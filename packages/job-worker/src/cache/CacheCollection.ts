@@ -216,7 +216,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 	public static createFromArray<TDoc extends { _id: ProtectedString<any> }>(
 		context: JobContext,
 		collection: ICollection<TDoc>,
-		docs: TDoc[]
+		docs: TDoc[] | ReadonlyDeep<TDoc[]>
 	): DbCacheWriteCollection<TDoc> {
 		const col = new DbCacheWriteCollection(context, collection)
 		col.fillWithDataFromArray(docs as any)

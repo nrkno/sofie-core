@@ -5,6 +5,7 @@ import { SourceLayers } from '../dataModel/ShowStyleBase'
 import { assertNever, groupByToMapFunc } from '../lib'
 import _ = require('underscore')
 import { isCandidateBetterToBeContinued, isCandidateMoreImportant } from './infinites'
+import { ReadonlyDeep } from 'type-fest'
 
 /**
  * Get the `enable: { start: ?? }` for the new piece in terms that can be used as an `end` for another object
@@ -13,14 +14,14 @@ function getPieceStartTime(newPieceStart: number | 'now'): number | RelativeReso
 	return typeof newPieceStart === 'number' ? newPieceStart : { offsetFromNow: 0 }
 }
 
-function isClear(piece?: PieceInstance): boolean {
+function isClear(piece?: ReadonlyDeep<PieceInstance>): boolean {
 	return !!piece?.piece.virtual
 }
 
 function isCappedByAVirtual(
 	activePieces: PieceInstanceOnInfiniteLayers,
 	key: keyof PieceInstanceOnInfiniteLayers,
-	newPiece: PieceInstance
+	newPiece: ReadonlyDeep<PieceInstance>
 ): boolean {
 	if (
 		(key === 'onRundownEnd' || key === 'onShowStyleEnd') &&
@@ -41,7 +42,7 @@ export interface RelativeResolvedEndCap {
 	offsetFromNow: number
 }
 
-export interface PieceInstanceWithTimings extends PieceInstance {
+export interface PieceInstanceWithTimings extends ReadonlyDeep<PieceInstance> {
 	/**
 	 * This is a maximum end point of the pieceInstance.
 	 * If the pieceInstance also has a enable.duration or userDuration set then the shortest one will need to be used
@@ -62,7 +63,7 @@ export interface PieceInstanceWithTimings extends PieceInstance {
  */
 export function processAndPrunePieceInstanceTimings(
 	sourceLayers: SourceLayers,
-	pieces: PieceInstance[],
+	pieces: ReadonlyDeep<PieceInstance[]>,
 	nowInPart: number,
 	keepDisabledPieces?: boolean,
 	includeVirtual?: boolean
@@ -88,9 +89,9 @@ export function processAndPrunePieceInstanceTimings(
 	)
 	for (const pieces of groupedPieces.values()) {
 		// Group and sort the pieces so that we can step through each point in time
-		const piecesByStart: Array<[number | 'now', PieceInstance[]]> = _.sortBy(
+		const piecesByStart: Array<[number | 'now', ReadonlyDeep<PieceInstance[]>]> = _.sortBy(
 			Array.from(groupByToMapFunc(pieces, (p) => p.piece.enable.start).entries()).map(([k, v]) =>
-				literal<[number | 'now', PieceInstance[]]>([k === 'now' ? 'now' : Number(k), v])
+				literal<[number | 'now', ReadonlyDeep<PieceInstance[]>]>([k === 'now' ? 'now' : Number(k), v])
 			),
 			([k]) => (k === 'now' ? nowInPart : k)
 		)
@@ -163,7 +164,7 @@ interface PieceInstanceOnInfiniteLayers {
 	onSegmentEnd?: PieceInstanceWithTimings
 	other?: PieceInstanceWithTimings
 }
-function findPieceInstancesOnInfiniteLayers(pieces: PieceInstance[]): PieceInstanceOnInfiniteLayers {
+function findPieceInstancesOnInfiniteLayers(pieces: ReadonlyDeep<PieceInstance[]>): PieceInstanceOnInfiniteLayers {
 	if (pieces.length === 0) {
 		return {}
 	}

@@ -3,6 +3,7 @@ import { ITranslatableMessage } from '../TranslatableMessage'
 import { ProtectedStringProperties } from '../protectedString'
 import { PartId, RundownId, SegmentId } from './Ids'
 import { PartNote } from './Notes'
+import { ReadonlyDeep } from 'type-fest'
 
 export interface PartInvalidReason {
 	message: ITranslatableMessage
@@ -33,6 +34,6 @@ export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id
 	expectedDurationWithPreroll: number | undefined
 }
 
-export function isPartPlayable(part: DBPart): boolean {
+export function isPartPlayable(part: Pick<ReadonlyDeep<DBPart>, 'invalid' | 'floated'>): boolean {
 	return !part.invalid && !part.floated
 }

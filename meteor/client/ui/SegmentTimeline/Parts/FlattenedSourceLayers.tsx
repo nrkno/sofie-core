@@ -7,6 +7,7 @@ import { SourceLayerItemContainer } from '../SourceLayerItemContainer'
 import { ISourceLayerPropsBase, useMouseContext } from './SourceLayer'
 import { ISourceLayerExtended } from '../../../../lib/Rundown'
 import { PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { ReadonlyDeep } from 'type-fest'
 
 interface IFlattenedSourceLayerProps extends ISourceLayerPropsBase {
 	layers: ISourceLayerUi[]
@@ -17,7 +18,7 @@ export function FlattenedSourceLayers(props: IFlattenedSourceLayerProps): JSX.El
 	const { getPartContext, onMouseDown } = useMouseContext(props)
 
 	const piecesForLayers = useMemo(() => {
-		const piecesForLayers: Map<string, PieceInstancePiece[]> = new Map()
+		const piecesForLayers: Map<string, ReadonlyDeep<PieceInstancePiece>[]> = new Map()
 		for (const layer of props.layers) {
 			piecesForLayers.set(
 				layer._id,

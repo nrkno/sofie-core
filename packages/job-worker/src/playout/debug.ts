@@ -2,13 +2,12 @@ import {
 	DebugRegenerateNextPartInstanceProps,
 	DebugSyncInfinitesForNextPartInstanceProps,
 } from '@sofie-automation/corelib/dist/worker/studio'
-import { runJobWithStudioCache } from '../studio/lock'
+import { runJobWithStudioPlayoutModel } from '../studio/lock'
 import { JobContext } from '../jobs'
 import { logger } from '../logging'
-import { getSelectedPartInstancesFromCache } from './cache'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { setNextPart } from './setNext'
-import { runJobWithPlayoutCache } from './lock'
+import { runJobWithPlayoutModel } from './lock'
 import { updateStudioTimeline, updateTimeline } from './timeline/generate'
 
 /**
@@ -21,8 +20,13 @@ export async function handleDebugSyncPlayheadInfinitesForNextPartInstance(
 ): Promise<void> {
 	logger.info(`syncPlayheadInfinitesForNextPartInstance ${data.playlistId}`)
 
-	await runJobWithPlayoutCache(context, data, null, async (cache) => {
-		await syncPlayheadInfinitesForNextPartInstance(context, cache)
+	await runJobWithPlayoutModel(context, data, null, async (playoutModel) => {
+		await syncPlayheadInfinitesForNextPartInstance(
+			context,
+			playoutModel,
+			playoutModel.CurrentPartInstance,
+			playoutModel.NextPartInstance
+		)
 	})
 }
 
@@ -36,22 +40,22 @@ export async function handleDebugRegenerateNextPartInstance(
 ): Promise<void> {
 	logger.info('regenerateNextPartInstance')
 
-	await runJobWithPlayoutCache(context, data, null, async (cache) => {
-		const playlist = cache.Playlist.doc
+	await runJobWithPlayoutModel(context, data, null, async (playoutModel) => {
+		const playlist = playoutModel.Playlist
 		const originalNextPartInfo = playlist.nextPartInfo
 		if (originalNextPartInfo && playlist.activationId) {
-			const { nextPartInstance } = getSelectedPartInstancesFromCache(cache)
-			const part = nextPartInstance ? cache.Parts.findOne(nextPartInstance.part._id) : undefined
+			const nextPartInstance = playoutModel.NextPartInstance
+			const part = nextPartInstance ? playoutModel.findPart(nextPartInstance.PartInstance.part._id) : undefined
 			if (part) {
-				await setNextPart(context, cache, null, false)
+				await setNextPart(context, playoutModel, null, false)
 				await setNextPart(
 					context,
-					cache,
+					playoutModel,
 					{ part: part, consumesQueuedSegmentId: false },
 					originalNextPartInfo.manuallySelected
 				)
 
-				await updateTimeline(context, cache)
+				await updateTimeline(context, playoutModel)
 			}
 		}
 	})
@@ -63,10 +67,10 @@ export async function handleDebugRegenerateNextPartInstance(
 export async function handleDebugCrash(context: JobContext, data: DebugRegenerateNextPartInstanceProps): Promise<void> {
 	logger.info('debugCrash')
 
-	await runJobWithPlayoutCache(context, data, null, async (cache) => {
+	await runJobWithPlayoutModel(context, data, null, async (playoutModel) => {
 		setTimeout(() => {
 			//@ts-expect-error: 2339
-			cache.callUndefined()
+			playoutModel.callUndefined()
 		}, 10)
 	})
 }
@@ -75,19 +79,18 @@ export async function handleDebugCrash(context: JobContext, data: DebugRegenerat
  * Debug: Regenerate the timeline for the Studio
  */
 export async function handleDebugUpdateTimeline(context: JobContext, _data: void): Promise<void> {
-	await runJobWithStudioCache(context, async (studioCache) => {
+	await runJobWithStudioPlayoutModel(context, async (studioCache) => {
 		const activePlaylists = studioCache.getActiveRundownPlaylists()
 		if (activePlaylists.length > 1) {
 			throw new Error(`Too many active playlists`)
 		} else if (activePlaylists.length > 0) {
 			const playlist = activePlaylists[0]
 
-			await runJobWithPlayoutCache(context, { playlistId: playlist._id }, null, async (playoutCache) => {
+			await runJobWithPlayoutModel(context, { playlistId: playlist._id }, null, async (playoutCache) => {
 				await updateTimeline(context, playoutCache)
 			})
 		} else {
 			await updateStudioTimeline(context, studioCache)
-			await studioCache.saveAllToDatabase()
 		}
 	})
 }

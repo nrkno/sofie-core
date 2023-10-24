@@ -14,6 +14,9 @@ import { clone, Complete, literal } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
 import {
+	ExpectedPackage,
+	ExpectedPlayoutItemGeneric,
+	HackPartMediaObjectSubscription,
 	IBlueprintActionManifest,
 	IBlueprintAdLibPieceDB,
 	IBlueprintConfig,
@@ -33,6 +36,7 @@ import {
 	IBlueprintShowStyleVariant,
 	IOutputLayer,
 	ISourceLayer,
+	PieceAbSessionInfo,
 	RundownPlaylistTiming,
 } from '@sofie-automation/blueprints-integration'
 import { JobContext, ProcessedShowStyleBase, ProcessedShowStyleVariant } from '../../jobs'
@@ -101,7 +105,9 @@ export const IBlueprintMutatablePartSampleKeys = allKeysOfObject<IBlueprintMutat
  * Note: they are all intended to 'clone' the objects, to avoid mutability concerns
  */
 
-function convertPieceInstanceToBlueprintsInner(pieceInstance: PieceInstance): Complete<IBlueprintPieceInstance> {
+function convertPieceInstanceToBlueprintsInner(
+	pieceInstance: ReadonlyDeep<PieceInstance>
+): Complete<IBlueprintPieceInstance> {
 	const obj: Complete<IBlueprintPieceInstance> = {
 		_id: unprotectString(pieceInstance._id),
 		partInstanceId: unprotectString(pieceInstance.partInstanceId),
@@ -128,7 +134,7 @@ function convertPieceInstanceToBlueprintsInner(pieceInstance: PieceInstance): Co
  * @param pieceInstance the PieceInstance to convert
  * @returns a cloned complete and clean IBlueprintPieceInstance
  */
-export function convertPieceInstanceToBlueprints(pieceInstance: PieceInstance): IBlueprintPieceInstance {
+export function convertPieceInstanceToBlueprints(pieceInstance: ReadonlyDeep<PieceInstance>): IBlueprintPieceInstance {
 	return convertPieceInstanceToBlueprintsInner(pieceInstance)
 }
 
@@ -154,7 +160,7 @@ export function convertResolvedPieceInstanceToBlueprints(
  * @param partInstance the DBPartInstance to convert
  * @returns a cloned complete and clean IBlueprintPartInstance
  */
-export function convertPartInstanceToBlueprints(partInstance: DBPartInstance): IBlueprintPartInstance {
+export function convertPartInstanceToBlueprints(partInstance: ReadonlyDeep<DBPartInstance>): IBlueprintPartInstance {
 	const obj: Complete<IBlueprintPartInstance> = {
 		_id: unprotectString(partInstance._id),
 		segmentId: unprotectString(partInstance.segmentId),
@@ -169,7 +175,7 @@ export function convertPartInstanceToBlueprints(partInstance: DBPartInstance): I
 	return obj
 }
 
-function convertPieceGenericToBlueprintsInner(piece: PieceGeneric): Complete<IBlueprintPieceGeneric> {
+function convertPieceGenericToBlueprintsInner(piece: ReadonlyDeep<PieceGeneric>): Complete<IBlueprintPieceGeneric> {
 	const obj: Complete<IBlueprintPieceGeneric> = {
 		externalId: piece.externalId,
 		name: piece.name,
@@ -180,16 +186,16 @@ function convertPieceGenericToBlueprintsInner(piece: PieceGeneric): Complete<IBl
 		prerollDuration: piece.prerollDuration,
 		postrollDuration: piece.postrollDuration,
 		toBeQueued: piece.toBeQueued,
-		expectedPlayoutItems: clone(piece.expectedPlayoutItems),
-		tags: clone(piece.tags),
+		expectedPlayoutItems: clone<ExpectedPlayoutItemGeneric[] | undefined>(piece.expectedPlayoutItems),
+		tags: clone<string[] | undefined>(piece.tags),
 		allowDirectPlay: clone<IBlueprintPieceDB['allowDirectPlay']>(piece.allowDirectPlay),
-		expectedPackages: clone(piece.expectedPackages),
+		expectedPackages: clone<ExpectedPackage.Any[] | undefined>(piece.expectedPackages),
 		hasSideEffects: piece.hasSideEffects,
 		content: {
 			...clone(piece.content),
 			timelineObjects: deserializePieceTimelineObjectsBlob(piece.timelineObjectsString),
 		},
-		abSessions: clone(piece.abSessions),
+		abSessions: clone<PieceAbSessionInfo[] | undefined>(piece.abSessions),
 	}
 
 	return obj
@@ -200,7 +206,7 @@ function convertPieceGenericToBlueprintsInner(piece: PieceGeneric): Complete<IBl
  * @param piece the Piece to convert
  * @returns a cloned complete and clean IBlueprintPieceDB
  */
-export function convertPieceToBlueprints(piece: PieceInstancePiece): IBlueprintPieceDB {
+export function convertPieceToBlueprints(piece: ReadonlyDeep<PieceInstancePiece>): IBlueprintPieceDB {
 	const obj: Complete<IBlueprintPieceDB> = {
 		...convertPieceGenericToBlueprintsInner(piece),
 		_id: unprotectString(piece._id),
@@ -219,7 +225,7 @@ export function convertPieceToBlueprints(piece: PieceInstancePiece): IBlueprintP
  * @param part the Part to convert
  * @returns a cloned complete and clean IBlueprintPartDB
  */
-export function convertPartToBlueprints(part: DBPart): IBlueprintPartDB {
+export function convertPartToBlueprints(part: ReadonlyDeep<DBPart>): IBlueprintPartDB {
 	const obj: Complete<IBlueprintPartDB> = {
 		_id: unprotectString(part._id),
 		segmentId: unprotectString(part.segmentId),
@@ -241,12 +247,14 @@ export function convertPartToBlueprints(part: DBPart): IBlueprintPartDB {
 		budgetDuration: part.budgetDuration,
 		holdMode: part.holdMode,
 		shouldNotifyCurrentPlayingPart: part.shouldNotifyCurrentPlayingPart,
-		classes: clone(part.classes),
-		classesForNext: clone(part.classesForNext),
+		classes: clone<string[] | undefined>(part.classes),
+		classesForNext: clone<string[] | undefined>(part.classesForNext),
 		displayDurationGroup: part.displayDurationGroup,
 		displayDuration: part.displayDuration,
 		identifier: part.identifier,
-		hackListenToMediaObjectUpdates: part.hackListenToMediaObjectUpdates,
+		hackListenToMediaObjectUpdates: clone<HackPartMediaObjectSubscription[] | undefined>(
+			part.hackListenToMediaObjectUpdates
+		),
 	}
 
 	return obj

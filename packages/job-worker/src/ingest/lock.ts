@@ -11,7 +11,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownLock } from '../jobs/lock'
 import { groupByToMap } from '@sofie-automation/corelib/dist/lib'
 import { UserError } from '@sofie-automation/corelib/dist/error'
-import { getOrderedSegmentsAndPartsFromCacheCollections } from '../cache/utils'
+import { sortSegmentsInRundowns, sortPartsInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
 
 /**
  * The result of the initial stage of an Ingest operation
@@ -182,10 +182,27 @@ function generatePartMap(cache: ReadOnlyCache<CacheForIngest>): BeforePartMap {
 	const rundown = cache.Rundown.doc
 	if (!rundown) return new Map()
 
-	const segmentsAndParts = getOrderedSegmentsAndPartsFromCacheCollections(cache.Parts, cache.Segments, [
-		cache.RundownId,
-	])
-	const existingRundownParts = groupByToMap(segmentsAndParts.parts, 'segmentId')
+	const orderedSegments = sortSegmentsInRundowns(
+		cache.Segments.findAll(null, {
+			sort: {
+				rundownId: 1,
+				_rank: 1,
+			},
+		}),
+		[cache.RundownId]
+	)
+
+	const orderedParts = sortPartsInSortedSegments(
+		cache.Parts.findAll(null, {
+			sort: {
+				rundownId: 1,
+				_rank: 1,
+			},
+		}),
+		orderedSegments
+	)
+
+	const existingRundownParts = groupByToMap(orderedParts, 'segmentId')
 
 	const res = new Map<SegmentId, Array<{ id: PartId; rank: number }>>()
 	for (const [segmentId, parts] of existingRundownParts.entries()) {

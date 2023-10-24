@@ -29,7 +29,7 @@ export namespace ServerPlayoutAPI {
 			])
 			if (blueprint === undefined) return 'missingBlueprint'
 
-			return shouldUpdateStudioBaselineInner(PackageInfo.version, studio, timeline, blueprint)
+			return shouldUpdateStudioBaselineInner(PackageInfo.version, studio, timeline ?? null, blueprint)
 		} else {
 			return false
 		}

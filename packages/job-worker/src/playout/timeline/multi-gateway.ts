@@ -1,18 +1,18 @@
 import { Time } from '@sofie-automation/blueprints-integration'
 import { PieceInstanceInfiniteId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { TimelineObjRundown } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { normalizeArray } from '@sofie-automation/corelib/dist/lib'
 import { PieceTimelineMetadata } from './pieceGroup'
-import { CacheForStudioBase } from '../../studio/cache'
+import { StudioPlayoutModelBase } from '../../studio/model/StudioPlayoutModel'
 import { JobContext } from '../../jobs'
 import { getCurrentTime } from '../../lib'
-import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../cache'
+import { PlayoutModel } from '../model/PlayoutModel'
 import { RundownTimelineTimingContext, getInfinitePartGroupId } from './rundown'
 import { getExpectedLatency } from '@sofie-automation/corelib/dist/studio/playout'
-import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { getPieceControlObjectId } from '@sofie-automation/corelib/dist/playout/ids'
+import { PlayoutPartInstanceModel } from '../model/PlayoutPartInstanceModel'
+import { PlayoutPieceInstanceModel } from '../model/PlayoutPieceInstanceModel'
 
 /**
  * We want it to be possible to generate a timeline without it containing any `start: 'now'`.
@@ -23,7 +23,7 @@ import { getPieceControlObjectId } from '@sofie-automation/corelib/dist/playout/
  */
 export function deNowifyMultiGatewayTimeline(
 	context: JobContext,
-	cache: CacheForPlayout,
+	playoutModel: PlayoutModel,
 	timelineObjs: TimelineObjRundown[],
 	timeOffsetIntoPart: Time | undefined,
 	timingContext: RundownTimelineTimingContext | undefined
@@ -32,23 +32,22 @@ export function deNowifyMultiGatewayTimeline(
 
 	const timelineObjsMap = normalizeArray(timelineObjs, 'id')
 
-	const nowOffsetLatency = calculateNowOffsetLatency(context, cache, timeOffsetIntoPart)
+	const nowOffsetLatency = calculateNowOffsetLatency(context, playoutModel, timeOffsetIntoPart)
 	const targetNowTime = getCurrentTime() + (nowOffsetLatency ?? 0)
 
 	// Replace `start: 'now'` in currentPartInstance on timeline
-	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
+	const currentPartInstance = playoutModel.CurrentPartInstance
 	if (!currentPartInstance) return
 
 	const partGroupTimings = updatePartInstancePlannedTimes(
-		cache,
+		playoutModel,
 		targetNowTime,
 		timingContext,
 		currentPartInstance,
-		nextPartInstance
+		playoutModel.NextPartInstance
 	)
 
 	deNowifyCurrentPieces(
-		cache,
 		targetNowTime,
 		timingContext,
 		currentPartInstance,
@@ -56,19 +55,21 @@ export function deNowifyMultiGatewayTimeline(
 		timelineObjsMap
 	)
 
-	updatePlannedTimingsForPieceInstances(cache, currentPartInstance, partGroupTimings, timelineObjsMap)
+	updatePlannedTimingsForPieceInstances(playoutModel, currentPartInstance, partGroupTimings, timelineObjsMap)
 }
 
 export function calculateNowOffsetLatency(
 	context: JobContext,
-	cache: CacheForStudioBase,
+	studioPlayoutModel: StudioPlayoutModelBase,
 	timeOffsetIntoPart: Time | undefined
 ): Time | undefined {
 	/** The timestamp that "now" was set to */
 	let nowOffsetLatency: Time | undefined
 
-	if (cache.isMultiGatewayMode) {
-		const playoutDevices = cache.PeripheralDevices.findAll((device) => device.type === PeripheralDeviceType.PLAYOUT)
+	if (studioPlayoutModel.isMultiGatewayMode) {
+		const playoutDevices = studioPlayoutModel.PeripheralDevices.filter(
+			(device) => device.type === PeripheralDeviceType.PLAYOUT
+		)
 		const worstLatency = Math.max(0, ...playoutDevices.map((device) => getExpectedLatency(device).safe))
 		/** Add a little more latency, to account for network latency variability */
 		const ADD_SAFE_LATENCY = context.studio.settings.multiGatewayNowSafeLatency || 30
@@ -90,55 +91,29 @@ interface PartGroupTimings {
 }
 
 function updatePartInstancePlannedTimes(
-	cache: CacheForPlayout,
+	playoutModel: PlayoutModel,
 	targetNowTime: number,
 	timingContext: RundownTimelineTimingContext,
-	currentPartInstance: DBPartInstance,
-	nextPartInstance: DBPartInstance | undefined
+	currentPartInstance: PlayoutPartInstanceModel,
+	nextPartInstance: PlayoutPartInstanceModel | null
 ): PartGroupTimings {
 	let currentPartGroupStartTime: number
-	if (!currentPartInstance.timings?.plannedStartedPlayback) {
+	if (!currentPartInstance.PartInstance.timings?.plannedStartedPlayback) {
 		// Looks like the part is just being taken
-		cache.PartInstances.updateOne(
-			currentPartInstance._id,
-			(instance) => {
-				if (instance.timings?.plannedStartedPlayback !== targetNowTime) {
-					if (!instance.timings) instance.timings = {}
-					instance.timings.plannedStartedPlayback = targetNowTime
-					return instance
-				} else {
-					return false
-				}
-			},
-			true
-		)
+		currentPartInstance.setPlannedStartedPlayback(targetNowTime)
 
 		// Reflect this in the timeline
 		timingContext.currentPartGroup.enable.start = targetNowTime
 		currentPartGroupStartTime = targetNowTime
 	} else {
-		currentPartGroupStartTime = currentPartInstance.timings.plannedStartedPlayback
+		currentPartGroupStartTime = currentPartInstance.PartInstance.timings.plannedStartedPlayback
 	}
 
 	// Also mark the previous as ended
-	if (cache.Playlist.doc.previousPartInfo) {
+	const previousPartInstance = playoutModel.PreviousPartInstance
+	if (previousPartInstance) {
 		const previousPartEndTime = currentPartGroupStartTime + (timingContext.previousPartOverlap ?? 0)
-		cache.PartInstances.updateOne(
-			cache.Playlist.doc.previousPartInfo.partInstanceId,
-			(instance) => {
-				if (
-					instance.timings?.plannedStartedPlayback &&
-					instance.timings?.plannedStoppedPlayback !== previousPartEndTime
-				) {
-					if (!instance.timings) instance.timings = {}
-					instance.timings.plannedStoppedPlayback = previousPartEndTime
-					return instance
-				} else {
-					return false
-				}
-			},
-			true
-		)
+		previousPartInstance.setPlannedStoppedPlayback(previousPartEndTime)
 	}
 
 	const currentPartGroupEndTime = timingContext.currentPartDuration
@@ -154,34 +129,10 @@ function updatePartInstancePlannedTimes(
 
 		timingContext.nextPartGroup.enable.start = nextPartGroupStartTime
 
-		cache.PartInstances.updateOne(
-			nextPartInstance._id,
-			(instance) => {
-				if (instance.timings?.plannedStartedPlayback !== nextPartGroupStartTime) {
-					if (!instance.timings) instance.timings = {}
-					instance.timings.plannedStartedPlayback = nextPartGroupStartTime
-					delete instance.timings.plannedStoppedPlayback
-					return instance
-				} else {
-					return false
-				}
-			},
-			true
-		)
+		nextPartInstance.setPlannedStartedPlayback(nextPartGroupStartTime)
 	} else if (nextPartInstance) {
 		// Make sure the next partInstance doesnt have a start time
-		cache.PartInstances.updateOne(
-			nextPartInstance._id,
-			(instance) => {
-				if (instance.timings?.plannedStartedPlayback) {
-					delete instance.timings.plannedStartedPlayback
-					return instance
-				} else {
-					return false
-				}
-			},
-			true
-		)
+		nextPartInstance.setPlannedStartedPlayback(undefined)
 	}
 
 	return {
@@ -192,10 +143,9 @@ function updatePartInstancePlannedTimes(
 }
 
 function deNowifyCurrentPieces(
-	cache: CacheForPlayout,
 	targetNowTime: number,
 	timingContext: RundownTimelineTimingContext,
-	currentPartInstance: DBPartInstance,
+	currentPartInstance: PlayoutPartInstanceModel,
 	currentPartGroupStartTime: number,
 	timelineObjsMap: Record<string, TimelineObjRundown>
 ) {
@@ -203,14 +153,16 @@ function deNowifyCurrentPieces(
 	const nowInPart = targetNowTime - currentPartGroupStartTime
 
 	// Ensure any pieces in the currentPartInstance have their now replaced
-	cache.PieceInstances.updateAll((p) => {
-		if (p.partInstanceId === currentPartInstance._id && p.piece.enable.start === 'now') {
-			p.piece.enable.start = nowInPart
-			return p
+	for (const pieceInstance of currentPartInstance.PieceInstances) {
+		if (pieceInstance.PieceInstance.piece.enable.start === 'now') {
+			pieceInstance.updatePieceProps({
+				enable: {
+					...pieceInstance.PieceInstance.piece.enable,
+					start: nowInPart,
+				},
+			})
 		}
-
-		return false
-	}, true)
+	}
 
 	// Pieces without concrete times will add some special 'now' objects to the timeline that they can reference
 	// Make sure that the all have concrete times attached
@@ -226,158 +178,133 @@ function deNowifyCurrentPieces(
 	}
 
 	// Ensure any pieces with an unconfirmed userDuration is confirmed
-	cache.PieceInstances.updateAll((p) => {
-		if (p.partInstanceId === currentPartInstance._id && p.userDuration && 'endRelativeToNow' in p.userDuration) {
-			const relativeToNow = p.userDuration.endRelativeToNow
-			p.userDuration = {
-				endRelativeToPart: relativeToNow + nowInPart,
-			}
+	for (const pieceInstance of currentPartInstance.PieceInstances) {
+		if (
+			pieceInstance.PieceInstance.userDuration &&
+			'endRelativeToNow' in pieceInstance.PieceInstance.userDuration
+		) {
+			const relativeToNow = pieceInstance.PieceInstance.userDuration.endRelativeToNow
+			const endRelativeToPart = relativeToNow + nowInPart
+			pieceInstance.setDuration({ endRelativeToPart })
 
 			// Update the piece control obj
-			const controlObj = timelineObjsMap[getPieceControlObjectId(p)]
+			const controlObj = timelineObjsMap[getPieceControlObjectId(pieceInstance.PieceInstance)]
 			if (controlObj && !Array.isArray(controlObj.enable) && controlObj.enable.end === 'now') {
-				controlObj.enable.end = p.userDuration.endRelativeToPart
+				controlObj.enable.end = endRelativeToPart
 			}
 
 			// If the piece is an infinite, there may be a now in the parent group
-			const infiniteGroup = timelineObjsMap[getInfinitePartGroupId(p._id)]
+			const infiniteGroup = timelineObjsMap[getInfinitePartGroupId(pieceInstance.PieceInstance._id)]
 			if (infiniteGroup && !Array.isArray(infiniteGroup.enable) && infiniteGroup.enable.end === 'now') {
 				infiniteGroup.enable.end = targetNowTime + relativeToNow
 			}
-
-			return p
 		}
-
-		return false
-	})
+	}
 }
 
 function updatePlannedTimingsForPieceInstances(
-	cache: CacheForPlayout,
-	currentPartInstance: DBPartInstance,
+	playoutModel: PlayoutModel,
+	currentPartInstance: PlayoutPartInstanceModel,
 	partGroupTimings: PartGroupTimings,
 	timelineObjsMap: Record<string, TimelineObjRundown>
 ) {
 	const existingInfiniteTimings = new Map<PieceInstanceInfiniteId, Time>()
-	if (cache.Playlist.doc.previousPartInfo) {
-		const previousPartInstanceId = cache.Playlist.doc.previousPartInfo.partInstanceId
-		const pieceInstances = cache.PieceInstances.findAll((p) => p.partInstanceId === previousPartInstanceId)
+	const previousPartInstance = playoutModel.PreviousPartInstance
+	if (previousPartInstance) {
+		const pieceInstances = previousPartInstance.PieceInstances
 		for (const pieceInstance of pieceInstances) {
 			// Track the timings for the infinites
-			const plannedStartedPlayback = pieceInstance.plannedStartedPlayback
-			if (pieceInstance.infinite && plannedStartedPlayback) {
-				existingInfiniteTimings.set(pieceInstance.infinite.infiniteInstanceId, plannedStartedPlayback)
+			const plannedStartedPlayback = pieceInstance.PieceInstance.plannedStartedPlayback
+			if (pieceInstance.PieceInstance.infinite && plannedStartedPlayback) {
+				existingInfiniteTimings.set(
+					pieceInstance.PieceInstance.infinite.infiniteInstanceId,
+					plannedStartedPlayback
+				)
 			}
 		}
 	}
 
 	// Ensure any pieces have up to date timings
-	cache.PieceInstances.updateAll((p) => {
-		if (p.partInstanceId === currentPartInstance._id) {
-			let res = setPlannedTimingsOnPieceInstance(
-				p,
-				partGroupTimings.currentStartTime,
-				partGroupTimings.currentEndTime
-			)
-			res = preserveOrTrackInfiniteTimings(existingInfiniteTimings, timelineObjsMap, res || p) || res
+	for (const pieceInstance of currentPartInstance.PieceInstances) {
+		setPlannedTimingsOnPieceInstance(
+			pieceInstance,
+			partGroupTimings.currentStartTime,
+			partGroupTimings.currentEndTime
+		)
+		preserveOrTrackInfiniteTimings(existingInfiniteTimings, timelineObjsMap, pieceInstance)
+	}
 
-			return res
-		} else {
-			return false
-		}
-	}, true)
-
-	if (cache.Playlist.doc.nextPartInfo && partGroupTimings.nextStartTime) {
+	const nextPartInstance = playoutModel.NextPartInstance
+	if (nextPartInstance && partGroupTimings.nextStartTime) {
 		const nextPartGroupStartTime0 = partGroupTimings.nextStartTime
-		cache.PieceInstances.updateAll((p) => {
-			if (p.partInstanceId === currentPartInstance._id) {
-				let res = setPlannedTimingsOnPieceInstance(p, nextPartGroupStartTime0, undefined)
-				res = preserveOrTrackInfiniteTimings(existingInfiniteTimings, timelineObjsMap, res || p) || res
-
-				return res
-			} else {
-				return false
-			}
-		}, true)
+		for (const pieceInstance of nextPartInstance.PieceInstances) {
+			setPlannedTimingsOnPieceInstance(pieceInstance, nextPartGroupStartTime0, undefined)
+			preserveOrTrackInfiniteTimings(existingInfiniteTimings, timelineObjsMap, pieceInstance)
+		}
 	}
 }
 
 function setPlannedTimingsOnPieceInstance(
-	pieceInstance: PieceInstance,
+	pieceInstance: PlayoutPieceInstanceModel,
 	partPlannedStart: Time,
 	partPlannedEnd: Time | undefined
-): PieceInstance | false {
+): void {
 	if (
-		pieceInstance.infinite &&
-		pieceInstance.infinite.infiniteInstanceIndex > 0 &&
-		pieceInstance.plannedStartedPlayback
+		pieceInstance.PieceInstance.infinite &&
+		pieceInstance.PieceInstance.infinite.infiniteInstanceIndex > 0 &&
+		pieceInstance.PieceInstance.plannedStartedPlayback
 	) {
 		// If not the start of an infinite chain, then the plannedStartedPlayback flows differently
-		return false
+		return
 	}
 
-	let changed = false
-
-	if (typeof pieceInstance.piece.enable.start === 'number') {
-		const plannedStart = partPlannedStart + pieceInstance.piece.enable.start
-		if (pieceInstance.plannedStartedPlayback !== plannedStart) {
-			pieceInstance.plannedStartedPlayback = plannedStart
-			changed = true
-		}
+	if (typeof pieceInstance.PieceInstance.piece.enable.start === 'number') {
+		const plannedStart = partPlannedStart + pieceInstance.PieceInstance.piece.enable.start
+		pieceInstance.setPlannedStartedPlayback(plannedStart)
 
 		const userDurationEnd =
-			pieceInstance.userDuration && 'endRelativeToPart' in pieceInstance.userDuration
-				? pieceInstance.userDuration.endRelativeToPart
+			pieceInstance.PieceInstance.userDuration && 'endRelativeToPart' in pieceInstance.PieceInstance.userDuration
+				? pieceInstance.PieceInstance.userDuration.endRelativeToPart
 				: null
 		const plannedEnd =
 			userDurationEnd ??
-			(pieceInstance.piece.enable.duration ? plannedStart + pieceInstance.piece.enable.duration : partPlannedEnd)
+			(pieceInstance.PieceInstance.piece.enable.duration
+				? plannedStart + pieceInstance.PieceInstance.piece.enable.duration
+				: partPlannedEnd)
 
-		if (pieceInstance.plannedStoppedPlayback !== plannedEnd) {
-			pieceInstance.plannedStoppedPlayback = plannedEnd
-			changed = true
-		}
+		pieceInstance.setPlannedStoppedPlayback(plannedEnd)
 	}
-
-	return changed ? pieceInstance : false
 }
 
 function preserveOrTrackInfiniteTimings(
 	existingInfiniteTimings: Map<PieceInstanceInfiniteId, Time>,
 	timelineObjsMap: Record<string, TimelineObjRundown>,
-	pieceInstance: PieceInstance
-): PieceInstance | false {
-	let changed = false
-	if (pieceInstance.infinite) {
-		const plannedStartedPlayback = existingInfiniteTimings.get(pieceInstance.infinite.infiniteInstanceId)
-		if (plannedStartedPlayback) {
-			// Found a value from the previousPartInstance, lets preserve it
-			if (pieceInstance.plannedStartedPlayback !== plannedStartedPlayback) {
-				pieceInstance.plannedStartedPlayback = plannedStartedPlayback
-				changed = true
-			}
-		} else {
-			const plannedStartedPlayback = pieceInstance.plannedStartedPlayback
-			if (plannedStartedPlayback) {
-				existingInfiniteTimings.set(pieceInstance.infinite.infiniteInstanceId, plannedStartedPlayback)
-			}
-		}
+	pieceInstance: PlayoutPieceInstanceModel
+): void {
+	if (!pieceInstance.PieceInstance.infinite) return
 
-		// Update the timeline group
-		const startedPlayback = plannedStartedPlayback ?? pieceInstance.plannedStartedPlayback
-		if (startedPlayback) {
-			const infinitePartGroupId = getInfinitePartGroupId(pieceInstance._id)
-			const infinitePartGroupObj = timelineObjsMap[infinitePartGroupId]
-			if (
-				infinitePartGroupObj &&
-				!Array.isArray(infinitePartGroupObj.enable) &&
-				typeof infinitePartGroupObj.enable.start === 'string'
-			) {
-				infinitePartGroupObj.enable.start = startedPlayback
-				changed = true
-			}
+	const plannedStartedPlayback = existingInfiniteTimings.get(pieceInstance.PieceInstance.infinite.infiniteInstanceId)
+	if (plannedStartedPlayback) {
+		// Found a value from the previousPartInstance, lets preserve it
+		pieceInstance.setPlannedStartedPlayback(plannedStartedPlayback)
+	} else {
+		const plannedStartedPlayback = pieceInstance.PieceInstance.plannedStartedPlayback
+		if (plannedStartedPlayback) {
+			existingInfiniteTimings.set(pieceInstance.PieceInstance.infinite.infiniteInstanceId, plannedStartedPlayback)
 		}
 	}
 
-	return changed ? pieceInstance : false
+	// Update the timeline group
+	const startedPlayback = plannedStartedPlayback ?? pieceInstance.PieceInstance.plannedStartedPlayback
+	if (startedPlayback) {
+		const infinitePartGroupId = getInfinitePartGroupId(pieceInstance.PieceInstance._id)
+		const infinitePartGroupObj = timelineObjsMap[infinitePartGroupId]
+		if (
+			infinitePartGroupObj &&
+			!Array.isArray(infinitePartGroupObj.enable) &&
+			typeof infinitePartGroupObj.enable.start === 'string'
+		) {
+			infinitePartGroupObj.enable.start = startedPlayback
+		}
+	}
 }

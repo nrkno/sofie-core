@@ -1222,21 +1222,30 @@ describe('Test recieved mos ingest payloads', () => {
 				fromPartInstanceId: null,
 			})
 
-			const partInstances0 = await context.mockCollections.PartInstances.findFetch({ rundownId: rundown._id })
-			const { segments: segments0, parts: parts0 } = await getRundownData({ _id: rundown._id })
+			const partInstancesBefore = await context.mockCollections.PartInstances.findFetch({
+				rundownId: rundown._id,
+			})
+			const { segments: segmentsBefore, parts: partsBefore } = await getRundownData({ _id: rundown._id })
 
 			await mosReplaceBasicStory(rundown.externalId, 'ro1;s2;p1', 'ro1;s2;p1', 'SEGMENT2b;PART1')
 			await mosReplaceBasicStory(rundown.externalId, 'ro1;s2;p2', 'ro1;s2;p2', 'SEGMENT2b;PART2')
 
-			const partInstances = await context.mockCollections.PartInstances.findFetch({ rundownId: rundown._id })
-			const { segments, parts } = await getRundownData({ _id: rundown._id })
+			const partInstancesAfter = await context.mockCollections.PartInstances.findFetch({ rundownId: rundown._id })
+			const { segments: segmentsAfter, parts: partsAfter } = await getRundownData({ _id: rundown._id })
 
 			// Update expected data, for just the segment name and ids changing
-			applySegmentRenameToContents('SEGMENT2', 'SEGMENT2b', segments0, segments, parts0, partInstances0)
+			applySegmentRenameToContents(
+				'SEGMENT2',
+				'SEGMENT2b',
+				segmentsBefore,
+				segmentsAfter,
+				partsBefore,
+				partInstancesBefore
+			)
 
-			expect(fixSnapshot(segments)).toMatchObject(fixSnapshot(segments0) || [])
-			expect(fixSnapshot(parts)).toMatchObject(fixSnapshot(parts0) || [])
-			expect(fixSnapshot(partInstances)).toMatchObject(fixSnapshot(partInstances0) || [])
+			expect(fixSnapshot(segmentsAfter)).toMatchObject(fixSnapshot(segmentsBefore))
+			expect(fixSnapshot(partsAfter)).toMatchObject(fixSnapshot(partsBefore))
+			expect(fixSnapshot(partInstancesAfter)).toMatchObject(fixSnapshot(partInstancesBefore))
 		} catch (e) {
 			console.error(e)
 			throw e
@@ -1272,8 +1281,10 @@ describe('Test recieved mos ingest payloads', () => {
 				fromPartInstanceId: null,
 			})
 
-			const partInstances0 = await context.mockCollections.PartInstances.findFetch({ rundownId: rundown._id })
-			const { segments: segments0, parts: parts0 } = await getRundownData({ _id: rundown._id })
+			const partInstancesBefore = await context.mockCollections.PartInstances.findFetch({
+				rundownId: rundown._id,
+			})
+			const { segments: segmentsBefore, parts: partsBefore } = await getRundownData({ _id: rundown._id })
 
 			// rename the segment
 			for (const story of mosRO.Stories) {
@@ -1300,15 +1311,22 @@ describe('Test recieved mos ingest payloads', () => {
 				expect(rundown2.orphaned).toBeFalsy()
 			}
 
-			const partInstances = await context.mockCollections.PartInstances.findFetch({ rundownId: rundown._id })
-			const { segments, parts } = await getRundownData({ _id: rundown._id })
+			const partInstancesAfter = await context.mockCollections.PartInstances.findFetch({ rundownId: rundown._id })
+			const { segments: segmentsAfter, parts: partsAfter } = await getRundownData({ _id: rundown._id })
 
 			// Update expected data, for just the segment name and ids changing
-			applySegmentRenameToContents('SEGMENT2', 'SEGMENT2b', segments0, segments, parts0, partInstances0)
+			applySegmentRenameToContents(
+				'SEGMENT2',
+				'SEGMENT2b',
+				segmentsBefore,
+				segmentsAfter,
+				partsBefore,
+				partInstancesBefore
+			)
 
-			expect(fixSnapshot(segments)).toMatchObject(fixSnapshot(segments0) || [])
-			expect(fixSnapshot(parts)).toMatchObject(fixSnapshot(parts0) || [])
-			expect(fixSnapshot(partInstances)).toMatchObject(fixSnapshot(partInstances0) || [])
+			expect(fixSnapshot(segmentsAfter)).toMatchObject(fixSnapshot(segmentsBefore))
+			expect(fixSnapshot(partsAfter)).toMatchObject(fixSnapshot(partsBefore))
+			expect(fixSnapshot(partInstancesAfter)).toMatchObject(fixSnapshot(partInstancesBefore))
 		} finally {
 			// cleanup
 			await handleDeactivateRundownPlaylist(context, {

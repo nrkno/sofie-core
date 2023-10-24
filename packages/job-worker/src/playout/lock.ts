@@ -3,20 +3,20 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { RundownPlayoutPropsBase } from '@sofie-automation/corelib/dist/worker/studio'
 import { logger } from '../logging'
 import { ReadonlyDeep } from 'type-fest'
-import { ReadOnlyCache } from '../cache/CacheBase'
 import { JobContext } from '../jobs'
 import { PlaylistLock } from '../jobs/lock'
-import { CacheForPlayoutPreInit, CacheForPlayout } from './cache'
+import { PlayoutModel, PlayoutModelPreInit } from './model/PlayoutModel'
+import { createPlayoutModelfromInitModel, loadPlayoutModelPreInit } from './model/implementation/LoadPlayoutModel'
 
 /**
  * Run a typical playout job
- * This means loading the playout cache in stages, doing some calculations and saving the result
+ * This means loading the playout model in stages, doing some calculations and saving the result
  */
-export async function runJobWithPlayoutCache<TRes>(
+export async function runJobWithPlayoutModel<TRes>(
 	context: JobContext,
 	data: RundownPlayoutPropsBase,
-	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void> | void),
-	fcn: (cache: CacheForPlayout) => Promise<TRes> | TRes
+	preInitFcn: null | ((playoutModel: PlayoutModelPreInit) => Promise<void> | void),
+	fcn: (playoutModel: PlayoutModel) => Promise<TRes> | TRes
 ): Promise<TRes> {
 	if (!data.playlistId) {
 		throw new Error(`Job is missing playlistId`)
@@ -29,7 +29,7 @@ export async function runJobWithPlayoutCache<TRes>(
 			throw new Error(`Job playlist "${data.playlistId}" not found or for another studio`)
 		}
 
-		return runWithPlaylistCache(context, playlist, playlistLock, preInitFcn, fcn)
+		return runWithPlayoutModel(context, playlist, playlistLock, preInitFcn, fcn)
 	})
 }
 
@@ -75,24 +75,24 @@ export async function runWithPlaylistLock<TRes>(
 	}
 }
 
-export async function runWithPlaylistCache<TRes>(
+export async function runWithPlayoutModel<TRes>(
 	context: JobContext,
 	playlist: ReadonlyDeep<DBRundownPlaylist>,
 	lock: PlaylistLock,
-	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void> | void),
-	fcn: (cache: CacheForPlayout) => Promise<TRes> | TRes
+	preInitFcn: null | ((playoutModel: PlayoutModelPreInit) => Promise<void> | void),
+	fcn: (playoutModel: PlayoutModel) => Promise<TRes> | TRes
 ): Promise<TRes> {
-	const initCache = await CacheForPlayoutPreInit.createPreInit(context, lock, playlist, false)
+	const initCache = await loadPlayoutModelPreInit(context, lock, playlist, false)
 
 	if (preInitFcn) {
 		await preInitFcn(initCache)
 	}
 
-	const fullCache = await CacheForPlayout.fromInit(context, initCache)
+	const fullCache = await createPlayoutModelfromInitModel(context, initCache)
 
 	try {
 		const res = await fcn(fullCache)
-		logger.silly('runWithPlaylistCache: saveAllToDatabase')
+		logger.silly('runWithPlayoutModel: saveAllToDatabase')
 		await fullCache.saveAllToDatabase()
 
 		return res

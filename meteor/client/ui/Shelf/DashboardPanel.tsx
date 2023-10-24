@@ -51,9 +51,9 @@ export interface IDashboardPanelProps {
 export interface IDashboardPanelTrackedProps {
 	studio: UIStudio | undefined
 	unfinishedAdLibIds: PieceId[]
-	unfinishedTags: string[]
+	unfinishedTags: readonly string[]
 	nextAdLibIds: PieceId[]
-	nextTags: string[]
+	nextTags: readonly string[]
 }
 
 interface DashboardPositionableElement {

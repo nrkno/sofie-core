@@ -96,7 +96,7 @@ export interface PartEnable {
 }
 
 export function createPartGroup(
-	partInstance: DBPartInstance,
+	partInstance: ReadonlyDeep<DBPartInstance>,
 	enable: PartEnable
 ): TimelineObjGroupPart & OnGenerateTimelineObjExt {
 	const partGrp = literal<TimelineObjGroupPart & OnGenerateTimelineObjExt>({
@@ -122,9 +122,9 @@ export function createPartGroup(
 
 export function createPartGroupFirstObject(
 	playlistId: RundownPlaylistId,
-	partInstance: DBPartInstance,
+	partInstance: ReadonlyDeep<DBPartInstance>,
 	partGroup: TimelineObjRundown & OnGenerateTimelineObjExt,
-	previousPart?: DBPartInstance
+	previousPart?: ReadonlyDeep<DBPartInstance>
 ): TimelineObjPartAbstract & OnGenerateTimelineObjExt {
 	return literal<TimelineObjPartAbstract & OnGenerateTimelineObjExt>({
 		id: getPartFirstObjectId(partInstance),

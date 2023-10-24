@@ -8,11 +8,12 @@ import { runJobWithPlaylistLock } from '../lock'
 import { saveTimeline } from '../timeline/generate'
 import { applyToArray } from '@sofie-automation/corelib/dist/lib'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { runJobWithStudioCache } from '../../studio/lock'
-import { CacheForStudio } from '../../studio/cache'
+import { runJobWithStudioPlayoutModel } from '../../studio/lock'
+import { StudioPlayoutModel } from '../../studio/model/StudioPlayoutModel'
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { PieceTimelineMetadata } from '../timeline/pieceGroup'
 import { deserializeTimelineBlob } from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { ReadonlyDeep } from 'type-fest'
 
 /**
  * Called from Playout-gateway when the trigger-time of a timeline object has updated
@@ -20,7 +21,7 @@ import { deserializeTimelineBlob } from '@sofie-automation/corelib/dist/dataMode
  */
 export async function handleTimelineTriggerTime(context: JobContext, data: OnTimelineTriggerTimeProps): Promise<void> {
 	if (data.results.length > 0) {
-		await runJobWithStudioCache(context, async (studioCache) => {
+		await runJobWithStudioPlayoutModel(context, async (studioCache) => {
 			const activePlaylists = studioCache.getActiveRundownPlaylists()
 
 			if (studioCache.isMultiGatewayMode) {
@@ -67,15 +68,15 @@ export async function handleTimelineTriggerTime(context: JobContext, data: OnTim
 
 function timelineTriggerTimeInner(
 	context: JobContext,
-	cache: CacheForStudio,
+	studioPlayoutModel: StudioPlayoutModel,
 	results: OnTimelineTriggerTimeProps['results'],
 	pieceInstanceCache: DbCacheWriteCollection<PieceInstance> | undefined,
-	activePlaylist: DBRundownPlaylist | undefined
+	activePlaylist: ReadonlyDeep<DBRundownPlaylist> | undefined
 ) {
 	let lastTakeTime: number | undefined
 
 	// ------------------------------
-	const timeline = cache.Timeline.doc
+	const timeline = studioPlayoutModel.Timeline
 	if (timeline) {
 		const timelineObjs = deserializeTimelineBlob(timeline.timelineBlob)
 		let tlChanged = false
@@ -140,7 +141,7 @@ function timelineTriggerTimeInner(
 			}
 		}
 		if (tlChanged) {
-			saveTimeline(context, cache, timelineObjs, timeline.generationVersions)
+			saveTimeline(context, studioPlayoutModel, timelineObjs, timeline.generationVersions)
 		}
 	}
 }

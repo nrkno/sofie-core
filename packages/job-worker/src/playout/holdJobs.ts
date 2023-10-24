@@ -3,19 +3,18 @@ import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/Rundo
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { ActivateHoldProps, DeactivateHoldProps } from '@sofie-automation/corelib/dist/worker/studio'
 import { JobContext } from '../jobs'
-import { getSelectedPartInstancesFromCache } from './cache'
-import { runJobWithPlayoutCache } from './lock'
+import { runJobWithPlayoutModel } from './lock'
 import { updateTimeline } from './timeline/generate'
 
 /**
  * Activate Hold
  */
 export async function handleActivateHold(context: JobContext, data: ActivateHoldProps): Promise<void> {
-	return runJobWithPlayoutCache(
+	return runJobWithPlayoutModel(
 		context,
 		data,
-		async (cache) => {
-			const playlist = cache.Playlist.doc
+		async (playoutModel) => {
+			const playlist = playoutModel.Playlist
 
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
 
@@ -24,37 +23,34 @@ export async function handleActivateHold(context: JobContext, data: ActivateHold
 
 			if (playlist.holdState) throw UserError.create(UserErrorMessage.HoldAlreadyActive)
 		},
-		async (cache) => {
-			const playlist = cache.Playlist.doc
-			const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
+		async (playoutModel) => {
+			const playlist = playoutModel.Playlist
+			const currentPartInstance = playoutModel.CurrentPartInstance
 			if (!currentPartInstance)
 				throw new Error(`PartInstance "${playlist.currentPartInfo?.partInstanceId}" not found!`)
+			const nextPartInstance = playoutModel.NextPartInstance
 			if (!nextPartInstance) throw new Error(`PartInstance "${playlist.nextPartInfo?.partInstanceId}" not found!`)
 
 			if (
-				currentPartInstance.part.holdMode !== PartHoldMode.FROM ||
-				nextPartInstance.part.holdMode !== PartHoldMode.TO ||
-				currentPartInstance.part.segmentId !== nextPartInstance.part.segmentId
+				currentPartInstance.PartInstance.part.holdMode !== PartHoldMode.FROM ||
+				nextPartInstance.PartInstance.part.holdMode !== PartHoldMode.TO ||
+				currentPartInstance.PartInstance.part.segmentId !== nextPartInstance.PartInstance.part.segmentId
 			) {
 				throw UserError.create(UserErrorMessage.HoldIncompatibleParts)
 			}
 
-			const hasDynamicallyInserted = cache.PieceInstances.findOne(
+			const hasDynamicallyInserted = currentPartInstance.PieceInstances.find(
 				(p) =>
-					p.partInstanceId === currentPartInstance._id &&
-					!!p.dynamicallyInserted &&
+					!!p.PieceInstance.dynamicallyInserted &&
 					// If its a continuation of an infinite adlib it is probably a graphic, so is 'fine'
-					!p.infinite?.fromPreviousPart &&
-					!p.infinite?.fromPreviousPlayhead
+					!p.PieceInstance.infinite?.fromPreviousPart &&
+					!p.PieceInstance.infinite?.fromPreviousPlayhead
 			)
 			if (hasDynamicallyInserted) throw UserError.create(UserErrorMessage.HoldAfterAdlib)
 
-			cache.Playlist.update((p) => {
-				p.holdState = RundownHoldState.PENDING
-				return p
-			})
+			playoutModel.setHoldState(RundownHoldState.PENDING)
 
-			await updateTimeline(context, cache)
+			await updateTimeline(context, playoutModel)
 		}
 	)
 }
@@ -63,24 +59,21 @@ export async function handleActivateHold(context: JobContext, data: ActivateHold
  * Deactivate Hold
  */
 export async function handleDeactivateHold(context: JobContext, data: DeactivateHoldProps): Promise<void> {
-	return runJobWithPlayoutCache(
+	return runJobWithPlayoutModel(
 		context,
 		data,
-		async (cache) => {
-			const playlist = cache.Playlist.doc
+		async (playoutModel) => {
+			const playlist = playoutModel.Playlist
 
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
 
 			if (playlist.holdState !== RundownHoldState.PENDING)
 				throw UserError.create(UserErrorMessage.HoldNotCancelable)
 		},
-		async (cache) => {
-			cache.Playlist.update((p) => {
-				p.holdState = RundownHoldState.NONE
-				return p
-			})
+		async (playoutModel) => {
+			playoutModel.setHoldState(RundownHoldState.NONE)
 
-			await updateTimeline(context, cache)
+			await updateTimeline(context, playoutModel)
 		}
 	)
 }

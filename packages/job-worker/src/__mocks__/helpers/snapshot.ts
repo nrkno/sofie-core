@@ -26,6 +26,8 @@ type Data =
  * Remove certain fields from data that change often, so that it can be used in snapshots
  * @param data
  */
+export function fixSnapshot(data: Data, sortData?: boolean): Data
+export function fixSnapshot(data: Array<Data>, sortData?: boolean): Array<Data>
 export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean): Data | Array<Data> {
 	if (_.isArray(data)) {
 		const dataArray: any[] = _.map(data, (d) => fixSnapshot(d))

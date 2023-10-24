@@ -3,7 +3,8 @@ import { JobContext } from '../jobs'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { ReadonlyDeep } from 'type-fest'
+import { PlayoutSegmentModel } from './model/PlayoutSegmentModel'
 
 /**
  * This wraps a Part which has been selected to be next, to include some additional data about that choice
@@ -12,7 +13,7 @@ export interface SelectNextPartResult {
 	/**
 	 * The Part selected to be nexted
 	 */
-	part: DBPart
+	part: ReadonlyDeep<DBPart>
 
 	/**
 	 * The index of the Part in the provided list of all sorted Parts
@@ -25,10 +26,6 @@ export interface SelectNextPartResult {
 	 */
 	consumesQueuedSegmentId: boolean
 }
-export interface PartsAndSegments {
-	segments: DBSegment[]
-	parts: DBPart[]
-}
 
 /**
  * Select the Part in the Playlist which should be set as next
@@ -37,9 +34,10 @@ export interface PartsAndSegments {
 export function selectNextPart(
 	context: JobContext,
 	rundownPlaylist: Pick<DBRundownPlaylist, 'queuedSegmentId' | 'loop'>,
-	previousPartInstance: DBPartInstance | null,
-	currentlySelectedPartInstance: DBPartInstance | null,
-	{ parts: parts0, segments }: PartsAndSegments,
+	previousPartInstance: ReadonlyDeep<DBPartInstance> | null,
+	currentlySelectedPartInstance: ReadonlyDeep<DBPartInstance> | null,
+	segments: readonly PlayoutSegmentModel[],
+	parts0: ReadonlyDeep<DBPart>[],
 	ignoreUnplayabale = true
 ): SelectNextPartResult | null {
 	const span = context.startSpan('selectNextPart')
@@ -57,7 +55,7 @@ export function selectNextPart(
 	 */
 	const findFirstPlayablePart = (
 		offset: number,
-		condition?: (part: DBPart) => boolean,
+		condition?: (part: ReadonlyDeep<DBPart>) => boolean,
 		length?: number
 	): SelectNextPartResult | undefined => {
 		// Filter to after and find the first playabale
@@ -99,12 +97,12 @@ export function selectNextPart(
 				searchFromIndex = nextInSegmentIndex ?? segmentStartIndex
 			} else {
 				// If we didn't find the segment in the list of parts, then look for segments after this one.
-				const segmentIndex = segments.findIndex((s) => s._id === previousPartInstance.segmentId)
+				const segmentIndex = segments.findIndex((s) => s.Segment._id === previousPartInstance.segmentId)
 				let followingSegmentStart: number | undefined
 				if (segmentIndex !== -1) {
 					// Find the first segment with parts that lies after this
 					for (let i = segmentIndex + 1; i < segments.length; i++) {
-						const segmentStart = segmentStarts.get(segments[i]._id)
+						const segmentStart = segmentStarts.get(segments[i].Segment._id)
 						if (segmentStart !== undefined) {
 							followingSegmentStart = segmentStart
 							break

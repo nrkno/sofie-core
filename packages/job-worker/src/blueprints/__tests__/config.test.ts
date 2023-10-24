@@ -1,12 +1,8 @@
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { setupMockShowStyleCompound } from '../../__mocks__/presetCollections'
 import { setupDefaultJobEnvironment } from '../../__mocks__/context'
-import {
-	getShowStyleConfigRef,
-	getStudioConfigRef,
-	preprocessStudioConfig,
-	retrieveBlueprintConfigRefs,
-} from '../config'
+import { preprocessStudioConfig, retrieveBlueprintConfigRefs } from '../config'
+import { getShowStyleConfigRef, getStudioConfigRef } from '../configRefs'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
 

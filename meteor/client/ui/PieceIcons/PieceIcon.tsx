@@ -24,6 +24,7 @@ import {
 	RundownPlaylistActivationId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ReadonlyDeep } from 'type-fest'
 
 export interface IPropsHeader {
 	partInstanceId: PartInstanceId
@@ -33,7 +34,7 @@ export interface IPropsHeader {
 }
 
 export const PieceIcon = (props: {
-	pieceInstance: PieceInstance | undefined
+	pieceInstance: ReadonlyDeep<PieceInstance> | undefined
 	sourceLayer: ISourceLayer | undefined
 	renderUnknown?: boolean
 }): JSX.Element | null => {
@@ -100,7 +101,7 @@ export function PieceIconContainerNoSub({
 	sourceLayers,
 	renderUnknown,
 }: {
-	pieceInstances: PieceInstance[]
+	pieceInstances: ReadonlyDeep<PieceInstance[]>
 	sourceLayers: {
 		[key: string]: ISourceLayer
 	}

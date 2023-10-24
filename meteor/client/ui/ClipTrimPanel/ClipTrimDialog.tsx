@@ -13,12 +13,13 @@ import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { UIStudio } from '../../../lib/api/studios'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ReadonlyDeep } from 'type-fest'
 
 export interface IProps {
 	playlistId: RundownPlaylistId
 	rundown: Rundown
 	studio: UIStudio
-	selectedPiece: PieceInstancePiece
+	selectedPiece: ReadonlyDeep<PieceInstancePiece>
 
 	onClose?: () => void
 }

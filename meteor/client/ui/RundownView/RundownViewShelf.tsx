@@ -47,9 +47,9 @@ interface IRundownViewShelfTrackedProps {
 	outputLayers: OutputLayers
 	sourceLayers: SourceLayers
 	unfinishedAdLibIds: PieceId[]
-	unfinishedTags: string[]
+	unfinishedTags: readonly string[]
 	nextAdLibIds: PieceId[]
-	nextTags: string[]
+	nextTags: readonly string[]
 }
 
 interface IRundownViewShelfState {

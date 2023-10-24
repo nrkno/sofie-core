@@ -19,12 +19,12 @@ import _ = require('underscore')
 import { MongoQuery } from '../mongo'
 import { DBSegment, SegmentOrphanedReason } from '../dataModel/Segment'
 
-export function buildPiecesStartingInThisPartQuery(part: DBPart): MongoQuery<Piece> {
+export function buildPiecesStartingInThisPartQuery(part: ReadonlyDeep<DBPart>): MongoQuery<Piece> {
 	return { startPartId: part._id }
 }
 
 export function buildPastInfinitePiecesForThisPartQuery(
-	part: DBPart,
+	part: ReadonlyDeep<DBPart>,
 	partIdsToReceiveOnSegmentEndFrom: PartId[],
 	segmentsToReceiveOnRundownEndFrom: SegmentId[],
 	rundownIdsBeforeThisInPlaylist: RundownId[]
@@ -95,19 +95,19 @@ export function getPlayheadTrackingInfinitesForPart(
 	segmentsToReceiveOnRundownEndFromSet: Set<SegmentId>,
 	rundownsToReceiveOnShowStyleEndFrom: RundownId[],
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
-	currentPartInstance: DBPartInstance,
+	currentPartInstance: ReadonlyDeep<DBPartInstance>,
 	playingSegment: ReadonlyDeep<Pick<DBSegment, '_id' | 'orphaned'>>,
-	currentPartPieceInstances: PieceInstance[],
-	rundown: ReadonlyDeep<Pick<DBRundown, '_id' | 'showStyleBaseId'>>,
-	part: DBPart,
-	segment: ReadonlyDeep<Pick<DBSegment, '_id' | 'orphaned'>>,
+	currentPartPieceInstances: ReadonlyDeep<PieceInstance[]>,
+	intoRundown: ReadonlyDeep<Pick<DBRundown, '_id' | 'showStyleBaseId'>>,
+	intoPart: ReadonlyDeep<DBPart>,
+	intoSegment: ReadonlyDeep<Pick<DBSegment, '_id' | 'orphaned'>>,
 	newInstanceId: PartInstanceId,
 	nextPartIsAfterCurrentPart: boolean,
 	isTemporary: boolean
 ): PieceInstance[] {
 	if (
-		segment._id !== playingSegment._id &&
-		(segment.orphaned === SegmentOrphanedReason.SCRATCHPAD ||
+		intoSegment._id !== playingSegment._id &&
+		(intoSegment.orphaned === SegmentOrphanedReason.SCRATCHPAD ||
 			playingSegment.orphaned === SegmentOrphanedReason.SCRATCHPAD)
 	) {
 		// If crossing the boundary between of the scratchpad, don't continue any infinites
@@ -116,10 +116,10 @@ export function getPlayheadTrackingInfinitesForPart(
 
 	const canContinueAdlibOnEnds = nextPartIsAfterCurrentPart
 	interface InfinitePieceSet {
-		[PieceLifespan.OutOnShowStyleEnd]?: PieceInstance
-		[PieceLifespan.OutOnRundownEnd]?: PieceInstance
-		[PieceLifespan.OutOnSegmentEnd]?: PieceInstance
-		onChange?: PieceInstance
+		[PieceLifespan.OutOnShowStyleEnd]?: ReadonlyDeep<PieceInstance>
+		[PieceLifespan.OutOnRundownEnd]?: ReadonlyDeep<PieceInstance>
+		[PieceLifespan.OutOnSegmentEnd]?: ReadonlyDeep<PieceInstance>
+		onChange?: ReadonlyDeep<PieceInstance>
 	}
 	const piecesOnSourceLayers = new Map<string, InfinitePieceSet>()
 
@@ -127,7 +127,7 @@ export function getPlayheadTrackingInfinitesForPart(
 		rundownsToReceiveOnShowStyleEndFrom,
 		rundownsToShowstyles,
 		currentPartInstance.rundownId,
-		rundown
+		intoRundown
 	)
 
 	const groupedPlayingPieceInstances = groupByToMapFunc(currentPartPieceInstances, (p) => p.piece.sourceLayerId)
@@ -143,7 +143,7 @@ export function getPlayheadTrackingInfinitesForPart(
 		}
 
 		// Some basic resolving, to figure out which is our candidate
-		let lastPieceInstance: PieceInstance | undefined
+		let lastPieceInstance: ReadonlyDeep<PieceInstance> | undefined
 		for (const candidate of lastPieceInstances) {
 			if (lastPieceInstance === undefined || isCandidateBetterToBeContinued(lastPieceInstance, candidate)) {
 				lastPieceInstance = candidate
@@ -155,13 +155,13 @@ export function getPlayheadTrackingInfinitesForPart(
 			let isUsed = false
 			switch (lastPieceInstance.piece.lifespan) {
 				case PieceLifespan.OutOnSegmentChange:
-					if (currentPartInstance.segmentId === part.segmentId) {
+					if (currentPartInstance.segmentId === intoPart.segmentId) {
 						// Still in the same segment
 						isUsed = true
 					}
 					break
 				case PieceLifespan.OutOnRundownChange:
-					if (lastPieceInstance.rundownId === part.rundownId) {
+					if (lastPieceInstance.rundownId === intoPart.rundownId) {
 						// Still in the same rundown
 						isUsed = true
 					}
@@ -203,14 +203,14 @@ export function getPlayheadTrackingInfinitesForPart(
 					switch (mode) {
 						case PieceLifespan.OutOnSegmentEnd:
 							isValid =
-								currentPartInstance.segmentId === part.segmentId &&
+								currentPartInstance.segmentId === intoPart.segmentId &&
 								partsToReceiveOnSegmentEndFromSet.has(candidatePiece.piece.startPartId)
 							break
 						case PieceLifespan.OutOnRundownEnd:
 							isValid =
-								candidatePiece.rundownId === part.rundownId &&
+								candidatePiece.rundownId === intoPart.rundownId &&
 								(segmentsToReceiveOnRundownEndFromSet.has(currentPartInstance.segmentId) ||
-									currentPartInstance.segmentId === part.segmentId)
+									currentPartInstance.segmentId === intoPart.segmentId)
 							break
 						case PieceLifespan.OutOnShowStyleEnd:
 							isValid = canContinueShowStyleEndInfinites
@@ -231,7 +231,7 @@ export function getPlayheadTrackingInfinitesForPart(
 			const instance = rewrapPieceToInstance(
 				p.piece,
 				playlistActivationId,
-				part.rundownId,
+				intoPart.rundownId,
 				newInstanceId,
 				isTemporary
 			)
@@ -265,7 +265,7 @@ export function getPlayheadTrackingInfinitesForPart(
 	)
 }
 
-function markPieceInstanceAsContinuation(previousInstance: PieceInstance, instance: PieceInstance) {
+function markPieceInstanceAsContinuation(previousInstance: ReadonlyDeep<PieceInstance>, instance: PieceInstance) {
 	instance._id = protectString(`${instance._id}_continue`)
 	instance.dynamicallyInserted = previousInstance.dynamicallyInserted
 	instance.adLibSourceId = previousInstance.adLibSourceId
@@ -274,13 +274,13 @@ function markPieceInstanceAsContinuation(previousInstance: PieceInstance, instan
 }
 
 export function isPiecePotentiallyActiveInPart(
-	previousPartInstance: DBPartInstance | undefined,
+	previousPartInstance: ReadonlyDeep<DBPartInstance> | undefined,
 	partsToReceiveOnSegmentEndFrom: Set<PartId>,
 	segmentsToReceiveOnRundownEndFrom: Set<SegmentId>,
 	rundownsToReceiveOnShowStyleEndFrom: RundownId[],
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 	rundown: ReadonlyDeep<Pick<DBRundown, '_id' | 'showStyleBaseId'>>,
-	part: DBPart,
+	part: ReadonlyDeep<DBPart>,
 	pieceToCheck: Piece
 ): boolean {
 	// If its from the current part
@@ -366,12 +366,12 @@ export function isPiecePotentiallyActiveInPart(
  */
 export function getPieceInstancesForPart(
 	playlistActivationId: RundownPlaylistActivationId,
-	playingPartInstance: DBPartInstance | undefined,
+	playingPartInstance: ReadonlyDeep<DBPartInstance> | undefined,
 	playingSegment: ReadonlyDeep<Pick<DBSegment, '_id' | 'orphaned'>> | undefined,
-	playingPieceInstances: PieceInstance[] | undefined,
+	playingPieceInstances: ReadonlyDeep<PieceInstance[]> | undefined,
 	rundown: ReadonlyDeep<Pick<DBRundown, '_id' | 'showStyleBaseId'>>,
 	segment: ReadonlyDeep<Pick<DBSegment, '_id' | 'orphaned'>>,
-	part: DBPart,
+	part: ReadonlyDeep<DBPart>,
 	partsToReceiveOnSegmentEndFromSet: Set<PartId>,
 	segmentsToReceiveOnRundownEndFromSet: Set<SegmentId>,
 	rundownsToReceiveOnShowStyleEndFrom: RundownId[],
@@ -519,7 +519,10 @@ export function getPieceInstancesForPart(
 	return result
 }
 
-export function isCandidateMoreImportant(best: PieceInstance, candidate: PieceInstance): boolean | undefined {
+export function isCandidateMoreImportant(
+	best: ReadonlyDeep<PieceInstance>,
+	candidate: ReadonlyDeep<PieceInstance>
+): boolean | undefined {
 	// Prioritise the one from this part over previous part
 	if (best.infinite?.fromPreviousPart && !candidate.infinite?.fromPreviousPart) {
 		// Prefer the candidate as it is not from previous
@@ -557,7 +560,10 @@ export function isCandidateMoreImportant(best: PieceInstance, candidate: PieceIn
 	return undefined
 }
 
-export function isCandidateBetterToBeContinued(best: PieceInstance, candidate: PieceInstance): boolean {
+export function isCandidateBetterToBeContinued(
+	best: ReadonlyDeep<PieceInstance>,
+	candidate: ReadonlyDeep<PieceInstance>
+): boolean {
 	// Fallback to id, as we dont have any other criteria and this will be stable.
 	// Note: we shouldnt even get here, as it shouldnt be possible for multiple to start at the same time, but it is possible
 	return isCandidateMoreImportant(best, candidate) ?? best.piece._id < candidate.piece._id
@@ -567,13 +573,13 @@ function continueShowStyleEndInfinites(
 	rundownsToReceiveOnShowStyleEndFrom: RundownId[],
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 	previousRundownId: RundownId,
-	rundown: ReadonlyDeep<Pick<DBRundown, '_id' | 'showStyleBaseId'>>
+	targetRundown: ReadonlyDeep<Pick<DBRundown, '_id' | 'showStyleBaseId'>>
 ): boolean {
 	let canContinueShowStyleEndInfinites = true
-	if (rundown.showStyleBaseId !== rundownsToShowstyles.get(previousRundownId)) {
+	if (targetRundown.showStyleBaseId !== rundownsToShowstyles.get(previousRundownId)) {
 		canContinueShowStyleEndInfinites = false
 	} else {
-		const targetShowStyle = rundown.showStyleBaseId
+		const targetShowStyle = targetRundown.showStyleBaseId
 		canContinueShowStyleEndInfinites = rundownsToReceiveOnShowStyleEndFrom
 			.slice(rundownsToReceiveOnShowStyleEndFrom.indexOf(previousRundownId))
 			.every((r) => rundownsToShowstyles.get(r) === targetShowStyle)

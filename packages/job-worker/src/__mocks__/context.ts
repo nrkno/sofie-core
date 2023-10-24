@@ -16,7 +16,7 @@ import {
 	preprocessStudioConfig,
 	preprocessShowStyleConfig,
 } from '../blueprints/config'
-import { ReadOnlyCacheBase } from '../cache/CacheBase'
+import { BaseModel } from '../modelBase'
 import { PlaylistLock, RundownLock } from '../jobs/lock'
 import { ReadonlyDeep } from 'type-fest'
 import {
@@ -114,7 +114,7 @@ export class MockJobContext implements JobContext {
 		}
 	}
 
-	trackCache(_cache: ReadOnlyCacheBase<any>): void {
+	trackCache(_cache: BaseModel): void {
 		// TODO
 		// throw new Error('Method not implemented.')
 	}

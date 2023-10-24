@@ -17,7 +17,7 @@ import {
 import { DBRundown, Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { getRandomId, getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
+import { getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
 import { sortPartsInSortedSegments, sortSegmentsInRundowns } from '@sofie-automation/corelib/dist/playout/playlist'
 import { MongoQuery } from '../../db'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
@@ -40,13 +40,13 @@ import { handleActivateRundownPlaylist } from '../../playout/activePlaylistJobs'
 import { PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { getSelectedPartInstances } from '../../playout/__tests__/lib'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { runJobWithPlayoutCache } from '../../playout/lock'
-import { getSelectedPartInstancesFromCache } from '../../playout/cache'
+import { runJobWithPlayoutModel } from '../../playout/lock'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { innerStartQueuedAdLib } from '../../playout/adlibUtils'
+import { insertQueuedPartWithPieces } from '../../playout/adlibUtils'
 import { IngestJobs, RemoveOrphanedSegmentsProps } from '@sofie-automation/corelib/dist/worker/ingest'
 import { removeRundownPlaylistFromDb } from './lib'
 import { UserErrorMessage } from '@sofie-automation/corelib/dist/error'
+import { PlayoutPartInstanceModel } from '../../playout/model/PlayoutPartInstanceModel'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
@@ -1998,48 +1998,43 @@ describe('Test ingest actions for rundowns and segments', () => {
 				fromPartInstanceId: null,
 			})
 
-			const doQueuePart = async (partInstanceId: PartInstanceId): Promise<void> =>
-				runJobWithPlayoutCache(
+			const doQueuePart = async (): Promise<PartInstanceId> =>
+				runJobWithPlayoutModel(
 					context,
 					{
 						playlistId: rundown.playlistId,
 					},
 					null,
 					async (cache) => {
-						const rundown0 = cache.Rundowns.findOne(() => true) as DBRundown
+						const rundown0 = cache.Rundowns[0]
 						expect(rundown0).toBeTruthy()
 
-						const currentPartInstance = getSelectedPartInstancesFromCache(cache)
-							.currentPartInstance as DBPartInstance
+						const currentPartInstance = cache.CurrentPartInstance as PlayoutPartInstanceModel
 						expect(currentPartInstance).toBeTruthy()
 
-						const newPartInstance: DBPartInstance = {
-							_id: partInstanceId,
-							rundownId: rundown0._id,
-							segmentId: currentPartInstance.segmentId,
-							playlistActivationId: currentPartInstance.playlistActivationId,
-							segmentPlayoutId: currentPartInstance.segmentPlayoutId,
-							takeCount: currentPartInstance.takeCount + 1,
-							rehearsal: true,
-							part: {
-								_id: protectString(`${partInstanceId}_part`),
+						// Simulate a queued part
+						const newPartInstance = await insertQueuedPartWithPieces(
+							context,
+							cache,
+							rundown0,
+							currentPartInstance,
+							{
+								_id: protectString(`after_${currentPartInstance.PartInstance._id}_part`),
 								_rank: 0,
-								rundownId: rundown0._id,
-								segmentId: currentPartInstance.segmentId,
-								externalId: `${partInstanceId}_externalId`,
+								externalId: `after_${currentPartInstance.PartInstance._id}_externalId`,
 								title: 'New part',
 								expectedDurationWithPreroll: undefined,
 							},
-						}
+							[],
+							undefined
+						)
 
-						// Simulate a queued part
-						await innerStartQueuedAdLib(context, cache, rundown0, currentPartInstance, newPartInstance, [])
+						return newPartInstance.PartInstance._id
 					}
 				)
 
 			// Queue and take an adlib-part
-			const partInstanceId0: PartInstanceId = getRandomId()
-			await doQueuePart(partInstanceId0)
+			const partInstanceId0 = await doQueuePart()
 			{
 				const playlist = (await context.mockCollections.RundownPlaylists.findOne(
 					rundown.playlistId
@@ -2122,8 +2117,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			}
 
 			// Queue and take another adlib-part
-			const partInstanceId1: PartInstanceId = getRandomId()
-			await doQueuePart(partInstanceId1)
+			const partInstanceId1 = await doQueuePart()
 			{
 				const playlist = (await context.mockCollections.RundownPlaylists.findOne(
 					rundown.playlistId
