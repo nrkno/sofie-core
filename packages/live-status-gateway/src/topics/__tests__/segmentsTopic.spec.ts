@@ -87,7 +87,7 @@ describe('SegmentsTopic', () => {
 		const testPlaylist2 = makeTestPlaylist()
 		testPlaylist2.currentPartInfo = {
 			partInstanceId: protectString('PI_1'),
-			consumesNextSegmentId: true,
+			consumesQueuedSegmentId: true,
 			manuallySelected: false,
 			rundownId: protectString(RUNDOWN_1_ID),
 		}
@@ -159,6 +159,35 @@ describe('SegmentsTopic', () => {
 				{ id: '2_2', rundownId: RUNDOWN_2_ID, name: 'Segment 2_2' },
 				{ id: '1_1', rundownId: RUNDOWN_1_ID, name: 'Segment 1_1' },
 				{ id: '1_2', rundownId: RUNDOWN_1_ID, name: 'Segment 1_2' },
+			],
+		}
+		expect(mockSubscriber.send.mock.calls).toEqual([[JSON.stringify(expectedStatus)]])
+	})
+
+	it('includes segment identifier', async () => {
+		const topic = new SegmentsTopic(makeMockLogger())
+		const mockSubscriber = makeMockSubscriber()
+
+		const testPlaylist = makeTestPlaylist()
+		await topic.update(PlaylistHandler.name, testPlaylist)
+		await topic.update(SegmentsHandler.name, [
+			{ ...makeTestSegment('1_2', 2, RUNDOWN_1_ID), identifier: 'SomeIdentifier' },
+			makeTestSegment('1_1', 1, RUNDOWN_1_ID),
+		])
+
+		topic.addSubscriber(mockSubscriber)
+		mockSubscriber.send.mockClear()
+
+		const testPlaylist2 = makeTestPlaylist()
+		testPlaylist2.rundownIdsInOrder = [protectString(RUNDOWN_2_ID), protectString(RUNDOWN_1_ID)]
+		await topic.update(PlaylistHandler.name, testPlaylist2)
+
+		const expectedStatus: SegmentsStatus = {
+			event: 'segments',
+			rundownPlaylistId: unprotectString(testPlaylist._id),
+			segments: [
+				{ id: '1_1', rundownId: RUNDOWN_1_ID, name: 'Segment 1_1' },
+				{ id: '1_2', rundownId: RUNDOWN_1_ID, name: 'Segment 1_2', identifier: 'SomeIdentifier' },
 			],
 		}
 		expect(mockSubscriber.send.mock.calls).toEqual([[JSON.stringify(expectedStatus)]])

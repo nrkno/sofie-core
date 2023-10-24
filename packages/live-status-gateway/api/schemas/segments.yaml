@@ -30,6 +30,9 @@ $defs:
       id:
         description: Unique id of the segment
         type: string
+      identifier:
+        description: User-facing identifier that can be used by the User to identify the contents of a segment in the Rundown source system
+        type: string
       rundownId:
         description: Unique id of the rundown this segment belongs to
         type: string
