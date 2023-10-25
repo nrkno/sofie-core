@@ -54,6 +54,7 @@ export enum UserErrorMessage {
 	ShowStyleBaseNotFound = 39,
 	NoMigrationsToApply = 40,
 	ValidationFailed = 41,
+	BucketNotFound = 42,
 }
 
 const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
@@ -107,6 +108,7 @@ const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
 	[UserErrorMessage.ShowStyleBaseNotFound]: t(`ShowStyleBase not found!`),
 	[UserErrorMessage.NoMigrationsToApply]: t(`No migrations to apply`),
 	[UserErrorMessage.ValidationFailed]: t('Validation failed!'),
+	[UserErrorMessage.BucketNotFound]: t(`Bucket not found!`),
 }
 
 export class UserError {

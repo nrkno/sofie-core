@@ -3,6 +3,7 @@ import {
 	AdLibActionId,
 	BlueprintId,
 	BucketAdLibId,
+	BucketId,
 	PartId,
 	PartInstanceId,
 	PeripheralDeviceId,
@@ -644,6 +645,28 @@ export interface RestAPI {
 	): Promise<ClientAPI.ClientResponse<void>>
 }
 
+export interface BucketsRestAPI {
+	/**
+	 * Get all available Buckets.
+	 *
+	 * @param event User event string
+	 * @param inputs Migration data to apply
+	 */
+	getAllBuckets(connection: Meteor.Connection, event: string): Promise<ClientAPI.ClientResponse<Array<APIBucket>>>
+	/**
+	 * Adds a new Bucket, returns the Id of the newly created Bucket.
+	 *
+	 * @param connection Connection data including client and header details
+	 * @param event User event string
+	 * @param bucket Bucket to add
+	 */
+	addBucket(
+		connection: Meteor.Connection,
+		event: string,
+		bucket: APIBucket
+	): Promise<ClientAPI.ClientResponse<BucketId>>
+}
+
 // This interface should be auto-generated in future
 export interface APIPeripheralDevice {
 	id: string
@@ -794,3 +817,12 @@ export interface MigrationStepData {
 }
 
 export type MigrationData = Array<MigrationStepData>
+
+export interface APIBucket {
+	name: string
+	studioId: string
+}
+
+export interface APIBucketComplete extends APIBucket {
+	id: string
+}

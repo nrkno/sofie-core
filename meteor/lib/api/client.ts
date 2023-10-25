@@ -57,7 +57,7 @@ export namespace ClientAPI {
 		/** On success, return success code (by default, use 200) */
 		success: number
 		/** Optionally, provide method result */
-		result?: Result
+		result: Result
 	}
 	export function responseSuccess<Result>(result: Result, code?: number): ClientResponseSuccess<Result> {
 		if (isClientResponseSuccess(result)) result = result.result
