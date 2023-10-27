@@ -259,7 +259,7 @@ describe('Test blueprint api context', () => {
 					manuallySelected: false,
 					consumesQueuedSegmentId: false,
 				}
-			} else if ('PartInstance' in info) {
+			} else if ('partInstance' in info) {
 				return {
 					partInstanceId: info.partInstance._id,
 					rundownId: info.partInstance.rundownId,
