@@ -2006,10 +2006,10 @@ describe('Test ingest actions for rundowns and segments', () => {
 					},
 					null,
 					async (cache) => {
-						const rundown0 = cache.Rundowns[0]
+						const rundown0 = cache.rundowns[0]
 						expect(rundown0).toBeTruthy()
 
-						const currentPartInstance = cache.CurrentPartInstance as PlayoutPartInstanceModel
+						const currentPartInstance = cache.currentPartInstance as PlayoutPartInstanceModel
 						expect(currentPartInstance).toBeTruthy()
 
 						// Simulate a queued part
@@ -2019,9 +2019,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 							rundown0,
 							currentPartInstance,
 							{
-								_id: protectString(`after_${currentPartInstance.PartInstance._id}_part`),
+								_id: protectString(`after_${currentPartInstance.partInstance._id}_part`),
 								_rank: 0,
-								externalId: `after_${currentPartInstance.PartInstance._id}_externalId`,
+								externalId: `after_${currentPartInstance.partInstance._id}_externalId`,
 								title: 'New part',
 								expectedDurationWithPreroll: undefined,
 							},
@@ -2029,7 +2029,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 							undefined
 						)
 
-						return newPartInstance.PartInstance._id
+						return newPartInstance.partInstance._id
 					}
 				)
 

@@ -12,10 +12,10 @@ import { getCurrentTime } from '../../../lib'
 import { PlayoutSegmentModelImpl } from './PlayoutSegmentModelImpl'
 
 export class PlayoutRundownModelImpl implements PlayoutRundownModel {
-	readonly Rundown: ReadonlyDeep<DBRundown>
+	readonly rundown: ReadonlyDeep<DBRundown>
 	readonly #segments: PlayoutSegmentModelImpl[]
 
-	readonly BaselineObjects: ReadonlyDeep<RundownBaselineObj[]>
+	readonly baselineObjects: ReadonlyDeep<RundownBaselineObj[]>
 
 	#scratchPadSegmentHasChanged = false
 	/**
@@ -36,23 +36,23 @@ export class PlayoutRundownModelImpl implements PlayoutRundownModel {
 		segments: PlayoutSegmentModelImpl[],
 		baselineObjects: ReadonlyDeep<RundownBaselineObj[]>
 	) {
-		segments.sort((a, b) => a.Segment._rank - b.Segment._rank)
+		segments.sort((a, b) => a.segment._rank - b.segment._rank)
 
-		this.Rundown = rundown
+		this.rundown = rundown
 		this.#segments = segments
-		this.BaselineObjects = baselineObjects
+		this.baselineObjects = baselineObjects
 	}
 
-	get Segments(): readonly PlayoutSegmentModel[] {
+	get segments(): readonly PlayoutSegmentModel[] {
 		return this.#segments
 	}
 
 	getSegment(id: SegmentId): PlayoutSegmentModel | undefined {
-		return this.Segments.find((segment) => segment.Segment._id === id)
+		return this.segments.find((segment) => segment.segment._id === id)
 	}
 
 	getSegmentIds(): SegmentId[] {
-		return this.Segments.map((segment) => segment.Segment._id)
+		return this.segments.map((segment) => segment.segment._id)
 	}
 
 	getAllPartIds(): PartId[] {
@@ -60,14 +60,14 @@ export class PlayoutRundownModelImpl implements PlayoutRundownModel {
 	}
 
 	getAllOrderedParts(): ReadonlyDeep<DBPart>[] {
-		return this.Segments.flatMap((segment) => segment.Parts)
+		return this.segments.flatMap((segment) => segment.parts)
 	}
 
 	insertScratchpadSegment(): SegmentId {
-		const existingSegment = this.Segments.find((s) => s.Segment.orphaned === SegmentOrphanedReason.SCRATCHPAD)
+		const existingSegment = this.segments.find((s) => s.segment.orphaned === SegmentOrphanedReason.SCRATCHPAD)
 		if (existingSegment) throw UserError.create(UserErrorMessage.ScratchpadAlreadyActive)
 
-		const minSegmentRank = Math.min(0, ...this.Segments.map((s) => s.Segment._rank))
+		const minSegmentRank = Math.min(0, ...this.segments.map((s) => s.segment._rank))
 
 		const segmentId: SegmentId = getRandomId()
 		this.#segments.unshift(
@@ -77,7 +77,7 @@ export class PlayoutRundownModelImpl implements PlayoutRundownModel {
 					_rank: minSegmentRank - 1,
 					externalId: '__scratchpad__',
 					externalModified: getCurrentTime(),
-					rundownId: this.Rundown._id,
+					rundownId: this.rundown._id,
 					orphaned: SegmentOrphanedReason.SCRATCHPAD,
 					name: '',
 				},
@@ -91,7 +91,7 @@ export class PlayoutRundownModelImpl implements PlayoutRundownModel {
 	}
 
 	removeScratchpadSegment(): boolean {
-		const index = this.#segments.findIndex((s) => s.Segment.orphaned === SegmentOrphanedReason.SCRATCHPAD)
+		const index = this.#segments.findIndex((s) => s.segment.orphaned === SegmentOrphanedReason.SCRATCHPAD)
 		if (index === -1) return false
 
 		this.#segments.splice(index, 1)
@@ -102,15 +102,15 @@ export class PlayoutRundownModelImpl implements PlayoutRundownModel {
 
 	getScratchpadSegment(): PlayoutSegmentModel | undefined {
 		// Note: this assumes there will be up to one per rundown
-		return this.#segments.find((s) => s.Segment.orphaned === SegmentOrphanedReason.SCRATCHPAD)
+		return this.#segments.find((s) => s.segment.orphaned === SegmentOrphanedReason.SCRATCHPAD)
 	}
 
 	setScratchpadSegmentRank(rank: number): void {
-		const segment = this.#segments.find((s) => s.Segment.orphaned === SegmentOrphanedReason.SCRATCHPAD)
+		const segment = this.#segments.find((s) => s.segment.orphaned === SegmentOrphanedReason.SCRATCHPAD)
 		if (!segment) throw new Error('Scratchpad segment does not exist!')
 
 		segment.setScratchpadRank(rank)
-		this.#segments.sort((a, b) => a.Segment._rank - b.Segment._rank)
+		this.#segments.sort((a, b) => a.segment._rank - b.segment._rank)
 
 		this.#scratchPadSegmentHasChanged = true
 	}

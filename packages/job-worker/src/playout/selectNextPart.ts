@@ -97,12 +97,12 @@ export function selectNextPart(
 				searchFromIndex = nextInSegmentIndex ?? segmentStartIndex
 			} else {
 				// If we didn't find the segment in the list of parts, then look for segments after this one.
-				const segmentIndex = segments.findIndex((s) => s.Segment._id === previousPartInstance.segmentId)
+				const segmentIndex = segments.findIndex((s) => s.segment._id === previousPartInstance.segmentId)
 				let followingSegmentStart: number | undefined
 				if (segmentIndex !== -1) {
 					// Find the first segment with parts that lies after this
 					for (let i = segmentIndex + 1; i < segments.length; i++) {
-						const segmentStart = segmentStarts.get(segments[i].Segment._id)
+						const segmentStart = segmentStarts.get(segments[i].segment._id)
 						if (segmentStart !== undefined) {
 							followingSegmentStart = segmentStart
 							break

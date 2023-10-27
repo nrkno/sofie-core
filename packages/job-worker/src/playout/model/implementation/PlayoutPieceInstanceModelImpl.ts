@@ -67,7 +67,7 @@ export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel 
 		this.#HasChanges = false
 	}
 
-	get PieceInstance(): ReadonlyDeep<PieceInstance> {
+	get pieceInstance(): ReadonlyDeep<PieceInstance> {
 		return this.PieceInstanceImpl
 	}
 

@@ -16,16 +16,16 @@ export async function ensureNextPartIsValid(context: JobContext, playoutModel: P
 	const span = context.startSpan('api.ingest.ensureNextPartIsValid')
 
 	// Ensure the next-id is still valid
-	const playlist = playoutModel.Playlist
+	const playlist = playoutModel.playlist
 	if (playlist?.activationId) {
-		const currentPartInstance = playoutModel.CurrentPartInstance
-		const nextPartInstance = playoutModel.NextPartInstance
+		const currentPartInstance = playoutModel.currentPartInstance
+		const nextPartInstance = playoutModel.nextPartInstance
 
 		if (
 			playlist.nextPartInfo?.manuallySelected &&
 			nextPartInstance &&
-			isPartPlayable(nextPartInstance.PartInstance.part) &&
-			nextPartInstance.PartInstance.orphaned !== 'deleted'
+			isPartPlayable(nextPartInstance.partInstance.part) &&
+			nextPartInstance.partInstance.orphaned !== 'deleted'
 		) {
 			// Manual next part is almost always valid. This includes orphaned (adlib-part) partinstances
 			span?.end()
@@ -33,7 +33,7 @@ export async function ensureNextPartIsValid(context: JobContext, playoutModel: P
 		}
 
 		// If we are close to an autonext, then leave it to avoid glitches
-		if (isTooCloseToAutonext(currentPartInstance?.PartInstance) && nextPartInstance) {
+		if (isTooCloseToAutonext(currentPartInstance?.partInstance) && nextPartInstance) {
 			span?.end()
 			return
 		}
@@ -46,8 +46,8 @@ export async function ensureNextPartIsValid(context: JobContext, playoutModel: P
 			const newNextPart = selectNextPart(
 				context,
 				playlist,
-				currentPartInstance.PartInstance,
-				nextPartInstance.PartInstance,
+				currentPartInstance.partInstance,
+				nextPartInstance.partInstance,
 				orderedSegments,
 				orderedParts
 			)
@@ -56,22 +56,22 @@ export async function ensureNextPartIsValid(context: JobContext, playoutModel: P
 				// Nothing should be nexted
 				!newNextPart ||
 				// The nexted-part should be different to what is selected
-				newNextPart.part._id !== nextPartInstance.PartInstance.part._id ||
+				newNextPart.part._id !== nextPartInstance.partInstance.part._id ||
 				// The nexted-part Instance is no longer playable
-				!isPartPlayable(nextPartInstance.PartInstance.part)
+				!isPartPlayable(nextPartInstance.partInstance.part)
 			) {
 				// The 'new' next part is before the current next, so move the next point
 				await setNextPart(context, playoutModel, newNextPart ?? null, false)
 
 				await updateTimeline(context, playoutModel)
 			}
-		} else if (!nextPartInstance || nextPartInstance.PartInstance.orphaned === 'deleted') {
+		} else if (!nextPartInstance || nextPartInstance.partInstance.orphaned === 'deleted') {
 			// Don't have a nextPart or it has been deleted, so autoselect something
 			const newNextPart = selectNextPart(
 				context,
 				playlist,
-				currentPartInstance?.PartInstance ?? null,
-				nextPartInstance?.PartInstance ?? null,
+				currentPartInstance?.partInstance ?? null,
+				nextPartInstance?.partInstance ?? null,
 				orderedSegments,
 				orderedParts
 			)

@@ -368,7 +368,7 @@ export class JobContextImpl extends StudioCacheContextImpl implements JobContext
 			try {
 				cache.assertNoChanges()
 			} catch (e) {
-				logger.warn(`${cache.DisplayName} has unsaved changes: ${stringifyError(e)}`)
+				logger.warn(`${cache.displayName} has unsaved changes: ${stringifyError(e)}`)
 			}
 		}
 	}

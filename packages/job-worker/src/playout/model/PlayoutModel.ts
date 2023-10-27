@@ -39,25 +39,25 @@ export interface PlayoutModelPreInit {
 	/**
 	 * The Id of the RundownPlaylist this PlayoutModel operates for
 	 */
-	readonly PlaylistId: RundownPlaylistId
+	readonly playlistId: RundownPlaylistId
 	/**
 	 * Reference to the lock for the RundownPlaylist
 	 */
-	readonly PlaylistLock: PlaylistLock
+	readonly playlistLock: PlaylistLock
 
 	/**
 	 * All of the PeripheralDevices that belong to the Studio of this RundownPlaylist
 	 */
-	readonly PeripheralDevices: ReadonlyDeep<PeripheralDevice[]>
+	readonly peripheralDevices: ReadonlyDeep<PeripheralDevice[]>
 
 	/**
 	 * The RundownPlaylist this PlayoutModel operates for
 	 */
-	readonly Playlist: ReadonlyDeep<DBRundownPlaylist>
+	readonly playlist: ReadonlyDeep<DBRundownPlaylist>
 	/**
 	 * The unwrapped Rundowns in this RundownPlaylist
 	 */
-	readonly Rundowns: ReadonlyDeep<DBRundown[]>
+	readonly rundowns: ReadonlyDeep<DBRundown[]>
 
 	/**
 	 * Get a Rundown which belongs to this RundownPlaylist
@@ -75,57 +75,57 @@ export interface PlayoutModelReadonly extends StudioPlayoutModelBaseReadonly {
 	/**
 	 * The Id of the RundownPlaylist this PlayoutModel operates for
 	 */
-	readonly PlaylistId: RundownPlaylistId
+	readonly playlistId: RundownPlaylistId
 	/**
 	 * Reference to the lock for the RundownPlaylist
 	 */
-	readonly PlaylistLock: PlaylistLock
+	readonly playlistLock: PlaylistLock
 
 	/**
 	 * The RundownPlaylist this PlayoutModel operates for
 	 */
-	get Playlist(): ReadonlyDeep<DBRundownPlaylist>
+	get playlist(): ReadonlyDeep<DBRundownPlaylist>
 	/**
 	 * The Rundowns in this RundownPlaylist
 	 */
-	get Rundowns(): readonly PlayoutRundownModel[]
+	get rundowns(): readonly PlayoutRundownModel[]
 
 	/**
 	 * All of the loaded PartInstances which are not one of the Previous, Current or Next
 	 * This may or may not contain all PartInstances from the RundownPlaylist, depending on implementation.
 	 * At a minimum it will contain all PartInstances from the Segments of the previous, current and next PartInstances
 	 */
-	get OlderPartInstances(): PlayoutPartInstanceModel[]
+	get olderPartInstances(): PlayoutPartInstanceModel[]
 	/**
 	 * The PartInstance previously played, if any
 	 */
-	get PreviousPartInstance(): PlayoutPartInstanceModel | null
+	get previousPartInstance(): PlayoutPartInstanceModel | null
 	/**
 	 * The PartInstance currently being played, if any
 	 */
-	get CurrentPartInstance(): PlayoutPartInstanceModel | null
+	get currentPartInstance(): PlayoutPartInstanceModel | null
 	/**
 	 * The PartInstance which is next to be played, if any
 	 */
-	get NextPartInstance(): PlayoutPartInstanceModel | null
+	get nextPartInstance(): PlayoutPartInstanceModel | null
 	/**
 	 * Ids of the previous, current and next PartInstances
 	 */
-	get SelectedPartInstanceIds(): PartInstanceId[]
+	get selectedPartInstanceIds(): PartInstanceId[]
 	/**
 	 * The previous, current and next PartInstances
 	 */
-	get SelectedPartInstances(): PlayoutPartInstanceModel[]
+	get selectedPartInstances(): PlayoutPartInstanceModel[]
 	/**
 	 * All of the loaded PartInstances
 	 * This may or may not contain all PartInstances from the RundownPlaylist, depending on implementation.
 	 * At a minimum it will contain all PartInstances from the Segments of the previous, current and next PartInstances
 	 */
-	get LoadedPartInstances(): PlayoutPartInstanceModel[]
+	get loadedPartInstances(): PlayoutPartInstanceModel[]
 	/**
 	 * All of the loaded PartInstances, sorted by order of playback
 	 */
-	get SortedLoadedPartInstances(): PlayoutPartInstanceModel[]
+	get sortedLoadedPartInstances(): PlayoutPartInstanceModel[]
 	/**
 	 * Get a PartInstance which belongs to this RundownPlaylist
 	 * @param id Id of the PartInstance
@@ -179,7 +179,7 @@ export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBa
 	/**
 	 * Temporary hack for debug logging
 	 */
-	get HackDeletedPartInstanceIds(): PartInstanceId[]
+	get hackDeletedPartInstanceIds(): PartInstanceId[]
 
 	/**
 	 * Set the RundownPlaylist as activated (or reactivate)

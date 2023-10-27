@@ -27,12 +27,12 @@ export function getResolvedPiecesForCurrentPartInstance(
 ): ResolvedPieceInstance[] {
 	if (now === undefined) now = getCurrentTime()
 
-	const partStarted = partInstance.PartInstance.timings?.plannedStartedPlayback
+	const partStarted = partInstance.partInstance.timings?.plannedStartedPlayback
 	const nowInPart = partStarted ? now - partStarted : 0
 
 	const preprocessedPieces = processAndPrunePieceInstanceTimings(
 		sourceLayers,
-		partInstance.PieceInstances.map((p) => p.PieceInstance),
+		partInstance.pieceInstances.map((p) => p.pieceInstance),
 		nowInPart
 	)
 	return preprocessedPieces.map((instance) => resolvePrunedPieceInstance(nowInPart, instance))

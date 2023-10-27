@@ -15,12 +15,12 @@ export interface StudioPlayoutModelBaseReadonly {
 	/**
 	 * All of the PeripheralDevices that belong to the Studio of this RundownPlaylist
 	 */
-	readonly PeripheralDevices: ReadonlyDeep<PeripheralDevice[]>
+	readonly peripheralDevices: ReadonlyDeep<PeripheralDevice[]>
 
 	/**
 	 * Get the Timeline for the current Studio
 	 */
-	get Timeline(): TimelineComplete | null
+	get timeline(): TimelineComplete | null
 
 	/**
 	 * Whether this Studio is operating in multi-gateway mode
@@ -57,7 +57,7 @@ export interface StudioPlayoutModel extends StudioPlayoutModelBase, BaseModel {
 	/**
 	 * The unwrapped RundownPlaylists in this Studio
 	 */
-	readonly RundownPlaylists: ReadonlyDeep<DBRundownPlaylist[]>
+	readonly rundownPlaylists: ReadonlyDeep<DBRundownPlaylist[]>
 
 	/**
 	 * Get any activated RundownPlaylists in this Studio

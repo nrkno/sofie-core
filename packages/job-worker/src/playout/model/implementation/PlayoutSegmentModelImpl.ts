@@ -6,9 +6,9 @@ import { PlayoutSegmentModel } from '../PlayoutSegmentModel'
 
 export class PlayoutSegmentModelImpl implements PlayoutSegmentModel {
 	readonly #Segment: DBSegment
-	readonly Parts: ReadonlyDeep<DBPart[]>
+	readonly parts: ReadonlyDeep<DBPart[]>
 
-	get Segment(): ReadonlyDeep<DBSegment> {
+	get segment(): ReadonlyDeep<DBSegment> {
 		return this.#Segment
 	}
 
@@ -16,15 +16,15 @@ export class PlayoutSegmentModelImpl implements PlayoutSegmentModel {
 		parts.sort((a, b) => a._rank - b._rank)
 
 		this.#Segment = segment
-		this.Parts = parts
+		this.parts = parts
 	}
 
 	getPart(id: PartId): ReadonlyDeep<DBPart> | undefined {
-		return this.Parts.find((part) => part._id === id)
+		return this.parts.find((part) => part._id === id)
 	}
 
 	getPartIds(): PartId[] {
-		return this.Parts.map((part) => part._id)
+		return this.parts.map((part) => part._id)
 	}
 
 	/**

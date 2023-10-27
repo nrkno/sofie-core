@@ -32,7 +32,7 @@ async function shouldUpdateStudioBaselineInner(
 
 	if (playoutModel.getActiveRundownPlaylists().length > 0) return false
 
-	const timeline = playoutModel.Timeline
+	const timeline = playoutModel.timeline
 	const blueprint = studio.blueprintId ? await context.directCollections.Blueprints.findOne(studio.blueprintId) : null
 	if (!blueprint) return 'missingBlueprint'
 
@@ -51,11 +51,11 @@ export async function handleUpdateTimelineAfterIngest(
 		if (playlist?.activationId && (playlist.currentPartInfo || playlist.nextPartInfo)) {
 			// TODO - r37 added a retry mechanic to this. should that be kept?
 			await runWithPlayoutModel(context, playlist, lock, null, async (playoutModel) => {
-				const currentPartInstance = playoutModel.CurrentPartInstance
+				const currentPartInstance = playoutModel.currentPartInstance
 				if (
 					!playoutModel.isMultiGatewayMode &&
 					currentPartInstance &&
-					!currentPartInstance.PartInstance.timings?.reportedStartedPlayback
+					!currentPartInstance.partInstance.timings?.reportedStartedPlayback
 				) {
 					// HACK: The current PartInstance doesn't have a start time yet, so we know an updateTimeline is coming as part of onPartPlaybackStarted
 					// We mustn't run before that does, or we will get the timings in playout-gateway confused.

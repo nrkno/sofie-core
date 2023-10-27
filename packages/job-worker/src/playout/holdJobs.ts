@@ -14,7 +14,7 @@ export async function handleActivateHold(context: JobContext, data: ActivateHold
 		context,
 		data,
 		async (playoutModel) => {
-			const playlist = playoutModel.Playlist
+			const playlist = playoutModel.playlist
 
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
 
@@ -24,27 +24,27 @@ export async function handleActivateHold(context: JobContext, data: ActivateHold
 			if (playlist.holdState) throw UserError.create(UserErrorMessage.HoldAlreadyActive)
 		},
 		async (playoutModel) => {
-			const playlist = playoutModel.Playlist
-			const currentPartInstance = playoutModel.CurrentPartInstance
+			const playlist = playoutModel.playlist
+			const currentPartInstance = playoutModel.currentPartInstance
 			if (!currentPartInstance)
 				throw new Error(`PartInstance "${playlist.currentPartInfo?.partInstanceId}" not found!`)
-			const nextPartInstance = playoutModel.NextPartInstance
+			const nextPartInstance = playoutModel.nextPartInstance
 			if (!nextPartInstance) throw new Error(`PartInstance "${playlist.nextPartInfo?.partInstanceId}" not found!`)
 
 			if (
-				currentPartInstance.PartInstance.part.holdMode !== PartHoldMode.FROM ||
-				nextPartInstance.PartInstance.part.holdMode !== PartHoldMode.TO ||
-				currentPartInstance.PartInstance.part.segmentId !== nextPartInstance.PartInstance.part.segmentId
+				currentPartInstance.partInstance.part.holdMode !== PartHoldMode.FROM ||
+				nextPartInstance.partInstance.part.holdMode !== PartHoldMode.TO ||
+				currentPartInstance.partInstance.part.segmentId !== nextPartInstance.partInstance.part.segmentId
 			) {
 				throw UserError.create(UserErrorMessage.HoldIncompatibleParts)
 			}
 
-			const hasDynamicallyInserted = currentPartInstance.PieceInstances.find(
+			const hasDynamicallyInserted = currentPartInstance.pieceInstances.find(
 				(p) =>
-					!!p.PieceInstance.dynamicallyInserted &&
+					!!p.pieceInstance.dynamicallyInserted &&
 					// If its a continuation of an infinite adlib it is probably a graphic, so is 'fine'
-					!p.PieceInstance.infinite?.fromPreviousPart &&
-					!p.PieceInstance.infinite?.fromPreviousPlayhead
+					!p.pieceInstance.infinite?.fromPreviousPart &&
+					!p.pieceInstance.infinite?.fromPreviousPlayhead
 			)
 			if (hasDynamicallyInserted) throw UserError.create(UserErrorMessage.HoldAfterAdlib)
 
@@ -63,7 +63,7 @@ export async function handleDeactivateHold(context: JobContext, data: Deactivate
 		context,
 		data,
 		async (playoutModel) => {
-			const playlist = playoutModel.Playlist
+			const playlist = playoutModel.playlist
 
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
 

@@ -9,7 +9,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 export async function handleRemoveEmptyPlaylists(context: JobContext, _data: void): Promise<void> {
 	await runJobWithStudioPlayoutModel(context, async (studioPlayoutModel) => {
 		// Skip any playlists which are active
-		const tmpPlaylists = studioPlayoutModel.RundownPlaylists.filter((p) => !p.activationId, { fields: { _id: 1 } })
+		const tmpPlaylists = studioPlayoutModel.rundownPlaylists.filter((p) => !p.activationId, { fields: { _id: 1 } })
 
 		// We want to run them all in parallel
 		await Promise.allSettled(

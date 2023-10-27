@@ -150,9 +150,9 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	private _getPartInstance(part: 'current' | 'next'): PlayoutPartInstanceModel | null {
 		switch (part) {
 			case 'current':
-				return this._playoutModel.CurrentPartInstance
+				return this._playoutModel.currentPartInstance
 			case 'next':
-				return this._playoutModel.NextPartInstance
+				return this._playoutModel.nextPartInstance
 			default:
 				assertNever(part)
 				logger.warn(`Blueprint action requested unknown PartInstance "${part}"`)
@@ -163,11 +163,11 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	async getPartInstance(part: 'current' | 'next'): Promise<IBlueprintPartInstance | undefined> {
 		const partInstance = this._getPartInstance(part)
 
-		return partInstance ? convertPartInstanceToBlueprints(partInstance.PartInstance) : undefined
+		return partInstance ? convertPartInstanceToBlueprints(partInstance.partInstance) : undefined
 	}
 	async getPieceInstances(part: 'current' | 'next'): Promise<IBlueprintPieceInstance[]> {
 		const partInstance = this._getPartInstance(part)
-		return partInstance?.PieceInstances?.map((p) => convertPieceInstanceToBlueprints(p.PieceInstance)) ?? []
+		return partInstance?.pieceInstances?.map((p) => convertPieceInstanceToBlueprints(p.pieceInstance)) ?? []
 	}
 	async getResolvedPieceInstances(part: 'current' | 'next'): Promise<IBlueprintResolvedPieceInstance[]> {
 		const partInstance = this._getPartInstance(part)
@@ -200,8 +200,8 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			}
 		}
 
-		if (options?.excludeCurrentPart && this._playoutModel.Playlist.currentPartInfo) {
-			query['partInstanceId'] = { $ne: this._playoutModel.Playlist.currentPartInfo.partInstanceId }
+		if (options?.excludeCurrentPart && this._playoutModel.playlist.currentPartInfo) {
+			query['partInstanceId'] = { $ne: this._playoutModel.playlist.currentPartInfo.partInstanceId }
 		}
 
 		const sourceLayerId = Array.isArray(sourceLayerId0) ? sourceLayerId0 : [sourceLayerId0]
@@ -233,8 +233,8 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			}
 		}
 
-		if (options?.excludeCurrentPart && this._playoutModel.CurrentPartInstance) {
-			query['startPartId'] = { $ne: this._playoutModel.CurrentPartInstance.PartInstance.part._id }
+		if (options?.excludeCurrentPart && this._playoutModel.currentPartInstance) {
+			query['startPartId'] = { $ne: this._playoutModel.currentPartInstance.partInstance.part._id }
 		}
 
 		const sourceLayerId = Array.isArray(sourceLayerId0) ? sourceLayerId0 : [sourceLayerId0]
@@ -258,7 +258,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 
 		const loadedPartInstanceModel = this._playoutModel.getPartInstance(partInstanceId)
 		if (loadedPartInstanceModel) {
-			return convertPartInstanceToBlueprints(loadedPartInstanceModel.PartInstance)
+			return convertPartInstanceToBlueprints(loadedPartInstanceModel.partInstance)
 		}
 
 		// It might be reset and so not in the loaded model
@@ -297,7 +297,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			throw new Error('Cannot insert piece when no active part')
 		}
 
-		const rundown = this._playoutModel.getRundown(partInstance.PartInstance.rundownId)
+		const rundown = this._playoutModel.getRundown(partInstance.partInstance.rundownId)
 		if (!rundown) {
 			throw new Error('Failed to find rundown of partInstance')
 		}
@@ -308,9 +308,9 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			this._context,
 			[trimmedPiece],
 			this.showStyleCompound.blueprintId,
-			partInstance.PartInstance.rundownId,
-			partInstance.PartInstance.segmentId,
-			partInstance.PartInstance.part._id,
+			partInstance.partInstance.rundownId,
+			partInstance.partInstance.segmentId,
+			partInstance.partInstance.part._id,
 			part === 'current'
 		)[0]
 		piece._id = getRandomId() // Make id random, as postProcessPieces is too predictable (for ingest)
@@ -324,7 +324,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			this.nextPartState = Math.max(this.nextPartState, ActionPartChange.SAFE_CHANGE)
 		}
 
-		return convertPieceInstanceToBlueprints(newPieceInstance.PieceInstance)
+		return convertPieceInstanceToBlueprints(newPieceInstance.pieceInstance)
 	}
 	async updatePieceInstance(
 		pieceInstanceId: string,
@@ -343,16 +343,16 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 
 		const { pieceInstance } = foundPieceInstance
 
-		if (pieceInstance.PieceInstance.infinite?.fromPreviousPart) {
+		if (pieceInstance.pieceInstance.infinite?.fromPreviousPart) {
 			throw new Error('Cannot update an infinite piece that is continued from a previous part')
 		}
 
 		const updatesCurrentPart: ActionPartChange =
-			pieceInstance.PieceInstance.partInstanceId === this._playoutModel.Playlist.currentPartInfo?.partInstanceId
+			pieceInstance.pieceInstance.partInstanceId === this._playoutModel.playlist.currentPartInfo?.partInstanceId
 				? ActionPartChange.SAFE_CHANGE
 				: ActionPartChange.NONE
 		const updatesNextPart: ActionPartChange =
-			pieceInstance.PieceInstance.partInstanceId === this._playoutModel.Playlist.nextPartInfo?.partInstanceId
+			pieceInstance.pieceInstance.partInstanceId === this._playoutModel.playlist.nextPartInfo?.partInstanceId
 				? ActionPartChange.SAFE_CHANGE
 				: ActionPartChange.NONE
 		if (!updatesCurrentPart && !updatesNextPart) {
@@ -363,7 +363,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		if (trimmedPiece.content?.timelineObjects) {
 			timelineObjectsString = serializePieceTimelineObjectsBlob(
 				postProcessTimelineObjects(
-					pieceInstance.PieceInstance.piece._id,
+					pieceInstance.pieceInstance.piece._id,
 					this.showStyleCompound.blueprintId,
 					trimmedPiece.content.timelineObjects
 				)
@@ -380,10 +380,10 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		this.nextPartState = Math.max(this.nextPartState, updatesNextPart)
 		this.currentPartState = Math.max(this.currentPartState, updatesCurrentPart)
 
-		return convertPieceInstanceToBlueprints(pieceInstance.PieceInstance)
+		return convertPieceInstanceToBlueprints(pieceInstance.pieceInstance)
 	}
 	async queuePart(rawPart: IBlueprintPart, rawPieces: IBlueprintPiece[]): Promise<IBlueprintPartInstance> {
-		const currentPartInstance = this._playoutModel.CurrentPartInstance
+		const currentPartInstance = this._playoutModel.currentPartInstance
 		if (!currentPartInstance) {
 			throw new Error('Cannot queue part when no current partInstance')
 		}
@@ -395,7 +395,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			throw new Error('Cannot queue part when next part has already been modified')
 		}
 
-		if (isTooCloseToAutonext(currentPartInstance.PartInstance, true)) {
+		if (isTooCloseToAutonext(currentPartInstance.partInstance, true)) {
 			throw new Error('Too close to an autonext to queue a part')
 		}
 
@@ -418,8 +418,8 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			this._context,
 			rawPieces,
 			this.showStyleCompound.blueprintId,
-			currentPartInstance.PartInstance.rundownId,
-			currentPartInstance.PartInstance.segmentId,
+			currentPartInstance.partInstance.rundownId,
+			currentPartInstance.partInstance.segmentId,
 			newPart._id,
 			false
 		)
@@ -440,9 +440,9 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		)
 
 		this.nextPartState = ActionPartChange.SAFE_CHANGE
-		this.queuedPartInstanceId = newPartInstance.PartInstance._id
+		this.queuedPartInstanceId = newPartInstance.partInstance._id
 
-		return convertPartInstanceToBlueprints(newPartInstance.PartInstance)
+		return convertPartInstanceToBlueprints(newPartInstance.partInstance)
 	}
 	async moveNextPart(partDelta: number, segmentDelta: number): Promise<void> {
 		await moveNextPart(this._context, this._playoutModel, partDelta, segmentDelta)
@@ -469,7 +469,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			part === 'current' ? ActionPartChange.SAFE_CHANGE : ActionPartChange.NONE
 		)
 
-		return convertPartInstanceToBlueprints(partInstance.PartInstance)
+		return convertPartInstanceToBlueprints(partInstance.partInstance)
 	}
 
 	async stopPiecesOnLayers(sourceLayerIds: string[], timeOffset?: number | undefined): Promise<string[]> {
@@ -523,7 +523,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		if (time !== null && (time < getCurrentTime() || typeof time !== 'number'))
 			throw new Error('Cannot block taking out of the current part, to a time in the past')
 
-		const partInstance = this._playoutModel.CurrentPartInstance
+		const partInstance = this._playoutModel.currentPartInstance
 		if (!partInstance) {
 			throw new Error('Cannot block take when there is no part playing')
 		}
@@ -535,10 +535,10 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		filter: (pieceInstance: ReadonlyDeep<PieceInstance>) => boolean,
 		timeOffset: number | undefined
 	) {
-		if (!this._playoutModel.Playlist.currentPartInfo) {
+		if (!this._playoutModel.playlist.currentPartInfo) {
 			return []
 		}
-		const partInstance = this._playoutModel.CurrentPartInstance
+		const partInstance = this._playoutModel.currentPartInstance
 		if (!partInstance) {
 			throw new Error('Cannot stop pieceInstances when no current partInstance')
 		}

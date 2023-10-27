@@ -76,7 +76,7 @@ function timelineTriggerTimeInner(
 	let lastTakeTime: number | undefined
 
 	// ------------------------------
-	const timeline = studioPlayoutModel.Timeline
+	const timeline = studioPlayoutModel.timeline
 	if (timeline) {
 		const timelineObjs = deserializeTimelineBlob(timeline.timelineBlob)
 		let tlChanged = false

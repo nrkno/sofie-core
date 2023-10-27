@@ -51,20 +51,20 @@ export async function syncChangesToPartInstances(
 	playoutModel: PlayoutModel,
 	ingestCache: ReadOnlyCache<CacheForIngest>
 ): Promise<void> {
-	if (playoutModel.Playlist.activationId) {
+	if (playoutModel.playlist.activationId) {
 		// Get the final copy of the rundown
 		const rundownWrapped = hackConvertIngestCacheToRundownWithSegments(ingestCache)
 
 		const showStyle = await context.getShowStyleCompound(
-			rundownWrapped.Rundown.showStyleVariantId,
-			rundownWrapped.Rundown.showStyleBaseId
+			rundownWrapped.rundown.showStyleVariantId,
+			rundownWrapped.rundown.showStyleBaseId
 		)
 		const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 
 		if (blueprint.blueprint.syncIngestUpdateToPartInstance) {
-			const currentPartInstance = playoutModel.CurrentPartInstance
-			const nextPartInstance = playoutModel.NextPartInstance
-			const previousPartInstance = playoutModel.PreviousPartInstance
+			const currentPartInstance = playoutModel.currentPartInstance
+			const nextPartInstance = playoutModel.nextPartInstance
+			const previousPartInstance = playoutModel.previousPartInstance
 
 			const instances: SyncedInstance[] = []
 			if (currentPartInstance) {
@@ -73,10 +73,10 @@ export async function syncChangesToPartInstances(
 				// changed (like timing) that will affect what's going on.
 				// The previous "planned" Part Instance needs to be inserted into the `instances` first, so that
 				// it's ran first through the blueprints.
-				if (currentPartInstance.PartInstance.orphaned === 'adlib-part') {
+				if (currentPartInstance.partInstance.orphaned === 'adlib-part') {
 					const partAndPartInstance = findLastUnorphanedPartInstanceInSegment(
 						playoutModel,
-						currentPartInstance.PartInstance
+						currentPartInstance.partInstance
 					)
 					if (partAndPartInstance) {
 						insertToSyncedInstanceCandidates(
@@ -110,7 +110,7 @@ export async function syncChangesToPartInstances(
 					ingestCache,
 					nextPartInstance,
 					currentPartInstance,
-					isTooCloseToAutonext(currentPartInstance?.PartInstance, false) ? 'current' : 'next'
+					isTooCloseToAutonext(currentPartInstance?.partInstance, false) ? 'current' : 'next'
 				)
 			}
 
@@ -121,12 +121,12 @@ export async function syncChangesToPartInstances(
 				newPart,
 				piecesThatMayBeActive,
 			} of instances) {
-				const pieceInstancesInPart = existingPartInstance.PieceInstances
+				const pieceInstancesInPart = existingPartInstance.pieceInstances
 
-				const partId = existingPartInstance.PartInstance.part._id
+				const partId = existingPartInstance.partInstance.part._id
 				const existingResultPartInstance: BlueprintSyncIngestPartInstance = {
-					partInstance: convertPartInstanceToBlueprints(existingPartInstance.PartInstance),
-					pieceInstances: pieceInstancesInPart.map((p) => convertPieceInstanceToBlueprints(p.PieceInstance)),
+					partInstance: convertPartInstanceToBlueprints(existingPartInstance.partInstance),
+					pieceInstances: pieceInstancesInPart.map((p) => convertPieceInstanceToBlueprints(p.pieceInstance)),
 				}
 
 				const proposedPieceInstances = getPieceInstancesForPart(
@@ -134,15 +134,15 @@ export async function syncChangesToPartInstances(
 					playoutModel,
 					previousPartInstance,
 					rundownWrapped,
-					newPart ?? existingPartInstance.PartInstance.part,
+					newPart ?? existingPartInstance.partInstance.part,
 					await piecesThatMayBeActive,
-					existingPartInstance.PartInstance._id
+					existingPartInstance.partInstance._id
 				)
 
 				logger.info(`Syncing ingest changes for part: ${partId} (orphaned: ${!!newPart})`)
 
 				const referencedAdlibIds = new Set(
-					_.compact(pieceInstancesInPart.map((p) => p.PieceInstance.adLibSourceId))
+					_.compact(pieceInstancesInPart.map((p) => p.pieceInstance.adLibSourceId))
 				)
 				const newResultData: BlueprintSyncIngestNewData = {
 					part: newPart ? convertPartToBlueprints(newPart) : undefined,
@@ -167,12 +167,12 @@ export async function syncChangesToPartInstances(
 				const syncContext = new SyncIngestUpdateToPartInstanceContext(
 					context,
 					{
-						name: `Update to ${existingPartInstance.PartInstance.part.externalId}`,
-						identifier: `rundownId=${existingPartInstance.PartInstance.part.rundownId},segmentId=${existingPartInstance.PartInstance.part.segmentId}`,
+						name: `Update to ${existingPartInstance.partInstance.part.externalId}`,
+						identifier: `rundownId=${existingPartInstance.partInstance.part.rundownId},segmentId=${existingPartInstance.partInstance.part.segmentId}`,
 					},
 					context.studio,
 					showStyle,
-					rundownWrapped.Rundown,
+					rundownWrapped.rundown,
 					existingPartInstance,
 					proposedPieceInstances,
 					playStatus
@@ -218,13 +218,13 @@ export async function syncChangesToPartInstances(
 					validateScratchpartPartInstanceProperties(context, playoutModel, existingPartInstance)
 				}
 
-				if (existingPartInstance.PartInstance._id === playoutModel.Playlist.currentPartInfo?.partInstanceId) {
+				if (existingPartInstance.partInstance._id === playoutModel.playlist.currentPartInfo?.partInstanceId) {
 					// This should be run after 'current', before 'next':
 					await syncPlayheadInfinitesForNextPartInstance(
 						context,
 						playoutModel,
-						playoutModel.CurrentPartInstance,
-						playoutModel.NextPartInstance
+						playoutModel.currentPartInstance,
+						playoutModel.nextPartInstance
 					)
 				}
 			}
@@ -256,7 +256,7 @@ function insertToSyncedInstanceCandidates(
 			context,
 			playoutModel,
 			ingestCache,
-			part ?? thisPartInstance.PartInstance.part
+			part ?? thisPartInstance.partInstance.part
 		),
 	})
 }
@@ -274,7 +274,7 @@ function findPartAndInsertToSyncedInstanceCandidates(
 	previousPartInstance: PlayoutPartInstanceModel | null,
 	playStatus: PlayStatus
 ): void {
-	const newPart = playoutModel.findPart(thisPartInstance.PartInstance.part._id)
+	const newPart = playoutModel.findPart(thisPartInstance.partInstance.part._id)
 
 	insertToSyncedInstanceCandidates(
 		context,
@@ -300,19 +300,21 @@ function findLastUnorphanedPartInstanceInSegment(
 	part: ReadonlyDeep<DBPart>
 } | null {
 	// Find the "latest" (last played), non-orphaned PartInstance in this Segment, in this play-through
-	const previousPartInstance = playoutModel.SortedLoadedPartInstances.reverse().find(
-		(p) =>
-			p.PartInstance.playlistActivationId === currentPartInstance.playlistActivationId &&
-			p.PartInstance.segmentId === currentPartInstance.segmentId &&
-			p.PartInstance.segmentPlayoutId === currentPartInstance.segmentPlayoutId &&
-			p.PartInstance.takeCount < currentPartInstance.takeCount &&
-			!!p.PartInstance.orphaned &&
-			!p.PartInstance.reset
-	)
+	const previousPartInstance = playoutModel.sortedLoadedPartInstances
+		.reverse()
+		.find(
+			(p) =>
+				p.partInstance.playlistActivationId === currentPartInstance.playlistActivationId &&
+				p.partInstance.segmentId === currentPartInstance.segmentId &&
+				p.partInstance.segmentPlayoutId === currentPartInstance.segmentPlayoutId &&
+				p.partInstance.takeCount < currentPartInstance.takeCount &&
+				!!p.partInstance.orphaned &&
+				!p.partInstance.reset
+		)
 
 	if (!previousPartInstance) return null
 
-	const previousPart = playoutModel.findPart(previousPartInstance.PartInstance.part._id)
+	const previousPart = playoutModel.findPart(previousPartInstance.partInstance.part._id)
 	if (!previousPart) return null
 
 	return {
