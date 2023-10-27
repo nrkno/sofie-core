@@ -61,8 +61,11 @@ export class StudioObserver extends EventEmitter {
 	#showStyleOfRundownLiveQuery: Meteor.LiveQueryHandle | undefined
 	#rundownsLiveQuery: Meteor.LiveQueryHandle | undefined
 	activePlaylistId: RundownPlaylistId | undefined
+	newActivePlaylistId: RundownPlaylistId | undefined
 	activationId: RundownPlaylistActivationId | undefined
+	newActivationId: RundownPlaylistActivationId | undefined
 	currentRundownId: RundownId | undefined
+	newCurrentRundownId: RundownId | undefined
 	showStyleBaseId: ShowStyleBaseId | undefined
 
 	#changed: ChangedHandler
@@ -127,9 +130,9 @@ export class StudioObserver extends EventEmitter {
 				this.#showStyleOfRundownLiveQuery?.stop()
 				this.#showStyleOfRundownLiveQuery = undefined
 
-				this.activePlaylistId = activePlaylistId
-				this.activationId = activationId
-				this.currentRundownId = currentRundownId
+				this.newActivePlaylistId = activePlaylistId
+				this.newActivationId = activationId
+				this.newCurrentRundownId = currentRundownId
 
 				this.#showStyleOfRundownLiveQuery = this.setupShowStyleOfRundownObserver(currentRundownId)
 			}
@@ -170,20 +173,31 @@ export class StudioObserver extends EventEmitter {
 			) => {
 				const showStyleBaseId = state?.showStyleBase._id
 
-				if (showStyleBaseId === undefined || !this.activePlaylistId || !this.activationId) {
+				if (showStyleBaseId === undefined || !this.newActivePlaylistId || !this.newActivationId) {
+					this.activePlaylistId = undefined
+					this.activationId = undefined
 					this.#rundownsLiveQuery?.stop()
 					this.#rundownsLiveQuery = undefined
 					this.showStyleBaseId = showStyleBaseId
 					return
 				}
 
-				if (showStyleBaseId === this.showStyleBaseId) return
+				if (
+					showStyleBaseId === this.showStyleBaseId &&
+					this.newActivationId === this.activationId &&
+					this.newActivePlaylistId === this.activePlaylistId &&
+					this.newCurrentRundownId === this.currentRundownId
+				)
+					return
 
 				this.#rundownsLiveQuery?.stop()
 				this.#rundownsLiveQuery = undefined
 
+				this.activePlaylistId = this.newActivePlaylistId
 				const activePlaylistId = this.activePlaylistId
+				this.activationId = this.newActivationId
 				const activationId = this.activationId
+				this.currentRundownId = this.newCurrentRundownId
 				this.showStyleBaseId = showStyleBaseId
 
 				let cleanupChanges: (() => void) | undefined = undefined
