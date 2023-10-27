@@ -1,6 +1,6 @@
 import { useMemo, JSX } from 'react'
 import { useSubscription, useSubscriptions, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { PubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { getSegmentsWithPartInstances } from '../../../lib/Rundown'
 import {
 	AdLibActionId,
@@ -35,6 +35,7 @@ import { assertNever, literal } from '@sofie-automation/corelib/dist/lib'
 import { UIPieceContentStatuses, UIShowStyleBases } from '../Collections'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 export function MediaStatus({
 	playlistIds,
@@ -256,24 +257,24 @@ function useMediaStatusSubscriptions(
 ): boolean {
 	const readyStatus: boolean[] = []
 	let counter = 0
-	readyStatus[counter++] = useSubscription(PubSub.rundownPlaylists, {
+	readyStatus[counter++] = useSubscription(CorelibPubSub.rundownPlaylists, {
 		_id: {
 			$in: playlistIds,
 		},
 	})
-	readyStatus[counter++] = useSubscription(PubSub.rundowns, playlistIds, null)
+	readyStatus[counter++] = useSubscription(CorelibPubSub.rundowns, playlistIds, null)
 	const uiShowStyleBaseSubArguments = useMemo(
 		() => showStyleBaseIds.map((showStyleBaseId) => [showStyleBaseId] as [ShowStyleBaseId]),
 		[showStyleBaseIds]
 	)
-	readyStatus[counter++] = useSubscriptions(PubSub.uiShowStyleBase, uiShowStyleBaseSubArguments)
-	readyStatus[counter++] = useSubscription(PubSub.segments, {
+	readyStatus[counter++] = useSubscriptions(MeteorPubSub.uiShowStyleBase, uiShowStyleBaseSubArguments)
+	readyStatus[counter++] = useSubscription(CorelibPubSub.segments, {
 		rundownId: {
 			$in: rundownIds,
 		},
 	})
-	readyStatus[counter++] = useSubscription(PubSub.parts, rundownIds)
-	readyStatus[counter++] = useSubscription(PubSub.partInstancesSimple, {
+	readyStatus[counter++] = useSubscription(CorelibPubSub.parts, rundownIds)
+	readyStatus[counter++] = useSubscription(CorelibPubSub.partInstancesSimple, {
 		rundownId: {
 			$in: rundownIds,
 		},
@@ -281,32 +282,32 @@ function useMediaStatusSubscriptions(
 			$ne: true,
 		},
 	})
-	readyStatus[counter++] = useSubscription(PubSub.pieceInstancesSimple, {
+	readyStatus[counter++] = useSubscription(CorelibPubSub.pieceInstancesSimple, {
 		rundownId: {
 			$in: rundownIds,
 		},
 	})
-	readyStatus[counter++] = useSubscription(PubSub.pieces, {
+	readyStatus[counter++] = useSubscription(CorelibPubSub.pieces, {
 		startRundownId: {
 			$in: rundownIds,
 		},
 	})
-	readyStatus[counter++] = useSubscription(PubSub.adLibActions, {
+	readyStatus[counter++] = useSubscription(CorelibPubSub.adLibActions, {
 		rundownId: {
 			$in: rundownIds,
 		},
 	})
-	readyStatus[counter++] = useSubscription(PubSub.adLibPieces, {
+	readyStatus[counter++] = useSubscription(CorelibPubSub.adLibPieces, {
 		rundownId: {
 			$in: rundownIds,
 		},
 	})
-	readyStatus[counter++] = useSubscription(PubSub.rundownBaselineAdLibActions, {
+	readyStatus[counter++] = useSubscription(CorelibPubSub.rundownBaselineAdLibActions, {
 		rundownId: {
 			$in: rundownIds,
 		},
 	})
-	readyStatus[counter++] = useSubscription(PubSub.rundownBaselineAdLibPieces, {
+	readyStatus[counter++] = useSubscription(CorelibPubSub.rundownBaselineAdLibPieces, {
 		rundownId: {
 			$in: rundownIds,
 		},
@@ -315,7 +316,7 @@ function useMediaStatusSubscriptions(
 		() => playlistIds.map((playlistIds) => [playlistIds] as [RundownPlaylistId]),
 		[playlistIds]
 	)
-	readyStatus[counter++] = useSubscriptions(PubSub.uiPieceContentStatuses, uiPieceContentStatusesSubArguments)
+	readyStatus[counter++] = useSubscriptions(MeteorPubSub.uiPieceContentStatuses, uiPieceContentStatusesSubArguments)
 
 	return readyStatus.reduce((mem, current) => mem && current, true)
 }

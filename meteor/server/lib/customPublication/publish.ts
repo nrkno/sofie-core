@@ -1,8 +1,8 @@
 import { UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Meteor } from 'meteor/meteor'
-import { CustomCollectionName, PubSubTypes } from '../../../lib/api/pubsub'
+import { AllPubSubTypes } from '../../../lib/api/pubsub'
 import { ProtectedString, unprotectString } from '../../../lib/lib'
-import { SubscriptionContext, meteorPublishUnsafe } from '../../publications/lib'
+import { PublishDocType, SubscriptionContext, meteorPublishUnsafe } from '../../publications/lib'
 
 export interface CustomPublishChanges<T extends { _id: ProtectedString<any> }> {
 	added: Array<T>
@@ -33,7 +33,7 @@ export class CustomPublishMeteor<DBObj extends { _id: ProtectedString<any> }> {
 	#onStop: (() => void) | undefined
 	#isReady = false
 
-	constructor(private _meteorSubscription: SubscriptionContext, private _collectionName: CustomCollectionName) {
+	constructor(private _meteorSubscription: SubscriptionContext, private _collectionName: string) {
 		this._meteorSubscription.onStop(() => {
 			if (this.#onStop) this.#onStop()
 		})
@@ -88,17 +88,19 @@ export class CustomPublishMeteor<DBObj extends { _id: ProtectedString<any> }> {
 	}
 }
 
+type PublishIfDocument<Doc> = Doc extends { _id: ProtectedString<any> } ? CustomPublish<Doc> : never
+
 /** Wrapping of Meteor.publish to provide types for for custom publications */
-export function meteorCustomPublish<K extends keyof PubSubTypes>(
+export function meteorCustomPublish<K extends keyof AllPubSubTypes, N extends ReturnType<AllPubSubTypes[K]>>(
 	publicationName: K,
-	customCollectionName: CustomCollectionName,
+	customCollectionName: N,
 	cb: (
 		this: SubscriptionContext,
-		publication: CustomPublish<ReturnType<PubSubTypes[K]>>,
-		...args: Parameters<PubSubTypes[K]>
+		publication: PublishIfDocument<PublishDocType<K>>,
+		...args: Parameters<AllPubSubTypes[K]>
 	) => Promise<void>
 ): void {
 	meteorPublishUnsafe(publicationName, async function (this: SubscriptionContext, ...args: any[]) {
-		return cb.call(this, new CustomPublishMeteor(this, customCollectionName), ...(args as any))
+		return cb.call(this, new CustomPublishMeteor<any>(this, String(customCollectionName)) as any, ...(args as any))
 	})
 }

@@ -1,34 +1,32 @@
 import { Logger } from 'winston'
 import { CoreHandler } from '../coreHandler'
 import { CollectionBase, Collection, CollectionObserver } from '../wsHandler'
-import { CoreConnection } from '@sofie-automation/server-core-integration'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { PartInstanceName, PartInstancesHandler } from './partInstances'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { PlaylistHandler } from './playlist'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export class PartHandler
-	extends CollectionBase<DBPart>
+	extends CollectionBase<DBPart, CorelibPubSub.parts, CollectionName.Parts>
 	implements Collection<DBPart>, CollectionObserver<Map<PartInstanceName, DBPartInstance | undefined>>
 {
 	public observerName: string
-	private _core: CoreConnection
 	private _activePlaylist: DBRundownPlaylist | undefined
 	private _curPartInstance: DBPartInstance | undefined
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
-		super(PartHandler.name, CollectionName.Parts, 'parts', logger, coreHandler)
-		this._core = coreHandler.coreConnection
+		super(PartHandler.name, CollectionName.Parts, CorelibPubSub.parts, logger, coreHandler)
 		this.observerName = this._name
 	}
 
-	async changed(id: string, changeType: string): Promise<void> {
+	async changed(id: PartId, changeType: string): Promise<void> {
 		this._logger.info(`${this._name} ${changeType} ${id}`)
 		if (!this._collectionName) return
-		const col = this._core.getCollection<DBPart>(this._collectionName)
+		const col = this._core.getCollection(this._collectionName)
 		if (!col) throw new Error(`collection '${this._collectionName}' not found!`)
 		if (this._collectionData) {
 			this._collectionData = col.findOne(this._collectionData._id)
@@ -65,17 +63,13 @@ export class PartHandler
 			if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
 			if (this._dbObserver) this._dbObserver.stop()
 			if (this._activePlaylist) {
-				const rundownIds = this._activePlaylist.rundownIdsInOrder.map((r) => unprotectString(r))
-				this._subscriptionId = await this._coreHandler.setupSubscription(
-					this._publicationName,
-					rundownIds,
-					undefined
-				)
+				const rundownIds = this._activePlaylist.rundownIdsInOrder
+				this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, rundownIds)
 				this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
-				this._dbObserver.added = (id: string) => {
+				this._dbObserver.added = (id) => {
 					void this.changed(id, 'added').catch(this._logger.error)
 				}
-				this._dbObserver.changed = (id: string) => {
+				this._dbObserver.changed = (id) => {
 					void this.changed(id, 'changed').catch(this._logger.error)
 				}
 			}
@@ -85,7 +79,7 @@ export class PartHandler
 			this._logger.info(
 				`${this._name} found updated partInstances with current part ${this._activePlaylist?.currentPartInfo?.partInstanceId}`
 			)
-			const collection = this._core.getCollection<DBPart>(this._collectionName)
+			const collection = this._core.getCollection(this._collectionName)
 			if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
 			if (this._curPartInstance) {
 				this._collectionData = collection.findOne(this._curPartInstance.part._id)

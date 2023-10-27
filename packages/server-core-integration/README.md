@@ -57,7 +57,7 @@ This library is developed as part of [Sofie Server Core](https://github.com/nrkn
 This library has a self-contained DDP client that can be used independently of the rest of the module.
 
 ```typescript
-import { DDPClient, DDPConnectorOptions } from 'tv-automation-server-integration'
+import { DDPClient, DDPConnectorOptions, PeripheralDevicePubSubCollectionsNames } from 'tv-automation-server-integration'
 
 let options: DDPConnectorOptions = {
 	host: '127.0.0.1',
@@ -72,7 +72,7 @@ ddp.connect((err: any) => {
 		return
 	}
 	let subId = ddp.subscribe('expectedMediaItems')
-	ddp.observe('expectedMediaItems', /* added cb */, /* changed cb */, /* removed cb */)
+	ddp.observe(PeripheralDevicePubSubCollectionsNames.expectedMediaItems, /* added cb */, /* changed cb */, /* removed cb */)
 
 	/* ... then later ... */
 	ddp.unsub(subId)

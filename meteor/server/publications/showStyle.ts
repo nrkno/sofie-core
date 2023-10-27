@@ -1,5 +1,5 @@
 import { meteorPublish, AutoFillSelector } from './lib'
-import { PubSub } from '../../lib/api/pubsub'
+import { MeteorPubSub } from '../../lib/api/pubsub'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
@@ -10,9 +10,10 @@ import { NoSecurityReadAccess } from '../security/noSecurity'
 import { RundownLayouts, ShowStyleBases, ShowStyleVariants, TriggeredActions } from '../collections'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { DBTriggeredActions } from '../../lib/collections/TriggeredActions'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 meteorPublish(
-	PubSub.showStyleBases,
+	CorelibPubSub.showStyleBases,
 	async function (selector0: MongoQuery<DBShowStyleBase>, token: string | undefined) {
 		const { cred, selector } = await AutoFillSelector.organizationId<DBShowStyleBase>(this.userId, selector0, token)
 		const modifier: FindOptions<DBShowStyleBase> = {
@@ -32,7 +33,7 @@ meteorPublish(
 )
 
 meteorPublish(
-	PubSub.showStyleVariants,
+	CorelibPubSub.showStyleVariants,
 	async function (selector0: MongoQuery<DBShowStyleVariant>, token: string | undefined) {
 		const { cred, selector } = await AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
 
@@ -52,7 +53,7 @@ meteorPublish(
 )
 
 meteorPublish(
-	PubSub.rundownLayouts,
+	MeteorPubSub.rundownLayouts,
 	async function (selector0: MongoQuery<RundownLayoutBase>, token: string | undefined) {
 		const { cred, selector } = await AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
 
@@ -67,7 +68,7 @@ meteorPublish(
 )
 
 meteorPublish(
-	PubSub.triggeredActions,
+	MeteorPubSub.triggeredActions,
 	async function (selector0: MongoQuery<DBTriggeredActions>, token: string | undefined) {
 		const { cred, selector } = await AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
 

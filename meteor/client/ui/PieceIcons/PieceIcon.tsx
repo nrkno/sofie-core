@@ -14,7 +14,7 @@ import RemoteInputIcon from './Renderers/RemoteInputIcon'
 import LiveSpeakInputIcon from './Renderers/LiveSpeakInputIcon'
 import GraphicsInputIcon from './Renderers/GraphicsInputIcon'
 import UnknownInputIcon from './Renderers/UnknownInputIcon'
-import { PubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { findPieceInstanceToShow, findPieceInstanceToShowFromInstances } from './utils'
 import LocalInputIcon from './Renderers/LocalInputIcon'
@@ -25,6 +25,7 @@ import {
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 export interface IPropsHeader {
 	partInstanceId: PartInstanceId
@@ -129,12 +130,12 @@ export function PieceIconContainer(props: IPropsHeader): JSX.Element | null {
 		}
 	)
 
-	useSubscription(PubSub.pieceInstancesSimple, {
+	useSubscription(CorelibPubSub.pieceInstancesSimple, {
 		rundownId: { $in: props.rundownIds },
 		playlistActivationId: props.playlistActivationId,
 	})
 
-	useSubscription(PubSub.uiShowStyleBase, props.showStyleBaseId)
+	useSubscription(MeteorPubSub.uiShowStyleBase, props.showStyleBaseId)
 
 	return <PieceIcon pieceInstance={pieceInstance} sourceLayer={sourceLayer} />
 }

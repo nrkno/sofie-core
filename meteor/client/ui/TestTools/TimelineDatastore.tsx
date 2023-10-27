@@ -3,11 +3,11 @@ import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-met
 import { StudioSelect } from './StudioSelect'
 import { Mongo } from 'meteor/mongo'
 import { DBTimelineDatastoreEntry } from '@sofie-automation/corelib/dist/dataModel/TimelineDatastore'
-import { PubSub } from '../../../lib/api/pubsub'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 const TimelineDatastore = new Mongo.Collection<DBTimelineDatastoreEntry>('timelineDatastore')
 
@@ -39,7 +39,7 @@ interface IDatastoreControlsProps {
 	studioId: StudioId
 }
 function ComponentDatastoreControls({ studioId }: IDatastoreControlsProps) {
-	useSubscription(PubSub.timelineDatastore, studioId)
+	useSubscription(CorelibPubSub.timelineDatastore, studioId)
 
 	const datastore = useTracker(() => TimelineDatastore.find().fetch(), [studioId])
 

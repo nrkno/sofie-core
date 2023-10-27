@@ -2,12 +2,13 @@ import React from 'react'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { EvsContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 
-import { PubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { IPropsHeader } from './PieceIcon'
 import { findPieceInstanceToShow } from './utils'
 import { PieceGeneric } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 interface INamePropsHeader extends IPropsHeader {
 	partName: string
@@ -54,12 +55,12 @@ export function PieceNameContainer(props: INamePropsHeader): JSX.Element | null 
 		}
 	)
 
-	useSubscription(PubSub.pieceInstancesSimple, {
+	useSubscription(CorelibPubSub.pieceInstancesSimple, {
 		rundownId: { $in: props.rundownIds },
 		playlistActivationId: props.playlistActivationId,
 	})
 
-	useSubscription(PubSub.uiShowStyleBase, props.showStyleBaseId)
+	useSubscription(MeteorPubSub.uiShowStyleBase, props.showStyleBaseId)
 
 	if (pieceInstance && sourceLayer && supportedLayers.has(sourceLayer.type)) {
 		return getPieceLabel(pieceInstance.piece, sourceLayer.type)

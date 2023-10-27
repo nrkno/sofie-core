@@ -18,3 +18,4 @@ export { PeripheralDeviceCommand } from '@sofie-automation/shared-lib/dist/core/
 export { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
 export * as PeripheralDeviceAPI from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 export { PeripheralDeviceId, StudioId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+export * from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'

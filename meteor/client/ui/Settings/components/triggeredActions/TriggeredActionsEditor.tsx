@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSubscription, useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
-import { PubSub } from '../../../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../../../lib/api/pubsub'
 import { TriggeredActionsObj } from '../../../../../lib/collections/TriggeredActions'
 import { faCaretDown, faCaretRight, faDownload, faPlus, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -31,6 +31,7 @@ import { PartInstances, Parts, RundownPlaylists, Rundowns, TriggeredActions } fr
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { SourceLayers, OutputLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { RundownPlaylistCollectionUtil } from '../../../../../lib/collections/rundownPlaylistUtil'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 export interface PreviewContext {
 	rundownPlaylist: DBRundownPlaylist | null
@@ -90,8 +91,8 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 		]),
 	}
 
-	useSubscription(PubSub.triggeredActions, showStyleBaseSelector)
-	useSubscription(PubSub.rundowns, null, showStyleBaseId ? [showStyleBaseId] : [])
+	useSubscription(MeteorPubSub.triggeredActions, showStyleBaseSelector)
+	useSubscription(CorelibPubSub.rundowns, null, showStyleBaseId ? [showStyleBaseId] : [])
 
 	useEffect(() => {
 		const debounce = setTimeout(() => {
@@ -166,7 +167,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 		[showStyleBaseId, parsedTriggerFilter]
 	)
 
-	useSubscription(PubSub.rundownPlaylists, {})
+	useSubscription(CorelibPubSub.rundownPlaylists, {})
 
 	const rundown = useTracker(() => {
 		const activePlaylists = RundownPlaylists.find(
@@ -205,8 +206,8 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 		null
 	)
 
-	useSubscription(PubSub.partInstances, rundown ? [rundown._id] : [], rundownPlaylist?.activationId)
-	useSubscription(PubSub.parts, rundown ? [rundown._id] : [])
+	useSubscription(CorelibPubSub.partInstances, rundown ? [rundown._id] : [], rundownPlaylist?.activationId)
+	useSubscription(CorelibPubSub.parts, rundown ? [rundown._id] : [])
 
 	const previewContext = useTracker(
 		() => {

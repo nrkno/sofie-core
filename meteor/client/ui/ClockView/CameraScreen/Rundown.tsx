@@ -1,7 +1,7 @@
 import React, { useContext } from 'react'
 import { useSubscription, useTracker } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { Rundown as RundownObj } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { PubSub } from '../../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../../lib/api/pubsub'
 import { Segments } from '../../../collections'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { Segment as SegmentComponent } from './Segment'
@@ -20,7 +20,7 @@ interface IProps {
 export function Rundown({ playlist, rundown, rundownIdsBefore }: IProps): JSX.Element | null {
 	const rundownId = rundown._id
 
-	useSubscription(PubSub.uiShowStyleBase, rundown.showStyleBaseId)
+	useSubscription(MeteorPubSub.uiShowStyleBase, rundown.showStyleBaseId)
 
 	const segments = useTracker(() => Segments.find({ rundownId }).fetch(), [rundownId], [] as DBSegment[])
 

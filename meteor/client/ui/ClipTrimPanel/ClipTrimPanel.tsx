@@ -9,9 +9,9 @@ import { UIStudio } from '../../../lib/api/studios'
 import { useTranslation } from 'react-i18next'
 import { useContentStatusForPiece } from '../SegmentTimeline/withMediaObjectStatus'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { PubSub } from '../../../lib/api/pubsub'
 import { PieceId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Pieces } from '../../collections'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 export interface IProps {
 	studio: UIStudio
@@ -86,7 +86,7 @@ export function ClipTrimPanel({
 }: IProps): JSX.Element {
 	const { t } = useTranslation()
 
-	useSubscription(PubSub.pieces, { _id: pieceId, startRundownId: rundownId })
+	useSubscription(CorelibPubSub.pieces, { _id: pieceId, startRundownId: rundownId })
 
 	const piece = useTracker(() => Pieces.findOne(pieceId), [pieceId])
 

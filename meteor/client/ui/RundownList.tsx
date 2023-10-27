@@ -1,6 +1,6 @@
 import Tooltip from 'rc-tooltip'
 import * as React from 'react'
-import { PubSub } from '../../lib/api/pubsub'
+import { MeteorPubSub } from '../../lib/api/pubsub'
 import { GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getAllowConfigure, getHelpMode } from '../lib/localStorage'
@@ -19,6 +19,7 @@ import { getCoreSystem, RundownLayouts, RundownPlaylists, Rundowns } from '../co
 import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlaylistUtil'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 export enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',
@@ -59,17 +60,17 @@ export function RundownList(): JSX.Element {
 	)
 
 	const baseSubsReady = [
-		useSubscription(PubSub.rundownPlaylists, {}),
-		useSubscription(PubSub.uiStudio, null),
-		useSubscription(PubSub.rundownLayouts, {}),
+		useSubscription(CorelibPubSub.rundownPlaylists, {}),
+		useSubscription(MeteorPubSub.uiStudio, null),
+		useSubscription(MeteorPubSub.rundownLayouts, {}),
 
-		useSubscription(PubSub.rundowns, playlistIds, null),
+		useSubscription(CorelibPubSub.rundowns, playlistIds, null),
 
-		useSubscription(PubSub.showStyleBases, {
+		useSubscription(CorelibPubSub.showStyleBases, {
 			_id: { $in: showStyleBaseIds },
 		}),
 
-		useSubscription(PubSub.showStyleVariants, {
+		useSubscription(CorelibPubSub.showStyleVariants, {
 			_id: { $in: showStyleVariantIds },
 		}),
 	].reduce((prev, current) => prev && current, true)

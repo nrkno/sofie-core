@@ -9,9 +9,10 @@ import { ExternalMessages } from './Status/ExternalMessages'
 import { UserActivity } from './Status/UserActivity'
 import { EvaluationView } from './Status/Evaluations'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { PubSub } from '../../lib/api/pubsub'
+import { MeteorPubSub } from '../../lib/api/pubsub'
 import { ExpectedPackagesStatus } from './Status/package-status'
 import { MediaStatus } from './Status/media-status'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 interface IStatusMenuProps {
 	match?: any
@@ -79,10 +80,10 @@ class Status extends MeteorReactComponent<Translated<IStatusProps>> {
 	componentDidMount(): void {
 		// Subscribe to data:
 
-		this.subscribe(PubSub.peripheralDevices, {})
-		this.subscribe(PubSub.uiStudio, null)
-		this.subscribe(PubSub.showStyleBases, {})
-		this.subscribe(PubSub.showStyleVariants, {})
+		this.subscribe(CorelibPubSub.peripheralDevices, {})
+		this.subscribe(MeteorPubSub.uiStudio, null)
+		this.subscribe(CorelibPubSub.showStyleBases, {})
+		this.subscribe(CorelibPubSub.showStyleVariants, {})
 	}
 	render(): JSX.Element {
 		// const { t } = this.props

@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
 import { meteorPublish, AutoFillSelector } from './lib'
-import { PubSub } from '../../lib/api/pubsub'
+import { MeteorPubSub } from '../../lib/api/pubsub'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { OrganizationReadAccess } from '../security/organization'
@@ -14,6 +14,8 @@ import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids
 import { MediaWorkFlows, MediaWorkFlowSteps, PeripheralDeviceCommands, PeripheralDevices } from '../collections'
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { PeripheralDevicePubSub } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 
 /*
  * This file contains publications for the peripheralDevices, such as playout-gateway, mos-gateway and package-manager
@@ -31,7 +33,7 @@ async function checkAccess(cred: Credentials | ResolvedCredentials | null, selec
 	)
 }
 meteorPublish(
-	PubSub.peripheralDevices,
+	CorelibPubSub.peripheralDevices,
 	async function (selector0: MongoQuery<PeripheralDevice>, token: string | undefined) {
 		const { cred, selector } = await AutoFillSelector.organizationId<PeripheralDevice>(
 			this.userId,
@@ -55,7 +57,7 @@ meteorPublish(
 	}
 )
 
-meteorPublish(PubSub.peripheralDevicesAndSubDevices, async function (selector0: MongoQuery<PeripheralDevice>) {
+meteorPublish(CorelibPubSub.peripheralDevicesAndSubDevices, async function (selector0: MongoQuery<PeripheralDevice>) {
 	const { cred, selector } = await AutoFillSelector.organizationId<PeripheralDevice>(
 		this.userId,
 		selector0,
@@ -86,7 +88,7 @@ meteorPublish(PubSub.peripheralDevicesAndSubDevices, async function (selector0: 
 	return null
 })
 meteorPublish(
-	PubSub.peripheralDeviceCommands,
+	PeripheralDevicePubSub.peripheralDeviceCommands,
 	async function (deviceId: PeripheralDeviceId, token: string | undefined) {
 		if (!deviceId) throw new Meteor.Error(400, 'deviceId argument missing')
 		check(deviceId, String)
@@ -96,15 +98,18 @@ meteorPublish(
 		return null
 	}
 )
-meteorPublish(PubSub.mediaWorkFlows, async function (selector0: MongoQuery<MediaWorkFlow>, token: string | undefined) {
-	const { cred, selector } = await AutoFillSelector.deviceId(this.userId, selector0, token)
-	if (!cred || (await PeripheralDeviceReadAccess.peripheralDeviceContent(selector.deviceId, cred))) {
-		return MediaWorkFlows.findWithCursor(selector)
-	}
-	return null
-})
 meteorPublish(
-	PubSub.mediaWorkFlowSteps,
+	MeteorPubSub.mediaWorkFlows,
+	async function (selector0: MongoQuery<MediaWorkFlow>, token: string | undefined) {
+		const { cred, selector } = await AutoFillSelector.deviceId(this.userId, selector0, token)
+		if (!cred || (await PeripheralDeviceReadAccess.peripheralDeviceContent(selector.deviceId, cred))) {
+			return MediaWorkFlows.findWithCursor(selector)
+		}
+		return null
+	}
+)
+meteorPublish(
+	MeteorPubSub.mediaWorkFlowSteps,
 	async function (selector0: MongoQuery<MediaWorkFlowStep>, token: string | undefined) {
 		const { cred, selector } = await AutoFillSelector.deviceId(this.userId, selector0, token)
 		if (!cred || (await PeripheralDeviceReadAccess.peripheralDeviceContent(selector.deviceId, cred))) {

@@ -3,7 +3,7 @@ import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-met
 import * as _ from 'underscore'
 import { deserializeTimelineBlob, TimelineHash } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { applyToArray, clone, normalizeArray, protectString } from '../../../lib/lib'
-import { CustomCollectionName, PubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
 import {
 	TimelineState,
 	ResolvedTimelineObjectInstance,
@@ -20,10 +20,13 @@ import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Classnames from 'classnames'
-import { createSyncCustomPublicationMongoCollection } from '../../../lib/collections/lib'
+import { createSyncPeripheralDeviceCustomPublicationMongoCollection } from '../../../lib/collections/lib'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PeripheralDevicePubSubCollectionsNames } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 
-export const StudioTimeline = createSyncCustomPublicationMongoCollection(CustomCollectionName.StudioTimeline)
+export const StudioTimeline = createSyncPeripheralDeviceCustomPublicationMongoCollection(
+	PeripheralDevicePubSubCollectionsNames.studioTimeline
+)
 
 interface TimelineViewRouteParams {
 	studioId: string | undefined
@@ -53,7 +56,7 @@ interface ITimelineSimulateProps {
 	studioId: StudioId
 }
 function ComponentTimelineSimulate({ studioId }: ITimelineSimulateProps) {
-	useSubscription(PubSub.timelineForStudio, studioId)
+	useSubscription(MeteorPubSub.timelineForStudio, studioId)
 
 	const now = useCurrentTime()
 	const tlComplete = useTracker(() => StudioTimeline.findOne(studioId), [studioId])

@@ -3,16 +3,19 @@ import { Translated, translateWithTracker, withTracker } from '../../lib/ReactMe
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { omit, Time, unprotectString } from '../../../lib/lib'
-import { CustomCollectionName, PubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { makeTableOfObject } from '../../lib/utilComponents'
 import { StudioSelect } from './StudioSelect'
 import { MappingExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
-import { createSyncCustomPublicationMongoCollection } from '../../../lib/collections/lib'
+import { createSyncPeripheralDeviceCustomPublicationMongoCollection } from '../../../lib/collections/lib'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RoutedMappings } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
+import { PeripheralDevicePubSubCollectionsNames } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 
-const StudioMappings = createSyncCustomPublicationMongoCollection(CustomCollectionName.StudioMappings)
+const StudioMappings = createSyncPeripheralDeviceCustomPublicationMongoCollection(
+	PeripheralDevicePubSubCollectionsNames.studioMappings
+)
 
 interface IMappingsViewProps {
 	match?: {
@@ -88,7 +91,7 @@ export const ComponentMappingsTable = withTracker<IMappingsTableProps, IMappings
 			}
 		}
 		componentDidMount(): void {
-			this.subscribe(PubSub.mappingsForStudio, this.props.studioId)
+			this.subscribe(MeteorPubSub.mappingsForStudio, this.props.studioId)
 		}
 		renderMappingsState(state: RoutedMappings) {
 			const rows = _.sortBy(Object.entries<MappingExt>(state.mappings), (o) => o[0])

@@ -14,7 +14,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { firstIfArray, literal, protectString } from '../../../lib/lib'
 import { PrompterData, PrompterAPI, PrompterDataPart } from './prompter'
 import { PrompterControlManager } from './controller/manager'
-import { PubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { documentTitle } from '../../lib/DocumentTitleProvider'
 import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
 import { RundownTimingProvider } from '../RundownView/RundownTiming/RundownTimingProvider'
@@ -26,6 +26,7 @@ import { UIStudio } from '../../../lib/api/studios'
 import { RundownPlaylists, Rundowns } from '../../collections'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 import { logger } from '../../../lib/logging'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 const DEFAULT_UPDATE_THROTTLE = 250 //ms
 const PIECE_MISSING_UPDATE_THROTTLE = 2000 //ms
@@ -203,9 +204,9 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 	componentDidMount(): void {
 		if (this.props.studioId) {
-			this.subscribe(PubSub.uiStudio, this.props.studioId)
+			this.subscribe(MeteorPubSub.uiStudio, this.props.studioId)
 
-			this.subscribe(PubSub.rundownPlaylists, {
+			this.subscribe(CorelibPubSub.rundownPlaylists, {
 				activationId: { $exists: true },
 				studioId: this.props.studioId,
 			})
@@ -224,7 +225,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 				}
 			) as Pick<DBRundownPlaylist, '_id'> | undefined
 			if (playlist?._id) {
-				this.subscribe(PubSub.rundowns, [playlist._id], null)
+				this.subscribe(CorelibPubSub.rundowns, [playlist._id], null)
 			}
 		})
 
@@ -598,7 +599,7 @@ export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, 
 		}
 
 		componentDidMount(): void {
-			this.subscribe(PubSub.rundowns, [this.props.rundownPlaylistId], null)
+			this.subscribe(CorelibPubSub.rundowns, [this.props.rundownPlaylistId], null)
 
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(this.props.rundownPlaylistId, {
@@ -609,15 +610,15 @@ export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, 
 				}) as Pick<DBRundownPlaylist, '_id' | 'activationId'> | undefined
 				if (playlist) {
 					const rundownIDs = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
-					this.subscribe(PubSub.segments, {
+					this.subscribe(CorelibPubSub.segments, {
 						rundownId: { $in: rundownIDs },
 					})
-					this.subscribe(PubSub.parts, rundownIDs)
-					this.subscribe(PubSub.partInstances, rundownIDs, playlist.activationId)
-					this.subscribe(PubSub.pieces, {
+					this.subscribe(CorelibPubSub.parts, rundownIDs)
+					this.subscribe(CorelibPubSub.partInstances, rundownIDs, playlist.activationId)
+					this.subscribe(CorelibPubSub.pieces, {
 						startRundownId: { $in: rundownIDs },
 					})
-					this.subscribe(PubSub.pieceInstancesSimple, {
+					this.subscribe(CorelibPubSub.pieceInstancesSimple, {
 						rundownId: { $in: rundownIDs },
 						reset: { $ne: true },
 					})
@@ -635,7 +636,7 @@ export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, 
 					}
 				).fetch() as Pick<Rundown, '_id' | 'showStyleBaseId'>[]
 				for (const rundown of rundowns) {
-					this.subscribe(PubSub.uiShowStyleBase, rundown.showStyleBaseId)
+					this.subscribe(MeteorPubSub.uiShowStyleBase, rundown.showStyleBaseId)
 				}
 			})
 		}

@@ -20,7 +20,7 @@ import {
 	CustomizableRegionSettingsManifest,
 	RundownLayoutsAPI,
 } from '../../../lib/api/rundownLayouts'
-import { PubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { getRandomString, literal, unprotectString } from '../../../lib/lib'
 import { UploadButton } from '../../lib/uploadButton'
 import { doModalDialog } from '../../lib/ModalDialog'
@@ -83,7 +83,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		componentDidMount(): void {
 			super.componentDidMount && super.componentDidMount()
 
-			this.subscribe(PubSub.rundownLayouts, {})
+			this.subscribe(MeteorPubSub.rundownLayouts, {})
 		}
 
 		onAddLayout = () => {

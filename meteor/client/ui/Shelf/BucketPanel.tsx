@@ -23,7 +23,7 @@ import {
 	IBlueprintActionTriggerMode,
 	SomeContent,
 } from '@sofie-automation/blueprints-integration'
-import { PubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { doUserAction, getEventTimestamp, UserAction } from '../../../lib/clientUserAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { literal, unprotectString, partial, protectString } from '../../../lib/lib'
@@ -72,6 +72,7 @@ import {
 	ShowStyleVariantId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 interface IBucketPanelDragObject {
 	id: BucketId
@@ -385,9 +386,9 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 				}
 
 				componentDidMount(): void {
-					this.subscribe(PubSub.buckets, this.props.playlist.studioId, this.props.bucket._id)
-					this.subscribe(PubSub.uiBucketContentStatuses, this.props.playlist.studioId, this.props.bucket._id)
-					this.subscribe(PubSub.uiStudio, this.props.playlist.studioId)
+					this.subscribe(MeteorPubSub.buckets, this.props.playlist.studioId, this.props.bucket._id)
+					this.subscribe(MeteorPubSub.uiBucketContentStatuses, this.props.playlist.studioId, this.props.bucket._id)
+					this.subscribe(MeteorPubSub.uiStudio, this.props.playlist.studioId)
 					this.autorun(() => {
 						const showStyles: Array<[ShowStyleBaseId, ShowStyleVariantId]> =
 							RundownPlaylistCollectionUtil.getRundownsUnordered(this.props.playlist).map((rundown) => [
@@ -396,14 +397,14 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 							])
 						const showStyleBases = showStyles.map((showStyle) => showStyle[0])
 						const showStyleVariants = showStyles.map((showStyle) => showStyle[1])
-						this.subscribe(PubSub.bucketAdLibPieces, {
+						this.subscribe(CorelibPubSub.bucketAdLibPieces, {
 							bucketId: this.props.bucket._id,
 							studioId: this.props.playlist.studioId,
 							showStyleVariantId: {
 								$in: [null, ...showStyleVariants], // null = valid for all variants
 							},
 						})
-						this.subscribe(PubSub.bucketAdLibActions, {
+						this.subscribe(CorelibPubSub.bucketAdLibActions, {
 							bucketId: this.props.bucket._id,
 							studioId: this.props.playlist.studioId,
 							showStyleVariantId: {
@@ -411,7 +412,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 							},
 						})
 						for (const showStyleBaseId of _.uniq(showStyleBases)) {
-							this.subscribe(PubSub.uiShowStyleBase, showStyleBaseId)
+							this.subscribe(MeteorPubSub.uiShowStyleBase, showStyleBaseId)
 						}
 					})
 

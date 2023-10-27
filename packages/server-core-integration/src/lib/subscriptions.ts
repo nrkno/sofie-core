@@ -3,7 +3,9 @@ import type { DDPConnector } from './ddpConnector'
 
 export type SubscriptionId = ProtectedString<'SubscriptionId'>
 
-export class SubscriptionsHelper {
+export type ParametersOfFunctionOrNever<T> = T extends (...args: any[]) => any ? Parameters<T> : never
+
+export class SubscriptionsHelper<PubSubTypes> {
 	readonly #ddp: DDPConnector
 	readonly #deviceToken: string
 
@@ -21,16 +23,19 @@ export class SubscriptionsHelper {
 		this.#deviceToken = deviceToken
 	}
 
-	public async subscribeOnce(publicationName: string, ...params: Array<any>): Promise<SubscriptionId> {
-		const subscriptionId = await this.subscribeWithId(undefined, publicationName, ...params)
+	public async subscribeOnce<Key extends keyof PubSubTypes>(
+		publicationName: Key,
+		...params: ParametersOfFunctionOrNever<PubSubTypes[Key]>
+	): Promise<SubscriptionId> {
+		const subscriptionId = await this.subscribeWithId(undefined, String(publicationName), ...params)
 		this.#otherSubscriptions.add(subscriptionId)
 		return subscriptionId
 	}
 
 	private async subscribeWithId(
-		existingSubscriptionId: string | undefined,
+		existingSubscriptionId: SubscriptionId | undefined,
 		publicationName: string,
-		...params: Array<any>
+		...params: any[]
 	): Promise<SubscriptionId> {
 		return new Promise((resolve, reject) => {
 			if (!this.#ddp.ddpClient) {
@@ -47,7 +52,7 @@ export class SubscriptionsHelper {
 						// callback when the subscription is complete
 						resolve(protectString(subscriptionId))
 					},
-					existingSubscriptionId
+					unprotectString(existingSubscriptionId)
 				)
 			} catch (e) {
 				reject(e)
@@ -55,10 +60,13 @@ export class SubscriptionsHelper {
 		})
 	}
 
-	async autoSubscribe(publicationName: string, ...params: Array<any>): Promise<SubscriptionId> {
-		const subscriptionId = await this.subscribeOnce(publicationName, ...params)
+	async autoSubscribe<Key extends keyof PubSubTypes>(
+		publicationName: Key,
+		...params: ParametersOfFunctionOrNever<PubSubTypes[Key]>
+	): Promise<SubscriptionId> {
+		const subscriptionId = await this.subscribeWithId(undefined, String(publicationName), ...params)
 		this.#autoSubscriptions.set(subscriptionId, {
-			publicationName: publicationName,
+			publicationName: String(publicationName),
 			params: params,
 		})
 		return subscriptionId
@@ -75,7 +83,7 @@ export class SubscriptionsHelper {
 		this.#otherSubscriptions.clear()
 
 		for (const [subId, sub] of this.#autoSubscriptions.entries()) {
-			this.subscribeWithId(unprotectString(subId), sub.publicationName, ...sub.params).catch((e) =>
+			this.subscribeWithId(subId, sub.publicationName, ...sub.params).catch((e) =>
 				this.emitError('renewSubscr ' + sub.publicationName + ': ' + e)
 			)
 		}

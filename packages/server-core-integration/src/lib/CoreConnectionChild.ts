@@ -10,10 +10,13 @@ import { Observer } from './ddpClient'
 import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 import { ConnectionMethodsQueue, ExternalPeripheralDeviceAPI, makeMethods, makeMethodsLowPrio } from './methods'
 import { PeripheralDeviceForDevice } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
-import { ProtectedString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
-import { CoreConnection, Collection, CoreOptions } from './coreConnection'
+import { CoreConnection, Collection, CoreOptions, CollectionDocCheck } from './coreConnection'
 import { CorePinger } from './ping'
-import { SubscriptionId, SubscriptionsHelper } from './subscriptions'
+import { ParametersOfFunctionOrNever, SubscriptionId, SubscriptionsHelper } from './subscriptions'
+import {
+	PeripheralDevicePubSubCollections,
+	PeripheralDevicePubSubTypes,
+} from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 
 export interface ChildCoreOptions {
 	deviceId: PeripheralDeviceId
@@ -34,12 +37,15 @@ export type ChildCoreConnectionEvents = {
 	error: [err: Error | string]
 }
 
-export class CoreConnectionChild extends EventEmitter<ChildCoreConnectionEvents> {
-	private _parent: CoreConnection | undefined
+export class CoreConnectionChild<
+	PubSubTypes = PeripheralDevicePubSubTypes,
+	PubSubCollections = PeripheralDevicePubSubCollections
+> extends EventEmitter<ChildCoreConnectionEvents> {
+	private _parent: CoreConnection<PubSubTypes, PubSubCollections> | undefined
 	private _parentOptions!: CoreOptions
 	private _coreOptions: ChildCoreOptions
 	private _methodQueue!: ConnectionMethodsQueue
-	private _subscriptions!: SubscriptionsHelper
+	private _subscriptions!: SubscriptionsHelper<PubSubTypes>
 
 	private _pinger: CorePinger
 	private _destroyed = false
@@ -66,7 +72,10 @@ export class CoreConnectionChild extends EventEmitter<ChildCoreConnectionEvents>
 		this._pinger.triggerPing()
 	}
 
-	async init(parent: CoreConnection, parentOptions: CoreOptions): Promise<PeripheralDeviceId> {
+	async init(
+		parent: CoreConnection<PubSubTypes, PubSubCollections>,
+		parentOptions: CoreOptions
+	): Promise<PeripheralDeviceId> {
 		this._destroyed = false
 
 		parent.on('connected', () => this._subscriptions.renewAutoSubscriptions())
@@ -105,7 +114,7 @@ export class CoreConnectionChild extends EventEmitter<ChildCoreConnectionEvents>
 		this._pinger.destroy()
 	}
 
-	public get parent(): CoreConnection {
+	public get parent(): CoreConnection<PubSubTypes, PubSubCollections> {
 		if (!this._parent) throw new Error('Connection has been destroyed')
 		return this._parent
 	}
@@ -151,9 +160,9 @@ export class CoreConnectionChild extends EventEmitter<ChildCoreConnectionEvents>
 	async getPeripheralDevice(): Promise<PeripheralDeviceForDevice> {
 		return this.coreMethods.getPeripheralDevice()
 	}
-	getCollection<DBObj extends { _id: ProtectedString<any> | string } = never>(
-		collectionName: string
-	): Collection<DBObj> {
+	getCollection<K extends keyof PubSubCollections>(
+		collectionName: K
+	): Collection<CollectionDocCheck<PubSubCollections[K]>> {
 		if (!this._parent) throw new Error('Connection has been destroyed')
 
 		return this._parent.getCollection(collectionName)
@@ -171,7 +180,10 @@ export class CoreConnectionChild extends EventEmitter<ChildCoreConnectionEvents>
 	 * Subscribe to a DDP publication
 	 * Upon reconnecting to Sofie, this publication will be restarted
 	 */
-	async autoSubscribe(publicationName: string, ...params: Array<any>): Promise<SubscriptionId> {
+	async autoSubscribe<Key extends keyof PubSubTypes>(
+		publicationName: Key,
+		...params: ParametersOfFunctionOrNever<PubSubTypes[Key]>
+	): Promise<SubscriptionId> {
 		if (!this._subscriptions) throw new Error('Connection is not ready to handle subscriptions')
 
 		return this._subscriptions.autoSubscribe(publicationName, ...params)
@@ -192,7 +204,7 @@ export class CoreConnectionChild extends EventEmitter<ChildCoreConnectionEvents>
 
 		this._subscriptions.unsubscribeAll()
 	}
-	observe(collectionName: string): Observer {
+	observe<K extends keyof PubSubCollections>(collectionName: K): Observer<CollectionDocCheck<PubSubCollections[K]>> {
 		if (!this._parent) throw new Error('Connection has been destroyed')
 
 		return this._parent.observe(collectionName)

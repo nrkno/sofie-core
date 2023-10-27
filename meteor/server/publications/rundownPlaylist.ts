@@ -1,6 +1,5 @@
 import { RundownPlaylistReadAccess } from '../security/rundownPlaylist'
 import { meteorPublish, AutoFillSelector } from './lib'
-import { PubSub } from '../../lib/api/pubsub'
 import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
 import { NoSecurityReadAccess } from '../security/noSecurity'
@@ -8,9 +7,10 @@ import { isProtectedString } from '@sofie-automation/corelib/dist/protectedStrin
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { RundownPlaylists } from '../collections'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 meteorPublish(
-	PubSub.rundownPlaylists,
+	CorelibPubSub.rundownPlaylists,
 	async function (selector0: MongoQuery<DBRundownPlaylist>, token: string | undefined) {
 		const { cred, selector } = await AutoFillSelector.organizationId<DBRundownPlaylist>(
 			this.userId,
