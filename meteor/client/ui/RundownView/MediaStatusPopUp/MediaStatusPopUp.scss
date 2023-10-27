@@ -22,12 +22,20 @@
 
 .media-status-panel__pop-out {
 	position: absolute;
-    top: 20px;
-    right: 20px;
-    left: auto;
+	top: 20px;
+	right: 20px;
+	left: auto;
 	opacity: 0.5;
+	visibility: visible;
+	transition: opacity 200ms, visibility 0ms 0ms;
 
 	&:hover {
 		opacity: 1;
 	}
+}
+
+.media-status-panel.velocity-animating .media-status-panel__pop-out {
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity 200ms, visibility 0ms 200ms;
 }

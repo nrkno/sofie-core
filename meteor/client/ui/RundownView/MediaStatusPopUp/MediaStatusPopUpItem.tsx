@@ -7,7 +7,8 @@ import { TimingDataResolution, TimingTickResolution, withTiming } from '../Rundo
 import { RundownUtils } from '../../../lib/rundown'
 import classNames from 'classnames'
 import { MediaStatusIndicator } from '../../MediaStatus/MediaStatusIndicator'
-import RundownViewEventBus, { RundownViewEvents } from '../../../../lib/api/triggers/RundownViewEventBus'
+import { scrollToPart, scrollToSegment } from '../../../lib/viewPort'
+import { logger } from '../../../../lib/logging'
 
 export const MediaStatusPopUpItem = withTiming<
 	{
@@ -58,17 +59,19 @@ export const MediaStatusPopUpItem = withTiming<
 	const onPartIdentifierClick = useCallback(() => {
 		if (!segmentId || !partId) return
 
-		RundownViewEventBus.emit(RundownViewEvents.GO_TO_PART, {
-			segmentId,
-			partId,
-			zoomInToFit: true,
-		})
+		scrollToPart(partId, false, false, false).catch(logger.error)
 	}, [segmentId, partId])
+
+	const onSegmentIdentifierClick = useCallback(() => {
+		if (!segmentId) return
+
+		scrollToSegment(segmentId, false, false).catch(logger.error)
+	}, [segmentId])
 
 	return (
 		<tr className="media-status-popup-item">
 			<td className="media-status-popup-item__playout-indicator">
-				{isNext ? <div className="media-status-popup-item__next-indicator"></div> : null}
+				{isNext && !isLive ? <div className="media-status-popup-item__next-indicator"></div> : null}
 				{isLive ? <div className="media-status-popup-item__live-indicator"></div> : null}
 			</td>
 			<td className="media-status-popup-item__countdown">
@@ -76,7 +79,9 @@ export const MediaStatusPopUpItem = withTiming<
 			</td>
 			<td className="media-status-popup-item__identifiers">
 				{segmentIdentifier ? (
-					<button className="media-status-popup-item__segment-identifier">{segmentIdentifier}</button>
+					<button className="media-status-popup-item__segment-identifier" onClick={onSegmentIdentifierClick}>
+						{segmentIdentifier}
+					</button>
 				) : null}
 				{partIdentifier ? (
 					<button className="media-status-popup-item__part-identifier" onClick={onPartIdentifierClick}>
