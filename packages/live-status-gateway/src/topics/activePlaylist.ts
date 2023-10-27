@@ -11,6 +11,8 @@ import {
 	IBlueprintActionManifestDisplayContent,
 	IOutputLayer,
 	ISourceLayer,
+	PlaylistTimingType,
+	RundownPlaylistTiming,
 } from '@sofie-automation/blueprints-integration'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { WebSocketTopicBase, WebSocketTopic, CollectionObserver } from '../wsHandler'
@@ -30,6 +32,12 @@ interface PartStatus {
 	segmentId: string
 	name: string
 	autoNext?: boolean
+	timing: {
+		reportedStartedPlayback?: number
+		expectedDuration?: number
+		expectedDurationWithPreroll?: number
+	}
+	metaData?: unknown
 }
 
 interface AdLibActionType {
@@ -50,6 +58,10 @@ export interface ActivePlaylistStatus {
 	event: string
 	id: string | null
 	name: string
+	timing: {
+		playlistTiming: RundownPlaylistTiming
+		startedPlayback?: number
+	}
 	rundownIds: string[]
 	currentPart: PartStatus | null
 	nextPart: PartStatus | null
@@ -87,7 +99,7 @@ export class ActivePlaylistTopic
 	}
 
 	sendStatus(subscribers: Iterable<WebSocket>): void {
-		const currentPartInstance = this._currentPartInstance ? this._currentPartInstance.part : null
+		const currentPartInstance = this._currentPartInstance ?? null
 		const nextPartInstance = this._nextPartInstance ? this._nextPartInstance.part : null
 		const adLibs: AdLibStatus[] = []
 		const globalAdLibs: AdLibStatus[] = []
@@ -190,12 +202,22 @@ export class ActivePlaylistTopic
 					id: unprotectString(this._activePlaylist._id),
 					name: this._activePlaylist.name,
 					rundownIds: this._activePlaylist.rundownIdsInOrder.map((r) => unprotectString(r)),
+					timing: {
+						playlistTiming: this._activePlaylist.timing,
+						startedPlayback: this._activePlaylist.startedPlayback,
+					},
 					currentPart: currentPartInstance
 						? literal<PartStatus>({
 								id: unprotectString(currentPartInstance._id),
-								name: currentPartInstance.title,
-								autoNext: currentPartInstance.autoNext,
+								name: currentPartInstance.part.title,
+								autoNext: currentPartInstance.part.autoNext,
 								segmentId: unprotectString(currentPartInstance.segmentId),
+								timing: {
+									reportedStartedPlayback: currentPartInstance.timings?.reportedStartedPlayback,
+									expectedDuration: currentPartInstance.part.expectedDuration,
+									expectedDurationWithPreroll: currentPartInstance.part.expectedDurationWithPreroll,
+								},
+								metaData: currentPartInstance.part.metaData,
 						  })
 						: null,
 					nextPart: nextPartInstance
@@ -204,6 +226,11 @@ export class ActivePlaylistTopic
 								name: nextPartInstance.title,
 								autoNext: nextPartInstance.autoNext,
 								segmentId: unprotectString(nextPartInstance.segmentId),
+								timing: {
+									expectedDuration: nextPartInstance.expectedDuration,
+									expectedDurationWithPreroll: nextPartInstance.expectedDurationWithPreroll,
+								},
+								metaData: nextPartInstance.metaData,
 						  })
 						: null,
 					adLibs,
@@ -213,6 +240,11 @@ export class ActivePlaylistTopic
 					event: 'activePlaylist',
 					id: null,
 					name: '',
+					timing: {
+						playlistTiming: {
+							type: PlaylistTimingType.None,
+						},
+					},
 					rundownIds: [],
 					currentPart: null,
 					nextPart: null,

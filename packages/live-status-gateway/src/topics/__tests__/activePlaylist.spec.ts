@@ -3,7 +3,7 @@ import { makeMockLogger, makeMockSubscriber, makeTestPlaylist } from './utils'
 import { PlaylistHandler } from '../../collections/playlist'
 import { ShowStyleBaseHandler } from '../../collections/showStyleBase'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { SourceLayerType } from '@sofie-automation/blueprints-integration/dist'
+import { PlaylistTimingType, SourceLayerType } from '@sofie-automation/blueprints-integration/dist'
 import { PartInstanceName, PartInstancesHandler } from '../../collections/partInstances'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
@@ -109,6 +109,11 @@ describe('ActivePlaylistTopic', () => {
 					tags: ['adlib_tag'],
 				},
 			],
+			timing: {
+				playlistTiming: {
+					type: PlaylistTimingType.None,
+				},
+			},
 			currentPart: null,
 			nextPart: null,
 			globalAdLibs: [
