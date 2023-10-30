@@ -13,6 +13,7 @@ import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { BlueprintId, OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { check, Match } from '../../lib/check'
+import { getCurrentTime } from '../../lib/lib'
 
 meteorPublish(
 	MeteorPubSub.organization,
@@ -58,14 +59,27 @@ meteorPublish(CorelibPubSub.blueprints, async function (blueprintIds: BlueprintI
 	}
 	return null
 })
-meteorPublish(MeteorPubSub.evaluations, async function (selector0: MongoQuery<Evaluation>, token: string | undefined) {
+meteorPublish(MeteorPubSub.evaluations, async function (dateFrom: number, dateTo: number, token: string | undefined) {
+	const selector0: MongoQuery<Evaluation> = {
+		timestamp: {
+			$gte: dateFrom,
+			$lt: dateTo,
+		},
+	}
+
 	const { cred, selector } = await AutoFillSelector.organizationId<Evaluation>(this.userId, selector0, token)
 	if (!cred || (await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) {
 		return Evaluations.findWithCursor(selector)
 	}
 	return null
 })
-meteorPublish(MeteorPubSub.snapshots, async function (selector0: MongoQuery<SnapshotItem>, token: string | undefined) {
+meteorPublish(MeteorPubSub.snapshots, async function (token: string | undefined) {
+	const selector0: MongoQuery<SnapshotItem> = {
+		created: {
+			$gt: getCurrentTime() - 30 * 24 * 3600 * 1000, // last 30 days
+		},
+	}
+
 	const { cred, selector } = await AutoFillSelector.organizationId<SnapshotItem>(this.userId, selector0, token)
 	if (!cred || (await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) {
 		return Snapshots.findWithCursor(selector)
@@ -74,7 +88,14 @@ meteorPublish(MeteorPubSub.snapshots, async function (selector0: MongoQuery<Snap
 })
 meteorPublish(
 	MeteorPubSub.userActionsLog,
-	async function (selector0: MongoQuery<UserActionsLogItem>, token: string | undefined) {
+	async function (dateFrom: number, dateTo: number, token: string | undefined) {
+		const selector0: MongoQuery<UserActionsLogItem> = {
+			timestamp: {
+				$gte: dateFrom,
+				$lt: dateTo,
+			},
+		}
+
 		const { cred, selector } = await AutoFillSelector.organizationId<UserActionsLogItem>(
 			this.userId,
 			selector0,

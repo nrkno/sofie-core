@@ -24,7 +24,6 @@ import { UIBucketContentStatus, UIPieceContentStatus, UISegmentPartNote } from '
 import { UIShowStyleBase } from './showStyles'
 import { UIStudio } from './studios'
 import { UIDeviceTriggerPreview } from '../../server/publications/deviceTriggersPreview'
-import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { logger } from '../logging'
 import { UIBlueprintUpgradeStatus } from './upgradeStatus'
 import {
@@ -94,7 +93,7 @@ export type AllPubSubTypes = CorelibPubSubTypes & PeripheralDevicePubSubTypes & 
 
 export interface MeteorPubSubTypes {
 	[MeteorPubSub.coreSystem]: (token?: string) => CollectionName.CoreSystem
-	[MeteorPubSub.evaluations]: (selector: MongoQuery<Evaluation>, token?: string) => CollectionName.Evaluations
+	[MeteorPubSub.evaluations]: (dateFrom: number, dateTo: number, token?: string) => CollectionName.Evaluations
 
 	[MeteorPubSub.rundownPlaylistForStudio]: (studioId: StudioId, isActive: boolean) => CollectionName.RundownPlaylists
 	[MeteorPubSub.adLibActionsForPart]: (partId: PartId, sourceLayerIds: string[]) => CollectionName.AdLibActions
@@ -105,11 +104,8 @@ export interface MeteorPubSubTypes {
 		showStyleBaseIds: ShowStyleBaseId[] | null,
 		token?: string
 	) => CollectionName.TriggeredActions
-	[MeteorPubSub.snapshots]: (selector: MongoQuery<SnapshotItem>, token?: string) => CollectionName.Snapshots
-	[MeteorPubSub.userActionsLog]: (
-		selector: MongoQuery<UserActionsLogItem>,
-		token?: string
-	) => CollectionName.UserActionsLog
+	[MeteorPubSub.snapshots]: (token?: string) => CollectionName.Snapshots
+	[MeteorPubSub.userActionsLog]: (dateFrom: number, dateTo: number, token?: string) => CollectionName.UserActionsLog
 	/** @deprecated */
 	[MeteorPubSub.mediaWorkFlows]: (token?: string) => CollectionName.MediaWorkFlows
 	/** @deprecated */
