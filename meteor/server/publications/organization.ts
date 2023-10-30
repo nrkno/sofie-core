@@ -10,8 +10,9 @@ import { DBOrganization } from '../../lib/collections/Organization'
 import { isProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Blueprints, Evaluations, Organizations, Snapshots, UserActionsLog } from '../collections'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
-import { OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BlueprintId, OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { check, Match } from '../../lib/check'
 
 meteorPublish(
 	MeteorPubSub.organization,
@@ -37,15 +38,23 @@ meteorPublish(
 	}
 )
 
-meteorPublish(CorelibPubSub.blueprints, async function (selector0: MongoQuery<Blueprint>, token: string | undefined) {
-	const { cred, selector } = await AutoFillSelector.organizationId<Blueprint>(this.userId, selector0, token)
-	const modifier: FindOptions<Blueprint> = {
-		fields: {
-			code: 0,
-		},
-	}
+meteorPublish(CorelibPubSub.blueprints, async function (blueprintIds: BlueprintId[] | null, token: string | undefined) {
+	check(blueprintIds, Match.Maybe(Array))
+
+	// If values were provided, they must have values
+	if (blueprintIds && blueprintIds.length === 0) return null
+
+	const { cred, selector } = await AutoFillSelector.organizationId<Blueprint>(this.userId, {}, token)
+
+	// Add the requested filter
+	if (blueprintIds) selector._id = { $in: blueprintIds }
+
 	if (!cred || (await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) {
-		return Blueprints.findWithCursor(selector, modifier)
+		return Blueprints.findWithCursor(selector, {
+			fields: {
+				code: 0,
+			},
+		})
 	}
 	return null
 })

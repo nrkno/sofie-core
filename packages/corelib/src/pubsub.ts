@@ -33,7 +33,7 @@ import {
 	ShowStyleBaseId,
 	StudioId,
 } from '@sofie-automation/shared-lib/dist/core/model/Ids'
-import { RundownPlaylistActivationId, SegmentPlayoutId, ShowStyleVariantId } from './dataModel/Ids'
+import { BlueprintId, RundownPlaylistActivationId, SegmentPlayoutId, ShowStyleVariantId } from './dataModel/Ids'
 
 /**
  * Ids of possible DDP subscriptions for any the UI and gateways accessing the Rundown & RundownPlaylist model.
@@ -81,7 +81,11 @@ export enum CorelibPubSub {
  * Type definitions for DDP subscriptions for any the UI and gateways accessing the Rundown & RundownPlaylist model.
  */
 export interface CorelibPubSubTypes {
-	[CorelibPubSub.blueprints]: (selector: MongoQuery<Blueprint>, token?: string) => CollectionName.Blueprints
+	[CorelibPubSub.blueprints]: (
+		/** BlueprintIds to fetch for, or null to fetch all */
+		blueprintIds: BlueprintId[] | null,
+		token?: string
+	) => CollectionName.Blueprints
 
 	[CorelibPubSub.externalMessageQueue]: (
 		selector: MongoQuery<ExternalMessageQueueObj>,

@@ -27,7 +27,7 @@ export function Settings(): JSX.Element | null {
 	useSubscription(CorelibPubSub.studios, null)
 	useSubscription(CorelibPubSub.showStyleBases, null)
 	useSubscription(CorelibPubSub.showStyleVariants, null)
-	useSubscription(CorelibPubSub.blueprints, {})
+	useSubscription(CorelibPubSub.blueprints, null)
 
 	useEffect(() => {
 		if (MeteorSettings.enableUserAccounts && user) {
