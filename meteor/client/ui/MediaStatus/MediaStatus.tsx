@@ -268,11 +268,7 @@ function useMediaStatusSubscriptions(
 		[showStyleBaseIds]
 	)
 	readyStatus[counter++] = useSubscriptions(MeteorPubSub.uiShowStyleBase, uiShowStyleBaseSubArguments)
-	readyStatus[counter++] = useSubscription(CorelibPubSub.segments, {
-		rundownId: {
-			$in: rundownIds,
-		},
-	})
+	readyStatus[counter++] = useSubscription(CorelibPubSub.segments, rundownIds, false)
 	readyStatus[counter++] = useSubscription(CorelibPubSub.parts, rundownIds)
 	readyStatus[counter++] = useSubscription(CorelibPubSub.partInstancesSimple, rundownIds, null)
 	readyStatus[counter++] = useSubscription(CorelibPubSub.pieceInstancesSimple, rundownIds, null)

@@ -607,9 +607,7 @@ export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, 
 				}) as Pick<DBRundownPlaylist, '_id' | 'activationId'> | undefined
 				if (playlist) {
 					const rundownIDs = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
-					this.subscribe(CorelibPubSub.segments, {
-						rundownId: { $in: rundownIDs },
-					})
+					this.subscribe(CorelibPubSub.segments, rundownIDs, false)
 					this.subscribe(CorelibPubSub.parts, rundownIDs)
 					this.subscribe(CorelibPubSub.partInstances, rundownIDs, playlist.activationId)
 					this.subscribe(CorelibPubSub.pieces, {

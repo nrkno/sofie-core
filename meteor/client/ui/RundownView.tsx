@@ -1630,11 +1630,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					},
 				})
 				const rundownIDs = rundowns.map((i) => i._id)
-				this.subscribe(CorelibPubSub.segments, {
-					rundownId: {
-						$in: rundownIDs,
-					},
-				})
+				this.subscribe(CorelibPubSub.segments, rundownIDs, false)
 				this.subscribe(CorelibPubSub.adLibPieces, rundownIDs)
 				this.subscribe(CorelibPubSub.rundownBaselineAdLibPieces, rundownIDs)
 				this.subscribe(CorelibPubSub.adLibActions, rundownIDs)

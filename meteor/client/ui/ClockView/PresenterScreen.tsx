@@ -329,9 +329,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 					const showStyleBaseIds = rundowns.map((r) => r.showStyleBaseId)
 					const showStyleVariantIds = rundowns.map((r) => r.showStyleVariantId)
 
-					this.subscribe(CorelibPubSub.segments, {
-						rundownId: { $in: rundownIds },
-					})
+					this.subscribe(CorelibPubSub.segments, rundownIds, false)
 					this.subscribe(CorelibPubSub.parts, rundownIds)
 					this.subscribe(CorelibPubSub.partInstances, rundownIds, playlist.activationId)
 

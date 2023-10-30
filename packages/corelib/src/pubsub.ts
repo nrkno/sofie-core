@@ -143,7 +143,7 @@ export interface CorelibPubSubTypes {
 		segmentPlayoutId: SegmentPlayoutId,
 		token?: string
 	) => CollectionName.PartInstances
-	[CorelibPubSub.segments]: (selector: MongoQuery<DBSegment>, token?: string) => CollectionName.Segments
+	[CorelibPubSub.segments]: (rundownIds: RundownId[], omitHidden: boolean, token?: string) => CollectionName.Segments
 	[CorelibPubSub.showStyleBases]: (
 		selector: MongoQuery<DBShowStyleBase>,
 		token?: string

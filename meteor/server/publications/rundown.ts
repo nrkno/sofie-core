@@ -118,23 +118,31 @@ meteorPublish(
 		return null
 	}
 )
-meteorPublish(CorelibPubSub.segments, async function (selector: MongoQuery<DBSegment>, token: string | undefined) {
-	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-	const modifier: FindOptions<DBSegment> = {
-		fields: {
-			metaData: 0,
-		},
+meteorPublish(
+	CorelibPubSub.segments,
+	async function (rundownIds: RundownId[], omitHidden: boolean, token: string | undefined) {
+		check(rundownIds, Array)
+
+		if (rundownIds.length === 0) return null
+
+		const selector: MongoQuery<DBSegment> = {
+			rundownId: { $in: rundownIds },
+		}
+		if (omitHidden) selector.isHidden = { $ne: true }
+
+		if (
+			NoSecurityReadAccess.any() ||
+			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
+		) {
+			return Segments.findWithCursor(selector, {
+				fields: {
+					metaData: 0,
+				},
+			})
+		}
+		return null
 	}
-	if (
-		NoSecurityReadAccess.any() ||
-		(selector.rundownId &&
-			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))) ||
-		(selector._id && (await RundownReadAccess.segments(selector._id, { userId: this.userId, token })))
-	) {
-		return Segments.findWithCursor(selector, modifier)
-	}
-	return null
-})
+)
 
 meteorPublish(CorelibPubSub.parts, async function (rundownIds: RundownId[], token: string | undefined) {
 	check(rundownIds, Array)
