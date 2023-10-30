@@ -274,14 +274,7 @@ function useMediaStatusSubscriptions(
 		},
 	})
 	readyStatus[counter++] = useSubscription(CorelibPubSub.parts, rundownIds)
-	readyStatus[counter++] = useSubscription(CorelibPubSub.partInstancesSimple, {
-		rundownId: {
-			$in: rundownIds,
-		},
-		reset: {
-			$ne: true,
-		},
-	})
+	readyStatus[counter++] = useSubscription(CorelibPubSub.partInstancesSimple, rundownIds, null)
 	readyStatus[counter++] = useSubscription(CorelibPubSub.pieceInstancesSimple, rundownIds, null)
 	readyStatus[counter++] = useSubscription(CorelibPubSub.pieces, {
 		startRundownId: {

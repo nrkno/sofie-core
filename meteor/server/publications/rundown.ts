@@ -8,7 +8,6 @@ import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { PartInstance } from '../../lib/collections/PartInstances'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { OrganizationReadAccess } from '../security/organization'
 import { StudioReadAccess } from '../security/studio'
@@ -38,6 +37,7 @@ import {
 	RundownId,
 	RundownPlaylistActivationId,
 	RundownPlaylistId,
+	SegmentPlayoutId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
@@ -198,50 +198,64 @@ meteorPublish(
 )
 meteorPublish(
 	CorelibPubSub.partInstancesSimple,
-	async function (selector: MongoQuery<PartInstance>, token: string | undefined) {
-		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-		const modifier: FindOptions<DBPartInstance> = {
-			fields: literal<MongoFieldSpecifierZeroes<DBPartInstance>>({
-				// @ts-expect-error Mongo typings aren't clever enough yet
-				'part.metaData': 0,
-				isTaken: 0,
-				timings: 0,
-			}),
-		}
+	async function (
+		rundownIds: RundownId[],
+		playlistActivationId: RundownPlaylistActivationId | null,
+		token: string | undefined
+	) {
+		check(rundownIds, Array)
 
-		// Enforce only not-reset
-		selector.reset = { $ne: true }
+		if (rundownIds.length === 0) return null
+
+		const selector: MongoQuery<DBPartInstance> = {
+			rundownId: { $in: rundownIds },
+			// Enforce only not-reset
+			reset: { $ne: true },
+		}
+		if (playlistActivationId) selector.playlistActivationId = playlistActivationId
 
 		if (
 			NoSecurityReadAccess.any() ||
 			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
 		) {
-			return PartInstances.findWithCursor(selector, modifier)
+			return PartInstances.findWithCursor(selector, {
+				fields: literal<MongoFieldSpecifierZeroes<DBPartInstance>>({
+					// @ts-expect-error Mongo typings aren't clever enough yet
+					'part.metaData': 0,
+					isTaken: 0,
+					timings: 0,
+				}),
+			})
 		}
 		return null
 	}
 )
 meteorPublish(
 	CorelibPubSub.partInstancesForSegmentPlayout,
-	async function (selector: MongoQuery<PartInstance>, token: string | undefined) {
-		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-		const modifier: FindOptions<DBPartInstance> = {
-			fields: {
-				// @ts-expect-error Mongo typings aren't clever enough yet
-				'part.metaData': 0,
-			},
-			sort: {
-				takeCount: 1,
-			},
-			limit: 1,
-		}
+	async function (rundownId: RundownId, segmentPlayoutId: SegmentPlayoutId, token: string | undefined) {
+		if (!rundownId) throw new Meteor.Error(400, 'rundownId argument missing')
+		if (!segmentPlayoutId) throw new Meteor.Error(400, 'segmentPlayoutId argument missing')
 
 		if (
 			NoSecurityReadAccess.any() ||
-			(selector.segmentPlayoutId &&
-				(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token })))
+			(await RundownReadAccess.rundownContent(rundownId, { userId: this.userId, token }))
 		) {
-			return PartInstances.findWithCursor(selector, modifier)
+			return PartInstances.findWithCursor(
+				{
+					rundownId,
+					segmentPlayoutId,
+				},
+				{
+					fields: {
+						// @ts-expect-error Mongo typings aren't clever enough yet
+						'part.metaData': 0,
+					},
+					sort: {
+						takeCount: 1,
+					},
+					limit: 1,
+				}
+			)
 		}
 		return null
 	}

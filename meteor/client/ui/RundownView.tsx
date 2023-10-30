@@ -1671,16 +1671,18 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
 
 					if (previousPartInstance) {
-						meteorSubscribe(CorelibPubSub.partInstancesForSegmentPlayout, {
-							rundownId: previousPartInstance.rundownId,
-							segmentPlayoutId: previousPartInstance.segmentPlayoutId,
-						})
+						meteorSubscribe(
+							CorelibPubSub.partInstancesForSegmentPlayout,
+							previousPartInstance.rundownId,
+							previousPartInstance.segmentPlayoutId
+						)
 					}
 					if (currentPartInstance) {
-						meteorSubscribe(CorelibPubSub.partInstancesForSegmentPlayout, {
-							rundownId: currentPartInstance.rundownId,
-							segmentPlayoutId: currentPartInstance.segmentPlayoutId,
-						})
+						meteorSubscribe(
+							CorelibPubSub.partInstancesForSegmentPlayout,
+							currentPartInstance.rundownId,
+							currentPartInstance.segmentPlayoutId
+						)
 					}
 				}
 			})
