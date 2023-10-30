@@ -5,8 +5,7 @@ import { SystemReadAccess } from '../security/system'
 import { OrganizationReadAccess } from '../security/organization'
 import { CoreSystem, Users } from '../collections'
 import { SYSTEM_ID } from '../../lib/collections/CoreSystem'
-import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
-import { DBUser } from '../../lib/collections/Users'
+import { OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 meteorPublish(MeteorPubSub.coreSystem, async function (token: string | undefined) {
 	if (await SystemReadAccess.coreSystem({ userId: this.userId, token })) {
@@ -54,19 +53,22 @@ meteorPublish(MeteorPubSub.loggedInUser, async function (token: string | undefin
 })
 meteorPublish(
 	MeteorPubSub.usersInOrganization,
-	async function (selector: MongoQuery<DBUser>, token: string | undefined) {
-		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-		if (await OrganizationReadAccess.adminUsers(selector.organizationId, { userId: this.userId, token })) {
-			return Users.findWithCursor(selector, {
-				fields: {
-					_id: 1,
-					username: 1,
-					emails: 1,
-					profile: 1,
-					organizationId: 1,
-					superAdmin: 1,
-				},
-			})
+	async function (organizationId: OrganizationId, token: string | undefined) {
+		if (!organizationId) throw new Meteor.Error(400, 'organizationId argument missing')
+		if (await OrganizationReadAccess.adminUsers(organizationId, { userId: this.userId, token })) {
+			return Users.findWithCursor(
+				{ organizationId },
+				{
+					fields: {
+						_id: 1,
+						username: 1,
+						emails: 1,
+						profile: 1,
+						organizationId: 1,
+						superAdmin: 1,
+					},
+				}
+			)
 		}
 		return null
 	}

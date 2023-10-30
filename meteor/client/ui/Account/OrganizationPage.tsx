@@ -53,7 +53,7 @@ export const OrganizationPage = translateWithTracker(() => {
 		componentDidMount(): void {
 			this.autorun(() => {
 				if (this.props.organization) {
-					this.subscribe(MeteorPubSub.usersInOrganization, { organizationId: this.props.organization._id })
+					this.subscribe(MeteorPubSub.usersInOrganization, this.props.organization._id)
 				}
 			})
 		}

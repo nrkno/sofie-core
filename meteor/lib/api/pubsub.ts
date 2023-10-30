@@ -124,7 +124,7 @@ export interface MeteorPubSubTypes {
 		token?: string
 	) => CollectionName.RundownLayouts
 	[MeteorPubSub.loggedInUser]: (token?: string) => CollectionName.Users
-	[MeteorPubSub.usersInOrganization]: (selector: MongoQuery<DBUser>, token?: string) => CollectionName.Users
+	[MeteorPubSub.usersInOrganization]: (organizationId: OrganizationId, token?: string) => CollectionName.Users
 	[MeteorPubSub.organization]: (organizationId: OrganizationId | null, token?: string) => CollectionName.Organizations
 	[MeteorPubSub.buckets]: (studioId: StudioId, bucketId: BucketId | null, token?: string) => CollectionName.Buckets
 	[MeteorPubSub.translationsBundles]: (
