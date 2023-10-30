@@ -1617,6 +1617,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 				for (const rundown of rundowns) {
 					this.subscribe(MeteorPubSub.uiShowStyleBase, rundown.showStyleBaseId)
+
+					this.subscribe(CorelibPubSub.rundownBaselineAdLibPieces, rundown._id)
+					this.subscribe(CorelibPubSub.rundownBaselineAdLibActions, rundown._id)
 				}
 
 				this.subscribe(CorelibPubSub.showStyleVariants, {
@@ -1640,17 +1643,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						$in: rundownIDs,
 					},
 				})
-				this.subscribe(CorelibPubSub.rundownBaselineAdLibPieces, {
-					rundownId: {
-						$in: rundownIDs,
-					},
-				})
 				this.subscribe(CorelibPubSub.adLibActions, {
-					rundownId: {
-						$in: rundownIDs,
-					},
-				})
-				this.subscribe(CorelibPubSub.rundownBaselineAdLibActions, {
 					rundownId: {
 						$in: rundownIDs,
 					},

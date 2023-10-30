@@ -10,12 +10,10 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { PartInstance } from '../../lib/collections/PartInstances'
-import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { OrganizationReadAccess } from '../security/organization'
 import { StudioReadAccess } from '../security/studio'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
-import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 import { check, Match } from 'meteor/check'
 import { FindOptions } from '../../lib/collections/lib'
 import {
@@ -414,18 +412,20 @@ meteorPublish(
 )
 meteorPublish(
 	CorelibPubSub.rundownBaselineAdLibPieces,
-	async function (selector: MongoQuery<RundownBaselineAdLibItem>, token: string | undefined) {
-		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-		const modifier: FindOptions<RundownBaselineAdLibItem> = {
-			fields: {
-				timelineObjectsString: 0,
-			},
-		}
+	async function (rundownId: RundownId, token: string | undefined) {
+		if (!rundownId) throw new Meteor.Error(400, 'rundownId argument missing')
 		if (
 			NoSecurityReadAccess.any() ||
-			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
+			(await RundownReadAccess.rundownContent(rundownId, { userId: this.userId, token }))
 		) {
-			return RundownBaselineAdLibPieces.findWithCursor(selector, modifier)
+			return RundownBaselineAdLibPieces.findWithCursor(
+				{ rundownId },
+				{
+					fields: {
+						timelineObjectsString: 0,
+					},
+				}
+			)
 		}
 		return null
 	}
@@ -448,16 +448,13 @@ meteorPublish(
 )
 meteorPublish(
 	CorelibPubSub.rundownBaselineAdLibActions,
-	async function (selector: MongoQuery<RundownBaselineAdLibAction>, token: string | undefined) {
-		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-		const modifier: FindOptions<RundownBaselineAdLibAction> = {
-			fields: {},
-		}
+	async function (rundownId: RundownId, token: string | undefined) {
+		if (!rundownId) throw new Meteor.Error(400, 'rundownId argument missing')
 		if (
 			NoSecurityReadAccess.any() ||
-			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
+			(await RundownReadAccess.rundownContent(rundownId, { userId: this.userId, token }))
 		) {
-			return RundownBaselineAdLibActions.findWithCursor(selector, modifier)
+			return RundownBaselineAdLibActions.findWithCursor({ rundownId })
 		}
 		return null
 	}

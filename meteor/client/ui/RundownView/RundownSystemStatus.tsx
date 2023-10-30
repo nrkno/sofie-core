@@ -180,9 +180,7 @@ export const RundownSystemStatus = translateWithTracker(
 		}
 
 		componentDidMount(): void {
-			this.subscribe(CorelibPubSub.peripheralDevicesAndSubDevices, {
-				studioId: this.props.studio._id,
-			})
+			this.subscribe(CorelibPubSub.peripheralDevicesAndSubDevices, this.props.studio._id)
 		}
 
 		componentWillUnmount(): void {

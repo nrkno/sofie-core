@@ -97,15 +97,13 @@ export interface CorelibPubSubTypes {
 		selector: MongoQuery<PeripheralDevice>,
 		token?: string
 	) => CollectionName.PeripheralDevices
-	[CorelibPubSub.peripheralDevicesAndSubDevices]: (
-		selector: MongoQuery<PeripheralDevice>
-	) => CollectionName.PeripheralDevices
+	[CorelibPubSub.peripheralDevicesAndSubDevices]: (studioId: StudioId) => CollectionName.PeripheralDevices
 	[CorelibPubSub.rundownBaselineAdLibPieces]: (
-		selector: MongoQuery<RundownBaselineAdLibItem>,
+		rundownId: RundownId,
 		token?: string
 	) => CollectionName.RundownBaselineAdLibPieces
 	[CorelibPubSub.rundownBaselineAdLibActions]: (
-		selector: MongoQuery<RundownBaselineAdLibAction>,
+		rundownId: RundownId,
 		token?: string
 	) => CollectionName.RundownBaselineAdLibActions
 	[CorelibPubSub.ingestDataCache]: (

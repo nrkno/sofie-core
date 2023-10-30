@@ -10,7 +10,7 @@ import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { Credentials, ResolvedCredentials } from '../security/lib/credentials'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { FindOptions } from '../../lib/collections/lib'
-import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MediaWorkFlows, MediaWorkFlowSteps, PeripheralDeviceCommands, PeripheralDevices } from '../collections'
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
@@ -57,14 +57,17 @@ meteorPublish(
 	}
 )
 
-meteorPublish(CorelibPubSub.peripheralDevicesAndSubDevices, async function (selector0: MongoQuery<PeripheralDevice>) {
+meteorPublish(CorelibPubSub.peripheralDevicesAndSubDevices, async function (studioId: StudioId) {
 	const { cred, selector } = await AutoFillSelector.organizationId<PeripheralDevice>(
 		this.userId,
-		selector0,
+		{ studioId },
 		undefined
 	)
 	if (await checkAccess(cred, selector)) {
-		const parents = await PeripheralDevices.findFetchAsync(selector)
+		// TODO - this is not correctly reactive when changing the `studioId` property of a parent device
+		const parents = (await PeripheralDevices.findFetchAsync(selector, { projection: { _id: 1 } })) as Array<
+			Pick<PeripheralDevice, '_id'>
+		>
 
 		const modifier: FindOptions<PeripheralDevice> = {
 			fields: {
