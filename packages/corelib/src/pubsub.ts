@@ -27,13 +27,20 @@ import { Piece } from './dataModel/Piece'
 import { PieceInstance } from './dataModel/PieceInstance'
 import { TimelineComplete } from './dataModel/Timeline'
 import {
+	PartId,
 	PeripheralDeviceId,
 	RundownId,
 	RundownPlaylistId,
 	ShowStyleBaseId,
 	StudioId,
 } from '@sofie-automation/shared-lib/dist/core/model/Ids'
-import { BlueprintId, RundownPlaylistActivationId, SegmentPlayoutId, ShowStyleVariantId } from './dataModel/Ids'
+import {
+	BlueprintId,
+	RundownPlaylistActivationId,
+	SegmentId,
+	SegmentPlayoutId,
+	ShowStyleVariantId,
+} from './dataModel/Ids'
 
 /**
  * Ids of possible DDP subscriptions for any the UI and gateways accessing the Rundown & RundownPlaylist model.
@@ -54,6 +61,7 @@ export enum CorelibPubSub {
 	partInstancesSimple = 'partInstancesSimple',
 	partInstancesForSegmentPlayout = 'partInstancesForSegmentPlayout',
 	pieces = 'pieces',
+	piecesInfiniteStartingBefore = 'piecesInfiniteStartingBefore',
 	pieceInstances = 'pieceInstances',
 	pieceInstancesSimple = 'pieceInstancesSimple',
 
@@ -122,7 +130,18 @@ export interface CorelibPubSubTypes {
 	) => CollectionName.Rundowns
 	[CorelibPubSub.adLibActions]: (rundownIds: RundownId[], token?: string) => CollectionName.AdLibActions
 	[CorelibPubSub.adLibPieces]: (rundownIds: RundownId[], token?: string) => CollectionName.AdLibPieces
-	[CorelibPubSub.pieces]: (selector: MongoQuery<Piece>, token?: string) => CollectionName.Pieces
+	[CorelibPubSub.pieces]: (
+		rundownIds: RundownId[],
+		/** PartIds to fetch for, or null to fetch all */
+		partIds: PartId[] | null,
+		token?: string
+	) => CollectionName.Pieces
+	[CorelibPubSub.piecesInfiniteStartingBefore]: (
+		thisRundownId: RundownId,
+		segmentsIdsBefore: SegmentId[],
+		rundownIdsBefore: RundownId[],
+		token?: string
+	) => CollectionName.Pieces
 	[CorelibPubSub.pieceInstances]: (
 		selector: MongoQuery<PieceInstance>,
 		token?: string

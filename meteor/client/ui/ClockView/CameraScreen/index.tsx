@@ -105,11 +105,7 @@ export function CameraScreen({ playlist, studioId }: IProps): JSX.Element | null
 
 	useSubscription(CorelibPubSub.pieceInstancesSimple, rundownIds, null)
 
-	const piecesReady = useSubscription(CorelibPubSub.pieces, {
-		startRundownId: {
-			$in: rundownIds,
-		},
-	})
+	const piecesReady = useSubscription(CorelibPubSub.pieces, rundownIds, null)
 
 	const [piecesReadyOnce, setPiecesReadyOnce] = useState(false)
 	useEffect(() => {

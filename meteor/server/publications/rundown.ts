@@ -37,6 +37,7 @@ import {
 	RundownId,
 	RundownPlaylistActivationId,
 	RundownPlaylistId,
+	SegmentId,
 	SegmentPlayoutId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -47,6 +48,7 @@ import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
+import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 
 meteorPublish(PeripheralDevicePubSub.rundownsForDevice, async function (deviceId, token: string | undefined) {
 	check(deviceId, String)
@@ -269,22 +271,80 @@ meteorPublish(
 	}
 )
 
-meteorPublish(CorelibPubSub.pieces, async function (selector: MongoQuery<Piece>, token: string | undefined) {
-	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-	const modifier: FindOptions<Piece> = {
-		fields: {
-			metaData: 0,
-			timelineObjectsString: 0,
-		},
+const piecesSubFields: MongoFieldSpecifierZeroes<Piece> = {
+	metaData: 0,
+	timelineObjectsString: 0,
+}
+
+meteorPublish(
+	CorelibPubSub.pieces,
+	async function (rundownIds: RundownId[], partIds: PartId[] | null, token: string | undefined) {
+		check(rundownIds, Array)
+		check(partIds, Match.Maybe(Array))
+
+		// If values were provided, they must have values
+		if (partIds && partIds.length === 0) return null
+
+		const selector: MongoQuery<Piece> = {
+			startRundownId: { $in: rundownIds },
+		}
+		if (partIds) selector.startPartId = { $in: partIds }
+
+		if (
+			NoSecurityReadAccess.any() ||
+			(await RundownReadAccess.rundownContent(selector.startRundownId, { userId: this.userId, token }))
+		) {
+			return Pieces.findWithCursor(selector, {
+				fields: piecesSubFields,
+			})
+		}
+		return null
 	}
-	if (
-		NoSecurityReadAccess.any() ||
-		(await RundownReadAccess.rundownContent(selector.startRundownId, { userId: this.userId, token }))
+)
+
+meteorPublish(
+	CorelibPubSub.piecesInfiniteStartingBefore,
+	async function (
+		thisRundownId: RundownId,
+		segmentsIdsBefore: SegmentId[],
+		rundownIdsBefore: RundownId[],
+		_token: string | undefined
 	) {
-		return Pieces.findWithCursor(selector, modifier)
+		// TODO - Fix this when security is enabled
+		if (!NoSecurityReadAccess.any()) return null
+
+		const selector: MongoQuery<Piece> = {
+			invalid: {
+				$ne: true,
+			},
+			$or: [
+				// same rundown, and previous segment
+				{
+					startRundownId: thisRundownId,
+					startSegmentId: { $in: segmentsIdsBefore },
+					lifespan: {
+						$in: [
+							PieceLifespan.OutOnRundownEnd,
+							PieceLifespan.OutOnRundownChange,
+							PieceLifespan.OutOnShowStyleEnd,
+						],
+					},
+				},
+				// Previous rundown
+				{
+					startRundownId: { $in: rundownIdsBefore },
+					lifespan: {
+						$in: [PieceLifespan.OutOnShowStyleEnd],
+					},
+				},
+			],
+		}
+
+		return Pieces.findWithCursor(selector, {
+			fields: piecesSubFields,
+		})
 	}
-	return null
-})
+)
 
 const adlibPiecesSubFields: MongoFieldSpecifierZeroes<AdLibPiece> = {
 	metaData: 0,

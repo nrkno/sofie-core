@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { meteorSubscribe } from '../../../lib/api/pubsub'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import {
@@ -46,12 +45,7 @@ export const SegmentScratchpadContainer = withResolvedSegment<IProps>(function S
 		[segmentId]
 	)
 
-	const piecesReady = useSubscription(CorelibPubSub.pieces, {
-		startRundownId: rundownId,
-		startPartId: {
-			$in: partIds,
-		},
-	})
+	const piecesReady = useSubscription(CorelibPubSub.pieces, [rundownId], partIds ?? [])
 
 	const partInstanceIds = useTracker(
 		() =>
@@ -87,28 +81,12 @@ export const SegmentScratchpadContainer = withResolvedSegment<IProps>(function S
 			},
 		})
 		segment &&
-			meteorSubscribe(CorelibPubSub.pieces, {
-				invalid: {
-					$ne: true,
-				},
-				$or: [
-					// same rundown, and previous segment
-					{
-						startRundownId: rundownId,
-						startSegmentId: { $in: Array.from(segmentsIdsBefore.values()) },
-						lifespan: {
-							$in: [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnRundownChange, PieceLifespan.OutOnShowStyleEnd],
-						},
-					},
-					// Previous rundown
-					{
-						startRundownId: { $in: Array.from(rundownIdsBefore.values()) },
-						lifespan: {
-							$in: [PieceLifespan.OutOnShowStyleEnd],
-						},
-					},
-				],
-			})
+			meteorSubscribe(
+				CorelibPubSub.piecesInfiniteStartingBefore,
+				rundownId,
+				Array.from(segmentsIdsBefore.values()),
+				Array.from(rundownIdsBefore.values())
+			)
 	}, [segmentId, rundownId, segmentsIdsBefore.values(), rundownIdsBefore.values()])
 
 	const isLiveSegment = useTracker(
