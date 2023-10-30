@@ -123,10 +123,7 @@ export interface MeteorPubSubTypes {
 	[MeteorPubSub.usersInOrganization]: (organizationId: OrganizationId, token?: string) => CollectionName.Users
 	[MeteorPubSub.organization]: (organizationId: OrganizationId | null, token?: string) => CollectionName.Organizations
 	[MeteorPubSub.buckets]: (studioId: StudioId, bucketId: BucketId | null, token?: string) => CollectionName.Buckets
-	[MeteorPubSub.translationsBundles]: (
-		selector: MongoQuery<TranslationsBundle>,
-		token?: string
-	) => CollectionName.TranslationsBundles
+	[MeteorPubSub.translationsBundles]: (token?: string) => CollectionName.TranslationsBundles
 
 	// custom publications:
 
