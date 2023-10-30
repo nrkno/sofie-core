@@ -19,7 +19,7 @@ import { BucketAdLibAction } from './dataModel/BucketAdLibAction'
 import { BucketAdLib } from './dataModel/BucketAdLibPiece'
 import { ExpectedMediaItem } from './dataModel/ExpectedMediaItem'
 import { ExpectedPackageWorkStatus } from './dataModel/ExpectedPackageWorkStatuses'
-import { ExpectedPackageDB, ExpectedPackageDBBase } from './dataModel/ExpectedPackages'
+import { ExpectedPackageDBBase } from './dataModel/ExpectedPackages'
 import { ExternalMessageQueueObj } from './dataModel/ExternalMessageQueue'
 import { PackageContainerStatusDB } from './dataModel/PackageContainerStatus'
 import { PeripheralDevice } from './dataModel/PeripheralDevice'
@@ -165,16 +165,13 @@ export interface CorelibPubSubTypes {
 		selector: MongoQuery<BucketAdLibAction>,
 		token?: string
 	) => CollectionName.BucketAdLibActions
-	[CorelibPubSub.expectedPackages]: (
-		selector: MongoQuery<ExpectedPackageDB>,
-		token?: string
-	) => CollectionName.ExpectedPackages
+	[CorelibPubSub.expectedPackages]: (studioIds: StudioId[], token?: string) => CollectionName.ExpectedPackages
 	[CorelibPubSub.expectedPackageWorkStatuses]: (
-		selector: MongoQuery<ExpectedPackageWorkStatus>,
+		studioIds: StudioId[],
 		token?: string
 	) => CollectionName.ExpectedPackageWorkStatuses
 	[CorelibPubSub.packageContainerStatuses]: (
-		selector: MongoQuery<PackageContainerStatusDB>,
+		studioIds: StudioId[],
 		token?: string
 	) => CollectionName.PackageContainerStatuses
 }

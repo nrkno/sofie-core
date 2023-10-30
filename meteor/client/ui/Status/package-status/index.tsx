@@ -34,15 +34,9 @@ export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesSta
 
 	const allSubsReady: boolean =
 		[
-			useSubscription(CorelibPubSub.expectedPackageWorkStatuses, {
-				studioId: { $in: studioIds },
-			}),
-			useSubscription(CorelibPubSub.expectedPackages, {
-				studioId: { $in: studioIds },
-			}),
-			useSubscription(CorelibPubSub.packageContainerStatuses, {
-				studioId: { $in: studioIds },
-			}),
+			useSubscription(CorelibPubSub.expectedPackageWorkStatuses, studioIds ?? []),
+			useSubscription(CorelibPubSub.expectedPackages, studioIds ?? []),
+			useSubscription(CorelibPubSub.packageContainerStatuses, studioIds ?? []),
 			studioIds && studioIds.length > 0,
 		].reduce((memo, value) => memo && value, true) || false
 
