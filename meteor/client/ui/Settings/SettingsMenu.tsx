@@ -40,7 +40,7 @@ export const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMe
 		// TODO: add organizationId:
 
 		meteorSubscribe(CorelibPubSub.studios, {})
-		meteorSubscribe(CorelibPubSub.showStyleBases, {})
+		meteorSubscribe(CorelibPubSub.showStyleBases, null)
 		meteorSubscribe(CorelibPubSub.showStyleVariants, {})
 		meteorSubscribe(CorelibPubSub.blueprints, {})
 		meteorSubscribe(CorelibPubSub.peripheralDevices, {})

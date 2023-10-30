@@ -11,14 +11,22 @@ import { RundownLayouts, ShowStyleBases, ShowStyleVariants, TriggeredActions } f
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { DBTriggeredActions } from '../../lib/collections/TriggeredActions'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { check, Match } from '../../lib/check'
 
 meteorPublish(
 	CorelibPubSub.showStyleBases,
-	async function (selector0: MongoQuery<DBShowStyleBase>, token: string | undefined) {
-		const { cred, selector } = await AutoFillSelector.organizationId<DBShowStyleBase>(this.userId, selector0, token)
-		const modifier: FindOptions<DBShowStyleBase> = {
-			fields: {},
-		}
+	async function (showStyleBaseIds: ShowStyleBaseId[] | null, token: string | undefined) {
+		check(showStyleBaseIds, Match.Maybe(Array))
+
+		// If values were provided, they must have values
+		if (showStyleBaseIds && showStyleBaseIds.length === 0) return null
+
+		const { cred, selector } = await AutoFillSelector.organizationId<DBShowStyleBase>(this.userId, {}, token)
+
+		// Add the requested filter
+		if (showStyleBaseIds) selector._id = { $in: showStyleBaseIds }
+
 		if (
 			!cred ||
 			NoSecurityReadAccess.any() ||
@@ -26,7 +34,7 @@ meteorPublish(
 				(await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) ||
 			(selector._id && (await ShowStyleReadAccess.showStyleBase(selector.id, cred)))
 		) {
-			return ShowStyleBases.findWithCursor(selector, modifier)
+			return ShowStyleBases.findWithCursor(selector)
 		}
 		return null
 	}

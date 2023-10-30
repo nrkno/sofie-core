@@ -145,7 +145,8 @@ export interface CorelibPubSubTypes {
 	) => CollectionName.PartInstances
 	[CorelibPubSub.segments]: (rundownIds: RundownId[], omitHidden: boolean, token?: string) => CollectionName.Segments
 	[CorelibPubSub.showStyleBases]: (
-		selector: MongoQuery<DBShowStyleBase>,
+		/** ShowStyleBaseIds to fetch for, or null to fetch all */
+		showStyleBaseIds: ShowStyleBaseId[] | null,
 		token?: string
 	) => CollectionName.ShowStyleBases
 	[CorelibPubSub.showStyleVariants]: (

@@ -66,9 +66,7 @@ export function RundownList(): JSX.Element {
 
 		useSubscription(CorelibPubSub.rundowns, playlistIds, null),
 
-		useSubscription(CorelibPubSub.showStyleBases, {
-			_id: { $in: showStyleBaseIds },
-		}),
+		useSubscription(CorelibPubSub.showStyleBases, showStyleBaseIds),
 
 		useSubscription(CorelibPubSub.showStyleVariants, {
 			_id: { $in: showStyleVariantIds },
