@@ -27,6 +27,7 @@ import { Piece } from './dataModel/Piece'
 import { PieceInstance } from './dataModel/PieceInstance'
 import { TimelineComplete } from './dataModel/Timeline'
 import {
+	PeripheralDeviceId,
 	RundownId,
 	RundownPlaylistId,
 	ShowStyleBaseId,
@@ -88,7 +89,8 @@ export interface CorelibPubSubTypes {
 		token?: string
 	) => CollectionName.ExternalMessageQueue
 	[CorelibPubSub.peripheralDevices]: (
-		selector: MongoQuery<PeripheralDevice>,
+		/** PeripheralDeviceId to fetch for, or null to fetch all */
+		deviceIds: PeripheralDeviceId[] | null,
 		token?: string
 	) => CollectionName.PeripheralDevices
 	[CorelibPubSub.peripheralDevicesAndSubDevices]: (studioId: StudioId) => CollectionName.PeripheralDevices

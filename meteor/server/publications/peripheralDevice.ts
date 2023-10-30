@@ -1,21 +1,21 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from '../../lib/check'
+import { check, Match } from '../../lib/check'
 import { meteorPublish, AutoFillSelector } from './lib'
 import { MeteorPubSub } from '../../lib/api/pubsub'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { OrganizationReadAccess } from '../security/organization'
 import { StudioReadAccess } from '../security/studio'
-import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
+import { MongoFieldSpecifierZeroes, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { Credentials, ResolvedCredentials } from '../security/lib/credentials'
 import { NoSecurityReadAccess } from '../security/noSecurity'
-import { FindOptions } from '../../lib/collections/lib'
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MediaWorkFlows, MediaWorkFlowSteps, PeripheralDeviceCommands, PeripheralDevices } from '../collections'
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { PeripheralDevicePubSub } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
+import { clone } from '@sofie-automation/corelib/dist/lib'
 
 /*
  * This file contains publications for the peripheralDevices, such as playout-gateway, mos-gateway and package-manager
@@ -32,26 +32,34 @@ async function checkAccess(cred: Credentials | ResolvedCredentials | null, selec
 		(selector.studioId && (await StudioReadAccess.studioContent(selector.studioId, cred)))
 	)
 }
+
+const peripheralDeviceFields: MongoFieldSpecifierZeroes<PeripheralDevice> = {
+	token: 0,
+	secretSettings: 0,
+}
+
 meteorPublish(
 	CorelibPubSub.peripheralDevices,
-	async function (selector0: MongoQuery<PeripheralDevice>, token: string | undefined) {
-		const { cred, selector } = await AutoFillSelector.organizationId<PeripheralDevice>(
-			this.userId,
-			selector0,
-			token
-		)
+	async function (peripheralDeviceIds: PeripheralDeviceId[] | null, token: string | undefined) {
+		check(peripheralDeviceIds, Match.Maybe(Array))
+
+		// If values were provided, they must have values
+		if (peripheralDeviceIds && peripheralDeviceIds.length === 0) return null
+
+		const { cred, selector } = await AutoFillSelector.organizationId<PeripheralDevice>(this.userId, {}, token)
+
+		// Add the requested filter
+		if (peripheralDeviceIds) selector._id = { $in: peripheralDeviceIds }
+
 		if (await checkAccess(cred, selector)) {
-			const modifier: FindOptions<PeripheralDevice> = {
-				fields: {
-					token: 0,
-					secretSettings: 0,
-				},
-			}
-			if (selector._id && token && modifier.fields) {
+			const fields = clone(peripheralDeviceFields)
+			if (selector._id && token) {
 				// in this case, send the secretSettings:
-				delete modifier.fields.secretSettings
+				delete fields.secretSettings
 			}
-			return PeripheralDevices.findWithCursor(selector, modifier)
+			return PeripheralDevices.findWithCursor(selector, {
+				fields,
+			})
 		}
 		return null
 	}
@@ -69,13 +77,6 @@ meteorPublish(CorelibPubSub.peripheralDevicesAndSubDevices, async function (stud
 			Pick<PeripheralDevice, '_id'>
 		>
 
-		const modifier: FindOptions<PeripheralDevice> = {
-			fields: {
-				token: 0,
-				secretSettings: 0,
-			},
-		}
-
 		return PeripheralDevices.findWithCursor(
 			{
 				$or: [
@@ -85,7 +86,9 @@ meteorPublish(CorelibPubSub.peripheralDevicesAndSubDevices, async function (stud
 					selector,
 				],
 			},
-			modifier
+			{
+				fields: peripheralDeviceFields,
+			}
 		)
 	}
 	return null

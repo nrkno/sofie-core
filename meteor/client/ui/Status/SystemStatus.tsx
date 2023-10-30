@@ -546,7 +546,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 			this.refreshDebugStatesInterval = setInterval(this.refreshDebugStates, 1000)
 
 			// Subscribe to data:
-			this.subscribe(CorelibPubSub.peripheralDevices, {})
+			this.subscribe(CorelibPubSub.peripheralDevices, null)
 		}
 
 		componentWillUnmount(): void {

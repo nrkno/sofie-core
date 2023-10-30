@@ -23,7 +23,7 @@ export function Settings(): JSX.Element | null {
 
 	const history = useHistory()
 
-	useSubscription(CorelibPubSub.peripheralDevices, {})
+	useSubscription(CorelibPubSub.peripheralDevices, null)
 	useSubscription(CorelibPubSub.studios, {})
 	useSubscription(CorelibPubSub.showStyleBases, null)
 	useSubscription(CorelibPubSub.showStyleVariants, null)
