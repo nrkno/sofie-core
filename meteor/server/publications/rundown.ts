@@ -49,6 +49,8 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { PeripheralDevicePubSub } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
+import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
+import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 
 meteorPublish(PeripheralDevicePubSub.rundownsForDevice, async function (deviceId, token: string | undefined) {
 	check(deviceId, String)
@@ -412,20 +414,24 @@ meteorPublish(
 )
 meteorPublish(
 	CorelibPubSub.rundownBaselineAdLibPieces,
-	async function (rundownId: RundownId, token: string | undefined) {
-		if (!rundownId) throw new Meteor.Error(400, 'rundownId argument missing')
+	async function (rundownIds: RundownId[], token: string | undefined) {
+		check(rundownIds, Array)
+
+		if (rundownIds.length === 0) return null
+
+		const selector: MongoQuery<RundownBaselineAdLibItem> = {
+			rundownId: { $in: rundownIds },
+		}
+
 		if (
 			NoSecurityReadAccess.any() ||
-			(await RundownReadAccess.rundownContent(rundownId, { userId: this.userId, token }))
+			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
 		) {
-			return RundownBaselineAdLibPieces.findWithCursor(
-				{ rundownId },
-				{
-					fields: {
-						timelineObjectsString: 0,
-					},
-				}
-			)
+			return RundownBaselineAdLibPieces.findWithCursor(selector, {
+				fields: {
+					timelineObjectsString: 0,
+				},
+			})
 		}
 		return null
 	}
@@ -448,13 +454,20 @@ meteorPublish(
 )
 meteorPublish(
 	CorelibPubSub.rundownBaselineAdLibActions,
-	async function (rundownId: RundownId, token: string | undefined) {
-		if (!rundownId) throw new Meteor.Error(400, 'rundownId argument missing')
+	async function (rundownIds: RundownId[], token: string | undefined) {
+		check(rundownIds, Array)
+
+		if (rundownIds.length === 0) return null
+
+		const selector: MongoQuery<RundownBaselineAdLibAction> = {
+			rundownId: { $in: rundownIds },
+		}
+
 		if (
 			NoSecurityReadAccess.any() ||
-			(await RundownReadAccess.rundownContent(rundownId, { userId: this.userId, token }))
+			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
 		) {
-			return RundownBaselineAdLibActions.findWithCursor({ rundownId })
+			return RundownBaselineAdLibActions.findWithCursor(selector)
 		}
 		return null
 	}

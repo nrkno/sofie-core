@@ -88,13 +88,10 @@ function useSubscriptions(
 				$in: rundownIds,
 			},
 		}),
+		useSubscription(CorelibPubSub.rundownBaselineAdLibActions, rundownIds),
+		useSubscription(CorelibPubSub.rundownBaselineAdLibPieces, rundownIds),
 		useSubscription(MeteorPubSub.uiShowStyleBase, showStyleBaseId),
 	]
-
-	for (const rundownId of rundownIds) {
-		allReady.push(useSubscription(CorelibPubSub.rundownBaselineAdLibPieces, rundownId))
-		allReady.push(useSubscription(CorelibPubSub.rundownBaselineAdLibActions, rundownId))
-	}
 
 	return !allReady.some((state) => state === false)
 }

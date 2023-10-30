@@ -99,11 +99,11 @@ export interface CorelibPubSubTypes {
 	) => CollectionName.PeripheralDevices
 	[CorelibPubSub.peripheralDevicesAndSubDevices]: (studioId: StudioId) => CollectionName.PeripheralDevices
 	[CorelibPubSub.rundownBaselineAdLibPieces]: (
-		rundownId: RundownId,
+		rundownIds: RundownId[],
 		token?: string
 	) => CollectionName.RundownBaselineAdLibPieces
 	[CorelibPubSub.rundownBaselineAdLibActions]: (
-		rundownId: RundownId,
+		rundownIds: RundownId[],
 		token?: string
 	) => CollectionName.RundownBaselineAdLibActions
 	[CorelibPubSub.ingestDataCache]: (

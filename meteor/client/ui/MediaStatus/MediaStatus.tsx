@@ -302,10 +302,8 @@ function useMediaStatusSubscriptions(
 			$in: rundownIds,
 		},
 	})
-	for (const rundownId of rundownIds) {
-		readyStatus[counter++] = useSubscription(CorelibPubSub.rundownBaselineAdLibActions, rundownId)
-		readyStatus[counter++] = useSubscription(CorelibPubSub.rundownBaselineAdLibPieces, rundownId)
-	}
+	readyStatus[counter++] = useSubscription(CorelibPubSub.rundownBaselineAdLibActions, rundownIds)
+	readyStatus[counter++] = useSubscription(CorelibPubSub.rundownBaselineAdLibPieces, rundownIds)
 
 	const uiPieceContentStatusesSubArguments = useMemo(
 		() => playlistIds.map((playlistIds) => [playlistIds] as [RundownPlaylistId]),
