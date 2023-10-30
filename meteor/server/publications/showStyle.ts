@@ -5,7 +5,6 @@ import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/Sho
 import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { ShowStyleReadAccess } from '../security/showStyle'
 import { OrganizationReadAccess } from '../security/organization'
-import { FindOptions } from '../../lib/collections/lib'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { RundownLayouts, ShowStyleBases, ShowStyleVariants, TriggeredActions } from '../collections'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
@@ -67,14 +66,19 @@ meteorPublish(
 
 meteorPublish(
 	MeteorPubSub.rundownLayouts,
-	async function (selector0: MongoQuery<RundownLayoutBase>, token: string | undefined) {
+	async function (showStyleBaseIds: ShowStyleBaseId[] | null, token: string | undefined) {
+		check(showStyleBaseIds, Match.Maybe(Array))
+
+		// If values were provided, they must have values
+		if (showStyleBaseIds && showStyleBaseIds.length === 0) return null
+
+		const selector0: MongoQuery<RundownLayoutBase> = {}
+		if (showStyleBaseIds) selector0.showStyleBaseId = { $in: showStyleBaseIds }
+
 		const { cred, selector } = await AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
 
-		const modifier: FindOptions<RundownLayoutBase> = {
-			fields: {},
-		}
 		if (!cred || (await ShowStyleReadAccess.showStyleBaseContent(selector, cred))) {
-			return RundownLayouts.findWithCursor(selector, modifier)
+			return RundownLayouts.findWithCursor(selector)
 		}
 		return null
 	}
@@ -85,16 +89,12 @@ meteorPublish(
 	async function (selector0: MongoQuery<DBTriggeredActions>, token: string | undefined) {
 		const { cred, selector } = await AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
 
-		const modifier: FindOptions<DBTriggeredActions> = {
-			fields: {},
-		}
-
 		if (
 			!cred ||
 			NoSecurityReadAccess.any() ||
 			(selector.showStyleBaseId && (await ShowStyleReadAccess.showStyleBaseContent(selector, cred)))
 		) {
-			return TriggeredActions.findWithCursor(selector, modifier)
+			return TriggeredActions.findWithCursor(selector)
 		}
 		return null
 	}

@@ -83,7 +83,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		componentDidMount(): void {
 			super.componentDidMount && super.componentDidMount()
 
-			this.subscribe(MeteorPubSub.rundownLayouts, {})
+			this.subscribe(MeteorPubSub.rundownLayouts, null)
 		}
 
 		onAddLayout = () => {

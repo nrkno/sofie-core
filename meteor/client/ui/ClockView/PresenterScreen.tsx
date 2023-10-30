@@ -338,11 +338,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 					}
 
 					this.subscribe(CorelibPubSub.showStyleVariants, showStyleVariantIds)
-					this.subscribe(MeteorPubSub.rundownLayouts, {
-						showStyleBaseId: {
-							$in: showStyleBaseIds,
-						},
-					})
+					this.subscribe(MeteorPubSub.rundownLayouts, showStyleBaseIds)
 
 					this.autorun(() => {
 						const playlistR = RundownPlaylists.findOne(this.props.playlistId, {

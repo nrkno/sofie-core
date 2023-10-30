@@ -114,7 +114,8 @@ export interface MeteorPubSubTypes {
 	/** @deprecated */
 	[MeteorPubSub.mediaWorkFlowSteps]: (token?: string) => CollectionName.MediaWorkFlowSteps
 	[MeteorPubSub.rundownLayouts]: (
-		selector: MongoQuery<RundownLayoutBase>,
+		/** ShowStyleBaseIds to fetch for, or null to fetch all */
+		showStyleBaseIds: ShowStyleBaseId[] | null,
 		token?: string
 	) => CollectionName.RundownLayouts
 	[MeteorPubSub.loggedInUser]: (token?: string) => CollectionName.Users

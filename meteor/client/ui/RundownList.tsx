@@ -62,7 +62,7 @@ export function RundownList(): JSX.Element {
 	const baseSubsReady = [
 		useSubscription(CorelibPubSub.rundownPlaylists, null, null),
 		useSubscription(MeteorPubSub.uiStudio, null),
-		useSubscription(MeteorPubSub.rundownLayouts, {}),
+		useSubscription(MeteorPubSub.rundownLayouts, null),
 
 		useSubscription(CorelibPubSub.rundowns, playlistIds, null),
 
