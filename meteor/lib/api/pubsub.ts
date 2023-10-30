@@ -101,7 +101,8 @@ export interface MeteorPubSubTypes {
 	[MeteorPubSub.adLibPiecesForPart]: (partId: PartId, sourceLayerIds: string[]) => CollectionName.AdLibPieces
 
 	[MeteorPubSub.triggeredActions]: (
-		selector: MongoQuery<DBTriggeredActions>,
+		/** ShowStyleBaseIds to fetch for, or null to just fetch global */
+		showStyleBaseIds: ShowStyleBaseId[] | null,
 		token?: string
 	) => CollectionName.TriggeredActions
 	[MeteorPubSub.snapshots]: (selector: MongoQuery<SnapshotItem>, token?: string) => CollectionName.Snapshots

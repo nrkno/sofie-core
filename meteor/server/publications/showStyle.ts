@@ -86,7 +86,23 @@ meteorPublish(
 
 meteorPublish(
 	MeteorPubSub.triggeredActions,
-	async function (selector0: MongoQuery<DBTriggeredActions>, token: string | undefined) {
+	async function (showStyleBaseIds: ShowStyleBaseId[] | null, token: string | undefined) {
+		check(showStyleBaseIds, Match.Maybe(Array))
+
+		const selector0: MongoQuery<DBTriggeredActions> =
+			showStyleBaseIds && showStyleBaseIds.length > 0
+				? {
+						$or: [
+							{
+								showStyleBaseId: null,
+							},
+							{
+								showStyleBaseId: { $in: showStyleBaseIds },
+							},
+						],
+				  }
+				: { showStyleBaseId: null }
+
 		const { cred, selector } = await AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
 
 		if (

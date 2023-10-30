@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSubscription, useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorPubSub } from '../../../../../lib/api/pubsub'
-import { TriggeredActionsObj } from '../../../../../lib/collections/TriggeredActions'
 import { faCaretDown, faCaretRight, faDownload, faPlus, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { TriggeredActionEntry, TRIGGERED_ACTION_ENTRY_DRAG_TYPE } from './TriggeredActionEntry'
@@ -24,8 +23,6 @@ import { catchError, fetchFrom } from '../../../../lib/lib'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../../../lib/notifications/notifications'
 import { Meteor } from 'meteor/meteor'
 import { doModalDialog } from '../../../../lib/ModalDialog'
-import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
-import _ from 'underscore'
 import { PartId, RundownId, ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PartInstances, Parts, RundownPlaylists, Rundowns, TriggeredActions } from '../../../../collections'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
@@ -78,20 +75,8 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 	})
 
 	const { showStyleBaseId, sourceLayers, outputLayers } = props
-	const showStyleBaseSelector: MongoQuery<TriggeredActionsObj> = {
-		$or: _.compact([
-			{
-				showStyleBaseId: null,
-			},
-			showStyleBaseId !== null
-				? {
-						showStyleBaseId: showStyleBaseId,
-				  }
-				: undefined,
-		]),
-	}
 
-	useSubscription(MeteorPubSub.triggeredActions, showStyleBaseSelector)
+	useSubscription(MeteorPubSub.triggeredActions, showStyleBaseId ? [showStyleBaseId] : null)
 	useSubscription(CorelibPubSub.rundowns, null, showStyleBaseId ? [showStyleBaseId] : [])
 
 	useEffect(() => {
