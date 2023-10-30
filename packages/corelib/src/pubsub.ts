@@ -156,7 +156,11 @@ export interface CorelibPubSubTypes {
 		showStyleVariantIds: ShowStyleVariantId[] | null,
 		token?: string
 	) => CollectionName.ShowStyleVariants
-	[CorelibPubSub.studios]: (selector: MongoQuery<DBStudio>, token?: string) => CollectionName.Studios
+	[CorelibPubSub.studios]: (
+		/** StudioIds to fetch for, or null to fetch all */
+		studioIds: StudioId[] | null,
+		token?: string
+	) => CollectionName.Studios
 	[CorelibPubSub.timeline]: (selector: MongoQuery<TimelineComplete>, token?: string) => CollectionName.Timelines
 	[CorelibPubSub.timelineDatastore]: (studioId: StudioId, token?: string) => CollectionName.TimelineDatastore
 	[CorelibPubSub.bucketAdLibPieces]: (

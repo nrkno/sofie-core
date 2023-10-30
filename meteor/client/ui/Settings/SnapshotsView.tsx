@@ -65,7 +65,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 					$gt: getCurrentTime() - 30 * 24 * 3600 * 1000, // last 30 days
 				},
 			})
-			this.subscribe(CorelibPubSub.studios, {})
+			this.subscribe(CorelibPubSub.studios, null)
 		}
 
 		onUploadFile(e: React.ChangeEvent<HTMLInputElement>) {

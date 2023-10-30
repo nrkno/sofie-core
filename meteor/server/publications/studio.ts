@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from '../../lib/check'
+import { check, Match } from '../../lib/check'
 import { meteorPublish, AutoFillSelector } from './lib'
 import { MeteorPubSub } from '../../lib/api/pubsub'
 import { getActiveRoutes, getRoutedMappings } from '../../lib/collections/Studios'
@@ -36,18 +36,24 @@ import {
 	PeripheralDevicePubSubCollectionsNames,
 } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 
-meteorPublish(CorelibPubSub.studios, async function (selector0: MongoQuery<DBStudio>, token: string | undefined) {
-	const { cred, selector } = await AutoFillSelector.organizationId<DBStudio>(this.userId, selector0, token)
-	const modifier: FindOptions<DBStudio> = {
-		fields: {},
-	}
+meteorPublish(CorelibPubSub.studios, async function (studioIds: StudioId[] | null, token: string | undefined) {
+	check(studioIds, Match.Maybe(Array))
+
+	// If values were provided, they must have values
+	if (studioIds && studioIds.length === 0) return null
+
+	const { cred, selector } = await AutoFillSelector.organizationId<DBStudio>(this.userId, {}, token)
+
+	// Add the requested filter
+	if (studioIds) selector._id = { $in: studioIds }
+
 	if (
 		!cred ||
 		NoSecurityReadAccess.any() ||
 		(selector._id && (await StudioReadAccess.studio(selector._id, cred))) ||
 		(selector.organizationId && (await OrganizationReadAccess.organizationContent(selector.organizationId, cred)))
 	) {
-		return Studios.findWithCursor(selector, modifier)
+		return Studios.findWithCursor(selector)
 	}
 	return null
 })
