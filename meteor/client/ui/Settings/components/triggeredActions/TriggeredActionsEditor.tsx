@@ -167,7 +167,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 		[showStyleBaseId, parsedTriggerFilter]
 	)
 
-	useSubscription(CorelibPubSub.rundownPlaylists, {})
+	useSubscription(CorelibPubSub.rundownPlaylists, null, null)
 
 	const rundown = useTracker(() => {
 		const activePlaylists = RundownPlaylists.find(

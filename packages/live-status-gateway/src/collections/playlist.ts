@@ -60,9 +60,7 @@ export class PlaylistHandler
 		if (!this._studioId) return
 		if (!this._collectionName) return
 		if (!this._publicationName) return
-		this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, {
-			studioId: this._studioId,
-		})
+		this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, null, [this._studioId])
 		this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
 		if (this._collectionName) {
 			const col = this._core.getCollection(this._collectionName)

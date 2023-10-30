@@ -118,7 +118,10 @@ export interface CorelibPubSubTypes {
 		token?: string
 	) => CollectionName.IngestDataCache
 	[CorelibPubSub.rundownPlaylists]: (
-		selector: MongoQuery<DBRundownPlaylist>,
+		/** RundownPlaylistIds to fetch for, or null to fetch all */
+		rundownPlaylistIds: RundownPlaylistId[] | null,
+		/** StudioIds to fetch for, or null to fetch all */
+		studioIds: StudioId[] | null,
 		token?: string
 	) => CollectionName.RundownPlaylists
 	[CorelibPubSub.rundowns]: (

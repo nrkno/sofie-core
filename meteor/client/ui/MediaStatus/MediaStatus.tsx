@@ -257,11 +257,7 @@ function useMediaStatusSubscriptions(
 ): boolean {
 	const readyStatus: boolean[] = []
 	let counter = 0
-	readyStatus[counter++] = useSubscription(CorelibPubSub.rundownPlaylists, {
-		_id: {
-			$in: playlistIds,
-		},
-	})
+	readyStatus[counter++] = useSubscription(CorelibPubSub.rundownPlaylists, playlistIds, null)
 	readyStatus[counter++] = useSubscription(CorelibPubSub.rundowns, playlistIds, null)
 	const uiShowStyleBaseSubArguments = useMemo(
 		() => showStyleBaseIds.map((showStyleBaseId) => [showStyleBaseId] as [ShowStyleBaseId]),

@@ -43,7 +43,7 @@ export enum MeteorPubSub {
 	coreSystem = 'coreSystem',
 	evaluations = 'evaluations',
 
-	activeRundownPlaylistForStudio = 'activeRundownPlaylistForStudio',
+	rundownPlaylistForStudio = 'rundownPlaylistForStudio',
 	adLibActionsForPart = 'adLibActionsForPart',
 	adLibPiecesForPart = 'adLibPiecesForPart',
 
@@ -96,7 +96,7 @@ export interface MeteorPubSubTypes {
 	[MeteorPubSub.coreSystem]: (token?: string) => CollectionName.CoreSystem
 	[MeteorPubSub.evaluations]: (selector: MongoQuery<Evaluation>, token?: string) => CollectionName.Evaluations
 
-	[MeteorPubSub.activeRundownPlaylistForStudio]: (studioId: StudioId) => CollectionName.RundownPlaylists
+	[MeteorPubSub.rundownPlaylistForStudio]: (studioId: StudioId, isActive: boolean) => CollectionName.RundownPlaylists
 	[MeteorPubSub.adLibActionsForPart]: (partId: PartId, sourceLayerIds: string[]) => CollectionName.AdLibActions
 	[MeteorPubSub.adLibPiecesForPart]: (partId: PartId, sourceLayerIds: string[]) => CollectionName.AdLibPieces
 

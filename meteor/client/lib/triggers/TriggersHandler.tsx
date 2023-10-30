@@ -73,9 +73,7 @@ function useSubscriptions(
 	showStyleBaseId: ShowStyleBaseId
 ) {
 	const allReady = [
-		useSubscription(CorelibPubSub.rundownPlaylists, {
-			_id: rundownPlaylistId,
-		}),
+		useSubscription(CorelibPubSub.rundownPlaylists, [rundownPlaylistId], null),
 		useSubscription(CorelibPubSub.rundowns, [rundownPlaylistId], null),
 
 		useSubscription(CorelibPubSub.adLibActions, rundownIds),

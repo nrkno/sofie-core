@@ -16,7 +16,7 @@ export function ActiveRundownView({ studioId }: { studioId: StudioId }): JSX.Ele
 	const { path } = useRouteMatch()
 
 	const studioReady = useSubscription(MeteorPubSub.uiStudio, studioId)
-	const playlistReady = useSubscription(MeteorPubSub.activeRundownPlaylistForStudio, studioId)
+	const playlistReady = useSubscription(MeteorPubSub.rundownPlaylistForStudio, studioId, true)
 
 	const subsReady = studioReady && playlistReady
 

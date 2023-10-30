@@ -1579,9 +1579,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		componentDidMount(): void {
 			const playlistId = this.props.rundownPlaylistId
 
-			this.subscribe(CorelibPubSub.rundownPlaylists, {
-				_id: playlistId,
-			})
+			this.subscribe(CorelibPubSub.rundownPlaylists, [playlistId], null)
 			this.subscribe(CorelibPubSub.rundowns, [playlistId], null)
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(playlistId, {

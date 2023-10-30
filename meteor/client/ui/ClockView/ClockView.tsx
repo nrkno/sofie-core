@@ -14,7 +14,7 @@ import { CameraScreen } from './CameraScreen'
 import { MeteorPubSub } from '../../../lib/api/pubsub'
 
 export function ClockView({ studioId }: { studioId: StudioId }): JSX.Element {
-	useSubscription(MeteorPubSub.activeRundownPlaylistForStudio, studioId)
+	useSubscription(MeteorPubSub.rundownPlaylistForStudio, studioId, true)
 
 	const playlist = useTracker(
 		() =>

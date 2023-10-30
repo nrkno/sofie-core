@@ -35,7 +35,7 @@ export function MediaStatus(): JSX.Element | null {
 		setSortBy(sortBy)
 	}
 
-	useSubscription(CorelibPubSub.rundownPlaylists, {})
+	useSubscription(CorelibPubSub.rundownPlaylists, null, null)
 
 	const { t } = useTranslation()
 

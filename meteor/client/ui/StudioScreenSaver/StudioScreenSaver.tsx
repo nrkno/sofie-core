@@ -126,9 +126,7 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 
 		componentDidMount(): void {
 			this.subscribe(MeteorPubSub.uiStudio, this.props.studioId)
-			this.subscribe(CorelibPubSub.rundownPlaylists, {
-				studioId: this.props.studioId,
-			})
+			this.subscribe(CorelibPubSub.rundownPlaylists, [], [this.props.studioId])
 
 			if (this.props.ownBackground) {
 				document.body.classList.add('dark', 'xdark')
