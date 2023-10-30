@@ -42,7 +42,6 @@ import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collect
 export enum MeteorPubSub {
 	coreSystem = 'coreSystem',
 	evaluations = 'evaluations',
-	expectedPlayoutItems = 'expectedPlayoutItems',
 
 	activeRundownPlaylistForStudio = 'activeRundownPlaylistForStudio',
 	adLibActionsForPart = 'adLibActionsForPart',
@@ -96,10 +95,6 @@ export type AllPubSubTypes = CorelibPubSubTypes & PeripheralDevicePubSubTypes & 
 export interface MeteorPubSubTypes {
 	[MeteorPubSub.coreSystem]: (token?: string) => CollectionName.CoreSystem
 	[MeteorPubSub.evaluations]: (selector: MongoQuery<Evaluation>, token?: string) => CollectionName.Evaluations
-	[MeteorPubSub.expectedPlayoutItems]: (
-		selector: MongoQuery<ExpectedPlayoutItem>,
-		token?: string
-	) => CollectionName.ExpectedPlayoutItems
 
 	[MeteorPubSub.activeRundownPlaylistForStudio]: (studioId: StudioId) => CollectionName.RundownPlaylists
 	[MeteorPubSub.adLibActionsForPart]: (partId: PartId, sourceLayerIds: string[]) => CollectionName.AdLibActions

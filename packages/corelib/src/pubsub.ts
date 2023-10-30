@@ -59,8 +59,6 @@ export enum CorelibPubSub {
 	timeline = 'timeline',
 	timelineDatastore = 'timelineDatastore',
 
-	expectedMediaItems = 'expectedMediaItems',
-
 	expectedPackages = 'expectedPackages',
 	expectedPackageWorkStatuses = 'expectedPackageWorkStatuses',
 	packageContainerStatuses = 'packageContainerStatuses',
@@ -85,10 +83,6 @@ export enum CorelibPubSub {
 export interface CorelibPubSubTypes {
 	[CorelibPubSub.blueprints]: (selector: MongoQuery<Blueprint>, token?: string) => CollectionName.Blueprints
 
-	[CorelibPubSub.expectedMediaItems]: (
-		selector: MongoQuery<ExpectedMediaItem>,
-		token?: string
-	) => CollectionName.ExpectedMediaItems
 	[CorelibPubSub.externalMessageQueue]: (
 		selector: MongoQuery<ExternalMessageQueueObj>,
 		token?: string

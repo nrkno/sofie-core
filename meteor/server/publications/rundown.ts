@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
 import { meteorPublish, AutoFillSelector } from './lib'
 import { MeteorPubSub } from '../../lib/api/pubsub'
 import { MongoFieldSpecifierZeroes, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
@@ -18,7 +17,6 @@ import { FindOptions } from '../../lib/collections/lib'
 import {
 	AdLibActions,
 	AdLibPieces,
-	ExpectedMediaItems,
 	ExpectedPlayoutItems,
 	IngestDataCache,
 	PartInstances,
@@ -42,8 +40,6 @@ import {
 	RundownPlaylistId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ExpectedMediaItem } from '@sofie-automation/corelib/dist/dataModel/ExpectedMediaItem'
-import { ExpectedPlayoutItem } from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { PeripheralDevicePubSub } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
@@ -366,46 +362,6 @@ meteorPublish(
 					plannedStoppedPlayback: 0,
 				}),
 			})
-		}
-		return null
-	}
-)
-meteorPublish(
-	CorelibPubSub.expectedMediaItems,
-	async function (selector: MongoQuery<ExpectedMediaItem>, token: string | undefined) {
-		const allowed =
-			NoSecurityReadAccess.any() ||
-			(await RundownReadAccess.expectedMediaItems(selector, { userId: this.userId, token }))
-		if (!allowed) {
-			return null
-		} else if (allowed === true) {
-			return ExpectedMediaItems.findWithCursor(selector)
-		} else if (typeof allowed === 'object') {
-			return ExpectedMediaItems.findWithCursor(
-				_.extend(selector, {
-					studioId: allowed.studioId,
-				})
-			)
-		}
-		return null
-	}
-)
-meteorPublish(
-	MeteorPubSub.expectedPlayoutItems,
-	async function (selector: MongoQuery<ExpectedPlayoutItem>, token: string | undefined) {
-		const allowed =
-			NoSecurityReadAccess.any() ||
-			(await RundownReadAccess.expectedPlayoutItems(selector, { userId: this.userId, token }))
-		if (!allowed) {
-			return null
-		} else if (allowed === true) {
-			return ExpectedPlayoutItems.findWithCursor(selector)
-		} else if (typeof allowed === 'object') {
-			return ExpectedPlayoutItems.findWithCursor(
-				_.extend(selector, {
-					studioId: allowed.studioId,
-				})
-			)
 		}
 		return null
 	}
