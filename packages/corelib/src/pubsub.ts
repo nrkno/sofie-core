@@ -57,7 +57,6 @@ export enum CorelibPubSub {
 	pieceInstances = 'pieceInstances',
 	pieceInstancesSimple = 'pieceInstancesSimple',
 
-	timeline = 'timeline',
 	timelineDatastore = 'timelineDatastore',
 
 	expectedPackages = 'expectedPackages',
@@ -161,7 +160,6 @@ export interface CorelibPubSubTypes {
 		studioIds: StudioId[] | null,
 		token?: string
 	) => CollectionName.Studios
-	[CorelibPubSub.timeline]: (selector: MongoQuery<TimelineComplete>, token?: string) => CollectionName.Timelines
 	[CorelibPubSub.timelineDatastore]: (studioId: StudioId, token?: string) => CollectionName.TimelineDatastore
 	[CorelibPubSub.bucketAdLibPieces]: (
 		selector: MongoQuery<BucketAdLib>,
