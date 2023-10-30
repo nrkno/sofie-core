@@ -337,11 +337,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 						this.subscribe(MeteorPubSub.uiShowStyleBase, rundown.showStyleBaseId)
 					}
 
-					this.subscribe(CorelibPubSub.showStyleVariants, {
-						_id: {
-							$in: showStyleVariantIds,
-						},
-					})
+					this.subscribe(CorelibPubSub.showStyleVariants, showStyleVariantIds)
 					this.subscribe(MeteorPubSub.rundownLayouts, {
 						showStyleBaseId: {
 							$in: showStyleBaseIds,

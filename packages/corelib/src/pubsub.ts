@@ -32,7 +32,7 @@ import {
 	ShowStyleBaseId,
 	StudioId,
 } from '@sofie-automation/shared-lib/dist/core/model/Ids'
-import { RundownPlaylistActivationId, SegmentPlayoutId } from './dataModel/Ids'
+import { RundownPlaylistActivationId, SegmentPlayoutId, ShowStyleVariantId } from './dataModel/Ids'
 
 /**
  * Ids of possible DDP subscriptions for any the UI and gateways accessing the Rundown & RundownPlaylist model.
@@ -150,7 +150,8 @@ export interface CorelibPubSubTypes {
 		token?: string
 	) => CollectionName.ShowStyleBases
 	[CorelibPubSub.showStyleVariants]: (
-		selector: MongoQuery<DBShowStyleVariant>,
+		/** ShowStyleVariantId to fetch for, or null to fetch all */
+		showStyleVariantIds: ShowStyleVariantId[] | null,
 		token?: string
 	) => CollectionName.ShowStyleVariants
 	[CorelibPubSub.studios]: (selector: MongoQuery<DBStudio>, token?: string) => CollectionName.Studios

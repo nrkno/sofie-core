@@ -11,7 +11,7 @@ import { RundownLayouts, ShowStyleBases, ShowStyleVariants, TriggeredActions } f
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { DBTriggeredActions } from '../../lib/collections/TriggeredActions'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
-import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { check, Match } from '../../lib/check'
 
 meteorPublish(
@@ -42,19 +42,24 @@ meteorPublish(
 
 meteorPublish(
 	CorelibPubSub.showStyleVariants,
-	async function (selector0: MongoQuery<DBShowStyleVariant>, token: string | undefined) {
-		const { cred, selector } = await AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
+	async function (showStyleVariantIds: ShowStyleVariantId[] | null, token: string | undefined) {
+		check(showStyleVariantIds, Match.Maybe(Array))
 
-		const modifier: FindOptions<DBShowStyleVariant> = {
-			fields: {},
-		}
+		// If values were provided, they must have values
+		if (showStyleVariantIds && showStyleVariantIds.length === 0) return null
+
+		const { cred, selector } = await AutoFillSelector.showStyleBaseId<DBShowStyleVariant>(this.userId, {}, token)
+
+		// Add the requested filter
+		if (showStyleVariantIds) selector._id = { $in: showStyleVariantIds }
+
 		if (
 			!cred ||
 			NoSecurityReadAccess.any() ||
 			(selector.showStyleBaseId && (await ShowStyleReadAccess.showStyleBaseContent(selector, cred))) ||
 			(selector._id && (await ShowStyleReadAccess.showStyleVariant(selector._id, cred)))
 		) {
-			return ShowStyleVariants.findWithCursor(selector, modifier)
+			return ShowStyleVariants.findWithCursor(selector)
 		}
 		return null
 	}
