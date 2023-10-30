@@ -337,26 +337,35 @@ meteorPublish(
 
 meteorPublish(
 	CorelibPubSub.pieceInstancesSimple,
-	async function (selector: MongoQuery<PieceInstance>, token: string | undefined) {
-		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-		const modifier: FindOptions<PieceInstance> = {
-			fields: literal<MongoFieldSpecifierZeroes<PieceInstance>>({
-				// @ts-expect-error Mongo typings aren't clever enough yet
-				'piece.metaData': 0,
-				'piece.timelineObjectsString': 0,
-				plannedStartedPlayback: 0,
-				plannedStoppedPlayback: 0,
-			}),
-		}
+	async function (
+		rundownIds: RundownId[],
+		playlistActivationId: RundownPlaylistActivationId | null,
+		token: string | undefined
+	) {
+		check(rundownIds, Array)
 
-		// Enforce only not-reset
-		selector.reset = { $ne: true }
+		if (rundownIds.length === 0) return null
+
+		const selector: MongoQuery<PieceInstance> = {
+			rundownId: { $in: rundownIds },
+			// Enforce only not-reset
+			reset: { $ne: true },
+		}
+		if (playlistActivationId) selector.playlistActivationId = playlistActivationId
 
 		if (
 			NoSecurityReadAccess.any() ||
 			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
 		) {
-			return PieceInstances.findWithCursor(selector, modifier)
+			return PieceInstances.findWithCursor(selector, {
+				fields: literal<MongoFieldSpecifierZeroes<PieceInstance>>({
+					// @ts-expect-error Mongo typings aren't clever enough yet
+					'piece.metaData': 0,
+					'piece.timelineObjectsString': 0,
+					plannedStartedPlayback: 0,
+					plannedStoppedPlayback: 0,
+				}),
+			})
 		}
 		return null
 	}

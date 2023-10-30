@@ -282,11 +282,7 @@ function useMediaStatusSubscriptions(
 			$ne: true,
 		},
 	})
-	readyStatus[counter++] = useSubscription(CorelibPubSub.pieceInstancesSimple, {
-		rundownId: {
-			$in: rundownIds,
-		},
-	})
+	readyStatus[counter++] = useSubscription(CorelibPubSub.pieceInstancesSimple, rundownIds, null)
 	readyStatus[counter++] = useSubscription(CorelibPubSub.pieces, {
 		startRundownId: {
 			$in: rundownIds,

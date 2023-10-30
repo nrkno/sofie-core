@@ -615,10 +615,8 @@ export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, 
 					this.subscribe(CorelibPubSub.pieces, {
 						startRundownId: { $in: rundownIDs },
 					})
-					this.subscribe(CorelibPubSub.pieceInstancesSimple, {
-						rundownId: { $in: rundownIDs },
-						reset: { $ne: true },
-					})
+
+					this.subscribe(CorelibPubSub.pieceInstancesSimple, rundownIDs, null)
 				}
 			})
 

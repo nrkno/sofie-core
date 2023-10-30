@@ -129,7 +129,8 @@ export interface CorelibPubSubTypes {
 		token?: string
 	) => CollectionName.PieceInstances
 	[CorelibPubSub.pieceInstancesSimple]: (
-		selector: MongoQuery<PieceInstance>,
+		rundownIds: RundownId[],
+		playlistActivationId: RundownPlaylistActivationId | null,
 		token?: string
 	) => CollectionName.PieceInstances
 	[CorelibPubSub.parts]: (rundownIds: RundownId[], token?: string) => CollectionName.Parts

@@ -107,11 +107,7 @@ export function CameraScreen({ playlist, studioId }: IProps): JSX.Element | null
 
 	useSubscription(CorelibPubSub.parts, rundownIds)
 
-	useSubscription(CorelibPubSub.pieceInstancesSimple, {
-		rundownId: {
-			$in: rundownIds,
-		},
-	})
+	useSubscription(CorelibPubSub.pieceInstancesSimple, rundownIds, null)
 
 	const piecesReady = useSubscription(CorelibPubSub.pieces, {
 		startRundownId: {
