@@ -429,9 +429,6 @@ export const SegmentTimelineContainer = withResolvedSegment(
 					partInstanceId: {
 						$in: partInstanceIds,
 					},
-					reset: {
-						$ne: true,
-					},
 				})
 				this.partInstanceSubPartInstanceIds = partInstanceIds
 			})

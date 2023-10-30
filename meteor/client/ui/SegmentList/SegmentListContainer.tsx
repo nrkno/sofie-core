@@ -73,9 +73,6 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 		partInstanceId: {
 			$in: partInstanceIds,
 		},
-		reset: {
-			$ne: true,
-		},
 	})
 
 	useTracker(() => {

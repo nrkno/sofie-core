@@ -77,9 +77,6 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 		partInstanceId: {
 			$in: partInstanceIds,
 		},
-		reset: {
-			$ne: true,
-		},
 	})
 
 	useTracker(() => {

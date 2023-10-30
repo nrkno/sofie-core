@@ -1666,9 +1666,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								playlist.previousPartInfo?.partInstanceId,
 							].filter((p): p is PartInstanceId => p !== null),
 						},
-						reset: {
-							$ne: true,
-						},
 					})
 					const { previousPartInstance, currentPartInstance } =
 						RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
