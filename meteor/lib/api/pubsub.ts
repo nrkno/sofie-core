@@ -110,15 +110,9 @@ export interface MeteorPubSubTypes {
 		token?: string
 	) => CollectionName.UserActionsLog
 	/** @deprecated */
-	[MeteorPubSub.mediaWorkFlows]: (
-		selector: MongoQuery<MediaWorkFlow>,
-		token?: string
-	) => CollectionName.MediaWorkFlows
+	[MeteorPubSub.mediaWorkFlows]: (token?: string) => CollectionName.MediaWorkFlows
 	/** @deprecated */
-	[MeteorPubSub.mediaWorkFlowSteps]: (
-		selector: MongoQuery<MediaWorkFlowStep>,
-		token?: string
-	) => CollectionName.MediaWorkFlowSteps
+	[MeteorPubSub.mediaWorkFlowSteps]: (token?: string) => CollectionName.MediaWorkFlowSteps
 	[MeteorPubSub.rundownLayouts]: (
 		selector: MongoQuery<RundownLayoutBase>,
 		token?: string

@@ -104,23 +104,17 @@ meteorPublish(
 		return null
 	}
 )
-meteorPublish(
-	MeteorPubSub.mediaWorkFlows,
-	async function (selector0: MongoQuery<MediaWorkFlow>, token: string | undefined) {
-		const { cred, selector } = await AutoFillSelector.deviceId(this.userId, selector0, token)
-		if (!cred || (await PeripheralDeviceReadAccess.peripheralDeviceContent(selector.deviceId, cred))) {
-			return MediaWorkFlows.findWithCursor(selector)
-		}
-		return null
+meteorPublish(MeteorPubSub.mediaWorkFlows, async function (token: string | undefined) {
+	const { cred, selector } = await AutoFillSelector.deviceId<MediaWorkFlow>(this.userId, {}, token)
+	if (!cred || (await PeripheralDeviceReadAccess.peripheralDeviceContent(selector.deviceId, cred))) {
+		return MediaWorkFlows.findWithCursor(selector)
 	}
-)
-meteorPublish(
-	MeteorPubSub.mediaWorkFlowSteps,
-	async function (selector0: MongoQuery<MediaWorkFlowStep>, token: string | undefined) {
-		const { cred, selector } = await AutoFillSelector.deviceId(this.userId, selector0, token)
-		if (!cred || (await PeripheralDeviceReadAccess.peripheralDeviceContent(selector.deviceId, cred))) {
-			return MediaWorkFlowSteps.findWithCursor(selector)
-		}
-		return null
+	return null
+})
+meteorPublish(MeteorPubSub.mediaWorkFlowSteps, async function (token: string | undefined) {
+	const { cred, selector } = await AutoFillSelector.deviceId<MediaWorkFlowStep>(this.userId, {}, token)
+	if (!cred || (await PeripheralDeviceReadAccess.peripheralDeviceContent(selector.deviceId, cred))) {
+		return MediaWorkFlowSteps.findWithCursor(selector)
 	}
-)
+	return null
+})

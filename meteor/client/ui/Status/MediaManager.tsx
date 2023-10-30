@@ -378,8 +378,8 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 
 		componentDidMount(): void {
 			// Subscribe to data:
-			this.subscribe(MeteorPubSub.mediaWorkFlows, {}) // TODO: add some limit
-			this.subscribe(MeteorPubSub.mediaWorkFlowSteps, {})
+			this.subscribe(MeteorPubSub.mediaWorkFlows) // TODO: add some limit
+			this.subscribe(MeteorPubSub.mediaWorkFlowSteps)
 		}
 
 		toggleExpanded = (workFlowId: MediaWorkFlowId) => {
