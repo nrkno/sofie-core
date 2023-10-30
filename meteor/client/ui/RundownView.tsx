@@ -1648,18 +1648,16 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					// Use meteorSubscribe so that this subscription doesn't mess with this.subscriptionsReady()
 					// it's run in this.autorun, so the subscription will be stopped along with the autorun,
 					// so we don't have to manually clean up after ourselves.
-					meteorSubscribe(CorelibPubSub.pieceInstances, {
-						rundownId: {
-							$in: rundownIds,
-						},
-						partInstanceId: {
-							$in: [
-								playlist.currentPartInfo?.partInstanceId,
-								playlist.nextPartInfo?.partInstanceId,
-								playlist.previousPartInfo?.partInstanceId,
-							].filter((p): p is PartInstanceId => p !== null),
-						},
-					})
+					meteorSubscribe(
+						CorelibPubSub.pieceInstances,
+						rundownIds,
+						[
+							playlist.currentPartInfo?.partInstanceId,
+							playlist.nextPartInfo?.partInstanceId,
+							playlist.previousPartInfo?.partInstanceId,
+						].filter((p): p is PartInstanceId => p !== null),
+						false
+					)
 					const { previousPartInstance, currentPartInstance } =
 						RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
 

@@ -33,6 +33,7 @@ import { IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/Ing
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import {
 	PartId,
+	PartInstanceId,
 	PeripheralDeviceId,
 	RundownId,
 	RundownPlaylistActivationId,
@@ -388,26 +389,78 @@ meteorPublish(MeteorPubSub.adLibPiecesForPart, async function (partId: PartId, s
 	)
 })
 
+const pieceInstanceFields: MongoFieldSpecifierZeroes<PieceInstance> = {
+	// @ts-expect-error Mongo typings aren't clever enough yet
+	'piece.metaData': 0,
+	'piece.timelineObjectsString': 0,
+}
+
 meteorPublish(
 	CorelibPubSub.pieceInstances,
-	async function (selector: MongoQuery<PieceInstance>, token: string | undefined) {
-		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-		const modifier: FindOptions<PieceInstance> = {
-			fields: {
-				// @ts-expect-error Mongo typings aren't clever enough yet
-				'piece.metaData': 0,
-				'piece.timelineObjectsString': 0,
-			},
-		}
+	async function (
+		rundownIds: RundownId[],
+		partInstanceIds: PartInstanceId[] | null,
+		onlyPlayingAdlibsOrWithTags: boolean,
+		token: string | undefined
+	) {
+		check(rundownIds, Array)
+		check(partInstanceIds, Match.Maybe(Array))
 
-		// Enforce only not-reset
-		selector.reset = { $ne: true }
+		// If values were provided, they must have values
+		if (rundownIds.length === 0) return null
+		if (partInstanceIds && partInstanceIds.length === 0) return null
+
+		const selector: MongoQuery<PieceInstance> = {
+			rundownId: { $in: rundownIds },
+
+			// Enforce only not-reset
+			reset: { $ne: true },
+		}
+		if (partInstanceIds) selector.partInstanceId = { $in: partInstanceIds }
+
+		if (onlyPlayingAdlibsOrWithTags) {
+			selector.plannedStartedPlayback = {
+				$exists: true,
+			}
+			selector.$and = [
+				{
+					$or: [
+						{
+							adLibSourceId: {
+								$exists: true,
+							},
+						},
+						{
+							'piece.tags': {
+								$exists: true,
+							},
+						},
+					],
+				},
+				{
+					$or: [
+						{
+							plannedStoppedPlayback: {
+								$eq: 0,
+							},
+						},
+						{
+							plannedStoppedPlayback: {
+								$exists: false,
+							},
+						},
+					],
+				},
+			]
+		}
 
 		if (
 			NoSecurityReadAccess.any() ||
 			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
 		) {
-			return PieceInstances.findWithCursor(selector, modifier)
+			return PieceInstances.findWithCursor(selector, {
+				fields: pieceInstanceFields,
+			})
 		}
 		return null
 	}
@@ -437,9 +490,7 @@ meteorPublish(
 		) {
 			return PieceInstances.findWithCursor(selector, {
 				fields: literal<MongoFieldSpecifierZeroes<PieceInstance>>({
-					// @ts-expect-error Mongo typings aren't clever enough yet
-					'piece.metaData': 0,
-					'piece.timelineObjectsString': 0,
+					...pieceInstanceFields,
 					plannedStartedPlayback: 0,
 					plannedStoppedPlayback: 0,
 				}),

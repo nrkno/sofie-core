@@ -357,16 +357,20 @@ export class PresenterScreenBase extends MeteorReactComponent<
 							const { nextPartInstance, currentPartInstance } =
 								RundownPlaylistCollectionUtil.getSelectedPartInstances(playlistR)
 							if (currentPartInstance) {
-								this.subscribe(CorelibPubSub.pieceInstances, {
-									rundownId: currentPartInstance.rundownId,
-									partInstanceId: currentPartInstance._id,
-								})
+								this.subscribe(
+									CorelibPubSub.pieceInstances,
+									[currentPartInstance.rundownId],
+									[currentPartInstance._id],
+									false
+								)
 							}
 							if (nextPartInstance) {
-								this.subscribe(CorelibPubSub.pieceInstances, {
-									rundownId: nextPartInstance.rundownId,
-									partInstanceId: nextPartInstance._id,
-								})
+								this.subscribe(
+									CorelibPubSub.pieceInstances,
+									[nextPartInstance.rundownId],
+									[nextPartInstance._id],
+									false
+								)
 							}
 						}
 					})

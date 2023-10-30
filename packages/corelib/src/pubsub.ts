@@ -28,6 +28,7 @@ import { PieceInstance } from './dataModel/PieceInstance'
 import { TimelineComplete } from './dataModel/Timeline'
 import {
 	PartId,
+	PartInstanceId,
 	PeripheralDeviceId,
 	RundownId,
 	RundownPlaylistId,
@@ -146,7 +147,11 @@ export interface CorelibPubSubTypes {
 		token?: string
 	) => CollectionName.Pieces
 	[CorelibPubSub.pieceInstances]: (
-		selector: MongoQuery<PieceInstance>,
+		rundownIds: RundownId[],
+		/** PartInstanceIds to fetch for, or null to fetch all */
+		partInstanceIds: PartInstanceId[] | null,
+		/** Only include PieceInstances which are playing as an adlib, or with tags */
+		onlyPlayingAdlibsOrWithTags: boolean,
 		token?: string
 	) => CollectionName.PieceInstances
 	[CorelibPubSub.pieceInstancesSimple]: (

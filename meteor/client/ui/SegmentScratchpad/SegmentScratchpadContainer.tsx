@@ -66,12 +66,7 @@ export const SegmentScratchpadContainer = withResolvedSegment<IProps>(function S
 		[segmentId]
 	)
 
-	const pieceInstancesReady = useSubscription(CorelibPubSub.pieceInstances, {
-		rundownId: rundownId,
-		partInstanceId: {
-			$in: partInstanceIds,
-		},
-	})
+	const pieceInstancesReady = useSubscription(CorelibPubSub.pieceInstances, [rundownId], partInstanceIds ?? [], false)
 
 	useTracker(() => {
 		const segment = Segments.findOne(segmentId, {

@@ -62,12 +62,7 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 		[segmentId]
 	)
 
-	useSubscription(CorelibPubSub.pieceInstances, {
-		rundownId: rundownId,
-		partInstanceId: {
-			$in: partInstanceIds,
-		},
-	})
+	useSubscription(CorelibPubSub.pieceInstances, [rundownId], partInstanceIds ?? [], false)
 
 	useTracker(() => {
 		const segment = Segments.findOne(segmentId, {

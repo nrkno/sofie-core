@@ -398,12 +398,12 @@ export const SegmentTimelineContainer = withResolvedSegment(
 					this.partInstanceSub.stop()
 				}
 				// we handle this subscription manually
-				this.partInstanceSub = meteorSubscribe(CorelibPubSub.pieceInstances, {
-					rundownId: this.props.rundownId,
-					partInstanceId: {
-						$in: partInstanceIds,
-					},
-				})
+				this.partInstanceSub = meteorSubscribe(
+					CorelibPubSub.pieceInstances,
+					[this.props.rundownId],
+					partInstanceIds,
+					false
+				)
 				this.partInstanceSubPartInstanceIds = partInstanceIds
 			})
 		}
