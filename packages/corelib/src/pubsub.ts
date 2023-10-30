@@ -37,6 +37,7 @@ import {
 } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 import {
 	BlueprintId,
+	BucketId,
 	RundownPlaylistActivationId,
 	SegmentId,
 	SegmentPlayoutId,
@@ -193,12 +194,14 @@ export interface CorelibPubSubTypes {
 	) => CollectionName.Studios
 	[CorelibPubSub.timelineDatastore]: (studioId: StudioId, token?: string) => CollectionName.TimelineDatastore
 	[CorelibPubSub.bucketAdLibPieces]: (
-		selector: MongoQuery<BucketAdLib>,
-		token?: string
+		studioId: StudioId,
+		bucketId: BucketId,
+		showStyleVariantIds: ShowStyleVariantId[]
 	) => CollectionName.BucketAdLibPieces
 	[CorelibPubSub.bucketAdLibActions]: (
-		selector: MongoQuery<BucketAdLibAction>,
-		token?: string
+		studioId: StudioId,
+		bucketId: BucketId,
+		showStyleVariantIds: ShowStyleVariantId[]
 	) => CollectionName.BucketAdLibActions
 	[CorelibPubSub.expectedPackages]: (studioIds: StudioId[], token?: string) => CollectionName.ExpectedPackages
 	[CorelibPubSub.expectedPackageWorkStatuses]: (
