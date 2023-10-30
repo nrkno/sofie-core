@@ -27,9 +27,14 @@ export function calculateCurrentPartTiming(
 		expectedDuration = groupDuration - groupPlayed
 	}
 
+	const startTime =
+		currentPartInstance.timings?.reportedStartedPlayback ??
+		currentPartInstance.timings?.plannedStartedPlayback ??
+		Date.now()
+
 	return {
-		startTime: currentPartInstance.timings?.plannedStartedPlayback ?? 0,
+		startTime,
 		expectedDurationMs: currentPartInstance.part.expectedDuration ?? 0,
-		expectedEndTime: (currentPartInstance.timings?.plannedStartedPlayback ?? 0) + expectedDuration,
+		expectedEndTime: startTime + expectedDuration,
 	}
 }
