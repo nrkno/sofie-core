@@ -292,16 +292,8 @@ function useMediaStatusSubscriptions(
 			$in: rundownIds,
 		},
 	})
-	readyStatus[counter++] = useSubscription(CorelibPubSub.adLibActions, {
-		rundownId: {
-			$in: rundownIds,
-		},
-	})
-	readyStatus[counter++] = useSubscription(CorelibPubSub.adLibPieces, {
-		rundownId: {
-			$in: rundownIds,
-		},
-	})
+	readyStatus[counter++] = useSubscription(CorelibPubSub.adLibActions, rundownIds)
+	readyStatus[counter++] = useSubscription(CorelibPubSub.adLibPieces, rundownIds)
 	readyStatus[counter++] = useSubscription(CorelibPubSub.rundownBaselineAdLibActions, rundownIds)
 	readyStatus[counter++] = useSubscription(CorelibPubSub.rundownBaselineAdLibPieces, rundownIds)
 

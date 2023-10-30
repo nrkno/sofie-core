@@ -121,8 +121,8 @@ export interface CorelibPubSubTypes {
 		showStyleBaseIds: ShowStyleBaseId[] | null,
 		token?: string
 	) => CollectionName.Rundowns
-	[CorelibPubSub.adLibActions]: (selector: MongoQuery<AdLibAction>, token?: string) => CollectionName.AdLibActions
-	[CorelibPubSub.adLibPieces]: (selector: MongoQuery<AdLibPiece>, token?: string) => CollectionName.AdLibPieces
+	[CorelibPubSub.adLibActions]: (rundownIds: RundownId[], token?: string) => CollectionName.AdLibActions
+	[CorelibPubSub.adLibPieces]: (rundownIds: RundownId[], token?: string) => CollectionName.AdLibPieces
 	[CorelibPubSub.pieces]: (selector: MongoQuery<Piece>, token?: string) => CollectionName.Pieces
 	[CorelibPubSub.pieceInstances]: (
 		selector: MongoQuery<PieceInstance>,

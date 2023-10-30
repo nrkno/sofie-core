@@ -1635,17 +1635,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						$in: rundownIDs,
 					},
 				})
-				this.subscribe(CorelibPubSub.adLibPieces, {
-					rundownId: {
-						$in: rundownIDs,
-					},
-				})
+				this.subscribe(CorelibPubSub.adLibPieces, rundownIDs)
 				this.subscribe(CorelibPubSub.rundownBaselineAdLibPieces, rundownIDs)
-				this.subscribe(CorelibPubSub.adLibActions, {
-					rundownId: {
-						$in: rundownIDs,
-					},
-				})
+				this.subscribe(CorelibPubSub.adLibActions, rundownIDs)
 				this.subscribe(CorelibPubSub.rundownBaselineAdLibActions, rundownIDs)
 				this.subscribe(CorelibPubSub.parts, rundownIDs)
 				this.subscribe(CorelibPubSub.partInstances, rundownIDs, playlist.activationId)

@@ -1,6 +1,7 @@
 import {
 	BucketId,
 	OrganizationId,
+	PartId,
 	RundownPlaylistId,
 	ShowStyleBaseId,
 	StudioId,
@@ -42,6 +43,10 @@ export enum MeteorPubSub {
 	coreSystem = 'coreSystem',
 	evaluations = 'evaluations',
 	expectedPlayoutItems = 'expectedPlayoutItems',
+
+	activeRundownPlaylistForStudio = 'activeRundownPlaylistForStudio',
+	adLibActionsForPart = 'adLibActionsForPart',
+	adLibPiecesForPart = 'adLibPiecesForPart',
 
 	triggeredActions = 'triggeredActions',
 	snapshots = 'snapshots',
@@ -95,6 +100,10 @@ export interface MeteorPubSubTypes {
 		selector: MongoQuery<ExpectedPlayoutItem>,
 		token?: string
 	) => CollectionName.ExpectedPlayoutItems
+
+	[MeteorPubSub.activeRundownPlaylistForStudio]: (studioId: StudioId) => CollectionName.RundownPlaylists
+	[MeteorPubSub.adLibActionsForPart]: (partId: PartId, sourceLayerIds: string[]) => CollectionName.AdLibActions
+	[MeteorPubSub.adLibPiecesForPart]: (partId: PartId, sourceLayerIds: string[]) => CollectionName.AdLibPieces
 
 	[MeteorPubSub.triggeredActions]: (
 		selector: MongoQuery<DBTriggeredActions>,

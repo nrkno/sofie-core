@@ -8,6 +8,9 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { RundownPlaylists } from '../collections'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { MeteorPubSub } from '../../lib/api/pubsub'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { resolveCredentials } from '../security/lib/credentials'
 
 meteorPublish(
 	CorelibPubSub.rundownPlaylists,
@@ -33,3 +36,23 @@ meteorPublish(
 		return null
 	}
 )
+
+meteorPublish(MeteorPubSub.activeRundownPlaylistForStudio, async function (studioId: StudioId) {
+	if (!NoSecurityReadAccess.any()) {
+		const cred = await resolveCredentials({ userId: this.userId })
+		if (!cred) return null
+
+		if (!(await StudioReadAccess.studioContent(studioId, cred))) return null
+	}
+
+	return RundownPlaylists.findWithCursor(
+		{ studioId },
+		{
+			// Ensure the result is 'stable' and only produces one (there should only ever be one)
+			sort: {
+				_id: 1,
+			},
+			limit: 1,
+		}
+	)
+})

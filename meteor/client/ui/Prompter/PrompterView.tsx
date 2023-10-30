@@ -206,10 +206,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		if (this.props.studioId) {
 			this.subscribe(MeteorPubSub.uiStudio, this.props.studioId)
 
-			this.subscribe(CorelibPubSub.rundownPlaylists, {
-				activationId: { $exists: true },
-				studioId: this.props.studioId,
-			})
+			this.subscribe(MeteorPubSub.activeRundownPlaylistForStudio, this.props.studioId)
 		}
 
 		this.autorun(() => {

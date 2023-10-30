@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { meteorPublish, AutoFillSelector } from './lib'
 import { MeteorPubSub } from '../../lib/api/pubsub'
-import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
+import { MongoFieldSpecifierZeroes, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { RundownReadAccess } from '../security/rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
@@ -13,7 +13,6 @@ import { PartInstance } from '../../lib/collections/PartInstances'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { OrganizationReadAccess } from '../security/organization'
 import { StudioReadAccess } from '../security/studio'
-import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { check, Match } from 'meteor/check'
 import { FindOptions } from '../../lib/collections/lib'
 import {
@@ -35,8 +34,8 @@ import {
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 import { literal } from '@sofie-automation/corelib/dist/lib'
-import { MongoFieldSpecifierZeroes } from '@sofie-automation/corelib/dist/mongo'
 import {
+	PartId,
 	PeripheralDeviceId,
 	RundownId,
 	RundownPlaylistActivationId,
@@ -51,6 +50,7 @@ import { PeripheralDevicePubSub } from '@sofie-automation/shared-lib/dist/pubsub
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
+import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 
 meteorPublish(PeripheralDevicePubSub.rundownsForDevice, async function (deviceId, token: string | undefined) {
 	check(deviceId, String)
@@ -268,22 +268,48 @@ meteorPublish(CorelibPubSub.pieces, async function (selector: MongoQuery<Piece>,
 	return null
 })
 
-meteorPublish(CorelibPubSub.adLibPieces, async function (selector: MongoQuery<AdLibPiece>, token: string | undefined) {
-	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-	const modifier: FindOptions<AdLibPiece> = {
-		fields: {
-			metaData: 0,
-			timelineObjectsString: 0,
-		},
+const adlibPiecesSubFields: MongoFieldSpecifierZeroes<AdLibPiece> = {
+	metaData: 0,
+	timelineObjectsString: 0,
+}
+
+meteorPublish(CorelibPubSub.adLibPieces, async function (rundownIds: RundownId[], token: string | undefined) {
+	check(rundownIds, Array)
+
+	if (rundownIds.length === 0) return null
+
+	const selector: MongoQuery<AdLibPiece> = {
+		rundownId: { $in: rundownIds },
 	}
+
 	if (
 		NoSecurityReadAccess.any() ||
 		(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
 	) {
-		return AdLibPieces.findWithCursor(selector, modifier)
+		return AdLibPieces.findWithCursor(selector, {
+			fields: adlibPiecesSubFields,
+		})
 	}
 	return null
 })
+meteorPublish(MeteorPubSub.adLibPiecesForPart, async function (partId: PartId, sourceLayerIds: string[]) {
+	if (!partId) throw new Meteor.Error(400, 'partId argument missing')
+	if (!sourceLayerIds) throw new Meteor.Error(400, 'sourceLayerIds argument missing')
+
+	// Future: This needs some thought for a security enabled environment
+	if (!NoSecurityReadAccess.any()) return null
+
+	return AdLibPieces.findWithCursor(
+		{
+			partId,
+			sourceLayerId: { $in: sourceLayerIds },
+		},
+		{
+			fields: adlibPiecesSubFields,
+		}
+	)
+})
+
 meteorPublish(
 	CorelibPubSub.pieceInstances,
 	async function (selector: MongoQuery<PieceInstance>, token: string | undefined) {
@@ -436,22 +462,36 @@ meteorPublish(
 		return null
 	}
 )
-meteorPublish(
-	CorelibPubSub.adLibActions,
-	async function (selector: MongoQuery<AdLibAction>, token: string | undefined) {
-		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-		const modifier: FindOptions<AdLibAction> = {
-			fields: {},
-		}
-		if (
-			NoSecurityReadAccess.any() ||
-			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
-		) {
-			return AdLibActions.findWithCursor(selector, modifier)
-		}
-		return null
+meteorPublish(CorelibPubSub.adLibActions, async function (rundownIds: RundownId[], token: string | undefined) {
+	check(rundownIds, Array)
+
+	if (rundownIds.length === 0) return null
+
+	const selector: MongoQuery<AdLibAction> = {
+		rundownId: { $in: rundownIds },
 	}
-)
+
+	if (
+		NoSecurityReadAccess.any() ||
+		(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
+	) {
+		return AdLibActions.findWithCursor(selector)
+	}
+	return null
+})
+meteorPublish(MeteorPubSub.adLibActionsForPart, async function (partId: PartId, sourceLayerIds: string[]) {
+	if (!partId) throw new Meteor.Error(400, 'partId argument missing')
+	if (!sourceLayerIds) throw new Meteor.Error(400, 'sourceLayerIds argument missing')
+
+	// Future: This needs some thought for a security enabled environment
+	if (!NoSecurityReadAccess.any()) return null
+
+	return AdLibActions.findWithCursor({
+		partId,
+		'display.sourceLayerId': { $in: sourceLayerIds },
+	})
+})
+
 meteorPublish(
 	CorelibPubSub.rundownBaselineAdLibActions,
 	async function (rundownIds: RundownId[], token: string | undefined) {

@@ -78,16 +78,8 @@ function useSubscriptions(
 		}),
 		useSubscription(CorelibPubSub.rundowns, [rundownPlaylistId], null),
 
-		useSubscription(CorelibPubSub.adLibActions, {
-			rundownId: {
-				$in: rundownIds,
-			},
-		}),
-		useSubscription(CorelibPubSub.adLibPieces, {
-			rundownId: {
-				$in: rundownIds,
-			},
-		}),
+		useSubscription(CorelibPubSub.adLibActions, rundownIds),
+		useSubscription(CorelibPubSub.adLibPieces, rundownIds),
 		useSubscription(CorelibPubSub.rundownBaselineAdLibActions, rundownIds),
 		useSubscription(CorelibPubSub.rundownBaselineAdLibPieces, rundownIds),
 		useSubscription(MeteorPubSub.uiShowStyleBase, showStyleBaseId),
