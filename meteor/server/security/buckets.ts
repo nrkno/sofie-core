@@ -8,7 +8,6 @@ import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLi
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { AdLibActionId, BucketId, PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { BucketAdLibActions, BucketAdLibs, Buckets } from '../collections'
-import { Settings } from '../../lib/Settings'
 
 export namespace BucketSecurity {
 	export interface BucketContentAccess extends StudioContentAccess {
@@ -27,8 +26,6 @@ export namespace BucketSecurity {
 		bucketId: BucketId
 	): Promise<boolean> {
 		check(bucketId, String)
-
-		if (!Settings.enableUserAccounts) return true
 
 		const bucket = await Buckets.findOneAsync(bucketId)
 		if (!bucket) throw new Meteor.Error(404, `Bucket "${bucketId}" not found!`)
