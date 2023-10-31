@@ -1632,7 +1632,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				this.subscribe(CorelibPubSub.adLibActions, rundownIDs)
 				this.subscribe(CorelibPubSub.rundownBaselineAdLibActions, rundownIDs)
 				this.subscribe(CorelibPubSub.parts, rundownIDs)
-				this.subscribe(CorelibPubSub.partInstances, rundownIDs, playlist.activationId)
+				this.subscribe(CorelibPubSub.partInstances, rundownIDs, playlist.activationId ?? null)
 			})
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(playlistId, {

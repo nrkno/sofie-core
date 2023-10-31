@@ -191,7 +191,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 		null
 	)
 
-	useSubscription(CorelibPubSub.partInstances, rundown ? [rundown._id] : [], rundownPlaylist?.activationId)
+	useSubscription(CorelibPubSub.partInstances, rundown ? [rundown._id] : [], rundownPlaylist?.activationId ?? null)
 	useSubscription(CorelibPubSub.parts, rundown ? [rundown._id] : [])
 
 	const previewContext = useTracker(

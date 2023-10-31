@@ -609,7 +609,7 @@ export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, 
 					const rundownIDs = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
 					this.subscribe(CorelibPubSub.segments, rundownIDs, false)
 					this.subscribe(CorelibPubSub.parts, rundownIDs)
-					this.subscribe(CorelibPubSub.partInstances, rundownIDs, playlist.activationId)
+					this.subscribe(CorelibPubSub.partInstances, rundownIDs, playlist.activationId ?? null)
 					this.subscribe(CorelibPubSub.pieces, rundownIDs, null)
 					this.subscribe(CorelibPubSub.pieceInstancesSimple, rundownIDs, null)
 				}

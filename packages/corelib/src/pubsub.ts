@@ -163,7 +163,7 @@ export interface CorelibPubSubTypes {
 	[CorelibPubSub.parts]: (rundownIds: RundownId[], token?: string) => CollectionName.Parts
 	[CorelibPubSub.partInstances]: (
 		rundownIds: RundownId[],
-		playlistActivationId: RundownPlaylistActivationId | undefined,
+		playlistActivationId: RundownPlaylistActivationId | null,
 		token?: string
 	) => CollectionName.PartInstances
 	[CorelibPubSub.partInstancesSimple]: (

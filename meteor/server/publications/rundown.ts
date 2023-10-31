@@ -177,7 +177,7 @@ meteorPublish(
 	CorelibPubSub.partInstances,
 	async function (
 		rundownIds: RundownId[],
-		playlistActivationId: RundownPlaylistActivationId | undefined,
+		playlistActivationId: RundownPlaylistActivationId | null,
 		token: string | undefined
 	) {
 		check(rundownIds, Array)
@@ -194,9 +194,9 @@ meteorPublish(
 
 		const selector: MongoQuery<DBPartInstance> = {
 			rundownId: { $in: rundownIds },
-			playlistActivationId: playlistActivationId,
 			reset: { $ne: true },
 		}
+		if (playlistActivationId) selector.playlistActivationId = playlistActivationId
 
 		if (
 			NoSecurityReadAccess.any() ||
