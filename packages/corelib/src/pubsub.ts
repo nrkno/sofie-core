@@ -48,42 +48,139 @@ import {
  * Ids of possible DDP subscriptions for any the UI and gateways accessing the Rundown & RundownPlaylist model.
  */
 export enum CorelibPubSub {
+	/**
+	 * Fetch RundownPlaylists. Either all in the system, limited to certain Studios, or to specific RundownPlaylists by id.
+	 */
 	rundownPlaylists = 'rundownPlaylists',
+	/**
+	 * Fetch Rundowns. Either all in the system, limited to certain ShowStyleBases, or to specific RundownPlaylists by id.
+	 */
 	rundowns = 'rundowns',
+	/**
+	 * Fetch cached ingest data
+	 */
 	ingestDataCache = 'ingestDataCache',
 
+	/**
+	 * Fetch baseline adlib pieces belonging to the specified Rundowns
+	 */
 	rundownBaselineAdLibPieces = 'rundownBaselineAdLibPieces',
+	/**
+	 * Fetch baseline adlib actions belonging to the specified Rundowns
+	 */
 	rundownBaselineAdLibActions = 'rundownBaselineAdLibActions',
+	/**
+	 * Fetch adlib actions belonging to the specified Rundowns
+	 */
 	adLibActions = 'adLibActions',
+	/**
+	 * Fetch adlib pieces belonging to the specified Rundowns
+	 */
 	adLibPieces = 'adLibPieces',
 
+	/**
+	 *  Fetch Segments belonging to the specified Rundowns, optionally omitting ones set as hidden
+	 */
 	segments = 'segments',
+	/**
+	 * Fetch Parts belonging to the specified Rundowns
+	 */
 	parts = 'parts',
+	/**
+	 * Fetch PartInstances in the specified Rundowns. If set, the result will be limited to the supplied RundownPlaylistActivationId.
+	 * Any reset PartInstances will be omitted
+	 */
 	partInstances = 'partInstances',
+	/**
+	 * Fetch PartInstances in the specified Rundowns. If set, the result will be limited to the supplied RundownPlaylistActivationId.
+	 * Any reset PartInstances will be omitted
+	 * This provides a simplified form of the PartInstance, with any timing information omitted to reduce data churn
+	 */
 	partInstancesSimple = 'partInstancesSimple',
+	/**
+	 * Fetch the most recent PartInstance in a Rundown with the SegmentPlayoutId, including reset instances
+	 * This provides a simplified form of the PartInstance, with any timing information omitted to reduce data churn
+	 */
 	partInstancesForSegmentPlayout = 'partInstancesForSegmentPlayout',
+	/**
+	 * Fetch Pieces belonging to the specified Rundowns, optionally limiting the result to the specified Parts
+	 */
 	pieces = 'pieces',
+	/**
+	 * Fetch Pieces which are infinite and start within the specified range of Segments or Rundowns.
+	 */
 	piecesInfiniteStartingBefore = 'piecesInfiniteStartingBefore',
+	/**
+	 * Fetch PieceInstances in the specified Rundowns, optionally limiting the result to the specified PartInstances.
+	 * Optionally only returning PieceInstances which are playing and were sourced from adlibs, or have tags set.
+	 * Any reset PieceInstances will be omitted
+	 */
 	pieceInstances = 'pieceInstances',
+	/**
+	 * Fetch PieceInstances in the specified Rundowns. If set, the result will be limited to the supplied RundownPlaylistActivationId.
+	 * Any reset PieceInstances will be omitted
+	 * This provides a simplified form of the PieceInstance, with any timing information omitted to reduce data churn
+	 */
 	pieceInstancesSimple = 'pieceInstancesSimple',
 
+	/**
+	 * Fetch all Timeline Datastore entries in the specified Studio
+	 */
 	timelineDatastore = 'timelineDatastore',
 
+	/**
+	 * Fetch all Expected Packages in the specified Studios
+	 */
 	expectedPackages = 'expectedPackages',
+	/**
+	 * Fetch all Expected Package statuses in the specified Studios
+	 */
 	expectedPackageWorkStatuses = 'expectedPackageWorkStatuses',
+	/**
+	 * Fetch all Package container statuses in the specified Studios
+	 */
 	packageContainerStatuses = 'packageContainerStatuses',
 
+	/**
+	 * Fetch all bucket adlib pieces for the specified Studio and Bucket.
+	 * The result will be limited to ones valid to the ShowStyleVariants specified, as well as ones marked as valid in any ShowStyleVariant
+	 */
 	bucketAdLibPieces = 'bucketAdLibPieces',
+	/**
+	 * Fetch all bucket adlib action for the specified Studio and Bucket.
+	 * The result will be limited to ones valid to the ShowStyleVariants specified, as well as ones marked as valid in any ShowStyleVariant
+	 */
 	bucketAdLibActions = 'bucketAdLibActions',
 
+	/**
+	 * Fetch all the External Message Queue documents with a raw mongo query
+	 */
 	externalMessageQueue = 'externalMessageQueue',
 
+	/**
+	 * Fetch either all Blueprints, or the ones specified
+	 */
 	blueprints = 'blueprints',
+	/**
+	 * Fetch either all ShowStyleBases, or the ones specified
+	 */
 	showStyleBases = 'showStyleBases',
+	/**
+	 * Fetch either all ShowStyleVariants, or the ones specified
+	 */
 	showStyleVariants = 'showStyleVariants',
+	/**
+	 * Fetch either all Studios, or the ones specified
+	 */
 	studios = 'studios',
 
+	/**
+	 * Fetch either all PeripheralDevices, or the ones specified
+	 */
 	peripheralDevices = 'peripheralDevices',
+	/**
+	 * Fetch all the PeripheralDevices and sub-devices for the specified Studio
+	 */
 	peripheralDevicesAndSubDevices = 'peripheralDevicesAndSubDevices',
 }
 
