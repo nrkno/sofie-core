@@ -340,6 +340,8 @@ export async function handleRestorePlaylistSnapshot(
 		}
 	}
 
+	snapshot.playlist.rundownIdsInOrder = snapshot.playlist.rundownIdsInOrder.map((id) => rundownIdMap.get(id) ?? id)
+
 	const rundownIds = snapshot.rundowns.map((r) => r._id)
 
 	// Apply the updates of any properties to any document
