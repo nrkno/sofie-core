@@ -238,8 +238,8 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 	#playlistHasChanged = false
 	#timelineHasChanged = false
 
-	#PendingPartInstanceTimingEvents = new Set<PartInstanceId>()
-	#PendingNotifyCurrentlyPlayingPartEvent = new Map<RundownId, string | null>()
+	#pendingPartInstanceTimingEvents = new Set<PartInstanceId>()
+	#pendingNotifyCurrentlyPlayingPartEvent = new Map<RundownId, string | null>()
 
 	get hackDeletedPartInstanceIds(): PartInstanceId[] {
 		const result: PartInstanceId[] = []
@@ -437,14 +437,14 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 	}
 
 	queuePartInstanceTimingEvent(partInstanceId: PartInstanceId): void {
-		this.#PendingPartInstanceTimingEvents.add(partInstanceId)
+		this.#pendingPartInstanceTimingEvents.add(partInstanceId)
 	}
 
 	queueNotifyCurrentlyPlayingPartEvent(rundownId: RundownId, partInstance: PlayoutPartInstanceModel | null): void {
 		if (partInstance && partInstance.partInstance.part.shouldNotifyCurrentPlayingPart) {
-			this.#PendingNotifyCurrentlyPlayingPartEvent.set(rundownId, partInstance.partInstance.part.externalId)
+			this.#pendingNotifyCurrentlyPlayingPartEvent.set(rundownId, partInstance.partInstance.part.externalId)
 		} else if (!partInstance) {
-			this.#PendingNotifyCurrentlyPlayingPartEvent.set(rundownId, null)
+			this.#pendingNotifyCurrentlyPlayingPartEvent.set(rundownId, null)
 		}
 	}
 
@@ -571,13 +571,13 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		}
 		this.#deferredAfterSaveFunctions.length = 0 // clear the array
 
-		for (const partInstanceId of this.#PendingPartInstanceTimingEvents) {
+		for (const partInstanceId of this.#pendingPartInstanceTimingEvents) {
 			// Run in the background, we don't want to hold onto the lock to do this
 			queuePartInstanceTimingEvent(this.context, this.playlistId, partInstanceId)
 		}
-		this.#PendingPartInstanceTimingEvents.clear()
+		this.#pendingPartInstanceTimingEvents.clear()
 
-		for (const [rundownId, partExternalId] of this.#PendingNotifyCurrentlyPlayingPartEvent) {
+		for (const [rundownId, partExternalId] of this.#pendingNotifyCurrentlyPlayingPartEvent) {
 			// This is low-prio, defer so that it's executed well after publications has been updated,
 			// so that the playout gateway has had the chance to learn about the timeline changes
 			this.context
@@ -590,7 +590,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 					logger.warn(`Failed to queue NotifyCurrentlyPlayingPart job: ${e}`)
 				})
 		}
-		this.#PendingNotifyCurrentlyPlayingPartEvent.clear()
+		this.#pendingNotifyCurrentlyPlayingPartEvent.clear()
 
 		if (span) span.end()
 	}

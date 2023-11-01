@@ -5,17 +5,17 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PlayoutSegmentModel } from '../PlayoutSegmentModel'
 
 export class PlayoutSegmentModelImpl implements PlayoutSegmentModel {
-	readonly #Segment: DBSegment
+	readonly #segment: DBSegment
 	readonly parts: ReadonlyDeep<DBPart[]>
 
 	get segment(): ReadonlyDeep<DBSegment> {
-		return this.#Segment
+		return this.#segment
 	}
 
 	constructor(segment: DBSegment, parts: DBPart[]) {
 		parts.sort((a, b) => a._rank - b._rank)
 
-		this.#Segment = segment
+		this.#segment = segment
 		this.parts = parts
 	}
 
@@ -33,9 +33,9 @@ export class PlayoutSegmentModelImpl implements PlayoutSegmentModel {
 	 * @param rank New rank for the segment
 	 */
 	setScratchpadRank(rank: number): void {
-		if (this.#Segment.orphaned !== SegmentOrphanedReason.SCRATCHPAD)
+		if (this.#segment.orphaned !== SegmentOrphanedReason.SCRATCHPAD)
 			throw new Error('setScratchpadRank can only be used on a SCRATCHPAD segment')
 
-		this.#Segment._rank = rank
+		this.#segment._rank = rank
 	}
 }
