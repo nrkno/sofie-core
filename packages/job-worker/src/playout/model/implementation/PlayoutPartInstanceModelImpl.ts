@@ -476,12 +476,18 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		this.#compareAndSetPartValue('_rank', rank)
 	}
 
-	setTaken(takeTime: number, playOffset: number): void {
+	setTaken(takeTime: number, playOffset: number | null): void {
 		this.#compareAndSetPartInstanceValue('isTaken', true)
 
 		const timings = { ...this.partInstanceImpl.timings }
 		timings.take = takeTime
-		timings.playOffset = playOffset
+		timings.playOffset = playOffset ?? 0
+
+		if (playOffset !== null) {
+			// Shift the startedPlayback into the past, to cause playout to start a while into the Part:
+			// Note: We won't use the takeTime here, since the takeTime is when we started executing the take, and we'd rather have the play-time to be Now instead
+			timings.plannedStartedPlayback = getCurrentTime() - playOffset
+		}
 
 		this.#compareAndSetPartInstanceValue('timings', timings, true)
 	}
