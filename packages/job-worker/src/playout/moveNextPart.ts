@@ -15,10 +15,10 @@ export async function moveNextPart(
 	partDelta: number,
 	segmentDelta: number
 ): Promise<PartId | null> {
-	const playlist = playoutModel.Playlist
+	const playlist = playoutModel.playlist
 
-	const currentPartInstance = playoutModel.CurrentPartInstance?.PartInstance
-	const nextPartInstance = playoutModel.NextPartInstance?.PartInstance
+	const currentPartInstance = playoutModel.currentPartInstance?.partInstance
+	const nextPartInstance = playoutModel.nextPartInstance?.partInstance
 
 	const refPartInstance = nextPartInstance ?? currentPartInstance
 	const refPart = refPartInstance?.part
@@ -32,11 +32,11 @@ export async function moveNextPart(
 		// Ignores horizontalDelta
 		const considerSegments = rawSegments.filter(
 			(s) =>
-				s.Segment._id === refPart.segmentId ||
-				!s.Segment.isHidden ||
-				s.Segment.orphaned === SegmentOrphanedReason.SCRATCHPAD
+				s.segment._id === refPart.segmentId ||
+				!s.segment.isHidden ||
+				s.segment.orphaned === SegmentOrphanedReason.SCRATCHPAD
 		)
-		const refSegmentIndex = considerSegments.findIndex((s) => s.Segment._id === refPart.segmentId)
+		const refSegmentIndex = considerSegments.findIndex((s) => s.segment._id === refPart.segmentId)
 		if (refSegmentIndex === -1) throw new Error(`Segment "${refPart.segmentId}" not found!`)
 
 		const targetSegmentIndex = refSegmentIndex + segmentDelta
@@ -57,7 +57,7 @@ export async function moveNextPart(
 		// Iterate through segments and find the first part
 		let selectedPart: ReadonlyDeep<DBPart> | undefined
 		for (const segment of allowedSegments) {
-			const parts = playablePartsBySegment.get(segment.Segment._id) ?? []
+			const parts = playablePartsBySegment.get(segment.segment._id) ?? []
 			// Cant go to the current part (yet)
 			const filteredParts = parts.filter((p) => p._id !== currentPartInstance?.part._id)
 			if (filteredParts.length > 0) {
@@ -84,7 +84,7 @@ export async function moveNextPart(
 			const tmpRefPart = { ...refPart, invalid: true } // make sure it won't be found as playable
 			playabaleParts = sortPartsInSortedSegments(
 				[...playabaleParts, tmpRefPart],
-				rawSegments.map((s) => s.Segment)
+				rawSegments.map((s) => s.segment)
 			)
 			refPartIndex = playabaleParts.findIndex((p) => p._id === refPart._id)
 			if (refPartIndex === -1) throw new Error(`Part "${refPart._id}" not found after insert!`)

@@ -32,7 +32,7 @@ function getShowStyleIdsRundownMapping(rundowns: readonly PlayoutRundownModel[])
 	const ret = new Map()
 
 	for (const rundown of rundowns) {
-		ret.set(rundown.Rundown._id, rundown.Rundown.showStyleBaseId)
+		ret.set(rundown.rundown._id, rundown.rundown.showStyleBaseId)
 	}
 
 	return ret
@@ -54,10 +54,10 @@ export function candidatePartIsAfterPreviewPartInstance(
 		} else {
 			// Check if the segment is after the other
 			const previousSegmentIndex = orderedSegments.findIndex(
-				(s) => s.Segment._id === previousPartInstance.segmentId
+				(s) => s.segment._id === previousPartInstance.segmentId
 			)
 			const candidateSegmentIndex = orderedSegments.findIndex(
-				(s) => s.Segment._id === candidateInstance.segmentId
+				(s) => s.segment._id === candidateInstance.segmentId
 			)
 
 			if (previousSegmentIndex === -1 || candidateSegmentIndex === -1) {
@@ -84,21 +84,21 @@ function getIdsBeforeThisPart(context: JobContext, playoutModel: PlayoutModel, n
 	const currentSegment = currentRundown?.getSegment(nextPart.segmentId)
 
 	// Get the normal parts
-	const partsBeforeThisInSegment = currentSegment?.Parts?.filter((p) => p._rank < nextPart._rank) ?? []
+	const partsBeforeThisInSegment = currentSegment?.parts?.filter((p) => p._rank < nextPart._rank) ?? []
 
 	// Find any orphaned parts
-	const partInstancesBeforeThisInSegment = playoutModel.LoadedPartInstances.filter(
+	const partInstancesBeforeThisInSegment = playoutModel.loadedPartInstances.filter(
 		(p) =>
-			p.PartInstance.segmentId === nextPart.segmentId &&
-			!!p.PartInstance.orphaned &&
-			p.PartInstance.part._rank < nextPart._rank
+			p.partInstance.segmentId === nextPart.segmentId &&
+			!!p.partInstance.orphaned &&
+			p.partInstance.part._rank < nextPart._rank
 	)
-	partsBeforeThisInSegment.push(...partInstancesBeforeThisInSegment.map((p) => p.PartInstance.part))
+	partsBeforeThisInSegment.push(...partInstancesBeforeThisInSegment.map((p) => p.partInstance.part))
 
 	const partsBeforeThisInSegmentSorted = _.sortBy(partsBeforeThisInSegment, (p) => p._rank).map((p) => p._id)
 
 	const nextPartSegment = currentRundown?.getSegment(nextPart.segmentId)
-	if (nextPartSegment?.Segment?.orphaned === SegmentOrphanedReason.SCRATCHPAD) {
+	if (nextPartSegment?.segment?.orphaned === SegmentOrphanedReason.SCRATCHPAD) {
 		if (span) span.end()
 		return {
 			partsToReceiveOnSegmentEndFrom: partsBeforeThisInSegmentSorted,
@@ -111,17 +111,19 @@ function getIdsBeforeThisPart(context: JobContext, playoutModel: PlayoutModel, n
 		const currentSegment = currentRundown?.getSegment(nextPart.segmentId)
 		const segmentsToReceiveOnRundownEndFrom =
 			currentRundown && currentSegment
-				? currentRundown.Segments.filter(
-						(s) =>
-							s.Segment.rundownId === nextPart.rundownId &&
-							s.Segment._rank < currentSegment.Segment._rank &&
-							s.Segment.orphaned !== SegmentOrphanedReason.SCRATCHPAD
-				  ).map((p) => p.Segment._id)
+				? currentRundown.segments
+						.filter(
+							(s) =>
+								s.segment.rundownId === nextPart.rundownId &&
+								s.segment._rank < currentSegment.segment._rank &&
+								s.segment.orphaned !== SegmentOrphanedReason.SCRATCHPAD
+						)
+						.map((p) => p.segment._id)
 				: []
 
 		const sortedRundownIds = sortRundownIDsInPlaylist(
-			playoutModel.Playlist.rundownIdsInOrder,
-			playoutModel.Rundowns.map((rd) => rd.Rundown._id)
+			playoutModel.playlist.rundownIdsInOrder,
+			playoutModel.rundowns.map((rd) => rd.rundown._id)
 		)
 		const currentRundownIndex = sortedRundownIds.indexOf(nextPart.rundownId)
 		const rundownsToReceiveOnShowStyleEndFrom =
@@ -221,46 +223,46 @@ export async function syncPlayheadInfinitesForNextPartInstance(
 	const span = context.startSpan('syncPlayheadInfinitesForNextPartInstance')
 
 	if (toPartInstance && fromPartInstance) {
-		const playlist = playoutModel.Playlist
+		const playlist = playoutModel.playlist
 		if (!playlist.activationId) throw new Error(`RundownPlaylist "${playlist._id}" is not active`)
 
 		const {
 			partsToReceiveOnSegmentEndFrom,
 			segmentsToReceiveOnRundownEndFrom,
 			rundownsToReceiveOnShowStyleEndFrom,
-		} = getIdsBeforeThisPart(context, playoutModel, toPartInstance.PartInstance.part)
+		} = getIdsBeforeThisPart(context, playoutModel, toPartInstance.partInstance.part)
 
-		const currentRundown = playoutModel.getRundown(fromPartInstance.PartInstance.rundownId)
-		if (!currentRundown) throw new Error(`Rundown "${fromPartInstance.PartInstance.rundownId}" not found!`)
+		const currentRundown = playoutModel.getRundown(fromPartInstance.partInstance.rundownId)
+		if (!currentRundown) throw new Error(`Rundown "${fromPartInstance.partInstance.rundownId}" not found!`)
 
-		const currentSegment = currentRundown.getSegment(fromPartInstance.PartInstance.segmentId)
-		if (!currentSegment) throw new Error(`Segment "${fromPartInstance.PartInstance.segmentId}" not found!`)
+		const currentSegment = currentRundown.getSegment(fromPartInstance.partInstance.segmentId)
+		if (!currentSegment) throw new Error(`Segment "${fromPartInstance.partInstance.segmentId}" not found!`)
 
-		const nextRundown = playoutModel.getRundown(toPartInstance.PartInstance.rundownId)
-		if (!nextRundown) throw new Error(`Rundown "${toPartInstance.PartInstance.rundownId}" not found!`)
+		const nextRundown = playoutModel.getRundown(toPartInstance.partInstance.rundownId)
+		if (!nextRundown) throw new Error(`Rundown "${toPartInstance.partInstance.rundownId}" not found!`)
 
-		const nextSegment = nextRundown.getSegment(toPartInstance.PartInstance.segmentId)
-		if (!nextSegment) throw new Error(`Segment "${toPartInstance.PartInstance.segmentId}" not found!`)
+		const nextSegment = nextRundown.getSegment(toPartInstance.partInstance.segmentId)
+		if (!nextSegment) throw new Error(`Segment "${toPartInstance.partInstance.segmentId}" not found!`)
 
-		const showStyleBase = await context.getShowStyleBase(nextRundown.Rundown.showStyleBaseId)
+		const showStyleBase = await context.getShowStyleBase(nextRundown.rundown.showStyleBaseId)
 
 		const nextPartIsAfterCurrentPart = candidatePartIsAfterPreviewPartInstance(
 			context,
 			playoutModel.getAllOrderedSegments(),
-			fromPartInstance.PartInstance,
-			toPartInstance.PartInstance.part
+			fromPartInstance.partInstance,
+			toPartInstance.partInstance.part
 		)
 
-		const nowInPart = getCurrentTime() - (fromPartInstance.PartInstance.timings?.plannedStartedPlayback ?? 0)
+		const nowInPart = getCurrentTime() - (fromPartInstance.partInstance.timings?.plannedStartedPlayback ?? 0)
 		const prunedPieceInstances = processAndPrunePieceInstanceTimings(
 			showStyleBase.sourceLayers,
-			fromPartInstance.PieceInstances.map((p) => p.PieceInstance),
+			fromPartInstance.pieceInstances.map((p) => p.pieceInstance),
 			nowInPart,
 			undefined,
 			true
 		)
 
-		const rundownIdsToShowstyleIds = getShowStyleIdsRundownMapping(playoutModel.Rundowns)
+		const rundownIdsToShowstyleIds = getShowStyleIdsRundownMapping(playoutModel.rundowns)
 
 		const infinites = libgetPlayheadTrackingInfinitesForPart(
 			playlist.activationId,
@@ -268,13 +270,13 @@ export async function syncPlayheadInfinitesForNextPartInstance(
 			new Set(segmentsToReceiveOnRundownEndFrom),
 			rundownsToReceiveOnShowStyleEndFrom,
 			rundownIdsToShowstyleIds,
-			fromPartInstance.PartInstance,
-			currentSegment?.Segment,
+			fromPartInstance.partInstance,
+			currentSegment?.segment,
 			prunedPieceInstances,
-			nextRundown.Rundown,
-			toPartInstance.PartInstance.part,
-			nextSegment?.Segment,
-			toPartInstance.PartInstance._id,
+			nextRundown.rundown,
+			toPartInstance.partInstance.part,
+			nextSegment?.segment,
+			toPartInstance.partInstance._id,
 			nextPartIsAfterCurrentPart,
 			false
 		)
@@ -308,28 +310,28 @@ export function getPieceInstancesForPart(
 	const { partsToReceiveOnSegmentEndFrom, segmentsToReceiveOnRundownEndFrom, rundownsToReceiveOnShowStyleEndFrom } =
 		getIdsBeforeThisPart(context, playoutModel, part)
 
-	const playlist = playoutModel.Playlist
+	const playlist = playoutModel.playlist
 	if (!playlist.activationId) throw new Error(`RundownPlaylist "${playlist._id}" is not active`)
 
-	const playingPieceInstances = playingPartInstance?.PieceInstances ?? []
+	const playingPieceInstances = playingPartInstance?.pieceInstances ?? []
 
 	const nextPartIsAfterCurrentPart = candidatePartIsAfterPreviewPartInstance(
 		context,
 		playoutModel.getAllOrderedSegments(),
-		playingPartInstance?.PartInstance,
+		playingPartInstance?.partInstance,
 		part
 	)
 
-	const rundownIdsToShowstyleIds = getShowStyleIdsRundownMapping(playoutModel.Rundowns)
+	const rundownIdsToShowstyleIds = getShowStyleIdsRundownMapping(playoutModel.rundowns)
 
 	let playingRundown: PlayoutRundownModel | undefined
 	let playingSegment: PlayoutSegmentModel | undefined
 	if (playingPartInstance) {
-		playingRundown = playoutModel.getRundown(playingPartInstance.PartInstance.rundownId)
-		if (!playingRundown) throw new Error(`Rundown "${playingPartInstance.PartInstance.rundownId}" not found!`)
+		playingRundown = playoutModel.getRundown(playingPartInstance.partInstance.rundownId)
+		if (!playingRundown) throw new Error(`Rundown "${playingPartInstance.partInstance.rundownId}" not found!`)
 
-		playingSegment = playingRundown.getSegment(playingPartInstance.PartInstance.segmentId)
-		if (!playingSegment) throw new Error(`Segment "${playingPartInstance.PartInstance.segmentId}" not found!`)
+		playingSegment = playingRundown.getSegment(playingPartInstance.partInstance.segmentId)
+		if (!playingSegment) throw new Error(`Segment "${playingPartInstance.partInstance.segmentId}" not found!`)
 	}
 
 	const segment = rundown.getSegment(part.segmentId)
@@ -337,11 +339,11 @@ export function getPieceInstancesForPart(
 
 	const res = libgetPieceInstancesForPart(
 		playlist.activationId,
-		playingPartInstance?.PartInstance,
-		playingSegment?.Segment,
-		playingPieceInstances.map((p) => p.PieceInstance),
-		rundown.Rundown,
-		segment.Segment,
+		playingPartInstance?.partInstance,
+		playingSegment?.segment,
+		playingPieceInstances.map((p) => p.pieceInstance),
+		rundown.rundown,
+		segment.segment,
 		part,
 		new Set(partsToReceiveOnSegmentEndFrom),
 		new Set(segmentsToReceiveOnRundownEndFrom),

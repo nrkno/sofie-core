@@ -22,13 +22,13 @@ export async function writeScratchpadSegments(
 	for (const rundown of rundowns) {
 		if (rundown.ScratchPadSegmentHasChanged) {
 			rundown.clearScratchPadSegmentChangedFlag()
-			const scratchpadSegment = rundown.getScratchpadSegment()?.Segment
+			const scratchpadSegment = rundown.getScratchpadSegment()?.segment
 
 			// Delete a removed scratchpad, and any with the non-current id (just in case)
 			writeOps.push({
 				deleteMany: {
 					filter: {
-						rundownId: rundown.Rundown._id,
+						rundownId: rundown.rundown._id,
 						_id: { $ne: scratchpadSegment?._id ?? protectString('') },
 					},
 				},
@@ -71,17 +71,17 @@ export function writePartInstancesAndPieceInstances(
 		if (!partInstance) {
 			deletedPartInstanceIds.push(partInstanceId)
 		} else {
-			if (partInstance.PartInstanceHasChanges) {
+			if (partInstance.partInstanceHasChanges) {
 				partInstanceOps.push({
 					replaceOne: {
 						filter: { _id: partInstanceId },
-						replacement: partInstance.PartInstanceImpl,
+						replacement: partInstance.partInstanceImpl,
 						upsert: true,
 					},
 				})
 			}
 
-			for (const [pieceInstanceId, pieceInstance] of partInstance.PieceInstancesImpl.entries()) {
+			for (const [pieceInstanceId, pieceInstance] of partInstance.pieceInstancesImpl.entries()) {
 				if (!pieceInstance) {
 					deletedPieceInstanceIds.push(pieceInstanceId)
 				} else if (pieceInstance.HasChanges) {

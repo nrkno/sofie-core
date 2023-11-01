@@ -24,8 +24,8 @@ export async function handleDebugSyncPlayheadInfinitesForNextPartInstance(
 		await syncPlayheadInfinitesForNextPartInstance(
 			context,
 			playoutModel,
-			playoutModel.CurrentPartInstance,
-			playoutModel.NextPartInstance
+			playoutModel.currentPartInstance,
+			playoutModel.nextPartInstance
 		)
 	})
 }
@@ -41,11 +41,11 @@ export async function handleDebugRegenerateNextPartInstance(
 	logger.info('regenerateNextPartInstance')
 
 	await runJobWithPlayoutModel(context, data, null, async (playoutModel) => {
-		const playlist = playoutModel.Playlist
+		const playlist = playoutModel.playlist
 		const originalNextPartInfo = playlist.nextPartInfo
 		if (originalNextPartInfo && playlist.activationId) {
-			const nextPartInstance = playoutModel.NextPartInstance
-			const part = nextPartInstance ? playoutModel.findPart(nextPartInstance.PartInstance.part._id) : undefined
+			const nextPartInstance = playoutModel.nextPartInstance
+			const part = nextPartInstance ? playoutModel.findPart(nextPartInstance.partInstance.part._id) : undefined
 			if (part) {
 				await setNextPart(context, playoutModel, null, false)
 				await setNextPart(

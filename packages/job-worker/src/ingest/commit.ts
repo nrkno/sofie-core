@@ -230,14 +230,14 @@ export async function CommitIngestOperation(
 					// Run in the background, we don't want to hold onto the lock to do this
 					context
 						.queueEventJob(EventsJobs.RundownDataChanged, {
-							playlistId: playoutCache.PlaylistId,
+							playlistId: playoutCache.playlistId,
 							rundownId: ingestCache.RundownId,
 						})
 						.catch((e) => {
 							logger.error(`Queue RundownDataChanged failed: ${e}`)
 						})
 
-					triggerUpdateTimelineAfterIngestData(context, playoutCache.PlaylistId)
+					triggerUpdateTimelineAfterIngestData(context, playoutCache.playlistId)
 				})
 
 				// wait for the ingest changes to save
@@ -354,7 +354,7 @@ export function hackConvertIngestCacheToRundownWithSegments(cache: ReadOnlyCache
 	const segmentsWithParts = cache.Segments.findAll(null).map(
 		(segment) => new PlayoutSegmentModelImpl(segment, groupedParts.get(segment._id) ?? [])
 	)
-	const groupedSegmentsWithParts = groupByToMapFunc(segmentsWithParts, (s) => s.Segment.rundownId)
+	const groupedSegmentsWithParts = groupByToMapFunc(segmentsWithParts, (s) => s.segment.rundownId)
 
 	return new PlayoutRundownModelImpl(rundown, groupedSegmentsWithParts.get(rundown._id) ?? [], [])
 }
@@ -375,7 +375,7 @@ async function updatePartInstancesBasicProperties(
 		await context.directCollections.PartInstances.findFetch(
 			{
 				reset: { $ne: true },
-				rundownId: rundownModel.Rundown._id,
+				rundownId: rundownModel.rundown._id,
 				orphaned: { $exists: false },
 				'part._id': { $nin: knownPartIds },
 			},
@@ -494,12 +494,12 @@ export async function updatePlayoutAfterChangingRundownInPlaylist(
 ): Promise<void> {
 	// ensure the 'old' playout is updated to remove any references to the rundown
 	await runWithPlayoutModel(context, playlist, playlistLock, null, async (playoutCache) => {
-		if (playoutCache.Rundowns.length === 0) {
-			if (playoutCache.Playlist.activationId)
-				throw new Error(`RundownPlaylist "${playoutCache.PlaylistId}" has no contents but is active...`)
+		if (playoutCache.rundowns.length === 0) {
+			if (playoutCache.playlist.activationId)
+				throw new Error(`RundownPlaylist "${playoutCache.playlistId}" has no contents but is active...`)
 
 			// Remove an empty playlist
-			await context.directCollections.RundownPlaylists.remove({ _id: playoutCache.PlaylistId })
+			await context.directCollections.RundownPlaylists.remove({ _id: playoutCache.playlistId })
 
 			playoutCache.assertNoChanges()
 			return
@@ -511,14 +511,14 @@ export async function updatePlayoutAfterChangingRundownInPlaylist(
 			const rundownModel = playoutCache.getRundown(insertedRundown._id)
 			if (rundownModel) {
 				// If a rundown has changes, ensure instances are updated
-				await updatePartInstancesBasicProperties(context, rundownModel, playoutCache.Playlist)
+				await updatePartInstancesBasicProperties(context, rundownModel, playoutCache.playlist)
 			}
 		}
 
 		await ensureNextPartIsValid(context, playoutCache)
 
-		if (playoutCache.Playlist.activationId) {
-			triggerUpdateTimelineAfterIngestData(context, playoutCache.PlaylistId)
+		if (playoutCache.playlist.activationId) {
+			triggerUpdateTimelineAfterIngestData(context, playoutCache.playlistId)
 		}
 	})
 }
@@ -836,15 +836,15 @@ async function preserveUnsyncedPlayingSegmentContents(
 }
 
 async function validateScratchpad(_context: JobContext, playoutModel: PlayoutModel) {
-	for (const rundown of playoutModel.Rundowns) {
+	for (const rundown of playoutModel.rundowns) {
 		const scratchpadSegment = rundown.getScratchpadSegment()
 
 		if (scratchpadSegment) {
 			// Ensure the _rank is just before the real content
-			const otherSegmentsInRundown = rundown.Segments.filter(
-				(s) => s.Segment.orphaned !== SegmentOrphanedReason.SCRATCHPAD
+			const otherSegmentsInRundown = rundown.segments.filter(
+				(s) => s.segment.orphaned !== SegmentOrphanedReason.SCRATCHPAD
 			)
-			const minNormalRank = Math.min(0, ...otherSegmentsInRundown.map((s) => s.Segment._rank))
+			const minNormalRank = Math.min(0, ...otherSegmentsInRundown.map((s) => s.segment._rank))
 
 			rundown.setScratchpadSegmentRank(minNormalRank - 1)
 		}

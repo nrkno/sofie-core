@@ -19,25 +19,25 @@ import { selectNextPart } from './selectNextPart'
  * Remove all dynamically inserted/updated pieces, parts, timings etc..
  */
 export async function resetRundownPlaylist(context: JobContext, playoutModel: PlayoutModel): Promise<void> {
-	logger.info('resetRundownPlaylist ' + playoutModel.Playlist._id)
+	logger.info('resetRundownPlaylist ' + playoutModel.playlist._id)
 	// Remove all dunamically inserted pieces (adlibs etc)
 	// const rundownIds = new Set((cache.getRundownIds()))
 
-	playoutModel.resetPlaylist(!!playoutModel.Playlist.activationId)
+	playoutModel.resetPlaylist(!!playoutModel.playlist.activationId)
 
 	playoutModel.removeAllRehearsalPartInstances()
 	resetPartInstancesWithPieceInstances(context, playoutModel)
 
 	// Remove the scratchpad
-	for (const rundown of playoutModel.Rundowns) {
+	for (const rundown of playoutModel.rundowns) {
 		rundown.removeScratchpadSegment()
 	}
 
-	if (playoutModel.Playlist.activationId) {
+	if (playoutModel.playlist.activationId) {
 		// put the first on queue:
 		const firstPart = selectNextPart(
 			context,
-			playoutModel.Playlist,
+			playoutModel.playlist,
 			null,
 			null,
 			playoutModel.getAllOrderedSegments(),
@@ -60,17 +60,17 @@ export function resetPartInstancesWithPieceInstances(
 	selector?: MongoQuery<DBPartInstance>
 ): void {
 	const partInstanceIdsToReset: PartInstanceId[] = []
-	for (const partInstance of playoutModel.LoadedPartInstances) {
-		if (!partInstance.PartInstance.reset && (!selector || mongoWhere(partInstance.PartInstance, selector))) {
+	for (const partInstance of playoutModel.loadedPartInstances) {
+		if (!partInstance.partInstance.reset && (!selector || mongoWhere(partInstance.partInstance, selector))) {
 			partInstance.markAsReset()
-			partInstanceIdsToReset.push(partInstance.PartInstance._id)
+			partInstanceIdsToReset.push(partInstance.partInstance._id)
 		}
 	}
 
 	// Defer ones which arent loaded
 	playoutModel.deferAfterSave(async (playoutModel) => {
 		const rundownIds = playoutModel.getRundownIds()
-		const partInstanceIdsInCache = playoutModel.LoadedPartInstances.map((p) => p.PartInstance._id)
+		const partInstanceIdsInCache = playoutModel.loadedPartInstances.map((p) => p.partInstance._id)
 
 		// Find all the partInstances which are not loaded, but should be reset
 		const resetInDb = await context.directCollections.PartInstances.findFetch(

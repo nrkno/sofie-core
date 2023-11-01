@@ -7,7 +7,7 @@ export interface PlayoutPieceInstanceModel {
 	/**
 	 * The PieceInstance properties
 	 */
-	readonly PieceInstance: ReadonlyDeep<PieceInstance>
+	readonly pieceInstance: ReadonlyDeep<PieceInstance>
 
 	/**
 	 * Prepare this PieceInstance to be continued during HOLD

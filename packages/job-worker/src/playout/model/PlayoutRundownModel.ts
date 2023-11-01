@@ -12,17 +12,17 @@ export interface PlayoutRundownModel {
 	/**
 	 * The Rundown properties
 	 */
-	readonly Rundown: ReadonlyDeep<DBRundown>
+	readonly rundown: ReadonlyDeep<DBRundown>
 	/**
 	 * All the Segments in the Rundown
 	 * Sorted by their rank
 	 */
-	readonly Segments: readonly PlayoutSegmentModel[]
+	readonly segments: readonly PlayoutSegmentModel[]
 
 	/**
 	 * The RundownBaselineObjs for this Rundown
 	 */
-	readonly BaselineObjects: ReadonlyDeep<RundownBaselineObj[]>
+	readonly baselineObjects: ReadonlyDeep<RundownBaselineObj[]>
 
 	/**
 	 * Get a Segment which belongs to this Rundown

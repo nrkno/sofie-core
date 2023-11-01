@@ -28,14 +28,14 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 
 	public readonly isStudio = true
 
-	public readonly PeripheralDevices: ReadonlyDeep<PeripheralDevice[]>
+	public readonly peripheralDevices: ReadonlyDeep<PeripheralDevice[]>
 
-	public readonly RundownPlaylists: ReadonlyDeep<DBRundownPlaylist[]>
+	public readonly rundownPlaylists: ReadonlyDeep<DBRundownPlaylist[]>
 
-	#TimelineHasChanged = false
-	#Timeline: TimelineComplete | null
-	public get Timeline(): TimelineComplete | null {
-		return this.#Timeline
+	#timelineHasChanged = false
+	#timeline: TimelineComplete | null
+	public get timeline(): TimelineComplete | null {
+		return this.#timeline
 	}
 
 	public constructor(
@@ -48,18 +48,18 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 
 		this.#baselineHelper = new StudioBaselineHelper(context)
 
-		this.PeripheralDevices = peripheralDevices
+		this.peripheralDevices = peripheralDevices
 
-		this.RundownPlaylists = rundownPlaylists
-		this.#Timeline = timeline ?? null
+		this.rundownPlaylists = rundownPlaylists
+		this.#timeline = timeline ?? null
 	}
 
-	public get DisplayName(): string {
+	public get displayName(): string {
 		return `CacheForStudio`
 	}
 
 	public getActiveRundownPlaylists(excludeRundownPlaylistId?: RundownPlaylistId): ReadonlyDeep<DBRundownPlaylist[]> {
-		return this.RundownPlaylists.filter((p) => !!p.activationId && p._id !== excludeRundownPlaylistId)
+		return this.rundownPlaylists.filter((p) => !!p.activationId && p._id !== excludeRundownPlaylistId)
 	}
 
 	#isMultiGatewayMode: boolean | undefined = undefined
@@ -68,7 +68,7 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 			if (this.context.studio.settings.forceMultiGatewayMode) {
 				this.#isMultiGatewayMode = true
 			} else {
-				const playoutDevices = this.PeripheralDevices.filter(
+				const playoutDevices = this.peripheralDevices.filter(
 					(device) => device.type === PeripheralDeviceType.PLAYOUT
 				)
 				this.#isMultiGatewayMode = playoutDevices.length > 1
@@ -85,14 +85,14 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 	}
 
 	setTimeline(timelineObjs: TimelineObjGeneric[], generationVersions: TimelineCompleteGenerationVersions): void {
-		this.#Timeline = {
+		this.#timeline = {
 			_id: this.context.studioId,
 			timelineHash: getRandomId(),
 			generated: getCurrentTime(),
 			timelineBlob: serializeTimelineBlob(timelineObjs),
 			generationVersions: generationVersions,
 		}
-		this.#TimelineHasChanged = true
+		this.#timelineHasChanged = true
 	}
 
 	/**
@@ -110,10 +110,10 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 		const span = this.context.startSpan('StudioPlayoutModelImpl.saveAllToDatabase')
 
 		// Prioritise the timeline for publication reasons
-		if (this.#TimelineHasChanged && this.#Timeline) {
-			await this.context.directCollections.Timelines.replace(this.#Timeline)
+		if (this.#timelineHasChanged && this.#timeline) {
+			await this.context.directCollections.Timelines.replace(this.#timeline)
 		}
-		this.#TimelineHasChanged = false
+		this.#timelineHasChanged = false
 
 		await this.#baselineHelper.saveAllToDatabase()
 
@@ -143,7 +143,7 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 				)
 			)
 
-		if (this.#TimelineHasChanged)
+		if (this.#timelineHasChanged)
 			logOrThrowError(new Error(`Failed no changes in cache assertion, Timeline has been changed`))
 
 		if (span) span.end()

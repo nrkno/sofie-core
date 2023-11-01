@@ -39,7 +39,7 @@ export async function handleTakePieceAsAdlibNow(context: JobContext, data: TakeP
 		context,
 		data,
 		async (playoutModel) => {
-			const playlist = playoutModel.Playlist
+			const playlist = playoutModel.playlist
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
 			if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
 				throw UserError.create(UserErrorMessage.DuringHold)
@@ -49,11 +49,11 @@ export async function handleTakePieceAsAdlibNow(context: JobContext, data: TakeP
 				throw UserError.create(UserErrorMessage.AdlibCurrentPart)
 		},
 		async (playoutModel) => {
-			const currentPartInstance = playoutModel.CurrentPartInstance
+			const currentPartInstance = playoutModel.currentPartInstance
 			if (!currentPartInstance) throw UserError.create(UserErrorMessage.InactiveRundown)
-			const currentRundown = playoutModel.getRundown(currentPartInstance.PartInstance.rundownId)
+			const currentRundown = playoutModel.getRundown(currentPartInstance.partInstance.rundownId)
 			if (!currentRundown)
-				throw new Error(`Missing Rundown for PartInstance: ${currentPartInstance.PartInstance._id}`)
+				throw new Error(`Missing Rundown for PartInstance: ${currentPartInstance.partInstance._id}`)
 
 			const rundownIds = playoutModel.getRundownIds()
 
@@ -62,7 +62,7 @@ export async function handleTakePieceAsAdlibNow(context: JobContext, data: TakeP
 			)
 
 			const pieceToCopy = pieceInstanceToCopy
-				? clone<PieceInstancePiece>(pieceInstanceToCopy.pieceInstance.PieceInstance.piece)
+				? clone<PieceInstancePiece>(pieceInstanceToCopy.pieceInstance.pieceInstance.piece)
 				: ((await context.directCollections.Pieces.findOne({
 						_id: data.pieceInstanceIdOrPieceIdToCopy as PieceId,
 						startRundownId: { $in: rundownIds },
@@ -75,8 +75,8 @@ export async function handleTakePieceAsAdlibNow(context: JobContext, data: TakeP
 			}
 
 			const showStyleCompound = await context.getShowStyleCompound(
-				currentRundown.Rundown.showStyleVariantId,
-				currentRundown.Rundown.showStyleBaseId
+				currentRundown.rundown.showStyleVariantId,
+				currentRundown.rundown.showStyleBaseId
 			)
 			if (!pieceToCopy.allowDirectPlay) {
 				throw UserError.from(
@@ -146,12 +146,12 @@ async function pieceTakeNowAsAdlib(
 	// Disable the original piece if from the same Part
 	if (
 		pieceInstanceToCopy &&
-		pieceInstanceToCopy.pieceInstance.PieceInstance.partInstanceId === currentPartInstance.PartInstance._id
+		pieceInstanceToCopy.pieceInstance.pieceInstance.partInstanceId === currentPartInstance.partInstance._id
 	) {
 		// Ensure the piece being copied isnt currently live
 		if (
-			pieceInstanceToCopy.pieceInstance.PieceInstance.plannedStartedPlayback &&
-			pieceInstanceToCopy.pieceInstance.PieceInstance.plannedStartedPlayback <= getCurrentTime()
+			pieceInstanceToCopy.pieceInstance.pieceInstance.plannedStartedPlayback &&
+			pieceInstanceToCopy.pieceInstance.pieceInstance.plannedStartedPlayback <= getCurrentTime()
 		) {
 			const resolvedPieces = getResolvedPiecesForCurrentPartInstance(
 				context,
@@ -159,7 +159,7 @@ async function pieceTakeNowAsAdlib(
 				currentPartInstance
 			)
 			const resolvedPieceBeingCopied = resolvedPieces.find(
-				(p) => p.instance._id === pieceInstanceToCopy.pieceInstance.PieceInstance._id
+				(p) => p.instance._id === pieceInstanceToCopy.pieceInstance.pieceInstance._id
 			)
 
 			if (
@@ -171,7 +171,7 @@ async function pieceTakeNowAsAdlib(
 				// logger.debug(`Piece "${piece._id}" is currently live and cannot be used as an ad-lib`)
 				throw UserError.from(
 					new Error(
-						`PieceInstance "${pieceInstanceToCopy.pieceInstance.PieceInstance._id}" is currently live and cannot be used as an ad-lib`
+						`PieceInstance "${pieceInstanceToCopy.pieceInstance.pieceInstance._id}" is currently live and cannot be used as an ad-lib`
 					),
 					UserErrorMessage.PieceAsAdlibCurrentlyLive
 				)
@@ -185,8 +185,8 @@ async function pieceTakeNowAsAdlib(
 	await syncPlayheadInfinitesForNextPartInstance(
 		context,
 		playoutModel,
-		playoutModel.CurrentPartInstance,
-		playoutModel.NextPartInstance
+		playoutModel.currentPartInstance,
+		playoutModel.nextPartInstance
 	)
 
 	await updateTimeline(context, playoutModel)
@@ -200,7 +200,7 @@ export async function handleAdLibPieceStart(context: JobContext, data: AdlibPiec
 		context,
 		data,
 		async (playoutModel) => {
-			const playlist = playoutModel.Playlist
+			const playlist = playoutModel.playlist
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
 			if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
 				throw UserError.create(UserErrorMessage.DuringHold)
@@ -212,13 +212,13 @@ export async function handleAdLibPieceStart(context: JobContext, data: AdlibPiec
 		async (playoutModel) => {
 			const partInstance = playoutModel.getPartInstance(data.partInstanceId)
 			if (!partInstance) throw new Error(`PartInstance "${data.partInstanceId}" not found!`)
-			const rundown = playoutModel.getRundown(partInstance.PartInstance.rundownId)
-			if (!rundown) throw new Error(`Rundown "${partInstance.PartInstance.rundownId}" not found!`)
+			const rundown = playoutModel.getRundown(partInstance.partInstance.rundownId)
+			if (!rundown) throw new Error(`Rundown "${partInstance.partInstance.rundownId}" not found!`)
 
 			// Rundows that share the same showstyle variant as the current rundown, so adlibs from these rundowns are safe to play
-			const safeRundownIds = playoutModel.Rundowns.filter(
-				(rd) => rd.Rundown.showStyleVariantId === rundown.Rundown.showStyleVariantId
-			).map((r) => r.Rundown._id)
+			const safeRundownIds = playoutModel.rundowns
+				.filter((rd) => rd.rundown.showStyleVariantId === rundown.rundown.showStyleVariantId)
+				.map((r) => r.rundown._id)
 
 			let adLibPiece: AdLibPiece | BucketAdLib | undefined
 			if (data.pieceType === 'baseline') {
@@ -237,10 +237,10 @@ export async function handleAdLibPieceStart(context: JobContext, data: AdlibPiec
 					studioId: context.studioId,
 				})
 
-				if (bucketAdlib && bucketAdlib.showStyleVariantId !== rundown.Rundown.showStyleVariantId) {
+				if (bucketAdlib && bucketAdlib.showStyleVariantId !== rundown.rundown.showStyleVariantId) {
 					throw UserError.from(
 						new Error(
-							`Bucket AdLib "${data.adLibPieceId}" is not compatible with rundown "${rundown.Rundown._id}"!`
+							`Bucket AdLib "${data.adLibPieceId}" is not compatible with rundown "${rundown.rundown._id}"!`
 						),
 						UserErrorMessage.BucketAdlibIncompatible
 					)
@@ -281,7 +281,7 @@ export async function handleStartStickyPieceOnSourceLayer(
 		context,
 		data,
 		async (playoutModel) => {
-			const playlist = playoutModel.Playlist
+			const playlist = playoutModel.playlist
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
 			if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
 				throw UserError.create(UserErrorMessage.DuringHold)
@@ -289,13 +289,13 @@ export async function handleStartStickyPieceOnSourceLayer(
 			if (!playlist.currentPartInfo) throw UserError.create(UserErrorMessage.NoCurrentPart)
 		},
 		async (playoutModel) => {
-			const currentPartInstance = playoutModel.CurrentPartInstance
+			const currentPartInstance = playoutModel.currentPartInstance
 			if (!currentPartInstance) throw UserError.create(UserErrorMessage.NoCurrentPart)
 
-			const rundown = playoutModel.getRundown(currentPartInstance.PartInstance.rundownId)
-			if (!rundown) throw new Error(`Rundown "${currentPartInstance.PartInstance.rundownId}" not found!`)
+			const rundown = playoutModel.getRundown(currentPartInstance.partInstance.rundownId)
+			if (!rundown) throw new Error(`Rundown "${currentPartInstance.partInstance.rundownId}" not found!`)
 
-			const showStyleBase = await context.getShowStyleBase(rundown.Rundown.showStyleBaseId)
+			const showStyleBase = await context.getShowStyleBase(rundown.rundown.showStyleBaseId)
 			const sourceLayer = showStyleBase.sourceLayers[data.sourceLayerId]
 			if (!sourceLayer) throw new Error(`Source layer "${data.sourceLayerId}" not found!`)
 
@@ -333,7 +333,7 @@ export async function handleStopPiecesOnSourceLayers(
 		context,
 		data,
 		async (playoutModel) => {
-			const playlist = playoutModel.Playlist
+			const playlist = playoutModel.playlist
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
 			if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
 				throw UserError.create(UserErrorMessage.DuringHold)
@@ -343,13 +343,13 @@ export async function handleStopPiecesOnSourceLayers(
 		async (playoutModel) => {
 			const partInstance = playoutModel.getPartInstance(data.partInstanceId)
 			if (!partInstance) throw new Error(`PartInstance "${data.partInstanceId}" not found!`)
-			const lastStartedPlayback = partInstance.PartInstance.timings?.plannedStartedPlayback
+			const lastStartedPlayback = partInstance.partInstance.timings?.plannedStartedPlayback
 			if (!lastStartedPlayback) throw new Error(`Part "${data.partInstanceId}" has yet to start playback!`)
 
-			const rundown = playoutModel.getRundown(partInstance.PartInstance.rundownId)
-			if (!rundown) throw new Error(`Rundown "${partInstance.PartInstance.rundownId}" not found!`)
+			const rundown = playoutModel.getRundown(partInstance.partInstance.rundownId)
+			if (!rundown) throw new Error(`Rundown "${partInstance.partInstance.rundownId}" not found!`)
 
-			const showStyleBase = await context.getShowStyleBase(rundown.Rundown.showStyleBaseId)
+			const showStyleBase = await context.getShowStyleBase(rundown.rundown.showStyleBaseId)
 			const sourceLayerIds = new Set(data.sourceLayerIds)
 			const changedIds = innerStopPieces(
 				context,
@@ -364,8 +364,8 @@ export async function handleStopPiecesOnSourceLayers(
 				await syncPlayheadInfinitesForNextPartInstance(
 					context,
 					playoutModel,
-					playoutModel.CurrentPartInstance,
-					playoutModel.NextPartInstance
+					playoutModel.currentPartInstance,
+					playoutModel.nextPartInstance
 				)
 
 				await updateTimeline(context, playoutModel)
@@ -382,22 +382,22 @@ export async function handleDisableNextPiece(context: JobContext, data: DisableN
 		context,
 		data,
 		async (playoutModel) => {
-			const playlist = playoutModel.Playlist
+			const playlist = playoutModel.playlist
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
 
 			if (!playlist.currentPartInfo) throw UserError.create(UserErrorMessage.NoCurrentPart)
 		},
 		async (playoutModel) => {
-			const playlist = playoutModel.Playlist
+			const playlist = playoutModel.playlist
 
-			const currentPartInstance = playoutModel.CurrentPartInstance
-			const nextPartInstance = playoutModel.NextPartInstance
+			const currentPartInstance = playoutModel.currentPartInstance
+			const nextPartInstance = playoutModel.nextPartInstance
 			if (!currentPartInstance)
 				throw new Error(`PartInstance "${playlist.currentPartInfo?.partInstanceId}" not found!`)
 
-			const rundown = playoutModel.getRundown(currentPartInstance.PartInstance.rundownId)
-			if (!rundown) throw new Error(`Rundown "${currentPartInstance.PartInstance.rundownId}" not found!`)
-			const showStyleBase = await context.getShowStyleBase(rundown.Rundown.showStyleBaseId)
+			const rundown = playoutModel.getRundown(currentPartInstance.partInstance.rundownId)
+			if (!rundown) throw new Error(`Rundown "${currentPartInstance.partInstance.rundownId}" not found!`)
+			const showStyleBase = await context.getShowStyleBase(rundown.rundown.showStyleBaseId)
 
 			// logger.info(o)
 			// logger.info(JSON.stringify(o, '', 2))
@@ -408,28 +408,28 @@ export async function handleDisableNextPiece(context: JobContext, data: DisableN
 				// Find next piece to disable
 
 				let nowInPart = 0
-				if (!ignoreStartedPlayback && partInstance.PartInstance.timings?.plannedStartedPlayback) {
-					nowInPart = getCurrentTime() - partInstance.PartInstance.timings?.plannedStartedPlayback
+				if (!ignoreStartedPlayback && partInstance.partInstance.timings?.plannedStartedPlayback) {
+					nowInPart = getCurrentTime() - partInstance.partInstance.timings?.plannedStartedPlayback
 				}
 
-				const filteredPieces = partInstance.PieceInstances.filter((piece) => {
-					const sourceLayer = allowedSourceLayers[piece.PieceInstance.piece.sourceLayerId]
+				const filteredPieces = partInstance.pieceInstances.filter((piece) => {
+					const sourceLayer = allowedSourceLayers[piece.pieceInstance.piece.sourceLayerId]
 					if (
 						sourceLayer?.allowDisable &&
-						!piece.PieceInstance.piece.virtual &&
-						piece.PieceInstance.piece.pieceType === IBlueprintPieceType.Normal
+						!piece.pieceInstance.piece.virtual &&
+						piece.pieceInstance.piece.pieceType === IBlueprintPieceType.Normal
 					)
 						return true
 					return false
 				})
 
 				const sortedByLayer = _.sortBy(filteredPieces, (piece) => {
-					const sourceLayer = allowedSourceLayers[piece.PieceInstance.piece.sourceLayerId]
+					const sourceLayer = allowedSourceLayers[piece.pieceInstance.piece.sourceLayerId]
 					return sourceLayer?._rank || -9999
 				})
 
 				const sortedPieces = [...sortedByLayer]
-				sortedPieces.sort((a, b) => comparePieceStart(a.PieceInstance.piece, b.PieceInstance.piece, nowInPart))
+				sortedPieces.sort((a, b) => comparePieceStart(a.pieceInstance.piece, b.pieceInstance.piece, nowInPart))
 
 				const findLast = !!data.undo
 
@@ -437,8 +437,8 @@ export async function handleDisableNextPiece(context: JobContext, data: DisableN
 
 				return sortedPieces.find((piece) => {
 					return (
-						piece.PieceInstance.piece.enable.start >= nowInPart &&
-						((!data.undo && !piece.PieceInstance.disabled) || (data.undo && piece.PieceInstance.disabled))
+						piece.pieceInstance.piece.enable.start >= nowInPart &&
+						((!data.undo && !piece.pieceInstance.disabled) || (data.undo && piece.pieceInstance.disabled))
 					)
 				})
 			}
@@ -458,7 +458,7 @@ export async function handleDisableNextPiece(context: JobContext, data: DisableN
 						logger.debug(
 							(data.undo ? 'Disabling' : 'Enabling') +
 								' next PieceInstance ' +
-								candidatePieceInstance.PieceInstance._id
+								candidatePieceInstance.pieceInstance._id
 						)
 						candidatePieceInstance.setDisabled(!data.undo)
 						disabledPiece = true

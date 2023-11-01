@@ -135,12 +135,12 @@ export async function executeActionInner(
 ): Promise<ExecuteActionResult> {
 	const now = getCurrentTime()
 
-	const playlist = playoutModel.Playlist
+	const playlist = playoutModel.playlist
 
 	const actionContext = new ActionExecutionContext(
 		{
-			name: `${rundown.Rundown.name}(${playlist.name})`,
-			identifier: `playlist=${playlist._id},rundown=${rundown.Rundown._id},currentPartInstance=${
+			name: `${rundown.rundown.name}(${playlist.name})`,
+			identifier: `playlist=${playlist._id},rundown=${rundown.rundown._id},currentPartInstance=${
 				playlist.currentPartInfo?.partInstanceId
 			},execution=${getRandomId()}`,
 			tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT store these notes
@@ -195,13 +195,13 @@ async function applyAnyExecutionSideEffects(
 		await syncPlayheadInfinitesForNextPartInstance(
 			context,
 			playoutModel,
-			playoutModel.CurrentPartInstance,
-			playoutModel.NextPartInstance
+			playoutModel.currentPartInstance,
+			playoutModel.nextPartInstance
 		)
 	}
 
 	if (actionContext.nextPartState !== ActionPartChange.NONE) {
-		const nextPartInstance = playoutModel.NextPartInstance
+		const nextPartInstance = playoutModel.nextPartInstance
 		if (nextPartInstance) {
 			nextPartInstance.recalculateExpectedDurationWithPreroll()
 
@@ -210,7 +210,7 @@ async function applyAnyExecutionSideEffects(
 	}
 
 	if (actionContext.currentPartState !== ActionPartChange.NONE) {
-		const currentPartInstance = playoutModel.CurrentPartInstance
+		const currentPartInstance = playoutModel.currentPartInstance
 		if (currentPartInstance) {
 			validateScratchpartPartInstanceProperties(context, playoutModel, currentPartInstance)
 		}

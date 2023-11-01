@@ -47,7 +47,7 @@ export async function handlePrepareRundownPlaylistForBroadcast(
 		context,
 		data,
 		async (playoutModel) => {
-			const playlist = playoutModel.Playlist
+			const playlist = playoutModel.playlist
 			if (playlist.activationId) throw UserError.create(UserErrorMessage.RundownAlreadyActive)
 
 			await checkNoOtherPlaylistsActive(context, playlist)
@@ -70,7 +70,7 @@ export async function handleResetRundownPlaylist(context: JobContext, data: Rese
 		context,
 		data,
 		async (playoutModel) => {
-			const playlist = playoutModel.Playlist
+			const playlist = playoutModel.playlist
 			if (playlist.activationId && !playlist.rehearsal && !context.studio.settings.allowRundownResetOnAir) {
 				throw UserError.create(UserErrorMessage.RundownResetWhileActive)
 			}
@@ -115,7 +115,7 @@ export async function handleResetRundownPlaylist(context: JobContext, data: Rese
 			if (data.activate) {
 				// Do the activation
 				await activateRundownPlaylist(context, playoutModel, data.activate !== 'active') // Activate rundown
-			} else if (playoutModel.Playlist.activationId) {
+			} else if (playoutModel.playlist.activationId) {
 				// Only update the timeline if this is the active playlist
 				await updateTimeline(context, playoutModel)
 			}
@@ -135,7 +135,7 @@ export async function handleActivateRundownPlaylist(
 		// 'activateRundownPlaylist',
 		data,
 		async (playoutModel) => {
-			const playlist = playoutModel.Playlist
+			const playlist = playoutModel.playlist
 			await checkNoOtherPlaylistsActive(context, playlist)
 		},
 		async (playoutModel) => {

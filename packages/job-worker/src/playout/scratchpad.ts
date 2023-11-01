@@ -16,13 +16,13 @@ export async function handleActivateScratchpad(context: JobContext, data: Activa
 		context,
 		data,
 		async (playoutModel) => {
-			const playlist = playoutModel.Playlist
+			const playlist = playoutModel.playlist
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
 
 			if (playlist.currentPartInfo) throw UserError.create(UserErrorMessage.RundownAlreadyActive)
 		},
 		async (playoutModel) => {
-			const playlist = playoutModel.Playlist
+			const playlist = playoutModel.playlist
 			if (!playlist.activationId) throw new Error(`Playlist has no activationId!`)
 
 			const rundown = playoutModel.getRundown(data.rundownId)
@@ -60,20 +60,20 @@ export function validateScratchpartPartInstanceProperties(
 	playoutModel: PlayoutModel,
 	partInstance: PlayoutPartInstanceModel
 ): void {
-	const rundown = playoutModel.getRundown(partInstance.PartInstance.rundownId)
+	const rundown = playoutModel.getRundown(partInstance.partInstance.rundownId)
 	if (!rundown)
 		throw new Error(
-			`Failed to find Rundown "${partInstance.PartInstance.rundownId}" for PartInstance "${partInstance.PartInstance._id}"`
+			`Failed to find Rundown "${partInstance.partInstance.rundownId}" for PartInstance "${partInstance.partInstance._id}"`
 		)
 
-	const segment = rundown.getSegment(partInstance.PartInstance.segmentId)
+	const segment = rundown.getSegment(partInstance.partInstance.segmentId)
 	if (!segment)
 		throw new Error(
-			`Failed to find Segment "${partInstance.PartInstance.segmentId}" for PartInstance "${partInstance.PartInstance._id}"`
+			`Failed to find Segment "${partInstance.partInstance.segmentId}" for PartInstance "${partInstance.partInstance._id}"`
 		)
 
 	// Check if this applies
-	if (segment.Segment.orphaned !== SegmentOrphanedReason.SCRATCHPAD) return
+	if (segment.segment.orphaned !== SegmentOrphanedReason.SCRATCHPAD) return
 
 	partInstance.validateScratchpadSegmentProperties()
 }

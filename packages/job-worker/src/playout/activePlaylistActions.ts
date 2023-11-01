@@ -18,15 +18,15 @@ export async function activateRundownPlaylist(
 	playoutModel: PlayoutModel,
 	rehearsal: boolean
 ): Promise<void> {
-	logger.info('Activating rundown ' + playoutModel.Playlist._id + (rehearsal ? ' (Rehearsal)' : ''))
+	logger.info('Activating rundown ' + playoutModel.playlist._id + (rehearsal ? ' (Rehearsal)' : ''))
 
 	rehearsal = !!rehearsal
-	const wasActive = !!playoutModel.Playlist.activationId
+	const wasActive = !!playoutModel.playlist.activationId
 
 	const anyOtherActiveRundowns = await getActiveRundownPlaylistsInStudioFromDb(
 		context,
 		context.studio._id,
-		playoutModel.Playlist._id
+		playoutModel.playlist._id
 	)
 	if (anyOtherActiveRundowns.length) {
 		// logger.warn('Only one rundown can be active at the same time. Active rundowns: ' + _.map(anyOtherActiveRundowns, rundown => rundown._id))
@@ -37,7 +37,7 @@ export async function activateRundownPlaylist(
 		)
 	}
 
-	if (!playoutModel.Playlist.activationId) {
+	if (!playoutModel.playlist.activationId) {
 		// Reset the playlist if it wasnt already active
 		await resetRundownPlaylist(context, playoutModel)
 	}
@@ -46,14 +46,14 @@ export async function activateRundownPlaylist(
 
 	let rundown: ReadonlyDeep<DBRundown> | undefined
 
-	const currentPartInstance = playoutModel.CurrentPartInstance
-	if (!currentPartInstance || currentPartInstance.PartInstance.reset) {
+	const currentPartInstance = playoutModel.currentPartInstance
+	if (!currentPartInstance || currentPartInstance.partInstance.reset) {
 		playoutModel.clearSelectedPartInstances()
 
 		// If we are not playing anything, then regenerate the next part
 		const firstPart = selectNextPart(
 			context,
-			playoutModel.Playlist,
+			playoutModel.playlist,
 			null,
 			null,
 			playoutModel.getAllOrderedSegments(),
@@ -62,18 +62,18 @@ export async function activateRundownPlaylist(
 		await setNextPart(context, playoutModel, firstPart, false)
 
 		if (firstPart) {
-			rundown = playoutModel.getRundown(firstPart.part.rundownId)?.Rundown
+			rundown = playoutModel.getRundown(firstPart.part.rundownId)?.rundown
 		}
 	} else {
 		// Otherwise preserve the active partInstances
-		for (const partInstance of playoutModel.SelectedPartInstances) {
+		for (const partInstance of playoutModel.selectedPartInstances) {
 			partInstance.setPlaylistActivationId(newActivationId)
 		}
 
-		const nextPartInstance = playoutModel.NextPartInstance
+		const nextPartInstance = playoutModel.nextPartInstance
 		if (nextPartInstance) {
-			rundown = playoutModel.getRundown(nextPartInstance.PartInstance.rundownId)?.Rundown
-			if (!rundown) throw new Error(`Could not find rundown "${nextPartInstance.PartInstance.rundownId}"`)
+			rundown = playoutModel.getRundown(nextPartInstance.partInstance.rundownId)?.rundown
+			if (!rundown) throw new Error(`Could not find rundown "${nextPartInstance.partInstance.rundownId}"`)
 		}
 	}
 
@@ -123,18 +123,18 @@ export async function deactivateRundownPlaylistInner(
 	playoutModel: PlayoutModel
 ): Promise<ReadonlyDeep<DBRundown> | undefined> {
 	const span = context.startSpan('deactivateRundownPlaylistInner')
-	logger.info(`Deactivating rundown playlist "${playoutModel.Playlist._id}"`)
+	logger.info(`Deactivating rundown playlist "${playoutModel.playlist._id}"`)
 
-	const currentPartInstance = playoutModel.CurrentPartInstance
-	const nextPartInstance = playoutModel.NextPartInstance
+	const currentPartInstance = playoutModel.currentPartInstance
+	const nextPartInstance = playoutModel.nextPartInstance
 
 	let rundown: ReadonlyDeep<DBRundown> | undefined
 	if (currentPartInstance) {
-		rundown = playoutModel.getRundown(currentPartInstance.PartInstance.rundownId)?.Rundown
+		rundown = playoutModel.getRundown(currentPartInstance.partInstance.rundownId)?.rundown
 
-		playoutModel.queueNotifyCurrentlyPlayingPartEvent(currentPartInstance.PartInstance.rundownId, null)
+		playoutModel.queueNotifyCurrentlyPlayingPartEvent(currentPartInstance.partInstance.rundownId, null)
 	} else if (nextPartInstance) {
-		rundown = playoutModel.getRundown(nextPartInstance.PartInstance.rundownId)?.Rundown
+		rundown = playoutModel.getRundown(nextPartInstance.partInstance.rundownId)?.rundown
 	}
 
 	playoutModel.deactivatePlaylist()

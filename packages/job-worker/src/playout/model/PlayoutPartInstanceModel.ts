@@ -19,12 +19,12 @@ export interface PlayoutPartInstanceModel {
 	/**
 	 * The PartInstance properties
 	 */
-	readonly PartInstance: ReadonlyDeep<DBPartInstance>
+	readonly partInstance: ReadonlyDeep<DBPartInstance>
 
 	/**
 	 * All the PieceInstances in the PartInstance
 	 */
-	readonly PieceInstances: PlayoutPieceInstanceModel[]
+	readonly pieceInstances: PlayoutPieceInstanceModel[]
 
 	/**
 	 * Take a snapshot of the current state of this PlayoutPartInstanceModel

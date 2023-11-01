@@ -29,11 +29,11 @@ export async function onPartPlaybackStarted(
 	const playingPartInstance = playoutModel.getPartInstance(data.partInstanceId)
 	if (!playingPartInstance)
 		throw new Error(
-			`PartInstance "${data.partInstanceId}" in RundownPlayst "${playoutModel.PlaylistId}" not found!`
+			`PartInstance "${data.partInstanceId}" in RundownPlayst "${playoutModel.playlistId}" not found!`
 		)
 
 	// make sure we don't run multiple times, even if TSR calls us multiple times
-	const hasStartedPlaying = !!playingPartInstance.PartInstance.timings?.reportedStartedPlayback
+	const hasStartedPlaying = !!playingPartInstance.partInstance.timings?.reportedStartedPlayback
 	if (!hasStartedPlaying) {
 		logger.debug(
 			`Playout reports PartInstance "${data.partInstanceId}" has started playback on timestamp ${new Date(
@@ -41,12 +41,12 @@ export async function onPartPlaybackStarted(
 			).toISOString()}`
 		)
 
-		const playlist = playoutModel.Playlist
+		const playlist = playoutModel.playlist
 
-		const rundown = playoutModel.getRundown(playingPartInstance.PartInstance.rundownId)
-		if (!rundown) throw new Error(`Rundown "${playingPartInstance.PartInstance.rundownId}" not found!`)
+		const rundown = playoutModel.getRundown(playingPartInstance.partInstance.rundownId)
+		if (!rundown) throw new Error(`Rundown "${playingPartInstance.partInstance.rundownId}" not found!`)
 
-		const currentPartInstance = playoutModel.CurrentPartInstance
+		const currentPartInstance = playoutModel.currentPartInstance
 
 		if (playlist.currentPartInfo?.partInstanceId === data.partInstanceId) {
 			// this is the current part, it has just started playback
@@ -63,32 +63,32 @@ export async function onPartPlaybackStarted(
 
 			// Update generated properties on the newly playing partInstance
 			const currentRundown = currentPartInstance
-				? playoutModel.getRundown(currentPartInstance.PartInstance.rundownId)
+				? playoutModel.getRundown(currentPartInstance.partInstance.rundownId)
 				: undefined
 			const showStyleRundown = currentRundown ?? rundown
 			const showStyle = await context.getShowStyleCompound(
-				showStyleRundown.Rundown.showStyleVariantId,
-				showStyleRundown.Rundown.showStyleBaseId
+				showStyleRundown.rundown.showStyleVariantId,
+				showStyleRundown.rundown.showStyleBaseId
 			)
 			const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 			updatePartInstanceOnTake(
 				context,
-				playoutModel.Playlist,
+				playoutModel.playlist,
 				showStyle,
 				blueprint,
-				rundown.Rundown,
+				rundown.rundown,
 				playingPartInstance,
 				currentPartInstance
 			)
 
-			clearQueuedSegmentId(playoutModel, playingPartInstance.PartInstance, playlist.nextPartInfo)
+			clearQueuedSegmentId(playoutModel, playingPartInstance.partInstance, playlist.nextPartInfo)
 			resetPreviousSegment(playoutModel)
 
 			// Update the next partinstance
 			const nextPart = selectNextPart(
 				context,
 				playlist,
-				playingPartInstance.PartInstance,
+				playingPartInstance.partInstance,
 				null,
 				playoutModel.getAllOrderedSegments(),
 				playoutModel.getAllOrderedParts()
@@ -116,7 +116,7 @@ export async function onPartPlaybackStarted(
 			}
 
 			logger.error(
-				`PartInstance "${playingPartInstance.PartInstance._id}" has started playback by the playout gateway, but has not been selected for playback!`
+				`PartInstance "${playingPartInstance.partInstance._id}" has started playback by the playout gateway, but has not been selected for playback!`
 			)
 		}
 	}
@@ -136,15 +136,15 @@ export function onPartPlaybackStopped(
 		stoppedPlayback: Time
 	}
 ): void {
-	const playlist = playoutModel.Playlist
+	const playlist = playoutModel.playlist
 
 	const partInstance = playoutModel.getPartInstance(data.partInstanceId)
 	if (partInstance) {
 		// make sure we don't run multiple times, even if TSR calls us multiple times
 
 		const isPlaying =
-			partInstance.PartInstance.timings?.reportedStartedPlayback &&
-			!partInstance.PartInstance.timings?.reportedStoppedPlayback
+			partInstance.partInstance.timings?.reportedStartedPlayback &&
+			!partInstance.partInstance.timings?.reportedStoppedPlayback
 		if (isPlaying) {
 			logger.debug(
 				`onPartPlaybackStopped: Playout reports PartInstance "${
@@ -182,19 +182,19 @@ export function reportPartInstanceHasStarted(
 			partInstance.setPlannedStartedPlayback(timestamp)
 		}
 
-		const previousPartInstance = playoutModel.PreviousPartInstance
+		const previousPartInstance = playoutModel.previousPartInstance
 		if (timestampUpdated && !playoutModel.isMultiGatewayMode && previousPartInstance) {
 			// Ensure the plannedStoppedPlayback is set for the previous partinstance too
 			previousPartInstance.setPlannedStoppedPlayback(timestamp)
 		}
 
 		// Update the playlist:
-		if (!partInstance.PartInstance.part.untimed) {
-			playoutModel.setRundownStartedPlayback(partInstance.PartInstance.rundownId, timestamp)
+		if (!partInstance.partInstance.part.untimed) {
+			playoutModel.setRundownStartedPlayback(partInstance.partInstance.rundownId, timestamp)
 		}
 
 		if (timestampUpdated) {
-			playoutModel.queuePartInstanceTimingEvent(partInstance.PartInstance._id)
+			playoutModel.queuePartInstanceTimingEvent(partInstance.partInstance._id)
 		}
 	}
 }
@@ -218,6 +218,6 @@ export function reportPartInstanceHasStopped(
 	}
 
 	if (timestampUpdated) {
-		playoutModel.queuePartInstanceTimingEvent(partInstance.PartInstance._id)
+		playoutModel.queuePartInstanceTimingEvent(partInstance.partInstance._id)
 	}
 }
