@@ -34,6 +34,9 @@ import {
 } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 import { RundownPlaylistActivationId } from './dataModel/Ids'
 
+/**
+ * Ids of possible DDP subscriptions for any the UI and gateways accessing the Rundown & RundownPlaylist model.
+ */
 export enum CorelibPubSub {
 	rundownPlaylists = 'rundownPlaylists',
 	rundowns = 'rundowns',
@@ -73,11 +76,11 @@ export enum CorelibPubSub {
 	studios = 'studios',
 
 	peripheralDevices = 'peripheralDevices',
-	peripheralDevicesAndSubDevices = ' peripheralDevicesAndSubDevices',
+	peripheralDevicesAndSubDevices = 'peripheralDevicesAndSubDevices',
 }
 
 /**
- * Type definitions for DDP subscriptions of corelib types.
+ * Type definitions for DDP subscriptions for any the UI and gateways accessing the Rundown & RundownPlaylist model.
  */
 export interface CorelibPubSubTypes {
 	[CorelibPubSub.blueprints]: (selector: MongoQuery<Blueprint>, token?: string) => CollectionName.Blueprints
