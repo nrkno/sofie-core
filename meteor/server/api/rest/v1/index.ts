@@ -20,9 +20,6 @@ import {
 	ShowStyleBaseActionType,
 	MigrationData,
 	PendingMigrations,
-	APIBucket,
-	BucketsRestAPI,
-	APIBucketComplete,
 } from '../../../../lib/api/rest'
 import { MeteorCall, MethodContextAPI } from '../../../../lib/api/methods'
 import { ServerClientAPI } from '../../client'
@@ -35,7 +32,6 @@ import {
 	BlueprintId,
 	BucketAdLibActionId,
 	BucketAdLibId,
-	BucketId,
 	PartId,
 	PartInstanceId,
 	PeripheralDeviceId,
@@ -60,7 +56,6 @@ import {
 	Blueprints,
 	BucketAdLibActions,
 	BucketAdLibs,
-	Buckets,
 	PeripheralDevices,
 	RundownBaselineAdLibActions,
 	RundownBaselineAdLibPieces,
@@ -72,7 +67,6 @@ import {
 } from '../../../collections'
 import {
 	APIBlueprintFrom,
-	APIBucketFrom,
 	APIPeripheralDeviceFrom,
 	APIShowStyleBaseFrom,
 	APIShowStyleVariantFrom,
@@ -98,8 +92,8 @@ import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { executePeripheralDeviceFunction } from '../../peripheralDevice/executeFunction'
 import { makeMeteorConnectionFromKoa } from '../koa'
 import bodyParser from 'koa-bodyparser'
-import { BucketsAPI } from '../../buckets'
-import { BucketSecurity } from '../../../security/buckets'
+import { APIFactory, ServerAPIContext } from './types'
+import { registerRoutes as registerBucketsRoutes } from './buckets'
 
 function restAPIUserEvent(
 	ctx: Koa.ParameterizedContext<
@@ -111,7 +105,7 @@ function restAPIUserEvent(
 	return `rest_api_${ctx.method}_${ctx.URL.origin}/api/v1.0${ctx.URL.pathname}}`
 }
 
-class ServerRestAPI implements RestAPI, BucketsRestAPI {
+export class ServerRestAPI implements RestAPI {
 	static getMethodContext(connection: Meteor.Connection): MethodContextAPI {
 		return {
 			userId: null,
@@ -126,7 +120,7 @@ class ServerRestAPI implements RestAPI, BucketsRestAPI {
 		}
 	}
 
-	static getCredentials(_connection: Meteor.Connection): Credentials {
+	static getCredentials(): Credentials {
 		return { userId: null }
 	}
 
@@ -509,7 +503,7 @@ class ServerRestAPI implements RestAPI, BucketsRestAPI {
 		studioId: StudioId,
 		routeSetId: string,
 		state: boolean
-	) {
+	): Promise<ClientAPI.ClientResponse<void>> {
 		return ServerClientAPI.runUserActionInLog(
 			ServerRestAPI.getMethodContext(connection),
 			event,
@@ -521,10 +515,7 @@ class ServerRestAPI implements RestAPI, BucketsRestAPI {
 				check(routeSetId, String)
 				check(state, Boolean)
 
-				const access = await StudioContentWriteAccess.routeSet(
-					ServerRestAPI.getCredentials(connection),
-					studioId
-				)
+				const access = await StudioContentWriteAccess.routeSet(ServerRestAPI.getCredentials(), studioId)
 				return ServerPlayoutAPI.switchRouteSet(access, routeSetId, state)
 			}
 		)
@@ -750,7 +741,7 @@ class ServerRestAPI implements RestAPI, BucketsRestAPI {
 		_event: string,
 		studioId: StudioId,
 		deviceId: PeripheralDeviceId
-	) {
+	): Promise<ClientAPI.ClientResponse<void>> {
 		const studio = await Studios.findOneAsync(studioId)
 		if (!studio)
 			return ClientAPI.responseError(
@@ -1207,181 +1198,6 @@ class ServerRestAPI implements RestAPI, BucketsRestAPI {
 		if (result.migrationCompleted) return ClientAPI.responseSuccess(undefined)
 		throw new Error(`Unknown error occurred`)
 	}
-
-	// --- Buckets
-
-	async getAllBuckets(
-		_connection: Meteor.Connection,
-		_event: string
-	): Promise<ClientAPI.ClientResponse<Array<APIBucketComplete>>> {
-		const buckets = await Buckets.findFetchAsync({}, { projection: { _id: 1, name: 1, studioId: 1 } })
-		return ClientAPI.responseSuccess(buckets.map(APIBucketFrom))
-	}
-
-	async addBucket(
-		connection: Meteor.Connection,
-		event: string,
-		bucket: APIBucket
-	): Promise<ClientAPI.ClientResponse<BucketId>> {
-		// const studio = await Studios.findOneAsync(protectString(bucket.studioId))
-		// if (!studio)
-		// 	return ClientAPI.responseError(
-		// 		UserError.from(new Error(`Studio does not exist`), UserErrorMessage.StudioNotFound),
-		// 		404
-		// 	)
-		// const newBucket = bucketFrom(bucket)
-		// const newBucketId = await Buckets.insertAsync(newBucket)
-		// return ClientAPI.responseSuccess(unprotectString(newBucketId))
-		const createdBucketResponse = await ServerClientAPI.runUserActionInLog(
-			ServerRestAPI.getMethodContext(connection),
-			event,
-			getCurrentTime(),
-			'bucketsCreateNewBucket',
-			[bucket.name, bucket.studioId],
-			async () => {
-				check(bucket.studioId, String)
-				check(bucket.name, String)
-
-				const access = await StudioContentWriteAccess.bucket(
-					ServerRestAPI.getCredentials(connection),
-					protectString(bucket.studioId)
-				)
-				return BucketsAPI.createNewBucket(access, bucket.name)
-			}
-		)
-		if (ClientAPI.isClientResponseSuccess(createdBucketResponse)) {
-			return ClientAPI.responseSuccess(createdBucketResponse.result._id)
-		}
-		return createdBucketResponse
-	}
-
-	async deleteBucket(
-		connection: Meteor.Connection,
-		event: string,
-		bucketId: BucketId
-	): Promise<ClientAPI.ClientResponse<void>> {
-		return ServerClientAPI.runUserActionInLog(
-			ServerRestAPI.getMethodContext(connection),
-			event,
-			getCurrentTime(),
-			'bucketsRemoveBucket',
-			[bucketId],
-			async () => {
-				check(bucketId, String)
-
-				const access = await BucketSecurity.allowWriteAccess(ServerRestAPI.getCredentials(connection), bucketId)
-				return BucketsAPI.removeBucket(access)
-			}
-		)
-	}
-
-	async emptyBucket(
-		connection: Meteor.Connection,
-		event: string,
-		bucketId: BucketId
-	): Promise<ClientAPI.ClientResponse<void>> {
-		return ServerClientAPI.runUserActionInLog(
-			ServerRestAPI.getMethodContext(connection),
-			event,
-			getCurrentTime(),
-			'bucketsEmptyBucket',
-			[bucketId],
-			async () => {
-				check(bucketId, String)
-
-				const access = await BucketSecurity.allowWriteAccess(ServerRestAPI.getCredentials(connection), bucketId)
-				return BucketsAPI.emptyBucket(access)
-			}
-		)
-	}
-
-	async deleteBucketAdLib(
-		connection: Meteor.Connection,
-		event: string,
-		bucketId: BucketId,
-		adLibId: BucketAdLibId | BucketAdLibActionId
-	): Promise<ClientAPI.ClientResponse<void>> {
-		return ServerClientAPI.runUserActionInLog(
-			ServerRestAPI.getMethodContext(connection),
-			event,
-			getCurrentTime(),
-			'bucketsRemoveBucket',
-			[bucketId],
-			async () => {
-				check(bucketId, String)
-
-				const bucketAdLibPiecePromise = BucketAdLibs.findOneAsync(adLibId as BucketAdLibId, {
-					projection: { _id: 1 },
-				})
-				const bucketAdLibActionPromise = BucketAdLibActions.findOneAsync(adLibId as BucketAdLibActionId, {
-					projection: { _id: 1 },
-				})
-				const [bucketAdLibPiece, bucketAdLibAction] = await Promise.all([
-					bucketAdLibPiecePromise,
-					bucketAdLibActionPromise,
-				])
-				if (bucketAdLibPiece) {
-					const access = await BucketSecurity.allowWriteAccessPiece(
-						ServerRestAPI.getCredentials(connection),
-						adLibId as BucketAdLibId
-					)
-					return BucketsAPI.removeBucketAdLib(access)
-				} else if (bucketAdLibAction) {
-					const access = await BucketSecurity.allowWriteAccessAction(
-						ServerRestAPI.getCredentials(connection),
-						adLibId as BucketAdLibActionId
-					)
-					return BucketsAPI.removeBucketAdLibAction(access)
-				}
-			}
-		)
-	}
-
-	async addModifiedAdLibToBucket(
-		connection: Meteor.Connection,
-		event: string,
-		bucketId: BucketId,
-		sourceAdLibId: AdLibActionId | RundownBaselineAdLibActionId | PieceId,
-		label: string,
-		userData?: any | null
-	): Promise<ClientAPI.ClientResponse<void>> {
-		const [baselineAdLibPiece, segmentAdLibPiece, baselineAdLibAction, adLibAction] = await Promise.all([
-			RundownBaselineAdLibPieces.findOneAsync(sourceAdLibId as PieceId),
-			AdLibPieces.findOneAsync(sourceAdLibId as PieceId),
-			RundownBaselineAdLibActions.findOneAsync(sourceAdLibId as AdLibActionId),
-			AdLibActions.findOneAsync(sourceAdLibId as AdLibActionId),
-		])
-		const adLibActionDoc = adLibAction ?? baselineAdLibAction
-		const adLibPieceDoc = baselineAdLibPiece ?? segmentAdLibPiece
-		if (adLibPieceDoc) {
-			throw new Error(`Not Implemented`)
-		} else if (adLibActionDoc) {
-			// TODO: this probably needs the proper ingest flow because of tags
-			await ServerClientAPI.runUserActionInLog(
-				ServerRestAPI.getMethodContext(connection),
-				event,
-				getCurrentTime(),
-				'bucketsEmptyBucket',
-				[bucketId],
-				async () => {
-					check(bucketId, String)
-
-					const access = await BucketSecurity.allowWriteAccess(
-						ServerRestAPI.getCredentials(connection),
-						bucketId
-					)
-					return await BucketsAPI.saveAdLibActionIntoBucket(access, {
-						...adLibActionDoc,
-						// @ts-ignore: TODO label
-						display: { ...adLibActionDoc.display, label },
-						userData: userData ?? adLibActionDoc.userData,
-					})
-				}
-			)
-			return ClientAPI.responseSuccess(undefined)
-		}
-		throw new Error(`Unknown error occurred`)
-	}
 }
 
 export const koaRouter = new KoaRouter()
@@ -1425,21 +1241,23 @@ function extractErrorDetails(e: unknown): string[] | undefined {
 	}
 }
 
-function sofieAPIRequest<Params, Body, Response>(
+function sofieAPIRequest<Params, Body, Response, API = ServerRestAPI>(
 	method: 'get' | 'post' | 'put' | 'delete',
 	route: string,
 	errMsgs: Map<number, UserErrorMessage[]>,
 	handler: (
-		serverAPI: ServerRestAPI,
+		serverAPI: API,
 		connection: Meteor.Connection,
 		event: string,
 		params: Params,
 		body: Body
-	) => Promise<ClientAPI.ClientResponse<Response>>
+	) => Promise<ClientAPI.ClientResponse<Response>>,
+	serverAPIFactory: APIFactory<API> = { createServerAPI: () => new ServerRestAPI() as API } // TODO: merge conflict with R51
 ) {
 	koaRouter[method](route, async (ctx, next) => {
 		try {
-			const serverAPI = new ServerRestAPI()
+			const context = new APIContext()
+			const serverAPI = serverAPIFactory.createServerAPI(context)
 			const response = await handler(
 				serverAPI,
 				makeMeteorConnectionFromKoa(ctx),
@@ -2132,76 +1950,24 @@ sofieAPIRequest<never, { inputs: MigrationData }, void>(
 	}
 )
 
-// --- Buckets
-
-sofieAPIRequest<never, never, Array<APIBucket>>(
-	'get',
-	'/buckets',
-	new Map(),
-	async (serverAPI, connection, event, _params, _body) => {
-		logger.info(`API GET: Buckets`)
-		return await serverAPI.getAllBuckets(connection, event)
+class APIContext implements ServerAPIContext {
+	public getMethodContext(connection: Meteor.Connection): MethodContextAPI {
+		return {
+			userId: null,
+			connection,
+			isSimulation: false,
+			setUserId: () => {
+				/* no-op */
+			},
+			unblock: () => {
+				/* no-op */
+			},
+		}
 	}
-)
 
-sofieAPIRequest<never, APIBucket, BucketId>(
-	'post',
-	'/buckets',
-	new Map([[404, [UserErrorMessage.StudioNotFound]]]),
-	async (serverAPI, connection, event, _params, body) => {
-		logger.info(`API POST: Add Bucket`)
-		return await serverAPI.addBucket(connection, event, body)
+	public getCredentials(): Credentials {
+		return { userId: null }
 	}
-)
+}
 
-sofieAPIRequest<{ bucketId: string }, never, void>(
-	'delete',
-	'/buckets/:bucketId',
-	new Map([[404, [UserErrorMessage.BucketNotFound]]]),
-	async (serverAPI, connection, event, params, _body) => {
-		logger.info(`API DELETE: Bucket`)
-		const bucketId = protectString(params.bucketId)
-		return await serverAPI.deleteBucket(connection, event, bucketId)
-	}
-)
-
-sofieAPIRequest<{ bucketId: string }, never, void>(
-	'delete',
-	'/buckets/:bucketId/adlibs',
-	new Map([[404, [UserErrorMessage.BucketNotFound]]]),
-	async (serverAPI, connection, event, params, _body) => {
-		logger.info(`API DELETE: Empty Bucket`)
-		const bucketId = protectString(params.bucketId)
-		check(bucketId, String)
-		return await serverAPI.emptyBucket(connection, event, bucketId)
-	}
-)
-
-sofieAPIRequest<{ bucketId: string; adLibId: string }, never, void>(
-	'delete',
-	'/buckets/:bucketId/adlibs/:adLibId',
-	new Map([[404, [UserErrorMessage.BucketNotFound]]]),
-	async (serverAPI, connection, event, params, _body) => {
-		logger.info(`API DELETE: Remove Bucket AdLib`)
-		const bucketId = protectString(params.bucketId)
-		const adLibId = protectString(params.adLibId)
-		check(bucketId, String)
-		check(adLibId, String)
-		return await serverAPI.deleteBucketAdLib(connection, event, bucketId, adLibId)
-	}
-)
-
-sofieAPIRequest<{ bucketId: string }, { sourceAdLibId: string; userData?: any; name: string }, void>(
-	'post',
-	'/buckets/:bucketId/adlibs',
-	new Map([[404, [UserErrorMessage.BucketNotFound]]]),
-	async (serverAPI, connection, event, params, body) => {
-		logger.info(`API DELETE: Add AdLib to Bucket`)
-		const bucketId = protectString(params.bucketId)
-		const adLibId = protectString(body.sourceAdLibId)
-		check(bucketId, String)
-		check(adLibId, String)
-		check(body.name, String)
-		return await serverAPI.addModifiedAdLibToBucket(connection, event, bucketId, adLibId, body.name, body.userData)
-	}
-)
+registerBucketsRoutes(sofieAPIRequest)
