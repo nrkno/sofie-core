@@ -143,11 +143,7 @@ export async function updateStudioTimeline(
 	if (span) span.end()
 }
 
-export async function updateTimeline(
-	context: JobContext,
-	playoutModel: PlayoutModel,
-	timeOffsetIntoPart?: Time
-): Promise<void> {
+export async function updateTimeline(context: JobContext, playoutModel: PlayoutModel): Promise<void> {
 	const span = context.startSpan('updateTimeline')
 	logger.debug('updateTimeline running...')
 
@@ -162,7 +158,7 @@ export async function updateTimeline(
 	preserveOrReplaceNowTimesInObjects(playoutModel, timelineObjs)
 
 	if (playoutModel.isMultiGatewayMode) {
-		deNowifyMultiGatewayTimeline(context, playoutModel, timelineObjs, timeOffsetIntoPart, timingInfo)
+		deNowifyMultiGatewayTimeline(context, playoutModel, timelineObjs, timingInfo)
 
 		logAnyRemainingNowTimes(context, timelineObjs)
 	}

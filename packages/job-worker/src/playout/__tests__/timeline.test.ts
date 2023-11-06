@@ -435,7 +435,7 @@ async function doDeactivatePlaylist(context: MockJobContext, playlistId: Rundown
 }
 
 /** perform an update of the timeline */
-async function doUpdateTimeline(context: MockJobContext, playlistId: RundownPlaylistId, forceNowToTime?: Time) {
+async function doUpdateTimeline(context: MockJobContext, playlistId: RundownPlaylistId) {
 	await runJobWithPlayoutModel(
 		context,
 		{
@@ -443,7 +443,7 @@ async function doUpdateTimeline(context: MockJobContext, playlistId: RundownPlay
 		},
 		null,
 		async (playoutModel) => {
-			await updateTimeline(context, playoutModel, forceNowToTime)
+			await updateTimeline(context, playoutModel)
 		}
 	)
 }

@@ -25,14 +25,13 @@ export function deNowifyMultiGatewayTimeline(
 	context: JobContext,
 	playoutModel: PlayoutModel,
 	timelineObjs: TimelineObjRundown[],
-	timeOffsetIntoPart: Time | undefined,
 	timingContext: RundownTimelineTimingContext | undefined
 ): void {
 	if (!timingContext) return
 
 	const timelineObjsMap = normalizeArray(timelineObjs, 'id')
 
-	const nowOffsetLatency = calculateNowOffsetLatency(context, playoutModel, timeOffsetIntoPart)
+	const nowOffsetLatency = calculateNowOffsetLatency(context, playoutModel)
 	const targetNowTime = getCurrentTime() + (nowOffsetLatency ?? 0)
 
 	// Replace `start: 'now'` in currentPartInstance on timeline
@@ -40,9 +39,9 @@ export function deNowifyMultiGatewayTimeline(
 	if (!currentPartInstance) return
 
 	const partGroupTimings = updatePartInstancePlannedTimes(
-		playoutModel,
 		targetNowTime,
 		timingContext,
+		playoutModel.previousPartInstance,
 		currentPartInstance,
 		playoutModel.nextPartInstance
 	)
@@ -58,10 +57,13 @@ export function deNowifyMultiGatewayTimeline(
 	updatePlannedTimingsForPieceInstances(playoutModel, currentPartInstance, partGroupTimings, timelineObjsMap)
 }
 
+/**
+ * Calculate an offset to apply to the 'now' value, to compensate for delay in playout-gateway
+ * The intention is that any concrete value used instead of 'now' should still be just in the future for playout-gateway
+ */
 export function calculateNowOffsetLatency(
 	context: JobContext,
-	studioPlayoutModel: StudioPlayoutModelBase,
-	timeOffsetIntoPart: Time | undefined
+	studioPlayoutModel: StudioPlayoutModelBase
 ): Time | undefined {
 	/** The timestamp that "now" was set to */
 	let nowOffsetLatency: Time | undefined
@@ -76,11 +78,6 @@ export function calculateNowOffsetLatency(
 		nowOffsetLatency = worstLatency + ADD_SAFE_LATENCY
 	}
 
-	if (timeOffsetIntoPart) {
-		// Include the requested offset
-		nowOffsetLatency = (nowOffsetLatency ?? 0) - timeOffsetIntoPart
-	}
-
 	return nowOffsetLatency
 }
 
@@ -90,10 +87,14 @@ interface PartGroupTimings {
 	nextStartTime: number | undefined
 }
 
+/**
+ * Update the `plannedStartedPlayback` and `plannedStoppedPlayback` for the PartInstances on the timeline,
+ * returning the chosen start times for each PartInstance
+ */
 function updatePartInstancePlannedTimes(
-	playoutModel: PlayoutModel,
 	targetNowTime: number,
 	timingContext: RundownTimelineTimingContext,
+	previousPartInstance: PlayoutPartInstanceModel | null,
 	currentPartInstance: PlayoutPartInstanceModel,
 	nextPartInstance: PlayoutPartInstanceModel | null
 ): PartGroupTimings {
@@ -110,7 +111,6 @@ function updatePartInstancePlannedTimes(
 	}
 
 	// Also mark the previous as ended
-	const previousPartInstance = playoutModel.previousPartInstance
 	if (previousPartInstance) {
 		const previousPartEndTime = currentPartGroupStartTime + (timingContext.previousPartOverlap ?? 0)
 		previousPartInstance.setPlannedStoppedPlayback(previousPartEndTime)
@@ -142,6 +142,9 @@ function updatePartInstancePlannedTimes(
 	}
 }
 
+/**
+ * Replace the `now` time in any Pieces on the timeline from the current Part with concrete start times
+ */
 function deNowifyCurrentPieces(
 	targetNowTime: number,
 	timingContext: RundownTimelineTimingContext,

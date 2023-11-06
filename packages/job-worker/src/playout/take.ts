@@ -241,7 +241,7 @@ export async function performTakeToNextedPart(
 
 	playoutModel.cycleSelectedPartInstances()
 
-	takePartInstance.setTaken(now, timeOffset ?? 0)
+	takePartInstance.setTaken(now, timeOffset)
 
 	resetPreviousSegment(playoutModel)
 
@@ -255,7 +255,7 @@ export async function performTakeToNextedPart(
 	) {
 		startHold(context, currentPartInstance, nextPartInstance)
 	}
-	await afterTake(context, playoutModel, takePartInstance, timeOffset)
+	await afterTake(context, playoutModel, takePartInstance)
 
 	// Last:
 	const takeDoneTime = getCurrentTime()
@@ -463,14 +463,13 @@ export function updatePartInstanceOnTake(
 export async function afterTake(
 	context: JobContext,
 	playoutModel: PlayoutModel,
-	takePartInstance: PlayoutPartInstanceModel,
-	timeOffsetIntoPart: number | null = null
+	takePartInstance: PlayoutPartInstanceModel
 ): Promise<void> {
 	const span = context.startSpan('afterTake')
 	// This function should be called at the end of a "take" event (when the Parts have been updated)
 	// or after a new part has started playing
 
-	await updateTimeline(context, playoutModel, timeOffsetIntoPart || undefined)
+	await updateTimeline(context, playoutModel)
 
 	playoutModel.queueNotifyCurrentlyPlayingPartEvent(takePartInstance.partInstance.rundownId, takePartInstance)
 
