@@ -115,13 +115,13 @@ export function createLegacyApiRouter(): KoaRouter {
 	}
 
 	// Expose publications:
-	for (const [pubName, pubValue] of Object.entries<any>(MeteorPubSub)) {
+	for (const [pubName, pubValue] of Object.entries<string>(MeteorPubSub)) {
 		exposePublication(pubName, pubValue)
 	}
-	for (const [pubName, pubValue] of Object.entries<any>(CorelibPubSub)) {
+	for (const [pubName, pubValue] of Object.entries<string>(CorelibPubSub)) {
 		exposePublication(pubName, pubValue)
 	}
-	for (const [pubName, pubValue] of Object.entries<any>(PeripheralDevicePubSub)) {
+	for (const [pubName, pubValue] of Object.entries<string>(PeripheralDevicePubSub)) {
 		exposePublication(pubName, pubValue)
 	}
 

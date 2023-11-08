@@ -72,7 +72,15 @@ export enum MeteorPubSub {
 	uiBucketContentStatuses = 'uiBucketContentStatuses',
 	uiBlueprintUpgradeStatuses = 'uiBlueprintUpgradeStatuses',
 }
-export type AllPubSub = MeteorPubSub | CorelibPubSub | PeripheralDevicePubSub
+
+/**
+ * Names of all the known DDP publications
+ */
+export const AllPubSubNames: string[] = [
+	...Object.values<string>(MeteorPubSub),
+	...Object.values<string>(CorelibPubSub),
+	...Object.values<string>(PeripheralDevicePubSub),
+]
 
 /**
  * Type definitions for all DDP subscriptions.
