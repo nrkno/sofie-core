@@ -25,6 +25,8 @@ const THROTTLE_PERIOD_MS = 100
 interface PieceStatus {
 	id: string
 	name: string
+	sourceLayer: string
+	outputLayer: string
 	tags?: string[]
 }
 
@@ -123,7 +125,10 @@ export class ActivePlaylistTopic
 										this._currentPartInstance,
 										this._partInstancesInCurrentSegment
 									),
-									pieces: this._pieceInstances?.currentPartInstance.map(this.toPieceStatus) ?? [],
+									pieces:
+										this._pieceInstances?.currentPartInstance.map((piece) =>
+											this.toPieceStatus(piece)
+										) ?? [],
 							  })
 							: null,
 					currentSegment:
@@ -144,10 +149,12 @@ export class ActivePlaylistTopic
 								name: nextPart.title,
 								autoNext: nextPart.autoNext,
 								segmentId: unprotectString(nextPart.segmentId),
-								pieces: this._pieceInstances?.nextPartInstance.map(this.toPieceStatus) ?? [],
+								pieces:
+									this._pieceInstances?.nextPartInstance.map((piece) => this.toPieceStatus(piece)) ??
+									[],
 						  })
 						: null,
-					activePieces: this._pieceInstances?.active.map(this.toPieceStatus) ?? [],
+					activePieces: this._pieceInstances?.active.map((piece) => this.toPieceStatus(piece)) ?? [],
 			  })
 			: literal<ActivePlaylistStatus>({
 					event: 'activePlaylist',
@@ -252,10 +259,14 @@ export class ActivePlaylistTopic
 		this.sendStatus(this._subscribers)
 	}
 
-	private toPieceStatus(this: void, pieceInstance: PieceInstance): PieceStatus {
+	private toPieceStatus(pieceInstance: PieceInstance): PieceStatus {
+		const sourceLayerName = this._sourceLayersMap.get(pieceInstance.piece.sourceLayerId)
+		const outputLayerName = this._outputLayersMap.get(pieceInstance.piece.outputLayerId)
 		return {
 			id: unprotectString(pieceInstance._id),
 			name: pieceInstance.piece.name,
+			sourceLayer: sourceLayerName ?? 'invalid',
+			outputLayer: outputLayerName ?? 'invalid',
 			tags: pieceInstance.piece.tags,
 		}
 	}

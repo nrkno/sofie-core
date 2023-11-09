@@ -27,7 +27,12 @@ $defs:
       nextPart:
         description: The next Part - if empty, no part will follow live part
         $ref: '#/$defs/part'
-    required: [event, id, name, rundownIds, currentPart, currentSegment, nextPart]
+      activePieces:
+        description: Pieces that are currently active (live)
+        type: array
+        items:
+          $ref: '#/$defs/piece'
+    required: [event, id, name, rundownIds, currentPart, currentSegment, nextPart, activePieces]
     additionalProperties: false
     examples:
       - event: activePlaylist
@@ -40,6 +45,8 @@ $defs:
           $ref: '#/$defs/currentSegment/examples/0'
         nextPart:
           $ref: '#/$defs/part/examples/0'
+        activePieces:
+          - $ref: '#/$defs/piece/examples/0'
   partBase:
     type: object
     properties:
@@ -56,13 +63,20 @@ $defs:
         description: Should this part progress to the next automatically
         type: boolean
         default: false
-    required: [id, name, segmentId]
+      pieces:
+        description: All pieces in this part
+        type: array
+        items:
+          $ref: '#/$defs/piece'
+    required: [id, name, segmentId, pieces]
     additionalProperties: false
     examples:
       - id: 'H5CBGYjThrMSmaYvRaa5FVKJIzk_'
         name: 'Intro'
         segmentId: 'n1mOVd5_K5tt4sfk6HYfTuwumGQ_'
         autoNext: false
+        pieces:
+          - $ref: '#/$defs/piece/examples/0'
   part:
     oneOf:
       - $ref: '#/$defs/partBase'
@@ -72,6 +86,8 @@ $defs:
         name: 'Intro'
         segmentId: 'n1mOVd5_K5tt4sfk6HYfTuwumGQ_'
         autoNext: false
+        pieces:
+          - $ref: '#/$defs/piece/examples/0'
   currentPart:
     oneOf:
       - allOf:
@@ -103,6 +119,8 @@ $defs:
           startTime: 1600000060000
           expectedDurationMs: 15000
           expectedEndTime: 1600000075000
+        pieces:
+          - $ref: '#/$defs/piece/examples/0'
   currentSegment:
     type: object
     properties:
@@ -131,3 +149,31 @@ $defs:
           expectedDurationMs: 15000
           budgetDurationMs: 20000
           expectedEndTime: 1600000075000
+  piece:
+    type: object
+    properties:
+      id:
+        description: Unique id of the Piece
+        type: string
+      name:
+        description: User-facing name of the Piece
+        type: string
+      sourceLayer:
+        description: The source layer name for this Piece
+        type: string
+      outputLayer:
+        description: The output layer name for this Piece
+        type: string
+      tags:
+        description: Tags attached to this Piece
+        type: array
+        items:
+          type: string
+    required: [id, name, sourceLayer, outputLayer]
+    additionalProperties: false
+    examples:
+      - id: 'H5CBGYjThrMSmaYvRaa5FVKJIzk_'
+        name: 'Camera 1'
+        sourceLayer: 'Camera'
+        outputLayer: 'PGM'
+        tags: ['camera']
