@@ -4,39 +4,36 @@ import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protected
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBShowStyleBase, OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
-import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
-import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
-import {
-	IBlueprintActionManifestDisplayContent,
-	IOutputLayer,
-	ISourceLayer,
-} from '@sofie-automation/blueprints-integration'
+import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { WebSocketTopicBase, WebSocketTopic, CollectionObserver } from '../wsHandler'
 import { SelectedPartInstances, PartInstancesHandler } from '../collections/partInstancesHandler'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
-import { interpollateTranslation } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { AdLibsHandler } from '../collections/adLibsHandler'
-import { GlobalAdLibsHandler } from '../collections/globalAdLibsHandler'
 import { PlaylistHandler } from '../collections/playlistHandler'
 import { ShowStyleBaseHandler } from '../collections/showStyleBaseHandler'
-import { AdLibActionsHandler } from '../collections/adLibActionsHandler'
-import { GlobalAdLibActionsHandler } from '../collections/globalAdLibActionsHandler'
 import { CurrentSegmentTiming, calculateCurrentSegmentTiming } from './helpers/segmentTiming'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PartsHandler } from '../collections/partsHandler'
 import _ = require('underscore')
 import { PartTiming, calculateCurrentPartTiming } from './helpers/partTiming'
+import { SelectedPieceInstances } from '../collections/pieceInstancesHandler'
+import { PieceInstancesHandler } from '../collections/pieceInstancesHandler'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 
-const THROTTLE_PERIOD_MS = 20
+const THROTTLE_PERIOD_MS = 100
+
+interface PieceStatus {
+	id: string
+	name: string
+	tags?: string[]
+}
 
 interface PartStatus {
 	id: string
 	segmentId: string
 	name: string
 	autoNext?: boolean
+	pieces: PieceStatus[]
 }
 
 interface CurrentPartStatus extends PartStatus {
@@ -48,20 +45,6 @@ interface CurrentSegmentStatus {
 	timing: CurrentSegmentTiming
 }
 
-interface AdLibActionType {
-	name: string
-	label: string
-}
-
-interface AdLibStatus {
-	id: string
-	name: string
-	sourceLayer: string
-	outputLayer: string
-	actionType: AdLibActionType[]
-	tags?: string[]
-}
-
 export interface ActivePlaylistStatus {
 	event: string
 	id: string | null
@@ -70,8 +53,7 @@ export interface ActivePlaylistStatus {
 	currentPart: CurrentPartStatus | null
 	currentSegment: CurrentSegmentStatus | null
 	nextPart: PartStatus | null
-	adLibs: AdLibStatus[]
-	globalAdLibs: AdLibStatus[]
+	activePieces: PieceStatus[]
 }
 
 export class ActivePlaylistTopic
@@ -80,9 +62,8 @@ export class ActivePlaylistTopic
 		WebSocketTopic,
 		CollectionObserver<DBRundownPlaylist>,
 		CollectionObserver<SelectedPartInstances>,
-		CollectionObserver<AdLibAction[]>,
-		CollectionObserver<RundownBaselineAdLibAction[]>,
-		CollectionObserver<DBPart[]>
+		CollectionObserver<DBPart[]>,
+		CollectionObserver<SelectedPieceInstances>
 {
 	public observerName = ActivePlaylistTopic.name
 	private _sourceLayersMap: Map<string, string> = new Map()
@@ -92,11 +73,8 @@ export class ActivePlaylistTopic
 	private _nextPartInstance: DBPartInstance | undefined
 	private _firstInstanceInSegmentPlayout: DBPartInstance | undefined
 	private _partInstancesInCurrentSegment: DBPartInstance[] = []
-	private _adLibActions: AdLibAction[] | undefined
-	private _abLibs: AdLibPiece[] | undefined
-	private _globalAdLibActions: RundownBaselineAdLibAction[] | undefined
-	private _globalAdLibs: RundownBaselineAdLibItem[] | undefined
 	private _partsBySegmentId: Record<string, DBPart[]> = {}
+	private _pieceInstances: SelectedPieceInstances | undefined
 	private throttledSendStatusToAll: () => void
 
 	constructor(logger: Logger) {
@@ -115,7 +93,11 @@ export class ActivePlaylistTopic
 	sendStatus(subscribers: Iterable<WebSocket>): void {
 		if (
 			this._currentPartInstance?._id !== this._activePlaylist?.currentPartInfo?.partInstanceId ||
-			this._nextPartInstance?._id !== this._activePlaylist?.nextPartInfo?.partInstanceId
+			this._nextPartInstance?._id !== this._activePlaylist?.nextPartInfo?.partInstanceId ||
+			(this._pieceInstances?.currentPartInstance[0] &&
+				this._pieceInstances.currentPartInstance[0].partInstanceId !== this._currentPartInstance?._id) ||
+			(this._pieceInstances?.nextPartInstance[0] &&
+				this._pieceInstances.nextPartInstance[0].partInstanceId !== this._nextPartInstance?._id)
 		) {
 			// data is inconsistent, let's wait
 			return
@@ -123,100 +105,6 @@ export class ActivePlaylistTopic
 
 		const currentPart = this._currentPartInstance ? this._currentPartInstance.part : null
 		const nextPart = this._nextPartInstance ? this._nextPartInstance.part : null
-		const adLibs: AdLibStatus[] = []
-		const globalAdLibs: AdLibStatus[] = []
-
-		if (this._adLibActions) {
-			adLibs.push(
-				...this._adLibActions.map((action) => {
-					const sourceLayerName = this._sourceLayersMap.get(
-						(action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
-					)
-					const outputLayerName = this._outputLayersMap.get(
-						(action.display as IBlueprintActionManifestDisplayContent).outputLayerId
-					)
-					const triggerModes = action.triggerModes
-						? action.triggerModes.map((t) =>
-								literal<AdLibActionType>({
-									name: t.data,
-									label: interpollateTranslation(t.display.label.key, t.display.label.args),
-								})
-						  )
-						: []
-					return literal<AdLibStatus>({
-						id: unprotectString(action._id),
-						name: interpollateTranslation(action.display.label.key, action.display.label.args),
-						sourceLayer: sourceLayerName ?? 'invalid',
-						outputLayer: outputLayerName ?? 'invalid',
-						actionType: triggerModes,
-						tags: action.display.tags,
-					})
-				})
-			)
-		}
-
-		if (this._abLibs) {
-			adLibs.push(
-				...this._abLibs.map((adLib) => {
-					const sourceLayerName = this._sourceLayersMap.get(adLib.sourceLayerId)
-					const outputLayerName = this._outputLayersMap.get(adLib.outputLayerId)
-					return literal<AdLibStatus>({
-						id: unprotectString(adLib._id),
-						name: adLib.name,
-						sourceLayer: sourceLayerName ?? 'invalid',
-						outputLayer: outputLayerName ?? 'invalid',
-						actionType: [],
-						tags: adLib.tags,
-					})
-				})
-			)
-		}
-
-		if (this._globalAdLibActions) {
-			globalAdLibs.push(
-				...this._globalAdLibActions.map((action) => {
-					const sourceLayerName = this._sourceLayersMap.get(
-						(action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
-					)
-					const outputLayerName = this._outputLayersMap.get(
-						(action.display as IBlueprintActionManifestDisplayContent).outputLayerId
-					)
-					const triggerModes = action.triggerModes
-						? action.triggerModes.map((t) =>
-								literal<AdLibActionType>({
-									name: t.data,
-									label: interpollateTranslation(t.display.label.key, t.display.label.args),
-								})
-						  )
-						: []
-					return literal<AdLibStatus>({
-						id: unprotectString(action._id),
-						name: interpollateTranslation(action.display.label.key, action.display.label.args),
-						sourceLayer: sourceLayerName ?? 'invalid',
-						outputLayer: outputLayerName ?? 'invalid',
-						actionType: triggerModes,
-						tags: action.display.tags,
-					})
-				})
-			)
-		}
-
-		if (this._globalAdLibs) {
-			globalAdLibs.push(
-				...this._globalAdLibs.map((adLib) => {
-					const sourceLayerName = this._sourceLayersMap.get(adLib.sourceLayerId)
-					const outputLayerName = this._outputLayersMap.get(adLib.outputLayerId)
-					return literal<AdLibStatus>({
-						id: unprotectString(adLib._id),
-						name: adLib.name,
-						sourceLayer: sourceLayerName ?? 'invalid',
-						outputLayer: outputLayerName ?? 'invalid',
-						actionType: [],
-						tags: adLib.tags,
-					})
-				})
-			)
-		}
 
 		const message = this._activePlaylist
 			? literal<ActivePlaylistStatus>({
@@ -235,6 +123,7 @@ export class ActivePlaylistTopic
 										this._currentPartInstance,
 										this._partInstancesInCurrentSegment
 									),
+									pieces: this._pieceInstances?.currentPartInstance.map(this.toPieceStatus) ?? [],
 							  })
 							: null,
 					currentSegment:
@@ -255,10 +144,10 @@ export class ActivePlaylistTopic
 								name: nextPart.title,
 								autoNext: nextPart.autoNext,
 								segmentId: unprotectString(nextPart.segmentId),
+								pieces: this._pieceInstances?.nextPartInstance.map(this.toPieceStatus) ?? [],
 						  })
 						: null,
-					adLibs,
-					globalAdLibs,
+					activePieces: this._pieceInstances?.active.map(this.toPieceStatus) ?? [],
 			  })
 			: literal<ActivePlaylistStatus>({
 					event: 'activePlaylist',
@@ -268,8 +157,7 @@ export class ActivePlaylistTopic
 					currentPart: null,
 					currentSegment: null,
 					nextPart: null,
-					adLibs: [],
-					globalAdLibs: [],
+					activePieces: [],
 			  })
 
 		for (const subscriber of subscribers) {
@@ -283,11 +171,8 @@ export class ActivePlaylistTopic
 			| DBRundownPlaylist
 			| DBShowStyleBase
 			| SelectedPartInstances
-			| AdLibAction[]
-			| RundownBaselineAdLibAction[]
-			| AdLibPiece[]
-			| RundownBaselineAdLibItem[]
 			| DBPart[]
+			| SelectedPieceInstances
 			| undefined
 	): Promise<void> {
 		switch (source) {
@@ -345,33 +230,15 @@ export class ActivePlaylistTopic
 				this._partInstancesInCurrentSegment = partInstances.inCurrentSegment
 				break
 			}
-			case AdLibActionsHandler.name: {
-				const adLibActions = data ? (data as AdLibAction[]) : []
-				this._logger.info(`${this._name} received adLibActions update from ${source}`)
-				this._adLibActions = adLibActions
-				break
-			}
-			case GlobalAdLibActionsHandler.name: {
-				const globalAdLibActions = data ? (data as RundownBaselineAdLibAction[]) : []
-				this._logger.info(`${this._name} received globalAdLibActions update from ${source}`)
-				this._globalAdLibActions = globalAdLibActions
-				break
-			}
-			case AdLibsHandler.name: {
-				const adLibs = data ? (data as AdLibPiece[]) : []
-				this._logger.info(`${this._name} received adLibs update from ${source}`)
-				this._abLibs = adLibs
-				break
-			}
-			case GlobalAdLibsHandler.name: {
-				const globalAdLibs = data ? (data as RundownBaselineAdLibItem[]) : []
-				this._logger.info(`${this._name} received globalAdLibs update from ${source}`)
-				this._globalAdLibs = globalAdLibs
-				break
-			}
 			case PartsHandler.name: {
 				this._partsBySegmentId = _.groupBy(data as DBPart[], 'segmentId')
 				this._logger.info(`${this._name} received parts update from ${source}`)
+				break
+			}
+			case PieceInstancesHandler.name: {
+				const pieceInstances = data as SelectedPieceInstances
+				this._logger.info(`${this._name} received pieceInstances update from ${source}`)
+				this._pieceInstances = pieceInstances
 				break
 			}
 			default:
@@ -383,5 +250,13 @@ export class ActivePlaylistTopic
 
 	private sendStatusToAll() {
 		this.sendStatus(this._subscribers)
+	}
+
+	private toPieceStatus(this: void, pieceInstance: PieceInstance): PieceStatus {
+		return {
+			id: unprotectString(pieceInstance._id),
+			name: pieceInstance.piece.name,
+			tags: pieceInstance.piece.tags,
+		}
 	}
 }

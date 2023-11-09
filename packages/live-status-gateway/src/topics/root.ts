@@ -35,6 +35,7 @@ export enum StatusChannels {
 	studio = 'studio',
 	activePlaylist = 'activePlaylist',
 	segments = 'segments',
+	adLibs = 'adLibs',
 }
 
 interface RootMsg {

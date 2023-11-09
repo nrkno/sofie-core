@@ -6,7 +6,6 @@ import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibActio
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-import _ = require('underscore')
 import { SelectedPartInstances } from './partInstancesHandler'
 
 export class AdLibActionsHandler
@@ -36,14 +35,13 @@ export class AdLibActionsHandler
 	async update(source: string, data: SelectedPartInstances | undefined): Promise<void> {
 		this._logger.info(`${this._name} received partInstances update from ${source}`)
 		const prevRundownId = this._curRundownId
-		const prevCurPartInstance = this._curPartInstance
 		this._curPartInstance = data ? data.current ?? data.next : undefined
 		this._curRundownId = this._curPartInstance ? unprotectString(this._curPartInstance.rundownId) : undefined
 
 		await new Promise(process.nextTick.bind(this))
 		if (!this._collectionName) return
 		if (!this._publicationName) return
-		if (prevRundownId !== this._curRundownId || !_.isEqual(prevCurPartInstance, this._curPartInstance)) {
+		if (prevRundownId !== this._curRundownId) {
 			if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
 			if (this._dbObserver) this._dbObserver.stop()
 			if (this._curRundownId && this._curPartInstance) {
@@ -62,7 +60,6 @@ export class AdLibActionsHandler
 				if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
 				this._collectionData = collection.find({
 					rundownId: this._curRundownId,
-					partId: this._curPartInstance.part._id,
 				})
 				await this.notify(this._collectionData)
 			}

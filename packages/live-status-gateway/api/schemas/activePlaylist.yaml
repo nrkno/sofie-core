@@ -27,17 +27,7 @@ $defs:
       nextPart:
         description: The next Part - if empty, no part will follow live part
         $ref: '#/$defs/part'
-      adLibs:
-        description: The available AdLibs for this playlist
-        type: array
-        items:
-          $ref: '#/$defs/adLib'
-      globalAdLibs:
-        description: The available Global AdLibs for this playlist
-        type: array
-        items:
-          $ref: '#/$defs/adLib'
-    required: [event, id, name, rundownIds, currentPart, currentSegment, nextPart, adLibs, globalAdLibs]
+    required: [event, id, name, rundownIds, currentPart, currentSegment, nextPart]
     additionalProperties: false
     examples:
       - event: activePlaylist
@@ -50,10 +40,6 @@ $defs:
           $ref: '#/$defs/currentSegment/examples/0'
         nextPart:
           $ref: '#/$defs/part/examples/0'
-        adLibs:
-          $ref: '#/$defs/adLib/examples'
-        globals:
-          $ref: '#/$defs/adLib/examples'
   partBase:
     type: object
     properties:
@@ -117,50 +103,6 @@ $defs:
           startTime: 1600000060000
           expectedDurationMs: 15000
           expectedEndTime: 1600000075000
-  adLib:
-    type: object
-    properties:
-      id:
-        description: Unique id of the AdLib
-        type: string
-      name:
-        description: The user defined AdLib name
-        type: string
-      sourceLayer:
-        description: The source layer name for this AdLib
-        type: string
-      outputLayer:
-        description: The output layer name for this AdLib
-        type: string
-      actionType:
-        description: The available action type names that can be used to modify the execution of the AdLib
-        type: array
-        items:
-          type: object
-          properties:
-            name:
-              description: The string to be passed to the ExecuteAdlib function
-              type: string
-            label:
-              description: The label for the AdLib type
-              type: string
-          required: [name, label]
-          additionalProperties: false
-      tags:
-        description: Tags attached to this AdLib
-        type: array
-        items:
-          type: string
-    required: [id, name, sourceLayer, actionType]
-    additionalProperties: false
-    examples:
-      - id: 'C6K_yIMuGFUk8X_L9A9_jRT6aq4_'
-        name: Music video clip
-        sourceLayer: Video Clip
-        actionType:
-          - name: pvw
-            label: Preview
-        tags: ['music_video']
   currentSegment:
     type: object
     properties:

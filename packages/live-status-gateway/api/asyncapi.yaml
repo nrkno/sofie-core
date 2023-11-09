@@ -35,6 +35,7 @@ channels:
           - $ref: '#/components/messages/studio'
           - $ref: '#/components/messages/activePlaylist'
           - $ref: '#/components/messages/segments'
+          - $ref: '#/components/messages/adLibs'
 components:
   messages:
     ping:
@@ -89,3 +90,8 @@ components:
       description: Segments in active Playlist
       payload:
         $ref: './schemas/segments.yaml#/$defs/segments'
+    adLibs:
+      name: adLibs
+      description: AdLibs in active Playlist
+      payload:
+        $ref: './schemas/adLibs.yaml#/$defs/adLibs'
