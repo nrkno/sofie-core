@@ -1,5 +1,7 @@
+import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { PlaylistTimingType } from '@sofie-automation/blueprints-integration/dist/documents/playlistTiming'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { mock, MockProxy } from 'jest-mock-extended'
 import { Logger } from 'winston'
@@ -30,5 +32,21 @@ export function makeTestPlaylist(id?: string): DBRundownPlaylist {
 		rundownIdsInOrder: [protectString(RUNDOWN_1_ID), protectString(RUNDOWN_2_ID)],
 		studioId: protectString('STUDIO_1'),
 		timing: { type: PlaylistTimingType.None },
+	}
+}
+
+export function makeTestShowStyleBase(): Pick<
+	DBShowStyleBase,
+	'sourceLayersWithOverrides' | 'outputLayersWithOverrides'
+> {
+	return {
+		sourceLayersWithOverrides: {
+			defaults: { layer0: { _id: 'layer0', name: 'Layer 0', _rank: 0, type: SourceLayerType.VT } },
+			overrides: [],
+		},
+		outputLayersWithOverrides: {
+			defaults: { pgm: { _id: 'pgm', name: 'PGM', _rank: 0, isPGM: true } },
+			overrides: [],
+		},
 	}
 }
