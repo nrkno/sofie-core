@@ -54,7 +54,7 @@ import {
 	unprotectString,
 } from '@sofie-automation/server-core-integration'
 import { BaseRemoteDeviceIntegration } from 'timeline-state-resolver/dist/service/remoteDeviceInstance'
-import { DeviceEvents } from 'timeline-state-resolver/dist/devices/device'
+import { DeviceEvents } from 'timeline-state-resolver/dist/service/device'
 import EventEmitter = require('eventemitter3')
 
 const debug = Debug('playout-gateway')
