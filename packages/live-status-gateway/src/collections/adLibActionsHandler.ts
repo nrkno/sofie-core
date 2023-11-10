@@ -55,6 +55,9 @@ export class AdLibActionsHandler
 				this._dbObserver.changed = (id: string) => {
 					void this.changed(id, 'changed').catch(this._logger.error)
 				}
+				this._dbObserver.removed = (id: string) => {
+					void this.changed(id, 'removed').catch(this._logger.error)
+				}
 
 				const collection = this._core.getCollection<AdLibAction>(this._collectionName)
 				if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
