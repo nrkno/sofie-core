@@ -8,6 +8,7 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import areElementsShallowEqual from '@sofie-automation/shared-lib/dist/lib/isShallowEqual'
 import _ = require('underscore')
+import throttleToNextTick from '@sofie-automation/shared-lib/dist/lib/throttleToNextTick'
 
 export interface SelectedPartInstances {
 	current: DBPartInstance | undefined
@@ -25,6 +26,12 @@ export class PartInstancesHandler
 	private _currentPlaylist: DBRundownPlaylist | undefined
 	private _rundownIds: string[] = []
 	private _activationId: string | undefined
+	private _subscriptionPending = false
+
+	private _throttledUpdateAndNotify = throttleToNextTick(() => {
+		this.updateCollectionData()
+		this.notify(this._collectionData).catch(this._logger.error)
+	})
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
 		super(PartInstancesHandler.name, CollectionName.PartInstances, 'partInstances', logger, coreHandler)
@@ -40,10 +47,9 @@ export class PartInstancesHandler
 
 	async changed(id: string, changeType: string): Promise<void> {
 		this._logger.info(`${this._name} ${changeType} ${id}`)
-		if (!this._collectionName) return
-		this.updateCollectionData()
+		if (!this._collectionName || this._subscriptionPending) return
 
-		await this.notify(this._collectionData)
+		this._throttledUpdateAndNotify()
 	}
 
 	private updateCollectionData(): boolean {
@@ -118,11 +124,13 @@ export class PartInstancesHandler
 				if (!this._publicationName) return
 				if (!this._currentPlaylist) return
 				if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
+				this._subscriptionPending = true
 				this._subscriptionId = await this._coreHandler.setupSubscription(
 					this._publicationName,
 					this._rundownIds,
 					this._activationId
 				)
+				this._subscriptionPending = false
 				this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
 				this._dbObserver.added = (id: string) => {
 					void this.changed(id, 'added').catch(this._logger.error)
@@ -139,10 +147,7 @@ export class PartInstancesHandler
 					await this.notify(this._collectionData)
 				}
 			} else if (this._subscriptionId) {
-				const hasAnythingChanged = this.updateCollectionData()
-				if (hasAnythingChanged) {
-					await this.notify(this._collectionData)
-				}
+				// nothing relevant has changed
 			} else {
 				this.clearCollectionData()
 				await this.notify(this._collectionData)
