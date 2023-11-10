@@ -80,7 +80,7 @@ class ConnectionManager extends Manager {
 		}
 
 		this.connection = await this.initConnection()
-		this.channelManager = new ChannelManager(this.connection)
+		this.channelManager = new ChannelManager(this.connection, this.hostURL)
 	}
 
 	private async initConnection(): Promise<AMQP.Connection> {
@@ -91,20 +91,20 @@ class ConnectionManager extends Manager {
 			})
 
 			connection.on('error', (err) => {
-				logger.error('AMQP connection error', err)
+				logger.warn(`AMQP connection to "${this.hostURL}" error`, err)
 				this.errorCount++
 			})
 			connection.on('close', () => {
 				this.open = false
-				logger.error('AMQP connection closed')
+				logger.warn(`AMQP connection to "${this.hostURL}" closed`)
 			})
 			connection.on('blocked', (reason) => {
 				this.blocked = true
-				logger.error('AMQP connection blocked', reason)
+				logger.warn(`AMQP connection to "${this.hostURL}" blocked`, reason)
 			})
 			connection.on('unblocked', () => {
 				this.blocked = false
-				logger.error('AMQP connection unblocked')
+				logger.warn(`AMQP connection to "${this.hostURL}" unblocked`)
 			})
 			this.open = true
 
@@ -113,22 +113,24 @@ class ConnectionManager extends Manager {
 			this.errorCount++
 			this.fatalError = true
 
-			logger.error('Error when connecting AMQP (to ' + this.hostURL + ') ' + err)
+			logger.warn(`AMQP connection to "${this.hostURL}" failed to connect`, err)
 			throw err instanceof Error ? err : new Error(stringifyError(err))
 		}
 	}
 }
 class ChannelManager extends Manager {
-	private connection: AMQP.Connection
+	private readonly connection: AMQP.Connection
+	private readonly hostURL: string
 	private channel: AMQP.ConfirmChannel | undefined
 
 	private outgoingQueue: Array<Message> = []
 	private handleOutgoingQueueTimeout: NodeJS.Timer | null = null
 
-	constructor(connection: AMQP.Connection) {
+	constructor(connection: AMQP.Connection, hostURL: string) {
 		super()
 
 		this.connection = connection
+		this.hostURL = hostURL
 	}
 	protected async init() {
 		super.resetProps()
@@ -146,18 +148,18 @@ class ChannelManager extends Manager {
 
 			channel.on('error', (err) => {
 				this.errorCount++
-				logger.error('AMQP channel error', err)
+				logger.warn(`AMQP channel for "${this.hostURL}" errored`, err)
 			})
 			channel.on('close', () => {
 				this.open = false
-				logger.error('AMQP channel closed')
+				logger.warn(`AMQP channel for "${this.hostURL}" closed`)
 			})
 			// When a "mandatory" message cannot be delivered, it's returned here:
 			// channel.on('return', message => {
-			// 	logger.error('AMQP channel return', message)
+			// 	logger.warn('AMQP channel for "${this.hostURL}" message failed to send', message)
 			// })
 			channel.on('drain', () => {
-				logger.error('AMQP channel drain')
+				logger.debug(`AMQP channel for "${this.hostURL}" drained`)
 				this.triggerHandleOutgoingQueue()
 			})
 			this.open = true
@@ -177,7 +179,7 @@ class ChannelManager extends Manager {
 		message: string,
 		headers: { [headers: string]: string } | undefined
 	): Promise<void> {
-		if (!this.channel) throw new Error(`AMQP Channel is not initialised`)
+		if (!this.channel) throw new Error(`AMQP channel for "${this.hostURL}" is not initialised`)
 
 		await this.channel.assertExchange(exchangeTopic, 'topic', { durable: true })
 
@@ -206,7 +208,7 @@ class ChannelManager extends Manager {
 					this.handleOutgoingQueueTimeout = null
 					this.handleOutgoingQueue()
 				} catch (e) {
-					logger.error(`Unexpected error in AMQP triggerHandleOutgoingQueue`)
+					logger.warn(`AMQP channel for "${this.hostURL}" errored in triggerHandleOutgoingQueue`, e)
 					this.handleOutgoingQueueTimeout = null
 					this.triggerHandleOutgoingQueue()
 				}
@@ -214,7 +216,7 @@ class ChannelManager extends Manager {
 		}
 	}
 	private handleOutgoingQueue() {
-		if (!this.channel) throw new Error(`AMQP Channel is not initialised`)
+		if (!this.channel) throw new Error(`AMQP channel for "${this.hostURL}" is not initialised`)
 
 		const firstMessageInQueue: Message | undefined = this.outgoingQueue.shift()
 
@@ -270,7 +272,7 @@ async function getChannelManager(hostURL: string): Promise<ChannelManager> {
 	await connectionManager.prepare()
 
 	if (!connectionManager.channelManager) {
-		throw new Error(`AMQP failed to initialise`)
+		throw new Error(`AMQP channel for "${hostURL}" failed to initialise`)
 	}
 	// Let the connectionManager set up the channel:
 	await connectionManager.channelManager.prepare()
