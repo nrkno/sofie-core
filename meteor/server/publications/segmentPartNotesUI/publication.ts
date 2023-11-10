@@ -1,7 +1,7 @@
 import { RundownId, RundownPlaylistId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { ReadonlyDeep } from 'type-fest'
-import { CustomCollectionName, PubSub } from '../../../lib/api/pubsub'
+import { CustomCollectionName, MeteorPubSub } from '../../../lib/api/pubsub'
 import { UISegmentPartNote } from '../../../lib/api/rundownNotifications'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
@@ -210,7 +210,7 @@ function updateNotesForSegment(
 }
 
 meteorCustomPublish(
-	PubSub.uiSegmentPartNotes,
+	MeteorPubSub.uiSegmentPartNotes,
 	CustomCollectionName.UISegmentPartNotes,
 	async function (pub, playlistId: RundownPlaylistId | null) {
 		check(playlistId, Match.Maybe(String))
@@ -229,7 +229,7 @@ meteorCustomPublish(
 				UISegmentPartNotesState,
 				UISegmentPartNotesUpdateProps
 			>(
-				`pub_${PubSub.uiSegmentPartNotes}_${playlistId}`,
+				`pub_${MeteorPubSub.uiSegmentPartNotes}_${playlistId}`,
 				{ playlistId },
 				setupUISegmentPartNotesPublicationObservers,
 				manipulateUISegmentPartNotesPublicationData,

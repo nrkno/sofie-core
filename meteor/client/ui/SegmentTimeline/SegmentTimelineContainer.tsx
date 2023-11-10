@@ -11,7 +11,7 @@ import { MAGIC_TIME_SCALE_FACTOR } from '../RundownView'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment, getHeaderHeight } from '../../lib/viewPort'
-import { meteorSubscribe, PubSub } from '../../../lib/api/pubsub'
+import { meteorSubscribe } from '../../../lib/api/pubsub'
 import { unprotectString, equalSets, equivalentArrays } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
 import { Tracker } from 'meteor/tracker'
@@ -34,6 +34,7 @@ import { RundownViewShelf } from '../RundownView/RundownViewShelf'
 import { PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PartInstances, Parts, Segments } from '../../collections'
 import { catchError } from '../../lib/lib'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 // Kept for backwards compatibility
 export { SegmentUi, PartUi, PieceUi, ISourceLayerUi, IOutputLayerUi } from '../SegmentContainer/withResolvedSegment'
@@ -145,7 +146,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 					}
 				).map((part) => part._id)
 
-				this.subscribe(PubSub.pieces, {
+				this.subscribe(CorelibPubSub.pieces, {
 					startRundownId: this.props.rundownId,
 					startPartId: {
 						$in: partIds,
@@ -178,7 +179,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 					},
 				})
 				segment &&
-					this.subscribe(PubSub.pieces, {
+					this.subscribe(CorelibPubSub.pieces, {
 						invalid: {
 							$ne: true,
 						},
@@ -423,7 +424,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 					this.partInstanceSub.stop()
 				}
 				// we handle this subscription manually
-				this.partInstanceSub = meteorSubscribe(PubSub.pieceInstances, {
+				this.partInstanceSub = meteorSubscribe(CorelibPubSub.pieceInstances, {
 					rundownId: this.props.rundownId,
 					partInstanceId: {
 						$in: partInstanceIds,

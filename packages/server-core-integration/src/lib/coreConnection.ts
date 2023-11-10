@@ -21,7 +21,11 @@ import { PeripheralDeviceForDevice } from '@sofie-automation/shared-lib/dist/cor
 import { ProtectedString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { ChildCoreOptions, CoreConnectionChild } from './CoreConnectionChild'
 import { CorePinger } from './ping'
-import { SubscriptionId, SubscriptionsHelper } from './subscriptions'
+import { ParametersOfFunctionOrNever, SubscriptionId, SubscriptionsHelper } from './subscriptions'
+import {
+	PeripheralDevicePubSubCollections,
+	PeripheralDevicePubSubTypes,
+} from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const PkgInfo = require('../../package.json')
@@ -60,6 +64,8 @@ export interface CoreOptions extends CoreCredentials {
 	configManifest: DeviceConfigManifest
 }
 
+export type CollectionDocCheck<Doc> = Doc extends { _id: ProtectedString<any> | string } ? Doc : never
+
 export interface Collection<DBObj extends { _id: ProtectedString<any> | string }> {
 	find: (selector?: any) => Array<DBObj>
 	findOne: (docId: DBObj['_id']) => DBObj | undefined
@@ -72,11 +78,14 @@ export type CoreConnectionEvents = {
 	failed: [err: Error]
 	error: [err: Error | string]
 }
-export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
+export class CoreConnection<
+	PubSubTypes = PeripheralDevicePubSubTypes,
+	PubSubCollections = PeripheralDevicePubSubCollections
+> extends EventEmitter<CoreConnectionEvents> {
 	private _ddp: DDPConnector | undefined
 	private _methodQueue: ConnectionMethodsQueue | undefined
-	private _subscriptions: SubscriptionsHelper | undefined
-	private _children: Array<CoreConnectionChild> = []
+	private _subscriptions: SubscriptionsHelper<PubSubTypes> | undefined
+	private _children: Array<CoreConnectionChild<PubSubTypes, PubSubCollections>> = []
 	private _coreOptions: CoreOptions
 	private _timeSync: TimeSync | null = null
 	private _watchDog?: WatchDog
@@ -200,15 +209,15 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 		this._children = []
 	}
 
-	async createChild(coreOptions: ChildCoreOptions): Promise<CoreConnectionChild> {
-		const child = new CoreConnectionChild(coreOptions)
+	async createChild(coreOptions: ChildCoreOptions): Promise<CoreConnectionChild<PubSubTypes, PubSubCollections>> {
+		const child = new CoreConnectionChild<PubSubTypes, PubSubCollections>(coreOptions)
 
 		await child.init(this, this._coreOptions)
 
 		return child
 	}
 
-	removeChild(childToRemove: CoreConnectionChild): void {
+	removeChild(childToRemove: CoreConnectionChild<any, any>): void {
 		let removeIndex = -1
 		this._children.forEach((c, i) => {
 			if (c === childToRemove) removeIndex = i
@@ -281,17 +290,18 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 	async getPeripheralDevice(): Promise<PeripheralDeviceForDevice> {
 		return this.coreMethods.getPeripheralDevice()
 	}
-	getCollection<DBObj extends { _id: ProtectedString<any> | string } = never>(
-		collectionName: string
-	): Collection<DBObj> {
+	getCollection<K extends keyof PubSubCollections>(
+		collectionName: K
+	): Collection<CollectionDocCheck<PubSubCollections[K]>> {
+		type Doc = CollectionDocCheck<PubSubCollections[K]>
 		if (!this.ddp.ddpClient) {
 			throw new Error('getCollection: DDP client not initialized')
 		}
 		const collections = this.ddp.ddpClient.collections
 
-		const c: Collection<DBObj> = {
-			find(selector?: any): Array<DBObj> {
-				const collection = (collections[collectionName] || {}) as any as Record<string, DBObj>
+		const c: Collection<Doc> = {
+			find(selector?: any): Array<Doc> {
+				const collection = (collections[String(collectionName)] || {}) as any as Record<string, Doc>
 				if (_.isUndefined(selector)) {
 					return _.values(collection)
 				} else if (_.isFunction(selector)) {
@@ -302,8 +312,8 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 					return [collection[selector]]
 				}
 			},
-			findOne(docId: DBObj['_id']): DBObj | undefined {
-				const collection = (collections[collectionName] || {}) as any as Record<string, DBObj>
+			findOne(docId: Doc['_id']): Doc | undefined {
+				const collection = (collections[String(collectionName)] || {}) as any as Record<string, Doc>
 				return collection[docId as string]
 			},
 		}
@@ -322,7 +332,10 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 	 * Subscribe to a DDP publication
 	 * Upon reconnecting to Sofie, this publication will be restarted
 	 */
-	async autoSubscribe(publicationName: string, ...params: Array<any>): Promise<SubscriptionId> {
+	async autoSubscribe<Key extends keyof PubSubTypes>(
+		publicationName: Key,
+		...params: ParametersOfFunctionOrNever<PubSubTypes[Key]>
+	): Promise<SubscriptionId> {
 		if (!this._subscriptions) throw new Error('Connection is not ready to handle subscriptions')
 
 		return this._subscriptions.autoSubscribe(publicationName, ...params)
@@ -343,11 +356,11 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 
 		this._subscriptions.unsubscribeAll()
 	}
-	observe(collectionName: string): Observer {
+	observe<K extends keyof PubSubCollections>(collectionName: K): Observer<CollectionDocCheck<PubSubCollections[K]>> {
 		if (!this.ddp.ddpClient) {
 			throw new Error('observe: DDP client not initialised')
 		}
-		return this.ddp.ddpClient.observe(collectionName)
+		return this.ddp.ddpClient.observe(String(collectionName))
 	}
 	getCurrentTime(): number {
 		return this._timeSync?.currentTime() || 0

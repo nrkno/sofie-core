@@ -3,6 +3,7 @@ import {
 	StatusCode,
 	protectString,
 	Observer,
+	PeripheralDevicePubSub,
 } from '@sofie-automation/server-core-integration'
 import {
 	IMOSConnectionStatus,
@@ -66,7 +67,7 @@ interface IStoryItemChange {
 
 export class CoreMosDeviceHandler {
 	core!: CoreConnectionChild
-	public _observers: Array<Observer> = []
+	public _observers: Array<Observer<any>> = []
 	public _mosDevice: IMOSDevice
 	private _coreParentHandler: CoreHandler
 	private _mosHandler: MosHandler
@@ -122,7 +123,9 @@ export class CoreMosDeviceHandler {
 				this._mosDevice.idPrimary +
 				' ..'
 		)
-		Promise.all([this.core.autoSubscribe('peripheralDeviceCommands', this.core.deviceId)]).catch((e) => {
+		Promise.all([
+			this.core.autoSubscribe(PeripheralDevicePubSub.peripheralDeviceCommands, this.core.deviceId),
+		]).catch((e) => {
 			this._coreParentHandler.logger.error(e)
 		})
 

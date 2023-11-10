@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { meteorSubscribe, PubSub } from '../../../lib/api/pubsub'
+import { meteorSubscribe } from '../../../lib/api/pubsub'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import {
 	// PartUi,
@@ -16,6 +16,7 @@ import { PartInstances, Parts, Segments } from '../../collections'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
 import { PartInstance } from '../../../lib/collections/PartInstances'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 export const LIVELINE_HISTORY_SIZE = TIMELINE_LIVELINE_HISTORY_SIZE
 
@@ -45,7 +46,7 @@ export const SegmentScratchpadContainer = withResolvedSegment<IProps>(function S
 		[segmentId]
 	)
 
-	const piecesReady = useSubscription(PubSub.pieces, {
+	const piecesReady = useSubscription(CorelibPubSub.pieces, {
 		startRundownId: rundownId,
 		startPartId: {
 			$in: partIds,
@@ -71,7 +72,7 @@ export const SegmentScratchpadContainer = withResolvedSegment<IProps>(function S
 		[segmentId]
 	)
 
-	const pieceInstancesReady = useSubscription(PubSub.pieceInstances, {
+	const pieceInstancesReady = useSubscription(CorelibPubSub.pieceInstances, {
 		rundownId: rundownId,
 		partInstanceId: {
 			$in: partInstanceIds,
@@ -89,7 +90,7 @@ export const SegmentScratchpadContainer = withResolvedSegment<IProps>(function S
 			},
 		})
 		segment &&
-			meteorSubscribe(PubSub.pieces, {
+			meteorSubscribe(CorelibPubSub.pieces, {
 				invalid: {
 					$ne: true,
 				},

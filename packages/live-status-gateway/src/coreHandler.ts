@@ -1,8 +1,13 @@
 import {
+	CollectionDocCheck,
 	CoreConnection,
 	CoreOptions,
 	DDPConnectorOptions,
 	Observer,
+	PeripheralDevicePubSub,
+	PeripheralDevicePubSubCollections,
+	PeripheralDevicePubSubCollectionsNames,
+	PeripheralDevicePubSubTypes,
 	SubscriptionId,
 	stringifyError,
 } from '@sofie-automation/server-core-integration'
@@ -14,12 +19,17 @@ import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
-import { protectString, unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
-import { PeripheralDeviceId, StudioId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+import {
+	PeripheralDeviceCommandId,
+	PeripheralDeviceId,
+	StudioId,
+} from '@sofie-automation/shared-lib/dist/core/model/Ids'
 import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
 import { PeripheralDeviceCommand } from '@sofie-automation/shared-lib/dist/core/model/PeripheralDeviceCommand'
-import { PeripheralDeviceForDevice } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 import { LiveStatusGatewayConfig } from './generated/options'
+import { CorelibPubSubTypes, CorelibPubSubCollections } from '@sofie-automation/corelib/dist/pubsub'
+import { ParametersOfFunctionOrNever } from '@sofie-automation/server-core-integration/dist/lib/subscriptions'
 
 export interface CoreConfig {
 	host: string
@@ -31,7 +41,10 @@ export interface CoreConfig {
  * Represents a connection between the Gateway and Core
  */
 export class CoreHandler {
-	core!: CoreConnection
+	core!: CoreConnection<
+		CorelibPubSubTypes & PeripheralDevicePubSubTypes,
+		CorelibPubSubCollections & PeripheralDevicePubSubCollections
+	>
 	logger: Logger
 	public _observers: Array<any> = []
 	public deviceSettings: LiveStatusGatewayConfig = {}
@@ -42,7 +55,7 @@ export class CoreHandler {
 
 	private _deviceOptions: DeviceConfig
 	private _onConnected?: () => any
-	private _executedFunctions: { [id: string]: boolean } = {}
+	private _executedFunctions = new Set<PeripheralDeviceCommandId>()
 	private _coreConfig?: CoreConfig
 	private _process?: Process
 
@@ -61,7 +74,9 @@ export class CoreHandler {
 		this._coreConfig = config
 		this._process = process
 
-		this.core = new CoreConnection(this.getCoreConnectionOptions())
+		this.core = new CoreConnection<CorelibPubSubTypes & PeripheralDevicePubSubTypes>(
+			this.getCoreConnectionOptions()
+		)
 
 		this.core.onConnected(() => {
 			this.logger.info('Core Connected!')
@@ -98,7 +113,10 @@ export class CoreHandler {
 		await this.updateCoreStatus()
 	}
 
-	async setupSubscription(collection: string, ...params: any[]): Promise<SubscriptionId> {
+	async setupSubscription<Key extends keyof CorelibPubSubTypes>(
+		collection: Key,
+		...params: ParametersOfFunctionOrNever<CorelibPubSubTypes[Key]>
+	): Promise<SubscriptionId> {
 		this.logger.info(`Core: Set up subscription for '${collection}'`)
 		const subscriptionId = await this.core.autoSubscribe(collection, ...params)
 		this.logger.info(`Core: Subscription for '${collection}' set up with id ${subscriptionId}`)
@@ -110,7 +128,9 @@ export class CoreHandler {
 		this.core.unsubscribe(subscriptionId)
 	}
 
-	setupObserver(collection: string): Observer {
+	setupObserver<K extends keyof (CorelibPubSubCollections & PeripheralDevicePubSubCollections)>(
+		collection: K
+	): Observer<CollectionDocCheck<(CorelibPubSubCollections & PeripheralDevicePubSubCollections)[K]>> {
 		return this.core.observe(collection)
 	}
 
@@ -119,8 +139,8 @@ export class CoreHandler {
 		this.logger.info('DeviceId: ' + this.core.deviceId)
 
 		await Promise.all([
-			this.core.autoSubscribe('peripheralDeviceForDevice', this.core.deviceId),
-			this.core.autoSubscribe('peripheralDeviceCommands', this.core.deviceId),
+			this.core.autoSubscribe(PeripheralDevicePubSub.peripheralDeviceForDevice, this.core.deviceId),
+			this.core.autoSubscribe(PeripheralDevicePubSub.peripheralDeviceCommands, this.core.deviceId),
 		])
 		this.logger.info('Core: Subscriptions are set up!')
 		if (this._observers.length) {
@@ -131,9 +151,9 @@ export class CoreHandler {
 			this._observers = []
 		}
 		// setup observers
-		const observer = this.core.observe('peripheralDeviceForDevice')
-		observer.added = (id: string) => this.onDeviceChanged(protectString(id))
-		observer.changed = (id: string) => this.onDeviceChanged(protectString(id))
+		const observer = this.core.observe(PeripheralDevicePubSubCollectionsNames.peripheralDeviceForDevice)
+		observer.added = (id) => this.onDeviceChanged(id)
+		observer.changed = (id) => this.onDeviceChanged(id)
 		this.setupObserverForPeripheralDeviceCommands(this)
 	}
 	async destroy(): Promise<void> {
@@ -175,7 +195,7 @@ export class CoreHandler {
 
 	onDeviceChanged(id: PeripheralDeviceId): void {
 		if (id !== this.core.deviceId) return
-		const col = this.core.getCollection<PeripheralDeviceForDevice>('peripheralDeviceForDevice')
+		const col = this.core.getCollection(PeripheralDevicePubSubCollectionsNames.peripheralDeviceForDevice)
 		if (!col) throw new Error('collection "peripheralDeviceForDevice" not found!')
 		const device = col.findOne(id)
 
@@ -215,14 +235,14 @@ export class CoreHandler {
 
 	executeFunction(cmd: PeripheralDeviceCommand, fcnObject: CoreHandler): void {
 		if (cmd) {
-			if (this._executedFunctions[unprotectString(cmd._id)]) return // prevent it from running multiple times
+			if (this._executedFunctions.has(cmd._id)) return // prevent it from running multiple times
 
 			// Ignore specific commands, to reduce noise:
 			if (cmd.functionName !== 'getDebugStates') {
 				this.logger.debug(`Executing function "${cmd.functionName}", args: ${JSON.stringify(cmd.args)}`)
 			}
 
-			this._executedFunctions[unprotectString(cmd._id)] = true
+			this._executedFunctions.add(cmd._id)
 			const cb = (errStr: string | null, res?: any) => {
 				if (errStr) {
 					this.logger.error(`executeFunction error: ${errStr}`)
@@ -248,16 +268,18 @@ export class CoreHandler {
 			}
 		}
 	}
-	retireExecuteFunction(cmdId: string): void {
-		delete this._executedFunctions[cmdId]
+	retireExecuteFunction(cmdId: PeripheralDeviceCommandId): void {
+		this._executedFunctions.delete(cmdId)
 	}
 	setupObserverForPeripheralDeviceCommands(functionObject: CoreHandler): void {
-		const observer = functionObject.core.observe('peripheralDeviceCommands')
+		const observer = functionObject.core.observe(PeripheralDevicePubSubCollectionsNames.peripheralDeviceCommands)
 		functionObject._observers.push(observer)
-		const addedChangedCommand = (id: string) => {
-			const cmds = functionObject.core.getCollection<PeripheralDeviceCommand>('peripheralDeviceCommands')
+		const addedChangedCommand = (id: PeripheralDeviceCommandId) => {
+			const cmds = functionObject.core.getCollection(
+				PeripheralDevicePubSubCollectionsNames.peripheralDeviceCommands
+			)
 			if (!cmds) throw Error('"peripheralDeviceCommands" collection not found!')
-			const cmd = cmds.findOne(protectString(id))
+			const cmd = cmds.findOne(id)
 			if (!cmd) throw Error('PeripheralCommand "' + id + '" not found!')
 			// console.log('addedChangedCommand', id)
 			if (cmd.deviceId === functionObject.core.deviceId) {
@@ -266,16 +288,16 @@ export class CoreHandler {
 				// console.log('not mine', cmd.deviceId, this.core.deviceId)
 			}
 		}
-		observer.added = (id: string) => {
+		observer.added = (id) => {
 			addedChangedCommand(id)
 		}
-		observer.changed = (id: string) => {
+		observer.changed = (id) => {
 			addedChangedCommand(id)
 		}
-		observer.removed = (id: string) => {
+		observer.removed = (id) => {
 			this.retireExecuteFunction(id)
 		}
-		const cmds = functionObject.core.getCollection<PeripheralDeviceCommand>('peripheralDeviceCommands')
+		const cmds = functionObject.core.getCollection(PeripheralDevicePubSubCollectionsNames.peripheralDeviceCommands)
 		if (!cmds) throw Error('"peripheralDeviceCommands" collection not found!')
 		cmds.find({}).forEach((cmd) => {
 			if (cmd.deviceId === functionObject.core.deviceId) {

@@ -2,7 +2,7 @@ import { Tracker } from 'meteor/tracker'
 import * as React from 'react'
 import { stringifyObjects } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
-import { PubSubTypes } from '../../lib/api/pubsub'
+import { AllPubSubTypes } from '../../lib/api/pubsub'
 import { catchError } from './lib'
 export class MeteorReactComponent<IProps, IState = {}> extends React.Component<IProps, IState> {
 	private _subscriptions: { [id: string]: Meteor.SubscriptionHandle } = {}
@@ -14,7 +14,10 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 	componentWillUnmount(): void {
 		this._cleanUp()
 	}
-	subscribe<K extends keyof PubSubTypes>(name: K, ...args: Parameters<PubSubTypes[K]>): Meteor.SubscriptionHandle {
+	subscribe<K extends keyof AllPubSubTypes>(
+		name: K,
+		...args: Parameters<AllPubSubTypes[K]>
+	): Meteor.SubscriptionHandle {
 		return Tracker.nonreactive(() => {
 			// let id = name + '_' + JSON.stringify(args.join())
 			const id = name + '_' + stringifyObjects(args)

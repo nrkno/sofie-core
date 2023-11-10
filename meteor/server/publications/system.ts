@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { meteorPublish } from './lib'
-import { PubSub } from '../../lib/api/pubsub'
+import { MeteorPubSub } from '../../lib/api/pubsub'
 import { SystemReadAccess } from '../security/system'
 import { OrganizationReadAccess } from '../security/organization'
 import { CoreSystem, Users } from '../collections'
@@ -8,7 +8,7 @@ import { SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { DBUser } from '../../lib/collections/Users'
 
-meteorPublish(PubSub.coreSystem, async function (token: string | undefined) {
+meteorPublish(MeteorPubSub.coreSystem, async function (token: string | undefined) {
 	if (await SystemReadAccess.coreSystem({ userId: this.userId, token })) {
 		return CoreSystem.findWithCursor(SYSTEM_ID, {
 			fields: {
@@ -29,7 +29,7 @@ meteorPublish(PubSub.coreSystem, async function (token: string | undefined) {
 	return null
 })
 
-meteorPublish(PubSub.loggedInUser, async function (token: string | undefined) {
+meteorPublish(MeteorPubSub.loggedInUser, async function (token: string | undefined) {
 	const currentUserId = this.userId
 
 	if (!currentUserId) return null
@@ -52,19 +52,22 @@ meteorPublish(PubSub.loggedInUser, async function (token: string | undefined) {
 	}
 	return null
 })
-meteorPublish(PubSub.usersInOrganization, async function (selector: MongoQuery<DBUser>, token: string | undefined) {
-	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-	if (await OrganizationReadAccess.adminUsers(selector.organizationId, { userId: this.userId, token })) {
-		return Users.findWithCursor(selector, {
-			fields: {
-				_id: 1,
-				username: 1,
-				emails: 1,
-				profile: 1,
-				organizationId: 1,
-				superAdmin: 1,
-			},
-		})
+meteorPublish(
+	MeteorPubSub.usersInOrganization,
+	async function (selector: MongoQuery<DBUser>, token: string | undefined) {
+		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
+		if (await OrganizationReadAccess.adminUsers(selector.organizationId, { userId: this.userId, token })) {
+			return Users.findWithCursor(selector, {
+				fields: {
+					_id: 1,
+					username: 1,
+					emails: 1,
+					profile: 1,
+					organizationId: 1,
+					superAdmin: 1,
+				},
+			})
+		}
+		return null
 	}
-	return null
-})
+)

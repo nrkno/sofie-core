@@ -2,7 +2,7 @@ import { IBlueprintDeviceTrigger } from '@sofie-automation/blueprints-integratio
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import classNames from 'classnames'
 import React, { useMemo } from 'react'
-import { PubSub } from '../../../../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../../../../lib/api/pubsub'
 import { Studios } from '../../../../../collections'
 import { getCurrentTime } from '../../../../../../lib/lib'
 import { UIDeviceTriggerPreview } from '../../../../../../server/publications/deviceTriggersPreview'
@@ -33,7 +33,7 @@ export const DeviceEditor = function DeviceEditor({ trigger, modified, readonly,
 	)
 	const studio = useTracker(() => Studios.findOne(), [], undefined)
 
-	useSubscription(PubSub.deviceTriggersPreview, studio?._id ?? protectString(''))
+	useSubscription(MeteorPubSub.deviceTriggersPreview, studio?._id ?? protectString(''))
 
 	return (
 		<>

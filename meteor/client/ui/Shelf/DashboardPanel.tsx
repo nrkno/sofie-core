@@ -6,7 +6,6 @@ import ClassNames from 'classnames'
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ISourceLayer, IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
-import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { DashboardLayoutFilter, DashboardPanelUnit } from '../../../lib/collections/RundownLayouts'
@@ -34,6 +33,7 @@ import { UIStudios } from '../Collections'
 import { Meteor } from 'meteor/meteor'
 import { PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 interface IState {
 	outputLayers: OutputLayers
@@ -167,7 +167,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		this.autorun(() => {
 			const unorderedRundownIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(this.props.playlist)
 			if (unorderedRundownIds.length > 0) {
-				this.subscribe(PubSub.pieceInstances, {
+				this.subscribe(CorelibPubSub.pieceInstances, {
 					rundownId: {
 						$in: unorderedRundownIds,
 					},

@@ -23,20 +23,23 @@ import * as crypto from 'crypto'
 import * as cp from 'child_process'
 
 import * as _ from 'underscore'
-import { Observer, stringifyError } from '@sofie-automation/server-core-integration'
+import {
+	Observer,
+	PeripheralDevicePubSubCollectionsNames,
+	stringifyError,
+} from '@sofie-automation/server-core-integration'
 import { Logger } from 'winston'
 import { disableAtemUpload } from './config'
 import Debug from 'debug'
 import { FinishedTrace, sendTrace } from './influxdb'
 
-import { StudioId, TimelineHash } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+import { RundownId, RundownPlaylistId, StudioId, TimelineHash } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 import {
 	deserializeTimelineBlob,
 	RoutedMappings,
 	RoutedTimeline,
 	TimelineObjGeneric,
 } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
-import { DBTimelineDatastoreEntry } from '@sofie-automation/shared-lib/dist/core/model/TimelineDatastore'
 import { PLAYOUT_DEVICE_CONFIG } from './configManifest'
 import { PlayoutGatewayConfig } from './generated/options'
 import {
@@ -99,9 +102,9 @@ export class TSRHandler {
 	tsr!: Conductor
 	// private _config: TSRConfig
 	private _coreHandler!: CoreHandler
-	private _triggerupdateExpectedPlayoutItemsTimeout: any = null
+	private _triggerupdateExpectedPlayoutItemsTimeout: NodeJS.Timeout | null = null
 	private _coreTsrHandlers: { [deviceId: string]: CoreTSRDeviceHandler } = {}
-	private _observers: Array<Observer> = []
+	private _observers: Array<Observer<any>> = []
 	private _cachedStudioId: StudioId | null = null
 
 	private _initialized = false
@@ -252,7 +255,7 @@ export class TSRHandler {
 		}
 		this.logger.debug('Renewing observers')
 
-		const timelineObserver = this._coreHandler.core.observe('studioTimeline')
+		const timelineObserver = this._coreHandler.core.observe(PeripheralDevicePubSubCollectionsNames.studioTimeline)
 		timelineObserver.added = () => {
 			this._triggerupdateTimelineAndMappings('studioTimeline.added', true)
 		}
@@ -264,7 +267,7 @@ export class TSRHandler {
 		}
 		this._observers.push(timelineObserver)
 
-		const mappingsObserver = this._coreHandler.core.observe('studioMappings')
+		const mappingsObserver = this._coreHandler.core.observe(PeripheralDevicePubSubCollectionsNames.studioMappings)
 		mappingsObserver.added = () => {
 			this._triggerupdateTimelineAndMappings('studioMappings.added')
 		}
@@ -276,7 +279,9 @@ export class TSRHandler {
 		}
 		this._observers.push(mappingsObserver)
 
-		const deviceObserver = this._coreHandler.core.observe('peripheralDeviceForDevice')
+		const deviceObserver = this._coreHandler.core.observe(
+			PeripheralDevicePubSubCollectionsNames.peripheralDeviceForDevice
+		)
 		deviceObserver.added = () => {
 			debug('triggerUpdateDevices from deviceObserver added')
 			this._triggerUpdateDevices()
@@ -294,7 +299,9 @@ export class TSRHandler {
 		}
 		this._observers.push(deviceObserver)
 
-		const expectedPlayoutItemsObserver = this._coreHandler.core.observe('expectedPlayoutItems')
+		const expectedPlayoutItemsObserver = this._coreHandler.core.observe(
+			PeripheralDevicePubSubCollectionsNames.expectedPlayoutItems
+		)
 		expectedPlayoutItemsObserver.added = () => {
 			this._triggerupdateExpectedPlayoutItems()
 		}
@@ -306,7 +313,9 @@ export class TSRHandler {
 		}
 		this._observers.push(expectedPlayoutItemsObserver)
 
-		const timelineDatastoreObserver = this._coreHandler.core.observe('timelineDatastore')
+		const timelineDatastoreObserver = this._coreHandler.core.observe(
+			PeripheralDevicePubSubCollectionsNames.timelineDatastore
+		)
 		timelineDatastoreObserver.added = () => {
 			this._triggerUpdateDatastore()
 		}
@@ -341,7 +350,9 @@ export class TSRHandler {
 			return undefined
 		}
 
-		return this._coreHandler.core.getCollection<RoutedTimeline>('studioTimeline').findOne(studioId)
+		return this._coreHandler.core
+			.getCollection(PeripheralDevicePubSubCollectionsNames.studioTimeline)
+			.findOne(studioId)
 	}
 	getMappings(): RoutedMappings | undefined {
 		const studioId = this._getStudioId()
@@ -350,7 +361,9 @@ export class TSRHandler {
 			return undefined
 		}
 		// Note: The studioMappings virtual collection contains a single object that contains all mappings
-		return this._coreHandler.core.getCollection<RoutedMappings>('studioMappings').findOne(studioId)
+		return this._coreHandler.core
+			.getCollection(PeripheralDevicePubSubCollectionsNames.studioMappings)
+			.findOne(studioId)
 	}
 	onSettingsChanged(): void {
 		if (!this._initialized) return
@@ -426,8 +439,9 @@ export class TSRHandler {
 		this.tsr.setTimelineAndMappings(transformedTimeline, unprotectObject(mappingsObject.mappings))
 	}
 	private _getPeripheralDevice(): PeripheralDeviceForDevice {
-		const peripheralDevices =
-			this._coreHandler.core.getCollection<PeripheralDeviceForDevice>('peripheralDeviceForDevice')
+		const peripheralDevices = this._coreHandler.core.getCollection(
+			PeripheralDevicePubSubCollectionsNames.peripheralDeviceForDevice
+		)
 		const doc = peripheralDevices.findOne(this._coreHandler.core.deviceId)
 		if (!doc) throw new Error('Missing PeripheralDevice document!')
 		return doc
@@ -1015,19 +1029,22 @@ export class TSRHandler {
 		}, 200)
 	}
 	private async _updateExpectedPlayoutItems() {
-		const expectedPlayoutItems = this._coreHandler.core.getCollection<any>('expectedPlayoutItems')
+		const expectedPlayoutItems = this._coreHandler.core.getCollection(
+			PeripheralDevicePubSubCollectionsNames.expectedPlayoutItems
+		)
 		const peripheralDevice = this._getPeripheralDevice()
 
 		const expectedItems = expectedPlayoutItems.find({
 			studioId: peripheralDevice.studioId,
 		})
 
-		const rundowns = _.indexBy(
-			this._coreHandler.core.getCollection<any>('rundowns').find({
-				studioId: peripheralDevice.studioId,
-			}),
-			'_id'
-		)
+		const rundownIdToPlaylistId = new Map<RundownId, RundownPlaylistId>()
+		const allRundowns = this._coreHandler.core.getCollection(PeripheralDevicePubSubCollectionsNames.rundowns).find({
+			studioId: peripheralDevice.studioId,
+		})
+		for (const rundown of allRundowns) {
+			rundownIdToPlaylistId.set(rundown._id, rundown.playlistId)
+		}
 
 		await Promise.all(
 			_.map(this.tsr.getDevices(), async (container) => {
@@ -1035,22 +1052,22 @@ export class TSRHandler {
 					return
 				}
 				await container.device.handleExpectedPlayoutItems(
-					_.map(
-						_.filter(
-							expectedItems,
+					expectedItems
+						.filter(
 							(item) => item.deviceSubType === container.deviceType
 							// TODO: implement item.deviceId === container.deviceId
-						),
-						(item): ExpectedPlayoutItem => {
+						)
+						.map((item): ExpectedPlayoutItem => {
 							const itemContent: ExpectedPlayoutItemContent = item.content
 							return {
 								...itemContent,
-								rundownId: item.rundownId,
-								playlistId: item.rundownId && rundowns[item.rundownId]?.playlistId,
+								rundownId: unprotectString(item.rundownId) ?? '',
+								playlistId:
+									(item.rundownId && unprotectString(rundownIdToPlaylistId.get(item.rundownId))) ??
+									'',
 								baseline: item.baseline,
 							}
-						}
-					)
+						})
 				)
 			})
 		)
@@ -1060,7 +1077,9 @@ export class TSRHandler {
 		this._updateDatastore().catch((e) => this.logger.error('Error in _updateDatastore', e))
 	}
 	private async _updateDatastore() {
-		const datastoreCollection = this._coreHandler.core.getCollection<DBTimelineDatastoreEntry>('timelineDatastore')
+		const datastoreCollection = this._coreHandler.core.getCollection(
+			PeripheralDevicePubSubCollectionsNames.timelineDatastore
+		)
 		const peripheralDevice = this._getPeripheralDevice()
 
 		const datastoreObjs = datastoreCollection.find({

@@ -63,7 +63,7 @@ import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/coreli
 import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { hashSingleUseToken, ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
-import { meteorSubscribe, PubSub } from '../../lib/api/pubsub'
+import { meteorSubscribe, MeteorPubSub } from '../../lib/api/pubsub'
 import {
 	RundownLayoutType,
 	RundownLayoutBase,
@@ -148,6 +148,7 @@ import { PromiseButton } from '../lib/Components/PromiseButton'
 import { logger } from '../../lib/logging'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from './i18n'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -1578,10 +1579,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		componentDidMount(): void {
 			const playlistId = this.props.rundownPlaylistId
 
-			this.subscribe(PubSub.rundownPlaylists, {
+			this.subscribe(CorelibPubSub.rundownPlaylists, {
 				_id: playlistId,
 			})
-			this.subscribe(PubSub.rundowns, [playlistId], null)
+			this.subscribe(CorelibPubSub.rundowns, [playlistId], null)
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(playlistId, {
 					fields: {
@@ -1591,10 +1592,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}) as Pick<DBRundownPlaylist, '_id' | 'studioId'> | undefined
 				if (!playlist) return
 
-				this.subscribe(PubSub.uiSegmentPartNotes, playlistId)
-				this.subscribe(PubSub.uiPieceContentStatuses, playlistId)
-				this.subscribe(PubSub.uiStudio, playlist.studioId)
-				this.subscribe(PubSub.buckets, playlist.studioId, null)
+				this.subscribe(MeteorPubSub.uiSegmentPartNotes, playlistId)
+				this.subscribe(MeteorPubSub.uiPieceContentStatuses, playlistId)
+				this.subscribe(MeteorPubSub.uiStudio, playlist.studioId)
+				this.subscribe(MeteorPubSub.buckets, playlist.studioId, null)
 			})
 
 			this.autorun(() => {
@@ -1615,47 +1616,47 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}) as Pick<Rundown, '_id' | 'showStyleBaseId' | 'showStyleVariantId'>[]
 
 				for (const rundown of rundowns) {
-					this.subscribe(PubSub.uiShowStyleBase, rundown.showStyleBaseId)
+					this.subscribe(MeteorPubSub.uiShowStyleBase, rundown.showStyleBaseId)
 				}
 
-				this.subscribe(PubSub.showStyleVariants, {
+				this.subscribe(CorelibPubSub.showStyleVariants, {
 					_id: {
 						$in: rundowns.map((i) => i.showStyleVariantId),
 					},
 				})
-				this.subscribe(PubSub.rundownLayouts, {
+				this.subscribe(MeteorPubSub.rundownLayouts, {
 					showStyleBaseId: {
 						$in: rundowns.map((i) => i.showStyleBaseId),
 					},
 				})
 				const rundownIDs = rundowns.map((i) => i._id)
-				this.subscribe(PubSub.segments, {
+				this.subscribe(CorelibPubSub.segments, {
 					rundownId: {
 						$in: rundownIDs,
 					},
 				})
-				this.subscribe(PubSub.adLibPieces, {
+				this.subscribe(CorelibPubSub.adLibPieces, {
 					rundownId: {
 						$in: rundownIDs,
 					},
 				})
-				this.subscribe(PubSub.rundownBaselineAdLibPieces, {
+				this.subscribe(CorelibPubSub.rundownBaselineAdLibPieces, {
 					rundownId: {
 						$in: rundownIDs,
 					},
 				})
-				this.subscribe(PubSub.adLibActions, {
+				this.subscribe(CorelibPubSub.adLibActions, {
 					rundownId: {
 						$in: rundownIDs,
 					},
 				})
-				this.subscribe(PubSub.rundownBaselineAdLibActions, {
+				this.subscribe(CorelibPubSub.rundownBaselineAdLibActions, {
 					rundownId: {
 						$in: rundownIDs,
 					},
 				})
-				this.subscribe(PubSub.parts, rundownIDs)
-				this.subscribe(PubSub.partInstances, rundownIDs, playlist.activationId)
+				this.subscribe(CorelibPubSub.parts, rundownIDs)
+				this.subscribe(CorelibPubSub.partInstances, rundownIDs, playlist.activationId)
 			})
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(playlistId, {
@@ -1670,7 +1671,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					// Use meteorSubscribe so that this subscription doesn't mess with this.subscriptionsReady()
 					// it's run in this.autorun, so the subscription will be stopped along with the autorun,
 					// so we don't have to manually clean up after ourselves.
-					meteorSubscribe(PubSub.pieceInstances, {
+					meteorSubscribe(CorelibPubSub.pieceInstances, {
 						rundownId: {
 							$in: rundownIds,
 						},
@@ -1689,13 +1690,13 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
 
 					if (previousPartInstance) {
-						meteorSubscribe(PubSub.partInstancesForSegmentPlayout, {
+						meteorSubscribe(CorelibPubSub.partInstancesForSegmentPlayout, {
 							rundownId: previousPartInstance.rundownId,
 							segmentPlayoutId: previousPartInstance.segmentPlayoutId,
 						})
 					}
 					if (currentPartInstance) {
-						meteorSubscribe(PubSub.partInstancesForSegmentPlayout, {
+						meteorSubscribe(CorelibPubSub.partInstancesForSegmentPlayout, {
 							rundownId: currentPartInstance.rundownId,
 							segmentPlayoutId: currentPartInstance.segmentPlayoutId,
 						})

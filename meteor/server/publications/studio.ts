@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
 import { meteorPublish, AutoFillSelector } from './lib'
-import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
+import { MeteorPubSub } from '../../lib/api/pubsub'
 import { getActiveRoutes, getRoutedMappings } from '../../lib/collections/Studios'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
@@ -33,8 +33,13 @@ import { PackageContainerStatusDB } from '@sofie-automation/corelib/dist/dataMod
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { RoutedMappings } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import {
+	PeripheralDevicePubSub,
+	PeripheralDevicePubSubCollectionsNames,
+} from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 
-meteorPublish(PubSub.studios, async function (selector0: MongoQuery<DBStudio>, token: string | undefined) {
+meteorPublish(CorelibPubSub.studios, async function (selector0: MongoQuery<DBStudio>, token: string | undefined) {
 	const { cred, selector } = await AutoFillSelector.organizationId<DBStudio>(this.userId, selector0, token)
 	const modifier: FindOptions<DBStudio> = {
 		fields: {},
@@ -51,7 +56,7 @@ meteorPublish(PubSub.studios, async function (selector0: MongoQuery<DBStudio>, t
 })
 
 meteorPublish(
-	PubSub.externalMessageQueue,
+	CorelibPubSub.externalMessageQueue,
 	async function (selector: MongoQuery<ExternalMessageQueueObj>, token: string | undefined) {
 		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 		const modifier: FindOptions<ExternalMessageQueueObj> = {
@@ -65,7 +70,7 @@ meteorPublish(
 )
 
 meteorPublish(
-	PubSub.expectedPackages,
+	CorelibPubSub.expectedPackages,
 	async function (selector: MongoQuery<ExpectedPackageDB>, token: string | undefined) {
 		// Note: This differs from the expected packages sent to the Package Manager, instead @see PubSub.expectedPackagesForDevice
 		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
@@ -79,7 +84,7 @@ meteorPublish(
 	}
 )
 meteorPublish(
-	PubSub.expectedPackageWorkStatuses,
+	CorelibPubSub.expectedPackageWorkStatuses,
 	async function (selector: MongoQuery<ExpectedPackageWorkStatus>, token: string | undefined) {
 		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 		const modifier: FindOptions<ExpectedPackageWorkStatus> = {
@@ -92,7 +97,7 @@ meteorPublish(
 	}
 )
 meteorPublish(
-	PubSub.packageContainerStatuses,
+	CorelibPubSub.packageContainerStatuses,
 	async function (selector: MongoQuery<PackageContainerStatusDB>, token: string | undefined) {
 		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 		const modifier: FindOptions<ExpectedPackageWorkStatus> = {
@@ -106,8 +111,8 @@ meteorPublish(
 )
 
 meteorCustomPublish(
-	PubSub.mappingsForDevice,
-	CustomCollectionName.StudioMappings,
+	PeripheralDevicePubSub.mappingsForDevice,
+	PeripheralDevicePubSubCollectionsNames.studioMappings,
 	async function (pub, deviceId: PeripheralDeviceId, token: string | undefined) {
 		check(deviceId, String)
 
@@ -125,8 +130,8 @@ meteorCustomPublish(
 )
 
 meteorCustomPublish(
-	PubSub.mappingsForStudio,
-	CustomCollectionName.StudioMappings,
+	MeteorPubSub.mappingsForStudio,
+	PeripheralDevicePubSubCollectionsNames.studioMappings,
 	async function (pub, studioId: StudioId, token: string | undefined) {
 		check(studioId, String)
 
@@ -202,7 +207,7 @@ async function createObserverForMappingsPublication(pub: CustomPublish<RoutedMap
 		RoutedMappingsState,
 		RoutedMappingsUpdateProps
 	>(
-		`${CustomCollectionName.StudioMappings}_${studioId}`,
+		`${PeripheralDevicePubSubCollectionsNames.studioMappings}_${studioId}`,
 		{ studioId },
 		setupMappingsPublicationObservers,
 		manipulateMappingsPublicationData,

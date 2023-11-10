@@ -52,7 +52,7 @@ import { ResetPasswordPage } from './Account/NotLoggedIn/ResetPasswordPage'
 import { AccountPage } from './Account/AccountPage'
 import { OrganizationPage } from './Account/OrganizationPage'
 import { getUser, User } from '../../lib/collections/Users'
-import { PubSub } from '../../lib/api/pubsub'
+import { MeteorPubSub } from '../../lib/api/pubsub'
 import { useTracker, useSubscription } from '../lib/ReactMeteorData/ReactMeteorData'
 import { DocumentTitleProvider } from '../lib/DocumentTitleProvider'
 import { Spinner } from '../lib/Spinner'
@@ -82,8 +82,8 @@ export const App: React.FC = function App() {
 	const [lastStart] = useState(Date.now())
 	const [requestedRoute, setRequestedRoute] = useState<undefined | string>()
 
-	const userReady = useSubscription(PubSub.loggedInUser)
-	const orgReady = useSubscription(PubSub.organization, user?.organizationId ?? null)
+	const userReady = useSubscription(MeteorPubSub.loggedInUser)
+	const orgReady = useSubscription(MeteorPubSub.organization, user?.organizationId ?? null)
 
 	const subsReady = userReady && orgReady
 

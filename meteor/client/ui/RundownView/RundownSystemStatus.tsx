@@ -13,11 +13,11 @@ import { Time, getCurrentTime, unprotectString } from '../../../lib/lib'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { PubSub } from '../../../lib/api/pubsub'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { UIStudio } from '../../../lib/api/studios'
 import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevices } from '../../collections'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 interface IMOSStatusProps {
 	lastUpdate: Time
@@ -180,7 +180,7 @@ export const RundownSystemStatus = translateWithTracker(
 		}
 
 		componentDidMount(): void {
-			this.subscribe(PubSub.peripheralDevicesAndSubDevices, {
+			this.subscribe(CorelibPubSub.peripheralDevicesAndSubDevices, {
 				studioId: this.props.studio._id,
 			})
 		}

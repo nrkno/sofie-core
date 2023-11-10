@@ -1,7 +1,7 @@
 import { BlueprintId, ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { ReadonlyDeep } from 'type-fest'
-import { CustomCollectionName, PubSub } from '../../../lib/api/pubsub'
+import { CustomCollectionName, MeteorPubSub } from '../../../lib/api/pubsub'
 import { literal, ProtectedString, protectString } from '../../../lib/lib'
 import {
 	CustomPublish,
@@ -238,7 +238,7 @@ export async function createBlueprintUpgradeStatusSubscriptionHandle(
 		BlueprintUpgradeStatusState,
 		BlueprintUpgradeStatusUpdateProps
 	>(
-		`pub_${PubSub.uiBlueprintUpgradeStatuses}`,
+		`pub_${MeteorPubSub.uiBlueprintUpgradeStatuses}`,
 		{},
 		setupBlueprintUpgradeStatusPublicationObservers,
 		manipulateBlueprintUpgradeStatusPublicationData,
@@ -248,7 +248,7 @@ export async function createBlueprintUpgradeStatusSubscriptionHandle(
 }
 
 meteorCustomPublish(
-	PubSub.uiBlueprintUpgradeStatuses,
+	MeteorPubSub.uiBlueprintUpgradeStatuses,
 	CustomCollectionName.UIBlueprintUpgradeStatuses,
 	async function (pub) {
 		const cred = await resolveCredentials({ userId: this.userId, token: undefined })

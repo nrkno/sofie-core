@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
+import { meteorSubscribe } from '../../../lib/api/pubsub'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import {
 	withResolvedSegment,
@@ -12,6 +12,7 @@ import { SegmentList } from './SegmentList'
 import { unprotectString } from '../../../lib/lib'
 import { LIVELINE_HISTORY_SIZE as TIMELINE_LIVELINE_HISTORY_SIZE } from '../SegmentTimeline/SegmentTimelineContainer'
 import { PartInstances, Parts, Segments } from '../../collections'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 export const LIVELINE_HISTORY_SIZE = TIMELINE_LIVELINE_HISTORY_SIZE
 
@@ -41,7 +42,7 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 		[segmentId]
 	)
 
-	useSubscription(PubSub.pieces, {
+	useSubscription(CorelibPubSub.pieces, {
 		startRundownId: rundownId,
 		startPartId: {
 			$in: partIds,
@@ -67,7 +68,7 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 		[segmentId]
 	)
 
-	useSubscription(PubSub.pieceInstances, {
+	useSubscription(CorelibPubSub.pieceInstances, {
 		rundownId: rundownId,
 		partInstanceId: {
 			$in: partInstanceIds,
@@ -85,7 +86,7 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 			},
 		})
 		segment &&
-			meteorSubscribe(PubSub.pieces, {
+			meteorSubscribe(CorelibPubSub.pieces, {
 				invalid: {
 					$ne: true,
 				},

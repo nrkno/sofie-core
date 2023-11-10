@@ -3,7 +3,7 @@ import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mo
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
-import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
+import { CustomCollectionName, MeteorPubSub } from '../../lib/api/pubsub'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { Complete, literal } from '../../lib/lib'
@@ -83,7 +83,7 @@ async function manipulateUIShowStyleBasePublicationData(
 }
 
 meteorCustomPublish(
-	PubSub.uiShowStyleBase,
+	MeteorPubSub.uiShowStyleBase,
 	CustomCollectionName.UIShowStyleBase,
 	async function (pub, showStyleBaseId: ShowStyleBaseId) {
 		check(showStyleBaseId, String)
@@ -107,7 +107,7 @@ meteorCustomPublish(
 				UIShowStyleBaseState,
 				UIShowStyleBaseUpdateProps
 			>(
-				`pub_${PubSub.uiShowStyleBase}_${showStyleBaseId}`,
+				`pub_${MeteorPubSub.uiShowStyleBase}_${showStyleBaseId}`,
 				{ showStyleBaseId },
 				setupUIShowStyleBasePublicationObservers,
 				manipulateUIShowStyleBasePublicationData,

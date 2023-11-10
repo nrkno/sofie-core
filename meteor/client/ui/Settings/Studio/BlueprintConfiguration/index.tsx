@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { SelectConfigPreset } from './SelectConfigPreset'
 import { SelectBlueprint } from './SelectBlueprint'
-import { PubSub } from '../../../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../../../lib/api/pubsub'
 import { UIBlueprintUpgradeStatuses } from '../../../Collections'
 import { getUpgradeStatusMessage, UpgradeStatusButtons } from '../../Upgrades/Components'
 
@@ -23,7 +23,7 @@ interface StudioBlueprintConfigurationSettingsProps {
 export function StudioBlueprintConfigurationSettings(props: StudioBlueprintConfigurationSettingsProps): JSX.Element {
 	const { t } = useTranslation()
 
-	const isStatusReady = useSubscription(PubSub.uiBlueprintUpgradeStatuses)
+	const isStatusReady = useSubscription(MeteorPubSub.uiBlueprintUpgradeStatuses)
 	const status = useTracker(
 		() =>
 			UIBlueprintUpgradeStatuses.findOne({

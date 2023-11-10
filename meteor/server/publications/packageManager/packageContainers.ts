@@ -7,11 +7,14 @@ import { PackageManagerPackageContainers } from '@sofie-automation/shared-lib/di
 import { check } from 'meteor/check'
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
-import { PubSub, CustomCollectionName } from '../../../lib/api/pubsub'
 import { PeripheralDevices, Studios } from '../../collections'
 import { meteorCustomPublish, setUpOptimizedObserverArray, TriggerUpdate } from '../../lib/customPublication'
 import { logger } from '../../logging'
 import { PeripheralDeviceReadAccess } from '../../security/peripheralDevice'
+import {
+	PeripheralDevicePubSub,
+	PeripheralDevicePubSubCollectionsNames,
+} from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 
 type StudioFields = '_id' | 'packageContainers'
 const studioFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBStudio, StudioFields>>>({
@@ -81,8 +84,8 @@ async function manipulateExpectedPackagesPublicationData(
 }
 
 meteorCustomPublish(
-	PubSub.packageManagerPackageContainers,
-	CustomCollectionName.PackageManagerPackageContainers,
+	PeripheralDevicePubSub.packageManagerPackageContainers,
+	PeripheralDevicePubSubCollectionsNames.packageManagerPackageContainers,
 	async function (pub, deviceId: PeripheralDeviceId, token: string | undefined) {
 		check(deviceId, String)
 
@@ -103,7 +106,7 @@ meteorCustomPublish(
 				PackageManagerPackageContainersState,
 				PackageManagerPackageContainersUpdateProps
 			>(
-				`${PubSub.packageManagerPackageContainers}_${studioId}_${deviceId}`,
+				`${PeripheralDevicePubSub.packageManagerPackageContainers}_${studioId}_${deviceId}`,
 				{ studioId, deviceId },
 				setupExpectedPackagesPublicationObservers,
 				manipulateExpectedPackagesPublicationData,

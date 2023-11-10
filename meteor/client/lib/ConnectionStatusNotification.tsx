@@ -16,7 +16,7 @@ import {
 import { WithManagedTracker } from './reactiveData/reactiveDataHelper'
 import { withTranslation } from 'react-i18next'
 import { NotificationCenterPopUps } from './notifications/NotificationCenterPanel'
-import { PubSub } from '../../lib/api/pubsub'
+import { MeteorPubSub } from '../../lib/api/pubsub'
 import { ICoreSystem, ServiceMessage, Criticality } from '../../lib/collections/CoreSystem'
 import { TFunction } from 'react-i18next'
 import { getRandomId } from '@sofie-automation/corelib/dist/lib'
@@ -31,7 +31,7 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 	constructor(t: TFunction) {
 		super()
 
-		this.subscribe(PubSub.coreSystem)
+		this.subscribe(MeteorPubSub.coreSystem)
 
 		this._translator = t
 
