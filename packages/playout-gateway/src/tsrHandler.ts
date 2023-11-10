@@ -51,6 +51,8 @@ import {
 	unprotectString,
 } from '@sofie-automation/server-core-integration'
 import { BaseRemoteDeviceIntegration } from 'timeline-state-resolver/dist/service/remoteDeviceInstance'
+import { DeviceEvents } from 'timeline-state-resolver/dist/devices/device'
+import EventEmitter = require('eventemitter3')
 
 const debug = Debug('playout-gateway')
 
@@ -882,31 +884,27 @@ export class TSRHandler {
 					}
 				)
 			}
-			// Note for the future:
-			// It is important that the callbacks returns void,
-			// otherwise there might be problems with threadedclass!
 
-			await device.device.on('connectionChanged', onDeviceStatusChanged as () => void)
-			// await device.device.on('slowCommand', onSlowCommand)
-			await device.device.on('slowSentCommand', onSlowSentCommand as () => void)
-			await device.device.on('slowFulfilledCommand', onSlowFulfilledCommand as () => void)
-			await device.device.on('commandError', onCommandError as () => void)
-			await device.device.on('commandReport', onCommandReport as () => void)
-			await device.device.on('updateMediaObject', onUpdateMediaObject as () => void)
-			await device.device.on('clearMediaObjects', onClearMediaObjectCollection as () => void)
+			await addListenerToDevice(device, 'connectionChanged', onDeviceStatusChanged)
+			// await addListenerToDevice(device, 'slowCommand', onSlowCommand)
+			await addListenerToDevice(device, 'slowSentCommand', onSlowSentCommand)
+			await addListenerToDevice(device, 'slowFulfilledCommand', onSlowFulfilledCommand)
+			await addListenerToDevice(device, 'commandError', onCommandError)
+			await addListenerToDevice(device, 'commandReport', onCommandReport)
+			await addListenerToDevice(device, 'updateMediaObject', onUpdateMediaObject)
+			await addListenerToDevice(device, 'clearMediaObjects', onClearMediaObjectCollection)
 
-			// note - these callbacks do not give type warnings. check them manually against TSR typings
-			await device.device.on('info', ((info: string) => {
+			await addListenerToDevice(device, 'info', (info) => {
 				this.logger.info(fixLog(info))
-			}) as () => void)
-			await device.device.on('warning', ((warning: string) => {
+			})
+			await addListenerToDevice(device, 'warning', (warning: string) => {
 				this.logger.warn(fixLog(warning))
-			}) as () => void)
-			await device.device.on('error', ((context: string, err: Error) => {
-				this.logger.error(fixError(err), fixContext(context))
-			}) as () => void)
+			})
+			await addListenerToDevice(device, 'error', (context, error) => {
+				this.logger.error(fixError(error), fixContext(context))
+			})
 
-			await device.device.on('debug', (...args: any[]) => {
+			await addListenerToDevice(device, 'debug', (...args) => {
 				if (!device.debugLogging && !this._coreHandler.logDebug) {
 					return
 				}
@@ -918,7 +916,7 @@ export class TSRHandler {
 				this.logger.debug(`Device "${device.deviceName || deviceId}" (${device.instanceId})`, { data })
 			})
 
-			await device.device.on('debugState', (...args: any[]) => {
+			await addListenerToDevice(device, 'debugState', (...args) => {
 				if (device.debugState && this._coreHandler.logDebug) {
 					// Fetch the Id that core knows this device by
 					const coreId = this._coreTsrHandlers[device.deviceId].core.deviceId
@@ -926,7 +924,8 @@ export class TSRHandler {
 				}
 			})
 
-			await device.device.on('timeTrace', ((trace: FinishedTrace) => sendTrace(trace)) as () => void)
+			await addListenerToDevice(device, 'timeTrace', (trace) => sendTrace(trace))
+			/* eslint-enable @typescript-eslint/await-thenable */
 
 			// now initialize it
 			await this.tsr.initDevice(deviceId, options)
@@ -1220,4 +1219,20 @@ export function getHash(str: string): string {
 
 export function stringifyIds(ids: string[]): string {
 	return ids.map((id) => `"${id}"`).join(', ')
+}
+
+async function addListenerToDevice<T extends keyof DeviceEvents>(
+	device: BaseRemoteDeviceIntegration<DeviceOptionsAny>,
+	eventName: T,
+	fcn: EventEmitter.EventListener<DeviceEvents, T>
+): Promise<void> {
+	// Note for the future:
+	// It is important that the callbacks returns void,
+	// otherwise there might be problems with threadedclass!
+	// Also, it is critical that all of these `.on` calls be `await`ed.
+	// They aren't typed as promises due to limitations of TypeScript,
+	// but due to threadedclass they _are_ promises.
+
+	const emitterHack = device.device as unknown as EventEmitter<DeviceEvents>
+	await Promise.resolve(emitterHack.on(eventName, fcn))
 }
