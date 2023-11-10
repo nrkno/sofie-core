@@ -54,14 +54,7 @@ export class PieceInstancesHandler
 		const collection = this._core.getCollection<PieceInstance>(this._collectionName)
 		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
 		const active = this._currentPlaylist?.currentPartInfo?.partInstanceId
-			? collection.find(
-					(pieceInstance: PieceInstance) =>
-						(pieceInstance.partInstanceId === this._currentPlaylist?.previousPartInfo?.partInstanceId ||
-							pieceInstance.partInstanceId === this._currentPlaylist?.currentPartInfo?.partInstanceId) &&
-						(pieceInstance.reportedStartedPlayback != null ||
-							pieceInstance.piece.enable.start === 0 ||
-							pieceInstance.infinite?.fromPreviousPart)
-			  )
+			? collection.find((pieceInstance: PieceInstance) => this.isPieceInstanceActive(pieceInstance))
 			: []
 		const inCurrentPartInstance = this._currentPlaylist?.currentPartInfo?.partInstanceId
 			? collection.find({ partInstanceId: this._currentPlaylist.currentPartInfo.partInstanceId })
@@ -126,7 +119,7 @@ export class PieceInstancesHandler
 				this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, {
 					partInstanceId: { $in: this._partInstanceIds },
 					playlistActivationId: this._activationId,
-					reportedStartedPlayback: { $exists: false },
+					reportedStoppedPlayback: { $exists: false },
 				})
 				this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
 				this._dbObserver.added = (id: string) => {
@@ -156,5 +149,16 @@ export class PieceInstancesHandler
 			this.clearCollectionData()
 			await this.notify(this._collectionData)
 		}
+	}
+
+	private isPieceInstanceActive(pieceInstance: PieceInstance) {
+		return (
+			(pieceInstance.partInstanceId === this._currentPlaylist?.previousPartInfo?.partInstanceId || // a piece from previous part instance may be active during transition
+				pieceInstance.partInstanceId === this._currentPlaylist?.currentPartInfo?.partInstanceId) &&
+			(pieceInstance.reportedStartedPlayback != null || // has been reported to have started by the Playout Gateway
+				(pieceInstance.partInstanceId === this._currentPlaylist?.currentPartInfo?.partInstanceId &&
+					pieceInstance.piece.enable.start === 0) || // this is to speed things up immediately after a part instance is taken when not yet reported by the Playout Gateway
+				pieceInstance.infinite?.fromPreviousPart) // infinites from previous part also are on air from the start of the current part
+		)
 	}
 }
