@@ -177,7 +177,13 @@ resources:
       parameters:
         - name: bucketId
           in: path
-          description: Bucket to remove.
+          description: Bucket to remove the adlib from.
+          required: true
+          schema:
+            type: string
+        - name: adlibId
+          in: path
+          description: Id of the bucket adlib to remove.
           required: true
           schema:
             type: string
