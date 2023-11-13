@@ -11,6 +11,7 @@ import isShallowEqual from '@sofie-automation/shared-lib/dist/lib/isShallowEqual
 
 interface SegmentStatus {
 	id: string
+	identifier?: string
 	rundownId: string
 	name: string
 }
@@ -47,6 +48,7 @@ export class SegmentsTopic
 				id: unprotectString(segment._id),
 				rundownId: unprotectString(segment.rundownId),
 				name: segment.name,
+				identifier: segment.identifier,
 			})),
 		}
 
