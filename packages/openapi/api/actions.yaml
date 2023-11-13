@@ -84,3 +84,12 @@ paths:
     $ref: 'definitions/showstyles.yaml#/resources/showStyleVariant'
   /showstyles/{showStyleBaseId}/action:
     $ref: 'definitions/showstyles.yaml#/resources/showStyleBaseAction'
+  # bucket operations
+  /buckets:
+    $ref: 'definitions/buckets.yaml#/resources/buckets'
+  /buckets/{bucketId}:
+    $ref: 'definitions/buckets.yaml#/resources/bucket'
+  /buckets/{bucketId}/adlibs:
+    $ref: 'definitions/buckets.yaml#/resources/bucketAdlibs'
+  /buckets/{bucketId}/adlibs/{adlibId}:
+    $ref: 'definitions/buckets.yaml#/resources/bucketAdlib'
