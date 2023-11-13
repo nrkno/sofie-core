@@ -1,11 +1,12 @@
 import { Meteor } from 'meteor/meteor'
-import { ClientAPI } from '../client'
+import { ClientAPI } from '../../client'
 import {
 	BucketAdLibActionId,
 	BucketAdLibId,
 	BucketId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { IngestAdlib } from '@sofie-automation/blueprints-integration'
 
 export interface BucketsRestAPI {
 	/**
@@ -28,10 +29,10 @@ export interface BucketsRestAPI {
 	 * @param inputs Migration data to apply
 	 */
 	getBucket(
-		_connection: Meteor.Connection,
-		_event: string,
+		connection: Meteor.Connection,
+		event: string,
 		bucketId: BucketId
-	): Promise<ClientAPI.ClientResponse<Array<APIBucketComplete>>>
+	): Promise<ClientAPI.ClientResponse<APIBucketComplete>>
 
 	/**
 	 * Adds a new Bucket, returns the Id of the newly created Bucket.
@@ -85,37 +86,21 @@ export interface BucketsRestAPI {
 		adLibId: BucketAdLibId | BucketAdLibActionId
 	): Promise<ClientAPI.ClientResponse<void>>
 
-	// /**
-	//  * Adds an AdLib to the Bucket, based on an existing adLib.
-	//  *
-	//  * @param connection Connection data including client and header details
-	//  * @param event User event string
-	//  * @param bucketId Id of the bucket to delete
-	//  * @param sourceAdLibId Id of the bucket adlib to empty
-	//  * @param label Custom label for the adlib
-	//  */
-	// addModifiedAdLibToBucket(
-	// 	connection: Meteor.Connection,
-	// 	event: string,
-	// 	bucketId: BucketId,
-	// 	sourceAdLibId: AdLibActionId | RundownBaselineAdLibActionId | PieceId,
-	// 	label: string,
-	// 	userData?: any | null
-	// ): Promise<ClientAPI.ClientResponse<void>>
-
 	/**
 	 * Imports a Bucket AdLib.
 	 *
 	 * @param connection Connection data including client and header details
 	 * @param event User event string
-	 * @param adLibId Id of the bucket adlib to delete
+	 * @param bucketId Id of the bucket where to import the adlib
+	 * @param showStyleBaseId Id of the showStyle to use when importing the adlib
+	 * @param ingestItem Adlib to be imported
 	 */
 	importAdLibToBucket(
 		connection: Meteor.Connection,
 		event: string,
 		bucketId: BucketId,
-		showStyleBaseId: ShowStyleBaseId | undefined,
-		ingestItem: APIImportAdlib
+		showStyleBaseId: ShowStyleBaseId,
+		ingestItem: IngestAdlib
 	): Promise<ClientAPI.ClientResponse<void>>
 }
 

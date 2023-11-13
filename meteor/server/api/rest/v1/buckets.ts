@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { APIBucket, APIBucketComplete, APIImportAdlib, BucketsRestAPI } from '../../../../lib/api/rest/buckets'
+import { APIBucket, APIBucketComplete, APIImportAdlib, BucketsRestAPI } from '../../../../lib/api/rest/v1/buckets'
 import { BucketAdLibActions, BucketAdLibs, Buckets } from '../../../collections'
 import { APIBucketFrom } from './typeConversion'
 import { ClientAPI } from '../../../../lib/api/client'
@@ -18,6 +18,7 @@ import { BucketSecurity } from '../../../security/buckets'
 import { APIFactory, APIRegisterHook, ServerAPIContext } from './types'
 import { logger } from '../../../logging'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
+import { IngestAdlib } from '@sofie-automation/blueprints-integration'
 
 export class BucketsServerAPI implements BucketsRestAPI {
 	constructor(private context: ServerAPIContext) {}
@@ -34,7 +35,7 @@ export class BucketsServerAPI implements BucketsRestAPI {
 		_connection: Meteor.Connection,
 		_event: string,
 		bucketId: BucketId
-	): Promise<ClientAPI.ClientResponse<Array<APIBucketComplete>>> {
+	): Promise<ClientAPI.ClientResponse<APIBucketComplete>> {
 		const bucket = await Buckets.findOneAsync({}, { projection: { _id: 1, name: 1, studioId: 1 } })
 		if (!bucket) {
 			return ClientAPI.responseError(
@@ -152,55 +153,12 @@ export class BucketsServerAPI implements BucketsRestAPI {
 		)
 	}
 
-	// async addModifiedAdLibToBucket(
-	// 	connection: Meteor.Connection,
-	// 	event: string,
-	// 	bucketId: BucketId,
-	// 	sourceAdLibId: AdLibActionId | RundownBaselineAdLibActionId | PieceId,
-	// 	label: string,
-	// 	userData?: any | null
-	// ): Promise<ClientAPI.ClientResponse<void>> {
-	// 	const [baselineAdLibPiece, segmentAdLibPiece, baselineAdLibAction, adLibAction] = await Promise.all([
-	// 		RundownBaselineAdLibPieces.findOneAsync(sourceAdLibId as PieceId),
-	// 		AdLibPieces.findOneAsync(sourceAdLibId as PieceId),
-	// 		RundownBaselineAdLibActions.findOneAsync(sourceAdLibId as AdLibActionId),
-	// 		AdLibActions.findOneAsync(sourceAdLibId as AdLibActionId),
-	// 	])
-	// 	const adLibActionDoc = adLibAction ?? baselineAdLibAction
-	// 	const adLibPieceDoc = baselineAdLibPiece ?? segmentAdLibPiece
-	// 	if (adLibPieceDoc) {
-	// 		throw new Error(`Not Implemented`)
-	// 	} else if (adLibActionDoc) {
-	// 		// TODO: this probably needs the proper ingest flow because of tags
-	// 		await ServerClientAPI.runUserActionInLog(
-	// 			this.context.getMethodContext(connection),
-	// 			event,
-	// 			getCurrentTime(),
-	// 			'bucketsEmptyBucket',
-	// 			[bucketId],
-	// 			async () => {
-	// 				check(bucketId, String)
-
-	// 				const access = await BucketSecurity.allowWriteAccess(this.context.getCredentials(), bucketId)
-	// 				return await BucketsAPI.saveAdLibActionIntoBucket(access, {
-	// 					...adLibActionDoc,
-	// 					// @ts-ignore: TODO label
-	// 					display: { ...adLibActionDoc.display, label },
-	// 					userData: userData ?? adLibActionDoc.userData,
-	// 				})
-	// 			}
-	// 		)
-	// 		return ClientAPI.responseSuccess(undefined)
-	// 	}
-	// 	throw new Error(`Unknown error occurred`)
-	// }
-
 	async importAdLibToBucket(
 		connection: Meteor.Connection,
 		event: string,
 		bucketId: BucketId,
-		showStyleBaseId: ShowStyleBaseId | undefined,
-		ingestItem: APIImportAdlib
+		showStyleBaseId: ShowStyleBaseId,
+		ingestItem: IngestAdlib
 	): Promise<ClientAPI.ClientResponse<void>> {
 		return ServerClientAPI.runUserActionInLog(
 			this.context.getMethodContext(connection),
@@ -240,7 +198,7 @@ export function registerRoutes(registerRoute: APIRegisterHook<BucketsRestAPI>): 
 		bucketsApiFactory
 	)
 
-	registerRoute<{ bucketId: string }, never, Array<APIBucket>>(
+	registerRoute<{ bucketId: string }, never, APIBucket>(
 		'get',
 		'/buckets/:bucketId',
 		new Map(),
