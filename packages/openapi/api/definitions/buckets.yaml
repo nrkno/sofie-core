@@ -127,7 +127,7 @@ resources:
               $ref: '#/components/schemas/importAdlib'
       responses:
         200:
-          description: Command successfully handled - returns a bucket adlib id.
+          description: Bucket adlib successfully imported.
           content:
             application/json:
               schema:
@@ -136,9 +136,6 @@ resources:
                   status:
                     type: number
                     example: 200
-                  result:
-                    type: string
-                    description: Bucket Adlib Id.
         500:
           $ref: '#/components/responses/internalServerError'
     delete:
