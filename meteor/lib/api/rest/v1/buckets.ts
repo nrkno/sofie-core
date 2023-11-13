@@ -6,6 +6,7 @@ import {
 	BucketId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { IngestAdlib } from '@sofie-automation/blueprints-integration'
 
 export interface BucketsRestAPI {
 	/**
@@ -90,14 +91,16 @@ export interface BucketsRestAPI {
 	 *
 	 * @param connection Connection data including client and header details
 	 * @param event User event string
-	 * @param adLibId Id of the bucket adlib to delete
+	 * @param bucketId Id of the bucket where to import the adlib
+	 * @param showStyleBaseId Id of the showStyle to use when importing the adlib
+	 * @param ingestItem Adlib to be imported
 	 */
 	importAdLibToBucket(
 		connection: Meteor.Connection,
 		event: string,
 		bucketId: BucketId,
-		showStyleBaseId: ShowStyleBaseId | undefined,
-		ingestItem: APIImportAdlib
+		showStyleBaseId: ShowStyleBaseId,
+		ingestItem: IngestAdlib
 	): Promise<ClientAPI.ClientResponse<void>>
 }
 

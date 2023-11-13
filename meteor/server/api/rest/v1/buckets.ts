@@ -18,6 +18,7 @@ import { BucketSecurity } from '../../../security/buckets'
 import { APIFactory, APIRegisterHook, ServerAPIContext } from './types'
 import { logger } from '../../../logging'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
+import { IngestAdlib } from '@sofie-automation/blueprints-integration'
 
 export class BucketsServerAPI implements BucketsRestAPI {
 	constructor(private context: ServerAPIContext) {}
@@ -156,8 +157,8 @@ export class BucketsServerAPI implements BucketsRestAPI {
 		connection: Meteor.Connection,
 		event: string,
 		bucketId: BucketId,
-		showStyleBaseId: ShowStyleBaseId | undefined,
-		ingestItem: APIImportAdlib
+		showStyleBaseId: ShowStyleBaseId,
+		ingestItem: IngestAdlib
 	): Promise<ClientAPI.ClientResponse<void>> {
 		return ServerClientAPI.runUserActionInLog(
 			this.context.getMethodContext(connection),
