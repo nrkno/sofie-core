@@ -474,20 +474,23 @@ export namespace ServerPeripheralDeviceAPI {
 		deviceId: PeripheralDeviceId,
 		token: string,
 		layer: string,
-		state: TSR.LayerStatus
+		state: TSR.LayerState
 	): Promise<void> {
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		if (!peripheralDevice.studioId)
-			throw new Error(`PeripheralDevice "${peripheralDevice._id}" sent updateLayerMediaStatus, but has no studioId`)
+			throw new Error(
+				`PeripheralDevice "${peripheralDevice._id}" sent updateLayerMediaStatus, but has no studioId`
+			)
 
 		const studio = await Studios.findOneAsync(peripheralDevice.studioId)
-		if (!studio)
-			throw new Error(`Studio "${peripheralDevice.studioId}" was not found`)
+		if (!studio) throw new Error(`Studio "${peripheralDevice.studioId}" was not found`)
 
 		// logger.debug('Playout gw ' + deviceId + ' reported layer ' + layer + ' is ' + status + ' with ' + JSON.stringify(mediaId))
 
-		Studios.updateAsync(studio._id, { $set: {layerMediaStatus: { ...studio.layerMediaStatus, [layer]: state} } }) // todo - some cleanup process?
+		await Studios.updateAsync(studio._id, {
+			$set: { layerMediaStatus: { ...studio.layerMediaStatus, [layer]: state } },
+		}) // todo - some cleanup process?
 	}
 
 	export async function requestUserAuthToken(

@@ -39,7 +39,7 @@
 	],
 	"dependencies": {
 		"@mos-connection/model": "^3.0.4",
-		"timeline-state-resolver-types": "9.1.0-nightly-feat-command-feedback-SOFIE-2114-20231110-135807-7a0e6b5d6.0",
+		"timeline-state-resolver-types": "9.1.0-nightly-feat-command-feedback-SOFIE-2114-20231114-081349-3bf1f153a.0",
 		"tslib": "^2.6.2",
 		"type-fest": "^3.13.1"
 	},

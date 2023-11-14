@@ -276,6 +276,7 @@ export async function studioFrom(apiStudio: APIStudio, existingId?: StudioId): P
 		},
 		lastBlueprintConfig: undefined,
 		lastBlueprintFixUpHash: undefined,
+		layerMediaStatus: {},
 	}
 }
 

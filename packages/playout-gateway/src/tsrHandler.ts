@@ -437,7 +437,7 @@ export class TSRHandler {
 
 		const transformedTimeline = this._transformTimeline(deserializeTimelineBlob(timeline.timelineBlob))
 		this.tsr.timelineHash = unprotectString(timeline.timelineHash)
-		this.tsr.setTimelineAndMappings(transformedTimeline, unprotectObject(mappingsObject.mappings))
+		this.tsr.setTimelineAndMappings(transformedTimeline, unprotectObject(mappingsObject.mappings as any))
 	}
 	private _getPeripheralDevice(): PeripheralDeviceForDevice {
 		const peripheralDevices = this._coreHandler.core.getCollection(

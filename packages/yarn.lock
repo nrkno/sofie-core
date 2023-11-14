@@ -4560,7 +4560,7 @@ __metadata:
   resolution: "@sofie-automation/shared-lib@workspace:shared-lib"
   dependencies:
     "@mos-connection/model": ^3.0.4
-    timeline-state-resolver-types: 9.1.0-nightly-feat-command-feedback-SOFIE-2114-20231110-135807-7a0e6b5d6.0
+    timeline-state-resolver-types: 9.1.0-nightly-feat-command-feedback-SOFIE-2114-20231114-081349-3bf1f153a.0
     tslib: ^2.6.2
     type-fest: ^3.13.1
   languageName: unknown
@@ -17984,7 +17984,7 @@ asn1@evs-broadcast/node-asn1:
     "@sofie-automation/shared-lib": 1.51.0-in-development
     debug: ^4.3.4
     influx: ^5.9.3
-    timeline-state-resolver: 9.1.0-nightly-feat-command-feedback-SOFIE-2114-20231110-135807-7a0e6b5d6.0
+    timeline-state-resolver: 9.1.0-nightly-feat-command-feedback-SOFIE-2114-20231114-081349-3bf1f153a.0
     tslib: ^2.6.2
     underscore: ^1.13.6
     winston: ^3.10.0
@@ -21659,18 +21659,18 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"timeline-state-resolver-types@npm:9.1.0-nightly-feat-command-feedback-SOFIE-2114-20231110-135807-7a0e6b5d6.0":
-  version: 9.1.0-nightly-feat-command-feedback-SOFIE-2114-20231110-135807-7a0e6b5d6.0
-  resolution: "timeline-state-resolver-types@npm:9.1.0-nightly-feat-command-feedback-SOFIE-2114-20231110-135807-7a0e6b5d6.0"
+"timeline-state-resolver-types@npm:9.1.0-nightly-feat-command-feedback-SOFIE-2114-20231114-081349-3bf1f153a.0":
+  version: 9.1.0-nightly-feat-command-feedback-SOFIE-2114-20231114-081349-3bf1f153a.0
+  resolution: "timeline-state-resolver-types@npm:9.1.0-nightly-feat-command-feedback-SOFIE-2114-20231114-081349-3bf1f153a.0"
   dependencies:
     tslib: ^2.5.1
-  checksum: 952781aafc06381a86bb3d18610f5f24528e74c26b9ec84e587b00f49778559f4576885afd64140ada6cfebc7e43775b18eb1883d53530f9897ba82f876431a3
+  checksum: 23d3cdf6133985ad54b5e55c2d68359853769a2648660dc5b565e0d7e6607bc02d36464de19270643675b7cdf75a421d8feca2162f5fa16580d71e65ef05c634
   languageName: node
   linkType: hard
 
-"timeline-state-resolver@npm:9.1.0-nightly-feat-command-feedback-SOFIE-2114-20231110-135807-7a0e6b5d6.0":
-  version: 9.1.0-nightly-feat-command-feedback-SOFIE-2114-20231110-135807-7a0e6b5d6.0
-  resolution: "timeline-state-resolver@npm:9.1.0-nightly-feat-command-feedback-SOFIE-2114-20231110-135807-7a0e6b5d6.0"
+"timeline-state-resolver@npm:9.1.0-nightly-feat-command-feedback-SOFIE-2114-20231114-081349-3bf1f153a.0":
+  version: 9.1.0-nightly-feat-command-feedback-SOFIE-2114-20231114-081349-3bf1f153a.0
+  resolution: "timeline-state-resolver@npm:9.1.0-nightly-feat-command-feedback-SOFIE-2114-20231114-081349-3bf1f153a.0"
   dependencies:
     "@tv2media/v-connection": ^7.3.0
     atem-connection: 2.5.0
@@ -21694,7 +21694,7 @@ asn1@evs-broadcast/node-asn1:
     sprintf-js: ^1.1.2
     superfly-timeline: ^9.0.0
     threadedclass: ^1.2.1
-    timeline-state-resolver-types: 9.1.0-nightly-feat-command-feedback-SOFIE-2114-20231110-135807-7a0e6b5d6.0
+    timeline-state-resolver-types: 9.1.0-nightly-feat-command-feedback-SOFIE-2114-20231114-081349-3bf1f153a.0
     tslib: ^2.5.1
     tv-automation-quantel-gateway-client: ^3.1.7
     underscore: ^1.13.6
@@ -21702,7 +21702,7 @@ asn1@evs-broadcast/node-asn1:
     utf-8-validate: ^5.0.10
     ws: ^7.5.9
     xml-js: ^1.6.11
-  checksum: ed66d6a7dd28b973ee3601a9d7b01e0831b08b52147582c8722606edb2b5cf8d6194232b3453067d6e9cf8951440d35ba50f2b95bba204fab4311e35e4b61895
+  checksum: 9f433cd48ce3ffe59e0d6fcc3e328fc3728aaaa841173acdc26ce1e366828421486078ad77fc16b95fc17778364806759f06609973209880805f9ebb4fa3afbc
   languageName: node
   linkType: hard
 

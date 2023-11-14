@@ -177,7 +177,13 @@ describe('lib/mediaObjects', () => {
 		const mockStudio: Complete<
 			Pick<
 				DBStudio,
-				'_id' | 'settings' | 'packageContainers' | 'previewContainerIds' | 'thumbnailContainerIds' | 'routeSets'
+				| '_id'
+				| 'settings'
+				| 'packageContainers'
+				| 'previewContainerIds'
+				| 'thumbnailContainerIds'
+				| 'routeSets'
+				| 'layerMediaStatus'
 			> &
 				Pick<UIStudio, 'mappings'>
 		> = {
@@ -188,6 +194,7 @@ describe('lib/mediaObjects', () => {
 			thumbnailContainerIds: ['thumbnails0'],
 			routeSets: mockDefaultStudio.routeSets,
 			mappings: applyAndValidateOverrides(mockDefaultStudio.mappingsWithOverrides).obj,
+			layerMediaStatus: {},
 		}
 
 		mockMediaObjectsCollection.insert(

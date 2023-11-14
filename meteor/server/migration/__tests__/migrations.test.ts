@@ -142,6 +142,7 @@ describe('Migrations', () => {
 						},
 						lastBlueprintConfig: undefined,
 						lastBlueprintFixUpHash: undefined,
+						layerMediaStatus: {},
 					})
 				},
 			},
@@ -180,6 +181,7 @@ describe('Migrations', () => {
 						},
 						lastBlueprintConfig: undefined,
 						lastBlueprintFixUpHash: undefined,
+						layerMediaStatus: {},
 					})
 				},
 			},
@@ -218,6 +220,7 @@ describe('Migrations', () => {
 						},
 						lastBlueprintConfig: undefined,
 						lastBlueprintFixUpHash: undefined,
+						layerMediaStatus: {},
 					})
 				},
 			},
