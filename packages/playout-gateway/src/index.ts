@@ -51,7 +51,6 @@ if (logPath) {
 		handleExceptions: true,
 		handleRejections: true,
 		format: combine(splat(), myFormat),
-		silent: true,
 	})
 
 	logger = Winston.createLogger({
