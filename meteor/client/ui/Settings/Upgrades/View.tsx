@@ -24,9 +24,11 @@ export function UpgradesView(): JSX.Element {
 
 				<table className="table">
 					<thead>
-						<th>Name</th>
-						<th>&nbsp;</th>
-						<th>&nbsp;</th>
+						<tr>
+							<th>Name</th>
+							<th>&nbsp;</th>
+							<th>&nbsp;</th>
+						</tr>
 					</thead>
 					<tbody>
 						{isReady && statuses && statuses.length === 0 && (
