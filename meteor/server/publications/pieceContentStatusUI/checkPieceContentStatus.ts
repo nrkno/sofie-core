@@ -520,8 +520,18 @@ async function checkPieceContentExpectedPackageStatus(
 
 			// match the routed layernames against the reported media status
 			for (const layer of routedLayerNames) {
-				// todo - no enum?
-				if (expectedPackage.type !== 'media_file') continue
+				const getMediaId = () => {
+					switch (expectedPackage.type) {
+						case ExpectedPackage.PackageType.MEDIA_FILE:
+							// todo - maybe the package should explicitly state the mediaId
+							return expectedPackage.content.filePath
+						case ExpectedPackage.PackageType.QUANTEL_CLIP:
+							return expectedPackage.content.guid
+					}
+					return undefined
+				}
+				const mediaId = getMediaId()
+				if (!mediaId) continue
 
 				const status: TSR.LayerState = studio.layerMediaStatus?.[layer] ?? {
 					status: 'EMPTY',
@@ -529,8 +539,6 @@ async function checkPieceContentExpectedPackageStatus(
 					failedMediaId: [],
 				}
 
-				// todo - maybe the package should explicitly state the mediaId
-				const mediaId = expectedPackage.content.filePath
 				if (status.failedMediaId.includes(mediaId)) {
 					messages.push({
 						status: PieceStatusCode.SOURCE_MISSING,
@@ -708,7 +716,10 @@ async function checkPieceContentExpectedPackageStatus(
 	}
 
 	// hack - override all statuses to be missing
-	messages.push({ status: PieceStatusCode.SOURCE_MISSING, message: generateTranslation('All files are missing because of something terrible!') })
+	messages.push({
+		status: PieceStatusCode.SOURCE_MISSING,
+		message: generateTranslation('All files are missing because of something terrible!'),
+	})
 
 	if (messages.length) {
 		if (hasLoaded) {
