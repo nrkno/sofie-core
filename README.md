@@ -8,7 +8,11 @@ System documentation can be found here: [Sofie system documentation](https://nrk
 
 # For developers
 
-## Gettings started, local development
+## Contribution guidelines
+
+See [Contribution guidelines](CONTRIBUTING.md).
+
+## Getting started, local development
 
 Follow these instructions to start up Sofie Core in development mode. (For production deploys, see [System documentation](https://nrkno.github.io/sofie-core/docs/user-guide/installation/intro).)
 

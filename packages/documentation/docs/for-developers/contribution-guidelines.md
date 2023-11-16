@@ -7,71 +7,72 @@ sidebar_position: 2
 
 # Contribution Guidelines
 
-## Reporting bugs
+## About the Sofie project
 
-If you think you have found a bug in Sofie, we appreciate bug reports as GitHub issues.
+The Sofie project includes a number of open-source applications and libraries developed and maintained by the Norwegian public service broadcaster, NRK. Sofie has been used to produce live shows in NRK since September 2018.
 
-As a minimum a bug report should include the following:
+A list of the "Sofie repositories" [can be found here](libraries.md). NRK has the copyright of the contents of the official Sofie repositories, including the source code, related files, as well as the Sofie logo.
 
-1. **Steps to reproduce:** a detailed description of what input or interaction caused the problem you are experiencing. This will help us greatly in reproducing the error situation ourselves, so that we can observe and analyze the problem.
-2. **Expected behavior or result:** Following the steps given, what was it that you expected to happen?
-3. **Actual behavior or result:** Following the steps given, what was it that actually happened?
+The Sofie team at NRK is responsible for development and maintenance. We also do thorough testing of each release to avoid regressions in functionality and ensure interoperability with the various hardware and software involved.
 
-Feel free to include additional information if you have it.
+The Sofie team welcomes open-source contributions and will actively work towards enabling contributions to become mergeable into the Sofie repositories. However, as main stakeholder and maintainer we reserve the right to refuse any contributions.
 
-Issues should be reported in our main repository: [https://github.com/nrkno/Sofie-TV-automation/issues](https://github.com/nrkno/Sofie-TV-automation/issues)
 
-## Contributing code
+## About Contributing
 
-### How to contribute
+Thank you for considering contributing to the Sofie project!
 
-#### Minor improvements and bug fixes
+Before you start, there are a few things you should know:
 
-If you believe you have a minor improvement or a bug fix that can be added to the project you are welcome to contribute it as a pull request via GitHub.
+### "Discussions Before Pull Requests"
 
-#### New features or bigger changes
+**Minor changes** (most bug fixes and small features) can be submitted directly as pull requests to the appropriate official repo.
 
-If you're considering a larger contribution, we would love to have a chat beforehand about it to make sure it fits nicely into our own development. Please open an issue for discussion over at [https://github.com/nrkno/Sofie-TV-automation/issues](https://github.com/nrkno/Sofie-TV-automation/issues)
+However, Sofie is a big project with many differing users and use cases. **Larger changes** might be more difficult to merge into an official repository if NRK has not been made aware of their existence beforehand. To facilitate a timely handling of larger contributions, there’s a workflow intended to keep an open dialogue between all interested parties:
 
-### Things to keep in mind when contributing
+1. Contributor opens an RFC (as a _GitHub issue_) in the appropriate repository.
+2. NRK evaluates the RFC, usually within a week.
+3. (If needed) NRK establishes contact with the RFC author, who will be invited to a workshop where the  RFC is discussed. Meeting notes are published publicly on the RFC thread.
+4. The contributor references the RFC when a pull request is ready.
 
-#### Types
+### Base contributions on the in-development branch (or the master branch)
+In order to facilitate merging, we ask that contributions are based on the latest (at the time of the pull request) _in-development_ branch (often named `release*`), alternatively the stable (eg. `master`) branch. NRK will take responsibility for rebasing stable contributions to the latest in-development branch if needed.
+See **CONTRIBUTING.md** in each official repository for details on which branch to use as a base for contributions.
 
-All of the Sofie projects use Typescript. When you contribute code, be sure to keep it as strictly-typed as possible.
+## Developer Guidelines
 
-#### Code style & formatting
+### Pull Requests
 
-Most of the projects use a linter. Before pushing your code, make sure it abides to the linting rules by running `yarn lint`. `yarn lint --fix`can fix most of the issues.
+We encourage you to open PRs early! If it’s still in development, open the PR as a draft.
 
-:::info
-Tip: If using VS Code, turn on the "format on save"-feature in the settings, that way you won't have to think about formatting!
-:::
+### Types
 
-#### Documentation
+All official Sofie repositories use TypeScript. When you contribute code, be sure to keep it as strictly typed as possible.
 
-To be honest, we don't aim to have the "absolute perfect documentation possible". BUT we do try to improve and add documentation to have a good-enough-to-be-comprehensible standard.
+### Code Style & Formatting
 
-- The "what" something does something, is not as important - we can read the code for that.
-- The "why" something does something, IS important. Implied usage, side-effects, descriptions of the context etc.. Those are things that greatly help a reader.
+Most of the projects use a linter (eslint) and a formatter (prettier). Before submitting a pull request, please make sure it conforms to the linting rules by running yarn lint. yarn lint --fix can fix most of the issues.
 
-#### Tests
+### Documentation
 
-Most of the sofie-projects have unit-tests with a fairly good coverage. While developing, make sure any existing tests pass before you push your code. `yarn test` or `yarn watch` are your friends.
+We rely on two types of documentation; the [System documentation](https://nrkno.github.io/sofie-core/) ([source code](https://github.com/nrkno/sofie-core/tree/master/packages/documentation)) and inline code docs.
 
-### Updating Dependencies
+We don't aim to have the "absolute perfect documentation possible". BUT we do try to improve and add documentation to have a good-enough-to-be-comprehensible standard. We think that:
 
-When updating dependencies in a library, it is preferred to do so via `yarn upgrade-interactive --latest` whenever possible. This is so that the versions in package.json are also updated as we have no guarantee that the library will work with versions lower than that used in the yarn.lock file, even if it is compatible with the semver range in package.json. After this, a `yarn upgrade` can be used to update any child dependencies
+* _What_ something does is not as important – we can read the code for that.
+* _Why_ something does something, **is** important. Implied usage, side-effects, descriptions of the context etcetera...
+
+When you contribute, we ask you to also update any documentation where needed.
+
+### Updating Dependencies​
+When updating dependencies in a library, it is preferred to do so via `yarn upgrade-interactive --latest` whenever possible. This is so that the versions in `package.json` are also updated as we have no guarantee that the library will work with versions lower than that used in the `yarn.lock` file, even if it is compatible with the semver range in `package.json`. After this, a `yarn upgrade` can be used to update any child dependencies
 
 Be careful with bumping across major versions.
 
-Also, be aware that a couple of the libraries want to retain support for node8. Not all dependencies can be updated as doing so will cause things to break for node8.
+Also, each of the libraries has a minimum nodejs version specified in their package.json. Care must be taken when updating dependencies to ensure its compatibility is retained.
 
-#### Resolutions
+### Resolutions​
 
-We use the yarn resolutions property in package.json sometimes to fix security vulnerabilities in dependencies of libraries that haven't released a fix yet. If adding a new one, try to make it as specific as possible to ensure it doesn't have unintended side effects.
+We sometimes use the `yarn resolutions` property in `package.json` to fix security vulnerabilities in dependencies of libraries that haven't released a fix yet. If adding a new one, try to make it as specific as possible to ensure it doesn't have unintended side effects.
 
-When updating other dependencies, it is a good idea to make sure that the resolutions defined still apply and are correct
-
-:::info
-We use Jest for running unit-tests. [Read more about its CLI here](https://jestjs.io/docs/en/cli).
-:::
+When updating other dependencies, it is a good idea to make sure that the resolutions defined still apply and are correct.
