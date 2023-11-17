@@ -20,8 +20,6 @@ import {
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import {
 	APIBlueprint,
-	APIBucket,
-	APIBucketComplete,
 	APIOutputLayer,
 	APIPeripheralDevice,
 	APIShowStyleBase,
@@ -36,6 +34,7 @@ import { Studio } from '../../../../lib/collections/Studios'
 import { Blueprints, ShowStyleBases, Studios } from '../../../collections'
 import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
 import { Bucket } from '../../../../lib/collections/Buckets'
+import { APIBucket, APIBucketComplete } from '../../../../lib/api/rest/v1/buckets'
 
 /*
 This file contains functions that convert between the internal Sofie-Core types and types exposed to the external API.

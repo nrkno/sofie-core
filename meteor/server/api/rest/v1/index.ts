@@ -1252,7 +1252,7 @@ function sofieAPIRequest<Params, Body, Response, API = ServerRestAPI>(
 		params: Params,
 		body: Body
 	) => Promise<ClientAPI.ClientResponse<Response>>,
-	serverAPIFactory: APIFactory<API> = { createServerAPI: () => new ServerRestAPI() as API } // TODO: merge conflict with R51
+	serverAPIFactory: APIFactory<API> = { createServerAPI: () => new ServerRestAPI() as unknown as API } // TODO: merge conflict with R51
 ) {
 	koaRouter[method](route, async (ctx, next) => {
 		try {
