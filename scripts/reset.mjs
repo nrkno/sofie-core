@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import rimraf from "rimraf";
+import { rimraf } from "rimraf";
 
 async function rimrafLog(command) {
 	console.log("  " + command);
