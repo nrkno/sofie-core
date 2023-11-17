@@ -34,15 +34,9 @@ export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesSta
 
 	const allSubsReady: boolean =
 		[
-			useSubscription(CorelibPubSub.expectedPackageWorkStatuses, {
-				studioId: { $in: studioIds },
-			}),
-			useSubscription(CorelibPubSub.expectedPackages, {
-				studioId: { $in: studioIds },
-			}),
-			useSubscription(CorelibPubSub.packageContainerStatuses, {
-				studioId: { $in: studioIds },
-			}),
+			useSubscription(CorelibPubSub.expectedPackageWorkStatuses, studioIds ?? []),
+			useSubscription(CorelibPubSub.expectedPackages, studioIds ?? []),
+			useSubscription(CorelibPubSub.packageContainerStatuses, studioIds ?? []),
 			studioIds && studioIds.length > 0,
 		].reduce((memo, value) => memo && value, true) || false
 
@@ -56,9 +50,7 @@ export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesSta
 		expectedPackageWorkStatuses.forEach((epws) => devices.add(epws.deviceId))
 		return Array.from(devices)
 	}, [packageContainerStatuses, expectedPackageWorkStatuses])
-	const peripheralDeviceSubReady = useSubscription(CorelibPubSub.peripheralDevices, {
-		_id: { $in: deviceIds },
-	})
+	const peripheralDeviceSubReady = useSubscription(CorelibPubSub.peripheralDevices, deviceIds)
 	const peripheralDevices = useTracker(() => PeripheralDevices.find().fetch(), [], [])
 	const peripheralDevicesMap = normalizeArrayToMap(peripheralDevices, '_id')
 

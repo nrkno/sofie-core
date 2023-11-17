@@ -397,20 +397,18 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 							])
 						const showStyleBases = showStyles.map((showStyle) => showStyle[0])
 						const showStyleVariants = showStyles.map((showStyle) => showStyle[1])
-						this.subscribe(CorelibPubSub.bucketAdLibPieces, {
-							bucketId: this.props.bucket._id,
-							studioId: this.props.playlist.studioId,
-							showStyleVariantId: {
-								$in: [null, ...showStyleVariants], // null = valid for all variants
-							},
-						})
-						this.subscribe(CorelibPubSub.bucketAdLibActions, {
-							bucketId: this.props.bucket._id,
-							studioId: this.props.playlist.studioId,
-							showStyleVariantId: {
-								$in: [null, ...showStyleVariants], // null = valid for all variants
-							},
-						})
+						this.subscribe(
+							CorelibPubSub.bucketAdLibPieces,
+							this.props.playlist.studioId,
+							this.props.bucket._id,
+							showStyleVariants
+						)
+						this.subscribe(
+							CorelibPubSub.bucketAdLibActions,
+							this.props.playlist.studioId,
+							this.props.bucket._id,
+							showStyleVariants
+						)
 						for (const showStyleBaseId of _.uniq(showStyleBases)) {
 							this.subscribe(MeteorPubSub.uiShowStyleBase, showStyleBaseId)
 						}

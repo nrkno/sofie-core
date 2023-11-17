@@ -149,12 +149,7 @@ function UserActivity(): JSX.Element {
 	const [dateFrom, setDateFrom] = useState<Time>(moment().startOf('day').valueOf())
 	const [dateTo, setDateTo] = useState<Time>(moment().add(1, 'days').startOf('day').valueOf())
 
-	useSubscription(MeteorPubSub.userActionsLog, {
-		timestamp: {
-			$gte: dateFrom,
-			$lt: dateTo,
-		},
-	})
+	useSubscription(MeteorPubSub.userActionsLog, dateFrom, dateTo)
 
 	const log = useTracker(
 		() =>

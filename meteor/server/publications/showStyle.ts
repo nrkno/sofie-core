@@ -5,20 +5,27 @@ import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/Sho
 import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { ShowStyleReadAccess } from '../security/showStyle'
 import { OrganizationReadAccess } from '../security/organization'
-import { FindOptions } from '../../lib/collections/lib'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { RundownLayouts, ShowStyleBases, ShowStyleVariants, TriggeredActions } from '../collections'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { DBTriggeredActions } from '../../lib/collections/TriggeredActions'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { check, Match } from '../../lib/check'
 
 meteorPublish(
 	CorelibPubSub.showStyleBases,
-	async function (selector0: MongoQuery<DBShowStyleBase>, token: string | undefined) {
-		const { cred, selector } = await AutoFillSelector.organizationId<DBShowStyleBase>(this.userId, selector0, token)
-		const modifier: FindOptions<DBShowStyleBase> = {
-			fields: {},
-		}
+	async function (showStyleBaseIds: ShowStyleBaseId[] | null, token: string | undefined) {
+		check(showStyleBaseIds, Match.Maybe(Array))
+
+		// If values were provided, they must have values
+		if (showStyleBaseIds && showStyleBaseIds.length === 0) return null
+
+		const { cred, selector } = await AutoFillSelector.organizationId<DBShowStyleBase>(this.userId, {}, token)
+
+		// Add the requested filter
+		if (showStyleBaseIds) selector._id = { $in: showStyleBaseIds }
+
 		if (
 			!cred ||
 			NoSecurityReadAccess.any() ||
@@ -26,7 +33,7 @@ meteorPublish(
 				(await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) ||
 			(selector._id && (await ShowStyleReadAccess.showStyleBase(selector.id, cred)))
 		) {
-			return ShowStyleBases.findWithCursor(selector, modifier)
+			return ShowStyleBases.findWithCursor(selector)
 		}
 		return null
 	}
@@ -34,19 +41,31 @@ meteorPublish(
 
 meteorPublish(
 	CorelibPubSub.showStyleVariants,
-	async function (selector0: MongoQuery<DBShowStyleVariant>, token: string | undefined) {
-		const { cred, selector } = await AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
+	async function (
+		showStyleBaseIds: ShowStyleBaseId[] | null,
+		showStyleVariantIds: ShowStyleVariantId[] | null,
+		token: string | undefined
+	) {
+		check(showStyleBaseIds, Match.Maybe(Array))
+		check(showStyleVariantIds, Match.Maybe(Array))
 
-		const modifier: FindOptions<DBShowStyleVariant> = {
-			fields: {},
-		}
+		// If values were provided, they must have values
+		if (showStyleBaseIds && showStyleBaseIds.length === 0) return null
+		if (showStyleVariantIds && showStyleVariantIds.length === 0) return null
+
+		const { cred, selector } = await AutoFillSelector.showStyleBaseId<DBShowStyleVariant>(this.userId, {}, token)
+
+		// Add the requested filter
+		if (showStyleBaseIds) selector.showStyleBaseId = { $in: showStyleBaseIds }
+		if (showStyleVariantIds) selector._id = { $in: showStyleVariantIds }
+
 		if (
 			!cred ||
 			NoSecurityReadAccess.any() ||
 			(selector.showStyleBaseId && (await ShowStyleReadAccess.showStyleBaseContent(selector, cred))) ||
 			(selector._id && (await ShowStyleReadAccess.showStyleVariant(selector._id, cred)))
 		) {
-			return ShowStyleVariants.findWithCursor(selector, modifier)
+			return ShowStyleVariants.findWithCursor(selector)
 		}
 		return null
 	}
@@ -54,14 +73,19 @@ meteorPublish(
 
 meteorPublish(
 	MeteorPubSub.rundownLayouts,
-	async function (selector0: MongoQuery<RundownLayoutBase>, token: string | undefined) {
+	async function (showStyleBaseIds: ShowStyleBaseId[] | null, token: string | undefined) {
+		check(showStyleBaseIds, Match.Maybe(Array))
+
+		// If values were provided, they must have values
+		if (showStyleBaseIds && showStyleBaseIds.length === 0) return null
+
+		const selector0: MongoQuery<RundownLayoutBase> = {}
+		if (showStyleBaseIds) selector0.showStyleBaseId = { $in: showStyleBaseIds }
+
 		const { cred, selector } = await AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
 
-		const modifier: FindOptions<RundownLayoutBase> = {
-			fields: {},
-		}
 		if (!cred || (await ShowStyleReadAccess.showStyleBaseContent(selector, cred))) {
-			return RundownLayouts.findWithCursor(selector, modifier)
+			return RundownLayouts.findWithCursor(selector)
 		}
 		return null
 	}
@@ -69,19 +93,31 @@ meteorPublish(
 
 meteorPublish(
 	MeteorPubSub.triggeredActions,
-	async function (selector0: MongoQuery<DBTriggeredActions>, token: string | undefined) {
-		const { cred, selector } = await AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
+	async function (showStyleBaseIds: ShowStyleBaseId[] | null, token: string | undefined) {
+		check(showStyleBaseIds, Match.Maybe(Array))
 
-		const modifier: FindOptions<DBTriggeredActions> = {
-			fields: {},
-		}
+		const selector0: MongoQuery<DBTriggeredActions> =
+			showStyleBaseIds && showStyleBaseIds.length > 0
+				? {
+						$or: [
+							{
+								showStyleBaseId: null,
+							},
+							{
+								showStyleBaseId: { $in: showStyleBaseIds },
+							},
+						],
+				  }
+				: { showStyleBaseId: null }
+
+		const { cred, selector } = await AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
 
 		if (
 			!cred ||
 			NoSecurityReadAccess.any() ||
 			(selector.showStyleBaseId && (await ShowStyleReadAccess.showStyleBaseContent(selector, cred)))
 		) {
-			return TriggeredActions.findWithCursor(selector, modifier)
+			return TriggeredActions.findWithCursor(selector)
 		}
 		return null
 	}

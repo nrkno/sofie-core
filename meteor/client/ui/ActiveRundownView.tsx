@@ -9,7 +9,6 @@ import { UIStudios } from './Collections'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylists } from '../collections'
 import { useTranslation } from 'react-i18next'
-import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 export function ActiveRundownView({ studioId }: { studioId: StudioId }): JSX.Element | null {
 	const { t } = useTranslation()
@@ -17,10 +16,7 @@ export function ActiveRundownView({ studioId }: { studioId: StudioId }): JSX.Ele
 	const { path } = useRouteMatch()
 
 	const studioReady = useSubscription(MeteorPubSub.uiStudio, studioId)
-	const playlistReady = useSubscription(CorelibPubSub.rundownPlaylists, {
-		activationId: { $exists: true },
-		studioId,
-	})
+	const playlistReady = useSubscription(MeteorPubSub.rundownPlaylistForStudio, studioId, true)
 
 	const subsReady = studioReady && playlistReady
 

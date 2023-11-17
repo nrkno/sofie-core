@@ -257,61 +257,23 @@ function useMediaStatusSubscriptions(
 ): boolean {
 	const readyStatus: boolean[] = []
 	let counter = 0
-	readyStatus[counter++] = useSubscription(CorelibPubSub.rundownPlaylists, {
-		_id: {
-			$in: playlistIds,
-		},
-	})
-	readyStatus[counter++] = useSubscription(CorelibPubSub.rundowns, playlistIds, null)
+	readyStatus[counter++] = useSubscription(CorelibPubSub.rundownPlaylists, playlistIds, null)
+	readyStatus[counter++] = useSubscription(CorelibPubSub.rundownsInPlaylists, playlistIds)
 	const uiShowStyleBaseSubArguments = useMemo(
 		() => showStyleBaseIds.map((showStyleBaseId) => [showStyleBaseId] as [ShowStyleBaseId]),
 		[showStyleBaseIds]
 	)
 	readyStatus[counter++] = useSubscriptions(MeteorPubSub.uiShowStyleBase, uiShowStyleBaseSubArguments)
-	readyStatus[counter++] = useSubscription(CorelibPubSub.segments, {
-		rundownId: {
-			$in: rundownIds,
-		},
-	})
-	readyStatus[counter++] = useSubscription(CorelibPubSub.parts, rundownIds)
-	readyStatus[counter++] = useSubscription(CorelibPubSub.partInstancesSimple, {
-		rundownId: {
-			$in: rundownIds,
-		},
-		reset: {
-			$ne: true,
-		},
-	})
-	readyStatus[counter++] = useSubscription(CorelibPubSub.pieceInstancesSimple, {
-		rundownId: {
-			$in: rundownIds,
-		},
-	})
-	readyStatus[counter++] = useSubscription(CorelibPubSub.pieces, {
-		startRundownId: {
-			$in: rundownIds,
-		},
-	})
-	readyStatus[counter++] = useSubscription(CorelibPubSub.adLibActions, {
-		rundownId: {
-			$in: rundownIds,
-		},
-	})
-	readyStatus[counter++] = useSubscription(CorelibPubSub.adLibPieces, {
-		rundownId: {
-			$in: rundownIds,
-		},
-	})
-	readyStatus[counter++] = useSubscription(CorelibPubSub.rundownBaselineAdLibActions, {
-		rundownId: {
-			$in: rundownIds,
-		},
-	})
-	readyStatus[counter++] = useSubscription(CorelibPubSub.rundownBaselineAdLibPieces, {
-		rundownId: {
-			$in: rundownIds,
-		},
-	})
+	readyStatus[counter++] = useSubscription(CorelibPubSub.segments, rundownIds, {})
+	readyStatus[counter++] = useSubscription(CorelibPubSub.parts, rundownIds, null)
+	readyStatus[counter++] = useSubscription(CorelibPubSub.partInstancesSimple, rundownIds, null)
+	readyStatus[counter++] = useSubscription(CorelibPubSub.pieceInstancesSimple, rundownIds, null)
+	readyStatus[counter++] = useSubscription(CorelibPubSub.pieces, rundownIds, null)
+	readyStatus[counter++] = useSubscription(CorelibPubSub.adLibActions, rundownIds)
+	readyStatus[counter++] = useSubscription(CorelibPubSub.adLibPieces, rundownIds)
+	readyStatus[counter++] = useSubscription(CorelibPubSub.rundownBaselineAdLibActions, rundownIds)
+	readyStatus[counter++] = useSubscription(CorelibPubSub.rundownBaselineAdLibPieces, rundownIds)
+
 	const uiPieceContentStatusesSubArguments = useMemo(
 		() => playlistIds.map((playlistIds) => [playlistIds] as [RundownPlaylistId]),
 		[playlistIds]

@@ -23,11 +23,11 @@ export function Settings(): JSX.Element | null {
 
 	const history = useHistory()
 
-	useSubscription(CorelibPubSub.peripheralDevices, {})
-	useSubscription(CorelibPubSub.studios, {})
-	useSubscription(CorelibPubSub.showStyleBases, {})
-	useSubscription(CorelibPubSub.showStyleVariants, {})
-	useSubscription(CorelibPubSub.blueprints, {})
+	useSubscription(CorelibPubSub.peripheralDevices, null)
+	useSubscription(CorelibPubSub.studios, null)
+	useSubscription(CorelibPubSub.showStyleBases, null)
+	useSubscription(CorelibPubSub.showStyleVariants, null, null)
+	useSubscription(CorelibPubSub.blueprints, null)
 
 	useEffect(() => {
 		if (MeteorSettings.enableUserAccounts && user) {

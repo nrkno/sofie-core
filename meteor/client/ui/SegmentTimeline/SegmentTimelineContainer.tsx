@@ -1,7 +1,6 @@
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
-import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { SegmentTimeline, SegmentTimelineClass } from './SegmentTimeline'
 import { computeSegmentDisplayDuration, RundownTiming, TimingEvent } from '../RundownView/RundownTiming/RundownTiming'
 import { UIStateStorage } from '../../lib/UIStateStorage'
@@ -146,12 +145,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 					}
 				).map((part) => part._id)
 
-				this.subscribe(CorelibPubSub.pieces, {
-					startRundownId: this.props.rundownId,
-					startPartId: {
-						$in: partIds,
-					},
-				})
+				this.subscribe(CorelibPubSub.pieces, [this.props.rundownId], partIds ?? [])
 			})
 			this.autorun(() => {
 				const partInstanceIds = PartInstances.find(
@@ -179,32 +173,12 @@ export const SegmentTimelineContainer = withResolvedSegment(
 					},
 				})
 				segment &&
-					this.subscribe(CorelibPubSub.pieces, {
-						invalid: {
-							$ne: true,
-						},
-						$or: [
-							// same rundown, and previous segment
-							{
-								startRundownId: this.props.rundownId,
-								startSegmentId: { $in: Array.from(this.props.segmentsIdsBefore.values()) },
-								lifespan: {
-									$in: [
-										PieceLifespan.OutOnRundownEnd,
-										PieceLifespan.OutOnRundownChange,
-										PieceLifespan.OutOnShowStyleEnd,
-									],
-								},
-							},
-							// Previous rundown
-							{
-								startRundownId: { $in: Array.from(this.props.rundownIdsBefore.values()) },
-								lifespan: {
-									$in: [PieceLifespan.OutOnShowStyleEnd],
-								},
-							},
-						],
-					})
+					this.subscribe(
+						CorelibPubSub.piecesInfiniteStartingBefore,
+						this.props.rundownId,
+						Array.from(this.props.segmentsIdsBefore.values()),
+						Array.from(this.props.rundownIdsBefore.values())
+					)
 			})
 			SpeechSynthesiser.init()
 
@@ -424,15 +398,12 @@ export const SegmentTimelineContainer = withResolvedSegment(
 					this.partInstanceSub.stop()
 				}
 				// we handle this subscription manually
-				this.partInstanceSub = meteorSubscribe(CorelibPubSub.pieceInstances, {
-					rundownId: this.props.rundownId,
-					partInstanceId: {
-						$in: partInstanceIds,
-					},
-					reset: {
-						$ne: true,
-					},
-				})
+				this.partInstanceSub = meteorSubscribe(
+					CorelibPubSub.pieceInstances,
+					[this.props.rundownId],
+					partInstanceIds,
+					{}
+				)
 				this.partInstanceSubPartInstanceIds = partInstanceIds
 			})
 		}

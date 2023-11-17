@@ -3,7 +3,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { SnapshotItem } from '../../../lib/collections/Snapshots'
-import { getCurrentTime, unprotectString } from '../../../lib/lib'
+import { unprotectString } from '../../../lib/lib'
 import * as _ from 'underscore'
 import { logger } from '../../../lib/logging'
 import { EditAttribute } from '../../lib/EditAttribute'
@@ -60,12 +60,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 			}
 		}
 		componentDidMount(): void {
-			this.subscribe(MeteorPubSub.snapshots, {
-				created: {
-					$gt: getCurrentTime() - 30 * 24 * 3600 * 1000, // last 30 days
-				},
-			})
-			this.subscribe(CorelibPubSub.studios, {})
+			this.subscribe(MeteorPubSub.snapshots)
+			this.subscribe(CorelibPubSub.studios, null)
 		}
 
 		onUploadFile(e: React.ChangeEvent<HTMLInputElement>) {

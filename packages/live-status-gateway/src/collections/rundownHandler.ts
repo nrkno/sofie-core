@@ -12,7 +12,7 @@ import { RundownsHandler } from './rundownsHandler'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 export class RundownHandler
-	extends CollectionBase<DBRundown, CorelibPubSub.rundowns, CollectionName.Rundowns>
+	extends CollectionBase<DBRundown, CorelibPubSub.rundownsInPlaylists, CollectionName.Rundowns>
 	implements
 		Collection<DBRundown>,
 		CollectionObserver<DBRundownPlaylist>,
@@ -23,7 +23,7 @@ export class RundownHandler
 	private _curRundownId: RundownId | undefined
 
 	constructor(logger: Logger, coreHandler: CoreHandler, private _rundownsHandler?: RundownsHandler) {
-		super(RundownHandler.name, CollectionName.Rundowns, CorelibPubSub.rundowns, logger, coreHandler)
+		super(RundownHandler.name, CollectionName.Rundowns, CorelibPubSub.rundownsInPlaylists, logger, coreHandler)
 		this.observerName = this._name
 	}
 
@@ -67,11 +67,9 @@ export class RundownHandler
 			if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
 			if (this._dbObserver) this._dbObserver.stop()
 			if (this._curPlaylistId) {
-				this._subscriptionId = await this._coreHandler.setupSubscription(
-					this._publicationName,
-					[this._curPlaylistId],
-					null
-				)
+				this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, [
+					this._curPlaylistId,
+				])
 				this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
 				this._dbObserver.added = (id) => {
 					void this.changed(id, 'added').catch(this._logger.error)

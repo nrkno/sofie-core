@@ -63,12 +63,7 @@ const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, 
 				if (this._sub) {
 					this._sub.stop()
 				}
-				this._sub = meteorSubscribe(MeteorPubSub.evaluations, {
-					timestamp: {
-						$gte: this.state.dateFrom,
-						$lt: this.state.dateTo,
-					},
-				})
+				this._sub = meteorSubscribe(MeteorPubSub.evaluations, this.state.dateFrom, this.state.dateTo)
 			}
 		}
 		componentWillUnmount(): void {

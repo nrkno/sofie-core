@@ -315,7 +315,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 				},
 			}) as Pick<DBRundownPlaylist, '_id' | 'activationId'> | undefined
 			if (playlist) {
-				this.subscribe(CorelibPubSub.rundowns, [playlist._id], null)
+				this.subscribe(CorelibPubSub.rundownsInPlaylists, [playlist._id])
 
 				this.autorun(() => {
 					const rundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(playlist, undefined, {
@@ -329,26 +329,16 @@ export class PresenterScreenBase extends MeteorReactComponent<
 					const showStyleBaseIds = rundowns.map((r) => r.showStyleBaseId)
 					const showStyleVariantIds = rundowns.map((r) => r.showStyleVariantId)
 
-					this.subscribe(CorelibPubSub.segments, {
-						rundownId: { $in: rundownIds },
-					})
-					this.subscribe(CorelibPubSub.parts, rundownIds)
-					this.subscribe(CorelibPubSub.partInstances, rundownIds, playlist.activationId)
+					this.subscribe(CorelibPubSub.segments, rundownIds, {})
+					this.subscribe(CorelibPubSub.parts, rundownIds, null)
+					this.subscribe(CorelibPubSub.partInstances, rundownIds, playlist.activationId ?? null)
 
 					for (const rundown of rundowns) {
 						this.subscribe(MeteorPubSub.uiShowStyleBase, rundown.showStyleBaseId)
 					}
 
-					this.subscribe(CorelibPubSub.showStyleVariants, {
-						_id: {
-							$in: showStyleVariantIds,
-						},
-					})
-					this.subscribe(MeteorPubSub.rundownLayouts, {
-						showStyleBaseId: {
-							$in: showStyleBaseIds,
-						},
-					})
+					this.subscribe(CorelibPubSub.showStyleVariants, null, showStyleVariantIds)
+					this.subscribe(MeteorPubSub.rundownLayouts, showStyleBaseIds)
 
 					this.autorun(() => {
 						const playlistR = RundownPlaylists.findOne(this.props.playlistId, {
@@ -363,16 +353,15 @@ export class PresenterScreenBase extends MeteorReactComponent<
 							const { nextPartInstance, currentPartInstance } =
 								RundownPlaylistCollectionUtil.getSelectedPartInstances(playlistR)
 							if (currentPartInstance) {
-								this.subscribe(CorelibPubSub.pieceInstances, {
-									rundownId: currentPartInstance.rundownId,
-									partInstanceId: currentPartInstance._id,
-								})
+								this.subscribe(
+									CorelibPubSub.pieceInstances,
+									[currentPartInstance.rundownId],
+									[currentPartInstance._id],
+									{}
+								)
 							}
 							if (nextPartInstance) {
-								this.subscribe(CorelibPubSub.pieceInstances, {
-									rundownId: nextPartInstance.rundownId,
-									partInstanceId: nextPartInstance._id,
-								})
+								this.subscribe(CorelibPubSub.pieceInstances, [nextPartInstance.rundownId], [nextPartInstance._id], {})
 							}
 						}
 					})

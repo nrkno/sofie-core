@@ -55,10 +55,7 @@ export function PieceNameContainer(props: INamePropsHeader): JSX.Element | null 
 		}
 	)
 
-	useSubscription(CorelibPubSub.pieceInstancesSimple, {
-		rundownId: { $in: props.rundownIds },
-		playlistActivationId: props.playlistActivationId,
-	})
+	useSubscription(CorelibPubSub.pieceInstancesSimple, props.rundownIds, props.playlistActivationId ?? null)
 
 	useSubscription(MeteorPubSub.uiShowStyleBase, props.showStyleBaseId)
 

@@ -130,7 +130,7 @@ function DeviceTriggersControls({ peripheralDeviceId }: IDatastoreControlsProps)
 }
 
 const DeviceTriggersDeviceSelect: React.FC = function DeviceTriggersDeviceSelect() {
-	useSubscription(CorelibPubSub.peripheralDevices, {})
+	useSubscription(CorelibPubSub.peripheralDevices, null)
 	const devices = useTracker(() => PeripheralDevices.find().fetch(), [])
 
 	if (!devices) return null

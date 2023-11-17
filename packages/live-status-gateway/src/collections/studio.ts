@@ -22,7 +22,7 @@ export class StudioHandler
 		if (!this._collectionName) return
 		if (!this._publicationName) return
 		if (!this._studioId) return
-		this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, { _id: this._studioId })
+		this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, [this._studioId])
 		this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
 
 		if (this._collectionName) {
