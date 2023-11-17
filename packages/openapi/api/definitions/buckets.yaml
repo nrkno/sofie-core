@@ -247,12 +247,6 @@ components:
           type: string
           description: Hint for the blueprints on how to process the payload.
         payload:
-          oneOf:
-            - type: string
-            - type: number
-            - type: integer
-            - type: object
-            - type: boolean
           description: Data that the blueprints can use to create the Adlib.
       required:
         - externalId
