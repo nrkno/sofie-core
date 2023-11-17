@@ -66,7 +66,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 		[segmentId]
 	)
 
-	const pieceInstancesReady = useSubscription(CorelibPubSub.pieceInstances, [rundownId], partInstanceIds ?? [], false)
+	const pieceInstancesReady = useSubscription(CorelibPubSub.pieceInstances, [rundownId], partInstanceIds ?? [], {})
 
 	useTracker(() => {
 		const segment = Segments.findOne(segmentId, {

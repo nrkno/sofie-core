@@ -65,7 +65,7 @@ class Status extends MeteorReactComponent<Translated<IStatusProps>> {
 
 		this.subscribe(MeteorPubSub.uiStudio, null)
 		this.subscribe(CorelibPubSub.showStyleBases, null)
-		this.subscribe(CorelibPubSub.showStyleVariants, null)
+		this.subscribe(CorelibPubSub.showStyleVariants, null, null)
 	}
 	render(): JSX.Element {
 		return (

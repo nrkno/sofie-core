@@ -74,7 +74,7 @@ function useSubscriptions(
 ) {
 	const allReady = [
 		useSubscription(CorelibPubSub.rundownPlaylists, [rundownPlaylistId], null),
-		useSubscription(CorelibPubSub.rundowns, [rundownPlaylistId], null),
+		useSubscription(CorelibPubSub.rundownsInPlaylists, [rundownPlaylistId]),
 
 		useSubscription(CorelibPubSub.adLibActions, rundownIds),
 		useSubscription(CorelibPubSub.adLibPieces, rundownIds),

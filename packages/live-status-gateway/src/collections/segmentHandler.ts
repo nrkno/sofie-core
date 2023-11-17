@@ -75,7 +75,9 @@ export class SegmentHandler
 				this._subscriptionId = await this._coreHandler.setupSubscription(
 					this._publicationName,
 					this._rundownIds,
-					true
+					{
+						omitHidden: true,
+					}
 				)
 				this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
 				this._dbObserver.added = (id) => {

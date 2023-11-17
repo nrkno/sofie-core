@@ -258,14 +258,14 @@ function useMediaStatusSubscriptions(
 	const readyStatus: boolean[] = []
 	let counter = 0
 	readyStatus[counter++] = useSubscription(CorelibPubSub.rundownPlaylists, playlistIds, null)
-	readyStatus[counter++] = useSubscription(CorelibPubSub.rundowns, playlistIds, null)
+	readyStatus[counter++] = useSubscription(CorelibPubSub.rundownsInPlaylists, playlistIds)
 	const uiShowStyleBaseSubArguments = useMemo(
 		() => showStyleBaseIds.map((showStyleBaseId) => [showStyleBaseId] as [ShowStyleBaseId]),
 		[showStyleBaseIds]
 	)
 	readyStatus[counter++] = useSubscriptions(MeteorPubSub.uiShowStyleBase, uiShowStyleBaseSubArguments)
-	readyStatus[counter++] = useSubscription(CorelibPubSub.segments, rundownIds, false)
-	readyStatus[counter++] = useSubscription(CorelibPubSub.parts, rundownIds)
+	readyStatus[counter++] = useSubscription(CorelibPubSub.segments, rundownIds, {})
+	readyStatus[counter++] = useSubscription(CorelibPubSub.parts, rundownIds, null)
 	readyStatus[counter++] = useSubscription(CorelibPubSub.partInstancesSimple, rundownIds, null)
 	readyStatus[counter++] = useSubscription(CorelibPubSub.pieceInstancesSimple, rundownIds, null)
 	readyStatus[counter++] = useSubscription(CorelibPubSub.pieces, rundownIds, null)

@@ -315,7 +315,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 				},
 			}) as Pick<DBRundownPlaylist, '_id' | 'activationId'> | undefined
 			if (playlist) {
-				this.subscribe(CorelibPubSub.rundowns, [playlist._id], null)
+				this.subscribe(CorelibPubSub.rundownsInPlaylists, [playlist._id])
 
 				this.autorun(() => {
 					const rundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(playlist, undefined, {
@@ -329,15 +329,15 @@ export class PresenterScreenBase extends MeteorReactComponent<
 					const showStyleBaseIds = rundowns.map((r) => r.showStyleBaseId)
 					const showStyleVariantIds = rundowns.map((r) => r.showStyleVariantId)
 
-					this.subscribe(CorelibPubSub.segments, rundownIds, false)
-					this.subscribe(CorelibPubSub.parts, rundownIds)
+					this.subscribe(CorelibPubSub.segments, rundownIds, {})
+					this.subscribe(CorelibPubSub.parts, rundownIds, null)
 					this.subscribe(CorelibPubSub.partInstances, rundownIds, playlist.activationId ?? null)
 
 					for (const rundown of rundowns) {
 						this.subscribe(MeteorPubSub.uiShowStyleBase, rundown.showStyleBaseId)
 					}
 
-					this.subscribe(CorelibPubSub.showStyleVariants, showStyleVariantIds)
+					this.subscribe(CorelibPubSub.showStyleVariants, null, showStyleVariantIds)
 					this.subscribe(MeteorPubSub.rundownLayouts, showStyleBaseIds)
 
 					this.autorun(() => {
@@ -357,16 +357,11 @@ export class PresenterScreenBase extends MeteorReactComponent<
 									CorelibPubSub.pieceInstances,
 									[currentPartInstance.rundownId],
 									[currentPartInstance._id],
-									false
+									{}
 								)
 							}
 							if (nextPartInstance) {
-								this.subscribe(
-									CorelibPubSub.pieceInstances,
-									[nextPartInstance.rundownId],
-									[nextPartInstance._id],
-									false
-								)
+								this.subscribe(CorelibPubSub.pieceInstances, [nextPartInstance.rundownId], [nextPartInstance._id], {})
 							}
 						}
 					})

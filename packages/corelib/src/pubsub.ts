@@ -53,9 +53,13 @@ export enum CorelibPubSub {
 	 */
 	rundownPlaylists = 'rundownPlaylists',
 	/**
-	 * Fetch Rundowns. Either all in the system, limited to certain ShowStyleBases, or to specific RundownPlaylists by id.
+	 * Fetch Rundowns belonging to specific RundownPlaylists by id.
 	 */
-	rundowns = 'rundowns',
+	rundownsInPlaylists = 'rundownsInPlaylists',
+	/**
+	 * Fetch Rundowns belonging to certain ShowStyleBases.
+	 */
+	rundownsWithShowStyleBases = 'rundownsWithShowStyleBases',
 	/**
 	 * Fetch cached ingest data
 	 */
@@ -223,11 +227,9 @@ export interface CorelibPubSubTypes {
 		studioIds: StudioId[] | null,
 		token?: string
 	) => CollectionName.RundownPlaylists
-	[CorelibPubSub.rundowns]: (
-		/** RundownPlaylistId to fetch for, or null to not check */
-		playlistIds: RundownPlaylistId[] | null,
-		/** ShowStyleBaseId to fetch for, or null to not check */
-		showStyleBaseIds: ShowStyleBaseId[] | null,
+	[CorelibPubSub.rundownsInPlaylists]: (playlistIds: RundownPlaylistId[], token?: string) => CollectionName.Rundowns
+	[CorelibPubSub.rundownsWithShowStyleBases]: (
+		showStyleBaseIds: ShowStyleBaseId[],
 		token?: string
 	) => CollectionName.Rundowns
 	[CorelibPubSub.adLibActions]: (rundownIds: RundownId[], token?: string) => CollectionName.AdLibActions
@@ -248,8 +250,10 @@ export interface CorelibPubSubTypes {
 		rundownIds: RundownId[],
 		/** PartInstanceIds to fetch for, or null to fetch all */
 		partInstanceIds: PartInstanceId[] | null,
-		/** Only include PieceInstances which are playing as an adlib, or with tags */
-		onlyPlayingAdlibsOrWithTags: boolean,
+		filter: {
+			/** Only include PieceInstances which are playing as an adlib, or with tags */
+			onlyPlayingAdlibsOrWithTags?: boolean
+		},
 		token?: string
 	) => CollectionName.PieceInstances
 	[CorelibPubSub.pieceInstancesSimple]: (
@@ -257,7 +261,12 @@ export interface CorelibPubSubTypes {
 		playlistActivationId: RundownPlaylistActivationId | null,
 		token?: string
 	) => CollectionName.PieceInstances
-	[CorelibPubSub.parts]: (rundownIds: RundownId[], token?: string) => CollectionName.Parts
+	[CorelibPubSub.parts]: (
+		rundownIds: RundownId[],
+		/** SegmentIds to fetch for, or null to fetch all */
+		segmentIds: SegmentId[] | null,
+		token?: string
+	) => CollectionName.Parts
 	[CorelibPubSub.partInstances]: (
 		rundownIds: RundownId[],
 		playlistActivationId: RundownPlaylistActivationId | null,
@@ -273,13 +282,22 @@ export interface CorelibPubSubTypes {
 		segmentPlayoutId: SegmentPlayoutId,
 		token?: string
 	) => CollectionName.PartInstances
-	[CorelibPubSub.segments]: (rundownIds: RundownId[], omitHidden: boolean, token?: string) => CollectionName.Segments
+	[CorelibPubSub.segments]: (
+		rundownIds: RundownId[],
+		filter: {
+			/** Omit any Segments marked with `isHidden` */
+			omitHidden?: boolean
+		},
+		token?: string
+	) => CollectionName.Segments
 	[CorelibPubSub.showStyleBases]: (
 		/** ShowStyleBaseIds to fetch for, or null to fetch all */
 		showStyleBaseIds: ShowStyleBaseId[] | null,
 		token?: string
 	) => CollectionName.ShowStyleBases
 	[CorelibPubSub.showStyleVariants]: (
+		/** ShowStyleBaseIds to fetch for, or null to fetch all */
+		showStyleBaseIds: ShowStyleBaseId[] | null,
 		/** ShowStyleVariantId to fetch for, or null to fetch all */
 		showStyleVariantIds: ShowStyleVariantId[] | null,
 		token?: string

@@ -41,7 +41,7 @@ export const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMe
 
 		meteorSubscribe(CorelibPubSub.studios, null)
 		meteorSubscribe(CorelibPubSub.showStyleBases, null)
-		meteorSubscribe(CorelibPubSub.showStyleVariants, null)
+		meteorSubscribe(CorelibPubSub.showStyleVariants, null, null)
 		meteorSubscribe(CorelibPubSub.blueprints, null)
 		meteorSubscribe(CorelibPubSub.peripheralDevices, null)
 

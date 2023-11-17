@@ -402,7 +402,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 					CorelibPubSub.pieceInstances,
 					[this.props.rundownId],
 					partInstanceIds,
-					false
+					{}
 				)
 				this.partInstanceSubPartInstanceIds = partInstanceIds
 			})

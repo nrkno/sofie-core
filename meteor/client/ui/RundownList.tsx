@@ -64,10 +64,10 @@ export function RundownList(): JSX.Element {
 		useSubscription(MeteorPubSub.uiStudio, null),
 		useSubscription(MeteorPubSub.rundownLayouts, null),
 
-		useSubscription(CorelibPubSub.rundowns, playlistIds, null),
+		useSubscription(CorelibPubSub.rundownsInPlaylists, playlistIds),
 
 		useSubscription(CorelibPubSub.showStyleBases, showStyleBaseIds),
-		useSubscription(CorelibPubSub.showStyleVariants, showStyleVariantIds),
+		useSubscription(CorelibPubSub.showStyleVariants, null, showStyleVariantIds),
 	].reduce((prev, current) => prev && current, true)
 
 	const [subsReady, setSubsReady] = useState(false)

@@ -167,7 +167,9 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		this.autorun(() => {
 			const unorderedRundownIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(this.props.playlist)
 			if (unorderedRundownIds.length > 0) {
-				this.subscribe(CorelibPubSub.pieceInstances, unorderedRundownIds, null, true)
+				this.subscribe(CorelibPubSub.pieceInstances, unorderedRundownIds, null, {
+					onlyPlayingAdlibsOrWithTags: true,
+				})
 			}
 		})
 	}

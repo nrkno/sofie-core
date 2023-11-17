@@ -95,13 +95,13 @@ export function CameraScreen({ playlist, studioId }: IProps): JSX.Element | null
 	const rundownIds = useMemo(() => rundowns.map((rundown) => rundown._id), [rundowns])
 	const showStyleBaseIds = useMemo(() => rundowns.map((rundown) => rundown.showStyleBaseId), [rundowns])
 
-	const rundownsReady = useSubscription(CorelibPubSub.rundowns, playlistIds, null)
-	useSubscription(CorelibPubSub.segments, rundownIds, false)
+	const rundownsReady = useSubscription(CorelibPubSub.rundownsInPlaylists, playlistIds)
+	useSubscription(CorelibPubSub.segments, rundownIds, {})
 
 	const studioReady = useSubscription(MeteorPubSub.uiStudio, studioId)
 	useSubscription(CorelibPubSub.partInstances, rundownIds, playlist?.activationId ?? null)
 
-	useSubscription(CorelibPubSub.parts, rundownIds)
+	useSubscription(CorelibPubSub.parts, rundownIds, null)
 
 	useSubscription(CorelibPubSub.pieceInstancesSimple, rundownIds, null)
 

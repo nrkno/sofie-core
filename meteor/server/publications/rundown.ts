@@ -80,27 +80,20 @@ meteorPublish(PeripheralDevicePubSub.rundownsForDevice, async function (deviceId
 })
 
 meteorPublish(
-	CorelibPubSub.rundowns,
-	async function (
-		playlistIds: RundownPlaylistId[] | null,
-		showStyleBaseIds: ShowStyleBaseId[] | null,
-		token: string | undefined
-	) {
-		check(playlistIds, Match.Maybe(Array))
-		check(showStyleBaseIds, Match.Maybe(Array))
-
-		if (!playlistIds && !showStyleBaseIds)
-			throw new Meteor.Error(400, 'One of playlistIds and showStyleBaseIds must be provided')
+	CorelibPubSub.rundownsInPlaylists,
+	async function (playlistIds: RundownPlaylistId[], token: string | undefined) {
+		check(playlistIds, Array)
 
 		// If values were provided, they must have values
-		if (playlistIds && playlistIds.length === 0) return null
-		if (showStyleBaseIds && showStyleBaseIds.length === 0) return null
+		if (playlistIds.length === 0) return null
 
-		const { cred, selector } = await AutoFillSelector.organizationId<DBRundown>(this.userId, {}, token)
-
-		// Add the requested filter
-		if (playlistIds) selector.playlistId = { $in: playlistIds }
-		if (showStyleBaseIds) selector.showStyleBaseId = { $in: showStyleBaseIds }
+		const { cred, selector } = await AutoFillSelector.organizationId<DBRundown>(
+			this.userId,
+			{
+				playlistId: { $in: playlistIds },
+			},
+			token
+		)
 
 		const modifier: FindOptions<DBRundown> = {
 			fields: {
@@ -122,8 +115,43 @@ meteorPublish(
 	}
 )
 meteorPublish(
+	CorelibPubSub.rundownsWithShowStyleBases,
+	async function (showStyleBaseIds: ShowStyleBaseId[], token: string | undefined) {
+		check(showStyleBaseIds, Array)
+
+		if (showStyleBaseIds.length === 0) return null
+
+		const { cred, selector } = await AutoFillSelector.organizationId<DBRundown>(
+			this.userId,
+			{
+				showStyleBaseId: { $in: showStyleBaseIds },
+			},
+			token
+		)
+
+		const modifier: FindOptions<DBRundown> = {
+			fields: {
+				metaData: 0,
+			},
+		}
+
+		if (
+			!cred ||
+			NoSecurityReadAccess.any() ||
+			(selector.organizationId &&
+				(await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) ||
+			(selector.studioId && (await StudioReadAccess.studioContent(selector.studioId, cred))) ||
+			(selector._id && (await RundownReadAccess.rundown(selector._id, cred)))
+		) {
+			return Rundowns.findWithCursor(selector, modifier)
+		}
+		return null
+	}
+)
+
+meteorPublish(
 	CorelibPubSub.segments,
-	async function (rundownIds: RundownId[], omitHidden: boolean, token: string | undefined) {
+	async function (rundownIds: RundownId[], filter: { omitHidden?: boolean } | undefined, token: string | undefined) {
 		check(rundownIds, Array)
 
 		if (rundownIds.length === 0) return null
@@ -131,7 +159,7 @@ meteorPublish(
 		const selector: MongoQuery<DBSegment> = {
 			rundownId: { $in: rundownIds },
 		}
-		if (omitHidden) selector.isHidden = { $ne: true }
+		if (filter?.omitHidden) selector.isHidden = { $ne: true }
 
 		if (
 			NoSecurityReadAccess.any() ||
@@ -147,32 +175,38 @@ meteorPublish(
 	}
 )
 
-meteorPublish(CorelibPubSub.parts, async function (rundownIds: RundownId[], token: string | undefined) {
-	check(rundownIds, Array)
+meteorPublish(
+	CorelibPubSub.parts,
+	async function (rundownIds: RundownId[], segmentIds: SegmentId[] | null, token: string | undefined) {
+		check(rundownIds, Array)
+		check(segmentIds, Match.Maybe(Array))
 
-	if (rundownIds.length === 0) return null
+		if (rundownIds.length === 0) return null
+		if (segmentIds && segmentIds.length === 0) return null
 
-	const modifier: FindOptions<DBPart> = {
-		fields: {
-			metaData: 0,
-		},
+		const modifier: FindOptions<DBPart> = {
+			fields: {
+				metaData: 0,
+			},
+		}
+
+		const selector: MongoQuery<DBPart> = {
+			rundownId: { $in: rundownIds },
+			reset: { $ne: true },
+		}
+		if (segmentIds) selector.segmentId = { $in: segmentIds }
+
+		if (
+			NoSecurityReadAccess.any() ||
+			(selector.rundownId &&
+				(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))) // ||
+			// (selector._id && await RundownReadAccess.pieces(selector._id, { userId: this.userId, token })) // TODO - the types for this did not match
+		) {
+			return Parts.findWithCursor(selector, modifier)
+		}
+		return null
 	}
-
-	const selector: MongoQuery<DBPart> = {
-		rundownId: { $in: rundownIds },
-		reset: { $ne: true },
-	}
-
-	if (
-		NoSecurityReadAccess.any() ||
-		(selector.rundownId &&
-			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))) // ||
-		// (selector._id && await RundownReadAccess.pieces(selector._id, { userId: this.userId, token })) // TODO - the types for this did not match
-	) {
-		return Parts.findWithCursor(selector, modifier)
-	}
-	return null
-})
+)
 meteorPublish(
 	CorelibPubSub.partInstances,
 	async function (
@@ -400,7 +434,11 @@ meteorPublish(
 	async function (
 		rundownIds: RundownId[],
 		partInstanceIds: PartInstanceId[] | null,
-		onlyPlayingAdlibsOrWithTags: boolean,
+		filter:
+			| {
+					onlyPlayingAdlibsOrWithTags?: boolean
+			  }
+			| undefined,
 		token: string | undefined
 	) {
 		check(rundownIds, Array)
@@ -418,7 +456,7 @@ meteorPublish(
 		}
 		if (partInstanceIds) selector.partInstanceId = { $in: partInstanceIds }
 
-		if (onlyPlayingAdlibsOrWithTags) {
+		if (filter?.onlyPlayingAdlibsOrWithTags) {
 			selector.plannedStartedPlayback = {
 				$exists: true,
 			}

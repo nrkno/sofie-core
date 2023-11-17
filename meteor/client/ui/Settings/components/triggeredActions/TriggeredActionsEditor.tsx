@@ -77,7 +77,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 	const { showStyleBaseId, sourceLayers, outputLayers } = props
 
 	useSubscription(MeteorPubSub.triggeredActions, showStyleBaseId ? [showStyleBaseId] : null)
-	useSubscription(CorelibPubSub.rundowns, null, showStyleBaseId ? [showStyleBaseId] : [])
+	useSubscription(CorelibPubSub.rundownsWithShowStyleBases, showStyleBaseId ? [showStyleBaseId] : [])
 
 	useEffect(() => {
 		const debounce = setTimeout(() => {
@@ -192,7 +192,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 	)
 
 	useSubscription(CorelibPubSub.partInstances, rundown ? [rundown._id] : [], rundownPlaylist?.activationId ?? null)
-	useSubscription(CorelibPubSub.parts, rundown ? [rundown._id] : [])
+	useSubscription(CorelibPubSub.parts, rundown ? [rundown._id] : [], null)
 
 	const previewContext = useTracker(
 		() => {

@@ -26,7 +26,7 @@ export function Settings(): JSX.Element | null {
 	useSubscription(CorelibPubSub.peripheralDevices, null)
 	useSubscription(CorelibPubSub.studios, null)
 	useSubscription(CorelibPubSub.showStyleBases, null)
-	useSubscription(CorelibPubSub.showStyleVariants, null)
+	useSubscription(CorelibPubSub.showStyleVariants, null, null)
 	useSubscription(CorelibPubSub.blueprints, null)
 
 	useEffect(() => {

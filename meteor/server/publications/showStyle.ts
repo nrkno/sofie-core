@@ -41,15 +41,22 @@ meteorPublish(
 
 meteorPublish(
 	CorelibPubSub.showStyleVariants,
-	async function (showStyleVariantIds: ShowStyleVariantId[] | null, token: string | undefined) {
+	async function (
+		showStyleBaseIds: ShowStyleBaseId[] | null,
+		showStyleVariantIds: ShowStyleVariantId[] | null,
+		token: string | undefined
+	) {
+		check(showStyleBaseIds, Match.Maybe(Array))
 		check(showStyleVariantIds, Match.Maybe(Array))
 
 		// If values were provided, they must have values
+		if (showStyleBaseIds && showStyleBaseIds.length === 0) return null
 		if (showStyleVariantIds && showStyleVariantIds.length === 0) return null
 
 		const { cred, selector } = await AutoFillSelector.showStyleBaseId<DBShowStyleVariant>(this.userId, {}, token)
 
 		// Add the requested filter
+		if (showStyleBaseIds) selector.showStyleBaseId = { $in: showStyleBaseIds }
 		if (showStyleVariantIds) selector._id = { $in: showStyleVariantIds }
 
 		if (

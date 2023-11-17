@@ -36,7 +36,7 @@ import { CorelibPubSub, CorelibPubSubCollections, CorelibPubSubTypes } from '@so
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 /**
- * Ids of possible DDP subscriptions
+ * Ids of possible DDP subscriptions for the UI only
  */
 export enum MeteorPubSub {
 	/**

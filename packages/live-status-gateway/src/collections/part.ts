@@ -64,7 +64,11 @@ export class PartHandler
 			if (this._dbObserver) this._dbObserver.stop()
 			if (this._activePlaylist) {
 				const rundownIds = this._activePlaylist.rundownIdsInOrder
-				this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, rundownIds)
+				this._subscriptionId = await this._coreHandler.setupSubscription(
+					this._publicationName,
+					rundownIds,
+					null
+				)
 				this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
 				this._dbObserver.added = (id) => {
 					void this.changed(id, 'added').catch(this._logger.error)

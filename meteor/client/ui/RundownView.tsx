@@ -1580,7 +1580,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			const playlistId = this.props.rundownPlaylistId
 
 			this.subscribe(CorelibPubSub.rundownPlaylists, [playlistId], null)
-			this.subscribe(CorelibPubSub.rundowns, [playlistId], null)
+			this.subscribe(CorelibPubSub.rundownsInPlaylists, [playlistId])
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(playlistId, {
 					fields: {
@@ -1619,6 +1619,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 				this.subscribe(
 					CorelibPubSub.showStyleVariants,
+					null,
 					rundowns.map((i) => i.showStyleVariantId)
 				)
 				this.subscribe(
@@ -1626,12 +1627,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					rundowns.map((i) => i.showStyleBaseId)
 				)
 				const rundownIDs = rundowns.map((i) => i._id)
-				this.subscribe(CorelibPubSub.segments, rundownIDs, false)
+				this.subscribe(CorelibPubSub.segments, rundownIDs, {})
 				this.subscribe(CorelibPubSub.adLibPieces, rundownIDs)
 				this.subscribe(CorelibPubSub.rundownBaselineAdLibPieces, rundownIDs)
 				this.subscribe(CorelibPubSub.adLibActions, rundownIDs)
 				this.subscribe(CorelibPubSub.rundownBaselineAdLibActions, rundownIDs)
-				this.subscribe(CorelibPubSub.parts, rundownIDs)
+				this.subscribe(CorelibPubSub.parts, rundownIDs, null)
 				this.subscribe(CorelibPubSub.partInstances, rundownIDs, playlist.activationId ?? null)
 			})
 			this.autorun(() => {
@@ -1655,7 +1656,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							playlist.nextPartInfo?.partInstanceId,
 							playlist.previousPartInfo?.partInstanceId,
 						].filter((p): p is PartInstanceId => p !== null),
-						false
+						{}
 					)
 					const { previousPartInstance, currentPartInstance } =
 						RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
