@@ -9,16 +9,16 @@ sidebar_position: 2
 
 ## About the Sofie project
 
-The Sofie project includes a number of open-source applications and libraries developed and maintained by the Norwegian public service broadcaster, NRK. Sofie has been used to produce live shows in NRK since September 2018.
+The Sofie project includes a number of open source applications and libraries developed and maintained by the Norwegian public service broadcaster, [NRK](https://www.nrk.no/about/). Sofie has been used to produce live shows at NRK since September 2018.
 
-A list of the "Sofie repositories" [can be found here](libraries.md). NRK has the copyright of the contents of the official Sofie repositories, including the source code, related files, as well as the Sofie logo.
+A list of the "Sofie repositories" [can be found here](libraries.md). NRK owns the copyright of the contents of the official Sofie repositories, including the source code, related files, as well as the Sofie logo.
 
 The Sofie team at NRK is responsible for development and maintenance. We also do thorough testing of each release to avoid regressions in functionality and ensure interoperability with the various hardware and software involved.
 
-The Sofie team welcomes open-source contributions and will actively work towards enabling contributions to become mergeable into the Sofie repositories. However, as main stakeholder and maintainer we reserve the right to refuse any contributions.
+The Sofie team welcomes open source contributions and will actively work towards enabling contributions to become mergeable into the Sofie repositories. However, as main stakeholder and maintainer we reserve the right to refuse any contributions.
 
 
-## About Contributing
+## About Contributions
 
 Thank you for considering contributing to the Sofie project!
 
@@ -55,9 +55,9 @@ Most of the projects use a linter (eslint) and a formatter (prettier). Before su
 
 ### Documentation
 
-We rely on two types of documentation; the [System documentation](https://nrkno.github.io/sofie-core/) ([source code](https://github.com/nrkno/sofie-core/tree/master/packages/documentation)) and inline code docs.
+We rely on two types of documentation; the [Sofie documentation](https://nrkno.github.io/sofie-core/) ([source code](https://github.com/nrkno/sofie-core/tree/master/packages/documentation)) and inline code documentation.
 
-We don't aim to have the "absolute perfect documentation possible". BUT we do try to improve and add documentation to have a good-enough-to-be-comprehensible standard. We think that:
+We don't aim to have the "absolute perfect documentation possible", BUT we do try to improve and add documentation to have a good-enough-to-be-comprehensible standard. We think that:
 
 * _What_ something does is not as important – we can read the code for that.
 * _Why_ something does something, **is** important. Implied usage, side-effects, descriptions of the context etcetera...
