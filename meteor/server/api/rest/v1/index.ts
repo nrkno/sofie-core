@@ -202,13 +202,13 @@ export class ServerRestAPI implements RestAPI {
 				segmentAdLibPiece,
 				bucketAdLibPiece,
 				AdLibActions.findOneAsync(adLibId as AdLibActionId, {
-					projection: { _id: 1, actionId: 1, userData: 1 },
+					projection: { _id: 1, actionId: 1, userData: 1, blueprintsData: 1 },
 				}),
 				RundownBaselineAdLibActions.findOneAsync(adLibId as RundownBaselineAdLibActionId, {
-					projection: { _id: 1, actionId: 1, userData: 1 },
+					projection: { _id: 1, actionId: 1, userData: 1, blueprintsData: 1 },
 				}),
 				BucketAdLibActions.findOneAsync(adLibId as BucketAdLibActionId, {
-					projection: { _id: 1, actionId: 1, userData: 1 },
+					projection: { _id: 1, actionId: 1, userData: 1, blueprintsData: 1 },
 				}),
 			])
 		const adLibActionDoc = adLibAction ?? baselineAdLibAction ?? bucketAdLibAction
@@ -298,7 +298,8 @@ export class ServerRestAPI implements RestAPI {
 					actionDocId: adLibActionDoc._id,
 					actionId: adLibActionDoc.actionId,
 					userData: userData ?? adLibActionDoc.userData,
-					triggerMode: triggerMode ? triggerMode : undefined,
+					triggerMode: triggerMode ?? undefined,
+					blueprintsData: adLibActionDoc.blueprintsData,
 				}
 			)
 		} else {

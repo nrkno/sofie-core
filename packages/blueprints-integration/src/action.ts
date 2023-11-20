@@ -7,6 +7,9 @@ import { ExpectedPlayoutItemGeneric } from './documents'
 export interface ActionUserData {
 	[key: string]: any
 }
+export interface ActionBlueprintsData {
+	[key: string]: any
+}
 
 export enum ActionExecuteAfterChanged {
 	/** Do not execute the action after userData has changed, unless specifically triggered by the user */
@@ -73,8 +76,10 @@ export interface IBlueprintActionManifest {
 
 	/** Id of the action */
 	actionId: string
-	/** Properties defining the action behaviour */
+	/** Public-facing (and possibly even user-editable) properties defining the action behaviour */
 	userData: ActionUserData
+	/** Private (blueprints-internal) properties defining the action behaviour */
+	blueprintsData?: ActionBlueprintsData
 
 	/**
 	 * Set if ad-lib action should be limited in context to the current part/segment

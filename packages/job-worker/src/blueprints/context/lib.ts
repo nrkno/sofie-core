@@ -288,6 +288,7 @@ export function convertAdLibActionToBlueprints(action: AdLibAction): IBlueprintA
 		externalId: action.externalId,
 		actionId: action.actionId,
 		userData: clone(action.userData),
+		blueprintsData: clone(action.blueprintsData),
 		partId: unprotectString(action.partId),
 		allVariants: action.allVariants,
 		userDataManifest: clone(action.userDataManifest),

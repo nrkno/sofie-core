@@ -1,6 +1,7 @@
 import { PlayoutChangedResults } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import {
 	AdLibActionId,
+	BucketAdLibActionId,
 	PartId,
 	PartInstanceId,
 	PieceId,
@@ -13,7 +14,7 @@ import {
 } from '../dataModel/Ids'
 import { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { CoreRundownPlaylistSnapshot } from '../snapshots'
-import { NoteSeverity } from '@sofie-automation/blueprints-integration'
+import { ActionBlueprintsData, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { ITranslatableMessage } from '../TranslatableMessage'
 
 /** List of all Jobs performed by the Worker related to a certain Studio */
@@ -218,10 +219,11 @@ export interface QueueNextSegmentProps extends RundownPlayoutPropsBase {
 }
 export type QueueNextSegmentResult = { nextPartId: PartId } | { queuedSegmentId: SegmentId | null }
 export interface ExecuteActionProps extends RundownPlayoutPropsBase {
-	actionDocId: AdLibActionId | RundownBaselineAdLibActionId | null
+	actionDocId: AdLibActionId | RundownBaselineAdLibActionId | BucketAdLibActionId
 	actionId: string
 	userData: any
 	triggerMode?: string
+	blueprintsData: ActionBlueprintsData | undefined | null
 }
 export interface ExecuteActionResult {
 	queuedPartInstanceId?: PartInstanceId

@@ -1,4 +1,4 @@
-import type { ActionUserData, IBlueprintActionManifest } from '../action'
+import type { ActionBlueprintsData, ActionUserData, IBlueprintActionManifest } from '../action'
 import type {
 	IActionExecutionContext,
 	ISyncIngestUpdateToPartInstanceContext,
@@ -115,7 +115,8 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 		context: IActionExecutionContext,
 		actionId: string,
 		userData: ActionUserData,
-		triggerMode?: string
+		triggerMode: string | undefined,
+		blueprintsData?: ActionBlueprintsData
 	) => Promise<void>
 
 	/** Generate adlib piece from ingest data */

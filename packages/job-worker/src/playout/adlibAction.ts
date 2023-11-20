@@ -16,9 +16,14 @@ import { updateExpectedDurationWithPrerollForPartInstance } from './lib'
 import { runJobWithPlaylistLock } from './lock'
 import { updateTimeline } from './timeline/generate'
 import { performTakeToNextedPart } from './take'
-import { ActionUserData } from '@sofie-automation/blueprints-integration'
+import { ActionBlueprintsData, ActionUserData } from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { logger } from '../logging'
+import {
+	AdLibActionId,
+	BucketAdLibActionId,
+	RundownBaselineAdLibActionId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 /**
  * Execute an AdLib Action
@@ -54,10 +59,30 @@ export async function handleExecuteAdlibAction(
 			},
 		})
 
+		if (data.blueprintsData === null) {
+			const [adLibAction, baselineAdLibAction, bucketAdLibAction] = await Promise.all([
+				context.directCollections.AdLibActions.findOne(data.actionDocId as AdLibActionId, {
+					projection: { _id: 1, blueprintsData: 1 },
+				}),
+				context.directCollections.RundownBaselineAdLibActions.findOne(
+					data.actionDocId as RundownBaselineAdLibActionId,
+					{
+						projection: { _id: 1, blueprintsData: 1 },
+					}
+				),
+				context.directCollections.BucketAdLibActions.findOne(data.actionDocId as BucketAdLibActionId, {
+					projection: { _id: 1, blueprintsData: 1 },
+				}),
+			])
+			const adLibActionDoc = adLibAction ?? baselineAdLibAction ?? bucketAdLibAction
+			data.blueprintsData = adLibActionDoc?.blueprintsData
+		}
+
 		const actionParameters: ExecuteActionParameters = {
 			actionId: data.actionId,
 			userData: data.userData,
 			triggerMode: data.triggerMode,
+			blueprintsData: data.blueprintsData,
 		}
 
 		try {
@@ -77,6 +102,7 @@ export async function handleExecuteAdlibAction(
 		if (blueprint.blueprint.executeAction) {
 			// load a full cache for the regular actions & executet the handler
 			const fullCache: CacheForPlayout = await CacheForPlayout.fromInit(context, initCache)
+
 			try {
 				const res: ExecuteActionResult = await executeActionInner(
 					context,
@@ -108,8 +134,10 @@ export async function handleExecuteAdlibAction(
 export interface ExecuteActionParameters {
 	/** Id of the action */
 	actionId: string
-	/** Properties defining the action behaviour */
+	/** Public-facing (and possibly even user-editable) properties defining the action behaviour */
 	userData: ActionUserData
+	/** Private (blueprints-internal) properties defining the action behaviour */
+	blueprintsData: ActionBlueprintsData | undefined
 
 	triggerMode: string | undefined
 }
@@ -157,7 +185,8 @@ export async function executeActionInner(
 			actionContext,
 			actionParameters.actionId,
 			actionParameters.userData,
-			actionParameters.triggerMode
+			actionParameters.triggerMode,
+			actionParameters.blueprintsData
 		)
 	} catch (err) {
 		logger.error(`Error in showStyleBlueprint.executeAction: ${stringifyError(err)}`)
