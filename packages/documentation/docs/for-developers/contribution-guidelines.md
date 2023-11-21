@@ -7,7 +7,7 @@ sidebar_position: 2
 
 # Contribution Guidelines
 
-## About the Sofie project
+## About the Sofie TV Studio Automation Project
 
 The Sofie project includes a number of open source applications and libraries developed and maintained by the Norwegian public service broadcaster, [NRK](https://www.nrk.no/about/). Sofie has been used to produce live shows at NRK since September 2018.
 
@@ -24,7 +24,7 @@ Thank you for considering contributing to the Sofie project!
 
 Before you start, there are a few things you should know:
 
-### "Discussions Before Pull Requests"
+### “Discussions Before Pull Requests”
 
 **Minor changes** (most bug fixes and small features) can be submitted directly as pull requests to the appropriate official repo.
 
@@ -32,7 +32,7 @@ However, Sofie is a big project with many differing users and use cases. **Large
 
 1. Contributor opens an RFC (as a _GitHub issue_) in the appropriate repository.
 2. NRK evaluates the RFC, usually within a week.
-3. (If needed) NRK establishes contact with the RFC author, who will be invited to a workshop where the  RFC is discussed. Meeting notes are published publicly on the RFC thread.
+3. (If needed) NRK establishes contact with the RFC author, who will be invited to a workshop where the RFC is discussed. Meeting notes are published publicly on the RFC thread.
 4. The contributor references the RFC when a pull request is ready.
 
 ### Base contributions on the in-development branch (or the master branch)
@@ -67,7 +67,7 @@ When you contribute, we ask you to also update any documentation where needed.
 ### Updating Dependencies​
 When updating dependencies in a library, it is preferred to do so via `yarn upgrade-interactive --latest` whenever possible. This is so that the versions in `package.json` are also updated as we have no guarantee that the library will work with versions lower than that used in the `yarn.lock` file, even if it is compatible with the semver range in `package.json`. After this, a `yarn upgrade` can be used to update any child dependencies
 
-Be careful with bumping across major versions.
+Be careful when bumping across major versions.
 
 Also, each of the libraries has a minimum nodejs version specified in their package.json. Care must be taken when updating dependencies to ensure its compatibility is retained.
 
