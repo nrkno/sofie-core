@@ -56,17 +56,20 @@ const showStyleBaseFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<D
 	hotkeyLegend: 1,
 })
 
+interface StudioObserverProps {
+	activePlaylistId: RundownPlaylistId
+	activationId: RundownPlaylistActivationId
+	currentRundownId: RundownId
+}
+
 export class StudioObserver extends EventEmitter {
 	#playlistInStudioLiveQuery: Meteor.LiveQueryHandle
 	#showStyleOfRundownLiveQuery: Meteor.LiveQueryHandle | undefined
 	#rundownsLiveQuery: Meteor.LiveQueryHandle | undefined
-	activePlaylistId: RundownPlaylistId | undefined
-	newActivePlaylistId: RundownPlaylistId | undefined
-	activationId: RundownPlaylistActivationId | undefined
-	newActivationId: RundownPlaylistActivationId | undefined
-	currentRundownId: RundownId | undefined
-	newCurrentRundownId: RundownId | undefined
 	showStyleBaseId: ShowStyleBaseId | undefined
+
+	currentProps: StudioObserverProps | undefined = undefined
+	nextProps: StudioObserverProps | undefined = undefined
 
 	#changed: ChangedHandler
 
@@ -114,25 +117,25 @@ export class StudioObserver extends EventEmitter {
 
 				if (!activePlaylistId || !activationId || !currentRundownId) {
 					this.#showStyleOfRundownLiveQuery?.stop()
-					this.activePlaylistId = undefined
-					this.activationId = undefined
-					this.currentRundownId = undefined
+					this.currentProps = undefined
 					return
 				}
 
 				if (
-					currentRundownId === this.currentRundownId &&
-					activePlaylistId === this.activePlaylistId &&
-					activationId === this.activationId
+					currentRundownId === this.currentProps?.currentRundownId &&
+					activePlaylistId === this.currentProps?.activePlaylistId &&
+					activationId === this.currentProps?.activationId
 				)
 					return
 
 				this.#showStyleOfRundownLiveQuery?.stop()
 				this.#showStyleOfRundownLiveQuery = undefined
 
-				this.newActivePlaylistId = activePlaylistId
-				this.newActivationId = activationId
-				this.newCurrentRundownId = currentRundownId
+				this.nextProps = {
+					activePlaylistId,
+					activationId,
+					currentRundownId,
+				}
 
 				this.#showStyleOfRundownLiveQuery = this.setupShowStyleOfRundownObserver(currentRundownId)
 			}
@@ -173,9 +176,12 @@ export class StudioObserver extends EventEmitter {
 			) => {
 				const showStyleBaseId = state?.showStyleBase._id
 
-				if (showStyleBaseId === undefined || !this.newActivePlaylistId || !this.newActivationId) {
-					this.activePlaylistId = undefined
-					this.activationId = undefined
+				if (
+					showStyleBaseId === undefined ||
+					!this.nextProps?.activePlaylistId ||
+					!this.nextProps?.activationId
+				) {
+					this.currentProps = undefined
 					this.#rundownsLiveQuery?.stop()
 					this.#rundownsLiveQuery = undefined
 					this.showStyleBaseId = showStyleBaseId
@@ -184,20 +190,20 @@ export class StudioObserver extends EventEmitter {
 
 				if (
 					showStyleBaseId === this.showStyleBaseId &&
-					this.newActivationId === this.activationId &&
-					this.newActivePlaylistId === this.activePlaylistId &&
-					this.newCurrentRundownId === this.currentRundownId
+					this.nextProps?.activationId === this.currentProps?.activationId &&
+					this.nextProps?.activePlaylistId === this.currentProps?.activePlaylistId &&
+					this.nextProps?.currentRundownId === this.currentProps?.currentRundownId
 				)
 					return
 
 				this.#rundownsLiveQuery?.stop()
 				this.#rundownsLiveQuery = undefined
 
-				this.activePlaylistId = this.newActivePlaylistId
-				const activePlaylistId = this.activePlaylistId
-				this.activationId = this.newActivationId
-				const activationId = this.activationId
-				this.currentRundownId = this.newCurrentRundownId
+				this.currentProps = this.nextProps
+				this.nextProps = undefined
+
+				const { activationId, activePlaylistId } = this.currentProps
+
 				this.showStyleBaseId = showStyleBaseId
 
 				let cleanupChanges: (() => void) | undefined = undefined
