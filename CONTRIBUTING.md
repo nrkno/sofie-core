@@ -1,17 +1,12 @@
-# Contribution guidelines
+# How to Contribute to the Sofie Project
+
+Before contributing to this repository, please read the [Contribution Guidelines](https://nrkno.github.io/sofie-core/docs/for-developers/contribution-guidelines) for the Sofie project.
 
 
-Before you contribute to this repository, please read the **[contribution guidelines for the Sofie project](https://nrkno.github.io/sofie-core/docs/for-developers/contribution-guidelines)**.
-
-
-## About branches
-
+## Branches
 This repository uses the following branches:
 
-* **master** is our main branch. We consider it stable and it is used in production.
-* The **releaseXX** branches are our in-development branches. When a release is ready, we decide to "freeze" that branch and create a new **releaseXX+1** branch.
+* **_master_** is our main branch. We consider it stable and it is used in production.
+* The **_releaseXX_** branches are our in-development branches. When a release is ready, we decide to “freeze” that branch and create a new **_releaseXX+1_** branch.
 
-Check the [Sofie Releases page on github](https://github.com/nrkno/Sofie-TV-automation/issues?q=is%3Aissue+label%3ARelease+) to see the current status of the Sofie releases.
-
-
-We encourage you to base your contributions on the latest **releaseXX** branch, alternatively the **master** branch or a recently frozen **releaseXX** branch.
+We encourage you to base your contributions on the latest **releaseXX** branch, alternatively the **master** branch or a recently frozen **releaseXX** branch. The [Sofie Releases](https://nrkno.github.io/sofie-core/releases) page collects the status and timeline of the releases.
