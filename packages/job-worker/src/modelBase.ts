@@ -5,7 +5,7 @@ export interface BaseModel {
 	/**
 	 * Name to display in debug logs about this Model
 	 */
-	readonly DisplayName: string
+	readonly displayName: string
 
 	/**
 	 * Mark the model as disposed

@@ -13,13 +13,14 @@ import ClassNames from 'classnames'
 import { DatePickerFromTo } from '../../lib/datePicker'
 import moment from 'moment'
 import { faTrash, faPause, faPlay, faRedo } from '@fortawesome/free-solid-svg-icons'
-import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
+import { MeteorPubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { MeteorCall } from '../../../lib/api/methods'
 import { UIStudios } from '../Collections'
 import { UIStudio } from '../../../lib/api/studios'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ExternalMessageQueue } from '../../collections'
 import { catchError } from '../../lib/lib'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 interface IExternalMessagesProps {}
 interface IExternalMessagesState {
@@ -49,7 +50,7 @@ const ExternalMessages = translateWithTracker<
 			}
 		}
 		componentDidMount(): void {
-			this.subscribe(PubSub.uiStudio, null)
+			this.subscribe(MeteorPubSub.uiStudio, null)
 		}
 		onClickStudio = (studio: UIStudio) => {
 			this.setState({
@@ -159,7 +160,7 @@ const ExternalMessagesInStudio = translateWithTracker<
 				if (this._sub) {
 					this._sub.stop()
 				}
-				this._sub = meteorSubscribe(PubSub.externalMessageQueue, {
+				this._sub = meteorSubscribe(CorelibPubSub.externalMessageQueue, {
 					studioId: this.props.studioId,
 					created: {
 						$gte: this.state.dateFrom,

@@ -5,10 +5,11 @@ import { Route, Switch, NavLink, Redirect } from 'react-router-dom'
 
 import { TimelineView, TimelineStudioSelect } from './Timeline'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { PubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { MappingsStudioSelect, MappingsView } from './Mappings'
 import { TimelineDatastoreStudioSelect, TimelineDatastoreView } from './TimelineDatastore'
 import { DeviceTriggersDeviceSelect, DeviceTriggersView } from './DeviceTriggers'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 interface IStatusMenuProps {
 	match?: any
@@ -62,9 +63,9 @@ class Status extends MeteorReactComponent<Translated<IStatusProps>> {
 	componentDidMount(): void {
 		// Subscribe to data:
 
-		this.subscribe(PubSub.uiStudio, null)
-		this.subscribe(PubSub.showStyleBases, {})
-		this.subscribe(PubSub.showStyleVariants, {})
+		this.subscribe(MeteorPubSub.uiStudio, null)
+		this.subscribe(CorelibPubSub.showStyleBases, null)
+		this.subscribe(CorelibPubSub.showStyleVariants, null, null)
 	}
 	render(): JSX.Element {
 		return (

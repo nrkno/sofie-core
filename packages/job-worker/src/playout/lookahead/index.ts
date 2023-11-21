@@ -165,7 +165,7 @@ export async function getLookeaheadObjects(
 
 			const lookaheadObjs = findLookaheadForLayer(
 				context,
-				playoutModel.Playlist.currentPartInfo?.partInstanceId ?? null,
+				playoutModel.playlist.currentPartInfo?.partInstanceId ?? null,
 				partInstancesInfo,
 				previousPartInfo,
 				orderedPartInfos,

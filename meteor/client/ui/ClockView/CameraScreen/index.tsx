@@ -3,7 +3,7 @@ import { CameraContent, RemoteContent, SourceLayerType, SplitsContent } from '@s
 import { RundownId, ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { PubSub } from '../../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../../lib/api/pubsub'
 import { UIStudio } from '../../../../lib/api/studios'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PieceExtended } from '../../../../lib/Rundown'
@@ -21,6 +21,7 @@ import { Spinner } from '../../../lib/Spinner'
 import { useBlackBrowserTheme } from '../../../lib/useBlackBrowserTheme'
 import { useWakeLock } from './useWakeLock'
 import { catchError, useDebounce } from '../../../lib/lib'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 interface IProps {
 	playlist: DBRundownPlaylist | undefined
@@ -94,29 +95,17 @@ export function CameraScreen({ playlist, studioId }: IProps): JSX.Element | null
 	const rundownIds = useMemo(() => rundowns.map((rundown) => rundown._id), [rundowns])
 	const showStyleBaseIds = useMemo(() => rundowns.map((rundown) => rundown.showStyleBaseId), [rundowns])
 
-	const rundownsReady = useSubscription(PubSub.rundowns, playlistIds, null)
-	useSubscription(PubSub.segments, {
-		rundownId: {
-			$in: rundownIds,
-		},
-	})
+	const rundownsReady = useSubscription(CorelibPubSub.rundownsInPlaylists, playlistIds)
+	useSubscription(CorelibPubSub.segments, rundownIds, {})
 
-	const studioReady = useSubscription(PubSub.uiStudio, studioId)
-	useSubscription(PubSub.partInstances, rundownIds, playlist?.activationId)
+	const studioReady = useSubscription(MeteorPubSub.uiStudio, studioId)
+	useSubscription(CorelibPubSub.partInstances, rundownIds, playlist?.activationId ?? null)
 
-	useSubscription(PubSub.parts, rundownIds)
+	useSubscription(CorelibPubSub.parts, rundownIds, null)
 
-	useSubscription(PubSub.pieceInstancesSimple, {
-		rundownId: {
-			$in: rundownIds,
-		},
-	})
+	useSubscription(CorelibPubSub.pieceInstancesSimple, rundownIds, null)
 
-	const piecesReady = useSubscription(PubSub.pieces, {
-		startRundownId: {
-			$in: rundownIds,
-		},
-	})
+	const piecesReady = useSubscription(CorelibPubSub.pieces, rundownIds, null)
 
 	const [piecesReadyOnce, setPiecesReadyOnce] = useState(false)
 	useEffect(() => {

@@ -10,13 +10,13 @@ export interface PlayoutSegmentModel {
 	/**
 	 * The Segment properties
 	 */
-	readonly Segment: ReadonlyDeep<DBSegment>
+	readonly segment: ReadonlyDeep<DBSegment>
 
 	/**
 	 * All the Parts in the Segment
 	 * Sorted by their rank
 	 */
-	readonly Parts: ReadonlyDeep<DBPart[]>
+	readonly parts: ReadonlyDeep<DBPart[]>
 
 	/**
 	 * Get a Part which belongs to this Segment

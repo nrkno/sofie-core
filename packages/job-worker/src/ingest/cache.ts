@@ -51,7 +51,7 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 		return this.Rundown.doc?._id ?? getRundownId(this.context.studioId, this.RundownExternalId)
 	}
 
-	public get DisplayName(): string {
+	public get displayName(): string {
 		return `CacheForIngest "${this.RundownExternalId}"`
 	}
 

@@ -19,12 +19,12 @@ export interface PlayoutPartInstanceModel {
 	/**
 	 * The PartInstance properties
 	 */
-	readonly PartInstance: ReadonlyDeep<DBPartInstance>
+	readonly partInstance: ReadonlyDeep<DBPartInstance>
 
 	/**
 	 * All the PieceInstances in the PartInstance
 	 */
-	readonly PieceInstances: PlayoutPieceInstanceModel[]
+	readonly pieceInstances: PlayoutPieceInstanceModel[]
 
 	/**
 	 * Take a snapshot of the current state of this PlayoutPartInstanceModel
@@ -184,11 +184,12 @@ export interface PlayoutPartInstanceModel {
 	setRank(rank: number): void
 
 	/**
-	 * Set the PartInstance as having been taken
+	 * Set the PartInstance as having been taken, if an offset is provided the plannedStartedPlayback of the PartInstance will be set to match,
+	 * to force the PartInstance to have started a certain distance in the past
 	 * @param takeTime The timestamp to record as when it was taken
-	 * @param playOffset The offset into the PartInstance to start playback from
+	 * @param playOffset If set, offset into the PartInstance to start playback from
 	 */
-	setTaken(takeTime: number, playOffset: number): void
+	setTaken(takeTime: number, playOffset: number | null): void
 
 	/**
 	 * Define some cached values, to be done when taking the PartInstance

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { Clock } from '../StudioScreenSaver/Clock'
 import { useTracker, useSubscription } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { PubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { findNextPlaylist } from '../StudioScreenSaver/StudioScreenSaver'
 // @ts-expect-error No types available
 import Velocity from 'velocity-animate'
@@ -17,8 +17,8 @@ export function OverlayScreenSaver({ studioId }: { studioId: StudioId }): JSX.El
 		}
 	})
 
-	useSubscription(PubSub.uiStudio, studioId)
-	useSubscription(PubSub.rundownPlaylists, { studioId: studioId, activationId: { $exists: false } })
+	useSubscription(MeteorPubSub.uiStudio, studioId)
+	useSubscription(MeteorPubSub.rundownPlaylistForStudio, studioId, false)
 
 	const data = useTracker(() => findNextPlaylist({ studioId }), [studioId])
 

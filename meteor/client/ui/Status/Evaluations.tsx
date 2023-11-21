@@ -9,7 +9,7 @@ import { Evaluation } from '../../../lib/collections/Evaluations'
 import { DatePickerFromTo } from '../../lib/datePicker'
 import moment from 'moment'
 import { getQuestionOptions } from '../AfterBroadcastForm'
-import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
+import { MeteorPubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { Evaluations } from '../../collections'
 
 interface IEvaluationProps {}
@@ -63,12 +63,7 @@ const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, 
 				if (this._sub) {
 					this._sub.stop()
 				}
-				this._sub = meteorSubscribe(PubSub.evaluations, {
-					timestamp: {
-						$gte: this.state.dateFrom,
-						$lt: this.state.dateTo,
-					},
-				})
+				this._sub = meteorSubscribe(MeteorPubSub.evaluations, this.state.dateFrom, this.state.dateTo)
 			}
 		}
 		componentWillUnmount(): void {

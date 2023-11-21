@@ -92,9 +92,9 @@ export const SegmentContextMenu = withTranslation()(
 										</MenuItem> */}
 										<MenuItem
 											onClick={(e) => this.onPlayFromHere(part.instance.part, e)}
-											disabled={isCurrentPart || !!part.instance.orphaned || !canSetAsNext}
+											disabled={!!part.instance.orphaned || !canSetAsNext}
 										>
-											<span dangerouslySetInnerHTML={{ __html: t('Play from Here') }}></span> (
+											<span>{t('Play from Here')}</span> (
 											{RundownUtils.formatTimeToShortTime(Math.floor((startsAt + timecode) / 1000) * 1000)})
 										</MenuItem>
 									</>

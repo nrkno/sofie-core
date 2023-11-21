@@ -1,7 +1,6 @@
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
-import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { SegmentTimeline, SegmentTimelineClass } from './SegmentTimeline'
 import { computeSegmentDisplayDuration, RundownTiming, TimingEvent } from '../RundownView/RundownTiming/RundownTiming'
 import { UIStateStorage } from '../../lib/UIStateStorage'
@@ -11,7 +10,7 @@ import { MAGIC_TIME_SCALE_FACTOR } from '../RundownView'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment, getHeaderHeight } from '../../lib/viewPort'
-import { meteorSubscribe, PubSub } from '../../../lib/api/pubsub'
+import { meteorSubscribe } from '../../../lib/api/pubsub'
 import { unprotectString, equalSets, equivalentArrays } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
 import { Tracker } from 'meteor/tracker'
@@ -34,6 +33,7 @@ import { RundownViewShelf } from '../RundownView/RundownViewShelf'
 import { PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PartInstances, Parts, Segments } from '../../collections'
 import { catchError } from '../../lib/lib'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 // Kept for backwards compatibility
 export { SegmentUi, PartUi, PieceUi, ISourceLayerUi, IOutputLayerUi } from '../SegmentContainer/withResolvedSegment'
@@ -145,12 +145,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 					}
 				).map((part) => part._id)
 
-				this.subscribe(PubSub.pieces, {
-					startRundownId: this.props.rundownId,
-					startPartId: {
-						$in: partIds,
-					},
-				})
+				this.subscribe(CorelibPubSub.pieces, [this.props.rundownId], partIds ?? [])
 			})
 			this.autorun(() => {
 				const partInstanceIds = PartInstances.find(
@@ -178,32 +173,12 @@ export const SegmentTimelineContainer = withResolvedSegment(
 					},
 				})
 				segment &&
-					this.subscribe(PubSub.pieces, {
-						invalid: {
-							$ne: true,
-						},
-						$or: [
-							// same rundown, and previous segment
-							{
-								startRundownId: this.props.rundownId,
-								startSegmentId: { $in: Array.from(this.props.segmentsIdsBefore.values()) },
-								lifespan: {
-									$in: [
-										PieceLifespan.OutOnRundownEnd,
-										PieceLifespan.OutOnRundownChange,
-										PieceLifespan.OutOnShowStyleEnd,
-									],
-								},
-							},
-							// Previous rundown
-							{
-								startRundownId: { $in: Array.from(this.props.rundownIdsBefore.values()) },
-								lifespan: {
-									$in: [PieceLifespan.OutOnShowStyleEnd],
-								},
-							},
-						],
-					})
+					this.subscribe(
+						CorelibPubSub.piecesInfiniteStartingBefore,
+						this.props.rundownId,
+						Array.from(this.props.segmentsIdsBefore.values()),
+						Array.from(this.props.rundownIdsBefore.values())
+					)
 			})
 			SpeechSynthesiser.init()
 
@@ -423,15 +398,12 @@ export const SegmentTimelineContainer = withResolvedSegment(
 					this.partInstanceSub.stop()
 				}
 				// we handle this subscription manually
-				this.partInstanceSub = meteorSubscribe(PubSub.pieceInstances, {
-					rundownId: this.props.rundownId,
-					partInstanceId: {
-						$in: partInstanceIds,
-					},
-					reset: {
-						$ne: true,
-					},
-				})
+				this.partInstanceSub = meteorSubscribe(
+					CorelibPubSub.pieceInstances,
+					[this.props.rundownId],
+					partInstanceIds,
+					{}
+				)
 				this.partInstanceSubPartInstanceIds = partInstanceIds
 			})
 		}

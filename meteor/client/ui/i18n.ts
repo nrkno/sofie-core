@@ -5,7 +5,7 @@ import Backend from 'i18next-http-backend'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
 import { WithManagedTracker } from '../lib/reactiveData/reactiveDataHelper'
-import { PubSub } from '../../lib/api/pubsub'
+import { MeteorPubSub } from '../../lib/api/pubsub'
 import { Translation, TranslationsBundle } from '../../lib/collections/TranslationsBundles'
 import { I18NextData } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../lib/api/methods'
@@ -103,7 +103,7 @@ class I18nContainer extends WithManagedTracker {
 			})
 			.catch(catchError('i18nInstance.init'))
 
-		this.subscribe(PubSub.translationsBundles, {})
+		this.subscribe(MeteorPubSub.translationsBundles)
 		this.autorun(() => {
 			const bundlesInfo = TranslationsBundles.find().fetch() as Omit<TranslationsBundle, 'data'>[]
 

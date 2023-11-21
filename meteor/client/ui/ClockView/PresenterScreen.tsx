@@ -10,7 +10,7 @@ import { Translated, withTracker } from '../../lib/ReactMeteorData/ReactMeteorDa
 import { extendMandadory, getCurrentTime, protectString, unprotectString } from '../../../lib/lib'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { PubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { PieceIconContainer } from '../PieceIcons/PieceIcon'
 import { PieceNameContainer } from '../PieceIcons/PieceName'
 import { Timediff } from './Timediff'
@@ -41,6 +41,7 @@ import { UIStudio } from '../../../lib/api/studios'
 import { PieceInstances, RundownLayouts, RundownPlaylists, Rundowns, ShowStyleVariants } from '../../collections'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -305,7 +306,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 
 	protected subscribeToData(): void {
 		this.autorun(() => {
-			this.subscribe(PubSub.uiStudio, this.props.studioId)
+			this.subscribe(MeteorPubSub.uiStudio, this.props.studioId)
 
 			const playlist = RundownPlaylists.findOne(this.props.playlistId, {
 				fields: {
@@ -314,7 +315,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 				},
 			}) as Pick<DBRundownPlaylist, '_id' | 'activationId'> | undefined
 			if (playlist) {
-				this.subscribe(PubSub.rundowns, [playlist._id], null)
+				this.subscribe(CorelibPubSub.rundownsInPlaylists, [playlist._id])
 
 				this.autorun(() => {
 					const rundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(playlist, undefined, {
@@ -328,26 +329,16 @@ export class PresenterScreenBase extends MeteorReactComponent<
 					const showStyleBaseIds = rundowns.map((r) => r.showStyleBaseId)
 					const showStyleVariantIds = rundowns.map((r) => r.showStyleVariantId)
 
-					this.subscribe(PubSub.segments, {
-						rundownId: { $in: rundownIds },
-					})
-					this.subscribe(PubSub.parts, rundownIds)
-					this.subscribe(PubSub.partInstances, rundownIds, playlist.activationId)
+					this.subscribe(CorelibPubSub.segments, rundownIds, {})
+					this.subscribe(CorelibPubSub.parts, rundownIds, null)
+					this.subscribe(CorelibPubSub.partInstances, rundownIds, playlist.activationId ?? null)
 
 					for (const rundown of rundowns) {
-						this.subscribe(PubSub.uiShowStyleBase, rundown.showStyleBaseId)
+						this.subscribe(MeteorPubSub.uiShowStyleBase, rundown.showStyleBaseId)
 					}
 
-					this.subscribe(PubSub.showStyleVariants, {
-						_id: {
-							$in: showStyleVariantIds,
-						},
-					})
-					this.subscribe(PubSub.rundownLayouts, {
-						showStyleBaseId: {
-							$in: showStyleBaseIds,
-						},
-					})
+					this.subscribe(CorelibPubSub.showStyleVariants, null, showStyleVariantIds)
+					this.subscribe(MeteorPubSub.rundownLayouts, showStyleBaseIds)
 
 					this.autorun(() => {
 						const playlistR = RundownPlaylists.findOne(this.props.playlistId, {
@@ -362,16 +353,15 @@ export class PresenterScreenBase extends MeteorReactComponent<
 							const { nextPartInstance, currentPartInstance } =
 								RundownPlaylistCollectionUtil.getSelectedPartInstances(playlistR)
 							if (currentPartInstance) {
-								this.subscribe(PubSub.pieceInstances, {
-									rundownId: currentPartInstance.rundownId,
-									partInstanceId: currentPartInstance._id,
-								})
+								this.subscribe(
+									CorelibPubSub.pieceInstances,
+									[currentPartInstance.rundownId],
+									[currentPartInstance._id],
+									{}
+								)
 							}
 							if (nextPartInstance) {
-								this.subscribe(PubSub.pieceInstances, {
-									rundownId: nextPartInstance.rundownId,
-									partInstanceId: nextPartInstance._id,
-								})
+								this.subscribe(CorelibPubSub.pieceInstances, [nextPartInstance.rundownId], [nextPartInstance._id], {})
 							}
 						}
 					})

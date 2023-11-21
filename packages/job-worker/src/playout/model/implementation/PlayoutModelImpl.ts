@@ -57,28 +57,28 @@ import { StudioBaselineHelper } from '../../../studio/model/StudioBaselineHelper
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
 
 export class PlayoutModelReadonlyImpl implements PlayoutModelReadonly {
-	public readonly PlaylistId: RundownPlaylistId
+	public readonly playlistId: RundownPlaylistId
 
-	public readonly PlaylistLock: PlaylistLock
+	public readonly playlistLock: PlaylistLock
 
-	public readonly PeripheralDevices: ReadonlyDeep<PeripheralDevice[]>
+	public readonly peripheralDevices: ReadonlyDeep<PeripheralDevice[]>
 
-	protected readonly PlaylistImpl: DBRundownPlaylist
-	public get Playlist(): ReadonlyDeep<DBRundownPlaylist> {
-		return this.PlaylistImpl
+	protected readonly playlistImpl: DBRundownPlaylist
+	public get playlist(): ReadonlyDeep<DBRundownPlaylist> {
+		return this.playlistImpl
 	}
 
-	protected readonly RundownsImpl: readonly PlayoutRundownModelImpl[]
-	public get Rundowns(): readonly PlayoutRundownModel[] {
-		return this.RundownsImpl
+	protected readonly rundownsImpl: readonly PlayoutRundownModelImpl[]
+	public get rundowns(): readonly PlayoutRundownModel[] {
+		return this.rundownsImpl
 	}
 
-	protected TimelineImpl: TimelineComplete | null
-	public get Timeline(): TimelineComplete | null {
-		return this.TimelineImpl
+	protected timelineImpl: TimelineComplete | null
+	public get timeline(): TimelineComplete | null {
+		return this.timelineImpl
 	}
 
-	protected AllPartInstances: Map<PartInstanceId, PlayoutPartInstanceModelImpl | null>
+	protected allPartInstances: Map<PartInstanceId, PlayoutPartInstanceModelImpl | null>
 
 	public constructor(
 		protected readonly context: JobContext,
@@ -90,70 +90,70 @@ export class PlayoutModelReadonlyImpl implements PlayoutModelReadonly {
 		rundowns: PlayoutRundownModelImpl[],
 		timeline: TimelineComplete | undefined
 	) {
-		this.PlaylistId = playlistId
-		this.PlaylistLock = playlistLock
+		this.playlistId = playlistId
+		this.playlistLock = playlistLock
 
-		this.PeripheralDevices = peripheralDevices
-		this.PlaylistImpl = playlist
+		this.peripheralDevices = peripheralDevices
+		this.playlistImpl = playlist
 
-		this.RundownsImpl = rundowns
+		this.rundownsImpl = rundowns
 
-		this.TimelineImpl = timeline ?? null
+		this.timelineImpl = timeline ?? null
 
-		this.AllPartInstances = normalizeArrayToMapFunc(partInstances, (p) => p.PartInstance._id)
+		this.allPartInstances = normalizeArrayToMapFunc(partInstances, (p) => p.partInstance._id)
 	}
 
-	public get OlderPartInstances(): PlayoutPartInstanceModel[] {
-		const allPartInstances = this.LoadedPartInstances
+	public get olderPartInstances(): PlayoutPartInstanceModel[] {
+		const allPartInstances = this.loadedPartInstances
 
-		const ignoreIds = new Set(this.SelectedPartInstanceIds)
+		const ignoreIds = new Set(this.selectedPartInstanceIds)
 
-		return allPartInstances.filter((partInstance) => !ignoreIds.has(partInstance.PartInstance._id))
+		return allPartInstances.filter((partInstance) => !ignoreIds.has(partInstance.partInstance._id))
 	}
-	public get PreviousPartInstance(): PlayoutPartInstanceModel | null {
-		if (!this.Playlist.previousPartInfo?.partInstanceId) return null
-		const partInstance = this.AllPartInstances.get(this.Playlist.previousPartInfo.partInstanceId)
+	public get previousPartInstance(): PlayoutPartInstanceModel | null {
+		if (!this.playlist.previousPartInfo?.partInstanceId) return null
+		const partInstance = this.allPartInstances.get(this.playlist.previousPartInfo.partInstanceId)
 		if (!partInstance) return null // throw new Error('PreviousPartInstance is missing')
 		return partInstance
 	}
-	public get CurrentPartInstance(): PlayoutPartInstanceModel | null {
-		if (!this.Playlist.currentPartInfo?.partInstanceId) return null
-		const partInstance = this.AllPartInstances.get(this.Playlist.currentPartInfo.partInstanceId)
+	public get currentPartInstance(): PlayoutPartInstanceModel | null {
+		if (!this.playlist.currentPartInfo?.partInstanceId) return null
+		const partInstance = this.allPartInstances.get(this.playlist.currentPartInfo.partInstanceId)
 		if (!partInstance) return null // throw new Error('CurrentPartInstance is missing')
 		return partInstance
 	}
-	public get NextPartInstance(): PlayoutPartInstanceModel | null {
-		if (!this.Playlist.nextPartInfo?.partInstanceId) return null
-		const partInstance = this.AllPartInstances.get(this.Playlist.nextPartInfo.partInstanceId)
+	public get nextPartInstance(): PlayoutPartInstanceModel | null {
+		if (!this.playlist.nextPartInfo?.partInstanceId) return null
+		const partInstance = this.allPartInstances.get(this.playlist.nextPartInfo.partInstanceId)
 		if (!partInstance) return null // throw new Error('NextPartInstance is missing')
 		return partInstance
 	}
 
-	public get SelectedPartInstanceIds(): PartInstanceId[] {
+	public get selectedPartInstanceIds(): PartInstanceId[] {
 		return _.compact([
-			this.Playlist.previousPartInfo?.partInstanceId,
-			this.Playlist.currentPartInfo?.partInstanceId,
-			this.Playlist.nextPartInfo?.partInstanceId,
+			this.playlist.previousPartInfo?.partInstanceId,
+			this.playlist.currentPartInfo?.partInstanceId,
+			this.playlist.nextPartInfo?.partInstanceId,
 		])
 	}
 
-	public get SelectedPartInstances(): PlayoutPartInstanceModel[] {
-		return _.compact([this.CurrentPartInstance, this.PreviousPartInstance, this.NextPartInstance])
+	public get selectedPartInstances(): PlayoutPartInstanceModel[] {
+		return _.compact([this.currentPartInstance, this.previousPartInstance, this.nextPartInstance])
 	}
 
-	public get LoadedPartInstances(): PlayoutPartInstanceModel[] {
-		return Array.from(this.AllPartInstances.values()).filter((v): v is PlayoutPartInstanceModelImpl => v !== null)
+	public get loadedPartInstances(): PlayoutPartInstanceModel[] {
+		return Array.from(this.allPartInstances.values()).filter((v): v is PlayoutPartInstanceModelImpl => v !== null)
 	}
 
-	public get SortedLoadedPartInstances(): PlayoutPartInstanceModel[] {
-		const allInstances = this.LoadedPartInstances
-		allInstances.sort((a, b) => a.PartInstance.takeCount - b.PartInstance.takeCount)
+	public get sortedLoadedPartInstances(): PlayoutPartInstanceModel[] {
+		const allInstances = this.loadedPartInstances
+		allInstances.sort((a, b) => a.partInstance.takeCount - b.partInstance.takeCount)
 
 		return allInstances
 	}
 
 	public getPartInstance(partInstanceId: PartInstanceId): PlayoutPartInstanceModel | undefined {
-		return this.AllPartInstances.get(partInstanceId) ?? undefined
+		return this.allPartInstances.get(partInstanceId) ?? undefined
 	}
 
 	/**
@@ -161,8 +161,8 @@ export class PlayoutModelReadonlyImpl implements PlayoutModelReadonly {
 	 * @param id
 	 */
 	findPart(id: PartId): ReadonlyDeep<DBPart> | undefined {
-		for (const rundown of this.Rundowns) {
-			for (const segment of rundown.Segments) {
+		for (const rundown of this.rundowns) {
+			for (const segment of rundown.segments) {
 				const part = segment.getPart(id)
 				if (part) return part
 			}
@@ -171,11 +171,11 @@ export class PlayoutModelReadonlyImpl implements PlayoutModelReadonly {
 		return undefined
 	}
 	getAllOrderedParts(): ReadonlyDeep<DBPart>[] {
-		return this.Rundowns.flatMap((rundown) => rundown.getAllOrderedParts())
+		return this.rundowns.flatMap((rundown) => rundown.getAllOrderedParts())
 	}
 
 	findSegment(id: SegmentId): ReadonlyDeep<PlayoutSegmentModel> | undefined {
-		for (const rundown of this.Rundowns) {
+		for (const rundown of this.rundowns) {
 			const segment = rundown.getSegment(id)
 			if (segment) return segment
 		}
@@ -183,23 +183,23 @@ export class PlayoutModelReadonlyImpl implements PlayoutModelReadonly {
 		return undefined
 	}
 	getAllOrderedSegments(): ReadonlyDeep<PlayoutSegmentModel>[] {
-		return this.Rundowns.flatMap((rundown) => rundown.Segments)
+		return this.rundowns.flatMap((rundown) => rundown.segments)
 	}
 
 	getRundown(id: RundownId): PlayoutRundownModel | undefined {
-		return this.Rundowns.find((rundown) => rundown.Rundown._id === id)
+		return this.rundowns.find((rundown) => rundown.rundown._id === id)
 	}
 	getRundownIds(): RundownId[] {
 		return sortRundownIDsInPlaylist(
-			this.Playlist.rundownIdsInOrder,
-			this.Rundowns.map((rd) => rd.Rundown._id)
+			this.playlist.rundownIdsInOrder,
+			this.rundowns.map((rd) => rd.rundown._id)
 		)
 	}
 
 	findPieceInstance(
 		id: PieceInstanceId
 	): { partInstance: PlayoutPartInstanceModel; pieceInstance: PlayoutPieceInstanceModel } | undefined {
-		for (const partInstance of this.LoadedPartInstances) {
+		for (const partInstance of this.loadedPartInstances) {
 			const pieceInstance = partInstance.getPieceInstance(id)
 			if (pieceInstance) return { partInstance, pieceInstance }
 		}
@@ -213,7 +213,7 @@ export class PlayoutModelReadonlyImpl implements PlayoutModelReadonly {
 			if (this.context.studio.settings.forceMultiGatewayMode) {
 				this.#isMultiGatewayMode = true
 			} else {
-				const playoutDevices = this.PeripheralDevices.filter(
+				const playoutDevices = this.peripheralDevices.filter(
 					(device) => device.type === PeripheralDeviceType.PLAYOUT
 				)
 				this.#isMultiGatewayMode = playoutDevices.length > 1
@@ -235,15 +235,15 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 	#deferredAfterSaveFunctions: DeferredAfterSaveFunction[] = []
 	#disposed = false
 
-	#PlaylistHasChanged = false
-	#TimelineHasChanged = false
+	#playlistHasChanged = false
+	#timelineHasChanged = false
 
-	#PendingPartInstanceTimingEvents = new Set<PartInstanceId>()
-	#PendingNotifyCurrentlyPlayingPartEvent = new Map<RundownId, string | null>()
+	#pendingPartInstanceTimingEvents = new Set<PartInstanceId>()
+	#pendingNotifyCurrentlyPlayingPartEvent = new Map<RundownId, string | null>()
 
-	get HackDeletedPartInstanceIds(): PartInstanceId[] {
+	get hackDeletedPartInstanceIds(): PartInstanceId[] {
 		const result: PartInstanceId[] = []
-		for (const [id, doc] of this.AllPartInstances) {
+		for (const [id, doc] of this.allPartInstances) {
 			if (!doc) result.push(id)
 		}
 		return result
@@ -265,29 +265,29 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		this.#baselineHelper = new StudioBaselineHelper(context)
 	}
 
-	public get DisplayName(): string {
-		return `PlayoutModel "${this.PlaylistId}"`
+	public get displayName(): string {
+		return `PlayoutModel "${this.playlistId}"`
 	}
 
 	activatePlaylist(rehearsal: boolean): RundownPlaylistActivationId {
-		this.PlaylistImpl.activationId = getRandomId()
-		this.PlaylistImpl.rehearsal = rehearsal
+		this.playlistImpl.activationId = getRandomId()
+		this.playlistImpl.rehearsal = rehearsal
 
-		this.#PlaylistHasChanged = true
+		this.#playlistHasChanged = true
 
-		return this.PlaylistImpl.activationId
+		return this.playlistImpl.activationId
 	}
 
 	clearSelectedPartInstances(): void {
-		this.PlaylistImpl.currentPartInfo = null
-		this.PlaylistImpl.nextPartInfo = null
-		this.PlaylistImpl.previousPartInfo = null
-		this.PlaylistImpl.holdState = RundownHoldState.NONE
+		this.playlistImpl.currentPartInfo = null
+		this.playlistImpl.nextPartInfo = null
+		this.playlistImpl.previousPartInfo = null
+		this.playlistImpl.holdState = RundownHoldState.NONE
 
-		delete this.PlaylistImpl.lastTakeTime
-		delete this.PlaylistImpl.queuedSegmentId
+		delete this.playlistImpl.lastTakeTime
+		delete this.playlistImpl.queuedSegmentId
 
-		this.#PlaylistHasChanged = true
+		this.#playlistHasChanged = true
 	}
 
 	#fixupPieceInstancesForPartInstance(partInstance: DBPartInstance, pieceInstances: PieceInstance[]): void {
@@ -304,22 +304,22 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		fromAdlibId: PieceId | undefined,
 		infinitePieceInstances: PieceInstance[]
 	): PlayoutPartInstanceModel {
-		const currentPartInstance = this.CurrentPartInstance
+		const currentPartInstance = this.currentPartInstance
 		if (!currentPartInstance) throw new Error('No currentPartInstance')
 
 		const newPartInstance: DBPartInstance = {
 			_id: getRandomId(),
-			rundownId: currentPartInstance.PartInstance.rundownId,
-			segmentId: currentPartInstance.PartInstance.segmentId,
-			playlistActivationId: currentPartInstance.PartInstance.playlistActivationId,
-			segmentPlayoutId: currentPartInstance.PartInstance.segmentPlayoutId,
-			takeCount: currentPartInstance.PartInstance.takeCount + 1,
-			rehearsal: currentPartInstance.PartInstance.rehearsal,
+			rundownId: currentPartInstance.partInstance.rundownId,
+			segmentId: currentPartInstance.partInstance.segmentId,
+			playlistActivationId: currentPartInstance.partInstance.playlistActivationId,
+			segmentPlayoutId: currentPartInstance.partInstance.segmentPlayoutId,
+			takeCount: currentPartInstance.partInstance.takeCount + 1,
+			rehearsal: currentPartInstance.partInstance.rehearsal,
 			orphaned: 'adlib-part',
 			part: {
 				...part,
-				rundownId: currentPartInstance.PartInstance.rundownId,
-				segmentId: currentPartInstance.PartInstance.segmentId,
+				rundownId: currentPartInstance.partInstance.rundownId,
+				segmentId: currentPartInstance.partInstance.segmentId,
 			},
 		}
 
@@ -333,21 +333,21 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 
 		partInstance.recalculateExpectedDurationWithPreroll()
 
-		this.AllPartInstances.set(newPartInstance._id, partInstance)
+		this.allPartInstances.set(newPartInstance._id, partInstance)
 
 		return partInstance
 	}
 
 	createInstanceForPart(nextPart: ReadonlyDeep<DBPart>, pieceInstances: PieceInstance[]): PlayoutPartInstanceModel {
-		const playlistActivationId = this.Playlist.activationId
+		const playlistActivationId = this.playlist.activationId
 		if (!playlistActivationId) throw new Error(`Playlist is not active`)
 
-		const currentPartInstance = this.CurrentPartInstance
+		const currentPartInstance = this.currentPartInstance
 
-		const newTakeCount = currentPartInstance ? currentPartInstance.PartInstance.takeCount + 1 : 0 // Increment
+		const newTakeCount = currentPartInstance ? currentPartInstance.partInstance.takeCount + 1 : 0 // Increment
 		const segmentPlayoutId: SegmentPlayoutId =
-			currentPartInstance && nextPart.segmentId === currentPartInstance.PartInstance.segmentId
-				? currentPartInstance.PartInstance.segmentPlayoutId
+			currentPartInstance && nextPart.segmentId === currentPartInstance.partInstance.segmentId
+				? currentPartInstance.partInstance.segmentPlayoutId
 				: getRandomId()
 
 		const newPartInstance: DBPartInstance = {
@@ -357,7 +357,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 			playlistActivationId: playlistActivationId,
 			segmentPlayoutId,
 			takeCount: newTakeCount,
-			rehearsal: !!this.Playlist.rehearsal,
+			rehearsal: !!this.playlist.rehearsal,
 			part: clone<DBPart>(nextPart),
 			timings: {
 				setAsNext: getCurrentTime(),
@@ -369,7 +369,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		const partInstance = new PlayoutPartInstanceModelImpl(newPartInstance, pieceInstances, true)
 		partInstance.recalculateExpectedDurationWithPreroll()
 
-		this.AllPartInstances.set(newPartInstance._id, partInstance)
+		this.allPartInstances.set(newPartInstance._id, partInstance)
 
 		return partInstance
 	}
@@ -378,82 +378,82 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		rundown: PlayoutRundownModel,
 		part: Omit<DBPart, 'segmentId' | 'rundownId'>
 	): PlayoutPartInstanceModel {
-		const currentPartInstance = this.CurrentPartInstance
+		const currentPartInstance = this.currentPartInstance
 		if (!currentPartInstance) throw new Error('No currentPartInstance')
 
 		const scratchpadSegment = rundown.getScratchpadSegment()
 		if (!scratchpadSegment) throw new Error('No scratchpad segment')
-		if (this.LoadedPartInstances.find((p) => p.PartInstance.segmentId === scratchpadSegment.Segment._id))
+		if (this.loadedPartInstances.find((p) => p.partInstance.segmentId === scratchpadSegment.segment._id))
 			throw new Error('Scratchpad segment already has content')
 
-		const activationId = this.Playlist.activationId
+		const activationId = this.playlist.activationId
 		if (!activationId) throw new Error('Playlist is not active')
 
 		const newPartInstance: DBPartInstance = {
 			_id: getRandomId(),
-			rundownId: rundown.Rundown._id,
-			segmentId: scratchpadSegment.Segment._id,
+			rundownId: rundown.rundown._id,
+			segmentId: scratchpadSegment.segment._id,
 			playlistActivationId: activationId,
 			segmentPlayoutId: getRandomId(),
 			takeCount: 1,
-			rehearsal: !!this.Playlist.rehearsal,
+			rehearsal: !!this.playlist.rehearsal,
 			orphaned: 'adlib-part',
 			part: {
 				...part,
-				rundownId: rundown.Rundown._id,
-				segmentId: scratchpadSegment.Segment._id,
+				rundownId: rundown.rundown._id,
+				segmentId: scratchpadSegment.segment._id,
 			},
 		}
 
 		const partInstance = new PlayoutPartInstanceModelImpl(newPartInstance, [], true)
 		partInstance.recalculateExpectedDurationWithPreroll()
 
-		this.AllPartInstances.set(newPartInstance._id, partInstance)
+		this.allPartInstances.set(newPartInstance._id, partInstance)
 
 		return partInstance
 	}
 
 	cycleSelectedPartInstances(): void {
-		this.PlaylistImpl.previousPartInfo = this.PlaylistImpl.currentPartInfo
-		this.PlaylistImpl.currentPartInfo = this.PlaylistImpl.nextPartInfo
-		this.PlaylistImpl.nextPartInfo = null
-		this.PlaylistImpl.lastTakeTime = getCurrentTime()
+		this.playlistImpl.previousPartInfo = this.playlistImpl.currentPartInfo
+		this.playlistImpl.currentPartInfo = this.playlistImpl.nextPartInfo
+		this.playlistImpl.nextPartInfo = null
+		this.playlistImpl.lastTakeTime = getCurrentTime()
 
-		if (!this.PlaylistImpl.holdState || this.PlaylistImpl.holdState === RundownHoldState.COMPLETE) {
-			this.PlaylistImpl.holdState = RundownHoldState.NONE
+		if (!this.playlistImpl.holdState || this.playlistImpl.holdState === RundownHoldState.COMPLETE) {
+			this.playlistImpl.holdState = RundownHoldState.NONE
 		} else {
-			this.PlaylistImpl.holdState = this.PlaylistImpl.holdState + 1
+			this.playlistImpl.holdState = this.playlistImpl.holdState + 1
 		}
 
-		this.#PlaylistHasChanged = true
+		this.#playlistHasChanged = true
 	}
 
 	deactivatePlaylist(): void {
-		delete this.PlaylistImpl.activationId
+		delete this.playlistImpl.activationId
 
 		this.clearSelectedPartInstances()
 
-		this.#PlaylistHasChanged = true
+		this.#playlistHasChanged = true
 	}
 
 	queuePartInstanceTimingEvent(partInstanceId: PartInstanceId): void {
-		this.#PendingPartInstanceTimingEvents.add(partInstanceId)
+		this.#pendingPartInstanceTimingEvents.add(partInstanceId)
 	}
 
 	queueNotifyCurrentlyPlayingPartEvent(rundownId: RundownId, partInstance: PlayoutPartInstanceModel | null): void {
-		if (partInstance && partInstance.PartInstance.part.shouldNotifyCurrentPlayingPart) {
-			this.#PendingNotifyCurrentlyPlayingPartEvent.set(rundownId, partInstance.PartInstance.part.externalId)
+		if (partInstance && partInstance.partInstance.part.shouldNotifyCurrentPlayingPart) {
+			this.#pendingNotifyCurrentlyPlayingPartEvent.set(rundownId, partInstance.partInstance.part.externalId)
 		} else if (!partInstance) {
-			this.#PendingNotifyCurrentlyPlayingPartEvent.set(rundownId, null)
+			this.#pendingNotifyCurrentlyPlayingPartEvent.set(rundownId, null)
 		}
 	}
 
 	removeAllRehearsalPartInstances(): void {
 		const partInstancesToRemove: PartInstanceId[] = []
 
-		for (const [id, partInstance] of this.AllPartInstances.entries()) {
-			if (partInstance?.PartInstance.rehearsal) {
-				this.AllPartInstances.set(id, null)
+		for (const [id, partInstance] of this.allPartInstances.entries()) {
+			if (partInstance?.partInstance.rehearsal) {
+				this.allPartInstances.set(id, null)
 				partInstancesToRemove.push(id)
 			}
 		}
@@ -462,7 +462,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		this.deferAfterSave(async (playoutModel) => {
 			const rundownIds = playoutModel.getRundownIds()
 			// We need to keep any for PartInstances which are still existent in the cache (as they werent removed)
-			const partInstanceIdsInCache = playoutModel.LoadedPartInstances.map((p) => p.PartInstance._id)
+			const partInstanceIdsInCache = playoutModel.loadedPartInstances.map((p) => p.partInstance._id)
 
 			// Find all the partInstances which are not loaded, but should be removed
 			const removeFromDb = await this.context.directCollections.PartInstances.findFetch(
@@ -495,9 +495,9 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 	}
 
 	removeUntakenPartInstances(): void {
-		for (const partInstance of this.OlderPartInstances) {
-			if (!partInstance.PartInstance.isTaken) {
-				this.AllPartInstances.set(partInstance.PartInstance._id, null)
+		for (const partInstance of this.olderPartInstances) {
+			if (!partInstance.partInstance.isTaken) {
+				this.allPartInstances.set(partInstance.partInstance._id, null)
 			}
 		}
 	}
@@ -506,22 +506,22 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 	 * Reset the playlist for playout
 	 */
 	resetPlaylist(regenerateActivationId: boolean): void {
-		this.PlaylistImpl.previousPartInfo = null
-		this.PlaylistImpl.currentPartInfo = null
-		this.PlaylistImpl.nextPartInfo = null
-		this.PlaylistImpl.holdState = RundownHoldState.NONE
-		this.PlaylistImpl.resetTime = getCurrentTime()
+		this.playlistImpl.previousPartInfo = null
+		this.playlistImpl.currentPartInfo = null
+		this.playlistImpl.nextPartInfo = null
+		this.playlistImpl.holdState = RundownHoldState.NONE
+		this.playlistImpl.resetTime = getCurrentTime()
 
-		delete this.PlaylistImpl.lastTakeTime
-		delete this.PlaylistImpl.startedPlayback
-		delete this.PlaylistImpl.rundownsStartedPlayback
-		delete this.PlaylistImpl.previousPersistentState
-		delete this.PlaylistImpl.trackedAbSessions
-		delete this.PlaylistImpl.queuedSegmentId
+		delete this.playlistImpl.lastTakeTime
+		delete this.playlistImpl.startedPlayback
+		delete this.playlistImpl.rundownsStartedPlayback
+		delete this.playlistImpl.previousPersistentState
+		delete this.playlistImpl.trackedAbSessions
+		delete this.playlistImpl.queuedSegmentId
 
-		if (regenerateActivationId) this.PlaylistImpl.activationId = getRandomId()
+		if (regenerateActivationId) this.playlistImpl.activationId = getRandomId()
 
-		this.#PlaylistHasChanged = true
+		this.#playlistHasChanged = true
 	}
 
 	async saveAllToDatabase(): Promise<void> {
@@ -530,7 +530,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		}
 
 		// TODO - ideally we should make sure to preserve the lock during this operation
-		if (!this.PlaylistLock.isLocked) {
+		if (!this.playlistLock.isLocked) {
 			throw new Error('Cannot save changes with released playlist lock')
 		}
 
@@ -543,8 +543,8 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		this.#deferredBeforeSaveFunctions.length = 0 // clear the array
 
 		// Prioritise the timeline for publication reasons
-		if (this.#TimelineHasChanged && this.TimelineImpl) {
-			await this.context.directCollections.Timelines.replace(this.TimelineImpl)
+		if (this.#timelineHasChanged && this.timelineImpl) {
+			await this.context.directCollections.Timelines.replace(this.timelineImpl)
 			if (!process.env.JEST_WORKER_ID) {
 				// Wait a little bit before saving the rest.
 				// The idea is that this allows for the high priority publications to update (such as the Timeline),
@@ -552,18 +552,18 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 				await sleep(2)
 			}
 		}
-		this.#TimelineHasChanged = false
+		this.#timelineHasChanged = false
 
 		await Promise.all([
-			this.#PlaylistHasChanged
-				? this.context.directCollections.RundownPlaylists.replace(this.PlaylistImpl)
+			this.#playlistHasChanged
+				? this.context.directCollections.RundownPlaylists.replace(this.playlistImpl)
 				: undefined,
-			...writePartInstancesAndPieceInstances(this.context, this.AllPartInstances),
-			writeScratchpadSegments(this.context, this.RundownsImpl),
+			...writePartInstancesAndPieceInstances(this.context, this.allPartInstances),
+			writeScratchpadSegments(this.context, this.rundownsImpl),
 			this.#baselineHelper.saveAllToDatabase(),
 		])
 
-		this.#PlaylistHasChanged = false
+		this.#playlistHasChanged = false
 
 		// Execute cache.deferAfterSave()'s
 		for (const fn of this.#deferredAfterSaveFunctions) {
@@ -571,34 +571,34 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		}
 		this.#deferredAfterSaveFunctions.length = 0 // clear the array
 
-		for (const partInstanceId of this.#PendingPartInstanceTimingEvents) {
+		for (const partInstanceId of this.#pendingPartInstanceTimingEvents) {
 			// Run in the background, we don't want to hold onto the lock to do this
-			queuePartInstanceTimingEvent(this.context, this.PlaylistId, partInstanceId)
+			queuePartInstanceTimingEvent(this.context, this.playlistId, partInstanceId)
 		}
-		this.#PendingPartInstanceTimingEvents.clear()
+		this.#pendingPartInstanceTimingEvents.clear()
 
-		for (const [rundownId, partExternalId] of this.#PendingNotifyCurrentlyPlayingPartEvent) {
+		for (const [rundownId, partExternalId] of this.#pendingNotifyCurrentlyPlayingPartEvent) {
 			// This is low-prio, defer so that it's executed well after publications has been updated,
 			// so that the playout gateway has had the chance to learn about the timeline changes
 			this.context
 				.queueEventJob(EventsJobs.NotifyCurrentlyPlayingPart, {
 					rundownId: rundownId,
-					isRehearsal: !!this.Playlist.rehearsal,
+					isRehearsal: !!this.playlist.rehearsal,
 					partExternalId: partExternalId,
 				})
 				.catch((e) => {
 					logger.warn(`Failed to queue NotifyCurrentlyPlayingPart job: ${e}`)
 				})
 		}
-		this.#PendingNotifyCurrentlyPlayingPartEvent.clear()
+		this.#pendingNotifyCurrentlyPlayingPartEvent.clear()
 
 		if (span) span.end()
 	}
 
 	setHoldState(newState: RundownHoldState): void {
-		this.PlaylistImpl.holdState = newState
+		this.playlistImpl.holdState = newState
 
-		this.#PlaylistHasChanged = true
+		this.#playlistHasChanged = true
 	}
 
 	setOnTimelineGenerateResult(
@@ -606,11 +606,11 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		assignedAbSessions: Record<string, ABSessionAssignments>,
 		trackedAbSessions: ABSessionInfo[]
 	): void {
-		this.PlaylistImpl.previousPersistentState = persistentState
-		this.PlaylistImpl.assignedAbSessions = assignedAbSessions
-		this.PlaylistImpl.trackedAbSessions = trackedAbSessions
+		this.playlistImpl.previousPersistentState = persistentState
+		this.playlistImpl.assignedAbSessions = assignedAbSessions
+		this.playlistImpl.trackedAbSessions = trackedAbSessions
 
-		this.#PlaylistHasChanged = true
+		this.#playlistHasChanged = true
 	}
 
 	setPartInstanceAsNext(
@@ -620,61 +620,61 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		nextTimeOffset?: number
 	): void {
 		if (partInstance) {
-			const storedPartInstance = this.AllPartInstances.get(partInstance.PartInstance._id)
+			const storedPartInstance = this.allPartInstances.get(partInstance.partInstance._id)
 			if (!storedPartInstance) throw new Error(`PartInstance being set as next was not constructed correctly`)
 			// Make sure we were given the exact same object
 			if (storedPartInstance !== partInstance) throw new Error(`PartInstance being set as next is not current`)
 		}
 
 		if (partInstance) {
-			this.PlaylistImpl.nextPartInfo = literal<SelectedPartInstance>({
-				partInstanceId: partInstance.PartInstance._id,
-				rundownId: partInstance.PartInstance.rundownId,
-				manuallySelected: !!(setManually || partInstance.PartInstance.orphaned),
+			this.playlistImpl.nextPartInfo = literal<SelectedPartInstance>({
+				partInstanceId: partInstance.partInstance._id,
+				rundownId: partInstance.partInstance.rundownId,
+				manuallySelected: !!(setManually || partInstance.partInstance.orphaned),
 				consumesQueuedSegmentId,
 			})
-			this.PlaylistImpl.nextTimeOffset = nextTimeOffset || null
+			this.playlistImpl.nextTimeOffset = nextTimeOffset || null
 		} else {
-			this.PlaylistImpl.nextPartInfo = null
-			this.PlaylistImpl.nextTimeOffset = null
+			this.playlistImpl.nextPartInfo = null
+			this.playlistImpl.nextTimeOffset = null
 		}
 
-		this.#PlaylistHasChanged = true
+		this.#playlistHasChanged = true
 	}
 
 	setQueuedSegment(segment: PlayoutSegmentModel | null): void {
-		this.PlaylistImpl.queuedSegmentId = segment?.Segment?._id ?? undefined
+		this.playlistImpl.queuedSegmentId = segment?.segment?._id ?? undefined
 
-		this.#PlaylistHasChanged = true
+		this.#playlistHasChanged = true
 	}
 
 	setRundownStartedPlayback(rundownId: RundownId, timestamp: number): void {
-		if (!this.PlaylistImpl.rundownsStartedPlayback) {
-			this.PlaylistImpl.rundownsStartedPlayback = {}
+		if (!this.playlistImpl.rundownsStartedPlayback) {
+			this.playlistImpl.rundownsStartedPlayback = {}
 		}
 
 		// If the partInstance is "untimed", it will not update the playlist's startedPlayback and will not count time in the GUI:
 		const rundownIdStr = unprotectString(rundownId)
-		if (!this.PlaylistImpl.rundownsStartedPlayback[rundownIdStr]) {
-			this.PlaylistImpl.rundownsStartedPlayback[rundownIdStr] = timestamp
+		if (!this.playlistImpl.rundownsStartedPlayback[rundownIdStr]) {
+			this.playlistImpl.rundownsStartedPlayback[rundownIdStr] = timestamp
 		}
 
-		if (!this.PlaylistImpl.startedPlayback) {
-			this.PlaylistImpl.startedPlayback = timestamp
+		if (!this.playlistImpl.startedPlayback) {
+			this.playlistImpl.startedPlayback = timestamp
 		}
 
-		this.#PlaylistHasChanged = true
+		this.#playlistHasChanged = true
 	}
 
 	setTimeline(timelineObjs: TimelineObjGeneric[], generationVersions: TimelineCompleteGenerationVersions): void {
-		this.TimelineImpl = {
+		this.timelineImpl = {
 			_id: this.context.studioId,
 			timelineHash: getRandomId(), // randomized on every timeline change
 			generated: getCurrentTime(),
 			timelineBlob: serializeTimelineBlob(timelineObjs),
 			generationVersions: generationVersions,
 		}
-		this.#TimelineHasChanged = true
+		this.#timelineHasChanged = true
 	}
 
 	setExpectedPackagesForStudioBaseline(packages: ExpectedPackageDBFromStudioBaselineObjects[]): void {
@@ -731,18 +731,18 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 				)
 			)
 
-		if (this.#TimelineHasChanged)
+		if (this.#timelineHasChanged)
 			logOrThrowError(new Error(`Failed no changes in cache assertion, Timeline has been changed`))
 
-		if (this.#PlaylistHasChanged)
+		if (this.#playlistHasChanged)
 			logOrThrowError(new Error(`Failed no changes in cache assertion, Playlist has been changed`))
 
-		if (this.RundownsImpl.find((rd) => rd.ScratchPadSegmentHasChanged))
+		if (this.rundownsImpl.find((rd) => rd.ScratchPadSegmentHasChanged))
 			logOrThrowError(new Error(`Failed no changes in cache assertion, a scratchpad Segment has been changed`))
 
 		if (
-			Array.from(this.AllPartInstances.values()).find(
-				(part) => !part || part.PartInstanceHasChanges || part.ChangedPieceInstanceIds().length > 0
+			Array.from(this.allPartInstances.values()).find(
+				(part) => !part || part.partInstanceHasChanges || part.changedPieceInstanceIds().length > 0
 			)
 		)
 			logOrThrowError(new Error(`Failed no changes in cache assertion, a PartInstance has been changed`))

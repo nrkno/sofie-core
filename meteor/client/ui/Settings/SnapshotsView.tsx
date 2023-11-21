@@ -3,7 +3,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { SnapshotItem } from '../../../lib/collections/Snapshots'
-import { getCurrentTime, unprotectString } from '../../../lib/lib'
+import { unprotectString } from '../../../lib/lib'
 import * as _ from 'underscore'
 import { logger } from '../../../lib/logging'
 import { EditAttribute } from '../../lib/EditAttribute'
@@ -13,12 +13,13 @@ import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { multilineText, fetchFrom } from '../../lib/lib'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { UploadButton } from '../../lib/uploadButton'
-import { PubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { MeteorCall } from '../../../lib/api/methods'
 import { SnapshotId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Snapshots, Studios } from '../../collections'
 import { ClientAPI } from '../../../lib/api/client'
 import { hashSingleUseToken } from '../../../lib/api/userActions'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 interface IProps {
 	match: {
@@ -59,12 +60,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 			}
 		}
 		componentDidMount(): void {
-			this.subscribe(PubSub.snapshots, {
-				created: {
-					$gt: getCurrentTime() - 30 * 24 * 3600 * 1000, // last 30 days
-				},
-			})
-			this.subscribe(PubSub.studios, {})
+			this.subscribe(MeteorPubSub.snapshots)
+			this.subscribe(CorelibPubSub.studios, null)
 		}
 
 		onUploadFile(e: React.ChangeEvent<HTMLInputElement>) {

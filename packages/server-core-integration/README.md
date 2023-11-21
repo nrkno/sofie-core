@@ -2,7 +2,7 @@
 
 [![npm](https://img.shields.io/npm/v/@sofie-automation/server-core-integration)](https://www.npmjs.com/package/@sofie-automation/server-core-integration)
 
-This library is used to connect to the [**Sofie Server Core**](https://github.com/nrkno/tv-automation-server-core) from other Node processes.
+This library is used to connect to the [**Sofie Server Core**](https://github.com/nrkno/sofie-core) from other Node processes.
 
 This is a part of the [**Sofie** TV News Studio Automation System](https://github.com/nrkno/Sofie-TV-automation/).
 
@@ -45,7 +45,7 @@ core
 
 ## Development
 
-This library is developed as part of [Sofie Server Core](https://github.com/nrkno/tv-automation-server-core). See there for more instructions
+This library is developed as part of [Sofie Server Core](https://github.com/nrkno/sofie-core). See there for more instructions
 
 - Build
   - Build, `yarn build`
@@ -57,7 +57,7 @@ This library is developed as part of [Sofie Server Core](https://github.com/nrkn
 This library has a self-contained DDP client that can be used independently of the rest of the module.
 
 ```typescript
-import { DDPClient, DDPConnectorOptions } from 'tv-automation-server-integration'
+import { DDPClient, DDPConnectorOptions } from '@sofie-automation/server-integration'
 
 let options: DDPConnectorOptions = {
 	host: '127.0.0.1',

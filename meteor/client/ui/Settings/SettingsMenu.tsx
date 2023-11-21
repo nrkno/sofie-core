@@ -14,7 +14,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
-import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
+import { meteorSubscribe } from '../../../lib/api/pubsub'
 import { MeteorCall } from '../../../lib/api/methods'
 import { Settings as MeteorSettings } from '../../../lib/Settings'
 import { IOutputLayer, StatusCode } from '@sofie-automation/blueprints-integration'
@@ -23,6 +23,7 @@ import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { Blueprints, PeripheralDevices, ShowStyleBases, Studios } from '../../collections'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { catchError } from '../../lib/lib'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 interface ISettingsMenuProps {
 	superAdmin?: boolean
@@ -38,11 +39,11 @@ export const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMe
 	(_props: ISettingsMenuProps) => {
 		// TODO: add organizationId:
 
-		meteorSubscribe(PubSub.studios, {})
-		meteorSubscribe(PubSub.showStyleBases, {})
-		meteorSubscribe(PubSub.showStyleVariants, {})
-		meteorSubscribe(PubSub.blueprints, {})
-		meteorSubscribe(PubSub.peripheralDevices, {})
+		meteorSubscribe(CorelibPubSub.studios, null)
+		meteorSubscribe(CorelibPubSub.showStyleBases, null)
+		meteorSubscribe(CorelibPubSub.showStyleVariants, null, null)
+		meteorSubscribe(CorelibPubSub.blueprints, null)
+		meteorSubscribe(CorelibPubSub.peripheralDevices, null)
 
 		return {
 			studios: Studios.find({}).fetch(),

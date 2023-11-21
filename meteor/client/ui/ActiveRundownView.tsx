@@ -4,7 +4,7 @@ import { useSubscription, useTracker } from '../lib/ReactMeteorData/ReactMeteorD
 
 import { Spinner } from '../lib/Spinner'
 import { RundownView } from './RundownView'
-import { PubSub } from '../../lib/api/pubsub'
+import { MeteorPubSub } from '../../lib/api/pubsub'
 import { UIStudios } from './Collections'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylists } from '../collections'
@@ -15,11 +15,8 @@ export function ActiveRundownView({ studioId }: { studioId: StudioId }): JSX.Ele
 
 	const { path } = useRouteMatch()
 
-	const studioReady = useSubscription(PubSub.uiStudio, studioId)
-	const playlistReady = useSubscription(PubSub.rundownPlaylists, {
-		activationId: { $exists: true },
-		studioId,
-	})
+	const studioReady = useSubscription(MeteorPubSub.uiStudio, studioId)
+	const playlistReady = useSubscription(MeteorPubSub.rundownPlaylistForStudio, studioId, true)
 
 	const subsReady = studioReady && playlistReady
 

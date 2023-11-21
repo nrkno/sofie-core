@@ -392,6 +392,10 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 		}
 	}
 
+	private onContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
+		e.preventDefault()
+	}
+
 	private onTimelineMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
 		if (!this._touchAttached && !this._mouseAttached) {
 			// if mouse down is on a piece - abort
@@ -1167,6 +1171,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 						'segment-timeline__timeline-container--grabbable': Settings.allowGrabbingTimeline,
 						'segment-timeline__timeline-container--grabbed': this.state.mouseGrabbed,
 					})}
+					onContextMenu={this.onContextMenu}
 					onMouseDown={this.onTimelineMouseDown}
 					onTouchStartCapture={this.onTimelineTouchStart}
 					ref={this.setTimelineRef}

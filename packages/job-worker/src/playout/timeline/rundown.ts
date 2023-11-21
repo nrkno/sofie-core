@@ -57,7 +57,7 @@ export function buildTimelineObjsForRundown(
 	const span = context.startSpan('buildTimelineObjsForRundown')
 	const timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 
-	const activePlaylist = playoutModel.Playlist
+	const activePlaylist = playoutModel.playlist
 	const currentTime = getCurrentTime()
 
 	timelineObjs.push(

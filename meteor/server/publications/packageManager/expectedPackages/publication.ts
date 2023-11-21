@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import { CustomCollectionName, PubSub } from '../../../../lib/api/pubsub'
 import { PeripheralDeviceReadAccess } from '../../../security/peripheralDevice'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
@@ -26,6 +25,10 @@ import { ExpectedPackagesContentObserver } from './contentObserver'
 import { createReactiveContentCache, ExpectedPackagesContentCache } from './contentCache'
 import { buildMappingsToDeviceIdMap } from './util'
 import { updateCollectionForExpectedPackageIds, updateCollectionForPieceInstanceIds } from './generate'
+import {
+	PeripheralDevicePubSub,
+	PeripheralDevicePubSubCollectionsNames,
+} from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 
 interface ExpectedPackagesPublicationArgs {
 	readonly studioId: StudioId
@@ -182,8 +185,8 @@ async function manipulateExpectedPackagesPublicationData(
 }
 
 meteorCustomPublish(
-	PubSub.packageManagerExpectedPackages,
-	CustomCollectionName.PackageManagerExpectedPackages,
+	PeripheralDevicePubSub.packageManagerExpectedPackages,
+	PeripheralDevicePubSubCollectionsNames.packageManagerExpectedPackages,
 	async function (
 		pub,
 		deviceId: PeripheralDeviceId,
@@ -210,7 +213,7 @@ meteorCustomPublish(
 				ExpectedPackagesPublicationState,
 				ExpectedPackagesPublicationUpdateProps
 			>(
-				`${PubSub.packageManagerExpectedPackages}_${studioId}_${deviceId}_${JSON.stringify(
+				`${PeripheralDevicePubSub.packageManagerExpectedPackages}_${studioId}_${deviceId}_${JSON.stringify(
 					(filterPlayoutDeviceIds || []).sort()
 				)}`,
 				{ studioId, deviceId, filterPlayoutDeviceIds },

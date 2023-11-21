@@ -63,7 +63,7 @@ import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/coreli
 import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { hashSingleUseToken, ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
-import { meteorSubscribe, PubSub } from '../../lib/api/pubsub'
+import { meteorSubscribe, MeteorPubSub } from '../../lib/api/pubsub'
 import {
 	RundownLayoutType,
 	RundownLayoutBase,
@@ -148,6 +148,7 @@ import { PromiseButton } from '../lib/Components/PromiseButton'
 import { logger } from '../../lib/logging'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from './i18n'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -1578,10 +1579,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		componentDidMount(): void {
 			const playlistId = this.props.rundownPlaylistId
 
-			this.subscribe(PubSub.rundownPlaylists, {
-				_id: playlistId,
-			})
-			this.subscribe(PubSub.rundowns, [playlistId], null)
+			this.subscribe(CorelibPubSub.rundownPlaylists, [playlistId], null)
+			this.subscribe(CorelibPubSub.rundownsInPlaylists, [playlistId])
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(playlistId, {
 					fields: {
@@ -1591,10 +1590,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}) as Pick<DBRundownPlaylist, '_id' | 'studioId'> | undefined
 				if (!playlist) return
 
-				this.subscribe(PubSub.uiSegmentPartNotes, playlistId)
-				this.subscribe(PubSub.uiPieceContentStatuses, playlistId)
-				this.subscribe(PubSub.uiStudio, playlist.studioId)
-				this.subscribe(PubSub.buckets, playlist.studioId, null)
+				this.subscribe(MeteorPubSub.uiSegmentPartNotes, playlistId)
+				this.subscribe(MeteorPubSub.uiPieceContentStatuses, playlistId)
+				this.subscribe(MeteorPubSub.uiStudio, playlist.studioId)
+				this.subscribe(MeteorPubSub.buckets, playlist.studioId, null)
 			})
 
 			this.autorun(() => {
@@ -1615,47 +1614,26 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}) as Pick<Rundown, '_id' | 'showStyleBaseId' | 'showStyleVariantId'>[]
 
 				for (const rundown of rundowns) {
-					this.subscribe(PubSub.uiShowStyleBase, rundown.showStyleBaseId)
+					this.subscribe(MeteorPubSub.uiShowStyleBase, rundown.showStyleBaseId)
 				}
 
-				this.subscribe(PubSub.showStyleVariants, {
-					_id: {
-						$in: rundowns.map((i) => i.showStyleVariantId),
-					},
-				})
-				this.subscribe(PubSub.rundownLayouts, {
-					showStyleBaseId: {
-						$in: rundowns.map((i) => i.showStyleBaseId),
-					},
-				})
+				this.subscribe(
+					CorelibPubSub.showStyleVariants,
+					null,
+					rundowns.map((i) => i.showStyleVariantId)
+				)
+				this.subscribe(
+					MeteorPubSub.rundownLayouts,
+					rundowns.map((i) => i.showStyleBaseId)
+				)
 				const rundownIDs = rundowns.map((i) => i._id)
-				this.subscribe(PubSub.segments, {
-					rundownId: {
-						$in: rundownIDs,
-					},
-				})
-				this.subscribe(PubSub.adLibPieces, {
-					rundownId: {
-						$in: rundownIDs,
-					},
-				})
-				this.subscribe(PubSub.rundownBaselineAdLibPieces, {
-					rundownId: {
-						$in: rundownIDs,
-					},
-				})
-				this.subscribe(PubSub.adLibActions, {
-					rundownId: {
-						$in: rundownIDs,
-					},
-				})
-				this.subscribe(PubSub.rundownBaselineAdLibActions, {
-					rundownId: {
-						$in: rundownIDs,
-					},
-				})
-				this.subscribe(PubSub.parts, rundownIDs)
-				this.subscribe(PubSub.partInstances, rundownIDs, playlist.activationId)
+				this.subscribe(CorelibPubSub.segments, rundownIDs, {})
+				this.subscribe(CorelibPubSub.adLibPieces, rundownIDs)
+				this.subscribe(CorelibPubSub.rundownBaselineAdLibPieces, rundownIDs)
+				this.subscribe(CorelibPubSub.adLibActions, rundownIDs)
+				this.subscribe(CorelibPubSub.rundownBaselineAdLibActions, rundownIDs)
+				this.subscribe(CorelibPubSub.parts, rundownIDs, null)
+				this.subscribe(CorelibPubSub.partInstances, rundownIDs, playlist.activationId ?? null)
 			})
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(playlistId, {
@@ -1670,35 +1648,32 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					// Use meteorSubscribe so that this subscription doesn't mess with this.subscriptionsReady()
 					// it's run in this.autorun, so the subscription will be stopped along with the autorun,
 					// so we don't have to manually clean up after ourselves.
-					meteorSubscribe(PubSub.pieceInstances, {
-						rundownId: {
-							$in: rundownIds,
-						},
-						partInstanceId: {
-							$in: [
-								playlist.currentPartInfo?.partInstanceId,
-								playlist.nextPartInfo?.partInstanceId,
-								playlist.previousPartInfo?.partInstanceId,
-							].filter((p): p is PartInstanceId => p !== null),
-						},
-						reset: {
-							$ne: true,
-						},
-					})
+					meteorSubscribe(
+						CorelibPubSub.pieceInstances,
+						rundownIds,
+						[
+							playlist.currentPartInfo?.partInstanceId,
+							playlist.nextPartInfo?.partInstanceId,
+							playlist.previousPartInfo?.partInstanceId,
+						].filter((p): p is PartInstanceId => p !== null),
+						{}
+					)
 					const { previousPartInstance, currentPartInstance } =
 						RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
 
 					if (previousPartInstance) {
-						meteorSubscribe(PubSub.partInstancesForSegmentPlayout, {
-							rundownId: previousPartInstance.rundownId,
-							segmentPlayoutId: previousPartInstance.segmentPlayoutId,
-						})
+						meteorSubscribe(
+							CorelibPubSub.partInstancesForSegmentPlayout,
+							previousPartInstance.rundownId,
+							previousPartInstance.segmentPlayoutId
+						)
 					}
 					if (currentPartInstance) {
-						meteorSubscribe(PubSub.partInstancesForSegmentPlayout, {
-							rundownId: currentPartInstance.rundownId,
-							segmentPlayoutId: currentPartInstance.segmentPlayoutId,
-						})
+						meteorSubscribe(
+							CorelibPubSub.partInstancesForSegmentPlayout,
+							currentPartInstance.rundownId,
+							currentPartInstance.segmentPlayoutId
+						)
 					}
 				}
 			})

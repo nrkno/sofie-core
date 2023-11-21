@@ -116,12 +116,12 @@ export async function updatePartInstanceRanks(
  * Syncs the ranks from matching Parts to PartInstances.
  */
 export function updatePartInstanceRanksAfterAdlib(playoutModel: PlayoutModel, segmentId: SegmentId): void {
-	const newParts = playoutModel.findSegment(segmentId)?.Parts ?? []
+	const newParts = playoutModel.findSegment(segmentId)?.parts ?? []
 
 	const segmentPartInstances = _.sortBy(
-		playoutModel.LoadedPartInstances.filter((p) => p.PartInstance.segmentId === segmentId).map((p) =>
-			clone<DBPartInstance>(p.PartInstance)
-		),
+		playoutModel.loadedPartInstances
+			.filter((p) => p.partInstance.segmentId === segmentId)
+			.map((p) => clone<DBPartInstance>(p.partInstance)),
 		(p) => p.part._rank
 	)
 

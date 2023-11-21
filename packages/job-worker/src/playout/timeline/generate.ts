@@ -86,7 +86,7 @@ export async function updateStudioTimeline(
 			throw new Error(`Studio has an active playlist`)
 		}
 	} else {
-		if (playoutModel.Playlist.activationId) {
+		if (playoutModel.playlist.activationId) {
 			throw new Error(`Studio has an active playlist`)
 		}
 	}
@@ -143,16 +143,12 @@ export async function updateStudioTimeline(
 	if (span) span.end()
 }
 
-export async function updateTimeline(
-	context: JobContext,
-	playoutModel: PlayoutModel,
-	timeOffsetIntoPart?: Time
-): Promise<void> {
+export async function updateTimeline(context: JobContext, playoutModel: PlayoutModel): Promise<void> {
 	const span = context.startSpan('updateTimeline')
 	logger.debug('updateTimeline running...')
 
-	if (!playoutModel.Playlist.activationId) {
-		throw new Error(`RundownPlaylist ("${playoutModel.Playlist._id}") is not active")`)
+	if (!playoutModel.playlist.activationId) {
+		throw new Error(`RundownPlaylist ("${playoutModel.playlist._id}") is not active")`)
 	}
 
 	const { versions, objs: timelineObjs, timingContext: timingInfo } = await getTimelineRundown(context, playoutModel)
@@ -162,7 +158,7 @@ export async function updateTimeline(
 	preserveOrReplaceNowTimesInObjects(playoutModel, timelineObjs)
 
 	if (playoutModel.isMultiGatewayMode) {
-		deNowifyMultiGatewayTimeline(context, playoutModel, timelineObjs, timeOffsetIntoPart, timingInfo)
+		deNowifyMultiGatewayTimeline(context, playoutModel, timelineObjs, timingInfo)
 
 		logAnyRemainingNowTimes(context, timelineObjs)
 	}
@@ -178,7 +174,7 @@ function preserveOrReplaceNowTimesInObjects(
 	studioPlayoutModel: StudioPlayoutModelBase,
 	timelineObjs: Array<TimelineObjGeneric>
 ) {
-	const timeline = studioPlayoutModel.Timeline
+	const timeline = studioPlayoutModel.timeline
 	const oldTimelineObjsMap = normalizeArray(
 		(timeline?.timelineBlob !== undefined && deserializeTimelineBlob(timeline.timelineBlob)) || [],
 		'id'
@@ -275,21 +271,21 @@ function getPartInstanceTimelineInfo(
 	partInstance: PlayoutPartInstanceModel | null
 ): SelectedPartInstanceTimelineInfo | undefined {
 	if (partInstance) {
-		const partStarted = partInstance.PartInstance.timings?.plannedStartedPlayback
+		const partStarted = partInstance.partInstance.timings?.plannedStartedPlayback
 		const nowInPart = partStarted === undefined ? 0 : currentTime - partStarted
 		const pieceInstances = processAndPrunePieceInstanceTimings(
 			sourceLayers,
-			partInstance.PieceInstances.map((p) => p.PieceInstance),
+			partInstance.pieceInstances.map((p) => p.pieceInstance),
 			nowInPart
 		)
 
 		return {
-			partInstance: partInstance.PartInstance,
+			partInstance: partInstance.partInstance,
 			pieceInstances,
 			nowInPart,
 			partStarted,
 			// Approximate `calculatedTimings`, for the partInstances which already have it cached
-			calculatedTimings: getPartTimingsOrDefaults(partInstance.PartInstance, pieceInstances),
+			calculatedTimings: getPartTimingsOrDefaults(partInstance.partInstance, pieceInstances),
 		}
 	} else {
 		return undefined
@@ -311,23 +307,23 @@ async function getTimelineRundown(
 	try {
 		let timelineObjs: Array<TimelineObjGeneric & OnGenerateTimelineObjExt> = []
 
-		const currentPartInstance = playoutModel.CurrentPartInstance
-		const nextPartInstance = playoutModel.NextPartInstance
-		const previousPartInstance = playoutModel.PreviousPartInstance
+		const currentPartInstance = playoutModel.currentPartInstance
+		const nextPartInstance = playoutModel.nextPartInstance
+		const previousPartInstance = playoutModel.previousPartInstance
 
 		const partForRundown = currentPartInstance || nextPartInstance
-		const activeRundown = partForRundown && playoutModel.getRundown(partForRundown.PartInstance.rundownId)
+		const activeRundown = partForRundown && playoutModel.getRundown(partForRundown.partInstance.rundownId)
 
 		let timelineVersions: TimelineCompleteGenerationVersions | undefined
 		if (activeRundown) {
 			// Fetch showstyle blueprint:
 			const showStyle = await context.getShowStyleCompound(
-				activeRundown.Rundown.showStyleVariantId,
-				activeRundown.Rundown.showStyleBaseId
+				activeRundown.rundown.showStyleVariantId,
+				activeRundown.rundown.showStyleBaseId
 			)
 			if (!showStyle) {
 				throw new Error(
-					`ShowStyleBase "${activeRundown.Rundown.showStyleBaseId}" not found! (referenced by Rundown "${activeRundown.Rundown._id}")`
+					`ShowStyleBase "${activeRundown.rundown.showStyleBaseId}" not found! (referenced by Rundown "${activeRundown.rundown._id}")`
 				)
 			}
 
@@ -340,7 +336,7 @@ async function getTimelineRundown(
 			if (partInstancesInfo.next) {
 				// the nextPartInstance doesn't have accurate cached `calculatedTimings` yet, so calculate a prediction
 				partInstancesInfo.next.calculatedTimings = calculatePartTimings(
-					playoutModel.Playlist.holdState,
+					playoutModel.playlist.holdState,
 					partInstancesInfo.current?.partInstance?.part,
 					partInstancesInfo.current?.pieceInstances?.map?.((p) => p.piece),
 					partInstancesInfo.next.partInstance.part,
@@ -352,17 +348,17 @@ async function getTimelineRundown(
 
 			// next (on pvw (or on pgm if first))
 			const pLookaheadObjs = getLookeaheadObjects(context, playoutModel, partInstancesInfo)
-			const rawBaselineItems = activeRundown.BaselineObjects
+			const rawBaselineItems = activeRundown.baselineObjects
 			if (rawBaselineItems.length > 0) {
 				timelineObjs = timelineObjs.concat(transformBaselineItemsIntoTimeline(rawBaselineItems))
 			} else {
-				logger.warn(`Missing Baseline objects for Rundown "${activeRundown.Rundown._id}"`)
+				logger.warn(`Missing Baseline objects for Rundown "${activeRundown.rundown._id}"`)
 			}
 
 			const rundownTimelineResult = buildTimelineObjsForRundown(
 				context,
 				playoutModel,
-				activeRundown.Rundown,
+				activeRundown.rundown,
 				partInstancesInfo
 			)
 
@@ -387,11 +383,11 @@ async function getTimelineRundown(
 					context.getStudioBlueprintConfig(),
 					showStyle,
 					context.getShowStyleBlueprintConfig(showStyle),
-					playoutModel.Playlist,
-					activeRundown.Rundown,
-					previousPartInstance?.PartInstance,
-					currentPartInstance?.PartInstance,
-					nextPartInstance?.PartInstance,
+					playoutModel.playlist,
+					activeRundown.rundown,
+					previousPartInstance?.partInstance,
+					currentPartInstance?.partInstance,
+					nextPartInstance?.partInstance,
 					resolvedPieces
 				)
 				try {
@@ -401,7 +397,7 @@ async function getTimelineRundown(
 						abHelper,
 						blueprint,
 						showStyle,
-						playoutModel.Playlist,
+						playoutModel.playlist,
 						resolvedPieces,
 						timelineObjs
 					)
@@ -413,8 +409,8 @@ async function getTimelineRundown(
 						tlGenRes = await blueprint.blueprint.onTimelineGenerate(
 							blueprintContext,
 							timelineObjs,
-							clone(playoutModel.Playlist.previousPersistentState),
-							clone(currentPartInstance?.PartInstance?.previousPartEndState),
+							clone(playoutModel.playlist.previousPersistentState),
+							clone(currentPartInstance?.partInstance?.previousPartEndState),
 							resolvedPieces.map(convertResolvedPieceInstanceToBlueprints)
 						)
 						sendTrace(endTrace(influxTrace))

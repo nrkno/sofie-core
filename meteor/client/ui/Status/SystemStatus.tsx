@@ -19,7 +19,6 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { callPeripheralDeviceAction, PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { NotificationCenter, NoticeLevel, Notification } from '../../../lib/notifications/notifications'
 import { getAllowConfigure, getAllowDeveloper, getAllowStudio, getHelpMode } from '../../lib/localStorage'
-import { PubSub } from '../../../lib/api/pubsub'
 import ClassNames from 'classnames'
 import { StatusCode, TSR } from '@sofie-automation/blueprints-integration'
 import { ICoreSystem } from '../../../lib/collections/CoreSystem'
@@ -40,6 +39,7 @@ import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { ClientAPI } from '../../../lib/api/client'
 import { catchError } from '../../lib/lib'
 import { logger } from '../../../lib/logging'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 interface IDeviceItemProps {
 	parentDevice: PeripheralDevice | null
@@ -546,7 +546,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 			this.refreshDebugStatesInterval = setInterval(this.refreshDebugStates, 1000)
 
 			// Subscribe to data:
-			this.subscribe(PubSub.peripheralDevices, {})
+			this.subscribe(CorelibPubSub.peripheralDevices, null)
 		}
 
 		componentWillUnmount(): void {

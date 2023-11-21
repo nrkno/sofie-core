@@ -52,13 +52,13 @@ export async function loadPlayoutModelPreInit(
 	if (!Playlist) throw new Error(`Playlist "${tmpPlaylist._id}" not found!`)
 
 	const res: PlayoutModelPreInit = {
-		PlaylistId: playlistLock.playlistId,
-		PlaylistLock: playlistLock,
+		playlistId: playlistLock.playlistId,
+		playlistLock: playlistLock,
 
-		PeripheralDevices,
+		peripheralDevices: PeripheralDevices,
 
-		Playlist,
-		Rundowns,
+		playlist: Playlist,
+		rundowns: Rundowns,
 
 		getRundown: (id: RundownId) => Rundowns.find((rd) => rd._id === id),
 	}
@@ -141,26 +141,26 @@ export async function createPlayoutModelfromInitModel(
 	initModel: PlayoutModelPreInit
 ): Promise<PlayoutModel & DatabasePersistedModel> {
 	const span = context.startSpan('CacheForPlayout.fromInit')
-	if (span) span.setLabel('playlistId', unprotectString(initModel.PlaylistId))
+	if (span) span.setLabel('playlistId', unprotectString(initModel.playlistId))
 
-	if (!initModel.PlaylistLock.isLocked) {
+	if (!initModel.playlistLock.isLocked) {
 		throw new Error('Cannot create cache with released playlist lock')
 	}
 
-	const rundownIds = initModel.Rundowns.map((r) => r._id)
+	const rundownIds = initModel.rundowns.map((r) => r._id)
 
 	const [partInstances, rundownsWithContent, timeline] = await Promise.all([
-		loadPartInstances(context, initModel.Playlist, rundownIds),
-		loadRundowns(context, null, initModel.Rundowns),
+		loadPartInstances(context, initModel.playlist, rundownIds),
+		loadRundowns(context, null, initModel.rundowns),
 		loadTimeline(context),
 	])
 
 	const res = new PlayoutModelImpl(
 		context,
-		initModel.PlaylistLock,
-		initModel.PlaylistId,
-		initModel.PeripheralDevices,
-		clone<DBRundownPlaylist>(initModel.Playlist),
+		initModel.playlistLock,
+		initModel.playlistId,
+		initModel.peripheralDevices,
+		clone<DBRundownPlaylist>(initModel.playlist),
 		partInstances,
 		rundownsWithContent,
 		timeline
@@ -213,7 +213,7 @@ async function loadRundowns(
 	const segmentsWithParts = segments.map(
 		(segment) => new PlayoutSegmentModelImpl(segment, groupedParts.get(segment._id) ?? [])
 	)
-	const groupedSegmentsWithParts = groupByToMapFunc(segmentsWithParts, (s) => s.Segment.rundownId)
+	const groupedSegmentsWithParts = groupByToMapFunc(segmentsWithParts, (s) => s.segment.rundownId)
 
 	const groupedBaselineObjects = groupByToMap(baselineObjects, 'rundownId')
 

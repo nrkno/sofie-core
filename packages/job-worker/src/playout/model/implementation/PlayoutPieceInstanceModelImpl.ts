@@ -25,7 +25,7 @@ export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel 
 			this.PieceInstanceImpl[key] = newValue
 		}
 
-		this.#HasChanges = true
+		this.#hasChanges = true
 	}
 
 	/**
@@ -52,28 +52,28 @@ export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel 
 		}
 	}
 
-	#HasChanges = false
+	#hasChanges = false
 	/**
 	 * Whether this PieceInstance has unsaved changes
 	 */
 	get HasChanges(): boolean {
-		return this.#HasChanges
+		return this.#hasChanges
 	}
 
 	/**
 	 * Clear the `HasChanges` flag
 	 */
 	clearChangedFlag(): void {
-		this.#HasChanges = false
+		this.#hasChanges = false
 	}
 
-	get PieceInstance(): ReadonlyDeep<PieceInstance> {
+	get pieceInstance(): ReadonlyDeep<PieceInstance> {
 		return this.PieceInstanceImpl
 	}
 
 	constructor(pieceInstances: PieceInstance, hasChanges: boolean) {
 		this.PieceInstanceImpl = pieceInstances
-		this.#HasChanges = hasChanges
+		this.#hasChanges = hasChanges
 	}
 
 	/**
@@ -86,7 +86,7 @@ export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel 
 			...clone<PieceInstance>(pieceInstance),
 		}
 
-		this.#HasChanges = true
+		this.#hasChanges = true
 	}
 
 	prepareForHold(): PieceInstanceInfiniteId {

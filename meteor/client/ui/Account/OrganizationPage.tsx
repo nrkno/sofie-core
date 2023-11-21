@@ -3,7 +3,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { getUser, User, getUserRoles, DBUser } from '../../../lib/collections/Users'
 import { Spinner } from '../../lib/Spinner'
-import { PubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { DBOrganization, UserRoles } from '../../../lib/collections/Organization'
 import { unprotectString } from '../../../lib/lib'
 import { MeteorCall } from '../../../lib/api/methods'
@@ -53,7 +53,7 @@ export const OrganizationPage = translateWithTracker(() => {
 		componentDidMount(): void {
 			this.autorun(() => {
 				if (this.props.organization) {
-					this.subscribe(PubSub.usersInOrganization, { organizationId: this.props.organization._id })
+					this.subscribe(MeteorPubSub.usersInOrganization, this.props.organization._id)
 				}
 			})
 		}

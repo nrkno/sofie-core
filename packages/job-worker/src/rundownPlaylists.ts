@@ -80,7 +80,7 @@ export async function handleRegenerateRundownPlaylist(
 		await runWithPlayoutModel(context, playlist, playlistLock, null, async (cache) => {
 			await resetRundownPlaylist(context, cache)
 
-			if (cache.Playlist.activationId) {
+			if (cache.playlist.activationId) {
 				await updateTimeline(context, cache)
 			}
 		})

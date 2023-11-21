@@ -59,7 +59,7 @@ export async function innerStartOrQueueAdLibPiece(
 			[genericAdlibPiece],
 			adLibPiece._id
 		)
-		queuedPartInstanceId = newPartInstance.PartInstance._id
+		queuedPartInstanceId = newPartInstance.partInstance._id
 
 		// syncPlayheadInfinitesForNextPartInstance is handled by setNextPart
 	} else {
@@ -70,7 +70,7 @@ export async function innerStartOrQueueAdLibPiece(
 			context,
 			playoutModel,
 			currentPartInstance,
-			playoutModel.NextPartInstance
+			playoutModel.nextPartInstance
 		)
 	}
 
@@ -92,7 +92,7 @@ export async function innerFindLastPieceOnLayer(
 
 	const query: MongoQuery<PieceInstance> = {
 		...customQuery,
-		playlistActivationId: playoutModel.Playlist.activationId,
+		playlistActivationId: playoutModel.playlist.activationId,
 		rundownId: { $in: rundownIds },
 		'piece.sourceLayerId': { $in: sourceLayerId },
 		plannedStartedPlayback: {
@@ -126,7 +126,7 @@ export async function innerFindLastScriptedPieceOnLayer(
 ): Promise<Piece | undefined> {
 	const span = context.startSpan('innerFindLastScriptedPieceOnLayer')
 
-	const playlist = playoutModel.Playlist
+	const playlist = playoutModel.playlist
 	const rundownIds = playoutModel.getRundownIds()
 
 	// TODO - this should throw instead of return more?
@@ -135,7 +135,7 @@ export async function innerFindLastScriptedPieceOnLayer(
 		return
 	}
 
-	const currentPartInstance = playoutModel.CurrentPartInstance?.PartInstance
+	const currentPartInstance = playoutModel.currentPartInstance?.partInstance
 
 	if (!currentPartInstance) {
 		return
@@ -192,14 +192,14 @@ function updateRankForAdlibbedPartInstance(
 	playoutModel: PlayoutModel,
 	newPartInstance: PlayoutPartInstanceModel
 ) {
-	const currentPartInstance = playoutModel.CurrentPartInstance
+	const currentPartInstance = playoutModel.currentPartInstance
 	if (!currentPartInstance) throw new Error('CurrentPartInstance not found')
 
 	// Find the following part, so we can pick a good rank
 	const followingPart = selectNextPart(
 		context,
-		playoutModel.Playlist,
-		currentPartInstance.PartInstance,
+		playoutModel.playlist,
+		currentPartInstance.partInstance,
 		null,
 		playoutModel.getAllOrderedSegments(),
 		playoutModel.getAllOrderedParts(),
@@ -207,12 +207,12 @@ function updateRankForAdlibbedPartInstance(
 	)
 	newPartInstance.setRank(
 		getRank(
-			currentPartInstance.PartInstance.part,
-			followingPart?.part?.segmentId === newPartInstance.PartInstance.segmentId ? followingPart?.part : undefined
+			currentPartInstance.partInstance.part,
+			followingPart?.part?.segmentId === newPartInstance.partInstance.segmentId ? followingPart?.part : undefined
 		)
 	)
 
-	updatePartInstanceRanksAfterAdlib(playoutModel, newPartInstance.PartInstance.segmentId)
+	updatePartInstanceRanksAfterAdlib(playoutModel, newPartInstance.partInstance.segmentId)
 }
 
 export async function insertQueuedPartWithPieces(
@@ -228,8 +228,8 @@ export async function insertQueuedPartWithPieces(
 
 	const newPartFull: DBPart = {
 		...newPart,
-		segmentId: currentPartInstance.PartInstance.segmentId,
-		rundownId: currentPartInstance.PartInstance.rundownId,
+		segmentId: currentPartInstance.partInstance.segmentId,
+		rundownId: currentPartInstance.partInstance.rundownId,
 	}
 
 	// Find any rundown defined infinites that we should inherit
@@ -271,13 +271,13 @@ export function innerStopPieces(
 	const span = context.startSpan('innerStopPieces')
 	const stoppedInstances: PieceInstanceId[] = []
 
-	const lastStartedPlayback = currentPartInstance.PartInstance.timings?.plannedStartedPlayback
+	const lastStartedPlayback = currentPartInstance.partInstance.timings?.plannedStartedPlayback
 	if (lastStartedPlayback === undefined) {
 		throw new Error('Cannot stop pieceInstances when partInstance hasnt started playback')
 	}
 
 	const resolvedPieces = getResolvedPiecesForCurrentPartInstance(context, sourceLayers, currentPartInstance)
-	const offsetRelativeToNow = (timeOffset || 0) + (calculateNowOffsetLatency(context, playoutModel, undefined) || 0)
+	const offsetRelativeToNow = (timeOffset || 0) + (calculateNowOffsetLatency(context, playoutModel) || 0)
 	const stopAt = getCurrentTime() + offsetRelativeToNow
 	const relativeStopAt = stopAt - lastStartedPlayback
 

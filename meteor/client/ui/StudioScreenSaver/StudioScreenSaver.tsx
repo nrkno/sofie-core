@@ -4,7 +4,7 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { getCurrentTime } from '../../../lib/lib'
 import { invalidateAfter } from '../../../lib/invalidatingTime'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { PubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
 import classNames from 'classnames'
 import { Clock } from './Clock'
 import { Countdown } from './Countdown'
@@ -13,6 +13,7 @@ import { UIStudios } from '../Collections'
 import { UIStudio } from '../../../lib/api/studios'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylists } from '../../collections'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 interface IProps {
 	// the studio to be displayed in the screen saver
@@ -124,10 +125,8 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 		}
 
 		componentDidMount(): void {
-			this.subscribe(PubSub.uiStudio, this.props.studioId)
-			this.subscribe(PubSub.rundownPlaylists, {
-				studioId: this.props.studioId,
-			})
+			this.subscribe(MeteorPubSub.uiStudio, this.props.studioId)
+			this.subscribe(CorelibPubSub.rundownPlaylists, [], [this.props.studioId])
 
 			if (this.props.ownBackground) {
 				document.body.classList.add('dark', 'xdark')

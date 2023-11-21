@@ -25,7 +25,7 @@ export async function handleSetNextPart(context: JobContext, data: SetNextPartPr
 		context,
 		data,
 		async (playoutModel) => {
-			const playlist = playoutModel.Playlist
+			const playlist = playoutModel.playlist
 
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown, undefined, 412)
 			if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE) {
@@ -56,7 +56,7 @@ export async function handleMoveNextPart(context: JobContext, data: MoveNextPart
 			if (!data.partDelta && !data.segmentDelta)
 				throw new Error(`rundownMoveNext: invalid delta: (${data.partDelta}, ${data.segmentDelta})`)
 
-			const playlist = playoutModel.Playlist
+			const playlist = playoutModel.playlist
 
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown, undefined, 412)
 			if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
@@ -85,7 +85,7 @@ export async function handleSetNextSegment(context: JobContext, data: SetNextSeg
 		context,
 		data,
 		async (playoutModel) => {
-			const playlist = playoutModel.Playlist
+			const playlist = playoutModel.playlist
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown, undefined, 412)
 
 			if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE) {
@@ -117,7 +117,7 @@ export async function handleQueueNextSegment(
 		context,
 		data,
 		async (playoutModel) => {
-			const playlist = playoutModel.Playlist
+			const playlist = playoutModel.playlist
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown, undefined, 412)
 
 			if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE) {

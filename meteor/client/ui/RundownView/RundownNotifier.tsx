@@ -14,7 +14,7 @@ import { WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
 import { reactiveData } from '../../lib/reactiveData/reactiveData'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { getCurrentTime, unprotectString } from '../../../lib/lib'
-import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
+import { meteorSubscribe } from '../../../lib/api/pubsub'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { doModalDialog } from '../../lib/ModalDialog'
@@ -44,6 +44,7 @@ import {
 import { UIPieceContentStatuses, UISegmentPartNotes } from '../Collections'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 import { logger } from '../../../lib/logging'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownPlaylistClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -292,7 +293,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			| ReactiveVar<Pick<PeripheralDevice, '_id' | 'name' | 'ignore' | 'status' | 'connected' | 'parentDeviceId'>[]>
 			| undefined
 		if (studioId) {
-			meteorSubscribe(PubSub.peripheralDevicesAndSubDevices, { studioId: studioId })
+			meteorSubscribe(CorelibPubSub.peripheralDevicesAndSubDevices, studioId)
 			reactivePeripheralDevices = reactiveData.getRPeripheralDevices(studioId, {
 				fields: {
 					name: 1,
@@ -576,7 +577,7 @@ class RundownViewNotifier extends WithManagedTracker {
 	}
 
 	private reactiveQueueStatus(studioId: StudioId, playlistId: RundownPlaylistId) {
-		meteorSubscribe(PubSub.externalMessageQueue, { studioId: studioId, playlistId })
+		meteorSubscribe(CorelibPubSub.externalMessageQueue, { studioId: studioId, playlistId })
 		const reactiveUnsentMessageCount = reactiveData.getUnsentExternalMessageCount(studioId, playlistId)
 		this.autorun(() => {
 			if (reactiveUnsentMessageCount.get() > 0 && this._unsentExternalMessagesStatus === undefined) {

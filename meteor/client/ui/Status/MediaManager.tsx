@@ -14,7 +14,7 @@ import * as i18next from 'react-i18next'
 import { extendMandadory, unprotectString } from '../../../lib/lib'
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { PubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { Spinner } from '../../lib/Spinner'
 import { sofieWarningIcon as WarningIcon } from '../../lib/notifications/warningIcon'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
@@ -378,8 +378,8 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 
 		componentDidMount(): void {
 			// Subscribe to data:
-			this.subscribe(PubSub.mediaWorkFlows, {}) // TODO: add some limit
-			this.subscribe(PubSub.mediaWorkFlowSteps, {})
+			this.subscribe(MeteorPubSub.mediaWorkFlows) // TODO: add some limit
+			this.subscribe(MeteorPubSub.mediaWorkFlowSteps)
 		}
 
 		toggleExpanded = (workFlowId: MediaWorkFlowId) => {

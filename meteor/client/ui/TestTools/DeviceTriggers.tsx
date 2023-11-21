@@ -1,16 +1,25 @@
 import React, { Fragment, useState } from 'react'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Mongo } from 'meteor/mongo'
-import { CustomCollectionName, PubSub } from '../../../lib/api/pubsub'
+import {} from '../../../lib/api/pubsub'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DeviceTriggerMountedAction, PreviewWrappedAdLib } from '../../../lib/api/triggers/MountedTriggers'
 import { PeripheralDevices } from '../../collections'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import {
+	PeripheralDevicePubSub,
+	PeripheralDevicePubSubCollectionsNames,
+} from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 
-const MountedTriggers = new Mongo.Collection<DeviceTriggerMountedAction>(CustomCollectionName.MountedTriggers)
-const MountedTriggersPreviews = new Mongo.Collection<PreviewWrappedAdLib>(CustomCollectionName.MountedTriggersPreviews)
+const MountedTriggers = new Mongo.Collection<DeviceTriggerMountedAction>(
+	PeripheralDevicePubSubCollectionsNames.mountedTriggers
+)
+const MountedTriggersPreviews = new Mongo.Collection<PreviewWrappedAdLib>(
+	PeripheralDevicePubSubCollectionsNames.mountedTriggersPreviews
+)
 
 interface DeviceTriggersViewRouteParams {
 	peripheralDeviceId: string
@@ -41,8 +50,8 @@ interface IDatastoreControlsProps {
 }
 function DeviceTriggersControls({ peripheralDeviceId }: IDatastoreControlsProps) {
 	const [deviceIds, setDeviceIds] = useState<string[]>([])
-	useSubscription(PubSub.mountedTriggersForDevice, peripheralDeviceId, deviceIds)
-	useSubscription(PubSub.mountedTriggersForDevicePreview, peripheralDeviceId)
+	useSubscription(PeripheralDevicePubSub.mountedTriggersForDevice, peripheralDeviceId, deviceIds)
+	useSubscription(PeripheralDevicePubSub.mountedTriggersForDevicePreview, peripheralDeviceId)
 
 	const mountedTriggers = useTracker<DeviceTriggerMountedAction[]>(
 		() =>
@@ -123,7 +132,7 @@ function DeviceTriggersControls({ peripheralDeviceId }: IDatastoreControlsProps)
 }
 
 const DeviceTriggersDeviceSelect: React.FC = function DeviceTriggersDeviceSelect() {
-	useSubscription(PubSub.peripheralDevices, {})
+	useSubscription(CorelibPubSub.peripheralDevices, null)
 	const devices = useTracker(() => PeripheralDevices.find().fetch(), [])
 
 	if (!devices) return null

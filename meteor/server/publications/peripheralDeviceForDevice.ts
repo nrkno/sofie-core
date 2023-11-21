@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { PeripheralDevice, PeripheralDeviceCategory } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -18,6 +17,10 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { check } from 'meteor/check'
+import {
+	PeripheralDevicePubSub,
+	PeripheralDevicePubSubCollectionsNames,
+} from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 
 interface PeripheralDeviceForDeviceArgs {
 	readonly deviceId: PeripheralDeviceId
@@ -194,8 +197,8 @@ async function manipulatePeripheralDevicePublicationData(
 }
 
 meteorCustomPublish(
-	PubSub.peripheralDeviceForDevice,
-	CustomCollectionName.PeripheralDeviceForDevice,
+	PeripheralDevicePubSub.peripheralDeviceForDevice,
+	PeripheralDevicePubSubCollectionsNames.peripheralDeviceForDevice,
 	async function (pub, deviceId: PeripheralDeviceId, token: string | undefined) {
 		check(deviceId, String)
 
@@ -213,7 +216,7 @@ meteorCustomPublish(
 				PeripheralDeviceForDeviceState,
 				PeripheralDeviceForDeviceUpdateProps
 			>(
-				`${CustomCollectionName.PeripheralDeviceForDevice}_${deviceId}`,
+				`${PeripheralDevicePubSubCollectionsNames.peripheralDeviceForDevice}_${deviceId}`,
 				{ deviceId },
 				setupPeripheralDevicePublicationObservers,
 				manipulatePeripheralDevicePublicationData,

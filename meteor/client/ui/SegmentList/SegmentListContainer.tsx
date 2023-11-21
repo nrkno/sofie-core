@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import { PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
+import { meteorSubscribe } from '../../../lib/api/pubsub'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import {
 	withResolvedSegment,
@@ -12,6 +11,7 @@ import { SegmentList } from './SegmentList'
 import { unprotectString } from '../../../lib/lib'
 import { LIVELINE_HISTORY_SIZE as TIMELINE_LIVELINE_HISTORY_SIZE } from '../SegmentTimeline/SegmentTimelineContainer'
 import { PartInstances, Parts, Segments } from '../../collections'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 export const LIVELINE_HISTORY_SIZE = TIMELINE_LIVELINE_HISTORY_SIZE
 
@@ -41,12 +41,7 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 		[segmentId]
 	)
 
-	useSubscription(PubSub.pieces, {
-		startRundownId: rundownId,
-		startPartId: {
-			$in: partIds,
-		},
-	})
+	useSubscription(CorelibPubSub.pieces, [rundownId], partIds ?? [])
 
 	const partInstanceIds = useTracker(
 		() =>
@@ -67,15 +62,7 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 		[segmentId]
 	)
 
-	useSubscription(PubSub.pieceInstances, {
-		rundownId: rundownId,
-		partInstanceId: {
-			$in: partInstanceIds,
-		},
-		reset: {
-			$ne: true,
-		},
-	})
+	useSubscription(CorelibPubSub.pieceInstances, [rundownId], partInstanceIds ?? [], {})
 
 	useTracker(() => {
 		const segment = Segments.findOne(segmentId, {
@@ -85,28 +72,12 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 			},
 		})
 		segment &&
-			meteorSubscribe(PubSub.pieces, {
-				invalid: {
-					$ne: true,
-				},
-				$or: [
-					// same rundown, and previous segment
-					{
-						startRundownId: rundownId,
-						startSegmentId: { $in: Array.from(segmentsIdsBefore.values()) },
-						lifespan: {
-							$in: [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnRundownChange, PieceLifespan.OutOnShowStyleEnd],
-						},
-					},
-					// Previous rundown
-					{
-						startRundownId: { $in: Array.from(rundownIdsBefore.values()) },
-						lifespan: {
-							$in: [PieceLifespan.OutOnShowStyleEnd],
-						},
-					},
-				],
-			})
+			meteorSubscribe(
+				CorelibPubSub.piecesInfiniteStartingBefore,
+				rundownId,
+				Array.from(segmentsIdsBefore.values()),
+				Array.from(rundownIdsBefore.values())
+			)
 	}, [segmentId, rundownId, segmentsIdsBefore.values(), rundownIdsBefore.values()])
 
 	const isLiveSegment = useTracker(

@@ -1,39 +1,41 @@
 import { Logger } from 'winston'
 import { CoreHandler } from '../coreHandler'
 import { CollectionBase, Collection, CollectionObserver } from '../wsHandler'
-import { CoreConnection } from '@sofie-automation/server-core-integration'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { PartInstanceName } from './partInstances'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { PieceId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export class GlobalAdLibsHandler
-	extends CollectionBase<RundownBaselineAdLibItem[]>
+	extends CollectionBase<
+		RundownBaselineAdLibItem[],
+		CorelibPubSub.rundownBaselineAdLibPieces,
+		CollectionName.RundownBaselineAdLibPieces
+	>
 	implements
 		Collection<RundownBaselineAdLibItem[]>,
 		CollectionObserver<Map<PartInstanceName, DBPartInstance | undefined>>
 {
 	public observerName: string
-	private _core: CoreConnection
-	private _curRundownId: string | undefined
+	private _curRundownId: RundownId | undefined
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
 		super(
 			GlobalAdLibsHandler.name,
 			CollectionName.RundownBaselineAdLibPieces,
-			'rundownBaselineAdLibPieces',
+			CorelibPubSub.rundownBaselineAdLibPieces,
 			logger,
 			coreHandler
 		)
-		this._core = coreHandler.coreConnection
 		this.observerName = this._name
 	}
 
-	async changed(id: string, changeType: string): Promise<void> {
+	async changed(id: PieceId, changeType: string): Promise<void> {
 		this._logger.info(`${this._name} ${changeType} ${id}`)
 		if (!this._collectionName) return
-		const collection = this._core.getCollection<RundownBaselineAdLibItem>(this._collectionName)
+		const collection = this._core.getCollection(this._collectionName)
 		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
 		this._collectionData = collection.find({ rundownId: this._curRundownId })
 		await this.notify(this._collectionData)
@@ -43,7 +45,7 @@ export class GlobalAdLibsHandler
 		this._logger.info(`${this._name} received globalAdLibs update from ${source}`)
 		const prevRundownId = this._curRundownId
 		const partInstance = data ? data.get(PartInstanceName.current) ?? data.get(PartInstanceName.next) : undefined
-		this._curRundownId = partInstance ? unprotectString(partInstance.rundownId) : undefined
+		this._curRundownId = partInstance ? partInstance.rundownId : undefined
 
 		await new Promise(process.nextTick.bind(this))
 		if (!this._collectionName) return
@@ -52,18 +54,18 @@ export class GlobalAdLibsHandler
 			if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
 			if (this._dbObserver) this._dbObserver.stop()
 			if (this._curRundownId) {
-				this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, {
-					rundownId: this._curRundownId,
-				})
+				this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, [
+					this._curRundownId,
+				])
 				this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
-				this._dbObserver.added = (id: string) => {
+				this._dbObserver.added = (id) => {
 					void this.changed(id, 'added').catch(this._logger.error)
 				}
-				this._dbObserver.changed = (id: string) => {
+				this._dbObserver.changed = (id) => {
 					void this.changed(id, 'changed').catch(this._logger.error)
 				}
 
-				const collection = this._core.getCollection<RundownBaselineAdLibItem>(this._collectionName)
+				const collection = this._core.getCollection(this._collectionName)
 				if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
 				this._collectionData = collection.find({ rundownId: this._curRundownId })
 				await this.notify(this._collectionData)

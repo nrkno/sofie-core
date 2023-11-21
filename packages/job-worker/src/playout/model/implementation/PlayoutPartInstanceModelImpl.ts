@@ -39,16 +39,16 @@ class PlayoutPartInstanceModelSnapshotImpl implements PlayoutPartInstanceModelSn
 
 	isRestored = false
 
-	readonly PartInstance: DBPartInstance
-	readonly PartInstanceHasChanges: boolean
-	readonly PieceInstances: ReadonlyMap<PieceInstanceId, PlayoutPieceInstanceModelSnapshotImpl | null>
+	readonly partInstance: DBPartInstance
+	readonly partInstanceHasChanges: boolean
+	readonly pieceInstances: ReadonlyMap<PieceInstanceId, PlayoutPieceInstanceModelSnapshotImpl | null>
 
 	constructor(copyFrom: PlayoutPartInstanceModelImpl) {
-		this.PartInstance = clone(copyFrom.PartInstanceImpl)
-		this.PartInstanceHasChanges = copyFrom.PartInstanceHasChanges
+		this.partInstance = clone(copyFrom.partInstanceImpl)
+		this.partInstanceHasChanges = copyFrom.partInstanceHasChanges
 
 		const pieceInstances = new Map<PieceInstanceId, PlayoutPieceInstanceModelSnapshotImpl | null>()
-		for (const [pieceInstanceId, pieceInstance] of copyFrom.PieceInstancesImpl) {
+		for (const [pieceInstanceId, pieceInstance] of copyFrom.pieceInstancesImpl) {
 			if (pieceInstance) {
 				pieceInstances.set(pieceInstanceId, {
 					PieceInstance: clone(pieceInstance.PieceInstanceImpl),
@@ -58,28 +58,28 @@ class PlayoutPartInstanceModelSnapshotImpl implements PlayoutPartInstanceModelSn
 				pieceInstances.set(pieceInstanceId, null)
 			}
 		}
-		this.PieceInstances = pieceInstances
+		this.pieceInstances = pieceInstances
 	}
 }
 export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
-	PartInstanceImpl: DBPartInstance
-	PieceInstancesImpl: Map<PieceInstanceId, PlayoutPieceInstanceModelImpl | null>
+	partInstanceImpl: DBPartInstance
+	pieceInstancesImpl: Map<PieceInstanceId, PlayoutPieceInstanceModelImpl | null>
 
 	#setPartInstanceValue<T extends keyof DBPartInstance>(key: T, newValue: DBPartInstance[T]): void {
 		if (newValue === undefined) {
-			delete this.PartInstanceImpl[key]
+			delete this.partInstanceImpl[key]
 		} else {
-			this.PartInstanceImpl[key] = newValue
+			this.partInstanceImpl[key] = newValue
 		}
 
-		this.#PartInstanceHasChanges = true
+		this.#partInstanceHasChanges = true
 	}
 	#compareAndSetPartInstanceValue<T extends keyof DBPartInstance>(
 		key: T,
 		newValue: DBPartInstance[T],
 		deepEqual = false
 	): boolean {
-		const oldValue = this.PartInstanceImpl[key]
+		const oldValue = this.partInstanceImpl[key]
 
 		const areEqual = deepEqual ? _.isEqual(oldValue, newValue) : oldValue === newValue
 
@@ -94,15 +94,15 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 
 	#setPartValue<T extends keyof DBPart>(key: T, newValue: DBPart[T]): void {
 		if (newValue === undefined) {
-			delete this.PartInstanceImpl.part[key]
+			delete this.partInstanceImpl.part[key]
 		} else {
-			this.PartInstanceImpl.part[key] = newValue
+			this.partInstanceImpl.part[key] = newValue
 		}
 
-		this.#PartInstanceHasChanges = true
+		this.#partInstanceHasChanges = true
 	}
 	#compareAndSetPartValue<T extends keyof DBPart>(key: T, newValue: DBPart[T], deepEqual = false): boolean {
-		const oldValue = this.PartInstanceImpl.part[key]
+		const oldValue = this.partInstanceImpl.part[key]
 
 		const areEqual = deepEqual ? _.isEqual(oldValue, newValue) : oldValue === newValue
 
@@ -115,39 +115,39 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		}
 	}
 
-	#PartInstanceHasChanges = false
-	get PartInstanceHasChanges(): boolean {
-		return this.#PartInstanceHasChanges
+	#partInstanceHasChanges = false
+	get partInstanceHasChanges(): boolean {
+		return this.#partInstanceHasChanges
 	}
-	ChangedPieceInstanceIds(): PieceInstanceId[] {
+	changedPieceInstanceIds(): PieceInstanceId[] {
 		const result: PieceInstanceId[] = []
-		for (const [id, pieceInstance] of this.PieceInstancesImpl.entries()) {
+		for (const [id, pieceInstance] of this.pieceInstancesImpl.entries()) {
 			if (!pieceInstance || pieceInstance.HasChanges) result.push(id)
 		}
 		return result
 	}
-	HasAnyChanges(): boolean {
-		return this.#PartInstanceHasChanges || this.ChangedPieceInstanceIds().length > 0
+	hasAnyChanges(): boolean {
+		return this.#partInstanceHasChanges || this.changedPieceInstanceIds().length > 0
 	}
 	clearChangedFlags(): void {
-		this.#PartInstanceHasChanges = false
+		this.#partInstanceHasChanges = false
 
-		for (const [id, value] of this.PieceInstancesImpl) {
+		for (const [id, value] of this.pieceInstancesImpl) {
 			if (!value) {
-				this.PieceInstancesImpl.delete(id)
+				this.pieceInstancesImpl.delete(id)
 			} else if (value.HasChanges) {
 				value.clearChangedFlag()
 			}
 		}
 	}
 
-	get PartInstance(): ReadonlyDeep<DBPartInstance> {
-		return this.PartInstanceImpl
+	get partInstance(): ReadonlyDeep<DBPartInstance> {
+		return this.partInstanceImpl
 	}
-	get PieceInstances(): PlayoutPieceInstanceModel[] {
+	get pieceInstances(): PlayoutPieceInstanceModel[] {
 		const result: PlayoutPieceInstanceModel[] = []
 
-		for (const pieceWrapped of this.PieceInstancesImpl.values()) {
+		for (const pieceWrapped of this.pieceInstancesImpl.values()) {
 			if (pieceWrapped) result.push(pieceWrapped)
 		}
 
@@ -155,12 +155,12 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 	}
 
 	constructor(partInstance: DBPartInstance, pieceInstances: PieceInstance[], hasChanges: boolean) {
-		this.PartInstanceImpl = partInstance
-		this.#PartInstanceHasChanges = hasChanges
+		this.partInstanceImpl = partInstance
+		this.#partInstanceHasChanges = hasChanges
 
-		this.PieceInstancesImpl = new Map()
+		this.pieceInstancesImpl = new Map()
 		for (const pieceInstance of pieceInstances) {
-			this.PieceInstancesImpl.set(pieceInstance._id, new PlayoutPieceInstanceModelImpl(pieceInstance, hasChanges))
+			this.pieceInstancesImpl.set(pieceInstance._id, new PlayoutPieceInstanceModelImpl(pieceInstance, hasChanges))
 		}
 	}
 
@@ -172,29 +172,29 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		if (!(snapshot instanceof PlayoutPartInstanceModelSnapshotImpl))
 			throw new Error(`Cannot restore a Snapshot from an different Model`)
 
-		if (snapshot.PartInstance._id !== this.PartInstance._id)
+		if (snapshot.partInstance._id !== this.partInstance._id)
 			throw new Error(`Cannot restore a Snapshot from an different PartInstance`)
 
 		if (snapshot.isRestored) throw new Error(`Cannot restore a Snapshot which has already been restored`)
 		snapshot.isRestored = true
 
-		this.PartInstanceImpl = snapshot.PartInstance
-		this.#PartInstanceHasChanges = snapshot.PartInstanceHasChanges
-		this.PieceInstancesImpl.clear()
-		for (const [pieceInstanceId, pieceInstance] of snapshot.PieceInstances) {
+		this.partInstanceImpl = snapshot.partInstance
+		this.#partInstanceHasChanges = snapshot.partInstanceHasChanges
+		this.pieceInstancesImpl.clear()
+		for (const [pieceInstanceId, pieceInstance] of snapshot.pieceInstances) {
 			if (pieceInstance) {
-				this.PieceInstancesImpl.set(
+				this.pieceInstancesImpl.set(
 					pieceInstanceId,
 					new PlayoutPieceInstanceModelImpl(pieceInstance.PieceInstance, pieceInstance.HasChanges)
 				)
 			} else {
-				this.PieceInstancesImpl.set(pieceInstanceId, null)
+				this.pieceInstancesImpl.set(pieceInstanceId, null)
 			}
 		}
 	}
 
 	appendNotes(notes: PartNote[]): void {
-		this.#setPartValue('notes', [...(this.PartInstanceImpl.part.notes ?? []), ...clone(notes)])
+		this.#setPartValue('notes', [...(this.partInstanceImpl.part.notes ?? []), ...clone(notes)])
 	}
 
 	blockTakeUntil(timestamp: Time | null): void {
@@ -202,7 +202,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 	}
 
 	getPieceInstance(id: PieceInstanceId): PlayoutPieceInstanceModel | undefined {
-		return this.PieceInstancesImpl.get(id) ?? undefined
+		return this.pieceInstancesImpl.get(id) ?? undefined
 	}
 
 	insertAdlibbedPiece(
@@ -210,35 +210,35 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		fromAdlibId: PieceId | undefined
 	): PlayoutPieceInstanceModel {
 		const pieceInstance: PieceInstance = {
-			_id: protectString(`${this.PartInstance._id}_${piece._id}`),
-			rundownId: this.PartInstance.rundownId,
-			playlistActivationId: this.PartInstance.playlistActivationId,
-			partInstanceId: this.PartInstance._id,
+			_id: protectString(`${this.partInstance._id}_${piece._id}`),
+			rundownId: this.partInstance.rundownId,
+			playlistActivationId: this.partInstance.playlistActivationId,
+			partInstanceId: this.partInstance._id,
 			piece: clone(
 				omitPiecePropertiesForInstance({
 					...piece,
-					startPartId: this.PartInstanceImpl.part._id,
+					startPartId: this.partInstanceImpl.part._id,
 				})
 			),
 		}
 
 		// Ensure it is labelled as dynamic
-		pieceInstance.partInstanceId = this.PartInstance._id
-		pieceInstance.piece.startPartId = this.PartInstance.part._id
+		pieceInstance.partInstanceId = this.partInstance._id
+		pieceInstance.piece.startPartId = this.partInstance.part._id
 		pieceInstance.adLibSourceId = fromAdlibId
 
-		if (this.PartInstance.isTaken) pieceInstance.dynamicallyInserted = getCurrentTime()
+		if (this.partInstance.isTaken) pieceInstance.dynamicallyInserted = getCurrentTime()
 
 		setupPieceInstanceInfiniteProperties(pieceInstance)
 
 		const pieceInstanceModel = new PlayoutPieceInstanceModelImpl(pieceInstance, true)
-		this.PieceInstancesImpl.set(pieceInstance._id, pieceInstanceModel)
+		this.pieceInstancesImpl.set(pieceInstance._id, pieceInstanceModel)
 
 		return pieceInstanceModel
 	}
 
 	insertHoldPieceInstance(extendPieceInstance: PlayoutPieceInstanceModel): PlayoutPieceInstanceModel {
-		const extendPieceInfinite = extendPieceInstance.PieceInstance.infinite
+		const extendPieceInfinite = extendPieceInstance.pieceInstance.infinite
 		if (!extendPieceInfinite) throw new Error('Piece being extended is not infinite!')
 		if (extendPieceInfinite.infiniteInstanceIndex !== 0 || extendPieceInfinite.fromPreviousPart)
 			throw new Error('Piece being extended is not infinite due to HOLD!')
@@ -247,49 +247,49 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 
 		// make the extension
 		const newInstance: PieceInstance = {
-			_id: protectString<PieceInstanceId>(extendPieceInstance.PieceInstance._id + '_hold'),
-			playlistActivationId: extendPieceInstance.PieceInstance.playlistActivationId,
-			rundownId: extendPieceInstance.PieceInstance.rundownId,
-			partInstanceId: this.PartInstance._id,
+			_id: protectString<PieceInstanceId>(extendPieceInstance.pieceInstance._id + '_hold'),
+			playlistActivationId: extendPieceInstance.pieceInstance.playlistActivationId,
+			rundownId: extendPieceInstance.pieceInstance.rundownId,
+			partInstanceId: this.partInstance._id,
 			dynamicallyInserted: getCurrentTime(),
 			piece: {
-				...clone<PieceInstancePiece>(extendPieceInstance.PieceInstance.piece),
+				...clone<PieceInstancePiece>(extendPieceInstance.pieceInstance.piece),
 				enable: { start: 0 },
 				extendOnHold: false,
 			},
 			infinite: {
 				infiniteInstanceId: infiniteInstanceId,
 				infiniteInstanceIndex: 1,
-				infinitePieceId: extendPieceInstance.PieceInstance.piece._id,
+				infinitePieceId: extendPieceInstance.pieceInstance.piece._id,
 				fromPreviousPart: true,
 				fromHold: true,
 			},
 			// Preserve the timings from the playing instance
-			reportedStartedPlayback: extendPieceInstance.PieceInstance.reportedStartedPlayback,
-			reportedStoppedPlayback: extendPieceInstance.PieceInstance.reportedStoppedPlayback,
-			plannedStartedPlayback: extendPieceInstance.PieceInstance.plannedStartedPlayback,
-			plannedStoppedPlayback: extendPieceInstance.PieceInstance.plannedStoppedPlayback,
+			reportedStartedPlayback: extendPieceInstance.pieceInstance.reportedStartedPlayback,
+			reportedStoppedPlayback: extendPieceInstance.pieceInstance.reportedStoppedPlayback,
+			plannedStartedPlayback: extendPieceInstance.pieceInstance.plannedStartedPlayback,
+			plannedStoppedPlayback: extendPieceInstance.pieceInstance.plannedStoppedPlayback,
 		}
 
 		const pieceInstanceModel = new PlayoutPieceInstanceModelImpl(newInstance, true)
-		this.PieceInstancesImpl.set(newInstance._id, pieceInstanceModel)
+		this.pieceInstancesImpl.set(newInstance._id, pieceInstanceModel)
 
 		return pieceInstanceModel
 	}
 
 	insertPlannedPiece(piece: Omit<PieceInstancePiece, 'startPartId'>): PlayoutPieceInstanceModel {
-		const pieceInstanceId = getPieceInstanceIdForPiece(this.PartInstance._id, piece._id)
-		if (this.PieceInstancesImpl.has(pieceInstanceId))
+		const pieceInstanceId = getPieceInstanceIdForPiece(this.partInstance._id, piece._id)
+		if (this.pieceInstancesImpl.has(pieceInstanceId))
 			throw new Error(`PieceInstance "${pieceInstanceId}" already exists`)
 
 		const newPieceInstance: PieceInstance = {
-			_id: getPieceInstanceIdForPiece(this.PartInstance._id, piece._id),
-			rundownId: this.PartInstance.rundownId,
-			playlistActivationId: this.PartInstance.playlistActivationId,
-			partInstanceId: this.PartInstance._id,
+			_id: getPieceInstanceIdForPiece(this.partInstance._id, piece._id),
+			rundownId: this.partInstance.rundownId,
+			playlistActivationId: this.partInstance.playlistActivationId,
+			partInstanceId: this.partInstance._id,
 			piece: {
 				...piece,
-				startPartId: this.PartInstance.part._id,
+				startPartId: this.partInstance.part._id,
 			},
 		}
 
@@ -297,7 +297,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		setupPieceInstanceInfiniteProperties(newPieceInstance)
 
 		const pieceInstanceModel = new PlayoutPieceInstanceModelImpl(newPieceInstance, true)
-		this.PieceInstancesImpl.set(pieceInstanceId, pieceInstanceModel)
+		this.pieceInstancesImpl.set(pieceInstanceId, pieceInstanceModel)
 
 		return pieceInstanceModel
 	}
@@ -310,10 +310,10 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 	): PlayoutPieceInstanceModel {
 		const pieceId: PieceId = getRandomId()
 		const newPieceInstance: PieceInstance = {
-			_id: protectString(`${this.PartInstance._id}_${pieceId}`),
-			rundownId: this.PartInstance.rundownId,
-			playlistActivationId: this.PartInstance.playlistActivationId,
-			partInstanceId: this.PartInstance._id,
+			_id: protectString(`${this.partInstance._id}_${pieceId}`),
+			rundownId: this.partInstance.rundownId,
+			playlistActivationId: this.partInstance.playlistActivationId,
+			partInstanceId: this.partInstance._id,
 			piece: {
 				_id: pieceId,
 				externalId: '-',
@@ -323,7 +323,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 				outputLayerId: outputLayerId,
 				invalid: false,
 				name: '',
-				startPartId: this.PartInstance.part._id,
+				startPartId: this.partInstance.part._id,
 				pieceType: IBlueprintPieceType.Normal,
 				virtual: true,
 				content: {},
@@ -335,7 +335,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		setupPieceInstanceInfiniteProperties(newPieceInstance)
 
 		const pieceInstanceModel = new PlayoutPieceInstanceModelImpl(newPieceInstance, true)
-		this.PieceInstancesImpl.set(newPieceInstance._id, pieceInstanceModel)
+		this.pieceInstancesImpl.set(newPieceInstance._id, pieceInstanceModel)
 
 		return pieceInstanceModel
 	}
@@ -343,7 +343,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 	markAsReset(): void {
 		this.#compareAndSetPartInstanceValue('reset', true)
 
-		for (const pieceInstance of this.PieceInstancesImpl.values()) {
+		for (const pieceInstance of this.pieceInstancesImpl.values()) {
 			if (!pieceInstance) continue
 
 			pieceInstance.compareAndSetPieceInstanceValue('reset', true)
@@ -352,8 +352,8 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 
 	recalculateExpectedDurationWithPreroll(): void {
 		const newDuration = calculatePartExpectedDurationWithPreroll(
-			this.PartInstanceImpl.part,
-			this.PieceInstances.map((p) => p.PieceInstance.piece)
+			this.partInstanceImpl.part,
+			this.pieceInstances.map((p) => p.pieceInstance.piece)
 		)
 
 		this.#compareAndSetPartValue('expectedDurationWithPreroll', newDuration)
@@ -362,9 +362,9 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 	removePieceInstance(id: PieceInstanceId): boolean {
 		// Future: should this limit what can be removed based on type/infinite
 
-		const pieceInstanceWrapped = this.PieceInstancesImpl.get(id)
+		const pieceInstanceWrapped = this.pieceInstancesImpl.get(id)
 		if (pieceInstanceWrapped) {
-			this.PieceInstancesImpl.set(id, null)
+			this.pieceInstancesImpl.set(id, null)
 			return true
 		}
 
@@ -375,16 +375,16 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		// Future: this should do some of the wrapping from a Piece into a PieceInstance
 
 		// Remove old infinite pieces
-		for (const [id, piece] of this.PieceInstancesImpl.entries()) {
+		for (const [id, piece] of this.pieceInstancesImpl.entries()) {
 			if (!piece) continue
 
-			if (piece.PieceInstance.infinite?.fromPreviousPlayhead) {
-				this.PieceInstancesImpl.set(id, null)
+			if (piece.pieceInstance.infinite?.fromPreviousPlayhead) {
+				this.pieceInstancesImpl.set(id, null)
 			}
 		}
 
 		for (const pieceInstance of pieceInstances) {
-			if (this.PieceInstancesImpl.has(pieceInstance._id))
+			if (this.pieceInstancesImpl.has(pieceInstance._id))
 				throw new Error(
 					`Cannot replace infinite PieceInstance "${pieceInstance._id}" as it replaces a non-infinite`
 				)
@@ -394,21 +394,21 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 
 			// Future: should this do any deeper validation of the PieceInstances?
 
-			this.PieceInstancesImpl.set(pieceInstance._id, new PlayoutPieceInstanceModelImpl(pieceInstance, true))
+			this.pieceInstancesImpl.set(pieceInstance._id, new PlayoutPieceInstanceModelImpl(pieceInstance, true))
 		}
 	}
 
 	mergeOrInsertPieceInstance(doc: ReadonlyDeep<PieceInstance>): PlayoutPieceInstanceModel {
 		// Future: this should do some validation of the new PieceInstance
 
-		const existingPieceInstance = this.PieceInstancesImpl.get(doc._id)
+		const existingPieceInstance = this.pieceInstancesImpl.get(doc._id)
 		if (existingPieceInstance) {
 			existingPieceInstance.mergeProperties(doc)
 
 			return existingPieceInstance
 		} else {
 			const newPieceInstance = new PlayoutPieceInstanceModelImpl(clone<PieceInstance>(doc), true)
-			this.PieceInstancesImpl.set(newPieceInstance.PieceInstance._id, newPieceInstance)
+			this.pieceInstancesImpl.set(newPieceInstance.pieceInstance._id, newPieceInstance)
 			return newPieceInstance
 		}
 	}
@@ -420,21 +420,21 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 	setPlaylistActivationId(id: RundownPlaylistActivationId): void {
 		this.#compareAndSetPartInstanceValue('playlistActivationId', id)
 
-		for (const pieceInstance of this.PieceInstancesImpl.values()) {
+		for (const pieceInstance of this.pieceInstancesImpl.values()) {
 			if (!pieceInstance) continue
 			pieceInstance.compareAndSetPieceInstanceValue('playlistActivationId', id)
 		}
 	}
 
 	setPlannedStartedPlayback(time: Time | undefined): void {
-		const timings = { ...this.PartInstanceImpl.timings }
+		const timings = { ...this.partInstanceImpl.timings }
 		timings.plannedStartedPlayback = time
 		delete timings.plannedStoppedPlayback
 
 		this.#compareAndSetPartInstanceValue('timings', timings, true)
 	}
 	setPlannedStoppedPlayback(time: Time | undefined): void {
-		const timings = { ...this.PartInstanceImpl.timings }
+		const timings = { ...this.partInstanceImpl.timings }
 		if (timings?.plannedStartedPlayback && !timings.plannedStoppedPlayback) {
 			if (time) {
 				timings.plannedStoppedPlayback = time
@@ -448,7 +448,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		}
 	}
 	setReportedStartedPlayback(time: Time): boolean {
-		const timings = { ...this.PartInstanceImpl.timings }
+		const timings = { ...this.partInstanceImpl.timings }
 
 		if (!timings.reportedStartedPlayback) {
 			timings.reportedStartedPlayback = time
@@ -461,7 +461,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		return false
 	}
 	setReportedStoppedPlayback(time: number): boolean {
-		const timings = { ...this.PartInstanceImpl.timings }
+		const timings = { ...this.partInstanceImpl.timings }
 
 		if (!timings.reportedStoppedPlayback) {
 			timings.reportedStoppedPlayback = time
@@ -476,12 +476,18 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		this.#compareAndSetPartValue('_rank', rank)
 	}
 
-	setTaken(takeTime: number, playOffset: number): void {
+	setTaken(takeTime: number, playOffset: number | null): void {
 		this.#compareAndSetPartInstanceValue('isTaken', true)
 
-		const timings = { ...this.PartInstanceImpl.timings }
+		const timings = { ...this.partInstanceImpl.timings }
 		timings.take = takeTime
-		timings.playOffset = playOffset
+		timings.playOffset = playOffset ?? 0
+
+		if (playOffset !== null) {
+			// Shift the startedPlayback into the past, to cause playout to start a while into the Part:
+			// Note: We won't use the takeTime here, since the takeTime is when we started executing the take, and we'd rather have the play-time to be Now instead
+			timings.plannedStartedPlayback = getCurrentTime() - playOffset
+		}
 
 		this.#compareAndSetPartInstanceValue('timings', timings, true)
 	}
@@ -507,7 +513,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		this.#compareAndSetPartInstanceValue(
 			'part',
 			{
-				...this.PartInstanceImpl.part,
+				...this.partInstanceImpl.part,
 				...trimmedProps,
 			},
 			true

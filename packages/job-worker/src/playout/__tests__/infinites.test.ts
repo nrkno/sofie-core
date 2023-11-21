@@ -43,7 +43,7 @@ describe('canContinueAdlibOnEndInfinites', () => {
 		expect(rundown).toBeTruthy()
 
 		return runJobWithPlayoutModel(context, { playlistId: tmpPlaylist._id }, null, async (playoutModel) => {
-			const playlist = playoutModel.Playlist as SetRequired<ReadonlyDeep<DBRundownPlaylist>, 'activationId'>
+			const playlist = playoutModel.playlist as SetRequired<ReadonlyDeep<DBRundownPlaylist>, 'activationId'>
 			if (!playlist.activationId) throw new Error('Missing activationId')
 			return fcn(playoutModel, playlist)
 		})

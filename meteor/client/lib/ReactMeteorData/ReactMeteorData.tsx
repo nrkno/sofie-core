@@ -6,7 +6,7 @@ import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../MeteorReactComponent'
-import { meteorSubscribe, PubSubTypes } from '../../../lib/api/pubsub'
+import { meteorSubscribe, AllPubSubTypes } from '../../../lib/api/pubsub'
 import { stringifyObjects } from '../../../lib/lib'
 
 const globalTrackerQueue: Array<Function> = []
@@ -340,7 +340,10 @@ export function useTracker<T, K extends undefined | T = undefined>(
  * @param {...any[]} args A list of arugments for the subscription. This is used for optimizing the subscription across
  * 		renders so that it isn't torn down and created for every render.
  */
-export function useSubscription<K extends keyof PubSubTypes>(sub: K, ...args: Parameters<PubSubTypes[K]>): boolean {
+export function useSubscription<K extends keyof AllPubSubTypes>(
+	sub: K,
+	...args: Parameters<AllPubSubTypes[K]>
+): boolean {
 	const [ready, setReady] = useState<boolean>(false)
 
 	useEffect(() => {
@@ -359,9 +362,9 @@ export function useSubscription<K extends keyof PubSubTypes>(sub: K, ...args: Pa
 /**
  * Sets up multiple subscriptions of the same type, but with different arguments
  */
-export function useSubscriptions<K extends keyof PubSubTypes>(
+export function useSubscriptions<K extends keyof AllPubSubTypes>(
 	sub: K,
-	argsArray: Parameters<PubSubTypes[K]>[]
+	argsArray: Parameters<AllPubSubTypes[K]>[]
 ): boolean {
 	const [ready, setReady] = useState<boolean>(false)
 

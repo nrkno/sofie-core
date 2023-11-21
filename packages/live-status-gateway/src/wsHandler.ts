@@ -1,9 +1,9 @@
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Observer, SubscriptionId } from '@sofie-automation/server-core-integration'
+import { CoreConnection, Observer, SubscriptionId } from '@sofie-automation/server-core-integration'
 import { Logger } from 'winston'
 import { WebSocket } from 'ws'
 import { CoreHandler } from './coreHandler'
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import { CorelibPubSub, CorelibPubSubCollections, CorelibPubSubTypes } from '@sofie-automation/corelib/dist/pubsub'
 
 export abstract class WebSocketTopicBase {
 	protected _name: string
@@ -49,10 +49,18 @@ export interface WebSocketTopic {
 	sendMessage(ws: WebSocket, msg: object): void
 }
 
-export abstract class CollectionBase<T> {
+export type ObserverForCollection<T> = T extends keyof CorelibPubSubCollections
+	? Observer<CorelibPubSubCollections[T]>
+	: undefined
+
+export abstract class CollectionBase<
+	T,
+	TPubSub extends CorelibPubSub | undefined,
+	TCollection extends keyof CorelibPubSubCollections | undefined
+> {
 	protected _name: string
-	protected _collectionName: CollectionName | undefined
-	protected _publicationName: string | undefined
+	protected _collectionName: TCollection
+	protected _publicationName: TPubSub
 	protected _logger: Logger
 	protected _coreHandler: CoreHandler
 	protected _studioId!: StudioId
@@ -60,15 +68,13 @@ export abstract class CollectionBase<T> {
 	protected _observers: Set<CollectionObserver<T>> = new Set()
 	protected _collectionData: T | undefined
 	protected _subscriptionId: SubscriptionId | undefined
-	protected _dbObserver: Observer | undefined
+	protected _dbObserver: ObserverForCollection<TCollection> | undefined
 
-	constructor(
-		name: string,
-		collection: CollectionName | undefined,
-		publication: string | undefined,
-		logger: Logger,
-		coreHandler: CoreHandler
-	) {
+	protected get _core(): CoreConnection<CorelibPubSubTypes, CorelibPubSubCollections> {
+		return this._coreHandler.core
+	}
+
+	constructor(name: string, collection: TCollection, publication: TPubSub, logger: Logger, coreHandler: CoreHandler) {
 		this._name = name
 		this._collectionName = collection
 		this._publicationName = publication

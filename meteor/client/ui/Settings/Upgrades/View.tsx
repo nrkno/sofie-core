@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Spinner } from '../../../lib/Spinner'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { useSubscription, useTracker } from '../../../lib/ReactMeteorData/ReactMeteorData'
-import { PubSub } from '../../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../../lib/api/pubsub'
 import { UIBlueprintUpgradeStatuses } from '../../Collections'
 import { UIBlueprintUpgradeStatusShowStyle, UIBlueprintUpgradeStatusStudio } from '../../../../lib/api/upgradeStatus'
 import { getUpgradeStatusMessage, UpgradeStatusButtons } from './Components'
@@ -11,7 +11,7 @@ import { getUpgradeStatusMessage, UpgradeStatusButtons } from './Components'
 export function UpgradesView(): JSX.Element {
 	const { t } = useTranslation()
 
-	const isReady = useSubscription(PubSub.uiBlueprintUpgradeStatuses)
+	const isReady = useSubscription(MeteorPubSub.uiBlueprintUpgradeStatuses)
 
 	const statuses = useTracker(() => UIBlueprintUpgradeStatuses.find().fetch(), [])
 
@@ -24,9 +24,11 @@ export function UpgradesView(): JSX.Element {
 
 				<table className="table">
 					<thead>
-						<th>Name</th>
-						<th>&nbsp;</th>
-						<th>&nbsp;</th>
+						<tr>
+							<th>Name</th>
+							<th>&nbsp;</th>
+							<th>&nbsp;</th>
+						</tr>
 					</thead>
 					<tbody>
 						{isReady && statuses && statuses.length === 0 && (

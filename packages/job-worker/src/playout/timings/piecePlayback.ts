@@ -21,7 +21,7 @@ export function onPiecePlaybackStarted(
 		startedPlayback: Time
 	}
 ): void {
-	const playlist = playoutModel.Playlist
+	const playlist = playoutModel.playlist
 
 	const partInstance = playoutModel.getPartInstance(data.partInstanceId)
 	if (!partInstance) {
@@ -44,7 +44,7 @@ export function onPiecePlaybackStarted(
 	}
 
 	const isPlaying = !!(
-		pieceInstance.PieceInstance.reportedStartedPlayback && !pieceInstance.PieceInstance.reportedStoppedPlayback
+		pieceInstance.pieceInstance.reportedStartedPlayback && !pieceInstance.pieceInstance.reportedStoppedPlayback
 	)
 	if (!isPlaying) {
 		logger.debug(
@@ -73,7 +73,7 @@ export function onPiecePlaybackStopped(
 		stoppedPlayback: Time
 	}
 ): void {
-	const playlist = playoutModel.Playlist
+	const playlist = playoutModel.playlist
 
 	const partInstance = playoutModel.getPartInstance(data.partInstanceId)
 	if (!partInstance) {
@@ -92,7 +92,7 @@ export function onPiecePlaybackStopped(
 	}
 
 	const isPlaying = !!(
-		pieceInstance.PieceInstance.reportedStartedPlayback && !pieceInstance.PieceInstance.reportedStoppedPlayback
+		pieceInstance.pieceInstance.reportedStartedPlayback && !pieceInstance.pieceInstance.reportedStoppedPlayback
 	)
 	if (isPlaying) {
 		logger.debug(
@@ -126,17 +126,17 @@ function reportPieceHasStarted(
 		}
 
 		// Update the copy in the next-part if there is one, so that the infinite has the same start after a take
-		const nextPartInstance = playoutModel.NextPartInstance
+		const nextPartInstance = playoutModel.nextPartInstance
 		if (
-			pieceInstance.PieceInstance.infinite &&
+			pieceInstance.pieceInstance.infinite &&
 			nextPartInstance &&
-			nextPartInstance.PartInstance._id !== partInstance.PartInstance._id
+			nextPartInstance.partInstance._id !== partInstance.partInstance._id
 		) {
-			const infiniteInstanceId = pieceInstance.PieceInstance.infinite.infiniteInstanceId
-			for (const nextPieceInstance of nextPartInstance.PieceInstances) {
+			const infiniteInstanceId = pieceInstance.pieceInstance.infinite.infiniteInstanceId
+			for (const nextPieceInstance of nextPartInstance.pieceInstances) {
 				if (
-					!!nextPieceInstance.PieceInstance.infinite &&
-					nextPieceInstance.PieceInstance.infinite.infiniteInstanceId === infiniteInstanceId
+					!!nextPieceInstance.pieceInstance.infinite &&
+					nextPieceInstance.pieceInstance.infinite.infiniteInstanceId === infiniteInstanceId
 				) {
 					nextPieceInstance.setReportedStartedPlayback(timestamp)
 
@@ -147,7 +147,7 @@ function reportPieceHasStarted(
 			}
 		}
 
-		playoutModel.queuePartInstanceTimingEvent(partInstance.PartInstance._id)
+		playoutModel.queuePartInstanceTimingEvent(partInstance.partInstance._id)
 	}
 }
 
@@ -171,6 +171,6 @@ function reportPieceHasStopped(
 			pieceInstance.setPlannedStoppedPlayback(timestamp)
 		}
 
-		playoutModel.queuePartInstanceTimingEvent(pieceInstance.PieceInstance.partInstanceId)
+		playoutModel.queuePartInstanceTimingEvent(pieceInstance.pieceInstance.partInstanceId)
 	}
 }

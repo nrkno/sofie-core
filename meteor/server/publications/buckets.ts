@@ -1,20 +1,17 @@
-import { Meteor } from 'meteor/meteor'
 import { FindOptions } from '../../lib/collections/lib'
 import { BucketSecurity } from '../security/buckets'
 import { meteorPublish } from './lib'
-import { PubSub } from '../../lib/api/pubsub'
+import { MeteorPubSub } from '../../lib/api/pubsub'
 import { Bucket } from '../../lib/collections/Buckets'
-import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
-import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { StudioReadAccess } from '../security/studio'
 import { isProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { BucketAdLibActions, BucketAdLibs, Buckets } from '../collections'
 import { check, Match } from 'meteor/check'
-import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
-import { StudioId, BucketId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { StudioId, BucketId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 meteorPublish(
-	PubSub.buckets,
+	MeteorPubSub.buckets,
 	async function (studioId: StudioId, bucketId: BucketId | null, _token: string | undefined) {
 		check(studioId, String)
 		check(bucketId, Match.Maybe(String))
@@ -42,30 +39,55 @@ meteorPublish(
 	}
 )
 
-meteorPublish(PubSub.bucketAdLibPieces, async function (selector: MongoQuery<BucketAdLib>, _token: string | undefined) {
-	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-	const modifier: FindOptions<BucketAdLib> = {
-		fields: {
-			ingestInfo: 0, // This is a large blob, and is not of interest to the UI
-		},
+meteorPublish(
+	CorelibPubSub.bucketAdLibPieces,
+	async function (studioId: StudioId, bucketId: BucketId, showStyleVariantIds: ShowStyleVariantId[]) {
+		check(studioId, String)
+		check(bucketId, String)
+		check(showStyleVariantIds, Array)
+
+		if (isProtectedString(bucketId) && (await BucketSecurity.allowReadAccess(this, bucketId))) {
+			return BucketAdLibs.findWithCursor(
+				{
+					studioId: studioId,
+					bucketId: bucketId,
+					showStyleVariantId: {
+						$in: [null, ...showStyleVariantIds], // null = valid for all variants
+					},
+				},
+				{
+					fields: {
+						ingestInfo: 0, // This is a large blob, and is not of interest to the UI
+					},
+				}
+			)
+		}
+		return null
 	}
-	if (isProtectedString(selector.bucketId) && (await BucketSecurity.allowReadAccess(this, selector.bucketId))) {
-		return BucketAdLibs.findWithCursor(selector, modifier)
-	}
-	return null
-})
+)
 
 meteorPublish(
-	PubSub.bucketAdLibActions,
-	async function (selector: MongoQuery<BucketAdLibAction>, _token: string | undefined) {
-		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-		const modifier: FindOptions<BucketAdLibAction> = {
-			fields: {
-				ingestInfo: 0, // This is a large blob, and is not of interest to the UI
-			},
-		}
-		if (isProtectedString(selector.bucketId) && (await BucketSecurity.allowReadAccess(this, selector.bucketId))) {
-			return BucketAdLibActions.findWithCursor(selector, modifier)
+	CorelibPubSub.bucketAdLibActions,
+	async function (studioId: StudioId, bucketId: BucketId, showStyleVariantIds: ShowStyleVariantId[]) {
+		check(studioId, String)
+		check(bucketId, String)
+		check(showStyleVariantIds, Array)
+
+		if (isProtectedString(bucketId) && (await BucketSecurity.allowReadAccess(this, bucketId))) {
+			return BucketAdLibActions.findWithCursor(
+				{
+					studioId: studioId,
+					bucketId: bucketId,
+					showStyleVariantId: {
+						$in: [null, ...showStyleVariantIds], // null = valid for all variants
+					},
+				},
+				{
+					fields: {
+						ingestInfo: 0, // This is a large blob, and is not of interest to the UI
+					},
+				}
+			)
 		}
 		return null
 	}

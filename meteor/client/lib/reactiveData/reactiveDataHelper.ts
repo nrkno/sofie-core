@@ -1,5 +1,5 @@
 import { Tracker } from 'meteor/tracker'
-import { meteorSubscribe, PubSubTypes } from '../../../lib/api/pubsub'
+import { meteorSubscribe, AllPubSubTypes } from '../../../lib/api/pubsub'
 import { Meteor } from 'meteor/meteor'
 
 /**
@@ -70,7 +70,7 @@ export abstract class WithManagedTracker {
 		return this._subs.every((e) => e.ready())
 	}
 
-	protected subscribe<K extends keyof PubSubTypes>(sub: K, ...args: Parameters<PubSubTypes[K]>): void {
+	protected subscribe<K extends keyof AllPubSubTypes>(sub: K, ...args: Parameters<AllPubSubTypes[K]>): void {
 		this._subs.push(meteorSubscribe(sub, ...args))
 	}
 

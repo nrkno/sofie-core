@@ -45,11 +45,11 @@ export function getOrderedPartsAfterPlayhead(
 	}
 	const span = context.startSpan('getOrderedPartsAfterPlayhead')
 
-	const playlist = playoutModel.Playlist
+	const playlist = playoutModel.playlist
 	const orderedSegments = playoutModel.getAllOrderedSegments()
 	const orderedParts = playoutModel.getAllOrderedParts()
-	const currentPartInstance = playoutModel.CurrentPartInstance?.PartInstance
-	const nextPartInstance = playoutModel.NextPartInstance?.PartInstance
+	const currentPartInstance = playoutModel.currentPartInstance?.partInstance
+	const nextPartInstance = playoutModel.nextPartInstance?.partInstance
 
 	// If the nextPartInstance consumes the
 	const alreadyConsumedQueuedSegmentId =
