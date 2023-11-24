@@ -4168,7 +4168,7 @@
     webpack-sources "^3.2.2"
 
 "@sofie-automation/blueprints-integration@link:blueprints-integration":
-  version "1.49.0"
+  version "1.49.1"
   dependencies:
     "@sofie-automation/shared-lib" "link:shared-lib"
     tslib "^2.4.0"
@@ -4197,7 +4197,7 @@
     shelljs "^0.8.5"
 
 "@sofie-automation/corelib@link:corelib":
-  version "1.49.0"
+  version "1.49.1"
   dependencies:
     "@sofie-automation/blueprints-integration" "link:blueprints-integration"
     "@sofie-automation/shared-lib" "link:shared-lib"
@@ -4213,10 +4213,10 @@
     underscore "^1.13.4"
 
 "@sofie-automation/shared-lib@link:shared-lib":
-  version "1.49.0"
+  version "1.49.1"
   dependencies:
     "@mos-connection/model" "^3.0.4"
-    timeline-state-resolver-types "8.1.0"
+    timeline-state-resolver-types "8.1.1-nightly-fix-multi-osc-logging-20231124-150959-9f6786b60.0"
     tslib "^2.4.0"
     type-fest "^2.19.0"
 
@@ -14956,17 +14956,17 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@8.1.0:
-  version "8.1.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-8.1.0.tgz#f30547c802d689770ca97be225084e8fc43c55eb"
-  integrity sha512-XROh0/BUCMXDBjxoExwPkWBREAJSJQQmdL7jkMQqnLfz1FfzHG6IQIU/nKlRVjd5ur5fq1lzfsK5xUzQYlI2+Q==
+timeline-state-resolver-types@8.1.1-nightly-fix-multi-osc-logging-20231124-150959-9f6786b60.0:
+  version "8.1.1-nightly-fix-multi-osc-logging-20231124-150959-9f6786b60.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-8.1.1-nightly-fix-multi-osc-logging-20231124-150959-9f6786b60.0.tgz#b6f318c227f14ee1b1c59f73fa3b31bfcab180ec"
+  integrity sha512-lUx3xvRTlRq4vFq4j57rk++OVaqHwZkAoJnYAulxgKpuco2Y9UwFG0upXxobzSYzKyz8y0QHdDSq/8QZMo0aig==
   dependencies:
     tslib "^2.4.1"
 
-timeline-state-resolver@8.1.0:
-  version "8.1.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-8.1.0.tgz#2f3ff66faa8bfaeaf4635f4fda6892883b74cfea"
-  integrity sha512-mPV2bXny4pGv50BRcXe8F8mSYo+34M9sJzoR9Hv+UX6XGlDl0XjEpFizdOLpKNeFKabJVHH+JOIvsughoHdxqA==
+timeline-state-resolver@8.1.1-nightly-fix-multi-osc-logging-20231124-150959-9f6786b60.0:
+  version "8.1.1-nightly-fix-multi-osc-logging-20231124-150959-9f6786b60.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-8.1.1-nightly-fix-multi-osc-logging-20231124-150959-9f6786b60.0.tgz#c84dad23de72c580776e9ebfef25e2c0c9de5459"
+  integrity sha512-lr/id8hF/phs3JOZSuuOroXv6UXgy51gWyI/q2tsloKPFU/T4joaWhEwsqRhQpDivrIxhYi2Lu4kYOIWl1fYIA==
   dependencies:
     "@tv2media/v-connection" "^7.3.0"
     atem-connection "2.5.0"
@@ -14988,7 +14988,7 @@ timeline-state-resolver@8.1.0:
     sprintf-js "^1.1.2"
     superfly-timeline "^8.3.1"
     threadedclass "^1.2.0"
-    timeline-state-resolver-types "8.1.0"
+    timeline-state-resolver-types "8.1.1-nightly-fix-multi-osc-logging-20231124-150959-9f6786b60.0"
     tslib "^2.4.1"
     tv-automation-quantel-gateway-client "^3.0.2"
     underscore "^1.13.4"
