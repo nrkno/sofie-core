@@ -21,7 +21,7 @@ import { getResolvedPiecesForCurrentPartInstance } from './resolvedPieces'
 import { clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { updateTimeline } from './timeline/generate'
-import { PartEventContext, RundownContext } from '../blueprints/context'
+import { OnTakeContext, PartEventContext, RundownContext } from '../blueprints/context'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { innerStopPieces } from './adlibUtils'
 import { reportPartInstanceHasStarted, reportPartInstanceHasStopped } from './timings/partPlayback'
@@ -31,6 +31,13 @@ import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/d
 import { TakeNextPartProps } from '@sofie-automation/corelib/dist/worker/studio'
 import { runJobWithPlayoutModel } from './lock'
 import _ = require('underscore')
+import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
+import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
+import {
+	PartAndPieceInstanceActionService,
+	applyActionSideEffects,
+} from '../blueprints/context/services/PartAndPieceInstanceActionService'
+import { PlayoutRundownModel } from './model/PlayoutRundownModel'
 
 /**
  * Take the currently Next:ed Part (start playing it)
@@ -189,6 +196,16 @@ export async function performTakeToNextedPart(
 	if (!takeRundown)
 		throw new Error(`takeRundown: takeRundown not found! ("${takePartInstance.partInstance.rundownId}")`)
 
+	const showStyle = await pShowStyle
+	const blueprint = await context.getShowStyleBlueprint(showStyle._id)
+
+	const { isTakeAborted } = await executeOnTakeCallback(context, playoutModel, showStyle, blueprint, currentRundown)
+
+	if (isTakeAborted) {
+		await updateTimeline(context, playoutModel)
+		return
+	}
+
 	// Autonext may have setup the plannedStartedPlayback. Clear it so that a new value is generated
 	takePartInstance.setPlannedStartedPlayback(undefined)
 	takePartInstance.setPlannedStoppedPlayback(undefined)
@@ -207,8 +224,6 @@ export async function performTakeToNextedPart(
 		playoutModel.getAllOrderedParts()
 	)
 
-	const showStyle = await pShowStyle
-	const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 	if (blueprint.blueprint.onPreTake) {
 		const span = context.startSpan('blueprint.onPreTake')
 		try {
@@ -264,6 +279,47 @@ export async function performTakeToNextedPart(
 	})
 
 	if (span) span.end()
+}
+
+async function executeOnTakeCallback(
+	context: JobContext,
+	playoutModel: PlayoutModel,
+	showStyle: ReadonlyObjectDeep<ProcessedShowStyleCompound>,
+	blueprint: ReadonlyObjectDeep<WrappedShowStyleBlueprint>,
+	currentRundown: PlayoutRundownModel
+): Promise<{ isTakeAborted: boolean }> {
+	let isTakeAborted = false
+	if (blueprint.blueprint.onTake) {
+		const watchedPackagesHelper = WatchedPackagesHelper.empty(context)
+		const onSetAsNextContext = new OnTakeContext(
+			{
+				name: `${currentRundown.rundown.name}(${playoutModel.playlist.name})`,
+				identifier: `playlist=${playoutModel.playlist._id},rundown=${
+					currentRundown.rundown._id
+				},currentPartInstance=${
+					playoutModel.playlist.currentPartInfo?.partInstanceId
+				},execution=${getRandomId()}`,
+				tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT store these notes
+			},
+			context,
+			playoutModel,
+			showStyle,
+			watchedPackagesHelper,
+			new PartAndPieceInstanceActionService(context, playoutModel, showStyle, currentRundown)
+		)
+		try {
+			await blueprint.blueprint.onTake(onSetAsNextContext)
+			await applyOnTakeSideEffects(context, playoutModel, onSetAsNextContext)
+			isTakeAborted = onSetAsNextContext.isTakeAborted
+		} catch (err) {
+			logger.error(`Error in showStyleBlueprint.onTake: ${stringifyError(err)}`)
+		}
+	}
+	return { isTakeAborted }
+}
+
+async function applyOnTakeSideEffects(context: JobContext, playoutModel: PlayoutModel, onTakeContext: OnTakeContext) {
+	await applyActionSideEffects(context, playoutModel, onTakeContext)
 }
 
 /**

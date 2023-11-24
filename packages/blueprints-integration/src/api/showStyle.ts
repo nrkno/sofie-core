@@ -16,6 +16,8 @@ import type {
 	IRundownActivationContext,
 	IShowStyleContext,
 	IFixUpConfigContext,
+	IOnTakeContext,
+	IOnSetAsNextContext,
 } from '../context'
 import type { IngestAdlib, ExtendedIngestRundown, IngestSegment } from '../ingest'
 import type { IBlueprintExternalMessageQueueObj } from '../message'
@@ -163,9 +165,21 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 	onRundownFirstTake?: (context: IPartEventContext) => Promise<void>
 	onRundownDeActivate?: (context: IRundownActivationContext) => Promise<void>
 
-	/** Called after a Take action */
+	/** Called before a Take action */
 	onPreTake?: (context: IPartEventContext) => Promise<void>
+	/**
+	 * Called during a Take action.
+	 * Allows for part modification or aborting the take.
+	 */
+	onTake?: (context: IOnTakeContext) => Promise<void>
+	/** Called after a Take action */
 	onPostTake?: (context: IPartEventContext) => Promise<void>
+
+	/**
+	 * Called when a part is set as Next, including right after a Take.
+	 * Allows for part modification.
+	 */
+	onSetAsNext?: (context: IOnSetAsNextContext) => Promise<void>
 
 	/** Called after the timeline has been generated, used to manipulate the timeline */
 	onTimelineGenerate?: (

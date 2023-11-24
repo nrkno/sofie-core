@@ -1,17 +1,16 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion, @typescript-eslint/unbound-method */
-import { IBlueprintMutatablePart, IBlueprintPart, IBlueprintPiece } from '@sofie-automation/blueprints-integration'
-import { ActionExecutionContext } from '../context/adlibActions'
+import { IBlueprintMutatablePart, IBlueprintPiece } from '@sofie-automation/blueprints-integration'
 import { PlayoutModel } from '../../playout/model/PlayoutModel'
 import { WatchedPackagesHelper } from '../context/watchedPackages'
 import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
 import { mock } from 'jest-mock-extended'
 import { PartAndPieceInstanceActionService } from '../context/services/PartAndPieceInstanceActionService'
-import { ProcessedShowStyleConfig } from '../config'
+import { OnSetAsNextContext } from '../context'
 
 describe('Test blueprint api context', () => {
 	async function getTestee() {
 		const mockActionService = mock<PartAndPieceInstanceActionService>()
-		const context = new ActionExecutionContext(
+		const context = new OnSetAsNextContext(
 			{
 				name: 'fakeContext',
 				identifier: 'action',
@@ -19,7 +18,6 @@ describe('Test blueprint api context', () => {
 			mock<JobContext>(),
 			mock<PlayoutModel>(),
 			mock<ProcessedShowStyleCompound>(),
-			mock<ProcessedShowStyleConfig>(),
 			mock<WatchedPackagesHelper>(),
 			mockActionService
 		)
@@ -107,30 +105,6 @@ describe('Test blueprint api context', () => {
 			await context.updatePieceInstance('pieceId', { name: 'My Piece' } as IBlueprintPiece<unknown>)
 			expect(mockActionService.updatePieceInstance).toHaveBeenCalledTimes(1)
 			expect(mockActionService.updatePieceInstance).toHaveBeenCalledWith('pieceId', { name: 'My Piece' })
-		})
-
-		test('queuePart', async () => {
-			const { context, mockActionService } = await getTestee()
-
-			await context.queuePart({ title: 'My Piece' } as IBlueprintPart<unknown>, [])
-			expect(mockActionService.queuePart).toHaveBeenCalledTimes(1)
-			expect(mockActionService.queuePart).toHaveBeenCalledWith({ title: 'My Piece' }, [])
-		})
-
-		test('stopPiecesOnLayers', async () => {
-			const { context, mockActionService } = await getTestee()
-
-			await context.stopPiecesOnLayers(['myLayer'], 1000)
-			expect(mockActionService.stopPiecesOnLayers).toHaveBeenCalledTimes(1)
-			expect(mockActionService.stopPiecesOnLayers).toHaveBeenCalledWith(['myLayer'], 1000)
-		})
-
-		test('stopPieceInstances', async () => {
-			const { context, mockActionService } = await getTestee()
-
-			await context.stopPieceInstances(['pieceInstanceId'], 1000)
-			expect(mockActionService.stopPieceInstances).toHaveBeenCalledTimes(1)
-			expect(mockActionService.stopPieceInstances).toHaveBeenCalledWith(['pieceInstanceId'], 1000)
 		})
 
 		test('removePieceInstances', async () => {

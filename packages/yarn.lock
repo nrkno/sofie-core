@@ -4528,6 +4528,7 @@ __metadata:
     deepmerge: ^4.3.1
     elastic-apm-node: ^3.50.0
     eventemitter3: ^4.0.7
+    jest-mock-extended: ^3.0.5
     mongodb: ^5.9.0
     p-lazy: ^3.1.0
     p-timeout: ^4.1.0

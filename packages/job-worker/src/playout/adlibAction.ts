@@ -5,22 +5,25 @@ import { getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { ExecuteActionProps, ExecuteActionResult } from '@sofie-automation/corelib/dist/worker/studio'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
-import { DatastoreActionExecutionContext, ActionExecutionContext, ActionPartChange } from '../blueprints/context'
+import { DatastoreActionExecutionContext, ActionExecutionContext } from '../blueprints/context'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { JobContext, ProcessedShowStyleCompound } from '../jobs'
 import { getCurrentTime } from '../lib'
 import { ReadonlyDeep } from 'type-fest'
 import { PlayoutModel } from './model/PlayoutModel'
-import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { runJobWithPlaylistLock } from './lock'
 import { updateTimeline } from './timeline/generate'
 import { performTakeToNextedPart } from './take'
 import { ActionUserData } from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { logger } from '../logging'
-import { validateScratchpartPartInstanceProperties } from './scratchpad'
 import { PlayoutRundownModel } from './model/PlayoutRundownModel'
 import { createPlayoutModelfromInitModel, loadPlayoutModelPreInit } from './model/implementation/LoadPlayoutModel'
+import {
+	ActionPartChange,
+	PartAndPieceInstanceActionService,
+	applyActionSideEffects,
+} from '../blueprints/context/services/PartAndPieceInstanceActionService'
 
 /**
  * Execute an AdLib Action
@@ -149,8 +152,8 @@ export async function executeActionInner(
 		playoutModel,
 		showStyle,
 		context.getShowStyleBlueprintConfig(showStyle),
-		rundown,
-		watchedPackages
+		watchedPackages,
+		new PartAndPieceInstanceActionService(context, playoutModel, showStyle, rundown)
 	)
 
 	// If any action cannot be done due to timings, that needs to be rejected by the context
@@ -188,43 +191,15 @@ async function applyAnyExecutionSideEffects(
 	actionContext: ActionExecutionContext,
 	now: number
 ) {
-	if (
-		actionContext.currentPartState !== ActionPartChange.NONE ||
-		actionContext.nextPartState !== ActionPartChange.NONE
-	) {
-		await syncPlayheadInfinitesForNextPartInstance(
-			context,
-			playoutModel,
-			playoutModel.currentPartInstance,
-			playoutModel.nextPartInstance
-		)
-	}
-
-	if (actionContext.nextPartState !== ActionPartChange.NONE) {
-		const nextPartInstance = playoutModel.nextPartInstance
-		if (nextPartInstance) {
-			nextPartInstance.recalculateExpectedDurationWithPreroll()
-
-			validateScratchpartPartInstanceProperties(context, playoutModel, nextPartInstance)
-		}
-	}
-
-	if (actionContext.currentPartState !== ActionPartChange.NONE) {
-		const currentPartInstance = playoutModel.currentPartInstance
-		if (currentPartInstance) {
-			validateScratchpartPartInstanceProperties(context, playoutModel, currentPartInstance)
-		}
-	}
+	await applyActionSideEffects(context, playoutModel, actionContext)
 
 	if (actionContext.takeAfterExecute) {
 		await performTakeToNextedPart(context, playoutModel, now)
-	} else {
-		if (
-			actionContext.currentPartState !== ActionPartChange.NONE ||
-			actionContext.nextPartState !== ActionPartChange.NONE
-		) {
-			await updateTimeline(context, playoutModel)
-		}
+	} else if (
+		actionContext.currentPartState !== ActionPartChange.NONE ||
+		actionContext.nextPartState !== ActionPartChange.NONE
+	) {
+		await updateTimeline(context, playoutModel)
 	}
 }
 
