@@ -7,7 +7,7 @@ export interface SegmentTiming {
 }
 
 export interface CurrentSegmentTiming extends SegmentTiming {
-	expectedEndTime: number
+	projectedEndTime: number
 }
 
 export function calculateCurrentSegmentTiming(
@@ -25,14 +25,14 @@ export function calculateCurrentSegmentTiming(
 		currentPartInstance.timings?.plannedStartedPlayback ??
 		Date.now()
 	const leftToPlay = segmentTiming.expectedDurationMs - playedDurations
-	const expectedEndTime = leftToPlay + currentPartInstanceStart
-	const expectedBudgetEndTime =
+	const projectedEndTime = leftToPlay + currentPartInstanceStart
+	const projectedBudgetEndTime =
 		(firstInstanceInSegmentPlayout?.timings?.reportedStartedPlayback ??
 			firstInstanceInSegmentPlayout?.timings?.plannedStartedPlayback ??
 			0) + (segmentTiming.budgetDurationMs ?? 0)
 	return {
 		...segmentTiming,
-		expectedEndTime: segmentTiming.budgetDurationMs != null ? expectedBudgetEndTime : expectedEndTime,
+		projectedEndTime: segmentTiming.budgetDurationMs != null ? projectedBudgetEndTime : projectedEndTime,
 	}
 }
 

@@ -3,7 +3,7 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 export interface PartTiming {
 	startTime: number
 	expectedDurationMs: number
-	expectedEndTime: number
+	projectedEndTime: number
 }
 
 export function calculateCurrentPartTiming(
@@ -35,6 +35,6 @@ export function calculateCurrentPartTiming(
 	return {
 		startTime,
 		expectedDurationMs: currentPartInstance.part.expectedDuration ?? 0,
-		expectedEndTime: startTime + expectedDuration,
+		projectedEndTime: startTime + expectedDuration,
 	}
 }
