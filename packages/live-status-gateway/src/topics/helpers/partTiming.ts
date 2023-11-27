@@ -14,7 +14,9 @@ export function calculateCurrentPartTiming(
 	let expectedDuration = currentPartInstance.part.expectedDuration ?? 0
 
 	if (isMemberOfDisplayDurationGroup && currentPartInstance.part.expectedDuration === 0) {
-		// TODO: support partInstance order edge case
+		// TODO: This implementation currently only handles the simplest use case of Display Duration Groups,
+		// where all members of a group are within a single Segment, and one or more Parts with expectedDuration===0
+		// follow (not necessarily immediately) a Part with expectedDuration!==0.
 		const displayDurationGroup = segmentPartInstances.filter(
 			(partInstance) => partInstance.part.displayDurationGroup === currentPartInstance.part.displayDurationGroup
 		)
