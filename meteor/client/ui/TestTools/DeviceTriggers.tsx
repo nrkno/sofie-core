@@ -109,15 +109,17 @@ function DeviceTriggersControls({ peripheralDeviceId }: IDatastoreControlsProps)
 								</tr>
 								<tr>
 									<td colSpan={5}>
-										{mountedTriggersPreviews
-											.filter((preview) => preview.actionId === entry.actionId)
-											.map((preview) => (
-												<span key={unprotectString(preview._id)}>
-													{JSON.stringify(preview.label)}: {String(preview.type)} {preview.sourceLayerType}{' '}
-													{preview.sourceLayerName?.name}{' '}
-													{preview.sourceLayerName?.abbreviation ? `(${preview.sourceLayerName.abbreviation})` : null}
-												</span>
-											))}
+										<ul className="mod mhn mvn">
+											{mountedTriggersPreviews
+												.filter((preview) => preview.actionId === entry.actionId)
+												.map((preview) => (
+													<li key={unprotectString(preview._id)}>
+														{JSON.stringify(preview.label)}: {String(preview.type)} {preview.sourceLayerType}{' '}
+														{preview.sourceLayerName?.name}{' '}
+														{preview.sourceLayerName?.abbreviation ? `(${preview.sourceLayerName.abbreviation})` : null}
+													</li>
+												))}
+										</ul>
 									</td>
 								</tr>
 							</Fragment>
