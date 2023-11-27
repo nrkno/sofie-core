@@ -67,7 +67,7 @@ $defs:
         description: Unique id of the segment this part belongs to
         type: string
       autoNext:
-        description: Should this part progress to the next automatically
+        description: If this part will progress to the next automatically
         type: boolean
         default: false
     required: [id, name, segmentId]
