@@ -17,6 +17,7 @@ const THROTTLE_PERIOD_MS = 200
 
 interface SegmentStatus {
 	id: string
+	identifier?: string
 	rundownId: string
 	name: string
 	timing: SegmentTiming
@@ -67,6 +68,7 @@ export class SegmentsTopic
 					rundownId: unprotectString(segment.rundownId),
 					name: segment.name,
 					timing: calculateSegmentTiming(this._partsBySegment[segmentId] ?? []),
+					identifier: segment.identifier,
 				}
 			}),
 		}

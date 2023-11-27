@@ -14,6 +14,8 @@ let additionalTags: Record<string, string> = {}
 let timeout: NodeJS.Timeout | undefined = undefined
 let bufferedTraces: Influx.IPoint[] = []
 
+const APP_HOST = process.env.APP_HOST
+
 export interface TimeTrace {
 	measurement: FinishedTrace['measurement']
 	tags: FinishedTrace['tags']
@@ -112,7 +114,7 @@ export function initInfluxdb(config: InfluxConfig, tags: Record<string, string>)
 
 		additionalTags = {
 			...tags,
-			host: os.hostname(),
+			host: APP_HOST ?? os.hostname(),
 		}
 	}
 }

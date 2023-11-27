@@ -254,31 +254,39 @@ All notable changes to this project will be documented in this file. See [standa
 - verifyHashedToken compatible with securityVerify ([7052f3d](https://github.com/nrkno/sofie-core/commit/7052f3dc3844bc272719fedf5c3da799a1d38dd1))
 - working re-layouting of hover inspectors ([87811a9](https://github.com/nrkno/sofie-core/commit/87811a90e18eb6cd9427773e820a1cee7517da6c))
 
-## [1.49.0](https://github.com/nrkno/sofie-core/compare/v1.49.0-in-testing.10...v1.49.0) (2023-10-06)
+### [1.49.1](https://github.com/nrkno/sofie-core/compare/v1.49.0...v1.49.1) (2023-10-20)
 
+### Features
+
+- bumps TSR to 8.0.1 for a Release49.1 minor release ([6b9e763](https://github.com/nrkno/sofie-core/commit/6b9e76349149e2650fd9ed89e86b32ff031a26f4))
 
 ### Bug Fixes
 
-* error is reported in the Rundown View when an empty Combo is created in Action Triggers ([e6a0c5f](https://github.com/nrkno/sofie-core/commit/e6a0c5f4161132e300fa225e8aad50e1cbe72ffb))
-* update casparcg-connection ([366f75c](https://github.com/nrkno/sofie-core/commit/366f75ce1bfab3054cc93bee58c6601bd4a40ceb))
+- allow BucketAdlibAction to access PackageInfos SOFIE-2655 ([#1052](https://github.com/nrkno/sofie-core/issues/1052)) ([e2ff354](https://github.com/nrkno/sofie-core/commit/e2ff3545d097c74429bc81070f503795d5f1008f))
+- Multiline config fields fail to save SOFIE-2715 ([d3931fb](https://github.com/nrkno/sofie-core/commit/d3931fbdbd2b96903b02a53e18f2c77d661bca73))
+
+## [1.49.0](https://github.com/nrkno/sofie-core/compare/v1.49.0-in-testing.10...v1.49.0) (2023-10-06)
+
+### Bug Fixes
+
+- error is reported in the Rundown View when an empty Combo is created in Action Triggers ([e6a0c5f](https://github.com/nrkno/sofie-core/commit/e6a0c5f4161132e300fa225e8aad50e1cbe72ffb))
+- update casparcg-connection ([366f75c](https://github.com/nrkno/sofie-core/commit/366f75ce1bfab3054cc93bee58c6601bd4a40ceb))
 
 ## [1.49.0-in-testing.10](///compare/v1.49.0-in-testing.9...v1.49.0-in-testing.10) (2023-10-03)
 
-
 ### Bug Fixes
 
-* Add debug logging for `No partinstance was found during take` SOFIE-2594 ([#1028](undefined/undefined/undefined/issues/1028)) 3771ec1
-* custom publications overly reactive ([#976](undefined/undefined/undefined/issues/976)) 08b5e55
-* don't use setImmediate client side e14dafa
+- Add debug logging for `No partinstance was found during take` SOFIE-2594 ([#1028](undefined/undefined/undefined/issues/1028)) 3771ec1
+- custom publications overly reactive ([#976](undefined/undefined/undefined/issues/976)) 08b5e55
+- don't use setImmediate client side e14dafa
 
 ## [1.49.0-in-testing.9](///compare/v1.49.0-in-testing.8...v1.49.0-in-testing.9) (2023-09-20)
 
-
 ### Bug Fixes
 
-* **docs:** outdated links in documentation 049f86c
-* recompile "@mos-connection/model" with meteor for legacy browsers (casparcg) 1eea0c6
-* **Settings:** provide a stable order for Blueprint configs table columns db42f5f
+- **docs:** outdated links in documentation 049f86c
+- recompile "@mos-connection/model" with meteor for legacy browsers (casparcg) 1eea0c6
+- **Settings:** provide a stable order for Blueprint configs table columns db42f5f
 
 ## [1.49.0-in-testing.8](https://github.com/nrkno/sofie-core/compare/v1.47.6...v1.49.0-in-testing.8) (2023-09-20)
 

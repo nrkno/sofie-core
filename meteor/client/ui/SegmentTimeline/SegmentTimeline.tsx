@@ -1109,7 +1109,6 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 						)}
 				</div>
 
-				<div className="segment-timeline__identifier">{this.props.segment.identifier}</div>
 				{this.props.segment.segmentTiming?.expectedStart || this.props.segment.segmentTiming?.expectedEnd ? (
 					<div className="segment-timeline__expectedTime">
 						<SegmentTimeAnchorTime

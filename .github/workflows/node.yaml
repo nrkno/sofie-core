@@ -231,11 +231,11 @@ jobs:
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
         uses: aquasecurity/trivy-action@0.12.0
         with:
-          image-ref: '${{ steps.trivy-image.outputs.image }}'
-          format: 'table'
+          image-ref: "${{ steps.trivy-image.outputs.image }}"
+          format: "table"
           output: trivy-scan-result.txt
           ignore-unfixed: true
-          severity: 'CRITICAL,HIGH'
+          severity: "CRITICAL,HIGH"
       - name: Post all Trivy scan results to Github Summary as a table
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
         env:
@@ -246,7 +246,6 @@ jobs:
           echo $CODE_BLOCK >> $GITHUB_STEP_SUMMARY
           cat trivy-scan-result.txt >> $GITHUB_STEP_SUMMARY
           echo $CODE_BLOCK >> $GITHUB_STEP_SUMMARY
-
 
   build-gateways:
     # TODO - should this be dependant on tests or something passing if we are on a tag?
@@ -381,11 +380,11 @@ jobs:
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
         uses: aquasecurity/trivy-action@0.12.0
         with:
-          image-ref: '${{ steps.trivy-image.outputs.image }}'
-          format: 'table'
+          image-ref: "${{ steps.trivy-image.outputs.image }}"
+          format: "table"
           output: ${{ matrix.gateway-name }}-trivy-scan-result.txt
           ignore-unfixed: true
-          severity: 'CRITICAL,HIGH'
+          severity: "CRITICAL,HIGH"
       - name: Post all Trivy scan results to Github Summary as a table
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
         env:
@@ -473,12 +472,12 @@ jobs:
           - node-version: 18.x
             package-name: openapi
           # No tests for the gateways yet
-          # - node-version: 16.x
+          # - node-version: 18.x
           #   package-name: playout-gateway
-          # - node-version: 16.x
+          # - node-version: 18.x
           #   package-name: mos-gateway
-          # - node-version: 16.x
-          #   package-name: live-status-gateway
+          - node-version: 18.x
+            package-name: live-status-gateway
 
     steps:
       - uses: actions/checkout@v4
