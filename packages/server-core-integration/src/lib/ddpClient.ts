@@ -519,15 +519,16 @@ export class DDPClient extends EventEmitter<DDPClientEvents> {
 			if (!this.collections[name]) {
 				this.collections[name] = {}
 			}
-			if (!this.collections[name][id]) {
-				this.collections[name][id] = { _id: id }
-			}
+
+			const addedDocument = this.collections[name][id] ? { ...this.collections[name][id] } : { _id: id }
 
 			if (data.fields) {
 				Object.entries<unknown>(data.fields).forEach(([key, value]) => {
-					this.collections[name][id][key] = value
+					addedDocument[key] = value
 				})
 			}
+
+			this.collections[name][id] = addedDocument
 
 			if (this.observers[name]) {
 				Object.values<Observer>(this.observers[name]).forEach((ob) => ob.added(id, data.fields))
@@ -570,20 +571,24 @@ export class DDPClient extends EventEmitter<DDPClientEvents> {
 			const clearedFields = data.cleared || []
 			const newFields: { [attr: string]: unknown } = {}
 
+			// cloning allows detection of changed objects in `find` results using shallow comparison
+			const updatedDocument = { ...this.collections[name][id] }
+
 			if (data.fields) {
 				Object.entries<unknown>(data.fields).forEach(([key, value]) => {
-					oldFields[key] = this.collections[name][id][key]
+					oldFields[key] = updatedDocument[key]
 					newFields[key] = value
-					this.collections[name][id][key] = value
+					updatedDocument[key] = value
 				})
 			}
 
 			if (data.cleared) {
 				data.cleared.forEach((value) => {
-					delete this.collections[name][id][value]
+					delete updatedDocument[value]
 				})
 			}
-			this.collections[name][id] = { ...this.collections[name][id] } // allows shallow comparison to detect changed objects
+
+			this.collections[name][id] = updatedDocument
 
 			if (this.observers[name]) {
 				Object.values<Observer>(this.observers[name]).forEach((ob) =>
