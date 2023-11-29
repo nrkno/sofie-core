@@ -4168,7 +4168,7 @@
     webpack-sources "^3.2.2"
 
 "@sofie-automation/blueprints-integration@link:blueprints-integration":
-  version "1.49.0"
+  version "1.49.1"
   dependencies:
     "@sofie-automation/shared-lib" "link:shared-lib"
     tslib "^2.4.0"
@@ -4197,7 +4197,7 @@
     shelljs "^0.8.5"
 
 "@sofie-automation/corelib@link:corelib":
-  version "1.49.0"
+  version "1.49.1"
   dependencies:
     "@sofie-automation/blueprints-integration" "link:blueprints-integration"
     "@sofie-automation/shared-lib" "link:shared-lib"
@@ -4213,7 +4213,7 @@
     underscore "^1.13.4"
 
 "@sofie-automation/shared-lib@link:shared-lib":
-  version "1.49.0"
+  version "1.49.1"
   dependencies:
     "@mos-connection/model" "^3.0.4"
     timeline-state-resolver-types "8.1.0"
@@ -14963,10 +14963,10 @@ timeline-state-resolver-types@8.1.0:
   dependencies:
     tslib "^2.4.1"
 
-timeline-state-resolver@8.1.0:
-  version "8.1.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-8.1.0.tgz#2f3ff66faa8bfaeaf4635f4fda6892883b74cfea"
-  integrity sha512-mPV2bXny4pGv50BRcXe8F8mSYo+34M9sJzoR9Hv+UX6XGlDl0XjEpFizdOLpKNeFKabJVHH+JOIvsughoHdxqA==
+timeline-state-resolver@8.1.1:
+  version "8.1.1"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-8.1.1.tgz#0208015980db4531c4f45882c884c9467cbb69f3"
+  integrity sha512-MY7WNSy9N5VrrFft7P2cBlmzUdzuf0OzGSVTbDjZ2aygb5+VucqrZzzWKTrFPFrUS0/GuPvqtNfETbtczT368Q==
   dependencies:
     "@tv2media/v-connection" "^7.3.0"
     atem-connection "2.5.0"
