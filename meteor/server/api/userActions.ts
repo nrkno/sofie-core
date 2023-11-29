@@ -415,7 +415,7 @@ class ServerUserActionAPI
 				actionId,
 				userData,
 				triggerMode: triggerMode ?? undefined,
-				blueprintsData: null,
+				privateData: null,
 			}
 		)
 	}

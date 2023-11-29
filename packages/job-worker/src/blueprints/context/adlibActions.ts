@@ -213,7 +213,9 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		options?: {
 			excludeCurrentPart?: boolean
 			originalOnly?: boolean
+			/** @deprecated */
 			pieceMetaDataFilter?: any
+			piecePrivateDataFilter?: any
 		}
 	): Promise<IBlueprintPieceInstance | undefined> {
 		const query: MongoQuery<PieceInstance> = {}
@@ -223,6 +225,12 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 				// It should be pretty safe as we are working with the cache version (for now)
 				// @ts-expect-error metaData is `unknown` so no subkeys are known to be valid
 				query[`piece.metaData.${key}`] = value
+			}
+		}
+		if (options?.piecePrivateDataFilter) {
+			for (const [key, value] of Object.entries<unknown>(options.piecePrivateDataFilter)) {
+				// @ts-expect-error metaData is `unknown` so no subkeys are known to be valid
+				query[`piece.privateData.${key}`] = value
 			}
 		}
 
@@ -247,7 +255,9 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		sourceLayerId0: string | string[],
 		options?: {
 			excludeCurrentPart?: boolean
+			/** @deprecated */
 			pieceMetaDataFilter?: any
+			piecePrivateDataFilter?: any
 		}
 	): Promise<IBlueprintPieceDB | undefined> {
 		const query: MongoQuery<Piece> = {}
@@ -257,6 +267,14 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 				// It should be pretty safe as we are working with the cache version (for now)
 				// @ts-expect-error metaData is `unknown` so no subkeys are known to be valid
 				query[`metaData.${key}`] = value
+			}
+		}
+		if (options?.piecePrivateDataFilter) {
+			for (const [key, value] of Object.entries<unknown>(options.piecePrivateDataFilter)) {
+				// TODO do we need better validation here?
+				// It should be pretty safe as we are working with the cache version (for now)
+				// @ts-expect-error metaData is `unknown` so no subkeys are known to be valid
+				query[`privateData.${key}`] = value
 			}
 		}
 

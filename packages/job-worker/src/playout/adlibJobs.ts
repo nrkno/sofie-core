@@ -108,7 +108,7 @@ export async function handleTakePieceAsAdlibNow(context: JobContext, data: TakeP
 						await executeActionInner(context, cache, rundown, showStyle, blueprint, watchedPackages, {
 							...executeProps,
 							triggerMode: undefined,
-							blueprintsData: undefined,
+							privateData: undefined,
 						})
 						break
 					}

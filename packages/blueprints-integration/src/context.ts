@@ -197,7 +197,9 @@ export interface IActionExecutionContext
 		options?: {
 			excludeCurrentPart?: boolean
 			originalOnly?: boolean
+			/** @deprecated */
 			pieceMetaDataFilter?: any // Mongo query against properties inside of piece.metaData
+			piecePrivateDataFilter?: any // Mongo query against properties inside of piece.privateData
 		}
 	): Promise<IBlueprintPieceInstance | undefined>
 	/** Get the previous scripted piece on a given layer, looking backwards from the current part. */
@@ -205,7 +207,9 @@ export interface IActionExecutionContext
 		sourceLayerId: string | string[],
 		options?: {
 			excludeCurrentPart?: boolean
+			/** @deprecated */
 			pieceMetaDataFilter?: any
+			piecePrivateDataFilter?: any // Mongo query against properties inside of piece.privateData
 		}
 	): Promise<IBlueprintPiece | undefined>
 	/** Gets the PartInstance for a PieceInstance retrieved from findLastPieceOnLayer. This primarily allows for accessing metadata of the PartInstance */

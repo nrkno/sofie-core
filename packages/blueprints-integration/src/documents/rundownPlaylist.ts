@@ -16,7 +16,14 @@ export interface IBlueprintResultRundownPlaylist {
 	/** Should time-of-day clocks be used instead of countdowns by default */
 	timeOfDayCountdowns?: boolean
 
-	/** Arbitraty data used by rundowns */
+	/** Arbitraty data for internal use in the blueprints */
+	privateData?: unknown
+	/** Arbitraty data relevant for other systems and exposed to them via APIs */
+	publicData?: unknown
+	/**
+	 * Arbitraty data used by rundowns
+	 * @deprecated Use privateData or publicData
+	 */
 	metaData?: unknown
 }
 

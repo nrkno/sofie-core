@@ -13,10 +13,17 @@ export interface SegmentTimingInfo {
 }
 
 /** The Segment generated from Blueprint */
-export interface IBlueprintSegment<TMetadata = unknown> {
+export interface IBlueprintSegment<TPrivateData = unknown, TPublicData = unknown, TMetadata = TPrivateData> {
 	/** User-presentable name (Slug) for the Title */
 	name: string
-	/** Arbitrary data storage for plugins */
+	/** Arbitraty data for internal use in the blueprints */
+	privateData?: TPrivateData
+	/** Arbitraty data relevant for other systems, made available to them through APIs */
+	publicData?: TPublicData
+	/**
+	 * Arbitraty data storage for plugins
+	 * @deprecated Use privateData or publicData
+	 */
 	metaData?: TMetadata
 	/** Hide the Segment in the UI */
 	isHidden?: boolean

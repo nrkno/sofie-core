@@ -56,7 +56,7 @@ describe('Playout API', () => {
 					actionDocId: actionDocId,
 					actionId: actionId,
 					userData: userData,
-					blueprintsData: undefined,
+					privateData: undefined,
 				})
 			).rejects.toMatchUserError(UserErrorMessage.ActionsNotSupported)
 
@@ -72,7 +72,7 @@ describe('Playout API', () => {
 					actionDocId,
 					actionId,
 					userData,
-					blueprintsData: undefined,
+					privateData: undefined,
 				})
 			).rejects.toMatchUserError(UserErrorMessage.InternalError)
 
@@ -98,7 +98,7 @@ describe('Playout API', () => {
 				actionDocId,
 				actionId,
 				userData,
-				blueprintsData: undefined,
+				privateData: undefined,
 			})
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(0)
@@ -125,7 +125,7 @@ describe('Playout API', () => {
 				actionDocId,
 				actionId,
 				userData,
-				blueprintsData: undefined,
+				privateData: undefined,
 			})
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(1)
@@ -152,7 +152,7 @@ describe('Playout API', () => {
 				actionDocId,
 				actionId,
 				userData,
-				blueprintsData: undefined,
+				privateData: undefined,
 			})
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(1)
@@ -176,7 +176,7 @@ describe('Playout API', () => {
 				actionDocId,
 				actionId,
 				userData,
-				blueprintsData: undefined,
+				privateData: undefined,
 			})
 
 			expect(takeNextPartMock).toHaveBeenCalledTimes(1)
@@ -199,7 +199,7 @@ describe('Playout API', () => {
 				actionDocId,
 				actionId,
 				userData,
-				blueprintsData: undefined,
+				privateData: undefined,
 			})
 
 			expect(takeNextPartMock).toHaveBeenCalledTimes(0)

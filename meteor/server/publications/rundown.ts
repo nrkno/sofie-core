@@ -57,6 +57,7 @@ meteorPublish(PubSub.rundownsForDevice, async function (deviceId, token) {
 	const modifier: FindOptions<DBRundown> = {
 		fields: {
 			metaData: 0,
+			privateData: 0,
 		},
 	}
 
@@ -86,6 +87,7 @@ meteorPublish(PubSub.rundowns, async function (playlistIds, showStyleBaseIds, to
 	const modifier: FindOptions<DBRundown> = {
 		fields: {
 			metaData: 0,
+			privateData: 0,
 		},
 	}
 
@@ -106,6 +108,7 @@ meteorPublish(PubSub.segments, async function (selector, token) {
 	const modifier: FindOptions<DBSegment> = {
 		fields: {
 			metaData: 0,
+			privateData: 0,
 		},
 	}
 	if (
@@ -127,6 +130,7 @@ meteorPublish(PubSub.parts, async function (rundownIds, token) {
 	const modifier: FindOptions<DBPart> = {
 		fields: {
 			metaData: 0,
+			privateData: 0,
 		},
 	}
 
@@ -155,6 +159,7 @@ meteorPublish(PubSub.partInstances, async function (rundownIds, playlistActivati
 		fields: {
 			// @ts-expect-error Mongo typings aren't clever enough yet
 			'part.metaData': 0,
+			'part.privateData': 0,
 		},
 	}
 
@@ -178,6 +183,8 @@ meteorPublish(PubSub.partInstancesSimple, async function (selector, token) {
 		fields: literal<MongoFieldSpecifierZeroes<DBPartInstance>>({
 			// @ts-expect-error Mongo typings aren't clever enough yet
 			'part.metaData': 0,
+			'part.privateData': 0,
+			'part.publicData': 0,
 			isTaken: 0,
 			timings: 0,
 		}),
@@ -200,6 +207,8 @@ meteorPublish(PubSub.partInstancesForSegmentPlayout, async function (selector, t
 		fields: {
 			// @ts-expect-error Mongo typings aren't clever enough yet
 			'part.metaData': 0,
+			'part.privateData': 0,
+			'part.publicData': 0,
 		},
 		sort: {
 			takeCount: 1,
@@ -222,6 +231,7 @@ meteorPublish(PubSub.pieces, async function (selector: MongoQuery<Piece>, token?
 	const modifier: FindOptions<Piece> = {
 		fields: {
 			metaData: 0,
+			privateData: 0,
 			timelineObjectsString: 0,
 		},
 	}
@@ -239,6 +249,7 @@ meteorPublish(PubSub.adLibPieces, async function (selector, token) {
 	const modifier: FindOptions<AdLibPiece> = {
 		fields: {
 			metaData: 0,
+			privateData: 0,
 			timelineObjectsString: 0,
 		},
 	}
@@ -256,6 +267,7 @@ meteorPublish(PubSub.pieceInstances, async function (selector, token) {
 		fields: {
 			// @ts-expect-error Mongo typings aren't clever enough yet
 			'piece.metaData': 0,
+			'piece.privateData': 0,
 			'piece.timelineObjectsString': 0,
 		},
 	}
@@ -278,6 +290,7 @@ meteorPublish(PubSub.pieceInstancesSimple, async function (selector, token) {
 		fields: literal<MongoFieldSpecifierZeroes<PieceInstance>>({
 			// @ts-expect-error Mongo typings aren't clever enough yet
 			'piece.metaData': 0,
+			'piece.privateData': 0,
 			'piece.timelineObjectsString': 0,
 			plannedStartedPlayback: 0,
 			plannedStoppedPlayback: 0,
@@ -349,6 +362,7 @@ meteorPublish(
 		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 		const modifier: FindOptions<RundownBaselineAdLibItem> = {
 			fields: {
+				privateData: 0,
 				timelineObjectsString: 0,
 			},
 		}
@@ -364,7 +378,9 @@ meteorPublish(
 meteorPublish(PubSub.adLibActions, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<AdLibAction> = {
-		fields: {},
+		fields: {
+			privateData: 0,
+		},
 	}
 	if (
 		NoSecurityReadAccess.any() ||
@@ -377,7 +393,9 @@ meteorPublish(PubSub.adLibActions, async function (selector, token) {
 meteorPublish(PubSub.rundownBaselineAdLibActions, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<RundownBaselineAdLibAction> = {
-		fields: {},
+		fields: {
+			privateData: 0,
+		},
 	}
 	if (
 		NoSecurityReadAccess.any() ||
