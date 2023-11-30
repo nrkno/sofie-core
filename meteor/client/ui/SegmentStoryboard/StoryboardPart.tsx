@@ -60,7 +60,7 @@ export function StoryboardPart({
 	onContextMenu,
 	onHoverOver,
 	onHoverOut,
-}: IProps): JSX.Element {
+}: Readonly<IProps>): JSX.Element {
 	const { t } = useTranslation()
 	const [highlight, setHighlight] = useState(false)
 	const willBeAutoNextedInto = isNextPart ? currentPartWillAutonext : part.willProbablyAutoNext

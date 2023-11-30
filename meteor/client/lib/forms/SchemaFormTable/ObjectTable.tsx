@@ -55,7 +55,7 @@ export const SchemaFormObjectTable = ({
 	attr,
 	item,
 	overrideHelper,
-}: SchemaFormObjectTableProps): JSX.Element => {
+}: Readonly<SchemaFormObjectTableProps>): JSX.Element => {
 	const { t } = useTranslation()
 
 	const wrappedRows = useMemo(() => {

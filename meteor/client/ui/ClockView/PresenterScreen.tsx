@@ -210,7 +210,7 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 		}
 		showStyleBaseIds = rundowns.map((rundown) => rundown.showStyleBaseId)
 		const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
-		const partInstance = currentPartInstance || nextPartInstance
+		const partInstance = currentPartInstance ?? nextPartInstance
 		if (partInstance) {
 			// This is to register a reactive dependency on Rundown-spanning PieceInstances, that we may miss otherwise.
 			PieceInstances.find({

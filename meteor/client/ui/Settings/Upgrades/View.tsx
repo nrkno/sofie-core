@@ -69,7 +69,7 @@ interface ShowUpgradesRowProps {
 	resourceName: string
 	upgradeResult: UIBlueprintUpgradeStatusStudio | UIBlueprintUpgradeStatusShowStyle
 }
-function ShowUpgradesRow({ resourceName, upgradeResult }: ShowUpgradesRowProps) {
+function ShowUpgradesRow({ resourceName, upgradeResult }: Readonly<ShowUpgradesRowProps>) {
 	const { t } = useTranslation()
 
 	return (

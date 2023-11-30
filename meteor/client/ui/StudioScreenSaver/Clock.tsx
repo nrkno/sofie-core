@@ -2,7 +2,7 @@ import * as React from 'react'
 import Moment from 'react-moment'
 import { useCurrentTime } from '../../lib/lib'
 
-export function Clock({ className }: { className?: string | undefined }): JSX.Element {
+export function Clock({ className }: Readonly<{ className?: string | undefined }>): JSX.Element {
 	const now = useCurrentTime()
 
 	return (

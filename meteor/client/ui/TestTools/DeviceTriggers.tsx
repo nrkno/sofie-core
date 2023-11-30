@@ -48,7 +48,7 @@ const DeviceTriggersView: React.FC = function TimelineDatastoreView() {
 interface IDatastoreControlsProps {
 	peripheralDeviceId: PeripheralDeviceId
 }
-function DeviceTriggersControls({ peripheralDeviceId }: IDatastoreControlsProps) {
+function DeviceTriggersControls({ peripheralDeviceId }: Readonly<IDatastoreControlsProps>) {
 	const [deviceIds, setDeviceIds] = useState<string[]>([])
 	useSubscription(PeripheralDevicePubSub.mountedTriggersForDevice, peripheralDeviceId, deviceIds)
 	useSubscription(PeripheralDevicePubSub.mountedTriggersForDevicePreview, peripheralDeviceId)
@@ -131,22 +131,20 @@ function DeviceTriggersControls({ peripheralDeviceId }: IDatastoreControlsProps)
 	)
 }
 
-const DeviceTriggersDeviceSelect: React.FC = function DeviceTriggersDeviceSelect() {
+function DeviceTriggersDeviceSelect(): JSX.Element | null {
 	useSubscription(CorelibPubSub.peripheralDevices, null)
 	const devices = useTracker(() => PeripheralDevices.find().fetch(), [])
 
 	if (!devices) return null
 
 	return (
-		<>
-			<ul>
-				{devices.map((device) => (
-					<li key={unprotectString(device._id)}>
-						<Link to={`devicetriggers/${device._id}`}>{device.name}</Link>
-					</li>
-				))}
-			</ul>
-		</>
+		<ul>
+			{devices.map((device) => (
+				<li key={unprotectString(device._id)}>
+					<Link to={`devicetriggers/${device._id}`}>{device.name}</Link>
+				</li>
+			))}
+		</ul>
 	)
 }
 

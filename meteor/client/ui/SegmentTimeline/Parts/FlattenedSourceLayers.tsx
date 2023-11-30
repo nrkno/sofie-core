@@ -14,7 +14,7 @@ interface IFlattenedSourceLayerProps extends ISourceLayerPropsBase {
 	shouldShowDuration: (layer: ISourceLayerExtended) => boolean
 }
 
-export function FlattenedSourceLayers(props: IFlattenedSourceLayerProps): JSX.Element {
+export function FlattenedSourceLayers(props: Readonly<IFlattenedSourceLayerProps>): JSX.Element {
 	const { getPartContext, onMouseDown } = useMouseContext(props)
 
 	const piecesForLayers = useMemo(() => {

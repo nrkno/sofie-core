@@ -103,24 +103,22 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 								// Deep clone the required bits
 								const origPiece = (overrides.piece || this.props.piece) as AdLibPieceUi
 								const pieceCopy: AdLibPieceUi = {
-									...(origPiece as AdLibPieceUi),
+									...origPiece,
 
 									contentStatus: statusObj,
 								}
 
 								overrides.piece = pieceCopy
 							}
-						} else {
-							if (!overrides.piece || !_.isEqual(statusObj, (overrides.piece as PieceUi).contentStatus)) {
-								// Deep clone the required bits
-								const pieceCopy: PieceUi = {
-									...((overrides.piece || piece) as PieceUi),
+						} else if (!overrides.piece || !_.isEqual(statusObj, (overrides.piece as PieceUi).contentStatus)) {
+							// Deep clone the required bits
+							const pieceCopy: PieceUi = {
+								...((overrides.piece || piece) as PieceUi),
 
-									contentStatus: statusObj,
-								}
-
-								overrides.piece = pieceCopy
+								contentStatus: statusObj,
 							}
+
+							overrides.piece = pieceCopy
 						}
 					}
 

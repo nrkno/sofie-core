@@ -32,7 +32,7 @@ const supportedLayers = new Set([
 	SourceLayerType.CAMERA,
 ])
 
-export function PieceCountdownContainer(props: IPropsHeader): JSX.Element | null {
+export function PieceCountdownContainer(props: Readonly<IPropsHeader>): JSX.Element | null {
 	const { pieceInstance, sourceLayer } = useTracker(
 		() => findPieceInstanceToShow(props, supportedLayers),
 		[props.partInstanceId, props.showStyleBaseId],

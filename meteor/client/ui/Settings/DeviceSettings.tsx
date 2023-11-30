@@ -37,7 +37,7 @@ interface IDeviceSettingsTrackedProps {
 	subDevices: PeripheralDevice[] | undefined
 }
 export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, IDeviceSettingsTrackedProps>(
-	(props: IDeviceSettingsProps) => {
+	(props: Readonly<IDeviceSettingsProps>) => {
 		return {
 			device: PeripheralDevices.findOne(props.match.params.deviceId),
 			subDevices: PeripheralDevices.find({
@@ -150,7 +150,7 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 							<h2 className="mhn mtn">{t('Generic Properties')}</h2>
 							<label className="field">
 								<LabelActual label={t('Device Name')} />
-								{!(device && device.name) ? (
+								{!device?.name ? (
 									<div className="error-notice inline">
 										{t('No name set')} <FontAwesomeIcon icon={faExclamationTriangle} />
 									</div>
@@ -257,22 +257,20 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 interface IngestDeviceCoreConfigProps {
 	device: PeripheralDevice
 }
-function IngestDeviceCoreConfig({ device }: IngestDeviceCoreConfigProps) {
+function IngestDeviceCoreConfig({ device }: Readonly<IngestDeviceCoreConfigProps>) {
 	const { t } = useTranslation()
 
 	return (
-		<>
-			<label className="field">
-				<LabelActual label={t('NRCS Name')} />
-				<EditAttribute
-					modifiedClassName="bghl"
-					attribute="nrcsName"
-					obj={device}
-					type="text"
-					collection={PeripheralDevices}
-					className="form-control input text-input input-l"
-				/>
-			</label>
-		</>
+		<label className="field">
+			<LabelActual label={t('NRCS Name')} />
+			<EditAttribute
+				modifiedClassName="bghl"
+				attribute="nrcsName"
+				obj={device}
+				type="text"
+				collection={PeripheralDevices}
+				className="form-control input text-input input-l"
+			/>
+		</label>
 	)
 }

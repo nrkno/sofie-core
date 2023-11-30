@@ -79,7 +79,7 @@ export function useMouseContext(props: ISourceLayerPropsBase): {
 	}
 }
 
-export function SourceLayer(props: ISourceLayerProps): JSX.Element {
+export function SourceLayer(props: Readonly<ISourceLayerProps>): JSX.Element {
 	const { getPartContext, onMouseDown } = useMouseContext(props)
 
 	return (

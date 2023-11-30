@@ -40,7 +40,7 @@ export function BlueprintConfigSchemaSettings({
 
 	configObject: rawConfigObject,
 	saveOverrides: rawSaveOverrides,
-}: BlueprintConfigSchemaSettingsProps): JSX.Element {
+}: Readonly<BlueprintConfigSchemaSettingsProps>): JSX.Element {
 	const { t } = useTranslation()
 
 	const saveOverridesStrippingPrefix = useCallback(
@@ -58,7 +58,7 @@ export function BlueprintConfigSchemaSettings({
 	const sofieEnumDefinitons: Record<string, SchemaFormSofieEnumDefinition> = useMemo(() => {
 		// Future: if there are multiple studios, this could result in duplicates
 		const mappingsDefinition: SchemaFormSofieEnumDefinition = { options: [] }
-		for (const mappings of Object.values<MappingsExt>(layerMappings || {})) {
+		for (const mappings of Object.values<MappingsExt>(layerMappings ?? {})) {
 			for (const [mappingId, mapping] of Object.entries<MappingExt>(mappings)) {
 				mappingsDefinition.options.push({
 					name: mapping.layerName || mappingId,

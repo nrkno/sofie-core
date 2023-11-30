@@ -7,7 +7,7 @@ interface IRundownListItemProblemsProps {
 	errors: INoteBase[]
 }
 
-export default function RundownListItemProblems(props: IRundownListItemProblemsProps): JSX.Element {
+export default function RundownListItemProblems(props: Readonly<IRundownListItemProblemsProps>): JSX.Element {
 	const { warnings, errors } = props
 
 	return (

@@ -168,15 +168,14 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 
 	calculateSegmentDuration(): number {
 		let total = 0
-		if (this.context && this.context.durations) {
-			const durations = this.context.durations as RundownTimingContext
+		if (this.context?.durations) {
+			const durations = this.context.durations
 			this.props.parts.forEach((partExtended) => {
 				// total += durations.partDurations ? durations.partDurations[item._id] : (item.duration || item.renderedDuration || 1)
 				const partInstanceTimingId = getPartInstanceTimingId(partExtended.instance)
 				const duration = Math.max(
 					partExtended.instance.timings?.duration || partExtended.renderedDuration || 0,
-					(durations.partDisplayDurations && durations.partDisplayDurations[partInstanceTimingId]) ||
-						Settings.defaultDisplayDuration
+					durations.partDisplayDurations?.[partInstanceTimingId] || Settings.defaultDisplayDuration
 				)
 				total += duration
 			})
@@ -985,7 +984,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 		const criticalNotes = this.props.segmentNoteCounts.criticial
 		const warningNotes = this.props.segmentNoteCounts.warning
 
-		const identifiers: Array<{ partId: PartId; ident?: string }> = this.props.parts
+		const identifiers: Array<{ partId: PartId; ident: string }> = this.props.parts
 			.map((p) =>
 				p.instance.part.identifier
 					? {
@@ -994,7 +993,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 					  }
 					: null
 			)
-			.filter((entry) => entry !== null) as Array<{ partId: PartId; ident?: string }>
+			.filter((entry): entry is { partId: PartId; ident: string } => entry !== null)
 
 		let countdownToPartId: PartId | undefined = undefined
 		if (!this.props.isLiveSegment) {
@@ -1229,8 +1228,8 @@ export const SegmentTimeline = withTranslation()(
 				)
 				const livePartId = livePart ? getPartInstanceTimingId(livePart.instance) : undefined
 				return [
-					livePartId ? (durations.partDisplayStartsAt || {})[livePartId] : undefined,
-					livePartId ? (durations.partDisplayDurations || {})[livePartId] : undefined,
+					livePartId ? durations.partDisplayStartsAt?.[livePartId] : undefined,
+					livePartId ? durations.partDisplayDurations?.[livePartId] : undefined,
 				]
 			},
 		}

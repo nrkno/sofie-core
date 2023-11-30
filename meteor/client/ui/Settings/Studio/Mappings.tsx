@@ -57,14 +57,18 @@ interface IStudioMappingsProps {
 	translationNamespaces: string[]
 }
 
-export function StudioMappings({ manifest, translationNamespaces, studio }: IStudioMappingsProps): JSX.Element {
+export function StudioMappings({
+	manifest,
+	translationNamespaces,
+	studio,
+}: Readonly<IStudioMappingsProps>): JSX.Element {
 	const { t } = useTranslation()
 
 	const { toggleExpanded, isExpanded } = useToggleExpandHelper()
 
 	const manifestNames = useMemo(() => {
 		return Object.fromEntries(
-			Object.entries<MappingsSettingsManifest>(manifest || {}).map(([id, val]) => [
+			Object.entries<MappingsSettingsManifest>(manifest ?? {}).map(([id, val]) => [
 				id,
 				translateStringIfHasNamespaces(val.displayName, translationNamespaces),
 			])
@@ -192,7 +196,7 @@ function MappingDeletedEntry({
 	mapping,
 	layerId,
 	doUndelete,
-}: DeletedEntryProps) {
+}: Readonly<DeletedEntryProps>) {
 	const { t } = useTranslation()
 
 	const doUndeleteItem = useCallback(() => doUndelete(layerId), [doUndelete, layerId])
@@ -255,7 +259,7 @@ function StudioMappingsEntry({
 	isExpanded,
 	item,
 	overrideHelper,
-}: StudioMappingsEntryProps) {
+}: Readonly<StudioMappingsEntryProps>) {
 	const { t } = useTranslation()
 
 	const toggleEditItem = useCallback(() => toggleExpanded(item.id), [toggleExpanded, item.id])
@@ -318,7 +322,7 @@ function StudioMappingsEntry({
 	}, [manifestNames])
 
 	const mappingTypeOptions = useMemo(() => {
-		return Object.entries<JSONSchema>(manifest?.mappingsSchema || {}).map(([id, entry], i) =>
+		return Object.entries<JSONSchema>(manifest?.mappingsSchema ?? {}).map(([id, entry], i) =>
 			literal<DropdownInputOption<string | number>>({
 				value: id + '',
 				name: entry?.title ?? id + '',
@@ -580,7 +584,7 @@ interface MappingSummaryProps {
 	fields: SchemaSummaryField[]
 	mapping: MappingExt
 }
-function MappingSummary({ translationNamespaces, fields, mapping }: MappingSummaryProps) {
+function MappingSummary({ translationNamespaces, fields, mapping }: Readonly<MappingSummaryProps>) {
 	if (fields.length > 0) {
 		return (
 			<span>

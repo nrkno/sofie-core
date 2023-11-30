@@ -315,7 +315,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	private calculateSegmentDisplayDuration(): number {
 		let total = 0
 		if (this.context?.durations) {
-			const durations = this.context.durations as RundownTimingContext
+			const durations = this.context.durations
 			this.props.partInstances.forEach((partInstance) => {
 				const currentTime = durations.currentTime || getCurrentTime()
 				const duration =

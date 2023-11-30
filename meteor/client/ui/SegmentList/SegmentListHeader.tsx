@@ -40,7 +40,7 @@ export function SegmentListHeader({
 	getSegmentContext,
 	onTimeUntilClick,
 	onHeaderNoteClick,
-}: {
+}: Readonly<{
 	isDetached: boolean
 	isDetachedStick: boolean
 	segment: SegmentUi
@@ -61,7 +61,7 @@ export function SegmentListHeader({
 	onTimeUntilClick: () => void
 	getSegmentContext: () => IContextMenuContext
 	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteSeverity) => void
-}): JSX.Element {
+}>): JSX.Element {
 	const { t } = useTranslation()
 
 	// TODO: This still needs to detect when it should stop being detached, because the original segment is no longer

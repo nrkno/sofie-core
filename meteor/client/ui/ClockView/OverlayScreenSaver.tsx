@@ -7,7 +7,7 @@ import { findNextPlaylist } from '../StudioScreenSaver/StudioScreenSaver'
 import Velocity from 'velocity-animate'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
-export function OverlayScreenSaver({ studioId }: { studioId: StudioId }): JSX.Element {
+export function OverlayScreenSaver({ studioId }: Readonly<{ studioId: StudioId }>): JSX.Element {
 	const studioNameRef = useRef<HTMLDivElement>(null)
 
 	useEffect(() => {

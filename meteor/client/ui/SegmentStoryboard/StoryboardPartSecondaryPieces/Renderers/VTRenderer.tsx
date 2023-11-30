@@ -12,7 +12,7 @@ export function VTRenderer({
 	elementOffset,
 	studio,
 	typeClass,
-}: IDefaultRendererProps): JSX.Element {
+}: Readonly<IDefaultRendererProps>): JSX.Element {
 	const status = pieceInstance.contentStatus?.status
 
 	const vtContent = pieceInstance.instance.piece.content as VTContent

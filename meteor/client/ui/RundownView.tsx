@@ -16,7 +16,7 @@ import Escape from './../lib/Escape'
 import * as i18next from 'i18next'
 import Tooltip from 'rc-tooltip'
 import { NavLink, Route, Prompt } from 'react-router-dom'
-import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { DBRundownPlaylist, RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { StudioRouteSet } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -131,7 +131,6 @@ import {
 	SegmentId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import {
 	Buckets,
 	Parts,
@@ -1258,10 +1257,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					...input,
 					segmentIdsBeforeEachSegment: input.segments.map(
 						(_segment, segmentIndex, segmentArray) =>
-							new Set([
-								...(_.flatten(
+							new Set<SegmentId>([
+								..._.flatten(
 									rundownArray.slice(0, rundownIndex).map((match) => match.segments.map((segment) => segment._id))
-								) as SegmentId[]),
+								),
 								...segmentArray.slice(0, segmentIndex).map((segment) => segment._id),
 							])
 					),
@@ -1447,7 +1446,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 				// Try to load defaults from rundown view layouts
 				if (selectedViewLayout && RundownLayoutsAPI.isLayoutForRundownView(selectedViewLayout)) {
-					const rundownLayout = selectedViewLayout as RundownViewLayout
+					const rundownLayout = selectedViewLayout
 					if (!selectedShelfLayout && rundownLayout.shelfLayout) {
 						selectedShelfLayout = props.rundownLayouts.find((i) => i._id === rundownLayout.shelfLayout)
 					}
@@ -1531,10 +1530,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							liveSegment,
 							miniShelfFilter
 								? {
-										...(miniShelfFilter as RundownLayoutFilterBase),
-										currentSegment:
-											!(segment.isHidden && segment.showShelf) &&
-											(miniShelfFilter as RundownLayoutFilterBase).currentSegment,
+										...miniShelfFilter,
+										currentSegment: !(segment.isHidden && segment.showShelf) && miniShelfFilter.currentSegment,
 								  }
 								: undefined,
 							undefined,

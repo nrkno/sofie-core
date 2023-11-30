@@ -11,13 +11,13 @@ export function MediaStatusPopUpHeader({
 	onChange,
 	filter,
 	onFilterChange,
-}: {
+}: Readonly<{
 	sortBy: SortBy
 	sortOrder: SortOrder
 	onChange?: (sortBy: SortBy, sortOrder: SortOrder) => void
 	filter: string
 	onFilterChange?: (filter: string) => void
-}): JSX.Element | null {
+}>): JSX.Element | null {
 	const { t } = useTranslation()
 
 	function changeSortOrder(newSortBy: SortBy, newSortOrder: SortOrder) {
@@ -39,7 +39,7 @@ export function MediaStatusPopUpHeader({
 		if (e.key === 'Escape' || e.key === 'Enter') {
 			if (!(document.activeElement instanceof HTMLElement)) return
 			document.activeElement.blur()
-		} else if (e.key.match(/^F\d+$/)) {
+		} else if (RegExp(/^F\d+$/).exec(e.key)) {
 			e.preventDefault()
 		}
 	}, [])

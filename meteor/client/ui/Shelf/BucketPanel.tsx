@@ -271,7 +271,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		let showStyleBaseId: ShowStyleBaseId | undefined = undefined
 		let showStyleVariantId: ShowStyleVariantId | undefined = undefined
 
-		const selectedPart = props.playlist.currentPartInfo?.partInstanceId || props.playlist.nextPartInfo?.partInstanceId
+		const selectedPart = props.playlist.currentPartInfo?.partInstanceId ?? props.playlist.nextPartInfo?.partInstanceId
 		if (selectedPart) {
 			const part = PartInstances.findOne(selectedPart, {
 				fields: literal<MongoFieldSpecifierOnes<PartInstance>>({
@@ -530,7 +530,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						return
 					}
 					if (this.props.playlist && this.props.playlist.currentPartInfo) {
-						if (isAdLibAction(piece as BucketAdLibItem)) {
+						if (isAdLibAction(piece)) {
 							const bucketAction = piece as BucketAdLibActionUi
 							doUserAction(t, e, UserAction.START_BUCKET_ADLIB, (e) =>
 								MeteorCall.userAction.executeAction(

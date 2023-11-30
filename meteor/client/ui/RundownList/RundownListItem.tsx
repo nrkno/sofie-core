@@ -25,7 +25,7 @@ export function RundownListItem({
 	rundownLayouts,
 	swapRundownOrder,
 	isOnlyRundownInPlaylist,
-}: {
+}: Readonly<{
 	isActive: boolean
 	rundown: Rundown
 	rundownViewUrl?: string
@@ -34,7 +34,7 @@ export function RundownListItem({
 	playlistId: RundownPlaylistId
 	isOnlyRundownInPlaylist?: boolean
 	action?: IRundownPlaylistUiAction
-}): JSX.Element | null {
+}>): JSX.Element | null {
 	const { t } = useTranslation()
 
 	const showStyleBase = useTracker(
@@ -98,7 +98,7 @@ export function RundownListItem({
 					showStyleVariant: showStyleVariant.name,
 					showStyleBase: showStyleBase.name,
 			  })
-			: showStyleBase?.name || ''
+			: showStyleBase?.name ?? ''
 
 	return (
 		<RundownListItemView

@@ -55,7 +55,7 @@ function TimelineView(): JSX.Element {
 interface ITimelineSimulateProps {
 	studioId: StudioId
 }
-function ComponentTimelineSimulate({ studioId }: ITimelineSimulateProps) {
+function ComponentTimelineSimulate({ studioId }: Readonly<ITimelineSimulateProps>) {
 	useSubscription(MeteorPubSub.timelineForStudio, studioId)
 
 	const now = useCurrentTime()
@@ -93,7 +93,7 @@ function ComponentTimelineSimulate({ studioId }: ITimelineSimulateProps) {
 					if (typeof groupStart === 'number') {
 						const relativeNow = now - groupStart
 						// is a piece group or piece related object
-						for (const child of obj.children || []) {
+						for (const child of obj.children ?? []) {
 							applyToArray(child.enable, (enable) => {
 								if (enable.start === 'now') {
 									enable.start = relativeNow
@@ -140,7 +140,7 @@ type FilterInputValue = RegExp | string | undefined
 interface FilterInputProps {
 	filterChanged: (val: FilterInputValue) => void
 }
-function FilterInput({ filterChanged }: FilterInputProps) {
+function FilterInput({ filterChanged }: Readonly<FilterInputProps>) {
 	const [filterText, setFilterText] = useState<string>('')
 	const changeFilter = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
 		setFilterText(e.target.value)
@@ -151,7 +151,7 @@ function FilterInput({ filterChanged }: FilterInputProps) {
 		if (!filterText || typeof filterText !== 'string') {
 			filterChanged(undefined)
 			setIsError(false)
-		} else if (filterText.match(/^\/.+\/$/)) {
+		} else if (RegExp(/^\/.+\/$/).exec(filterText)) {
 			try {
 				filterChanged(new RegExp(filterText.substr(1, filterText.length - 2)))
 				setIsError(false)
@@ -181,7 +181,7 @@ interface TimelineStateTableProps {
 	now: number
 	resolvedTimeline: ResolvedTimeline | undefined
 }
-function TimelineStateTable({ resolvedTimeline, now }: TimelineStateTableProps) {
+function TimelineStateTable({ resolvedTimeline, now }: Readonly<TimelineStateTableProps>) {
 	const [viewTime, setViewTime] = useState<number | null>(null)
 	const selectViewTime = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
 		const val = Number(e.target.value)
@@ -238,7 +238,7 @@ function renderTimelineState(state: TimelineState, filter: RegExp | string | und
 		if (typeof filter === 'string') {
 			filteredLayers = filteredLayers.filter((o) => String(o.layer).includes(filter))
 		} else {
-			filteredLayers = filteredLayers.filter((o) => !!String(o.layer).match(filter))
+			filteredLayers = filteredLayers.filter((o) => !!RegExp(filter).exec(String(o.layer)))
 		}
 	}
 
@@ -255,7 +255,7 @@ function renderTimelineState(state: TimelineState, filter: RegExp | string | und
 				End: {o.instance.end}
 			</td>
 			<td>{o.content.type}</td>
-			<td>{(o.classes || []).join('<br />')}</td>
+			<td>{(o.classes ?? []).join('<br />')}</td>
 			<td style={{ whiteSpace: 'pre' }}>
 				<pre>{JSON.stringify(o.content, undefined, '\t')}</pre>
 			</td>
@@ -266,7 +266,7 @@ function renderTimelineState(state: TimelineState, filter: RegExp | string | und
 interface TimelineInstancesTableProps {
 	resolvedTl: ResolvedTimeline | undefined
 }
-function TimelineInstancesTable({ resolvedTl }: TimelineInstancesTableProps) {
+function TimelineInstancesTable({ resolvedTl }: Readonly<TimelineInstancesTableProps>) {
 	const [idFilter, setIdFilter] = useState<FilterInputValue>(undefined)
 
 	return (
@@ -302,7 +302,7 @@ function renderTimelineInstances(resolvedTl: ResolvedTimeline, filter: RegExp | 
 		if (typeof filter === 'string') {
 			filteredObjects = filteredObjects.filter((o) => o.id.includes(filter))
 		} else {
-			filteredObjects = filteredObjects.filter((o) => !!o.id.match(filter))
+			filteredObjects = filteredObjects.filter((o) => !!RegExp(filter).exec(o.id))
 		}
 	}
 
@@ -329,7 +329,7 @@ interface ChangeEntry {
 	msg: string
 }
 
-function TimelineChangesLog({ resolvedTl, timelineHash }: TimelineChangesLogProps) {
+function TimelineChangesLog({ resolvedTl, timelineHash }: Readonly<TimelineChangesLogProps>) {
 	const [lastResolvedTl, setLastResolvedTl] = useState<ResolvedTimeline | null>(null)
 	const [idFilter, setIdFilter] = useState<FilterInputValue>(undefined)
 
@@ -409,7 +409,7 @@ function TimelineChangesLog({ resolvedTl, timelineHash }: TimelineChangesLogProp
 		}
 
 		if (newEntries.length) setEntries((old) => [...old, ...newEntries])
-		setLastResolvedTl(clone(resolvedTl) || null)
+		setLastResolvedTl(clone(resolvedTl) ?? null)
 	}, [resolvedTl])
 
 	const doClear = useCallback(() => {
@@ -419,9 +419,9 @@ function TimelineChangesLog({ resolvedTl, timelineHash }: TimelineChangesLogProp
 	const showEntries = useMemo(() => {
 		if (idFilter) {
 			if (typeof idFilter === 'string') {
-				return entries.filter((o) => o.forceShow || o.msg.includes(idFilter))
+				return entries.filter((o) => !!o.forceShow || o.msg.includes(idFilter))
 			} else {
-				return entries.filter((o) => o.forceShow || !!o.msg.match(idFilter))
+				return entries.filter((o) => !!o.forceShow || !!RegExp(idFilter).exec(o.msg))
 			}
 		} else {
 			return entries
