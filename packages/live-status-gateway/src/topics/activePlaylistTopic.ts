@@ -14,22 +14,38 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { WebSocketTopicBase, WebSocketTopic, CollectionObserver } from '../wsHandler'
-import { PartInstanceName, PartInstancesHandler } from '../collections/partInstances'
+import { SelectedPartInstances, PartInstancesHandler } from '../collections/partInstancesHandler'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { interpollateTranslation } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { AdLibsHandler } from '../collections/adLibs'
-import { GlobalAdLibsHandler } from '../collections/globalAdLibs'
-import { PlaylistHandler } from '../collections/playlist'
-import { ShowStyleBaseHandler } from '../collections/showStyleBase'
-import { AdLibActionsHandler } from '../collections/adLibActions'
-import { GlobalAdLibActionsHandler } from '../collections/globalAdLibActions'
+import { AdLibsHandler } from '../collections/adLibsHandler'
+import { GlobalAdLibsHandler } from '../collections/globalAdLibsHandler'
+import { PlaylistHandler } from '../collections/playlistHandler'
+import { ShowStyleBaseHandler } from '../collections/showStyleBaseHandler'
+import { AdLibActionsHandler } from '../collections/adLibActionsHandler'
+import { GlobalAdLibActionsHandler } from '../collections/globalAdLibActionsHandler'
+import { CurrentSegmentTiming, calculateCurrentSegmentTiming } from './helpers/segmentTiming'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { PartsHandler } from '../collections/partsHandler'
+import _ = require('underscore')
+import { PartTiming, calculateCurrentPartTiming } from './helpers/partTiming'
+
+const THROTTLE_PERIOD_MS = 20
 
 interface PartStatus {
 	id: string
 	segmentId: string
 	name: string
 	autoNext?: boolean
+}
+
+interface CurrentPartStatus extends PartStatus {
+	timing: PartTiming
+}
+
+interface CurrentSegmentStatus {
+	id: string
+	timing: CurrentSegmentTiming
 }
 
 interface AdLibActionType {
@@ -51,7 +67,8 @@ export interface ActivePlaylistStatus {
 	id: string | null
 	name: string
 	rundownIds: string[]
-	currentPart: PartStatus | null
+	currentPart: CurrentPartStatus | null
+	currentSegment: CurrentSegmentStatus | null
 	nextPart: PartStatus | null
 	adLibs: AdLibStatus[]
 	globalAdLibs: AdLibStatus[]
@@ -62,9 +79,10 @@ export class ActivePlaylistTopic
 	implements
 		WebSocketTopic,
 		CollectionObserver<DBRundownPlaylist>,
-		CollectionObserver<Map<PartInstanceName, DBPartInstance | undefined>>,
+		CollectionObserver<SelectedPartInstances>,
 		CollectionObserver<AdLibAction[]>,
-		CollectionObserver<RundownBaselineAdLibAction[]>
+		CollectionObserver<RundownBaselineAdLibAction[]>,
+		CollectionObserver<DBPart[]>
 {
 	public observerName = ActivePlaylistTopic.name
 	private _sourceLayersMap: Map<string, string> = new Map()
@@ -72,13 +90,21 @@ export class ActivePlaylistTopic
 	private _activePlaylist: DBRundownPlaylist | undefined
 	private _currentPartInstance: DBPartInstance | undefined
 	private _nextPartInstance: DBPartInstance | undefined
+	private _firstInstanceInSegmentPlayout: DBPartInstance | undefined
+	private _partInstancesInCurrentSegment: DBPartInstance[] = []
 	private _adLibActions: AdLibAction[] | undefined
 	private _abLibs: AdLibPiece[] | undefined
 	private _globalAdLibActions: RundownBaselineAdLibAction[] | undefined
 	private _globalAdLibs: RundownBaselineAdLibItem[] | undefined
+	private _partsBySegmentId: Record<string, DBPart[]> = {}
+	private throttledSendStatusToAll: () => void
 
 	constructor(logger: Logger) {
 		super(ActivePlaylistTopic.name, logger)
+		this.throttledSendStatusToAll = _.throttle(this.sendStatusToAll.bind(this), THROTTLE_PERIOD_MS, {
+			leading: false,
+			trailing: true,
+		})
 	}
 
 	addSubscriber(ws: WebSocket): void {
@@ -87,8 +113,16 @@ export class ActivePlaylistTopic
 	}
 
 	sendStatus(subscribers: Iterable<WebSocket>): void {
-		const currentPartInstance = this._currentPartInstance ? this._currentPartInstance.part : null
-		const nextPartInstance = this._nextPartInstance ? this._nextPartInstance.part : null
+		if (
+			this._currentPartInstance?._id !== this._activePlaylist?.currentPartInfo?.partInstanceId ||
+			this._nextPartInstance?._id !== this._activePlaylist?.nextPartInfo?.partInstanceId
+		) {
+			// data is inconsistent, let's wait
+			return
+		}
+
+		const currentPart = this._currentPartInstance ? this._currentPartInstance.part : null
+		const nextPart = this._nextPartInstance ? this._nextPartInstance.part : null
 		const adLibs: AdLibStatus[] = []
 		const globalAdLibs: AdLibStatus[] = []
 
@@ -190,20 +224,37 @@ export class ActivePlaylistTopic
 					id: unprotectString(this._activePlaylist._id),
 					name: this._activePlaylist.name,
 					rundownIds: this._activePlaylist.rundownIdsInOrder.map((r) => unprotectString(r)),
-					currentPart: currentPartInstance
+					currentPart:
+						this._currentPartInstance && currentPart
+							? literal<CurrentPartStatus>({
+									id: unprotectString(currentPart._id),
+									name: currentPart.title,
+									autoNext: currentPart.autoNext,
+									segmentId: unprotectString(currentPart.segmentId),
+									timing: calculateCurrentPartTiming(
+										this._currentPartInstance,
+										this._partInstancesInCurrentSegment
+									),
+							  })
+							: null,
+					currentSegment:
+						this._currentPartInstance && currentPart
+							? literal<CurrentSegmentStatus>({
+									id: unprotectString(currentPart.segmentId),
+									timing: calculateCurrentSegmentTiming(
+										this._currentPartInstance,
+										this._firstInstanceInSegmentPlayout,
+										this._partInstancesInCurrentSegment,
+										this._partsBySegmentId[unprotectString(currentPart.segmentId)] ?? []
+									),
+							  })
+							: null,
+					nextPart: nextPart
 						? literal<PartStatus>({
-								id: unprotectString(currentPartInstance._id),
-								name: currentPartInstance.title,
-								autoNext: currentPartInstance.autoNext,
-								segmentId: unprotectString(currentPartInstance.segmentId),
-						  })
-						: null,
-					nextPart: nextPartInstance
-						? literal<PartStatus>({
-								id: unprotectString(nextPartInstance._id),
-								name: nextPartInstance.title,
-								autoNext: nextPartInstance.autoNext,
-								segmentId: unprotectString(nextPartInstance.segmentId),
+								id: unprotectString(nextPart._id),
+								name: nextPart.title,
+								autoNext: nextPart.autoNext,
+								segmentId: unprotectString(nextPart.segmentId),
 						  })
 						: null,
 					adLibs,
@@ -215,6 +266,7 @@ export class ActivePlaylistTopic
 					name: '',
 					rundownIds: [],
 					currentPart: null,
+					currentSegment: null,
 					nextPart: null,
 					adLibs: [],
 					globalAdLibs: [],
@@ -230,11 +282,12 @@ export class ActivePlaylistTopic
 		data:
 			| DBRundownPlaylist
 			| DBShowStyleBase
-			| Map<PartInstanceName, DBPartInstance | undefined>
+			| SelectedPartInstances
 			| AdLibAction[]
 			| RundownBaselineAdLibAction[]
 			| AdLibPiece[]
 			| RundownBaselineAdLibItem[]
+			| DBPart[]
 			| undefined
 	): Promise<void> {
 		switch (source) {
@@ -282,10 +335,14 @@ export class ActivePlaylistTopic
 				break
 			}
 			case PartInstancesHandler.name: {
-				const partInstances = data as Map<PartInstanceName, DBPartInstance | undefined>
-				this._logger.info(`${this._name} received partInstances update from ${source}`)
-				this._currentPartInstance = partInstances.get(PartInstanceName.current)
-				this._nextPartInstance = partInstances.get(PartInstanceName.next)
+				const partInstances = data as SelectedPartInstances
+				this._logger.info(
+					`${this._name} received partInstances update from ${source} with ${partInstances.inCurrentSegment.length} instances in segment`
+				)
+				this._currentPartInstance = partInstances.current
+				this._nextPartInstance = partInstances.next
+				this._firstInstanceInSegmentPlayout = partInstances.firstInSegmentPlayout
+				this._partInstancesInCurrentSegment = partInstances.inCurrentSegment
 				break
 			}
 			case AdLibActionsHandler.name: {
@@ -312,10 +369,19 @@ export class ActivePlaylistTopic
 				this._globalAdLibs = globalAdLibs
 				break
 			}
+			case PartsHandler.name: {
+				this._partsBySegmentId = _.groupBy(data as DBPart[], 'segmentId')
+				this._logger.info(`${this._name} received parts update from ${source}`)
+				break
+			}
 			default:
 				throw new Error(`${this._name} received unsupported update from ${source}}`)
 		}
 
+		this.throttledSendStatusToAll()
+	}
+
+	private sendStatusToAll() {
 		this.sendStatus(this._subscribers)
 	}
 }

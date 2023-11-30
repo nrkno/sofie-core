@@ -16,9 +16,9 @@ export class SegmentsHandler extends CollectionBase<DBSegment[]> implements Coll
 		this.throttledNotify = _.throttle(this.notify.bind(this), THROTTLE_PERIOD_MS, { leading: true, trailing: true })
 	}
 
-	async setSegments(rundowns: DBSegment[]): Promise<void> {
-		this._logger.info(`'${this._name}' handler received segments update with ${rundowns.length} segments`)
-		this._collectionData = rundowns
+	async setSegments(segments: DBSegment[]): Promise<void> {
+		this._logger.info(`'${this._name}' handler received segments update with ${segments.length} segments`)
+		this._collectionData = segments
 		await this.throttledNotify(this._collectionData)
 	}
 

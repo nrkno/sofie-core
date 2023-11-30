@@ -1,23 +1,25 @@
 import { Logger } from 'winston'
 import { CoreHandler } from './coreHandler'
 import { WebSocket, WebSocketServer } from 'ws'
-import { StudioHandler } from './collections/studio'
-import { ShowStyleBaseHandler } from './collections/showStyleBase'
-import { PlaylistHandler } from './collections/playlist'
+import { StudioHandler } from './collections/studioHandler'
+import { ShowStyleBaseHandler } from './collections/showStyleBaseHandler'
+import { PlaylistHandler } from './collections/playlistHandler'
 import { RundownHandler } from './collections/rundownHandler'
 // import { RundownsHandler } from './collections/rundownsHandler'
 import { SegmentHandler } from './collections/segmentHandler'
 // import { PartHandler } from './collections/part'
-import { PartInstancesHandler } from './collections/partInstances'
-import { AdLibActionsHandler } from './collections/adLibActions'
-import { GlobalAdLibActionsHandler } from './collections/globalAdLibActions'
+import { PartInstancesHandler } from './collections/partInstancesHandler'
+import { AdLibActionsHandler } from './collections/adLibActionsHandler'
+import { GlobalAdLibActionsHandler } from './collections/globalAdLibActionsHandler'
 import { RootChannel } from './topics/root'
-import { StudioTopic } from './topics/studio'
-import { ActivePlaylistTopic } from './topics/activePlaylist'
-import { AdLibsHandler } from './collections/adLibs'
-import { GlobalAdLibsHandler } from './collections/globalAdLibs'
+import { StudioTopic } from './topics/studioTopic'
+import { ActivePlaylistTopic } from './topics/activePlaylistTopic'
+import { AdLibsHandler } from './collections/adLibsHandler'
+import { GlobalAdLibsHandler } from './collections/globalAdLibsHandler'
 import { SegmentsTopic } from './topics/segmentsTopic'
 import { SegmentsHandler } from './collections/segmentsHandler'
+import { PartHandler } from './collections/partHandler'
+import { PartsHandler } from './collections/partsHandler'
 
 export class LiveStatusServer {
 	_logger: Logger
@@ -56,8 +58,10 @@ export class LiveStatusServer {
 		await segmentsHandler.init()
 		const segmentHandler = new SegmentHandler(this._logger, this._coreHandler, segmentsHandler)
 		await segmentHandler.init()
-		// const partHandler = new PartHandler(this._logger, this._coreHandler)
-		// await partHandler.init()
+		const partsHandler = new PartsHandler(this._logger, this._coreHandler)
+		await partsHandler.init()
+		const partHandler = new PartHandler(this._logger, this._coreHandler, partsHandler)
+		await partHandler.init()
 		const partInstancesHandler = new PartInstancesHandler(this._logger, this._coreHandler)
 		await partInstancesHandler.init()
 		const adLibActionsHandler = new AdLibActionsHandler(this._logger, this._coreHandler)
@@ -72,7 +76,7 @@ export class LiveStatusServer {
 		// add observers for collection subscription updates
 		await playlistHandler.subscribe(rundownHandler)
 		await playlistHandler.subscribe(segmentHandler)
-		// playlistHandler.subscribe(partHandler)
+		await playlistHandler.subscribe(partHandler)
 		await playlistHandler.subscribe(partInstancesHandler)
 		await rundownHandler.subscribe(showStyleBaseHandler)
 		await partInstancesHandler.subscribe(rundownHandler)
@@ -93,8 +97,11 @@ export class LiveStatusServer {
 		await adLibsHandler.subscribe(activePlaylistTopic)
 		await globalAdLibActionsHandler.subscribe(activePlaylistTopic)
 		await globalAdLibsHandler.subscribe(activePlaylistTopic)
+		await partsHandler.subscribe(activePlaylistTopic)
+
 		await playlistHandler.subscribe(segmentsTopic)
 		await segmentsHandler.subscribe(segmentsTopic)
+		await partsHandler.subscribe(segmentsTopic)
 
 		const wss = new WebSocketServer({ port: 8080 })
 		wss.on('connection', (ws, request) => {
