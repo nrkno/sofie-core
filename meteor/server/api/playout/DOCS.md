@@ -162,7 +162,7 @@ _Prerequisite: deactivated rundown, or in rehearsal mode, or Settings.allowRundo
 *   If rundown is active, create a new rundown id and select the first part and set it as next
 *   Else, set the next part to null
 
-### How Sofie Deactivate a Rundown
+### How Sofie Deactivates a Rundown
 
 *   Call playout gateway devicesStandDown
 *   Get part instances from Cache
