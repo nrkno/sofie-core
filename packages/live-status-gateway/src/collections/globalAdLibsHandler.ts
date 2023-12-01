@@ -2,11 +2,10 @@ import { Logger } from 'winston'
 import { CoreHandler } from '../coreHandler'
 import { CollectionBase, Collection, CollectionObserver } from '../wsHandler'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
-import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { PartInstanceName } from './partInstances'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { PieceId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { SelectedPartInstances } from './partInstancesHandler'
 
 export class GlobalAdLibsHandler
 	extends CollectionBase<
@@ -14,12 +13,10 @@ export class GlobalAdLibsHandler
 		CorelibPubSub.rundownBaselineAdLibPieces,
 		CollectionName.RundownBaselineAdLibPieces
 	>
-	implements
-		Collection<RundownBaselineAdLibItem[]>,
-		CollectionObserver<Map<PartInstanceName, DBPartInstance | undefined>>
+	implements Collection<RundownBaselineAdLibItem[]>, CollectionObserver<SelectedPartInstances>
 {
 	public observerName: string
-	private _curRundownId: RundownId | undefined
+	private _currentRundownId: RundownId | undefined
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
 		super(
@@ -37,25 +34,25 @@ export class GlobalAdLibsHandler
 		if (!this._collectionName) return
 		const collection = this._core.getCollection(this._collectionName)
 		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
-		this._collectionData = collection.find({ rundownId: this._curRundownId })
+		this._collectionData = collection.find({ rundownId: this._currentRundownId })
 		await this.notify(this._collectionData)
 	}
 
-	async update(source: string, data: Map<PartInstanceName, DBPartInstance | undefined> | undefined): Promise<void> {
+	async update(source: string, data: SelectedPartInstances | undefined): Promise<void> {
 		this._logger.info(`${this._name} received globalAdLibs update from ${source}`)
-		const prevRundownId = this._curRundownId
-		const partInstance = data ? data.get(PartInstanceName.current) ?? data.get(PartInstanceName.next) : undefined
-		this._curRundownId = partInstance ? partInstance.rundownId : undefined
+		const prevRundownId = this._currentRundownId
+		const partInstance = data ? data.current ?? data.next : undefined
+		this._currentRundownId = partInstance?.rundownId
 
 		await new Promise(process.nextTick.bind(this))
 		if (!this._collectionName) return
 		if (!this._publicationName) return
-		if (prevRundownId !== this._curRundownId) {
+		if (prevRundownId !== this._currentRundownId) {
 			if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
 			if (this._dbObserver) this._dbObserver.stop()
-			if (this._curRundownId) {
+			if (this._currentRundownId) {
 				this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, [
-					this._curRundownId,
+					this._currentRundownId,
 				])
 				this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
 				this._dbObserver.added = (id) => {
@@ -67,7 +64,7 @@ export class GlobalAdLibsHandler
 
 				const collection = this._core.getCollection(this._collectionName)
 				if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
-				this._collectionData = collection.find({ rundownId: this._curRundownId })
+				this._collectionData = collection.find({ rundownId: this._currentRundownId })
 				await this.notify(this._collectionData)
 			}
 		}

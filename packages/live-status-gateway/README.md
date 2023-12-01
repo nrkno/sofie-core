@@ -49,3 +49,9 @@ ws.addEventListener('error', (error) => {
     console.log('socket error', error);
 });
 ```
+
+### Timing accuracy
+
+The Live Status Gateway provides certain values in the form of timestamps, referencing both past and future events. These timestamps are particularly useful, for instance, in creating countdown timers. It's important to note that these values are relative to the system clock of the machine hosting Sofie Core.
+
+For optimal accuracy, we strongly recommend that external systems and applications leveraging these timestamps implement a method for time synchronization. This synchronization should align with the same time source used by Sofie Core — whether at the operating system level (e.g., utilizing a system-wide NTP client) or at the application level.

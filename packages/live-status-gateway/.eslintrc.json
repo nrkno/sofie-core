@@ -13,7 +13,7 @@
 	"rules": {
 		"prettier/prettier": ["error", { "endOfLine": "auto" }],
 		"node/no-unpublished-import": ["error", {
-			"allowModules": ["jest-mock-extended"]
+			"allowModules": ["jest-mock-extended", "type-fest"]
 		}]
 	},
 	"parserOptions": {

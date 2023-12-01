@@ -14875,6 +14875,7 @@ asn1@evs-broadcast/node-asn1:
     influx: ^5.9.3
     jest-mock-extended: ^3.0.5
     tslib: ^2.6.2
+    type-fest: ^4.5.0
     underscore: ^1.13.6
     winston: ^3.10.0
     ws: ^8.14.2
@@ -22204,6 +22205,13 @@ asn1@evs-broadcast/node-asn1:
   version: 3.13.1
   resolution: "type-fest@npm:3.13.1"
   checksum: c06b0901d54391dc46de3802375f5579868949d71f93b425ce564e19a428a0d411ae8d8cb0e300d330071d86152c3ea86e744c3f2860a42a79585b6ec2fdae8e
+  languageName: node
+  linkType: hard
+
+"type-fest@npm:^4.5.0":
+  version: 4.5.0
+  resolution: "type-fest@npm:4.5.0"
+  checksum: cddc3900f19671e16ec49080e5c06c197d5554a75a1b758ff6d07af1089925ade4bcc9d1af080bd4a4a4fdf973a90ad4a83229203c854a444c511f8a3daeb56d
   languageName: node
   linkType: hard
 

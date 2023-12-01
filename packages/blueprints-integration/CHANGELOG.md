@@ -30,8 +30,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 # [1.50.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.0...v1.50.0-in-testing.1) (2023-07-05)
 
-**Note:** Version bump only for package @sofie-automation/blueprints-integration
-
 # [1.50.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.4...v1.50.0-in-testing.0) (2023-07-03)
 
 ### Bug Fixes
@@ -50,6 +48,14 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 - move blueprint ab logic into sofie SOFIE-2403 ([#946](https://github.com/nrkno/tv-automation-server-core/issues/946)) ([cc37b75](https://github.com/nrkno/tv-automation-server-core/commit/cc37b751d674be7f8631d0315e52f8fa29a8d3c4))
 - move gateway settings onto Studio SOFIE-1330 ([#907](https://github.com/nrkno/tv-automation-server-core/issues/907)) ([523c061](https://github.com/nrkno/tv-automation-server-core/commit/523c061c51296e21814deeeabbe9aafca21cd5a6))
 - trs actions in blueprints rundown hooks ([bb5e442](https://github.com/nrkno/tv-automation-server-core/commit/bb5e4422fa32e1af1e520e0c288360b304da4289))
+
+## [1.49.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0...v1.49.1) (2023-10-20)
+
+**Note:** Version bump only for package @sofie-automation/blueprints-integration
+
+# [1.49.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.10...v1.49.0) (2023-10-06)
+
+**Note:** Version bump only for package @sofie-automation/blueprints-integration
 
 # [1.49.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.10...v1.49.0) (2023-10-06)
 
