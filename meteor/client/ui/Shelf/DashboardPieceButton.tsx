@@ -181,7 +181,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 
 	private renderSplits(renderThumbnail = false) {
 		const splitAdLib = this.props.piece
-		if (splitAdLib && splitAdLib.content) {
+		if (splitAdLib?.content) {
 			return (
 				<>
 					{renderThumbnail ? (
@@ -250,7 +250,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	}
 
 	private handleOnTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-		if (e.changedTouches && e.changedTouches.length) {
+		if (e.changedTouches && e.changedTouches.length > 0) {
 			this.handleMove(e.changedTouches[0].clientX)
 		}
 	}

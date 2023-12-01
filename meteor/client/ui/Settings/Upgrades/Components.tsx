@@ -28,7 +28,7 @@ export function getUpgradeStatusMessage(t: TFunction, upgradeResult: UIBlueprint
 interface UpgradeStatusButtonsProps {
 	upgradeResult: UIBlueprintUpgradeStatusStudio | UIBlueprintUpgradeStatusShowStyle
 }
-export function UpgradeStatusButtons({ upgradeResult }: UpgradeStatusButtonsProps): JSX.Element {
+export function UpgradeStatusButtons({ upgradeResult }: Readonly<UpgradeStatusButtonsProps>): JSX.Element {
 	const { t } = useTranslation()
 
 	const validateConfig = useCallback(async () => {

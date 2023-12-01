@@ -484,7 +484,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 			}
 		}
 
-		onGoToPartInner = (part: PartUi, _timingDurations: RundownTimingContext, zoomInToFit?: boolean) => {
+		onGoToPartInner = (part: PartUi, zoomInToFit?: boolean) => {
 			this.setState((state) => {
 				const timelineWidth = this.timelineDiv instanceof HTMLElement ? getElementWidth(this.timelineDiv) : 0 // unsure if this is good default/substitute
 				let newScale: number | undefined
@@ -534,23 +534,19 @@ export const SegmentTimelineContainer = withResolvedSegment(
 
 		onGoToPart = (e: GoToPartEvent) => {
 			if (this.props.segmentId === e.segmentId) {
-				const timingDurations = this.context?.durations as RundownTimingContext
-
 				const part = this.props.parts.find((part) => part.partId === e.partId)
 				if (part) {
-					this.onGoToPartInner(part, timingDurations, e.zoomInToFit)
+					this.onGoToPartInner(part, e.zoomInToFit)
 				}
 			}
 		}
 
 		onGoToPartInstance = (e: GoToPartInstanceEvent) => {
 			if (this.props.segmentId === e.segmentId) {
-				const timingDurations = this.context?.durations as RundownTimingContext
-
 				const part = this.props.parts.find((part) => part.instance._id === e.partInstanceId)
 
 				if (part) {
-					this.onGoToPartInner(part, timingDurations, e.zoomInToFit)
+					this.onGoToPartInner(part, e.zoomInToFit)
 				}
 			}
 		}

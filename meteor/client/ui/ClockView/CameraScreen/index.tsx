@@ -49,12 +49,12 @@ const PARAM_NAME_SOURCE_LAYER_IDS = 'sourceLayerIds'
 const PARAM_NAME_STUDIO_LABEL = 'studioLabels'
 const PARAM_NAME_FULLSCREEN = 'fullscreen'
 
-export function CameraScreen({ playlist, studioId }: IProps): JSX.Element | null {
+export function CameraScreen({ playlist, studioId }: Readonly<IProps>): JSX.Element | null {
 	const playlistIds = playlist ? [playlist._id] : []
 
 	const [studioLabels, setStudioLabels] = useState<string[] | null>(null)
 	const [sourceLayerIds, setSourceLayerIds] = useState<string[] | null>(null)
-	const [fullscreenMode, setFullScreenMode] = useState<boolean>(false)
+	const [fullScreenMode, setFullScreenMode] = useState<boolean>(false)
 
 	useBlackBrowserTheme()
 
@@ -210,7 +210,7 @@ export function CameraScreen({ playlist, studioId }: IProps): JSX.Element | null
 	}, [canvasElRef.current])
 
 	useLayoutEffect(() => {
-		if (!document.fullscreenEnabled || !fullscreenMode) return
+		if (!document.fullscreenEnabled || !fullScreenMode) return
 
 		const targetEl = document.documentElement
 
@@ -228,7 +228,7 @@ export function CameraScreen({ playlist, studioId }: IProps): JSX.Element | null
 		return () => {
 			document.documentElement.removeEventListener('click', onCanvasClick)
 		}
-	}, [fullscreenMode])
+	}, [fullScreenMode])
 
 	useWakeLock()
 

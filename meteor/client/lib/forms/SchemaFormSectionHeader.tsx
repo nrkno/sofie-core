@@ -5,11 +5,11 @@ export function SchemaFormSectionHeader({
 	title,
 	description,
 	translationNamespaces,
-}: {
+}: Readonly<{
 	title: string | undefined
 	description: string | undefined
 	translationNamespaces: string[] | undefined
-}): JSX.Element | null {
+}>): JSX.Element | null {
 	if (!title) return null
 
 	return (

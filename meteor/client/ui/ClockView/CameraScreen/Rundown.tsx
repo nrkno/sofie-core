@@ -17,7 +17,7 @@ interface IProps {
 	rundownIdsBefore: RundownId[]
 }
 
-export function Rundown({ playlist, rundown, rundownIdsBefore }: IProps): JSX.Element | null {
+export function Rundown({ playlist, rundown, rundownIdsBefore }: Readonly<IProps>): JSX.Element | null {
 	const rundownId = rundown._id
 
 	useSubscription(MeteorPubSub.uiShowStyleBase, rundown.showStyleBaseId)

@@ -226,7 +226,7 @@ function SettingsCollapsibleGroup({
 interface SettingsMenuStudioProps {
 	studio: DBStudio
 }
-function SettingsMenuStudio({ studio }: SettingsMenuStudioProps) {
+function SettingsMenuStudio({ studio }: Readonly<SettingsMenuStudioProps>) {
 	const { t } = useTranslation()
 
 	const onDeleteStudio = React.useCallback(
@@ -296,7 +296,7 @@ function studioHasError(studio: DBStudio): boolean {
 interface SettingsMenuShowStyleProps {
 	showStyleBase: DBShowStyleBase
 }
-function SettingsMenuShowStyle({ showStyleBase }: SettingsMenuShowStyleProps) {
+function SettingsMenuShowStyle({ showStyleBase }: Readonly<SettingsMenuShowStyleProps>) {
 	const { t } = useTranslation()
 
 	const onDeleteShowStyleBase = React.useCallback(
@@ -312,7 +312,7 @@ function SettingsMenuShowStyle({ showStyleBase }: SettingsMenuShowStyleProps) {
 					<React.Fragment>
 						<p>
 							{t('Are you sure you want to delete the show style "{{showStyleId}}"?', {
-								showStyleId: showStyleBase && showStyleBase.name,
+								showStyleId: showStyleBase?.name,
 							})}
 						</p>
 						<p>{t('Please note: This action is irreversible!')}</p>
@@ -354,7 +354,7 @@ function SettingsMenuShowStyle({ showStyleBase }: SettingsMenuShowStyleProps) {
 
 		if (!Object.keys(resolvedSourceLayers).length) return true
 		if (!Object.keys(resolvedOutputLayers).length) return true
-		if (!Object.values<IOutputLayer | undefined>(resolvedOutputLayers).find((l) => l && l.isPGM)) return true
+		if (!Object.values<IOutputLayer | undefined>(resolvedOutputLayers).find((l) => !!l?.isPGM)) return true
 		return false
 	}, [showStyleBase.outputLayersWithOverrides, showStyleBase.sourceLayersWithOverrides])
 
@@ -379,7 +379,7 @@ function SettingsMenuShowStyle({ showStyleBase }: SettingsMenuShowStyleProps) {
 interface SettingsMenuBlueprintProps {
 	blueprint: Blueprint
 }
-function SettingsMenuBlueprint({ blueprint }: SettingsMenuBlueprintProps) {
+function SettingsMenuBlueprint({ blueprint }: Readonly<SettingsMenuBlueprintProps>) {
 	const { t } = useTranslation()
 
 	const onDeleteBlueprint = React.useCallback(
@@ -395,7 +395,7 @@ function SettingsMenuBlueprint({ blueprint }: SettingsMenuBlueprintProps) {
 					<React.Fragment>
 						<p>
 							{t('Are you sure you want to delete the blueprint "{{blueprintId}}"?', {
-								blueprintId: blueprint && blueprint.name,
+								blueprintId: blueprint?.name,
 							})}
 						</p>
 						<p>{t('Please note: This action is irreversible!')}</p>
@@ -425,7 +425,7 @@ function SettingsMenuBlueprint({ blueprint }: SettingsMenuBlueprintProps) {
 			) : null}
 			<h3>{blueprint.name || t('Unnamed blueprint')}</h3>
 			<p>
-				{t('Type')} {(blueprint.blueprintType || '').toUpperCase()}
+				{t('Type')} {(blueprint.blueprintType ?? '').toUpperCase()}
 			</p>
 			<p>
 				{t('Version')} {blueprint.blueprintVersion}
@@ -444,7 +444,7 @@ function blueprintHasError(blueprint: Blueprint): boolean {
 interface SettingsMenuPeripheralDeviceProps {
 	device: PeripheralDevice
 }
-function SettingsMenuPeripheralDevice({ device }: SettingsMenuPeripheralDeviceProps) {
+function SettingsMenuPeripheralDevice({ device }: Readonly<SettingsMenuPeripheralDeviceProps>) {
 	const { t } = useTranslation()
 
 	const onDeleteDevice = React.useCallback(
@@ -460,7 +460,7 @@ function SettingsMenuPeripheralDevice({ device }: SettingsMenuPeripheralDevicePr
 					<React.Fragment>
 						<p>
 							{t('Are you sure you want to remove the device "{{deviceName}}" and all of it\'s sub-devices?', {
-								deviceName: device && device.name,
+								deviceName: device?.name,
 							})}
 						</p>
 						<p>{t('Please note: This action is irreversible!')}</p>

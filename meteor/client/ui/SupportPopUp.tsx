@@ -8,7 +8,7 @@ import { CoreSystem } from '../collections'
 
 interface IProps {}
 
-export function SupportPopUp({ children }: React.PropsWithChildren<IProps>): JSX.Element {
+export function SupportPopUp({ children }: Readonly<React.PropsWithChildren<IProps>>): JSX.Element {
 	const { t } = useTranslation()
 
 	const { supportMessage } = useTracker(
@@ -43,7 +43,7 @@ interface IToggleProps {
 	title?: string
 }
 
-export function SupportPopUpToggle({ isOpen, title, onClick }: IToggleProps): JSX.Element {
+export function SupportPopUpToggle({ isOpen, title, onClick }: Readonly<IToggleProps>): JSX.Element {
 	return (
 		<button
 			className={ClassNames('status-bar__controls__button', 'support__toggle-button', {

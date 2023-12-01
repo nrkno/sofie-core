@@ -10,7 +10,7 @@ export function GraphicsRenderer({
 	hovering,
 	elementOffset,
 	typeClass,
-}: IDefaultRendererProps): JSX.Element {
+}: Readonly<IDefaultRendererProps>): JSX.Element {
 	const content = pieceInstance.instance.piece.content as NoraContent | GraphicsContent | undefined
 
 	return (

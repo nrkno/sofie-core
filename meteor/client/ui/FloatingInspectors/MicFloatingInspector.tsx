@@ -16,12 +16,12 @@ interface IProps {
 	displayOn?: 'document' | 'viewport'
 }
 
-export function MicFloatingInspector(props: IProps): JSX.Element {
+export function MicFloatingInspector(props: Readonly<IProps>): JSX.Element {
 	const { t } = useTranslation()
 
 	const ref = useRef<HTMLDivElement>(null)
 
-	const { startOfScript, endOfScript, breakScript } = getScriptPreview(props.content.fullScript || '')
+	const { startOfScript, endOfScript, breakScript } = getScriptPreview(props.content.fullScript ?? '')
 
 	const shown = props.showMiniInspector && props.itemElement !== undefined
 
@@ -37,7 +37,7 @@ export function MicFloatingInspector(props: IProps): JSX.Element {
 				ref={ref}
 			>
 				<div>
-					{props.content && props.content.fullScript ? (
+					{props.content?.fullScript ? (
 						breakScript ? (
 							<React.Fragment>
 								<span className="mini-inspector__full-text text-broken">{startOfScript + '\u2026'}</span>
@@ -55,7 +55,7 @@ export function MicFloatingInspector(props: IProps): JSX.Element {
 						<span className="mini-inspector__full-text text-comment text-end">{props.content.comment}</span>
 					) : null}
 				</div>
-				{props.content && props.content.lastModified ? (
+				{props.content?.lastModified ? (
 					<div className="mini-inspector__footer">
 						<span className="mini-inspector__changed">
 							<Moment date={props.content.lastModified} calendar={true} />

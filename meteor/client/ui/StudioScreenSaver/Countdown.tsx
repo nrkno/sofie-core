@@ -9,10 +9,10 @@ function floorCeil(val: number) {
 export function Countdown({
 	expectedStart,
 	className,
-}: {
+}: Readonly<{
 	expectedStart: number
 	className?: string | undefined
-}): JSX.Element {
+}>): JSX.Element {
 	const { t } = useTranslation()
 	const now = useCurrentTime()
 	const diff = expectedStart - now

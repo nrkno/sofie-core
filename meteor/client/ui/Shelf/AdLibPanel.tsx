@@ -532,7 +532,7 @@ export function AdLibPanel({
 	selectedPiece,
 	includeGlobalAdLibs,
 	onSelectPiece,
-}: IAdLibPanelProps): JSX.Element | null {
+}: Readonly<IAdLibPanelProps>): JSX.Element | null {
 	const { t } = useTranslation()
 	const studio = useTracker(() => UIStudios.findOne(playlist.studioId), [playlist.studioId], undefined)
 

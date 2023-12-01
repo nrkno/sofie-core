@@ -5,7 +5,7 @@ import { ILayerItemRendererProps } from './ItemRendererFactory'
 import { ActionAdLibHotkeyPreview } from '../../../lib/triggers/ActionAdLibHotkeyPreview'
 
 export const DefaultListItemRenderer: React.FunctionComponent<ILayerItemRendererProps> = (
-	props: ILayerItemRendererProps
+	props: Readonly<ILayerItemRendererProps>
 ) => {
 	const type = props.adLibListItem.isAction
 		? props.adLibListItem.isGlobal

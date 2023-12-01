@@ -69,7 +69,7 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 	private onElementResize = (entries: ResizeObserverEntry[]) => {
 		let width: number
 		if (entries && entries[0] && entries[0].contentRect) {
-			width = entries[0].contentRect!.width
+			width = entries[0].contentRect.width
 		} else {
 			width = getElementWidth(this.parentElement)
 		}
