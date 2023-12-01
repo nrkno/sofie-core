@@ -1,6 +1,6 @@
 # Sofie Server Core Playout Logic
 
-All of the server core playout functions run in a lock and cache: [api/playout/lockFunction.ts#L66](./lockFunction.ts#L66)
+<!-- All of the server core playout functions run in a lock and cache: [api/playout/lockFunction.ts#L66](./lockFunction.ts#L66) -->
 
 The user functions for playout (server side) are found here: [api/userActions.ts](../userActions.ts)
 
