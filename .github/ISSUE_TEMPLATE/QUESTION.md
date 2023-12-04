@@ -1,7 +1,7 @@
 ---
 name: Question
 description: Use this if you have a question to the Sofie team
-title: ""
+title: "Question: [Short summary of the question]"
 labels: ❓ Question
 assignees: ''
 
