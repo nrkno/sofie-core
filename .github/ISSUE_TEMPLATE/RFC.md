@@ -44,4 +44,3 @@ The Sofie Team will evaluate this RFC and open up a discussion about it, usually
 - [ ] A workshop has been planned
 - [ ] RFC has been discussed in a workshop
 - [ ] A conclusion has been reached, see comments in thread.
-
