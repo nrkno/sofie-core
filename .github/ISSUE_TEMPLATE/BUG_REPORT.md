@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Use this if you have a problem with Sofie
+description: Use this if you've found a bug
 title: "Bug Report: [Short description of the bug]"
 labels: 🐛bug
 assignees: ''
