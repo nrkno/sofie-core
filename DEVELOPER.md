@@ -1,19 +1,18 @@
-# For developers
+# For Developers
 
-Hello there!
 Before you start, be sure to read the [Contribution guidelines](CONTRIBUTING.md)!
 
 ## About Sofie Core
 
 ### Documentation
 
-The current user facing documentation can be found at [sofie.gitbook.io](https://sofie.gitbook.io/sofie-tv-automation/). The documentation for developers (although scarce) can be found in `DOCS.md` or `DEVELOPER.md` in the subfolders of the git project. (Currently in fact so scarce that [meteor/server/api/playout](meteor/server/api/playout/DOCS.md) is the only you will find, work in progress...)
+The documentation can be found at [Sofie TV Automation Documentation](https://nrkno.github.io/sofie-core/) and its for subsection (For Developers)[https://nrkno.github.io/sofie-core/docs/for-developers/intro]. Specific _Sofie Core_ information can also be in `DOCS.md` and `DEVELOPER.md` in the subfolders of this git project, for example [meteor/server/api/playout](meteor/server/api/playout/DOCS.md).
 
-### Monorepo layout
+### Monorepo Layout
 
 This repository is a monorepo and contains both the main application (usually called server-core) as well as multiple auxiliary projects. In the `meteor` folder you will find the main Meteor application with `server` and `client` sub folders for the server-side application and front end. The `packages` folder contains other libraries and apps used together with Sofie Core.
 
-## Getting started with local development
+## Getting Started with Local Development
 
 Follow these instructions to start up Sofie Core in development mode. (For production deploys, see [System documentation](https://nrkno.github.io/sofie-core/docs/user-guide/installation/intro).)
 
@@ -24,7 +23,7 @@ Follow these instructions to start up Sofie Core in development mode. (For produ
 - Install [Meteor](https://www.meteor.com/install) (`npm install --global meteor`)
 - Install [Yarn](https://yarnpkg.com) (`npm install --global corepack && corepack enable`)
 
-### Quick-start:
+### Quick Start
 
 ```bash
 git clone -b master https://github.com/nrkno/sofie-core.git
@@ -34,7 +33,7 @@ yarn start
 
 > 💡 First startup may take a while, especially on Windows. To speed things up, consider adding `%LOCALAPPDATA%\.meteor` and the directory where you cloned `server-core` to your Windows Defender virus protection exclusions.
 
-### Slightly more detailed start:
+### Slightly more Involved Start
 
 1. Clone the repository (for development, it is recommended to base your work on the latest unstable release branch)
 
@@ -67,7 +66,7 @@ yarn start
    yarn buildstart
    ```
 
-### Dealing with strange errors
+### Dealing with Strange Errors
 
 If you get any strange errors (such as the application crashing, "Unable to resolve some modules" or errors during installation of dependencies), the last resort is to reset and restart:
 
@@ -76,19 +75,19 @@ yarn reset # Removes all installed dependencies and build artifacts
 yarn start # Set up, install and run in dev mode
 ```
 
-## Editing the code
+## Editing the Code
 
 The code is formatted and linted using prettier/eslint. The shared config can be found in the [code-standard-preset](https://github.com/nrkno/tv-automation-sofie-code-standard-preset) project. We recommend using VS code with the Prettier plugin and "format-on-save" enabled.
 
-### When using the Visual Studio Code IDE
+### When Using the Visual Studio Code IDE
 
 We provide a `settings.json.default` file in `.vscode` that you should consider using with your IDE. Also consider installing suggested
 extensions, which should help you create PRs consistent with project's code standards.
 
 
-## Translating Sofie, add a new language
+## Translating Sofie
 
-For support of various languages in the GUI, Sofie uses the i18next framework. It uses JSON-based translation files to store UI strings. In order to build a new translation file, first extract a PO template file from Sofie UI source code:
+For support of various languages in the GUI, Sofie uses the _i18next_ framework. It uses JSON-based translation files to store UI strings. In order to build a new translation file, first extract a PO template file from Sofie UI source code:
 
 ```bash
 cd meteor
@@ -109,7 +108,7 @@ Then submit this as a PR.
 
 ## Other info
 
-### Version numbering scheme
+### Version-Numbering Scheme
 
 This repository, Sofie Core, does not follow semver. We believe that semver does not make sense for Sofie Core as there are so many moving parts that a majority of releases could be considered breaking in some way.
 
@@ -133,7 +132,7 @@ The api of `blueprints-integration` is rather volatile, and often has breaking c
 </tr>
 
 <tr>
-<td>Auto next</td>
+<td>Auto Next</td>
 <td>Part with a set duration after which Sofie will automatically take the next part</td>
 </tr>
 
@@ -143,7 +142,7 @@ The api of `blueprints-integration` is rather volatile, and often has breaking c
 </tr>
 
 <tr>
-<td>Piece or part instance</td>
+<td>Piece or Part Instance</td>
 <td>A copy of the original part or piece that was created just before playback. Can contain timing information and prevents ingest operations from badly affecting parts and pieces on-air</td>
 </tr>
 
