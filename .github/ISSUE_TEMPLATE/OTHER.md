@@ -1,6 +1,6 @@
 ---
 name: Other Issue
-about: Use this for anything else
+about: Use this for other issues
 title: ""
 labels: ""
 assignees: ''
