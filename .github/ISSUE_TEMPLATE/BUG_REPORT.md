@@ -15,7 +15,7 @@ https://nrkno.github.io/sofie-core/docs/for-developers/contribution-guidelines
 ## About Me
 <!--
 Tell us who / which organization you are representing, and how the Sofie team will be able to contact you.
-Example: This issue is posted on behalf of the NRK.
+Example: "This issue is posted on behalf of the NRK."
 -->
 
 ## Observed Behavior
