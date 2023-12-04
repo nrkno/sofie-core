@@ -19,4 +19,4 @@ Example: "This issue is posted on behalf of the NRK."
 -->
 
 ## Issue
-<!-- Write below -->
+<!-- Describe the issue below -->
