@@ -12,9 +12,8 @@ Example: "This pull request is posted on behalf of the NRK."
 
 
 ## Type of Contribution
-<!-- Pick one by marking it with an "x" -->
 
-This is a
+This is a: 
 <!-- (pick one) -->
 Bug fix / Feature / Code improvement / Documentation improvement / Other (please specify)
 
