@@ -1,10 +1,9 @@
-
 <!--
 Before you open a PR, be sure to read our Contribution guidelines:
 https://nrkno.github.io/sofie-core/docs/for-developers/contribution-guidelines
 -->
 
-## About Me
+## About the Contributor
 <!--
 Tell us who / which organization you are representing, and how the Sofie team will be able to contact you.
 Example: "This pull request is posted on behalf of the NRK."
@@ -42,6 +41,7 @@ Examples:
 
 
 ## Other Information
+<!-- The more information you can provide, the easier the pull request will be to merge -->
 
 
 ## Status
