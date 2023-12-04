@@ -1,7 +1,7 @@
 ---
-name: Bug report
+name: Bug Report
 about: Use this if you have a problem with Sofie
-title: "Bug report: [Short description of the bug]"
+title: "Bug Report: [Short description of the bug]"
 labels: 🐛bug
 assignees: ''
 
@@ -12,16 +12,16 @@ Before you post, be sure to read our Contribution guidelines:
 https://nrkno.github.io/sofie-core/docs/for-developers/contribution-guidelines
 -->
 
-## About me
+## About Me
 <!--
-Tell us who / which organization you are representing.
+Tell us who / which organization you are representing, and how the Sofie team will be able to contact you.
 Example: This PR is contributed by NRK
 -->
 
-## Observed behavior
+## Observed Behavior
 <!-- What happened? -->
 
-## Expected behavior
+## Expected Behavior
 <!-- What did you expect to happen? -->
 
 ## Version
