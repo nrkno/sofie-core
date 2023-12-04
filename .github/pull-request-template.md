@@ -15,12 +15,8 @@ Example: "This pull request is posted on behalf of the NRK."
 <!-- Pick one by marking it with an "x" -->
 
 This is a
-
-- [ ] Bug fix
-- [ ] Feature
-- [ ] Code improvement
-- [ ] Documentation improvement
-- [ ] Other (please specify)
+<!-- (pick one) -->
+Bug fix / Feature / Code improvement / Documentation improvement / Other (please specify)
 
 
 ## Current Behavior
