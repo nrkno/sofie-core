@@ -1,8 +1,8 @@
 ---
 name: Other Issue
 description: Use this for other issues
-title: ""
-labels: ""
+title: "Other: [Short description of the issue]"
+labels: "Other"
 assignees: ''
 
 ---
