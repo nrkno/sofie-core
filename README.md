@@ -4,13 +4,14 @@ This is the _Core_ application of the [**Sofie** TV Automation System](https://g
 
 The _Core_ is a _Meteor/Node.JS_-based web server that serves the web GUIs as well as handling the business logic for the Sofie system.
 
-### Repository-specific Info for Developers
-* [Developer Info](DEVELOPER.md)
-* [Contribution Guidelines](CONTRIBUTING.md)
+* [_Core_-specific Developer Info](DEVELOPER.md)
+
 
 ### General Sofie System Info
 * [Documentation](https://nrkno.github.io/sofie-core/)
 * [Releases](https://nrkno.github.io/sofie-core/releases)
+* [Contribution Guidelines](CONTRIBUTING.md)
+*  [License](LICENSE)
 
 ---
 
