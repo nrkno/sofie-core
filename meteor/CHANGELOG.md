@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.49.2](https://github.com/nrkno/sofie-core/compare/v1.49.1...v1.49.2) (2023-11-29)
+
+
+### Bug Fixes
+
+* rundown view fails to load when playlist does not exist SOFIE-2815 ([551541e](https://github.com/nrkno/sofie-core/commit/551541e27e7cff3a297203469cca4a77ba942c24))
+
 ### [1.49.1](https://github.com/nrkno/sofie-core/compare/v1.49.0...v1.49.1) (2023-10-20)
 
 
