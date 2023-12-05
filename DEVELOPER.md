@@ -6,7 +6,7 @@ Before you start, be sure to read the [Contribution guidelines](CONTRIBUTING.md)
 
 ### Documentation
 
-The documentation can be found at [Sofie TV Automation Documentation](https://nrkno.github.io/sofie-core/) and its for subsection (For Developers)[https://nrkno.github.io/sofie-core/docs/for-developers/intro]. Specific _Sofie Core_ information can also be in `DOCS.md` and `DEVELOPER.md` in the subfolders of this git project, for example [meteor/server/api/playout](meteor/server/api/playout/DOCS.md).
+The documentation can be found at [Sofie TV Automation Documentation](https://nrkno.github.io/sofie-core/) and its for subsection [For Developers](https://nrkno.github.io/sofie-core/docs/for-developers/intro). Specific _Sofie Core_ information can also be in `DOCS.md` and `DEVELOPER.md` in the subfolders of this git project, for example [meteor/server/api/playout](meteor/server/api/playout/DOCS.md).
 
 ### Monorepo Layout
 
