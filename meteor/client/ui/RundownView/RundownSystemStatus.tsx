@@ -1,8 +1,7 @@
 import { Meteor } from 'meteor/meteor'
-import * as React from 'react'
+import React, { useMemo } from 'react'
 import ClassNames from 'classnames'
-import * as _ from 'underscore'
-import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { Translated, useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import {
 	PeripheralDevice,
 	PeripheralDeviceCategory,
@@ -11,7 +10,6 @@ import {
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Time, getCurrentTime, unprotectString } from '../../../lib/lib'
 import { withTranslation, WithTranslation } from 'react-i18next'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { UIStudio } from '../../../lib/api/studios'
@@ -106,64 +104,84 @@ function diffOnLineOffLineList(prevList: OnLineOffLineList, list: OnLineOffLineL
 	return diff
 }
 
-export const RundownSystemStatus = translateWithTracker(
-	(props: IProps) => {
-		let attachedDevices: PeripheralDevice[] = []
+function calculateStatusForDevices(devices: PeripheralDevice[]) {
+	const status = devices
+		.filter((i) => !i.ignore)
+		.reduce((memo: StatusCode, device: PeripheralDevice) => {
+			if (device.connected && memo.valueOf() < device.status.statusCode.valueOf()) {
+				return device.status.statusCode
+			} else if (!device.connected) {
+				return StatusCode.FATAL
+			} else {
+				return memo
+			}
+		}, StatusCode.UNKNOWN)
 
-		const parentDevices = PeripheralDevices.find({
-			studioId: props.studio._id,
-		}).fetch()
-		attachedDevices = attachedDevices.concat(parentDevices)
+	const onlineOffline: OnLineOffLineList = {
+		onLine: devices.filter((device) => device.connected && device.status.statusCode < StatusCode.WARNING_MINOR),
+		offLine: devices.filter((device) => !device.connected || device.status.statusCode >= StatusCode.WARNING_MINOR),
+	}
+	const lastUpdate = devices.reduce((memo, device) => Math.max(device.lastDataReceived || 0, memo), 0)
+	return {
+		status: status,
+		lastUpdate: lastUpdate,
+		onlineOffline: onlineOffline,
+	}
+}
 
-		const subDevices = PeripheralDevices.find({
-			parentDeviceId: { $in: _.pluck(parentDevices, '_id') },
-		}).fetch()
-		attachedDevices = attachedDevices.concat(subDevices)
+export function RundownSystemStatus(props: Readonly<IProps>): JSX.Element {
+	useSubscription(CorelibPubSub.peripheralDevicesAndSubDevices, props.studio._id)
+
+	const parentDevices = useTracker(
+		() =>
+			PeripheralDevices.find({
+				studioId: props.studio._id,
+			}).fetch(),
+		[],
+		[]
+	)
+	const parentDeviceIds = useMemo(() => parentDevices.map((pd) => pd._id), [parentDevices])
+	const subDevices = useTracker(
+		() =>
+			PeripheralDevices.find({
+				parentDeviceId: { $in: parentDeviceIds },
+			}).fetch(),
+		[parentDeviceIds],
+		[]
+	)
+
+	const ingest = useMemo(() => {
+		const attachedDevices = [...parentDevices, ...subDevices]
 
 		const ingestDevices = attachedDevices.filter(
 			(i) => i.category === PeripheralDeviceCategory.INGEST || i.category === PeripheralDeviceCategory.MEDIA_MANAGER
 		)
+
+		return calculateStatusForDevices(ingestDevices)
+	}, [parentDevices, subDevices])
+
+	const playout = useMemo(() => {
+		const attachedDevices = [...parentDevices, ...subDevices]
+
 		const playoutDevices = attachedDevices.filter((i) => i.type === PeripheralDeviceType.PLAYOUT)
 
-		const [ingest, playout] = [ingestDevices, playoutDevices].map((devices) => {
-			const status = devices
-				.filter((i) => !i.ignore)
-				.reduce((memo: StatusCode, device: PeripheralDevice) => {
-					if (device.connected && memo.valueOf() < device.status.statusCode.valueOf()) {
-						return device.status.statusCode
-					} else if (!device.connected) {
-						return StatusCode.FATAL
-					} else {
-						return memo
-					}
-				}, StatusCode.UNKNOWN)
-			const onlineOffline: OnLineOffLineList = {
-				onLine: devices.filter((device) => device.connected && device.status.statusCode < StatusCode.WARNING_MINOR),
-				offLine: devices.filter((device) => !device.connected || device.status.statusCode >= StatusCode.WARNING_MINOR),
-			}
-			const lastUpdate = devices.reduce((memo, device) => Math.max(device.lastDataReceived || 0, memo), 0)
-			return {
-				status: status,
-				lastUpdate: lastUpdate,
-				onlineOffline: onlineOffline,
-			}
-		})
+		return calculateStatusForDevices(playoutDevices)
+	}, [parentDevices, subDevices])
 
-		return {
-			mosStatus: ingest.status,
-			mosDevices: ingest.onlineOffline,
-			mosLastUpdate: ingest.lastUpdate,
+	const trackedProps: ITrackedProps = {
+		mosStatus: ingest.status,
+		mosDevices: ingest.onlineOffline,
+		mosLastUpdate: ingest.lastUpdate,
 
-			playoutStatus: playout.status,
-			playoutDevices: playout.onlineOffline,
-		}
-	},
-	(_data, props: IProps, nextProps: IProps) => {
-		if (props.playlist._id === nextProps.playlist._id && props.studio._id === nextProps.studio._id) return false
-		return true
+		playoutStatus: playout.status,
+		playoutDevices: playout.onlineOffline,
 	}
-)(
-	class RundownSystemStatus extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+
+	return <RundownSystemStatusContent {...props} {...trackedProps} />
+}
+
+const RundownSystemStatusContent = withTranslation()(
+	class RundownSystemStatusContent extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		constructor(props: Translated<IProps & ITrackedProps>) {
 			super(props)
 
@@ -177,14 +195,6 @@ export const RundownSystemStatus = translateWithTracker(
 					offLine: props.playoutDevices.offLine,
 				},
 			}
-		}
-
-		componentDidMount(): void {
-			this.subscribe(CorelibPubSub.peripheralDevicesAndSubDevices, this.props.studio._id)
-		}
-
-		componentWillUnmount(): void {
-			super.componentWillUnmount()
 		}
 
 		componentDidUpdate(prevProps: IProps & ITrackedProps) {
