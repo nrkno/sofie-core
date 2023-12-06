@@ -87,7 +87,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 
 		isVisible: boolean
 		rundownCurrentPartInstanceId: PartInstanceId | null
-		timelineDiv: HTMLDivElement
+		timelineDiv: HTMLDivElement | undefined
 		intersectionObserver: IntersectionObserver | undefined
 		mountedTime: number
 		nextPartOffset: number
@@ -628,6 +628,10 @@ export const SegmentTimelineContainer = withResolvedSegment(
 
 		startLive = () => {
 			window.addEventListener(RundownTiming.Events.timeupdateHighResolution, this.onAirLineRefresh)
+
+			const watchElement = this.timelineDiv?.parentElement
+			if (!watchElement) return
+
 			// As of Chrome 76, IntersectionObserver rootMargin works in screen pixels when root
 			// is viewport. This seems like an implementation bug and IntersectionObserver is
 			// an Experimental Feature in Chrome, so this might change in the future.
@@ -637,7 +641,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 				rootMargin: `-${getHeaderHeight() * zoomFactor}px 0px -${20 * zoomFactor}px 0px`,
 				threshold: [0, 0.25, 0.5, 0.75, 0.98],
 			})
-			this.intersectionObserver.observe(this.timelineDiv.parentElement!)
+			this.intersectionObserver.observe(watchElement)
 		}
 
 		stopLive = () => {
