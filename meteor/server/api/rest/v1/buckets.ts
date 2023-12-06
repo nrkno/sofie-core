@@ -3,12 +3,7 @@ import { APIBucket, APIBucketComplete, APIImportAdlib, BucketsRestAPI } from '..
 import { BucketAdLibActions, BucketAdLibs, Buckets } from '../../../collections'
 import { APIBucketFrom } from './typeConversion'
 import { ClientAPI } from '../../../../lib/api/client'
-import {
-	BucketAdLibActionId,
-	BucketAdLibId,
-	BucketId,
-	ShowStyleBaseId,
-} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BucketId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ServerClientAPI } from '../../client'
 import { getCurrentTime, protectString } from '../../../../lib/lib'
 import { check } from 'meteor/check'
@@ -117,21 +112,27 @@ export class BucketsServerAPI implements BucketsRestAPI {
 	async deleteBucketAdLib(
 		connection: Meteor.Connection,
 		event: string,
-		adLibId: BucketAdLibId | BucketAdLibActionId
+		externalId: string
 	): Promise<ClientAPI.ClientResponse<void>> {
 		return ServerClientAPI.runUserActionInLog(
 			this.context.getMethodContext(connection),
 			event,
 			getCurrentTime(),
 			'bucketsRemoveBucketAdLib',
-			[adLibId],
+			[externalId],
 			async () => {
-				const bucketAdLibPiecePromise = BucketAdLibs.findOneAsync(adLibId as BucketAdLibId, {
-					projection: { _id: 1 },
-				})
-				const bucketAdLibActionPromise = BucketAdLibActions.findOneAsync(adLibId as BucketAdLibActionId, {
-					projection: { _id: 1 },
-				})
+				const bucketAdLibPiecePromise = BucketAdLibs.findOneAsync(
+					{ externalId },
+					{
+						projection: { _id: 1 },
+					}
+				)
+				const bucketAdLibActionPromise = BucketAdLibActions.findOneAsync(
+					{ externalId },
+					{
+						projection: { _id: 1 },
+					}
+				)
 				const [bucketAdLibPiece, bucketAdLibAction] = await Promise.all([
 					bucketAdLibPiecePromise,
 					bucketAdLibActionPromise,
@@ -139,13 +140,13 @@ export class BucketsServerAPI implements BucketsRestAPI {
 				if (bucketAdLibPiece) {
 					const access = await BucketSecurity.allowWriteAccessPiece(
 						this.context.getCredentials(),
-						adLibId as BucketAdLibId
+						bucketAdLibPiece._id
 					)
 					return BucketsAPI.removeBucketAdLib(access)
 				} else if (bucketAdLibAction) {
 					const access = await BucketSecurity.allowWriteAccessAction(
 						this.context.getCredentials(),
-						adLibId as BucketAdLibActionId
+						bucketAdLibAction._id
 					)
 					return BucketsAPI.removeBucketAdLibAction(access)
 				}
@@ -247,13 +248,13 @@ export function registerRoutes(registerRoute: APIRegisterHook<BucketsRestAPI>): 
 		bucketsApiFactory
 	)
 
-	registerRoute<{ adLibId: string }, never, void>(
+	registerRoute<{ externalId: string }, never, void>(
 		'delete',
-		'/buckets/:bucketId/adlibs/:adLibId',
+		'/buckets/:bucketId/adlibs/:externalId',
 		new Map([[404, [UserErrorMessage.BucketNotFound]]]),
 		async (serverAPI, connection, event, params, _body) => {
 			logger.info(`API DELETE: Remove Bucket AdLib`)
-			const adLibId = protectString(params.adLibId)
+			const adLibId = protectString(params.externalId)
 			check(adLibId, String)
 			return await serverAPI.deleteBucketAdLib(connection, event, adLibId)
 		},
