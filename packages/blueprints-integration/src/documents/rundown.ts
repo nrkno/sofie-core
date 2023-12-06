@@ -2,7 +2,7 @@ import type { RundownPlaylistTiming } from './playlistTiming'
 
 /** The Rundown generated from Blueprint */
 
-export interface IBlueprintRundown<TPrivateData = unknown, TPublicData = unknown, TMetadata = TPrivateData> {
+export interface IBlueprintRundown<TPrivateData = unknown, TPublicData = unknown> {
 	externalId: string
 	/** Rundown slug - user-presentable name */
 	name: string
@@ -13,15 +13,10 @@ export interface IBlueprintRundown<TPrivateData = unknown, TPublicData = unknown
 	/** Rundown timing information */
 	timing: RundownPlaylistTiming
 
-	/** Arbitraty data for internal use in the blueprints */
+	/** Arbitraty data storage for internal use in the blueprints */
 	privateData?: TPrivateData
 	/** Arbitraty data relevant for other systems, made available to them through APIs */
 	publicData?: TPublicData
-	/**
-	 * Arbitraty data storage for plugins
-	 * @deprecated Use privateData or publicData
-	 */
-	metaData?: TMetadata
 
 	/** A hint to the Core that the Rundown should be a part of a playlist */
 	playlistExternalId?: string
@@ -52,16 +47,11 @@ export interface IBlueprintRundownDBData {
 	airStatus?: string
 }
 
-export interface IBlueprintSegmentRundown<TPrivateData = unknown, TPublicData = unknown, TMetadata = TPrivateData> {
+export interface IBlueprintSegmentRundown<TPrivateData = unknown, TPublicData = unknown> {
 	externalId: string
 
-	/** Arbitraty data for internal use in the blueprints */
+	/** Arbitraty data storage for internal use in the blueprints */
 	privateData?: TPrivateData
 	/** Arbitraty data relevant for other systems, made available to them through APIs */
 	publicData?: TPublicData
-	/**
-	 * Arbitraty data storage for plugins
-	 * @deprecated Use privateData or publicData
-	 */
-	metaData?: TMetadata
 }

@@ -23,7 +23,7 @@ export enum PartHoldMode {
 	TO = 2,
 }
 
-export interface IBlueprintMutatablePart<TPrivateData = unknown, TPublicData = unknown, TMetadata = TPrivateData> {
+export interface IBlueprintMutatablePart<TPrivateData = unknown, TPublicData = unknown> {
 	/** The story title */
 	title: string
 	/**
@@ -32,15 +32,10 @@ export interface IBlueprintMutatablePart<TPrivateData = unknown, TPublicData = u
 	 */
 	prompterTitle?: string
 
-	/** Arbitraty data for internal use in the blueprints */
+	/** Arbitraty data storage for internal use in the blueprints */
 	privateData?: TPrivateData
 	/** Arbitraty data relevant for other systems, made available to them through APIs */
 	publicData?: TPublicData
-	/**
-	 * Arbitraty data storage for plugins
-	 * @deprecated Use privateData or publicData
-	 */
-	metaData?: TMetadata
 
 	/** Should this item should progress to the next automatically */
 	autoNext?: boolean

@@ -73,7 +73,7 @@ export interface IBlueprintActionManifest<TPrivateData = unknown, TPublicData = 
 
 	/** Id of the action */
 	actionId: string
-	/** Arbitraty data for internal use in the blueprints */
+	/** Arbitraty data storage for internal use in the blueprints */
 	privateData?: TPrivateData
 	/** Arbitraty data relevant for other systems, made available to them through APIs */
 	publicData?: TPublicData

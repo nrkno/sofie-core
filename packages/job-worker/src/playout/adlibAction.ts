@@ -136,7 +136,7 @@ export interface ExecuteActionParameters {
 	actionId: string
 	/** Public-facing (and possibly even user-editable) properties defining the action behaviour */
 	userData: ActionUserData
-	/** Arbitraty data for internal use in the blueprints */
+	/** Arbitraty data storage for internal use in the blueprints */
 	privateData: unknown | undefined
 
 	triggerMode: string | undefined
