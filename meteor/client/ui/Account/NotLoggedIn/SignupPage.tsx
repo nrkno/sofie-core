@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import type { RouteComponentProps } from 'react-router'
-import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
 import { getUser } from '../../../../lib/collections/Users'
 import { NotLoggedInContainer } from './lib'
 import { Link } from 'react-router-dom'
@@ -26,7 +25,7 @@ export const SignupPage = translateWithTracker((props: ISignupPageProps) => {
 	if (user) props.history.push('/rundowns')
 	return {}
 })(
-	class SignupPage extends MeteorReactComponent<Translated<ISignupPageProps>, ISignupPageState> {
+	class SignupPage extends React.Component<Translated<ISignupPageProps>, ISignupPageState> {
 		private applications: string[] = [
 			'Doing TV shows from a studio',
 			'Doing streaming on the web from a studio',

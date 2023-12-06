@@ -3,7 +3,6 @@ import { Meteor } from 'meteor/meteor'
 import * as PropTypes from 'prop-types'
 import { withTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { getCurrentTime, protectString } from '../../../../lib/lib'
-import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PartInstance, wrapPartToTemporaryInstance } from '../../../../lib/collections/PartInstances'
 import { RundownTiming, TimeEventArgs } from './RundownTiming'
@@ -183,7 +182,7 @@ export const RundownTimingProvider = withTracker<
 	}
 })(
 	class RundownTimingProvider
-		extends MeteorReactComponent<
+		extends React.Component<
 			PropsWithChildren<IRundownTimingProviderProps> & IRundownTimingProviderTrackedProps,
 			IRundownTimingProviderState
 		>
@@ -274,7 +273,6 @@ export const RundownTimingProvider = withTracker<
 		}
 
 		componentWillUnmount(): void {
-			this._cleanUp()
 			delete (window as any)['rundownTimingContext']
 			Meteor.clearInterval(this.refreshTimer)
 		}

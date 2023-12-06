@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { OutputLayers, DBShowStyleBase, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import RundownLayoutEditor from './RundownLayoutEditor'
@@ -100,7 +99,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		layerMappings: mappings,
 	}
 })(
-	class ShowStyleBaseSettings extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+	class ShowStyleBaseSettings extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		constructor(props: Translated<IProps & ITrackedProps>) {
 			super(props)
 			this.state = {
