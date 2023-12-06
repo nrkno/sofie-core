@@ -1,7 +1,5 @@
-import * as React from 'react'
-import { Tracker } from 'meteor/tracker'
+import React, { useEffect, useState } from 'react'
 import { PieceUi } from './SegmentTimelineContainer'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { RundownUtils } from '../../lib/rundown'
 import { IAdLibListItem } from '../Shelf/AdLibListItem'
@@ -45,113 +43,83 @@ const DEFAULT_STATUS = deepFreeze<PieceContentStatusObj>({
 	contentDuration: undefined,
 })
 
+function unwrapPieceInstance(piece: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | BucketAdLibActionUi) {
+	if (RundownUtils.isPieceInstance(piece)) {
+		return piece.instance.piece
+	} else {
+		return piece
+	}
+}
+
 /**
  * @deprecated This can now be achieved by a simple minimongo query against either UIPieceContentStatuses or UIBucketContentStatuses
  */
 export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 	WrappedComponent: IWrappedComponent<IProps, IState> | React.FC<IProps>
-) => new (props: IProps, context: any) => React.Component<IProps, IState> {
+) => React.FC<IProps> {
 	return (WrappedComponent) => {
-		return class WithMediaObjectStatusHOCComponent extends MeteorReactComponent<IProps, IState> {
-			private statusComp: Tracker.Computation
-			private overrides: Partial<IProps>
-			private destroyed: boolean
+		return function WithMediaObjectStatusHOCComponent(props: IProps) {
+			const [invalidationToken, setInvalidationToken] = useState(Date.now())
+			useEffect(() => {
+				// Force an invalidation shortly after mounting
+				window.requestIdleCallback(
+					() => {
+						setInvalidationToken(Date.now())
+					},
+					{
+						timeout: 500,
+					}
+				)
+			}, [])
 
-			private shouldDataTrackerUpdate(prevProps: IProps): boolean {
-				if (this.props.piece !== prevProps.piece) return true
-				if (this.props.studio !== prevProps.studio) return true
-				if (this.props.isLiveLine !== prevProps.isLiveLine) return true
-				return false
-			}
+			const overrides = useTracker(() => {
+				const { piece, studio, layer } = props
+				const overrides: Partial<IProps> = {}
 
-			private static unwrapPieceInstance(
-				piece: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | BucketAdLibActionUi
-			) {
-				if (RundownUtils.isPieceInstance(piece)) {
-					return piece.instance.piece
-				} else {
-					return piece
-				}
-			}
+				// Check item status
+				if (piece && (piece.sourceLayer || layer) && studio) {
+					const pieceUnwrapped = unwrapPieceInstance(piece)
+					const statusDoc = RundownUtils.isBucketAdLibItem(piece)
+						? UIBucketContentStatuses.findOne({
+								bucketId: piece.bucketId,
+								docId: pieceUnwrapped._id,
+						  })
+						: UIPieceContentStatuses.findOne({
+								// Future: It would be good for this to be stricter.
+								pieceId: pieceUnwrapped._id,
+						  })
 
-			updateDataTracker() {
-				if (this.destroyed) return
+					// Extract the status or populate some default values
+					const statusObj = statusDoc?.status ?? DEFAULT_STATUS
 
-				this.statusComp = this.autorun(() => {
-					const { piece, studio, layer } = this.props
-					this.overrides = {}
-					const overrides = this.overrides
-
-					// Check item status
-					if (piece && (piece.sourceLayer || layer) && studio) {
-						const pieceUnwrapped = WithMediaObjectStatusHOCComponent.unwrapPieceInstance(piece)
-						const statusDoc = RundownUtils.isBucketAdLibItem(piece)
-							? UIBucketContentStatuses.findOne({
-									bucketId: piece.bucketId,
-									docId: pieceUnwrapped._id,
-							  })
-							: UIPieceContentStatuses.findOne({
-									// Future: It would be good for this to be stricter.
-									pieceId: pieceUnwrapped._id,
-							  })
-
-						// Extract the status or populate some default values
-						const statusObj = statusDoc?.status ?? DEFAULT_STATUS
-
-						if (RundownUtils.isAdLibPieceOrAdLibListItem(piece)) {
-							if (!overrides.piece || !_.isEqual(statusObj, (overrides.piece as AdLibPieceUi).contentStatus)) {
-								// Deep clone the required bits
-								const origPiece = (overrides.piece || this.props.piece) as AdLibPieceUi
-								const pieceCopy: AdLibPieceUi = {
-									...origPiece,
-
-									contentStatus: statusObj,
-								}
-
-								overrides.piece = pieceCopy
-							}
-						} else if (!overrides.piece || !_.isEqual(statusObj, (overrides.piece as PieceUi).contentStatus)) {
+					if (RundownUtils.isAdLibPieceOrAdLibListItem(piece)) {
+						if (!overrides.piece || !_.isEqual(statusObj, (overrides.piece as AdLibPieceUi).contentStatus)) {
 							// Deep clone the required bits
-							const pieceCopy: PieceUi = {
-								...((overrides.piece || piece) as PieceUi),
+							const origPiece = (overrides.piece || props.piece) as AdLibPieceUi
+							const pieceCopy: AdLibPieceUi = {
+								...origPiece,
 
 								contentStatus: statusObj,
 							}
 
 							overrides.piece = pieceCopy
 						}
+					} else if (!overrides.piece || !_.isEqual(statusObj, (overrides.piece as PieceUi).contentStatus)) {
+						// Deep clone the required bits
+						const pieceCopy: PieceUi = {
+							...((overrides.piece || piece) as PieceUi),
+
+							contentStatus: statusObj,
+						}
+
+						overrides.piece = pieceCopy
 					}
-
-					this.forceUpdate()
-				})
-			}
-
-			componentDidMount(): void {
-				window.requestIdleCallback(
-					() => {
-						this.updateDataTracker()
-					},
-					{
-						timeout: 500,
-					}
-				)
-			}
-
-			componentDidUpdate(prevProps: IProps) {
-				if (this.shouldDataTrackerUpdate(prevProps)) {
-					if (this.statusComp) this.statusComp.invalidate()
 				}
-			}
 
-			componentWillUnmount(): void {
-				this.destroyed = true
+				return overrides
+			}, [props.piece, props.studio, props.isLiveLine, invalidationToken])
 
-				super.componentWillUnmount()
-			}
-
-			render(): JSX.Element {
-				return <WrappedComponent {...this.props} {...this.overrides} />
-			}
+			return <WrappedComponent {...props} {...overrides} />
 		}
 	}
 }
