@@ -56,7 +56,6 @@ meteorPublish(PubSub.rundownsForDevice, async function (deviceId, token) {
 
 	const modifier: FindOptions<DBRundown> = {
 		fields: {
-			metaData: 0,
 			privateData: 0,
 		},
 	}
@@ -86,7 +85,6 @@ meteorPublish(PubSub.rundowns, async function (playlistIds, showStyleBaseIds, to
 
 	const modifier: FindOptions<DBRundown> = {
 		fields: {
-			metaData: 0,
 			privateData: 0,
 		},
 	}
@@ -107,7 +105,6 @@ meteorPublish(PubSub.segments, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<DBSegment> = {
 		fields: {
-			metaData: 0,
 			privateData: 0,
 		},
 	}
@@ -129,7 +126,6 @@ meteorPublish(PubSub.parts, async function (rundownIds, token) {
 
 	const modifier: FindOptions<DBPart> = {
 		fields: {
-			metaData: 0,
 			privateData: 0,
 		},
 	}
@@ -230,7 +226,6 @@ meteorPublish(PubSub.pieces, async function (selector: MongoQuery<Piece>, token?
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<Piece> = {
 		fields: {
-			metaData: 0,
 			privateData: 0,
 			timelineObjectsString: 0,
 		},
@@ -248,7 +243,6 @@ meteorPublish(PubSub.adLibPieces, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<AdLibPiece> = {
 		fields: {
-			metaData: 0,
 			privateData: 0,
 			timelineObjectsString: 0,
 		},

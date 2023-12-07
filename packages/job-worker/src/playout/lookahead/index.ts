@@ -67,7 +67,7 @@ export async function getLookeaheadObjects(
 	}
 	const pPiecesToSearch = context.directCollections.Pieces.findFetch(piecesToSearchQuery, {
 		projection: {
-			metaData: 0,
+			privateData: 0,
 
 			// these are known to be chunky when they exist
 			content: 0,

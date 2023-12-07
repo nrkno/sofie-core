@@ -260,7 +260,7 @@ describe('lib/mediaObjects', () => {
 			prerollDuration: 0,
 			externalId: '',
 			lifespan: PieceLifespan.WithinPart,
-			metaData: {},
+			privateData: {},
 			outputLayerId: '',
 			sourceLayerId: '',
 			content: literal<VTContent>({
@@ -347,7 +347,7 @@ describe('lib/mediaObjects', () => {
 			prerollDuration: 0,
 			externalId: '',
 			lifespan: PieceLifespan.WithinPart,
-			metaData: {},
+			privateData: {},
 			outputLayerId: '',
 			sourceLayerId: '',
 			content: literal<VTContent>({
@@ -363,7 +363,7 @@ describe('lib/mediaObjects', () => {
 			prerollDuration: 0,
 			externalId: '',
 			lifespan: PieceLifespan.WithinPart,
-			metaData: {},
+			privateData: {},
 			outputLayerId: '',
 			sourceLayerId: '',
 			content: literal<VTContent>({

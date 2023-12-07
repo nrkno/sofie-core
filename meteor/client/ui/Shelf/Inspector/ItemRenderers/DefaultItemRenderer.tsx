@@ -39,8 +39,8 @@ export default function DefaultItemRenderer(props: {
 					<dt>{piece.sourceLayerId}</dt>
 					<dd>outputLayerId</dd>
 					<dt>{piece.outputLayerId}</dt>
-					<dd>metaData</dd>
-					<dt>{JSON.stringify(piece.metaData || {})}</dt>
+					<dd>publicData</dd>
+					<dt>{JSON.stringify(piece.publicData || {})}</dt>
 				</dl>
 			</>
 		)
@@ -64,8 +64,8 @@ export default function DefaultItemRenderer(props: {
 					<dt>{piece.sourceLayerId}</dt>
 					<dd>outputLayerId</dd>
 					<dt>{piece.outputLayerId}</dt>
-					<dd>metaData</dd>
-					<dt>{JSON.stringify(piece.metaData || {})}</dt>
+					<dd>publicData</dd>
+					<dt>{JSON.stringify(piece.publicData || {})}</dt>
 				</dl>
 			</>
 		)

@@ -657,7 +657,7 @@ describe('Test blueprint api context', () => {
 				})
 			})
 
-			test('pieceMetaDataFilter', async () => {
+			test('piecePrivateDataFilter', async () => {
 				const { jobContext, playlistId, allPartInstances } = await setupMyDefaultRundown()
 
 				await setPartInstances(jobContext, playlistId, allPartInstances[2], undefined)
@@ -714,7 +714,7 @@ describe('Test blueprint api context', () => {
 							sourceLayerId: sourceLayerIds[0],
 							outputLayerId: '',
 							enable: { start: 0 },
-							metaData: {
+							privateData: {
 								prop1: 'hello',
 								prop2: '5',
 							},
@@ -734,16 +734,16 @@ describe('Test blueprint api context', () => {
 						_id: pieceId1,
 					})
 					await expect(
-						context.findLastPieceOnLayer(sourceLayerIds[0], { pieceMetaDataFilter: {} })
+						context.findLastPieceOnLayer(sourceLayerIds[0], { piecePrivateDataFilter: {} })
 					).resolves.toMatchObject({
 						_id: pieceId1,
 					})
 					await expect(
-						context.findLastPieceOnLayer(sourceLayerIds[0], { pieceMetaDataFilter: { prop1: 'hello' } })
+						context.findLastPieceOnLayer(sourceLayerIds[0], { piecePrivateDataFilter: { prop1: 'hello' } })
 					).resolves.toMatchObject({ _id: pieceId1 })
 					await expect(
 						context.findLastPieceOnLayer(sourceLayerIds[0], {
-							pieceMetaDataFilter: { prop1: { $ne: 'hello' } },
+							piecePrivateDataFilter: { prop1: { $ne: 'hello' } },
 						})
 					).resolves.toMatchObject({ _id: pieceId0 })
 				})

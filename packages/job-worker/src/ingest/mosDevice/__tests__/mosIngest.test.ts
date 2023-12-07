@@ -359,7 +359,7 @@ describe('Test recieved mos ingest payloads', () => {
 		let rundown = (await context.mockCollections.Rundowns.findOne()) as DBRundown
 		expect(rundown).toBeTruthy()
 		expect(rundown.status).not.toEqual(newStatus.toString())
-		expect((rundown.metaData as any)?.airStatus).not.toEqual(newStatus.toString())
+		expect((rundown.privateData as any)?.airStatus).not.toEqual(newStatus.toString())
 
 		await handleMosRundownReadyToAir(context, {
 			peripheralDeviceId: device._id,
@@ -371,7 +371,7 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(rundown).toBeTruthy()
 		expect(rundown.airStatus).toEqual(newStatus.toString())
 
-		expect((rundown.metaData as any)?.airStatus).toEqual(newStatus.toString())
+		expect((rundown.privateData as any)?.airStatus).toEqual(newStatus.toString())
 
 		await expectRundownToMatchSnapshot(rundown._id, true, false)
 	})
@@ -742,7 +742,7 @@ describe('Test recieved mos ingest payloads', () => {
 			externalId: mosTypes.mosString128.stringify(story.ID),
 		})) as DBPart
 		expect(part).toBeTruthy()
-		expect(part.metaData).toEqual(story)
+		expect(part.privateData).toEqual(story)
 
 		await expectRundownToMatchSnapshot(rundown._id, true, true)
 	})
@@ -1182,7 +1182,7 @@ describe('Test recieved mos ingest payloads', () => {
 						if (oldPart.segmentId === oldSegmentId) {
 							oldPart.segmentId = newSegment._id
 							oldPart.title = newSegment.name + ';' + oldPart.title.split(';')[1]
-							delete oldPart.metaData
+							delete oldPart.privateData
 						}
 					}
 

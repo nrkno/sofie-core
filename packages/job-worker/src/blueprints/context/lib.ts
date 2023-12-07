@@ -58,7 +58,6 @@ export const IBlueprintPieceObjectsSampleKeys = allKeysOfObject<IBlueprintPiece>
 	pieceType: true,
 	extendOnHold: true,
 	name: true,
-	metaData: true,
 	privateData: true,
 	publicData: true,
 	sourceLayerId: true,
@@ -82,7 +81,6 @@ export const IBlueprintPieceObjectsSampleKeys = allKeysOfObject<IBlueprintPiece>
 export const IBlueprintMutatablePartSampleKeys = allKeysOfObject<IBlueprintMutatablePart>({
 	title: true,
 	prompterTitle: true,
-	metaData: true,
 	privateData: true,
 	publicData: true,
 	autoNext: true,
@@ -179,7 +177,6 @@ function convertPieceGenericToBlueprintsInner(piece: PieceGeneric): Complete<IBl
 	const obj: Complete<IBlueprintPieceGeneric> = {
 		externalId: piece.externalId,
 		name: piece.name,
-		metaData: clone(piece.metaData),
 		privateData: clone(piece.privateData),
 		publicData: clone(piece.publicData),
 		lifespan: piece.lifespan,
@@ -241,7 +238,6 @@ export function convertPartToBlueprints(part: DBPart): IBlueprintPartDB {
 		gap: part.gap,
 		title: part.title,
 		prompterTitle: part.prompterTitle,
-		metaData: clone(part.metaData),
 		privateData: clone(part.privateData),
 		publicData: clone(part.publicData),
 		autoNext: part.autoNext,
@@ -319,7 +315,6 @@ export function convertSegmentToBlueprints(segment: ReadonlyDeep<DBSegment>): IB
 	const obj: Complete<IBlueprintSegmentDB> = {
 		_id: unprotectString(segment._id),
 		name: segment.name,
-		metaData: clone(segment.metaData),
 		privateData: clone(segment.privateData),
 		publicData: clone(segment.publicData),
 		isHidden: segment.isHidden,
@@ -343,7 +338,6 @@ export function convertRundownToBlueprints(rundown: ReadonlyDeep<DBRundown>): IB
 		name: rundown.name,
 		description: rundown.description,
 		timing: clone<RundownPlaylistTiming>(rundown.timing),
-		metaData: clone(rundown.metaData),
 		privateData: clone(rundown.privateData),
 		publicData: clone(rundown.publicData),
 		playlistExternalId: rundown.playlistExternalId,
@@ -368,7 +362,6 @@ export function convertRundownToBlueprintSegmentRundown(
 ): IBlueprintSegmentRundown {
 	const obj: Complete<IBlueprintSegmentRundown> = {
 		externalId: rundown.externalId,
-		metaData: skipClone ? rundown.metaData : clone(rundown.metaData),
 		privateData: skipClone ? rundown.privateData : clone(rundown.privateData),
 		publicData: skipClone ? rundown.publicData : clone(rundown.publicData),
 	}
@@ -395,7 +388,6 @@ export function convertRundownPlaylistToBlueprints(
 		loop: playlist.loop,
 		timeOfDayCountdowns: playlist.timeOfDayCountdowns,
 
-		metaData: clone(playlist.metaData),
 		privateData: clone(playlist.privateData),
 		publicData: clone(playlist.publicData),
 

@@ -300,7 +300,7 @@ const MockShowStyleBlueprint: () => ShowStyleBlueprintManifest = () => ({
 			name: ingestRundown.name,
 			// expectedStart?:
 			// expectedDuration?: number;
-			metaData: {
+			privateData: {
 				payload: ingestRundown.payload,
 				airStatus: ingestRundown.coreData?.airStatus,
 			},
@@ -323,7 +323,7 @@ const MockShowStyleBlueprint: () => ShowStyleBlueprintManifest = () => ({
 	getSegment: (_context: ISegmentUserContext, ingestSegment: IngestSegment): BlueprintResultSegment => {
 		const segment: IBlueprintSegment = {
 			name: ingestSegment.name ? ingestSegment.name : ingestSegment.externalId,
-			metaData: ingestSegment.payload,
+			privateData: ingestSegment.payload,
 			isHidden: ingestSegment.payload?.hidden,
 		}
 		const parts: BlueprintResultPart[] = []
@@ -332,7 +332,7 @@ const MockShowStyleBlueprint: () => ShowStyleBlueprintManifest = () => ({
 			const part: IBlueprintPart = {
 				externalId: ingestPart.externalId,
 				title: ingestPart.name,
-				metaData: ingestPart.payload,
+				privateData: ingestPart.payload,
 				// autoNext?: boolean;
 				// autoNextOverlap?: number;
 				// prerollDuration?: number;

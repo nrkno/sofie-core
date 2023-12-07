@@ -20,11 +20,6 @@ export interface IBlueprintResultRundownPlaylist {
 	privateData?: unknown
 	/** Arbitraty data relevant for other systems and exposed to them via APIs */
 	publicData?: unknown
-	/**
-	 * Arbitraty data used by rundowns
-	 * @deprecated Use privateData or publicData
-	 */
-	metaData?: unknown
 }
 
 /** Playlist, when reported from Core  */

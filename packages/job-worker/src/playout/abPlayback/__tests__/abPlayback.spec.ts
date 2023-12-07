@@ -32,7 +32,7 @@ function createBasicResolvedPieceInstance(
 		},
 		sourceLayerId: '',
 		outputLayerId: '',
-		metaData: {},
+		privateData: {},
 		lifespan: PieceLifespan.WithinPart,
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		content: {},
