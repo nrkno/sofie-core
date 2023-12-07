@@ -3,7 +3,13 @@ import * as React from 'react'
 import { parse as queryStringParse } from 'query-string'
 // @ts-expect-error No types available
 import * as VelocityReact from 'velocity-react'
-import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
+import {
+	Translated,
+	translateWithTracker,
+	useSubscription,
+	useSubscriptions,
+	useTracker,
+} from '../lib/ReactMeteorData/react-meteor-data'
 import { VTContent, TSR, NoteSeverity, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import timer from 'react-timer-hoc'
@@ -34,7 +40,6 @@ import { getCurrentTime, unprotectString, protectString } from '../../lib/lib'
 import { RundownUtils } from '../lib/rundown'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
-import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { getAllowStudio, getAllowDeveloper, getHelpMode } from '../lib/localStorage'
 import { ClientAPI } from '../../lib/api/client'
 import {
@@ -63,7 +68,7 @@ import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/coreli
 import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { hashSingleUseToken, ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
-import { meteorSubscribe, MeteorPubSub } from '../../lib/api/pubsub'
+import { MeteorPubSub, meteorSubscribe } from '../../lib/api/pubsub'
 import {
 	RundownLayoutType,
 	RundownLayoutBase,
@@ -1151,7 +1156,6 @@ interface IState {
 	bottomMargin: string
 	followLiveSegments: boolean
 	manualSetAsNext: boolean
-	subsReady: boolean
 	isNotificationsCenterOpen: NoticeLevel | undefined
 	isSupportPanelOpen: boolean
 	isInspectorShelfExpanded: boolean
@@ -1205,7 +1209,128 @@ interface ITrackedProps {
 	currentSegmentPartIds: PartId[]
 	nextSegmentPartIds: PartId[]
 }
-export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: Translated<IProps>) => {
+export function RundownView(props: Readonly<IProps>): JSX.Element {
+	const playlistId = props.playlistId
+
+	const subsReady: boolean[] = []
+	subsReady.push(useSubscription(CorelibPubSub.rundownPlaylists, [playlistId], null))
+	subsReady.push(useSubscription(CorelibPubSub.rundownsInPlaylists, [playlistId]))
+
+	const playlistStudioId = useTracker(() => {
+		const playlist = RundownPlaylists.findOne(playlistId, {
+			fields: {
+				_id: 1,
+				studioId: 1,
+			},
+		}) as Pick<DBRundownPlaylist, '_id' | 'studioId'> | undefined
+
+		return playlist?.studioId
+	}, [playlistId])
+	// Load once the playlist is confirmed to exist
+	subsReady.push(useSubscriptions(MeteorPubSub.uiSegmentPartNotes, playlistStudioId ? [[playlistId]] : []))
+	subsReady.push(useSubscriptions(MeteorPubSub.uiPieceContentStatuses, playlistStudioId ? [[playlistId]] : []))
+	// Load only when the studio is known
+	subsReady.push(useSubscriptions(MeteorPubSub.uiStudio, playlistStudioId ? [[playlistStudioId]] : []))
+	subsReady.push(useSubscriptions(MeteorPubSub.buckets, playlistStudioId ? [[playlistStudioId, null]] : []))
+
+	const { rundownIds, showStyleBaseIds, showStyleVariantIds, playlistActivationId } = useTracker(
+		() => {
+			const playlist = RundownPlaylists.findOne(playlistId, {
+				fields: {
+					_id: 1,
+					activationId: 1,
+				},
+			}) as Pick<DBRundownPlaylist, '_id' | 'activationId'> | undefined
+			if (playlist) {
+				const rundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(playlist, undefined, {
+					fields: {
+						_id: 1,
+						showStyleBaseId: 1,
+						showStyleVariantId: 1,
+					},
+				}) as Pick<Rundown, '_id' | 'showStyleBaseId' | 'showStyleVariantId'>[]
+
+				const rundownIds = rundowns.map((rundown) => rundown._id)
+				const showStyleBaseIds = rundowns.map((rundown) => rundown.showStyleBaseId)
+				const showStyleVariantIds = rundowns.map((rundown) => rundown.showStyleVariantId)
+				return { rundownIds, showStyleBaseIds, showStyleVariantIds, playlistActivationId: playlist.activationId }
+			}
+
+			return { rundownIds: [], showStyleBaseIds: [], showStyleVariantIds: [], playlistActivationId: undefined }
+		},
+		[],
+		{ rundownIds: [], showStyleBaseIds: [], showStyleVariantIds: [], playlistActivationId: undefined }
+	)
+
+	subsReady.push(
+		useSubscriptions(
+			MeteorPubSub.uiShowStyleBase,
+			showStyleBaseIds.map((id) => [id])
+		)
+	)
+	subsReady.push(useSubscription(CorelibPubSub.showStyleVariants, null, showStyleVariantIds))
+	subsReady.push(useSubscription(MeteorPubSub.rundownLayouts, showStyleBaseIds))
+
+	subsReady.push(useSubscription(CorelibPubSub.segments, rundownIds, {}))
+	subsReady.push(useSubscription(CorelibPubSub.adLibPieces, rundownIds))
+	subsReady.push(useSubscription(CorelibPubSub.rundownBaselineAdLibPieces, rundownIds))
+	subsReady.push(useSubscription(CorelibPubSub.adLibActions, rundownIds))
+	subsReady.push(useSubscription(CorelibPubSub.rundownBaselineAdLibActions, rundownIds))
+	subsReady.push(useSubscription(CorelibPubSub.parts, rundownIds, null))
+	subsReady.push(useSubscription(CorelibPubSub.partInstances, rundownIds, playlistActivationId ?? null))
+
+	useTracker(() => {
+		const playlist = RundownPlaylists.findOne(playlistId, {
+			fields: {
+				currentPartInfo: 1,
+				nextPartInfo: 1,
+				previousPartInfo: 1,
+			},
+		}) as Pick<DBRundownPlaylist, '_id' | 'currentPartInfo' | 'nextPartInfo' | 'previousPartInfo'> | undefined
+		if (playlist) {
+			const rundownIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
+			// Use meteorSubscribe so that this subscription doesn't mess with this.subscriptionsReady()
+			// it's run in useTracker, so the subscription will be stopped along with the autorun,
+			// so we don't have to manually clean up after ourselves.
+			meteorSubscribe(
+				CorelibPubSub.pieceInstances,
+				rundownIds,
+				[
+					playlist.currentPartInfo?.partInstanceId,
+					playlist.nextPartInfo?.partInstanceId,
+					playlist.previousPartInfo?.partInstanceId,
+				].filter((p): p is PartInstanceId => p !== null),
+				{}
+			)
+			const { previousPartInstance, currentPartInstance } =
+				RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
+
+			if (previousPartInstance) {
+				meteorSubscribe(
+					CorelibPubSub.partInstancesForSegmentPlayout,
+					previousPartInstance.rundownId,
+					previousPartInstance.segmentPlayoutId
+				)
+			}
+			if (currentPartInstance) {
+				meteorSubscribe(
+					CorelibPubSub.partInstancesForSegmentPlayout,
+					currentPartInstance.rundownId,
+					currentPartInstance.segmentPlayoutId
+				)
+			}
+		}
+	}, [playlistId])
+
+	const allSubsReady = !subsReady.find((ready) => !ready)
+	return <RundownViewContent {...props} subsReady={allSubsReady} />
+}
+
+interface IPropsWithReady extends IProps {
+	subsReady: boolean
+}
+
+const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITrackedProps>((props: Translated<IProps>) => {
 	const playlistId = props.playlistId
 
 	const playlist = RundownPlaylists.findOne(playlistId)
@@ -1337,7 +1462,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			: [],
 	}
 })(
-	class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+	class RundownViewContent extends React.Component<Translated<IPropsWithReady & ITrackedProps>, IState> {
 		private _hideNotificationsAfterMount: number | undefined
 		/** MiniShelf data */
 		private keyboardQueuedPiece: AdLibPieceUi | undefined = undefined
@@ -1345,7 +1470,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		private shouldKeyboardRequeue = false
 		private isKeyboardQueuePending = false
 
-		constructor(props: Translated<IProps & ITrackedProps>) {
+		constructor(props: Translated<IPropsWithReady & ITrackedProps>) {
 			super(props)
 
 			const shelfLayout = this.props.rundownLayouts?.find((layout) => layout._id === this.props.shelfLayoutId)
@@ -1362,7 +1487,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				bottomMargin: '',
 				followLiveSegments: true,
 				manualSetAsNext: false,
-				subsReady: false,
 				isNotificationsCenterOpen: undefined,
 				isSupportPanelOpen: false,
 				isInspectorShelfExpanded,
@@ -1574,115 +1698,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		componentDidMount(): void {
-			const playlistId = this.props.rundownPlaylistId
-
-			this.subscribe(CorelibPubSub.rundownPlaylists, [playlistId], null)
-			this.subscribe(CorelibPubSub.rundownsInPlaylists, [playlistId])
-			this.autorun(() => {
-				const playlist = RundownPlaylists.findOne(playlistId, {
-					fields: {
-						_id: 1,
-						studioId: 1,
-					},
-				}) as Pick<DBRundownPlaylist, '_id' | 'studioId'> | undefined
-				if (!playlist) return
-
-				this.subscribe(MeteorPubSub.uiSegmentPartNotes, playlistId)
-				this.subscribe(MeteorPubSub.uiPieceContentStatuses, playlistId)
-				this.subscribe(MeteorPubSub.uiStudio, playlist.studioId)
-				this.subscribe(MeteorPubSub.buckets, playlist.studioId, null)
-			})
-
-			this.autorun(() => {
-				const playlist = RundownPlaylists.findOne(playlistId, {
-					fields: {
-						_id: 1,
-						activationId: 1,
-					},
-				}) as Pick<DBRundownPlaylist, '_id' | 'activationId'> | undefined
-				if (!playlist) return
-
-				const rundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(playlist, undefined, {
-					fields: {
-						_id: 1,
-						showStyleBaseId: 1,
-						showStyleVariantId: 1,
-					},
-				}) as Pick<Rundown, '_id' | 'showStyleBaseId' | 'showStyleVariantId'>[]
-
-				for (const rundown of rundowns) {
-					this.subscribe(MeteorPubSub.uiShowStyleBase, rundown.showStyleBaseId)
-				}
-
-				this.subscribe(
-					CorelibPubSub.showStyleVariants,
-					null,
-					rundowns.map((i) => i.showStyleVariantId)
-				)
-				this.subscribe(
-					MeteorPubSub.rundownLayouts,
-					rundowns.map((i) => i.showStyleBaseId)
-				)
-				const rundownIDs = rundowns.map((i) => i._id)
-				this.subscribe(CorelibPubSub.segments, rundownIDs, {})
-				this.subscribe(CorelibPubSub.adLibPieces, rundownIDs)
-				this.subscribe(CorelibPubSub.rundownBaselineAdLibPieces, rundownIDs)
-				this.subscribe(CorelibPubSub.adLibActions, rundownIDs)
-				this.subscribe(CorelibPubSub.rundownBaselineAdLibActions, rundownIDs)
-				this.subscribe(CorelibPubSub.parts, rundownIDs, null)
-				this.subscribe(CorelibPubSub.partInstances, rundownIDs, playlist.activationId ?? null)
-			})
-			this.autorun(() => {
-				const playlist = RundownPlaylists.findOne(playlistId, {
-					fields: {
-						currentPartInfo: 1,
-						nextPartInfo: 1,
-						previousPartInfo: 1,
-					},
-				}) as Pick<DBRundownPlaylist, '_id' | 'currentPartInfo' | 'nextPartInfo' | 'previousPartInfo'> | undefined
-				if (playlist) {
-					const rundownIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
-					// Use meteorSubscribe so that this subscription doesn't mess with this.subscriptionsReady()
-					// it's run in this.autorun, so the subscription will be stopped along with the autorun,
-					// so we don't have to manually clean up after ourselves.
-					meteorSubscribe(
-						CorelibPubSub.pieceInstances,
-						rundownIds,
-						[
-							playlist.currentPartInfo?.partInstanceId,
-							playlist.nextPartInfo?.partInstanceId,
-							playlist.previousPartInfo?.partInstanceId,
-						].filter((p): p is PartInstanceId => p !== null),
-						{}
-					)
-					const { previousPartInstance, currentPartInstance } =
-						RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
-
-					if (previousPartInstance) {
-						meteorSubscribe(
-							CorelibPubSub.partInstancesForSegmentPlayout,
-							previousPartInstance.rundownId,
-							previousPartInstance.segmentPlayoutId
-						)
-					}
-					if (currentPartInstance) {
-						meteorSubscribe(
-							CorelibPubSub.partInstancesForSegmentPlayout,
-							currentPartInstance.rundownId,
-							currentPartInstance.segmentPlayoutId
-						)
-					}
-				}
-			})
-			this.autorun(() => {
-				const subsReady = this.subscriptionsReady()
-				if (subsReady !== this.state.subsReady) {
-					this.setState({
-						subsReady: subsReady,
-					})
-				}
-			})
-
 			document.body.classList.add('dark', 'vertical-overflow-only')
 
 			rundownNotificationHandler.set(this.onRONotificationClick)
@@ -1712,7 +1727,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			NotificationCenter.isConcentrationMode = true
 		}
 
-		componentDidUpdate(prevProps: IProps & ITrackedProps, prevState: IState) {
+		componentDidUpdate(prevProps: IPropsWithReady & ITrackedProps, prevState: IState) {
 			if (!this.props.onlyShelf) {
 				if (
 					this.props.playlist &&
@@ -1777,8 +1792,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					// initial Rundown open
 					this.props.playlist &&
 					this.props.playlist.currentPartInfo &&
-					this.state.subsReady &&
-					!prevState.subsReady
+					this.props.subsReady &&
+					!prevProps.subsReady
 				) {
 					// allow for some time for the Rundown to render
 					maintainFocusOnPartInstance(this.props.playlist.currentPartInfo.partInstanceId, 7000, true, true)
@@ -1888,7 +1903,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		componentWillUnmount(): void {
-			this._cleanUp()
 			document.body.classList.remove('dark', 'vertical-overflow-only')
 			window.removeEventListener('beforeunload', this.onBeforeUnload)
 
@@ -2670,7 +2684,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								new Notification(
 									undefined,
 									NoticeLevel.NOTIFICATION,
-									t('Playout\xa0Gateway "{{playoutDeviceName}}" is now restarting.', { playoutDeviceName: item.name }),
+									t('Playout\xa0Gateway "{{playoutDeviceName}}" is now restarting.', {
+										playoutDeviceName: item.name,
+									}),
 									'RundownView'
 								)
 							)
@@ -2680,7 +2696,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								new Notification(
 									undefined,
 									NoticeLevel.CRITICAL,
-									t('Could not restart Playout\xa0Gateway "{{playoutDeviceName}}".', { playoutDeviceName: item.name }),
+									t('Could not restart Playout\xa0Gateway "{{playoutDeviceName}}".', {
+										playoutDeviceName: item.name,
+									}),
 									'RundownView'
 								)
 							)
@@ -3171,7 +3189,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		render(): JSX.Element {
-			if (!this.state.subsReady) {
+			if (!this.props.subsReady) {
 				return (
 					<div className="rundown-view rundown-view--loading">
 						<Spinner />
