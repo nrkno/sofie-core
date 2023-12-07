@@ -1,6 +1,7 @@
 import { PlayoutChangedResults } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import {
 	AdLibActionId,
+	BucketId,
 	PartId,
 	PartInstanceId,
 	PieceId,
@@ -90,6 +91,10 @@ export enum StudioJobs {
 	 * Execute an AdLib Action
 	 */
 	ExecuteAction = 'executeAction',
+	/**
+	 * Execute a Bucket AdLib (Action)
+	 */
+	ExecuteBucketAdLibOrAction = 'executeBucketAdLibOrAction',
 	/**
 	 * Take the currently Next:ed Part (start playing it)
 	 */
@@ -237,6 +242,11 @@ export interface ExecuteActionProps extends RundownPlayoutPropsBase {
 	userData: any
 	triggerMode?: string
 }
+export interface ExecuteBucketAdLibOrActionProps extends RundownPlayoutPropsBase {
+	bucketId: BucketId
+	externalId: string
+	triggerMode?: string
+}
 export interface ExecuteActionResult {
 	queuedPartInstanceId?: PartInstanceId
 	taken?: boolean
@@ -333,6 +343,7 @@ export type StudioJobFunc = {
 	[StudioJobs.SetNextSegment]: (data: SetNextSegmentProps) => PartId
 	[StudioJobs.QueueNextSegment]: (data: QueueNextSegmentProps) => QueueNextSegmentResult
 	[StudioJobs.ExecuteAction]: (data: ExecuteActionProps) => ExecuteActionResult
+	[StudioJobs.ExecuteBucketAdLibOrAction]: (data: ExecuteBucketAdLibOrActionProps) => ExecuteActionResult
 	[StudioJobs.TakeNextPart]: (data: TakeNextPartProps) => void
 	[StudioJobs.DisableNextPiece]: (data: DisableNextPieceProps) => void
 	[StudioJobs.RemovePlaylist]: (data: RemovePlaylistProps) => void

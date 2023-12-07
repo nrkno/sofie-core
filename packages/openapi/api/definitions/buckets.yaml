@@ -178,9 +178,9 @@ resources:
           required: true
           schema:
             type: string
-        - name: adlibId
+        - name: externalId
           in: path
-          description: Id of the bucket adlib to remove.
+          description: External id of the bucket adlib to remove.
           required: true
           schema:
             type: string
@@ -236,7 +236,7 @@ components:
       properties:
         externalId:
           type: string
-          description: Id of the adlib recognizable by the external source. Must be unique for each adlib.
+          description: Id of the adlib recognizable by the external source. Unique within a bucket. If an adlib with the same `externalId` already exists in the bucket, it will be replaced.
         showStyleBaseId:
           type: string
           description: Id of the ShowStyle to use when importing the adlib.
