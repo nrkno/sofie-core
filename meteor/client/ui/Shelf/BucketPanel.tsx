@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as _ from 'underscore'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { Translated, useSubscription, useSubscriptions, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
 import {
@@ -15,7 +15,6 @@ import {
 } from 'react-dnd'
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import {
 	ISourceLayer,
@@ -73,6 +72,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { withTranslation } from 'react-i18next'
 
 interface IBucketPanelDragObject {
 	id: BucketId
@@ -266,34 +266,57 @@ interface BucketTargetCollectedProps {
 	connectDropTarget: ConnectDropTarget
 }
 
-export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, IState, IBucketPanelTrackedProps>(
-	(props: Translated<IBucketPanelProps>) => {
-		let showStyleBaseId: ShowStyleBaseId | undefined = undefined
-		let showStyleVariantId: ShowStyleVariantId | undefined = undefined
+export function BucketPanel(props: Readonly<IBucketPanelProps>): JSX.Element | null {
+	// Data subscriptions:
+	useSubscription(MeteorPubSub.buckets, props.playlist.studioId, props.bucket._id)
+	useSubscription(MeteorPubSub.uiBucketContentStatuses, props.playlist.studioId, props.bucket._id)
+	useSubscription(MeteorPubSub.uiStudio, props.playlist.studioId)
 
-		const selectedPart = props.playlist.currentPartInfo?.partInstanceId ?? props.playlist.nextPartInfo?.partInstanceId
-		if (selectedPart) {
-			const part = PartInstances.findOne(selectedPart, {
+	const { showStyleBases, showStyleVariants } = useTracker(
+		() => {
+			const rundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(props.playlist)
+
+			const showStyleBases = _.uniq(rundowns.map((rundown) => rundown.showStyleBaseId))
+			const showStyleVariants = _.uniq(rundowns.map((rundown) => rundown.showStyleVariantId))
+
+			return { showStyleBases, showStyleVariants }
+		},
+		[props.playlist],
+		{ showStyleBases: [], showStyleVariants: [] }
+	)
+
+	useSubscription(CorelibPubSub.bucketAdLibPieces, props.playlist.studioId, props.bucket._id, showStyleVariants)
+	useSubscription(CorelibPubSub.bucketAdLibActions, props.playlist.studioId, props.bucket._id, showStyleVariants)
+
+	useSubscriptions(
+		MeteorPubSub.uiShowStyleBase,
+		showStyleBases.map((id) => [id])
+	)
+
+	// Data processing:
+	const { showStyleBaseId, showStyleVariantId } = useTracker(
+		() => {
+			const selectedPartInstanceId =
+				props.playlist.currentPartInfo?.partInstanceId ?? props.playlist.nextPartInfo?.partInstanceId
+			const partInstance = PartInstances.findOne(selectedPartInstanceId, {
 				fields: literal<MongoFieldSpecifierOnes<PartInstance>>({
 					rundownId: 1,
 					//@ts-expect-error deep property
 					'part._id': 1,
 				}),
 			}) as Pick<PartInstance, 'rundownId'> | undefined
-			if (part) {
-				const rundown = Rundowns.findOne(part.rundownId, {
+			if (partInstance) {
+				const rundown = Rundowns.findOne(partInstance.rundownId, {
 					fields: {
 						showStyleBaseId: 1,
 						showStyleVariantId: 1,
 					},
 				}) as Pick<Rundown, 'showStyleVariantId' | 'showStyleBaseId'> | undefined
 				if (rundown) {
-					showStyleBaseId = rundown.showStyleBaseId
-					showStyleVariantId = rundown.showStyleVariantId
+					return { showStyleBaseId: rundown.showStyleBaseId, showStyleVariantId: rundown.showStyleVariantId }
 				}
 			}
-		}
-		if (showStyleVariantId === undefined) {
+
 			const rundown = RundownPlaylistCollectionUtil.getRundownsOrdered(
 				props.playlist,
 				{},
@@ -305,25 +328,31 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 				}
 			)[0] as Pick<Rundown, 'showStyleVariantId' | 'showStyleBaseId'> | undefined
 			if (rundown) {
-				showStyleBaseId = rundown.showStyleBaseId
-				showStyleVariantId = rundown.showStyleVariantId
+				return { showStyleBaseId: rundown.showStyleBaseId, showStyleVariantId: rundown.showStyleVariantId }
 			}
-		}
-		if (!showStyleBaseId) throw new Meteor.Error(500, `No showStyleBaseId found for playlist ${props.playlist._id}`)
-		if (!showStyleVariantId)
-			throw new Meteor.Error(500, `No showStyleVariantId found for playlist ${props.playlist._id}`)
 
-		const studio = UIStudios.findOne(props.playlist.studioId)
-		if (!studio) throw new Meteor.Error(500, `No Studio found for playlist ${props.playlist._id}`)
+			return { showStyleBaseId: undefined, showStyleVariantId: undefined }
+		},
+		[],
+		{ showStyleBaseId: undefined, showStyleVariantId: undefined }
+	)
 
-		const tOLayers = props.showStyleBase ? props.showStyleBase.outputLayers : {}
-		const tSLayers = props.showStyleBase ? props.showStyleBase.sourceLayers : {}
+	const studio = useTracker(() => UIStudios.findOne(props.playlist.studioId), [props.playlist.studioId])
 
-		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
-			props.playlist,
-			props.showStyleBase
-		)
-		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist, props.showStyleBase)
+	const outputLayers = props.showStyleBase.outputLayers
+	const sourceLayers = props.showStyleBase.sourceLayers
+
+	const { unfinishedAdLibIds, unfinishedTags } = useTracker(
+		() => getUnfinishedPieceInstancesGrouped(props.playlist, props.showStyleBase),
+		[props.playlist, props.showStyleBase],
+		{ unfinishedPieceInstances: [], unfinishedAdLibIds: [], unfinishedTags: [] }
+	)
+	const { nextAdLibIds, nextTags } = useTracker(
+		() => getNextPieceInstancesGrouped(props.playlist, props.showStyleBase),
+		[props.playlist, props.showStyleBase],
+		{ nextPieceInstances: [], nextAdLibIds: [], nextTags: [] }
+	)
+	const allBucketItems = useTracker(() => {
 		const bucketAdLibPieces = BucketAdLibs.find({
 			bucketId: props.bucket._id,
 		}).fetch()
@@ -331,28 +360,33 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 			bucketId: props.bucket._id,
 		})
 			.fetch()
-			.map((action) => actionToAdLibPieceUi(action, tSLayers, tOLayers))
-		const allBucketItems = (bucketAdLibPieces as BucketAdLibItem[])
+			.map((action) => actionToAdLibPieceUi(action, sourceLayers, outputLayers))
+		return (bucketAdLibPieces as BucketAdLibItem[])
 			.concat(bucketActions)
 			.sort((a, b) => a._rank - b._rank || a.name.localeCompare(b.name))
+	}, [props.bucket._id, sourceLayers, outputLayers])
 
-		return literal<IBucketPanelTrackedProps>({
-			adLibPieces: allBucketItems,
-			studio,
-			unfinishedAdLibIds,
-			unfinishedTags,
-			showStyleBaseId,
-			showStyleVariantId,
-			nextAdLibIds,
-			nextTags,
-			outputLayers: tOLayers,
-			sourceLayers: tSLayers,
-		})
-	},
-	(_data, props: IBucketPanelProps, nextProps: IBucketPanelProps) => {
-		return !_.isEqual(props, nextProps)
-	}
-)(
+	// Wait for data to load, it might take a tick
+	if (!studio || !showStyleBaseId || !showStyleVariantId) return null
+
+	return (
+		<BucketPanelContent
+			{...props}
+			adLibPieces={allBucketItems}
+			studio={studio}
+			unfinishedAdLibIds={unfinishedAdLibIds}
+			unfinishedTags={unfinishedTags}
+			showStyleBaseId={showStyleBaseId}
+			showStyleVariantId={showStyleVariantId}
+			nextAdLibIds={nextAdLibIds}
+			nextTags={nextTags}
+			outputLayers={outputLayers}
+			sourceLayers={sourceLayers}
+		/>
+	)
+}
+
+const BucketPanelContent = withTranslation()(
 	DropTarget([DragDropItemTypes.BUCKET, DragDropItemTypes.BUCKET_ADLIB_PIECE], bucketTarget, (connect) => ({
 		connectDropTarget: connect.dropTarget(),
 	}))(
@@ -361,7 +395,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 			connectDragPreview: connect.dragPreview(),
 			isDragging: monitor.isDragging(),
 		}))(
-			class BucketPanel extends MeteorReactComponent<
+			class BucketPanel extends React.Component<
 				Translated<IBucketPanelProps & IBucketPanelTrackedProps> &
 					BucketSourceCollectedProps &
 					BucketTargetCollectedProps,
@@ -386,34 +420,6 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 				}
 
 				componentDidMount(): void {
-					this.subscribe(MeteorPubSub.buckets, this.props.playlist.studioId, this.props.bucket._id)
-					this.subscribe(MeteorPubSub.uiBucketContentStatuses, this.props.playlist.studioId, this.props.bucket._id)
-					this.subscribe(MeteorPubSub.uiStudio, this.props.playlist.studioId)
-					this.autorun(() => {
-						const showStyles: Array<[ShowStyleBaseId, ShowStyleVariantId]> =
-							RundownPlaylistCollectionUtil.getRundownsUnordered(this.props.playlist).map((rundown) => [
-								rundown.showStyleBaseId,
-								rundown.showStyleVariantId,
-							])
-						const showStyleBases = showStyles.map((showStyle) => showStyle[0])
-						const showStyleVariants = showStyles.map((showStyle) => showStyle[1])
-						this.subscribe(
-							CorelibPubSub.bucketAdLibPieces,
-							this.props.playlist.studioId,
-							this.props.bucket._id,
-							showStyleVariants
-						)
-						this.subscribe(
-							CorelibPubSub.bucketAdLibActions,
-							this.props.playlist.studioId,
-							this.props.bucket._id,
-							showStyleVariants
-						)
-						for (const showStyleBaseId of _.uniq(showStyleBases)) {
-							this.subscribe(MeteorPubSub.uiShowStyleBase, showStyleBaseId)
-						}
-					})
-
 					window.addEventListener(MOSEvents.dragenter, this.onDragEnter)
 					window.addEventListener(MOSEvents.dragleave, this.onDragLeave)
 
@@ -431,8 +437,6 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 				}
 
 				componentWillUnmount(): void {
-					this._cleanUp()
-
 					window.removeEventListener(MOSEvents.dragenter, this.onDragEnter)
 					window.removeEventListener(MOSEvents.dragleave, this.onDragLeave)
 				}
