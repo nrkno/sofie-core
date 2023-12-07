@@ -32,6 +32,7 @@ import {
 	BlueprintId,
 	BucketAdLibActionId,
 	BucketAdLibId,
+	BucketId,
 	PartId,
 	PartInstanceId,
 	PeripheralDeviceId,
@@ -56,6 +57,7 @@ import {
 	Blueprints,
 	BucketAdLibActions,
 	BucketAdLibs,
+	Buckets,
 	PeripheralDevices,
 	RundownBaselineAdLibActions,
 	RundownBaselineAdLibPieces,
@@ -307,6 +309,57 @@ export class ServerRestAPI implements RestAPI {
 				412
 			)
 		}
+	}
+	async executeBucketAdLib(
+		connection: Meteor.Connection,
+		event: string,
+		rundownPlaylistId: RundownPlaylistId,
+		bucketId: BucketId,
+		externalId: string,
+		triggerMode?: string | null
+	): Promise<ClientAPI.ClientResponse<object>> {
+		const bucketPromise = Buckets.findOneAsync({}, { projection: { _id: 1, name: 1, studioId: 1 } })
+		const bucketAdlibPromise = BucketAdLibs.findOneAsync({ bucketId, externalId }, { projection: { _id: 1 } })
+		const bucketAdlibActionPromise = BucketAdLibActions.findOneAsync(
+			{ bucketId, externalId },
+			{
+				projection: { _id: 1 },
+			}
+		)
+		if (!(await bucketPromise)) {
+			return ClientAPI.responseError(
+				UserError.from(new Error(`Bucket ${bucketId} not found`), UserErrorMessage.BucketNotFound),
+				412
+			)
+		}
+		if (!((await bucketAdlibPromise) ?? (await bucketAdlibActionPromise))) {
+			return ClientAPI.responseError(
+				UserError.from(
+					new Error(`No adLib with Id ${externalId}, in bucket ${bucketId}`),
+					UserErrorMessage.AdlibNotFound
+				),
+				412
+			)
+		}
+
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			ServerRestAPI.getMethodContext(connection),
+			event,
+			getCurrentTime(),
+			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+				check(bucketId, String)
+				check(externalId, String)
+			},
+			StudioJobs.ExecuteBucketAdLibOrAction,
+			{
+				playlistId: rundownPlaylistId,
+				bucketId,
+				externalId,
+				triggerMode: triggerMode ?? undefined,
+			}
+		)
 	}
 	async moveNextPart(
 		connection: Meteor.Connection,
@@ -1376,6 +1429,50 @@ sofieAPIRequest<{ playlistId: string }, { adLibId: string; actionType?: string; 
 		check(rundownPlaylistId, String)
 
 		return await serverAPI.executeAdLib(connection, event, rundownPlaylistId, adLibId, triggerMode, body.userData)
+	}
+)
+
+sofieAPIRequest<
+	{ playlistId: string },
+	{ bucketId: string; externalId: string; actionType?: string; userData?: any },
+	object
+>(
+	'post',
+	'/playlists/:playlistId/execute-bucket-adlib',
+	new Map([
+		[404, [UserErrorMessage.RundownPlaylistNotFound]],
+		[
+			412,
+			[
+				UserErrorMessage.InactiveRundown,
+				UserErrorMessage.NoCurrentPart,
+				UserErrorMessage.AdlibNotFound,
+				UserErrorMessage.BucketNotFound,
+			],
+		],
+	]),
+	async (serverAPI, connection, event, params, body) => {
+		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
+		const bucketId = protectString<BucketId>(body.bucketId)
+		const adLibExternalId = body.externalId
+		const actionTypeObj = body
+		const triggerMode = actionTypeObj ? (actionTypeObj as { actionType: string }).actionType : undefined
+		logger.info(
+			`API POST: execute-bucket-adlib ${rundownPlaylistId} ${bucketId} ${adLibExternalId} - triggerMode: ${triggerMode}`
+		)
+
+		check(rundownPlaylistId, String)
+		check(bucketId, String)
+		check(adLibExternalId, String)
+
+		return await serverAPI.executeBucketAdLib(
+			connection,
+			event,
+			rundownPlaylistId,
+			bucketId,
+			adLibExternalId,
+			triggerMode
+		)
 	}
 )
 

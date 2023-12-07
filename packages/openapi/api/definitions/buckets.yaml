@@ -236,7 +236,7 @@ components:
       properties:
         externalId:
           type: string
-          description: Id of the adlib recognizable by the external source. If an adlib with the same `externalId` already exists in the bucket, it will be replaced.
+          description: Id of the adlib recognizable by the external source. Unique within a bucket. If an adlib with the same `externalId` already exists in the bucket, it will be replaced.
         showStyleBaseId:
           type: string
           description: Id of the ShowStyle to use when importing the adlib.
