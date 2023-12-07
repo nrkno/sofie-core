@@ -8,6 +8,7 @@ import { withTranslation, WithTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../MeteorReactComponent'
 import { meteorSubscribe, AllPubSubTypes } from '../../../lib/api/pubsub'
 import { stringifyObjects } from '../../../lib/lib'
+import _ from 'underscore'
 
 const globalTrackerQueue: Array<Function> = []
 let globalTrackerTimestamp: number | undefined = undefined
@@ -364,12 +365,12 @@ export function useSubscription<K extends keyof AllPubSubTypes>(
  */
 export function useSubscriptions<K extends keyof AllPubSubTypes>(
 	sub: K,
-	argsArray: Parameters<AllPubSubTypes[K]>[]
+	argsArray: Array<Parameters<AllPubSubTypes[K]> | undefined | null>
 ): boolean {
 	const [ready, setReady] = useState<boolean>(false)
 
 	useEffect(() => {
-		const subscriptions = Tracker.nonreactive(() => argsArray.map((args) => meteorSubscribe(sub, ...args)))
+		const subscriptions = Tracker.nonreactive(() => _.compact(argsArray).map((args) => meteorSubscribe(sub, ...args)))
 		const isReadyComp = Tracker.nonreactive(() =>
 			Tracker.autorun(() => setReady(subscriptions.reduce((memo, subscription) => memo && subscription.ready(), true)))
 		)
