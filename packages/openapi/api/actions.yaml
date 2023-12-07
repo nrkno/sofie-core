@@ -93,5 +93,5 @@ paths:
     $ref: 'definitions/buckets.yaml#/resources/bucket'
   /buckets/{bucketId}/adlibs:
     $ref: 'definitions/buckets.yaml#/resources/bucketAdlibs'
-  /buckets/{bucketId}/adlibs/{adlibId}:
+  /buckets/{bucketId}/adlibs/{externalId}:
     $ref: 'definitions/buckets.yaml#/resources/bucketAdlib'
