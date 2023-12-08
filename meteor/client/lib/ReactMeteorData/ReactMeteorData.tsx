@@ -5,7 +5,6 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
 import { withTranslation, WithTranslation } from 'react-i18next'
-import { MeteorReactComponent } from '../MeteorReactComponent'
 import { meteorSubscribe, AllPubSubTypes } from '../../../lib/api/pubsub'
 import { stringifyObjects } from '../../../lib/lib'
 import _ from 'underscore'
@@ -254,9 +253,6 @@ export const ReactMeteorData = {
 	componentWillUnmount(this: any): void {
 		this._meteorDataManager.dispose()
 	},
-	// pick the MeteorReactComponent member functions, so they will be available in withTracker(() => { >here< })
-	autorun: MeteorReactComponent.prototype.autorun,
-	subscribe: MeteorReactComponent.prototype.subscribe,
 }
 
 class ReactMeteorComponentWrapper<P, S> extends React.Component<P, S> {
