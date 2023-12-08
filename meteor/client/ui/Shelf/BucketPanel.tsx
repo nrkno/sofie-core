@@ -266,125 +266,130 @@ interface BucketTargetCollectedProps {
 	connectDropTarget: ConnectDropTarget
 }
 
-export function BucketPanel(props: Readonly<IBucketPanelProps>): JSX.Element | null {
-	// Data subscriptions:
-	useSubscription(MeteorPubSub.buckets, props.playlist.studioId, props.bucket._id)
-	useSubscription(MeteorPubSub.uiBucketContentStatuses, props.playlist.studioId, props.bucket._id)
-	useSubscription(MeteorPubSub.uiStudio, props.playlist.studioId)
+export const BucketPAnel = React.memo(
+	function BucketPanel(props: Readonly<IBucketPanelProps>): JSX.Element | null {
+		// Data subscriptions:
+		useSubscription(MeteorPubSub.buckets, props.playlist.studioId, props.bucket._id)
+		useSubscription(MeteorPubSub.uiBucketContentStatuses, props.playlist.studioId, props.bucket._id)
+		useSubscription(MeteorPubSub.uiStudio, props.playlist.studioId)
 
-	const { showStyleBases, showStyleVariants } = useTracker(
-		() => {
-			const rundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(props.playlist)
+		const { showStyleBases, showStyleVariants } = useTracker(
+			() => {
+				const rundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(props.playlist)
 
-			const showStyleBases = _.uniq(rundowns.map((rundown) => rundown.showStyleBaseId))
-			const showStyleVariants = _.uniq(rundowns.map((rundown) => rundown.showStyleVariantId))
+				const showStyleBases = _.uniq(rundowns.map((rundown) => rundown.showStyleBaseId))
+				const showStyleVariants = _.uniq(rundowns.map((rundown) => rundown.showStyleVariantId))
 
-			return { showStyleBases, showStyleVariants }
-		},
-		[props.playlist],
-		{ showStyleBases: [], showStyleVariants: [] }
-	)
+				return { showStyleBases, showStyleVariants }
+			},
+			[props.playlist],
+			{ showStyleBases: [], showStyleVariants: [] }
+		)
 
-	useSubscription(CorelibPubSub.bucketAdLibPieces, props.playlist.studioId, props.bucket._id, showStyleVariants)
-	useSubscription(CorelibPubSub.bucketAdLibActions, props.playlist.studioId, props.bucket._id, showStyleVariants)
+		useSubscription(CorelibPubSub.bucketAdLibPieces, props.playlist.studioId, props.bucket._id, showStyleVariants)
+		useSubscription(CorelibPubSub.bucketAdLibActions, props.playlist.studioId, props.bucket._id, showStyleVariants)
 
-	useSubscriptions(
-		MeteorPubSub.uiShowStyleBase,
-		showStyleBases.map((id) => [id])
-	)
+		useSubscriptions(
+			MeteorPubSub.uiShowStyleBase,
+			showStyleBases.map((id) => [id])
+		)
 
-	// Data processing:
-	const { showStyleBaseId, showStyleVariantId } = useTracker(
-		() => {
-			const selectedPartInstanceId =
-				props.playlist.currentPartInfo?.partInstanceId ?? props.playlist.nextPartInfo?.partInstanceId
-			const partInstance = PartInstances.findOne(selectedPartInstanceId, {
-				fields: literal<MongoFieldSpecifierOnes<PartInstance>>({
-					rundownId: 1,
-					//@ts-expect-error deep property
-					'part._id': 1,
-				}),
-			}) as Pick<PartInstance, 'rundownId'> | undefined
-			if (partInstance) {
-				const rundown = Rundowns.findOne(partInstance.rundownId, {
-					fields: {
-						showStyleBaseId: 1,
-						showStyleVariantId: 1,
-					},
-				}) as Pick<Rundown, 'showStyleVariantId' | 'showStyleBaseId'> | undefined
+		// Data processing:
+		const { showStyleBaseId, showStyleVariantId } = useTracker(
+			() => {
+				const selectedPartInstanceId =
+					props.playlist.currentPartInfo?.partInstanceId ?? props.playlist.nextPartInfo?.partInstanceId
+				const partInstance = PartInstances.findOne(selectedPartInstanceId, {
+					fields: literal<MongoFieldSpecifierOnes<PartInstance>>({
+						rundownId: 1,
+						//@ts-expect-error deep property
+						'part._id': 1,
+					}),
+				}) as Pick<PartInstance, 'rundownId'> | undefined
+				if (partInstance) {
+					const rundown = Rundowns.findOne(partInstance.rundownId, {
+						fields: {
+							showStyleBaseId: 1,
+							showStyleVariantId: 1,
+						},
+					}) as Pick<Rundown, 'showStyleVariantId' | 'showStyleBaseId'> | undefined
+					if (rundown) {
+						return { showStyleBaseId: rundown.showStyleBaseId, showStyleVariantId: rundown.showStyleVariantId }
+					}
+				}
+
+				const rundown = RundownPlaylistCollectionUtil.getRundownsOrdered(
+					props.playlist,
+					{},
+					{
+						fields: {
+							showStyleBaseId: 1,
+							showStyleVariantId: 1,
+						},
+					}
+				)[0] as Pick<Rundown, 'showStyleVariantId' | 'showStyleBaseId'> | undefined
 				if (rundown) {
 					return { showStyleBaseId: rundown.showStyleBaseId, showStyleVariantId: rundown.showStyleVariantId }
 				}
-			}
 
-			const rundown = RundownPlaylistCollectionUtil.getRundownsOrdered(
-				props.playlist,
-				{},
-				{
-					fields: {
-						showStyleBaseId: 1,
-						showStyleVariantId: 1,
-					},
-				}
-			)[0] as Pick<Rundown, 'showStyleVariantId' | 'showStyleBaseId'> | undefined
-			if (rundown) {
-				return { showStyleBaseId: rundown.showStyleBaseId, showStyleVariantId: rundown.showStyleVariantId }
-			}
+				return { showStyleBaseId: undefined, showStyleVariantId: undefined }
+			},
+			[],
+			{ showStyleBaseId: undefined, showStyleVariantId: undefined }
+		)
 
-			return { showStyleBaseId: undefined, showStyleVariantId: undefined }
-		},
-		[],
-		{ showStyleBaseId: undefined, showStyleVariantId: undefined }
-	)
+		const studio = useTracker(() => UIStudios.findOne(props.playlist.studioId), [props.playlist.studioId])
 
-	const studio = useTracker(() => UIStudios.findOne(props.playlist.studioId), [props.playlist.studioId])
+		const outputLayers = props.showStyleBase.outputLayers
+		const sourceLayers = props.showStyleBase.sourceLayers
 
-	const outputLayers = props.showStyleBase.outputLayers
-	const sourceLayers = props.showStyleBase.sourceLayers
+		const { unfinishedAdLibIds, unfinishedTags } = useTracker(
+			() => getUnfinishedPieceInstancesGrouped(props.playlist, props.showStyleBase),
+			[props.playlist, props.showStyleBase],
+			{ unfinishedPieceInstances: [], unfinishedAdLibIds: [], unfinishedTags: [] }
+		)
+		const { nextAdLibIds, nextTags } = useTracker(
+			() => getNextPieceInstancesGrouped(props.playlist, props.showStyleBase),
+			[props.playlist, props.showStyleBase],
+			{ nextPieceInstances: [], nextAdLibIds: [], nextTags: [] }
+		)
+		const allBucketItems = useTracker(() => {
+			const bucketAdLibPieces = BucketAdLibs.find({
+				bucketId: props.bucket._id,
+			}).fetch()
+			const bucketActions = BucketAdLibActions.find({
+				bucketId: props.bucket._id,
+			})
+				.fetch()
+				.map((action) => actionToAdLibPieceUi(action, sourceLayers, outputLayers))
+			return (bucketAdLibPieces as BucketAdLibItem[])
+				.concat(bucketActions)
+				.sort((a, b) => a._rank - b._rank || a.name.localeCompare(b.name))
+		}, [props.bucket._id, sourceLayers, outputLayers])
 
-	const { unfinishedAdLibIds, unfinishedTags } = useTracker(
-		() => getUnfinishedPieceInstancesGrouped(props.playlist, props.showStyleBase),
-		[props.playlist, props.showStyleBase],
-		{ unfinishedPieceInstances: [], unfinishedAdLibIds: [], unfinishedTags: [] }
-	)
-	const { nextAdLibIds, nextTags } = useTracker(
-		() => getNextPieceInstancesGrouped(props.playlist, props.showStyleBase),
-		[props.playlist, props.showStyleBase],
-		{ nextPieceInstances: [], nextAdLibIds: [], nextTags: [] }
-	)
-	const allBucketItems = useTracker(() => {
-		const bucketAdLibPieces = BucketAdLibs.find({
-			bucketId: props.bucket._id,
-		}).fetch()
-		const bucketActions = BucketAdLibActions.find({
-			bucketId: props.bucket._id,
-		})
-			.fetch()
-			.map((action) => actionToAdLibPieceUi(action, sourceLayers, outputLayers))
-		return (bucketAdLibPieces as BucketAdLibItem[])
-			.concat(bucketActions)
-			.sort((a, b) => a._rank - b._rank || a.name.localeCompare(b.name))
-	}, [props.bucket._id, sourceLayers, outputLayers])
+		// Wait for data to load, it might take a tick
+		if (!studio || !showStyleBaseId || !showStyleVariantId) return null
 
-	// Wait for data to load, it might take a tick
-	if (!studio || !showStyleBaseId || !showStyleVariantId) return null
-
-	return (
-		<BucketPanelContent
-			{...props}
-			adLibPieces={allBucketItems}
-			studio={studio}
-			unfinishedAdLibIds={unfinishedAdLibIds}
-			unfinishedTags={unfinishedTags}
-			showStyleBaseId={showStyleBaseId}
-			showStyleVariantId={showStyleVariantId}
-			nextAdLibIds={nextAdLibIds}
-			nextTags={nextTags}
-			outputLayers={outputLayers}
-			sourceLayers={sourceLayers}
-		/>
-	)
-}
+		return (
+			<BucketPanelContent
+				{...props}
+				adLibPieces={allBucketItems}
+				studio={studio}
+				unfinishedAdLibIds={unfinishedAdLibIds}
+				unfinishedTags={unfinishedTags}
+				showStyleBaseId={showStyleBaseId}
+				showStyleVariantId={showStyleVariantId}
+				nextAdLibIds={nextAdLibIds}
+				nextTags={nextTags}
+				outputLayers={outputLayers}
+				sourceLayers={sourceLayers}
+			/>
+		)
+	},
+	(props: IBucketPanelProps, nextProps: IBucketPanelProps) => {
+		return !_.isEqual(props, nextProps)
+	}
+)
 
 const BucketPanelContent = withTranslation()(
 	DropTarget([DragDropItemTypes.BUCKET, DragDropItemTypes.BUCKET_ADLIB_PIECE], bucketTarget, (connect) => ({
