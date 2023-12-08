@@ -41,6 +41,7 @@ import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownP
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { useSetDocumentClass } from '../util/useSetDocumentClass'
+import { useRundownAndShowStyleIdsForPlaylist } from '../util/useRundownAndShowStyleIdsForPlaylist'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -344,28 +345,7 @@ export function usePresenterScreenSubscriptions(props: PresenterScreenProps): vo
 
 	useSubscription(CorelibPubSub.rundownsInPlaylists, playlist ? [playlist._id] : [])
 
-	const { rundownIds, showStyleBaseIds, showStyleVariantIds } = useTracker(
-		() => {
-			if (playlist) {
-				const rundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(playlist, undefined, {
-					fields: {
-						_id: 1,
-						showStyleBaseId: 1,
-						showStyleVariantId: 1,
-					},
-				}) as Array<Pick<Rundown, '_id' | 'showStyleBaseId' | 'showStyleVariantId'>>
-				const rundownIds = rundowns.map((r) => r._id)
-				const showStyleBaseIds = rundowns.map((r) => r.showStyleBaseId)
-				const showStyleVariantIds = rundowns.map((r) => r.showStyleVariantId)
-
-				return { rundownIds, showStyleBaseIds, showStyleVariantIds }
-			} else {
-				return { rundownIds: [], showStyleBaseIds: [], showStyleVariantIds: [] }
-			}
-		},
-		[playlist],
-		{ rundownIds: [], showStyleBaseIds: [], showStyleVariantIds: [] }
-	)
+	const { rundownIds, showStyleBaseIds, showStyleVariantIds } = useRundownAndShowStyleIdsForPlaylist(playlist?._id)
 
 	useSubscription(CorelibPubSub.segments, rundownIds, {})
 	useSubscription(CorelibPubSub.parts, rundownIds, null)
