@@ -7,7 +7,7 @@ import {
 	WrappedOverridableItemNormal,
 	OverrideOpHelperForItemContents,
 } from '../../../ui/Settings/util/OverrideOpHelper'
-import { useToggleExpandHelper } from '../../../ui/Settings/util/ToggleExpandedHelper'
+import { useToggleExpandHelper } from '../../../ui/util/useToggleExpandHelper'
 import { doModalDialog } from '../../ModalDialog'
 import {
 	getSchemaSummaryFieldsForObject,
