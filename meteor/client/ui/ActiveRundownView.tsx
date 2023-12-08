@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { NavLink, Route, Switch, useRouteMatch } from 'react-router-dom'
 import { useSubscription, useTracker } from '../lib/ReactMeteorData/ReactMeteorData'
 
@@ -9,6 +9,7 @@ import { UIStudios } from './Collections'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylists } from '../collections'
 import { useTranslation } from 'react-i18next'
+import { useSetDocumentClass } from './util/useSetDocumentClass'
 
 export function ActiveRundownView({ studioId }: Readonly<{ studioId: StudioId }>): JSX.Element | null {
 	const { t } = useTranslation()
@@ -30,13 +31,7 @@ export function ActiveRundownView({ studioId }: Readonly<{ studioId: StudioId }>
 		[studioId]
 	)
 
-	useEffect(() => {
-		document.body.classList.add('dark', 'vertical-overflow-only')
-
-		return () => {
-			document.body.classList.remove('dark', 'vertical-overflow-only')
-		}
-	}, [playlist])
+	useSetDocumentClass('dark', 'vertical-overflow-only')
 
 	if (!subsReady) {
 		return (

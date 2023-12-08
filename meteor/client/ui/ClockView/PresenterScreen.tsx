@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import ClassNames from 'classnames'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
@@ -40,6 +40,7 @@ import { PieceInstances, RundownLayouts, RundownPlaylists, Rundowns, ShowStyleVa
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { useSetDocumentClass } from '../util/useSetDocumentClass'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -310,15 +311,7 @@ function PresenterScreenContent(props: WithTiming<PresenterScreenProps & Present
 			? selectedPresenterLayout
 			: undefined
 
-	useEffect(() => {
-		const bodyClassList: string[] = ['dark', 'xdark']
-
-		document.body.classList.add(...bodyClassList)
-
-		return () => {
-			document.body.classList.remove(...bodyClassList)
-		}
-	}, [])
+	useSetDocumentClass('dark', 'xdark')
 
 	if (presenterLayout && RundownLayoutsAPI.isDashboardLayout(presenterLayout)) {
 		return (
