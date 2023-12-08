@@ -10,10 +10,8 @@ import {
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Time, getCurrentTime, unprotectString } from '../../../lib/lib'
 import { withTranslation, WithTranslation } from 'react-i18next'
-import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
-import { UIStudio } from '../../../lib/api/studios'
-import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevices } from '../../collections'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
@@ -21,7 +19,7 @@ interface IMOSStatusProps {
 	lastUpdate: Time
 }
 
-export const MOSLastUpdateStatus = withTranslation()(
+const MOSLastUpdateStatus = withTranslation()(
 	class MOSLastUpdateStatus extends React.Component<IMOSStatusProps & WithTranslation> {
 		_interval: number
 
@@ -60,10 +58,9 @@ export const MOSLastUpdateStatus = withTranslation()(
 )
 
 interface IProps {
-	studio: UIStudio
-	playlist: DBRundownPlaylist
-	rundownIds: RundownId[]
-	firstRundown: Rundown | undefined
+	studioId: StudioId
+	playlistId: RundownPlaylistId
+	firstRundown: Pick<Rundown, 'externalNRCSName'> | undefined
 }
 
 interface IState {
@@ -129,56 +126,62 @@ function calculateStatusForDevices(devices: PeripheralDevice[]) {
 	}
 }
 
-export function RundownSystemStatus(props: Readonly<IProps>): JSX.Element {
-	useSubscription(CorelibPubSub.peripheralDevicesAndSubDevices, props.studio._id)
+export const RundownSystemStatus = React.memo(
+	function RundownSystemStatus(props: Readonly<IProps>): JSX.Element {
+		useSubscription(CorelibPubSub.peripheralDevicesAndSubDevices, props.studioId)
 
-	const parentDevices = useTracker(
-		() =>
-			PeripheralDevices.find({
-				studioId: props.studio._id,
-			}).fetch(),
-		[],
-		[]
-	)
-	const parentDeviceIds = useMemo(() => parentDevices.map((pd) => pd._id), [parentDevices])
-	const subDevices = useTracker(
-		() =>
-			PeripheralDevices.find({
-				parentDeviceId: { $in: parentDeviceIds },
-			}).fetch(),
-		[parentDeviceIds],
-		[]
-	)
-
-	const ingest = useMemo(() => {
-		const attachedDevices = [...parentDevices, ...subDevices]
-
-		const ingestDevices = attachedDevices.filter(
-			(i) => i.category === PeripheralDeviceCategory.INGEST || i.category === PeripheralDeviceCategory.MEDIA_MANAGER
+		const parentDevices = useTracker(
+			() =>
+				PeripheralDevices.find({
+					studioId: props.studioId,
+				}).fetch(),
+			[],
+			[]
+		)
+		const parentDeviceIds = useMemo(() => parentDevices.map((pd) => pd._id), [parentDevices])
+		const subDevices = useTracker(
+			() =>
+				PeripheralDevices.find({
+					parentDeviceId: { $in: parentDeviceIds },
+				}).fetch(),
+			[parentDeviceIds],
+			[]
 		)
 
-		return calculateStatusForDevices(ingestDevices)
-	}, [parentDevices, subDevices])
+		const ingest = useMemo(() => {
+			const attachedDevices = [...parentDevices, ...subDevices]
 
-	const playout = useMemo(() => {
-		const attachedDevices = [...parentDevices, ...subDevices]
+			const ingestDevices = attachedDevices.filter(
+				(i) => i.category === PeripheralDeviceCategory.INGEST || i.category === PeripheralDeviceCategory.MEDIA_MANAGER
+			)
 
-		const playoutDevices = attachedDevices.filter((i) => i.type === PeripheralDeviceType.PLAYOUT)
+			return calculateStatusForDevices(ingestDevices)
+		}, [parentDevices, subDevices])
 
-		return calculateStatusForDevices(playoutDevices)
-	}, [parentDevices, subDevices])
+		const playout = useMemo(() => {
+			const attachedDevices = [...parentDevices, ...subDevices]
 
-	const trackedProps: ITrackedProps = {
-		mosStatus: ingest.status,
-		mosDevices: ingest.onlineOffline,
-		mosLastUpdate: ingest.lastUpdate,
+			const playoutDevices = attachedDevices.filter((i) => i.type === PeripheralDeviceType.PLAYOUT)
 
-		playoutStatus: playout.status,
-		playoutDevices: playout.onlineOffline,
+			return calculateStatusForDevices(playoutDevices)
+		}, [parentDevices, subDevices])
+
+		const trackedProps: ITrackedProps = {
+			mosStatus: ingest.status,
+			mosDevices: ingest.onlineOffline,
+			mosLastUpdate: ingest.lastUpdate,
+
+			playoutStatus: playout.status,
+			playoutDevices: playout.onlineOffline,
+		}
+
+		return <RundownSystemStatusContent {...props} {...trackedProps} />
+	},
+	(props: IProps, nextProps: IProps) => {
+		if (props.playlistId === nextProps.playlistId && props.studioId === nextProps.studioId) return false
+		return true
 	}
-
-	return <RundownSystemStatusContent {...props} {...trackedProps} />
-}
+)
 
 const RundownSystemStatusContent = withTranslation()(
 	class RundownSystemStatusContent extends React.Component<Translated<IProps & ITrackedProps>, IState> {

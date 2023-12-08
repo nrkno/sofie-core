@@ -1096,9 +1096,8 @@ const RundownHeader = withTranslation()(
 											layout={this.props.layout}
 										/>
 										<RundownSystemStatus
-											studio={this.props.studio}
-											playlist={this.props.playlist}
-											rundownIds={this.props.rundownIds}
+											studioId={this.props.studio._id}
+											playlistId={this.props.playlist._id}
 											firstRundown={this.props.firstRundown}
 										/>
 									</>
