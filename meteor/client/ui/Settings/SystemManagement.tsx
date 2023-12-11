@@ -34,6 +34,8 @@ export default function SystemManagement(): JSX.Element | null {
 
 			<SystemManagementSupportPanel coreSystem={coreSystem} />
 
+			<SystemManagementEvaluationsMessage coreSystem={coreSystem} />
+
 			<div className="row">
 				<div className="col c12 r1-c12">
 					<TriggeredActionsEditor showStyleBaseId={null} sourceLayers={emptyObject} outputLayers={emptyObject} />
@@ -171,6 +173,58 @@ function SystemManagementSupportPanel({ coreSystem }: Readonly<WithCoreSystemPro
 						<span className="mdfx"></span>
 					</div>
 					<span className="text-s dimmed field-hint">{t('HTML that will be shown in the Support Panel')}</span>
+				</label>
+			</div>
+		</>
+	)
+}
+
+function SystemManagementEvaluationsMessage({ coreSystem }: Readonly<WithCoreSystemProps>) {
+	const { t } = useTranslation()
+
+	return (
+		<>
+			<h2 className="mhn mtn">{t('Evaluations')}</h2>
+			<div className="properties-grid">
+				<label className="field">
+					<LabelActual label={t('Heading')} />
+					<div className="mdi">
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute="evaluations.heading"
+							obj={coreSystem}
+							type="text"
+							collection={CoreSystem}
+							className="mdinput"
+						/>
+						<span className="mdfx"></span>
+					</div>
+				</label>
+				<label className="field">
+					<LabelActual label={t('Message')} />
+					<div className="mdi">
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute="evaluations.message"
+							obj={coreSystem}
+							type="multiline"
+							collection={CoreSystem}
+							className="mdinput"
+						/>
+						<span className="mdfx"></span>
+					</div>
+					<span className="text-s dimmed field-hint">{t('Message shown to users in the Evaluations form')}</span>
+				</label>
+				<label className="field">
+					<LabelActual label={t('Enabled')} />
+					<div className="mdi">
+						<EditAttribute
+							attribute="evaluations.enabled"
+							obj={coreSystem}
+							type="checkbox"
+							collection={CoreSystem}
+						></EditAttribute>
+					</div>
 				</label>
 			</div>
 		</>
