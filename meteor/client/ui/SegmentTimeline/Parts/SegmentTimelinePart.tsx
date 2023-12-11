@@ -3,7 +3,7 @@ import _ from 'underscore'
 import { withTranslation, WithTranslation, TFunction } from 'react-i18next'
 
 import ClassNames from 'classnames'
-import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { DBRundownPlaylist, QuickLoopMarkerType } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { SegmentUi, PartUi, IOutputLayerUi, PieceUi, LIVE_LINE_TIME_PADDING } from '../SegmentTimelineContainer'
 import {
 	TimingDataResolution,
@@ -35,6 +35,7 @@ import { InvalidPartCover } from './InvalidPartCover'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { UIStudio } from '../../../../lib/api/studios'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
+import { isEndOfLoopingShow, isLoopRunning } from '../../../../lib/Rundown'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -143,6 +144,12 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		const isPrevious = nextProps.playlist.previousPartInfo?.partInstanceId === nextProps.part.instance._id
 		const isLive = nextProps.playlist.currentPartInfo?.partInstanceId === nextProps.part.instance._id
 		const isNext = nextProps.playlist.nextPartInfo?.partInstanceId === nextProps.part.instance._id
+		const isQuickLoopStart =
+			nextProps.playlist.quickLoop?.start?.type === QuickLoopMarkerType.PART &&
+			nextProps.playlist.quickLoop.start.id === nextProps.part.partId
+		const isQuickLoopEnd =
+			nextProps.playlist.quickLoop?.end?.type === QuickLoopMarkerType.PART &&
+			nextProps.playlist.quickLoop.end.id === nextProps.part.partId
 
 		const nextPartInstance = nextProps.part.instance
 
@@ -210,6 +217,9 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		const partial = {
 			isLive,
 			isNext,
+			isQuickLoopStart,
+			isQuickLoopEnd,
+
 			isDurationSettling,
 			durationSettlingStartsAt,
 			liveDuration,
@@ -548,6 +558,10 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 			((!this.props.isLastSegment && !this.props.isLastInSegment) || !!this.props.playlist.nextPartInfo) &&
 			!innerPart.invalid
 		let timeOffset = SegmentTimelinePartClass.getPartDisplayDuration(this.props.part, this.props.timingDurations)
+		// const timingId = getPartInstanceTimingId(this.props.part.instance)
+		// const autoNext =
+		// 	innerPart.autoNext ||
+		// 	(this.props.playlist.quickLoop?.running && this.props.timingDurations.partInQuickLoop?.[timingId])
 		if (this.state.isLive) {
 			timeOffset += this.getFutureShadePaddingTime()
 		}
@@ -576,7 +590,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 						</div>
 					</div>
 				)}
-				{!isEndOfShow && this.props.isLastInSegment && !innerPart.invalid && (
+				{!isEndOfShow && !isEndOfLoopingShow && this.props.isLastInSegment && !innerPart.invalid && (
 					<div
 						className={ClassNames('segment-timeline__part__segment-end', {
 							'is-next': isNext,
@@ -587,14 +601,14 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 						</div>
 					</div>
 				)}
-				{isEndOfShow && (
+				{(isEndOfShow || isEndOfLoopingShow) && (
 					<div
 						className={ClassNames('segment-timeline__part__show-end', {
-							loop: this.props.playlist.loop,
+							loop: isEndOfLoopingShow,
 						})}
 					>
 						<div className="segment-timeline__part__show-end__label">
-							{this.props.playlist.loop ? t('Loops to top') : t('Show End')}
+							{isEndOfLoopingShow ? t('Loops to Start') : t('Show End')}
 						</div>
 					</div>
 				)}
@@ -627,7 +641,13 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 			this.props.isLastSegment &&
 			this.props.isLastInSegment &&
 			(!this.state.isLive || (this.state.isLive && !this.props.playlist.nextPartInfo))
-		const isEndOfLoopingShow = this.props.isLastSegment && this.props.isLastInSegment && this.props.playlist.loop
+		const isPlaylistLooping = isLoopRunning(this.props.playlist)
+		const endOfLoopingShow = isEndOfLoopingShow(
+			this.props.playlist,
+			this.props.isLastSegment,
+			this.props.isLastInSegment,
+			this.props.part.instance.part
+		)
 		let invalidReasonColorVars: CSSProperties | undefined = undefined
 		if (innerPart.invalidReason && innerPart.invalidReason.color) {
 			const invalidColor = SegmentTimelinePartClass.convertHexToRgb(innerPart.invalidReason.color)
@@ -638,6 +658,20 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 				}
 			}
 		}
+		const isPartInQuickLoop =
+			this.props.timingDurations.partsInQuickLoop?.[getPartInstanceTimingId(this.props.part.instance)] ?? false
+		// const isPrevPartInQuickLoop =
+		// 	(this.props.part.previousPartId &&
+		// 		this.props.timingDurations.partInQuickLoop?.[this.props.part.previousPartId]) ??
+		// 	false
+		// const willProbablyAutoNext = this.props.part.willProbablyAutoNext || (isPlaylistLooping && isPrevPartInQuickLoop)
+
+		const isQuickLoopStart =
+			this.props.playlist.quickLoop?.start?.type === QuickLoopMarkerType.PART &&
+			this.props.playlist.quickLoop.start.id === this.props.part.partId
+		const isQuickLoopEnd =
+			this.props.playlist.quickLoop?.end?.type === QuickLoopMarkerType.PART &&
+			this.props.playlist.quickLoop.end.id === this.props.part.partId
 
 		if (
 			this.state.isInsideViewport &&
@@ -657,6 +691,8 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 
 							'duration-settling': this.state.isDurationSettling,
 							'budget-gap': this.props.isBudgetGap,
+
+							'out-of-the-loop': !isPartInQuickLoop && isLoopRunning(this.props.playlist) && !this.state.isNext,
 						},
 						this.props.className
 					)}
@@ -682,7 +718,12 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 						<InvalidPartCover className="segment-timeline__part__invalid-cover" part={innerPart} />
 					) : null}
 					{innerPart.floated ? <div className="segment-timeline__part__floated-cover"></div> : null}
-
+					{isQuickLoopStart ? <div className="segment-timeline__part__quick-loop-start">LOOP START</div> : null}
+					{isQuickLoopEnd ? (
+						<div className="segment-timeline__part__quick-loop-end" style={{ textAlign: 'right' }}>
+							LOOP END
+						</div>
+					) : null}
 					{this.props.playlist.nextTimeOffset &&
 						this.state.isNext && ( // This is the off-set line
 							<div
@@ -749,15 +790,15 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 											: null}
 									</React.Fragment>
 								)}
-								{this.props.isAfterLastValidInSegmentAndItsLive && !this.props.playlist.loop && <SegmentEnd />}
-								{this.props.isAfterLastValidInSegmentAndItsLive && this.props.playlist.loop && <LoopingIcon />}
+								{this.props.isAfterLastValidInSegmentAndItsLive && !isPlaylistLooping && <SegmentEnd />}
+								{this.props.isAfterLastValidInSegmentAndItsLive && isPlaylistLooping && <LoopingIcon />}
 							</div>
 							{!this.props.isPreview && this.props.part.instance.part.identifier && (
 								<div className="segment-timeline__identifier">{this.props.part.instance.part.identifier}</div>
 							)}
 						</div>
 					)}
-					{this.renderEndOfSegment(t, innerPart, isEndOfShow, isEndOfLoopingShow)}
+					{this.renderEndOfSegment(t, innerPart, isEndOfShow, endOfLoopingShow)}
 				</div>
 			)
 		} else {
@@ -777,7 +818,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 					style={this.getPartStyle()}
 				>
 					{/* render it empty, just to take up space */}
-					{this.state.isInsideViewport ? this.renderEndOfSegment(t, innerPart, isEndOfShow, isEndOfLoopingShow) : null}
+					{this.state.isInsideViewport ? this.renderEndOfSegment(t, innerPart, isEndOfShow, endOfLoopingShow) : null}
 				</div>
 			)
 		}
@@ -800,6 +841,8 @@ export const SegmentTimelinePart = withTranslation()(
 					(durations.partDurations || {})[timingId],
 					(durations.partDisplayStartsAt || {})[timingId],
 					(durations.partDisplayDurations || {})[timingId],
+					(durations.partsInQuickLoop || {})[timingId],
+					props.part.previousPartId ? (durations.partsInQuickLoop || {})[props.part.previousPartId] : undefined,
 					firstPartInSegmentId ? (durations.partDisplayStartsAt || {})[firstPartInSegmentId] : undefined,
 					firstPartInSegmentId ? (durations.partDisplayDurations || {})[firstPartInSegmentId] : undefined,
 				]

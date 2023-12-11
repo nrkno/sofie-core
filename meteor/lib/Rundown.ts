@@ -11,7 +11,7 @@ import {
 } from '@sofie-automation/corelib/dist/playout/infinites'
 import { invalidateAfter } from '../lib/invalidatingTime'
 import { getCurrentTime, groupByToMap, ProtectedString, protectString } from './lib'
-import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { DBRundownPlaylist, QuickLoopMarkerType } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { mongoWhereFilter, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
@@ -28,6 +28,7 @@ import { RundownPlaylistCollectionUtil } from './collections/rundownPlaylistUtil
 import { PieceContentStatusObj } from './api/pieceContentStatus'
 import { ReadonlyDeep } from 'type-fest'
 import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
+import { TimingId } from '../client/lib/rundownTiming'
 
 export interface SegmentExtended extends DBSegment {
 	/** Output layers available in the installation used by this segment */
@@ -50,6 +51,7 @@ export interface PartExtended {
 	renderedDuration: number
 	startsAt: number
 	willProbablyAutoNext: boolean
+	previousPartId: TimingId | null
 }
 
 export interface IOutputLayerExtended extends IOutputLayer {
@@ -403,4 +405,29 @@ export function sortAdlibs<T>(
 	})
 
 	return adlibs.map((a) => a.adlib)
+}
+
+export function isLoopDefined(playlist?: DBRundownPlaylist): boolean {
+	return playlist?.quickLoop?.start != null && playlist?.quickLoop?.end != null
+}
+
+export function isLoopRunning(playlist?: DBRundownPlaylist): boolean {
+	return !!playlist?.quickLoop?.running
+}
+
+export function isEndOfLoopingShow(
+	playlist: DBRundownPlaylist | undefined,
+	isLastSegment: boolean,
+	isPartLastInSegment: boolean,
+	part: DBPart
+): boolean {
+	return (
+		(isLastSegment &&
+			isPartLastInSegment &&
+			isLoopDefined(playlist) &&
+			playlist?.quickLoop?.end?.type === QuickLoopMarkerType.PLAYLIST) ||
+		(playlist?.quickLoop?.end?.type === QuickLoopMarkerType.SEGMENT &&
+			playlist?.quickLoop.end.id === part.segmentId) ||
+		(playlist?.quickLoop?.end?.type === QuickLoopMarkerType.PART && playlist?.quickLoop.end.id === part._id)
+	)
 }

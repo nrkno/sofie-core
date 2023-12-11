@@ -8,6 +8,7 @@ import { withTiming, WithTiming } from './withTiming'
 import ClassNames from 'classnames'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getPlaylistTimingDiff } from '../../../lib/rundownTiming'
+import { isLoopRunning } from '../../../../lib/Rundown'
 
 interface IEndTimingProps {
 	rundownPlaylist: DBRundownPlaylist
@@ -54,7 +55,7 @@ export const PlaylistEndTiming = withTranslation()(
 									</span>
 								)
 							) : this.props.timingDurations ? (
-								this.props.rundownPlaylist.loop ? (
+								isLoopRunning(this.props.rundownPlaylist) ? (
 									this.props.timingDurations.partCountdown &&
 									rundownPlaylist.activationId &&
 									rundownPlaylist.currentPartInfo ? (

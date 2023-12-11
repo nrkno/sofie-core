@@ -13,6 +13,7 @@ import { MultiLineTextInputControl } from '../lib/Components/MultiLineTextInput'
 import { TextInputControl } from '../lib/Components/TextInput'
 import { Spinner } from '../lib/Spinner'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { isLoopRunning } from '../../lib/Rundown'
 
 type ProblemType = 'nothing' | 'minor' | 'major'
 
@@ -30,7 +31,7 @@ const DEFAULT_STATE = {
 
 export function AfterBroadcastForm({ playlist }: { playlist: DBRundownPlaylist }): JSX.Element {
 	const { t } = useTranslation()
-	const shouldDeactivateRundown = !playlist.loop
+	const shouldDeactivateRundown = isLoopRunning(playlist)
 	const [problems, setProblems] = useState<ProblemType>(DEFAULT_STATE.problems)
 	const [description, setDescription] = useState<string[]>(DEFAULT_STATE.description.slice())
 	const [userName, setUserName] = useState<string>(DEFAULT_STATE.userName)

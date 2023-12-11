@@ -11,7 +11,7 @@ import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { SegmentStoryboard } from './SegmentStoryboard'
 import { unprotectString } from '../../../lib/lib'
 import { LIVELINE_HISTORY_SIZE as TIMELINE_LIVELINE_HISTORY_SIZE } from '../SegmentTimeline/SegmentTimelineContainer'
-import { PartInstances, Parts, Segments } from '../../collections'
+import { PartInstances, Segments, UIParts } from '../../collections'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
 import { PartInstance } from '../../../lib/collections/PartInstances'
@@ -32,7 +32,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 }: IProps & ITrackedResolvedSegmentProps) {
 	const partIds = useTracker(
 		() =>
-			Parts.find(
+			UIParts.find(
 				{
 					segmentId,
 				},

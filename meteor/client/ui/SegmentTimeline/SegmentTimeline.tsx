@@ -236,6 +236,7 @@ export const BUDGET_GAP_PART = {
 	renderedDuration: 0,
 	startsAt: 0,
 	willProbablyAutoNext: false,
+	previousPartId: null,
 }
 
 export class SegmentTimelineClass extends React.Component<Translated<WithTiming<IProps>>, IStateHeader> {

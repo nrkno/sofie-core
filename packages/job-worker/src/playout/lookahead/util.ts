@@ -58,6 +58,7 @@ export function getOrderedPartsAfterPlayhead(
 	const strippedPlaylist = {
 		queuedSegmentId: alreadyConsumedQueuedSegmentId ? undefined : playlist.queuedSegmentId,
 		loop: playlist.loop,
+		quickLoop: playlist.quickLoop,
 	}
 	const nextNextPart = selectNextPart(
 		context,

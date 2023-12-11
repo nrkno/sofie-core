@@ -26,6 +26,7 @@ import { getCurrentTime, objectFromEntries } from '../../lib/lib'
 import { Settings } from '../../lib/Settings'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { isLoopRunning } from '../../lib/Rundown'
 
 // Minimum duration that a part can be assigned. Used by gap parts to allow them to "compress" to indicate time running out.
 const MINIMAL_NONZERO_DURATION = 1
@@ -111,7 +112,8 @@ export class RundownTimingCalculator {
 		 * the currentPartInstance.
 		 *
 		 * This is being used for calculating Segment Duration Budget */
-		segmentEntryPartInstances: CalculateTimingsPartInstance[]
+		segmentEntryPartInstances: CalculateTimingsPartInstance[],
+		partsInQuickLoop: Record<TimingId, boolean>
 	): RundownTimingContext {
 		let totalRundownDuration = 0
 		let remainingRundownDuration = 0
@@ -504,7 +506,7 @@ export class RundownTimingCalculator {
 					// this is a line before next line
 					localAccum = this.linearParts[i][1] || 0
 					// only null the values if not looping, if looping, these will be offset by the countdown for the last part
-					if (!playlist.loop) {
+					if (!partsInQuickLoop[unprotectString(this.linearParts[i][0])]) {
 						this.linearParts[i][1] = null // we use null to express 'will not probably be played out, if played in order'
 					}
 				} else if (i === currentAIndex) {
@@ -546,8 +548,9 @@ export class RundownTimingCalculator {
 				}
 			}
 			// contiunation of linearParts calculations for looping playlists
-			if (playlist.loop) {
+			if (isLoopRunning(playlist)) {
 				for (let i = 0; i < nextAIndex; i++) {
+					if (!partsInQuickLoop[unprotectString(this.linearParts[i][0])]) continue
 					// offset the parts before the on air line by the countdown for the end of the rundown
 					this.linearParts[i][1] =
 						(this.linearParts[i][1] || 0) + waitAccumulator - localAccum + currentRemaining
@@ -658,6 +661,7 @@ export class RundownTimingCalculator {
 			breakIsLastRundown,
 			isLowResolution,
 			nextRundownAnchor,
+			partsInQuickLoop,
 		})
 	}
 
@@ -721,6 +725,8 @@ export interface RundownTimingContext {
 	partCountdown?: Record<string, number | null>
 	/** The calculated durations of each of the Parts: as-planned/as-run depending on state. */
 	partDurations?: Record<string, number>
+	/** TODO */
+	partsInQuickLoop?: Record<string, boolean>
 	/** The offset of each of the Parts from the beginning of the Playlist. */
 	partStartsAt?: Record<string, number>
 	/** Same as partStartsAt, but will include display duration overrides

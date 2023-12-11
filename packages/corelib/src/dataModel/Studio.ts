@@ -3,6 +3,7 @@ import { ObjectWithOverrides } from '../settings/objectWithOverrides'
 import { StudioId, OrganizationId, BlueprintId, ShowStyleBaseId, MappingsHash, PeripheralDeviceId } from './Ids'
 import { BlueprintHash, LastBlueprintConfig } from './Blueprint'
 import { MappingsExt, MappingExt } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
+import { ForceQuickLoopAutoNext } from './RundownPlaylist'
 
 export { MappingsExt, MappingExt, MappingsHash }
 
@@ -52,6 +53,9 @@ export interface IStudioSettings {
 
 	/** Whether to allow scratchpad mode, before a Part is playing in a Playlist */
 	allowScratchpad?: boolean
+
+	/** If and how to force auto-nexting in a looping Playlist */
+	forceQuickLoopAutoNext?: ForceQuickLoopAutoNext
 }
 
 export type StudioLight = Omit<DBStudio, 'mappingsWithOverrides' | 'blueprintConfigWithOverrides'>

@@ -45,6 +45,7 @@ import { PartId, PieceId, RundownId, SegmentId, ShowStyleBaseId } from '@sofie-a
 import { PieceInstances, Segments } from '../collections'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { assertNever } from '@sofie-automation/shared-lib/dist/lib/lib'
+import { getPartInstanceTimingId } from './rundownTiming'
 
 export namespace RundownUtils {
 	export function padZeros(input: number, places?: number): string {
@@ -439,6 +440,7 @@ export namespace RundownUtils {
 						previousPart.instance.part.autoNext &&
 						previousPart.instance.part.expectedDuration
 					),
+					previousPartId: previousPart?.instance ? getPartInstanceTimingId(previousPart?.instance) : null, // TODO: this should be no longer needed
 				})
 
 				// set the flags for isLiveSegment, isNextSegment, autoNextPart, hasAlreadyPlayed

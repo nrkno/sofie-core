@@ -45,6 +45,7 @@ import { handleTimelineTriggerTime, handleOnPlayoutPlaybackChanged } from '../..
 import { handleExecuteAdlibAction } from '../../playout/adlibAction'
 import { handleTakeNextPart } from '../../playout/take'
 import { handleActivateScratchpad } from '../../playout/scratchpad'
+import { handleSetQuickLoopMarker } from '../../playout/quickLoopMarkers'
 
 type ExecutableFunction<T extends keyof StudioJobFunc> = (
 	context: JobContext,
@@ -101,4 +102,6 @@ export const studioJobHandlers: StudioJobHandlers = {
 	[StudioJobs.BlueprintIgnoreFixUpConfigForStudio]: handleBlueprintIgnoreFixUpConfigForStudio,
 
 	[StudioJobs.ActivateScratchpad]: handleActivateScratchpad,
+
+	[StudioJobs.SetQuickLoopMarker]: handleSetQuickLoopMarker,
 }

@@ -166,6 +166,21 @@ $break-width: 35rem;
 		background: $segment-timeline-background-color;
 	}
 
+	&--out-of-the-loop {
+		&::before {
+			content: ' ';
+			display: block;
+			position: absolute;
+			top: 0;
+			left: 0;
+			bottom: 0;
+			right: 0;
+			background: rgba(0, 0, 0, 0.4);
+			z-index: 2;
+			pointer-events: none;
+		}
+	}
+
 	> .segment-storyboard__part__background {
 		position: absolute;
 		background-image: linear-gradient(to bottom, $general-live-color 20px, black 8rem);

@@ -1,7 +1,7 @@
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { JobContext } from '../jobs'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { DBRundownPlaylist, QuickLoopMarkerType } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import { PlayoutSegmentModel } from './model/PlayoutSegmentModel'
@@ -33,7 +33,7 @@ export interface SelectNextPartResult {
 
 export function selectNextPart(
 	context: JobContext,
-	rundownPlaylist: Pick<DBRundownPlaylist, 'queuedSegmentId' | 'loop'>,
+	rundownPlaylist: Pick<DBRundownPlaylist, 'queuedSegmentId' | 'loop' | 'quickLoop'>,
 	previousPartInstance: ReadonlyDeep<DBPartInstance> | null,
 	currentlySelectedPartInstance: ReadonlyDeep<DBPartInstance> | null,
 	segments: readonly PlayoutSegmentModel[],
@@ -66,6 +66,42 @@ export function selectNextPart(
 			}
 		}
 		return undefined
+	}
+
+	const findQuickLoopStartPart = (length: number): SelectNextPartResult | undefined => {
+		if (rundownPlaylist.quickLoop?.start?.type === QuickLoopMarkerType.PART) {
+			const startPartId = rundownPlaylist.quickLoop.start.id
+			return findFirstPlayablePart(0, (part) => part._id === startPartId, length)
+		}
+		if (rundownPlaylist.quickLoop?.start?.type === QuickLoopMarkerType.SEGMENT) {
+			const startSegmentId = rundownPlaylist.quickLoop.start.id
+			return findFirstPlayablePart(0, (part) => part.segmentId === startSegmentId, length)
+		}
+		if (rundownPlaylist.quickLoop?.start?.type === QuickLoopMarkerType.PLAYLIST) {
+			return findFirstPlayablePart(0, undefined, length)
+		}
+		return undefined
+	}
+
+	if (rundownPlaylist.quickLoop?.running && previousPartInstance) {
+		const currentIndex = parts.findIndex((p) => p._id === previousPartInstance.part._id)
+		if (
+			rundownPlaylist.quickLoop?.end?.type === QuickLoopMarkerType.PART &&
+			previousPartInstance.part._id === rundownPlaylist.quickLoop.end.id
+		) {
+			return findQuickLoopStartPart(currentIndex + 1) ?? null
+		} else if (
+			rundownPlaylist.quickLoop?.end?.type === QuickLoopMarkerType.SEGMENT &&
+			previousPartInstance.part.segmentId === rundownPlaylist.quickLoop.end.id
+		) {
+			const nextPlayablePart = findFirstPlayablePart(
+				currentIndex + 1,
+				(part) => part.segmentId === previousPartInstance.part.segmentId
+			)
+			if (!nextPlayablePart) {
+				findQuickLoopStartPart(currentIndex + 1) ?? null
+			}
+		}
 	}
 
 	let searchFromIndex = 0
@@ -143,6 +179,10 @@ export function selectNextPart(
 	if (rundownPlaylist.loop && !nextPart && previousPartInstance) {
 		// Search up until the current part
 		nextPart = findFirstPlayablePart(0, undefined, searchFromIndex - 1)
+	}
+
+	if (rundownPlaylist.quickLoop?.end?.type === QuickLoopMarkerType.PLAYLIST && !nextPart && previousPartInstance) {
+		nextPart = findQuickLoopStartPart(searchFromIndex - 1)
 	}
 
 	if (span) span.end()

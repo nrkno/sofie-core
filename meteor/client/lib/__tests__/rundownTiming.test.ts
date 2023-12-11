@@ -119,7 +119,8 @@ describe('rundown Timing Calculator', () => {
 			new Map(),
 			segmentsMap,
 			DEFAULT_DURATION,
-			[]
+			[],
+			{}
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -183,7 +184,8 @@ describe('rundown Timing Calculator', () => {
 			new Map(),
 			segmentsMap,
 			DEFAULT_DURATION,
-			[]
+			[],
+			{}
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -286,7 +288,8 @@ describe('rundown Timing Calculator', () => {
 			new Map(),
 			segmentsMap,
 			DEFAULT_DURATION,
-			[]
+			[],
+			{}
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -391,7 +394,8 @@ describe('rundown Timing Calculator', () => {
 			new Map(),
 			segmentsMap,
 			DEFAULT_DURATION,
-			[]
+			[],
+			{}
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -521,7 +525,8 @@ describe('rundown Timing Calculator', () => {
 				new Map(),
 				segmentsMap,
 				DEFAULT_DURATION,
-				[]
+				[],
+				{}
 			)
 			expect(result).toEqual(
 				literal<RundownTimingContext>({
@@ -677,7 +682,8 @@ describe('rundown Timing Calculator', () => {
 				new Map(),
 				segmentsMap,
 				DEFAULT_DURATION,
-				[]
+				[],
+				{}
 			)
 			expect(result).toEqual(
 				literal<RundownTimingContext>({
@@ -834,7 +840,8 @@ describe('rundown Timing Calculator', () => {
 				new Map(),
 				segmentsMap,
 				DEFAULT_DURATION,
-				[]
+				[],
+				{}
 			)
 			expect(result).toEqual(
 				literal<RundownTimingContext>({
@@ -940,7 +947,8 @@ describe('rundown Timing Calculator', () => {
 				new Map(),
 				segmentsMap,
 				DEFAULT_NONZERO_DURATION,
-				[]
+				[],
+				{}
 			)
 			expect(result).toEqual(
 				literal<RundownTimingContext>({
@@ -1072,7 +1080,8 @@ describe('rundown Timing Calculator', () => {
 				new Map(),
 				segmentsMap,
 				DEFAULT_NONZERO_DURATION,
-				[]
+				[],
+				{}
 			)
 			expect(result).toEqual(
 				literal<RundownTimingContext>({
@@ -1198,7 +1207,8 @@ describe('rundown Timing Calculator', () => {
 			new Map(),
 			segmentsMap,
 			DEFAULT_DURATION,
-			[]
+			[],
+			{}
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -1323,7 +1333,8 @@ describe('rundown Timing Calculator', () => {
 			piecesMap,
 			segmentsMap,
 			DEFAULT_DURATION,
-			[]
+			[],
+			{}
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -1473,7 +1484,8 @@ describe('rundown Timing Calculator', () => {
 			new Map(),
 			segmentsMap,
 			DEFAULT_DURATION,
-			[]
+			[],
+			{}
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -1623,7 +1635,8 @@ describe('rundown Timing Calculator', () => {
 			new Map(),
 			segmentsMap,
 			DEFAULT_DURATION,
-			[]
+			[],
+			{}
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -1779,7 +1792,8 @@ describe('rundown Timing Calculator', () => {
 			new Map(),
 			segmentsMap,
 			DEFAULT_DURATION,
-			[]
+			[],
+			{}
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -1929,7 +1943,8 @@ describe('rundown Timing Calculator', () => {
 			new Map(),
 			segmentsMap,
 			DEFAULT_DURATION,
-			[]
+			[],
+			{}
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -2079,7 +2094,8 @@ describe('rundown Timing Calculator', () => {
 			new Map(),
 			segmentsMap,
 			DEFAULT_DURATION,
-			[]
+			[],
+			{}
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -2235,7 +2251,8 @@ describe('rundown Timing Calculator', () => {
 			new Map(),
 			segmentsMap,
 			DEFAULT_DURATION,
-			[]
+			[],
+			{}
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({

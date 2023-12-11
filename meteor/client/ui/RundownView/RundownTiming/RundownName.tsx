@@ -9,6 +9,7 @@ import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownUtils } from '../../../lib/rundown'
 import { getCurrentTime } from '../../../../lib/lib'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
+import { isLoopDefined } from '../../../../lib/Rundown'
 
 interface IRundownNameProps {
 	rundownPlaylist: DBRundownPlaylist
@@ -23,6 +24,7 @@ export const RundownName = withTranslation()(
 			render(): JSX.Element {
 				const { rundownPlaylist, currentRundown, rundownCount, t } = this.props
 				const expectedStart = PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
+				const isPlaylistLooping = isLoopDefined(rundownPlaylist)
 				return (
 					<span
 						className={ClassNames('timing-clock countdown left', {
@@ -43,7 +45,7 @@ export const RundownName = withTranslation()(
 							<span
 								className="timing-clock-label left hide-overflow rundown-name"
 								title={
-									rundownPlaylist.loop
+									isPlaylistLooping
 										? t('{{currentRundownName}} - {{rundownPlaylistName}} (Looping)', {
 												currentRundownName: currentRundown.name,
 												rundownPlaylistName: rundownPlaylist.name,
@@ -55,13 +57,13 @@ export const RundownName = withTranslation()(
 								}
 								id="rundown-playlist-name"
 							>
-								{rundownPlaylist.loop && <LoopingIcon />} <strong>{currentRundown.name}</strong> {rundownPlaylist.name}
+								{isPlaylistLooping && <LoopingIcon />} <strong>{currentRundown.name}</strong> {rundownPlaylist.name}
 							</span>
 						) : (
 							<span
 								className="timing-clock-label left hide-overflow rundown-name"
 								title={
-									rundownPlaylist.loop
+									isPlaylistLooping
 										? t('{{rundownPlaylistName}} (Looping)', {
 												rundownPlaylistName: rundownPlaylist.name,
 										  })
@@ -69,7 +71,7 @@ export const RundownName = withTranslation()(
 								}
 								id="rundown-playlist-name"
 							>
-								{rundownPlaylist.loop && <LoopingIcon />} {rundownPlaylist.name}
+								{isPlaylistLooping && <LoopingIcon />} {rundownPlaylist.name}
 							</span>
 						)}
 						{!this.props.hideDiff &&

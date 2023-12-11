@@ -13,6 +13,7 @@ import { useHistory } from 'react-router-dom'
 import { MeteorCall } from '../../../../lib/api/methods'
 import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
 import { catchError } from '../../../lib/lib'
+import { ForceQuickLoopAutoNext } from '@sofie-automation/corelib/src/dataModel/RundownPlaylist'
 
 interface IStudioGenericPropertiesProps {
 	studio: DBStudio
@@ -255,6 +256,28 @@ export const StudioGenericProperties = withTranslation()(
 						/>
 					</label>
 
+					<label className="field">
+						<LabelActual label={t('Force Auto in a Loop')} />
+						<div className="mdi">
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute="settings.forceQuickLoopAutoNext"
+								obj={this.props.studio}
+								mutateDisplayValue={(v) => v ?? ForceQuickLoopAutoNext.DISABLED}
+								options={{
+									[t('Disabled')]: ForceQuickLoopAutoNext.DISABLED,
+									[t('Enabled when Part Duration is defined and higher than 0')]:
+										ForceQuickLoopAutoNext.ENABLED_WHEN_VALID_DURATION,
+									[t('Enabled on all Parts, applying a Minimum Display Duration if needed')]:
+										ForceQuickLoopAutoNext.ENABLED_FORCING_MIN_DURATION,
+								}}
+								type="dropdown"
+								collection={Studios}
+								className="mdinput"
+							/>
+							<span className="mdfx"></span>
+						</div>
+					</label>
 					<StudioBaselineStatus studioId={this.props.studio._id} />
 				</div>
 			)

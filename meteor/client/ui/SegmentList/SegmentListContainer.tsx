@@ -10,7 +10,7 @@ import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { SegmentList } from './SegmentList'
 import { unprotectString } from '../../../lib/lib'
 import { LIVELINE_HISTORY_SIZE as TIMELINE_LIVELINE_HISTORY_SIZE } from '../SegmentTimeline/SegmentTimelineContainer'
-import { PartInstances, Parts, Segments } from '../../collections'
+import { PartInstances, Segments, UIParts } from '../../collections'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 export const LIVELINE_HISTORY_SIZE = TIMELINE_LIVELINE_HISTORY_SIZE
@@ -28,7 +28,7 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 }: IProps & ITrackedResolvedSegmentProps) {
 	const partIds = useTracker(
 		() =>
-			Parts.find(
+			UIParts.find(
 				{
 					segmentId,
 				},

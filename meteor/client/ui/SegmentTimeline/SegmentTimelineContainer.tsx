@@ -31,7 +31,7 @@ import {
 import { computeSegmentDuration, getPartInstanceTimingId, RundownTimingContext } from '../../lib/rundownTiming'
 import { RundownViewShelf } from '../RundownView/RundownViewShelf'
 import { PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PartInstances, Parts, Segments } from '../../collections'
+import { PartInstances, Segments, UIParts } from '../../collections'
 import { catchError } from '../../lib/lib'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
@@ -134,7 +134,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 
 		componentDidMount(): void {
 			this.autorun(() => {
-				const partIds = Parts.find(
+				const partIds = UIParts.find(
 					{
 						segmentId: this.props.segmentId,
 					},
@@ -221,9 +221,8 @@ export const SegmentTimelineContainer = withResolvedSegment(
 				currentNextPart = this.props.parts.find((part) => part.instance._id === this.props.ownNextPartInstance?._id)
 			}
 			autoNextPart = !!(
-				currentLivePart &&
-				currentLivePart.instance.part.autoNext &&
-				currentLivePart.instance.part.expectedDuration
+				(currentLivePart && currentLivePart.instance.part.autoNext && currentLivePart.instance.part.expectedDuration) ||
+				this.props.playlist.quickLoop?.running
 			)
 			if (isNextSegment && !isLiveSegment && !autoNextPart && this.props.ownCurrentPartInstance) {
 				if (

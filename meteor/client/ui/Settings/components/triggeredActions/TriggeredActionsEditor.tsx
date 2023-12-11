@@ -24,7 +24,7 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../../../../li
 import { Meteor } from 'meteor/meteor'
 import { doModalDialog } from '../../../../lib/ModalDialog'
 import { PartId, RundownId, ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PartInstances, Parts, RundownPlaylists, Rundowns, TriggeredActions } from '../../../../collections'
+import { PartInstances, RundownPlaylists, Rundowns, TriggeredActions, UIParts } from '../../../../collections'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { SourceLayers, OutputLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { RundownPlaylistCollectionUtil } from '../../../../../lib/collections/rundownPlaylistUtil'
@@ -205,7 +205,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 					const currentPartInstance = PartInstances.findOne(rundownPlaylist.currentPartInfo.partInstanceId)
 					if (currentPartInstance) {
 						thisCurrentPart = currentPartInstance.part
-						thisCurrentSegmentPartIds = Parts.find({
+						thisCurrentSegmentPartIds = UIParts.find({
 							segmentId: currentPartInstance.segmentId,
 						}).map((part) => part._id)
 					}
@@ -214,7 +214,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 					const nextPartInstance = PartInstances.findOne(rundownPlaylist.nextPartInfo.partInstanceId)
 					if (nextPartInstance) {
 						thisNextPart = nextPartInstance.part
-						thisNextSegmentPartIds = Parts.find({
+						thisNextSegmentPartIds = UIParts.find({
 							segmentId: nextPartInstance.segmentId,
 						}).map((part) => part._id)
 					}

@@ -16,7 +16,11 @@ import Escape from './../lib/Escape'
 import * as i18next from 'i18next'
 import Tooltip from 'rc-tooltip'
 import { NavLink, Route, Prompt } from 'react-router-dom'
-import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import {
+	DBRundownPlaylist,
+	QuickLoopMarker,
+	QuickLoopMarkerType,
+} from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { StudioRouteSet } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -134,12 +138,12 @@ import {
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import {
 	Buckets,
-	Parts,
 	PeripheralDevices,
 	RundownLayouts,
 	RundownPlaylists,
 	Rundowns,
 	ShowStyleVariants,
+	UIParts,
 } from '../collections'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlaylistUtil'
@@ -149,6 +153,7 @@ import { logger } from '../../lib/logging'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from './i18n'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { isLoopDefined, isLoopRunning } from '../../lib/Rundown'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -307,7 +312,7 @@ const TimingDisplay = withTranslation()(
 						{showEndTiming ? (
 							<PlaylistEndTiming
 								rundownPlaylist={rundownPlaylist}
-								loop={rundownPlaylist.loop}
+								loop={isLoopRunning(rundownPlaylist)}
 								expectedStart={expectedStart}
 								expectedEnd={expectedEnd}
 								expectedDuration={expectedDuration}
@@ -1313,7 +1318,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		currentPartInstance,
 		nextPartInstance,
 		currentSegmentPartIds: currentPartInstance
-			? Parts.find(
+			? UIParts.find(
 					{
 						segmentId: currentPartInstance?.part.segmentId,
 					},
@@ -1325,7 +1330,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			  ).map((part) => part._id)
 			: [],
 		nextSegmentPartIds: nextPartInstance
-			? Parts.find(
+			? UIParts.find(
 					{
 						segmentId: nextPartInstance?.part.segmentId,
 					},
@@ -1632,7 +1637,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				this.subscribe(CorelibPubSub.rundownBaselineAdLibPieces, rundownIDs)
 				this.subscribe(CorelibPubSub.adLibActions, rundownIDs)
 				this.subscribe(CorelibPubSub.rundownBaselineAdLibActions, rundownIDs)
-				this.subscribe(CorelibPubSub.parts, rundownIDs, null)
+				this.subscribe(MeteorPubSub.uiParts, playlistId)
 				this.subscribe(CorelibPubSub.partInstances, rundownIDs, playlist.activationId ?? null)
 			})
 			this.autorun(() => {
@@ -2097,6 +2102,38 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}
 
+		onSetQuickLoopStart = (marker: QuickLoopMarker | null, e: any) => {
+			const { t } = this.props
+			if (this.state.studioMode && this.props.playlist) {
+				const playlistId = this.props.playlist._id
+				doUserAction(
+					t,
+					e,
+					UserAction.SET_QUICK_LOOP_START,
+					(e, ts) => MeteorCall.userAction.setQuickLoopStart(e, ts, playlistId, marker),
+					(err) => {
+						if (err) logger.error(err)
+					}
+				)
+			}
+		}
+
+		onSetQuickLoopEnd = (marker: QuickLoopMarker | null, e: any) => {
+			const { t } = this.props
+			if (this.state.studioMode && this.props.playlist) {
+				const playlistId = this.props.playlist._id
+				doUserAction(
+					t,
+					e,
+					UserAction.SET_QUICK_LOOP_END,
+					(e, ts) => MeteorCall.userAction.setQuickLoopEnd(e, ts, playlistId, marker),
+					(err) => {
+						if (err) logger.error(err)
+					}
+				)
+			}
+		}
+
 		onPieceDoubleClick = (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => {
 			const { t } = this.props
 			if (
@@ -2121,7 +2158,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 				if (!segmentId) {
 					if (e.sourceLocator.partId) {
-						const part = Parts.findOne(e.sourceLocator.partId)
+						const part = UIParts.findOne(e.sourceLocator.partId)
 						if (part) {
 							segmentId = part.segmentId
 						}
@@ -2572,16 +2609,16 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					</div>
 				)
 			}
-
+			const isPlaylistLooping = isLoopDefined(this.props.playlist)
 			return (
 				<React.Fragment>
-					{this.props.playlist?.loop && (
+					{isPlaylistLooping && this.props.playlist.quickLoop?.start?.type === QuickLoopMarkerType.PLAYLIST && (
 						<PlaylistLoopingHeader position="start" multiRundown={this.props.matchedSegments.length > 1} />
 					)}
 					<div className="segment-timeline-container" role="main" aria-labelledby="rundown-playlist-name">
 						{this.renderSegments()}
 					</div>
-					{this.props.playlist?.loop && (
+					{isPlaylistLooping && this.props.playlist.quickLoop?.end?.type === QuickLoopMarkerType.PLAYLIST && (
 						<PlaylistLoopingHeader
 							position="end"
 							multiRundown={this.props.matchedSegments.length > 1}
@@ -3008,6 +3045,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									onSetNext={this.onSetNext}
 									onSetNextSegment={this.onSetNextSegment}
 									onQueueNextSegment={this.onQueueNextSegment}
+									onSetQuickLoopStart={this.onSetQuickLoopStart}
+									onSetQuickLoopEnd={this.onSetQuickLoopEnd}
 									studioMode={this.state.studioMode}
 									enablePlayFromAnywhere={!!studio.settings.enablePlayFromAnywhere}
 								/>

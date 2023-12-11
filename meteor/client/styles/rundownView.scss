@@ -1512,6 +1512,22 @@ svg.icon {
 				z-index: -1;
 			}
 
+			&.out-of-the-loop {
+				&::before {
+					content: ' ';
+					display: block;
+					position: absolute;
+					top: 0;
+					left: 0;
+					bottom: 0;
+					right: 0;
+					background: rgba(0, 0, 0, 0.4);
+					z-index: 2;
+					pointer-events: none;
+				}
+			}
+
+
 			&:not(.live) {
 				.segment-timeline__part__nextline.auto-next:not(.segment-timeline__part__nextline--endline),
 				.segment-timeline__part__nextline.invalid:not(.segment-timeline__part__nextline--endline) {
@@ -1626,9 +1642,6 @@ svg.icon {
 						> svg {
 							margin-left: 1px;
 							margin-right: 5px;
-							> path {
-								stroke: $general-next-color;
-							}
 						}
 					}
 				}

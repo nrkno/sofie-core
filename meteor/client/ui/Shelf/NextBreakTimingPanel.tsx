@@ -22,7 +22,7 @@ interface INextBreakTimingPanelProps {
 
 export class NextBreakTimingPanelInner extends MeteorReactComponent<Translated<INextBreakTimingPanelProps>> {
 	render(): JSX.Element {
-		const { playlist, panel, layout } = this.props
+		const { panel, layout } = this.props
 
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(layout)
 
@@ -34,7 +34,7 @@ export class NextBreakTimingPanelInner extends MeteorReactComponent<Translated<I
 				)}
 				style={isDashboardLayout ? dashboardElementStyle({ ...(panel as DashboardLayoutNextBreakTiming) }) : {}}
 			>
-				<NextBreakTiming loop={playlist.loop} breakText={panel.name} />
+				<NextBreakTiming breakText={panel.name} />
 			</div>
 		)
 	}

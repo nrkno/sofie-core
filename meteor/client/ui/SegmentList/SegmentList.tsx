@@ -9,7 +9,7 @@ import { literal } from '@sofie-automation/corelib/dist/lib'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { LinePart } from './LinePart'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { ISourceLayerExtended } from '../../../lib/Rundown'
+import { ISourceLayerExtended, isLoopRunning } from '../../../lib/Rundown'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 import { SegmentListHeader } from './SegmentListHeader'
 import { useInView } from 'react-intersection-observer'
@@ -158,6 +158,7 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 				doesPlaylistHaveNextPart={playlistHasNextPart}
 				onPieceDoubleClick={props.onPieceDoubleClick}
 				onContextMenu={props.onContextMenu}
+				isPlaylistLooping={isLoopRunning(props.playlist)}
 			/>
 		)
 

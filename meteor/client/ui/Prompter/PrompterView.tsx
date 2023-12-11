@@ -608,7 +608,7 @@ export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, 
 				if (playlist) {
 					const rundownIDs = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
 					this.subscribe(CorelibPubSub.segments, rundownIDs, {})
-					this.subscribe(CorelibPubSub.parts, rundownIDs, null)
+					this.subscribe(MeteorPubSub.uiParts, playlist._id)
 					this.subscribe(CorelibPubSub.partInstances, rundownIDs, playlist.activationId ?? null)
 					this.subscribe(CorelibPubSub.pieces, rundownIDs, null)
 					this.subscribe(CorelibPubSub.pieceInstancesSimple, rundownIDs, null)

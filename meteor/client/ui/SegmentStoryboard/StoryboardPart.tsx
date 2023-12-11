@@ -20,6 +20,8 @@ import { PartDisplayDuration } from '../RundownView/RundownTiming/PartDuration'
 import { InvalidPartCover } from '../SegmentTimeline/Parts/InvalidPartCover'
 import { SegmentEnd } from '../../lib/ui/icons/segment'
 import { AutoNextStatus } from '../RundownView/RundownTiming/AutoNextStatus'
+import { RundownTimingContext, getPartInstanceTimingId } from '../../lib/rundownTiming'
+import { TimingDataResolution, TimingTickResolution, withTiming } from '../RundownView/RundownTiming/withTiming'
 
 interface IProps {
 	className?: string
@@ -31,6 +33,7 @@ interface IProps {
 	isLastSegment?: boolean
 	isLastPartInSegment?: boolean
 	isPlaylistLooping?: boolean
+	isEndOfLoopingShow?: boolean
 	doesPlaylistHaveNextPart?: boolean
 	inHold: boolean
 	currentPartWillAutonext: boolean
@@ -41,8 +44,18 @@ interface IProps {
 	onHoverOver?: () => void
 	onHoverOut?: () => void
 }
+export const StoryboardPart = withTiming<IProps, {}>((props: IProps) => {
+	return {
+		tickResolution: TimingTickResolution.Synced,
+		dataResolution: TimingDataResolution.High,
+		filter: (durations: RundownTimingContext) => {
+			durations = durations || {}
 
-export function StoryboardPart({
+			const timingId = getPartInstanceTimingId(props.part.instance)
+			return [(durations.partsInQuickLoop || {})[timingId]]
+		},
+	}
+})(function StoryboardPart({
 	className,
 	segment,
 	part,
@@ -51,16 +64,18 @@ export function StoryboardPart({
 	isLastPartInSegment,
 	isLastSegment,
 	isPlaylistLooping,
+	isEndOfLoopingShow,
 	doesPlaylistHaveNextPart,
 	currentPartWillAutonext,
 	outputLayers,
 	subscriptionsReady,
 	displayLiveLineCounter,
 	style,
+	timingDurations,
 	onContextMenu,
 	onHoverOver,
 	onHoverOut,
-}: IProps): JSX.Element {
+}): JSX.Element {
 	const { t } = useTranslation()
 	const [highlight, setHighlight] = useState(false)
 	const willBeAutoNextedInto = isNextPart ? currentPartWillAutonext : part.willProbablyAutoNext
@@ -112,6 +127,7 @@ export function StoryboardPart({
 
 	const isInvalid = part.instance.part.invalid
 	const isFloated = part.instance.part.floated
+	const isPartInQuickLoop = timingDurations.partsInQuickLoop?.[getPartInstanceTimingId(part.instance)] ?? false
 
 	return (
 		<ContextMenuTrigger
@@ -125,6 +141,7 @@ export function StoryboardPart({
 						'segment-storyboard__part--next': isNextPart,
 						'segment-storyboard__part--live': isLivePart,
 						'segment-storyboard__part--invalid': part.instance.part.invalid,
+						'segment-storyboard__part--out-of-the-loop': !isPartInQuickLoop && isPlaylistLooping && !isNextPart,
 					},
 					className
 				),
@@ -213,7 +230,7 @@ export function StoryboardPart({
 					</div>
 				</>
 			)}
-			{!isLastSegment && isLastPartInSegment && !part.instance.part.invalid && (
+			{!isLastSegment && isLastPartInSegment && !isEndOfLoopingShow && !part.instance.part.invalid && (
 				<div
 					className={classNames('segment-storyboard__part__segment-end', {
 						'segment-storyboard__part__segment-end--next': isLivePart && (!isLastSegment || doesPlaylistHaveNextPart),
@@ -224,7 +241,7 @@ export function StoryboardPart({
 					</div>
 				</div>
 			)}
-			{isLastSegment && (
+			{(isLastSegment || isEndOfLoopingShow) && (
 				<div
 					className={classNames('segment-storyboard__part__show-end', {
 						'segment-storyboard__part__show-end--loop': isPlaylistLooping,
@@ -232,7 +249,7 @@ export function StoryboardPart({
 				>
 					{(!isLivePart || !doesPlaylistHaveNextPart || isPlaylistLooping) && isLastPartInSegment && (
 						<div className="segment-storyboard__part__show-end__label">
-							{isPlaylistLooping ? t('Loops to top') : t('Show End')}
+							{isEndOfLoopingShow ? t('Loops to Start') : t('Show End')}
 						</div>
 					)}
 				</div>
@@ -254,4 +271,4 @@ export function StoryboardPart({
 			) : null}
 		</ContextMenuTrigger>
 	)
-}
+})
