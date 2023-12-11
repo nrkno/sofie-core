@@ -1,20 +1,15 @@
-import React, { useMemo } from 'react'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import React, { useCallback, useMemo } from 'react'
+import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { unprotectString } from '../../../lib/lib'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { NavLink, useLocation } from 'react-router-dom'
-
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
-
 import { faPlus, faTrash, faExclamationTriangle, faCaretRight, faCaretDown } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
-import { meteorSubscribe } from '../../../lib/api/pubsub'
 import { MeteorCall } from '../../../lib/api/methods'
 import { Settings as MeteorSettings } from '../../../lib/Settings'
 import { IOutputLayer, StatusCode } from '@sofie-automation/blueprints-integration'
@@ -28,27 +23,139 @@ import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 interface ISettingsMenuProps {
 	superAdmin?: boolean
 }
-interface ISettingsMenuState {}
-interface ISettingsMenuTrackedProps {
-	studios: Array<DBStudio>
-	showStyleBases: Array<DBShowStyleBase>
-	blueprints: Array<Blueprint>
-	peripheralDevices: Array<PeripheralDevice>
+export function SettingsMenu({ superAdmin }: Readonly<ISettingsMenuProps>): JSX.Element {
+	const { t } = useTranslation()
+
+	return (
+		<div className="tight-xs htight-xs text-s">
+			<SettingsMenuStudios />
+
+			<SettingsMenuShowStyles />
+
+			{(!MeteorSettings.enableUserAccounts || superAdmin) && <SettingsMenuBlueprints />}
+
+			<SettingsMenuPeripheralDevices />
+
+			<h2 className="mhs">{t('Tools')}</h2>
+			<hr className="vsubtle man" />
+			{(!MeteorSettings.enableUserAccounts || superAdmin) && (
+				<React.Fragment>
+					<NavLink
+						activeClassName="selectable-selected"
+						className="settings-menu__settings-menu-item selectable clickable"
+						to="/settings/tools/system"
+					>
+						<h3>{t('Core System settings')}</h3>
+					</NavLink>
+					<NavLink
+						activeClassName="selectable-selected"
+						className="settings-menu__settings-menu-item selectable clickable"
+						to="/settings/tools/migration"
+					>
+						<h3>{t('Upgrade Database')}</h3>
+					</NavLink>
+					<NavLink
+						activeClassName="selectable-selected"
+						className="settings-menu__settings-menu-item selectable clickable"
+						to="/settings/tools/snapshots"
+					>
+						<h3>{t('Manage Snapshots')}</h3>
+					</NavLink>
+				</React.Fragment>
+			)}
+		</div>
+	)
 }
-export const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState, ISettingsMenuTrackedProps>(
-	(_props: ISettingsMenuProps) => {
-		// TODO: add organizationId:
 
-		meteorSubscribe(CorelibPubSub.studios, null)
-		meteorSubscribe(CorelibPubSub.showStyleBases, null)
-		meteorSubscribe(CorelibPubSub.showStyleVariants, null, null)
-		meteorSubscribe(CorelibPubSub.blueprints, null)
-		meteorSubscribe(CorelibPubSub.peripheralDevices, null)
+function SettingsMenuStudios() {
+	const { t } = useTranslation()
 
-		return {
-			studios: Studios.find({}).fetch(),
-			showStyleBases: ShowStyleBases.find({}).fetch(),
-			peripheralDevices: PeripheralDevices.find(
+	useSubscription(CorelibPubSub.studios, null)
+
+	const studios = useTracker(() => Studios.find({}).fetch(), [], [])
+
+	const onAddStudio = useCallback(() => {
+		MeteorCall.studio.insertStudio().catch(catchError('studio.insertStudio'))
+	}, [])
+
+	return (
+		<>
+			<h2 className="mhs">
+				<button className="action-btn right" onClick={onAddStudio}>
+					<FontAwesomeIcon icon={faPlus} />
+				</button>
+				{t('Studios')}
+			</h2>
+			<hr className="vsubtle man" />
+			{studios.map((studio) => (
+				<SettingsMenuStudio key={unprotectString(studio._id)} studio={studio} />
+			))}
+		</>
+	)
+}
+function SettingsMenuShowStyles() {
+	const { t } = useTranslation()
+
+	useSubscription(CorelibPubSub.showStyleBases, null)
+	useSubscription(CorelibPubSub.showStyleVariants, null, null)
+
+	const showStyleBases = useTracker(() => ShowStyleBases.find({}).fetch(), [], [])
+
+	const onAddShowStyleBase = useCallback(() => {
+		MeteorCall.showstyles.insertShowStyleBase().catch(catchError('showstyles.insertShowStyleBase'))
+	}, [])
+
+	return (
+		<>
+			<h2 className="mhs">
+				<button className="action-btn right" onClick={onAddShowStyleBase}>
+					<FontAwesomeIcon icon={faPlus} />
+				</button>
+				{t('Show Styles')}
+			</h2>
+			<hr className="vsubtle man" />
+			{showStyleBases.map((showStyleBase) => (
+				<SettingsMenuShowStyle key={unprotectString(showStyleBase._id)} showStyleBase={showStyleBase} />
+			))}
+		</>
+	)
+}
+function SettingsMenuBlueprints() {
+	const { t } = useTranslation()
+
+	useSubscription(CorelibPubSub.blueprints, null)
+
+	const blueprints = useTracker(() => Blueprints.find({}).fetch(), [], [])
+
+	const onAddBlueprint = useCallback(() => {
+		MeteorCall.blueprint.insertBlueprint().catch((error) => {
+			NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, error.reason, 'Create New Blueprint'))
+		})
+	}, [])
+
+	return (
+		<>
+			<h2 className="mhs">
+				<button className="action-btn right" onClick={onAddBlueprint}>
+					<FontAwesomeIcon icon={faPlus} />
+				</button>
+				{t('Blueprints')}
+			</h2>
+			<hr className="vsubtle man" />
+			{blueprints.map((blueprint) => (
+				<SettingsMenuBlueprint key={unprotectString(blueprint._id)} blueprint={blueprint} />
+			))}
+		</>
+	)
+}
+function SettingsMenuPeripheralDevices() {
+	const { t } = useTranslation()
+
+	useSubscription(CorelibPubSub.peripheralDevices, null)
+
+	const peripheralDevices = useTracker(
+		() =>
+			PeripheralDevices.find(
 				{},
 				{
 					sort: {
@@ -56,110 +163,24 @@ export const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMe
 					},
 				}
 			).fetch(),
-			blueprints: Blueprints.find({}).fetch(),
-		}
-	}
-)(
-	class SettingsMenu extends MeteorReactComponent<
-		Translated<ISettingsMenuProps & ISettingsMenuTrackedProps>,
-		ISettingsMenuState
-	> {
-		constructor(props: Translated<ISettingsMenuProps & ISettingsMenuTrackedProps>) {
-			super(props)
-			this.state = {}
-		}
+		[],
+		[]
+	)
 
-		onAddStudio() {
-			MeteorCall.studio.insertStudio().catch(catchError('studio.insertStudio'))
-		}
-		onAddShowStyleBase() {
-			MeteorCall.showstyles.insertShowStyleBase().catch(catchError('showstyles.insertShowStyleBase'))
-		}
-		onAddBlueprint() {
-			MeteorCall.blueprint.insertBlueprint().catch((error) => {
-				NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, error.reason, 'Create New Blueprint'))
-			})
-		}
-
-		render(): JSX.Element {
-			const { t } = this.props
-			return (
-				<div className="tight-xs htight-xs text-s">
-					<h2 className="mhs">
-						<button className="action-btn right" onClick={() => this.onAddStudio()}>
-							<FontAwesomeIcon icon={faPlus} />
-						</button>
-						{t('Studios')}
-					</h2>
-					<hr className="vsubtle man" />
-					{this.props.studios.map((studio) => (
-						<SettingsMenuStudio key={unprotectString(studio._id)} studio={studio} />
-					))}
-					<h2 className="mhs">
-						<button className="action-btn right" onClick={() => this.onAddShowStyleBase()}>
-							<FontAwesomeIcon icon={faPlus} />
-						</button>
-						{t('Show Styles')}
-					</h2>
-					<hr className="vsubtle man" />
-					{this.props.showStyleBases.map((showStyleBase) => (
-						<SettingsMenuShowStyle key={unprotectString(showStyleBase._id)} showStyleBase={showStyleBase} />
-					))}
-					{(!MeteorSettings.enableUserAccounts || this.props.superAdmin) && (
-						<React.Fragment>
-							<h2 className="mhs">
-								<button className="action-btn right" onClick={() => this.onAddBlueprint()}>
-									<FontAwesomeIcon icon={faPlus} />
-								</button>
-								{t('Blueprints')}
-							</h2>
-							<hr className="vsubtle man" />
-							{this.props.blueprints.map((blueprint) => (
-								<SettingsMenuBlueprint key={unprotectString(blueprint._id)} blueprint={blueprint} />
-							))}
-						</React.Fragment>
-					)}
-					<h2 className="mhs">{t('Devices')}</h2>
-					<hr className="vsubtle man" />
-					{this.props.peripheralDevices
-						.filter((device) => {
-							return device.subType === PERIPHERAL_SUBTYPE_PROCESS
-						})
-						.map((device) => (
-							<SettingsMenuPeripheralDevice key={unprotectString(device._id)} device={device} />
-						))}
-					<h2 className="mhs">{t('Tools')}</h2>
-					<hr className="vsubtle man" />
-					{(!MeteorSettings.enableUserAccounts || this.props.superAdmin) && (
-						<React.Fragment>
-							<NavLink
-								activeClassName="selectable-selected"
-								className="settings-menu__settings-menu-item selectable clickable"
-								to="/settings/tools/system"
-							>
-								<h3>{t('Core System settings')}</h3>
-							</NavLink>
-							<NavLink
-								activeClassName="selectable-selected"
-								className="settings-menu__settings-menu-item selectable clickable"
-								to="/settings/tools/migration"
-							>
-								<h3>{t('Upgrade Database')}</h3>
-							</NavLink>
-							<NavLink
-								activeClassName="selectable-selected"
-								className="settings-menu__settings-menu-item selectable clickable"
-								to="/settings/tools/snapshots"
-							>
-								<h3>{t('Manage Snapshots')}</h3>
-							</NavLink>
-						</React.Fragment>
-					)}
-				</div>
-			)
-		}
-	}
-)
+	return (
+		<>
+			<h2 className="mhs">{t('Devices')}</h2>
+			<hr className="vsubtle man" />
+			{peripheralDevices
+				.filter((device) => {
+					return device.subType === PERIPHERAL_SUBTYPE_PROCESS
+				})
+				.map((device) => (
+					<SettingsMenuPeripheralDevice key={unprotectString(device._id)} device={device} />
+				))}
+		</>
+	)
+}
 
 interface SettingsCollapsibleGroupProps {
 	links: Array<{ label: string; subPath: string }>
