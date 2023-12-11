@@ -8,7 +8,6 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
@@ -40,9 +39,7 @@ interface MiniRundownSegment {
 	cssClass: string
 }
 
-export class MiniRundownPanelInner extends MeteorReactComponent<
-	IMiniRundownPanelProps & IMiniRundownPanelTrackedProps
-> {
+export class MiniRundownPanelInner extends React.Component<IMiniRundownPanelProps & IMiniRundownPanelTrackedProps> {
 	static currentSegmentCssClass = 'current-segment'
 	static nextSegmentCssClass = 'next-segment'
 	static panelContainerId = 'mini-rundown-panel__container'

@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { doModalDialog } from '../../lib/ModalDialog'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import ClassNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faClipboardCheck, faDatabase, faCoffee, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
@@ -47,7 +46,7 @@ interface ITrackedProps {}
 export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>((_props: IProps) => {
 	return {}
 })(
-	class MigrationView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+	class MigrationView extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		private cancelRequests: boolean
 		constructor(props: Translated<IProps & ITrackedProps>) {
 			super(props)
@@ -67,7 +66,6 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 			this.updateVersions()
 		}
 		componentWillUnmount(): void {
-			super.componentWillUnmount()
 			this.cancelRequests = true
 		}
 		clickRefresh() {

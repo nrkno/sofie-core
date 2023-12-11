@@ -4,7 +4,6 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import Moment from 'react-moment'
 import { Time, unprotectString } from '../../../lib/lib'
 import * as _ from 'underscore'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Evaluation } from '../../../lib/collections/Evaluations'
 import { DatePickerFromTo } from '../../lib/datePicker'
 import moment from 'moment'
@@ -35,7 +34,7 @@ const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, 
 		}
 	}
 )(
-	class EvaluationView extends MeteorReactComponent<
+	class EvaluationView extends React.Component<
 		Translated<IEvaluationProps & IEvaluationTrackedProps>,
 		IEvaluationState
 	> {
@@ -70,7 +69,6 @@ const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, 
 			if (this._sub) {
 				this._sub.stop()
 			}
-			this._cleanUp()
 		}
 
 		renderMessageHead() {

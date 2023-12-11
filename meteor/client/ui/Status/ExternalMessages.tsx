@@ -130,7 +130,7 @@ const ExternalMessagesInStudio = translateWithTracker<
 		).fetch(),
 	}
 })(
-	class ExternalMessagesInStudio extends MeteorReactComponent<
+	class ExternalMessagesInStudio extends React.Component<
 		Translated<IExternalMessagesInStudioProps & IExternalMessagesInStudioTrackedProps>,
 		IExternalMessagesInStudioState
 	> {
@@ -173,7 +173,6 @@ const ExternalMessagesInStudio = translateWithTracker<
 			if (this._sub) {
 				this._sub.stop()
 			}
-			this._cleanUp()
 		}
 		removeMessage(msg: ExternalMessageQueueObj) {
 			MeteorCall.externalMessages.remove(msg._id).catch(catchError('externalMessages.remove'))
