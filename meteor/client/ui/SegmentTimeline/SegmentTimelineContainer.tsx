@@ -33,6 +33,7 @@ import { computeSegmentDuration, RundownTimingContext } from '../../lib/rundownT
 import { RundownViewShelf } from '../RundownView/RundownViewShelf'
 import { PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PartInstances, Parts, Segments } from '../../collections'
+import { logger } from '../../../lib/logging'
 
 // Kept for backwards compatibility
 export { SegmentUi, PartUi, PieceUi, ISourceLayerUi, IOutputLayerUi } from '../SegmentContainer/withResolvedSegment'
@@ -630,7 +631,10 @@ export const SegmentTimelineContainer = withResolvedSegment(
 			window.addEventListener(RundownTiming.Events.timeupdateHighResolution, this.onAirLineRefresh)
 
 			const watchElement = this.timelineDiv?.parentElement
-			if (!watchElement) return
+			if (!watchElement) {
+				logger.warn(`Missing timelineDiv.parentElement in SegmentTimelineContainer.startLive`)
+				return
+			}
 
 			// As of Chrome 76, IntersectionObserver rootMargin works in screen pixels when root
 			// is viewport. This seems like an implementation bug and IntersectionObserver is
