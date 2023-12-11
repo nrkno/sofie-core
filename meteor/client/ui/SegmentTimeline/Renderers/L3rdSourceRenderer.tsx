@@ -11,9 +11,9 @@ import { PieceMultistepChevron } from '../../SegmentContainer/PieceMultistepChev
 type IProps = ICustomLayerItemProps
 interface IState {}
 export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> {
-	leftLabel: HTMLElement | null
-	rightLabel: HTMLElement | null
-	lastOverflowTime: boolean
+	leftLabel: HTMLElement | null = null
+	rightLabel: HTMLElement | null = null
+	lastOverflowTime: boolean | undefined
 
 	private updateAnchoredElsWidths = () => {
 		const leftLabelWidth = this.leftLabel ? getElementWidth(this.leftLabel) : 0

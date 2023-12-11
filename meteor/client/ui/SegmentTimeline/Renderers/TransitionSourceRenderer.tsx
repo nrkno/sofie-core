@@ -12,8 +12,8 @@ interface IState {
 	iconFailed: boolean
 }
 export class TransitionSourceRenderer extends CustomLayerItemRenderer<IProps, IState> {
-	leftLabel: HTMLElement
-	rightLabel: HTMLElement
+	leftLabel: HTMLElement | null = null
+	rightLabel: HTMLElement | null = null
 
 	constructor(props: IProps) {
 		super(props)

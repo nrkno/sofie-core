@@ -52,7 +52,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 	}
 )(
 	class TimelineDashboardPanel extends DashboardPanelInner {
-		liveLine: HTMLDivElement
+		liveLine: HTMLDivElement | null = null
 		scrollIntoViewTimeout: NodeJS.Timer | undefined = undefined
 
 		constructor(
@@ -63,7 +63,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 			super(props)
 		}
 
-		setRef = (ref: HTMLDivElement) => {
+		setRef = (ref: HTMLDivElement | null) => {
 			this.liveLine = ref
 			this.ensureLiveLineVisible()
 

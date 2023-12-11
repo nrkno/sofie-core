@@ -73,7 +73,7 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 		width: number
 		height: number
 	} | null = null
-	private _labelEl: HTMLTextAreaElement
+	private _labelEl: HTMLTextAreaElement | null = null
 	private pointerId: number | null = null
 	private hoverTimeout: number | null = null
 	protected inBucket = false
@@ -323,7 +323,7 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 		input.setSelectionRange(0, input.value.length)
 	}
 
-	private onRenameTextBoxShow = (ref: HTMLTextAreaElement) => {
+	private onRenameTextBoxShow = (ref: HTMLTextAreaElement | null) => {
 		if (ref && !this._labelEl) {
 			ref.addEventListener('keyup', this.onRenameTextBoxKeyUp)
 			this.renameTextBoxFocus(ref)

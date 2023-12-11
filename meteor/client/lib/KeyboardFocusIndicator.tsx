@@ -18,7 +18,7 @@ export class KeyboardFocusIndicator extends React.Component<
 	React.PropsWithChildren<IKeyboardFocusIndicatorProps>,
 	IKeyboardFocusIndicatorState
 > {
-	private keyboardFocusInterval: number
+	private keyboardFocusInterval: number | undefined
 
 	constructor(props: IKeyboardFocusIndicatorProps) {
 		super(props)
@@ -37,7 +37,7 @@ export class KeyboardFocusIndicator extends React.Component<
 	}
 
 	componentWillUnmount(): void {
-		Meteor.clearInterval(this.keyboardFocusInterval)
+		if (this.keyboardFocusInterval !== undefined) Meteor.clearInterval(this.keyboardFocusInterval)
 		document.body.removeEventListener('focusin', this.checkFocus)
 		document.body.removeEventListener('focus', this.checkFocus)
 		document.body.removeEventListener('mousedown', this.checkFocus)

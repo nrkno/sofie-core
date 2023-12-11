@@ -114,7 +114,7 @@ const StudioScreenSaverContent = withTranslation()(
 		private _nextAnimationFrameRequest: number | undefined
 		private readonly SPEED = 0.5 // non-unit value
 		private readonly FRAME_MARGIN: [number, number, number, number] = [10, 28, 10, 10] // margin, specified in vmin CSS units
-		private FRAME_PIXEL_MARGIN: [number, number, number, number] // margin, calculated to pixels on resize
+		private FRAME_PIXEL_MARGIN: [number, number, number, number] = [0, 0, 0, 0] // margin, calculated to pixels on resize
 		private PIXEL_SPEED = 0.5
 
 		private position: {

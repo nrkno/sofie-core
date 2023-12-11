@@ -54,20 +54,22 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		durations: PropTypes.object.isRequired,
 	}
 
-	context: {
-		durations: RundownTimingContext
-	}
+	context:
+		| {
+				durations: RundownTimingContext
+		  }
+		| undefined
 
-	canvasElement: HTMLCanvasElement | null
-	parentElement: HTMLDivElement | null
-	ctx: CanvasRenderingContext2D | null
+	canvasElement: HTMLCanvasElement | null = null
+	parentElement: HTMLDivElement | null = null
+	ctx: CanvasRenderingContext2D | null = null
 
-	width: number
-	height: number
-	pixelRatio: number
+	width = 1
+	height = 1
+	pixelRatio = 1
 	scheduledRepaint?: number | null
 
-	private _resizeObserver: ResizeObserver
+	private _resizeObserver: ResizeObserver | undefined
 
 	private fontSize: number = FONT_SIZE
 	private labelTop: number = LABEL_TOP
@@ -444,7 +446,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	}
 
 	componentWillUnmount(): void {
-		this._resizeObserver.disconnect()
+		if (this._resizeObserver) this._resizeObserver.disconnect()
 		window.removeEventListener(RundownTiming.Events.timeupdateLowResolution, this.onTimeupdate)
 		window.removeEventListener(RundownTiming.Events.timeupdateHighResolution, this.onTimeupdate)
 	}

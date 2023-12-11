@@ -101,7 +101,7 @@ interface ISourceLayerItemState {
 }
 export const SourceLayerItem = withTranslation()(
 	class SourceLayerItem extends React.Component<ISourceLayerItemProps & WithTranslation, ISourceLayerItemState> {
-		animFrameHandle: number
+		animFrameHandle: number | undefined
 
 		constructor(props: ISourceLayerItemProps & WithTranslation) {
 			super(props)
@@ -408,7 +408,7 @@ export const SourceLayerItem = withTranslation()(
 		// 	}
 		// }
 
-		private highlightTimeout: NodeJS.Timer
+		private highlightTimeout: NodeJS.Timer | undefined
 
 		private onHighlight = (e: HighlightEvent) => {
 			if (
@@ -512,7 +512,7 @@ export const SourceLayerItem = withTranslation()(
 					this.animFrameHandle = requestAnimationFrame(updatePos)
 				}
 				this.animFrameHandle = requestAnimationFrame(updatePos)
-			} else {
+			} else if (this.animFrameHandle !== undefined) {
 				cancelAnimationFrame(this.animFrameHandle)
 			}
 		}

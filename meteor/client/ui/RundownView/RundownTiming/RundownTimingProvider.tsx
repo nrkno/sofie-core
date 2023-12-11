@@ -199,7 +199,7 @@ export const RundownTimingProvider = withTracker<
 		syncedDurations: RundownTimingContext = {
 			isLowResolution: true,
 		}
-		refreshTimer: number
+		refreshTimer: number | undefined
 		refreshTimerInterval: number
 		refreshDecimator: number
 
@@ -274,7 +274,7 @@ export const RundownTimingProvider = withTracker<
 
 		componentWillUnmount(): void {
 			delete (window as any)['rundownTimingContext']
-			Meteor.clearInterval(this.refreshTimer)
+			if (this.refreshTimer !== undefined) Meteor.clearInterval(this.refreshTimer)
 		}
 
 		dispatchHREvent(now: number) {

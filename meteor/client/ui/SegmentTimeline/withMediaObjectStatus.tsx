@@ -53,9 +53,9 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 ) => new (props: IProps, context: any) => React.Component<IProps, IState> {
 	return (WrappedComponent) => {
 		return class WithMediaObjectStatusHOCComponent extends MeteorReactComponent<IProps, IState> {
-			private statusComp: Tracker.Computation
-			private overrides: Partial<IProps>
-			private destroyed: boolean
+			private statusComp: Tracker.Computation | undefined
+			private overrides: Partial<IProps> | undefined
+			private destroyed = false
 
 			private shouldDataTrackerUpdate(prevProps: IProps): boolean {
 				if (this.props.piece !== prevProps.piece) return true

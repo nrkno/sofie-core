@@ -25,7 +25,7 @@ interface IMOSStatusProps {
 
 export const MOSLastUpdateStatus = withTranslation()(
 	class MOSLastUpdateStatus extends React.Component<IMOSStatusProps & WithTranslation> {
-		_interval: number
+		_interval: number | undefined
 
 		componentDidMount(): void {
 			this._interval = Meteor.setInterval(() => {
@@ -34,7 +34,7 @@ export const MOSLastUpdateStatus = withTranslation()(
 		}
 
 		componentWillUnmount(): void {
-			Meteor.clearInterval(this._interval)
+			if (this._interval !== undefined) Meteor.clearInterval(this._interval)
 		}
 
 		tick() {
