@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import ClassNames from 'classnames'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
 import {
 	ISourceLayer,
@@ -63,7 +62,7 @@ interface IState {
 	active: boolean
 }
 
-export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
+export class DashboardPieceButtonBase<T = {}> extends React.Component<
 	React.PropsWithChildren<IDashboardButtonProps> & T,
 	IState
 > {
@@ -99,7 +98,6 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	}
 
 	componentWillUnmount(): void {
-		super.componentWillUnmount()
 		if (this.hoverTimeout) {
 			clearTimeout(this.hoverTimeout)
 			this.hoverTimeout = null

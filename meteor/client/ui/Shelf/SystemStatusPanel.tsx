@@ -6,7 +6,6 @@ import {
 	RundownLayoutSytemStatus,
 } from '../../../lib/collections/RundownLayouts'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
@@ -32,7 +31,7 @@ interface ISystemStatusPanelTrackedProps {
 	rundownIds: RundownId[]
 }
 
-class SystemStatusPanelInner extends MeteorReactComponent<
+class SystemStatusPanelInner extends React.Component<
 	Translated<ISystemStatusPanelProps & ISystemStatusPanelTrackedProps>,
 	IState
 > {
