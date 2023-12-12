@@ -71,7 +71,7 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 					}
 				)
 				return () => {
-					window.cancelIdleCallback(callback);
+					window.cancelIdleCallback(callback)
 				}
 			}, [])
 
