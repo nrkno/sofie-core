@@ -62,7 +62,7 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 			const [invalidationToken, setInvalidationToken] = useState(Date.now())
 			useEffect(() => {
 				// Force an invalidation shortly after mounting
-				window.requestIdleCallback(
+				const callback = window.requestIdleCallback(
 					() => {
 						setInvalidationToken(Date.now())
 					},
@@ -70,6 +70,9 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 						timeout: 500,
 					}
 				)
+				return () => {
+					window.cancelIdleCallback(callback);
+				}
 			}, [])
 
 			const overrides = useTracker(() => {
