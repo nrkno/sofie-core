@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo } from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { SegmentTimeline, SegmentTimelineClass } from './SegmentTimeline'
@@ -29,7 +29,7 @@ import { computeSegmentDuration, getPartInstanceTimingId, RundownTimingContext }
 import { RundownViewShelf } from '../RundownView/RundownViewShelf'
 import { PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PartInstances, Parts } from '../../collections'
-import { catchError } from '../../lib/lib'
+import { catchError, useDebounce } from '../../lib/lib'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 
@@ -114,27 +114,11 @@ export function SegmentTimelineContainer(props: Readonly<IProps>): JSX.Element {
 		[props.segmentId]
 	)
 
-	const [debouncedPartInstanceIds, setDebouncedPartInstanceIds] = useState<PartInstanceId[] | undefined>(undefined)
-	useEffect(() => {
-		if (!partInstanceIds) return // Tracker is not ready yet
-
-		const timeout = setTimeout(() => {
-			setDebouncedPartInstanceIds((previousIds) => {
-				// // old subscription is equivalent to the new one, don't do anything
-				if (previousIds && equivalentArrays(previousIds, partInstanceIds)) {
-					return previousIds
-				} else {
-					return partInstanceIds
-				}
-			})
-		}, 40)
-
-		return () => {
-			// Abort if changed again before it fires
-			clearTimeout(timeout)
-		}
-	}, [partInstanceIds])
-
+	const debouncedPartInstanceIds = useDebounce<PartInstanceId[] | undefined>(
+		partInstanceIds,
+		40,
+		(oldVal, newVal) => !oldVal || (!!newVal && !equivalentArrays(oldVal, newVal))
+	)
 	useSubscription(CorelibPubSub.pieceInstances, [props.rundownId], debouncedPartInstanceIds ?? [], {})
 
 	// Convert to an array and sort to allow the `useSubscription` to better detect them being unchanged
