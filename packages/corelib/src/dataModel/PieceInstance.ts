@@ -98,7 +98,7 @@ export function omitPiecePropertiesForInstance(piece: Piece | PieceInstancePiece
 }
 
 export function rewrapPieceToInstance(
-	piece: PieceInstancePiece,
+	piece: ReadonlyDeep<PieceInstancePiece>,
 	playlistActivationId: RundownPlaylistActivationId,
 	rundownId: RundownId,
 	partInstanceId: PartInstanceId,

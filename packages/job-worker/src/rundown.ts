@@ -7,7 +7,7 @@ import { normalizeArrayToMap, min, groupByToMap, clone } from '@sofie-automation
 import { AnyBulkWriteOperation } from 'mongodb'
 import { ReadonlyDeep } from 'type-fest'
 import _ = require('underscore')
-import { CacheForIngest } from './ingest/cache'
+import { IngestModelReadonly } from './ingest/model/IngestModel'
 import { BeforePartMap } from './ingest/commit'
 import { JobContext } from './jobs'
 import { logger } from './logging'
@@ -38,7 +38,7 @@ export function allowedToMoveRundownOutOfPlaylist(
  */
 export async function updatePartInstanceRanks(
 	context: JobContext,
-	cache: CacheForIngest,
+	ingestModel: IngestModelReadonly,
 	changedSegmentIds: ReadonlyDeep<SegmentId[]>,
 	beforePartMap: BeforePartMap
 ): Promise<void> {
@@ -49,17 +49,13 @@ export async function updatePartInstanceRanks(
 		}),
 		'segmentId'
 	)
-	const groupedNewParts = groupByToMap(
-		cache.Parts.findAll((p) => changedSegmentIds.includes(p.segmentId)),
-		'segmentId'
-	)
 
 	const writeOps: AnyBulkWriteOperation<DBPartInstance>[] = []
 
 	for (const segmentId of changedSegmentIds) {
 		const oldPartIdsAndRanks = beforePartMap.get(segmentId) ?? []
 
-		const newParts = groupedNewParts.get(segmentId) ?? []
+		const newParts = (ingestModel.getSegment(segmentId)?.parts ?? []).map((part) => part.part)
 		const segmentPartInstances = _.sortBy(groupedPartInstances.get(segmentId) ?? [], (p) => p.part._rank)
 
 		const newRanks = calculateNewRanksForParts(segmentId, oldPartIdsAndRanks, newParts, segmentPartInstances)

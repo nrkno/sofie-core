@@ -1,12 +1,16 @@
-import { ExpectedPackageDB, ExpectedPackageDBBase } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import {
+	ExpectedPackageDB,
+	ExpectedPackageDBBase,
+	ExpectedPackageDBFromRundownBaselineObjects,
+	ExpectedPackageFromRundown,
+} from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { JobContext } from '../../jobs'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Filter as FilterQuery } from 'mongodb'
 import { PackageInfo } from '@sofie-automation/blueprints-integration'
 import { unprotectObjectArray } from '@sofie-automation/corelib/dist/protectedString'
-import { CacheForIngest } from '../../ingest/cache'
-import { ReadOnlyCache } from '../../cache/CacheBase'
+import { IngestModelReadonly } from '../../ingest/model/IngestModel'
 import { ReadonlyDeep } from 'type-fest'
 
 /**
@@ -49,22 +53,63 @@ export class WatchedPackagesHelper {
 	}
 
 	/**
-	 * Create a helper, and populate it with data from a CacheForIngest
+	 * Create a helper, and populate it with data from an IngestModel
 	 * @param studioId The studio this is for
-	 * @param filter A filter to check if each package should be included
+	 * @param ingestModel Model to fetch data for
 	 */
-	static async createForIngest(
+	static async createForIngestRundown(
 		context: JobContext,
-		cache: ReadOnlyCache<CacheForIngest>,
-		func: ((pkg: ExpectedPackageDB) => boolean) | undefined
+		ingestModel: IngestModelReadonly
 	): Promise<WatchedPackagesHelper> {
-		const packages = cache.ExpectedPackages.findAll(func ?? null)
+		const packages: ReadonlyDeep<ExpectedPackageFromRundown | ExpectedPackageDBFromRundownBaselineObjects>[] = []
+
+		packages.push(...ingestModel.expectedPackagesForRundownBaseline)
+
+		for (const segment of ingestModel.getAllSegments()) {
+			for (const part of segment.parts) {
+				packages.push(...part.expectedPackages)
+			}
+		}
 
 		// Load all the packages and the infos that are watched
 		const watchedPackageInfos = await context.directCollections.PackageInfos.findFetch({
 			studioId: context.studio._id,
 			packageId: { $in: packages.map((p) => p._id) },
 		})
+
+		return new WatchedPackagesHelper(packages, watchedPackageInfos)
+	}
+
+	/**
+	 * Create a helper, and populate it with data from an IngestModel
+	 * @param studioId The studio this is for
+	 * @param ingestModel Model to fetch data for
+	 * @param segmentExternelIds ExternalId of Segments to be loaded
+	 */
+	static async createForIngestSegment(
+		context: JobContext,
+		ingestModel: IngestModelReadonly,
+		segmentExternelIds: string[]
+	): Promise<WatchedPackagesHelper> {
+		const packages: ReadonlyDeep<ExpectedPackageFromRundown>[] = []
+
+		for (const externalId of segmentExternelIds) {
+			const segment = ingestModel.getSegmentByExternalId(externalId)
+			if (!segment) continue // First ingest of the Segment
+
+			for (const part of segment.parts) {
+				packages.push(...part.expectedPackages)
+			}
+		}
+
+		// Load all the packages and the infos that are watched
+		const watchedPackageInfos =
+			packages.length > 0
+				? await context.directCollections.PackageInfos.findFetch({
+						studioId: context.studio._id,
+						packageId: { $in: packages.map((p) => p._id) },
+				  })
+				: []
 
 		return new WatchedPackagesHelper(packages, watchedPackageInfos)
 	}

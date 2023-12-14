@@ -3,7 +3,7 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { sleep } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { getRundownId } from '../../ingest/lib'
-import { CacheForIngest } from '../../ingest/cache'
+import { CacheForIngest } from '../../ingest/model/IngestModel'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
 
 describe('DatabaseCaches', () => {

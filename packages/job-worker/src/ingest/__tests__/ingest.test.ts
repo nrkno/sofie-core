@@ -2009,17 +2009,17 @@ describe('Test ingest actions for rundowns and segments', () => {
 						playlistId: rundown.playlistId,
 					},
 					null,
-					async (cache) => {
-						const rundown0 = cache.rundowns[0]
+					async (playoutModel) => {
+						const rundown0 = playoutModel.rundowns[0]
 						expect(rundown0).toBeTruthy()
 
-						const currentPartInstance = cache.currentPartInstance as PlayoutPartInstanceModel
+						const currentPartInstance = playoutModel.currentPartInstance as PlayoutPartInstanceModel
 						expect(currentPartInstance).toBeTruthy()
 
 						// Simulate a queued part
 						const newPartInstance = await insertQueuedPartWithPieces(
 							context,
-							cache,
+							playoutModel,
 							rundown0,
 							currentPartInstance,
 							{
@@ -2208,6 +2208,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			await context.mockCollections.RundownPlaylists.update({}, { $unset: { activationId: 1 } })
 		}
 	})
+	// nocommit Are we keeping preserveUnsyncedPlayingSegmentContents?
 	test('prevent hiding current segment when preserveUnsyncedPlayingSegmentContents: true', async () => {
 		try {
 			// Cleanup any rundowns / playlists

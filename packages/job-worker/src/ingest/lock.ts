@@ -1,7 +1,6 @@
 import { SegmentId, PartId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ReadOnlyCache } from '../cache/CacheBase'
 import { clone } from 'underscore'
-import { CacheForIngest } from './cache'
+import { IngestModel, IngestModelReadonly } from './model/IngestModel'
 import { BeforePartMap, CommitIngestOperation } from './commit'
 import { LocalIngestRundown, RundownIngestDataCache } from './ingestCache'
 import { getRundownId } from './lib'
@@ -9,9 +8,8 @@ import { JobContext } from '../jobs'
 import { IngestPropsBase } from '@sofie-automation/corelib/dist/worker/ingest'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownLock } from '../jobs/lock'
-import { groupByToMap } from '@sofie-automation/corelib/dist/lib'
 import { UserError } from '@sofie-automation/corelib/dist/error'
-import { sortSegmentsInRundowns, sortPartsInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
+import { loadIngestModelFromRundownExternalId } from './model/implementation/LoadIngestModel'
 
 /**
  * The result of the initial stage of an Ingest operation
@@ -57,7 +55,7 @@ export async function runIngestJob(
 	) => LocalIngestRundown | UpdateIngestRundownAction,
 	calcFcn: (
 		context: JobContext,
-		cache: CacheForIngest,
+		ingestModel: IngestModel,
 		newIngestRundown: LocalIngestRundown | undefined,
 		oldIngestRundown: LocalIngestRundown | undefined
 	) => Promise<CommitIngestData | null>
@@ -71,7 +69,7 @@ export async function runIngestJob(
 		const span = context.startSpan(`ingestLockFunction.${context}`)
 
 		// Load the old ingest data
-		const pIngestCache = CacheForIngest.create(context, rundownLock, data.rundownExternalId)
+		const pIngestModel = loadIngestModelFromRundownExternalId(context, rundownLock, data.rundownExternalId)
 		const ingestObjCache = await RundownIngestDataCache.create(context, rundownId)
 
 		// Recalculate the ingest data
@@ -97,14 +95,14 @@ export async function runIngestJob(
 		let resultingError: UserError | void
 
 		try {
-			const ingestCache = await pIngestCache
+			const ingestModel = await pIngestModel
 
 			// Load any 'before' data for the commit
-			const beforeRundown = ingestCache.Rundown.doc
-			const beforePartMap = generatePartMap(ingestCache)
+			const beforeRundown = ingestModel.rundown
+			const beforePartMap = generatePartMap(ingestModel)
 
 			const span = context.startSpan('ingest.calcFcn')
-			const commitData = await calcFcn(context, ingestCache, newIngestRundown, oldIngestRundown)
+			const commitData = await calcFcn(context, ingestModel, newIngestRundown, oldIngestRundown)
 			span?.end()
 
 			if (commitData) {
@@ -112,7 +110,7 @@ export async function runIngestJob(
 				// The change is accepted. Perform some playout calculations and save it all
 				resultingError = await CommitIngestOperation(
 					context,
-					ingestCache,
+					ingestModel,
 					beforeRundown,
 					beforePartMap,
 					commitData
@@ -120,7 +118,7 @@ export async function runIngestJob(
 				span?.end()
 			} else {
 				// Should be no changes
-				ingestCache.assertNoChanges()
+				ingestModel.assertNoChanges()
 			}
 		} finally {
 			// Ensure we save the ingest data
@@ -178,37 +176,15 @@ async function runWithRundownLockInner<TRes>(
 	}
 }
 
-function generatePartMap(cache: ReadOnlyCache<CacheForIngest>): BeforePartMap {
-	const rundown = cache.Rundown.doc
+function generatePartMap(ingestModel: IngestModelReadonly): BeforePartMap {
+	const rundown = ingestModel.rundown
 	if (!rundown) return new Map()
 
-	const orderedSegments = sortSegmentsInRundowns(
-		cache.Segments.findAll(null, {
-			sort: {
-				rundownId: 1,
-				_rank: 1,
-			},
-		}),
-		[cache.RundownId]
-	)
-
-	const orderedParts = sortPartsInSortedSegments(
-		cache.Parts.findAll(null, {
-			sort: {
-				rundownId: 1,
-				_rank: 1,
-			},
-		}),
-		orderedSegments
-	)
-
-	const existingRundownParts = groupByToMap(orderedParts, 'segmentId')
-
 	const res = new Map<SegmentId, Array<{ id: PartId; rank: number }>>()
-	for (const [segmentId, parts] of existingRundownParts.entries()) {
+	for (const segment of ingestModel.getAllSegments()) {
 		res.set(
-			segmentId,
-			parts.map((p) => ({ id: p._id, rank: p._rank }))
+			segment.segment._id,
+			segment.parts.map((p) => ({ id: p.part._id, rank: p.part._rank }))
 		)
 	}
 	return res

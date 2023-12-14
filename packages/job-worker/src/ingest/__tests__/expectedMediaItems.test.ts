@@ -196,8 +196,8 @@ describe('Expected Media Items', () => {
 				context,
 				{ rundownExternalId: rundown.externalId, peripheralDeviceId: null },
 				(oldIngest) => oldIngest ?? UpdateIngestRundownAction.DELETE,
-				async (_context, cache) => {
-					await updateExpectedPackagesOnRundown(context, cache)
+				async (_context, ingestModel) => {
+					await updateExpectedPackagesOnRundown(context, ingestModel)
 
 					return {
 						changedSegmentIds: [],

@@ -1,8 +1,7 @@
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { ReadOnlyCache } from '../../../cache/CacheBase'
 import { DatabasePersistedModel } from '../../../modelBase'
-import { CacheForIngest } from '../../../ingest/cache'
+import { IngestModelReadonly } from '../../../ingest/model/IngestModel'
 import { PlaylistLock } from '../../../jobs/lock'
 import { ReadonlyDeep } from 'type-fest'
 import { JobContext } from '../../../jobs'
@@ -11,16 +10,18 @@ import { PlayoutRundownModelImpl } from './PlayoutRundownModelImpl'
 import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import _ = require('underscore')
-import { clone, groupByToMap, groupByToMapFunc } from '@sofie-automation/corelib/dist/lib'
+import { clone, Complete, groupByToMap, groupByToMapFunc, literal } from '@sofie-automation/corelib/dist/lib'
 import { PlayoutSegmentModelImpl } from './PlayoutSegmentModelImpl'
-import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { PlayoutPartInstanceModelImpl } from './PlayoutPartInstanceModelImpl'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { PlayoutModel, PlayoutModelPreInit } from '../PlayoutModel'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
 
 /**
  * Load a PlayoutModelPreInit for the given RundownPlaylist
@@ -73,22 +74,22 @@ export async function loadPlayoutModelPreInit(
  * @param playlistLock Lock for the RundownPlaylist to load
  * @param loadedPlaylist Preloaded copy of the RundownPlaylist
  * @param newRundowns Preloaded copy of the Rundowns belonging to the RundownPlaylist
- * @param ingestCache IngestModel to take data from
+ * @param ingestModel IngestModel to take data from
  * @returns Loaded PlayoutModel
  */
-export async function createPlayoutCachefromIngestCache(
+export async function createPlayoutModelfromIngestModel(
 	context: JobContext,
 	playlistLock: PlaylistLock,
 	loadedPlaylist: ReadonlyDeep<DBRundownPlaylist>,
 	newRundowns: ReadonlyDeep<Array<DBRundown>>,
-	ingestCache: ReadOnlyCache<CacheForIngest>
+	ingestModel: IngestModelReadonly
 ): Promise<PlayoutModel & DatabasePersistedModel> {
 	const [peripheralDevices, playlist, rundowns] = await loadInitData(context, loadedPlaylist, false, newRundowns)
 	const rundownIds = rundowns.map((r) => r._id)
 
 	const [partInstances, rundownsWithContent, timeline] = await Promise.all([
 		loadPartInstances(context, loadedPlaylist, rundownIds),
-		loadRundowns(context, ingestCache, rundowns),
+		loadRundowns(context, ingestModel, rundowns),
 		loadTimeline(context),
 	])
 
@@ -172,15 +173,15 @@ export async function createPlayoutModelfromInitModel(
 
 async function loadRundowns(
 	context: JobContext,
-	ingestCache: ReadOnlyCache<CacheForIngest> | null,
+	ingestModel: IngestModelReadonly | null,
 	rundowns: ReadonlyDeep<DBRundown[]>
 ): Promise<PlayoutRundownModelImpl[]> {
 	const rundownIds = rundowns.map((rd) => rd._id)
 
-	// If there is an ingestCache, then avoid loading some bits from the db for that rundown
-	const loadRundownIds = ingestCache ? rundownIds.filter((id) => id !== ingestCache.RundownId) : rundownIds
-	const baselineFromIngest = ingestCache?.RundownBaselineObjs.getIfLoaded()
-	const loadBaselineIds = baselineFromIngest ? loadRundownIds : rundownIds
+	// If there is an ingestModel, then avoid loading some bits from the db for that rundown
+	const loadRundownIds = ingestModel ? rundownIds.filter((id) => id !== ingestModel.rundownId) : rundownIds
+	const baselineTimelineFromIngest = ingestModel?.rundownBaselineTimelineObjects.getIfLoaded()
+	const loadBaselineIds = baselineTimelineFromIngest ? loadRundownIds : rundownIds
 
 	const [segments, parts, baselineObjects] = await Promise.all([
 		context.directCollections.Segments.findFetch({
@@ -200,15 +201,6 @@ async function loadRundowns(
 		context.directCollections.RundownBaselineObjects.findFetch({ rundownId: { $in: loadBaselineIds } }),
 	])
 
-	if (ingestCache) {
-		// Populate the collections with the cached data instead
-		segments.push(...ingestCache.Segments.findAll(null))
-		parts.push(...ingestCache.Parts.findAll(null))
-		if (baselineFromIngest) {
-			baselineObjects.push(...baselineFromIngest.findAll(null))
-		}
-	}
-
 	const groupedParts = groupByToMap(parts, 'segmentId')
 	const segmentsWithParts = segments.map(
 		(segment) => new PlayoutSegmentModelImpl(segment, groupedParts.get(segment._id) ?? [])
@@ -216,6 +208,29 @@ async function loadRundowns(
 	const groupedSegmentsWithParts = groupByToMapFunc(segmentsWithParts, (s) => s.segment.rundownId)
 
 	const groupedBaselineObjects = groupByToMap(baselineObjects, 'rundownId')
+
+	if (ingestModel) {
+		const playoutSegments: PlayoutSegmentModelImpl[] = []
+		groupedSegmentsWithParts.set(ingestModel.rundownId, playoutSegments)
+		// Populate the collections with the in-memory data instead
+		for (const segment of ingestModel.getAllSegments()) {
+			playoutSegments.push(
+				new PlayoutSegmentModelImpl(
+					clone<DBSegment>(segment.segment),
+					segment.parts.map((part) => clone<DBPart>(part.part))
+				)
+			)
+		}
+		if (baselineTimelineFromIngest) {
+			groupedBaselineObjects.set(ingestModel.rundownId, [
+				literal<Complete<RundownBaselineObj>>({
+					_id: protectString(''),
+					rundownId: ingestModel.rundownId,
+					timelineObjectsString: baselineTimelineFromIngest,
+				}),
+			])
+		}
+	}
 
 	return rundowns.map(
 		(rundown) =>
@@ -227,10 +242,6 @@ async function loadRundowns(
 	)
 }
 
-/**
- * Intitialise the full content of the model
- * @param ingestCache A CacheForIngest that is pending saving, if this is following an ingest operation
- */
 async function loadPartInstances(
 	context: JobContext,
 	playlist: ReadonlyDeep<DBRundownPlaylist>,

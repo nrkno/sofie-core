@@ -29,9 +29,9 @@ export interface JobContext extends StudioCacheContext {
 	/** Internal: Track a cache, to check it was saved at the end of the job */
 	trackCache(cache: BaseModel): void
 
-	/** Aquire the CacheForPlayout/write lock for a Playlist */
+	/** Aquire the PlayoutModel/write lock for a Playlist */
 	lockPlaylist(playlistId: RundownPlaylistId): Promise<PlaylistLock>
-	/** Aquire the CacheForIngest/write lock for a Rundown */
+	/** Aquire the IngestModel/write lock for a Rundown */
 	lockRundown(rundownId: RundownId): Promise<RundownLock>
 
 	/** Start an APM span, if there is an active APM transaction */

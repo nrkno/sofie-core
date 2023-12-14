@@ -7,10 +7,10 @@ import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { JobContext } from '../jobs'
-import { CacheForIngest } from '../ingest/cache'
 import { BeforePartMapItem } from '../ingest/commit'
 import { getRundownId } from '../ingest/lib'
 import { runWithRundownLock } from '../ingest/lock'
+import { loadIngestModelFromRundownExternalId } from '../ingest/model/implementation/LoadIngestModel'
 
 // require('../rundown') // include in order to create the Meteor methods needed
 
@@ -118,13 +118,14 @@ describe('updatePartInstanceRanks', () => {
 		initialRanks: BeforePartMapItem[]
 	): Promise<void> {
 		await runWithRundownLock(context, rundownId, async (_rundown, lock) => {
-			const cache = await CacheForIngest.create(context, lock, rundownExternalId)
+			// nocommit can this use a 'fake' model instead?
+			const ingestModel = await loadIngestModelFromRundownExternalId(context, lock, rundownExternalId)
 
 			const changeMap = new Map<SegmentId, Array<{ id: PartId; rank: number }>>()
 			changeMap.set(segmentId, initialRanks)
-			await updatePartInstanceRanks(context, cache, [segmentId], changeMap)
+			await updatePartInstanceRanks(context, ingestModel, [segmentId], changeMap)
 
-			await cache.saveAllToDatabase()
+			await ingestModel.saveAllToDatabase()
 		})
 	}
 

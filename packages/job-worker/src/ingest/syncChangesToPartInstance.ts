@@ -1,9 +1,12 @@
-import { BlueprintSyncIngestNewData, BlueprintSyncIngestPartInstance } from '@sofie-automation/blueprints-integration'
-import { ReadOnlyCache } from '../cache/CacheBase'
+import {
+	BlueprintSyncIngestNewData,
+	BlueprintSyncIngestPartInstance,
+	IBlueprintAdLibPieceDB,
+} from '@sofie-automation/blueprints-integration'
 import { JobContext } from '../jobs'
 import { PlayoutModel } from '../playout/model/PlayoutModel'
 import { PlayoutPartInstanceModel } from '../playout/model/PlayoutPartInstanceModel'
-import { CacheForIngest } from './cache'
+import { IngestModelReadonly } from './model/IngestModel'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PartNote, SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
@@ -28,7 +31,7 @@ import {
 } from '../blueprints/context/lib'
 import { validateScratchpartPartInstanceProperties } from '../playout/scratchpad'
 import { ReadonlyDeep } from 'type-fest'
-import { hackConvertIngestCacheToRundownWithSegments } from './commit'
+import { hackConvertIngestModelToRundownWithSegments } from './commit'
 
 type PlayStatus = 'previous' | 'current' | 'next'
 type SyncedInstance = {
@@ -36,24 +39,24 @@ type SyncedInstance = {
 	previousPartInstance: PlayoutPartInstanceModel | null
 	playStatus: PlayStatus
 	newPart: ReadonlyDeep<DBPart> | undefined
-	piecesThatMayBeActive: Promise<Piece[]>
+	piecesThatMayBeActive: Promise<ReadonlyDeep<Piece>[]>
 }
 
 /**
  * Attempt to sync the current and next Part into their PartInstances
  * This defers out to the Blueprints to do the syncing
  * @param context Context of the job ebeing run
- * @param playoutModel Playout cache containing containing the Rundown being ingested
- * @param ingestCache Ingest cache for the Rundown
+ * @param playoutModel Playout model containing containing the Rundown being ingested
+ * @param ingestModel Ingest model for the Rundown
  */
 export async function syncChangesToPartInstances(
 	context: JobContext,
 	playoutModel: PlayoutModel,
-	ingestCache: ReadOnlyCache<CacheForIngest>
+	ingestModel: IngestModelReadonly
 ): Promise<void> {
 	if (playoutModel.playlist.activationId) {
 		// Get the final copy of the rundown
-		const rundownWrapped = hackConvertIngestCacheToRundownWithSegments(ingestCache)
+		const rundownWrapped = hackConvertIngestModelToRundownWithSegments(ingestModel)
 
 		const showStyle = await context.getShowStyleCompound(
 			rundownWrapped.rundown.showStyleVariantId,
@@ -83,7 +86,7 @@ export async function syncChangesToPartInstances(
 							context,
 							instances,
 							playoutModel,
-							ingestCache,
+							ingestModel,
 							partAndPartInstance.partInstance,
 							null,
 							partAndPartInstance.part,
@@ -96,7 +99,7 @@ export async function syncChangesToPartInstances(
 					context,
 					instances,
 					playoutModel,
-					ingestCache,
+					ingestModel,
 					currentPartInstance,
 					previousPartInstance,
 					'current'
@@ -107,7 +110,7 @@ export async function syncChangesToPartInstances(
 					context,
 					instances,
 					playoutModel,
-					ingestCache,
+					ingestModel,
 					nextPartInstance,
 					currentPartInstance,
 					isTooCloseToAutonext(currentPartInstance?.partInstance, false) ? 'current' : 'next'
@@ -141,25 +144,20 @@ export async function syncChangesToPartInstances(
 
 				logger.info(`Syncing ingest changes for part: ${partId} (orphaned: ${!!newPart})`)
 
-				const referencedAdlibIds = new Set(
-					_.compact(pieceInstancesInPart.map((p) => p.pieceInstance.adLibSourceId))
-				)
+				const ingestPart = ingestModel.findPart(partId)
+
+				const referencedAdlibs: IBlueprintAdLibPieceDB[] = []
+				for (const adLibPieceId of _.compact(pieceInstancesInPart.map((p) => p.pieceInstance.adLibSourceId))) {
+					const adLibPiece = ingestModel.findAdlibPiece(adLibPieceId)
+					if (adLibPiece) referencedAdlibs.push(convertAdLibPieceToBlueprints(adLibPiece))
+				}
+
 				const newResultData: BlueprintSyncIngestNewData = {
 					part: newPart ? convertPartToBlueprints(newPart) : undefined,
 					pieceInstances: proposedPieceInstances.map(convertPieceInstanceToBlueprints),
-					adLibPieces: newPart
-						? ingestCache.AdLibPieces.findAll((p) => p.partId === newPart._id).map(
-								convertAdLibPieceToBlueprints
-						  )
-						: [],
-					actions: newPart
-						? ingestCache.AdLibActions.findAll((p) => p.partId === newPart._id).map(
-								convertAdLibActionToBlueprints
-						  )
-						: [],
-					referencedAdlibs: ingestCache.AdLibPieces.findAll((p) => referencedAdlibIds.has(p._id)).map(
-						convertAdLibPieceToBlueprints
-					),
+					adLibPieces: newPart && ingestPart ? ingestPart.adLibPieces.map(convertAdLibPieceToBlueprints) : [],
+					actions: newPart && ingestPart ? ingestPart.adLibActions.map(convertAdLibActionToBlueprints) : [],
+					referencedAdlibs: referencedAdlibs,
 				}
 
 				const partInstanceSnapshot = existingPartInstance.snapshotMakeCopy()
@@ -241,7 +239,7 @@ function insertToSyncedInstanceCandidates(
 	context: JobContext,
 	instances: SyncedInstance[],
 	playoutModel: PlayoutModel,
-	ingestCache: ReadOnlyCache<CacheForIngest>,
+	ingestModel: IngestModelReadonly,
 	thisPartInstance: PlayoutPartInstanceModel,
 	previousPartInstance: PlayoutPartInstanceModel | null,
 	part: ReadonlyDeep<DBPart> | undefined,
@@ -255,7 +253,7 @@ function insertToSyncedInstanceCandidates(
 		piecesThatMayBeActive: fetchPiecesThatMayBeActiveForPart(
 			context,
 			playoutModel,
-			ingestCache,
+			ingestModel,
 			part ?? thisPartInstance.partInstance.part
 		),
 	})
@@ -263,13 +261,13 @@ function insertToSyncedInstanceCandidates(
 
 /**
  * Finds the underlying Part for a given `thisPartInstance` and inserts it to the list of PartInstances to be synced.
- * Doesn't do anything if it can't find the underlying Part in `cache`.
+ * Doesn't do anything if it can't find the underlying Part in `model`.
  */
 function findPartAndInsertToSyncedInstanceCandidates(
 	context: JobContext,
 	instances: SyncedInstance[],
 	playoutModel: PlayoutModel,
-	ingestCache: ReadOnlyCache<CacheForIngest>,
+	ingestModel: IngestModelReadonly,
 	thisPartInstance: PlayoutPartInstanceModel,
 	previousPartInstance: PlayoutPartInstanceModel | null,
 	playStatus: PlayStatus
@@ -280,7 +278,7 @@ function findPartAndInsertToSyncedInstanceCandidates(
 		context,
 		instances,
 		playoutModel,
-		ingestCache,
+		ingestModel,
 		thisPartInstance,
 		previousPartInstance,
 		newPart,
