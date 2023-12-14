@@ -36,9 +36,9 @@ export async function handleExecuteAdlibAction(
 		if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown, undefined, 412)
 		if (!playlist.currentPartInfo) throw UserError.create(UserErrorMessage.NoCurrentPart, undefined, 412)
 
-		const initCache = await loadPlayoutModelPreInit(context, lock, playlist, false)
+		const initPlayoutModel = await loadPlayoutModelPreInit(context, lock, playlist, false)
 
-		const rundown = initCache.getRundown(playlist.currentPartInfo.rundownId)
+		const rundown = initPlayoutModel.getRundown(playlist.currentPartInfo.rundownId)
 		if (!rundown) throw new Error(`Current Rundown "${playlist.currentPartInfo.rundownId}" could not be found`)
 
 		const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
@@ -81,11 +81,11 @@ export async function handleExecuteAdlibAction(
 		}
 
 		if (blueprint.blueprint.executeAction) {
-			// load a full cache for the regular actions & executet the handler
-			const playoutModel = await createPlayoutModelfromInitModel(context, initCache)
+			// load a full model for the regular actions & execute the handler
+			const playoutModel = await createPlayoutModelfromInitModel(context, initPlayoutModel)
 
 			const fullRundown = playoutModel.getRundown(rundown._id)
-			if (!fullRundown) throw new Error(`Rundown "${rundown._id}" missing between caches`)
+			if (!fullRundown) throw new Error(`Rundown "${rundown._id}" missing between models`)
 
 			try {
 				const res: ExecuteActionResult = await executeActionInner(

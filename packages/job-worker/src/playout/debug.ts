@@ -79,18 +79,18 @@ export async function handleDebugCrash(context: JobContext, data: DebugRegenerat
  * Debug: Regenerate the timeline for the Studio
  */
 export async function handleDebugUpdateTimeline(context: JobContext, _data: void): Promise<void> {
-	await runJobWithStudioPlayoutModel(context, async (studioCache) => {
-		const activePlaylists = studioCache.getActiveRundownPlaylists()
+	await runJobWithStudioPlayoutModel(context, async (studioPlayoutModel) => {
+		const activePlaylists = studioPlayoutModel.getActiveRundownPlaylists()
 		if (activePlaylists.length > 1) {
 			throw new Error(`Too many active playlists`)
 		} else if (activePlaylists.length > 0) {
 			const playlist = activePlaylists[0]
 
-			await runJobWithPlayoutModel(context, { playlistId: playlist._id }, null, async (playoutCache) => {
-				await updateTimeline(context, playoutCache)
+			await runJobWithPlayoutModel(context, { playlistId: playlist._id }, null, async (playoutModel) => {
+				await updateTimeline(context, playoutModel)
 			})
 		} else {
-			await updateStudioTimeline(context, studioCache)
+			await updateStudioTimeline(context, studioPlayoutModel)
 		}
 	})
 }

@@ -109,7 +109,7 @@ export async function innerFindLastPieceOnLayer(
 
 	if (span) span.end()
 
-	// Note: This does not want to use the cache, as we want to search as far back as we can
+	// Note: This does not want to use the in-memory model, as we want to search as far back as we can
 	// TODO - will this cause problems?
 	return context.directCollections.PieceInstances.findOne(query, {
 		sort: {
