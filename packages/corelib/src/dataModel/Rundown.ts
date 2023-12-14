@@ -87,8 +87,6 @@ export interface Rundown {
 	playlistId: RundownPlaylistId
 	/** If the playlistId has ben set manually by a user in Sofie */
 	playlistIdIsSetInSofie?: boolean
-	/** Whenever the baseline (RundownBaselineObjs, RundownBaselineAdLibItems, RundownBaselineAdLibActions) changes, this is changed too */
-	baselineModifyHash?: string
 }
 
 /** Note: Use Rundown instead */
