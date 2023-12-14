@@ -612,6 +612,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 						</div>
 					</div>
 				)}
+				{}
 			</div>
 		)
 	}
@@ -693,6 +694,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 							'budget-gap': this.props.isBudgetGap,
 
 							'out-of-the-loop': !isPartInQuickLoop && isLoopRunning(this.props.playlist) && !this.state.isNext,
+							'quickloop-end': isQuickLoopEnd,
 						},
 						this.props.className
 					)}
@@ -718,12 +720,19 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 						<InvalidPartCover className="segment-timeline__part__invalid-cover" part={innerPart} />
 					) : null}
 					{innerPart.floated ? <div className="segment-timeline__part__floated-cover"></div> : null}
-					{isQuickLoopStart ? <div className="segment-timeline__part__quick-loop-start">LOOP START</div> : null}
-					{isQuickLoopEnd ? (
-						<div className="segment-timeline__part__quick-loop-end" style={{ textAlign: 'right' }}>
-							LOOP END
-						</div>
-					) : null}
+					<div className="segment-timeline__part__quickloop-line">
+						{isPartInQuickLoop && <div className="segment-timeline__part__quickloop-background"></div>}
+						{isQuickLoopStart ? (
+							<div className="segment-timeline__part__quickloop-start">
+								START <LoopingIcon />
+							</div>
+						) : null}
+						{isQuickLoopEnd ? (
+							<div className="segment-timeline__part__quickloop-end">
+								<LoopingIcon /> END
+							</div>
+						) : null}
+					</div>
 					{this.props.playlist.nextTimeOffset &&
 						this.state.isNext && ( // This is the off-set line
 							<div
@@ -772,6 +781,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 								invalid: innerPart.invalid && !innerPart.gap,
 								floated: innerPart.floated,
 								offset: !!this.props.playlist.nextTimeOffset,
+								'quickloop-start': isQuickLoopStart,
 							})}
 						>
 							<div
@@ -793,11 +803,13 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 								{this.props.isAfterLastValidInSegmentAndItsLive && !isPlaylistLooping && <SegmentEnd />}
 								{this.props.isAfterLastValidInSegmentAndItsLive && isPlaylistLooping && <LoopingIcon />}
 							</div>
+							{isQuickLoopStart && <div className="segment-timeline__part__nextline__quickloop-start" />}
 							{!this.props.isPreview && this.props.part.instance.part.identifier && (
 								<div className="segment-timeline__identifier">{this.props.part.instance.part.identifier}</div>
 							)}
 						</div>
 					)}
+					{isQuickLoopEnd && <div className="segment-timeline__part__nextline__quickloop-end" />}
 					{this.renderEndOfSegment(t, innerPart, isEndOfShow, endOfLoopingShow)}
 				</div>
 			)

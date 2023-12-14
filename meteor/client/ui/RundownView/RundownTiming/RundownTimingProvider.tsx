@@ -378,7 +378,7 @@ function findPartInstancesInQuickLoop(
 					playlist.quickLoop.end.id === previousPartInstance!.rundownId))
 		) {
 			isInQuickLoop = false
-			break
+			// a `break` should be here, but it can't because when looping over a single part we need to include the three instances of that part shown at once
 		}
 		if (
 			!isInQuickLoop &&

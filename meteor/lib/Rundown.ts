@@ -422,12 +422,11 @@ export function isEndOfLoopingShow(
 	part: DBPart
 ): boolean {
 	return (
-		(isLastSegment &&
-			isPartLastInSegment &&
-			isLoopDefined(playlist) &&
-			playlist?.quickLoop?.end?.type === QuickLoopMarkerType.PLAYLIST) ||
-		(playlist?.quickLoop?.end?.type === QuickLoopMarkerType.SEGMENT &&
-			playlist?.quickLoop.end.id === part.segmentId) ||
-		(playlist?.quickLoop?.end?.type === QuickLoopMarkerType.PART && playlist?.quickLoop.end.id === part._id)
+		isPartLastInSegment &&
+		isLoopDefined(playlist) &&
+		((isLastSegment && playlist?.quickLoop?.end?.type === QuickLoopMarkerType.PLAYLIST) ||
+			(playlist?.quickLoop?.end?.type === QuickLoopMarkerType.SEGMENT &&
+				playlist?.quickLoop.end.id === part.segmentId) ||
+			(playlist?.quickLoop?.end?.type === QuickLoopMarkerType.PART && playlist?.quickLoop.end.id === part._id))
 	)
 }

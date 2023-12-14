@@ -1392,6 +1392,11 @@ svg.icon {
 					z-index: 30;
 				}
 
+				&.quickloop-start {
+					left: 1px;
+					border-left: 1px solid white;
+				}
+
 				.segment-timeline__part__nextline__label {
 					display: none;
 					position: absolute;
@@ -1434,6 +1439,35 @@ svg.icon {
 					bottom: -1px;
 					left: -2px;
 					@include take-arrow();
+				}
+
+				.segment-timeline__part__nextline__quickloop-start {
+					border-left: 3px solid white;
+					display: block;
+					position: absolute;
+					top: -2px;
+					bottom: 0;
+					left: -6px;
+				}
+			}
+
+			.segment-timeline__part__nextline__quickloop-end {
+				border-right: 3px solid white;
+				display: block;
+				position: absolute;
+				top: -12px;
+				bottom: 0;
+				right: -2px;
+				z-index: 40;
+
+				&::before {
+					content: ' ';
+					border-left: 1px solid white;
+					display: block;
+					position: absolute;
+					top: 0;
+					bottom: 0;
+					right: 2px;
 				}
 			}
 
@@ -1512,6 +1546,10 @@ svg.icon {
 				z-index: -1;
 			}
 
+			&.quickloop-end {
+				z-index: 1;
+			}
+
 			&.out-of-the-loop {
 				&::before {
 					content: ' ';
@@ -1521,7 +1559,7 @@ svg.icon {
 					left: 0;
 					bottom: 0;
 					right: 0;
-					background: rgba(0, 0, 0, 0.4);
+					background: rgba(0, 0, 0, 0.5);
 					z-index: 2;
 					pointer-events: none;
 				}
@@ -1741,6 +1779,37 @@ svg.icon {
 					.segment-timeline__part__nextline__label {
 						padding: 0 0 0 7px;
 					}
+				}
+			}
+
+			.segment-timeline__part__quickloop-line {
+				min-height: $segment-layer-height;
+				line-height: $segment-layer-height;
+				font-weight: 400;
+
+				.segment-timeline__part__quickloop-background {
+					width: 100%;
+					position: absolute;
+					min-height: $segment-layer-height;
+					background-image: linear-gradient(to right, white 20%, rgba(255, 255, 255, 0) 0%);
+					background-position: center left;
+					background-size: 10px 2px;
+					background-repeat: repeat-x;
+				}
+
+				.segment-timeline__part__quickloop-start, .segment-timeline__part__quickloop-end {
+					position: absolute;
+					background: $segment-background-color;
+					padding: 0 0.3em;
+					white-space: nowrap;
+				}
+
+				.segment-timeline__part__quickloop-start {
+					left: 0;
+				}
+
+				.segment-timeline__part__quickloop-end {
+					right: 0;
 				}
 			}
 
