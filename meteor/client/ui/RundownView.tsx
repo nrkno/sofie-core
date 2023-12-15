@@ -6,7 +6,7 @@ import * as VelocityReact from 'velocity-react'
 import {
 	Translated,
 	translateWithTracker,
-	useSubscription,
+	useSubscriptionIfEnabled,
 	useSubscriptions,
 	useTracker,
 } from '../lib/ReactMeteorData/react-meteor-data'
@@ -1213,8 +1213,8 @@ export function RundownView(props: Readonly<IProps>): JSX.Element {
 	const playlistId = props.playlistId
 
 	const subsReady: boolean[] = []
-	subsReady.push(useSubscription(CorelibPubSub.rundownPlaylists, [playlistId], null))
-	subsReady.push(useSubscription(CorelibPubSub.rundownsInPlaylists, [playlistId]))
+	subsReady.push(useSubscriptionIfEnabled(CorelibPubSub.rundownPlaylists, true, [playlistId], null))
+	subsReady.push(useSubscriptionIfEnabled(CorelibPubSub.rundownsInPlaylists, true, [playlistId]))
 
 	const playlistStudioId = useTracker(() => {
 		const playlist = RundownPlaylists.findOne(playlistId, {
@@ -1227,11 +1227,15 @@ export function RundownView(props: Readonly<IProps>): JSX.Element {
 		return playlist?.studioId
 	}, [playlistId])
 	// Load once the playlist is confirmed to exist
-	subsReady.push(useSubscriptions(MeteorPubSub.uiSegmentPartNotes, playlistStudioId ? [[playlistId]] : []))
-	subsReady.push(useSubscriptions(MeteorPubSub.uiPieceContentStatuses, playlistStudioId ? [[playlistId]] : []))
+	subsReady.push(useSubscriptionIfEnabled(MeteorPubSub.uiSegmentPartNotes, !!playlistStudioId, playlistId))
+	subsReady.push(useSubscriptionIfEnabled(MeteorPubSub.uiPieceContentStatuses, !!playlistStudioId, playlistId))
 	// Load only when the studio is known
-	subsReady.push(useSubscriptions(MeteorPubSub.uiStudio, playlistStudioId ? [[playlistStudioId]] : []))
-	subsReady.push(useSubscriptions(MeteorPubSub.buckets, playlistStudioId ? [[playlistStudioId, null]] : []))
+	subsReady.push(
+		useSubscriptionIfEnabled(MeteorPubSub.uiStudio, !!playlistStudioId, playlistStudioId ?? protectString(''))
+	)
+	subsReady.push(
+		useSubscriptionIfEnabled(MeteorPubSub.buckets, !!playlistStudioId, playlistStudioId ?? protectString(''), null)
+	)
 
 	const { rundownIds, showStyleBaseIds, showStyleVariantIds, playlistActivationId } = useTracker(
 		() => {
@@ -1268,16 +1272,25 @@ export function RundownView(props: Readonly<IProps>): JSX.Element {
 			showStyleBaseIds.map((id) => [id])
 		)
 	)
-	subsReady.push(useSubscription(CorelibPubSub.showStyleVariants, null, showStyleVariantIds))
-	subsReady.push(useSubscription(MeteorPubSub.rundownLayouts, showStyleBaseIds))
+	subsReady.push(
+		useSubscriptionIfEnabled(CorelibPubSub.showStyleVariants, showStyleVariantIds.length > 0, null, showStyleVariantIds)
+	)
+	subsReady.push(useSubscriptionIfEnabled(MeteorPubSub.rundownLayouts, showStyleBaseIds.length > 0, showStyleBaseIds))
 
-	subsReady.push(useSubscription(CorelibPubSub.segments, rundownIds, {}))
-	subsReady.push(useSubscription(CorelibPubSub.adLibPieces, rundownIds))
-	subsReady.push(useSubscription(CorelibPubSub.rundownBaselineAdLibPieces, rundownIds))
-	subsReady.push(useSubscription(CorelibPubSub.adLibActions, rundownIds))
-	subsReady.push(useSubscription(CorelibPubSub.rundownBaselineAdLibActions, rundownIds))
-	subsReady.push(useSubscription(CorelibPubSub.parts, rundownIds, null))
-	subsReady.push(useSubscription(CorelibPubSub.partInstances, rundownIds, playlistActivationId ?? null))
+	subsReady.push(useSubscriptionIfEnabled(CorelibPubSub.segments, rundownIds.length > 0, rundownIds, {}))
+	subsReady.push(useSubscriptionIfEnabled(CorelibPubSub.adLibPieces, rundownIds.length > 0, rundownIds))
+	subsReady.push(useSubscriptionIfEnabled(CorelibPubSub.rundownBaselineAdLibPieces, rundownIds.length > 0, rundownIds))
+	subsReady.push(useSubscriptionIfEnabled(CorelibPubSub.adLibActions, rundownIds.length > 0, rundownIds))
+	subsReady.push(useSubscriptionIfEnabled(CorelibPubSub.rundownBaselineAdLibActions, rundownIds.length > 0, rundownIds))
+	subsReady.push(useSubscriptionIfEnabled(CorelibPubSub.parts, rundownIds.length > 0, rundownIds, null))
+	subsReady.push(
+		useSubscriptionIfEnabled(
+			CorelibPubSub.partInstances,
+			rundownIds.length > 0,
+			rundownIds,
+			playlistActivationId ?? null
+		)
+	)
 
 	useTracker(() => {
 		const playlist = RundownPlaylists.findOne(playlistId, {
