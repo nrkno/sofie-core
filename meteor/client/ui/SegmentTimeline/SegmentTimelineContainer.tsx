@@ -157,6 +157,7 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 		mountedTime = 0
 		nextPartOffset = 0
 
+		// Setup by React.Component constructor
 		context!: {
 			durations: RundownTimingContext
 			syncedDurations: RundownTimingContext

@@ -63,6 +63,7 @@ export function withTiming<IProps, IState>(
 				syncedDurations: PropTypes.object.isRequired,
 			}
 
+			// Setup by React.Component constructor
 			context!: {
 				durations: RundownTimingContext
 				syncedDurations: RundownTimingContext
