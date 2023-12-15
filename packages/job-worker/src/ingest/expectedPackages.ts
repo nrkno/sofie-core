@@ -180,6 +180,7 @@ function generateExpectedPackagesForPiece(
 						...base,
 						rundownId,
 						segmentId,
+						partId,
 						pieceId: piece._id,
 						fromPieceType: type,
 					})
@@ -227,6 +228,7 @@ function generateExpectedPackagesForAdlibAction(
 						...base,
 						rundownId,
 						segmentId,
+						partId: action.partId,
 						pieceId: action._id,
 						fromPieceType: ExpectedPackageDBType.ADLIB_ACTION,
 					})
