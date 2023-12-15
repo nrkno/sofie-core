@@ -349,6 +349,13 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 			name: 'Allow cloning of clips if on wrong server/pool',
 			type: ConfigManifestEntryType.BOOLEAN,
 		},
+		{
+			id: 'options.suppressDisconnectTime',
+			type: ConfigManifestEntryType.INT,
+			name: 'Suppress Disconnect Warnings Time',
+			hint: 'If the ISA goes down the gateway will temporarily emit a disconnection warning, this is a false flag when a backup ISA is available. This option will suppress the disconnection warning for a number of ms to give the system time to switch without warnings.',
+			includeInSummary: true,
+		},
 	],
 	[TSRDeviceType.VIZMSE]: [
 		...PLAYOUT_SUBDEVICE_COMMON,

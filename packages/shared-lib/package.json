@@ -40,7 +40,7 @@
 	],
 	"dependencies": {
 		"@mos-connection/model": "^3.0.4",
-		"timeline-state-resolver-types": "8.1.0",
+		"timeline-state-resolver-types": "8.1.2-nightly-chore-backport-quantel-warnings-20231214-150032-f04befb64.0",
 		"tslib": "^2.4.0",
 		"type-fest": "^2.19.0"
 	},
