@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import React, { useMemo } from 'react'
 import ClassNames from 'classnames'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -8,54 +7,38 @@ import {
 	PeripheralDeviceType,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { Time, getCurrentTime, unprotectString } from '../../../lib/lib'
-import { useTranslation, withTranslation, WithTranslation } from 'react-i18next'
+import { Time, unprotectString } from '../../../lib/lib'
+import { useTranslation } from 'react-i18next'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevices } from '../../collections'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { useCurrentTime } from '../../lib/lib'
 
 interface IMOSStatusProps {
 	lastUpdate: Time
 }
 
-const MOSLastUpdateStatus = withTranslation()(
-	class MOSLastUpdateStatus extends React.Component<IMOSStatusProps & WithTranslation> {
-		_interval: number
+const MOSLastUpdateStatus = React.memo(function MOSLastUpdateStatus({ lastUpdate }: Readonly<IMOSStatusProps>) {
+	const { t } = useTranslation()
 
-		componentDidMount(): void {
-			this._interval = Meteor.setInterval(() => {
-				this.tick()
-			}, 5000)
-		}
+	const currentTime = useCurrentTime(5000)
+	const timeDiff = currentTime - lastUpdate
 
-		componentWillUnmount(): void {
-			Meteor.clearInterval(this._interval)
-		}
-
-		tick() {
-			this.forceUpdate()
-		}
-
-		render(): JSX.Element {
-			const { t } = this.props
-			const timeDiff = getCurrentTime() - this.props.lastUpdate
-			return (
-				<span>
-					{timeDiff < 3000 && t('Just now')}
-					{timeDiff >= 3000 && timeDiff < 60 * 1000 && t('Less than a minute ago')}
-					{timeDiff >= 60 * 1000 && timeDiff < 5 * 60 * 1000 && t('Less than five minutes ago')}
-					{timeDiff >= 5 * 60 * 1000 && timeDiff < 10 * 60 * 1000 && t('Around 10 minutes ago')}
-					{timeDiff >= 10 * 60 * 1000 && timeDiff < 30 * 60 * 1000 && t('More than 10 minutes ago')}
-					{timeDiff >= 30 * 60 * 1000 && timeDiff < 2 * 60 * 60 * 1000 && t('More than 30 minutes ago')}
-					{timeDiff >= 2 * 60 * 60 * 1000 && timeDiff < 5 * 60 * 60 * 1000 && t('More than 2 hours ago')}
-					{timeDiff >= 5 * 60 * 60 * 1000 && timeDiff < 24 * 60 * 60 * 1000 && t('More than 5 hours ago')}
-					{timeDiff >= 24 * 60 * 60 * 1000 && t('More than a day ago')}
-				</span>
-			)
-		}
-	}
-)
+	return (
+		<span>
+			{timeDiff < 3000 && t('Just now')}
+			{timeDiff >= 3000 && timeDiff < 60 * 1000 && t('Less than a minute ago')}
+			{timeDiff >= 60 * 1000 && timeDiff < 5 * 60 * 1000 && t('Less than five minutes ago')}
+			{timeDiff >= 5 * 60 * 1000 && timeDiff < 10 * 60 * 1000 && t('Around 10 minutes ago')}
+			{timeDiff >= 10 * 60 * 1000 && timeDiff < 30 * 60 * 1000 && t('More than 10 minutes ago')}
+			{timeDiff >= 30 * 60 * 1000 && timeDiff < 2 * 60 * 60 * 1000 && t('More than 30 minutes ago')}
+			{timeDiff >= 2 * 60 * 60 * 1000 && timeDiff < 5 * 60 * 60 * 1000 && t('More than 2 hours ago')}
+			{timeDiff >= 5 * 60 * 60 * 1000 && timeDiff < 24 * 60 * 60 * 1000 && t('More than 5 hours ago')}
+			{timeDiff >= 24 * 60 * 60 * 1000 && t('More than a day ago')}
+		</span>
+	)
+})
 
 interface IProps {
 	studioId: StudioId
