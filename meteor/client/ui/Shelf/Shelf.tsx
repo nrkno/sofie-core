@@ -96,7 +96,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		x: 0,
 		y: 0,
 	}
-	private _mouseDown: number
+	private _mouseDown = 0
 
 	constructor(props: Translated<IShelfProps>) {
 		super(props)

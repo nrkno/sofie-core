@@ -28,15 +28,15 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 	IPropsHeader,
 	IStateHeader
 > {
-	parentElement: HTMLDivElement
-	selAreaElement: HTMLDivElement
-	parentOffsetX: number
-	parentOffsetY: number
-	clickOffsetX: number
-	clickOffsetY: number
+	parentElement: HTMLDivElement | null = null
+	selAreaElement: HTMLDivElement | null = null
+	parentOffsetX = 0
+	parentOffsetY = 0
+	clickOffsetX = 0
+	clickOffsetY = 0
 
 	private _isTouch = false
-	private resizeObserver: ResizeObserver
+	private resizeObserver: ResizeObserver | undefined
 
 	SMALL_WIDTH_BREAKPOINT = 25
 
@@ -53,6 +53,7 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 	}
 
 	private checkSmallMode = () => {
+		if (!this.selAreaElement) return
 		const selAreaElementWidth = getElementWidth(this.selAreaElement)
 
 		if (selAreaElementWidth && selAreaElementWidth < this.SMALL_WIDTH_BREAKPOINT) {
@@ -67,10 +68,10 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 	}
 
 	private onElementResize = (entries: ResizeObserverEntry[]) => {
-		let width: number
+		let width = 0
 		if (entries && entries[0] && entries[0].contentRect) {
 			width = entries[0].contentRect.width
-		} else {
+		} else if (this.parentElement) {
 			width = getElementWidth(this.parentElement)
 		}
 
@@ -163,23 +164,27 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 		})
 	}
 
-	private setParentRef = (element: HTMLDivElement) => {
+	private setParentRef = (element: HTMLDivElement | null) => {
 		this.parentElement = element
 	}
 
-	private setSelAreaRef = (element: HTMLDivElement) => {
+	private setSelAreaRef = (element: HTMLDivElement | null) => {
 		this.selAreaElement = element
 	}
 
 	componentDidMount(): void {
-		this.resizeObserver = onElementResize(this.parentElement, this.onElementResize)
-		this.setState({
-			width: getElementWidth(this.parentElement) || 1,
-		})
+		if (this.parentElement) {
+			this.resizeObserver = onElementResize(this.parentElement, this.onElementResize)
+			this.setState({
+				width: getElementWidth(this.parentElement) || 1,
+			})
+		}
 	}
 
 	componentWillUnmount(): void {
-		offElementResize(this.resizeObserver, this.parentElement)
+		if (this.resizeObserver && this.parentElement) {
+			offElementResize(this.resizeObserver, this.parentElement)
+		}
 	}
 
 	render(): JSX.Element {

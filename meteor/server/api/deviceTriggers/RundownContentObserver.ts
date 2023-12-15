@@ -37,7 +37,9 @@ export class RundownContentObserver {
 	#observers: Meteor.LiveQueryHandle[] = []
 	#cache: ContentCache
 	#cancelCache: () => void
-	#cleanup: () => void
+	#cleanup: () => void = () => {
+		throw new Error('RundownContentObserver.#cleanup has not been set!')
+	}
 
 	constructor(
 		rundownPlaylistId: RundownPlaylistId,

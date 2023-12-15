@@ -414,7 +414,7 @@ export class DashboardPanelInner extends React.Component<Translated<DashboardPan
 		})
 	}
 
-	protected setRef = (ref: HTMLDivElement): void => {
+	protected setRef = (ref: HTMLDivElement | null): void => {
 		const _panel = ref
 		if (_panel) {
 			const style = window.getComputedStyle(_panel)

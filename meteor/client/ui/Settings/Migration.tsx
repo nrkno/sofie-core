@@ -47,7 +47,8 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 	return {}
 })(
 	class MigrationView extends React.Component<Translated<IProps & ITrackedProps>, IState> {
-		private cancelRequests: boolean
+		private cancelRequests = false
+
 		constructor(props: Translated<IProps & ITrackedProps>) {
 			super(props)
 

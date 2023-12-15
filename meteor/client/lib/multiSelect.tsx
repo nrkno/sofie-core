@@ -31,9 +31,9 @@ interface IState {
 }
 
 export class MultiSelect extends React.Component<IProps, IState> {
-	private _titleRef: HTMLElement | null
-	private _popperRef: HTMLElement | null
-	private _popperUpdate: () => Promise<any>
+	private _titleRef: HTMLElement | null = null
+	private _popperRef: HTMLElement | null = null
+	private _popperUpdate: (() => Promise<any>) | undefined
 
 	constructor(props: IProps) {
 		super(props)
@@ -153,7 +153,9 @@ export class MultiSelect extends React.Component<IProps, IState> {
 
 		if (this.props.disabled) return
 
-		await this._popperUpdate()
+		if (typeof this._popperUpdate === 'function') {
+			await this._popperUpdate()
+		}
 		this.setState({
 			expanded: !this.state.expanded,
 		})

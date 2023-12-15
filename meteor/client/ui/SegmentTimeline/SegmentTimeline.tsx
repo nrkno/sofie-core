@@ -131,9 +131,11 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 		durations: PropTypes.object.isRequired,
 	}
 
-	context: {
-		durations: RundownTimingContext
-	}
+	context:
+		| {
+				durations: RundownTimingContext
+		  }
+		| undefined
 
 	constructor(props: IProps & IZoomPropsHeader, context: any) {
 		super(props, context)
@@ -240,8 +242,8 @@ export const BUDGET_GAP_PART = {
 export class SegmentTimelineClass extends React.Component<Translated<WithTiming<IProps>>, IStateHeader> {
 	static whyDidYouRender = true
 
-	timeline: HTMLDivElement
-	segmentBlock: HTMLDivElement
+	timeline: HTMLDivElement | null = null
+	segmentBlock: HTMLDivElement | null = null
 
 	private _touchSize = 0
 	private _touchAttached = false
@@ -296,7 +298,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 		RundownViewEventBus.off(RundownViewEvents.SEGMENT_ZOOM_OFF, this.onRundownEventSegmentZoomOff)
 	}
 
-	private highlightTimeout: NodeJS.Timer
+	private highlightTimeout: NodeJS.Timer | undefined
 
 	private onHighlight = (e: HighlightEvent) => {
 		if (e.segmentId === this.props.segment._id && !e.partId && !e.pieceId) {

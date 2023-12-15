@@ -38,14 +38,14 @@ export const TimelineDashboardPanel = React.memo(
 
 const TimelineDashboardPanelContent = withTranslation()(
 	class TimelineDashboardPanelContent extends DashboardPanelInner {
-		liveLine: HTMLDivElement
+		liveLine: HTMLDivElement | null = null
 		scrollIntoViewTimeout: NodeJS.Timer | undefined = undefined
 
 		constructor(props: Translated<DashboardPanelInnerProps>) {
 			super(props)
 		}
 
-		private setRefExt = (ref: HTMLDivElement) => {
+		private setRefExt = (ref: HTMLDivElement | null) => {
 			this.liveLine = ref
 			this.ensureLiveLineVisible()
 

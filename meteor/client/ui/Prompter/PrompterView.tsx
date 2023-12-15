@@ -586,7 +586,7 @@ export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, 
 		Translated<PropsWithChildren<IPrompterProps> & IPrompterTrackedProps>,
 		{}
 	> {
-		private _debounceUpdate: NodeJS.Timer
+		private _debounceUpdate: NodeJS.Timer | undefined
 
 		constructor(props: Translated<PropsWithChildren<IPrompterProps> & IPrompterTrackedProps>) {
 			super(props)

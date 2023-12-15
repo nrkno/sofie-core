@@ -240,7 +240,7 @@ interface IState {
 
 export const ConnectionStatusNotification = withTranslation()(
 	class ConnectionStatusNotification extends React.Component<Translated<IProps>, IState> {
-		private notifier: ConnectionStatusNotifier
+		private notifier: ConnectionStatusNotifier | undefined
 
 		constructor(props: Translated<IProps>) {
 			super(props)
@@ -251,7 +251,7 @@ export const ConnectionStatusNotification = withTranslation()(
 		}
 
 		componentWillUnmount(): void {
-			this.notifier.stop()
+			if (this.notifier) this.notifier.stop()
 		}
 
 		render(): JSX.Element {

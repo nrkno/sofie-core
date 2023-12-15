@@ -151,13 +151,14 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 		}
 
 		isVisible: boolean
-		rundownCurrentPartInstanceId: PartInstanceId | null
-		timelineDiv: HTMLDivElement
+		rundownCurrentPartInstanceId: PartInstanceId | null = null
+		timelineDiv: HTMLDivElement | null = null
 		intersectionObserver: IntersectionObserver | undefined
-		mountedTime: number
-		nextPartOffset: number
+		mountedTime = 0
+		nextPartOffset = 0
 
-		context: {
+		// Setup by React.Component constructor
+		context!: {
 			durations: RundownTimingContext
 			syncedDurations: RundownTimingContext
 		}
@@ -576,7 +577,8 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 				rootMargin: `-${getHeaderHeight() * zoomFactor}px 0px -${20 * zoomFactor}px 0px`,
 				threshold: [0, 0.25, 0.5, 0.75, 0.98],
 			})
-			this.intersectionObserver.observe(this.timelineDiv.parentElement!)
+			if (!this.timelineDiv?.parentElement) return
+			this.intersectionObserver.observe(this.timelineDiv.parentElement)
 		}
 
 		stopLive = () => {
