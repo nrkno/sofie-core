@@ -21,8 +21,8 @@ import { SegmentTimelinePartClass } from './Parts/SegmentTimelinePart'
 import {
 	PartUi,
 	withResolvedSegment,
-	IProps as IResolvedSegmentProps,
-	ITrackedProps,
+	IResolvedSegmentProps,
+	ITrackedResolvedSegmentProps,
 	IOutputLayerUi,
 } from '../SegmentContainer/withResolvedSegment'
 import { computeSegmentDuration, getPartInstanceTimingId, RundownTimingContext } from '../../lib/rundownTiming'
@@ -144,7 +144,7 @@ export function SegmentTimelineContainer(props: Readonly<IProps>): JSX.Element {
 }
 
 const SegmentTimelineContainerContent = withResolvedSegment(
-	class SegmentTimelineContainerContent extends React.Component<IProps & ITrackedProps, IState> {
+	class SegmentTimelineContainerContent extends React.Component<IProps & ITrackedResolvedSegmentProps, IState> {
 		static contextTypes = {
 			durations: PropTypes.object.isRequired,
 			syncedDurations: PropTypes.object.isRequired,
@@ -162,7 +162,7 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 			syncedDurations: RundownTimingContext
 		}
 
-		constructor(props: IProps & ITrackedProps) {
+		constructor(props: IProps & ITrackedResolvedSegmentProps) {
 			super(props)
 
 			this.state = {
@@ -190,7 +190,7 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 			this.isVisible = false
 		}
 
-		shouldComponentUpdate(nextProps: IProps & ITrackedProps, nextState: IState) {
+		shouldComponentUpdate(nextProps: IProps & ITrackedResolvedSegmentProps, nextState: IState) {
 			return !_.isMatch(this.props, nextProps) || !_.isMatch(this.state, nextState)
 		}
 
@@ -219,7 +219,7 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 				.catch(catchError('updateMaxTimeScale'))
 		}
 
-		componentDidUpdate(prevProps: IProps & ITrackedProps) {
+		componentDidUpdate(prevProps: IProps & ITrackedResolvedSegmentProps) {
 			let isLiveSegment = false
 			let isNextSegment = false
 			let currentLivePart: PartExtended | undefined = undefined

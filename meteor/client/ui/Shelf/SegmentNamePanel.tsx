@@ -5,7 +5,6 @@ import {
 	RundownLayoutBase,
 	RundownLayoutSegmentName,
 } from '../../../lib/collections/RundownLayouts'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
@@ -27,7 +26,7 @@ interface ISegmentNamePanelTrackedProps {
 	name?: string
 }
 
-class SegmentNamePanelInner extends MeteorReactComponent<
+class SegmentNamePanelInner extends React.Component<
 	Translated<ISegmentNamePanelProps & ISegmentNamePanelTrackedProps>,
 	IState
 > {

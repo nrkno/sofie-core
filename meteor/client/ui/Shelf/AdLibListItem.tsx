@@ -1,6 +1,5 @@
 import * as React from 'react'
 import ClassNames from 'classnames'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ISourceLayer, IOutputLayer, IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { unprotectString } from '../../../lib/lib'
@@ -32,7 +31,7 @@ interface IListViewItemProps {
 }
 
 export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
-	class AdLibListItem extends MeteorReactComponent<IListViewItemProps> {
+	class AdLibListItem extends React.Component<IListViewItemProps> {
 		constructor(props: IListViewItemProps) {
 			super(props)
 		}

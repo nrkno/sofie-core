@@ -55,7 +55,7 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 	}
 
 	public get displayName(): string {
-		return `CacheForStudio`
+		return `StudioPlayoutModel`
 	}
 
 	public getActiveRundownPlaylists(excludeRundownPlaylistId?: RundownPlaylistId): ReadonlyDeep<DBRundownPlaylist[]> {
@@ -96,7 +96,7 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 	}
 
 	/**
-	 * Discards all documents in this cache, and marks it as unusable
+	 * Discards all documents in this model, and marks it as unusable
 	 */
 	dispose(): void {
 		this.#disposed = true
@@ -121,12 +121,12 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 	}
 
 	/**
-	 * Assert that no changes should have been made to the cache, will throw an Error otherwise. This can be used in
-	 * place of `saveAllToDatabase()`, when the code controlling the cache expects no changes to have been made and any
+	 * Assert that no changes should have been made to the model, will throw an Error otherwise. This can be used in
+	 * place of `saveAllToDatabase()`, when the code controlling the model expects no changes to have been made and any
 	 * changes made are an error and will cause issues.
 	 */
 	assertNoChanges(): void {
-		const span = this.context.startSpan('Cache.assertNoChanges')
+		const span = this.context.startSpan('StudioPlayoutModelImpl.assertNoChanges')
 
 		function logOrThrowError(error: Error) {
 			if (!IS_PRODUCTION) {
@@ -139,12 +139,12 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 		if (this.#baselineHelper.hasChanges())
 			logOrThrowError(
 				new Error(
-					`Failed no changes in cache assertion, baseline ExpectedPackages or ExpectedPlayoutItems has changes`
+					`Failed no changes in model assertion, baseline ExpectedPackages or ExpectedPlayoutItems has changes`
 				)
 			)
 
 		if (this.#timelineHasChanged)
-			logOrThrowError(new Error(`Failed no changes in cache assertion, Timeline has been changed`))
+			logOrThrowError(new Error(`Failed no changes in model assertion, Timeline has been changed`))
 
 		if (span) span.end()
 	}

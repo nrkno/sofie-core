@@ -39,7 +39,7 @@
 	],
 	"dependencies": {
 		"@mos-connection/model": "^3.0.4",
-		"timeline-state-resolver-types": "9.1.0-nightly-release51-20231129-150159-1758ffc22.0",
+		"timeline-state-resolver-types": "9.1.0-nightly-release51-20231211-110613-75e2cbebd.0",
 		"tslib": "^2.6.2",
 		"type-fest": "^3.13.1"
 	},

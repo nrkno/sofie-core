@@ -195,7 +195,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		if (options?.pieceMetaDataFilter) {
 			for (const [key, value] of Object.entries<unknown>(options.pieceMetaDataFilter)) {
 				// TODO do we need better validation here?
-				// It should be pretty safe as we are working with the cache version (for now)
+				// It should be pretty safe as we are working with the in-memory version (for now)
 				query[`piece.metaData.${key}`] = value
 			}
 		}
@@ -228,7 +228,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		if (options?.pieceMetaDataFilter) {
 			for (const [key, value] of Object.entries<unknown>(options.pieceMetaDataFilter)) {
 				// TODO do we need better validation here?
-				// It should be pretty safe as we are working with the cache version (for now)
+				// It should be pretty safe as we are working with the in-memory version (for now)
 				query[`metaData.${key}`] = value
 			}
 		}

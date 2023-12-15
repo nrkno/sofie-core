@@ -1,7 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { SegmentUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { unprotectString } from '../../../lib/lib'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
@@ -56,7 +55,7 @@ interface IRundownViewShelfState {
 	singleClickMode: boolean
 }
 
-class RundownViewShelfInner extends MeteorReactComponent<
+class RundownViewShelfInner extends React.Component<
 	Translated<IRundownViewShelfProps & IRundownViewShelfTrackedProps>,
 	IRundownViewShelfState
 > {

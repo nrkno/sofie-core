@@ -35,7 +35,7 @@ export async function runJobWithPlayoutModel<TRes>(
 
 /**
  * Run a minimal playout job
- * This avoids loading the cache
+ * This avoids loading the model
  */
 export async function runJobWithPlaylistLock<TRes>(
 	context: JobContext,
@@ -58,7 +58,7 @@ export async function runJobWithPlaylistLock<TRes>(
 }
 
 /**
- * Lock the playlist for a quick task without the cache
+ * Lock the playlist for a quick task without the model
  */
 export async function runWithPlaylistLock<TRes>(
 	context: JobContext,
@@ -82,22 +82,22 @@ export async function runWithPlayoutModel<TRes>(
 	preInitFcn: null | ((playoutModel: PlayoutModelPreInit) => Promise<void> | void),
 	fcn: (playoutModel: PlayoutModel) => Promise<TRes> | TRes
 ): Promise<TRes> {
-	const initCache = await loadPlayoutModelPreInit(context, lock, playlist, false)
+	const initPlayoutModel = await loadPlayoutModelPreInit(context, lock, playlist, false)
 
 	if (preInitFcn) {
-		await preInitFcn(initCache)
+		await preInitFcn(initPlayoutModel)
 	}
 
-	const fullCache = await createPlayoutModelfromInitModel(context, initCache)
+	const fullPlayoutModel = await createPlayoutModelfromInitModel(context, initPlayoutModel)
 
 	try {
-		const res = await fcn(fullCache)
+		const res = await fcn(fullPlayoutModel)
 		logger.silly('runWithPlayoutModel: saveAllToDatabase')
-		await fullCache.saveAllToDatabase()
+		await fullPlayoutModel.saveAllToDatabase()
 
 		return res
 	} catch (err) {
-		fullCache.dispose()
+		fullPlayoutModel.dispose()
 		throw err
 	}
 }

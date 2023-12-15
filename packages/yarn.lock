@@ -4571,7 +4571,7 @@ __metadata:
   resolution: "@sofie-automation/shared-lib@workspace:shared-lib"
   dependencies:
     "@mos-connection/model": ^3.0.4
-    timeline-state-resolver-types: 9.1.0-nightly-release51-20231129-150159-1758ffc22.0
+    timeline-state-resolver-types: 9.1.0-nightly-release51-20231211-110613-75e2cbebd.0
     tslib: ^2.6.2
     type-fest: ^3.13.1
   languageName: unknown
@@ -6904,9 +6904,9 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"atem-connection@npm:3.3.2":
-  version: 3.3.2
-  resolution: "atem-connection@npm:3.3.2"
+"atem-connection@npm:3.4.0":
+  version: 3.4.0
+  resolution: "atem-connection@npm:3.4.0"
   dependencies:
     "@julusian/freetype2": ^1.1.2
     debug: ^4.3.4
@@ -6918,7 +6918,7 @@ asn1@evs-broadcast/node-asn1:
     threadedclass: ^1.2.1
     tslib: ^2.6.2
     wavefile: ^8.4.6
-  checksum: dbfe751a75bd6d7de7877eda84800d9ca5a644a97f603cc60050eabbf02c2ebfe516344c3f6525a2417b83d35f98e542787a8178c85e660d54964a49f6b47664
+  checksum: 03a0c4ce624afe404f74735a37f469776d6eaab942731b950ff4e4bfe434021858fb54ffd8d7732e7290f28302646b4420265c86cfe3af421b68638216d31856
   languageName: node
   linkType: hard
 
@@ -17994,7 +17994,7 @@ asn1@evs-broadcast/node-asn1:
     "@sofie-automation/shared-lib": 1.51.0-in-development
     debug: ^4.3.4
     influx: ^5.9.3
-    timeline-state-resolver: 9.1.0-nightly-release51-20231129-150159-1758ffc22.0
+    timeline-state-resolver: 9.1.0-nightly-release51-20231211-110613-75e2cbebd.0
     tslib: ^2.6.2
     underscore: ^1.13.6
     winston: ^3.10.0
@@ -21626,21 +21626,21 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"timeline-state-resolver-types@npm:9.1.0-nightly-release51-20231129-150159-1758ffc22.0":
-  version: 9.1.0-nightly-release51-20231129-150159-1758ffc22.0
-  resolution: "timeline-state-resolver-types@npm:9.1.0-nightly-release51-20231129-150159-1758ffc22.0"
+"timeline-state-resolver-types@npm:9.1.0-nightly-release51-20231211-110613-75e2cbebd.0":
+  version: 9.1.0-nightly-release51-20231211-110613-75e2cbebd.0
+  resolution: "timeline-state-resolver-types@npm:9.1.0-nightly-release51-20231211-110613-75e2cbebd.0"
   dependencies:
     tslib: ^2.5.1
-  checksum: 97a99b076d3db6a4a9be7bed44c44a4af47709072cb6fba3a7bef9b24e0ac9c2bbd39ad6d723eba982ea4b445433b6f57cc4cd3800d03c6d1a7b8ee0c4ba52a0
+  checksum: 64038c242b007e59897fb62c117753960ff1406885bd3f2b566bc031b6ecbbb0ec5cefae3c7f875baa85a1284feabf25f5da4cb1de72ec279ce6f815d91a5c8d
   languageName: node
   linkType: hard
 
-"timeline-state-resolver@npm:9.1.0-nightly-release51-20231129-150159-1758ffc22.0":
-  version: 9.1.0-nightly-release51-20231129-150159-1758ffc22.0
-  resolution: "timeline-state-resolver@npm:9.1.0-nightly-release51-20231129-150159-1758ffc22.0"
+"timeline-state-resolver@npm:9.1.0-nightly-release51-20231211-110613-75e2cbebd.0":
+  version: 9.1.0-nightly-release51-20231211-110613-75e2cbebd.0
+  resolution: "timeline-state-resolver@npm:9.1.0-nightly-release51-20231211-110613-75e2cbebd.0"
   dependencies:
     "@tv2media/v-connection": ^7.3.2
-    atem-connection: 3.3.2
+    atem-connection: 3.4.0
     atem-state: 1.2.0-nightly-master-20231129-144508-fb53d10.0
     cacheable-lookup: ^5.0.3
     casparcg-connection: ^6.1.1
@@ -21661,7 +21661,7 @@ asn1@evs-broadcast/node-asn1:
     sprintf-js: ^1.1.2
     superfly-timeline: ^9.0.0
     threadedclass: ^1.2.1
-    timeline-state-resolver-types: 9.1.0-nightly-release51-20231129-150159-1758ffc22.0
+    timeline-state-resolver-types: 9.1.0-nightly-release51-20231211-110613-75e2cbebd.0
     tslib: ^2.5.1
     tv-automation-quantel-gateway-client: ^3.1.7
     type-fest: ^3.10.0
@@ -21669,7 +21669,7 @@ asn1@evs-broadcast/node-asn1:
     utf-8-validate: ^5.0.10
     ws: ^7.5.9
     xml-js: ^1.6.11
-  checksum: 0830bca8d74c0b79fef007fbdbe0e3efbdec6a80c541f8b14bcde94e092b4dc49a63c002ddcc671774b10b32a97bc3429b2f7d5890d8225b5627ca4f5c7a7f82
+  checksum: eea2807ee6cad17992459fb6fb617bb1300ae4c7fe5fafd5f1d60e392b33928bd6ac5a655a51c69ee851d69f7c2b3b4a2e153c1f4ca7c05098e1b104c84970a3
   languageName: node
   linkType: hard
 
