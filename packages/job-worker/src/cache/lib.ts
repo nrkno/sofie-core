@@ -57,10 +57,10 @@ export function logChanges(collection: string, changes: ChangedIds<ProtectedStri
  * @param changedIds Set of changed document ids to update in place
  * @param oldObjects Old documents to compare
  * @param newObjects New documents to compare
- * @param mergeFn Optional merge to perform before diffing
+ * @param mergeFn Optional merge to perform before diffing, this change will be present in the returned values
  * @returns Array of the documents. Contains unchanged items from oldObjects, and changed items from newObjects
  */
-export function diffAndStoreObjects<T extends { _id: ProtectedString<any> }>(
+export function diffAndReturnLatestObjects<T extends { _id: ProtectedString<any> }>(
 	changedIds: Set<T['_id']>,
 	oldObjects: T[],
 	newObjects: T[],

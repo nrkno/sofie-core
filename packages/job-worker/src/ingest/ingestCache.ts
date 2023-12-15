@@ -7,7 +7,7 @@ import {
 	IngestDataCacheObjPart,
 } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { diffAndStoreObjects } from '../cache/lib'
+import { diffAndReturnLatestObjects } from '../cache/lib'
 import { getCurrentTime } from '../lib'
 import _ = require('underscore')
 import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
@@ -109,7 +109,7 @@ export class RundownIngestDataCache {
 	update(ingestRundown: LocalIngestRundown): void {
 		const cacheEntries: IngestDataCacheObj[] = generateCacheForRundown(this.rundownId, ingestRundown)
 
-		this.documents = diffAndStoreObjects(this.#changedDocumentIds, this.documents, cacheEntries)
+		this.documents = diffAndReturnLatestObjects(this.#changedDocumentIds, this.documents, cacheEntries)
 	}
 
 	delete(): void {
