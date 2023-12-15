@@ -365,7 +365,7 @@ export function useSubscription<K extends keyof AllPubSubTypes>(
  */
 export function useSubscriptions<K extends keyof AllPubSubTypes>(
 	sub: K,
-	argsArray: Array<Parameters<AllPubSubTypes[K]> | undefined | null>
+	argsArray: Array<Parameters<AllPubSubTypes[K]> | undefined | null | false>
 ): boolean {
 	const [ready, setReady] = useState<boolean>(false)
 

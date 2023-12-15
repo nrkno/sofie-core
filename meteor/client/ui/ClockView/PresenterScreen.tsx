@@ -49,12 +49,12 @@ interface TimeMap {
 	[key: string]: number
 }
 
-interface RundownOverviewProps {
+interface PresenterScreenProps {
 	studioId: StudioId
 	playlistId: RundownPlaylistId
 	segmentLiveDurations?: TimeMap
 }
-export interface RundownOverviewTrackedProps {
+export interface PresenterScreenTrackedProps {
 	studio: UIStudio | undefined
 	playlist: DBRundownPlaylist | undefined
 	rundowns: Rundown[]
@@ -158,7 +158,7 @@ function getShowStyleBaseIdSegmentPartUi(
 	}
 }
 
-export const getPresenterScreenReactive = (props: RundownOverviewProps): RundownOverviewTrackedProps => {
+export const getPresenterScreenReactive = (props: PresenterScreenProps): PresenterScreenTrackedProps => {
 	const studio = UIStudios.findOne(props.studioId)
 
 	let playlist: DBRundownPlaylist | undefined
@@ -281,7 +281,7 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 	}
 }
 
-function PresenterScreenContent(props: WithTiming<RundownOverviewProps & RundownOverviewTrackedProps>): JSX.Element {
+function PresenterScreenContent(props: WithTiming<PresenterScreenProps & PresenterScreenTrackedProps>): JSX.Element {
 	usePresenterScreenSubscriptions(props)
 
 	let selectedPresenterLayout: RundownLayoutBase | undefined = undefined
@@ -335,7 +335,7 @@ function PresenterScreenContent(props: WithTiming<RundownOverviewProps & Rundown
 	}
 }
 
-export function usePresenterScreenSubscriptions(props: RundownOverviewProps): void {
+export function usePresenterScreenSubscriptions(props: PresenterScreenProps): void {
 	useSubscription(MeteorPubSub.uiStudio, props.studioId)
 
 	const playlist = useTracker(
@@ -458,7 +458,7 @@ function PresenterScreenContentDefaultLayout({
 	nextPartInstance,
 	nextSegment,
 	rundownIds,
-}: Readonly<WithTiming<RundownOverviewProps & RundownOverviewTrackedProps>>) {
+}: Readonly<WithTiming<PresenterScreenProps & PresenterScreenTrackedProps>>) {
 	if (playlist && playlistId && segments) {
 		let currentPartCountdown = 0
 		if (currentPartInstance) {
@@ -583,6 +583,6 @@ function PresenterScreenContentDefaultLayout({
 /**
  * This component renders a Countdown screen for a given playlist
  */
-export const PresenterScreen = withTracker<RundownOverviewProps, {}, RundownOverviewTrackedProps>(
+export const PresenterScreen = withTracker<PresenterScreenProps, {}, PresenterScreenTrackedProps>(
 	getPresenterScreenReactive
-)(withTiming<RundownOverviewProps & RundownOverviewTrackedProps, {}>()(PresenterScreenContent))
+)(withTiming<PresenterScreenProps & PresenterScreenTrackedProps, {}>()(PresenterScreenContent))

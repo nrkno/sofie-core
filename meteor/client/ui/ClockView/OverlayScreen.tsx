@@ -8,7 +8,7 @@ import { PieceNameContainer } from '../PieceIcons/PieceName'
 import { Timediff } from './Timediff'
 import {
 	getPresenterScreenReactive,
-	RundownOverviewTrackedProps,
+	PresenterScreenTrackedProps,
 	usePresenterScreenSubscriptions,
 } from './PresenterScreen'
 import { RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -17,21 +17,21 @@ interface TimeMap {
 	[key: string]: number
 }
 
-interface RundownOverviewProps {
+interface OverlayScreenProps {
 	studioId: StudioId
 	playlistId: RundownPlaylistId
 	segmentLiveDurations?: TimeMap
 }
-interface RundownOverviewState {}
+interface OverlayScreenState {}
 
 /**
  * This component renders a Countdown screen for a given playlist
  */
-export const OverlayScreen = withTracker<RundownOverviewProps, RundownOverviewState, RundownOverviewTrackedProps>(
+export const OverlayScreen = withTracker<OverlayScreenProps, OverlayScreenState, PresenterScreenTrackedProps>(
 	getPresenterScreenReactive
 )(
-	withTiming<RundownOverviewProps & RundownOverviewTrackedProps, RundownOverviewState>()(function OverlayScreen(
-		props: Readonly<WithTiming<RundownOverviewProps & RundownOverviewTrackedProps>>
+	withTiming<OverlayScreenProps & PresenterScreenTrackedProps, OverlayScreenState>()(function OverlayScreen(
+		props: Readonly<WithTiming<OverlayScreenProps & PresenterScreenTrackedProps>>
 	) {
 		usePresenterScreenSubscriptions(props)
 
@@ -58,7 +58,7 @@ function OverlayScreenContent({
 	nextPartInstance,
 	timingDurations,
 	rundownIds,
-}: Readonly<WithTiming<RundownOverviewProps & RundownOverviewTrackedProps>>) {
+}: Readonly<WithTiming<OverlayScreenProps & PresenterScreenTrackedProps>>) {
 	const { t } = useTranslation()
 
 	if (playlist && playlistId && segments) {
