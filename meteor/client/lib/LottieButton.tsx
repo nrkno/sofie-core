@@ -25,6 +25,7 @@ export class LottieButton extends React.Component<React.PropsWithChildren<IProps
 		},
 	}
 
+	// Setup in `buildAnimationObjects`
 	overAnimation!: { animationData: object } & object
 	outAnimation!: { animationData: object } & object
 

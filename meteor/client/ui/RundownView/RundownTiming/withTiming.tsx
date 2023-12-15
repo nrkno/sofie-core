@@ -68,7 +68,7 @@ export function withTiming<IProps, IState>(
 				syncedDurations: RundownTimingContext
 			}
 
-			filterGetter!: (o: any) => any
+			filterGetter: ((o: any) => any) | undefined
 			previousValue: any = undefined
 			isDirty = false
 
@@ -151,7 +151,7 @@ export function withTiming<IProps, IState>(
 }
 
 function componentIsDirty(
-	filterGetter: (...args: any[]) => any | undefined,
+	filterGetter: ((...args: any[]) => any) | undefined,
 	highResDurations: RundownTimingContext,
 	dataResolution: TimingDataResolution
 ) {
