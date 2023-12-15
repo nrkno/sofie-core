@@ -6,7 +6,7 @@ import { canRundownBeUpdated, getRundown } from './lib'
 import { CommitIngestData, runIngestJob, runWithRundownLock, UpdateIngestRundownAction } from './lock'
 import { removeRundownFromDb } from '../rundownPlaylists'
 import { literal } from '@sofie-automation/corelib/dist/lib'
-import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { DBRundown, RundownOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import {
 	IngestRegenerateRundownProps,
 	IngestRemoveRundownProps,
@@ -183,7 +183,7 @@ export async function handleUserUnsyncRundown(context: JobContext, data: UserUns
 			if (!rundown.orphaned) {
 				await context.directCollections.Rundowns.update(rundown._id, {
 					$set: {
-						orphaned: 'manual',
+						orphaned: RundownOrphanedReason.MANUAL,
 					},
 				})
 			} else {

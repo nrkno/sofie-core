@@ -69,7 +69,6 @@ export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean): Data 
 		} else if (isRundown(o)) {
 			o['created'] = 0
 			o['modified'] = 0
-			delete o['baselineModifyHash'] // TODO - is this ok?
 			if (o.importVersions.core) {
 				// re-write the core version so something static, so tests won't fail just because the version has changed
 				o.importVersions.core = '0.0.0-test'

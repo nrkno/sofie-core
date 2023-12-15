@@ -5,7 +5,7 @@ import {
 	RundownId,
 	PartInstanceId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { DBRundown, RundownOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { unprotectString, protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { logger } from '../logging'
 import { PlayoutModel } from '../playout/model/PlayoutModel'
@@ -625,7 +625,7 @@ function setRundownAsTrapepdInPlaylist(
 	if (rundownIsToBeRemoved) {
 		// Orphan the deleted rundown
 		ingestCache.Rundown.update((rd) => {
-			rd.orphaned = 'deleted'
+			rd.orphaned = RundownOrphanedReason.DELETED
 			return rd
 		})
 	} else {

@@ -92,8 +92,8 @@ export async function handleResetRundownPlaylist(context: JobContext, data: Rese
 									// 'forceResetAndActivateRundownPlaylist',
 									{ playlistId: otherRundownPlaylist._id },
 									null,
-									async (otherCache) => {
-										await deactivateRundownPlaylistInner(context, otherCache)
+									async (otherPlayoutModel) => {
+										await deactivateRundownPlaylistInner(context, otherPlayoutModel)
 									}
 								).catch((e) => errors.push(e))
 							)
