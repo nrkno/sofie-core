@@ -1,7 +1,6 @@
 import {
 	ExpectedPackageDB,
 	ExpectedPackageDBBase,
-	ExpectedPackageDBFromRundownBaselineObjects,
 	ExpectedPackageFromRundown,
 } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
@@ -10,7 +9,7 @@ import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Filter as FilterQuery } from 'mongodb'
 import { PackageInfo } from '@sofie-automation/blueprints-integration'
 import { unprotectObjectArray } from '@sofie-automation/corelib/dist/protectedString'
-import { IngestModelReadonly } from '../../ingest/model/IngestModel'
+import { ExpectedPackageForIngestModel, IngestModelReadonly } from '../../ingest/model/IngestModel'
 import { ReadonlyDeep } from 'type-fest'
 
 /**
@@ -61,7 +60,7 @@ export class WatchedPackagesHelper {
 		context: JobContext,
 		ingestModel: IngestModelReadonly
 	): Promise<WatchedPackagesHelper> {
-		const packages: ReadonlyDeep<ExpectedPackageFromRundown | ExpectedPackageDBFromRundownBaselineObjects>[] = []
+		const packages: ReadonlyDeep<ExpectedPackageForIngestModel>[] = []
 
 		packages.push(...ingestModel.expectedPackagesForRundownBaseline)
 

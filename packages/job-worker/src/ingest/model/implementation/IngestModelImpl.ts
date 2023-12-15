@@ -163,9 +163,7 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 				(pkg): pkg is ExpectedPackageFromRundown =>
 					pkg.fromPieceType === ExpectedPackageDBType.PIECE ||
 					pkg.fromPieceType === ExpectedPackageDBType.ADLIB_PIECE ||
-					pkg.fromPieceType === ExpectedPackageDBType.ADLIB_ACTION ||
-					pkg.fromPieceType === ExpectedPackageDBType.BASELINE_ADLIB_ACTION ||
-					pkg.fromPieceType === ExpectedPackageDBType.BASELINE_ADLIB_PIECE
+					pkg.fromPieceType === ExpectedPackageDBType.ADLIB_ACTION
 			)
 			const groupedExpectedPackages = groupByToMap(rundownExpectedPackages, 'partId')
 			const baselineExpectedPackages = existingData.expectedPackages.filter(
@@ -545,7 +543,12 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 
 		const span = this.context.startSpan('IngestModelImpl.saveAllToDatabase')
 
-		// nocommit TODO ensure we don't have a Part in here twice
+		// Ensure there are no duplicate part ids
+		const partIds = new Set<PartId>()
+		for (const part of this.getAllOrderedParts()) {
+			if (partIds.has(part.part._id)) throw new Error(`Duplicate PartId "${part.part._id}" in IngestModel`)
+			partIds.add(part.part._id)
+		}
 
 		await Promise.all([
 			this.#rundownHasChanged && this.#rundownImpl
