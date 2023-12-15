@@ -203,10 +203,10 @@ export function ShelfDashboardLayout(props: Readonly<IShelfDashboardLayoutProps>
 							return (
 								<SystemStatusPanel
 									key={panel._id}
-									playlist={props.playlist}
+									playlistId={props.playlist._id}
 									layout={rundownLayout}
 									panel={panel}
-									studio={props.studio}
+									studioId={props.studio._id}
 								/>
 							)
 						} else if (RundownLayoutsAPI.isShowStyleDisplay(panel)) {
