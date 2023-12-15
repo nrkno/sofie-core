@@ -67,7 +67,7 @@ export type MinimalRundown = Pick<Rundown, '_id' | 'name' | 'timing' | 'showStyl
 
 export const FREEZE_FRAME_FLASH = 5000
 
-export interface IProps {
+export interface IResolvedSegmentProps {
 	// id: string
 	rundownId: RundownId
 	segmentId: SegmentId
@@ -105,7 +105,7 @@ export interface SegmentNoteCounts {
 	warning: number
 }
 
-export interface ITrackedProps {
+export interface ITrackedResolvedSegmentProps {
 	segmentui: SegmentUi | undefined
 	parts: Array<PartUi>
 	pieces: Map<PartId, CalculateTimingsPiece[]>
@@ -124,10 +124,10 @@ type IWrappedComponent<IProps, IState, TrackedProps> =
 	| React.ComponentClass<IProps & TrackedProps, IState>
 	| ((props: IProps & TrackedProps) => JSX.Element | null)
 
-export function withResolvedSegment<T extends IProps, IState = {}>(
-	WrappedComponent: IWrappedComponent<T, IState, ITrackedProps>
+export function withResolvedSegment<T extends IResolvedSegmentProps, IState = {}>(
+	WrappedComponent: IWrappedComponent<T, IState, ITrackedResolvedSegmentProps>
 ): new (props: T) => React.Component<T, IState> {
-	return withTracker<T, IState, ITrackedProps>(
+	return withTracker<T, IState, ITrackedResolvedSegmentProps>(
 		(props: T) => {
 			const segment = Segments.findOne(props.segmentId) as SegmentUi | undefined
 
@@ -314,7 +314,11 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				isScratchpad,
 			}
 		},
-		(data: ITrackedProps, props: IProps, nextProps: IProps): boolean => {
+		(
+			data: ITrackedResolvedSegmentProps,
+			props: IResolvedSegmentProps,
+			nextProps: IResolvedSegmentProps
+		): boolean => {
 			// This is a potentailly very dangerous hook into the React component lifecycle. Re-use with caution.
 			// Check obvious primitive changes
 			if (

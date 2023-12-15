@@ -231,7 +231,7 @@ function logAnyRemainingNowTimes(_context: JobContext, timelineObjs: Array<Timel
 	}
 }
 
-/** Store the timelineobjects into the cache, and perform any post-save actions */
+/** Store the timelineobjects into the model, and perform any post-save actions */
 export function saveTimeline(
 	context: JobContext,
 	studioPlayoutModel: StudioPlayoutModelBase,

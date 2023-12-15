@@ -34,6 +34,7 @@ import { assertNever, getRandomId, literal } from '@sofie-automation/corelib/dis
 import { logger } from '../logging'
 import { JSONBlobParse, JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { RundownOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 
 /**
  * Generate the Playlist owned portions of a Playlist snapshot
@@ -161,7 +162,7 @@ export async function handleRestorePlaylistSnapshot(
 
 	for (const rd of snapshot.rundowns) {
 		if (!rd.orphaned) {
-			rd.orphaned = 'from-snapshot'
+			rd.orphaned = RundownOrphanedReason.FROM_SNAPSHOT
 		}
 
 		rd.playlistId = playlistId

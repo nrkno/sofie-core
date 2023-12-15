@@ -4,7 +4,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import type { RouteComponentProps } from 'react-router'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { MeteorCall } from '../../../lib/api/methods'
-import { getUser, User, getUserRoles } from '../../../lib/collections/Users'
+import { getUser, User, getUserRolesFromLoadedDocuments } from '../../../lib/collections/Users'
 import { DBOrganization, UserRoles } from '../../../lib/collections/Organization'
 import { Spinner } from '../../lib/Spinner'
 import { Link } from 'react-router-dom'
@@ -91,7 +91,7 @@ export const AccountPage = translateWithTracker(() => {
 
 			if (user && organization) {
 				const roles: UserRoles = organization.userRoles[unprotectString(user._id)] || {}
-				return getUserRoles(user, organization).admin ? (
+				return getUserRolesFromLoadedDocuments(user, organization).admin ? (
 					<EditAttribute
 						attribute={`userRoles.${user._id}.${userRole}`}
 						obj={organization}
@@ -163,7 +163,7 @@ export const AccountPage = translateWithTracker(() => {
 								<p>
 									{t('Name:')} {organization.name}
 								</p>
-								{user && getUserRoles(user, organization).admin ? (
+								{user && getUserRolesFromLoadedDocuments(user, organization).admin ? (
 									<button className="btn btn-primary">
 										<Link to="/organization">Edit Organization</Link>
 									</button>

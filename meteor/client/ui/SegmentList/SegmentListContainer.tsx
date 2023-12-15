@@ -3,8 +3,8 @@ import { meteorSubscribe } from '../../../lib/api/pubsub'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import {
 	withResolvedSegment,
-	IProps as IResolvedSegmentProps,
-	ITrackedProps as ITrackedResolvedSegmentProps,
+	IResolvedSegmentProps,
+	ITrackedResolvedSegmentProps,
 } from '../SegmentContainer/withResolvedSegment'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { SegmentList } from './SegmentList'

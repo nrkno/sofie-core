@@ -1,163 +1,121 @@
-import { Meteor } from 'meteor/meteor'
-import * as React from 'react'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import React, { useCallback, useMemo, useState } from 'react'
+import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import Moment from 'react-moment'
 import { Time, unprotectString } from '../../../lib/lib'
-import * as _ from 'underscore'
 import { Evaluation } from '../../../lib/collections/Evaluations'
 import { DatePickerFromTo } from '../../lib/datePicker'
 import moment from 'moment'
 import { getQuestionOptions } from '../AfterBroadcastForm'
-import { MeteorPubSub, meteorSubscribe } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { Evaluations } from '../../collections'
+import { DropdownInputOption } from '../../lib/Components/DropdownInput'
+import { useTranslation } from 'react-i18next'
 
-interface IEvaluationProps {}
-interface IEvaluationState {
-	dateFrom: Time
-	dateTo: Time
-}
-interface IEvaluationTrackedProps {
-	evaluations: Evaluation[]
-}
+export function EvaluationView(): JSX.Element {
+	const { t } = useTranslation()
 
-const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, IEvaluationTrackedProps>(
-	(_props: IEvaluationProps) => {
-		return {
-			evaluations: Evaluations.find(
+	const questionOptions = useMemo(() => getQuestionOptions(t), [t])
+
+	const [dateFrom, setDateFrom] = useState(() => moment().startOf('day').valueOf())
+	const [dateTo, setDateTo] = useState(() => moment().add(1, 'days').startOf('day').valueOf())
+
+	useSubscription(MeteorPubSub.evaluations, dateFrom, dateTo)
+	const evaluations = useTracker(
+		() => {
+			return Evaluations.find(
 				{},
 				{
 					sort: {
 						timestamp: 1,
 					},
 				}
-			).fetch(),
-		}
-	}
-)(
-	class EvaluationView extends React.Component<
-		Translated<IEvaluationProps & IEvaluationTrackedProps>,
-		IEvaluationState
-	> {
-		private _currentsub = ''
-		private _sub?: Meteor.SubscriptionHandle
-		constructor(props: Translated<IEvaluationProps & IEvaluationTrackedProps>) {
-			super(props)
+			).fetch()
+		},
+		[],
+		[]
+	)
 
-			this.state = {
-				dateFrom: moment().startOf('day').valueOf(),
-				dateTo: moment().add(1, 'days').startOf('day').valueOf(),
-			}
-		}
-		componentDidMount(): void {
-			// Subscribe to data:
-			this.updateSubscription()
-		}
-		componentDidUpdate(): void {
-			this.updateSubscription()
-		}
-		updateSubscription() {
-			const h = this.state.dateFrom + '_' + this.state.dateTo
-			if (h !== this._currentsub) {
-				this._currentsub = h
-				if (this._sub) {
-					this._sub.stop()
+	const handleChangeDate = useCallback((from: Time, to: Time) => {
+		setDateFrom(from)
+		setDateTo(to)
+	}, [])
+
+	return (
+		<div className="mhl gutter external-message-status">
+			<header className="mbs">
+				<h1>{t('Evaluations')}</h1>
+			</header>
+			<div className="mod mvl">
+				<div className="paging">
+					<DatePickerFromTo from={dateFrom} to={dateTo} onChange={handleChangeDate} />
+				</div>
+				<table className="table user-action-log">
+					<thead>
+						<tr>
+							<th className="c3 user-action-log__timestamp">{t('Timestamp')}</th>
+							<th className="c1 user-action-log__userId">{t('User Name')}</th>
+							<th>{t('Rundown')}</th>
+							<th colSpan={99} className="c8">
+								{t('Answers')}
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						{evaluations
+							.filter((e) => e.timestamp >= dateFrom && e.timestamp < dateTo)
+							.map((evaluation) => {
+								return (
+									<EvaluationRow
+										key={unprotectString(evaluation._id)}
+										questionOptions={questionOptions}
+										evaluation={evaluation}
+									/>
+								)
+							})}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	)
+}
+
+interface EvaluationRowProps {
+	questionOptions: Omit<DropdownInputOption<string>, 'i'>[]
+	evaluation: Evaluation
+}
+
+function EvaluationRow({ questionOptions, evaluation }: Readonly<EvaluationRowProps>): JSX.Element {
+	const tds = Object.entries<string>(evaluation.answers).map(([key, answer]) => {
+		let str: string = answer
+		if (key === 'q0') {
+			for (const option of questionOptions) {
+				if (option.value === str) {
+					str = option.name
+					break
 				}
-				this._sub = meteorSubscribe(MeteorPubSub.evaluations, this.state.dateFrom, this.state.dateTo)
-			}
-		}
-		componentWillUnmount(): void {
-			if (this._sub) {
-				this._sub.stop()
 			}
 		}
 
-		renderMessageHead() {
-			const { t } = this.props
-			return (
-				<thead>
-					<tr>
-						<th className="c3 user-action-log__timestamp">{t('Timestamp')}</th>
-						<th className="c1 user-action-log__userId">{t('User Name')}</th>
-						<th>{t('Rundown')}</th>
-						<th colSpan={99} className="c8">
-							{t('Answers')}
-						</th>
-					</tr>
-				</thead>
-			)
-		}
-		handleChangeDate = (from: Time, to: Time) => {
-			this.setState({
-				dateFrom: from,
-				dateTo: to,
-			})
-		}
+		return (
+			<td key={key} className="user-action-log__answer">
+				{str}
+			</td>
+		)
+	})
 
-		renderEvaluation() {
-			const { t } = this.props
-			return (
-				<div>
-					<div className="paging">
-						<DatePickerFromTo from={this.state.dateFrom} to={this.state.dateTo} onChange={this.handleChangeDate} />
-					</div>
-					<table className="table user-action-log">
-						{this.renderMessageHead()}
-						<tbody>
-							{_.map(
-								_.filter(this.props.evaluations, (e) => {
-									return e.timestamp >= this.state.dateFrom && e.timestamp < this.state.dateTo
-								}),
-								(evaluation) => {
-									let tds = [
-										<td key="c0" className="user-action-log__timestamp">
-											<Moment format="YYYY/MM/DD HH:mm:ss">{evaluation.timestamp}</Moment>
-										</td>,
-										<td key="c1" className="user-action-log__userId">
-											{evaluation.answers && evaluation.answers.q2}
-										</td>,
-										<td key="c2" className="user-action-log__rundown">
-											{unprotectString(evaluation.playlistId)}
-										</td>,
-									]
-									tds = tds.concat(
-										_.map(evaluation.answers, (answer, key) => {
-											let str: string = answer
-											if (key === 'q0') {
-												_.find(getQuestionOptions(t), (o) => {
-													if (o.value === str) {
-														str = o.name
-														return true
-													}
-													return false
-												})
-											}
-											return (
-												<td key={key} className="user-action-log__answer">
-													{str}
-												</td>
-											)
-										})
-									)
-									return <tr key={unprotectString(evaluation._id)}>{tds}</tr>
-								}
-							)}
-						</tbody>
-					</table>
-				</div>
-			)
-		}
+	return (
+		<tr key={unprotectString(evaluation._id)}>
+			<td key="c0" className="user-action-log__timestamp">
+				<Moment format="YYYY/MM/DD HH:mm:ss">{evaluation.timestamp}</Moment>
+			</td>
+			<td key="c1" className="user-action-log__userId">
+				{evaluation.answers.q2 || ''}
+			</td>
+			<td key="c2" className="user-action-log__rundown">
+				{unprotectString(evaluation.playlistId)}
+			</td>
 
-		render(): JSX.Element {
-			const { t } = this.props
-			return (
-				<div className="mhl gutter external-message-status">
-					<header className="mbs">
-						<h1>{t('Evaluations')}</h1>
-					</header>
-					<div className="mod mvl">{this.renderEvaluation()}</div>
-				</div>
-			)
-		}
-	}
-)
-export { EvaluationView }
+			{tds}
+		</tr>
+	)
+}
