@@ -2,7 +2,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import _ = require('underscore')
 import { IngestPartModel } from '../IngestPartModel'
-import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { AdLibActionId, PieceId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { ExpectedMediaItemRundown } from '@sofie-automation/corelib/dist/dataModel/ExpectedMediaItem'
@@ -10,6 +10,7 @@ import { ExpectedPlayoutItemRundown } from '@sofie-automation/corelib/dist/dataM
 import { ExpectedPackageFromRundown } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { ExpectedPackagesStore } from './ExpectedPackagesStore'
+import { diffAndStoreObjects, setValuesAndTrackChanges } from './utils'
 
 export class IngestPartModelImpl implements IngestPartModel {
 	readonly #part: DBPart
@@ -52,6 +53,10 @@ export class IngestPartModelImpl implements IngestPartModel {
 		}
 	}
 
+	#piecesWithChanges = new Set<PieceId>()
+	#adLibPiecesWithChanges = new Set<PieceId>()
+	#adLibActionsWithChanges = new Set<AdLibActionId>()
+
 	#partHasChanges = false
 	get partHasChanges(): boolean {
 		return this.#partHasChanges
@@ -62,15 +67,15 @@ export class IngestPartModelImpl implements IngestPartModel {
 	}
 
 	get pieces(): ReadonlyDeep<Piece>[] {
-		return this.#pieces
+		return [...this.#pieces]
 	}
 
 	get adLibPieces(): ReadonlyDeep<AdLibPiece>[] {
-		return this.#adLibPieces
+		return [...this.#adLibPieces]
 	}
 
 	get adLibActions(): ReadonlyDeep<AdLibAction>[] {
-		return this.#adLibActions
+		return [...this.#adLibActions]
 	}
 
 	get expectedMediaItems(): ReadonlyDeep<ExpectedMediaItemRundown>[] {
@@ -84,6 +89,7 @@ export class IngestPartModelImpl implements IngestPartModel {
 	}
 
 	constructor(
+		isBeingCreated: boolean,
 		part: DBPart,
 		pieces: Piece[],
 		adLibPieces: AdLibPiece[],
@@ -92,14 +98,27 @@ export class IngestPartModelImpl implements IngestPartModel {
 		expectedPlayoutItems: ExpectedPlayoutItemRundown[],
 		expectedPackages: ExpectedPackageFromRundown[]
 	) {
-		// parts.sort((a, b) => a._rank - b._rank)
-
 		this.#part = part
 		this.#pieces = pieces
 		this.#adLibPieces = adLibPieces
 		this.#adLibActions = adLibActions
 
+		if (isBeingCreated) {
+			// This PartModel is being created by an ingest operation, so mark everything as having changed
+			this.#partHasChanges = isBeingCreated
+			for (const piece of pieces) {
+				this.#piecesWithChanges.add(piece._id)
+			}
+			for (const adLibPiece of adLibPieces) {
+				this.#adLibPiecesWithChanges.add(adLibPiece._id)
+			}
+			for (const adLibAction of adLibActions) {
+				this.#adLibActionsWithChanges.add(adLibAction._id)
+			}
+		}
+
 		this.#expectedPackagesStore = new ExpectedPackagesStore(
+			isBeingCreated,
 			part.rundownId,
 			part.segmentId,
 			part._id,
@@ -114,6 +133,24 @@ export class IngestPartModelImpl implements IngestPartModel {
 	}
 
 	/**
+	 * This IngestPartModel replaces an existing one.
+	 * Run some comparisons to ensure that
+	 * @param previousModel
+	 */
+	compareToPreviousModel(previousModel: IngestPartModelImpl): void {
+		this.#expectedPackagesStore.compareToPreviousData(previousModel.#expectedPackagesStore)
+
+		if (this.#partHasChanges || previousModel.#partHasChanges || !_.isEqual(this.#part, previousModel.#part)) {
+			this.#partHasChanges = true
+		}
+
+		// Diff the objects, but don't update the stored copies
+		diffAndStoreObjects(this.#piecesWithChanges, previousModel.#pieces, this.#pieces)
+		diffAndStoreObjects(this.#adLibPiecesWithChanges, previousModel.#adLibPieces, this.#adLibPieces)
+		diffAndStoreObjects(this.#adLibActionsWithChanges, previousModel.#adLibActions, this.#adLibActions)
+	}
+
+	/**
 	 * Internal Method. This must only be called by the parent IngestSegment when its owners change
 	 * @param segmentId Id of the owning parent
 	 */
@@ -123,20 +160,19 @@ export class IngestPartModelImpl implements IngestPartModel {
 
 		this.#expectedPackagesStore.setOwnerIds(rundownId, segmentId, this.part._id)
 
-		// nocommit track changed docs
-		for (const adLibPiece of this.#adLibPieces) {
-			adLibPiece.partId = this.part._id
-			adLibPiece.rundownId = rundownId
-		}
-		for (const adLibAction of this.#adLibActions) {
-			adLibAction.partId = this.part._id
-			adLibAction.rundownId = rundownId
-		}
-		for (const piece of this.#pieces) {
-			piece.startPartId = this.part._id
-			piece.startSegmentId = segmentId
-			piece.startRundownId = rundownId
-		}
+		setValuesAndTrackChanges(this.#piecesWithChanges, this.#pieces, {
+			startRundownId: rundownId,
+			startSegmentId: segmentId,
+			startPartId: this.part._id,
+		})
+		setValuesAndTrackChanges(this.#adLibPiecesWithChanges, this.#adLibPieces, {
+			rundownId,
+			partId: this.part._id,
+		})
+		setValuesAndTrackChanges(this.#adLibActionsWithChanges, this.#adLibActions, {
+			rundownId,
+			partId: this.part._id,
+		})
 	}
 
 	setExpectedPlayoutItems(expectedPlayoutItems: ExpectedPlayoutItemRundown[]): void {
@@ -146,6 +182,7 @@ export class IngestPartModelImpl implements IngestPartModel {
 		this.#expectedPackagesStore.setExpectedMediaItems(expectedMediaItems)
 	}
 	setExpectedPackages(expectedPackages: ExpectedPackageFromRundown[]): void {
+		// Future: should these be here, or held as part of each adlib/piece?
 		this.#expectedPackagesStore.setExpectedPackages(expectedPackages)
 	}
 }

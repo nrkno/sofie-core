@@ -185,7 +185,7 @@ export async function CommitIngestOperation(
 			// This will reorder the rundowns a little before the playlist and the contents, but that is ok
 			await context.directCollections.RundownPlaylists.replace(newPlaylist)
 			// ensure instances are updated for rundown changes
-			await updatePartInstancesSegmentIds(context, ingestModel, data.renamedSegments)
+			await updatePartInstancesSegmentIds(context, ingestModel, data.renamedSegments, beforePartMap)
 			await updatePartInstancesBasicProperties(
 				context,
 				hackConvertIngestModelToRundownWithSegments(ingestModel),
@@ -269,12 +269,14 @@ function canRemoveSegment(
 /**
  * Update the segmentId property for any PartInstances following any segments being 'renamed'
  * @param ingestModel Ingest model
- * @param renamedSegments Map of <fromSegmentId, toSegmentId>
+ * @param renamedSegments Map of <fromSegmentId, toSegmentId>, this will ensure any orphaned PartInstances get moved correctly
+ * @param beforePartMap The segments and partIds before the batch of ingest operations
  */
 async function updatePartInstancesSegmentIds(
 	context: JobContext,
 	ingestModel: IngestModel,
-	renamedSegments: ReadonlyMap<SegmentId, SegmentId>
+	renamedSegments: ReadonlyMap<SegmentId, SegmentId>,
+	beforePartMap: BeforePartMap
 ) {
 	// A set of rules which can be translated to mongo queries for PartInstances to update
 	const renameRules = new Map<
@@ -293,13 +295,22 @@ async function updatePartInstancesSegmentIds(
 		rule.fromSegmentId = fromSegmentId
 	}
 
-	// Some parts may have gotten a different segmentId to the base rule, so track those seperately in the rules
-	for (const [id, doc] of ingestModel.Parts.documents) {
-		if (doc?.updated) {
-			const rule = renameRules.get(doc.document.segmentId) ?? { partIds: [], fromSegmentId: null }
-			renameRules.set(doc.document.segmentId, rule)
+	// Reverse the structure
+	const beforePartSegmentIdMap = new Map<PartId, SegmentId>()
+	for (const [segmentId, partItems] of beforePartMap.entries()) {
+		for (const partItem of partItems) {
+			beforePartSegmentIdMap.set(partItem.id, segmentId)
+		}
+	}
 
-			rule.partIds.push(id)
+	// Some parts may have gotten a different segmentId to the base rule, so track those seperately in the rules
+	for (const partModel of ingestModel.getAllOrderedParts()) {
+		const oldSegmentId = beforePartSegmentIdMap.get(partModel.part._id)
+		if (oldSegmentId && oldSegmentId !== partModel.part.segmentId) {
+			const rule = renameRules.get(partModel.part.segmentId) ?? { partIds: [], fromSegmentId: null }
+			renameRules.set(partModel.part.segmentId, rule)
+
+			rule.partIds.push(partModel.part._id)
 		}
 	}
 

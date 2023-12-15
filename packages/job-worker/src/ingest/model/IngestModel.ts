@@ -1,5 +1,7 @@
 import { ExpectedMediaItemRundown } from '@sofie-automation/corelib/dist/dataModel/ExpectedMediaItem'
 import {
+	ExpectedPackageDBFromBaselineAdLibAction,
+	ExpectedPackageDBFromBaselineAdLibPiece,
 	ExpectedPackageDBFromRundownBaselineObjects,
 	ExpectedPackageFromRundown,
 } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
@@ -24,8 +26,13 @@ import { BaseModel } from '../../modelBase'
 import { Piece, PieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { RundownNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 
-export type ExpectedPackageForIngestModel = ExpectedPackageFromRundown | ExpectedPackageDBFromRundownBaselineObjects
+export type ExpectedPackageForIngestModelBaseline =
+	| ExpectedPackageDBFromBaselineAdLibAction
+	| ExpectedPackageDBFromBaselineAdLibPiece
+	| ExpectedPackageDBFromRundownBaselineObjects
+export type ExpectedPackageForIngestModel = ExpectedPackageFromRundown | ExpectedPackageForIngestModelBaseline
 
 export interface IngestModelReadonly {
 	/**
@@ -43,7 +50,7 @@ export interface IngestModelReadonly {
 
 	readonly expectedMediaItemsForRundownBaseline: ReadonlyDeep<ExpectedMediaItemRundown>[]
 	readonly expectedPlayoutItemsForRundownBaseline: ReadonlyDeep<ExpectedPlayoutItemRundown>[]
-	readonly expectedPackagesForRundownBaseline: ReadonlyDeep<ExpectedPackageForIngestModel>[]
+	readonly expectedPackagesForRundownBaseline: ReadonlyDeep<ExpectedPackageForIngestModelBaseline>[]
 
 	readonly rundownBaselineTimelineObjects: LazyInitialiseReadonly<PieceTimelineObjectsBlob>
 	readonly rundownBaselineAdLibPieces: LazyInitialiseReadonly<ReadonlyDeep<RundownBaselineAdLibItem[]>>
@@ -125,11 +132,13 @@ export interface IngestModel extends IngestModelReadonly, BaseModel {
 
 	removeSegment(id: SegmentId): void
 
+	replaceSegment(segment: DBSegment): IngestSegmentModel
+
 	changeSegmentId(oldId: SegmentId, newId: SegmentId): void
 
 	setExpectedPlayoutItemsForRundownBaseline(expectedPlayoutItems: ExpectedPlayoutItemRundown[]): void
 	setExpectedMediaItemsForRundownBaseline(expectedMediaItems: ExpectedMediaItemRundown[]): void
-	setExpectedPackagesForRundownBaseline(expectedPackages: ExpectedPackageForIngestModel[]): void
+	setExpectedPackagesForRundownBaseline(expectedPackages: ExpectedPackageForIngestModelBaseline[]): void
 
 	setRundownBaseline(
 		timelineObjectsBlob: PieceTimelineObjectsBlob,

@@ -42,7 +42,7 @@ import {
 	updateExpectedPlayoutItemsForRundownBaseline,
 } from './expectedPlayoutItems'
 import { JobContext } from '../jobs'
-import { ExpectedPackageForIngestModel, IngestModel } from './model/IngestModel'
+import { ExpectedPackageForIngestModelBaseline, IngestModel } from './model/IngestModel'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { IngestPartModel } from './model/IngestPartModel'
 import { clone } from '@sofie-automation/corelib/dist/lib'
@@ -86,7 +86,7 @@ export async function updateExpectedPackagesForRundownBaseline(
 	await updateExpectedMediaItemsForRundownBaseline(context, ingestModel)
 	await updateExpectedPlayoutItemsForRundownBaseline(context, ingestModel, baseline)
 
-	const expectedPackages: ExpectedPackageForIngestModel[] = []
+	const expectedPackages: ExpectedPackageForIngestModelBaseline[] = []
 
 	const preserveTypesDuringSave = new Set<ExpectedPackageDBType>()
 
@@ -152,7 +152,7 @@ export async function updateExpectedPackagesForRundownBaseline(
 	// Preserve anything existing
 	for (const expectedPackage of ingestModel.expectedPackagesForRundownBaseline) {
 		if (preserveTypesDuringSave.has(expectedPackage.fromPieceType)) {
-			expectedPackages.push(clone<ExpectedPackageForIngestModel>(expectedPackage))
+			expectedPackages.push(clone<ExpectedPackageForIngestModelBaseline>(expectedPackage))
 		}
 	}
 

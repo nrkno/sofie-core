@@ -32,9 +32,25 @@ import { IngestPartModelImpl } from './IngestPartModelImpl'
 import { DatabasePersistedModel } from '../../../modelBase'
 import { ExpectedPackagesStore } from './ExpectedPackagesStore'
 import { ReadonlyDeep } from 'type-fest'
-import { ExpectedPackageForIngestModel, IngestModelReadonly } from '../IngestModel'
+import {
+	ExpectedPackageForIngestModel,
+	ExpectedPackageForIngestModelBaseline,
+	IngestModelReadonly,
+} from '../IngestModel'
 import { RundownNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { diffAndReturnLatestObjects } from './utils'
+
+export interface IngestModelImplExistingData {
+	rundown: DBRundown
+	segments: DBSegment[]
+	parts: DBPart[]
+	pieces: Piece[]
+	adLibPieces: AdLibPiece[]
+	adLibActions: AdLibAction[]
+	expectedMediaItems: ExpectedMediaItemRundown[]
+	expectedPlayoutItems: ExpectedPlayoutItemRundown[]
+	expectedPackages: ExpectedPackageFromRundown[]
+}
 
 /**
  * Cache of relevant documents for an Ingest Operation
@@ -68,7 +84,7 @@ export class IngestModelImpl implements IngestModelReadonly, DatabasePersistedMo
 
 	protected readonly segmentsImpl: Map<SegmentId, IngestSegmentModelImpl | null>
 
-	readonly #rundownBaselineExpectedPackagesStore: ExpectedPackagesStore<ExpectedPackageForIngestModel>
+	readonly #rundownBaselineExpectedPackagesStore: ExpectedPackagesStore<ExpectedPackageForIngestModelBaseline>
 	// public get segments(): readonly IngestSegmentModel[] {
 	// 	return this.segmentsImpl
 	// }
@@ -103,7 +119,7 @@ export class IngestModelImpl implements IngestModelReadonly, DatabasePersistedMo
 	get expectedPlayoutItemsForRundownBaseline(): ReadonlyDeep<ExpectedPlayoutItemRundown>[] {
 		return [...this.#rundownBaselineExpectedPackagesStore.expectedPlayoutItems]
 	}
-	get expectedPackagesForRundownBaseline(): ReadonlyDeep<ExpectedPackageForIngestModel>[] {
+	get expectedPackagesForRundownBaseline(): ReadonlyDeep<ExpectedPackageForIngestModelBaseline>[] {
 		return [...this.#rundownBaselineExpectedPackagesStore.expectedPackages]
 	}
 
@@ -115,73 +131,87 @@ export class IngestModelImpl implements IngestModelReadonly, DatabasePersistedMo
 		protected readonly context: JobContext,
 		rundownLock: RundownLock,
 		rundownExternalId: string,
-		rundown: DBRundown | undefined,
-		segments: DBSegment[],
-		parts: DBPart[],
-		pieces: Piece[],
-		adLibPieces: AdLibPiece[],
-		adLibActions: AdLibAction[],
-		expectedMediaItems: ExpectedMediaItemRundown[],
-		expectedPlayoutItems: ExpectedPlayoutItemRundown[],
-		expectedPackages: ExpectedPackageFromRundown[]
+		existingData: IngestModelImplExistingData | undefined
 	) {
 		this.rundownLock = rundownLock
 		this.rundownExternalId = rundownExternalId
 
-		this.#rundownImpl = rundown
+		if (existingData) {
+			this.#rundownImpl = existingData.rundown
 
-		const groupedPieces = groupByToMap(pieces, 'startPartId')
-		const groupedAdLibPieces = groupByToMap(adLibPieces, 'partId')
-		const groupedAdLibActions = groupByToMap(adLibActions, 'partId')
+			const groupedPieces = groupByToMap(existingData.pieces, 'startPartId')
+			const groupedAdLibPieces = groupByToMap(existingData.adLibPieces, 'partId')
+			const groupedAdLibActions = groupByToMap(existingData.adLibActions, 'partId')
 
-		const groupedExpectedMediaItems = groupByToMap(expectedMediaItems, 'partId')
-		const groupedExpectedPlayoutItems = groupByToMap(expectedPlayoutItems, 'partId')
-		const groupedExpectedPackages = groupByToMap(expectedPackages, 'partId')
+			const groupedExpectedMediaItems = groupByToMap(existingData.expectedMediaItems, 'partId')
+			const groupedExpectedPlayoutItems = groupByToMap(existingData.expectedPlayoutItems, 'partId')
+			const groupedExpectedPackages = groupByToMap(existingData.expectedPackages, 'partId')
 
-		this.#rundownBaselineExpectedPackagesStore = new ExpectedPackagesStore(
-			this.rundownId,
-			undefined,
-			undefined,
-			groupedExpectedMediaItems.get(undefined) ?? [],
-			groupedExpectedPlayoutItems.get(undefined) ?? [],
-			groupedExpectedPackages.get(undefined) ?? []
-		)
-
-		const groupedParts = groupByToMap(parts, 'segmentId')
-
-		this.segmentsImpl = new Map()
-		for (const segment of segments) {
-			const rawParts = groupedParts.get(segment._id) ?? []
-			const parts = rawParts.map(
-				(part) =>
-					new IngestPartModelImpl(
-						part,
-						groupedPieces.get(part._id) ?? [],
-						groupedAdLibPieces.get(part._id) ?? [],
-						groupedAdLibActions.get(part._id) ?? [],
-						groupedExpectedMediaItems.get(part._id) ?? [],
-						groupedExpectedPlayoutItems.get(part._id) ?? [],
-						groupedExpectedPackages.get(part._id) ?? []
-					)
+			this.#rundownBaselineExpectedPackagesStore = new ExpectedPackagesStore(
+				false,
+				this.rundownId,
+				undefined,
+				undefined,
+				groupedExpectedMediaItems.get(undefined) ?? [],
+				groupedExpectedPlayoutItems.get(undefined) ?? [],
+				groupedExpectedPackages.get(undefined) ?? []
 			)
-			this.segmentsImpl.set(segment._id, new IngestSegmentModelImpl(segment, parts))
-		}
 
-		this.#rundownBaselineObjs = new LazyInitialise(async () =>
-			context.directCollections.RundownBaselineObjects.findFetch({
-				rundownId: this.rundownId,
-			})
-		)
-		this.#rundownBaselineAdLibPieces = new LazyInitialise(async () =>
-			context.directCollections.RundownBaselineAdLibPieces.findFetch({
-				rundownId: this.rundownId,
-			})
-		)
-		this.#rundownBaselineAdLibActions = new LazyInitialise(async () =>
-			context.directCollections.RundownBaselineAdLibActions.findFetch({
-				rundownId: this.rundownId,
-			})
-		)
+			const groupedParts = groupByToMap(existingData.parts, 'segmentId')
+
+			this.segmentsImpl = new Map()
+			for (const segment of existingData.segments) {
+				const rawParts = groupedParts.get(segment._id) ?? []
+				const parts = rawParts.map(
+					(part) =>
+						new IngestPartModelImpl(
+							false,
+							part,
+							groupedPieces.get(part._id) ?? [],
+							groupedAdLibPieces.get(part._id) ?? [],
+							groupedAdLibActions.get(part._id) ?? [],
+							groupedExpectedMediaItems.get(part._id) ?? [],
+							groupedExpectedPlayoutItems.get(part._id) ?? [],
+							groupedExpectedPackages.get(part._id) ?? []
+						)
+				)
+				this.segmentsImpl.set(segment._id, new IngestSegmentModelImpl(segment, parts))
+			}
+
+			this.#rundownBaselineObjs = new LazyInitialise(async () =>
+				context.directCollections.RundownBaselineObjects.findFetch({
+					rundownId: this.rundownId,
+				})
+			)
+			this.#rundownBaselineAdLibPieces = new LazyInitialise(async () =>
+				context.directCollections.RundownBaselineAdLibPieces.findFetch({
+					rundownId: this.rundownId,
+				})
+			)
+			this.#rundownBaselineAdLibActions = new LazyInitialise(async () =>
+				context.directCollections.RundownBaselineAdLibActions.findFetch({
+					rundownId: this.rundownId,
+				})
+			)
+		} else {
+			this.#rundownImpl = undefined
+
+			this.#rundownBaselineExpectedPackagesStore = new ExpectedPackagesStore(
+				true,
+				this.rundownId,
+				undefined,
+				undefined,
+				[],
+				[],
+				[]
+			)
+
+			this.segmentsImpl = new Map()
+
+			this.#rundownBaselineObjs = new LazyInitialise(async () => [])
+			this.#rundownBaselineAdLibPieces = new LazyInitialise(async () => [])
+			this.#rundownBaselineAdLibActions = new LazyInitialise(async () => [])
+		}
 	}
 
 	getRundown(): ReadonlyDeep<DBRundown> {
@@ -278,14 +308,13 @@ export class IngestModelImpl implements IngestModelReadonly, DatabasePersistedMo
 	}
 
 	replaceSegment(segment: DBSegment): IngestSegmentModel {
-		// nocommit how should this allow segments to track changes?
+		const oldSegment = this.segmentsImpl.get(segment._id)
+
+		const newSegment = new IngestSegmentModelImpl(segment, [], oldSegment ?? undefined)
+		this.segmentsImpl.set(segment._id, newSegment)
+
+		return newSegment
 	}
-
-	// replacePart(segmentId: SegmentId, ): boolean {
-	// 	// This has to be done through the root, so that we can be sure that the PartId is not in use in another segment already
-
-	// 	return false
-	// }
 
 	changeSegmentId(oldId: SegmentId, newId: SegmentId): boolean {
 		const existingSegment = this.segmentsImpl.get(oldId)
@@ -302,13 +331,13 @@ export class IngestModelImpl implements IngestModelReadonly, DatabasePersistedMo
 	}
 
 	setExpectedPlayoutItemsForRundownBaseline(expectedPlayoutItems: ExpectedPlayoutItemRundown[]): void {
-		// TODO - should these be here, or inside of an BaselineAdlibModel?
 		this.#rundownBaselineExpectedPackagesStore.setExpectedPlayoutItems(expectedPlayoutItems)
 	}
 	setExpectedMediaItemsForRundownBaseline(expectedMediaItems: ExpectedMediaItemRundown[]): void {
 		this.#rundownBaselineExpectedPackagesStore.setExpectedMediaItems(expectedMediaItems)
 	}
-	setExpectedPackagesForRundownBaseline(expectedPackages: ExpectedPackageForIngestModel[]): void {
+	setExpectedPackagesForRundownBaseline(expectedPackages: ExpectedPackageForIngestModelBaseline[]): void {
+		// Future: should these be here, or held as part of each adlib?
 		this.#rundownBaselineExpectedPackagesStore.setExpectedPackages(expectedPackages)
 	}
 

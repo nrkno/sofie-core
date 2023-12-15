@@ -10,9 +10,20 @@ import {
 	SegmentId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
-import { diffAndReturnLatestObjects } from './utils'
+import { diffAndReturnLatestObjects, setValuesAndTrackChanges } from './utils'
 
-export class ExpectedPackagesStore<ExpectedPackageType extends ExpectedPackageDBBase> {
+function mutateExpectedPackage<ExpectedPackageType extends ExpectedPackageDBBase>(
+	oldObj: ExpectedPackageType,
+	newObj: ExpectedPackageType
+): ExpectedPackageType {
+	return {
+		...newObj,
+		// Retain the created property
+		created: oldObj.created,
+	}
+}
+
+export class ExpectedPackagesStore<ExpectedPackageType extends ExpectedPackageDBBase & { rundownId: RundownId }> {
 	#expectedMediaItems: ExpectedMediaItemRundown[]
 	#expectedPlayoutItems: ExpectedPlayoutItemRundown[]
 	#expectedPackages: ExpectedPackageType[]
@@ -37,6 +48,7 @@ export class ExpectedPackagesStore<ExpectedPackageType extends ExpectedPackageDB
 	#partId: PartId | undefined
 
 	constructor(
+		isBeingCreated: boolean,
 		rundownId: RundownId,
 		segmentId: SegmentId | undefined,
 		partId: PartId | undefined,
@@ -51,6 +63,19 @@ export class ExpectedPackagesStore<ExpectedPackageType extends ExpectedPackageDB
 		this.#expectedMediaItems = expectedMediaItems
 		this.#expectedPlayoutItems = expectedPlayoutItems
 		this.#expectedPackages = expectedPackages
+
+		if (isBeingCreated) {
+			// Everything contained currently is a new document, track the ids as having changed
+			for (const expectedPlayoutItem of this.#expectedPlayoutItems) {
+				this.#expectedPlayoutItemsWithChanges.add(expectedPlayoutItem._id)
+			}
+			for (const expectedMediaItem of this.#expectedMediaItems) {
+				this.#expectedMediaItemsWithChanges.add(expectedMediaItem._id)
+			}
+			for (const expectedPackage of this.#expectedPackages) {
+				this.#expectedPackagesWithChanges.add(expectedPackage._id)
+			}
+		}
 	}
 
 	setOwnerIds(rundownId: RundownId, segmentId: SegmentId | undefined, partId: PartId | undefined): void {
@@ -58,11 +83,40 @@ export class ExpectedPackagesStore<ExpectedPackageType extends ExpectedPackageDB
 		this.#segmentId = segmentId
 		this.#partId = partId
 
-		// for (const expectedPlayoutItem of this.#expectedPlayoutItems) {
-		// if (this.#expectedPlayoutItemsWithChanges.has(expectedPlayoutItem._id))
-		// }
+		setValuesAndTrackChanges(this.#expectedPlayoutItemsWithChanges, this.#expectedPlayoutItems, {
+			rundownId,
+			partId,
+		})
+		setValuesAndTrackChanges(this.#expectedMediaItemsWithChanges, this.#expectedMediaItems, {
+			rundownId,
+			partId,
+		})
+		setValuesAndTrackChanges(this.#expectedPackagesWithChanges, this.#expectedPackages, {
+			rundownId,
+			// @ts-expect-error Not all ExpectedPackage types have this property
+			segmentId,
+			partId,
+		})
+	}
 
-		// nocommit TODO
+	compareToPreviousData(oldStore: ExpectedPackagesStore<ExpectedPackageType>): void {
+		// Diff the objects, but don't update the stored copies
+		diffAndReturnLatestObjects(
+			this.#expectedPlayoutItemsWithChanges,
+			oldStore.#expectedPlayoutItems,
+			this.#expectedPlayoutItems
+		)
+		diffAndReturnLatestObjects(
+			this.#expectedMediaItemsWithChanges,
+			oldStore.#expectedMediaItems,
+			this.#expectedMediaItems
+		)
+		diffAndReturnLatestObjects(
+			this.#expectedPackagesWithChanges,
+			oldStore.#expectedPackages,
+			this.#expectedPackages,
+			mutateExpectedPackage
+		)
 	}
 
 	setExpectedPlayoutItems(expectedPlayoutItems: ExpectedPlayoutItemRundown[]): void {
@@ -103,11 +157,7 @@ export class ExpectedPackagesStore<ExpectedPackageType extends ExpectedPackageDB
 			this.#expectedPackagesWithChanges,
 			this.#expectedPackages,
 			newExpectedPackages,
-			(oldObj, newObj) => ({
-				...newObj,
-				// Retain the created property
-				created: oldObj.created,
-			})
+			mutateExpectedPackage
 		)
 	}
 }

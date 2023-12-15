@@ -11,7 +11,7 @@ import { ExpectedPackageFromRundown } from '@sofie-automation/corelib/dist/dataM
 import { ExpectedPlayoutItemRundown } from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'
 import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { IngestModelImpl } from './IngestModelImpl'
+import { IngestModelImpl, IngestModelImplExistingData } from './IngestModelImpl'
 import { clone } from '@sofie-automation/corelib/dist/lib'
 
 /**
@@ -33,13 +33,16 @@ export async function loadIngestModelFromRundown(
 		throw new Error('Cannot create model with released RundownLock')
 	}
 
-	const collections = await loadCollections(context, rundown._id)
+	const existingData = await loadExistingRundownData(context, rundown._id)
 	if (rundown._id !== rundownLock.rundownId)
 		throw new Error(
 			`loadIngestModelFromRundown: RundownLock "${rundownLock.rundownId}" is for the wrong Rundown. Expected ${rundown._id}`
 		)
 
-	const res = new IngestModelImpl(context, rundownLock, rundown.externalId, clone<DBRundown>(rundown), ...collections)
+	const res = new IngestModelImpl(context, rundownLock, rundown.externalId, {
+		...existingData,
+		rundown: clone<DBRundown>(rundown),
+	})
 
 	if (span) span.end()
 	return res
@@ -67,19 +70,34 @@ export async function loadIngestModelFromRundownExternalId(
 		throw new Error('Cannot create model with released RundownLock')
 	}
 
-	const [rundown, collections] = await Promise.all([
-		context.directCollections.Rundowns.findOne(rundownId),
-		loadCollections(context, rundownId),
-	])
+	let res: IngestModelImpl
 
-	const res = new IngestModelImpl(context, rundownLock, rundownExternalId, rundown, ...collections)
+	const rundown = await context.directCollections.Rundowns.findOne(rundownId)
+	if (rundown) {
+		const existingData = await loadExistingRundownData(context, rundownId)
+		res = new IngestModelImpl(context, rundownLock, rundownExternalId, { ...existingData, rundown })
+	} else {
+		res = new IngestModelImpl(context, rundownLock, rundownExternalId, undefined)
+	}
 
 	if (span) span.end()
 	return res
 }
 
-async function loadCollections(context: JobContext, rundownId: RundownId) {
-	return Promise.all([
+async function loadExistingRundownData(
+	context: JobContext,
+	rundownId: RundownId
+): Promise<Omit<IngestModelImplExistingData, 'rundown'>> {
+	const [
+		segments,
+		parts,
+		pieces,
+		adLibPieces,
+		adLibActions,
+		expectedMediaItems,
+		expectedPlayoutItems,
+		expectedPackages,
+	] = await Promise.all([
 		context.directCollections.Segments.findFetch({
 			rundownId: rundownId,
 			orphaned: { $ne: SegmentOrphanedReason.SCRATCHPAD },
@@ -108,4 +126,16 @@ async function loadCollections(context: JobContext, rundownId: RundownId) {
 			rundownId: rundownId,
 		}) as Promise<ExpectedPackageFromRundown[]>,
 	])
+
+	return {
+		segments,
+		parts,
+		pieces,
+		adLibPieces,
+		adLibActions,
+
+		expectedMediaItems,
+		expectedPlayoutItems,
+		expectedPackages,
+	}
 }

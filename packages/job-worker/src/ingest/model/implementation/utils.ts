@@ -12,8 +12,8 @@ import _ = require('underscore')
  */
 export function diffAndReturnLatestObjects<T extends { _id: ProtectedString<any> }>(
 	changedIds: Set<T['_id']>,
-	oldObjects: T[],
-	newObjects: T[],
+	oldObjects: readonly T[],
+	newObjects: readonly T[],
 	mergeFn?: (oldValue: T, newValue: T) => T
 ): T[] {
 	const oldObjectMap = normalizeArrayToMap(oldObjects, '_id')
@@ -41,4 +41,28 @@ export function diffAndReturnLatestObjects<T extends { _id: ProtectedString<any>
 	}
 
 	return result
+}
+
+export function setValuesAndTrackChanges<T extends { _id: ProtectedString<any> }>(
+	changedIds: Set<T['_id']>,
+	objects: readonly T[],
+	newFragment: Partial<T>
+): void {
+	const fragmentEntries = Object.entries<any>(newFragment)
+
+	for (const obj of objects) {
+		// If the doc is already changed, we can skip further comparisons
+		let changed = changedIds.has(obj._id)
+
+		for (const [key0, value] of fragmentEntries) {
+			const key = key0 as keyof T
+			if (changed || obj[key] !== value) {
+				obj[key] = value
+				changed = true
+			}
+		}
+
+		// The doc changed, track it as such
+		if (changed) changedIds.add(obj._id)
+	}
 }

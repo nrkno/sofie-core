@@ -10,11 +10,19 @@ import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { calculatePartExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
-import { clone, normalizeArrayToMapFunc } from '@sofie-automation/corelib/dist/lib'
+import { clone } from '@sofie-automation/corelib/dist/lib'
+
+/**
+ * A light wrapper around the IngestPartModel, so that we can track the deletions while still accessing the contents
+ */
+interface PartWrapper {
+	partModel: IngestPartModelImpl
+	deleted: boolean
+}
 
 export class IngestSegmentModelImpl implements IngestSegmentModel {
 	readonly #segment: DBSegment
-	readonly #parts: Map<PartId, IngestPartModelImpl | null>
+	readonly #parts: Map<PartId, PartWrapper>
 
 	#setSegmentValue<T extends keyof DBSegment>(key: T, newValue: DBSegment[T]): void {
 		if (newValue === undefined) {
@@ -56,18 +64,56 @@ export class IngestSegmentModelImpl implements IngestSegmentModel {
 	}
 
 	get parts(): IngestPartModel[] {
-		return Array.from(this.#parts.values()).filter((p): p is IngestPartModelImpl => p !== null)
+		const parts: IngestPartModel[] = []
+		for (const part of this.#parts.values()) {
+			if (!part.deleted) {
+				parts.push(part.partModel)
+			}
+		}
+		return parts
 	}
 
 	get segment(): ReadonlyDeep<DBSegment> {
 		return this.#segment
 	}
 
-	constructor(segment: DBSegment, parts: IngestPartModelImpl[]) {
-		parts.sort((a, b) => a.part._rank - b.part._rank)
+	constructor(segment: DBSegment, currentParts: IngestPartModelImpl[], previousSegment?: IngestSegmentModelImpl) {
+		currentParts.sort((a, b) => a.part._rank - b.part._rank)
 
 		this.#segment = segment
-		this.#parts = normalizeArrayToMapFunc(parts, (p) => p.part._id)
+		this.#parts = new Map()
+		for (const part of currentParts) {
+			this.#parts.set(part.part._id, {
+				partModel: part,
+				deleted: false,
+			})
+		}
+
+		if (previousSegment) {
+			// This Segment replaces an existing one. This requires some more work to track any changes
+
+			if (
+				this.#segmentHasChanges ||
+				previousSegment.#segmentHasChanges ||
+				!_.isEqual(this.#segment, previousSegment.#segment)
+			) {
+				this.#segmentHasChanges = true
+			}
+
+			for (const [partId, oldPart] of previousSegment.#parts.entries()) {
+				const newPart = this.#parts.get(partId)
+				if (newPart) {
+					// Merge the old part into the new part
+					newPart.partModel.compareToPreviousModel(oldPart.partModel)
+				} else {
+					// Store the old part, marked as deleted
+					this.#parts.set(partId, {
+						partModel: oldPart.partModel,
+						deleted: true,
+					})
+				}
+			}
+		}
 	}
 
 	/**
@@ -78,19 +124,21 @@ export class IngestSegmentModelImpl implements IngestSegmentModel {
 		this.#segment._id = id
 
 		for (const part of this.#parts.values()) {
-			if (part) part.setOwnerIds(this.#segment.rundownId, id)
+			if (part && !part.deleted) part.partModel.setOwnerIds(this.#segment.rundownId, id)
 		}
 	}
 
 	getPart(id: PartId): IngestPartModel | undefined {
-		return this.#parts.get(id) ?? undefined
+		const partEntry = this.#parts.get(id)
+		if (partEntry && !partEntry.deleted) return partEntry.partModel
+		return undefined
 	}
 
 	getPartIds(): PartId[] {
 		const ids: PartId[] = []
 		for (const part of this.#parts.values()) {
-			if (part) {
-				ids.push(part.part._id)
+			if (part && !part.deleted) {
+				ids.push(part.partModel.part._id)
 			}
 		}
 		return ids
@@ -110,10 +158,10 @@ export class IngestSegmentModelImpl implements IngestSegmentModel {
 
 	removeAllParts(): PartId[] {
 		const ids: PartId[] = []
-		for (const [id, part] of this.#parts.entries()) {
-			if (part) {
-				ids.push(part.part._id)
-				this.#parts.set(id, null)
+		for (const part of this.#parts.values()) {
+			if (part && !part.deleted) {
+				ids.push(part.partModel.part._id)
+				part.deleted = true
 			}
 		}
 		return ids
@@ -122,8 +170,14 @@ export class IngestSegmentModelImpl implements IngestSegmentModel {
 	replacePart(part: DBPart, pieces: Piece[], adLibPiece: AdLibPiece[], adLibActions: AdLibAction[]): IngestPartModel {
 		part.expectedDurationWithPreroll = calculatePartExpectedDurationWithPreroll(part, pieces)
 
-		// nocommit we should track which documents have changed, and ensure the expectedPackage.created property can be persisted as intended
+		// We don't need to worry about this being present on other Segments. The caller must make sure it gets removed if needed,
+		// and when persisting a duplicates check is performed. If there is a copy on another Segment, every document will have changes
+		// due to the segmentId
+
+		const oldPart = this.#parts.get(part._id)
+
 		const partModel = new IngestPartModelImpl(
+			!oldPart, // nocommit is this correct if it moved across segments?
 			clone(part),
 			clone(pieces),
 			clone(adLibPiece),
@@ -133,6 +187,10 @@ export class IngestSegmentModelImpl implements IngestSegmentModel {
 			[]
 		)
 		partModel.setOwnerIds(this.segment.rundownId, this.segment._id)
+
+		if (oldPart) partModel.compareToPreviousModel(oldPart.partModel)
+
+		this.#parts.set(part._id, { partModel, deleted: false })
 
 		return partModel
 	}
