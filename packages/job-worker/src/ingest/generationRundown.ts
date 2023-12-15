@@ -19,7 +19,6 @@ import {
 	postProcessRundownBaselineItems,
 } from '../blueprints/postProcess'
 import { saveIntoCache } from '../cache/lib'
-import { sumChanges, anythingChanged } from '../db/changes'
 import { getCurrentTime, getSystemVersion } from '../lib'
 import { logger } from '../logging'
 import _ = require('underscore')
@@ -367,9 +366,7 @@ export async function getRundownFromIngestData(
 
 		// validated later
 		playlistId: protectString(''),
-		...(cache.Rundown.doc
-			? _.pick(cache.Rundown.doc, 'playlistId', 'baselineModifyHash', 'airStatus', 'status')
-			: {}),
+		...(cache.Rundown.doc ? _.pick(cache.Rundown.doc, 'playlistId', 'airStatus', 'status') : {}),
 	})
 
 	return { dbRundownData, rundownRes }
@@ -400,43 +397,34 @@ export async function saveChangesForRundown(
 	logger.info(`... got ${(rundownRes.globalActions || []).length} adLib actions from baseline.`)
 
 	const { baselineObjects, baselineAdlibPieces, baselineAdlibActions } = await cache.loadBaselineCollections()
-	const rundownBaselineChanges = sumChanges(
-		saveIntoCache<RundownBaselineObj>(context, baselineObjects, null, [
-			{
-				_id: getRandomId(7),
-				rundownId: dbRundown._id,
-				timelineObjectsString: serializePieceTimelineObjectsBlob(
-					postProcessRundownBaselineItems(showStyle.base.blueprintId, rundownRes.baseline.timelineObjects)
-				),
-			},
-		]),
-		// Save the global adlibs
-		saveIntoCache<RundownBaselineAdLibItem>(
+	saveIntoCache<RundownBaselineObj>(context, baselineObjects, null, [
+		{
+			_id: getRandomId(7),
+			rundownId: dbRundown._id,
+			timelineObjectsString: serializePieceTimelineObjectsBlob(
+				postProcessRundownBaselineItems(showStyle.base.blueprintId, rundownRes.baseline.timelineObjects)
+			),
+		},
+	])
+	// Save the global adlibs
+	saveIntoCache<RundownBaselineAdLibItem>(
+		context,
+		baselineAdlibPieces,
+		null,
+		postProcessAdLibPieces(
 			context,
-			baselineAdlibPieces,
-			null,
-			postProcessAdLibPieces(
-				context,
-				showStyle.base.blueprintId,
-				dbRundown._id,
-				undefined,
-				rundownRes.globalAdLibPieces
-			)
-		),
-		saveIntoCache<RundownBaselineAdLibAction>(
-			context,
-			baselineAdlibActions,
-			null,
-			postProcessGlobalAdLibActions(showStyle.base.blueprintId, dbRundown._id, rundownRes.globalActions || [])
+			showStyle.base.blueprintId,
+			dbRundown._id,
+			undefined,
+			rundownRes.globalAdLibPieces
 		)
 	)
-	if (anythingChanged(rundownBaselineChanges)) {
-		// If any of the rundown baseline datas was modified, we'll update the baselineModifyHash of the rundown
-		cache.Rundown.update((rd) => {
-			rd.baselineModifyHash = getCurrentTime() + ''
-			return rd
-		})
-	}
+	saveIntoCache<RundownBaselineAdLibAction>(
+		context,
+		baselineAdlibActions,
+		null,
+		postProcessGlobalAdLibActions(showStyle.base.blueprintId, dbRundown._id, rundownRes.globalActions || [])
+	)
 
 	return dbRundown
 }

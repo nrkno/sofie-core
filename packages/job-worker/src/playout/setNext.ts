@@ -25,7 +25,7 @@ import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 /**
  * Set or clear the nexted part, from a given PartInstance, or SelectNextPartResult
  * @param context Context for the running job
- * @param playoutModel The playout cache of the playlist
+ * @param playoutModel The playout model of the playlist
  * @param rawNextPart The Part to set as next
  * @param setManually Whether this was manually chosen by the user
  * @param nextTimeOffset The offset into the Part to start playback
@@ -308,7 +308,7 @@ async function cleanupOrphanedItems(context: JobContext, playoutModel: PlayoutMo
 /**
  * Set or clear the queued segment.
  * @param context Context for the running job
- * @param playoutModel The playout cache of the playlist
+ * @param playoutModel The playout model of the playlist
  * @param queuedSegment The segment to queue, or null to clear it
  */
 export async function queueNextSegment(
@@ -358,7 +358,7 @@ export async function queueNextSegment(
 /**
  * Set the first playable part of a given segment as next.
  * @param context Context for the running job
- * @param playoutModel The playout cache of the playlist
+ * @param playoutModel The playout model of the playlist
  * @param nextSegment The segment, whose first part is to be set as next
  */
 export async function setNextSegment(
@@ -397,7 +397,7 @@ function findFirstPlayablePartOrThrow(segment: PlayoutSegmentModel): ReadonlyDee
 /**
  * Set the nexted part, from a given DBPart
  * @param context Context for the running job
- * @param playoutModel The playout cache of the playlist
+ * @param playoutModel The playout model of the playlist
  * @param nextPart The Part to set as next
  * @param setManually Whether this was manually chosen by the user
  * @param nextTimeOffset The offset into the Part to start playback

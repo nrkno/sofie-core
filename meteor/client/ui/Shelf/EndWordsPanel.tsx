@@ -9,7 +9,6 @@ import {
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementStyle } from './DashboardPanel'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { ScriptContent } from '@sofie-automation/blueprints-integration'
@@ -33,7 +32,7 @@ interface IEndsWordsPanelTrackedProps {
 
 interface IState {}
 
-class EndWordsPanelInner extends MeteorReactComponent<
+class EndWordsPanelInner extends React.Component<
 	Translated<IEndsWordsPanelProps & IEndsWordsPanelTrackedProps>,
 	IState
 > {
