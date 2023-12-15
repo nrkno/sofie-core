@@ -10,7 +10,7 @@ import { updateTimeline } from '../playout/timeline/generate'
  * Make sure that the nextPartInstance for the current Playlist is still correct
  * This will often change the nextPartInstance
  * @param context Context of the job being run
- * @param playoutModel Playout Cache to operate on
+ * @param playoutModel Playout Model to operate on
  */
 export async function ensureNextPartIsValid(context: JobContext, playoutModel: PlayoutModel): Promise<void> {
 	const span = context.startSpan('api.ingest.ensureNextPartIsValid')

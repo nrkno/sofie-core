@@ -2,7 +2,6 @@ import * as React from 'react'
 import { Accounts } from 'meteor/accounts-base'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import type { RouteComponentProps } from 'react-router'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { MeteorCall } from '../../../lib/api/methods'
 import { getUser, User, getUserRoles } from '../../../lib/collections/Users'
@@ -32,7 +31,7 @@ export const AccountPage = translateWithTracker(() => {
 		organization: organization,
 	}
 })(
-	class extends MeteorReactComponent<Translated<IAccountPageProps>, IAccountPageState> {
+	class AccountPage extends React.Component<Translated<IAccountPageProps>, IAccountPageState> {
 		constructor(props: any) {
 			super(props)
 		}

@@ -7,7 +7,6 @@ import {
 	RundownLayoutSegmentTiming,
 } from '../../../lib/collections/RundownLayouts'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
@@ -42,7 +41,7 @@ interface ISegmentTimingPanelTrackedProps {
 
 interface IState {}
 
-class SegmentTimingPanelInner extends MeteorReactComponent<
+class SegmentTimingPanelInner extends React.Component<
 	Translated<ISegmentTimingPanelProps & ISegmentTimingPanelTrackedProps>,
 	IState
 > {

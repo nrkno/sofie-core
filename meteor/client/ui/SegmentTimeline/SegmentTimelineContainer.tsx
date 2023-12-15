@@ -24,8 +24,8 @@ import { SegmentTimelinePartClass } from './Parts/SegmentTimelinePart'
 import {
 	PartUi,
 	withResolvedSegment,
-	IProps as IResolvedSegmentProps,
-	ITrackedProps,
+	IResolvedSegmentProps,
+	ITrackedResolvedSegmentProps,
 	IOutputLayerUi,
 } from '../SegmentContainer/withResolvedSegment'
 import { computeSegmentDuration, getPartInstanceTimingId, RundownTimingContext } from '../../lib/rundownTiming'
@@ -80,7 +80,7 @@ interface IProps extends IResolvedSegmentProps {
 }
 
 export const SegmentTimelineContainer = withResolvedSegment(
-	class SegmentTimelineContainer extends MeteorReactComponent<IProps & ITrackedProps, IState> {
+	class SegmentTimelineContainer extends MeteorReactComponent<IProps & ITrackedResolvedSegmentProps, IState> {
 		static contextTypes = {
 			durations: PropTypes.object.isRequired,
 			syncedDurations: PropTypes.object.isRequired,
@@ -100,7 +100,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 
 		private pastInfinitesComp: Tracker.Computation | undefined
 
-		constructor(props: IProps & ITrackedProps) {
+		constructor(props: IProps & ITrackedResolvedSegmentProps) {
 			super(props)
 
 			this.state = {
@@ -128,7 +128,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 			this.isVisible = false
 		}
 
-		shouldComponentUpdate(nextProps: IProps & ITrackedProps, nextState: IState) {
+		shouldComponentUpdate(nextProps: IProps & ITrackedResolvedSegmentProps, nextState: IState) {
 			return !_.isMatch(this.props, nextProps) || !_.isMatch(this.state, nextState)
 		}
 
@@ -204,7 +204,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 				.catch(catchError('updateMaxTimeScale'))
 		}
 
-		componentDidUpdate(prevProps: IProps & ITrackedProps) {
+		componentDidUpdate(prevProps: IProps & ITrackedResolvedSegmentProps) {
 			let isLiveSegment = false
 			let isNextSegment = false
 			let currentLivePart: PartExtended | undefined = undefined

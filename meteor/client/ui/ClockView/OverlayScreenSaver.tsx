@@ -20,7 +20,7 @@ export function OverlayScreenSaver({ studioId }: Readonly<{ studioId: StudioId }
 	useSubscription(MeteorPubSub.uiStudio, studioId)
 	useSubscription(MeteorPubSub.rundownPlaylistForStudio, studioId, false)
 
-	const data = useTracker(() => findNextPlaylist({ studioId }), [studioId])
+	const data = useTracker(() => findNextPlaylist(studioId), [studioId])
 
 	function animate() {
 		const el = studioNameRef.current

@@ -21,7 +21,7 @@ import { selectNextPart } from './selectNextPart'
 export async function resetRundownPlaylist(context: JobContext, playoutModel: PlayoutModel): Promise<void> {
 	logger.info('resetRundownPlaylist ' + playoutModel.playlist._id)
 	// Remove all dunamically inserted pieces (adlibs etc)
-	// const rundownIds = new Set((cache.getRundownIds()))
+	// const rundownIds = new Set((playoutModel.getRundownIds()))
 
 	playoutModel.resetPlaylist(!!playoutModel.playlist.activationId)
 
@@ -70,7 +70,7 @@ export function resetPartInstancesWithPieceInstances(
 	// Defer ones which arent loaded
 	playoutModel.deferAfterSave(async (playoutModel) => {
 		const rundownIds = playoutModel.getRundownIds()
-		const partInstanceIdsInCache = playoutModel.loadedPartInstances.map((p) => p.partInstance._id)
+		const partInstanceIdsInModel = playoutModel.loadedPartInstances.map((p) => p.partInstance._id)
 
 		// Find all the partInstances which are not loaded, but should be reset
 		const resetInDb = await context.directCollections.PartInstances.findFetch(
@@ -78,8 +78,8 @@ export function resetPartInstancesWithPieceInstances(
 				$and: [
 					selector ?? {},
 					{
-						// Not any which are in the cache, as they have already been done if needed
-						_id: { $nin: partInstanceIdsInCache },
+						// Not any which are in the model, as they have already been done if needed
+						_id: { $nin: partInstanceIdsInModel },
 						rundownId: { $in: rundownIds },
 						reset: { $ne: true },
 					},

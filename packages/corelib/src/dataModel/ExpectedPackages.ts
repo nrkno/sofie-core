@@ -13,6 +13,7 @@ import {
 	SegmentId,
 	StudioId,
 } from './Ids'
+import { ReadonlyDeep } from 'type-fest'
 
 /*
  Expected Packages are created from Pieces in the rundown.
@@ -126,7 +127,7 @@ export interface ExpectedPackageDBFromBucketAdLibAction extends ExpectedPackageD
 	pieceExternalId: string
 }
 
-export function getContentVersionHash(expectedPackage: Omit<ExpectedPackage.Any, '_id'>): string {
+export function getContentVersionHash(expectedPackage: ReadonlyDeep<Omit<ExpectedPackage.Any, '_id'>>): string {
 	return hashObj({
 		content: expectedPackage.content,
 		version: expectedPackage.version,

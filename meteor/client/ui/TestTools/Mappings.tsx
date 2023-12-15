@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
 import { omit, unprotectString } from '../../../lib/lib'
 import { MeteorPubSub } from '../../../lib/api/pubsub'
@@ -32,7 +32,7 @@ function MappingsView(props: Readonly<IMappingsViewProps>): JSX.Element {
 				<h1>{t('Routed Mappings')}</h1>
 			</header>
 			<div className="mod mvl">
-				{props.match?.params && (
+				{props.match && props.match.params && (
 					<div>
 						<ComponentMappingsTable studioId={props.match.params.studioId} />
 					</div>

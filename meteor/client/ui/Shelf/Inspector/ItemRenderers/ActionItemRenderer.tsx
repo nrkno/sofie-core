@@ -4,7 +4,6 @@ import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
 import { RundownUtils } from '../../../../lib/rundown'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
-import { MeteorReactComponent } from '../../../../lib/MeteorReactComponent'
 import { translateWithTracker, Translated } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { AdLibActionCommon } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { createInMemorySyncMongoCollection } from '../../../../../lib/collections/lib'
@@ -86,7 +85,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 			.map((bucket) => bucket._id),
 	}
 })(
-	class ActionItemRenderer extends MeteorReactComponent<Translated<IProps & ITrackedProps>> {
+	class ActionItemRenderer extends React.Component<Translated<IProps & ITrackedProps>> {
 		componentDidMount(): void {
 			const action = this.getActionItem()
 
@@ -134,8 +133,6 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 		}
 
 		componentWillUnmount(): void {
-			super.componentWillUnmount()
-
 			if (this.props.targetAction) {
 				LocalActionItems.remove(this.props.targetAction._id)
 			}

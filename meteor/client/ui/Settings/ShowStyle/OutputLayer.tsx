@@ -20,7 +20,7 @@ import {
 } from '../util/OverrideOpHelper'
 import { TextInputControl } from '../../../lib/Components/TextInput'
 import { IntInputControl } from '../../../lib/Components/IntInput'
-import { useToggleExpandHelper } from '../util/ToggleExpandedHelper'
+import { useToggleExpandHelper } from '../../util/useToggleExpandHelper'
 import {
 	LabelActual,
 	LabelAndOverrides,
