@@ -1,8 +1,7 @@
 import * as React from 'react'
-import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { omit, Time, unprotectString } from '../../../lib/lib'
+import { omit, unprotectString } from '../../../lib/lib'
 import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { makeTableOfObject } from '../../lib/utilComponents'
 import { StudioSelect } from './StudioSelect'
@@ -10,7 +9,6 @@ import { MappingExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
 import { createSyncPeripheralDeviceCustomPublicationMongoCollection } from '../../../lib/collections/lib'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RoutedMappings } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 import { PeripheralDevicePubSubCollectionsNames } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 import { useTranslation } from 'react-i18next'
 
@@ -44,94 +42,73 @@ function MappingsView(props: Readonly<IMappingsViewProps>): JSX.Element {
 	)
 }
 
-interface IMappingsTableProps {
+interface ComponentMappingsTableProps {
 	studioId: StudioId
 }
-interface IMappingsTableTrackedProps {
-	mappings: RoutedMappings | null
-}
-interface IMappingsTableState {
-	time: Time | null
-}
-export const ComponentMappingsTable = withTracker<IMappingsTableProps, IMappingsTableState, IMappingsTableTrackedProps>(
-	(props: IMappingsTableProps) => {
-		try {
-			// These properties will be exposed under this.props
-			// Note that these properties are reactively recalculated
-			const mappings = StudioMappings.findOne(props.studioId)
-			return {
-				mappings: mappings || null,
-			}
-		} catch (e) {
-			return {
-				mappings: null,
-			}
-		}
-	}
-)(
-	class ComponentMappingsTable extends MeteorReactComponent<
-		IMappingsTableProps & IMappingsTableTrackedProps,
-		IMappingsTableState
-	> {
-		constructor(props: IMappingsTableProps & IMappingsTableTrackedProps) {
-			super(props)
+function ComponentMappingsTable({ studioId }: Readonly<ComponentMappingsTableProps>): JSX.Element {
+	useSubscription(MeteorPubSub.mappingsForStudio, studioId)
 
-			this.state = {
-				time: null,
-			}
-		}
-		componentDidMount(): void {
-			this.subscribe(MeteorPubSub.mappingsForStudio, this.props.studioId)
-		}
-		renderMappingsState(state: RoutedMappings) {
-			const rows = _.sortBy(Object.entries<MappingExt>(state.mappings), (o) => o[0])
-			return rows.map(([id, obj]) => (
-				<tr key={id}>
-					<td>{id}</td>
-					<td>{unprotectString(obj.deviceId)}</td>
-					<td>{TSR.DeviceType[obj.device]}</td>
-					<td>{obj.layerName}</td>
-					<td>
-						Mode: {LookaheadMode[obj.lookahead]}
-						<br />
-						Distance: {obj.lookaheadMaxSearchDistance}
-						<br />
-						Depth: {obj.lookaheadDepth}
-					</td>
-					<td>
-						{makeTableOfObject(
-							omit(obj, 'deviceId', 'device', 'lookahead', 'lookaheadDepth', 'lookaheadMaxSearchDistance', 'layerName')
-						)}
-					</td>
-				</tr>
-			))
-		}
-		render(): JSX.Element {
-			const { mappings } = this.props
-			return (
+	const mappingsObj = useTracker(
+		() => {
+			return StudioMappings.findOne(studioId)
+		},
+		[studioId],
+		null
+	)
+
+	const mappingsItems = mappingsObj ? _.sortBy(Object.entries<MappingExt>(mappingsObj.mappings), (o) => o[0]) : []
+
+	return (
+		<div>
+			<div>
 				<div>
-					<div>
-						<div>
-							<table className="testtools-timelinetable">
-								<tbody>
-									<tr>
-										<th>Mapping</th>
-										<th>DeviceId</th>
-										<th>Type</th>
-										<th>Name</th>
-										<th>Lookahead</th>
-										<th>Data</th>
-									</tr>
-									{mappings ? this.renderMappingsState(mappings) : ''}
-								</tbody>
-							</table>
-						</div>
-					</div>
+					<table className="testtools-timelinetable">
+						<tbody>
+							<tr>
+								<th>Mapping</th>
+								<th>DeviceId</th>
+								<th>Type</th>
+								<th>Name</th>
+								<th>Lookahead</th>
+								<th>Data</th>
+							</tr>
+							{mappingsItems.map(([id, obj]) => (
+								<ComponentMappingsTableRow key={id} id={id} obj={obj} />
+							))}
+						</tbody>
+					</table>
 				</div>
-			)
-		}
-	}
-)
+			</div>
+		</div>
+	)
+}
+
+interface ComponentMappingsTableRowProps {
+	id: string
+	obj: MappingExt<TSR.TSRMappingOptions>
+}
+function ComponentMappingsTableRow({ id, obj }: Readonly<ComponentMappingsTableRowProps>) {
+	return (
+		<tr>
+			<td>{id}</td>
+			<td>{unprotectString(obj.deviceId)}</td>
+			<td>{TSR.DeviceType[obj.device]}</td>
+			<td>{obj.layerName}</td>
+			<td>
+				Mode: {LookaheadMode[obj.lookahead]}
+				<br />
+				Distance: {obj.lookaheadMaxSearchDistance}
+				<br />
+				Depth: {obj.lookaheadDepth}
+			</td>
+			<td>
+				{makeTableOfObject(
+					omit(obj, 'deviceId', 'device', 'lookahead', 'lookaheadDepth', 'lookaheadMaxSearchDistance', 'layerName')
+				)}
+			</td>
+		</tr>
+	)
+}
 
 function MappingsStudioSelect(): JSX.Element {
 	return <StudioSelect path="mappings" title="Mappings" />
