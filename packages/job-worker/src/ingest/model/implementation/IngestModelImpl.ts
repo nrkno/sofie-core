@@ -351,8 +351,6 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 	}
 
 	removeSegment(id: SegmentId): void {
-		// nocommit If we keeping preserveUnsyncedPlayingSegmentContents, then this should not do a full delete, but just set a flag
-
 		const segment = this.segmentsImpl.get(id)
 		if (segment) {
 			segment.deleted = true
