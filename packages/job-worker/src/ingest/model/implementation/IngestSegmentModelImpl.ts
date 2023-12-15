@@ -21,14 +21,14 @@ interface PartWrapper {
 }
 
 export class IngestSegmentModelImpl implements IngestSegmentModel {
-	readonly #segment: DBSegment
-	readonly #parts: Map<PartId, PartWrapper>
+	readonly segmentImpl: DBSegment
+	readonly partsImpl: Map<PartId, PartWrapper>
 
 	#setSegmentValue<T extends keyof DBSegment>(key: T, newValue: DBSegment[T]): void {
 		if (newValue === undefined) {
-			delete this.#segment[key]
+			delete this.segmentImpl[key]
 		} else {
-			this.#segment[key] = newValue
+			this.segmentImpl[key] = newValue
 		}
 
 		this.#segmentHasChanges = true
@@ -45,7 +45,7 @@ export class IngestSegmentModelImpl implements IngestSegmentModel {
 			return true
 		}
 
-		const oldValue = this.#segment[key]
+		const oldValue = this.segmentImpl[key]
 
 		const areEqual = deepEqual ? _.isEqual(oldValue, newValue) : oldValue === newValue
 
@@ -65,7 +65,7 @@ export class IngestSegmentModelImpl implements IngestSegmentModel {
 
 	get parts(): IngestPartModel[] {
 		const parts: IngestPartModel[] = []
-		for (const part of this.#parts.values()) {
+		for (const part of this.partsImpl.values()) {
 			if (!part.deleted) {
 				parts.push(part.partModel)
 			}
@@ -74,16 +74,22 @@ export class IngestSegmentModelImpl implements IngestSegmentModel {
 	}
 
 	get segment(): ReadonlyDeep<DBSegment> {
-		return this.#segment
+		return this.segmentImpl
 	}
 
-	constructor(segment: DBSegment, currentParts: IngestPartModelImpl[], previousSegment?: IngestSegmentModelImpl) {
+	constructor(
+		isBeingCreated: boolean,
+		segment: DBSegment,
+		currentParts: IngestPartModelImpl[],
+		previousSegment?: IngestSegmentModelImpl
+	) {
 		currentParts.sort((a, b) => a.part._rank - b.part._rank)
 
-		this.#segment = segment
-		this.#parts = new Map()
+		this.#segmentHasChanges = isBeingCreated
+		this.segmentImpl = segment
+		this.partsImpl = new Map()
 		for (const part of currentParts) {
-			this.#parts.set(part.part._id, {
+			this.partsImpl.set(part.part._id, {
 				partModel: part,
 				deleted: false,
 			})
@@ -95,19 +101,19 @@ export class IngestSegmentModelImpl implements IngestSegmentModel {
 			if (
 				this.#segmentHasChanges ||
 				previousSegment.#segmentHasChanges ||
-				!_.isEqual(this.#segment, previousSegment.#segment)
+				!_.isEqual(this.segmentImpl, previousSegment.segmentImpl)
 			) {
 				this.#segmentHasChanges = true
 			}
 
-			for (const [partId, oldPart] of previousSegment.#parts.entries()) {
-				const newPart = this.#parts.get(partId)
+			for (const [partId, oldPart] of previousSegment.partsImpl.entries()) {
+				const newPart = this.partsImpl.get(partId)
 				if (newPart) {
 					// Merge the old part into the new part
 					newPart.partModel.compareToPreviousModel(oldPart.partModel)
 				} else {
 					// Store the old part, marked as deleted
-					this.#parts.set(partId, {
+					this.partsImpl.set(partId, {
 						partModel: oldPart.partModel,
 						deleted: true,
 					})
@@ -121,22 +127,22 @@ export class IngestSegmentModelImpl implements IngestSegmentModel {
 	 * @param id New id for the segment
 	 */
 	setOwnerIds(id: SegmentId): void {
-		this.#segment._id = id
+		this.segmentImpl._id = id
 
-		for (const part of this.#parts.values()) {
-			if (part && !part.deleted) part.partModel.setOwnerIds(this.#segment.rundownId, id)
+		for (const part of this.partsImpl.values()) {
+			if (part && !part.deleted) part.partModel.setOwnerIds(this.segmentImpl.rundownId, id)
 		}
 	}
 
 	getPart(id: PartId): IngestPartModel | undefined {
-		const partEntry = this.#parts.get(id)
+		const partEntry = this.partsImpl.get(id)
 		if (partEntry && !partEntry.deleted) return partEntry.partModel
 		return undefined
 	}
 
 	getPartIds(): PartId[] {
 		const ids: PartId[] = []
-		for (const part of this.#parts.values()) {
+		for (const part of this.partsImpl.values()) {
 			if (part && !part.deleted) {
 				ids.push(part.partModel.part._id)
 			}
@@ -158,7 +164,7 @@ export class IngestSegmentModelImpl implements IngestSegmentModel {
 
 	removeAllParts(): PartId[] {
 		const ids: PartId[] = []
-		for (const part of this.#parts.values()) {
+		for (const part of this.partsImpl.values()) {
 			if (part && !part.deleted) {
 				ids.push(part.partModel.part._id)
 				part.deleted = true
@@ -174,7 +180,7 @@ export class IngestSegmentModelImpl implements IngestSegmentModel {
 		// and when persisting a duplicates check is performed. If there is a copy on another Segment, every document will have changes
 		// due to the segmentId
 
-		const oldPart = this.#parts.get(part._id)
+		const oldPart = this.partsImpl.get(part._id)
 
 		const partModel = new IngestPartModelImpl(
 			!oldPart, // nocommit is this correct if it moved across segments?
@@ -190,7 +196,7 @@ export class IngestSegmentModelImpl implements IngestSegmentModel {
 
 		if (oldPart) partModel.compareToPreviousModel(oldPart.partModel)
 
-		this.#parts.set(part._id, { partModel, deleted: false })
+		this.partsImpl.set(part._id, { partModel, deleted: false })
 
 		return partModel
 	}

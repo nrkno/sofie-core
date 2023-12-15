@@ -10,20 +10,20 @@ import { ExpectedPlayoutItemRundown } from '@sofie-automation/corelib/dist/dataM
 import { ExpectedPackageFromRundown } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { ExpectedPackagesStore } from './ExpectedPackagesStore'
-import { diffAndStoreObjects, setValuesAndTrackChanges } from './utils'
+import { diffAndStoreObjects, DocumentChanges, getDocumentChanges, setValuesAndTrackChanges } from './utils'
 
 export class IngestPartModelImpl implements IngestPartModel {
-	readonly #part: DBPart
+	readonly partImpl: DBPart
 	readonly #pieces: Piece[]
 	readonly #adLibPieces: AdLibPiece[]
 	readonly #adLibActions: AdLibAction[]
-	readonly #expectedPackagesStore: ExpectedPackagesStore<ExpectedPackageFromRundown>
+	readonly expectedPackagesStore: ExpectedPackagesStore<ExpectedPackageFromRundown>
 
 	#setPartValue<T extends keyof DBPart>(key: T, newValue: DBPart[T]): void {
 		if (newValue === undefined) {
-			delete this.#part[key]
+			delete this.partImpl[key]
 		} else {
-			this.#part[key] = newValue
+			this.partImpl[key] = newValue
 		}
 
 		this.#partHasChanges = true
@@ -40,7 +40,7 @@ export class IngestPartModelImpl implements IngestPartModel {
 			return true
 		}
 
-		const oldValue = this.#part[key]
+		const oldValue = this.partImpl[key]
 
 		const areEqual = deepEqual ? _.isEqual(oldValue, newValue) : oldValue === newValue
 
@@ -63,7 +63,7 @@ export class IngestPartModelImpl implements IngestPartModel {
 	}
 
 	get part(): ReadonlyDeep<DBPart> {
-		return this.#part
+		return this.partImpl
 	}
 
 	get pieces(): ReadonlyDeep<Piece>[] {
@@ -79,13 +79,23 @@ export class IngestPartModelImpl implements IngestPartModel {
 	}
 
 	get expectedMediaItems(): ReadonlyDeep<ExpectedMediaItemRundown>[] {
-		return [...this.#expectedPackagesStore.expectedMediaItems]
+		return [...this.expectedPackagesStore.expectedMediaItems]
 	}
 	get expectedPlayoutItems(): ReadonlyDeep<ExpectedPlayoutItemRundown>[] {
-		return [...this.#expectedPackagesStore.expectedPlayoutItems]
+		return [...this.expectedPackagesStore.expectedPlayoutItems]
 	}
 	get expectedPackages(): ReadonlyDeep<ExpectedPackageFromRundown>[] {
-		return [...this.#expectedPackagesStore.expectedPackages]
+		return [...this.expectedPackagesStore.expectedPackages]
+	}
+
+	get piecesChanges(): DocumentChanges<Piece> {
+		return getDocumentChanges(this.#piecesWithChanges, this.#pieces)
+	}
+	get adLibPiecesChanges(): DocumentChanges<AdLibPiece> {
+		return getDocumentChanges(this.#adLibPiecesWithChanges, this.#adLibPieces)
+	}
+	get adLibActionsChanges(): DocumentChanges<AdLibAction> {
+		return getDocumentChanges(this.#adLibActionsWithChanges, this.#adLibActions)
 	}
 
 	constructor(
@@ -98,7 +108,7 @@ export class IngestPartModelImpl implements IngestPartModel {
 		expectedPlayoutItems: ExpectedPlayoutItemRundown[],
 		expectedPackages: ExpectedPackageFromRundown[]
 	) {
-		this.#part = part
+		this.partImpl = part
 		this.#pieces = pieces
 		this.#adLibPieces = adLibPieces
 		this.#adLibActions = adLibActions
@@ -117,7 +127,7 @@ export class IngestPartModelImpl implements IngestPartModel {
 			}
 		}
 
-		this.#expectedPackagesStore = new ExpectedPackagesStore(
+		this.expectedPackagesStore = new ExpectedPackagesStore(
 			isBeingCreated,
 			part.rundownId,
 			part.segmentId,
@@ -138,9 +148,13 @@ export class IngestPartModelImpl implements IngestPartModel {
 	 * @param previousModel
 	 */
 	compareToPreviousModel(previousModel: IngestPartModelImpl): void {
-		this.#expectedPackagesStore.compareToPreviousData(previousModel.#expectedPackagesStore)
+		this.expectedPackagesStore.compareToPreviousData(previousModel.expectedPackagesStore)
 
-		if (this.#partHasChanges || previousModel.#partHasChanges || !_.isEqual(this.#part, previousModel.#part)) {
+		if (
+			this.#partHasChanges ||
+			previousModel.#partHasChanges ||
+			!_.isEqual(this.partImpl, previousModel.partImpl)
+		) {
 			this.#partHasChanges = true
 		}
 
@@ -158,7 +172,7 @@ export class IngestPartModelImpl implements IngestPartModel {
 		this.#compareAndSetPartValue('segmentId', segmentId)
 		this.#compareAndSetPartValue('rundownId', rundownId)
 
-		this.#expectedPackagesStore.setOwnerIds(rundownId, segmentId, this.part._id)
+		this.expectedPackagesStore.setOwnerIds(rundownId, segmentId, this.part._id)
 
 		setValuesAndTrackChanges(this.#piecesWithChanges, this.#pieces, {
 			startRundownId: rundownId,
@@ -176,13 +190,13 @@ export class IngestPartModelImpl implements IngestPartModel {
 	}
 
 	setExpectedPlayoutItems(expectedPlayoutItems: ExpectedPlayoutItemRundown[]): void {
-		this.#expectedPackagesStore.setExpectedPlayoutItems(expectedPlayoutItems)
+		this.expectedPackagesStore.setExpectedPlayoutItems(expectedPlayoutItems)
 	}
 	setExpectedMediaItems(expectedMediaItems: ExpectedMediaItemRundown[]): void {
-		this.#expectedPackagesStore.setExpectedMediaItems(expectedMediaItems)
+		this.expectedPackagesStore.setExpectedMediaItems(expectedMediaItems)
 	}
 	setExpectedPackages(expectedPackages: ExpectedPackageFromRundown[]): void {
 		// Future: should these be here, or held as part of each adlib/piece?
-		this.#expectedPackagesStore.setExpectedPackages(expectedPackages)
+		this.expectedPackagesStore.setExpectedPackages(expectedPackages)
 	}
 }

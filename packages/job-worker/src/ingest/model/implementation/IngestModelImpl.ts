@@ -52,6 +52,7 @@ import { IBlueprintRundown } from '@sofie-automation/blueprints-integration'
 import { getCurrentTime, getSystemVersion } from '../../../lib'
 import { WrappedShowStyleBlueprint } from '../../../blueprints/cache'
 import { getExternalNRCSName, PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import { SaveIngestModelHelper } from './SaveIngestModel'
 
 export interface IngestModelImplExistingData {
 	rundown: DBRundown
@@ -201,7 +202,7 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 							groupedExpectedPackages.get(part._id) ?? []
 						)
 				)
-				this.segmentsImpl.set(segment._id, new IngestSegmentModelImpl(segment, parts))
+				this.segmentsImpl.set(segment._id, new IngestSegmentModelImpl(false, segment, parts))
 			}
 
 			this.#rundownBaselineObjs = new LazyInitialise(async () =>
@@ -336,7 +337,7 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 	replaceSegment(segment: DBSegment): IngestSegmentModel {
 		const oldSegment = this.segmentsImpl.get(segment._id)
 
-		const newSegment = new IngestSegmentModelImpl(segment, [], oldSegment ?? undefined)
+		const newSegment = new IngestSegmentModelImpl(true, segment, [], oldSegment ?? undefined)
 		this.segmentsImpl.set(segment._id, newSegment)
 
 		return newSegment
@@ -550,6 +551,18 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 			partIds.add(part.part._id)
 		}
 
+		const saveHelper = new SaveIngestModelHelper()
+		for (const [segmentId, segment] of this.segmentsImpl) {
+			saveHelper.addSegment(segmentId, segment, !segment)
+		}
+
+		saveHelper.addExpectedPackagesStore(this.#rundownBaselineExpectedPackagesStore)
+
+		// nocommit TODO
+		// #rundownBaselineObjsWithChanges = new Set<RundownBaselineObjId>()
+		// #rundownBaselineAdLibPiecesWithChanges = new Set<PieceId>()
+		// #rundownBaselineAdLibActionsWithChanges = new Set<RundownBaselineAdLibActionId>()
+
 		await Promise.all([
 			this.#rundownHasChanged && this.#rundownImpl
 				? this.context.directCollections.Rundowns.replace(this.#rundownImpl)
@@ -558,6 +571,7 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 			// ...writePartInstancesAndPieceInstances(this.context, this.allPartInstances),
 			// writeScratchpadSegments(this.context, this.rundownsImpl),
 			// this.#baselineHelper.saveAllToDatabase(),
+			...saveHelper.commit(this.context),
 		])
 
 		this.#rundownHasChanged = false

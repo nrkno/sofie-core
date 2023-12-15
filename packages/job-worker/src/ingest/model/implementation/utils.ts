@@ -66,3 +66,38 @@ export function setValuesAndTrackChanges<T extends { _id: ProtectedString<any> }
 		if (changed) changedIds.add(obj._id)
 	}
 }
+
+export interface DocumentChanges<T extends { _id: ProtectedString<any> }> {
+	currentIds: T['_id'][]
+	deletedIds: T['_id'][]
+	changedDocuments: T[]
+}
+
+export function getDocumentChanges<T extends { _id: ProtectedString<any> }>(
+	changedIds: ReadonlySet<T['_id']>,
+	documents: readonly T[]
+): DocumentChanges<T> {
+	const result: DocumentChanges<T> = {
+		currentIds: [],
+		deletedIds: [],
+		changedDocuments: [],
+	}
+
+	// calculate changes
+	for (const doc of documents) {
+		result.currentIds.push(doc._id)
+		if (changedIds.has(doc._id)) {
+			result.changedDocuments.push(doc)
+		}
+	}
+
+	// Find deletions
+	const currentIdsSet = new Set(result.currentIds)
+	for (const id of changedIds) {
+		if (!currentIdsSet.has(id)) {
+			result.deletedIds.push(id)
+		}
+	}
+
+	return result
+}
