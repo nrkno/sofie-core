@@ -1,7 +1,11 @@
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { ExpectedMediaItemRundown } from '@sofie-automation/corelib/dist/dataModel/ExpectedMediaItem'
-import { ExpectedPackageFromRundown } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import {
+	ExpectedPackageDB,
+	ExpectedPackageDBType,
+	ExpectedPackageFromRundown,
+} from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { ExpectedPlayoutItemRundown } from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'
 import {
 	ExpectedPackageId,
@@ -49,7 +53,7 @@ export interface IngestModelImplExistingData {
 	adLibActions: AdLibAction[]
 	expectedMediaItems: ExpectedMediaItemRundown[]
 	expectedPlayoutItems: ExpectedPlayoutItemRundown[]
-	expectedPackages: ExpectedPackageFromRundown[]
+	expectedPackages: ExpectedPackageDB[]
 }
 
 /**
@@ -145,7 +149,22 @@ export class IngestModelImpl implements IngestModelReadonly, DatabasePersistedMo
 
 			const groupedExpectedMediaItems = groupByToMap(existingData.expectedMediaItems, 'partId')
 			const groupedExpectedPlayoutItems = groupByToMap(existingData.expectedPlayoutItems, 'partId')
-			const groupedExpectedPackages = groupByToMap(existingData.expectedPackages, 'partId')
+
+			const rundownExpectedPackages = existingData.expectedPackages.filter(
+				(pkg): pkg is ExpectedPackageFromRundown =>
+					pkg.fromPieceType === ExpectedPackageDBType.PIECE ||
+					pkg.fromPieceType === ExpectedPackageDBType.ADLIB_PIECE ||
+					pkg.fromPieceType === ExpectedPackageDBType.ADLIB_ACTION ||
+					pkg.fromPieceType === ExpectedPackageDBType.BASELINE_ADLIB_ACTION ||
+					pkg.fromPieceType === ExpectedPackageDBType.BASELINE_ADLIB_PIECE
+			)
+			const groupedExpectedPackages = groupByToMap(rundownExpectedPackages, 'partId')
+			const baselineExpectedPackages = existingData.expectedPackages.filter(
+				(pkg): pkg is ExpectedPackageForIngestModelBaseline =>
+					pkg.fromPieceType === ExpectedPackageDBType.BASELINE_ADLIB_ACTION ||
+					pkg.fromPieceType === ExpectedPackageDBType.BASELINE_ADLIB_PIECE ||
+					pkg.fromPieceType === ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS
+			)
 
 			this.#rundownBaselineExpectedPackagesStore = new ExpectedPackagesStore(
 				false,
@@ -154,7 +173,7 @@ export class IngestModelImpl implements IngestModelReadonly, DatabasePersistedMo
 				undefined,
 				groupedExpectedMediaItems.get(undefined) ?? [],
 				groupedExpectedPlayoutItems.get(undefined) ?? [],
-				groupedExpectedPackages.get(undefined) ?? []
+				baselineExpectedPackages
 			)
 
 			const groupedParts = groupByToMap(existingData.parts, 'segmentId')

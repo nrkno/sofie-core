@@ -368,7 +368,10 @@ export async function saveChangesForRundown(
 	rundownRes: BlueprintResultRundown,
 	showStyle: SelectedShowStyleVariant
 ): Promise<ReadonlyDeep<DBRundown>> {
-	const dbRundown = ingestModel.Rundown.replace(dbRundownData)
+	ingestModel.Rundown.replace(dbRundownData)
+
+	// get the rundown separetely to ensure it exists now
+	const dbRundown = ingestModel.getRundown()
 
 	// Save the baseline
 	logger.info(`Building baseline objects for ${dbRundown._id}...`)

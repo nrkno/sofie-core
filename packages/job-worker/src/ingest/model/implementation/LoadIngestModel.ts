@@ -7,7 +7,6 @@ import { IngestModel } from '../IngestModel'
 import { DatabasePersistedModel } from '../../../modelBase'
 import { getRundownId } from '../../lib'
 import { ExpectedMediaItemRundown } from '@sofie-automation/corelib/dist/dataModel/ExpectedMediaItem'
-import { ExpectedPackageFromRundown } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { ExpectedPlayoutItemRundown } from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'
 import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
@@ -124,7 +123,7 @@ async function loadExistingRundownData(
 		}) as Promise<ExpectedPlayoutItemRundown[]>,
 		context.directCollections.ExpectedPackages.findFetch({
 			rundownId: rundownId,
-		}) as Promise<ExpectedPackageFromRundown[]>,
+		}),
 	])
 
 	return {
