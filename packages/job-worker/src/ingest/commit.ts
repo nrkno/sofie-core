@@ -640,7 +640,7 @@ async function removeSegments(
 	newPlaylist: DBRundownPlaylist,
 	rundownsInPlaylist: Array<ReadonlyDeep<DBRundown>>,
 	ingestModel: IngestModel,
-	_changedSegmentIds: ReadonlyDeep<SegmentId[]>,
+	changedSegmentIds: ReadonlyDeep<SegmentId[]>,
 	removedSegmentIds: ReadonlyDeep<SegmentId[]>
 ) {
 	const { currentPartInstance, nextPartInstance } = await getSelectedPartInstances(
@@ -664,16 +664,15 @@ async function removeSegments(
 	}
 
 	// nocommit Are we keeping preserveUnsyncedPlayingSegmentContents?
-	// if (context.studio.settings.preserveUnsyncedPlayingSegmentContents) {
-	// 	await preserveUnsyncedPlayingSegmentContents(
-	// 		context,
-	// 		ingestModel,
-	// 		changedSegmentIds,
-	// 		removedSegmentIds,
-	// 		currentPartInstance,
-	// 		nextPartInstance
-	// 	)
-	// }
+	if (context.studio.settings.preserveUnsyncedPlayingSegmentContents) {
+		await preserveUnsyncedPlayingSegmentContents(
+			ingestModel,
+			changedSegmentIds,
+			removedSegmentIds,
+			currentPartInstance,
+			nextPartInstance
+		)
+	}
 
 	for (const segment of ingestModel.getAllSegments()) {
 		const segmentId = segment.segment._id
@@ -712,9 +711,9 @@ async function removeSegments(
 	}
 
 	// nocommit Are we keeping preserveUnsyncedPlayingSegmentContents?
-	const emptySegmentIds = /*context.studio.settings.preserveUnsyncedPlayingSegmentContents
+	const emptySegmentIds = context.studio.settings.preserveUnsyncedPlayingSegmentContents
 		? purgeSegmentIds
-		: */ new Set([...purgeSegmentIds.values(), ...orphanDeletedSegmentIds.values()])
+		: new Set([...purgeSegmentIds.values(), ...orphanDeletedSegmentIds.values()])
 	for (const segmentId of emptySegmentIds) {
 		const segment = ingestModel.getSegment(segmentId)
 		if (segment) {
@@ -743,70 +742,36 @@ async function removeSegments(
 }
 
 // nocommit Are we keeping preserveUnsyncedPlayingSegmentContents?
-// async function preserveUnsyncedPlayingSegmentContents(
-// 	context: JobContext,
-// 	ingestCache: CacheForIngest,
-// 	changedSegmentIds: ReadonlyDeep<SegmentId[]>,
-// 	removedSegmentIds: ReadonlyDeep<SegmentId[]>,
-// 	currentPartInstance: ReadonlyDeep<DBPartInstance> | undefined,
-// 	nextPartInstance: ReadonlyDeep<DBPartInstance> | undefined
-// ) {
-// 	const changedSegmentIdsSet = new Set(changedSegmentIds)
+async function preserveUnsyncedPlayingSegmentContents(
+	ingestModel: IngestModel,
+	changedSegmentIds: ReadonlyDeep<SegmentId[]>,
+	removedSegmentIds: ReadonlyDeep<SegmentId[]>,
+	currentPartInstance: ReadonlyDeep<DBPartInstance> | undefined,
+	nextPartInstance: ReadonlyDeep<DBPartInstance> | undefined
+) {
+	const changedSegmentIdsSet = new Set(changedSegmentIds)
 
-// 	const segmentsChangedToHidden = ingestCache
-// 		.getAllSegments()
-// 		.filter((s) => !!s.segment.isHidden && changedSegmentIdsSet.has(s.segment._id))
-// 		.map((segment) => segment.segment._id)
+	const segmentsChangedToHidden = ingestModel
+		.getAllSegments()
+		.filter((s) => !!s.segment.isHidden && changedSegmentIdsSet.has(s.segment._id))
+		.map((segment) => segment.segment._id)
 
-// 	// Find segments that are hidden, not removed, and are not safe to remove (e.g. a live segment)
-// 	const hiddenSegmentsToRestore = segmentsChangedToHidden
-// 		.filter((segmentId) => !removedSegmentIds.includes(segmentId))
-// 		.filter((segmentId) => !canRemoveSegment(currentPartInstance, nextPartInstance, segmentId))
+	// Find segments that are hidden, not removed, and are not safe to remove (e.g. a live segment)
+	const hiddenSegmentsToRestore = segmentsChangedToHidden
+		.filter((segmentId) => !removedSegmentIds.includes(segmentId))
+		.filter((segmentId) => !canRemoveSegment(currentPartInstance, nextPartInstance, segmentId))
 
-// 	for (const segmentId of [...removedSegmentIds, ...hiddenSegmentsToRestore]) {
-// 		const newParts = ingestCache.Parts.findAll((p) => p.segmentId === segmentId)
+	for (const segmentId of [...removedSegmentIds, ...hiddenSegmentsToRestore]) {
+		const segment = ingestModel.getSegment(segmentId)
+		if (!segment) continue // Segment doesn't exist to be restored
 
-// 		// Blueprints have updated the hidden segment, so we won't try to preserve the contents
-// 		if (newParts.length) {
-// 			continue
-// 		}
+		// Blueprints have updated the hidden segment, so we won't try to preserve the contents
+		if (segment.parts.length) continue
 
-// 		// Restore old data
-// 		const oldParts = await context.directCollections.Parts.findFetch({
-// 			rundownId: ingestCache.RundownId,
-// 			segmentId,
-// 		})
-// 		const oldPartIds = oldParts.map((part) => part._id)
-
-// 		const [oldPieces, oldAdLibPieces, oldAdLibActions] = await Promise.all([
-// 			await context.directCollections.Pieces.findFetch({
-// 				startRundownId: ingestCache.RundownId,
-// 				startPartId: { $in: oldPartIds },
-// 			}),
-// 			await context.directCollections.AdLibPieces.findFetch({
-// 				rundownId: ingestCache.RundownId,
-// 				partId: { $in: oldPartIds },
-// 			}),
-// 			await context.directCollections.AdLibActions.findFetch({
-// 				rundownId: ingestCache.RundownId,
-// 				partId: { $in: oldPartIds },
-// 			}),
-// 		])
-
-// 		for (const part of oldParts) {
-// 			ingestCache.Parts.insert(part)
-// 		}
-// 		for (const piece of oldPieces) {
-// 			ingestCache.Pieces.insert(piece)
-// 		}
-// 		for (const adLib of oldAdLibPieces) {
-// 			ingestCache.AdLibPieces.insert(adLib)
-// 		}
-// 		for (const action of oldAdLibActions) {
-// 			ingestCache.AdLibActions.insert(action)
-// 		}
-// 	}
-// }
+		// nocommit could any partIds have been used elsewhere?
+		segment.restoreDeletedParts()
+	}
+}
 
 async function validateScratchpad(_context: JobContext, playoutModel: PlayoutModel) {
 	for (const rundown of playoutModel.rundowns) {

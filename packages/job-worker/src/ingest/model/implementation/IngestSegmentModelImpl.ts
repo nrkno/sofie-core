@@ -199,6 +199,17 @@ export class IngestSegmentModelImpl implements IngestSegmentModel {
 		return ids
 	}
 
+	restoreDeletedParts(): PartId[] {
+		const partIds: PartId[] = []
+		for (const [partId, part] of this.partsImpl) {
+			if (part.deleted) {
+				part.deleted = false
+				partIds.push(partId)
+			}
+		}
+		return partIds
+	}
+
 	replacePart(part: DBPart, pieces: Piece[], adLibPiece: AdLibPiece[], adLibActions: AdLibAction[]): IngestPartModel {
 		part.expectedDurationWithPreroll = calculatePartExpectedDurationWithPreroll(part, pieces)
 

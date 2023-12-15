@@ -56,5 +56,7 @@ export interface IngestSegmentModel extends IngestSegmentModelReadonly {
 
 	removeAllParts(): PartId[]
 
+	restoreDeletedParts(): PartId[]
+
 	replacePart(part: DBPart, pieces: Piece[], adLibPiece: AdLibPiece[], adLibActions: AdLibAction[]): IngestPartModel
 }

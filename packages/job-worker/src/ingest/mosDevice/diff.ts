@@ -114,9 +114,9 @@ export async function diffAndApplyChanges(
 			// TODO - what should happen if it is missing?
 
 			// nocommit Are we keeping preserveUnsyncedPlayingSegmentContents?
-			// if (!context.studio.settings.preserveUnsyncedPlayingSegmentContents) {
-			segment.removeAllParts()
-			// }
+			if (!context.studio.settings.preserveUnsyncedPlayingSegmentContents) {
+				segment.removeAllParts()
+			}
 		}
 	}
 
