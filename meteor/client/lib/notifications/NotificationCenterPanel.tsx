@@ -4,7 +4,6 @@ import ClassNames from 'classnames'
 // @ts-expect-error No types available
 import * as VelocityReact from 'velocity-react'
 import { translateWithTracker, Translated, withTracker } from '../ReactMeteorData/ReactMeteorData'
-import { MeteorReactComponent } from '../MeteorReactComponent'
 import {
 	NotificationCenter,
 	Notification,
@@ -183,7 +182,7 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 		highlightedLevel: NotificationCenter.getHighlightedLevel(),
 	}
 })(
-	class NotificationCenterPopUps extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+	class NotificationCenterPopUps extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		private readonly DISMISS_ANIMATION_DURATION = 500
 		private readonly LEAVE_ANIMATION_DURATION = 150
 
@@ -505,7 +504,7 @@ export const NotificationCenterPanelToggle = withTracker<IToggleProps, {}, ITrac
 		}
 	}
 )(
-	class NotificationCenterPanelToggle extends MeteorReactComponent<IToggleProps & ITrackedCountProps> {
+	class NotificationCenterPanelToggle extends React.Component<IToggleProps & ITrackedCountProps> {
 		render(): JSX.Element {
 			return (
 				<button

@@ -1,6 +1,5 @@
-import { IBlueprintPartDB, NoteSeverity } from '@sofie-automation/blueprints-integration'
+import { IBlueprintPart, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { ITranslatableMessage } from '../TranslatableMessage'
-import { ProtectedStringProperties } from '../protectedString'
 import { PartId, RundownId, SegmentId } from './Ids'
 import { PartNote } from './Notes'
 import { ReadonlyDeep } from 'type-fest'
@@ -12,7 +11,7 @@ export interface PartInvalidReason {
 }
 
 /** A "Line" in NRK Lingo. */
-export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId'> {
+export interface DBPart extends IBlueprintPart {
 	_id: PartId
 	/** Position inside the segment */
 	_rank: number

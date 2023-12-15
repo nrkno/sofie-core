@@ -6,7 +6,6 @@ import {
 	RundownLayoutPartTiming,
 } from '../../../lib/collections/RundownLayouts'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { dashboardElementStyle } from './DashboardPanel'
@@ -33,7 +32,7 @@ interface IPartTimingPanelTrackedProps {
 
 interface IState {}
 
-class PartTimingPanelInner extends MeteorReactComponent<
+class PartTimingPanelInner extends React.Component<
 	Translated<IPartTimingPanelProps & IPartTimingPanelTrackedProps>,
 	IState
 > {

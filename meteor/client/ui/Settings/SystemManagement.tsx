@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ICoreSystem, SofieLogo } from '../../../lib/collections/CoreSystem'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { meteorSubscribe, MeteorPubSub } from '../../../lib/api/pubsub'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
@@ -28,7 +27,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 		coreSystem: CoreSystem.findOne(),
 	}
 })(
-	class SystemManagement extends MeteorReactComponent<Translated<IProps & ITrackedProps>> {
+	class SystemManagement extends React.Component<Translated<IProps & ITrackedProps>> {
 		componentDidMount(): void {
 			meteorSubscribe(MeteorPubSub.coreSystem)
 		}

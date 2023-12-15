@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Translated, translateWithTracker, withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { omit, Time, unprotectString } from '../../../lib/lib'
@@ -12,6 +12,7 @@ import { createSyncPeripheralDeviceCustomPublicationMongoCollection } from '../.
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RoutedMappings } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 import { PeripheralDevicePubSubCollectionsNames } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
+import { useTranslation } from 'react-i18next'
 
 const StudioMappings = createSyncPeripheralDeviceCustomPublicationMongoCollection(
 	PeripheralDevicePubSubCollectionsNames.studioMappings
@@ -24,35 +25,24 @@ interface IMappingsViewProps {
 		}
 	}
 }
-interface IMappingsViewState {}
-const MappingsView = translateWithTracker<IMappingsViewProps, IMappingsViewState, {}>((_props: IMappingsViewProps) => {
-	return {}
-})(
-	class MappingsView extends MeteorReactComponent<Translated<IMappingsViewProps>, IMappingsViewState> {
-		constructor(props: Translated<IMappingsViewProps>) {
-			super(props)
-		}
+function MappingsView(props: Readonly<IMappingsViewProps>): JSX.Element {
+	const { t } = useTranslation()
 
-		render(): JSX.Element {
-			const { t } = this.props
-
-			return (
-				<div className="mtl gutter">
-					<header className="mvs">
-						<h1>{t('Routed Mappings')}</h1>
-					</header>
-					<div className="mod mvl">
-						{this.props.match && this.props.match.params && (
-							<div>
-								<ComponentMappingsTable studioId={this.props.match.params.studioId} />
-							</div>
-						)}
+	return (
+		<div className="mtl gutter">
+			<header className="mvs">
+				<h1>{t('Routed Mappings')}</h1>
+			</header>
+			<div className="mod mvl">
+				{props.match && props.match.params && (
+					<div>
+						<ComponentMappingsTable studioId={props.match.params.studioId} />
 					</div>
-				</div>
-			)
-		}
-	}
-)
+				)}
+			</div>
+		</div>
+	)
+}
 
 interface IMappingsTableProps {
 	studioId: StudioId
