@@ -266,7 +266,7 @@ interface BucketTargetCollectedProps {
 	connectDropTarget: ConnectDropTarget
 }
 
-export const BucketPAnel = React.memo(
+export const BucketPanel = React.memo(
 	function BucketPanel(props: Readonly<IBucketPanelProps>): JSX.Element | null {
 		// Data subscriptions:
 		useSubscription(MeteorPubSub.buckets, props.playlist.studioId, props.bucket._id)
