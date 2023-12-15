@@ -3,7 +3,7 @@ import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { ExpectedMediaItem } from '@sofie-automation/corelib/dist/dataModel/ExpectedMediaItem'
 import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { ExpectedPlayoutItem } from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'
-import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
@@ -134,31 +134,26 @@ export class SaveIngestModelHelper {
 		this.#expectedPlayoutItems.addChanges(store.expectedPlayoutItemsChanges, deleteAll ?? false)
 		this.#expectedMediaItems.addChanges(store.expectedMediaItemsChanges, deleteAll ?? false)
 	}
-	addSegment(segmentId: SegmentId, segment: IngestSegmentModelImpl | null, segmentIsDeleted: boolean): void {
-		// nocommit TODO we need the deleted segments so we know what to cleanup
+	addSegment(segment: IngestSegmentModelImpl, segmentIsDeleted: boolean): void {
+		if (segmentIsDeleted) {
+			this.#segments.deleteDocument(segment.segment._id)
+		} else {
+			this.#segments.addDocument(segment.segmentImpl, segment.segmentHasChanges)
+		}
 
-		// TODO - this is ignoring segments which have been deleted for now
-		if (segment) {
-			if (segmentIsDeleted) {
-				this.#segments.deleteDocument(segment.segment._id)
+		for (const part of segment.partsImpl.values()) {
+			const partIsDeleted = segmentIsDeleted || part.deleted
+			if (partIsDeleted) {
+				this.#parts.deleteDocument(part.partModel.part._id)
 			} else {
-				this.#segments.addDocument(segment.segmentImpl, segment.segmentHasChanges)
+				this.#parts.addDocument(part.partModel.partImpl, part.partModel.partHasChanges)
 			}
 
-			for (const part of segment.partsImpl.values()) {
-				const partIsDeleted = segmentIsDeleted || part.deleted
-				if (partIsDeleted) {
-					this.#parts.deleteDocument(part.partModel.part._id)
-				} else {
-					this.#parts.addDocument(part.partModel.partImpl, part.partModel.partHasChanges)
-				}
+			this.addExpectedPackagesStore(part.partModel.expectedPackagesStore, partIsDeleted)
 
-				this.addExpectedPackagesStore(part.partModel.expectedPackagesStore, partIsDeleted)
-
-				this.#pieces.addChanges(part.partModel.piecesChanges, partIsDeleted)
-				this.#adLibPieces.addChanges(part.partModel.adLibPiecesChanges, partIsDeleted)
-				this.#adLibActions.addChanges(part.partModel.adLibActionsChanges, partIsDeleted)
-			}
+			this.#pieces.addChanges(part.partModel.piecesChanges, partIsDeleted)
+			this.#adLibPieces.addChanges(part.partModel.adLibPiecesChanges, partIsDeleted)
+			this.#adLibActions.addChanges(part.partModel.adLibActionsChanges, partIsDeleted)
 		}
 	}
 

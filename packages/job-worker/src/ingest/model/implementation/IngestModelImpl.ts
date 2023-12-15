@@ -67,6 +67,14 @@ export interface IngestModelImplExistingData {
 }
 
 /**
+ * A light wrapper around the IngestSegmentModel, so that we can track the deletions while still accessing the contents
+ */
+interface SegmentWrapper {
+	segmentModel: IngestSegmentModelImpl
+	deleted: boolean
+}
+
+/**
  * Cache of relevant documents for an Ingest Operation
  */
 export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
@@ -96,7 +104,7 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 		return `IngestModel "${this.rundownExternalId}"`
 	}
 
-	protected readonly segmentsImpl: Map<SegmentId, IngestSegmentModelImpl | null>
+	protected readonly segmentsImpl: Map<SegmentId, SegmentWrapper>
 
 	readonly #rundownBaselineExpectedPackagesStore: ExpectedPackagesStore<ExpectedPackageForIngestModelBaseline>
 	// public get segments(): readonly IngestSegmentModel[] {
@@ -202,7 +210,10 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 							groupedExpectedPackages.get(part._id) ?? []
 						)
 				)
-				this.segmentsImpl.set(segment._id, new IngestSegmentModelImpl(false, segment, parts))
+				this.segmentsImpl.set(segment._id, {
+					segmentModel: new IngestSegmentModelImpl(false, segment, parts),
+					deleted: false,
+				})
 			}
 
 			this.#rundownBaselineObjs = new LazyInitialise(async () =>
@@ -255,7 +266,7 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 	 */
 	getSegmentByExternalId(externalId: string): IngestSegmentModel | undefined {
 		const segmentId = getSegmentId(this.rundownId, externalId)
-		return this.segmentsImpl.get(segmentId) ?? undefined
+		return this.getSegment(segmentId)
 	}
 
 	/**
@@ -263,13 +274,21 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 	 * @param id Id of the Segment
 	 */
 	getSegment(id: SegmentId): IngestSegmentModel | undefined {
-		return this.segmentsImpl.get(id) ?? undefined
+		const segment = this.segmentsImpl.get(id)
+		if (segment && !segment.deleted) return segment.segmentModel
+		return undefined
 	}
 	/**
 	 * Get the Segments of this Rundown, in order
 	 */
 	getAllSegments(): IngestSegmentModel[] {
-		return Array.from(this.segmentsImpl.values()).filter((v): v is IngestSegmentModelImpl => !!v)
+		const segments: IngestSegmentModel[] = []
+
+		for (const segment of this.segmentsImpl.values()) {
+			if (!segment.deleted) segments.push(segment.segmentModel)
+		}
+
+		return segments
 	}
 
 	/**
@@ -299,7 +318,8 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 
 	findPart(partId: PartId): IngestPartModel | undefined {
 		for (const segment of this.segmentsImpl.values()) {
-			const part = segment?.getPart(partId)
+			if (!segment || segment.deleted) continue
+			const part = segment.segmentModel.getPart(partId)
 			if (part) return part
 		}
 		return undefined
@@ -331,21 +351,27 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 	removeSegment(id: SegmentId): void {
 		// nocommit If we keeping preserveUnsyncedPlayingSegmentContents, then this should not do a full delete, but just set a flag
 
-		this.segmentsImpl.set(id, null)
+		const segment = this.segmentsImpl.get(id)
+		if (segment) {
+			segment.deleted = true
+		}
 	}
 
 	replaceSegment(segment: DBSegment): IngestSegmentModel {
 		const oldSegment = this.segmentsImpl.get(segment._id)
 
-		const newSegment = new IngestSegmentModelImpl(true, segment, [], oldSegment ?? undefined)
-		this.segmentsImpl.set(segment._id, newSegment)
+		const newSegment = new IngestSegmentModelImpl(true, segment, [], oldSegment?.segmentModel)
+		this.segmentsImpl.set(segment._id, {
+			segmentModel: newSegment,
+			deleted: false,
+		})
 
 		return newSegment
 	}
 
 	changeSegmentId(oldId: SegmentId, newId: SegmentId): boolean {
 		const existingSegment = this.segmentsImpl.get(oldId)
-		if (!existingSegment) return false
+		if (!existingSegment || existingSegment.deleted) return false
 
 		if (this.segmentsImpl.has(newId))
 			throw new Error(`Cannot rename Segment ${oldId} to ${newId}. New id is already in use`)
@@ -353,7 +379,7 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 		this.segmentsImpl.delete(oldId)
 		this.segmentsImpl.set(newId, existingSegment)
 
-		existingSegment.setOwnerIds(newId)
+		existingSegment.segmentModel.setOwnerIds(newId)
 		return true
 	}
 
@@ -552,8 +578,8 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 		}
 
 		const saveHelper = new SaveIngestModelHelper()
-		for (const [segmentId, segment] of this.segmentsImpl) {
-			saveHelper.addSegment(segmentId, segment, !segment)
+		for (const segment of this.segmentsImpl.values()) {
+			saveHelper.addSegment(segment.segmentModel, segment.deleted)
 		}
 
 		saveHelper.addExpectedPackagesStore(this.#rundownBaselineExpectedPackagesStore)
