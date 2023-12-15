@@ -24,25 +24,34 @@ import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataM
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { JobContext } from '../../../jobs'
+import { JobContext, ProcessedShowStyleBase, ProcessedShowStyleVariant } from '../../../jobs'
 import { LazyInitialise, LazyInitialiseReadonly } from '../../../lib/lazy'
 import { getRundownId, getSegmentId } from '../../lib'
 import { RundownLock } from '../../../jobs/lock'
 import { IngestSegmentModel } from '../IngestSegmentModel'
 import { IngestSegmentModelImpl } from './IngestSegmentModelImpl'
 import { IngestPartModel } from '../IngestPartModel'
-import { clone, Complete, getRandomId, groupByToMap } from '@sofie-automation/corelib/dist/lib'
+import {
+	clone,
+	Complete,
+	deleteAllUndefinedProperties,
+	getRandomId,
+	groupByToMap,
+	literal,
+} from '@sofie-automation/corelib/dist/lib'
 import { IngestPartModelImpl } from './IngestPartModelImpl'
 import { DatabasePersistedModel } from '../../../modelBase'
 import { ExpectedPackagesStore } from './ExpectedPackagesStore'
 import { ReadonlyDeep } from 'type-fest'
-import {
-	ExpectedPackageForIngestModel,
-	ExpectedPackageForIngestModelBaseline,
-	IngestModelReadonly,
-} from '../IngestModel'
+import { ExpectedPackageForIngestModel, ExpectedPackageForIngestModelBaseline, IngestModel } from '../IngestModel'
 import { RundownNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { diffAndReturnLatestObjects } from './utils'
+import _ = require('underscore')
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { IBlueprintRundown } from '@sofie-automation/blueprints-integration'
+import { getCurrentTime, getSystemVersion } from '../../../lib'
+import { WrappedShowStyleBlueprint } from '../../../blueprints/cache'
+import { getExternalNRCSName, PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
 export interface IngestModelImplExistingData {
 	rundown: DBRundown
@@ -59,7 +68,7 @@ export interface IngestModelImplExistingData {
 /**
  * Cache of relevant documents for an Ingest Operation
  */
-export class IngestModelImpl implements IngestModelReadonly, DatabasePersistedModel {
+export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 	public readonly isIngest = true
 
 	public readonly rundownLock: RundownLock
@@ -358,6 +367,59 @@ export class IngestModelImpl implements IngestModelReadonly, DatabasePersistedMo
 	setExpectedPackagesForRundownBaseline(expectedPackages: ExpectedPackageForIngestModelBaseline[]): void {
 		// Future: should these be here, or held as part of each adlib?
 		this.#rundownBaselineExpectedPackagesStore.setExpectedPackages(expectedPackages)
+	}
+
+	setRundownData(
+		rundownData: IBlueprintRundown,
+		showStyleBase: ReadonlyDeep<ProcessedShowStyleBase>,
+		showStyleVariant: ReadonlyDeep<ProcessedShowStyleVariant>,
+		showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
+		peripheralDevice: ReadonlyDeep<PeripheralDevice> | undefined,
+		rundownNotes: RundownNote[]
+	): ReadonlyDeep<DBRundown> {
+		const newRundown = literal<Complete<DBRundown>>({
+			...clone(rundownData as Complete<IBlueprintRundown>),
+			notes: clone(rundownNotes),
+			_id: this.rundownId,
+			externalId: this.rundownExternalId,
+			organizationId: this.context.studio.organizationId,
+			studioId: this.context.studio._id,
+			showStyleVariantId: showStyleVariant._id,
+			showStyleBaseId: showStyleBase._id,
+			orphaned: undefined,
+
+			importVersions: {
+				studio: this.context.studio._rundownVersionHash,
+				showStyleBase: showStyleBase._rundownVersionHash,
+				showStyleVariant: showStyleVariant._rundownVersionHash,
+				blueprint: showStyleBlueprint.blueprint.blueprintVersion,
+				core: getSystemVersion(),
+			},
+
+			created: this.rundown?.created ?? getCurrentTime(),
+			modified: getCurrentTime(),
+
+			peripheralDeviceId: peripheralDevice?._id,
+			externalNRCSName: getExternalNRCSName(peripheralDevice),
+
+			// validated later
+			playlistId: this.#rundownImpl?.playlistId ?? protectString(''),
+			playlistIdIsSetInSofie: this.#rundownImpl?.playlistIdIsSetInSofie,
+
+			// owned by elsewhere
+			airStatus: this.#rundownImpl?.airStatus,
+			status: this.#rundownImpl?.status,
+			restoredFromSnapshotId: undefined,
+			notifiedCurrentPlayingPartExternalId: this.#rundownImpl?.notifiedCurrentPlayingPartExternalId,
+		})
+		deleteAllUndefinedProperties(newRundown)
+
+		if (!this.#rundownImpl || !_.isEqual(this.#rundownImpl, newRundown)) {
+			this.#rundownImpl = newRundown
+			this.#rundownHasChanged = true
+		}
+
+		return this.#rundownImpl
 	}
 
 	async setRundownBaseline(

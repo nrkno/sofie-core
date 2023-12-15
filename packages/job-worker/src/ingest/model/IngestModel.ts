@@ -27,6 +27,9 @@ import { Piece, PieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { RundownNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { ProcessedShowStyleBase, ProcessedShowStyleVariant } from '../../jobs/showStyle'
+import { WrappedShowStyleBlueprint } from '../../blueprints/cache'
+import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
 export type ExpectedPackageForIngestModelBaseline =
 	| ExpectedPackageDBFromBaselineAdLibAction
@@ -139,6 +142,15 @@ export interface IngestModel extends IngestModelReadonly, BaseModel {
 	setExpectedPlayoutItemsForRundownBaseline(expectedPlayoutItems: ExpectedPlayoutItemRundown[]): void
 	setExpectedMediaItemsForRundownBaseline(expectedMediaItems: ExpectedMediaItemRundown[]): void
 	setExpectedPackagesForRundownBaseline(expectedPackages: ExpectedPackageForIngestModelBaseline[]): void
+
+	setRundownData(
+		rundownData: unknown,
+		showStyleBase: ReadonlyDeep<ProcessedShowStyleBase>,
+		showStyleVariant: ReadonlyDeep<ProcessedShowStyleVariant>,
+		showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
+		peripheralDevice: ReadonlyDeep<PeripheralDevice> | undefined,
+		rundownNotes: RundownNote[]
+	): ReadonlyDeep<DBRundown>
 
 	setRundownBaseline(
 		timelineObjectsBlob: PieceTimelineObjectsBlob,

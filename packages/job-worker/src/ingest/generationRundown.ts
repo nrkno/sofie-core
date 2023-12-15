@@ -5,7 +5,6 @@ import { serializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dis
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { StudioUserContext, GetRundownContext } from '../blueprints/context'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
@@ -14,16 +13,15 @@ import {
 	postProcessGlobalAdLibActions,
 	postProcessRundownBaselineItems,
 } from '../blueprints/postProcess'
-import { getCurrentTime, getSystemVersion } from '../lib'
 import { logger } from '../logging'
 import _ = require('underscore')
-import { IngestModel, IngestModelReadonly } from './model/IngestModel'
+import { IngestModel } from './model/IngestModel'
 import { LocalIngestRundown } from './ingestCache'
 import { extendIngestRundownCore, canRundownBeUpdated } from './lib'
 import { JobContext } from '../jobs'
 import { CommitIngestData } from './lock'
 import { SelectedShowStyleVariant, selectShowStyleVariant } from './selectShowStyleVariant'
-import { getExternalNRCSName, PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { updateExpectedPackagesForRundownBaseline } from './expectedPackages'
 import { ReadonlyDeep } from 'type-fest'
 import { BlueprintResultRundown, ExtendedIngestRundown } from '@sofie-automation/blueprints-integration'
@@ -83,7 +81,7 @@ export async function updateRundownFromIngestData(
 	const allRundownWatchedPackages = await pAllRundownWatchedPackages
 
 	// Call blueprints, get rundown
-	const rundownData = await getRundownFromIngestData(
+	const dbRundown = await regenerateRundownAndBaselineFromIngestData(
 		context,
 		ingestModel,
 		extendedIngestRundown,
@@ -92,15 +90,10 @@ export async function updateRundownFromIngestData(
 		showStyleBlueprint,
 		allRundownWatchedPackages
 	)
-	if (!rundownData) {
+	if (!dbRundown) {
 		// We got no rundown, abort:
 		return null
 	}
-
-	const { dbRundownData, rundownRes } = rundownData
-
-	// Save rundown and baseline
-	const dbRundown = await saveChangesForRundown(context, ingestModel, dbRundownData, rundownRes, showStyle)
 
 	// TODO - store notes from rundownNotesContext
 
@@ -177,7 +170,7 @@ export async function updateRundownMetadataFromIngestData(
 	const allRundownWatchedPackages = await pAllRundownWatchedPackages
 
 	// Call blueprints, get rundown
-	const rundownData = await getRundownFromIngestData(
+	const dbRundown = await regenerateRundownAndBaselineFromIngestData(
 		context,
 		ingestModel,
 		extendedIngestRundown,
@@ -186,15 +179,10 @@ export async function updateRundownMetadataFromIngestData(
 		showStyleBlueprint,
 		allRundownWatchedPackages
 	)
-	if (!rundownData) {
+	if (!dbRundown) {
 		// We got no rundown, abort:
 		return null
 	}
-
-	const { dbRundownData, rundownRes } = rundownData
-
-	// Save rundown and baseline
-	const dbRundown = await saveChangesForRundown(context, ingestModel, dbRundownData, rundownRes, showStyle)
 
 	let changedSegmentIds: SegmentId[] | undefined
 	let removedSegmentIds: SegmentId[] | undefined
@@ -238,15 +226,15 @@ export async function updateRundownMetadataFromIngestData(
  * @param allRundownWatchedPackages WatchedPackagesHelper for all packages belonging to the rundown
  * @returns Generated documents or null if Blueprints reject the Rundown
  */
-export async function getRundownFromIngestData(
+export async function regenerateRundownAndBaselineFromIngestData(
 	context: JobContext,
-	ingestModel: IngestModelReadonly,
+	ingestModel: IngestModel,
 	extendedIngestRundown: ExtendedIngestRundown,
 	pPeripheralDevice: Promise<PeripheralDevice | undefined> | undefined,
 	showStyle: SelectedShowStyleVariant,
 	showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 	allRundownWatchedPackages: WatchedPackagesHelper
-): Promise<{ dbRundownData: DBRundown; rundownRes: BlueprintResultRundown } | null> {
+): Promise<ReadonlyDeep<DBRundown> | null> {
 	const rundownBaselinePackages = allRundownWatchedPackages.filter(
 		context,
 		(pkg) =>
@@ -319,56 +307,44 @@ export async function getRundownFromIngestData(
 	)
 
 	const peripheralDevice = await pPeripheralDevice
-	const dbRundownData = literal<DBRundown>({
-		...rundownRes.rundown,
-		notes: rundownNotes,
-		_id: ingestModel.rundownId,
-		externalId: extendedIngestRundown.externalId,
-		organizationId: context.studio.organizationId,
-		studioId: context.studio._id,
-		showStyleVariantId: showStyle.variant._id,
-		showStyleBaseId: showStyle.base._id,
-		orphaned: undefined,
+	// const dbRundownData = literal<DBRundown>({
+	// 	...rundownRes.rundown,
+	// 	notes: rundownNotes,
+	// 	_id: ingestModel.rundownId,
+	// 	externalId: extendedIngestRundown.externalId,
+	// 	organizationId: context.studio.organizationId,
+	// 	studioId: context.studio._id,
+	// 	showStyleVariantId: showStyle.variant._id,
+	// 	showStyleBaseId: showStyle.base._id,
+	// 	orphaned: undefined,
 
-		importVersions: {
-			studio: context.studio._rundownVersionHash,
-			showStyleBase: showStyle.base._rundownVersionHash,
-			showStyleVariant: showStyle.variant._rundownVersionHash,
-			blueprint: showStyleBlueprint.blueprint.blueprintVersion,
-			core: getSystemVersion(),
-		},
+	// 	importVersions: {
+	// 		studio: context.studio._rundownVersionHash,
+	// 		showStyleBase: showStyle.base._rundownVersionHash,
+	// 		showStyleVariant: showStyle.variant._rundownVersionHash,
+	// 		blueprint: showStyleBlueprint.blueprint.blueprintVersion,
+	// 		core: getSystemVersion(),
+	// 	},
 
-		created: ingestModel.rundown?.created ?? getCurrentTime(),
-		modified: getCurrentTime(),
+	// 	created: ingestModel.rundown?.created ?? getCurrentTime(),
+	// 	modified: getCurrentTime(),
 
-		peripheralDeviceId: peripheralDevice?._id,
-		externalNRCSName: getExternalNRCSName(peripheralDevice),
+	// 	peripheralDeviceId: peripheralDevice?._id,
+	// 	externalNRCSName: getExternalNRCSName(peripheralDevice),
 
-		// validated later
-		playlistId: protectString(''),
-		...(ingestModel.rundown ? _.pick(ingestModel.rundown, 'playlistId', 'airStatus', 'status') : {}),
-	})
+	// 	// validated later
+	// 	playlistId: protectString(''),
+	// 	...(ingestModel.rundown ? _.pick(ingestModel.rundown, 'playlistId', 'airStatus', 'status') : {}),
+	// })
 
-	return { dbRundownData, rundownRes }
-}
-
-/**
- * Save documents for an ingested Rundown into the ingestModel
- * @param context Context for the running job
- * @param ingestModel The ingest model of the rundown
- * @param dbRundownData Rundown document to save
- * @param rundownRes Rundown owned documents
- * @param showStyle ShowStyle the rundown is generated for
- * @returns Reference to updated Rundown document
- */
-export async function saveChangesForRundown(
-	context: JobContext,
-	ingestModel: IngestModel,
-	dbRundownData: DBRundown,
-	rundownRes: BlueprintResultRundown,
-	showStyle: SelectedShowStyleVariant
-): Promise<ReadonlyDeep<DBRundown>> {
-	ingestModel.Rundown.replace(dbRundownData)
+	ingestModel.setRundownData(
+		rundownRes.rundown,
+		showStyle.base,
+		showStyle.variant,
+		showStyleBlueprint,
+		peripheralDevice,
+		rundownNotes
+	)
 
 	// get the rundown separetely to ensure it exists now
 	const dbRundown = ingestModel.getRundown()
