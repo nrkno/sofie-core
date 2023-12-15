@@ -52,7 +52,7 @@ import { IBlueprintRundown } from '@sofie-automation/blueprints-integration'
 import { getCurrentTime, getSystemVersion } from '../../../lib'
 import { WrappedShowStyleBlueprint } from '../../../blueprints/cache'
 import { getExternalNRCSName, PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { SaveIngestModelHelper } from './SaveIngestModel'
+import { generateWriteOpsForDocuments, SaveIngestModelHelper } from './SaveIngestModel'
 
 export interface IngestModelImplExistingData {
 	rundown: DBRundown
@@ -587,22 +587,25 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 			}
 		}
 
+		const [baselineObjsOps, baselineAdLibPiecesOps, baselineAdLibActionsOps] = await Promise.all([
+			generateWriteOpsForDocuments(this.#rundownBaselineObjs, this.#rundownBaselineObjsWithChanges),
+			generateWriteOpsForDocuments(this.#rundownBaselineAdLibPieces, this.#rundownBaselineAdLibPiecesWithChanges),
+			generateWriteOpsForDocuments(
+				this.#rundownBaselineAdLibActions,
+				this.#rundownBaselineAdLibActionsWithChanges
+			),
+		])
+
 		saveHelper.addExpectedPackagesStore(this.#rundownBaselineExpectedPackagesStore)
 		this.#rundownBaselineExpectedPackagesStore.clearChangedFlags()
-
-		// nocommit TODO
-		// #rundownBaselineObjsWithChanges = new Set<RundownBaselineObjId>()
-		// #rundownBaselineAdLibPiecesWithChanges = new Set<PieceId>()
-		// #rundownBaselineAdLibActionsWithChanges = new Set<RundownBaselineAdLibActionId>()
 
 		await Promise.all([
 			this.#rundownHasChanged && this.#rundownImpl
 				? this.context.directCollections.Rundowns.replace(this.#rundownImpl)
 				: undefined,
-			// nocommit TODO
-			// ...writePartInstancesAndPieceInstances(this.context, this.allPartInstances),
-			// writeScratchpadSegments(this.context, this.rundownsImpl),
-			// this.#baselineHelper.saveAllToDatabase(),
+			this.context.directCollections.RundownBaselineObjects.bulkWrite(baselineObjsOps),
+			this.context.directCollections.RundownBaselineAdLibPieces.bulkWrite(baselineAdLibPiecesOps),
+			this.context.directCollections.RundownBaselineAdLibActions.bulkWrite(baselineAdLibActionsOps),
 			...saveHelper.commit(this.context),
 		])
 

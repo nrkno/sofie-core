@@ -9,12 +9,27 @@ import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { AnyBulkWriteOperation } from 'mongodb'
+import { LazyInitialise } from '../../../lib/lazy'
 import { JobContext } from '../../../jobs'
 import { ExpectedPackagesStore } from './ExpectedPackagesStore'
 import { IngestSegmentModelImpl } from './IngestSegmentModelImpl'
-import { DocumentChanges } from './utils'
+import { DocumentChanges, getDocumentChanges } from './utils'
 
-class DocumentTracker<TDoc extends { _id: ProtectedString<any> }> {
+export async function generateWriteOpsForDocuments<TDoc extends { _id: ProtectedString<any> }>(
+	currentDocs: LazyInitialise<TDoc[]>,
+	changedIds: ReadonlySet<TDoc['_id']>
+): Promise<AnyBulkWriteOperation<TDoc>[]> {
+	const changeTracker = new DocumentChangeTracker<TDoc>()
+
+	if (changedIds.size > 0 || currentDocs.isLoaded()) {
+		const loadedDocs = await currentDocs.get()
+		changeTracker.addChanges(getDocumentChanges(changedIds, loadedDocs), false)
+	}
+
+	return changeTracker.generateWriteOps()
+}
+
+class DocumentChangeTracker<TDoc extends { _id: ProtectedString<any> }> {
 	#currentIds = new Set<TDoc['_id']>()
 	#deletedIds = new Set<TDoc['_id']>()
 	#documentsToSave = new Map<TDoc['_id'], TDoc>()
@@ -88,7 +103,7 @@ class DocumentTracker<TDoc extends { _id: ProtectedString<any> }> {
 		}
 	}
 
-	generateWriteOp(): AnyBulkWriteOperation<TDoc>[] {
+	generateWriteOps(): AnyBulkWriteOperation<TDoc>[] {
 		const ops: AnyBulkWriteOperation<TDoc>[] = []
 
 		for (const doc of this.#documentsToSave) {
@@ -116,15 +131,15 @@ class DocumentTracker<TDoc extends { _id: ProtectedString<any> }> {
 }
 
 export class SaveIngestModelHelper {
-	#expectedPackages = new DocumentTracker<ExpectedPackageDB>()
-	#expectedPlayoutItems = new DocumentTracker<ExpectedPlayoutItem>()
-	#expectedMediaItems = new DocumentTracker<ExpectedMediaItem>()
+	#expectedPackages = new DocumentChangeTracker<ExpectedPackageDB>()
+	#expectedPlayoutItems = new DocumentChangeTracker<ExpectedPlayoutItem>()
+	#expectedMediaItems = new DocumentChangeTracker<ExpectedMediaItem>()
 
-	#segments = new DocumentTracker<DBSegment>()
-	#parts = new DocumentTracker<DBPart>()
-	#pieces = new DocumentTracker<Piece>()
-	#adLibPieces = new DocumentTracker<AdLibPiece>()
-	#adLibActions = new DocumentTracker<AdLibAction>()
+	#segments = new DocumentChangeTracker<DBSegment>()
+	#parts = new DocumentChangeTracker<DBPart>()
+	#pieces = new DocumentChangeTracker<Piece>()
+	#adLibPieces = new DocumentChangeTracker<AdLibPiece>()
+	#adLibActions = new DocumentChangeTracker<AdLibAction>()
 
 	addExpectedPackagesStore(
 		store: ExpectedPackagesStore<ExpectedPackageDB & { rundownId: RundownId }>,
@@ -159,15 +174,15 @@ export class SaveIngestModelHelper {
 
 	commit(context: JobContext): Array<Promise<unknown>> {
 		return [
-			context.directCollections.ExpectedPackages.bulkWrite(this.#expectedPackages.generateWriteOp()),
-			context.directCollections.ExpectedPlayoutItems.bulkWrite(this.#expectedPlayoutItems.generateWriteOp()),
-			context.directCollections.ExpectedMediaItems.bulkWrite(this.#expectedMediaItems.generateWriteOp()),
+			context.directCollections.ExpectedPackages.bulkWrite(this.#expectedPackages.generateWriteOps()),
+			context.directCollections.ExpectedPlayoutItems.bulkWrite(this.#expectedPlayoutItems.generateWriteOps()),
+			context.directCollections.ExpectedMediaItems.bulkWrite(this.#expectedMediaItems.generateWriteOps()),
 
-			context.directCollections.Segments.bulkWrite(this.#segments.generateWriteOp()),
-			context.directCollections.Parts.bulkWrite(this.#parts.generateWriteOp()),
-			context.directCollections.Pieces.bulkWrite(this.#pieces.generateWriteOp()),
-			context.directCollections.AdLibPieces.bulkWrite(this.#adLibPieces.generateWriteOp()),
-			context.directCollections.AdLibActions.bulkWrite(this.#adLibActions.generateWriteOp()),
+			context.directCollections.Segments.bulkWrite(this.#segments.generateWriteOps()),
+			context.directCollections.Parts.bulkWrite(this.#parts.generateWriteOps()),
+			context.directCollections.Pieces.bulkWrite(this.#pieces.generateWriteOps()),
+			context.directCollections.AdLibPieces.bulkWrite(this.#adLibPieces.generateWriteOps()),
+			context.directCollections.AdLibActions.bulkWrite(this.#adLibActions.generateWriteOps()),
 		]
 	}
 }
