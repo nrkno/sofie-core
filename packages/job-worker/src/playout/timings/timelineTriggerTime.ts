@@ -95,9 +95,7 @@ async function writePieceInstanceChangesToMongo(context: JobContext, changes: Pi
 		})
 	}
 
-	if (updates.length > 0) {
-		await context.directCollections.PieceInstances.bulkWrite(updates)
-	}
+	await context.directCollections.PieceInstances.bulkWrite(updates)
 }
 
 interface PieceInstancesChanges {

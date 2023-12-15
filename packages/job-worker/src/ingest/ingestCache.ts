@@ -152,9 +152,7 @@ export class RundownIngestDataCache {
 			})
 		}
 
-		if (updates.length > 0) {
-			await this.context.directCollections.IngestDataCache.bulkWrite(updates)
-		}
+		await this.context.directCollections.IngestDataCache.bulkWrite(updates)
 	}
 }
 
