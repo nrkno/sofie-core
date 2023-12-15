@@ -53,6 +53,12 @@ export class ExpectedPackagesStore<ExpectedPackageType extends ExpectedPackageDB
 		return getDocumentChanges(this.#expectedPackagesWithChanges, this.#expectedPackages)
 	}
 
+	clearChangedFlags(): void {
+		this.#expectedMediaItemsWithChanges.clear()
+		this.#expectedPlayoutItemsWithChanges.clear()
+		this.#expectedPackagesWithChanges.clear()
+	}
+
 	#rundownId: RundownId
 	#segmentId: SegmentId | undefined
 	#partId: PartId | undefined

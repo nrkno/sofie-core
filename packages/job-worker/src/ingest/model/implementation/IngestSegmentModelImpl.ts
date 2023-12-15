@@ -58,6 +58,17 @@ export class IngestSegmentModelImpl implements IngestSegmentModel {
 		}
 	}
 
+	clearChangedFlags(): void {
+		this.#segmentHasChanges = false
+		for (const [partId, part] of this.partsImpl) {
+			if (part.deleted) {
+				this.partsImpl.delete(partId)
+			} else {
+				part.partModel.clearChangedFlags()
+			}
+		}
+	}
+
 	#segmentHasChanges = false
 	get segmentHasChanges(): boolean {
 		return this.#segmentHasChanges

@@ -578,11 +578,17 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 		}
 
 		const saveHelper = new SaveIngestModelHelper()
-		for (const segment of this.segmentsImpl.values()) {
+		for (const [segmentId, segment] of this.segmentsImpl.entries()) {
 			saveHelper.addSegment(segment.segmentModel, segment.deleted)
+			if (segment.deleted) {
+				this.segmentsImpl.delete(segmentId)
+			} else {
+				segment.segmentModel.clearChangedFlags()
+			}
 		}
 
 		saveHelper.addExpectedPackagesStore(this.#rundownBaselineExpectedPackagesStore)
+		this.#rundownBaselineExpectedPackagesStore.clearChangedFlags()
 
 		// nocommit TODO
 		// #rundownBaselineObjsWithChanges = new Set<RundownBaselineObjId>()

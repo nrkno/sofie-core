@@ -98,6 +98,16 @@ export class IngestPartModelImpl implements IngestPartModel {
 		return getDocumentChanges(this.#adLibActionsWithChanges, this.#adLibActions)
 	}
 
+	clearChangedFlags(): void {
+		this.#partHasChanges = false
+
+		this.#piecesWithChanges.clear()
+		this.#adLibPiecesWithChanges.clear()
+		this.#adLibActionsWithChanges.clear()
+
+		this.expectedPackagesStore.clearChangedFlags()
+	}
+
 	constructor(
 		isBeingCreated: boolean,
 		part: DBPart,
