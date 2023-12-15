@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
 import { omit, unprotectString } from '../../../lib/lib'
 import { MeteorPubSub } from '../../../lib/api/pubsub'
