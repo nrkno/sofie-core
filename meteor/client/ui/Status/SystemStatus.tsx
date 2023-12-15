@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { Translated, useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import {
 	PeripheralDevice,
 	PeripheralDeviceType,
@@ -15,7 +15,6 @@ import { faTrash, faEye } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
 import { doModalDialog } from '../../lib/ModalDialog'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { callPeripheralDeviceAction, PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { NotificationCenter, NoticeLevel, Notification } from '../../../lib/notifications/notifications'
 import { getAllowConfigure, getAllowDeveloper, getAllowStudio, getHelpMode } from '../../lib/localStorage'
@@ -517,13 +516,18 @@ interface DeviceInHierarchy {
 	children: Array<DeviceInHierarchy>
 }
 
-export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISystemStatusTrackedProps>(() => {
-	return {
-		coreSystem: CoreSystem.findOne(),
-		devices: PeripheralDevices.find({}, { sort: { lastConnected: -1 } }).fetch(),
-	}
-})(
-	class SystemStatus extends MeteorReactComponent<
+export default function SystemStatus(props: Readonly<ISystemStatusProps>): JSX.Element {
+	// Subscribe to data:
+	useSubscription(CorelibPubSub.peripheralDevices, null)
+
+	const coreSystem = useTracker(() => CoreSystem.findOne(), [])
+	const devices = useTracker(() => PeripheralDevices.find({}, { sort: { lastConnected: -1 } }).fetch(), [], [])
+
+	return <SystemStatusContent {...props} coreSystem={coreSystem} devices={devices} />
+}
+
+const SystemStatusContent = reacti18next.withTranslation()(
+	class SystemStatusContent extends React.Component<
 		Translated<ISystemStatusProps & ISystemStatusTrackedProps>,
 		ISystemStatusState
 	> {
@@ -544,9 +548,6 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 			this.refreshSystemStatus()
 			this.refreshInterval = setInterval(this.refreshSystemStatus, 5000)
 			this.refreshDebugStatesInterval = setInterval(this.refreshDebugStates, 1000)
-
-			// Subscribe to data:
-			this.subscribe(CorelibPubSub.peripheralDevices, null)
 		}
 
 		componentWillUnmount(): void {
