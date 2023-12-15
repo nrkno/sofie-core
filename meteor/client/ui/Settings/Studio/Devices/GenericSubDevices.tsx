@@ -11,7 +11,7 @@ import { faCheck, faPencilAlt, faSync, faTrash } from '@fortawesome/free-solid-s
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { JSONBlob, JSONBlobParse, JSONSchema } from '@sofie-automation/blueprints-integration'
 import { DropdownInputControl, DropdownInputOption } from '../../../../lib/Components/DropdownInput'
-import { useToggleExpandHelper } from '../../util/ToggleExpandedHelper'
+import { useToggleExpandHelper } from '../../../util/useToggleExpandHelper'
 import { doModalDialog } from '../../../../lib/ModalDialog'
 import classNames from 'classnames'
 import { SubdeviceManifest } from '@sofie-automation/corelib/dist/deviceConfig'

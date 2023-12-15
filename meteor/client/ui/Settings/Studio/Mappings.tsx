@@ -9,7 +9,7 @@ import { faTrash, faPencilAlt, faCheck, faPlus, faSync } from '@fortawesome/free
 import { useTranslation } from 'react-i18next'
 import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
 import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/shared-lib/dist/core/constants'
-import { useToggleExpandHelper } from '../util/ToggleExpandedHelper'
+import { useToggleExpandHelper } from '../../util/useToggleExpandHelper'
 import {
 	getAllCurrentAndDeletedItemsFromOverrides,
 	OverrideOpHelper,
