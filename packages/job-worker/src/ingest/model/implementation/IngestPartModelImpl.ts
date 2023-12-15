@@ -108,6 +108,24 @@ export class IngestPartModelImpl implements IngestPartModel {
 		this.expectedPackagesStore.clearChangedFlags()
 	}
 
+	checkNoChanges(): Error | undefined {
+		if (this.#partHasChanges) return new Error(`Failed no changes in model assertion, Part has been changed`)
+
+		if (this.expectedPackagesStore.hasChanges)
+			return new Error(`Failed no changes in model assertion, ExpectedPackages has been changed`)
+
+		if (this.#piecesWithChanges.size > 0)
+			return new Error(`Failed no changes in model assertion, Pieces has been changed`)
+
+		if (this.#adLibPiecesWithChanges.size > 0)
+			return new Error(`Failed no changes in model assertion, Pieces has been changed`)
+
+		if (this.#adLibActionsWithChanges.size > 0)
+			return new Error(`Failed no changes in model assertion, Pieces has been changed`)
+
+		return undefined
+	}
+
 	constructor(
 		isBeingCreated: boolean,
 		part: DBPart,

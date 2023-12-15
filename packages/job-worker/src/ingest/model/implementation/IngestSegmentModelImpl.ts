@@ -69,6 +69,21 @@ export class IngestSegmentModelImpl implements IngestSegmentModel {
 		}
 	}
 
+	checkNoChanges(): Error | undefined {
+		if (this.#segmentHasChanges) return new Error(`Failed no changes in model assertion, Segment has been changed`)
+
+		for (const part of this.partsImpl.values()) {
+			if (part.deleted) {
+				return new Error(`Failed no changes in model assertion, Part has been changed`)
+			} else {
+				const err = part.partModel.checkNoChanges()
+				if (err) return err
+			}
+		}
+
+		return undefined
+	}
+
 	#segmentHasChanges = false
 	get segmentHasChanges(): boolean {
 		return this.#segmentHasChanges

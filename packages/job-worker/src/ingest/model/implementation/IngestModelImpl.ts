@@ -53,6 +53,8 @@ import { getCurrentTime, getSystemVersion } from '../../../lib'
 import { WrappedShowStyleBlueprint } from '../../../blueprints/cache'
 import { getExternalNRCSName, PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { generateWriteOpsForDocuments, SaveIngestModelHelper } from './SaveIngestModel'
+import { IS_PRODUCTION } from '../../../environment'
+import { logger } from '../../../logging'
 
 export interface IngestModelImplExistingData {
 	rundown: DBRundown
@@ -549,7 +551,48 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 		// Once disposed, it no longer has any changes
 		if (this.#disposed) return
 
-		throw new Error('Method not implemented.')
+		function logOrThrowError(error: Error) {
+			if (!IS_PRODUCTION) {
+				throw error
+			} else {
+				logger.error(error)
+			}
+		}
+
+		const span = this.context.startSpan('IngestModelImpl.assertNoChanges')
+		try {
+			if (this.#rundownHasChanged)
+				logOrThrowError(new Error(`Failed no changes in model assertion, Rundown has been changed`))
+
+			if (this.#rundownBaselineObjsWithChanges.size)
+				logOrThrowError(new Error(`Failed no changes in model assertion, RundownBaselineObjs has been changed`))
+
+			if (this.#rundownBaselineAdLibPiecesWithChanges.size)
+				logOrThrowError(
+					new Error(`Failed no changes in model assertion, RundownBaselineAdlibPieces has been changed`)
+				)
+
+			if (this.#rundownBaselineAdLibActionsWithChanges.size)
+				logOrThrowError(
+					new Error(`Failed no changes in model assertion, RundownBaselineAdlibActions has been changed`)
+				)
+
+			if (this.#rundownBaselineExpectedPackagesStore.hasChanges)
+				logOrThrowError(
+					new Error(`Failed no changes in model assertion, RundownBaselineExpectedPackages has been changed`)
+				)
+
+			for (const segment of this.segmentsImpl.values()) {
+				if (segment.deleted) {
+					logOrThrowError(new Error(`Failed no changes in model assertion, Segment has been changed`))
+				} else {
+					const err = segment.segmentModel.checkNoChanges()
+					if (err) logOrThrowError(err)
+				}
+			}
+		} finally {
+			if (span) span.end()
+		}
 	}
 
 	/**

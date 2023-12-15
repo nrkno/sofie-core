@@ -43,6 +43,14 @@ export class ExpectedPackagesStore<ExpectedPackageType extends ExpectedPackageDB
 		return this.#expectedPackages as any[]
 	}
 
+	get hasChanges(): boolean {
+		return (
+			this.#expectedMediaItemsWithChanges.size > 0 ||
+			this.#expectedPlayoutItemsWithChanges.size > 0 ||
+			this.#expectedPackagesWithChanges.size > 0
+		)
+	}
+
 	get expectedMediaItemsChanges(): DocumentChanges<ExpectedMediaItemRundown> {
 		return getDocumentChanges(this.#expectedMediaItemsWithChanges, this.#expectedMediaItems)
 	}
