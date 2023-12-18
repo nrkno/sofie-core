@@ -1,98 +1,41 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { RundownId, SegmentId, PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { MockJobContext, setupDefaultJobEnvironment } from '../__mocks__/context'
-import { setupDefaultRundownPlaylist, setupMockShowStyleCompound } from '../__mocks__/presetCollections'
 import { updatePartInstanceRanks } from '../rundown'
-import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { JobContext } from '../jobs'
 import { BeforePartMapItem } from '../ingest/commit'
-import { getRundownId } from '../ingest/lib'
-import { runWithRundownLock } from '../ingest/lock'
-import { loadIngestModelFromRundownExternalId } from '../ingest/model/implementation/LoadIngestModel'
+import { mock } from 'jest-mock-extended'
+import { ICollection } from '../db'
+import { IngestModel } from '../ingest/model/IngestModel'
+import { IngestSegmentModel } from '../ingest/model/IngestSegmentModel'
+import { clone } from '@sofie-automation/corelib/dist/lib'
+import { IngestPartModel } from '../ingest/model/IngestPartModel'
+import { AnyBulkWriteOperation } from 'mongodb'
+import _ = require('underscore')
 
-// require('../rundown') // include in order to create the Meteor methods needed
+const mockOptions = {
+	fallbackMockImplementation: () => {
+		throw new Error('not mocked')
+	},
+}
 
 describe('updatePartInstanceRanks', () => {
-	let context: MockJobContext
-	// let playlistId!: RundownPlaylistId
-	const rundownExternalId = 'rundown00'
-	let rundownId!: RundownId
-	let segmentId!: SegmentId
+	const rundownId: RundownId = protectString('')
+	const segmentId: SegmentId = protectString('')
 
-	beforeAll(async () => {
-		context = setupDefaultJobEnvironment()
-
-		await setupMockShowStyleCompound(context)
-
-		// Set up a playlist:
-		const info = await setupDefaultRundownPlaylist(
-			context,
-			undefined,
-			getRundownId(context.studio._id, rundownExternalId)
-		)
-		await context.mockCollections.RundownPlaylists.update(info.playlistId, {
-			$set: { activationId: protectString('active') },
-		})
-
-		// playlistId = info.playlistId
-		rundownId = info.rundownId
-
-		const segment0 = (await context.mockCollections.Segments.findOne({ rundownId })) as DBSegment
-		// eslint-disable-next-line jest/no-standalone-expect
-		expect(segment0).toBeTruthy()
-		segmentId = segment0._id
-	})
-
-	async function insertPart(id: string, rank: number): Promise<void> {
-		await context.mockCollections.Parts.insertOne({
-			_id: protectString(id),
-			_rank: rank,
-			rundownId,
-			segmentId,
-			externalId: id,
-			title: id,
-			expectedDurationWithPreroll: undefined,
-		})
-	}
-
-	beforeEach(async () => {
-		await context.mockCollections.Parts.remove({ segmentId })
-		await context.mockCollections.PartInstances.remove({ segmentId })
-
-		await insertPart('part01', 1)
-		await insertPart('part02', 2)
-		await insertPart('part03', 3)
-		await insertPart('part04', 4)
-		await insertPart('part05', 5)
-	})
-
-	async function getParts(): Promise<DBPart[]> {
-		return context.mockCollections.Parts.findFetch({ segmentId })
-	}
-	async function getPartInstances(): Promise<DBPartInstance[]> {
-		return context.mockCollections.PartInstances.findFetch({ segmentId })
-	}
-
-	async function getPartRanks(): Promise<Array<{ id: PartId; rank: number }>> {
-		const parts = await getParts()
+	function getPartRanks(parts: DBPart[]): Array<{ id: PartId; rank: number }> {
 		return parts.map((p) => ({ id: p._id, rank: p._rank }))
 	}
-	type InstanceRanks = Array<{ id: PartInstanceId; partId: PartId; rank: number; orphaned?: string }>
-	async function getPartInstanceRanks(): Promise<InstanceRanks> {
-		const pi = await getPartInstances()
-		return pi.map((p) => ({
-			id: p._id,
-			partId: p.part._id,
-			rank: p.part._rank,
-			orphaned: p.orphaned,
-		}))
-	}
 
-	async function insertPartInstance(part: DBPart, orphaned?: DBPartInstance['orphaned']): Promise<PartInstanceId> {
+	function addPartInstance(
+		partInstances: DBPartInstance[],
+		part: DBPart,
+		orphaned?: DBPartInstance['orphaned']
+	): PartInstanceId {
 		const id: PartInstanceId = protectString(`${part._id}_instance`)
-		await context.mockCollections.PartInstances.insertOne({
+		partInstances.push({
 			_id: id,
 			rehearsal: false,
 			takeCount: 0,
@@ -106,257 +49,399 @@ describe('updatePartInstanceRanks', () => {
 		return id
 	}
 
-	async function insertAllPartInstances(): Promise<void> {
-		for (const part of await getParts()) {
-			await insertPartInstance(part)
+	async function updateRanksForSegment(
+		context: JobContext,
+		expectedSegmentId: SegmentId,
+		parts: DBPart[],
+		initialRanks: BeforePartMapItem[]
+	): Promise<void> {
+		const ingestModel = mock<IngestModel>(
+			{
+				getSegment: (segmentId) => {
+					if (segmentId !== expectedSegmentId) throw new Error('Wrong SegmentId')
+					return mock<IngestSegmentModel>(
+						{
+							parts: parts.map((part) =>
+								mock<IngestPartModel>(
+									{
+										part: part as any,
+									},
+									mockOptions
+								)
+							) as any,
+						},
+						mockOptions
+					)
+				},
+			},
+			mockOptions
+		)
+
+		const changeMap = new Map<SegmentId, Array<{ id: PartId; rank: number }>>()
+		changeMap.set(expectedSegmentId, initialRanks)
+		await updatePartInstanceRanks(context, ingestModel, [expectedSegmentId], changeMap)
+	}
+
+	function createFakeContext(partInstances: DBPartInstance[]) {
+		const fakeCollection = mock<ICollection<DBPartInstance>>({}, mockOptions)
+		const context = mock<JobContext>(
+			{
+				directCollections: mock(
+					{
+						PartInstances: fakeCollection,
+					},
+					mockOptions
+				),
+			},
+			mockOptions
+		)
+
+		const expectedQuery = {
+			reset: {
+				$ne: true,
+			},
+			segmentId: { $in: [segmentId] },
+		}
+
+		fakeCollection.bulkWrite.mockImplementation(async () => null)
+		fakeCollection.findFetch.mockImplementation(async (q) => {
+			if (!_.isEqual(expectedQuery, q)) {
+				throw new Error('Mismatch in query')
+			} else {
+				return clone(partInstances)
+			}
+		})
+
+		return { context, fakeCollection }
+	}
+
+	function createMinimalPart(id: string, rank: number): DBPart {
+		return {
+			_id: protectString(id),
+			_rank: rank,
+			rundownId,
+			segmentId,
+			externalId: id,
+			title: id,
+			expectedDurationWithPreroll: undefined,
 		}
 	}
 
-	async function updateRanksForSegment(
-		context: JobContext,
-		segmentId: SegmentId,
-		initialRanks: BeforePartMapItem[]
-	): Promise<void> {
-		await runWithRundownLock(context, rundownId, async (_rundown, lock) => {
-			// nocommit can this use a 'fake' model instead?
-			const ingestModel = await loadIngestModelFromRundownExternalId(context, lock, rundownExternalId)
+	function createFakeData() {
+		const parts: DBPart[] = []
+		const partInstances: DBPartInstance[] = []
 
-			const changeMap = new Map<SegmentId, Array<{ id: PartId; rank: number }>>()
-			changeMap.set(segmentId, initialRanks)
-			await updatePartInstanceRanks(context, ingestModel, [segmentId], changeMap)
+		const addPart = (id: string, rank: number) => {
+			parts.push(createMinimalPart(id, rank))
 
-			await ingestModel.saveAllToDatabase()
+			partInstances.push({
+				_id: protectString(`${id}_instance`),
+				rehearsal: false,
+				takeCount: 0,
+				rundownId,
+				segmentId,
+				playlistActivationId: protectString('active'),
+				segmentPlayoutId: protectString(''),
+				part: createMinimalPart(id, rank),
+				// orphaned: orphaned,
+			})
+		}
+
+		addPart('part01', 1)
+		addPart('part02', 2)
+		addPart('part03', 3)
+		addPart('part04', 4)
+		addPart('part05', 5)
+
+		return { parts, partInstances }
+	}
+
+	function updatePartRank(
+		parts: DBPart[],
+		expectedOps: AnyBulkWriteOperation<DBPartInstance>[],
+		id: string,
+		newRank: number
+	): void {
+		const partId = protectString(id)
+
+		let updated = false
+		for (const part of parts) {
+			if (part._id === partId) {
+				part._rank = newRank
+				updated = true
+			}
+		}
+
+		const partInstanceId = protectString(`${partId}_instance`)
+
+		addExpectedOp(expectedOps, partInstanceId, newRank, !updated ? 'deleted' : undefined)
+	}
+
+	function removePart(parts: DBPart[], id: string) {
+		const partIndex = parts.findIndex((p) => p._id === protectString(id))
+		expect(partIndex).not.toBe(-1)
+		parts.splice(partIndex, 1)
+	}
+
+	function addExpectedOp(
+		expectedOps: AnyBulkWriteOperation<DBPartInstance>[],
+		partInstanceId: PartInstanceId | string,
+		newRank: number,
+		orphaned: DBPartInstance['orphaned'] | null
+	) {
+		expectedOps.push({
+			updateOne: {
+				filter: {
+					_id: partInstanceId as PartInstanceId,
+				},
+				update: {
+					$set: {
+						'part._rank': newRank,
+						...(orphaned
+							? {
+									orphaned: orphaned,
+							  }
+							: ''),
+					},
+					...(orphaned === undefined
+						? {
+								$unset: {
+									orphaned: 1,
+								},
+						  }
+						: ''),
+				},
+			},
 		})
 	}
 
+	function updatePartInstanceRank(partInstances: DBPartInstance[], partId: string, newRank: number): void {
+		const partInstanceId = protectString(`${partId}_instance`)
+
+		for (const partInstance of partInstances) {
+			if (partInstance._id === partInstanceId) {
+				partInstance.part._rank = newRank
+			}
+		}
+	}
+
 	test('sync from parts: no change', async () => {
-		const initialRanks = await getPartRanks()
+		const { parts, partInstances } = createFakeData()
+		const { context, fakeCollection } = createFakeContext(partInstances)
+
+		const initialRanks = getPartRanks(parts)
 		expect(initialRanks).toHaveLength(5)
 
-		await insertAllPartInstances()
+		fakeCollection.findFetch.mockImplementationOnce(async () => clone(partInstances))
+		fakeCollection.bulkWrite.mockImplementationOnce(async () => null)
 
-		const initialInstanceRanks = await getPartInstanceRanks()
-		expect(initialInstanceRanks).toHaveLength(5)
+		await updateRanksForSegment(context, segmentId, parts, initialRanks)
 
-		await updateRanksForSegment(context, segmentId, initialRanks)
-
-		const newInstanceRanks = await getPartInstanceRanks()
-		expect(newInstanceRanks).toEqual(initialInstanceRanks)
+		expect(fakeCollection.findFetch).toHaveBeenCalledTimes(1)
+		expect(fakeCollection.findFetch).toHaveBeenCalledWith({
+			reset: {
+				$ne: true,
+			},
+			segmentId: { $in: [segmentId] },
+		})
+		expect(fakeCollection.bulkWrite).toHaveBeenCalledTimes(0)
 	})
 
-	async function updatePartRank(expectedRanks: InstanceRanks, id: string, newRank: number): Promise<void> {
-		const partId = protectString(id)
-		const updated = await context.mockCollections.Parts.update(partId, { $set: { _rank: newRank } })
-
-		for (const e of expectedRanks) {
-			if (e.partId === partId) {
-				e.rank = newRank
-				if (updated === 0) {
-					e.orphaned = 'deleted'
-				}
-			}
-		}
-	}
-
-	async function updatePartInstanceRank(
-		expectedRanks: InstanceRanks,
-		partId: string,
-		newRank: number
-	): Promise<void> {
-		const partInstanceId = protectString(`${partId}_instance`)
-		await context.mockCollections.PartInstances.update(partInstanceId, { $set: { 'part._rank': newRank } })
-
-		for (const e of expectedRanks) {
-			if (e.id === partInstanceId) {
-				e.rank = newRank
-			}
-		}
-	}
-
 	test('sync from parts: swap part order', async () => {
-		const initialRanks = await getPartRanks()
+		const { parts, partInstances } = createFakeData()
+		const { context, fakeCollection } = createFakeContext(partInstances)
+
+		const initialRanks = getPartRanks(parts)
 		expect(initialRanks).toHaveLength(5)
 
-		await insertAllPartInstances()
-
-		const initialInstanceRanks = await getPartInstanceRanks()
-		expect(initialInstanceRanks).toHaveLength(5)
-
 		// swap the middle ones
-		await updatePartRank(initialInstanceRanks, 'part02', 3)
-		await updatePartRank(initialInstanceRanks, 'part03', 4)
-		await updatePartRank(initialInstanceRanks, 'part04', 2)
+		const expectedResult: AnyBulkWriteOperation<DBPartInstance>[] = []
+		updatePartRank(parts, expectedResult, 'part02', 3)
+		updatePartRank(parts, expectedResult, 'part03', 4)
+		updatePartRank(parts, expectedResult, 'part04', 2)
 
-		await updateRanksForSegment(context, segmentId, initialRanks)
+		await updateRanksForSegment(context, segmentId, parts, initialRanks)
 
-		const newInstanceRanks = await getPartInstanceRanks()
-		expect(newInstanceRanks).toEqual(initialInstanceRanks)
+		expect(fakeCollection.findFetch).toHaveBeenCalledTimes(1)
+		expect(fakeCollection.bulkWrite).toHaveBeenCalledTimes(1)
+		expect(fakeCollection.bulkWrite).toHaveBeenCalledWith(expectedResult)
 
-		// now lets try swapping the first and last
-		await updatePartRank(initialInstanceRanks, 'part01', 5)
-		await updatePartRank(initialInstanceRanks, 'part02', 0)
-		await updatePartRank(initialInstanceRanks, 'part05', 1)
+		// Update our Instances to match
+		updatePartInstanceRank(partInstances, 'part02', 3)
+		updatePartInstanceRank(partInstances, 'part03', 4)
+		updatePartInstanceRank(partInstances, 'part04', 2)
+	})
 
-		await updateRanksForSegment(context, segmentId, initialRanks)
+	test('sync from parts: swap part order2', async () => {
+		const { parts, partInstances } = createFakeData()
+		const { context, fakeCollection } = createFakeContext(partInstances)
 
-		const newInstanceRanks2 = await getPartInstanceRanks()
-		expect(newInstanceRanks2).toEqual(initialInstanceRanks)
+		const initialRanks = getPartRanks(parts)
+		expect(initialRanks).toHaveLength(5)
+
+		// try swapping the first and last
+		const expectedResult: AnyBulkWriteOperation<DBPartInstance>[] = []
+		updatePartRank(parts, expectedResult, 'part01', 5)
+		updatePartRank(parts, expectedResult, 'part02', 0)
+		updatePartRank(parts, expectedResult, 'part05', 1)
+
+		await updateRanksForSegment(context, segmentId, parts, initialRanks)
+
+		expect(fakeCollection.findFetch).toHaveBeenCalledTimes(1)
+		expect(fakeCollection.bulkWrite).toHaveBeenCalledTimes(1)
+		expect(fakeCollection.bulkWrite).toHaveBeenCalledWith(expectedResult)
 	})
 
 	test('sync from parts: missing part', async () => {
-		const initialRanks = await getPartRanks()
+		const { parts, partInstances } = createFakeData()
+		const { context, fakeCollection } = createFakeContext(partInstances)
+
+		const initialRanks = getPartRanks(parts)
 		expect(initialRanks).toHaveLength(5)
 
-		await insertAllPartInstances()
-
-		const initialInstanceRanks = await getPartInstanceRanks()
-		expect(initialInstanceRanks).toHaveLength(5)
-
 		// remove one and offset the others
-		await updatePartRank(initialInstanceRanks, 'part04', 3)
-		await updatePartRank(initialInstanceRanks, 'part05', 4)
-		await context.mockCollections.Parts.remove(protectString('part03'))
-		await updatePartRank(initialInstanceRanks, 'part03', 2.5)
+		removePart(parts, 'part03')
 
-		await updateRanksForSegment(context, segmentId, initialRanks)
+		const expectedResult: AnyBulkWriteOperation<DBPartInstance>[] = []
+		updatePartRank(parts, expectedResult, 'part03', 2.5)
+		updatePartRank(parts, expectedResult, 'part04', 3)
+		updatePartRank(parts, expectedResult, 'part05', 4)
 
-		const newInstanceRanks = await getPartInstanceRanks()
-		expect(newInstanceRanks).toEqual(initialInstanceRanks)
+		await updateRanksForSegment(context, segmentId, parts, initialRanks)
+
+		expect(fakeCollection.findFetch).toHaveBeenCalledTimes(1)
+		expect(fakeCollection.bulkWrite).toHaveBeenCalledTimes(1)
+		expect(fakeCollection.bulkWrite).toHaveBeenCalledWith(expectedResult)
 	})
 
 	test('sync from parts: missing first part', async () => {
-		const initialRanks = await getPartRanks()
+		const { parts, partInstances } = createFakeData()
+		const { context, fakeCollection } = createFakeContext(partInstances)
+
+		const initialRanks = getPartRanks(parts)
 		expect(initialRanks).toHaveLength(5)
 
-		await insertAllPartInstances()
-
-		const initialInstanceRanks = await getPartInstanceRanks()
-		expect(initialInstanceRanks).toHaveLength(5)
-
 		// remove one and offset the others
-		await updatePartRank(initialInstanceRanks, 'part02', 1)
-		await updatePartRank(initialInstanceRanks, 'part03', 2)
-		await updatePartRank(initialInstanceRanks, 'part04', 3)
-		await updatePartRank(initialInstanceRanks, 'part05', 4)
-		await context.mockCollections.Parts.remove(protectString('part01'))
-		await updatePartRank(initialInstanceRanks, 'part01', 0)
+		removePart(parts, 'part01')
 
-		await updateRanksForSegment(context, segmentId, initialRanks)
+		const expectedResult: AnyBulkWriteOperation<DBPartInstance>[] = []
+		updatePartRank(parts, expectedResult, 'part01', 0)
+		updatePartRank(parts, expectedResult, 'part02', 1)
+		updatePartRank(parts, expectedResult, 'part03', 2)
+		updatePartRank(parts, expectedResult, 'part04', 3)
+		updatePartRank(parts, expectedResult, 'part05', 4)
 
-		const newInstanceRanks = await getPartInstanceRanks()
-		expect(newInstanceRanks).toEqual(initialInstanceRanks)
+		await updateRanksForSegment(context, segmentId, parts, initialRanks)
+
+		expect(fakeCollection.findFetch).toHaveBeenCalledTimes(1)
+		expect(fakeCollection.bulkWrite).toHaveBeenCalledTimes(1)
+		expect(fakeCollection.bulkWrite).toHaveBeenCalledWith(expectedResult)
 	})
 
 	test('sync from parts: adlib part after missing part', async () => {
-		const initialRanks = await getPartRanks()
+		const { parts, partInstances } = createFakeData()
+		const { context, fakeCollection } = createFakeContext(partInstances)
+
+		const initialRanks = getPartRanks(parts)
 		expect(initialRanks).toHaveLength(5)
-
-		await insertAllPartInstances()
-
-		const initialInstanceRanks = await getPartInstanceRanks()
-		expect(initialInstanceRanks).toHaveLength(5)
 
 		// insert an adlib part
 		const adlibId = 'adlib0'
-		await insertPartInstance(
-			{
-				_id: protectString(adlibId),
-				_rank: 3.5, // after part03
-				rundownId,
-				segmentId,
-				externalId: adlibId,
-				title: adlibId,
-				expectedDurationWithPreroll: undefined,
-			},
+		addPartInstance(
+			partInstances,
+			createMinimalPart(adlibId, 3.5), // after part03
 			'adlib-part'
 		)
 
 		// remove one and offset the others
-		await updatePartRank(initialInstanceRanks, 'part04', 3)
-		await updatePartRank(initialInstanceRanks, 'part05', 4)
-		await context.mockCollections.Parts.remove(protectString('part03'))
-		await updatePartRank(initialInstanceRanks, 'part03', 2.3333333333333335)
-		initialInstanceRanks.push({
-			id: protectString(`${adlibId}_instance`),
-			partId: protectString(adlibId),
-			orphaned: 'adlib-part',
-			rank: 2.666666666666667,
-		})
+		removePart(parts, 'part03')
 
-		await updateRanksForSegment(context, segmentId, initialRanks)
+		const expectedResult: AnyBulkWriteOperation<DBPartInstance>[] = []
+		updatePartRank(parts, expectedResult, 'part03', 2.3333333333333335)
+		updatePartRank(parts, expectedResult, 'part04', 3)
+		updatePartRank(parts, expectedResult, 'part05', 4)
+		addExpectedOp(expectedResult, protectString(`${adlibId}_instance`), 2.666666666666667, null)
 
-		const newInstanceRanks = await getPartInstanceRanks()
-		expect(newInstanceRanks).toEqual(initialInstanceRanks)
+		await updateRanksForSegment(context, segmentId, parts, initialRanks)
+
+		expect(fakeCollection.findFetch).toHaveBeenCalledTimes(1)
+		expect(fakeCollection.bulkWrite).toHaveBeenCalledTimes(1)
+		expect(fakeCollection.bulkWrite).toHaveBeenCalledWith(expectedResult)
 	})
 
 	test('sync from parts: delete and insert segment', async () => {
-		const initialRanks = await getPartRanks()
+		const { parts, partInstances } = createFakeData()
+		const { context, fakeCollection } = createFakeContext(partInstances)
+
+		const initialRanks = getPartRanks(parts)
 		expect(initialRanks).toHaveLength(5)
 
-		await insertAllPartInstances()
-
-		const initialInstanceRanks = await getPartInstanceRanks()
-		expect(initialInstanceRanks).toHaveLength(5)
-
 		// Delete the segment
-		await context.mockCollections.Parts.remove({ segmentId })
-		for (const e of initialInstanceRanks) {
-			e.rank-- // Offset to match the generated order
-			e.orphaned = 'deleted'
+		parts.splice(0, parts.length)
+		expect(parts).toHaveLength(0)
+
+		// Every PartInstance should be marked as deleted with a different rank
+		const expectedResult: AnyBulkWriteOperation<DBPartInstance>[] = []
+		for (const partInstance of partInstances) {
+			addExpectedOp(expectedResult, partInstance._id, partInstance.part._rank - 1, 'deleted')
 		}
 
-		await updateRanksForSegment(context, segmentId, initialRanks)
+		await updateRanksForSegment(context, segmentId, parts, initialRanks)
 
-		const newInstanceRanks = await getPartInstanceRanks()
-		expect(newInstanceRanks).toEqual(initialInstanceRanks)
-
-		const initialRanks2 = await getPartRanks()
-		expect(initialRanks2).toHaveLength(0)
+		expect(fakeCollection.findFetch).toHaveBeenCalledTimes(1)
+		expect(fakeCollection.bulkWrite).toHaveBeenCalledTimes(1)
+		expect(fakeCollection.bulkWrite).toHaveBeenCalledWith(expectedResult)
 
 		// Insert new segment
-		await insertPart('part10', 0)
-		await insertPart('part11', 1)
-		await insertPart('part12', 2)
-		await updatePartInstanceRank(initialInstanceRanks, 'part01', -5)
-		await updatePartInstanceRank(initialInstanceRanks, 'part02', -4)
-		await updatePartInstanceRank(initialInstanceRanks, 'part03', -3)
-		await updatePartInstanceRank(initialInstanceRanks, 'part04', -2)
-		await updatePartInstanceRank(initialInstanceRanks, 'part05', -1)
+		const newParts: DBPart[] = [
+			createMinimalPart('part10', 0),
+			createMinimalPart('part11', 1),
+			createMinimalPart('part12', 2),
+		]
 
-		await updateRanksForSegment(context, segmentId, initialRanks2)
+		const expectedResult2: AnyBulkWriteOperation<DBPartInstance>[] = []
+		addExpectedOp(expectedResult2, 'part01_instance', -5, 'deleted')
+		addExpectedOp(expectedResult2, 'part02_instance', -4, 'deleted')
+		addExpectedOp(expectedResult2, 'part03_instance', -3, 'deleted')
+		addExpectedOp(expectedResult2, 'part04_instance', -2, 'deleted')
+		addExpectedOp(expectedResult2, 'part05_instance', -1, 'deleted')
 
-		const newInstanceRanks2 = await getPartInstanceRanks()
-		expect(newInstanceRanks2).toEqual(initialInstanceRanks)
+		fakeCollection.findFetch.mockClear()
+		fakeCollection.bulkWrite.mockClear()
+
+		await updateRanksForSegment(context, segmentId, newParts, [])
+
+		expect(fakeCollection.findFetch).toHaveBeenCalledTimes(1)
+		expect(fakeCollection.bulkWrite).toHaveBeenCalledTimes(1)
+		expect(fakeCollection.bulkWrite).toHaveBeenCalledWith(expectedResult2)
 	})
 
 	test('sync from parts: replace segment', async () => {
-		const initialRanks = await getPartRanks()
+		const { parts, partInstances } = createFakeData()
+		const { context, fakeCollection } = createFakeContext(partInstances)
+
+		const initialRanks = getPartRanks(parts)
 		expect(initialRanks).toHaveLength(5)
 
-		await insertAllPartInstances()
-
-		const initialInstanceRanks = await getPartInstanceRanks()
-		expect(initialInstanceRanks.filter((r) => r.orphaned)).toHaveLength(0)
-		expect(initialInstanceRanks).toHaveLength(5)
-
 		// Delete the segment
-		await context.mockCollections.Parts.remove({ segmentId })
-		for (const e of initialInstanceRanks) {
-			e.orphaned = 'deleted'
+		parts.splice(0, parts.length)
+		expect(parts).toHaveLength(0)
+
+		// Every PartInstance should remain as orphaned
+		const expectedResult: AnyBulkWriteOperation<DBPartInstance>[] = []
+		for (const partInstance of partInstances) {
+			addExpectedOp(expectedResult, partInstance._id, partInstance.part._rank - 5.5, 'deleted')
 		}
+
 		// Insert new segment
-		await insertPart('part10', 0.5)
-		await insertPart('part11', 1)
-		await insertPart('part12', 2)
-		await updatePartInstanceRank(initialInstanceRanks, 'part01', -4.5)
-		await updatePartInstanceRank(initialInstanceRanks, 'part02', -3.5)
-		await updatePartInstanceRank(initialInstanceRanks, 'part03', -2.5)
-		await updatePartInstanceRank(initialInstanceRanks, 'part04', -1.5)
-		await updatePartInstanceRank(initialInstanceRanks, 'part05', -0.5)
+		parts.push(createMinimalPart('part10', 0.5))
+		parts.push(createMinimalPart('part11', 1))
+		parts.push(createMinimalPart('part12', 2))
 
-		await updateRanksForSegment(context, segmentId, initialRanks)
+		await updateRanksForSegment(context, segmentId, parts, initialRanks)
 
-		const newInstanceRanks = await getPartInstanceRanks()
-		expect(newInstanceRanks).toEqual(initialInstanceRanks)
+		expect(fakeCollection.findFetch).toHaveBeenCalledTimes(1)
+		expect(fakeCollection.bulkWrite).toHaveBeenCalledTimes(1)
+		expect(fakeCollection.bulkWrite).toHaveBeenCalledWith(expectedResult)
 	})
 })

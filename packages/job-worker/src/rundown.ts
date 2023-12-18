@@ -153,15 +153,17 @@ function calculateNewRanksForParts(
 	for (const partInstance of segmentPartInstances) {
 		const part = newPartsMap.get(partInstance.part._id)
 		if (part) {
-			// We have a part and instance, so make sure the part isn't orphaned and sync the rank
-			changedRanks.set(partInstance._id, {
-				rank: part._rank,
-				deleted: false,
-			})
+			if (part._rank !== partInstance.part._rank || partInstance.orphaned) {
+				// We have a part and instance, so make sure the part isn't orphaned and sync the rank
+				changedRanks.set(partInstance._id, {
+					rank: part._rank,
+					deleted: false,
+				})
 
-			// Update local copy
-			delete partInstance.orphaned
-			partInstance.part._rank = part._rank
+				// Update local copy
+				delete partInstance.orphaned
+				partInstance.part._rank = part._rank
+			}
 		} else if (!partInstance.orphaned) {
 			partInstance.orphaned = 'deleted'
 			changedRanks.set(partInstance._id, {
