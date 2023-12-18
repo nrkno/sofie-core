@@ -14873,7 +14873,6 @@ asn1@evs-broadcast/node-asn1:
     debug: ^4.3.4
     fast-clone: ^1.5.13
     influx: ^5.9.3
-    jest-mock-extended: ^3.0.5
     tslib: ^2.6.2
     type-fest: ^4.5.0
     underscore: ^1.13.6
@@ -17488,6 +17487,7 @@ asn1@evs-broadcast/node-asn1:
     babel-jest: ^29.7.0
     copyfiles: ^2.4.1
     jest: ^29.7.0
+    jest-mock-extended: ^3.0.5
     json-schema-to-typescript: ^10.1.5
     lerna: ^6.6.2
     nodemon: ^2.0.22
