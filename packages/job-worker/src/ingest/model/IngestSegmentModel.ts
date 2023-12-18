@@ -48,15 +48,40 @@ export interface IngestSegmentModel extends IngestSegmentModelReadonly {
 	 */
 	getPart(id: PartId): IngestPartModel | undefined
 
+	/**
+	 * Set the rank of this Segment
+	 * @param rank New rank
+	 */
 	setRank(rank: number): boolean
 
+	/**
+	 * Mark this Segment as being orphaned
+	 * @param orphaned New orphaned state
+	 */
 	setOrphaned(orphaned: SegmentOrphanedReason | undefined): void
 
+	/**
+	 * Mark this Part as being hidden
+	 * @param hidden New hidden state
+	 */
 	setHidden(hidden: boolean): void
 
+	/**
+	 * Remove all the Parts in this Segment
+	 */
 	removeAllParts(): PartId[]
 
+	/**
+	 * Restore all the Parts in this Segment which hasve been marked as deleted
+	 */
 	restoreDeletedParts(): PartId[]
 
+	/**
+	 * Replace or insert a Part into this Segment
+	 * @param part New part data
+	 * @param pieces Pieces to add to the Part
+	 * @param adLibPiece AdLib Pieces to add to the Part
+	 * @param adLibActions AdLib Actions to add to the Part
+	 */
 	replacePart(part: DBPart, pieces: Piece[], adLibPiece: AdLibPiece[], adLibActions: AdLibAction[]): IngestPartModel
 }

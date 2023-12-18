@@ -30,6 +30,7 @@ import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { ProcessedShowStyleBase, ProcessedShowStyleVariant } from '../../jobs/showStyle'
 import { WrappedShowStyleBlueprint } from '../../blueprints/cache'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import { IBlueprintRundown } from '@sofie-automation/blueprints-integration'
 
 export type ExpectedPackageForIngestModelBaseline =
 	| ExpectedPackageDBFromBaselineAdLibAction
@@ -51,14 +52,39 @@ export interface IngestModelReadonly {
 	 */
 	readonly rundownLock: RundownLock
 
+	/**
+	 * The ExpectedMediaItems for the baseline of this Rundown
+	 */
 	readonly expectedMediaItemsForRundownBaseline: ReadonlyDeep<ExpectedMediaItemRundown>[]
+
+	/**
+	 * The ExpectedPlayoutItems for the baseline of this Rundown
+	 */
 	readonly expectedPlayoutItemsForRundownBaseline: ReadonlyDeep<ExpectedPlayoutItemRundown>[]
+
+	/**
+	 * The ExpectedPackages for the baseline of this Rundown
+	 */
 	readonly expectedPackagesForRundownBaseline: ReadonlyDeep<ExpectedPackageForIngestModelBaseline>[]
 
+	/**
+	 * The baseline Timeline objects of this Rundown
+	 */
 	readonly rundownBaselineTimelineObjects: LazyInitialiseReadonly<PieceTimelineObjectsBlob>
+
+	/**
+	 * The baseline AdLib Pieces of this Rundown
+	 */
 	readonly rundownBaselineAdLibPieces: LazyInitialiseReadonly<ReadonlyDeep<RundownBaselineAdLibItem[]>>
+
+	/**
+	 * The baseline AdLib Actions of this Rundown
+	 */
 	readonly rundownBaselineAdLibActions: LazyInitialiseReadonly<ReadonlyDeep<RundownBaselineAdLibAction[]>>
 
+	/**
+	 * The Rundown this IngestModel operates for
+	 */
 	readonly rundown: ReadonlyDeep<DBRundown> | undefined
 
 	/**
@@ -97,14 +123,32 @@ export interface IngestModelReadonly {
 	 */
 	getAllPieces(): ReadonlyDeep<Piece>[]
 
+	/**
+	 * Search for a Part through the whole Rundown
+	 * @param id Id of the Part
+	 */
 	findPart(partId: PartId): IngestPartModelReadonly | undefined
 
+	/**
+	 * Search for an AdLibPiece in all Parts of the Rundown
+	 * @param id Id of the AdLib Piece
+	 */
 	findAdlibPiece(adLibPieceId: PieceId): ReadonlyDeep<AdLibPiece> | undefined
 
+	/**
+	 * Search for an ExpectedPackage through the whole Rundown
+	 * @param id Id of the ExpectedPackage
+	 */
 	findExpectedPackage(packageId: ExpectedPackageId): ReadonlyDeep<ExpectedPackageForIngestModel> | undefined
 }
 
 export interface IngestModel extends IngestModelReadonly, BaseModel {
+	/**
+	 * Search for a Part through the whole Rundown
+	 * @param id Id of the Part
+	 */
+	findPart(partId: PartId): IngestPartModel | undefined
+
 	/**
 	 * Get a Segment from the Rundown by `externalId`
 	 * @param id Id of the Segment
@@ -131,20 +175,56 @@ export interface IngestModel extends IngestModelReadonly, BaseModel {
 	 */
 	getAllOrderedParts(): IngestPartModel[]
 
-	findPart(partId: PartId): IngestPartModel | undefined
-
+	/**
+	 * Remove a Segment from this Rundown
+	 * @param id Id of the Segment
+	 */
 	removeSegment(id: SegmentId): void
 
+	/**
+	 * Replace or insert a Segment in this Rundown
+	 * @param segment New Segment data
+	 */
 	replaceSegment(segment: DBSegment): IngestSegmentModel
 
+	/**
+	 * Change the id of a Segment in this Rundown.
+	 * All child documents of the Segment will be updated to reflect this rename
+	 * @param oldId Old id of the Segment
+	 * @param newId New id of the Segment
+	 */
 	changeSegmentId(oldId: SegmentId, newId: SegmentId): void
 
+	/**
+	 * Set the ExpectedPlayoutItems for the baseline of this Rundown
+	 * @param expectedPlayoutItems The new ExpectedPlayoutItems
+	 */
 	setExpectedPlayoutItemsForRundownBaseline(expectedPlayoutItems: ExpectedPlayoutItemRundown[]): void
+
+	/**
+	 * Set the ExpectedMediaItems for the baseline of this Rundown
+	 * @param expectedMediaItems The new ExpectedMediaItems
+	 */
 	setExpectedMediaItemsForRundownBaseline(expectedMediaItems: ExpectedMediaItemRundown[]): void
+
+	/**
+	 * Set the ExpectedPackages for the baseline of this Rundown
+	 * @param expectedPackages The new ExpectedPackages
+	 */
 	setExpectedPackagesForRundownBaseline(expectedPackages: ExpectedPackageForIngestModelBaseline[]): void
 
+	/**
+	 * Set the data for this Rundown.
+	 * This will either update or create the Rundown
+	 * @param rundownData The blueprint Rundown data
+	 * @param showStyleBase The ShowStyleBase to be used for the Rundown
+	 * @param showStyleVariant The ShowStyleVariant to be used for the Rundown
+	 * @param showStyleBlueprint The ShowStyle bleprint used for the Rundown
+	 * @param peripheralDevice The PeripheralDevice that created the Rundown, if any
+	 * @param rundownNotes Any user facing notes generated during the creation of this Rundown
+	 */
 	setRundownData(
-		rundownData: unknown,
+		rundownData: IBlueprintRundown,
 		showStyleBase: ReadonlyDeep<ProcessedShowStyleBase>,
 		showStyleVariant: ReadonlyDeep<ProcessedShowStyleVariant>,
 		showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
@@ -152,17 +232,42 @@ export interface IngestModel extends IngestModelReadonly, BaseModel {
 		rundownNotes: RundownNote[]
 	): ReadonlyDeep<DBRundown>
 
+	/**
+	 * Set the baseline object and adlibs for this Rundown
+	 * @param timelineObjectsBlob Rundown baseline timeline objects
+	 * @param adlibPieces Rundown adlib pieces
+	 * @param adlibActions Rundown adlib actions
+	 */
 	setRundownBaseline(
 		timelineObjectsBlob: PieceTimelineObjectsBlob,
 		adlibPieces: RundownBaselineAdLibItem[],
 		adlibActions: RundownBaselineAdLibAction[]
 	): Promise<void>
 
+	/**
+	 * Mark this Rundown as being orphaned
+	 * @param orphaned New orphaned state
+	 */
 	setRundownOrphaned(orphaned: RundownOrphanedReason | undefined): void
 
+	/**
+	 * Set the parent RundownPlaylist of this Rundown
+	 * This is only allowed when the id has not be set by the User
+	 * @param playlistId Id of the RundownPlaylist
+	 */
 	setRundownPlaylistId(playlistId: RundownPlaylistId): void
 
+	/**
+	 * Set the AirStatus for this Rundown
+	 * This is an indicator for the blueprints
+	 * @param status Rundown air status
+	 */
 	setRundownAirStatus(status: string | undefined): void
 
+	/**
+	 * Add some user facing notes for this Rundown
+	 * Future: it is only possible to add these, there is no way to 'replace' or remove them
+	 * @param notes New notes to add
+	 */
 	appendRundownNotes(...notes: RundownNote[]): void
 }

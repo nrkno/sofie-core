@@ -13,31 +13,57 @@ export interface IngestPartModelReadonly {
 	 */
 	readonly part: ReadonlyDeep<DBPart>
 
+	/**
+	 * The Pieces belonging to this Part
+	 */
 	readonly pieces: ReadonlyDeep<Piece>[]
+	/**
+	 * The AdLib Pieces belonging to this Part
+	 */
 	readonly adLibPieces: ReadonlyDeep<AdLibPiece>[]
+	/**
+	 * The AdLib Actions belonging to this Part
+	 */
 	readonly adLibActions: ReadonlyDeep<AdLibAction>[]
 
+	/**
+	 * The ExpectedMediaItems belonging to this Part
+	 */
 	readonly expectedMediaItems: ReadonlyDeep<ExpectedMediaItemRundown>[]
+	/**
+	 * The ExpectedPlayoutItems belonging to this Part
+	 */
 	readonly expectedPlayoutItems: ReadonlyDeep<ExpectedPlayoutItemRundown>[]
+	/**
+	 * The ExpectedPackages belonging to this Part
+	 */
 	readonly expectedPackages: ReadonlyDeep<ExpectedPackageFromRundown>[]
 }
 /**
  * Wrap a Part and its contents in a view for Ingest operations
  */
 export interface IngestPartModel extends IngestPartModelReadonly {
-	// /**
-	//  * Get all the PartIds in this Segment
-	//  * Sorted by the Part ranks
-	//  */
-	// getPartIds(): PartId[]
-
-	// setRank(rank: number): boolean
-
-	// setOrphaned(orphaned: SegmentOrphanedReason | undefined): void
-
+	/**
+	 * Mark this Part as being invalid
+	 * @param invalid New invalid state
+	 */
 	setInvalid(invalid: boolean): void
 
+	/**
+	 * Set the ExpectedPlayoutItems for the contents of this Part
+	 * @param expectedPlayoutItems The new ExpectedPlayoutItems
+	 */
 	setExpectedPlayoutItems(expectedPlayoutItems: ExpectedPlayoutItemRundown[]): void
+
+	/**
+	 * Set the ExpectedMediaItems for the contents of this Part
+	 * @param expectedMediaItems The new ExpectedMediaItems
+	 */
 	setExpectedMediaItems(expectedMediaItems: ExpectedMediaItemRundown[]): void
+
+	/**
+	 * Set the ExpectedPackages for the contents of this Part
+	 * @param expectedPackages The new ExpectedPackages
+	 */
 	setExpectedPackages(expectedPackages: ExpectedPackageFromRundown[]): void
 }

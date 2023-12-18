@@ -109,9 +109,6 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 	protected readonly segmentsImpl: Map<SegmentId, SegmentWrapper>
 
 	readonly #rundownBaselineExpectedPackagesStore: ExpectedPackagesStore<ExpectedPackageForIngestModelBaseline>
-	// public get segments(): readonly IngestSegmentModel[] {
-	// 	return this.segmentsImpl
-	// }
 
 	get rundownBaselineTimelineObjects(): LazyInitialiseReadonly<PieceTimelineObjectsBlob> {
 		// Return a simplified view of what we store, of just `timelineObjectsString`
@@ -373,7 +370,8 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 		const existingSegment = this.segmentsImpl.get(oldId)
 		if (!existingSegment || existingSegment.deleted) return false
 
-		if (this.segmentsImpl.has(newId))
+		const existingSegmentWithNewId = this.segmentsImpl.get(newId)
+		if (existingSegmentWithNewId && !existingSegmentWithNewId.deleted)
 			throw new Error(`Cannot rename Segment ${oldId} to ${newId}. New id is already in use`)
 
 		this.segmentsImpl.delete(oldId)
@@ -512,6 +510,9 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 
 	setRundownPlaylistId(playlistId: RundownPlaylistId): void {
 		if (!this.#rundownImpl) throw new Error(`Rundown "${this.rundownId}" ("${this.rundownExternalId}") not found`)
+
+		if (this.#rundownImpl.playlistIdIsSetInSofie)
+			throw new Error(`Rundown "${this.rundownId}" playlistId cannot be changed, it is set by the User`)
 
 		if (this.#rundownImpl.playlistId !== playlistId) {
 			this.#rundownImpl.playlistId = playlistId
