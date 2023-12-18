@@ -52,7 +52,8 @@ import { IBlueprintRundown } from '@sofie-automation/blueprints-integration'
 import { getCurrentTime, getSystemVersion } from '../../../lib'
 import { WrappedShowStyleBlueprint } from '../../../blueprints/cache'
 import { getExternalNRCSName, PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { generateWriteOpsForDocuments, SaveIngestModelHelper } from './SaveIngestModel'
+import { SaveIngestModelHelper } from './SaveIngestModel'
+import { generateWriteOpsForLazyDocuments } from './DocumentChangeTracker'
 import { IS_PRODUCTION } from '../../../environment'
 import { logger } from '../../../logging'
 
@@ -630,9 +631,12 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 		}
 
 		const [baselineObjsOps, baselineAdLibPiecesOps, baselineAdLibActionsOps] = await Promise.all([
-			generateWriteOpsForDocuments(this.#rundownBaselineObjs, this.#rundownBaselineObjsWithChanges),
-			generateWriteOpsForDocuments(this.#rundownBaselineAdLibPieces, this.#rundownBaselineAdLibPiecesWithChanges),
-			generateWriteOpsForDocuments(
+			generateWriteOpsForLazyDocuments(this.#rundownBaselineObjs, this.#rundownBaselineObjsWithChanges),
+			generateWriteOpsForLazyDocuments(
+				this.#rundownBaselineAdLibPieces,
+				this.#rundownBaselineAdLibPiecesWithChanges
+			),
+			generateWriteOpsForLazyDocuments(
 				this.#rundownBaselineAdLibActions,
 				this.#rundownBaselineAdLibActionsWithChanges
 			),
