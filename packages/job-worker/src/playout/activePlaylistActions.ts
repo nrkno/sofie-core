@@ -57,7 +57,9 @@ export async function activateRundownPlaylist(
 			null,
 			null,
 			playoutModel.getAllOrderedSegments(),
-			playoutModel.getAllOrderedParts()
+			playoutModel.getAllOrderedParts(),
+			false,
+			false
 		)
 		await setNextPart(context, playoutModel, firstPart, false)
 

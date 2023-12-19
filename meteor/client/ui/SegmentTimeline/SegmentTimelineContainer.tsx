@@ -221,8 +221,9 @@ export const SegmentTimelineContainer = withResolvedSegment(
 				currentNextPart = this.props.parts.find((part) => part.instance._id === this.props.ownNextPartInstance?._id)
 			}
 			autoNextPart = !!(
-				(currentLivePart && currentLivePart.instance.part.autoNext && currentLivePart.instance.part.expectedDuration) ||
-				this.props.playlist.quickLoop?.running
+				currentLivePart &&
+				currentLivePart.instance.part.autoNext &&
+				currentLivePart.instance.part.expectedDuration
 			)
 			if (isNextSegment && !isLiveSegment && !autoNextPart && this.props.ownCurrentPartInstance) {
 				if (

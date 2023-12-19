@@ -446,132 +446,112 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 
 	updateQuickLoopState(): void {
 		if (this.playlistImpl.quickLoop == null) return
-		if (this.playlistImpl.quickLoop.start == null || this.playlistImpl.quickLoop.end == null) return
+		const wasLoopRunning = this.playlistImpl.quickLoop.running
 
-		const orderedParts = this.getAllOrderedParts()
-		// let startPart
-		// let endPart
-		// let startSegment
-		// let endSegment
-		// const startPartIndex = -1
-		// const endPartIndex = -1
-		const rundownIds = this.getRundownIds()
-		type Positions = {
-			partRank: number
-			segmentRank: number
-			rundownRank: number
-		}
-		const findMarkerPosition = (marker: QuickLoopMarker, type: 'start' | 'end'): Positions => {
-			let part: ReadonlyObjectDeep<DBPart> | undefined
-			let segment: ReadonlyObjectDeep<DBSegment> | undefined
-			let rundownRank
-			if (marker.type === QuickLoopMarkerType.PART) {
-				const partId = marker.id
-				const partIndex = orderedParts.findIndex((part) => part._id === partId)
-				part = orderedParts[partIndex]
+		let isNextBetweenMarkers = false
+		if (this.playlistImpl.quickLoop.start == null || this.playlistImpl.quickLoop.end == null) {
+			this.playlistImpl.quickLoop.running = false
+		} else {
+			const orderedParts = this.getAllOrderedParts()
+
+			const rundownIds = this.getRundownIds()
+			type Positions = {
+				partRank: number
+				segmentRank: number
+				rundownRank: number
 			}
-			if (marker.type === QuickLoopMarkerType.SEGMENT) {
-				segment = this.findSegment(marker.id)?.segment
-			} else if (part != null) {
-				segment = this.findSegment(part.segmentId)?.segment
+			const findMarkerPosition = (marker: QuickLoopMarker, type: 'start' | 'end'): Positions => {
+				let part: ReadonlyObjectDeep<DBPart> | undefined
+				let segment: ReadonlyObjectDeep<DBSegment> | undefined
+				let rundownRank
+				if (marker.type === QuickLoopMarkerType.PART) {
+					const partId = marker.id
+					const partIndex = orderedParts.findIndex((part) => part._id === partId)
+					part = orderedParts[partIndex]
+				}
+				if (marker.type === QuickLoopMarkerType.SEGMENT) {
+					segment = this.findSegment(marker.id)?.segment
+				} else if (part != null) {
+					segment = this.findSegment(part.segmentId)?.segment
+				}
+				if (marker.type === QuickLoopMarkerType.RUNDOWN) {
+					rundownRank = rundownIds.findIndex((id) => id === marker.id)
+				} else if (part ?? segment != null) {
+					rundownRank = rundownIds.findIndex((id) => id === (part ?? segment)?.rundownId)
+				}
+				const fallback = type === 'start' ? -Infinity : Infinity
+				return {
+					partRank: part?._rank ?? fallback,
+					segmentRank: segment?._rank ?? fallback,
+					rundownRank: rundownRank ?? fallback,
+				}
 			}
-			if (marker.type === QuickLoopMarkerType.RUNDOWN) {
-				rundownRank = rundownIds.findIndex((id) => id === marker.id)
-			} else if (part ?? segment != null) {
-				rundownRank = rundownIds.findIndex((id) => id === (part ?? segment)?.rundownId)
+
+			const startPosition = findMarkerPosition(this.playlistImpl.quickLoop.start, 'start')
+			const endPosition = findMarkerPosition(this.playlistImpl.quickLoop.end, 'end')
+
+			const comparePositions = (a: Positions, b: Positions): number => {
+				if (a.rundownRank > b.rundownRank) return -1
+				if (a.rundownRank < b.rundownRank) return 1
+				if (a.segmentRank > b.segmentRank) return -1
+				if (a.segmentRank < b.segmentRank) return 1
+				if (a.partRank > b.partRank) return -1
+				if (a.partRank < b.partRank) return 1
+				return 0
 			}
-			const fallback = type === 'start' ? -Infinity : Infinity
-			return {
-				partRank: part?._rank ?? fallback,
-				segmentRank: segment?._rank ?? fallback,
-				rundownRank: rundownRank ?? fallback,
+
+			const extractPartPosition = (partInstance: PlayoutPartInstanceModel) => {
+				const currentSegment = this.findSegment(partInstance.partInstance.segmentId)?.segment
+				const currentRundownIndex = rundownIds.findIndex((id) => id === partInstance.partInstance.rundownId)
+
+				return {
+					partRank: partInstance.partInstance.part._rank,
+					segmentRank: currentSegment?._rank ?? 0,
+					rundownRank: currentRundownIndex ?? 0,
+				}
 			}
-		}
 
-		const startPosition = findMarkerPosition(this.playlistImpl.quickLoop.start, 'start')
-		const endPosition = findMarkerPosition(this.playlistImpl.quickLoop.end, 'end')
+			const currentPartPosition: Positions | undefined = this.currentPartInstance
+				? extractPartPosition(this.currentPartInstance)
+				: undefined
+			const nextPartPosition: Positions | undefined = this.nextPartInstance
+				? extractPartPosition(this.nextPartInstance)
+				: undefined
 
-		const comparePositions = (a: Positions, b: Positions): number => {
-			if (a.rundownRank > b.rundownRank) return -1
-			if (a.rundownRank < b.rundownRank) return 1
-			if (a.segmentRank > b.segmentRank) return -1
-			if (a.segmentRank < b.segmentRank) return 1
-			if (a.partRank > b.partRank) return -1
-			if (a.partRank < b.partRank) return 1
-			return 0
-		}
+			const isCurrentBetweenMarkers = currentPartPosition
+				? comparePositions(startPosition, currentPartPosition) >= 0 &&
+				  comparePositions(currentPartPosition, endPosition) >= 0
+				: false
+			isNextBetweenMarkers = nextPartPosition
+				? comparePositions(startPosition, nextPartPosition) >= 0 &&
+				  comparePositions(nextPartPosition, endPosition) >= 0
+				: false
 
-		// if (this.playlistImpl.quickLoop.start.type === QuickLoopMarkerType.PART) {
-		// 	const startPartId = this.playlistImpl.quickLoop.start.id
-		// 	startPartIndex = orderedParts.findIndex((part) => part._id === startPartId)
-		// 	startPart = orderedParts[startPartIndex]
-		// }
-		// if (this.playlistImpl.quickLoop.start.type === QuickLoopMarkerType.SEGMENT) {
-		// 	startSegment = this.findSegment(this.playlistImpl.quickLoop.start.id)?.segment
-		// } else if (startPart != null) {
-		// 	startSegment = this.findSegment(startPart.segmentId)?.segment
-		// }
-
-		// // TODO: Compare ranks first of rundowns, then of segments, then of parts
-		// if (this.playlistImpl.quickLoop.end.type === QuickLoopMarkerType.PART) {
-		// 	const endPartId = this.playlistImpl.quickLoop.end.id
-		// 	endPartIndex = orderedParts.findIndex((part) => part._id === endPartId)
-		// 	endPart = orderedParts[startPartIndex]
-		// }
-		// if (this.playlistImpl.quickLoop.end.type === QuickLoopMarkerType.SEGMENT) {
-		// 	endSegment = this.findSegment(this.playlistImpl.quickLoop.end.id)?.segment
-		// } else if (endPart != null) {
-		// 	endSegment = this.findSegment(endPart.segmentId)?.segment
-		// }
-		// if (startPartIndex < 0) this.playlistImpl.quickLoop.start = undefined
-		// if (endPartIndex < 0) this.playlistImpl.quickLoop.end = undefined
-		// if (startPartIndex > endPartIndex) {
-		// 	this.playlistImpl.quickLoop.start = undefined
-		// 	this.playlistImpl.quickLoop.end = undefined
-		// }
-
-		const extractPartPosition = (partInstance: PlayoutPartInstanceModel) => {
-			const currentSegment = this.findSegment(partInstance.partInstance.segmentId)?.segment
-			const currentRundownIndex = rundownIds.findIndex((id) => id === partInstance.partInstance.rundownId)
-
-			return {
-				partRank: partInstance.partInstance.part._rank,
-				segmentRank: currentSegment?._rank ?? 0,
-				rundownRank: currentRundownIndex ?? 0,
+			if (this.nextPartInstance && isNextBetweenMarkers) {
+				updatePartOverrides(this.nextPartInstance, this.playlistImpl.quickLoop.forceAutoNext)
 			}
+
+			this.playlistImpl.quickLoop.running =
+				this.playlistImpl.quickLoop.start != null &&
+				this.playlistImpl.quickLoop.end != null &&
+				isCurrentBetweenMarkers // &&
 		}
 
-		const currentPartPosition: Positions | undefined = this.currentPartInstance
-			? extractPartPosition(this.currentPartInstance)
-			: undefined
-		const nextPartPosition: Positions | undefined = this.nextPartInstance
-			? extractPartPosition(this.nextPartInstance)
-			: undefined
-
-		const isCurrentBetweenMarkers = currentPartPosition
-			? comparePositions(startPosition, currentPartPosition) >= 0 &&
-			  comparePositions(currentPartPosition, endPosition) >= 0
-			: false
-		const isNextBetweenMarkers = nextPartPosition
-			? comparePositions(startPosition, nextPartPosition) >= 0 &&
-			  comparePositions(nextPartPosition, endPosition) >= 0
-			: false
-
-		this.playlistImpl.quickLoop.running =
-			this.playlistImpl.quickLoop.start != null &&
-			this.playlistImpl.quickLoop.end != null &&
-			isCurrentBetweenMarkers // &&
-		// currentPartInstance?.partInstance.orphaned != null //||
-		// (currentPartIndex >= startPartIndex && currentPartIndex <= endPartIndex))
-		if (this.playlistImpl.quickLoop.running && this.currentPartInstance) {
+		if (this.currentPartInstance && this.playlistImpl.quickLoop.running) {
 			updatePartOverrides(this.currentPartInstance, this.playlistImpl.quickLoop.forceAutoNext)
+		} else if (this.currentPartInstance && wasLoopRunning) {
+			// TODO: revert next overrides
 		}
-		if (this.nextPartInstance && isNextBetweenMarkers) {
-			updatePartOverrides(this.nextPartInstance, this.playlistImpl.quickLoop.forceAutoNext)
+
+		if (this.nextPartInstance && !isNextBetweenMarkers) {
+			// TODO: revert next overrides
+		}
+
+		if (wasLoopRunning && !this.playlistImpl.quickLoop.running) {
+			// clears the loop markers after leaving the loop, as per the requirements, but perhaps it should be optional
+			delete this.playlistImpl.quickLoop
 		}
 		this.#playlistHasChanged = true
-
-		console.log('isNextBetweenMarkers', isNextBetweenMarkers, nextPartPosition)
 
 		function updatePartOverrides(partInstance: PlayoutPartInstanceModel, forceAutoNext: ForceQuickLoopAutoNext) {
 			const partPropsToUpdate: Partial<IBlueprintMutatablePart<unknown>> = {}
@@ -865,14 +845,12 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		if (type === 'start') {
 			if (marker == null) {
 				delete this.playlistImpl.quickLoop.start
-				this.playlistImpl.quickLoop.running = false
 			} else {
 				this.playlistImpl.quickLoop.start = marker
 			}
 		} else {
 			if (marker == null) {
 				delete this.playlistImpl.quickLoop.end
-				this.playlistImpl.quickLoop.running = false
 			} else {
 				this.playlistImpl.quickLoop.end = marker
 			}

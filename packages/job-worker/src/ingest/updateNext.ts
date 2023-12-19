@@ -49,7 +49,9 @@ export async function ensureNextPartIsValid(context: JobContext, playoutModel: P
 				currentPartInstance.partInstance,
 				nextPartInstance.partInstance,
 				orderedSegments,
-				orderedParts
+				orderedParts,
+				false,
+				false
 			)
 
 			if (

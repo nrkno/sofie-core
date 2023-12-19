@@ -724,12 +724,14 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 						{isPartInQuickLoop && <div className="segment-timeline__part__quickloop-background"></div>}
 						{isQuickLoopStart ? (
 							<div className="segment-timeline__part__quickloop-start">
-								START <LoopingIcon />
+								START
+								<LoopingIcon />
 							</div>
 						) : null}
 						{isQuickLoopEnd ? (
 							<div className="segment-timeline__part__quickloop-end">
-								<LoopingIcon /> END
+								<LoopingIcon />
+								END
 							</div>
 						) : null}
 					</div>

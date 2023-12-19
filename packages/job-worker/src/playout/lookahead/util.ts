@@ -66,7 +66,9 @@ export function getOrderedPartsAfterPlayhead(
 		nextPartInstance ?? currentPartInstance ?? null,
 		null,
 		orderedSegments,
-		orderedParts
+		orderedParts,
+		false,
+		false
 	)
 	if (!nextNextPart) {
 		// We don't know where to begin searching, so we can't do anything

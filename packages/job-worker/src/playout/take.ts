@@ -198,15 +198,6 @@ export async function performTakeToNextedPart(
 
 	clearQueuedSegmentId(playoutModel, takePartInstance.partInstance, playoutModel.playlist.nextPartInfo)
 
-	const nextPart = selectNextPart(
-		context,
-		playoutModel.playlist,
-		takePartInstance.partInstance,
-		null,
-		playoutModel.getAllOrderedSegments(),
-		playoutModel.getAllOrderedParts()
-	)
-
 	const showStyle = await pShowStyle
 	const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 	if (blueprint.blueprint.onPreTake) {
@@ -240,6 +231,18 @@ export async function performTakeToNextedPart(
 	)
 
 	playoutModel.cycleSelectedPartInstances()
+	playoutModel.updateQuickLoopState()
+
+	const nextPart = selectNextPart(
+		context,
+		playoutModel.playlist,
+		takePartInstance.partInstance,
+		null,
+		playoutModel.getAllOrderedSegments(),
+		playoutModel.getAllOrderedParts(),
+		false,
+		false
+	)
 
 	takePartInstance.setTaken(now, timeOffset)
 

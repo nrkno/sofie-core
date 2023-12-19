@@ -1445,7 +1445,7 @@ svg.icon {
 					border-left: 3px solid white;
 					display: block;
 					position: absolute;
-					top: -2px;
+					top: 0;
 					bottom: 0;
 					left: -6px;
 				}
@@ -1456,7 +1456,7 @@ svg.icon {
 				display: block;
 				position: absolute;
 				top: -12px;
-				bottom: 0;
+				bottom: -1.3em;
 				right: -2px;
 				z-index: 40;
 
@@ -1470,6 +1470,8 @@ svg.icon {
 					right: 2px;
 				}
 			}
+
+			&:first-child
 
 			.segment-timeline__part__invalid-cover {
 				position: absolute;
@@ -1786,10 +1788,14 @@ svg.icon {
 				min-height: $segment-layer-height;
 				line-height: $segment-layer-height;
 				font-weight: 400;
+				position: absolute;
+				bottom: -$segment-layer-height;
+				width: 100%;
 
 				.segment-timeline__part__quickloop-background {
 					width: 100%;
 					position: absolute;
+					bottom: -1px;
 					min-height: $segment-layer-height;
 					background-image: linear-gradient(to right, white 20%, rgba(255, 255, 255, 0) 0%);
 					background-position: center left;
@@ -1799,6 +1805,7 @@ svg.icon {
 
 				.segment-timeline__part__quickloop-start, .segment-timeline__part__quickloop-end {
 					position: absolute;
+					bottom: -1px;
 					background: $segment-background-color;
 					padding: 0 0.3em;
 					white-space: nowrap;

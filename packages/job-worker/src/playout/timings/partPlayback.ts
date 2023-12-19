@@ -58,7 +58,6 @@ export async function onPartPlaybackStarted(
 			// this is the next part, clearly an autoNext has taken place
 
 			playoutModel.cycleSelectedPartInstances()
-			playoutModel.updateQuickLoopState()
 
 			reportPartInstanceHasStarted(context, playoutModel, playingPartInstance, data.startedPlayback)
 
@@ -92,9 +91,12 @@ export async function onPartPlaybackStarted(
 				playingPartInstance.partInstance,
 				null,
 				playoutModel.getAllOrderedSegments(),
-				playoutModel.getAllOrderedParts()
+				playoutModel.getAllOrderedParts(),
+				false,
+				false
 			)
 			await setNextPart(context, playoutModel, nextPart, false)
+			playoutModel.updateQuickLoopState()
 
 			// complete the take
 			await afterTake(context, playoutModel, playingPartInstance)

@@ -38,7 +38,8 @@ export function selectNextPart(
 	currentlySelectedPartInstance: ReadonlyDeep<DBPartInstance> | null,
 	segments: readonly PlayoutSegmentModel[],
 	parts0: ReadonlyDeep<DBPart>[],
-	ignoreUnplayabale = true
+	ignoreUnplayabale = true,
+	ignoreQuickLoop = true
 ): SelectNextPartResult | null {
 	const span = context.startSpan('selectNextPart')
 
@@ -83,7 +84,7 @@ export function selectNextPart(
 		return undefined
 	}
 
-	if (rundownPlaylist.quickLoop?.running && previousPartInstance) {
+	if (!ignoreQuickLoop && rundownPlaylist.quickLoop?.running && previousPartInstance) {
 		const currentIndex = parts.findIndex((p) => p._id === previousPartInstance.part._id)
 		if (
 			rundownPlaylist.quickLoop?.end?.type === QuickLoopMarkerType.PART &&
@@ -175,13 +176,19 @@ export function selectNextPart(
 		}
 	}
 
-	// if playlist should loop, check from 0 to currentPart
-	if (rundownPlaylist.loop && !nextPart && previousPartInstance) {
-		// Search up until the current part
-		nextPart = findFirstPlayablePart(0, undefined, searchFromIndex - 1)
-	}
+	// // if playlist should loop, check from 0 to currentPart
+	// if (rundownPlaylist.loop && !nextPart && previousPartInstance) {
+	// 	// Search up until the current part
+	// 	nextPart = findFirstPlayablePart(0, undefined, searchFromIndex - 1)
+	// }
 
-	if (rundownPlaylist.quickLoop?.end?.type === QuickLoopMarkerType.PLAYLIST && !nextPart && previousPartInstance) {
+	// TODO: check how this used to behave when you queue dynamic parts after the last one in a looping playlist
+	if (
+		!ignoreQuickLoop &&
+		rundownPlaylist.quickLoop?.end?.type === QuickLoopMarkerType.PLAYLIST &&
+		!nextPart &&
+		previousPartInstance
+	) {
 		nextPart = findQuickLoopStartPart(searchFromIndex - 1)
 	}
 
