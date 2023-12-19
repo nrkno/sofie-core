@@ -94,6 +94,7 @@ interface IState {
 	isDurationSettling: boolean
 	durationSettlingStartsAt: number
 	liveDuration: number
+	isInQuickLoop: boolean
 
 	isInsideViewport: boolean
 	isTooSmallForText: boolean
@@ -108,6 +109,8 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 
 		const isLive = this.props.playlist.currentPartInfo?.partInstanceId === partInstance._id
 		const isNext = this.props.playlist.nextPartInfo?.partInstanceId === partInstance._id
+		const isInQuickLoop =
+			this.props.timingDurations.partsInQuickLoop?.[getPartInstanceTimingId(this.props.part.instance)] ?? false
 		const startedPlayback = partInstance.timings?.plannedStartedPlayback
 
 		this.state = {
@@ -118,6 +121,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 			isInsideViewport: false,
 			isTooSmallForText: false,
 			isTooSmallForDisplay: false,
+			isInQuickLoop,
 			highlight: false,
 			liveDuration: isLive
 				? Math.max(
@@ -144,12 +148,9 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		const isPrevious = nextProps.playlist.previousPartInfo?.partInstanceId === nextProps.part.instance._id
 		const isLive = nextProps.playlist.currentPartInfo?.partInstanceId === nextProps.part.instance._id
 		const isNext = nextProps.playlist.nextPartInfo?.partInstanceId === nextProps.part.instance._id
-		const isQuickLoopStart =
-			nextProps.playlist.quickLoop?.start?.type === QuickLoopMarkerType.PART &&
-			nextProps.playlist.quickLoop.start.id === nextProps.part.partId
-		const isQuickLoopEnd =
-			nextProps.playlist.quickLoop?.end?.type === QuickLoopMarkerType.PART &&
-			nextProps.playlist.quickLoop.end.id === nextProps.part.partId
+
+		const isInQuickLoop =
+			nextProps.timingDurations.partsInQuickLoop?.[getPartInstanceTimingId(nextProps.part.instance)] ?? false
 
 		const nextPartInstance = nextProps.part.instance
 
@@ -217,8 +218,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		const partial = {
 			isLive,
 			isNext,
-			isQuickLoopStart,
-			isQuickLoopEnd,
+			isInQuickLoop,
 
 			isDurationSettling,
 			durationSettlingStartsAt,
@@ -659,13 +659,6 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 				}
 			}
 		}
-		const isPartInQuickLoop =
-			this.props.timingDurations.partsInQuickLoop?.[getPartInstanceTimingId(this.props.part.instance)] ?? false
-		// const isPrevPartInQuickLoop =
-		// 	(this.props.part.previousPartId &&
-		// 		this.props.timingDurations.partInQuickLoop?.[this.props.part.previousPartId]) ??
-		// 	false
-		// const willProbablyAutoNext = this.props.part.willProbablyAutoNext || (isPlaylistLooping && isPrevPartInQuickLoop)
 
 		const isQuickLoopStart =
 			this.props.playlist.quickLoop?.start?.type === QuickLoopMarkerType.PART &&
@@ -693,7 +686,8 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 							'duration-settling': this.state.isDurationSettling,
 							'budget-gap': this.props.isBudgetGap,
 
-							'out-of-the-loop': !isPartInQuickLoop && isLoopRunning(this.props.playlist) && !this.state.isNext,
+							'out-of-the-loop': !this.state.isInQuickLoop && isLoopRunning(this.props.playlist) && !this.state.isNext,
+							'quickloop-start': isQuickLoopStart,
 							'quickloop-end': isQuickLoopEnd,
 						},
 						this.props.className
@@ -720,21 +714,6 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 						<InvalidPartCover className="segment-timeline__part__invalid-cover" part={innerPart} />
 					) : null}
 					{innerPart.floated ? <div className="segment-timeline__part__floated-cover"></div> : null}
-					<div className="segment-timeline__part__quickloop-line">
-						{isPartInQuickLoop && <div className="segment-timeline__part__quickloop-background"></div>}
-						{isQuickLoopStart ? (
-							<div className="segment-timeline__part__quickloop-start">
-								START
-								<LoopingIcon />
-							</div>
-						) : null}
-						{isQuickLoopEnd ? (
-							<div className="segment-timeline__part__quickloop-end">
-								<LoopingIcon />
-								END
-							</div>
-						) : null}
-					</div>
 					{this.props.playlist.nextTimeOffset &&
 						this.state.isNext && ( // This is the off-set line
 							<div
@@ -805,10 +784,25 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 								{this.props.isAfterLastValidInSegmentAndItsLive && !isPlaylistLooping && <SegmentEnd />}
 								{this.props.isAfterLastValidInSegmentAndItsLive && isPlaylistLooping && <LoopingIcon />}
 							</div>
+							<div className="segment-timeline__part__quickloop-line">
+								{this.state.isInQuickLoop && <div className="segment-timeline__part__quickloop-background"></div>}
+								{!this.props.isPreview && this.props.part.instance.part.identifier && (
+									<div className="segment-timeline__identifier">{this.props.part.instance.part.identifier}</div>
+								)}
+								{isQuickLoopStart ? (
+									<div className="segment-timeline__part__quickloop-start">
+										START
+										<LoopingIcon />
+									</div>
+								) : null}
+								{isQuickLoopEnd ? (
+									<div className="segment-timeline__part__quickloop-end">
+										<LoopingIcon />
+										END
+									</div>
+								) : null}
+							</div>
 							{isQuickLoopStart && <div className="segment-timeline__part__nextline__quickloop-start" />}
-							{!this.props.isPreview && this.props.part.instance.part.identifier && (
-								<div className="segment-timeline__identifier">{this.props.part.instance.part.identifier}</div>
-							)}
 						</div>
 					)}
 					{isQuickLoopEnd && <div className="segment-timeline__part__nextline__quickloop-end" />}
@@ -856,7 +850,6 @@ export const SegmentTimelinePart = withTranslation()(
 					(durations.partDisplayStartsAt || {})[timingId],
 					(durations.partDisplayDurations || {})[timingId],
 					(durations.partsInQuickLoop || {})[timingId],
-					props.part.previousPartId ? (durations.partsInQuickLoop || {})[props.part.previousPartId] : undefined,
 					firstPartInSegmentId ? (durations.partDisplayStartsAt || {})[firstPartInSegmentId] : undefined,
 					firstPartInSegmentId ? (durations.partDisplayDurations || {})[firstPartInSegmentId] : undefined,
 				]

@@ -1380,6 +1380,7 @@ svg.icon {
 				position: absolute;
 				top: -10px;
 				left: 0;
+				right: 0;
 				bottom: -1.3em;
 				flex: 0;
 				border-left: 2px solid $part-start-color;
@@ -1393,8 +1394,16 @@ svg.icon {
 				}
 
 				&.quickloop-start {
-					left: 1px;
-					border-left: 1px solid white;
+					left: 0px;
+
+					&::before, &::after {
+						z-index: 1;
+						margin-left: 5px;
+					}
+					
+					.segment-timeline__part__nextline__label {
+						margin-left: 5px;
+					}
 				}
 
 				.segment-timeline__part__nextline__label {
@@ -1443,11 +1452,13 @@ svg.icon {
 
 				.segment-timeline__part__nextline__quickloop-start {
 					border-left: 3px solid white;
+					border-right: 1px solid white;
 					display: block;
 					position: absolute;
 					top: 0;
 					bottom: 0;
-					left: -6px;
+					left: -2px;
+					width: 6px;
 				}
 			}
 
@@ -1457,8 +1468,9 @@ svg.icon {
 				position: absolute;
 				top: -12px;
 				bottom: -1.3em;
-				right: -2px;
+				right: 0px;
 				z-index: 40;
+				width: 6px;
 
 				&::before {
 					content: ' ';
@@ -1546,6 +1558,10 @@ svg.icon {
 			&.budget-gap {
 				flex: 1;
 				z-index: -1;
+			}
+
+			&.quickloop-start {
+				z-index: 1;
 			}
 
 			&.quickloop-end {
@@ -1747,6 +1763,11 @@ svg.icon {
 							filter: drop-shadow(2px 2px 0px black) drop-shadow(-2px -2px 0px black) drop-shadow(0 0 5px black);
 						}
 					}
+
+					.segment-timeline__part__nextline__quickloop-start {
+						border-left-color: $general-next-color;
+						border-right-color: $general-next-color;
+					}
 				}
 			}
 
@@ -1786,37 +1807,44 @@ svg.icon {
 
 			.segment-timeline__part__quickloop-line {
 				min-height: $segment-layer-height;
-				line-height: $segment-layer-height;
 				font-weight: 400;
+				display: flex;
+				flex-direction: row;
+				align-items: flex-end;
 				position: absolute;
-				bottom: -$segment-layer-height;
+				bottom: 0;
 				width: 100%;
+				overflow: hidden;
 
 				.segment-timeline__part__quickloop-background {
-					width: 100%;
 					position: absolute;
-					bottom: -1px;
-					min-height: $segment-layer-height;
+					z-index: -2;
+					min-height: 1em;
 					background-image: linear-gradient(to right, white 20%, rgba(255, 255, 255, 0) 0%);
 					background-position: center left;
 					background-size: 10px 2px;
 					background-repeat: repeat-x;
+					left: 0;
+					right: 0;
 				}
 
 				.segment-timeline__part__quickloop-start, .segment-timeline__part__quickloop-end {
-					position: absolute;
-					bottom: -1px;
 					background: $segment-background-color;
 					padding: 0 0.3em;
+					margin-bottom: -2px;
 					white-space: nowrap;
 				}
-
 				.segment-timeline__part__quickloop-start {
-					left: 0;
+					padding-left: 0.6em;
+				}
+
+				.segment-timeline__identifier + .segment-timeline__part__quickloop-start {
+					padding-left: 0.3em;
 				}
 
 				.segment-timeline__part__quickloop-end {
-					right: 0;
+					padding-right: 0.6em;
+					margin-left: auto
 				}
 			}
 
@@ -2339,8 +2367,6 @@ svg.icon {
 			}
 
 			.segment-timeline__identifier {
-				position: absolute;
-				bottom: 0;
 				z-index: -1;
 				padding: 0 4px 0 10px;
 				box-sizing: border-box;
