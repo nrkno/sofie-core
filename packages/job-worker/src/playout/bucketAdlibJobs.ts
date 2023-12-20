@@ -4,7 +4,7 @@ import { runJobWithPlaylistLock } from './lock'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { BucketId, ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { innerStartOrQueueAdLibPiece } from './adlibUtils'
-import { executeAdlibAction } from './adlibAction'
+import { executeAdlibActionAndSaveModel } from './adlibAction'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { createPlayoutModelfromInitModel, loadPlayoutModelPreInit } from './model/implementation/LoadPlayoutModel'
 
@@ -55,9 +55,10 @@ export async function handleExecuteBucketAdLibOrAction(
 				partInstance,
 				bucketAdLib
 			)
+			await playoutModel.saveAllToDatabase()
 			return {}
 		} else if (bucketAdLibAction) {
-			return await executeAdlibAction(context, playlist, initCache, {
+			return await executeAdlibActionAndSaveModel(context, playlist, initCache, {
 				actionDocId: bucketAdLibAction._id,
 				actionId: bucketAdLibAction.actionId,
 				playlistId: playlist._id,

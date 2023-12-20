@@ -38,11 +38,11 @@ export async function handleExecuteAdlibAction(
 
 		const initCache = await loadPlayoutModelPreInit(context, lock, playlist, false)
 
-		return executeAdlibAction(context, playlist, initCache, data)
+		return executeAdlibActionAndSaveModel(context, playlist, initCache, data)
 	})
 }
 
-export async function executeAdlibAction(
+export async function executeAdlibActionAndSaveModel(
 	context: JobContext,
 	playlist: DBRundownPlaylist,
 	initCache: PlayoutModelPreInit,

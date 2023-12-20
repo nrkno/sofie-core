@@ -221,7 +221,7 @@ class PlaylistsServerAPI implements PlaylistsRestAPI {
 		externalId: string,
 		triggerMode?: string | null
 	): Promise<ClientAPI.ClientResponse<object>> {
-		const bucketPromise = Buckets.findOneAsync({}, { projection: { _id: 1, name: 1, studioId: 1 } })
+		const bucketPromise = Buckets.findOneAsync(bucketId, { projection: { _id: 1 } })
 		const bucketAdlibPromise = BucketAdLibs.findOneAsync({ bucketId, externalId }, { projection: { _id: 1 } })
 		const bucketAdlibActionPromise = BucketAdLibActions.findOneAsync(
 			{ bucketId, externalId },
@@ -229,13 +229,18 @@ class PlaylistsServerAPI implements PlaylistsRestAPI {
 				projection: { _id: 1 },
 			}
 		)
-		if (!(await bucketPromise)) {
+		const [bucket, bucketAdlib, bucketAdlibAction] = await Promise.all([
+			bucketPromise,
+			bucketAdlibPromise,
+			bucketAdlibActionPromise,
+		])
+		if (!bucket) {
 			return ClientAPI.responseError(
 				UserError.from(new Error(`Bucket ${bucketId} not found`), UserErrorMessage.BucketNotFound),
 				412
 			)
 		}
-		if (!((await bucketAdlibPromise) ?? (await bucketAdlibActionPromise))) {
+		if (!bucketAdlib && !bucketAdlibAction) {
 			return ClientAPI.responseError(
 				UserError.from(
 					new Error(`No adLib with Id ${externalId}, in bucket ${bucketId}`),
