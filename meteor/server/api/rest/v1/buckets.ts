@@ -31,7 +31,7 @@ export class BucketsServerAPI implements BucketsRestAPI {
 		_event: string,
 		bucketId: BucketId
 	): Promise<ClientAPI.ClientResponse<APIBucketComplete>> {
-		const bucket = await Buckets.findOneAsync({}, { projection: { _id: 1, name: 1, studioId: 1 } })
+		const bucket = await Buckets.findOneAsync(bucketId, { projection: { _id: 1, name: 1, studioId: 1 } })
 		if (!bucket) {
 			return ClientAPI.responseError(
 				UserError.from(new Error(`Bucket ${bucketId} not found`), UserErrorMessage.BucketNotFound),
