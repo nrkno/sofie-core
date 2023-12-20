@@ -10,7 +10,7 @@ import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { JobContext, ProcessedShowStyleCompound } from '../jobs'
 import { getCurrentTime } from '../lib'
 import { ReadonlyDeep } from 'type-fest'
-import { PlayoutModel } from './model/PlayoutModel'
+import { PlayoutModel, PlayoutModelPreInit } from './model/PlayoutModel'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { runJobWithPlaylistLock } from './lock'
 import { updateTimeline } from './timeline/generate'
@@ -38,81 +38,93 @@ export async function handleExecuteAdlibAction(
 
 		const initPlayoutModel = await loadPlayoutModelPreInit(context, lock, playlist, false)
 
-		const rundown = initPlayoutModel.getRundown(playlist.currentPartInfo.rundownId)
-		if (!rundown) throw new Error(`Current Rundown "${playlist.currentPartInfo.rundownId}" could not be found`)
+		return executeAdlibActionAndSaveModel(context, playlist, initPlayoutModel, data)
+	})
+}
 
-		const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
+export async function executeAdlibActionAndSaveModel(
+	context: JobContext,
+	playlist: DBRundownPlaylist,
+	initPlayoutModel: PlayoutModelPreInit,
+	data: ExecuteActionProps
+): Promise<ExecuteActionResult> {
+	if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown, undefined, 412)
+	if (!playlist.currentPartInfo) throw UserError.create(UserErrorMessage.NoCurrentPart, undefined, 412)
 
-		const blueprint = await context.getShowStyleBlueprint(showStyle._id)
+	const rundown = initPlayoutModel.getRundown(playlist.currentPartInfo.rundownId)
+	if (!rundown) throw new Error(`Current Rundown "${playlist.currentPartInfo.rundownId}" could not be found`)
 
-		if (!blueprint.blueprint.executeAction && !blueprint.blueprint.executeDataStoreAction) {
-			throw UserError.create(UserErrorMessage.ActionsNotSupported)
-		}
+	const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
 
-		const watchedPackages = await WatchedPackagesHelper.create(context, context.studio._id, {
-			pieceId: data.actionDocId,
-			fromPieceType: {
-				$in: [
-					ExpectedPackageDBType.ADLIB_ACTION,
-					ExpectedPackageDBType.BASELINE_ADLIB_ACTION,
-					ExpectedPackageDBType.BUCKET_ADLIB_ACTION,
-				],
-			},
-		})
+	const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 
-		const actionParameters: ExecuteActionParameters = {
-			actionId: data.actionId,
-			userData: data.userData,
-			triggerMode: data.triggerMode,
-		}
+	if (!blueprint.blueprint.executeAction && !blueprint.blueprint.executeDataStoreAction) {
+		throw UserError.create(UserErrorMessage.ActionsNotSupported)
+	}
+
+	const watchedPackages = await WatchedPackagesHelper.create(context, context.studio._id, {
+		pieceId: data.actionDocId,
+		fromPieceType: {
+			$in: [
+				ExpectedPackageDBType.ADLIB_ACTION,
+				ExpectedPackageDBType.BASELINE_ADLIB_ACTION,
+				ExpectedPackageDBType.BUCKET_ADLIB_ACTION,
+			],
+		},
+	})
+
+	const actionParameters: ExecuteActionParameters = {
+		actionId: data.actionId,
+		userData: data.userData,
+		triggerMode: data.triggerMode,
+	}
+
+	try {
+		await executeDataStoreAction(
+			context,
+			playlist,
+			rundown,
+			showStyle,
+			blueprint,
+			watchedPackages,
+			actionParameters
+		)
+	} catch (err) {
+		logger.error(`Error in showStyleBlueprint.executeDatastoreAction: ${stringifyError(err)}`)
+	}
+
+	if (blueprint.blueprint.executeAction) {
+		// load a full model for the regular actions & executet the handler
+		const playoutModel = await createPlayoutModelfromInitModel(context, initPlayoutModel)
+
+		const fullRundown = playoutModel.getRundown(rundown._id)
+		if (!fullRundown) throw new Error(`Rundown "${rundown._id}" missing between models`)
 
 		try {
-			await executeDataStoreAction(
+			const res: ExecuteActionResult = await executeActionInner(
 				context,
-				playlist,
-				rundown,
+				playoutModel,
+				fullRundown,
 				showStyle,
 				blueprint,
 				watchedPackages,
 				actionParameters
 			)
+
+			await playoutModel.saveAllToDatabase()
+
+			return res
 		} catch (err) {
-			logger.error(`Error in showStyleBlueprint.executeDatastoreAction: ${stringifyError(err)}`)
+			playoutModel.dispose()
+			throw err
 		}
+	}
 
-		if (blueprint.blueprint.executeAction) {
-			// load a full model for the regular actions & execute the handler
-			const playoutModel = await createPlayoutModelfromInitModel(context, initPlayoutModel)
-
-			const fullRundown = playoutModel.getRundown(rundown._id)
-			if (!fullRundown) throw new Error(`Rundown "${rundown._id}" missing between models`)
-
-			try {
-				const res: ExecuteActionResult = await executeActionInner(
-					context,
-					playoutModel,
-					fullRundown,
-					showStyle,
-					blueprint,
-					watchedPackages,
-					actionParameters
-				)
-
-				await playoutModel.saveAllToDatabase()
-
-				return res
-			} catch (err) {
-				playoutModel.dispose()
-				throw err
-			}
-		}
-
-		// if we haven't returned yet, these defaults should be correct
-		return {
-			queuedPartInstanceId: undefined,
-			taken: false,
-		}
-	})
+	// if we haven't returned yet, these defaults should be correct
+	return {
+		queuedPartInstanceId: undefined,
+		taken: false,
+	}
 }
 
 export interface ExecuteActionParameters {
