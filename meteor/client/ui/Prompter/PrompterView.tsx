@@ -101,419 +101,418 @@ function asArray<T>(value: T | T[] | null): T[] {
 	}
 }
 
-export const PrompterViewContent = withTranslation()(
-	class PrompterViewContent extends React.Component<Translated<IProps & ITrackedProps>> {
-		autoScrollPreviousPartInstanceId: PartInstanceId | null = null
+export class PrompterViewContent extends React.Component<Translated<IProps & ITrackedProps>> {
+	autoScrollPreviousPartInstanceId: PartInstanceId | null = null
 
-		configOptions: PrompterConfig
+	configOptions: PrompterConfig
 
-		// @ts-expect-error The manager inspects this instance
-		private _controller: PrompterControlManager
+	// @ts-expect-error The manager inspects this instance
+	private _controller: PrompterControlManager
 
-		private checkWindowScroll: number | null = null
+	private checkWindowScroll: number | null = null
 
-		constructor(props: Translated<IProps & ITrackedProps>) {
-			super(props)
-			this.state = {
-				subsReady: false,
-			}
-			// Disable the context menu:
-			document.addEventListener('contextmenu', (e) => {
-				e.preventDefault()
-			})
+	constructor(props: Translated<IProps & ITrackedProps>) {
+		super(props)
+		this.state = {
+			subsReady: false,
+		}
+		// Disable the context menu:
+		document.addEventListener('contextmenu', (e) => {
+			e.preventDefault()
+		})
 
-			const queryParams = queryStringParse(location.search, {
-				arrayFormat: 'comma',
-			})
+		const queryParams = queryStringParse(location.search, {
+			arrayFormat: 'comma',
+		})
 
-			this.configOptions = {
-				mirror: firstIfArray(queryParams['mirror']) === '1',
-				mirrorv: firstIfArray(queryParams['mirrorv']) === '1',
-				mode: asArray(queryParams['mode']),
-				controlMode: firstIfArray(queryParams['controlmode']) || undefined,
-				followTake: queryParams['followtake'] === undefined ? true : queryParams['followtake'] === '1',
-				fontSize: parseInt(firstIfArray(queryParams['fontsize']) as string, 10) || undefined,
-				margin: parseInt(firstIfArray(queryParams['margin']) as string, 10) || undefined,
-				joycon_invertJoystick:
-					queryParams['joycon_invertJoystick'] === undefined ? true : queryParams['joycon_invertJoystick'] === '1',
-				joycon_speedMap:
-					queryParams['joycon_speedMap'] === undefined
-						? undefined
-						: asArray(queryParams['joycon_speedMap']).map((value) => parseInt(value, 10)),
-				joycon_reverseSpeedMap:
-					queryParams['joycon_reverseSpeedMap'] === undefined
-						? undefined
-						: asArray(queryParams['joycon_reverseSpeedMap']).map((value) => parseInt(value, 10)),
-				joycon_rangeRevMin: parseInt(firstIfArray(queryParams['joycon_rangeRevMin']) as string, 10) || undefined,
-				joycon_rangeNeutralMin:
-					parseInt(firstIfArray(queryParams['joycon_rangeNeutralMin']) as string, 10) || undefined,
-				joycon_rangeNeutralMax:
-					parseInt(firstIfArray(queryParams['joycon_rangeNeutralMax']) as string, 10) || undefined,
-				joycon_rangeFwdMax: parseInt(firstIfArray(queryParams['joycon_rangeFwdMax']) as string, 10) || undefined,
-				pedal_speedMap:
-					queryParams['pedal_speedMap'] === undefined
-						? undefined
-						: asArray(queryParams['pedal_speedMap']).map((value) => parseInt(value, 10)),
-				pedal_reverseSpeedMap:
-					queryParams['pedal_reverseSpeedMap'] === undefined
-						? undefined
-						: asArray(queryParams['pedal_reverseSpeedMap']).map((value) => parseInt(value, 10)),
-				pedal_rangeRevMin: parseInt(firstIfArray(queryParams['pedal_rangeRevMin']) as string, 10) || undefined,
-				pedal_rangeNeutralMin: parseInt(firstIfArray(queryParams['pedal_rangeNeutralMin']) as string, 10) || undefined,
-				pedal_rangeNeutralMax: parseInt(firstIfArray(queryParams['pedal_rangeNeutralMax']) as string, 10) || undefined,
-				pedal_rangeFwdMax: parseInt(firstIfArray(queryParams['pedal_rangeFwdMax']) as string, 10) || undefined,
-				marker: (firstIfArray(queryParams['marker']) as any) || undefined,
-				showMarker: queryParams['showmarker'] === undefined ? true : queryParams['showmarker'] === '1',
-				showScroll: queryParams['showscroll'] === undefined ? true : queryParams['showscroll'] === '1',
-				debug: queryParams['debug'] === undefined ? false : queryParams['debug'] === '1',
-				showOverUnder: queryParams['showoverunder'] === undefined ? true : queryParams['showoverunder'] === '1',
-				addBlankLine: queryParams['addblanklinke'] === undefined ? true : queryParams['adblankline'] === '1',
-			}
-
-			this._controller = new PrompterControlManager(this)
+		this.configOptions = {
+			mirror: firstIfArray(queryParams['mirror']) === '1',
+			mirrorv: firstIfArray(queryParams['mirrorv']) === '1',
+			mode: asArray(queryParams['mode']),
+			controlMode: firstIfArray(queryParams['controlmode']) || undefined,
+			followTake: queryParams['followtake'] === undefined ? true : queryParams['followtake'] === '1',
+			fontSize: parseInt(firstIfArray(queryParams['fontsize']) as string, 10) || undefined,
+			margin: parseInt(firstIfArray(queryParams['margin']) as string, 10) || undefined,
+			joycon_invertJoystick:
+				queryParams['joycon_invertJoystick'] === undefined ? true : queryParams['joycon_invertJoystick'] === '1',
+			joycon_speedMap:
+				queryParams['joycon_speedMap'] === undefined
+					? undefined
+					: asArray(queryParams['joycon_speedMap']).map((value) => parseInt(value, 10)),
+			joycon_reverseSpeedMap:
+				queryParams['joycon_reverseSpeedMap'] === undefined
+					? undefined
+					: asArray(queryParams['joycon_reverseSpeedMap']).map((value) => parseInt(value, 10)),
+			joycon_rangeRevMin: parseInt(firstIfArray(queryParams['joycon_rangeRevMin']) as string, 10) || undefined,
+			joycon_rangeNeutralMin: parseInt(firstIfArray(queryParams['joycon_rangeNeutralMin']) as string, 10) || undefined,
+			joycon_rangeNeutralMax: parseInt(firstIfArray(queryParams['joycon_rangeNeutralMax']) as string, 10) || undefined,
+			joycon_rangeFwdMax: parseInt(firstIfArray(queryParams['joycon_rangeFwdMax']) as string, 10) || undefined,
+			pedal_speedMap:
+				queryParams['pedal_speedMap'] === undefined
+					? undefined
+					: asArray(queryParams['pedal_speedMap']).map((value) => parseInt(value, 10)),
+			pedal_reverseSpeedMap:
+				queryParams['pedal_reverseSpeedMap'] === undefined
+					? undefined
+					: asArray(queryParams['pedal_reverseSpeedMap']).map((value) => parseInt(value, 10)),
+			pedal_rangeRevMin: parseInt(firstIfArray(queryParams['pedal_rangeRevMin']) as string, 10) || undefined,
+			pedal_rangeNeutralMin: parseInt(firstIfArray(queryParams['pedal_rangeNeutralMin']) as string, 10) || undefined,
+			pedal_rangeNeutralMax: parseInt(firstIfArray(queryParams['pedal_rangeNeutralMax']) as string, 10) || undefined,
+			pedal_rangeFwdMax: parseInt(firstIfArray(queryParams['pedal_rangeFwdMax']) as string, 10) || undefined,
+			marker: (firstIfArray(queryParams['marker']) as any) || undefined,
+			showMarker: queryParams['showmarker'] === undefined ? true : queryParams['showmarker'] === '1',
+			showScroll: queryParams['showscroll'] === undefined ? true : queryParams['showscroll'] === '1',
+			debug: queryParams['debug'] === undefined ? false : queryParams['debug'] === '1',
+			showOverUnder: queryParams['showoverunder'] === undefined ? true : queryParams['showoverunder'] === '1',
+			addBlankLine: queryParams['addblanklinke'] === undefined ? true : queryParams['adblankline'] === '1',
 		}
 
-		DEBUG_controllerSpeed(speed: number): void {
-			const speedEl = document.getElementById('prompter-debug-speed')
-			if (speedEl) {
-				speedEl.textContent = speed + ''
-			}
-		}
+		this._controller = new PrompterControlManager(this)
+	}
 
-		DEBUG_controllerState(state: IPrompterControllerState): void {
-			const debug = document.getElementById('prompter-debug')
-			if (debug) {
-				debug.textContent = ''
-
-				const debugInfo = document.createElement('div')
-
-				const source = document.createElement('h2')
-				source.textContent = state.source
-
-				const lastEvent = document.createElement('div')
-				lastEvent.classList.add('lastEvent')
-				lastEvent.textContent = state.lastEvent
-
-				const lastSpeed = document.createElement('div')
-				lastSpeed.id = 'prompter-debug-speed'
-				lastSpeed.classList.add('lastSpeed')
-				lastSpeed.textContent = state.lastSpeed + ''
-
-				debugInfo.appendChild(source)
-				debugInfo.appendChild(lastEvent)
-				debugInfo.appendChild(lastSpeed)
-				debug.appendChild(debugInfo)
-			}
-		}
-
-		componentDidMount(): void {
-			const themeColor = document.head.querySelector('meta[name="theme-color"]')
-			if (themeColor) {
-				themeColor.setAttribute('data-content', themeColor.getAttribute('content') || '')
-				themeColor.setAttribute('content', '#000000')
-			}
-
-			document.body.classList.add(
-				'dark',
-				'xdark',
-				'prompter-scrollbar',
-				this.configOptions.showScroll ? 'vertical-overflow-only' : 'no-overflow'
-			)
-			window.addEventListener('scroll', this.onWindowScroll)
-
-			this.triggerCheckCurrentTakeMarkers()
-			this.checkScrollToCurrent()
-
-			this.setDocumentTitle()
-		}
-
-		componentWillUnmount(): void {
-			documentTitle.set(null)
-
-			const themeColor = document.head.querySelector('meta[name="theme-color"]')
-			if (themeColor) {
-				themeColor.setAttribute('content', themeColor.getAttribute('data-content') || '#ffffff')
-			}
-
-			document.body.classList.remove(
-				'dark',
-				'xdark',
-				'prompter-scrollbar',
-				this.configOptions.showScroll ? 'vertical-overflow-only' : 'no-overflow'
-			)
-			window.removeEventListener('scroll', this.onWindowScroll)
-		}
-
-		componentDidUpdate(): void {
-			this.triggerCheckCurrentTakeMarkers()
-			this.checkScrollToCurrent()
-		}
-
-		private setDocumentTitle() {
-			const { t } = this.props
-
-			documentTitle.set(t('Prompter'))
-		}
-
-		private checkScrollToCurrent() {
-			const playlistId: RundownPlaylistId =
-				(this.props.rundownPlaylist && this.props.rundownPlaylist._id) || protectString('')
-			const playlist = RundownPlaylists.findOne(playlistId)
-
-			if (!this.configOptions.followTake) return
-			if (!playlist) return
-			if (playlist.currentPartInfo?.partInstanceId === this.autoScrollPreviousPartInstanceId) return
-			this.autoScrollPreviousPartInstanceId = playlist.currentPartInfo?.partInstanceId ?? null
-			if (playlist.currentPartInfo === null) return
-
-			this.scrollToPartInstance(playlist.currentPartInfo.partInstanceId)
-		}
-		private calculateScrollPosition() {
-			let pixelMargin = this.calculateMarginPosition()
-			switch (this.configOptions.marker) {
-				case 'top':
-				case 'hide':
-					pixelMargin += 0
-					break
-				case 'center':
-					pixelMargin = window.innerHeight / 2
-					break
-				case 'bottom':
-					pixelMargin = window.innerHeight - pixelMargin
-					break
-			}
-			return pixelMargin
-		}
-		private calculateMarginPosition() {
-			// margin in pixels
-			return ((this.configOptions.margin || 0) * window.innerHeight) / 100
-		}
-		scrollToPartInstance(partInstanceId: PartInstanceId): void {
-			const scrollMargin = this.calculateScrollPosition()
-			const target = document.querySelector(`#partInstance_${partInstanceId}`)
-
-			if (target) {
-				Velocity(document.body, 'finish')
-				Velocity(target, 'scroll', { offset: -1 * scrollMargin, duration: 400, easing: 'ease-out' })
-			}
-		}
-		scrollToLive(): void {
-			const scrollMargin = this.calculateScrollPosition()
-			const current = document.querySelector('.prompter .live') || document.querySelector('.prompter .next')
-
-			if (current) {
-				Velocity(document.body, 'finish')
-				Velocity(current, 'scroll', { offset: -1 * scrollMargin, duration: 400, easing: 'ease-out' })
-			}
-		}
-		scrollToNext(): void {
-			const scrollMargin = this.calculateScrollPosition()
-			const next = document.querySelector('.prompter .next')
-
-			if (next) {
-				Velocity(document.body, 'finish')
-				Velocity(next, 'scroll', { offset: -1 * scrollMargin, duration: 400, easing: 'ease-out' })
-			}
-		}
-		scrollToPrevious(): void {
-			const scrollMargin = this.calculateScrollPosition()
-			const anchors = this.listAnchorPositions(-1, 10 + scrollMargin)
-
-			const target = anchors[anchors.length - 2] || anchors[0]
-			if (!target) return
-
-			Velocity(document.body, 'finish')
-			Velocity(document.body, 'scroll', {
-				offset: window.scrollY - scrollMargin + target[0],
-				duration: 200,
-				easing: 'ease-out',
-			})
-		}
-		scrollToFollowing(): void {
-			const scrollMargin = this.calculateScrollPosition()
-			const anchors = this.listAnchorPositions(40 + scrollMargin, -1)
-
-			const target = anchors[0]
-			if (!target) return
-
-			Velocity(document.body, 'finish')
-			Velocity(document.body, 'scroll', {
-				offset: window.scrollY - scrollMargin + target[0],
-				duration: 200,
-				easing: 'ease-out',
-			})
-		}
-		listAnchorPositions(startY: number, endY: number, sortDirection = 1): [number, Element][] {
-			let foundPositions: [number, Element][] = []
-			// const anchors = document.querySelectorAll('.prompter .scroll-anchor')
-
-			Array.from(document.querySelectorAll('.prompter .scroll-anchor')).forEach((anchor) => {
-				const { top } = anchor.getBoundingClientRect()
-				if ((startY === -1 || top > startY) && (endY === -1 || top <= endY)) {
-					foundPositions.push([top, anchor])
-				}
-			})
-
-			foundPositions = _.sortBy(foundPositions, (v) => sortDirection * v[0])
-
-			return foundPositions
-		}
-		findAnchorPosition(startY: number, endY: number, sortDirection = 1): number | null {
-			return (this.listAnchorPositions(startY, endY, sortDirection)[0] || [])[0] || null
-		}
-		private onWindowScroll = () => {
-			this.triggerCheckCurrentTakeMarkers()
-		}
-		private triggerCheckCurrentTakeMarkers = () => {
-			// Rate limit:
-			if (!this.checkWindowScroll) {
-				this.checkWindowScroll = Meteor.setTimeout(() => {
-					this.checkWindowScroll = null
-
-					this.checkCurrentTakeMarkers()
-				}, 500)
-			}
-		}
-		private checkCurrentTakeMarkers = () => {
-			const playlist = this.props.rundownPlaylist
-
-			if (playlist !== undefined) {
-				const positionTop = window.scrollY
-				const positionBottom = positionTop + window.innerHeight
-
-				let currentPartElement: Element | null = null
-				let currentPartElementAfter: Element | null = null
-				let nextPartElementAfter: Element | null = null
-
-				const anchors: Array<Element> = Array.from(document.querySelectorAll('.scroll-anchor'))
-
-				for (let index = 0; index < anchors.length; index++) {
-					const current = anchors[index]
-					const next = index + 1 < anchors.length ? anchors[index + 1] : null
-
-					if (playlist.currentPartInfo && current.classList.contains(`live`)) {
-						currentPartElement = current
-						currentPartElementAfter = next
-					}
-					if (playlist.nextPartInfo && current.classList.contains(`next`)) {
-						nextPartElementAfter = next
-					}
-				}
-
-				const currentPositionStart = currentPartElement
-					? currentPartElement.getBoundingClientRect().top + positionTop
-					: null
-				const currentPositionEnd = currentPartElementAfter
-					? currentPartElementAfter.getBoundingClientRect().top + positionTop
-					: null
-
-				const nextPositionEnd = nextPartElementAfter
-					? nextPartElementAfter.getBoundingClientRect().top + positionTop
-					: null
-
-				const takeIndicator = document.querySelector('.take-indicator')
-				if (takeIndicator) {
-					if (currentPositionEnd && currentPositionEnd < positionTop) {
-						// Display take "^" indicator
-						takeIndicator.classList.remove('hidden')
-						takeIndicator.classList.add('top')
-					} else if (currentPositionStart && currentPositionStart > positionBottom) {
-						// Display take "v" indicator
-						takeIndicator.classList.remove('hidden', 'top')
-					} else {
-						takeIndicator.classList.add('hidden')
-					}
-				}
-
-				const nextIndicator = document.querySelector('.next-indicator')
-				if (nextIndicator) {
-					if (nextPositionEnd && nextPositionEnd < positionTop) {
-						// Display next "^" indicator
-						nextIndicator.classList.remove('hidden')
-						nextIndicator.classList.add('top')
-					} else {
-						nextIndicator.classList.add('hidden')
-					}
-				}
-			}
-		}
-
-		private renderMessage(message: string) {
-			const { t } = this.props
-
-			return (
-				<div className="rundown-view rundown-view--unpublished">
-					<div className="rundown-view__label">
-						<p>{message}</p>
-						<p>
-							<Route
-								render={({ history }) => (
-									<button
-										className="btn btn-primary"
-										onClick={() => {
-											history.push('/rundowns')
-										}}
-									>
-										{t('Return to list')}
-									</button>
-								)}
-							/>
-						</p>
-					</div>
-				</div>
-			)
-		}
-
-		render(): JSX.Element {
-			const { t } = this.props
-
-			const overUnderStyle: React.CSSProperties = {
-				marginTop: this.configOptions.margin ? `${this.configOptions.margin}vh` : undefined,
-				marginBottom: this.configOptions.margin ? `${this.configOptions.margin}vh` : undefined,
-				marginRight: this.configOptions.margin ? `${this.configOptions.margin}vw` : undefined,
-				marginLeft: this.configOptions.margin ? `${this.configOptions.margin}vw` : undefined,
-				fontSize: (this.configOptions.fontSize ?? 0) > 12 ? `12vmin` : undefined,
-			}
-
-			return (
-				<React.Fragment>
-					{!this.props.subsReady ? (
-						<div className="rundown-view rundown-view--loading">
-							<Spinner />
-						</div>
-					) : this.props.rundownPlaylist ? (
-						<>
-							<RundownTimingProvider playlist={this.props.rundownPlaylist}>
-								<Prompter rundownPlaylistId={this.props.rundownPlaylist._id} config={this.configOptions}>
-									{this.configOptions.showOverUnder && (
-										<OverUnderTimer rundownPlaylist={this.props.rundownPlaylist} style={overUnderStyle} />
-									)}
-								</Prompter>
-							</RundownTimingProvider>
-							{this.configOptions.debug ? (
-								<div
-									id="prompter-debug"
-									style={{
-										marginTop: this.configOptions.margin ? this.configOptions.margin + 'vh' : undefined,
-										marginBottom: this.configOptions.margin ? this.configOptions.margin + 'vh' : undefined,
-										marginLeft: this.configOptions.margin ? this.configOptions.margin + 'vw' : undefined,
-										marginRight: this.configOptions.margin ? this.configOptions.margin + 'vw' : undefined,
-									}}
-								></div>
-							) : null}
-						</>
-					) : this.props.studio ? (
-						<StudioScreenSaver studioId={this.props.studio._id} />
-					) : this.props.studioId ? (
-						this.renderMessage(t("This studio doesn't exist."))
-					) : (
-						this.renderMessage(t('There are no active rundowns.'))
-					)}
-				</React.Fragment>
-			)
+	DEBUG_controllerSpeed(speed: number): void {
+		const speedEl = document.getElementById('prompter-debug-speed')
+		if (speedEl) {
+			speedEl.textContent = speed + ''
 		}
 	}
-)
+
+	DEBUG_controllerState(state: IPrompterControllerState): void {
+		const debug = document.getElementById('prompter-debug')
+		if (debug) {
+			debug.textContent = ''
+
+			const debugInfo = document.createElement('div')
+
+			const source = document.createElement('h2')
+			source.textContent = state.source
+
+			const lastEvent = document.createElement('div')
+			lastEvent.classList.add('lastEvent')
+			lastEvent.textContent = state.lastEvent
+
+			const lastSpeed = document.createElement('div')
+			lastSpeed.id = 'prompter-debug-speed'
+			lastSpeed.classList.add('lastSpeed')
+			lastSpeed.textContent = state.lastSpeed + ''
+
+			debugInfo.appendChild(source)
+			debugInfo.appendChild(lastEvent)
+			debugInfo.appendChild(lastSpeed)
+			debug.appendChild(debugInfo)
+		}
+	}
+
+	componentDidMount(): void {
+		const themeColor = document.head.querySelector('meta[name="theme-color"]')
+		if (themeColor) {
+			themeColor.setAttribute('data-content', themeColor.getAttribute('content') || '')
+			themeColor.setAttribute('content', '#000000')
+		}
+
+		document.body.classList.add(
+			'dark',
+			'xdark',
+			'prompter-scrollbar',
+			this.configOptions.showScroll ? 'vertical-overflow-only' : 'no-overflow'
+		)
+		window.addEventListener('scroll', this.onWindowScroll)
+
+		this.triggerCheckCurrentTakeMarkers()
+		this.checkScrollToCurrent()
+
+		this.setDocumentTitle()
+	}
+
+	componentWillUnmount(): void {
+		documentTitle.set(null)
+
+		const themeColor = document.head.querySelector('meta[name="theme-color"]')
+		if (themeColor) {
+			themeColor.setAttribute('content', themeColor.getAttribute('data-content') || '#ffffff')
+		}
+
+		document.body.classList.remove(
+			'dark',
+			'xdark',
+			'prompter-scrollbar',
+			this.configOptions.showScroll ? 'vertical-overflow-only' : 'no-overflow'
+		)
+		window.removeEventListener('scroll', this.onWindowScroll)
+	}
+
+	componentDidUpdate(): void {
+		this.triggerCheckCurrentTakeMarkers()
+		this.checkScrollToCurrent()
+	}
+
+	private setDocumentTitle() {
+		const { t } = this.props
+
+		documentTitle.set(t('Prompter'))
+	}
+
+	private checkScrollToCurrent() {
+		const playlistId: RundownPlaylistId =
+			(this.props.rundownPlaylist && this.props.rundownPlaylist._id) || protectString('')
+		const playlist = RundownPlaylists.findOne(playlistId)
+
+		if (!this.configOptions.followTake) return
+		if (!playlist) return
+		if (playlist.currentPartInfo?.partInstanceId === this.autoScrollPreviousPartInstanceId) return
+		this.autoScrollPreviousPartInstanceId = playlist.currentPartInfo?.partInstanceId ?? null
+		if (playlist.currentPartInfo === null) return
+
+		this.scrollToPartInstance(playlist.currentPartInfo.partInstanceId)
+	}
+	private calculateScrollPosition() {
+		let pixelMargin = this.calculateMarginPosition()
+		switch (this.configOptions.marker) {
+			case 'top':
+			case 'hide':
+				pixelMargin += 0
+				break
+			case 'center':
+				pixelMargin = window.innerHeight / 2
+				break
+			case 'bottom':
+				pixelMargin = window.innerHeight - pixelMargin
+				break
+		}
+		return pixelMargin
+	}
+	private calculateMarginPosition() {
+		// margin in pixels
+		return ((this.configOptions.margin || 0) * window.innerHeight) / 100
+	}
+	scrollToPartInstance(partInstanceId: PartInstanceId): void {
+		const scrollMargin = this.calculateScrollPosition()
+		const target = document.querySelector(`#partInstance_${partInstanceId}`)
+
+		if (target) {
+			Velocity(document.body, 'finish')
+			Velocity(target, 'scroll', { offset: -1 * scrollMargin, duration: 400, easing: 'ease-out' })
+		}
+	}
+	scrollToLive(): void {
+		const scrollMargin = this.calculateScrollPosition()
+		const current = document.querySelector('.prompter .live') || document.querySelector('.prompter .next')
+
+		if (current) {
+			Velocity(document.body, 'finish')
+			Velocity(current, 'scroll', { offset: -1 * scrollMargin, duration: 400, easing: 'ease-out' })
+		}
+	}
+	scrollToNext(): void {
+		const scrollMargin = this.calculateScrollPosition()
+		const next = document.querySelector('.prompter .next')
+
+		if (next) {
+			Velocity(document.body, 'finish')
+			Velocity(next, 'scroll', { offset: -1 * scrollMargin, duration: 400, easing: 'ease-out' })
+		}
+	}
+	scrollToPrevious(): void {
+		const scrollMargin = this.calculateScrollPosition()
+		const anchors = this.listAnchorPositions(-1, 10 + scrollMargin)
+
+		const target = anchors[anchors.length - 2] || anchors[0]
+		if (!target) return
+
+		Velocity(document.body, 'finish')
+		Velocity(document.body, 'scroll', {
+			offset: window.scrollY - scrollMargin + target[0],
+			duration: 200,
+			easing: 'ease-out',
+		})
+	}
+	scrollToFollowing(): void {
+		const scrollMargin = this.calculateScrollPosition()
+		const anchors = this.listAnchorPositions(40 + scrollMargin, -1)
+
+		const target = anchors[0]
+		if (!target) return
+
+		Velocity(document.body, 'finish')
+		Velocity(document.body, 'scroll', {
+			offset: window.scrollY - scrollMargin + target[0],
+			duration: 200,
+			easing: 'ease-out',
+		})
+	}
+	listAnchorPositions(startY: number, endY: number, sortDirection = 1): [number, Element][] {
+		let foundPositions: [number, Element][] = []
+		// const anchors = document.querySelectorAll('.prompter .scroll-anchor')
+
+		Array.from(document.querySelectorAll('.prompter .scroll-anchor')).forEach((anchor) => {
+			const { top } = anchor.getBoundingClientRect()
+			if ((startY === -1 || top > startY) && (endY === -1 || top <= endY)) {
+				foundPositions.push([top, anchor])
+			}
+		})
+
+		foundPositions = _.sortBy(foundPositions, (v) => sortDirection * v[0])
+
+		return foundPositions
+	}
+	findAnchorPosition(startY: number, endY: number, sortDirection = 1): number | null {
+		return (this.listAnchorPositions(startY, endY, sortDirection)[0] || [])[0] || null
+	}
+	private onWindowScroll = () => {
+		this.triggerCheckCurrentTakeMarkers()
+	}
+	private triggerCheckCurrentTakeMarkers = () => {
+		// Rate limit:
+		if (!this.checkWindowScroll) {
+			this.checkWindowScroll = Meteor.setTimeout(() => {
+				this.checkWindowScroll = null
+
+				this.checkCurrentTakeMarkers()
+			}, 500)
+		}
+	}
+	private checkCurrentTakeMarkers = () => {
+		const playlist = this.props.rundownPlaylist
+
+		if (playlist !== undefined) {
+			const positionTop = window.scrollY
+			const positionBottom = positionTop + window.innerHeight
+
+			let currentPartElement: Element | null = null
+			let currentPartElementAfter: Element | null = null
+			let nextPartElementAfter: Element | null = null
+
+			const anchors: Array<Element> = Array.from(document.querySelectorAll('.scroll-anchor'))
+
+			for (let index = 0; index < anchors.length; index++) {
+				const current = anchors[index]
+				const next = index + 1 < anchors.length ? anchors[index + 1] : null
+
+				if (playlist.currentPartInfo && current.classList.contains(`live`)) {
+					currentPartElement = current
+					currentPartElementAfter = next
+				}
+				if (playlist.nextPartInfo && current.classList.contains(`next`)) {
+					nextPartElementAfter = next
+				}
+			}
+
+			const currentPositionStart = currentPartElement
+				? currentPartElement.getBoundingClientRect().top + positionTop
+				: null
+			const currentPositionEnd = currentPartElementAfter
+				? currentPartElementAfter.getBoundingClientRect().top + positionTop
+				: null
+
+			const nextPositionEnd = nextPartElementAfter
+				? nextPartElementAfter.getBoundingClientRect().top + positionTop
+				: null
+
+			const takeIndicator = document.querySelector('.take-indicator')
+			if (takeIndicator) {
+				if (currentPositionEnd && currentPositionEnd < positionTop) {
+					// Display take "^" indicator
+					takeIndicator.classList.remove('hidden')
+					takeIndicator.classList.add('top')
+				} else if (currentPositionStart && currentPositionStart > positionBottom) {
+					// Display take "v" indicator
+					takeIndicator.classList.remove('hidden', 'top')
+				} else {
+					takeIndicator.classList.add('hidden')
+				}
+			}
+
+			const nextIndicator = document.querySelector('.next-indicator')
+			if (nextIndicator) {
+				if (nextPositionEnd && nextPositionEnd < positionTop) {
+					// Display next "^" indicator
+					nextIndicator.classList.remove('hidden')
+					nextIndicator.classList.add('top')
+				} else {
+					nextIndicator.classList.add('hidden')
+				}
+			}
+		}
+	}
+
+	private renderMessage(message: string) {
+		const { t } = this.props
+
+		return (
+			<div className="rundown-view rundown-view--unpublished">
+				<div className="rundown-view__label">
+					<p>{message}</p>
+					<p>
+						<Route
+							render={({ history }) => (
+								<button
+									className="btn btn-primary"
+									onClick={() => {
+										history.push('/rundowns')
+									}}
+								>
+									{t('Return to list')}
+								</button>
+							)}
+						/>
+					</p>
+				</div>
+			</div>
+		)
+	}
+
+	render(): JSX.Element {
+		const { t } = this.props
+
+		const overUnderStyle: React.CSSProperties = {
+			marginTop: this.configOptions.margin ? `${this.configOptions.margin}vh` : undefined,
+			marginBottom: this.configOptions.margin ? `${this.configOptions.margin}vh` : undefined,
+			marginRight: this.configOptions.margin ? `${this.configOptions.margin}vw` : undefined,
+			marginLeft: this.configOptions.margin ? `${this.configOptions.margin}vw` : undefined,
+			fontSize: (this.configOptions.fontSize ?? 0) > 12 ? `12vmin` : undefined,
+		}
+
+		return (
+			<React.Fragment>
+				{!this.props.subsReady ? (
+					<div className="rundown-view rundown-view--loading">
+						<Spinner />
+					</div>
+				) : this.props.rundownPlaylist ? (
+					<>
+						<RundownTimingProvider playlist={this.props.rundownPlaylist}>
+							<Prompter rundownPlaylistId={this.props.rundownPlaylist._id} config={this.configOptions}>
+								{this.configOptions.showOverUnder && (
+									<OverUnderTimer rundownPlaylist={this.props.rundownPlaylist} style={overUnderStyle} />
+								)}
+							</Prompter>
+						</RundownTimingProvider>
+						{this.configOptions.debug ? (
+							<div
+								id="prompter-debug"
+								style={{
+									marginTop: this.configOptions.margin ? this.configOptions.margin + 'vh' : undefined,
+									marginBottom: this.configOptions.margin ? this.configOptions.margin + 'vh' : undefined,
+									marginLeft: this.configOptions.margin ? this.configOptions.margin + 'vw' : undefined,
+									marginRight: this.configOptions.margin ? this.configOptions.margin + 'vw' : undefined,
+								}}
+							></div>
+						) : null}
+					</>
+				) : this.props.studio ? (
+					<StudioScreenSaver studioId={this.props.studio._id} />
+				) : this.props.studioId ? (
+					this.renderMessage(t("This studio doesn't exist."))
+				) : (
+					this.renderMessage(t('There are no active rundowns.'))
+				)}
+			</React.Fragment>
+		)
+	}
+}
+
+const PrompterViewContentWithTranslation = withTranslation()(PrompterViewContent)
+
 export function PrompterView(props: Readonly<IProps>): JSX.Element {
 	const studioIsReady = useSubscription(MeteorPubSub.uiStudio, props.studioId)
 	const playlistIsReady = useSubscription(MeteorPubSub.rundownPlaylistForStudio, props.studioId, true)
@@ -559,7 +558,14 @@ export function PrompterView(props: Readonly<IProps>): JSX.Element {
 		[props.studioId]
 	)
 
-	return <PrompterViewContent {...props} studio={studio} rundownPlaylist={rundownPlaylist} subsReady={subsReady} />
+	return (
+		<PrompterViewContentWithTranslation
+			{...props}
+			studio={studio}
+			rundownPlaylist={rundownPlaylist}
+			subsReady={subsReady}
+		/>
+	)
 }
 
 interface IPrompterProps {
