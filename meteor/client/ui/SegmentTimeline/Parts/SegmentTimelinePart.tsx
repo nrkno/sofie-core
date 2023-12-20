@@ -3,7 +3,7 @@ import _ from 'underscore'
 import { withTranslation, WithTranslation, TFunction } from 'react-i18next'
 
 import ClassNames from 'classnames'
-import { DBRundownPlaylist, QuickLoopMarkerType } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { SegmentUi, PartUi, IOutputLayerUi, PieceUi, LIVE_LINE_TIME_PADDING } from '../SegmentTimelineContainer'
 import {
 	TimingDataResolution,
@@ -35,7 +35,7 @@ import { InvalidPartCover } from './InvalidPartCover'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { UIStudio } from '../../../../lib/api/studios'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
-import { isEndOfLoopingShow, isLoopRunning } from '../../../../lib/Rundown'
+import * as RundownLib from '../../../../lib/Rundown'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -642,8 +642,8 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 			this.props.isLastSegment &&
 			this.props.isLastInSegment &&
 			(!this.state.isLive || (this.state.isLive && !this.props.playlist.nextPartInfo))
-		const isPlaylistLooping = isLoopRunning(this.props.playlist)
-		const endOfLoopingShow = isEndOfLoopingShow(
+		const isPlaylistLooping = RundownLib.isLoopRunning(this.props.playlist)
+		const endOfLoopingShow = RundownLib.isEndOfLoopingShow(
 			this.props.playlist,
 			this.props.isLastSegment,
 			this.props.isLastInSegment,
@@ -660,12 +660,8 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 			}
 		}
 
-		const isQuickLoopStart =
-			this.props.playlist.quickLoop?.start?.type === QuickLoopMarkerType.PART &&
-			this.props.playlist.quickLoop.start.id === this.props.part.partId
-		const isQuickLoopEnd =
-			this.props.playlist.quickLoop?.end?.type === QuickLoopMarkerType.PART &&
-			this.props.playlist.quickLoop.end.id === this.props.part.partId
+		const isQuickLoopStart = RundownLib.isQuickLoopStart(this.props.part.partId, this.props.playlist)
+		const isQuickLoopEnd = RundownLib.isQuickLoopEnd(this.props.part.partId, this.props.playlist)
 
 		if (
 			this.state.isInsideViewport &&
@@ -686,7 +682,8 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 							'duration-settling': this.state.isDurationSettling,
 							'budget-gap': this.props.isBudgetGap,
 
-							'out-of-the-loop': !this.state.isInQuickLoop && isLoopRunning(this.props.playlist) && !this.state.isNext,
+							'out-of-the-loop':
+								!this.state.isInQuickLoop && RundownLib.isLoopRunning(this.props.playlist) && !this.state.isNext,
 							'quickloop-start': isQuickLoopStart,
 							'quickloop-end': isQuickLoopEnd,
 						},

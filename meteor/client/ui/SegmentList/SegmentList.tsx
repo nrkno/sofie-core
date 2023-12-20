@@ -9,7 +9,7 @@ import { literal } from '@sofie-automation/corelib/dist/lib'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { LinePart } from './LinePart'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { ISourceLayerExtended, isLoopRunning } from '../../../lib/Rundown'
+import { ISourceLayerExtended } from '../../../lib/Rundown'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 import { SegmentListHeader } from './SegmentListHeader'
 import { useInView } from 'react-intersection-observer'
@@ -19,6 +19,7 @@ import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { UIStudio } from '../../../lib/api/studios'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
+import * as RundownLib from '../../../lib/Rundown'
 
 interface IProps {
 	id: string
@@ -158,7 +159,9 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 				doesPlaylistHaveNextPart={playlistHasNextPart}
 				onPieceDoubleClick={props.onPieceDoubleClick}
 				onContextMenu={props.onContextMenu}
-				isPlaylistLooping={isLoopRunning(props.playlist)}
+				isPlaylistLooping={RundownLib.isLoopRunning(props.playlist)}
+				isQuickLoopStart={RundownLib.isQuickLoopStart(part.partId, props.playlist)}
+				isQuickLoopEnd={RundownLib.isQuickLoopEnd(part.partId, props.playlist)}
 			/>
 		)
 

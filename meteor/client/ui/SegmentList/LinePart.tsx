@@ -16,6 +16,7 @@ import { LinePartTimeline } from './LinePartTimeline'
 import { LinePartTitle } from './LinePartTitle'
 import { TimingDataResolution, TimingTickResolution, withTiming } from '../RundownView/RundownTiming/withTiming'
 import { RundownTimingContext, getPartInstanceTimingId } from '../../lib/rundownTiming'
+import { LoopingIcon } from '../../lib/ui/icons/looping'
 
 interface IProps {
 	segment: SegmentUi
@@ -24,6 +25,8 @@ interface IProps {
 	isNextPart: boolean
 	isSinglePartInSegment: boolean
 	hasAlreadyPlayed: boolean
+	isQuickLoopStart: boolean
+	isQuickLoopEnd: boolean
 	// isLastSegment?: boolean
 	// isLastPartInSegment?: boolean
 	isPlaylistLooping: boolean
@@ -64,6 +67,8 @@ export const LinePart = withTiming<IProps, {}>((props: IProps) => {
 	adLibIndicatorColumns,
 	isPlaylistLooping,
 	timingDurations,
+	isQuickLoopStart,
+	isQuickLoopEnd,
 	onContextMenu,
 	onPieceClick,
 	onPieceDoubleClick,
@@ -162,6 +167,17 @@ export const LinePart = withTiming<IProps, {}>((props: IProps) => {
 				{part.instance.part.identifier !== undefined && (
 					<LinePartIdentifier identifier={part.instance.part.identifier} />
 				)}
+				{isQuickLoopStart && (
+					<div className="segment-opl__quickloop-start">
+						<LoopingIcon />
+					</div>
+				)}
+				{isQuickLoopEnd && (
+					<div className="segment-opl__quickloop-end">
+						<LoopingIcon />
+					</div>
+				)}
+				{isInQuickLoop && <div className="segment-opl__quickloop-background"></div>}
 			</div>
 			<LinePartPieceIndicators
 				partId={part.partId}
@@ -179,6 +195,8 @@ export const LinePart = withTiming<IProps, {}>((props: IProps) => {
 				currentPartWillAutonext={currentPartWillAutonext}
 				hasAlreadyPlayed={hasAlreadyPlayed}
 				onPieceDoubleClick={onPieceDoubleClick}
+				isQuickLoopStart={isQuickLoopStart}
+				isQuickLoopEnd={isQuickLoopEnd}
 			/>
 		</ContextMenuTrigger>
 	)

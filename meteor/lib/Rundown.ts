@@ -407,12 +407,20 @@ export function sortAdlibs<T>(
 	return adlibs.map((a) => a.adlib)
 }
 
-export function isLoopDefined(playlist?: DBRundownPlaylist): boolean {
+export function isLoopDefined(playlist: DBRundownPlaylist | undefined): boolean {
 	return playlist?.quickLoop?.start != null && playlist?.quickLoop?.end != null
 }
 
-export function isLoopRunning(playlist?: DBRundownPlaylist): boolean {
+export function isLoopRunning(playlist: DBRundownPlaylist | undefined): boolean {
 	return !!playlist?.quickLoop?.running
+}
+
+export function isQuickLoopStart(partId: PartId, playlist: DBRundownPlaylist | undefined): boolean {
+	return playlist?.quickLoop?.start?.type === QuickLoopMarkerType.PART && playlist.quickLoop.start.id === partId
+}
+
+export function isQuickLoopEnd(partId: PartId, playlist: DBRundownPlaylist | undefined): boolean {
+	return playlist?.quickLoop?.end?.type === QuickLoopMarkerType.PART && playlist.quickLoop.end.id === partId
 }
 
 export function isEndOfLoopingShow(
