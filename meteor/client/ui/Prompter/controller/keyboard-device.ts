@@ -1,5 +1,5 @@
 import { ControllerAbstract, LONGPRESS_TIME } from './lib'
-import { PrompterViewInner, PrompterConfigMode } from '../PrompterView'
+import { PrompterViewContent, PrompterConfigMode } from '../PrompterView'
 
 const LOCALSTORAGE_MODE = 'prompter-controller-arrowkeys'
 
@@ -15,7 +15,7 @@ export class KeyboardController extends ControllerAbstract {
 
 	private _keyDown: { [button: string]: number } = {}
 
-	private _prompterView: PrompterViewInner
+	private _prompterView: PrompterViewContent
 
 	/** Scroll speed, in pixels per frame */
 	private _maxSpeed = 100
@@ -29,7 +29,7 @@ export class KeyboardController extends ControllerAbstract {
 
 	private _updateSpeedHandle: number | null = null
 
-	constructor(view: PrompterViewInner) {
+	constructor(view: PrompterViewContent) {
 		super()
 
 		this._prompterView = view
