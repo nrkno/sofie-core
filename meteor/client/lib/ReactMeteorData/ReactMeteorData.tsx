@@ -402,6 +402,43 @@ export function useSubscription<K extends keyof AllPubSubTypes>(
 
 	return ready
 }
+
+/**
+ * A Meteor Subscription hook that allows using React Functional Components and the Hooks API with Meteor subscriptions.
+ * Subscriptions will be torn down 1000ms after unmounting the component.
+ *
+ * @export
+ * @param {PubSub} sub The subscription to be subscribed to
+ * @param {boolean} enable Whether the subscription is enabled
+ * @param {...any[]} args A list of arugments for the subscription. This is used for optimizing the subscription across
+ * 		renders so that it isn't torn down and created for every render.
+ */
+export function useSubscriptionIfEnabled<K extends keyof AllPubSubTypes>(
+	sub: K,
+	enable: boolean,
+	...args: Parameters<AllPubSubTypes[K]>
+): boolean {
+	const [ready, setReady] = useState<boolean>(false)
+
+	useEffect(() => {
+		if (!enable) {
+			setReady(false)
+			return
+		}
+
+		const subscription = Tracker.nonreactive(() => meteorSubscribe(sub, ...args))
+		const isReadyComp = Tracker.nonreactive(() => Tracker.autorun(() => setReady(subscription.ready())))
+		return () => {
+			isReadyComp.stop()
+			setTimeout(() => {
+				subscription.stop()
+			}, 1000)
+		}
+	}, [sub, enable, stringifyObjects(args)])
+
+	return ready
+}
+
 /**
  * Sets up multiple subscriptions of the same type, but with different arguments
  */
