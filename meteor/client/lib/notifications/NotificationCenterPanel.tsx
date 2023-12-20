@@ -4,7 +4,6 @@ import ClassNames from 'classnames'
 // @ts-expect-error No types available
 import * as VelocityReact from 'velocity-react'
 import { translateWithTracker, Translated, withTracker } from '../ReactMeteorData/ReactMeteorData'
-import { MeteorReactComponent } from '../MeteorReactComponent'
 import {
 	NotificationCenter,
 	Notification,
@@ -12,7 +11,6 @@ import {
 	NotificationAction,
 } from '../../../lib/notifications/notifications'
 import { ContextMenuTrigger, ContextMenu, MenuItem } from '@jstarpl/react-contextmenu'
-import * as _ from 'underscore'
 import { translateMessage, isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { CriticalIcon, WarningIcon, CollapseChevrons, InformationIcon } from '../ui/icons/notifications'
 import update from 'immutability-helper'
@@ -38,10 +36,8 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 	triggerEvent = (action: NotificationAction, e: React.SyntheticEvent) => {
 		if (action.action) {
 			action.action(e)
-		} else {
-			if (this.props.item.actions && this.props.item.actions.find((i) => i.type === action.type)) {
-				this.props.item.action(action.type, e)
-			}
+		} else if (this.props.item.actions?.find((i) => i.type === action.type)) {
+			this.props.item.action(action.type, e)
 		}
 	}
 
@@ -106,7 +102,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 								</div>
 							) : !defaultAction && allActions.length ? (
 								<div className="notification-pop-up__actions--other">
-									{_.map(allActions, (action: NotificationAction, i: number) => {
+									{allActions.map((action: NotificationAction, i: number) => {
 										return (
 											<button
 												disabled={action.disabled}
@@ -186,7 +182,7 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 		highlightedLevel: NotificationCenter.getHighlightedLevel(),
 	}
 })(
-	class NotificationCenterPopUps extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+	class NotificationCenterPopUps extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		private readonly DISMISS_ANIMATION_DURATION = 500
 		private readonly LEAVE_ANIMATION_DURATION = 150
 
@@ -216,7 +212,7 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 							$push: [key],
 						}),
 						dismissingTransform: update(this.state.dismissingTransform, {
-							$push: [this.createDismissTransform(`notification-pop-up_${key}`) || ''],
+							$push: [this.createDismissTransform(`notification-pop-up_${key}`) ?? ''],
 						}),
 					})
 
@@ -261,9 +257,9 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 			})
 
 			setTimeout(() => {
-				const indexes = notificationsToDismiss
+				const indexes: [number, number][] = notificationsToDismiss
 					.map((value) => this.state.dismissing.indexOf(value))
-					.map((index) => [index, 1]) as [number, number][]
+					.map((index) => [index, 1])
 
 				setTimeout(() => {
 					this.setState({
@@ -345,11 +341,7 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 
 			if (notificationEl && (toggleButtonEl || toggleButtonRect)) {
 				const notificationPosition = notificationEl.getClientRects()[0]
-				const toggleButtonPosition = toggleButtonRect
-					? toggleButtonRect
-					: toggleButtonEl
-					? toggleButtonEl.getClientRects()[0]
-					: null
+				const toggleButtonPosition = toggleButtonRect ?? toggleButtonEl?.getClientRects()?.[0] ?? null
 				if (toggleButtonPosition) {
 					const style = `translate3d(${toggleButtonPosition.left - notificationPosition.left}px, ${
 						toggleButtonPosition.top - notificationPosition.top
@@ -512,7 +504,7 @@ export const NotificationCenterPanelToggle = withTracker<IToggleProps, {}, ITrac
 		}
 	}
 )(
-	class NotificationCenterPanelToggle extends MeteorReactComponent<IToggleProps & ITrackedCountProps> {
+	class NotificationCenterPanelToggle extends React.Component<IToggleProps & ITrackedCountProps> {
 		render(): JSX.Element {
 			return (
 				<button

@@ -11,13 +11,10 @@ import { OverlayScreenSaver } from './OverlayScreenSaver'
 import { RundownPlaylists } from '../../collections'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CameraScreen } from './CameraScreen'
-import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
 
-export function ClockView({ studioId }: { studioId: StudioId }): JSX.Element {
-	useSubscription(CorelibPubSub.rundownPlaylists, {
-		activationId: { $exists: true },
-		studioId,
-	})
+export function ClockView({ studioId }: Readonly<{ studioId: StudioId }>): JSX.Element {
+	useSubscription(MeteorPubSub.rundownPlaylistForStudio, studioId, true)
 
 	const playlist = useTracker(
 		() =>

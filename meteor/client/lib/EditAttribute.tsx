@@ -261,7 +261,7 @@ const EditAttributeMultilineText = wrapEditAttribute(
 			this.handleChange = this.handleChange.bind(this)
 		}
 		private handleChange(value: string[]) {
-			this.handleEdit(joinLines(value)) // as single string
+			this.handleUpdate(joinLines(value)) // as single string
 		}
 		render(): JSX.Element {
 			return (

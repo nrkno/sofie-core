@@ -14,7 +14,6 @@ import { PlayoutPartInstanceModel } from './model/PlayoutPartInstanceModel'
  * Resolve the PieceInstances for a PartInstance
  * Uses the getCurrentTime() as approximation for 'now'
  * @param context Context for current job
- * @param cache Cache for the active Playlist
  * @param sourceLayers SourceLayers for the current ShowStyle
  * @param partInstance PartInstance to resolve
  * @returns ResolvedPieceInstances sorted by startTime

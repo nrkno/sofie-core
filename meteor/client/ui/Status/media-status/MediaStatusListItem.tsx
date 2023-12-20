@@ -20,7 +20,7 @@ export function MediaStatusListItem({
 	invalid,
 	label,
 	duration,
-}: {
+}: Readonly<{
 	rundownName: string
 	rundownTo?: string
 	status: PieceStatusCode
@@ -33,7 +33,7 @@ export function MediaStatusListItem({
 	invalid?: boolean | undefined
 	label: string
 	duration?: number | undefined
-}): JSX.Element | null {
+}>): JSX.Element | null {
 	const sourceLayerClassName =
 		sourceLayerType !== undefined ? RundownUtils.getSourceLayerClassName(sourceLayerType) : undefined
 

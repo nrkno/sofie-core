@@ -1,8 +1,7 @@
 import { BlueprintId, ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, MeteorPubSub } from '../../../lib/api/pubsub'
-import { literal, ProtectedString, protectString } from '../../../lib/lib'
+import { ProtectedString, protectString } from '../../../lib/lib'
 import {
 	CustomPublish,
 	CustomPublishCollection,
@@ -16,8 +15,6 @@ import { NoSecurityReadAccess } from '../../security/noSecurity'
 import { LiveQueryHandle } from '../../lib/lib'
 import { ContentCache, createReactiveContentCache, ShowStyleBaseFields, StudioFields } from './reactiveContentCache'
 import { UpgradesContentObserver } from './upgradesContentObserver'
-import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { RundownPlaylists } from '../../collections'
 import { BlueprintMapEntry, checkDocUpgradeStatus } from './checkStatus'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
@@ -38,23 +35,10 @@ interface BlueprintUpgradeStatusUpdateProps {
 	invalidateBlueprintIds: BlueprintId[]
 }
 
-type RundownPlaylistFields = '_id' | 'studioId'
-const rundownPlaylistFieldSpecifier = literal<
-	MongoFieldSpecifierOnesStrict<Pick<DBRundownPlaylist, RundownPlaylistFields>>
->({
-	_id: 1,
-	studioId: 1,
-})
-
 async function setupBlueprintUpgradeStatusPublicationObservers(
-	args: ReadonlyDeep<BlueprintUpgradeStatusArgs>,
+	_args: ReadonlyDeep<BlueprintUpgradeStatusArgs>,
 	triggerUpdate: TriggerUpdate<BlueprintUpgradeStatusUpdateProps>
 ): Promise<LiveQueryHandle[]> {
-	const playlist = (await RundownPlaylists.findOneAsync(args.playlistId, {
-		projection: rundownPlaylistFieldSpecifier,
-	})) as Pick<DBRundownPlaylist, RundownPlaylistFields> | undefined
-	if (!playlist) throw new Error(`RundownPlaylist "${args.playlistId}" not found!`)
-
 	// TODO - can this be done cheaper?
 	const cache = createReactiveContentCache()
 

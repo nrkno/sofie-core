@@ -1,6 +1,7 @@
 import {
 	BucketId,
 	OrganizationId,
+	PartId,
 	RundownPlaylistId,
 	ShowStyleBaseId,
 	StudioId,
@@ -23,7 +24,6 @@ import { UIBucketContentStatus, UIPieceContentStatus, UISegmentPartNote } from '
 import { UIShowStyleBase } from './showStyles'
 import { UIStudio } from './studios'
 import { UIDeviceTriggerPreview } from '../../server/publications/deviceTriggersPreview'
-import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { logger } from '../logging'
 import { UIBlueprintUpgradeStatus } from './upgradeStatus'
 import {
@@ -36,40 +36,127 @@ import { CorelibPubSub, CorelibPubSubCollections, CorelibPubSubTypes } from '@so
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 /**
- * Ids of possible DDP subscriptions
+ * Ids of possible DDP subscriptions for the UI only
  */
 export enum MeteorPubSub {
+	/**
+	 * Fetch the CoreSystem document
+	 */
 	coreSystem = 'coreSystem',
+	/**
+	 * Fetch all User Evaluations for the specified time range
+	 */
 	evaluations = 'evaluations',
-	expectedPlayoutItems = 'expectedPlayoutItems',
 
+	/**
+	 * Fetch RundownPlaylists for the specified Studio, limited to either active or inactive playlists
+	 */
+	rundownPlaylistForStudio = 'rundownPlaylistForStudio',
+	/**
+	 * Fetch all the AdlibActions for specified PartId, limited to the specified sourceLayerIds
+	 */
+	adLibActionsForPart = 'adLibActionsForPart',
+	/**
+	 * Fetch all the AdlibPieces for specified PartId, limited to the specified sourceLayerIds
+	 */
+	adLibPiecesForPart = 'adLibPiecesForPart',
+
+	/**
+	 * Fetch either all TriggeredActions or limited to the specified ShowStyleBases
+	 */
 	triggeredActions = 'triggeredActions',
+	/**
+	 * Fetch all the Snapshots in the system
+	 */
 	snapshots = 'snapshots',
+	/**
+	 * Fetch all User Action Log entries for the specified time range
+	 */
 	userActionsLog = 'userActionsLog',
-	/** @deprecated */
+	/**
+	 * Fetch all MediaManager workflows in the system
+	 * @deprecated
+	 */
 	mediaWorkFlows = 'mediaWorkFlows',
-	/** @deprecated */
+	/**
+	 * Fetch all MediaManager workflow steps in the system
+	 * @deprecated
+	 */
 	mediaWorkFlowSteps = 'mediaWorkFlowSteps',
+	/**
+	 * Fetch either all RundownLayouts or limited to the specified ShowStyleBases
+	 */
 	rundownLayouts = 'rundownLayouts',
+	/**
+	 * Fetch information about the current logged in user, if any
+	 */
 	loggedInUser = 'loggedInUser',
+	/**
+	 * Fetch information about all users for a given organization
+	 */
 	usersInOrganization = 'usersInOrganization',
+	/**
+	 * Fetch information about a specified organization.
+	 * If null is provided, nothing will be returned
+	 */
 	organization = 'organization',
+	/**
+	 * Fetch either all buckets for the given Studio, or the Bucket specified.
+	 */
 	buckets = 'buckets',
+	/**
+	 * Fetch all translation bundles
+	 */
 	translationsBundles = 'translationsBundles',
 
 	// custom publications:
+
+	/**
+	 * Fetch the simplified timeline mappings for a given studio
+	 */
 	mappingsForStudio = 'mappingsForStudio',
+	/**
+	 * Fetch the simplified timeline for a given studio
+	 */
 	timelineForStudio = 'timelineForStudio',
 
+	/**
+	 * Fetch the simplified playout UI view of the specified ShowStyleBase
+	 */
 	uiShowStyleBase = 'uiShowStyleBase',
+	/**
+	 * Fetch the simplified playout UI view of the specified Studio.
+	 * If the id is null, nothing will be returned
+	 */
 	uiStudio = 'uiStudio',
+	/**
+	 * Fetch the simplified playout UI view of the TriggeredActions in the specified ShowStyleBase.
+	 * If the id is null, nothing will be returned
+	 */
 	uiTriggeredActions = 'uiTriggeredActions',
 
+	/**
+	 * Fetch the calculated trigger previews for the given Studio
+	 */
 	deviceTriggersPreview = 'deviceTriggersPreview',
 
+	/**
+	 * Fetch the Segment and Part notes in the given RundownPlaylist
+	 * If the id is null, nothing will be returned
+	 */
 	uiSegmentPartNotes = 'uiSegmentPartNotes',
+	/**
+	 * Fetch the Pieces content-status in the given RundownPlaylist
+	 * If the id is null, nothing will be returned
+	 */
 	uiPieceContentStatuses = 'uiPieceContentStatuses',
+	/**
+	 * Fetch the Pieces content-status in the given Bucket
+	 */
 	uiBucketContentStatuses = 'uiBucketContentStatuses',
+	/**
+	 * Fetch the Upgrade Statuses of all Blueprints in the system
+	 */
 	uiBlueprintUpgradeStatuses = 'uiBlueprintUpgradeStatuses',
 }
 
@@ -90,43 +177,33 @@ export type AllPubSubTypes = CorelibPubSubTypes & PeripheralDevicePubSubTypes & 
 
 export interface MeteorPubSubTypes {
 	[MeteorPubSub.coreSystem]: (token?: string) => CollectionName.CoreSystem
-	[MeteorPubSub.evaluations]: (selector: MongoQuery<Evaluation>, token?: string) => CollectionName.Evaluations
-	[MeteorPubSub.expectedPlayoutItems]: (
-		selector: MongoQuery<ExpectedPlayoutItem>,
-		token?: string
-	) => CollectionName.ExpectedPlayoutItems
+	[MeteorPubSub.evaluations]: (dateFrom: number, dateTo: number, token?: string) => CollectionName.Evaluations
+
+	[MeteorPubSub.rundownPlaylistForStudio]: (studioId: StudioId, isActive: boolean) => CollectionName.RundownPlaylists
+	[MeteorPubSub.adLibActionsForPart]: (partId: PartId, sourceLayerIds: string[]) => CollectionName.AdLibActions
+	[MeteorPubSub.adLibPiecesForPart]: (partId: PartId, sourceLayerIds: string[]) => CollectionName.AdLibPieces
 
 	[MeteorPubSub.triggeredActions]: (
-		selector: MongoQuery<DBTriggeredActions>,
+		/** ShowStyleBaseIds to fetch for, or null to just fetch global */
+		showStyleBaseIds: ShowStyleBaseId[] | null,
 		token?: string
 	) => CollectionName.TriggeredActions
-	[MeteorPubSub.snapshots]: (selector: MongoQuery<SnapshotItem>, token?: string) => CollectionName.Snapshots
-	[MeteorPubSub.userActionsLog]: (
-		selector: MongoQuery<UserActionsLogItem>,
-		token?: string
-	) => CollectionName.UserActionsLog
+	[MeteorPubSub.snapshots]: (token?: string) => CollectionName.Snapshots
+	[MeteorPubSub.userActionsLog]: (dateFrom: number, dateTo: number, token?: string) => CollectionName.UserActionsLog
 	/** @deprecated */
-	[MeteorPubSub.mediaWorkFlows]: (
-		selector: MongoQuery<MediaWorkFlow>,
-		token?: string
-	) => CollectionName.MediaWorkFlows
+	[MeteorPubSub.mediaWorkFlows]: (token?: string) => CollectionName.MediaWorkFlows
 	/** @deprecated */
-	[MeteorPubSub.mediaWorkFlowSteps]: (
-		selector: MongoQuery<MediaWorkFlowStep>,
-		token?: string
-	) => CollectionName.MediaWorkFlowSteps
+	[MeteorPubSub.mediaWorkFlowSteps]: (token?: string) => CollectionName.MediaWorkFlowSteps
 	[MeteorPubSub.rundownLayouts]: (
-		selector: MongoQuery<RundownLayoutBase>,
+		/** ShowStyleBaseIds to fetch for, or null to fetch all */
+		showStyleBaseIds: ShowStyleBaseId[] | null,
 		token?: string
 	) => CollectionName.RundownLayouts
 	[MeteorPubSub.loggedInUser]: (token?: string) => CollectionName.Users
-	[MeteorPubSub.usersInOrganization]: (selector: MongoQuery<DBUser>, token?: string) => CollectionName.Users
+	[MeteorPubSub.usersInOrganization]: (organizationId: OrganizationId, token?: string) => CollectionName.Users
 	[MeteorPubSub.organization]: (organizationId: OrganizationId | null, token?: string) => CollectionName.Organizations
 	[MeteorPubSub.buckets]: (studioId: StudioId, bucketId: BucketId | null, token?: string) => CollectionName.Buckets
-	[MeteorPubSub.translationsBundles]: (
-		selector: MongoQuery<TranslationsBundle>,
-		token?: string
-	) => CollectionName.TranslationsBundles
+	[MeteorPubSub.translationsBundles]: (token?: string) => CollectionName.TranslationsBundles
 
 	// custom publications:
 

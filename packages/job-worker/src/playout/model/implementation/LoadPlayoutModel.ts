@@ -36,11 +36,11 @@ export async function loadPlayoutModelPreInit(
 	tmpPlaylist: ReadonlyDeep<DBRundownPlaylist>,
 	reloadPlaylist = true
 ): Promise<PlayoutModelPreInit> {
-	const span = context.startSpan('CacheForPlayoutPreInit.createPreInit')
+	const span = context.startSpan('PlayoutModelPreInit.createPreInit')
 	if (span) span.setLabel('playlistId', unprotectString(tmpPlaylist._id))
 
 	if (!playlistLock.isLocked) {
-		throw new Error('Cannot create cache with released playlist lock')
+		throw new Error('Cannot create model with released playlist lock')
 	}
 
 	const [PeripheralDevices, Playlist, Rundowns] = await Promise.all([
@@ -140,11 +140,11 @@ export async function createPlayoutModelfromInitModel(
 	context: JobContext,
 	initModel: PlayoutModelPreInit
 ): Promise<PlayoutModel & DatabasePersistedModel> {
-	const span = context.startSpan('CacheForPlayout.fromInit')
+	const span = context.startSpan('PlayoutModel.fromInit')
 	if (span) span.setLabel('playlistId', unprotectString(initModel.playlistId))
 
 	if (!initModel.playlistLock.isLocked) {
-		throw new Error('Cannot create cache with released playlist lock')
+		throw new Error('Cannot create model with released playlist lock')
 	}
 
 	const rundownIds = initModel.rundowns.map((r) => r._id)
@@ -228,7 +228,7 @@ async function loadRundowns(
 }
 
 /**
- * Intitialise the full content of the cache
+ * Intitialise the full content of the model
  * @param ingestCache A CacheForIngest that is pending saving, if this is following an ingest operation
  */
 async function loadPartInstances(

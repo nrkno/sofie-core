@@ -30,7 +30,6 @@ import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dat
 import { DBTimelineDatastoreEntry } from '@sofie-automation/corelib/dist/dataModel/TimelineDatastore'
 import { PeripheralDevices, Studios, Timeline, TimelineDatastore } from '../collections'
 import { check } from 'meteor/check'
-import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { ResultingMappingRoutes, StudioLight } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import {
@@ -38,19 +37,6 @@ import {
 	PeripheralDevicePubSubCollectionsNames,
 } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 
-meteorPublish(
-	CorelibPubSub.timeline,
-	async function (selector: MongoQuery<TimelineComplete>, token: string | undefined) {
-		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-		const modifier: FindOptions<TimelineComplete> = {
-			fields: {},
-		}
-		if (await StudioReadAccess.studioContent(selector._id, { userId: this.userId, token })) {
-			return Timeline.findWithCursor(selector, modifier)
-		}
-		return null
-	}
-)
 meteorPublish(CorelibPubSub.timelineDatastore, async function (studioId: StudioId, token: string | undefined) {
 	if (!studioId) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<DBTimelineDatastoreEntry> = {

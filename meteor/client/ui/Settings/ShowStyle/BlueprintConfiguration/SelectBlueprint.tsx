@@ -16,7 +16,7 @@ interface SelectBlueprintProps {
 	showStyleBase: DBShowStyleBase
 }
 
-export function SelectBlueprint({ showStyleBase }: SelectBlueprintProps): JSX.Element {
+export function SelectBlueprint({ showStyleBase }: Readonly<SelectBlueprintProps>): JSX.Element {
 	const { t } = useTranslation()
 
 	const allShowStyleBlueprints = useTracker(() => {

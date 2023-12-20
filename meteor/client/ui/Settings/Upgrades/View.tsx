@@ -24,9 +24,11 @@ export function UpgradesView(): JSX.Element {
 
 				<table className="table">
 					<thead>
-						<th>Name</th>
-						<th>&nbsp;</th>
-						<th>&nbsp;</th>
+						<tr>
+							<th>Name</th>
+							<th>&nbsp;</th>
+							<th>&nbsp;</th>
+						</tr>
 					</thead>
 					<tbody>
 						{isReady && statuses && statuses.length === 0 && (
@@ -67,7 +69,7 @@ interface ShowUpgradesRowProps {
 	resourceName: string
 	upgradeResult: UIBlueprintUpgradeStatusStudio | UIBlueprintUpgradeStatusShowStyle
 }
-function ShowUpgradesRow({ resourceName, upgradeResult }: ShowUpgradesRowProps) {
+function ShowUpgradesRow({ resourceName, upgradeResult }: Readonly<ShowUpgradesRowProps>) {
 	const { t } = useTranslation()
 
 	return (

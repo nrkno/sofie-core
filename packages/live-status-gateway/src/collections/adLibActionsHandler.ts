@@ -1,28 +1,28 @@
 import { Logger } from 'winston'
 import { CoreHandler } from '../coreHandler'
 import { CollectionBase, Collection, CollectionObserver } from '../wsHandler'
-import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
+import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { PartInstanceName } from './partInstances'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import _ = require('underscore')
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
-import { PieceId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { AdLibActionId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { SelectedPartInstances } from './partInstancesHandler'
 
-export class AdLibsHandler
-	extends CollectionBase<AdLibPiece[], CorelibPubSub.adLibPieces, CollectionName.AdLibPieces>
-	implements Collection<AdLibPiece[]>, CollectionObserver<Map<PartInstanceName, DBPartInstance | undefined>>
+export class AdLibActionsHandler
+	extends CollectionBase<AdLibAction[], CorelibPubSub.adLibActions, CollectionName.AdLibActions>
+	implements Collection<AdLibAction[]>, CollectionObserver<SelectedPartInstances>
 {
 	public observerName: string
 	private _curRundownId: RundownId | undefined
 	private _curPartInstance: DBPartInstance | undefined
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
-		super(AdLibsHandler.name, CollectionName.AdLibPieces, CorelibPubSub.adLibPieces, logger, coreHandler)
+		super(AdLibActionsHandler.name, CollectionName.AdLibActions, CorelibPubSub.adLibActions, logger, coreHandler)
 		this.observerName = this._name
 	}
 
-	async changed(id: PieceId, changeType: string): Promise<void> {
+	async changed(id: AdLibActionId, changeType: string): Promise<void> {
 		this._logger.info(`${this._name} ${changeType} ${id}`)
 		if (!this._collectionName) return
 		const col = this._core.getCollection(this._collectionName)
@@ -31,11 +31,11 @@ export class AdLibsHandler
 		await this.notify(this._collectionData)
 	}
 
-	async update(source: string, data: Map<PartInstanceName, DBPartInstance | undefined> | undefined): Promise<void> {
-		this._logger.info(`${this._name} received adLibs update from ${source}`)
+	async update(source: string, data: SelectedPartInstances | undefined): Promise<void> {
+		this._logger.info(`${this._name} received partInstances update from ${source}`)
 		const prevRundownId = this._curRundownId
 		const prevCurPartInstance = this._curPartInstance
-		this._curPartInstance = data ? data.get(PartInstanceName.current) ?? data.get(PartInstanceName.next) : undefined
+		this._curPartInstance = data ? data.current ?? data.next : undefined
 		this._curRundownId = this._curPartInstance ? this._curPartInstance.rundownId : undefined
 
 		await new Promise(process.nextTick.bind(this))
@@ -45,9 +45,9 @@ export class AdLibsHandler
 			if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
 			if (this._dbObserver) this._dbObserver.stop()
 			if (this._curRundownId && this._curPartInstance) {
-				this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, {
-					rundownId: this._curRundownId,
-				})
+				this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, [
+					this._curRundownId,
+				])
 				this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
 				this._dbObserver.added = (id) => {
 					void this.changed(id, 'added').catch(this._logger.error)
@@ -68,8 +68,8 @@ export class AdLibsHandler
 	}
 
 	// override notify to implement empty array handling
-	async notify(data: AdLibPiece[] | undefined): Promise<void> {
-		this._logger.info(`${this._name} notifying update with ${data?.length} adLibs`)
+	async notify(data: AdLibAction[] | undefined): Promise<void> {
+		this._logger.info(`${this._name} notifying update with ${data?.length} adLibActions`)
 		if (data !== undefined) {
 			for (const observer of this._observers) {
 				await observer.update(this._name, data)

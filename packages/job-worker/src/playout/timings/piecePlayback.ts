@@ -9,7 +9,7 @@ import { PlayoutPieceInstanceModel } from '../model/PlayoutPieceInstanceModel'
 /**
  * Set the playback of a piece is confirmed to have started
  * @param context Context from the job queue
- * @param playoutModel DB cache for the current playlist
+ * @param playoutModel playout model for the current playlist
  * @param data Details on the piece start event
  */
 export function onPiecePlaybackStarted(
@@ -61,7 +61,7 @@ export function onPiecePlaybackStarted(
 /**
  * Set the playback of a piece is confirmed to have stopped
  * @param context Context from the job queue
- * @param playoutModel DB cache for the current playlist
+ * @param playoutModel playout model for the current playlist
  * @param data Details on the piece stop event
  */
 export function onPiecePlaybackStopped(
@@ -108,7 +108,7 @@ export function onPiecePlaybackStopped(
 /**
  * Set the playback of a PieceInstance is confirmed to have started
  * @param context Context from the job queue
- * @param playoutModel DB cache for the current playlist
+ * @param playoutModel playout model for the current playlist
  * @param pieceInstance PieceInstance to be updated
  * @param timestamp timestamp the PieceInstance started
  */
@@ -154,7 +154,7 @@ function reportPieceHasStarted(
 /**
  * Set the playback of a PieceInstance is confirmed to have stopped
  * @param context Context from the job queue
- * @param playoutModel DB cache for the current playlist
+ * @param playoutModel playout model for the current playlist
  * @param pieceInstance PieceInstance to be updated
  * @param timestamp timestamp the PieceInstance stopped
  */

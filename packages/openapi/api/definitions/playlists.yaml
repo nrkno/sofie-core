@@ -406,7 +406,7 @@ resources:
         500:
           $ref: '#/components/responses/internalServerError'
   setNextSegment:
-    put:
+    post:
       operationId: setNextSegment
       tags:
         - playlists

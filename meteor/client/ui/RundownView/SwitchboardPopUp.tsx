@@ -26,7 +26,7 @@ interface IProps {
 /**
  * This is a panel for which Route Sets are active in the current studio
  */
-export function SwitchboardPopUp(props: IProps): JSX.Element {
+export function SwitchboardPopUp(props: Readonly<IProps>): JSX.Element {
 	const { t } = useTranslation()
 	const exclusivityGroups: {
 		[id: string]: Array<[string, StudioRouteSet]>

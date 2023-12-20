@@ -23,7 +23,7 @@ interface ShowStyleBaseBlueprintConfigurationSettingsProps {
 }
 
 export function ShowStyleBaseBlueprintConfigurationSettings(
-	props: ShowStyleBaseBlueprintConfigurationSettingsProps
+	props: Readonly<ShowStyleBaseBlueprintConfigurationSettingsProps>
 ): JSX.Element {
 	const { t } = useTranslation()
 

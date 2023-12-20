@@ -1,9 +1,8 @@
 import * as React from 'react'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { Translated, useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { doModalDialog } from '../../lib/ModalDialog'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { SnapshotItem } from '../../../lib/collections/Snapshots'
-import { getCurrentTime, unprotectString } from '../../../lib/lib'
+import { unprotectString } from '../../../lib/lib'
 import * as _ from 'underscore'
 import { logger } from '../../../lib/logging'
 import { EditAttribute } from '../../lib/EditAttribute'
@@ -20,6 +19,7 @@ import { Snapshots, Studios } from '../../collections'
 import { ClientAPI } from '../../../lib/api/client'
 import { hashSingleUseToken } from '../../../lib/api/userActions'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { withTranslation } from 'react-i18next'
 
 interface IProps {
 	match: {
@@ -37,20 +37,32 @@ interface ITrackedProps {
 	snapshots: Array<SnapshotItem>
 	studios: Array<DBStudio>
 }
-export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
-	return {
-		snapshots: Snapshots.find(
-			{},
-			{
-				sort: {
-					created: -1,
-				},
-			}
-		).fetch(),
-		studios: Studios.find({}, {}).fetch(),
-	}
-})(
-	class SnapshotsView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+
+export default function SnapshotsView(props: Readonly<IProps>): JSX.Element {
+	// // Subscribe to data:
+	useSubscription(MeteorPubSub.snapshots)
+	useSubscription(CorelibPubSub.studios, null)
+
+	const snapshots = useTracker(
+		() =>
+			Snapshots.find(
+				{},
+				{
+					sort: {
+						created: -1,
+					},
+				}
+			).fetch(),
+		[],
+		[]
+	)
+	const studios = useTracker(() => Studios.find({}, {}).fetch(), [], [])
+
+	return <SnapshotsViewContent {...props} snapshots={snapshots} studios={studios} />
+}
+
+const SnapshotsViewContent = withTranslation()(
+	class SnapshotsViewContent extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		constructor(props: Translated<IProps & ITrackedProps>) {
 			super(props)
 			this.state = {
@@ -58,14 +70,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 				editSnapshotId: null,
 				removeSnapshots: false,
 			}
-		}
-		componentDidMount(): void {
-			this.subscribe(MeteorPubSub.snapshots, {
-				created: {
-					$gt: getCurrentTime() - 30 * 24 * 3600 * 1000, // last 30 days
-				},
-			})
-			this.subscribe(CorelibPubSub.studios, {})
 		}
 
 		onUploadFile(e: React.ChangeEvent<HTMLInputElement>) {

@@ -15,7 +15,7 @@ import { Time } from '@sofie-automation/blueprints-integration'
  * Set the playback of a part is confirmed to have started
  * If the part reported to be playing is not the current part, then make it be the current
  * @param context Context from the job queue
- * @param playoutModel DB cache for the current playlist
+ * @param playoutModel playout model for the current playlist
  * @param data Details on the part start event
  */
 export async function onPartPlaybackStarted(
@@ -125,7 +125,7 @@ export async function onPartPlaybackStarted(
 /**
  * Set the playback of a part is confirmed to have stopped
  * @param context Context from the job queue
- * @param playoutModel DB cache for the current playlist
+ * @param playoutModel playout model for the current playlist
  * @param data Details on the part stop event
  */
 export function onPartPlaybackStopped(
@@ -166,7 +166,7 @@ export function onPartPlaybackStopped(
 /**
  * Set the playback of a PartInstance is confirmed to have started
  * @param context Context from the job queue
- * @param playoutModel DB cache for the current playlist
+ * @param playoutModel playout model for the current playlist
  * @param partInstance PartInstance to be updated
  * @param timestamp timestamp the PieceInstance started
  */
@@ -202,7 +202,7 @@ export function reportPartInstanceHasStarted(
 /**
  * Set the playback of a PartInstance is confirmed to have stopped
  * @param context Context from the job queue
- * @param playoutModel DB cache for the current playlist
+ * @param playoutModel playout model for the current playlist
  * @param partInstance PartInstance to be updated
  * @param timestamp timestamp the PieceInstance stopped
  */

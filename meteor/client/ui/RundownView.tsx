@@ -16,7 +16,7 @@ import Escape from './../lib/Escape'
 import * as i18next from 'i18next'
 import Tooltip from 'rc-tooltip'
 import { NavLink, Route, Prompt } from 'react-router-dom'
-import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { DBRundownPlaylist, RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { StudioRouteSet } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -119,7 +119,7 @@ import { matchFilter } from './Shelf/AdLibListView'
 import { ExecuteActionResult } from '@sofie-automation/corelib/dist/worker/studio'
 import { SegmentListContainer } from './SegmentList/SegmentListContainer'
 import { getNextMode as getNextSegmentViewMode } from './SegmentContainer/SwitchViewModeButton'
-import { IProps as IResolvedSegmentProps } from './SegmentContainer/withResolvedSegment'
+import { IResolvedSegmentProps } from './SegmentContainer/withResolvedSegment'
 import { UIShowStyleBases, UIStudios } from './Collections'
 import { UIStudio } from '../../lib/api/studios'
 import {
@@ -131,7 +131,6 @@ import {
 	SegmentId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import {
 	Buckets,
 	Parts,
@@ -1097,9 +1096,8 @@ const RundownHeader = withTranslation()(
 											layout={this.props.layout}
 										/>
 										<RundownSystemStatus
-											studio={this.props.studio}
-											playlist={this.props.playlist}
-											rundownIds={this.props.rundownIds}
+											studioId={this.props.studio._id}
+											playlistId={this.props.playlist._id}
 											firstRundown={this.props.firstRundown}
 										/>
 									</>
@@ -1258,10 +1256,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					...input,
 					segmentIdsBeforeEachSegment: input.segments.map(
 						(_segment, segmentIndex, segmentArray) =>
-							new Set([
-								...(_.flatten(
+							new Set<SegmentId>([
+								..._.flatten(
 									rundownArray.slice(0, rundownIndex).map((match) => match.segments.map((segment) => segment._id))
-								) as SegmentId[]),
+								),
 								...segmentArray.slice(0, segmentIndex).map((segment) => segment._id),
 							])
 					),
@@ -1447,7 +1445,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 				// Try to load defaults from rundown view layouts
 				if (selectedViewLayout && RundownLayoutsAPI.isLayoutForRundownView(selectedViewLayout)) {
-					const rundownLayout = selectedViewLayout as RundownViewLayout
+					const rundownLayout = selectedViewLayout
 					if (!selectedShelfLayout && rundownLayout.shelfLayout) {
 						selectedShelfLayout = props.rundownLayouts.find((i) => i._id === rundownLayout.shelfLayout)
 					}
@@ -1531,10 +1529,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							liveSegment,
 							miniShelfFilter
 								? {
-										...(miniShelfFilter as RundownLayoutFilterBase),
-										currentSegment:
-											!(segment.isHidden && segment.showShelf) &&
-											(miniShelfFilter as RundownLayoutFilterBase).currentSegment,
+										...miniShelfFilter,
+										currentSegment: !(segment.isHidden && segment.showShelf) && miniShelfFilter.currentSegment,
 								  }
 								: undefined,
 							undefined,
@@ -1579,10 +1575,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		componentDidMount(): void {
 			const playlistId = this.props.rundownPlaylistId
 
-			this.subscribe(CorelibPubSub.rundownPlaylists, {
-				_id: playlistId,
-			})
-			this.subscribe(CorelibPubSub.rundowns, [playlistId], null)
+			this.subscribe(CorelibPubSub.rundownPlaylists, [playlistId], null)
+			this.subscribe(CorelibPubSub.rundownsInPlaylists, [playlistId])
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(playlistId, {
 					fields: {
@@ -1619,44 +1613,23 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					this.subscribe(MeteorPubSub.uiShowStyleBase, rundown.showStyleBaseId)
 				}
 
-				this.subscribe(CorelibPubSub.showStyleVariants, {
-					_id: {
-						$in: rundowns.map((i) => i.showStyleVariantId),
-					},
-				})
-				this.subscribe(MeteorPubSub.rundownLayouts, {
-					showStyleBaseId: {
-						$in: rundowns.map((i) => i.showStyleBaseId),
-					},
-				})
+				this.subscribe(
+					CorelibPubSub.showStyleVariants,
+					null,
+					rundowns.map((i) => i.showStyleVariantId)
+				)
+				this.subscribe(
+					MeteorPubSub.rundownLayouts,
+					rundowns.map((i) => i.showStyleBaseId)
+				)
 				const rundownIDs = rundowns.map((i) => i._id)
-				this.subscribe(CorelibPubSub.segments, {
-					rundownId: {
-						$in: rundownIDs,
-					},
-				})
-				this.subscribe(CorelibPubSub.adLibPieces, {
-					rundownId: {
-						$in: rundownIDs,
-					},
-				})
-				this.subscribe(CorelibPubSub.rundownBaselineAdLibPieces, {
-					rundownId: {
-						$in: rundownIDs,
-					},
-				})
-				this.subscribe(CorelibPubSub.adLibActions, {
-					rundownId: {
-						$in: rundownIDs,
-					},
-				})
-				this.subscribe(CorelibPubSub.rundownBaselineAdLibActions, {
-					rundownId: {
-						$in: rundownIDs,
-					},
-				})
-				this.subscribe(CorelibPubSub.parts, rundownIDs)
-				this.subscribe(CorelibPubSub.partInstances, rundownIDs, playlist.activationId)
+				this.subscribe(CorelibPubSub.segments, rundownIDs, {})
+				this.subscribe(CorelibPubSub.adLibPieces, rundownIDs)
+				this.subscribe(CorelibPubSub.rundownBaselineAdLibPieces, rundownIDs)
+				this.subscribe(CorelibPubSub.adLibActions, rundownIDs)
+				this.subscribe(CorelibPubSub.rundownBaselineAdLibActions, rundownIDs)
+				this.subscribe(CorelibPubSub.parts, rundownIDs, null)
+				this.subscribe(CorelibPubSub.partInstances, rundownIDs, playlist.activationId ?? null)
 			})
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(playlistId, {
@@ -1671,35 +1644,32 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					// Use meteorSubscribe so that this subscription doesn't mess with this.subscriptionsReady()
 					// it's run in this.autorun, so the subscription will be stopped along with the autorun,
 					// so we don't have to manually clean up after ourselves.
-					meteorSubscribe(CorelibPubSub.pieceInstances, {
-						rundownId: {
-							$in: rundownIds,
-						},
-						partInstanceId: {
-							$in: [
-								playlist.currentPartInfo?.partInstanceId,
-								playlist.nextPartInfo?.partInstanceId,
-								playlist.previousPartInfo?.partInstanceId,
-							].filter((p): p is PartInstanceId => p !== null),
-						},
-						reset: {
-							$ne: true,
-						},
-					})
+					meteorSubscribe(
+						CorelibPubSub.pieceInstances,
+						rundownIds,
+						[
+							playlist.currentPartInfo?.partInstanceId,
+							playlist.nextPartInfo?.partInstanceId,
+							playlist.previousPartInfo?.partInstanceId,
+						].filter((p): p is PartInstanceId => p !== null),
+						{}
+					)
 					const { previousPartInstance, currentPartInstance } =
 						RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
 
 					if (previousPartInstance) {
-						meteorSubscribe(CorelibPubSub.partInstancesForSegmentPlayout, {
-							rundownId: previousPartInstance.rundownId,
-							segmentPlayoutId: previousPartInstance.segmentPlayoutId,
-						})
+						meteorSubscribe(
+							CorelibPubSub.partInstancesForSegmentPlayout,
+							previousPartInstance.rundownId,
+							previousPartInstance.segmentPlayoutId
+						)
 					}
 					if (currentPartInstance) {
-						meteorSubscribe(CorelibPubSub.partInstancesForSegmentPlayout, {
-							rundownId: currentPartInstance.rundownId,
-							segmentPlayoutId: currentPartInstance.segmentPlayoutId,
-						})
+						meteorSubscribe(
+							CorelibPubSub.partInstancesForSegmentPlayout,
+							currentPartInstance.rundownId,
+							currentPartInstance.segmentPlayoutId
+						)
 					}
 				}
 			})

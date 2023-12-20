@@ -48,7 +48,7 @@ const DeviceTriggersView: React.FC = function TimelineDatastoreView() {
 interface IDatastoreControlsProps {
 	peripheralDeviceId: PeripheralDeviceId
 }
-function DeviceTriggersControls({ peripheralDeviceId }: IDatastoreControlsProps) {
+function DeviceTriggersControls({ peripheralDeviceId }: Readonly<IDatastoreControlsProps>) {
 	const [deviceIds, setDeviceIds] = useState<string[]>([])
 	useSubscription(PeripheralDevicePubSub.mountedTriggersForDevice, peripheralDeviceId, deviceIds)
 	useSubscription(PeripheralDevicePubSub.mountedTriggersForDevicePreview, peripheralDeviceId)
@@ -109,15 +109,17 @@ function DeviceTriggersControls({ peripheralDeviceId }: IDatastoreControlsProps)
 								</tr>
 								<tr>
 									<td colSpan={5}>
-										{mountedTriggersPreviews
-											.filter((preview) => preview.actionId === entry.actionId)
-											.map((preview) => (
-												<span key={unprotectString(preview._id)}>
-													{JSON.stringify(preview.label)}: {String(preview.type)} {preview.sourceLayerType}{' '}
-													{preview.sourceLayerName?.name}{' '}
-													{preview.sourceLayerName?.abbreviation ? `(${preview.sourceLayerName.abbreviation})` : null}
-												</span>
-											))}
+										<ul className="mod mhn mvn">
+											{mountedTriggersPreviews
+												.filter((preview) => preview.actionId === entry.actionId)
+												.map((preview) => (
+													<li key={unprotectString(preview._id)}>
+														{JSON.stringify(preview.label)}: {String(preview.type)} {preview.sourceLayerType}{' '}
+														{preview.sourceLayerName?.name}{' '}
+														{preview.sourceLayerName?.abbreviation ? `(${preview.sourceLayerName.abbreviation})` : null}
+													</li>
+												))}
+										</ul>
 									</td>
 								</tr>
 							</Fragment>
@@ -129,22 +131,20 @@ function DeviceTriggersControls({ peripheralDeviceId }: IDatastoreControlsProps)
 	)
 }
 
-const DeviceTriggersDeviceSelect: React.FC = function DeviceTriggersDeviceSelect() {
-	useSubscription(CorelibPubSub.peripheralDevices, {})
+function DeviceTriggersDeviceSelect(): JSX.Element | null {
+	useSubscription(CorelibPubSub.peripheralDevices, null)
 	const devices = useTracker(() => PeripheralDevices.find().fetch(), [])
 
 	if (!devices) return null
 
 	return (
-		<>
-			<ul>
-				{devices.map((device) => (
-					<li key={unprotectString(device._id)}>
-						<Link to={`devicetriggers/${device._id}`}>{device.name}</Link>
-					</li>
-				))}
-			</ul>
-		</>
+		<ul>
+			{devices.map((device) => (
+				<li key={unprotectString(device._id)}>
+					<Link to={`devicetriggers/${device._id}`}>{device.name}</Link>
+				</li>
+			))}
+		</ul>
 	)
 }
 

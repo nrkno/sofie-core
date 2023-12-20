@@ -35,7 +35,7 @@ export function GlobalAdLibPanel({
 	studioMode,
 	visible,
 	onSelectPiece,
-}: IProps): JSX.Element {
+}: Readonly<IProps>): JSX.Element {
 	const { t } = useTranslation()
 
 	const GLOBAL_ADLIB_FILTER: RundownLayoutFilter = useMemo(

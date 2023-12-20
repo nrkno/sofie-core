@@ -2,25 +2,21 @@ import { Logger } from 'winston'
 import { CoreHandler } from '../coreHandler'
 import { CollectionBase, Collection, CollectionObserver } from '../wsHandler'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { PartInstanceName, PartInstancesHandler } from './partInstances'
+import { PartInstancesHandler, SelectedPartInstances } from './partInstancesHandler'
 import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-import isShallowEqual from '@sofie-automation/shared-lib/dist/lib/isShallowEqual'
+import areElementsShallowEqual from '@sofie-automation/shared-lib/dist/lib/isShallowEqual'
 import { SegmentsHandler } from './segmentsHandler'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { PlaylistHandler } from './playlist'
+import { PlaylistHandler } from './playlistHandler'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 export class SegmentHandler
 	extends CollectionBase<DBSegment, CorelibPubSub.segments, CollectionName.Segments>
-	implements
-		Collection<DBSegment>,
-		CollectionObserver<Map<PartInstanceName, DBPartInstance | undefined>>,
-		CollectionObserver<DBRundownPlaylist>
+	implements Collection<DBSegment>, CollectionObserver<SelectedPartInstances>, CollectionObserver<DBRundownPlaylist>
 {
 	public observerName: string
-	private _curSegmentId: SegmentId | undefined
+	private _currentSegmentId: SegmentId | undefined
 	private _rundownIds: RundownId[] = []
 
 	constructor(logger: Logger, coreHandler: CoreHandler, private _segmentsHandler: SegmentsHandler) {
@@ -35,24 +31,21 @@ export class SegmentHandler
 		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
 		const allSegments = collection.find(undefined)
 		await this._segmentsHandler.setSegments(allSegments)
-		if (this._curSegmentId) {
-			this._collectionData = collection.findOne(this._curSegmentId)
+		if (this._currentSegmentId) {
+			this._collectionData = collection.findOne(this._currentSegmentId)
 			await this.notify(this._collectionData)
 		}
 	}
 
-	async update(
-		source: string,
-		data: Map<PartInstanceName, DBPartInstance | undefined> | DBRundownPlaylist | undefined
-	): Promise<void> {
-		const prevSegmentId = this._curSegmentId
-		const prevRundownIds = this._rundownIds
+	async update(source: string, data: SelectedPartInstances | DBRundownPlaylist | undefined): Promise<void> {
+		const previousSegmentId = this._currentSegmentId
+		const previousRundownIds = this._rundownIds
 
 		switch (source) {
 			case PartInstancesHandler.name: {
 				this._logger.info(`${this._name} received update from ${source}`)
-				const partInstanceMap = data as Map<PartInstanceName, DBPartInstance | undefined>
-				this._curSegmentId = data ? partInstanceMap.get(PartInstanceName.current)?.segmentId : undefined
+				const partInstanceMap = data as SelectedPartInstances
+				this._currentSegmentId = data ? partInstanceMap.current?.segmentId : undefined
 				break
 			}
 			case PlaylistHandler.name: {
@@ -67,21 +60,27 @@ export class SegmentHandler
 		if (!this._collectionName) return
 		if (!this._publicationName) return
 
-		const rundownsChanged = !isShallowEqual(this._rundownIds, prevRundownIds)
+		const rundownsChanged = !areElementsShallowEqual(this._rundownIds, previousRundownIds)
 		if (rundownsChanged) {
 			if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
 			if (this._dbObserver) this._dbObserver.stop()
 			if (this._rundownIds.length) {
-				this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, {
-					rundownId: { $in: this._rundownIds },
-					isHidden: { $ne: true },
-				})
+				this._subscriptionId = await this._coreHandler.setupSubscription(
+					this._publicationName,
+					this._rundownIds,
+					{
+						omitHidden: true,
+					}
+				)
 				this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
 				this._dbObserver.added = (id) => {
 					void this.changed(id, 'added').catch(this._logger.error)
 				}
 				this._dbObserver.changed = (id) => {
 					void this.changed(id, 'changed').catch(this._logger.error)
+				}
+				this._dbObserver.removed = (id) => {
+					void this.changed(id, 'removed').catch(this._logger.error)
 				}
 			}
 		}
@@ -92,9 +91,9 @@ export class SegmentHandler
 			const allSegments = collection.find(undefined)
 			await this._segmentsHandler.setSegments(allSegments)
 		}
-		if (prevSegmentId !== this._curSegmentId) {
-			if (this._curSegmentId) {
-				this._collectionData = collection.findOne(this._curSegmentId)
+		if (previousSegmentId !== this._currentSegmentId) {
+			if (this._currentSegmentId) {
+				this._collectionData = collection.findOne(this._currentSegmentId)
 				await this.notify(this._collectionData)
 			}
 		}

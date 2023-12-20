@@ -1,8 +1,7 @@
-import * as React from 'react'
+import React, { useMemo } from 'react'
 import ClassNames from 'classnames'
 import { EditAttribute } from '../../lib/EditAttribute'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { Translated, useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { faUpload, faPlus, faCheck, faPencilAlt, faDownload, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
@@ -38,6 +37,7 @@ import { RundownLayoutId, ShowStyleBaseId } from '@sofie-automation/corelib/dist
 import { OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { RundownLayouts } from '../../collections'
 import { LabelActual } from '../../lib/Components/LabelAndOverrides'
+import { withTranslation } from 'react-i18next'
 
 export interface IProps {
 	showStyleBaseId: ShowStyleBaseId
@@ -57,20 +57,26 @@ interface ITrackedProps {
 	layoutTypes: RundownLayoutType[]
 }
 
-export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
-	const layoutTypes = props.customRegion.layouts.map((l) => l.type)
+export default function RundownLayoutEditor(props: Readonly<IProps>): JSX.Element {
+	useSubscription(MeteorPubSub.rundownLayouts, [props.showStyleBaseId])
 
-	const rundownLayouts = RundownLayouts.find({
-		showStyleBaseId: props.showStyleBaseId,
-		userId: { $exists: false },
-	}).fetch()
+	const layoutTypes = useMemo(() => props.customRegion.layouts.map((l) => l.type), [props.customRegion])
 
-	return {
-		rundownLayouts,
-		layoutTypes,
-	}
-})(
-	class RundownLayoutEditor extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+	const rundownLayouts = useTracker(
+		() =>
+			RundownLayouts.find({
+				showStyleBaseId: props.showStyleBaseId,
+				userId: { $exists: false },
+			}).fetch(),
+		[props.showStyleBaseId],
+		[]
+	)
+
+	return <RundownLayoutEditorContent {...props} layoutTypes={layoutTypes} rundownLayouts={rundownLayouts} />
+}
+
+const RundownLayoutEditorContent = withTranslation()(
+	class RundownLayoutEditorContent extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		constructor(props: Translated<IProps & ITrackedProps>) {
 			super(props)
 
@@ -78,12 +84,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				editedItems: [],
 				uploadFileKey: Date.now(),
 			}
-		}
-
-		componentDidMount(): void {
-			super.componentDidMount && super.componentDidMount()
-
-			this.subscribe(MeteorPubSub.rundownLayouts, {})
 		}
 
 		onAddLayout = () => {

@@ -103,7 +103,7 @@ class I18nContainer extends WithManagedTracker {
 			})
 			.catch(catchError('i18nInstance.init'))
 
-		this.subscribe(MeteorPubSub.translationsBundles, {})
+		this.subscribe(MeteorPubSub.translationsBundles)
 		this.autorun(() => {
 			const bundlesInfo = TranslationsBundles.find().fetch() as Omit<TranslationsBundle, 'data'>[]
 

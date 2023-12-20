@@ -73,31 +73,13 @@ function useSubscriptions(
 	showStyleBaseId: ShowStyleBaseId
 ) {
 	const allReady = [
-		useSubscription(CorelibPubSub.rundownPlaylists, {
-			_id: rundownPlaylistId,
-		}),
-		useSubscription(CorelibPubSub.rundowns, [rundownPlaylistId], null),
+		useSubscription(CorelibPubSub.rundownPlaylists, [rundownPlaylistId], null),
+		useSubscription(CorelibPubSub.rundownsInPlaylists, [rundownPlaylistId]),
 
-		useSubscription(CorelibPubSub.adLibActions, {
-			rundownId: {
-				$in: rundownIds,
-			},
-		}),
-		useSubscription(CorelibPubSub.adLibPieces, {
-			rundownId: {
-				$in: rundownIds,
-			},
-		}),
-		useSubscription(CorelibPubSub.rundownBaselineAdLibActions, {
-			rundownId: {
-				$in: rundownIds,
-			},
-		}),
-		useSubscription(CorelibPubSub.rundownBaselineAdLibPieces, {
-			rundownId: {
-				$in: rundownIds,
-			},
-		}),
+		useSubscription(CorelibPubSub.adLibActions, rundownIds),
+		useSubscription(CorelibPubSub.adLibPieces, rundownIds),
+		useSubscription(CorelibPubSub.rundownBaselineAdLibActions, rundownIds),
+		useSubscription(CorelibPubSub.rundownBaselineAdLibPieces, rundownIds),
 		useSubscription(MeteorPubSub.uiShowStyleBase, showStyleBaseId),
 	]
 

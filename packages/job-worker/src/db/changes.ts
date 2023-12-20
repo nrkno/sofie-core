@@ -208,7 +208,7 @@ export function saveIntoBase<TDoc extends { _id: ProtectedString<any> }>(
 	newData: Array<TDoc>,
 	options: SaveIntoDbHooks<TDoc> & SaveIntoDbHandlers<TDoc>
 ): ChangedIds<TDoc['_id']> {
-	const span = context.startSpan(`DBCache.saveIntoBase.${collectionName}`)
+	const span = context.startSpan(`saveIntoBase.${collectionName}`)
 
 	const changes: ChangedIds<TDoc['_id']> = {
 		added: [],
@@ -228,7 +228,7 @@ export function saveIntoBase<TDoc extends { _id: ProtectedString<any> }>(
 	const objectsToRemove = normalizeArrayToMap(oldDocs, '_id')
 
 	for (const o of newData) {
-		// const span2 = profiler.startSpan(`DBCache.saveIntoBase.${collectionName}.do.${o._id}`)
+		// const span2 = profiler.startSpan(`saveIntoBase.${collectionName}.do.${o._id}`)
 		const oldObj = objectsToRemove.get(o._id)
 
 		if (oldObj) {

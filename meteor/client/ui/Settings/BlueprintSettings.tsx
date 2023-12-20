@@ -3,7 +3,6 @@ import { EditAttribute } from '../../lib/EditAttribute'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
 import { doModalDialog } from '../../lib/ModalDialog'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import Moment from 'react-moment'
 import { Link } from 'react-router-dom'
@@ -45,7 +44,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		assignedSystem: CoreSystem.findOne({ blueprintId: id }),
 	}
 })(
-	class BlueprintSettings extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+	class BlueprintSettings extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		constructor(props: Translated<IProps & ITrackedProps>) {
 			super(props)
 			this.state = {

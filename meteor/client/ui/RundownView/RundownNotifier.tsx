@@ -293,7 +293,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			| ReactiveVar<Pick<PeripheralDevice, '_id' | 'name' | 'ignore' | 'status' | 'connected' | 'parentDeviceId'>[]>
 			| undefined
 		if (studioId) {
-			meteorSubscribe(CorelibPubSub.peripheralDevicesAndSubDevices, { studioId: studioId })
+			meteorSubscribe(CorelibPubSub.peripheralDevicesAndSubDevices, studioId)
 			reactivePeripheralDevices = reactiveData.getRPeripheralDevices(studioId, {
 				fields: {
 					name: 1,

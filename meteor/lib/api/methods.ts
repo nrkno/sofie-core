@@ -89,8 +89,9 @@ export interface MethodContext extends Omit<Meteor.MethodThisType, 'userId'> {
 
 /** Abstarct class to be used when defining Mehod-classes */
 export abstract class MethodContextAPI implements MethodContext {
-	public userId: UserId | null
-	public isSimulation: boolean
+	// These properties are added by Meteor to the `this` context when calling methods
+	public userId!: UserId | null
+	public isSimulation!: boolean
 	public setUserId(_userId: string | null): void {
 		throw new Meteor.Error(
 			500,
@@ -103,5 +104,5 @@ export abstract class MethodContextAPI implements MethodContext {
 			`This shoulc never be called, there's something wrong in with 'this' in the calling method`
 		)
 	}
-	public connection: Meteor.Connection | null
+	public connection!: Meteor.Connection | null
 }

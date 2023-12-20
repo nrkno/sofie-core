@@ -49,12 +49,12 @@ const PARAM_NAME_SOURCE_LAYER_IDS = 'sourceLayerIds'
 const PARAM_NAME_STUDIO_LABEL = 'studioLabels'
 const PARAM_NAME_FULLSCREEN = 'fullscreen'
 
-export function CameraScreen({ playlist, studioId }: IProps): JSX.Element | null {
+export function CameraScreen({ playlist, studioId }: Readonly<IProps>): JSX.Element | null {
 	const playlistIds = playlist ? [playlist._id] : []
 
 	const [studioLabels, setStudioLabels] = useState<string[] | null>(null)
 	const [sourceLayerIds, setSourceLayerIds] = useState<string[] | null>(null)
-	const [fullscreenMode, setFullScreenMode] = useState<boolean>(false)
+	const [fullScreenMode, setFullScreenMode] = useState<boolean>(false)
 
 	useBlackBrowserTheme()
 
@@ -95,29 +95,17 @@ export function CameraScreen({ playlist, studioId }: IProps): JSX.Element | null
 	const rundownIds = useMemo(() => rundowns.map((rundown) => rundown._id), [rundowns])
 	const showStyleBaseIds = useMemo(() => rundowns.map((rundown) => rundown.showStyleBaseId), [rundowns])
 
-	const rundownsReady = useSubscription(CorelibPubSub.rundowns, playlistIds, null)
-	useSubscription(CorelibPubSub.segments, {
-		rundownId: {
-			$in: rundownIds,
-		},
-	})
+	const rundownsReady = useSubscription(CorelibPubSub.rundownsInPlaylists, playlistIds)
+	useSubscription(CorelibPubSub.segments, rundownIds, {})
 
 	const studioReady = useSubscription(MeteorPubSub.uiStudio, studioId)
-	useSubscription(CorelibPubSub.partInstances, rundownIds, playlist?.activationId)
+	useSubscription(CorelibPubSub.partInstances, rundownIds, playlist?.activationId ?? null)
 
-	useSubscription(CorelibPubSub.parts, rundownIds)
+	useSubscription(CorelibPubSub.parts, rundownIds, null)
 
-	useSubscription(CorelibPubSub.pieceInstancesSimple, {
-		rundownId: {
-			$in: rundownIds,
-		},
-	})
+	useSubscription(CorelibPubSub.pieceInstancesSimple, rundownIds, null)
 
-	const piecesReady = useSubscription(CorelibPubSub.pieces, {
-		startRundownId: {
-			$in: rundownIds,
-		},
-	})
+	const piecesReady = useSubscription(CorelibPubSub.pieces, rundownIds, null)
 
 	const [piecesReadyOnce, setPiecesReadyOnce] = useState(false)
 	useEffect(() => {
@@ -222,7 +210,7 @@ export function CameraScreen({ playlist, studioId }: IProps): JSX.Element | null
 	}, [canvasElRef.current])
 
 	useLayoutEffect(() => {
-		if (!document.fullscreenEnabled || !fullscreenMode) return
+		if (!document.fullscreenEnabled || !fullScreenMode) return
 
 		const targetEl = document.documentElement
 
@@ -240,7 +228,7 @@ export function CameraScreen({ playlist, studioId }: IProps): JSX.Element | null
 		return () => {
 			document.documentElement.removeEventListener('click', onCanvasClick)
 		}
-	}, [fullscreenMode])
+	}, [fullScreenMode])
 
 	useWakeLock()
 

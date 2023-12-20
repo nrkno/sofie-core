@@ -32,7 +32,7 @@ const supportedLayers = new Set([
 	SourceLayerType.CAMERA,
 ])
 
-export function PieceCountdownContainer(props: IPropsHeader): JSX.Element | null {
+export function PieceCountdownContainer(props: Readonly<IPropsHeader>): JSX.Element | null {
 	const { pieceInstance, sourceLayer } = useTracker(
 		() => findPieceInstanceToShow(props, supportedLayers),
 		[props.partInstanceId, props.showStyleBaseId],
@@ -42,10 +42,7 @@ export function PieceCountdownContainer(props: IPropsHeader): JSX.Element | null
 		}
 	)
 
-	useSubscription(CorelibPubSub.pieceInstancesSimple, {
-		rundownId: { $in: props.rundownIds },
-		playlistActivationId: props.playlistActivationId,
-	})
+	useSubscription(CorelibPubSub.pieceInstancesSimple, props.rundownIds, props.playlistActivationId ?? null)
 
 	useSubscription(MeteorPubSub.uiShowStyleBase, props.showStyleBaseId)
 

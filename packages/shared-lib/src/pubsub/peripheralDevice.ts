@@ -15,23 +15,41 @@ import { DeviceTriggerMountedAction, PreviewWrappedAdLib } from '../input-gatewa
  * Ids of possible DDP subscriptions for any PeripheralDevice.
  */
 export enum PeripheralDevicePubSub {
-	peripheralDeviceCommands = 'peripheralDeviceCommands',
+	// Common:
 
-	// For a PeripheralDevice
+	/** Commands for the PeripheralDevice to execute */
+	peripheralDeviceCommands = 'peripheralDeviceCommands',
+	/** Properties/settings of the PeripheralDevice */
+	peripheralDeviceForDevice = 'peripheralDeviceForDevice',
+
+	// Playout gateway:
+
+	/** Playout gateway: Rundowns in the Studio of the PeripheralDevice */
 	rundownsForDevice = 'rundownsForDevice',
 
-	// custom publications:
-	peripheralDeviceForDevice = 'peripheralDeviceForDevice',
+	/** Playout gateway: Simplified timeline mappings in the Studio of the PeripheralDevice */
 	mappingsForDevice = 'mappingsForDevice',
+	/** Playout gateway: Simplified timeline in the Studio of the PeripheralDevice */
 	timelineForDevice = 'timelineForDevice',
+	/** Playout gateway: Timeline datastore entries in the Studio of the PeripheralDevice */
 	timelineDatastoreForDevice = 'timelineDatastoreForDevice',
+	/** Playout gateway: ExpectedPlayoutItems in the Studio of the PeripheralDevice */
 	expectedPlayoutItemsForDevice = 'expectedPlayoutItemsForDevice',
 
+	// Input gateway:
+
+	/** Input gateway: Calculated triggered actions */
 	mountedTriggersForDevice = 'mountedTriggersForDevice',
+	/** Input gateway: Calculated trigger previews */
 	mountedTriggersForDevicePreview = 'mountedTriggersForDevicePreview',
 
+	// Package manager:
+
+	/** Package manager: Info about the active playlist in the Studio of the PeripheralDevice */
 	packageManagerPlayoutContext = 'packageManagerPlayoutContext',
+	/** Package manager: The package containers in the Studio of the PeripheralDevice */
 	packageManagerPackageContainers = 'packageManagerPackageContainers',
+	/** Package manager: The expected packages in the Studio of the PeripheralDevice */
 	packageManagerExpectedPackages = 'packageManagerExpectedPackages',
 }
 

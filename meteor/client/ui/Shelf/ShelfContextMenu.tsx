@@ -73,7 +73,7 @@ export function setShelfContextMenuContext(context: ShelfContextMenuContext | un
 	shelfContextMenuContext.set(context)
 }
 
-export default function ShelfContextMenu(props: ShelfContextMenuProps): JSX.Element {
+export default function ShelfContextMenu(props: Readonly<ShelfContextMenuProps>): JSX.Element {
 	const { t } = useTranslation()
 
 	const context = useTracker(() => {
@@ -106,7 +106,7 @@ export default function ShelfContextMenu(props: ShelfContextMenuProps): JSX.Elem
 						key={mode.data}
 						onClick={(e) => {
 							e.persist()
-							item.onToggle && item.onToggle(item.adLib, false, e, mode)
+							item.onToggle?.(item.adLib, false, e, mode)
 						}}
 						disabled={item.disabled}
 					>
@@ -119,7 +119,7 @@ export default function ShelfContextMenu(props: ShelfContextMenuProps): JSX.Elem
 					<MenuItem
 						onClick={(e) => {
 							e.persist()
-							item.onToggle && item.onToggle(item.adLib, false, e)
+							item.onToggle?.(item.adLib, false, e)
 						}}
 						disabled={item.disabled}
 					>
@@ -134,17 +134,17 @@ export default function ShelfContextMenu(props: ShelfContextMenuProps): JSX.Elem
 					<MenuItem
 						onClick={(e) => {
 							e.persist()
-							item.onToggle && item.onToggle(item.adLib, false, e)
+							item.onToggle?.(item.adLib, false, e)
 						}}
 						disabled={item.disabled}
 					>
 						{t('Start this AdLib')}
 					</MenuItem>
-					{item.adLib.sourceLayer && item.adLib.sourceLayer?.isQueueable && (
+					{item.adLib.sourceLayer?.isQueueable && (
 						<MenuItem
 							onClick={(e) => {
 								e.persist()
-								item.onToggle && item.onToggle(item.adLib, true, e)
+								item.onToggle?.(item.adLib, true, e)
 							}}
 							disabled={item.disabled}
 						>

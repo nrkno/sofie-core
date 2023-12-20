@@ -18,7 +18,7 @@ interface INoraEditorProps {
 }
 
 class NoraItemEditor extends React.Component<INoraEditorProps> {
-	iframe: HTMLIFrameElement
+	iframe: HTMLIFrameElement | null = null
 
 	componentDidMount(): void {
 		this.setUpEventListeners(window)
@@ -68,12 +68,12 @@ class NoraItemEditor extends React.Component<INoraEditorProps> {
 	}
 
 	private handleMosMessage(mos: MosPluginMessage) {
-		if (mos.ncsReqAppInfo) {
+		if (mos.ncsReqAppInfo && this.iframe) {
 			this.sendAppInfo(this.iframe.contentWindow)
 
 			// delay to send in order
 			setTimeout(() => {
-				this.postPayload(this.iframe.contentWindow)
+				if (this.iframe) this.postPayload(this.iframe.contentWindow)
 			}, 1)
 		}
 	}

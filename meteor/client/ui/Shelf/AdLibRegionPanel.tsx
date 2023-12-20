@@ -13,7 +13,6 @@ import { IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter } from './Ad
 import { matchFilter } from './AdLibListView'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { MeteorCall } from '../../../lib/api/methods'
 import {
@@ -49,7 +48,7 @@ interface IAdLibRegionPanelTrackedProps extends IDashboardPanelTrackedProps {
 	isLiveLine: boolean
 }
 
-class AdLibRegionPanelBase extends MeteorReactComponent<
+class AdLibRegionPanelBase extends React.Component<
 	Translated<IAdLibPanelProps & IAdLibRegionPanelProps & AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps>,
 	IState
 > {

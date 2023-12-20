@@ -45,7 +45,7 @@ function getPieceLabel(piece: ReadonlyDeep<PieceGeneric>, type: SourceLayerType)
 	}
 }
 
-export function PieceNameContainer(props: INamePropsHeader): JSX.Element | null {
+export function PieceNameContainer(props: Readonly<INamePropsHeader>): JSX.Element | null {
 	const { sourceLayer, pieceInstance } = useTracker(
 		() => findPieceInstanceToShow(props, supportedLayers),
 		[props.partInstanceId, props.showStyleBaseId],
@@ -55,10 +55,7 @@ export function PieceNameContainer(props: INamePropsHeader): JSX.Element | null 
 		}
 	)
 
-	useSubscription(CorelibPubSub.pieceInstancesSimple, {
-		rundownId: { $in: props.rundownIds },
-		playlistActivationId: props.playlistActivationId,
-	})
+	useSubscription(CorelibPubSub.pieceInstancesSimple, props.rundownIds, props.playlistActivationId ?? null)
 
 	useSubscription(MeteorPubSub.uiShowStyleBase, props.showStyleBaseId)
 
