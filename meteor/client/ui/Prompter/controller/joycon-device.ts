@@ -1,5 +1,5 @@
 import { ControllerAbstract } from './lib'
-import { PrompterConfigMode, PrompterViewInner } from '../PrompterView'
+import { PrompterConfigMode, PrompterViewContent } from '../PrompterView'
 import Spline from 'cubic-spline'
 import { logger } from '../../../../lib/logging'
 
@@ -10,7 +10,7 @@ type JoyconMode = 'L' | 'R' | 'LR' | null
  * This class handles control of the prompter using
  */
 export class JoyConController extends ControllerAbstract {
-	private prompterView: PrompterViewInner
+	private prompterView: PrompterViewContent
 
 	private invertJoystick = false // change scrolling direction for joystick
 	private rangeRevMin = -1 // pedal "all back" position, the max-reverse-position
@@ -30,7 +30,7 @@ export class JoyConController extends ControllerAbstract {
 	private lastInputValue = ''
 	private lastButtonInputs: { [index: number]: { mode: JoyconMode; buttons: number[] } } = {}
 
-	constructor(view: PrompterViewInner) {
+	constructor(view: PrompterViewContent) {
 		super()
 		this.prompterView = view
 

@@ -1,5 +1,5 @@
 import { ControllerAbstract } from './lib'
-import { PrompterViewInner, PrompterConfigMode } from '../PrompterView'
+import { PrompterViewContent, PrompterConfigMode } from '../PrompterView'
 import Spline from 'cubic-spline'
 
 import webmidi, { Input, InputEventControlchange } from 'webmidi'
@@ -9,7 +9,7 @@ import { logger } from '../../../../lib/logging'
  * This class handles control of the prompter using
  */
 export class MidiPedalController extends ControllerAbstract {
-	private prompterView: PrompterViewInner
+	private prompterView: PrompterViewContent
 	private midiInputs: Input[] = []
 	private idleMidiInputs: { [midiId: string]: boolean } = {}
 
@@ -26,7 +26,7 @@ export class MidiPedalController extends ControllerAbstract {
 	private lastSpeed = 0
 	private currentPosition = 0
 
-	constructor(view: PrompterViewInner) {
+	constructor(view: PrompterViewContent) {
 		super()
 		this.prompterView = view
 

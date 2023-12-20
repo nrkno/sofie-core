@@ -1,6 +1,6 @@
 /* eslint-disable react/prefer-stateless-function */
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
@@ -13,6 +13,48 @@ import _ from 'underscore'
 const globalTrackerQueue: Array<Function> = []
 let globalTrackerTimestamp: number | undefined = undefined
 let globalTrackerTimeout: number | undefined = undefined
+
+/**
+ * Delay an update to be batched with the global tracker invalidation queue
+ */
+export function useGlobalDelayedTrackerUpdateState<T>(newValue: T): T {
+	const [delayedValue, setDelayedValue] = useState<T>(newValue)
+
+	useGlobalDelayedTrackerUpdate(setDelayedValue, newValue)
+
+	return delayedValue
+}
+
+/**
+ * Delay an update to be batched with the global tracker invalidation queue
+ * @param performUpdate Function to call to apply the update
+ * @param newValue New value to apply with the tracker
+ */
+export function useGlobalDelayedTrackerUpdate<T>(performUpdate: (value: T) => void, newValue: T): void {
+	const isPending = useRef(false)
+	const updateRef = useRef<() => void>()
+
+	useEffect(() => {
+		// Store the new callback
+		updateRef.current = () => performUpdate(newValue)
+
+		return () => {
+			// Invalidated, discard current callback
+			updateRef.current = undefined
+		}
+	}, [performUpdate, newValue])
+
+	// If a call isn't pending, enqueue the callback
+	if (!isPending.current) {
+		MeteorDataManager.enqueueUpdate(() => {
+			isPending.current = false
+			if (updateRef.current) {
+				updateRef.current()
+			}
+		})
+		isPending.current = true
+	}
+}
 
 const METEOR_DATA_DEBOUNCE = 120
 const METEOR_DATA_DEBOUNCE_STALE = 200
