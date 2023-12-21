@@ -37,7 +37,7 @@ import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/Rundo
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 import { SegmentTimeAnchorTime } from '../RundownView/RundownTiming/SegmentTimeAnchorTime'
 import { logger } from '../../../lib/logging'
-import { isEndOfLoopingShow, isLoopRunning } from '../../../lib/Rundown'
+import * as RundownLib from '../../../lib/Rundown'
 
 interface IProps {
 	id: string
@@ -198,7 +198,7 @@ export const SegmentStoryboard = React.memo(
 			squishedPartsNum > 1 ? Math.max(4, (spaceLeft - PART_WIDTH) / (squishedPartsNum - 1)) : null
 
 		const playlistHasNextPart = !!props.playlist.nextPartInfo
-		const playlistIsLooping = isLoopRunning(props.playlist)
+		const playlistIsLooping = RundownLib.isLoopRunning(props.playlist)
 
 		renderedParts.forEach((part, index) => {
 			const isLivePart = part.instance._id === props.playlist.currentPartInfo?.partInstanceId
@@ -219,12 +219,14 @@ export const SegmentStoryboard = React.memo(
 					isNextPart={isNextPart}
 					isLastPartInSegment={part.instance._id === lastValidPartId}
 					isLastSegment={props.isLastSegment}
-					isEndOfLoopingShow={isEndOfLoopingShow(
+					isEndOfLoopingShow={RundownLib.isEndOfLoopingShow(
 						props.playlist,
 						props.isLastSegment,
 						part.instance._id === lastValidPartId,
 						part.instance.part
 					)}
+					isQuickLoopStart={RundownLib.isQuickLoopStart(part.partId, props.playlist)}
+					isQuickLoopEnd={RundownLib.isQuickLoopEnd(part.partId, props.playlist)}
 					isPlaylistLooping={playlistIsLooping}
 					doesPlaylistHaveNextPart={playlistHasNextPart}
 					displayLiveLineCounter={props.displayLiveLineCounter}

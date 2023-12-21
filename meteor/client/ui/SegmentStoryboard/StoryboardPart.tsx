@@ -22,6 +22,7 @@ import { SegmentEnd } from '../../lib/ui/icons/segment'
 import { AutoNextStatus } from '../RundownView/RundownTiming/AutoNextStatus'
 import { RundownTimingContext, getPartInstanceTimingId } from '../../lib/rundownTiming'
 import { TimingDataResolution, TimingTickResolution, withTiming } from '../RundownView/RundownTiming/withTiming'
+import { LoopingIcon } from '../../lib/ui/icons/looping'
 
 interface IProps {
 	className?: string
@@ -34,6 +35,8 @@ interface IProps {
 	isLastPartInSegment?: boolean
 	isPlaylistLooping?: boolean
 	isEndOfLoopingShow?: boolean
+	isQuickLoopStart: boolean
+	isQuickLoopEnd: boolean
 	doesPlaylistHaveNextPart?: boolean
 	inHold: boolean
 	currentPartWillAutonext: boolean
@@ -65,6 +68,8 @@ export const StoryboardPart = withTiming<IProps, {}>((props: IProps) => {
 	isLastSegment,
 	isPlaylistLooping,
 	isEndOfLoopingShow,
+	isQuickLoopStart,
+	isQuickLoopEnd,
 	doesPlaylistHaveNextPart,
 	currentPartWillAutonext,
 	outputLayers,
@@ -142,6 +147,8 @@ export const StoryboardPart = withTiming<IProps, {}>((props: IProps) => {
 						'segment-storyboard__part--live': isLivePart,
 						'segment-storyboard__part--invalid': part.instance.part.invalid,
 						'segment-storyboard__part--out-of-the-loop': !isPartInQuickLoop && isPlaylistLooping && !isNextPart,
+						'segment-storyboard__part--quickloop-start': isQuickLoopStart,
+						'segment-storyboard__part--quickloop-end': isQuickLoopEnd,
 					},
 					className
 				),
@@ -159,7 +166,6 @@ export const StoryboardPart = withTiming<IProps, {}>((props: IProps) => {
 			collect={getPartContext}
 		>
 			{isLivePart ? <div className="segment-storyboard__part__background"></div> : null}
-			<div className="segment-storyboard__identifier">{part.instance.part.identifier}</div>
 			{subscriptionsReady ? (
 				<>
 					<StoryboardPartThumbnail part={part} isLive={isLivePart} isNext={isNextPart} />
@@ -180,12 +186,14 @@ export const StoryboardPart = withTiming<IProps, {}>((props: IProps) => {
 			) : null}
 			{isFloated ? <div className="segment-storyboard__part__floated-cover"></div> : null}
 			<div className="segment-storyboard__part__title">{part.instance.part.title}</div>
+			{isQuickLoopStart && <div className="segment-storyboard__part__quickloop-start" />}
 			<div
 				className={classNames('segment-storyboard__part__next-line', {
 					'segment-storyboard__part__next-line--autonext': willBeAutoNextedInto,
 					'segment-storyboard__part__next-line--invalid': part.instance.part.invalid,
 					'segment-storyboard__part__next-line--next': isNextPart,
 					'segment-storyboard__part__next-line--live': isLivePart,
+					'segment-storyboard__part__next-line--quickloop-start': isQuickLoopStart,
 				})}
 			></div>
 			<div
@@ -193,6 +201,7 @@ export const StoryboardPart = withTiming<IProps, {}>((props: IProps) => {
 					'segment-storyboard__part__next-line-label--autonext': willBeAutoNextedInto,
 					'segment-storyboard__part__next-line-label--next': isNextPart,
 					'segment-storyboard__part__next-line-label--live': isLivePart,
+					'segment-storyboard__part__next-line-label--quickloop-start': isQuickLoopStart,
 				})}
 			>
 				{isLivePart ? t('On Air') : willBeAutoNextedInto ? t('Auto') : isNextPart ? t('Next') : null}
@@ -254,21 +263,40 @@ export const StoryboardPart = withTiming<IProps, {}>((props: IProps) => {
 					)}
 				</div>
 			)}
-			{isLivePart && displayLiveLineCounter ? (
-				<div className="segment-storyboard__part-timer segment-storyboard__part-timer--live">
-					<AutoNextStatus />
-					<CurrentPartRemaining
-						currentPartInstanceId={part.instance._id}
-						speaking={getAllowSpeaking()}
-						vibrating={getAllowVibrating()}
-						heavyClassName="overtime"
-					/>
-				</div>
-			) : displayLiveLineCounter ? (
-				<div className="segment-storyboard__part-timer">
-					<PartDisplayDuration part={part} />
-				</div>
-			) : null}
+			<div className="segment-storyboard__part__bottom-left">
+				{part.instance.part.identifier && (
+					<div className="segment-storyboard__identifier">{part.instance.part.identifier}</div>
+				)}
+				{isQuickLoopStart ? (
+					<div className="segment-storyboard__part__quickloop-start-icon">
+						<LoopingIcon />
+					</div>
+				) : null}
+				{isPartInQuickLoop && <div className="segment-storyboard__part__quickloop-background"></div>}
+			</div>
+			<div className="segment-storyboard__part__bottom-right">
+				{isQuickLoopEnd ? (
+					<div className="segment-storyboard__part__quickloop-end-icon">
+						<LoopingIcon />
+					</div>
+				) : null}
+				{isLivePart && displayLiveLineCounter ? (
+					<div className="segment-storyboard__part-timer segment-storyboard__part-timer--live">
+						<AutoNextStatus />
+						<CurrentPartRemaining
+							currentPartInstanceId={part.instance._id}
+							speaking={getAllowSpeaking()}
+							vibrating={getAllowVibrating()}
+							heavyClassName="overtime"
+						/>
+					</div>
+				) : displayLiveLineCounter ? (
+					<div className="segment-storyboard__part-timer">
+						<PartDisplayDuration part={part} />
+					</div>
+				) : null}
+			</div>
+			{isQuickLoopEnd && <div className="segment-storyboard__part__quickloop-end" />}
 		</ContextMenuTrigger>
 	)
 })

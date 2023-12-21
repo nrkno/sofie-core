@@ -306,6 +306,18 @@ $identifier-area-width: 3em;
 							@include take-arrow();
 							z-index: 1;
 						}
+
+						&.quickloop-start {
+							&::before, &::after {
+								left: 6px;
+							}
+
+							&:not(.next) {
+								&::before, &::after {
+									border-left-color: white;
+								}
+							}
+						}
 					}
 
 					&.next {
@@ -552,6 +564,11 @@ $identifier-area-width: 3em;
 						color: $next-marker;
 						left: 0.1em;
 					}
+				}
+			}
+			&--next {
+				> .segment-opl__part-timeline > .segment-opl__take-line__quickloop-start {
+					border-color: $general-next-color;
 				}
 			}
 

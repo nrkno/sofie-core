@@ -136,6 +136,7 @@ export const LinePart = withTiming<IProps, {}>((props: IProps) => {
 					'segment-opl__part--live': isLivePart,
 					'segment-opl__part--has-played': hasAlreadyPlayed && (!isPlaylistLooping || !isInQuickLoop),
 					'segment-opl__part--out-of-the-loop': isPlaylistLooping && !isInQuickLoop && !isNextPart && !hasAlreadyPlayed,
+					'segment-opl__part--quickloop-start': isQuickLoopStart,
 					'segment-opl__part--invalid': part.instance.part.invalid,
 					'segment-opl__part--timing-sibling': isPreceededByTimingGroupSibling,
 				}),

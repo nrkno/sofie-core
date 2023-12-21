@@ -781,21 +781,19 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 								{this.props.isAfterLastValidInSegmentAndItsLive && !isPlaylistLooping && <SegmentEnd />}
 								{this.props.isAfterLastValidInSegmentAndItsLive && isPlaylistLooping && <LoopingIcon />}
 							</div>
-							<div className="segment-timeline__part__quickloop-line">
+							<div className="segment-timeline__part__bottom-line">
 								{this.state.isInQuickLoop && <div className="segment-timeline__part__quickloop-background"></div>}
 								{!this.props.isPreview && this.props.part.instance.part.identifier && (
 									<div className="segment-timeline__identifier">{this.props.part.instance.part.identifier}</div>
 								)}
 								{isQuickLoopStart ? (
 									<div className="segment-timeline__part__quickloop-start">
-										START
 										<LoopingIcon />
 									</div>
 								) : null}
 								{isQuickLoopEnd ? (
 									<div className="segment-timeline__part__quickloop-end">
 										<LoopingIcon />
-										END
 									</div>
 								) : null}
 							</div>

@@ -1088,6 +1088,7 @@ svg.icon {
 			$output-layer-group-collapse-animation-duration margin-bottom
 				($output-layer-group-collapse-animation-duration * 1/2);
 		margin-bottom: 1.5em;
+		margin-left: 2px;
 	}
 
 	.segment-timeline__timeline-grid {
@@ -1101,6 +1102,7 @@ svg.icon {
 		min-width: 0;
 		overflow: hidden;
 		margin-bottom: 1.15em;
+		margin-left: 2px;
 
 		opacity: 1;
 		visibility: visible;
@@ -1394,15 +1396,17 @@ svg.icon {
 				}
 
 				&.quickloop-start {
-					left: 0px;
+					left: -2px;
 
 					&::before, &::after {
 						z-index: 1;
 						margin-left: 5px;
+						border-left-color: white;
 					}
 					
 					.segment-timeline__part__nextline__label {
-						margin-left: 5px;
+						z-index: 5;
+						left: 5px;
 					}
 				}
 
@@ -1482,8 +1486,6 @@ svg.icon {
 					right: 2px;
 				}
 			}
-
-			&:first-child
 
 			.segment-timeline__part__invalid-cover {
 				position: absolute;
@@ -1805,7 +1807,7 @@ svg.icon {
 				}
 			}
 
-			.segment-timeline__part__quickloop-line {
+			.segment-timeline__part__bottom-line {
 				min-height: $segment-layer-height;
 				font-weight: 400;
 				display: flex;
@@ -1813,7 +1815,8 @@ svg.icon {
 				align-items: flex-end;
 				position: absolute;
 				bottom: 0;
-				width: 100%;
+				left: 1px;
+				right: 1px;
 				overflow: hidden;
 
 				.segment-timeline__part__quickloop-background {
@@ -1824,7 +1827,7 @@ svg.icon {
 					background-position: center left;
 					background-size: 10px 2px;
 					background-repeat: repeat-x;
-					left: 0;
+					left: 6px;
 					right: 0;
 				}
 
@@ -1833,6 +1836,7 @@ svg.icon {
 					padding: 0 0.3em;
 					margin-bottom: -2px;
 					white-space: nowrap;
+					color: white;
 				}
 				.segment-timeline__part__quickloop-start {
 					padding-left: 0.6em;

@@ -153,6 +153,8 @@ export const SegmentScratchpad = React.memo(
 					isLastPartInSegment={part.instance._id === lastValidPartId}
 					isLastSegment={props.isLastSegment}
 					isPlaylistLooping={playlistIsLooping}
+					isQuickLoopStart={false}
+					isQuickLoopEnd={false}
 					doesPlaylistHaveNextPart={playlistHasNextPart}
 					displayLiveLineCounter={props.displayLiveLineCounter}
 					inHold={!!(props.playlist.holdState && props.playlist.holdState !== RundownHoldState.COMPLETE)}
