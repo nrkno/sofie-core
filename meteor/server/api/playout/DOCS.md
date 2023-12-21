@@ -1,18 +1,18 @@
-# Server core playout logic
+# Sofie Server Core Playout Logic
 
-All of the server core playout functions run in a lock and cache: [api/playout/lockFunction.ts#L66](./lockFunction.ts#L66)
+<!-- All of the server core playout functions run in a lock and cache: [api/playout/lockFunction.ts#L66](./lockFunction.ts#L66) -->
 
 The user functions for playout (server side) are found here: [api/userActions.ts](../userActions.ts)
 
-### How does Sofie create a playout cache
+### How Sofie Creates a Playout Cache
 
 Any cache consists of a set of DBCacheReadObject's, DBCacheWriteObject's, DBCacheReadCollection's, DBCacheWriteCollection's. DBCacheReadObject's and DBCacheWriteObject's can only contain a single object whereas the others can contain multiple objects. The primary function of a cache is to reduce the traffic between Sofie server-core and the MongoDB database, this is done by reading from the database upon initialization and deferring any write operation until "Cache.saveAllToDatabase()" is called.
 
-### How does Sofie create a playout lock
+### How Sofie Creates a Playout Lock
 
 Before any playout operation can proceed a studio and playlist lock must be created. This is done by running the operation in a syncfunction: this is essentially a queue of similar functions that will be executed one by one (sort of like a promise queue). Note that the studio and playlist have separate locks.
 
-### How does Sofie activate a rundown?
+### How Sofie Activates a Rundown
 
 *   First the studio is prepared for broadcast
     *   This calls a function in the playout-gateway/TSR called '`devicesMakeReady`'
@@ -24,8 +24,8 @@ Before any playout operation can proceed a studio and playlist lock must be crea
     *   Update the timeline
     *   Call the blueprints `onRundownActive` callback
 
-### How does Sofie select what is the next part?
-*See here for the definition of a part: [sofie.gitbook.io](https://sofie.gitbook.io/sofie-tv-automation/documentation/features-and-configuration/concepts-and-architecture#part)*
+### How Sofie Selects Which Part will be Next
+[Definition of a Part](https://nrkno.github.io/sofie-core/docs/user-guide/concepts-and-architecture/#part)
 
 From an optional current part instance and a selection of parts and segments Sofie can select the next part:
 
@@ -36,7 +36,7 @@ From an optional current part instance and a selection of parts and segments Sof
 
 At this point there are 2 more edge cases to account for, when a segment is queued and when the playlist loops. To account for the former, we see if the nextPart (if we found one) has a different segmentId from the current part. If so, we search for the first playable part in the queued segment. For looped playlists we first see if any nextPart has been found, if not we search again starting from the start of the playlist up to the current part.
 
-### How does Sofie set a part as next?
+### How Sofie Sets a Part as Next
 
 _Prerequisites: rundown playlist is active and there is no current hold_
 
@@ -54,9 +54,9 @@ _Prerequisites: rundown playlist is active and there is no current hold_
 *   Clean up any orphaned segments and part instances when they are done playing
     *   Note that this is classed as an ingest operation therefore done outside the playout lock
 
-### How does Sofie remove orphaned segments and part instances
+### How Sofie Removes Orphaned Segments and Part Instances
 
-[https://github.com/nrkno/sofie-core/blob/release35/meteor/server/api/playout/lib.ts#L442](https://github.com/nrkno/sofie-core/blob/release35/meteor/server/api/playout/lib.ts#L442)
+<!-- [https://github.com/nrkno/sofie-core/blob/release35/meteor/server/api/playout/lib.ts#L442](https://github.com/nrkno/sofie-core/blob/release35/meteor/server/api/playout/lib.ts#L442) -->
 
 *   Gather segments that have `orphaned === 'deleted'`
 *   Find the part instances from the orphaned segment
@@ -65,7 +65,7 @@ _Prerequisites: rundown playlist is active and there is no current hold_
 *   Queue part instances for removal
     *   if `Settings.preserveUnsyncedPlayingSegmentContents` is true and the segment is orphaned as well, do not remove the part instance
 
-### How does Sofie execute a take?
+### How Sofie Executes a Take
 
 _Prerequisites: previous take must be over 1000ms (configurable on a per-studio basis) ago, playlist must be active, there must be a next part instance, any transitions in the current part must be finished, any autonext must be over 1000ms ahead, current time is after blockTakeUntil from the current part_
 
@@ -98,7 +98,7 @@ _Prerequisites: previous take must be over 1000ms (configurable on a per-studio 
     *   Call blueprints.onRundownFirstTake if this is the first take (and not an untimed part)
     *   Call blueprints.onPostTake
 
-### How does Sofie play an adlib?
+### How Sofie Plays an AdLib
 
 _Prerequisites: an active playlist, currently not in hold, a currently playing part_
 
@@ -125,7 +125,7 @@ _Prerequisites: an active playlist, currently not in hold, a currently playing p
     *   Process and prune
 *   Update the timeline
 
-### How does Sofie execute an adlib action?
+### How Sofies Executes an AdLib Action
 
 _prerequisites: activated playlist & a current part instance_
 
@@ -136,7 +136,7 @@ _prerequisites: activated playlist & a current part instance_
 *   If takeAfterExecute is true, execute a take
 *   Else only update timeline
 
-### How does Sofie activate/execute/deactivate hold?
+### How Sofie Activates/Executea/Deactivates a Hold
 
 _Prerequisites for activate: active playlist, current part, next part and hold state is None or undefined_
 
@@ -151,7 +151,7 @@ _Prerequisites for deactive: hold state is Pending_
 *   Set the playlist hold state to NONE
 *   Update the timeline
 
-### How does Sofie reset a rundown?
+### How Sofie Reset a Rundown
 
 _Prerequisite: deactivated rundown, or in rehearsal mode, or Settings.allowRundownResetOnAir is true_
 
@@ -162,7 +162,7 @@ _Prerequisite: deactivated rundown, or in rehearsal mode, or Settings.allowRundo
 *   If rundown is active, create a new rundown id and select the first part and set it as next
 *   Else, set the next part to null
 
-### How does Sofie deactivate a rundown?
+### How Sofie Deactivates a Rundown
 
 *   Call playout gateway devicesStandDown
 *   Get part instances from Cache
@@ -174,7 +174,7 @@ _Prerequisite: deactivated rundown, or in rehearsal mode, or Settings.allowRundo
 *   Update studio timeline
 *   Call blueprint.onRundownDeActivate
 
-### How does Sofie create the timeline for playout from the data structures it has?
+### How Sofie Creates the Timeline for Playout from the Data Structures it has
 
 *   Lookahead objects
 *   Part groups > Piece instances (excluding infinites)

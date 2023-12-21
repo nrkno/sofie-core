@@ -323,8 +323,8 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 		}
 	}
 
-	private setTimelineRef = (el: HTMLDivElement) => {
-		this.timeline = el
+	private setTimelineRef = (el: HTMLDivElement | null) => {
+		this.timeline = el ?? undefined
 	}
 
 	private convertTimeToPixels = (time: number) => {
