@@ -9302,10 +9302,10 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@8.1.2-nightly-chore-backport-quantel-warnings-20231214-150032-f04befb64.0:
-  version "8.1.2-nightly-chore-backport-quantel-warnings-20231214-150032-f04befb64.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-8.1.2-nightly-chore-backport-quantel-warnings-20231214-150032-f04befb64.0.tgz#c4a1f970ad4371928c8c2d6bdef0c64cdef65b86"
-  integrity sha512-JsTSKqvw7XLOvEIDzCvbhAT/DAZuE9q1XTs35sQlBblGyB2VDnAX3gjWmfWy34450ehmsPQUNx5GcqeAXGBMtw==
+timeline-state-resolver-types@8.1.2:
+  version "8.1.2"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-8.1.2.tgz#e01221a565dfcd80a05156e7d377ad966ae7c95a"
+  integrity sha512-F7cHHqVS+nNMvRu8hMeBCwo9DqkjdSSVFlLWHHzgbfud41swSlpGBP0FynYBTtChmA1UW7IqPzjgaGfoYqhWeg==
   dependencies:
     tslib "^2.4.1"
 

@@ -4199,7 +4199,7 @@
   version "1.49.2"
   dependencies:
     "@mos-connection/model" "^3.0.4"
-    timeline-state-resolver-types "8.1.2-nightly-chore-backport-quantel-warnings-20231214-150032-f04befb64.0"
+    timeline-state-resolver-types "8.1.2"
     tslib "^2.4.0"
     type-fest "^2.19.0"
 
@@ -14931,17 +14931,17 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@8.1.2-nightly-chore-backport-quantel-warnings-20231214-150032-f04befb64.0:
-  version "8.1.2-nightly-chore-backport-quantel-warnings-20231214-150032-f04befb64.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-8.1.2-nightly-chore-backport-quantel-warnings-20231214-150032-f04befb64.0.tgz#c4a1f970ad4371928c8c2d6bdef0c64cdef65b86"
-  integrity sha512-JsTSKqvw7XLOvEIDzCvbhAT/DAZuE9q1XTs35sQlBblGyB2VDnAX3gjWmfWy34450ehmsPQUNx5GcqeAXGBMtw==
+timeline-state-resolver-types@8.1.2:
+  version "8.1.2"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-8.1.2.tgz#e01221a565dfcd80a05156e7d377ad966ae7c95a"
+  integrity sha512-F7cHHqVS+nNMvRu8hMeBCwo9DqkjdSSVFlLWHHzgbfud41swSlpGBP0FynYBTtChmA1UW7IqPzjgaGfoYqhWeg==
   dependencies:
     tslib "^2.4.1"
 
-timeline-state-resolver@8.1.2-nightly-chore-backport-quantel-warnings-20231214-150032-f04befb64.0:
-  version "8.1.2-nightly-chore-backport-quantel-warnings-20231214-150032-f04befb64.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-8.1.2-nightly-chore-backport-quantel-warnings-20231214-150032-f04befb64.0.tgz#0d8e045e0d9eb4739a3ae7ffe73ccefe1cd6f344"
-  integrity sha512-hY72ctck+jYdsYmpE/WPDDq2MDLJIhAGjdJV6/t2EOR1wYsZIsF0FQ9ENhQvexvbud+R8g76qQCE0zKQbthtbg==
+timeline-state-resolver@8.1.2:
+  version "8.1.2"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-8.1.2.tgz#bda2b142b55936b78f8e1c8af4e57d04f54f9fa9"
+  integrity sha512-kEX728nUwqz+LNVsKbNDb7X/zrfXuT28Y+Pf2pYyGnSd4l2xwQ6z/J7YubRS5EYX+xwakfp/d/t/Q+q2ix93fA==
   dependencies:
     "@tv2media/v-connection" "^7.3.0"
     atem-connection "2.5.0"
@@ -14963,7 +14963,7 @@ timeline-state-resolver@8.1.2-nightly-chore-backport-quantel-warnings-20231214-1
     sprintf-js "^1.1.2"
     superfly-timeline "^8.3.1"
     threadedclass "^1.2.0"
-    timeline-state-resolver-types "8.1.2-nightly-chore-backport-quantel-warnings-20231214-150032-f04befb64.0"
+    timeline-state-resolver-types "8.1.2"
     tslib "^2.4.1"
     tv-automation-quantel-gateway-client "^3.0.2"
     underscore "^1.13.4"
