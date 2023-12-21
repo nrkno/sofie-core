@@ -3,28 +3,6 @@
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
 ## [1.50.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.4...v1.50.0-in-testing.5) (2023-08-25)
-
-## [1.50.0-in-testing.4](https://github.com/nrkno/sofie-core/compare/v1.49.0-in-testing.7...v1.50.0-in-testing.4) (2023-08-23)
-
-### Bug Fixes
-
-- **LiveStatus:** interpolate adlib names ([3fcb186](https://github.com/nrkno/sofie-core/commit/3fcb186e7d62d2b39d2f5b8859da2eda827c1af6))
-- **SegmentTimeline:** Parts don't display Part identifier labels ([3f51ec7](https://github.com/nrkno/sofie-core/commit/3f51ec7513065e2a08ea952fa8c17030083c1ec6))
-
-## [1.50.0-in-testing.3](https://github.com/nrkno/sofie-core/compare/v1.49.0-in-testing.5...v1.50.0-in-testing.3) (2023-08-17)
-
-### Features
-
-- respect json schema required field in ui SOFIE-2436 ([#995](https://github.com/nrkno/sofie-core/issues/995)) ([35a95c7](https://github.com/nrkno/sofie-core/commit/35a95c73190e674da59218174d038d20b9ee38a5))
-
-### Bug Fixes
-
-- **CameraView:** resolve issue after `remainingTimeOnCurrentPart` was reversed ([695cc4c](https://github.com/nrkno/sofie-core/commit/695cc4ca72077c64a49353b01976f5ecf0ce0af5))
-
-## [1.50.0-in-testing.2](https://github.com/nrkno/sofie-core/compare/v1.50.0-in-testing.1...v1.50.0-in-testing.2) (2023-07-17)
-
-### Bug Fixes
-
 - **RundownList:** vertical line does not line up with horizontal on last Rundown in a Playlist ([d511ff6](https://github.com/nrkno/sofie-core/commit/d511ff6fb1484ec91cbe1703b7e01721087c2f4e))
 - **server-core-integration:** `autosubscribe` will resubscribe to collections using the same subscriptionId as when initially subscribed ([f0f3383](https://github.com/nrkno/sofie-core/commit/f0f33837b07b944abe320ae4a378641bba167a3c))
 - simplify executeFunction triggerWriteAccess() check ([0579716](https://github.com/nrkno/sofie-core/commit/0579716377294e35996511cc92f6a3672535d7d5))
@@ -253,6 +231,22 @@ All notable changes to this project will be documented in this file. See [standa
 - usePopper placement of Inspectors ([b6dc9b8](https://github.com/nrkno/sofie-core/commit/b6dc9b8ca7c6e35bff09159130cfdb073535a8a8))
 - verifyHashedToken compatible with securityVerify ([7052f3d](https://github.com/nrkno/sofie-core/commit/7052f3dc3844bc272719fedf5c3da799a1d38dd1))
 - working re-layouting of hover inspectors ([87811a9](https://github.com/nrkno/sofie-core/commit/87811a90e18eb6cd9427773e820a1cee7517da6c))
+
+### [1.49.3](https://github.com/nrkno/sofie-core/compare/v1.49.2...v1.49.3) (2023-12-21)
+
+
+### Bug Fixes
+
+* Cannot read properties of undefined (reading 'parentElement') at startLive SOFIE-2772 ([#1080](https://github.com/nrkno/sofie-core/issues/1080)) ([9c1331a](https://github.com/nrkno/sofie-core/commit/9c1331a88ac9b8d19f2700a1acebedca63ce37a2))
+* cleanup for deviceTriggers RundownContentObserver failing SOFIE-2834 ([#1107](https://github.com/nrkno/sofie-core/issues/1107)) ([2432e4f](https://github.com/nrkno/sofie-core/commit/2432e4f4318ad9ebc691208c51cdba742c63143d))
+* suppress quantel disconnection warnings temporarily ([f9c1dae](https://github.com/nrkno/sofie-core/commit/f9c1dae2fcc346cb2c10d89ccf1a812aec6d0bc0))
+
+### [1.49.2](https://github.com/nrkno/sofie-core/compare/v1.49.1...v1.49.2) (2023-11-29)
+
+
+### Bug Fixes
+
+* rundown view fails to load when playlist does not exist SOFIE-2815 ([551541e](https://github.com/nrkno/sofie-core/commit/551541e27e7cff3a297203469cca4a77ba942c24))
 
 ### [1.49.1](https://github.com/nrkno/sofie-core/compare/v1.49.0...v1.49.1) (2023-10-20)
 

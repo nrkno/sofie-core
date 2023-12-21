@@ -1559,7 +1559,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			this.subscribe(PubSub.rundownPlaylists, {
 				_id: playlistId,
 			})
-			this.subscribe(PubSub.rundowns, [playlistId], null)
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(playlistId, {
 					fields: {
@@ -1571,6 +1570,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 				this.subscribe(PubSub.uiSegmentPartNotes, playlistId)
 				this.subscribe(PubSub.uiPieceContentStatuses, playlistId)
+				this.subscribe(PubSub.rundowns, [playlistId], null)
+
 				this.subscribe(PubSub.uiStudio, playlist.studioId)
 				this.subscribe(PubSub.buckets, playlist.studioId, null)
 			})

@@ -20,7 +20,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
@@ -55,7 +55,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
@@ -147,7 +147,7 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
       - name: Use Node.js
         if: steps.check-build-and-push.outputs.enable == 'true'
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
@@ -229,7 +229,7 @@ jobs:
           echo "image=$image" >> $GITHUB_OUTPUT
       - name: Trivy scanning
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
-        uses: aquasecurity/trivy-action@0.12.0
+        uses: aquasecurity/trivy-action@0.16.0
         with:
           image-ref: "${{ steps.trivy-image.outputs.image }}"
           format: "table"
@@ -315,7 +315,7 @@ jobs:
             type=ref,event=tag
             type=raw,value=latest,enable={{is_default_branch}}
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         if: steps.check-build-and-push.outputs.enable == 'true'
         with:
           node-version-file: ".node-version"
@@ -378,7 +378,7 @@ jobs:
           echo "image=$image" >> $GITHUB_OUTPUT
       - name: Trivy scanning
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
-        uses: aquasecurity/trivy-action@0.12.0
+        uses: aquasecurity/trivy-action@0.16.0
         with:
           image-ref: "${{ steps.trivy-image.outputs.image }}"
           format: "table"
@@ -421,7 +421,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".node-version"
       - name: restore node_modules
@@ -484,7 +484,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
       - name: restore node_modules
@@ -522,7 +522,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".node-version"
       - name: restore node_modules
@@ -577,7 +577,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".node-version"
       - name: Prepare Environment # have to run this first to make sure the semver lib is available
@@ -645,7 +645,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor

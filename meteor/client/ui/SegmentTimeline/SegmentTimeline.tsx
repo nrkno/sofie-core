@@ -240,8 +240,8 @@ export const BUDGET_GAP_PART = {
 export class SegmentTimelineClass extends React.Component<Translated<WithTiming<IProps>>, IStateHeader> {
 	static whyDidYouRender = true
 
-	timeline: HTMLDivElement
-	segmentBlock: HTMLDivElement
+	timeline: HTMLDivElement | undefined
+	segmentBlock: HTMLDivElement | undefined
 
 	private _touchSize = 0
 	private _touchAttached = false
@@ -321,8 +321,8 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 		}
 	}
 
-	private setTimelineRef = (el: HTMLDivElement) => {
-		this.timeline = el
+	private setTimelineRef = (el: HTMLDivElement | null) => {
+		this.timeline = el ?? undefined
 	}
 
 	private convertTimeToPixels = (time: number) => {
