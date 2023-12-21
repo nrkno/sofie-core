@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.49.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.2...v1.49.3) (2023-12-21)
+
+
+### Bug Fixes
+
+* suppress quantel disconnection warnings temporarily ([f9c1dae](https://github.com/nrkno/tv-automation-server-core/commit/f9c1dae2fcc346cb2c10d89ccf1a812aec6d0bc0))
+
+
+
+
+
 ## [1.49.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.1...v1.49.2) (2023-11-29)
 
 **Note:** Version bump only for package playout-gateway

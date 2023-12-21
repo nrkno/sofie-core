@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.49.3](https://github.com/nrkno/sofie-core/compare/v1.49.2...v1.49.3) (2023-12-21)
+
+
+### Bug Fixes
+
+* Cannot read properties of undefined (reading 'parentElement') at startLive SOFIE-2772 ([#1080](https://github.com/nrkno/sofie-core/issues/1080)) ([9c1331a](https://github.com/nrkno/sofie-core/commit/9c1331a88ac9b8d19f2700a1acebedca63ce37a2))
+* cleanup for deviceTriggers RundownContentObserver failing SOFIE-2834 ([#1107](https://github.com/nrkno/sofie-core/issues/1107)) ([2432e4f](https://github.com/nrkno/sofie-core/commit/2432e4f4318ad9ebc691208c51cdba742c63143d))
+* suppress quantel disconnection warnings temporarily ([f9c1dae](https://github.com/nrkno/sofie-core/commit/f9c1dae2fcc346cb2c10d89ccf1a812aec6d0bc0))
+
 ### [1.49.2](https://github.com/nrkno/sofie-core/compare/v1.49.1...v1.49.2) (2023-11-29)
 
 
