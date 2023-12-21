@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/job-worker",
-	"version": "1.49.2",
+	"version": "1.49.3",
 	"description": "Worker for things",
 	"main": "dist/index.js",
 	"license": "MIT",
