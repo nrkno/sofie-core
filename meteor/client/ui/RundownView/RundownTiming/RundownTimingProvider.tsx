@@ -369,16 +369,22 @@ function findPartInstancesInQuickLoop(
 	let previousPartInstance: MinimalPartInstance | undefined = undefined
 	for (const partInstance of sortedPartInstances) {
 		if (
-			isInQuickLoop &&
+			previousPartInstance &&
 			((playlist.quickLoop?.end?.type === QuickLoopMarkerType.PART &&
-				playlist.quickLoop.end.id === previousPartInstance!.part._id) ||
+				playlist.quickLoop.end.id === previousPartInstance.part._id) ||
 				(playlist.quickLoop?.end?.type === QuickLoopMarkerType.SEGMENT &&
-					playlist.quickLoop.end.id === previousPartInstance!.segmentId) ||
+					playlist.quickLoop.end.id === previousPartInstance.segmentId) ||
 				(playlist.quickLoop?.end?.type === QuickLoopMarkerType.RUNDOWN &&
-					playlist.quickLoop.end.id === previousPartInstance!.rundownId))
+					playlist.quickLoop.end.id === previousPartInstance.rundownId))
 		) {
 			isInQuickLoop = false
-			// a `break` should be here, but it can't because when looping over a single part we need to include the three instances of that part shown at once
+			if (
+				playlist.quickLoop.start?.type !== QuickLoopMarkerType.PART ||
+				playlist.quickLoop.start?.id !== playlist.quickLoop.end?.id
+			) {
+				// when looping over a single part we need to include the three instances of that part shown at once, otherwise, we can break
+				break
+			}
 		}
 		if (
 			!isInQuickLoop &&
