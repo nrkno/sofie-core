@@ -1,11 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../client'
-import {
-	BucketAdLibActionId,
-	BucketAdLibId,
-	BucketId,
-	ShowStyleBaseId,
-} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BucketId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { IngestAdlib } from '@sofie-automation/blueprints-integration'
 
 export interface BucketsRestAPI {
@@ -83,11 +78,12 @@ export interface BucketsRestAPI {
 	deleteBucketAdLib(
 		connection: Meteor.Connection,
 		event: string,
-		adLibId: BucketAdLibId | BucketAdLibActionId
+		externalId: string
 	): Promise<ClientAPI.ClientResponse<void>>
 
 	/**
 	 * Imports a Bucket AdLib.
+	 * If adlibs with the same `ingestItem.externalId` already exist in the bucket, they will be replaced.
 	 *
 	 * @param connection Connection data including client and header details
 	 * @param event User event string

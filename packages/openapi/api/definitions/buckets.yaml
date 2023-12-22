@@ -24,6 +24,33 @@ resources:
                       $ref: '#/components/schemas/bucket'
         500:
           $ref: '#/components/responses/internalServerError'
+    post:
+      operationId: addBucket
+      tags:
+        - buckets
+      summary: Adds a Bucket.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/bucketBase'
+      responses:
+        200:
+          description: Command successfully handled - returns a bucket id.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 200
+                  result:
+                    type: string
+                    description: Bucket Id.
+        500:
+          $ref: '#/components/responses/internalServerError'
   bucket:
     get:
       operationId: bucket
@@ -52,32 +79,6 @@ resources:
                     $ref: '#/components/schemas/bucket'
         404:
           $ref: '#/components/responses/bucketNotFound'
-        500:
-          $ref: '#/components/responses/internalServerError'
-    post:
-      operationId: addBucket
-      tags:
-        - buckets
-      summary: Adds a Bucket.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/bucketBase'
-      responses:
-        200:
-          description: Command successfully handled - returns a bucket id.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: number
-                    example: 200
-                  result:
-                    type: string
-                    description: Bucket Id.
         500:
           $ref: '#/components/responses/internalServerError'
     delete:
@@ -121,6 +122,7 @@ resources:
           schema:
             type: string
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -178,9 +180,9 @@ resources:
           required: true
           schema:
             type: string
-        - name: adlibId
+        - name: externalId
           in: path
-          description: Id of the bucket adlib to remove.
+          description: External id of the bucket adlib to remove.
           required: true
           schema:
             type: string
@@ -236,7 +238,7 @@ components:
       properties:
         externalId:
           type: string
-          description: Id of the adlib recognizable by the external source. Must be unique for each adlib.
+          description: Id of the adlib recognizable by the external source. Unique within a bucket. If an adlib with the same `externalId` already exists in the bucket, it will be replaced.
         showStyleBaseId:
           type: string
           description: Id of the ShowStyle to use when importing the adlib.

@@ -3,6 +3,7 @@ import {
 	AdLibActionId,
 	BlueprintId,
 	BucketAdLibId,
+	BucketId,
 	PartId,
 	PartInstanceId,
 	PeripheralDeviceId,
@@ -82,6 +83,28 @@ export interface RestAPI {
 		event: string,
 		rundownPlaylistId: RundownPlaylistId,
 		adLibId: AdLibActionId | RundownBaselineAdLibActionId | PieceId | BucketAdLibId,
+		triggerMode?: string
+	): Promise<ClientAPI.ClientResponse<object>>
+	/**
+	 * Executes the requested Bucket AdLib/AdLib Action. This is a Bucket AdLib (Action) that has been previously inserted into a Bucket.
+	 * It will automatically find the variation matching the showStyleBaseId and showStyleVariantId of the current Rundown.
+	 *
+	 * Throws if the target Playlist is not active.
+	 * Throws if there is not an on-air part instance.
+	 * @returns a `ClientResponseError` if a bucket or adlib for the provided ids cannot be found.
+	 * @param connection Connection data including client and header details
+	 * @param event User event string
+	 * @param rundownPlaylistId Playlist to execute adLib in.
+	 * @param bucketId Bucket to execute the adlib from
+	 * @param externalId External Id of the Bucket AdLib to execute.
+	 * @param triggerMode A string to specify a particular variation for the AdLibAction, valid actionType strings are to be read from the status API.
+	 */
+	executeBucketAdLib(
+		connection: Meteor.Connection,
+		event: string,
+		rundownPlaylistId: RundownPlaylistId,
+		bucketId: BucketId,
+		externalId: string,
 		triggerMode?: string
 	): Promise<ClientAPI.ClientResponse<object>>
 	/**
