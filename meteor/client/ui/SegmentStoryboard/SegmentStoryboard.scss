@@ -464,7 +464,7 @@ $break-width: 35rem;
 		}
 	}
 
-	&--quickloop-end + & {
+	&--quickloop-end + &, &--quickloop-end + .segment-storyboard__part-list--squished-parts > &:last-child {
 		> .segment-storyboard__part__next-line {
 			margin-left: 3px;
 			z-index: 6;
