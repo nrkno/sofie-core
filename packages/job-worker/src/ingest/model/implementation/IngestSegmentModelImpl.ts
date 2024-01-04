@@ -220,7 +220,7 @@ export class IngestSegmentModelImpl implements IngestSegmentModel {
 		const oldPart = this.partsImpl.get(part._id)
 
 		const partModel = new IngestPartModelImpl(
-			!oldPart, // nocommit is this correct if it moved across segments?
+			!oldPart,
 			clone(part),
 			clone(pieces),
 			clone(adLibPiece),
