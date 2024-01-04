@@ -13,7 +13,7 @@ import { PieceInstance, PieceInstancePiece, rewrapPieceToInstance } from '../dat
 import { DBPartInstance } from '../dataModel/PartInstance'
 import { DBRundown } from '../dataModel/Rundown'
 import { ReadonlyDeep } from 'type-fest'
-import { assertNever, flatten, getRandomId, groupByToMapFunc, max, normalizeArrayToMapFunc } from '../lib'
+import { assertNever, clone, flatten, getRandomId, groupByToMapFunc, max, normalizeArrayToMapFunc } from '../lib'
 import { protectString } from '../protectedString'
 import _ = require('underscore')
 import { MongoQuery } from '../mongo'
@@ -470,7 +470,13 @@ export function getPieceInstancesForPart(
 	)
 
 	const wrapPiece = (p: ReadonlyDeep<PieceInstancePiece>) => {
-		const instance = rewrapPieceToInstance(p, playlistActivationId, part.rundownId, newInstanceId, isTemporary)
+		const instance = rewrapPieceToInstance(
+			clone<PieceInstancePiece>(p),
+			playlistActivationId,
+			part.rundownId,
+			newInstanceId,
+			isTemporary
+		)
 
 		if (instance.piece.lifespan !== PieceLifespan.WithinPart) {
 			const existingPiece = nextPartIsAfterCurrentPart
