@@ -375,10 +375,15 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 		if (existingSegmentWithNewId && !existingSegmentWithNewId.deleted)
 			throw new Error(`Cannot rename Segment ${oldId} to ${newId}. New id is already in use`)
 
-		this.segmentsImpl.delete(oldId)
-		this.segmentsImpl.set(newId, existingSegment)
+		this.segmentsImpl.set(oldId, {
+			// Make a minimal clone of the old segment, the reference is needed to issue a mongo delete
+			segmentModel: new IngestSegmentModelImpl(false, clone<DBSegment>(existingSegment.segmentModel.segment), []),
+			deleted: true,
+		})
 
+		this.segmentsImpl.set(newId, existingSegment)
 		existingSegment.segmentModel.setOwnerIds(newId)
+
 		return true
 	}
 

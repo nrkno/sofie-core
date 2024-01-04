@@ -35,7 +35,7 @@ export function diffAndUpdateSegmentIds(
 	const segmentDiff = diffSegmentEntries(oldSegmentEntries, newSegmentEntries, oldSegments)
 
 	// Updated segments that has had their segment.externalId changed:
-	const renamedSegments = applyExternalIdDiff(ingestModel, segmentDiff)
+	const renamedSegments = applyExternalIdDiff(ingestModel, segmentDiff, false)
 
 	span?.end()
 	return renamedSegments
@@ -84,7 +84,7 @@ export async function diffAndApplyChanges(
 	}
 
 	// Updated segments that has had their segment.externalId changed:
-	const renamedSegments = applyExternalIdDiff(ingestModel, segmentDiff)
+	const renamedSegments = applyExternalIdDiff(ingestModel, segmentDiff, true)
 
 	// Figure out which segments need to be regenerated
 	const segmentsToRegenerate = Object.values<LocalIngestSegment>(segmentDiff.added)
@@ -138,7 +138,8 @@ export async function diffAndApplyChanges(
  */
 function applyExternalIdDiff(
 	ingestModel: IngestModel,
-	segmentDiff: Pick<DiffSegmentEntries, 'externalIdChanged'>
+	segmentDiff: Pick<DiffSegmentEntries, 'externalIdChanged' | 'onlyRankChanged'>,
+	canDiscardParts: boolean
 ): CommitIngestData['renamedSegments'] {
 	// Updated segments that has had their segment.externalId changed:
 	const renamedSegments = new Map<SegmentId, SegmentId>()
@@ -146,8 +147,27 @@ function applyExternalIdDiff(
 		const oldSegmentId = getSegmentId(ingestModel.rundownId, oldSegmentExternalId)
 		const newSegmentId = getSegmentId(ingestModel.rundownId, newSegmentExternalId)
 
+		// Track the rename
 		renamedSegments.set(oldSegmentId, newSegmentId)
-		ingestModel.changeSegmentId(oldSegmentId, newSegmentId)
+
+		// If the segment doesnt exist (it should), then there isn't a segment to rename
+		const oldSegment = ingestModel.getSegment(oldSegmentId)
+		if (!oldSegment) continue
+
+		if (ingestModel.getSegment(newSegmentId)) {
+			// If the new SegmentId already exists, we need to discard the old one rather than trying to merge it.
+			// This can only be done if the caller is expecting to regenerate Segments
+			const canDiscardPartsForSegment = canDiscardParts && !segmentDiff.onlyRankChanged[oldSegmentExternalId]
+			if (!canDiscardPartsForSegment) {
+				throw new Error(`Cannot merge Segments with only rank changes`)
+			}
+
+			// Remove the old Segment and it's contents, the new one will be generated shortly
+			ingestModel.removeSegment(oldSegmentId)
+		} else {
+			// Perform the rename
+			ingestModel.changeSegmentId(oldSegmentId, newSegmentId)
+		}
 	}
 
 	return renamedSegments
