@@ -6,6 +6,7 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { JobContext } from '../jobs'
 import { BeforePartMapItem } from '../ingest/commit'
+// eslint-disable-next-line node/no-extraneous-import
 import { mock } from 'jest-mock-extended'
 import { ICollection } from '../db'
 import { IngestModel } from '../ingest/model/IngestModel'
