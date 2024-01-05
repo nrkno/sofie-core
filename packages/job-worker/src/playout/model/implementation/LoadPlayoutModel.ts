@@ -77,7 +77,7 @@ export async function loadPlayoutModelPreInit(
  * @param ingestModel IngestModel to take data from
  * @returns Loaded PlayoutModel
  */
-export async function createPlayoutModelfromIngestModel(
+export async function createPlayoutModelFromIngestModel(
 	context: JobContext,
 	playlistLock: PlaylistLock,
 	loadedPlaylist: ReadonlyDeep<DBRundownPlaylist>,

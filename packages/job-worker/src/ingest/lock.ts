@@ -1,5 +1,4 @@
 import { SegmentId, PartId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { clone } from 'underscore'
 import { IngestModel, IngestModelReadonly } from './model/IngestModel'
 import { BeforePartMap, CommitIngestOperation } from './commit'
 import { LocalIngestRundown, RundownIngestDataCache } from './ingestCache'
@@ -66,7 +65,7 @@ export async function runIngestJob(
 
 	const rundownId = getRundownId(context.studioId, data.rundownExternalId)
 	return runWithRundownLockInner(context, rundownId, async (rundownLock) => {
-		const span = context.startSpan(`ingestLockFunction.${context}`)
+		const span = context.startSpan(`ingestLockFunction.${context.studioId}`)
 
 		// Load the old ingest data
 		const pIngestModel = loadIngestModelFromRundownExternalId(context, rundownLock, data.rundownExternalId)
@@ -74,7 +73,7 @@ export async function runIngestJob(
 
 		// Recalculate the ingest data
 		const oldIngestRundown = ingestObjCache.fetchRundown()
-		const updatedIngestRundown = updateCacheFcn(clone(oldIngestRundown))
+		const updatedIngestRundown = updateCacheFcn(oldIngestRundown)
 		let newIngestRundown: LocalIngestRundown | undefined
 		switch (updatedIngestRundown) {
 			// case UpdateIngestRundownAction.REJECT:

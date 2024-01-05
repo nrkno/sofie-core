@@ -37,7 +37,7 @@ import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { PlayoutRundownModelImpl } from '../playout/model/implementation/PlayoutRundownModelImpl'
 import { PlayoutSegmentModelImpl } from '../playout/model/implementation/PlayoutSegmentModelImpl'
-import { createPlayoutModelfromIngestModel } from '../playout/model/implementation/LoadPlayoutModel'
+import { createPlayoutModelFromIngestModel } from '../playout/model/implementation/LoadPlayoutModel'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DatabasePersistedModel } from '../modelBase'
 
@@ -188,7 +188,7 @@ export async function CommitIngestOperation(
 			await updatePartInstancesSegmentIds(context, ingestModel, data.renamedSegments, beforePartMap)
 			await updatePartInstancesBasicProperties(
 				context,
-				hackConvertIngestModelToRundownWithSegments(ingestModel),
+				convertIngestModelToPlayoutRundownWithSegments(ingestModel),
 				newPlaylist
 			)
 
@@ -196,7 +196,7 @@ export async function CommitIngestOperation(
 			await updatePartInstanceRanks(context, ingestModel, data.changedSegmentIds, beforePartMap)
 
 			// Create the full playout model, now we have the rundowns and playlist updated
-			const playoutModel = await createPlayoutModelfromIngestModel(
+			const playoutModel = await createPlayoutModelFromIngestModel(
 				context,
 				playlistLock,
 				newPlaylist,
@@ -343,7 +343,7 @@ async function updatePartInstancesSegmentIds(
 	}
 }
 
-export function hackConvertIngestModelToRundownWithSegments(ingestModel: IngestModelReadonly): PlayoutRundownModel {
+export function convertIngestModelToPlayoutRundownWithSegments(ingestModel: IngestModelReadonly): PlayoutRundownModel {
 	const rundown = ingestModel.getRundown()
 
 	const segmentsWithParts = ingestModel

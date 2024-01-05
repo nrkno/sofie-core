@@ -79,7 +79,6 @@ export async function diffAndApplyChanges(
 		const segment = ingestModel.getSegmentByExternalId(segmentExternalId)
 		if (segment) {
 			segment.setRank(newRank)
-			// TODO - what should happen if it is missing?
 		}
 	}
 
@@ -111,7 +110,6 @@ export async function diffAndApplyChanges(
 			// We orphan it and queue for deletion. the commit phase will complete if possible
 			orphanedSegmentIds.push(segment.segment._id)
 			segment.setOrphaned(SegmentOrphanedReason.DELETED)
-			// TODO - what should happen if it is missing?
 
 			// nocommit Are we keeping preserveUnsyncedPlayingSegmentContents?
 			if (!context.studio.settings.preserveUnsyncedPlayingSegmentContents) {

@@ -13,7 +13,7 @@ import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blue
 import { JobContext } from '../jobs'
 import { getPartId, getSegmentId } from './lib'
 import { SetOptional } from 'type-fest'
-import { groupByToMap, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
+import { clone, groupByToMap, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { AnyBulkWriteOperation } from 'mongodb'
 import { diffAndReturnLatestObjects } from './model/implementation/utils'
 
@@ -103,7 +103,7 @@ export class RundownIngestDataCache {
 		ingestRundown.segments = _.sortBy(ingestRundown.segments, (s) => s.rank)
 
 		span?.end()
-		return ingestRundown
+		return clone(ingestRundown)
 	}
 
 	update(ingestRundown: LocalIngestRundown): void {
@@ -137,6 +137,7 @@ export class RundownIngestDataCache {
 							_id: changedId,
 						},
 						replacement: newDoc,
+						upsert: true,
 					},
 				})
 			}

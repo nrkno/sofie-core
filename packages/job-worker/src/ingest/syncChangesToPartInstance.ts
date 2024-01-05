@@ -31,7 +31,7 @@ import {
 } from '../blueprints/context/lib'
 import { validateScratchpartPartInstanceProperties } from '../playout/scratchpad'
 import { ReadonlyDeep } from 'type-fest'
-import { hackConvertIngestModelToRundownWithSegments } from './commit'
+import { convertIngestModelToPlayoutRundownWithSegments } from './commit'
 
 type PlayStatus = 'previous' | 'current' | 'next'
 type SyncedInstance = {
@@ -56,11 +56,11 @@ export async function syncChangesToPartInstances(
 ): Promise<void> {
 	if (playoutModel.playlist.activationId) {
 		// Get the final copy of the rundown
-		const rundownWrapped = hackConvertIngestModelToRundownWithSegments(ingestModel)
+		const playoutRundownModel = convertIngestModelToPlayoutRundownWithSegments(ingestModel)
 
 		const showStyle = await context.getShowStyleCompound(
-			rundownWrapped.rundown.showStyleVariantId,
-			rundownWrapped.rundown.showStyleBaseId
+			playoutRundownModel.rundown.showStyleVariantId,
+			playoutRundownModel.rundown.showStyleBaseId
 		)
 		const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 
@@ -136,7 +136,7 @@ export async function syncChangesToPartInstances(
 					context,
 					playoutModel,
 					previousPartInstance,
-					rundownWrapped,
+					playoutRundownModel,
 					newPart ?? existingPartInstance.partInstance.part,
 					await piecesThatMayBeActive,
 					existingPartInstance.partInstance._id
@@ -170,7 +170,7 @@ export async function syncChangesToPartInstances(
 					},
 					context.studio,
 					showStyle,
-					rundownWrapped.rundown,
+					playoutRundownModel.rundown,
 					existingPartInstance,
 					proposedPieceInstances,
 					playStatus
