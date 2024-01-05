@@ -448,6 +448,16 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		if (this.playlistImpl.quickLoop == null) return
 		const wasLoopRunning = this.playlistImpl.quickLoop.running
 
+		if (
+			this.playlistImpl.quickLoop.end?.type === QuickLoopMarkerType.PART &&
+			this.playlistImpl.quickLoop.end?.overridenId &&
+			this.playlistImpl.quickLoop.end?.id !== this.currentPartInstance?.partInstance.part._id &&
+			this.playlistImpl.quickLoop.end?.id !== this.nextPartInstance?.partInstance.part._id
+		) {
+			this.playlistImpl.quickLoop.end.id = this.playlistImpl.quickLoop.end.overridenId
+			delete this.playlistImpl.quickLoop.end.overridenId
+		}
+
 		let isNextBetweenMarkers = false
 		if (this.playlistImpl.quickLoop.start == null || this.playlistImpl.quickLoop.end == null) {
 			this.playlistImpl.quickLoop.running = false

@@ -52,6 +52,9 @@ export enum QuickLoopMarkerType {
 interface QuickLoopPartMarker {
 	type: QuickLoopMarkerType.PART
 	id: PartId
+
+	/** When a part is dynamically inserted after the marker, it keeps the old Id */
+	overridenId?: PartId
 }
 
 interface QuickLoopSegmentMarker {

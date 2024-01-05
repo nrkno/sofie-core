@@ -13,6 +13,7 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { withTranslation } from 'react-i18next'
 import { PlaylistEndTiming } from '../RundownView/RundownTiming/PlaylistEndTiming'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
+import { isLoopRunning } from '../../../lib/Rundown'
 
 interface IPlaylistEndTimerPanelProps {
 	visible?: boolean
@@ -39,7 +40,7 @@ export class PlaylistEndTimerPanelInner extends MeteorReactComponent<Translated<
 			>
 				<PlaylistEndTiming
 					rundownPlaylist={this.props.playlist}
-					loop={playlist.loop}
+					loop={isLoopRunning(playlist)}
 					expectedStart={PlaylistTiming.getExpectedStart(playlist.timing)}
 					expectedEnd={PlaylistTiming.getExpectedEnd(playlist.timing)}
 					expectedDuration={PlaylistTiming.getExpectedDuration(playlist.timing)}
