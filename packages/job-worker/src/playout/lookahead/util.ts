@@ -57,7 +57,6 @@ export function getOrderedPartsAfterPlayhead(
 
 	const strippedPlaylist = {
 		queuedSegmentId: alreadyConsumedQueuedSegmentId ? undefined : playlist.queuedSegmentId,
-		loop: playlist.loop,
 		quickLoop: playlist.quickLoop,
 	}
 	const nextNextPart = selectNextPart(
@@ -98,18 +97,7 @@ export function getOrderedPartsAfterPlayhead(
 		res.push(...playablePartsSlice)
 	}
 
-	if (res.length < partCount && playlist.loop) {
-		// The rundown would loop here, so lets run with that
-		const playableParts = orderedParts.filter((p) => isPartPlayable(p))
-		// Note: We only add it once, as lookahead is unlikely to show anything new in a second pass
-		res.push(...playableParts)
-
-		if (span) span.end()
-		// Final trim to ensure it is within bounds
-		return res.slice(0, partCount)
-	} else {
-		if (span) span.end()
-		// We reached the target or ran out of parts
-		return res.slice(0, partCount)
-	}
+	if (span) span.end()
+	// We reached the target or ran out of parts
+	return res.slice(0, partCount)
 }

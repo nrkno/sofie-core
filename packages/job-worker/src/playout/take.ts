@@ -231,6 +231,7 @@ export async function performTakeToNextedPart(
 	)
 
 	playoutModel.cycleSelectedPartInstances()
+	const wasLooping = playoutModel.playlist.quickLoop?.running
 	playoutModel.updateQuickLoopState()
 
 	const nextPart = selectNextPart(
@@ -246,7 +247,9 @@ export async function performTakeToNextedPart(
 
 	takePartInstance.setTaken(now, timeOffset)
 
-	resetPreviousSegment(playoutModel)
+	if (wasLooping) {
+		resetPreviousSegmentIfLooping(playoutModel)
+	}
 
 	// Once everything is synced, we can choose the next part
 	await setNextPart(context, playoutModel, nextPart, false)
@@ -290,17 +293,17 @@ export function clearQueuedSegmentId(
 }
 
 /**
- * Reset the Segment of the previousPartInstance, if playback has left that Segment and the Rundown is looping
+ * Reset the Segment of the previousPartInstance, if playback has left that Segment and the Playlist is looping
  * @param playoutModel Cache for the active Playlist
  */
-export function resetPreviousSegment(playoutModel: PlayoutModel): void {
+export function resetPreviousSegmentIfLooping(playoutModel: PlayoutModel): void {
 	const previousPartInstance = playoutModel.previousPartInstance
 	const currentPartInstance = playoutModel.currentPartInstance
 
 	// If the playlist is looping and
 	// If the previous and current part are not in the same segment, then we have just left a segment
 	if (
-		playoutModel.playlist.loop &&
+		playoutModel.playlist.quickLoop?.running &&
 		previousPartInstance &&
 		previousPartInstance.partInstance.segmentId !== currentPartInstance?.partInstance?.segmentId
 	) {

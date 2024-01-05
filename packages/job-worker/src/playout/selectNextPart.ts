@@ -33,7 +33,7 @@ export interface SelectNextPartResult {
 
 export function selectNextPart(
 	context: JobContext,
-	rundownPlaylist: Pick<DBRundownPlaylist, 'queuedSegmentId' | 'loop' | 'quickLoop'>,
+	rundownPlaylist: Pick<DBRundownPlaylist, 'queuedSegmentId' | 'quickLoop'>,
 	previousPartInstance: ReadonlyDeep<DBPartInstance> | null,
 	currentlySelectedPartInstance: ReadonlyDeep<DBPartInstance> | null,
 	segments: readonly PlayoutSegmentModel[],
@@ -175,12 +175,6 @@ export function selectNextPart(
 			}
 		}
 	}
-
-	// // if playlist should loop, check from 0 to currentPart
-	// if (rundownPlaylist.loop && !nextPart && previousPartInstance) {
-	// 	// Search up until the current part
-	// 	nextPart = findFirstPlayablePart(0, undefined, searchFromIndex - 1)
-	// }
 
 	// TODO: check how this used to behave when you queue dynamic parts after the last one in a looping playlist
 	if (

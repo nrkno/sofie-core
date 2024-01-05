@@ -109,8 +109,6 @@ export interface DBRundownPlaylist {
 	activationId?: RundownPlaylistActivationId
 	/** Timestamp when the playlist was last reset. Used to silence a few errors upon reset.*/
 	resetTime?: Time
-	/** Should the playlist loop at the end */
-	loop?: boolean
 	/** Marker indicating if unplayed parts behind the onAir part, should be treated as "still to be played" or "skipped" in terms of timing calculations */
 	outOfOrderTiming?: boolean
 	/** Should time-of-day clocks be used instead of countdowns by default */
