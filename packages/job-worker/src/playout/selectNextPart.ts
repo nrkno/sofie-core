@@ -88,7 +88,8 @@ export function selectNextPart(
 		const currentIndex = parts.findIndex((p) => p._id === previousPartInstance.part._id)
 		if (
 			rundownPlaylist.quickLoop?.end?.type === QuickLoopMarkerType.PART &&
-			previousPartInstance.part._id === rundownPlaylist.quickLoop.end.id
+			(previousPartInstance.part._id === rundownPlaylist.quickLoop.end.id ||
+				previousPartInstance.part._id === rundownPlaylist.quickLoop.end.overridenId)
 		) {
 			return findQuickLoopStartPart(currentIndex + 1) ?? null
 		} else if (
