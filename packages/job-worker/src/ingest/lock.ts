@@ -9,6 +9,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownLock } from '../jobs/lock'
 import { UserError } from '@sofie-automation/corelib/dist/error'
 import { loadIngestModelFromRundownExternalId } from './model/implementation/LoadIngestModel'
+import { clone } from '@sofie-automation/corelib/dist/lib'
 
 /**
  * The result of the initial stage of an Ingest operation
@@ -73,7 +74,7 @@ export async function runIngestJob(
 
 		// Recalculate the ingest data
 		const oldIngestRundown = ingestObjCache.fetchRundown()
-		const updatedIngestRundown = updateCacheFcn(oldIngestRundown)
+		const updatedIngestRundown = updateCacheFcn(clone(oldIngestRundown))
 		let newIngestRundown: LocalIngestRundown | undefined
 		switch (updatedIngestRundown) {
 			// case UpdateIngestRundownAction.REJECT:
@@ -91,7 +92,7 @@ export async function runIngestJob(
 		// Start saving the ingest data
 		const pSaveIngestChanges = ingestObjCache.saveToDatabase()
 
-		let resultingError: UserError | void
+		let resultingError: UserError | void | undefined
 
 		try {
 			const ingestModel = await pIngestModel
