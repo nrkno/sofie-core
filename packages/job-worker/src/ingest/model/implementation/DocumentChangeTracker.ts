@@ -22,21 +22,24 @@ export class DocumentChangeTracker<TDoc extends { _id: ProtectedString<any> }> {
 	#deletedIds = new Set<TDoc['_id']>()
 	#documentsToSave = new Map<TDoc['_id'], TDoc>()
 
-	addDocument(doc: TDoc, hasChanges: boolean): void {
-		if (this.#currentIds.has(doc._id)) {
-			// TODO - report duplicate
-		}
-		this.#currentIds.add(doc._id)
+	#addDocumentId(id: TDoc['_id']): void {
+		// if (this.#currentIds.has(id)) {
+		// Future: report duplicate?
+		// }
+		this.#currentIds.add(id)
 
-		if (this.#deletedIds.has(doc._id)) {
+		if (this.#deletedIds.has(id)) {
 			// It was marked for deletion elsewhere, but exists so skip deletion
-			this.#deletedIds.delete(doc._id)
+			this.#deletedIds.delete(id)
 
-			if (!this.#documentsToSave.has(doc._id)) {
-				// TODO - warn
-				// This is suspicious, as it already has changes, but is also marked for deletion
-			}
+			// if (!this.#documentsToSave.has(id)){
+			// This is suspicious, as it already has changes, but is also marked for deletion
+			// }
 		}
+	}
+
+	addDocument(doc: TDoc, hasChanges: boolean): void {
+		this.#addDocumentId(doc._id)
 
 		if (hasChanges) {
 			this.#documentsToSave.set(doc._id, doc)
@@ -57,35 +60,17 @@ export class DocumentChangeTracker<TDoc extends { _id: ProtectedString<any> }> {
 
 		if (!parentIsDeleted) {
 			for (const doc of changes.changedDocuments) {
-				// Ensure not marked for deletion
-				this.#deletedIds.delete(doc._id)
+				this.#addDocumentId(doc._id)
 
-				if (this.#documentsToSave.has(doc._id)) {
-					// TODO - report duplicate
-				}
 				this.#documentsToSave.set(doc._id, doc)
 			}
 		}
 
-		// TODO - refactor to use addDocument?
-		// Finally
 		for (const id of changes.currentIds) {
 			if (parentIsDeleted) {
 				this.deleteDocument(id)
 			} else {
-				if (this.#currentIds.has(id)) {
-					// TODO - report duplicate
-				}
-				if (this.#deletedIds.has(id)) {
-					// It was marked for deletion elsewhere, but exists so skip deletion
-					this.#deletedIds.delete(id)
-
-					if (!this.#documentsToSave.has(id)) {
-						// TODO - warn
-						// This is suspicious, as it was marked for deletion, but still exists and has no changes. That can't all be true, so do we have a duplicate or bug?
-					}
-				}
-				this.#currentIds.add(id)
+				this.#addDocumentId(id)
 			}
 		}
 	}

@@ -7,7 +7,7 @@ import _ = require('underscore')
  * @param changedIds Set of changed document ids to update in place
  * @param oldObjects Old documents to compare
  * @param newObjects New documents to compare
- * @param mergeFn Optional merge to perform before diffing, this change will be present in the returned values
+ * @param mergeFn Optional merge to perform before diffing, this change will be present in the returned values. Note: The parameters must not be modified, you should clone them first if you need to do this
  * @returns Array of the documents. Contains unchanged items from oldObjects, and changed items from newObjects
  */
 export function diffAndReturnLatestObjects<T extends { _id: ProtectedString<any> }>(
