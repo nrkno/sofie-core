@@ -153,6 +153,7 @@ import { logger } from '../../lib/logging'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from './i18n'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { useRundownAndShowStyleIdsForPlaylist } from './util/useRundownAndShowStyleIdsForPlaylist'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -1236,34 +1237,18 @@ export function RundownView(props: Readonly<IProps>): JSX.Element {
 		useSubscriptionIfEnabled(MeteorPubSub.buckets, !!playlistStudioId, playlistStudioId ?? protectString(''), null)
 	)
 
-	const { rundownIds, showStyleBaseIds, showStyleVariantIds, playlistActivationId } = useTracker(
-		() => {
-			const playlist = RundownPlaylists.findOne(playlistId, {
-				fields: {
-					_id: 1,
-					activationId: 1,
-				},
-			}) as Pick<DBRundownPlaylist, '_id' | 'activationId'> | undefined
-			if (playlist) {
-				const rundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(playlist, undefined, {
-					fields: {
-						_id: 1,
-						showStyleBaseId: 1,
-						showStyleVariantId: 1,
-					},
-				}) as Pick<Rundown, '_id' | 'showStyleBaseId' | 'showStyleVariantId'>[]
+	const playlistActivationId = useTracker(() => {
+		const playlist = RundownPlaylists.findOne(playlistId, {
+			fields: {
+				_id: 1,
+				activationId: 1,
+			},
+		}) as Pick<DBRundownPlaylist, '_id' | 'activationId'> | undefined
 
-				const rundownIds = rundowns.map((rundown) => rundown._id)
-				const showStyleBaseIds = rundowns.map((rundown) => rundown.showStyleBaseId)
-				const showStyleVariantIds = rundowns.map((rundown) => rundown.showStyleVariantId)
-				return { rundownIds, showStyleBaseIds, showStyleVariantIds, playlistActivationId: playlist.activationId }
-			}
+		return playlist?.activationId
+	}, [playlistId])
 
-			return { rundownIds: [], showStyleBaseIds: [], showStyleVariantIds: [], playlistActivationId: undefined }
-		},
-		[],
-		{ rundownIds: [], showStyleBaseIds: [], showStyleVariantIds: [], playlistActivationId: undefined }
-	)
+	const { rundownIds, showStyleBaseIds, showStyleVariantIds } = useRundownAndShowStyleIdsForPlaylist(playlistId)
 
 	subsReady.push(
 		useSubscriptions(

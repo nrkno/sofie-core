@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as _ from 'underscore'
 import { Translated, useSubscription, useSubscriptions, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
@@ -73,6 +72,8 @@ import {
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { withTranslation } from 'react-i18next'
+import { useRundownAndShowStyleIdsForPlaylist } from '../util/useRundownAndShowStyleIdsForPlaylist'
+import _ from 'underscore'
 
 interface IBucketPanelDragObject {
 	id: BucketId
@@ -273,25 +274,14 @@ export const BucketPanel = React.memo(
 		useSubscription(MeteorPubSub.uiBucketContentStatuses, props.playlist.studioId, props.bucket._id)
 		useSubscription(MeteorPubSub.uiStudio, props.playlist.studioId)
 
-		const { showStyleBases, showStyleVariants } = useTracker(
-			() => {
-				const rundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(props.playlist)
+		const { showStyleBaseIds, showStyleVariantIds } = useRundownAndShowStyleIdsForPlaylist(props.playlist._id)
 
-				const showStyleBases = _.uniq(rundowns.map((rundown) => rundown.showStyleBaseId))
-				const showStyleVariants = _.uniq(rundowns.map((rundown) => rundown.showStyleVariantId))
-
-				return { showStyleBases, showStyleVariants }
-			},
-			[props.playlist],
-			{ showStyleBases: [], showStyleVariants: [] }
-		)
-
-		useSubscription(CorelibPubSub.bucketAdLibPieces, props.playlist.studioId, props.bucket._id, showStyleVariants)
-		useSubscription(CorelibPubSub.bucketAdLibActions, props.playlist.studioId, props.bucket._id, showStyleVariants)
+		useSubscription(CorelibPubSub.bucketAdLibPieces, props.playlist.studioId, props.bucket._id, showStyleVariantIds)
+		useSubscription(CorelibPubSub.bucketAdLibActions, props.playlist.studioId, props.bucket._id, showStyleVariantIds)
 
 		useSubscriptions(
 			MeteorPubSub.uiShowStyleBase,
-			showStyleBases.map((id) => [id])
+			showStyleBaseIds.map((id) => [id])
 		)
 
 		// Data processing:
