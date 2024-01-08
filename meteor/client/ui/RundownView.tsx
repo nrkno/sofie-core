@@ -1342,6 +1342,11 @@ interface IPropsWithReady extends IProps {
 	subsReady: boolean
 }
 
+interface IRundownViewContentSnapshot {
+	elementId: string
+	top: number
+}
+
 const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITrackedProps>((props: Translated<IProps>) => {
 	const playlistId = props.playlistId
 
@@ -1739,91 +1744,14 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 			NotificationCenter.isConcentrationMode = true
 		}
 
-		componentDidUpdate(prevProps: IPropsWithReady & ITrackedProps, prevState: IState) {
-			if (!this.props.onlyShelf) {
-				if (
-					this.props.playlist &&
-					prevProps.playlist &&
-					prevProps.playlist.currentPartInfo?.partInstanceId !== this.props.playlist.currentPartInfo?.partInstanceId &&
-					prevProps.playlist.nextPartInfo?.manuallySelected
-				) {
-					// reset followLiveSegments after a manual set as next
-					this.setState({
-						manualSetAsNext: false,
-						followLiveSegments: true,
-					})
-					if (this.props.playlist.currentPartInfo) {
-						scrollToPartInstance(this.props.playlist.currentPartInfo?.partInstanceId, true).catch((error) => {
-							if (!error.toString().match(/another scroll/)) console.warn(error)
-						})
-					}
-				} else if (
-					this.props.playlist &&
-					prevProps.playlist &&
-					prevProps.playlist.activationId &&
-					!this.props.playlist.activationId
-				) {
-					// reset followLiveSegments after deactivating a rundown
-					this.setState({
-						followLiveSegments: true,
-					})
-				} else if (
-					this.props.playlist &&
-					prevProps.playlist &&
-					!prevProps.playlist.activationId &&
-					this.props.playlist.activationId &&
-					this.props.playlist.nextPartInfo
-				) {
-					// scroll to next after activation
-					scrollToPartInstance(this.props.playlist.nextPartInfo.partInstanceId).catch((error) => {
-						if (!error.toString().match(/another scroll/)) console.warn(error)
-					})
-				} else if (
-					// after take
-					this.props.playlist &&
-					prevProps.playlist &&
-					this.props.playlist.currentPartInfo?.partInstanceId !== prevProps.playlist.currentPartInfo?.partInstanceId &&
-					this.props.playlist.currentPartInfo &&
-					this.state.followLiveSegments
-				) {
-					scrollToPartInstance(this.props.playlist.currentPartInfo.partInstanceId, true).catch((error) => {
-						if (!error.toString().match(/another scroll/)) console.warn(error)
-					})
-				} else if (
-					this.props.playlist &&
-					prevProps.playlist &&
-					this.props.playlist.nextPartInfo?.partInstanceId !== prevProps.playlist.nextPartInfo?.partInstanceId &&
-					this.props.playlist.currentPartInfo?.partInstanceId === prevProps.playlist.currentPartInfo?.partInstanceId &&
-					this.props.playlist.nextPartInfo &&
-					this.props.playlist.nextPartInfo.manuallySelected
-				) {
-					scrollToPartInstance(this.props.playlist.nextPartInfo.partInstanceId, false).catch((error) => {
-						if (!error.toString().match(/another scroll/)) console.warn(error)
-					})
-				} else if (
-					// initial Rundown open
-					this.props.playlist &&
-					this.props.playlist.currentPartInfo &&
-					this.props.subsReady &&
-					!prevProps.subsReady
-				) {
-					// allow for some time for the Rundown to render
-					maintainFocusOnPartInstance(this.props.playlist.currentPartInfo.partInstanceId, 7000, true, true)
-				}
-			}
+		componentDidUpdate(
+			prevProps: IPropsWithReady & ITrackedProps,
+			prevState: IState,
+			snapshot: IRundownViewContentSnapshot | null
+		) {
+			this.handleFollowLiveSegment(prevProps, snapshot)
 
-			if (
-				typeof this.props.playlist !== typeof prevProps.playlist ||
-				this.props.playlist?._id !== prevProps.playlist?._id ||
-				!!this.props.playlist?.activationId !== !!prevProps.playlist?.activationId ||
-				this.state.studioMode !== prevState.studioMode
-			) {
-				if (this.props.playlist && this.props.playlist.activationId && this.state.studioMode && !getAllowDeveloper()) {
-					window.addEventListener('beforeunload', this.onBeforeUnload)
-				} else {
-					window.removeEventListener('beforeunload', this.onBeforeUnload)
-				}
-			}
+			this.handleBeforeUnloadEventAttach(prevProps, prevState)
 
 			if (
 				this.props.playlist &&
@@ -1856,6 +1784,142 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 			}
 
 			this.handleMiniShelfRequeue(prevProps)
+		}
+
+		public getSnapshotBeforeUpdate(): IRundownViewContentSnapshot | null {
+			if (!this.state.followLiveSegments) return null
+
+			let focalElement: HTMLElement | null = null
+
+			const liveSegmentEl = document.querySelector<HTMLElement>('.segment-timeline.live')
+			if (liveSegmentEl) focalElement = liveSegmentEl
+
+			if (!focalElement) {
+				const nextSegmentEl = document.querySelector<HTMLElement>('.segment-timeline.next')
+				if (nextSegmentEl) focalElement = nextSegmentEl
+			}
+
+			if (!focalElement) return null
+
+			const { top } = focalElement.getBoundingClientRect()
+
+			return {
+				elementId: focalElement.id,
+				top: top,
+			}
+		}
+
+		private handleFollowLiveSegment(
+			prevProps: IPropsWithReady & ITrackedProps,
+			snapshot: IRundownViewContentSnapshot | null
+		) {
+			if (this.props.onlyShelf) return
+
+			if (
+				this.props.playlist &&
+				prevProps.playlist &&
+				prevProps.playlist.currentPartInfo?.partInstanceId !== this.props.playlist.currentPartInfo?.partInstanceId &&
+				prevProps.playlist.nextPartInfo?.manuallySelected
+			) {
+				// reset followLiveSegments after a manual set as next
+				this.setState({
+					manualSetAsNext: false,
+					followLiveSegments: true,
+				})
+				if (this.props.playlist.currentPartInfo) {
+					scrollToPartInstance(this.props.playlist.currentPartInfo?.partInstanceId, true).catch((error) => {
+						if (!error.toString().match(/another scroll/)) console.warn(error)
+					})
+				}
+			} else if (
+				this.props.playlist &&
+				prevProps.playlist &&
+				prevProps.playlist.activationId &&
+				!this.props.playlist.activationId
+			) {
+				// reset followLiveSegments after deactivating a rundown
+				this.setState({
+					followLiveSegments: true,
+				})
+			} else if (
+				this.props.playlist &&
+				prevProps.playlist &&
+				!prevProps.playlist.activationId &&
+				this.props.playlist.activationId &&
+				this.props.playlist.nextPartInfo
+			) {
+				// scroll to next after activation
+				scrollToPartInstance(this.props.playlist.nextPartInfo.partInstanceId).catch((error) => {
+					if (!error.toString().match(/another scroll/)) console.warn(error)
+				})
+			} else if (
+				// after take
+				this.props.playlist &&
+				prevProps.playlist &&
+				this.props.playlist.currentPartInfo?.partInstanceId !== prevProps.playlist.currentPartInfo?.partInstanceId &&
+				this.props.playlist.currentPartInfo &&
+				this.state.followLiveSegments
+			) {
+				scrollToPartInstance(this.props.playlist.currentPartInfo.partInstanceId, true).catch((error) => {
+					if (!error.toString().match(/another scroll/)) console.warn(error)
+				})
+			} else if (
+				this.props.playlist &&
+				prevProps.playlist &&
+				this.props.playlist.nextPartInfo?.partInstanceId !== prevProps.playlist.nextPartInfo?.partInstanceId &&
+				this.props.playlist.currentPartInfo?.partInstanceId === prevProps.playlist.currentPartInfo?.partInstanceId &&
+				this.props.playlist.nextPartInfo &&
+				this.props.playlist.nextPartInfo.manuallySelected
+			) {
+				scrollToPartInstance(this.props.playlist.nextPartInfo.partInstanceId, false).catch((error) => {
+					if (!error.toString().match(/another scroll/)) console.warn(error)
+				})
+			} else if (
+				// initial Rundown open
+				this.props.playlist &&
+				this.props.playlist.currentPartInfo &&
+				this.props.subsReady &&
+				!prevProps.subsReady
+			) {
+				// allow for some time for the Rundown to render
+				maintainFocusOnPartInstance(this.props.playlist.currentPartInfo.partInstanceId, 7000, true, true)
+			} else if (
+				this.props.playlist &&
+				this.props.playlist.currentPartInfo?.partInstanceId === prevProps.playlist?.currentPartInfo?.partInstanceId &&
+				this.props.playlist.nextPartInfo?.partInstanceId === prevProps.playlist?.nextPartInfo?.partInstanceId &&
+				this.props.matchedSegments !== prevProps.matchedSegments &&
+				this.state.followLiveSegments &&
+				snapshot
+			) {
+				// segments changed before the live segment
+				const focalElement = document.getElementById(snapshot.elementId)
+				if (!focalElement) return
+				const { top } = focalElement.getBoundingClientRect()
+
+				const diff = top - snapshot.top
+				window.scrollBy({
+					top: diff,
+					// @ts-expect-error 'instant' value has been introduced in browsers, but is not supported by TS 4.9
+					behavior: 'instant',
+				})
+			}
+		}
+
+		private handleBeforeUnloadEventAttach(prevProps: ITrackedProps, prevState: IState) {
+			if (this.props.onlyShelf) return
+
+			if (
+				typeof this.props.playlist !== typeof prevProps.playlist ||
+				this.props.playlist?._id !== prevProps.playlist?._id ||
+				!!this.props.playlist?.activationId !== !!prevProps.playlist?.activationId ||
+				this.state.studioMode !== prevState.studioMode
+			) {
+				if (this.props.playlist && this.props.playlist.activationId && this.state.studioMode && !getAllowDeveloper()) {
+					window.addEventListener('beforeunload', this.onBeforeUnload)
+				} else {
+					window.removeEventListener('beforeunload', this.onBeforeUnload)
+				}
+			}
 		}
 
 		private handleMiniShelfRequeue(prevProps: IProps & ITrackedProps) {
