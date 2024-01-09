@@ -82,7 +82,7 @@ export async function onPartPlaybackStarted(
 			)
 
 			clearQueuedSegmentId(playoutModel, playingPartInstance.partInstance, playlist.nextPartInfo)
-			resetPreviousSegmentIfLooping(playoutModel) // Note: rare edgecase of auto-nexting into a loop causing reset of a segment outside of the loop; is it worth fixing?
+			resetPreviousSegmentIfLooping(context, playoutModel) // Note: rare edgecase of auto-nexting into a loop causing reset of a segment outside of the loop; is it worth fixing?
 
 			// Update the next partinstance
 			const nextPart = selectNextPart(

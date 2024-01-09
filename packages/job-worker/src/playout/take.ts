@@ -10,7 +10,7 @@ import { logger } from '../logging'
 import { JobContext, ProcessedShowStyleCompound } from '../jobs'
 import { PlayoutModel } from './model/PlayoutModel'
 import { PlayoutPartInstanceModel } from './model/PlayoutPartInstanceModel'
-import { isTooCloseToAutonext } from './lib'
+import { isTooCloseToAutonext, resetPartInstancesWithPieceInstances } from './lib'
 import { selectNextPart } from './selectNextPart'
 import { setNextPart } from './setNext'
 import { getCurrentTime } from '../lib'
@@ -248,7 +248,7 @@ export async function performTakeToNextedPart(
 	takePartInstance.setTaken(now, timeOffset)
 
 	if (wasLooping) {
-		resetPreviousSegmentIfLooping(playoutModel)
+		resetPreviousSegmentIfLooping(context, playoutModel)
 	}
 
 	// Once everything is synced, we can choose the next part
@@ -296,7 +296,7 @@ export function clearQueuedSegmentId(
  * Reset the Segment of the previousPartInstance, if playback has left that Segment and the Playlist is looping
  * @param playoutModel Cache for the active Playlist
  */
-export function resetPreviousSegmentIfLooping(playoutModel: PlayoutModel): void {
+export function resetPreviousSegmentIfLooping(context: JobContext, playoutModel: PlayoutModel): void {
 	const previousPartInstance = playoutModel.previousPartInstance
 	const currentPartInstance = playoutModel.currentPartInstance
 
@@ -309,11 +309,7 @@ export function resetPreviousSegmentIfLooping(playoutModel: PlayoutModel): void 
 	) {
 		// Reset the old segment
 		const segmentId = previousPartInstance.partInstance.segmentId
-		for (const partInstance of playoutModel.loadedPartInstances) {
-			if (partInstance.partInstance.segmentId === segmentId) {
-				partInstance.markAsReset()
-			}
-		}
+		resetPartInstancesWithPieceInstances(context, playoutModel, { segmentId })
 	}
 }
 
