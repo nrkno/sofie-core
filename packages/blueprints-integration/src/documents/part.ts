@@ -151,6 +151,7 @@ export interface IBlueprintPart<TMetadata = unknown> extends IBlueprintMutatable
 	/** When this part is just a filler to fill space in a segment. Generally, used with invalid: true */
 	gap?: boolean
 }
+
 /** The Part sent from Core */
 export interface IBlueprintPartDB<TMetadata = unknown> extends IBlueprintPart<TMetadata> {
 	_id: string

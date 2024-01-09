@@ -507,7 +507,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		// Future: this could do some better validation
 
 		// filter the submission to the allowed ones
-		const trimmedProps: Partial<IBlueprintMutatablePart> = _.pick(props, [...IBlueprintMutatablePartSampleKeys])
+		const trimmedProps: Partial<IBlueprintMutatablePart> = filterPropsToAllowed(props)
 		if (Object.keys(trimmedProps).length === 0) return false
 
 		this.#compareAndSetPartInstanceValue(
@@ -515,6 +515,54 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 			{
 				...this.partInstanceImpl.part,
 				...trimmedProps,
+			},
+			true
+		)
+
+		return true
+	}
+
+	overridePartProps(props: Partial<IBlueprintMutatablePart>): boolean {
+		const trimmedProps: Partial<IBlueprintMutatablePart> = filterPropsToAllowed(props)
+		const keys = Object.keys(trimmedProps) as Array<keyof Partial<IBlueprintMutatablePart>>
+		if (keys.length === 0) return false
+
+		const overridenProperties: DBPart['overridenProperties'] = _.pick(this.partInstanceImpl.part, keys)
+		keys.forEach((key) => {
+			if (overridenProperties[key] === undefined) {
+				overridenProperties[key] = null
+			}
+		})
+
+		this.#compareAndSetPartInstanceValue(
+			'part',
+			{
+				...this.partInstanceImpl.part,
+				...trimmedProps,
+				overridenProperties,
+			},
+			true
+		)
+
+		return true
+	}
+
+	revertOverridenPartProps(): boolean {
+		const overridenProperties = { ...this.partInstanceImpl.part.overridenProperties }
+		if (!overridenProperties) return false
+		const keys = Object.keys(overridenProperties) as Array<keyof Partial<IBlueprintMutatablePart>>
+
+		keys.forEach((key) => {
+			if (overridenProperties[key] === null) {
+				overridenProperties[key] = undefined
+			}
+		})
+
+		this.#compareAndSetPartInstanceValue(
+			'part',
+			{
+				...this.partInstanceImpl.part,
+				...(overridenProperties as Partial<IBlueprintMutatablePart>),
 			},
 			true
 		)
@@ -531,4 +579,10 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		// Force this to not affect rundown timing
 		this.#compareAndSetPartValue('untimed', true)
 	}
+}
+
+function filterPropsToAllowed(
+	props: Partial<IBlueprintMutatablePart<unknown>>
+): Partial<IBlueprintMutatablePart<unknown>> {
+	return _.pick(props, [...IBlueprintMutatablePartSampleKeys])
 }

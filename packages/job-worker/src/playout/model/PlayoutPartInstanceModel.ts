@@ -210,6 +210,20 @@ export interface PlayoutPartInstanceModel {
 	updatePartProps(props: Partial<IBlueprintMutatablePart>): boolean
 
 	/**
+	 * Update some properties for the wrapped Part in a way that can be reverted
+	 * @param props New properties for the Part being wrapped
+	 * @returns True if any valid properties were provided
+	 */
+	overridePartProps(props: Partial<IBlueprintMutatablePart>): boolean
+
+	/**
+	 * Reverts overriden Part props
+	 * @param props New properties for the Part being wrapped
+	 * @returns True if properties were reverted
+	 */
+	revertOverridenPartProps(): boolean
+
+	/**
 	 * Ensure that this PartInstance is setup correctly for being in the Scratchpad Segment
 	 */
 	validateScratchpadSegmentProperties(): void

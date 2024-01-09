@@ -544,17 +544,18 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 			this.playlistImpl.quickLoop.running =
 				this.playlistImpl.quickLoop.start != null &&
 				this.playlistImpl.quickLoop.end != null &&
-				isCurrentBetweenMarkers // &&
+				isCurrentBetweenMarkers
 		}
 
 		if (this.currentPartInstance && this.playlistImpl.quickLoop.running) {
 			updatePartOverrides(this.currentPartInstance, this.playlistImpl.quickLoop.forceAutoNext)
 		} else if (this.currentPartInstance && wasLoopRunning) {
-			// TODO: revert next overrides
+			revertPartOverrides(this.currentPartInstance)
+			// TODO: this may need updating the timeline
 		}
 
 		if (this.nextPartInstance && !isNextBetweenMarkers) {
-			// TODO: revert next overrides
+			revertPartOverrides(this.nextPartInstance)
 		}
 
 		if (wasLoopRunning && !this.playlistImpl.quickLoop.running) {
@@ -579,8 +580,18 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 				partPropsToUpdate.autoNext = true
 			}
 			if (Object.keys(partPropsToUpdate).length) {
-				partInstance.updatePartProps(partPropsToUpdate)
+				partInstance.overridePartProps(partPropsToUpdate)
 				if (partPropsToUpdate.expectedDuration) partInstance.recalculateExpectedDurationWithPreroll()
+			}
+		}
+
+		function revertPartOverrides(partInstance: PlayoutPartInstanceModel) {
+			const overridenProperties = partInstance.partInstance.part.overridenProperties
+			if (overridenProperties) {
+				partInstance.revertOverridenPartProps()
+				if (overridenProperties.expectedDuration) {
+					partInstance.recalculateExpectedDurationWithPreroll()
+				}
 			}
 		}
 	}
