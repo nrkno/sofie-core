@@ -23,8 +23,17 @@ import { StudioLight } from '../optimizations'
 import { ReadonlyDeep } from 'type-fest'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
-import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ExpectedPackages, RundownPlaylists, Rundowns, PeripheralDevices, Studios, PartInstances } from '../collections'
+import { PartInstanceId, PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	ExpectedPackages,
+	RundownPlaylists,
+	Rundowns,
+	PeripheralDevices,
+	Studios,
+	PartInstances,
+	PieceInstances,
+} from '../collections'
+import { ReactiveMongoObserverGroup } from './lib/observerGroup'
 
 interface ExpectedPackagesPublicationArgs {
 	readonly studioId: StudioId
@@ -89,6 +98,40 @@ async function setupExpectedPackagesPublicationObservers(
 	args: ReadonlyDeep<ExpectedPackagesPublicationArgs>,
 	triggerUpdate: TriggerUpdate<ExpectedPackagesPublicationUpdateProps>
 ): Promise<Meteor.LiveQueryHandle[]> {
+	const partInstanceGroup = await ReactiveMongoObserverGroup(async () => {
+		triggerUpdate({ invalidateRundownPlaylist: true })
+
+		const partInstanceIds: PartInstanceId[] = []
+
+		const playlists = await RundownPlaylists.findFetchAsync(
+			{
+				studioId: args.studioId,
+				activationId: { $exists: true },
+			},
+			{
+				fields: {
+					currentPartInstanceId: 1, // So that it invalidates when the current changes
+					nextPartInstanceId: 1, // So that it invalidates when the next changes
+				},
+			}
+		)
+
+		for (const playlist of playlists) {
+			if (playlist.currentPartInstanceId) partInstanceIds.push(playlist.currentPartInstanceId)
+			if (playlist.nextPartInstanceId) partInstanceIds.push(playlist.nextPartInstanceId)
+		}
+
+		return [
+			PieceInstances.find({
+				partInstanceId: { $in: partInstanceIds },
+			}).observeChanges({
+				added: () => triggerUpdate({ invalidateRundownPlaylist: true }),
+				changed: () => triggerUpdate({ invalidateRundownPlaylist: true }),
+				removed: () => triggerUpdate({ invalidateRundownPlaylist: true }),
+			}),
+		]
+	})
+
 	// Set up observers:
 	return [
 		Studios.find(args.studioId, {
@@ -125,15 +168,17 @@ async function setupExpectedPackagesPublicationObservers(
 		RundownPlaylists.find(
 			{
 				studioId: args.studioId,
+				activationId: { $exists: true },
 			},
 			{
 				fields: rundownPlaylistFieldSpecifier,
 			}
 		).observeChanges({
-			added: () => triggerUpdate({ invalidateRundownPlaylist: true }),
-			changed: () => triggerUpdate({ invalidateRundownPlaylist: true }),
-			removed: () => triggerUpdate({ invalidateRundownPlaylist: true }),
+			added: () => partInstanceGroup.restart(),
+			changed: () => partInstanceGroup.restart(),
+			removed: () => partInstanceGroup.restart(),
 		}),
+		partInstanceGroup,
 	]
 }
 
