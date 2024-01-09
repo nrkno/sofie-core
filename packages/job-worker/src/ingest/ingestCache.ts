@@ -137,6 +137,7 @@ export class RundownIngestDataCache {
 							_id: changedId,
 						},
 						replacement: newDoc,
+						upsert: true,
 					},
 				})
 			}
