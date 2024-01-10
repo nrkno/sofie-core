@@ -36,10 +36,14 @@ export async function updateCollectionForExpectedPackageIds(
 	regenerateIds: Set<ExpectedPackageId>
 ): Promise<void> {
 	const updatedDocIds = new Set<PackageManagerExpectedPackageId>()
+	const missingExpectedPackageIds = new Set<ExpectedPackageId>()
 
 	for (const packageId of regenerateIds) {
 		const packageDoc = contentCache.ExpectedPackages.findOne(packageId)
-		if (!packageDoc) continue
+		if (!packageDoc) {
+			missingExpectedPackageIds.add(packageId)
+			continue
+		}
 
 		// Map the expectedPackages onto their specified layer:
 		const allDeviceIds = new Set<PeripheralDeviceId>()
@@ -71,12 +75,15 @@ export async function updateCollectionForExpectedPackageIds(
 	}
 
 	// Remove all documents for an ExpectedPackage that was regenerated, and no update was issues
-	collection.remove(
-		(doc) =>
-			!doc.pieceInstanceId &&
-			updatedDocIds.has(doc._id) &&
-			!regenerateIds.has(protectString(doc.expectedPackage._id))
-	)
+	collection.remove((doc) => {
+		if (doc.pieceInstanceId) return false
+
+		if (missingExpectedPackageIds.has(protectString(doc.expectedPackage._id))) return true
+
+		if (updatedDocIds.has(doc._id) && !regenerateIds.has(protectString(doc.expectedPackage._id))) return true
+
+		return false
+	})
 }
 
 /**
@@ -97,10 +104,15 @@ export async function updateCollectionForPieceInstanceIds(
 	regenerateIds: Set<PieceInstanceId>
 ): Promise<void> {
 	const updatedDocIds = new Set<PackageManagerExpectedPackageId>()
+	const missingPieceInstanceIds = new Set<PieceInstanceId>()
 
 	for (const pieceInstanceId of regenerateIds) {
 		const pieceInstanceDoc = contentCache.PieceInstances.findOne(pieceInstanceId)
-		if (!pieceInstanceDoc?.piece?.expectedPackages) continue
+		if (!pieceInstanceDoc) {
+			missingPieceInstanceIds.add(pieceInstanceId)
+			continue
+		}
+		if (!pieceInstanceDoc.piece?.expectedPackages) continue
 
 		pieceInstanceDoc.piece.expectedPackages.forEach((expectedPackage, i) => {
 			const sanitisedPackageId = expectedPackage._id || '__unnamed' + i
@@ -138,9 +150,15 @@ export async function updateCollectionForPieceInstanceIds(
 	}
 
 	// Remove all documents for an ExpectedPackage that was regenerated, and no update was issues
-	collection.remove(
-		(doc) => !!doc.pieceInstanceId && updatedDocIds.has(doc._id) && !regenerateIds.has(doc.pieceInstanceId)
-	)
+	collection.remove((doc) => {
+		if (!doc.pieceInstanceId) return false
+
+		if (missingPieceInstanceIds.has(doc.pieceInstanceId)) return true
+
+		if (updatedDocIds.has(doc._id) && !regenerateIds.has(doc.pieceInstanceId)) return true
+
+		return false
+	})
 }
 
 enum Priorities {
