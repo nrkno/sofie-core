@@ -7,6 +7,7 @@ import { IS_PRODUCTION } from '../environment'
 import { logger } from '../logging'
 import { sleep } from '@sofie-automation/corelib/dist/lib'
 import { JobContext } from '../jobs'
+import { BaseModel } from '../modelBase'
 
 type DeferredFunction<Cache> = (cache: Cache) => void | Promise<void>
 type DeferredAfterSaveFunction<Cache extends CacheBase<any>> = (cache: ReadOnlyCache<Cache>) => void | Promise<void>
@@ -30,7 +31,7 @@ export type ReadOnlyCache<T extends CacheBase<any>> = Omit<
 >
 
 /** This cache contains data relevant in a studio */
-export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
+export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> implements BaseModel {
 	protected _deferredBeforeSaveFunctions: DeferredFunction<T>[] = []
 	protected _deferredAfterSaveFunctions: DeferredAfterSaveFunction<any>[] = []
 
@@ -38,7 +39,7 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 		context.trackCache(this)
 	}
 
-	abstract DisplayName: string
+	abstract displayName: string
 
 	private getAllCollections() {
 		const highPrioDBs: DbCacheWritable<any>[] = []
@@ -76,11 +77,9 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 		this._deferredBeforeSaveFunctions.length = 0 // clear the array
 
 		const { highPrioDBs, lowPrioDBs } = this.getAllCollections()
-
 		if (highPrioDBs.length) {
-			const anyThingChanged = anythingChanged(
-				sumChanges(...(await Promise.all(highPrioDBs.map(async (db) => db.updateDatabaseWithData()))))
-			)
+			const allSaves = [...highPrioDBs.map(async (db) => db.updateDatabaseWithData())]
+			const anyThingChanged = anythingChanged(sumChanges(...(await Promise.all(allSaves))))
 			if (anyThingChanged && !process.env.JEST_WORKER_ID) {
 				// Wait a little bit before saving the rest.
 				// The idea is that this allows for the high priority publications to update (such as the Timeline),
@@ -180,29 +179,6 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 		}
 
 		if (span) span.end()
-	}
-
-	hasChanges(): boolean {
-		const { allDBs } = this.getAllCollections()
-
-		if (this._deferredBeforeSaveFunctions.length > 0) {
-			logger.silly(`hasChanges: _deferredBeforeSaveFunctions.length=${this._deferredBeforeSaveFunctions.length}`)
-			return true
-		}
-
-		if (this._deferredAfterSaveFunctions.length > 0) {
-			logger.silly(`hasChanges: _deferredAfterSaveFunctions.length=${this._deferredAfterSaveFunctions.length}`)
-			return true
-		}
-
-		for (const db of allDBs) {
-			if (db.isModified()) {
-				logger.silly(`hasChanges: db=${db.name}`)
-				return true
-			}
-		}
-
-		return false
 	}
 }
 export interface ICacheBase<T> {

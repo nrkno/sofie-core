@@ -7,12 +7,14 @@ import { PackageManagerPackageContainers } from '@sofie-automation/shared-lib/di
 import { check } from 'meteor/check'
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
-import { PubSub, CustomCollectionName } from '../../../lib/api/pubsub'
-import { Studio } from '../../../lib/collections/Studios'
 import { PeripheralDevices, Studios } from '../../collections'
 import { meteorCustomPublish, setUpOptimizedObserverArray, TriggerUpdate } from '../../lib/customPublication'
 import { logger } from '../../logging'
 import { PeripheralDeviceReadAccess } from '../../security/peripheralDevice'
+import {
+	PeripheralDevicePubSub,
+	PeripheralDevicePubSubCollectionsNames,
+} from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 
 type StudioFields = '_id' | 'packageContainers'
 const studioFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBStudio, StudioFields>>>({
@@ -61,7 +63,7 @@ async function manipulateExpectedPackagesPublicationData(
 	// Future: this may want to cache on the state, but with only a single observer there feels little point
 
 	const studio = (await Studios.findOneAsync(args.studioId, { fields: studioFieldSpecifier })) as
-		| Pick<Studio, StudioFields>
+		| Pick<DBStudio, StudioFields>
 		| undefined
 
 	const packageContainers: { [containerId: string]: PackageContainer } = {}
@@ -82,8 +84,8 @@ async function manipulateExpectedPackagesPublicationData(
 }
 
 meteorCustomPublish(
-	PubSub.packageManagerPackageContainers,
-	CustomCollectionName.PackageManagerPackageContainers,
+	PeripheralDevicePubSub.packageManagerPackageContainers,
+	PeripheralDevicePubSubCollectionsNames.packageManagerPackageContainers,
 	async function (pub, deviceId: PeripheralDeviceId, token: string | undefined) {
 		check(deviceId, String)
 
@@ -104,7 +106,7 @@ meteorCustomPublish(
 				PackageManagerPackageContainersState,
 				PackageManagerPackageContainersUpdateProps
 			>(
-				`${PubSub.packageManagerPackageContainers}_${studioId}_${deviceId}`,
+				`${PeripheralDevicePubSub.packageManagerPackageContainers}_${studioId}_${deviceId}`,
 				{ studioId, deviceId },
 				setupExpectedPackagesPublicationObservers,
 				manipulateExpectedPackagesPublicationData,

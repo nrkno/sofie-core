@@ -12,9 +12,9 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { ReadonlyDeep } from 'type-fest'
-import { CustomCollectionName, PubSub } from '../../../../lib/api/pubsub'
+import { CustomCollectionName, MeteorPubSub } from '../../../../lib/api/pubsub'
 import { UIPieceContentStatus } from '../../../../lib/api/rundownNotifications'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import {
 	MediaObjects,
 	PackageContainerPackageStatuses,
@@ -92,7 +92,7 @@ interface UIPieceContentStatusesUpdateProps extends IContentStatusesUpdatePropsB
 
 type RundownPlaylistFields = '_id' | 'studioId'
 const rundownPlaylistFieldSpecifier = literal<
-	MongoFieldSpecifierOnesStrict<Pick<RundownPlaylist, RundownPlaylistFields>>
+	MongoFieldSpecifierOnesStrict<Pick<DBRundownPlaylist, RundownPlaylistFields>>
 >({
 	_id: 1,
 	studioId: 1,
@@ -116,7 +116,7 @@ async function setupUIPieceContentStatusesPublicationObservers(
 
 	const playlist = (await RundownPlaylists.findOneAsync(args.rundownPlaylistId, {
 		projection: rundownPlaylistFieldSpecifier,
-	})) as Pick<RundownPlaylist, RundownPlaylistFields> | undefined
+	})) as Pick<DBRundownPlaylist, RundownPlaylistFields> | undefined
 	if (!playlist) throw new Error(`RundownPlaylist "${args.rundownPlaylistId}" not found!`)
 
 	const rundownsObserver = new RundownsObserver(playlist.studioId, playlist._id, (rundownIds) => {
@@ -445,7 +445,7 @@ function updatePartAndSegmentInfoForExistingDocs(
 }
 
 meteorCustomPublish(
-	PubSub.uiPieceContentStatuses,
+	MeteorPubSub.uiPieceContentStatuses,
 	CustomCollectionName.UIPieceContentStatuses,
 	async function (pub, rundownPlaylistId: RundownPlaylistId | null) {
 		check(rundownPlaylistId, Match.Maybe(String))
@@ -464,7 +464,7 @@ meteorCustomPublish(
 				UIPieceContentStatusesState,
 				UIPieceContentStatusesUpdateProps
 			>(
-				`pub_${PubSub.uiPieceContentStatuses}_${rundownPlaylistId}`,
+				`pub_${MeteorPubSub.uiPieceContentStatuses}_${rundownPlaylistId}`,
 				{ rundownPlaylistId },
 				setupUIPieceContentStatusesPublicationObservers,
 				manipulateUIPieceContentStatusesPublicationData,

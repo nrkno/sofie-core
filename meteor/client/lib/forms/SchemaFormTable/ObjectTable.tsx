@@ -8,7 +8,7 @@ import {
 	OverrideOpHelperForItemContents,
 	getAllCurrentAndDeletedItemsFromOverrides,
 } from '../../../ui/Settings/util/OverrideOpHelper'
-import { useToggleExpandHelper } from '../../../ui/Settings/util/ToggleExpandedHelper'
+import { useToggleExpandHelper } from '../../../ui/util/useToggleExpandHelper'
 import { doModalDialog } from '../../ModalDialog'
 import {
 	getSchemaSummaryFieldsForObject,
@@ -16,7 +16,11 @@ import {
 	translateStringIfHasNamespaces,
 } from '../schemaFormUtil'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
-import { getSchemaDefaultValues, SchemaFormUIField } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaUtil'
+import {
+	getSchemaDefaultValues,
+	getSchemaUIField,
+	SchemaFormUIField,
+} from '@sofie-automation/shared-lib/dist/lib/JSONSchemaUtil'
 import { SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { SchemaFormTableEditRow } from './TableEditRow'
 import { SchemaTableSummaryRow } from '../SchemaTableSummaryRow'
@@ -51,7 +55,7 @@ export const SchemaFormObjectTable = ({
 	attr,
 	item,
 	overrideHelper,
-}: SchemaFormObjectTableProps): JSX.Element => {
+}: Readonly<SchemaFormObjectTableProps>): JSX.Element => {
 	const { t } = useTranslation()
 
 	const wrappedRows = useMemo(() => {
@@ -129,8 +133,8 @@ export const SchemaFormObjectTable = ({
 		[t, tableOverrideHelper]
 	)
 
-	const title = schema[SchemaFormUIField.Title]
-	const description = schema[SchemaFormUIField.Description]
+	const title = getSchemaUIField(schema, SchemaFormUIField.Title)
+	const description = getSchemaUIField(schema, SchemaFormUIField.Description)
 	const titleElement = title && (
 		<SchemaFormSectionHeader title={title} description={description} translationNamespaces={translationNamespaces} />
 	)

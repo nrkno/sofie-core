@@ -4,7 +4,6 @@ import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-met
 
 import { RundownTimingProvider } from '../RundownView/RundownTiming/RundownTimingProvider'
 
-import { PubSub } from '../../../lib/api/pubsub'
 import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
 import { PresenterScreen } from './PresenterScreen'
 import { OverlayScreen } from './OverlayScreen'
@@ -12,12 +11,10 @@ import { OverlayScreenSaver } from './OverlayScreenSaver'
 import { RundownPlaylists } from '../../collections'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CameraScreen } from './CameraScreen'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
 
-export function ClockView({ studioId }: { studioId: StudioId }): JSX.Element {
-	useSubscription(PubSub.rundownPlaylists, {
-		activationId: { $exists: true },
-		studioId,
-	})
+export function ClockView({ studioId }: Readonly<{ studioId: StudioId }>): JSX.Element {
+	useSubscription(MeteorPubSub.rundownPlaylistForStudio, studioId, true)
 
 	const playlist = useTracker(
 		() =>

@@ -112,6 +112,8 @@ function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
 			return t('Resetting Playlist to default order')
 		case UserAction.PERIPHERAL_DEVICE_REFRESH_DEBUG_STATES:
 			return t('Refreshing debug states')
+		case UserAction.ACTIVATE_SCRATCHPAD:
+			return t('Activate Scratchpad')
 		default:
 			assertNever(userAction)
 	}

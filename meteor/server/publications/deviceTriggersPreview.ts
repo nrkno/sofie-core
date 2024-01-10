@@ -4,7 +4,7 @@ import { ProtectedString, unprotectString } from '@sofie-automation/corelib/dist
 import { check } from 'meteor/check'
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
-import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
+import { CustomCollectionName, MeteorPubSub } from '../../lib/api/pubsub'
 import { DeviceTriggerArguments } from '../../lib/api/triggers/MountedTriggers'
 import { getCurrentTime } from '../../lib/lib'
 import { setUpOptimizedObserverArray, TriggerUpdate } from '../lib/customPublication'
@@ -28,15 +28,15 @@ export interface UIDeviceTriggerPreview {
 }
 
 meteorCustomPublish(
-	PubSub.deviceTriggersPreview,
+	MeteorPubSub.deviceTriggersPreview,
 	CustomCollectionName.UIDeviceTriggerPreviews,
-	async function (pub, studioId: StudioId, token) {
+	async function (pub, studioId: StudioId, token: string | undefined) {
 		check(studioId, String)
 
 		if (!studioId) throw new Meteor.Error(400, 'One of studioId must be provided')
 
 		if (await StudioReadAccess.studioContent(studioId, { userId: this.userId, token })) {
-			await createObserverForDeviceTriggersPreviewsPublication(pub, PubSub.mountedTriggersForDevice, studioId)
+			await createObserverForDeviceTriggersPreviewsPublication(pub, MeteorPubSub.deviceTriggersPreview, studioId)
 		}
 	}
 )
@@ -105,7 +105,7 @@ async function setupDeviceTriggersPreviewsObservers(
 
 async function createObserverForDeviceTriggersPreviewsPublication(
 	pub: CustomPublish<UIDeviceTriggerPreview>,
-	observerId: PubSub,
+	observerId: MeteorPubSub,
 	studioId: StudioId
 ) {
 	return setUpOptimizedObserverArray<

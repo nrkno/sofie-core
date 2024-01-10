@@ -43,10 +43,11 @@ export function testInFiberOnly(testName: string, fcn: () => void | Promise<void
 	)
 }
 const orgSetTimeout = setTimeout
+const DateOrg = Date
 export async function runAllTimers(): Promise<void> {
 	// Run all timers, and wait, multiple times.
 	// This is to allow timers AND internal promises to resolve in inner functions
-	for (let i = 0; i < 50; i++) {
+	for (let i = 0; i < 10; i++) {
 		jest.runOnlyPendingTimers()
 		await new Promise((resolve) => orgSetTimeout(resolve, 0))
 	}
@@ -63,8 +64,9 @@ export async function runTimersUntilNow(): Promise<void> {
 
 /** Returns a Promise that resolves after a speficied number of milliseconds */
 export async function waitTime(ms: number): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, ms))
+	return new Promise((resolve) => orgSetTimeout(resolve, ms))
 }
+
 /**
  * Executes {expectFcn} intermittently until it doesn't throw anymore.
  * Waits up to {maxWaitTime} ms, then throws the latest error.
@@ -90,7 +92,7 @@ export async function waitUntil(expectFcn: () => void | Promise<void>, maxWaitTi
 			await expectFcn()
 			return
 		} catch (err) {
-			const waitedTime = Date.now() - startTime
+			const waitedTime = DateOrg.now() - startTime
 			if (waitedTime > maxWaitTime) throw err
 			// else ignore error and try again later
 		}

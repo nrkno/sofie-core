@@ -1,4 +1,3 @@
-import * as SuperTimeline from 'superfly-timeline'
 import * as _ from 'underscore'
 import { PieceUi, PartUi } from '../ui/SegmentTimeline/SegmentTimelineContainer'
 import { Timecode } from '@sofie-automation/corelib/dist/index'
@@ -8,8 +7,6 @@ import {
 	PieceLifespan,
 	IBlueprintActionManifestDisplay,
 	IBlueprintActionManifestDisplayContent,
-	TimelineObjectCoreExt,
-	TSR,
 	IOutputLayer,
 	ISourceLayer,
 } from '@sofie-automation/blueprints-integration'
@@ -24,17 +21,19 @@ import {
 	getSegmentsWithPartInstances,
 } from '../../lib/Rundown'
 import { PartInstance } from '../../lib/collections/PartInstances'
-import { Segment } from '../../lib/collections/Segments'
-import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { literal, getCurrentTime, applyToArray } from '../../lib/lib'
-import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
-import { createPieceGroupAndCap, PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
-import { PieceInstance } from '../../lib/collections/PieceInstances'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { literal, getCurrentTime } from '../../lib/lib'
+import {
+	processAndPrunePieceInstanceTimings,
+	resolvePrunedPieceInstance,
+} from '@sofie-automation/corelib/dist/playout/processAndPrune'
+import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { IAdLibListItem } from '../ui/Shelf/AdLibListItem'
 import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
 import { FindOptions } from '../../lib/collections/lib'
 import { getShowHiddenSourceLayers } from './localStorage'
-import { Rundown } from '../../lib/collections/Rundowns'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
 	calculatePartInstanceExpectedDurationWithPreroll,
@@ -46,10 +45,6 @@ import { PartId, PieceId, RundownId, SegmentId, ShowStyleBaseId } from '@sofie-a
 import { PieceInstances, Segments } from '../collections'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { assertNever } from '@sofie-automation/shared-lib/dist/lib/lib'
-
-interface PieceTimelineMetadataExt extends PieceTimelineMetadata {
-	id: PieceId
-}
 
 export namespace RundownUtils {
 	export function padZeros(input: number, places?: number): string {
@@ -276,9 +271,9 @@ export namespace RundownUtils {
 	 *
 	 * @export
 	 * @param {ShowStyleBase} showStyleBase
-	 * @param {RundownPlaylist} playlist
+	 * @param {DBRundownPlaylist} playlist
 	 * @param {DBSegment} segment
-	 * @param {Set<SegmentId>} segmentsBeforeThisInRundownSet
+	 * @param {Set<SegmentId>} segmentsToReceiveOnRundownEndFromSet
 	 * @param {PartId[]} orderedAllPartIds
 	 * @param {PartInstance | undefined } currentPartInstance
 	 * @param {PartInstance | undefined } nextPartInstance
@@ -292,11 +287,11 @@ export namespace RundownUtils {
 	 */
 	export function getResolvedSegment(
 		showStyleBase: UIShowStyleBase,
-		playlist: RundownPlaylist,
+		playlist: DBRundownPlaylist,
 		rundown: Pick<Rundown, '_id' | 'showStyleBaseId'>,
-		segment: Segment,
-		segmentsBeforeThisInRundownSet: Set<SegmentId>,
-		rundownsBeforeThisInPlaylist: RundownId[],
+		segment: DBSegment,
+		segmentsToReceiveOnRundownEndFromSet: Set<SegmentId>,
+		rundownsToReceiveOnShowStyleEndFrom: RundownId[],
 		rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 		orderedAllPartIds: PartId[],
 		pieces: Map<PartId, CalculateTimingsPiece[]>,
@@ -363,10 +358,9 @@ export namespace RundownUtils {
 				fields: {
 					isTaken: 0,
 					previousPartEndState: 0,
-					takeCount: 0,
 				},
 			}
-		)[0] as { segment: Segment; partInstances: PartInstanceLimited[] } | undefined
+		)[0] as { segment: DBSegment; partInstances: PartInstanceLimited[] } | undefined
 
 		if (segmentInfo && segmentInfo.partInstances.length > 0) {
 			// create local deep copies of the studio outputLayers and sourceLayers so that we can store
@@ -428,8 +422,6 @@ export namespace RundownUtils {
 			const showHiddenSourceLayers = getShowHiddenSourceLayers()
 
 			partsE = segmentInfo.partInstances.map((partInstance, itIndex) => {
-				const partTimeline: SuperTimeline.TimelineObject[] = []
-
 				const partExpectedDuration = calculatePartInstanceExpectedDurationWithPreroll(
 					partInstance,
 					pieces.get(partInstance.part._id) ?? []
@@ -477,14 +469,23 @@ export namespace RundownUtils {
 				const rawPieceInstances = getPieceInstancesForPartInstance(
 					playlist.activationId,
 					rundown,
+					segment,
 					partInstance,
 					new Set(partIds.slice(0, itIndex)),
-					segmentsBeforeThisInRundownSet,
-					rundownsBeforeThisInPlaylist,
+					segmentsToReceiveOnRundownEndFromSet,
+					rundownsToReceiveOnShowStyleEndFrom,
 					rundownsToShowstyles,
 					orderedAllPartIds,
 					nextPartIsAfterCurrentPart,
 					currentPartInstance,
+					currentPartInstance
+						? (Segments.findOne(currentPartInstance.segmentId, {
+								projection: {
+									_id: 1,
+									orphaned: 1,
+								},
+						  }) as Pick<DBSegment, '_id' | 'orphaned'> | undefined)
+						: undefined,
 					currentPartInstance
 						? PieceInstances.find(
 								{
@@ -510,34 +511,12 @@ export namespace RundownUtils {
 
 				// insert items into the timeline for resolution
 				partE.pieces = preprocessedPieces.map((piece) => {
+					const resolvedPiece = resolvePrunedPieceInstance(nowInPart, piece)
 					const resPiece: PieceExtended = {
 						instance: piece,
-						renderedDuration: 0,
-						renderedInPoint: 0,
+						renderedDuration: resolvedPiece.resolvedDuration ?? null,
+						renderedInPoint: resolvedPiece.resolvedStart,
 					}
-
-					let controlObjEnable: TSR.Timeline.TimelineEnable = piece.piece.enable
-					// if there is an userDuration override, override it for the timeline
-					if (piece.userDuration) {
-						controlObjEnable = {
-							start: piece.piece.enable.start,
-						}
-
-						if ('endRelativeToPart' in piece.userDuration) {
-							controlObjEnable.end = piece.userDuration.endRelativeToPart
-						} else {
-							controlObjEnable.end = nowInPart + piece.userDuration.endRelativeToNow
-						}
-					}
-
-					const { controlObj, capObjs } = createPieceGroupAndCap(playlist._id, piece, controlObjEnable)
-					controlObj.metaData = literal<PieceTimelineMetadataExt>({
-						id: piece.piece._id,
-						pieceInstanceGroupId: piece._id,
-						isPieceTimeline: true,
-					})
-					partTimeline.push(controlObj)
-					partTimeline.push(...capObjs)
 
 					// find the target output layer
 					const outputLayer = outputLayers[piece.piece.outputLayerId] as IOutputLayerExtended | undefined
@@ -585,52 +564,9 @@ export namespace RundownUtils {
 
 					// add the piece to the map to make future searches quicker
 					piecesLookup.set(piece.piece._id, resPiece)
-					const continues = piece.piece.continuesRefId && piecesLookup.get(piece.piece.continuesRefId)
-					if (piece.piece.continuesRefId && continues) {
-						continues.continuedByRef = resPiece
-						resPiece.continuesRef = continues
-					}
 
 					return resPiece
 				})
-
-				// Use the SuperTimeline library to resolve all the items within the Part
-				partTimeline.forEach((obj) => {
-					applyToArray(obj.enable, (enable) => {
-						if (enable.start === 'now') {
-							enable.start = nowInPart
-						}
-					})
-				})
-				const tlResolved = SuperTimeline.Resolver.resolveTimeline(partTimeline, { time: 0 })
-				// furthestDuration is used to figure out how much content (in terms of time) is there in the Part
-				let furthestDuration = 0
-				const objs = Object.values<SuperTimeline.ResolvedTimelineObject>(tlResolved.objects)
-				for (let i = 0; i < objs.length; i++) {
-					const obj = objs[i]
-					const obj0 = obj as unknown as TimelineObjectCoreExt<any, PieceTimelineMetadataExt>
-					if (obj.resolved.resolved && obj0.metaData) {
-						// Timeline actually has copies of the content object, instead of the object itself, so we need to match it back to the Part
-						const piece = piecesLookup.get(obj0.metaData.id)
-						const instance = obj.resolved.instances[0]
-						if (piece && instance) {
-							piece.renderedDuration = instance.end ? instance.end - instance.start : null
-
-							// if there is no renderedInPoint, use 0 as the starting time for the item
-							piece.renderedInPoint = instance.start ? instance.start : 0
-
-							// if the duration is finite, set the furthestDuration as the inPoint+Duration to know how much content there is
-							if (
-								Number.isFinite(piece.renderedDuration || 0) &&
-								(piece.renderedInPoint || 0) + (piece.renderedDuration || 0) > furthestDuration
-							) {
-								furthestDuration = (piece.renderedInPoint || 0) + (piece.renderedDuration || 0)
-							}
-						} else {
-							// TODO - should this piece be removed?
-						}
-					}
-				}
 
 				// displayDuration groups are sets of Parts that share their expectedDurations.
 				// If a member of the group has a displayDuration > 0, this displayDuration is used as the renderedDuration of a part.
@@ -668,7 +604,7 @@ export namespace RundownUtils {
 				}
 
 				// use the expectedDuration and fallback to the default display duration for the part
-				partE.renderedDuration = partE.renderedDuration || Settings.defaultDisplayDuration // furthestDuration
+				partE.renderedDuration = partE.renderedDuration || Settings.defaultDisplayDuration
 
 				// push the startsAt value, to figure out when each of the parts starts, relative to the beginning of the segment
 				partE.startsAt = startsAt
@@ -678,40 +614,11 @@ export namespace RundownUtils {
 				return partE
 			})
 
-			// resolve the duration of a Piece to be used for display
-			const resolveDuration = (item: PieceExtended, nowInPart: number): number => {
-				if (item.instance.userDuration && item.instance.plannedStartedPlayback) {
-					const end =
-						'endRelativeToPart' in item.instance.userDuration
-							? item.instance.userDuration.endRelativeToPart
-							: item.instance.userDuration.endRelativeToNow + nowInPart
-
-					const duration = end - item.instance.plannedStartedPlayback
-					if (duration) return duration
-				}
-
-				const expectedDurationNumber =
-					typeof item.instance.piece.enable.duration === 'number'
-						? item.instance.piece.enable.duration || 0
-						: 0
-				return item.renderedDuration || expectedDurationNumber
-			}
-
 			// let lastPartPiecesBySourceLayer: Record<string, PieceExtended> = {}
 
 			partsE.forEach((part) => {
 				// const thisLastPartPiecesBySourceLayer: Record<string, PieceExtended> = {}
 				if (part.pieces) {
-					const partStarted = part.instance.timings?.plannedStartedPlayback
-					const nowInPart = partStarted ? getCurrentTime() - partStarted : 0
-
-					// if an item is continued by another item, rendered duration may need additional resolution
-					part.pieces.forEach((item) => {
-						if (item.continuedByRef) {
-							item.renderedDuration = resolveDuration(item, nowInPart)
-						}
-					})
-
 					const itemsByLayer = Object.entries<PieceExtended[]>(
 						_.groupBy(part.pieces, (item) => {
 							return item.outputLayer && item.sourceLayer && item.outputLayer.isFlattened
@@ -768,8 +675,9 @@ export namespace RundownUtils {
 							) {
 								// if previousItem is infinite, currentItem caps it within the current part
 								if (previousItem.instance.infinite) {
-									previousItem.instance.piece.lifespan = PieceLifespan.WithinPart
-									delete previousItem.instance.infinite
+									;(previousItem.instance.piece as PieceInstancePiece).lifespan =
+										PieceLifespan.WithinPart
+									delete (previousItem.instance as PieceInstance).infinite
 								}
 
 								if (
@@ -827,7 +735,7 @@ export namespace RundownUtils {
 	export function isPieceInstance(
 		piece: BucketAdLibItem | IAdLibListItem | PieceUi | AdLibPieceUi
 	): piece is PieceUi {
-		if (piece['instance'] && piece['name'] === undefined) {
+		if ('instance' in piece && piece['instance'] && (!('name' in piece) || piece['name'] === undefined)) {
 			return true
 		}
 		return false
@@ -836,7 +744,7 @@ export namespace RundownUtils {
 	export function isAdLibPiece(
 		piece: PieceUi | IAdLibListItem | BucketAdLibItem
 	): piece is IAdLibListItem | BucketAdLibUi {
-		if (piece['instance'] || piece['name'] === undefined) {
+		if (('instance' in piece && piece['instance']) || !('name' in piece) || piece['name'] === undefined) {
 			return false
 		}
 		return true
@@ -845,14 +753,14 @@ export namespace RundownUtils {
 	export function isAdLibPieceOrAdLibListItem(
 		piece: IAdLibListItem | PieceUi | AdLibPieceUi | BucketAdLibItem
 	): piece is IAdLibListItem | AdLibPieceUi | BucketAdLibItem {
-		if (piece['instance'] || piece['name'] === undefined) {
+		if (('instance' in piece && piece['instance']) || !('name' in piece) || piece['name'] === undefined) {
 			return false
 		}
 		return true
 	}
 
 	export function isAdLibActionItem(piece: IAdLibListItem | AdLibPieceUi | BucketAdLibItem): boolean {
-		if (piece['adlibAction']) {
+		if ('adlibAction' in piece && piece['adlibAction']) {
 			return true
 		}
 		return false
@@ -870,6 +778,6 @@ export namespace RundownUtils {
 	export function isBucketAdLibItem(
 		piece: IAdLibListItem | PieceUi | AdLibPieceUi | BucketAdLibItem
 	): piece is BucketAdLibItem {
-		return !!piece['bucketId']
+		return 'bucketId' in piece && !!piece['bucketId']
 	}
 }

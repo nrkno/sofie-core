@@ -13,7 +13,7 @@ import {
 	PeripheralDeviceType,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import _ from 'underscore'
-import { Studio } from '../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
 	wrapDefaultObject,
 	ObjectOverrideSetOp,
@@ -42,7 +42,7 @@ const mappingBaseOptions: Array<keyof MappingExt> = [
 	'lookaheadMaxSearchDistance',
 ]
 
-function convertMappingsOverrideOps(studio: Studio) {
+function convertMappingsOverrideOps(studio: DBStudio) {
 	let changed = false
 
 	const newOverrides = clone(studio.mappingsWithOverrides.overrides)
@@ -74,7 +74,7 @@ function convertMappingsOverrideOps(studio: Studio) {
 	return changed && newOverrides
 }
 
-function convertRouteSetMappings(studio: Studio) {
+function convertRouteSetMappings(studio: DBStudio) {
 	let changed = false
 
 	const newRouteSets = clone(studio.routeSets || {})
@@ -156,7 +156,7 @@ export const addSteps = addMigrationSteps('1.50.0', [
 			})
 			const badObject = objects.find(
 				(device) =>
-					!!Object.values<unknown>(device.settings?.['devices'] ?? {}).find(
+					!!Object.values<unknown>((device.settings as any)?.['devices'] ?? {}).find(
 						(subdev: any) => !subdev?.type || !subdev?.options
 					)
 			)
@@ -172,7 +172,7 @@ export const addSteps = addMigrationSteps('1.50.0', [
 				'settings.device': { $exists: true },
 			})
 			for (const obj of objects) {
-				const newDevices: any = clone(obj.settings['devices'] || {})
+				const newDevices: any = clone((obj.settings as any)?.['devices'] || {})
 
 				for (const [id, subdev] of Object.entries<any>(newDevices)) {
 					if (!subdev) continue
@@ -379,6 +379,7 @@ export const addSteps = addMigrationSteps('1.50.0', [
 
 	{
 		id: `Studio move playout-gateway subdevices`,
+		dependOnResultFrom: `Studio ensure peripheralDeviceSettings field`,
 		canBeRunAutomatically: true,
 		validate: async () => {
 			const objectCount = await PeripheralDevices.countDocuments({
@@ -403,7 +404,7 @@ export const addSteps = addMigrationSteps('1.50.0', [
 
 				const newOverrides: SomeObjectOverrideOp[] = []
 
-				for (const [id, subDevice] of Object.entries<unknown>(device.settings?.['devices'] || {})) {
+				for (const [id, subDevice] of Object.entries<unknown>((device.settings as any)?.['devices'] || {})) {
 					newOverrides.push(
 						literal<ObjectOverrideSetOp>({
 							op: 'set',
@@ -432,6 +433,7 @@ export const addSteps = addMigrationSteps('1.50.0', [
 	},
 	{
 		id: `Studio move ingest subdevices`,
+		dependOnResultFrom: `Studio ensure peripheralDeviceSettings field`,
 		canBeRunAutomatically: true,
 		validate: async () => {
 			const objectCount = await PeripheralDevices.countDocuments({
@@ -456,7 +458,7 @@ export const addSteps = addMigrationSteps('1.50.0', [
 
 				const newOverrides: SomeObjectOverrideOp[] = []
 
-				for (const [id, subDevice] of Object.entries<unknown>(device.settings?.['devices'] || {})) {
+				for (const [id, subDevice] of Object.entries<unknown>((device.settings as any)?.['devices'] || {})) {
 					newOverrides.push(
 						literal<ObjectOverrideSetOp>({
 							op: 'set',
@@ -485,6 +487,7 @@ export const addSteps = addMigrationSteps('1.50.0', [
 	},
 	{
 		id: `Studio move input subdevices`,
+		dependOnResultFrom: `Studio ensure peripheralDeviceSettings field`,
 		canBeRunAutomatically: true,
 		validate: async () => {
 			const objectCount = await PeripheralDevices.countDocuments({
@@ -509,7 +512,7 @@ export const addSteps = addMigrationSteps('1.50.0', [
 
 				const newOverrides: SomeObjectOverrideOp[] = []
 
-				for (const [id, subDevice] of Object.entries<unknown>(device.settings?.['devices'] || {})) {
+				for (const [id, subDevice] of Object.entries<unknown>((device.settings as any)?.['devices'] || {})) {
 					newOverrides.push(
 						literal<ObjectOverrideSetOp>({
 							op: 'set',
@@ -748,21 +751,91 @@ export const addSteps = addMigrationSteps('1.50.0', [
 			)
 		},
 	},
+
+	{
+		// This migration may not be necessary, but ensures the db isn't in a bad state
+		id: `Studio ensure peripheralDeviceSettings field looks correct`,
+		dependOnResultFrom: `Studio ensure peripheralDeviceSettings field`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objectCount = await Studios.countDocuments({
+				peripheralDeviceSettings: { $exists: true },
+				$or: [
+					{
+						'peripheralDeviceSettings.playoutDevices.defaults': { $exists: false },
+					},
+					{
+						'peripheralDeviceSettings.playoutDevices.overrides': { $exists: false },
+					},
+					{
+						'peripheralDeviceSettings.ingestDevices.defaults': { $exists: false },
+					},
+					{
+						'peripheralDeviceSettings.ingestDevices.overrides': { $exists: false },
+					},
+					{
+						'peripheralDeviceSettings.inputDevices.defaults': { $exists: false },
+					},
+					{
+						'peripheralDeviceSettings.inputDevices.overrides': { $exists: false },
+					},
+				],
+			})
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			const objects = await Studios.findFetchAsync({
+				peripheralDeviceSettings: { $exists: true },
+			})
+			for (const studio of objects) {
+				const update: any = {}
+				if (!studio.peripheralDeviceSettings.playoutDevices.defaults) {
+					update['peripheralDeviceSettings.playoutDevices.defaults'] = {}
+				}
+				if (!studio.peripheralDeviceSettings.playoutDevices.overrides) {
+					update['peripheralDeviceSettings.playoutDevices.overrides'] = []
+				}
+				if (!studio.peripheralDeviceSettings.ingestDevices.defaults) {
+					update['peripheralDeviceSettings.ingestDevices.defaults'] = {}
+				}
+				if (!studio.peripheralDeviceSettings.ingestDevices.overrides) {
+					update['peripheralDeviceSettings.ingestDevices.overrides'] = []
+				}
+				if (!studio.peripheralDeviceSettings.inputDevices.defaults) {
+					update['peripheralDeviceSettings.inputDevices.defaults'] = {}
+				}
+				if (!studio.peripheralDeviceSettings.inputDevices.overrides) {
+					update['peripheralDeviceSettings.inputDevices.overrides'] = []
+				}
+
+				if (Object.keys(update).length) {
+					await Studios.updateAsync(studio._id, {
+						$set: update,
+					})
+				}
+			}
+		},
+	},
 ])
 
 function updatePlayoutDeviceTypeInOverride(op: SomeObjectOverrideOp): ObjectOverrideSetOp | undefined {
 	if (op.op !== 'set') return undefined
 	if (!op.path.includes('.')) {
 		// Root level
-		const value = op.value as Partial<StudioPlayoutDevice>
+		const value = op.value
 		if (typeof value.options?.type === 'number') {
-			value.options.type = oldDeviceTypeToNewMapping[value.options.type] ?? TSR.DeviceType.ABSTRACT
+			value.options.type =
+				oldDeviceTypeToNewMapping[value.options.type as OldDeviceType] ?? TSR.DeviceType.ABSTRACT
 			return op
 		}
 	} else if (op.path.endsWith('.options.type')) {
 		// Single property override
 		if (typeof op.value === 'number') {
-			op.value = oldDeviceTypeToNewMapping[op.value] ?? TSR.DeviceType.ABSTRACT
+			op.value = oldDeviceTypeToNewMapping[op.value as OldDeviceType] ?? TSR.DeviceType.ABSTRACT
 			return op
 		}
 	}
@@ -776,13 +849,13 @@ function updateMappingDeviceTypeInOverride(op: SomeObjectOverrideOp): ObjectOver
 		// Root level
 		const value = op.value as Partial<TSR.Mapping<any, any>>
 		if (typeof value.device === 'number') {
-			value.device = oldDeviceTypeToNewMapping[value.device] ?? TSR.DeviceType.ABSTRACT
+			value.device = oldDeviceTypeToNewMapping[value.device as OldDeviceType] ?? TSR.DeviceType.ABSTRACT
 			return op
 		}
 	} else if (op.path.endsWith('.device')) {
 		// Single property override
 		if (typeof op.value === 'number') {
-			op.value = oldDeviceTypeToNewMapping[op.value] ?? TSR.DeviceType.ABSTRACT
+			op.value = oldDeviceTypeToNewMapping[op.value as OldDeviceType] ?? TSR.DeviceType.ABSTRACT
 			return op
 		}
 	}

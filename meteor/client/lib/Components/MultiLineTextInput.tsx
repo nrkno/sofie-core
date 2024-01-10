@@ -36,7 +36,7 @@ export function MultiLineTextInputControl({
 	placeholder,
 	handleUpdate,
 	updateOnKey,
-}: IMultiLineTextInputControlProps): JSX.Element {
+}: Readonly<IMultiLineTextInputControlProps>): JSX.Element {
 	const [editingValue, setEditingValue] = useState<string | null>(null)
 
 	const handleChange = useCallback(

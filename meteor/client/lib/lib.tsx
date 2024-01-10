@@ -137,14 +137,30 @@ export function useInvalidateTimeout<K>(func: () => [K, number], deps: any[]): K
  * @template K
  * @param {K} value value to be debounced
  * @param {number} delay how long to wait after an update before updating the state
- * @return {*} debounced value
+ * @param shouldUpdate optional function to filter whether the value has changed
+ * @return {K} debounced value
  */
-export function useDebounce<K>(value: K, delay: number): K {
+export function useDebounce<K>(value: K, delay: number, shouldUpdate?: (oldVal: K, newVal: K) => boolean): K {
 	const [debouncedValue, setDebouncedValue] = useState(value)
+
+	// Store the function in a ref to avoid the debounce being reactive to the function changing
+	const shouldUpdateFn = useRef<(oldVal: K, newVal: K) => boolean>()
+	shouldUpdateFn.current = shouldUpdate
 
 	useEffect(() => {
 		const handler = setTimeout(() => {
-			setDebouncedValue(value)
+			const shouldUpdate = shouldUpdateFn.current
+			if (typeof shouldUpdate === 'function') {
+				setDebouncedValue((oldVal) => {
+					if (shouldUpdate(oldVal, value)) {
+						return value
+					} else {
+						return oldVal
+					}
+				})
+			} else {
+				setDebouncedValue(value)
+			}
 		}, delay)
 
 		return () => {
@@ -180,6 +196,16 @@ export function isRunningInPWA(): boolean {
 
 export function getEventTimestamp(e: Event): Time {
 	return e?.timeStamp ? performance.timeOrigin + e.timeStamp + systemTime.timeOriginDiff : getCurrentTime()
+}
+
+export function mapOrFallback<T = any, K = any, L = any>(
+	array: T[],
+	callbackFn: (value: T, index: number, array: T[]) => K,
+	fallbackCallbackFn: () => L
+): K[] | L {
+	if (array.length === 0) return fallbackCallbackFn()
+
+	return array.map(callbackFn)
 }
 
 export const TOOLTIP_DEFAULT_DELAY = 0.5

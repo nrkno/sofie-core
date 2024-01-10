@@ -11,7 +11,7 @@ import deepExtend from 'deep-extend'
 import { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
 import { getSideEffect } from '../../../../lib/collections/ExpectedPackages'
-import { Studio, StudioLight, StudioPackageContainer } from '../../../../lib/collections/Studios'
+import { DBStudio, StudioLight, StudioPackageContainer } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { clone, omit } from '../../../../lib/lib'
 import { CustomPublishCollection } from '../../../lib/customPublication'
 import { logger } from '../../../logging'
@@ -29,7 +29,7 @@ import type { StudioFields } from './publication'
  */
 export async function updateCollectionForExpectedPackageIds(
 	contentCache: ReadonlyDeep<ExpectedPackagesContentCache>,
-	studio: Pick<Studio, StudioFields>,
+	studio: Pick<DBStudio, StudioFields>,
 	layerNameToDeviceIds: Map<string, PeripheralDeviceId[]>,
 	collection: CustomPublishCollection<PackageManagerExpectedPackage>,
 	filterPlayoutDeviceIds: ReadonlyDeep<PeripheralDeviceId[]> | undefined,
@@ -90,7 +90,7 @@ export async function updateCollectionForExpectedPackageIds(
  */
 export async function updateCollectionForPieceInstanceIds(
 	contentCache: ReadonlyDeep<ExpectedPackagesContentCache>,
-	studio: Pick<Studio, StudioFields>,
+	studio: Pick<DBStudio, StudioFields>,
 	layerNameToDeviceIds: Map<string, PeripheralDeviceId[]>,
 	collection: CustomPublishCollection<PackageManagerExpectedPackage>,
 	filterPlayoutDeviceIds: ReadonlyDeep<PeripheralDeviceId[]> | undefined,

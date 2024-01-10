@@ -6,8 +6,8 @@ import { NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/n
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { SupportPopUpToggle, SupportPopUp } from './SupportPopUp'
+// @ts-expect-error No types available
 import * as VelocityReact from 'velocity-react'
-import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { Settings } from '../../lib/Settings'
 import { CoreSystem } from '../collections'
@@ -28,7 +28,7 @@ interface IStateHeader {
 	isSupportPanelOpen: boolean
 }
 
-class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedPropsHeader>, IStateHeader> {
+class Header extends React.Component<Translated<IPropsHeader & ITrackedPropsHeader>, IStateHeader> {
 	constructor(props: Translated<IPropsHeader & ITrackedPropsHeader>) {
 		super(props)
 

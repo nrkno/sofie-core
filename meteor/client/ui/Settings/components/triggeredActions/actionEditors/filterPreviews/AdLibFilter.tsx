@@ -22,7 +22,7 @@ interface IProps {
 	outputLayers: OutputLayers | undefined
 	readonly?: boolean
 	opened: boolean
-	onChange: (index, newVal: IAdLibFilterLink, oldVal: IAdLibFilterLink) => void
+	onChange: (index: number, newVal: IAdLibFilterLink, oldVal: IAdLibFilterLink) => void
 	onFocus?: (index: number) => void
 	onInsertNext?: (index: number) => void
 	onRemove?: (index: number) => void

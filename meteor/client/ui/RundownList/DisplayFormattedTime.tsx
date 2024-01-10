@@ -10,6 +10,6 @@ interface IDisplayFormattedTimeProps {
 	nowTimestamp?: number
 }
 
-export function DisplayFormattedTime(props: IDisplayFormattedTimeProps): JSX.Element {
+export function DisplayFormattedTime(props: Readonly<IDisplayFormattedTimeProps>): JSX.Element {
 	return <span>{DisplayFormattedTimeInner(props.t, props.displayTimestamp, props.nowTimestamp)}</span>
 }

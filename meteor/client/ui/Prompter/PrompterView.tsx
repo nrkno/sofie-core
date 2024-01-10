@@ -1,11 +1,12 @@
 import React, { PropsWithChildren } from 'react'
 import _ from 'underscore'
+// @ts-expect-error No types available
 import Velocity from 'velocity-animate'
 import ClassNames from 'classnames'
 import { Meteor } from 'meteor/meteor'
 import { Route } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { parse as queryStringParse } from 'query-string'
 
 import { Spinner } from '../../lib/Spinner'
@@ -13,18 +14,19 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { firstIfArray, literal, protectString } from '../../../lib/lib'
 import { PrompterData, PrompterAPI, PrompterDataPart } from './prompter'
 import { PrompterControlManager } from './controller/manager'
-import { PubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { documentTitle } from '../../lib/DocumentTitleProvider'
 import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
 import { RundownTimingProvider } from '../RundownView/RundownTiming/RundownTimingProvider'
 import { OverUnderTimer } from './OverUnderTimer'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { PartInstanceId, PieceId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { UIStudios } from '../Collections'
 import { UIStudio } from '../../../lib/api/studios'
 import { RundownPlaylists, Rundowns } from '../../collections'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 import { logger } from '../../../lib/logging'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 const DEFAULT_UPDATE_THROTTLE = 250 //ms
 const PIECE_MISSING_UPDATE_THROTTLE = 2000 //ms
@@ -78,7 +80,7 @@ interface IProps {
 }
 
 interface ITrackedProps {
-	rundownPlaylist?: RundownPlaylist
+	rundownPlaylist?: DBRundownPlaylist
 	studio?: UIStudio
 }
 
@@ -202,12 +204,9 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 	componentDidMount(): void {
 		if (this.props.studioId) {
-			this.subscribe(PubSub.uiStudio, this.props.studioId)
+			this.subscribe(MeteorPubSub.uiStudio, this.props.studioId)
 
-			this.subscribe(PubSub.rundownPlaylists, {
-				activationId: { $exists: true },
-				studioId: this.props.studioId,
-			})
+			this.subscribe(MeteorPubSub.rundownPlaylistForStudio, this.props.studioId, true)
 		}
 
 		this.autorun(() => {
@@ -221,9 +220,9 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 						_id: 1,
 					},
 				}
-			) as Pick<RundownPlaylist, '_id'> | undefined
+			) as Pick<DBRundownPlaylist, '_id'> | undefined
 			if (playlist?._id) {
-				this.subscribe(PubSub.rundowns, [playlist._id], null)
+				this.subscribe(CorelibPubSub.rundownsInPlaylists, [playlist._id])
 			}
 		})
 
@@ -558,7 +557,7 @@ export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>(({ s
 				lastIncorrectPartPlaybackReported: 0,
 			},
 		}
-	) as Omit<RundownPlaylist, 'trackedAbSessions'> | undefined
+	) as Omit<DBRundownPlaylist, 'trackedAbSessions'> | undefined
 
 	return literal<ITrackedProps>({
 		rundownPlaylist,
@@ -587,9 +586,9 @@ export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, 
 		Translated<PropsWithChildren<IPrompterProps> & IPrompterTrackedProps>,
 		{}
 	> {
-		private _debounceUpdate: NodeJS.Timer
+		private _debounceUpdate: NodeJS.Timer | undefined
 
-		constructor(props) {
+		constructor(props: Translated<PropsWithChildren<IPrompterProps> & IPrompterTrackedProps>) {
 			super(props)
 			this.state = {
 				subsReady: false,
@@ -597,7 +596,7 @@ export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, 
 		}
 
 		componentDidMount(): void {
-			this.subscribe(PubSub.rundowns, [this.props.rundownPlaylistId], null)
+			this.subscribe(CorelibPubSub.rundownsInPlaylists, [this.props.rundownPlaylistId])
 
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(this.props.rundownPlaylistId, {
@@ -605,21 +604,14 @@ export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, 
 						_id: 1,
 						activationId: 1,
 					},
-				}) as Pick<RundownPlaylist, '_id' | 'activationId'> | undefined
+				}) as Pick<DBRundownPlaylist, '_id' | 'activationId'> | undefined
 				if (playlist) {
 					const rundownIDs = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
-					this.subscribe(PubSub.segments, {
-						rundownId: { $in: rundownIDs },
-					})
-					this.subscribe(PubSub.parts, rundownIDs)
-					this.subscribe(PubSub.partInstances, rundownIDs, playlist.activationId)
-					this.subscribe(PubSub.pieces, {
-						startRundownId: { $in: rundownIDs },
-					})
-					this.subscribe(PubSub.pieceInstancesSimple, {
-						rundownId: { $in: rundownIDs },
-						reset: { $ne: true },
-					})
+					this.subscribe(CorelibPubSub.segments, rundownIDs, {})
+					this.subscribe(CorelibPubSub.parts, rundownIDs, null)
+					this.subscribe(CorelibPubSub.partInstances, rundownIDs, playlist.activationId ?? null)
+					this.subscribe(CorelibPubSub.pieces, rundownIDs, null)
+					this.subscribe(CorelibPubSub.pieceInstancesSimple, rundownIDs, null)
 				}
 			})
 
@@ -634,7 +626,7 @@ export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, 
 					}
 				).fetch() as Pick<Rundown, '_id' | 'showStyleBaseId'>[]
 				for (const rundown of rundowns) {
-					this.subscribe(PubSub.uiShowStyleBase, rundown.showStyleBaseId)
+					this.subscribe(MeteorPubSub.uiShowStyleBase, rundown.showStyleBaseId)
 				}
 			})
 		}
@@ -742,7 +734,11 @@ export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, 
 			return this.getScrollAnchor()
 		}
 
-		componentDidUpdate(_prevProps, _prevState, snapshot: ScrollAnchor) {
+		componentDidUpdate(
+			_prevProps: Readonly<Translated<PropsWithChildren<IPrompterProps> & IPrompterTrackedProps>>,
+			_prevState: Readonly<{}>,
+			snapshot: ScrollAnchor
+		) {
 			this.restoreScrollAnchor(snapshot)
 		}
 

@@ -16,6 +16,7 @@
  * Data type for stringified data using JSONBlobStringify().
  * To parse the data, use JSONBlobParse()
  */
+// eslint-disable-next-line @typescript-eslint/ban-types
 export interface JSONBlob<T> extends String {
 	__internal: T
 }

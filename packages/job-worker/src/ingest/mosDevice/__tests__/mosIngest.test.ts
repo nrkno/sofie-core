@@ -18,7 +18,7 @@ import { parseMosString } from '../lib'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../../__mocks__/context'
 import { setupMockIngestDevice, setupMockShowStyleCompound } from '../../../__mocks__/presetCollections'
 import { fixSnapshot } from '../../../__mocks__/helpers/snapshot'
-import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { DBRundown, RundownOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { MongoQuery } from '../../../db'
 import { handleRemovedRundown } from '../../ingestRundownJobs'
@@ -207,7 +207,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		await context.mockCollections.Rundowns.update(
 			{ externalId: mosTypes.mosString128.stringify(roData.ID) },
-			{ $set: { orphaned: 'deleted' } }
+			{ $set: { orphaned: RundownOrphanedReason.DELETED } }
 		)
 		expect(
 			await context.mockCollections.Rundowns.findOne({ externalId: mosTypes.mosString128.stringify(roData.ID) })
@@ -237,7 +237,7 @@ describe('Test recieved mos ingest payloads', () => {
 		const roData = mockRO.roCreate()
 		await context.mockCollections.Rundowns.update(
 			{ externalId: mosTypes.mosString128.stringify(roData.ID) },
-			{ $set: { orphaned: 'deleted' } }
+			{ $set: { orphaned: RundownOrphanedReason.DELETED } }
 		)
 
 		const rundown = (await context.mockCollections.Rundowns.findOne({
@@ -317,7 +317,7 @@ describe('Test recieved mos ingest payloads', () => {
 	})
 
 	test('mosRoStatus: orphaned rundown', async () => {
-		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: 'deleted' } })
+		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: RundownOrphanedReason.DELETED } })
 
 		const newStatus = MOS.IMOSObjectStatus.UPDATED
 
@@ -377,7 +377,7 @@ describe('Test recieved mos ingest payloads', () => {
 	})
 
 	test('mosRoReadyToAir: orphaned rundown', async () => {
-		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: 'deleted' } })
+		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: RundownOrphanedReason.DELETED } })
 
 		const newStatus = MOS.IMOSObjectAirStatus.NOT_READY
 
@@ -451,7 +451,7 @@ describe('Test recieved mos ingest payloads', () => {
 	})
 
 	test('mosRoStoryInsert: orphaned rundown', async () => {
-		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: 'deleted' } })
+		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: RundownOrphanedReason.DELETED } })
 
 		const playlist = (await context.mockCollections.RundownPlaylists.findOne()) as DBRundownPlaylist
 		expect(playlist).toBeTruthy()
@@ -471,7 +471,9 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const { parts } = await getRundownData({ _id: rundown._id })
 
-		expect((await context.mockCollections.Rundowns.findOne(rundown._id))?.orphaned).toEqual('deleted')
+		expect((await context.mockCollections.Rundowns.findOne(rundown._id))?.orphaned).toEqual(
+			RundownOrphanedReason.DELETED
+		)
 		expect(parts.find((p) => p.externalId === mosTypes.mosString128.stringify(newPartData.ID))).toBeUndefined()
 	})
 
@@ -619,7 +621,7 @@ describe('Test recieved mos ingest payloads', () => {
 	})
 
 	test('mosRoStoryReplace: orphaned rundown', async () => {
-		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: 'deleted' } })
+		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: RundownOrphanedReason.DELETED } })
 
 		const playlist = (await context.mockCollections.RundownPlaylists.findOne()) as DBRundownPlaylist
 		expect(playlist).toBeTruthy()
@@ -638,7 +640,9 @@ describe('Test recieved mos ingest payloads', () => {
 		})
 		const { parts } = await getRundownData({ _id: rundown._id })
 
-		expect((await context.mockCollections.Rundowns.findOne(rundown._id))?.orphaned).toEqual('deleted')
+		expect((await context.mockCollections.Rundowns.findOne(rundown._id))?.orphaned).toEqual(
+			RundownOrphanedReason.DELETED
+		)
 		expect(parts.find((p) => p.externalId === mosTypes.mosString128.stringify(newPartData.ID))).toBeUndefined()
 	})
 
@@ -1222,21 +1226,30 @@ describe('Test recieved mos ingest payloads', () => {
 				fromPartInstanceId: null,
 			})
 
-			const partInstances0 = await context.mockCollections.PartInstances.findFetch({ rundownId: rundown._id })
-			const { segments: segments0, parts: parts0 } = await getRundownData({ _id: rundown._id })
+			const partInstancesBefore = await context.mockCollections.PartInstances.findFetch({
+				rundownId: rundown._id,
+			})
+			const { segments: segmentsBefore, parts: partsBefore } = await getRundownData({ _id: rundown._id })
 
 			await mosReplaceBasicStory(rundown.externalId, 'ro1;s2;p1', 'ro1;s2;p1', 'SEGMENT2b;PART1')
 			await mosReplaceBasicStory(rundown.externalId, 'ro1;s2;p2', 'ro1;s2;p2', 'SEGMENT2b;PART2')
 
-			const partInstances = await context.mockCollections.PartInstances.findFetch({ rundownId: rundown._id })
-			const { segments, parts } = await getRundownData({ _id: rundown._id })
+			const partInstancesAfter = await context.mockCollections.PartInstances.findFetch({ rundownId: rundown._id })
+			const { segments: segmentsAfter, parts: partsAfter } = await getRundownData({ _id: rundown._id })
 
 			// Update expected data, for just the segment name and ids changing
-			applySegmentRenameToContents('SEGMENT2', 'SEGMENT2b', segments0, segments, parts0, partInstances0)
+			applySegmentRenameToContents(
+				'SEGMENT2',
+				'SEGMENT2b',
+				segmentsBefore,
+				segmentsAfter,
+				partsBefore,
+				partInstancesBefore
+			)
 
-			expect(fixSnapshot(segments)).toMatchObject(fixSnapshot(segments0) || [])
-			expect(fixSnapshot(parts)).toMatchObject(fixSnapshot(parts0) || [])
-			expect(fixSnapshot(partInstances)).toMatchObject(fixSnapshot(partInstances0) || [])
+			expect(fixSnapshot(segmentsAfter)).toMatchObject(fixSnapshot(segmentsBefore))
+			expect(fixSnapshot(partsAfter)).toMatchObject(fixSnapshot(partsBefore))
+			expect(fixSnapshot(partInstancesAfter)).toMatchObject(fixSnapshot(partInstancesBefore))
 		} catch (e) {
 			console.error(e)
 			throw e
@@ -1272,8 +1285,10 @@ describe('Test recieved mos ingest payloads', () => {
 				fromPartInstanceId: null,
 			})
 
-			const partInstances0 = await context.mockCollections.PartInstances.findFetch({ rundownId: rundown._id })
-			const { segments: segments0, parts: parts0 } = await getRundownData({ _id: rundown._id })
+			const partInstancesBefore = await context.mockCollections.PartInstances.findFetch({
+				rundownId: rundown._id,
+			})
+			const { segments: segmentsBefore, parts: partsBefore } = await getRundownData({ _id: rundown._id })
 
 			// rename the segment
 			for (const story of mosRO.Stories) {
@@ -1300,15 +1315,22 @@ describe('Test recieved mos ingest payloads', () => {
 				expect(rundown2.orphaned).toBeFalsy()
 			}
 
-			const partInstances = await context.mockCollections.PartInstances.findFetch({ rundownId: rundown._id })
-			const { segments, parts } = await getRundownData({ _id: rundown._id })
+			const partInstancesAfter = await context.mockCollections.PartInstances.findFetch({ rundownId: rundown._id })
+			const { segments: segmentsAfter, parts: partsAfter } = await getRundownData({ _id: rundown._id })
 
 			// Update expected data, for just the segment name and ids changing
-			applySegmentRenameToContents('SEGMENT2', 'SEGMENT2b', segments0, segments, parts0, partInstances0)
+			applySegmentRenameToContents(
+				'SEGMENT2',
+				'SEGMENT2b',
+				segmentsBefore,
+				segmentsAfter,
+				partsBefore,
+				partInstancesBefore
+			)
 
-			expect(fixSnapshot(segments)).toMatchObject(fixSnapshot(segments0) || [])
-			expect(fixSnapshot(parts)).toMatchObject(fixSnapshot(parts0) || [])
-			expect(fixSnapshot(partInstances)).toMatchObject(fixSnapshot(partInstances0) || [])
+			expect(fixSnapshot(segmentsAfter)).toMatchObject(fixSnapshot(segmentsBefore))
+			expect(fixSnapshot(partsAfter)).toMatchObject(fixSnapshot(partsBefore))
+			expect(fixSnapshot(partInstancesAfter)).toMatchObject(fixSnapshot(partInstancesBefore))
 		} finally {
 			// cleanup
 			await handleDeactivateRundownPlaylist(context, {

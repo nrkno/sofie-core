@@ -70,7 +70,7 @@ export class ReactiveStore<Key extends ProtectedString<any> | string, Value> {
 			}
 		}
 
-		if (Tracker.active) {
+		if (Tracker.active && Tracker.currentComputation) {
 			Tracker.currentComputation.onStop(() => {
 				// Called when the reactive context of the caller of this.getValue is invalidated.
 

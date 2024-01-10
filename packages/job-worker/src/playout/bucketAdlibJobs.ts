@@ -3,10 +3,10 @@ import { JobContext } from '../jobs'
 import { runJobWithPlaylistLock } from './lock'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { BucketId, ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { CacheForPlayout, CacheForPlayoutPreInit } from './cache'
 import { innerStartOrQueueAdLibPiece } from './adlibUtils'
 import { executeAdlibActionAndSaveModel } from './adlibAction'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { createPlayoutModelfromInitModel, loadPlayoutModelPreInit } from './model/implementation/LoadPlayoutModel'
 
 /**
  * Execute an AdLib Action
@@ -22,9 +22,9 @@ export async function handleExecuteBucketAdLibOrAction(
 		if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown, undefined, 412)
 		if (!playlist.currentPartInfo) throw UserError.create(UserErrorMessage.NoCurrentPart, undefined, 412)
 
-		const initCache = await CacheForPlayoutPreInit.createPreInit(context, lock, playlist, false)
+		const initCache = await loadPlayoutModelPreInit(context, lock, playlist, false)
 
-		const rundown = initCache.Rundowns.findOne(playlist.currentPartInfo.rundownId)
+		const rundown = initCache.getRundown(playlist.currentPartInfo.rundownId)
 		if (!rundown) throw new Error(`Current Rundown "${playlist.currentPartInfo.rundownId}" could not be found`)
 
 		const { bucketAdLib, bucketAdLibAction } = await findBucketAdLibOrAction(
@@ -39,18 +39,23 @@ export async function handleExecuteBucketAdLibOrAction(
 			if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
 				throw UserError.create(UserErrorMessage.DuringHold)
 			}
-			const fullCache: CacheForPlayout = await CacheForPlayout.fromInit(context, initCache)
-			const partInstance = fullCache.PartInstances.findOne(playlist.currentPartInfo.partInstanceId)
+
+			const playoutModel = await createPlayoutModelfromInitModel(context, initCache)
+
+			const fullRundown = playoutModel.getRundown(rundown._id)
+			if (!fullRundown) throw new Error(`Rundown "${rundown._id}" missing between caches`)
+
+			const partInstance = playoutModel.currentPartInstance
 			if (!partInstance) throw new Error(`PartInstance "${playlist.currentPartInfo.partInstanceId}" not found!`)
 			await innerStartOrQueueAdLibPiece(
 				context,
-				fullCache,
-				rundown,
+				playoutModel,
+				fullRundown,
 				!!bucketAdLib.toBeQueued,
 				partInstance,
 				bucketAdLib
 			)
-			await fullCache.saveAllToDatabase()
+			await playoutModel.saveAllToDatabase()
 			return {}
 		} else if (bucketAdLibAction) {
 			return await executeAdlibActionAndSaveModel(context, playlist, initCache, {

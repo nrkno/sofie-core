@@ -1,13 +1,14 @@
 import React from 'react'
-import { PieceInstancePiece } from '../../../../lib/collections/PieceInstances'
+import { PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { RundownUtils } from '../../../lib/rundown'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { TFunction, useTranslation } from 'react-i18next'
 import { Time } from '../../../../lib/lib'
 import Moment from 'react-moment'
+import { ReadonlyDeep } from 'type-fest'
 
 interface IProps {
-	piece: Omit<PieceInstancePiece, 'timelineObjectsString'>
+	piece: ReadonlyDeep<Omit<PieceInstancePiece, 'timelineObjectsString'>>
 	pieceRenderedDuration: number | null
 	pieceRenderedIn: number | null
 	changed?: Time
@@ -39,7 +40,7 @@ export const FloatingInspectorTimeInformationRow: React.FunctionComponent<IProps
 	)
 }
 
-function getLifeSpanText(t: TFunction, piece: Omit<PieceInstancePiece, 'timelineObjectsString'>): string {
+function getLifeSpanText(t: TFunction, piece: ReadonlyDeep<Omit<PieceInstancePiece, 'timelineObjectsString'>>): string {
 	switch (piece.lifespan) {
 		case PieceLifespan.WithinPart:
 			return t('Until next take')
@@ -59,7 +60,7 @@ function getLifeSpanText(t: TFunction, piece: Omit<PieceInstancePiece, 'timeline
 }
 
 function getDuration(
-	piece: Omit<PieceInstancePiece, 'timelineObjectsString'>,
+	piece: ReadonlyDeep<Omit<PieceInstancePiece, 'timelineObjectsString'>>,
 	pieceRenderedDuration: number | null
 ): string {
 	return RundownUtils.formatTimeToShortTime(

@@ -30,7 +30,7 @@ export function IntInputControl({
 	min,
 	max,
 	step,
-}: IIntInputControlProps): JSX.Element {
+}: Readonly<IIntInputControlProps>): JSX.Element {
 	const [editingValue, setEditingValue] = useState<number | null>(null)
 
 	const handleChange = useCallback(

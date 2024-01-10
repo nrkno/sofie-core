@@ -3,6 +3,7 @@ import {
 	StatusCode,
 	protectString,
 	Observer,
+	PeripheralDevicePubSub,
 } from '@sofie-automation/server-core-integration'
 import {
 	IMOSConnectionStatus,
@@ -66,11 +67,10 @@ interface IStoryItemChange {
 
 export class CoreMosDeviceHandler {
 	core!: CoreConnectionChild
-	public _observers: Array<Observer> = []
+	public _observers: Array<Observer<any>> = []
 	public _mosDevice: IMOSDevice
 	private _coreParentHandler: CoreHandler
 	private _mosHandler: MosHandler
-	private _subscriptions: Array<string> = []
 
 	private _pendingStoryItemChanges: Array<IStoryItemChange> = []
 	private _pendingChangeTimeout: number = 60 * 1000
@@ -123,14 +123,11 @@ export class CoreMosDeviceHandler {
 				this._mosDevice.idPrimary +
 				' ..'
 		)
-		this._subscriptions = []
-		Promise.all([this.core.autoSubscribe('peripheralDeviceCommands', this.core.deviceId)])
-			.then((subs) => {
-				this._subscriptions = this._subscriptions.concat(subs)
-			})
-			.catch((e) => {
-				this._coreParentHandler.logger.error(e)
-			})
+		Promise.all([
+			this.core.autoSubscribe(PeripheralDevicePubSub.peripheralDeviceCommands, this.core.deviceId),
+		]).catch((e) => {
+			this._coreParentHandler.logger.error(e)
+		})
 
 		this._coreParentHandler.logger.info('CoreMos: Setting up observers..')
 
@@ -433,14 +430,12 @@ export class CoreMosDeviceHandler {
 	async dispose(): Promise<void> {
 		this._observers.forEach((obs) => obs.stop())
 
-		for (const subId of this._subscriptions) {
-			this.core.unsubscribe(subId)
-		}
-
 		await this.core.setStatus({
 			statusCode: StatusCode.BAD,
 			messages: ['Uninitialized'],
 		})
+
+		await this.core.destroy()
 	}
 	killProcess(): void {
 		this._coreParentHandler.killProcess()

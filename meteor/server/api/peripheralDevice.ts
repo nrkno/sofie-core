@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { check, Match } from '../../lib/check'
 import * as _ from 'underscore'
-import { PeripheralDeviceType, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDeviceType, PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { PeripheralDeviceCommands, PeripheralDevices, Rundowns, Studios, UserActionsLog } from '../collections'
 import { getCurrentTime, protectString, stringifyObjects, literal, unprotectString } from '../../lib/lib'
 import { logger } from '../logging'
@@ -434,11 +434,9 @@ export namespace ServerPeripheralDeviceAPI {
 	export async function getDebugStates(access: PeripheralDeviceContentWriteAccess.ContentAccess): Promise<object> {
 		if (
 			// Debug states are only valid for Playout devices and must be enabled with the `debugState` option
-			!(
-				access.device.type === PeripheralDeviceType.PLAYOUT &&
-				access.device.settings &&
-				access.device.settings['debugState']
-			)
+			access.device.type !== PeripheralDeviceType.PLAYOUT ||
+			!access.device.settings ||
+			!(access.device.settings as any)['debugState']
 		) {
 			return {}
 		}

@@ -9,7 +9,7 @@ import { SelectedPartInstancesTimelineInfo } from '../../timeline/generate'
 import { getLookeaheadObjects } from '..'
 import { LookaheadMode, PlaylistTimingType, TSR } from '@sofie-automation/blueprints-integration'
 import { setupDefaultJobEnvironment, MockJobContext } from '../../../__mocks__/context'
-import { runJobWithPlayoutCache } from '../../../playout/lock'
+import { runJobWithPlayoutModel } from '../../../playout/lock'
 import { defaultRundownPlaylist } from '../../../__mocks__/defaultCollectionObjects'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
@@ -163,8 +163,8 @@ describe('Lookahead', () => {
 		const fakeParts = partIds.map((p) => ({ part: { _id: p } as any, usesInTransition: true, pieces: [] }))
 		getOrderedPartsAfterPlayheadMock.mockReturnValueOnce(fakeParts.map((p) => p.part))
 
-		const res = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			getLookeaheadObjects(context, cache, partInstancesInfo)
+		const res = await runJobWithPlayoutModel(context, { playlistId }, null, async (playoutModel) =>
+			getLookeaheadObjects(context, playoutModel, partInstancesInfo)
 		)
 		expect(res).toHaveLength(0)
 
@@ -206,8 +206,8 @@ describe('Lookahead', () => {
 				],
 			}))
 
-		const res = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			getLookeaheadObjects(context, cache, partInstancesInfo)
+		const res = await runJobWithPlayoutModel(context, { playlistId }, null, async (playoutModel) =>
+			getLookeaheadObjects(context, playoutModel, partInstancesInfo)
 		)
 		expect(res).toMatchSnapshot()
 
@@ -226,8 +226,8 @@ describe('Lookahead', () => {
 			studio.mappingsWithOverrides.defaults['PRELOAD'].lookaheadMaxSearchDistance = 0
 			context.setStudio(studio)
 		}
-		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			getLookeaheadObjects(context, cache, partInstancesInfo)
+		await runJobWithPlayoutModel(context, { playlistId }, null, async (playoutModel) =>
+			getLookeaheadObjects(context, playoutModel, partInstancesInfo)
 		)
 		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledTimes(1)
 		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledWith(context, expect.anything(), 0)
@@ -240,8 +240,8 @@ describe('Lookahead', () => {
 			studio.mappingsWithOverrides.defaults['PRELOAD'].lookaheadMaxSearchDistance = 2000
 			context.setStudio(studio)
 		}
-		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			getLookeaheadObjects(context, cache, partInstancesInfo)
+		await runJobWithPlayoutModel(context, { playlistId }, null, async (playoutModel) =>
+			getLookeaheadObjects(context, playoutModel, partInstancesInfo)
 		)
 		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledTimes(1)
 		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledWith(context, expect.anything(), 2000)
@@ -254,8 +254,8 @@ describe('Lookahead', () => {
 			studio.mappingsWithOverrides.defaults['PRELOAD'].lookaheadMaxSearchDistance = -1
 			context.setStudio(studio)
 		}
-		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			getLookeaheadObjects(context, cache, partInstancesInfo)
+		await runJobWithPlayoutModel(context, { playlistId }, null, async (playoutModel) =>
+			getLookeaheadObjects(context, playoutModel, partInstancesInfo)
 		)
 		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledTimes(1)
 		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledWith(context, expect.anything(), 10)
@@ -272,6 +272,7 @@ describe('Lookahead', () => {
 		partInstancesInfo.previous = {
 			partInstance: { _id: 'abc2', part: { _id: 'abc' } } as any,
 			nowInPart: 987,
+			partStarted: getCurrentTime() + 546,
 			pieceInstances: ['1', '2'] as any,
 			calculatedTimings: { inTransitionStart: null } as any,
 		}
@@ -285,8 +286,8 @@ describe('Lookahead', () => {
 		}
 
 		// With a previous
-		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			getLookeaheadObjects(context, cache, partInstancesInfo)
+		await runJobWithPlayoutModel(context, { playlistId }, null, async (playoutModel) =>
+			getLookeaheadObjects(context, playoutModel, partInstancesInfo)
 		)
 		await expectLookaheadForLayerMock(playlistId, [], expectedPrevious, fakeParts)
 
@@ -294,6 +295,7 @@ describe('Lookahead', () => {
 		partInstancesInfo.current = {
 			partInstance: { _id: 'curr', part: {} } as any,
 			nowInPart: 56,
+			partStarted: getCurrentTime() + 865,
 			pieceInstances: ['3', '4'] as any,
 			calculatedTimings: { inTransitionStart: null } as any,
 		}
@@ -304,8 +306,8 @@ describe('Lookahead', () => {
 			allPieces: partInstancesInfo.current.pieceInstances,
 			calculatedTimings: partInstancesInfo.current.calculatedTimings,
 		}
-		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			getLookeaheadObjects(context, cache, partInstancesInfo)
+		await runJobWithPlayoutModel(context, { playlistId }, null, async (playoutModel) =>
+			getLookeaheadObjects(context, playoutModel, partInstancesInfo)
 		)
 		await expectLookaheadForLayerMock(playlistId, [expectedCurrent], expectedPrevious, fakeParts)
 
@@ -313,6 +315,7 @@ describe('Lookahead', () => {
 		partInstancesInfo.next = {
 			partInstance: { _id: 'nxt2', part: { _id: 'nxt' } } as any,
 			nowInPart: -85,
+			partStarted: getCurrentTime() + 142,
 			pieceInstances: ['5'] as any,
 			calculatedTimings: { inTransitionStart: null } as any,
 		}
@@ -323,16 +326,16 @@ describe('Lookahead', () => {
 			allPieces: partInstancesInfo.next.pieceInstances,
 			calculatedTimings: partInstancesInfo.next.calculatedTimings,
 		}
-		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			getLookeaheadObjects(context, cache, partInstancesInfo)
+		await runJobWithPlayoutModel(context, { playlistId }, null, async (playoutModel) =>
+			getLookeaheadObjects(context, playoutModel, partInstancesInfo)
 		)
 		await expectLookaheadForLayerMock(playlistId, [expectedCurrent, expectedNext], expectedPrevious, fakeParts)
 
 		// current has autonext
-		partInstancesInfo.current.partInstance.part.autoNext = true
+		;(partInstancesInfo.current.partInstance.part as DBPart).autoNext = true
 		expectedNext.onTimeline = true
-		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			getLookeaheadObjects(context, cache, partInstancesInfo)
+		await runJobWithPlayoutModel(context, { playlistId }, null, async (playoutModel) =>
+			getLookeaheadObjects(context, playoutModel, partInstancesInfo)
 		)
 		await expectLookaheadForLayerMock(playlistId, [expectedCurrent, expectedNext], expectedPrevious, fakeParts)
 	})
@@ -379,9 +382,9 @@ describe('Lookahead', () => {
 
 	// 	// pieceMap should have come through valid
 	// 	;(
-	// 		wrapWithCacheForRundownPlaylist(playlist, async (cache) => {
-	// 			await getLookeaheadObjects(context, cache, env.studio, playlist, partInstancesInfo)
-	// 			expect(cache.Pieces.initialized).toBeFalsy()
+	// 		wrapWithCacheForRundownPlaylist(playlist, async (playoutModel) => {
+	// 			await getLookeaheadObjects(context, playoutModel, env.studio, playlist, partInstancesInfo)
+	// 			expect(playoutModel.Pieces.initialized).toBeFalsy()
 	// 		})
 	// 	)
 	// 	await expectLookaheadForLayerMock(playlist, [], undefined, fakeParts, pieceMap)
@@ -389,18 +392,18 @@ describe('Lookahead', () => {
 	// 	// Use the modified cache values
 	// 	const removedIds: PieceId[] = protectStringArray(['piece_1_0', 'piece_4_0'])
 	// 	;(
-	// 		wrapWithCacheForRundownPlaylist(playlist, async (cache) => {
+	// 		wrapWithCacheForRundownPlaylist(playlist, async (playoutModel) => {
 	// 			expect(
-	// 				cache.Pieces.update(removedIds[0], {
+	// 				playoutModel.Pieces.update(removedIds[0], {
 	// 					$set: {
 	// 						invalid: true,
 	// 					},
 	// 				})
 	// 			).toEqual(1)
-	// 			cache.Pieces.remove(removedIds[1])
-	// 			expect(cache.Pieces.initialized).toBeTruthy()
+	// 			playoutModel.Pieces.remove(removedIds[1])
+	// 			expect(playoutModel.Pieces.initialized).toBeTruthy()
 
-	// 			await getLookeaheadObjects(context, cache, env.studio, playlist, partInstancesInfo)
+	// 			await getLookeaheadObjects(context, playoutModel, env.studio, playlist, partInstancesInfo)
 	// 		})
 	// 	)
 	// 	const pieceMap2 = new Map<PartId, Piece[]>()

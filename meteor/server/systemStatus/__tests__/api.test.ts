@@ -6,9 +6,9 @@ import { status2ExternalStatus, setSystemStatus } from '../systemStatus'
 import { StatusResponse } from '../../../lib/api/systemStatus'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../../lib/api/methods'
-import { GetUpgradeStatusResult } from '../../../lib/api/migration'
 import { callKoaRoute } from '../../../__mocks__/koa-util'
 import { healthRouter } from '../api'
+import { UIBlueprintUpgradeStatus } from '../../../lib/api/upgradeStatus'
 
 // we don't want the deviceTriggers observer to start up at this time
 jest.mock('../../api/deviceTriggers/observer')
@@ -17,14 +17,9 @@ require('../api')
 require('../../coreSystem/index')
 const PackageInfo = require('../../../package.json')
 
-import * as checkUpgradeStatus from '../../migration/upgrades/checkStatus'
-jest.spyOn(checkUpgradeStatus, 'getUpgradeStatus').mockReturnValue(
-	Promise.resolve(
-		literal<GetUpgradeStatusResult>({
-			studios: [],
-			showStyleBases: [],
-		})
-	)
+import * as getServerBlueprintUpgradeStatuses from '../../publications/blueprintUpgradeStatus/systemStatus'
+jest.spyOn(getServerBlueprintUpgradeStatuses, 'getServerBlueprintUpgradeStatuses').mockReturnValue(
+	Promise.resolve(literal<UIBlueprintUpgradeStatus[]>([]))
 )
 
 describe('systemStatus API', () => {

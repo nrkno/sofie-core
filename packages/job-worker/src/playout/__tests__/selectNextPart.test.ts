@@ -3,8 +3,11 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { ReadonlyDeep } from 'type-fest'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
-import { selectNextPart, PartsAndSegments } from '../selectNextPart'
+import { PlayoutSegmentModelImpl } from '../model/implementation/PlayoutSegmentModelImpl'
+import { PlayoutSegmentModel } from '../model/PlayoutSegmentModel'
+import { selectNextPart } from '../selectNextPart'
 
 class MockPart {
 	constructor(
@@ -62,38 +65,56 @@ describe('selectNextPart', () => {
 		defaultSegments = [new MockSegment(segment1, 1), new MockSegment(segment2, 2), new MockSegment(segment3, 3)]
 	})
 
-	function getSegmentsAndParts(): PartsAndSegments {
-		return {
-			parts: [...(defaultParts as unknown as DBPart[])],
-			segments: [...(defaultSegments as unknown as DBSegment[])],
-		}
+	function selectNextPart2(
+		previousPartInstance: ReadonlyDeep<DBPartInstance> | null,
+		currentlySelectedPartInstance: ReadonlyDeep<DBPartInstance> | null,
+		ignoreUnplayabale = true
+	) {
+		const parts = [...(defaultParts as unknown as DBPart[])]
+		const segments: readonly PlayoutSegmentModel[] = defaultSegments.map(
+			(segment) =>
+				new PlayoutSegmentModelImpl(
+					segment as unknown as DBSegment,
+					parts.filter((p) => p.segmentId === segment._id)
+				)
+		)
+
+		return selectNextPart(
+			context,
+			defaultPlaylist,
+			previousPartInstance,
+			currentlySelectedPartInstance,
+			segments,
+			parts,
+			ignoreUnplayabale
+		)
 	}
 
 	test('from nothing', () => {
 		{
 			// default
-			const nextPart = selectNextPart(context, defaultPlaylist, null, null, getSegmentsAndParts())
+			const nextPart = selectNextPart2(null, null)
 			expect(nextPart).toEqual({ index: 0, part: defaultParts[0], consumesQueuedSegmentId: false })
 		}
 
 		{
 			// first isnt playable
 			defaultParts[0].playable = false
-			const nextPart = selectNextPart(context, defaultPlaylist, null, null, getSegmentsAndParts())
+			const nextPart = selectNextPart2(null, null)
 			expect(nextPart).toEqual({ index: 1, part: defaultParts[1], consumesQueuedSegmentId: false })
 		}
 
 		{
-			// queuedSegmentId is set
+			// nextSegmentId is set
 			defaultPlaylist.queuedSegmentId = segment3
-			const nextPart = selectNextPart(context, defaultPlaylist, null, null, getSegmentsAndParts())
+			const nextPart = selectNextPart2(null, null)
 			expect(nextPart).toEqual({ index: 6, part: defaultParts[6], consumesQueuedSegmentId: true })
 		}
 
 		{
-			// queuedSegmentId is set (and first there isnt playable)
+			// nextSegmentId is set (and first there isnt playable)
 			defaultPlaylist.queuedSegmentId = segment2
-			const nextPart = selectNextPart(context, defaultPlaylist, null, null, getSegmentsAndParts())
+			const nextPart = selectNextPart2(null, null)
 			expect(nextPart).toEqual({ index: 4, part: defaultParts[4], consumesQueuedSegmentId: true })
 		}
 	})
@@ -101,28 +122,28 @@ describe('selectNextPart', () => {
 	test('from nothing - allow unplayable', () => {
 		{
 			// default
-			const nextPart = selectNextPart(context, defaultPlaylist, null, null, getSegmentsAndParts(), false)
+			const nextPart = selectNextPart2(null, null, false)
 			expect(nextPart).toEqual({ index: 0, part: defaultParts[0], consumesQueuedSegmentId: false })
 		}
 
 		{
 			// first isnt playable
 			defaultParts[0].playable = false
-			const nextPart = selectNextPart(context, defaultPlaylist, null, null, getSegmentsAndParts(), false)
+			const nextPart = selectNextPart2(null, null, false)
 			expect(nextPart).toEqual({ index: 0, part: defaultParts[0], consumesQueuedSegmentId: false })
 		}
 
 		{
-			// queuedSegmentId is set
+			// nextSegmentId is set
 			defaultPlaylist.queuedSegmentId = segment3
-			const nextPart = selectNextPart(context, defaultPlaylist, null, null, getSegmentsAndParts(), false)
+			const nextPart = selectNextPart2(null, null, false)
 			expect(nextPart).toEqual({ index: 6, part: defaultParts[6], consumesQueuedSegmentId: true })
 		}
 
 		{
-			// queuedSegmentId is set (and first there isnt playable)
+			// nextSegmentId is set (and first there isnt playable)
 			defaultPlaylist.queuedSegmentId = segment2
-			const nextPart = selectNextPart(context, defaultPlaylist, null, null, getSegmentsAndParts(), false)
+			const nextPart = selectNextPart2(null, null, false)
 			expect(nextPart).toEqual({ index: 3, part: defaultParts[3], consumesQueuedSegmentId: true })
 		}
 	})
@@ -131,14 +152,14 @@ describe('selectNextPart', () => {
 		const previousPartInstance = defaultParts[4].toPartInstance()
 		{
 			// default
-			const nextPart = selectNextPart(context, defaultPlaylist, previousPartInstance, null, getSegmentsAndParts())
+			const nextPart = selectNextPart2(previousPartInstance, null)
 			expect(nextPart).toEqual({ index: 5, part: defaultParts[5], consumesQueuedSegmentId: false })
 		}
 
 		{
 			// next isnt playable
 			defaultParts[5].playable = false
-			const nextPart = selectNextPart(context, defaultPlaylist, previousPartInstance, null, getSegmentsAndParts())
+			const nextPart = selectNextPart2(previousPartInstance, null)
 			expect(nextPart).toEqual({ index: 6, part: defaultParts[6], consumesQueuedSegmentId: false })
 		}
 
@@ -146,14 +167,14 @@ describe('selectNextPart', () => {
 			// queuedSegmentId is set
 			defaultParts[0].playable = false
 			defaultPlaylist.queuedSegmentId = segment1
-			const nextPart = selectNextPart(context, defaultPlaylist, previousPartInstance, null, getSegmentsAndParts())
+			const nextPart = selectNextPart2(previousPartInstance, null)
 			expect(nextPart).toEqual({ index: 1, part: defaultParts[1], consumesQueuedSegmentId: true })
 		}
 
 		{
-			// queuedSegmentId is set (and first there isnt playable)
+			// nextSegmentId is set (and first there isnt playable)
 			defaultPlaylist.queuedSegmentId = segment2
-			const nextPart = selectNextPart(context, defaultPlaylist, previousPartInstance, null, getSegmentsAndParts())
+			const nextPart = selectNextPart2(previousPartInstance, null)
 			expect(nextPart).toEqual({ index: 4, part: defaultParts[4], consumesQueuedSegmentId: true })
 		}
 	})
@@ -165,21 +186,21 @@ describe('selectNextPart', () => {
 
 		{
 			// single part is orphaned
-			const nextPart = selectNextPart(context, defaultPlaylist, previousPartInstance, null, getSegmentsAndParts())
+			const nextPart = selectNextPart2(previousPartInstance, null)
 			expect(nextPart).toEqual({ index: 4, part: defaultParts[4], consumesQueuedSegmentId: false })
 		}
 
 		{
 			// whole segment is orphaned/deleted
 			defaultParts = defaultParts.filter((p) => p.segmentId !== previousPartInstance.segmentId)
-			const nextPart = selectNextPart(context, defaultPlaylist, previousPartInstance, null, getSegmentsAndParts())
+			const nextPart = selectNextPart2(previousPartInstance, null)
 			expect(nextPart).toEqual({ index: 3, part: defaultParts[3], consumesQueuedSegmentId: false })
 		}
 
 		{
 			// no parts after
 			defaultParts = defaultParts.filter((p) => p.segmentId !== segment3)
-			const nextPart = selectNextPart(context, defaultPlaylist, previousPartInstance, null, getSegmentsAndParts())
+			const nextPart = selectNextPart2(previousPartInstance, null)
 			expect(nextPart).toEqual(null)
 		}
 
@@ -187,7 +208,7 @@ describe('selectNextPart', () => {
 			// no parts after, but looping
 			defaultPlaylist.loop = true
 			defaultParts = defaultParts.filter((p) => p.segmentId !== segment3)
-			const nextPart = selectNextPart(context, defaultPlaylist, previousPartInstance, null, getSegmentsAndParts())
+			const nextPart = selectNextPart2(previousPartInstance, null)
 			expect(nextPart).toEqual({ index: 0, part: defaultParts[0], consumesQueuedSegmentId: false })
 		}
 	})
@@ -196,28 +217,14 @@ describe('selectNextPart', () => {
 		const previousPartInstance = defaultParts[4].toPartInstance()
 		{
 			// default
-			const nextPart = selectNextPart(
-				context,
-				defaultPlaylist,
-				previousPartInstance,
-				null,
-				getSegmentsAndParts(),
-				false
-			)
+			const nextPart = selectNextPart2(previousPartInstance, null, false)
 			expect(nextPart).toEqual({ index: 5, part: defaultParts[5], consumesQueuedSegmentId: false })
 		}
 
 		{
 			// next isnt playable
 			defaultParts[5].playable = false
-			const nextPart = selectNextPart(
-				context,
-				defaultPlaylist,
-				previousPartInstance,
-				null,
-				getSegmentsAndParts(),
-				false
-			)
+			const nextPart = selectNextPart2(previousPartInstance, null, false)
 			expect(nextPart).toEqual({ index: 5, part: defaultParts[5], consumesQueuedSegmentId: false })
 		}
 	})

@@ -1,6 +1,6 @@
 {
 	"name": "live-status-gateway",
-	"version": "1.50.0-in-testing.5",
+	"version": "1.51.0-in-development",
 	"private": true,
 	"description": "Provides state from Sofie over sockets",
 	"license": "MIT",
@@ -53,23 +53,24 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/blueprints-integration": "1.50.0-in-testing.5",
-		"@sofie-automation/corelib": "1.50.0-in-testing.5",
-		"@sofie-automation/server-core-integration": "1.50.0-in-testing.5",
-		"@sofie-automation/shared-lib": "1.50.0-in-testing.5",
-		"debug": "^4.3.2",
+		"@sofie-automation/blueprints-integration": "1.51.0-in-development",
+		"@sofie-automation/corelib": "1.51.0-in-development",
+		"@sofie-automation/server-core-integration": "1.51.0-in-development",
+		"@sofie-automation/shared-lib": "1.51.0-in-development",
+		"debug": "^4.3.4",
 		"fast-clone": "^1.5.13",
-		"influx": "^5.9.2",
-		"tslib": "^2.4.0",
+		"influx": "^5.9.3",
+		"tslib": "^2.6.2",
 		"underscore": "^1.13.6",
-		"winston": "^3.8.1",
-		"ws": "^8.10.0"
+		"winston": "^3.10.0",
+		"ws": "^8.14.2"
 	},
 	"devDependencies": {
-		"@asyncapi/generator": "1.9.13",
+		"@asyncapi/generator": "1.10.9",
 		"@asyncapi/html-template": "0.26.0",
-		"@asyncapi/nodejs-ws-template": "0.9.25",
-		"jest-mock-extended": "^3.0.5"
+		"@asyncapi/nodejs-ws-template": "0.9.33",
+		"jest-mock-extended": "^3.0.5",
+		"type-fest": "^4.5.0"
 	},
 	"lint-staged": {
 		"*.{css,json,md,scss}": [

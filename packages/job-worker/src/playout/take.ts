@@ -1,10 +1,15 @@
 import { PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { RundownHoldState, SelectedPartInstance } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import {
+	DBRundownPlaylist,
+	RundownHoldState,
+	SelectedPartInstance,
+} from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { logger } from '../logging'
 import { JobContext, ProcessedShowStyleCompound } from '../jobs'
-import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
+import { PlayoutModel } from './model/PlayoutModel'
+import { PlayoutPartInstanceModel } from './model/PlayoutPartInstanceModel'
 import { isTooCloseToAutonext } from './lib'
 import { selectNextPart } from './selectNextPart'
 import { setNextPart } from './setNext'
@@ -12,27 +17,19 @@ import { getCurrentTime } from '../lib'
 import { PartEndState, VTContent } from '@sofie-automation/blueprints-integration'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { ReadonlyDeep } from 'type-fest'
-import { getResolvedPieces } from './pieces'
-import { clone, getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
+import { getResolvedPiecesForCurrentPartInstance } from './resolvedPieces'
+import { clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { updateTimeline } from './timeline/generate'
-import {
-	PieceInstanceId,
-	PieceInstanceInfiniteId,
-	RundownPlaylistActivationId,
-} from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { PartEventContext, RundownContext } from '../blueprints/context'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { innerStopPieces } from './adlibUtils'
 import { reportPartInstanceHasStarted, reportPartInstanceHasStopped } from './timings/partPlayback'
-import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
 import { calculatePartTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { convertPartInstanceToBlueprints, convertResolvedPieceInstanceToBlueprints } from '../blueprints/context/lib'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { TakeNextPartProps } from '@sofie-automation/corelib/dist/worker/studio'
-import { runJobWithPlayoutCache } from './lock'
+import { runJobWithPlayoutModel } from './lock'
 import _ = require('underscore')
 
 /**
@@ -41,11 +38,11 @@ import _ = require('underscore')
 export async function handleTakeNextPart(context: JobContext, data: TakeNextPartProps): Promise<void> {
 	const now = getCurrentTime()
 
-	return runJobWithPlayoutCache(
+	return runJobWithPlayoutModel(
 		context,
 		data,
-		async (cache) => {
-			const playlist = cache.Playlist.doc
+		async (playoutModel) => {
+			const playlist = playoutModel.playlist
 
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown, undefined, 412)
 
@@ -55,13 +52,13 @@ export async function handleTakeNextPart(context: JobContext, data: TakeNextPart
 			if ((playlist.currentPartInfo?.partInstanceId ?? null) !== data.fromPartInstanceId)
 				throw UserError.create(UserErrorMessage.TakeFromIncorrectPart, undefined, 412)
 		},
-		async (cache) => {
-			const playlist = cache.Playlist.doc
+		async (playoutModel) => {
+			const playlist = playoutModel.playlist
 
 			let lastTakeTime = playlist.lastTakeTime ?? 0
 
 			if (playlist.currentPartInfo) {
-				const currentPartInstance = cache.PartInstances.findOne(playlist.currentPartInfo.partInstanceId)
+				const currentPartInstance = playoutModel.currentPartInstance?.partInstance
 				if (currentPartInstance?.timings?.plannedStartedPlayback) {
 					lastTakeTime = Math.max(lastTakeTime, currentPartInstance.timings.plannedStartedPlayback)
 				} else {
@@ -83,7 +80,7 @@ export async function handleTakeNextPart(context: JobContext, data: TakeNextPart
 				})
 			}
 
-			return performTakeToNextedPart(context, cache, now)
+			return performTakeToNextedPart(context, playoutModel, now)
 		}
 	)
 }
@@ -91,41 +88,42 @@ export async function handleTakeNextPart(context: JobContext, data: TakeNextPart
 /**
  * Perform a Take into the nexted Part, and prepare a new nexted Part
  * @param context Context for current job
- * @param cache Cache for the active Playlist
+ * @param playoutModel Model for the active Playlist
  * @param now Current timestamp
  */
-export async function performTakeToNextedPart(context: JobContext, cache: CacheForPlayout, now: number): Promise<void> {
+export async function performTakeToNextedPart(
+	context: JobContext,
+	playoutModel: PlayoutModel,
+	now: number
+): Promise<void> {
 	const span = context.startSpan('takeNextPartInner')
 
-	if (!cache.Playlist.doc.activationId) throw new Error(`Rundown Playlist "${cache.Playlist.doc._id}" is not active!`)
-	const playlistActivationId = cache.Playlist.doc.activationId
+	if (!playoutModel.playlist.activationId)
+		throw new Error(`Rundown Playlist "${playoutModel.playlist._id}" is not active!`)
 
-	const timeOffset: number | null = cache.Playlist.doc.nextTimeOffset || null
+	const timeOffset: number | null = playoutModel.playlist.nextTimeOffset || null
 
-	const { currentPartInstance, nextPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(cache)
+	const currentPartInstance = playoutModel.currentPartInstance
+	const nextPartInstance = playoutModel.nextPartInstance
+	const previousPartInstance = playoutModel.previousPartInstance
 
 	const currentOrNextPartInstance = nextPartInstance ?? currentPartInstance
 	if (!currentOrNextPartInstance) {
 		// Some temporary logging to diagnose some cases where this route is hit
-		logger.warn(`No partinstance was found during take`, JSON.stringify(cache.Playlist.doc))
+		logger.warn(`No partinstance was found during take`, JSON.stringify(playoutModel.playlist))
 		logger.warn(
 			'All PartInstances in cache',
-			cache.PartInstances.findAll(null).map((p) => p._id)
+			playoutModel.sortedLoadedPartInstances.map((p) => p.partInstance._id)
 		)
-		logger.warn(
-			'Deleted PartInstances in cache',
-			Array.from(cache.PartInstances.documents.entries())
-				.filter((d) => d[1] === null)
-				.map((d) => d[0])
-		)
+		logger.warn('Deleted PartInstances in cache', playoutModel.hackDeletedPartInstanceIds)
 		logger.warn(
 			'Parts in cache',
-			cache.Parts.findAll(null).map((d) => d._id)
+			playoutModel.getAllOrderedParts().map((d) => d._id)
 		)
 
 		const validIds = _.compact([
-			cache.Playlist.doc.currentPartInfo?.partInstanceId,
-			cache.Playlist.doc.nextPartInfo?.partInstanceId,
+			playoutModel.playlist.currentPartInfo?.partInstanceId,
+			playoutModel.playlist.nextPartInfo?.partInstanceId,
 		])
 		if (validIds.length) {
 			const mongoDocs = await context.directCollections.PartInstances.findFetch({ _id: { $in: validIds } })
@@ -135,46 +133,50 @@ export async function performTakeToNextedPart(context: JobContext, cache: CacheF
 		throw new Error(`No partInstance could be found!`)
 	}
 	const currentRundown = currentOrNextPartInstance
-		? cache.Rundowns.findOne(currentOrNextPartInstance.rundownId)
+		? playoutModel.getRundown(currentOrNextPartInstance.partInstance.rundownId)
 		: undefined
-	if (!currentRundown) throw new Error(`Rundown "${currentOrNextPartInstance?.rundownId ?? ''}" could not be found!`)
+	if (!currentRundown)
+		throw new Error(`Rundown "${currentOrNextPartInstance?.partInstance?.rundownId ?? ''}" could not be found!`)
 
-	const pShowStyle = context.getShowStyleCompound(currentRundown.showStyleVariantId, currentRundown.showStyleBaseId)
+	const pShowStyle = context.getShowStyleCompound(
+		currentRundown.rundown.showStyleVariantId,
+		currentRundown.rundown.showStyleBaseId
+	)
 
 	if (currentPartInstance) {
 		const now = getCurrentTime()
-		if (currentPartInstance.blockTakeUntil && currentPartInstance.blockTakeUntil > now) {
-			const remainingTime = currentPartInstance.blockTakeUntil - now
+		if (currentPartInstance.partInstance.blockTakeUntil && currentPartInstance.partInstance.blockTakeUntil > now) {
+			const remainingTime = currentPartInstance.partInstance.blockTakeUntil - now
 			// Adlib-actions can arbitrarily block takes from being done
-			logger.debug(`Take is blocked until ${currentPartInstance.blockTakeUntil}. Which is in: ${remainingTime}`)
+			logger.debug(
+				`Take is blocked until ${currentPartInstance.partInstance.blockTakeUntil}. Which is in: ${remainingTime}`
+			)
 			throw UserError.create(UserErrorMessage.TakeBlockedDuration, { duration: remainingTime })
 		}
 
 		// If there was a transition from the previous Part, then ensure that has finished before another take is permitted
-		const allowTransition = previousPartInstance && !previousPartInstance.part.disableNextInTransition
-		const start = currentPartInstance.timings?.plannedStartedPlayback
+		const allowTransition = previousPartInstance && !previousPartInstance.partInstance.part.disableNextInTransition
+		const start = currentPartInstance.partInstance.timings?.plannedStartedPlayback
 		if (
 			allowTransition &&
-			currentPartInstance.part.inTransition &&
+			currentPartInstance.partInstance.part.inTransition &&
 			start &&
-			now < start + currentPartInstance.part.inTransition.blockTakeDuration
+			now < start + currentPartInstance.partInstance.part.inTransition.blockTakeDuration
 		) {
 			throw UserError.create(UserErrorMessage.TakeDuringTransition)
 		}
 
-		if (isTooCloseToAutonext(currentPartInstance, true)) {
+		if (isTooCloseToAutonext(currentPartInstance.partInstance, true)) {
 			throw UserError.create(UserErrorMessage.TakeCloseToAutonext)
 		}
 	}
 
-	if (cache.Playlist.doc.holdState === RundownHoldState.COMPLETE) {
-		cache.Playlist.update((p) => {
-			p.holdState = RundownHoldState.NONE
-			return p
-		})
+	if (playoutModel.playlist.holdState === RundownHoldState.COMPLETE) {
+		playoutModel.setHoldState(RundownHoldState.NONE)
+
 		// If hold is active, then this take is to clear it
-	} else if (cache.Playlist.doc.holdState === RundownHoldState.ACTIVE) {
-		await completeHold(context, cache, await pShowStyle, currentPartInstance)
+	} else if (playoutModel.playlist.holdState === RundownHoldState.ACTIVE) {
+		await completeHold(context, playoutModel, await pShowStyle, currentPartInstance)
 
 		if (span) span.end()
 
@@ -183,32 +185,26 @@ export async function performTakeToNextedPart(context: JobContext, cache: CacheF
 
 	const takePartInstance = nextPartInstance
 	if (!takePartInstance) throw new Error('takePart not found!')
-	const takeRundown: DBRundown | undefined = cache.Rundowns.findOne(takePartInstance.rundownId)
-	if (!takeRundown) throw new Error(`takeRundown: takeRundown not found! ("${takePartInstance.rundownId}")`)
+	const takeRundown = playoutModel.getRundown(takePartInstance.partInstance.rundownId)
+	if (!takeRundown)
+		throw new Error(`takeRundown: takeRundown not found! ("${takePartInstance.partInstance.rundownId}")`)
 
 	// Autonext may have setup the plannedStartedPlayback. Clear it so that a new value is generated
-	cache.PartInstances.updateOne(takePartInstance._id, (p) => {
-		if (p.timings?.plannedStartedPlayback) {
-			delete p.timings.plannedStartedPlayback
-			delete p.timings.plannedStoppedPlayback
-			return p
-		} else {
-			// No change
-			return false
-		}
-	})
+	takePartInstance.setPlannedStartedPlayback(undefined)
+	takePartInstance.setPlannedStoppedPlayback(undefined)
 
 	// it is only a first take if the Playlist has no startedPlayback and the taken PartInstance is not untimed
-	const isFirstTake = !cache.Playlist.doc.startedPlayback && !takePartInstance.part.untimed
+	const isFirstTake = !playoutModel.playlist.startedPlayback && !takePartInstance.partInstance.part.untimed
 
-	clearQueuedSegmentId(cache, takePartInstance, cache.Playlist.doc.nextPartInfo)
+	clearQueuedSegmentId(playoutModel, takePartInstance.partInstance, playoutModel.playlist.nextPartInfo)
 
 	const nextPart = selectNextPart(
 		context,
-		cache.Playlist.doc,
-		takePartInstance,
+		playoutModel.playlist,
+		takePartInstance.partInstance,
 		null,
-		getOrderedSegmentsAndPartsFromPlayoutCache(cache)
+		playoutModel.getAllOrderedSegments(),
+		playoutModel.getAllOrderedParts()
 	)
 
 	const showStyle = await pShowStyle
@@ -223,8 +219,8 @@ export async function performTakeToNextedPart(context: JobContext, cache: CacheF
 					context.getStudioBlueprintConfig(),
 					showStyle,
 					context.getShowStyleBlueprintConfig(showStyle),
-					takeRundown,
-					takePartInstance
+					takeRundown.rundown,
+					takePartInstance.partInstance
 				)
 			)
 		} catch (err) {
@@ -233,54 +229,38 @@ export async function performTakeToNextedPart(context: JobContext, cache: CacheF
 		if (span) span.end()
 	}
 
-	updatePartInstanceOnTake(context, cache, showStyle, blueprint, takeRundown, takePartInstance, currentPartInstance)
+	updatePartInstanceOnTake(
+		context,
+		playoutModel.playlist,
+		showStyle,
+		blueprint,
+		takeRundown.rundown,
+		takePartInstance,
+		currentPartInstance
+	)
 
-	cache.Playlist.update((p) => {
-		p.previousPartInfo = p.currentPartInfo
-		p.currentPartInfo = {
-			partInstanceId: takePartInstance._id,
-			rundownId: takePartInstance.rundownId,
-			manuallySelected: p.nextPartInfo?.manuallySelected ?? false,
-			consumesQueuedSegmentId: p.nextPartInfo?.consumesQueuedSegmentId ?? false,
-		}
-		p.lastTakeTime = getCurrentTime()
+	playoutModel.cycleSelectedPartInstances()
 
-		if (!p.holdState || p.holdState === RundownHoldState.COMPLETE) {
-			p.holdState = RundownHoldState.NONE
-		} else {
-			p.holdState = p.holdState + 1
-		}
-		return p
-	})
+	takePartInstance.setTaken(now, timeOffset)
 
-	cache.PartInstances.updateOne(takePartInstance._id, (instance) => {
-		instance.isTaken = true
-
-		if (!instance.timings) instance.timings = {}
-		instance.timings.take = now
-		instance.timings.playOffset = timeOffset || 0
-
-		return instance
-	})
-
-	resetPreviousSegment(cache)
+	resetPreviousSegment(playoutModel)
 
 	// Once everything is synced, we can choose the next part
-	await setNextPart(context, cache, nextPart, false)
+	await setNextPart(context, playoutModel, nextPart, false)
 
 	// Setup the parts for the HOLD we are starting
 	if (
-		cache.Playlist.doc.previousPartInfo &&
-		(cache.Playlist.doc.holdState as RundownHoldState) === RundownHoldState.ACTIVE
+		playoutModel.playlist.previousPartInfo &&
+		(playoutModel.playlist.holdState as RundownHoldState) === RundownHoldState.ACTIVE
 	) {
-		startHold(context, cache, playlistActivationId, currentPartInstance, nextPartInstance)
+		startHold(context, currentPartInstance, nextPartInstance)
 	}
-	await afterTake(context, cache, takePartInstance, timeOffset)
+	await afterTake(context, playoutModel, takePartInstance)
 
 	// Last:
 	const takeDoneTime = getCurrentTime()
-	cache.deferBeforeSave(async (cache2) => {
-		await afterTakeUpdateTimingsAndEvents(context, cache2, showStyle, blueprint, isFirstTake, takeDoneTime)
+	playoutModel.deferBeforeSave(async (playoutModel2) => {
+		await afterTakeUpdateTimingsAndEvents(context, playoutModel2, showStyle, blueprint, isFirstTake, takeDoneTime)
 	})
 
 	if (span) span.end()
@@ -288,98 +268,86 @@ export async function performTakeToNextedPart(context: JobContext, cache: CacheF
 
 /**
  * Clear the nexted Segment, if taking into a PartInstance that consumes it
- * @param cache Cache for the active Playlist
+ * @param playoutModel Model for the active Playlist
  * @param takenPartInstance PartInstance to check
  */
 export function clearQueuedSegmentId(
-	cache: CacheForPlayout,
-	takenPartInstance: DBPartInstance | undefined,
+	playoutModel: PlayoutModel,
+	takenPartInstance: ReadonlyDeep<DBPartInstance> | undefined,
 	takenPartInfo: ReadonlyDeep<SelectedPartInstance> | null
 ): void {
 	if (
 		takenPartInfo?.consumesQueuedSegmentId &&
 		takenPartInstance &&
-		cache.Playlist.doc.queuedSegmentId === takenPartInstance.segmentId
+		playoutModel.playlist.queuedSegmentId === takenPartInstance.segmentId
 	) {
 		// clear the queuedSegmentId if the newly taken partInstance says it was selected because of it
-		cache.Playlist.update((p) => {
-			delete p.queuedSegmentId
-			return p
-		})
+		playoutModel.setQueuedSegment(null)
 	}
 }
 
 /**
  * Reset the Segment of the previousPartInstance, if playback has left that Segment and the Rundown is looping
- * @param cache Cache for the active Playlist
+ * @param playoutModel Model for the active Playlist
  */
-export function resetPreviousSegment(cache: CacheForPlayout): void {
-	const { previousPartInstance, currentPartInstance } = getSelectedPartInstancesFromCache(cache)
+export function resetPreviousSegment(playoutModel: PlayoutModel): void {
+	const previousPartInstance = playoutModel.previousPartInstance
+	const currentPartInstance = playoutModel.currentPartInstance
 
 	// If the playlist is looping and
 	// If the previous and current part are not in the same segment, then we have just left a segment
 	if (
-		cache.Playlist.doc.loop &&
+		playoutModel.playlist.loop &&
 		previousPartInstance &&
-		previousPartInstance.segmentId !== currentPartInstance?.segmentId
+		previousPartInstance.partInstance.segmentId !== currentPartInstance?.partInstance?.segmentId
 	) {
 		// Reset the old segment
-		const segmentId = previousPartInstance.segmentId
-		const resetIds = new Set(
-			cache.PartInstances.updateAll((p) => {
-				if (!p.reset && p.segmentId === segmentId) {
-					p.reset = true
-					return p
-				} else {
-					return false
-				}
-			})
-		)
-		cache.PieceInstances.updateAll((p) => {
-			if (resetIds.has(p.partInstanceId)) {
-				p.reset = true
-				return p
-			} else {
-				return false
+		const segmentId = previousPartInstance.partInstance.segmentId
+		for (const partInstance of playoutModel.loadedPartInstances) {
+			if (partInstance.partInstance.segmentId === segmentId) {
+				partInstance.markAsReset()
 			}
-		})
+		}
 	}
 }
 
 async function afterTakeUpdateTimingsAndEvents(
 	context: JobContext,
-	cache: CacheForPlayout,
+	playoutModel: PlayoutModel,
 	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 	isFirstTake: boolean,
 	takeDoneTime: number
 ): Promise<void> {
-	const { currentPartInstance: takePartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(cache)
+	const takePartInstance = playoutModel.currentPartInstance
+	const previousPartInstance = playoutModel.previousPartInstance
 
 	if (takePartInstance) {
 		// Simulate playout, if no gateway
-		const playoutDevices = cache.PeripheralDevices.findAll((d) => d.type === PeripheralDeviceType.PLAYOUT)
+		const playoutDevices = playoutModel.peripheralDevices.filter((d) => d.type === PeripheralDeviceType.PLAYOUT)
 		if (playoutDevices.length === 0) {
 			logger.info(
 				`No Playout gateway attached to studio, reporting PartInstance "${
-					takePartInstance._id
+					takePartInstance.partInstance._id
 				}" to have started playback on timestamp ${new Date(takeDoneTime).toISOString()}`
 			)
-			reportPartInstanceHasStarted(context, cache, takePartInstance, takeDoneTime)
+			reportPartInstanceHasStarted(context, playoutModel, takePartInstance, takeDoneTime)
 
 			if (previousPartInstance) {
 				logger.info(
 					`Also reporting PartInstance "${
-						previousPartInstance._id
+						previousPartInstance.partInstance._id
 					}" to have stopped playback on timestamp ${new Date(takeDoneTime).toISOString()}`
 				)
-				reportPartInstanceHasStopped(context, cache, previousPartInstance, takeDoneTime)
+				reportPartInstanceHasStopped(context, playoutModel, previousPartInstance, takeDoneTime)
 			}
 
 			// Future: is there anything we can do for simulating autoNext?
 		}
 
-		const takeRundown = takePartInstance ? cache.Rundowns.findOne(takePartInstance.rundownId) : undefined
+		const takeRundown = takePartInstance
+			? playoutModel.getRundown(takePartInstance.partInstance.rundownId)
+			: undefined
 
 		if (isFirstTake && takeRundown) {
 			if (blueprint.blueprint.onRundownFirstTake) {
@@ -392,8 +360,8 @@ async function afterTakeUpdateTimingsAndEvents(
 							context.getStudioBlueprintConfig(),
 							showStyle,
 							context.getShowStyleBlueprintConfig(showStyle),
-							takeRundown,
-							takePartInstance
+							takeRundown.rundown,
+							takePartInstance.partInstance
 						)
 					)
 				} catch (err) {
@@ -413,8 +381,8 @@ async function afterTakeUpdateTimingsAndEvents(
 						context.getStudioBlueprintConfig(),
 						showStyle,
 						context.getShowStyleBlueprintConfig(showStyle),
-						takeRundown,
-						takePartInstance
+						takeRundown.rundown,
+						takePartInstance.partInstance
 					)
 				)
 			} catch (err) {
@@ -427,29 +395,31 @@ async function afterTakeUpdateTimingsAndEvents(
 
 export function updatePartInstanceOnTake(
 	context: JobContext,
-	cache: CacheForPlayout,
+	playlist: ReadonlyDeep<DBRundownPlaylist>,
 	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
-	takeRundown: DBRundown,
-	takePartInstance: DBPartInstance,
-	currentPartInstance: DBPartInstance | undefined
+	takeRundown: ReadonlyDeep<DBRundown>,
+	takePartInstance: PlayoutPartInstanceModel,
+	currentPartInstance: PlayoutPartInstanceModel | null
 ): void {
-	const playlist = cache.Playlist.doc
-
 	// TODO - the state could change after this sampling point. This should be handled properly
 	let previousPartEndState: PartEndState | undefined = undefined
 	if (blueprint.blueprint.getEndStateForPart && currentPartInstance) {
 		try {
 			const time = getCurrentTime()
 
-			const resolvedPieces = getResolvedPieces(context, cache, showStyle.sourceLayers, currentPartInstance)
+			const resolvedPieces = getResolvedPiecesForCurrentPartInstance(
+				context,
+				showStyle.sourceLayers,
+				currentPartInstance
+			)
 
 			const span = context.startSpan('blueprint.getEndStateForPart')
 			const context2 = new RundownContext(
 				{
 					name: `${playlist.name}`,
 					identifier: `playlist=${playlist._id},currentPartInstance=${
-						currentPartInstance._id
+						currentPartInstance.partInstance._id
 					},execution=${getRandomId()}`,
 				},
 				context.studio,
@@ -461,7 +431,7 @@ export function updatePartInstanceOnTake(
 			previousPartEndState = blueprint.blueprint.getEndStateForPart(
 				context2,
 				playlist.previousPersistentState,
-				convertPartInstanceToBlueprints(currentPartInstance),
+				convertPartInstanceToBlueprints(currentPartInstance.partInstance),
 				resolvedPieces.map(convertResolvedPieceInstanceToBlueprints),
 				time
 			)
@@ -476,56 +446,32 @@ export function updatePartInstanceOnTake(
 	// calculate and cache playout timing properties, so that we don't depend on the previousPartInstance:
 	const tmpTakePieces = processAndPrunePieceInstanceTimings(
 		showStyle.sourceLayers,
-		cache.PieceInstances.findAll((p) => p.partInstanceId === takePartInstance._id),
+		takePartInstance.pieceInstances.map((p) => p.pieceInstance),
 		0
 	)
 	const partPlayoutTimings = calculatePartTimings(
-		cache.Playlist.doc.holdState,
-		currentPartInstance?.part,
-		cache.PieceInstances.findAll((p) => p.partInstanceId === currentPartInstance?._id).map((p) => p.piece),
-		takePartInstance.part,
+		playlist.holdState,
+		currentPartInstance?.partInstance?.part,
+		currentPartInstance?.pieceInstances?.map((p) => p.pieceInstance.piece) ?? [],
+		takePartInstance.partInstance.part,
 		tmpTakePieces.filter((p) => !p.infinite || p.infinite.infiniteInstanceIndex === 0).map((p) => p.piece)
 	)
 
-	cache.PartInstances.updateOne(takePartInstance._id, (p) => {
-		p.isTaken = true
-		p.partPlayoutTimings = partPlayoutTimings
-
-		if (previousPartEndState) {
-			p.previousPartEndState = previousPartEndState
-		}
-
-		return p
-	})
+	takePartInstance.storePlayoutTimingsAndPreviousEndState(partPlayoutTimings, previousPartEndState)
 }
 
 export async function afterTake(
 	context: JobContext,
-	cache: CacheForPlayout,
-	takePartInstance: DBPartInstance,
-	timeOffsetIntoPart: number | null = null
+	playoutModel: PlayoutModel,
+	takePartInstance: PlayoutPartInstanceModel
 ): Promise<void> {
 	const span = context.startSpan('afterTake')
 	// This function should be called at the end of a "take" event (when the Parts have been updated)
 	// or after a new part has started playing
 
-	await updateTimeline(context, cache, timeOffsetIntoPart || undefined)
+	await updateTimeline(context, playoutModel)
 
-	cache.deferAfterSave(async () => {
-		// This is low-prio, defer so that it's executed well after publications has been updated,
-		// so that the playout gateway has haf the chance to learn about the timeline changes
-		if (takePartInstance.part.shouldNotifyCurrentPlayingPart) {
-			context
-				.queueEventJob(EventsJobs.NotifyCurrentlyPlayingPart, {
-					rundownId: takePartInstance.rundownId,
-					isRehearsal: !!cache.Playlist.doc.rehearsal,
-					partExternalId: takePartInstance.part.externalId,
-				})
-				.catch((e) => {
-					logger.warn(`Failed to queue NotifyCurrentlyPlayingPart job: ${e}`)
-				})
-		}
-	})
+	playoutModel.queueNotifyCurrentlyPlayingPartEvent(takePartInstance.partInstance.rundownId, takePartInstance)
 
 	if (span) span.end()
 }
@@ -535,65 +481,31 @@ export async function afterTake(
  */
 function startHold(
 	context: JobContext,
-	cache: CacheForPlayout,
-	activationId: RundownPlaylistActivationId,
-	holdFromPartInstance: DBPartInstance | undefined,
-	holdToPartInstance: DBPartInstance | undefined
+	holdFromPartInstance: PlayoutPartInstanceModel | null,
+	holdToPartInstance: PlayoutPartInstanceModel | undefined
 ) {
 	if (!holdFromPartInstance) throw new Error('previousPart not found!')
 	if (!holdToPartInstance) throw new Error('currentPart not found!')
 	const span = context.startSpan('startHold')
 
 	// Make a copy of any item which is flagged as an 'infinite' extension
-	const itemsToCopy = cache.PieceInstances.findAll(
-		(p) => p.partInstanceId === holdFromPartInstance._id && !!p.piece.extendOnHold
-	)
-	itemsToCopy.forEach((instance) => {
-		if (!instance.infinite) {
-			const infiniteInstanceId: PieceInstanceInfiniteId = getRandomId()
+	const pieceInstancesToCopy = holdFromPartInstance.pieceInstances.filter((p) => !!p.pieceInstance.piece.extendOnHold)
+	pieceInstancesToCopy.forEach((instance) => {
+		if (!instance.pieceInstance.infinite) {
 			// mark current one as infinite
-			cache.PieceInstances.updateOne(instance._id, (p) => {
-				p.infinite = {
-					infiniteInstanceId: infiniteInstanceId,
-					infiniteInstanceIndex: 0,
-					infinitePieceId: instance.piece._id,
-					fromPreviousPart: false,
-				}
-				return p
-			})
-
-			// make the extension
-			const newInstance = literal<PieceInstance>({
-				_id: protectString<PieceInstanceId>(instance._id + '_hold'),
-				playlistActivationId: activationId,
-				rundownId: instance.rundownId,
-				partInstanceId: holdToPartInstance._id,
-				dynamicallyInserted: getCurrentTime(),
-				piece: {
-					...clone(instance.piece),
-					enable: { start: 0 },
-					extendOnHold: false,
-				},
-				infinite: {
-					infiniteInstanceId: infiniteInstanceId,
-					infiniteInstanceIndex: 1,
-					infinitePieceId: instance.piece._id,
-					fromPreviousPart: true,
-					fromHold: true,
-				},
-				// Preserve the timings from the playing instance
-				reportedStartedPlayback: instance.reportedStartedPlayback,
-				reportedStoppedPlayback: instance.reportedStoppedPlayback,
-				plannedStartedPlayback: instance.plannedStartedPlayback,
-				plannedStoppedPlayback: instance.plannedStoppedPlayback,
-			})
-			const content = newInstance.piece.content as VTContent | undefined
-			if (content?.fileName && content.sourceDuration && instance.plannedStartedPlayback) {
-				content.seek = Math.min(content.sourceDuration, getCurrentTime() - instance.plannedStartedPlayback)
-			}
+			instance.prepareForHold()
 
 			// This gets deleted once the nextpart is activated, so it doesnt linger for long
-			cache.PieceInstances.replace(newInstance)
+			const extendedPieceInstance = holdToPartInstance.insertHoldPieceInstance(instance)
+
+			const content = clone(instance.pieceInstance.piece.content) as VTContent | undefined
+			if (content?.fileName && content.sourceDuration && instance.pieceInstance.plannedStartedPlayback) {
+				content.seek = Math.min(
+					content.sourceDuration,
+					getCurrentTime() - instance.pieceInstance.plannedStartedPlayback
+				)
+			}
+			extendedPieceInstance.updatePieceProps({ content })
 		}
 	})
 	if (span) span.end()
@@ -601,22 +513,19 @@ function startHold(
 
 async function completeHold(
 	context: JobContext,
-	cache: CacheForPlayout,
+	playoutModel: PlayoutModel,
 	showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
-	currentPartInstance: DBPartInstance | undefined
+	currentPartInstance: PlayoutPartInstanceModel | null
 ): Promise<void> {
-	cache.Playlist.update((p) => {
-		p.holdState = RundownHoldState.COMPLETE
-		return p
-	})
+	playoutModel.setHoldState(RundownHoldState.COMPLETE)
 
-	if (cache.Playlist.doc.currentPartInfo) {
+	if (playoutModel.playlist.currentPartInfo) {
 		if (!currentPartInstance) throw new Error('currentPart not found!')
 
 		// Clear the current extension line
 		innerStopPieces(
 			context,
-			cache,
+			playoutModel,
 			showStyleCompound.sourceLayers,
 			currentPartInstance,
 			(p) => !!p.infinite?.fromHold,
@@ -624,5 +533,5 @@ async function completeHold(
 		)
 	}
 
-	await updateTimeline(context, cache)
+	await updateTimeline(context, playoutModel)
 }

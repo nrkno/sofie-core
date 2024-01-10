@@ -6,7 +6,7 @@ import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
-} from '../../../../lib/collections/PeripheralDevices'
+} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { literal, getRandomId, protectString, unprotectString } from '../../../../lib/lib'
 import {
 	LookaheadMode,
@@ -22,7 +22,7 @@ import {
 	PlayoutActions,
 	IBlueprintTriggeredActions,
 } from '@sofie-automation/blueprints-integration'
-import { Studio, MappingExt } from '../../../../lib/collections/Studios'
+import { DBStudio, MappingExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { MigrationContextStudio, MigrationContextShowStyle, MigrationContextSystem } from '../migrationContext'
 import { DBShowStyleBase, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
@@ -47,18 +47,18 @@ describe('Test blueprint migrationContext', () => {
 
 	describe('MigrationContextStudio', () => {
 		async function getContext() {
-			const studio = (await Studios.findOneAsync({})) as Studio
+			const studio = (await Studios.findOneAsync({})) as DBStudio
 			expect(studio).toBeTruthy()
 			return new MigrationContextStudio(studio)
 		}
-		function getStudio(context: MigrationContextStudio): Studio {
+		function getStudio(context: MigrationContextStudio): DBStudio {
 			const studio = (context as any).studio
 			expect(studio).toBeTruthy()
 			return studio
 		}
 		describe('mappings', () => {
-			async function getMappingFromDb(studio: Studio, mappingId: string): Promise<MappingExt | undefined> {
-				const studio2 = (await Studios.findOneAsync(studio._id)) as Studio
+			async function getMappingFromDb(studio: DBStudio, mappingId: string): Promise<MappingExt | undefined> {
+				const studio2 = (await Studios.findOneAsync(studio._id)) as DBStudio
 				expect(studio2).toBeTruthy()
 				return studio2.mappingsWithOverrides.defaults[mappingId]
 			}
@@ -253,8 +253,8 @@ describe('Test blueprint migrationContext', () => {
 		})
 
 		describe('config', () => {
-			async function getAllConfigFromDb(studio: Studio): Promise<IBlueprintConfig> {
-				const studio2 = (await Studios.findOneAsync(studio._id)) as Studio
+			async function getAllConfigFromDb(studio: DBStudio): Promise<IBlueprintConfig> {
+				const studio2 = (await Studios.findOneAsync(studio._id)) as DBStudio
 				expect(studio2).toBeTruthy()
 				return studio2.blueprintConfigWithOverrides.defaults
 			}
@@ -414,13 +414,13 @@ describe('Test blueprint migrationContext', () => {
 		})
 
 		describe('devices', () => {
-			async function getStudio(context: MigrationContextStudio): Promise<Studio> {
+			async function getStudio(context: MigrationContextStudio): Promise<DBStudio> {
 				const studioId = (context as any).studio._id
-				const studio = (await Studios.findOneAsync(studioId)) as Studio
+				const studio = (await Studios.findOneAsync(studioId)) as DBStudio
 				expect(studio).toBeTruthy()
 				return studio
 			}
-			async function createPlayoutDevice(studio: Studio) {
+			async function createPlayoutDevice(studio: DBStudio) {
 				const peripheralDeviceId = getRandomId()
 				studio.peripheralDeviceSettings.playoutDevices.defaults = {
 					device01: {
@@ -458,7 +458,7 @@ describe('Test blueprint migrationContext', () => {
 					},
 				})
 			}
-			async function getPlayoutDevice(studio: Studio): Promise<PeripheralDevice> {
+			async function getPlayoutDevice(studio: DBStudio): Promise<PeripheralDevice> {
 				const device = await PeripheralDevices.findOneAsync({
 					studioId: studio._id,
 					type: PeripheralDeviceType.PLAYOUT,

@@ -3,14 +3,14 @@ import { WithTranslation, withTranslation } from 'react-i18next'
 import Moment from 'react-moment'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { withTiming, WithTiming } from './withTiming'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { RundownUtils } from '../../../lib/rundown'
 import { getCurrentTime } from '../../../../lib/lib'
 import ClassNames from 'classnames'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 
 interface IEndTimingProps {
-	rundownPlaylist: RundownPlaylist
+	rundownPlaylist: DBRundownPlaylist
 	hidePlannedStart?: boolean
 	hideDiff?: boolean
 	plannedStartText?: string

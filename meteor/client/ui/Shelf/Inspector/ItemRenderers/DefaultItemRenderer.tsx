@@ -2,7 +2,7 @@ import * as React from 'react'
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
 import { IAdLibListItem } from '../../AdLibListItem'
 import { RundownUtils } from '../../../../lib/rundown'
-import { Piece } from '../../../../../lib/collections/Pieces'
+import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import InspectorTitle from './InspectorTitle'
 import { BucketAdLibUi } from '../../RundownViewBuckets'
 import { AdLibPieceUi } from '../../../../lib/shelf'
@@ -10,11 +10,13 @@ import { UIShowStyleBase } from '../../../../../lib/api/showStyles'
 import { UIStudio } from '../../../../../lib/api/studios'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 
-export default function DefaultItemRenderer(props: {
-	piece: PieceUi | IAdLibListItem | BucketAdLibUi
-	showStyleBase: UIShowStyleBase
-	studio: UIStudio
-}): JSX.Element {
+export default function DefaultItemRenderer(
+	props: Readonly<{
+		piece: PieceUi | IAdLibListItem | BucketAdLibUi
+		showStyleBase: UIShowStyleBase
+		studio: UIStudio
+	}>
+): JSX.Element {
 	if (RundownUtils.isAdLibPiece(props.piece)) {
 		const piece = props.piece as IAdLibListItem
 

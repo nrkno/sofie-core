@@ -1,6 +1,6 @@
 import { IBlueprintConfig, IOutputLayer, ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { ObjectWithOverrides } from '../settings/objectWithOverrides'
-import { LastBlueprintConfig } from './Blueprint'
+import { BlueprintHash, LastBlueprintConfig } from './Blueprint'
 import { BlueprintId, OrganizationId, ShowStyleBaseId } from './Ids'
 
 export interface HotkeyDefinition {
@@ -55,4 +55,6 @@ export interface DBShowStyleBase {
 
 	/** Details on the last blueprint used to generate the defaults values for this */
 	lastBlueprintConfig: LastBlueprintConfig | undefined
+	/** Last BlueprintHash where the fixupConfig method was run */
+	lastBlueprintFixUpHash: BlueprintHash | undefined
 }

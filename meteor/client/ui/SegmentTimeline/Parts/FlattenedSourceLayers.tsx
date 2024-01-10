@@ -7,17 +7,18 @@ import { SourceLayerItemContainer } from '../SourceLayerItemContainer'
 import { ISourceLayerPropsBase, useMouseContext } from './SourceLayer'
 import { ISourceLayerExtended } from '../../../../lib/Rundown'
 import { PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { ReadonlyDeep } from 'type-fest'
 
 interface IFlattenedSourceLayerProps extends ISourceLayerPropsBase {
 	layers: ISourceLayerUi[]
 	shouldShowDuration: (layer: ISourceLayerExtended) => boolean
 }
 
-export function FlattenedSourceLayers(props: IFlattenedSourceLayerProps): JSX.Element {
-	const { getPartContext, onMouseUp } = useMouseContext(props)
+export function FlattenedSourceLayers(props: Readonly<IFlattenedSourceLayerProps>): JSX.Element {
+	const { getPartContext, onMouseDown } = useMouseContext(props)
 
 	const piecesForLayers = useMemo(() => {
-		const piecesForLayers: Map<string, PieceInstancePiece[]> = new Map()
+		const piecesForLayers: Map<string, ReadonlyDeep<PieceInstancePiece>[]> = new Map()
 		for (const layer of props.layers) {
 			piecesForLayers.set(
 				layer._id,
@@ -32,7 +33,7 @@ export function FlattenedSourceLayers(props: IFlattenedSourceLayerProps): JSX.El
 			id="segment-timeline-context-menu"
 			attributes={{
 				className: 'segment-timeline__layer segment-timeline__layer--flattened',
-				onMouseUpCapture: (e) => onMouseUp(e),
+				onMouseUpCapture: (e) => onMouseDown(e),
 				role: 'log',
 				'aria-live': 'assertive',
 				'aria-label': props.outputLayer.name,
@@ -75,7 +76,7 @@ export function FlattenedSourceLayers(props: IFlattenedSourceLayerProps): JSX.El
 									part={props.part}
 									partStartsAt={props.startsAt}
 									partDuration={props.duration}
-									partExpectedDuration={props.expectedDuration}
+									partDisplayDuration={props.displayDuration}
 									timeScale={props.timeScale}
 									autoNextPart={props.autoNextPart}
 									liveLinePadding={props.liveLinePadding}

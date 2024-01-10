@@ -172,6 +172,20 @@ export enum StudioJobs {
 	 * Validate the blueprintConfig for the Studio, with the Blueprint validateConfig
 	 */
 	BlueprintValidateConfigForStudio = 'blueprintValidateConfigForStudio',
+
+	/**
+	 * Run the 'fixUpConfig' method for the Studio blueprint config
+	 */
+	BlueprintFixUpConfigForStudio = 'blueprintFixUpConfigForStudio',
+	/**
+	 * Ignore the 'fixUpConfig' method for the Studio blueprint config
+	 */
+	BlueprintIgnoreFixUpConfigForStudio = 'blueprintIgnoreFixUpConfigForStudio',
+
+	/**
+	 * Activate scratchpad mode for the Rundown containing the nexted Part.
+	 */
+	ActivateScratchpad = 'activateScratchpad',
 }
 
 export interface RundownPlayoutPropsBase {
@@ -297,6 +311,17 @@ export interface BlueprintValidateConfigForStudioResult {
 	}>
 }
 
+export interface BlueprintFixUpConfigForStudioResult {
+	messages: Array<{
+		path: string
+		message: ITranslatableMessage
+	}>
+}
+
+export interface ActivateScratchpadProps extends RundownPlayoutPropsBase {
+	rundownId: RundownId
+}
+
 /**
  * Set of valid functions, of form:
  * `id: (data) => return`
@@ -344,6 +369,10 @@ export type StudioJobFunc = {
 
 	[StudioJobs.BlueprintUpgradeForStudio]: () => void
 	[StudioJobs.BlueprintValidateConfigForStudio]: () => BlueprintValidateConfigForStudioResult
+	[StudioJobs.BlueprintFixUpConfigForStudio]: () => BlueprintFixUpConfigForStudioResult
+	[StudioJobs.BlueprintIgnoreFixUpConfigForStudio]: () => void
+
+	[StudioJobs.ActivateScratchpad]: (data: ActivateScratchpadProps) => void
 }
 
 export function getStudioQueueName(id: StudioId): string {

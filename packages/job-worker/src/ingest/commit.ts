@@ -5,11 +5,11 @@ import {
 	RundownId,
 	PartInstanceId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { DBRundown, RundownOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { unprotectString, protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { DbCacheReadCollection } from '../cache/CacheCollection'
 import { logger } from '../logging'
-import { CacheForPlayout } from '../playout/cache'
+import { PlayoutModel } from '../playout/model/PlayoutModel'
+import { PlayoutRundownModel } from '../playout/model/PlayoutRundownModel'
 import { isTooCloseToAutonext } from '../playout/lib'
 import { allowedToMoveRundownOutOfPlaylist, updatePartInstanceRanks } from '../rundown'
 import {
@@ -23,10 +23,10 @@ import { getRundown } from './lib'
 import { JobContext } from '../jobs'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { runJobWithPlaylistLock, runWithPlaylistCache } from '../playout/lock'
+import { runJobWithPlaylistLock, runWithPlayoutModel } from '../playout/lock'
 import { removeSegmentContents } from './cleanup'
 import { CommitIngestData } from './lock'
-import { normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
+import { groupByToMap, groupByToMapFunc, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { PlaylistLock } from '../jobs/lock'
 import { syncChangesToPartInstances } from './syncChangesToPartInstance'
 import { ensureNextPartIsValid } from './updateNext'
@@ -41,8 +41,11 @@ import {
 	orphanedHiddenSegmentPropertiesToPreserve,
 	SegmentOrphanedReason,
 } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
+import { PlayoutRundownModelImpl } from '../playout/model/implementation/PlayoutRundownModelImpl'
+import { PlayoutSegmentModelImpl } from '../playout/model/implementation/PlayoutSegmentModelImpl'
+import { ReadOnlyCache } from '../cache/CacheBase'
+import { createPlayoutCachefromIngestCache } from '../playout/model/implementation/LoadPlayoutModel'
 
 export type BeforePartMapItem = { id: PartId; rank: number }
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<BeforePartMapItem>>
@@ -195,13 +198,17 @@ export async function CommitIngestOperation(
 			await context.directCollections.RundownPlaylists.replace(newPlaylist)
 			// ensure instances are updated for rundown changes
 			await updatePartInstancesSegmentIds(context, ingestCache, data.renamedSegments)
-			await updatePartInstancesBasicProperties(context, ingestCache.Parts, ingestCache.RundownId, newPlaylist)
+			await updatePartInstancesBasicProperties(
+				context,
+				hackConvertIngestCacheToRundownWithSegments(ingestCache),
+				newPlaylist
+			)
 
 			// Update the playout to use the updated rundown
 			await updatePartInstanceRanks(context, ingestCache, data.changedSegmentIds, beforePartMap)
 
 			// Create the full playout cache, now we have the rundowns and playlist updated
-			const playoutCache = await CacheForPlayout.fromIngest(
+			const playoutCache = await createPlayoutCachefromIngestCache(
 				context,
 				playlistLock,
 				newPlaylist,
@@ -213,6 +220,8 @@ export async function CommitIngestOperation(
 			const pSaveIngest = ingestCache.saveAllToDatabase()
 			pSaveIngest.catch(() => null) // Ensure promise isn't reported as unhandled
 
+			await validateScratchpad(context, playoutCache)
+
 			try {
 				// sync changes to the 'selected' partInstances
 				await syncChangesToPartInstances(context, playoutCache, ingestCache)
@@ -221,14 +230,14 @@ export async function CommitIngestOperation(
 					// Run in the background, we don't want to hold onto the lock to do this
 					context
 						.queueEventJob(EventsJobs.RundownDataChanged, {
-							playlistId: playoutCache.PlaylistId,
+							playlistId: playoutCache.playlistId,
 							rundownId: ingestCache.RundownId,
 						})
 						.catch((e) => {
 							logger.error(`Queue RundownDataChanged failed: ${e}`)
 						})
 
-					triggerUpdateTimelineAfterIngestData(context, playoutCache.PlaylistId)
+					triggerUpdateTimelineAfterIngestData(context, playoutCache.playlistId)
 				})
 
 				// wait for the ingest changes to save
@@ -335,24 +344,38 @@ async function updatePartInstancesSegmentIds(
 	}
 }
 
+export function hackConvertIngestCacheToRundownWithSegments(cache: ReadOnlyCache<CacheForIngest>): PlayoutRundownModel {
+	const rundown = cache.Rundown.doc
+	if (!rundown) {
+		throw new Error(`Rundown "${cache.RundownId}" ("${cache.RundownExternalId}") not found`)
+	}
+
+	const groupedParts = groupByToMap(cache.Parts.findAll(null), 'segmentId')
+	const segmentsWithParts = cache.Segments.findAll(null).map(
+		(segment) => new PlayoutSegmentModelImpl(segment, groupedParts.get(segment._id) ?? [])
+	)
+	const groupedSegmentsWithParts = groupByToMapFunc(segmentsWithParts, (s) => s.segment.rundownId)
+
+	return new PlayoutRundownModelImpl(rundown, groupedSegmentsWithParts.get(rundown._id) ?? [], [])
+}
+
 /**
  * Ensure some 'basic' PartInstances properties are in sync with their parts
  */
 async function updatePartInstancesBasicProperties(
 	context: JobContext,
-	partCache: DbCacheReadCollection<DBPart>,
-	rundownId: RundownId,
+	rundownModel: PlayoutRundownModel,
 	playlist: ReadonlyDeep<DBRundownPlaylist>
 ) {
 	// Get a list of all the Parts that are known to exist
-	const knownPartIds = partCache.findAll(null).map((p) => p._id)
+	const knownPartIds = rundownModel.getAllPartIds()
 
 	// Find all the partInstances which are not reset, and are not orphaned, but their Part no longer exist (ie they should be orphaned)
 	const partInstancesToOrphan: Array<Pick<DBPartInstance, '_id'>> =
 		await context.directCollections.PartInstances.findFetch(
 			{
 				reset: { $ne: true },
-				rundownId: rundownId,
+				rundownId: rundownModel.rundown._id,
 				orphaned: { $exists: false },
 				'part._id': { $nin: knownPartIds },
 			},
@@ -470,13 +493,13 @@ export async function updatePlayoutAfterChangingRundownInPlaylist(
 	insertedRundown: ReadonlyDeep<DBRundown> | null
 ): Promise<void> {
 	// ensure the 'old' playout is updated to remove any references to the rundown
-	await runWithPlaylistCache(context, playlist, playlistLock, null, async (playoutCache) => {
-		if (playoutCache.Rundowns.documents.size === 0) {
-			if (playoutCache.Playlist.doc.activationId)
-				throw new Error(`RundownPlaylist "${playoutCache.PlaylistId}" has no contents but is active...`)
+	await runWithPlayoutModel(context, playlist, playlistLock, null, async (playoutCache) => {
+		if (playoutCache.rundowns.length === 0) {
+			if (playoutCache.playlist.activationId)
+				throw new Error(`RundownPlaylist "${playoutCache.playlistId}" has no contents but is active...`)
 
 			// Remove an empty playlist
-			await context.directCollections.RundownPlaylists.remove({ _id: playoutCache.PlaylistId })
+			await context.directCollections.RundownPlaylists.remove({ _id: playoutCache.playlistId })
 
 			playoutCache.assertNoChanges()
 			return
@@ -485,19 +508,17 @@ export async function updatePlayoutAfterChangingRundownInPlaylist(
 		// Ensure playout is in sync
 
 		if (insertedRundown) {
-			// If a rundown has changes, ensure instances are updated
-			await updatePartInstancesBasicProperties(
-				context,
-				playoutCache.Parts,
-				insertedRundown._id,
-				playoutCache.Playlist.doc
-			)
+			const rundownModel = playoutCache.getRundown(insertedRundown._id)
+			if (rundownModel) {
+				// If a rundown has changes, ensure instances are updated
+				await updatePartInstancesBasicProperties(context, rundownModel, playoutCache.playlist)
+			}
 		}
 
 		await ensureNextPartIsValid(context, playoutCache)
 
-		if (playoutCache.Playlist.doc.activationId) {
-			triggerUpdateTimelineAfterIngestData(context, playoutCache.PlaylistId)
+		if (playoutCache.playlist.activationId) {
+			triggerUpdateTimelineAfterIngestData(context, playoutCache.playlistId)
 		}
 	})
 }
@@ -604,7 +625,7 @@ function setRundownAsTrapepdInPlaylist(
 	if (rundownIsToBeRemoved) {
 		// Orphan the deleted rundown
 		ingestCache.Rundown.update((rd) => {
-			rd.orphaned = 'deleted'
+			rd.orphaned = RundownOrphanedReason.DELETED
 			return rd
 		})
 	} else {
@@ -810,6 +831,22 @@ async function preserveUnsyncedPlayingSegmentContents(
 		}
 		for (const action of oldAdLibActions) {
 			ingestCache.AdLibActions.insert(action)
+		}
+	}
+}
+
+async function validateScratchpad(_context: JobContext, playoutModel: PlayoutModel) {
+	for (const rundown of playoutModel.rundowns) {
+		const scratchpadSegment = rundown.getScratchpadSegment()
+
+		if (scratchpadSegment) {
+			// Ensure the _rank is just before the real content
+			const otherSegmentsInRundown = rundown.segments.filter(
+				(s) => s.segment.orphaned !== SegmentOrphanedReason.SCRATCHPAD
+			)
+			const minNormalRank = Math.min(0, ...otherSegmentsInRundown.map((s) => s.segment._rank))
+
+			rundown.setScratchpadSegmentRank(minNormalRank - 1)
 		}
 	}
 }

@@ -13,6 +13,7 @@ import {
 	SegmentId,
 	StudioId,
 } from './Ids'
+import { ReadonlyDeep } from 'type-fest'
 
 /*
  Expected Packages are created from Pieces in the rundown.
@@ -114,15 +115,19 @@ export interface ExpectedPackageDBFromBucketAdLib extends ExpectedPackageDBBase 
 	bucketId: BucketId
 	/** The Bucket adlib this package belongs to */
 	pieceId: BucketAdLibId
+	/** The `externalId` of the Bucket adlib this package belongs to */
+	pieceExternalId: string
 }
 export interface ExpectedPackageDBFromBucketAdLibAction extends ExpectedPackageDBBase {
 	fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB_ACTION
 	bucketId: BucketId
 	/** The Bucket adlib-action this package belongs to */
 	pieceId: BucketAdLibActionId
+	/** The `externalId` of the Bucket adlib-action this package belongs to */
+	pieceExternalId: string
 }
 
-export function getContentVersionHash(expectedPackage: Omit<ExpectedPackage.Any, '_id'>): string {
+export function getContentVersionHash(expectedPackage: ReadonlyDeep<Omit<ExpectedPackage.Any, '_id'>>): string {
 	return hashObj({
 		content: expectedPackage.content,
 		version: expectedPackage.version,

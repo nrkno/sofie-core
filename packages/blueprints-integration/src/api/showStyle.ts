@@ -15,6 +15,7 @@ import type {
 	IDataStoreActionExecutionContext,
 	IRundownActivationContext,
 	IShowStyleContext,
+	IFixUpConfigContext,
 } from '../context'
 import type { IngestAdlib, ExtendedIngestRundown, IngestSegment } from '../ingest'
 import type { IBlueprintExternalMessageQueueObj } from '../message'
@@ -52,7 +53,9 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 
 	/** A list of config items this blueprint expects to be available on the ShowStyle */
 	showStyleConfigSchema: JSONBlob<JSONSchema>
-	/** A list of Migration steps related to a ShowStyle */
+	/** A list of Migration steps related to a ShowStyle
+	 * @deprecated This has been replaced with `validateConfig` and `applyConfig`
+	 */
 	showStyleMigrations: MigrationStepShowStyle[]
 
 	/** The config presets exposed by this blueprint */
@@ -123,7 +126,17 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 	getAdlibItem?: (
 		context: IShowStyleUserContext,
 		ingestItem: IngestAdlib
-	) => IBlueprintAdLibPiece | IBlueprintActionManifest | null
+	) =>
+		| Promise<IBlueprintAdLibPiece | IBlueprintActionManifest | null>
+		| IBlueprintAdLibPiece
+		| IBlueprintActionManifest
+		| null
+
+	/**
+	 * Apply automatic upgrades to the structure of user specified config overrides
+	 * This lets you apply various changes to the user's values in an abstract way
+	 */
+	fixUpConfig?: (context: IFixUpConfigContext<TRawConfig>) => void
 
 	/**
 	 * Validate the config passed to this blueprint
@@ -194,7 +207,6 @@ export interface BlueprintResultTimeline {
 }
 export interface BlueprintResultBaseline {
 	timelineObjects: TimelineObjectCoreExt<TSR.TSRTimelineContent>[]
-	/** @deprecated */
 	expectedPlayoutItems?: ExpectedPlayoutItemGeneric[]
 	expectedPackages?: ExpectedPackage.Any[]
 }

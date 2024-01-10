@@ -1196,5 +1196,28 @@ class ServerUserActionAPI
 			}
 		)
 	}
+
+	async activateScratchpadMode(
+		userEvent: string,
+		eventTime: number,
+		playlistId: RundownPlaylistId,
+		rundownId: RundownId
+	): Promise<ClientAPI.ClientResponse<void>> {
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			eventTime,
+			playlistId,
+			() => {
+				check(playlistId, String)
+				check(rundownId, String)
+			},
+			StudioJobs.ActivateScratchpad,
+			{
+				playlistId: playlistId,
+				rundownId: rundownId,
+			}
+		)
+	}
 }
 registerClassToMeteorMethods(UserActionAPIMethods, ServerUserActionAPI, false)

@@ -32,6 +32,12 @@ export interface IBlueprintPieceInstance<TMetadata = unknown> {
 	}
 }
 export interface IBlueprintResolvedPieceInstance<TMetadata = unknown> extends IBlueprintPieceInstance<TMetadata> {
+	/**
+	 * Calculated start point within the PartInstance
+	 */
 	resolvedStart: number
+	/**
+	 * Calculated duration within the PartInstance
+	 */
 	resolvedDuration?: number
 }

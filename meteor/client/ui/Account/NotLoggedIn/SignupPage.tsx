@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import type { RouteComponentProps } from 'react-router'
-import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
 import { getUser } from '../../../../lib/collections/Users'
 import { NotLoggedInContainer } from './lib'
 import { Link } from 'react-router-dom'
@@ -26,7 +25,7 @@ export const SignupPage = translateWithTracker((props: ISignupPageProps) => {
 	if (user) props.history.push('/rundowns')
 	return {}
 })(
-	class SignupPage extends MeteorReactComponent<Translated<ISignupPageProps>, ISignupPageState> {
+	class SignupPage extends React.Component<Translated<ISignupPageProps>, ISignupPageState> {
 		private applications: string[] = [
 			'Doing TV shows from a studio',
 			'Doing streaming on the web from a studio',
@@ -35,7 +34,7 @@ export const SignupPage = translateWithTracker((props: ISignupPageProps) => {
 		]
 		private broadcastMediums: string[] = ['News', 'Sports', 'E-Sports', 'Entertainment']
 
-		constructor(props) {
+		constructor(props: Translated<ISignupPageProps>) {
 			super(props)
 
 			this.state = {
@@ -52,8 +51,11 @@ export const SignupPage = translateWithTracker((props: ISignupPageProps) => {
 		}
 
 		private handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-			if (Array.isArray(this.state[e.currentTarget.name])) {
-				const item = this.state[e.currentTarget.name]
+			const name = e.currentTarget.name as keyof ISignupPageState
+			if (!(name in this.state)) return
+
+			const item = this.state[name]
+			if (Array.isArray(item)) {
 				if (e.currentTarget.type === 'checkbox') {
 					if (e.currentTarget.checked) {
 						item.push(e.currentTarget.value)
@@ -62,12 +64,12 @@ export const SignupPage = translateWithTracker((props: ISignupPageProps) => {
 						item.splice(found, 1)
 					}
 				} else {
-					const found = item.findIndex((i) => !this[e.currentTarget.name].includes(i))
+					const found = item.findIndex((i) => !this.state[name].includes(i))
 					found !== -1 ? item.splice(found, 1, e.currentTarget.value) : item.push(e.currentTarget.value)
 				}
-				this.setState({ ...this.state, [e.currentTarget.name]: item.filter((i) => i.length) })
+				this.setState({ ...this.state, [name]: item.filter((i) => i.length) })
 			} else {
-				this.setState({ ...this.state, [e.currentTarget.name]: e.currentTarget.value })
+				this.setState({ ...this.state, [name]: e.currentTarget.value })
 			}
 		}
 

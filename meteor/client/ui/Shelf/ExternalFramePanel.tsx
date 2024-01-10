@@ -10,7 +10,7 @@ import {
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementStyle } from './DashboardPanel'
 import { assertNever, getRandomString, literal, protectString } from '../../../lib/lib'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { parseMosPluginMessageXml, MosPluginMessage } from '../../lib/parsers/mos/mosXml2Js'
 import {
@@ -40,7 +40,7 @@ interface IProps {
 	layout: RundownLayoutBase
 	panel: RundownLayoutExternalFrame
 	visible: boolean
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 }
 
 enum SofieExternalMessageType {
@@ -96,7 +96,7 @@ interface CurrentNextPartChangedSofieExternalMessage extends SofieExternalMessag
 
 export const ExternalFramePanel = withTranslation()(
 	class ExternalFramePanel extends React.Component<Translated<IProps>> {
-		frame: HTMLIFrameElement
+		frame: HTMLIFrameElement | null = null
 		mounted = false
 		initialized = false
 		failedDragTimeout: number | undefined
@@ -108,7 +108,7 @@ export const ExternalFramePanel = withTranslation()(
 			}
 		} = {}
 
-		setElement = (frame: HTMLIFrameElement) => {
+		setElement = (frame: HTMLIFrameElement | null) => {
 			this.frame = frame
 			if (this.frame && !this.mounted) {
 				this.registerHandlers()
@@ -135,7 +135,7 @@ export const ExternalFramePanel = withTranslation()(
 
 		onReceiveMessage = (e: MessageEvent) => {
 			if ((e.origin === 'null' || e.origin === self.origin) && this.frame && e.source === this.frame.contentWindow) {
-				const data = e.data || e['message']
+				const data = e.data || (e as any)['message']
 				if (!data) return
 				if (data.type) {
 					this.actSofieMessage(data)
@@ -190,13 +190,7 @@ export const ExternalFramePanel = withTranslation()(
 			console.log('Object received, passing onto blueprints', mosItem)
 
 			const bucketId = this.findBucketId(e.target)
-			let targetBucket
-
-			if (bucketId) {
-				targetBucket = Buckets.findOne(bucketId)
-			} else {
-				targetBucket = Buckets.findOne()
-			}
+			const targetBucket = bucketId ? Buckets.findOne(bucketId) : Buckets.findOne()
 
 			let targetRundown: Rundown | undefined
 			let currentPart: PartInstance | undefined

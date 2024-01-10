@@ -1,8 +1,7 @@
 import * as React from 'react'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ICoreSystem, SofieLogo } from '../../../lib/collections/CoreSystem'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { meteorSubscribe, PubSub } from '../../../lib/api/pubsub'
+import { meteorSubscribe, MeteorPubSub } from '../../../lib/api/pubsub'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorCall } from '../../../lib/api/methods'
@@ -28,9 +27,9 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 		coreSystem: CoreSystem.findOne(),
 	}
 })(
-	class SystemManagement extends MeteorReactComponent<Translated<IProps & ITrackedProps>> {
+	class SystemManagement extends React.Component<Translated<IProps & ITrackedProps>> {
 		componentDidMount(): void {
-			meteorSubscribe(PubSub.coreSystem)
+			meteorSubscribe(MeteorPubSub.coreSystem)
 		}
 		cleanUpOldDatabaseIndexes(): void {
 			const { t } = this.props
@@ -255,21 +254,6 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 								></EditAttribute>
 							</div>
 						</label>
-					</div>
-
-					<h2 className="mhn">{t('Cron jobs')}</h2>
-					<div className="properties-grid">
-						<label className="field">
-							<LabelActual label={t('Disable CasparCG restart job')} />
-							<div className="mdi">
-								<EditAttribute
-									attribute="cron.casparCG.disabled"
-									obj={this.props.coreSystem}
-									type="checkbox"
-									collection={CoreSystem}
-								></EditAttribute>
-							</div>
-						</label>
 						<label className="field">
 							<LabelActual label={t('Enable automatic storage of Rundown Playlist snapshots periodically')} />
 							<div className="mdi">
@@ -292,8 +276,10 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 									collection={CoreSystem}
 									className="mdinput"
 									label="Rundown Playlist names"
-									mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? undefined : v.join(', '))}
-									mutateUpdateValue={(v) =>
+									mutateDisplayValue={(v: string[] | undefined) =>
+										v === undefined || v.length === 0 ? undefined : v.join(', ')
+									}
+									mutateUpdateValue={(v: string | undefined) =>
 										v === undefined || v.length === 0 ? undefined : v.split(',').map((i) => i.trim())
 									}
 								/>

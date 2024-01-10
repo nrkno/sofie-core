@@ -14,12 +14,12 @@ Follow these instructions to start up Sofie Core in development mode. (For produ
 
 ### Prerequisites
 
-- Install [Node.js](https://nodejs.org) 16 (14 will also work) (using [nvm](https://github.com/nvm-sh/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows) is the recommended way to install Node.js)
+- Install [Node.js](https://nodejs.org) version 18.x (16.x will also work) (using [nvm](https://github.com/nvm-sh/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows) is the recommended way to install Node.js)
 - If on Windows: `npm install --global windows-build-tools`
 - Install [Meteor](https://www.meteor.com/install) (`npm install --global meteor`)
 - Install [Yarn](https://yarnpkg.com) (`npm install --global corepack && corepack enable`)
 
-### Quick-start:
+### Quick Start:
 
 ```bash
 git clone -b master https://github.com/nrkno/sofie-core.git
@@ -90,7 +90,7 @@ The "Attach" configuration in `launch.json` supports debugging blueprints.
 
 Local blueprints repo needs to be added to the Visual Studio Code workspace under the name "Blueprints".
 
-It is required to set `devtool` to  `'inline-source-map'` and `output.devtoolModuleFilenameTemplate` to `'blueprint:///[resource-path]'` in webpack config of the blueprints.
+It is required to set `devtool` to `'inline-source-map'` and `output.devtoolModuleFilenameTemplate` to `'blueprint:///[resource-path]'` in webpack config of the blueprints.
 
 ### Dealing with strange errors
 
@@ -132,6 +132,30 @@ Instead of semver, the Major number gets incremented whenever we feel like Sofie
 The version numbers of the blueprints-integration and server-core-integration libraries are tied to this, and as such they also do not follow semver currently. In future these may be decoupled.
 The api of server-core-integration is pretty stable and rarely undergoes any breaking changes, so is ok to be mismatched.
 The api of blueprints-integration is rather volatile, and often has breaking changes. Because of this, we recommend matching the minor version of blueprints-integration with Sofie core. Sofie will warn if these do not match. We expect this to settle down in the future, and will review this decision when we feel it is worthwhile.
+
+## Deprecations
+
+### ConfigManifests
+
+The ConfigManifests for Blueprints and Gateways was replaced with JSONSchema in R50.  
+However, one usage by AdlibActions for their userDataManifest remains as this is not something we are actively using.
+
+## Blueprint Migrations
+
+In R49, a replacement flow was added consisting of `validateConfig` and `applyConfig`.  
+It is no longer recommended to use the old migrations flow for showstyle and studio blueprints.
+
+### ExpectedMediaItems
+
+These are used for Media-manager which is no longer being developed.
+
+### Blueprints: getPieceABSessionId & getTimelineObjectAbSessionId
+
+With AB being a native concept supported by Sofie since R50, these are likely no longer useful to Blueprints.
+
+### MongoQuery `fields` specifier
+
+It is recommended to use `projection` instead, as it is functionally identical but follows recommended naming from mongodb.
 
 ## Additional information
 

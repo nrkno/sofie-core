@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import IconExternalLink from '@docusaurus/theme-classic/lib-next/theme/IconExternalLink'
+import IconExternalLink from '@docusaurus/theme-classic/lib/theme/Icon/ExternalLink'
 
 const GITHUB_API_URL = 'https://api.github.com'
 

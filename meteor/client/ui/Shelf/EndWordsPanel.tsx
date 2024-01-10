@@ -9,20 +9,20 @@ import {
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementStyle } from './DashboardPanel'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { PieceInstance } from '../../../lib/collections/PieceInstances'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { ScriptContent } from '@sofie-automation/blueprints-integration'
 import { getUnfinishedPieceInstancesReactive } from '../../lib/rundownLayouts'
 import { getScriptPreview } from '../../lib/ui/scriptPreview'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { PieceInstances } from '../../collections'
+import { ReadonlyDeep } from 'type-fest'
 
 interface IEndsWordsPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutEndWords
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	showStyleBase: UIShowStyleBase
 }
 
@@ -32,14 +32,10 @@ interface IEndsWordsPanelTrackedProps {
 
 interface IState {}
 
-class EndWordsPanelInner extends MeteorReactComponent<
+class EndWordsPanelInner extends React.Component<
 	Translated<IEndsWordsPanelProps & IEndsWordsPanelTrackedProps>,
 	IState
 > {
-	constructor(props) {
-		super(props)
-	}
-
 	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 
@@ -83,12 +79,12 @@ function getPieceWithScript(props: IEndsWordsPanelProps): PieceInstance | undefi
 	)
 
 	const highestStartedPlayback = unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet.reduce(
-		(hsp, piece: PieceInstance) => Math.max(hsp, piece.reportedStartedPlayback ?? 0),
+		(hsp, piece: ReadonlyDeep<PieceInstance>) => Math.max(hsp, piece.reportedStartedPlayback ?? 0),
 		0
 	)
 
 	const unfinishedPieces = unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet.filter(
-		(pieceInstance: PieceInstance) => {
+		(pieceInstance: ReadonlyDeep<PieceInstance>) => {
 			return !pieceInstance.reportedStartedPlayback || pieceInstance.reportedStartedPlayback == highestStartedPlayback
 		}
 	)

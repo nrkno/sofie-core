@@ -10,7 +10,7 @@ import { StudioContentWriteAccess } from '../security/studio'
 import { ExternalMessageQueueObjId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ExternalMessageQueue } from '../collections'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
-import { MongoQuery } from '../../lib/typings/meteor'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 
 let updateExternalMessageQueueStatusTimeout = 0
 function updateExternalMessageQueueStatus(): void {
@@ -29,15 +29,14 @@ function updateExternalMessageQueueStatus(): void {
 					statusCode: StatusCode.GOOD,
 				}
 				if (messagesOnQueueCount > 0) {
-					// TODO - this is fetching ALL of the docs that match the query, then only using the first
-					const messagesOnQueueExample = await ExternalMessageQueue.findOneAsync(query)[0]
+					const messagesOnQueueExample = await ExternalMessageQueue.findOneAsync(query)
 					status = {
 						statusCode: StatusCode.WARNING_MAJOR,
 						messages: [
 							`There are ${messagesOnQueueCount} unsent messages on queue (one of the unsent messages has the error message: "${
-								messagesOnQueueExample.errorMessage
-							}", to receiver "${messagesOnQueueExample.type}", "${JSON.stringify(
-								messagesOnQueueExample.receiver
+								messagesOnQueueExample?.errorMessage
+							}", to receiver "${messagesOnQueueExample?.type}", "${JSON.stringify(
+								messagesOnQueueExample?.receiver
 							)}")`,
 						],
 					}

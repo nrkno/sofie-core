@@ -2,11 +2,11 @@ import * as React from 'react'
 import ClassNames from 'classnames'
 
 import { ActionButtonType, DashboardLayoutActionButton } from '../../../lib/collections/RundownLayouts'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
 export interface IDashboardButtonProps {
 	button: DashboardLayoutActionButton
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	studioMode: boolean
 
 	onButtonDown: (button: DashboardLayoutActionButton, e: React.SyntheticEvent<HTMLElement>) => void

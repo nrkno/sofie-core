@@ -1,5 +1,5 @@
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
-import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { MediaWorkFlowContentAccess } from '../security/peripheralDevice'
 import { BasicAccessContext } from '../security/organization'
 import { MediaWorkFlows, PeripheralDevices } from '../collections'

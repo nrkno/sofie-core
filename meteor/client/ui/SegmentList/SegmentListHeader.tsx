@@ -11,7 +11,7 @@ import { PartCountdown } from '../RundownView/RundownTiming/PartCountdown'
 import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
 import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { useTranslation } from 'react-i18next'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { IContextMenuContext } from '../RundownView'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
@@ -40,11 +40,11 @@ export function SegmentListHeader({
 	getSegmentContext,
 	onTimeUntilClick,
 	onHeaderNoteClick,
-}: {
+}: Readonly<{
 	isDetached: boolean
 	isDetachedStick: boolean
 	segment: SegmentUi
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	studio: UIStudio
 	parts: Array<PartUi>
 	pieces: Map<PartId, CalculateTimingsPiece[]>
@@ -61,7 +61,7 @@ export function SegmentListHeader({
 	onTimeUntilClick: () => void
 	getSegmentContext: () => IContextMenuContext
 	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteSeverity) => void
-}): JSX.Element {
+}>): JSX.Element {
 	const { t } = useTranslation()
 
 	// TODO: This still needs to detect when it should stop being detached, because the original segment is no longer

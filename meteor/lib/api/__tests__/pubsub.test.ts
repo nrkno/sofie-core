@@ -1,12 +1,24 @@
-import { PubSub } from '../pubsub'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { MeteorPubSub } from '../pubsub'
+import { PeripheralDevicePubSub } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 
 describe('Pubsub', () => {
 	it('Ensures that PubSub values are unique', () => {
-		const values: { [key: string]: true } = {}
-		for (const key in PubSub) {
-			expect(values[key]).toBeFalsy()
-			values[key] = true
+		const values = new Set<string>()
+		const runForEnum = (enumType: any) => {
+			for (const key in enumType) {
+				if (values.has(key))
+					// Throw a meaningful error
+					throw new Error(`Key "${key}" is already defined`)
+
+				values.add(key)
+			}
 		}
-		expect(Object.keys(values).length).toBeGreaterThan(10)
+
+		runForEnum(MeteorPubSub)
+		runForEnum(CorelibPubSub)
+		runForEnum(PeripheralDevicePubSub)
+
+		expect(values.size).toBeGreaterThan(10)
 	})
 })

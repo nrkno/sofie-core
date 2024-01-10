@@ -21,8 +21,8 @@ export class JoyConController extends ControllerAbstract {
 	private reverseSpeedMap = [1, 2, 3, 4, 5, 8, 12, 30]
 	private deadBand = 0.25
 
-	private speedSpline: Spline
-	private reverseSpeedSpline: Spline
+	private speedSpline: Spline | undefined
+	private reverseSpeedSpline: Spline | undefined
 
 	private updateSpeedHandle: number | null = null
 	private timestampOfLastUsedJoyconInput = 0
@@ -307,6 +307,8 @@ export class JoyConController extends ControllerAbstract {
 	}
 
 	private calculateSpeed(inputs: JoyconWithData[]) {
+		if (!this.reverseSpeedSpline || !this.speedSpline) return 0
+
 		const { rangeRevMin, rangeNeutralMin, rangeNeutralMax, rangeFwdMax } = this
 		let inputValue = this.getActiveInputsOfJoycons(inputs)
 

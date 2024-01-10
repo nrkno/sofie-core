@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { Meteor } from 'meteor/meteor'
-import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { TFunction, useTranslation } from 'react-i18next'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
 import { doUserAction, UserAction } from '../../lib/clientUserAction'
@@ -16,19 +16,13 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notific
 
 type ProblemType = 'nothing' | 'minor' | 'major'
 
-// const DEFAULT_STATE = {
-// 	q0: 'nothing',
-// 	q1: '',
-// 	q2: '',
-// }
-
 const DEFAULT_STATE = {
 	problems: 'nothing' as ProblemType,
 	description: [],
 	userName: '' as const,
 } as const
 
-export function AfterBroadcastForm({ playlist }: { playlist: RundownPlaylist }): JSX.Element {
+export function AfterBroadcastForm({ playlist }: Readonly<{ playlist: DBRundownPlaylist }>): JSX.Element {
 	const { t } = useTranslation()
 	const shouldDeactivateRundown = !playlist.loop
 	const [problems, setProblems] = useState<ProblemType>(DEFAULT_STATE.problems)

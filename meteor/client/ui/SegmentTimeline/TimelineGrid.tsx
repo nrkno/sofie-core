@@ -54,20 +54,22 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		durations: PropTypes.object.isRequired,
 	}
 
-	context: {
-		durations: RundownTimingContext
-	}
+	context:
+		| {
+				durations: RundownTimingContext
+		  }
+		| undefined
 
-	canvasElement: HTMLCanvasElement | null
-	parentElement: HTMLDivElement | null
-	ctx: CanvasRenderingContext2D | null
+	canvasElement: HTMLCanvasElement | null = null
+	parentElement: HTMLDivElement | null = null
+	ctx: CanvasRenderingContext2D | null = null
 
-	width: number
-	height: number
-	pixelRatio: number
+	width = 1
+	height = 1
+	pixelRatio = 1
 	scheduledRepaint?: number | null
 
-	private _resizeObserver: ResizeObserver
+	private _resizeObserver: ResizeObserver | undefined
 
 	private fontSize: number = FONT_SIZE
 	private labelTop: number = LABEL_TOP
@@ -155,7 +157,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		}
 	}
 
-	private ring(value, ringMax) {
+	private ring(value: number, ringMax: number) {
 		return value < 0 ? ringMax + (value % ringMax) : value % ringMax
 	}
 
@@ -315,7 +317,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	private calculateSegmentDisplayDuration(): number {
 		let total = 0
 		if (this.context?.durations) {
-			const durations = this.context.durations as RundownTimingContext
+			const durations = this.context.durations
 			this.props.partInstances.forEach((partInstance) => {
 				const currentTime = durations.currentTime || getCurrentTime()
 				const duration =
@@ -375,7 +377,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 								this.repaint()
 							})
 						})
-						.catch((err) => console.log(err))
+						.catch((err: any) => console.log(err))
 					document['fonts'].add(gridFont)
 				} else if (gridFont && !gridFontAvailable) {
 					gridFont.loaded.then(() => {
@@ -444,7 +446,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	}
 
 	componentWillUnmount(): void {
-		this._resizeObserver.disconnect()
+		if (this._resizeObserver) this._resizeObserver.disconnect()
 		window.removeEventListener(RundownTiming.Events.timeupdateLowResolution, this.onTimeupdate)
 		window.removeEventListener(RundownTiming.Events.timeupdateHighResolution, this.onTimeupdate)
 	}

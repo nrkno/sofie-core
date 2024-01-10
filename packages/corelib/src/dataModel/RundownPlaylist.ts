@@ -27,7 +27,7 @@ export interface ABSessionInfo {
 
 export interface ABSessionAssignment {
 	sessionId: string
-	playerId: number
+	playerId: number | string
 	lookahead: boolean // purely informational for debugging
 }
 

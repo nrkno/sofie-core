@@ -4,12 +4,11 @@ import {
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
 	PeripheralDeviceCategory,
-} from '../../../lib/collections/PeripheralDevices'
+} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
@@ -37,7 +36,7 @@ interface IDeviceSettingsTrackedProps {
 	subDevices: PeripheralDevice[] | undefined
 }
 export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, IDeviceSettingsTrackedProps>(
-	(props: IDeviceSettingsProps) => {
+	(props: Readonly<IDeviceSettingsProps>) => {
 		return {
 			device: PeripheralDevices.findOne(props.match.params.deviceId),
 			subDevices: PeripheralDevices.find({
@@ -46,7 +45,7 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 		}
 	}
 )(
-	class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProps & IDeviceSettingsTrackedProps>> {
+	class DeviceSettings extends React.Component<Translated<IDeviceSettingsProps & IDeviceSettingsTrackedProps>> {
 		renderSpecifics() {
 			if (this.props.device && this.props.device.subType === PERIPHERAL_SUBTYPE_PROCESS) {
 				if (this.props.device.configManifest) {
@@ -150,7 +149,7 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 							<h2 className="mhn mtn">{t('Generic Properties')}</h2>
 							<label className="field">
 								<LabelActual label={t('Device Name')} />
-								{!(device && device.name) ? (
+								{!device?.name ? (
 									<div className="error-notice inline">
 										{t('No name set')} <FontAwesomeIcon icon={faExclamationTriangle} />
 									</div>
@@ -257,22 +256,20 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 interface IngestDeviceCoreConfigProps {
 	device: PeripheralDevice
 }
-function IngestDeviceCoreConfig({ device }: IngestDeviceCoreConfigProps) {
+function IngestDeviceCoreConfig({ device }: Readonly<IngestDeviceCoreConfigProps>) {
 	const { t } = useTranslation()
 
 	return (
-		<>
-			<label className="field">
-				<LabelActual label={t('NRCS Name')} />
-				<EditAttribute
-					modifiedClassName="bghl"
-					attribute="nrcsName"
-					obj={device}
-					type="text"
-					collection={PeripheralDevices}
-					className="form-control input text-input input-l"
-				/>
-			</label>
-		</>
+		<label className="field">
+			<LabelActual label={t('NRCS Name')} />
+			<EditAttribute
+				modifiedClassName="bghl"
+				attribute="nrcsName"
+				obj={device}
+				type="text"
+				collection={PeripheralDevices}
+				className="form-control input text-input input-l"
+			/>
+		</label>
 	)
 }

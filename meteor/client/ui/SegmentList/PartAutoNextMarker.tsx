@@ -10,10 +10,10 @@ function widthInBase(pieceMaxDuration: number, timelineBase: number): number {
 export function PartAutoNextMarker({
 	partDuration,
 	timelineBase,
-}: {
+}: Readonly<{
 	partDuration: number
 	timelineBase: number
-}): JSX.Element {
+}>): JSX.Element {
 	const { t } = useTranslation()
 
 	const style = useMemo<React.CSSProperties>(

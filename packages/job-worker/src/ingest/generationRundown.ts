@@ -19,7 +19,6 @@ import {
 	postProcessRundownBaselineItems,
 } from '../blueprints/postProcess'
 import { saveIntoCache } from '../cache/lib'
-import { sumChanges, anythingChanged } from '../db/changes'
 import { getCurrentTime, getSystemVersion } from '../lib'
 import { logger } from '../logging'
 import _ = require('underscore')
@@ -32,7 +31,7 @@ import { SelectedShowStyleVariant, selectShowStyleVariant } from './selectShowSt
 import { getExternalNRCSName, PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { updateBaselineExpectedPackagesOnRundown } from './expectedPackages'
 import { ReadonlyDeep } from 'type-fest'
-import { BlueprintResultRundown } from '@sofie-automation/blueprints-integration'
+import { BlueprintResultRundown, ExtendedIngestRundown } from '@sofie-automation/blueprints-integration'
 import { wrapTranslatableMessageFromBlueprints } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { ReadOnlyCache } from '../cache/CacheBase'
 import { convertRundownToBlueprintSegmentRundown } from '../blueprints/context/lib'
@@ -97,7 +96,7 @@ export async function updateRundownFromIngestData(
 	const rundownData = await getRundownFromIngestData(
 		context,
 		cache,
-		ingestRundown,
+		extendedIngestRundown,
 		pPeripheralDevice,
 		showStyle,
 		showStyleBlueprint,
@@ -195,7 +194,7 @@ export async function updateRundownMetadataFromIngestData(
 	const rundownData = await getRundownFromIngestData(
 		context,
 		cache,
-		ingestRundown,
+		extendedIngestRundown,
 		pPeripheralDevice,
 		showStyle,
 		showStyleBlueprint,
@@ -262,14 +261,12 @@ export async function updateRundownMetadataFromIngestData(
 export async function getRundownFromIngestData(
 	context: JobContext,
 	cache: ReadOnlyCache<CacheForIngest>,
-	ingestRundown: LocalIngestRundown,
+	extendedIngestRundown: ExtendedIngestRundown,
 	pPeripheralDevice: Promise<PeripheralDevice | undefined> | undefined,
 	showStyle: SelectedShowStyleVariant,
 	showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 	allRundownWatchedPackages: WatchedPackagesHelper
 ): Promise<{ dbRundownData: DBRundown; rundownRes: BlueprintResultRundown } | null> {
-	const extendedIngestRundown = extendIngestRundownCore(ingestRundown, cache.Rundown.doc)
-
 	const rundownBaselinePackages = allRundownWatchedPackages.filter(
 		context,
 		(pkg) =>
@@ -346,7 +343,7 @@ export async function getRundownFromIngestData(
 		...rundownRes.rundown,
 		notes: rundownNotes,
 		_id: cache.RundownId,
-		externalId: ingestRundown.externalId,
+		externalId: extendedIngestRundown.externalId,
 		organizationId: context.studio.organizationId,
 		studioId: context.studio._id,
 		showStyleVariantId: showStyle.variant._id,
@@ -369,9 +366,7 @@ export async function getRundownFromIngestData(
 
 		// validated later
 		playlistId: protectString(''),
-		...(cache.Rundown.doc
-			? _.pick(cache.Rundown.doc, 'playlistId', 'baselineModifyHash', 'airStatus', 'status')
-			: {}),
+		...(cache.Rundown.doc ? _.pick(cache.Rundown.doc, 'playlistId', 'airStatus', 'status') : {}),
 	})
 
 	return { dbRundownData, rundownRes }
@@ -402,43 +397,34 @@ export async function saveChangesForRundown(
 	logger.info(`... got ${(rundownRes.globalActions || []).length} adLib actions from baseline.`)
 
 	const { baselineObjects, baselineAdlibPieces, baselineAdlibActions } = await cache.loadBaselineCollections()
-	const rundownBaselineChanges = sumChanges(
-		saveIntoCache<RundownBaselineObj>(context, baselineObjects, null, [
-			{
-				_id: getRandomId(7),
-				rundownId: dbRundown._id,
-				timelineObjectsString: serializePieceTimelineObjectsBlob(
-					postProcessRundownBaselineItems(showStyle.base.blueprintId, rundownRes.baseline.timelineObjects)
-				),
-			},
-		]),
-		// Save the global adlibs
-		saveIntoCache<RundownBaselineAdLibItem>(
+	saveIntoCache<RundownBaselineObj>(context, baselineObjects, null, [
+		{
+			_id: getRandomId(7),
+			rundownId: dbRundown._id,
+			timelineObjectsString: serializePieceTimelineObjectsBlob(
+				postProcessRundownBaselineItems(showStyle.base.blueprintId, rundownRes.baseline.timelineObjects)
+			),
+		},
+	])
+	// Save the global adlibs
+	saveIntoCache<RundownBaselineAdLibItem>(
+		context,
+		baselineAdlibPieces,
+		null,
+		postProcessAdLibPieces(
 			context,
-			baselineAdlibPieces,
-			null,
-			postProcessAdLibPieces(
-				context,
-				showStyle.base.blueprintId,
-				dbRundown._id,
-				undefined,
-				rundownRes.globalAdLibPieces
-			)
-		),
-		saveIntoCache<RundownBaselineAdLibAction>(
-			context,
-			baselineAdlibActions,
-			null,
-			postProcessGlobalAdLibActions(showStyle.base.blueprintId, dbRundown._id, rundownRes.globalActions || [])
+			showStyle.base.blueprintId,
+			dbRundown._id,
+			undefined,
+			rundownRes.globalAdLibPieces
 		)
 	)
-	if (anythingChanged(rundownBaselineChanges)) {
-		// If any of the rundown baseline datas was modified, we'll update the baselineModifyHash of the rundown
-		cache.Rundown.update((rd) => {
-			rd.baselineModifyHash = getCurrentTime() + ''
-			return rd
-		})
-	}
+	saveIntoCache<RundownBaselineAdLibAction>(
+		context,
+		baselineAdlibActions,
+		null,
+		postProcessGlobalAdLibActions(showStyle.base.blueprintId, dbRundown._id, rundownRes.globalActions || [])
+	)
 
 	return dbRundown
 }

@@ -5,86 +5,79 @@ import {
 	RundownLayoutBase,
 	RundownLayoutSytemStatus,
 } from '../../../lib/collections/RundownLayouts'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { RundownSystemStatus } from '../RundownView/RundownSystemStatus'
-import { DBRundown, Rundown } from '../../../lib/collections/Rundowns'
-import { UIStudio } from '../../../lib/api/studios'
-import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Rundowns } from '../../collections'
+import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { RundownId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownPlaylists, Rundowns } from '../../collections'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { useTranslation } from 'react-i18next'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
 interface ISystemStatusPanelProps {
-	studio: UIStudio
-	visible?: boolean
+	studioId: StudioId
 	layout: RundownLayoutBase
 	panel: RundownLayoutSytemStatus
-	playlist: RundownPlaylist
+	playlistId: RundownPlaylistId
 }
 
-interface IState {}
+export function SystemStatusPanel({
+	panel,
+	layout,
+	studioId,
+	playlistId,
+}: Readonly<ISystemStatusPanelProps>): JSX.Element {
+	const { t } = useTranslation()
 
-interface ISystemStatusPanelTrackedProps {
-	firstRundown: Rundown | undefined
-	rundownIds: RundownId[]
-}
+	const firstRundown = useTracker(() => {
+		const playlist = RundownPlaylists.findOne(playlistId, {
+			fields: {
+				rundownIdsInOrder: 1,
+			},
+		}) as Pick<DBRundownPlaylist, '_id' | 'rundownIdsInOrder'> | undefined
+		if (!playlist) return undefined
 
-class SystemStatusPanelInner extends MeteorReactComponent<
-	Translated<ISystemStatusPanelProps & ISystemStatusPanelTrackedProps>,
-	IState
-> {
-	constructor(props) {
-		super(props)
-	}
+		let rundownId: RundownId | undefined = undefined
 
-	render(): JSX.Element {
-		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
-		const { t, panel } = this.props
-
-		return (
-			<div
-				className={ClassNames(
-					'system-status-panel timing',
-					isDashboardLayout ? (panel as DashboardLayoutSystemStatus).customClasses : undefined
-				)}
-				style={isDashboardLayout ? dashboardElementStyle(this.props.panel as DashboardLayoutSystemStatus) : {}}
-			>
-				<span className="timing-clock left">
-					<span className="timing-clock-label">{t('System Status')}</span>
-					<RundownSystemStatus
-						studio={this.props.studio}
-						playlist={this.props.playlist}
-						rundownIds={this.props.rundownIds}
-						firstRundown={this.props.firstRundown}
-					/>
-				</span>
-			</div>
-		)
-	}
-}
-
-export const SystemStatusPanel = translateWithTracker<ISystemStatusPanelProps, IState, ISystemStatusPanelTrackedProps>(
-	(props: ISystemStatusPanelProps) => {
-		const rundownIds = RundownPlaylistCollectionUtil.getRundownOrderedIDs(props.playlist)
-		let firstRundown: DBRundown | undefined
-
-		if (props.playlist.rundownIdsInOrder.length > 0) {
-			firstRundown = Rundowns.findOne({
-				playlistId: props.playlist._id,
-				_id: props.playlist.rundownIdsInOrder[0],
-			})
-		} else if (rundownIds.length > 0) {
-			firstRundown = Rundowns.findOne({
-				playlistId: props.playlist._id,
-				_id: rundownIds[0],
-			})
+		if (playlist.rundownIdsInOrder.length > 0) {
+			rundownId = playlist.rundownIdsInOrder[0]
+		} else {
+			rundownId = RundownPlaylistCollectionUtil.getRundownOrderedIDs(playlist)[0]
 		}
-		return {
-			rundownIds,
-			firstRundown,
+
+		if (rundownId) {
+			return Rundowns.findOne(
+				{
+					playlistId: playlistId,
+					_id: rundownId,
+				},
+				{
+					fields: {
+						externalNRCSName: 1,
+					},
+				}
+			) as Pick<DBRundown, 'externalNRCSName'> | undefined
+		} else {
+			return undefined
 		}
-	}
-)(SystemStatusPanelInner)
+	}, [playlistId])
+
+	const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(layout)
+
+	return (
+		<div
+			className={ClassNames(
+				'system-status-panel timing',
+				isDashboardLayout ? (panel as DashboardLayoutSystemStatus).customClasses : undefined
+			)}
+			style={isDashboardLayout ? dashboardElementStyle(panel as DashboardLayoutSystemStatus) : {}}
+		>
+			<span className="timing-clock left">
+				<span className="timing-clock-label">{t('System Status')}</span>
+				<RundownSystemStatus studioId={studioId} playlistId={playlistId} firstRundown={firstRundown} />
+			</span>
+		</div>
+	)
+}

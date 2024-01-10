@@ -6,7 +6,10 @@ import * as _ from 'underscore'
 
 const THROTTLE_PERIOD_MS = 200
 
-export class SegmentsHandler extends CollectionBase<DBSegment[]> implements Collection<DBSegment[]> {
+export class SegmentsHandler
+	extends CollectionBase<DBSegment[], undefined, undefined>
+	implements Collection<DBSegment[]>
+{
 	public observerName: string
 	private throttledNotify: (data: DBSegment[]) => Promise<void>
 
@@ -16,9 +19,9 @@ export class SegmentsHandler extends CollectionBase<DBSegment[]> implements Coll
 		this.throttledNotify = _.throttle(this.notify.bind(this), THROTTLE_PERIOD_MS, { leading: true, trailing: true })
 	}
 
-	async setSegments(rundowns: DBSegment[]): Promise<void> {
-		this._logger.info(`'${this._name}' handler received segments update with ${rundowns.length} segments`)
-		this._collectionData = rundowns
+	async setSegments(segments: DBSegment[]): Promise<void> {
+		this._logger.info(`'${this._name}' handler received segments update with ${segments.length} segments`)
+		this._collectionData = segments
 		await this.throttledNotify(this._collectionData)
 	}
 

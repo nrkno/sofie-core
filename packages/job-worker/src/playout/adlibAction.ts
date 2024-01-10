@@ -10,9 +10,8 @@ import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { JobContext, ProcessedShowStyleCompound } from '../jobs'
 import { getCurrentTime } from '../lib'
 import { ReadonlyDeep } from 'type-fest'
-import { CacheForPlayoutPreInit, CacheForPlayout } from './cache'
+import { PlayoutModel, PlayoutModelPreInit } from './model/PlayoutModel'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
-import { updateExpectedDurationWithPrerollForPartInstance } from './lib'
 import { runJobWithPlaylistLock } from './lock'
 import { updateTimeline } from './timeline/generate'
 import { performTakeToNextedPart } from './take'
@@ -24,7 +23,9 @@ import {
 	BucketAdLibActionId,
 	RundownBaselineAdLibActionId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ReadOnlyCache } from '../cache/CacheBase'
+import { validateScratchpartPartInstanceProperties } from './scratchpad'
+import { PlayoutRundownModel } from './model/PlayoutRundownModel'
+import { createPlayoutModelfromInitModel, loadPlayoutModelPreInit } from './model/implementation/LoadPlayoutModel'
 
 /**
  * Execute an AdLib Action
@@ -40,22 +41,22 @@ export async function handleExecuteAdlibAction(
 		if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown, undefined, 412)
 		if (!playlist.currentPartInfo) throw UserError.create(UserErrorMessage.NoCurrentPart, undefined, 412)
 
-		const initCache = await CacheForPlayoutPreInit.createPreInit(context, lock, playlist, false)
+		const initPlayoutModel = await loadPlayoutModelPreInit(context, lock, playlist, false)
 
-		return executeAdlibActionAndSaveModel(context, playlist, initCache, data)
+		return executeAdlibActionAndSaveModel(context, playlist, initPlayoutModel, data)
 	})
 }
 
 export async function executeAdlibActionAndSaveModel(
 	context: JobContext,
 	playlist: DBRundownPlaylist,
-	initCache: ReadOnlyCache<CacheForPlayoutPreInit>,
+	initPlayoutModel: PlayoutModelPreInit,
 	data: ExecuteActionProps
 ): Promise<ExecuteActionResult> {
 	if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown, undefined, 412)
 	if (!playlist.currentPartInfo) throw UserError.create(UserErrorMessage.NoCurrentPart, undefined, 412)
 
-	const rundown = initCache.Rundowns.findOne(playlist.currentPartInfo.rundownId)
+	const rundown = initPlayoutModel.getRundown(playlist.currentPartInfo.rundownId)
 	if (!rundown) throw new Error(`Current Rundown "${playlist.currentPartInfo.rundownId}" could not be found`)
 
 	const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
@@ -69,7 +70,11 @@ export async function executeAdlibActionAndSaveModel(
 	const watchedPackages = await WatchedPackagesHelper.create(context, context.studio._id, {
 		pieceId: data.actionDocId,
 		fromPieceType: {
-			$in: [ExpectedPackageDBType.ADLIB_ACTION, ExpectedPackageDBType.BASELINE_ADLIB_ACTION],
+			$in: [
+				ExpectedPackageDBType.ADLIB_ACTION,
+				ExpectedPackageDBType.BASELINE_ADLIB_ACTION,
+				ExpectedPackageDBType.BUCKET_ADLIB_ACTION,
+			],
 		},
 	})
 
@@ -114,24 +119,28 @@ export async function executeAdlibActionAndSaveModel(
 	}
 
 	if (blueprint.blueprint.executeAction) {
-		// load a full cache for the regular actions & executet the handler
-		const fullCache: CacheForPlayout = await CacheForPlayout.fromInit(context, initCache)
+		// load a full model for the regular actions & executet the handler
+		const playoutModel = await createPlayoutModelfromInitModel(context, initPlayoutModel)
+
+		const fullRundown = playoutModel.getRundown(rundown._id)
+		if (!fullRundown) throw new Error(`Rundown "${rundown._id}" missing between models`)
+
 		try {
 			const res: ExecuteActionResult = await executeActionInner(
 				context,
-				fullCache,
-				rundown,
+				playoutModel,
+				fullRundown,
 				showStyle,
 				blueprint,
 				watchedPackages,
 				actionParameters
 			)
 
-			await fullCache.saveAllToDatabase()
+			await playoutModel.saveAllToDatabase()
 
 			return res
 		} catch (err) {
-			fullCache.dispose()
+			playoutModel.dispose()
 			throw err
 		}
 	}
@@ -156,8 +165,8 @@ export interface ExecuteActionParameters {
 
 export async function executeActionInner(
 	context: JobContext,
-	cache: CacheForPlayout,
-	rundown: DBRundown,
+	playoutModel: PlayoutModel,
+	rundown: PlayoutRundownModel,
 	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 	watchedPackages: WatchedPackagesHelper,
@@ -165,18 +174,18 @@ export async function executeActionInner(
 ): Promise<ExecuteActionResult> {
 	const now = getCurrentTime()
 
-	const playlist = cache.Playlist.doc
+	const playlist = playoutModel.playlist
 
 	const actionContext = new ActionExecutionContext(
 		{
-			name: `${rundown.name}(${playlist.name})`,
-			identifier: `playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${
+			name: `${rundown.rundown.name}(${playlist.name})`,
+			identifier: `playlist=${playlist._id},rundown=${rundown.rundown._id},currentPartInstance=${
 				playlist.currentPartInfo?.partInstanceId
 			},execution=${getRandomId()}`,
 			tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT store these notes
 		},
 		context,
-		cache,
+		playoutModel,
 		showStyle,
 		context.getShowStyleBlueprintConfig(showStyle),
 		rundown,
@@ -205,7 +214,7 @@ export async function executeActionInner(
 		throw UserError.fromUnknown(err, UserErrorMessage.InternalError)
 	}
 
-	await applyAnyExecutionSideEffects(context, cache, actionContext, now)
+	await applyAnyExecutionSideEffects(context, playoutModel, actionContext, now)
 
 	return {
 		queuedPartInstanceId: actionContext.queuedPartInstanceId,
@@ -215,7 +224,7 @@ export async function executeActionInner(
 
 async function applyAnyExecutionSideEffects(
 	context: JobContext,
-	cache: CacheForPlayout,
+	playoutModel: PlayoutModel,
 	actionContext: ActionExecutionContext,
 	now: number
 ) {
@@ -223,24 +232,38 @@ async function applyAnyExecutionSideEffects(
 		actionContext.currentPartState !== ActionPartChange.NONE ||
 		actionContext.nextPartState !== ActionPartChange.NONE
 	) {
-		await syncPlayheadInfinitesForNextPartInstance(context, cache)
+		await syncPlayheadInfinitesForNextPartInstance(
+			context,
+			playoutModel,
+			playoutModel.currentPartInstance,
+			playoutModel.nextPartInstance
+		)
 	}
 
 	if (actionContext.nextPartState !== ActionPartChange.NONE) {
-		const nextPartInstanceId = cache.Playlist.doc.nextPartInfo?.partInstanceId
-		if (nextPartInstanceId) {
-			updateExpectedDurationWithPrerollForPartInstance(cache, nextPartInstanceId)
+		const nextPartInstance = playoutModel.nextPartInstance
+		if (nextPartInstance) {
+			nextPartInstance.recalculateExpectedDurationWithPreroll()
+
+			validateScratchpartPartInstanceProperties(context, playoutModel, nextPartInstance)
+		}
+	}
+
+	if (actionContext.currentPartState !== ActionPartChange.NONE) {
+		const currentPartInstance = playoutModel.currentPartInstance
+		if (currentPartInstance) {
+			validateScratchpartPartInstanceProperties(context, playoutModel, currentPartInstance)
 		}
 	}
 
 	if (actionContext.takeAfterExecute) {
-		await performTakeToNextedPart(context, cache, now)
+		await performTakeToNextedPart(context, playoutModel, now)
 	} else {
 		if (
 			actionContext.currentPartState !== ActionPartChange.NONE ||
 			actionContext.nextPartState !== ActionPartChange.NONE
 		) {
-			await updateTimeline(context, cache)
+			await updateTimeline(context, playoutModel)
 		}
 	}
 }

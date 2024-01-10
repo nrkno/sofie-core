@@ -3,6 +3,7 @@ export * from './lib/configManifest'
 export * from './lib/ddpClient'
 export * from './lib/methods'
 export * from './lib/process'
+export { SubscriptionId } from './lib/subscriptions'
 
 // Re-export some util from shared-lib
 export * from '@sofie-automation/shared-lib/dist/lib/lib'
@@ -17,3 +18,4 @@ export { PeripheralDeviceCommand } from '@sofie-automation/shared-lib/dist/core/
 export { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
 export * as PeripheralDeviceAPI from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 export { PeripheralDeviceId, StudioId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+export * from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'

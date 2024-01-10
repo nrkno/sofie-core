@@ -33,8 +33,8 @@ import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataM
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { saveIntoCache } from '../cache/lib'
 import { saveIntoDb } from '../db/changes'
-import { CacheForPlayout } from '../playout/cache'
-import { CacheForStudio } from '../studio/cache'
+import { PlayoutModel } from '../playout/model/PlayoutModel'
+import { StudioPlayoutModel } from '../studio/model/StudioPlayoutModel'
 import { ReadonlyDeep } from 'type-fest'
 import { ExpectedPackage, BlueprintResultBaseline } from '@sofie-automation/blueprints-integration'
 import { updateExpectedMediaItemsOnRundown } from './expectedMediaItems'
@@ -267,6 +267,7 @@ function generateExpectedPackagesForBucketAdlib(studio: ReadonlyDeep<DBStudio>, 
 					...base,
 					bucketId: adlib.bucketId,
 					pieceId: adlib._id,
+					pieceExternalId: adlib.externalId,
 					fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB,
 				})
 			}
@@ -287,6 +288,7 @@ function generateExpectedPackagesForBucketAdlibAction(
 					...base,
 					bucketId: action.bucketId,
 					pieceId: action._id,
+					pieceExternalId: action.externalId,
 					fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB_ACTION,
 				})
 			}
@@ -369,7 +371,7 @@ export function updateBaselineExpectedPackagesOnRundown(
 	baseline: BlueprintResultBaseline
 ): void {
 	// @todo: this call is for backwards compatibility and soon to be removed
-	updateBaselineExpectedPlayoutItemsOnRundown(context, cache, baseline.expectedPlayoutItems)
+	updateBaselineExpectedPlayoutItemsOnRundown(context, cache, baseline.expectedPlayoutItems ?? [])
 
 	// Fill in ids of unnamed expectedPackages
 	setDefaultIdOnExpectedPackages(baseline.expectedPackages)
@@ -398,33 +400,25 @@ export function updateBaselineExpectedPackagesOnRundown(
 
 export function updateBaselineExpectedPackagesOnStudio(
 	context: JobContext,
-	cache: CacheForStudio | CacheForPlayout,
+	cache: StudioPlayoutModel | PlayoutModel,
 	baseline: BlueprintResultBaseline
 ): void {
 	// @todo: this call is for backwards compatibility and soon to be removed
-	updateBaselineExpectedPlayoutItemsOnStudio(context, cache, baseline.expectedPlayoutItems)
+	updateBaselineExpectedPlayoutItemsOnStudio(context, cache, baseline.expectedPlayoutItems ?? [])
 
 	// Fill in ids of unnamed expectedPackages
 	setDefaultIdOnExpectedPackages(baseline.expectedPackages)
 
 	const bases = generateExpectedPackageBases(context.studio, context.studio._id, baseline.expectedPackages ?? [])
-	cache.deferAfterSave(async () => {
-		await saveIntoDb<ExpectedPackageDB>(
-			context,
-			context.directCollections.ExpectedPackages,
-			{
-				studioId: context.studio._id,
+	cache.setExpectedPackagesForStudioBaseline(
+		bases.map((item): ExpectedPackageDBFromStudioBaselineObjects => {
+			return {
+				...item,
 				fromPieceType: ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS,
-			},
-			bases.map((item): ExpectedPackageDBFromStudioBaselineObjects => {
-				return {
-					...item,
-					fromPieceType: ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS,
-					pieceId: null,
-				}
-			})
-		)
-	})
+				pieceId: null,
+			}
+		})
+	)
 }
 
 export function setDefaultIdOnExpectedPackages(expectedPackages: ExpectedPackage.Any[] | undefined): void {

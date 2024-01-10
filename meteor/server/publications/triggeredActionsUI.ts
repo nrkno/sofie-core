@@ -1,9 +1,8 @@
 import { ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { Meteor } from 'meteor/meteor'
-import { Mongo } from 'meteor/mongo'
 import { ReadonlyDeep } from 'type-fest'
-import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
+import { CustomCollectionName, MeteorPubSub } from '../../lib/api/pubsub'
 import { DBTriggeredActions, UITriggeredActionsObj } from '../../lib/collections/TriggeredActions'
 import { Complete, literal } from '../../lib/lib'
 import {
@@ -18,6 +17,7 @@ import { NoSecurityReadAccess } from '../security/noSecurity'
 import { ShowStyleReadAccess } from '../security/showStyle'
 import { TriggeredActions } from '../collections'
 import { check, Match } from 'meteor/check'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 
 interface UITriggeredActionsArgs {
 	readonly showStyleBaseId: ShowStyleBaseId | null
@@ -32,8 +32,8 @@ interface UITriggeredActionsUpdateProps {
 function compileMongoSelector(
 	showStyleBaseId: ShowStyleBaseId | null,
 	docIds?: readonly TriggeredActionId[]
-): Mongo.Selector<DBTriggeredActions> {
-	const selector: Mongo.Selector<DBTriggeredActions> = { showStyleBaseId: null }
+): MongoQuery<DBTriggeredActions> {
+	const selector: MongoQuery<DBTriggeredActions> = { showStyleBaseId: null }
 	if (showStyleBaseId) {
 		selector.showStyleBaseId = { $in: [null, showStyleBaseId] }
 	}
@@ -104,7 +104,7 @@ async function manipulateUITriggeredActionsPublicationData(
 }
 
 meteorCustomPublish(
-	PubSub.uiTriggeredActions,
+	MeteorPubSub.uiTriggeredActions,
 	CustomCollectionName.UITriggeredActions,
 	async function (pub, showStyleBaseId: ShowStyleBaseId | null) {
 		check(showStyleBaseId, Match.Maybe(String))
@@ -114,7 +114,7 @@ meteorCustomPublish(
 		if (
 			!cred ||
 			NoSecurityReadAccess.any() ||
-			(showStyleBaseId && (await ShowStyleReadAccess.showStyleBase({ _id: showStyleBaseId }, cred)))
+			(showStyleBaseId && (await ShowStyleReadAccess.showStyleBase(showStyleBaseId, cred)))
 		) {
 			await setUpCollectionOptimizedObserver<
 				UITriggeredActionsObj,
@@ -122,7 +122,7 @@ meteorCustomPublish(
 				UITriggeredActionsState,
 				UITriggeredActionsUpdateProps
 			>(
-				`pub_${PubSub.uiTriggeredActions}_${showStyleBaseId}`,
+				`pub_${MeteorPubSub.uiTriggeredActions}_${showStyleBaseId}`,
 				{ showStyleBaseId },
 				setupUITriggeredActionsPublicationObservers,
 				manipulateUITriggeredActionsPublicationData,

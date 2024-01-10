@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import type { RouteComponentProps } from 'react-router'
-import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
 import { getUser } from '../../../../lib/collections/Users'
 import { MeteorCall } from '../../../../lib/api/methods'
 import { NotLoggedInContainer } from './lib'
@@ -22,8 +21,8 @@ export const LostPasswordPage = translateWithTracker((props: ILostPasswordPagePr
 
 	return {}
 })(
-	class extends MeteorReactComponent<Translated<ILostPasswordPageProps>, ILostPasswordPageState> {
-		constructor(props) {
+	class LostPassword extends React.Component<Translated<ILostPasswordPageProps>, ILostPasswordPageState> {
+		constructor(props: Translated<ILostPasswordPageProps>) {
 			super(props)
 
 			this.state = {

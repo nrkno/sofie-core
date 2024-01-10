@@ -192,79 +192,80 @@ export function registerRoutes(registerRoute: APIRegisterHook<BucketsRestAPI>): 
 		'get',
 		'/buckets',
 		new Map(),
+		bucketsApiFactory,
 		async (serverAPI, connection, event, _params, _body) => {
 			logger.info(`API GET: Buckets`)
 			return await serverAPI.getAllBuckets(connection, event)
-		},
-		bucketsApiFactory
+		}
 	)
 
 	registerRoute<{ bucketId: string }, never, APIBucket>(
 		'get',
 		'/buckets/:bucketId',
 		new Map(),
+		bucketsApiFactory,
 		async (serverAPI, connection, event, params, _body) => {
 			logger.info(`API GET: Bucket`)
 			const bucketId = protectString(params.bucketId)
 			check(bucketId, String)
 			return await serverAPI.getBucket(connection, event, bucketId)
-		},
-		bucketsApiFactory
+		}
 	)
 
 	registerRoute<never, APIBucket, BucketId>(
 		'post',
 		'/buckets',
 		new Map([[404, [UserErrorMessage.StudioNotFound]]]),
+		bucketsApiFactory,
 		async (serverAPI, connection, event, _params, body) => {
 			logger.info(`API POST: Add Bucket`)
 			return await serverAPI.addBucket(connection, event, body)
-		},
-		bucketsApiFactory
+		}
 	)
 
 	registerRoute<{ bucketId: string }, never, void>(
 		'delete',
 		'/buckets/:bucketId',
 		new Map([[404, [UserErrorMessage.BucketNotFound]]]),
+		bucketsApiFactory,
 		async (serverAPI, connection, event, params, _body) => {
 			logger.info(`API DELETE: Bucket`)
 			const bucketId = protectString(params.bucketId)
 			return await serverAPI.deleteBucket(connection, event, bucketId)
-		},
-		bucketsApiFactory
+		}
 	)
 
 	registerRoute<{ bucketId: string }, never, void>(
 		'delete',
 		'/buckets/:bucketId/adlibs',
 		new Map([[404, [UserErrorMessage.BucketNotFound]]]),
+		bucketsApiFactory,
 		async (serverAPI, connection, event, params, _body) => {
 			logger.info(`API DELETE: Empty Bucket`)
 			const bucketId = protectString(params.bucketId)
 			check(bucketId, String)
 			return await serverAPI.emptyBucket(connection, event, bucketId)
-		},
-		bucketsApiFactory
+		}
 	)
 
 	registerRoute<{ externalId: string }, never, void>(
 		'delete',
 		'/buckets/:bucketId/adlibs/:externalId',
 		new Map([[404, [UserErrorMessage.BucketNotFound]]]),
+		bucketsApiFactory,
 		async (serverAPI, connection, event, params, _body) => {
 			logger.info(`API DELETE: Remove Bucket AdLib`)
 			const adLibId = protectString(params.externalId)
 			check(adLibId, String)
 			return await serverAPI.deleteBucketAdLib(connection, event, adLibId)
-		},
-		bucketsApiFactory
+		}
 	)
 
 	registerRoute<{ bucketId: string }, APIImportAdlib, void>(
 		'put',
 		'/buckets/:bucketId/adlibs',
 		new Map([[404, [UserErrorMessage.BucketNotFound]]]),
+		bucketsApiFactory,
 		async (serverAPI, connection, event, params, body) => {
 			logger.info(`API POST: Add AdLib to Bucket`)
 			const bucketId = protectString(params.bucketId)
@@ -275,7 +276,6 @@ export function registerRoutes(registerRoute: APIRegisterHook<BucketsRestAPI>): 
 			check(body.showStyleBaseId, String)
 			const showStyleBaseId = protectString(body.showStyleBaseId)
 			return await serverAPI.importAdLibToBucket(connection, event, bucketId, showStyleBaseId, body)
-		},
-		bucketsApiFactory
+		}
 	)
 }
