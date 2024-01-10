@@ -1,0 +1,50 @@
+name: Bug Report 🐛
+description: Use this if you've found a bug
+title: "Bug Report: [Short description of the bug]"
+labels:
+  - 🐛bug
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before you post, be sure to read our Contribution guidelines:
+        https://nrkno.github.io/sofie-core/docs/for-developers/contribution-guidelines
+
+  - type: textarea
+    attributes:
+      label: About me
+      description: Tell us who / which organization you are representing, and how the Sofie team will be able to contact you.
+      placeholder: Example "This RFC is posted on behalf of the NRK."
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Observed Behavior
+      description: What happened?
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: Version
+      description: What version of Sofie Core / Gateways / other components are you using?
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Severity / Impact
+      description: How big of an issue is this? How does this limit your operations?
+      placeholder: |
+        Examples:
+        * This is a blocker for us, we cannot use feature X until this is fixed.
+        * Not a big issue for us, but it would be nice to have this fixed.

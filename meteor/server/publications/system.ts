@@ -22,6 +22,7 @@ meteorPublish(MeteorPubSub.coreSystem, async function (token: string | undefined
 				blueprintId: 1,
 				cron: 1,
 				logo: 1,
+				evaluations: 1,
 			},
 		})
 	}

@@ -64,7 +64,17 @@ export const CoreSystem = createAsyncOnlyMongoCollection<ICoreSystem>(Collection
 		const cred = await resolveCredentials({ userId: userId })
 		const access = await allowAccessToCoreSystem(cred)
 		if (!access.update) return logNotAllowed('CoreSystem', access.reason)
-		return allowOnlyFields(doc, fields, ['support', 'systemInfo', 'name', 'logLevel', 'apm', 'cron', 'logo'])
+
+		return allowOnlyFields(doc, fields, [
+			'support',
+			'systemInfo',
+			'name',
+			'logLevel',
+			'apm',
+			'cron',
+			'logo',
+			'evaluations',
+		])
 	},
 })
 
