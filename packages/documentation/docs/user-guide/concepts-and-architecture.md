@@ -61,7 +61,7 @@ The Segment is the horizontal line in the GUI. It is intended to be used as a "c
 
 ### Part
 
-The Part is the playable element inside of a [Segment](#segment). This is the thing that starts playing when the user does a [TAKE](#take-point).  
+The Part is the playable element inside of a [Segment](#segment). This is the thing that starts playing when the user does a [TAKE](#take-point). A Playing part is _On Air_ or _current_, while the part "cued" to be played is _Next_.
 The Part in itself doesn't determine what's going to happen, that's handled by the [Pieces](#piece) in it.
 
 ### Piece
@@ -122,6 +122,12 @@ Documentation on the interface to be exposed by the Blueprint:
 Handle things on the _Showstyle level_, like generating [_Baseline_](#baseline), _Segments_, _Parts, Pieces_ and _Timelines_ in a rundown.  
 Documentation on the interface to be exposed by the Blueprint:  
 [https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L117](https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L117)
+
+### `PartInstances` and `PieceInstances`
+
+In order to be able to facilitate ingesting changes from the NRCS while continuing to provide a stable and predictable playback of the Rundowns, Sofie internally uses a concept of ["instantiation"](https://en.wikipedia.org/wiki/Instance_(computer_science)) of key Rundown elements. Before playback of a Part can begin, the Part and it's Pieces are copied into an Instance of a Part: a `PartInstance`. This protects the contents of the _Next_ and _On Air_ part, preventing accidental changes that could surprise the producer/director. This also makes it possible to inspect the "as played" state of the Rundown, independently of the "as planned" state ingested from the NRCS.
+
+The blueprints can optionally allow some changes to the Parts and Pieces to be forwarded onto these `PartInstances`: [https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L190](https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L190)
 
 ## Timeline
 
