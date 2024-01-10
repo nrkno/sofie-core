@@ -88,7 +88,9 @@ An AdLib isn't added to the Part in the GUI until it starts playing, instead you
 
 A Bucket is a container for AdLib Pieces created by the producer/operator during production. They exist independently of the Rundowns and associated content created by ingesting data from the NRCS. Users can freely create, modify and remove Buckets.
 
-The primary use-case of these elements is for breaking news formats where quick turnaround video editing may require circumvention of the regular flow of show assets and programming via the NRCS. Currently, one way of creating AdLibs inside Buckets is using a MOS Plugin integration inside the Shelf.
+The primary use-case of these elements is for breaking news formats where quick turnaround video editing may require circumvention of the regular flow of show assets and programming via the NRCS. Currently, one way of creating AdLibs inside Buckets is using a MOS Plugin integration inside the Shelf, where MOS [ncsItem](https://mosprotocol.com/wp-content/MOS-Protocol-Documents/MOS-Protocol-2.8.4-Current.htm#ncsItem) elements can be dragged from the MOS Plugin onto a bucket and ingested.
+
+The ingest happens via the `getAdlibItem` method: [https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L215](https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L215)
 
 ## Views
 
