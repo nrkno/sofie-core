@@ -435,7 +435,7 @@ export async function setupMockShowStyleBlueprint(
 						name: ingestRundown.name,
 						// expectedStart?:
 						// expectedDuration?: number;
-						metaData: ingestRundown.payload,
+						privateData: ingestRundown.payload,
 						timing: {
 							type: 'none' as any,
 						},
@@ -455,7 +455,7 @@ export async function setupMockShowStyleBlueprint(
 				getSegment: (_context: unknown, ingestSegment: IngestSegment): BlueprintResultSegment => {
 					const segment: IBlueprintSegment = {
 						name: ingestSegment.name ? ingestSegment.name : ingestSegment.externalId,
-						metaData: ingestSegment.payload,
+						privateData: ingestSegment.payload,
 						isHidden: ingestSegment.payload?.hidden,
 					}
 					const parts: BlueprintResultPart[] = []
@@ -464,7 +464,7 @@ export async function setupMockShowStyleBlueprint(
 						const part: IBlueprintPart = {
 							externalId: ingestPart.externalId,
 							title: ingestPart.name,
-							metaData: ingestPart.payload,
+							privateData: ingestPart.payload,
 							// autoNext?: boolean;
 							// autoNextOverlap?: number;
 							// prerollDuration?: number;

@@ -25,8 +25,10 @@ export interface DBSegment {
 
 	/** User-presentable name (Slug) for the Title */
 	name: string
-	/** Arbitrary data storage for plugins */
-	metaData?: unknown
+	/** Arbitraty data storage for internal use in the blueprints */
+	privateData?: unknown
+	/** Arbitraty data relevant for other systems, made available to them through APIs */
+	publicData?: unknown
 	/** Hide the Segment in the UI */
 	isHidden?: boolean
 	/** User-facing identifier that can be used by the User to identify the contents of a segment in the Rundown source system */

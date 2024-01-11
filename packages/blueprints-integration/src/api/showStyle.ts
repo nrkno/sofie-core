@@ -118,7 +118,8 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 		context: IActionExecutionContext,
 		actionId: string,
 		userData: ActionUserData,
-		triggerMode?: string
+		triggerMode: string | undefined,
+		privateData?: unknown
 	) => Promise<void>
 
 	/** Generate adlib piece from ingest data */

@@ -74,8 +74,10 @@ export interface Rundown {
 	/** Rundown timing information */
 	timing: RundownPlaylistTiming
 
-	/** Arbitrary data storage for plugins */
-	metaData?: unknown
+	/** Arbitraty data storage for internal use in the blueprints */
+	privateData?: unknown
+	/** Arbitraty data relevant for other systems, made available to them through APIs */
+	publicData?: unknown
 
 	/** External id of the Rundown Playlist to put this rundown in */
 	playlistExternalId?: string

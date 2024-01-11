@@ -18,6 +18,11 @@ import { performTakeToNextedPart } from './take'
 import { ActionUserData } from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { logger } from '../logging'
+import {
+	AdLibActionId,
+	BucketAdLibActionId,
+	RundownBaselineAdLibActionId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { validateScratchpartPartInstanceProperties } from './scratchpad'
 import { PlayoutRundownModel } from './model/PlayoutRundownModel'
 import { createPlayoutModelfromInitModel, loadPlayoutModelPreInit } from './model/implementation/LoadPlayoutModel'
@@ -73,10 +78,30 @@ export async function executeAdlibActionAndSaveModel(
 		},
 	})
 
+	if (data.privateData === null) {
+		const [adLibAction, baselineAdLibAction, bucketAdLibAction] = await Promise.all([
+			context.directCollections.AdLibActions.findOne(data.actionDocId as AdLibActionId, {
+				projection: { _id: 1, privateData: 1 },
+			}),
+			context.directCollections.RundownBaselineAdLibActions.findOne(
+				data.actionDocId as RundownBaselineAdLibActionId,
+				{
+					projection: { _id: 1, privateData: 1 },
+				}
+			),
+			context.directCollections.BucketAdLibActions.findOne(data.actionDocId as BucketAdLibActionId, {
+				projection: { _id: 1, privateData: 1 },
+			}),
+		])
+		const adLibActionDoc = adLibAction ?? baselineAdLibAction ?? bucketAdLibAction
+		data.privateData = adLibActionDoc?.privateData
+	}
+
 	const actionParameters: ExecuteActionParameters = {
 		actionId: data.actionId,
 		userData: data.userData,
 		triggerMode: data.triggerMode,
+		privateData: data.privateData,
 	}
 
 	try {
@@ -130,8 +155,10 @@ export async function executeAdlibActionAndSaveModel(
 export interface ExecuteActionParameters {
 	/** Id of the action */
 	actionId: string
-	/** Properties defining the action behaviour */
+	/** Public-facing (and possibly even user-editable) properties defining the action behaviour */
 	userData: ActionUserData
+	/** Arbitraty data storage for internal use in the blueprints */
+	privateData: unknown | undefined
 
 	triggerMode: string | undefined
 }
@@ -179,7 +206,8 @@ export async function executeActionInner(
 			actionContext,
 			actionParameters.actionId,
 			actionParameters.userData,
-			actionParameters.triggerMode
+			actionParameters.triggerMode,
+			actionParameters.privateData
 		)
 	} catch (err) {
 		logger.error(`Error in showStyleBlueprint.executeAction: ${stringifyError(err)}`)
