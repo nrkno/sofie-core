@@ -132,9 +132,11 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 		durations: PropTypes.object.isRequired,
 	}
 
-	context: {
-		durations: RundownTimingContext
-	}
+	context:
+		| {
+				durations: RundownTimingContext
+		  }
+		| undefined
 
 	constructor(props: IProps & IZoomPropsHeader, context: any) {
 		super(props, context)
@@ -169,15 +171,14 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 
 	calculateSegmentDuration(): number {
 		let total = 0
-		if (this.context && this.context.durations) {
-			const durations = this.context.durations as RundownTimingContext
+		if (this.context?.durations) {
+			const durations = this.context.durations
 			this.props.parts.forEach((partExtended) => {
 				// total += durations.partDurations ? durations.partDurations[item._id] : (item.duration || item.renderedDuration || 1)
 				const partInstanceTimingId = getPartInstanceTimingId(partExtended.instance)
 				const duration = Math.max(
 					partExtended.instance.timings?.duration || partExtended.renderedDuration || 0,
-					(durations.partDisplayDurations && durations.partDisplayDurations[partInstanceTimingId]) ||
-						Settings.defaultDisplayDuration
+					durations.partDisplayDurations?.[partInstanceTimingId] || Settings.defaultDisplayDuration
 				)
 				total += duration
 			})
@@ -243,8 +244,8 @@ export const BUDGET_GAP_PART = {
 export class SegmentTimelineClass extends React.Component<Translated<WithTiming<IProps>>, IStateHeader> {
 	static whyDidYouRender = true
 
-	timeline: HTMLDivElement
-	segmentBlock: HTMLDivElement
+	timeline: HTMLDivElement | null = null
+	segmentBlock: HTMLDivElement | null = null
 
 	private _touchSize = 0
 	private _touchAttached = false
@@ -299,7 +300,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 		RundownViewEventBus.off(RundownViewEvents.SEGMENT_ZOOM_OFF, this.onRundownEventSegmentZoomOff)
 	}
 
-	private highlightTimeout: NodeJS.Timer
+	private highlightTimeout: NodeJS.Timer | undefined
 
 	private onHighlight = (e: HighlightEvent) => {
 		if (e.segmentId === this.props.segment._id && !e.partId && !e.pieceId) {
@@ -324,7 +325,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 		}
 	}
 
-	private setTimelineRef = (el: HTMLDivElement) => {
+	private setTimelineRef = (el: HTMLDivElement | null) => {
 		this.timeline = el
 	}
 
@@ -989,7 +990,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 		const criticalNotes = this.props.segmentNoteCounts.criticial
 		const warningNotes = this.props.segmentNoteCounts.warning
 
-		const identifiers: Array<{ partId: PartId; ident?: string }> = this.props.parts
+		const identifiers: Array<{ partId: PartId; ident: string }> = this.props.parts
 			.map((p) =>
 				p.instance.part.identifier
 					? {
@@ -998,7 +999,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 					  }
 					: null
 			)
-			.filter((entry) => entry !== null) as Array<{ partId: PartId; ident?: string }>
+			.filter((entry): entry is { partId: PartId; ident: string } => entry !== null)
 
 		let countdownToPartId: PartId | undefined = undefined
 		if (!this.props.isLiveSegment) {
@@ -1118,7 +1119,6 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 						)}
 				</div>
 
-				<div className="segment-timeline__identifier">{this.props.segment.identifier}</div>
 				{this.props.segment.segmentTiming?.expectedStart || this.props.segment.segmentTiming?.expectedEnd ? (
 					<div className="segment-timeline__expectedTime">
 						<SegmentTimeAnchorTime
@@ -1233,8 +1233,8 @@ export const SegmentTimeline = withTranslation()(
 				)
 				const livePartId = livePart ? getPartInstanceTimingId(livePart.instance) : undefined
 				return [
-					livePartId ? (durations.partDisplayStartsAt || {})[livePartId] : undefined,
-					livePartId ? (durations.partDisplayDurations || {})[livePartId] : undefined,
+					livePartId ? durations.partDisplayStartsAt?.[livePartId] : undefined,
+					livePartId ? durations.partDisplayDurations?.[livePartId] : undefined,
 				]
 			},
 		}

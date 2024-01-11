@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import ClassNames from 'classnames'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
 import {
 	ISourceLayer,
@@ -63,7 +62,7 @@ interface IState {
 	active: boolean
 }
 
-export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
+export class DashboardPieceButtonBase<T = {}> extends React.Component<
 	React.PropsWithChildren<IDashboardButtonProps> & T,
 	IState
 > {
@@ -74,7 +73,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		width: number
 		height: number
 	} | null = null
-	private _labelEl: HTMLTextAreaElement
+	private _labelEl: HTMLTextAreaElement | null = null
 	private pointerId: number | null = null
 	private hoverTimeout: number | null = null
 	protected inBucket = false
@@ -99,7 +98,6 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	}
 
 	componentWillUnmount(): void {
-		super.componentWillUnmount()
 		if (this.hoverTimeout) {
 			clearTimeout(this.hoverTimeout)
 			this.hoverTimeout = null
@@ -181,7 +179,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 
 	private renderSplits(renderThumbnail = false) {
 		const splitAdLib = this.props.piece
-		if (splitAdLib && splitAdLib.content) {
+		if (splitAdLib?.content) {
 			return (
 				<>
 					{renderThumbnail ? (
@@ -250,7 +248,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	}
 
 	private handleOnTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-		if (e.changedTouches && e.changedTouches.length) {
+		if (e.changedTouches && e.changedTouches.length > 0) {
 			this.handleMove(e.changedTouches[0].clientX)
 		}
 	}
@@ -325,7 +323,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		input.setSelectionRange(0, input.value.length)
 	}
 
-	private onRenameTextBoxShow = (ref: HTMLTextAreaElement) => {
+	private onRenameTextBoxShow = (ref: HTMLTextAreaElement | null) => {
 		if (ref && !this._labelEl) {
 			ref.addEventListener('keyup', this.onRenameTextBoxKeyUp)
 			this.renameTextBoxFocus(ref)

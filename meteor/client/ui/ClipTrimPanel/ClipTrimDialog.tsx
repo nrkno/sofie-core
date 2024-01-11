@@ -36,7 +36,7 @@ export function ClipTrimDialog({
 	selectedPiece,
 
 	onClose,
-}: IProps): JSX.Element {
+}: Readonly<IProps>): JSX.Element {
 	const { t } = useTranslation()
 
 	const vtContent = selectedPiece.content as VTContent | undefined
@@ -54,7 +54,7 @@ export function ClipTrimDialog({
 	}, [])
 
 	const handleAccept = useCallback((e: SomeEvent) => {
-		onClose && onClose()
+		onClose?.()
 
 		doUserAction(
 			t,
@@ -76,7 +76,7 @@ export function ClipTrimDialog({
 				if (
 					ClientAPI.isClientResponseError(err) &&
 					err.error.rawError &&
-					stringifyError(err.error.rawError).match(/timed out/)
+					RegExp(/timed out/).exec(stringifyError(err.error.rawError))
 				) {
 					NotificationCenter.push(
 						new Notification(

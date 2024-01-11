@@ -8,7 +8,7 @@ import {
 	OverrideOpHelperForItemContents,
 	getAllCurrentAndDeletedItemsFromOverrides,
 } from '../../../ui/Settings/util/OverrideOpHelper'
-import { useToggleExpandHelper } from '../../../ui/Settings/util/ToggleExpandedHelper'
+import { useToggleExpandHelper } from '../../../ui/util/useToggleExpandHelper'
 import { doModalDialog } from '../../ModalDialog'
 import {
 	getSchemaSummaryFieldsForObject,
@@ -55,7 +55,7 @@ export const SchemaFormObjectTable = ({
 	attr,
 	item,
 	overrideHelper,
-}: SchemaFormObjectTableProps): JSX.Element => {
+}: Readonly<SchemaFormObjectTableProps>): JSX.Element => {
 	const { t } = useTranslation()
 
 	const wrappedRows = useMemo(() => {

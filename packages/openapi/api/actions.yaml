@@ -40,6 +40,8 @@ paths:
     $ref: 'definitions/playlists.yaml#/resources/deactivate'
   /playlists/{playlistId}/execute-adlib:
     $ref: 'definitions/playlists.yaml#/resources/executeAdLib'
+  /playlists/{playlistId}/execute-bucket-adlib:
+    $ref: 'definitions/playlists.yaml#/resources/executeBucketAdLib'
   /playlists/{playlistId}/move-next-part:
     $ref: 'definitions/playlists.yaml#/resources/moveNextPart'
   /playlists/{playlistId}/move-next-segment:
@@ -84,3 +86,12 @@ paths:
     $ref: 'definitions/showstyles.yaml#/resources/showStyleVariant'
   /showstyles/{showStyleBaseId}/action:
     $ref: 'definitions/showstyles.yaml#/resources/showStyleBaseAction'
+  # bucket operations
+  /buckets:
+    $ref: 'definitions/buckets.yaml#/resources/buckets'
+  /buckets/{bucketId}:
+    $ref: 'definitions/buckets.yaml#/resources/bucket'
+  /buckets/{bucketId}/adlibs:
+    $ref: 'definitions/buckets.yaml#/resources/bucketAdlibs'
+  /buckets/{bucketId}/adlibs/{externalId}:
+    $ref: 'definitions/buckets.yaml#/resources/bucketAdlib'

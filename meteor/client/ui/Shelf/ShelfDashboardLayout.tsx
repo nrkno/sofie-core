@@ -47,7 +47,7 @@ export interface IShelfDashboardLayoutProps {
 	onSelectPiece?: (piece: AdLibPieceUi | PieceUi) => void
 }
 
-export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps): JSX.Element {
+export function ShelfDashboardLayout(props: Readonly<IShelfDashboardLayoutProps>): JSX.Element {
 	const { rundownLayout } = props
 	return (
 		<div className="dashboard">
@@ -184,15 +184,7 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps): JSX.Ele
 								<PlaylistNamePanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
 							)
 						} else if (RundownLayoutsAPI.isStudioName(panel)) {
-							return (
-								<StudioNamePanel
-									key={panel._id}
-									studio={props.studio}
-									playlist={props.playlist}
-									layout={rundownLayout}
-									panel={panel}
-								/>
-							)
+							return <StudioNamePanel key={panel._id} studio={props.studio} layout={rundownLayout} panel={panel} />
 						} else if (RundownLayoutsAPI.isSegmentName(panel)) {
 							return <SegmentNamePanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
 						} else if (RundownLayoutsAPI.isPartName(panel)) {
@@ -211,10 +203,10 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps): JSX.Ele
 							return (
 								<SystemStatusPanel
 									key={panel._id}
-									playlist={props.playlist}
+									playlistId={props.playlist._id}
 									layout={rundownLayout}
 									panel={panel}
-									studio={props.studio}
+									studioId={props.studio._id}
 								/>
 							)
 						} else if (RundownLayoutsAPI.isShowStyleDisplay(panel)) {

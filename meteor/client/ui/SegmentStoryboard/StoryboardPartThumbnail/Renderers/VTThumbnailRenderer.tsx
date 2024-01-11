@@ -25,7 +25,7 @@ export function VTThumbnailRenderer({
 	studio,
 	layer,
 	height,
-}: IProps): JSX.Element {
+}: Readonly<IProps>): JSX.Element {
 	const status = pieceInstance.contentStatus?.status
 
 	const vtContent = pieceInstance.instance.piece.content as VTContent
@@ -38,7 +38,7 @@ export function VTThumbnailRenderer({
 	return (
 		<>
 			<VTFloatingInspector
-				status={status || PieceStatusCode.UNKNOWN}
+				status={status ?? PieceStatusCode.UNKNOWN}
 				showMiniInspector={hovering}
 				timePosition={hoverScrubTimePosition}
 				content={vtContent}
@@ -51,7 +51,7 @@ export function VTThumbnailRenderer({
 				}}
 				typeClass={layer && RundownUtils.getSourceLayerClassName(layer.type)}
 				itemElement={null}
-				noticeMessages={pieceInstance.contentStatus?.messages || null}
+				noticeMessages={pieceInstance.contentStatus?.messages ?? null}
 				noticeLevel={noticeLevel}
 				studio={studio}
 				previewUrl={pieceInstance.contentStatus?.previewUrl}

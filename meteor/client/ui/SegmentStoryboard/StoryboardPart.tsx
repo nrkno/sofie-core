@@ -21,7 +21,12 @@ import { InvalidPartCover } from '../SegmentTimeline/Parts/InvalidPartCover'
 import { SegmentEnd } from '../../lib/ui/icons/segment'
 import { AutoNextStatus } from '../RundownView/RundownTiming/AutoNextStatus'
 import { RundownTimingContext, getPartInstanceTimingId } from '../../lib/rundownTiming'
-import { TimingDataResolution, TimingTickResolution, withTiming } from '../RundownView/RundownTiming/withTiming'
+import {
+	TimingDataResolution,
+	TimingTickResolution,
+	WithTiming,
+	withTiming,
+} from '../RundownView/RundownTiming/withTiming'
 import { LoopingIcon } from '../../lib/ui/icons/looping'
 
 interface IProps {
@@ -80,7 +85,7 @@ export const StoryboardPart = withTiming<IProps, {}>((props: IProps) => {
 	onContextMenu,
 	onHoverOver,
 	onHoverOut,
-}): JSX.Element {
+}: Readonly<WithTiming<IProps>>): JSX.Element {
 	const { t } = useTranslation()
 	const [highlight, setHighlight] = useState(false)
 	const willBeAutoNextedInto = isNextPart ? currentPartWillAutonext : part.willProbablyAutoNext

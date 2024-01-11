@@ -1,4 +1,4 @@
-import { PartId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartId, RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { Rundown, DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
@@ -29,7 +29,7 @@ export class RundownPlaylistCollectionUtil {
 		selector?: MongoQuery<Rundown>,
 		options?: FindOptions<Rundown>
 	): Rundown[] {
-		const allRundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(playlist, selector, options)
+		const allRundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(playlist._id, selector, options)
 
 		const rundownsMap = normalizeArrayToMap(allRundowns, '_id')
 
@@ -39,13 +39,13 @@ export class RundownPlaylistCollectionUtil {
 	}
 	/** Returns an array of all Rundowns in the RundownPlaylist, in no predictable order */
 	static getRundownsUnordered(
-		playlist: Pick<DBRundownPlaylist, '_id'>,
+		playlistId: RundownPlaylistId,
 		selector?: MongoQuery<Rundown>,
 		options?: FindOptions<Rundown>
 	): Rundown[] {
 		return Rundowns.find(
 			{
-				playlistId: playlist._id,
+				playlistId: playlistId,
 				...selector,
 			},
 			{

@@ -8,7 +8,6 @@ import {
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementStyle } from './DashboardPanel'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { withTranslation } from 'react-i18next'
 import { NextBreakTiming } from '../RundownView/RundownTiming/NextBreakTiming'
@@ -20,7 +19,7 @@ interface INextBreakTimingPanelProps {
 	playlist: DBRundownPlaylist
 }
 
-export class NextBreakTimingPanelInner extends MeteorReactComponent<Translated<INextBreakTimingPanelProps>> {
+export class NextBreakTimingPanelInner extends React.Component<Translated<INextBreakTimingPanelProps>> {
 	render(): JSX.Element {
 		const { panel, layout } = this.props
 

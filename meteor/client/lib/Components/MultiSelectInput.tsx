@@ -16,9 +16,10 @@ export function MultiSelectInputControl({
 	classNames,
 	value,
 	disabled,
+	placeholder,
 	options,
 	handleUpdate,
-}: IMultiSelectInputControlProps): JSX.Element {
+}: Readonly<IMultiSelectInputControlProps>): JSX.Element {
 	const handleChange = useCallback((event: MultiSelectEvent) => handleUpdate(event.selectedValues), [handleUpdate])
 
 	const {
@@ -49,7 +50,7 @@ export function MultiSelectInputControl({
 	return (
 		<MultiSelect
 			availableOptions={optionsWithCurrentValue}
-			// placeholder?: string
+			placeholder={placeholder}
 			className={ClassNames(classNames, {
 				'option-missing': currentOptionMissing,
 			})}

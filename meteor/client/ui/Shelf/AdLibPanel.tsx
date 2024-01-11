@@ -137,6 +137,46 @@ interface IFetchAndFilterProps {
 	includeGlobalAdLibs?: boolean
 }
 
+export function useFetchAndFilter(
+	playlist: DBRundownPlaylist,
+	showStyleBase: UIShowStyleBase,
+	filter: RundownLayoutFilterBase | undefined,
+	includeGlobalAdLibs: boolean | undefined
+): AdLibFetchAndFilterProps {
+	return useTracker(
+		() =>
+			fetchAndFilter({
+				playlist: playlist as Pick<
+					DBRundownPlaylist,
+					'_id' | 'studioId' | 'currentPartInfo' | 'nextPartInfo' | 'previousPartInfo' | 'rundownIdsInOrder'
+				>,
+				showStyleBase: showStyleBase as Pick<UIShowStyleBase, '_id' | 'sourceLayers' | 'outputLayers'>,
+				filter,
+				includeGlobalAdLibs,
+			}),
+		[
+			playlist._id,
+			playlist.studioId,
+			playlist.currentPartInfo?.partInstanceId,
+			playlist.nextPartInfo?.partInstanceId,
+			playlist.previousPartInfo?.partInstanceId,
+			playlist.rundownIdsInOrder,
+			showStyleBase._id,
+			showStyleBase.sourceLayers,
+			showStyleBase.outputLayers,
+			filter,
+			includeGlobalAdLibs,
+		],
+		{
+			liveSegment: undefined,
+			rundownBaselineAdLibs: [],
+			sourceLayerLookup: {},
+			uiSegments: [] as AdlibSegmentUi[],
+			uiSegmentMap: new Map(),
+		}
+	)
+}
+
 export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilterProps {
 	const sourceLayerLookup = props.showStyleBase && props.showStyleBase.sourceLayers
 	const outputLayerLookup = props.showStyleBase && props.showStyleBase.outputLayers
@@ -532,7 +572,7 @@ export function AdLibPanel({
 	selectedPiece,
 	includeGlobalAdLibs,
 	onSelectPiece,
-}: IAdLibPanelProps): JSX.Element | null {
+}: Readonly<IAdLibPanelProps>): JSX.Element | null {
 	const { t } = useTranslation()
 	const studio = useTracker(() => UIStudios.findOne(playlist.studioId), [playlist.studioId], undefined)
 
@@ -540,37 +580,11 @@ export function AdLibPanel({
 	const [selectedSegment, setSelectedSegment] = useState<AdlibSegmentUi | undefined>(undefined)
 	const shelfFollowsOnAir = getShelfFollowsOnAir()
 
-	const { uiSegments, liveSegment, sourceLayerLookup, rundownBaselineAdLibs } = useTracker(
-		() =>
-			fetchAndFilter({
-				playlist: playlist as Pick<
-					DBRundownPlaylist,
-					'_id' | 'studioId' | 'currentPartInfo' | 'nextPartInfo' | 'previousPartInfo' | 'rundownIdsInOrder'
-				>,
-				showStyleBase: showStyleBase as Pick<UIShowStyleBase, '_id' | 'sourceLayers' | 'outputLayers'>,
-				filter,
-				includeGlobalAdLibs,
-			}),
-		[
-			playlist._id,
-			playlist.studioId,
-			playlist.currentPartInfo?.partInstanceId,
-			playlist.nextPartInfo?.partInstanceId,
-			playlist.previousPartInfo?.partInstanceId,
-			playlist.rundownIdsInOrder,
-			showStyleBase._id,
-			showStyleBase.sourceLayers,
-			showStyleBase.outputLayers,
-			filter,
-			includeGlobalAdLibs,
-		],
-		{
-			liveSegment: undefined,
-			rundownBaselineAdLibs: [],
-			sourceLayerLookup: {},
-			uiSegments: [] as AdlibSegmentUi[],
-			uiSegmentMap: new Map(),
-		}
+	const { uiSegments, liveSegment, sourceLayerLookup, rundownBaselineAdLibs } = useFetchAndFilter(
+		playlist,
+		showStyleBase,
+		filter,
+		includeGlobalAdLibs
 	)
 
 	useEffect(() => {

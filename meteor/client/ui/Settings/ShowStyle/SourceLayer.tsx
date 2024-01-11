@@ -10,7 +10,7 @@ import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowSt
 import { getHelpMode } from '../../../lib/localStorage'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { findHighestRank } from '../StudioSettings'
-import { useToggleExpandHelper } from '../util/ToggleExpandedHelper'
+import { useToggleExpandHelper } from '../../util/useToggleExpandHelper'
 import { ObjectOverrideSetOp, SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import {
 	getAllCurrentAndDeletedItemsFromOverrides,
@@ -71,7 +71,7 @@ interface IStudioSourcesSettingsProps {
 	showStyleBase: DBShowStyleBase
 }
 
-export function SourceLayerSettings({ showStyleBase }: IStudioSourcesSettingsProps): JSX.Element {
+export function SourceLayerSettings({ showStyleBase }: Readonly<IStudioSourcesSettingsProps>): JSX.Element {
 	const { t } = useTranslation()
 
 	const { toggleExpanded, isExpanded } = useToggleExpandHelper()
@@ -175,7 +175,7 @@ interface DeletedEntryProps {
 	item: ISourceLayer
 	doUndelete: (itemId: string) => void
 }
-function SourceLayerDeletedEntry({ item, doUndelete }: DeletedEntryProps) {
+function SourceLayerDeletedEntry({ item, doUndelete }: Readonly<DeletedEntryProps>) {
 	const { t } = useTranslation()
 
 	const doUndeleteItem = useCallback(() => doUndelete(item._id), [doUndelete, item._id])
@@ -202,7 +202,7 @@ interface EntryProps {
 	toggleExpanded: (itemId: string, force?: boolean) => void
 	overrideHelper: OverrideOpHelper
 }
-function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: EntryProps) {
+function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: Readonly<EntryProps>) {
 	const { t } = useTranslation()
 
 	const toggleEditItem = useCallback(() => toggleExpanded(item.id), [toggleExpanded, item.id])

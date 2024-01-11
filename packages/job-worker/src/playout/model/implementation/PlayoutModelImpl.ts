@@ -230,9 +230,9 @@ export class PlayoutModelReadonlyImpl implements PlayoutModelReadonly {
 }
 
 /**
- * This is a cache used for playout operations.
+ * This is a model used for playout operations.
  * It contains everything that is needed to generate the timeline, and everything except for pieces needed to update the partinstances.
- * Anything not in this cache should not be needed often, and only for specific operations (eg, AdlibActions needed to run one).
+ * Anything not in this model should not be needed often, and only for specific operations (eg, AdlibActions needed to run one).
  */
 export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements PlayoutModel, DatabasePersistedModel {
 	readonly #baselineHelper: StudioBaselineHelper
@@ -630,14 +630,14 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		// Defer ones which arent loaded
 		this.deferAfterSave(async (playoutModel) => {
 			const rundownIds = playoutModel.getRundownIds()
-			// We need to keep any for PartInstances which are still existent in the cache (as they werent removed)
-			const partInstanceIdsInCache = playoutModel.loadedPartInstances.map((p) => p.partInstance._id)
+			// We need to keep any for PartInstances which are still existent in the model (as they werent removed)
+			const partInstanceIdsInModel = playoutModel.loadedPartInstances.map((p) => p.partInstance._id)
 
 			// Find all the partInstances which are not loaded, but should be removed
 			const removeFromDb = await this.context.directCollections.PartInstances.findFetch(
 				{
-					// Not any which are in the cache, as they have already been done if needed
-					_id: { $nin: partInstanceIdsInCache },
+					// Not any which are in the model, as they have already been done if needed
+					_id: { $nin: partInstanceIdsInModel },
 					rundownId: { $in: rundownIds },
 					rehearsal: true,
 				},
@@ -705,7 +705,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 
 		const span = this.context.startSpan('PlayoutModelImpl.saveAllToDatabase')
 
-		// Execute cache.deferBeforeSave()'s
+		// Execute deferBeforeSave()'s
 		for (const fn of this.#deferredBeforeSaveFunctions) {
 			await fn(this as any)
 		}
@@ -734,7 +734,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 
 		this.#playlistHasChanged = false
 
-		// Execute cache.deferAfterSave()'s
+		// Execute deferAfterSave()'s
 		for (const fn of this.#deferredAfterSaveFunctions) {
 			await fn(this as any)
 		}
@@ -892,15 +892,15 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		this.#deferredAfterSaveFunctions.push(fcn)
 	}
 
-	/** ICacheBase */
+	/** BaseModel */
 
 	/**
-	 * Assert that no changes should have been made to the cache, will throw an Error otherwise. This can be used in
-	 * place of `saveAllToDatabase()`, when the code controlling the cache expects no changes to have been made and any
+	 * Assert that no changes should have been made to the model, will throw an Error otherwise. This can be used in
+	 * place of `saveAllToDatabase()`, when the code controlling the model expects no changes to have been made and any
 	 * changes made are an error and will cause issues.
 	 */
 	assertNoChanges(): void {
-		const span = this.context.startSpan('Cache.assertNoChanges')
+		const span = this.context.startSpan('PlayoutModelImpl.assertNoChanges')
 
 		function logOrThrowError(error: Error) {
 			if (!IS_PRODUCTION) {
@@ -913,7 +913,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		if (this.#deferredBeforeSaveFunctions.length > 0)
 			logOrThrowError(
 				new Error(
-					`Failed no changes in cache assertion, there were ${
+					`Failed no changes in model assertion, there were ${
 						this.#deferredBeforeSaveFunctions.length
 					} deferred functions`
 				)
@@ -922,33 +922,33 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		if (this.#deferredAfterSaveFunctions.length > 0)
 			logOrThrowError(
 				new Error(
-					`Failed no changes in cache assertion, there were ${
+					`Failed no changes in model assertion, there were ${
 						this.#deferredAfterSaveFunctions.length
 					} after-save deferred functions`
 				)
 			)
 
 		if (this.#timelineHasChanged)
-			logOrThrowError(new Error(`Failed no changes in cache assertion, Timeline has been changed`))
+			logOrThrowError(new Error(`Failed no changes in model assertion, Timeline has been changed`))
 
 		if (this.#playlistHasChanged)
-			logOrThrowError(new Error(`Failed no changes in cache assertion, Playlist has been changed`))
+			logOrThrowError(new Error(`Failed no changes in model assertion, Playlist has been changed`))
 
 		if (this.rundownsImpl.find((rd) => rd.ScratchPadSegmentHasChanged))
-			logOrThrowError(new Error(`Failed no changes in cache assertion, a scratchpad Segment has been changed`))
+			logOrThrowError(new Error(`Failed no changes in model assertion, a scratchpad Segment has been changed`))
 
 		if (
 			Array.from(this.allPartInstances.values()).find(
 				(part) => !part || part.partInstanceHasChanges || part.changedPieceInstanceIds().length > 0
 			)
 		)
-			logOrThrowError(new Error(`Failed no changes in cache assertion, a PartInstance has been changed`))
+			logOrThrowError(new Error(`Failed no changes in model assertion, a PartInstance has been changed`))
 
 		if (span) span.end()
 	}
 
 	/**
-	 * Discards all documents in this cache, and marks it as unusable
+	 * Discards all documents in this model, and marks it as unusable
 	 */
 	dispose(): void {
 		this.#disposed = true

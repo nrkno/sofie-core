@@ -15,7 +15,7 @@ interface TimelineDatastoreViewRouteParams {
 	studioId: string
 }
 
-const TimelineDatastoreView: React.FC = function TimelineDatastoreView() {
+function TimelineDatastoreView(): JSX.Element {
 	const { t } = useTranslation()
 	const { studioId } = useParams<TimelineDatastoreViewRouteParams>()
 
@@ -38,7 +38,7 @@ const TimelineDatastoreView: React.FC = function TimelineDatastoreView() {
 interface IDatastoreControlsProps {
 	studioId: StudioId
 }
-function ComponentDatastoreControls({ studioId }: IDatastoreControlsProps) {
+function ComponentDatastoreControls({ studioId }: Readonly<IDatastoreControlsProps>) {
 	useSubscription(CorelibPubSub.timelineDatastore, studioId)
 
 	const datastore = useTracker(() => TimelineDatastore.find().fetch(), [studioId])
@@ -71,7 +71,7 @@ function ComponentDatastoreControls({ studioId }: IDatastoreControlsProps) {
 	)
 }
 
-const TimelineDatastoreStudioSelect: React.FC = function TimelineDatastoreStudioSelect() {
+function TimelineDatastoreStudioSelect(): JSX.Element {
 	return <StudioSelect path="timelinedatastore" title="Timeline Datastore" />
 }
 

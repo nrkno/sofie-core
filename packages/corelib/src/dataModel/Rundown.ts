@@ -10,6 +10,15 @@ import {
 } from './Ids'
 import { RundownNote } from './Notes'
 
+export enum RundownOrphanedReason {
+	/** Rundown is deleted from the NRCS but we still need it */
+	DELETED = 'deleted',
+	/** Rundown was restored from a snapshot and does not correspond with a rundown in the NRCS */
+	FROM_SNAPSHOT = 'from-snapshot',
+	/** Rundown was unsynced by the user */
+	MANUAL = 'manual',
+}
+
 export interface RundownImportVersions {
 	studio: string
 	showStyleBase: string
@@ -47,7 +56,7 @@ export interface Rundown {
 	// There should be something like a Owner user here somewhere?
 
 	/** Is the rundown in an unsynced (has been unpublished from ENPS) state? */
-	orphaned?: 'deleted' | 'from-snapshot' | 'manual'
+	orphaned?: RundownOrphanedReason
 
 	/** Last sent storyStatus to ingestDevice (MOS) */
 	notifiedCurrentPlayingPartExternalId?: string
@@ -78,8 +87,6 @@ export interface Rundown {
 	playlistId: RundownPlaylistId
 	/** If the playlistId has ben set manually by a user in Sofie */
 	playlistIdIsSetInSofie?: boolean
-	/** Whenever the baseline (RundownBaselineObjs, RundownBaselineAdLibItems, RundownBaselineAdLibActions) changes, this is changed too */
-	baselineModifyHash?: string
 }
 
 /** Note: Use Rundown instead */

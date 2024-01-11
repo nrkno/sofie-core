@@ -30,7 +30,7 @@ interface IProps {
 /**
  * This is a panel for monitoring the state of all the Media for this Playlist
  */
-export function MediaStatusPopUp({ playlistId }: IProps): JSX.Element {
+export function MediaStatusPopUp({ playlistId }: Readonly<IProps>): JSX.Element {
 	const { t } = useTranslation()
 
 	const [sortBy, setSortBy] = useState<'rundown' | 'status' | 'sourceLayer' | 'name'>('rundown')
@@ -49,9 +49,8 @@ export function MediaStatusPopUp({ playlistId }: IProps): JSX.Element {
 		(item: IMediaStatusListItem) => {
 			if (emptyFilter) return true
 			if (item.name.toLowerCase().indexOf(debouncedFilter.toLowerCase().trim()) >= 0) return true
-			if ((item.partIdentifier?.toLocaleLowerCase() ?? '').indexOf(debouncedFilter.toLowerCase().trim()) === 0)
-				return true
-			if ((item.segmentIdentifier?.toLocaleLowerCase() ?? '').indexOf(debouncedFilter.toLowerCase().trim()) === 0)
+			if ((item.partIdentifier?.toLocaleLowerCase() ?? '').startsWith(debouncedFilter.toLowerCase().trim())) return true
+			if ((item.segmentIdentifier?.toLocaleLowerCase() ?? '').startsWith(debouncedFilter.toLowerCase().trim()))
 				return true
 			return false
 		},

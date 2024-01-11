@@ -18,6 +18,9 @@ import {
 	ExpectedPlayoutItemGeneric,
 	HackPartMediaObjectSubscription,
 	IBlueprintActionManifest,
+	IBlueprintActionManifestDisplay,
+	IBlueprintActionManifestDisplayContent,
+	IBlueprintActionTriggerMode,
 	IBlueprintAdLibPieceDB,
 	IBlueprintConfig,
 	IBlueprintMutatablePart,
@@ -265,7 +268,7 @@ export function convertPartToBlueprints(part: ReadonlyDeep<DBPart>): IBlueprintP
  * @param adLib the AdLibPiece to convert
  * @returns a cloned complete and clean IBlueprintAdLibPieceDB
  */
-export function convertAdLibPieceToBlueprints(adLib: AdLibPiece): IBlueprintAdLibPieceDB {
+export function convertAdLibPieceToBlueprints(adLib: ReadonlyDeep<AdLibPiece>): IBlueprintAdLibPieceDB {
 	const obj: Complete<IBlueprintAdLibPieceDB> = {
 		...convertPieceGenericToBlueprintsInner(adLib),
 		_id: unprotectString(adLib._id),
@@ -273,8 +276,8 @@ export function convertAdLibPieceToBlueprints(adLib: AdLibPiece): IBlueprintAdLi
 		invalid: adLib.invalid,
 		expectedDuration: adLib.expectedDuration,
 		floated: adLib.floated,
-		currentPieceTags: clone(adLib.currentPieceTags),
-		nextPieceTags: clone(adLib.nextPieceTags),
+		currentPieceTags: clone<string[] | undefined>(adLib.currentPieceTags),
+		nextPieceTags: clone<string[] | undefined>(adLib.nextPieceTags),
 		uniquenessId: adLib.uniquenessId,
 		invertOnAirState: adLib.invertOnAirState,
 	}
@@ -287,7 +290,7 @@ export function convertAdLibPieceToBlueprints(adLib: AdLibPiece): IBlueprintAdLi
  * @param action the AdLibAction to convert
  * @returns a cloned complete and clean IBlueprintActionManifest
  */
-export function convertAdLibActionToBlueprints(action: AdLibAction): IBlueprintActionManifest {
+export function convertAdLibActionToBlueprints(action: ReadonlyDeep<AdLibAction>): IBlueprintActionManifest {
 	const obj: Complete<IBlueprintActionManifest> = {
 		externalId: action.externalId,
 		actionId: action.actionId,
@@ -295,10 +298,10 @@ export function convertAdLibActionToBlueprints(action: AdLibAction): IBlueprintA
 		partId: unprotectString(action.partId),
 		allVariants: action.allVariants,
 		userDataManifest: clone(action.userDataManifest),
-		display: clone(action.display), // TODO - type mismatch
-		triggerModes: clone(action.triggerModes), // TODO - type mismatch
-		expectedPlayoutItems: clone(action.expectedPlayoutItems),
-		expectedPackages: clone(action.expectedPackages),
+		display: clone<IBlueprintActionManifestDisplay | IBlueprintActionManifestDisplayContent>(action.display), // TODO - type mismatch
+		triggerModes: clone<IBlueprintActionTriggerMode[] | undefined>(action.triggerModes), // TODO - type mismatch
+		expectedPlayoutItems: clone<ExpectedPlayoutItemGeneric[] | undefined>(action.expectedPlayoutItems),
+		expectedPackages: clone<ExpectedPackage.Any[] | undefined>(action.expectedPackages),
 	}
 
 	return obj

@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React, { useCallback } from 'react'
 import CoreIcons from '@nrk/core-icons/jsx'
 import { faChevronDown, faChevronRight, faCheck, faStopCircle, faRedo, faFlag } from '@fortawesome/free-solid-svg-icons'
 // @ts-expect-error No types available
@@ -7,13 +7,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import ClassNames from 'classnames'
 import { MomentFromNow } from '../../lib/Moment'
 import { CircularProgressbar } from 'react-circular-progressbar'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
-import * as i18next from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { extendMandadory, unprotectString } from '../../../lib/lib'
-import * as _ from 'underscore'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { Spinner } from '../../lib/Spinner'
 import { sofieWarningIcon as WarningIcon } from '../../lib/notifications/warningIcon'
@@ -24,26 +22,15 @@ import { MediaManagerAPI } from '../../../lib/api/mediaManager'
 import { getAllowConfigure, getAllowStudio } from '../../lib/localStorage'
 import { MediaWorkFlowId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MediaWorkFlows, MediaWorkFlowSteps } from '../../collections'
-
-interface IMediaManagerStatusProps {}
+import { useToggleExpandHelper } from '../util/useToggleExpandHelper'
 
 interface MediaWorkFlowUi extends MediaWorkFlow {
 	steps: MediaWorkFlowStep[]
 }
 
-interface IMediaManagerStatusTrackedProps {
-	workFlows: MediaWorkFlowUi[]
-}
-
-interface IMediaManagerStatusState {
-	expanded: {
-		[mediaWorkFlowId: string]: boolean
-	}
-}
-
 interface IItemProps {
 	item: MediaWorkFlowUi
-	expanded: _.Dictionary<boolean>
+	isExpanded: boolean
 	toggleExpanded: (id: MediaWorkFlowId) => void
 	actionRestart: (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => void
 	actionAbort: (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => void
@@ -148,13 +135,12 @@ function workStepStatusLabel(t: TFunc, step: MediaWorkFlowStep): string {
 	}
 }
 
-const MediaManagerWorkFlowItem: React.FunctionComponent<IItemProps & i18next.WithTranslation> = (
-	props: IItemProps & i18next.WithTranslation
-) => {
-	const mediaWorkflow = props.item
-	const t = props.t
+function MediaManagerWorkFlowItem(props: Readonly<IItemProps>): JSX.Element {
+	const { t } = useTranslation()
 
-	const expanded = props.expanded[unprotectString(mediaWorkflow._id)] === true
+	const mediaWorkflow = props.item
+
+	const isExpanded = props.isExpanded
 	const finishedOK = mediaWorkflow.success && mediaWorkflow.finished
 	const finishedError = !mediaWorkflow.success && mediaWorkflow.finished
 	const criticalSteps = mediaWorkflow.steps.filter((j) => j.criticalStep)
@@ -186,7 +172,7 @@ const MediaManagerWorkFlowItem: React.FunctionComponent<IItemProps & i18next.Wit
 	return (
 		<div
 			className={ClassNames('workflow mbs', {
-				expanded: expanded,
+				expanded: isExpanded,
 
 				keyOk: keyFinishedOK,
 				ok: finishedOK,
@@ -252,8 +238,8 @@ const MediaManagerWorkFlowItem: React.FunctionComponent<IItemProps & i18next.Wit
 						<MomentFromNow>{mediaWorkflow.created}</MomentFromNow>
 					</div>
 					<div className="workflow__header__expand" onClick={() => props.toggleExpanded(mediaWorkflow._id)}>
-						{expanded ? t('Collapse') : t('Details')}
-						{expanded ? <FontAwesomeIcon icon={faChevronDown} /> : <FontAwesomeIcon icon={faChevronRight} />}
+						{isExpanded ? t('Collapse') : t('Details')}
+						{isExpanded ? <FontAwesomeIcon icon={faChevronDown} /> : <FontAwesomeIcon icon={faChevronRight} />}
 					</div>
 					<div className="workflow__header__status">
 						{workFlowStatusLabel(t, mediaWorkflow.success, mediaWorkflow.finished, keyFinishedOK, currentTask)}
@@ -310,7 +296,7 @@ const MediaManagerWorkFlowItem: React.FunctionComponent<IItemProps & i18next.Wit
 					overflow: 'hidden',
 				}}
 			>
-				{expanded && (
+				{isExpanded && (
 					<div>
 						{mediaWorkflow.steps
 							.sort((a, b) => b.priority - a.priority)
@@ -349,10 +335,58 @@ const MediaManagerWorkFlowItem: React.FunctionComponent<IItemProps & i18next.Wit
 	)
 }
 
-export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps, {}, IMediaManagerStatusTrackedProps>(
-	(_props: IMediaManagerStatusProps) => {
-		return {
-			workFlows: MediaWorkFlows.find({})
+export function MediaManagerStatus(): JSX.Element {
+	const { t } = useTranslation()
+
+	// Subscribe to data:
+	useSubscription(MeteorPubSub.mediaWorkFlows) // TODO: add some limit
+	useSubscription(MeteorPubSub.mediaWorkFlowSteps)
+
+	const actionRestartAll = useCallback(
+		(event: React.MouseEvent<HTMLElement>) => {
+			doUserAction(t, event, UserAction.RESTART_MEDIA_WORKFLOW, (e, ts) =>
+				MeteorCall.userAction.mediaRestartAllWorkflows(e, ts)
+			)
+		},
+		[t]
+	)
+	const actionAbortAll = useCallback(
+		(event: React.MouseEvent<HTMLElement>) => {
+			doUserAction(t, event, UserAction.ABORT_ALL_MEDIA_WORKFLOWS, (e, ts) =>
+				MeteorCall.userAction.mediaAbortAllWorkflows(e, ts)
+			)
+		},
+		[t]
+	)
+
+	const actionRestart = useCallback(
+		(event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
+			doUserAction(t, event, UserAction.RESTART_MEDIA_WORKFLOW, (e, ts) =>
+				MeteorCall.userAction.mediaRestartWorkflow(e, ts, workflow._id)
+			)
+		},
+		[t]
+	)
+	const actionAbort = useCallback(
+		(event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
+			doUserAction(t, event, UserAction.ABORT_MEDIA_WORKFLOW, (e, ts) =>
+				MeteorCall.userAction.mediaAbortWorkflow(e, ts, workflow._id)
+			)
+		},
+		[t]
+	)
+	const actionPrioritize = useCallback(
+		(event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
+			doUserAction(t, event, UserAction.PRIORITIZE_MEDIA_WORKFLOW, (e, ts) =>
+				MeteorCall.userAction.mediaPrioritizeWorkflow(e, ts, workflow._id)
+			)
+		},
+		[t]
+	)
+
+	const allWorkFlows = useTracker(
+		() =>
+			MediaWorkFlows.find({})
 				.fetch()
 				.map((i) =>
 					extendMandadory<MediaWorkFlow, MediaWorkFlowUi>(i, {
@@ -361,106 +395,43 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 						}).fetch(),
 					})
 				),
-		}
-	}
-)(
-	class MediaManagerStatus extends MeteorReactComponent<
-		Translated<IMediaManagerStatusProps & IMediaManagerStatusTrackedProps>,
-		IMediaManagerStatusState
-	> {
-		constructor(props: Translated<IMediaManagerStatusProps & IMediaManagerStatusTrackedProps>) {
-			super(props)
+		[],
+		[]
+	)
+	const sortedWorkflows = allWorkFlows.sort((a, b) => b.created - a.created).sort((a, b) => b.priority - a.priority)
 
-			this.state = {
-				expanded: {},
-			}
-		}
+	const expandedHelper = useToggleExpandHelper()
 
-		componentDidMount(): void {
-			// Subscribe to data:
-			this.subscribe(MeteorPubSub.mediaWorkFlows) // TODO: add some limit
-			this.subscribe(MeteorPubSub.mediaWorkFlowSteps)
-		}
-
-		toggleExpanded = (workFlowId: MediaWorkFlowId) => {
-			this.state.expanded[unprotectString(workFlowId)] = !this.state.expanded[unprotectString(workFlowId)]
-			this.setState({
-				expanded: this.state.expanded,
-			})
-		}
-		actionRestart = (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
-			doUserAction(this.props.t, event, UserAction.RESTART_MEDIA_WORKFLOW, (e, ts) =>
-				MeteorCall.userAction.mediaRestartWorkflow(e, ts, workflow._id)
-			)
-		}
-		actionAbort = (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
-			doUserAction(this.props.t, event, UserAction.ABORT_MEDIA_WORKFLOW, (e, ts) =>
-				MeteorCall.userAction.mediaAbortWorkflow(e, ts, workflow._id)
-			)
-		}
-		actionPrioritize = (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
-			doUserAction(this.props.t, event, UserAction.PRIORITIZE_MEDIA_WORKFLOW, (e, ts) =>
-				MeteorCall.userAction.mediaPrioritizeWorkflow(e, ts, workflow._id)
-			)
-		}
-		actionRestartAll = (event: React.MouseEvent<HTMLElement>) => {
-			doUserAction(this.props.t, event, UserAction.RESTART_MEDIA_WORKFLOW, (e, ts) =>
-				MeteorCall.userAction.mediaRestartAllWorkflows(e, ts)
-			)
-		}
-		actionAbortAll = (event: React.MouseEvent<HTMLElement>) => {
-			doUserAction(this.props.t, event, UserAction.ABORT_ALL_MEDIA_WORKFLOWS, (e, ts) =>
-				MeteorCall.userAction.mediaAbortAllWorkflows(e, ts)
-			)
-		}
-
-		renderWorkFlows() {
-			const { t, i18n, tReady } = this.props
-
-			return this.props.workFlows
-				.sort((a, b) => b.created - a.created)
-				.sort((a, b) => b.priority - a.priority)
-				.map((mediaWorkflow) => {
-					return (
-						<MediaManagerWorkFlowItem
-							expanded={this.state.expanded}
-							item={mediaWorkflow}
-							key={unprotectString(mediaWorkflow._id)}
-							t={t}
-							i18n={i18n}
-							tReady={tReady}
-							toggleExpanded={this.toggleExpanded}
-							actionRestart={this.actionRestart}
-							actionAbort={this.actionAbort}
-							actionPrioritize={this.actionPrioritize}
-						/>
-					)
-				})
-		}
-
-		render(): JSX.Element {
-			const { t } = this.props
-
-			return (
-				<div className="mhl gutter media-manager-status">
-					<header className="mbs">
-						<h1>{t('Media Transfer Status')}</h1>
-					</header>
-					<div className="mod mvl alright">
-						{getAllowStudio() || getAllowConfigure() ? (
-							<React.Fragment>
-								<button className="btn btn-secondary mls" onClick={this.actionAbortAll}>
-									{t('Abort All')}
-								</button>
-								<button className="btn btn-secondary mls" onClick={this.actionRestartAll}>
-									{t('Restart All')}
-								</button>
-							</React.Fragment>
-						) : null}
-					</div>
-					<div className="mod mvl">{this.renderWorkFlows()}</div>
-				</div>
-			)
-		}
-	}
-)
+	return (
+		<div className="mhl gutter media-manager-status">
+			<header className="mbs">
+				<h1>{t('Media Transfer Status')}</h1>
+			</header>
+			<div className="mod mvl alright">
+				{getAllowStudio() || getAllowConfigure() ? (
+					<React.Fragment>
+						<button className="btn btn-secondary mls" onClick={actionAbortAll}>
+							{t('Abort All')}
+						</button>
+						<button className="btn btn-secondary mls" onClick={actionRestartAll}>
+							{t('Restart All')}
+						</button>
+					</React.Fragment>
+				) : null}
+			</div>
+			<div className="mod mvl">
+				{sortedWorkflows.map((mediaWorkflow) => (
+					<MediaManagerWorkFlowItem
+						isExpanded={expandedHelper.isExpanded(mediaWorkflow._id)}
+						item={mediaWorkflow}
+						key={unprotectString(mediaWorkflow._id)}
+						toggleExpanded={expandedHelper.toggleExpanded}
+						actionRestart={actionRestart}
+						actionAbort={actionAbort}
+						actionPrioritize={actionPrioritize}
+					/>
+				))}
+			</div>
+		</div>
+	)
+}

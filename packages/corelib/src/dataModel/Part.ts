@@ -1,6 +1,5 @@
-import { IBlueprintPartDB, NoteSeverity } from '@sofie-automation/blueprints-integration'
+import { IBlueprintPart, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { ITranslatableMessage } from '../TranslatableMessage'
-import { ProtectedStringProperties } from '../protectedString'
 import { PartId, RundownId, SegmentId } from './Ids'
 import { PartNote } from './Notes'
 import { ReadonlyDeep } from 'type-fest'
@@ -16,7 +15,7 @@ type NullableProps<T> = {
 }
 
 /** A "Line" in NRK Lingo. */
-export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId'> {
+export interface DBPart extends IBlueprintPart {
 	_id: PartId
 	/** Position inside the segment */
 	_rank: number
@@ -41,7 +40,7 @@ export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id
 	 * Original values of properties overriden by some features.
 	 * Currently this only supports the QuickLoop
 	 */
-	overridenProperties?: Partial<NullableProps<IBlueprintPartDB>>
+	overridenProperties?: Partial<NullableProps<IBlueprintPart>>
 }
 
 export function isPartPlayable(part: Pick<ReadonlyDeep<DBPart>, 'invalid' | 'floated'>): boolean {

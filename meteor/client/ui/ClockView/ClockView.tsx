@@ -13,7 +13,7 @@ import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CameraScreen } from './CameraScreen'
 import { MeteorPubSub } from '../../../lib/api/pubsub'
 
-export function ClockView({ studioId }: { studioId: StudioId }): JSX.Element {
+export function ClockView({ studioId }: Readonly<{ studioId: StudioId }>): JSX.Element {
 	useSubscription(MeteorPubSub.rundownPlaylistForStudio, studioId, true)
 
 	const playlist = useTracker(

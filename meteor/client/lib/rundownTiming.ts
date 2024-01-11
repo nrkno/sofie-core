@@ -645,7 +645,7 @@ export class RundownTimingCalculator {
 			asPlayedPlaylistDuration: asPlayedRundownDuration,
 			rundownExpectedDurations,
 			rundownAsPlayedDurations,
-			partCountdown: objectFromEntries(this.linearParts) as Record<string, number | null>,
+			partCountdown: objectFromEntries(this.linearParts),
 			partDurations: this.partDurations,
 			partPlayed: this.partPlayed,
 			partStartsAt: this.partStartsAt,

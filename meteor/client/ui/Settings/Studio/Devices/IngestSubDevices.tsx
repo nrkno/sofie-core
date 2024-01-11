@@ -22,7 +22,10 @@ interface StudioIngestSubDevicesProps {
 	studioId: StudioId
 	studioDevices: PeripheralDevice[]
 }
-export function StudioIngestSubDevices({ studioId, studioDevices }: StudioIngestSubDevicesProps): JSX.Element {
+export function StudioIngestSubDevices({
+	studioId,
+	studioDevices,
+}: Readonly<StudioIngestSubDevicesProps>): JSX.Element {
 	const { t } = useTranslation()
 
 	const studio = useTracker(() => Studios.findOne(studioId), [studioId])

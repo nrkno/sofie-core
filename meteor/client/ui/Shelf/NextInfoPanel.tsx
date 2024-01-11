@@ -8,7 +8,6 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
@@ -27,7 +26,7 @@ interface INextInfoPanelTrackedProps {
 	nextSegment?: DBSegment
 }
 
-export class NextInfoPanelInner extends MeteorReactComponent<INextInfoPanelProps & INextInfoPanelTrackedProps> {
+export class NextInfoPanelInner extends React.Component<INextInfoPanelProps & INextInfoPanelTrackedProps> {
 	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 		const showAny =

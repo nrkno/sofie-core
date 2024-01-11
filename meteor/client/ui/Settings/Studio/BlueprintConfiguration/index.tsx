@@ -20,7 +20,9 @@ interface StudioBlueprintConfigurationSettingsProps {
 	studio: DBStudio
 }
 
-export function StudioBlueprintConfigurationSettings(props: StudioBlueprintConfigurationSettingsProps): JSX.Element {
+export function StudioBlueprintConfigurationSettings(
+	props: Readonly<StudioBlueprintConfigurationSettingsProps>
+): JSX.Element {
 	const { t } = useTranslation()
 
 	const isStatusReady = useSubscription(MeteorPubSub.uiBlueprintUpgradeStatuses)

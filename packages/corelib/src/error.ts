@@ -56,6 +56,7 @@ export enum UserErrorMessage {
 	ValidationFailed = 41,
 	ScratchpadNotAllowed = 42,
 	ScratchpadAlreadyActive = 43,
+	BucketNotFound = 44,
 }
 
 const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
@@ -111,6 +112,7 @@ const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
 	[UserErrorMessage.ValidationFailed]: t('Validation failed!'),
 	[UserErrorMessage.ScratchpadNotAllowed]: t(`Scratchpad mode is not allowed`),
 	[UserErrorMessage.ScratchpadAlreadyActive]: t(`Scratchpad mode is already active`),
+	[UserErrorMessage.BucketNotFound]: t(`Bucket not found!`),
 }
 
 export class UserError {
