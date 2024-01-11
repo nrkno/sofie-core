@@ -307,35 +307,6 @@ export async function regenerateRundownAndBaselineFromIngestData(
 	)
 
 	const peripheralDevice = await pPeripheralDevice
-	// const dbRundownData = literal<DBRundown>({
-	// 	...rundownRes.rundown,
-	// 	notes: rundownNotes,
-	// 	_id: ingestModel.rundownId,
-	// 	externalId: extendedIngestRundown.externalId,
-	// 	organizationId: context.studio.organizationId,
-	// 	studioId: context.studio._id,
-	// 	showStyleVariantId: showStyle.variant._id,
-	// 	showStyleBaseId: showStyle.base._id,
-	// 	orphaned: undefined,
-
-	// 	importVersions: {
-	// 		studio: context.studio._rundownVersionHash,
-	// 		showStyleBase: showStyle.base._rundownVersionHash,
-	// 		showStyleVariant: showStyle.variant._rundownVersionHash,
-	// 		blueprint: showStyleBlueprint.blueprint.blueprintVersion,
-	// 		core: getSystemVersion(),
-	// 	},
-
-	// 	created: ingestModel.rundown?.created ?? getCurrentTime(),
-	// 	modified: getCurrentTime(),
-
-	// 	peripheralDeviceId: peripheralDevice?._id,
-	// 	externalNRCSName: getExternalNRCSName(peripheralDevice),
-
-	// 	// validated later
-	// 	playlistId: protectString(''),
-	// 	...(ingestModel.rundown ? _.pick(ingestModel.rundown, 'playlistId', 'airStatus', 'status') : {}),
-	// })
 
 	ingestModel.setRundownData(
 		rundownRes.rundown,
