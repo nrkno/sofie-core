@@ -13,11 +13,13 @@ export interface SegmentTimingInfo {
 }
 
 /** The Segment generated from Blueprint */
-export interface IBlueprintSegment<TMetadata = unknown> {
+export interface IBlueprintSegment<TPrivateData = unknown, TPublicData = unknown> {
 	/** User-presentable name (Slug) for the Title */
 	name: string
-	/** Arbitrary data storage for plugins */
-	metaData?: TMetadata
+	/** Arbitraty data storage for internal use in the blueprints */
+	privateData?: TPrivateData
+	/** Arbitraty data relevant for other systems, made available to them through APIs */
+	publicData?: TPublicData
 	/** Hide the Segment in the UI */
 	isHidden?: boolean
 	/** User-facing identifier that can be used by the User to identify the contents of a segment in the Rundown source system */
