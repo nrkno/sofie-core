@@ -415,10 +415,10 @@ export async function calculateSegmentsAndRemovalsFromIngestData(
 	)
 
 	/** Don't remove segments for now, orphan them instead. The 'commit' phase will clean them up if possible */
-	const changedSegmentIds2 = new Set(changedSegmentIds)
-	const removedSegments = ingestModel.getAllSegments().filter((s) => !changedSegmentIds2.has(s.segment._id))
+	const changedSegmentIdsSet = new Set(changedSegmentIds)
+	const segmentsToBeRemoved = ingestModel.getAllSegments().filter((s) => !changedSegmentIdsSet.has(s.segment._id))
 	const removedSegmentIds: SegmentId[] = []
-	for (const oldSegment of removedSegments) {
+	for (const oldSegment of segmentsToBeRemoved) {
 		removedSegmentIds.push(oldSegment.segment._id)
 		changedSegmentIds.push(oldSegment.segment._id)
 		oldSegment.setOrphaned(SegmentOrphanedReason.DELETED)

@@ -1,6 +1,6 @@
 import { SegmentId, PartId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { IngestModel, IngestModelReadonly } from './model/IngestModel'
-import { BeforePartMap, CommitIngestOperation } from './commit'
+import { BeforeIngestOperationPartMap, CommitIngestOperation } from './commit'
 import { LocalIngestRundown, RundownIngestDataCache } from './ingestCache'
 import { getRundownId } from './lib'
 import { JobContext } from '../jobs'
@@ -176,7 +176,7 @@ async function runWithRundownLockInner<TRes>(
 	}
 }
 
-function generatePartMap(ingestModel: IngestModelReadonly): BeforePartMap {
+function generatePartMap(ingestModel: IngestModelReadonly): BeforeIngestOperationPartMap {
 	const rundown = ingestModel.rundown
 	if (!rundown) return new Map()
 

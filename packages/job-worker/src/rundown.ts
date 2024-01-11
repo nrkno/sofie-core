@@ -8,7 +8,7 @@ import { AnyBulkWriteOperation } from 'mongodb'
 import { ReadonlyDeep } from 'type-fest'
 import _ = require('underscore')
 import { IngestModelReadonly } from './ingest/model/IngestModel'
-import { BeforePartMap } from './ingest/commit'
+import { BeforeIngestOperationPartMap } from './ingest/commit'
 import { JobContext } from './jobs'
 import { logger } from './logging'
 import { PlayoutModel } from './playout/model/PlayoutModel'
@@ -40,7 +40,7 @@ export async function updatePartInstanceRanks(
 	context: JobContext,
 	ingestModel: IngestModelReadonly,
 	changedSegmentIds: ReadonlyDeep<SegmentId[]>,
-	beforePartMap: BeforePartMap
+	oldPartMap: BeforeIngestOperationPartMap
 ): Promise<void> {
 	const groupedPartInstances = groupByToMap(
 		await context.directCollections.PartInstances.findFetch({
@@ -53,7 +53,7 @@ export async function updatePartInstanceRanks(
 	const writeOps: AnyBulkWriteOperation<DBPartInstance>[] = []
 
 	for (const segmentId of changedSegmentIds) {
-		const oldPartIdsAndRanks = beforePartMap.get(segmentId) ?? []
+		const oldPartIdsAndRanks = oldPartMap.get(segmentId) ?? []
 
 		const newParts = (ingestModel.getSegment(segmentId)?.parts ?? []).map((part) => part.part)
 		const segmentPartInstances = _.sortBy(groupedPartInstances.get(segmentId) ?? [], (p) => p.part._rank)

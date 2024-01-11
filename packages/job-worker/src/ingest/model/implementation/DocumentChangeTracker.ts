@@ -17,6 +17,11 @@ export async function generateWriteOpsForLazyDocuments<TDoc extends { _id: Prote
 	return changeTracker.generateWriteOps()
 }
 
+/**
+ * A helper to calculate the mongodb BulkWrite operations for a collection.
+ * It is intended to be used to combine 'fragments' of a collection which have been distributed amongst their 'parent' documents,
+ * and to safely handle cases such as a document being deleted from one 'parent' and re-created under another 'parent'
+ */
 export class DocumentChangeTracker<TDoc extends { _id: ProtectedString<any> }> {
 	#currentIds = new Set<TDoc['_id']>()
 	#deletedIds = new Set<TDoc['_id']>()
@@ -38,6 +43,11 @@ export class DocumentChangeTracker<TDoc extends { _id: ProtectedString<any> }> {
 		}
 	}
 
+	/**
+	 * Add a document as existing
+	 * @param doc Document which exists in the Model
+	 * @param hasChanges Whether this document has any changes
+	 */
 	addDocument(doc: TDoc, hasChanges: boolean): void {
 		this.#addDocumentId(doc._id)
 
@@ -46,6 +56,10 @@ export class DocumentChangeTracker<TDoc extends { _id: ProtectedString<any> }> {
 		}
 	}
 
+	/**
+	 * Mark a document as deleted
+	 * @param id Id of document to be deleted
+	 */
 	deleteDocument(id: TDoc['_id']): void {
 		// If not reused elswehere, add for deletion
 		if (!this.#currentIds.has(id) && !this.#documentsToSave.has(id)) {
@@ -53,6 +67,11 @@ export class DocumentChangeTracker<TDoc extends { _id: ProtectedString<any> }> {
 		}
 	}
 
+	/**
+	 * Add a batch of changes
+	 * @param changes Description of documents and whether they have changes
+	 * @param parentIsDeleted Whether the parent document is deleted, indicating all of documents should be deleted
+	 */
 	addChanges(changes: DocumentChanges<TDoc>, parentIsDeleted: boolean): void {
 		for (const id of changes.deletedIds) {
 			this.deleteDocument(id)
@@ -75,6 +94,10 @@ export class DocumentChangeTracker<TDoc extends { _id: ProtectedString<any> }> {
 		}
 	}
 
+	/**
+	 * Generate the mongodb BulkWrite operations for the documents known to this tracker
+	 * @returns mongodb BulkWrite operations
+	 */
 	generateWriteOps(): AnyBulkWriteOperation<TDoc>[] {
 		const ops: AnyBulkWriteOperation<TDoc>[] = []
 

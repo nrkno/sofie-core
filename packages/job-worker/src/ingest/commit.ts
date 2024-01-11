@@ -42,7 +42,7 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DatabasePersistedModel } from '../modelBase'
 
 export type BeforePartMapItem = { id: PartId; rank: number }
-export type BeforePartMap = ReadonlyMap<SegmentId, Array<BeforePartMapItem>>
+export type BeforeIngestOperationPartMap = ReadonlyMap<SegmentId, Array<BeforePartMapItem>>
 
 interface PlaylistIdPair {
 	id: RundownPlaylistId
@@ -62,7 +62,7 @@ export async function CommitIngestOperation(
 	context: JobContext,
 	ingestModel: IngestModel & DatabasePersistedModel,
 	beforeRundown: ReadonlyDeep<DBRundown> | undefined,
-	beforePartMap: BeforePartMap,
+	beforePartMap: BeforeIngestOperationPartMap,
 	data: ReadonlyDeep<CommitIngestData>
 ): Promise<UserError | void> {
 	const rundown = ingestModel.getRundown()
@@ -276,7 +276,7 @@ async function updatePartInstancesSegmentIds(
 	context: JobContext,
 	ingestModel: IngestModel,
 	renamedSegments: ReadonlyMap<SegmentId, SegmentId>,
-	beforePartMap: BeforePartMap
+	beforePartMap: BeforeIngestOperationPartMap
 ) {
 	// A set of rules which can be translated to mongo queries for PartInstances to update
 	const renameRules = new Map<
