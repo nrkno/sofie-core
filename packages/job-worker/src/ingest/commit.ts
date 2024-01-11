@@ -640,7 +640,7 @@ async function removeSegments(
 	newPlaylist: DBRundownPlaylist,
 	rundownsInPlaylist: Array<ReadonlyDeep<DBRundown>>,
 	ingestModel: IngestModel,
-	changedSegmentIds: ReadonlyDeep<SegmentId[]>,
+	_changedSegmentIds: ReadonlyDeep<SegmentId[]>,
 	removedSegmentIds: ReadonlyDeep<SegmentId[]>
 ) {
 	const { currentPartInstance, nextPartInstance } = await getSelectedPartInstances(
@@ -661,17 +661,6 @@ async function removeSegments(
 			)
 			orphanDeletedSegmentIds.add(segmentId)
 		}
-	}
-
-	// nocommit Are we keeping preserveUnsyncedPlayingSegmentContents?
-	if (context.studio.settings.preserveUnsyncedPlayingSegmentContents) {
-		await preserveUnsyncedPlayingSegmentContents(
-			ingestModel,
-			changedSegmentIds,
-			removedSegmentIds,
-			currentPartInstance,
-			nextPartInstance
-		)
 	}
 
 	for (const segment of ingestModel.getAllSegments()) {
@@ -710,10 +699,7 @@ async function removeSegments(
 		}
 	}
 
-	// nocommit Are we keeping preserveUnsyncedPlayingSegmentContents?
-	const emptySegmentIds = context.studio.settings.preserveUnsyncedPlayingSegmentContents
-		? purgeSegmentIds
-		: new Set([...purgeSegmentIds.values(), ...orphanDeletedSegmentIds.values()])
+	const emptySegmentIds = new Set([...purgeSegmentIds.values(), ...orphanDeletedSegmentIds.values()])
 	for (const segmentId of emptySegmentIds) {
 		const segment = ingestModel.getSegment(segmentId)
 		if (segment) {
@@ -738,38 +724,6 @@ async function removeSegments(
 	}
 	for (const segmentId of purgeSegmentIds) {
 		ingestModel.removeSegment(segmentId)
-	}
-}
-
-// nocommit Are we keeping preserveUnsyncedPlayingSegmentContents?
-async function preserveUnsyncedPlayingSegmentContents(
-	ingestModel: IngestModel,
-	changedSegmentIds: ReadonlyDeep<SegmentId[]>,
-	removedSegmentIds: ReadonlyDeep<SegmentId[]>,
-	currentPartInstance: ReadonlyDeep<DBPartInstance> | undefined,
-	nextPartInstance: ReadonlyDeep<DBPartInstance> | undefined
-) {
-	const changedSegmentIdsSet = new Set(changedSegmentIds)
-
-	const segmentsChangedToHidden = ingestModel
-		.getAllSegments()
-		.filter((s) => !!s.segment.isHidden && changedSegmentIdsSet.has(s.segment._id))
-		.map((segment) => segment.segment._id)
-
-	// Find segments that are hidden, not removed, and are not safe to remove (e.g. a live segment)
-	const hiddenSegmentsToRestore = segmentsChangedToHidden
-		.filter((segmentId) => !removedSegmentIds.includes(segmentId))
-		.filter((segmentId) => !canRemoveSegment(currentPartInstance, nextPartInstance, segmentId))
-
-	for (const segmentId of [...removedSegmentIds, ...hiddenSegmentsToRestore]) {
-		const segment = ingestModel.getSegment(segmentId)
-		if (!segment) continue // Segment doesn't exist to be restored
-
-		// Blueprints have updated the hidden segment, so we won't try to preserve the contents
-		if (segment.parts.length) continue
-
-		// nocommit could any partIds have been used elsewhere?
-		segment.restoreDeletedParts()
 	}
 }
 

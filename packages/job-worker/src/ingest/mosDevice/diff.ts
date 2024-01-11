@@ -111,10 +111,7 @@ export async function diffAndApplyChanges(
 			orphanedSegmentIds.push(segment.segment._id)
 			segment.setOrphaned(SegmentOrphanedReason.DELETED)
 
-			// nocommit Are we keeping preserveUnsyncedPlayingSegmentContents?
-			if (!context.studio.settings.preserveUnsyncedPlayingSegmentContents) {
-				segment.removeAllParts()
-			}
+			segment.removeAllParts()
 		}
 	}
 

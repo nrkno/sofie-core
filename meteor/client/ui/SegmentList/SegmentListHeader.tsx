@@ -15,7 +15,6 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { IContextMenuContext } from '../RundownView'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
-import { UIStudio } from '../../../lib/api/studios'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 import { SegmentTimeAnchorTime } from '../RundownView/RundownTiming/SegmentTimeAnchorTime'
 
@@ -26,7 +25,6 @@ export function SegmentListHeader({
 	parts,
 	pieces,
 	playlist,
-	studio,
 	highlight,
 	segmentNoteCounts,
 	isLiveSegment,
@@ -45,7 +43,6 @@ export function SegmentListHeader({
 	isDetachedStick: boolean
 	segment: SegmentUi
 	playlist: DBRundownPlaylist
-	studio: UIStudio
 	parts: Array<PartUi>
 	pieces: Map<PartId, CalculateTimingsPiece[]>
 	segmentNoteCounts: SegmentNoteCounts
@@ -151,9 +148,6 @@ export function SegmentListHeader({
 									)
 								}
 							/>
-						)}
-						{studio.settings.preserveUnsyncedPlayingSegmentContents && segment.orphaned && (
-							<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
 						)}
 					</div>
 				)}

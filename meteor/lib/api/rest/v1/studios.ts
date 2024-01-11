@@ -180,7 +180,6 @@ export interface APIStudioSettings {
 	enablePlayFromAnywhere?: boolean
 	forceMultiGatewayMode?: boolean
 	multiGatewayNowSafeLatency?: number
-	preserveUnsyncedPlayingSegmentContents?: boolean
 	allowRundownResetOnAir?: boolean
 	preserveOrphanedSegmentPositionInRundown?: boolean
 	minimumTakeSpan?: number

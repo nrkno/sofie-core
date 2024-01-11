@@ -72,11 +72,6 @@ export interface IngestSegmentModel extends IngestSegmentModelReadonly {
 	removeAllParts(): PartId[]
 
 	/**
-	 * Restore all the Parts in this Segment which hasve been marked as deleted
-	 */
-	restoreDeletedParts(): PartId[]
-
-	/**
 	 * Replace or insert a Part into this Segment
 	 * @param part New part data
 	 * @param pieces Pieces to add to the Part
