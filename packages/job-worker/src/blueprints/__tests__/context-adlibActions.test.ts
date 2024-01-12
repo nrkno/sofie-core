@@ -61,7 +61,7 @@ describe('Test blueprint api context', () => {
 			await context.findLastPieceOnLayer('myLayer', { piecePrivateDataFilter: { someField: 1 } })
 			expect(mockActionService.findLastPieceOnLayer).toHaveBeenCalledTimes(1)
 			expect(mockActionService.findLastPieceOnLayer).toHaveBeenCalledWith('myLayer', {
-				pieceMetaDataFilter: { someField: 1 },
+				piecePrivateDataFilter: { someField: 1 },
 			})
 		})
 
@@ -71,7 +71,7 @@ describe('Test blueprint api context', () => {
 			await context.findLastScriptedPieceOnLayer('myLayer', { piecePrivateDataFilter: { someField: 1 } })
 			expect(mockActionService.findLastScriptedPieceOnLayer).toHaveBeenCalledTimes(1)
 			expect(mockActionService.findLastScriptedPieceOnLayer).toHaveBeenCalledWith('myLayer', {
-				pieceMetaDataFilter: { someField: 1 },
+				piecePrivateDataFilter: { someField: 1 },
 			})
 		})
 
@@ -81,7 +81,7 @@ describe('Test blueprint api context', () => {
 			await context.findLastPieceOnLayer('myLayer', { piecePrivateDataFilter: { someField: 1 } })
 			expect(mockActionService.findLastPieceOnLayer).toHaveBeenCalledTimes(1)
 			expect(mockActionService.findLastPieceOnLayer).toHaveBeenCalledWith('myLayer', {
-				pieceMetaDataFilter: { someField: 1 },
+				piecePrivateDataFilter: { someField: 1 },
 			})
 		})
 

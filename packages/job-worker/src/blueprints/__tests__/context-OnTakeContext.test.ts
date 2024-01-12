@@ -56,30 +56,30 @@ describe('Test blueprint api context', () => {
 		test('findLastPieceOnLayer', async () => {
 			const { context, mockActionService } = await getTestee()
 
-			await context.findLastPieceOnLayer('myLayer', { pieceMetaDataFilter: { someField: 1 } })
+			await context.findLastPieceOnLayer('myLayer', { piecePrivateDataFilter: { someField: 1 } })
 			expect(mockActionService.findLastPieceOnLayer).toHaveBeenCalledTimes(1)
 			expect(mockActionService.findLastPieceOnLayer).toHaveBeenCalledWith('myLayer', {
-				pieceMetaDataFilter: { someField: 1 },
+				piecePrivateDataFilter: { someField: 1 },
 			})
 		})
 
 		test('findLastScriptedPieceOnLayer', async () => {
 			const { context, mockActionService } = await getTestee()
 
-			await context.findLastScriptedPieceOnLayer('myLayer', { pieceMetaDataFilter: { someField: 1 } })
+			await context.findLastScriptedPieceOnLayer('myLayer', { piecePrivateDataFilter: { someField: 1 } })
 			expect(mockActionService.findLastScriptedPieceOnLayer).toHaveBeenCalledTimes(1)
 			expect(mockActionService.findLastScriptedPieceOnLayer).toHaveBeenCalledWith('myLayer', {
-				pieceMetaDataFilter: { someField: 1 },
+				piecePrivateDataFilter: { someField: 1 },
 			})
 		})
 
 		test('getPartInstanceForPreviousPiece', async () => {
 			const { context, mockActionService } = await getTestee()
 
-			await context.findLastPieceOnLayer('myLayer', { pieceMetaDataFilter: { someField: 1 } })
+			await context.findLastPieceOnLayer('myLayer', { piecePrivateDataFilter: { someField: 1 } })
 			expect(mockActionService.findLastPieceOnLayer).toHaveBeenCalledTimes(1)
 			expect(mockActionService.findLastPieceOnLayer).toHaveBeenCalledWith('myLayer', {
-				pieceMetaDataFilter: { someField: 1 },
+				piecePrivateDataFilter: { someField: 1 },
 			})
 		})
 

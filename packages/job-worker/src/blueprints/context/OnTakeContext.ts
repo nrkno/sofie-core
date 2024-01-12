@@ -65,7 +65,7 @@ export class OnTakeContext extends ShowStyleUserContext implements IOnTakeContex
 		options?: {
 			excludeCurrentPart?: boolean
 			originalOnly?: boolean
-			pieceMetaDataFilter?: any
+			piecePrivateDataFilter?: any
 		}
 	): Promise<IBlueprintPieceInstance | undefined> {
 		return this.partAndPieceInstanceService.findLastPieceOnLayer(sourceLayerId0, options)
@@ -75,7 +75,7 @@ export class OnTakeContext extends ShowStyleUserContext implements IOnTakeContex
 		sourceLayerId0: string | string[],
 		options?: {
 			excludeCurrentPart?: boolean
-			pieceMetaDataFilter?: any
+			piecePrivateDataFilter?: any
 		}
 	): Promise<IBlueprintPieceDB | undefined> {
 		return this.partAndPieceInstanceService.findLastScriptedPieceOnLayer(sourceLayerId0, options)
