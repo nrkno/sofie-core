@@ -1143,9 +1143,6 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 									}
 								/>
 							)}
-						{this.props.studio.settings.preserveUnsyncedPlayingSegmentContents && this.props.segment.orphaned && (
-							<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
-						)}
 					</div>
 				)}
 

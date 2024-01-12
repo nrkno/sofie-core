@@ -7,7 +7,6 @@ import {
 	IngestDataCacheObjPart,
 } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { diffAndReturnLatestObjects } from '../cache/lib'
 import { getCurrentTime } from '../lib'
 import _ = require('underscore')
 import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
@@ -16,6 +15,7 @@ import { getPartId, getSegmentId } from './lib'
 import { SetOptional } from 'type-fest'
 import { groupByToMap, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { AnyBulkWriteOperation } from 'mongodb'
+import { diffAndReturnLatestObjects } from './model/implementation/utils'
 
 interface LocalIngestBase {
 	modified: number

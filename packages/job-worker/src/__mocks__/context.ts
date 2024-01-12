@@ -114,7 +114,7 @@ export class MockJobContext implements JobContext {
 		}
 	}
 
-	trackCache(_cache: BaseModel): void {
+	trackCache(_model: BaseModel): void {
 		// TODO
 		// throw new Error('Method not implemented.')
 	}
