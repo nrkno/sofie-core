@@ -109,10 +109,10 @@ class PlaylistsServerAPI implements PlaylistsRestAPI {
 				segmentAdLibPiece,
 				bucketAdLibPiece,
 				AdLibActions.findOneAsync(adLibId as AdLibActionId, {
-					projection: { _id: 1, actionId: 1, userData: 1 },
+					projection: { _id: 1, actionId: 1, userData: 1, privateData: 1 },
 				}),
 				RundownBaselineAdLibActions.findOneAsync(adLibId as RundownBaselineAdLibActionId, {
-					projection: { _id: 1, actionId: 1, userData: 1 },
+					projection: { _id: 1, actionId: 1, userData: 1, privateData: 1 },
 				}),
 			]
 		)
@@ -204,6 +204,7 @@ class PlaylistsServerAPI implements PlaylistsRestAPI {
 					actionId: adLibActionDoc.actionId,
 					userData: adLibActionDoc.userData,
 					triggerMode: triggerMode ?? undefined,
+					privateData: adLibActionDoc.privateData,
 				}
 			)
 		} else {

@@ -26,7 +26,7 @@ export interface IBlueprintDirectPlayAdLibAction extends IBlueprintDirectPlayBas
 }
 export type IBlueprintDirectPlay = IBlueprintDirectPlayAdLibPiece | IBlueprintDirectPlayAdLibAction
 
-export interface IBlueprintPieceGeneric<TMetadata = unknown> {
+export interface IBlueprintPieceGeneric<TPrivateData = unknown, TPublicData = unknown> {
 	/**
 	 * An identifier for this Piece
 	 * It should be unique within the part it belongs to, and consistent across ingest updates
@@ -34,8 +34,10 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	externalId: string
 	/** User-presentable name for the timeline item */
 	name: string
-	/** Arbitrary data storage for plugins */
-	metaData?: TMetadata
+	/** Arbitraty data storage for internal use in the blueprints */
+	privateData?: TPrivateData
+	/** Arbitraty data relevant for other systems, made available to them through APIs */
+	publicData?: TPublicData
 
 	/** Whether and how the piece is infinite */
 	lifespan: PieceLifespan

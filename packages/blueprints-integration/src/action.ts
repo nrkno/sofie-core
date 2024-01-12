@@ -65,7 +65,7 @@ export interface IBlueprintActionTriggerMode {
 	}
 }
 
-export interface IBlueprintActionManifest {
+export interface IBlueprintActionManifest<TPrivateData = unknown, TPublicData = unknown> {
 	/**
 	 * An identifier for this Action
 	 * It should be unique within the part it belongs to, and consistent across ingest updates
@@ -74,9 +74,16 @@ export interface IBlueprintActionManifest {
 
 	/** Id of the action */
 	actionId: string
-	/** Properties defining the action behaviour */
+	/** Arbitraty data storage for internal use in the blueprints */
+	privateData?: TPrivateData
+	/** Arbitraty data relevant for other systems, made available to them through APIs */
+	publicData?: TPublicData
+	/**
+	 * Arbitrary data relevant for other systems and/or users, available through APIs.
+	 * It can be overriden when executing the action.
+	 * It can be made user-editable with userDataManifest.
+	 */
 	userData: ActionUserData
-
 	/**
 	 * Set if ad-lib action should be limited in context to the current part/segment
 	 * Note: Only valid for items returned from getSegment

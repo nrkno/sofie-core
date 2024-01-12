@@ -64,7 +64,8 @@ export const IBlueprintPieceObjectsSampleKeys = allKeysOfObject<IBlueprintPiece>
 	pieceType: true,
 	extendOnHold: true,
 	name: true,
-	metaData: true,
+	privateData: true,
+	publicData: true,
 	sourceLayerId: true,
 	outputLayerId: true,
 	content: true,
@@ -85,7 +86,8 @@ export const IBlueprintPieceObjectsSampleKeys = allKeysOfObject<IBlueprintPiece>
 export const IBlueprintMutatablePartSampleKeys = allKeysOfObject<IBlueprintMutatablePart>({
 	title: true,
 	prompterTitle: true,
-	metaData: true,
+	privateData: true,
+	publicData: true,
 	autoNext: true,
 	autoNextOverlap: true,
 	inTransition: true,
@@ -182,7 +184,8 @@ function convertPieceGenericToBlueprintsInner(piece: ReadonlyDeep<PieceGeneric>)
 	const obj: Complete<IBlueprintPieceGeneric> = {
 		externalId: piece.externalId,
 		name: piece.name,
-		metaData: clone(piece.metaData),
+		privateData: clone(piece.privateData),
+		publicData: clone(piece.publicData),
 		lifespan: piece.lifespan,
 		sourceLayerId: piece.sourceLayerId,
 		outputLayerId: piece.outputLayerId,
@@ -240,7 +243,8 @@ export function convertPartToBlueprints(part: ReadonlyDeep<DBPart>): IBlueprintP
 		gap: part.gap,
 		title: part.title,
 		prompterTitle: part.prompterTitle,
-		metaData: clone(part.metaData),
+		privateData: clone(part.privateData),
+		publicData: clone(part.publicData),
 		autoNext: part.autoNext,
 		autoNextOverlap: part.autoNextOverlap,
 		inTransition: clone(part.inTransition),
@@ -295,6 +299,8 @@ export function convertAdLibActionToBlueprints(action: ReadonlyDeep<AdLibAction>
 		externalId: action.externalId,
 		actionId: action.actionId,
 		userData: clone(action.userData),
+		privateData: clone(action.privateData),
+		publicData: clone(action.publicData),
 		partId: unprotectString(action.partId),
 		allVariants: action.allVariants,
 		userDataManifest: clone(action.userDataManifest),
@@ -316,7 +322,8 @@ export function convertSegmentToBlueprints(segment: ReadonlyDeep<DBSegment>): IB
 	const obj: Complete<IBlueprintSegmentDB> = {
 		_id: unprotectString(segment._id),
 		name: segment.name,
-		metaData: clone(segment.metaData),
+		privateData: clone(segment.privateData),
+		publicData: clone(segment.publicData),
 		isHidden: segment.isHidden,
 		identifier: segment.identifier,
 		displayAs: segment.displayAs,
@@ -338,7 +345,8 @@ export function convertRundownToBlueprints(rundown: ReadonlyDeep<DBRundown>): IB
 		name: rundown.name,
 		description: rundown.description,
 		timing: clone<RundownPlaylistTiming>(rundown.timing),
-		metaData: clone(rundown.metaData),
+		privateData: clone(rundown.privateData),
+		publicData: clone(rundown.publicData),
 		playlistExternalId: rundown.playlistExternalId,
 		endOfRundownIsShowBreak: rundown.endOfRundownIsShowBreak,
 		_id: unprotectString(rundown._id),
@@ -361,7 +369,8 @@ export function convertRundownToBlueprintSegmentRundown(
 ): IBlueprintSegmentRundown {
 	const obj: Complete<IBlueprintSegmentRundown> = {
 		externalId: rundown.externalId,
-		metaData: skipClone ? rundown.metaData : clone(rundown.metaData),
+		privateData: skipClone ? rundown.privateData : clone(rundown.privateData),
+		publicData: skipClone ? rundown.publicData : clone(rundown.publicData),
 	}
 
 	return obj
@@ -388,7 +397,8 @@ export function convertRundownPlaylistToBlueprints(
 			playlist.quickLoop.end?.type === QuickLoopMarkerType.PLAYLIST,
 		timeOfDayCountdowns: playlist.timeOfDayCountdowns,
 
-		metaData: clone(playlist.metaData),
+		privateData: clone(playlist.privateData),
+		publicData: clone(playlist.publicData),
 
 		_id: unprotectString(playlist._id),
 		externalId: playlist.externalId,

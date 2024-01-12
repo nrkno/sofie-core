@@ -415,7 +415,8 @@ class ServerUserActionAPI
 				actionDocId,
 				actionId,
 				userData,
-				triggerMode: triggerMode || undefined,
+				triggerMode: triggerMode ?? undefined,
+				privateData: null,
 			}
 		)
 	}

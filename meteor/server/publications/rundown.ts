@@ -69,7 +69,7 @@ meteorPublish(PeripheralDevicePubSub.rundownsForDevice, async function (deviceId
 
 	const modifier: FindOptions<DBRundown> = {
 		fields: {
-			metaData: 0,
+			privateData: 0,
 		},
 	}
 
@@ -97,7 +97,7 @@ meteorPublish(
 
 		const modifier: FindOptions<DBRundown> = {
 			fields: {
-				metaData: 0,
+				privateData: 0,
 			},
 		}
 
@@ -131,7 +131,7 @@ meteorPublish(
 
 		const modifier: FindOptions<DBRundown> = {
 			fields: {
-				metaData: 0,
+				privateData: 0,
 			},
 		}
 
@@ -167,7 +167,7 @@ meteorPublish(
 		) {
 			return Segments.findWithCursor(selector, {
 				fields: {
-					metaData: 0,
+					privateData: 0,
 				},
 			})
 		}
@@ -186,7 +186,7 @@ meteorPublish(
 
 		const modifier: FindOptions<DBPart> = {
 			fields: {
-				metaData: 0,
+				privateData: 0,
 			},
 		}
 
@@ -222,7 +222,7 @@ meteorPublish(
 		const modifier: FindOptions<DBPartInstance> = {
 			fields: {
 				// @ts-expect-error Mongo typings aren't clever enough yet
-				'part.metaData': 0,
+				'part.privateData': 0,
 			},
 		}
 
@@ -266,7 +266,7 @@ meteorPublish(
 			return PartInstances.findWithCursor(selector, {
 				fields: literal<MongoFieldSpecifierZeroes<DBPartInstance>>({
 					// @ts-expect-error Mongo typings aren't clever enough yet
-					'part.metaData': 0,
+					'part.privateData': 0,
 					isTaken: 0,
 					timings: 0,
 				}),
@@ -293,7 +293,7 @@ meteorPublish(
 				{
 					fields: {
 						// @ts-expect-error Mongo typings aren't clever enough yet
-						'part.metaData': 0,
+						'part.privateData': 0,
 					},
 					sort: {
 						takeCount: 1,
@@ -307,7 +307,7 @@ meteorPublish(
 )
 
 const piecesSubFields: MongoFieldSpecifierZeroes<Piece> = {
-	metaData: 0,
+	privateData: 0,
 	timelineObjectsString: 0,
 }
 
@@ -382,7 +382,7 @@ meteorPublish(
 )
 
 const adlibPiecesSubFields: MongoFieldSpecifierZeroes<AdLibPiece> = {
-	metaData: 0,
+	privateData: 0,
 	timelineObjectsString: 0,
 }
 
@@ -425,7 +425,7 @@ meteorPublish(MeteorPubSub.adLibPiecesForPart, async function (partId: PartId, s
 
 const pieceInstanceFields: MongoFieldSpecifierZeroes<PieceInstance> = {
 	// @ts-expect-error Mongo typings aren't clever enough yet
-	'piece.metaData': 0,
+	'piece.privateData': 0,
 	'piece.timelineObjectsString': 0,
 }
 
@@ -592,12 +592,18 @@ meteorPublish(
 			return RundownBaselineAdLibPieces.findWithCursor(selector, {
 				fields: {
 					timelineObjectsString: 0,
+					privateData: 0,
 				},
 			})
 		}
 		return null
 	}
 )
+
+const adlibActionSubFields: MongoFieldSpecifierZeroes<AdLibAction> = {
+	privateData: 0,
+}
+
 meteorPublish(CorelibPubSub.adLibActions, async function (rundownIds: RundownId[], token: string | undefined) {
 	check(rundownIds, Array)
 
@@ -611,7 +617,9 @@ meteorPublish(CorelibPubSub.adLibActions, async function (rundownIds: RundownId[
 		NoSecurityReadAccess.any() ||
 		(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
 	) {
-		return AdLibActions.findWithCursor(selector)
+		return AdLibActions.findWithCursor(selector, {
+			fields: adlibActionSubFields,
+		})
 	}
 	return null
 })
@@ -622,10 +630,15 @@ meteorPublish(MeteorPubSub.adLibActionsForPart, async function (partId: PartId, 
 	// Future: This needs some thought for a security enabled environment
 	if (!NoSecurityReadAccess.any()) return null
 
-	return AdLibActions.findWithCursor({
-		partId,
-		'display.sourceLayerId': { $in: sourceLayerIds },
-	})
+	return AdLibActions.findWithCursor(
+		{
+			partId,
+			'display.sourceLayerId': { $in: sourceLayerIds },
+		},
+		{
+			fields: adlibActionSubFields,
+		}
+	)
 })
 
 meteorPublish(
@@ -643,7 +656,9 @@ meteorPublish(
 			NoSecurityReadAccess.any() ||
 			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
 		) {
-			return RundownBaselineAdLibActions.findWithCursor(selector)
+			return RundownBaselineAdLibActions.findWithCursor(selector, {
+				fields: adlibActionSubFields,
+			})
 		}
 		return null
 	}
