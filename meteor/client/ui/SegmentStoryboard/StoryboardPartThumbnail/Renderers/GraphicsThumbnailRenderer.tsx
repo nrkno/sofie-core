@@ -12,7 +12,7 @@ export function GraphicsThumbnailRenderer({
 	layer,
 	originPosition,
 	height,
-}: IProps): JSX.Element {
+}: Readonly<IProps>): JSX.Element {
 	const content = pieceInstance.instance.piece.content as NoraContent | GraphicsContent | undefined
 
 	return (

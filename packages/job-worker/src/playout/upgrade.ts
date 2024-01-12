@@ -116,7 +116,8 @@ export async function handleBlueprintValidateConfigForStudio(
 	})
 	const rawBlueprintConfig = applyAndValidateOverrides(context.studio.blueprintConfigWithOverrides).obj
 
-	const messages = blueprint.blueprint.validateConfig(blueprintContext, rawBlueprintConfig)
+	// This clone seems excessive, but without it a DataCloneError is generated when posting the result to the parent
+	const messages = clone(blueprint.blueprint.validateConfig(blueprintContext, rawBlueprintConfig))
 
 	return {
 		messages: messages.map((msg) => ({

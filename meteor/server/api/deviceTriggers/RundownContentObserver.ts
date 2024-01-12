@@ -37,7 +37,10 @@ export class RundownContentObserver {
 	#observers: Meteor.LiveQueryHandle[] = []
 	#cache: ContentCache
 	#cancelCache: () => void
-	#cleanup: () => void
+	#cleanup: () => void = () => {
+		throw new Error('RundownContentObserver.#cleanup has not been set!')
+	}
+	#disposed = false
 
 	constructor(
 		rundownPlaylistId: RundownPlaylistId,
@@ -49,6 +52,7 @@ export class RundownContentObserver {
 		logger.silly(`Creating RundownContentObserver for playlist "${rundownPlaylistId}" activation "${activationId}"`)
 		const { cache, cancel: cancelCache } = createReactiveContentCache(() => {
 			this.#cleanup = onChanged(cache)
+			if (this.#disposed) this.#cleanup()
 		}, REACTIVITY_DEBOUNCE)
 
 		this.#cache = cache
@@ -153,8 +157,9 @@ export class RundownContentObserver {
 	}
 
 	public stop = (): void => {
+		this.#disposed = true
 		this.#cancelCache()
 		this.#observers.forEach((observer) => observer.stop())
-		this.#cleanup()
+		this.#cleanup?.()
 	}
 }

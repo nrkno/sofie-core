@@ -3,28 +3,6 @@
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
 ## [1.50.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.4...v1.50.0-in-testing.5) (2023-08-25)
-
-## [1.50.0-in-testing.4](https://github.com/nrkno/sofie-core/compare/v1.49.0-in-testing.7...v1.50.0-in-testing.4) (2023-08-23)
-
-### Bug Fixes
-
-- **LiveStatus:** interpolate adlib names ([3fcb186](https://github.com/nrkno/sofie-core/commit/3fcb186e7d62d2b39d2f5b8859da2eda827c1af6))
-- **SegmentTimeline:** Parts don't display Part identifier labels ([3f51ec7](https://github.com/nrkno/sofie-core/commit/3f51ec7513065e2a08ea952fa8c17030083c1ec6))
-
-## [1.50.0-in-testing.3](https://github.com/nrkno/sofie-core/compare/v1.49.0-in-testing.5...v1.50.0-in-testing.3) (2023-08-17)
-
-### Features
-
-- respect json schema required field in ui SOFIE-2436 ([#995](https://github.com/nrkno/sofie-core/issues/995)) ([35a95c7](https://github.com/nrkno/sofie-core/commit/35a95c73190e674da59218174d038d20b9ee38a5))
-
-### Bug Fixes
-
-- **CameraView:** resolve issue after `remainingTimeOnCurrentPart` was reversed ([695cc4c](https://github.com/nrkno/sofie-core/commit/695cc4ca72077c64a49353b01976f5ecf0ce0af5))
-
-## [1.50.0-in-testing.2](https://github.com/nrkno/sofie-core/compare/v1.50.0-in-testing.1...v1.50.0-in-testing.2) (2023-07-17)
-
-### Bug Fixes
-
 - **RundownList:** vertical line does not line up with horizontal on last Rundown in a Playlist ([d511ff6](https://github.com/nrkno/sofie-core/commit/d511ff6fb1484ec91cbe1703b7e01721087c2f4e))
 - **server-core-integration:** `autosubscribe` will resubscribe to collections using the same subscriptionId as when initially subscribed ([f0f3383](https://github.com/nrkno/sofie-core/commit/f0f33837b07b944abe320ae4a378641bba167a3c))
 - simplify executeFunction triggerWriteAccess() check ([0579716](https://github.com/nrkno/sofie-core/commit/0579716377294e35996511cc92f6a3672535d7d5))
@@ -254,31 +232,55 @@ All notable changes to this project will be documented in this file. See [standa
 - verifyHashedToken compatible with securityVerify ([7052f3d](https://github.com/nrkno/sofie-core/commit/7052f3dc3844bc272719fedf5c3da799a1d38dd1))
 - working re-layouting of hover inspectors ([87811a9](https://github.com/nrkno/sofie-core/commit/87811a90e18eb6cd9427773e820a1cee7517da6c))
 
-## [1.49.0](https://github.com/nrkno/sofie-core/compare/v1.49.0-in-testing.10...v1.49.0) (2023-10-06)
+### [1.49.3](https://github.com/nrkno/sofie-core/compare/v1.49.2...v1.49.3) (2023-12-21)
 
 
 ### Bug Fixes
 
-* error is reported in the Rundown View when an empty Combo is created in Action Triggers ([e6a0c5f](https://github.com/nrkno/sofie-core/commit/e6a0c5f4161132e300fa225e8aad50e1cbe72ffb))
-* update casparcg-connection ([366f75c](https://github.com/nrkno/sofie-core/commit/366f75ce1bfab3054cc93bee58c6601bd4a40ceb))
+* Cannot read properties of undefined (reading 'parentElement') at startLive SOFIE-2772 ([#1080](https://github.com/nrkno/sofie-core/issues/1080)) ([9c1331a](https://github.com/nrkno/sofie-core/commit/9c1331a88ac9b8d19f2700a1acebedca63ce37a2))
+* cleanup for deviceTriggers RundownContentObserver failing SOFIE-2834 ([#1107](https://github.com/nrkno/sofie-core/issues/1107)) ([2432e4f](https://github.com/nrkno/sofie-core/commit/2432e4f4318ad9ebc691208c51cdba742c63143d))
+* suppress quantel disconnection warnings temporarily ([f9c1dae](https://github.com/nrkno/sofie-core/commit/f9c1dae2fcc346cb2c10d89ccf1a812aec6d0bc0))
+
+### [1.49.2](https://github.com/nrkno/sofie-core/compare/v1.49.1...v1.49.2) (2023-11-29)
+
+
+### Bug Fixes
+
+* rundown view fails to load when playlist does not exist SOFIE-2815 ([551541e](https://github.com/nrkno/sofie-core/commit/551541e27e7cff3a297203469cca4a77ba942c24))
+
+### [1.49.1](https://github.com/nrkno/sofie-core/compare/v1.49.0...v1.49.1) (2023-10-20)
+
+### Features
+
+- bumps TSR to 8.0.1 for a Release49.1 minor release ([6b9e763](https://github.com/nrkno/sofie-core/commit/6b9e76349149e2650fd9ed89e86b32ff031a26f4))
+
+### Bug Fixes
+
+- allow BucketAdlibAction to access PackageInfos SOFIE-2655 ([#1052](https://github.com/nrkno/sofie-core/issues/1052)) ([e2ff354](https://github.com/nrkno/sofie-core/commit/e2ff3545d097c74429bc81070f503795d5f1008f))
+- Multiline config fields fail to save SOFIE-2715 ([d3931fb](https://github.com/nrkno/sofie-core/commit/d3931fbdbd2b96903b02a53e18f2c77d661bca73))
+
+## [1.49.0](https://github.com/nrkno/sofie-core/compare/v1.49.0-in-testing.10...v1.49.0) (2023-10-06)
+
+### Bug Fixes
+
+- error is reported in the Rundown View when an empty Combo is created in Action Triggers ([e6a0c5f](https://github.com/nrkno/sofie-core/commit/e6a0c5f4161132e300fa225e8aad50e1cbe72ffb))
+- update casparcg-connection ([366f75c](https://github.com/nrkno/sofie-core/commit/366f75ce1bfab3054cc93bee58c6601bd4a40ceb))
 
 ## [1.49.0-in-testing.10](///compare/v1.49.0-in-testing.9...v1.49.0-in-testing.10) (2023-10-03)
 
-
 ### Bug Fixes
 
-* Add debug logging for `No partinstance was found during take` SOFIE-2594 ([#1028](undefined/undefined/undefined/issues/1028)) 3771ec1
-* custom publications overly reactive ([#976](undefined/undefined/undefined/issues/976)) 08b5e55
-* don't use setImmediate client side e14dafa
+- Add debug logging for `No partinstance was found during take` SOFIE-2594 ([#1028](undefined/undefined/undefined/issues/1028)) 3771ec1
+- custom publications overly reactive ([#976](undefined/undefined/undefined/issues/976)) 08b5e55
+- don't use setImmediate client side e14dafa
 
 ## [1.49.0-in-testing.9](///compare/v1.49.0-in-testing.8...v1.49.0-in-testing.9) (2023-09-20)
 
-
 ### Bug Fixes
 
-* **docs:** outdated links in documentation 049f86c
-* recompile "@mos-connection/model" with meteor for legacy browsers (casparcg) 1eea0c6
-* **Settings:** provide a stable order for Blueprint configs table columns db42f5f
+- **docs:** outdated links in documentation 049f86c
+- recompile "@mos-connection/model" with meteor for legacy browsers (casparcg) 1eea0c6
+- **Settings:** provide a stable order for Blueprint configs table columns db42f5f
 
 ## [1.49.0-in-testing.8](https://github.com/nrkno/sofie-core/compare/v1.47.6...v1.49.0-in-testing.8) (2023-09-20)
 

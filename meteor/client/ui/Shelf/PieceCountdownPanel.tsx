@@ -9,7 +9,6 @@ import {
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementStyle } from './DashboardPanel'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
 import { RundownTiming, TimingEvent } from '../RundownView/RundownTiming/RundownTiming'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
@@ -34,7 +33,7 @@ interface IState {
 	displayTimecode: number
 }
 
-export class PieceCountdownPanelInner extends MeteorReactComponent<
+export class PieceCountdownPanelInner extends React.Component<
 	IPieceCountdownPanelProps & IPieceCountdownPanelTrackedProps,
 	IState
 > {

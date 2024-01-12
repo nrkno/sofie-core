@@ -34,7 +34,7 @@ function prettyPrintJsonString(str: string): string {
 	}
 }
 
-function UserActionsList(props: IUserActionsListProps) {
+function UserActionsList(props: Readonly<IUserActionsListProps>) {
 	const { t } = useTranslation()
 
 	function renderMessageHead() {

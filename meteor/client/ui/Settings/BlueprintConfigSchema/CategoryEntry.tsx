@@ -29,7 +29,7 @@ export function ConfigCategoryEntry({
 	toggleExpanded,
 	overrideHelper,
 	sofieEnumDefinitons,
-}: ConfigCategoryEntryProps): JSX.Element {
+}: Readonly<ConfigCategoryEntryProps>): JSX.Element {
 	const { t } = useTranslation()
 
 	const toggleEditItem = useCallback(() => toggleExpanded(categoryName), [toggleExpanded, categoryName])

@@ -77,15 +77,15 @@ export async function handleRegenerateRundownPlaylist(
 			)
 		if (rundowns.length === 0) return []
 
-		await runWithPlayoutModel(context, playlist, playlistLock, null, async (cache) => {
-			await resetRundownPlaylist(context, cache)
+		await runWithPlayoutModel(context, playlist, playlistLock, null, async (playoutModel) => {
+			await resetRundownPlaylist(context, playoutModel)
 
-			if (cache.playlist.activationId) {
-				await updateTimeline(context, cache)
+			if (playoutModel.playlist.activationId) {
+				await updateTimeline(context, playoutModel)
 			}
 		})
 
-		// exit the sync function, so the cache is written back
+		// exit the sync function, so the lock is released is written back
 		return rundowns.map((rundown) => ({
 			rundownExternalId: rundown.externalId,
 		}))
@@ -215,7 +215,8 @@ export function produceRundownPlaylistInfoFromRundown(
 
 			outOfOrderTiming: playlistInfo.playlist.outOfOrderTiming,
 			timeOfDayCountdowns: playlistInfo.playlist.timeOfDayCountdowns,
-			metaData: playlistInfo.playlist.metaData,
+			privateData: playlistInfo.playlist.privateData,
+			publicData: playlistInfo.playlist.publicData,
 
 			modified: getCurrentTime(),
 		}

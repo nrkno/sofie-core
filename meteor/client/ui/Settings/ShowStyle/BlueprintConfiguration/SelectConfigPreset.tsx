@@ -13,7 +13,7 @@ interface SelectConfigPresetProps {
 	showStyleBase: DBShowStyleBase
 }
 
-export function SelectConfigPreset({ showStyleBase }: SelectConfigPresetProps): JSX.Element {
+export function SelectConfigPreset({ showStyleBase }: Readonly<SelectConfigPresetProps>): JSX.Element {
 	const { t } = useTranslation()
 
 	const blueprint = useTracker(() => {

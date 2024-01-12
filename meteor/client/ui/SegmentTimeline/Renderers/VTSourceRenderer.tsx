@@ -33,8 +33,8 @@ interface IState {
 	sourceEndCountdownAppendage?: boolean
 }
 export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithTranslation, IState> {
-	private leftLabel: HTMLSpanElement
-	private rightLabel: HTMLSpanElement
+	private leftLabel: HTMLSpanElement | null = null
+	private rightLabel: HTMLSpanElement | null = null
 
 	private leftLabelNodes: JSX.Element | null = null
 	private rightLabelNodes: JSX.Element | null = null

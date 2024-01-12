@@ -1,15 +1,13 @@
-import * as React from 'react'
+import React from 'react'
 import ClassNames from 'classnames'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { withTranslation, WithTranslation } from 'react-i18next'
 import { withTiming, WithTiming } from '../RundownView/RundownTiming/withTiming'
-import { Translated, withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { useSubscription, useSubscriptions, useTracker, withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { extendMandadory, getCurrentTime, protectString, unprotectString } from '../../../lib/lib'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { PieceIconContainer } from '../PieceIcons/PieceIcon'
 import { PieceNameContainer } from '../PieceIcons/PieceName'
@@ -19,7 +17,7 @@ import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PieceCountdownContainer } from '../PieceIcons/PieceCountdown'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
-import { DashboardLayout, RundownLayoutBase, RundownLayoutPresenterView } from '../../../lib/collections/RundownLayouts'
+import { DashboardLayout, RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
 import {
 	PartId,
 	RundownId,
@@ -42,6 +40,8 @@ import { PieceInstances, RundownLayouts, RundownPlaylists, Rundowns, ShowStyleVa
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { useSetDocumentClass } from '../util/useSetDocumentClass'
+import { useRundownAndShowStyleIdsForPlaylist } from '../util/useRundownAndShowStyleIdsForPlaylist'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -51,17 +51,14 @@ interface TimeMap {
 	[key: string]: number
 }
 
-interface RundownOverviewProps {
+interface PresenterScreenProps {
 	studioId: StudioId
 	playlistId: RundownPlaylistId
 	segmentLiveDurations?: TimeMap
 }
-interface RundownOverviewState {
-	presenterLayout: RundownLayoutPresenterView | undefined
-}
-export interface RundownOverviewTrackedProps {
+export interface PresenterScreenTrackedProps {
 	studio: UIStudio | undefined
-	playlist?: DBRundownPlaylist
+	playlist: DBRundownPlaylist | undefined
 	rundowns: Rundown[]
 	segments: Array<SegmentUi>
 	pieces: Map<PartId, Piece[]>
@@ -163,7 +160,7 @@ function getShowStyleBaseIdSegmentPartUi(
 	}
 }
 
-export const getPresenterScreenReactive = (props: RundownOverviewProps): RundownOverviewTrackedProps => {
+export const getPresenterScreenReactive = (props: PresenterScreenProps): PresenterScreenTrackedProps => {
 	const studio = UIStudios.findOne(props.studioId)
 
 	let playlist: DBRundownPlaylist | undefined
@@ -210,7 +207,7 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 		}
 		showStyleBaseIds = rundowns.map((rundown) => rundown.showStyleBaseId)
 		const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
-		const partInstance = currentPartInstance || nextPartInstance
+		const partInstance = currentPartInstance ?? nextPartInstance
 		if (partInstance) {
 			// This is to register a reactive dependency on Rundown-spanning PieceInstances, that we may miss otherwise.
 			PieceInstances.find({
@@ -286,296 +283,279 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 	}
 }
 
-export class PresenterScreenBase extends MeteorReactComponent<
-	WithTiming<RundownOverviewProps & RundownOverviewTrackedProps & WithTranslation>,
-	RundownOverviewState
-> {
-	protected bodyClassList: string[] = ['dark', 'xdark']
+function PresenterScreenContent(props: WithTiming<PresenterScreenProps & PresenterScreenTrackedProps>): JSX.Element {
+	usePresenterScreenSubscriptions(props)
 
-	constructor(props: WithTiming<RundownOverviewProps & RundownOverviewTrackedProps & WithTranslation>) {
-		super(props)
-		this.state = {
-			presenterLayout: undefined,
+	let selectedPresenterLayout: RundownLayoutBase | undefined = undefined
+
+	if (props.rundownLayouts) {
+		// first try to use the one selected by the user
+		if (props.presenterLayoutId) {
+			selectedPresenterLayout = props.rundownLayouts.find((i) => i._id === props.presenterLayoutId)
+		}
+
+		// if couldn't find based on id, try matching part of the name
+		if (props.presenterLayoutId && !selectedPresenterLayout) {
+			selectedPresenterLayout = props.rundownLayouts.find(
+				(i) => i.name.indexOf(unprotectString(props.presenterLayoutId!)) >= 0
+			)
+		}
+
+		// if still not found, use the first one
+		if (!selectedPresenterLayout) {
+			selectedPresenterLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForPresenterView(i))
 		}
 	}
 
-	componentDidMount(): void {
-		document.body.classList.add(...this.bodyClassList)
-		this.subscribeToData()
+	const presenterLayout =
+		selectedPresenterLayout && RundownLayoutsAPI.isLayoutForPresenterView(selectedPresenterLayout)
+			? selectedPresenterLayout
+			: undefined
+
+	useSetDocumentClass('dark', 'xdark')
+
+	if (presenterLayout && RundownLayoutsAPI.isDashboardLayout(presenterLayout)) {
+		return (
+			<PresenterScreenContentDashboardLayout
+				studio={props.studio}
+				playlist={props.playlist}
+				currentShowStyleBase={props.currentShowStyleBase}
+				currentShowStyleVariant={props.currentShowStyleVariant}
+				layout={presenterLayout}
+			/>
+		)
+	} else {
+		return <PresenterScreenContentDefaultLayout {...props} />
 	}
+}
 
-	protected subscribeToData(): void {
-		this.autorun(() => {
-			this.subscribe(MeteorPubSub.uiStudio, this.props.studioId)
+export function usePresenterScreenSubscriptions(props: PresenterScreenProps): void {
+	useSubscription(MeteorPubSub.uiStudio, props.studioId)
 
-			const playlist = RundownPlaylists.findOne(this.props.playlistId, {
+	const playlist = useTracker(
+		() =>
+			RundownPlaylists.findOne(props.playlistId, {
 				fields: {
 					_id: 1,
 					activationId: 1,
 				},
-			}) as Pick<DBRundownPlaylist, '_id' | 'activationId'> | undefined
+			}) as Pick<DBRundownPlaylist, '_id' | 'activationId'> | undefined,
+		[props.playlistId]
+	)
+
+	useSubscription(CorelibPubSub.rundownsInPlaylists, playlist ? [playlist._id] : [])
+
+	const { rundownIds, showStyleBaseIds, showStyleVariantIds } = useRundownAndShowStyleIdsForPlaylist(playlist?._id)
+
+	useSubscription(CorelibPubSub.segments, rundownIds, {})
+	useSubscription(CorelibPubSub.parts, rundownIds, null)
+	useSubscription(CorelibPubSub.partInstances, rundownIds, playlist?.activationId ?? null)
+	useSubscriptions(
+		MeteorPubSub.uiShowStyleBase,
+		showStyleBaseIds.map((id) => [id])
+	)
+	useSubscription(CorelibPubSub.showStyleVariants, null, showStyleVariantIds)
+	useSubscription(MeteorPubSub.rundownLayouts, showStyleBaseIds)
+
+	const { currentPartInstance, nextPartInstance } = useTracker(
+		() => {
+			const playlist = RundownPlaylists.findOne(props.playlistId, {
+				fields: {
+					_id: 1,
+					currentPartInfo: 1,
+					nextPartInfo: 1,
+					previousPartInfo: 1,
+				},
+			}) as Pick<DBRundownPlaylist, '_id' | 'currentPartInfo' | 'nextPartInfo' | 'previousPartInfo'> | undefined
+
 			if (playlist) {
-				this.subscribe(CorelibPubSub.rundownsInPlaylists, [playlist._id])
-
-				this.autorun(() => {
-					const rundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(playlist, undefined, {
-						fields: {
-							_id: 1,
-							showStyleBaseId: 1,
-							showStyleVariantId: 1,
-						},
-					}) as Array<Pick<Rundown, '_id' | 'showStyleBaseId' | 'showStyleVariantId'>>
-					const rundownIds = rundowns.map((r) => r._id)
-					const showStyleBaseIds = rundowns.map((r) => r.showStyleBaseId)
-					const showStyleVariantIds = rundowns.map((r) => r.showStyleVariantId)
-
-					this.subscribe(CorelibPubSub.segments, rundownIds, {})
-					this.subscribe(CorelibPubSub.parts, rundownIds, null)
-					this.subscribe(CorelibPubSub.partInstances, rundownIds, playlist.activationId ?? null)
-
-					for (const rundown of rundowns) {
-						this.subscribe(MeteorPubSub.uiShowStyleBase, rundown.showStyleBaseId)
-					}
-
-					this.subscribe(CorelibPubSub.showStyleVariants, null, showStyleVariantIds)
-					this.subscribe(MeteorPubSub.rundownLayouts, showStyleBaseIds)
-
-					this.autorun(() => {
-						const playlistR = RundownPlaylists.findOne(this.props.playlistId, {
-							fields: {
-								_id: 1,
-								currentPartInfo: 1,
-								nextPartInfo: 1,
-								previousPartInfo: 1,
-							},
-						}) as Pick<DBRundownPlaylist, '_id' | 'currentPartInfo' | 'nextPartInfo' | 'previousPartInfo'> | undefined
-						if (playlistR) {
-							const { nextPartInstance, currentPartInstance } =
-								RundownPlaylistCollectionUtil.getSelectedPartInstances(playlistR)
-							if (currentPartInstance) {
-								this.subscribe(
-									CorelibPubSub.pieceInstances,
-									[currentPartInstance.rundownId],
-									[currentPartInstance._id],
-									{}
-								)
-							}
-							if (nextPartInstance) {
-								this.subscribe(CorelibPubSub.pieceInstances, [nextPartInstance.rundownId], [nextPartInstance._id], {})
-							}
-						}
-					})
-				})
+				return RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
+			} else {
+				return { currentPartInstance: undefined, nextPartInstance: undefined, previousPartInstance: undefined }
 			}
-		})
+		},
+		[props.playlistId],
+		{ currentPartInstance: undefined, nextPartInstance: undefined, previousPartInstance: undefined }
+	)
+
+	useSubscriptions(CorelibPubSub.pieceInstances, [
+		currentPartInstance && [[currentPartInstance.rundownId], [currentPartInstance._id], {}],
+		nextPartInstance && [[nextPartInstance.rundownId], [nextPartInstance._id], {}],
+	])
+}
+
+interface PresenterScreenContentDashboardLayoutProps {
+	studio: UIStudio | undefined
+	playlist: DBRundownPlaylist | undefined
+	currentShowStyleBase: UIShowStyleBase | undefined
+	currentShowStyleVariant: DBShowStyleVariant | undefined
+
+	layout: DashboardLayout
+}
+function PresenterScreenContentDashboardLayout({
+	studio,
+	playlist,
+	currentShowStyleBase,
+	currentShowStyleVariant,
+	layout,
+}: Readonly<PresenterScreenContentDashboardLayoutProps>) {
+	if (studio && playlist && currentShowStyleBase && currentShowStyleVariant) {
+		return (
+			<div className="presenter-screen">
+				<ShelfDashboardLayout
+					rundownLayout={layout}
+					playlist={playlist}
+					showStyleBase={currentShowStyleBase}
+					showStyleVariant={currentShowStyleVariant}
+					studio={studio}
+					studioMode={false}
+					shouldQueue={false}
+					selectedPiece={undefined}
+				/>
+			</div>
+		)
 	}
+	return null
+}
 
-	static getDerivedStateFromProps(
-		props: Translated<RundownOverviewProps & RundownOverviewTrackedProps>
-	): Partial<RundownOverviewState> {
-		let selectedPresenterLayout: RundownLayoutBase | undefined = undefined
-
-		if (props.rundownLayouts) {
-			// first try to use the one selected by the user
-			if (props.presenterLayoutId) {
-				selectedPresenterLayout = props.rundownLayouts.find((i) => i._id === props.presenterLayoutId)
-			}
-
-			// if couldn't find based on id, try matching part of the name
-			if (props.presenterLayoutId && !selectedPresenterLayout) {
-				selectedPresenterLayout = props.rundownLayouts.find(
-					(i) => i.name.indexOf(unprotectString(props.presenterLayoutId!)) >= 0
-				)
-			}
-
-			// if still not found, use the first one
-			if (!selectedPresenterLayout) {
-				selectedPresenterLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForPresenterView(i))
-			}
+function PresenterScreenContentDefaultLayout({
+	playlist,
+	segments,
+	pieces,
+	currentShowStyleBaseId,
+	nextShowStyleBaseId,
+	playlistId,
+	currentPartInstance,
+	currentSegment,
+	timingDurations,
+	nextPartInstance,
+	nextSegment,
+	rundownIds,
+}: Readonly<WithTiming<PresenterScreenProps & PresenterScreenTrackedProps>>) {
+	if (playlist && playlistId && segments) {
+		let currentPartCountdown = 0
+		if (currentPartInstance) {
+			currentPartCountdown = timingDurations.remainingTimeOnCurrentPart || 0
 		}
 
-		return {
-			presenterLayout:
-				selectedPresenterLayout && RundownLayoutsAPI.isLayoutForPresenterView(selectedPresenterLayout)
-					? selectedPresenterLayout
-					: undefined,
-		}
-	}
+		const expectedStart = PlaylistTiming.getExpectedStart(playlist.timing)
+		const overUnderClock = getPlaylistTimingDiff(playlist, timingDurations) ?? 0
 
-	componentWillUnmount(): void {
-		super.componentWillUnmount()
-		document.body.classList.remove(...this.bodyClassList)
-	}
-
-	render(): JSX.Element | null {
-		if (this.state.presenterLayout && RundownLayoutsAPI.isDashboardLayout(this.state.presenterLayout)) {
-			return this.renderDashboardLayout(this.state.presenterLayout)
-		}
-		return this.renderDefaultLayout()
-	}
-
-	private renderDefaultLayout() {
-		const { playlist, segments, pieces, currentShowStyleBaseId, nextShowStyleBaseId, playlistId } = this.props
-
-		if (playlist && playlistId && segments) {
-			const currentPart = this.props.currentPartInstance
-			const currentSegment = this.props.currentSegment
-
-			let currentPartCountdown = 0
-			if (currentPart) {
-				currentPartCountdown = this.props.timingDurations.remainingTimeOnCurrentPart || 0
-			}
-
-			const nextPart = this.props.nextPartInstance
-			const nextSegment = this.props.nextSegment
-
-			const expectedStart = PlaylistTiming.getExpectedStart(playlist.timing)
-			const overUnderClock = getPlaylistTimingDiff(playlist, this.props.timingDurations) ?? 0
-
-			return (
-				<div className="presenter-screen">
-					<div className="presenter-screen__part presenter-screen__part--current-part">
-						<div
-							className={ClassNames('presenter-screen__segment-name', {
-								live: currentSegment !== undefined,
-							})}
-						>
-							{currentSegment?.name}
-						</div>
-						{currentPart && currentShowStyleBaseId ? (
-							<>
-								<div className="presenter-screen__part__piece-icon">
-									<PieceIconContainer
-										partInstanceId={currentPart.instance._id}
-										showStyleBaseId={currentShowStyleBaseId}
-										rundownIds={this.props.rundownIds}
-										playlistActivationId={this.props.playlist?.activationId}
-									/>
-								</div>
-								<div className="presenter-screen__part__piece-name">
-									<PieceNameContainer
-										partName={currentPart.instance.part.title}
-										partInstanceId={currentPart.instance._id}
-										showStyleBaseId={currentShowStyleBaseId}
-										rundownIds={this.props.rundownIds}
-										playlistActivationId={this.props.playlist?.activationId}
-									/>
-								</div>
-								<div className="presenter-screen__part__piece-countdown">
-									<PieceCountdownContainer
-										partInstanceId={currentPart.instance._id}
-										showStyleBaseId={currentShowStyleBaseId}
-										rundownIds={this.props.rundownIds}
-										partAutoNext={currentPart.instance.part.autoNext || false}
-										partExpectedDuration={calculatePartInstanceExpectedDurationWithPreroll(
-											currentPart.instance,
-											pieces.get(currentPart.partId) ?? []
-										)}
-										partStartedPlayback={currentPart.instance.timings?.plannedStartedPlayback}
-										playlistActivationId={this.props.playlist?.activationId}
-									/>
-								</div>
-								<div className="presenter-screen__part__part-countdown">
-									<Timediff time={currentPartCountdown} />
-								</div>
-							</>
-						) : expectedStart ? (
-							<div className="presenter-screen__rundown-countdown">
-								<Timediff time={expectedStart - getCurrentTime()} />
+		return (
+			<div className="presenter-screen">
+				<div className="presenter-screen__part presenter-screen__part--current-part">
+					<div
+						className={ClassNames('presenter-screen__segment-name', {
+							live: currentSegment !== undefined,
+						})}
+					>
+						{currentSegment?.name}
+					</div>
+					{currentPartInstance && currentShowStyleBaseId ? (
+						<>
+							<div className="presenter-screen__part__piece-icon">
+								<PieceIconContainer
+									partInstanceId={currentPartInstance.instance._id}
+									showStyleBaseId={currentShowStyleBaseId}
+									rundownIds={rundownIds}
+									playlistActivationId={playlist?.activationId}
+								/>
 							</div>
-						) : null}
-					</div>
-					<div className="presenter-screen__part presenter-screen__part--next-part">
-						<div
-							className={ClassNames('presenter-screen__segment-name', {
-								next: nextSegment !== undefined && nextSegment?._id !== currentSegment?._id,
-							})}
-						>
-							{nextSegment?._id !== currentSegment?._id ? nextSegment?.name : undefined}
-						</div>
-						{nextPart && nextShowStyleBaseId ? (
-							<>
-								<div className="presenter-screen__part__piece-icon">
-									<PieceIconContainer
-										partInstanceId={nextPart.instance._id}
-										showStyleBaseId={nextShowStyleBaseId}
-										rundownIds={this.props.rundownIds}
-										playlistActivationId={this.props.playlist?.activationId}
-									/>
-								</div>
-								<div className="presenter-screen__part__piece-name">
-									{currentPart && currentPart.instance.part.autoNext ? (
-										<img
-											className="presenter-screen__part__auto-next-icon"
-											src="/icons/auto-presenter-screen.svg"
-											alt="Autonext"
-										/>
-									) : null}
-									{nextPart && nextShowStyleBaseId && nextPart.instance.part.title ? (
-										<PieceNameContainer
-											partName={nextPart.instance.part.title}
-											partInstanceId={nextPart.instance._id}
-											showStyleBaseId={nextShowStyleBaseId}
-											rundownIds={this.props.rundownIds}
-											playlistActivationId={this.props.playlist?.activationId}
-										/>
-									) : (
-										'_'
+							<div className="presenter-screen__part__piece-name">
+								<PieceNameContainer
+									partName={currentPartInstance.instance.part.title}
+									partInstanceId={currentPartInstance.instance._id}
+									showStyleBaseId={currentShowStyleBaseId}
+									rundownIds={rundownIds}
+									playlistActivationId={playlist?.activationId}
+								/>
+							</div>
+							<div className="presenter-screen__part__piece-countdown">
+								<PieceCountdownContainer
+									partInstanceId={currentPartInstance.instance._id}
+									showStyleBaseId={currentShowStyleBaseId}
+									rundownIds={rundownIds}
+									partAutoNext={currentPartInstance.instance.part.autoNext || false}
+									partExpectedDuration={calculatePartInstanceExpectedDurationWithPreroll(
+										currentPartInstance.instance,
+										pieces.get(currentPartInstance.partId) ?? []
 									)}
-								</div>
-							</>
-						) : null}
+									partStartedPlayback={currentPartInstance.instance.timings?.plannedStartedPlayback}
+									playlistActivationId={playlist?.activationId}
+								/>
+							</div>
+							<div className="presenter-screen__part__part-countdown">
+								<Timediff time={currentPartCountdown} />
+							</div>
+						</>
+					) : expectedStart ? (
+						<div className="presenter-screen__rundown-countdown">
+							<Timediff time={expectedStart - getCurrentTime()} />
+						</div>
+					) : null}
+				</div>
+				<div className="presenter-screen__part presenter-screen__part--next-part">
+					<div
+						className={ClassNames('presenter-screen__segment-name', {
+							next: nextSegment !== undefined && nextSegment?._id !== currentSegment?._id,
+						})}
+					>
+						{nextSegment?._id !== currentSegment?._id ? nextSegment?.name : undefined}
 					</div>
-					<div className="presenter-screen__rundown-status-bar">
-						<div className="presenter-screen__rundown-status-bar__rundown-name">
-							{playlist ? playlist.name : 'UNKNOWN'}
-						</div>
-						<div
-							className={ClassNames('presenter-screen__rundown-status-bar__countdown', {
-								over: Math.floor(overUnderClock / 1000) >= 0,
-							})}
-						>
-							{RundownUtils.formatDiffToTimecode(overUnderClock, true, false, true, true, true, undefined, true, true)}
-						</div>
+					{nextPartInstance && nextShowStyleBaseId ? (
+						<>
+							<div className="presenter-screen__part__piece-icon">
+								<PieceIconContainer
+									partInstanceId={nextPartInstance.instance._id}
+									showStyleBaseId={nextShowStyleBaseId}
+									rundownIds={rundownIds}
+									playlistActivationId={playlist?.activationId}
+								/>
+							</div>
+							<div className="presenter-screen__part__piece-name">
+								{currentPartInstance && currentPartInstance.instance.part.autoNext ? (
+									<img
+										className="presenter-screen__part__auto-next-icon"
+										src="/icons/auto-presenter-screen.svg"
+										alt="Autonext"
+									/>
+								) : null}
+								{nextPartInstance && nextShowStyleBaseId && nextPartInstance.instance.part.title ? (
+									<PieceNameContainer
+										partName={nextPartInstance.instance.part.title}
+										partInstanceId={nextPartInstance.instance._id}
+										showStyleBaseId={nextShowStyleBaseId}
+										rundownIds={rundownIds}
+										playlistActivationId={playlist?.activationId}
+									/>
+								) : (
+									'_'
+								)}
+							</div>
+						</>
+					) : null}
+				</div>
+				<div className="presenter-screen__rundown-status-bar">
+					<div className="presenter-screen__rundown-status-bar__rundown-name">
+						{playlist ? playlist.name : 'UNKNOWN'}
+					</div>
+					<div
+						className={ClassNames('presenter-screen__rundown-status-bar__countdown', {
+							over: Math.floor(overUnderClock / 1000) >= 0,
+						})}
+					>
+						{RundownUtils.formatDiffToTimecode(overUnderClock, true, false, true, true, true, undefined, true, true)}
 					</div>
 				</div>
-			)
-		}
-		return null
+			</div>
+		)
 	}
-
-	private renderDashboardLayout(layout: DashboardLayout) {
-		const { studio, playlist, currentShowStyleBase, currentShowStyleVariant } = this.props
-
-		if (studio && playlist && currentShowStyleBase && currentShowStyleVariant) {
-			return (
-				<div className="presenter-screen">
-					<ShelfDashboardLayout
-						rundownLayout={layout}
-						playlist={playlist}
-						showStyleBase={currentShowStyleBase}
-						showStyleVariant={currentShowStyleVariant}
-						studio={studio}
-						studioMode={false}
-						shouldQueue={false}
-						selectedPiece={undefined}
-					/>
-				</div>
-			)
-		}
-		return null
-	}
+	return null
 }
 
 /**
  * This component renders a Countdown screen for a given playlist
  */
-export const PresenterScreen = withTranslation()(
-	withTracker<RundownOverviewProps & WithTranslation, RundownOverviewState, RundownOverviewTrackedProps>(
-		getPresenterScreenReactive
-	)(
-		withTiming<RundownOverviewProps & RundownOverviewTrackedProps & WithTranslation, RundownOverviewState>()(
-			PresenterScreenBase
-		)
-	)
-)
+export const PresenterScreen = withTracker<PresenterScreenProps, {}, PresenterScreenTrackedProps>(
+	getPresenterScreenReactive
+)(withTiming<PresenterScreenProps & PresenterScreenTrackedProps, {}>()(PresenterScreenContent))

@@ -237,7 +237,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		}
 	}
 
-	private highlightTimeout: NodeJS.Timer
+	private highlightTimeout: NodeJS.Timer | undefined
 
 	private onHighlight = (e: HighlightEvent) => {
 		if (e && e.partId === this.props.part.partId && !e.pieceId) {

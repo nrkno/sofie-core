@@ -18,7 +18,7 @@ import { parseMosString } from '../lib'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../../__mocks__/context'
 import { setupMockIngestDevice, setupMockShowStyleCompound } from '../../../__mocks__/presetCollections'
 import { fixSnapshot } from '../../../__mocks__/helpers/snapshot'
-import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { DBRundown, RundownOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { MongoQuery } from '../../../db'
 import { handleRemovedRundown } from '../../ingestRundownJobs'
@@ -207,7 +207,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		await context.mockCollections.Rundowns.update(
 			{ externalId: mosTypes.mosString128.stringify(roData.ID) },
-			{ $set: { orphaned: 'deleted' } }
+			{ $set: { orphaned: RundownOrphanedReason.DELETED } }
 		)
 		expect(
 			await context.mockCollections.Rundowns.findOne({ externalId: mosTypes.mosString128.stringify(roData.ID) })
@@ -237,7 +237,7 @@ describe('Test recieved mos ingest payloads', () => {
 		const roData = mockRO.roCreate()
 		await context.mockCollections.Rundowns.update(
 			{ externalId: mosTypes.mosString128.stringify(roData.ID) },
-			{ $set: { orphaned: 'deleted' } }
+			{ $set: { orphaned: RundownOrphanedReason.DELETED } }
 		)
 
 		const rundown = (await context.mockCollections.Rundowns.findOne({
@@ -317,7 +317,7 @@ describe('Test recieved mos ingest payloads', () => {
 	})
 
 	test('mosRoStatus: orphaned rundown', async () => {
-		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: 'deleted' } })
+		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: RundownOrphanedReason.DELETED } })
 
 		const newStatus = MOS.IMOSObjectStatus.UPDATED
 
@@ -359,7 +359,7 @@ describe('Test recieved mos ingest payloads', () => {
 		let rundown = (await context.mockCollections.Rundowns.findOne()) as DBRundown
 		expect(rundown).toBeTruthy()
 		expect(rundown.status).not.toEqual(newStatus.toString())
-		expect((rundown.metaData as any)?.airStatus).not.toEqual(newStatus.toString())
+		expect((rundown.privateData as any)?.airStatus).not.toEqual(newStatus.toString())
 
 		await handleMosRundownReadyToAir(context, {
 			peripheralDeviceId: device._id,
@@ -371,13 +371,13 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(rundown).toBeTruthy()
 		expect(rundown.airStatus).toEqual(newStatus.toString())
 
-		expect((rundown.metaData as any)?.airStatus).toEqual(newStatus.toString())
+		expect((rundown.privateData as any)?.airStatus).toEqual(newStatus.toString())
 
 		await expectRundownToMatchSnapshot(rundown._id, true, false)
 	})
 
 	test('mosRoReadyToAir: orphaned rundown', async () => {
-		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: 'deleted' } })
+		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: RundownOrphanedReason.DELETED } })
 
 		const newStatus = MOS.IMOSObjectAirStatus.NOT_READY
 
@@ -451,7 +451,7 @@ describe('Test recieved mos ingest payloads', () => {
 	})
 
 	test('mosRoStoryInsert: orphaned rundown', async () => {
-		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: 'deleted' } })
+		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: RundownOrphanedReason.DELETED } })
 
 		const playlist = (await context.mockCollections.RundownPlaylists.findOne()) as DBRundownPlaylist
 		expect(playlist).toBeTruthy()
@@ -471,7 +471,9 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const { parts } = await getRundownData({ _id: rundown._id })
 
-		expect((await context.mockCollections.Rundowns.findOne(rundown._id))?.orphaned).toEqual('deleted')
+		expect((await context.mockCollections.Rundowns.findOne(rundown._id))?.orphaned).toEqual(
+			RundownOrphanedReason.DELETED
+		)
 		expect(parts.find((p) => p.externalId === mosTypes.mosString128.stringify(newPartData.ID))).toBeUndefined()
 	})
 
@@ -619,7 +621,7 @@ describe('Test recieved mos ingest payloads', () => {
 	})
 
 	test('mosRoStoryReplace: orphaned rundown', async () => {
-		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: 'deleted' } })
+		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: RundownOrphanedReason.DELETED } })
 
 		const playlist = (await context.mockCollections.RundownPlaylists.findOne()) as DBRundownPlaylist
 		expect(playlist).toBeTruthy()
@@ -638,7 +640,9 @@ describe('Test recieved mos ingest payloads', () => {
 		})
 		const { parts } = await getRundownData({ _id: rundown._id })
 
-		expect((await context.mockCollections.Rundowns.findOne(rundown._id))?.orphaned).toEqual('deleted')
+		expect((await context.mockCollections.Rundowns.findOne(rundown._id))?.orphaned).toEqual(
+			RundownOrphanedReason.DELETED
+		)
 		expect(parts.find((p) => p.externalId === mosTypes.mosString128.stringify(newPartData.ID))).toBeUndefined()
 	})
 
@@ -742,7 +746,7 @@ describe('Test recieved mos ingest payloads', () => {
 			externalId: mosTypes.mosString128.stringify(story.ID),
 		})) as DBPart
 		expect(part).toBeTruthy()
-		expect(part.metaData).toEqual(story)
+		expect(part.privateData).toEqual(story)
 
 		await expectRundownToMatchSnapshot(rundown._id, true, true)
 	})
@@ -1182,7 +1186,7 @@ describe('Test recieved mos ingest payloads', () => {
 						if (oldPart.segmentId === oldSegmentId) {
 							oldPart.segmentId = newSegment._id
 							oldPart.title = newSegment.name + ';' + oldPart.title.split(';')[1]
-							delete oldPart.metaData
+							delete oldPart.privateData
 						}
 					}
 

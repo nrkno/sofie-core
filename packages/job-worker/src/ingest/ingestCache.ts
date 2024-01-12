@@ -7,17 +7,15 @@ import {
 	IngestDataCacheObjPart,
 } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { DbCacheWriteCollection } from '../cache/CacheCollection'
-import { saveIntoCache } from '../cache/lib'
-import { Changes } from '../db/changes'
+import { diffAndReturnLatestObjects } from '../cache/lib'
 import { getCurrentTime } from '../lib'
-import { logger } from '../logging'
 import _ = require('underscore')
 import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
 import { JobContext } from '../jobs'
 import { getPartId, getSegmentId } from './lib'
 import { SetOptional } from 'type-fest'
-import { groupByToMap } from '@sofie-automation/corelib/dist/lib'
+import { groupByToMap, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
+import { AnyBulkWriteOperation } from 'mongodb'
 
 interface LocalIngestBase {
 	modified: number
@@ -51,28 +49,24 @@ export function makeNewIngestPart(ingestPart: IngestPart): LocalIngestPart {
 }
 
 export class RundownIngestDataCache {
+	readonly #changedDocumentIds = new Set<IngestDataCacheObjId>()
+
 	private constructor(
 		private readonly context: JobContext,
 		private readonly rundownId: RundownId,
-		private readonly collection: DbCacheWriteCollection<IngestDataCacheObj>
+		private documents: IngestDataCacheObj[]
 	) {}
 
 	static async create(context: JobContext, rundownId: RundownId): Promise<RundownIngestDataCache> {
-		const col = await DbCacheWriteCollection.createFromDatabase(
-			context,
-			context.directCollections.IngestDataCache,
-			{ rundownId }
-		)
+		const docs = await context.directCollections.IngestDataCache.findFetch({ rundownId })
 
-		return new RundownIngestDataCache(context, rundownId, col)
+		return new RundownIngestDataCache(context, rundownId, docs)
 	}
 
 	fetchRundown(): LocalIngestRundown | undefined {
 		const span = this.context.startSpan('ingest.ingestCache.loadCachedRundownData')
 
-		const cacheEntries = this.collection.findAll(null)
-
-		const cachedRundown = cacheEntries.find((e) => e.type === IngestCacheType.RUNDOWN)
+		const cachedRundown = this.documents.find((e) => e.type === IngestCacheType.RUNDOWN)
 		if (!cachedRundown) {
 			span?.end()
 			return undefined
@@ -85,7 +79,7 @@ export class RundownIngestDataCache {
 			return !!obj.segmentId
 		}
 
-		const segmentMap = groupByToMap(cacheEntries.filter(hasSegmentId), 'segmentId')
+		const segmentMap = groupByToMap(this.documents.filter(hasSegmentId), 'segmentId')
 		for (const objs of segmentMap.values()) {
 			const segmentEntry = objs.find((e) => e.type === IngestCacheType.SEGMENT)
 			if (segmentEntry) {
@@ -112,48 +106,54 @@ export class RundownIngestDataCache {
 		return ingestRundown
 	}
 
-	fetchSegment(segmentId: SegmentId): LocalIngestSegment | undefined {
-		const cacheEntries = this.collection.findAll((d) => d.segmentId === segmentId)
-
-		const segmentEntries = cacheEntries.filter((e) => e.type === IngestCacheType.SEGMENT)
-		if (segmentEntries.length > 1)
-			logger.warn(
-				`There are multiple segments (${cacheEntries.length}) in IngestDataCache for rundownId: "${this.rundownId}", segmentId: "${segmentId}"`
-			)
-
-		const segmentEntry = segmentEntries[0]
-		if (!segmentEntry) return undefined
-		if (segmentEntry.type !== IngestCacheType.SEGMENT) throw new Error('Wrong type on cached segment')
-
-		const ingestSegment = segmentEntry.data as LocalIngestSegment
-		ingestSegment.modified = segmentEntry.modified
-
-		for (const entry of cacheEntries) {
-			if (entry.type === IngestCacheType.PART) {
-				const ingestPart = entry.data as LocalIngestPart
-				ingestPart.modified = entry.modified
-
-				ingestSegment.parts.push(ingestPart)
-			}
-		}
-
-		ingestSegment.parts = _.sortBy(ingestSegment.parts, (s) => s.rank)
-
-		return ingestSegment
-	}
-
 	update(ingestRundown: LocalIngestRundown): void {
-		// cache the Data:
 		const cacheEntries: IngestDataCacheObj[] = generateCacheForRundown(this.rundownId, ingestRundown)
-		saveIntoCache<IngestDataCacheObj>(this.context, this.collection, null, cacheEntries)
+
+		this.documents = diffAndReturnLatestObjects(this.#changedDocumentIds, this.documents, cacheEntries)
 	}
 
 	delete(): void {
-		this.collection.remove(null)
+		// Mark each document for deletion
+		for (const doc of this.documents) {
+			this.#changedDocumentIds.add(doc._id)
+		}
+
+		this.documents = []
 	}
 
-	async saveToDatabase(): Promise<Changes> {
-		return this.collection.updateDatabaseWithData()
+	async saveToDatabase(): Promise<void> {
+		const documentsMap = normalizeArrayToMap(this.documents, '_id')
+
+		const updates: AnyBulkWriteOperation<IngestDataCacheObj>[] = []
+		const removedIds: IngestDataCacheObjId[] = []
+		for (const changedId of this.#changedDocumentIds) {
+			const newDoc = documentsMap.get(changedId)
+			if (!newDoc) {
+				removedIds.push(changedId)
+			} else {
+				updates.push({
+					replaceOne: {
+						filter: {
+							_id: changedId,
+						},
+						replacement: newDoc,
+						upsert: true,
+					},
+				})
+			}
+		}
+
+		if (removedIds.length) {
+			updates.push({
+				deleteMany: {
+					filter: {
+						_id: { $in: removedIds as any },
+					},
+				},
+			})
+		}
+
+		await this.context.directCollections.IngestDataCache.bulkWrite(updates)
 	}
 }
 
@@ -171,7 +171,11 @@ function generateCacheForRundown(rundownId: RundownId, ingestRundown: LocalInges
 		},
 	}
 	cacheEntries.push(rundown)
-	_.each(ingestRundown.segments, (segment) => cacheEntries.push(...generateCacheForSegment(rundownId, segment)))
+
+	for (const segment of ingestRundown.segments) {
+		cacheEntries.push(...generateCacheForSegment(rundownId, segment))
+	}
+
 	return cacheEntries
 }
 function generateCacheForSegment(rundownId: RundownId, ingestSegment: LocalIngestSegment): IngestDataCacheObj[] {
@@ -191,9 +195,9 @@ function generateCacheForSegment(rundownId: RundownId, ingestSegment: LocalInges
 	}
 	cacheEntries.push(segment)
 
-	_.each(ingestSegment.parts, (part) => {
+	for (const part of ingestSegment.parts) {
 		cacheEntries.push(generateCacheForPart(rundownId, segmentId, part))
-	})
+	}
 
 	return cacheEntries
 }

@@ -71,7 +71,7 @@ const ONAIR_OVER = {
 	animationData: On_Air_MouseOver,
 }
 
-export function RundownRightHandControls(props: IProps): JSX.Element {
+export function RundownRightHandControls(props: Readonly<IProps>): JSX.Element {
 	const { t } = useTranslation()
 	const [onAirHover, setOnAirHover] = useState(false)
 	const [switchboardOpen, setSwitchboardOpen] = useState(false)
@@ -131,23 +131,21 @@ export function RundownRightHandControls(props: IProps): JSX.Element {
 				className="status-bar__cell status-bar__cell--align-start"
 			>
 				<NotificationCenterPanelToggle
-					onClick={(e) => props.onToggleNotifications && props.onToggleNotifications(e, NoticeLevel.CRITICAL)}
+					onClick={(e) => props.onToggleNotifications?.(e, NoticeLevel.CRITICAL)}
 					isOpen={props.isNotificationCenterOpen === NoticeLevel.CRITICAL}
 					filter={NoticeLevel.CRITICAL}
 					className="type-critical"
 					title={t('Critical Problems')}
 				/>
 				<NotificationCenterPanelToggle
-					onClick={(e) => props.onToggleNotifications && props.onToggleNotifications(e, NoticeLevel.WARNING)}
+					onClick={(e) => props.onToggleNotifications?.(e, NoticeLevel.WARNING)}
 					isOpen={props.isNotificationCenterOpen === NoticeLevel.WARNING}
 					filter={NoticeLevel.WARNING}
 					className="type-warning"
 					title={t('Warnings')}
 				/>
 				<NotificationCenterPanelToggle
-					onClick={(e) =>
-						props.onToggleNotifications && props.onToggleNotifications(e, NoticeLevel.NOTIFICATION | NoticeLevel.TIP)
-					}
+					onClick={(e) => props.onToggleNotifications?.(e, NoticeLevel.NOTIFICATION | NoticeLevel.TIP)}
 					isOpen={props.isNotificationCenterOpen === (NoticeLevel.NOTIFICATION | NoticeLevel.TIP)}
 					filter={NoticeLevel.NOTIFICATION | NoticeLevel.TIP}
 					className="type-notification"

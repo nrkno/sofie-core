@@ -130,15 +130,15 @@ export class PartAndPieceInstanceActionService {
 		options?: {
 			excludeCurrentPart?: boolean
 			originalOnly?: boolean
-			pieceMetaDataFilter?: any
+			piecePrivateDataFilter?: any
 		}
 	): Promise<IBlueprintPieceInstance | undefined> {
 		const query: MongoQuery<PieceInstance> = {}
-		if (options?.pieceMetaDataFilter) {
-			for (const [key, value] of Object.entries<unknown>(options.pieceMetaDataFilter)) {
+		if (options?.piecePrivateDataFilter) {
+			for (const [key, value] of Object.entries<unknown>(options.piecePrivateDataFilter)) {
 				// TODO do we need better validation here?
 				// It should be pretty safe as we are working with the cache version (for now)
-				query[`piece.metaData.${key}`] = value
+				query[`piece.privateData.${key}`] = value
 			}
 		}
 
@@ -163,15 +163,15 @@ export class PartAndPieceInstanceActionService {
 		sourceLayerId0: string | string[],
 		options?: {
 			excludeCurrentPart?: boolean
-			pieceMetaDataFilter?: any
+			piecePrivateDataFilter?: any
 		}
 	): Promise<IBlueprintPieceDB | undefined> {
 		const query: MongoQuery<Piece> = {}
-		if (options?.pieceMetaDataFilter) {
-			for (const [key, value] of Object.entries<unknown>(options.pieceMetaDataFilter)) {
+		if (options?.piecePrivateDataFilter) {
+			for (const [key, value] of Object.entries<unknown>(options.piecePrivateDataFilter)) {
 				// TODO do we need better validation here?
 				// It should be pretty safe as we are working with the cache version (for now)
-				query[`metaData.${key}`] = value
+				query[`privateData.${key}`] = value
 			}
 		}
 

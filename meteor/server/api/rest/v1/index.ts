@@ -17,6 +17,7 @@ import { registerRoutes as registerPlaylistsRoutes } from './playlists'
 import { registerRoutes as registerShowStylesRoutes } from './showstyles'
 import { registerRoutes as registerStudiosRoutes } from './studios'
 import { registerRoutes as registerSystemRoutes } from './system'
+import { registerRoutes as registerBucketsRoutes } from './buckets'
 import { APIFactory, ServerAPIContext } from './types'
 
 function restAPIUserEvent(
@@ -181,3 +182,4 @@ registerPlaylistsRoutes(sofieAPIRequest)
 registerShowStylesRoutes(sofieAPIRequest)
 registerStudiosRoutes(sofieAPIRequest)
 registerSystemRoutes(sofieAPIRequest)
+registerBucketsRoutes(sofieAPIRequest)

@@ -5,7 +5,6 @@ import {
 	RundownLayoutBase,
 	RundownLayoutTextLabel,
 } from '../../../lib/collections/RundownLayouts'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
@@ -17,25 +16,20 @@ interface ITextLabelPanelProps {
 	playlist: DBRundownPlaylist
 }
 
-interface IState {}
+export function TextLabelPanel({ panel, layout }: Readonly<ITextLabelPanelProps>): JSX.Element {
+	const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(layout)
 
-export class TextLabelPanel extends MeteorReactComponent<ITextLabelPanelProps, IState> {
-	render(): JSX.Element {
-		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
-		const { panel } = this.props
-
-		return (
-			<div
-				className={ClassNames(
-					'text-label-panel',
-					isDashboardLayout ? (panel as DashboardLayoutTextLabel).customClasses : undefined
-				)}
-				style={isDashboardLayout ? dashboardElementStyle(this.props.panel as DashboardLayoutTextLabel) : {}}
-			>
-				<div className="wrapper">
-					<span className="text">{this.props.panel.text}</span>
-				</div>
+	return (
+		<div
+			className={ClassNames(
+				'text-label-panel',
+				isDashboardLayout ? (panel as DashboardLayoutTextLabel).customClasses : undefined
+			)}
+			style={isDashboardLayout ? dashboardElementStyle(panel as DashboardLayoutTextLabel) : {}}
+		>
+			<div className="wrapper">
+				<span className="text">{panel.text}</span>
 			</div>
-		)
-	}
+		</div>
+	)
 }

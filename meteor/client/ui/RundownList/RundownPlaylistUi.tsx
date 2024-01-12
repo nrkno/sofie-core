@@ -35,10 +35,10 @@ export interface RundownPlaylistUi extends DBRundownPlaylist {
 export function RundownPlaylistUi({
 	playlist,
 	rundownLayouts,
-}: {
+}: Readonly<{
 	playlist: RundownPlaylistUi
 	rundownLayouts: RundownLayoutBase[]
-}): JSX.Element | null {
+}>): JSX.Element | null {
 	const { t } = useTranslation()
 	const [rundownOrder, setRundownOrder] = useState(playlist.rundowns.map((rundown) => rundown._id))
 
@@ -203,7 +203,7 @@ export function RundownPlaylistUi({
 					{getAllowStudio() ? (
 						<PlaylistRankResetButton
 							manualSortingActive={playlist.rundownRanksAreSetInSofie === true}
-							nrcsName={(playlist.rundowns[0] && playlist.rundowns[0].externalNRCSName) || 'NRCS'}
+							nrcsName={playlist.rundowns[0]?.externalNRCSName || 'NRCS'}
 							toggleCallbackHandler={handleResetRundownOrderClick}
 						/>
 					) : null}
@@ -267,7 +267,7 @@ export function RundownPlaylistUi({
 	)
 }
 
-function RundownPlaylistProgressBar({ playlist }: { playlist: RundownPlaylistUi }) {
+function RundownPlaylistProgressBar({ playlist }: Readonly<{ playlist: RundownPlaylistUi }>) {
 	if (
 		!playlist.activationId ||
 		PlaylistTiming.getExpectedDuration(playlist.timing) === undefined ||

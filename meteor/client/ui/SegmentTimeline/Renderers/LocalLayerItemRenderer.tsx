@@ -7,8 +7,8 @@ type IProps = ICustomLayerItemProps
 interface IState {}
 
 export class LocalLayerItemRenderer extends CustomLayerItemRenderer<IProps, IState> {
-	leftLabel: HTMLSpanElement | null
-	rightLabel: HTMLSpanElement | null
+	leftLabel: HTMLSpanElement | null = null
+	rightLabel: HTMLSpanElement | null = null
 
 	private setLeftLabelRef = (e: HTMLSpanElement) => {
 		this.leftLabel = e

@@ -57,6 +57,7 @@ describe('Playout API', () => {
 					actionDocId: actionDocId,
 					actionId: actionId,
 					userData: userData,
+					privateData: undefined,
 				})
 			).rejects.toMatchUserError(UserErrorMessage.ActionsNotSupported)
 
@@ -67,7 +68,13 @@ describe('Playout API', () => {
 			})
 
 			await expect(
-				handleExecuteAdlibAction(context, { playlistId, actionDocId, actionId, userData })
+				handleExecuteAdlibAction(context, {
+					playlistId,
+					actionDocId,
+					actionId,
+					userData,
+					privateData: undefined,
+				})
 			).rejects.toMatchUserError(UserErrorMessage.InternalError)
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(0)
@@ -92,6 +99,7 @@ describe('Playout API', () => {
 				actionDocId,
 				actionId,
 				userData,
+				privateData: undefined,
 			})
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(0)
@@ -119,6 +127,7 @@ describe('Playout API', () => {
 				actionDocId,
 				actionId,
 				userData,
+				privateData: undefined,
 			})
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(1)
@@ -146,6 +155,7 @@ describe('Playout API', () => {
 				actionDocId,
 				actionId,
 				userData,
+				privateData: undefined,
 			})
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(1)
@@ -169,6 +179,7 @@ describe('Playout API', () => {
 				actionDocId,
 				actionId,
 				userData,
+				privateData: undefined,
 			})
 
 			expect(takeNextPartMock).toHaveBeenCalledTimes(1)
@@ -191,6 +202,7 @@ describe('Playout API', () => {
 				actionDocId,
 				actionId,
 				userData,
+				privateData: undefined,
 			})
 
 			expect(takeNextPartMock).toHaveBeenCalledTimes(0)

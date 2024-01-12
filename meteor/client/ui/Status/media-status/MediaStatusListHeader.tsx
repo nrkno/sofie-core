@@ -7,11 +7,11 @@ export function MediaStatusListHeader({
 	sortOrder,
 	sortBy,
 	onChange,
-}: {
+}: Readonly<{
 	sortBy: SortBy
 	sortOrder: SortOrder
 	onChange?: (sortBy: SortBy, sortOrder: SortOrder) => void
-}): JSX.Element | null {
+}>): JSX.Element | null {
 	const { t } = useTranslation()
 
 	function changeSortOrder(newSortBy: SortBy, newSortOrder: SortOrder) {

@@ -10,11 +10,13 @@ import { UIShowStyleBase } from '../../../../../lib/api/showStyles'
 import { UIStudio } from '../../../../../lib/api/studios'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 
-export default function DefaultItemRenderer(props: {
-	piece: PieceUi | IAdLibListItem | BucketAdLibUi
-	showStyleBase: UIShowStyleBase
-	studio: UIStudio
-}): JSX.Element {
+export default function DefaultItemRenderer(
+	props: Readonly<{
+		piece: PieceUi | IAdLibListItem | BucketAdLibUi
+		showStyleBase: UIShowStyleBase
+		studio: UIStudio
+	}>
+): JSX.Element {
 	if (RundownUtils.isAdLibPiece(props.piece)) {
 		const piece = props.piece as IAdLibListItem
 
@@ -39,8 +41,8 @@ export default function DefaultItemRenderer(props: {
 					<dt>{piece.sourceLayerId}</dt>
 					<dd>outputLayerId</dd>
 					<dt>{piece.outputLayerId}</dt>
-					<dd>metaData</dd>
-					<dt>{JSON.stringify(piece.metaData || {})}</dt>
+					<dd>publicData</dd>
+					<dt>{JSON.stringify(piece.publicData || {})}</dt>
 				</dl>
 			</>
 		)
@@ -64,8 +66,8 @@ export default function DefaultItemRenderer(props: {
 					<dt>{piece.sourceLayerId}</dt>
 					<dd>outputLayerId</dd>
 					<dt>{piece.outputLayerId}</dt>
-					<dd>metaData</dd>
-					<dt>{JSON.stringify(piece.metaData || {})}</dt>
+					<dd>publicData</dd>
+					<dt>{JSON.stringify(piece.publicData || {})}</dt>
 				</dl>
 			</>
 		)

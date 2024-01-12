@@ -17,7 +17,7 @@ interface IShowStyleGenericPropertiesProps {
 export function ShowStyleGenericProperties({
 	showStyleBase,
 	compatibleStudios,
-}: IShowStyleGenericPropertiesProps): JSX.Element {
+}: Readonly<IShowStyleGenericPropertiesProps>): JSX.Element {
 	const { t } = useTranslation()
 
 	return (
@@ -25,7 +25,7 @@ export function ShowStyleGenericProperties({
 			<div>
 				<label className="field">
 					<LabelActual label={t('Show Style Base Name')} />
-					{!(showStyleBase && showStyleBase.name) ? (
+					{!showStyleBase?.name ? (
 						<div className="error-notice inline">
 							<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No name set')}
 						</div>

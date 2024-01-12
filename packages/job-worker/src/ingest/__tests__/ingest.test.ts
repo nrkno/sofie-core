@@ -14,7 +14,7 @@ import {
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { DBRundown, Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { DBRundown, Rundown, RundownOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
@@ -733,11 +733,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 		})
 
 		await expect(context.mockCollections.Rundowns.findOne()).resolves.toBeTruthy()
-		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: 'deleted' } })
+		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: RundownOrphanedReason.DELETED } })
 
 		const rundown0 = (await context.mockCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown0).toBeTruthy()
-		expect(rundown0.orphaned).toEqual('deleted')
+		expect(rundown0.orphaned).toEqual(RundownOrphanedReason.DELETED)
 		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown0._id })).resolves.toHaveLength(2)
 
 		const rundownData: IngestRundown = {
@@ -771,12 +771,14 @@ describe('Test ingest actions for rundowns and segments', () => {
 		// Segment count should not have changed
 		const rundown1 = (await context.mockCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown1).toBeTruthy()
-		expect(rundown1.orphaned).toEqual('deleted')
+		expect(rundown1.orphaned).toEqual(RundownOrphanedReason.DELETED)
 		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown1._id })).resolves.toHaveLength(2)
 	})
 
 	test('dataRundownCreate replace orphaned rundown', async () => {
-		await expect(context.mockCollections.Rundowns.findFetch({ orphaned: 'deleted' })).resolves.toHaveLength(1)
+		await expect(
+			context.mockCollections.Rundowns.findFetch({ orphaned: RundownOrphanedReason.DELETED })
+		).resolves.toHaveLength(1)
 
 		const rundownData: IngestRundown = {
 			externalId: externalId,
@@ -817,16 +819,18 @@ describe('Test ingest actions for rundowns and segments', () => {
 			isCreateAction: true,
 		})
 
-		await expect(context.mockCollections.Rundowns.findFetch({ orphaned: 'deleted' })).resolves.toHaveLength(0)
+		await expect(
+			context.mockCollections.Rundowns.findFetch({ orphaned: RundownOrphanedReason.DELETED })
+		).resolves.toHaveLength(0)
 	})
 
 	test('dataSegmentCreate in deleted rundown', async () => {
 		await expect(context.mockCollections.Rundowns.findOne()).resolves.toBeTruthy()
-		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: 'deleted' } })
+		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: RundownOrphanedReason.DELETED } })
 
 		const rundown0 = (await context.mockCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown0).toBeTruthy()
-		expect(rundown0.orphaned).toEqual('deleted')
+		expect(rundown0.orphaned).toEqual(RundownOrphanedReason.DELETED)
 		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown0._id })).resolves.toHaveLength(2)
 
 		const ingestSegment: IngestSegment = {
@@ -1001,7 +1005,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 	test('dataSegmentUpdate deleted rundown', async () => {
 		const rundown = (await context.mockCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown).toBeTruthy()
-		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: 'deleted' } })
+		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: RundownOrphanedReason.DELETED } })
 		await context.mockCollections.Segments.update({ rundownId: rundown._id }, { $unset: { orphaned: 1 } })
 		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
 
@@ -1238,7 +1242,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			context.mockCollections.Segments.findFetch({ rundownId: rundown._id, externalId: segExternalId })
 		).resolves.toHaveLength(1)
 
-		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: 'deleted' } })
+		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: RundownOrphanedReason.DELETED } })
 		await context.mockCollections.Segments.update({ rundownId: rundown._id }, { $unset: { orphaned: 1 } })
 
 		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
@@ -1652,7 +1656,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 					rundownExternalId: rundownData.externalId,
 				})
 			).rejects.toMatchUserError(UserErrorMessage.RundownRemoveWhileActive)
-			await expect(getRundownOrphaned()).resolves.toEqual('deleted')
+			await expect(getRundownOrphaned()).resolves.toEqual(RundownOrphanedReason.DELETED)
 
 			await resyncRundown()
 			await expect(getRundownOrphaned()).resolves.toBeUndefined()

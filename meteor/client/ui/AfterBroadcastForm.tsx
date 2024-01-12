@@ -13,14 +13,10 @@ import { MultiLineTextInputControl } from '../lib/Components/MultiLineTextInput'
 import { TextInputControl } from '../lib/Components/TextInput'
 import { Spinner } from '../lib/Spinner'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { useTracker } from '../lib/ReactMeteorData/ReactMeteorData'
+import { CoreSystem } from '../collections'
 
 type ProblemType = 'nothing' | 'minor' | 'major'
-
-// const DEFAULT_STATE = {
-// 	q0: 'nothing',
-// 	q1: '',
-// 	q2: '',
-// }
 
 const DEFAULT_STATE = {
 	problems: 'nothing' as ProblemType,
@@ -28,7 +24,7 @@ const DEFAULT_STATE = {
 	userName: '' as const,
 } as const
 
-export function AfterBroadcastForm({ playlist }: { playlist: DBRundownPlaylist }): JSX.Element {
+export function AfterBroadcastForm({ playlist }: Readonly<{ playlist: DBRundownPlaylist }>): JSX.Element {
 	const { t } = useTranslation()
 	const shouldDeactivateRundown = !playlist.loop
 	const [problems, setProblems] = useState<ProblemType>(DEFAULT_STATE.problems)
@@ -122,18 +118,17 @@ export function AfterBroadcastForm({ playlist }: { playlist: DBRundownPlaylist }
 	return (
 		<div className="afterbroadcastform-container" role="complementary" aria-labelledby="evaluation-header">
 			<div className="afterbroadcastform">
-				<h2 id="evaluation-header">{t('Evaluation')}</h2>
+				<EvaluationInfoBubble />
 
-				<p>
-					<em>{t('Please take a minute to fill in this form.')}</em>
-				</p>
-				<p>
-					<b>{t('Be aware that while filling out the form keyboard and streamdeck commands will not be executed!')}</b>
-				</p>
+				<h2 id="evaluation-header">{t('How did the show go?')}</h2>
+
+				<p>{t('Keyboard shortcuts and Stream Deck buttons will not work while filling out the form!')}</p>
 
 				<div className="form">
 					<div className="question">
-						<p>{t('Did you have any problems with the broadcast?')}</p>
+						<p>
+							<b>{t('Did you have any problems with the broadcast?')}</b>
+						</p>
 						<div className="input q0">
 							<DropdownInputControl
 								value={problems}
@@ -145,8 +140,10 @@ export function AfterBroadcastForm({ playlist }: { playlist: DBRundownPlaylist }
 					</div>
 					<div className="question q1">
 						<p>
+							<b>{t('Please explain the problems you experienced')}</b>
+							<br />
 							{t(
-								'Please explain the problems you experienced (what happened and when, what should have happened, what could have triggered the problems, etcetera...)'
+								'(what happened and when, what should have happened, what could have triggered the problems, etcetera...)'
 							)}
 						</p>
 						<div className="input">
@@ -154,7 +151,9 @@ export function AfterBroadcastForm({ playlist }: { playlist: DBRundownPlaylist }
 						</div>
 					</div>
 					<div className="question q2">
-						<p>{t('Your name')}</p>
+						<p>
+							<b>{t('Your name')}</b>
+						</p>
 						<div className="input">
 							<TextInputControl value={userName} handleUpdate={setUserName} disabled={busy} />
 						</div>
@@ -162,13 +161,43 @@ export function AfterBroadcastForm({ playlist }: { playlist: DBRundownPlaylist }
 
 					<div>
 						<button className="btn btn-primary" onClick={saveForm} disabled={busy}>
-							{!shouldDeactivateRundown ? t('Save message') : t('Save message and Deactivate Rundown')}
+							{!shouldDeactivateRundown ? t('Send message') : t('Send message and Deactivate Rundown')}
 						</button>
 						{busy ? <Spinner className="afterbroadcastform-spinner" size="small" /> : null}
 					</div>
 				</div>
 			</div>
 		</div>
+	)
+}
+
+const EvaluationInfoBubble = React.memo(function EvaluationInfoBubble() {
+	const coreSystem = useTracker(() => CoreSystem.findOne(), [])
+
+	const message = coreSystem?.evaluations?.enabled ? coreSystem.evaluations : undefined
+	if (!message) return null
+
+	return (
+		<div className="afterbroadcastform-bubble-container">
+			<div className="afterbroadcastform-bubble">
+				<h5>{message.heading ?? ''}</h5>
+				<p>{message.message ?? ''}</p>
+			</div>
+			<EvaluationBubbleStem />
+		</div>
+	)
+})
+
+function EvaluationBubbleStem() {
+	return (
+		<svg width="101" height="40" viewBox="0 0 101 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+			<path
+				fillRule="evenodd"
+				clipRule="evenodd"
+				d="M0 0.400223H101C101 0.400223 97.5 0.400146 84 0.400146C70.5 0.400146 56.5 5.99992 42.5 21.4999C28.5 36.9999 21.1095 39.4985 16.5 39.4985C15.9438 39.4985 16.2207 38.9292 17.1378 37.928C30.1502 23.7223 23.3237 0.400195 4.05909 0.400218L0 0.400223Z"
+				fill="white"
+			/>
+		</svg>
 	)
 }
 

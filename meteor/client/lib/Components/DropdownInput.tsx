@@ -90,7 +90,7 @@ export function DropdownInputControl<TValue>({
 	disabled,
 	options,
 	handleUpdate,
-}: IDropdownInputControlProps<TValue>): JSX.Element {
+}: Readonly<IDropdownInputControlProps<TValue>>): JSX.Element {
 	const handleChange = useCallback(
 		(event: React.ChangeEvent<HTMLSelectElement>) => {
 			// because event.target.value is always a string, use the original value instead

@@ -45,6 +45,7 @@ import { handleTimelineTriggerTime, handleOnPlayoutPlaybackChanged } from '../..
 import { handleExecuteAdlibAction } from '../../playout/adlibAction'
 import { handleTakeNextPart } from '../../playout/take'
 import { handleActivateScratchpad } from '../../playout/scratchpad'
+import { handleExecuteBucketAdLibOrAction } from '../../playout/bucketAdlibJobs'
 
 type ExecutableFunction<T extends keyof StudioJobFunc> = (
 	context: JobContext,
@@ -74,6 +75,7 @@ export const studioJobHandlers: StudioJobHandlers = {
 	[StudioJobs.SetNextSegment]: handleSetNextSegment,
 	[StudioJobs.QueueNextSegment]: handleQueueNextSegment,
 	[StudioJobs.ExecuteAction]: handleExecuteAdlibAction,
+	[StudioJobs.ExecuteBucketAdLibOrAction]: handleExecuteBucketAdLibOrAction,
 	[StudioJobs.TakeNextPart]: handleTakeNextPart,
 	[StudioJobs.DisableNextPiece]: handleDisableNextPiece,
 	[StudioJobs.RemovePlaylist]: handleRemoveRundownPlaylist,

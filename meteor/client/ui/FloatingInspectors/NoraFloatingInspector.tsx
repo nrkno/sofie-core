@@ -18,7 +18,7 @@ export const NoraFloatingInspector = React.forwardRef<HTMLDivElement, IPropsHead
 	useImperativeHandle(
 		ref,
 		() => {
-			return NoraPreviewRenderer._singletonRef.rootElement
+			return NoraPreviewRenderer._singletonRef.rootElement as HTMLDivElement
 		},
 		[]
 	)
@@ -45,8 +45,8 @@ export const NoraFloatingInspector = React.forwardRef<HTMLDivElement, IPropsHead
 export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 	static _singletonRef: NoraPreviewRenderer
 
-	iframeElement: HTMLIFrameElement
-	rootElement: HTMLDivElement
+	iframeElement: HTMLIFrameElement | null = null
+	rootElement: HTMLDivElement | null = null
 
 	static update(noraContent: NoraContent, style: React.CSSProperties): void {
 		NoraPreviewRenderer._singletonRef._update(noraContent, style)
@@ -148,7 +148,7 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 		}
 	}
 
-	private _setRootElement = (e: HTMLDivElement) => {
+	private _setRootElement = (e: HTMLDivElement | null) => {
 		this.rootElement = e
 	}
 

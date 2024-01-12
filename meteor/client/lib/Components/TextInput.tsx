@@ -21,7 +21,7 @@ export function TextInputControl({
 	placeholder,
 	handleUpdate,
 	updateOnKey,
-}: ITextInputControlProps): JSX.Element {
+}: Readonly<ITextInputControlProps>): JSX.Element {
 	const [editingValue, setEditingValue] = useState<string | null>(null)
 
 	const handleChange = useCallback(

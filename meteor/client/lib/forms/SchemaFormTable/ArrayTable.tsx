@@ -7,7 +7,7 @@ import {
 	WrappedOverridableItemNormal,
 	OverrideOpHelperForItemContents,
 } from '../../../ui/Settings/util/OverrideOpHelper'
-import { useToggleExpandHelper } from '../../../ui/Settings/util/ToggleExpandedHelper'
+import { useToggleExpandHelper } from '../../../ui/util/useToggleExpandHelper'
 import { doModalDialog } from '../../ModalDialog'
 import {
 	getSchemaSummaryFieldsForObject,
@@ -52,7 +52,7 @@ export const SchemaFormArrayTable = ({
 	attr,
 	item,
 	overrideHelper,
-}: SchemaFormArrayTableProps): JSX.Element => {
+}: Readonly<SchemaFormArrayTableProps>): JSX.Element => {
 	const { t } = useTranslation()
 
 	const rowsArray: any[] = useMemo(
@@ -82,7 +82,7 @@ export const SchemaFormArrayTable = ({
 
 	const isOverridden = hasOpWithPath(item.overrideOps, item.id, attr)
 
-	const columns = useMemo(() => schema?.items?.properties || {}, [schema])
+	const columns = useMemo(() => schema?.items?.properties ?? {}, [schema])
 	const summaryFields = useMemo(() => getSchemaSummaryFieldsForObject(columns), [columns])
 	const { toggleExpanded, isExpanded } = useToggleExpandHelper()
 

@@ -101,13 +101,13 @@ export function PieceIconContainerNoSub({
 	pieceInstances,
 	sourceLayers,
 	renderUnknown,
-}: {
+}: Readonly<{
 	pieceInstances: ReadonlyDeep<PieceInstance[]>
 	sourceLayers: {
 		[key: string]: ISourceLayer
 	}
 	renderUnknown?: boolean
-}): JSX.Element | null {
+}>): JSX.Element | null {
 	const { pieceInstance, sourceLayer } = useTracker(
 		() => findPieceInstanceToShowFromInstances(pieceInstances, sourceLayers, pieceIconSupportedLayers),
 		[pieceInstances, sourceLayers],
@@ -120,7 +120,7 @@ export function PieceIconContainerNoSub({
 	return <PieceIcon pieceInstance={pieceInstance} sourceLayer={sourceLayer} renderUnknown={renderUnknown} />
 }
 
-export function PieceIconContainer(props: IPropsHeader): JSX.Element | null {
+export function PieceIconContainer(props: Readonly<IPropsHeader>): JSX.Element | null {
 	const { pieceInstance, sourceLayer } = useTracker(
 		() => findPieceInstanceToShow(props, pieceIconSupportedLayers),
 		[props.partInstanceId, props.showStyleBaseId],

@@ -6,11 +6,11 @@ export function SortOrderButton({
 	className,
 	order,
 	onChange,
-}: {
+}: Readonly<{
 	className?: string
 	order: Order
 	onChange?: (nextOrder: Order) => void
-}): JSX.Element | null {
+}>): JSX.Element | null {
 	function onClick() {
 		switch (order) {
 			case 'asc':

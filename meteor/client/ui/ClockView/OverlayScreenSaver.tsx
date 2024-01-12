@@ -6,21 +6,17 @@ import { findNextPlaylist } from '../StudioScreenSaver/StudioScreenSaver'
 // @ts-expect-error No types available
 import Velocity from 'velocity-animate'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { useSetDocumentClass } from '../util/useSetDocumentClass'
 
-export function OverlayScreenSaver({ studioId }: { studioId: StudioId }): JSX.Element {
+export function OverlayScreenSaver({ studioId }: Readonly<{ studioId: StudioId }>): JSX.Element {
 	const studioNameRef = useRef<HTMLDivElement>(null)
 
-	useEffect(() => {
-		document.body.classList.add('transparent')
-		return () => {
-			document.body.classList.remove('transparent')
-		}
-	})
+	useSetDocumentClass('transparent')
 
 	useSubscription(MeteorPubSub.uiStudio, studioId)
 	useSubscription(MeteorPubSub.rundownPlaylistForStudio, studioId, false)
 
-	const data = useTracker(() => findNextPlaylist({ studioId }), [studioId])
+	const data = useTracker(() => findNextPlaylist(studioId), [studioId])
 
 	function animate() {
 		const el = studioNameRef.current

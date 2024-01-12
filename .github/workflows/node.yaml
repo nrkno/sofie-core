@@ -20,7 +20,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
@@ -59,7 +59,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
@@ -155,7 +155,7 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
       - name: Use Node.js
         if: steps.check-build-and-push.outputs.enable == 'true'
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
@@ -237,13 +237,13 @@ jobs:
           echo "image=$image" >> $GITHUB_OUTPUT
       - name: Trivy scanning
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
-        uses: aquasecurity/trivy-action@0.12.0
+        uses: aquasecurity/trivy-action@0.16.0
         with:
-          image-ref: '${{ steps.trivy-image.outputs.image }}'
-          format: 'table'
+          image-ref: "${{ steps.trivy-image.outputs.image }}"
+          format: "table"
           output: trivy-scan-result.txt
           ignore-unfixed: true
-          severity: 'CRITICAL,HIGH'
+          severity: "CRITICAL,HIGH"
       - name: Post all Trivy scan results to Github Summary as a table
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
         env:
@@ -254,7 +254,6 @@ jobs:
           echo $CODE_BLOCK >> $GITHUB_STEP_SUMMARY
           cat trivy-scan-result.txt >> $GITHUB_STEP_SUMMARY
           echo $CODE_BLOCK >> $GITHUB_STEP_SUMMARY
-
 
   build-gateways:
     # TODO - should this be dependant on tests or something passing if we are on a tag?
@@ -324,7 +323,7 @@ jobs:
             type=ref,event=tag
             type=raw,value=latest,enable={{is_default_branch}}
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         if: steps.check-build-and-push.outputs.enable == 'true'
         with:
           node-version-file: ".node-version"
@@ -387,13 +386,13 @@ jobs:
           echo "image=$image" >> $GITHUB_OUTPUT
       - name: Trivy scanning
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
-        uses: aquasecurity/trivy-action@0.12.0
+        uses: aquasecurity/trivy-action@0.16.0
         with:
-          image-ref: '${{ steps.trivy-image.outputs.image }}'
-          format: 'table'
+          image-ref: "${{ steps.trivy-image.outputs.image }}"
+          format: "table"
           output: ${{ matrix.gateway-name }}-trivy-scan-result.txt
           ignore-unfixed: true
-          severity: 'CRITICAL,HIGH'
+          severity: "CRITICAL,HIGH"
       - name: Post all Trivy scan results to Github Summary as a table
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
         env:
@@ -430,7 +429,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".node-version"
       - name: restore node_modules
@@ -481,19 +480,19 @@ jobs:
           - node-version: 18.x
             package-name: openapi
           # No tests for the gateways yet
-          # - node-version: 16.x
+          # - node-version: 18.x
           #   package-name: playout-gateway
-          # - node-version: 16.x
+          # - node-version: 18.x
           #   package-name: mos-gateway
-          # - node-version: 16.x
-          #   package-name: live-status-gateway
+          - node-version: 18.x
+            package-name: live-status-gateway
 
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
       - name: restore node_modules
@@ -531,7 +530,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".node-version"
       - name: restore node_modules
@@ -586,7 +585,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".node-version"
       - name: Prepare Environment # have to run this first to make sure the semver lib is available
@@ -654,7 +653,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor

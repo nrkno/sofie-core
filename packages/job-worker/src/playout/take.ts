@@ -95,7 +95,7 @@ export async function handleTakeNextPart(context: JobContext, data: TakeNextPart
 /**
  * Perform a Take into the nexted Part, and prepare a new nexted Part
  * @param context Context for current job
- * @param playoutModel Cache for the active Playlist
+ * @param playoutModel Model for the active Playlist
  * @param now Current timestamp
  */
 export async function performTakeToNextedPart(
@@ -274,8 +274,8 @@ export async function performTakeToNextedPart(
 
 	// Last:
 	const takeDoneTime = getCurrentTime()
-	playoutModel.deferBeforeSave(async (cache2) => {
-		await afterTakeUpdateTimingsAndEvents(context, cache2, showStyle, blueprint, isFirstTake, takeDoneTime)
+	playoutModel.deferBeforeSave(async (playoutModel2) => {
+		await afterTakeUpdateTimingsAndEvents(context, playoutModel2, showStyle, blueprint, isFirstTake, takeDoneTime)
 	})
 
 	if (span) span.end()
@@ -324,7 +324,7 @@ async function applyOnTakeSideEffects(context: JobContext, playoutModel: Playout
 
 /**
  * Clear the nexted Segment, if taking into a PartInstance that consumes it
- * @param playoutModel Cache for the active Playlist
+ * @param playoutModel Model for the active Playlist
  * @param takenPartInstance PartInstance to check
  */
 export function clearQueuedSegmentId(
@@ -344,7 +344,7 @@ export function clearQueuedSegmentId(
 
 /**
  * Reset the Segment of the previousPartInstance, if playback has left that Segment and the Rundown is looping
- * @param playoutModel Cache for the active Playlist
+ * @param playoutModel Model for the active Playlist
  */
 export function resetPreviousSegment(playoutModel: PlayoutModel): void {
 	const previousPartInstance = playoutModel.previousPartInstance

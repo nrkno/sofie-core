@@ -4,8 +4,8 @@ import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMete
 import {
 	// PartUi,
 	withResolvedSegment,
-	IProps as IResolvedSegmentProps,
-	ITrackedProps as ITrackedResolvedSegmentProps,
+	IResolvedSegmentProps,
+	ITrackedResolvedSegmentProps,
 } from '../SegmentContainer/withResolvedSegment'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { SegmentScratchpad } from './SegmentScratchpad'

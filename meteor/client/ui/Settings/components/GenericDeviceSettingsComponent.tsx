@@ -18,7 +18,7 @@ interface IGenericDeviceSettingsComponentProps {
 export function GenericDeviceSettingsComponent({
 	device,
 	subDevices,
-}: IGenericDeviceSettingsComponentProps): JSX.Element {
+}: Readonly<IGenericDeviceSettingsComponentProps>): JSX.Element {
 	const { t } = useTranslation()
 
 	const [debugStates, setDebugStates] = useState(() => new Map<PeripheralDeviceId, object>())
@@ -62,17 +62,15 @@ export function GenericDeviceSettingsComponent({
 			)}
 
 			{parsedSchema ? (
-				<>
-					<SchemaFormForCollection
-						schema={parsedSchema}
-						object={device.settings}
-						collection={PeripheralDevices}
-						objectId={device._id}
-						basePath="settings"
-						translationNamespaces={translationNamespaces}
-						allowTables
-					/>
-				</>
+				<SchemaFormForCollection
+					schema={parsedSchema}
+					object={device.settings}
+					collection={PeripheralDevices}
+					objectId={device._id}
+					basePath="settings"
+					translationNamespaces={translationNamespaces}
+					allowTables
+				/>
 			) : (
 				<p>{t('There is no JSON config schema provided by this Gateway')}</p>
 			)}
