@@ -1,10 +1,10 @@
 import {
 	ExpectedPackageDBFromBucketAdLib,
 	ExpectedPackageDBFromBucketAdLibAction,
-	ExpectedPackageDBFromRundownBaselineObjects,
 	ExpectedPackageDBFromStudioBaselineObjects,
 	ExpectedPackageDBType,
 	ExpectedPackageFromRundown,
+	ExpectedPackageFromRundownBaseline,
 } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { ExpectedPackages, Rundowns } from '../../collections'
@@ -51,9 +51,7 @@ export async function onUpdatedPackageInfo(packageId: ExpectedPackageId, _doc: P
 }
 
 const pendingRundownPackageUpdates = new Map<RundownId, Array<ExpectedPackageId>>()
-function onUpdatedPackageInfoForRundownDebounce(
-	pkg: ExpectedPackageFromRundown | ExpectedPackageDBFromRundownBaselineObjects
-) {
+function onUpdatedPackageInfoForRundownDebounce(pkg: ExpectedPackageFromRundown | ExpectedPackageFromRundownBaseline) {
 	const existingEntry = pendingRundownPackageUpdates.get(pkg.rundownId)
 	if (existingEntry) {
 		// already queued, add to the batch

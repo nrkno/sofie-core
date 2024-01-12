@@ -344,8 +344,8 @@ describe('ensureNextPartIsValid', () => {
 		})
 	}
 	async function ensureNextPartIsValid() {
-		await runJobWithPlayoutModel(context, { playlistId: rundownPlaylistId }, null, async (cache) =>
-			ensureNextPartIsValidRaw(context, cache)
+		await runJobWithPlayoutModel(context, { playlistId: rundownPlaylistId }, null, async (playoutModel) =>
+			ensureNextPartIsValidRaw(context, playoutModel)
 		)
 	}
 

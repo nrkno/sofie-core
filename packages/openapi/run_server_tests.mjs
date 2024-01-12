@@ -10,7 +10,6 @@ import { join } from 'path'
 import { createServer } from 'http'
 import { expressAppConfig } from './server/node_modules/oas3-tools/dist/index.js'
 
-const serverPort = 3000
 const testTimeout = 120000
 
 async function startServer() {

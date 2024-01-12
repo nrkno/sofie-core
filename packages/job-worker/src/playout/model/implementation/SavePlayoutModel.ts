@@ -1,7 +1,7 @@
 import { PartInstanceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { AnyBulkWriteOperation } from 'mongodb'
 import { JobContext } from '../../../jobs'
@@ -30,6 +30,7 @@ export async function writeScratchpadSegments(
 					filter: {
 						rundownId: rundown.rundown._id,
 						_id: { $ne: scratchpadSegment?._id ?? protectString('') },
+						orphaned: SegmentOrphanedReason.SCRATCHPAD,
 					},
 				},
 			})

@@ -20,8 +20,6 @@ interface ISettingsOld {
 	allowGrabbingTimeline: boolean
 	/** If true, enables security measures, access control and user accounts. */
 	enableUserAccounts: boolean
-	/** Preserve unsynced segment contents when the playing segment is removed, rather than removing all but the playing part */
-	preserveUnsyncedPlayingSegmentContents: boolean
 	/** Allow resets while a rundown is on-air */
 	allowRundownResetOnAir: boolean
 	/** Default duration to use to render parts when no duration is provided */
@@ -71,38 +69,6 @@ export const addSteps = addMigrationSteps('1.40.0', [
 					},
 				}
 			)
-		},
-	},
-	{
-		id: `Studio.settings.preserveUnsyncedPlayingSegmentContents`,
-		canBeRunAutomatically: true,
-		validate: async () => {
-			if (OldSettings.preserveUnsyncedPlayingSegmentContents !== undefined) {
-				const count = await Studios.countDocuments({
-					'settings.preserveUnsyncedPlayingSegmentContents': {
-						$exists: false,
-					},
-				})
-				if (count > 0) return `${count} studios need to be updated`
-			}
-			return false
-		},
-		migrate: async () => {
-			if (OldSettings.preserveUnsyncedPlayingSegmentContents !== undefined) {
-				await Studios.updateAsync(
-					{
-						'settings.preserveUnsyncedPlayingSegmentContents': {
-							$exists: false,
-						},
-					},
-					{
-						$set: {
-							'settings.preserveUnsyncedPlayingSegmentContents':
-								OldSettings.preserveUnsyncedPlayingSegmentContents,
-						},
-					}
-				)
-			}
 		},
 	},
 	{

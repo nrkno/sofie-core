@@ -13,7 +13,7 @@ import { PieceInstance, PieceInstancePiece, rewrapPieceToInstance } from '../dat
 import { DBPartInstance } from '../dataModel/PartInstance'
 import { DBRundown } from '../dataModel/Rundown'
 import { ReadonlyDeep } from 'type-fest'
-import { assertNever, flatten, getRandomId, groupByToMapFunc, max, normalizeArrayToMapFunc } from '../lib'
+import { assertNever, clone, flatten, getRandomId, groupByToMapFunc, max, normalizeArrayToMapFunc } from '../lib'
 import { protectString } from '../protectedString'
 import _ = require('underscore')
 import { MongoQuery } from '../mongo'
@@ -281,7 +281,7 @@ export function isPiecePotentiallyActiveInPart(
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 	rundown: ReadonlyDeep<Pick<DBRundown, '_id' | 'showStyleBaseId'>>,
 	part: ReadonlyDeep<DBPart>,
-	pieceToCheck: Piece
+	pieceToCheck: ReadonlyDeep<Piece>
 ): boolean {
 	// If its from the current part
 	if (pieceToCheck.startPartId === part._id) {
@@ -376,13 +376,16 @@ export function getPieceInstancesForPart(
 	segmentsToReceiveOnRundownEndFromSet: Set<SegmentId>,
 	rundownsToReceiveOnShowStyleEndFrom: RundownId[],
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
-	possiblePieces: Piece[],
+	possiblePieces: ReadonlyDeep<Piece>[],
 	orderedPartIds: PartId[],
 	newInstanceId: PartInstanceId,
 	nextPartIsAfterCurrentPart: boolean,
 	isTemporary: boolean
 ): PieceInstance[] {
-	const doesPieceAStartBeforePieceB = (pieceA: PieceInstancePiece, pieceB: PieceInstancePiece): boolean => {
+	const doesPieceAStartBeforePieceB = (
+		pieceA: ReadonlyDeep<PieceInstancePiece>,
+		pieceB: ReadonlyDeep<PieceInstancePiece>
+	): boolean => {
 		if (pieceA.startPartId === pieceB.startPartId) {
 			return pieceA.enable.start < pieceB.enable.start
 		}
@@ -401,9 +404,9 @@ export function getPieceInstancesForPart(
 	}
 
 	interface InfinitePieceSet {
-		[PieceLifespan.OutOnShowStyleEnd]?: Piece
-		[PieceLifespan.OutOnRundownEnd]?: Piece
-		[PieceLifespan.OutOnSegmentEnd]?: Piece
+		[PieceLifespan.OutOnShowStyleEnd]?: ReadonlyDeep<Piece>
+		[PieceLifespan.OutOnRundownEnd]?: ReadonlyDeep<Piece>
+		[PieceLifespan.OutOnSegmentEnd]?: ReadonlyDeep<Piece>
 		// onChange?: PieceInstance
 	}
 	const piecesOnSourceLayers = new Map<string, InfinitePieceSet>()
@@ -466,8 +469,14 @@ export function getPieceInstancesForPart(
 		(p) => p.infinite?.infinitePieceId
 	)
 
-	const wrapPiece = (p: PieceInstancePiece) => {
-		const instance = rewrapPieceToInstance(p, playlistActivationId, part.rundownId, newInstanceId, isTemporary)
+	const wrapPiece = (p: ReadonlyDeep<PieceInstancePiece>) => {
+		const instance = rewrapPieceToInstance(
+			clone<PieceInstancePiece>(p),
+			playlistActivationId,
+			part.rundownId,
+			newInstanceId,
+			isTemporary
+		)
 
 		if (instance.piece.lifespan !== PieceLifespan.WithinPart) {
 			const existingPiece = nextPartIsAfterCurrentPart
@@ -510,10 +519,6 @@ export function getPieceInstancesForPart(
 			pieceSet[PieceLifespan.OutOnSegmentEnd],
 		])
 		result.push(...onEndPieces.map(wrapPiece))
-
-		// if (pieceSet.onChange) {
-		// 	result.push(rewrapInstance(pieceSet.onChange))
-		// }
 	}
 
 	return result

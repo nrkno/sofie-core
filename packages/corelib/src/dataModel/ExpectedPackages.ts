@@ -7,6 +7,7 @@ import {
 	BucketAdLibId,
 	BucketId,
 	ExpectedPackageId,
+	PartId,
 	PieceId,
 	RundownBaselineAdLibActionId,
 	RundownId,
@@ -24,17 +25,19 @@ import { ReadonlyDeep } from 'type-fest'
    The Package Manager will then copy the file to the right place.
 */
 
-export type ExpectedPackageFromRundown =
-	| ExpectedPackageDBFromPiece
-	| ExpectedPackageDBFromAdLibAction
+export type ExpectedPackageFromRundown = ExpectedPackageDBFromPiece | ExpectedPackageDBFromAdLibAction
+
+export type ExpectedPackageFromRundownBaseline =
 	| ExpectedPackageDBFromBaselineAdLibAction
 	| ExpectedPackageDBFromBaselineAdLibPiece
+	| ExpectedPackageDBFromRundownBaselineObjects
+
+export type ExpectedPackageDBFromBucket = ExpectedPackageDBFromBucketAdLib | ExpectedPackageDBFromBucketAdLibAction
 
 export type ExpectedPackageDB =
 	| ExpectedPackageFromRundown
-	| ExpectedPackageDBFromBucketAdLib
-	| ExpectedPackageDBFromBucketAdLibAction
-	| ExpectedPackageDBFromRundownBaselineObjects
+	| ExpectedPackageDBFromBucket
+	| ExpectedPackageFromRundownBaseline
 	| ExpectedPackageDBFromStudioBaselineObjects
 
 export enum ExpectedPackageDBType {
@@ -68,6 +71,8 @@ export interface ExpectedPackageDBFromPiece extends ExpectedPackageDBBase {
 	fromPieceType: ExpectedPackageDBType.PIECE | ExpectedPackageDBType.ADLIB_PIECE
 	/** The Piece this package belongs to */
 	pieceId: PieceId
+	/** The Part this package belongs to */
+	partId: PartId
 	/** The Segment this package belongs to */
 	segmentId: SegmentId
 	/** The rundown of the Piece this package belongs to */
@@ -86,6 +91,8 @@ export interface ExpectedPackageDBFromAdLibAction extends ExpectedPackageDBBase 
 	fromPieceType: ExpectedPackageDBType.ADLIB_ACTION
 	/** The Adlib Action this package belongs to */
 	pieceId: AdLibActionId
+	/** The Part this package belongs to */
+	partId: PartId
 	/** The Segment this package belongs to */
 	segmentId: SegmentId
 	/** The rundown of the Piece this package belongs to */

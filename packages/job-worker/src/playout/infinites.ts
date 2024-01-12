@@ -18,8 +18,7 @@ import { PlayoutSegmentModel } from './model/PlayoutSegmentModel'
 import { getCurrentTime } from '../lib'
 import { flatten } from '@sofie-automation/corelib/dist/lib'
 import _ = require('underscore')
-import { ReadOnlyCache } from '../cache/CacheBase'
-import { CacheForIngest } from '../ingest/cache'
+import { IngestModelReadonly } from '../ingest/model/IngestModel'
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { sortRundownIDsInPlaylist } from '@sofie-automation/corelib/dist/playout/playlist'
 import { mongoWhere } from '@sofie-automation/corelib/dist/mongo'
@@ -140,28 +139,28 @@ function getIdsBeforeThisPart(context: JobContext, playoutModel: PlayoutModel, n
 
 /**
  * Find all infinite Pieces that _may_ be active in the given Part, which will be continued from a previous part
- * Either search a provided ingest cache, or the database for these Pieces
+ * Either search a provided ingest model, or the database for these Pieces
  * @param context Context of the current job
- * @param playoutModel Playout cache for the current playlist
- * @param unsavedIngestCache If an ingest cache is loaded, we can search that instead of mongo
+ * @param playoutModel Playout model for the current playlist
+ * @param unsavedIngestModel If an ingest model is loaded, we can search that instead of mongo
  * @param part The Part to get the Pieces for
  * @returns Array of Piece
  */
 export async function fetchPiecesThatMayBeActiveForPart(
 	context: JobContext,
 	playoutModel: PlayoutModel,
-	unsavedIngestCache: Omit<ReadOnlyCache<CacheForIngest>, 'Rundown'> | undefined,
+	unsavedIngestModel: Pick<IngestModelReadonly, 'rundownId' | 'getAllPieces'> | undefined,
 	part: ReadonlyDeep<DBPart>
-): Promise<Piece[]> {
+): Promise<ReadonlyDeep<Piece>[]> {
 	const span = context.startSpan('fetchPiecesThatMayBeActiveForPart')
 
-	const piecePromises: Array<Promise<Array<Piece>> | Array<Piece>> = []
+	const piecePromises: Array<Promise<Array<Piece>> | Array<ReadonlyDeep<Piece>>> = []
 
 	// Find all the pieces starting in the part
 	const thisPiecesQuery = buildPiecesStartingInThisPartQuery(part)
 	piecePromises.push(
-		unsavedIngestCache?.RundownId === part.rundownId
-			? unsavedIngestCache.Pieces.findAll((p) => mongoWhere(p, thisPiecesQuery))
+		unsavedIngestModel?.rundownId === part.rundownId
+			? unsavedIngestModel.getAllPieces().filter((p) => mongoWhere(p, thisPiecesQuery))
 			: context.directCollections.Pieces.findFetch(thisPiecesQuery)
 	)
 
@@ -169,16 +168,16 @@ export async function fetchPiecesThatMayBeActiveForPart(
 	const { partsToReceiveOnSegmentEndFrom, segmentsToReceiveOnRundownEndFrom, rundownsToReceiveOnShowStyleEndFrom } =
 		getIdsBeforeThisPart(context, playoutModel, part)
 
-	if (unsavedIngestCache?.RundownId === part.rundownId) {
+	if (unsavedIngestModel?.rundownId === part.rundownId) {
 		// Find pieces for the current rundown
 		const thisRundownPieceQuery = buildPastInfinitePiecesForThisPartQuery(
 			part,
 			partsToReceiveOnSegmentEndFrom,
 			segmentsToReceiveOnRundownEndFrom,
-			[] // other rundowns don't exist in the ingestCache
+			[] // other rundowns don't exist in the ingestModel
 		)
 		if (thisRundownPieceQuery) {
-			piecePromises.push(unsavedIngestCache.Pieces.findAll((p) => mongoWhere(p, thisRundownPieceQuery)))
+			piecePromises.push(unsavedIngestModel.getAllPieces().filter((p) => mongoWhere(p, thisRundownPieceQuery)))
 		}
 
 		// Find pieces for the previous rundowns
@@ -192,7 +191,7 @@ export async function fetchPiecesThatMayBeActiveForPart(
 			piecePromises.push(context.directCollections.Pieces.findFetch(previousRundownPieceQuery))
 		}
 	} else {
-		// No cache, so we can do a single query to the db for it all
+		// Skip model, so we can do a single query to the db for it all
 		const infinitePiecesQuery = buildPastInfinitePiecesForThisPartQuery(
 			part,
 			partsToReceiveOnSegmentEndFrom,
@@ -212,7 +211,7 @@ export async function fetchPiecesThatMayBeActiveForPart(
 /**
  * Update the onChange infinites for the nextPartInstance to be up to date with the ones on the currentPartInstance
  * @param context Context for the current job
- * @param playoutModel Playout cache for the current playlist
+ * @param playoutModel Playout model for the current playlist
  */
 export async function syncPlayheadInfinitesForNextPartInstance(
 	context: JobContext,
@@ -289,7 +288,7 @@ export async function syncPlayheadInfinitesForNextPartInstance(
 /**
  * Calculate all of the onEnd PieceInstances for a PartInstance
  * @param context Context for the running job
- * @param playoutModel Playout cache for the current playlist
+ * @param playoutModel Playout model for the current playlist
  * @param playingPartInstance The current PartInstance, if there is one
  * @param rundown The Rundown the Part belongs to
  * @param part The Part the PartInstance is based on
@@ -303,7 +302,7 @@ export function getPieceInstancesForPart(
 	playingPartInstance: PlayoutPartInstanceModel | null,
 	rundown: PlayoutRundownModel,
 	part: ReadonlyDeep<DBPart>,
-	possiblePieces: Piece[],
+	possiblePieces: ReadonlyDeep<Piece>[],
 	newInstanceId: PartInstanceId
 ): PieceInstance[] {
 	const span = context.startSpan('getPieceInstancesForPart')

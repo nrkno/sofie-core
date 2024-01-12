@@ -69,7 +69,6 @@
 		"@asyncapi/generator": "1.10.9",
 		"@asyncapi/html-template": "0.26.0",
 		"@asyncapi/nodejs-ws-template": "0.9.33",
-		"jest-mock-extended": "^3.0.5",
 		"type-fest": "^4.5.0"
 	},
 	"lint-staged": {

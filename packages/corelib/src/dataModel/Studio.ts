@@ -36,8 +36,6 @@ export interface IStudioSettings {
 	 * A higher value adds delays in playout, but reduces the risk of missed frames. */
 	multiGatewayNowSafeLatency?: number
 
-	/** Preserve unsynced segment contents when the playing segment is removed, rather than removing all but the playing part */
-	preserveUnsyncedPlayingSegmentContents?: boolean
 	/** Allow resets while a rundown is on-air */
 	allowRundownResetOnAir?: boolean
 
