@@ -611,7 +611,6 @@ components:
         - name
         - rank
         - showStyleBaseId
-        - blueprintId
         - config
       additionalProperties: false
     outputLayer:
