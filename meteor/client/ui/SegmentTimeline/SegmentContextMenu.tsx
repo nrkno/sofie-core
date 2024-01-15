@@ -14,6 +14,7 @@ import { IContextMenuContext } from '../RundownView'
 import { PartUi, SegmentUi } from './SegmentTimelineContainer'
 import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import * as RundownLib from '../../../lib/Rundown'
 
 interface IProps {
 	onSetNext: (part: DBPart | undefined, e: any, offset?: number, take?: boolean) => void
@@ -105,35 +106,43 @@ export const SegmentContextMenu = withTranslation()(
 										</MenuItem>
 									</>
 								) : null}
-								{this.props.playlist?.quickLoop?.start?.type === QuickLoopMarkerType.PART &&
-								this.props.playlist.quickLoop.start.id === part.partId ? (
-									<MenuItem onClick={(e) => this.props.onSetQuickLoopStart(null, e)}>
-										<span>{t('Clear QuickLoop Start')}</span>
-									</MenuItem>
-								) : (
-									<MenuItem
-										onClick={(e) =>
-											this.props.onSetQuickLoopStart({ type: QuickLoopMarkerType.PART, id: part.instance.part._id }, e)
-										}
-										disabled={!!part.instance.orphaned || !canSetAsNext}
-									>
-										<span>{t('Set as QuickLoop Start')}</span>
-									</MenuItem>
-								)}
-								{this.props.playlist?.quickLoop?.end?.type === QuickLoopMarkerType.PART &&
-								this.props.playlist.quickLoop.end.id === part.partId ? (
-									<MenuItem onClick={(e) => this.props.onSetQuickLoopEnd(null, e)}>
-										<span>{t('Clear QuickLoop End')}</span>
-									</MenuItem>
-								) : (
-									<MenuItem
-										onClick={(e) =>
-											this.props.onSetQuickLoopEnd({ type: QuickLoopMarkerType.PART, id: part.instance.part._id }, e)
-										}
-										disabled={!!part.instance.orphaned || !canSetAsNext}
-									>
-										<span>{t('Set as QuickLoop End')}</span>
-									</MenuItem>
+								{!RundownLib.isLoopLocked(this.props.playlist) && (
+									<>
+										{RundownLib.isQuickLoopStart(part.partId, this.props.playlist) ? (
+											<MenuItem onClick={(e) => this.props.onSetQuickLoopStart(null, e)}>
+												<span>{t('Clear QuickLoop Start')}</span>
+											</MenuItem>
+										) : (
+											<MenuItem
+												onClick={(e) =>
+													this.props.onSetQuickLoopStart(
+														{ type: QuickLoopMarkerType.PART, id: part.instance.part._id },
+														e
+													)
+												}
+												disabled={!!part.instance.orphaned || !canSetAsNext}
+											>
+												<span>{t('Set as QuickLoop Start')}</span>
+											</MenuItem>
+										)}
+										{RundownLib.isQuickLoopEnd(part.partId, this.props.playlist) ? (
+											<MenuItem onClick={(e) => this.props.onSetQuickLoopEnd(null, e)}>
+												<span>{t('Clear QuickLoop End')}</span>
+											</MenuItem>
+										) : (
+											<MenuItem
+												onClick={(e) =>
+													this.props.onSetQuickLoopEnd(
+														{ type: QuickLoopMarkerType.PART, id: part.instance.part._id },
+														e
+													)
+												}
+												disabled={!!part.instance.orphaned || !canSetAsNext}
+											>
+												<span>{t('Set as QuickLoop End')}</span>
+											</MenuItem>
+										)}
+									</>
 								)}
 							</>
 						)}
