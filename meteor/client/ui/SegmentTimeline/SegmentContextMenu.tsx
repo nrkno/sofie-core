@@ -26,6 +26,7 @@ interface IProps {
 	studioMode: boolean
 	contextMenuContext: IContextMenuContext | null
 	enablePlayFromAnywhere: boolean
+	enableQuickLoop: boolean
 }
 interface IState {}
 
@@ -106,7 +107,7 @@ export const SegmentContextMenu = withTranslation()(
 										</MenuItem>
 									</>
 								) : null}
-								{!RundownLib.isLoopLocked(this.props.playlist) && (
+								{this.props.enableQuickLoop && !RundownLib.isLoopLocked(this.props.playlist) && (
 									<>
 										{RundownLib.isQuickLoopStart(part.partId, this.props.playlist) ? (
 											<MenuItem onClick={(e) => this.props.onSetQuickLoopStart(null, e)}>

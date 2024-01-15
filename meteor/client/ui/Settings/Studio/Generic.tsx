@@ -257,6 +257,17 @@ export const StudioGenericProperties = withTranslation()(
 					</label>
 
 					<label className="field">
+						<LabelActual label={t('Enable QuickLoop')} />
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute="settings.enableQuickLoop"
+							obj={this.props.studio}
+							type="checkbox"
+							collection={Studios}
+						/>
+					</label>
+
+					<label className="field">
 						<LabelActual label={t('Force Auto in a Loop')} />
 						<div className="mdi">
 							<EditAttribute
@@ -266,7 +277,7 @@ export const StudioGenericProperties = withTranslation()(
 								mutateDisplayValue={(v) => v ?? ForceQuickLoopAutoNext.DISABLED}
 								options={{
 									[t('Disabled')]: ForceQuickLoopAutoNext.DISABLED,
-									[t('Enabled when Part Duration is defined and higher than 0')]:
+									[t('Enabled, but skipping parts with undefined or 0 duration')]:
 										ForceQuickLoopAutoNext.ENABLED_WHEN_VALID_DURATION,
 									[t('Enabled on all Parts, applying a Minimum Display Duration if needed')]:
 										ForceQuickLoopAutoNext.ENABLED_FORCING_MIN_DURATION,

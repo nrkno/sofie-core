@@ -54,6 +54,9 @@ export interface IStudioSettings {
 	/** Whether to allow scratchpad mode, before a Part is playing in a Playlist */
 	allowScratchpad?: boolean
 
+	/** Should QuickLoop context menu options be available to the users */
+	enableQuickLoop?: ForceQuickLoopAutoNext
+
 	/** If and how to force auto-nexting in a looping Playlist */
 	forceQuickLoopAutoNext?: ForceQuickLoopAutoNext
 }

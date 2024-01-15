@@ -551,7 +551,6 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 			updatePartOverrides(this.currentPartInstance, this.playlistImpl.quickLoop.forceAutoNext)
 		} else if (this.currentPartInstance && wasLoopRunning) {
 			revertPartOverrides(this.currentPartInstance)
-			// TODO: this may need updating the timeline
 		}
 
 		if (this.nextPartInstance && !isNextBetweenMarkers) {
@@ -565,7 +564,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		this.#playlistHasChanged = true
 
 		function updatePartOverrides(partInstance: PlayoutPartInstanceModel, forceAutoNext: ForceQuickLoopAutoNext) {
-			const partPropsToUpdate: Partial<IBlueprintMutatablePart<unknown>> = {}
+			const partPropsToUpdate: Partial<IBlueprintMutatablePart> = {}
 			if (
 				!partInstance.partInstance.part.expectedDuration &&
 				forceAutoNext === ForceQuickLoopAutoNext.ENABLED_FORCING_MIN_DURATION

@@ -28,6 +28,7 @@ import { RundownsObserver } from '../lib/rundownsObserver'
 import { RundownContentObserver } from './rundownContentObserver'
 import { ProtectedString, protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
+import { generateTranslation } from '../../../lib/lib'
 
 interface UIPartsArgs {
 	readonly playlistId: RundownPlaylistId
@@ -68,7 +69,6 @@ async function setupUIPartsPublicationObservers(
 	const rundownsObserver = new RundownsObserver(playlist.studioId, playlist._id, (rundownIds) => {
 		logger.silly(`Creating new RundownContentObserver`)
 
-		// TODO - can this be done cheaper?
 		const cache = createReactiveContentCache()
 
 		// Push update
@@ -87,11 +87,6 @@ async function setupUIPartsPublicationObservers(
 				changed: (id) => triggerUpdate({ invalidatePartIds: [protectString(id)] }),
 				removed: (id) => triggerUpdate({ invalidatePartIds: [protectString(id)] }),
 			}),
-			// cache.Rundowns.find({}).observeChanges({
-			// 	added: (id) => triggerUpdate({ invalidateRundownIds: [protectString(id)] }),
-			// 	changed: (id) => triggerUpdate({ invalidateRundownIds: [protectString(id)] }),
-			// 	removed: (id) => triggerUpdate({ invalidateRundownIds: [protectString(id)] }),
-			// }),
 			cache.RundownPlaylists.find({}).observeChanges({
 				added: () => triggerUpdate({ invalidateQuickLoop: true }),
 				changed: () => triggerUpdate({ invalidateQuickLoop: true }),
@@ -128,7 +123,7 @@ export async function manipulateUIPartsPublicationData(
 	}
 
 	if (!state.contentCache) {
-		// Remove all the notes
+		// Remove all the parts
 		collection.remove(null)
 
 		return
@@ -137,14 +132,14 @@ export async function manipulateUIPartsPublicationData(
 	const playlist = state.contentCache.RundownPlaylists.find({}).fetch()[0]
 	if (!playlist) return
 
-	// const segmentsByRundownId = groupByToMap(state.contentCache.Segments.find({}).fetch(), 'rundownId')
-	// const orderedSegments = playlist.rundownIdsInOrder.flatMap((rundownId) => {
-	// 	return segmentsByRundownId.get(rundownId)?.sort((a, b) => a._rank - b._rank) ?? []
-	// })
+	if (!playlist.quickLoop?.start || !playlist.quickLoop?.end) {
+		collection.remove(null)
+		state.contentCache.Parts.find({}).forEach((part) => {
+			collection.replace(part)
+		})
+		return
+	}
 
-	// if (!playlist.quickLoop) return // TODO
-
-	// const contentCache = state.contentCache
 	const rundownRanks = stringsToIndexLookup(playlist.rundownIdsInOrder as unknown as string[]) // TODO: optimize by storing in state?
 	const segmentRanks = extractRanks(state.contentCache.Segments.find({}).fetch()) // TODO: optimize by storing in state?
 
@@ -156,13 +151,9 @@ export async function manipulateUIPartsPublicationData(
 		extractMarkerPosition(playlist.quickLoop.end, Infinity, state.contentCache, rundownRanks)
 
 	const isLoopDefined = playlist.quickLoop?.start && playlist.quickLoop?.end && startPosition && endPosition
-	// const isLoopRunning = isLoopDefined && playlist.quickLoop?.running
-	// const isAutoNexting = isLoopRunning // TODO
-	// Remove all the parts
+
 	collection.remove(null)
 
-	// console.log(startPosition, endPosition, state.contentCache.Parts.find({}).fetch().length)
-	// console.log('a')
 	state.contentCache.Parts.find({}).forEach((part) => {
 		const partPosition = extractPartPosition(part, segmentRanks, rundownRanks)
 		const isLoopingOverriden =
@@ -170,18 +161,21 @@ export async function manipulateUIPartsPublicationData(
 			playlist.quickLoop?.forceAutoNext !== ForceQuickLoopAutoNext.DISABLED &&
 			comparePositions(startPosition, partPosition) >= 0 &&
 			comparePositions(partPosition, endPosition) >= 0
-		// console.log(isLoopingOverriden, part.title)
-		if (
-			(part.expectedDuration ?? 0) <= 0 &&
-			playlist.quickLoop?.forceAutoNext === ForceQuickLoopAutoNext.ENABLED_FORCING_MIN_DURATION
-		) {
-			part.expectedDuration = 3000 // TODO: use settings
-			part.expectedDurationWithPreroll = 3000
+
+		if (isLoopingOverriden && (part.expectedDuration ?? 0) <= 0) {
+			if (playlist.quickLoop?.forceAutoNext === ForceQuickLoopAutoNext.ENABLED_FORCING_MIN_DURATION) {
+				part.expectedDuration = 3000 // TODO: use settings
+				part.expectedDurationWithPreroll = 3000
+			} else if (playlist.quickLoop?.forceAutoNext === ForceQuickLoopAutoNext.ENABLED_WHEN_VALID_DURATION) {
+				part.invalid = true
+				part.invalidReason = {
+					message: generateTranslation('Part duration is 0.'),
+				}
+			}
 		}
 		part.autoNext = part.autoNext || (isLoopingOverriden && (part.expectedDuration ?? 0) > 0)
 		collection.replace(part)
 	})
-	// console.log('b')
 }
 
 const comparePositions = (a: number[], b: number[]): number => {

@@ -3126,6 +3126,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 									onSetQuickLoopEnd={this.onSetQuickLoopEnd}
 									studioMode={this.state.studioMode}
 									enablePlayFromAnywhere={!!studio.settings.enablePlayFromAnywhere}
+									enableQuickLoop={!!studio.settings.enableQuickLoop}
 								/>
 							</ErrorBoundary>
 							<ErrorBoundary>

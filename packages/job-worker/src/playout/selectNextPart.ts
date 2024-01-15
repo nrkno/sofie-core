@@ -1,7 +1,11 @@
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { JobContext } from '../jobs'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { DBRundownPlaylist, QuickLoopMarkerType } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import {
+	DBRundownPlaylist,
+	ForceQuickLoopAutoNext,
+	QuickLoopMarkerType,
+} from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import { PlayoutSegmentModel } from './model/PlayoutSegmentModel'
@@ -62,7 +66,15 @@ export function selectNextPart(
 		// Filter to after and find the first playabale
 		for (let index = offset; index < (length || parts.length); index++) {
 			const part = parts[index]
-			if ((!ignoreUnplayabale || isPartPlayable(part)) && (!condition || condition(part))) {
+			if (
+				(!ignoreUnplayabale || isPartPlayable(part)) &&
+				(ignoreQuickLoop ||
+					!rundownPlaylist.quickLoop?.running ||
+					context.studio.settings.forceQuickLoopAutoNext !==
+						ForceQuickLoopAutoNext.ENABLED_WHEN_VALID_DURATION ||
+					isPartPlayableInQuickLoop(part)) &&
+				(!condition || condition(part))
+			) {
 				return { part, index, consumesQueuedSegmentId: false }
 			}
 		}
@@ -101,7 +113,7 @@ export function selectNextPart(
 				(part) => part.segmentId === previousPartInstance.part.segmentId
 			)
 			if (!nextPlayablePart) {
-				findQuickLoopStartPart(currentIndex + 1) ?? null
+				return findQuickLoopStartPart(currentIndex + 1) ?? null
 			}
 		}
 	}
@@ -189,4 +201,8 @@ export function selectNextPart(
 
 	if (span) span.end()
 	return nextPart ?? null
+}
+
+function isPartPlayableInQuickLoop(part: ReadonlyDeep<DBPart>): boolean {
+	return (part.expectedDuration ?? 0) > 0
 }
