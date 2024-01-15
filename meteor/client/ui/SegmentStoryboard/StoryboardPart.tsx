@@ -151,7 +151,7 @@ export const StoryboardPart = withTiming<IProps, {}>((props: IProps) => {
 						'segment-storyboard__part--next': isNextPart,
 						'segment-storyboard__part--live': isLivePart,
 						'segment-storyboard__part--invalid': part.instance.part.invalid,
-						'segment-storyboard__part--out-of-the-loop': !isPartInQuickLoop && isPlaylistLooping && !isNextPart,
+						'segment-storyboard__part--outside-quickloop': !isPartInQuickLoop && isPlaylistLooping && !isNextPart,
 						'segment-storyboard__part--quickloop-start': isQuickLoopStart,
 						'segment-storyboard__part--quickloop-end': isQuickLoopEnd,
 					},

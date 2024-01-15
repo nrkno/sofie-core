@@ -231,7 +231,7 @@ $identifier-area-width: 3em;
 				}
 			}
 
-			&--out-of-the-loop {
+			&--outside-quickloop {
 				&::before {
 					content: ' ';
 					display: block;

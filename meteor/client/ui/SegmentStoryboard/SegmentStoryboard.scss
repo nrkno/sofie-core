@@ -168,7 +168,7 @@ $break-width: 35rem;
 		background: $segment-timeline-background-color;
 	}
 
-	&--out-of-the-loop {
+	&--outside-quickloop {
 		&::before {
 			content: ' ';
 			display: block;

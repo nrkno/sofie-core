@@ -682,7 +682,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 							'duration-settling': this.state.isDurationSettling,
 							'budget-gap': this.props.isBudgetGap,
 
-							'out-of-the-loop':
+							'outside-quickloop':
 								!this.state.isInQuickLoop && RundownLib.isLoopRunning(this.props.playlist) && !this.state.isNext,
 							'quickloop-start': isQuickLoopStart,
 							'quickloop-end': isQuickLoopEnd,
