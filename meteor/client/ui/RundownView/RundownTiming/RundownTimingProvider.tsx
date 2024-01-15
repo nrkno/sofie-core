@@ -19,6 +19,7 @@ import { RundownPlaylistCollectionUtil } from '../../../../lib/collections/rundo
 import { sortPartInstancesInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 import { isLoopDefined, isLoopLocked } from '../../../../lib/Rundown'
+import { RundownUtils } from '../../../lib/rundown'
 
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
 const LOW_RESOLUTION_TIMING_DECIMATOR = 15
@@ -172,6 +173,8 @@ export const RundownTimingProvider = withTracker<
 	}
 
 	partInstances = sortPartInstancesInSortedSegments(partInstances, segments)
+
+	partInstances = RundownUtils.deduplicatePartInstancesForQuickLoop(partInstances, currentPartInstance)
 
 	const partsInQuickLoop = findPartInstancesInQuickLoop(playlist, partInstances)
 

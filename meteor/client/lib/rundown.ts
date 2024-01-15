@@ -394,8 +394,13 @@ export namespace RundownUtils {
 
 			let startsAt = 0
 			let previousPart: PartExtended | undefined
+
+			const dedupedPartInstances = playlist.quickLoop?.running
+				? RundownUtils.deduplicatePartInstancesForQuickLoop(segmentInfo.partInstances, currentPartInstance)
+				: segmentInfo.partInstances
+
 			// fetch all the pieces for the parts
-			const partIds = segmentInfo.partInstances.map((part) => part.part._id)
+			const partIds = dedupedPartInstances.map((part) => part.part._id)
 
 			let nextPartIsAfterCurrentPart = false
 			if (nextPartInstance && currentPartInstance) {
@@ -422,7 +427,7 @@ export namespace RundownUtils {
 
 			const showHiddenSourceLayers = getShowHiddenSourceLayers()
 
-			partsE = segmentInfo.partInstances.map((partInstance, itIndex) => {
+			partsE = dedupedPartInstances.map((partInstance, itIndex) => {
 				const partExpectedDuration = calculatePartInstanceExpectedDurationWithPreroll(
 					partInstance,
 					pieces.get(partInstance.part._id) ?? []
@@ -781,5 +786,16 @@ export namespace RundownUtils {
 		piece: IAdLibListItem | PieceUi | AdLibPieceUi | BucketAdLibItem
 	): piece is BucketAdLibItem {
 		return 'bucketId' in piece && !!piece['bucketId']
+	}
+
+	export function deduplicatePartInstancesForQuickLoop<T extends Pick<PartInstance, '_id' | 'part'>>(
+		sortedPartInstances: T[],
+		currentPartInstance: T | undefined
+	): T[] {
+		return sortedPartInstances.filter((partInstance) => {
+			return (
+				partInstance.part._id !== currentPartInstance?.part._id || partInstance._id === currentPartInstance._id
+			)
+		})
 	}
 }
