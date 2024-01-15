@@ -181,9 +181,20 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 		this.rootElement = e
 	}
 
-	private getElStyle() {
+	private getElStyle(width: number, height: number) {
 		const style = { ...this.state.style }
 		style.visibility = this.state.show ? 'visible' : 'hidden'
+		style.width = `${width / 4}px`
+		style.height = `${height / 4}px`
+		return style
+	}
+
+	private getPreviewStyle(width: number, height: number) {
+		const style: React.CSSProperties = {
+			width: `${width}px`,
+			height: `${height}px`,
+		}
+
 		return style
 	}
 
@@ -193,23 +204,30 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 
 		const rendererUrl = this.state.noraContent?.previewRenderer
 
+		const dimensions = this.state.noraContent?.previewRendererDimensions
+		const renderWidth = dimensions?.width ?? 1920
+		const renderHeight = dimensions?.height ?? 1080
+
+		const rootElmStyle = { ...this.state.style }
+		rootElmStyle.visibility = this.state.show ? 'visible' : 'hidden'
+
 		return (
 			<Escape to="document">
 				<div
 					className="segment-timeline__mini-inspector segment-timeline__mini-inspector--graphics segment-timeline__mini-inspector--graphics--preview"
-					style={this.getElStyle()}
+					style={this.getElStyle(renderWidth, renderHeight)}
 					ref={this._setRootElement}
 				>
-					<div className="preview">
-						<img width="100%" src="/images/previewBG.jpg" alt="" />
+					<div className="preview" style={this.getPreviewStyle(renderWidth, renderHeight)}>
+						<img src="/images/previewBG.jpg" alt="" width={renderWidth} height={renderHeight} />
 						{rendererUrl && (
 							<iframe
 								key={rendererUrl} // Use the url as the key, so that the old renderer unloads immediately when changing url
 								sandbox="allow-scripts allow-same-origin"
 								src={rendererUrl}
 								ref={this._setIFrameElement}
-								width="1920"
-								height="1080"
+								width={renderWidth}
+								height={renderHeight}
 							></iframe>
 						)}
 					</div>
