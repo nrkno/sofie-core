@@ -26,9 +26,9 @@ export const segmentFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<
 	rundownId: 1,
 })
 
-export type PartOmitedFields = 'metaData'
+export type PartOmitedFields = 'privateData'
 export const partFieldSpecifier = literal<MongoFieldSpecifierZeroes<Pick<DBPart, PartOmitedFields>>>({
-	metaData: 0,
+	privateData: 0,
 })
 
 export interface ContentCache {
