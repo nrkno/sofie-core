@@ -18,7 +18,7 @@ import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dis
 import { RundownPlaylistCollectionUtil } from '../../../../lib/collections/rundownPlaylistUtil'
 import { sortPartInstancesInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
-import { isLoopDefined } from '../../../../lib/Rundown'
+import { isLoopDefined, isLoopLocked } from '../../../../lib/Rundown'
 
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
 const LOW_RESOLUTION_TIMING_DECIMATOR = 15
@@ -361,7 +361,12 @@ function findPartInstancesInQuickLoop(
 	sortedPartInstances: MinimalPartInstance[]
 ): Record<TimingId, boolean> {
 	const partsInQuickLoop: Record<TimingId, boolean> = {}
-	if (!isLoopDefined(playlist)) return partsInQuickLoop
+	if (
+		!isLoopDefined(playlist) ||
+		isLoopLocked(playlist) // a crude way of disabling the dots when looping the entire playlist
+	) {
+		return partsInQuickLoop
+	}
 
 	let isInQuickLoop = playlist.quickLoop?.start?.type === QuickLoopMarkerType.PLAYLIST
 	let previousPartInstance: MinimalPartInstance | undefined = undefined
