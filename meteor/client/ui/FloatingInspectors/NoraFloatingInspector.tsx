@@ -158,16 +158,19 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 	}
 
 	private _onNoraMessage = (msg: MessageEvent): void => {
+		if (!this.state.noraContent) return
+
+		const rendererUrl = new URL(this.state.noraContent.previewRenderer)
+		if (rendererUrl.origin !== msg.origin) return
+
 		if (msg.source !== this.iframeElement?.contentWindow) return
 		if (msg.data.event === 'nora-render') {
-			console.log('nora-render', msg)
-
 			if (msg.data.data.loaded) {
 				// Nora has loaded, dispatch the initial content
 
 				// Future: this may want to be done via `onload` on the iframe in the future to allow for non-nora renderers to work
 
-				if (this.state.noraContent && this.iframeElement?.contentWindow) {
+				if (this.iframeElement?.contentWindow) {
 					this.postNoraEvent(this.iframeElement.contentWindow, this.state.noraContent)
 				}
 			}
