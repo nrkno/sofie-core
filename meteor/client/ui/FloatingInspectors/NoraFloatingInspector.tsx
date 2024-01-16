@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { NoraContent } from '@sofie-automation/blueprints-integration'
 import Escape from 'react-escape'
+import _ from 'underscore'
 
 interface IPropsHeader {
 	noraContent: NoraContent | undefined
@@ -77,6 +78,14 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 		NoraPreviewRenderer._singletonRef = this
 	}
 
+	componentDidMount(): void {
+		window.addEventListener('message', this._onNoraMessage)
+	}
+
+	shouldComponentUpdate(_nextProps: {}, nextState: IStateHeader, _nextContext: unknown): boolean {
+		return !_.isEqual(nextState, this.state)
+	}
+
 	private postNoraEvent(contentWindow: Window, noraContent: NoraContent) {
 		contentWindow.postMessage(
 			{
@@ -109,7 +118,7 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 
 	private _show(noraContent: NoraContent, style: React.CSSProperties, displayOn?: 'document' | 'viewport') {
 		if (JSON.stringify(this.state.noraContent) !== JSON.stringify(noraContent)) {
-			if (this.iframeElement && this.iframeElement.contentWindow) {
+			if (this.iframeElement?.contentWindow) {
 				this.postNoraEvent(this.iframeElement.contentWindow, noraContent)
 			}
 		}
@@ -152,18 +161,9 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 		})
 	}
 
-	private _setPreview = (e: HTMLIFrameElement) => {
+	private _setIFrameElement = (e: HTMLIFrameElement | null) => {
 		if (!e) return
 		this.iframeElement = e
-		const noraContent = this.state.noraContent
-		window.onmessage = (msg) => {
-			if (msg.data.source === 'nora-render') console.log(msg)
-		}
-		setTimeout(() => {
-			if (e.contentWindow && noraContent) {
-				this.postNoraEvent(e.contentWindow, noraContent)
-			}
-		}, 1000)
 
 		// set up IntersectionObserver to keep the preview inside the viewport
 		const options = {
@@ -186,7 +186,29 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 		this._observer.observe(e)
 	}
 
+	private _onNoraMessage = (msg: MessageEvent): void => {
+		if (!this.state.noraContent) return
+
+		const rendererUrl = new URL(this.state.noraContent.previewRenderer)
+		if (rendererUrl.origin !== msg.origin) return
+
+		if (msg.source !== this.iframeElement?.contentWindow) return
+		if (msg.data.event === 'nora-render') {
+			if (msg.data.data.loaded) {
+				// Nora has loaded, dispatch the initial content
+
+				// Future: this may want to be done via `onload` on the iframe in the future to allow for non-nora renderers to work
+
+				if (this.iframeElement?.contentWindow) {
+					this.postNoraEvent(this.iframeElement.contentWindow, this.state.noraContent)
+				}
+			}
+		}
+	}
+
 	componentWillUnmount(): void {
+		window.removeEventListener('message', this._onNoraMessage)
+
 		if (this._observer) this._observer.disconnect()
 	}
 
@@ -209,36 +231,39 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 		const stepContent = this.state.noraContent?.payload?.step
 		const isMultiStep = this.state.noraContent?.payload?.step?.enabled === true
 
+		const rendererUrl = this.state.noraContent?.previewRenderer
+
 		return (
-			<React.Fragment>
-				<Escape to={this.state.displayOn}>
-					<div
-						className="segment-timeline__mini-inspector segment-timeline__mini-inspector--graphics segment-timeline__mini-inspector--graphics--preview"
-						style={this.getElStyle()}
-					>
-						<div className="preview">
-							<img width="100%" src="/images/previewBG.jpg" alt="" />
+			<Escape to={this.state.displayOn}>
+				<div
+					className="segment-timeline__mini-inspector segment-timeline__mini-inspector--graphics segment-timeline__mini-inspector--graphics--preview"
+					style={this.getElStyle()}
+				>
+					<div className="preview">
+						<img width="100%" src="/images/previewBG.jpg" alt="" />
+						{rendererUrl && (
 							<iframe
+								key={rendererUrl} // Use the url as the key, so that the old renderer unloads immediately when changing url
 								sandbox="allow-scripts allow-same-origin"
-								src={this.state.noraContent?.previewRenderer}
-								ref={this._setPreview}
+								src={rendererUrl}
+								ref={this._setIFrameElement}
 								width="1920"
 								height="1080"
 							></iframe>
-						</div>
-						{isMultiStep && stepContent ? (
-							<div className="segment-timeline__mini-inspector--graphics--preview__step-chevron">
-								{stepContent.to === 'next' ? (stepContent.from || 0) + 1 : stepContent.to || 1}
-								{typeof stepContent.total === 'number' && stepContent.total > 0 ? (
-									<span className="segment-timeline__mini-inspector--graphics--preview__step-chevron__total">
-										/{stepContent.total}
-									</span>
-								) : null}
-							</div>
-						) : null}
+						)}
 					</div>
-				</Escape>
-			</React.Fragment>
+					{isMultiStep && stepContent ? (
+						<div className="segment-timeline__mini-inspector--graphics--preview__step-chevron">
+							{stepContent.to === 'next' ? (stepContent.from || 0) + 1 : stepContent.to || 1}
+							{typeof stepContent.total === 'number' && stepContent.total > 0 ? (
+								<span className="segment-timeline__mini-inspector--graphics--preview__step-chevron__total">
+									/{stepContent.total}
+								</span>
+							) : null}
+						</div>
+					) : null}
+				</div>
+			</Escape>
 		)
 	}
 }
