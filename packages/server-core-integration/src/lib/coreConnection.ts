@@ -362,9 +362,17 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 				const subscriptionId = this.ddp.ddpClient.subscribe(
 					publicationName, // name of Meteor Publish function to subscribe to
 					params.concat([this._coreOptions.deviceToken]), // parameters used by the Publish function
-					() => {
-						// callback when the subscription is complete
-						resolve(subscriptionId)
+					(error) => {
+						if (error) {
+							reject(
+								new Error(
+									`Error from publication: ${error.errorType} [${error.error}] ${error.reason} ${error.message}`
+								)
+							)
+						} else {
+							// callback when the subscription is complete
+							resolve(subscriptionId)
+						}
 					}
 				)
 			} catch (e) {
