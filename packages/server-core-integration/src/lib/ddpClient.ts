@@ -841,7 +841,12 @@ export class DDPClient extends EventEmitter<DDPClientEvents> {
 	}
 
 	// open a subscription on the server, callback should handle on ready and nosub
-	subscribe(subscriptionName: string, data: Array<unknown>, callback: () => void, reuseId?: string): string {
+	subscribe(
+		subscriptionName: string,
+		data: Array<unknown>,
+		callback: (error?: DDPError) => void,
+		reuseId?: string
+	): string {
 		const id = reuseId || this.getNextId()
 
 		if (callback) {

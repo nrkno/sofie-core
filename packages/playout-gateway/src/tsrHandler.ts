@@ -940,7 +940,7 @@ export class TSRHandler {
 			}
 		} catch (error) {
 			// Initialization failed, clean up any artifacts and see if we can try again later:
-			this.logger.error(`Error when adding device "${deviceId}"`, error)
+			this.logger.error(`Error when adding device "${deviceId}"`, { error })
 			debug(`Error when adding device "${deviceId}"`)
 			try {
 				await this._removeDevice(deviceId)
