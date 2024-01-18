@@ -1,6 +1,6 @@
 import { ExpectedPackage, Time } from '@sofie-automation/blueprints-integration'
 import { protectString } from '../protectedString'
-import { hashObj } from '../lib'
+import { getHash, hashObj } from '../lib'
 import {
 	AdLibActionId,
 	BucketAdLibActionId,
@@ -155,5 +155,5 @@ export function getExpectedPackageId(
 	/** The locally unique id of the expectedPackage */
 	localExpectedPackageId: ExpectedPackage.Base['_id']
 ): ExpectedPackageId {
-	return protectString(`${ownerId}_${localExpectedPackageId}`)
+	return protectString(`${ownerId}_${getHash(localExpectedPackageId)}`)
 }

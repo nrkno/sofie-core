@@ -27,7 +27,8 @@ To be able to facilitate various workflows and to Here's a short explanation abo
 - The **System** defines the whole of the Sofie&nbsp;Core
 - The **Organization** \(only available if user accounts are enabled\) defines things that are common for an organization. An organization consists of: **Users, Studios** and **ShowStyles**.
 - The **Studio** contains things that are related to the "hardware" or "rig". Technically, a Studio is defined as an entity that can have one \(or none\) rundown active at any given time. In most cases, this will be a representation of your gallery, with cameras, video playback and graphics systems, external inputs, sound mixers, lighting controls and so on. A single System can easily control multiple Studios.
-- The **Show Style** contains settings for the "show", for example if there's a "Morning Show" and an "Afternoon Show" - produced in the same gallery - they might be two different Show Styles \(played in the same Studio\).
+- The **Show Style** contains settings for the "show", for example if there's a "Morning Show" and an "Afternoon Show" - produced in the same gallery - they might be two different Show Styles \(played in the same Studio\). Most importantly, the Show Style decides the "look and feel" of the Show towards the producer/director, dictating how data ingested from the NRCS will be interpreted and how the user will interact with the system during playback (see: [Show Style](../configuration/settings-view#show-style) in Settings).
+  * A **Show Style Variant** is a set of Show Style _Blueprint_ configuration values, that allows to use the same interaction model across multiple Shows with potentially different assets, changing the outward look of the Show: for example news programs with different hosts produced from the same Studio, but with different light setups, backscreen and overlay graphics.
 
 ![Sofie Architecture Venn Diagram](/img/docs/main/features/sofie-venn-diagram.png)
 
@@ -60,20 +61,20 @@ The Segment is the horizontal line in the GUI. It is intended to be used as a "c
 
 ### Part
 
-The Part is the playable element inside of a [Segment](#segment). This is the thing that starts playing when the user does a [TAKE](#take-point).  
+The Part is the playable element inside of a [Segment](#segment). This is the thing that starts playing when the user does a [TAKE](#take-point). A Playing part is _On Air_ or _current_, while the part "cued" to be played is _Next_.
 The Part in itself doesn't determine what's going to happen, that's handled by the [Pieces](#piece) in it.
 
 ### Piece
 
-The Pieces inside of a Part determines what's going to happen, the could be indicating things like VT:s, cut to cameras, graphics, or what script the host is going to read.
+The Pieces inside of a Part determines what's going to happen, the could be indicating things like VT's, cut to cameras, graphics, or what script the host is going to read.
 
-Inside of the pieces are the [timeline-objects](#timeline-object) which controls the playout on a technical level.
+Inside of the pieces are the [timeline-objects](#what-is-the-timeline) which controls the playout on a technical level.
 
 :::tip
 Tip! If you want to manually play a certain piece \(for example a graphics overlay\), you can at any time double-click it in the GUI, and it will be copied and played at your play head, just like an [AdLib](#adlib-pieces) would!
 :::
 
-See also: [Showstyle](#showstyle)
+See also: [Showstyle](#system-organization-studio--show-style)
 
 ### AdLib Piece
 
@@ -81,7 +82,15 @@ The AdLib pieces are Pieces that isn't programmed to fire at a specific time, bu
 
 The AdLib pieces can either come from the currently playing Part, or it could be _global AdLibs_ that are available throughout the show.
 
-An AdLib isn't added to the Part in the GUI until it starts playing, instead you find it in the [Shelf](#shelf).
+An AdLib isn't added to the Part in the GUI until it starts playing, instead you find it in the [Shelf](features/sofie-views.mdx#shelf).
+
+## Buckets
+
+A Bucket is a container for AdLib Pieces created by the producer/operator during production. They exist independently of the Rundowns and associated content created by ingesting data from the NRCS. Users can freely create, modify and remove Buckets.
+
+The primary use-case of these elements is for breaking news formats where quick turnaround video editing may require circumvention of the regular flow of show assets and programming via the NRCS. Currently, one way of creating AdLibs inside Buckets is using a MOS Plugin integration inside the Shelf, where MOS [ncsItem](https://mosprotocol.com/wp-content/MOS-Protocol-Documents/MOS-Protocol-2.8.4-Current.htm#ncsItem) elements can be dragged from the MOS Plugin onto a bucket and ingested.
+
+The ingest happens via the `getAdlibItem` method: [https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L215](https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L215)
 
 ## Views
 
@@ -115,6 +124,12 @@ Documentation on the interface to be exposed by the Blueprint:
 Handle things on the _Showstyle level_, like generating [_Baseline_](#baseline), _Segments_, _Parts, Pieces_ and _Timelines_ in a rundown.  
 Documentation on the interface to be exposed by the Blueprint:  
 [https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L117](https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L117)
+
+## `PartInstances` and `PieceInstances`
+
+In order to be able to facilitate ingesting changes from the NRCS while continuing to provide a stable and predictable playback of the Rundowns, Sofie internally uses a concept of ["instantiation"](https://en.wikipedia.org/wiki/Instance_(computer_science)) of key Rundown elements. Before playback of a Part can begin, the Part and it's Pieces are copied into an Instance of a Part: a `PartInstance`. This protects the contents of the _Next_ and _On Air_ part, preventing accidental changes that could surprise the producer/director. This also makes it possible to inspect the "as played" state of the Rundown, independently of the "as planned" state ingested from the NRCS.
+
+The blueprints can optionally allow some changes to the Parts and Pieces to be forwarded onto these `PartInstances`: [https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L190](https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L190)
 
 ## Timeline
 
@@ -154,7 +169,7 @@ _Sofie&nbsp;Core_ generates the timeline using:
 - The [Studio Baseline](#baseline) \(only if no rundown is currently active\)
 - The [Showstyle Baseline](#baseline), of the currently active rundown.
 - The [currently playing Part](#take-point)
-- The [Next:ed Part](#next-point-and-lookahead) and Parts that come after it \(the [Lookahead](#lookahead)\)
+- The [Next'ed Part](#next-point-and-lookahead) and Parts that come after it \(the [Lookahead](#lookahead)\)
 - Any [AdLibs](#adlib-pieces) the user has manually selected to play
 
 The [**Playout Gateway**](../for-developers/libraries.md#gateways) then picks up the new timeline, and pipes it into the [\(TSR\) timeline-state-resolver](https://github.com/nrkno/sofie-timeline-state-resolver) library.
@@ -163,13 +178,13 @@ The TSR then...
 
 - Resolves the timeline, using the [timeline-library](https://github.com/SuperFlyTV/supertimeline)
 - Calculates new target-states for each relevant point in time
-- Maps the target-state to each playout device.
+- Maps the target-state to each playout device
 - Compares the target-states for each device with the currently-tracked-state and..
-- ..generates commands to send to each device to account for the change.
-- The commands are then put on queue and sent to the devices at the correct time.
+- Generates commands to send to each device to account for the change
+- The commands are then put on queue and sent to the devices at the correct time
 
 :::info
-For more information about what playout devices the _TSR_ supports, and examples of the timeline-objects, see the [README of TSR](https://github.com/nrkno/sofie-timeline-state-resolver#timeline-state-resolver)
+For more information about what playout devices _TSR_ supports, and examples of the timeline-objects, see the [README of TSR](https://github.com/nrkno/sofie-timeline-state-resolver#timeline-state-resolver)
 :::
 
 :::info
