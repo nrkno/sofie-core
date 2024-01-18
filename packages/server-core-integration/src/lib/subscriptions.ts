@@ -46,11 +46,17 @@ export class SubscriptionsHelper<PubSubTypes> {
 				const subscriptionId = this.#ddp.ddpClient.subscribe(
 					publicationName, // name of Meteor Publish function to subscribe to
 					params.concat([this.#deviceToken]), // parameters used by the Publish function
-					() => {
-						// TODO - I think this callback has an error parameter?
-
-						// callback when the subscription is complete
-						resolve(protectString(subscriptionId))
+					(error) => {
+						if (error) {
+							reject(
+								new Error(
+									`Error from publication: ${error.errorType} [${error.error}] ${error.reason} ${error.message}`
+								)
+							)
+						} else {
+							// callback when the subscription is complete
+							resolve(protectString(subscriptionId))
+						}
 					},
 					unprotectString(existingSubscriptionId)
 				)
