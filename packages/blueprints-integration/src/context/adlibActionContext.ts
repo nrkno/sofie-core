@@ -1,10 +1,8 @@
 import type { DatastorePersistenceMode, Time } from '../common'
 import type { IEventContext } from '.'
 import type { IShowStyleUserContext } from './showStyleContext'
-import type { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
-import type { TSR } from '../timeline'
-import type { IBlueprintPlayoutDevice } from '..'
 import { IPartAndPieceActionContext } from './partsAndPieceActionContext'
+import { IExecuteTSRActionsContext } from './executeTsrActionContext'
 
 /** Actions */
 export interface IDataStoreActionExecutionContext extends IShowStyleUserContext, IEventContext {
@@ -23,7 +21,8 @@ export interface IActionExecutionContext
 	extends IShowStyleUserContext,
 		IEventContext,
 		IDataStoreActionExecutionContext,
-		IPartAndPieceActionContext {
+		IPartAndPieceActionContext,
+		IExecuteTSRActionsContext {
 	/** Fetch the showstyle config for the specified part */
 	// getNextShowStyleConfig(): Readonly<{ [key: string]: ConfigItemValue }>
 
@@ -38,12 +37,4 @@ export interface IActionExecutionContext
 	// updateAction(newManifest: Pick<IBlueprintAdLibActionManifest, 'description' | 'payload'>): void // only updates itself. to allow for the next one to do something different
 	// executePeripheralDeviceAction(deviceId: string, functionName: string, args: any[]): Promise<any>
 	// openUIDialogue(message: string) // ?????
-	/** Returns a list of the PeripheralDevices */
-	listPlayoutDevices(): Promise<IBlueprintPlayoutDevice[]>
-	/** Execute an action on a certain PeripheralDevice */
-	executeTSRAction(
-		deviceId: PeripheralDeviceId,
-		actionId: string,
-		payload: Record<string, any>
-	): Promise<TSR.ActionExecutionResult>
 }
