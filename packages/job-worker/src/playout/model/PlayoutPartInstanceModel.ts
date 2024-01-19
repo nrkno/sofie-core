@@ -41,7 +41,7 @@ export interface PlayoutPartInstanceModel {
 	snapshotRestore(snapshot: PlayoutPartInstanceModelSnapshot): void
 
 	/**
-	 * Add some user notes for this PartInstance
+	 * Add some user facing notes for this PartInstance
 	 * Future: it is only possible to add these, there is no way to 'replace' or remove them
 	 * @param notes New notes to add
 	 */

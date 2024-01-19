@@ -1,6 +1,7 @@
 import { PlaylistTimingType } from '@sofie-automation/blueprints-integration/dist/documents/playlistTiming'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+// eslint-disable-next-line node/no-extraneous-import
 import { mock, MockProxy } from 'jest-mock-extended'
 import { Logger } from 'winston'
 import { WebSocket } from 'ws'

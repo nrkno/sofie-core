@@ -37,6 +37,7 @@ export class SubscriptionsHelper<PubSubTypes> {
 		publicationName: string,
 		...params: any[]
 	): Promise<SubscriptionId> {
+		const orgError = new Error()
 		return new Promise((resolve, reject) => {
 			if (!this.#ddp.ddpClient) {
 				reject('subscribe: DDP client is not initialized')
@@ -46,11 +47,18 @@ export class SubscriptionsHelper<PubSubTypes> {
 				const subscriptionId = this.#ddp.ddpClient.subscribe(
 					publicationName, // name of Meteor Publish function to subscribe to
 					params.concat([this.#deviceToken]), // parameters used by the Publish function
-					() => {
-						// TODO - I think this callback has an error parameter?
+					(error) => {
+						if (error) {
+							const newError = new Error(
+								`Error from publication: ${error.errorType} [${error.error}] ${error.reason} ${error.message}`
+							)
+							newError.stack = `${newError.stack}\nOriginal stack:\n${orgError.stack}`
 
-						// callback when the subscription is complete
-						resolve(protectString(subscriptionId))
+							reject(newError)
+						} else {
+							// callback when the subscription is complete
+							resolve(protectString(subscriptionId))
+						}
 					},
 					unprotectString(existingSubscriptionId)
 				)

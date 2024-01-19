@@ -395,7 +395,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		part: Omit<DBPart, 'segmentId' | 'rundownId'>
 	): PlayoutPartInstanceModel {
 		const currentPartInstance = this.currentPartInstance
-		if (!currentPartInstance) throw new Error('No currentPartInstance')
+		if (currentPartInstance) throw new Error('Scratchpad can only be used before the first take')
 
 		const scratchpadSegment = rundown.getScratchpadSegment()
 		if (!scratchpadSegment) throw new Error('No scratchpad segment')

@@ -7,8 +7,8 @@ import { normalizeArrayToMap, min, groupByToMap, clone } from '@sofie-automation
 import { AnyBulkWriteOperation } from 'mongodb'
 import { ReadonlyDeep } from 'type-fest'
 import _ = require('underscore')
-import { CacheForIngest } from './ingest/cache'
-import { BeforePartMap } from './ingest/commit'
+import { IngestModelReadonly } from './ingest/model/IngestModel'
+import { BeforeIngestOperationPartMap } from './ingest/commit'
 import { JobContext } from './jobs'
 import { logger } from './logging'
 import { PlayoutModel } from './playout/model/PlayoutModel'
@@ -38,9 +38,9 @@ export function allowedToMoveRundownOutOfPlaylist(
  */
 export async function updatePartInstanceRanks(
 	context: JobContext,
-	cache: CacheForIngest,
+	ingestModel: IngestModelReadonly,
 	changedSegmentIds: ReadonlyDeep<SegmentId[]>,
-	beforePartMap: BeforePartMap
+	oldPartMap: BeforeIngestOperationPartMap
 ): Promise<void> {
 	const groupedPartInstances = groupByToMap(
 		await context.directCollections.PartInstances.findFetch({
@@ -49,17 +49,13 @@ export async function updatePartInstanceRanks(
 		}),
 		'segmentId'
 	)
-	const groupedNewParts = groupByToMap(
-		cache.Parts.findAll((p) => changedSegmentIds.includes(p.segmentId)),
-		'segmentId'
-	)
 
 	const writeOps: AnyBulkWriteOperation<DBPartInstance>[] = []
 
 	for (const segmentId of changedSegmentIds) {
-		const oldPartIdsAndRanks = beforePartMap.get(segmentId) ?? []
+		const oldPartIdsAndRanks = oldPartMap.get(segmentId) ?? []
 
-		const newParts = groupedNewParts.get(segmentId) ?? []
+		const newParts = (ingestModel.getSegment(segmentId)?.parts ?? []).map((part) => part.part)
 		const segmentPartInstances = _.sortBy(groupedPartInstances.get(segmentId) ?? [], (p) => p.part._rank)
 
 		const newRanks = calculateNewRanksForParts(segmentId, oldPartIdsAndRanks, newParts, segmentPartInstances)
@@ -157,15 +153,17 @@ function calculateNewRanksForParts(
 	for (const partInstance of segmentPartInstances) {
 		const part = newPartsMap.get(partInstance.part._id)
 		if (part) {
-			// We have a part and instance, so make sure the part isn't orphaned and sync the rank
-			changedRanks.set(partInstance._id, {
-				rank: part._rank,
-				deleted: false,
-			})
+			if (part._rank !== partInstance.part._rank || partInstance.orphaned) {
+				// We have a part and instance, so make sure the part isn't orphaned and sync the rank
+				changedRanks.set(partInstance._id, {
+					rank: part._rank,
+					deleted: false,
+				})
 
-			// Update local copy
-			delete partInstance.orphaned
-			partInstance.part._rank = part._rank
+				// Update local copy
+				delete partInstance.orphaned
+				partInstance.part._rank = part._rank
+			}
 		} else if (!partInstance.orphaned) {
 			partInstance.orphaned = 'deleted'
 			changedRanks.set(partInstance._id, {

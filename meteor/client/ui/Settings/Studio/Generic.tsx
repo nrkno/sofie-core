@@ -214,16 +214,6 @@ export const StudioGenericProperties = withTranslation()(
 						/>
 					</label>
 					<label className="field">
-						<LabelActual label={t('Preserve contents of playing segment when unsynced')} />
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute="settings.preserveUnsyncedPlayingSegmentContents"
-							obj={this.props.studio}
-							type="checkbox"
-							collection={Studios}
-						/>
-					</label>
-					<label className="field">
 						<LabelActual label={t('Allow Rundowns to be reset while on-air')} />
 						<EditAttribute
 							modifiedClassName="bghl"

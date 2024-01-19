@@ -1,5 +1,4 @@
 import { SegmentDisplayMode, SegmentTimingInfo } from '@sofie-automation/blueprints-integration'
-import { MongoFieldSpecifierOnes } from '../mongo'
 import { SegmentId, RundownId } from './Ids'
 import { SegmentNote } from './Notes'
 
@@ -11,9 +10,6 @@ export enum SegmentOrphanedReason {
 	/** Segment is owned by playout, and is the scratchpad for its rundown */
 	SCRATCHPAD = 'scratchpad',
 }
-
-// TV 2 uses this for the not-yet-contributed MiniShelf
-export const orphanedHiddenSegmentPropertiesToPreserve: MongoFieldSpecifierOnes<DBSegment> = {}
 
 /** A "Title" in NRK Lingo / "Stories" in ENPS Lingo. */
 export interface DBSegment {
