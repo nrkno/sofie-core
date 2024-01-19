@@ -525,8 +525,8 @@ describe('Test blueprint api context', () => {
 					expect(sourceLayerIds).toHaveLength(4)
 
 					// No playback has begun, so nothing should happen
-					await expect(service.findLastPieceOnLayer(sourceLayerIds[0])).resolves.toBeUndefined()
-					await expect(service.findLastPieceOnLayer(sourceLayerIds[1])).resolves.toBeUndefined()
+					await expect(service.findLastPieceOnLayer(sourceLayerIds[0], undefined)).resolves.toBeUndefined()
+					await expect(service.findLastPieceOnLayer(sourceLayerIds[1], undefined)).resolves.toBeUndefined()
 
 					// Insert a piece that is played
 					const insertedPieceInstance = allPartInstances[0].insertAdlibbedPiece(
@@ -549,7 +549,7 @@ describe('Test blueprint api context', () => {
 					// We need to push changes back to 'mongo' for these tests
 					await saveAllToDatabase(jobContext, playoutModel, allPartInstances)
 
-					await expect(service.findLastPieceOnLayer(sourceLayerIds[0])).resolves.toMatchObject({
+					await expect(service.findLastPieceOnLayer(sourceLayerIds[0], undefined)).resolves.toMatchObject({
 						_id: insertedPieceInstance.pieceInstance._id,
 					})
 					await expect(
@@ -578,7 +578,7 @@ describe('Test blueprint api context', () => {
 					// We need to push changes back to 'mongo' for these tests
 					await saveAllToDatabase(jobContext, playoutModel, allPartInstances)
 
-					await expect(service.findLastPieceOnLayer(sourceLayerIds[0])).resolves.toMatchObject({
+					await expect(service.findLastPieceOnLayer(sourceLayerIds[0], undefined)).resolves.toMatchObject({
 						_id: insertedPieceInstance2.pieceInstance._id,
 					})
 					await expect(
@@ -606,8 +606,8 @@ describe('Test blueprint api context', () => {
 					expect(sourceLayerIds).toHaveLength(4)
 
 					// No playback has begun, so nothing should happen
-					await expect(service.findLastPieceOnLayer(sourceLayerIds[0])).resolves.toBeUndefined()
-					await expect(service.findLastPieceOnLayer(sourceLayerIds[1])).resolves.toBeUndefined()
+					await expect(service.findLastPieceOnLayer(sourceLayerIds[0], undefined)).resolves.toBeUndefined()
+					await expect(service.findLastPieceOnLayer(sourceLayerIds[1], undefined)).resolves.toBeUndefined()
 
 					// Insert a couple of pieces that are played
 					const insertedPieceInstance = allPartInstances[0].insertAdlibbedPiece(
@@ -648,7 +648,7 @@ describe('Test blueprint api context', () => {
 					await saveAllToDatabase(jobContext, playoutModel, allPartInstances)
 
 					// Check it
-					await expect(service.findLastPieceOnLayer(sourceLayerIds[0])).resolves.toMatchObject({
+					await expect(service.findLastPieceOnLayer(sourceLayerIds[0], undefined)).resolves.toMatchObject({
 						_id: insertedPieceInstance2.pieceInstance._id,
 					})
 					await expect(
@@ -678,8 +678,8 @@ describe('Test blueprint api context', () => {
 					expect(sourceLayerIds).toHaveLength(4)
 
 					// No playback has begun, so nothing should happen
-					await expect(service.findLastPieceOnLayer(sourceLayerIds[0])).resolves.toBeUndefined()
-					await expect(service.findLastPieceOnLayer(sourceLayerIds[1])).resolves.toBeUndefined()
+					await expect(service.findLastPieceOnLayer(sourceLayerIds[0], undefined)).resolves.toBeUndefined()
+					await expect(service.findLastPieceOnLayer(sourceLayerIds[1], undefined)).resolves.toBeUndefined()
 
 					// Insert a couple of pieces that are played
 					const insertedPieceInstance = allPartInstances[0].insertAdlibbedPiece(
@@ -724,7 +724,7 @@ describe('Test blueprint api context', () => {
 					await saveAllToDatabase(jobContext, playoutModel, allPartInstances)
 
 					// Check it
-					await expect(service.findLastPieceOnLayer(sourceLayerIds[0])).resolves.toMatchObject({
+					await expect(service.findLastPieceOnLayer(sourceLayerIds[0], undefined)).resolves.toMatchObject({
 						_id: insertedPieceInstance2.pieceInstance._id,
 					})
 					await expect(
@@ -758,8 +758,12 @@ describe('Test blueprint api context', () => {
 					expect(sourceLayerIds).toHaveLength(4)
 
 					// No playback has begun, so nothing should happen
-					await expect(service.findLastScriptedPieceOnLayer(sourceLayerIds[0])).resolves.toBeUndefined()
-					await expect(service.findLastScriptedPieceOnLayer(sourceLayerIds[1])).resolves.toBeUndefined()
+					await expect(
+						service.findLastScriptedPieceOnLayer(sourceLayerIds[0], undefined)
+					).resolves.toBeUndefined()
+					await expect(
+						service.findLastScriptedPieceOnLayer(sourceLayerIds[1], undefined)
+					).resolves.toBeUndefined()
 				})
 			})
 
@@ -799,7 +803,9 @@ describe('Test blueprint api context', () => {
 					const expectedPieceSourceLayer0 = await jobContext.mockCollections.Pieces.findOne({
 						_id: expectedPieceInstanceSourceLayer0?.piece._id,
 					})
-					await expect(service.findLastScriptedPieceOnLayer(sourceLayerIds[0])).resolves.toMatchObject({
+					await expect(
+						service.findLastScriptedPieceOnLayer(sourceLayerIds[0], undefined)
+					).resolves.toMatchObject({
 						_id: expectedPieceSourceLayer0?._id,
 					})
 
@@ -813,7 +819,9 @@ describe('Test blueprint api context', () => {
 					const expectedPieceSourceLayer1 = await jobContext.mockCollections.Pieces.findOne({
 						_id: expectedPieceInstanceSourceLayer1?.piece._id,
 					})
-					await expect(service.findLastScriptedPieceOnLayer(sourceLayerIds[1])).resolves.toMatchObject({
+					await expect(
+						service.findLastScriptedPieceOnLayer(sourceLayerIds[1], undefined)
+					).resolves.toMatchObject({
 						_id: expectedPieceSourceLayer1?._id,
 					})
 				})
@@ -882,7 +890,9 @@ describe('Test blueprint api context', () => {
 					const expectedPieceSourceLayer0 = await jobContext.mockCollections.Pieces.findOne({
 						_id: expectedPieceInstanceSourceLayer0?.piece._id,
 					})
-					await expect(service.findLastScriptedPieceOnLayer(sourceLayerIds[0])).resolves.toMatchObject({
+					await expect(
+						service.findLastScriptedPieceOnLayer(sourceLayerIds[0], undefined)
+					).resolves.toMatchObject({
 						_id: expectedPieceSourceLayer0?._id,
 					})
 
@@ -895,7 +905,9 @@ describe('Test blueprint api context', () => {
 					const expectedPieceSourceLayer1 = await jobContext.mockCollections.Pieces.findOne({
 						_id: expectedPieceInstanceSourceLayer1?.piece._id,
 					})
-					await expect(service.findLastScriptedPieceOnLayer(sourceLayerIds[1])).resolves.toMatchObject({
+					await expect(
+						service.findLastScriptedPieceOnLayer(sourceLayerIds[1], undefined)
+					).resolves.toMatchObject({
 						_id: expectedPieceSourceLayer1?._id,
 					})
 				})

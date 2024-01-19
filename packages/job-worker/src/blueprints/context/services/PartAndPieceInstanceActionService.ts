@@ -127,11 +127,13 @@ export class PartAndPieceInstanceActionService {
 
 	async findLastPieceOnLayer(
 		sourceLayerId0: string | string[],
-		options?: {
-			excludeCurrentPart?: boolean
-			originalOnly?: boolean
-			piecePrivateDataFilter?: any
-		}
+		options:
+			| {
+					excludeCurrentPart?: boolean
+					originalOnly?: boolean
+					piecePrivateDataFilter?: any
+			  }
+			| undefined
 	): Promise<IBlueprintPieceInstance | undefined> {
 		const query: MongoQuery<PieceInstance> = {}
 		if (options?.piecePrivateDataFilter) {
@@ -161,10 +163,12 @@ export class PartAndPieceInstanceActionService {
 
 	async findLastScriptedPieceOnLayer(
 		sourceLayerId0: string | string[],
-		options?: {
-			excludeCurrentPart?: boolean
-			piecePrivateDataFilter?: any
-		}
+		options:
+			| {
+					excludeCurrentPart?: boolean
+					piecePrivateDataFilter?: any
+			  }
+			| undefined
 	): Promise<IBlueprintPieceDB | undefined> {
 		const query: MongoQuery<Piece> = {}
 		if (options?.piecePrivateDataFilter) {
@@ -414,7 +418,7 @@ export class PartAndPieceInstanceActionService {
 		return convertPartInstanceToBlueprints(newPartInstance.partInstance)
 	}
 
-	async stopPiecesOnLayers(sourceLayerIds: string[], timeOffset?: number | undefined): Promise<string[]> {
+	async stopPiecesOnLayers(sourceLayerIds: string[], timeOffset: number | undefined): Promise<string[]> {
 		if (sourceLayerIds.length == 0) {
 			return []
 		}
@@ -425,7 +429,7 @@ export class PartAndPieceInstanceActionService {
 		)
 	}
 
-	async stopPieceInstances(pieceInstanceIds: string[], timeOffset?: number | undefined): Promise<string[]> {
+	async stopPieceInstances(pieceInstanceIds: string[], timeOffset: number | undefined): Promise<string[]> {
 		if (pieceInstanceIds.length == 0) {
 			return []
 		}
