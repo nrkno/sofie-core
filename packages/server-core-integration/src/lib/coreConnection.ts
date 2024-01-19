@@ -353,6 +353,7 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 		return c
 	}
 	async subscribe(publicationName: string, ...params: Array<any>): Promise<string> {
+		const orgError = new Error()
 		return new Promise((resolve, reject) => {
 			if (!this.ddp.ddpClient) {
 				reject('subscribe: DDP client is not initialized')
@@ -364,11 +365,16 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 					params.concat([this._coreOptions.deviceToken]), // parameters used by the Publish function
 					(error) => {
 						if (error) {
-							reject(
-								new Error(
-									`Error from publication: ${error.errorType} [${error.error}] ${error.reason} ${error.message}`
-								)
+							// In Release49, in order to not cause unintended issues, we'll emit just the error instead of throwing it:
+							// In Release50+, the error will be thrown.
+							const newError = new Error(
+								`Error from publication: ${error.errorType} [${error.error}] ${error.reason} ${error.message}`
 							)
+							newError.stack = `${newError.stack}\nOriginal stack:\n${orgError.stack}`
+
+							// reject(newError)
+							this._emitError(newError)
+							resolve(subscriptionId)
 						} else {
 							// callback when the subscription is complete
 							resolve(subscriptionId)
