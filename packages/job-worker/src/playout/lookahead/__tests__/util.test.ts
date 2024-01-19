@@ -11,6 +11,7 @@ import { defaultRundownPlaylist } from '../../../__mocks__/defaultCollectionObje
 import _ = require('underscore')
 import { wrapPartToTemporaryInstance } from '../../../__mocks__/partinstance'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { ForceQuickLoopAutoNext, QuickLoopMarkerType } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
 describe('getOrderedPartsAfterPlayhead', () => {
 	let context!: MockJobContext
@@ -235,7 +236,17 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		expect(parts.map((p) => p._id)).toEqual([])
 
 		// Playlist could loop
-		await context.mockCollections.RundownPlaylists.update(playlistId, { $set: { loop: true } })
+		await context.mockCollections.RundownPlaylists.update(playlistId, {
+			$set: {
+				quickLoop: {
+					start: { type: QuickLoopMarkerType.PLAYLIST },
+					end: { type: QuickLoopMarkerType.PLAYLIST },
+					running: true,
+					forceAutoNext: ForceQuickLoopAutoNext.DISABLED,
+					locked: false,
+				},
+			},
+		})
 		const parts2 = await runJobWithPlayoutModel(context, { playlistId }, null, async (playoutModel) =>
 			getOrderedPartsAfterPlayhead(context, playoutModel, 5)
 		)

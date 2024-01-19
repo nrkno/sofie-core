@@ -42,8 +42,8 @@ export function selectNextPart(
 	currentlySelectedPartInstance: ReadonlyDeep<DBPartInstance> | null,
 	segments: readonly PlayoutSegmentModel[],
 	parts0: ReadonlyDeep<DBPart>[],
-	ignoreUnplayabale = true,
-	ignoreQuickLoop = true
+	ignoreUnplayable: boolean,
+	ignoreQuickLoop: boolean // TODO: this should be refactored
 ): SelectNextPartResult | null {
 	const span = context.startSpan('selectNextPart')
 
@@ -67,7 +67,7 @@ export function selectNextPart(
 		for (let index = offset; index < (length || parts.length); index++) {
 			const part = parts[index]
 			if (
-				(!ignoreUnplayabale || isPartPlayable(part)) &&
+				(!ignoreUnplayable || isPartPlayable(part)) &&
 				(ignoreQuickLoop ||
 					!rundownPlaylist.quickLoop?.running ||
 					context.studio.settings.forceQuickLoopAutoNext !==
@@ -189,7 +189,6 @@ export function selectNextPart(
 		}
 	}
 
-	// TODO: check how this used to behave when you queue dynamic parts after the last one in a looping playlist
 	if (
 		!ignoreQuickLoop &&
 		rundownPlaylist.quickLoop?.end?.type === QuickLoopMarkerType.PLAYLIST &&

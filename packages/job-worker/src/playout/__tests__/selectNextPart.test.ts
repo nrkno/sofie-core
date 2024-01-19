@@ -8,6 +8,7 @@ import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/cont
 import { PlayoutSegmentModelImpl } from '../model/implementation/PlayoutSegmentModelImpl'
 import { PlayoutSegmentModel } from '../model/PlayoutSegmentModel'
 import { selectNextPart } from '../selectNextPart'
+import { ForceQuickLoopAutoNext, QuickLoopMarkerType } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
 class MockPart {
 	constructor(
@@ -48,7 +49,7 @@ describe('selectNextPart', () => {
 
 		defaultPlaylist = {
 			queuedSegmentId: undefined,
-			loop: false,
+			quickLoop: undefined,
 		}
 
 		defaultParts = [
@@ -68,7 +69,8 @@ describe('selectNextPart', () => {
 	function selectNextPart2(
 		previousPartInstance: ReadonlyDeep<DBPartInstance> | null,
 		currentlySelectedPartInstance: ReadonlyDeep<DBPartInstance> | null,
-		ignoreUnplayabale = true
+		ignoreUnplayable = true,
+		ignoreQuickLoop = false
 	) {
 		const parts = [...(defaultParts as unknown as DBPart[])]
 		const segments: readonly PlayoutSegmentModel[] = defaultSegments.map(
@@ -86,7 +88,8 @@ describe('selectNextPart', () => {
 			currentlySelectedPartInstance,
 			segments,
 			parts,
-			ignoreUnplayabale
+			ignoreUnplayable,
+			ignoreQuickLoop
 		)
 	}
 
@@ -206,7 +209,13 @@ describe('selectNextPart', () => {
 
 		{
 			// no parts after, but looping
-			defaultPlaylist.loop = true
+			defaultPlaylist.quickLoop = {
+				start: { type: QuickLoopMarkerType.PLAYLIST },
+				end: { type: QuickLoopMarkerType.PLAYLIST },
+				running: true,
+				forceAutoNext: ForceQuickLoopAutoNext.DISABLED,
+				locked: false,
+			}
 			defaultParts = defaultParts.filter((p) => p.segmentId !== segment3)
 			const nextPart = selectNextPart2(previousPartInstance, null)
 			expect(nextPart).toEqual({ index: 0, part: defaultParts[0], consumesQueuedSegmentId: false })
