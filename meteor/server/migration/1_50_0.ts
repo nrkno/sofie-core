@@ -347,11 +347,34 @@ export const addSteps = addMigrationSteps('1.50.0', [
 	},
 
 	{
+		// This is excessively verbose, but sometimes the db gets into a bad state with these objects being only partially defined
 		id: `Studio ensure peripheralDeviceSettings field`,
 		canBeRunAutomatically: true,
 		validate: async () => {
 			const objectCount = await Studios.countDocuments({
-				peripheralDeviceSettings: { $exists: false },
+				$or: [
+					{
+						peripheralDeviceSettings: { $exists: false },
+					},
+					{
+						'peripheralDeviceSettings.playoutDevices.defaults': { $exists: false },
+					},
+					{
+						'peripheralDeviceSettings.playoutDevices.overrides': { $exists: false },
+					},
+					{
+						'peripheralDeviceSettings.ingestDevices.defaults': { $exists: false },
+					},
+					{
+						'peripheralDeviceSettings.ingestDevices.overrides': { $exists: false },
+					},
+					{
+						'peripheralDeviceSettings.inputDevices.defaults': { $exists: false },
+					},
+					{
+						'peripheralDeviceSettings.inputDevices.overrides': { $exists: false },
+					},
+				],
 			})
 
 			if (objectCount) {
@@ -361,18 +384,68 @@ export const addSteps = addMigrationSteps('1.50.0', [
 		},
 		migrate: async () => {
 			const objects = await Studios.findFetchAsync({
-				peripheralDeviceSettings: { $exists: false },
+				$or: [
+					{
+						peripheralDeviceSettings: { $exists: false },
+					},
+					{
+						'peripheralDeviceSettings.playoutDevices.defaults': { $exists: false },
+					},
+					{
+						'peripheralDeviceSettings.playoutDevices.overrides': { $exists: false },
+					},
+					{
+						'peripheralDeviceSettings.ingestDevices.defaults': { $exists: false },
+					},
+					{
+						'peripheralDeviceSettings.ingestDevices.overrides': { $exists: false },
+					},
+					{
+						'peripheralDeviceSettings.inputDevices.defaults': { $exists: false },
+					},
+					{
+						'peripheralDeviceSettings.inputDevices.overrides': { $exists: false },
+					},
+				],
 			})
 			for (const studio of objects) {
-				await Studios.updateAsync(studio._id, {
-					$set: {
-						peripheralDeviceSettings: {
-							playoutDevices: wrapDefaultObject({}),
-							ingestDevices: wrapDefaultObject({}),
-							inputDevices: wrapDefaultObject({}),
+				if (!studio.peripheralDeviceSettings) {
+					await Studios.updateAsync(studio._id, {
+						$set: {
+							peripheralDeviceSettings: {
+								playoutDevices: wrapDefaultObject({}),
+								ingestDevices: wrapDefaultObject({}),
+								inputDevices: wrapDefaultObject({}),
+							},
 						},
-					},
-				})
+					})
+				} else {
+					const update: any = {}
+					if (!studio.peripheralDeviceSettings.playoutDevices.defaults) {
+						update['peripheralDeviceSettings.playoutDevices.defaults'] = {}
+					}
+					if (!studio.peripheralDeviceSettings.playoutDevices.overrides) {
+						update['peripheralDeviceSettings.playoutDevices.overrides'] = []
+					}
+					if (!studio.peripheralDeviceSettings.ingestDevices.defaults) {
+						update['peripheralDeviceSettings.ingestDevices.defaults'] = {}
+					}
+					if (!studio.peripheralDeviceSettings.ingestDevices.overrides) {
+						update['peripheralDeviceSettings.ingestDevices.overrides'] = []
+					}
+					if (!studio.peripheralDeviceSettings.inputDevices.defaults) {
+						update['peripheralDeviceSettings.inputDevices.defaults'] = {}
+					}
+					if (!studio.peripheralDeviceSettings.inputDevices.overrides) {
+						update['peripheralDeviceSettings.inputDevices.overrides'] = []
+					}
+
+					if (Object.keys(update).length) {
+						await Studios.updateAsync(studio._id, {
+							$set: update,
+						})
+					}
+				}
 			}
 		},
 	},
@@ -749,75 +822,6 @@ export const addSteps = addMigrationSteps('1.50.0', [
 					},
 				}
 			)
-		},
-	},
-
-	{
-		// This migration may not be necessary, but ensures the db isn't in a bad state
-		id: `Studio ensure peripheralDeviceSettings field looks correct`,
-		dependOnResultFrom: `Studio ensure peripheralDeviceSettings field`,
-		canBeRunAutomatically: true,
-		validate: async () => {
-			const objectCount = await Studios.countDocuments({
-				peripheralDeviceSettings: { $exists: true },
-				$or: [
-					{
-						'peripheralDeviceSettings.playoutDevices.defaults': { $exists: false },
-					},
-					{
-						'peripheralDeviceSettings.playoutDevices.overrides': { $exists: false },
-					},
-					{
-						'peripheralDeviceSettings.ingestDevices.defaults': { $exists: false },
-					},
-					{
-						'peripheralDeviceSettings.ingestDevices.overrides': { $exists: false },
-					},
-					{
-						'peripheralDeviceSettings.inputDevices.defaults': { $exists: false },
-					},
-					{
-						'peripheralDeviceSettings.inputDevices.overrides': { $exists: false },
-					},
-				],
-			})
-
-			if (objectCount) {
-				return `object needs to be updated`
-			}
-			return false
-		},
-		migrate: async () => {
-			const objects = await Studios.findFetchAsync({
-				peripheralDeviceSettings: { $exists: true },
-			})
-			for (const studio of objects) {
-				const update: any = {}
-				if (!studio.peripheralDeviceSettings.playoutDevices.defaults) {
-					update['peripheralDeviceSettings.playoutDevices.defaults'] = {}
-				}
-				if (!studio.peripheralDeviceSettings.playoutDevices.overrides) {
-					update['peripheralDeviceSettings.playoutDevices.overrides'] = []
-				}
-				if (!studio.peripheralDeviceSettings.ingestDevices.defaults) {
-					update['peripheralDeviceSettings.ingestDevices.defaults'] = {}
-				}
-				if (!studio.peripheralDeviceSettings.ingestDevices.overrides) {
-					update['peripheralDeviceSettings.ingestDevices.overrides'] = []
-				}
-				if (!studio.peripheralDeviceSettings.inputDevices.defaults) {
-					update['peripheralDeviceSettings.inputDevices.defaults'] = {}
-				}
-				if (!studio.peripheralDeviceSettings.inputDevices.overrides) {
-					update['peripheralDeviceSettings.inputDevices.overrides'] = []
-				}
-
-				if (Object.keys(update).length) {
-					await Studios.updateAsync(studio._id, {
-						$set: update,
-					})
-				}
-			}
 		},
 	},
 ])
