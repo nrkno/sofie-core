@@ -19,6 +19,7 @@ import {
 	ISourceLayerExtended,
 	PartInstanceLimited,
 	getSegmentsWithPartInstances,
+	isLoopRunning,
 } from '../../lib/Rundown'
 import { PartInstance } from '../../lib/collections/PartInstances'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
@@ -45,7 +46,6 @@ import { PartId, PieceId, RundownId, SegmentId, ShowStyleBaseId } from '@sofie-a
 import { PieceInstances, Segments } from '../collections'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { assertNever } from '@sofie-automation/shared-lib/dist/lib/lib'
-import { getPartInstanceTimingId } from './rundownTiming'
 
 export namespace RundownUtils {
 	export function padZeros(input: number, places?: number): string {
@@ -395,9 +395,11 @@ export namespace RundownUtils {
 			let startsAt = 0
 			let previousPart: PartExtended | undefined
 
-			const dedupedPartInstances = playlist.quickLoop?.running
-				? RundownUtils.deduplicatePartInstancesForQuickLoop(segmentInfo.partInstances, currentPartInstance)
-				: segmentInfo.partInstances
+			const dedupedPartInstances = RundownUtils.deduplicatePartInstancesForQuickLoop(
+				playlist,
+				segmentInfo.partInstances,
+				currentPartInstance
+			)
 
 			// fetch all the pieces for the parts
 			const partIds = dedupedPartInstances.map((part) => part.part._id)
@@ -445,7 +447,6 @@ export namespace RundownUtils {
 						previousPart.instance.part.autoNext &&
 						previousPart.instance.part.expectedDuration
 					),
-					previousPartId: previousPart?.instance ? getPartInstanceTimingId(previousPart?.instance) : null, // TODO: this should be no longer needed
 				})
 
 				// set the flags for isLiveSegment, isNextSegment, autoNextPart, hasAlreadyPlayed
@@ -789,9 +790,11 @@ export namespace RundownUtils {
 	}
 
 	export function deduplicatePartInstancesForQuickLoop<T extends Pick<PartInstance, '_id' | 'part'>>(
+		playlist: DBRundownPlaylist,
 		sortedPartInstances: T[],
 		currentPartInstance: T | undefined
 	): T[] {
+		if (!isLoopRunning(playlist)) return sortedPartInstances
 		return sortedPartInstances.filter((partInstance) => {
 			return (
 				partInstance.part._id !== currentPartInstance?.part._id || partInstance._id === currentPartInstance._id

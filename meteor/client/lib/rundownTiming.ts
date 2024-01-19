@@ -725,7 +725,7 @@ export interface RundownTimingContext {
 	partCountdown?: Record<string, number | null>
 	/** The calculated durations of each of the Parts: as-planned/as-run depending on state. */
 	partDurations?: Record<string, number>
-	/** TODO */
+	/** Whether a Part (or Part Instance) is within the QuickLoop */
 	partsInQuickLoop?: Record<string, boolean>
 	/** The offset of each of the Parts from the beginning of the Playlist. */
 	partStartsAt?: Record<string, number>

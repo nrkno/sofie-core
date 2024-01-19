@@ -23,6 +23,15 @@ const mockPartInstancesCollection = MongoMock.getInnerMockCollection(PartInstanc
 const mockPieceInstancesCollection = MongoMock.getInnerMockCollection(PieceInstances)
 const mockPiecesCollection = MongoMock.getInnerMockCollection(Pieces)
 
+// This is a hack, the tests should be rewriten to not use methods unrelated to the testee
+jest.mock('../../../lib/collections/libCollections', () => {
+	const mockCollections = jest.requireActual('../../../lib/collections/libCollections')
+	return {
+		...mockCollections,
+		UIParts: mockCollections.Parts, // for most purposes they're equivalent
+	}
+})
+
 describe('client/lib/rundown', () => {
 	let env: DefaultEnvironment
 	let playlistId: RundownPlaylistId

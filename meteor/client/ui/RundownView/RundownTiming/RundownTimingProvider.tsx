@@ -174,7 +174,7 @@ export const RundownTimingProvider = withTracker<
 
 	partInstances = sortPartInstancesInSortedSegments(partInstances, segments)
 
-	partInstances = RundownUtils.deduplicatePartInstancesForQuickLoop(partInstances, currentPartInstance)
+	partInstances = RundownUtils.deduplicatePartInstancesForQuickLoop(playlist, partInstances, currentPartInstance)
 
 	const partsInQuickLoop = findPartInstancesInQuickLoop(playlist, partInstances)
 

@@ -28,7 +28,6 @@ import { RundownPlaylistCollectionUtil } from './collections/rundownPlaylistUtil
 import { PieceContentStatusObj } from './api/pieceContentStatus'
 import { ReadonlyDeep } from 'type-fest'
 import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
-import { TimingId } from '../client/lib/rundownTiming'
 
 export interface SegmentExtended extends DBSegment {
 	/** Output layers available in the installation used by this segment */
@@ -51,7 +50,6 @@ export interface PartExtended {
 	renderedDuration: number
 	startsAt: number
 	willProbablyAutoNext: boolean
-	previousPartId: TimingId | null
 }
 
 export interface IOutputLayerExtended extends IOutputLayer {
