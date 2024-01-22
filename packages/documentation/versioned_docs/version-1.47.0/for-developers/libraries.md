@@ -9,16 +9,16 @@ sidebar_position: 5
 
 [**Sofie&nbsp;Core**](https://github.com/nrkno/sofie-core) is the main application that serves the web GUI and handles the core logic.
 
-## Gateways and Services
+## Gateways
 
 Together with the _Sofie&nbsp;Core_ there are several _gateways_ which are separate applications, but which connect to _Sofie&nbsp;Core_ and are managed from within the Core's web UI.
 
 * [**Playout Gateway**](https://github.com/nrkno/sofie-core/tree/master/packages/playout-gateway) Handles the playout from _Sofie_. Connects to and controls a multitude of devices, such as vision mixers, graphics, light controllers, audio mixers etc..
 * [**MOS Gateway**](https://github.com/nrkno/sofie-core/tree/master/packages/mos-gateway) Connects _Sofie_ to a newsroom system \(NRCS\) and ingests rundowns via the [MOS protocol](http://mosprotocol.com/).
 * [**iNEWS Gateway**](https://github.com/tv2/inews-ftp-gateway) Connects _Sofie_ to an Avid iNEWS newsroom system.
+* [**Quantel Gateway**](https://github.com/nrkno/sofie-quantel-gateway) CORBA to REST gateway for _Quantel/ISA_ playback. 
 * [**Spreadsheet Gateway**](https://github.com/SuperFlyTV/spreadsheet-gateway) Connects _Sofie_ to a _Google Drive_ folder and ingests rundowns from _Google Sheets_.
-* [**Input Gateway**](https://github.com/nrkno/sofie-input-gateway) Connects _Sofie_ to various input devices, allowing triggering _User-Actions_ using these devices.
-* [**Package Manager**](https://github.com/nrkno/sofie-package-manager) Handles media asset transfer and media file management for pulling new files, deleting expired files on playout devices and generating additional metadata (previews, thumbnails, automated QA checks) in a more performant, and possibly distributed, way. Can smartly figure out how to get a file on storage A to playout server B.
+* [**Input Gateway**](https://github.com/nrkno/sofie-input-gateway) 
 
 
 ## Libraries
@@ -29,7 +29,7 @@ There are a number of libraries used in the Sofie ecosystem:
 * [**ATEM State**](https://github.com/nrkno/sofie-atem-state)  Used in TSR to tracks the state of ATEMs and generate commands to control them.
 * [**CasparCG&nbsp;Server Connection**](https://github.com/SuperFlyTV/casparcg-connection) developed by **[_SuperFly.tv_](https://github.com/SuperFlyTV)** Library to connect and interact with CasparCG&nbsp;Servers.
 * [**CasparCG State**](https://github.com/superflytv/casparcg-state) developed by **[_SuperFly.tv_](https://github.com/SuperFlyTV)** Used in TSR to tracks the state of CasparCG&nbsp;Servers and generate commands to control them.
-* [**Ember+ Connection**](https://github.com/nrkno/sofie-emberplus-connection) Library to communicate with _Ember+_ control protocol
+* [**Ember+ Connection**](https://github.com/nrkno/sofie-emberplus-connection) Library to communicate with _Ember+_ control protocol 
 * [**HyperDeck Connection**](https://github.com/nrkno/sofie-hyperdeck-connection) Library for connecting to Blackmagic Design's HyperDeck recorders.
 * [**MOS Connection**](https://github.com/nrkno/sofie-mos-connection/) A [_MOS protocol_](http://mosprotocol.com/) library for acting as a MOS device and connecting to an newsroom control system.
 * [**Quantel Gateway Client**](https://github.com/nrkno/sofie-quantel-gateway-client) An interface that talks to the Quantel-Gateway application.
@@ -51,11 +51,10 @@ There are also a few typings-only libraries that define interfaces between appli
 * [**CasparCG&nbsp;Server** \(NRK fork\)](https://github.com/nrkno/sofie-casparcg-server) Sofie-specific fork of CasparCG&nbsp;Server.
 * [**CasparCG Launcher**](https://github.com/nrkno/sofie-casparcg-launcher) Launcher, controller, and logger for CasparCG&nbsp;Server.
 * [**CasparCG Media Scanner** \(NRK fork\)](https://github.com/nrkno/sofie-casparcg-server) Sofie-specific fork of CasparCG&nbsp;Server 2.2 Media&nbsp;Scanner.
-* [**Sofie Chef**](https://github.com/nrkno/sofie-chef) A simple Chromium based renderer, used for kiosk mode rendering of web pages.
+* [**Package Manager**](https://github.com/nrkno/sofie-package-manager) Handles media asset transfer and media file management for pulling new files and deleting expired files on playout devices in a more performant, and possibly distributed, way. Can smartly figure out how to get a file on storage A to playout server B.
 * [**Media Manager**](https://github.com/nrkno/sofie-media-management) *(deprecated)* Handles media transfer and media file management for pulling new files and deleting expired files on playout devices.
 * [**Quantel Browser Plugin**](https://github.com/nrkno/sofie-quantel-browser-plugin) MOS-compatible Quantel video clip browser for use with Sofie.
 * [**Sisyfos Audio Controller**](https://github.com/nrkno/sofie-sisyfos-audio-controller) *developed by [_olzzon_](https://github.com/olzzon/)*
-* [**Quantel Gateway**](https://github.com/nrkno/sofie-quantel-gateway) CORBA to REST gateway for _Quantel/ISA_ playback.
 
 
 
