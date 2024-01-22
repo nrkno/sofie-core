@@ -18,10 +18,10 @@ Follow these instructions to start up Sofie Core in development mode. (For produ
 
 ### Prerequisites
 
-- Install [Node.js](https://nodejs.org) 16 (14 will also work) (using [nvm](https://github.com/nvm-sh/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows) is the recommended way to install Node.js)
+- Install [Node.js](https://nodejs.org) 18 (14 should also work) (using [nvm](https://github.com/nvm-sh/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows) is the recommended way to install Node.js)
 - If on Windows: `npm install --global windows-build-tools`
 - Install [Meteor](https://www.meteor.com/install) (`npm install --global meteor`)
-- Install [Yarn](https://yarnpkg.com) (`npm install --global corepack && corepack enable`)
+- Enable [corepack](https://nodejs.org/api/corepack.html#corepack) (`corepack enable`) as administrator/root. If `corepack` is not found, you may need to install it first with `npm install --global corepack`
 
 ### Quick Start
 
@@ -84,7 +84,6 @@ The code is formatted and linted using prettier/eslint. The shared config can be
 We provide a `settings.json.default` file in `.vscode` that you should consider using with your IDE. Also consider installing suggested
 extensions, which should help you create PRs consistent with project's code standards.
 
-
 ## Translating Sofie
 
 For support of various languages in the GUI, Sofie uses the _i18next_ framework. It uses JSON-based translation files to store UI strings. In order to build a new translation file, first extract a PO template file from Sofie UI source code:
@@ -120,7 +119,7 @@ The api of `blueprints-integration` is rather volatile, and often has breaking c
 
 ### Glossary
 
-*Note: this list is not very complete but will be supplemented over time.*
+_Note: this list is not very complete but will be supplemented over time._
 
 <table class="relative-table wrapped" style="width: 58.5299%;">
 <colgroup><col style="width: 22.6079%;"> <col style="width: 77.3921%;"></colgroup>
