@@ -50,6 +50,7 @@ import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataM
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { resolveCredentials } from '../security/lib/credentials'
 
 meteorPublish(PeripheralDevicePubSub.rundownsForDevice, async function (deviceId, token: string | undefined) {
 	check(deviceId, String)
@@ -59,13 +60,15 @@ meteorPublish(PeripheralDevicePubSub.rundownsForDevice, async function (deviceId
 
 	// Future: this should be reactive to studioId changes, but this matches how the other *ForDevice publications behave
 
-	if (!cred || !cred.device)
+	// The above auth check may return nothing when security is disabled, but we need the return value
+	const resolvedCred = cred?.device ? cred : await resolveCredentials({ userId: this.userId, token })
+	if (!resolvedCred || !resolvedCred.device)
 		throw new Meteor.Error(403, 'Publication can only be used by authorized PeripheralDevices')
 
 	// No studio, then no rundowns
-	if (!cred.device.studioId) return null
+	if (!resolvedCred.device.studioId) return null
 
-	selector.studioId = cred.device.studioId
+	selector.studioId = resolvedCred.device.studioId
 
 	const modifier: FindOptions<DBRundown> = {
 		fields: {
@@ -73,7 +76,7 @@ meteorPublish(PeripheralDevicePubSub.rundownsForDevice, async function (deviceId
 		},
 	}
 
-	if (NoSecurityReadAccess.any() || (await StudioReadAccess.studioContent(selector.studioId, cred))) {
+	if (NoSecurityReadAccess.any() || (await StudioReadAccess.studioContent(selector.studioId, resolvedCred))) {
 		return Rundowns.findWithCursor(selector, modifier)
 	}
 	return null
