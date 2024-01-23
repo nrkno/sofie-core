@@ -63,7 +63,7 @@ meteorPublish(PubSub.rundownsForDevice, async function (deviceId, token) {
 		},
 	}
 
-	if (NoSecurityReadAccess.any() || (await StudioReadAccess.studioContent(selector.studioId, cred))) {
+	if (NoSecurityReadAccess.any() || (await StudioReadAccess.studioContent(selector.studioId, resolvedCred))) {
 		return Rundowns.findWithCursor(selector, modifier)
 	}
 	return null
