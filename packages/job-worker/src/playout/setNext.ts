@@ -1,4 +1,4 @@
-import { assertNever } from '@sofie-automation/corelib/dist/lib'
+import { assertNever, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { JobContext } from '../jobs'
@@ -21,6 +21,14 @@ import { SelectNextPartResult } from './selectNextPart'
 import { ReadonlyDeep } from 'type-fest'
 import { QueueNextSegmentResult } from '@sofie-automation/corelib/dist/worker/studio'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { OnSetAsNextContext } from '../blueprints/context'
+import { logger } from '../logging'
+import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
+import {
+	PartAndPieceInstanceActionService,
+	applyActionSideEffects,
+} from '../blueprints/context/services/PartAndPieceInstanceActionService'
 
 /**
  * Set or clear the nexted part, from a given PartInstance, or SelectNextPartResult
@@ -111,6 +119,8 @@ export async function setNextPart(
 		})
 
 		playoutModel.setPartInstanceAsNext(newPartInstance, setManually, consumesQueuedSegmentId, nextTimeOffset)
+
+		await executeOnSetAsNextCallback(playoutModel, newPartInstance, context)
 	} else {
 		// Set to null
 
@@ -124,6 +134,54 @@ export async function setNextPart(
 	await cleanupOrphanedItems(context, playoutModel)
 
 	if (span) span.end()
+}
+
+async function executeOnSetAsNextCallback(
+	playoutModel: PlayoutModel,
+	newPartInstance: PlayoutPartInstanceModel,
+	context: JobContext
+) {
+	const rundownOfNextPart = playoutModel.getRundown(newPartInstance.partInstance.rundownId)
+	if (rundownOfNextPart) {
+		const blueprint = await context.getShowStyleBlueprint(rundownOfNextPart.rundown.showStyleBaseId)
+		if (blueprint.blueprint.onSetAsNext) {
+			const showStyle = await context.getShowStyleCompound(
+				rundownOfNextPart.rundown.showStyleVariantId,
+				rundownOfNextPart.rundown.showStyleBaseId
+			)
+			const watchedPackagesHelper = WatchedPackagesHelper.empty(context)
+			const onSetAsNextContext = new OnSetAsNextContext(
+				{
+					name: `${rundownOfNextPart.rundown.name}(${playoutModel.playlist.name})`,
+					identifier: `playlist=${playoutModel.playlist._id},rundown=${
+						rundownOfNextPart.rundown._id
+					},currentPartInstance=${
+						playoutModel.playlist.currentPartInfo?.partInstanceId
+					},execution=${getRandomId()}`,
+					tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT store these notes
+				},
+				context,
+				playoutModel,
+				showStyle,
+				watchedPackagesHelper,
+				new PartAndPieceInstanceActionService(context, playoutModel, showStyle, rundownOfNextPart)
+			)
+			try {
+				await blueprint.blueprint.onSetAsNext(onSetAsNextContext)
+				await applyOnSetAsNextSideEffects(context, playoutModel, onSetAsNextContext)
+			} catch (err) {
+				logger.error(`Error in showStyleBlueprint.onSetAsNext: ${stringifyError(err)}`)
+			}
+		}
+	}
+}
+
+async function applyOnSetAsNextSideEffects(
+	context: JobContext,
+	playoutModel: PlayoutModel,
+	onSetAsNextContext: OnSetAsNextContext
+): Promise<void> {
+	await applyActionSideEffects(context, playoutModel, onSetAsNextContext)
 }
 
 async function prepareExistingPartInstanceForBeingNexted(
