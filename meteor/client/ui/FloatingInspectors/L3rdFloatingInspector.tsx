@@ -83,7 +83,7 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 
 	return noraContent && noraContent.payload && noraContent.previewRenderer ? (
 		showMiniInspector ? (
-			<NoraFloatingInspector ref={ref} noraContent={noraContent} style={floatingInspectorStyle ?? {}} />
+			<NoraFloatingInspector ref={ref} noraContent={noraContent} style={floatingInspectorStyle} />
 		) : null
 	) : (
 		<FloatingInspector shown={showMiniInspector} displayOn="viewport">
