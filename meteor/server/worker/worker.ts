@@ -24,7 +24,7 @@ import { fetchStudioLight } from '../optimizations'
 import * as path from 'path'
 import { LogEntry } from 'winston'
 import { initializeWorkerStatus, setWorkerStatus } from './workerStatus'
-import { MongoQuery } from '../../lib/typings/meteor'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { UserActionsLog } from '../collections'
 import { MetricsCounter } from '@sofie-automation/corelib/dist/prometheus'
 

@@ -1,16 +1,16 @@
 import * as _ from 'underscore'
-import { MongoQueryKey } from '../../../lib/typings/meteor'
+import { MongoQueryKey } from '@sofie-automation/corelib/dist/mongo'
 import { Settings } from '../../../lib/Settings'
 import { resolveCredentials, ResolvedCredentials, Credentials, isResolvedCredentials } from './credentials'
 import { allAccess, noAccess, combineAccess, Access } from './access'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { isProtectedString } from '../../../lib/lib'
 import { DBOrganization } from '../../../lib/collections/Organization'
-import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { profiler } from '../../api/profiler'
-import { fetchShowStyleBasesLight, fetchStudioLight, ShowStyleBaseLight, StudioLight } from '../../optimizations'
+import { fetchShowStyleBasesLight, fetchStudioLight, ShowStyleBaseLight } from '../../optimizations'
 import { Organizations, PeripheralDevices, RundownPlaylists, Rundowns, ShowStyleVariants } from '../../collections'
 import {
 	OrganizationId,
@@ -22,6 +22,7 @@ import {
 	StudioId,
 	UserId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { StudioLight } from '@sofie-automation/corelib/dist/dataModel/Studio'
 
 export const LIMIT_CACHE_TIME = 1000 * 60 * 15 // 15 minutes
 
@@ -162,7 +163,7 @@ export async function allowAccessToStudio(
 export async function allowAccessToRundownPlaylist(
 	cred0: Credentials | ResolvedCredentials,
 	playlistId: RundownPlaylistId
-): Promise<Access<RundownPlaylist | null>> {
+): Promise<Access<DBRundownPlaylist | null>> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 	if (!playlistId) return noAccess('playlistId not set')
 	const cred = await resolveCredentials(cred0)
@@ -323,9 +324,9 @@ namespace AccessRules {
 		} else return noAccess(`User is not in the same organization as the studio ${studio._id}`)
 	}
 	export async function accessRundownPlaylist(
-		playlist: RundownPlaylist,
+		playlist: DBRundownPlaylist,
 		cred: ResolvedCredentials
-	): Promise<Access<RundownPlaylist>> {
+	): Promise<Access<DBRundownPlaylist>> {
 		const studio = await fetchStudioLight(playlist.studioId)
 		if (!studio) return noAccess(`Studio of playlist "${playlist._id}" not found`)
 		return { ...accessStudio(studio, cred), document: playlist }

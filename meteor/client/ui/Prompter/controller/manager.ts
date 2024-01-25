@@ -1,4 +1,4 @@
-import { PrompterViewInner, PrompterConfigMode } from '../PrompterView'
+import { PrompterViewContent, PrompterConfigMode } from '../PrompterView'
 import { MouseIshController } from './mouse-ish-device'
 import { MidiPedalController } from './midi-pedal-device'
 import { ControllerAbstract } from './lib'
@@ -7,10 +7,10 @@ import { KeyboardController } from './keyboard-device'
 import { ShuttleKeyboardController } from './shuttle-keyboard-device'
 
 export class PrompterControlManager {
-	private _view: PrompterViewInner
+	private _view: PrompterViewContent
 	private _controllers: Array<ControllerAbstract> = []
 
-	constructor(view: PrompterViewInner) {
+	constructor(view: PrompterViewContent) {
 		this._view = view
 
 		window.addEventListener('keydown', this._onKeyDown)

@@ -38,7 +38,7 @@ export async function ObserveChangesForHash<DBInterface extends { _id: Protected
 		if (newHash !== String(obj[hashName])) {
 			logger.debug(`Updating hash: ${obj._id} ${String(hashName)}:${newHash}`)
 			const update: Partial<DBInterface> = {}
-			update[String(hashName)] = newHash
+			update[hashName] = newHash as any
 			await collection.updateAsync(obj._id, { $set: update })
 		}
 	}

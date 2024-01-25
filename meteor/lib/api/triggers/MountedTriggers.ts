@@ -1,15 +1,22 @@
-import { ISourceLayer, ITranslatableMessage, SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { ISourceLayer, ITranslatableMessage } from '@sofie-automation/blueprints-integration'
 import {
 	AdLibActionId,
 	PieceId,
 	RundownBaselineAdLibActionId,
-	ShowStyleBaseId,
-	StudioId,
 	TriggeredActionId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
-import { ExecutableAction } from './actionFactory'
 import { IWrappedAdLib } from './actionFilterChainCompilers'
+
+export {
+	DeviceActionId,
+	DeviceTriggerMountedActionId,
+	ShiftRegisterActionArguments,
+	DeviceTriggerMountedAction,
+	PreviewWrappedAdLibId,
+	PreviewWrappedAdLib,
+	IWrappedAdLibBase,
+} from '@sofie-automation/shared-lib/dist/input-gateway/deviceTriggerPreviews'
 
 export type MountedTrigger = (MountedGenericTrigger | MountedAdLibTrigger) & MountedHotkeyMixin
 export type MountedDeviceTrigger = (MountedGenericTrigger | MountedAdLibTrigger) & MountedDeviceMixin
@@ -63,35 +70,3 @@ export interface MountedAdLibTrigger extends MountedTriggerCommon {
 }
 
 export type MountedAdLibTriggerId = ProtectedString<'mountedAdLibTriggerId'>
-
-export type DeviceTriggerMountedActionId = ProtectedString<'deviceTriggerMountedActionId'>
-
-export type DeviceActionId = ProtectedString<'DeviceActionId'>
-
-export interface DeviceTriggerMountedAction {
-	_id: DeviceTriggerMountedActionId
-	studioId: StudioId
-	showStyleBaseId: ShowStyleBaseId
-	deviceId: string
-	deviceTriggerId: string
-	values: DeviceTriggerArguments
-	actionId: DeviceActionId
-	actionType: ExecutableAction['action']
-	name?: string | ITranslatableMessage
-}
-
-export type PreviewWrappedAdLibId = ProtectedString<'previewWrappedAdLibId'>
-export type PreviewWrappedAdLib = Omit<IWrappedAdLib, '_id'> & {
-	_id: PreviewWrappedAdLibId
-	studioId: StudioId
-	showStyleBaseId: ShowStyleBaseId
-	triggeredActionId: TriggeredActionId
-	actionId: DeviceActionId
-	sourceLayerType?: SourceLayerType
-	sourceLayerName?: {
-		name?: string
-		abbreviation?: string
-	}
-	isCurrent?: boolean
-	isNext?: boolean
-}

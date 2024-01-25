@@ -36,7 +36,7 @@ export function VideoPreviewPlayer({
 	seek,
 	loop,
 	studioSettings,
-}: IProps): JSX.Element {
+}: Readonly<IProps>): JSX.Element {
 	const videoElement = useRef<HTMLVideoElement>(null)
 
 	useEffect(() => {

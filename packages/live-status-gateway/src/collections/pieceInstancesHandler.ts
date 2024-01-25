@@ -1,7 +1,6 @@
 import { Logger } from 'winston'
 import { CoreHandler } from '../coreHandler'
 import { CollectionBase, Collection, CollectionObserver } from '../wsHandler'
-import { CoreConnection } from '@sofie-automation/server-core-integration'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
@@ -9,6 +8,8 @@ import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collect
 import areElementsShallowEqual from '@sofie-automation/shared-lib/dist/lib/isShallowEqual'
 import throttleToNextTick from '@sofie-automation/shared-lib/dist/lib/throttleToNextTick'
 import _ = require('underscore')
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { PartInstanceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface SelectedPieceInstances {
 	// Pieces reported by the Playout Gateway as active
@@ -22,13 +23,12 @@ export interface SelectedPieceInstances {
 }
 
 export class PieceInstancesHandler
-	extends CollectionBase<SelectedPieceInstances>
+	extends CollectionBase<SelectedPieceInstances, CorelibPubSub.pieceInstances, CollectionName.PieceInstances>
 	implements Collection<SelectedPieceInstances>, CollectionObserver<DBRundownPlaylist>
 {
 	public observerName: string
-	private _core: CoreConnection
 	private _currentPlaylist: DBRundownPlaylist | undefined
-	private _partInstanceIds: string[] = []
+	private _partInstanceIds: PartInstanceId[] = []
 	private _activationId: string | undefined
 	private _subscriptionPending = false
 
@@ -38,8 +38,13 @@ export class PieceInstancesHandler
 	})
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
-		super(PieceInstancesHandler.name, CollectionName.PieceInstances, 'pieceInstances', logger, coreHandler)
-		this._core = coreHandler.coreConnection
+		super(
+			PieceInstancesHandler.name,
+			CollectionName.PieceInstances,
+			CorelibPubSub.pieceInstances,
+			logger,
+			coreHandler
+		)
 		this.observerName = this._name
 		this._collectionData = {
 			active: [],
@@ -48,7 +53,7 @@ export class PieceInstancesHandler
 		}
 	}
 
-	async changed(id: string, changeType: string): Promise<void> {
+	async changed(id: PieceInstanceId, changeType: string): Promise<void> {
 		this._logger.info(`${this._name} ${changeType} ${id}`)
 		if (!this._collectionName || this._subscriptionPending) return
 		this._throttledUpdateAndNotify()
@@ -56,7 +61,7 @@ export class PieceInstancesHandler
 
 	private updateCollectionData(): boolean {
 		if (!this._collectionName || !this._collectionData) return false
-		const collection = this._core.getCollection<PieceInstance>(this._collectionName)
+		const collection = this._core.getCollection(this._collectionName)
 		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
 		const active = this._currentPlaylist?.currentPartInfo?.partInstanceId
 			? collection.find((pieceInstance: PieceInstance) => this.isPieceInstanceActive(pieceInstance))
@@ -96,18 +101,16 @@ export class PieceInstancesHandler
 		const prevActivationId = this._activationId
 
 		this._logger.info(
-			`${this._name} received playlist update ${data?._id}, active ${
-				data?.activationId ? true : false
-			} from ${source}`
+			`${this._name} received playlist update ${data?._id}, active ${!!data?.activationId} from ${source}`
 		)
 		this._currentPlaylist = data
 		if (!this._collectionName) return
 
 		this._partInstanceIds = this._currentPlaylist
 			? _.compact([
-					unprotectString(this._currentPlaylist.previousPartInfo?.partInstanceId),
-					unprotectString(this._currentPlaylist.nextPartInfo?.partInstanceId),
-					unprotectString(this._currentPlaylist.currentPartInfo?.partInstanceId),
+					this._currentPlaylist.previousPartInfo?.partInstanceId,
+					this._currentPlaylist.nextPartInfo?.partInstanceId,
+					this._currentPlaylist.currentPartInfo?.partInstanceId,
 			  ])
 			: []
 		this._activationId = unprotectString(this._currentPlaylist?.activationId)
@@ -122,20 +125,21 @@ export class PieceInstancesHandler
 				if (!this._currentPlaylist) return
 				if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
 				this._subscriptionPending = true
-				this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, {
-					partInstanceId: { $in: this._partInstanceIds },
-					playlistActivationId: this._activationId,
-					reportedStoppedPlayback: { $exists: false },
-				})
+				this._subscriptionId = await this._coreHandler.setupSubscription(
+					this._publicationName,
+					this._currentPlaylist.rundownIdsInOrder,
+					this._partInstanceIds,
+					{}
+				)
 				this._subscriptionPending = false
 				this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
-				this._dbObserver.added = (id: string) => {
+				this._dbObserver.added = (id) => {
 					void this.changed(id, 'added').catch(this._logger.error)
 				}
-				this._dbObserver.changed = (id: string) => {
+				this._dbObserver.changed = (id) => {
 					void this.changed(id, 'changed').catch(this._logger.error)
 				}
-				this._dbObserver.removed = (id: string) => {
+				this._dbObserver.removed = (id) => {
 					void this.changed(id, 'removed').catch(this._logger.error)
 				}
 
@@ -147,18 +151,17 @@ export class PieceInstancesHandler
 				// nothing relevant has changed
 			} else {
 				this.clearCollectionData()
-				console.log('notify')
 				await this.notify(this._collectionData)
 			}
 		} else {
 			this.clearCollectionData()
-			console.log('notify')
 			await this.notify(this._collectionData)
 		}
 	}
 
 	private isPieceInstanceActive(pieceInstance: PieceInstance) {
 		return (
+			pieceInstance.reportedStoppedPlayback == null &&
 			(pieceInstance.partInstanceId === this._currentPlaylist?.previousPartInfo?.partInstanceId || // a piece from previous part instance may be active during transition
 				pieceInstance.partInstanceId === this._currentPlaylist?.currentPartInfo?.partInstanceId) &&
 			(pieceInstance.reportedStartedPlayback != null || // has been reported to have started by the Playout Gateway

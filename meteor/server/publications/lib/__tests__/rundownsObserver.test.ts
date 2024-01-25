@@ -1,12 +1,14 @@
 import { RundownId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { Rundown } from '../../../../lib/collections/Rundowns'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Rundowns } from '../../../collections'
-import { runAllTimers, runTimersUntilNow, testInFiber } from '../../../../__mocks__/helpers/jest'
+import { runAllTimers, runTimersUntilNow, testInFiber, waitUntil } from '../../../../__mocks__/helpers/jest'
 import { MongoMock } from '../../../../__mocks__/mongo'
 import { RundownsObserver } from '../rundownsObserver'
 
 const RundownsMock = (Rundowns as any).mockCollection as MongoMock.Collection<Rundown>
+
+const MAX_WAIT_TIME = 4000
 
 describe('RundownsObserver', () => {
 	beforeEach(() => {
@@ -32,9 +34,12 @@ describe('RundownsObserver', () => {
 			expect(onChanged).toHaveBeenCalledTimes(0)
 
 			// After debounce
-			await runAllTimers()
-			expect(onChanged).toHaveBeenCalledTimes(1)
-			expect(onChangedCleanup).toHaveBeenCalledTimes(0)
+			await waitUntil(async () => {
+				// Run timers, so that promises in the observer has a chance to resolve:
+				await runAllTimers()
+				expect(onChanged).toHaveBeenCalledTimes(1)
+				expect(onChangedCleanup).toHaveBeenCalledTimes(0)
+			}, MAX_WAIT_TIME)
 
 			// still got an observer
 			expect(RundownsMock.observers).toHaveLength(1)
@@ -76,8 +81,12 @@ describe('RundownsObserver', () => {
 		const observer = new RundownsObserver(studioId, playlistId, onChanged)
 		try {
 			// ensure starts correct
-			await runAllTimers()
-			expect(onChanged).toHaveBeenCalledTimes(1)
+			await waitUntil(async () => {
+				// Run timers, so that promises in the observer has a chance to resolve:
+				await runAllTimers()
+				expect(onChanged).toHaveBeenCalledTimes(1)
+			}, MAX_WAIT_TIME)
+
 			expect(onChanged).toHaveBeenLastCalledWith([])
 			expect(onChangedCleanup).toHaveBeenCalledTimes(0)
 			expect(observer.rundownIds).toEqual([])
@@ -99,8 +108,12 @@ describe('RundownsObserver', () => {
 			expect(onChangedCleanup).toHaveBeenCalledTimes(0)
 
 			// After debounce
-			await runAllTimers()
-			expect(onChanged).toHaveBeenCalledTimes(2)
+			// ensure starts correct
+			await waitUntil(async () => {
+				// Run timers, so that promises in the observer has a chance to resolve:
+				await runAllTimers()
+				expect(onChanged).toHaveBeenCalledTimes(2)
+			}, MAX_WAIT_TIME)
 			expect(onChangedCleanup).toHaveBeenCalledTimes(0)
 			expect(onChanged).toHaveBeenLastCalledWith([mockId0])
 		} finally {
@@ -122,8 +135,12 @@ describe('RundownsObserver', () => {
 		const observer = new RundownsObserver(studioId, playlistId, onChanged)
 		try {
 			// ensure starts correct
-			await runAllTimers()
-			expect(onChanged).toHaveBeenCalledTimes(1)
+			// ensure starts correct
+			await waitUntil(async () => {
+				// Run timers, so that promises in the observer has a chance to resolve:
+				await runAllTimers()
+				expect(onChanged).toHaveBeenCalledTimes(1)
+			}, MAX_WAIT_TIME)
 			expect(onChanged).toHaveBeenLastCalledWith([])
 			expect(onChangedCleanup).toHaveBeenCalledTimes(0)
 			expect(observer.rundownIds).toEqual([])
@@ -145,8 +162,12 @@ describe('RundownsObserver', () => {
 			expect(onChangedCleanup).toHaveBeenCalledTimes(0)
 
 			// After debounce
-			await runAllTimers()
-			expect(onChanged).toHaveBeenCalledTimes(2)
+			// ensure starts correct
+			await waitUntil(async () => {
+				// Run timers, so that promises in the observer has a chance to resolve:
+				await runAllTimers()
+				expect(onChanged).toHaveBeenCalledTimes(2)
+			}, MAX_WAIT_TIME)
 			expect(onChangedCleanup).toHaveBeenCalledTimes(0)
 			expect(onChanged).toHaveBeenLastCalledWith([mockId0])
 		} finally {
@@ -168,8 +189,12 @@ describe('RundownsObserver', () => {
 		const observer = new RundownsObserver(studioId, playlistId, onChanged)
 		try {
 			// ensure starts correct
-			await runAllTimers()
-			expect(onChanged).toHaveBeenCalledTimes(1)
+			// ensure starts correct
+			await waitUntil(async () => {
+				// Run timers, so that promises in the observer has a chance to resolve:
+				await runAllTimers()
+				expect(onChanged).toHaveBeenCalledTimes(1)
+			}, MAX_WAIT_TIME)
 			expect(onChanged).toHaveBeenLastCalledWith([])
 			expect(onChangedCleanup).toHaveBeenCalledTimes(0)
 			expect(observer.rundownIds).toEqual([])
@@ -197,8 +222,12 @@ describe('RundownsObserver', () => {
 			expect(onChangedCleanup).toHaveBeenCalledTimes(0)
 
 			// After debounce
-			await runAllTimers()
-			expect(onChanged).toHaveBeenCalledTimes(2)
+			// ensure starts correct
+			await waitUntil(async () => {
+				// Run timers, so that promises in the observer has a chance to resolve:
+				await runAllTimers()
+				expect(onChanged).toHaveBeenCalledTimes(2)
+			}, MAX_WAIT_TIME)
 			expect(onChangedCleanup).toHaveBeenCalledTimes(0)
 			expect(onChanged).toHaveBeenLastCalledWith([mockId0, mockId1, mockId2, mockId3])
 
@@ -221,8 +250,12 @@ describe('RundownsObserver', () => {
 			expect(onChangedCleanup).toHaveBeenCalledTimes(0)
 
 			// After debounce
-			await runAllTimers()
-			expect(onChanged).toHaveBeenCalledTimes(3)
+			// ensure starts correct
+			await waitUntil(async () => {
+				// Run timers, so that promises in the observer has a chance to resolve:
+				await runAllTimers()
+				expect(onChanged).toHaveBeenCalledTimes(3)
+			}, MAX_WAIT_TIME)
 			expect(onChangedCleanup).toHaveBeenCalledTimes(0)
 			expect(onChanged).toHaveBeenLastCalledWith([mockId0, mockId1, mockId3, mockId4])
 		} finally {

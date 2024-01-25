@@ -107,7 +107,7 @@ _Note: this is not currently used in production by anyone we know of_
 
 ## OBS <a id="obs"></a>
 
-*Through OBS WebSocket v4 RPC API*
+*Through OBS 28+ WebSocket API (a.k.a v5 Protocol)*
 
 * Current / Preview Scene
 * Current Transition

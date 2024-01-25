@@ -154,7 +154,7 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 		// Returns a value deep inside an object
 		// Example: deepAttribute(company,"ceo.address.street");
 
-		const f = (obj: any, attr: string) => {
+		const f = (obj: any, attr: string): any => {
 			if (obj) {
 				const attributes = attr.split('.')
 
@@ -185,7 +185,7 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 	protected getEditAttribute(): any {
 		return this.state.editing ? this.state.value : this.getAttribute()
 	}
-	private updateValue(newValue) {
+	private updateValue(newValue: any) {
 		if (this.props.mutateUpdateValue) {
 			try {
 				newValue = this.props.mutateUpdateValue(newValue)
@@ -206,11 +206,11 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 		} else {
 			if (this.props.collection && this.props.attribute) {
 				if (newValue === undefined) {
-					const m = {}
+					const m: Record<string, 1> = {}
 					m[this.props.attribute] = 1
 					this.props.collection.update(this.props.obj._id, { $unset: m })
 				} else {
-					const m = {}
+					const m: Record<string, any> = {}
 					m[this.props.attribute] = newValue
 					this.props.collection.update(this.props.obj._id, { $set: m })
 				}
@@ -218,7 +218,7 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 		}
 	}
 }
-function wrapEditAttribute(newClass) {
+function wrapEditAttribute(newClass: any) {
 	return withTracker((props: IEditAttributeBaseProps) => {
 		// These properties will be exposed under this.props
 		// Note that these properties are reactively recalculated
@@ -230,7 +230,7 @@ function wrapEditAttribute(newClass) {
 
 const EditAttributeText = wrapEditAttribute(
 	class EditAttributeText extends EditAttributeBase {
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
@@ -255,13 +255,13 @@ const EditAttributeText = wrapEditAttribute(
 )
 const EditAttributeMultilineText = wrapEditAttribute(
 	class EditAttributeMultilineText extends EditAttributeBase {
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
 		}
 		private handleChange(value: string[]) {
-			this.handleEdit(joinLines(value)) // as single string
+			this.handleUpdate(joinLines(value)) // as single string
 		}
 		render(): JSX.Element {
 			return (
@@ -280,7 +280,7 @@ const EditAttributeMultilineText = wrapEditAttribute(
 )
 const EditAttributeInt = wrapEditAttribute(
 	class EditAttributeInt extends EditAttributeBase {
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
@@ -305,7 +305,7 @@ const EditAttributeInt = wrapEditAttribute(
 )
 const EditAttributeFloat = wrapEditAttribute(
 	class EditAttributeFloat extends EditAttributeBase {
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
@@ -330,7 +330,7 @@ const EditAttributeFloat = wrapEditAttribute(
 )
 const EditAttributeCheckbox = wrapEditAttribute(
 	class EditAttributeCheckbox extends EditAttributeBase {
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
@@ -359,7 +359,7 @@ const EditAttributeCheckbox = wrapEditAttribute(
 )
 const EditAttributeToggle = wrapEditAttribute(
 	class EditAttributeToggle extends EditAttributeBase {
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 		}
 		isChecked() {
@@ -407,7 +407,7 @@ const EditAttributeToggle = wrapEditAttribute(
 )
 const EditAttributeSwitch = wrapEditAttribute(
 	class EditAttributeSwitch extends EditAttributeBase {
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 		}
 		isChecked() {
@@ -444,7 +444,7 @@ const EditAttributeSwitch = wrapEditAttribute(
 
 const EditAttributeDropdown = wrapEditAttribute(
 	class EditAttributeDropdown extends EditAttributeBase {
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
@@ -471,7 +471,7 @@ const EditAttributeDropdownText = wrapEditAttribute(
 	class EditAttributeDropdownText extends EditAttributeBase {
 		private _id: string
 
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 
 			this.handleChangeDropdown = this.handleChangeDropdown.bind(this)
@@ -481,7 +481,7 @@ const EditAttributeDropdownText = wrapEditAttribute(
 
 			this._id = getRandomString()
 		}
-		handleChangeDropdown(event) {
+		handleChangeDropdown(event: React.ChangeEvent<HTMLInputElement>) {
 			// because event.target.value is always a string, use the original value instead
 			const option = _.find(this.getOptions(), (o) => {
 				return o.value + '' === event.target.value + ''
@@ -489,16 +489,15 @@ const EditAttributeDropdownText = wrapEditAttribute(
 
 			const value = option ? option.value : event.target.value
 
-			this.handleUpdate(this.props.optionsAreNumbers ? parseInt(value, 10) : value)
+			this.handleUpdate(this.props.optionsAreNumbers ? Number(value) : value)
 		}
-		handleChangeText(event) {
+		handleChangeText(event: React.ChangeEvent<HTMLInputElement>) {
 			this.handleChangeDropdown(event)
 		}
-		handleBlurText(event) {
+		handleBlurText(event: React.FocusEvent<HTMLInputElement>) {
 			this.handleUpdate(event.target.value)
 		}
-		handleEscape(event) {
-			const e = event as KeyboardEvent
+		handleEscape(e: React.KeyboardEvent<HTMLInputElement>) {
 			if (e.key === 'Escape') {
 				this.handleDiscard()
 			}
@@ -557,7 +556,7 @@ interface EditAttributeMultiSelectOptionsResult {
 
 const EditAttributeMultiSelect = wrapEditAttribute(
 	class EditAttributeMultiSelect extends EditAttributeBase {
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
@@ -631,7 +630,7 @@ const EditAttributeMultiSelect = wrapEditAttribute(
 
 const EditAttributeJson = wrapEditAttribute(
 	class EditAttributeJson extends EditAttributeBase {
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
@@ -662,7 +661,7 @@ const EditAttributeJson = wrapEditAttribute(
 )
 const EditAttributeArray = wrapEditAttribute(
 	class EditAttributeArray extends EditAttributeBase {
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
@@ -700,7 +699,7 @@ const EditAttributeArray = wrapEditAttribute(
 			}
 			return { parsed: values }
 		}
-		handleChange(event) {
+		handleChange(event: React.ChangeEvent<HTMLInputElement>) {
 			const v = event.target.value
 
 			const arrayObj = this.isArray(v)
@@ -713,7 +712,7 @@ const EditAttributeArray = wrapEditAttribute(
 				this.handleUpdateButDontSave(v, true)
 			}
 		}
-		handleBlur(event) {
+		handleBlur(event: React.FocusEvent<HTMLInputElement>) {
 			const v = event.target.value
 
 			const arrayObj = this.isArray(v)
@@ -729,8 +728,7 @@ const EditAttributeArray = wrapEditAttribute(
 				})
 			}
 		}
-		handleEscape(event) {
-			const e = event as KeyboardEvent
+		handleEscape(e: React.KeyboardEvent<HTMLInputElement>) {
 			if (e.key === 'Escape') {
 				this.handleDiscard()
 			}
@@ -770,7 +768,7 @@ const EditAttributeArray = wrapEditAttribute(
 
 const EditAttributeColorPicker = wrapEditAttribute(
 	class EditAttributeColorPicker extends EditAttributeBase {
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
@@ -793,7 +791,7 @@ const EditAttributeColorPicker = wrapEditAttribute(
 )
 const EditAttributeIconPicker = wrapEditAttribute(
 	class extends EditAttributeBase {
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)

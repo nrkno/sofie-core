@@ -3,7 +3,10 @@ import { CoreHandler } from '../coreHandler'
 import { CollectionBase, Collection } from '../wsHandler'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 
-export class RundownsHandler extends CollectionBase<DBRundown[]> implements Collection<DBRundown[]> {
+export class RundownsHandler
+	extends CollectionBase<DBRundown[], undefined, undefined>
+	implements Collection<DBRundown[]>
+{
 	public observerName: string
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {

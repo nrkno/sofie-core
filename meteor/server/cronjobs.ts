@@ -1,9 +1,9 @@
 import { PeripheralDevices, RundownPlaylists } from './collections'
 import {
+	PERIPHERAL_SUBTYPE_PROCESS,
 	PeripheralDevice,
 	PeripheralDeviceType,
-	PERIPHERAL_SUBTYPE_PROCESS,
-} from '../lib/collections/PeripheralDevices'
+} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { getCurrentTime } from '../lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { logger } from './logging'

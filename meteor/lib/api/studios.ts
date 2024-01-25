@@ -1,5 +1,10 @@
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { IStudioSettings, MappingsExt, StudioRouteSet, StudioRouteSetExclusivityGroup } from '../collections/Studios'
+import {
+	IStudioSettings,
+	MappingsExt,
+	StudioRouteSet,
+	StudioRouteSetExclusivityGroup,
+} from '@sofie-automation/corelib/dist/dataModel/Studio'
 
 export interface NewStudiosAPI {
 	insertStudio(): Promise<StudioId>

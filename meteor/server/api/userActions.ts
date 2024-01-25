@@ -414,7 +414,8 @@ class ServerUserActionAPI
 				actionDocId,
 				actionId,
 				userData,
-				triggerMode: triggerMode || undefined,
+				triggerMode: triggerMode ?? undefined,
+				privateData: null,
 			}
 		)
 	}
@@ -1192,6 +1193,29 @@ class ServerUserActionAPI
 
 				const access = await PeripheralDeviceContentWriteAccess.peripheralDevice(this, peripheralDeviceId)
 				return ServerPeripheralDeviceAPI.disableSubDevice(access, subDeviceId, disable)
+			}
+		)
+	}
+
+	async activateScratchpadMode(
+		userEvent: string,
+		eventTime: number,
+		playlistId: RundownPlaylistId,
+		rundownId: RundownId
+	): Promise<ClientAPI.ClientResponse<void>> {
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			eventTime,
+			playlistId,
+			() => {
+				check(playlistId, String)
+				check(rundownId, String)
+			},
+			StudioJobs.ActivateScratchpad,
+			{
+				playlistId: playlistId,
+				rundownId: rundownId,
 			}
 		)
 	}

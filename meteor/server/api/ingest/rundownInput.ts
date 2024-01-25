@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
-import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { IngestDataCache, MediaObjects, Parts, Rundowns, Segments } from '../../collections'
 import { lazyIgnore, literal } from '../../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart, IngestPlaylist } from '@sofie-automation/blueprints-integration'

@@ -23,6 +23,7 @@ import {
 	IngestDeviceSecretSettings,
 	IngestDeviceSettings,
 } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
+import { ReadonlyDeep } from 'type-fest'
 
 export interface PeripheralDevice {
 	_id: PeripheralDeviceId
@@ -88,7 +89,7 @@ export interface PeripheralDevice {
 	accessTokenUrl?: string
 }
 
-export function getExternalNRCSName(device: PeripheralDevice | undefined): string {
+export function getExternalNRCSName(device: ReadonlyDeep<PeripheralDevice> | undefined): string {
 	if (device?.nrcsName && device.category === PeripheralDeviceCategory.INGEST) {
 		return device.nrcsName
 	} else {

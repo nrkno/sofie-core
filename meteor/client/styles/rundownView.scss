@@ -739,9 +739,6 @@ svg.icon {
 		grid-column: duration-onAirIn-split / segment-group-controls;
 	}
 
-	.segment-timeline__unsynced {
-		text-transform: uppercase;
-	}
 }
 
 .segment-timeline__switch-view-mode-button {
@@ -1755,6 +1752,12 @@ svg.icon {
 						box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5);
 						cursor: default;
 
+						.piece__status-icon {
+							> svg.type-warning {
+								margin-top: 2px;
+							}
+						}
+
 						// TODO: This is just temporary styling, to indicate that the layers are clickable
 						&:hover {
 							transition: none;
@@ -2098,7 +2101,8 @@ svg.icon {
 						margin: 0 -10px 0 0;
 					}
 
-					> .label-icon.label-infinite-icon {
+					> .label-icon.label-infinite-icon,
+					> .label-icon.label-loop-icon {
 						margin: 0 0 0 0;
 					}
 				}
@@ -2161,6 +2165,13 @@ svg.icon {
 					object-fit: contain;
 					object-position: center center;
 					margin-left: 0.5em;
+				}
+
+				.segment-timeline__piece__label-icon {
+					display: inline-block;
+					vertical-align: top;
+					margin-top: 0;
+					margin-bottom: -5px;
 				}
 
 				&.with-duration {

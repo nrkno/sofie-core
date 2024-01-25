@@ -3,6 +3,7 @@ import CoreIcons from '@nrk/core-icons/jsx'
 import Escape from './Escape'
 
 import ClassNames from 'classnames'
+// @ts-expect-error No types available
 import * as VelocityReact from 'velocity-react'
 import { logger } from '../../lib/logging'
 import * as _ from 'underscore'
@@ -42,7 +43,7 @@ type OnAction = (e: SomeEvent, inputResult: ModalInputResult) => void
 export type ModalInputResult = { [attribute: string]: any }
 export type SomeEvent = Event | React.SyntheticEvent<object>
 export class ModalDialog extends React.Component<React.PropsWithChildren<IModalDialogAttributes>> {
-	sorensen: Sorensen
+	sorensen: Sorensen | undefined
 
 	private inputResult: ModalInputResult = {}
 
@@ -64,6 +65,8 @@ export class ModalDialog extends React.Component<React.PropsWithChildren<IModalD
 	}
 
 	private bindKeys = () => {
+		if (!this.sorensen) return
+
 		if (this.props.show) {
 			this.sorensen.bind(Settings.confirmKeyCode, this.preventDefault, {
 				up: false,
@@ -87,6 +90,7 @@ export class ModalDialog extends React.Component<React.PropsWithChildren<IModalD
 	}
 
 	private unbindKeys = () => {
+		if (!this.sorensen) return
 		this.sorensen.unbind(Settings.confirmKeyCode, this.preventDefault)
 		this.sorensen.unbind(Settings.confirmKeyCode, this.handleKey)
 		this.sorensen.unbind('Escape', this.preventDefault)
@@ -357,7 +361,7 @@ class ModalDialogGlobalContainer0 extends React.Component<
 			const actions: ModalAction[] = _.map(onQueue.actions || [], (action: ModalAction) => {
 				return {
 					...action,
-					on: (e, inputResult) => this.onAction(e, inputResult, action.on),
+					on: (e: SomeEvent, inputResult: ModalInputResult) => this.onAction(e, inputResult, action.on),
 				}
 			})
 			return (

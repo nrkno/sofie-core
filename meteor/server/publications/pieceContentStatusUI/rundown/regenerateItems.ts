@@ -7,7 +7,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import { UIPieceContentStatus } from '../../../../lib/api/rundownNotifications'
-import { literal, protectString } from '../../../../lib/lib'
+import { literal, protectString, unprotectString } from '../../../../lib/lib'
 import { CustomPublishCollection } from '../../../lib/customPublication'
 import { ContentCache } from './reactiveContentCache'
 import { wrapTranslatableMessageFromBlueprintsIfNotString } from '@sofie-automation/corelib/dist/TranslatableMessage'
@@ -137,7 +137,10 @@ export async function regenerateForPieceInstanceIds(
 			const res = await regenerateGenericPiece(
 				contentCache,
 				uiStudio,
-				pieceDoc.piece,
+				{
+					...pieceDoc.piece,
+					_id: protectString(unprotectString(pieceDoc._id)),
+				},
 				pieceDoc.piece.sourceLayerId,
 				{
 					_id: protectString(`piece_${pieceId}`),

@@ -5,7 +5,7 @@ import { PieceUi } from '../../SegmentTimeline/SegmentTimelineContainer'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { contextMenuHoldToDisplayTime } from '../../../lib/lib'
 import { BucketAdLibItem } from '../RundownViewBuckets'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { IAdLibListItem } from '../AdLibListItem'
 import { UIShowStyleBase } from '../../../../lib/api/showStyles'
 import { UIStudio } from '../../../../lib/api/studios'
@@ -16,7 +16,7 @@ interface IShelfInspectorProps {
 	selected: BucketAdLibItem | IAdLibListItem | PieceUi | undefined
 	showStyleBase: UIShowStyleBase
 	studio: UIStudio
-	rundownPlaylist: RundownPlaylist
+	rundownPlaylist: DBRundownPlaylist
 	onSelectPiece: (piece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined) => void
 }
 

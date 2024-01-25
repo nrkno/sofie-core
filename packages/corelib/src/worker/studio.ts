@@ -1,6 +1,8 @@
 import { PlayoutChangedResults } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import {
 	AdLibActionId,
+	BucketAdLibActionId,
+	BucketId,
 	PartId,
 	PartInstanceId,
 	PieceId,
@@ -91,6 +93,10 @@ export enum StudioJobs {
 	 */
 	ExecuteAction = 'executeAction',
 	/**
+	 * Execute a Bucket AdLib (Action)
+	 */
+	ExecuteBucketAdLibOrAction = 'executeBucketAdLibOrAction',
+	/**
 	 * Take the currently Next:ed Part (start playing it)
 	 */
 	TakeNextPart = 'takeNextPart',
@@ -166,6 +172,20 @@ export enum StudioJobs {
 	 * Validate the blueprintConfig for the Studio, with the Blueprint validateConfig
 	 */
 	BlueprintValidateConfigForStudio = 'blueprintValidateConfigForStudio',
+
+	/**
+	 * Run the 'fixUpConfig' method for the Studio blueprint config
+	 */
+	BlueprintFixUpConfigForStudio = 'blueprintFixUpConfigForStudio',
+	/**
+	 * Ignore the 'fixUpConfig' method for the Studio blueprint config
+	 */
+	BlueprintIgnoreFixUpConfigForStudio = 'blueprintIgnoreFixUpConfigForStudio',
+
+	/**
+	 * Activate scratchpad mode for the Rundown containing the nexted Part.
+	 */
+	ActivateScratchpad = 'activateScratchpad',
 }
 
 export interface RundownPlayoutPropsBase {
@@ -218,9 +238,20 @@ export interface QueueNextSegmentProps extends RundownPlayoutPropsBase {
 }
 export type QueueNextSegmentResult = { nextPartId: PartId } | { queuedSegmentId: SegmentId | null }
 export interface ExecuteActionProps extends RundownPlayoutPropsBase {
-	actionDocId: AdLibActionId | RundownBaselineAdLibActionId | null
+	actionDocId: AdLibActionId | RundownBaselineAdLibActionId | BucketAdLibActionId
 	actionId: string
 	userData: any
+	triggerMode?: string
+	privateData?: unknown | undefined | null
+}
+export interface ExecuteBucketAdLibOrActionProps extends RundownPlayoutPropsBase {
+	bucketId: BucketId
+	externalId: string
+	triggerMode?: string
+}
+export interface ExecuteBucketAdLibOrActionProps extends RundownPlayoutPropsBase {
+	bucketId: BucketId
+	externalId: string
 	triggerMode?: string
 }
 export interface ExecuteActionResult {
@@ -285,6 +316,17 @@ export interface BlueprintValidateConfigForStudioResult {
 	}>
 }
 
+export interface BlueprintFixUpConfigForStudioResult {
+	messages: Array<{
+		path: string
+		message: ITranslatableMessage
+	}>
+}
+
+export interface ActivateScratchpadProps extends RundownPlayoutPropsBase {
+	rundownId: RundownId
+}
+
 /**
  * Set of valid functions, of form:
  * `id: (data) => return`
@@ -308,6 +350,7 @@ export type StudioJobFunc = {
 	[StudioJobs.SetNextSegment]: (data: SetNextSegmentProps) => PartId
 	[StudioJobs.QueueNextSegment]: (data: QueueNextSegmentProps) => QueueNextSegmentResult
 	[StudioJobs.ExecuteAction]: (data: ExecuteActionProps) => ExecuteActionResult
+	[StudioJobs.ExecuteBucketAdLibOrAction]: (data: ExecuteBucketAdLibOrActionProps) => ExecuteActionResult
 	[StudioJobs.TakeNextPart]: (data: TakeNextPartProps) => void
 	[StudioJobs.DisableNextPiece]: (data: DisableNextPieceProps) => void
 	[StudioJobs.RemovePlaylist]: (data: RemovePlaylistProps) => void
@@ -331,6 +374,10 @@ export type StudioJobFunc = {
 
 	[StudioJobs.BlueprintUpgradeForStudio]: () => void
 	[StudioJobs.BlueprintValidateConfigForStudio]: () => BlueprintValidateConfigForStudioResult
+	[StudioJobs.BlueprintFixUpConfigForStudio]: () => BlueprintFixUpConfigForStudioResult
+	[StudioJobs.BlueprintIgnoreFixUpConfigForStudio]: () => void
+
+	[StudioJobs.ActivateScratchpad]: (data: ActivateScratchpadProps) => void
 }
 
 export function getStudioQueueName(id: StudioId): string {

@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import type { AnyBulkWriteOperation } from 'mongodb'
 import _ from 'underscore'
 import { DBObj, normalizeArrayToMap, ProtectedString, deleteAllUndefinedProperties } from '../../lib/lib'
-import { MongoQuery } from '../../lib/typings/meteor'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { profiler } from '../api/profiler'
 import { AsyncOnlyMongoCollection } from '../collections/collection'
 
@@ -101,15 +101,15 @@ async function savePreparedChanges<DBInterface extends DBObj>(
 		updated: 0,
 		removed: 0,
 	}
-	const newObjIds: { [identifier: string]: true } = {}
-	const checkInsertId = (id) => {
-		if (newObjIds[id]) {
+	const newObjIds = new Set<DBInterface['_id']>()
+	const checkInsertId = (id: DBInterface['_id']) => {
+		if (newObjIds.has(id)) {
 			throw new Meteor.Error(
 				500,
 				`savePreparedChanges into collection "${(collection as any)._name}": Duplicate identifier "${id}"`
 			)
 		}
-		newObjIds[id] = true
+		newObjIds.add(id)
 	}
 
 	const updates: AnyBulkWriteOperation<DBInterface>[] = []

@@ -135,7 +135,7 @@ describe('ActivePlaylistTopic', () => {
 				id: 'PART_1',
 				name: 'Test Part',
 				segmentId: 'SEGMENT_1',
-				timing: { startTime: 1600000060000, expectedDurationMs: 10000, expectedEndTime: 1600000070000 },
+				timing: { startTime: 1600000060000, expectedDurationMs: 10000, projectedEndTime: 1600000070000 },
 				pieces: [],
 			},
 			nextPart: null,
@@ -143,7 +143,7 @@ describe('ActivePlaylistTopic', () => {
 				id: 'SEGMENT_1',
 				timing: {
 					expectedDurationMs: 10000,
-					expectedEndTime: 1600000070000,
+					projectedEndTime: 1600000070000,
 				},
 			},
 			rundownIds: unprotectStringArray(playlist.rundownIdsInOrder),

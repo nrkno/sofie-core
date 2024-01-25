@@ -7,7 +7,7 @@ import {
 	MediaWorkFlowRevision,
 	MediaWorkFlowStepRevision,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/mediaManager'
-import { PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { MethodContext } from '../../../lib/api/methods'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 import { MediaWorkFlowId, MediaWorkFlowStepId, PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'

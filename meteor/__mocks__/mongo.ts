@@ -15,7 +15,13 @@ import {
 	UpdateOptions,
 	UpsertOptions,
 } from '../lib/collections/lib'
-import { mongoWhere, mongoFindOptions, mongoModify } from '@sofie-automation/corelib/dist/mongo'
+import {
+	mongoWhere,
+	mongoFindOptions,
+	mongoModify,
+	MongoQuery,
+	MongoModifier,
+} from '@sofie-automation/corelib/dist/mongo'
 import { Mongo } from 'meteor/mongo'
 import { AsyncOnlyMongoCollection, AsyncOnlyReadOnlyMongoCollection } from '../server/collections/collection'
 const clone = require('fast-clone')
@@ -126,18 +132,18 @@ export namespace MongoMock {
 						},
 					}
 				},
-				forEach(f) {
+				forEach(f: any) {
 					docs.forEach(f)
 				},
-				map(f) {
+				map(f: any) {
 					return docs.map(f)
 				},
 			}
 		}
-		findOne(query, options?: FindOneOptions<T>) {
+		findOne(query: MongoQuery<T>, options?: FindOneOptions<T>) {
 			return this.find(query, options).fetch()[0]
 		}
-		update(query: any, modifier, options?: UpdateOptions): number {
+		update(query: MongoQuery<T>, modifier: MongoModifier<T>, options?: UpdateOptions): number {
 			const unimplementedUsedOptions = _.without(_.keys(options), 'multi')
 			if (unimplementedUsedOptions.length > 0) {
 				throw new Error(`update being performed using unimplemented options: ${unimplementedUsedOptions}`)
@@ -202,7 +208,7 @@ export namespace MongoMock {
 		}
 		upsert(
 			query: any,
-			modifier,
+			modifier: MongoModifier<T>,
 			options?: UpsertOptions
 		): { numberAffected: number | undefined; insertedId: T['_id'] | undefined } {
 			const id = _.isString(query) ? query : query._id
@@ -248,7 +254,7 @@ export namespace MongoMock {
 		}
 		rawCollection() {
 			return {
-				bulkWrite: async (updates: AnyBulkWriteOperation<any>[], _options) => {
+				bulkWrite: async (updates: AnyBulkWriteOperation<any>[], _options: unknown) => {
 					await sleep(this.asyncBulkWriteDelay)
 
 					for (const update of updates) {
@@ -256,15 +262,15 @@ export namespace MongoMock {
 							this.insert(update.insertOne.document)
 						} else if ('updateOne' in update) {
 							if (update.updateOne.upsert) {
-								this.upsert(update.updateOne.filter, update.updateOne.update, { multi: false })
+								this.upsert(update.updateOne.filter, update.updateOne.update as any, { multi: false })
 							} else {
-								this.update(update.updateOne.filter, update.updateOne.update, { multi: false })
+								this.update(update.updateOne.filter, update.updateOne.update as any, { multi: false })
 							}
 						} else if ('updateMany' in update) {
 							if (update.updateMany.upsert) {
-								this.upsert(update.updateMany.filter, update.updateMany.update, { multi: true })
+								this.upsert(update.updateMany.filter, update.updateMany.update as any, { multi: true })
 							} else {
-								this.update(update.updateMany.filter, update.updateMany.update, { multi: true })
+								this.update(update.updateMany.filter, update.updateMany.update as any, { multi: true })
 							}
 						} else if ('deleteOne' in update) {
 							const docs = this.find(update.deleteOne.filter).fetch()
@@ -298,7 +304,7 @@ export namespace MongoMock {
 
 		data = data || {}
 		if (_.isArray(data)) {
-			const collectionData = {}
+			const collectionData: MockCollection<T> = {}
 			_.each(data, (doc) => {
 				if (!doc._id) throw Error(`mockSetData: "${collectionName}": doc._id missing`)
 				collectionData[unprotectString(doc._id)] = doc

@@ -29,7 +29,7 @@ export function SchemaFormTableEditRow({
 	editItem,
 	rowItem,
 	overrideHelper,
-}: SchemaFormTableEditRowProps): JSX.Element {
+}: Readonly<SchemaFormTableEditRowProps>): JSX.Element {
 	const finishEditItem = useCallback(() => editItem(rowId, false), [editItem, rowId])
 
 	return (

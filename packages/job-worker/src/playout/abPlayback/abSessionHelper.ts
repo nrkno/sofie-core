@@ -44,7 +44,7 @@ export class AbSessionHelper {
 	 * Get the full session id for an ab playback session.
 	 * Note: sessionName should be unique within the segment unless pieces want to share a session
 	 */
-	getPieceABSessionId(pieceInstance: PieceInstance, sessionName: string): string {
+	getPieceABSessionId(pieceInstance: ReadonlyDeep<PieceInstance>, sessionName: string): string {
 		const partInstanceIndex = this.#partInstances.findIndex((p) => p._id === pieceInstance.partInstanceId)
 		const partInstance = partInstanceIndex >= 0 ? this.#partInstances[partInstanceIndex] : undefined
 		if (!partInstance) throw new Error('Unknown partInstanceId in call to getPieceABSessionId')

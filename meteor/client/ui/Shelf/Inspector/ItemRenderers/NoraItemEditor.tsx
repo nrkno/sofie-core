@@ -1,9 +1,10 @@
 import * as React from 'react'
 import { createMosObjectXmlStringNoraBluePrintPiece } from '../../../../lib/data/nora/browser-plugin-data'
 import { parseMosPluginMessageXml, MosPluginMessage } from '../../../../lib/parsers/mos/mosXml2Js'
-import { PieceGeneric } from '../../../../../lib/collections/Pieces'
+import { PieceGeneric } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { createMosAppInfoXmlString } from '../../../../lib/data/mos/plugin-support'
 import { logger } from '../../../../../lib/logging'
+import { ReadonlyDeep } from 'type-fest'
 
 //TODO: figure out what the origin should be
 const LOCAL_ORIGIN = `${window.location.protocol}//${window.location.host}`
@@ -13,11 +14,11 @@ export const MODULE_BROWSER_ORIGIN = `${MODULE_BROWSER_URL.protocol}//${MODULE_B
 export { NoraItemEditor }
 
 interface INoraEditorProps {
-	piece: Omit<PieceGeneric, 'timelineObjectsString'>
+	piece: ReadonlyDeep<Omit<PieceGeneric, 'timelineObjectsString'>>
 }
 
 class NoraItemEditor extends React.Component<INoraEditorProps> {
-	iframe: HTMLIFrameElement
+	iframe: HTMLIFrameElement | null = null
 
 	componentDidMount(): void {
 		this.setUpEventListeners(window)
@@ -67,12 +68,12 @@ class NoraItemEditor extends React.Component<INoraEditorProps> {
 	}
 
 	private handleMosMessage(mos: MosPluginMessage) {
-		if (mos.ncsReqAppInfo) {
+		if (mos.ncsReqAppInfo && this.iframe) {
 			this.sendAppInfo(this.iframe.contentWindow)
 
 			// delay to send in order
 			setTimeout(() => {
-				this.postPayload(this.iframe.contentWindow)
+				if (this.iframe) this.postPayload(this.iframe.contentWindow)
 			}, 1)
 		}
 	}
@@ -103,8 +104,8 @@ class NoraItemEditor extends React.Component<INoraEditorProps> {
 
 	render(): JSX.Element {
 		return React.createElement('iframe', {
-			ref: (element) => {
-				this.iframe = element as HTMLIFrameElement
+			ref: (element: HTMLIFrameElement) => {
+				this.iframe = element
 			},
 			src: MODULE_BROWSER_URL.href,
 			style: {

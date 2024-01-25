@@ -9,7 +9,7 @@ import { AdLibPanel } from './AdLibPanel'
 import { AdLibPieceUi } from '../../lib/shelf'
 import { GlobalAdLibPanel } from './GlobalAdLibPanel'
 import { HotkeyHelpPanel } from './HotkeyHelpPanel'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { useTranslation } from 'react-i18next'
 import { BucketAdLibItem } from './RundownViewBuckets'
@@ -19,7 +19,7 @@ import { UIStudio } from '../../../lib/api/studios'
 
 export interface IShelfRundownLayoutProps {
 	rundownLayout: RundownLayout | undefined
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	showStyleBase: UIShowStyleBase
 	studioMode: boolean
 	studio: UIStudio
@@ -35,7 +35,7 @@ export interface IShelfRundownLayoutProps {
 	}>
 }
 
-export function ShelfRundownLayout(props: IShelfRundownLayoutProps): JSX.Element {
+export function ShelfRundownLayout(props: Readonly<IShelfRundownLayoutProps>): JSX.Element {
 	const { t } = useTranslation()
 	const { rundownLayout, onSwitchTab } = props
 	return (

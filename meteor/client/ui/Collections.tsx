@@ -44,3 +44,10 @@ export const UIPieceContentStatuses = createSyncCustomPublicationMongoCollection
 export const UIBucketContentStatuses = createSyncCustomPublicationMongoCollection(
 	CustomCollectionName.UIBucketContentStatuses
 )
+
+/**
+ * Pre-processed Blueprint Upgrade statuses
+ */
+export const UIBlueprintUpgradeStatuses = createSyncCustomPublicationMongoCollection(
+	CustomCollectionName.UIBlueprintUpgradeStatuses
+)

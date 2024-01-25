@@ -4,6 +4,7 @@ import { RundownUtils } from '../../../../lib/rundown'
 import { L3rdFloatingInspector } from '../../../FloatingInspectors/L3rdFloatingInspector'
 import { PieceMultistepChevron } from '../../../SegmentContainer/PieceMultistepChevron'
 import { IProps } from './ThumbnailRendererFactory'
+import { LoopingPieceIcon } from '../../../../lib/ui/icons/looping'
 
 export function GraphicsThumbnailRenderer({
 	pieceInstance,
@@ -11,7 +12,7 @@ export function GraphicsThumbnailRenderer({
 	layer,
 	originPosition,
 	height,
-}: IProps): JSX.Element {
+}: Readonly<IProps>): JSX.Element {
 	const content = pieceInstance.instance.piece.content as NoraContent | GraphicsContent | undefined
 
 	return (
@@ -35,6 +36,9 @@ export function GraphicsThumbnailRenderer({
 			/>
 			<div className="segment-storyboard__thumbnail__label segment-storyboard__thumbnail__label--sm">
 				<PieceMultistepChevron className="segment-storyboard__piece__step-chevron" piece={pieceInstance} />
+				{pieceInstance.instance.piece.content?.loop && (
+					<LoopingPieceIcon className="segment-storyboard__thumbnail__label-icon" playing={hovering} />
+				)}
 				{pieceInstance.instance.piece.name}
 			</div>
 		</>

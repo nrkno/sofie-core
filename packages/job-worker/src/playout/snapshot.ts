@@ -34,6 +34,7 @@ import { assertNever, getRandomId, literal } from '@sofie-automation/corelib/dis
 import { logger } from '../logging'
 import { JSONBlobParse, JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { RundownOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 
 /**
  * Generate the Playlist owned portions of a Playlist snapshot
@@ -161,7 +162,7 @@ export async function handleRestorePlaylistSnapshot(
 
 	for (const rd of snapshot.rundowns) {
 		if (!rd.orphaned) {
-			rd.orphaned = 'from-snapshot'
+			rd.orphaned = RundownOrphanedReason.FROM_SNAPSHOT
 		}
 
 		rd.playlistId = playlistId
@@ -285,7 +286,7 @@ export async function handleRestorePlaylistSnapshot(
 		pieceInstance.piece._id = (pieceIdMap.get(pieceInstance.piece._id) || getRandomId()) as PieceId // Note: don't warn if not found, as the piece may have been deleted
 		if (pieceInstance.infinite) {
 			pieceInstance.infinite.infinitePieceId =
-				pieceIdMap.get(pieceInstance.infinite.infinitePieceId) || getRandomId() // Note: don't warn if not found, as the piece may have been deleted
+				(pieceIdMap.get(pieceInstance.infinite.infinitePieceId) as PieceId) || getRandomId() // Note: don't warn if not found, as the piece may have been deleted
 		}
 	}
 
@@ -339,6 +340,8 @@ export async function handleRestorePlaylistSnapshot(
 				break
 		}
 	}
+
+	snapshot.playlist.rundownIdsInOrder = snapshot.playlist.rundownIdsInOrder.map((id) => rundownIdMap.get(id) ?? id)
 
 	const rundownIds = snapshot.rundowns.map((r) => r._id)
 

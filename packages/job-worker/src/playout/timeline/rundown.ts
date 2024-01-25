@@ -5,7 +5,7 @@ import {
 	TimelineObjClassesCore,
 	TSR,
 } from '@sofie-automation/blueprints-integration'
-import { PartInstanceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstanceId, PieceInstanceId, PieceInstanceInfiniteId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstanceInfinite } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { DBRundownPlaylist, RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import {
@@ -26,10 +26,9 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { literal, normalizeArrayToMapFunc } from '@sofie-automation/corelib/dist/lib'
 import { getCurrentTime } from '../../lib'
 import _ = require('underscore')
-import { CacheForPlayout } from '../cache'
+import { PlayoutModel } from '../model/PlayoutModel'
 import { getPieceEnableInsidePart, transformPieceGroupAndObjects } from './piece'
 import { logger } from '../../logging'
-import { ReadOnlyCache } from '../../cache/CacheBase'
 
 /**
  * Some additional data used by the timeline generation process
@@ -51,14 +50,14 @@ export interface RundownTimelineResult {
 
 export function buildTimelineObjsForRundown(
 	context: JobContext,
-	cache: ReadOnlyCache<CacheForPlayout>,
-	_activeRundown: DBRundown,
+	playoutModel: PlayoutModel,
+	_activeRundown: ReadonlyDeep<DBRundown>,
 	partInstancesInfo: SelectedPartInstancesTimelineInfo
 ): RundownTimelineResult {
 	const span = context.startSpan('buildTimelineObjsForRundown')
 	const timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 
-	const activePlaylist = cache.Playlist.doc
+	const activePlaylist = playoutModel.playlist
 	const currentTime = getCurrentTime()
 
 	timelineObjs.push(
@@ -355,7 +354,7 @@ function generatePreviousPartInstanceObjects(
 	context: JobContext,
 	activePlaylist: ReadonlyDeep<DBRundownPlaylist>,
 	previousPartInfo: SelectedPartInstanceTimelineInfo,
-	currentInfinitePieceIds: Set<PieceInstanceInfinite['infinitePieceId']>,
+	currentInfinitePieceIds: Set<PieceInstanceInfiniteId>,
 	timingContext: RundownTimelineTimingContext,
 	currentPartInstanceTimings: PartCalculatedTimings
 ): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {

@@ -11,7 +11,7 @@ import deepExtend from 'deep-extend'
 import { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
 import { getSideEffect } from '../../../../lib/collections/ExpectedPackages'
-import { Studio, StudioLight, StudioPackageContainer } from '../../../../lib/collections/Studios'
+import { DBStudio, StudioLight, StudioPackageContainer } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { clone, omit } from '../../../../lib/lib'
 import { CustomPublishCollection } from '../../../lib/customPublication'
 import { logger } from '../../../logging'
@@ -29,17 +29,21 @@ import type { StudioFields } from './publication'
  */
 export async function updateCollectionForExpectedPackageIds(
 	contentCache: ReadonlyDeep<ExpectedPackagesContentCache>,
-	studio: Pick<Studio, StudioFields>,
+	studio: Pick<DBStudio, StudioFields>,
 	layerNameToDeviceIds: Map<string, PeripheralDeviceId[]>,
 	collection: CustomPublishCollection<PackageManagerExpectedPackage>,
 	filterPlayoutDeviceIds: ReadonlyDeep<PeripheralDeviceId[]> | undefined,
 	regenerateIds: Set<ExpectedPackageId>
 ): Promise<void> {
 	const updatedDocIds = new Set<PackageManagerExpectedPackageId>()
+	const missingExpectedPackageIds = new Set<ExpectedPackageId>()
 
 	for (const packageId of regenerateIds) {
 		const packageDoc = contentCache.ExpectedPackages.findOne(packageId)
-		if (!packageDoc) continue
+		if (!packageDoc) {
+			missingExpectedPackageIds.add(packageId)
+			continue
+		}
 
 		// Map the expectedPackages onto their specified layer:
 		const allDeviceIds = new Set<PeripheralDeviceId>()
@@ -71,12 +75,15 @@ export async function updateCollectionForExpectedPackageIds(
 	}
 
 	// Remove all documents for an ExpectedPackage that was regenerated, and no update was issues
-	collection.remove(
-		(doc) =>
-			!doc.pieceInstanceId &&
-			updatedDocIds.has(doc._id) &&
-			!regenerateIds.has(protectString(doc.expectedPackage._id))
-	)
+	collection.remove((doc) => {
+		if (doc.pieceInstanceId) return false
+
+		if (missingExpectedPackageIds.has(protectString(doc.expectedPackage._id))) return true
+
+		if (updatedDocIds.has(doc._id) && !regenerateIds.has(protectString(doc.expectedPackage._id))) return true
+
+		return false
+	})
 }
 
 /**
@@ -90,17 +97,22 @@ export async function updateCollectionForExpectedPackageIds(
  */
 export async function updateCollectionForPieceInstanceIds(
 	contentCache: ReadonlyDeep<ExpectedPackagesContentCache>,
-	studio: Pick<Studio, StudioFields>,
+	studio: Pick<DBStudio, StudioFields>,
 	layerNameToDeviceIds: Map<string, PeripheralDeviceId[]>,
 	collection: CustomPublishCollection<PackageManagerExpectedPackage>,
 	filterPlayoutDeviceIds: ReadonlyDeep<PeripheralDeviceId[]> | undefined,
 	regenerateIds: Set<PieceInstanceId>
 ): Promise<void> {
 	const updatedDocIds = new Set<PackageManagerExpectedPackageId>()
+	const missingPieceInstanceIds = new Set<PieceInstanceId>()
 
 	for (const pieceInstanceId of regenerateIds) {
 		const pieceInstanceDoc = contentCache.PieceInstances.findOne(pieceInstanceId)
-		if (!pieceInstanceDoc?.piece?.expectedPackages) continue
+		if (!pieceInstanceDoc) {
+			missingPieceInstanceIds.add(pieceInstanceId)
+			continue
+		}
+		if (!pieceInstanceDoc.piece?.expectedPackages) continue
 
 		pieceInstanceDoc.piece.expectedPackages.forEach((expectedPackage, i) => {
 			const sanitisedPackageId = expectedPackage._id || '__unnamed' + i
@@ -138,9 +150,15 @@ export async function updateCollectionForPieceInstanceIds(
 	}
 
 	// Remove all documents for an ExpectedPackage that was regenerated, and no update was issues
-	collection.remove(
-		(doc) => !!doc.pieceInstanceId && updatedDocIds.has(doc._id) && !regenerateIds.has(doc.pieceInstanceId)
-	)
+	collection.remove((doc) => {
+		if (!doc.pieceInstanceId) return false
+
+		if (missingPieceInstanceIds.has(doc.pieceInstanceId)) return true
+
+		if (updatedDocIds.has(doc._id) && !regenerateIds.has(doc.pieceInstanceId)) return true
+
+		return false
+	})
 }
 
 enum Priorities {

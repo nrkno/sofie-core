@@ -83,8 +83,8 @@ function handleActivePlaylist(data) {
 setInterval(() => {
 	const segmentRemainingEl = document.getElementById(SEGMENT_REMAINIG_SPAN_ID)
 	const partRemainingEl = document.getElementById(PART_REMAINIG_SPAN_ID)
-	const segmentEndTime = activePlaylist.currentSegment && activePlaylist.currentSegment.timing.expectedEndTime
-	const partEndTime = activePlaylist.currentPart && activePlaylist.currentPart.timing.expectedEndTime
+	const segmentEndTime = activePlaylist.currentSegment && activePlaylist.currentSegment.timing.projectedEndTime
+	const partEndTime = activePlaylist.currentPart && activePlaylist.currentPart.timing.projectedEndTime
 
 	const currentSegmentId = activePlaylist.currentPart && activePlaylist.currentPart.segmentId
 	const now = ENABLE_SYNCED_TICKS ? Math.floor(Date.now() / 1000) * 1000 : Date.now()

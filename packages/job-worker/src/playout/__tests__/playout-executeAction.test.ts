@@ -6,7 +6,8 @@ import { setupDefaultRundownPlaylist, setupMockShowStyleCompound } from '../../_
 import { handleTakeNextPart } from '../take'
 import { handleExecuteAdlibAction } from '../adlibAction'
 import { handleActivateRundownPlaylist } from '../activePlaylistJobs'
-import { ActionPartChange, ActionExecutionContext } from '../../blueprints/context/adlibActions'
+import { ActionExecutionContext } from '../../blueprints/context/adlibActions'
+import { ActionPartChange } from '../../blueprints/context/services/PartAndPieceInstanceActionService'
 import * as Infinites from '../../playout/infinites'
 import * as TakeApi from '../../playout/take'
 
@@ -56,6 +57,7 @@ describe('Playout API', () => {
 					actionDocId: actionDocId,
 					actionId: actionId,
 					userData: userData,
+					privateData: undefined,
 				})
 			).rejects.toMatchUserError(UserErrorMessage.ActionsNotSupported)
 
@@ -66,7 +68,13 @@ describe('Playout API', () => {
 			})
 
 			await expect(
-				handleExecuteAdlibAction(context, { playlistId, actionDocId, actionId, userData })
+				handleExecuteAdlibAction(context, {
+					playlistId,
+					actionDocId,
+					actionId,
+					userData,
+					privateData: undefined,
+				})
 			).rejects.toMatchUserError(UserErrorMessage.InternalError)
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(0)
@@ -91,6 +99,7 @@ describe('Playout API', () => {
 				actionDocId,
 				actionId,
 				userData,
+				privateData: undefined,
 			})
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(0)
@@ -105,7 +114,8 @@ describe('Playout API', () => {
 					if (context.currentPartState !== ActionPartChange.NONE)
 						throw new Error('nextPartState started wrong')
 
-					context.nextPartState = ActionPartChange.SAFE_CHANGE
+					// @ts-ignore
+					context.partAndPieceInstanceService.nextPartState = ActionPartChange.SAFE_CHANGE
 				},
 			})
 
@@ -117,6 +127,7 @@ describe('Playout API', () => {
 				actionDocId,
 				actionId,
 				userData,
+				privateData: undefined,
 			})
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(1)
@@ -131,7 +142,8 @@ describe('Playout API', () => {
 					if (context.currentPartState !== ActionPartChange.NONE)
 						throw new Error('nextPartState started wrong')
 
-					context.currentPartState = ActionPartChange.SAFE_CHANGE
+					// @ts-ignore
+					context.partAndPieceInstanceService.nextPartState = ActionPartChange.SAFE_CHANGE
 				},
 			})
 
@@ -143,6 +155,7 @@ describe('Playout API', () => {
 				actionDocId,
 				actionId,
 				userData,
+				privateData: undefined,
 			})
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(1)
@@ -166,6 +179,7 @@ describe('Playout API', () => {
 				actionDocId,
 				actionId,
 				userData,
+				privateData: undefined,
 			})
 
 			expect(takeNextPartMock).toHaveBeenCalledTimes(1)
@@ -188,6 +202,7 @@ describe('Playout API', () => {
 				actionDocId,
 				actionId,
 				userData,
+				privateData: undefined,
 			})
 
 			expect(takeNextPartMock).toHaveBeenCalledTimes(0)

@@ -85,6 +85,7 @@ export async function insertShowStyleBaseInner(organizationId: OrganizationId | 
 		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		_rundownVersionHash: '',
 		lastBlueprintConfig: undefined,
+		lastBlueprintFixUpHash: undefined,
 	}
 	await ShowStyleBases.insertAsync(showStyleBase)
 

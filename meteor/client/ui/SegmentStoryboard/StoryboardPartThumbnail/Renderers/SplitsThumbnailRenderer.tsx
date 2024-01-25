@@ -11,7 +11,7 @@ export function SplitsThumbnailRenderer({
 	hovering,
 	layer,
 	height,
-}: IProps): JSX.Element {
+}: Readonly<IProps>): JSX.Element {
 	const splitItems = getSplitItems(pieceInstance, 'segment-storyboard__thumbnail__item')
 
 	return (

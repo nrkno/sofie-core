@@ -5,7 +5,7 @@ import { WithTranslation, withTranslation } from 'react-i18next'
 import ClassNames from 'classnames'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { SegmentUi, PartUi, IOutputLayerUi, PieceUi } from './SegmentTimelineContainer'
 import { TimelineGrid } from './TimelineGrid'
 import { SegmentTimelinePart, SegmentTimelinePartClass } from './Parts/SegmentTimelinePart'
@@ -25,7 +25,7 @@ import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerL
 import { Settings } from '../../../lib/Settings'
 import { IContextMenuContext } from '../RundownView'
 import { literal, protectString, unprotectString } from '../../../lib/lib'
-import { isPartPlayable } from '../../../lib/collections/Parts'
+import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifications'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../../../lib/api/triggers/RundownViewEventBus'
@@ -33,7 +33,7 @@ import { wrapPartToTemporaryInstance } from '../../../lib/collections/PartInstan
 
 import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
 import { UIStateStorage } from '../../lib/UIStateStorage'
-import { RundownTimingContext } from '../../lib/rundownTiming'
+import { getPartInstanceTimingId, RundownTimingContext } from '../../lib/rundownTiming'
 import { IOutputLayer, ISourceLayer, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { SegmentTimelineZoomButtons } from './SegmentTimelineZoomButtons'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
@@ -57,7 +57,7 @@ interface IProps {
 	id: string
 	key: string
 	segment: SegmentUi
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	followLiveSegments: boolean
 	studio: UIStudio
 	parts: Array<PartUi>
@@ -86,7 +86,7 @@ interface IProps {
 	onScroll: (scrollLeft: number, event: any) => void
 	onZoomChange: (newScale: number, event: any) => void
 	onFollowLiveLine?: (state: boolean, event: any) => void
-	onShowEntireSegment?: (event: any) => void
+	onShowEntireSegment?: (event: React.MouseEvent | undefined) => void
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	onItemClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
@@ -116,7 +116,7 @@ interface IStateHeader {
 }
 
 interface IZoomPropsHeader {
-	onZoomDblClick: (e) => void
+	onZoomDblClick: (e: React.MouseEvent) => void
 	timelineWidth: number
 }
 interface IZoomStateHeader {
@@ -131,11 +131,13 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 		durations: PropTypes.object.isRequired,
 	}
 
-	context: {
-		durations: RundownTimingContext
-	}
+	context:
+		| {
+				durations: RundownTimingContext
+		  }
+		| undefined
 
-	constructor(props, context) {
+	constructor(props: IProps & IZoomPropsHeader, context: any) {
 		super(props, context)
 		this.state = {
 			totalSegmentDuration: 10,
@@ -168,14 +170,14 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 
 	calculateSegmentDuration(): number {
 		let total = 0
-		if (this.context && this.context.durations) {
-			const durations = this.context.durations as RundownTimingContext
-			this.props.parts.forEach((item) => {
+		if (this.context?.durations) {
+			const durations = this.context.durations
+			this.props.parts.forEach((partExtended) => {
 				// total += durations.partDurations ? durations.partDurations[item._id] : (item.duration || item.renderedDuration || 1)
+				const partInstanceTimingId = getPartInstanceTimingId(partExtended.instance)
 				const duration = Math.max(
-					item.instance.timings?.duration || item.renderedDuration || 0,
-					(durations.partDisplayDurations && durations.partDisplayDurations[unprotectString(item.instance.part._id)]) ||
-						Settings.defaultDisplayDuration
+					partExtended.instance.timings?.duration || partExtended.renderedDuration || 0,
+					durations.partDisplayDurations?.[partInstanceTimingId] || Settings.defaultDisplayDuration
 				)
 				total += duration
 			})
@@ -240,8 +242,8 @@ export const BUDGET_GAP_PART = {
 export class SegmentTimelineClass extends React.Component<Translated<WithTiming<IProps>>, IStateHeader> {
 	static whyDidYouRender = true
 
-	timeline: HTMLDivElement
-	segmentBlock: HTMLDivElement
+	timeline: HTMLDivElement | null = null
+	segmentBlock: HTMLDivElement | null = null
 
 	private _touchSize = 0
 	private _touchAttached = false
@@ -282,7 +284,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 		setTimeout(() => {
 			// TODO: This doesn't actually handle having new parts added/removed, which should cause the segment to re-scale!
 			if (this.props.onShowEntireSegment) {
-				this.props.onShowEntireSegment({})
+				this.props.onShowEntireSegment(undefined)
 			}
 		}, 10)
 	}
@@ -296,7 +298,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 		RundownViewEventBus.off(RundownViewEvents.SEGMENT_ZOOM_OFF, this.onRundownEventSegmentZoomOff)
 	}
 
-	private highlightTimeout: NodeJS.Timer
+	private highlightTimeout: NodeJS.Timer | undefined
 
 	private onHighlight = (e: HighlightEvent) => {
 		if (e.segmentId === this.props.segment._id && !e.partId && !e.pieceId) {
@@ -321,7 +323,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 		}
 	}
 
-	private setTimelineRef = (el: HTMLDivElement) => {
+	private setTimelineRef = (el: HTMLDivElement | null) => {
 		this.timeline = el
 	}
 
@@ -335,7 +337,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 		})
 	}
 
-	private onZoomNormalize = (e) => {
+	private onZoomNormalize = (e: React.MouseEvent) => {
 		if (this.props.onShowEntireSegment) {
 			this.props.onShowEntireSegment(e)
 		}
@@ -389,6 +391,10 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 			e.preventDefault()
 			e.stopPropagation()
 		}
+	}
+
+	private onContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
+		e.preventDefault()
 	}
 
 	private onTimelineMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -590,7 +596,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 		})
 	}
 
-	private getSegmentContext = (_props) => {
+	private getSegmentContext = () => {
 		const ctx = literal<IContextMenuContext>({
 			segment: this.props.segment,
 			part: this.props.parts.find((p) => isPartPlayable(p.instance.part)) || null,
@@ -737,7 +743,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 							pieces={this.props.pieces}
 							followingPart={part}
 							livePosition={this.props.livePosition}
-							firstPartInSegmentId={firstPartInSegment.partId}
+							firstPartInSegment={firstPartInSegment}
 							sourceLayers={this.props.segment.sourceLayers}
 							timeToPixelRatio={this.props.timeScale}
 							autoNextPart={this.props.autoNextPart}
@@ -799,7 +805,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 							pieces={this.props.pieces}
 							followingPart={undefined}
 							livePosition={this.props.livePosition}
-							firstPartInSegmentId={firstPartInSegment.partId}
+							firstPartInSegment={firstPartInSegment}
 							sourceLayers={this.props.segment.sourceLayers}
 							timeToPixelRatio={this.props.timeScale}
 							autoNextPart={this.props.autoNextPart}
@@ -963,8 +969,8 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 					0,
 					(firstPartInSegment &&
 						this.props.timingDurations.partDisplayStartsAt &&
-						this.props.timingDurations.partDisplayStartsAt[unprotectString(livePart.instance.part._id)] -
-							this.props.timingDurations.partDisplayStartsAt[unprotectString(firstPartInSegment.instance.part._id)]) ||
+						this.props.timingDurations.partDisplayStartsAt[getPartInstanceTimingId(livePart.instance)] -
+							this.props.timingDurations.partDisplayStartsAt[getPartInstanceTimingId(firstPartInSegment.instance)]) ||
 						0
 			  )
 			: 0
@@ -980,7 +986,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 		const criticalNotes = this.props.segmentNoteCounts.criticial
 		const warningNotes = this.props.segmentNoteCounts.warning
 
-		const identifiers: Array<{ partId: PartId; ident?: string }> = this.props.parts
+		const identifiers: Array<{ partId: PartId; ident: string }> = this.props.parts
 			.map((p) =>
 				p.instance.part.identifier
 					? {
@@ -989,7 +995,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 					  }
 					: null
 			)
-			.filter((entry) => entry !== null) as Array<{ partId: PartId; ident?: string }>
+			.filter((entry): entry is { partId: PartId; ident: string } => entry !== null)
 
 		let countdownToPartId: PartId | undefined = undefined
 		if (!this.props.isLiveSegment) {
@@ -1109,7 +1115,6 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 						)}
 				</div>
 
-				<div className="segment-timeline__identifier">{this.props.segment.identifier}</div>
 				{this.props.segment.segmentTiming?.expectedStart || this.props.segment.segmentTiming?.expectedEnd ? (
 					<div className="segment-timeline__expectedTime">
 						<SegmentTimeAnchorTime
@@ -1138,9 +1143,6 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 									}
 								/>
 							)}
-						{this.props.studio.settings.preserveUnsyncedPlayingSegmentContents && this.props.segment.orphaned && (
-							<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
-						)}
 					</div>
 				)}
 
@@ -1166,6 +1168,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 						'segment-timeline__timeline-container--grabbable': Settings.allowGrabbingTimeline,
 						'segment-timeline__timeline-container--grabbed': this.state.mouseGrabbed,
 					})}
+					onContextMenu={this.onContextMenu}
 					onMouseDown={this.onTimelineMouseDown}
 					onTouchStartCapture={this.onTimelineTouchStart}
 					ref={this.setTimelineRef}
@@ -1221,10 +1224,10 @@ export const SegmentTimeline = withTranslation()(
 				const livePart = props.parts.find(
 					(part) => part.instance._id === props.playlist.currentPartInfo?.partInstanceId
 				)
-				const livePartId = unprotectString(livePart?.instance.part._id)
+				const livePartId = livePart ? getPartInstanceTimingId(livePart.instance) : undefined
 				return [
-					livePartId ? (durations.partDisplayStartsAt || {})[livePartId] : undefined,
-					livePartId ? (durations.partDisplayDurations || {})[livePartId] : undefined,
+					livePartId ? durations.partDisplayStartsAt?.[livePartId] : undefined,
+					livePartId ? durations.partDisplayDurations?.[livePartId] : undefined,
 				]
 			},
 		}

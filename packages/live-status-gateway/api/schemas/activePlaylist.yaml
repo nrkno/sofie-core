@@ -60,7 +60,7 @@ $defs:
         description: Unique id of the segment this part belongs to
         type: string
       autoNext:
-        description: Should this part progress to the next automatically
+        description: If this part will progress to the next automatically
         type: boolean
         default: false
       pieces:
@@ -104,10 +104,10 @@ $defs:
                   expectedDurationMs:
                     description: Expected duration of the part (milliseconds)
                     type: number
-                  expectedEndTime:
-                    description: Unix timestamp of when the part is expected to end (milliseconds)
+                  projectedEndTime:
+                    description: Unix timestamp of when the part is projected to end (milliseconds). A sum of `startTime` and `expectedDurationMs`.
                     type: number
-                required: [startTime, expectedDurationMs, expectedEndTime]
+                required: [startTime, expectedDurationMs, projectedEndTime]
             required: [timing]
       - type: 'null'
     examples:
@@ -118,7 +118,7 @@ $defs:
         timing:
           startTime: 1600000060000
           expectedDurationMs: 15000
-          expectedEndTime: 1600000075000
+          projectedEndTime: 1600000075000
         pieces:
           - $ref: '#/$defs/piece/examples/0'
   currentSegment:
@@ -137,10 +137,10 @@ $defs:
           budgetDurationMs:
             description: Budget duration of the segment
             type: number
-          expectedEndTime:
-            description: Unix timestamp of when the segment is expected to end (milliseconds)
+          projectedEndTime:
+            description: Unix timestamp of when the segment is projected to end (milliseconds). The time this segment started, offset by its budget duration, if the segment has a defined budget duration. Otherwise, the time the current part started, offset by the difference between expected durations of all parts in this segment and the as-played durations of the parts that already stopped.
             type: number
-        required: [expectedDurationMs, expectedEndTime]
+        required: [expectedDurationMs, projectedEndTime]
     required: [id, timing]
     additionalProperties: false
     examples:
@@ -148,7 +148,7 @@ $defs:
         timing:
           expectedDurationMs: 15000
           budgetDurationMs: 20000
-          expectedEndTime: 1600000075000
+          projectedEndTime: 1600000075000
   piece:
     type: object
     properties:

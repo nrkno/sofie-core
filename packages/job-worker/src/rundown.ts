@@ -3,15 +3,15 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { normalizeArrayToMap, min, groupByToMap } from '@sofie-automation/corelib/dist/lib'
+import { normalizeArrayToMap, min, groupByToMap, clone } from '@sofie-automation/corelib/dist/lib'
 import { AnyBulkWriteOperation } from 'mongodb'
 import { ReadonlyDeep } from 'type-fest'
 import _ = require('underscore')
-import { CacheForIngest } from './ingest/cache'
-import { BeforePartMap } from './ingest/commit'
+import { IngestModelReadonly } from './ingest/model/IngestModel'
+import { BeforeIngestOperationPartMap } from './ingest/commit'
 import { JobContext } from './jobs'
 import { logger } from './logging'
-import { CacheForPlayout } from './playout/cache'
+import { PlayoutModel } from './playout/model/PlayoutModel'
 
 /** Return true if the rundown is allowed to be moved out of that playlist */
 export function allowedToMoveRundownOutOfPlaylist(
@@ -38,9 +38,9 @@ export function allowedToMoveRundownOutOfPlaylist(
  */
 export async function updatePartInstanceRanks(
 	context: JobContext,
-	cache: CacheForIngest,
+	ingestModel: IngestModelReadonly,
 	changedSegmentIds: ReadonlyDeep<SegmentId[]>,
-	beforePartMap: BeforePartMap
+	oldPartMap: BeforeIngestOperationPartMap
 ): Promise<void> {
 	const groupedPartInstances = groupByToMap(
 		await context.directCollections.PartInstances.findFetch({
@@ -49,17 +49,13 @@ export async function updatePartInstanceRanks(
 		}),
 		'segmentId'
 	)
-	const groupedNewParts = groupByToMap(
-		cache.Parts.findAll((p) => changedSegmentIds.includes(p.segmentId)),
-		'segmentId'
-	)
 
 	const writeOps: AnyBulkWriteOperation<DBPartInstance>[] = []
 
 	for (const segmentId of changedSegmentIds) {
-		const oldPartIdsAndRanks = beforePartMap.get(segmentId) ?? []
+		const oldPartIdsAndRanks = oldPartMap.get(segmentId) ?? []
 
-		const newParts = groupedNewParts.get(segmentId) ?? []
+		const newParts = (ingestModel.getSegment(segmentId)?.parts ?? []).map((part) => part.part)
 		const segmentPartInstances = _.sortBy(groupedPartInstances.get(segmentId) ?? [], (p) => p.part._rank)
 
 		const newRanks = calculateNewRanksForParts(segmentId, oldPartIdsAndRanks, newParts, segmentPartInstances)
@@ -115,32 +111,29 @@ export async function updatePartInstanceRanks(
  * Update the ranks of all PartInstances in the given segments.
  * Syncs the ranks from matching Parts to PartInstances.
  */
-export function updatePartInstanceRanksAfterAdlib(cache: CacheForPlayout, segmentId: SegmentId): void {
-	const newParts = cache.Parts.findAll((p) => p.segmentId === segmentId)
+export function updatePartInstanceRanksAfterAdlib(playoutModel: PlayoutModel, segmentId: SegmentId): void {
+	const newParts = playoutModel.findSegment(segmentId)?.parts ?? []
+
 	const segmentPartInstances = _.sortBy(
-		cache.PartInstances.findAll((p) => p.segmentId === segmentId),
+		playoutModel.loadedPartInstances
+			.filter((p) => p.partInstance.segmentId === segmentId)
+			.map((p) => clone<DBPartInstance>(p.partInstance)),
 		(p) => p.part._rank
 	)
 
 	const newRanks = calculateNewRanksForParts(segmentId, null, newParts, segmentPartInstances)
 	for (const [instanceId, info] of newRanks.entries()) {
+		const partInstance = playoutModel.getPartInstance(instanceId)
+		if (!partInstance) continue // TODO - should this throw?
+
 		if (info.deleted) {
-			cache.PartInstances.updateOne(instanceId, (p) => {
-				p.part._rank = info.rank
-				p.orphaned = 'deleted'
-				return p
-			})
+			partInstance.setRank(info.rank)
+			partInstance.setOrphaned('deleted')
 		} else if (info.deleted === undefined) {
-			cache.PartInstances.updateOne(instanceId, (p) => {
-				p.part._rank = info.rank
-				return p
-			})
+			partInstance.setRank(info.rank)
 		} else {
-			cache.PartInstances.updateOne(instanceId, (p) => {
-				p.part._rank = info.rank
-				delete p.orphaned
-				return p
-			})
+			partInstance.setRank(info.rank)
+			partInstance.setOrphaned(undefined)
 		}
 	}
 
@@ -150,7 +143,7 @@ export function updatePartInstanceRanksAfterAdlib(cache: CacheForPlayout, segmen
 function calculateNewRanksForParts(
 	segmentId: SegmentId,
 	oldPartIdsAndRanks0: Array<{ id: PartId; rank: number }> | null, // Null if the Parts havent changed, and so can be loaded locally
-	newParts: DBPart[],
+	newParts: ReadonlyDeep<DBPart[]>,
 	segmentPartInstances: DBPartInstance[]
 ): Map<PartInstanceId, { deleted: boolean | undefined; rank: number }> {
 	const changedRanks = new Map<PartInstanceId, { deleted: boolean | undefined; rank: number }>()
@@ -160,15 +153,17 @@ function calculateNewRanksForParts(
 	for (const partInstance of segmentPartInstances) {
 		const part = newPartsMap.get(partInstance.part._id)
 		if (part) {
-			// We have a part and instance, so make sure the part isn't orphaned and sync the rank
-			changedRanks.set(partInstance._id, {
-				rank: part._rank,
-				deleted: false,
-			})
+			if (part._rank !== partInstance.part._rank || partInstance.orphaned) {
+				// We have a part and instance, so make sure the part isn't orphaned and sync the rank
+				changedRanks.set(partInstance._id, {
+					rank: part._rank,
+					deleted: false,
+				})
 
-			// Update local copy
-			delete partInstance.orphaned
-			partInstance.part._rank = part._rank
+				// Update local copy
+				delete partInstance.orphaned
+				partInstance.part._rank = part._rank
+			}
 		} else if (!partInstance.orphaned) {
 			partInstance.orphaned = 'deleted'
 			changedRanks.set(partInstance._id, {
@@ -179,7 +174,12 @@ function calculateNewRanksForParts(
 	}
 
 	const orphanedPartInstances = segmentPartInstances
-		.map((p) => ({ rank: p.part._rank, orphaned: p.orphaned, instanceId: p._id, id: p.part._id }))
+		.map((p) => ({
+			rank: p.part._rank,
+			orphaned: p.orphaned,
+			instanceId: p._id,
+			id: p.part._id,
+		}))
 		.filter((p) => p.orphaned)
 
 	if (orphanedPartInstances.length === 0) {

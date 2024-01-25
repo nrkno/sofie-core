@@ -19,7 +19,7 @@ function addNodes(obj: object, rootNode: Node): void {
 	}
 
 	for (const name of Object.keys(obj)) {
-		const value = obj[name]
+		const value = (obj as any)[name]
 
 		if (typeof value === 'object' && name === '_attributes') {
 			// only Elements can have attributes

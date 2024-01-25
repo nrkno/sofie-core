@@ -1,12 +1,20 @@
 import { check, Match } from '../../lib/check'
 import { registerClassToMeteorMethods } from '../methods'
-import { MigrationChunk, NewMigrationAPI, MigrationAPIMethods, GetUpgradeStatusResult } from '../../lib/api/migration'
+import {
+	MigrationChunk,
+	NewMigrationAPI,
+	MigrationAPIMethods,
+	BlueprintFixUpConfigMessage,
+} from '../../lib/api/migration'
 import * as Migrations from './databaseMigration'
 import { MigrationStepInputResult } from '@sofie-automation/blueprints-integration'
 import { MethodContextAPI } from '../../lib/api/methods'
 import { SystemWriteAccess } from '../security/system'
 import {
-	getUpgradeStatus,
+	fixupConfigForShowStyleBase,
+	fixupConfigForStudio,
+	ignoreFixupConfigForShowStyleBase,
+	ignoreFixupConfigForStudio,
 	runUpgradeForShowStyleBase,
 	runUpgradeForStudio,
 	validateConfigForShowStyleBase,
@@ -50,10 +58,20 @@ class ServerMigrationAPI extends MethodContextAPI implements NewMigrationAPI {
 		return Migrations.resetDatabaseVersions()
 	}
 
-	async getUpgradeStatus(): Promise<GetUpgradeStatusResult> {
+	async fixupConfigForStudio(studioId: StudioId): Promise<BlueprintFixUpConfigMessage[]> {
+		check(studioId, String)
+
 		await SystemWriteAccess.migrations(this)
 
-		return getUpgradeStatus()
+		return fixupConfigForStudio(studioId)
+	}
+
+	async ignoreFixupConfigForStudio(studioId: StudioId): Promise<void> {
+		check(studioId, String)
+
+		await SystemWriteAccess.migrations(this)
+
+		return ignoreFixupConfigForStudio(studioId)
 	}
 
 	async validateConfigForStudio(studioId: StudioId): Promise<BlueprintValidateConfigForStudioResult> {
@@ -70,6 +88,22 @@ class ServerMigrationAPI extends MethodContextAPI implements NewMigrationAPI {
 		await SystemWriteAccess.migrations(this)
 
 		return runUpgradeForStudio(studioId)
+	}
+
+	async fixupConfigForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<BlueprintFixUpConfigMessage[]> {
+		check(showStyleBaseId, String)
+
+		await SystemWriteAccess.migrations(this)
+
+		return fixupConfigForShowStyleBase(showStyleBaseId)
+	}
+
+	async ignoreFixupConfigForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void> {
+		check(showStyleBaseId, String)
+
+		await SystemWriteAccess.migrations(this)
+
+		return ignoreFixupConfigForShowStyleBase(showStyleBaseId)
 	}
 
 	async validateConfigForShowStyleBase(

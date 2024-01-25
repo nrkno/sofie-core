@@ -1,6 +1,6 @@
 import React, { ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import classNames from 'classnames'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist, RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { PartUi, PieceUi, SegmentNoteCounts, SegmentUi } from '../SegmentContainer/withResolvedSegment'
 import { IContextMenuContext } from '../RundownView'
@@ -16,8 +16,6 @@ import { useInView } from 'react-intersection-observer'
 import { getHeaderHeight } from '../../lib/viewPort'
 import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
-import { UIStudio } from '../../../lib/api/studios'
-import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 
 interface IProps {
@@ -31,8 +29,7 @@ interface IProps {
 
 	key: string
 	segment: SegmentUi
-	playlist: RundownPlaylist
-	studio: UIStudio
+	playlist: DBRundownPlaylist
 	parts: Array<PartUi>
 	pieces: Map<PartId, CalculateTimingsPiece[]>
 	segmentNoteCounts: SegmentNoteCounts
@@ -227,7 +224,6 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 				pieces={props.pieces}
 				segment={props.segment}
 				playlist={props.playlist}
-				studio={props.studio}
 				segmentNoteCounts={props.segmentNoteCounts}
 				highlight={highlight}
 				isLiveSegment={props.isLiveSegment}

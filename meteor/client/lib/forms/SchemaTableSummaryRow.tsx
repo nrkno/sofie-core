@@ -22,7 +22,7 @@ export function SchemaTableSummaryRow<T extends string | number>({
 	isEdited,
 	editItem,
 	removeItem,
-}: SchemaTableSummaryRowProps<T>): JSX.Element {
+}: Readonly<SchemaTableSummaryRowProps<T>>): JSX.Element {
 	const editItem2 = useCallback(() => editItem(rowId), [editItem, rowId])
 	const removeItem2 = useCallback(() => removeItem(rowId), [removeItem, rowId])
 

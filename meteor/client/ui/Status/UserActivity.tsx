@@ -4,7 +4,7 @@ import { Time, unprotectString } from '../../../lib/lib'
 import { UserActionsLogItem } from '../../../lib/collections/UserActionsLog'
 import { DatePickerFromTo } from '../../lib/datePicker'
 import moment from 'moment'
-import { PubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { useTranslation } from 'react-i18next'
 import { parse as queryStringParse } from 'query-string'
 import { Link, useHistory, useLocation } from 'react-router-dom'
@@ -34,7 +34,7 @@ function prettyPrintJsonString(str: string): string {
 	}
 }
 
-function UserActionsList(props: IUserActionsListProps) {
+function UserActionsList(props: Readonly<IUserActionsListProps>) {
 	const { t } = useTranslation()
 
 	function renderMessageHead() {
@@ -149,12 +149,7 @@ function UserActivity(): JSX.Element {
 	const [dateFrom, setDateFrom] = useState<Time>(moment().startOf('day').valueOf())
 	const [dateTo, setDateTo] = useState<Time>(moment().add(1, 'days').startOf('day').valueOf())
 
-	useSubscription(PubSub.userActionsLog, {
-		timestamp: {
-			$gte: dateFrom,
-			$lt: dateTo,
-		},
-	})
+	useSubscription(MeteorPubSub.userActionsLog, dateFrom, dateTo)
 
 	const log = useTracker(
 		() =>
