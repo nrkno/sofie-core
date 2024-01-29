@@ -1319,7 +1319,7 @@ export function RundownView(props: Readonly<IProps>): JSX.Element {
 		}
 	}, [playlistId])
 
-	const allSubsReady = !subsReady.find((ready) => !ready)
+	const allSubsReady = subsReady.findIndex((ready) => !ready) === -1
 	return <RundownViewContent {...props} subsReady={allSubsReady} />
 }
 

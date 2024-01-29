@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, useEffect, useState } from 'react'
+import React, { PropsWithChildren } from 'react'
 import _ from 'underscore'
 // @ts-expect-error No types available
 import Velocity from 'velocity-animate'
@@ -514,8 +514,9 @@ export class PrompterViewContent extends React.Component<Translated<IProps & ITr
 const PrompterViewContentWithTranslation = withTranslation()(PrompterViewContent)
 
 export function PrompterView(props: Readonly<IProps>): JSX.Element {
-	const studioIsReady = useSubscription(MeteorPubSub.uiStudio, props.studioId)
-	const playlistIsReady = useSubscription(MeteorPubSub.rundownPlaylistForStudio, props.studioId, true)
+	const subsReady: boolean[] = []
+	subsReady.push(useSubscription(MeteorPubSub.uiStudio, props.studioId))
+	subsReady.push(useSubscription(MeteorPubSub.rundownPlaylistForStudio, props.studioId, true))
 
 	const playlist = useTracker(
 		() =>
@@ -532,12 +533,9 @@ export function PrompterView(props: Readonly<IProps>): JSX.Element {
 			) as Pick<DBRundownPlaylist, '_id'> | undefined,
 		[props.studioId]
 	)
-	const rundownsIsReady = useSubscription(CorelibPubSub.rundownsInPlaylists, playlist ? [playlist._id] : [])
+	subsReady.push(useSubscription(CorelibPubSub.rundownsInPlaylists, playlist ? [playlist._id] : []))
 
-	const [subsReady, setSubsReady] = useState(false)
-	useEffect(() => {
-		setSubsReady(studioIsReady && playlistIsReady && rundownsIsReady)
-	}, [studioIsReady, playlistIsReady, rundownsIsReady])
+	const allSubsReady = subsReady.findIndex((ready) => !ready) === -1
 
 	const studio = useTracker(() => UIStudios.findOne(props.studioId), [props.studioId])
 
@@ -563,7 +561,7 @@ export function PrompterView(props: Readonly<IProps>): JSX.Element {
 			{...props}
 			studio={studio}
 			rundownPlaylist={rundownPlaylist}
-			subsReady={subsReady}
+			subsReady={allSubsReady}
 		/>
 	)
 }
