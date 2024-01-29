@@ -39,7 +39,8 @@ export function AfterBroadcastForm({ playlist }: Readonly<{ playlist: DBRundownP
 		setBusy(false)
 	}
 
-	function saveForm(e: React.MouseEvent<HTMLElement>) {
+	function saveForm(e: React.FormEvent<HTMLElement>) {
+		e.preventDefault()
 		setBusy(true)
 
 		const answers = {
@@ -118,7 +119,7 @@ export function AfterBroadcastForm({ playlist }: Readonly<{ playlist: DBRundownP
 	return (
 		<div className="afterbroadcastform-container" role="complementary" aria-labelledby="evaluation-header">
 			<div className="afterbroadcastform">
-				<form className="form">
+				<form className="form" onSubmit={saveForm}>
 					<EvaluationInfoBubble />
 
 					<h2 id="evaluation-header">{t('How did the show go?')}</h2>
@@ -139,9 +140,11 @@ export function AfterBroadcastForm({ playlist }: Readonly<{ playlist: DBRundownP
 					<div className="question q1">
 						<label>
 							<span>{t('Please explain the problems you experienced')}</span>
-							{t(
-								'(what happened and when, what should have happened, what could have triggered the problems, etcetera...)'
-							)}
+							<span className="secondary">
+								{t(
+									'(what happened and when, what should have happened, what could have triggered the problems, etcetera...)'
+								)}
+							</span>
 							<MultiLineTextInputControl value={description} handleUpdate={setDescription} disabled={busy} />
 						</label>
 					</div>
@@ -153,7 +156,7 @@ export function AfterBroadcastForm({ playlist }: Readonly<{ playlist: DBRundownP
 					</div>
 
 					<div>
-						<button type="submit" className="btn btn-primary" onClick={saveForm} disabled={busy}>
+						<button type="submit" className="btn btn-primary" disabled={busy}>
 							{!shouldDeactivateRundown ? t('Send message') : t('Send message and Deactivate Rundown')}
 						</button>
 						{busy ? <Spinner className="afterbroadcastform-spinner" size="small" /> : null}

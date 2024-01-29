@@ -21,6 +21,10 @@
 			> label > span {
 				display: block;
 				font-weight: 600;
+
+				&.secondary {
+					font-weight: 400;
+				}
 			}
 
 			textarea {
