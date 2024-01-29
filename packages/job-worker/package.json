@@ -49,6 +49,7 @@
 		"elastic-apm-node": "^3.43.0",
 		"eventemitter3": "^4.0.7",
 		"mongodb": "^4.13.0",
+		"node-fetch": "^2.7.0",
 		"p-lazy": "^3.1.0",
 		"p-timeout": "^4.1.0",
 		"superfly-timeline": "^8.3.1",
