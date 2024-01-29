@@ -4,12 +4,12 @@ import type { IBlueprintPartDB } from './part'
 export type PartEndState = unknown
 
 /** The Part instance sent from Core */
-export interface IBlueprintPartInstance<TMetadata = unknown> {
+export interface IBlueprintPartInstance<TPrivateData = unknown, TPublicData = unknown> {
 	_id: string
 	/** The segment ("Title") this line belongs to */
 	segmentId: string
 
-	part: IBlueprintPartDB<TMetadata>
+	part: IBlueprintPartDB<TPrivateData, TPublicData>
 
 	/** If the playlist was in rehearsal mode when the PartInstance was created */
 	rehearsal: boolean

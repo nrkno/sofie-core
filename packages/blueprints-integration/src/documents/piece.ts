@@ -30,6 +30,7 @@ export interface IBlueprintPiece<TPrivateData = unknown, TPublicData = unknown>
 	/** Whether the piece affects the output of the Studio or is describing an invisible state within the Studio */
 	notInVision?: boolean
 }
-export interface IBlueprintPieceDB<TMetadata = unknown> extends IBlueprintPiece<TMetadata> {
+export interface IBlueprintPieceDB<TPrivateData = unknown, TPublicData = unknown>
+	extends IBlueprintPiece<TPrivateData, TPublicData> {
 	_id: string
 }

@@ -34,6 +34,7 @@ export interface IBlueprintSegment<TPrivateData = unknown, TPublicData = unknown
 	segmentTiming?: SegmentTimingInfo
 }
 /** The Segment sent from Core */
-export interface IBlueprintSegmentDB<TMetadata = unknown> extends IBlueprintSegment<TMetadata> {
+export interface IBlueprintSegmentDB<TPrivateData = unknown, TPublicData = unknown>
+	extends IBlueprintSegment<TPrivateData, TPublicData> {
 	_id: string
 }
