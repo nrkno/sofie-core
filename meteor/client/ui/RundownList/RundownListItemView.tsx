@@ -87,7 +87,9 @@ export default React.memo(function RundownListItemView({
 								mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
 								overlayStyle={{ display: renderTooltips ? undefined : 'none' }}
 							>
-								<button className="rundown-list-item__action">{iconDragHandle()}</button>
+								<button className="rundown-list-item__action" aria-label="Drag handle">
+									{iconDragHandle()}
+								</button>
 							</Tooltip>
 						</span>
 					) : null}

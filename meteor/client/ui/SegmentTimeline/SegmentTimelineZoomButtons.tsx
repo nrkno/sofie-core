@@ -51,7 +51,7 @@ export function SegmentTimelineZoomButtons(props: Readonly<IProps>): JSX.Element
 	}
 
 	return (
-		<div className="segment-timeline__timeline-zoom-buttons">
+		<div className="segment-timeline__timeline-zoom-buttons" role="group">
 			<button
 				className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--out"
 				onClick={zoomOut}

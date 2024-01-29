@@ -5,22 +5,30 @@
 		text-align: left;
 		margin-right: auto;
 		margin-left: auto;
-		display: inline-block;
 		max-width: 50em;
 
 		h2 {
 			margin-left: 0em;
 		}
+
 		p {
-			margin: 0em;
+			margin: 0;
 		}
+
 		.question {
 			margin: 1em 0 0 0;
+
+			> label > span {
+				display: block;
+				font-weight: 600;
+			}
+
 			textarea {
 				width: 50em;
 				height: 20em;
 			}
 		}
+
 		button {
 			margin-top: 2.5em;
 		}

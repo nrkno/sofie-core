@@ -149,7 +149,7 @@ export function RundownRightHandControls(props: Readonly<IProps>): JSX.Element {
 					isOpen={props.isNotificationCenterOpen === (NoticeLevel.NOTIFICATION | NoticeLevel.TIP)}
 					filter={NoticeLevel.NOTIFICATION | NoticeLevel.TIP}
 					className="type-notification"
-					title={t('Notifications')}
+					title={t('Notes')}
 				/>
 				<button
 					className="status-bar__controls__button"
