@@ -21,12 +21,12 @@ import {
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { PartInstance } from '../../lib/collections/PartInstances'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { DBRundownPlaylist, QuickLoopMarkerType } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getCurrentTime, objectFromEntries } from '../../lib/lib'
 import { Settings } from '../../lib/Settings'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { isLoopRunning } from '../../lib/Rundown'
+import { isLoopDefined, isLoopLocked, isLoopRunning } from '../../lib/Rundown'
 
 // Minimum duration that a part can be assigned. Used by gap parts to allow them to "compress" to indicate time running out.
 const MINIMAL_NONZERO_DURATION = 1
@@ -908,4 +908,69 @@ function getSegmentRundownAnchorFromPart(
 	}
 
 	return nextRundownAnchor
+}
+
+export type MinimalPartInstance = Pick<
+	PartInstance,
+	| '_id'
+	| 'isTemporary'
+	| 'rundownId'
+	| 'segmentId'
+	| 'segmentPlayoutId'
+	| 'takeCount'
+	| 'part'
+	| 'timings'
+	| 'orphaned'
+>
+
+export function findPartInstancesInQuickLoop(
+	playlist: DBRundownPlaylist,
+	sortedPartInstances: MinimalPartInstance[]
+): Record<TimingId, boolean> {
+	const partsInQuickLoop: Record<TimingId, boolean> = {}
+	if (
+		!isLoopDefined(playlist) ||
+		isLoopLocked(playlist) // a crude way of disabling the dots when looping the entire playlist
+	) {
+		return partsInQuickLoop
+	}
+
+	let isInQuickLoop = playlist.quickLoop?.start?.type === QuickLoopMarkerType.PLAYLIST
+	let previousPartInstance: MinimalPartInstance | undefined = undefined
+	for (const partInstance of sortedPartInstances) {
+		if (
+			previousPartInstance &&
+			((playlist.quickLoop?.end?.type === QuickLoopMarkerType.PART &&
+				playlist.quickLoop.end.id === previousPartInstance.part._id) ||
+				(playlist.quickLoop?.end?.type === QuickLoopMarkerType.SEGMENT &&
+					playlist.quickLoop.end.id === previousPartInstance.segmentId) ||
+				(playlist.quickLoop?.end?.type === QuickLoopMarkerType.RUNDOWN &&
+					playlist.quickLoop.end.id === previousPartInstance.rundownId))
+		) {
+			isInQuickLoop = false
+			if (
+				playlist.quickLoop.start?.type !== QuickLoopMarkerType.PART ||
+				playlist.quickLoop.start?.id !== playlist.quickLoop.end?.id
+			) {
+				// when looping over a single part we need to include the three instances of that part shown at once, otherwise, we can break
+				break
+			}
+		}
+		if (
+			!isInQuickLoop &&
+			((playlist.quickLoop?.start?.type === QuickLoopMarkerType.PART &&
+				playlist.quickLoop.start.id === partInstance.part._id) ||
+				(playlist.quickLoop?.start?.type === QuickLoopMarkerType.SEGMENT &&
+					playlist.quickLoop.start.id === partInstance.segmentId) ||
+				(playlist.quickLoop?.start?.type === QuickLoopMarkerType.RUNDOWN &&
+					playlist.quickLoop.start.id === partInstance.rundownId))
+		) {
+			isInQuickLoop = true
+		}
+		if (isInQuickLoop) {
+			partsInQuickLoop[getPartInstanceTimingId(partInstance)] = true
+		}
+		previousPartInstance = partInstance
+	}
+	return partsInQuickLoop
 }
