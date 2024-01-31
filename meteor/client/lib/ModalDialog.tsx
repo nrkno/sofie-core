@@ -143,19 +143,19 @@ export function ModalDialog({
 				runOnMount={true}
 			>
 				<div className="glass-pane">
-					<div className="glass-pane-content">
-						<VelocityReact.VelocityTransitionGroup
-							enter={{
-								animation: {
-									translateY: [0, 100],
-									opacity: [1, 0],
-								},
-								easing: 'spring',
-								duration: 250,
-							}}
-							runOnMount={true}
-						>
-							<FocusBounder>
+					<FocusBounder>
+						<div className="glass-pane-content">
+							<VelocityReact.VelocityTransitionGroup
+								enter={{
+									animation: {
+										translateY: [0, 100],
+										opacity: [1, 0],
+									},
+									easing: 'spring',
+									duration: 250,
+								}}
+								runOnMount={true}
+							>
 								<dialog
 									open={true}
 									className={'border-box overlay-m ' + className || ''}
@@ -252,9 +252,9 @@ export function ModalDialog({
 										</button>
 									</div>
 								</dialog>
-							</FocusBounder>
-						</VelocityReact.VelocityTransitionGroup>
-					</div>
+							</VelocityReact.VelocityTransitionGroup>
+						</div>
+					</FocusBounder>
 				</div>
 			</VelocityReact.VelocityTransitionGroup>
 		</Escape>

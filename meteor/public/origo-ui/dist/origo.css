@@ -1164,7 +1164,7 @@ hr.subtle {
   outline: 2px solid #00FEFF;
 }
 
-:not(dialog):focus:focus-visible {
+:not(dialog):focus-visible {
 	outline: 2px solid #00FEFF;
 }
 
