@@ -269,7 +269,7 @@ export const StudioGenericProperties = withTranslation()(
 									[t('Disabled')]: ForceQuickLoopAutoNext.DISABLED,
 									[t('Enabled, but skipping parts with undefined or 0 duration')]:
 										ForceQuickLoopAutoNext.ENABLED_WHEN_VALID_DURATION,
-									[t('Enabled on all Parts, applying a Minimum Display Duration if needed')]:
+									[t('Enabled on all Parts, applying QuickLoop Fallback Part Duration if needed')]:
 										ForceQuickLoopAutoNext.ENABLED_FORCING_MIN_DURATION,
 								}}
 								type="dropdown"
@@ -279,6 +279,21 @@ export const StudioGenericProperties = withTranslation()(
 							<span className="mdfx"></span>
 						</div>
 					</label>
+
+					<label className="field">
+						<LabelActual label={t('QuickLoop Fallback Part Duration')} />
+						<div className="mdi">
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute="settings.fallbackPartDuration"
+								obj={this.props.studio}
+								type="int"
+								collection={Studios}
+								className="mdinput"
+							/>
+						</div>
+					</label>
+
 					<StudioBaselineStatus studioId={this.props.studio._id} />
 				</div>
 			)

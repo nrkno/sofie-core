@@ -52,11 +52,17 @@ export interface IStudioSettings {
 	/** Whether to allow scratchpad mode, before a Part is playing in a Playlist */
 	allowScratchpad?: boolean
 
-	/** Should QuickLoop context menu options be available to the users */
-	enableQuickLoop?: ForceQuickLoopAutoNext
+	/** Should QuickLoop context menu options be available to the users. It does not affect Playlist loop enabled by the NRCS. */
+	enableQuickLoop?: boolean
 
 	/** If and how to force auto-nexting in a looping Playlist */
 	forceQuickLoopAutoNext?: ForceQuickLoopAutoNext
+
+	/**
+	 * The duration to apply on too short Parts Within QuickLoop when ForceQuickLoopAutoNext.ENABLED_FORCING_MIN_DURATION is selected
+	 * Default: 3000
+	 */
+	fallbackPartDuration?: number
 }
 
 export type StudioLight = Omit<DBStudio, 'mappingsWithOverrides' | 'blueprintConfigWithOverrides'>

@@ -4,6 +4,7 @@ import { ReactiveCacheCollection } from '../lib/ReactiveCacheCollection'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { MongoFieldSpecifierOnesStrict, MongoFieldSpecifierZeroes } from '@sofie-automation/corelib/dist/mongo'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 
 export type RundownPlaylistCompact = Pick<DBRundownPlaylist, '_id' | 'activationId' | 'quickLoop' | 'rundownIdsInOrder'>
 export const rundownPlaylistFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<RundownPlaylistCompact>>({
@@ -25,7 +26,14 @@ export const partFieldSpecifier = literal<MongoFieldSpecifierZeroes<Pick<DBPart,
 	privateData: 0,
 })
 
+export type StudioFields = '_id' | 'settings'
+export const studioFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBStudio, StudioFields>>>({
+	_id: 1,
+	settings: 1,
+})
+
 export interface ContentCache {
+	Studios: ReactiveCacheCollection<Pick<DBStudio, StudioFields>>
 	Segments: ReactiveCacheCollection<Pick<DBSegment, SegmentFields>>
 	Parts: ReactiveCacheCollection<Omit<DBPart, PartOmitedFields>>
 	RundownPlaylists: ReactiveCacheCollection<RundownPlaylistCompact>
@@ -33,6 +41,7 @@ export interface ContentCache {
 
 export function createReactiveContentCache(): ContentCache {
 	const cache: ContentCache = {
+		Studios: new ReactiveCacheCollection<Pick<DBStudio, StudioFields>>('rundownPlaylists'),
 		Segments: new ReactiveCacheCollection<Pick<DBSegment, SegmentFields>>('segments'),
 		Parts: new ReactiveCacheCollection<Omit<DBPart, PartOmitedFields>>('parts'),
 		RundownPlaylists: new ReactiveCacheCollection<RundownPlaylistCompact>('rundownPlaylists'),

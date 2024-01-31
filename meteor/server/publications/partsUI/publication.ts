@@ -29,6 +29,8 @@ import { RundownContentObserver } from './rundownContentObserver'
 import { ProtectedString, protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import { generateTranslation } from '../../../lib/lib'
+import { DEFAULT_FALLBACK_PART_DURATION } from '@sofie-automation/shared-lib/dist/core/constants'
+import { MarkerPosition, compareMarkerPositions } from '@sofie-automation/corelib/dist/playout/playlist'
 
 interface UIPartsArgs {
 	readonly playlistId: RundownPlaylistId
@@ -74,7 +76,7 @@ async function setupUIPartsPublicationObservers(
 		// Push update
 		triggerUpdate({ newCache: cache })
 
-		const obs1 = new RundownContentObserver(playlist._id, rundownIds, cache)
+		const obs1 = new RundownContentObserver(playlist.studioId, playlist._id, rundownIds, cache)
 
 		const innerQueries = [
 			cache.Segments.find({}).observeChanges({
@@ -88,6 +90,11 @@ async function setupUIPartsPublicationObservers(
 				removed: (id) => triggerUpdate({ invalidatePartIds: [protectString(id)] }),
 			}),
 			cache.RundownPlaylists.find({}).observeChanges({
+				added: () => triggerUpdate({ invalidateQuickLoop: true }),
+				changed: () => triggerUpdate({ invalidateQuickLoop: true }),
+				removed: () => triggerUpdate({ invalidateQuickLoop: true }),
+			}),
+			cache.Studios.find({}).observeChanges({
 				added: () => triggerUpdate({ invalidateQuickLoop: true }),
 				changed: () => triggerUpdate({ invalidateQuickLoop: true }),
 				removed: () => triggerUpdate({ invalidateQuickLoop: true }),
@@ -132,6 +139,9 @@ export async function manipulateUIPartsPublicationData(
 	const playlist = state.contentCache.RundownPlaylists.find({}).fetch()[0]
 	if (!playlist) return
 
+	const studio = state.contentCache.Studios.find({}).fetch()[0]
+	if (!studio) return
+
 	if (!playlist.quickLoop?.start || !playlist.quickLoop?.end) {
 		collection.remove(null)
 		state.contentCache.Parts.find({}).forEach((part) => {
@@ -147,26 +157,27 @@ export async function manipulateUIPartsPublicationData(
 
 	const quickLoopStartPosition =
 		playlist.quickLoop?.start &&
-		extractMarkerPosition(playlist.quickLoop.start, -Infinity, state.contentCache, rundownRanks)
+		findMarkerPosition(playlist.quickLoop.start, -Infinity, state.contentCache, rundownRanks)
 	const quickLoopEndPosition =
 		playlist.quickLoop?.end &&
-		extractMarkerPosition(playlist.quickLoop.end, Infinity, state.contentCache, rundownRanks)
+		findMarkerPosition(playlist.quickLoop.end, Infinity, state.contentCache, rundownRanks)
 
 	const isLoopDefined =
 		playlist.quickLoop?.start && playlist.quickLoop?.end && quickLoopStartPosition && quickLoopEndPosition
 
 	function modifyPartForQuickLoop(part: DBPart) {
-		const partPosition = extractPartPosition(part, segmentRanks, rundownRanks)
+		const partPosition = findPartPosition(part, segmentRanks, rundownRanks)
 		const isLoopingOverriden =
 			isLoopDefined &&
 			playlist.quickLoop?.forceAutoNext !== ForceQuickLoopAutoNext.DISABLED &&
-			comparePositions(quickLoopStartPosition, partPosition) >= 0 &&
-			comparePositions(partPosition, quickLoopEndPosition) >= 0
+			compareMarkerPositions(quickLoopStartPosition, partPosition) >= 0 &&
+			compareMarkerPositions(partPosition, quickLoopEndPosition) >= 0
 
 		if (isLoopingOverriden && (part.expectedDuration ?? 0) <= 0) {
 			if (playlist.quickLoop?.forceAutoNext === ForceQuickLoopAutoNext.ENABLED_FORCING_MIN_DURATION) {
-				part.expectedDuration = 3000 // TODO: use settings
-				part.expectedDurationWithPreroll = 3000
+				part.expectedDuration = studio.settings.fallbackPartDuration ?? DEFAULT_FALLBACK_PART_DURATION
+				part.expectedDurationWithPreroll =
+					studio.settings.fallbackPartDuration ?? DEFAULT_FALLBACK_PART_DURATION
 			} else if (playlist.quickLoop?.forceAutoNext === ForceQuickLoopAutoNext.ENABLED_WHEN_VALID_DURATION) {
 				part.invalid = true
 				part.invalidReason = {
@@ -183,47 +194,41 @@ export async function manipulateUIPartsPublicationData(
 	})
 }
 
-const comparePositions = (a: [number, number, number], b: [number, number, number]): number => {
-	if (a[0] > b[0]) return -1
-	if (a[0] < b[0]) return 1
-	if (a[1] > b[1]) return -1
-	if (a[1] < b[1]) return 1
-	if (a[2] > b[2]) return -1
-	if (a[2] < b[2]) return 1
-	return 0
-}
-
-function extractMarkerPosition(
+function findMarkerPosition(
 	marker: QuickLoopMarker,
 	fallback: number,
 	contentCache: ReadonlyObjectDeep<ContentCache>,
 	rundownRanks: Record<string, number>
-): [number, number, number] {
-	const startPart = marker.type === QuickLoopMarkerType.PART ? contentCache.Parts.findOne(marker.id) : undefined
-	const startPartRank = startPart?._rank ?? fallback
+): MarkerPosition {
+	const part = marker.type === QuickLoopMarkerType.PART ? contentCache.Parts.findOne(marker.id) : undefined
+	const partRank = part?._rank ?? fallback
 
-	const startSegmentId = marker.type === QuickLoopMarkerType.SEGMENT ? marker.id : startPart?.segmentId
-	const startSegment = startSegmentId && contentCache.Segments.findOne(startSegmentId)
-	const startSegmentRank = startSegment?._rank ?? fallback
+	const segmentId = marker.type === QuickLoopMarkerType.SEGMENT ? marker.id : part?.segmentId
+	const segment = segmentId && contentCache.Segments.findOne(segmentId)
+	const segmentRank = segment?._rank ?? fallback
 
-	const startRundownId = marker.type === QuickLoopMarkerType.RUNDOWN ? marker.id : startSegment?.rundownId
-	let startRundownRank = startRundownId ? rundownRanks[unprotectString(startRundownId)] : fallback
+	const rundownId = marker.type === QuickLoopMarkerType.RUNDOWN ? marker.id : segment?.rundownId
+	let rundownRank = rundownId ? rundownRanks[unprotectString(rundownId)] : fallback
 
-	if (marker.type === QuickLoopMarkerType.PLAYLIST) startRundownRank = fallback
+	if (marker.type === QuickLoopMarkerType.PLAYLIST) rundownRank = fallback
 
-	return [startRundownRank, startSegmentRank, startPartRank]
+	return {
+		rundownRank: rundownRank,
+		segmentRank: segmentRank,
+		partRank: partRank,
+	}
 }
 
-function extractPartPosition(
+function findPartPosition(
 	part: DBPart,
 	segmentRanks: Record<string, number>,
 	rundownRanks: Record<string, number>
-): [number, number, number] {
-	return [
-		rundownRanks[part.rundownId as unknown as string] ?? 0,
-		segmentRanks[part.segmentId as unknown as string] ?? 0,
-		part._rank,
-	]
+): MarkerPosition {
+	return {
+		rundownRank: rundownRanks[part.rundownId as unknown as string] ?? 0,
+		segmentRank: segmentRanks[part.segmentId as unknown as string] ?? 0,
+		partRank: part._rank,
+	}
 }
 
 function stringsToIndexLookup(strings: string[]): Record<string, number> {
