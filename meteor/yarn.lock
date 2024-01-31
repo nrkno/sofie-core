@@ -2742,6 +2742,7 @@ __metadata:
     react-dnd: ^14.0.5
     react-dnd-html5-backend: ^14.1.0
     react-dom: ^18.2.0
+    react-focus-bounder: ^1.1.6
     react-hotkeys: ^2.0.0
     react-i18next: ^11.18.6
     react-intersection-observer: ^9.5.2
@@ -9988,6 +9989,16 @@ __metadata:
   version: 3.2.2
   resolution: "react-fast-compare@npm:3.2.2"
   checksum: 2071415b4f76a3e6b55c84611c4d24dcb12ffc85811a2840b5a3f1ff2d1a99be1020d9437ee7c6e024c9f4cbb84ceb35e48cf84f28fcb00265ad2dfdd3947704
+  languageName: node
+  linkType: hard
+
+"react-focus-bounder@npm:^1.1.6":
+  version: 1.1.6
+  resolution: "react-focus-bounder@npm:1.1.6"
+  peerDependencies:
+    react: ^16.4.0 || ^17.0.0
+    react-dom: ^16.4.0 || ^17.0.0
+  checksum: 355af7e18e5243bc323e3b6a29cdaa2d19443d514f2dd59377191d91e500b8e3570eb3eec88e9a774d391060ba1cdbd40153874081993072e1c2b2224a965a99
   languageName: node
   linkType: hard
 
