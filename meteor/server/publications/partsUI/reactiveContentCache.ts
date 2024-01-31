@@ -10,14 +10,8 @@ export const rundownPlaylistFieldSpecifier = literal<MongoFieldSpecifierOnesStri
 	_id: 1,
 	activationId: 1,
 	quickLoop: 1, // so that it invalidates when the markers or state of the loop change
-	rundownIdsInOrder: 1, // TODO: maybe we can get it from elsewhere?
+	rundownIdsInOrder: 1,
 })
-
-// export type RundownFields = '_id' | 'playlistId'
-// export const rundownFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<Rundown, RundownFields>>>({
-// 	_id: 1,
-// 	playlistId: 1,
-// })
 
 export type SegmentFields = '_id' | '_rank' | 'rundownId'
 export const segmentFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBSegment, SegmentFields>>>({
@@ -32,7 +26,6 @@ export const partFieldSpecifier = literal<MongoFieldSpecifierZeroes<Pick<DBPart,
 })
 
 export interface ContentCache {
-	// Rundowns: ReactiveCacheCollection<Pick<Rundown, RundownFields>>
 	Segments: ReactiveCacheCollection<Pick<DBSegment, SegmentFields>>
 	Parts: ReactiveCacheCollection<Omit<DBPart, PartOmitedFields>>
 	RundownPlaylists: ReactiveCacheCollection<RundownPlaylistCompact>
@@ -40,7 +33,6 @@ export interface ContentCache {
 
 export function createReactiveContentCache(): ContentCache {
 	const cache: ContentCache = {
-		// Rundowns: new ReactiveCacheCollection<Pick<Rundown, RundownFields>>('rundowns'),
 		Segments: new ReactiveCacheCollection<Pick<DBSegment, SegmentFields>>('segments'),
 		Parts: new ReactiveCacheCollection<Omit<DBPart, PartOmitedFields>>('parts'),
 		RundownPlaylists: new ReactiveCacheCollection<RundownPlaylistCompact>('rundownPlaylists'),

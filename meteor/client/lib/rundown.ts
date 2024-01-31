@@ -395,14 +395,14 @@ export namespace RundownUtils {
 			let startsAt = 0
 			let previousPart: PartExtended | undefined
 
-			const dedupedPartInstances = RundownUtils.deduplicatePartInstancesForQuickLoop(
+			const deduplicatedPartInstances = RundownUtils.deduplicatePartInstancesForQuickLoop(
 				playlist,
 				segmentInfo.partInstances,
 				currentPartInstance
 			)
 
 			// fetch all the pieces for the parts
-			const partIds = dedupedPartInstances.map((part) => part.part._id)
+			const partIds = deduplicatedPartInstances.map((part) => part.part._id)
 
 			let nextPartIsAfterCurrentPart = false
 			if (nextPartInstance && currentPartInstance) {
@@ -429,7 +429,7 @@ export namespace RundownUtils {
 
 			const showHiddenSourceLayers = getShowHiddenSourceLayers()
 
-			partsE = dedupedPartInstances.map((partInstance, itIndex) => {
+			partsE = deduplicatedPartInstances.map((partInstance, itIndex) => {
 				const partExpectedDuration = calculatePartInstanceExpectedDurationWithPreroll(
 					partInstance,
 					pieces.get(partInstance.part._id) ?? []

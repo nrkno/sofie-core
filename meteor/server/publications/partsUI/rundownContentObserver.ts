@@ -4,7 +4,6 @@ import { logger } from '../../logging'
 import {
 	ContentCache,
 	partFieldSpecifier,
-	// rundownFieldSpecifier,
 	rundownPlaylistFieldSpecifier,
 	segmentFieldSpecifier,
 } from './reactiveContentCache'
@@ -28,17 +27,6 @@ export class RundownContentObserver {
 					fields: rundownPlaylistFieldSpecifier,
 				}
 			),
-			// Rundowns.observeChanges(
-			// 	{
-			// 		_id: {
-			// 			$in: rundownIds,
-			// 		},
-			// 	},
-			// 	cache.Rundowns.link(),
-			// 	{
-			// 		projection: rundownFieldSpecifier,
-			// 	}
-			// ),
 			Segments.observeChanges(
 				{
 					rundownId: {

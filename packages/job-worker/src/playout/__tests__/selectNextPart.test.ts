@@ -15,7 +15,8 @@ class MockPart {
 		public _id: string,
 		public _rank: number,
 		public segmentId: SegmentId,
-		public playable: boolean = true
+		public playable: boolean = true,
+		public expectedDuration: number | undefined = undefined
 	) {}
 
 	get invalid(): boolean {
@@ -235,6 +236,186 @@ describe('selectNextPart', () => {
 			defaultParts[5].playable = false
 			const nextPart = selectNextPart2(previousPartInstance, null, false)
 			expect(nextPart).toEqual({ index: 5, part: defaultParts[5], consumesQueuedSegmentId: false })
+		}
+	})
+
+	test('from End part in QuickLoop', () => {
+		const previousPartInstance = defaultParts[5].toPartInstance()
+		{
+			// Start in previous segment
+			defaultPlaylist.quickLoop = {
+				forceAutoNext: ForceQuickLoopAutoNext.DISABLED,
+				locked: false,
+				running: true,
+				start: {
+					type: QuickLoopMarkerType.PART,
+					id: protectString(defaultParts[2]._id),
+				},
+				end: {
+					type: QuickLoopMarkerType.PART,
+					id: protectString(defaultParts[5]._id),
+				},
+			}
+			const nextPart = selectNextPart2(previousPartInstance, null)
+			expect(nextPart).toEqual({ index: 2, part: defaultParts[2], consumesQueuedSegmentId: false })
+		}
+
+		{
+			// Start in the same segment
+			defaultPlaylist.quickLoop = {
+				forceAutoNext: ForceQuickLoopAutoNext.DISABLED,
+				locked: false,
+				running: true,
+				start: {
+					type: QuickLoopMarkerType.PART,
+					id: protectString(defaultParts[4]._id),
+				},
+				end: {
+					type: QuickLoopMarkerType.PART,
+					id: protectString(defaultParts[5]._id),
+				},
+			}
+			const nextPart = selectNextPart2(previousPartInstance, null)
+			expect(nextPart).toEqual({ index: 4, part: defaultParts[4], consumesQueuedSegmentId: false })
+		}
+
+		{
+			// Start is End
+			defaultPlaylist.quickLoop = {
+				forceAutoNext: ForceQuickLoopAutoNext.DISABLED,
+				locked: false,
+				running: true,
+				start: {
+					type: QuickLoopMarkerType.PART,
+					id: protectString(defaultParts[5]._id),
+				},
+				end: {
+					type: QuickLoopMarkerType.PART,
+					id: protectString(defaultParts[5]._id),
+				},
+			}
+			const nextPart = selectNextPart2(previousPartInstance, null)
+			expect(nextPart).toEqual({ index: 5, part: defaultParts[5], consumesQueuedSegmentId: false })
+		}
+
+		{
+			// Start is the Playlist
+			defaultPlaylist.quickLoop = {
+				forceAutoNext: ForceQuickLoopAutoNext.DISABLED,
+				locked: false,
+				running: true,
+				start: {
+					type: QuickLoopMarkerType.PLAYLIST,
+				},
+				end: {
+					type: QuickLoopMarkerType.PART,
+					id: protectString(defaultParts[5]._id),
+				},
+			}
+			const nextPart = selectNextPart2(previousPartInstance, null)
+			expect(nextPart).toEqual({ index: 0, part: defaultParts[0], consumesQueuedSegmentId: false })
+		}
+	})
+
+	test('from last part when End Marker is PLAYLIST', () => {
+		const previousPartInstance = defaultParts[defaultParts.length - 1].toPartInstance()
+
+		{
+			// Start is a Part
+			defaultPlaylist.quickLoop = {
+				forceAutoNext: ForceQuickLoopAutoNext.DISABLED,
+				locked: false,
+				running: true,
+				start: {
+					type: QuickLoopMarkerType.PART,
+					id: protectString(defaultParts[2]._id),
+				},
+				end: {
+					type: QuickLoopMarkerType.PLAYLIST,
+				},
+			}
+			const nextPart = selectNextPart2(previousPartInstance, null)
+			expect(nextPart).toEqual({ index: 2, part: defaultParts[2], consumesQueuedSegmentId: false })
+		}
+
+		{
+			// Start is Playlist
+			defaultPlaylist.quickLoop = {
+				forceAutoNext: ForceQuickLoopAutoNext.DISABLED,
+				locked: false,
+				running: true,
+				start: {
+					type: QuickLoopMarkerType.PLAYLIST,
+				},
+				end: {
+					type: QuickLoopMarkerType.PLAYLIST,
+				},
+			}
+			const nextPart = selectNextPart2(previousPartInstance, null)
+			expect(nextPart).toEqual({ index: 0, part: defaultParts[0], consumesQueuedSegmentId: false })
+		}
+	})
+
+	test('from within QuickLoop', () => {
+		const previousPartInstance = defaultParts[4].toPartInstance()
+		{
+			// default
+			defaultPlaylist.quickLoop = {
+				forceAutoNext: ForceQuickLoopAutoNext.DISABLED,
+				locked: false,
+				running: true,
+				start: {
+					type: QuickLoopMarkerType.PART,
+					id: protectString(defaultParts[2]._id),
+				},
+				end: {
+					type: QuickLoopMarkerType.PART,
+					id: protectString(defaultParts[5]._id),
+				},
+			}
+			const nextPart = selectNextPart2(previousPartInstance, null)
+			expect(nextPart).toEqual({ index: 5, part: defaultParts[5], consumesQueuedSegmentId: false })
+		}
+
+		{
+			// next is unplayable
+			defaultPlaylist.quickLoop = {
+				forceAutoNext: ForceQuickLoopAutoNext.DISABLED,
+				locked: false,
+				running: true,
+				start: {
+					type: QuickLoopMarkerType.PART,
+					id: protectString(defaultParts[4]._id),
+				},
+				end: {
+					type: QuickLoopMarkerType.PART,
+					id: protectString(defaultParts[6]._id),
+				},
+			}
+			defaultParts[5].playable = false
+			const nextPart = selectNextPart2(previousPartInstance, null)
+			expect(nextPart).toEqual({ index: 6, part: defaultParts[6], consumesQueuedSegmentId: false })
+		}
+
+		{
+			// next does not have valid duration for ENABLED_WHEN_VALID_DURATION
+			defaultPlaylist.quickLoop = {
+				forceAutoNext: ForceQuickLoopAutoNext.ENABLED_WHEN_VALID_DURATION,
+				locked: false,
+				running: true,
+				start: {
+					type: QuickLoopMarkerType.PART,
+					id: protectString(defaultParts[4]._id),
+				},
+				end: {
+					type: QuickLoopMarkerType.PART,
+					id: protectString(defaultParts[6]._id),
+				},
+			}
+			defaultParts[5].expectedDuration = undefined
+			defaultParts[6].expectedDuration = 1000
+			const nextPart = selectNextPart2(previousPartInstance, null)
+			expect(nextPart).toEqual({ index: 6, part: defaultParts[6], consumesQueuedSegmentId: false })
 		}
 	})
 })

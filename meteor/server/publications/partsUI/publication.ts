@@ -140,27 +140,28 @@ export async function manipulateUIPartsPublicationData(
 		return
 	}
 
+	collection.remove(null)
+
 	const rundownRanks = stringsToIndexLookup(playlist.rundownIdsInOrder as unknown as string[]) // TODO: optimize by storing in state?
 	const segmentRanks = extractRanks(state.contentCache.Segments.find({}).fetch()) // TODO: optimize by storing in state?
 
-	const startPosition =
+	const quickLoopStartPosition =
 		playlist.quickLoop?.start &&
 		extractMarkerPosition(playlist.quickLoop.start, -Infinity, state.contentCache, rundownRanks)
-	const endPosition =
+	const quickLoopEndPosition =
 		playlist.quickLoop?.end &&
 		extractMarkerPosition(playlist.quickLoop.end, Infinity, state.contentCache, rundownRanks)
 
-	const isLoopDefined = playlist.quickLoop?.start && playlist.quickLoop?.end && startPosition && endPosition
+	const isLoopDefined =
+		playlist.quickLoop?.start && playlist.quickLoop?.end && quickLoopStartPosition && quickLoopEndPosition
 
-	collection.remove(null)
-
-	state.contentCache.Parts.find({}).forEach((part) => {
+	function modifyPartForQuickLoop(part: DBPart) {
 		const partPosition = extractPartPosition(part, segmentRanks, rundownRanks)
 		const isLoopingOverriden =
 			isLoopDefined &&
 			playlist.quickLoop?.forceAutoNext !== ForceQuickLoopAutoNext.DISABLED &&
-			comparePositions(startPosition, partPosition) >= 0 &&
-			comparePositions(partPosition, endPosition) >= 0
+			comparePositions(quickLoopStartPosition, partPosition) >= 0 &&
+			comparePositions(partPosition, quickLoopEndPosition) >= 0
 
 		if (isLoopingOverriden && (part.expectedDuration ?? 0) <= 0) {
 			if (playlist.quickLoop?.forceAutoNext === ForceQuickLoopAutoNext.ENABLED_FORCING_MIN_DURATION) {
@@ -174,11 +175,15 @@ export async function manipulateUIPartsPublicationData(
 			}
 		}
 		part.autoNext = part.autoNext || (isLoopingOverriden && (part.expectedDuration ?? 0) > 0)
+	}
+
+	state.contentCache.Parts.find({}).forEach((part) => {
+		modifyPartForQuickLoop(part)
 		collection.replace(part)
 	})
 }
 
-const comparePositions = (a: number[], b: number[]): number => {
+const comparePositions = (a: [number, number, number], b: [number, number, number]): number => {
 	if (a[0] > b[0]) return -1
 	if (a[0] < b[0]) return 1
 	if (a[1] > b[1]) return -1
