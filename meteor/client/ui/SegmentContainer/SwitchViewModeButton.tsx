@@ -43,7 +43,11 @@ export function SwitchViewModeButton({
 
 	return (
 		<Tooltip overlay={label} destroyTooltipOnHide>
-			<button className="segment-timeline__switch-view-mode-button" onClick={() => onSwitchViewMode?.(nextMode)}>
+			<button
+				className="segment-timeline__switch-view-mode-button"
+				aria-label={label}
+				onClick={() => onSwitchViewMode?.(nextMode)}
+			>
 				<SegmentViewModeIcon />
 			</button>
 		</Tooltip>

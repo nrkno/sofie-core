@@ -203,7 +203,7 @@ export function RundownRightHandControls(props: Readonly<IProps>): JSX.Element {
 						role="button"
 						onClick={onMediaStatusToggle}
 						tabIndex={0}
-						aria-label={t('Toggle Media Status')}
+						aria-label={t('Media Status')}
 						aria-haspopup="dialog"
 						aria-pressed={mediaStatusOpen ? 'true' : 'false'}
 					>
@@ -254,7 +254,7 @@ export function RundownRightHandControls(props: Readonly<IProps>): JSX.Element {
 								role="button"
 								onClick={onRouteSetsToggle}
 								tabIndex={0}
-								aria-label={t('Toggle Switchboard Panel')}
+								aria-label={t('Switchboard Panel')}
 								aria-haspopup="dialog"
 								aria-pressed={switchboardOpen ? 'true' : 'false'}
 							>

@@ -516,6 +516,7 @@ export function NotificationCenterPanelToggle({
 				className
 			)}
 			role="button"
+			aria-pressed={isOpen ? 'true' : 'false'}
 			onClick={onClick}
 			tabIndex={0}
 			aria-label={title}
