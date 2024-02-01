@@ -55,8 +55,7 @@
 		"threadedclass": "^1.2.1",
 		"tslib": "^2.6.2",
 		"type-fest": "^3.13.1",
-		"underscore": "^1.13.6",
-		"vm2": "^3.9.19"
+		"underscore": "^1.13.6"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {
