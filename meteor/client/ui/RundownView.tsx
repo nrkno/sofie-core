@@ -1218,9 +1218,10 @@ interface ITrackedProps {
 export function RundownView(props: Readonly<IProps>): JSX.Element {
 	const playlistId = props.playlistId
 
-	const subsReady: boolean[] = []
-	subsReady.push(useSubscriptionIfEnabled(CorelibPubSub.rundownPlaylists, true, [playlistId], null))
-	subsReady.push(useSubscriptionIfEnabled(CorelibPubSub.rundownsInPlaylists, true, [playlistId]))
+	const requiredSubsReady: boolean[] = []
+	const auxSubsReady: boolean[] = []
+	requiredSubsReady.push(useSubscriptionIfEnabled(CorelibPubSub.rundownPlaylists, true, [playlistId], null))
+	requiredSubsReady.push(useSubscriptionIfEnabled(CorelibPubSub.rundownsInPlaylists, true, [playlistId]))
 
 	const playlistStudioId = useTracker(() => {
 		const playlist = RundownPlaylists.findOne(playlistId, {
@@ -1233,13 +1234,13 @@ export function RundownView(props: Readonly<IProps>): JSX.Element {
 		return playlist?.studioId
 	}, [playlistId])
 	// Load once the playlist is confirmed to exist
-	subsReady.push(useSubscriptionIfEnabled(MeteorPubSub.uiSegmentPartNotes, !!playlistStudioId, playlistId))
-	subsReady.push(useSubscriptionIfEnabled(MeteorPubSub.uiPieceContentStatuses, !!playlistStudioId, playlistId))
+	auxSubsReady.push(useSubscriptionIfEnabled(MeteorPubSub.uiSegmentPartNotes, !!playlistStudioId, playlistId))
+	auxSubsReady.push(useSubscriptionIfEnabled(MeteorPubSub.uiPieceContentStatuses, !!playlistStudioId, playlistId))
 	// Load only when the studio is known
-	subsReady.push(
+	requiredSubsReady.push(
 		useSubscriptionIfEnabled(MeteorPubSub.uiStudio, !!playlistStudioId, playlistStudioId ?? protectString(''))
 	)
-	subsReady.push(
+	auxSubsReady.push(
 		useSubscriptionIfEnabled(MeteorPubSub.buckets, !!playlistStudioId, playlistStudioId ?? protectString(''), null)
 	)
 
@@ -1256,24 +1257,30 @@ export function RundownView(props: Readonly<IProps>): JSX.Element {
 
 	const { rundownIds, showStyleBaseIds, showStyleVariantIds } = useRundownAndShowStyleIdsForPlaylist(playlistId)
 
-	subsReady.push(
+	requiredSubsReady.push(
 		useSubscriptions(
 			MeteorPubSub.uiShowStyleBase,
 			showStyleBaseIds.map((id) => [id])
 		)
 	)
-	subsReady.push(
+	requiredSubsReady.push(
 		useSubscriptionIfEnabled(CorelibPubSub.showStyleVariants, showStyleVariantIds.length > 0, null, showStyleVariantIds)
 	)
-	subsReady.push(useSubscriptionIfEnabled(MeteorPubSub.rundownLayouts, showStyleBaseIds.length > 0, showStyleBaseIds))
+	auxSubsReady.push(
+		useSubscriptionIfEnabled(MeteorPubSub.rundownLayouts, showStyleBaseIds.length > 0, showStyleBaseIds)
+	)
 
-	subsReady.push(useSubscriptionIfEnabled(CorelibPubSub.segments, rundownIds.length > 0, rundownIds, {}))
-	subsReady.push(useSubscriptionIfEnabled(CorelibPubSub.adLibPieces, rundownIds.length > 0, rundownIds))
-	subsReady.push(useSubscriptionIfEnabled(CorelibPubSub.rundownBaselineAdLibPieces, rundownIds.length > 0, rundownIds))
-	subsReady.push(useSubscriptionIfEnabled(CorelibPubSub.adLibActions, rundownIds.length > 0, rundownIds))
-	subsReady.push(useSubscriptionIfEnabled(CorelibPubSub.rundownBaselineAdLibActions, rundownIds.length > 0, rundownIds))
-	subsReady.push(useSubscriptionIfEnabled(MeteorPubSub.uiParts, rundownIds.length > 0, playlistId))
-	subsReady.push(
+	auxSubsReady.push(useSubscriptionIfEnabled(CorelibPubSub.segments, rundownIds.length > 0, rundownIds, {}))
+	auxSubsReady.push(useSubscriptionIfEnabled(CorelibPubSub.adLibPieces, rundownIds.length > 0, rundownIds))
+	auxSubsReady.push(
+		useSubscriptionIfEnabled(CorelibPubSub.rundownBaselineAdLibPieces, rundownIds.length > 0, rundownIds)
+	)
+	auxSubsReady.push(useSubscriptionIfEnabled(CorelibPubSub.adLibActions, rundownIds.length > 0, rundownIds))
+	auxSubsReady.push(
+		useSubscriptionIfEnabled(CorelibPubSub.rundownBaselineAdLibActions, rundownIds.length > 0, rundownIds)
+	)
+	auxSubsReady.push(useSubscriptionIfEnabled(MeteorPubSub.uiParts, rundownIds.length > 0, playlistId))
+	auxSubsReady.push(
 		useSubscriptionIfEnabled(
 			CorelibPubSub.partInstances,
 			rundownIds.length > 0,
@@ -1325,8 +1332,8 @@ export function RundownView(props: Readonly<IProps>): JSX.Element {
 		}
 	}, [playlistId])
 
-	const allSubsReady = !subsReady.find((ready) => !ready)
-	return <RundownViewContent {...props} subsReady={allSubsReady} />
+	const subsReady = requiredSubsReady.findIndex((ready) => !ready) === -1
+	return <RundownViewContent {...props} subsReady={subsReady} />
 }
 
 interface IPropsWithReady extends IProps {
