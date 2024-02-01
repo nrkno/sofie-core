@@ -62,14 +62,14 @@
 		"influx": "^5.9.3",
 		"tslib": "^2.6.2",
 		"underscore": "^1.13.6",
-		"winston": "^3.10.0",
-		"ws": "^8.14.2"
+		"winston": "^3.11.0",
+		"ws": "^8.16.0"
 	},
 	"devDependencies": {
 		"@asyncapi/generator": "1.10.9",
 		"@asyncapi/html-template": "0.26.0",
 		"@asyncapi/nodejs-ws-template": "0.9.33",
-		"type-fest": "^4.5.0"
+		"type-fest": "^4.10.2"
 	},
 	"lint-staged": {
 		"*.{css,json,md,scss}": [

@@ -32,7 +32,14 @@ export function bindKoaRouter(koaRouter: KoaRouter, bindPath: string): void {
 		}
 		await next()
 	})
-	app.use(cors())
+	app.use(
+		cors({
+			// Allow anything
+			origin(ctx) {
+				return ctx.get('Origin') || '*'
+			},
+		})
+	)
 	app.use(koaRouter.routes()).use(koaRouter.allowedMethods())
 }
 

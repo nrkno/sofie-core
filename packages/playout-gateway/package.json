@@ -63,7 +63,7 @@
 		"timeline-state-resolver": "9.1.0-nightly-release51-20231211-110613-75e2cbebd.0",
 		"tslib": "^2.6.2",
 		"underscore": "^1.13.6",
-		"winston": "^3.10.0"
+		"winston": "^3.11.0"
 	},
 	"lint-staged": {
 		"*.{css,json,md,scss}": [

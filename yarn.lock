@@ -421,11 +421,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "automation-core@workspace:."
   dependencies:
-    concurrently: ^8.2.1
+    concurrently: ^8.2.2
     lint-staged: ^13.3.0
-    rimraf: ^5.0.1
+    rimraf: ^5.0.5
     semver: ^7.5.4
-    snyk-nodejs-lockfile-parser: ^1.52.3
+    snyk-nodejs-lockfile-parser: ^1.52.11
   languageName: unknown
   linkType: soft
 
@@ -645,9 +645,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"concurrently@npm:^8.2.1":
-  version: 8.2.1
-  resolution: "concurrently@npm:8.2.1"
+"concurrently@npm:^8.2.2":
+  version: 8.2.2
+  resolution: "concurrently@npm:8.2.2"
   dependencies:
     chalk: ^4.1.2
     date-fns: ^2.30.0
@@ -661,7 +661,7 @@ __metadata:
   bin:
     conc: dist/bin/concurrently.js
     concurrently: dist/bin/concurrently.js
-  checksum: 216cb16d5b301cbd9c657b19430836d1686fe8fa9b9ef35ef7ac601e1a5cf6535166a3e57de446696dbd5e7e3f45d78fc70f33c5fd4bb565342cd5e752c5b069
+  checksum: 8ac774df06869773438f1bf91025180c52d5b53139bc86cf47659136c0d97461d0579c515d848d1e945d4e3e0cafe646b2ea18af8d74259b46abddcfe39b2c6c
   languageName: node
   linkType: hard
 
@@ -1849,7 +1849,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rimraf@npm:^5.0.1":
+"rimraf@npm:^5.0.5":
   version: 5.0.5
   resolution: "rimraf@npm:5.0.5"
   dependencies:
@@ -1969,9 +1969,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"snyk-nodejs-lockfile-parser@npm:^1.52.3":
-  version: 1.52.3
-  resolution: "snyk-nodejs-lockfile-parser@npm:1.52.3"
+"snyk-nodejs-lockfile-parser@npm:^1.52.11":
+  version: 1.52.11
+  resolution: "snyk-nodejs-lockfile-parser@npm:1.52.11"
   dependencies:
     "@snyk/dep-graph": ^2.3.0
     "@snyk/graphlib": 2.1.9-patch.3
@@ -1991,7 +1991,7 @@ __metadata:
     uuid: ^8.3.0
   bin:
     parse-nodejs-lockfile: bin/index.js
-  checksum: 5c94d7d3127fc964d72476b7afaf3d9ab0366724d77748d46287bb31ff1f1706d207651634700bd0f99f333a8283d763da1c364bc47740ea17d6db3c31bc4dc6
+  checksum: b40e456f184f627d57cf1cac81995829eaaf4597fa69b288996db43f8f177bcda302b9081c29d5ce427fb03b7c3e27943a4e386a3c23e9dd5412887b62125aeb
   languageName: node
   linkType: hard
 
