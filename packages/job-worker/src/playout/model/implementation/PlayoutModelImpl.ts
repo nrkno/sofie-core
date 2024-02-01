@@ -449,7 +449,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		this.#playlistHasChanged = true
 	}
 
-	updateQuickLoopState(): void {
+	updateQuickLoopState(hasJustSetMarker?: 'start' | 'end'): void {
 		if (this.playlistImpl.quickLoop == null) return
 		const wasLoopRunning = this.playlistImpl.quickLoop.running
 
@@ -484,20 +484,30 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 				rundownIds
 			)
 
-			const currentPartPosition = this.findPartPosition(this.currentPartInstance, rundownIds)
-			const nextPartPosition = this.findPartPosition(this.nextPartInstance, rundownIds)
+			let isCurrentBetweenMarkers = false
 
-			const isCurrentBetweenMarkers = currentPartPosition
-				? compareMarkerPositions(startPosition, currentPartPosition) >= 0 &&
-				  compareMarkerPositions(currentPartPosition, endPosition) >= 0
-				: false
-			isNextBetweenMarkers = nextPartPosition
-				? compareMarkerPositions(startPosition, nextPartPosition) >= 0 &&
-				  compareMarkerPositions(nextPartPosition, endPosition) >= 0
-				: false
+			if (compareMarkerPositions(startPosition, endPosition) < 0) {
+				if (hasJustSetMarker === 'start') {
+					delete this.playlistImpl.quickLoop.end
+				} else if (hasJustSetMarker === 'end') {
+					delete this.playlistImpl.quickLoop.start
+				}
+			} else {
+				const currentPartPosition = this.findPartPosition(this.currentPartInstance, rundownIds)
+				const nextPartPosition = this.findPartPosition(this.nextPartInstance, rundownIds)
 
-			if (this.nextPartInstance && isNextBetweenMarkers) {
-				this.updateQuickLoopPartOverrides(this.nextPartInstance, this.playlistImpl.quickLoop.forceAutoNext)
+				isCurrentBetweenMarkers = currentPartPosition
+					? compareMarkerPositions(startPosition, currentPartPosition) >= 0 &&
+					  compareMarkerPositions(currentPartPosition, endPosition) >= 0
+					: false
+				isNextBetweenMarkers = nextPartPosition
+					? compareMarkerPositions(startPosition, nextPartPosition) >= 0 &&
+					  compareMarkerPositions(nextPartPosition, endPosition) >= 0
+					: false
+
+				if (this.nextPartInstance && isNextBetweenMarkers) {
+					this.updateQuickLoopPartOverrides(this.nextPartInstance, this.playlistImpl.quickLoop.forceAutoNext)
+				}
 			}
 
 			this.playlistImpl.quickLoop.running =
@@ -886,7 +896,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 			}
 		}
 
-		this.updateQuickLoopState()
+		this.updateQuickLoopState(type)
 		this.#playlistHasChanged = true
 	}
 
