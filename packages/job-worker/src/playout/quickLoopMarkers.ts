@@ -17,28 +17,25 @@ export async function handleSetQuickLoopMarker(context: JobContext, data: SetQui
 		async (playoutModel) => {
 			const playlist = playoutModel.playlist
 			if (!playlist.activationId) throw new Error(`Playlist has no activationId!`)
-
-			const wasCurrentPartAutoNexting = playoutModel.currentPartInstance?.partInstance.part.autoNext
+			const wasQuickLoopRunning = playoutModel.playlist.quickLoop?.running
 			playoutModel.setQuickLoopMarker(data.type, data.marker)
 
-			const nextPart = selectNextPart(
-				context,
-				playoutModel.playlist,
-				null,
-				null,
-				playoutModel.getAllOrderedSegments(),
-				playoutModel.getAllOrderedParts(),
-				false,
-				false
-			)
-			if (nextPart?.part._id !== playoutModel.nextPartInstance?.partInstance.part._id) {
-				await setNextPart(context, playoutModel, nextPart, false)
+			if (wasQuickLoopRunning) {
+				const nextPart = selectNextPart(
+					context,
+					playoutModel.playlist,
+					playoutModel.currentPartInstance?.partInstance ?? null,
+					playoutModel.nextPartInstance?.partInstance ?? null,
+					playoutModel.getAllOrderedSegments(),
+					playoutModel.getAllOrderedParts(),
+					false,
+					false
+				)
+				if (nextPart?.part._id !== playoutModel.nextPartInstance?.partInstance.part._id) {
+					await setNextPart(context, playoutModel, nextPart, false)
+				}
 			}
-			const isCurrentPartAutoNexting = playoutModel.currentPartInstance?.partInstance.part.autoNext
-
-			if (wasCurrentPartAutoNexting !== isCurrentPartAutoNexting) {
-				await updateTimeline(context, playoutModel)
-			}
+			await updateTimeline(context, playoutModel)
 		}
 	)
 }
