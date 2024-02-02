@@ -3330,6 +3330,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@msgpack/msgpack@npm:^2.7.1":
+  version: 2.8.0
+  resolution: "@msgpack/msgpack@npm:2.8.0"
+  checksum: bead9393f57239007a2fe455df5277cbc03b125f14f310162a652b81471dcf3ab6780eaa24b36e20aa742998910a6840147d08b7267063b8e2de5d40c624360e
+  languageName: node
+  linkType: hard
+
 "@nestjs/axios@npm:3.0.1":
   version: 3.0.1
   resolution: "@nestjs/axios@npm:3.0.1"
@@ -4576,7 +4583,7 @@ __metadata:
   resolution: "@sofie-automation/shared-lib@workspace:shared-lib"
   dependencies:
     "@mos-connection/model": ^3.0.7
-    timeline-state-resolver-types: 9.1.0-nightly-release51-20231211-110613-75e2cbebd.0
+    timeline-state-resolver-types: 9.1.0-nightly-release51-20240202-124852-30953c1e0.0
     tslib: ^2.6.2
     type-fest: ^3.13.1
   languageName: unknown
@@ -6927,16 +6934,16 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"atem-state@npm:1.2.0-nightly-master-20231129-144508-fb53d10.0":
-  version: 1.2.0-nightly-master-20231129-144508-fb53d10.0
-  resolution: "atem-state@npm:1.2.0-nightly-master-20231129-144508-fb53d10.0"
+"atem-state@npm:1.2.0-nightly-master-20240202-124617-5b52568.0":
+  version: 1.2.0-nightly-master-20240202-124617-5b52568.0
+  resolution: "atem-state@npm:1.2.0-nightly-master-20240202-124617-5b52568.0"
   dependencies:
     deepmerge: ^4.3.1
     tslib: ^2.6.2
     type-fest: ^3.13.1
   peerDependencies:
-    atem-connection: 3.3.2
-  checksum: 25687ec294ae9af0ed803c06c845ec430a4f26ed61cb7b257dd6ae8155b6d70f50368ece4cde42a769a2098961ed112d62ff633ca258fa776035aa66be21a171
+    atem-connection: 3.4
+  checksum: 473c305838b6e5540beba5433dd8c1bd9212734b578e130b6eca6aee274f70ef3d469412bb34ea069e89921f15bf7fa320adfb26658698fc99d82040c34d7a84
   languageName: node
   linkType: hard
 
@@ -7828,18 +7835,7 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"casparcg-connection@npm:^6.1.1":
-  version: 6.2.1
-  resolution: "casparcg-connection@npm:6.2.1"
-  dependencies:
-    eventemitter3: ^5.0.1
-    tslib: ^2.5.0
-    xml2js: ^0.6.2
-  checksum: a086810faf0dbf91fc2987c1f4062696d5396fcbfeee16bc8b969a1a5edaac30657179c25164b1b62d9f79789ceee2e842822fe30dece420893e6fab50a467dd
-  languageName: node
-  linkType: hard
-
-"casparcg-state@npm:^3.0.2":
+"casparcg-state@npm:3.0.3":
   version: 3.0.3
   resolution: "casparcg-state@npm:3.0.3"
   dependencies:
@@ -8902,6 +8898,13 @@ asn1@evs-broadcast/node-asn1:
     shebang-command: ^2.0.0
     which: ^2.0.1
   checksum: 671cc7c7288c3a8406f3c69a3ae2fc85555c04169e9d611def9a675635472614f1c0ed0ef80955d5b6d4e724f6ced67f0ad1bb006c2ea643488fcfef994d7f52
+  languageName: node
+  linkType: hard
+
+"crypto-js@npm:^4.1.1":
+  version: 4.2.0
+  resolution: "crypto-js@npm:4.2.0"
+  checksum: f051666dbc077c8324777f44fbd3aaea2986f198fe85092535130d17026c7c2ccf2d23ee5b29b36f7a4a07312db2fae23c9094b644cc35f7858b1b4fcaf27774
   languageName: node
   linkType: hard
 
@@ -12623,12 +12626,13 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"hyperdeck-connection@npm:^0.5.0":
-  version: 0.5.0
-  resolution: "hyperdeck-connection@npm:0.5.0"
+"hyperdeck-connection@npm:2.0.0-nightly-master-20231205-105655-157a483.0":
+  version: 2.0.0-nightly-master-20231205-105655-157a483.0
+  resolution: "hyperdeck-connection@npm:2.0.0-nightly-master-20231205-105655-157a483.0"
   dependencies:
-    tslib: ^2.3.1
-  checksum: 629ad01a767f06af8cfa6910dea4ba3e083f3750955aeda6ce7c264fee50aa938b5437c9903b475f239cef112151c93f6f129e2ac91d32ab7f3c74a57e41fb01
+    eventemitter3: ^4.0.7
+    tslib: ^2.6.2
+  checksum: 2c4e7f437cfe040903545a52b09664343130d668e546843db752f342b2ce474d90377011d4c5632feb8aa4f6b5474544cd7bef605e7f471eb3f89b76c3753d20
   languageName: node
   linkType: hard
 
@@ -13565,12 +13569,12 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"isomorphic-ws@npm:^4.0.1":
-  version: 4.0.1
-  resolution: "isomorphic-ws@npm:4.0.1"
+"isomorphic-ws@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "isomorphic-ws@npm:5.0.0"
   peerDependencies:
     ws: "*"
-  checksum: d7190eadefdc28bdb93d67b5f0c603385aaf87724fa2974abb382ac1ec9756ed2cfb27065cbe76122879c2d452e2982bc4314317f3d6c737ddda6c047328771a
+  checksum: e20eb2aee09ba96247465fda40c6d22c1153394c0144fa34fe6609f341af4c8c564f60ea3ba762335a7a9c306809349f9b863c8beedf2beea09b299834ad5398
   languageName: node
   linkType: hard
 
@@ -17007,15 +17011,18 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"obs-websocket-js@npm:^4.0.3":
-  version: 4.0.3
-  resolution: "obs-websocket-js@npm:4.0.3"
+"obs-websocket-js@npm:^5.0.4":
+  version: 5.0.4
+  resolution: "obs-websocket-js@npm:5.0.4"
   dependencies:
-    debug: ^4.1.0
-    isomorphic-ws: ^4.0.1
-    sha.js: ^2.4.9
-    ws: ^7.2.0
-  checksum: 54e267b3ba6616fbdaf152bbd4ce76657a71c6c30c639bcb90199b127f02bddb587d20b98bf33b81e5063b0708b23acf324bdf1ce9db41482281a5aa88dcbcc1
+    "@msgpack/msgpack": ^2.7.1
+    crypto-js: ^4.1.1
+    debug: ^4.3.2
+    eventemitter3: ^5.0.1
+    isomorphic-ws: ^5.0.0
+    type-fest: ^3.11.0
+    ws: ^8.13.0
+  checksum: 5fab50747624abebe18a186f1cacd3f2ba72fe2a642f43a05babcc4b8da6342f4bcce31e8aacd7a895debf17a88eaff2222e423c9c55d2ba6b116ebb05cc4c2e
   languageName: node
   linkType: hard
 
@@ -17975,7 +17982,7 @@ asn1@evs-broadcast/node-asn1:
     "@sofie-automation/shared-lib": 1.51.0-in-development
     debug: ^4.3.4
     influx: ^5.9.3
-    timeline-state-resolver: 9.1.0-nightly-release51-20231211-110613-75e2cbebd.0
+    timeline-state-resolver: 9.1.0-nightly-release51-20240202-124852-30953c1e0.0
     tslib: ^2.6.2
     underscore: ^1.13.6
     winston: ^3.11.0
@@ -20318,18 +20325,6 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"sha.js@npm:^2.4.9":
-  version: 2.4.11
-  resolution: "sha.js@npm:2.4.11"
-  dependencies:
-    inherits: ^2.0.1
-    safe-buffer: ^5.0.1
-  bin:
-    sha.js: ./bin.js
-  checksum: ebd3f59d4b799000699097dadb831c8e3da3eb579144fd7eb7a19484cbcbb7aca3c68ba2bb362242eb09e33217de3b4ea56e4678184c334323eca24a58e3ad07
-  languageName: node
-  linkType: hard
-
 "shallow-clone-shim@npm:^2.0.0":
   version: 2.0.0
   resolution: "shallow-clone-shim@npm:2.0.0"
@@ -21598,34 +21593,34 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"timeline-state-resolver-types@npm:9.1.0-nightly-release51-20231211-110613-75e2cbebd.0":
-  version: 9.1.0-nightly-release51-20231211-110613-75e2cbebd.0
-  resolution: "timeline-state-resolver-types@npm:9.1.0-nightly-release51-20231211-110613-75e2cbebd.0"
+"timeline-state-resolver-types@npm:9.1.0-nightly-release51-20240202-124852-30953c1e0.0":
+  version: 9.1.0-nightly-release51-20240202-124852-30953c1e0.0
+  resolution: "timeline-state-resolver-types@npm:9.1.0-nightly-release51-20240202-124852-30953c1e0.0"
   dependencies:
     tslib: ^2.5.1
-  checksum: 64038c242b007e59897fb62c117753960ff1406885bd3f2b566bc031b6ecbbb0ec5cefae3c7f875baa85a1284feabf25f5da4cb1de72ec279ce6f815d91a5c8d
+  checksum: e5ec6a10e26357c7964a0cf3f6c9c02392ee0b9f492a48a9a1d0d172f563fc44ce48562da28521e4ed957908c5043d582b36aa7a12d52cd57d7f8433c90af022
   languageName: node
   linkType: hard
 
-"timeline-state-resolver@npm:9.1.0-nightly-release51-20231211-110613-75e2cbebd.0":
-  version: 9.1.0-nightly-release51-20231211-110613-75e2cbebd.0
-  resolution: "timeline-state-resolver@npm:9.1.0-nightly-release51-20231211-110613-75e2cbebd.0"
+"timeline-state-resolver@npm:9.1.0-nightly-release51-20240202-124852-30953c1e0.0":
+  version: 9.1.0-nightly-release51-20240202-124852-30953c1e0.0
+  resolution: "timeline-state-resolver@npm:9.1.0-nightly-release51-20240202-124852-30953c1e0.0"
   dependencies:
     "@tv2media/v-connection": ^7.3.2
     atem-connection: 3.4.0
-    atem-state: 1.2.0-nightly-master-20231129-144508-fb53d10.0
+    atem-state: 1.2.0-nightly-master-20240202-124617-5b52568.0
     cacheable-lookup: ^5.0.3
-    casparcg-connection: ^6.1.1
-    casparcg-state: ^3.0.2
+    casparcg-connection: 6.2.0
+    casparcg-state: 3.0.3
     debug: ^4.3.4
     deepmerge: ^4.3.1
     emberplus-connection: ^0.2.1
     eventemitter3: ^4.0.7
     got: ^11.8.6
     hpagent: ^1.2.0
-    hyperdeck-connection: ^0.5.0
+    hyperdeck-connection: 2.0.0-nightly-master-20231205-105655-157a483.0
     klona: ^2.0.6
-    obs-websocket-js: ^4.0.3
+    obs-websocket-js: ^5.0.4
     osc: ^2.4.4
     p-all: ^3.0.0
     p-queue: ^6.6.2
@@ -21633,7 +21628,7 @@ asn1@evs-broadcast/node-asn1:
     sprintf-js: ^1.1.2
     superfly-timeline: ^9.0.0
     threadedclass: ^1.2.1
-    timeline-state-resolver-types: 9.1.0-nightly-release51-20231211-110613-75e2cbebd.0
+    timeline-state-resolver-types: 9.1.0-nightly-release51-20240202-124852-30953c1e0.0
     tslib: ^2.5.1
     tv-automation-quantel-gateway-client: ^3.1.7
     type-fest: ^3.10.0
@@ -21641,7 +21636,7 @@ asn1@evs-broadcast/node-asn1:
     utf-8-validate: ^5.0.10
     ws: ^7.5.9
     xml-js: ^1.6.11
-  checksum: eea2807ee6cad17992459fb6fb617bb1300ae4c7fe5fafd5f1d60e392b33928bd6ac5a655a51c69ee851d69f7c2b3b4a2e153c1f4ca7c05098e1b104c84970a3
+  checksum: c3bb968755cd547b498c6ec311ad321e7721f2d7c69eac68c1244060e3c1083971c4b43a2ec8a9c5e4f6c56e38fc45da355e0b1643634bbd1de13eaee7cd9d81
   languageName: node
   linkType: hard
 
@@ -22159,7 +22154,7 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"type-fest@npm:^3.1.0, type-fest@npm:^3.10.0, type-fest@npm:^3.13.1":
+"type-fest@npm:^3.1.0, type-fest@npm:^3.10.0, type-fest@npm:^3.11.0, type-fest@npm:^3.13.1":
   version: 3.13.1
   resolution: "type-fest@npm:3.13.1"
   checksum: c06b0901d54391dc46de3802375f5579868949d71f93b425ce564e19a428a0d411ae8d8cb0e300d330071d86152c3ea86e744c3f2860a42a79585b6ec2fdae8e
@@ -23704,7 +23699,7 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"ws@npm:^7.2.0, ws@npm:^7.3.1, ws@npm:^7.4.6, ws@npm:^7.5.9":
+"ws@npm:^7.3.1, ws@npm:^7.4.6, ws@npm:^7.5.9":
   version: 7.5.9
   resolution: "ws@npm:7.5.9"
   peerDependencies:
