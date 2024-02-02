@@ -81,30 +81,27 @@ export async function executeAdlibActionAndSaveModel(
 		},
 	})
 
-	if (data.privateData === null) {
-		const [adLibAction, baselineAdLibAction, bucketAdLibAction] = await Promise.all([
-			context.directCollections.AdLibActions.findOne(data.actionDocId as AdLibActionId, {
+	const [adLibAction, baselineAdLibAction, bucketAdLibAction] = await Promise.all([
+		context.directCollections.AdLibActions.findOne(data.actionDocId as AdLibActionId, {
+			projection: { _id: 1, privateData: 1 },
+		}),
+		context.directCollections.RundownBaselineAdLibActions.findOne(
+			data.actionDocId as RundownBaselineAdLibActionId,
+			{
 				projection: { _id: 1, privateData: 1 },
-			}),
-			context.directCollections.RundownBaselineAdLibActions.findOne(
-				data.actionDocId as RundownBaselineAdLibActionId,
-				{
-					projection: { _id: 1, privateData: 1 },
-				}
-			),
-			context.directCollections.BucketAdLibActions.findOne(data.actionDocId as BucketAdLibActionId, {
-				projection: { _id: 1, privateData: 1 },
-			}),
-		])
-		const adLibActionDoc = adLibAction ?? baselineAdLibAction ?? bucketAdLibAction
-		data.privateData = adLibActionDoc?.privateData
-	}
+			}
+		),
+		context.directCollections.BucketAdLibActions.findOne(data.actionDocId as BucketAdLibActionId, {
+			projection: { _id: 1, privateData: 1 },
+		}),
+	])
+	const adLibActionDoc = adLibAction ?? baselineAdLibAction ?? bucketAdLibAction
 
 	const actionParameters: ExecuteActionParameters = {
 		actionId: data.actionId,
 		userData: data.userData,
 		triggerMode: data.triggerMode,
-		privateData: data.privateData,
+		privateData: adLibActionDoc?.privateData,
 	}
 
 	try {
