@@ -29,7 +29,8 @@ interface IProps {
 	}
 }
 interface IState {
-	uploadFileKey: number // Used to force clear the input after use
+	uploadFileKey: string // Used to force clear the input after use
+	uploadFileKey2: string // Used to force clear the input after use
 	editSnapshotId: SnapshotId | null
 	removeSnapshots: boolean
 }
@@ -66,13 +67,14 @@ const SnapshotsViewContent = withTranslation()(
 		constructor(props: Translated<IProps & ITrackedProps>) {
 			super(props)
 			this.state = {
-				uploadFileKey: Date.now(),
+				uploadFileKey: `${Date.now()}_1`,
+				uploadFileKey2: `${Date.now()}_2`,
 				editSnapshotId: null,
 				removeSnapshots: false,
 			}
 		}
 
-		onUploadFile(e: React.ChangeEvent<HTMLInputElement>) {
+		onUploadFile(e: React.ChangeEvent<HTMLInputElement>, restoreDebugData: boolean) {
 			const { t } = this.props
 
 			const file = e.target.files?.[0]
@@ -83,7 +85,8 @@ const SnapshotsViewContent = withTranslation()(
 			const reader = new FileReader()
 			reader.onload = (e2) => {
 				this.setState({
-					uploadFileKey: Date.now(),
+					uploadFileKey: `${Date.now()}_1`,
+					uploadFileKey2: `${Date.now()}_2`,
 				})
 				const uploadFileContents = ((e2.target as any) || {}).result
 
@@ -98,6 +101,7 @@ const SnapshotsViewContent = withTranslation()(
 							body: uploadFileContents,
 							headers: {
 								'content-type': 'application/json',
+								'restore-debug-data': restoreDebugData ? '1' : '0',
 							},
 						})
 							.then(() => {
@@ -123,7 +127,9 @@ const SnapshotsViewContent = withTranslation()(
 					},
 					onDiscard: () => {
 						this.setState({
-							uploadFileKey: Date.now(), // to clear input field
+							// to clear input field:
+							uploadFileKey: `${Date.now()}_1`,
+							uploadFileKey2: `${Date.now()}_2`,
 						})
 					},
 				})
@@ -139,7 +145,7 @@ const SnapshotsViewContent = withTranslation()(
 					message: `Do you really want to restore the snapshot ${snapshot.name}?`,
 					onAccept: () => {
 						MeteorCall.snapshot
-							.restoreSnapshot(snapshotId)
+							.restoreSnapshot(snapshotId, false)
 							.then(() => {
 								// todo: replace this with something else
 								doModalDialog({
@@ -310,11 +316,20 @@ const SnapshotsViewContent = withTranslation()(
 							<UploadButton
 								accept="application/json,.json"
 								className="btn btn-secondary"
-								onChange={(e) => this.onUploadFile(e)}
+								onChange={(e) => this.onUploadFile(e, false)}
 								key={this.state.uploadFileKey}
 							>
 								<FontAwesomeIcon icon={faUpload} />
 								<span>{t('Upload Snapshot')}</span>
+							</UploadButton>
+							<UploadButton
+								accept="application/json,.json"
+								className="btn btn-secondary"
+								onChange={(e) => this.onUploadFile(e, true)}
+								key={this.state.uploadFileKey2}
+							>
+								<FontAwesomeIcon icon={faUpload} />
+								<span>{t('Upload Snapshot (for debugging)')}</span>
 							</UploadButton>
 						</div>
 						<h2 className="mhn">{t('Restore from Stored Snapshots')}</h2>

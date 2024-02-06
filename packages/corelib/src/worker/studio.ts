@@ -3,6 +3,7 @@ import {
 	AdLibActionId,
 	BucketAdLibActionId,
 	BucketId,
+	ExpectedPackageId,
 	PartId,
 	PartInstanceId,
 	PieceId,
@@ -307,6 +308,13 @@ export interface RestorePlaylistSnapshotProps {
 }
 export interface RestorePlaylistSnapshotResult {
 	playlistId: RundownPlaylistId
+	remappedIds: {
+		rundownId: [RundownId, RundownId][]
+		segmentId: [SegmentId, SegmentId][]
+		partId: [PartId, PartId][]
+		partInstanceId: [PartInstanceId, PartInstanceId][]
+		expectedPackageId: [ExpectedPackageId, ExpectedPackageId][]
+	}
 }
 
 export interface BlueprintValidateConfigForStudioResult {
