@@ -11,15 +11,17 @@ import _ = require('underscore')
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { PartInstanceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
+export type PieceInstanceMin = Omit<PieceInstance, 'reportedStartedPlayback' | 'reportedStoppedPlayback'>
+
 export interface SelectedPieceInstances {
 	// Pieces reported by the Playout Gateway as active
-	active: PieceInstance[]
+	active: PieceInstanceMin[]
 
 	// Pieces present in the current part instance
-	currentPartInstance: PieceInstance[]
+	currentPartInstance: PieceInstanceMin[]
 
 	// Pieces present in the current part instance
-	nextPartInstance: PieceInstance[]
+	nextPartInstance: PieceInstanceMin[]
 }
 
 export class PieceInstancesHandler
@@ -78,7 +80,15 @@ export class PieceInstancesHandler
 			this._collectionData.active = active
 			hasAnythingChanged = true
 		}
-		if (!areElementsShallowEqual(this._collectionData.currentPartInstance, inCurrentPartInstance)) {
+		if (
+			!areElementsShallowEqual(this._collectionData.currentPartInstance, inCurrentPartInstance) &&
+			this._collectionData.currentPartInstance.some((pieceInstance, index) => {
+				return !arePropertiesShallowEqual<PieceInstance>(inCurrentPartInstance[index], pieceInstance, [
+					'reportedStartedPlayback',
+					'reportedStoppedPlayback',
+				])
+			})
+		) {
 			this._collectionData.currentPartInstance = inCurrentPartInstance
 			hasAnythingChanged = true
 		}
@@ -170,4 +180,27 @@ export class PieceInstancesHandler
 				pieceInstance.infinite?.fromPreviousPart) // infinites from previous part also are on air from the start of the current part
 		)
 	}
+}
+
+export function arePropertiesShallowEqual<T extends Record<string, any>>(
+	a: T,
+	b: T,
+	omitProperties: Array<keyof T>
+): boolean {
+	if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) {
+		return false
+	}
+
+	const keysA = Object.keys(a).filter((key) => !omitProperties.includes(key))
+	const keysB = Object.keys(b).filter((key) => !omitProperties.includes(key))
+
+	if (keysA.length !== keysB.length) return false
+
+	for (const key of keysA) {
+		if (!keysB.includes(key) || a[key] !== b[key]) {
+			return false
+		}
+	}
+
+	return true
 }

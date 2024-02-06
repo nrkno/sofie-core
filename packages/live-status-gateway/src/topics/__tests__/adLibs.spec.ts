@@ -2,8 +2,7 @@ import { protectString, unprotectString } from '@sofie-automation/server-core-in
 import { makeMockLogger, makeMockSubscriber, makeTestPlaylist, makeTestShowStyleBase } from './utils'
 import { AdLibsStatus, AdLibsTopic } from '../adLibsTopic'
 import { PlaylistHandler } from '../../collections/playlistHandler'
-import { ShowStyleBaseHandler } from '../../collections/showStyleBaseHandler'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { ShowStyleBaseExt, ShowStyleBaseHandler } from '../../collections/showStyleBaseHandler'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 import { AdLibActionsHandler } from '../../collections/adLibActionsHandler'
@@ -60,7 +59,7 @@ describe('ActivePlaylistTopic', () => {
 		await topic.update(PlaylistHandler.name, playlist)
 
 		const testShowStyleBase = makeTestShowStyleBase()
-		await topic.update(ShowStyleBaseHandler.name, testShowStyleBase as DBShowStyleBase)
+		await topic.update(ShowStyleBaseHandler.name, testShowStyleBase as ShowStyleBaseExt)
 
 		const testAdLibActions = makeTestAdLibActions()
 		await topic.update(AdLibActionsHandler.name, testAdLibActions)

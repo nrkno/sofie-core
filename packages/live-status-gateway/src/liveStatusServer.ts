@@ -11,7 +11,7 @@ import { SegmentHandler } from './collections/segmentHandler'
 import { PartInstancesHandler } from './collections/partInstancesHandler'
 import { AdLibActionsHandler } from './collections/adLibActionsHandler'
 import { GlobalAdLibActionsHandler } from './collections/globalAdLibActionsHandler'
-import { RootChannel } from './topics/root'
+import { RootChannel, StatusChannels } from './topics/root'
 import { StudioTopic } from './topics/studioTopic'
 import { ActivePlaylistTopic } from './topics/activePlaylistTopic'
 import { AdLibsHandler } from './collections/adLibsHandler'
@@ -22,6 +22,7 @@ import { PartHandler } from './collections/partHandler'
 import { PartsHandler } from './collections/partsHandler'
 import { PieceInstancesHandler } from './collections/pieceInstancesHandler'
 import { AdLibsTopic } from './topics/adLibsTopic'
+import { ActivePiecesTopic } from './topics/activePiecesTopic'
 
 export class LiveStatusServer {
 	_logger: Logger
@@ -39,14 +40,16 @@ export class LiveStatusServer {
 		const rootChannel = new RootChannel(this._logger)
 
 		const studioTopic = new StudioTopic(this._logger)
+		const activePiecesTopic = new ActivePiecesTopic(this._logger)
 		const activePlaylistTopic = new ActivePlaylistTopic(this._logger)
 		const segmentsTopic = new SegmentsTopic(this._logger)
 		const adLibsTopic = new AdLibsTopic(this._logger)
 
-		rootChannel.addTopic('studio', studioTopic)
-		rootChannel.addTopic('activePlaylist', activePlaylistTopic)
-		rootChannel.addTopic('segments', segmentsTopic)
-		rootChannel.addTopic('adLibs', adLibsTopic)
+		rootChannel.addTopic(StatusChannels.studio, studioTopic)
+		rootChannel.addTopic(StatusChannels.activePlaylist, activePlaylistTopic)
+		rootChannel.addTopic(StatusChannels.activePieces, activePiecesTopic)
+		rootChannel.addTopic(StatusChannels.segments, segmentsTopic)
+		rootChannel.addTopic(StatusChannels.adLibs, adLibsTopic)
 
 		const studioHandler = new StudioHandler(this._logger, this._coreHandler)
 		await studioHandler.init()
@@ -103,6 +106,10 @@ export class LiveStatusServer {
 		await partInstancesHandler.subscribe(activePlaylistTopic)
 		await partsHandler.subscribe(activePlaylistTopic)
 		await pieceInstancesHandler.subscribe(activePlaylistTopic)
+
+		await playlistHandler.subscribe(activePiecesTopic)
+		await showStyleBaseHandler.subscribe(activePiecesTopic)
+		await pieceInstancesHandler.subscribe(activePiecesTopic)
 
 		await playlistHandler.subscribe(segmentsTopic)
 		await segmentsHandler.subscribe(segmentsTopic)

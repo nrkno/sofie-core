@@ -34,6 +34,7 @@ interface SubscriptionResponse {
 export enum StatusChannels {
 	studio = 'studio',
 	activePlaylist = 'activePlaylist',
+	activePieces = 'activePieces',
 	segments = 'segments',
 	adLibs = 'adLibs',
 }

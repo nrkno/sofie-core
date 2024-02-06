@@ -1,10 +1,9 @@
-import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { PlaylistTimingType } from '@sofie-automation/blueprints-integration/dist/documents/playlistTiming'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 // eslint-disable-next-line node/no-extraneous-import
 import { mock, MockProxy } from 'jest-mock-extended'
+import { ShowStyleBaseExt } from '../../collections/showStyleBaseHandler'
 import { Logger } from 'winston'
 import { WebSocket } from 'ws'
 
@@ -36,18 +35,9 @@ export function makeTestPlaylist(id?: string): DBRundownPlaylist {
 	}
 }
 
-export function makeTestShowStyleBase(): Pick<
-	DBShowStyleBase,
-	'sourceLayersWithOverrides' | 'outputLayersWithOverrides'
-> {
+export function makeTestShowStyleBase(): Pick<ShowStyleBaseExt, 'sourceLayerNamesById' | 'outputLayerNamesById'> {
 	return {
-		sourceLayersWithOverrides: {
-			defaults: { layer0: { _id: 'layer0', name: 'Layer 0', _rank: 0, type: SourceLayerType.VT } },
-			overrides: [],
-		},
-		outputLayersWithOverrides: {
-			defaults: { pgm: { _id: 'pgm', name: 'PGM', _rank: 0, isPGM: true } },
-			overrides: [],
-		},
+		sourceLayerNamesById: new Map([['layer0', 'Layer 0']]),
+		outputLayerNamesById: new Map([['pgm', 'PGM']]),
 	}
 }

@@ -27,12 +27,7 @@ $defs:
       nextPart:
         description: The next Part - if empty, no part will follow live part
         $ref: '#/$defs/part'
-      activePieces:
-        description: Pieces that are currently active (live)
-        type: array
-        items:
-          $ref: '#/$defs/piece'
-    required: [event, id, name, rundownIds, currentPart, currentSegment, nextPart, activePieces]
+    required: [event, id, name, rundownIds, currentPart, currentSegment, nextPart]
     additionalProperties: false
     examples:
       - event: activePlaylist
@@ -45,8 +40,6 @@ $defs:
           $ref: '#/$defs/currentSegment/examples/0'
         nextPart:
           $ref: '#/$defs/part/examples/0'
-        activePieces:
-          - $ref: '#/$defs/piece/examples/0'
   partBase:
     type: object
     properties:
