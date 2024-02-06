@@ -25,6 +25,7 @@ function makeTestAdLibActions(): AdLibAction[] {
 			externalId: 'NCS_ACTION_0',
 			userData: {},
 			userDataManifest: {},
+			publicData: { a: 'b' },
 		},
 	]
 }
@@ -45,6 +46,7 @@ function makeTestGlobalAdLibActions(): RundownBaselineAdLibAction[] {
 			externalId: 'NCS_GLOBAL_ACTION_0',
 			userData: {},
 			userDataManifest: {},
+			publicData: { c: 'd' },
 		},
 	]
 }
@@ -82,6 +84,7 @@ describe('ActivePlaylistTopic', () => {
 					outputLayer: 'PGM',
 					sourceLayer: 'Layer 0',
 					tags: ['adlib_tag'],
+					publicData: { a: 'b' },
 				},
 			],
 			globalAdLibs: [
@@ -92,6 +95,7 @@ describe('ActivePlaylistTopic', () => {
 					outputLayer: 'PGM',
 					sourceLayer: 'Layer 0',
 					tags: ['global_adlib_tag'],
+					publicData: { c: 'd' },
 				},
 			],
 		}

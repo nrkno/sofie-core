@@ -39,6 +39,7 @@ describe('ActivePiecesTopic', () => {
 						outputLayerId: 'pgm',
 						sourceLayerId: 'layer0',
 						tags: ['my_tag'],
+						publicData: { c: 'd' },
 					},
 				}),
 			] as PieceInstance[],
@@ -47,7 +48,7 @@ describe('ActivePiecesTopic', () => {
 
 		topic.addSubscriber(mockSubscriber)
 
-		const expectedStatus: Partial<ActivePiecesStatus> = {
+		const expectedStatus: PartialDeep<ActivePiecesStatus> = {
 			event: 'activePieces',
 
 			activePieces: [
@@ -57,6 +58,7 @@ describe('ActivePiecesTopic', () => {
 					sourceLayer: 'Layer 0',
 					outputLayer: 'PGM',
 					tags: ['my_tag'],
+					publicData: { c: 'd' },
 				},
 			],
 		}

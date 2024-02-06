@@ -8,18 +8,10 @@ import { PlaylistHandler } from '../collections/playlistHandler'
 import { ShowStyleBaseExt, ShowStyleBaseHandler } from '../collections/showStyleBaseHandler'
 import _ = require('underscore')
 import { SelectedPieceInstances, PieceInstancesHandler, PieceInstanceMin } from '../collections/pieceInstancesHandler'
-import { toPieceStatus } from './helpers/pieceStatus'
+import { PieceStatus, toPieceStatus } from './helpers/pieceStatus'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 const THROTTLE_PERIOD_MS = 100
-
-interface PieceStatus {
-	id: string
-	name: string
-	sourceLayer: string
-	outputLayer: string
-	tags?: string[]
-}
 
 export interface ActivePiecesStatus {
 	event: 'activePieces'

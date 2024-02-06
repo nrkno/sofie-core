@@ -44,11 +44,14 @@ describe('ActivePlaylistTopic', () => {
 			nextPart: null,
 			currentSegment: null,
 			rundownIds: unprotectStringArray(playlist.rundownIdsInOrder),
+			publicData: undefined,
 		}
 
 		// eslint-disable-next-line @typescript-eslint/unbound-method
 		expect(mockSubscriber.send).toHaveBeenCalledTimes(1)
-		expect(JSON.parse(mockSubscriber.send.mock.calls[0][0] as string)).toMatchObject(expectedStatus)
+		expect(JSON.parse(mockSubscriber.send.mock.calls[0][0] as string)).toMatchObject(
+			JSON.parse(JSON.stringify(expectedStatus))
+		)
 	})
 
 	it('provides segment and part', async () => {
@@ -75,6 +78,7 @@ describe('ActivePlaylistTopic', () => {
 			segmentId: protectString('SEGMENT_1'),
 			expectedDurationWithPreroll: 10000,
 			expectedDuration: 10000,
+			publicData: { b: 'c' },
 		}
 		const testPartInstances: PartialDeep<SelectedPartInstances> = {
 			current: {
@@ -107,6 +111,8 @@ describe('ActivePlaylistTopic', () => {
 				segmentId: 'SEGMENT_1',
 				timing: { startTime: 1600000060000, expectedDurationMs: 10000, projectedEndTime: 1600000070000 },
 				pieces: [],
+				autoNext: undefined,
+				publicData: { b: 'c' },
 			},
 			nextPart: null,
 			currentSegment: {
@@ -117,10 +123,13 @@ describe('ActivePlaylistTopic', () => {
 				},
 			},
 			rundownIds: unprotectStringArray(playlist.rundownIdsInOrder),
+			publicData: { a: 'b' },
 		}
 
 		// eslint-disable-next-line @typescript-eslint/unbound-method
 		expect(mockSubscriber.send).toHaveBeenCalledTimes(1)
-		expect(JSON.parse(mockSubscriber.send.mock.calls[0][0] as string)).toMatchObject(expectedStatus)
+		expect(JSON.parse(mockSubscriber.send.mock.calls[0][0] as string)).toMatchObject(
+			JSON.parse(JSON.stringify(expectedStatus))
+		)
 	})
 })

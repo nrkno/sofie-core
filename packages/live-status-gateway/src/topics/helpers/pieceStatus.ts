@@ -7,7 +7,8 @@ export interface PieceStatus {
 	name: string
 	sourceLayer: string
 	outputLayer: string
-	tags?: string[]
+	tags: string[] | undefined
+	publicData: unknown
 }
 
 export function toPieceStatus(
@@ -22,5 +23,6 @@ export function toPieceStatus(
 		sourceLayer: sourceLayerName ?? 'invalid',
 		outputLayer: outputLayerName ?? 'invalid',
 		tags: pieceInstance.piece.tags,
+		publicData: pieceInstance.piece.publicData,
 	}
 }
