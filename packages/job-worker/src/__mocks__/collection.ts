@@ -32,7 +32,7 @@ import {
 } from '@sofie-automation/corelib/dist/mongo'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import EventEmitter = require('eventemitter3')
-import { AnyBulkWriteOperation, Collection, FindOptions } from 'mongodb'
+import { AnyBulkWriteOperation, Collection, CountOptions, FindOptions } from 'mongodb'
 import { ReadonlyDeep } from 'type-fest'
 import { IChangeStream, IChangeStreamEvents, ICollection, IDirectCollections, MongoModifier, MongoQuery } from '../db'
 import _ = require('underscore')
@@ -154,6 +154,13 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 		})
 		return docs[0]
 	}
+	async count(selector?: MongoQuery<TDoc> | TDoc['_id'], options?: CountOptions): Promise<number> {
+		this.#ops.push({ type: 'count', args: [selector, options] })
+
+		const docs = await this.findFetchInner(selector, options)
+		return docs.length
+	}
+
 	async insertOne(doc: TDoc | ReadonlyDeep<TDoc>): Promise<TDoc['_id']> {
 		this.#ops.push({ type: 'insertOne', args: [doc._id] })
 
