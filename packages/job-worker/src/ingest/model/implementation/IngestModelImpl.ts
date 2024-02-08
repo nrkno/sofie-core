@@ -270,6 +270,14 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 	}
 
 	/**
+	 * Get the internal `_id` of a segment from the `externalId`
+	 * @param externalId External id of the Segment
+	 */
+	getSegmentIdFromExternalId(externalId: string): SegmentId {
+		return getSegmentId(this.rundownId, externalId)
+	}
+
+	/**
 	 * Get a Segment from the Rundown
 	 * @param id Id of the Segment
 	 */
@@ -355,7 +363,12 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 		}
 	}
 
-	replaceSegment(segment: DBSegment): IngestSegmentModel {
+	replaceSegment(rawSegment: Omit<DBSegment, '_id' | 'rundownId'>): IngestSegmentModel {
+		const segment: DBSegment = {
+			...rawSegment,
+			_id: this.getSegmentIdFromExternalId(rawSegment.externalId),
+			rundownId: this.rundownId,
+		}
 		const oldSegment = this.segmentsImpl.get(segment._id)
 
 		const newSegment = new IngestSegmentModelImpl(true, segment, [], oldSegment?.segmentModel)
