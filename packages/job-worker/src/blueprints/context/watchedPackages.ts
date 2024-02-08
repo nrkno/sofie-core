@@ -70,13 +70,10 @@ export class WatchedPackagesHelper {
 			}
 		}
 
-		// Load all the packages and the infos that are watched
-		const watchedPackageInfos = await context.directCollections.PackageInfos.findFetch({
-			studioId: context.studio._id,
-			packageId: { $in: packages.map((p) => p._id) },
-		})
-
-		return new WatchedPackagesHelper(packages, watchedPackageInfos)
+		return this.#createFromPackages(
+			context,
+			packages.filter((pkg) => !!pkg.listenToPackageInfoUpdates)
+		)
 	}
 
 	/**
@@ -101,6 +98,13 @@ export class WatchedPackagesHelper {
 			}
 		}
 
+		return this.#createFromPackages(
+			context,
+			packages.filter((pkg) => !!pkg.listenToPackageInfoUpdates)
+		)
+	}
+
+	static async #createFromPackages(context: JobContext, packages: ReadonlyDeep<ExpectedPackageDB>[]) {
 		// Load all the packages and the infos that are watched
 		const watchedPackageInfos =
 			packages.length > 0
