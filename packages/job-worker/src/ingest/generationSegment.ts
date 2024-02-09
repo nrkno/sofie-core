@@ -1,4 +1,4 @@
-import { BlueprintId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BlueprintId, ExpectedPackageId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { SegmentNote, PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
@@ -76,7 +76,7 @@ export async function calculateSegmentsFromIngestData(
 
 		changedSegmentIds = await Promise.all(
 			ingestSegments.map(async (ingestSegment) =>
-				updateSegmentFromIngestData2(
+				regenerateSegmentAndUpdateModelFull(
 					context,
 					showStyle,
 					blueprint,
@@ -92,7 +92,7 @@ export async function calculateSegmentsFromIngestData(
 	return changedSegmentIds
 }
 
-async function updateSegmentFromIngestData2(
+async function regenerateSegmentAndUpdateModelFull(
 	context: JobContext,
 	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
@@ -110,7 +110,7 @@ async function updateSegmentFromIngestData2(
 		(p) => 'segmentId' in p && p.segmentId === segmentId
 	)
 
-	const updatedSegmentModel = await regenerateSegmentAndUpdateModel(
+	let updatedSegmentModel = await regenerateSegmentAndUpdateModel(
 		context,
 		showStyle,
 		blueprint,
@@ -118,6 +118,29 @@ async function updateSegmentFromIngestData2(
 		ingestSegment,
 		segmentWatchedPackages
 	)
+
+	// Future: this would be better to go before `updateModelWithGeneratedSegment`, but we need the final ids of the ExpectedPackages
+	const shouldRegenerateSegment = await checkIfSegmentReferencesUnloadedPackageInfos(
+		context,
+		updatedSegmentModel,
+		segmentWatchedPackages
+	)
+	if (shouldRegenerateSegment) {
+		logger.info(`Regenerating segment ${ingestSegment.name} due to existing PackageInfos being found`)
+		const reloadedWatchedPackages = await WatchedPackagesHelper.createForIngestSegments(context, ingestModel, [
+			ingestSegment.externalId,
+		])
+
+		// Regenerate the segment once, with the updated packages
+		updatedSegmentModel = await regenerateSegmentAndUpdateModel(
+			context,
+			showStyle,
+			blueprint,
+			ingestModel,
+			ingestSegment,
+			reloadedWatchedPackages
+		)
+	}
 
 	preserveOrphanedSegmentPositionInRundown(context, ingestModel, updatedSegmentModel.segment)
 
@@ -157,6 +180,34 @@ async function regenerateSegmentAndUpdateModel(
 		blueprintResult.blueprintSegment,
 		blueprintResult.blueprintNotes
 	)
+}
+
+async function checkIfSegmentReferencesUnloadedPackageInfos(
+	context: JobContext,
+	segmentModel: IngestSegmentModel,
+	segmentWatchedPackages: WatchedPackagesHelper
+) {
+	const expectedPackageIdsToCheck = new Set<ExpectedPackageId>()
+	// check if there are any updates right away?
+	for (const part of segmentModel.parts) {
+		for (const expectedPackage of part.expectedPackages) {
+			if (expectedPackage.listenToPackageInfoUpdates) {
+				const loadedPackage = segmentWatchedPackages.getPackage(expectedPackage._id)
+				if (!loadedPackage) {
+					// The package didn't exist prior to the blueprint running
+					expectedPackageIdsToCheck.add(expectedPackage._id)
+				}
+			}
+		}
+	}
+
+	if (expectedPackageIdsToCheck.size > 0) {
+		const areThereAnyData = await context.directCollections.PackageInfos.count({
+			packageId: { $in: Array.from(expectedPackageIdsToCheck) },
+		})
+		return areThereAnyData > 0
+	}
+	return false
 }
 
 async function generateSegmentWithBlueprints(

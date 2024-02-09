@@ -10,7 +10,13 @@ import { ExpectedPlayoutItemRundown } from '@sofie-automation/corelib/dist/dataM
 import { ExpectedPackageFromRundown } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { ExpectedPackagesStore } from './ExpectedPackagesStore'
-import { diffAndReturnLatestObjects, DocumentChanges, getDocumentChanges, setValuesAndTrackChanges } from './utils'
+import {
+	addManyToSet,
+	diffAndReturnLatestObjects,
+	DocumentChanges,
+	getDocumentChanges,
+	setValuesAndTrackChanges,
+} from './utils'
 
 export class IngestPartModelImpl implements IngestPartModel {
 	readonly partImpl: DBPart
@@ -185,6 +191,11 @@ export class IngestPartModelImpl implements IngestPartModel {
 		) {
 			this.#partHasChanges = true
 		}
+
+		// Anything already marked as changed should still be marked as changed
+		addManyToSet(this.#piecesWithChanges, previousModel.#piecesWithChanges)
+		addManyToSet(this.#adLibPiecesWithChanges, previousModel.#adLibPiecesWithChanges)
+		addManyToSet(this.#adLibActionsWithChanges, previousModel.#adLibActionsWithChanges)
 
 		// Diff the objects, but don't update the stored copies
 		diffAndReturnLatestObjects(this.#piecesWithChanges, previousModel.#pieces, this.#pieces)

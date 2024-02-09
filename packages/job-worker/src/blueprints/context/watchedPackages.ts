@@ -5,7 +5,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { JobContext } from '../../jobs'
-import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ExpectedPackageId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Filter as FilterQuery } from 'mongodb'
 import { PackageInfo } from '@sofie-automation/blueprints-integration'
 import { unprotectObjectArray } from '@sofie-automation/corelib/dist/protectedString'
@@ -16,10 +16,16 @@ import { ReadonlyDeep } from 'type-fest'
  * This is a helper class to simplify exposing packageInfo to various places in the blueprints
  */
 export class WatchedPackagesHelper {
+	private readonly packages = new Map<ExpectedPackageId, ReadonlyDeep<ExpectedPackageDB>>()
+
 	private constructor(
-		private readonly packages: ReadonlyDeep<ExpectedPackageDB[]>,
+		packages: ReadonlyDeep<ExpectedPackageDB[]>,
 		private readonly packageInfos: ReadonlyDeep<PackageInfoDB[]>
-	) {}
+	) {
+		for (const pkg of packages) {
+			this.packages.set(pkg._id, pkg)
+		}
+	}
 
 	/**
 	 * Create a helper with no packages. This should be used where the api is in place, but the update flow hasnt been implemented yet so we don't want to expose any data
@@ -80,16 +86,16 @@ export class WatchedPackagesHelper {
 	 * Create a helper, and populate it with data from an IngestModel
 	 * @param studioId The studio this is for
 	 * @param ingestModel Model to fetch data for
-	 * @param segmentExternelIds ExternalId of Segments to be loaded
+	 * @param segmentExternalIds ExternalId of Segments to be loaded
 	 */
-	static async createForIngestSegment(
+	static async createForIngestSegments(
 		context: JobContext,
 		ingestModel: IngestModelReadonly,
-		segmentExternelIds: string[]
+		segmentExternalIds: string[]
 	): Promise<WatchedPackagesHelper> {
 		const packages: ReadonlyDeep<ExpectedPackageFromRundown>[] = []
 
-		for (const externalId of segmentExternelIds) {
+		for (const externalId of segmentExternalIds) {
 			const segment = ingestModel.getSegmentByExternalId(externalId)
 			if (!segment) continue // First ingest of the Segment
 
@@ -123,7 +129,10 @@ export class WatchedPackagesHelper {
 	 * @param func A filter to check if each package should be included
 	 */
 	filter(_context: JobContext, func: (pkg: ReadonlyDeep<ExpectedPackageDB>) => boolean): WatchedPackagesHelper {
-		const watchedPackages = this.packages.filter(func)
+		const watchedPackages: ReadonlyDeep<ExpectedPackageDB>[] = []
+		for (const pkg of this.packages.values()) {
+			if (func(pkg)) watchedPackages.push(pkg)
+		}
 
 		const newPackageIds = new Set(watchedPackages.map((p) => p._id))
 		const watchedPackageInfos = this.packageInfos.filter((info) => newPackageIds.has(info.packageId))
@@ -131,13 +140,18 @@ export class WatchedPackagesHelper {
 		return new WatchedPackagesHelper(watchedPackages, watchedPackageInfos)
 	}
 
+	getPackage(packageId: ExpectedPackageId): ReadonlyDeep<ExpectedPackageDB> | undefined {
+		return this.packages.get(packageId)
+	}
+
 	getPackageInfo(packageId: string): Readonly<Array<PackageInfo.Any>> {
-		const pkg = this.packages.find((pkg) => pkg.blueprintPackageId === packageId)
-		if (pkg) {
-			const info = this.packageInfos.filter((p) => p.packageId === pkg._id)
-			return unprotectObjectArray(info)
-		} else {
-			return []
+		for (const pkg of this.packages.values()) {
+			if (pkg.blueprintPackageId === packageId) {
+				const info = this.packageInfos.filter((p) => p.packageId === pkg._id)
+				return unprotectObjectArray(info)
+			}
 		}
+
+		return []
 	}
 }
