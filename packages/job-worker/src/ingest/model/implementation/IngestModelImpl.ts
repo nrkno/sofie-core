@@ -43,7 +43,12 @@ import { IngestPartModelImpl } from './IngestPartModelImpl'
 import { DatabasePersistedModel } from '../../../modelBase'
 import { ExpectedPackagesStore } from './ExpectedPackagesStore'
 import { ReadonlyDeep } from 'type-fest'
-import { ExpectedPackageForIngestModel, ExpectedPackageForIngestModelBaseline, IngestModel } from '../IngestModel'
+import {
+	ExpectedPackageForIngestModel,
+	ExpectedPackageForIngestModelBaseline,
+	IngestModel,
+	IngestReplaceSegmentType,
+} from '../IngestModel'
 import { RundownNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { diffAndReturnLatestObjects } from './utils'
 import _ = require('underscore')
@@ -363,7 +368,7 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 		}
 	}
 
-	replaceSegment(rawSegment: Omit<DBSegment, '_id' | 'rundownId'>): IngestSegmentModel {
+	replaceSegment(rawSegment: IngestReplaceSegmentType): IngestSegmentModel {
 		const segment: DBSegment = {
 			...rawSegment,
 			_id: this.getSegmentIdFromExternalId(rawSegment.externalId),

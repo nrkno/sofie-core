@@ -1,6 +1,5 @@
 import { BlueprintId, ExpectedPackageId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { SegmentNote, PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
-import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
@@ -8,9 +7,9 @@ import { RawPartNote, SegmentUserContext } from '../blueprints/context'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { postProcessAdLibActions, postProcessAdLibPieces, postProcessPieces } from '../blueprints/postProcess'
 import { logger } from '../logging'
-import { IngestModel, IngestModelReadonly } from './model/IngestModel'
+import { IngestModel, IngestModelReadonly, IngestReplaceSegmentType } from './model/IngestModel'
 import { LocalIngestSegment, LocalIngestRundown } from './ingestCache'
-import { getSegmentId, getPartId, canSegmentBeUpdated } from './lib'
+import { getSegmentId, canSegmentBeUpdated } from './lib'
 import { JobContext, ProcessedShowStyleCompound } from '../jobs'
 import { CommitIngestData } from './lock'
 import {
@@ -21,7 +20,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { wrapTranslatableMessageFromBlueprints } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { updateExpectedPackagesForPartModel } from './expectedPackages'
-import { IngestSegmentModel } from './model/IngestSegmentModel'
+import { IngestReplacePartType, IngestSegmentModel } from './model/IngestSegmentModel'
 import { ReadonlyDeep } from 'type-fest'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
@@ -249,7 +248,7 @@ async function generateSegmentWithBlueprints(
 function createInternalErrorSegment(
 	blueprintId: BlueprintId,
 	ingestSegment: LocalIngestSegment
-): Omit<DBSegment, '_id' | 'rundownId'> {
+): IngestReplaceSegmentType {
 	return {
 		externalId: ingestSegment.externalId,
 		externalModified: ingestSegment.modified,
@@ -286,7 +285,7 @@ function updateModelWithGeneratedSegment(
 	const segmentNotes = extractAndWrapSegmentNotes(blueprintId, blueprintNotes, knownPartExternalIds)
 
 	const segmentModel = ingestModel.replaceSegment(
-		literal<Omit<DBSegment, '_id' | 'rundownId'>>({
+		literal<IngestReplaceSegmentType>({
 			...blueprintSegment.segment,
 			externalId: ingestSegment.externalId,
 			externalModified: ingestSegment.modified,
@@ -358,15 +357,12 @@ function updateModelWithGeneratedPart(
 	blueprintPart: BlueprintResultPart,
 	i: number
 ): void {
-	const partId = getPartId(segmentModel.segment.rundownId, blueprintPart.part.externalId)
+	const partId = segmentModel.getPartIdFromExternalId(blueprintPart.part.externalId)
 
 	const partNotes = extractAndWrapPartNotes(blueprintId, blueprintNotes, blueprintPart.part.externalId)
 
-	const part = literal<DBPart>({
+	const part = literal<IngestReplacePartType>({
 		...blueprintPart.part,
-		_id: partId,
-		rundownId: segmentModel.segment.rundownId,
-		segmentId: segmentModel.segment._id,
 		_rank: i, // This gets updated to a rank unique within its segment in a later step
 		notes: partNotes,
 		invalidReason: blueprintPart.part.invalidReason
@@ -377,8 +373,6 @@ function updateModelWithGeneratedPart(
 					]),
 			  }
 			: undefined,
-
-		expectedDurationWithPreroll: undefined, // Below
 	})
 
 	// Update pieces
@@ -388,7 +382,7 @@ function updateModelWithGeneratedPart(
 		blueprintId,
 		segmentModel.segment.rundownId,
 		segmentModel.segment._id,
-		part._id,
+		partId,
 		false,
 		part.invalid
 	)
@@ -396,14 +390,14 @@ function updateModelWithGeneratedPart(
 		context,
 		blueprintId,
 		segmentModel.segment.rundownId,
-		part._id,
+		partId,
 		blueprintPart.adLibPieces
 	)
 
 	const adlibActions = postProcessAdLibActions(
 		blueprintId,
 		segmentModel.segment.rundownId,
-		part._id,
+		partId,
 		blueprintPart.actions || []
 	)
 

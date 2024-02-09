@@ -20,6 +20,12 @@ export interface IngestSegmentModelReadonly {
 	readonly parts: IngestPartModelReadonly[]
 
 	/**
+	 * Get the internal `_id` of a Part from the `externalId`
+	 * @param externalId External id of the Part
+	 */
+	getPartIdFromExternalId(externalId: string): PartId
+
+	/**
 	 * Get a Part which belongs to this Segment
 	 * @param id Id of the Part
 	 */
@@ -78,5 +84,12 @@ export interface IngestSegmentModel extends IngestSegmentModelReadonly {
 	 * @param adLibPiece AdLib Pieces to add to the Part
 	 * @param adLibActions AdLib Actions to add to the Part
 	 */
-	replacePart(part: DBPart, pieces: Piece[], adLibPiece: AdLibPiece[], adLibActions: AdLibAction[]): IngestPartModel
+	replacePart(
+		part: IngestReplacePartType,
+		pieces: Piece[],
+		adLibPiece: AdLibPiece[],
+		adLibActions: AdLibAction[]
+	): IngestPartModel
 }
+
+export type IngestReplacePartType = Omit<DBPart, '_id' | 'rundownId' | 'segmentId' | 'expectedDurationWithPreroll'>
