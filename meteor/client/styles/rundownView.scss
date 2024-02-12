@@ -2950,6 +2950,11 @@ svg.icon {
 			top: 0;
 			transform-origin: center top;
 
+			img {
+				object-fit: cover;
+				object-position: center bottom;
+			}
+
 			> iframe {
 				position: absolute;
 				left: 50%;
