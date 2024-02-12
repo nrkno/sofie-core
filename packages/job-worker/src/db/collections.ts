@@ -7,6 +7,7 @@ import {
 	UpdateFilter,
 	Collection as MongoCollection,
 	ChangeStreamDocument,
+	CountOptions,
 } from 'mongodb'
 import { wrapMongoCollection } from './collection'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
@@ -53,6 +54,7 @@ export interface IReadOnlyCollection<TDoc extends { _id: ProtectedString<any> }>
 
 	findFetch(selector?: MongoQuery<TDoc>, options?: FindOptions<TDoc>): Promise<Array<TDoc>>
 	findOne(selector?: MongoQuery<TDoc> | TDoc['_id'], options?: FindOptions<TDoc>): Promise<TDoc | undefined>
+	count(selector?: MongoQuery<TDoc> | TDoc['_id'], options?: CountOptions): Promise<number>
 
 	/**
 	 * Watch the collection for changes

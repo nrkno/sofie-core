@@ -99,6 +99,12 @@ export interface IngestModelReadonly {
 	getSegmentByExternalId(externalId: string): IngestSegmentModelReadonly | undefined
 
 	/**
+	 * Get the internal `_id` of a segment from the `externalId`
+	 * @param externalId External id of the Segment
+	 */
+	getSegmentIdFromExternalId(externalId: string): SegmentId
+
+	/**
 	 * Get a Segment from the Rundown
 	 * @param id Id of the Segment
 	 */
@@ -185,7 +191,7 @@ export interface IngestModel extends IngestModelReadonly, BaseModel {
 	 * Replace or insert a Segment in this Rundown
 	 * @param segment New Segment data
 	 */
-	replaceSegment(segment: DBSegment): IngestSegmentModel
+	replaceSegment(segment: IngestReplaceSegmentType): IngestSegmentModel
 
 	/**
 	 * Change the id of a Segment in this Rundown.
@@ -271,3 +277,5 @@ export interface IngestModel extends IngestModelReadonly, BaseModel {
 	 */
 	appendRundownNotes(...notes: RundownNote[]): void
 }
+
+export type IngestReplaceSegmentType = Omit<DBSegment, '_id' | 'rundownId'>

@@ -1,6 +1,6 @@
 import { ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { EventEmitter } from 'eventemitter3'
-import { AnyBulkWriteOperation, ChangeStream, Collection as MongoCollection, FindOptions } from 'mongodb'
+import { AnyBulkWriteOperation, ChangeStream, Collection as MongoCollection, FindOptions, CountOptions } from 'mongodb'
 import { IChangeStreamEvents } from '.'
 import { startSpanManual } from '../profiler'
 import { IChangeStream, ICollection, MongoModifier, MongoQuery } from './collections'
@@ -56,6 +56,19 @@ class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements I
 		const res = await this.#collection.findOne(selector, options)
 		if (span) span.end()
 		return res ?? undefined
+	}
+
+	async count(selector: MongoQuery<TDoc> | TDoc['_id'], options?: CountOptions): Promise<number> {
+		const span = startSpanManual('WrappedCollection.count')
+		if (span) {
+			span.addLabels({
+				collection: this.name,
+				query: JSON.stringify(selector),
+			})
+		}
+		const res = await this.#collection.countDocuments(selector as any, options)
+		if (span) span.end()
+		return res
 	}
 
 	async insertOne(doc: TDoc): Promise<TDoc['_id']> {

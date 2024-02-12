@@ -67,6 +67,12 @@ export function setValuesAndTrackChanges<T extends { _id: ProtectedString<any> }
 	}
 }
 
+export function addManyToSet<T>(set: Set<T>, iter: Iterable<T>): void {
+	for (const val of iter) {
+		set.add(val)
+	}
+}
+
 export interface DocumentChanges<T extends { _id: ProtectedString<any> }> {
 	currentIds: T['_id'][]
 	deletedIds: T['_id'][]

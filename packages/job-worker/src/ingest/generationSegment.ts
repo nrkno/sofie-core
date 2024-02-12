@@ -1,21 +1,29 @@
-import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BlueprintId, ExpectedPackageId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { SegmentNote, PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
-import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { SegmentUserContext } from '../blueprints/context'
+import { RawPartNote, SegmentUserContext } from '../blueprints/context'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { postProcessAdLibActions, postProcessAdLibPieces, postProcessPieces } from '../blueprints/postProcess'
 import { logger } from '../logging'
-import { IngestModel, IngestModelReadonly } from './model/IngestModel'
+import { IngestModel, IngestModelReadonly, IngestReplaceSegmentType } from './model/IngestModel'
 import { LocalIngestSegment, LocalIngestRundown } from './ingestCache'
-import { getSegmentId, getPartId, canSegmentBeUpdated } from './lib'
-import { JobContext } from '../jobs'
+import { getSegmentId, canSegmentBeUpdated } from './lib'
+import { JobContext, ProcessedShowStyleCompound } from '../jobs'
 import { CommitIngestData } from './lock'
-import { BlueprintResultSegment, NoteSeverity } from '@sofie-automation/blueprints-integration'
+import {
+	BlueprintResultPart,
+	BlueprintResultSegment,
+	IngestSegment,
+	NoteSeverity,
+} from '@sofie-automation/blueprints-integration'
 import { wrapTranslatableMessageFromBlueprints } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { updateExpectedPackagesForPartModel } from './expectedPackages'
+import { IngestReplacePartType, IngestSegmentModel } from './model/IngestSegmentModel'
+import { ReadonlyDeep } from 'type-fest'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 
 async function getWatchedPackagesHelper(
 	context: JobContext,
@@ -27,7 +35,7 @@ async function getWatchedPackagesHelper(
 		return allRundownWatchedPackages0
 	} else {
 		const segmentExternalIds = ingestSegments.map((s) => s.externalId)
-		return WatchedPackagesHelper.createForIngestSegment(context, ingestModel, segmentExternalIds)
+		return WatchedPackagesHelper.createForIngestSegments(context, ingestModel, segmentExternalIds)
 	}
 }
 
@@ -49,7 +57,7 @@ export async function calculateSegmentsFromIngestData(
 
 	const rundown = ingestModel.getRundown()
 
-	const changedSegmentIds: SegmentId[] = []
+	let changedSegmentIds: SegmentId[] = []
 
 	if (ingestSegments.length > 0) {
 		const pShowStyle = context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
@@ -65,175 +73,336 @@ export async function calculateSegmentsFromIngestData(
 
 		const allRundownWatchedPackages = await pAllRundownWatchedPackages
 
-		for (const ingestSegment of ingestSegments) {
-			const segmentId = getSegmentId(ingestModel.rundownId, ingestSegment.externalId)
-
-			// Ensure the parts are sorted by rank
-			ingestSegment.parts.sort((a, b) => a.rank - b.rank)
-
-			// Filter down to the packages for this segment
-			const watchedPackages = allRundownWatchedPackages.filter(
-				context,
-				(p) => 'segmentId' in p && p.segmentId === segmentId
-			)
-
-			const context2 = new SegmentUserContext(
-				{
-					name: `getSegment=${ingestSegment.name}`,
-					// Note: this intentionally does not include the segmentId, as parts may be moved between segemnts later on
-					// This isn't much entropy, blueprints may want to add more for each Part they generate
-					identifier: `rundownId=${rundown._id}`,
-				},
-				context,
-				showStyle,
-				rundown,
-				watchedPackages
-			)
-			let blueprintSegment0: BlueprintResultSegment | null = null
-			try {
-				blueprintSegment0 = await blueprint.blueprint.getSegment(context2, ingestSegment)
-			} catch (err) {
-				logger.error(`Error in showStyleBlueprint.getSegment: ${stringifyError(err)}`)
-				blueprintSegment0 = null
-			}
-
-			if (!blueprintSegment0) {
-				// Something went wrong when generating the segment
-
-				const newSegment = literal<DBSegment>({
-					_id: segmentId,
-					rundownId: rundown._id,
-					externalId: ingestSegment.externalId,
-					externalModified: ingestSegment.modified,
-					_rank: ingestSegment.rank,
-					notes: [
-						{
-							type: NoteSeverity.ERROR,
-							message: wrapTranslatableMessageFromBlueprints(
-								{
-									key: 'Internal Error generating segment',
-								},
-								[blueprint.blueprintId]
-							),
-							origin: {
-								name: '', // TODO
-							},
-						},
-					],
-					name: ingestSegment.name,
-				})
-				ingestModel.replaceSegment(newSegment)
-				changedSegmentIds.push(newSegment._id)
-
-				continue // Don't generate any content for the faulty segment
-			}
-			const blueprintSegment: BlueprintResultSegment = blueprintSegment0
-
-			// Ensure all parts have a valid externalId set on them
-			const knownPartExternalIds = blueprintSegment.parts.map((p) => p.part.externalId)
-
-			const segmentNotes: SegmentNote[] = []
-			for (const note of context2.notes) {
-				if (!note.partExternalId || knownPartExternalIds.indexOf(note.partExternalId) === -1) {
-					segmentNotes.push(
-						literal<SegmentNote>({
-							type: note.type,
-							message: wrapTranslatableMessageFromBlueprints(note.message, [blueprint.blueprintId]),
-							origin: {
-								name: '', // TODO
-							},
-						})
-					)
-				}
-			}
-
-			const newSegment = literal<DBSegment>({
-				...blueprintSegment.segment,
-				_id: segmentId,
-				rundownId: rundown._id,
-				externalId: ingestSegment.externalId,
-				externalModified: ingestSegment.modified,
-				_rank: ingestSegment.rank,
-				notes: segmentNotes,
-			})
-			const segmentModel = ingestModel.replaceSegment(newSegment)
-			changedSegmentIds.push(newSegment._id)
-
-			blueprintSegment.parts.forEach((blueprintPart, i) => {
-				const partId = getPartId(rundown._id, blueprintPart.part.externalId)
-
-				const notes: PartNote[] = []
-
-				for (const note of context2.notes) {
-					if (note.partExternalId === blueprintPart.part.externalId) {
-						notes.push(
-							literal<PartNote>({
-								type: note.type,
-								message: wrapTranslatableMessageFromBlueprints(note.message, [blueprint.blueprintId]),
-								origin: {
-									name: '', // TODO
-								},
-							})
-						)
-					}
-				}
-
-				const part = literal<DBPart>({
-					...blueprintPart.part,
-					_id: partId,
-					rundownId: rundown._id,
-					segmentId: newSegment._id,
-					_rank: i, // This gets updated to a rank unique within its segment in a later step
-					notes: notes,
-					invalidReason: blueprintPart.part.invalidReason
-						? {
-								...blueprintPart.part.invalidReason,
-								message: wrapTranslatableMessageFromBlueprints(
-									blueprintPart.part.invalidReason.message,
-									[blueprint.blueprintId]
-								),
-						  }
-						: undefined,
-
-					expectedDurationWithPreroll: undefined, // Below
-				})
-
-				// Update pieces
-				const processedPieces = postProcessPieces(
+		changedSegmentIds = await Promise.all(
+			ingestSegments.map(async (ingestSegment) =>
+				regenerateSegmentAndUpdateModelFull(
 					context,
-					blueprintPart.pieces,
-					blueprint.blueprintId,
-					rundown._id,
-					newSegment._id,
-					part._id,
-					false,
-					part.invalid
+					showStyle,
+					blueprint,
+					allRundownWatchedPackages,
+					ingestModel,
+					ingestSegment
 				)
-				const adlibPieces = postProcessAdLibPieces(
-					context,
-					blueprint.blueprintId,
-					rundown._id,
-					part._id,
-					blueprintPart.adLibPieces
-				)
-
-				const adlibActions = postProcessAdLibActions(
-					blueprint.blueprintId,
-					rundown._id,
-					part._id,
-					blueprintPart.actions || []
-				)
-
-				const partModel = segmentModel.replacePart(part, processedPieces, adlibPieces, adlibActions)
-				updateExpectedPackagesForPartModel(context, partModel)
-			})
-
-			preserveOrphanedSegmentPositionInRundown(context, ingestModel, newSegment)
-		}
+			)
+		)
 	}
 
 	span?.end()
 	return changedSegmentIds
+}
+
+async function regenerateSegmentAndUpdateModelFull(
+	context: JobContext,
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
+	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
+	allRundownWatchedPackages: WatchedPackagesHelper,
+	ingestModel: IngestModel,
+	ingestSegment: LocalIngestSegment
+): Promise<SegmentId> {
+	// Ensure the parts are sorted by rank
+	ingestSegment.parts.sort((a, b) => a.rank - b.rank)
+
+	// Filter down to the packages for this segment
+	const segmentId = ingestModel.getSegmentIdFromExternalId(ingestSegment.externalId)
+	const segmentWatchedPackages = allRundownWatchedPackages.filter(
+		context,
+		(p) => 'segmentId' in p && p.segmentId === segmentId
+	)
+
+	let updatedSegmentModel = await regenerateSegmentAndUpdateModel(
+		context,
+		showStyle,
+		blueprint,
+		ingestModel,
+		ingestSegment,
+		segmentWatchedPackages
+	)
+
+	// Future: this would be better to go before `updateModelWithGeneratedSegment`, but we need the final ids of the ExpectedPackages
+	const shouldRegenerateSegment = await checkIfSegmentReferencesUnloadedPackageInfos(
+		context,
+		updatedSegmentModel,
+		segmentWatchedPackages
+	)
+	if (shouldRegenerateSegment) {
+		logger.info(`Regenerating segment ${ingestSegment.name} due to existing PackageInfos being found`)
+		const reloadedWatchedPackages = await WatchedPackagesHelper.createForIngestSegments(context, ingestModel, [
+			ingestSegment.externalId,
+		])
+
+		// Regenerate the segment once, with the updated packages
+		updatedSegmentModel = await regenerateSegmentAndUpdateModel(
+			context,
+			showStyle,
+			blueprint,
+			ingestModel,
+			ingestSegment,
+			reloadedWatchedPackages
+		)
+	}
+
+	preserveOrphanedSegmentPositionInRundown(context, ingestModel, updatedSegmentModel.segment)
+
+	return updatedSegmentModel.segment._id
+}
+
+async function regenerateSegmentAndUpdateModel(
+	context: JobContext,
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
+	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
+	ingestModel: IngestModel,
+	ingestSegment: LocalIngestSegment,
+	watchedPackages: WatchedPackagesHelper
+): Promise<IngestSegmentModel> {
+	const rundown = ingestModel.getRundown()
+
+	const blueprintResult = await generateSegmentWithBlueprints(
+		context,
+		showStyle,
+		blueprint,
+		rundown,
+		ingestSegment,
+		watchedPackages
+	)
+
+	if (!blueprintResult) {
+		// Something went wrong when generating the segment
+
+		return ingestModel.replaceSegment(createInternalErrorSegment(blueprint.blueprintId, ingestSegment))
+	}
+
+	return updateModelWithGeneratedSegment(
+		context,
+		blueprint.blueprintId,
+		ingestModel,
+		ingestSegment,
+		blueprintResult.blueprintSegment,
+		blueprintResult.blueprintNotes
+	)
+}
+
+async function checkIfSegmentReferencesUnloadedPackageInfos(
+	context: JobContext,
+	segmentModel: IngestSegmentModel,
+	segmentWatchedPackages: WatchedPackagesHelper
+) {
+	const expectedPackageIdsToCheck = new Set<ExpectedPackageId>()
+	// check if there are any updates right away?
+	for (const part of segmentModel.parts) {
+		for (const expectedPackage of part.expectedPackages) {
+			if (expectedPackage.listenToPackageInfoUpdates) {
+				const loadedPackage = segmentWatchedPackages.getPackage(expectedPackage._id)
+				if (!loadedPackage) {
+					// The package didn't exist prior to the blueprint running
+					expectedPackageIdsToCheck.add(expectedPackage._id)
+				}
+			}
+		}
+	}
+
+	if (expectedPackageIdsToCheck.size > 0) {
+		const areThereAnyData = await context.directCollections.PackageInfos.count({
+			packageId: { $in: Array.from(expectedPackageIdsToCheck) },
+		})
+		return areThereAnyData > 0
+	}
+	return false
+}
+
+async function generateSegmentWithBlueprints(
+	context: JobContext,
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
+	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
+	rundown: ReadonlyDeep<Rundown>,
+	ingestSegment: IngestSegment,
+	watchedPackages: WatchedPackagesHelper
+): Promise<{
+	blueprintSegment: BlueprintResultSegment
+	blueprintNotes: RawPartNote[]
+} | null> {
+	const blueprintContext = new SegmentUserContext(
+		{
+			name: `getSegment=${ingestSegment.name}`,
+			// Note: this intentionally does not include the segmentId, as parts may be moved between segemnts later on
+			// This isn't much entropy, blueprints may want to add more for each Part they generate
+			identifier: `rundownId=${rundown._id}`,
+		},
+		context,
+		showStyle,
+		rundown,
+		watchedPackages
+	)
+
+	try {
+		const blueprintSegment = await blueprint.blueprint.getSegment(blueprintContext, ingestSegment)
+		return {
+			blueprintSegment,
+			blueprintNotes: blueprintContext.notes,
+		}
+	} catch (err) {
+		logger.error(`Error in showStyleBlueprint.getSegment: ${stringifyError(err)}`)
+		return null
+	}
+}
+
+function createInternalErrorSegment(
+	blueprintId: BlueprintId,
+	ingestSegment: LocalIngestSegment
+): IngestReplaceSegmentType {
+	return {
+		externalId: ingestSegment.externalId,
+		externalModified: ingestSegment.modified,
+		_rank: ingestSegment.rank,
+		notes: [
+			{
+				type: NoteSeverity.ERROR,
+				message: wrapTranslatableMessageFromBlueprints(
+					{
+						key: 'Internal Error generating segment',
+					},
+					[blueprintId]
+				),
+				origin: {
+					name: '', // TODO
+				},
+			},
+		],
+		name: ingestSegment.name,
+	}
+}
+
+function updateModelWithGeneratedSegment(
+	context: JobContext,
+	blueprintId: BlueprintId,
+	ingestModel: IngestModel,
+	ingestSegment: LocalIngestSegment,
+	blueprintSegment: BlueprintResultSegment,
+	blueprintNotes: RawPartNote[]
+): IngestSegmentModel {
+	// Ensure all parts have a valid externalId set on them
+	const knownPartExternalIds = new Set(blueprintSegment.parts.map((p) => p.part.externalId))
+
+	const segmentNotes = extractAndWrapSegmentNotes(blueprintId, blueprintNotes, knownPartExternalIds)
+
+	const segmentModel = ingestModel.replaceSegment(
+		literal<IngestReplaceSegmentType>({
+			...blueprintSegment.segment,
+			externalId: ingestSegment.externalId,
+			externalModified: ingestSegment.modified,
+			_rank: ingestSegment.rank,
+			notes: segmentNotes,
+		})
+	)
+
+	blueprintSegment.parts.forEach((blueprintPart, i) => {
+		updateModelWithGeneratedPart(context, blueprintId, segmentModel, blueprintNotes, blueprintPart, i)
+	})
+
+	return segmentModel
+}
+
+function extractAndWrapSegmentNotes(
+	blueprintId: BlueprintId,
+	blueprintNotes: RawPartNote[],
+	knownPartExternalIds: Set<string>
+): SegmentNote[] {
+	const segmentNotes: SegmentNote[] = []
+
+	for (const note of blueprintNotes) {
+		if (!note.partExternalId || !knownPartExternalIds.has(note.partExternalId)) {
+			segmentNotes.push(
+				literal<SegmentNote>({
+					type: note.type,
+					message: wrapTranslatableMessageFromBlueprints(note.message, [blueprintId]),
+					origin: {
+						name: '', // TODO
+					},
+				})
+			)
+		}
+	}
+
+	return segmentNotes
+}
+
+function extractAndWrapPartNotes(
+	blueprintId: BlueprintId,
+	blueprintNotes: RawPartNote[],
+	partExternalId: string
+): PartNote[] {
+	const partNotes: PartNote[] = []
+
+	for (const note of blueprintNotes) {
+		if (note.partExternalId === partExternalId) {
+			partNotes.push(
+				literal<PartNote>({
+					type: note.type,
+					message: wrapTranslatableMessageFromBlueprints(note.message, [blueprintId]),
+					origin: {
+						name: '', // TODO
+					},
+				})
+			)
+		}
+	}
+
+	return partNotes
+}
+
+function updateModelWithGeneratedPart(
+	context: JobContext,
+	blueprintId: BlueprintId,
+	segmentModel: IngestSegmentModel,
+	blueprintNotes: RawPartNote[],
+	blueprintPart: BlueprintResultPart,
+	i: number
+): void {
+	const partId = segmentModel.getPartIdFromExternalId(blueprintPart.part.externalId)
+
+	const partNotes = extractAndWrapPartNotes(blueprintId, blueprintNotes, blueprintPart.part.externalId)
+
+	const part = literal<IngestReplacePartType>({
+		...blueprintPart.part,
+		_rank: i, // This gets updated to a rank unique within its segment in a later step
+		notes: partNotes,
+		invalidReason: blueprintPart.part.invalidReason
+			? {
+					...blueprintPart.part.invalidReason,
+					message: wrapTranslatableMessageFromBlueprints(blueprintPart.part.invalidReason.message, [
+						blueprintId,
+					]),
+			  }
+			: undefined,
+	})
+
+	// Update pieces
+	const processedPieces = postProcessPieces(
+		context,
+		blueprintPart.pieces,
+		blueprintId,
+		segmentModel.segment.rundownId,
+		segmentModel.segment._id,
+		partId,
+		false,
+		part.invalid
+	)
+	const adlibPieces = postProcessAdLibPieces(
+		context,
+		blueprintId,
+		segmentModel.segment.rundownId,
+		partId,
+		blueprintPart.adLibPieces
+	)
+
+	const adlibActions = postProcessAdLibActions(
+		blueprintId,
+		segmentModel.segment.rundownId,
+		partId,
+		blueprintPart.actions || []
+	)
+
+	const partModel = segmentModel.replacePart(part, processedPieces, adlibPieces, adlibActions)
+	updateExpectedPackagesForPartModel(context, partModel)
 }
 
 /**
@@ -247,7 +416,7 @@ export async function calculateSegmentsFromIngestData(
 function preserveOrphanedSegmentPositionInRundown(
 	context: JobContext,
 	ingestModel: IngestModel,
-	newSegment: DBSegment
+	newSegment: ReadonlyDeep<DBSegment>
 ) {
 	if (context.studio.settings.preserveOrphanedSegmentPositionInRundown) {
 		// When we have orphaned segments, try to keep the order correct when adding and removing other segments

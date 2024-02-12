@@ -1,7 +1,7 @@
 import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { IngestSegmentModel } from '../IngestSegmentModel'
+import { IngestReplacePartType, IngestSegmentModel } from '../IngestSegmentModel'
 import _ = require('underscore')
 import { IngestPartModelImpl } from './IngestPartModelImpl'
 import { IngestPartModel } from '../IngestPartModel'
@@ -11,6 +11,7 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { calculatePartExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 import { clone } from '@sofie-automation/corelib/dist/lib'
+import { getPartId } from '../../lib'
 
 /**
  * A light wrapper around the IngestPartModel, so that we can track the deletions while still accessing the contents
@@ -160,6 +161,10 @@ export class IngestSegmentModelImpl implements IngestSegmentModel {
 		}
 	}
 
+	getPartIdFromExternalId(externalId: string): PartId {
+		return getPartId(this.segment.rundownId, externalId)
+	}
+
 	getPart(id: PartId): IngestPartModel | undefined {
 		const partEntry = this.partsImpl.get(id)
 		if (partEntry && !partEntry.deleted) return partEntry.partModel
@@ -199,8 +204,19 @@ export class IngestSegmentModelImpl implements IngestSegmentModel {
 		return ids
 	}
 
-	replacePart(part: DBPart, pieces: Piece[], adLibPiece: AdLibPiece[], adLibActions: AdLibAction[]): IngestPartModel {
-		part.expectedDurationWithPreroll = calculatePartExpectedDurationWithPreroll(part, pieces)
+	replacePart(
+		rawPart: IngestReplacePartType,
+		pieces: Piece[],
+		adLibPiece: AdLibPiece[],
+		adLibActions: AdLibAction[]
+	): IngestPartModel {
+		const part: DBPart = {
+			...rawPart,
+			_id: this.getPartIdFromExternalId(rawPart.externalId),
+			rundownId: this.segment.rundownId,
+			segmentId: this.segment._id,
+			expectedDurationWithPreroll: calculatePartExpectedDurationWithPreroll(rawPart, pieces),
+		}
 
 		// We don't need to worry about this being present on other Segments. The caller must make sure it gets removed if needed,
 		// and when persisting a duplicates check is performed. If there is a copy on another Segment, every document will have changes

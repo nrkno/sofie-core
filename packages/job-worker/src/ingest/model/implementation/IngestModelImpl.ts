@@ -43,7 +43,12 @@ import { IngestPartModelImpl } from './IngestPartModelImpl'
 import { DatabasePersistedModel } from '../../../modelBase'
 import { ExpectedPackagesStore } from './ExpectedPackagesStore'
 import { ReadonlyDeep } from 'type-fest'
-import { ExpectedPackageForIngestModel, ExpectedPackageForIngestModelBaseline, IngestModel } from '../IngestModel'
+import {
+	ExpectedPackageForIngestModel,
+	ExpectedPackageForIngestModelBaseline,
+	IngestModel,
+	IngestReplaceSegmentType,
+} from '../IngestModel'
 import { RundownNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { diffAndReturnLatestObjects } from './utils'
 import _ = require('underscore')
@@ -270,6 +275,14 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 	}
 
 	/**
+	 * Get the internal `_id` of a segment from the `externalId`
+	 * @param externalId External id of the Segment
+	 */
+	getSegmentIdFromExternalId(externalId: string): SegmentId {
+		return getSegmentId(this.rundownId, externalId)
+	}
+
+	/**
 	 * Get a Segment from the Rundown
 	 * @param id Id of the Segment
 	 */
@@ -355,7 +368,12 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 		}
 	}
 
-	replaceSegment(segment: DBSegment): IngestSegmentModel {
+	replaceSegment(rawSegment: IngestReplaceSegmentType): IngestSegmentModel {
+		const segment: DBSegment = {
+			...rawSegment,
+			_id: this.getSegmentIdFromExternalId(rawSegment.externalId),
+			rundownId: this.rundownId,
+		}
 		const oldSegment = this.segmentsImpl.get(segment._id)
 
 		const newSegment = new IngestSegmentModelImpl(true, segment, [], oldSegment?.segmentModel)

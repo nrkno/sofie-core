@@ -165,8 +165,10 @@ function calculateExpectedDurationWithPreroll(rawDuration: number, timings: Part
 	return Math.max(0, rawDuration + timings.toPartDelay - (timings.fromPartRemaining - timings.toPartDelay))
 }
 
+export type CalculateExpectedDurationPart = Pick<DBPart, 'inTransition' | 'expectedDuration'>
+
 export function calculatePartExpectedDurationWithPreroll(
-	part: DBPart,
+	part: CalculateExpectedDurationPart,
 	pieces: ReadonlyDeep<PieceInstancePiece[]>
 ): number | undefined {
 	if (part.expectedDuration === undefined) return undefined
