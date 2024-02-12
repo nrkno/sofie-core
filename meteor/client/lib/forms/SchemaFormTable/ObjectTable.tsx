@@ -55,7 +55,8 @@ export const SchemaFormObjectTable = ({
 	const { t } = useTranslation()
 
 	const wrappedRows = useMemo(() => {
-		const rawRows = (attr ? objectPathGet(item.defaults, attr) : item.defaults) || {}
+		const itemValue = item.defaults ?? item.computed // If this is sourced from an override, there are no defaults so we need to use the computed instead
+		const rawRows = (attr ? objectPathGet(itemValue, attr) : itemValue) || {}
 
 		const prefix = joinObjectPathFragments(item.id, attr) + '.'
 
@@ -79,7 +80,7 @@ export const SchemaFormObjectTable = ({
 		)
 
 		return wrappedRows
-	}, [attr, item.computed])
+	}, [attr, item])
 
 	const rowSchema = schema.patternProperties?.['']
 
