@@ -198,11 +198,7 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 		const isMultiStep = this.state.noraContent?.payload?.step?.enabled === true
 
 		const rendererUrl = this.state.noraContent?.previewRenderer
-
 		const dimensions = this.state.noraContent?.previewRendererDimensions
-
-		const rootElmStyle = { ...this.state.style }
-		rootElmStyle.visibility = this.state.show ? 'visible' : 'hidden'
 
 		return (
 			<Escape to="document">
