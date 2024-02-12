@@ -139,9 +139,9 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 	}
 
 	private _hide() {
-		// this.setState({
-		// 	show: false,
-		// })
+		this.setState({
+			show: false,
+		})
 	}
 
 	private _setIFrameElement = (e: HTMLIFrameElement | null) => {
