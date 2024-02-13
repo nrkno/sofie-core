@@ -27,6 +27,8 @@ $defs:
       nextPart:
         description: The next Part - if empty, no part will follow live part
         $ref: '#/$defs/part'
+      publicData:
+        description: Optional arbitrary data
     required: [event, id, name, rundownIds, currentPart, currentSegment, nextPart]
     additionalProperties: false
     examples:
@@ -40,6 +42,8 @@ $defs:
           $ref: '#/$defs/currentSegment/examples/0'
         nextPart:
           $ref: '#/$defs/part/examples/0'
+        publicData:
+          category: 'Evening News'
   partBase:
     type: object
     properties:
@@ -61,6 +65,8 @@ $defs:
         type: array
         items:
           $ref: '#/$defs/piece'
+      publicData:
+        description: Optional arbitrary data
     required: [id, name, segmentId, pieces]
     additionalProperties: false
     examples:
@@ -70,6 +76,8 @@ $defs:
         autoNext: false
         pieces:
           - $ref: '#/$defs/piece/examples/0'
+        publicData:
+          partType: 'intro'
   part:
     oneOf:
       - $ref: '#/$defs/partBase'
@@ -114,6 +122,8 @@ $defs:
           projectedEndTime: 1600000075000
         pieces:
           - $ref: '#/$defs/piece/examples/0'
+        publicData:
+          partType: 'intro'
   currentSegment:
     type: object
     properties:
@@ -162,6 +172,8 @@ $defs:
         type: array
         items:
           type: string
+      publicData:
+        description: Optional arbitrary data
     required: [id, name, sourceLayer, outputLayer]
     additionalProperties: false
     examples:
@@ -170,3 +182,5 @@ $defs:
         sourceLayer: 'Camera'
         outputLayer: 'PGM'
         tags: ['camera']
+        publicData:
+          switcherSource: 1
