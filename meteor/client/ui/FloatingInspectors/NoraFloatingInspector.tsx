@@ -181,9 +181,15 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 		this.rootElement = e
 	}
 
-	private getElStyle() {
+	private getElStyle(dimensions: { width: number; height: number } | undefined) {
 		const style = { ...this.state.style }
 		style.visibility = this.state.show ? 'visible' : 'hidden'
+
+		if (dimensions) {
+			style['--preview-render-width'] = dimensions.width
+			style['--preview-render-height'] = dimensions.height
+		}
+
 		return style
 	}
 
@@ -192,24 +198,23 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 		const isMultiStep = this.state.noraContent?.payload?.step?.enabled === true
 
 		const rendererUrl = this.state.noraContent?.previewRenderer
+		const dimensions = this.state.noraContent?.previewRendererDimensions
 
 		return (
 			<Escape to="document">
 				<div
 					className="segment-timeline__mini-inspector segment-timeline__mini-inspector--graphics segment-timeline__mini-inspector--graphics--preview"
-					style={this.getElStyle()}
+					style={this.getElStyle(dimensions)}
 					ref={this._setRootElement}
 				>
 					<div className="preview">
-						<img width="100%" src="/images/previewBG.jpg" alt="" />
+						<img src="/images/previewBG.jpg" alt="" />
 						{rendererUrl && (
 							<iframe
 								key={rendererUrl} // Use the url as the key, so that the old renderer unloads immediately when changing url
 								sandbox="allow-scripts allow-same-origin"
 								src={rendererUrl}
 								ref={this._setIFrameElement}
-								width="1920"
-								height="1080"
 							></iframe>
 						)}
 					</div>

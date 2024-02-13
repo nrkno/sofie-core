@@ -2939,18 +2939,36 @@ svg.icon {
 		border: 1px solid #1f1f1f;
 		border-radius: 0px;
 		transform: translate(-100%, -100%);
-		width: 480px;
-		height: 270px;
 		max-width: none;
 
+		// Default values
+		--preview-render-width: 1920;
+		--preview-render-height: 1080;
+		--preview-max-dimension: 480;
+		--preview-scale: calc(
+			var(--preview-max-dimension) / max(var(--preview-render-width), var(--preview-render-height))
+		);
+
+		width: calc(var(--preview-render-width) * var(--preview-scale) * 1px);
+		height: calc(var(--preview-render-height) * var(--preview-scale) * 1px);
+
 		> .preview {
-			width: 1920px;
-			height: 1080px;
-			transform: translate(-50%, 0rem) scale(0.249479);
+			transform: translate(-50%, 0rem) scale(var(--preview-scale));
+			width: calc(var(--preview-render-width) * 1px);
+			height: calc(var(--preview-render-height) * 1px);
+
 			position: relative;
 			left: 50%;
 			top: 0;
 			transform-origin: center top;
+
+			img {
+				object-fit: cover;
+				object-position: center bottom;
+
+				width: calc(var(--preview-render-width) * 1px);
+				height: calc(var(--preview-render-height) * 1px);
+			}
 
 			> iframe {
 				position: absolute;
@@ -2959,6 +2977,9 @@ svg.icon {
 				transform: translate(-50%, -50%);
 				transform-origin: center center;
 				border: 0;
+
+				width: calc(var(--preview-render-width) * 1px);
+				height: calc(var(--preview-render-height) * 1px);
 			}
 		}
 	}

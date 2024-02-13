@@ -125,6 +125,8 @@ export interface NoraPayload {
 export interface NoraContent extends BaseContent {
 	payload: NoraPayload
 	previewRenderer: string
+	/** Dimensions of the rendered hover-preview viewport in pixels. Defaults to 1920x1080. */
+	previewRendererDimensions?: { width: number; height: number }
 }
 
 export interface SplitsContentBoxProperties {
