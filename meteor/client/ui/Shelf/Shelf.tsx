@@ -10,7 +10,12 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { getElementDocumentOffset } from '../../utils/positions'
-import { RundownLayoutFilter, RundownLayoutShelfBase } from '../../../lib/collections/RundownLayouts'
+import {
+	DashboardLayoutExternalFrame,
+	RundownLayoutElementType,
+	RundownLayoutFilter,
+	RundownLayoutShelfBase,
+} from '../../../lib/collections/RundownLayouts'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
@@ -476,6 +481,12 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 								displayBuckets={this.props.bucketDisplayFilter}
 								selectedPiece={this.state.selectedPiece}
 								onSelectPiece={this.selectPiece}
+								extFrames={
+									this.props.rundownLayout?.filters.filter(
+										(panel): panel is DashboardLayoutExternalFrame =>
+											panel.type === RundownLayoutElementType.EXTERNAL_FRAME
+									) ?? []
+								}
 							/>
 						</ErrorBoundary>
 					) : null}

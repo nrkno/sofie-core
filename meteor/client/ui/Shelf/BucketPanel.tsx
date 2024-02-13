@@ -47,6 +47,7 @@ import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import RundownViewEventBus, {
 	RundownViewEvents,
 	RevealInShelfEvent,
+	ToggleShelfDropzoneEvent,
 } from '../../../lib/api/triggers/RundownViewEventBus'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
@@ -72,6 +73,7 @@ import {
 	ShowStyleVariantId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { TFunction } from 'react-i18next'
 
 interface IBucketPanelDragObject {
 	id: BucketId
@@ -178,6 +180,7 @@ const bucketTarget = {
 
 interface IState {
 	dropActive: boolean
+	dropFrameActive: string | null
 	bucketName: string
 	adLibPieces: BucketAdLibItem[]
 	singleClickMode: boolean
@@ -244,6 +247,7 @@ export interface IBucketPanelProps {
 	onSelectAdlib
 	onAdLibContext: (args: { contextBucket: Bucket; contextBucketAdLib: BucketAdLibItem }, callback: () => void) => void
 	onPieceNameRename: () => void
+	extFrameDropZones: { _id: string; url: string }[]
 }
 
 export interface IBucketPanelTrackedProps extends IDashboardPanelTrackedProps {
@@ -378,6 +382,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 
 					this.state = {
 						dropActive: false,
+						dropFrameActive: null,
 						bucketName: props.bucket.name,
 						adLibPieces: props.adLibPieces.slice(),
 						singleClickMode: false,
@@ -419,6 +424,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					window.addEventListener(MOSEvents.dragleave, this.onDragLeave)
 
 					RundownViewEventBus.on(RundownViewEvents.REVEAL_IN_SHELF, this.onRevealInShelf)
+					RundownViewEventBus.on(RundownViewEvents.TOGGLE_SHELF_DROPZONE, this.onToggleDropFrame.bind(this))
 				}
 
 				componentDidUpdate(prevProps: IBucketPanelProps & IBucketPanelTrackedProps) {
@@ -436,6 +442,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 
 					window.removeEventListener(MOSEvents.dragenter, this.onDragEnter)
 					window.removeEventListener(MOSEvents.dragleave, this.onDragLeave)
+					RundownViewEventBus.removeListener(RundownViewEvents.TOGGLE_SHELF_DROPZONE, this.onToggleDropFrame)
 				}
 
 				onRevealInShelf = (e: RevealInShelfEvent) => {
@@ -791,6 +798,13 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					)
 				}
 
+				private onToggleDropFrame = (e: ToggleShelfDropzoneEvent) => {
+					this.setState({
+						dropActive: e.display,
+						dropFrameActive: e.display ? e.id : null,
+					})
+				}
+
 				render(): JSX.Element | null {
 					const { connectDragSource, connectDragPreview, connectDropTarget } = this.props
 
@@ -908,6 +922,17 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 												</BucketPieceButton>
 											</ContextMenuTrigger>
 										))}
+										{this.props.extFrameDropZones.map((dropZone) => (
+											<DropzoneHolder
+												key={dropZone._id}
+												bucketId={this.props.bucket._id}
+												id={dropZone._id}
+												url={dropZone.url}
+												hidden={this.state.dropFrameActive !== dropZone._id}
+												t={this.props.t}
+												showStyleBaseId={this.props.showStyleBaseId}
+											/>
+										))}
 									</div>
 								</div>
 							)
@@ -919,3 +944,81 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		)
 	)
 )
+
+interface DropzoneHolderProps {
+	id: string
+	bucketId: BucketId
+	url: string
+	hidden: boolean
+	t: TFunction<'translation', undefined>
+	showStyleBaseId: ShowStyleBaseId
+}
+const DropzoneHolder = (props: DropzoneHolderProps) => {
+	let frame: HTMLIFrameElement | null = null
+	let mounted = false
+
+	const setDropzoneElement = (frameRef: HTMLIFrameElement | null) => {
+		frame = frameRef
+		if (frame && !mounted) {
+			registerHandlers()
+			mounted = true
+		} else {
+			unregisterHandlers()
+			mounted = false
+		}
+	}
+	const registerHandlers = () => {
+		window.addEventListener('message', onMessage)
+	}
+	const unregisterHandlers = () => {
+		window.removeEventListener('message', onMessage)
+	}
+
+	const onMessage = (event: MessageEvent) => {
+		if (event.source === frame?.contentWindow) {
+			if (event.data && event.data.event === 'drop') {
+				RundownViewEventBus.emit(RundownViewEvents.ITEM_DROPPED, {
+					id: props.id,
+					bucketId: props.bucketId,
+					ev: event,
+				})
+			}
+
+			if (event.data && event.data.event === 'data' && event.data.data.trim().endsWith('</mos>')) {
+				RundownViewEventBus.emit(RundownViewEvents.ITEM_DROPPED, {
+					id: props.id,
+					bucketId: props.bucketId,
+					message: event.data.data,
+					ev: event,
+				})
+			}
+
+			if (event.data && event.data.event === 'error') {
+				RundownViewEventBus.emit(RundownViewEvents.ITEM_DROPPED, {
+					id: props.id,
+					bucketId: props.bucketId,
+					error: event.data.message,
+					ev: event,
+				})
+			}
+		}
+	}
+
+	React.useEffect(
+		() => () => {
+			unregisterHandlers()
+		},
+		[]
+	)
+
+	return (
+		<div className="dropzone-panel" style={{ visibility: props.hidden ? 'hidden' : 'visible' }}>
+			<iframe
+				ref={setDropzoneElement}
+				className="external-frame-panel__iframe"
+				src={props.url}
+				sandbox="allow-forms allow-popups allow-scripts allow-same-origin"
+			></iframe>
+		</div>
+	)
+}
