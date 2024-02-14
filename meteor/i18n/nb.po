@@ -2118,8 +2118,6 @@ msgstr "Er en gjesteinngang"
 msgid "Is hidden"
 msgstr "Er skjult"
 
-msgid "Display on Presenter's Screen"
-msgstr "Vis på presentatørskjerm"
 
 msgid "Pieces on this layer can be cleared"
 msgstr "Elementer på dette laget kan tømmes"
