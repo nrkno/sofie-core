@@ -76,3 +76,21 @@ Also, each of the libraries has a minimum nodejs version specified in their pack
 We sometimes use the `yarn resolutions` property in `package.json` to fix security vulnerabilities in dependencies of libraries that haven't released a fix yet. If adding a new one, try to make it as specific as possible to ensure it doesn't have unintended side effects.
 
 When updating other dependencies, it is a good idea to make sure that the resolutions defined still apply and are correct.
+
+### Logging
+
+When logging, we try to adher to the following guideliness:
+
+Usage of `console.log` and `console.error` directly is discouraged (except for quick debugging locally). Instead, use one of the logger libraries (to output json logs which are easier to index).
+When logging, use one of the **log level** described below:
+
+| Level   | Description | Examples |
+| ------- | ----------- | -- |
+| `silly` | For very detailed logs (rarely used). | - |
+| `debug` | Logging of info that could be useful for developers when debugging certain issues in production. | `"payload: {>JSON<} "`<br></br>`"Reloading data X from DB"` |
+| `verbose` | Logging of common events. | `"File X updated"` |
+| `info` | Logging of significant / uncommon events.<br></br>_Note: If an event happens often or many times, use `verbose` instead._ | `"Initializing TSR..."`<br></br>`"Starting nightly cronjob..."`<br></br>`"Snapshot X restored"`  |
+| `warn` | Used when something unexpected happened, but not necessarily due to an application bug.<br></br>These logs don't have to be acted upon directly, but could be useful to provide context to a dev/sysadmin while troubleshooting an issue. | `"Not allowing removal of current playing segment 'xyz', making segment unsynced instead"`<br></br>`"PeripheralDevice X disconnected"`<br></br>`"User Error: Cannot activate Rundown (Rundown not found)"` |
+| `error` | Used when something went _wrong_, preventing something from functioning.<br></br>A logged `error` should always result in a sysadmin / developer looking into the issue.<br></br>_Note: Don't use `error` for things that are out of the app's control, such as user error._ | `"Cannot read property 'length' of undefined"`<br></br>`"Failed to save Part 'X' to DB"`|
+| `crit` | Fatal errors (rarely used) | - |
+
