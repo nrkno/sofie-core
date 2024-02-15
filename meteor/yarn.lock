@@ -3520,7 +3520,7 @@ __metadata:
     eslint-plugin-prettier: ^4.2.1
     eslint-plugin-react: ^7.32.2
     fast-clone: ^1.5.13
-    fibers-npm: "npm:fibers@4.0.3"
+    fibers-npm: "npm:fibers@5.0.3"
     glob: ^8.1.0
     i18next: ^21.9.1
     i18next-browser-languagedetector: ^6.1.5
@@ -6110,12 +6110,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fibers-npm@npm:fibers@4.0.3":
-  version: 4.0.3
-  resolution: "fibers@npm:4.0.3"
+"fibers-npm@npm:fibers@5.0.3":
+  version: 5.0.3
+  resolution: "fibers@npm:5.0.3"
   dependencies:
     detect-libc: ^1.0.3
-  checksum: a51e9f792a17f32acdbcac02855e4d1bef42aa391cf9bb7044b21c6eb67deb8a84d1eb0e388977a6b79ca2c85fccdd108d5697ce573fe97eb86a3ec93bfb7d45
+  checksum: d66c5e18a911aab3480b846e1c837e5c7cfacb27a2a5fe512919865eaecef33cdd4abc14d777191a6a93473dc52356d48549c91a2a7b8b3450544c44104b23f3
   languageName: node
   linkType: hard
 
