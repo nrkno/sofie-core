@@ -34,6 +34,7 @@ interface AdLibActionType {
 
 interface AdLibStatus {
 	id: string
+	partId?: string
 	name: string
 	sourceLayer: string
 	outputLayer: string
@@ -97,6 +98,7 @@ export class AdLibsTopic
 						: []
 					return literal<AdLibStatus>({
 						id: unprotectString(action._id),
+						partId: unprotectString(action.partId),
 						name: interpollateTranslation(action.display.label.key, action.display.label.args),
 						sourceLayer: sourceLayerName ?? 'invalid',
 						outputLayer: outputLayerName ?? 'invalid',
@@ -115,6 +117,7 @@ export class AdLibsTopic
 					const outputLayerName = this._outputLayersMap.get(adLib.outputLayerId)
 					return literal<AdLibStatus>({
 						id: unprotectString(adLib._id),
+						partId: unprotectString(adLib.partId),
 						name: adLib.name,
 						sourceLayer: sourceLayerName ?? 'invalid',
 						outputLayer: outputLayerName ?? 'invalid',

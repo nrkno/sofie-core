@@ -37,6 +37,9 @@ $defs:
       id:
         description: Unique id of the AdLib
         type: string
+      partId:
+        description: Unique id of the part which owns this AdLib
+        type: string
       name:
         description: The user defined AdLib name
         type: string
