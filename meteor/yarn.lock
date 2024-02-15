@@ -1020,27 +1020,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mos-connection/helper@npm:3.0.4":
-  version: 3.0.4
-  resolution: "@mos-connection/helper@npm:3.0.4"
+"@mos-connection/helper@npm:3.0.7":
+  version: 3.0.7
+  resolution: "@mos-connection/helper@npm:3.0.7"
   dependencies:
-    "@mos-connection/model": 3.0.4
-    iconv-lite: ^0.6.2
-    tslib: ^2.2.0
+    "@mos-connection/model": 3.0.7
+    iconv-lite: ^0.6.3
+    tslib: ^2.5.3
     xml-js: ^1.6.11
     xmlbuilder: ^15.1.1
-  checksum: 43ade87fd9a7ca7e183377d36f4d3b0ae063180c8760657201e50169c0868647242c83adaf860c475b9959079512d42ceb43d8ed657356d02140d7aa93992d79
+  checksum: 802c95955328d89e62aa0addbaf79ce339c93bce499d96b6d314991cd77acbcbd573e4d6eb48408de234708f908d608b20941f846fceaa22813ddb2e6bdf6b4e
   languageName: node
   linkType: hard
 
-"@mos-connection/model@npm:3.0.4":
-  version: 3.0.4
-  resolution: "@mos-connection/model@npm:3.0.4"
-  checksum: 7de15fba9a818260fb57847dbc51695036720a7f499d2fe262c691630673e83c01bdc3ea62261529e661f957074a6d92e8d38305485293c5392e073dab33989b
-  languageName: node
-  linkType: hard
-
-"@mos-connection/model@npm:^3.0.7":
+"@mos-connection/model@npm:3.0.7, @mos-connection/model@npm:^3.0.7":
   version: 3.0.7
   resolution: "@mos-connection/model@npm:3.0.7"
   checksum: 4f7390a40fc5152bfcdb4e99eee243e3a1df248bf1f77e0a63d7d29d8db88cb8c9df5f231ab5d18e7cb1147ba8d39af5c621877221f343db630906e000c5b089
@@ -2695,7 +2688,7 @@ __metadata:
     "@jstarpl/react-contextmenu": ^2.15.0
     "@koa/cors": ^5.0.0
     "@koa/router": ^12.0.1
-    "@mos-connection/helper": 3.0.4
+    "@mos-connection/helper": 3.0.7
     "@nrk/core-icons": ^9.6.0
     "@popperjs/core": ^2.11.8
     "@shopify/jest-koa-mocks": ^5.1.1
@@ -11945,7 +11938,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.2.0, tslib@npm:^2.5.1, tslib@npm:^2.6.0, tslib@npm:^2.6.2":
+"tslib@npm:^2.5.1, tslib@npm:^2.5.3, tslib@npm:^2.6.0, tslib@npm:^2.6.2":
   version: 2.6.2
   resolution: "tslib@npm:2.6.2"
   checksum: 329ea56123005922f39642318e3d1f0f8265d1e7fcb92c633e0809521da75eeaca28d2cf96d7248229deb40e5c19adf408259f4b9640afd20d13aecc1430f3ad
