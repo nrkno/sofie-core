@@ -49,7 +49,9 @@ export async function ensureNextPartIsValid(context: JobContext, playoutModel: P
 				currentPartInstance.partInstance,
 				nextPartInstance.partInstance,
 				orderedSegments,
-				orderedParts
+				orderedParts,
+				true,
+				false
 			)
 
 			if (
@@ -73,7 +75,9 @@ export async function ensureNextPartIsValid(context: JobContext, playoutModel: P
 				currentPartInstance?.partInstance ?? null,
 				nextPartInstance?.partInstance ?? null,
 				orderedSegments,
-				orderedParts
+				orderedParts,
+				true,
+				false
 			)
 			await setNextPart(context, playoutModel, newNextPart ?? null, false)
 

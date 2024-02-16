@@ -10,6 +10,7 @@ import { dashboardElementStyle } from './DashboardPanel'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PlaylistEndTiming } from '../RundownView/RundownTiming/PlaylistEndTiming'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
+import { isLoopRunning } from '../../../lib/Rundown'
 
 interface IPlaylistEndTimerPanelProps {
 	visible?: boolean
@@ -31,7 +32,7 @@ export function PlaylistEndTimerPanel({ playlist, panel, layout }: Readonly<IPla
 		>
 			<PlaylistEndTiming
 				rundownPlaylist={playlist}
-				loop={playlist.loop}
+				loop={isLoopRunning(playlist)}
 				expectedStart={PlaylistTiming.getExpectedStart(playlist.timing)}
 				expectedEnd={PlaylistTiming.getExpectedEnd(playlist.timing)}
 				expectedDuration={PlaylistTiming.getExpectedDuration(playlist.timing)}

@@ -26,6 +26,7 @@ import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundownPlaylist, RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { isLoopRunning } from '../../../lib/Rundown'
 
 interface IProps {
 	id: string
@@ -130,7 +131,7 @@ export const SegmentScratchpad = React.memo(
 			squishedPartsNum > 1 ? Math.max(4, (spaceLeft - PART_WIDTH) / (squishedPartsNum - 1)) : null
 
 		const playlistHasNextPart = !!props.playlist.nextPartInfo
-		const playlistIsLooping = props.playlist.loop
+		const playlistIsLooping = isLoopRunning(props.playlist)
 
 		renderedParts.forEach((part, index) => {
 			const isLivePart = part.instance._id === props.playlist.currentPartInfo?.partInstanceId
@@ -152,6 +153,8 @@ export const SegmentScratchpad = React.memo(
 					isLastPartInSegment={part.instance._id === lastValidPartId}
 					isLastSegment={props.isLastSegment}
 					isPlaylistLooping={playlistIsLooping}
+					isQuickLoopStart={false}
+					isQuickLoopEnd={false}
 					doesPlaylistHaveNextPart={playlistHasNextPart}
 					displayLiveLineCounter={props.displayLiveLineCounter}
 					inHold={!!(props.playlist.holdState && props.playlist.holdState !== RundownHoldState.COMPLETE)}

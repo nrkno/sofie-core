@@ -13,6 +13,7 @@ import {
 	ABSessionAssignments,
 	ABSessionInfo,
 	DBRundownPlaylist,
+	QuickLoopMarker,
 	RundownHoldState,
 } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { ReadonlyDeep } from 'type-fest'
@@ -235,6 +236,11 @@ export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBa
 	cycleSelectedPartInstances(): void
 
 	/**
+	 * Update loop markers anytime something sinificant occurs that could result in entering or exiting the mode.
+	 */
+	updateQuickLoopState(): void
+
+	/**
 	 * Set the RundownPlaylist as deactivated
 	 */
 	deactivatePlaylist(): void
@@ -312,6 +318,13 @@ export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBa
 	 * @param timestamp Timestamp playback started
 	 */
 	setRundownStartedPlayback(rundownId: RundownId, timestamp: number): void
+
+	/**
+	 * Set or clear a QuickLoop Marker
+	 * @param type
+	 * @param marker
+	 */
+	setQuickLoopMarker(type: 'start' | 'end', marker: QuickLoopMarker | null): void
 
 	/** Lifecycle */
 

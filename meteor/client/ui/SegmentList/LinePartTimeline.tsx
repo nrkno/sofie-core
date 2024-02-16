@@ -14,6 +14,7 @@ import { PieceUi } from '../SegmentContainer/withResolvedSegment'
 import StudioContext from '../RundownView/StudioContext'
 import { InvalidPartCover } from '../SegmentTimeline/Parts/InvalidPartCover'
 import { getPartInstanceTimingId } from '../../lib/rundownTiming'
+import { QuickLoopEnd } from './QuickLoopEnd'
 
 const TIMELINE_DEFAULT_BASE = 30 * 1000
 
@@ -24,6 +25,8 @@ interface IProps {
 	isFinished: boolean
 	currentPartWillAutonext: boolean
 	hasAlreadyPlayed: boolean
+	isQuickLoopStart: boolean
+	isQuickLoopEnd: boolean
 	onPieceClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 }
@@ -72,6 +75,8 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 	part,
 	isLive,
 	isNext,
+	isQuickLoopStart,
+	isQuickLoopEnd,
 	currentPartWillAutonext,
 	hasAlreadyPlayed,
 	onPieceClick,
@@ -138,7 +143,10 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 			{part.instance.part.invalid && !part.instance.part.gap && (
 				<InvalidPartCover className="segment-opl__main-piece invalid" part={part.instance.part} align="start" />
 			)}
-			{!isLive && !isInvalid && <TakeLine isNext={isNext} autoNext={willAutoNextIntoThisPart} />}
+			{!isLive && !isInvalid && (
+				<TakeLine isNext={isNext} autoNext={willAutoNextIntoThisPart} isQuickLoopStart={isQuickLoopStart} />
+			)}
+			{isQuickLoopStart && <div className="segment-opl__take-line__quickloop-start"></div>}
 			{transitionPiece && <LinePartTransitionPiece piece={transitionPiece} />}
 			{!willAutoNextOut && !isInvalid && (
 				<OvertimeShadow
@@ -155,6 +163,7 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 				/>
 			)}
 			{willAutoNextOut && <PartAutoNextMarker partDuration={renderedPartDuration} timelineBase={timelineBase} />}
+			{isQuickLoopEnd && <QuickLoopEnd partDuration={renderedPartDuration} timelineBase={timelineBase} />}
 			{isLive && (
 				<OnAirLine
 					partInstance={part.instance}

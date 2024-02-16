@@ -21,7 +21,7 @@ interface INextBreakTimingPanelProps {
 
 export class NextBreakTimingPanelInner extends React.Component<Translated<INextBreakTimingPanelProps>> {
 	render(): JSX.Element {
-		const { playlist, panel, layout } = this.props
+		const { panel, layout } = this.props
 
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(layout)
 
@@ -33,7 +33,7 @@ export class NextBreakTimingPanelInner extends React.Component<Translated<INextB
 				)}
 				style={isDashboardLayout ? dashboardElementStyle({ ...(panel as DashboardLayoutNextBreakTiming) }) : {}}
 			>
-				<NextBreakTiming loop={playlist.loop} breakText={panel.name} />
+				<NextBreakTiming breakText={panel.name} />
 			</div>
 		)
 	}

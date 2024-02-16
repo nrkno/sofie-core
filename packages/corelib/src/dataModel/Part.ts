@@ -10,6 +10,10 @@ export interface PartInvalidReason {
 	color?: string
 }
 
+type NullableProps<T> = {
+	[K in keyof T]: T[K] | null
+}
+
 /** A "Line" in NRK Lingo. */
 export interface DBPart extends IBlueprintPart {
 	_id: PartId
@@ -31,6 +35,12 @@ export interface DBPart extends IBlueprintPart {
 
 	/** A modified expectedDuration with the planned preroll and other timings factored in */
 	expectedDurationWithPreroll: number | undefined
+
+	/**
+	 * Original values of properties overriden by some features.
+	 * Currently this only supports the QuickLoop
+	 */
+	overridenProperties?: Partial<NullableProps<IBlueprintPart>>
 }
 
 export function isPartPlayable(part: Pick<ReadonlyDeep<DBPart>, 'invalid' | 'floated'>): boolean {

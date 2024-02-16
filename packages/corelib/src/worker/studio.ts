@@ -17,6 +17,7 @@ import { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { CoreRundownPlaylistSnapshot } from '../snapshots'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { ITranslatableMessage } from '../TranslatableMessage'
+import { QuickLoopMarker } from '../dataModel/RundownPlaylist'
 
 /** List of all Jobs performed by the Worker related to a certain Studio */
 export enum StudioJobs {
@@ -186,6 +187,11 @@ export enum StudioJobs {
 	 * Activate scratchpad mode for the Rundown containing the nexted Part.
 	 */
 	ActivateScratchpad = 'activateScratchpad',
+
+	/**
+	 * Set QuickLoop marker
+	 */
+	SetQuickLoopMarker = 'setQuickLoopMarker',
 }
 
 export interface RundownPlayoutPropsBase {
@@ -326,6 +332,11 @@ export interface ActivateScratchpadProps extends RundownPlayoutPropsBase {
 	rundownId: RundownId
 }
 
+export interface SetQuickLoopMarkerProps extends RundownPlayoutPropsBase {
+	type: 'start' | 'end'
+	marker: QuickLoopMarker | null
+}
+
 /**
  * Set of valid functions, of form:
  * `id: (data) => return`
@@ -377,6 +388,8 @@ export type StudioJobFunc = {
 	[StudioJobs.BlueprintIgnoreFixUpConfigForStudio]: () => void
 
 	[StudioJobs.ActivateScratchpad]: (data: ActivateScratchpadProps) => void
+
+	[StudioJobs.SetQuickLoopMarker]: (data: SetQuickLoopMarkerProps) => void
 }
 
 export function getStudioQueueName(id: StudioId): string {

@@ -17,6 +17,7 @@ import { getHeaderHeight } from '../../lib/viewPort'
 import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
+import * as RundownLib from '../../../lib/Rundown'
 
 interface IProps {
 	id: string
@@ -155,6 +156,9 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 				doesPlaylistHaveNextPart={playlistHasNextPart}
 				onPieceDoubleClick={props.onPieceDoubleClick}
 				onContextMenu={props.onContextMenu}
+				isPlaylistLooping={RundownLib.isLoopRunning(props.playlist)}
+				isQuickLoopStart={RundownLib.isQuickLoopStart(part.partId, props.playlist)}
+				isQuickLoopEnd={RundownLib.isQuickLoopEnd(part.partId, props.playlist)}
 			/>
 		)
 

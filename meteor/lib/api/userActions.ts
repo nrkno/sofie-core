@@ -25,6 +25,7 @@ import {
 	SnapshotId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { QuickLoopMarker } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
 export interface NewUserActionAPI extends MethodContext {
 	take(
@@ -327,6 +328,18 @@ export interface NewUserActionAPI extends MethodContext {
 		playlistId: RundownPlaylistId,
 		rundownId: RundownId
 	): Promise<ClientAPI.ClientResponse<void>>
+	setQuickLoopStart(
+		userEvent: string,
+		eventTime: Time,
+		rundownPlaylistId: RundownPlaylistId,
+		marker: QuickLoopMarker | null
+	): Promise<ClientAPI.ClientResponse<void>>
+	setQuickLoopEnd(
+		userEvent: string,
+		eventTime: Time,
+		rundownPlaylistId: RundownPlaylistId,
+		marker: QuickLoopMarker | null
+	): Promise<ClientAPI.ClientResponse<void>>
 }
 
 export enum UserActionAPIMethods {
@@ -407,6 +420,9 @@ export enum UserActionAPIMethods {
 	'disablePeripheralSubDevice' = 'userAction.system.disablePeripheralSubDevice',
 
 	'activateScratchpadMode' = 'userAction.activateScratchpadMode',
+
+	'setQuickLoopStart' = 'userAction.setQuickLoopStart',
+	'setQuickLoopEnd' = 'userAction.setQuickLoopEnd',
 }
 
 export interface ReloadRundownPlaylistResponse {

@@ -28,7 +28,7 @@ import {
 import { computeSegmentDuration, getPartInstanceTimingId, RundownTimingContext } from '../../lib/rundownTiming'
 import { RundownViewShelf } from '../RundownView/RundownViewShelf'
 import { PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PartInstances, Parts } from '../../collections'
+import { PartInstances, UIParts } from '../../collections'
 import { catchError, useDebounce } from '../../lib/lib'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -81,7 +81,7 @@ interface IProps extends IResolvedSegmentProps {
 export function SegmentTimelineContainer(props: Readonly<IProps>): JSX.Element {
 	const partIds = useTracker(
 		() =>
-			Parts.find(
+			UIParts.find(
 				{
 					segmentId: props.segmentId,
 				},

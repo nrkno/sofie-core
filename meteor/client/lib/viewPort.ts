@@ -3,7 +3,7 @@ import { isProtectedString } from '../../lib/lib'
 import RundownViewEventBus, { RundownViewEvents } from '../../lib/api/triggers/RundownViewEventBus'
 import { Settings } from '../../lib/Settings'
 import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PartInstances, Parts } from '../collections'
+import { PartInstances, UIParts } from '../collections'
 import { logger } from '../../lib/logging'
 
 const HEADER_MARGIN = 24 // TODOSYNC: TV2 uses 15. If it's needed to be different, it needs to be made generic somehow..
@@ -72,7 +72,7 @@ export async function scrollToPart(
 	zoomInToFit?: boolean
 ): Promise<boolean> {
 	quitFocusOnPart()
-	const part = Parts.findOne(partId)
+	const part = UIParts.findOne(partId)
 	if (part) {
 		await scrollToSegment(part.segmentId, forceScroll, noAnimation)
 

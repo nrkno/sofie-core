@@ -6,7 +6,11 @@
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
-import { createSyncMongoCollection, createSyncReadOnlyMongoCollection } from './lib'
+import {
+	createSyncCustomPublicationMongoCollection,
+	createSyncMongoCollection,
+	createSyncReadOnlyMongoCollection,
+} from './lib'
 import { DBOrganization } from './Organization'
 import { PartInstance } from './PartInstances'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
@@ -17,6 +21,7 @@ import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataMod
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { CustomCollectionName } from '../api/pubsub'
 
 export const AdLibActions = createSyncReadOnlyMongoCollection<AdLibAction>(CollectionName.AdLibActions)
 
@@ -31,6 +36,11 @@ export const Pieces = createSyncReadOnlyMongoCollection<Piece>(CollectionName.Pi
 export const PartInstances = createSyncReadOnlyMongoCollection<PartInstance>(CollectionName.PartInstances)
 
 export const Parts = createSyncReadOnlyMongoCollection<DBPart>(CollectionName.Parts)
+
+/**
+ * A playout UI version of Parts.
+ */
+export const UIParts = createSyncCustomPublicationMongoCollection(CustomCollectionName.UIParts) // TODO
 
 export const RundownBaselineAdLibActions = createSyncReadOnlyMongoCollection<RundownBaselineAdLibAction>(
 	CollectionName.RundownBaselineAdLibActions

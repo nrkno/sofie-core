@@ -7,7 +7,7 @@ import { selectNextPart } from '../selectNextPart'
 import { setNextPart } from '../setNext'
 import { updateTimeline } from '../timeline/generate'
 import { getCurrentTime } from '../../lib'
-import { afterTake, clearQueuedSegmentId, resetPreviousSegment, updatePartInstanceOnTake } from '../take'
+import { afterTake, clearQueuedSegmentId, resetPreviousSegmentIfLooping, updatePartInstanceOnTake } from '../take'
 import { INCORRECT_PLAYING_PART_DEBOUNCE, RESET_IGNORE_ERRORS } from '../constants'
 import { Time } from '@sofie-automation/blueprints-integration'
 
@@ -82,7 +82,7 @@ export async function onPartPlaybackStarted(
 			)
 
 			clearQueuedSegmentId(playoutModel, playingPartInstance.partInstance, playlist.nextPartInfo)
-			resetPreviousSegment(playoutModel)
+			resetPreviousSegmentIfLooping(context, playoutModel) // Note: rare edgecase of auto-nexting into a loop causing reset of a segment outside of the loop; is it worth fixing?
 
 			// Update the next partinstance
 			const nextPart = selectNextPart(
@@ -91,9 +91,12 @@ export async function onPartPlaybackStarted(
 				playingPartInstance.partInstance,
 				null,
 				playoutModel.getAllOrderedSegments(),
-				playoutModel.getAllOrderedParts()
+				playoutModel.getAllOrderedParts(),
+				false,
+				false
 			)
 			await setNextPart(context, playoutModel, nextPart, false)
+			playoutModel.updateQuickLoopState()
 
 			// complete the take
 			await afterTake(context, playoutModel, playingPartInstance)

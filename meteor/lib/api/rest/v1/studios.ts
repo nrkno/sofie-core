@@ -182,5 +182,8 @@ export interface APIStudioSettings {
 	multiGatewayNowSafeLatency?: number
 	allowRundownResetOnAir?: boolean
 	preserveOrphanedSegmentPositionInRundown?: boolean
+	enableQuickLoop?: boolean
+	forceQuickLoopAutoNext?: 'disabled' | 'enabled_when_valid_duration' | 'enabled_forcing_min_duration'
 	minimumTakeSpan?: number
+	fallbackPartDuration?: number
 }

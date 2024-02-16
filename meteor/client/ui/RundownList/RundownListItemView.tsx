@@ -16,6 +16,7 @@ import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTi
 import { TOOLTIP_DEFAULT_DELAY } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { RundownPlaylists } from '../../collections'
+import { isLoopDefined } from '../../../lib/Rundown'
 
 interface IRundownListItemViewProps {
 	isActive: boolean
@@ -60,7 +61,7 @@ export default React.memo(function RundownListItemView({
 
 	const rundownNameContent = rundownViewUrl ? (
 		<Link to={rundownViewUrl}>
-			{isOnlyRundownInPlaylist && playlist.loop && <LoopingIcon />}
+			{isOnlyRundownInPlaylist && isLoopDefined(playlist) && <LoopingIcon />}
 			{rundown.name}
 		</Link>
 	) : (
@@ -131,7 +132,7 @@ export default React.memo(function RundownListItemView({
 			</span>
 			<span className="rundown-list-item__text">
 				{expectedDuration ? (
-					isOnlyRundownInPlaylist && playlist.loop ? (
+					isOnlyRundownInPlaylist && isLoopDefined(playlist) ? (
 						<Tooltip
 							overlay={t('This rundown will loop indefinitely')}
 							mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
@@ -148,7 +149,7 @@ export default React.memo(function RundownListItemView({
 					) : (
 						RundownUtils.formatDiffToTimecode(expectedDuration, false, true, true, false, true)
 					)
-				) : isOnlyRundownInPlaylist && playlist.loop ? (
+				) : isOnlyRundownInPlaylist && isLoopDefined(playlist) ? (
 					<Tooltip
 						overlay={t('This rundown will loop indefinitely')}
 						mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}

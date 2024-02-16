@@ -28,6 +28,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { PlayoutRundownModel } from './model/PlayoutRundownModel'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { QuickLoopMarkerType } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
 export async function innerStartOrQueueAdLibPiece(
 	context: JobContext,
@@ -203,7 +204,8 @@ function updateRankForAdlibbedPartInstance(
 		null,
 		playoutModel.getAllOrderedSegments(),
 		playoutModel.getAllOrderedParts(),
-		false // We want to insert it before any trailing invalid piece
+		false, // We want to insert it before any trailing invalid piece
+		true // We want to insert it at the end of the loop
 	)
 	newPartInstance.setRank(
 		getRank(
@@ -255,9 +257,29 @@ export async function insertQueuedPartWithPieces(
 
 	await setNextPart(context, playoutModel, newPartInstance, false)
 
+	handleQuickLoop(playoutModel, currentPartInstance, newPartInstance)
+
 	if (span) span.end()
 
 	return newPartInstance
+}
+
+function handleQuickLoop(
+	playoutModel: PlayoutModel,
+	currentPartInstance: PlayoutPartInstanceModel,
+	newPartInstance: PlayoutPartInstanceModel
+) {
+	if (
+		playoutModel.playlist.quickLoop?.end?.type === QuickLoopMarkerType.PART &&
+		(currentPartInstance.partInstance.part._id === playoutModel.playlist.quickLoop?.end?.id ||
+			currentPartInstance.partInstance.part._id === playoutModel.playlist.quickLoop?.end?.overridenId)
+	) {
+		playoutModel.setQuickLoopMarker('end', {
+			type: QuickLoopMarkerType.PART,
+			id: newPartInstance.partInstance.part._id,
+			overridenId: playoutModel.playlist.quickLoop?.end?.overridenId ?? playoutModel.playlist.quickLoop?.end?.id,
+		})
+	}
 }
 
 export function innerStopPieces(

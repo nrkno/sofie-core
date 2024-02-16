@@ -382,6 +382,8 @@ export function withResolvedSegment<T extends IResolvedSegmentProps, IState = {}
 				props.playlist.holdState !== nextProps.playlist.holdState ||
 				props.playlist.nextTimeOffset !== nextProps.playlist.nextTimeOffset ||
 				props.playlist.activationId !== nextProps.playlist.activationId ||
+				!_.isEqual(props.playlist.quickLoop?.start, nextProps.playlist.quickLoop?.start) ||
+				!_.isEqual(props.playlist.quickLoop?.end, nextProps.playlist.quickLoop?.end) ||
 				PlaylistTiming.getExpectedStart(props.playlist.timing) !==
 					PlaylistTiming.getExpectedStart(nextProps.playlist.timing)
 			) {

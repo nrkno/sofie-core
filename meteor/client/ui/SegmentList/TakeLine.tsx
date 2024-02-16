@@ -5,9 +5,10 @@ import { useTranslation } from 'react-i18next'
 interface IProps {
 	isNext: boolean
 	autoNext: boolean
+	isQuickLoopStart: boolean
 }
 
-export const TakeLine: React.FC<IProps> = function TakeLine({ isNext, autoNext }) {
+export const TakeLine: React.FC<IProps> = function TakeLine({ isNext, autoNext, isQuickLoopStart }) {
 	const { t } = useTranslation()
 
 	return (
@@ -15,6 +16,7 @@ export const TakeLine: React.FC<IProps> = function TakeLine({ isNext, autoNext }
 			className={classNames('segment-opl__timeline-flag', 'segment-opl__take-line', {
 				next: isNext,
 				auto: autoNext,
+				'quickloop-start': isQuickLoopStart,
 			})}
 		>
 			{isNext && (

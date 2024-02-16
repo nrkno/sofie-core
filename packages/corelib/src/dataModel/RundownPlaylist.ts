@@ -42,6 +42,49 @@ export enum RundownHoldState {
 	COMPLETE = 3, // During full, full is played
 }
 
+export enum QuickLoopMarkerType {
+	PART = 'part',
+	SEGMENT = 'segment',
+	RUNDOWN = 'rundown',
+	PLAYLIST = 'playlist',
+}
+
+interface QuickLoopPartMarker {
+	type: QuickLoopMarkerType.PART
+	id: PartId
+
+	/** When a part is dynamically inserted after the marker, it keeps the old Id */
+	overridenId?: PartId
+}
+
+interface QuickLoopSegmentMarker {
+	type: QuickLoopMarkerType.SEGMENT
+	id: SegmentId
+}
+
+interface QuickLoopRundownMarker {
+	type: QuickLoopMarkerType.RUNDOWN
+	id: RundownId
+}
+
+interface QuickLoopPlaylistMarker {
+	type: QuickLoopMarkerType.PLAYLIST
+}
+
+export type QuickLoopMarker =
+	| QuickLoopPartMarker
+	| QuickLoopSegmentMarker
+	| QuickLoopRundownMarker
+	| QuickLoopPlaylistMarker
+
+export enum ForceQuickLoopAutoNext {
+	/** Parts will auto-next only when explicitly set by the NRCS/blueprints */
+	DISABLED = 'disabled',
+	/** Parts will auto-next when the expected duration is set and within range */
+	ENABLED_WHEN_VALID_DURATION = 'enabled_when_valid_duration',
+	/** All parts will auto-next. If expected duration is undefined or low, the default display duration will be used */
+	ENABLED_FORCING_MIN_DURATION = 'enabled_forcing_min_duration',
+}
 export interface DBRundownPlaylist {
 	_id: RundownPlaylistId
 	/** External ID (source) of the playlist */
@@ -69,8 +112,6 @@ export interface DBRundownPlaylist {
 	activationId?: RundownPlaylistActivationId
 	/** Timestamp when the playlist was last reset. Used to silence a few errors upon reset.*/
 	resetTime?: Time
-	/** Should the playlist loop at the end */
-	loop?: boolean
 	/** Marker indicating if unplayed parts behind the onAir part, should be treated as "still to be played" or "skipped" in terms of timing calculations */
 	outOfOrderTiming?: boolean
 	/** Should time-of-day clocks be used instead of countdowns by default */
@@ -94,6 +135,19 @@ export interface DBRundownPlaylist {
 	 * In general this should only be set/cleared by a useraction, or during the take logic. This ensures that it isnt lost when doing manual set-next actions
 	 */
 	queuedSegmentId?: SegmentId
+
+	quickLoop?: {
+		/** The Start marker */
+		start?: QuickLoopMarker
+		/** The End marker */
+		end?: QuickLoopMarker
+		/** Whether the user is allowed to make alterations to the Start/End markers */
+		locked: boolean
+		/** Whether the loop has two valid markers and is currently running (the current Part is within the loop) */
+		running: boolean
+		/** Whether the loop has autoNext should force auto-next on contained Parts */
+		forceAutoNext: ForceQuickLoopAutoNext
+	}
 
 	/** Actual time of playback starting */
 	startedPlayback?: Time

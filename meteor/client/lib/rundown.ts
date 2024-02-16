@@ -19,6 +19,7 @@ import {
 	ISourceLayerExtended,
 	PartInstanceLimited,
 	getSegmentsWithPartInstances,
+	isLoopRunning,
 } from '../../lib/Rundown'
 import { PartInstance } from '../../lib/collections/PartInstances'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
@@ -393,8 +394,15 @@ export namespace RundownUtils {
 
 			let startsAt = 0
 			let previousPart: PartExtended | undefined
+
+			const deduplicatedPartInstances = RundownUtils.deduplicatePartInstancesForQuickLoop(
+				playlist,
+				segmentInfo.partInstances,
+				currentPartInstance
+			)
+
 			// fetch all the pieces for the parts
-			const partIds = segmentInfo.partInstances.map((part) => part.part._id)
+			const partIds = deduplicatedPartInstances.map((part) => part.part._id)
 
 			let nextPartIsAfterCurrentPart = false
 			if (nextPartInstance && currentPartInstance) {
@@ -421,7 +429,7 @@ export namespace RundownUtils {
 
 			const showHiddenSourceLayers = getShowHiddenSourceLayers()
 
-			partsE = segmentInfo.partInstances.map((partInstance, itIndex) => {
+			partsE = deduplicatedPartInstances.map((partInstance, itIndex) => {
 				const partExpectedDuration = calculatePartInstanceExpectedDurationWithPreroll(
 					partInstance,
 					pieces.get(partInstance.part._id) ?? []
@@ -779,5 +787,18 @@ export namespace RundownUtils {
 		piece: IAdLibListItem | PieceUi | AdLibPieceUi | BucketAdLibItem
 	): piece is BucketAdLibItem {
 		return 'bucketId' in piece && !!piece['bucketId']
+	}
+
+	export function deduplicatePartInstancesForQuickLoop<T extends Pick<PartInstance, '_id' | 'part'>>(
+		playlist: DBRundownPlaylist,
+		sortedPartInstances: T[],
+		currentPartInstance: T | undefined
+	): T[] {
+		if (!isLoopRunning(playlist)) return sortedPartInstances
+		return sortedPartInstances.filter((partInstance) => {
+			return (
+				partInstance.part._id !== currentPartInstance?.part._id || partInstance._id === currentPartInstance._id
+			)
+		})
 	}
 }

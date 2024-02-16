@@ -12,7 +12,7 @@ import {
 } from '@sofie-automation/corelib/dist/playout/playlist'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import _ from 'underscore'
-import { Rundowns, Segments, Parts, PartInstances, Pieces } from './libCollections'
+import { Rundowns, Segments, PartInstances, Pieces, UIParts } from './libCollections'
 import { FindOptions } from './lib'
 import { PartInstance } from './PartInstances'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
@@ -153,7 +153,7 @@ export class RundownPlaylistCollectionUtil {
 		options?: FindOptions<DBPart>
 	): DBPart[] {
 		const rundownIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
-		const parts = Parts.find(
+		const parts = UIParts.find(
 			{
 				...selector,
 				rundownId: {
@@ -204,7 +204,7 @@ export class RundownPlaylistCollectionUtil {
 			}
 		).fetch()
 
-		const parts = Parts.find(
+		const parts = UIParts.find(
 			{
 				rundownId: {
 					$in: rundownIds,

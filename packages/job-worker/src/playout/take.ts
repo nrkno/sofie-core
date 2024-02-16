@@ -10,7 +10,7 @@ import { logger } from '../logging'
 import { JobContext, ProcessedShowStyleCompound } from '../jobs'
 import { PlayoutModel } from './model/PlayoutModel'
 import { PlayoutPartInstanceModel } from './model/PlayoutPartInstanceModel'
-import { isTooCloseToAutonext } from './lib'
+import { isTooCloseToAutonext, resetPartInstancesWithPieceInstances } from './lib'
 import { selectNextPart } from './selectNextPart'
 import { setNextPart } from './setNext'
 import { getCurrentTime } from '../lib'
@@ -215,15 +215,6 @@ export async function performTakeToNextedPart(
 
 	clearQueuedSegmentId(playoutModel, takePartInstance.partInstance, playoutModel.playlist.nextPartInfo)
 
-	const nextPart = selectNextPart(
-		context,
-		playoutModel.playlist,
-		takePartInstance.partInstance,
-		null,
-		playoutModel.getAllOrderedSegments(),
-		playoutModel.getAllOrderedParts()
-	)
-
 	if (blueprint.blueprint.onPreTake) {
 		const span = context.startSpan('blueprint.onPreTake')
 		try {
@@ -255,10 +246,25 @@ export async function performTakeToNextedPart(
 	)
 
 	playoutModel.cycleSelectedPartInstances()
+	const wasLooping = playoutModel.playlist.quickLoop?.running
+	playoutModel.updateQuickLoopState()
+
+	const nextPart = selectNextPart(
+		context,
+		playoutModel.playlist,
+		takePartInstance.partInstance,
+		null,
+		playoutModel.getAllOrderedSegments(),
+		playoutModel.getAllOrderedParts(),
+		false,
+		false
+	)
 
 	takePartInstance.setTaken(now, timeOffset)
 
-	resetPreviousSegment(playoutModel)
+	if (wasLooping) {
+		resetPreviousSegmentIfLooping(context, playoutModel)
+	}
 
 	// Once everything is synced, we can choose the next part
 	await setNextPart(context, playoutModel, nextPart, false)
@@ -343,27 +349,23 @@ export function clearQueuedSegmentId(
 }
 
 /**
- * Reset the Segment of the previousPartInstance, if playback has left that Segment and the Rundown is looping
+ * Reset the Segment of the previousPartInstance, if playback has left that Segment and the Playlist is looping
  * @param playoutModel Model for the active Playlist
  */
-export function resetPreviousSegment(playoutModel: PlayoutModel): void {
+export function resetPreviousSegmentIfLooping(context: JobContext, playoutModel: PlayoutModel): void {
 	const previousPartInstance = playoutModel.previousPartInstance
 	const currentPartInstance = playoutModel.currentPartInstance
 
 	// If the playlist is looping and
 	// If the previous and current part are not in the same segment, then we have just left a segment
 	if (
-		playoutModel.playlist.loop &&
+		playoutModel.playlist.quickLoop?.running &&
 		previousPartInstance &&
 		previousPartInstance.partInstance.segmentId !== currentPartInstance?.partInstance?.segmentId
 	) {
 		// Reset the old segment
 		const segmentId = previousPartInstance.partInstance.segmentId
-		for (const partInstance of playoutModel.loadedPartInstances) {
-			if (partInstance.partInstance.segmentId === segmentId) {
-				partInstance.markAsReset()
-			}
-		}
+		resetPartInstancesWithPieceInstances(context, playoutModel, { segmentId })
 	}
 }
 

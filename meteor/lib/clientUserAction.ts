@@ -114,6 +114,10 @@ function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
 			return t('Refreshing debug states')
 		case UserAction.ACTIVATE_SCRATCHPAD:
 			return t('Activate Scratchpad')
+		case UserAction.SET_QUICK_LOOP_START:
+			return t('Setting as QuickLoop Start')
+		case UserAction.SET_QUICK_LOOP_END:
+			return t('Setting as QuickLoop End')
 		default:
 			assertNever(userAction)
 	}

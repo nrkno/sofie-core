@@ -8,11 +8,18 @@ import { PartInstance, wrapPartToTemporaryInstance } from '../../../../lib/colle
 import { RundownTiming, TimeEventArgs } from './RundownTiming'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { RundownTimingCalculator, RundownTimingContext } from '../../../lib/rundownTiming'
+import {
+	MinimalPartInstance,
+	RundownTimingCalculator,
+	RundownTimingContext,
+	TimingId,
+	findPartInstancesInQuickLoop,
+} from '../../../lib/rundownTiming'
 import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylistCollectionUtil } from '../../../../lib/collections/rundownPlaylistUtil'
 import { sortPartInstancesInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
+import { RundownUtils } from '../../../lib/rundown'
 
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
 const LOW_RESOLUTION_TIMING_DECIMATOR = 15
@@ -50,12 +57,8 @@ interface IRundownTimingProviderTrackedProps {
 	segmentEntryPartInstances: MinimalPartInstance[]
 	segments: DBSegment[]
 	segmentsMap: Map<SegmentId, DBSegment>
+	partsInQuickLoop: Record<TimingId, boolean>
 }
-
-type MinimalPartInstance = Pick<
-	PartInstance,
-	'_id' | 'isTemporary' | 'rundownId' | 'segmentId' | 'segmentPlayoutId' | 'takeCount' | 'part' | 'timings' | 'orphaned'
->
 
 /**
  * RundownTimingProvider is a container component that provides a timing context to all child elements.
@@ -78,6 +81,7 @@ export const RundownTimingProvider = withTracker<
 			segmentEntryPartInstances: [],
 			segments: [],
 			segmentsMap: new Map(),
+			partsInQuickLoop: {},
 		}
 	}
 
@@ -165,6 +169,10 @@ export const RundownTimingProvider = withTracker<
 
 	partInstances = sortPartInstancesInSortedSegments(partInstances, segments)
 
+	partInstances = RundownUtils.deduplicatePartInstancesForQuickLoop(playlist, partInstances, currentPartInstance)
+
+	const partsInQuickLoop = findPartInstancesInQuickLoop(playlist, partInstances)
+
 	if (firstPartInstanceInCurrentSegmentPlay) segmentEntryPartInstances.push(firstPartInstanceInCurrentSegmentPlay)
 	if (firstPartInstanceInPreviousSegmentPlay) segmentEntryPartInstances.push(firstPartInstanceInPreviousSegmentPlay)
 
@@ -179,6 +187,7 @@ export const RundownTimingProvider = withTracker<
 		segmentEntryPartInstances,
 		segments,
 		segmentsMap,
+		partsInQuickLoop,
 	}
 })(
 	class RundownTimingProvider
@@ -329,7 +338,8 @@ export const RundownTimingProvider = withTracker<
 				pieces,
 				segmentsMap,
 				this.props.defaultDuration,
-				segmentEntryPartInstances
+				segmentEntryPartInstances,
+				this.props.partsInQuickLoop
 			)
 			if (!isSynced) {
 				this.durations = Object.assign(this.durations, updatedDurations)
