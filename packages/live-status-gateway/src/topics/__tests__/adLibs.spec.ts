@@ -79,11 +79,11 @@ describe('ActivePlaylistTopic', () => {
 			adLibs: [
 				{
 					actionType: [],
+					partId: 'part0',
 					id: 'ACTION_0',
 					name: 'An Action',
 					outputLayer: 'PGM',
 					sourceLayer: 'Layer 0',
-					tags: ['adlib_tag'],
 					publicData: { a: 'b' },
 				},
 			],

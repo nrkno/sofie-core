@@ -31,14 +31,11 @@ $defs:
           $ref: '#/$defs/adLib/examples'
         globalAdLibs:
           $ref: '#/$defs/adLib/examples'
-  adLib:
+  baseAdLib:
     type: object
     properties:
       id:
         description: Unique id of the AdLib
-        type: string
-      partId:
-        description: Unique id of the part which owns this AdLib
         type: string
       name:
         description: The user defined AdLib name
@@ -63,17 +60,64 @@ $defs:
               type: string
           required: [name, label]
           additionalProperties: false
-      tags:
-        description: Tags attached to this AdLib
-        type: array
-        items:
-          type: string
       publicData:
         description: Optional arbitrary data
     required: [id, name, sourceLayer, actionType]
     additionalProperties: false
+  adLib:
+    allOf:
+      - $ref: '#/$defs/baseAdLib'
+      - type: object
+        properties:
+          partId:
+            description: Unique id of the part which owns this AdLib
+            type: string
     examples:
       - id: 'C6K_yIMuGFUk8X_L9A9_jRT6aq4_'
+        partId: 'H5CBGYjThrMSmaYvRaa5FVKJIzk_'
+        name: Music video clip
+        sourceLayer: Video Clip
+        actionType:
+          - name: pvw
+            label: Preview
+        publicData:
+          fileName: MV000123.mxf
+  globalAdLib:
+    allOf:
+      - $ref: '#/$defs/baseAdLib'
+      - type: object
+        properties:
+          tags:
+            description: Tags attached to this AdLib
+            type: array
+            items:
+              type: string
+    examples:
+      - id: 'C6K_yIMuGFUk8X_L9A9_jRT6aq4_'
+        name: Music video clip
+        sourceLayer: Video Clip
+        actionType:
+          - name: pvw
+            label: Preview
+        tags: ['music_video']
+        publicData:
+          fileName: MV000123.mxf
+  adLibAction:
+    allOf:
+      - $ref: '#/$defs/baseAdLib'
+      - type: object
+        properties:
+          partId:
+            description: Unique id of the part which owns this AdLib
+            type: string
+          tags:
+            description: Tags attached to this AdLib
+            type: array
+            items:
+              type: string
+    examples:
+      - id: 'C6K_yIMuGFUk8X_L9A9_jRT6aq4_'
+        partId: 'H5CBGYjThrMSmaYvRaa5FVKJIzk_'
         name: Music video clip
         sourceLayer: Video Clip
         actionType:
