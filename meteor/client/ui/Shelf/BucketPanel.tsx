@@ -73,7 +73,6 @@ import {
 	ShowStyleVariantId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
-import { TFunction } from 'react-i18next'
 
 interface IBucketPanelDragObject {
 	id: BucketId
@@ -424,7 +423,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					window.addEventListener(MOSEvents.dragleave, this.onDragLeave)
 
 					RundownViewEventBus.on(RundownViewEvents.REVEAL_IN_SHELF, this.onRevealInShelf)
-					RundownViewEventBus.on(RundownViewEvents.TOGGLE_SHELF_DROPZONE, this.onToggleDropFrame.bind(this))
+					RundownViewEventBus.on(RundownViewEvents.TOGGLE_SHELF_DROPZONE, this.onToggleDropFrame)
 				}
 
 				componentDidUpdate(prevProps: IBucketPanelProps & IBucketPanelTrackedProps) {
@@ -800,7 +799,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 
 				private onToggleDropFrame = (e: ToggleShelfDropzoneEvent) => {
 					this.setState({
-						dropActive: e.display,
+						// dropActive: e.display,
 						dropFrameActive: e.display ? e.id : null,
 					})
 				}
@@ -844,7 +843,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 								<div
 									className={ClassNames('dashboard-panel', 'dashboard-panel__panel--bucket', {
 										'dashboard-panel__panel--bucket-active': this.state.dropActive,
-										'dashboard-panel__panel--sort-dragging': this.props.isDragging,
+										'dashboard-panel__panel--sort-dragging':
+											(this.props.isDragging || this.state.dropFrameActive) && !this.state.dropActive,
 									})}
 									data-bucket-id={this.props.bucket._id}
 									ref={this.setRef}
@@ -929,8 +929,9 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 												id={dropZone._id}
 												url={dropZone.url}
 												hidden={this.state.dropFrameActive !== dropZone._id}
-												t={this.props.t}
 												showStyleBaseId={this.props.showStyleBaseId}
+												onDragEnter={this.onDragEnter}
+												onDragLeave={this.onDragLeave}
 											/>
 										))}
 									</div>
@@ -950,71 +951,75 @@ interface DropzoneHolderProps {
 	bucketId: BucketId
 	url: string
 	hidden: boolean
-	t: TFunction<'translation', undefined>
 	showStyleBaseId: ShowStyleBaseId
+
+	onDragEnter?: () => void
+	onDragLeave?: () => void
 }
 const DropzoneHolder = (props: DropzoneHolderProps) => {
-	let frame: HTMLIFrameElement | null = null
-	let mounted = false
-
-	const setDropzoneElement = (frameRef: HTMLIFrameElement | null) => {
-		frame = frameRef
-		if (frame && !mounted) {
-			registerHandlers()
-			mounted = true
-		} else {
-			unregisterHandlers()
-			mounted = false
-		}
-	}
-	const registerHandlers = () => {
-		window.addEventListener('message', onMessage)
-	}
-	const unregisterHandlers = () => {
-		window.removeEventListener('message', onMessage)
-	}
+	const [dropzoneElementRef, setDropzoneElementRef] = React.useState<HTMLIFrameElement | null>(null)
 
 	const onMessage = (event: MessageEvent) => {
-		if (event.source === frame?.contentWindow) {
-			if (event.data && event.data.event === 'drop') {
+		// filter out messages from this panel
+		if (event.source !== dropzoneElementRef?.contentWindow) return
+
+		switch (event.data?.event) {
+			case 'drop':
 				RundownViewEventBus.emit(RundownViewEvents.ITEM_DROPPED, {
 					id: props.id,
 					bucketId: props.bucketId,
 					ev: event,
 				})
-			}
-
-			if (event.data && event.data.event === 'data' && event.data.data.trim().endsWith('</mos>')) {
-				RundownViewEventBus.emit(RundownViewEvents.ITEM_DROPPED, {
-					id: props.id,
-					bucketId: props.bucketId,
-					message: event.data.data,
-					ev: event,
-				})
-			}
-
-			if (event.data && event.data.event === 'error') {
+				if (props.onDragLeave) props.onDragLeave()
+				break
+			case 'data':
+				if (event.data.data.trim().endsWith('</mos>')) {
+					RundownViewEventBus.emit(RundownViewEvents.ITEM_DROPPED, {
+						id: props.id,
+						bucketId: props.bucketId,
+						message: event.data.data,
+						ev: event,
+					})
+				}
+				break
+			case 'error':
 				RundownViewEventBus.emit(RundownViewEvents.ITEM_DROPPED, {
 					id: props.id,
 					bucketId: props.bucketId,
 					error: event.data.message,
 					ev: event,
 				})
-			}
+				break
+			case 'dragEnter':
+				if (props.onDragEnter) props.onDragEnter()
+				break
+			case 'dragLeave':
+				if (props.onDragLeave) props.onDragLeave()
+				break
 		}
 	}
 
-	React.useEffect(
-		() => () => {
+	React.useEffect(() => {
+		if (!dropzoneElementRef) return
+
+		const registerHandlers = () => {
+			window.addEventListener('message', onMessage)
+		}
+		const unregisterHandlers = () => {
+			window.removeEventListener('message', onMessage)
+		}
+
+		registerHandlers()
+
+		return () => {
 			unregisterHandlers()
-		},
-		[]
-	)
+		}
+	}, [dropzoneElementRef, onMessage])
 
 	return (
 		<div className="dropzone-panel" style={{ visibility: props.hidden ? 'hidden' : 'visible' }}>
 			<iframe
-				ref={setDropzoneElement}
+				ref={setDropzoneElementRef}
 				className="external-frame-panel__iframe"
 				src={props.url}
 				sandbox="allow-forms allow-popups allow-scripts allow-same-origin"
