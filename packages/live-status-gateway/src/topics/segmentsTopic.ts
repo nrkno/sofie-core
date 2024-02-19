@@ -20,6 +20,7 @@ interface SegmentStatus {
 	identifier?: string
 	rundownId: string
 	name: string
+	partIds: string[]
 	timing: SegmentTiming
 	publicData: unknown
 }
@@ -68,6 +69,7 @@ export class SegmentsTopic
 					id: segmentId,
 					rundownId: unprotectString(segment.rundownId),
 					name: segment.name,
+					partIds: this._partsBySegment[segmentId].map((p) => unprotectString(p._id)),
 					timing: calculateSegmentTiming(this._partsBySegment[segmentId] ?? []),
 					identifier: segment.identifier,
 					publicData: segment.publicData,
