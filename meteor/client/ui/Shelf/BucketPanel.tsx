@@ -959,45 +959,48 @@ interface DropzoneHolderProps {
 const DropzoneHolder = (props: DropzoneHolderProps) => {
 	const [dropzoneElementRef, setDropzoneElementRef] = React.useState<HTMLIFrameElement | null>(null)
 
-	const onMessage = (event: MessageEvent) => {
-		// filter out messages from this panel
-		if (event.source !== dropzoneElementRef?.contentWindow) return
+	const onMessage = React.useCallback(
+		(event: MessageEvent) => {
+			// filter out messages from this panel
+			if (event.source !== dropzoneElementRef?.contentWindow) return
 
-		switch (event.data?.event) {
-			case 'drop':
-				RundownViewEventBus.emit(RundownViewEvents.ITEM_DROPPED, {
-					id: props.id,
-					bucketId: props.bucketId,
-					ev: event,
-				})
-				if (props.onDragLeave) props.onDragLeave()
-				break
-			case 'data':
-				if (event.data.data.trim().endsWith('</mos>')) {
+			switch (event.data?.event) {
+				case 'drop':
 					RundownViewEventBus.emit(RundownViewEvents.ITEM_DROPPED, {
 						id: props.id,
 						bucketId: props.bucketId,
-						message: event.data.data,
 						ev: event,
 					})
-				}
-				break
-			case 'error':
-				RundownViewEventBus.emit(RundownViewEvents.ITEM_DROPPED, {
-					id: props.id,
-					bucketId: props.bucketId,
-					error: event.data.message,
-					ev: event,
-				})
-				break
-			case 'dragEnter':
-				if (props.onDragEnter) props.onDragEnter()
-				break
-			case 'dragLeave':
-				if (props.onDragLeave) props.onDragLeave()
-				break
-		}
-	}
+					if (props.onDragLeave) props.onDragLeave()
+					break
+				case 'data':
+					if (event.data.data.trim().endsWith('</mos>')) {
+						RundownViewEventBus.emit(RundownViewEvents.ITEM_DROPPED, {
+							id: props.id,
+							bucketId: props.bucketId,
+							message: event.data.data,
+							ev: event,
+						})
+					}
+					break
+				case 'error':
+					RundownViewEventBus.emit(RundownViewEvents.ITEM_DROPPED, {
+						id: props.id,
+						bucketId: props.bucketId,
+						error: event.data.message,
+						ev: event,
+					})
+					break
+				case 'dragEnter':
+					if (props.onDragEnter) props.onDragEnter()
+					break
+				case 'dragLeave':
+					if (props.onDragLeave) props.onDragLeave()
+					break
+			}
+		},
+		[dropzoneElementRef, props.onDragEnter, props.onDragLeave]
+	)
 
 	React.useEffect(() => {
 		if (!dropzoneElementRef) return
