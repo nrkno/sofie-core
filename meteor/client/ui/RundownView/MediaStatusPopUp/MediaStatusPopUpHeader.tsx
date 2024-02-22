@@ -73,6 +73,11 @@ export function MediaStatusPopUpHeader({
 					/>
 				</th>
 				<th className="media-status-item__label">
+					<SortOrderButton
+						className="media-status-popup-item__sort-button"
+						order={matchSortKey('name', sortBy, sortOrder)}
+						onChange={(order) => changeSortOrder('name', order)}
+					/>
 					<input
 						type="search"
 						className="media-status-panel-header__filter-input"
@@ -82,15 +87,14 @@ export function MediaStatusPopUpHeader({
 						placeholder={t('Filter...')}
 					/>
 					{filter && (
-						<div className="media-status-panel-header__clear-search-input" onClick={() => onFilterChange?.('')}>
+						<button
+							className="media-status-panel-header__clear-search-input"
+							aria-label={t('Clear filter')}
+							onClick={() => onFilterChange?.('')}
+						>
 							<FontAwesomeIcon icon={faTimes} />
-						</div>
+						</button>
 					)}
-					<SortOrderButton
-						className="media-status-popup-item__sort-button"
-						order={matchSortKey('name', sortBy, sortOrder)}
-						onChange={(order) => changeSortOrder('name', order)}
-					/>
 				</th>
 			</tr>
 		</thead>

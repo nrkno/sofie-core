@@ -187,11 +187,15 @@ export function RundownPlaylistUi({
 		))
 
 	return (
-		<li className={ClassNames('rundown-playlist', { droptarget: dropState.isActiveDropZone })} ref={connectDropTarget}>
+		<li
+			className={ClassNames('rundown-playlist', { droptarget: dropState.isActiveDropZone })}
+			ref={connectDropTarget}
+			role="rowgroup"
+		>
 			{/* Drop target { droptarget: isActiveDropZone } */}
 			<header className="rundown-playlist__header">
 				<span>
-					<h2 className="rundown-playlist__heading">
+					<h2 className="rundown-playlist__heading" role="rowheader">
 						<FontAwesomeIcon icon={faFolderOpen} />
 						<span className="rundown-playlist__heading-text">
 							<Link to={playlistViewURL}>
@@ -208,7 +212,7 @@ export function RundownPlaylistUi({
 						/>
 					) : null}
 				</span>
-				<span className="rundown-list-item__text">
+				<span className="rundown-list-item__text" role="gridcell">
 					{playlistExpectedStart ? (
 						<DisplayFormattedTime displayTimestamp={playlistExpectedStart} t={t} />
 					) : playlistExpectedEnd && playlistExpectedDuration ? (
@@ -217,7 +221,7 @@ export function RundownPlaylistUi({
 						<span className="dimmed">{t('Not set')}</span>
 					)}
 				</span>
-				<span className="rundown-list-item__text">
+				<span className="rundown-list-item__text" role="gridcell">
 					{expectedDuration ? (
 						expectedDuration
 					) : playlist.loop ? (
@@ -232,7 +236,7 @@ export function RundownPlaylistUi({
 						<span className="dimmed">{t('Not set')}</span>
 					)}
 				</span>
-				<span className="rundown-list-item__text">
+				<span className="rundown-list-item__text" role="gridcell">
 					{playlistExpectedEnd ? (
 						<DisplayFormattedTime displayTimestamp={playlistExpectedEnd} t={t} />
 					) : playlistExpectedStart && playlistExpectedDuration ? (
@@ -241,7 +245,7 @@ export function RundownPlaylistUi({
 						<span className="dimmed">{t('Not set')}</span>
 					)}
 				</span>
-				<span className="rundown-list-item__text">
+				<span className="rundown-list-item__text" role="gridcell">
 					<DisplayFormattedTime displayTimestamp={playlist.modified} t={t} />
 				</span>
 				{rundownLayouts.some(
@@ -249,7 +253,7 @@ export function RundownPlaylistUi({
 						(RundownLayoutsAPI.isLayoutForShelf(l) && l.exposeAsStandalone) ||
 						(RundownLayoutsAPI.isLayoutForRundownView(l) && l.exposeAsSelectableLayout)
 				) && (
-					<span className="rundown-list-item__text">
+					<span className="rundown-list-item__text" role="gridcell">
 						<RundownViewLayoutSelection
 							rundowns={playlist.rundowns}
 							rundownLayouts={rundownLayouts}
@@ -257,7 +261,7 @@ export function RundownPlaylistUi({
 						/>
 					</span>
 				)}
-				<span className="rundown-list-item__actions"></span>
+				<span className="rundown-list-item__actions" role="gridcell"></span>
 			</header>
 			<ol className="rundown-playlist__rundowns">{rundownListComponents}</ol>
 			<footer>
