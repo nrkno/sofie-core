@@ -394,11 +394,12 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								)}
 							</LabelAndOverridesForInt>
 							<LabelAndOverridesForCheckbox
-								label={t("Display on Presenter's Screen")}
+								label={t('Treat as Main content')}
 								item={item}
 								itemKey={'onPresenterScreen'}
 								opPrefix={item.id}
 								overrideHelper={overrideHelper}
+								hint="When set, Pieces on this Source Layer will be used to display summaries, thumbnails etc for the Part in GUIs. "
 							>
 								{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
 							</LabelAndOverridesForCheckbox>
