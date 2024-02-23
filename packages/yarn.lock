@@ -5158,7 +5158,7 @@ __metadata:
   resolution: "@sofie-automation/shared-lib@workspace:shared-lib"
   dependencies:
     "@mos-connection/model": ^3.0.4
-    timeline-state-resolver-types: 9.0.0-release50.8
+    timeline-state-resolver-types: 9.0.0
     tslib: ^2.4.0
     type-fest: ^2.19.0
   languageName: unknown
@@ -18046,7 +18046,7 @@ asn1@evs-broadcast/node-asn1:
     "@sofie-automation/shared-lib": 1.50.0-in-testing.5
     debug: ^4.3.3
     influx: ^5.9.3
-    timeline-state-resolver: 9.0.0-release50.8
+    timeline-state-resolver: 9.0.0
     tslib: ^2.4.0
     underscore: ^1.13.4
     winston: ^3.8.2
@@ -21676,18 +21676,18 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"timeline-state-resolver-types@npm:9.0.0-release50.8":
-  version: 9.0.0-release50.8
-  resolution: "timeline-state-resolver-types@npm:9.0.0-release50.8"
+"timeline-state-resolver-types@npm:9.0.0":
+  version: 9.0.0
+  resolution: "timeline-state-resolver-types@npm:9.0.0"
   dependencies:
     tslib: ^2.5.1
-  checksum: a042daaea1276c87ea0c48f2e2491b37acdf993b9e08546244cdf0a280d8ab076edf6d5cc055456ed2ca8147dd3218088749b6f2d5802b737675b422cc54892f
+  checksum: be3dd61b56d3c2c12141b7f60aea2e3db6ddd1f128d510db29174bc48e30059710c1bb8470c0bc768c97780f993d5869b9e9f4fdbd476c29dee5cdd6eb5f93ab
   languageName: node
   linkType: hard
 
-"timeline-state-resolver@npm:9.0.0-release50.8":
-  version: 9.0.0-release50.8
-  resolution: "timeline-state-resolver@npm:9.0.0-release50.8"
+"timeline-state-resolver@npm:9.0.0":
+  version: 9.0.0
+  resolution: "timeline-state-resolver@npm:9.0.0"
   dependencies:
     "@tv2media/v-connection": ^7.3.2
     atem-connection: 2.5.0
@@ -21709,7 +21709,7 @@ asn1@evs-broadcast/node-asn1:
     sprintf-js: ^1.1.2
     superfly-timeline: ^8.3.1
     threadedclass: ^1.2.1
-    timeline-state-resolver-types: 9.0.0-release50.8
+    timeline-state-resolver-types: 9.0.0
     tslib: ^2.5.1
     tv-automation-quantel-gateway-client: ^3.1.7
     underscore: ^1.13.6
@@ -21717,7 +21717,7 @@ asn1@evs-broadcast/node-asn1:
     utf-8-validate: ^5.0.10
     ws: ^7.5.9
     xml-js: ^1.6.11
-  checksum: 8829750d769b7e4938195677bb54b0c5aecbb5aa1ea57fcfc097c06568776f6bb22d9262596fbbc1a1fb5bddca43e1e79c3eb871cdd25799d159a5d61a66af4a
+  checksum: 3e18992e691eb28a256b07fb2b4145b43b7be098067a2193fef52f59cf8cb90c4bfa08a32ecdf8295f536a9cca2733866289a49f96bef8ba543ae6f9f53ef838
   languageName: node
   linkType: hard
 
