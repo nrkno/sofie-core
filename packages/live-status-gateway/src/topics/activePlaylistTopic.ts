@@ -134,7 +134,7 @@ export class ActivePlaylistTopic
 								autoNext: nextPart.autoNext,
 								segmentId: unprotectString(nextPart.segmentId),
 								pieces:
-									this._pieceInstancesInCurrentPartInstance?.map((piece) =>
+									this._pieceInstancesInNextPartInstance?.map((piece) =>
 										toPieceStatus(piece, this._showStyleBaseExt)
 									) ?? [],
 								publicData: nextPart.publicData,
