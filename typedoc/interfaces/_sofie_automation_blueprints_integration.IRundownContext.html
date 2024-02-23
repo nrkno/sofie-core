@@ -27,12 +27,13 @@
 <li><span class="target">IRundownContext</span>
 <ul class="tsd-hierarchy">
 <li><a href="_sofie_automation_blueprints_integration.IRundownUserContext.html" class="tsd-signature-type" data-tsd-kind="Interface">IRundownUserContext</a></li>
+<li><a href="_sofie_automation_blueprints_integration.IRundownActivationContext.html" class="tsd-signature-type" data-tsd-kind="Interface">IRundownActivationContext</a></li>
 <li><a href="_sofie_automation_blueprints_integration.ISegmentUserContext.html" class="tsd-signature-type" data-tsd-kind="Interface">ISegmentUserContext</a></li>
 <li><a href="_sofie_automation_blueprints_integration.ITimelineEventContext.html" class="tsd-signature-type" data-tsd-kind="Interface">ITimelineEventContext</a></li>
 <li><a href="_sofie_automation_blueprints_integration.IPartEventContext.html" class="tsd-signature-type" data-tsd-kind="Interface">IPartEventContext</a></li>
 <li><a href="_sofie_automation_blueprints_integration.IRundownDataChangedEventContext.html" class="tsd-signature-type" data-tsd-kind="Interface">IRundownDataChangedEventContext</a></li></ul></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/22ec576/packages/blueprints-integration/src/context.ts#L136">blueprints-integration/src/context.ts:136</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/842c6e3/packages/blueprints-integration/src/context.ts#L141">blueprints-integration/src/context.ts:141</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -48,6 +49,7 @@
 <a href="_sofie_automation_blueprints_integration.IRundownContext.html#logError" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>log<wbr/>Error</span></a>
 <a href="_sofie_automation_blueprints_integration.IRundownContext.html#logInfo" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>log<wbr/>Info</span></a>
 <a href="_sofie_automation_blueprints_integration.IRundownContext.html#logWarning" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>log<wbr/>Warning</span></a>
+<a href="_sofie_automation_blueprints_integration.IRundownContext.html#playlistId" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>playlist<wbr/>Id</span></a>
 <a href="_sofie_automation_blueprints_integration.IRundownContext.html#rundown" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>rundown</span></a>
 <a href="_sofie_automation_blueprints_integration.IRundownContext.html#rundownId" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>rundown<wbr/>Id</span></a>
 <a href="_sofie_automation_blueprints_integration.IRundownContext.html#studioId" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>studio<wbr/>Id</span></a>
@@ -56,6 +58,8 @@
 <section class="tsd-index-section">
 <h3 class="tsd-index-heading">Methods</h3>
 <div class="tsd-index-list"><a href="_sofie_automation_blueprints_integration.IRundownContext.html#getShowStyleConfigRef" class="tsd-index-link tsd-kind-method tsd-parent-kind-interface tsd-is-inherited"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="#FF4DB8" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="12" id="icon-2048-path"></rect><path d="M9.162 16V7.24H10.578L11.514 10.072C11.602 10.328 11.674 10.584 11.73 10.84C11.794 11.088 11.842 11.28 11.874 11.416C11.906 11.28 11.954 11.088 12.018 10.84C12.082 10.584 12.154 10.324 12.234 10.06L13.122 7.24H14.538V16H13.482V12.82C13.482 12.468 13.49 12.068 13.506 11.62C13.53 11.172 13.558 10.716 13.59 10.252C13.622 9.78 13.654 9.332 13.686 8.908C13.726 8.476 13.762 8.1 13.794 7.78L12.366 12.16H11.334L9.894 7.78C9.934 8.092 9.97 8.456 10.002 8.872C10.042 9.28 10.078 9.716 10.11 10.18C10.142 10.636 10.166 11.092 10.182 11.548C10.206 12.004 10.218 12.428 10.218 12.82V16H9.162Z" fill="var(--color-text)" id="icon-2048-text"></path></svg><span>get<wbr/>Show<wbr/>Style<wbr/>Config<wbr/>Ref</span></a>
+<a href="_sofie_automation_blueprints_integration.IRundownContext.html#getShowStyleOutputLayers" class="tsd-index-link tsd-kind-method tsd-parent-kind-interface tsd-is-inherited"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>get<wbr/>Show<wbr/>Style<wbr/>Output<wbr/>Layers</span></a>
+<a href="_sofie_automation_blueprints_integration.IRundownContext.html#getShowStyleSourceLayers" class="tsd-index-link tsd-kind-method tsd-parent-kind-interface tsd-is-inherited"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>get<wbr/>Show<wbr/>Style<wbr/>Source<wbr/>Layers</span></a>
 <a href="_sofie_automation_blueprints_integration.IRundownContext.html#getStudioConfigRef" class="tsd-index-link tsd-kind-method tsd-parent-kind-interface tsd-is-inherited"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>get<wbr/>Studio<wbr/>Config<wbr/>Ref</span></a>
 </div></section></div></details></section></section>
 <section class="tsd-panel-group tsd-member-group">
@@ -86,7 +90,7 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4></li></ul></li></ul></div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.IShowStyleContext.html">IShowStyleContext</a>.<a href="_sofie_automation_blueprints_integration.IShowStyleContext.html#getHashId">getHashId</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/22ec576/packages/blueprints-integration/src/context.ts#L29">blueprints-integration/src/context.ts:29</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/842c6e3/packages/blueprints-integration/src/context.ts#L30">blueprints-integration/src/context.ts:30</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a id="getShowStyleConfig" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Show<wbr/>Style<wbr/>Config</span><a href="#getShowStyleConfig" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">get<wbr/>Show<wbr/>Style<wbr/>Config<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">)</span></div>
@@ -102,7 +106,7 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">unknown</span></h4></li></ul></li></ul></div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.IShowStyleContext.html">IShowStyleContext</a>.<a href="_sofie_automation_blueprints_integration.IShowStyleContext.html#getShowStyleConfig">getShowStyleConfig</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/22ec576/packages/blueprints-integration/src/context.ts#L118">blueprints-integration/src/context.ts:118</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/842c6e3/packages/blueprints-integration/src/context.ts#L119">blueprints-integration/src/context.ts:119</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a id="getStudioConfig" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Studio<wbr/>Config</span><a href="#getStudioConfig" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">get<wbr/>Studio<wbr/>Config<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">)</span></div>
@@ -118,7 +122,7 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">unknown</span></h4></li></ul></li></ul></div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.IShowStyleContext.html">IShowStyleContext</a>.<a href="_sofie_automation_blueprints_integration.IShowStyleContext.html#getStudioConfig">getStudioConfig</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/22ec576/packages/blueprints-integration/src/context.ts#L91">blueprints-integration/src/context.ts:91</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/842c6e3/packages/blueprints-integration/src/context.ts#L92">blueprints-integration/src/context.ts:92</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a id="getStudioMappings" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Studio<wbr/>Mappings</span><a href="#getStudioMappings" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">get<wbr/>Studio<wbr/>Mappings<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="_sofie_automation_blueprints_integration.BlueprintMappings.html" class="tsd-signature-type" data-tsd-kind="Interface">BlueprintMappings</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span></div>
@@ -134,7 +138,7 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="_sofie_automation_blueprints_integration.BlueprintMappings.html" class="tsd-signature-type" data-tsd-kind="Interface">BlueprintMappings</a><span class="tsd-signature-symbol">&gt;</span></h4></li></ul></li></ul></div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.IShowStyleContext.html">IShowStyleContext</a>.<a href="_sofie_automation_blueprints_integration.IShowStyleContext.html#getStudioMappings">getStudioMappings</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/22ec576/packages/blueprints-integration/src/context.ts#L96">blueprints-integration/src/context.ts:96</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/842c6e3/packages/blueprints-integration/src/context.ts#L97">blueprints-integration/src/context.ts:97</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a id="logDebug" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>log<wbr/>Debug</span><a href="#logDebug" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">log<wbr/>Debug<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>message<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></div>
@@ -155,7 +159,7 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.IShowStyleContext.html">IShowStyleContext</a>.<a href="_sofie_automation_blueprints_integration.IShowStyleContext.html#logDebug">logDebug</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/22ec576/packages/blueprints-integration/src/context.ts#L34">blueprints-integration/src/context.ts:34</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/842c6e3/packages/blueprints-integration/src/context.ts#L35">blueprints-integration/src/context.ts:35</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a id="logError" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>log<wbr/>Error</span><a href="#logError" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">log<wbr/>Error<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>message<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></div>
@@ -176,7 +180,7 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.IShowStyleContext.html">IShowStyleContext</a>.<a href="_sofie_automation_blueprints_integration.IShowStyleContext.html#logError">logError</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/22ec576/packages/blueprints-integration/src/context.ts#L40">blueprints-integration/src/context.ts:40</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/842c6e3/packages/blueprints-integration/src/context.ts#L41">blueprints-integration/src/context.ts:41</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a id="logInfo" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>log<wbr/>Info</span><a href="#logInfo" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">log<wbr/>Info<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>message<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></div>
@@ -197,7 +201,7 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.IShowStyleContext.html">IShowStyleContext</a>.<a href="_sofie_automation_blueprints_integration.IShowStyleContext.html#logInfo">logInfo</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/22ec576/packages/blueprints-integration/src/context.ts#L36">blueprints-integration/src/context.ts:36</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/842c6e3/packages/blueprints-integration/src/context.ts#L37">blueprints-integration/src/context.ts:37</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a id="logWarning" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>log<wbr/>Warning</span><a href="#logWarning" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">log<wbr/>Warning<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>message<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></div>
@@ -218,17 +222,22 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.IShowStyleContext.html">IShowStyleContext</a>.<a href="_sofie_automation_blueprints_integration.IShowStyleContext.html#logWarning">logWarning</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/22ec576/packages/blueprints-integration/src/context.ts#L38">blueprints-integration/src/context.ts:38</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/842c6e3/packages/blueprints-integration/src/context.ts#L39">blueprints-integration/src/context.ts:39</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="playlistId" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>playlist<wbr/>Id</span><a href="#playlistId" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<div class="tsd-signature">playlist<wbr/>Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/842c6e3/packages/blueprints-integration/src/context.ts#L143">blueprints-integration/src/context.ts:143</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="rundown" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>rundown</span><a href="#rundown" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">rundown<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="_sofie_automation_blueprints_integration.IBlueprintSegmentRundown.html" class="tsd-signature-type" data-tsd-kind="Interface">IBlueprintSegmentRundown</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/22ec576/packages/blueprints-integration/src/context.ts#L138">blueprints-integration/src/context.ts:138</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/842c6e3/packages/blueprints-integration/src/context.ts#L144">blueprints-integration/src/context.ts:144</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="rundownId" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>rundown<wbr/>Id</span><a href="#rundownId" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">rundown<wbr/>Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/22ec576/packages/blueprints-integration/src/context.ts#L137">blueprints-integration/src/context.ts:137</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/842c6e3/packages/blueprints-integration/src/context.ts#L142">blueprints-integration/src/context.ts:142</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a id="studioId" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>studio<wbr/>Id</span><a href="#studioId" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">studio<wbr/>Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
@@ -236,7 +245,7 @@
 </div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.IShowStyleContext.html">IShowStyleContext</a>.<a href="_sofie_automation_blueprints_integration.IShowStyleContext.html#studioId">studioId</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/22ec576/packages/blueprints-integration/src/context.ts#L88">blueprints-integration/src/context.ts:88</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/842c6e3/packages/blueprints-integration/src/context.ts#L89">blueprints-integration/src/context.ts:89</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a id="unhashId" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>unhash<wbr/>Id</span><a href="#unhashId" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">unhash<wbr/>Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>hash<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span></div>
@@ -257,7 +266,7 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4></li></ul></li></ul></div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.IShowStyleContext.html">IShowStyleContext</a>.<a href="_sofie_automation_blueprints_integration.IShowStyleContext.html#unhashId">unhashId</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/22ec576/packages/blueprints-integration/src/context.ts#L31">blueprints-integration/src/context.ts:31</a></li></ul></aside></section></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/842c6e3/packages/blueprints-integration/src/context.ts#L32">blueprints-integration/src/context.ts:32</a></li></ul></aside></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Methods</h2>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-inherited"><a id="getShowStyleConfigRef" class="tsd-anchor"></a>
@@ -275,7 +284,29 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.IShowStyleContext.html">IShowStyleContext</a>.<a href="_sofie_automation_blueprints_integration.IShowStyleContext.html#getShowStyleConfigRef">getShowStyleConfigRef</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/22ec576/packages/blueprints-integration/src/context.ts#L120">blueprints-integration/src/context.ts:120</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/842c6e3/packages/blueprints-integration/src/context.ts#L121">blueprints-integration/src/context.ts:121</a></li></ul></aside></li></ul></section>
+<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-inherited"><a id="getShowStyleOutputLayers" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>get<wbr/>Show<wbr/>Style<wbr/>Output<wbr/>Layers</span><a href="#getShowStyleOutputLayers" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-inherited">
+<li class="tsd-signature tsd-anchor-link" id="getShowStyleOutputLayers.getShowStyleOutputLayers-1">get<wbr/>Show<wbr/>Style<wbr/>Output<wbr/>Layers<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="_sofie_automation_blueprints_integration.IOutputLayer.html" class="tsd-signature-type" data-tsd-kind="Interface">IOutputLayer</a><span class="tsd-signature-symbol">&gt;</span><a href="#getShowStyleOutputLayers.getShowStyleOutputLayers-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Get output layers for the ShowStyle</p>
+</div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="_sofie_automation_blueprints_integration.IOutputLayer.html" class="tsd-signature-type" data-tsd-kind="Interface">IOutputLayer</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
+<p>Inherited from <a href="_sofie_automation_blueprints_integration.IShowStyleContext.html">IShowStyleContext</a>.<a href="_sofie_automation_blueprints_integration.IShowStyleContext.html#getShowStyleOutputLayers">getShowStyleOutputLayers</a></p>
+<ul>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/842c6e3/packages/blueprints-integration/src/context.ts#L125">blueprints-integration/src/context.ts:125</a></li></ul></aside></li></ul></section>
+<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-inherited"><a id="getShowStyleSourceLayers" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>get<wbr/>Show<wbr/>Style<wbr/>Source<wbr/>Layers</span><a href="#getShowStyleSourceLayers" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-inherited">
+<li class="tsd-signature tsd-anchor-link" id="getShowStyleSourceLayers.getShowStyleSourceLayers-1">get<wbr/>Show<wbr/>Style<wbr/>Source<wbr/>Layers<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="_sofie_automation_blueprints_integration.ISourceLayer.html" class="tsd-signature-type" data-tsd-kind="Interface">ISourceLayer</a><span class="tsd-signature-symbol">&gt;</span><a href="#getShowStyleSourceLayers.getShowStyleSourceLayers-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Get source layers for the ShowStyle</p>
+</div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="_sofie_automation_blueprints_integration.ISourceLayer.html" class="tsd-signature-type" data-tsd-kind="Interface">ISourceLayer</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
+<p>Inherited from <a href="_sofie_automation_blueprints_integration.IShowStyleContext.html">IShowStyleContext</a>.<a href="_sofie_automation_blueprints_integration.IShowStyleContext.html#getShowStyleSourceLayers">getShowStyleSourceLayers</a></p>
+<ul>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/842c6e3/packages/blueprints-integration/src/context.ts#L123">blueprints-integration/src/context.ts:123</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-inherited"><a id="getStudioConfigRef" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Studio<wbr/>Config<wbr/>Ref</span><a href="#getStudioConfigRef" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-inherited">
@@ -291,7 +322,7 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.IShowStyleContext.html">IShowStyleContext</a>.<a href="_sofie_automation_blueprints_integration.IShowStyleContext.html#getStudioConfigRef">getStudioConfigRef</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/22ec576/packages/blueprints-integration/src/context.ts#L93">blueprints-integration/src/context.ts:93</a></li></ul></aside></li></ul></section></section></div>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/842c6e3/packages/blueprints-integration/src/context.ts#L94">blueprints-integration/src/context.ts:94</a></li></ul></aside></li></ul></section></section></div>
 <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
@@ -319,6 +350,7 @@
 <li class="tsd-kind-namespace tsd-parent-kind-module"><a href="../modules/_sofie_automation_blueprints_integration.AccessorOnPackage.html">Accessor<wbr/>On<wbr/>Package</a></li>
 <li class="tsd-kind-namespace tsd-parent-kind-module"><a href="../modules/_sofie_automation_blueprints_integration.ExpectedPackage.html">Expected<wbr/>Package</a></li>
 <li class="tsd-kind-namespace tsd-parent-kind-module"><a href="../modules/_sofie_automation_blueprints_integration.ExpectedPackageStatusAPI.html">Expected<wbr/>Package<wbr/>StatusAPI</a></li>
+<li class="tsd-kind-namespace tsd-parent-kind-module"><a href="../modules/_sofie_automation_blueprints_integration.JSONSchema.html">JSONSchema</a></li>
 <li class="tsd-kind-namespace tsd-parent-kind-module tsd-is-external"><a href="../modules/_sofie_automation_blueprints_integration.MOS.html">MOS</a></li>
 <li class="tsd-kind-namespace tsd-parent-kind-module"><a href="../modules/_sofie_automation_blueprints_integration.PackageInfo.html">Package<wbr/>Info</a></li>
 <li class="tsd-kind-namespace tsd-parent-kind-module tsd-is-external"><a href="../modules/_sofie_automation_blueprints_integration.TSR.html">TSR</a>
@@ -327,7 +359,10 @@
 <li class="tsd-kind-module"><a href="../modules/_sofie_automation_corelib.html">@sofie-<wbr/>automation/corelib</a>
 <ul>
 <li class="tsd-kind-namespace tsd-parent-kind-module tsd-is-external"><a href="../modules/_sofie_automation_corelib.MOS.html">MOS</a></li></ul></li>
-<li class="tsd-kind-module"><a href="../modules/_sofie_automation_server_core_integration.html">@sofie-<wbr/>automation/server-<wbr/>core-<wbr/>integration</a></li>
+<li class="tsd-kind-module"><a href="../modules/_sofie_automation_server_core_integration.html">@sofie-<wbr/>automation/server-<wbr/>core-<wbr/>integration</a>
+<ul>
+<li class="tsd-kind-namespace tsd-parent-kind-module"><a href="../modules/_sofie_automation_server_core_integration.JSONSchema.html">JSONSchema</a></li>
+<li class="tsd-kind-namespace tsd-parent-kind-module"><a href="../modules/_sofie_automation_server_core_integration.PeripheralDeviceAPI.html">Peripheral<wbr/>DeviceAPI</a></li></ul></li>
 <li class="tsd-kind-module"><a href="../modules/_sofie_automation_shared_lib.html">@sofie-<wbr/>automation/shared-<wbr/>lib</a></li></ul></li></ul></div></details></nav>
 <nav class="tsd-navigation secondary menu-sticky">
 <ul>
@@ -341,11 +376,14 @@
 <li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="_sofie_automation_blueprints_integration.IRundownContext.html#logError" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>log<wbr/>Error</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="_sofie_automation_blueprints_integration.IRundownContext.html#logInfo" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>log<wbr/>Info</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="_sofie_automation_blueprints_integration.IRundownContext.html#logWarning" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>log<wbr/>Warning</a></li>
+<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_sofie_automation_blueprints_integration.IRundownContext.html#playlistId" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>playlist<wbr/>Id</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface"><a href="_sofie_automation_blueprints_integration.IRundownContext.html#rundown" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>rundown</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface"><a href="_sofie_automation_blueprints_integration.IRundownContext.html#rundownId" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>rundown<wbr/>Id</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="_sofie_automation_blueprints_integration.IRundownContext.html#studioId" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>studio<wbr/>Id</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="_sofie_automation_blueprints_integration.IRundownContext.html#unhashId" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>unhash<wbr/>Id</a></li>
 <li class="tsd-kind-method tsd-parent-kind-interface tsd-is-inherited"><a href="_sofie_automation_blueprints_integration.IRundownContext.html#getShowStyleConfigRef" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>get<wbr/>Show<wbr/>Style<wbr/>Config<wbr/>Ref</a></li>
+<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-inherited"><a href="_sofie_automation_blueprints_integration.IRundownContext.html#getShowStyleOutputLayers" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>get<wbr/>Show<wbr/>Style<wbr/>Output<wbr/>Layers</a></li>
+<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-inherited"><a href="_sofie_automation_blueprints_integration.IRundownContext.html#getShowStyleSourceLayers" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>get<wbr/>Show<wbr/>Style<wbr/>Source<wbr/>Layers</a></li>
 <li class="tsd-kind-method tsd-parent-kind-interface tsd-is-inherited"><a href="_sofie_automation_blueprints_integration.IRundownContext.html#getStudioConfigRef" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>get<wbr/>Studio<wbr/>Config<wbr/>Ref</a></li></ul></li></ul></nav></div></div>
 <div class="container tsd-generator">
 <p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></div>
