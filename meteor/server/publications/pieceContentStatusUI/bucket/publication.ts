@@ -99,6 +99,7 @@ async function setupUIBucketContentStatusesPublicationObservers(
 	if (!bucket || bucket.studioId !== args.studioId) throw new Error(`Bucket "${args.bucketId}" not found!`)
 
 	const contentCache = createReactiveContentCache()
+	triggerUpdate({ newCache: contentCache })
 
 	// Set up observers:
 	return [
