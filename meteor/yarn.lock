@@ -1402,6 +1402,7 @@ __metadata:
     elastic-apm-node: ^3.51.0
     eventemitter3: ^4.0.7
     mongodb: ^5.9.2
+    node-fetch: ^2.7.0
     p-lazy: ^3.1.0
     p-timeout: ^4.1.0
     superfly-timeline: 9.0.0
@@ -8777,6 +8778,20 @@ __metadata:
   linkType: hard
 
 "node-fetch@npm:^2.6.7":
+  version: 2.7.0
+  resolution: "node-fetch@npm:2.7.0"
+  dependencies:
+    whatwg-url: ^5.0.0
+  peerDependencies:
+    encoding: ^0.1.0
+  peerDependenciesMeta:
+    encoding:
+      optional: true
+  checksum: d76d2f5edb451a3f05b15115ec89fc6be39de37c6089f1b6368df03b91e1633fd379a7e01b7ab05089a25034b2023d959b47e59759cb38d88341b2459e89d6e5
+  languageName: node
+  linkType: hard
+
+"node-fetch@npm:^2.7.0":
   version: 2.7.0
   resolution: "node-fetch@npm:2.7.0"
   dependencies:

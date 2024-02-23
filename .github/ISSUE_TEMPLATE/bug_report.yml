@@ -8,6 +8,10 @@ body:
   - type: markdown
     attributes:
       value: |
+        Thanks for considering to post a Bug Report!
+        The Bug Reports are used to raise awareness of issues in the Sofie system,
+        and to help the community to collaborate in troubleshooting and fixing them.
+
         Before you post, be sure to read our Contribution guidelines:
         https://nrkno.github.io/sofie-core/docs/for-developers/contribution-guidelines
 
@@ -48,3 +52,12 @@ body:
         Examples:
         * This is a blocker for us, we cannot use feature X until this is fixed.
         * Not a big issue for us, but it would be nice to have this fixed.
+
+  - type: textarea
+    attributes:
+      label: Level of Involvement
+      description: Are you willing to contribute a fix for this yourself? Or are you just raising awareness?
+      placeholder: |
+        Examples:
+        * I am willing to contribute a fix for this - if I get some guidance on what might be wrong.
+        * Just raising awareness, I won't be able to contribute a fix myself.

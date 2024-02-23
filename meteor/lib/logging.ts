@@ -62,7 +62,7 @@ if (Meteor.isServer) {
 		return (...args: any[]) => {
 			console.log(type, ...args)
 
-			if (type === 'error' || type === 'warn') {
+			if (type === 'error' || type === 'warn' || type === 'info') {
 				// Also send log entry to server, for logging:
 				const stringifiedArgs: string[] = args.map((arg) => {
 					return stringifyError(arg)

@@ -12,7 +12,7 @@ Example: "This pull request is posted on behalf of the NRK."
 
 ## Type of Contribution
 
-This is a: 
+This is a:
 <!-- (pick one) -->
 Bug fix / Feature / Code improvement / Documentation improvement / Other (please specify)
 
@@ -37,6 +37,16 @@ Examples:
 * "Do a Take for a part that contains an adlib, verify that the adlib plays out."
 * "Open the Switchboard panel and toggle a route, verify that the route toggles in the GUI."
 * "This feature also affects 'feature X', so that needs to be tested for regressions as well."
+-->
+
+
+## Time Frame
+<!--
+Please provide a note about the urgency or development plan for this PR.
+Example:
+* This Bug Fix is critical for us, please review and merge it as soon as possible.
+* We intend to finish the development on this feature in two weeks time.
+* Not urgent, but we would like to get this merged into the in-development release.
 -->
 
 
