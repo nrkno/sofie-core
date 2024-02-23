@@ -182,7 +182,7 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 	}
 
 	private getElStyle(dimensions: { width: number; height: number } | undefined) {
-		const style = { ...this.state.style }
+		const style: Record<string, any> = { ...this.state.style }
 		style.visibility = this.state.show ? 'visible' : 'hidden'
 
 		if (dimensions) {
