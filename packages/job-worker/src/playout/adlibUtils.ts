@@ -257,27 +257,30 @@ export async function insertQueuedPartWithPieces(
 
 	await setNextPart(context, playoutModel, newPartInstance, false)
 
-	handleQuickLoop(playoutModel, currentPartInstance, newPartInstance)
+	temporarilyExtendQuickLoop(playoutModel, currentPartInstance, newPartInstance)
 
 	if (span) span.end()
 
 	return newPartInstance
 }
 
-function handleQuickLoop(
+function temporarilyExtendQuickLoop(
 	playoutModel: PlayoutModel,
 	currentPartInstance: PlayoutPartInstanceModel,
 	newPartInstance: PlayoutPartInstanceModel
 ) {
+	const existingQuickLoopEnd = playoutModel.playlist.quickLoop?.end
+	if (!existingQuickLoopEnd) return
+
 	if (
-		playoutModel.playlist.quickLoop?.end?.type === QuickLoopMarkerType.PART &&
-		(currentPartInstance.partInstance.part._id === playoutModel.playlist.quickLoop?.end?.id ||
-			currentPartInstance.partInstance.part._id === playoutModel.playlist.quickLoop?.end?.overridenId)
+		existingQuickLoopEnd.type === QuickLoopMarkerType.PART &&
+		(currentPartInstance.partInstance.part._id === existingQuickLoopEnd.id ||
+			currentPartInstance.partInstance.part._id === existingQuickLoopEnd.overridenId)
 	) {
 		playoutModel.setQuickLoopMarker('end', {
 			type: QuickLoopMarkerType.PART,
 			id: newPartInstance.partInstance.part._id,
-			overridenId: playoutModel.playlist.quickLoop?.end?.overridenId ?? playoutModel.playlist.quickLoop?.end?.id,
+			overridenId: existingQuickLoopEnd.overridenId ?? existingQuickLoopEnd.id,
 		})
 	}
 }

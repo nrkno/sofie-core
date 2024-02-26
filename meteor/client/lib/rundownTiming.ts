@@ -26,7 +26,7 @@ import { getCurrentTime, objectFromEntries } from '../../lib/lib'
 import { Settings } from '../../lib/Settings'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { isLoopDefined, isLoopLocked, isLoopRunning } from '../../lib/Rundown'
+import { isLoopDefined, isEntirePlaylistLooping, isLoopRunning } from '../../lib/Rundown'
 
 // Minimum duration that a part can be assigned. Used by gap parts to allow them to "compress" to indicate time running out.
 const MINIMAL_NONZERO_DURATION = 1
@@ -927,14 +927,11 @@ export function findPartInstancesInQuickLoop(
 	playlist: DBRundownPlaylist,
 	sortedPartInstances: MinimalPartInstance[]
 ): Record<TimingId, boolean> {
-	const partsInQuickLoop: Record<TimingId, boolean> = {}
-	if (
-		!isLoopDefined(playlist) ||
-		isLoopLocked(playlist) // a crude way of disabling the dots when looping the entire playlist
-	) {
-		return partsInQuickLoop
+	if (!isLoopDefined(playlist) || isEntirePlaylistLooping(playlist)) {
+		return {}
 	}
 
+	const partsInQuickLoop: Record<TimingId, boolean> = {}
 	let isInQuickLoop = playlist.quickLoop?.start?.type === QuickLoopMarkerType.PLAYLIST
 	let previousPartInstance: MinimalPartInstance | undefined = undefined
 	for (const partInstance of sortedPartInstances) {

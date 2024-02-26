@@ -417,6 +417,13 @@ export function isLoopLocked(playlist: DBRundownPlaylist | undefined): boolean {
 	return !!playlist?.quickLoop?.locked
 }
 
+export function isEntirePlaylistLooping(playlist: DBRundownPlaylist | undefined): boolean {
+	return (
+		playlist?.quickLoop?.start?.type === QuickLoopMarkerType.PLAYLIST &&
+		playlist?.quickLoop?.end?.type === QuickLoopMarkerType.PLAYLIST
+	)
+}
+
 export function isQuickLoopStart(partId: PartId, playlist: DBRundownPlaylist | undefined): boolean {
 	return playlist?.quickLoop?.start?.type === QuickLoopMarkerType.PART && playlist.quickLoop.start.id === partId
 }

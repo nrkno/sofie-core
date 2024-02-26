@@ -136,10 +136,10 @@ export async function manipulateUIPartsPublicationData(
 		return
 	}
 
-	const playlist = state.contentCache.RundownPlaylists.find({}).fetch()[0]
+	const playlist = state.contentCache.RundownPlaylists.findOne({})
 	if (!playlist) return
 
-	const studio = state.contentCache.Studios.find({}).fetch()[0]
+	const studio = state.contentCache.Studios.findOne({})
 	if (!studio) return
 
 	if (!playlist.quickLoop?.start || !playlist.quickLoop?.end) {
@@ -152,8 +152,8 @@ export async function manipulateUIPartsPublicationData(
 
 	collection.remove(null)
 
-	const rundownRanks = stringsToIndexLookup(playlist.rundownIdsInOrder as unknown as string[]) // TODO: optimize by storing in state?
-	const segmentRanks = extractRanks(state.contentCache.Segments.find({}).fetch()) // TODO: optimize by storing in state?
+	const rundownRanks = stringsToIndexLookup(playlist.rundownIdsInOrder as unknown as string[])
+	const segmentRanks = extractRanks(state.contentCache.Segments.find({}).fetch())
 
 	const quickLoopStartPosition =
 		playlist.quickLoop?.start &&
@@ -165,7 +165,7 @@ export async function manipulateUIPartsPublicationData(
 	const isLoopDefined =
 		playlist.quickLoop?.start && playlist.quickLoop?.end && quickLoopStartPosition && quickLoopEndPosition
 
-	function modifyPartForQuickLoop(part: DBPart) {
+	const modifyPartForQuickLoop = (part: DBPart) => {
 		const partPosition = findPartPosition(part, segmentRanks, rundownRanks)
 		const isLoopingOverriden =
 			isLoopDefined &&

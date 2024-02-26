@@ -40,7 +40,7 @@ export const Parts = createSyncReadOnlyMongoCollection<DBPart>(CollectionName.Pa
 /**
  * A playout UI version of Parts.
  */
-export const UIParts = createSyncCustomPublicationMongoCollection(CustomCollectionName.UIParts) // TODO
+export const UIParts = createSyncCustomPublicationMongoCollection(CustomCollectionName.UIParts)
 
 export const RundownBaselineAdLibActions = createSyncReadOnlyMongoCollection<RundownBaselineAdLibAction>(
 	CollectionName.RundownBaselineAdLibActions

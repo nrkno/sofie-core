@@ -137,7 +137,8 @@ export const StoryboardPart = withTiming<IProps, {}>((props: IProps) => {
 
 	const isInvalid = part.instance.part.invalid
 	const isFloated = part.instance.part.floated
-	const isPartInQuickLoop = timingDurations.partsInQuickLoop?.[getPartInstanceTimingId(part.instance)] ?? false
+	const isInsideQuickLoop = timingDurations.partsInQuickLoop?.[getPartInstanceTimingId(part.instance)] ?? false
+	const isOutsideActiveQuickLoop = !isInsideQuickLoop && isPlaylistLooping && !isNextPart
 
 	return (
 		<ContextMenuTrigger
@@ -151,7 +152,7 @@ export const StoryboardPart = withTiming<IProps, {}>((props: IProps) => {
 						'segment-storyboard__part--next': isNextPart,
 						'segment-storyboard__part--live': isLivePart,
 						'segment-storyboard__part--invalid': part.instance.part.invalid,
-						'segment-storyboard__part--outside-quickloop': !isPartInQuickLoop && isPlaylistLooping && !isNextPart,
+						'segment-storyboard__part--outside-quickloop': isOutsideActiveQuickLoop,
 						'segment-storyboard__part--quickloop-start': isQuickLoopStart,
 						'segment-storyboard__part--quickloop-end': isQuickLoopEnd,
 					},
@@ -277,7 +278,7 @@ export const StoryboardPart = withTiming<IProps, {}>((props: IProps) => {
 						<LoopingIcon />
 					</div>
 				) : null}
-				{isPartInQuickLoop && <div className="segment-storyboard__part__quickloop-background"></div>}
+				{isInsideQuickLoop && <div className="segment-storyboard__part__quickloop-background"></div>}
 			</div>
 			<div className="segment-storyboard__part__bottom-right">
 				{isQuickLoopEnd ? (

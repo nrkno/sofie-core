@@ -660,6 +660,8 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 			}
 		}
 
+		const isOutsideActiveQuickLoop =
+			!this.state.isInQuickLoop && RundownLib.isLoopRunning(this.props.playlist) && !this.state.isNext
 		const isQuickLoopStart = RundownLib.isQuickLoopStart(this.props.part.partId, this.props.playlist)
 		const isQuickLoopEnd = RundownLib.isQuickLoopEnd(this.props.part.partId, this.props.playlist)
 
@@ -682,8 +684,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 							'duration-settling': this.state.isDurationSettling,
 							'budget-gap': this.props.isBudgetGap,
 
-							'outside-quickloop':
-								!this.state.isInQuickLoop && RundownLib.isLoopRunning(this.props.playlist) && !this.state.isNext,
+							'outside-quickloop': isOutsideActiveQuickLoop,
 							'quickloop-start': isQuickLoopStart,
 							'quickloop-end': isQuickLoopEnd,
 						},

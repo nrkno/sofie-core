@@ -25,7 +25,6 @@ import { NavLink, Route, Prompt } from 'react-router-dom'
 import {
 	DBRundownPlaylist,
 	QuickLoopMarker,
-	QuickLoopMarkerType,
 	RundownHoldState,
 } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
@@ -158,7 +157,7 @@ import { logger } from '../../lib/logging'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from './i18n'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
-import { isLoopDefined, isLoopRunning } from '../../lib/Rundown'
+import { isEntirePlaylistLooping, isLoopRunning } from '../../lib/Rundown'
 import { useRundownAndShowStyleIdsForPlaylist } from './util/useRundownAndShowStyleIdsForPlaylist'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
@@ -2689,16 +2688,15 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 					</div>
 				)
 			}
-			const isPlaylistLooping = isLoopDefined(this.props.playlist)
 			return (
 				<React.Fragment>
-					{isPlaylistLooping && this.props.playlist.quickLoop?.start?.type === QuickLoopMarkerType.PLAYLIST && (
+					{isEntirePlaylistLooping(this.props.playlist) && (
 						<PlaylistLoopingHeader position="start" multiRundown={this.props.matchedSegments.length > 1} />
 					)}
 					<div className="segment-timeline-container" role="main" aria-labelledby="rundown-playlist-name">
 						{this.renderSegments()}
 					</div>
-					{isPlaylistLooping && this.props.playlist.quickLoop?.end?.type === QuickLoopMarkerType.PLAYLIST && (
+					{isEntirePlaylistLooping(this.props.playlist) && (
 						<PlaylistLoopingHeader
 							position="end"
 							multiRundown={this.props.matchedSegments.length > 1}

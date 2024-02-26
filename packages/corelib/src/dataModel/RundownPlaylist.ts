@@ -53,7 +53,7 @@ interface QuickLoopPartMarker {
 	type: QuickLoopMarkerType.PART
 	id: PartId
 
-	/** When a part is dynamically inserted after the marker, it keeps the old Id */
+	/** When a part is dynamically inserted after the marker, the user selected id gets persisted here for the next iteration */
 	overridenId?: PartId
 }
 

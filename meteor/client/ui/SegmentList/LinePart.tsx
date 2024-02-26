@@ -78,7 +78,8 @@ export const LinePart = withTiming<IProps, {}>((props: IProps) => {
 	const [highlight] = useState(false)
 
 	const timingId = getPartInstanceTimingId(part.instance)
-	const isInQuickLoop = (timingDurations.partsInQuickLoop || {})[timingId]
+	const isInsideQuickLoop = (timingDurations.partsInQuickLoop || {})[timingId]
+	const isOutsideActiveQuickLoop = isPlaylistLooping && !isInsideQuickLoop && !isNextPart && !hasAlreadyPlayed
 
 	const getPartContext = useCallback(() => {
 		const partElement = document.querySelector('#' + SegmentTimelinePartElementId + part.instance._id)
@@ -134,9 +135,8 @@ export const LinePart = withTiming<IProps, {}>((props: IProps) => {
 					'invert-flash': highlight,
 					'segment-opl__part--next': isNextPart,
 					'segment-opl__part--live': isLivePart,
-					'segment-opl__part--has-played': hasAlreadyPlayed && (!isPlaylistLooping || !isInQuickLoop),
-					'segment-opl__part--outside-quickloop':
-						isPlaylistLooping && !isInQuickLoop && !isNextPart && !hasAlreadyPlayed,
+					'segment-opl__part--has-played': hasAlreadyPlayed && (!isPlaylistLooping || !isInsideQuickLoop),
+					'segment-opl__part--outside-quickloop': isOutsideActiveQuickLoop,
 					'segment-opl__part--quickloop-start': isQuickLoopStart,
 					'segment-opl__part--invalid': part.instance.part.invalid,
 					'segment-opl__part--timing-sibling': isPreceededByTimingGroupSibling,
@@ -179,7 +179,7 @@ export const LinePart = withTiming<IProps, {}>((props: IProps) => {
 						<LoopingIcon />
 					</div>
 				)}
-				{isInQuickLoop && <div className="segment-opl__quickloop-background"></div>}
+				{isInsideQuickLoop && <div className="segment-opl__quickloop-background"></div>}
 			</div>
 			<LinePartPieceIndicators
 				partId={part.partId}

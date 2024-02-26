@@ -2456,7 +2456,7 @@ describe('findPartInstancesInQuickLoop', () => {
 				type: QuickLoopMarkerType.PART,
 				id: parts[3]._id,
 			},
-			running: false,
+			running: true,
 			forceAutoNext: ForceQuickLoopAutoNext.DISABLED,
 			locked: false,
 		}
@@ -2470,8 +2470,9 @@ describe('findPartInstancesInQuickLoop', () => {
 		})
 	})
 
-	it('Returns all parts between QuickLoop Playlist Markers', () => {
-		const { parts, partInstances } = makeMockPartsForQuickLoopTest()
+	it('Returns no parts when the entire Playlist is looping', () => {
+		// this may need to change if setting other than Part markers is allowed by the users
+		const { partInstances } = makeMockPartsForQuickLoopTest()
 
 		const playlist = makeMockPlaylist()
 		playlist.quickLoop = {
@@ -2488,13 +2489,7 @@ describe('findPartInstancesInQuickLoop', () => {
 
 		const result = findPartInstancesInQuickLoop(playlist, partInstances)
 
-		expect(result).toEqual({
-			[unprotectString(parts[0]._id)]: true,
-			[unprotectString(parts[1]._id)]: true,
-			[unprotectString(parts[2]._id)]: true,
-			[unprotectString(parts[3]._id)]: true,
-			[unprotectString(parts[4]._id)]: true,
-		})
+		expect(result).toEqual({})
 	})
 
 	it('Returns no parts when QuickLoop Part Markers are in the wrong order', () => {

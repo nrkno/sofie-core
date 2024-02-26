@@ -41,7 +41,7 @@ export interface ContentCache {
 
 export function createReactiveContentCache(): ContentCache {
 	const cache: ContentCache = {
-		Studios: new ReactiveCacheCollection<Pick<DBStudio, StudioFields>>('rundownPlaylists'),
+		Studios: new ReactiveCacheCollection<Pick<DBStudio, StudioFields>>('studios'),
 		Segments: new ReactiveCacheCollection<Pick<DBSegment, SegmentFields>>('segments'),
 		Parts: new ReactiveCacheCollection<Omit<DBPart, PartOmitedFields>>('parts'),
 		RundownPlaylists: new ReactiveCacheCollection<RundownPlaylistCompact>('rundownPlaylists'),
