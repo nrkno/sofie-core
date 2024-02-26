@@ -31,7 +31,7 @@ function watchWorker() {
 function watchMeteor() {
 	return [
 		{
-			command: "meteor yarn watch-types --preserveWatchOutput",
+			command: "yarn watch-types --preserveWatchOutput",
 			cwd: "meteor",
 			name: "METEOR-TSC",
 			prefixColor: "blue",
@@ -57,7 +57,7 @@ function hr() {
 try {
 	// Note: This scricpt assumes that install-and-build.mjs has been run before
 
-	
+
 
 	// The main watching execution
 	console.log(hr());
