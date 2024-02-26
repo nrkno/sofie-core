@@ -14,9 +14,7 @@ import {
 	ABSessionAssignments,
 	ABSessionInfo,
 	DBRundownPlaylist,
-	ForceQuickLoopAutoNext,
 	QuickLoopMarker,
-	QuickLoopMarkerType,
 	RundownHoldState,
 	SelectedPartInstance,
 } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
@@ -40,11 +38,7 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { PlaylistLock } from '../../../jobs/lock'
 import { logger } from '../../../logging'
 import { clone, getRandomId, literal, normalizeArrayToMapFunc, sleep } from '@sofie-automation/corelib/dist/lib'
-import {
-	MarkerPosition,
-	compareMarkerPositions,
-	sortRundownIDsInPlaylist,
-} from '@sofie-automation/corelib/dist/playout/playlist'
+import { sortRundownIDsInPlaylist } from '@sofie-automation/corelib/dist/playout/playlist'
 import { PlayoutRundownModel } from '../PlayoutRundownModel'
 import { PlayoutRundownModelImpl } from './PlayoutRundownModelImpl'
 import { PlayoutSegmentModel } from '../PlayoutSegmentModel'
@@ -62,9 +56,7 @@ import { ExpectedPackageDBFromStudioBaselineObjects } from '@sofie-automation/co
 import { ExpectedPlayoutItemStudio } from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'
 import { StudioBaselineHelper } from '../../../studio/model/StudioBaselineHelper'
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
-import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
-import { DEFAULT_FALLBACK_PART_DURATION } from '@sofie-automation/shared-lib/dist/core/constants'
+import { QuickLoopService } from '../services/QuickLoopService'
 
 export class PlayoutModelReadonlyImpl implements PlayoutModelReadonly {
 	public readonly playlistId: RundownPlaylistId
@@ -90,6 +82,8 @@ export class PlayoutModelReadonlyImpl implements PlayoutModelReadonly {
 
 	protected allPartInstances: Map<PartInstanceId, PlayoutPartInstanceModelImpl | null>
 
+	protected quickLoopService: QuickLoopService
+
 	public constructor(
 		protected readonly context: JobContext,
 		playlistLock: PlaylistLock,
@@ -111,6 +105,8 @@ export class PlayoutModelReadonlyImpl implements PlayoutModelReadonly {
 		this.timelineImpl = timeline ?? null
 
 		this.allPartInstances = normalizeArrayToMapFunc(partInstances, (p) => p.partInstance._id)
+
+		this.quickLoopService = new QuickLoopService(context, this)
 	}
 
 	public get olderPartInstances(): PlayoutPartInstanceModel[] {
@@ -300,16 +296,6 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		this.#playlistHasChanged = true
 	}
 
-	clearQuickLoopMarkers(): void {
-		if (!this.playlistImpl.quickLoop || this.playlistImpl.quickLoop.locked) return
-
-		this.playlistImpl.quickLoop.start = undefined
-		this.playlistImpl.quickLoop.end = undefined
-		this.playlistImpl.quickLoop.running = false
-
-		this.#playlistHasChanged = true
-	}
-
 	#fixupPieceInstancesForPartInstance(partInstance: DBPartInstance, pieceInstances: PieceInstance[]): void {
 		for (const pieceInstance of pieceInstances) {
 			// Future: should these be PieceInstance already, or should that be handled here?
@@ -448,177 +434,11 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		this.#playlistHasChanged = true
 	}
 
-	updateQuickLoopState(hasJustSetMarker?: 'start' | 'end'): void {
-		if (this.playlistImpl.quickLoop == null) return
-		const wasLoopRunning = this.playlistImpl.quickLoop.running
-
-		if (
-			this.playlistImpl.quickLoop.end?.type === QuickLoopMarkerType.PART &&
-			this.playlistImpl.quickLoop.end?.overridenId &&
-			this.playlistImpl.quickLoop.end?.id !== this.currentPartInstance?.partInstance.part._id &&
-			this.playlistImpl.quickLoop.end?.id !== this.nextPartInstance?.partInstance.part._id
-		) {
-			this.playlistImpl.quickLoop.end.id = this.playlistImpl.quickLoop.end.overridenId
-			delete this.playlistImpl.quickLoop.end.overridenId
-		}
-
-		let isNextBetweenMarkers = false
-		if (this.playlistImpl.quickLoop.start == null || this.playlistImpl.quickLoop.end == null) {
-			this.playlistImpl.quickLoop.running = false
-		} else {
-			const orderedParts = this.getAllOrderedParts()
-
-			const rundownIds = this.getRundownIds()
-
-			const startPosition = this.findQuickLoopMarkerPosition(
-				this.playlistImpl.quickLoop.start,
-				'start',
-				orderedParts,
-				rundownIds
-			)
-			const endPosition = this.findQuickLoopMarkerPosition(
-				this.playlistImpl.quickLoop.end,
-				'end',
-				orderedParts,
-				rundownIds
-			)
-
-			let isCurrentBetweenMarkers = false
-
-			if (compareMarkerPositions(startPosition, endPosition) < 0) {
-				if (hasJustSetMarker === 'start') {
-					delete this.playlistImpl.quickLoop.end
-				} else if (hasJustSetMarker === 'end') {
-					delete this.playlistImpl.quickLoop.start
-				}
-			} else {
-				const currentPartPosition = this.findPartPosition(this.currentPartInstance, rundownIds)
-				const nextPartPosition = this.findPartPosition(this.nextPartInstance, rundownIds)
-
-				isCurrentBetweenMarkers = currentPartPosition
-					? compareMarkerPositions(startPosition, currentPartPosition) >= 0 &&
-					  compareMarkerPositions(currentPartPosition, endPosition) >= 0
-					: false
-				isNextBetweenMarkers = nextPartPosition
-					? compareMarkerPositions(startPosition, nextPartPosition) >= 0 &&
-					  compareMarkerPositions(nextPartPosition, endPosition) >= 0
-					: false
-
-				if (this.nextPartInstance && isNextBetweenMarkers) {
-					this.updateQuickLoopPartOverrides(this.nextPartInstance, this.playlistImpl.quickLoop.forceAutoNext)
-				}
-			}
-
-			this.playlistImpl.quickLoop.running =
-				this.playlistImpl.quickLoop.start != null &&
-				this.playlistImpl.quickLoop.end != null &&
-				isCurrentBetweenMarkers
-		}
-
-		if (this.currentPartInstance && this.playlistImpl.quickLoop.running) {
-			this.updateQuickLoopPartOverrides(this.currentPartInstance, this.playlistImpl.quickLoop.forceAutoNext)
-		} else if (this.currentPartInstance && wasLoopRunning) {
-			this.revertQuickLoopPartOverrides(this.currentPartInstance)
-		}
-
-		if (this.nextPartInstance && !isNextBetweenMarkers) {
-			this.revertQuickLoopPartOverrides(this.nextPartInstance)
-		}
-
-		if (wasLoopRunning && !this.playlistImpl.quickLoop.running) {
-			// clears the loop markers after leaving the loop, as per the requirements, but perhaps it should be optional
-			delete this.playlistImpl.quickLoop
-		}
-		this.#playlistHasChanged = true
-	}
-
-	private findQuickLoopMarkerPosition(
-		marker: QuickLoopMarker,
-		type: 'start' | 'end',
-		orderedParts: ReadonlyObjectDeep<DBPart>[],
-		rundownIds: RundownId[]
-	): MarkerPosition {
-		let part: ReadonlyObjectDeep<DBPart> | undefined
-		let segment: ReadonlyObjectDeep<DBSegment> | undefined
-		let rundownRank
-		if (marker.type === QuickLoopMarkerType.PART) {
-			const partId = marker.id
-			const partIndex = orderedParts.findIndex((part) => part._id === partId)
-			part = orderedParts[partIndex]
-		}
-		if (marker.type === QuickLoopMarkerType.SEGMENT) {
-			segment = this.findSegment(marker.id)?.segment
-		} else if (part != null) {
-			segment = this.findSegment(part.segmentId)?.segment
-		}
-		if (marker.type === QuickLoopMarkerType.RUNDOWN) {
-			rundownRank = rundownIds.findIndex((id) => id === marker.id)
-		} else if (part ?? segment != null) {
-			rundownRank = rundownIds.findIndex((id) => id === (part ?? segment)?.rundownId)
-		}
-		const fallback = type === 'start' ? -Infinity : Infinity
-		return {
-			partRank: part?._rank ?? fallback,
-			segmentRank: segment?._rank ?? fallback,
-			rundownRank: rundownRank ?? fallback,
-		}
-	}
-
-	private updateQuickLoopPartOverrides(
-		partInstance: PlayoutPartInstanceModel,
-		forceAutoNext: ForceQuickLoopAutoNext
-	): void {
-		const partPropsToUpdate: Partial<DBPart> = {}
-		if (
-			!partInstance.partInstance.part.expectedDuration &&
-			forceAutoNext === ForceQuickLoopAutoNext.ENABLED_FORCING_MIN_DURATION
-		) {
-			partPropsToUpdate.expectedDuration =
-				this.context.studio.settings.fallbackPartDuration ?? DEFAULT_FALLBACK_PART_DURATION
-		}
-		if (
-			(partInstance.partInstance.part.expectedDuration || partPropsToUpdate.expectedDuration) &&
-			forceAutoNext !== ForceQuickLoopAutoNext.DISABLED &&
-			!partInstance.partInstance.part.autoNext
-		) {
-			partPropsToUpdate.autoNext = true
-		}
-		if (Object.keys(partPropsToUpdate).length) {
-			partInstance.overridePartProps(partPropsToUpdate)
-			if (partPropsToUpdate.expectedDuration) partInstance.recalculateExpectedDurationWithPreroll()
-		}
-	}
-
-	private revertQuickLoopPartOverrides(partInstance: PlayoutPartInstanceModel) {
-		const overridenProperties = partInstance.partInstance.part.overridenProperties
-		if (overridenProperties) {
-			partInstance.revertOverridenPartProps()
-			if (overridenProperties.expectedDuration) {
-				partInstance.recalculateExpectedDurationWithPreroll()
-			}
-		}
-	}
-
-	private findPartPosition(
-		partInstance: PlayoutPartInstanceModel | null,
-		rundownIds: RundownId[]
-	): MarkerPosition | undefined {
-		if (partInstance == null) return undefined
-		const currentSegment = this.findSegment(partInstance.partInstance.segmentId)?.segment
-		const currentRundownIndex = rundownIds.findIndex((id) => id === partInstance.partInstance.rundownId)
-
-		return {
-			partRank: partInstance.partInstance.part._rank,
-			segmentRank: currentSegment?._rank ?? 0,
-			rundownRank: currentRundownIndex ?? 0,
-		}
-	}
-
 	deactivatePlaylist(): void {
 		delete this.playlistImpl.activationId
 
 		this.clearSelectedPartInstances()
-		this.clearQuickLoopMarkers()
+		this.playlistImpl.quickLoop = this.quickLoopService.getUpdatedPropsByClearingMarkers()
 
 		this.#playlistHasChanged = true
 	}
@@ -872,30 +692,13 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 	}
 
 	setQuickLoopMarker(type: 'start' | 'end', marker: QuickLoopMarker | null): void {
-		if (this.playlistImpl.quickLoop?.locked) {
-			throw new Error('Looping is locked')
-		}
-		this.playlistImpl.quickLoop = {
-			running: false,
-			locked: false,
-			...this.playlistImpl.quickLoop,
-			forceAutoNext: this.context.studio.settings.forceQuickLoopAutoNext ?? ForceQuickLoopAutoNext.DISABLED,
-		}
-		if (type === 'start') {
-			if (marker == null) {
-				delete this.playlistImpl.quickLoop.start
-			} else {
-				this.playlistImpl.quickLoop.start = marker
-			}
-		} else {
-			if (marker == null) {
-				delete this.playlistImpl.quickLoop.end
-			} else {
-				this.playlistImpl.quickLoop.end = marker
-			}
-		}
+		this.playlistImpl.quickLoop = this.quickLoopService.getUpdatedPropsBySettingAMarker(type, marker)
+		this.playlistImpl.quickLoop = this.quickLoopService.getUpdatedProps(type)
+		this.#playlistHasChanged = true
+	}
 
-		this.updateQuickLoopState(type)
+	updateQuickLoopState(): void {
+		this.playlistImpl.quickLoop = this.quickLoopService.getUpdatedProps()
 		this.#playlistHasChanged = true
 	}
 

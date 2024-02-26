@@ -85,6 +85,20 @@ export enum ForceQuickLoopAutoNext {
 	/** All parts will auto-next. If expected duration is undefined or low, the default display duration will be used */
 	ENABLED_FORCING_MIN_DURATION = 'enabled_forcing_min_duration',
 }
+
+export interface QuickLoopProps {
+	/** The Start marker */
+	start?: QuickLoopMarker
+	/** The End marker */
+	end?: QuickLoopMarker
+	/** Whether the user is allowed to make alterations to the Start/End markers */
+	locked: boolean
+	/** Whether the loop has two valid markers and is currently running (the current Part is within the loop) */
+	running: boolean
+	/** Whether the loop has autoNext should force auto-next on contained Parts */
+	forceAutoNext: ForceQuickLoopAutoNext
+}
+
 export interface DBRundownPlaylist {
 	_id: RundownPlaylistId
 	/** External ID (source) of the playlist */
@@ -136,18 +150,7 @@ export interface DBRundownPlaylist {
 	 */
 	queuedSegmentId?: SegmentId
 
-	quickLoop?: {
-		/** The Start marker */
-		start?: QuickLoopMarker
-		/** The End marker */
-		end?: QuickLoopMarker
-		/** Whether the user is allowed to make alterations to the Start/End markers */
-		locked: boolean
-		/** Whether the loop has two valid markers and is currently running (the current Part is within the loop) */
-		running: boolean
-		/** Whether the loop has autoNext should force auto-next on contained Parts */
-		forceAutoNext: ForceQuickLoopAutoNext
-	}
+	quickLoop?: QuickLoopProps
 
 	/** Actual time of playback starting */
 	startedPlayback?: Time
