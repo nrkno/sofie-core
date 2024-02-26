@@ -28,8 +28,7 @@ export async function handleSetQuickLoopMarker(context: JobContext, data: SetQui
 					playoutModel.nextPartInstance?.partInstance ?? null,
 					playoutModel.getAllOrderedSegments(),
 					playoutModel.getAllOrderedParts(),
-					false,
-					false
+					{ ignoreUnplayable: true, ignoreQuickLoop: false }
 				)
 				if (nextPart?.part._id !== playoutModel.nextPartInstance?.partInstance.part._id) {
 					await setNextPart(context, playoutModel, nextPart, false)

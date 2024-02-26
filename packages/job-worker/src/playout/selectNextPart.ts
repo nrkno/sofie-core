@@ -42,8 +42,7 @@ export function selectNextPart(
 	currentlySelectedPartInstance: ReadonlyDeep<DBPartInstance> | null,
 	segments: readonly PlayoutSegmentModel[],
 	parts0: ReadonlyDeep<DBPart>[],
-	ignoreUnplayable: boolean,
-	ignoreQuickLoop: boolean // TODO: this should be refactored
+	options: { ignoreUnplayable: boolean; ignoreQuickLoop: boolean }
 ): SelectNextPartResult | null {
 	const span = context.startSpan('selectNextPart')
 
@@ -66,17 +65,21 @@ export function selectNextPart(
 		// Filter to after and find the first playabale
 		for (let index = offset; index < (length || parts.length); index++) {
 			const part = parts[index]
-			if (
-				(!ignoreUnplayable || isPartPlayable(part)) &&
-				(ignoreQuickLoop ||
-					!rundownPlaylist.quickLoop?.running ||
-					context.studio.settings.forceQuickLoopAutoNext !==
-						ForceQuickLoopAutoNext.ENABLED_WHEN_VALID_DURATION ||
-					isPartPlayableInQuickLoop(part)) &&
-				(!condition || condition(part))
-			) {
-				return { part, index, consumesQueuedSegmentId: false }
+			if (options.ignoreUnplayable && !isPartPlayable(part)) {
+				continue
 			}
+			if (
+				!options.ignoreQuickLoop &&
+				rundownPlaylist.quickLoop?.running &&
+				context.studio.settings.forceQuickLoopAutoNext === ForceQuickLoopAutoNext.ENABLED_WHEN_VALID_DURATION &&
+				!isPartPlayableInQuickLoop(part)
+			) {
+				continue
+			}
+			if (condition && !condition(part)) {
+				continue
+			}
+			return { part, index, consumesQueuedSegmentId: false }
 		}
 		return undefined
 	}
@@ -96,7 +99,7 @@ export function selectNextPart(
 		return undefined
 	}
 
-	if (!ignoreQuickLoop && rundownPlaylist.quickLoop?.running && previousPartInstance) {
+	if (!options.ignoreQuickLoop && rundownPlaylist.quickLoop?.running && previousPartInstance) {
 		const currentIndex = parts.findIndex((p) => p._id === previousPartInstance.part._id)
 		if (
 			rundownPlaylist.quickLoop?.end?.type === QuickLoopMarkerType.PART &&
@@ -190,7 +193,7 @@ export function selectNextPart(
 	}
 
 	if (
-		!ignoreQuickLoop &&
+		!options.ignoreQuickLoop &&
 		rundownPlaylist.quickLoop?.end?.type === QuickLoopMarkerType.PLAYLIST &&
 		!nextPart &&
 		previousPartInstance

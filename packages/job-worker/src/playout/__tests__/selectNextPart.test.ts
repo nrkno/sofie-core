@@ -89,8 +89,7 @@ describe('selectNextPart', () => {
 			currentlySelectedPartInstance,
 			segments,
 			parts,
-			ignoreUnplayable,
-			ignoreQuickLoop
+			{ ignoreUnplayable, ignoreQuickLoop }
 		)
 	}
 

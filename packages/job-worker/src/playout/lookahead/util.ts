@@ -66,8 +66,7 @@ export function getOrderedPartsAfterPlayhead(
 		null,
 		orderedSegments,
 		orderedParts,
-		false,
-		false
+		{ ignoreUnplayable: true, ignoreQuickLoop: false }
 	)
 	if (!nextNextPart) {
 		// We don't know where to begin searching, so we can't do anything

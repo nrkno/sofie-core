@@ -256,8 +256,7 @@ export async function performTakeToNextedPart(
 		null,
 		playoutModel.getAllOrderedSegments(),
 		playoutModel.getAllOrderedParts(),
-		false,
-		false
+		{ ignoreUnplayable: true, ignoreQuickLoop: false }
 	)
 
 	takePartInstance.setTaken(now, timeOffset)

@@ -42,8 +42,7 @@ export async function resetRundownPlaylist(context: JobContext, playoutModel: Pl
 			null,
 			playoutModel.getAllOrderedSegments(),
 			playoutModel.getAllOrderedParts(),
-			false,
-			false
+			{ ignoreUnplayable: true, ignoreQuickLoop: false }
 		)
 		await setNextPart(context, playoutModel, firstPart, false)
 	} else {

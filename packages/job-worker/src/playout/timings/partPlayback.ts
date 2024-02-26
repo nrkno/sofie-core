@@ -92,8 +92,7 @@ export async function onPartPlaybackStarted(
 				null,
 				playoutModel.getAllOrderedSegments(),
 				playoutModel.getAllOrderedParts(),
-				false,
-				false
+				{ ignoreUnplayable: true, ignoreQuickLoop: false }
 			)
 			await setNextPart(context, playoutModel, nextPart, false)
 			playoutModel.updateQuickLoopState()

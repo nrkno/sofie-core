@@ -204,8 +204,10 @@ function updateRankForAdlibbedPartInstance(
 		null,
 		playoutModel.getAllOrderedSegments(),
 		playoutModel.getAllOrderedParts(),
-		false, // We want to insert it before any trailing invalid piece
-		true // We want to insert it at the end of the loop
+		{
+			ignoreUnplayable: false, // We want to insert it before any trailing invalid piece
+			ignoreQuickLoop: true, // We may want to insert it right after the end of the loop
+		}
 	)
 	newPartInstance.setRank(
 		getRank(
