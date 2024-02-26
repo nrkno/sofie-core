@@ -40,7 +40,7 @@ export interface DBPart extends IBlueprintPart {
 	 * Original values of properties overriden by some features.
 	 * Currently this only supports the QuickLoop
 	 */
-	overridenProperties?: Partial<NullableProps<IBlueprintPart>>
+	overridenProperties?: Partial<NullableProps<DBPart>>
 }
 
 export function isPartPlayable(part: Pick<ReadonlyDeep<DBPart>, 'invalid' | 'floated'>): boolean {

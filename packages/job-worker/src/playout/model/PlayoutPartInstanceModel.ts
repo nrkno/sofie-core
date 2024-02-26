@@ -6,6 +6,7 @@ import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { IBlueprintMutatablePart, PieceLifespan, Time } from '@sofie-automation/blueprints-integration'
 import { PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { PlayoutPieceInstanceModel } from './PlayoutPieceInstanceModel'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 
 /**
  * Token returned when making a backup copy of a PlayoutPartInstanceModel
@@ -214,7 +215,7 @@ export interface PlayoutPartInstanceModel {
 	 * @param props New properties for the Part being wrapped
 	 * @returns True if any valid properties were provided
 	 */
-	overridePartProps(props: Partial<IBlueprintMutatablePart>): boolean
+	overridePartProps(props: Partial<DBPart>): boolean
 
 	/**
 	 * Reverts overriden Part props

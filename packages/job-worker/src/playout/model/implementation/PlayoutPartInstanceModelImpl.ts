@@ -17,7 +17,6 @@ import {
 import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import {
 	IBlueprintMutatablePart,
-	IBlueprintPart,
 	IBlueprintPieceType,
 	PieceLifespan,
 	Time,
@@ -523,9 +522,8 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		return true
 	}
 
-	overridePartProps(props: Partial<IBlueprintPart>): boolean {
-		const trimmedProps: Partial<IBlueprintPart> = filterPropsToAllowed(props)
-		const keys = Object.keys(trimmedProps) as Array<keyof Partial<IBlueprintPart>>
+	overridePartProps(props: Partial<DBPart>): boolean {
+		const keys = Object.keys(props) as Array<keyof Partial<DBPart>>
 		if (keys.length === 0) return false
 
 		const overridenProperties: DBPart['overridenProperties'] = _.pick(this.partInstanceImpl.part, keys)
@@ -539,7 +537,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 			'part',
 			{
 				...this.partInstanceImpl.part,
-				...trimmedProps,
+				...props,
 				overridenProperties,
 			},
 			true

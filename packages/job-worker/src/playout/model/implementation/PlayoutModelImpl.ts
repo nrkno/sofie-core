@@ -64,7 +64,6 @@ import { StudioBaselineHelper } from '../../../studio/model/StudioBaselineHelper
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
-import { IBlueprintMutatablePart } from '@sofie-automation/blueprints-integration'
 import { DEFAULT_FALLBACK_PART_DURATION } from '@sofie-automation/shared-lib/dist/core/constants'
 
 export class PlayoutModelReadonlyImpl implements PlayoutModelReadonly {
@@ -569,7 +568,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		partInstance: PlayoutPartInstanceModel,
 		forceAutoNext: ForceQuickLoopAutoNext
 	): void {
-		const partPropsToUpdate: Partial<IBlueprintMutatablePart> = {}
+		const partPropsToUpdate: Partial<DBPart> = {}
 		if (
 			!partInstance.partInstance.part.expectedDuration &&
 			forceAutoNext === ForceQuickLoopAutoNext.ENABLED_FORCING_MIN_DURATION
