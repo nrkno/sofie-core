@@ -8,6 +8,7 @@ import {
 	BucketId,
 	ExpectedPackageId,
 	PieceId,
+	PieceInstanceId,
 	RundownBaselineAdLibActionId,
 	RundownId,
 	SegmentId,
@@ -134,6 +135,7 @@ export function getExpectedPackageId(
 	/** _id of the owner (the piece, adlib etc..) */
 	ownerId:
 		| PieceId
+		| PieceInstanceId
 		| AdLibActionId
 		| RundownBaselineAdLibActionId
 		| BucketAdLibId
