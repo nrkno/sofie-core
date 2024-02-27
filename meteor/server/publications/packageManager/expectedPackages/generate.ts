@@ -1,6 +1,11 @@
 import { PackageContainerOnPackage, Accessor, AccessorOnPackage } from '@sofie-automation/blueprints-integration'
-import { getContentVersionHash } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import { PeripheralDeviceId, ExpectedPackageId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { getContentVersionHash, getExpectedPackageId } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import {
+	PeripheralDeviceId,
+	ExpectedPackageId,
+	PieceInstanceId,
+	PieceId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import {
 	PackageManagerExpectedPackage,
@@ -115,7 +120,10 @@ export async function updateCollectionForPieceInstanceIds(
 		if (!pieceInstanceDoc.piece?.expectedPackages) continue
 
 		pieceInstanceDoc.piece.expectedPackages.forEach((expectedPackage, i) => {
-			const sanitisedPackageId = expectedPackage._id || '__unnamed' + i
+			const sanitisedPackageId = getExpectedPackageId(
+				protectString<PieceId>(unprotectString(pieceInstanceId)),
+				expectedPackage._id || '__unnamed' + i
+			)
 
 			// Map the expectedPackages onto their specified layer:
 			const allDeviceIds = new Set<PeripheralDeviceId>()
@@ -134,7 +142,7 @@ export async function updateCollectionForPieceInstanceIds(
 					studio,
 					{
 						...expectedPackage,
-						_id: `${pieceInstanceId}_${sanitisedPackageId}`,
+						_id: unprotectString(sanitisedPackageId),
 						rundownId: pieceInstanceDoc.rundownId,
 						contentVersionHash: getContentVersionHash(expectedPackage),
 					},
