@@ -26,9 +26,11 @@ import {
 	ExpectedPackageWorkStatuses,
 	ExternalMessageQueue,
 	PackageContainerStatuses,
+	PackageInfos,
 	PeripheralDevices,
 	Studios,
 } from '../collections'
+import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 
 meteorPublish(PubSub.studios, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.organizationId<DBStudio>(this.userId, selector0, token)
@@ -85,6 +87,16 @@ meteorPublish(PubSub.packageContainerStatuses, async function (selector, token) 
 	}
 	if (await StudioReadAccess.studioContent(selector.studioId, { userId: this.userId, token })) {
 		return PackageContainerStatuses.findWithCursor(selector, modifier)
+	}
+	return null
+})
+meteorPublish(PubSub.packageInfos, async function (deviceId, token) {
+	if (!deviceId) throw new Meteor.Error(400, 'deviceId argument missing')
+	const modifier: FindOptions<PackageInfoDB> = {
+		fields: {},
+	}
+	if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
+		return PackageInfos.findWithCursor({ deviceId }, modifier)
 	}
 	return null
 })
