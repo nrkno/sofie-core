@@ -5,6 +5,7 @@ import { IAdLibListItem } from '../../../client/ui/Shelf/AdLibListItem'
 import { BucketAdLibItem } from '../../../client/ui/Shelf/RundownViewBuckets'
 import { Bucket } from '../../collections/Buckets'
 import {
+	BucketId,
 	PartId,
 	PartInstanceId,
 	PieceId,
@@ -44,6 +45,9 @@ export enum RundownViewEvents {
 	CREATE_BUCKET = 'createBucket',
 
 	CREATE_SNAPSHOT_FOR_DEBUG = 'createSnapshotForDebug',
+
+	TOGGLE_SHELF_DROPZONE = 'toggleShelfDropzone',
+	ITEM_DROPPED = 'itemDropped',
 }
 
 export interface IEventContext {
@@ -110,6 +114,19 @@ export interface TriggerActionEvent extends IEventContext {
 	actionId: TriggeredActionId
 }
 
+export interface ToggleShelfDropzoneEvent extends IEventContext {
+	display: boolean
+	id: string
+}
+
+export interface ItemDroppedEvent extends IEventContext {
+	id: string
+	message?: string
+	error?: string
+	bucketId: BucketId
+	ev: any
+}
+
 class RundownViewEventBus0 extends EventEmitter {
 	emit(event: RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, e: ActivateRundownPlaylistEvent): boolean
 	emit(event: RundownViewEvents.DEACTIVATE_RUNDOWN_PLAYLIST, e: DeactivateRundownPlaylistEvent): boolean
@@ -137,6 +154,8 @@ class RundownViewEventBus0 extends EventEmitter {
 	emit(event: RundownViewEvents.DELETE_BUCKET_ADLIB, e: BucketAdLibEvent): boolean
 	emit(event: RundownViewEvents.RENAME_BUCKET_ADLIB, e: BucketAdLibEvent): boolean
 	emit(event: RundownViewEvents.CREATE_SNAPSHOT_FOR_DEBUG, e: BaseEvent): boolean
+	emit(event: RundownViewEvents.TOGGLE_SHELF_DROPZONE, e: ToggleShelfDropzoneEvent): boolean
+	emit(event: RundownViewEvents.ITEM_DROPPED, e: ItemDroppedEvent): boolean
 	emit(event: string, ...args: any[]) {
 		return super.emit(event, ...args)
 	}
@@ -170,6 +189,8 @@ class RundownViewEventBus0 extends EventEmitter {
 	on(event: RundownViewEvents.DELETE_BUCKET_ADLIB, listener: (e: BucketAdLibEvent) => void): this
 	on(event: RundownViewEvents.RENAME_BUCKET_ADLIB, listener: (e: BucketAdLibEvent) => void): this
 	on(event: RundownViewEvents.CREATE_SNAPSHOT_FOR_DEBUG, listener: (e: BaseEvent) => void): this
+	on(event: RundownViewEvents.TOGGLE_SHELF_DROPZONE, listener: (e: ToggleShelfDropzoneEvent) => void): this
+	on(event: RundownViewEvents.ITEM_DROPPED, listener: (e: ItemDroppedEvent) => void): this
 	on(event: string, listener: (...args: any[]) => void) {
 		return super.on(event, listener)
 	}
