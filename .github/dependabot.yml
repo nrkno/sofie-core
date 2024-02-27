@@ -1,12 +1,17 @@
 version: 2
 updates:
-  # # Enable version updates for npm
-  # - package-ecosystem: "npm"
-  #   # Look for `package.json` and `lock` files in the `root` directory
-  #   directory: "/"
-  #   # Check the npm registry for updates every day (weekdays)
-  #   schedule:
-  #     interval: "daily"
+  # Enable version updates for npm
+  - package-ecosystem: "npm"
+    # Look for `package.json` and `lock` files in the `root` directory
+    directory: "/"
+    # Check the npm registry for updates every day (weekdays)
+    schedule:
+      interval: "daily"
+    # Only create security updates
+    open-pull-requests-limit: 0
+    # Default reviewers
+    reviewers:
+      - "@nrkno/sofieteam"
 
   - package-ecosystem: "github-actions"
     # Workflow files stored in the
@@ -16,17 +21,3 @@ updates:
       interval: "weekly"
     reviewers:
       - "@nrkno/sofie-ops"
-      
-  # # Enable version updates for Docker
-  # - package-ecosystem: "docker"
-  #   directory: "/meteor"
-  #   schedule:
-  #     interval: "weekly"
-  # - package-ecosystem: "docker"
-  #   directory: "/packages/mos-gateway"
-  #   schedule:
-  #     interval: "weekly"
-  # - package-ecosystem: "docker"
-  #   directory: "/packages/playout-gateway"
-  #   schedule:
-  #     interval: "weekly"
