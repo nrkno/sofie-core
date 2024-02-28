@@ -528,31 +528,25 @@ async function checkPieceContentExpectedPackageStatus(
 					if (!thumbnailUrl) {
 						const sideEffect = getSideEffect(expectedPackage, studio)
 
-						const packageThumbnailPath = sideEffect.thumbnailPackageSettings?.path
-						const thumbnailContainerId = sideEffect.thumbnailContainerId
-						if (packageThumbnailPath && thumbnailContainerId) {
-							thumbnailUrl = getAssetUrlFromExpectedPackages(
-								packageThumbnailPath,
-								thumbnailContainerId,
-								studio,
-								packageOnPackageContainer
-							)
-						}
+						thumbnailUrl = await getAssetUrlFromPackageContainerStatus(
+							studio,
+							getPackageContainerPackageStatus,
+							expectedPackageId,
+							sideEffect.thumbnailContainerId,
+							sideEffect.thumbnailPackageSettings?.path
+						)
 					}
 
 					if (!previewUrl) {
 						const sideEffect = getSideEffect(expectedPackage, studio)
 
-						const packagePreviewPath = sideEffect.previewPackageSettings?.path
-						const previewContainerId = sideEffect.previewContainerId
-						if (packagePreviewPath && previewContainerId) {
-							previewUrl = getAssetUrlFromExpectedPackages(
-								packagePreviewPath,
-								previewContainerId,
-								studio,
-								packageOnPackageContainer
-							)
-						}
+						previewUrl = await getAssetUrlFromPackageContainerStatus(
+							studio,
+							getPackageContainerPackageStatus,
+							expectedPackageId,
+							sideEffect.previewContainerId,
+							sideEffect.previewPackageSettings?.path
+						)
 					}
 
 					warningMessage = getPackageWarningMessage(packageOnPackageContainer, sourceLayer)
@@ -678,15 +672,32 @@ async function checkPieceContentExpectedPackageStatus(
 	}
 }
 
+async function getAssetUrlFromPackageContainerStatus(
+	studio: PieceContentStatusStudio,
+	getPackageContainerPackageStatus: (
+		packageContainerId: string,
+		expectedPackageId: ExpectedPackageId
+	) => Promise<PackageContainerPackageStatusLight | undefined>,
+	expectedPackageId: ExpectedPackageId,
+	assetContainerId: string | null | undefined,
+	packageAssetPath: string | undefined
+): Promise<string | undefined> {
+	if (!assetContainerId || !packageAssetPath) return
+
+	const assetPackageContainer = studio.packageContainers[assetContainerId]
+	if (!assetPackageContainer) return
+
+	const previewPackageOnPackageContainer = await getPackageContainerPackageStatus(assetContainerId, expectedPackageId)
+	if (!previewPackageOnPackageContainer) return
+
+	return getAssetUrlFromExpectedPackages(packageAssetPath, assetPackageContainer, previewPackageOnPackageContainer)
+}
+
 function getAssetUrlFromExpectedPackages(
 	assetPath: string,
-	assetContainerId: string,
-	studio: PieceContentStatusStudio,
+	packageContainer: StudioPackageContainer,
 	packageOnPackageContainer: Pick<PackageContainerPackageStatusDB, 'status'>
 ): string | undefined {
-	const packageContainer = studio.packageContainers[assetContainerId]
-	if (!packageContainer) return
-
 	if (packageOnPackageContainer.status.status !== ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.READY)
 		return
 
