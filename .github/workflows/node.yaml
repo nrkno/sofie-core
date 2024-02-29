@@ -550,6 +550,34 @@ jobs:
           yarn genserver
         env:
           CI: true
+  openapi-generation:
+    name: OpenAPI Generation
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".node-version"
+      - name: Prepare Environment
+        run: |
+          cd packages
+          yarn
+        env:
+          CI: true
+      - name: Run generator
+        run: |
+          cd packages/openapi
+
+          yarn gendocs
+          yarn genserver
+          yarn genclient:ts
+        env:
+          CI: true
 
   publish-docs:
     name: Publish Docs
