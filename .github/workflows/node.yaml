@@ -523,6 +523,34 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
+  asyncapi-generation:
+    name: AsyncAPI Generation
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".node-version"
+      - name: Prepare Environment
+        run: |
+          cd packages
+          yarn
+        env:
+          CI: true
+      - name: Run generator
+        run: |
+          cd packages/live-status-gateway
+
+          yarn gendocs
+          yarn genserver
+        env:
+          CI: true
+
   publish-docs:
     name: Publish Docs
     runs-on: ubuntu-latest
