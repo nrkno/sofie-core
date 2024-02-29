@@ -89,7 +89,7 @@ $defs:
     oneOf:
       - $ref: '#/$defs/subscriptionStatusError'
       - $ref: '#/$defs/subscriptionStatusSuccess'
-    additionalProperties: false
+    # additionalProperties: false
     examples:
       - $ref: '#/$defs/subscriptionStatusCommon/examples/0'
   subscriptionStatusError:

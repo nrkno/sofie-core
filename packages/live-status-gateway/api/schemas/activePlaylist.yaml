@@ -68,7 +68,7 @@ $defs:
       publicData:
         description: Optional arbitrary data
     required: [id, name, segmentId, pieces]
-    additionalProperties: false
+    # additionalProperties: false
     examples:
       - id: 'H5CBGYjThrMSmaYvRaa5FVKJIzk_'
         name: 'Intro'
