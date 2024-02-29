@@ -38,6 +38,7 @@ export interface UIPieceContentStatus {
 	segmentId: SegmentId | undefined
 
 	pieceId: PieceId | AdLibActionId | RundownBaselineAdLibActionId | PieceInstanceId
+	isPieceInstance: boolean
 
 	name: string | ITranslatableMessage
 	segmentName: string | undefined
