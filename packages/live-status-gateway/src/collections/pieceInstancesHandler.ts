@@ -82,12 +82,13 @@ export class PieceInstancesHandler
 		}
 		if (
 			!areElementsShallowEqual(this._collectionData.currentPartInstance, inCurrentPartInstance) &&
-			this._collectionData.currentPartInstance.some((pieceInstance, index) => {
-				return !arePropertiesShallowEqual<PieceInstance>(inCurrentPartInstance[index], pieceInstance, [
-					'reportedStartedPlayback',
-					'reportedStoppedPlayback',
-				])
-			})
+			(this._collectionData.currentPartInstance.length !== inCurrentPartInstance.length ||
+				this._collectionData.currentPartInstance.some((pieceInstance, index) => {
+					return !arePropertiesShallowEqual<PieceInstance>(inCurrentPartInstance[index], pieceInstance, [
+						'reportedStartedPlayback',
+						'reportedStoppedPlayback',
+					])
+				}))
 		) {
 			this._collectionData.currentPartInstance = inCurrentPartInstance
 			hasAnythingChanged = true
@@ -153,18 +154,26 @@ export class PieceInstancesHandler
 					void this.changed(id, 'removed').catch(this._logger.error)
 				}
 
-				const hasAnythingChanged = this.updateCollectionData()
-				if (hasAnythingChanged) {
-					await this.notify(this._collectionData)
-				}
+				await this.updateAndNotify()
 			} else if (this._subscriptionId) {
-				// nothing relevant has changed
+				await this.updateAndNotify()
 			} else {
-				this.clearCollectionData()
-				await this.notify(this._collectionData)
+				await this.clearAndNotify()
 			}
 		} else {
 			this.clearCollectionData()
+			await this.notify(this._collectionData)
+		}
+	}
+
+	private async clearAndNotify() {
+		this.clearCollectionData()
+		await this.notify(this._collectionData)
+	}
+
+	private async updateAndNotify() {
+		const hasAnythingChanged = this.updateCollectionData()
+		if (hasAnythingChanged) {
 			await this.notify(this._collectionData)
 		}
 	}
@@ -187,7 +196,7 @@ export function arePropertiesShallowEqual<T extends Record<string, any>>(
 	b: T,
 	omitProperties: Array<keyof T>
 ): boolean {
-	if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) {
+	if (typeof a !== 'object' || a == null || typeof b !== 'object' || b == null) {
 		return false
 	}
 
