@@ -6,6 +6,7 @@ import {
 	adLibPieceFieldSpecifier,
 	ContentCache,
 	partFieldSpecifier,
+	partInstanceFieldSpecifier,
 	pieceFieldSpecifier,
 	pieceInstanceFieldSpecifier,
 	rundownFieldSpecifier,
@@ -17,6 +18,7 @@ import {
 import {
 	AdLibActions,
 	AdLibPieces,
+	PartInstances,
 	Parts,
 	PieceInstances,
 	Pieces,
@@ -136,6 +138,18 @@ export class RundownContentObserver {
 				cache.Pieces.link(),
 				{
 					projection: pieceFieldSpecifier,
+				}
+			),
+			PartInstances.observeChanges(
+				{
+					rundownId: {
+						$in: rundownIds,
+					},
+					reset: { $ne: true },
+				},
+				cache.PartInstances.link(),
+				{
+					projection: partInstanceFieldSpecifier,
 				}
 			),
 			PieceInstances.observeChanges(

@@ -4,6 +4,7 @@ import {
 	ExpectedPackageId,
 	PackageContainerPackageId,
 	PartId,
+	PartInstanceId,
 	PieceId,
 	PieceInstanceId,
 	RundownBaselineAdLibActionId,
@@ -33,7 +34,7 @@ import { logger } from '../../../logging'
 import { resolveCredentials } from '../../../security/lib/credentials'
 import { NoSecurityReadAccess } from '../../../security/noSecurity'
 import { RundownPlaylistReadAccess } from '../../../security/rundownPlaylist'
-import { ContentCache, createReactiveContentCache } from './reactiveContentCache'
+import { ContentCache, PartInstanceFields, createReactiveContentCache } from './reactiveContentCache'
 import { RundownContentObserver } from './rundownContentObserver'
 import { RundownsObserver } from '../../lib/rundownsObserver'
 import { LiveQueryHandle } from '../../../lib/lib'
@@ -57,6 +58,7 @@ import {
 } from './regenerateItems'
 import { PieceContentStatusStudio } from '../checkPieceContentStatus'
 import { check, Match } from 'meteor/check'
+import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 
 interface UIPieceContentStatusesArgs {
 	readonly rundownPlaylistId: RundownPlaylistId
@@ -80,6 +82,7 @@ interface UIPieceContentStatusesUpdateProps extends IContentStatusesUpdatePropsB
 
 	updatedSegmentIds: SegmentId[]
 	updatedPartIds: PartId[]
+	updatedPartInstanceIds: PartInstanceId[]
 
 	updatedPieceIds: PieceId[]
 	updatedPieceInstanceIds: PieceInstanceId[]
@@ -137,12 +140,17 @@ async function setupUIPieceContentStatusesPublicationObservers(
 			contentCache.Parts.find({}).observeChanges({
 				added: (id) => triggerUpdate({ updatedPartIds: [protectString(id)] }),
 				changed: (id) => triggerUpdate({ updatedPartIds: [protectString(id)] }),
-				removed: (id) => triggerUpdate({ updatedSegmentIds: [protectString(id)] }),
+				removed: (id) => triggerUpdate({ updatedPartIds: [protectString(id)] }),
 			}),
 			contentCache.Pieces.find({}).observeChanges({
 				added: (id) => triggerUpdate({ updatedPieceIds: [protectString(id)] }),
 				changed: (id) => triggerUpdate({ updatedPieceIds: [protectString(id)] }),
 				removed: (id) => triggerUpdate({ updatedPieceIds: [protectString(id)] }),
+			}),
+			contentCache.PartInstances.find({}).observeChanges({
+				added: (id) => triggerUpdate({ updatedPartInstanceIds: [protectString(id)] }),
+				changed: (id) => triggerUpdate({ updatedPartInstanceIds: [protectString(id)] }),
+				removed: (id) => triggerUpdate({ updatedPartInstanceIds: [protectString(id)] }),
 			}),
 			contentCache.PieceInstances.find({}).observeChanges({
 				added: (id) => triggerUpdate({ updatedPieceInstanceIds: [protectString(id)] }),
@@ -292,7 +300,8 @@ async function manipulateUIPieceContentStatusesPublicationData(
 		state.contentCache,
 		collection,
 		new Set(updateProps?.updatedSegmentIds),
-		new Set(updateProps?.updatedPartIds)
+		new Set(updateProps?.updatedPartIds),
+		new Set(updateProps?.updatedPartInstanceIds)
 	)
 
 	let regeneratePieceIds: Set<PieceId>
@@ -414,18 +423,35 @@ function updatePartAndSegmentInfoForExistingDocs(
 	contentCache: ReadonlyDeep<ContentCache>,
 	collection: CustomPublishCollection<UIPieceContentStatus>,
 	updatedSegmentIds: Set<SegmentId>,
-	updatedPartIds: Set<PartId>
+	updatedPartIds: Set<PartId>,
+	updatedPartInstanceIds: Set<PartInstanceId>
 ) {
+	const updatedPartInstancesByPartId = new Map<PartId, Pick<DBPartInstance, PartInstanceFields>>()
+	for (const partInstanceId of updatedPartInstanceIds) {
+		const partInstance = contentCache.PartInstances.findOne(partInstanceId)
+		if (partInstance) updatedPartInstancesByPartId.set(partInstance.part._id, partInstance)
+	}
+
 	collection.updateAll((doc) => {
 		let changed = false
 
 		// If the part for this doc changed, update its part.
 		// Note: if the segment of the doc's part changes that will only be noticed here
-		if (doc.partId && updatedPartIds.has(doc.partId)) {
+		if (doc.partId && !doc.isPieceInstance && updatedPartIds.has(doc.partId)) {
 			const part = contentCache.Parts.findOne(doc.partId)
 			if (part && (part.segmentId !== doc.segmentId || part._rank !== doc.partRank)) {
 				doc.segmentId = part.segmentId
 				doc.partRank = part._rank
+				changed = true
+			}
+		} else if (doc.partId && doc.isPieceInstance) {
+			const newPartProps = updatedPartInstancesByPartId.get(doc.partId)
+			if (
+				newPartProps &&
+				(newPartProps.segmentId !== doc.segmentId || newPartProps.part._rank !== doc.partRank)
+			) {
+				doc.segmentId = newPartProps.segmentId
+				doc.partRank = newPartProps.part._rank
 				changed = true
 			}
 		}

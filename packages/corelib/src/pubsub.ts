@@ -43,6 +43,7 @@ import {
 	SegmentPlayoutId,
 	ShowStyleVariantId,
 } from './dataModel/Ids'
+import { PackageInfoDB } from '@sofie-automation/corelib/src/dataModel/PackageInfos'
 
 /**
  * Ids of possible DDP subscriptions for any the UI and gateways accessing the Rundown & RundownPlaylist model.
@@ -186,6 +187,11 @@ export enum CorelibPubSub {
 	 * Fetch all the PeripheralDevices and sub-devices for the specified Studio
 	 */
 	peripheralDevicesAndSubDevices = 'peripheralDevicesAndSubDevices',
+
+	/**
+	 * Fetch all the PackageInfos owned by a PeripheralDevice
+	 */
+	packageInfos = 'packageInfos',
 }
 
 /**
@@ -327,6 +333,7 @@ export interface CorelibPubSubTypes {
 		studioIds: StudioId[],
 		token?: string
 	) => CollectionName.PackageContainerStatuses
+	[CorelibPubSub.packageInfos]: (deviceId: PeripheralDeviceId, token?: string) => PackageInfoDB
 }
 
 export type CorelibPubSubCollections = {

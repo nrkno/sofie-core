@@ -13,6 +13,7 @@ import { deepFreeze } from '@sofie-automation/corelib/dist/lib'
 import _ from 'underscore'
 import { useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { UIBucketContentStatus, UIPieceContentStatus } from '../../../lib/api/rundownNotifications'
 
 type AnyPiece = {
 	piece?: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | BucketAdLibActionUi | undefined
@@ -51,6 +52,35 @@ function unwrapPieceInstance(piece: BucketAdLibUi | IAdLibListItem | AdLibPieceU
 	}
 }
 
+function getStatusDocForPiece(
+	piece: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | BucketAdLibActionUi
+): UIPieceContentStatus | UIBucketContentStatus | undefined {
+	const pieceUnwrapped = unwrapPieceInstance(piece)
+
+	// Bucket items use a different collection
+	if (RundownUtils.isBucketAdLibItem(piece)) {
+		return UIBucketContentStatuses.findOne({
+			bucketId: piece.bucketId,
+			docId: pieceUnwrapped._id,
+		})
+	}
+
+	// PieceInstance's might have a dedicated status
+	if (RundownUtils.isPieceInstance(piece)) {
+		const status = UIPieceContentStatuses.findOne({
+			// Future: It would be good for this to be stricter.
+			pieceId: piece.instance._id,
+		})
+		if (status) return status
+	}
+
+	// Fallback to using the one from the source piece
+	return UIPieceContentStatuses.findOne({
+		// Future: It would be good for this to be stricter.
+		pieceId: pieceUnwrapped._id,
+	})
+}
+
 /**
  * @deprecated This can now be achieved by a simple minimongo query against either UIPieceContentStatuses or UIBucketContentStatuses
  */
@@ -81,19 +111,8 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 
 				// Check item status
 				if (piece && (piece.sourceLayer || layer) && studio) {
-					const pieceUnwrapped = unwrapPieceInstance(piece)
-					const statusDoc = RundownUtils.isBucketAdLibItem(piece)
-						? UIBucketContentStatuses.findOne({
-								bucketId: piece.bucketId,
-								docId: pieceUnwrapped._id,
-						  })
-						: UIPieceContentStatuses.findOne({
-								// Future: It would be good for this to be stricter.
-								pieceId: pieceUnwrapped._id,
-						  })
-
 					// Extract the status or populate some default values
-					const statusObj = statusDoc?.status ?? DEFAULT_STATUS
+					const statusObj = getStatusDocForPiece(piece)?.status ?? DEFAULT_STATUS
 
 					if (RundownUtils.isAdLibPieceOrAdLibListItem(piece)) {
 						if (!overrides.piece || !_.isEqual(statusObj, (overrides.piece as AdLibPieceUi).contentStatus)) {
