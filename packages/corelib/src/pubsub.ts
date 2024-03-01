@@ -43,7 +43,7 @@ import {
 	SegmentPlayoutId,
 	ShowStyleVariantId,
 } from './dataModel/Ids'
-import { PackageInfoDB } from '@sofie-automation/corelib/src/dataModel/PackageInfos'
+import { PackageInfoDB } from './dataModel/PackageInfos'
 
 /**
  * Ids of possible DDP subscriptions for any the UI and gateways accessing the Rundown & RundownPlaylist model.
@@ -333,7 +333,7 @@ export interface CorelibPubSubTypes {
 		studioIds: StudioId[],
 		token?: string
 	) => CollectionName.PackageContainerStatuses
-	[CorelibPubSub.packageInfos]: (deviceId: PeripheralDeviceId, token?: string) => PackageInfoDB
+	[CorelibPubSub.packageInfos]: (deviceId: PeripheralDeviceId, token?: string) => CollectionName.PackageInfos
 }
 
 export type CorelibPubSubCollections = {
@@ -349,6 +349,7 @@ export type CorelibPubSubCollections = {
 	[CollectionName.IngestDataCache]: IngestDataCacheObj
 	[CollectionName.PartInstances]: DBPartInstance
 	[CollectionName.PackageContainerStatuses]: PackageContainerStatusDB
+	[CollectionName.PackageInfos]: PackageInfoDB
 	[CollectionName.Parts]: DBPart
 	[CollectionName.PeripheralDevices]: PeripheralDevice
 	[CollectionName.PieceInstances]: PieceInstance

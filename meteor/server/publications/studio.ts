@@ -36,7 +36,6 @@ import {
 	PeripheralDevicePubSub,
 	PeripheralDevicePubSubCollectionsNames,
 } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
-import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 
 meteorPublish(CorelibPubSub.studios, async function (studioIds: StudioId[] | null, token: string | undefined) {
 	check(studioIds, Match.Maybe(Array))
@@ -118,13 +117,11 @@ meteorPublish(
 	}
 )
 
-meteorPublish(CorelibPubSub.packageInfos, async function (deviceId, token) {
+meteorPublish(CorelibPubSub.packageInfos, async function (deviceId: PeripheralDeviceId, token: string | undefined) {
 	if (!deviceId) throw new Meteor.Error(400, 'deviceId argument missing')
-	const modifier: FindOptions<PackageInfoDB> = {
-		fields: {},
-	}
+
 	if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
-		return PackageInfos.findWithCursor({ deviceId }, modifier)
+		return PackageInfos.findWithCursor({ deviceId })
 	}
 	return null
 })
