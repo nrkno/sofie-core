@@ -63,9 +63,7 @@ export interface PlayoutRundownModel {
 	 */
 	getScratchpadSegment(): PlayoutSegmentModel | undefined
 	/**
-	 * Set the rank of the Scratchpad Segment in this Rundown
-	 * Throws if the segment does not exists
-	 * @param rank New rank
+	 * Update the rank of the Scratchpad Segment in this Rundown, if it exists
 	 */
-	setScratchpadSegmentRank(rank: number): void
+	updateScratchpadSegmentRank(): void
 }

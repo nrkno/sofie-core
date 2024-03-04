@@ -729,16 +729,6 @@ async function removeSegments(
 
 async function validateScratchpad(_context: JobContext, playoutModel: PlayoutModel) {
 	for (const rundown of playoutModel.rundowns) {
-		const scratchpadSegment = rundown.getScratchpadSegment()
-
-		if (scratchpadSegment) {
-			// Ensure the _rank is just before the real content
-			const otherSegmentsInRundown = rundown.segments.filter(
-				(s) => s.segment.orphaned !== SegmentOrphanedReason.SCRATCHPAD
-			)
-			const minNormalRank = Math.min(0, ...otherSegmentsInRundown.map((s) => s.segment._rank))
-
-			rundown.setScratchpadSegmentRank(minNormalRank - 1)
-		}
+		rundown.updateScratchpadSegmentRank()
 	}
 }

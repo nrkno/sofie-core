@@ -67,14 +67,12 @@ export class PlayoutRundownModelImpl implements PlayoutRundownModel {
 		const existingSegment = this.segments.find((s) => s.segment.orphaned === SegmentOrphanedReason.SCRATCHPAD)
 		if (existingSegment) throw UserError.create(UserErrorMessage.ScratchpadAlreadyActive)
 
-		const minSegmentRank = Math.min(0, ...this.segments.map((s) => s.segment._rank))
-
 		const segmentId: SegmentId = getRandomId()
 		this.#segments.unshift(
 			new PlayoutSegmentModelImpl(
 				{
 					_id: segmentId,
-					_rank: minSegmentRank - 1,
+					_rank: calculateRankForScratchpadSegment(this.#segments),
 					externalId: '__scratchpad__',
 					externalModified: getCurrentTime(),
 					rundownId: this.rundown._id,
@@ -105,13 +103,24 @@ export class PlayoutRundownModelImpl implements PlayoutRundownModel {
 		return this.#segments.find((s) => s.segment.orphaned === SegmentOrphanedReason.SCRATCHPAD)
 	}
 
-	setScratchpadSegmentRank(rank: number): void {
+	updateScratchpadSegmentRank(): void {
 		const segment = this.#segments.find((s) => s.segment.orphaned === SegmentOrphanedReason.SCRATCHPAD)
-		if (!segment) throw new Error('Scratchpad segment does not exist!')
+		if (!segment) return
 
-		segment.setScratchpadRank(rank)
+		segment.setScratchpadRank(calculateRankForScratchpadSegment(this.#segments))
 		this.#segments.sort((a, b) => a.segment._rank - b.segment._rank)
 
 		this.#scratchPadSegmentHasChanged = true
 	}
+}
+
+function calculateRankForScratchpadSegment(segments: readonly PlayoutSegmentModel[]) {
+	// Ensure the _rank is just before the real content
+
+	return (
+		Math.min(
+			0,
+			...segments.map((s) => (s.segment.orphaned === SegmentOrphanedReason.SCRATCHPAD ? 0 : s.segment._rank))
+		) - 1
+	)
 }
