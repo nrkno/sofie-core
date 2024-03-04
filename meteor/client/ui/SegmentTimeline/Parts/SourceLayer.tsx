@@ -10,7 +10,6 @@ import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { SourceLayerItemContainer } from '../SourceLayerItemContainer'
 import { contextMenuHoldToDisplayTime } from '../../../lib/lib'
 import { UIStudio } from '../../../../lib/api/studios'
-import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 
 export interface ISourceLayerPropsBase {
 	key: string
@@ -19,7 +18,6 @@ export interface ISourceLayerPropsBase {
 	studio: UIStudio
 	segment: SegmentUi
 	part: PartUi
-	pieces: CalculateTimingsPiece[]
 	startsAt: number
 	duration: number
 	expectedDuration: number
@@ -119,7 +117,6 @@ export function SourceLayer(props: ISourceLayerProps): JSX.Element {
 									layer={props.layer}
 									outputLayer={props.outputLayer}
 									part={props.part}
-									pieces={props.pieces}
 									partStartsAt={props.startsAt}
 									partDuration={props.duration}
 									partExpectedDuration={props.expectedDuration}

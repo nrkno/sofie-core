@@ -8,7 +8,6 @@ import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { SegmentTimelinePartHoverPreview } from './SegmentTimelinePartHoverPreview'
 import RundownViewEventBus, { RundownViewEvents } from '../../../../lib/api/triggers/RundownViewEventBus'
 import { UIStudio } from '../../../../lib/api/studios'
-import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { TimingDataResolution, TimingTickResolution, withTiming } from '../../RundownView/RundownTiming/withTiming'
 import { SegmentTimelinePartClass } from '../Parts/SegmentTimelinePart'
@@ -16,7 +15,6 @@ import { SegmentTimelinePartClass } from '../Parts/SegmentTimelinePart'
 export const SegmentTimelineSmallPartFlag = withTiming<
 	{
 		parts: [PartUi, number, number][]
-		pieces: Map<PartId, CalculateTimingsPiece[]>
 		followingPart: PartUi | undefined
 		firstPartInSegmentId: PartId
 		sourceLayers: {
@@ -54,7 +52,6 @@ export const SegmentTimelineSmallPartFlag = withTiming<
 }))(
 	({
 		parts,
-		pieces,
 		followingPart,
 		sourceLayers,
 		timeToPixelRatio,
@@ -190,7 +187,6 @@ export const SegmentTimelineSmallPartFlag = withTiming<
 					showMiniInspector={isHover}
 					followingPart={followingPart}
 					parts={parts.map(([part]) => part)}
-					pieces={pieces}
 					segment={segment}
 					playlist={playlist}
 					liveLineHistorySize={liveLineHistorySize}

@@ -34,7 +34,6 @@ import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
 import { UIStudio } from '../../../lib/api/studios'
 import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 import { SegmentTimeAnchorTime } from '../RundownView/RundownTiming/SegmentTimeAnchorTime'
 import { logger } from '../../../lib/logging'
 
@@ -45,7 +44,6 @@ interface IProps {
 	playlist: RundownPlaylist
 	studio: UIStudio
 	parts: Array<PartUi>
-	pieces: Map<PartId, CalculateTimingsPiece[]>
 	segmentNoteCounts: SegmentNoteCounts
 	// timeScale: number
 	// maxTimeScale: number
@@ -616,7 +614,6 @@ export const SegmentStoryboard = React.memo(
 							<SegmentDuration
 								segmentId={props.segment._id}
 								parts={props.parts}
-								pieces={props.pieces}
 								label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
 								fixed={props.fixedSegmentDuration}
 							/>

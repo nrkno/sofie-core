@@ -176,15 +176,15 @@ export function calculatePartExpectedDurationWithPreroll(
 }
 
 export function calculatePartInstanceExpectedDurationWithPreroll(
-	partInstance: Pick<DBPartInstance, 'part' | 'partPlayoutTimings'>,
-	pieces: CalculateTimingsPiece[]
+	partInstance: Pick<DBPartInstance, 'part' | 'partPlayoutTimings'>
+	// pieces: CalculateTimingsPiece[]
 ): number | undefined {
 	if (partInstance.part.expectedDuration === undefined) return undefined
 
 	if (partInstance.partPlayoutTimings) {
 		return calculateExpectedDurationWithPreroll(partInstance.part.expectedDuration, partInstance.partPlayoutTimings)
 	} else {
-		const timings = calculatePartTimings(undefined, {}, [], partInstance.part, pieces)
+		const timings = calculatePartTimings(undefined, {}, [], partInstance.part, []) // TODO: Piece timings should be taken into account
 
 		return calculateExpectedDurationWithPreroll(
 			partInstance.part.expectedDurationWithPreroll ?? partInstance.part.expectedDuration,

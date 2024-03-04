@@ -35,7 +35,6 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstances, Segments } from '../../collections'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
-import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 import { ReadonlyDeep } from 'type-fest'
 import { PieceContentStatusObj } from '../../../lib/mediaObjects'
 
@@ -107,7 +106,6 @@ export interface SegmentNoteCounts {
 export interface ITrackedProps {
 	segmentui: SegmentUi | undefined
 	parts: Array<PartUi>
-	pieces: Map<PartId, CalculateTimingsPiece[]>
 	segmentNoteCounts: SegmentNoteCounts
 	hasRemoteItems: boolean
 	hasGuestItems: boolean
@@ -208,15 +206,6 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 			)
 
 			const rundownOrder = RundownPlaylistCollectionUtil.getRundownOrderedIDs(props.playlist)
-			const pieces = memoizedIsolatedAutorun(
-				(orderedParts) => {
-					return RundownPlaylistCollectionUtil.getPiecesForParts(orderedParts, {
-						fields: { enable: 1, prerollDuration: 1, postrollDuration: 1, pieceType: 1 },
-					})
-				},
-				'playlist.getPiecesForParts',
-				orderedAllPartIds
-			)
 			const rundownIndex = rundownOrder.indexOf(segment.rundownId)
 
 			const o = RundownUtils.getResolvedSegment(
@@ -228,7 +217,6 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				rundownOrder.slice(0, rundownIndex),
 				props.rundownsToShowstyles,
 				orderedAllPartIds,
-				pieces,
 				currentPartInstance,
 				nextPartInstance,
 				true,
@@ -297,7 +285,6 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 			return {
 				segmentui: o.segmentExtended,
 				parts: o.parts,
-				pieces,
 				segmentNoteCounts,
 				hasAlreadyPlayed: o.hasAlreadyPlayed,
 				hasRemoteItems: o.hasRemoteItems,
