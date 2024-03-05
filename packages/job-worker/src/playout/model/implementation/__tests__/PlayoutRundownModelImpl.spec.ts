@@ -323,6 +323,22 @@ describe('PlayoutRundownModelImpl', () => {
 			expect(model.ScratchPadSegmentHasChanged).toBeTruthy()
 		})
 
+		it('pre-defined: no change', async () => {
+			const rundown = createBasicDBRundown()
+
+			const segment = createBasicDBSegment('seg0', -1)
+			segment.orphaned = SegmentOrphanedReason.SCRATCHPAD
+			const segmentModel = new PlayoutSegmentModelImpl(segment, [])
+
+			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
+
+			model.clearScratchPadSegmentChangedFlag()
+			model.updateScratchpadSegmentRank()
+
+			expect(model.getScratchpadSegment()?.segment._rank).toBe(-1)
+			expect(model.ScratchPadSegmentHasChanged).toBeFalsy()
+		})
+
 		it('after remove', async () => {
 			const rundown = createBasicDBRundown()
 

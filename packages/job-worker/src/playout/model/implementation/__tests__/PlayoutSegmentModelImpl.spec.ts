@@ -91,7 +91,12 @@ describe('PlayoutSegmentModelImpl', () => {
 			const originalRank = segment._rank
 			const model = new PlayoutSegmentModelImpl(segment, [])
 
-			model.setScratchpadRank(originalRank + 1)
+			// Set should report change
+			expect(model.setScratchpadRank(originalRank + 1)).toBeTruthy()
+			expect(model.segment._rank).toBe(originalRank + 1)
+
+			// Set again should report no change
+			expect(model.setScratchpadRank(originalRank + 1)).toBeFalsy()
 			expect(model.segment._rank).toBe(originalRank + 1)
 		})
 

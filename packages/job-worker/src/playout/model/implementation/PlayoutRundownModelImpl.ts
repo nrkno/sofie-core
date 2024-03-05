@@ -107,9 +107,10 @@ export class PlayoutRundownModelImpl implements PlayoutRundownModel {
 		const segment = this.#segments.find((s) => s.segment.orphaned === SegmentOrphanedReason.SCRATCHPAD)
 		if (!segment) return
 
-		segment.setScratchpadRank(calculateRankForScratchpadSegment(this.#segments))
-		this.#segments.sort((a, b) => a.segment._rank - b.segment._rank)
+		const changed = segment.setScratchpadRank(calculateRankForScratchpadSegment(this.#segments))
+		if (!changed) return
 
+		this.#segments.sort((a, b) => a.segment._rank - b.segment._rank)
 		this.#scratchPadSegmentHasChanged = true
 	}
 }
