@@ -5158,7 +5158,7 @@ __metadata:
   resolution: "@sofie-automation/shared-lib@workspace:shared-lib"
   dependencies:
     "@mos-connection/model": ^3.0.4
-    timeline-state-resolver-types: 9.0.0
+    timeline-state-resolver-types: 9.0.1-nightly-SOFIE-2830-viz-reset-action-20240305-142318-0337a7228.0
     tslib: ^2.4.0
     type-fest: ^2.19.0
   languageName: unknown
@@ -18046,7 +18046,7 @@ asn1@evs-broadcast/node-asn1:
     "@sofie-automation/shared-lib": 1.50.0
     debug: ^4.3.3
     influx: ^5.9.3
-    timeline-state-resolver: 9.0.0
+    timeline-state-resolver: 9.0.1-nightly-SOFIE-2830-viz-reset-action-20240305-142318-0337a7228.0
     tslib: ^2.4.0
     underscore: ^1.13.4
     winston: ^3.8.2
@@ -21676,18 +21676,18 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"timeline-state-resolver-types@npm:9.0.0":
-  version: 9.0.0
-  resolution: "timeline-state-resolver-types@npm:9.0.0"
+"timeline-state-resolver-types@npm:9.0.1-nightly-SOFIE-2830-viz-reset-action-20240305-142318-0337a7228.0":
+  version: 9.0.1-nightly-SOFIE-2830-viz-reset-action-20240305-142318-0337a7228.0
+  resolution: "timeline-state-resolver-types@npm:9.0.1-nightly-SOFIE-2830-viz-reset-action-20240305-142318-0337a7228.0"
   dependencies:
     tslib: ^2.5.1
-  checksum: be3dd61b56d3c2c12141b7f60aea2e3db6ddd1f128d510db29174bc48e30059710c1bb8470c0bc768c97780f993d5869b9e9f4fdbd476c29dee5cdd6eb5f93ab
+  checksum: 046bda3b6ae8d43afa506e3aa9db53e63a299f481531ca930f6ce44c43cfde569115598f76fd21fc1f94bb023cb52d3e79d61c45d4c61051823bff81372f1fde
   languageName: node
   linkType: hard
 
-"timeline-state-resolver@npm:9.0.0":
-  version: 9.0.0
-  resolution: "timeline-state-resolver@npm:9.0.0"
+"timeline-state-resolver@npm:9.0.1-nightly-SOFIE-2830-viz-reset-action-20240305-142318-0337a7228.0":
+  version: 9.0.1-nightly-SOFIE-2830-viz-reset-action-20240305-142318-0337a7228.0
+  resolution: "timeline-state-resolver@npm:9.0.1-nightly-SOFIE-2830-viz-reset-action-20240305-142318-0337a7228.0"
   dependencies:
     "@tv2media/v-connection": ^7.3.2
     atem-connection: 2.5.0
@@ -21709,7 +21709,7 @@ asn1@evs-broadcast/node-asn1:
     sprintf-js: ^1.1.2
     superfly-timeline: ^8.3.1
     threadedclass: ^1.2.1
-    timeline-state-resolver-types: 9.0.0
+    timeline-state-resolver-types: 9.0.1-nightly-SOFIE-2830-viz-reset-action-20240305-142318-0337a7228.0
     tslib: ^2.5.1
     tv-automation-quantel-gateway-client: ^3.1.7
     underscore: ^1.13.6
@@ -21717,7 +21717,7 @@ asn1@evs-broadcast/node-asn1:
     utf-8-validate: ^5.0.10
     ws: ^7.5.9
     xml-js: ^1.6.11
-  checksum: 3e18992e691eb28a256b07fb2b4145b43b7be098067a2193fef52f59cf8cb90c4bfa08a32ecdf8295f536a9cca2733866289a49f96bef8ba543ae6f9f53ef838
+  checksum: a3816eeec9190bb8306b5a9c5508fb751904e9b46a3491edaf8a20b761ebf55912f6938476be80c2ef42a161972784e9182855bbc51a8fef4c45f22058eda06b
   languageName: node
   linkType: hard
 
