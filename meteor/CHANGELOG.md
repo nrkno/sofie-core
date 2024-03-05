@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.50.1-0](///compare/v1.50.0...v1.50.1-0) (2024-03-05)
+
+
+### Features
+
+* support external url dropzones 489c17b
+* support prompter-editor SOFIE-2846 ([#1151](undefined/undefined/undefined/issues/1151)) fd936d0
+
+
+### Bug Fixes
+
+* bucket content status publication SOFIE-2993 f361c89
+* content status for PieceInstances can be under the id of the PieceInstance or the wrapped Piece SOFIE-2993 a5e7af4
+* **GUI:** remove Piece dependency for Part duration calculation c862582
+* PieceInstance ExpectedPackages generated with incorrect id 89880fe
+* statuses for PieceInstances should copy from the Piece until package-manager catches up 3158b09
+* thumbnail and scrub previews being reported as available too early 391bfc4
+* use the PartInstance instead of Part for PieceInstance content status SOFIE-2993 5d3a610
+
 ## [1.50.0](///compare/v1.49.4...v1.50.0) (2024-02-23)
 
 
