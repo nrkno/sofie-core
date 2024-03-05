@@ -36,10 +36,7 @@ import { FindOptions } from '../../lib/collections/lib'
 import { getShowHiddenSourceLayers } from './localStorage'
 import { Rundown } from '../../lib/collections/Rundowns'
 import { IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import {
-	calculatePartInstanceExpectedDurationWithPreroll,
-	CalculateTimingsPiece,
-} from '@sofie-automation/corelib/dist/playout/timings'
+import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 import { AdLibPieceUi } from './shelf'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { PartId, PieceId, RundownId, SegmentId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -59,17 +56,14 @@ export namespace RundownUtils {
 
 	export function getSegmentDuration(
 		parts: Array<PartUi>,
-		pieces: Map<PartId, CalculateTimingsPiece[]>,
+		// pieces: Map<PartId, CalculateTimingsPiece[]>,
 		display?: boolean
 	): number {
 		return parts.reduce((memo, part) => {
 			return (
 				memo +
 				(part.instance.timings?.duration ||
-					calculatePartInstanceExpectedDurationWithPreroll(
-						part.instance,
-						pieces.get(part.instance.part._id) ?? []
-					) ||
+					calculatePartInstanceExpectedDurationWithPreroll(part.instance) ||
 					part.renderedDuration ||
 					(display ? Settings.defaultDisplayDuration : 0))
 			)
@@ -205,7 +199,6 @@ export namespace RundownUtils {
 		scrollLeft: number,
 		scrollWidth: number,
 		part: PartUi,
-		pieces: CalculateTimingsPiece[],
 		partStartsAt: number | undefined,
 		partDuration: number | undefined,
 		piece?: PieceUi
@@ -225,7 +218,7 @@ export namespace RundownUtils {
 								? part.instance.timings.duration + (part.instance.timings?.playOffset || 0)
 								: (partDuration ||
 										part.renderedDuration ||
-										calculatePartInstanceExpectedDurationWithPreroll(part.instance, pieces) ||
+										calculatePartInstanceExpectedDurationWithPreroll(part.instance) ||
 										0) - (piece.renderedInPoint || 0)))
 					: part.instance.timings?.duration !== undefined
 					? part.instance.timings.duration + (part.instance.timings?.playOffset || 0)
@@ -299,7 +292,6 @@ export namespace RundownUtils {
 		rundownsBeforeThisInPlaylist: RundownId[],
 		rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 		orderedAllPartIds: PartId[],
-		pieces: Map<PartId, CalculateTimingsPiece[]>,
 		currentPartInstance: PartInstance | undefined,
 		nextPartInstance: PartInstance | undefined,
 		pieceInstanceSimulation = false,
@@ -430,10 +422,7 @@ export namespace RundownUtils {
 			partsE = segmentInfo.partInstances.map((partInstance, itIndex) => {
 				const partTimeline: SuperTimeline.TimelineObject[] = []
 
-				const partExpectedDuration = calculatePartInstanceExpectedDurationWithPreroll(
-					partInstance,
-					pieces.get(partInstance.part._id) ?? []
-				)
+				const partExpectedDuration = calculatePartInstanceExpectedDurationWithPreroll(partInstance)
 
 				// extend objects to match the Extended interface
 				const partE = literal<PartExtended>({
