@@ -10,7 +10,7 @@ RUN yarn install --immutable
 RUN yarn run pinst --disable
 RUN yarn lerna run --scope \*\*/mos-gateway --include-dependencies --stream build
 RUN yarn plugin import workspace-tools
-RUN yarn workspaces focus --all --production # purge dev-dependencies
+RUN yarn workspaces focus mos-gateway --production # purge dev-dependencies
 
 # DEPLOY IMAGE
 FROM node:18-alpine
