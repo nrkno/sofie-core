@@ -1,15 +1,15 @@
 import * as v8 from 'node:v8'
 import { Readable } from 'stream'
 import { Meteor } from 'meteor/meteor'
+import Koa from 'koa'
+import KoaRouter from '@koa/router'
 import { fixValidPath } from '../../lib/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { logger } from '../logging'
 import { Settings } from '../../lib/Settings'
 import { Credentials } from '../security/lib/credentials'
 import { SystemWriteAccess } from '../security/system'
 import { sleep } from '@sofie-automation/corelib/dist/lib'
-import { PickerGET } from './http'
-import { ServerResponse, IncomingMessage } from 'http'
-import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 
 async function retrieveHeapSnapshot(cred0: Credentials): Promise<Readable> {
 	if (Settings.enableUserAccounts) {
@@ -22,45 +22,48 @@ async function retrieveHeapSnapshot(cred0: Credentials): Promise<Readable> {
 	return stream
 }
 
+export const heapSnapshotPrivateApiRouter = new KoaRouter()
+
 // Setup endpoints:
-async function handleKoaResponse(req: IncomingMessage, res: ServerResponse, snapshotFcn: () => Promise<Readable>) {
-	if (!`${req.url}`.includes(`areYouSure=yes`)) {
-		res.statusCode = 403
-		res.setHeader('Content-Type', 'text/plain')
-		res.end('?areYouSure=yes')
+async function handleKoaResponse(ctx: Koa.ParameterizedContext, snapshotFcn: () => Promise<Readable>) {
+	if (ctx.query.areYouSure !== 'yes') {
+		ctx.response.status = 403
+		ctx.response.body = '?areYouSure=yes'
 		return
 	}
 
 	try {
 		const stream = await snapshotFcn()
 
-		res.setHeader('Content-Type', 'application/octet-stream')
-		res.setHeader(
-			'Content-Disposition',
-			`attachment; filename*=UTF-8''${fixValidPath(
-				`sofie-heap-snapshot-${new Date().toISOString()}.heapsnapshot`
-			)}`
-		)
-		res.statusCode = 200
-		stream.pipe(res)
-		// res.write()
-		// res.body = JSON.stringify(snapshot, null, 4)
-	} catch (e: any) {
-		res.setHeader('Content-Type', 'text/plain')
-		res.statusCode = e instanceof Meteor.Error && typeof e.error === 'number' ? e.error : 500
-		res.end('Error: ' + stringifyError(e))
+		ctx.response.type = 'application/octet-stream'
+		ctx.response.attachment(fixValidPath(`sofie-heap-snapshot-${new Date().toISOString()}.heapsnapshot`))
+		ctx.response.status = 200
+		ctx.body = stream
+		// ctx.response.body = JSON.stringify(snapshot, null, 4)
+	} catch (e) {
+		ctx.response.type = 'text/plain'
+		ctx.response.status = e instanceof Meteor.Error && typeof e.error === 'number' ? e.error : 500
+		ctx.response.body = 'Error: ' + stringifyError(e)
 
-		if (res.statusCode !== 404) {
+		if (ctx.response.status !== 404) {
 			logger.error(stringifyError(e))
 		}
 	}
 }
 
+// For backwards compatibility:
 if (!Settings.enableUserAccounts) {
 	// Retrieve heap snapshot:
-	PickerGET.route('/heapSnapshot/retrieve', async (_, req: IncomingMessage, res: ServerResponse) => {
-		return handleKoaResponse(req, res, async () => {
+	heapSnapshotPrivateApiRouter.get('/retrieve', async (ctx) => {
+		return handleKoaResponse(ctx, async () => {
 			return retrieveHeapSnapshot({ userId: null })
 		})
 	})
 }
+
+// Retrieve heap snapshot:
+heapSnapshotPrivateApiRouter.get('/:token/retrieve', async (ctx) => {
+	return handleKoaResponse(ctx, async () => {
+		return retrieveHeapSnapshot({ userId: null, token: ctx.params.token })
+	})
+})
