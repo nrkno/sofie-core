@@ -7,27 +7,25 @@ import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export class PlaylistsHandler
-	extends CollectionBase<DBRundownPlaylist[], undefined, undefined>
+	extends CollectionBase<DBRundownPlaylist[], undefined, CollectionName.RundownPlaylists>
 	implements Collection<DBRundownPlaylist[]>
 {
 	public observerName: string
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
-		super(PlaylistsHandler.name, undefined, undefined, logger, coreHandler)
+		super(PlaylistsHandler.name, CollectionName.RundownPlaylists, undefined, logger, coreHandler)
 		this.observerName = this._name
 	}
 
 	async setPlaylists(playlists: DBRundownPlaylist[]): Promise<void> {
-		this._logger.info(`'${this._name}' handler received playlists update with ${playlists.length} playlists`)
+		this.logUpdateReceived('playlists', playlists.length)
 		this._collectionData = playlists
 		await this.notify(this._collectionData)
 	}
 
 	// override notify to implement empty array handling
 	async notify(data: DBRundownPlaylist[] | undefined): Promise<void> {
-		this._logger.info(
-			`${this._name} notifying all observers of an update with ${this._collectionData?.length} playlists`
-		)
+		this.logNotifyingUpdate(this._collectionData?.length)
 		if (data !== undefined) {
 			for (const observer of this._observers) {
 				await observer.update(this._name, data)
@@ -78,7 +76,7 @@ export class PlaylistHandler
 	}
 
 	async changed(id: RundownPlaylistId, changeType: string): Promise<void> {
-		this._logger.info(`${this._name} ${changeType} ${id}`)
+		this.logDocumentChange(id, changeType)
 		if (!this._collectionName) return
 		const collection = this._core.getCollection(this._collectionName)
 		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)

@@ -26,7 +26,7 @@ export class PartHandler
 	}
 
 	async changed(id: PartId, changeType: string): Promise<void> {
-		this._logger.info(`${this._name} ${changeType} ${id}`)
+		this.logDocumentChange(id, changeType)
 		if (!this._collectionName) return
 		const collection = this._core.getCollection(this._collectionName)
 		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
@@ -46,11 +46,11 @@ export class PartHandler
 		const partInstances = data as SelectedPartInstances
 		switch (source) {
 			case PlaylistHandler.name:
-				this._logger.info(`${this._name} received playlist update ${rundownPlaylist?._id}`)
+				this.logUpdateReceived('playlist', source, `rundownPlaylistId ${rundownPlaylist?._id}`)
 				this._activePlaylist = rundownPlaylist
 				break
 			case PartInstancesHandler.name:
-				this._logger.info(`${this._name} received partInstances update from ${source}`)
+				this.logUpdateReceived('partInstances', source)
 				this._currentPartInstance = partInstances.current
 				break
 			default:
@@ -89,7 +89,7 @@ export class PartHandler
 			await this._partsHandler.setParts(allParts)
 		}
 		if (prevCurPartInstance !== this._currentPartInstance) {
-			this._logger.info(
+			this._logger.debug(
 				`${this._name} found updated partInstances with current part ${this._activePlaylist?.currentPartInfo?.partInstanceId}`
 			)
 			if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)

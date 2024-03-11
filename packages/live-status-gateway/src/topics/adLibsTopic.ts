@@ -203,37 +203,37 @@ export class AdLibsTopic
 			case PlaylistHandler.name: {
 				const previousPlaylistId = this._activePlaylist?._id
 				this._activePlaylist = data as DBRundownPlaylist | undefined
-				this._logger.info(`${this._name} received playlist update from ${source}`)
+				this.logUpdateReceived('playlist', source)
 				if (previousPlaylistId === this._activePlaylist?._id) return
 				break
 			}
 			case AdLibActionsHandler.name: {
 				const adLibActions = data ? (data as AdLibAction[]) : []
-				this._logger.info(`${this._name} received adLibActions update from ${source}`)
+				this.logUpdateReceived('adLibActions', source)
 				this._adLibActions = adLibActions
 				break
 			}
 			case GlobalAdLibActionsHandler.name: {
 				const globalAdLibActions = data ? (data as RundownBaselineAdLibAction[]) : []
-				this._logger.info(`${this._name} received globalAdLibActions update from ${source}`)
+				this.logUpdateReceived('globalAdLibActions', source)
 				this._globalAdLibActions = globalAdLibActions
 				break
 			}
 			case AdLibsHandler.name: {
 				const adLibs = data ? (data as AdLibPiece[]) : []
-				this._logger.info(`${this._name} received adLibs update from ${source}`)
+				this.logUpdateReceived('adLibs', source)
 				this._abLibs = adLibs
 				break
 			}
 			case GlobalAdLibsHandler.name: {
 				const globalAdLibs = data ? (data as RundownBaselineAdLibItem[]) : []
-				this._logger.info(`${this._name} received globalAdLibs update from ${source}`)
+				this.logUpdateReceived('globalAdLibs', source)
 				this._globalAdLibs = globalAdLibs
 				break
 			}
 			case ShowStyleBaseHandler.name: {
 				const showStyleBaseExt = data ? (data as ShowStyleBaseExt) : undefined
-				this._logger.info(`${this._name} received showStyleBase update from ${source}`)
+				this.logUpdateReceived('showStyleBase', source)
 				this._sourceLayersMap = showStyleBaseExt?.sourceLayerNamesById ?? new Map()
 				this._outputLayersMap = showStyleBaseExt?.outputLayerNamesById ?? new Map()
 				break

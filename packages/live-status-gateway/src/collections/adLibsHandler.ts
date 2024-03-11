@@ -23,7 +23,7 @@ export class AdLibsHandler
 	}
 
 	async changed(id: PieceId, changeType: string): Promise<void> {
-		this._logger.info(`${this._name} ${changeType} ${id}`)
+		this.logDocumentChange(id, changeType)
 		if (!this._collectionName) return
 		const col = this._core.getCollection(this._collectionName)
 		if (!col) throw new Error(`collection '${this._collectionName}' not found!`)
@@ -32,7 +32,7 @@ export class AdLibsHandler
 	}
 
 	async update(source: string, data: SelectedPartInstances | undefined): Promise<void> {
-		this._logger.info(`${this._name} received adLibs update from ${source}`)
+		this.logUpdateReceived('partInstances', source)
 		const prevRundownId = this._currentRundownId
 		this._currentPartInstance = data ? data.current ?? data.next : undefined
 		this._currentRundownId = this._currentPartInstance?.rundownId
@@ -70,7 +70,7 @@ export class AdLibsHandler
 
 	// override notify to implement empty array handling
 	async notify(data: AdLibPiece[] | undefined): Promise<void> {
-		this._logger.info(`${this._name} notifying update with ${data?.length} adLibs`)
+		this.logNotifyingUpdate(data?.length)
 		if (data !== undefined) {
 			for (const observer of this._observers) {
 				await observer.update(this._name, data)

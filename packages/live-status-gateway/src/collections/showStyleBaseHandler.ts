@@ -35,7 +35,7 @@ export class ShowStyleBaseHandler
 	}
 
 	async changed(id: ShowStyleBaseId, changeType: string): Promise<void> {
-		this._logger.info(`${this._name} ${changeType} ${id}`)
+		this.logDocumentChange(id, changeType)
 		if (!this._collectionName) return
 		if (this._showStyleBaseId) {
 			this.updateCollectionData()
@@ -44,9 +44,7 @@ export class ShowStyleBaseHandler
 	}
 
 	async update(source: string, data: DBRundown | undefined): Promise<void> {
-		this._logger.info(
-			`${this._name} received rundown update ${data?._id}, showStyleBaseId ${data?.showStyleBaseId} from ${source}`
-		)
+		this.logUpdateReceived('rundown', source, `rundownId ${data?._id}, showStyleBaseId ${data?.showStyleBaseId}`)
 		const prevShowStyleBaseId = this._showStyleBaseId
 		this._showStyleBaseId = data?.showStyleBaseId
 

@@ -53,10 +53,7 @@ export class RootChannel extends WebSocketTopicBase implements WebSocketTopic {
 
 	constructor(logger: Logger) {
 		super('Root', logger)
-		this._heartbeat = setInterval(
-			() => this._subscribers.forEach((ws) => this.sendMessage(ws, { event: 'heartbeat' })),
-			2000
-		)
+		this._heartbeat = setInterval(() => this._subscribers.forEach((ws) => this.sendHeartbeat(ws)), 2000)
 	}
 
 	close(): void {
