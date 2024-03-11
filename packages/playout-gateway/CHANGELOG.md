@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.50.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.1-0...v1.50.1) (2024-03-11)
+
+
+### Bug Fixes
+
+* strip unused node dependencies from docker images ([#1159](https://github.com/nrkno/tv-automation-server-core/issues/1159)) ([6d86132](https://github.com/nrkno/tv-automation-server-core/commit/6d86132c1bc36219f04f00d5360940dfcbd6df7c))
+
+
+
+
+
 ## [1.50.1-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0...v1.50.1-0) (2024-03-05)
 
 **Note:** Version bump only for package playout-gateway
