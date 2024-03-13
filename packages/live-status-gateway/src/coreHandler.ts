@@ -117,14 +117,14 @@ export class CoreHandler {
 		collection: Key,
 		...params: ParametersOfFunctionOrNever<CorelibPubSubTypes[Key]>
 	): Promise<SubscriptionId> {
-		this.logger.info(`Core: Set up subscription for '${collection}'`)
+		this.logger.debug(`Core: Set up subscription for '${collection}'`)
 		const subscriptionId = await this.core.autoSubscribe(collection, ...params)
-		this.logger.info(`Core: Subscription for '${collection}' set up with id ${subscriptionId}`)
+		this.logger.debug(`Core: Subscription for '${collection}' set up with id ${subscriptionId}`)
 		return subscriptionId
 	}
 
 	unsubscribe(subscriptionId: SubscriptionId): void {
-		this.logger.info(`Core: Unsubscribing id '${subscriptionId}'`)
+		this.logger.debug(`Core: Unsubscribing id '${subscriptionId}'`)
 		this.core.unsubscribe(subscriptionId)
 	}
 
