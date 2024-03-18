@@ -213,7 +213,7 @@ export class RundownContentObserver {
 
 	private updateShowStyleBaseIds = _.debounce(
 		Meteor.bindEnvironment(() => {
-			const newShowStyleBaseIds = this.#cache.Rundowns.find({}).map((rd) => rd.showStyleBaseId)
+			const newShowStyleBaseIds = _.uniq(this.#cache.Rundowns.find({}).map((rd) => rd.showStyleBaseId))
 
 			if (!equivalentArrays(newShowStyleBaseIds, this.#showStyleBaseIds)) {
 				logger.silly(
