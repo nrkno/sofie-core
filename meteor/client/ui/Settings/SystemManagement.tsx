@@ -433,14 +433,14 @@ export function checkForOldDataAndCleanUp(t: TFunction, retriesLeft = 0): void {
 function SystemManagementHeapSnapshot() {
 	const { t } = useTranslation()
 
-	const [displayWarning, setdisplayWarning] = React.useState(false)
+	const [displayWarning, setDisplayWarning] = React.useState(false)
 	const [active, setActive] = React.useState(false)
 
 	const onAreYouSure = React.useCallback(() => {
-		setdisplayWarning(true)
+		setDisplayWarning(true)
 	}, [])
 	const onReset = React.useCallback(() => {
-		setdisplayWarning(false)
+		setDisplayWarning(false)
 		setActive(false)
 	}, [])
 	const onConfirm = React.useCallback(() => {
