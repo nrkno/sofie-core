@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.49.5-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.4...v1.49.5-0) (2024-03-08)
+
+
+### Bug Fixes
+
+* add a way to take a heap snapshot (patch for release49) ([9eb8280](https://github.com/nrkno/tv-automation-server-core/commit/9eb82802bbfe3d1e298c222d8a393623cbfc6e19))
+* core-integration: handle error when subscribing ([e9beb34](https://github.com/nrkno/tv-automation-server-core/commit/e9beb349b3e799f6a0110deb3c75374934a463a2))
+* nora hoverscrub not showing content on first load SOFIE-2819 ([#1119](https://github.com/nrkno/tv-automation-server-core/issues/1119)) ([590c372](https://github.com/nrkno/tv-automation-server-core/commit/590c3720fbb86cbb663e3e4430abb67b062b808d))
+
 ### [1.49.4](https://github.com/nrkno/sofie-core/compare/v1.49.3...v1.49.4) (2024-01-03)
 
 ### [1.49.3](https://github.com/nrkno/sofie-core/compare/v1.49.2...v1.49.3) (2023-12-21)

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.49.5-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.4...v1.49.5-0) (2024-03-08)
+
+
+### Bug Fixes
+
+* core-integration: handle error when subscribing ([e9beb34](https://github.com/nrkno/tv-automation-server-core/commit/e9beb349b3e799f6a0110deb3c75374934a463a2))
+
+
+
+
+
 ## [1.49.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.3...v1.49.4) (2024-01-03)
 
 **Note:** Version bump only for package @sofie-automation/server-core-integration
