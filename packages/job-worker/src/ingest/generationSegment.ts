@@ -102,7 +102,7 @@ export async function calculateSegmentsFromIngestData(
 
 			const context2 = new SegmentUserContext(
 				{
-					name: `getSegment=${ingestSegment.name}`,
+					name: `getSegment=${ingestSegment.name};${segmentId}`,
 					// Note: this intentionally does not include the segmentId, as parts may be moved between segemnts later on
 					// This isn't much entropy, blueprints may want to add more for each Part they generate
 					identifier: `rundownId=${rundown._id}`,

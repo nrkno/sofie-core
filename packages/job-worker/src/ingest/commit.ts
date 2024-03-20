@@ -177,6 +177,9 @@ export async function CommitIngestOperation(
 				rundownsInPlaylist
 			)
 
+			// ensure instances are updated for rundown changes
+			await updatePartInstancesSegmentIds(context, ingestCache, data.renamedSegments)
+
 			// Do the segment removals
 			await removeSegments(
 				context,
@@ -193,8 +196,6 @@ export async function CommitIngestOperation(
 			// Save the rundowns and regenerated playlist
 			// This will reorder the rundowns a little before the playlist and the contents, but that is ok
 			await context.directCollections.RundownPlaylists.replace(newPlaylist)
-			// ensure instances are updated for rundown changes
-			await updatePartInstancesSegmentIds(context, ingestCache, data.renamedSegments)
 			await updatePartInstancesBasicProperties(context, ingestCache.Parts, ingestCache.RundownId, newPlaylist)
 
 			// Update the playout to use the updated rundown
@@ -748,7 +749,7 @@ async function removeSegments(
 					...s,
 					...oldSegments?.get(segmentId),
 					isHidden: false,
-					orphaned: SegmentOrphanedReason.HIDDEN,
+					orphaned: s.orphaned ?? SegmentOrphanedReason.HIDDEN,
 				}
 			})
 		})
