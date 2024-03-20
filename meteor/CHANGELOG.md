@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.49.5-1](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.5-0...v1.49.5-1) (2024-03-20)
+
+
+### Bug Fixes
+
+* stop old observers when re-creating nested observers SOFIE-3016 ([#1167](https://github.com/nrkno/tv-automation-server-core/issues/1167)) ([5780de4](https://github.com/nrkno/tv-automation-server-core/commit/5780de42fdf4c89f024f1244ecf7e1ac70a99a79))
+
 ### [1.49.5-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.4...v1.49.5-0) (2024-03-08)
 
 
