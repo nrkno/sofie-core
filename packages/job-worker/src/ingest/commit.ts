@@ -266,6 +266,14 @@ function canRemoveSegment(
 		return false
 	}
 
+	if (nextPartInstance?.segmentId === segmentId && nextPartInstance.orphaned === 'adlib-part') {
+		// Don't allow removing an active rundown
+		logger.warn(
+			`Not allowing removal of segment "${segmentId}" which contains nexted adlibbed part, making segment unsynced instead`
+		)
+		return false
+	}
+
 	return true
 }
 
