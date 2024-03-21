@@ -141,9 +141,12 @@ export class CoreMosDeviceHandler {
 		const messages: Array<string> = []
 
 		if (this._hotStandby) {
+			// OpenMedia treats secondary server as hot-standby
+			// And thus is not considered as a warning if it's not connected
 			if (connectionStatus.PrimaryConnected) {
 				statusCode = StatusCode.GOOD
 			} else {
+				// Primary not connected is only bad if there is no secondary:
 				if (connectionStatus.SecondaryConnected) {
 					statusCode = StatusCode.GOOD
 					messages.push(connectionStatus.SecondaryStatus || 'Running NRCS on hot standby')
@@ -154,6 +157,7 @@ export class CoreMosDeviceHandler {
 			}
 		} else {
 			if (connectionStatus.PrimaryConnected) {
+				// ENPS expect both Primary and Secondary to be connected if both of them are configured
 				if (connectionStatus.SecondaryConnected || !this._mosDevice.idSecondary) {
 					statusCode = StatusCode.GOOD
 				} else {
@@ -161,8 +165,10 @@ export class CoreMosDeviceHandler {
 				}
 			} else {
 				if (connectionStatus.SecondaryConnected) {
+					// Primary not connected should give a warning if Secondary is used.
 					statusCode = StatusCode.WARNING_MAJOR
 				} else {
+					// If neither Primary nor Secondary is connected, it's a bad state.
 					statusCode = StatusCode.BAD
 				}
 			}
