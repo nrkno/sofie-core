@@ -202,7 +202,7 @@ describe('Expected Media Items', () => {
 					return {
 						changedSegmentIds: [],
 						removedSegmentIds: [],
-						renamedSegments: new Map(),
+						renamedSegments: null,
 						removeRundown: false,
 					}
 				}

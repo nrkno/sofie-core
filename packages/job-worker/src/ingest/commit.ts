@@ -286,7 +286,7 @@ function canRemoveSegment(
 async function updatePartInstancesSegmentIds(
 	context: JobContext,
 	cache: CacheForIngest,
-	renamedSegments: ReadonlyMap<SegmentId, SegmentId>
+	renamedSegments: ReadonlyMap<SegmentId, SegmentId> | null
 ) {
 	// A set of rules which can be translated to mongo queries for PartInstances to update
 	const renameRules = new Map<
@@ -298,11 +298,13 @@ async function updatePartInstancesSegmentIds(
 	>()
 
 	// Add whole segment renames to the set of rules
-	for (const [fromSegmentId, toSegmentId] of renamedSegments) {
-		const rule = renameRules.get(toSegmentId) ?? { partIds: [], fromSegmentId: null }
-		renameRules.set(toSegmentId, rule)
+	if (renamedSegments) {
+		for (const [fromSegmentId, toSegmentId] of renamedSegments) {
+			const rule = renameRules.get(toSegmentId) ?? { partIds: [], fromSegmentId: null }
+			renameRules.set(toSegmentId, rule)
 
-		rule.fromSegmentId = fromSegmentId
+			rule.fromSegmentId = fromSegmentId
+		}
 	}
 
 	// Some parts may have gotten a different segmentId to the base rule, so track those seperately in the rules
