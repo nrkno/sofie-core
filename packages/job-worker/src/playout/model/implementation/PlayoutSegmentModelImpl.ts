@@ -32,10 +32,13 @@ export class PlayoutSegmentModelImpl implements PlayoutSegmentModel {
 	 * This segment belongs to Playout, so is allowed to be modified in this way
 	 * @param rank New rank for the segment
 	 */
-	setScratchpadRank(rank: number): void {
+	setScratchpadRank(rank: number): boolean {
 		if (this.#segment.orphaned !== SegmentOrphanedReason.SCRATCHPAD)
 			throw new Error('setScratchpadRank can only be used on a SCRATCHPAD segment')
 
+		if (this.#segment._rank == rank) return false
+
 		this.#segment._rank = rank
+		return true
 	}
 }
