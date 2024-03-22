@@ -1,25 +1,22 @@
 import React, { useEffect, useRef } from 'react'
 import { Clock } from '../StudioScreenSaver/Clock'
 import { useTracker, useSubscription } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { PubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { findNextPlaylist } from '../StudioScreenSaver/StudioScreenSaver'
+// @ts-expect-error No types available
 import Velocity from 'velocity-animate'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { useSetDocumentClass } from '../util/useSetDocumentClass'
 
-export function OverlayScreenSaver({ studioId }: { studioId: StudioId }): JSX.Element {
+export function OverlayScreenSaver({ studioId }: Readonly<{ studioId: StudioId }>): JSX.Element {
 	const studioNameRef = useRef<HTMLDivElement>(null)
 
-	useEffect(() => {
-		document.body.classList.add('transparent')
-		return () => {
-			document.body.classList.remove('transparent')
-		}
-	})
+	useSetDocumentClass('transparent')
 
-	useSubscription(PubSub.uiStudio, studioId)
-	useSubscription(PubSub.rundownPlaylists, { studioId: studioId, activationId: { $exists: false } })
+	useSubscription(MeteorPubSub.uiStudio, studioId)
+	useSubscription(MeteorPubSub.rundownPlaylistForStudio, studioId, false)
 
-	const data = useTracker(() => findNextPlaylist({ studioId }), [studioId])
+	const data = useTracker(() => findNextPlaylist(studioId), [studioId])
 
 	function animate() {
 		const el = studioNameRef.current

@@ -2,11 +2,11 @@ import { check } from '../../../lib/check'
 import * as _ from 'underscore'
 import { ScriptContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { normalizeArrayToMap, protectString } from '../../../lib/lib'
-import { Piece } from '../../../lib/collections/Pieces'
+import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { getPieceInstancesForPartInstance, getSegmentsWithPartInstances } from '../../../lib/Rundown'
 import { FindOptions } from '../../../lib/collections/lib'
-import { PieceInstance } from '../../../lib/collections/PieceInstances'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { UIShowStyleBases } from '../Collections'
 import {
@@ -18,9 +18,10 @@ import {
 	SegmentId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownPlaylists, PieceInstances, Pieces } from '../../collections'
+import { RundownPlaylists, PieceInstances, Pieces, Segments } from '../../collections'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 
 // export interface NewPrompterAPI {
 // 	getPrompterData (playlistId: RundownPlaylistId): Promise<PrompterData>
@@ -73,6 +74,15 @@ export namespace PrompterAPI {
 
 		const { currentPartInstance, nextPartInstance } =
 			RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
+
+		const currentSegment = currentPartInstance
+			? (Segments.findOne(currentPartInstance?.segmentId, {
+					projection: {
+						_id: 1,
+						orphaned: 1,
+					},
+			  }) as Pick<DBSegment, '_id' | 'orphaned'>)
+			: undefined
 
 		const groupedParts = getSegmentsWithPartInstances(
 			playlist,
@@ -191,6 +201,7 @@ export namespace PrompterAPI {
 				const rawPieceInstances = getPieceInstancesForPartInstance(
 					playlist.activationId,
 					rundown,
+					segment,
 					partInstance,
 					new Set(partIds.slice(0, partIndex)),
 					new Set(segmentIds.slice(0, segmentIndex)),
@@ -199,6 +210,7 @@ export namespace PrompterAPI {
 					orderedAllPartIds,
 					nextPartIsAfterCurrentPart,
 					currentPartInstance,
+					currentSegment,
 					currentPartInstancePieceInstances,
 					allPiecesCache,
 					pieceInstanceFieldOptions,
@@ -221,10 +233,10 @@ export namespace PrompterAPI {
 						if (piece.content && sourceLayer && sourceLayer.type === SourceLayerType.SCRIPT) {
 							const content = piece.content as ScriptContent
 							if (content.fullScript) {
-								if (piecesIncluded.indexOf(piece.continuesRefId || piece._id) >= 0) {
+								if (piecesIncluded.indexOf(piece._id) >= 0) {
 									break // piece already included in prompter script
 								}
-								piecesIncluded.push(piece.continuesRefId || piece._id)
+								piecesIncluded.push(piece._id)
 								partData.pieces.push({
 									id: piece._id,
 									text: content.fullScript,

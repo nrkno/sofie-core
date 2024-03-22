@@ -321,6 +321,12 @@ export interface NewUserActionAPI extends MethodContext {
 		subDeviceId: string,
 		disable: boolean
 	): Promise<ClientAPI.ClientResponse<void>>
+	activateScratchpadMode(
+		userEvent: string,
+		eventTime: number,
+		playlistId: RundownPlaylistId,
+		rundownId: RundownId
+	): Promise<ClientAPI.ClientResponse<void>>
 }
 
 export enum UserActionAPIMethods {
@@ -399,6 +405,8 @@ export enum UserActionAPIMethods {
 	'switchRouteSet' = 'userAction.switchRouteSet',
 
 	'disablePeripheralSubDevice' = 'userAction.system.disablePeripheralSubDevice',
+
+	'activateScratchpadMode' = 'userAction.activateScratchpadMode',
 }
 
 export interface ReloadRundownPlaylistResponse {

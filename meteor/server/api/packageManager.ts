@@ -2,7 +2,7 @@ import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
-} from '../../lib/collections/PeripheralDevices'
+} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
 import { StudioContentAccess } from '../security/studio'
 import { PeripheralDevices } from '../collections'

@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react'
-import { MappingExt, MappingsExt } from '../../../../lib/collections/Studios'
+import { MappingExt, MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { IBlueprintConfig, ISourceLayer, SchemaFormUIField } from '@sofie-automation/blueprints-integration'
 import { groupByToMapFunc, literal } from '../../../../lib/lib'
 import { useTranslation } from 'react-i18next'
@@ -12,7 +12,7 @@ import { useOverrideOpHelper, WrappedOverridableItemNormal } from '../util/Overr
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 import deepmerge from 'deepmerge'
 import { SchemaFormSofieEnumDefinition, translateStringIfHasNamespaces } from '../../../lib/forms/schemaFormUtil'
-import { useToggleExpandHelper } from '../util/ToggleExpandedHelper'
+import { useToggleExpandHelper } from '../../util/useToggleExpandHelper'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { ConfigCategoryEntry } from './CategoryEntry'
 
@@ -40,7 +40,7 @@ export function BlueprintConfigSchemaSettings({
 
 	configObject: rawConfigObject,
 	saveOverrides: rawSaveOverrides,
-}: BlueprintConfigSchemaSettingsProps): JSX.Element {
+}: Readonly<BlueprintConfigSchemaSettingsProps>): JSX.Element {
 	const { t } = useTranslation()
 
 	const saveOverridesStrippingPrefix = useCallback(
@@ -58,7 +58,7 @@ export function BlueprintConfigSchemaSettings({
 	const sofieEnumDefinitons: Record<string, SchemaFormSofieEnumDefinition> = useMemo(() => {
 		// Future: if there are multiple studios, this could result in duplicates
 		const mappingsDefinition: SchemaFormSofieEnumDefinition = { options: [] }
-		for (const mappings of Object.values<MappingsExt>(layerMappings || {})) {
+		for (const mappings of Object.values<MappingsExt>(layerMappings ?? {})) {
 			for (const [mappingId, mapping] of Object.entries<MappingExt>(mappings)) {
 				mappingsDefinition.options.push({
 					name: mapping.layerName || mappingId,
@@ -127,7 +127,7 @@ export function BlueprintConfigSchemaSettings({
 		if (schema?.type === 'object' && schema.properties) {
 			const groupedMap = groupByToMapFunc(
 				Object.entries<JSONSchema>(schema.properties),
-				(v) => translateStringIfHasNamespaces(v[1][SchemaFormUIField.Category], translationNamespaces) || null
+				(v) => translateStringIfHasNamespaces((v[1] as any)[SchemaFormUIField.Category], translationNamespaces) || null
 			)
 
 			return Array.from(groupedMap.entries())

@@ -14,8 +14,8 @@ import RemoteInputIcon from './Renderers/RemoteInputIcon'
 import LiveSpeakInputIcon from './Renderers/LiveSpeakInputIcon'
 import GraphicsInputIcon from './Renderers/GraphicsInputIcon'
 import UnknownInputIcon from './Renderers/UnknownInputIcon'
-import { PubSub } from '../../../lib/api/pubsub'
-import { PieceInstance } from '../../../lib/collections/PieceInstances'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { findPieceInstanceToShow, findPieceInstanceToShowFromInstances } from './utils'
 import LocalInputIcon from './Renderers/LocalInputIcon'
 import {
@@ -24,6 +24,8 @@ import {
 	RundownPlaylistActivationId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ReadonlyDeep } from 'type-fest'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 export interface IPropsHeader {
 	partInstanceId: PartInstanceId
@@ -33,7 +35,7 @@ export interface IPropsHeader {
 }
 
 export const PieceIcon = (props: {
-	pieceInstance: PieceInstance | undefined
+	pieceInstance: ReadonlyDeep<PieceInstance> | undefined
 	sourceLayer: ISourceLayer | undefined
 	renderUnknown?: boolean
 }): JSX.Element | null => {
@@ -99,13 +101,13 @@ export function PieceIconContainerNoSub({
 	pieceInstances,
 	sourceLayers,
 	renderUnknown,
-}: {
-	pieceInstances: PieceInstance[]
+}: Readonly<{
+	pieceInstances: ReadonlyDeep<PieceInstance[]>
 	sourceLayers: {
 		[key: string]: ISourceLayer
 	}
 	renderUnknown?: boolean
-}): JSX.Element | null {
+}>): JSX.Element | null {
 	const { pieceInstance, sourceLayer } = useTracker(
 		() => findPieceInstanceToShowFromInstances(pieceInstances, sourceLayers, pieceIconSupportedLayers),
 		[pieceInstances, sourceLayers],
@@ -118,7 +120,7 @@ export function PieceIconContainerNoSub({
 	return <PieceIcon pieceInstance={pieceInstance} sourceLayer={sourceLayer} renderUnknown={renderUnknown} />
 }
 
-export function PieceIconContainer(props: IPropsHeader): JSX.Element | null {
+export function PieceIconContainer(props: Readonly<IPropsHeader>): JSX.Element | null {
 	const { pieceInstance, sourceLayer } = useTracker(
 		() => findPieceInstanceToShow(props, pieceIconSupportedLayers),
 		[props.partInstanceId, props.showStyleBaseId],
@@ -128,12 +130,9 @@ export function PieceIconContainer(props: IPropsHeader): JSX.Element | null {
 		}
 	)
 
-	useSubscription(PubSub.pieceInstancesSimple, {
-		rundownId: { $in: props.rundownIds },
-		playlistActivationId: props.playlistActivationId,
-	})
+	useSubscription(CorelibPubSub.pieceInstancesSimple, props.rundownIds, props.playlistActivationId ?? null)
 
-	useSubscription(PubSub.uiShowStyleBase, props.showStyleBaseId)
+	useSubscription(MeteorPubSub.uiShowStyleBase, props.showStyleBaseId)
 
 	return <PieceIcon pieceInstance={pieceInstance} sourceLayer={sourceLayer} />
 }

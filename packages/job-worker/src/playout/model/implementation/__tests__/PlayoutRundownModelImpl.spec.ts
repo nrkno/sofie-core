@@ -1,0 +1,358 @@
+import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { PlayoutSegmentModelImpl } from '../PlayoutSegmentModelImpl'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { PlayoutRundownModelImpl } from '../PlayoutRundownModelImpl'
+import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ReadonlyDeep } from 'type-fest'
+import { restartRandomId } from '../../../../__mocks__/nanoid'
+import { UserErrorMessage } from '@sofie-automation/corelib/dist/error'
+
+describe('PlayoutRundownModelImpl', () => {
+	function createBasicDBRundown(): DBRundown {
+		return {
+			_id: protectString('rd0'),
+			organizationId: null,
+			studioId: protectString('studio0'),
+			showStyleBaseId: protectString('ssb0'),
+			showStyleVariantId: protectString('ssv0'),
+			created: 0,
+			modified: 0,
+			externalId: 'rd0',
+			name: `my rundown`,
+			importVersions: null as any,
+			timing: null as any,
+			externalNRCSName: 'FAKE',
+			playlistId: protectString('playlist0'),
+		}
+	}
+
+	function createBasicDBSegment(id: string, rank: number): DBSegment {
+		return {
+			_id: protectString(id),
+			rundownId: protectString('rd0'),
+			externalId: id,
+			externalModified: 100000,
+			_rank: rank,
+			name: `${id} segment`,
+		}
+	}
+
+	it('rundown getter', async () => {
+		const rundown = createBasicDBRundown()
+		const model = new PlayoutRundownModelImpl(rundown, [], [])
+
+		expect(model.rundown).toBe(rundown)
+	})
+
+	it('getSegment', async () => {
+		const rundown = createBasicDBRundown()
+
+		const segment = createBasicDBSegment('seg0', 0)
+		const segmentModel = new PlayoutSegmentModelImpl(segment, [])
+
+		const segment2 = createBasicDBSegment('seg1', 5)
+		const segment2Model = new PlayoutSegmentModelImpl(segment2, [])
+
+		const model = new PlayoutRundownModelImpl(rundown, [segmentModel, segment2Model], [])
+
+		expect(model.getSegment(segment._id)).toBe(segmentModel)
+		expect(model.getSegment(segment2._id)).toBe(segment2Model)
+
+		expect(model.getSegment(protectString('missing-id'))).toBeUndefined()
+	})
+
+	it('getSegmentIds', async () => {
+		const rundown = createBasicDBRundown()
+
+		const segment = createBasicDBSegment('seg0', 0)
+		const segmentModel = new PlayoutSegmentModelImpl(segment, [])
+
+		const segment2 = createBasicDBSegment('seg1', 5)
+		const segment2Model = new PlayoutSegmentModelImpl(segment2, [])
+
+		const model = new PlayoutRundownModelImpl(
+			rundown,
+			[
+				// Intentionally reverse the order
+				segment2Model,
+				segmentModel,
+			],
+			[]
+		)
+
+		expect(model.getSegmentIds()).toEqual([segment._id, segment2._id])
+	})
+
+	describe('insertScratchpadSegment', () => {
+		beforeEach(() => {
+			restartRandomId()
+		})
+
+		it('ok', async () => {
+			const rundown = createBasicDBRundown()
+
+			const segment = createBasicDBSegment('seg0', 0)
+			const segmentModel = new PlayoutSegmentModelImpl(segment, [])
+
+			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
+			expect(model.ScratchPadSegmentHasChanged).toBeFalsy()
+
+			const expectedId: SegmentId = protectString('randomId9000')
+			expect(model.insertScratchpadSegment()).toEqual(expectedId)
+
+			const createdSegment = model.getSegment(expectedId) as PlayoutSegmentModelImpl
+			expect(createdSegment).toBeTruthy()
+
+			const fixedSegment: ReadonlyDeep<DBSegment> = {
+				...createdSegment.segment,
+				externalModified: 0,
+			}
+
+			expect(fixedSegment).toEqual({
+				_id: expectedId,
+				rundownId: protectString('rd0'),
+				externalId: '__scratchpad__',
+				externalModified: 0,
+				_rank: -1,
+				name: '',
+				orphaned: SegmentOrphanedReason.SCRATCHPAD,
+			} satisfies DBSegment)
+
+			expect(model.ScratchPadSegmentHasChanged).toBeTruthy()
+		})
+
+		it('check rank - first segment higher', async () => {
+			const rundown = createBasicDBRundown()
+			const segmentModel = new PlayoutSegmentModelImpl(createBasicDBSegment('seg0', 10), [])
+			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
+
+			const expectedId: SegmentId = protectString('randomId9000')
+			expect(model.insertScratchpadSegment()).toEqual(expectedId)
+
+			const createdSegment = model.getSegment(expectedId) as PlayoutSegmentModelImpl
+			expect(createdSegment).toBeTruthy()
+			expect(createdSegment.segment._rank).toBe(-1)
+		})
+		it('check rank - first segment lower', async () => {
+			const rundown = createBasicDBRundown()
+			const segmentModel = new PlayoutSegmentModelImpl(createBasicDBSegment('seg0', -5), [])
+			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
+
+			const expectedId: SegmentId = protectString('randomId9000')
+			expect(model.insertScratchpadSegment()).toEqual(expectedId)
+
+			const createdSegment = model.getSegment(expectedId) as PlayoutSegmentModelImpl
+			expect(createdSegment).toBeTruthy()
+			expect(createdSegment.segment._rank).toBe(-6)
+		})
+
+		it('calling twice fails', async () => {
+			const rundown = createBasicDBRundown()
+
+			const segment = createBasicDBSegment('seg0', 0)
+			const segmentModel = new PlayoutSegmentModelImpl(segment, [])
+
+			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
+
+			const expectedId: SegmentId = protectString('randomId9000')
+			expect(model.insertScratchpadSegment()).toEqual(expectedId)
+
+			const createdSegment = model.getSegment(expectedId) as PlayoutSegmentModelImpl
+			expect(createdSegment).toBeTruthy()
+
+			model.clearScratchPadSegmentChangedFlag()
+
+			// Expect a UserError
+			expect(() => model.insertScratchpadSegment()).toThrow(
+				expect.objectContaining({ key: UserErrorMessage.ScratchpadAlreadyActive })
+			)
+
+			expect(model.ScratchPadSegmentHasChanged).toBeFalsy()
+		})
+
+		it('calling when predefined', async () => {
+			const rundown = createBasicDBRundown()
+
+			const segment = createBasicDBSegment('seg0', 0)
+			segment.orphaned = SegmentOrphanedReason.SCRATCHPAD
+			const segmentModel = new PlayoutSegmentModelImpl(segment, [])
+
+			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
+
+			// Expect a UserError
+			expect(() => model.insertScratchpadSegment()).toThrow(
+				expect.objectContaining({ key: UserErrorMessage.ScratchpadAlreadyActive })
+			)
+
+			expect(model.ScratchPadSegmentHasChanged).toBeFalsy()
+		})
+	})
+
+	describe('removeScratchpadSegment', () => {
+		beforeEach(() => {
+			restartRandomId()
+		})
+
+		it('ok', async () => {
+			const rundown = createBasicDBRundown()
+
+			const segment = createBasicDBSegment('seg0', 0)
+			segment.orphaned = SegmentOrphanedReason.SCRATCHPAD
+			const segmentModel = new PlayoutSegmentModelImpl(segment, [])
+
+			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
+			expect(model.ScratchPadSegmentHasChanged).toBeFalsy()
+
+			expect(model.removeScratchpadSegment()).toBeTruthy()
+			expect(model.ScratchPadSegmentHasChanged).toBeTruthy()
+		})
+
+		it('calling multiple times', async () => {
+			const rundown = createBasicDBRundown()
+
+			const segment = createBasicDBSegment('seg0', 0)
+			segment.orphaned = SegmentOrphanedReason.SCRATCHPAD
+			const segmentModel = new PlayoutSegmentModelImpl(segment, [])
+
+			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
+			expect(model.ScratchPadSegmentHasChanged).toBeFalsy()
+
+			expect(model.removeScratchpadSegment()).toBeTruthy()
+			expect(model.ScratchPadSegmentHasChanged).toBeTruthy()
+
+			// call again
+			expect(model.removeScratchpadSegment()).toBeFalsy()
+			expect(model.ScratchPadSegmentHasChanged).toBeTruthy()
+
+			// once more, after clearing changed flag
+			model.clearScratchPadSegmentChangedFlag()
+			expect(model.removeScratchpadSegment()).toBeFalsy()
+			expect(model.ScratchPadSegmentHasChanged).toBeFalsy()
+		})
+
+		it('insert then remove', async () => {
+			const rundown = createBasicDBRundown()
+
+			const segment = createBasicDBSegment('seg0', 0)
+			const segmentModel = new PlayoutSegmentModelImpl(segment, [])
+
+			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
+			expect(model.ScratchPadSegmentHasChanged).toBeFalsy()
+
+			const expectedId: SegmentId = protectString('randomId9000')
+			expect(model.insertScratchpadSegment()).toEqual(expectedId)
+			expect(model.ScratchPadSegmentHasChanged).toBeTruthy()
+			expect(model.getSegmentIds()).toEqual([expectedId, segment._id])
+
+			model.clearScratchPadSegmentChangedFlag()
+			expect(model.removeScratchpadSegment()).toBeTruthy()
+			expect(model.ScratchPadSegmentHasChanged).toBeTruthy()
+			expect(model.getSegmentIds()).toEqual([segment._id])
+		})
+	})
+
+	describe('getScratchpadSegment', () => {
+		beforeEach(() => {
+			restartRandomId()
+		})
+
+		it('pre-defined', async () => {
+			const rundown = createBasicDBRundown()
+
+			const segment = createBasicDBSegment('seg0', 0)
+			segment.orphaned = SegmentOrphanedReason.SCRATCHPAD
+			const segmentModel = new PlayoutSegmentModelImpl(segment, [])
+
+			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
+
+			expect(model.getScratchpadSegment()).toBe(segmentModel)
+		})
+
+		it('after remove', async () => {
+			const rundown = createBasicDBRundown()
+
+			const segment = createBasicDBSegment('seg0', 0)
+			segment.orphaned = SegmentOrphanedReason.SCRATCHPAD
+			const segmentModel = new PlayoutSegmentModelImpl(segment, [])
+
+			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
+
+			expect(model.removeScratchpadSegment()).toBeTruthy()
+
+			expect(model.getScratchpadSegment()).toBe(undefined)
+		})
+
+		it('after insert', async () => {
+			const rundown = createBasicDBRundown()
+
+			const segment = createBasicDBSegment('seg0', 0)
+			const segmentModel = new PlayoutSegmentModelImpl(segment, [])
+
+			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
+
+			const expectedId: SegmentId = protectString('randomId9000')
+			expect(model.insertScratchpadSegment()).toEqual(expectedId)
+
+			expect(model.getScratchpadSegment()).toMatchObject({
+				segment: { _id: expectedId },
+			})
+		})
+	})
+
+	describe('setScratchpadSegmentRank', () => {
+		beforeEach(() => {
+			restartRandomId()
+		})
+
+		it('pre-defined', async () => {
+			const rundown = createBasicDBRundown()
+
+			const segment = createBasicDBSegment('seg0', 99)
+			segment.orphaned = SegmentOrphanedReason.SCRATCHPAD
+			const segmentModel = new PlayoutSegmentModelImpl(segment, [])
+
+			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
+
+			expect(model.getScratchpadSegment()?.segment._rank).toBe(99)
+
+			model.clearScratchPadSegmentChangedFlag()
+			model.updateScratchpadSegmentRank()
+
+			expect(model.getScratchpadSegment()?.segment._rank).toBe(-1)
+			expect(model.ScratchPadSegmentHasChanged).toBeTruthy()
+		})
+
+		it('pre-defined: no change', async () => {
+			const rundown = createBasicDBRundown()
+
+			const segment = createBasicDBSegment('seg0', -1)
+			segment.orphaned = SegmentOrphanedReason.SCRATCHPAD
+			const segmentModel = new PlayoutSegmentModelImpl(segment, [])
+
+			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
+
+			model.clearScratchPadSegmentChangedFlag()
+			model.updateScratchpadSegmentRank()
+
+			expect(model.getScratchpadSegment()?.segment._rank).toBe(-1)
+			expect(model.ScratchPadSegmentHasChanged).toBeFalsy()
+		})
+
+		it('after remove', async () => {
+			const rundown = createBasicDBRundown()
+
+			const segment = createBasicDBSegment('seg0', 0)
+			segment.orphaned = SegmentOrphanedReason.SCRATCHPAD
+			const segmentModel = new PlayoutSegmentModelImpl(segment, [])
+
+			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
+
+			expect(model.removeScratchpadSegment()).toBeTruthy()
+
+			model.clearScratchPadSegmentChangedFlag()
+			model.updateScratchpadSegmentRank()
+			expect(model.ScratchPadSegmentHasChanged).toBeFalsy()
+		})
+	})
+})

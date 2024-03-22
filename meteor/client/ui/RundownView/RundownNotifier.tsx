@@ -12,16 +12,16 @@ import {
 } from '../../../lib/notifications/notifications'
 import { WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
 import { reactiveData } from '../../lib/reactiveData/reactiveData'
-import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { getCurrentTime, unprotectString } from '../../../lib/lib'
-import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
+import { meteorSubscribe } from '../../../lib/api/pubsub'
 import { ReactiveVar } from 'meteor/reactive-var'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 // import { withTranslation, getI18n, getDefaults } from 'react-i18next'
 import { i18nTranslator as t } from '../i18n'
-import { PieceStatusCode } from '../../../lib/collections/Pieces'
+import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { handleRundownReloadResponse } from '../RundownView'
 import { MeteorCall } from '../../../lib/api/methods'
@@ -44,6 +44,7 @@ import {
 import { UIPieceContentStatuses, UISegmentPartNotes } from '../Collections'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 import { logger } from '../../../lib/logging'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownPlaylistClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -292,7 +293,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			| ReactiveVar<Pick<PeripheralDevice, '_id' | 'name' | 'ignore' | 'status' | 'connected' | 'parentDeviceId'>[]>
 			| undefined
 		if (studioId) {
-			meteorSubscribe(PubSub.peripheralDevicesAndSubDevices, { studioId: studioId })
+			meteorSubscribe(CorelibPubSub.peripheralDevicesAndSubDevices, studioId)
 			reactivePeripheralDevices = reactiveData.getRPeripheralDevices(studioId, {
 				fields: {
 					name: 1,
@@ -576,7 +577,7 @@ class RundownViewNotifier extends WithManagedTracker {
 	}
 
 	private reactiveQueueStatus(studioId: StudioId, playlistId: RundownPlaylistId) {
-		meteorSubscribe(PubSub.externalMessageQueue, { studioId: studioId, playlistId })
+		meteorSubscribe(CorelibPubSub.externalMessageQueue, { studioId: studioId, playlistId })
 		const reactiveUnsentMessageCount = reactiveData.getUnsentExternalMessageCount(studioId, playlistId)
 		this.autorun(() => {
 			if (reactiveUnsentMessageCount.get() > 0 && this._unsentExternalMessagesStatus === undefined) {

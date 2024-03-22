@@ -1,7 +1,22 @@
-import { IBlueprintAdLibPiece, SomeContent } from '@sofie-automation/blueprints-integration'
+import { IBlueprintAdLibPiece, IngestAdlib, SomeContent } from '@sofie-automation/blueprints-integration'
 import { BucketAdLibId, BucketId, StudioId, ShowStyleVariantId, ShowStyleBaseId } from './Ids'
 import { PieceTimelineObjectsBlob } from './Piece'
 import { RundownImportVersions } from './Rundown'
+
+/**
+ * Information used to 'ingest' a Bucket Adlib item
+ */
+export interface BucketAdLibIngestInfo {
+	/**
+	 * If set, the adlib should be limited to the specified ShowStyleVariants.
+	 * If undefined, the adlib will be generated for all Variants of the ShowStyleBase.
+	 */
+	limitToShowStyleVariantIds: ShowStyleVariantId[] | undefined
+	/**
+	 * The ingest payload the Adlib was generated from
+	 */
+	payload: IngestAdlib
+}
 
 export interface BucketAdLib extends Omit<IBlueprintAdLibPiece, 'content'> {
 	_id: BucketAdLibId
@@ -20,6 +35,8 @@ export interface BucketAdLib extends Omit<IBlueprintAdLibPiece, 'content'> {
 	showStyleVariantId: ShowStyleVariantId | null
 
 	importVersions: RundownImportVersions // TODO - is this good?
+	/** Information used to generate the adlib. If set, this adlib can be regenerated */
+	ingestInfo: BucketAdLibIngestInfo | undefined
 
 	/** Stringified timelineObjects */
 	timelineObjectsString: PieceTimelineObjectsBlob

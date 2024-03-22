@@ -1,5 +1,5 @@
 import { addMigrationSteps } from './databaseMigration'
-import { StudioRouteSet, StudioRouteType } from '../../lib/collections/Studios'
+import { StudioRouteSet, StudioRouteType } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { Studios } from '../collections'
 
 export const addSteps = addMigrationSteps('1.42.0', [

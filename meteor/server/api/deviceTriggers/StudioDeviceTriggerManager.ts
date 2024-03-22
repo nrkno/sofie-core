@@ -13,6 +13,7 @@ import {
 	DeviceActionId,
 	DeviceTriggerMountedActionId,
 	PreviewWrappedAdLibId,
+	ShiftRegisterActionArguments,
 } from '../../../lib/api/triggers/MountedTriggers'
 import { isDeviceTrigger } from '../../../lib/api/triggers/triggerTypeSelectors'
 import { DBTriggeredActions, UITriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
@@ -22,6 +23,7 @@ import { DeviceTriggerMountedActionAdlibsPreview, DeviceTriggerMountedActions } 
 import { ContentCache } from './reactiveContentCache'
 import { logger } from '../../logging'
 import { SomeAction, SomeBlueprintTrigger } from '@sofie-automation/blueprints-integration'
+import { DeviceActions } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
 
 export class StudioDeviceTriggerManager {
 	#lastShowStyleBaseId: ShowStyleBaseId | null = null
@@ -102,6 +104,19 @@ export class StudioDeviceTriggerManager {
 						return
 					}
 
+					let deviceActionArguments: ShiftRegisterActionArguments | undefined = undefined
+
+					if (action.action === DeviceActions.modifyShiftRegister) {
+						deviceActionArguments = {
+							type: 'modifyRegister',
+							register: action.register,
+							operation: action.operation,
+							value: action.value,
+							limitMin: action.limitMin,
+							limitMax: action.limitMax,
+						}
+					}
+
 					const deviceTriggerMountedActionId = protectString<DeviceTriggerMountedActionId>(
 						`${actionId}_${key}`
 					)
@@ -114,6 +129,7 @@ export class StudioDeviceTriggerManager {
 							deviceId: trigger.deviceId,
 							deviceTriggerId: trigger.triggerId,
 							values: trigger.values,
+							deviceActionArguments,
 							name: triggeredAction.name,
 						},
 					})

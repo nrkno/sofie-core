@@ -15,8 +15,7 @@
 			"MosScope": "OBJECT",
 			"MosSchema": "undefined",
 			"MosPayload": {
-				"objType": "VIDEO",
-				"text": "VIDEO"
+				"objType": "VIDEO"
 			}
 		}
 	],

@@ -1,15 +1,13 @@
 import React from 'react'
 import { RundownTimingConsumer } from '../../RundownView/RundownTiming/RundownTimingConsumer'
 import { TimingDataResolution, TimingTickResolution } from '../../RundownView/RundownTiming/withTiming'
-import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 
 export const LiveLineIsPast = React.memo(function LiveLineIsPast({
-	partId,
+	partTimingId,
 	time,
 	children,
 }: {
-	partId: PartId
+	partTimingId: string
 	time: number
 	children?: (isPast: boolean) => JSX.Element | null
 }) {
@@ -17,10 +15,10 @@ export const LiveLineIsPast = React.memo(function LiveLineIsPast({
 		<RundownTimingConsumer
 			dataResolution={TimingDataResolution.High}
 			tickResolution={TimingTickResolution.High}
-			filter={(data) => data.partPlayed?.[unprotectString(partId)]}
+			filter={(data) => data.partPlayed?.[partTimingId]}
 		>
 			{(timingContext) => {
-				const livePosition = timingContext.partPlayed?.[unprotectString(partId)] ?? 0
+				const livePosition = timingContext.partPlayed?.[partTimingId] ?? 0
 
 				return children ? children(livePosition > time) : null
 			}}

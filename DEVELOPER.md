@@ -129,6 +129,30 @@ The resulting JSON file will be placed in `meteor/public/locales/xx`, where it w
 
 Then submit this as a PR.
 
+## Deprecations
+
+### ConfigManifests
+
+The ConfigManifests for Blueprints and Gateways was replaced with JSONSchema in R50.  
+However, one usage by AdlibActions for their userDataManifest remains as this is not something we are actively using.
+
+## Blueprint Migrations
+
+In R49, a replacement flow was added consisting of `validateConfig` and `applyConfig`.  
+It is no longer recommended to use the old migrations flow for showstyle and studio blueprints.
+
+### ExpectedMediaItems
+
+These are used for Media-manager which is no longer being developed.
+
+### Blueprints: getPieceABSessionId & getTimelineObjectAbSessionId
+
+With AB being a native concept supported by Sofie since R50, these are likely no longer useful to Blueprints.
+
+### MongoQuery `fields` specifier
+
+It is recommended to use `projection` instead, as it is functionally identical but follows recommended naming from mongodb.
+
 ## Other info
 
 ### Version-Numbering Scheme

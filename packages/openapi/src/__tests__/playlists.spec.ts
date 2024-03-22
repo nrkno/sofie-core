@@ -127,6 +127,18 @@ describe('Network client', () => {
 		test.todo('execute adlib - need to have an adlib to run')
 	}
 
+	if (testServer) {
+		test('can execute a bucket adLib', async () => {
+			const execute = await playlistsApi.executeBucketAdLib({
+				playlistId: playlistIds[0],
+				executeBucketAdLibRequest: { bucketId: 'cIt0kEWuHOvQVMD', externalId: 'MDEKzCrBpgGWSs_' },
+			})
+			expect(execute.status).toBe(200)
+		})
+	} else {
+		test.todo('execute a bucket adlib - need to have an adlib to run')
+	}
+
 	test('can deactivate a playlist', async () => {
 		const deactive = await playlistsApi.deactivate({ playlistId: playlistIds[0] })
 		expect(deactive.status).toBe(200)

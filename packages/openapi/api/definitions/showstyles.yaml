@@ -607,13 +607,12 @@ components:
               type: boolean
               example: true
           additionalProperties: true
-        required:
-          - name
-          - rank
-          - showStyleBaseId
-          - blueprintId
-          - config
-        additionalProperties: false
+      required:
+        - name
+        - rank
+        - showStyleBaseId
+        - config
+      additionalProperties: false
     outputLayer:
       type: object
       properties:

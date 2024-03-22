@@ -4,12 +4,13 @@ import { DBPart } from '../dataModel/Part'
 import { PieceInstance, PieceInstancePiece } from '../dataModel/PieceInstance'
 import { Piece } from '../dataModel/Piece'
 import { RundownHoldState } from '../dataModel/RundownPlaylist'
+import { ReadonlyDeep } from 'type-fest'
 
 /**
  * Calculate the total pre-roll duration of a PartInstance
  * Note: once the part has been taken this should not be recalculated. Doing so may result in the timings shifting
  */
-function calculatePartPreroll(pieces: CalculateTimingsPiece[]): number {
+function calculatePartPreroll(pieces: ReadonlyDeep<CalculateTimingsPiece[]>): number {
 	const candidates: number[] = []
 	for (const piece of pieces) {
 		if (piece.pieceType !== IBlueprintPieceType.Normal) {
@@ -30,7 +31,7 @@ function calculatePartPreroll(pieces: CalculateTimingsPiece[]): number {
 /**
  * Calculate the total post-roll duration of a PartInstance
  */
-function calculatePartPostroll(pieces: CalculateTimingsPiece[]): number {
+function calculatePartPostroll(pieces: ReadonlyDeep<CalculateTimingsPiece[]>): number {
 	const candidates: number[] = []
 	for (const piece of pieces) {
 		if (!piece.postrollDuration) {
@@ -75,7 +76,7 @@ export function calculatePartTimings(
 	fromPart: CalculateTimingsFromPart | undefined,
 	fromPieces: CalculateTimingsPiece[] | undefined,
 	toPart: CalculateTimingsToPart,
-	toPieces: CalculateTimingsPiece[]
+	toPieces: ReadonlyDeep<CalculateTimingsPiece[]>
 	// toPartPreroll: number
 ): PartCalculatedTimings {
 	// If in a hold, we cant do the transition
@@ -140,8 +141,8 @@ export function calculatePartTimings(
 }
 
 export function getPartTimingsOrDefaults(
-	partInstance: DBPartInstance,
-	pieceInstances: PieceInstance[]
+	partInstance: ReadonlyDeep<DBPartInstance>,
+	pieceInstances: ReadonlyDeep<PieceInstance[]>
 ): PartCalculatedTimings {
 	if (partInstance.partPlayoutTimings) {
 		return partInstance.partPlayoutTimings
@@ -164,9 +165,11 @@ function calculateExpectedDurationWithPreroll(rawDuration: number, timings: Part
 	return Math.max(0, rawDuration + timings.toPartDelay - (timings.fromPartRemaining - timings.toPartDelay))
 }
 
+export type CalculateExpectedDurationPart = Pick<DBPart, 'inTransition' | 'expectedDuration'>
+
 export function calculatePartExpectedDurationWithPreroll(
-	part: DBPart,
-	pieces: PieceInstancePiece[]
+	part: CalculateExpectedDurationPart,
+	pieces: ReadonlyDeep<PieceInstancePiece[]>
 ): number | undefined {
 	if (part.expectedDuration === undefined) return undefined
 

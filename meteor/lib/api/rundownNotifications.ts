@@ -13,7 +13,7 @@ import {
 	SegmentId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ProtectedString } from '../lib'
-import { PieceContentStatusObj } from '../mediaObjects'
+import { PieceContentStatusObj } from './pieceContentStatus'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 export type UISegmentPartNoteId = ProtectedString<'UISegmentPartNote'>
@@ -38,6 +38,7 @@ export interface UIPieceContentStatus {
 	segmentId: SegmentId | undefined
 
 	pieceId: PieceId | AdLibActionId | RundownBaselineAdLibActionId | PieceInstanceId
+	isPieceInstance: boolean
 
 	name: string | ITranslatableMessage
 	segmentName: string | undefined

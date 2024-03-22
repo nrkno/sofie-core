@@ -68,12 +68,12 @@ export async function handleMosFullStory(context: JobContext, data: MosFullStory
 				throw new Error(`handleMosFullStory: Missing MOS Rundown "${data.rundownExternalId}"`)
 			}
 		},
-		async (context, cache, ingestRundown) => {
+		async (context, ingestModel, ingestRundown) => {
 			const ingestSegment = ingestRundown?.segments?.find((s) =>
 				s.parts.find((p) => p.externalId === partExternalId)
 			)
 			if (!ingestSegment) throw new Error(`IngestSegment for story "${partExternalId}" is missing!`)
-			return updateSegmentFromIngestData(context, cache, ingestSegment, false)
+			return updateSegmentFromIngestData(context, ingestModel, ingestSegment, false)
 		}
 	)
 }

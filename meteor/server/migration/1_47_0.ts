@@ -1,5 +1,5 @@
 import { addMigrationSteps } from './databaseMigration'
-import { DBStudio, MappingsExt } from '../../lib/collections/Studios'
+import { DBStudio, MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { DBShowStyleBase, OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
@@ -28,7 +28,7 @@ interface TriggeredActionsOld {
 function normalizeArrayRandomId<T>(array: Array<T>): { [indexKey: string]: T } {
 	const normalizedObject: any = {}
 	for (const obj of array) {
-		normalizedObject[obj[getRandomString()]] = obj
+		normalizedObject[getRandomString()] = obj
 	}
 	return normalizedObject as { [key: string]: T }
 }

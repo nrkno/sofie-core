@@ -4,7 +4,7 @@ import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { SegmentTimelineSmallPartFlagIcon } from './SegmentTimelineSmallPartFlagIcon'
 import { protectString, unprotectString } from '../../../../lib/lib'
 import { PartUi, SegmentUi } from '../SegmentTimelineContainer'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { SegmentTimelinePartHoverPreview } from './SegmentTimelinePartHoverPreview'
 import RundownViewEventBus, { RundownViewEvents } from '../../../../lib/api/triggers/RundownViewEventBus'
 import { UIStudio } from '../../../../lib/api/studios'
@@ -12,20 +12,22 @@ import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/ti
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { TimingDataResolution, TimingTickResolution, withTiming } from '../../RundownView/RundownTiming/withTiming'
 import { SegmentTimelinePartClass } from '../Parts/SegmentTimelinePart'
+import { PartExtended } from '../../../../lib/Rundown'
+import { getPartInstanceTimingId } from '../../../lib/rundownTiming'
 
 export const SegmentTimelineSmallPartFlag = withTiming<
 	{
 		parts: [PartUi, number, number][]
 		pieces: Map<PartId, CalculateTimingsPiece[]>
 		followingPart: PartUi | undefined
-		firstPartInSegmentId: PartId
+		firstPartInSegment: PartExtended
 		sourceLayers: {
 			[key: string]: ISourceLayer
 		}
 		timeToPixelRatio: number
 
 		segment: SegmentUi
-		playlist: RundownPlaylist
+		playlist: DBRundownPlaylist
 		studio: UIStudio
 		collapsedOutputs: {
 			[key: string]: boolean
@@ -48,8 +50,8 @@ export const SegmentTimelineSmallPartFlag = withTiming<
 	dataResolution: TimingDataResolution.High,
 	tickResolution: TimingTickResolution.High,
 	filter: (timings) => [
-		timings?.partDisplayStartsAt?.[unprotectString(props.firstPartInSegmentId)],
-		timings?.partDisplayStartsAt?.[unprotectString(props.parts[0][0].partId)],
+		timings?.partDisplayStartsAt?.[getPartInstanceTimingId(props.firstPartInSegment.instance)],
+		timings?.partDisplayStartsAt?.[getPartInstanceTimingId(props.parts[0][0].instance)],
 	],
 }))(
 	({
@@ -58,7 +60,7 @@ export const SegmentTimelineSmallPartFlag = withTiming<
 		followingPart,
 		sourceLayers,
 		timeToPixelRatio,
-		firstPartInSegmentId,
+		firstPartInSegment,
 
 		segment,
 		playlist,
@@ -113,8 +115,8 @@ export const SegmentTimelineSmallPartFlag = withTiming<
 		])
 
 		const firstPartDisplayStartsAt =
-			(timingDurations.partDisplayStartsAt?.[unprotectString(parts[0][0].partId)] ?? 0) -
-			(timingDurations.partDisplayStartsAt?.[unprotectString(firstPartInSegmentId)] ?? 0)
+			(timingDurations.partDisplayStartsAt?.[getPartInstanceTimingId(parts[0][0].instance)] ?? 0) -
+			(timingDurations.partDisplayStartsAt?.[getPartInstanceTimingId(firstPartInSegment.instance)] ?? 0)
 
 		const pixelOffsetPosition = (firstPartDisplayStartsAt + futureShadePaddingTime) * timeToPixelRatio
 

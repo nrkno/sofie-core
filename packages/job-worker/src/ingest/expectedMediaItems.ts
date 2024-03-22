@@ -1,5 +1,4 @@
 import {
-	ExpectedMediaItem,
 	ExpectedMediaItemBase,
 	ExpectedMediaItemBucketAction,
 	ExpectedMediaItemBucketPiece,
@@ -23,8 +22,7 @@ import { getCurrentTime } from '../lib'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { saveIntoCache } from '../cache/lib'
-import { CacheForIngest } from './cache'
+import { IngestModel } from './model/IngestModel'
 import { JobContext } from '../jobs'
 import { logger } from '../logging'
 import { saveIntoDb } from '../db/changes'
@@ -32,6 +30,8 @@ import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/Buck
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { interpollateTranslation, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
+import { ReadonlyDeep } from 'type-fest'
+import { IngestPartModel } from './model/IngestPartModel'
 
 export enum PieceType {
 	PIECE = 'piece',
@@ -78,11 +78,11 @@ function generateExpectedMediaItems<T extends ExpectedMediaItemBase>(
 function generateExpectedMediaItemsFull(
 	studioId: StudioId,
 	rundownId: RundownId,
-	pieces: Piece[],
-	adlibs: AdLibPiece[],
-	actions: (AdLibAction | RundownBaselineAdLibAction)[]
-): ExpectedMediaItem[] {
-	const eMIs: ExpectedMediaItem[] = []
+	pieces: readonly ReadonlyDeep<Piece>[],
+	adlibs: readonly ReadonlyDeep<AdLibPiece>[],
+	actions: readonly (ReadonlyDeep<AdLibAction> | ReadonlyDeep<RundownBaselineAdLibAction>)[]
+): ExpectedMediaItemRundown[] {
+	const eMIs: ExpectedMediaItemRundown[] = []
 
 	pieces.forEach((doc) =>
 		eMIs.push(
@@ -240,27 +240,40 @@ export async function updateExpectedMediaItemForBucketAdLibAction(
 /**
  * Regenerate the ExpectedMediaItems belonging to a Rundown
  * @param context Context for the Job
- * @param cache Cache containing the Rundown and resulting ExpectedMediaItems
+ * @param ingestModel Model containing the Rundown and resulting ExpectedMediaItems
  */
-export async function updateExpectedMediaItemsOnRundown(context: JobContext, cache: CacheForIngest): Promise<void> {
-	const pieces = cache.Pieces.findAll(null)
-	const adlibs = cache.AdLibPieces.findAll(null)
-	const actions: (AdLibAction | RundownBaselineAdLibAction)[] = cache.AdLibActions.findAll(null)
-
+export async function updateExpectedMediaItemsForRundownBaseline(
+	context: JobContext,
+	ingestModel: IngestModel
+): Promise<void> {
 	const [baselineAdlibPieces, baselineAdlibActions] = await Promise.all([
-		cache.RundownBaselineAdLibPieces.get(),
-		cache.RundownBaselineAdLibActions.get(),
+		ingestModel.rundownBaselineAdLibPieces.get(),
+		ingestModel.rundownBaselineAdLibActions.get(),
 	])
-
-	adlibs.push(...baselineAdlibPieces.findAll(null))
-	actions.push(...baselineAdlibActions.findAll(null))
 
 	const expectedMediaItems = generateExpectedMediaItemsFull(
 		context.studio._id,
-		cache.RundownId,
-		pieces,
-		adlibs,
-		actions
+		ingestModel.rundownId,
+		[],
+		baselineAdlibPieces,
+		baselineAdlibActions
 	)
-	saveIntoCache<ExpectedMediaItem>(context, cache.ExpectedMediaItems, null, expectedMediaItems)
+	ingestModel.setExpectedMediaItemsForRundownBaseline(expectedMediaItems)
+}
+
+/**
+ * Regenerate the ExpectedMediaItems belonging to a Part
+ * @param context Context for the Job
+ * @param part Model containing the Part and resulting ExpectedMediaItems
+ */
+export function updateExpectedMediaItemsForPartModel(context: JobContext, part: IngestPartModel): void {
+	const expectedMediaItems = generateExpectedMediaItemsFull(
+		context.studio._id,
+		part.part.rundownId,
+		part.pieces,
+		part.adLibPieces,
+		part.adLibActions
+	)
+
+	part.setExpectedMediaItems(expectedMediaItems)
 }

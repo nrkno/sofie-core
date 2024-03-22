@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import classNames from 'classnames'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { getAllowConfigure, getAllowService, getAllowStudio } from '../../lib/localStorage'
 import { useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { confirmDeleteRundown, confirmReSyncRundown, getShowStyleBaseLink } from './util'
@@ -25,7 +25,7 @@ export function RundownListItem({
 	rundownLayouts,
 	swapRundownOrder,
 	isOnlyRundownInPlaylist,
-}: {
+}: Readonly<{
 	isActive: boolean
 	rundown: Rundown
 	rundownViewUrl?: string
@@ -34,7 +34,7 @@ export function RundownListItem({
 	playlistId: RundownPlaylistId
 	isOnlyRundownInPlaylist?: boolean
 	action?: IRundownPlaylistUiAction
-}): JSX.Element | null {
+}>): JSX.Element | null {
 	const { t } = useTranslation()
 
 	const showStyleBase = useTracker(
@@ -98,7 +98,7 @@ export function RundownListItem({
 					showStyleVariant: showStyleVariant.name,
 					showStyleBase: showStyleBase.name,
 			  })
-			: showStyleBase?.name || ''
+			: showStyleBase?.name ?? ''
 
 	return (
 		<RundownListItemView

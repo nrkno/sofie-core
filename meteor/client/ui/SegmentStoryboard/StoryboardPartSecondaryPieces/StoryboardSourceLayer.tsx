@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import classNames from 'classnames'
+// @ts-expect-error No types available
 import * as VelocityReact from 'velocity-react'
 import { ISourceLayerExtended, PartExtended, PieceExtended } from '../../../../lib/Rundown'
 import StudioContext from '../../RundownView/StudioContext'
@@ -99,7 +100,7 @@ function usePlayedOutPieceState(
 const ONCE_A_MINUTE = 60000
 const EMPTY_PLAYED_PIECE_IDS = { playedPieceIds: [], finishedPieceIds: [] }
 
-export function StoryboardSourceLayer({ pieces, sourceLayer, part }: IProps): JSX.Element {
+export function StoryboardSourceLayer({ pieces, sourceLayer, part }: Readonly<IProps>): JSX.Element {
 	const [hoverIndex, setHoverIndex] = useState<number | null>(null)
 	const hoverTimeout = useRef<number | null>(null)
 

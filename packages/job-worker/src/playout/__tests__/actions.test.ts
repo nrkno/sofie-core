@@ -4,7 +4,7 @@ import { removeRundownFromDb } from '../../rundownPlaylists'
 import { setupDefaultRundownPlaylist, setupMockShowStyleCompound } from '../../__mocks__/presetCollections'
 import { activateRundownPlaylist } from '../activePlaylistActions'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { runJobWithPlayoutCache } from '../lock'
+import { runJobWithPlayoutModel } from '../lock'
 import { runWithRundownLock } from '../../ingest/lock'
 
 jest.mock('../../peripheralDevice')
@@ -48,8 +48,8 @@ describe('Playout Actions', () => {
 		expect(executePeripheralDeviceFunctionMock).toHaveBeenCalledTimes(0)
 
 		// Activating a rundown, to rehearsal
-		await runJobWithPlayoutCache(context, { playlistId: playlistId0 }, null, async (cache) =>
-			activateRundownPlaylist(context, cache, true)
+		await runJobWithPlayoutModel(context, { playlistId: playlistId0 }, null, async (playoutModel) =>
+			activateRundownPlaylist(context, playoutModel, true)
 		)
 		await expect(getPlaylist0()).resolves.toMatchObject({
 			activationId: expect.stringMatching(/^randomId/),
@@ -57,8 +57,8 @@ describe('Playout Actions', () => {
 		})
 
 		// Activating a rundown
-		await runJobWithPlayoutCache(context, { playlistId: playlistId0 }, null, async (cache) =>
-			activateRundownPlaylist(context, cache, false)
+		await runJobWithPlayoutModel(context, { playlistId: playlistId0 }, null, async (playoutModel) =>
+			activateRundownPlaylist(context, playoutModel, false)
 		)
 		await expect(getPlaylist0()).resolves.toMatchObject({
 			activationId: expect.stringMatching(/^randomId/),
@@ -66,8 +66,8 @@ describe('Playout Actions', () => {
 		})
 
 		// Activating a rundown, back to rehearsal
-		await runJobWithPlayoutCache(context, { playlistId: playlistId0 }, null, async (cache) =>
-			activateRundownPlaylist(context, cache, true)
+		await runJobWithPlayoutModel(context, { playlistId: playlistId0 }, null, async (playoutModel) =>
+			activateRundownPlaylist(context, playoutModel, true)
 		)
 		await expect(getPlaylist0()).resolves.toMatchObject({
 			activationId: expect.stringMatching(/^randomId/),
@@ -78,8 +78,8 @@ describe('Playout Actions', () => {
 
 		// Activating another rundown
 		await expect(
-			runJobWithPlayoutCache(context, { playlistId: playlistId1 }, null, async (cache) =>
-				activateRundownPlaylist(context, cache, false)
+			runJobWithPlayoutModel(context, { playlistId: playlistId1 }, null, async (playoutModel) =>
+				activateRundownPlaylist(context, playoutModel, false)
 			)
 		).rejects.toMatchToString(/only one rundown can be active/i)
 

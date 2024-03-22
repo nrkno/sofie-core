@@ -5,13 +5,12 @@ import {
 	PeripheralDeviceAPI,
 	PeripheralDeviceCommand,
 	PeripheralDeviceId,
-	PeripheralDeviceForDevice,
 	protectString,
 	StatusCode,
-	StudioId,
-	unprotectString,
 	Observer,
 	stringifyError,
+	PeripheralDevicePubSub,
+	PeripheralDevicePubSubCollectionsNames,
 } from '@sofie-automation/server-core-integration'
 import { MediaObject, DeviceOptionsAny, ActionExecutionResult } from 'timeline-state-resolver'
 import * as _ from 'underscore'
@@ -25,6 +24,7 @@ import { BaseRemoteDeviceIntegration } from 'timeline-state-resolver/dist/servic
 import { getVersions } from './versions'
 import { CoreConnectionChild } from '@sofie-automation/server-core-integration/dist/lib/CoreConnectionChild'
 import { PlayoutGatewayConfig } from './generated/options'
+import { PeripheralDeviceCommandId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 
 export interface CoreConfig {
 	host: string
@@ -43,7 +43,7 @@ export interface MemoryUsageReport {
 export class CoreHandler {
 	core!: CoreConnection
 	logger: Logger
-	public _observers: Array<Observer> = []
+	public _observers: Array<Observer<any>> = []
 	public deviceSettings: PlayoutGatewayConfig = {}
 
 	public multithreading = false
@@ -51,14 +51,10 @@ export class CoreHandler {
 
 	private _deviceOptions: DeviceConfig
 	private _onConnected?: () => any
-	private _executedFunctions: { [id: string]: boolean } = {}
+	private _executedFunctions = new Set<PeripheralDeviceCommandId>()
 	private _tsrHandler?: TSRHandler
 	private _coreConfig?: CoreConfig
 	private _certificates?: Buffer[]
-
-	private _studioId: StudioId | undefined
-	private _timelineSubscription: string | null = null
-	private _expectedItemsSubscription: string | null = null
 
 	private _statusInitialized = false
 	private _statusDestroyed = false
@@ -113,12 +109,13 @@ export class CoreHandler {
 		this.logger.info('Core: Setting up subscriptions..')
 		this.logger.info('DeviceId: ' + this.core.deviceId)
 		await Promise.all([
-			this.core.autoSubscribe('peripheralDeviceForDevice', this.core.deviceId),
-			this.core.autoSubscribe('mappingsForDevice', this.core.deviceId),
-			this.core.autoSubscribe('timelineForDevice', this.core.deviceId),
-			this.core.autoSubscribe('timelineDatastoreForDevice', this.core.deviceId),
-			this.core.autoSubscribe('peripheralDeviceCommands', this.core.deviceId),
-			this.core.autoSubscribe('rundownsForDevice', this.core.deviceId),
+			this.core.autoSubscribe(PeripheralDevicePubSub.peripheralDeviceForDevice, this.core.deviceId),
+			this.core.autoSubscribe(PeripheralDevicePubSub.mappingsForDevice, this.core.deviceId),
+			this.core.autoSubscribe(PeripheralDevicePubSub.timelineForDevice, this.core.deviceId),
+			this.core.autoSubscribe(PeripheralDevicePubSub.timelineDatastoreForDevice, this.core.deviceId),
+			this.core.autoSubscribe(PeripheralDevicePubSub.peripheralDeviceCommands, this.core.deviceId),
+			this.core.autoSubscribe(PeripheralDevicePubSub.rundownsForDevice, this.core.deviceId),
+			this.core.autoSubscribe(PeripheralDevicePubSub.expectedPlayoutItemsForDevice, this.core.deviceId),
 		])
 
 		this.logger.info('Core: Subscriptions are set up!')
@@ -130,9 +127,9 @@ export class CoreHandler {
 			this._observers = []
 		}
 		// setup observers
-		const observer = this.core.observe('peripheralDeviceForDevice')
-		observer.added = (id: string) => this.onDeviceChanged(protectString(id))
-		observer.changed = (id: string) => this.onDeviceChanged(protectString(id))
+		const observer = this.core.observe(PeripheralDevicePubSubCollectionsNames.peripheralDeviceForDevice)
+		observer.added = (id) => this.onDeviceChanged(id)
+		observer.changed = (id) => this.onDeviceChanged(id)
 		this.setupObserverForPeripheralDeviceCommands(this)
 
 		// trigger this callback because the observer doesn't the first time..
@@ -178,7 +175,7 @@ export class CoreHandler {
 	}
 	onDeviceChanged(id: PeripheralDeviceId): void {
 		if (id === this.core.deviceId) {
-			const col = this.core.getCollection<PeripheralDeviceForDevice>('peripheralDeviceForDevice')
+			const col = this.core.getCollection(PeripheralDevicePubSubCollectionsNames.peripheralDeviceForDevice)
 			if (!col) throw new Error('collection "peripheralDevices" not found!')
 
 			const device = col.findOne(id)
@@ -205,43 +202,6 @@ export class CoreHandler {
 			const studioId = device?.studioId
 			if (!studioId) throw new Error('PeripheralDevice has no studio!')
 
-			if (studioId !== this._studioId) {
-				this._studioId = studioId
-
-				// Set up timeline data subscription:
-				if (this._timelineSubscription) {
-					this.core.unsubscribe(this._timelineSubscription)
-					this._timelineSubscription = null
-				}
-				this.core
-					.autoSubscribe('timeline', {
-						studioId: studioId,
-					})
-					.then((subscriptionId: string | null) => {
-						this._timelineSubscription = subscriptionId
-					})
-					.catch((err: any) => {
-						this.logger.error(err)
-					})
-
-				// Set up expectedPlayoutItems data subscription:
-				if (this._expectedItemsSubscription) {
-					this.core.unsubscribe(this._expectedItemsSubscription)
-					this._expectedItemsSubscription = null
-				}
-				this.core
-					.autoSubscribe('expectedPlayoutItems', {
-						studioId: studioId,
-					})
-					.then((subscriptionId: string | null) => {
-						this._expectedItemsSubscription = subscriptionId
-					})
-					.catch((err: any) => {
-						this.logger.error(err)
-					})
-				this.logger.debug('VIZDEBUG: Subscription to expectedPlayoutItems done')
-			}
-
 			if (this._tsrHandler) {
 				this._tsrHandler.onSettingsChanged()
 			}
@@ -261,7 +221,7 @@ export class CoreHandler {
 
 	executeFunction(cmd: PeripheralDeviceCommand, fcnObject: CoreHandler | CoreTSRDeviceHandler): void {
 		if (cmd) {
-			if (this._executedFunctions[unprotectString(cmd._id)]) return // prevent it from running multiple times
+			if (this._executedFunctions.has(cmd._id)) return // prevent it from running multiple times
 
 			const cb = (errStr: string | null, res?: any) => {
 				if (errStr) {
@@ -277,7 +237,7 @@ export class CoreHandler {
 				if (cmd.functionName !== 'getDebugStates') {
 					this.logger.debug(`Executing function "${cmd.functionName}", args: ${JSON.stringify(cmd.args)}`)
 				}
-				this._executedFunctions[unprotectString(cmd._id)] = true
+				this._executedFunctions.add(cmd._id)
 				// @ts-expect-error Untyped bunch of functions
 				// eslint-disable-next-line @typescript-eslint/ban-types
 				const fcn: Function = fcnObject[cmd.functionName]
@@ -296,7 +256,7 @@ export class CoreHandler {
 				}
 			} else if (cmd.actionId && 'executeAction' in fcnObject) {
 				this.logger.debug(`Executing action "${cmd.actionId}", payload: ${JSON.stringify(cmd.payload)}`)
-				this._executedFunctions[unprotectString(cmd._id)] = true
+				this._executedFunctions.add(cmd._id)
 
 				fcnObject
 					.executeAction(cmd.actionId, cmd.payload)
@@ -311,16 +271,18 @@ export class CoreHandler {
 			}
 		}
 	}
-	retireExecuteFunction(cmdId: string): void {
-		delete this._executedFunctions[cmdId]
+	retireExecuteFunction(cmdId: PeripheralDeviceCommandId): void {
+		this._executedFunctions.delete(cmdId)
 	}
 	setupObserverForPeripheralDeviceCommands(functionObject: CoreTSRDeviceHandler | CoreHandler): void {
-		const observer = functionObject.core.observe('peripheralDeviceCommands')
+		const observer = functionObject.core.observe(PeripheralDevicePubSubCollectionsNames.peripheralDeviceCommands)
 		functionObject._observers.push(observer)
-		const addedChangedCommand = (id: string) => {
-			const cmds = functionObject.core.getCollection<PeripheralDeviceCommand>('peripheralDeviceCommands')
+		const addedChangedCommand = (id: PeripheralDeviceCommandId) => {
+			const cmds = functionObject.core.getCollection(
+				PeripheralDevicePubSubCollectionsNames.peripheralDeviceCommands
+			)
 			if (!cmds) throw Error('"peripheralDeviceCommands" collection not found!')
-			const cmd = cmds.findOne(protectString(id))
+			const cmd = cmds.findOne(id)
 			if (!cmd) throw Error('PeripheralCommand "' + id + '" not found!')
 			// console.log('addedChangedCommand', id)
 			if (cmd.deviceId === functionObject.core.deviceId) {
@@ -329,16 +291,16 @@ export class CoreHandler {
 				// console.log('not mine', cmd.deviceId, this.core.deviceId)
 			}
 		}
-		observer.added = (id: string) => {
+		observer.added = (id) => {
 			addedChangedCommand(id)
 		}
-		observer.changed = (id: string) => {
+		observer.changed = (id) => {
 			addedChangedCommand(id)
 		}
-		observer.removed = (id: string) => {
+		observer.removed = (id) => {
 			this.retireExecuteFunction(id)
 		}
-		const cmds = functionObject.core.getCollection<PeripheralDeviceCommand>('peripheralDeviceCommands')
+		const cmds = functionObject.core.getCollection(PeripheralDevicePubSubCollectionsNames.peripheralDeviceCommands)
 		if (!cmds) throw Error('"peripheralDeviceCommands" collection not found!')
 		cmds.find({}).forEach((cmd) => {
 			if (cmd.deviceId === functionObject.core.deviceId) {
@@ -449,13 +411,12 @@ export class CoreHandler {
 
 export class CoreTSRDeviceHandler {
 	core!: CoreConnectionChild
-	public _observers: Array<Observer> = []
+	public _observers: Array<Observer<any>> = []
 	public _devicePr: Promise<BaseRemoteDeviceIntegration<DeviceOptionsAny>>
 	public _deviceId: string
 	public _device!: BaseRemoteDeviceIntegration<DeviceOptionsAny>
 	private _coreParentHandler: CoreHandler
 	private _tsrHandler: TSRHandler
-	private _subscriptions: Array<string> = []
 	private _hasGottenStatusChange = false
 	private _deviceStatus: PeripheralDeviceAPI.PeripheralDeviceStatusObject = {
 		statusCode: StatusCode.BAD,
@@ -518,10 +479,8 @@ export class CoreTSRDeviceHandler {
 		this._coreParentHandler.logger.info(
 			'CoreTSRDevice: Setting up subscriptions for ' + this.core.deviceId + ' for device ' + deviceId + ' ..'
 		)
-		this._subscriptions = []
 		try {
-			const sub = await this.core.autoSubscribe('peripheralDeviceCommands', this.core.deviceId)
-			this._subscriptions.push(sub)
+			await this.core.autoSubscribe(PeripheralDevicePubSub.peripheralDeviceCommands, this.core.deviceId)
 		} catch (e) {
 			this._coreParentHandler.logger.error(e)
 		}
@@ -590,21 +549,15 @@ export class CoreTSRDeviceHandler {
 	}
 
 	async dispose(): Promise<void> {
-		this.disposed = true
-		this._observers.forEach((obs) => {
-			obs.stop()
-		})
-
-		for (const subId of this._subscriptions) {
-			this.core.unsubscribe(subId)
-		}
-		this._subscriptions = []
+		this._observers.forEach((obs) => obs.stop())
 
 		await this._tsrHandler.tsr.removeDevice(this._deviceId)
 		await this.core.setStatus({
 			statusCode: StatusCode.BAD,
 			messages: ['Uninitialized'],
 		})
+
+		await this.core.destroy()
 	}
 	killProcess(): void {
 		this._coreParentHandler.killProcess()

@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import { useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
-import { PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { StudioRoutings } from './Studio/Routings'
 import { StudioDevices } from './Studio/Devices'
 import { MappingsSettingsManifest, MappingsSettingsManifests, StudioMappings } from './Studio/Mappings'

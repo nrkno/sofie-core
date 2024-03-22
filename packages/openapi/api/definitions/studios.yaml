@@ -458,7 +458,8 @@ components:
           description: How much extra delay to add to the Now-time (used for the "multi-playout-gateway" feature). A higher value adds delays in playout, but reduces the risk of missed frames.
         preserveUnsyncedPlayingSegmentContents:
           type: boolean
-          description: Preserve unsynced segment contents when the playing segment is removed, rather than removing all but the playing part
+          deprecated: true
+          description: This no longer has any effect
         allowRundownResetOnAir:
           type: boolean
           description: Allow resets while a rundown is on-air

@@ -1,16 +1,17 @@
-import * as React from 'react'
+import React, { useLayoutEffect, useRef } from 'react'
 import CoreIcons from '@nrk/core-icons/jsx'
 import Escape from './Escape'
+import FocusBounder from 'react-focus-bounder'
+import { useTranslation } from 'react-i18next'
 
 import ClassNames from 'classnames'
+// @ts-expect-error No types available
 import * as VelocityReact from 'velocity-react'
 import { logger } from '../../lib/logging'
 import * as _ from 'underscore'
-import type { Sorensen } from '@sofie-automation/sorensen'
 import { withTranslation } from 'react-i18next'
 import { Translated } from './ReactMeteorData/ReactMeteorData'
 import { EditAttribute, EditAttributeType, EditAttributeBase } from './EditAttribute'
-import { SorensenContext } from './SorensenContext'
 import { Settings } from '../../lib/Settings'
 
 interface IModalDialogAttributes {
@@ -41,109 +42,108 @@ interface ModalAction {
 type OnAction = (e: SomeEvent, inputResult: ModalInputResult) => void
 export type ModalInputResult = { [attribute: string]: any }
 export type SomeEvent = Event | React.SyntheticEvent<object>
-export class ModalDialog extends React.Component<React.PropsWithChildren<IModalDialogAttributes>> {
-	sorensen: Sorensen
+export function ModalDialog({
+	show,
+	className,
+	warning,
+	acceptText,
+	title,
+	actions,
+	children,
+	inputs,
+	onAccept,
+	onDiscard,
+	onSecondary,
+	secondaryText,
+}: React.PropsWithChildren<IModalDialogAttributes>): JSX.Element | null {
+	const { t } = useTranslation()
+	const inputResult = useRef<ModalInputResult>(
+		inputs ? Object.entries<ModalInput>(inputs).map(([key, value]) => [key, value.defaultValue]) : {}
+	)
 
-	private inputResult: ModalInputResult = {}
-
-	constructor(args: IModalDialogAttributes) {
-		super(args)
+	function preventClickOnEnter(e: React.KeyboardEvent) {
+		if (!isAcceptKey(e.code)) return
+		e.preventDefault()
+		e.stopPropagation()
 	}
 
-	componentDidMount(): void {
-		this.sorensen = this.context as Sorensen
-		this.bindKeys()
+	function handleAccept(e: SomeEvent) {
+		onAccept?.(e, inputResult.current)
 	}
 
-	componentWillUnmount(): void {
-		this.unbindKeys()
+	function handleDiscard(e: SomeEvent) {
+		if (onDiscard) {
+			onDiscard(e, inputResult.current)
+			return
+		}
+		handleSecondary(e)
 	}
 
-	componentDidUpdate(prevProps: IModalDialogAttributes): void {
-		if (prevProps.show !== this.props.show) this.bindKeys()
+	function handleSecondary(e: SomeEvent) {
+		onSecondary?.(e, inputResult.current)
 	}
 
-	private bindKeys = () => {
-		if (this.props.show) {
-			this.sorensen.bind(Settings.confirmKeyCode, this.preventDefault, {
-				up: false,
-				prepend: true,
-			})
-			this.sorensen.bind(Settings.confirmKeyCode, this.handleKey, {
-				up: true,
-				prepend: true,
-			})
-			this.sorensen.bind('Escape', this.preventDefault, {
-				up: false,
-				prepend: true,
-			})
-			this.sorensen.bind('Escape', this.handleKey, {
-				up: true,
-				prepend: true,
-			})
-		} else {
-			this.unbindKeys()
+	function handleAction(e: SomeEvent, callback: OnAction) {
+		callback(e, inputResult.current)
+	}
+
+	function updateInput(edit: EditAttributeBase, newValue: any) {
+		inputResult.current[edit.props.attribute || ''] = newValue
+	}
+
+	function emulateClick(e: React.KeyboardEvent<HTMLButtonElement>) {
+		if (!isAcceptKey(e.code)) return
+		e.preventDefault()
+		e.stopPropagation()
+		e.currentTarget.click()
+	}
+
+	function onDialogKeyDown(e: React.KeyboardEvent<HTMLDialogElement>) {
+		if (!(e.target instanceof HTMLDialogElement)) return
+		if (!isAcceptKey(e.code) && !isDismissKey(e.code)) return
+
+		e.preventDefault()
+		e.stopPropagation()
+	}
+
+	function onDialogKeyUp(e: React.KeyboardEvent<HTMLDialogElement>) {
+		if (!(e.target instanceof HTMLDialogElement)) return
+		if (!isAcceptKey(e.code) && !isDismissKey(e.code)) return
+		e.preventDefault()
+		e.stopPropagation()
+
+		if (isAcceptKey(e.code)) {
+			handleAccept(e)
+		} else if (isDismissKey(e.code)) {
+			handleDiscard(e)
 		}
 	}
 
-	private unbindKeys = () => {
-		this.sorensen.unbind(Settings.confirmKeyCode, this.preventDefault)
-		this.sorensen.unbind(Settings.confirmKeyCode, this.handleKey)
-		this.sorensen.unbind('Escape', this.preventDefault)
-		this.sorensen.unbind('Escape', this.handleKey)
-	}
+	useLayoutEffect(() => {
+		if (!show) return
 
-	private handleKey = (e: KeyboardEvent) => {
-		if (this.props.show) {
-			if (e.code === 'Enter' || e.code === 'NumpadEnter') {
-				if (!this.props.warning) this.handleAccept(e)
-			} else if (e.code === 'Escape') {
-				if (this.props.secondaryText) {
-					this.handleSecondary(e)
-				} else {
-					this.handleDiscard(e)
-				}
-			}
-			e.preventDefault()
-			e.stopImmediatePropagation()
-		}
-	}
+		const timeout = setTimeout(() => {
+			const el = document.querySelector<HTMLDialogElement>('dialog')
+			if (!el) return
 
-	private handleAccept = (e: SomeEvent) => {
-		if (this.props.onAccept && typeof this.props.onAccept === 'function') {
-			this.props.onAccept(e, this.inputResult)
-		}
-	}
+			el.focus()
+		}, 251)
 
-	private handleSecondary = (e: SomeEvent) => {
-		if (this.props.onSecondary && typeof this.props.onSecondary === 'function') {
-			this.props.onSecondary(e, this.inputResult)
+		return () => {
+			clearTimeout(timeout)
 		}
-	}
-	private handleAction = (e: SomeEvent, on: OnAction) => {
-		if (on && typeof on === 'function') {
-			on(e, this.inputResult)
-		}
-	}
+	}, [show])
 
-	private handleDiscard = (e: SomeEvent) => {
-		if (this.props.onDiscard && typeof this.props.onDiscard === 'function') {
-			this.props.onDiscard(e, this.inputResult)
-		} else {
-			this.handleSecondary(e)
-		}
-	}
-	private updatedInput = (edit: EditAttributeBase, newValue: any) => {
-		this.inputResult[edit.props.attribute || ''] = newValue
-	}
-	render(): JSX.Element | null {
-		return this.props.show ? (
-			<Escape to="viewport">
-				<VelocityReact.VelocityTransitionGroup
-					enter={{ animation: 'fadeIn', easing: 'ease-out', duration: 250 }}
-					runOnMount={true}
-				>
-					<div className="glass-pane">
+	if (!show) return null
+
+	return (
+		<Escape to="viewport">
+			<VelocityReact.VelocityTransitionGroup
+				enter={{ animation: 'fadeIn', easing: 'ease-out', duration: 250 }}
+				runOnMount={true}
+			>
+				<div className="glass-pane">
+					<FocusBounder>
 						<div className="glass-pane-content">
 							<VelocityReact.VelocityTransitionGroup
 								enter={{
@@ -156,27 +156,35 @@ export class ModalDialog extends React.Component<React.PropsWithChildren<IModalD
 								}}
 								runOnMount={true}
 							>
-								<dialog open={true} className={'border-box overlay-m ' + this.props.className || ''} role="alertdialog">
-									<div
-										className={'flex-row ' + (this.props.warning ? 'warn' : 'info') + ' vertical-align-stretch tight-s'}
-									>
+								<dialog
+									open={true}
+									className={'border-box overlay-m ' + className || ''}
+									role="alertdialog"
+									onKeyUp={onDialogKeyUp}
+									onKeyDown={onDialogKeyDown}
+								>
+									<div className={'flex-row ' + (warning ? 'warn' : 'info') + ' vertical-align-stretch tight-s'}>
 										<div className="flex-col c12">
-											<h2>{this.props.title}</h2>
+											<h2>{title}</h2>
 										</div>
 										<div className="flex-col horizontal-align-right vertical-align-middle">
 											<p>
-												<button className="action-btn" onClick={this.handleDiscard}>
+												<button
+													className="action-btn"
+													onClick={handleDiscard}
+													onKeyDown={preventClickOnEnter}
+													onKeyUp={emulateClick}
+													aria-label={t('Dismiss')}
+												>
 													<CoreIcons.NrkClose />
 												</button>
 											</p>
 										</div>
 									</div>
-									<div className="title-box-content">{this.props.children}</div>
-									{this.props.inputs ? (
+									<div className="title-box-content">{children}</div>
+									{inputs ? (
 										<div className="title-box-inputs">
-											{_.map(this.props.inputs, (input: ModalInput, attribute: string) => {
-												if (this.inputResult[attribute] === undefined) this.inputResult[attribute] = input.defaultValue
-
+											{_.map(inputs, (input: ModalInput, attribute: string) => {
 												return (
 													<div className="title-box-input" key={attribute}>
 														{input.text}
@@ -186,7 +194,7 @@ export class ModalDialog extends React.Component<React.PropsWithChildren<IModalD
 															options={input.options}
 															overrideDisplayValue={input.defaultValue}
 															attribute={attribute}
-															updateFunction={this.updatedInput}
+															updateFunction={updateInput}
 														/>
 													</div>
 												)
@@ -195,63 +203,63 @@ export class ModalDialog extends React.Component<React.PropsWithChildren<IModalD
 									) : null}
 									<div
 										className={ClassNames('mod', {
-											alright: !this.props.secondaryText,
+											alright: !secondaryText,
 										})}
 									>
-										{this.props.secondaryText && (
-											<button className="btn btn-secondary" onClick={this.handleSecondary}>
-												{this.props.secondaryText}
+										{secondaryText && (
+											<button
+												className="btn btn-secondary"
+												onClick={handleSecondary}
+												onKeyDown={preventClickOnEnter}
+												onKeyUp={emulateClick}
+											>
+												{secondaryText}
 											</button>
 										)}
 										{_.compact(
-											_.map(this.props.actions || [], (action: ModalAction, i) => {
-												if (action) {
-													return (
-														<button
-															key={i}
-															className={ClassNames(
-																'btn right',
-																{
-																	'btn-secondary': !(action.classNames || '').match(/btn-/),
-																},
-																action.classNames
-															)}
-															onClick={(e) => this.handleAction(e, action.on)}
-														>
-															{action.label}
-														</button>
-													)
-												}
-												return undefined
+											_.map(actions || [], (action: ModalAction, i) => {
+												if (!action) return null
+												return (
+													<button
+														key={i}
+														className={ClassNames(
+															'btn right mrs',
+															{
+																'btn-secondary': !(action.classNames || '').match(/btn-/),
+															},
+															action.classNames
+														)}
+														onClick={(e) => handleAction(e, action.on)}
+														onKeyDown={preventClickOnEnter}
+														onKeyUp={emulateClick}
+													>
+														{action.label}
+													</button>
+												)
 											})
 										)}
 										<button
 											className={ClassNames('btn btn-primary', {
-												right: this.props.secondaryText !== undefined,
-												'btn-warn': this.props.warning,
+												right: secondaryText !== undefined,
+												'btn-warn': warning,
 											})}
-											onClick={this.handleAccept}
+											autoFocus
+											onClick={handleAccept}
+											onKeyDown={preventClickOnEnter}
+											onKeyUp={emulateClick}
 										>
-											{this.props.acceptText}
+											{acceptText}
 										</button>
 									</div>
 								</dialog>
 							</VelocityReact.VelocityTransitionGroup>
 						</div>
-					</div>
-				</VelocityReact.VelocityTransitionGroup>
-			</Escape>
-		) : null
-	}
-
-	private preventDefault = (e: KeyboardEvent) => {
-		e.preventDefault()
-		e.stopPropagation()
-		e.stopImmediatePropagation()
-	}
+					</FocusBounder>
+				</div>
+			</VelocityReact.VelocityTransitionGroup>
+		</Escape>
+	)
 }
-
-ModalDialog.contextType = SorensenContext
 
 export interface ModalDialogQueueItem {
 	/** The title of the dialog box  */
@@ -357,7 +365,7 @@ class ModalDialogGlobalContainer0 extends React.Component<
 			const actions: ModalAction[] = _.map(onQueue.actions || [], (action: ModalAction) => {
 				return {
 					...action,
-					on: (e, inputResult) => this.onAction(e, inputResult, action.on),
+					on: (e: SomeEvent, inputResult: ModalInputResult) => this.onAction(e, inputResult, action.on),
 				}
 			})
 			return (
@@ -408,5 +416,18 @@ export function isModalShowing(): boolean {
 	if (modalDialogGlobalContainerSingleton) {
 		return modalDialogGlobalContainerSingleton.queueHasItems()
 	}
+	return false
+}
+
+function isAcceptKey(code: string): boolean {
+	const acceptCodes = Settings.confirmKeyCode === 'AnyEnter' ? ['NumpadEnter', 'Enter'] : ['Enter']
+	if (acceptCodes.includes(code)) return true
+
+	return false
+}
+
+function isDismissKey(code: string): boolean {
+	if (code === 'Escape') return true
+
 	return false
 }

@@ -16,7 +16,7 @@ export function SegmentScrollbar({
 	onScrollLeftChange,
 	onScrollStart,
 	onScrollEnd,
-}: IProps): JSX.Element {
+}: Readonly<IProps>): JSX.Element {
 	const ref = useRef<HTMLDivElement>(null)
 	const [grabbed, setGrabbed] = useState<{ pageX: number; pageY: number; initialScrollLeft: number } | null>(null)
 

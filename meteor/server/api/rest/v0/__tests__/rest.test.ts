@@ -68,7 +68,7 @@ describe('REST API', () => {
 		test('returns a matching HTTP error code when method throws a Meteor.Error', async () => {
 			const methodName = Object.keys(UserActionAPIMethods)[0]
 
-			const methodValue = UserActionAPIMethods[methodName]
+			const methodValue: string = (UserActionAPIMethods as any)[methodName]
 			const signature = MeteorMethodSignatures[methodValue]
 
 			let docString = `/action/${methodName}`
@@ -94,7 +94,7 @@ describe('REST API', () => {
 		test('returns a 500 HTTP error code when method throws a Node Exception', async () => {
 			const methodName = Object.keys(UserActionAPIMethods)[0]
 
-			const methodValue = UserActionAPIMethods[methodName]
+			const methodValue: string = (UserActionAPIMethods as any)[methodName]
 			const signature = MeteorMethodSignatures[methodValue]
 
 			let docString = `/action/${methodName}`
@@ -120,7 +120,7 @@ describe('REST API', () => {
 		test('converts URL arguments from string to correct native types', async () => {
 			const methodName = Object.keys(UserActionAPIMethods)[0]
 
-			const methodValue = UserActionAPIMethods[methodName]
+			const methodValue: string = (UserActionAPIMethods as any)[methodName]
 			const signature = MeteorMethodSignatures[methodValue] || []
 
 			const params: any[] = ['one', true, false, { one: 'two' }, null, 1.323, 30]

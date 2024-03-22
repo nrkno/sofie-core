@@ -1,4 +1,4 @@
-import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { MeteorCall } from '../../lib/api/methods'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { eventContextForLog } from '../../lib/clientUserAction'

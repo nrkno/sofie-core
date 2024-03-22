@@ -67,6 +67,12 @@ export interface ICoreSystem {
 		enabled: boolean
 	}
 
+	evaluations?: {
+		enabled: boolean
+		heading: string
+		message: string
+	}
+
 	/** A user-defined name for the installation */
 	name?: string
 

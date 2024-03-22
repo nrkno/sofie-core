@@ -1,5 +1,6 @@
 import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { ReadonlyDeep } from 'type-fest'
 import { JobContext } from '../../jobs'
 import { sortPieceInstancesByStart } from '../pieces'
 import { findLookaheadObjectsForPart, LookaheadTimelineObject } from './findObjects'
@@ -27,7 +28,7 @@ export function findLookaheadForLayer(
 	}
 
 	// Track the previous info for checking how the timeline will be built
-	let previousPart: DBPart | undefined
+	let previousPart: ReadonlyDeep<DBPart> | undefined
 	if (previousPartInstanceInfo) {
 		previousPart = previousPartInstanceInfo.part.part
 	}

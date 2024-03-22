@@ -5,14 +5,15 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { assertNever } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { UISegmentPartNote } from '../../../lib/api/rundownNotifications'
-import { Segment } from '../../../lib/collections/Segments'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { generateTranslation } from '../../../lib/lib'
 import { SegmentFields, PartFields, PartInstanceFields } from './reactiveContentCache'
 
 export function generateNotesForSegment(
 	playlistId: RundownPlaylistId,
-	segment: Pick<Segment, SegmentFields>,
+	segment: Pick<DBSegment, SegmentFields>,
 	nrcsName: string,
 	parts: Pick<DBPart, PartFields>[],
 	partInstances: Pick<DBPartInstance, PartInstanceFields>[]
@@ -43,7 +44,7 @@ export function generateNotesForSegment(
 	}
 
 	if (segment.orphaned) {
-		let message: ITranslatableMessage
+		let message: ITranslatableMessage | undefined
 		switch (segment.orphaned) {
 			case SegmentOrphanedReason.DELETED:
 				message = generateTranslation('Segment no longer exists in {{nrcs}}', {
@@ -55,23 +56,31 @@ export function generateNotesForSegment(
 					nrcs: nrcsName,
 				})
 				break
+			case SegmentOrphanedReason.SCRATCHPAD:
+				// Ignore
+				break
+			default:
+				assertNever(segment.orphaned)
+				break
 		}
-		notes.push({
-			_id: protectString(`${segment._id}_segment_orphaned`),
-			playlistId,
-			rundownId: segment.rundownId,
-			segmentId: segment._id,
-			note: {
-				type: NoteSeverity.WARNING,
-				message,
-				rank: segment._rank,
-				origin: {
-					segmentId: segment._id,
-					rundownId: segment.rundownId,
-					name: segment.name,
+		if (message) {
+			notes.push({
+				_id: protectString(`${segment._id}_segment_orphaned`),
+				playlistId,
+				rundownId: segment.rundownId,
+				segmentId: segment._id,
+				note: {
+					type: NoteSeverity.WARNING,
+					message,
+					rank: segment._rank,
+					origin: {
+						segmentId: segment._id,
+						rundownId: segment.rundownId,
+						name: segment.name,
+					},
 				},
-			},
-		})
+			})
+		}
 	} else {
 		const deletedPartInstances = partInstances.filter((p) => p.orphaned === 'deleted' && !p.reset)
 		if (deletedPartInstances.length > 0) {

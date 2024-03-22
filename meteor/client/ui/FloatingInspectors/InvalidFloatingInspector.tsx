@@ -2,7 +2,7 @@ import React, { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { FloatingInspector } from '../FloatingInspector'
-import { DBPart } from '../../../lib/collections/Parts'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'

@@ -30,13 +30,16 @@
 }
 
 .support-pop-up-panel,
-.switchboard-pop-up-panel {
+.switchboard-pop-up-panel,
+.media-status-panel {
 	position: fixed;
 	bottom: rem(8px);
 	right: -1px;
 	left: auto;
 	margin-right: rem(60px);
-	background: #fff;
+	--panel-background: #fff;
+	background: var(--panel-background);
+
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
 	padding: rem(15px) rem(20px);
 	z-index: 290;
@@ -98,6 +101,24 @@
 	}
 }
 
+.media-status-panel {
+	top: auto;
+	z-index: -1;
+	white-space: nowrap;
+	overflow: hidden;
+	text-align: left;
+	box-sizing: content-box;
+	width: 28rem;
+	max-width: 28rem;
+	padding: 0;
+	padding-top: rem(15px);
+
+
+	> .media-status-panel__inside {
+		width: 28rem;
+	}
+}
+
 #render-target .switchboard-pop-up-panel .switchboard-pop-up-panel__group {
 	width: 28rem;
 	border-top: 1px solid #d7d7d7;
@@ -144,14 +165,19 @@
 }
 
 .rundown-view {
-	.support-pop-up-panel {
+	.support-pop-up-panel{
 		color: #000;
-		background: #eee;
+		--panel-background: #eee;
+		background: var(--panel-background);
+
 		z-index: 1900;
 	}
-	.switchboard-pop-up-panel {
+	.switchboard-pop-up-panel,
+	.media-status-panel {
 		color: #000;
-		background: #eee;
+		--panel-background: #eee;
+		background: var(--panel-background);
+
 		z-index: -1;
 
 		.status-bar__controls__button {

@@ -7,7 +7,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import { UIPieceContentStatus } from '../../../../lib/api/rundownNotifications'
-import { literal, protectString, unprotectString } from '../../../../lib/lib'
+import { literal, protectString } from '../../../../lib/lib'
 import { CustomPublishCollection } from '../../../lib/customPublication'
 import { ContentCache } from './reactiveContentCache'
 import { wrapTranslatableMessageFromBlueprintsIfNotString } from '@sofie-automation/corelib/dist/TranslatableMessage'
@@ -55,6 +55,8 @@ async function regenerateGenericPiece(
 
 				segmentName: segment.name,
 				name: wrapTranslatableMessageFromBlueprintsIfNotString(doc.name, [sourceLayersForRundown.blueprintId]),
+
+				isPieceInstance: false,
 
 				status,
 			},
@@ -134,29 +136,54 @@ export async function regenerateForPieceInstanceIds(
 			// Piece has been deleted, queue it for batching
 			deletedPieceIds.add(pieceId)
 		} else {
-			const res = await regenerateGenericPiece(
-				contentCache,
-				uiStudio,
-				{
-					...pieceDoc.piece,
-					_id: protectString(unprotectString(pieceDoc._id)),
-				},
-				pieceDoc.piece.sourceLayerId,
-				{
+			// Regenerate piece
+			const rundown = contentCache.Rundowns.findOne(pieceDoc.rundownId)
+			const sourceLayersForRundown = rundown
+				? contentCache.ShowStyleSourceLayers.findOne(rundown.showStyleBaseId)
+				: undefined
+
+			const partInstance = pieceDoc.partInstanceId
+				? contentCache.PartInstances.findOne(pieceDoc.partInstanceId)
+				: undefined
+			const segment = partInstance ? contentCache.Segments.findOne(partInstance.segmentId) : undefined
+			const sourceLayer =
+				pieceDoc.piece.sourceLayerId && sourceLayersForRundown?.sourceLayers?.[pieceDoc.piece.sourceLayerId]
+
+			if (partInstance && segment && sourceLayer) {
+				const [status, dependencies] = await checkPieceContentStatusAndDependencies(
+					uiStudio,
+					{
+						...pieceDoc.piece,
+						pieceInstanceId: pieceDoc._id,
+					},
+					sourceLayer
+				)
+
+				const res: UIPieceContentStatus = {
 					_id: protectString(`piece_${pieceId}`),
 
 					partId: pieceDoc.piece.startPartId,
 					rundownId: pieceDoc.rundownId,
 					pieceId: pieceId,
 
-					name: pieceDoc.piece.name,
+					segmentId: segment._id,
+
+					segmentRank: segment._rank,
+					partRank: partInstance.part._rank,
+
+					segmentName: segment.name,
+					name: wrapTranslatableMessageFromBlueprintsIfNotString(pieceDoc.piece.name, [
+						sourceLayersForRundown.blueprintId,
+					]),
+
+					isPieceInstance: true,
+
+					status,
 				}
-			)
 
-			if (res) {
-				dependenciesState.set(pieceId, res.dependencies)
+				dependenciesState.set(pieceId, dependencies)
 
-				collection.replace(res.doc)
+				collection.replace(res)
 			} else {
 				deletedPieceIds.add(pieceId)
 			}
@@ -323,6 +350,8 @@ export async function regenerateForBaselineAdLibPieceIds(
 					segmentRank: -1,
 					partRank: -1,
 
+					isPieceInstance: false,
+
 					status,
 				})
 			} else {
@@ -398,6 +427,8 @@ export async function regenerateForBaselineAdLibActionIds(
 
 					segmentRank: -1,
 					partRank: -1,
+
+					isPieceInstance: false,
 
 					status,
 				})

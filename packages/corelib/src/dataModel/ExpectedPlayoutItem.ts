@@ -8,7 +8,6 @@ export interface ExpectedPlayoutItemBase extends ExpectedPlayoutItemGeneric {
 	/** The studio installation this ExpectedPlayoutItem was generated in */
 	studioId: StudioId
 }
-/** @deprecated */
 export interface ExpectedPlayoutItemRundown extends ExpectedPlayoutItemBase {
 	/** The rundown id that is the source of this PlayoutItem */
 	rundownId: RundownId
@@ -19,9 +18,7 @@ export interface ExpectedPlayoutItemRundown extends ExpectedPlayoutItemBase {
 	/** Is created for studio/rundown baseline */
 	baseline?: 'rundown'
 }
-/** @deprecated */
 export interface ExpectedPlayoutItemStudio extends ExpectedPlayoutItemBase {
 	baseline: 'studio'
 }
-/** @deprecated */
 export type ExpectedPlayoutItem = ExpectedPlayoutItemStudio | ExpectedPlayoutItemRundown

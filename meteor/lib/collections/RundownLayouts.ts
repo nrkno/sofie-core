@@ -92,6 +92,7 @@ export interface RundownLayoutExternalFrame extends RundownLayoutElementBase {
 	url: string
 	scale: number
 	disableFocus?: boolean
+	dropzoneUrl?: string
 }
 
 export enum RundownLayoutAdLibRegionRole {

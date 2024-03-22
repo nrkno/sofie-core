@@ -3,11 +3,10 @@ import { EditAttribute } from '../../lib/EditAttribute'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
 import { doModalDialog } from '../../lib/ModalDialog'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { Blueprint } from '../../../lib/collections/Blueprints'
+import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import Moment from 'react-moment'
 import { Link } from 'react-router-dom'
-import { Studio } from '../../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { ICoreSystem } from '../../../lib/collections/CoreSystem'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
@@ -31,7 +30,7 @@ interface IState {
 }
 interface ITrackedProps {
 	blueprint?: Blueprint
-	assignedStudios: Studio[]
+	assignedStudios: DBStudio[]
 	assignedShowStyles: DBShowStyleBase[]
 	assignedSystem: ICoreSystem | undefined
 }
@@ -45,7 +44,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		assignedSystem: CoreSystem.findOne({ blueprintId: id }),
 	}
 })(
-	class BlueprintSettings extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+	class BlueprintSettings extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		constructor(props: Translated<IProps & ITrackedProps>) {
 			super(props)
 			this.state = {
@@ -53,10 +52,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			}
 		}
 
-		onUploadFile(e) {
+		onUploadFile(e: React.ChangeEvent<HTMLInputElement>) {
 			const { t } = this.props
 
-			const file = e.target.files[0]
+			const file = e.target.files?.[0]
 			if (!file) {
 				return
 			}

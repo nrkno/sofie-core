@@ -29,10 +29,10 @@ export async function handleRemovedPart(context: JobContext, data: IngestRemoveP
 				throw new Error(`Rundown "${data.rundownExternalId}" not found`)
 			}
 		},
-		async (context, cache, ingestRundown) => {
+		async (context, ingestModel, ingestRundown) => {
 			const ingestSegment = ingestRundown?.segments?.find((s) => s.externalId === data.segmentExternalId)
 			if (!ingestSegment) throw new Error(`IngestSegment "${data.segmentExternalId}" is missing!`)
-			return updateSegmentFromIngestData(context, cache, ingestSegment, false)
+			return updateSegmentFromIngestData(context, ingestModel, ingestSegment, false)
 		}
 	)
 }
@@ -62,10 +62,10 @@ export async function handleUpdatedPart(context: JobContext, data: IngestUpdateP
 				throw new Error(`Rundown "${data.rundownExternalId}" not found`)
 			}
 		},
-		async (context, cache, ingestRundown) => {
+		async (context, ingestModel, ingestRundown) => {
 			const ingestSegment = ingestRundown?.segments?.find((s) => s.externalId === data.segmentExternalId)
 			if (!ingestSegment) throw new Error(`IngestSegment "${data.segmentExternalId}" is missing!`)
-			return updateSegmentFromIngestData(context, cache, ingestSegment, false)
+			return updateSegmentFromIngestData(context, ingestModel, ingestSegment, false)
 		}
 	)
 }

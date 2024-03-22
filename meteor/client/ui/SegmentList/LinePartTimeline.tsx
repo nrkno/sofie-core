@@ -1,4 +1,4 @@
-import { PieceLifespan, SourceLayerType, VTContent } from '@sofie-automation/blueprints-integration'
+import { PieceLifespan, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import React, { useMemo } from 'react'
 import { PartExtended, PieceExtended } from '../../../lib/Rundown'
 import { findPieceExtendedToShowFromOrderedResolvedInstances } from '../PieceIcons/utils'
@@ -13,6 +13,7 @@ import { PartAutoNextMarker } from './PartAutoNextMarker'
 import { PieceUi } from '../SegmentContainer/withResolvedSegment'
 import StudioContext from '../RundownView/StudioContext'
 import { InvalidPartCover } from '../SegmentTimeline/Parts/InvalidPartCover'
+import { getPartInstanceTimingId } from '../../lib/rundownTiming'
 
 const TIMELINE_DEFAULT_BASE = 30 * 1000
 
@@ -86,7 +87,7 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 	const timings = part.instance.partPlayoutTimings
 	const toPartDelay = (timings?.toPartDelay ?? 0) - ((timings?.fromPartRemaining ?? 0) - (timings?.toPartDelay ?? 0))
 	const renderedPartDuration = part.renderedDuration + toPartDelay
-	const mainPieceSourceDuration = mainPiece?.instance.piece.content.sourceDuration
+	const mainPieceSourceDuration = mainPiece?.instance.piece.content?.sourceDuration
 	const mainPieceInPoint = mainPiece?.renderedInPoint
 	const maxDuration = Math.max((mainPieceInPoint ?? 0) + (mainPieceSourceDuration ?? 0), renderedPartDuration)
 	const timelineBase = Math.max(TIMELINE_DEFAULT_BASE, maxDuration)
@@ -96,8 +97,8 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 
 	const isInvalid = !!part.instance.part.invalid
 
-	const loop = !(mainPiece?.instance.piece.content as VTContent)?.loop
-	const endsInFreeze = !part.instance.part.autoNext && !loop && !!mainPiece?.instance.piece.content.sourceDuration
+	const loop = mainPiece?.instance.piece.content?.loop
+	const endsInFreeze = !part.instance.part.autoNext && !loop && !!mainPiece?.instance.piece.content?.sourceDuration
 	const mainSourceEnd = mainPiece?.instance.piece.content.sourceDuration
 		? (mainPieceInPoint ?? 0) + mainPiece?.instance.piece.content.sourceDuration
 		: null
@@ -141,7 +142,7 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 			{transitionPiece && <LinePartTransitionPiece piece={transitionPiece} />}
 			{!willAutoNextOut && !isInvalid && (
 				<OvertimeShadow
-					partId={part.instance.part._id}
+					partInstanceTimingId={getPartInstanceTimingId(part.instance)}
 					timelineBase={timelineBase}
 					maxDuration={maxDuration}
 					mainSourceEnd={mainSourceEnd ?? renderedPartDuration}

@@ -617,8 +617,8 @@ describe('Test blueprint post-process', () => {
 				)
 				// Error in blueprint "blueprint9": Validation of timelineObjs failed:
 				// Error: Object "IJ0Ud5lJhbIllA0_kWFIVz51eL4_": "classes[0]":
-				// Error: The string "i-am-an-invalid-class" contains a character ("-") which isn't allowed in Timeline (is an operator)
-			}).toThrow(/error in blueprint.*contains a character/i)
+				// Error: Error in blueprint "blueprint9": Validation of timelineObjs failed: Error:  "classes[0]": Error: The string "i-am-an-invalid-class" contains characters which aren't allowed in Timeline: "-", "-", "-", "-" (is an operator)
+			}).toThrow(/error in blueprint.*contains characters/i)
 		})
 	})
 })

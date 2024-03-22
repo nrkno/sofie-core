@@ -24,7 +24,7 @@ export function PieceHoverInspector({
 	originPosition,
 	mousePosition,
 	layer,
-}: {
+}: Readonly<{
 	studio: UIStudio
 	pieceInstance: PieceUi
 	hovering: boolean
@@ -32,7 +32,7 @@ export function PieceHoverInspector({
 	originPosition: OffsetPosition
 	mousePosition: number
 	layer: ISourceLayer | undefined
-}): JSX.Element | null {
+}>): JSX.Element | null {
 	const status = pieceInstance.contentStatus?.status
 
 	const vtContent = pieceInstance.instance.piece.content as VTContent
@@ -46,7 +46,7 @@ export function PieceHoverInspector({
 			// TODO: Move this code to a shared TransitionFloatingInspector
 			return (
 				<FloatingInspector shown={hovering}>
-					{transitionContent && transitionContent.preview && (
+					{transitionContent?.preview && (
 						<div
 							className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"
 							style={{
@@ -84,7 +84,7 @@ export function PieceHoverInspector({
 		case SourceLayerType.LIVE_SPEAK:
 			return (
 				<VTFloatingInspector
-					status={status || PieceStatusCode.UNKNOWN}
+					status={status ?? PieceStatusCode.UNKNOWN}
 					showMiniInspector={hovering}
 					timePosition={hoverScrubTimePosition}
 					content={vtContent}
@@ -96,7 +96,7 @@ export function PieceHoverInspector({
 					}}
 					typeClass={layer && RundownUtils.getSourceLayerClassName(layer.type)}
 					itemElement={null}
-					noticeMessages={pieceInstance.contentStatus?.messages || null}
+					noticeMessages={pieceInstance.contentStatus?.messages ?? null}
 					noticeLevel={noticeLevel}
 					studio={studio}
 					previewUrl={pieceInstance.contentStatus?.previewUrl}

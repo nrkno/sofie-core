@@ -1,7 +1,6 @@
 import { Accounts } from 'meteor/accounts-base'
 import { UserProfile } from '../../lib/collections/Users'
 import { protectString } from '../lib'
-import { DBOrganizationBase } from '../collections/Organization'
 import { UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface NewUserAPI {
@@ -15,22 +14,21 @@ export enum UserAPIMethods {
 	'removeUser' = 'user.removeUser',
 }
 
-interface NewUser {
+export interface CreateNewUserData {
 	email: string
 	profile: UserProfile
 	password?: string
-	createOrganization?: DBOrganizationBase
+	createOrganization?: {
+		name: string
+		applications: string[]
+		broadcastMediums: string[]
+	}
 }
-export async function createUser(newUser: NewUser): Promise<UserId> {
+export async function createUser(newUser: CreateNewUserData): Promise<UserId> {
 	// This is available both client-side and server side.
 	// The reason for that is that the client-side should use Accounts.createUser right away
 	// so that the password aren't sent in "plaintext" to the server.
 
-	return new Promise<UserId>((resolve, reject) => {
-		const userId = Accounts.createUser(newUser, (error) => {
-			if (error) reject(error)
-			else if (!userId) reject(new Error('Missing UserId'))
-			else resolve(protectString<UserId>(userId))
-		})
-	})
+	const userId = await Accounts.createUserAsync(newUser)
+	return protectString<UserId>(userId)
 }

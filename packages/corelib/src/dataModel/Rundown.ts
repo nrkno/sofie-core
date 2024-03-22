@@ -1,5 +1,4 @@
-import { IBlueprintRundownDB, Time } from '@sofie-automation/blueprints-integration'
-import { ProtectedStringProperties } from '../protectedString'
+import { RundownPlaylistTiming, Time } from '@sofie-automation/blueprints-integration'
 import {
 	RundownId,
 	OrganizationId,
@@ -11,6 +10,15 @@ import {
 } from './Ids'
 import { RundownNote } from './Notes'
 
+export enum RundownOrphanedReason {
+	/** Rundown is deleted from the NRCS but we still need it */
+	DELETED = 'deleted',
+	/** Rundown was restored from a snapshot and does not correspond with a rundown in the NRCS */
+	FROM_SNAPSHOT = 'from-snapshot',
+	/** Rundown was unsynced by the user */
+	MANUAL = 'manual',
+}
+
 export interface RundownImportVersions {
 	studio: string
 	showStyleBase: string
@@ -21,8 +29,7 @@ export interface RundownImportVersions {
 }
 
 /** This is a very uncomplete mock-up of the Rundown object */
-export interface Rundown
-	extends ProtectedStringProperties<IBlueprintRundownDB, '_id' | 'playlistId' | 'showStyleVariantId'> {
+export interface Rundown {
 	_id: RundownId
 	/** ID of the organization that owns the rundown */
 	organizationId: OrganizationId | null
@@ -42,16 +49,35 @@ export interface Rundown
 	importVersions: RundownImportVersions
 
 	status?: string
+
+	/** Air-status, comes from NCS, examples: "READY" | "NOT READY" */
+	airStatus?: string
+
 	// There should be something like a Owner user here somewhere?
 
 	/** Is the rundown in an unsynced (has been unpublished from ENPS) state? */
-	orphaned?: 'deleted' | 'from-snapshot' | 'manual'
+	orphaned?: RundownOrphanedReason
 
 	/** Last sent storyStatus to ingestDevice (MOS) */
 	notifiedCurrentPlayingPartExternalId?: string
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation, or appended after */
 	notes?: Array<RundownNote>
+
+	externalId: string
+	/** Rundown slug - user-presentable name */
+	name: string
+
+	/** Rundown description: Longer user-presentable description of the rundown */
+	description?: string
+
+	/** Rundown timing information */
+	timing: RundownPlaylistTiming
+
+	/** Arbitraty data storage for internal use in the blueprints */
+	privateData?: unknown
+	/** Arbitraty data relevant for other systems, made available to them through APIs */
+	publicData?: unknown
 
 	/** External id of the Rundown Playlist to put this rundown in */
 	playlistExternalId?: string
@@ -63,8 +89,6 @@ export interface Rundown
 	playlistId: RundownPlaylistId
 	/** If the playlistId has ben set manually by a user in Sofie */
 	playlistIdIsSetInSofie?: boolean
-	/** Whenever the baseline (RundownBaselineObjs, RundownBaselineAdLibItems, RundownBaselineAdLibActions) changes, this is changed too */
-	baselineModifyHash?: string
 }
 
 /** Note: Use Rundown instead */

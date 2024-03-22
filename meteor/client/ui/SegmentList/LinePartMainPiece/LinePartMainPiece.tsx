@@ -1,5 +1,5 @@
-import { EvsContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import React, { useMemo, useState, useRef } from 'react'
+import { EvsContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { PieceExtended } from '../../../../lib/Rundown'
 // TODO: Move to a shared lib file
 import { getSplitItems } from '../../SegmentContainer/getSplitItems'
@@ -15,6 +15,7 @@ import { PieceStatusIcon } from '../../../lib/ui/PieceStatusIcon'
 import { UIStudio } from '../../../../lib/api/studios'
 import classNames from 'classnames'
 import { PieceMultistepChevron } from '../../SegmentContainer/PieceMultistepChevron'
+import { LoopingPieceIcon } from '../../../lib/ui/icons/looping'
 
 interface IProps {
 	partId: PartId
@@ -39,8 +40,9 @@ function getPieceDuration(
 		  Math.min(piece.renderedDuration ?? partDuration, partDuration)
 		: Math.max(
 				// renderedDuration can be null. If there is a sourceDuration, use that, if not, use timelineBase
-				piece.renderedDuration ?? (piece.instance.piece.content.sourceDuration ? 0 : timelineBase),
-				piece.instance.piece.content.sourceDuration ?? 0
+				piece.renderedDuration ??
+					(piece.instance.piece.content?.sourceDuration && !piece.instance.piece.content?.loop ? 0 : timelineBase),
+				piece.instance.piece.content?.sourceDuration ?? 0
 		  )
 }
 
@@ -193,6 +195,9 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 					<ColoredMark color={(piece.instance.piece.content as EvsContent).color} />
 				)}
 				{piece.instance.piece.name}
+				{piece.instance.piece.content?.loop && (
+					<LoopingPieceIcon className="segment-opl__main-piece__label-icon" playing={hover} />
+				)}
 			</div>
 			{studio && (
 				<PieceHoverInspector
@@ -209,7 +214,7 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 	)
 })
 
-function ColoredMark({ color }: { color: string | undefined }) {
+const ColoredMark = React.memo(function ColoredMark({ color }: { color: string | undefined }) {
 	if (!color) return null
 
 	return (
@@ -218,4 +223,4 @@ function ColoredMark({ color }: { color: string | undefined }) {
 			className="segment-opl__main-piece__label__colored-mark"
 		></span>
 	)
-}
+})

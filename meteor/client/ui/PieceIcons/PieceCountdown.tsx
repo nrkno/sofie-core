@@ -1,7 +1,7 @@
 import React from 'react'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { SourceLayerType, VTContent } from '@sofie-automation/blueprints-integration'
-import { PubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { findPieceInstanceToShow } from './utils'
 import { Timediff } from '../ClockView/Timediff'
 import { getCurrentTime } from '../../../lib/lib'
@@ -11,6 +11,7 @@ import {
 	RundownPlaylistActivationId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 export interface IPropsHeader {
 	partInstanceId: PartInstanceId
@@ -31,7 +32,7 @@ const supportedLayers = new Set([
 	SourceLayerType.CAMERA,
 ])
 
-export function PieceCountdownContainer(props: IPropsHeader): JSX.Element | null {
+export function PieceCountdownContainer(props: Readonly<IPropsHeader>): JSX.Element | null {
 	const { pieceInstance, sourceLayer } = useTracker(
 		() => findPieceInstanceToShow(props, supportedLayers),
 		[props.partInstanceId, props.showStyleBaseId],
@@ -41,12 +42,9 @@ export function PieceCountdownContainer(props: IPropsHeader): JSX.Element | null
 		}
 	)
 
-	useSubscription(PubSub.pieceInstancesSimple, {
-		rundownId: { $in: props.rundownIds },
-		playlistActivationId: props.playlistActivationId,
-	})
+	useSubscription(CorelibPubSub.pieceInstancesSimple, props.rundownIds, props.playlistActivationId ?? null)
 
-	useSubscription(PubSub.uiShowStyleBase, props.showStyleBaseId)
+	useSubscription(MeteorPubSub.uiShowStyleBase, props.showStyleBaseId)
 
 	const piece = pieceInstance ? pieceInstance.piece : undefined
 	const sourceDuration = (piece?.content as VTContent)?.sourceDuration

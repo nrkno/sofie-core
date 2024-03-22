@@ -1,0 +1,291 @@
+title: buckets
+description: Definitions for buckets API
+resources:
+  buckets:
+    get:
+      operationId: buckets
+      tags:
+        - buckets
+      summary: Returns all buckets available in Sofie.
+      responses:
+        200:
+          description: Command successfully handled - returns an array of buckets.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 200
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/bucket'
+        500:
+          $ref: '#/components/responses/internalServerError'
+    post:
+      operationId: addBucket
+      tags:
+        - buckets
+      summary: Adds a Bucket.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/bucketBase'
+      responses:
+        200:
+          description: Command successfully handled - returns a bucket id.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 200
+                  result:
+                    type: string
+                    description: Bucket Id.
+        500:
+          $ref: '#/components/responses/internalServerError'
+  bucket:
+    get:
+      operationId: bucket
+      tags:
+        - buckets
+      summary: Returns some information about the specified bucket
+      parameters:
+        - name: bucketId
+          in: path
+          description: Requested bucket.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Command successfully handled - returns a bucket.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 200
+                  result:
+                    $ref: '#/components/schemas/bucket'
+        404:
+          $ref: '#/components/responses/bucketNotFound'
+        500:
+          $ref: '#/components/responses/internalServerError'
+    delete:
+      operationId: deleteBucket
+      tags:
+        - buckets
+      summary: Deletes a bucket
+      parameters:
+        - name: bucketId
+          in: path
+          description: Bucket to remove.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Bucket successfuly removed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 200
+        404:
+          $ref: '#/components/responses/bucketNotFound'
+        500:
+          $ref: '#/components/responses/internalServerError'
+  bucketAdlibs:
+    put:
+      operationId: importBucketAdlib
+      tags:
+        - buckets
+      summary: Imports a Bucket Adlib.
+      parameters:
+        - name: bucketId
+          in: path
+          description: Bucket to import the adlib to.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/importAdlib'
+      responses:
+        200:
+          description: Bucket adlib successfully imported.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 200
+        500:
+          $ref: '#/components/responses/internalServerError'
+    delete:
+      operationId: deleteBucketAdlibs
+      tags:
+        - buckets
+      summary: Deletes all adlibs in a bucket
+      parameters:
+        - name: bucketId
+          in: path
+          description: Bucket to remove adlibs from.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Bucket Adlibs successfuly removed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 200
+        404:
+          $ref: '#/components/responses/bucketNotFound'
+        500:
+          $ref: '#/components/responses/internalServerError'
+  bucketAdlib:
+    delete:
+      operationId: deleteBucketAdlib
+      tags:
+        - buckets
+      summary: Deletes a bucket adlib
+      parameters:
+        - name: bucketId
+          in: path
+          description: Bucket to remove the adlib from.
+          required: true
+          schema:
+            type: string
+        - name: externalId
+          in: path
+          description: External id of the bucket adlib to remove.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Bucket Adlib successfuly removed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 200
+        404:
+          $ref: '#/components/responses/bucketNotFound'
+        500:
+          $ref: '#/components/responses/internalServerError'
+components:
+  schemas:
+    bucketBase:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Bucket Name.
+        studioId:
+          type: string
+          description: Id of the studio this bucket belongs to.
+      additionalProperties: false
+      example:
+        name: My Bucket
+        studioId: studio0
+    bucket:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Bucket Id.
+        name:
+          type: string
+          description: Bucket Name.
+        studioId:
+          type: string
+          description: Id of the studio this bucket belongs to.
+      additionalProperties: false
+      example:
+        id: 6jZ6NvpoikxuXqcm4
+        name: My Bucket
+        studioId: studio0
+    importAdlib:
+      type: object
+      properties:
+        externalId:
+          type: string
+          description: Id of the adlib recognizable by the external source. Unique within a bucket. If an adlib with the same `externalId` already exists in the bucket, it will be replaced.
+        showStyleBaseId:
+          type: string
+          description: Id of the ShowStyle to use when importing the adlib.
+        name:
+          type: string
+          description: Adlib Name.
+        payloadType:
+          type: string
+          description: Hint for the blueprints on how to process the payload.
+        payload:
+          description: Data that the blueprints can use to create the Adlib.
+      required:
+        - externalId
+        - showStyleBaseId
+        - name
+        - payloadType
+      additionalProperties: false
+      example:
+        externalId: my_lower_third
+        showStyleBaseId: showstyle0
+        name: My Lower Third
+        payloadType: JSON
+        payload:
+          name: Joe
+          occupation: developer
+  responses:
+    bucketNotFound:
+      description: The specified Bucket does not exist.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: number
+                example: 404
+              message:
+                type: string
+    internalServerError:
+      description: An error unlikely to be the fault of the caller has occurred.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: number
+                example: 500
+              message:
+                type: string

@@ -1161,8 +1161,13 @@ hr.subtle {
   outline: none; }
 
 .keyboard-focus :focus:not(.focusable-main) {
-  outline: none;
-  box-shadow: 0 0 0 2px #00FEFF; }
+  outline: 2px solid #00FEFF;
+}
+
+:not(dialog):focus-visible {
+	outline: 2px solid #00FEFF;
+}
+
 
 h1 :link,
 h2 :link,

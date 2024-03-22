@@ -2,13 +2,12 @@ import { PartId, RundownId, SegmentId, StudioId } from '@sofie-automation/coreli
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { getHash } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { ReadOnlyCache } from '../cache/CacheBase'
 import { ReadonlyDeep } from 'type-fest'
-import { CacheForIngest } from './cache'
 import { logger } from '../logging'
 import { ExtendedIngestRundown, IngestRundown } from '@sofie-automation/blueprints-integration'
-import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { convertRundownToBlueprints } from '../blueprints/context/lib'
+import { IngestSegmentModel } from './model/IngestSegmentModel'
 
 export function getRundownId(studioId: StudioId, rundownExternalId: string): RundownId {
 	if (!studioId) throw new Error('getRundownId: studio not set!')
@@ -26,14 +25,6 @@ export function getPartId(rundownId: RundownId, partExternalId: string): PartId 
 	return protectString<PartId>(getHash(`${rundownId}_part_${partExternalId}`))
 }
 
-export function getRundown(cache: ReadOnlyCache<CacheForIngest> | CacheForIngest): ReadonlyDeep<DBRundown> {
-	const rundown = cache.Rundown.doc
-	if (!rundown) {
-		throw new Error(`Rundown "${cache.RundownId}" ("${cache.RundownExternalId}") not found`)
-	}
-	return rundown
-}
-
 export function canRundownBeUpdated(rundown: ReadonlyDeep<DBRundown> | undefined, isCreateAction: boolean): boolean {
 	if (!rundown) return true
 	if (rundown.orphaned && !isCreateAction) {
@@ -44,7 +35,7 @@ export function canRundownBeUpdated(rundown: ReadonlyDeep<DBRundown> | undefined
 }
 export function canSegmentBeUpdated(
 	rundown: ReadonlyDeep<DBRundown> | undefined,
-	segment: ReadonlyDeep<DBSegment> | undefined,
+	segment: ReadonlyDeep<IngestSegmentModel> | undefined,
 	isCreateAction: boolean
 ): boolean {
 	if (!canRundownBeUpdated(rundown, false)) {
@@ -52,8 +43,15 @@ export function canSegmentBeUpdated(
 	}
 
 	if (!segment) return true
-	if (segment.orphaned === SegmentOrphanedReason.DELETED && !isCreateAction) {
-		logger.info(`Segment "${segment._id}" has been unsynced and needs to be synced before it can be updated.`)
+	if (segment.segment.orphaned === SegmentOrphanedReason.DELETED && !isCreateAction) {
+		logger.info(
+			`Segment "${segment.segment._id}" has been unsynced and needs to be synced before it can be updated.`
+		)
+		return false
+	}
+
+	if (segment.segment.orphaned === SegmentOrphanedReason.SCRATCHPAD) {
+		logger.error(`Ingest cannot update Segment "${segment.segment._id}" which is owned by the Scratchpad.`)
 		return false
 	}
 

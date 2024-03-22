@@ -1,4 +1,4 @@
-let Fiber
+let Fiber: any
 try {
 	Fiber = require('fibers-npm')
 } catch (e: any) {

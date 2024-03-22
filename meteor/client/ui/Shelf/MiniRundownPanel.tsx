@@ -5,14 +5,12 @@ import {
 	RundownLayoutBase,
 	DashboardLayoutMiniRundown,
 	RundownLayoutMiniRundown,
-	DashboardLayoutNextInfo,
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import { Segment } from '../../../lib/collections/Segments'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { dashboardElementStyle } from './DashboardPanel'
 import { Meteor } from 'meteor/meteor'
 import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -24,13 +22,13 @@ interface IMiniRundownPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutMiniRundown
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 }
 
 interface IMiniRundownPanelTrackedProps {
 	currentPartInstance?: PartInstance
 	nextPartInstance?: PartInstance
-	allSegments?: Segment[]
+	allSegments?: DBSegment[]
 }
 
 interface IState {}
@@ -41,9 +39,7 @@ interface MiniRundownSegment {
 	cssClass: string
 }
 
-export class MiniRundownPanelInner extends MeteorReactComponent<
-	IMiniRundownPanelProps & IMiniRundownPanelTrackedProps
-> {
+export class MiniRundownPanelInner extends React.Component<IMiniRundownPanelProps & IMiniRundownPanelTrackedProps> {
 	static currentSegmentCssClass = 'current-segment'
 	static nextSegmentCssClass = 'next-segment'
 	static panelContainerId = 'mini-rundown-panel__container'
@@ -134,7 +130,7 @@ export const MiniRundownPanel = withTracker<IMiniRundownPanelProps, IState, IMin
 			nextPartInstance = PartInstances.findOne(props.playlist.nextPartInfo.partInstanceId)
 		}
 
-		const allSegments: Segment[] = RundownPlaylistCollectionUtil.getSegments(props.playlist)
+		const allSegments: DBSegment[] = RundownPlaylistCollectionUtil.getSegments(props.playlist)
 
 		return { currentPartInstance, nextPartInstance, allSegments }
 	},
@@ -144,13 +140,13 @@ export const MiniRundownPanel = withTracker<IMiniRundownPanelProps, IState, IMin
 )(MiniRundownPanelInner)
 
 function getMiniRundownList(
-	allSegments?: Segment[],
+	allSegments?: DBSegment[],
 	currentPart?: PartInstance,
 	nextPart?: PartInstance
 ): MiniRundownSegment[] {
 	const miniRundownSegments: MiniRundownSegment[] = []
 
-	allSegments?.forEach((segment: Segment) => {
+	allSegments?.forEach((segment: DBSegment) => {
 		if (segment.isHidden) return
 		miniRundownSegments.push({
 			identifier: getSegmentIdentifier(segment),
@@ -162,7 +158,7 @@ function getMiniRundownList(
 	return miniRundownSegments
 }
 
-function getSegmentCssClass(segment: Segment, currentPart?: PartInstance, nextPart?: PartInstance): string {
+function getSegmentCssClass(segment: DBSegment, currentPart?: PartInstance, nextPart?: PartInstance): string {
 	if (segment._id === currentPart?.segmentId) {
 		return MiniRundownPanelInner.currentSegmentCssClass
 	}
@@ -174,27 +170,27 @@ function getSegmentCssClass(segment: Segment, currentPart?: PartInstance, nextPa
 	return ''
 }
 
-function getContainerClass(props, isDashboardLayout: boolean): string[] | undefined {
+function getContainerClass(props: IMiniRundownPanelProps, isDashboardLayout: boolean): string[] | undefined {
 	return isDashboardLayout ? (props.panel as DashboardLayoutMiniRundown).customClasses : undefined
 }
 
-function getContainerStyle(props, isDashboardLayout: boolean): any {
-	return _.extend(isDashboardLayout ? dashboardElementStyle({ ...(props.panel as DashboardLayoutNextInfo) }) : {}, {
+function getContainerStyle(props: IMiniRundownPanelProps, isDashboardLayout: boolean): React.CSSProperties {
+	return _.extend(isDashboardLayout ? dashboardElementStyle({ ...(props.panel as DashboardLayoutMiniRundown) }) : {}, {
 		visibility: props.visible ? 'visible' : 'hidden',
 	})
 }
 
-function getElementStyle(props, isDashboardLayout: boolean) {
+function getElementStyle(props: IMiniRundownPanelProps, isDashboardLayout: boolean) {
 	return {
 		fontSize: isDashboardLayout ? ((props.panel as DashboardLayoutMiniRundown).scale || 1) + 'em' : undefined,
 	}
 }
 
-function getSegmentName(segment: Segment | undefined): string {
+function getSegmentName(segment: DBSegment | undefined): string {
 	return segment?.name !== undefined ? segment?.name : ''
 }
 
-function getSegmentIdentifier(segment: Segment | undefined): string {
+function getSegmentIdentifier(segment: DBSegment | undefined): string {
 	return segment?.identifier !== undefined ? segment?.identifier : ''
 }
 

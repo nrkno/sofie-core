@@ -6,7 +6,7 @@ import { UIStudios } from '../Collections'
 import { useTranslation } from 'react-i18next'
 import { UIStudio } from '../../../lib/api/studios'
 
-function StudioSelect({ title, path }: { title: string; path: string }): JSX.Element {
+function StudioSelect({ title, path }: Readonly<{ title: string; path: string }>): JSX.Element {
 	const studios = useTracker(
 		() =>
 			UIStudios.find(

@@ -58,7 +58,7 @@ export function memoizedIsolatedAutorun<T extends (...args: any) => any>(
 					value: result,
 				}
 
-				if (!Tracker.currentComputation.firstRun) {
+				if (Tracker.currentComputation && !Tracker.currentComputation.firstRun) {
 					if (!_.isEqual(oldValue, result)) {
 						dep.changed()
 					}

@@ -1,12 +1,15 @@
 import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ExpectedPackagesRegenerateProps, PackageInfosUpdatedProps } from '@sofie-automation/corelib/dist/worker/ingest'
+import {
+	ExpectedPackagesRegenerateProps,
+	PackageInfosUpdatedRundownProps,
+} from '@sofie-automation/corelib/dist/worker/ingest'
 import { logger } from '../logging'
 import { JobContext } from '../jobs'
 import { regenerateSegmentsFromIngestData } from './generationSegment'
 import { runIngestJob, runWithRundownLock } from './lock'
-import { CacheForIngest } from './cache'
-import { updateExpectedPackagesOnRundown } from './expectedPackages'
+import { updateExpectedPackagesForPartModel, updateExpectedPackagesForRundownBaseline } from './expectedPackages'
+import { loadIngestModelFromRundown } from './model/implementation/LoadIngestModel'
 
 /**
  * Debug: Regenerate ExpectedPackages for a Rundown
@@ -18,11 +21,15 @@ export async function handleExpectedPackagesRegenerate(
 	await runWithRundownLock(context, data.rundownId, async (rundown, rundownLock) => {
 		if (!rundown) throw new Error(`Rundown "${data.rundownId}" not found`)
 
-		const cache = await CacheForIngest.createFromRundown(context, rundownLock, rundown)
+		const ingestModel = await loadIngestModelFromRundown(context, rundownLock, rundown)
 
-		await updateExpectedPackagesOnRundown(context, cache)
+		for (const part of ingestModel.getAllOrderedParts()) {
+			updateExpectedPackagesForPartModel(context, part)
+		}
 
-		await cache.saveAllToDatabase()
+		await updateExpectedPackagesForRundownBaseline(context, ingestModel, undefined, true)
+
+		await ingestModel.saveAllToDatabase()
 	})
 }
 
@@ -31,7 +38,7 @@ export async function handleExpectedPackagesRegenerate(
  */
 export async function handleUpdatedPackageInfoForRundown(
 	context: JobContext,
-	data: PackageInfosUpdatedProps
+	data: PackageInfosUpdatedRundownProps
 ): Promise<void> {
 	if (data.packageIds.length === 0) {
 		return
@@ -44,7 +51,7 @@ export async function handleUpdatedPackageInfoForRundown(
 			if (!ingestRundown) throw new Error('onUpdatedPackageInfoForRundown called but ingestData is undefined')
 			return ingestRundown // don't mutate any ingest data
 		},
-		async (context, cache, ingestRundown) => {
+		async (context, ingestModel, ingestRundown) => {
 			if (!ingestRundown) throw new Error('onUpdatedPackageInfoForRundown called but ingestData is undefined')
 
 			/** All segments that need updating */
@@ -52,11 +59,12 @@ export async function handleUpdatedPackageInfoForRundown(
 			let regenerateRundownBaseline = false
 
 			for (const packageId of data.packageIds) {
-				const pkg = cache.ExpectedPackages.findOne(packageId)
+				const pkg = ingestModel.findExpectedPackage(packageId)
 				if (pkg) {
 					if (
 						pkg.fromPieceType === ExpectedPackageDBType.PIECE ||
-						pkg.fromPieceType === ExpectedPackageDBType.ADLIB_PIECE
+						pkg.fromPieceType === ExpectedPackageDBType.ADLIB_PIECE ||
+						pkg.fromPieceType === ExpectedPackageDBType.ADLIB_ACTION
 					) {
 						segmentsToUpdate.add(pkg.segmentId)
 					} else if (
@@ -84,7 +92,7 @@ export async function handleUpdatedPackageInfoForRundown(
 
 			const { result, skippedSegments } = await regenerateSegmentsFromIngestData(
 				context,
-				cache,
+				ingestModel,
 				ingestRundown,
 				Array.from(segmentsToUpdate)
 			)

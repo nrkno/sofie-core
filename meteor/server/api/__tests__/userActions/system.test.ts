@@ -4,7 +4,7 @@ import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
-} from '../../../../lib/collections/PeripheralDevices'
+} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { getCurrentTime, protectString } from '../../../../lib/lib'
 import {
 	DefaultEnvironment,
@@ -21,7 +21,7 @@ import {
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { StudioPlayoutDevice } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { Studio } from '../../../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 
 require('../../userActions') // include in order to create the Meteor methods needed
 
@@ -91,7 +91,7 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 			success: 200,
 		})
 
-		const studio = (await Studios.findOneAsync(env.studio._id)) as Studio
+		const studio = (await Studios.findOneAsync(env.studio._id)) as DBStudio
 		expect(studio).toBeDefined()
 		const playoutDevices = applyAndValidateOverrides(studio.peripheralDeviceSettings.playoutDevices).obj
 		expect(playoutDevices[mockSubDeviceId].options.disable).toBe(true)
@@ -110,7 +110,7 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 				success: 200,
 			})
 
-			const studio = (await Studios.findOneAsync(env.studio._id)) as Studio
+			const studio = (await Studios.findOneAsync(env.studio._id)) as DBStudio
 			expect(studio).toBeDefined()
 			const playoutDevices = applyAndValidateOverrides(studio.peripheralDeviceSettings.playoutDevices).obj
 			expect(playoutDevices[mockSubDeviceId].options.disable).toBe(true)
@@ -129,7 +129,7 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 				success: 200,
 			})
 
-			const studio = (await Studios.findOneAsync(env.studio._id)) as Studio
+			const studio = (await Studios.findOneAsync(env.studio._id)) as DBStudio
 			expect(studio).toBeDefined()
 			const playoutDevices = applyAndValidateOverrides(studio.peripheralDeviceSettings.playoutDevices).obj
 			expect(playoutDevices[mockSubDeviceId].options.disable).toBe(false)

@@ -31,7 +31,7 @@ export class ExpectedPackagesContentObserver implements Meteor.LiveQueryHandle {
 				cache.PieceInstances.remove({})
 
 				return [
-					PieceInstances.observe(
+					PieceInstances.observeChanges(
 						{
 							// We can use the `this.#partInstanceIds` here, as this is restarted every time that property changes
 							partInstanceId: { $in: this.#partInstanceIds },
@@ -47,14 +47,14 @@ export class ExpectedPackagesContentObserver implements Meteor.LiveQueryHandle {
 
 		// Subscribe to the database, and pipe any updates into the ReactiveCacheCollections
 		this.#observers = [
-			ExpectedPackages.observe(
+			ExpectedPackages.observeChanges(
 				{
 					studioId: studioId,
 				},
 				cache.ExpectedPackages.link()
 			),
 
-			RundownPlaylists.observe(
+			RundownPlaylists.observeChanges(
 				{
 					studioId: studioId,
 				},

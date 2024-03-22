@@ -5,7 +5,7 @@ import Koa from 'koa'
 import KoaRouter from '@koa/router'
 import bodyParser from 'koa-bodyparser'
 import { check } from '../../lib/check'
-import { Studio } from '../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
 	SnapshotType,
 	SnapshotSystem,
@@ -14,7 +14,7 @@ import {
 	SnapshotRundownPlaylist,
 } from '../../lib/collections/Snapshots'
 import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
-import { PieceGeneric } from '../../lib/collections/Pieces'
+import { PieceGeneric } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import {
 	getCurrentTime,
@@ -29,21 +29,21 @@ import {
 } from '../../lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { logger } from '../logging'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
+import { PeripheralDeviceCommand } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceCommand'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewSnapshotAPI, SnapshotAPIMethods } from '../../lib/api/shapshot'
 import { ICoreSystem, parseVersion } from '../../lib/collections/CoreSystem'
 import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
 import { isVersionSupported } from '../migration/databaseMigration'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { Blueprint } from '../../lib/collections/Blueprints'
+import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { IngestRundown, VTContent } from '@sofie-automation/blueprints-integration'
-import { MongoQuery } from '../../lib/typings/meteor'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { importIngestRundown } from './ingest/http'
-import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { DBTriggeredActions } from '../../lib/collections/TriggeredActions'
 import { Settings } from '../../lib/Settings'
@@ -113,7 +113,7 @@ interface SystemSnapshot {
 	versionExtended?: string
 	studioId: StudioId | null
 	snapshot: SnapshotSystem
-	studios: Array<Studio>
+	studios: Array<DBStudio>
 	showStyleBases: Array<DBShowStyleBase>
 	showStyleVariants: Array<DBShowStyleVariant>
 	blueprints?: Array<Blueprint> // optional, to be backwards compatible
@@ -161,7 +161,7 @@ async function createSystemSnapshot(
 	if (Settings.enableUserAccounts && !organizationId)
 		throw new Meteor.Error(500, 'Not able to create a systemSnaphost without organizationId')
 
-	let queryStudio: MongoQuery<Studio> = {}
+	let queryStudio: MongoQuery<DBStudio> = {}
 	let queryShowStyleBases: MongoQuery<DBShowStyleBase> = {}
 	let queryShowStyleVariants: MongoQuery<DBShowStyleVariant> = {}
 	let queryRundownLayouts: MongoQuery<RundownLayoutBase> = {}
@@ -324,7 +324,7 @@ function getPiecesMediaObjects(pieces: PieceGeneric[]): string[] {
 }
 
 async function createRundownPlaylistSnapshot(
-	playlist: ReadonlyDeep<RundownPlaylist>,
+	playlist: ReadonlyDeep<DBRundownPlaylist>,
 	full = false
 ): Promise<RundownPlaylistSnapshot> {
 	/** Max count of one type of items to include in the snapshot */
@@ -633,7 +633,7 @@ export async function storeRundownPlaylistSnapshot(
 	return storeSnaphot(s, access.organizationId, reason)
 }
 export async function internalStoreRundownPlaylistSnapshot(
-	playlist: RundownPlaylist,
+	playlist: DBRundownPlaylist,
 	reason: string,
 	full?: boolean
 ): Promise<SnapshotId> {

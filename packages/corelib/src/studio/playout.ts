@@ -1,21 +1,22 @@
+import { ReadonlyDeep } from 'type-fest'
+import _ = require('underscore')
 import { PeripheralDevice } from '../dataModel/PeripheralDevice'
 
 /**
  * Calculate what the expected latency is going to be for a device.
  * The returned latency represents the amount of time we expect the device will need to receive, process and execute a timeline
  */
-export function getExpectedLatency(peripheralDevice: PeripheralDevice): {
+export function getExpectedLatency(peripheralDevice: ReadonlyDeep<PeripheralDevice>): {
 	average: number
 	safe: number
 	fastest: number
 } {
 	if (peripheralDevice.latencies && peripheralDevice.latencies.length) {
-		peripheralDevice.latencies.sort((a, b) => {
+		const latencies = _.sortBy(peripheralDevice.latencies, (a, b) => {
 			if (a > b) return 1
 			if (a < b) return -1
 			return 0
 		})
-		const latencies = peripheralDevice.latencies
 		let total = 0
 		for (const latency of latencies) {
 			total += latency

@@ -2,7 +2,7 @@ import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { Studio } from '../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { Blueprints, ShowStyleBases, Studios } from '../collections'
 import { getCoreSystemAsync } from '../coreSystem/collection'
 
@@ -32,7 +32,7 @@ export async function getBlueprintVersions(): Promise<{
 				blueprintId: 1,
 			},
 		}
-	) as Promise<Array<Pick<Studio, '_id' | 'blueprintId'>>>
+	) as Promise<Array<Pick<DBStudio, '_id' | 'blueprintId'>>>
 
 	const pShowStyleBases = ShowStyleBases.findFetchAsync(
 		{ blueprintId: { $exists: true } },

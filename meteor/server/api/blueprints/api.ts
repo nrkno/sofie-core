@@ -4,7 +4,7 @@ import { ReadStream, createReadStream, promises as fsp } from 'fs'
 import { getCurrentTime, unprotectString, getRandomId } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'
-import { Blueprint } from '../../../lib/collections/Blueprints'
+import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import {
 	BlueprintManifestType,
 	IShowStyleConfigPreset,
@@ -29,7 +29,7 @@ import { fetchBlueprintLight, BlueprintLight } from '../../serverOptimisations'
 import { getSystemStorePath } from '../../coreSystem'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { Studio } from '../../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 
 export async function insertBlueprint(
 	methodContext: MethodContext,
@@ -65,6 +65,7 @@ export async function insertBlueprint(
 		TSRVersion: '',
 
 		blueprintHash: getRandomId(),
+		hasFixUpFunction: false,
 	})
 }
 export async function removeBlueprint(methodContext: MethodContext, blueprintId: BlueprintId): Promise<void> {
@@ -163,6 +164,7 @@ async function innerUploadBlueprint(
 		disableVersionChecks: false,
 		blueprintType: undefined,
 		blueprintHash: getRandomId(),
+		hasFixUpFunction: false,
 	}
 
 	let blueprintManifest: SomeBlueprintManifest | undefined
@@ -217,9 +219,13 @@ async function innerUploadBlueprint(
 	if (blueprintManifest.blueprintType === BlueprintManifestType.SHOWSTYLE) {
 		newBlueprint.showStyleConfigSchema = blueprintManifest.showStyleConfigSchema
 		newBlueprint.showStyleConfigPresets = blueprintManifest.configPresets
+		newBlueprint.hasFixUpFunction = !!blueprintManifest.fixUpConfig
 	} else if (blueprintManifest.blueprintType === BlueprintManifestType.STUDIO) {
 		newBlueprint.studioConfigSchema = blueprintManifest.studioConfigSchema
 		newBlueprint.studioConfigPresets = blueprintManifest.configPresets
+		newBlueprint.hasFixUpFunction = !!blueprintManifest.fixUpConfig
+	} else {
+		newBlueprint.hasFixUpFunction = false
 	}
 
 	// Parse the versions, just to verify that the format is correct:
@@ -331,7 +337,7 @@ async function syncConfigPresetsToStudios(blueprint: Blueprint): Promise<void> {
 				blueprintConfigPresetId: 1,
 			},
 		}
-	)) as Pick<Studio, '_id' | 'blueprintConfigPresetId'>[]
+	)) as Pick<DBStudio, '_id' | 'blueprintConfigPresetId'>[]
 
 	const configPresets = blueprint.studioConfigPresets || {}
 

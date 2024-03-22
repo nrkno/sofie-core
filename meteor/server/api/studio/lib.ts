@@ -1,14 +1,14 @@
 import { RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getCurrentTime, protectString } from '../../../lib/lib'
 import { ExpectedPackages, PackageInfos, PeripheralDevices, RundownPlaylists } from '../../collections'
 
 export async function getActiveRundownPlaylistsInStudioFromDb(
 	studioId: StudioId,
 	excludeRundownPlaylistId?: RundownPlaylistId
-): Promise<RundownPlaylist[]> {
+): Promise<DBRundownPlaylist[]> {
 	return RundownPlaylists.findFetchAsync({
 		studioId: studioId,
 		activationId: { $exists: true },

@@ -1,4 +1,3 @@
-import * as _ from 'underscore'
 import { FieldNames } from '../../../lib/collections/lib'
 import { logger } from '../../logging'
 /**
@@ -9,15 +8,13 @@ import { logger } from '../../logging'
  */
 export function allowOnlyFields<T>(_doc: T, fieldNames: FieldNames<T>, allowFields: FieldNames<T>): boolean {
 	// Note: _doc is only included to set the type T in this generic function
-	let allow = true
-	_.find(fieldNames, (field) => {
+	for (const field of fieldNames) {
 		if (allowFields.indexOf(field) === -1) {
-			allow = false
-			return true
+			return false
 		}
-		return false
-	})
-	return allow
+	}
+
+	return true
 }
 /**
  * Don't allow edits to the fields specified. All other edits are approved
@@ -27,15 +24,13 @@ export function allowOnlyFields<T>(_doc: T, fieldNames: FieldNames<T>, allowFiel
  */
 export function rejectFields<T>(_doc: T, fieldNames: FieldNames<T>, rejectFields: FieldNames<T>): boolean {
 	// Note: _doc is only included to set the type T in this generic function
-	let allow = true
-	_.find(fieldNames, (field) => {
+	for (const field of fieldNames) {
 		if (rejectFields.indexOf(field) !== -1) {
-			allow = false
-			return true
+			return false
 		}
-		return false
-	})
-	return allow
+	}
+
+	return true
 }
 
 export function logNotAllowed(area: string, reason: string): false {

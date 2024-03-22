@@ -9,7 +9,7 @@ import { AdLibPanel } from './AdLibPanel'
 import { AdLibPieceUi } from '../../lib/shelf'
 import { GlobalAdLibPanel } from './GlobalAdLibPanel'
 import { HotkeyHelpPanel } from './HotkeyHelpPanel'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { useTranslation } from 'react-i18next'
 import { BucketAdLibItem } from './RundownViewBuckets'
@@ -19,7 +19,7 @@ import { UIStudio } from '../../../lib/api/studios'
 
 export interface IShelfRundownLayoutProps {
 	rundownLayout: RundownLayout | undefined
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	showStyleBase: UIShowStyleBase
 	studioMode: boolean
 	studio: UIStudio
@@ -35,7 +35,7 @@ export interface IShelfRundownLayoutProps {
 	}>
 }
 
-export function ShelfRundownLayout(props: IShelfRundownLayoutProps): JSX.Element {
+export function ShelfRundownLayout(props: Readonly<IShelfRundownLayoutProps>): JSX.Element {
 	const { t } = useTranslation()
 	const { rundownLayout, onSwitchTab } = props
 	return (
@@ -44,7 +44,7 @@ export function ShelfRundownLayout(props: IShelfRundownLayoutProps): JSX.Element
 				<OverflowingContainer className="rundown-view__shelf__tabs__tab-group">
 					{!rundownLayout ? (
 						<>
-							<div
+							<button
 								className={ClassNames('rundown-view__shelf__tabs__tab', {
 									selected: (props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.ADLIB,
 								})}
@@ -53,8 +53,8 @@ export function ShelfRundownLayout(props: IShelfRundownLayoutProps): JSX.Element
 								role="tab"
 							>
 								{t('AdLib')}
-							</div>
-							<div
+							</button>
+							<button
 								className={ClassNames('rundown-view__shelf__tabs__tab', {
 									selected: (props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.GLOBAL_ADLIB,
 								})}
@@ -63,13 +63,13 @@ export function ShelfRundownLayout(props: IShelfRundownLayoutProps): JSX.Element
 								role="tab"
 							>
 								{t('Global AdLib')}
-							</div>
+							</button>
 						</>
 					) : (
 						rundownLayout.filters
 							.sort((a, b) => a.rank - b.rank)
 							.map((panel) => (
-								<div
+								<button
 									className={ClassNames('rundown-view__shelf__tabs__tab', {
 										selected:
 											(props.selectedTab || SHELF_DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`,
@@ -80,11 +80,11 @@ export function ShelfRundownLayout(props: IShelfRundownLayoutProps): JSX.Element
 									role="tab"
 								>
 									{panel.name}
-								</div>
+								</button>
 							))
 					)}
 				</OverflowingContainer>
-				<div
+				<button
 					className={ClassNames('rundown-view__shelf__tabs__tab', {
 						selected: (props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS,
 					})}
@@ -93,7 +93,7 @@ export function ShelfRundownLayout(props: IShelfRundownLayoutProps): JSX.Element
 					role="tab"
 				>
 					{t('Shortcuts')}
-				</div>
+				</button>
 			</div>
 			<div className="rundown-view__shelf__panel super-dark" role="tabpanel">
 				{!rundownLayout ? (

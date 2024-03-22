@@ -1,25 +1,23 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { NavLink, Route, Switch, useRouteMatch } from 'react-router-dom'
 import { useSubscription, useTracker } from '../lib/ReactMeteorData/ReactMeteorData'
 
 import { Spinner } from '../lib/Spinner'
 import { RundownView } from './RundownView'
-import { PubSub } from '../../lib/api/pubsub'
+import { MeteorPubSub } from '../../lib/api/pubsub'
 import { UIStudios } from './Collections'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylists } from '../collections'
 import { useTranslation } from 'react-i18next'
+import { useSetDocumentClass } from './util/useSetDocumentClass'
 
-export function ActiveRundownView({ studioId }: { studioId: StudioId }): JSX.Element | null {
+export function ActiveRundownView({ studioId }: Readonly<{ studioId: StudioId }>): JSX.Element | null {
 	const { t } = useTranslation()
 
 	const { path } = useRouteMatch()
 
-	const studioReady = useSubscription(PubSub.uiStudio, studioId)
-	const playlistReady = useSubscription(PubSub.rundownPlaylists, {
-		activationId: { $exists: true },
-		studioId,
-	})
+	const studioReady = useSubscription(MeteorPubSub.uiStudio, studioId)
+	const playlistReady = useSubscription(MeteorPubSub.rundownPlaylistForStudio, studioId, true)
 
 	const subsReady = studioReady && playlistReady
 
@@ -33,13 +31,7 @@ export function ActiveRundownView({ studioId }: { studioId: StudioId }): JSX.Ele
 		[studioId]
 	)
 
-	useEffect(() => {
-		document.body.classList.add('dark', 'vertical-overflow-only')
-
-		return () => {
-			document.body.classList.remove('dark', 'vertical-overflow-only')
-		}
-	}, [playlist])
+	useSetDocumentClass('dark', 'vertical-overflow-only')
 
 	if (!subsReady) {
 		return (
@@ -47,29 +39,27 @@ export function ActiveRundownView({ studioId }: { studioId: StudioId }): JSX.Ele
 				<Spinner />
 			</div>
 		)
+	} else if (playlist) {
+		return (
+			<Switch>
+				<Route path={`${path}`} exact>
+					<RundownView playlistId={playlist._id} inActiveRundownView={true} />
+				</Route>
+				<Route path={`${path}/shelf`} exact>
+					<RundownView playlistId={playlist._id} inActiveRundownView={true} onlyShelf={true} />
+				</Route>
+			</Switch>
+		)
+	} else if (studio) {
+		return <NotFoundMessage message={t('There is no rundown active in this studio.')} />
+	} else if (studioId) {
+		return <NotFoundMessage message={t("This studio doesn't exist.")} />
 	} else {
-		if (playlist) {
-			return (
-				<Switch>
-					<Route path={`${path}`} exact>
-						<RundownView playlistId={playlist._id} inActiveRundownView={true} />
-					</Route>
-					<Route path={`${path}/shelf`} exact>
-						<RundownView playlistId={playlist._id} inActiveRundownView={true} onlyShelf={true} />
-					</Route>
-				</Switch>
-			)
-		} else if (studio) {
-			return <NotFoundMessage message={t('There is no rundown active in this studio.')} />
-		} else if (studioId) {
-			return <NotFoundMessage message={t("This studio doesn't exist.")} />
-		} else {
-			return <NotFoundMessage message={t('There are no active rundowns.')} />
-		}
+		return <NotFoundMessage message={t('There are no active rundowns.')} />
 	}
 }
 
-function NotFoundMessage({ message }: { message: string }) {
+function NotFoundMessage({ message }: Readonly<{ message: string }>) {
 	const { t } = useTranslation()
 
 	return (

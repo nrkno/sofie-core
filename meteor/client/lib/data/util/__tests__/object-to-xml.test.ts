@@ -18,7 +18,7 @@ describe('objectToXML', () => {
 		it('should create a text node for a property with a string value', () => {
 			const nodeName = 'hehe'
 			const nodevalue = 'lol'
-			const input = {}
+			const input: any = {}
 			input[nodeName] = nodevalue
 
 			const xmlDoc = objectToXML(input, 'root')
@@ -31,7 +31,7 @@ describe('objectToXML', () => {
 		it('should create an attribute node for a property in property named _attributes', () => {
 			const attributeName = 'data-lol'
 			const attributeValue = 'hehe'
-			const _attributes = {}
+			const _attributes: any = {}
 			_attributes[attributeName] = attributeValue
 			const input = {
 				_attributes,

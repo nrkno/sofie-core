@@ -22,7 +22,7 @@ interface IProps {
 	layouts: RundownLayoutBase[]
 }
 
-export default function RundownViewLayoutSettings({ sourceLayers, item, layouts }: IProps): JSX.Element {
+export default function RundownViewLayoutSettings({ sourceLayers, item, layouts }: Readonly<IProps>): JSX.Element {
 	const { t } = useTranslation()
 
 	const sourceLayerOptions = useMemo(
@@ -97,7 +97,7 @@ export default function RundownViewLayoutSettings({ sourceLayers, item, layouts 
 						type="checkbox"
 						collection={RundownLayouts}
 						className="mhs mvxs"
-						mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
+						mutateDisplayValue={(v) => !(v === undefined || v.length === 0)}
 						mutateUpdateValue={() => undefined}
 					/>
 					<EditAttribute
@@ -127,7 +127,7 @@ export default function RundownViewLayoutSettings({ sourceLayers, item, layouts 
 						type="checkbox"
 						collection={RundownLayouts}
 						className="mhs mvxs"
-						mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
+						mutateDisplayValue={(v) => !(v === undefined || v.length === 0)}
 						mutateUpdateValue={() => undefined}
 					/>
 					<EditAttribute
@@ -195,7 +195,7 @@ export default function RundownViewLayoutSettings({ sourceLayers, item, layouts 
 						type="checkbox"
 						collection={RundownLayouts}
 						className="mhs mvxs"
-						mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
+						mutateDisplayValue={(v) => !(v === undefined || v.length === 0)}
 						mutateUpdateValue={() => undefined}
 					/>
 					<EditAttribute
@@ -270,7 +270,7 @@ export default function RundownViewLayoutSettings({ sourceLayers, item, layouts 
 						type="checkbox"
 						collection={RundownLayouts}
 						className="mhs mvxs"
-						mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
+						mutateDisplayValue={(v) => !(v === undefined || v.length === 0)}
 						mutateUpdateValue={() => undefined}
 					/>
 					<EditAttribute

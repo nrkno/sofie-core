@@ -9,7 +9,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { ReadonlyDeep } from 'type-fest'
-import { CustomCollectionName, PubSub } from '../../../../lib/api/pubsub'
+import { CustomCollectionName, MeteorPubSub } from '../../../../lib/api/pubsub'
 import { UIBucketContentStatus } from '../../../../lib/api/rundownNotifications'
 import { Buckets, MediaObjects, PackageContainerPackageStatuses, PackageInfos, Studios } from '../../../collections'
 import { literal, protectString } from '../../../../lib/lib'
@@ -99,6 +99,7 @@ async function setupUIBucketContentStatusesPublicationObservers(
 	if (!bucket || bucket.studioId !== args.studioId) throw new Error(`Bucket "${args.bucketId}" not found!`)
 
 	const contentCache = createReactiveContentCache()
+	triggerUpdate({ newCache: contentCache })
 
 	// Set up observers:
 	return [
@@ -243,7 +244,7 @@ async function manipulateUIBucketContentStatusesPublicationData(
 }
 
 meteorCustomPublish(
-	PubSub.uiBucketContentStatuses,
+	MeteorPubSub.uiBucketContentStatuses,
 	CustomCollectionName.UIBucketContentStatuses,
 	async function (pub, studioId: StudioId, bucketId: BucketId) {
 		check(studioId, String)
@@ -264,7 +265,7 @@ meteorCustomPublish(
 				UIBucketContentStatusesState,
 				UIBucketContentStatusesUpdateProps
 			>(
-				`pub_${PubSub.uiBucketContentStatuses}_${studioId}_${bucketId}`,
+				`pub_${MeteorPubSub.uiBucketContentStatuses}_${studioId}_${bucketId}`,
 				{ studioId, bucketId },
 				setupUIBucketContentStatusesPublicationObservers,
 				manipulateUIBucketContentStatusesPublicationData,

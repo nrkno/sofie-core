@@ -58,7 +58,7 @@ export const VariantListItem = ({
 	onFinishEdit,
 	onDelete,
 	onSaveOverrides,
-}: {
+}: Readonly<{
 	showStyleVariant: DBShowStyleVariant
 	onDragVariant: (draggingId: ShowStyleVariantId, hoverId: ShowStyleVariantId) => void
 	onDragEnd: (draggedId: ShowStyleVariantId) => void
@@ -77,7 +77,7 @@ export const VariantListItem = ({
 	onFinishEdit: (showStyleVariantId: ShowStyleVariantId) => void
 	onDelete: (showStyleVariant: DBShowStyleVariant) => void
 	onSaveOverrides: (showStyleVariantId: ShowStyleVariantId, newOps: SomeObjectOverrideOp[]) => void
-}): JSX.Element => {
+}>): JSX.Element => {
 	const ref = useRef<HTMLTableRowElement>(null)
 	const [{ handlerId }, drop] = useDrop<DraggableVariant, DraggableDropResult, { handlerId: string | symbol | null }>({
 		accept: ShowStyleDragDropTypes.VARIANT,

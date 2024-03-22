@@ -26,6 +26,8 @@ type Data =
  * Remove certain fields from data that change often, so that it can be used in snapshots
  * @param data
  */
+export function fixSnapshot(data: Data, sortData?: boolean): Data
+export function fixSnapshot(data: Array<Data>, sortData?: boolean): Array<Data>
 export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean): Data | Array<Data> {
 	if (_.isArray(data)) {
 		const dataArray: any[] = _.map(data, (d) => fixSnapshot(d))
@@ -67,7 +69,6 @@ export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean): Data 
 		} else if (isRundown(o)) {
 			o['created'] = 0
 			o['modified'] = 0
-			delete o['baselineModifyHash'] // TODO - is this ok?
 			if (o.importVersions.core) {
 				// re-write the core version so something static, so tests won't fail just because the version has changed
 				o.importVersions.core = '0.0.0-test'

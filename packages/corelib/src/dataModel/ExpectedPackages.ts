@@ -7,12 +7,15 @@ import {
 	BucketAdLibId,
 	BucketId,
 	ExpectedPackageId,
+	PartId,
 	PieceId,
+	PieceInstanceId,
 	RundownBaselineAdLibActionId,
 	RundownId,
 	SegmentId,
 	StudioId,
 } from './Ids'
+import { ReadonlyDeep } from 'type-fest'
 
 /*
  Expected Packages are created from Pieces in the rundown.
@@ -23,17 +26,19 @@ import {
    The Package Manager will then copy the file to the right place.
 */
 
-export type ExpectedPackageFromRundown =
-	| ExpectedPackageDBFromPiece
-	| ExpectedPackageDBFromAdLibAction
+export type ExpectedPackageFromRundown = ExpectedPackageDBFromPiece | ExpectedPackageDBFromAdLibAction
+
+export type ExpectedPackageFromRundownBaseline =
 	| ExpectedPackageDBFromBaselineAdLibAction
 	| ExpectedPackageDBFromBaselineAdLibPiece
+	| ExpectedPackageDBFromRundownBaselineObjects
+
+export type ExpectedPackageDBFromBucket = ExpectedPackageDBFromBucketAdLib | ExpectedPackageDBFromBucketAdLibAction
 
 export type ExpectedPackageDB =
 	| ExpectedPackageFromRundown
-	| ExpectedPackageDBFromBucketAdLib
-	| ExpectedPackageDBFromBucketAdLibAction
-	| ExpectedPackageDBFromRundownBaselineObjects
+	| ExpectedPackageDBFromBucket
+	| ExpectedPackageFromRundownBaseline
 	| ExpectedPackageDBFromStudioBaselineObjects
 
 export enum ExpectedPackageDBType {
@@ -67,6 +72,8 @@ export interface ExpectedPackageDBFromPiece extends ExpectedPackageDBBase {
 	fromPieceType: ExpectedPackageDBType.PIECE | ExpectedPackageDBType.ADLIB_PIECE
 	/** The Piece this package belongs to */
 	pieceId: PieceId
+	/** The Part this package belongs to */
+	partId: PartId
 	/** The Segment this package belongs to */
 	segmentId: SegmentId
 	/** The rundown of the Piece this package belongs to */
@@ -85,6 +92,8 @@ export interface ExpectedPackageDBFromAdLibAction extends ExpectedPackageDBBase 
 	fromPieceType: ExpectedPackageDBType.ADLIB_ACTION
 	/** The Adlib Action this package belongs to */
 	pieceId: AdLibActionId
+	/** The Part this package belongs to */
+	partId: PartId
 	/** The Segment this package belongs to */
 	segmentId: SegmentId
 	/** The rundown of the Piece this package belongs to */
@@ -114,15 +123,19 @@ export interface ExpectedPackageDBFromBucketAdLib extends ExpectedPackageDBBase 
 	bucketId: BucketId
 	/** The Bucket adlib this package belongs to */
 	pieceId: BucketAdLibId
+	/** The `externalId` of the Bucket adlib this package belongs to */
+	pieceExternalId: string
 }
 export interface ExpectedPackageDBFromBucketAdLibAction extends ExpectedPackageDBBase {
 	fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB_ACTION
 	bucketId: BucketId
 	/** The Bucket adlib-action this package belongs to */
 	pieceId: BucketAdLibActionId
+	/** The `externalId` of the Bucket adlib-action this package belongs to */
+	pieceExternalId: string
 }
 
-export function getContentVersionHash(expectedPackage: Omit<ExpectedPackage.Any, '_id'>): string {
+export function getContentVersionHash(expectedPackage: ReadonlyDeep<Omit<ExpectedPackage.Any, '_id'>>): string {
 	return hashObj({
 		content: expectedPackage.content,
 		version: expectedPackage.version,
@@ -134,6 +147,7 @@ export function getExpectedPackageId(
 	/** _id of the owner (the piece, adlib etc..) */
 	ownerId:
 		| PieceId
+		| PieceInstanceId
 		| AdLibActionId
 		| RundownBaselineAdLibActionId
 		| BucketAdLibId

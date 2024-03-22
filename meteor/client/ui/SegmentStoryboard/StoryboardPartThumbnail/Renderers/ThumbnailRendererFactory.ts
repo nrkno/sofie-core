@@ -27,7 +27,7 @@ export interface IProps {
 	isNext: boolean
 }
 
-export default function renderThumbnail(props: IProps): JSX.Element {
+export default function renderThumbnail(props: Readonly<IProps>): JSX.Element {
 	const type = props.layer?.type
 	switch (type) {
 		case SourceLayerType.VT:

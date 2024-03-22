@@ -10,15 +10,15 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
-import { DBPart } from '../../collections/Parts'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
-import { DBRundownPlaylist, RundownPlaylist } from '../../collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { assertNever, generateTranslation } from '../../lib'
-import { MongoQuery } from '../../typings/meteor'
-import { DBRundown } from '../../collections/Rundowns'
-import { DBSegment } from '../../collections/Segments'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
+import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { sortAdlibs } from '../../Rundown'
 import { ReactivePlaylistActionContext } from './actionFactory'
 import { FindOptions } from '../../collections/lib'
@@ -764,7 +764,7 @@ export function compileAdLibFilter(
 export function rundownPlaylistFilter(
 	studioId: StudioId,
 	filterChain: IRundownPlaylistFilterLink[]
-): RundownPlaylist | undefined {
+): DBRundownPlaylist | undefined {
 	const selector: MongoQuery<DBRundownPlaylist> = {
 		$and: [
 			{
@@ -788,7 +788,7 @@ export function rundownPlaylistFilter(
 			case 'studioId':
 				selector['$and']?.push({
 					studioId: {
-						$regex: link.value,
+						$regex: link.value as any,
 					},
 				})
 				break

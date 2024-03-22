@@ -15,7 +15,7 @@ interface IProps {
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 }
 
-export const LinePartPieceIndicators: React.FC<IProps> = function LinePartPieceIndicators({
+export const LinePartPieceIndicators: React.FC<Readonly<IProps>> = function LinePartPieceIndicators({
 	partId,
 	pieces,
 	indicatorColumns,

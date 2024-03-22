@@ -2,7 +2,6 @@ import * as React from 'react'
 import { Accounts } from 'meteor/accounts-base'
 import { Translated, translateWithTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import type { RouteComponentProps } from 'react-router'
-import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
 import { getUser } from '../../../../lib/collections/Users'
 import { NotLoggedInContainer } from './lib'
 import { Link } from 'react-router-dom'
@@ -23,8 +22,8 @@ export const ResetPasswordPage = translateWithTracker((props: IResetPageProps) =
 
 	return {}
 })(
-	class extends MeteorReactComponent<Translated<IResetPageProps>, IResetPageState> {
-		constructor(props) {
+	class ResetPasswordPage extends React.Component<Translated<IResetPageProps>, IResetPageState> {
+		constructor(props: Translated<IResetPageProps>) {
 			super(props)
 
 			this.state = {

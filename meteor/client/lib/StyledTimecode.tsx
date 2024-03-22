@@ -12,7 +12,7 @@ const FRAMES_INLINE_STYLE: React.CSSProperties = {
 	fontSize: '0.8em',
 }
 
-export function StyledTimecode({ time, studioSettings }: IProps): JSX.Element {
+export function StyledTimecode({ time, studioSettings }: Readonly<IProps>): JSX.Element {
 	const timecode = formatDurationAsTimecode({ frameRate: studioSettings?.frameRate ?? 25 }, time)
 	const hours = timecode.substring(0, 3)
 	const minutesSeconds = timecode.substring(3, 8)

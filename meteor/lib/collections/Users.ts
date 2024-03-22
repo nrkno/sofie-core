@@ -46,5 +46,12 @@ export function getUserRoles(user?: User | null, organization?: DBOrganization |
 		return {}
 	}
 	if (organization === undefined) organization = Organizations.findOne({ _id: user.organizationId }) || null
+	return getUserRolesFromLoadedDocuments(user, organization)
+}
+
+export function getUserRolesFromLoadedDocuments(user: User | null, organization: DBOrganization | null): UserRoles {
+	if (!user) {
+		return {}
+	}
 	return (organization?.userRoles && organization.userRoles[unprotectString(user._id)]) || {}
 }

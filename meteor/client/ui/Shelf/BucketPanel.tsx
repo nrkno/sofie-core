@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as _ from 'underscore'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { Translated, useSubscription, useSubscriptions, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
 import {
@@ -15,7 +14,6 @@ import {
 } from 'react-dnd'
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import {
 	ISourceLayer,
@@ -23,7 +21,7 @@ import {
 	IBlueprintActionTriggerMode,
 	SomeContent,
 } from '@sofie-automation/blueprints-integration'
-import { PubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { doUserAction, getEventTimestamp, UserAction } from '../../../lib/clientUserAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { literal, unprotectString, partial, protectString } from '../../../lib/lib'
@@ -32,13 +30,13 @@ import { IDashboardPanelTrackedProps } from './DashboardPanel'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { Bucket } from '../../../lib/collections/Buckets'
 import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { MeteorCall } from '../../../lib/api/methods'
 import { DragDropItemTypes } from '../DragDropItemTypes'
 import { BucketPieceButton, IBucketPieceDropResult } from './BucketPieceButton'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import update from 'immutability-helper'
-import { PartInstance, DBPartInstance } from '../../../lib/collections/PartInstances'
+import { PartInstance } from '../../../lib/collections/PartInstances'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { RundownUtils } from '../../lib/rundown'
 import { BucketAdLibItem, BucketAdLibActionUi, isAdLibAction, isAdLib, BucketAdLibUi } from './RundownViewBuckets'
@@ -47,6 +45,7 @@ import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import RundownViewEventBus, {
 	RundownViewEvents,
 	RevealInShelfEvent,
+	ToggleShelfDropzoneEvent,
 } from '../../../lib/api/triggers/RundownViewEventBus'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
@@ -72,6 +71,10 @@ import {
 	ShowStyleVariantId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { withTranslation } from 'react-i18next'
+import { useRundownAndShowStyleIdsForPlaylist } from '../util/useRundownAndShowStyleIdsForPlaylist'
+import _ from 'underscore'
 
 interface IBucketPanelDragObject {
 	id: BucketId
@@ -178,6 +181,7 @@ const bucketTarget = {
 
 interface IState {
 	dropActive: boolean
+	dropFrameActive: string | null
 	bucketName: string
 	adLibPieces: BucketAdLibItem[]
 	singleClickMode: boolean
@@ -231,7 +235,7 @@ export function actionToAdLibPieceUi(
 
 export interface IBucketPanelProps {
 	bucket: Bucket
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	showStyleBase: UIShowStyleBase
 	shouldQueue: boolean
 	editableName?: boolean
@@ -241,9 +245,10 @@ export interface IBucketPanelProps {
 	moveBucket: (id: BucketId, atIndex: number) => void
 	findBucket: (id: BucketId) => { bucket: Bucket | undefined; index: number }
 	onBucketReorder: (draggedId: BucketId, newIndex: number, oldIndex: number) => void
-	onSelectAdlib
+	onSelectAdlib: (piece: any) => void // TODO - fix this
 	onAdLibContext: (args: { contextBucket: Bucket; contextBucketAdLib: BucketAdLibItem }, callback: () => void) => void
 	onPieceNameRename: () => void
+	extFrameDropZones: { _id: string; url: string }[]
 }
 
 export interface IBucketPanelTrackedProps extends IDashboardPanelTrackedProps {
@@ -265,93 +270,121 @@ interface BucketTargetCollectedProps {
 	connectDropTarget: ConnectDropTarget
 }
 
-export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, IState, IBucketPanelTrackedProps>(
-	(props: Translated<IBucketPanelProps>) => {
-		let showStyleBaseId: ShowStyleBaseId | undefined = undefined
-		let showStyleVariantId: ShowStyleVariantId | undefined = undefined
+export const BucketPanel = React.memo(
+	function BucketPanel(props: Readonly<IBucketPanelProps>): JSX.Element | null {
+		// Data subscriptions:
+		useSubscription(MeteorPubSub.buckets, props.playlist.studioId, props.bucket._id)
+		useSubscription(MeteorPubSub.uiBucketContentStatuses, props.playlist.studioId, props.bucket._id)
+		useSubscription(MeteorPubSub.uiStudio, props.playlist.studioId)
 
-		const selectedPart = props.playlist.currentPartInfo?.partInstanceId || props.playlist.nextPartInfo?.partInstanceId
-		if (selectedPart) {
-			const part = PartInstances.findOne(selectedPart, {
-				fields: literal<MongoFieldSpecifierOnes<DBPartInstance>>({
-					rundownId: 1,
-					//@ts-expect-error deep property
-					'part._id': 1,
-				}),
-			}) as Pick<PartInstance, 'rundownId'> | undefined
-			if (part) {
-				const rundown = Rundowns.findOne(part.rundownId, {
-					fields: {
-						showStyleBaseId: 1,
-						showStyleVariantId: 1,
-					},
-				}) as Pick<Rundown, 'showStyleVariantId' | 'showStyleBaseId'> | undefined
-				if (rundown) {
-					showStyleBaseId = rundown.showStyleBaseId
-					showStyleVariantId = rundown.showStyleVariantId
-				}
-			}
-		}
-		if (showStyleVariantId === undefined) {
-			const rundown = RundownPlaylistCollectionUtil.getRundownsOrdered(
-				props.playlist,
-				{},
-				{
-					fields: {
-						showStyleBaseId: 1,
-						showStyleVariantId: 1,
-					},
-				}
-			)[0] as Pick<Rundown, 'showStyleVariantId' | 'showStyleBaseId'> | undefined
-			if (rundown) {
-				showStyleBaseId = rundown.showStyleBaseId
-				showStyleVariantId = rundown.showStyleVariantId
-			}
-		}
-		if (!showStyleBaseId) throw new Meteor.Error(500, `No showStyleBaseId found for playlist ${props.playlist._id}`)
-		if (!showStyleVariantId)
-			throw new Meteor.Error(500, `No showStyleVariantId found for playlist ${props.playlist._id}`)
+		const { showStyleBaseIds, showStyleVariantIds } = useRundownAndShowStyleIdsForPlaylist(props.playlist._id)
 
-		const studio = UIStudios.findOne(props.playlist.studioId)
-		if (!studio) throw new Meteor.Error(500, `No Studio found for playlist ${props.playlist._id}`)
+		useSubscription(CorelibPubSub.bucketAdLibPieces, props.playlist.studioId, props.bucket._id, showStyleVariantIds)
+		useSubscription(CorelibPubSub.bucketAdLibActions, props.playlist.studioId, props.bucket._id, showStyleVariantIds)
 
-		const tOLayers = props.showStyleBase ? props.showStyleBase.outputLayers : {}
-		const tSLayers = props.showStyleBase ? props.showStyleBase.sourceLayers : {}
-
-		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
-			props.playlist,
-			props.showStyleBase
+		useSubscriptions(
+			MeteorPubSub.uiShowStyleBase,
+			showStyleBaseIds.map((id) => [id])
 		)
-		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist, props.showStyleBase)
-		const bucketAdLibPieces = BucketAdLibs.find({
-			bucketId: props.bucket._id,
-		}).fetch()
-		const bucketActions = BucketAdLibActions.find({
-			bucketId: props.bucket._id,
-		})
-			.fetch()
-			.map((action) => actionToAdLibPieceUi(action, tSLayers, tOLayers))
-		const allBucketItems = (bucketAdLibPieces as BucketAdLibItem[])
-			.concat(bucketActions)
-			.sort((a, b) => a._rank - b._rank || a.name.localeCompare(b.name))
 
-		return literal<IBucketPanelTrackedProps>({
-			adLibPieces: allBucketItems,
-			studio,
-			unfinishedAdLibIds,
-			unfinishedTags,
-			showStyleBaseId,
-			showStyleVariantId,
-			nextAdLibIds,
-			nextTags,
-			outputLayers: tOLayers,
-			sourceLayers: tSLayers,
-		})
+		// Data processing:
+		const { showStyleBaseId, showStyleVariantId } = useTracker(
+			() => {
+				const selectedPartInstanceId =
+					props.playlist.currentPartInfo?.partInstanceId ?? props.playlist.nextPartInfo?.partInstanceId
+				const partInstance = PartInstances.findOne(selectedPartInstanceId, {
+					fields: literal<MongoFieldSpecifierOnes<PartInstance>>({
+						rundownId: 1,
+						//@ts-expect-error deep property
+						'part._id': 1,
+					}),
+				}) as Pick<PartInstance, 'rundownId'> | undefined
+				if (partInstance) {
+					const rundown = Rundowns.findOne(partInstance.rundownId, {
+						fields: {
+							showStyleBaseId: 1,
+							showStyleVariantId: 1,
+						},
+					}) as Pick<Rundown, 'showStyleVariantId' | 'showStyleBaseId'> | undefined
+					if (rundown) {
+						return { showStyleBaseId: rundown.showStyleBaseId, showStyleVariantId: rundown.showStyleVariantId }
+					}
+				}
+
+				const rundown = RundownPlaylistCollectionUtil.getRundownsOrdered(
+					props.playlist,
+					{},
+					{
+						fields: {
+							showStyleBaseId: 1,
+							showStyleVariantId: 1,
+						},
+					}
+				)[0] as Pick<Rundown, 'showStyleVariantId' | 'showStyleBaseId'> | undefined
+				if (rundown) {
+					return { showStyleBaseId: rundown.showStyleBaseId, showStyleVariantId: rundown.showStyleVariantId }
+				}
+
+				return { showStyleBaseId: undefined, showStyleVariantId: undefined }
+			},
+			[],
+			{ showStyleBaseId: undefined, showStyleVariantId: undefined }
+		)
+
+		const studio = useTracker(() => UIStudios.findOne(props.playlist.studioId), [props.playlist.studioId])
+
+		const outputLayers = props.showStyleBase.outputLayers
+		const sourceLayers = props.showStyleBase.sourceLayers
+
+		const { unfinishedAdLibIds, unfinishedTags } = useTracker(
+			() => getUnfinishedPieceInstancesGrouped(props.playlist, props.showStyleBase),
+			[props.playlist, props.showStyleBase],
+			{ unfinishedPieceInstances: [], unfinishedAdLibIds: [], unfinishedTags: [] }
+		)
+		const { nextAdLibIds, nextTags } = useTracker(
+			() => getNextPieceInstancesGrouped(props.playlist, props.showStyleBase),
+			[props.playlist, props.showStyleBase],
+			{ nextPieceInstances: [], nextAdLibIds: [], nextTags: [] }
+		)
+		const allBucketItems = useTracker(() => {
+			const bucketAdLibPieces = BucketAdLibs.find({
+				bucketId: props.bucket._id,
+			}).fetch()
+			const bucketActions = BucketAdLibActions.find({
+				bucketId: props.bucket._id,
+			})
+				.fetch()
+				.map((action) => actionToAdLibPieceUi(action, sourceLayers, outputLayers))
+			return (bucketAdLibPieces as BucketAdLibItem[])
+				.concat(bucketActions)
+				.sort((a, b) => a._rank - b._rank || a.name.localeCompare(b.name))
+		}, [props.bucket._id, sourceLayers, outputLayers])
+
+		// Wait for data to load, it might take a tick
+		if (!studio || !showStyleBaseId || !showStyleVariantId) return null
+
+		return (
+			<BucketPanelContent
+				{...props}
+				adLibPieces={allBucketItems}
+				studio={studio}
+				unfinishedAdLibIds={unfinishedAdLibIds}
+				unfinishedTags={unfinishedTags}
+				showStyleBaseId={showStyleBaseId}
+				showStyleVariantId={showStyleVariantId}
+				nextAdLibIds={nextAdLibIds}
+				nextTags={nextTags}
+				outputLayers={outputLayers}
+				sourceLayers={sourceLayers}
+			/>
+		)
 	},
-	(_data, props: IBucketPanelProps, nextProps: IBucketPanelProps) => {
+	(props: IBucketPanelProps, nextProps: IBucketPanelProps) => {
 		return !_.isEqual(props, nextProps)
 	}
-)(
+)
+
+const BucketPanelContent = withTranslation()(
 	DropTarget([DragDropItemTypes.BUCKET, DragDropItemTypes.BUCKET_ADLIB_PIECE], bucketTarget, (connect) => ({
 		connectDropTarget: connect.dropTarget(),
 	}))(
@@ -360,7 +393,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 			connectDragPreview: connect.dragPreview(),
 			isDragging: monitor.isDragging(),
 		}))(
-			class BucketPanel extends MeteorReactComponent<
+			class BucketPanel extends React.Component<
 				Translated<IBucketPanelProps & IBucketPanelTrackedProps> &
 					BucketSourceCollectedProps &
 					BucketTargetCollectedProps,
@@ -378,6 +411,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 
 					this.state = {
 						dropActive: false,
+						dropFrameActive: null,
 						bucketName: props.bucket.name,
 						adLibPieces: props.adLibPieces.slice(),
 						singleClickMode: false,
@@ -385,40 +419,11 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 				}
 
 				componentDidMount(): void {
-					this.subscribe(PubSub.buckets, this.props.playlist.studioId, this.props.bucket._id)
-					this.subscribe(PubSub.uiBucketContentStatuses, this.props.playlist.studioId, this.props.bucket._id)
-					this.subscribe(PubSub.uiStudio, this.props.playlist.studioId)
-					this.autorun(() => {
-						const showStyles: Array<[ShowStyleBaseId, ShowStyleVariantId]> =
-							RundownPlaylistCollectionUtil.getRundownsUnordered(this.props.playlist).map((rundown) => [
-								rundown.showStyleBaseId,
-								rundown.showStyleVariantId,
-							])
-						const showStyleBases = showStyles.map((showStyle) => showStyle[0])
-						const showStyleVariants = showStyles.map((showStyle) => showStyle[1])
-						this.subscribe(PubSub.bucketAdLibPieces, {
-							bucketId: this.props.bucket._id,
-							studioId: this.props.playlist.studioId,
-							showStyleVariantId: {
-								$in: [null, ...showStyleVariants], // null = valid for all variants
-							},
-						})
-						this.subscribe(PubSub.bucketAdLibActions, {
-							bucketId: this.props.bucket._id,
-							studioId: this.props.playlist.studioId,
-							showStyleVariantId: {
-								$in: [null, ...showStyleVariants], // null = valid for all variants
-							},
-						})
-						for (const showStyleBaseId of _.uniq(showStyleBases)) {
-							this.subscribe(PubSub.uiShowStyleBase, showStyleBaseId)
-						}
-					})
-
 					window.addEventListener(MOSEvents.dragenter, this.onDragEnter)
 					window.addEventListener(MOSEvents.dragleave, this.onDragLeave)
 
 					RundownViewEventBus.on(RundownViewEvents.REVEAL_IN_SHELF, this.onRevealInShelf)
+					RundownViewEventBus.on(RundownViewEvents.TOGGLE_SHELF_DROPZONE, this.onToggleDropFrame)
 				}
 
 				componentDidUpdate(prevProps: IBucketPanelProps & IBucketPanelTrackedProps) {
@@ -432,10 +437,9 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 				}
 
 				componentWillUnmount(): void {
-					this._cleanUp()
-
 					window.removeEventListener(MOSEvents.dragenter, this.onDragEnter)
 					window.removeEventListener(MOSEvents.dragleave, this.onDragLeave)
+					RundownViewEventBus.removeListener(RundownViewEvents.TOGGLE_SHELF_DROPZONE, this.onToggleDropFrame)
 				}
 
 				onRevealInShelf = (e: RevealInShelfEvent) => {
@@ -531,7 +535,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						return
 					}
 					if (this.props.playlist && this.props.playlist.currentPartInfo) {
-						if (isAdLibAction(piece as BucketAdLibItem)) {
+						if (isAdLibAction(piece)) {
 							const bucketAction = piece as BucketAdLibActionUi
 							doUserAction(t, e, UserAction.START_BUCKET_ADLIB, (e) =>
 								MeteorCall.userAction.executeAction(
@@ -791,6 +795,13 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					)
 				}
 
+				private onToggleDropFrame = (e: ToggleShelfDropzoneEvent) => {
+					this.setState({
+						// dropActive: e.display,
+						dropFrameActive: e.display ? e.id : null,
+					})
+				}
+
 				render(): JSX.Element | null {
 					const { connectDragSource, connectDragPreview, connectDropTarget } = this.props
 
@@ -830,7 +841,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 								<div
 									className={ClassNames('dashboard-panel', 'dashboard-panel__panel--bucket', {
 										'dashboard-panel__panel--bucket-active': this.state.dropActive,
-										'dashboard-panel__panel--sort-dragging': this.props.isDragging,
+										'dashboard-panel__panel--sort-dragging':
+											(this.props.isDragging || this.state.dropFrameActive) && !this.state.dropActive,
 									})}
 									data-bucket-id={this.props.bucket._id}
 									ref={this.setRef}
@@ -908,6 +920,18 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 												</BucketPieceButton>
 											</ContextMenuTrigger>
 										))}
+										{this.props.extFrameDropZones.map((dropZone) => (
+											<DropzoneHolder
+												key={dropZone._id}
+												bucketId={this.props.bucket._id}
+												id={dropZone._id}
+												url={dropZone.url}
+												hidden={this.state.dropFrameActive !== dropZone._id}
+												showStyleBaseId={this.props.showStyleBaseId}
+												onDragEnter={this.onDragEnter}
+												onDragLeave={this.onDragLeave}
+											/>
+										))}
 									</div>
 								</div>
 							)
@@ -919,3 +943,88 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		)
 	)
 )
+
+interface DropzoneHolderProps {
+	id: string
+	bucketId: BucketId
+	url: string
+	hidden: boolean
+	showStyleBaseId: ShowStyleBaseId
+
+	onDragEnter?: () => void
+	onDragLeave?: () => void
+}
+const DropzoneHolder = (props: DropzoneHolderProps) => {
+	const [dropzoneElementRef, setDropzoneElementRef] = React.useState<HTMLIFrameElement | null>(null)
+
+	const onMessage = React.useCallback(
+		(event: MessageEvent) => {
+			// filter out messages from this panel
+			if (event.source !== dropzoneElementRef?.contentWindow) return
+
+			switch (event.data?.event) {
+				case 'drop':
+					RundownViewEventBus.emit(RundownViewEvents.ITEM_DROPPED, {
+						id: props.id,
+						bucketId: props.bucketId,
+						ev: event,
+					})
+					if (props.onDragLeave) props.onDragLeave()
+					break
+				case 'data':
+					if (event.data.data.trim().endsWith('</mos>')) {
+						RundownViewEventBus.emit(RundownViewEvents.ITEM_DROPPED, {
+							id: props.id,
+							bucketId: props.bucketId,
+							message: event.data.data,
+							ev: event,
+						})
+					}
+					break
+				case 'error':
+					RundownViewEventBus.emit(RundownViewEvents.ITEM_DROPPED, {
+						id: props.id,
+						bucketId: props.bucketId,
+						error: event.data.message,
+						ev: event,
+					})
+					break
+				case 'dragEnter':
+					if (props.onDragEnter) props.onDragEnter()
+					break
+				case 'dragLeave':
+					if (props.onDragLeave) props.onDragLeave()
+					break
+			}
+		},
+		[dropzoneElementRef, props.onDragEnter, props.onDragLeave]
+	)
+
+	React.useEffect(() => {
+		if (!dropzoneElementRef) return
+
+		const registerHandlers = () => {
+			window.addEventListener('message', onMessage)
+		}
+		const unregisterHandlers = () => {
+			window.removeEventListener('message', onMessage)
+		}
+
+		registerHandlers()
+
+		return () => {
+			unregisterHandlers()
+		}
+	}, [dropzoneElementRef, onMessage])
+
+	return (
+		<div className="dropzone-panel" style={{ visibility: props.hidden ? 'hidden' : 'visible' }}>
+			<iframe
+				ref={setDropzoneElementRef}
+				className="external-frame-panel__iframe"
+				src={props.url}
+				sandbox="allow-forms allow-popups allow-scripts allow-same-origin"
+			></iframe>
+		</div>
+	)
+}

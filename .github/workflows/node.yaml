@@ -42,6 +42,10 @@ jobs:
       - name: Run typecheck and linter
         run: |
           cd meteor
+
+          # setup zodern:types. No linters are setup, so this simply installs the packages
+          meteor lint
+
           meteor yarn ci:lint
         env:
           CI: true
@@ -77,6 +81,10 @@ jobs:
       - name: Run Tests
         run: |
           cd meteor
+
+          # setup zodern:types. No linters are setup, so this simply installs the packages
+          meteor lint
+
           NODE_OPTIONS="--max-old-space-size=6144" meteor yarn unitci --force-exit
         env:
           CI: true
@@ -514,6 +522,62 @@ jobs:
         uses: codecov/codecov-action@v4
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  asyncapi-generation:
+    name: AsyncAPI Generation
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".node-version"
+      - name: Prepare Environment
+        run: |
+          cd packages
+          yarn
+        env:
+          CI: true
+      - name: Run generator
+        run: |
+          cd packages/live-status-gateway
+
+          yarn gendocs
+          yarn genserver
+        env:
+          CI: true
+  openapi-generation:
+    name: OpenAPI Generation
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".node-version"
+      - name: Prepare Environment
+        run: |
+          cd packages
+          yarn
+        env:
+          CI: true
+      - name: Run generator
+        run: |
+          cd packages/openapi
+
+          yarn gendocs
+          yarn genserver
+          yarn genclient:ts
+        env:
+          CI: true
 
   publish-docs:
     name: Publish Docs

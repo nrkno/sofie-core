@@ -22,6 +22,17 @@ export interface IWrappedAdLibBase {
 	item: unknown
 }
 
+export interface ShiftRegisterActionArguments {
+	type: 'modifyRegister'
+	register: number
+	operation: '=' | '+' | '-'
+	value: number
+	limitMin: number
+	limitMax: number
+}
+
+export type DeviceActionArguments = ShiftRegisterActionArguments
+
 export interface DeviceTriggerMountedAction {
 	_id: DeviceTriggerMountedActionId
 	studioId: StudioId
@@ -31,6 +42,7 @@ export interface DeviceTriggerMountedAction {
 	values: DeviceTriggerArguments
 	actionId: DeviceActionId
 	actionType: SomeActionIdentifier
+	deviceActionArguments?: DeviceActionArguments
 	name?: string | ITranslatableMessage
 }
 

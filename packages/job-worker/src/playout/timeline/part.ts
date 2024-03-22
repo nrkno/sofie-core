@@ -12,7 +12,7 @@ import {
 import { assertNever, literal } from '@sofie-automation/corelib/dist/lib'
 import { getPartGroupId, getPartFirstObjectId } from '@sofie-automation/corelib/dist/playout/ids'
 import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
-import { PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
+import { PieceTimelineMetadata } from './pieceGroup'
 import { PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { JobContext } from '../../jobs'
 import { ReadonlyDeep } from 'type-fest'
@@ -96,7 +96,7 @@ export interface PartEnable {
 }
 
 export function createPartGroup(
-	partInstance: DBPartInstance,
+	partInstance: ReadonlyDeep<DBPartInstance>,
 	enable: PartEnable
 ): TimelineObjGroupPart & OnGenerateTimelineObjExt {
 	const partGrp = literal<TimelineObjGroupPart & OnGenerateTimelineObjExt>({
@@ -122,9 +122,9 @@ export function createPartGroup(
 
 export function createPartGroupFirstObject(
 	playlistId: RundownPlaylistId,
-	partInstance: DBPartInstance,
+	partInstance: ReadonlyDeep<DBPartInstance>,
 	partGroup: TimelineObjRundown & OnGenerateTimelineObjExt,
-	previousPart?: DBPartInstance
+	previousPart?: ReadonlyDeep<DBPartInstance>
 ): TimelineObjPartAbstract & OnGenerateTimelineObjExt {
 	return literal<TimelineObjPartAbstract & OnGenerateTimelineObjExt>({
 		id: getPartFirstObjectId(partInstance),

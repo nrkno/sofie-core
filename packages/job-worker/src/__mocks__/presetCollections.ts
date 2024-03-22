@@ -124,6 +124,7 @@ export async function setupMockShowStyleBase(
 		// hotkeyLegend?: Array<HotkeyDefinition>
 		_rundownVersionHash: '',
 		lastBlueprintConfig: undefined,
+		lastBlueprintFixUpHash: undefined,
 	}
 	const showStyleBase = _.extend(defaultShowStyleBase, doc)
 	await context.mockCollections.ShowStyleBases.insertOne(showStyleBase)

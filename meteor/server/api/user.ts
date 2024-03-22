@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { Accounts } from 'meteor/accounts-base'
 import { unprotectString, protectString, deferAsync, sleep } from '../../lib/lib'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
-import { NewUserAPI, UserAPIMethods, createUser } from '../../lib/api/user'
+import { NewUserAPI, UserAPIMethods, createUser, CreateNewUserData } from '../../lib/api/user'
 import { registerClassToMeteorMethods } from '../methods'
 import { SystemWriteAccess } from '../security/system'
 import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
@@ -105,10 +105,10 @@ class ServerUserAPI extends MethodContextAPI implements NewUserAPI {
 
 registerClassToMeteorMethods(UserAPIMethods, ServerUserAPI, false)
 
-Accounts.onCreateUser((options, user) => {
+Accounts.onCreateUser((options0, user) => {
+	const options = options0 as Partial<CreateNewUserData>
 	user.profile = options.profile
 
-	// @ts-expect-error hack, add the property "createOrganization" to trigger creation of an org
 	const createOrganization = options.createOrganization
 	if (createOrganization) {
 		deferAsync(async () => {

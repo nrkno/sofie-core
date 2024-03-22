@@ -1,5 +1,13 @@
 import { addMigrationSteps } from './databaseMigration'
-import { PeripheralDevices, RundownPlaylists, Studios } from '../collections'
+import {
+	AdLibActions,
+	AdLibPieces,
+	ExpectedPackages,
+	PeripheralDevices,
+	Pieces,
+	RundownPlaylists,
+	Studios,
+} from '../collections'
 import { assertNever, clone, literal } from '@sofie-automation/corelib/dist/lib'
 import {
 	MappingExt,
@@ -13,7 +21,7 @@ import {
 	PeripheralDeviceType,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import _ from 'underscore'
-import { Studio } from '../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
 	wrapDefaultObject,
 	ObjectOverrideSetOp,
@@ -21,6 +29,13 @@ import {
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { JSONBlobStringify, JSONSchema, TSR } from '@sofie-automation/blueprints-integration'
 import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
+import { PartId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import { AdLibActionId, PieceId, RundownBaselineAdLibActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
+import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 
 /*
  * **************************************************************************************
@@ -42,7 +57,7 @@ const mappingBaseOptions: Array<keyof MappingExt> = [
 	'lookaheadMaxSearchDistance',
 ]
 
-function convertMappingsOverrideOps(studio: Studio) {
+function convertMappingsOverrideOps(studio: DBStudio) {
 	let changed = false
 
 	const newOverrides = clone(studio.mappingsWithOverrides.overrides)
@@ -74,7 +89,7 @@ function convertMappingsOverrideOps(studio: Studio) {
 	return changed && newOverrides
 }
 
-function convertRouteSetMappings(studio: Studio) {
+function convertRouteSetMappings(studio: DBStudio) {
 	let changed = false
 
 	const newRouteSets = clone(studio.routeSets || {})
@@ -145,6 +160,12 @@ const oldDeviceTypeToNewMapping = {
 	[OldDeviceType.MULTI_OSC]: TSR.DeviceType.MULTI_OSC,
 }
 
+const EXPECTED_PACKAGE_TYPES_ADDED_PART_ID = [
+	ExpectedPackageDBType.PIECE,
+	ExpectedPackageDBType.ADLIB_PIECE,
+	ExpectedPackageDBType.ADLIB_ACTION,
+]
+
 export const addSteps = addMigrationSteps('1.50.0', [
 	{
 		id: `Mos gateway fix up config`,
@@ -156,7 +177,7 @@ export const addSteps = addMigrationSteps('1.50.0', [
 			})
 			const badObject = objects.find(
 				(device) =>
-					!!Object.values<unknown>(device.settings?.['devices'] ?? {}).find(
+					!!Object.values<unknown>((device.settings as any)?.['devices'] ?? {}).find(
 						(subdev: any) => !subdev?.type || !subdev?.options
 					)
 			)
@@ -172,7 +193,7 @@ export const addSteps = addMigrationSteps('1.50.0', [
 				'settings.device': { $exists: true },
 			})
 			for (const obj of objects) {
-				const newDevices: any = clone(obj.settings['devices'] || {})
+				const newDevices: any = clone((obj.settings as any)?.['devices'] || {})
 
 				for (const [id, subdev] of Object.entries<any>(newDevices)) {
 					if (!subdev) continue
@@ -477,7 +498,7 @@ export const addSteps = addMigrationSteps('1.50.0', [
 
 				const newOverrides: SomeObjectOverrideOp[] = []
 
-				for (const [id, subDevice] of Object.entries<unknown>(device.settings?.['devices'] || {})) {
+				for (const [id, subDevice] of Object.entries<unknown>((device.settings as any)?.['devices'] || {})) {
 					newOverrides.push(
 						literal<ObjectOverrideSetOp>({
 							op: 'set',
@@ -531,7 +552,7 @@ export const addSteps = addMigrationSteps('1.50.0', [
 
 				const newOverrides: SomeObjectOverrideOp[] = []
 
-				for (const [id, subDevice] of Object.entries<unknown>(device.settings?.['devices'] || {})) {
+				for (const [id, subDevice] of Object.entries<unknown>((device.settings as any)?.['devices'] || {})) {
 					newOverrides.push(
 						literal<ObjectOverrideSetOp>({
 							op: 'set',
@@ -585,7 +606,7 @@ export const addSteps = addMigrationSteps('1.50.0', [
 
 				const newOverrides: SomeObjectOverrideOp[] = []
 
-				for (const [id, subDevice] of Object.entries<unknown>(device.settings?.['devices'] || {})) {
+				for (const [id, subDevice] of Object.entries<unknown>((device.settings as any)?.['devices'] || {})) {
 					newOverrides.push(
 						literal<ObjectOverrideSetOp>({
 							op: 'set',
@@ -824,21 +845,104 @@ export const addSteps = addMigrationSteps('1.50.0', [
 			)
 		},
 	},
+
+	{
+		id: `ExpectedPackageDBFromAdLibAction and ExpectedPackageDBFromPiece add partId`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objectCount = await ExpectedPackages.countDocuments({
+				fromPieceType: { $in: EXPECTED_PACKAGE_TYPES_ADDED_PART_ID as any }, // Force the types, as the query does not match due to the interfaces
+				partId: { $exists: false },
+			})
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			const objects = await ExpectedPackages.findFetchAsync({
+				fromPieceType: { $in: EXPECTED_PACKAGE_TYPES_ADDED_PART_ID as any }, // Force the types, as the query does not match due to the interfaces
+				partId: { $exists: false },
+			})
+
+			const neededPieceIds: Array<PieceId | AdLibActionId | RundownBaselineAdLibActionId> = _.compact(
+				objects.map((obj) => obj.pieceId)
+			)
+			const [pieces, adlibPieces, adlibActions] = await Promise.all([
+				Pieces.findFetchAsync(
+					{
+						_id: { $in: neededPieceIds as PieceId[] },
+					},
+					{
+						projection: {
+							_id: 1,
+							startPartId: 1,
+						},
+					}
+				) as Promise<Pick<Piece, '_id' | 'startPartId'>[]>,
+				AdLibPieces.findFetchAsync(
+					{
+						_id: { $in: neededPieceIds as PieceId[] },
+					},
+					{
+						projection: {
+							_id: 1,
+							partId: 1,
+						},
+					}
+				) as Promise<Pick<AdLibPiece, '_id' | 'partId'>[]>,
+				AdLibActions.findFetchAsync(
+					{
+						_id: { $in: neededPieceIds as AdLibActionId[] },
+					},
+					{
+						projection: {
+							_id: 1,
+							partId: 1,
+						},
+					}
+				) as Promise<Pick<AdLibAction, '_id' | 'partId'>[]>,
+			])
+
+			const partIdLookup = new Map<PieceId | AdLibActionId | RundownBaselineAdLibActionId, PartId>()
+			for (const piece of pieces) {
+				partIdLookup.set(piece._id, piece.startPartId)
+			}
+			for (const adlib of adlibPieces) {
+				if (adlib.partId) partIdLookup.set(adlib._id, adlib.partId)
+			}
+			for (const action of adlibActions) {
+				partIdLookup.set(action._id, action.partId)
+			}
+
+			for (const expectedPackage of objects) {
+				if (!expectedPackage.pieceId) continue
+
+				await ExpectedPackages.mutableCollection.updateAsync(expectedPackage._id, {
+					$set: {
+						partId: partIdLookup.get(expectedPackage.pieceId) ?? protectString(''),
+					},
+				})
+			}
+		},
+	},
 ])
 
 function updatePlayoutDeviceTypeInOverride(op: SomeObjectOverrideOp): ObjectOverrideSetOp | undefined {
 	if (op.op !== 'set') return undefined
 	if (!op.path.includes('.')) {
 		// Root level
-		const value = op.value as Partial<StudioPlayoutDevice>
+		const value = op.value
 		if (typeof value.options?.type === 'number') {
-			value.options.type = oldDeviceTypeToNewMapping[value.options.type] ?? TSR.DeviceType.ABSTRACT
+			value.options.type =
+				oldDeviceTypeToNewMapping[value.options.type as OldDeviceType] ?? TSR.DeviceType.ABSTRACT
 			return op
 		}
 	} else if (op.path.endsWith('.options.type')) {
 		// Single property override
 		if (typeof op.value === 'number') {
-			op.value = oldDeviceTypeToNewMapping[op.value] ?? TSR.DeviceType.ABSTRACT
+			op.value = oldDeviceTypeToNewMapping[op.value as OldDeviceType] ?? TSR.DeviceType.ABSTRACT
 			return op
 		}
 	}
@@ -852,13 +956,13 @@ function updateMappingDeviceTypeInOverride(op: SomeObjectOverrideOp): ObjectOver
 		// Root level
 		const value = op.value as Partial<TSR.Mapping<any, any>>
 		if (typeof value.device === 'number') {
-			value.device = oldDeviceTypeToNewMapping[value.device] ?? TSR.DeviceType.ABSTRACT
+			value.device = oldDeviceTypeToNewMapping[value.device as OldDeviceType] ?? TSR.DeviceType.ABSTRACT
 			return op
 		}
 	} else if (op.path.endsWith('.device')) {
 		// Single property override
 		if (typeof op.value === 'number') {
-			op.value = oldDeviceTypeToNewMapping[op.value] ?? TSR.DeviceType.ABSTRACT
+			op.value = oldDeviceTypeToNewMapping[op.value as OldDeviceType] ?? TSR.DeviceType.ABSTRACT
 			return op
 		}
 	}

@@ -1,41 +1,41 @@
 import { JobContext } from '../../jobs'
 import { ReadonlyDeep } from 'type-fest'
-import { CacheForIngest } from '../cache'
+import { IngestModel } from '../model/IngestModel'
 import { LocalIngestRundown, LocalIngestSegment } from '../ingestCache'
-import { canRundownBeUpdated, getRundown, getSegmentId } from '../lib'
-import { calculateSegmentsFromIngestData, saveSegmentChangesToCache } from '../generationSegment'
+import { canRundownBeUpdated, getSegmentId } from '../lib'
+import { calculateSegmentsFromIngestData } from '../generationSegment'
 import _ = require('underscore')
-import { clone, deleteAllUndefinedProperties, literal, normalizeArray } from '@sofie-automation/corelib/dist/lib'
+import { clone, deleteAllUndefinedProperties, literal, normalizeArrayFunc } from '@sofie-automation/corelib/dist/lib'
 import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { IngestSegment } from '@sofie-automation/blueprints-integration'
-import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { CommitIngestData } from '../lock'
-import { removeSegmentContents } from '../cleanup'
+import { IngestSegmentModel } from '../model/IngestSegmentModel'
 
 /**
  * Update the Ids of Segments based on new Ingest data
  * This assumes that no segments/parts were added or removed between the two LocalIngestRundowns provided
  * @param context Context of the job being run
- * @param cache Ingest cache for Rundown being updated
+ * @param ingestModel Ingest model for Rundown being updated
  * @param oldIngestRundown Last known ingest data
  * @param newIngestRundown New ingest data
  * @returns Map of the SegmentId changes
  */
 export function diffAndUpdateSegmentIds(
 	context: JobContext,
-	cache: CacheForIngest,
+	ingestModel: IngestModel,
 	oldIngestRundown: ReadonlyDeep<LocalIngestRundown>,
 	newIngestRundown: ReadonlyDeep<LocalIngestRundown>
 ): CommitIngestData['renamedSegments'] {
 	const span = context.startSpan('mosDevice.ingest.diffAndApplyChanges')
 
-	const oldSegments = cache.Segments.findAll(null)
+	const oldSegments = ingestModel.getOrderedSegments()
 	const oldSegmentEntries = compileSegmentEntries(oldIngestRundown.segments)
 	const newSegmentEntries = compileSegmentEntries(newIngestRundown.segments)
 	const segmentDiff = diffSegmentEntries(oldSegmentEntries, newSegmentEntries, oldSegments)
 
 	// Updated segments that has had their segment.externalId changed:
-	const renamedSegments = applyExternalIdDiff(cache, segmentDiff)
+	const renamedSegments = applyExternalIdDiff(ingestModel, segmentDiff, false)
 
 	span?.end()
 	return renamedSegments
@@ -45,14 +45,14 @@ export function diffAndUpdateSegmentIds(
  * Update the Rundown for new Ingest data
  * Performs a diff of the ingest data, and applies the changes including re-running blueprints on any changed segments
  * @param context Context of the job being run
- * @param cache Ingest cache for Rundown being updated
+ * @param ingestModel Ingest model for Rundown being updated
  * @param newIngestRundown New ingest data (if any)
  * @param oldIngestRundown Last known ingest data (if any)
  * @returns Map of the SegmentId changes
  */
 export async function diffAndApplyChanges(
 	context: JobContext,
-	cache: CacheForIngest,
+	ingestModel: IngestModel,
 	newIngestRundown: ReadonlyDeep<LocalIngestRundown> | undefined,
 	oldIngestRundown: ReadonlyDeep<LocalIngestRundown> | undefined
 	// newIngestParts: AnnotatedIngestPart[]
@@ -60,13 +60,13 @@ export async function diffAndApplyChanges(
 	if (!newIngestRundown) throw new Error(`diffAndApplyChanges lost the new IngestRundown...`)
 	if (!oldIngestRundown) throw new Error(`diffAndApplyChanges lost the old IngestRundown...`)
 
-	const rundown = getRundown(cache)
+	const rundown = ingestModel.getRundown()
 	if (!canRundownBeUpdated(rundown, false)) return null
 
 	const span = context.startSpan('mosDevice.ingest.diffAndApplyChanges')
 
 	// Fetch all existing segments:
-	const oldSegments = cache.Segments.findAll(null)
+	const oldSegments = ingestModel.getOrderedSegments()
 
 	const oldSegmentEntries = compileSegmentEntries(oldIngestRundown.segments)
 	const newSegmentEntries = compileSegmentEntries(newIngestRundown.segments)
@@ -75,15 +75,15 @@ export async function diffAndApplyChanges(
 	// Note: We may not need to do some of these quick updates anymore, but they are cheap so can stay for now
 
 	// Update segment ranks:
-	_.each(segmentDiff.onlyRankChanged, (newRank, segmentExternalId) => {
-		cache.Segments.updateOne(getSegmentId(rundown._id, segmentExternalId), (s) => {
-			s._rank = newRank
-			return s
-		})
-	})
+	for (const [segmentExternalId, newRank] of Object.entries<number>(segmentDiff.onlyRankChanged)) {
+		const segment = ingestModel.getSegmentByExternalId(segmentExternalId)
+		if (segment) {
+			segment.setRank(newRank)
+		}
+	}
 
 	// Updated segments that has had their segment.externalId changed:
-	const renamedSegments = applyExternalIdDiff(cache, segmentDiff)
+	const renamedSegments = applyExternalIdDiff(ingestModel, segmentDiff, true)
 
 	// Figure out which segments need to be regenerated
 	const segmentsToRegenerate = Object.values<LocalIngestSegment>(segmentDiff.added)
@@ -95,35 +95,29 @@ export async function diffAndApplyChanges(
 	}
 
 	// Create/Update segments
-	const segmentChanges = await calculateSegmentsFromIngestData(
+	const changedSegmentIds = await calculateSegmentsFromIngestData(
 		context,
-		cache,
+		ingestModel,
 		_.sortBy(segmentsToRegenerate, (se) => se.rank),
 		null
 	)
 
 	// Remove/orphan old segments
-	const segmentIdsToRemove = new Set(Object.keys(segmentDiff.removed).map((id) => getSegmentId(rundown._id, id)))
-	// We orphan it and queue for deletion. the commit phase will complete if possible
-	const orphanedSegmentIds = cache.Segments.updateAll((s) => {
-		if (segmentIdsToRemove.has(s._id)) {
-			s.orphaned = SegmentOrphanedReason.DELETED
-			return s
-		} else {
-			return false
+	const orphanedSegmentIds: SegmentId[] = []
+	for (const segmentExternalId of Object.keys(segmentDiff.removed)) {
+		const segment = ingestModel.getSegmentByExternalId(segmentExternalId)
+		if (segment) {
+			// We orphan it and queue for deletion. the commit phase will complete if possible
+			orphanedSegmentIds.push(segment.segment._id)
+			segment.setOrphaned(SegmentOrphanedReason.DELETED)
+
+			segment.removeAllParts()
 		}
-	})
-
-	if (!context.studio.settings.preserveUnsyncedPlayingSegmentContents) {
-		// Remove everything inside the segment
-		removeSegmentContents(cache, segmentIdsToRemove)
 	}
-
-	saveSegmentChangesToCache(context, cache, segmentChanges, false)
 
 	span?.end()
 	return literal<CommitIngestData>({
-		changedSegmentIds: segmentChanges.segments.map((s) => s._id),
+		changedSegmentIds: changedSegmentIds,
 		removedSegmentIds: orphanedSegmentIds, // Only inform about the ones that werent renamed
 		renamedSegments: renamedSegments,
 
@@ -133,46 +127,41 @@ export async function diffAndApplyChanges(
 
 /**
  * Apply the externalId renames from a DiffSegmentEntries
- * @param cache Ingest cache of the rundown being updated
+ * @param ingestModel Ingest model of the rundown being updated
  * @param segmentDiff Calculated Diff
  * @returns Map of the SegmentId changes
  */
 function applyExternalIdDiff(
-	cache: CacheForIngest,
-	segmentDiff: Pick<DiffSegmentEntries, 'externalIdChanged'>
+	ingestModel: IngestModel,
+	segmentDiff: Pick<DiffSegmentEntries, 'externalIdChanged' | 'onlyRankChanged'>,
+	canDiscardParts: boolean
 ): CommitIngestData['renamedSegments'] {
 	// Updated segments that has had their segment.externalId changed:
 	const renamedSegments = new Map<SegmentId, SegmentId>()
-	_.each(segmentDiff.externalIdChanged, (newSegmentExternalId, oldSegmentExternalId) => {
-		const oldSegmentId = getSegmentId(cache.RundownId, oldSegmentExternalId)
-		const newSegmentId = getSegmentId(cache.RundownId, newSegmentExternalId)
+	for (const [oldSegmentExternalId, newSegmentExternalId] of Object.entries<string>(segmentDiff.externalIdChanged)) {
+		const oldSegmentId = getSegmentId(ingestModel.rundownId, oldSegmentExternalId)
+		const newSegmentId = getSegmentId(ingestModel.rundownId, newSegmentExternalId)
 
-		// Some data will be orphaned temporarily, but will be picked up/cleaned up before the cache gets saved
-
-		const oldSegment = cache.Segments.findOne(oldSegmentId)
+		// Track the rename
 		renamedSegments.set(oldSegmentId, newSegmentId)
-		if (oldSegment) {
-			cache.Segments.remove(oldSegmentId)
-			cache.Segments.replace({
-				...oldSegment,
-				_id: newSegmentId,
-			})
-		}
-	})
 
-	// Move over those parts to the new segmentId.
-	for (const part of cache.Parts.findAll(null)) {
-		const newSegmentId = renamedSegments.get(part.segmentId)
-		if (newSegmentId) {
-			part.segmentId = newSegmentId
-			cache.Parts.replace(part)
-		}
-	}
-	for (const piece of cache.Pieces.findAll(null)) {
-		const newSegmentId = renamedSegments.get(piece.startSegmentId)
-		if (newSegmentId) {
-			piece.startSegmentId = newSegmentId
-			cache.Pieces.replace(piece)
+		// If the segment doesnt exist (it should), then there isn't a segment to rename
+		const oldSegment = ingestModel.getSegment(oldSegmentId)
+		if (!oldSegment) continue
+
+		if (ingestModel.getSegment(newSegmentId)) {
+			// If the new SegmentId already exists, we need to discard the old one rather than trying to merge it.
+			// This can only be done if the caller is expecting to regenerate Segments
+			const canDiscardPartsForSegment = canDiscardParts && !segmentDiff.onlyRankChanged[oldSegmentExternalId]
+			if (!canDiscardPartsForSegment) {
+				throw new Error(`Cannot merge Segments with only rank changes`)
+			}
+
+			// Remove the old Segment and it's contents, the new one will be generated shortly
+			ingestModel.removeSegment(oldSegmentId)
+		} else {
+			// Perform the rename
+			ingestModel.changeSegmentId(oldSegmentId, newSegmentId)
 		}
 	}
 
@@ -228,7 +217,7 @@ export interface DiffSegmentEntries {
 export function diffSegmentEntries(
 	oldSegmentEntries: SegmentEntries,
 	newSegmentEntries: SegmentEntries,
-	oldSegments: DBSegment[] | null
+	oldSegments: IngestSegmentModel[] | null
 ): DiffSegmentEntries {
 	const diff: DiffSegmentEntries = {
 		added: {},
@@ -239,12 +228,12 @@ export function diffSegmentEntries(
 		onlyRankChanged: {},
 		externalIdChanged: {},
 	}
-	const oldSegmentMap: { [externalId: string]: DBSegment } | null =
-		oldSegments === null ? null : normalizeArray(oldSegments, 'externalId')
+	const oldSegmentMap: { [externalId: string]: IngestSegmentModel } | null =
+		oldSegments === null ? null : normalizeArrayFunc(oldSegments, (segment) => segment.segment.externalId)
 
 	_.each(newSegmentEntries, (newSegmentEntry, segmentExternalId) => {
 		const oldSegmentEntry = oldSegmentEntries[segmentExternalId] as IngestSegment | undefined
-		let oldSegment: DBSegment | undefined
+		let oldSegment: IngestSegmentModel | undefined
 		if (oldSegmentMap) {
 			oldSegment = oldSegmentMap[newSegmentEntry.externalId]
 			if (!oldSegment) {
@@ -254,7 +243,7 @@ export function diffSegmentEntries(
 			}
 		}
 		if (oldSegmentEntry) {
-			const modifiedIsEqual = oldSegment ? newSegmentEntry.modified === oldSegment.externalModified : true
+			const modifiedIsEqual = oldSegment ? newSegmentEntry.modified === oldSegment.segment.externalModified : true
 
 			// ensure there are no 'undefined' properties
 			deleteAllUndefinedProperties(oldSegmentEntry)
@@ -263,7 +252,7 @@ export function diffSegmentEntries(
 			// deep compare:
 			const ingestContentIsEqual = _.isEqual(_.omit(newSegmentEntry, 'rank'), _.omit(oldSegmentEntry, 'rank'))
 			const rankIsEqual = oldSegment
-				? newSegmentEntry.rank === oldSegment._rank
+				? newSegmentEntry.rank === oldSegment.segment._rank
 				: newSegmentEntry.rank === oldSegmentEntry.rank
 
 			// Compare the modified timestamps:

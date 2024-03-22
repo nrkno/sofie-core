@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { Bucket } from '../../lib/collections/Buckets'
-import { getRandomId, literal } from '../../lib/lib'
+import { getRandomId, getRandomString, literal } from '../../lib/lib'
 import { BucketSecurity } from '../security/buckets'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { AdLibAction, AdLibActionCommon } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
@@ -18,7 +18,7 @@ import { ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/d
 const DEFAULT_BUCKET_WIDTH = undefined
 
 function isBucketAdLibAction(action: AdLibActionCommon | BucketAdLibAction): action is BucketAdLibAction {
-	if (action['showStyleVariantId'] && action['studioId']) {
+	if ('showStyleVariantId' in action && action['showStyleVariantId'] && action['studioId']) {
 		return true
 	}
 	return false
@@ -165,12 +165,13 @@ export namespace BucketsAPI {
 			adLibAction = {
 				...(_.omit(action, ['partId', 'rundownId']) as Omit<AdLibAction, 'partId' | 'rundownId'>),
 				_id: getRandomId(),
-				externalId: '', // TODO - is this ok?
+				externalId: getRandomString(), // This needs to be something unique, so that the regenerate logic doesn't get it mixed up with something else
 				bucketId: access.bucket._id,
 				studioId: access.studioId,
 				showStyleBaseId: rundown.showStyleBaseId,
 				showStyleVariantId: action.allVariants ? null : rundown.showStyleVariantId,
 				importVersions: rundown.importVersions,
+				ingestInfo: undefined,
 			}
 		}
 

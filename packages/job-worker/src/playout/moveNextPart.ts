@@ -2,32 +2,41 @@ import { groupByToMap } from '@sofie-automation/corelib/dist/lib'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { JobContext } from '../jobs'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
+import { PlayoutModel } from './model/PlayoutModel'
 import { sortPartsInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
 import { setNextPartFromPart } from './setNext'
 import { logger } from '../logging'
+import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { ReadonlyDeep } from 'type-fest'
 
 export async function moveNextPart(
 	context: JobContext,
-	cache: CacheForPlayout,
+	playoutModel: PlayoutModel,
 	partDelta: number,
 	segmentDelta: number
 ): Promise<PartId | null> {
-	const playlist = cache.Playlist.doc
+	const playlist = playoutModel.playlist
 
-	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
+	const currentPartInstance = playoutModel.currentPartInstance?.partInstance
+	const nextPartInstance = playoutModel.nextPartInstance?.partInstance
 
 	const refPartInstance = nextPartInstance ?? currentPartInstance
 	const refPart = refPartInstance?.part
 	if (!refPart || !refPartInstance)
 		throw new Error(`RundownPlaylist "${playlist._id}" has no next and no current part!`)
 
-	const { segments: rawSegments, parts: rawParts } = getOrderedSegmentsAndPartsFromPlayoutCache(cache)
+	const rawSegments = playoutModel.getAllOrderedSegments()
+	const rawParts = playoutModel.getAllOrderedParts()
 
 	if (segmentDelta) {
 		// Ignores horizontalDelta
-		const considerSegments = rawSegments.filter((s) => s._id === refPart.segmentId || !s.isHidden)
-		const refSegmentIndex = considerSegments.findIndex((s) => s._id === refPart.segmentId)
+		const considerSegments = rawSegments.filter(
+			(s) =>
+				s.segment._id === refPart.segmentId ||
+				!s.segment.isHidden ||
+				s.segment.orphaned === SegmentOrphanedReason.SCRATCHPAD
+		)
+		const refSegmentIndex = considerSegments.findIndex((s) => s.segment._id === refPart.segmentId)
 		if (refSegmentIndex === -1) throw new Error(`Segment "${refPart.segmentId}" not found!`)
 
 		const targetSegmentIndex = refSegmentIndex + segmentDelta
@@ -46,9 +55,9 @@ export async function moveNextPart(
 		)
 
 		// Iterate through segments and find the first part
-		let selectedPart: DBPart | undefined
+		let selectedPart: ReadonlyDeep<DBPart> | undefined
 		for (const segment of allowedSegments) {
-			const parts = playablePartsBySegment.get(segment._id) ?? []
+			const parts = playablePartsBySegment.get(segment.segment._id) ?? []
 			// Cant go to the current part (yet)
 			const filteredParts = parts.filter((p) => p._id !== currentPartInstance?.part._id)
 			if (filteredParts.length > 0) {
@@ -60,7 +69,7 @@ export async function moveNextPart(
 		// TODO - looping playlists
 		if (selectedPart) {
 			// Switch to that part
-			await setNextPartFromPart(context, cache, selectedPart, true)
+			await setNextPartFromPart(context, playoutModel, selectedPart, true)
 			return selectedPart._id
 		} else {
 			// Nothing looked valid so do nothing
@@ -69,11 +78,14 @@ export async function moveNextPart(
 			return null
 		}
 	} else if (partDelta) {
-		let playabaleParts: DBPart[] = rawParts.filter((p) => refPart._id === p._id || isPartPlayable(p))
+		let playabaleParts: ReadonlyDeep<DBPart>[] = rawParts.filter((p) => refPart._id === p._id || isPartPlayable(p))
 		let refPartIndex = playabaleParts.findIndex((p) => p._id === refPart._id)
 		if (refPartIndex === -1) {
 			const tmpRefPart = { ...refPart, invalid: true } // make sure it won't be found as playable
-			playabaleParts = sortPartsInSortedSegments([...playabaleParts, tmpRefPart], rawSegments)
+			playabaleParts = sortPartsInSortedSegments(
+				[...playabaleParts, tmpRefPart],
+				rawSegments.map((s) => s.segment)
+			)
 			refPartIndex = playabaleParts.findIndex((p) => p._id === refPart._id)
 			if (refPartIndex === -1) throw new Error(`Part "${refPart._id}" not found after insert!`)
 		}
@@ -89,7 +101,7 @@ export async function moveNextPart(
 
 		if (targetPart) {
 			// Switch to that part
-			await setNextPartFromPart(context, cache, targetPart, true)
+			await setNextPartFromPart(context, playoutModel, targetPart, true)
 			return targetPart._id
 		} else {
 			// Nothing looked valid so do nothing

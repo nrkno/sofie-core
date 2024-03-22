@@ -20,7 +20,7 @@ declare global {
 				timeout: number
 			}
 		): number
-		cancelIdleCallback(callback: number)
+		cancelIdleCallback(callback: number): void
 	}
 }
 

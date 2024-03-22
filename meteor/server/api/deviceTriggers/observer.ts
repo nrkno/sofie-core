@@ -13,10 +13,10 @@ import { logger } from '../../logging'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 import { StudioActionManagers } from './StudioActionManagers'
 import { JobQueueWithClasses } from '@sofie-automation/shared-lib/dist/lib/JobQueueWithClasses'
-import { ReactiveCacheCollection } from '../../publications/lib/ReactiveCacheCollection'
 import { StudioDeviceTriggerManager } from './StudioDeviceTriggerManager'
 import { StudioObserver } from './StudioObserver'
 import { Studios } from '../../collections'
+import { ReactiveCacheCollection } from '../../publications/lib/ReactiveCacheCollection'
 
 type ObserverAndManager = {
 	observer: StudioObserver

@@ -68,7 +68,7 @@ describe('lib/timeline', () => {
 					start: 0,
 				},
 				content: {
-					// @ts-expect-error temporary ignoring typing issue
+					deviceType: TSR.DeviceType.ABSTRACT,
 					callBack: 'partPlaybackStarted',
 					callBackData: {
 						rundownId: 'myRundown0',
@@ -77,7 +77,7 @@ describe('lib/timeline', () => {
 					callBackStopped: 'partPlaybackStopped',
 				},
 				layer: 'L1',
-				partId: 'myPart0',
+				// partId: 'myPart0',
 				priority: 0,
 			},
 			{
@@ -87,7 +87,7 @@ describe('lib/timeline', () => {
 					start: 0,
 				},
 				content: {
-					// @ts-expect-error temporary ignoring typing issue
+					deviceType: TSR.DeviceType.ABSTRACT,
 					callBack: 'piecePlaybackStarted',
 					callBackData: {
 						rundownId: 'myRundown0',

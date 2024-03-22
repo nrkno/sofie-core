@@ -23,7 +23,7 @@ export enum PartHoldMode {
 	TO = 2,
 }
 
-export interface IBlueprintMutatablePart<TMetadata = unknown> {
+export interface IBlueprintMutatablePart<TPrivateData = unknown, TPublicData = unknown> {
 	/** The story title */
 	title: string
 	/**
@@ -32,8 +32,10 @@ export interface IBlueprintMutatablePart<TMetadata = unknown> {
 	 */
 	prompterTitle?: string
 
-	/** Arbitrary data storage for plugins */
-	metaData?: TMetadata
+	/** Arbitraty data storage for internal use in the blueprints */
+	privateData?: TPrivateData
+	/** Arbitraty data relevant for other systems, made available to them through APIs */
+	publicData?: TPublicData
 
 	/** Should this item should progress to the next automatically */
 	autoNext?: boolean
@@ -91,7 +93,8 @@ export interface HackPartMediaObjectSubscription {
 }
 
 /** The Part generated from Blueprint */
-export interface IBlueprintPart<TMetadata = unknown> extends IBlueprintMutatablePart<TMetadata> {
+export interface IBlueprintPart<TPrivateData = unknown, TPublicData = unknown>
+	extends IBlueprintMutatablePart<TPrivateData, TPublicData> {
 	/** Id of the part from the gateway if this part does not map directly to an IngestPart. This must be unique for each part */
 	externalId: string
 
@@ -152,7 +155,8 @@ export interface IBlueprintPart<TMetadata = unknown> extends IBlueprintMutatable
 	gap?: boolean
 }
 /** The Part sent from Core */
-export interface IBlueprintPartDB<TMetadata = unknown> extends IBlueprintPart<TMetadata> {
+export interface IBlueprintPartDB<TPrivateData = unknown, TPublicData = unknown>
+	extends IBlueprintPart<TPrivateData, TPublicData> {
 	_id: string
 	/** The segment ("Title") this line belongs to */
 	segmentId: string

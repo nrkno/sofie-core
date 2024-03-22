@@ -5,15 +5,13 @@ import {
 	WithTiming,
 	withTiming,
 } from '../RundownView/RundownTiming/withTiming'
-import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { RundownUtils } from '../../lib/rundown'
 import { FreezeFrameIcon } from '../../lib/ui/icons/freezeFrame'
 import classNames from 'classnames'
 import { FREEZE_FRAME_FLASH } from '../SegmentContainer/withResolvedSegment'
 
 interface IProps {
-	partId: PartId
+	partInstanceTimingId: string
 	maxDuration: number
 	timelineBase: number
 	mainSourceEnd: number
@@ -33,11 +31,11 @@ function timeToPosition(time: number, timelineBase: number, maxDuration: number)
 
 // TODO: This should use RundownTimingConsumer
 export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
-	filter: (data) => data.partPlayed?.[unprotectString(props.partId)],
+	filter: (data) => data.partPlayed?.[props.partInstanceTimingId],
 	dataResolution: TimingDataResolution.High,
 	tickResolution: TimingTickResolution.High,
 }))(function OvertimeShadow({
-	partId,
+	partInstanceTimingId,
 	timingDurations,
 	timelineBase,
 	mainSourceEnd,
@@ -48,7 +46,7 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 	isLive,
 	hasAlreadyPlayed,
 }: WithTiming<IProps>) {
-	const livePosition = timingDurations.partPlayed?.[unprotectString(partId)] ?? 0
+	const livePosition = timingDurations.partPlayed?.[partInstanceTimingId] ?? 0
 
 	const contentVsPartDiff = mainSourceEnd - partRenderedDuration
 	const toFreezeFrame =

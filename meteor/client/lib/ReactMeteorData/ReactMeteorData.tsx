@@ -1,17 +1,59 @@
 /* eslint-disable react/prefer-stateless-function */
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
 import { withTranslation, WithTranslation } from 'react-i18next'
-import { MeteorReactComponent } from '../MeteorReactComponent'
-import { meteorSubscribe, PubSubTypes } from '../../../lib/api/pubsub'
+import { meteorSubscribe, AllPubSubTypes } from '../../../lib/api/pubsub'
 import { stringifyObjects } from '../../../lib/lib'
+import _ from 'underscore'
 
 const globalTrackerQueue: Array<Function> = []
 let globalTrackerTimestamp: number | undefined = undefined
 let globalTrackerTimeout: number | undefined = undefined
+
+/**
+ * Delay an update to be batched with the global tracker invalidation queue
+ */
+export function useGlobalDelayedTrackerUpdateState<T>(newValue: T): T {
+	const [delayedValue, setDelayedValue] = useState<T>(newValue)
+
+	useGlobalDelayedTrackerUpdate(setDelayedValue, newValue)
+
+	return delayedValue
+}
+
+/**
+ * Delay an update to be batched with the global tracker invalidation queue
+ * @param performUpdate Function to call to apply the update
+ * @param newValue New value to apply with the tracker
+ */
+export function useGlobalDelayedTrackerUpdate<T>(performUpdate: (value: T) => void, newValue: T): void {
+	const isPending = useRef(false)
+	const updateRef = useRef<() => void>()
+
+	useEffect(() => {
+		// Store the new callback
+		updateRef.current = () => performUpdate(newValue)
+
+		return () => {
+			// Invalidated, discard current callback
+			updateRef.current = undefined
+		}
+	}, [performUpdate, newValue])
+
+	// If a call isn't pending, enqueue the callback
+	if (!isPending.current) {
+		MeteorDataManager.enqueueUpdate(() => {
+			isPending.current = false
+			if (updateRef.current) {
+				updateRef.current()
+			}
+		})
+		isPending.current = true
+	}
+}
 
 const METEOR_DATA_DEBOUNCE = 120
 const METEOR_DATA_DEBOUNCE_STALE = 200
@@ -24,7 +66,7 @@ class MeteorDataManager {
 	oldData: any
 	queueTrackerUpdates: boolean
 
-	constructor(component, queueTrackerUpdates: boolean) {
+	constructor(component: any, queueTrackerUpdates: boolean) {
 		this.component = component
 		this.computation = null
 		this.oldData = null
@@ -80,7 +122,7 @@ class MeteorDataManager {
 			this.computation = null
 		}
 
-		let data
+		let data: any
 		// Use Tracker.nonreactive in case we are inside a Tracker Computation.
 		// This can happen if someone calls `ReactDOM.render` inside a Computation.
 		// In that case, we want to opt out of the normal behavior of nested
@@ -148,7 +190,7 @@ class MeteorDataManager {
 		return data
 	}
 
-	updateData(newData) {
+	updateData(newData: any) {
 		const component = this.component
 		const oldData = this.oldData
 
@@ -211,9 +253,6 @@ export const ReactMeteorData = {
 	componentWillUnmount(this: any): void {
 		this._meteorDataManager.dispose()
 	},
-	// pick the MeteorReactComponent member functions, so they will be available in withTracker(() => { >here< })
-	autorun: MeteorReactComponent.prototype.autorun,
-	subscribe: MeteorReactComponent.prototype.subscribe,
 }
 
 class ReactMeteorComponentWrapper<P, S> extends React.Component<P, S> {
@@ -269,8 +308,8 @@ export function withTracker<IProps, IState, TrackedProps>(
 				return <WrappedComponent {...this.props} {...this.data} />
 			}
 		}
-		HOC['displayName'] = `ReactMeteorComponentWrapper(${
-			WrappedComponent['displayName'] || WrappedComponent.name || 'Unnamed component'
+		;(HOC as any)['displayName'] = `ReactMeteorComponentWrapper(${
+			(WrappedComponent as any)['displayName'] || WrappedComponent.name || 'Unnamed component'
 		})`
 		return HOC
 	}
@@ -340,7 +379,10 @@ export function useTracker<T, K extends undefined | T = undefined>(
  * @param {...any[]} args A list of arugments for the subscription. This is used for optimizing the subscription across
  * 		renders so that it isn't torn down and created for every render.
  */
-export function useSubscription<K extends keyof PubSubTypes>(sub: K, ...args: Parameters<PubSubTypes[K]>): boolean {
+export function useSubscription<K extends keyof AllPubSubTypes>(
+	sub: K,
+	...args: Parameters<AllPubSubTypes[K]>
+): boolean {
 	const [ready, setReady] = useState<boolean>(false)
 
 	useEffect(() => {
@@ -352,7 +394,70 @@ export function useSubscription<K extends keyof PubSubTypes>(sub: K, ...args: Pa
 				subscription.stop()
 			}, 1000)
 		}
-	}, [stringifyObjects(args)])
+	}, [sub, stringifyObjects(args)])
+
+	return ready
+}
+
+/**
+ * A Meteor Subscription hook that allows using React Functional Components and the Hooks API with Meteor subscriptions.
+ * Subscriptions will be torn down 1000ms after unmounting the component.
+ *
+ * @export
+ * @param {PubSub} sub The subscription to be subscribed to
+ * @param {boolean} enable Whether the subscription is enabled
+ * @param {...any[]} args A list of arugments for the subscription. This is used for optimizing the subscription across
+ * 		renders so that it isn't torn down and created for every render.
+ */
+export function useSubscriptionIfEnabled<K extends keyof AllPubSubTypes>(
+	sub: K,
+	enable: boolean,
+	...args: Parameters<AllPubSubTypes[K]>
+): boolean {
+	const [ready, setReady] = useState<boolean>(false)
+
+	useEffect(() => {
+		if (!enable) {
+			setReady(false)
+			return
+		}
+
+		const subscription = Tracker.nonreactive(() => meteorSubscribe(sub, ...args))
+		const isReadyComp = Tracker.nonreactive(() => Tracker.autorun(() => setReady(subscription.ready())))
+		return () => {
+			isReadyComp.stop()
+			setTimeout(() => {
+				subscription.stop()
+			}, 1000)
+		}
+	}, [sub, enable, stringifyObjects(args)])
+
+	return ready
+}
+
+/**
+ * Sets up multiple subscriptions of the same type, but with different arguments
+ */
+export function useSubscriptions<K extends keyof AllPubSubTypes>(
+	sub: K,
+	argsArray: Array<Parameters<AllPubSubTypes[K]> | undefined | null | false>
+): boolean {
+	const [ready, setReady] = useState<boolean>(false)
+
+	useEffect(() => {
+		const subscriptions = Tracker.nonreactive(() => _.compact(argsArray).map((args) => meteorSubscribe(sub, ...args)))
+		const isReadyComp = Tracker.nonreactive(() =>
+			Tracker.autorun(() => setReady(subscriptions.reduce((memo, subscription) => memo && subscription.ready(), true)))
+		)
+		return () => {
+			isReadyComp.stop()
+			setTimeout(() => {
+				for (const subscription of subscriptions) {
+					subscription.stop()
+				}
+			}, 1000)
+		}
+	}, [sub, stringifyObjects(argsArray)])
 
 	return ready
 }

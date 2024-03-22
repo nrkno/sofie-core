@@ -7,15 +7,14 @@ import {
 	RundownLayoutSegmentTiming,
 } from '../../../lib/collections/RundownLayouts'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Segment } from '../../../lib/collections/Segments'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
 import { PartExtended } from '../../../lib/Rundown'
 import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
 import { slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
-import { Part } from '../../../lib/collections/Parts'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
@@ -29,12 +28,12 @@ interface ISegmentTimingPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutSegmentTiming
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	showStyleBase: UIShowStyleBase
 }
 
 interface ISegmentTimingPanelTrackedProps {
-	liveSegment?: Segment
+	liveSegment?: DBSegment
 	parts?: PartExtended[]
 	pieces?: Map<PartId, CalculateTimingsPiece[]>
 	active: boolean
@@ -42,14 +41,10 @@ interface ISegmentTimingPanelTrackedProps {
 
 interface IState {}
 
-class SegmentTimingPanelInner extends MeteorReactComponent<
+class SegmentTimingPanelInner extends React.Component<
 	Translated<ISegmentTimingPanelProps & ISegmentTimingPanelTrackedProps>,
 	IState
 > {
-	constructor(props) {
-		super(props)
-	}
-
 	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 		const { t, panel } = this.props
@@ -115,7 +110,7 @@ export const SegmentTimingPanel = translateWithTracker<
 										{
 											fields: { _id: 1 },
 										}
-									).parts as Pick<Part, '_id'>[]
+									).parts as Pick<DBPart, '_id'>[]
 								).map((part) => part._id),
 							'playlist.getAllOrderedParts',
 							props.playlist._id

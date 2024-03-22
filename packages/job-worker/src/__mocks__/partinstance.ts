@@ -2,10 +2,11 @@ import { RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/data
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { ReadonlyDeep } from 'type-fest'
 
 export function wrapPartToTemporaryInstance(
 	playlistActivationId: RundownPlaylistActivationId,
-	part: DBPart
+	part: ReadonlyDeep<DBPart>
 ): DBPartInstance {
 	return {
 		_id: protectString(`${part._id}_tmp_instance`),
@@ -15,6 +16,6 @@ export function wrapPartToTemporaryInstance(
 		segmentPlayoutId: protectString(''), // Only needed when stored in the db, and filled in nearer the time
 		takeCount: -1,
 		rehearsal: false,
-		part: part,
+		part: part as DBPart,
 	}
 }

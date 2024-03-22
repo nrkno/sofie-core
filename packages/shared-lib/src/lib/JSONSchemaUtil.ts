@@ -46,6 +46,10 @@ export enum SchemaFormUIField {
 	SofieEnumFilter = 'ui:sofie-enum:filter',
 }
 
+export function getSchemaUIField(schema: JSONSchema, field: SchemaFormUIField): any {
+	return (schema as any)[field]
+}
+
 export function getSchemaDefaultValues(schema: JSONSchema | undefined): any {
 	switch (schema?.type) {
 		case TypeName.Object: {

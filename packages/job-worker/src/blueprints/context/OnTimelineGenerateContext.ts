@@ -11,7 +11,7 @@ import { clone } from '@sofie-automation/corelib/dist/lib'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ABSessionInfo, DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getCurrentTime } from '../../lib'
-import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { PieceInstance, ResolvedPieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { ProcessedStudioConfig, ProcessedShowStyleConfig } from '../config'
 import _ = require('underscore')
 import { ProcessedShowStyleCompound } from '../../jobs'
@@ -27,7 +27,7 @@ export class OnTimelineGenerateContext extends RundownContext implements ITimeli
 	readonly previousPartInstance: Readonly<IBlueprintPartInstance> | undefined
 
 	readonly abSessionsHelper: AbSessionHelper
-	readonly #pieceInstanceCache = new Map<PieceInstanceId, PieceInstance>()
+	readonly #pieceInstanceCache = new Map<PieceInstanceId, ReadonlyDeep<PieceInstance>>()
 
 	constructor(
 		studio: ReadonlyDeep<DBStudio>,
@@ -36,10 +36,10 @@ export class OnTimelineGenerateContext extends RundownContext implements ITimeli
 		showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		playlist: ReadonlyDeep<DBRundownPlaylist>,
 		rundown: ReadonlyDeep<DBRundown>,
-		previousPartInstance: DBPartInstance | undefined,
-		currentPartInstance: DBPartInstance | undefined,
-		nextPartInstance: DBPartInstance | undefined,
-		pieceInstances: PieceInstance[]
+		previousPartInstance: ReadonlyDeep<DBPartInstance> | undefined,
+		currentPartInstance: ReadonlyDeep<DBPartInstance> | undefined,
+		nextPartInstance: ReadonlyDeep<DBPartInstance> | undefined,
+		pieceInstances: ReadonlyDeep<ResolvedPieceInstance[]>
 	) {
 		super(
 			{
@@ -60,7 +60,7 @@ export class OnTimelineGenerateContext extends RundownContext implements ITimeli
 		const partInstances = _.compact([previousPartInstance, currentPartInstance, nextPartInstance])
 
 		for (const pieceInstance of pieceInstances) {
-			this.#pieceInstanceCache.set(pieceInstance._id, pieceInstance)
+			this.#pieceInstanceCache.set(pieceInstance.instance._id, pieceInstance.instance)
 		}
 
 		this.abSessionsHelper = new AbSessionHelper(

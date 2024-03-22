@@ -8,7 +8,7 @@ export interface SessionRequest {
 	readonly end: number | undefined
 	readonly optional?: boolean
 	readonly lookaheadRank?: number
-	playerId?: number
+	playerId?: number | string
 }
 
 export interface AssignmentResult {
@@ -21,7 +21,7 @@ export interface AssignmentResult {
 }
 
 interface SlotAvailability {
-	id: number
+	id: number | string
 	before: (SessionRequest & { end: number }) | null
 	after: SessionRequest | null
 	clashes: SessionRequest[]
@@ -55,7 +55,7 @@ function safeMin<T>(arr: T[], func: (val: T) => number): T | undefined {
  */
 export function resolveAbAssignmentsFromRequests(
 	resolverOptions: ABResolverOptions,
-	playerIds: number[],
+	playerIds: Array<number | string>,
 	rawRequests: SessionRequest[],
 	now: number // Current time
 ): AssignmentResult {
@@ -80,7 +80,7 @@ export function resolveAbAssignmentsFromRequests(
 		return res
 	}
 
-	const originalLookaheadAssignments: Record<string, number> = {}
+	const originalLookaheadAssignments: Record<string, number | string> = {}
 	for (const req of rawRequests) {
 		if (req.lookaheadRank !== undefined && req.playerId !== undefined) {
 			originalLookaheadAssignments[req.id] = req.playerId
@@ -104,7 +104,7 @@ export function resolveAbAssignmentsFromRequests(
 	pendingRequests = grouped[undefined as any]
 
 	// build map of slots and what they already have assigned
-	const slots: Map<number, SessionRequest[]> = new Map()
+	const slots: Map<number | string, SessionRequest[]> = new Map()
 	_.each(playerIds, (id) => slots.set(id, grouped[id] || []))
 
 	const beforeHasGap = (p: SlotAvailability, req: SessionRequest): boolean =>
@@ -313,7 +313,7 @@ export function resolveAbAssignmentsFromRequests(
 
 	// Ensure lookahead gets assigned based on priority not some randomness
 	// Includes slots which have either no sessions, or the last has a known end time
-	const lastSessionPerSlot: Record<number, number | undefined> = {} // playerId, end
+	const lastSessionPerSlot: Record<number | string, number | undefined> = {} // playerId, end
 	for (const [playerId, sessions] of slots) {
 		const last = _.last(sessions.filter((s) => s.lookaheadRank === undefined))
 		if (!last) {
@@ -359,7 +359,12 @@ export function resolveAbAssignmentsFromRequests(
 		const req = remainingLookaheads[i]
 
 		if (slot) {
-			req.playerId = Number(slot[0])
+			// Check if we were originally given a player index rather than a string Id
+			if (playerIds.find((id) => typeof id === 'number' && id === Number(slot[0]))) {
+				req.playerId = Number(slot[0])
+			} else {
+				req.playerId = slot[0]
+			}
 		} else {
 			delete req.playerId
 		}
@@ -368,7 +373,11 @@ export function resolveAbAssignmentsFromRequests(
 	return res
 }
 
-function getAvailability(id: number, thisReq: SessionRequest, orderedRequests: SessionRequest[]): SlotAvailability {
+function getAvailability(
+	id: number | string,
+	thisReq: SessionRequest,
+	orderedRequests: SessionRequest[]
+): SlotAvailability {
 	const res: SlotAvailability = {
 		id,
 		before: null,

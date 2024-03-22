@@ -2,23 +2,13 @@
  * This file is the entry-point for both server side and client side code
  */
 
-import './collections/Blueprints'
 import './collections/Buckets'
 import './collections/CoreSystem'
 import './collections/Evaluations'
 import './collections/ExpectedPackages'
-import './collections/ExternalMessageQueue'
 import './collections/Organization'
 import './collections/PartInstances'
-import './collections/Parts'
-import './collections/PeripheralDeviceCommands'
-import './collections/PeripheralDevices'
-import './collections/PieceInstances'
-import './collections/Pieces'
 import './collections/RundownLayouts'
-import './collections/RundownPlaylists'
-import './collections/Rundowns'
-import './collections/Segments'
 import './collections/Snapshots'
 import './collections/Studios'
 import './collections/Timeline'

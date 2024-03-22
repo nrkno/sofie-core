@@ -34,7 +34,7 @@ export function LabelAndOverrides<T extends object, TValue = any>({
 	opPrefix,
 	overrideHelper,
 	formatDefaultValue,
-}: LabelAndOverridesProps<T, TValue>): JSX.Element {
+}: Readonly<LabelAndOverridesProps<T, TValue>>): JSX.Element {
 	const { t } = useTranslation()
 
 	const clearOverride = useCallback(() => {
@@ -96,7 +96,7 @@ export function LabelAndOverrides<T extends object, TValue = any>({
 }
 
 export function LabelAndOverridesForCheckbox<T extends object>(
-	props: Omit<LabelAndOverridesProps<T, boolean>, 'formatDefaultValue'>
+	props: Readonly<Omit<LabelAndOverridesProps<T, boolean>, 'formatDefaultValue'>>
 ): JSX.Element {
 	return <LabelAndOverrides<T, boolean> {...props} />
 }
@@ -147,7 +147,7 @@ function formatDefaultMultilineTextValue(value: any) {
 }
 
 export function LabelAndOverridesForMultiLineText<T extends object>(
-	props: Omit<LabelAndOverridesProps<T, string[]>, 'formatDefaultValue'>
+	props: Readonly<Omit<LabelAndOverridesProps<T, string[]>, 'formatDefaultValue'>>
 ): JSX.Element {
 	return <LabelAndOverrides<T, string[]> {...props} formatDefaultValue={formatDefaultMultilineTextValue} />
 }
@@ -171,6 +171,6 @@ export function LabelAndOverridesForInt<T extends object>(
 	return <LabelAndOverrides<T, number> {...props} formatDefaultValue={formatter} />
 }
 
-export function LabelActual(props: LabelActualProps): JSX.Element {
+export function LabelActual(props: Readonly<LabelActualProps>): JSX.Element {
 	return <div className="label-actual">{props.label}</div>
 }

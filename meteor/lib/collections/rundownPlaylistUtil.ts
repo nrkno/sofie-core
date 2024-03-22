@@ -1,4 +1,4 @@
-import { PartId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartId, RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { Rundown, DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
@@ -15,11 +15,8 @@ import _ from 'underscore'
 import { Rundowns, Segments, Parts, PartInstances, Pieces } from './libCollections'
 import { FindOptions } from './lib'
 import { PartInstance } from './PartInstances'
-import { Part } from './Parts'
-import { RundownPlaylist } from './RundownPlaylists'
-import { Segment } from './Segments'
-import { MongoQuery } from '../typings/meteor'
-import { Piece } from './Pieces'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
+import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 /**
  * Direct database accessors for the RundownPlaylist
@@ -28,11 +25,11 @@ import { Piece } from './Pieces'
 export class RundownPlaylistCollectionUtil {
 	/** Returns an array of all Rundowns in the RundownPlaylist, sorted in playout order */
 	static getRundownsOrdered(
-		playlist: Pick<RundownPlaylist, '_id' | 'rundownIdsInOrder'>,
+		playlist: Pick<DBRundownPlaylist, '_id' | 'rundownIdsInOrder'>,
 		selector?: MongoQuery<Rundown>,
 		options?: FindOptions<Rundown>
 	): Rundown[] {
-		const allRundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(playlist, selector, options)
+		const allRundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(playlist._id, selector, options)
 
 		const rundownsMap = normalizeArrayToMap(allRundowns, '_id')
 
@@ -42,13 +39,13 @@ export class RundownPlaylistCollectionUtil {
 	}
 	/** Returns an array of all Rundowns in the RundownPlaylist, in no predictable order */
 	static getRundownsUnordered(
-		playlist: Pick<RundownPlaylist, '_id'>,
+		playlistId: RundownPlaylistId,
 		selector?: MongoQuery<Rundown>,
 		options?: FindOptions<Rundown>
 	): Rundown[] {
 		return Rundowns.find(
 			{
-				playlistId: playlist._id,
+				playlistId: playlistId,
 				...selector,
 			},
 			{
@@ -60,13 +57,13 @@ export class RundownPlaylistCollectionUtil {
 		).fetch()
 	}
 	/** Returns an array with the id:s of all Rundowns in the RundownPlaylist, sorted in playout order */
-	static getRundownOrderedIDs(playlist: Pick<RundownPlaylist, '_id' | 'rundownIdsInOrder'>): RundownId[] {
+	static getRundownOrderedIDs(playlist: Pick<DBRundownPlaylist, '_id' | 'rundownIdsInOrder'>): RundownId[] {
 		const allIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
 
 		return sortRundownIDsInPlaylist(playlist.rundownIdsInOrder, allIds)
 	}
 	/** Returns an array with the id:s of all Rundowns in the RundownPlaylist, in no predictable order */
-	static getRundownUnorderedIDs(playlist: Pick<RundownPlaylist, '_id'>): RundownId[] {
+	static getRundownUnorderedIDs(playlist: Pick<DBRundownPlaylist, '_id'>): RundownId[] {
 		const rundowns = Rundowns.find(
 			{
 				playlistId: playlist._id,
@@ -83,9 +80,9 @@ export class RundownPlaylistCollectionUtil {
 
 	/** Returns all segments joined with their rundowns in their correct oreder for this RundownPlaylist */
 	static getRundownsAndSegments(
-		playlist: Pick<RundownPlaylist, '_id' | 'rundownIdsInOrder'>,
-		selector?: MongoQuery<Segment>,
-		options?: FindOptions<Segment>
+		playlist: Pick<DBRundownPlaylist, '_id' | 'rundownIdsInOrder'>,
+		selector?: MongoQuery<DBSegment>,
+		options?: FindOptions<DBSegment>
 	): Array<{
 		rundown: Pick<
 			Rundown,
@@ -97,7 +94,7 @@ export class RundownPlaylistCollectionUtil {
 			| 'showStyleVariantId'
 			| 'endOfRundownIsShowBreak'
 		>
-		segments: Segment[]
+		segments: DBSegment[]
 	}> {
 		const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist, undefined, {
 			fields: {
@@ -128,10 +125,10 @@ export class RundownPlaylistCollectionUtil {
 	}
 	/** Returns all segments in their correct order for this RundownPlaylist */
 	static getSegments(
-		playlist: Pick<RundownPlaylist, '_id' | 'rundownIdsInOrder'>,
-		selector?: MongoQuery<Segment>,
-		options?: FindOptions<Segment>
-	): Segment[] {
+		playlist: Pick<DBRundownPlaylist, '_id' | 'rundownIdsInOrder'>,
+		selector?: MongoQuery<DBSegment>,
+		options?: FindOptions<DBSegment>
+	): DBSegment[] {
 		const rundownIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
 		const segments = Segments.find(
 			{
@@ -151,10 +148,10 @@ export class RundownPlaylistCollectionUtil {
 		return RundownPlaylistCollectionUtil._sortSegments(segments, playlist)
 	}
 	static getUnorderedParts(
-		playlist: Pick<RundownPlaylist, '_id'>,
-		selector?: MongoQuery<Part>,
-		options?: FindOptions<Part>
-	): Part[] {
+		playlist: Pick<DBRundownPlaylist, '_id'>,
+		selector?: MongoQuery<DBPart>,
+		options?: FindOptions<DBPart>
+	): DBPart[] {
 		const rundownIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
 		const parts = Parts.find(
 			{
@@ -175,12 +172,12 @@ export class RundownPlaylistCollectionUtil {
 	}
 	/** Synchronous version of getSegmentsAndParts, to be used client-side */
 	static getSegmentsAndPartsSync(
-		playlist: Pick<RundownPlaylist, '_id' | 'rundownIdsInOrder'>,
-		segmentsQuery?: MongoQuery<Segment>,
+		playlist: Pick<DBRundownPlaylist, '_id' | 'rundownIdsInOrder'>,
+		segmentsQuery?: MongoQuery<DBSegment>,
 		partsQuery?: MongoQuery<DBPart>,
 		segmentsOptions?: Omit<FindOptions<DBSegment>, 'projection'>, // We are mangling fields, so block projection
 		partsOptions?: Omit<FindOptions<DBPart>, 'projection'> // We are mangling fields, so block projection
-	): { segments: Segment[]; parts: Part[] } {
+	): { segments: DBSegment[]; parts: DBPart[] } {
 		const rundownIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
 		const segments = Segments.find(
 			{
@@ -240,7 +237,7 @@ export class RundownPlaylistCollectionUtil {
 		}
 	}
 	static getSelectedPartInstances(
-		playlist: Pick<RundownPlaylist, '_id' | 'currentPartInfo' | 'previousPartInfo' | 'nextPartInfo'>,
+		playlist: Pick<DBRundownPlaylist, '_id' | 'currentPartInfo' | 'previousPartInfo' | 'nextPartInfo'>,
 		rundownIds0?: RundownId[]
 	): {
 		currentPartInstance: PartInstance | undefined
@@ -274,7 +271,7 @@ export class RundownPlaylistCollectionUtil {
 	}
 
 	static getAllPartInstances(
-		playlist: Pick<RundownPlaylist, '_id'>,
+		playlist: Pick<DBRundownPlaylist, '_id'>,
 		selector?: MongoQuery<PartInstance>,
 		options?: FindOptions<PartInstance>
 	): PartInstance[] {
@@ -293,7 +290,7 @@ export class RundownPlaylistCollectionUtil {
 	}
 	/** Return a list of PartInstances, omitting the reset ones (ie only the ones that are relevant) */
 	static getActivePartInstances(
-		playlist: Pick<RundownPlaylist, '_id'>,
+		playlist: Pick<DBRundownPlaylist, '_id'>,
 		selector?: MongoQuery<PartInstance>,
 		options?: FindOptions<PartInstance>
 	): PartInstance[] {
@@ -304,7 +301,7 @@ export class RundownPlaylistCollectionUtil {
 		return RundownPlaylistCollectionUtil.getAllPartInstances(playlist, newSelector, options)
 	}
 	static getActivePartInstancesMap(
-		playlist: Pick<RundownPlaylist, '_id'>,
+		playlist: Pick<DBRundownPlaylist, '_id'>,
 		selector?: MongoQuery<PartInstance>,
 		options?: FindOptions<PartInstance>
 	): Record<string, PartInstance> {
@@ -360,15 +357,15 @@ export class RundownPlaylistCollectionUtil {
 		return Array.from(rundownsMap.values())
 	}
 	static _sortParts(
-		parts: Part[],
+		parts: DBPart[],
 		playlist: Pick<DBRundownPlaylist, 'rundownIdsInOrder'>,
-		segments: Array<Pick<Segment, '_id' | 'rundownId' | '_rank'>>
-	): Part[] {
+		segments: Array<Pick<DBSegment, '_id' | 'rundownId' | '_rank'>>
+	): DBPart[] {
 		return sortPartsInSegments(parts, playlist.rundownIdsInOrder, segments)
 	}
 	static _sortPartsInner<P extends Pick<DBPart, '_id' | 'segmentId' | '_rank'>>(
 		parts: P[],
-		sortedSegments: Array<Pick<Segment, '_id'>>
+		sortedSegments: Array<Pick<DBSegment, '_id'>>
 	): P[] {
 		return sortPartsInSortedSegments(parts, sortedSegments)
 	}

@@ -1,5 +1,5 @@
 import '../../../__mocks__/_extendJest'
-import { ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
+import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
 import { ExternalMessageQueue, RundownPlaylists, Rundowns } from '../../collections'
 import { IBlueprintExternalMessageQueueType, PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 import { testInFiber } from '../../../__mocks__/helpers/jest'

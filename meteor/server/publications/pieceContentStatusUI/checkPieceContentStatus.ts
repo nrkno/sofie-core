@@ -11,13 +11,14 @@ import {
 	VTContent,
 } from '@sofie-automation/blueprints-integration'
 import { getExpectedPackageId } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import { ExpectedPackageId, PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ExpectedPackageId, PeripheralDeviceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
 	getPackageContainerPackageId,
 	PackageContainerPackageStatusDB,
 } from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
 import { PieceGeneric, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import {
+	DBStudio,
 	IStudioSettings,
 	MappingExt,
 	MappingsExt,
@@ -28,9 +29,9 @@ import { literal, Complete, assertNever } from '@sofie-automation/corelib/dist/l
 import { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
 import { getSideEffect } from '../../../lib/collections/ExpectedPackages'
-import { getActiveRoutes, getRoutedMappings, Studio } from '../../../lib/collections/Studios'
+import { getActiveRoutes, getRoutedMappings } from '../../../lib/collections/Studios'
 import { ensureHasTrailingSlash, generateTranslation, unprotectString } from '../../../lib/lib'
-import { PieceContentStatusObj, ScanInfoForPackage, ScanInfoForPackages } from '../../../lib/mediaObjects'
+import { PieceContentStatusObj } from '../../../lib/api/pieceContentStatus'
 import { MediaObjects, PackageContainerPackageStatuses, PackageInfos } from '../../collections'
 import {
 	mediaObjectFieldSpecifier,
@@ -41,6 +42,17 @@ import {
 	PackageInfoLight,
 	PieceDependencies,
 } from './common'
+
+interface ScanInfoForPackages {
+	[packageId: string]: ScanInfoForPackage
+}
+interface ScanInfoForPackage {
+	/** Display name of the package  */
+	packageName: string
+	scan?: PackageInfo.FFProbeScan['payload']
+	deepScan?: PackageInfo.FFProbeDeepScan['payload']
+	timebase?: number // derived from scan
+}
 
 /**
  * Take properties from the mediainfo / medistream and transform into a
@@ -156,10 +168,12 @@ export function getMediaObjectMediaId(
 	return undefined
 }
 
-export type PieceContentStatusPiece = Pick<PieceGeneric, '_id' | 'content' | 'expectedPackages'>
+export type PieceContentStatusPiece = Pick<PieceGeneric, '_id' | 'content' | 'expectedPackages'> & {
+	pieceInstanceId?: PieceInstanceId
+}
 export interface PieceContentStatusStudio
 	extends Pick<
-		Studio,
+		DBStudio,
 		'_id' | 'settings' | 'packageContainers' | 'previewContainerIds' | 'thumbnailContainerIds' | 'routeSets'
 	> {
 	/** Mappings between the physical devices / outputs and logical ones */
@@ -242,6 +256,7 @@ export async function checkPieceContentStatusAndDependencies(
 		{
 			status: PieceStatusCode.UNKNOWN,
 			messages: [],
+			progress: undefined,
 
 			freezes: [],
 			blacks: [],
@@ -251,6 +266,7 @@ export async function checkPieceContentStatusAndDependencies(
 			previewUrl: undefined,
 
 			packageName: null,
+			contentDuration: undefined,
 		},
 		pieceDependencies,
 	]
@@ -410,9 +426,20 @@ async function checkPieceContentMediaObjectStatus(
 		}
 	}
 
+	let contentDuration: number | null | undefined = undefined
+	if (metadata?.mediainfo?.streams?.length) {
+		const maximumStreamDuration = metadata.mediainfo.streams.reduce(
+			(prev, current) =>
+				current.duration !== undefined ? Math.max(prev, Number.parseFloat(current.duration)) : prev,
+			Number.NaN
+		)
+		contentDuration = Number.isFinite(maximumStreamDuration) ? maximumStreamDuration : undefined
+	}
+
 	return {
 		status: pieceStatus,
 		messages: messages.map((msg) => msg.message),
+		progress: 0,
 
 		freezes,
 		blacks,
@@ -426,6 +453,8 @@ async function checkPieceContentMediaObjectStatus(
 			: undefined,
 
 		packageName: metadata?.mediaId || null,
+
+		contentDuration,
 	}
 }
 
@@ -473,6 +502,7 @@ async function checkPieceContentExpectedPackageStatus(
 
 	let thumbnailUrl: string | undefined
 	let previewUrl: string | undefined
+	let progress: number | undefined
 
 	if (piece.expectedPackages && piece.expectedPackages.length) {
 		const routes = getActiveRoutes(studio.routeSets)
@@ -506,60 +536,74 @@ async function checkPieceContentExpectedPackageStatus(
 
 				checkedPackageContainers.add(packageContainerId)
 
-				const expectedPackageId = getExpectedPackageId(piece._id, expectedPackage._id)
-				const packageOnPackageContainer = await getPackageContainerPackageStatus(
-					packageContainerId,
-					expectedPackageId
-				)
-				const packageName =
-					// @ts-expect-error hack
-					expectedPackage.content.filePath ||
-					// @ts-expect-error hack
-					expectedPackage.content.guid ||
-					expectedPackage._id
-
-				if (!thumbnailUrl && packageOnPackageContainer) {
-					const sideEffect = getSideEffect(expectedPackage, studio)
-
-					const packageThumbnailPath = sideEffect.thumbnailPackageSettings?.path
-					const thumbnailContainerId = sideEffect.thumbnailContainerId
-					if (packageThumbnailPath && thumbnailContainerId) {
-						thumbnailUrl = getAssetUrlFromExpectedPackages(
-							packageThumbnailPath,
-							thumbnailContainerId,
-							studio,
-							packageOnPackageContainer
-						)
-					}
+				const expectedPackageIds = [getExpectedPackageId(piece._id, expectedPackage._id)]
+				if (piece.pieceInstanceId) {
+					// If this is a PieceInstance, try looking up the PieceInstance first
+					expectedPackageIds.unshift(getExpectedPackageId(piece.pieceInstanceId, expectedPackage._id))
 				}
 
-				if (!previewUrl && packageOnPackageContainer) {
-					const sideEffect = getSideEffect(expectedPackage, studio)
+				let warningMessage: ContentMessage | null = null
+				let matchedExpectedPackageId: ExpectedPackageId | null = null
+				for (const expectedPackageId of expectedPackageIds) {
+					const packageOnPackageContainer = await getPackageContainerPackageStatus(
+						packageContainerId,
+						expectedPackageId
+					)
+					if (!packageOnPackageContainer) continue
 
-					const packagePreviewPath = sideEffect.previewPackageSettings?.path
-					const previewContainerId = sideEffect.previewContainerId
-					if (packagePreviewPath && previewContainerId) {
-						previewUrl = getAssetUrlFromExpectedPackages(
-							packagePreviewPath,
-							previewContainerId,
+					matchedExpectedPackageId = expectedPackageId
+
+					if (!thumbnailUrl) {
+						const sideEffect = getSideEffect(expectedPackage, studio)
+
+						thumbnailUrl = await getAssetUrlFromPackageContainerStatus(
 							studio,
-							packageOnPackageContainer
+							getPackageContainerPackageStatus,
+							expectedPackageId,
+							sideEffect.thumbnailContainerId,
+							sideEffect.thumbnailPackageSettings?.path
 						)
 					}
+
+					if (!previewUrl) {
+						const sideEffect = getSideEffect(expectedPackage, studio)
+
+						previewUrl = await getAssetUrlFromPackageContainerStatus(
+							studio,
+							getPackageContainerPackageStatus,
+							expectedPackageId,
+							sideEffect.previewContainerId,
+							sideEffect.previewPackageSettings?.path
+						)
+					}
+
+					warningMessage = getPackageWarningMessage(packageOnPackageContainer, sourceLayer)
+
+					progress = getPackageProgress(packageOnPackageContainer) ?? undefined
+
+					// Found a packageOnPackageContainer
+					break
 				}
 
-				const warningMessage = getPackageWarningMessage(packageOnPackageContainer, sourceLayer)
-				if (warningMessage) {
-					messages.push(warningMessage)
+				if (!matchedExpectedPackageId || warningMessage) {
+					// If no package matched, we must have a warning
+					messages.push(warningMessage ?? getPackageSoruceMissingWarning(sourceLayer))
 				} else {
 					// No warning, must be OK
+
+					const packageName =
+						// @ts-expect-error hack
+						expectedPackage.content.filePath ||
+						// @ts-expect-error hack
+						expectedPackage.content.guid ||
+						expectedPackage._id
 
 					readyCount++
 					packageInfos[expectedPackage._id] = {
 						packageName,
 					}
 					// Fetch scan-info about the package:
-					const dbPackageInfos = await getPackageInfos(expectedPackageId)
+					const dbPackageInfos = await getPackageInfos(matchedExpectedPackageId)
 					for (const packageInfo of dbPackageInfos) {
 						if (packageInfo.type === PackageInfo.Type.SCAN) {
 							packageInfos[expectedPackage._id].scan = packageInfo.payload
@@ -616,6 +660,7 @@ async function checkPieceContentExpectedPackageStatus(
 	}
 
 	const firstPackage = Object.values<ScanInfoForPackage>(packageInfos)[0]
+	let contentDuration: number | null | undefined = undefined
 	if (firstPackage) {
 		// TODO: support multiple packages:
 		if (!piece.content.ignoreFreezeFrame && firstPackage.deepScan?.freezes?.length) {
@@ -632,6 +677,15 @@ async function checkPieceContentExpectedPackageStatus(
 			scenes = _.compact(firstPackage.deepScan.scenes.map((i) => i * 1000)) // convert into milliseconds
 		}
 
+		if (firstPackage.scan?.streams?.length) {
+			const maximumStreamDuration = firstPackage.scan.streams.reduce(
+				(prev, current) =>
+					current.duration !== undefined ? Math.max(prev, Number.parseFloat(current.duration)) : prev,
+				Number.NaN
+			)
+			contentDuration = Number.isFinite(maximumStreamDuration) ? maximumStreamDuration : undefined
+		}
+
 		packageName = firstPackage.packageName
 	}
 
@@ -646,6 +700,7 @@ async function checkPieceContentExpectedPackageStatus(
 	return {
 		status: pieceStatus,
 		messages: messages.map((msg) => msg.message),
+		progress,
 
 		freezes,
 		blacks,
@@ -655,18 +710,37 @@ async function checkPieceContentExpectedPackageStatus(
 		previewUrl,
 
 		packageName,
+
+		contentDuration,
 	}
+}
+
+async function getAssetUrlFromPackageContainerStatus(
+	studio: PieceContentStatusStudio,
+	getPackageContainerPackageStatus: (
+		packageContainerId: string,
+		expectedPackageId: ExpectedPackageId
+	) => Promise<PackageContainerPackageStatusLight | undefined>,
+	expectedPackageId: ExpectedPackageId,
+	assetContainerId: string | null | undefined,
+	packageAssetPath: string | undefined
+): Promise<string | undefined> {
+	if (!assetContainerId || !packageAssetPath) return
+
+	const assetPackageContainer = studio.packageContainers[assetContainerId]
+	if (!assetPackageContainer) return
+
+	const previewPackageOnPackageContainer = await getPackageContainerPackageStatus(assetContainerId, expectedPackageId)
+	if (!previewPackageOnPackageContainer) return
+
+	return getAssetUrlFromExpectedPackages(packageAssetPath, assetPackageContainer, previewPackageOnPackageContainer)
 }
 
 function getAssetUrlFromExpectedPackages(
 	assetPath: string,
-	assetContainerId: string,
-	studio: PieceContentStatusStudio,
+	packageContainer: StudioPackageContainer,
 	packageOnPackageContainer: Pick<PackageContainerPackageStatusDB, 'status'>
 ): string | undefined {
-	const packageContainer = studio.packageContainers[assetContainerId]
-	if (!packageContainer) return
-
 	if (packageOnPackageContainer.status.status !== ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.READY)
 		return
 
@@ -689,25 +763,34 @@ function getAssetUrlFromExpectedPackages(
 	}
 }
 
+function getPackageProgress(
+	packageOnPackageContainer: Pick<PackageContainerPackageStatusDB, 'status'> | undefined
+): number | null {
+	return packageOnPackageContainer?.status.progress ?? null
+}
+
+function getPackageSoruceMissingWarning(sourceLayer: ISourceLayer): ContentMessage {
+	// Examples of contents in packageOnPackageContainer?.status.statusReason.user:
+	// * Target package: Quantel clip "XXX" not found
+	// * Can't read the Package from PackageContainer "Quantel source 0" (on accessor "${accessorLabel}"), due to: Quantel clip "XXX" not found
+
+	return {
+		status: PieceStatusCode.SOURCE_MISSING,
+		message: generateTranslation(`{{sourceLayer}} can't be found on the playout system`, {
+			sourceLayer: sourceLayer.name,
+		}),
+	}
+}
+
 function getPackageWarningMessage(
-	packageOnPackageContainer: Pick<PackageContainerPackageStatusDB, 'status'> | undefined,
+	packageOnPackageContainer: Pick<PackageContainerPackageStatusDB, 'status'>,
 	sourceLayer: ISourceLayer
 ): ContentMessage | null {
 	if (
-		!packageOnPackageContainer ||
 		packageOnPackageContainer.status.status ===
-			ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.NOT_FOUND
+		ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.NOT_FOUND
 	) {
-		// Examples of contents in packageOnPackageContainer?.status.statusReason.user:
-		// * Target package: Quantel clip "XXX" not found
-		// * Can't read the Package from PackageContainer "Quantel source 0" (on accessor "${accessorLabel}"), due to: Quantel clip "XXX" not found
-
-		return {
-			status: PieceStatusCode.SOURCE_MISSING,
-			message: generateTranslation(`{{sourceLayer}} can't be found on the playout system`, {
-				sourceLayer: sourceLayer.name,
-			}),
-		}
+		return getPackageSoruceMissingWarning(sourceLayer)
 	} else if (
 		packageOnPackageContainer.status.status ===
 		ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.NOT_READY

@@ -76,7 +76,7 @@ export class ColorPicker extends React.Component<IProps, IState> {
 		}
 	}
 
-	private handleChange = (value) => {
+	private handleChange = (value: string) => {
 		this.setState({
 			selectedValue: value,
 		})

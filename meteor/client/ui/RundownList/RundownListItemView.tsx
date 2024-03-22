@@ -2,7 +2,7 @@ import Tooltip from 'rc-tooltip'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { getAllowStudio } from '../../lib/localStorage'
 import { RundownUtils } from '../../lib/rundown'
 import { iconDragHandle, iconRemove, iconResync } from './icons'
@@ -76,8 +76,9 @@ export default React.memo(function RundownListItemView({
 			id={htmlElementId}
 			className={`${className} rundown-list-item ${isDragLayer ? 'dragging' : ''}`}
 			ref={connectDropTarget}
+			role="row"
 		>
-			<span className="rundown-list-item__name">
+			<span className="rundown-list-item__name" role="rowheader">
 				<>
 					{getAllowStudio() ? (
 						<span className="draghandle" ref={connectDragSource}>
@@ -87,7 +88,9 @@ export default React.memo(function RundownListItemView({
 								mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
 								overlayStyle={{ display: renderTooltips ? undefined : 'none' }}
 							>
-								<button className="rundown-list-item__action">{iconDragHandle()}</button>
+								<button className="rundown-list-item__action" aria-label="Drag handle">
+									{iconDragHandle()}
+								</button>
 							</Tooltip>
 						</span>
 					) : null}
@@ -117,10 +120,10 @@ export default React.memo(function RundownListItemView({
 				</>
 			</span>
 			{/* <RundownListItemProblems warnings={warnings} errors={errors} /> */}
-			<span className="rundown-list-item__text">
+			<span className="rundown-list-item__text" role="gridcell">
 				{showStyleBaseURL ? <Link to={showStyleBaseURL}>{showStyleName}</Link> : showStyleName || ''}
 			</span>
-			<span className="rundown-list-item__text">
+			<span className="rundown-list-item__text" role="gridcell">
 				{expectedStart ? (
 					<DisplayFormattedTime displayTimestamp={expectedStart} t={t} />
 				) : expectedEnd && expectedDuration ? (
@@ -129,7 +132,7 @@ export default React.memo(function RundownListItemView({
 					<span className="dimmed">{t('Not set')}</span>
 				)}
 			</span>
-			<span className="rundown-list-item__text">
+			<span className="rundown-list-item__text" role="gridcell">
 				{expectedDuration ? (
 					isOnlyRundownInPlaylist && playlist.loop ? (
 						<Tooltip
@@ -162,7 +165,7 @@ export default React.memo(function RundownListItemView({
 					<span className="dimmed">{t('Not set')}</span>
 				)}
 			</span>
-			<span className="rundown-list-item__text">
+			<span className="rundown-list-item__text" role="gridcell">
 				{expectedEnd ? (
 					<DisplayFormattedTime displayTimestamp={expectedEnd} t={t} />
 				) : expectedStart && expectedDuration ? (
@@ -171,7 +174,7 @@ export default React.memo(function RundownListItemView({
 					<span className="dimmed">{t('Not set')}</span>
 				)}
 			</span>
-			<span className="rundown-list-item__text">
+			<span className="rundown-list-item__text" role="gridcell">
 				<DisplayFormattedTime displayTimestamp={rundown.modified} t={t} />
 			</span>
 			{rundownLayouts.some(
@@ -179,7 +182,7 @@ export default React.memo(function RundownListItemView({
 					(RundownLayoutsAPI.isLayoutForShelf(l) && l.exposeAsStandalone) ||
 					(RundownLayoutsAPI.isLayoutForRundownView(l) && l.exposeAsSelectableLayout)
 			) && (
-				<span className="rundown-list-item__text">
+				<span className="rundown-list-item__text" role="gridcell">
 					{isOnlyRundownInPlaylist && (
 						<RundownViewLayoutSelection
 							rundowns={[rundown]}
@@ -189,7 +192,7 @@ export default React.memo(function RundownListItemView({
 					)}
 				</span>
 			)}
-			<span className="rundown-list-item__actions">
+			<span className="rundown-list-item__actions" role="gridcell">
 				{confirmReSyncRundownHandler ? (
 					<Tooltip
 						mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}

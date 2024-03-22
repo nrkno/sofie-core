@@ -1,39 +1,37 @@
-import { DbCacheReadCollection } from '../../cache/CacheCollection'
-import { ExpectedPackageDB, ExpectedPackageDBBase } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import {
+	ExpectedPackageDB,
+	ExpectedPackageDBBase,
+	ExpectedPackageFromRundown,
+} from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { JobContext } from '../../jobs'
-import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ExpectedPackageId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Filter as FilterQuery } from 'mongodb'
 import { PackageInfo } from '@sofie-automation/blueprints-integration'
 import { unprotectObjectArray } from '@sofie-automation/corelib/dist/protectedString'
-import { CacheForIngest } from '../../ingest/cache'
-import { ReadOnlyCache } from '../../cache/CacheBase'
+import { ExpectedPackageForIngestModel, IngestModelReadonly } from '../../ingest/model/IngestModel'
+import { ReadonlyDeep } from 'type-fest'
 
 /**
  * This is a helper class to simplify exposing packageInfo to various places in the blueprints
  */
 export class WatchedPackagesHelper {
+	private readonly packages = new Map<ExpectedPackageId, ReadonlyDeep<ExpectedPackageDB>>()
+
 	private constructor(
-		private readonly packages: DbCacheReadCollection<ExpectedPackageDB>,
-		private readonly packageInfos: DbCacheReadCollection<PackageInfoDB>
-	) {}
+		packages: ReadonlyDeep<ExpectedPackageDB[]>,
+		private readonly packageInfos: ReadonlyDeep<PackageInfoDB[]>
+	) {
+		for (const pkg of packages) {
+			this.packages.set(pkg._id, pkg)
+		}
+	}
 
 	/**
 	 * Create a helper with no packages. This should be used where the api is in place, but the update flow hasnt been implemented yet so we don't want to expose any data
 	 */
-	static empty(context: JobContext): WatchedPackagesHelper {
-		const watchedPackages = DbCacheReadCollection.createFromArray(
-			context,
-			context.directCollections.ExpectedPackages,
-			[]
-		)
-		const watchedPackageInfos = DbCacheReadCollection.createFromArray(
-			context,
-			context.directCollections.PackageInfos,
-			[]
-		)
-
-		return new WatchedPackagesHelper(watchedPackages, watchedPackageInfos)
+	static empty(_context: JobContext): WatchedPackagesHelper {
+		return new WatchedPackagesHelper([], [])
 	}
 
 	/**
@@ -47,54 +45,82 @@ export class WatchedPackagesHelper {
 		filter: FilterQuery<Omit<T, 'studioId'>>
 	): Promise<WatchedPackagesHelper> {
 		// Load all the packages and the infos that are watched
-		const watchedPackages = await DbCacheReadCollection.createFromDatabase(
-			context,
-			context.directCollections.ExpectedPackages,
-			{
-				...filter,
-				studioId: studioId,
-			} as any
-		) // TODO: don't use any here
-		const watchedPackageInfos = await DbCacheReadCollection.createFromDatabase(
-			context,
-			context.directCollections.PackageInfos,
-			{
-				studioId: studioId,
-				packageId: { $in: watchedPackages.findAll(null).map((p) => p._id) },
-			}
-		)
+		const watchedPackages = await context.directCollections.ExpectedPackages.findFetch({
+			...filter,
+			studioId: studioId,
+		} as any) // TODO: don't use any here
+		const watchedPackageInfos = await context.directCollections.PackageInfos.findFetch({
+			studioId: studioId,
+			packageId: { $in: watchedPackages.map((p) => p._id) },
+		})
 
 		return new WatchedPackagesHelper(watchedPackages, watchedPackageInfos)
 	}
 
 	/**
-	 * Create a helper, and populate it with data from a CacheForIngest
+	 * Create a helper, and populate it with data from an IngestModel
 	 * @param studioId The studio this is for
-	 * @param filter A filter to check if each package should be included
+	 * @param ingestModel Model to fetch data for
 	 */
-	static async createForIngest(
+	static async createForIngestRundown(
 		context: JobContext,
-		cache: ReadOnlyCache<CacheForIngest>,
-		func: ((pkg: ExpectedPackageDB) => boolean) | undefined
+		ingestModel: IngestModelReadonly
 	): Promise<WatchedPackagesHelper> {
-		const packages = cache.ExpectedPackages.findAll(func ?? null)
+		const packages: ReadonlyDeep<ExpectedPackageForIngestModel>[] = []
 
-		// Load all the packages and the infos that are watched
-		const watchedPackages = DbCacheReadCollection.createFromArray(
-			context,
-			context.directCollections.ExpectedPackages,
-			packages
-		)
-		const watchedPackageInfos = await DbCacheReadCollection.createFromDatabase(
-			context,
-			context.directCollections.PackageInfos,
-			{
-				studioId: context.studio._id,
-				packageId: { $in: packages.map((p) => p._id) },
+		packages.push(...ingestModel.expectedPackagesForRundownBaseline)
+
+		for (const segment of ingestModel.getAllSegments()) {
+			for (const part of segment.parts) {
+				packages.push(...part.expectedPackages)
 			}
-		)
+		}
 
-		return new WatchedPackagesHelper(watchedPackages, watchedPackageInfos)
+		return this.#createFromPackages(
+			context,
+			packages.filter((pkg) => !!pkg.listenToPackageInfoUpdates)
+		)
+	}
+
+	/**
+	 * Create a helper, and populate it with data from an IngestModel
+	 * @param studioId The studio this is for
+	 * @param ingestModel Model to fetch data for
+	 * @param segmentExternalIds ExternalId of Segments to be loaded
+	 */
+	static async createForIngestSegments(
+		context: JobContext,
+		ingestModel: IngestModelReadonly,
+		segmentExternalIds: string[]
+	): Promise<WatchedPackagesHelper> {
+		const packages: ReadonlyDeep<ExpectedPackageFromRundown>[] = []
+
+		for (const externalId of segmentExternalIds) {
+			const segment = ingestModel.getSegmentByExternalId(externalId)
+			if (!segment) continue // First ingest of the Segment
+
+			for (const part of segment.parts) {
+				packages.push(...part.expectedPackages)
+			}
+		}
+
+		return this.#createFromPackages(
+			context,
+			packages.filter((pkg) => !!pkg.listenToPackageInfoUpdates)
+		)
+	}
+
+	static async #createFromPackages(context: JobContext, packages: ReadonlyDeep<ExpectedPackageDB>[]) {
+		// Load all the packages and the infos that are watched
+		const watchedPackageInfos =
+			packages.length > 0
+				? await context.directCollections.PackageInfos.findFetch({
+						studioId: context.studio._id,
+						packageId: { $in: packages.map((p) => p._id) },
+				  })
+				: []
+
+		return new WatchedPackagesHelper(packages, watchedPackageInfos)
 	}
 
 	/**
@@ -102,30 +128,30 @@ export class WatchedPackagesHelper {
 	 * This is useful so that all the data for a rundown can be loaded at the start of an ingest operation, and then subsets can be taken for particular blueprint methods without needing to do more db operations.
 	 * @param func A filter to check if each package should be included
 	 */
-	filter(context: JobContext, func: (pkg: ExpectedPackageDB) => boolean): WatchedPackagesHelper {
-		const watchedPackages = DbCacheReadCollection.createFromArray(
-			context,
-			context.directCollections.ExpectedPackages,
-			this.packages.findAll(func)
-		)
+	filter(_context: JobContext, func: (pkg: ReadonlyDeep<ExpectedPackageDB>) => boolean): WatchedPackagesHelper {
+		const watchedPackages: ReadonlyDeep<ExpectedPackageDB>[] = []
+		for (const pkg of this.packages.values()) {
+			if (func(pkg)) watchedPackages.push(pkg)
+		}
 
-		const newPackageIds = new Set(watchedPackages.findAll(null).map((p) => p._id))
-		const watchedPackageInfos = DbCacheReadCollection.createFromArray(
-			context,
-			context.directCollections.PackageInfos,
-			this.packageInfos.findAll((info) => newPackageIds.has(info.packageId))
-		)
+		const newPackageIds = new Set(watchedPackages.map((p) => p._id))
+		const watchedPackageInfos = this.packageInfos.filter((info) => newPackageIds.has(info.packageId))
 
 		return new WatchedPackagesHelper(watchedPackages, watchedPackageInfos)
 	}
 
+	getPackage(packageId: ExpectedPackageId): ReadonlyDeep<ExpectedPackageDB> | undefined {
+		return this.packages.get(packageId)
+	}
+
 	getPackageInfo(packageId: string): Readonly<Array<PackageInfo.Any>> {
-		const pkg = this.packages.findOne((pkg) => pkg.blueprintPackageId === packageId)
-		if (pkg) {
-			const info = this.packageInfos.findAll((p) => p.packageId === pkg._id)
-			return unprotectObjectArray(info)
-		} else {
-			return []
+		for (const pkg of this.packages.values()) {
+			if (pkg.blueprintPackageId === packageId) {
+				const info = this.packageInfos.filter((p) => p.packageId === pkg._id)
+				return unprotectObjectArray(info)
+			}
 		}
+
+		return []
 	}
 }

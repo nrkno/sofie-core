@@ -10,6 +10,8 @@ import semver from 'semver'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PeripheralDeviceStatusObject } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import { PeripheralDevices } from '../../collections'
+import { UIBlueprintUpgradeStatus } from '../../../lib/api/upgradeStatus'
 
 // we don't want the deviceTriggers observer to start up at this time
 jest.mock('../../api/deviceTriggers/observer')
@@ -17,24 +19,18 @@ jest.mock('../../api/deviceTriggers/observer')
 require('../api')
 const PackageInfo = require('../../../package.json')
 
-import * as checkUpgradeStatus from '../../migration/upgrades/checkStatus'
-import { GetUpgradeStatusResult } from '../../../lib/api/migration'
-import { PeripheralDevices } from '../../collections'
-const getUpgradeStatusMock = jest.spyOn(checkUpgradeStatus, 'getUpgradeStatus')
+import * as getServerBlueprintUpgradeStatuses from '../../publications/blueprintUpgradeStatus/systemStatus'
+const getServerBlueprintUpgradeStatusesMock = jest.spyOn(
+	getServerBlueprintUpgradeStatuses,
+	'getServerBlueprintUpgradeStatuses'
+)
 
 describe('systemStatus', () => {
 	beforeEach(() => {
-		getUpgradeStatusMock.mockReturnValue(
-			Promise.resolve(
-				literal<GetUpgradeStatusResult>({
-					studios: [],
-					showStyleBases: [],
-				})
-			)
-		)
+		getServerBlueprintUpgradeStatusesMock.mockReturnValue(Promise.resolve(literal<UIBlueprintUpgradeStatus[]>([])))
 	})
 	afterEach(() => {
-		getUpgradeStatusMock.mockReset()
+		getServerBlueprintUpgradeStatusesMock.mockReset()
 	})
 
 	let env: DefaultEnvironment
@@ -251,28 +247,31 @@ describe('systemStatus', () => {
 				status: status2ExternalStatus(expectedStatus),
 				_status: expectedStatus,
 			})
-			expect(getUpgradeStatusMock).toHaveBeenCalledTimes(1)
+			expect(getServerBlueprintUpgradeStatusesMock).toHaveBeenCalledTimes(1)
 		}
 
 		// Fake some studio upgrade errors
-		getUpgradeStatusMock.mockReturnValue(
+		getServerBlueprintUpgradeStatusesMock.mockReturnValue(
 			Promise.resolve(
-				literal<GetUpgradeStatusResult>({
-					studios: [
-						{
-							studioId: protectString('studio0'),
-							name: 'Test Studio #0',
-							changes: [generateTranslation('something changed')],
-						},
-						{
-							studioId: protectString('studio1'),
-							name: 'Test Studio #1',
-							invalidReason: generateTranslation('some invalid reason'),
-							changes: [],
-						},
-					],
-					showStyleBases: [],
-				})
+				literal<UIBlueprintUpgradeStatus[]>([
+					{
+						_id: protectString('studio-studio0'),
+						documentType: 'studio',
+						documentId: protectString('studio0'),
+						name: 'Test Studio #0',
+						pendingRunOfFixupFunction: false,
+						changes: [generateTranslation('something changed')],
+					},
+					{
+						_id: protectString('studio-studio1'),
+						documentType: 'studio',
+						documentId: protectString('studio1'),
+						name: 'Test Studio #1',
+						invalidReason: generateTranslation('some invalid reason'),
+						pendingRunOfFixupFunction: false,
+						changes: [],
+					},
+				])
 			)
 		)
 
@@ -284,27 +283,30 @@ describe('systemStatus', () => {
 				status: status2ExternalStatus(expectedStatus),
 				_status: expectedStatus,
 			})
-			expect(getUpgradeStatusMock).toHaveBeenCalledTimes(2)
+			expect(getServerBlueprintUpgradeStatusesMock).toHaveBeenCalledTimes(2)
 		}
 
 		// Just a minor studio warning
-		getUpgradeStatusMock.mockReturnValue(
+		getServerBlueprintUpgradeStatusesMock.mockReturnValue(
 			Promise.resolve(
-				literal<GetUpgradeStatusResult>({
-					studios: [
-						{
-							studioId: protectString('studio0'),
-							name: 'Test Studio #0',
-							changes: [generateTranslation('something changed')],
-						},
-						{
-							studioId: protectString('studio1'),
-							name: 'Test Studio #1',
-							changes: [],
-						},
-					],
-					showStyleBases: [],
-				})
+				literal<UIBlueprintUpgradeStatus[]>([
+					{
+						_id: protectString('studio-studio0'),
+						documentType: 'studio',
+						documentId: protectString('studio0'),
+						name: 'Test Studio #0',
+						pendingRunOfFixupFunction: false,
+						changes: [generateTranslation('something changed')],
+					},
+					{
+						_id: protectString('studio-studio1'),
+						documentType: 'studio',
+						documentId: protectString('studio1'),
+						name: 'Test Studio #1',
+						pendingRunOfFixupFunction: false,
+						changes: [],
+					},
+				])
 			)
 		)
 
@@ -316,27 +318,30 @@ describe('systemStatus', () => {
 				status: status2ExternalStatus(expectedStatus),
 				_status: expectedStatus,
 			})
-			expect(getUpgradeStatusMock).toHaveBeenCalledTimes(3)
+			expect(getServerBlueprintUpgradeStatusesMock).toHaveBeenCalledTimes(3)
 		}
 
 		// Nothing wrong with a studio
-		getUpgradeStatusMock.mockReturnValue(
+		getServerBlueprintUpgradeStatusesMock.mockReturnValue(
 			Promise.resolve(
-				literal<GetUpgradeStatusResult>({
-					studios: [
-						{
-							studioId: protectString('studio0'),
-							name: 'Test Studio #0',
-							changes: [],
-						},
-						{
-							studioId: protectString('studio1'),
-							name: 'Test Studio #1',
-							changes: [],
-						},
-					],
-					showStyleBases: [],
-				})
+				literal<UIBlueprintUpgradeStatus[]>([
+					{
+						_id: protectString('studio-studio0'),
+						documentType: 'studio',
+						documentId: protectString('studio0'),
+						name: 'Test Studio #0',
+						pendingRunOfFixupFunction: false,
+						changes: [],
+					},
+					{
+						_id: protectString('studio-studio1'),
+						documentType: 'studio',
+						documentId: protectString('studio1'),
+						name: 'Test Studio #1',
+						pendingRunOfFixupFunction: false,
+						changes: [],
+					},
+				])
 			)
 		)
 
@@ -348,28 +353,31 @@ describe('systemStatus', () => {
 				status: status2ExternalStatus(expectedStatus),
 				_status: expectedStatus,
 			})
-			expect(getUpgradeStatusMock).toHaveBeenCalledTimes(4)
+			expect(getServerBlueprintUpgradeStatusesMock).toHaveBeenCalledTimes(4)
 		}
 
 		// Fake some showStyleBase upgrade errors
-		getUpgradeStatusMock.mockReturnValue(
+		getServerBlueprintUpgradeStatusesMock.mockReturnValue(
 			Promise.resolve(
-				literal<GetUpgradeStatusResult>({
-					studios: [],
-					showStyleBases: [
-						{
-							showStyleBaseId: protectString('showStyleBase0'),
-							name: 'Test Show Style Base #0',
-							changes: [generateTranslation('something changed')],
-						},
-						{
-							showStyleBaseId: protectString('showStyleBase1'),
-							name: 'Test Show Style Base #1',
-							invalidReason: generateTranslation('some invalid reason'),
-							changes: [],
-						},
-					],
-				})
+				literal<UIBlueprintUpgradeStatus[]>([
+					{
+						_id: protectString('showStyle-showStyleBase0'),
+						documentType: 'showStyle',
+						documentId: protectString('showStyleBase0'),
+						name: 'Test Show Style Base #0',
+						pendingRunOfFixupFunction: false,
+						changes: [generateTranslation('something changed')],
+					},
+					{
+						_id: protectString('showStyle-showStyleBase1'),
+						documentType: 'showStyle',
+						documentId: protectString('showStyleBase1'),
+						name: 'Test Show Style Base #1',
+						invalidReason: generateTranslation('some invalid reason'),
+						pendingRunOfFixupFunction: false,
+						changes: [],
+					},
+				])
 			)
 		)
 
@@ -381,27 +389,30 @@ describe('systemStatus', () => {
 				status: status2ExternalStatus(expectedStatus),
 				_status: expectedStatus,
 			})
-			expect(getUpgradeStatusMock).toHaveBeenCalledTimes(5)
+			expect(getServerBlueprintUpgradeStatusesMock).toHaveBeenCalledTimes(5)
 		}
 
 		// Just a minor showStyleBase warning
-		getUpgradeStatusMock.mockReturnValue(
+		getServerBlueprintUpgradeStatusesMock.mockReturnValue(
 			Promise.resolve(
-				literal<GetUpgradeStatusResult>({
-					studios: [],
-					showStyleBases: [
-						{
-							showStyleBaseId: protectString('showStyleBase0'),
-							name: 'Test Show Style Base #0',
-							changes: [generateTranslation('something changed')],
-						},
-						{
-							showStyleBaseId: protectString('showStyleBase1'),
-							name: 'Test Show Style Base #1',
-							changes: [],
-						},
-					],
-				})
+				literal<UIBlueprintUpgradeStatus[]>([
+					{
+						_id: protectString('showStyle-showStyleBase0'),
+						documentType: 'showStyle',
+						documentId: protectString('showStyleBase0'),
+						name: 'Test Show Style Base #0',
+						pendingRunOfFixupFunction: false,
+						changes: [generateTranslation('something changed')],
+					},
+					{
+						_id: protectString('showStyle-showStyleBase1'),
+						documentType: 'showStyle',
+						documentId: protectString('showStyleBase1'),
+						name: 'Test Show Style Base #1',
+						pendingRunOfFixupFunction: false,
+						changes: [],
+					},
+				])
 			)
 		)
 
@@ -413,27 +424,30 @@ describe('systemStatus', () => {
 				status: status2ExternalStatus(expectedStatus),
 				_status: expectedStatus,
 			})
-			expect(getUpgradeStatusMock).toHaveBeenCalledTimes(6)
+			expect(getServerBlueprintUpgradeStatusesMock).toHaveBeenCalledTimes(6)
 		}
 
 		// Nothing wrong with a showStyleBase
-		getUpgradeStatusMock.mockReturnValue(
+		getServerBlueprintUpgradeStatusesMock.mockReturnValue(
 			Promise.resolve(
-				literal<GetUpgradeStatusResult>({
-					studios: [],
-					showStyleBases: [
-						{
-							showStyleBaseId: protectString('showStyleBase0'),
-							name: 'Test Show Style Base #0',
-							changes: [],
-						},
-						{
-							showStyleBaseId: protectString('showStyleBase1'),
-							name: 'Test Show Style Base #1',
-							changes: [],
-						},
-					],
-				})
+				literal<UIBlueprintUpgradeStatus[]>([
+					{
+						_id: protectString('showStyle-showStyleBase0'),
+						documentType: 'showStyle',
+						documentId: protectString('showStyleBase0'),
+						name: 'Test Show Style Base #0',
+						pendingRunOfFixupFunction: false,
+						changes: [],
+					},
+					{
+						_id: protectString('showStyle-showStyleBase1'),
+						documentType: 'showStyle',
+						documentId: protectString('showStyleBase1'),
+						name: 'Test Show Style Base #1',
+						pendingRunOfFixupFunction: false,
+						changes: [],
+					},
+				])
 			)
 		)
 
@@ -445,7 +459,7 @@ describe('systemStatus', () => {
 				status: status2ExternalStatus(expectedStatus),
 				_status: expectedStatus,
 			})
-			expect(getUpgradeStatusMock).toHaveBeenCalledTimes(7)
+			expect(getServerBlueprintUpgradeStatusesMock).toHaveBeenCalledTimes(7)
 		}
 	})
 })

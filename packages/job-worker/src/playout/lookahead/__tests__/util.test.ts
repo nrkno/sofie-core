@@ -6,7 +6,7 @@ import { getCurrentTime } from '../../../lib'
 import { LookaheadMode, PlaylistTimingType, TSR } from '@sofie-automation/blueprints-integration'
 import { getOrderedPartsAfterPlayhead } from '../util'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../../__mocks__/context'
-import { runJobWithPlayoutCache } from '../../../playout/lock'
+import { runJobWithPlayoutModel } from '../../../playout/lock'
 import { defaultRundownPlaylist } from '../../../__mocks__/defaultCollectionObjects'
 import _ = require('underscore')
 import { wrapPartToTemporaryInstance } from '../../../__mocks__/partinstance'
@@ -136,8 +136,8 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		])
 	})
 	test('all parts come back', async () => {
-		const parts = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			getOrderedPartsAfterPlayhead(context, cache, 100)
+		const parts = await runJobWithPlayoutModel(context, { playlistId }, null, async (playoutModel) =>
+			getOrderedPartsAfterPlayhead(context, playoutModel, 100)
 		)
 
 		expect(parts.map((p) => p._id)).toEqual(partIds)
@@ -162,15 +162,15 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			},
 		})
 
-		const parts = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			getOrderedPartsAfterPlayhead(context, cache, 100)
+		const parts = await runJobWithPlayoutModel(context, { playlistId }, null, async (playoutModel) =>
+			getOrderedPartsAfterPlayhead(context, playoutModel, 100)
 		)
 		// Should not have the first
 		expect(parts.map((p) => p._id)).toEqual(partIds.slice(1))
 
 		// Try with a limit
-		const parts2 = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			getOrderedPartsAfterPlayhead(context, cache, 5)
+		const parts2 = await runJobWithPlayoutModel(context, { playlistId }, null, async (playoutModel) =>
+			getOrderedPartsAfterPlayhead(context, playoutModel, 5)
 		)
 		// Should not have the first
 		expect(parts2.map((p) => p._id)).toEqual(partIds.slice(1, 6))
@@ -195,15 +195,15 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			},
 		})
 
-		const parts = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			getOrderedPartsAfterPlayhead(context, cache, 100)
+		const parts = await runJobWithPlayoutModel(context, { playlistId }, null, async (playoutModel) =>
+			getOrderedPartsAfterPlayhead(context, playoutModel, 100)
 		)
 		// Should not have the first
 		expect(parts.map((p) => p._id)).toEqual(partIds.slice(1))
 
 		// Try with a limit
-		const parts2 = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			getOrderedPartsAfterPlayhead(context, cache, 5)
+		const parts2 = await runJobWithPlayoutModel(context, { playlistId }, null, async (playoutModel) =>
+			getOrderedPartsAfterPlayhead(context, playoutModel, 5)
 		)
 		// Should not have the first
 		expect(parts2.map((p) => p._id)).toEqual(partIds.slice(1, 6))
@@ -228,16 +228,16 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			},
 		})
 
-		const parts = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			getOrderedPartsAfterPlayhead(context, cache, 100)
+		const parts = await runJobWithPlayoutModel(context, { playlistId }, null, async (playoutModel) =>
+			getOrderedPartsAfterPlayhead(context, playoutModel, 100)
 		)
 		// Should be empty
 		expect(parts.map((p) => p._id)).toEqual([])
 
 		// Playlist could loop
 		await context.mockCollections.RundownPlaylists.update(playlistId, { $set: { loop: true } })
-		const parts2 = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			getOrderedPartsAfterPlayhead(context, cache, 5)
+		const parts2 = await runJobWithPlayoutModel(context, { playlistId }, null, async (playoutModel) =>
+			getOrderedPartsAfterPlayhead(context, playoutModel, 5)
 		)
 		// Should be empty
 		expect(parts2.map((p) => p._id)).toEqual(partIds.slice(0, 5))
@@ -251,8 +251,8 @@ describe('getOrderedPartsAfterPlayhead', () => {
 				$set: { invalid: true },
 			}
 		)
-		const parts3 = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			getOrderedPartsAfterPlayhead(context, cache, 5)
+		const parts3 = await runJobWithPlayoutModel(context, { playlistId }, null, async (playoutModel) =>
+			getOrderedPartsAfterPlayhead(context, playoutModel, 5)
 		)
 		// Should be empty
 		expect(parts3.map((p) => p._id)).toEqual([partIds[0], ...partIds.slice(2, 4), ...partIds.slice(5, 7)])
@@ -286,8 +286,8 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			},
 		})
 
-		const parts = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			getOrderedPartsAfterPlayhead(context, cache, 5)
+		const parts = await runJobWithPlayoutModel(context, { playlistId }, null, async (playoutModel) =>
+			getOrderedPartsAfterPlayhead(context, playoutModel, 5)
 		)
 		// Should not have the first
 		expect(parts.map((p) => p._id)).toEqual([partIds[5], partIds[6], partIds[8], partIds[9], partIds[10]])
@@ -314,8 +314,8 @@ describe('getOrderedPartsAfterPlayhead', () => {
 
 		// Change next segment
 		await context.mockCollections.RundownPlaylists.update(playlistId, { $set: { queuedSegmentId: segmentId2 } })
-		const parts = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			getOrderedPartsAfterPlayhead(context, cache, 10)
+		const parts = await runJobWithPlayoutModel(context, { playlistId }, null, async (playoutModel) =>
+			getOrderedPartsAfterPlayhead(context, playoutModel, 10)
 		)
 		expect(parts.map((p) => p._id)).toEqual([...partIds.slice(1, 5), ...partIds.slice(8)])
 
@@ -328,8 +328,8 @@ describe('getOrderedPartsAfterPlayhead', () => {
 				$set: { invalid: true },
 			}
 		)
-		const parts2 = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			getOrderedPartsAfterPlayhead(context, cache, 10)
+		const parts2 = await runJobWithPlayoutModel(context, { playlistId }, null, async (playoutModel) =>
+			getOrderedPartsAfterPlayhead(context, playoutModel, 10)
 		)
 		expect(parts2.map((p) => p._id)).toEqual([...partIds.slice(1, 5), ...partIds.slice(9)])
 
@@ -342,8 +342,8 @@ describe('getOrderedPartsAfterPlayhead', () => {
 				$set: { invalid: true },
 			}
 		)
-		const parts3 = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			getOrderedPartsAfterPlayhead(context, cache, 10)
+		const parts3 = await runJobWithPlayoutModel(context, { playlistId }, null, async (playoutModel) =>
+			getOrderedPartsAfterPlayhead(context, playoutModel, 10)
 		)
 		expect(parts3.map((p) => p._id)).toEqual(partIds.slice(1, 8))
 	})

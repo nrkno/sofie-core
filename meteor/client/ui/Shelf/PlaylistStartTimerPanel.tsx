@@ -7,45 +7,36 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementStyle } from './DashboardPanel'
-import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { withTranslation } from 'react-i18next'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PlaylistStartTiming } from '../RundownView/RundownTiming/PlaylistStartTiming'
 
 interface IPlaylistStartTimerPanelProps {
 	layout: RundownLayoutBase
 	panel: RundownLayoutPlaylistStartTimer
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 }
 
-interface IState {}
+export function PlaylistStartTimerPanel({
+	playlist,
+	panel,
+	layout,
+}: Readonly<IPlaylistStartTimerPanelProps>): JSX.Element {
+	const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(layout)
 
-class PlaylistStartTimerPanelInner extends MeteorReactComponent<Translated<IPlaylistStartTimerPanelProps>, IState> {
-	constructor(props) {
-		super(props)
-	}
-
-	render(): JSX.Element {
-		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
-
-		return (
-			<div
-				className={ClassNames(
-					'playlist-start-time-panel timing',
-					isDashboardLayout ? (this.props.panel as DashboardLayoutPlaylistStartTimer).customClasses : undefined
-				)}
-				style={isDashboardLayout ? dashboardElementStyle(this.props.panel as DashboardLayoutPlaylistStartTimer) : {}}
-			>
-				<PlaylistStartTiming
-					rundownPlaylist={this.props.playlist}
-					hideDiff={this.props.panel.hideDiff}
-					hidePlannedStart={this.props.panel.hidePlannedStart}
-					plannedStartText={this.props.panel.plannedStartText}
-				/>
-			</div>
-		)
-	}
+	return (
+		<div
+			className={ClassNames(
+				'playlist-start-time-panel timing',
+				isDashboardLayout ? (panel as DashboardLayoutPlaylistStartTimer).customClasses : undefined
+			)}
+			style={isDashboardLayout ? dashboardElementStyle(panel as DashboardLayoutPlaylistStartTimer) : {}}
+		>
+			<PlaylistStartTiming
+				rundownPlaylist={playlist}
+				hideDiff={panel.hideDiff}
+				hidePlannedStart={panel.hidePlannedStart}
+				plannedStartText={panel.plannedStartText}
+			/>
+		</div>
+	)
 }
-
-export const PlaylistStartTimerPanel = withTranslation()(PlaylistStartTimerPanelInner)

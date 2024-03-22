@@ -20,7 +20,7 @@ export const AB_MEDIA_PLAYER_AUTO = '__auto__'
  * Description of a player in an AB pool
  */
 export interface ABPlayerDefinition {
-	playerId: number
+	playerId: number | string
 }
 
 /**
@@ -30,7 +30,7 @@ export interface ABTimelineLayerChangeRule {
 	/** What AB pools can this rule be used for */
 	acceptedPoolNames: string[]
 	/** A function to generate the new layer name for a chosen playerId */
-	newLayerName: (playerId: number) => string
+	newLayerName: (playerId: number | string) => string
 	/** Whether this rule can be used for lookaheadObjects */
 	allowsLookahead: boolean
 }
@@ -60,7 +60,7 @@ export interface ABResolverConfiguration {
 	customApplyToObject?: (
 		context: ICommonContext,
 		poolName: string,
-		playerId: number,
+		playerId: number | string,
 		timelineObject: OnGenerateTimelineObj<TSR.TSRTimelineContent>
 	) => boolean
 }

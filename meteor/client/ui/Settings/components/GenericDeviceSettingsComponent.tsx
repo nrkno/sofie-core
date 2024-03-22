@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { PeripheralDevice, PeripheralDeviceType } from '../../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { DeviceItem } from '../../Status/SystemStatus'
 import { ConfigManifestOAuthFlowComponent } from './ConfigManifestOAuthFlow'
 import { protectString, unprotectString } from '../../../../lib/lib'
@@ -18,14 +18,14 @@ interface IGenericDeviceSettingsComponentProps {
 export function GenericDeviceSettingsComponent({
 	device,
 	subDevices,
-}: IGenericDeviceSettingsComponentProps): JSX.Element {
+}: Readonly<IGenericDeviceSettingsComponentProps>): JSX.Element {
 	const { t } = useTranslation()
 
 	const [debugStates, setDebugStates] = useState(() => new Map<PeripheralDeviceId, object>())
 	const deviceHasDebugStates = !!(
 		device.type === PeripheralDeviceType.PLAYOUT &&
 		device.settings &&
-		device.settings['debugState']
+		(device.settings as any)['debugState']
 	)
 	useEffect(() => {
 		if (deviceHasDebugStates) {
@@ -62,17 +62,15 @@ export function GenericDeviceSettingsComponent({
 			)}
 
 			{parsedSchema ? (
-				<>
-					<SchemaFormForCollection
-						schema={parsedSchema}
-						object={device.settings}
-						collection={PeripheralDevices}
-						objectId={device._id}
-						basePath="settings"
-						translationNamespaces={translationNamespaces}
-						allowTables
-					/>
-				</>
+				<SchemaFormForCollection
+					schema={parsedSchema}
+					object={device.settings}
+					collection={PeripheralDevices}
+					objectId={device._id}
+					basePath="settings"
+					translationNamespaces={translationNamespaces}
+					allowTables
+				/>
 			) : (
 				<p>{t('There is no JSON config schema provided by this Gateway')}</p>
 			)}

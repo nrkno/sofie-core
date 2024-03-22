@@ -4,7 +4,6 @@ import { Accounts } from 'meteor/accounts-base'
 import { Translated, translateWithTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { Link } from 'react-router-dom'
 import type { RouteComponentProps } from 'react-router'
-import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
 import { StatusResponse } from '../../../../lib/api/systemStatus'
 import { getUser, User } from '../../../../lib/collections/Users'
 import { NotLoggedInContainer } from './lib'
@@ -29,10 +28,10 @@ export const LoginPage = translateWithTracker((_props: ILoginProps) => {
 	const user = getUser()
 	return { user: user ? user : null }
 })(
-	class extends MeteorReactComponent<Translated<ILoginPageProps>, ILoginPageState> {
+	class LoginPage extends React.Component<Translated<ILoginPageProps>, ILoginPageState> {
 		// private _subscriptions: Array<Meteor.SubscriptionHandle> = []
 
-		constructor(props) {
+		constructor(props: Translated<ILoginPageProps>) {
 			super(props)
 
 			this.state = {
@@ -47,8 +46,10 @@ export const LoginPage = translateWithTracker((_props: ILoginProps) => {
 		}
 
 		private handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-			if (this.state[e.currentTarget.name] === undefined) return
-			return this.setState({ ...this.state, [e.currentTarget.name]: e.currentTarget.value })
+			const name = e.currentTarget.name as keyof ILoginPageState
+			if (!(name in this.state)) return
+
+			return this.setState({ ...this.state, [name]: e.currentTarget.value })
 		}
 
 		private attempLogin(e: React.MouseEvent<HTMLFormElement>): void {

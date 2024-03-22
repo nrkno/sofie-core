@@ -7,6 +7,7 @@ import { setupDefaultJobEnvironment } from '../../../__mocks__/context'
 
 jest.mock('../findObjects')
 import { findLookaheadObjectsForPart } from '../findObjects'
+import { ReadonlyDeep } from 'type-fest'
 type TfindLookaheadObjectsForPart = jest.MockedFunction<typeof findLookaheadObjectsForPart>
 const findLookaheadObjectsForPartMock = findLookaheadObjectsForPart as TfindLookaheadObjectsForPart
 findLookaheadObjectsForPartMock.mockImplementation(() => []) // Default mock
@@ -128,7 +129,7 @@ describe('findLookaheadForLayer', () => {
 		index: number,
 		layer: string,
 		partInfo: PartAndPieces,
-		previousPart: DBPart | undefined
+		previousPart: ReadonlyDeep<DBPart> | undefined
 	): void {
 		expect(findLookaheadObjectsForPartMock).toHaveBeenNthCalledWith(
 			index,

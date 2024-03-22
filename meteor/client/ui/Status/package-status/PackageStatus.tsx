@@ -155,7 +155,9 @@ export const PackageStatus: React.FC<{
 	)
 }
 
-function PackageStatusIcon(props: { progress: number | undefined; label: string; isWorking: boolean }): JSX.Element {
+function PackageStatusIcon(
+	props: Readonly<{ progress: number | undefined; label: string; isWorking: boolean }>
+): JSX.Element {
 	const svgCircleSector = (x: number, y: number, radius: number, v: number, color: string) => {
 		if (v >= 1) {
 			return <circle cx={x} cy={y} r={radius} fill={color}></circle>

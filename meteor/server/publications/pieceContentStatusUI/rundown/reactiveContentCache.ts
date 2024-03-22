@@ -3,7 +3,6 @@ import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { ReactiveCacheCollection } from '../../lib/ReactiveCacheCollection'
 import { DBShowStyleBase, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { DBRundown, Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
@@ -11,12 +10,12 @@ import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
-import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BlueprintId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 
-export type SourceLayersDocId = ProtectedString<'SourceLayersDocId'>
 export interface SourceLayersDoc {
-	_id: SourceLayersDocId
+	_id: ShowStyleBaseId
 	blueprintId: BlueprintId
 	sourceLayers: SourceLayers
 }
@@ -54,12 +53,23 @@ export const pieceFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<Pi
 	expectedPackages: 1,
 })
 
-export type PieceInstanceFields = '_id' | 'rundownId' | 'piece'
+export type PartInstanceFields = '_id' | 'segmentId' | 'rundownId' | 'part'
+export const partInstanceFieldSpecifier = literal<
+	MongoFieldSpecifierOnesStrict<Pick<DBPartInstance, PartInstanceFields>>
+>({
+	_id: 1,
+	segmentId: 1,
+	rundownId: 1,
+	part: 1, // This could be stricter, but this is unlikely to be changed once the PartInstance is created
+})
+
+export type PieceInstanceFields = '_id' | 'rundownId' | 'partInstanceId' | 'piece'
 export const pieceInstanceFieldSpecifier = literal<
 	MongoFieldSpecifierOnesStrict<Pick<PieceInstance, PieceInstanceFields>>
 >({
 	_id: 1,
 	rundownId: 1,
+	partInstanceId: 1,
 	piece: 1, // This could be stricter, but this is unlikely to be changed once the PieceInstance is created
 })
 
@@ -110,6 +120,7 @@ export interface ContentCache {
 	Segments: ReactiveCacheCollection<Pick<DBSegment, SegmentFields>>
 	Parts: ReactiveCacheCollection<Pick<DBPart, PartFields>>
 	Pieces: ReactiveCacheCollection<Pick<Piece, PieceFields>>
+	PartInstances: ReactiveCacheCollection<Pick<DBPartInstance, PartInstanceFields>>
 	PieceInstances: ReactiveCacheCollection<Pick<PieceInstance, PieceInstanceFields>>
 	AdLibPieces: ReactiveCacheCollection<Pick<AdLibPiece, AdLibPieceFields>>
 	AdLibActions: ReactiveCacheCollection<Pick<AdLibAction, AdLibActionFields>>
@@ -124,6 +135,7 @@ export function createReactiveContentCache(): ContentCache {
 		Segments: new ReactiveCacheCollection<Pick<DBSegment, SegmentFields>>('segments'),
 		Parts: new ReactiveCacheCollection<Pick<DBPart, PartFields>>('parts'),
 		Pieces: new ReactiveCacheCollection<Pick<Piece, PieceFields>>('pieces'),
+		PartInstances: new ReactiveCacheCollection<Pick<DBPartInstance, PartInstanceFields>>('partInstances'),
 		PieceInstances: new ReactiveCacheCollection<Pick<PieceInstance, PieceInstanceFields>>('pieceInstances'),
 		AdLibPieces: new ReactiveCacheCollection<Pick<AdLibPiece, AdLibPieceFields>>('adlibPieces'),
 		AdLibActions: new ReactiveCacheCollection<Pick<AdLibAction, AdLibActionFields>>('adlibActions'),

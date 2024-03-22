@@ -6,7 +6,8 @@ import { setupDefaultRundownPlaylist, setupMockShowStyleCompound } from '../../_
 import { handleTakeNextPart } from '../take'
 import { handleExecuteAdlibAction } from '../adlibAction'
 import { handleActivateRundownPlaylist } from '../activePlaylistJobs'
-import { ActionPartChange, ActionExecutionContext } from '../../blueprints/context/adlibActions'
+import { ActionExecutionContext } from '../../blueprints/context/adlibActions'
+import { ActionPartChange } from '../../blueprints/context/services/PartAndPieceInstanceActionService'
 import * as Infinites from '../../playout/infinites'
 import * as TakeApi from '../../playout/take'
 
@@ -66,7 +67,12 @@ describe('Playout API', () => {
 			})
 
 			await expect(
-				handleExecuteAdlibAction(context, { playlistId, actionDocId, actionId, userData })
+				handleExecuteAdlibAction(context, {
+					playlistId,
+					actionDocId,
+					actionId,
+					userData,
+				})
 			).rejects.toMatchUserError(UserErrorMessage.InternalError)
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(0)
@@ -105,7 +111,8 @@ describe('Playout API', () => {
 					if (context.currentPartState !== ActionPartChange.NONE)
 						throw new Error('nextPartState started wrong')
 
-					context.nextPartState = ActionPartChange.SAFE_CHANGE
+					// @ts-ignore
+					context.partAndPieceInstanceService.nextPartState = ActionPartChange.SAFE_CHANGE
 				},
 			})
 
@@ -131,7 +138,8 @@ describe('Playout API', () => {
 					if (context.currentPartState !== ActionPartChange.NONE)
 						throw new Error('nextPartState started wrong')
 
-					context.currentPartState = ActionPartChange.SAFE_CHANGE
+					// @ts-ignore
+					context.partAndPieceInstanceService.nextPartState = ActionPartChange.SAFE_CHANGE
 				},
 			})
 

@@ -1,5 +1,5 @@
 import React from 'react'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { ISourceLayerExtended } from '../../../../lib/Rundown'
 import { IContextMenuContext } from '../../RundownView'
 import { IOutputLayerUi, PartUi, PieceUi, SegmentUi } from '../SegmentTimelineContainer'
@@ -15,14 +15,14 @@ import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/ti
 interface IOutputGroupProps {
 	layer: IOutputLayerUi
 	sourceLayers: ISourceLayerExtended[]
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	studio: UIStudio
 	segment: SegmentUi
 	part: PartUi
 	pieces: CalculateTimingsPiece[]
 	startsAt: number
 	duration: number
-	expectedDuration: number
+	displayDuration: number
 	timeScale: number
 	collapsedOutputs: {
 		[key: string]: boolean
@@ -46,7 +46,7 @@ interface IOutputGroupProps {
 	showDurationSourceLayers?: Set<ISourceLayer['_id']>
 }
 
-export function OutputGroup(props: IOutputGroupProps): JSX.Element {
+export function OutputGroup(props: Readonly<IOutputGroupProps>): JSX.Element {
 	const isCollapsed =
 		props.collapsedOutputs[props.layer._id] !== undefined
 			? props.collapsedOutputs[props.layer._id] === true
@@ -56,7 +56,7 @@ export function OutputGroup(props: IOutputGroupProps): JSX.Element {
 		return !!props.showDurationSourceLayers && props.showDurationSourceLayers.has(sourceLayer._id)
 	}
 
-	function renderInside(isOutputGroupCollapsed) {
+	function renderInside(isOutputGroupCollapsed: boolean) {
 		if (props.sourceLayers !== undefined) {
 			if (!props.layer.isFlattened) {
 				return props.sourceLayers.map((sourceLayer, index) => {
@@ -73,7 +73,7 @@ export function OutputGroup(props: IOutputGroupProps): JSX.Element {
 							pieces={props.pieces}
 							startsAt={props.startsAt}
 							duration={props.duration}
-							expectedDuration={props.expectedDuration}
+							displayDuration={props.displayDuration}
 							timeScale={props.timeScale}
 							autoNextPart={props.autoNextPart}
 							liveLinePadding={props.liveLinePadding}
@@ -109,7 +109,7 @@ export function OutputGroup(props: IOutputGroupProps): JSX.Element {
 						pieces={props.pieces}
 						startsAt={props.startsAt}
 						duration={props.duration}
-						expectedDuration={props.expectedDuration}
+						displayDuration={props.displayDuration}
 						timeScale={props.timeScale}
 						autoNextPart={props.autoNextPart}
 						liveLinePadding={props.liveLinePadding}
@@ -152,7 +152,7 @@ export function OutputGroup(props: IOutputGroupProps): JSX.Element {
 					{RundownUtils.formatTimeToTimecode(props.studio.settings, props.startsAt)}
 				</div>
 			)}
-			{renderInside(isCollapsed)}
+			{renderInside(!!isCollapsed)}
 		</div>
 	)
 }

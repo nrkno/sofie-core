@@ -34,7 +34,7 @@ export function SchemaFormForCollection({
 	objectId,
 	partialOverridesForObject,
 	...commonProps
-}: SchemaFormForCollectionProps): JSX.Element {
+}: Readonly<SchemaFormForCollectionProps>): JSX.Element {
 	const helper = useMemo(
 		() => new OverrideOpHelperCollection(collection, objectId, basePath),
 		[collection, objectId, basePath]

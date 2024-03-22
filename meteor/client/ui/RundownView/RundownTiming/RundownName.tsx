@@ -3,15 +3,15 @@ import { WithTranslation, withTranslation } from 'react-i18next'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { withTiming, WithTiming } from './withTiming'
 import ClassNames from 'classnames'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { LoopingIcon } from '../../../lib/ui/icons/looping'
-import { Rundown } from '../../../../lib/collections/Rundowns'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownUtils } from '../../../lib/rundown'
 import { getCurrentTime } from '../../../../lib/lib'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 
 interface IRundownNameProps {
-	rundownPlaylist: RundownPlaylist
+	rundownPlaylist: DBRundownPlaylist
 	currentRundown?: Rundown
 	rundownCount: number
 	hideDiff?: boolean
@@ -24,7 +24,7 @@ export const RundownName = withTranslation()(
 				const { rundownPlaylist, currentRundown, rundownCount, t } = this.props
 				const expectedStart = PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
 				return (
-					<span
+					<div
 						className={ClassNames('timing-clock countdown left', {
 							'plan-start': !(
 								rundownPlaylist.startedPlayback &&
@@ -40,7 +40,7 @@ export const RundownName = withTranslation()(
 						})}
 					>
 						{currentRundown && (rundownPlaylist.name !== currentRundown.name || rundownCount > 1) ? (
-							<span
+							<h1
 								className="timing-clock-label left hide-overflow rundown-name"
 								title={
 									rundownPlaylist.loop
@@ -56,9 +56,9 @@ export const RundownName = withTranslation()(
 								id="rundown-playlist-name"
 							>
 								{rundownPlaylist.loop && <LoopingIcon />} <strong>{currentRundown.name}</strong> {rundownPlaylist.name}
-							</span>
+							</h1>
 						) : (
-							<span
+							<h1
 								className="timing-clock-label left hide-overflow rundown-name"
 								title={
 									rundownPlaylist.loop
@@ -70,7 +70,7 @@ export const RundownName = withTranslation()(
 								id="rundown-playlist-name"
 							>
 								{rundownPlaylist.loop && <LoopingIcon />} {rundownPlaylist.name}
-							</span>
+							</h1>
 						)}
 						{!this.props.hideDiff &&
 						rundownPlaylist.startedPlayback &&
@@ -87,7 +87,7 @@ export const RundownName = withTranslation()(
 							  )
 							: expectedStart &&
 							  RundownUtils.formatDiffToTimecode(getCurrentTime() - expectedStart, true, false, true, true, true)}
-					</span>
+					</div>
 				)
 			}
 		}

@@ -1,16 +1,16 @@
-import { DBStudio } from '../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { clone, getCurrentTime, unprotectString } from '../lib/lib'
-import { DBRundownPlaylist } from '../lib/collections/RundownPlaylists'
-import { DBRundown } from '../lib/collections/Rundowns'
-import { DBSegment } from '../lib/collections/Segments'
-import { DBPart } from '../lib/collections/Parts'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { IBlueprintPieceType, PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { Piece, EmptyPieceTimelineObjectsBlob } from '../lib/collections/Pieces'
+import { Piece, EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { getRundownId } from '../server/api/ingest/lib'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { PartInstance } from '../lib/collections/PartInstances'
-import { PieceInstance } from '../lib/collections/PieceInstances'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import {
 	PartId,
 	PartInstanceId,
@@ -116,6 +116,7 @@ export function defaultStudio(_id: StudioId): DBStudio {
 			inputDevices: wrapDefaultObject({}),
 		},
 		lastBlueprintConfig: undefined,
+		lastBlueprintFixUpHash: undefined,
 	}
 }
 

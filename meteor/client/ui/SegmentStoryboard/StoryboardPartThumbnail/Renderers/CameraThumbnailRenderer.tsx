@@ -2,7 +2,7 @@ import React from 'react'
 import { getSizeClassForLabel } from '../../utils/getLabelClass'
 import { IProps } from './ThumbnailRendererFactory'
 
-export function CameraThumbnailRenderer({ pieceInstance }: IProps): JSX.Element {
+export function CameraThumbnailRenderer({ pieceInstance }: Readonly<IProps>): JSX.Element {
 	return (
 		<>
 			<div

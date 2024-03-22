@@ -63,16 +63,17 @@ export function withTiming<IProps, IState>(
 				syncedDurations: PropTypes.object.isRequired,
 			}
 
-			context: {
+			// Setup by React.Component constructor
+			context!: {
 				durations: RundownTimingContext
 				syncedDurations: RundownTimingContext
 			}
 
-			filterGetter: (o: any) => any
+			filterGetter: ((o: any) => any) | undefined
 			previousValue: any = undefined
 			isDirty = false
 
-			constructor(props, context) {
+			constructor(props: any, context: any) {
 				super(props, context)
 
 				this.configureOptions()
@@ -151,7 +152,7 @@ export function withTiming<IProps, IState>(
 }
 
 function componentIsDirty(
-	filterGetter: (...args: any[]) => any | undefined,
+	filterGetter: ((...args: any[]) => any) | undefined,
 	highResDurations: RundownTimingContext,
 	dataResolution: TimingDataResolution
 ) {

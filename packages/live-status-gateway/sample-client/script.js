@@ -59,6 +59,8 @@ const TIME_OF_DAY_SPAN_ID = 'time-of-day'
 const SEGMENT_DURATION_SPAN_CLASS = 'segment-duration'
 const SEGMENT_REMAINIG_SPAN_ID = 'segment-remaining'
 const PART_REMAINIG_SPAN_ID = 'part-remaining'
+const ACTIVE_PIECES_SPAN_ID = 'active-pieces'
+const NEXT_PIECES_SPAN_ID = 'next-pieces'
 const SEGMENTS_DIV_ID = 'segments'
 const ENABLE_SYNCED_TICKS = true
 
@@ -66,6 +68,16 @@ let activePlaylist = {}
 
 function handleActivePlaylist(data) {
 	activePlaylist = data
+	const activePiecesEl = document.getElementById(ACTIVE_PIECES_SPAN_ID)
+	const nextPiecesEl = document.getElementById(NEXT_PIECES_SPAN_ID)
+	activePiecesEl.innerHTML =
+		'<ul><li>' +
+		activePlaylist.activePieces.map((p) => `${p.name} [${p.tags || []}]`).join('</li><li>') +
+		'</li><ul>'
+	nextPiecesEl.innerHTML =
+		'<ul><li>' +
+		activePlaylist.nextPart.pieces.map((p) => `${p.name} [${p.tags || []}]`).join('</li><li>') +
+		'</li><ul>'
 }
 
 setInterval(() => {
@@ -85,6 +97,7 @@ setInterval(() => {
 	}
 	if (segmentEndTime) segmentRemainingEl.textContent = formatMillisecondsToTime(segmentEndTime - now)
 	if (partEndTime) partRemainingEl.textContent = formatMillisecondsToTime(Math.ceil(partEndTime / 1000) * 1000 - now)
+
 	updateClock()
 }, 100)
 
