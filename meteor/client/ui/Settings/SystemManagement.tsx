@@ -47,6 +47,7 @@ export default function SystemManagement(): JSX.Element | null {
 			<SystemManagementCronJobs coreSystem={coreSystem} />
 
 			<SystemManagementCleanup />
+			<SystemManagementHeapSnapshot />
 		</div>
 	)
 }
@@ -521,4 +522,52 @@ export function checkForOldDataAndCleanUp(t: TFunction, retriesLeft = 0): void {
 			}
 		})
 		.catch(catchError('system.cleanupOldData'))
+}
+function SystemManagementHeapSnapshot() {
+	const { t } = useTranslation()
+
+	const [displayWarning, setDisplayWarning] = React.useState(false)
+	const [active, setActive] = React.useState(false)
+
+	const onAreYouSure = useCallback(() => {
+		setDisplayWarning(true)
+	}, [])
+	const onReset = useCallback(() => {
+		setDisplayWarning(false)
+		setActive(false)
+	}, [])
+	const onConfirm = useCallback(() => {
+		setActive(true)
+		setTimeout(() => setActive(false), 20000)
+	}, [])
+	return (
+		<>
+			<h2 className="mhn">{t('Memory troubleshooting')}</h2>
+			<div>
+				{active ? (
+					<span>{t('Preparing, please wait...')}</span>
+				) : displayWarning ? (
+					<>
+						<div>{t(`Are you sure? This will cause the whole Sofie system to be unresponsive several seconds!`)}</div>
+
+						<a className="btn btn-primary" href="/api/private/heapSnapshot/retrieve?areYouSure=yes" onClick={onConfirm}>
+							{t(`Yes, Take and Download Memory Heap Snapshot`)}
+						</a>
+						<button className="btn btn-default" onClick={onReset}>
+							{t(`No`)}
+						</button>
+					</>
+				) : (
+					<button className="btn btn-primary" onClick={onAreYouSure}>
+						{t(`Take and Download Memory Heap Snapshot`)}
+					</button>
+				)}
+			</div>
+			<div>
+				<span className="text-s dimmed field-hint">
+					{t('To inspect the memory heap snapshot, use Chrome DevTools')}
+				</span>
+			</div>
+		</>
+	)
 }

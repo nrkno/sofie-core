@@ -10,6 +10,7 @@ import { actionTriggersRouter } from '../triggeredActions'
 import { peripheralDeviceRouter } from '../peripheralDevice'
 import { blueprintsRouter } from '../blueprints/http'
 import { createLegacyApiRouter } from './v0/index'
+import { heapSnapshotPrivateApiRouter } from '../heapSnapshot'
 
 const LATEST_REST_API = 'v1.0'
 
@@ -26,6 +27,11 @@ apiRouter.use('/private/shelfLayouts', shelfLayoutsRouter.routes(), shelfLayouts
 apiRouter.use('/private/actionTriggers', actionTriggersRouter.routes(), actionTriggersRouter.allowedMethods())
 apiRouter.use('/private/peripheralDevices', peripheralDeviceRouter.routes(), peripheralDeviceRouter.allowedMethods())
 apiRouter.use('/private/blueprints', blueprintsRouter.routes(), blueprintsRouter.allowedMethods())
+apiRouter.use(
+	'/private/heapSnapshot',
+	heapSnapshotPrivateApiRouter.routes(),
+	heapSnapshotPrivateApiRouter.allowedMethods()
+)
 
 async function redirectToLatest(ctx: koa.ParameterizedContext, _next: koa.Next): Promise<void> {
 	ctx.redirect(`/api/${LATEST_REST_API}`)
