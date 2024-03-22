@@ -55,8 +55,11 @@ import { SystemWriteAccess } from '../security/system'
 import { saveIntoDb, sumChanges } from '../lib/database'
 import * as fs from 'fs'
 import { ExpectedPackageWorkStatus } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackageWorkStatuses'
-import { PackageContainerPackageStatusDB } from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
-import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
+import {
+	PackageContainerPackageStatusDB,
+	getPackageContainerPackageId,
+} from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
+import { PackageInfoDB, getPackageInfoId } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { checkStudioExists } from '../optimizations'
 import { CoreRundownPlaylistSnapshot } from '@sofie-automation/corelib/dist/snapshots'
 import { QueueStudioJob } from '../worker/worker'
@@ -67,6 +70,7 @@ import { getSystemStorePath, PackageInfo } from '../coreSystem'
 import { JSONBlobParse, JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import {
 	BlueprintId,
+	ExpectedPackageId,
 	OrganizationId,
 	PeripheralDeviceId,
 	RundownPlaylistId,
@@ -485,7 +489,12 @@ async function retreiveSnapshot(snapshotId: SnapshotId, cred0: Credentials): Pro
 
 	return readSnapshot
 }
-async function restoreFromSnapshot(snapshot: AnySnapshot): Promise<void> {
+async function restoreFromSnapshot(
+	/** The snapshot data to restore */
+	snapshot: AnySnapshot,
+	/** Whether to restore debug data (used in debugging) */
+	restoreDebugData: boolean
+): Promise<void> {
 	// Determine what kind of snapshot
 
 	if (!_.isObject(snapshot)) throw new Meteor.Error(500, `Restore input data is not an object`)
@@ -523,7 +532,7 @@ async function restoreFromSnapshot(snapshot: AnySnapshot): Promise<void> {
 		if (!studioId) throw new Meteor.Error(500, `No Studio found`)
 
 		// A snapshot of a rundownPlaylist
-		return restoreFromRundownPlaylistSnapshot(snapshot as RundownPlaylistSnapshot, studioId)
+		return restoreFromRundownPlaylistSnapshot(snapshot as RundownPlaylistSnapshot, studioId, restoreDebugData)
 	} else if (snapshot.snapshot.type === SnapshotType.SYSTEM) {
 		// A snapshot of a system
 		return restoreFromSystemSnapshot(snapshot as SystemSnapshot)
@@ -534,7 +543,9 @@ async function restoreFromSnapshot(snapshot: AnySnapshot): Promise<void> {
 
 async function restoreFromRundownPlaylistSnapshot(
 	snapshot: RundownPlaylistSnapshot,
-	studioId: StudioId
+	studioId: StudioId,
+	/** Whether to restore debug data (PackageInfo, PackageOnPackageContainer etc, used in debugging) */
+	restoreDebugData: boolean
 ): Promise<void> {
 	if (!isVersionSupported(parseVersion(snapshot.version || '0.18.0'))) {
 		throw new Meteor.Error(400, `Cannot restore, the snapshot comes from an older, unsupported version of Sofie`)
@@ -543,17 +554,76 @@ async function restoreFromRundownPlaylistSnapshot(
 	const queuedJob = await QueueStudioJob(StudioJobs.RestorePlaylistSnapshot, studioId, {
 		snapshotJson: JSONBlobStringify(omit(snapshot, 'mediaObjects', 'userActions')),
 	})
-	await queuedJob.complete
+	const restoreResult = await queuedJob.complete
 
-	// Restore the collections that the worker is unaware of
-	await Promise.all([
-		// saveIntoDb(UserActionsLog, {}, snapshot.userActions),
-		saveIntoDb(
-			MediaObjects,
-			{ _id: { $in: _.map(snapshot.mediaObjects, (mediaObject) => mediaObject._id) } },
-			snapshot.mediaObjects
-		),
-	])
+	if (restoreDebugData) {
+		const expectedPackageIdMap = new Map<ExpectedPackageId, ExpectedPackageId>(
+			restoreResult.remappedIds.expectedPackageId
+		)
+
+		const mediaObjects = snapshot.mediaObjects.map((o) => {
+			return {
+				...o,
+				studioId,
+			}
+		})
+		const expectedPackageWorkStatuses = snapshot.expectedPackageWorkStatuses.map((o) => {
+			return {
+				...o,
+				studioId,
+				fromPackages: o.fromPackages.map((p) => ({
+					...p,
+					id: expectedPackageIdMap.get(p.id) || p.id,
+				})),
+			}
+		})
+		const packageContainerPackageStatuses = snapshot.packageContainerPackageStatuses.map((o) => {
+			const packageId = expectedPackageIdMap.get(o.packageId) || o.packageId
+
+			const id = getPackageContainerPackageId(studioId, o.containerId, packageId)
+			return {
+				...o,
+				_id: id,
+				studioId,
+				packageId: packageId,
+			}
+		})
+		const packageInfos = snapshot.packageInfos.map((o) => {
+			const packageId = expectedPackageIdMap.get(o.packageId) || o.packageId
+			const id = getPackageInfoId(packageId, o.type)
+			return {
+				...o,
+				_id: id,
+				studioId,
+				packageId,
+			}
+		})
+
+		// Restore the collections that the worker is unaware of
+		await Promise.all([
+			saveIntoDb(MediaObjects, { _id: { $in: mediaObjects.map((o) => o._id) } }, mediaObjects),
+			// userActions
+			saveIntoDb(
+				ExpectedPackageWorkStatuses,
+				{
+					_id: {
+						$in: _.map(expectedPackageWorkStatuses, (o) => o._id),
+					},
+				},
+				expectedPackageWorkStatuses
+			),
+			saveIntoDb(
+				PackageContainerPackageStatuses,
+				{
+					_id: {
+						$in: _.map(packageContainerPackageStatuses, (o) => o._id),
+					},
+				},
+				packageContainerPackageStatuses
+			),
+			saveIntoDb(PackageInfos, { _id: { $in: _.map(snapshot.packageInfos, (o) => o._id) } }, packageInfos),
+		])
+	}
 }
 
 async function restoreFromSystemSnapshot(snapshot: SystemSnapshot): Promise<void> {
@@ -659,14 +729,18 @@ export async function storeDebugSnapshot(
 	const s = await createDebugSnapshot(studioId, organizationId)
 	return storeSnaphot(s, organizationId, reason)
 }
-export async function restoreSnapshot(context: MethodContext, snapshotId: SnapshotId): Promise<void> {
+export async function restoreSnapshot(
+	context: MethodContext,
+	snapshotId: SnapshotId,
+	restoreDebugData: boolean
+): Promise<void> {
 	check(snapshotId, String)
 	const { cred } = await OrganizationContentWriteAccess.snapshot(context)
 	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
 		if (cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
 	}
 	const snapshot = await retreiveSnapshot(snapshotId, context)
-	return restoreFromSnapshot(snapshot)
+	return restoreFromSnapshot(snapshot, restoreDebugData)
 }
 export async function removeSnapshot(context: MethodContext, snapshotId: SnapshotId): Promise<void> {
 	check(snapshotId, String)
@@ -741,7 +815,9 @@ if (!Settings.enableUserAccounts) {
 				const snapshot = ctx.request.body as any
 				if (!snapshot) throw new Meteor.Error(400, 'Restore Snapshot: Missing request body')
 
-				await restoreFromSnapshot(snapshot)
+				const restoreDebugData = ctx.headers['restore-debug-data'] === '1'
+
+				await restoreFromSnapshot(snapshot, restoreDebugData)
 
 				ctx.response.status = 200
 				ctx.response.body = content
@@ -788,8 +864,8 @@ class ServerSnapshotAPI extends MethodContextAPI implements NewSnapshotAPI {
 	async storeDebugSnapshot(hashedToken: string, studioId: StudioId, reason: string) {
 		return storeDebugSnapshot(this, hashedToken, studioId, reason)
 	}
-	async restoreSnapshot(snapshotId: SnapshotId) {
-		return restoreSnapshot(this, snapshotId)
+	async restoreSnapshot(snapshotId: SnapshotId, restoreDebugData: boolean) {
+		return restoreSnapshot(this, snapshotId, restoreDebugData)
 	}
 	async removeSnapshot(snapshotId: SnapshotId) {
 		return removeSnapshot(this, snapshotId)
