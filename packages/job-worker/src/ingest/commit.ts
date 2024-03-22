@@ -43,6 +43,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
+import { updateSegmentIdsForAdlibbedPartInstances } from './commit/updateSegmentIdsForAdlibbedPartInstances'
 
 export type BeforePartMapItem = { id: PartId; rank: number }
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<BeforePartMapItem>>
@@ -177,7 +178,10 @@ export async function CommitIngestOperation(
 				rundownsInPlaylist
 			)
 
-			// ensure instances are updated for rundown changes
+			// Ensure any adlibbed parts are updated to follow the segmentId of the previous part
+			await updateSegmentIdsForAdlibbedPartInstances(context, ingestCache, beforePartMap)
+
+			// ensure instances have matching segmentIds with the parts
 			await updatePartInstancesSegmentIds(context, ingestCache, data.renamedSegments)
 
 			// Do the segment removals
