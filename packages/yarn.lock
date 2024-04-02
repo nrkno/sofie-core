@@ -5158,7 +5158,7 @@ __metadata:
   resolution: "@sofie-automation/shared-lib@workspace:shared-lib"
   dependencies:
     "@mos-connection/model": ^3.0.4
-    timeline-state-resolver-types: 9.0.0
+    timeline-state-resolver-types: 9.0.1
     tslib: ^2.4.0
     type-fest: ^2.19.0
   languageName: unknown
@@ -8127,6 +8127,17 @@ asn1@evs-broadcast/node-asn1:
     tslib: ^2.5.0
     xml2js: ^0.6.2
   checksum: f12ccc55beb08c2c8b1e061cbcb52cb48dbcd262e9b8ae61bfa0c47cf4b920781121acdc87cc32915375247c722d296fef4368de07734b3055a78ccc741a5f02
+  languageName: node
+  linkType: hard
+
+"casparcg-connection@npm:6.2.1":
+  version: 6.2.1
+  resolution: "casparcg-connection@npm:6.2.1"
+  dependencies:
+    eventemitter3: ^5.0.1
+    tslib: ^2.5.0
+    xml2js: ^0.6.2
+  checksum: a086810faf0dbf91fc2987c1f4062696d5396fcbfeee16bc8b969a1a5edaac30657179c25164b1b62d9f79789ceee2e842822fe30dece420893e6fab50a467dd
   languageName: node
   linkType: hard
 
@@ -18046,7 +18057,7 @@ asn1@evs-broadcast/node-asn1:
     "@sofie-automation/shared-lib": 1.50.1
     debug: ^4.3.3
     influx: ^5.9.3
-    timeline-state-resolver: 9.0.0
+    timeline-state-resolver: 9.0.1
     tslib: ^2.4.0
     underscore: ^1.13.4
     winston: ^3.8.2
@@ -21676,23 +21687,23 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"timeline-state-resolver-types@npm:9.0.0":
-  version: 9.0.0
-  resolution: "timeline-state-resolver-types@npm:9.0.0"
+"timeline-state-resolver-types@npm:9.0.1":
+  version: 9.0.1
+  resolution: "timeline-state-resolver-types@npm:9.0.1"
   dependencies:
     tslib: ^2.5.1
-  checksum: be3dd61b56d3c2c12141b7f60aea2e3db6ddd1f128d510db29174bc48e30059710c1bb8470c0bc768c97780f993d5869b9e9f4fdbd476c29dee5cdd6eb5f93ab
+  checksum: b814088e1118f0c5f80459958c5008e9bc9cf4484f5d0f3858e4bcb5146685f42a8328ef4e4764c1f95e1670b33109a8dd74c4582d6204a3f61b57efb216e013
   languageName: node
   linkType: hard
 
-"timeline-state-resolver@npm:9.0.0":
-  version: 9.0.0
-  resolution: "timeline-state-resolver@npm:9.0.0"
+"timeline-state-resolver@npm:9.0.1":
+  version: 9.0.1
+  resolution: "timeline-state-resolver@npm:9.0.1"
   dependencies:
     "@tv2media/v-connection": ^7.3.2
     atem-connection: 2.5.0
     atem-state: 0.13.0
-    casparcg-connection: 6.2.0
+    casparcg-connection: 6.2.1
     casparcg-state: 3.0.3
     debug: ^4.3.4
     deepmerge: ^4.3.1
@@ -21709,7 +21720,7 @@ asn1@evs-broadcast/node-asn1:
     sprintf-js: ^1.1.2
     superfly-timeline: ^8.3.1
     threadedclass: ^1.2.1
-    timeline-state-resolver-types: 9.0.0
+    timeline-state-resolver-types: 9.0.1
     tslib: ^2.5.1
     tv-automation-quantel-gateway-client: ^3.1.7
     underscore: ^1.13.6
@@ -21717,7 +21728,7 @@ asn1@evs-broadcast/node-asn1:
     utf-8-validate: ^5.0.10
     ws: ^7.5.9
     xml-js: ^1.6.11
-  checksum: 3e18992e691eb28a256b07fb2b4145b43b7be098067a2193fef52f59cf8cb90c4bfa08a32ecdf8295f536a9cca2733866289a49f96bef8ba543ae6f9f53ef838
+  checksum: 3769f084c29d0bee4bf6f80e48a395e838956d8ec9d0f57539fd8d90c9e71f9abab24167edfcf8d103e86e31e965bcf77acd85fab8f111e47208aa908b0ac8bc
   languageName: node
   linkType: hard
 
