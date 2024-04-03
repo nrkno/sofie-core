@@ -11,7 +11,8 @@ import { DbCacheReadCollection } from '../cache/CacheCollection'
 import { logger } from '../logging'
 import { CacheForPlayout } from '../playout/cache'
 import { isTooCloseToAutonext } from '../playout/lib'
-import { allowedToMoveRundownOutOfPlaylist, updatePartInstanceRanks } from '../rundown'
+import { allowedToMoveRundownOutOfPlaylist } from '../rundown'
+import { updatePartInstanceRanksAndOrphanedState } from '../updatePartInstanceRanksAndOrphanedState'
 import {
 	getPlaylistIdFromExternalId,
 	produceRundownPlaylistInfoFromRundown,
@@ -202,8 +203,8 @@ export async function CommitIngestOperation(
 			await context.directCollections.RundownPlaylists.replace(newPlaylist)
 			await updatePartInstancesBasicProperties(context, ingestCache.Parts, ingestCache.RundownId, newPlaylist)
 
-			// Update the playout to use the updated rundown
-			await updatePartInstanceRanks(context, ingestCache, data.changedSegmentIds, beforePartMap)
+			// Ensure any adlibbed instances follow the same part they did before the operation
+			await updatePartInstanceRanksAndOrphanedState(context, ingestCache, data.changedSegmentIds, beforePartMap)
 
 			// Create the full playout cache, now we have the rundowns and playlist updated
 			const playoutCache = await CacheForPlayout.fromIngest(
