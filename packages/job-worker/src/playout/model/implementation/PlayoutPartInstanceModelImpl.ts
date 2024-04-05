@@ -384,7 +384,8 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		}
 
 		for (const pieceInstance of pieceInstances) {
-			if (this.pieceInstancesImpl.has(pieceInstance._id))
+			const existingPieceInstance = this.pieceInstancesImpl.get(pieceInstance._id)
+			if (existingPieceInstance)
 				throw new Error(
 					`Cannot replace infinite PieceInstance "${pieceInstance._id}" as it replaces a non-infinite`
 				)
