@@ -55,6 +55,7 @@ import { defaultStudio } from './defaultCollectionObjects'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { processShowStyleBase, processShowStyleVariant } from '../jobs/showStyle'
 import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import { removeRundownPlaylistFromDb } from '../ingest/__tests__/lib'
 
 export function setupDefaultJobEnvironment(studioId?: StudioId): MockJobContext {
 	const { mockCollections, jobCollections } = getMockCollections()
@@ -241,6 +242,15 @@ export class MockJobContext implements JobContext {
 			...this.#studioBlueprint,
 			...blueprint,
 		}
+	}
+
+	async clearAllRundownsAndPlaylists(): Promise<void> {
+		// Cleanup any rundowns / playlists
+		const playlists = await this.mockCollections.RundownPlaylists.findFetch({})
+		await removeRundownPlaylistFromDb(
+			this,
+			playlists.map((p) => p._id)
+		)
 	}
 }
 
