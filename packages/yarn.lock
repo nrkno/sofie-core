@@ -4544,7 +4544,7 @@ __metadata:
     p-lazy: ^3.1.0
     p-timeout: ^4.1.0
     superfly-timeline: 9.0.0
-    threadedclass: ^1.2.1
+    threadedclass: ^1.2.2
     tslib: ^2.6.2
     type-fest: ^3.13.1
     underscore: ^1.13.6
@@ -21091,6 +21091,18 @@ asn1@evs-broadcast/node-asn1:
     is-running: ^2.1.0
     tslib: ^1.13.0
   checksum: 2f9cab0df9ed21865f6f874ff7e352bbc32c9970bb48f132ae9bd71d9203655089ad065fa8438bdb786e381c3e0284b43bf7f281ad607962ab365781ea9aef6f
+  languageName: node
+  linkType: hard
+
+"threadedclass@npm:^1.2.2":
+  version: 1.2.2
+  resolution: "threadedclass@npm:1.2.2"
+  dependencies:
+    callsites: ^3.1.0
+    eventemitter3: ^4.0.4
+    is-running: ^2.1.0
+    tslib: ^1.13.0
+  checksum: 9bf8a0fab0105178885f7ad26b8f8a807935f66f59d348ab5c1bf5ac0bd19c1f4c64aebc3f017073a7f57d20658a53798bc8eae6f822d79ec071d3e0e009389d
   languageName: node
   linkType: hard
 

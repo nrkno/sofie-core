@@ -1406,7 +1406,7 @@ __metadata:
     p-lazy: ^3.1.0
     p-timeout: ^4.1.0
     superfly-timeline: 9.0.0
-    threadedclass: ^1.2.1
+    threadedclass: ^1.2.2
     tslib: ^2.6.2
     type-fest: ^3.13.1
     underscore: ^1.13.6
@@ -11700,18 +11700,6 @@ __metadata:
   version: 0.2.0
   resolution: "text-table@npm:0.2.0"
   checksum: b6937a38c80c7f84d9c11dd75e49d5c44f71d95e810a3250bd1f1797fc7117c57698204adf676b71497acc205d769d65c16ae8fa10afad832ae1322630aef10a
-  languageName: node
-  linkType: hard
-
-"threadedclass@npm:^1.2.1":
-  version: 1.2.1
-  resolution: "threadedclass@npm:1.2.1"
-  dependencies:
-    callsites: ^3.1.0
-    eventemitter3: ^4.0.4
-    is-running: ^2.1.0
-    tslib: ^1.13.0
-  checksum: 2f9cab0df9ed21865f6f874ff7e352bbc32c9970bb48f132ae9bd71d9203655089ad065fa8438bdb786e381c3e0284b43bf7f281ad607962ab365781ea9aef6f
   languageName: node
   linkType: hard
 
