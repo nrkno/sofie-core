@@ -3916,34 +3916,41 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mos-connection/connector@npm:^3.0.4":
-  version: 3.0.4
-  resolution: "@mos-connection/connector@npm:3.0.4"
+"@mos-connection/connector@npm:4.1.1-nightly-fix-main-not-updated-SOFIE-3067-20240412-081623-a155d24.0":
+  version: 4.1.1-nightly-fix-main-not-updated-SOFIE-3067-20240412-081623-a155d24.0
+  resolution: "@mos-connection/connector@npm:4.1.1-nightly-fix-main-not-updated-SOFIE-3067-20240412-081623-a155d24.0"
   dependencies:
-    "@mos-connection/helper": 3.0.4
-    "@mos-connection/model": 3.0.4
-    iconv-lite: ^0.6.2
-    tslib: ^2.2.0
+    "@mos-connection/helper": 4.1.1-nightly-fix-main-not-updated-SOFIE-3067-20240412-081623-a155d24.0
+    "@mos-connection/model": 4.1.1-nightly-fix-main-not-updated-SOFIE-3067-20240412-081623-a155d24.0
+    iconv-lite: ^0.6.3
+    tslib: ^2.5.3
     xml-js: ^1.6.11
     xmlbuilder: ^15.1.1
-  checksum: 7ec53e26aefac824787fc5cd51a0cd36ab1429d9fb4ca510a89a0d371bfcf5e5b82cc12b483c2faa924993c04a19eead87839304ea5d4c5dcc2c7ac8ceae2cd0
+  checksum: 9c85b038d46201d8ac1333d0fa5f3a520310cb8eae6aaf5d0238b751eb5ddbad3ef7fbf5f648e757ebf18f030fcdb0dcc201c86e812695fa3586371f7d640b10
   languageName: node
   linkType: hard
 
-"@mos-connection/helper@npm:3.0.4":
-  version: 3.0.4
-  resolution: "@mos-connection/helper@npm:3.0.4"
+"@mos-connection/helper@npm:4.1.1-nightly-fix-main-not-updated-SOFIE-3067-20240412-081623-a155d24.0":
+  version: 4.1.1-nightly-fix-main-not-updated-SOFIE-3067-20240412-081623-a155d24.0
+  resolution: "@mos-connection/helper@npm:4.1.1-nightly-fix-main-not-updated-SOFIE-3067-20240412-081623-a155d24.0"
   dependencies:
-    "@mos-connection/model": 3.0.4
-    iconv-lite: ^0.6.2
-    tslib: ^2.2.0
+    "@mos-connection/model": 4.1.1-nightly-fix-main-not-updated-SOFIE-3067-20240412-081623-a155d24.0
+    iconv-lite: ^0.6.3
+    tslib: ^2.5.3
     xml-js: ^1.6.11
     xmlbuilder: ^15.1.1
-  checksum: 43ade87fd9a7ca7e183377d36f4d3b0ae063180c8760657201e50169c0868647242c83adaf860c475b9959079512d42ceb43d8ed657356d02140d7aa93992d79
+  checksum: f4950d5e4abb4e42a9f9cff351fabda1da628048097eae635ec45e0519d66aea5e825397abb236c3ef143b8b41a6613de080edae3e66b7dae4d800805af419e3
   languageName: node
   linkType: hard
 
-"@mos-connection/model@npm:3.0.4, @mos-connection/model@npm:^3.0.4":
+"@mos-connection/model@npm:4.1.1-nightly-fix-main-not-updated-SOFIE-3067-20240412-081623-a155d24.0":
+  version: 4.1.1-nightly-fix-main-not-updated-SOFIE-3067-20240412-081623-a155d24.0
+  resolution: "@mos-connection/model@npm:4.1.1-nightly-fix-main-not-updated-SOFIE-3067-20240412-081623-a155d24.0"
+  checksum: 6d7a4b0e1f234f1cdc7a5a13b7ba1d7abe766de8ce70854bf794ae0e0205b2c974c8dbd5103b5bf15c9d5796addf3be2e2d6af3ddb6b0becfecd02d5ad603409
+  languageName: node
+  linkType: hard
+
+"@mos-connection/model@npm:^3.0.4":
   version: 3.0.4
   resolution: "@mos-connection/model@npm:3.0.4"
   checksum: 7de15fba9a818260fb57847dbc51695036720a7f499d2fe262c691630673e83c01bdc3ea62261529e661f957074a6d92e8d38305485293c5392e073dab33989b
@@ -12865,7 +12872,7 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"iconv-lite@npm:^0.6.2":
+"iconv-lite@npm:^0.6.2, iconv-lite@npm:^0.6.3":
   version: 0.6.3
   resolution: "iconv-lite@npm:0.6.3"
   dependencies:
@@ -16075,7 +16082,7 @@ asn1@evs-broadcast/node-asn1:
   version: 0.0.0-use.local
   resolution: "mos-gateway@workspace:mos-gateway"
   dependencies:
-    "@mos-connection/connector": ^3.0.4
+    "@mos-connection/connector": 4.1.1-nightly-fix-main-not-updated-SOFIE-3067-20240412-081623-a155d24.0
     "@sofie-automation/server-core-integration": 1.50.1
     "@sofie-automation/shared-lib": 1.50.1
     tslib: ^2.4.0
@@ -22139,7 +22146,7 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.2.0, tslib@npm:^2.3.0, tslib@npm:^2.3.1, tslib@npm:^2.4.0, tslib@npm:^2.5.0, tslib@npm:^2.5.1, tslib@npm:^2.6.2":
+"tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.3.0, tslib@npm:^2.3.1, tslib@npm:^2.4.0, tslib@npm:^2.5.0, tslib@npm:^2.5.1, tslib@npm:^2.5.3, tslib@npm:^2.6.2":
   version: 2.6.2
   resolution: "tslib@npm:2.6.2"
   checksum: 329ea56123005922f39642318e3d1f0f8265d1e7fcb92c633e0809521da75eeaca28d2cf96d7248229deb40e5c19adf408259f4b9640afd20d13aecc1430f3ad
