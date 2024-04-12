@@ -1,5 +1,5 @@
 import React, { PropsWithChildren } from 'react'
-import _, { filter } from 'underscore'
+import _ from 'underscore'
 import Velocity from 'velocity-animate'
 import ClassNames from 'classnames'
 import { Meteor } from 'meteor/meteor'
@@ -729,7 +729,10 @@ export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, 
 		private restoreScrollAnchor = (scrollAnchors: ScrollAnchor[] | null) => {
 			if (scrollAnchors === null) return
 			if (!scrollAnchors.length) {
-				logger.error(`No read anchors to use after update`)
+				if (this.props.prompterData?.segments.length) {
+					// That's wierd, log the issue:
+					logger.error(`No read anchors to use after update`)
+				}
 				return
 			}
 
