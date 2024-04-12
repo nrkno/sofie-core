@@ -575,7 +575,8 @@ interface IPrompterTrackedProps {
 }
 
 interface ScrollAnchor {
-	offset: number
+	/** offset to use to scroll the anchor. null means "just scroll the anchor into view, best effort" */
+	offset: number | null
 	anchorId: string
 }
 type PrompterSnapshot = ScrollAnchor[] | null
@@ -643,7 +644,7 @@ export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, 
 			})
 		}
 
-		getScrollAnchors = (): ScrollAnchor[] => {
+		private getReadPosition(): number {
 			let readPosition = ((this.props.config.margin || 0) / 100) * window.innerHeight
 			switch (this.props.config.marker) {
 				case 'top':
@@ -656,74 +657,75 @@ export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, 
 					readPosition = window.innerHeight - readPosition
 					break
 			}
+			return readPosition
+		}
 
+		getScrollAnchors = (): ScrollAnchor[] => {
+			const readPosition = this.getReadPosition()
+
+			const useableTextAnchors: {
+				offset: number
+				anchorId: string
+			}[] = []
 			/** Maps anchorId -> offset */
-			const foundAnchors = new Map<
-				string,
-				{
-					/** offset of the anchor compared to current viewport (0 = top of the viewport) */
-					offset: number
-					/** Positive number. How "good" the anchor is. The anchor with the lowest number will preferred later. */
-					distanceToReadPosition: number
-				}
-			>()
+			const foundScrollAnchors: (ScrollAnchor & {
+				/** Positive number. How "good" the anchor is. The anchor with the lowest number will preferred later. */
+				distanceToReadPosition: number
+			})[] = []
 
 			/*
-				The idea here is to find the best anchor we can use to tie the prompter scroll position to the viewed content.
+				In this method, we find anchors in the DOM, so that we (when the content changes)
+				can scroll to the same position, keeping the content unchanged, visually.
+
+
+				We consider the textAnchors to be the best to use (if they are in view), since they
+				represent the prompter text - and we want to try to keep that as unchanged as possible.
+				If none are to be useable (like if they have been removed during the content change),
+				we resort to using the scrollAnchors (Segment and Part names).
 			*/
 
 			const windowInnerHeight = window.innerHeight
 
-			// Gather anchors from the text blocks in view
-			{
-				const textAnchors = Array.from(document.querySelectorAll('.prompter .prompter-line:not(.empty)'))
-					.map((anchor) => {
-						const { top, bottom } = anchor.getBoundingClientRect()
-						return { id: anchor.id, top, bottom }
-					})
-					.sort((a, b) => a.top - b.top)
+			// Gather anchors from any text blocks in view:
 
-				for (const anchor of textAnchors) {
-					const meanPosition = (anchor.top + anchor.bottom) / 2
-					const distanceToReadPosition = Math.abs(meanPosition - readPosition)
+			for (const textAnchor of document.querySelectorAll('.prompter .prompter-line:not(.empty)')) {
+				const { top, bottom } = textAnchor.getBoundingClientRect()
 
-					// Is the text block in view?
-					if (anchor.top <= windowInnerHeight && anchor.bottom > 0) {
-						foundAnchors.set(anchor.id, {
-							offset: anchor.top,
-
-							// Multiply by a small number to make these have higher priority in the sorting later.
-							// (We want to prefer these over the scroll-anchors)
-							distanceToReadPosition: distanceToReadPosition * 0.0001,
-						})
-					}
+				// Is the text block in view?
+				if (top <= readPosition && bottom > readPosition) {
+					useableTextAnchors.push({ anchorId: textAnchor.id, offset: top })
 				}
 			}
 
 			// Also use scroll-anchors (Segment and Part names)
-			{
-				const scrollAnchors = Array.from(document.querySelectorAll('.prompter .scroll-anchor'))
-					.map((anchor) => {
-						const { top, bottom } = anchor.getBoundingClientRect()
-						return { id: anchor.id, top, bottom }
-					})
-					.sort((a, b) => a.top - b.top)
-				for (const anchor of scrollAnchors) {
-					// find a prompter scroll anchor that is just above the prompter read position:
-					const distanceToReadPosition = Math.abs(anchor.top - readPosition)
 
-					foundAnchors.set(anchor.id, { offset: anchor.top, distanceToReadPosition })
+			for (const scrollAnchor of document.querySelectorAll('.prompter .scroll-anchor')) {
+				const { top, bottom } = scrollAnchor.getBoundingClientRect()
+
+				const distanceToReadPosition = Math.abs(top - readPosition)
+
+				if (top <= windowInnerHeight && bottom > 0) {
+					// If the anchor is in view, use the offset to keep it's position unchanged, relative to the viewport
+					foundScrollAnchors.push({ anchorId: scrollAnchor.id, distanceToReadPosition, offset: top })
+				} else {
+					// If the anchor is not in view, set the offset to null, this will cause the view to
+					// jump so that the anchor will be in view.
+					foundScrollAnchors.push({ anchorId: scrollAnchor.id, distanceToReadPosition, offset: null })
 				}
 			}
 
-			// Sort, smallest distanceToReadPosition first:
-			const sortedPositions = Array.from(foundAnchors.entries())
-				.map(([anchorId, value]) => ({ anchorId, ...value }))
-				.sort((a, b) => {
-					return a.distanceToReadPosition - b.distanceToReadPosition
-				})
+			// Sort text anchors, topmost first:
+			const sortedTextAnchors = useableTextAnchors.sort((a, b) => {
+				return a.offset - b.offset
+			})
 
-			return sortedPositions
+			// Sort, smallest distanceToReadPosition first:
+			const sortedScrollAnchors = foundScrollAnchors.sort((a, b) => {
+				return a.distanceToReadPosition - b.distanceToReadPosition
+			})
+
+			// Prioritize the text anchors, then the scroll anchors:
+			return [...sortedTextAnchors, ...sortedScrollAnchors]
 		}
 
 		private restoreScrollAnchor = (scrollAnchors: ScrollAnchor[] | null) => {
@@ -735,6 +737,7 @@ export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, 
 				}
 				return
 			}
+			const readPosition = this.getReadPosition()
 
 			// Go through the anchors and use the first one that we find:
 			for (const scrollAnchor of scrollAnchors) {
@@ -742,11 +745,21 @@ export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, 
 				if (anchor) {
 					const { top } = anchor.getBoundingClientRect()
 
-					window.scrollBy({
-						top: top - scrollAnchor.offset,
-					})
-					// We've scrolled, exit the function!
-					return
+					if (scrollAnchor.offset !== null) {
+						window.scrollBy({
+							top: top - scrollAnchor.offset,
+						})
+						// We've scrolled, exit the function!
+						return
+					} else {
+						// Note: config.margin does not have to be taken into account here,
+						// the css margins magically does it for us.
+						window.scrollBy({
+							top: top - readPosition,
+						})
+						// We've scrolled, exit the function!
+						return
+					}
 				}
 			}
 			// None of the anchors where found at this point.
