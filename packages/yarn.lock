@@ -3224,34 +3224,41 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mos-connection/connector@npm:^3.0.7":
-  version: 3.0.7
-  resolution: "@mos-connection/connector@npm:3.0.7"
+"@mos-connection/connector@npm:4.1.1-nightly-fix-main-not-updated-SOFIE-3067-20240412-081623-a155d24.0":
+  version: 4.1.1-nightly-fix-main-not-updated-SOFIE-3067-20240412-081623-a155d24.0
+  resolution: "@mos-connection/connector@npm:4.1.1-nightly-fix-main-not-updated-SOFIE-3067-20240412-081623-a155d24.0"
   dependencies:
-    "@mos-connection/helper": 3.0.7
-    "@mos-connection/model": 3.0.7
+    "@mos-connection/helper": 4.1.1-nightly-fix-main-not-updated-SOFIE-3067-20240412-081623-a155d24.0
+    "@mos-connection/model": 4.1.1-nightly-fix-main-not-updated-SOFIE-3067-20240412-081623-a155d24.0
     iconv-lite: ^0.6.3
     tslib: ^2.5.3
     xml-js: ^1.6.11
     xmlbuilder: ^15.1.1
-  checksum: 588a6c929eee17d272fe6cd15b8547b96bd36ad6e507cc6f0e6b879a479a63860e75c2e59287efe41fc78326bfa160b7a1e15a5dfbddb321f582a927cd64062f
+  checksum: 9c85b038d46201d8ac1333d0fa5f3a520310cb8eae6aaf5d0238b751eb5ddbad3ef7fbf5f648e757ebf18f030fcdb0dcc201c86e812695fa3586371f7d640b10
   languageName: node
   linkType: hard
 
-"@mos-connection/helper@npm:3.0.7":
-  version: 3.0.7
-  resolution: "@mos-connection/helper@npm:3.0.7"
+"@mos-connection/helper@npm:4.1.1-nightly-fix-main-not-updated-SOFIE-3067-20240412-081623-a155d24.0":
+  version: 4.1.1-nightly-fix-main-not-updated-SOFIE-3067-20240412-081623-a155d24.0
+  resolution: "@mos-connection/helper@npm:4.1.1-nightly-fix-main-not-updated-SOFIE-3067-20240412-081623-a155d24.0"
   dependencies:
-    "@mos-connection/model": 3.0.7
+    "@mos-connection/model": 4.1.1-nightly-fix-main-not-updated-SOFIE-3067-20240412-081623-a155d24.0
     iconv-lite: ^0.6.3
     tslib: ^2.5.3
     xml-js: ^1.6.11
     xmlbuilder: ^15.1.1
-  checksum: 802c95955328d89e62aa0addbaf79ce339c93bce499d96b6d314991cd77acbcbd573e4d6eb48408de234708f908d608b20941f846fceaa22813ddb2e6bdf6b4e
+  checksum: f4950d5e4abb4e42a9f9cff351fabda1da628048097eae635ec45e0519d66aea5e825397abb236c3ef143b8b41a6613de080edae3e66b7dae4d800805af419e3
   languageName: node
   linkType: hard
 
-"@mos-connection/model@npm:3.0.7, @mos-connection/model@npm:^3.0.7":
+"@mos-connection/model@npm:4.1.1-nightly-fix-main-not-updated-SOFIE-3067-20240412-081623-a155d24.0":
+  version: 4.1.1-nightly-fix-main-not-updated-SOFIE-3067-20240412-081623-a155d24.0
+  resolution: "@mos-connection/model@npm:4.1.1-nightly-fix-main-not-updated-SOFIE-3067-20240412-081623-a155d24.0"
+  checksum: 6d7a4b0e1f234f1cdc7a5a13b7ba1d7abe766de8ce70854bf794ae0e0205b2c974c8dbd5103b5bf15c9d5796addf3be2e2d6af3ddb6b0becfecd02d5ad603409
+  languageName: node
+  linkType: hard
+
+"@mos-connection/model@npm:^3.0.7":
   version: 3.0.7
   resolution: "@mos-connection/model@npm:3.0.7"
   checksum: 4f7390a40fc5152bfcdb4e99eee243e3a1df248bf1f77e0a63d7d29d8db88cb8c9df5f231ab5d18e7cb1147ba8d39af5c621877221f343db630906e000c5b089
@@ -15678,7 +15685,7 @@ asn1@evs-broadcast/node-asn1:
   version: 0.0.0-use.local
   resolution: "mos-gateway@workspace:mos-gateway"
   dependencies:
-    "@mos-connection/connector": ^3.0.7
+    "@mos-connection/connector": 4.1.1-nightly-fix-main-not-updated-SOFIE-3067-20240412-081623-a155d24.0
     "@sofie-automation/server-core-integration": 1.51.0-in-development
     "@sofie-automation/shared-lib": 1.51.0-in-development
     tslib: ^2.6.2
