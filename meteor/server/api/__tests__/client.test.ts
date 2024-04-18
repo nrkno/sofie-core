@@ -104,7 +104,8 @@ describe('ClientAPI', () => {
 								hasReply: true,
 								reply: 'OK',
 							},
-						}
+						},
+						{ multi: true }
 					)
 					return promise.then((value) => {
 						const log = UserActionsLog.findOne({
@@ -169,7 +170,8 @@ describe('ClientAPI', () => {
 								hasReply: true,
 								replyError: 'Failed',
 							},
-						}
+						},
+						{ multi: true }
 					)
 
 					// This will probably resolve after around 3s, since that is the timeout time

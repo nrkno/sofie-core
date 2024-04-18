@@ -27,6 +27,7 @@ import {
 	PackageContainerStatuses,
 	PackageInfos,
 } from '../../collections'
+import { logger } from '../../logging'
 
 export namespace PackageManagerIntegration {
 	export async function updateExpectedPackageWorkStatuses(
@@ -432,6 +433,7 @@ export namespace PackageManagerIntegration {
 					removeTime: getCurrentTime() + removeDelay,
 				},
 			})
+			logger.info(`PackageInfo remove later "${packageId}" (removeDelay: ${removeDelay})`)
 		} else {
 			// Remove right away:
 			await PackageInfos.removeAsync(id)
