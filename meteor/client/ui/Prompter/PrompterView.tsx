@@ -730,13 +730,8 @@ export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, 
 
 		private restoreScrollAnchor = (scrollAnchors: ScrollAnchor[] | null) => {
 			if (scrollAnchors === null) return
-			if (!scrollAnchors.length) {
-				if (this.props.prompterData?.segments.length) {
-					// That's wierd, log the issue:
-					logger.error(`No read anchors to use after update`)
-				}
-				return
-			}
+			if (!scrollAnchors.length) return
+
 			const readPosition = this.getReadPosition()
 
 			// Go through the anchors and use the first one that we find:
