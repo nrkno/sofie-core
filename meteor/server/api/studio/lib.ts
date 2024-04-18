@@ -69,7 +69,8 @@ export async function removePackageInfos(ids: PackageInfoDB['_id'][], mode: 'def
 				$set: {
 					removeTime: getCurrentTime() + removeDelay,
 				},
-			}
+			},
+			{ multi: true }
 		)
 	} else {
 		// Remove now

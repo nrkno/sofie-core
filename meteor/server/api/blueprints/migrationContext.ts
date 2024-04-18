@@ -122,7 +122,8 @@ class AbstractMigrationContextWithTriggeredActions {
 				},
 				{
 					$set: newObj,
-				}
+				},
+				{ multi: true }
 			)
 		}
 	}
@@ -336,9 +337,13 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 			(parentDevice.settings as PlayoutDeviceSettings).devices[deviceId],
 			device
 		)
-		PeripheralDevices.update(selector, {
-			$set: m,
-		})
+		PeripheralDevices.update(
+			selector,
+			{
+				$set: m,
+			},
+			{ multi: true }
+		)
 	}
 	removeDevice(deviceId: string): void {
 		check(deviceId, String)
@@ -356,7 +361,8 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 			},
 			{
 				$unset: m,
-			}
+			},
+			{ multi: true }
 		)
 	}
 }
@@ -502,7 +508,8 @@ export class MigrationContextShowStyle
 				$set: {
 					[`sourceLayersWithOverrides.defaults.${sourceLayerId}`]: fullLayer,
 				},
-			}
+			},
+			{ multi: false }
 		)
 		this.showStyleBase.sourceLayersWithOverrides.defaults[sourceLayerId] = fullLayer // Update local
 	}

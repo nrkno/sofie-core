@@ -769,6 +769,9 @@ async function functionReply(
 				replyError: err,
 				replyTime: getCurrentTime(),
 			},
+		},
+		{
+			multi: false,
 		}
 	)
 }
