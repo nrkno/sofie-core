@@ -14,7 +14,7 @@ import { getNoticeLevelForPieceStatus } from '../../../../lib/notifications/noti
 import { PieceStatusIcon } from '../../../lib/ui/PieceStatusIcon'
 import { UIStudio } from '../../../../lib/api/studios'
 import classNames from 'classnames'
-import { PieceMultistepChevron } from '../../SegmentContainer/PieceMultistepChevron'
+import { PieceMultistepChevron, usePieceSteps } from '../../SegmentContainer/PieceMultistepChevron'
 import { LoopingPieceIcon } from '../../../lib/ui/icons/looping'
 
 interface IProps {
@@ -163,10 +163,11 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 
 	const noticeLevel = getNoticeLevelForPieceStatus(piece.contentStatus?.status)
 
-	const multistepChevron = PieceMultistepChevron({
-		className: 'segment-opl__main-piece__label__step-chevron',
-		piece: piece,
-	})
+	const hasStepChevron = usePieceSteps(piece)
+
+	const multistepChevron = (
+		<PieceMultistepChevron className="segment-opl__main-piece__label__step-chevron" piece={piece} />
+	)
 
 	return (
 		<PieceElement
@@ -186,7 +187,7 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 			{anomalies}
 			<div
 				className={classNames('segment-opl__main-piece__label', {
-					mln: !!multistepChevron,
+					mln: hasStepChevron,
 				})}
 			>
 				{noticeLevel !== null && <PieceStatusIcon noticeLevel={noticeLevel} />}
