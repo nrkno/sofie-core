@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.49.6](https://github.com/nrkno/sofie-core/compare/v1.49.5...v1.49.6) (2024-04-18)
+
+
+### Bug Fixes
+
+* make update & updateAsync types be stricter, so that options: { mullti: true } is required when calling update methods that can update multiple documents ([d594c57](https://github.com/nrkno/sofie-core/commit/d594c577a9df451489939c7c7cccb685dd5f7a65))
+
 ### [1.49.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.5-1...v1.49.5) (2024-03-21)
 
 ### [1.49.5-1](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.5-0...v1.49.5-1) (2024-03-20)
