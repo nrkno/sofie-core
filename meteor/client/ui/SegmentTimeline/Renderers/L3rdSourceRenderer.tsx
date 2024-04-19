@@ -92,7 +92,6 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 			isLiveLine,
 			liveLineHistorySize,
 			followLiveLine,
-			// livePosition,
 			isPreview,
 			relative,
 			partStartsAt,
@@ -105,13 +104,7 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 			}
 		}
 
-		// const liveLineHistoryWithMargin = liveLineHistorySize
-
 		const inPoint = piece.renderedInPoint || 0
-		// const targetPos = Math.min(
-		// 	(scrollLeft - inPoint - partStartsAt) * timeScale,
-		// 	leftLabelWidth - multistepPillWidth * 2
-		// )
 		const targetPos = Math.min(
 			(scrollLeft - inPoint - partStartsAt) * timeScale - multistepPillWidth - 10,
 			leftLabelWidth - multistepPillWidth - liveLineHistorySize
@@ -120,7 +113,6 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 		return {
 			stepsStyle: {
 				transform: ` translate(${targetPos}px, 0) ` + ` translate(${liveLineHistorySize}px, 0) `,
-				// ' translate(-100%, 0)',
 				willChange: 'transform',
 			},
 		}
