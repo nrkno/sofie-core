@@ -1,5 +1,5 @@
-import React from 'react'
 import { NoraContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
+import React from 'react'
 import { PieceExtended } from '../../../lib/Rundown'
 
 export const PieceMultistepChevron = React.forwardRef<
@@ -10,7 +10,7 @@ export const PieceMultistepChevron = React.forwardRef<
 		style?: React.CSSProperties
 	}
 >(function PieceMultistepChevron({ className, piece, style }, ref): JSX.Element | null {
-	const hasStepChevron = usePieceSteps(piece)
+	const hasStepChevron = getPieceSteps(piece)
 
 	if (!hasStepChevron) return null
 
@@ -23,7 +23,7 @@ export const PieceMultistepChevron = React.forwardRef<
 	)
 })
 
-export function usePieceSteps(piece: PieceExtended): { currentStep: number; allSteps: number } | null {
+export function getPieceSteps(piece: PieceExtended): { currentStep: number; allSteps: number } | null {
 	const noraContent = piece.instance.piece.content as NoraContent | undefined
 
 	const hasStepChevron =

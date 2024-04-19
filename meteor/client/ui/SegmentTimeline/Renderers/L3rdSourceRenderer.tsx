@@ -1,12 +1,12 @@
 import * as React from 'react'
 import { getElementWidth } from '../../../utils/dimensions'
 
-import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 import { NoraContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
-import { L3rdFloatingInspector } from '../../FloatingInspectors/L3rdFloatingInspector'
-import { RundownUtils } from '../../../lib/rundown'
-import { PieceMultistepChevron, usePieceSteps } from '../../SegmentContainer/PieceMultistepChevron'
 import classNames from 'classnames'
+import { RundownUtils } from '../../../lib/rundown'
+import { L3rdFloatingInspector } from '../../FloatingInspectors/L3rdFloatingInspector'
+import { PieceMultistepChevron, getPieceSteps } from '../../SegmentContainer/PieceMultistepChevron'
+import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 
 type IProps = ICustomLayerItemProps
 interface IState {
@@ -131,7 +131,7 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 		const innerPiece = piece.instance.piece
 		const noraContent = innerPiece.content as NoraContent | undefined
 
-		const hasStepChevron = usePieceSteps(piece)
+		const hasStepChevron = getPieceSteps(piece)
 		const multistepPill = (
 			<PieceMultistepChevron
 				ref={this.setMultistepPillEl}
