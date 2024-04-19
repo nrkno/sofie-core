@@ -66,7 +66,7 @@ export class WrappedMongoCollectionBase<DBInterface extends { _id: ProtectedStri
 		}
 	}
 	protected update(
-		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		selector: MongoQuery<DBInterface> | DBInterface['_id'] | { _id: DBInterface['_id'] },
 		modifier: MongoModifier<DBInterface>,
 		options?: UpdateOptions
 	): number {
@@ -77,7 +77,7 @@ export class WrappedMongoCollectionBase<DBInterface extends { _id: ProtectedStri
 		}
 	}
 	protected upsert(
-		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		selector: MongoQuery<DBInterface> | DBInterface['_id'] | { _id: DBInterface['_id'] },
 		modifier: MongoModifier<DBInterface>,
 		options?: UpsertOptions
 	): {

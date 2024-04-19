@@ -167,12 +167,12 @@ export interface AsyncOnlyMongoCollection<DBInterface extends { _id: ProtectedSt
 	 * @param options Options for the operation
 	 */
 	updateAsync(
-		selector: DBInterface['_id'],
+		selector: DBInterface['_id'] | { _id: DBInterface['_id'] },
 		modifier: MongoModifier<DBInterface>,
 		options?: UpdateOptions
 	): Promise<number>
 	updateAsync(
-		selector: DBInterface['_id'],
+		selector: MongoQuery<DBInterface>,
 		modifier: MongoModifier<DBInterface>,
 		// Require { multi } to be set when selecting multiple documents to be updated, otherwise only the first found document will be updated
 		options: UpdateOptions & Required<Pick<UpdateOptions, 'multi'>>
@@ -185,7 +185,7 @@ export interface AsyncOnlyMongoCollection<DBInterface extends { _id: ProtectedSt
 	 * @param options Options for the operation
 	 */
 	upsertAsync(
-		selector: DBInterface['_id'],
+		selector: DBInterface['_id'] | { _id: DBInterface['_id'] },
 		modifier: MongoModifier<DBInterface>,
 		options?: UpsertOptions
 	): Promise<{ numberAffected?: number; insertedId?: DBInterface['_id'] }>

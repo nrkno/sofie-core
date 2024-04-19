@@ -10,13 +10,13 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { getPackageContainerPackageId } from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../../lib/api/pubsub'
 import { UIPieceContentStatus } from '../../../lib/api/rundownNotifications'
 import { UIStudio } from '../../../lib/api/studios'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import {
 	MediaObjects,
 	PackageContainerPackageStatuses,
@@ -24,7 +24,7 @@ import {
 	RundownPlaylists,
 	Studios,
 } from '../../collections'
-import { Studio } from '../../../lib/collections/Studios'
+import { DBStudio, Studio } from '../../../lib/collections/Studios'
 import { literal, protectString } from '../../../lib/lib'
 import { checkPieceContentStatus, PieceContentStatusObj } from '../../../lib/mediaObjects'
 import {
@@ -75,13 +75,15 @@ interface UIPieceContentStatusesUpdateProps {
 }
 
 type RundownPlaylistFields = '_id' | 'studioId'
-const rundownPlaylistFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<RundownPlaylistFields>>({
+const rundownPlaylistFieldSpecifier = literal<
+	MongoFieldSpecifierOnesStrict<Pick<DBRundownPlaylist, RundownPlaylistFields>>
+>({
 	_id: 1,
 	studioId: 1,
 })
 
 type StudioFields = '_id' | 'settings' | 'packageContainers' | 'mappingsWithOverrides' | 'routeSets'
-const studioFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<StudioFields>>({
+const studioFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBStudio, StudioFields>>>({
 	_id: 1,
 	settings: 1,
 	packageContainers: 1,
@@ -161,39 +163,45 @@ async function setupUIPieceContentStatusesPublicationObservers(
 	return [
 		rundownsObserver,
 
-		Studios.find({ _id: playlist.studioId }).observeChanges({
-			added: (id) => triggerUpdate({ invalidateStudio: id }),
-			changed: (id) => triggerUpdate({ invalidateStudio: id }),
-			removed: (id) => triggerUpdate({ invalidateStudio: id }),
-		}),
+		Studios.observeChanges(
+			{ _id: playlist.studioId },
+			{
+				added: (id) => triggerUpdate({ invalidateStudio: id }),
+				changed: (id) => triggerUpdate({ invalidateStudio: id }),
+				removed: (id) => triggerUpdate({ invalidateStudio: id }),
+			}
+		),
 
 		// Watch for affecting objects
-		MediaObjects.find({ studioId: playlist.studioId }).observe({
-			added: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
-			changed: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
-			removed: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
-		}),
-		PackageInfos.find({
-			studioId: playlist.studioId,
-			type: {
-				$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN],
+		MediaObjects.observe(
+			{ studioId: playlist.studioId },
+			{
+				added: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
+				changed: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
+				removed: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
+			}
+		),
+		PackageInfos.observe(
+			{
+				studioId: playlist.studioId,
+				type: {
+					$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN],
+				},
 			},
-		}).observeChanges({
-			added: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
-			changed: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
-			removed: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
-		}),
-		// .observe({
-		// 	added: ( obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
-
-		// 	changed: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
-		// 	removed: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
-		// }),
-		PackageContainerPackageStatuses.find({ studioId: playlist.studioId }).observeChanges({
-			added: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
-			changed: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
-			removed: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
-		}),
+			{
+				added: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
+				changed: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
+				removed: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
+			}
+		),
+		PackageContainerPackageStatuses.observeChanges(
+			{ studioId: playlist.studioId },
+			{
+				added: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
+				changed: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
+				removed: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
+			}
+		),
 	]
 }
 
