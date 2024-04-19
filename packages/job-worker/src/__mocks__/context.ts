@@ -1,36 +1,4 @@
 import {
-	StudioId,
-	RundownPlaylistId,
-	ShowStyleBaseId,
-	ShowStyleVariantId,
-	RundownId,
-} from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { EventsJobFunc } from '@sofie-automation/corelib/dist/worker/events'
-import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
-import { StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
-import { WrappedStudioBlueprint, WrappedShowStyleBlueprint } from '../blueprints/cache'
-import {
-	ProcessedStudioConfig,
-	ProcessedShowStyleConfig,
-	preprocessStudioConfig,
-	preprocessShowStyleConfig,
-} from '../blueprints/config'
-import { BaseModel } from '../modelBase'
-import { PlaylistLock, RundownLock } from '../jobs/lock'
-import { ReadonlyDeep } from 'type-fest'
-import {
-	ApmSpan,
-	ProcessedShowStyleBase,
-	JobContext,
-	ProcessedShowStyleCompound,
-	ProcessedShowStyleVariant,
-} from '../jobs'
-import { createShowStyleCompound } from '../showStyles'
-import { IMockCollections, getMockCollections } from './collection'
-import { clone } from '@sofie-automation/corelib/dist/lib'
-import { IDirectCollections } from '../db'
-import {
 	BlueprintManifestType,
 	BlueprintResultPart,
 	BlueprintResultRundown,
@@ -42,19 +10,51 @@ import {
 	IBlueprintPiece,
 	IBlueprintRundown,
 	IBlueprintSegment,
-	IngestSegment,
 	ISegmentUserContext,
 	IShowStyleContext,
+	IngestSegment,
 	PlaylistTimingType,
 	ShowStyleBlueprintManifest,
 	StudioBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
+import {
+	RundownId,
+	RundownPlaylistId,
+	ShowStyleBaseId,
+	ShowStyleVariantId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { clone } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { EventsJobFunc } from '@sofie-automation/corelib/dist/worker/events'
+import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
+import { StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
+import { ReadonlyDeep } from 'type-fest'
+import { WrappedShowStyleBlueprint, WrappedStudioBlueprint } from '../blueprints/cache'
+import {
+	ProcessedShowStyleConfig,
+	ProcessedStudioConfig,
+	preprocessShowStyleConfig,
+	preprocessStudioConfig,
+} from '../blueprints/config'
+import { IDirectCollections } from '../db'
+import {
+	ApmSpan,
+	JobContext,
+	ProcessedShowStyleBase,
+	ProcessedShowStyleCompound,
+	ProcessedShowStyleVariant,
+} from '../jobs'
+import { PlaylistLock, RundownLock } from '../jobs/lock'
+import { BaseModel } from '../modelBase'
+import { createShowStyleCompound } from '../showStyles'
+import { IMockCollections, getMockCollections } from './collection'
 // import _ = require('underscore')
-import { defaultStudio } from './defaultCollectionObjects'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { processShowStyleBase, processShowStyleVariant } from '../jobs/showStyle'
 import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import { processShowStyleBase, processShowStyleVariant } from '../jobs/showStyle'
+import { defaultStudio } from './defaultCollectionObjects'
 
 export function setupDefaultJobEnvironment(studioId?: StudioId): MockJobContext {
 	const { mockCollections, jobCollections } = getMockCollections()
