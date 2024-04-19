@@ -95,7 +95,8 @@ Meteor.startup(() => {
 				$set: {
 					connected: false,
 				},
-			}
+			},
+			{ multi: true }
 		)
 	})
 })

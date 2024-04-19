@@ -841,7 +841,8 @@ export const addSteps = addMigrationSteps('1.50.0', [
 					$set: {
 						'settings.minimumTakeSpan': DEFAULT_MINIMUM_TAKE_SPAN,
 					},
-				}
+				},
+				{ multi: true }
 			)
 		},
 	},
