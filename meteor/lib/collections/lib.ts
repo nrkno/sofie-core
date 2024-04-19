@@ -181,7 +181,7 @@ export class WrappedMongoCollection<DBInterface extends { _id: ProtectedString<a
 		}
 	}
 	update(
-		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		selector: MongoQuery<DBInterface> | DBInterface['_id'] | { _id: DBInterface['_id'] },
 		modifier: MongoModifier<DBInterface>,
 		options?: UpdateOptions
 	): number {
@@ -266,9 +266,15 @@ export interface MongoCollection<DBInterface extends { _id: ProtectedString<any>
 	 * @param modifier Specifies how to modify the documents
 	 */
 	update(
-		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		selector: DBInterface['_id'] | { _id: DBInterface['_id'] },
 		modifier: MongoModifier<DBInterface>,
 		options?: UpdateOptions
+	): number
+	update(
+		selector: MongoQuery<DBInterface>,
+		modifier: MongoModifier<DBInterface>,
+		// Require { multi } to be set when selecting multiple documents to be updated, otherwise only the first found document will be updated
+		options: UpdateOptions & Required<Pick<UpdateOptions, 'multi'>>
 	): number
 
 	/**

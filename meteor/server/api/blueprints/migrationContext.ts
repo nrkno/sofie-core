@@ -132,7 +132,8 @@ class AbstractMigrationContextWithTriggeredActions {
 					},
 					{
 						$set: newObj,
-					}
+					},
+					{ multi: true }
 				)
 			)
 		}
@@ -533,7 +534,8 @@ export class MigrationContextShowStyle
 					$set: {
 						[`sourceLayersWithOverrides.defaults.${sourceLayerId}`]: fullLayer,
 					},
-				}
+				},
+				{ multi: false }
 			)
 		)
 		this.showStyleBase.sourceLayersWithOverrides.defaults[sourceLayerId] = fullLayer // Update local

@@ -53,7 +53,8 @@ Meteor.onConnection((conn: Meteor.Connection) => {
 								connected: false,
 								// connectionId: ''
 							},
-						}
+						},
+						{ multi: true }
 					)
 				}
 			})
