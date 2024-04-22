@@ -28,11 +28,12 @@ import {
 import { computeSegmentDuration, getPartInstanceTimingId, RundownTimingContext } from '../../lib/rundownTiming'
 import { RundownViewShelf } from '../RundownView/RundownViewShelf'
 import { PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PartInstances, UIParts } from '../../collections'
+import { PartInstances } from '../../collections'
 import { catchError, useDebounce } from '../../lib/lib'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { logger } from '../../../lib/logging'
+import { UIParts } from '../Collections'
 
 // Kept for backwards compatibility
 export { SegmentUi, PartUi, PieceUi, ISourceLayerUi, IOutputLayerUi } from '../SegmentContainer/withResolvedSegment'

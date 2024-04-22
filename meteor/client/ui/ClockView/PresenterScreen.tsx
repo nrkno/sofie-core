@@ -42,6 +42,7 @@ import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { useSetDocumentClass } from '../util/useSetDocumentClass'
 import { useRundownAndShowStyleIdsForPlaylist } from '../util/useRundownAndShowStyleIdsForPlaylist'
+import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -198,7 +199,7 @@ export const getPresenterScreenReactive = (props: PresenterScreenProps): Present
 
 	if (playlist) {
 		rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)
-		const orderedSegmentsAndParts = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(playlist)
+		const orderedSegmentsAndParts = RundownPlaylistClientUtil.getSegmentsAndPartsSync(playlist)
 		pieces = RundownPlaylistCollectionUtil.getPiecesForParts(orderedSegmentsAndParts.parts.map((p) => p._id))
 		rundownIds = rundowns.map((rundown) => rundown._id)
 		const rundownsToShowstyles: Map<RundownId, ShowStyleBaseId> = new Map()

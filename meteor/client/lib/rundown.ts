@@ -18,13 +18,12 @@ import {
 	IOutputLayerExtended,
 	ISourceLayerExtended,
 	PartInstanceLimited,
-	getSegmentsWithPartInstances,
 	isLoopRunning,
 } from '../../lib/Rundown'
-import { PartInstance } from '../../lib/collections/PartInstances'
+import { PartInstance, wrapPartToTemporaryInstance } from '../../lib/collections/PartInstances'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { literal, getCurrentTime } from '../../lib/lib'
+import { literal, getCurrentTime, protectString, groupByToMap } from '../../lib/lib'
 import {
 	processAndPrunePieceInstanceTimings,
 	resolvePrunedPieceInstance,
@@ -46,6 +45,10 @@ import { PartId, PieceId, RundownId, SegmentId, ShowStyleBaseId } from '@sofie-a
 import { PieceInstances, Segments } from '../collections'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { assertNever } from '@sofie-automation/shared-lib/dist/lib/lib'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlaylistUtil'
+import { RundownPlaylistClientUtil } from './rundownPlaylistUtil'
 
 export namespace RundownUtils {
 	export function padZeros(input: number, places?: number): string {
@@ -799,6 +802,83 @@ export namespace RundownUtils {
 			return (
 				partInstance.part._id !== currentPartInstance?.part._id || partInstance._id === currentPartInstance._id
 			)
+		})
+	}
+
+	/**
+	 * Get all PartInstances (or temporary PartInstances) all segments in all rundowns in a playlist, using given queries
+	 * to limit the data, in correct order.
+	 *
+	 * @export
+	 * @param {DBRundownPlaylist} playlist
+	 * @param {(MongoQuery<DBSegment>)} [segmentsQuery]
+	 * @param {(MongoQuery<DBPart>)} [partsQuery]
+	 * @param {MongoQuery<PartInstance>} [partInstancesQuery]
+	 * @param {FindOptions<DBSegment>} [segmentsOptions]
+	 * @param {FindOptions<DBPart>} [partsOptions]
+	 * @param {FindOptions<PartInstance>} [partInstancesOptions]
+	 * @return {*}  {Array<{ segment: Segment; partInstances: PartInstance[] }>}
+	 */
+	export function getSegmentsWithPartInstances(
+		playlist: DBRundownPlaylist,
+		segmentsQuery?: MongoQuery<DBSegment>,
+		partsQuery?: MongoQuery<DBPart>,
+		partInstancesQuery?: MongoQuery<PartInstance>,
+		segmentsOptions?: FindOptions<DBSegment>,
+		partsOptions?: FindOptions<DBPart>,
+		partInstancesOptions?: FindOptions<PartInstance>
+	): Array<{ segment: DBSegment; partInstances: PartInstance[] }> {
+		const { segments, parts: rawParts } = RundownPlaylistClientUtil.getSegmentsAndPartsSync(
+			playlist,
+			segmentsQuery,
+			partsQuery,
+			segmentsOptions,
+			partsOptions
+		)
+		const rawPartInstances = RundownPlaylistCollectionUtil.getActivePartInstances(
+			playlist,
+			partInstancesQuery,
+			partInstancesOptions
+		)
+		const playlistActivationId = playlist.activationId ?? protectString('')
+
+		const partsBySegment = groupByToMap(rawParts, 'segmentId')
+		const partInstancesBySegment = groupByToMap(rawPartInstances, 'segmentId')
+
+		return segments.map((segment) => {
+			const segmentParts = partsBySegment.get(segment._id) ?? []
+			const segmentPartInstances = partInstancesBySegment.get(segment._id) ?? []
+
+			if (segmentPartInstances.length === 0) {
+				return {
+					segment,
+					partInstances: segmentParts.map((p) => wrapPartToTemporaryInstance(playlistActivationId, p)),
+				}
+			} else if (segmentParts.length === 0) {
+				return {
+					segment,
+					partInstances: segmentPartInstances.sort(
+						(a, b) => a.part._rank - b.part._rank || a.takeCount - b.takeCount
+					),
+				}
+			} else {
+				const partIds: Set<PartId> = new Set()
+				for (const partInstance of segmentPartInstances) {
+					partIds.add(partInstance.part._id)
+				}
+				for (const part of segmentParts) {
+					if (partIds.has(part._id)) continue
+					segmentPartInstances.push(wrapPartToTemporaryInstance(playlistActivationId, part))
+				}
+				const allPartInstances = segmentPartInstances.sort(
+					(a, b) => a.part._rank - b.part._rank || a.takeCount - b.takeCount
+				)
+
+				return {
+					segment,
+					partInstances: allPartInstances,
+				}
+			}
 		})
 	}
 }

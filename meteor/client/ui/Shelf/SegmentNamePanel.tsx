@@ -12,6 +12,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/Reac
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil'
 
 interface ISegmentNamePanelProps {
 	visible?: boolean
@@ -84,7 +85,7 @@ function getSegmentName(selectedSegment: 'current' | 'next', playlist: DBRundown
 
 		// Current and next part are same segment, or next is not set
 		// Find next segment in order
-		const orderedSegmentsAndParts = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(playlist)
+		const orderedSegmentsAndParts = RundownPlaylistClientUtil.getSegmentsAndPartsSync(playlist)
 		const segmentIndex = orderedSegmentsAndParts.segments.findIndex((s) => s._id === currentPartInstance.segmentId)
 		if (segmentIndex === -1) return
 

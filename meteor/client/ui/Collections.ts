@@ -39,6 +39,11 @@ export const UIPieceContentStatuses = createSyncCustomPublicationMongoCollection
 )
 
 /**
+ * A playout UI version of Parts.
+ */
+export const UIParts = createSyncCustomPublicationMongoCollection(CustomCollectionName.UIParts)
+
+/**
  * Pre-processed MediaObjectIssue for Adlibbs in a Bucket
  */
 export const UIBucketContentStatuses = createSyncCustomPublicationMongoCollection(

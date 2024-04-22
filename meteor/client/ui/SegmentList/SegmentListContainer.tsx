@@ -10,8 +10,9 @@ import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { SegmentList } from './SegmentList'
 import { unprotectString } from '../../../lib/lib'
 import { LIVELINE_HISTORY_SIZE as TIMELINE_LIVELINE_HISTORY_SIZE } from '../SegmentTimeline/SegmentTimelineContainer'
-import { PartInstances, Segments, UIParts } from '../../collections'
+import { PartInstances, Segments } from '../../collections'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { UIParts } from '../Collections'
 
 export const LIVELINE_HISTORY_SIZE = TIMELINE_LIVELINE_HISTORY_SIZE
 

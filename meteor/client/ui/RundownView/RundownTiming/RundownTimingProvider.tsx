@@ -20,6 +20,7 @@ import { RundownPlaylistCollectionUtil } from '../../../../lib/collections/rundo
 import { sortPartInstancesInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 import { RundownUtils } from '../../../lib/rundown'
+import { RundownPlaylistClientUtil } from '../../../lib/rundownPlaylistUtil'
 
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
 const LOW_RESOLUTION_TIMING_DECIMATOR = 15
@@ -91,7 +92,7 @@ export const RundownTimingProvider = withTracker<
 	const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)
 	const segments = RundownPlaylistCollectionUtil.getSegments(playlist)
 	const segmentsMap = new Map<SegmentId, DBSegment>(segments.map((segment) => [segment._id, segment]))
-	const unorderedParts = RundownPlaylistCollectionUtil.getUnorderedParts(playlist)
+	const unorderedParts = RundownPlaylistClientUtil.getUnorderedParts(playlist)
 	const activePartInstances = RundownPlaylistCollectionUtil.getActivePartInstances(playlist, undefined, {
 		projection: {
 			_id: 1,

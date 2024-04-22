@@ -11,11 +11,12 @@ import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { SegmentStoryboard } from './SegmentStoryboard'
 import { unprotectString } from '../../../lib/lib'
 import { LIVELINE_HISTORY_SIZE as TIMELINE_LIVELINE_HISTORY_SIZE } from '../SegmentTimeline/SegmentTimelineContainer'
-import { PartInstances, Segments, UIParts } from '../../collections'
+import { PartInstances, Segments } from '../../collections'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { UIParts } from '../Collections'
 
 export const LIVELINE_HISTORY_SIZE = TIMELINE_LIVELINE_HISTORY_SIZE
 

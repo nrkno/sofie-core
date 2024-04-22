@@ -1,7 +1,6 @@
 import { useMemo, JSX } from 'react'
 import { useSubscription, useSubscriptions, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorPubSub } from '../../../lib/api/pubsub'
-import { getSegmentsWithPartInstances } from '../../../lib/Rundown'
 import {
 	AdLibActionId,
 	PartId,
@@ -36,6 +35,7 @@ import { UIPieceContentStatuses, UIShowStyleBases } from '../Collections'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { RundownUtils } from '../../lib/rundown'
 
 export function MediaStatus({
 	playlistIds,
@@ -111,7 +111,7 @@ function useRundownPlaylists(playlistIds: RundownPlaylistId[]) {
 				.sort(sortRundownPlaylists)
 				.map((playlist) => ({
 					playlist,
-					segments: getSegmentsWithPartInstances(
+					segments: RundownUtils.getSegmentsWithPartInstances(
 						playlist,
 						undefined,
 						undefined,

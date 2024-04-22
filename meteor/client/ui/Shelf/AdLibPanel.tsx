@@ -59,6 +59,7 @@ import {
 	RundownBaselineAdLibPieces,
 } from '../../collections'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil'
 
 export interface IAdLibPanelProps {
 	// liveSegment: Segment | undefined
@@ -272,7 +273,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 				return segmentUi
 			})
 
-			RundownPlaylistCollectionUtil.getUnorderedParts(props.playlist, {
+			RundownPlaylistClientUtil.getUnorderedParts(props.playlist, {
 				segmentId: {
 					$in: Array.from(uiSegmentMap.keys()),
 				},

@@ -39,6 +39,7 @@ import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/ti
 import { ReadonlyDeep } from 'type-fest'
 import { PieceContentStatusObj } from '../../../lib/api/pieceContentStatus'
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil'
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
@@ -175,7 +176,7 @@ export function withResolvedSegment<T extends IResolvedSegmentProps, IState = {}
 						memoizedIsolatedAutorun(
 							(_playlistId: RundownPlaylistId) =>
 								(
-									RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(
+									RundownPlaylistClientUtil.getSegmentsAndPartsSync(
 										props.playlist,
 										undefined,
 										undefined,

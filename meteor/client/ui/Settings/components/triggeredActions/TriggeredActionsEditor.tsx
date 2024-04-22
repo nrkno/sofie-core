@@ -24,11 +24,12 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../../../../li
 import { Meteor } from 'meteor/meteor'
 import { doModalDialog } from '../../../../lib/ModalDialog'
 import { PartId, RundownId, ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PartInstances, RundownPlaylists, Rundowns, TriggeredActions, UIParts } from '../../../../collections'
+import { PartInstances, RundownPlaylists, Rundowns, TriggeredActions } from '../../../../collections'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { SourceLayers, OutputLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { RundownPlaylistCollectionUtil } from '../../../../../lib/collections/rundownPlaylistUtil'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { UIParts } from '../../../Collections'
 
 export interface PreviewContext {
 	rundownPlaylist: DBRundownPlaylist | null

@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { ScriptContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { normalizeArrayToMap, protectString } from '../../../lib/lib'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { getPieceInstancesForPartInstance, getSegmentsWithPartInstances } from '../../../lib/Rundown'
+import { getPieceInstancesForPartInstance } from '../../../lib/Rundown'
 import { FindOptions } from '../../../lib/collections/lib'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
@@ -22,6 +22,7 @@ import { RundownPlaylists, PieceInstances, Pieces, Segments } from '../../collec
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { RundownUtils } from '../../lib/rundown'
 
 // export interface NewPrompterAPI {
 // 	getPrompterData (playlistId: RundownPlaylistId): Promise<PrompterData>
@@ -84,7 +85,7 @@ export namespace PrompterAPI {
 			  }) as Pick<DBSegment, '_id' | 'orphaned'>)
 			: undefined
 
-		const groupedParts = getSegmentsWithPartInstances(
+		const groupedParts = RundownUtils.getSegmentsWithPartInstances(
 			playlist,
 			undefined,
 			undefined,

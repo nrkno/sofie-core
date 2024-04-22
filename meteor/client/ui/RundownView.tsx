@@ -129,7 +129,7 @@ import { ExecuteActionResult } from '@sofie-automation/corelib/dist/worker/studi
 import { SegmentListContainer } from './SegmentList/SegmentListContainer'
 import { getNextMode as getNextSegmentViewMode } from './SegmentContainer/SwitchViewModeButton'
 import { IResolvedSegmentProps } from './SegmentContainer/withResolvedSegment'
-import { UIShowStyleBases, UIStudios } from './Collections'
+import { UIParts, UIShowStyleBases, UIStudios } from './Collections'
 import { UIStudio } from '../../lib/api/studios'
 import {
 	PartId,
@@ -147,7 +147,6 @@ import {
 	RundownPlaylists,
 	Rundowns,
 	ShowStyleVariants,
-	UIParts,
 } from '../collections'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlaylistUtil'

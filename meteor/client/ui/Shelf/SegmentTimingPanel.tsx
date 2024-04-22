@@ -23,6 +23,7 @@ import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { PartId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
+import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil'
 
 interface ISegmentTimingPanelProps {
 	visible?: boolean
@@ -102,15 +103,9 @@ export const SegmentTimingPanel = translateWithTracker<
 						memoizedIsolatedAutorun(
 							(_playlistId: RundownPlaylistId) =>
 								(
-									RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(
-										props.playlist,
-										undefined,
-										undefined,
-										undefined,
-										{
-											fields: { _id: 1 },
-										}
-									).parts as Pick<DBPart, '_id'>[]
+									RundownPlaylistClientUtil.getSegmentsAndPartsSync(props.playlist, undefined, undefined, undefined, {
+										fields: { _id: 1 },
+									}).parts as Pick<DBPart, '_id'>[]
 								).map((part) => part._id),
 							'playlist.getAllOrderedParts',
 							props.playlist._id
@@ -133,7 +128,7 @@ export const SegmentTimingPanel = translateWithTracker<
 				props.playlist.activationId === undefined ? 0 : Math.random() * 2000 + 500
 			)
 
-			const orderedSegmentsAndParts = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(props.playlist)
+			const orderedSegmentsAndParts = RundownPlaylistClientUtil.getSegmentsAndPartsSync(props.playlist)
 			const rundownOrder = RundownPlaylistCollectionUtil.getRundownOrderedIDs(props.playlist)
 			const rundownIndex = rundownOrder.indexOf(liveSegment.rundownId)
 			const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(props.playlist)
