@@ -26,6 +26,7 @@ export interface ICustomLayerItemProps {
 	partDisplayDuration: number
 	piece: PieceUi
 	timeScale: number
+	scrollLeft: number
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	relative?: boolean
 	followLiveLine: boolean
