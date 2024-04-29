@@ -32,7 +32,7 @@ export function RundownListItem({
 	rundownLayouts: Array<RundownLayoutBase>
 	swapRundownOrder: (a: RundownId, b: RundownId) => void
 	playlistId: RundownPlaylistId
-	isOnlyRundownInPlaylist?: boolean
+	isOnlyRundownInPlaylist: boolean
 	action?: IRundownPlaylistUiAction
 }>): JSX.Element | null {
 	const { t } = useTranslation()
@@ -65,6 +65,7 @@ export function RundownListItem({
 			item: {
 				id: rundown._id,
 				rundownLayouts,
+				isOnlyRundownInPlaylist,
 			},
 		},
 		[rundown._id, rundownLayouts]
