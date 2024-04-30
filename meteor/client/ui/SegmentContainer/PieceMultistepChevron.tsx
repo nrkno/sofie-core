@@ -27,8 +27,17 @@ export function getPieceSteps(piece: PieceExtended): { currentStep: number; allS
 	const noraContent = piece.instance.piece.content as NoraContent | undefined
 
 	const hasStepChevron =
-		(piece.sourceLayer?.type === SourceLayerType.GRAPHICS || piece.sourceLayer?.type === SourceLayerType.LOWER_THIRD) &&
-		noraContent?.payload?.step?.enabled
+		piece.sourceLayer?.type === SourceLayerType.GRAPHICS || piece.sourceLayer?.type === SourceLayerType.LOWER_THIRD
+
+	if (!noraContent || !hasStepChevron) return null
+
+	return getNoraContentSteps(noraContent)
+}
+
+export function getNoraContentSteps(
+	noraContent: NoraContent | undefined
+): { currentStep: number; allSteps: number } | null {
+	const hasStepChevron = noraContent?.payload?.step?.enabled
 
 	if (!hasStepChevron) return null
 

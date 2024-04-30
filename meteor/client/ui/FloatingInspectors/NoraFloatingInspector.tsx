@@ -1,7 +1,8 @@
-import React, { useEffect, useImperativeHandle } from 'react'
 import { NoraContent } from '@sofie-automation/blueprints-integration'
-import Escape from './../../lib/Escape'
+import React, { useEffect, useImperativeHandle } from 'react'
 import _ from 'underscore'
+import { getNoraContentSteps } from '../SegmentContainer/PieceMultistepChevron'
+import Escape from './../../lib/Escape'
 
 interface IPropsHeader {
 	noraContent: NoraContent | undefined
@@ -194,8 +195,7 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 	}
 
 	render(): JSX.Element {
-		const stepContent = this.state.noraContent?.payload?.step
-		const isMultiStep = this.state.noraContent?.payload?.step?.enabled === true
+		const hasStepChevron = getNoraContentSteps(this.state.noraContent)
 
 		const rendererUrl = this.state.noraContent?.previewRenderer
 		const dimensions = this.state.noraContent?.previewRendererDimensions
@@ -218,12 +218,12 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 							></iframe>
 						)}
 					</div>
-					{isMultiStep && stepContent ? (
+					{hasStepChevron ? (
 						<div className="segment-timeline__mini-inspector--graphics--preview__step-chevron">
-							{stepContent.to === 'next' ? (stepContent.from || 0) + 1 : stepContent.to || 1}
-							{typeof stepContent.total === 'number' && stepContent.total > 0 ? (
+							{hasStepChevron.currentStep}
+							{typeof hasStepChevron.allSteps === 'number' && hasStepChevron.allSteps > 0 ? (
 								<span className="segment-timeline__mini-inspector--graphics--preview__step-chevron__total">
-									/{stepContent.total}
+									/{hasStepChevron.allSteps}
 								</span>
 							) : null}
 						</div>
