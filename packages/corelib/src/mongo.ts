@@ -3,6 +3,7 @@ import { ProtectedString } from './protectedString'
 import * as objectPath from 'object-path'
 // eslint-disable-next-line node/no-extraneous-import
 import type { Filter, UpdateFilter } from 'mongodb'
+import { clone } from './lib'
 
 /** Hack's using typings pulled from meteor */
 
@@ -200,20 +201,34 @@ export function mongoFindOptions<TDoc extends { _id: ProtectedString<any> }>(
 			const includeKeys = _.keys(projection).filter((key) => key !== '_id' && projection[key] !== 0)
 			const excludeKeys: string[] = _.keys(projection).filter((key) => key !== '_id' && projection[key] === 0)
 
-			// Mongo does allow mixed include and exclude (exception being excluding _id)
+			// Mongo does not allow mixed include and exclude (exception being excluding _id)
 			// https://docs.mongodb.com/manual/reference/method/db.collection.find/#projection
 			if (includeKeys.length !== 0 && excludeKeys.length !== 0) {
 				throw new Error(`options.projection cannot contain both include and exclude rules`)
 			}
 
-			// TODO - does this need to use objectPath in some way?
-
 			if (includeKeys.length !== 0) {
 				if (idVal !== 0) includeKeys.push('_id')
-				docs = _.map(docs, (doc) => _.pick(doc, includeKeys)) as any // any since includeKeys breaks strict typings anyway
+				docs = docs.map((doc) => {
+					const newDoc: any = {} // any since includeKeys breaks strict typings anyway
+
+					for (const key of includeKeys) {
+						objectPath.set(newDoc, key, objectPath.get(doc, key))
+					}
+
+					return newDoc
+				})
 			} else if (excludeKeys.length !== 0) {
 				if (idVal === 0) excludeKeys.push('_id')
-				docs = _.map(docs, (doc) => _.omit(doc, excludeKeys)) as any // any since excludeKeys breaks strict typings anyway
+				docs = docs.map((doc) => {
+					const newDoc = clone<any>(doc) // any since excludeKeys breaks strict typings anyway
+
+					for (const key of excludeKeys) {
+						objectPath.del(newDoc, key)
+					}
+
+					return newDoc
+				})
 			}
 		}
 

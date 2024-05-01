@@ -19,7 +19,6 @@ async function fetchOrphanedPartInstancesInRundown(context: JobContext, rundownI
 				orphaned: 1,
 				'part._id': 1,
 				'part._rank': 1,
-				part: 1, // nocommit - this is a workaround for the mock not supporting projection on nested fields
 			},
 			sort: {
 				takeCount: 1,
