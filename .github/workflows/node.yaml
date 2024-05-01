@@ -684,9 +684,9 @@ jobs:
           persist-credentials: false
 
       - name: Generate code
-        uses: hatamiarash7/openapi-generator@v0.2.0
+        uses: hatamiarash7/openapi-generator@v0.3.0
         with:
           generator: typescript-fetch
           openapi-file: ./packages/openapi/api/actions.yaml
           output-dir: ./packages/openapi/client/ts
-          command-args: supportsES6=true
+          command-args: -p supportsES6=true
