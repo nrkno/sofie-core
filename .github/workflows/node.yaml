@@ -672,3 +672,22 @@ jobs:
           node scripts/checkForMultipleVersions.mjs
         env:
           CI: true
+
+  build-stable-api:
+    name: Build OpenAPI typescript client
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Generate code
+        uses: hatamiarash7/openapi-generator@v0.2.0
+        working-directory: ./packages/openapi
+        with:
+          generator: typescript-fetch
+          openapi-file: ./api/actions.yaml
+          output-dir: client/ts
+          command-args: supportsES6=true
