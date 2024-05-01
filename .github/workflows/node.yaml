@@ -684,8 +684,8 @@ jobs:
           persist-credentials: false
 
       - name: Generate code
-        uses: hatamiarash7/openapi-generator@v0.2.0
         working-directory: ./packages/openapi
+        uses: hatamiarash7/openapi-generator@v0.2.0
         with:
           generator: typescript-fetch
           openapi-file: ./api/actions.yaml
