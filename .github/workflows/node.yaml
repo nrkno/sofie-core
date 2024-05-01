@@ -618,6 +618,21 @@ jobs:
           yarn build
         env:
           CI: true
+      - name: Generate OpenAPI client library
+        if: ${{ steps.do-publish.outputs.tag }}
+        uses: hatamiarash7/openapi-generator@v0.3.0
+        with:
+          generator: typescript-fetch
+          openapi-file: ./packages/openapi/api/actions.yaml
+          output-dir: ./packages/openapi/client/ts
+          command-args: -p supportsES6=true
+      - name: Build OpenAPI client library
+        if: ${{ steps.do-publish.outputs.tag }}
+        run: |
+          cd packages/openapi
+          yarn build:main
+        env:
+          CI: true
       - name: Modify dependencies to use npm packages
         run: node scripts/prepublish.js
       - name: Publish to NPM
@@ -673,15 +688,32 @@ jobs:
         env:
           CI: true
 
-  build-stable-api:
-    name: Build OpenAPI typescript client
+  release-openapi-lib:
+    name: Build and release OpenAPI typescript client
     runs-on: ubuntu-latest
     continue-on-error: true
     timeout-minutes: 15
+
+    # only run for tags
+    if: contains(github.ref, 'refs/tags/')
+
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".node-version"
+      - name: Prepare Environment # have to run this first to make sure the semver lib is available
+        run: |
+          yarn config set cacheFolder /home/runner/release-libs-cache
+
+          cd packages
+          yarn install
+        env:
+          CI: true
 
       - name: Generate code
         uses: hatamiarash7/openapi-generator@v0.3.0
