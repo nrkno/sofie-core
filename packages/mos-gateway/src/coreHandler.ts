@@ -30,7 +30,7 @@ export interface CoreConfig {
 export class CoreHandler {
 	core: CoreConnection | undefined
 	logger: Winston.Logger
-	public _observers: Array<Observer> = []
+	public _observers: Array<Observer<any>> = []
 	private _deviceOptions: DeviceConfig
 	private _coreMosHandlers: Array<CoreMosDeviceHandler> = []
 	private _onConnected?: () => any

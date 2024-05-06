@@ -357,7 +357,7 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 		this.ddp.ddpClient?.unsubscribe(subscriptionId)
 		delete this._autoSubscriptions[subscriptionId]
 	}
-	observe(collectionName: string): Observer {
+	observe(collectionName: string): Observer<any> {
 		if (!this.ddp.ddpClient) {
 			throw new Error('observe: DDP client not initialised')
 		}

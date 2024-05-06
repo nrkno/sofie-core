@@ -3,6 +3,7 @@ import {
 	CoreOptions,
 	DDPConnectorOptions,
 	Observer,
+	PeripheralDeviceForDevice,
 	stringifyError,
 } from '@sofie-automation/server-core-integration'
 import { DeviceConfig } from './connector'
@@ -13,12 +14,16 @@ import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
-import { protectString, unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
-import { PeripheralDeviceId, StudioId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+import {
+	PeripheralDeviceCommandId,
+	PeripheralDeviceId,
+	StudioId,
+} from '@sofie-automation/shared-lib/dist/core/model/Ids'
 import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
 import { PeripheralDeviceCommand } from '@sofie-automation/shared-lib/dist/core/model/PeripheralDeviceCommand'
-import { PeripheralDeviceForDevice } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 import { LiveStatusGatewayConfig } from './generated/options'
+import { CorelibPubSubCollections } from '@sofie-automation/corelib/dist/pubsub'
 
 export interface CoreConfig {
 	host: string
@@ -41,7 +46,7 @@ export class CoreHandler {
 
 	private _deviceOptions: DeviceConfig
 	private _onConnected?: () => any
-	private _executedFunctions: { [id: string]: boolean } = {}
+	private _executedFunctions = new Set<PeripheralDeviceCommandId>()
 	private _coreConfig?: CoreConfig
 	private _process?: Process
 
@@ -97,19 +102,20 @@ export class CoreHandler {
 		await this.updateCoreStatus()
 	}
 
-	async setupSubscription(collection: string, ...params: any[]): Promise<string> {
-		this.logger.info(`Core: Set up subscription for '${collection}'`)
+	async setupSubscription<Key extends string>(collection: Key, ...params: any[]): Promise<SubscriptionId> {
+		// tmp R50 hack
+		this.logger.debug(`Core: Set up subscription for '${collection}'`)
 		const subscriptionId = await this.core.autoSubscribe(collection, ...params)
-		this.logger.info(`Core: Subscription for '${collection}' set up with id ${subscriptionId}`)
+		this.logger.debug(`Core: Subscription for '${collection}' set up with id ${subscriptionId}`)
 		return subscriptionId
 	}
 
-	unsubscribe(subscriptionId: string): void {
-		this.logger.info(`Core: Unsubscribing id '${subscriptionId}'`)
+	unsubscribe(subscriptionId: SubscriptionId): void {
+		this.logger.debug(`Core: Unsubscribing id '${subscriptionId}'`)
 		this.core.unsubscribe(subscriptionId)
 	}
 
-	setupObserver(collection: string): Observer {
+	setupObserver<K extends keyof CorelibPubSubCollections>(collection: K): Observer<any> {
 		return this.core.observe(collection)
 	}
 
@@ -118,8 +124,8 @@ export class CoreHandler {
 		this.logger.info('DeviceId: ' + this.core.deviceId)
 
 		await Promise.all([
-			this.core.autoSubscribe('peripheralDeviceForDevice', this.core.deviceId),
-			this.core.autoSubscribe('peripheralDeviceCommands', this.core.deviceId),
+			this.core.autoSubscribe(PeripheralDevicePubSub.peripheralDeviceForDevice, this.core.deviceId),
+			this.core.autoSubscribe(PeripheralDevicePubSub.peripheralDeviceCommands, this.core.deviceId),
 		])
 		this.logger.info('Core: Subscriptions are set up!')
 		if (this._observers.length) {
@@ -130,9 +136,9 @@ export class CoreHandler {
 			this._observers = []
 		}
 		// setup observers
-		const observer = this.core.observe('peripheralDeviceForDevice')
-		observer.added = (id: string) => this.onDeviceChanged(protectString(id))
-		observer.changed = (id: string) => this.onDeviceChanged(protectString(id))
+		const observer = this.core.observe(PeripheralDevicePubSubCollectionsNames.peripheralDeviceForDevice)
+		observer.added = (id) => this.onDeviceChanged(id)
+		observer.changed = (id) => this.onDeviceChanged(id)
 		this.setupObserverForPeripheralDeviceCommands(this)
 	}
 	async destroy(): Promise<void> {
@@ -174,7 +180,9 @@ export class CoreHandler {
 
 	onDeviceChanged(id: PeripheralDeviceId): void {
 		if (id !== this.core.deviceId) return
-		const col = this.core.getCollection<PeripheralDeviceForDevice>('peripheralDeviceForDevice')
+		const col = this.core.getCollection<PeripheralDeviceForDevice>(
+			PeripheralDevicePubSubCollectionsNames.peripheralDeviceForDevice
+		)
 		if (!col) throw new Error('collection "peripheralDeviceForDevice" not found!')
 		const device = col.findOne(id)
 
@@ -214,14 +222,14 @@ export class CoreHandler {
 
 	executeFunction(cmd: PeripheralDeviceCommand, fcnObject: CoreHandler): void {
 		if (cmd) {
-			if (this._executedFunctions[unprotectString(cmd._id)]) return // prevent it from running multiple times
+			if (this._executedFunctions.has(cmd._id)) return // prevent it from running multiple times
 
 			// Ignore specific commands, to reduce noise:
 			if (cmd.functionName !== 'getDebugStates') {
 				this.logger.debug(`Executing function "${cmd.functionName}", args: ${JSON.stringify(cmd.args)}`)
 			}
 
-			this._executedFunctions[unprotectString(cmd._id)] = true
+			this._executedFunctions.add(cmd._id)
 			const cb = (errStr: string | null, res?: any) => {
 				if (errStr) {
 					this.logger.error(`executeFunction error: ${errStr}`)
@@ -247,16 +255,18 @@ export class CoreHandler {
 			}
 		}
 	}
-	retireExecuteFunction(cmdId: string): void {
-		delete this._executedFunctions[cmdId]
+	retireExecuteFunction(cmdId: PeripheralDeviceCommandId): void {
+		this._executedFunctions.delete(cmdId)
 	}
 	setupObserverForPeripheralDeviceCommands(functionObject: CoreHandler): void {
-		const observer = functionObject.core.observe('peripheralDeviceCommands')
+		const observer = functionObject.core.observe(PeripheralDevicePubSubCollectionsNames.peripheralDeviceCommands)
 		functionObject._observers.push(observer)
-		const addedChangedCommand = (id: string) => {
-			const cmds = functionObject.core.getCollection<PeripheralDeviceCommand>('peripheralDeviceCommands')
+		const addedChangedCommand = (id: PeripheralDeviceCommandId) => {
+			const cmds = functionObject.core.getCollection<PeripheralDeviceCommand>(
+				PeripheralDevicePubSubCollectionsNames.peripheralDeviceCommands
+			)
 			if (!cmds) throw Error('"peripheralDeviceCommands" collection not found!')
-			const cmd = cmds.findOne(protectString(id))
+			const cmd = cmds.findOne(id)
 			if (!cmd) throw Error('PeripheralCommand "' + id + '" not found!')
 			// console.log('addedChangedCommand', id)
 			if (cmd.deviceId === functionObject.core.deviceId) {
@@ -265,16 +275,18 @@ export class CoreHandler {
 				// console.log('not mine', cmd.deviceId, this.core.deviceId)
 			}
 		}
-		observer.added = (id: string) => {
+		observer.added = (id) => {
 			addedChangedCommand(id)
 		}
-		observer.changed = (id: string) => {
+		observer.changed = (id) => {
 			addedChangedCommand(id)
 		}
-		observer.removed = (id: string) => {
+		observer.removed = (id) => {
 			this.retireExecuteFunction(id)
 		}
-		const cmds = functionObject.core.getCollection<PeripheralDeviceCommand>('peripheralDeviceCommands')
+		const cmds = functionObject.core.getCollection<PeripheralDeviceCommand>(
+			PeripheralDevicePubSubCollectionsNames.peripheralDeviceCommands
+		)
 		if (!cmds) throw Error('"peripheralDeviceCommands" collection not found!')
 		cmds.find({}).forEach((cmd) => {
 			if (cmd.deviceId === functionObject.core.deviceId) {
@@ -332,3 +344,64 @@ export class CoreHandler {
 		return versions
 	}
 }
+
+// tmp, remove in R51 ------------------------------------------------------------------
+type SubscriptionId = string
+enum PeripheralDevicePubSubCollectionsNames {
+	// Real Mongodb collections:
+	peripheralDeviceCommands = 'peripheralDeviceCommands',
+	rundowns = 'rundowns',
+	expectedPlayoutItems = 'expectedPlayoutItems',
+	timelineDatastore = 'timelineDatastore',
+
+	// Custom collections:
+	peripheralDeviceForDevice = 'peripheralDeviceForDevice',
+	studioMappings = 'studioMappings',
+	studioTimeline = 'studioTimeline',
+
+	mountedTriggersPreviews = 'mountedTriggersPreviews',
+	mountedTriggers = 'mountedTriggers',
+
+	packageManagerPlayoutContext = 'packageManagerPlayoutContext',
+	packageManagerPackageContainers = 'packageManagerPackageContainers',
+	packageManagerExpectedPackages = 'packageManagerExpectedPackages',
+}
+export enum PeripheralDevicePubSub {
+	// Common:
+
+	/** Commands for the PeripheralDevice to execute */
+	peripheralDeviceCommands = 'peripheralDeviceCommands',
+	/** Properties/settings of the PeripheralDevice */
+	peripheralDeviceForDevice = 'peripheralDeviceForDevice',
+
+	// Playout gateway:
+
+	/** Playout gateway: Rundowns in the Studio of the PeripheralDevice */
+	rundownsForDevice = 'rundownsForDevice',
+
+	/** Playout gateway: Simplified timeline mappings in the Studio of the PeripheralDevice */
+	mappingsForDevice = 'mappingsForDevice',
+	/** Playout gateway: Simplified timeline in the Studio of the PeripheralDevice */
+	timelineForDevice = 'timelineForDevice',
+	/** Playout gateway: Timeline datastore entries in the Studio of the PeripheralDevice */
+	timelineDatastoreForDevice = 'timelineDatastoreForDevice',
+	/** Playout gateway: ExpectedPlayoutItems in the Studio of the PeripheralDevice */
+	expectedPlayoutItemsForDevice = 'expectedPlayoutItemsForDevice',
+
+	// Input gateway:
+
+	/** Input gateway: Calculated triggered actions */
+	mountedTriggersForDevice = 'mountedTriggersForDevice',
+	/** Input gateway: Calculated trigger previews */
+	mountedTriggersForDevicePreview = 'mountedTriggersForDevicePreview',
+
+	// Package manager:
+
+	/** Package manager: Info about the active playlist in the Studio of the PeripheralDevice */
+	packageManagerPlayoutContext = 'packageManagerPlayoutContext',
+	/** Package manager: The package containers in the Studio of the PeripheralDevice */
+	packageManagerPackageContainers = 'packageManagerPackageContainers',
+	/** Package manager: The expected packages in the Studio of the PeripheralDevice */
+	packageManagerExpectedPackages = 'packageManagerExpectedPackages',
+}
+// ------------------------------------------------------------------------------------

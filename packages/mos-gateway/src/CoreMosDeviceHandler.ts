@@ -66,7 +66,7 @@ interface IStoryItemChange {
 
 export class CoreMosDeviceHandler {
 	core!: CoreConnectionChild
-	public _observers: Array<Observer> = []
+	public _observers: Array<Observer<any>> = []
 	public _mosDevice: IMOSDevice
 	private _coreParentHandler: CoreHandler
 	private _mosHandler: MosHandler

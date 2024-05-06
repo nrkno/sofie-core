@@ -43,7 +43,7 @@ export interface MemoryUsageReport {
 export class CoreHandler {
 	core!: CoreConnection
 	logger: Logger
-	public _observers: Array<Observer> = []
+	public _observers: Array<Observer<any>> = []
 	public deviceSettings: PlayoutGatewayConfig = {}
 
 	public multithreading = false
@@ -449,7 +449,7 @@ export class CoreHandler {
 
 export class CoreTSRDeviceHandler {
 	core!: CoreConnectionChild
-	public _observers: Array<Observer> = []
+	public _observers: Array<Observer<any>> = []
 	public _devicePr: Promise<BaseRemoteDeviceIntegration<DeviceOptionsAny>>
 	public _deviceId: string
 	public _device!: BaseRemoteDeviceIntegration<DeviceOptionsAny>

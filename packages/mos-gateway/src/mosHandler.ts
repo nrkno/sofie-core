@@ -60,7 +60,7 @@ export class MosHandler {
 	private _disposed = false
 	private _settings?: MosGatewayConfig
 	private _coreHandler: CoreHandler | undefined
-	private _observers: Array<Observer> = []
+	private _observers: Array<Observer<any>> = []
 	private _triggerupdateDevicesTimeout: any = null
 	private mosTypes: MosTypes
 

@@ -65,11 +65,11 @@ export class StudioTopic
 		const studio = data ? (data as DBStudio) : undefined
 		switch (source) {
 			case StudioHandler.name:
-				this._logger.info(`${this._name} received studio update ${studio?._id}`)
+				this.logUpdateReceived('studio', source, `studioId ${studio?._id}`)
 				this._studio = studio
 				break
 			case PlaylistsHandler.name:
-				this._logger.info(`${this._name} received playlists update from ${source}`)
+				this.logUpdateReceived('playlists', source)
 				this._playlists = rundownPlaylists.map((p) => {
 					let activationStatus: PlaylistActivationStatus =
 						p.activationId === undefined ? 'deactivated' : 'activated'

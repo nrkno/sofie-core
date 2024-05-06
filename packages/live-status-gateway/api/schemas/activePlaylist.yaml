@@ -27,17 +27,9 @@ $defs:
       nextPart:
         description: The next Part - if empty, no part will follow live part
         $ref: '#/$defs/part'
-      adLibs:
-        description: The available AdLibs for this playlist
-        type: array
-        items:
-          $ref: '#/$defs/adLib'
-      globalAdLibs:
-        description: The available Global AdLibs for this playlist
-        type: array
-        items:
-          $ref: '#/$defs/adLib'
-    required: [event, id, name, rundownIds, currentPart, currentSegment, nextPart, adLibs, globalAdLibs]
+      publicData:
+        description: Optional arbitrary data
+    required: [event, id, name, rundownIds, currentPart, currentSegment, nextPart]
     additionalProperties: false
     examples:
       - event: activePlaylist
@@ -50,10 +42,8 @@ $defs:
           $ref: '#/$defs/currentSegment/examples/0'
         nextPart:
           $ref: '#/$defs/part/examples/0'
-        adLibs:
-          $ref: '#/$defs/adLib/examples'
-        globals:
-          $ref: '#/$defs/adLib/examples'
+        publicData:
+          category: 'Evening News'
   partBase:
     type: object
     properties:
@@ -70,13 +60,24 @@ $defs:
         description: If this part will progress to the next automatically
         type: boolean
         default: false
-    required: [id, name, segmentId]
-    additionalProperties: false
+      pieces:
+        description: All pieces in this part
+        type: array
+        items:
+          $ref: '#/$defs/piece'
+      publicData:
+        description: Optional arbitrary data
+    required: [id, name, segmentId, pieces]
+    # additionalProperties: false
     examples:
       - id: 'H5CBGYjThrMSmaYvRaa5FVKJIzk_'
         name: 'Intro'
         segmentId: 'n1mOVd5_K5tt4sfk6HYfTuwumGQ_'
         autoNext: false
+        pieces:
+          - $ref: '#/$defs/piece/examples/0'
+        publicData:
+          partType: 'intro'
   part:
     oneOf:
       - $ref: '#/$defs/partBase'
@@ -86,6 +87,8 @@ $defs:
         name: 'Intro'
         segmentId: 'n1mOVd5_K5tt4sfk6HYfTuwumGQ_'
         autoNext: false
+        pieces:
+          - $ref: '#/$defs/piece/examples/0'
   currentPart:
     oneOf:
       - allOf:
@@ -117,50 +120,10 @@ $defs:
           startTime: 1600000060000
           expectedDurationMs: 15000
           projectedEndTime: 1600000075000
-  adLib:
-    type: object
-    properties:
-      id:
-        description: Unique id of the AdLib
-        type: string
-      name:
-        description: The user defined AdLib name
-        type: string
-      sourceLayer:
-        description: The source layer name for this AdLib
-        type: string
-      outputLayer:
-        description: The output layer name for this AdLib
-        type: string
-      actionType:
-        description: The available action type names that can be used to modify the execution of the AdLib
-        type: array
-        items:
-          type: object
-          properties:
-            name:
-              description: The string to be passed to the ExecuteAdlib function
-              type: string
-            label:
-              description: The label for the AdLib type
-              type: string
-          required: [name, label]
-          additionalProperties: false
-      tags:
-        description: Tags attached to this AdLib
-        type: array
-        items:
-          type: string
-    required: [id, name, sourceLayer, actionType]
-    additionalProperties: false
-    examples:
-      - id: 'C6K_yIMuGFUk8X_L9A9_jRT6aq4_'
-        name: Music video clip
-        sourceLayer: Video Clip
-        actionType:
-          - name: pvw
-            label: Preview
-        tags: ['music_video']
+        pieces:
+          - $ref: '#/$defs/piece/examples/0'
+        publicData:
+          partType: 'intro'
   currentSegment:
     type: object
     properties:
@@ -189,3 +152,35 @@ $defs:
           expectedDurationMs: 15000
           budgetDurationMs: 20000
           projectedEndTime: 1600000075000
+  piece:
+    type: object
+    properties:
+      id:
+        description: Unique id of the Piece
+        type: string
+      name:
+        description: User-facing name of the Piece
+        type: string
+      sourceLayer:
+        description: The source layer name for this Piece
+        type: string
+      outputLayer:
+        description: The output layer name for this Piece
+        type: string
+      tags:
+        description: Tags attached to this Piece
+        type: array
+        items:
+          type: string
+      publicData:
+        description: Optional arbitrary data
+    required: [id, name, sourceLayer, outputLayer]
+    additionalProperties: false
+    examples:
+      - id: 'H5CBGYjThrMSmaYvRaa5FVKJIzk_'
+        name: 'Camera 1'
+        sourceLayer: 'Camera'
+        outputLayer: 'PGM'
+        tags: ['camera']
+        publicData:
+          switcherSource: 1
