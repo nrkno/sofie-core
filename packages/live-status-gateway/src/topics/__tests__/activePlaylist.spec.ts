@@ -78,7 +78,7 @@ describe('ActivePlaylistTopic', () => {
 			segmentId: protectString('SEGMENT_1'),
 			expectedDurationWithPreroll: 10000,
 			expectedDuration: 10000,
-			// publicData: { b: 'c' },
+			metaData: { b: 'c' }, // tmp, publicData was introduced in R51
 		}
 		const testPartInstances: PartialDeep<SelectedPartInstances> = {
 			current: {
@@ -112,7 +112,7 @@ describe('ActivePlaylistTopic', () => {
 				timing: { startTime: 1600000060000, expectedDurationMs: 10000, projectedEndTime: 1600000070000 },
 				pieces: [],
 				autoNext: undefined,
-				publicData: null, // { b: 'c' },
+				publicData: { b: 'c' },
 			},
 			nextPart: null,
 			currentSegment: {

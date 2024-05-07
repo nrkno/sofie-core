@@ -23,9 +23,9 @@ function makeTestAdLibActions(): AdLibAction[] {
 				tags: ['adlib_tag'],
 			},
 			externalId: 'NCS_ACTION_0',
-			userData: {},
+			// userData: {},
 			userDataManifest: {},
-			// publicData: { a: 'b' },
+			userData: { a: 'b' }, // tmp, publicData was introduced in R51
 		},
 	]
 }
@@ -44,9 +44,9 @@ function makeTestGlobalAdLibActions(): RundownBaselineAdLibAction[] {
 				tags: ['global_adlib_tag'],
 			},
 			externalId: 'NCS_GLOBAL_ACTION_0',
-			userData: {},
+			// userData: {},
 			userDataManifest: {},
-			// publicData: { c: 'd' },
+			userData: { c: 'd' }, // tmp, publicData was introduced in R51
 		},
 	]
 }
@@ -84,7 +84,7 @@ describe('ActivePlaylistTopic', () => {
 					outputLayer: 'PGM',
 					sourceLayer: 'Layer 0',
 					tags: ['adlib_tag'],
-					publicData: null, // { a: 'b' },
+					publicData: { a: 'b' },
 				},
 			],
 			globalAdLibs: [
@@ -95,7 +95,7 @@ describe('ActivePlaylistTopic', () => {
 					outputLayer: 'PGM',
 					sourceLayer: 'Layer 0',
 					tags: ['global_adlib_tag'],
-					publicData: null, // { c: 'd' },
+					publicData: { c: 'd' },
 				},
 			],
 		}

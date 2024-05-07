@@ -102,7 +102,7 @@ export class AdLibsTopic
 						outputLayer: outputLayerName ?? 'invalid',
 						actionType: triggerModes,
 						tags: action.display.tags,
-						publicData: null, // action.publicData, tmp, introduced in R51
+						publicData: action.userData, // tmp, publicData was introduced in R51
 					})
 				})
 			)
@@ -120,7 +120,7 @@ export class AdLibsTopic
 						outputLayer: outputLayerName ?? 'invalid',
 						actionType: [],
 						tags: adLib.tags,
-						publicData: null, // adLib.publicData, tmp, introduced in R51
+						publicData: adLib.metaData, // tmp, publicData was introduced in R51
 					})
 				})
 			)
@@ -150,7 +150,7 @@ export class AdLibsTopic
 						outputLayer: outputLayerName ?? 'invalid',
 						actionType: triggerModes,
 						tags: action.display.tags,
-						publicData: null, // action.publicData, tmp, introduced in R51
+						publicData: action.userData, // tmp, publicData was introduced in R51
 					})
 				})
 			)
@@ -168,7 +168,7 @@ export class AdLibsTopic
 						outputLayer: outputLayerName ?? 'invalid',
 						actionType: [],
 						tags: adLib.tags,
-						publicData: null, // adLib.publicData, tmp, introduced in R51
+						publicData: adLib.metaData, // tmp, publicData was introduced in R51
 					})
 				})
 			)

@@ -23,6 +23,6 @@ export function toPieceStatus(
 		sourceLayer: sourceLayerName ?? 'invalid',
 		outputLayer: outputLayerName ?? 'invalid',
 		tags: pieceInstance.piece.tags,
-		publicData: null, // pieceInstance.piece.publicData, tmp, introduced in R51
+		publicData: pieceInstance.piece.metaData, // tmp, publicData was introduced in R51
 	}
 }
