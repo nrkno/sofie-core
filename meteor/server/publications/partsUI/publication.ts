@@ -1,4 +1,4 @@
-import { PartId, RundownId, RundownPlaylistId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartId, RundownPlaylistId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { check } from 'meteor/check'
 import {
 	CustomPublishCollection,
@@ -43,7 +43,6 @@ export interface UIPartsState {
 interface UIPartsUpdateProps {
 	newCache: ContentCache
 
-	invalidateRundownIds: RundownId[]
 	invalidateSegmentIds: SegmentId[]
 	invalidatePartIds: PartId[]
 
@@ -84,10 +83,18 @@ async function setupUIPartsPublicationObservers(
 				changed: (id) => triggerUpdate({ invalidateSegmentIds: [protectString(id)] }),
 				removed: (id) => triggerUpdate({ invalidateSegmentIds: [protectString(id)] }),
 			}),
-			cache.Parts.find({}).observeChanges({
-				added: (id) => triggerUpdate({ invalidatePartIds: [protectString(id)] }),
-				changed: (id) => triggerUpdate({ invalidatePartIds: [protectString(id)] }),
-				removed: (id) => triggerUpdate({ invalidatePartIds: [protectString(id)] }),
+			cache.Parts.find({}).observe({
+				added: (doc) => triggerUpdate({ invalidatePartIds: [doc._id] }),
+				changed: (doc, oldDoc) => {
+					if (doc._rank !== oldDoc._rank) {
+						// with part rank change we need to invalidate the entire segment,
+						// as the order may affect which unchanged parts are/aren't in quickLoop
+						triggerUpdate({ invalidateSegmentIds: [doc.segmentId] })
+					} else {
+						triggerUpdate({ invalidatePartIds: [doc._id] })
+					}
+				},
+				removed: (doc) => triggerUpdate({ invalidatePartIds: [doc._id] }),
 			}),
 			cache.RundownPlaylists.find({}).observeChanges({
 				added: () => triggerUpdate({ invalidateQuickLoop: true }),
@@ -122,9 +129,6 @@ export async function manipulateUIPartsPublicationData(
 ): Promise<void> {
 	// Prepare data for publication:
 
-	// We know that `collection` does diffing when 'commiting' all of the changes we have made
-	// meaning that for anything we will call `replace()` on, we can `remove()` it first for no extra cost
-
 	if (updateProps?.newCache !== undefined) {
 		state.contentCache = updateProps.newCache ?? undefined
 	}
@@ -141,16 +145,6 @@ export async function manipulateUIPartsPublicationData(
 
 	const studio = state.contentCache.Studios.findOne({})
 	if (!studio) return
-
-	if (!playlist.quickLoop?.start || !playlist.quickLoop?.end) {
-		collection.remove(null)
-		state.contentCache.Parts.find({}).forEach((part) => {
-			collection.replace(part)
-		})
-		return
-	}
-
-	collection.remove(null)
 
 	const rundownRanks = stringsToIndexLookup(playlist.rundownIdsInOrder as unknown as string[])
 	const segmentRanks = extractRanks(state.contentCache.Segments.find({}).fetch())
@@ -188,9 +182,22 @@ export async function manipulateUIPartsPublicationData(
 		part.autoNext = part.autoNext || (isLoopingOverriden && (part.expectedDuration ?? 0) > 0)
 	}
 
+	updateProps?.invalidatePartIds?.forEach((partId) => {
+		collection.remove(partId) // if it still exists, it will be replaced in the next step
+	})
+
+	const invalidatedSegmentsSet = new Set(updateProps?.invalidateSegmentIds ?? [])
+	const invalidatedPartsSet = new Set(updateProps?.invalidatePartIds ?? [])
+
 	state.contentCache.Parts.find({}).forEach((part) => {
-		modifyPartForQuickLoop(part)
-		collection.replace(part)
+		if (
+			updateProps?.invalidateQuickLoop ||
+			invalidatedSegmentsSet.has(part.segmentId) ||
+			invalidatedPartsSet.has(part._id)
+		) {
+			modifyPartForQuickLoop(part)
+			collection.replace(part)
+		}
 	})
 }
 
