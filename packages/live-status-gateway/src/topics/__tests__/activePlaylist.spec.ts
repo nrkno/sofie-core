@@ -78,7 +78,7 @@ describe('ActivePlaylistTopic', () => {
 			segmentId: protectString('SEGMENT_1'),
 			expectedDurationWithPreroll: 10000,
 			expectedDuration: 10000,
-			publicData: { b: 'c' },
+			// publicData: { b: 'c' },
 		}
 		const testPartInstances: PartialDeep<SelectedPartInstances> = {
 			current: {
@@ -112,7 +112,7 @@ describe('ActivePlaylistTopic', () => {
 				timing: { startTime: 1600000060000, expectedDurationMs: 10000, projectedEndTime: 1600000070000 },
 				pieces: [],
 				autoNext: undefined,
-				publicData: { b: 'c' },
+				publicData: null, // { b: 'c' },
 			},
 			nextPart: null,
 			currentSegment: {
@@ -123,7 +123,7 @@ describe('ActivePlaylistTopic', () => {
 				},
 			},
 			rundownIds: unprotectStringArray(playlist.rundownIdsInOrder),
-			publicData: { a: 'b' },
+			publicData: null, // { a: 'b' },
 		}
 
 		// eslint-disable-next-line @typescript-eslint/unbound-method

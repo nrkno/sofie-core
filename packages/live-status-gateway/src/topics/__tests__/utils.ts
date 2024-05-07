@@ -32,7 +32,7 @@ export function makeTestPlaylist(id?: string): DBRundownPlaylist {
 		rundownIdsInOrder: [protectString(RUNDOWN_1_ID), protectString(RUNDOWN_2_ID)],
 		studioId: protectString('STUDIO_1'),
 		timing: { type: PlaylistTimingType.None },
-		publicData: { a: 'b' },
+		// publicData: { a: 'b' },
 	}
 }
 
