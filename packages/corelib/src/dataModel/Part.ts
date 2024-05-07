@@ -13,7 +13,7 @@ export interface PartInvalidReason {
 /** A "Line" in NRK Lingo. */
 export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId'> {
 	_id: PartId
-	/** 
+	/**
 	 * Position inside the segment
 	 * Parts always have a integer rank, spaced by one. This is defined during the core portion of ingest.
 	 * When an orphaned PartInstance this can be a decimal value.
