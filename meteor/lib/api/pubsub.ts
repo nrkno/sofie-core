@@ -163,6 +163,7 @@ export interface PubSubTypes {
 	[PubSub.peripheralDevicesAndSubDevices]: (selector: MongoQuery<PeripheralDevice>) => PeripheralDevice
 	[PubSub.rundownBaselineAdLibPieces]: (
 		selector: MongoQuery<RundownBaselineAdLibItem>,
+		includeMetadata?: boolean,
 		token?: string
 	) => RundownBaselineAdLibItem
 	[PubSub.rundownBaselineAdLibActions]: (
@@ -179,19 +180,24 @@ export interface PubSubTypes {
 		token?: string
 	) => DBRundown
 	[PubSub.adLibActions]: (selector: MongoQuery<AdLibAction>, token?: string) => AdLibAction
-	[PubSub.adLibPieces]: (selector: MongoQuery<AdLibPiece>, token?: string) => AdLibPiece
+	[PubSub.adLibPieces]: (selector: MongoQuery<AdLibPiece>, includeMetadata?: boolean, token?: string) => AdLibPiece
 	[PubSub.pieces]: (selector: MongoQuery<Piece>, token?: string) => Piece
-	[PubSub.pieceInstances]: (selector: MongoQuery<PieceInstance>, token?: string) => PieceInstance
+	[PubSub.pieceInstances]: (
+		selector: MongoQuery<PieceInstance>,
+		includeMetadata?: boolean,
+		token?: string
+	) => PieceInstance
 	[PubSub.pieceInstancesSimple]: (selector: MongoQuery<PieceInstance>, token?: string) => PieceInstance
-	[PubSub.parts]: (rundownIds: RundownId[], token?: string) => DBPart
+	[PubSub.parts]: (rundownIds: RundownId[], includeMetadata?: boolean, token?: string) => DBPart
 	[PubSub.partInstances]: (
 		rundownIds: RundownId[],
 		playlistActivationId: RundownPlaylistActivationId | undefined,
+		includeMetadata?: boolean,
 		token?: string
 	) => PartInstance
 	[PubSub.partInstancesSimple]: (selector: MongoQuery<PartInstance>, token?: string) => PartInstance
 	[PubSub.partInstancesForSegmentPlayout]: (selector: MongoQuery<PartInstance>, token?: string) => PartInstance
-	[PubSub.segments]: (selector: MongoQuery<DBSegment>, token?: string) => DBSegment
+	[PubSub.segments]: (selector: MongoQuery<DBSegment>, includeMetadata?: boolean, token?: string) => DBSegment
 	[PubSub.showStyleBases]: (selector: MongoQuery<DBShowStyleBase>, token?: string) => DBShowStyleBase
 	[PubSub.showStyleVariants]: (selector: MongoQuery<DBShowStyleVariant>, token?: string) => DBShowStyleVariant
 	[PubSub.triggeredActions]: (selector: MongoQuery<DBTriggeredActions>, token?: string) => DBTriggeredActions
@@ -224,7 +230,7 @@ export interface PubSubTypes {
 	[PubSub.packageInfos]: (deviceId: PeripheralDeviceId, token?: string) => PackageInfoDB
 
 	// For a PeripheralDevice
-	[PubSub.rundownsForDevice]: (deviceId: PeripheralDeviceId, token: string) => DBRundown
+	[PubSub.rundownsForDevice]: (deviceId: PeripheralDeviceId, includeMetadata?: boolean, token?: string) => DBRundown
 
 	// custom publications:
 	[PubSub.peripheralDeviceForDevice]: (deviceId: PeripheralDeviceId, token?: string) => PeripheralDeviceForDevice

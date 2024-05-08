@@ -140,7 +140,7 @@ export class ActivePlaylistTopic
 								publicData: nextPart.metaData, // tmp, publicData was introduced in R51
 						  })
 						: null,
-					publicData: null, // this._activePlaylist.publicData, tmp, introduced in R51
+					publicData: this._activePlaylist.metaData, // null, // this._activePlaylist.publicData, tmp, introduced in R51
 			  })
 			: literal<ActivePlaylistStatus>({
 					event: 'activePlaylist',

@@ -39,7 +39,12 @@ import { literal } from '@sofie-automation/corelib/dist/lib'
 import { MongoFieldSpecifierZeroes } from '@sofie-automation/corelib/dist/mongo'
 import { resolveCredentials } from '../security/lib/credentials'
 
-meteorPublish(PubSub.rundownsForDevice, async function (deviceId, token) {
+meteorPublish(PubSub.rundownsForDevice, async function (deviceId, includeMetadata, token) {
+	// Backwards compatibility, token is the last argument
+	if (typeof includeMetadata === 'string' && token === undefined) {
+		token = includeMetadata
+		includeMetadata = false
+	}
 	check(deviceId, String)
 	check(token, String)
 
@@ -62,6 +67,7 @@ meteorPublish(PubSub.rundownsForDevice, async function (deviceId, token) {
 			metaData: 0,
 		},
 	}
+	if (includeMetadata) delete modifier.fields?.metaData
 
 	if (NoSecurityReadAccess.any() || (await StudioReadAccess.studioContent(selector.studioId, resolvedCred))) {
 		return Rundowns.findWithCursor(selector, modifier)
@@ -104,13 +110,19 @@ meteorPublish(PubSub.rundowns, async function (playlistIds, showStyleBaseIds, to
 	}
 	return null
 })
-meteorPublish(PubSub.segments, async function (selector, token) {
+meteorPublish(PubSub.segments, async function (selector, includeMetadata, token) {
+	// Backwards compatibility, token is the last argument
+	if (typeof includeMetadata === 'string' && token === undefined) {
+		token = includeMetadata
+		includeMetadata = false
+	}
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<DBSegment> = {
 		fields: {
 			metaData: 0,
 		},
 	}
+	if (includeMetadata) delete modifier.fields?.metaData
 	if (
 		NoSecurityReadAccess.any() ||
 		(selector.rundownId &&
@@ -122,7 +134,12 @@ meteorPublish(PubSub.segments, async function (selector, token) {
 	return null
 })
 
-meteorPublish(PubSub.parts, async function (rundownIds, token) {
+meteorPublish(PubSub.parts, async function (rundownIds, includeMetadata, token) {
+	// Backwards compatibility, token is the last argument
+	if (typeof includeMetadata === 'string' && token === undefined) {
+		token = includeMetadata
+		includeMetadata = false
+	}
 	check(rundownIds, Array)
 
 	if (rundownIds.length === 0) return null
@@ -132,6 +149,7 @@ meteorPublish(PubSub.parts, async function (rundownIds, token) {
 			metaData: 0,
 		},
 	}
+	if (includeMetadata) delete modifier.fields?.metaData
 
 	const selector: MongoQuery<DBPart> = {
 		rundownId: { $in: rundownIds },
@@ -148,7 +166,12 @@ meteorPublish(PubSub.parts, async function (rundownIds, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.partInstances, async function (rundownIds, playlistActivationId, token?: string) {
+meteorPublish(PubSub.partInstances, async function (rundownIds, playlistActivationId, includeMetadata, token?: string) {
+	// Backwards compatibility, token is the last argument
+	if (typeof includeMetadata === 'string' && token === undefined) {
+		token = includeMetadata
+		includeMetadata = false
+	}
 	check(rundownIds, Array)
 	check(playlistActivationId, Match.Maybe(String))
 
@@ -160,6 +183,7 @@ meteorPublish(PubSub.partInstances, async function (rundownIds, playlistActivati
 			'part.metaData': 0,
 		},
 	}
+	if (includeMetadata) delete modifier.fields?.['part.metaData']
 
 	const selector: MongoQuery<DBPartInstance> = {
 		rundownId: { $in: rundownIds },
@@ -237,7 +261,13 @@ meteorPublish(PubSub.pieces, async function (selector: MongoQuery<Piece>, token?
 	return null
 })
 
-meteorPublish(PubSub.adLibPieces, async function (selector, token) {
+meteorPublish(PubSub.adLibPieces, async function (selector, includeMetadata, token) {
+	// Backwards compatibility, token is the last argument
+	if (typeof includeMetadata === 'string' && token === undefined) {
+		token = includeMetadata
+		includeMetadata = false
+	}
+
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<AdLibPiece> = {
 		fields: {
@@ -245,6 +275,7 @@ meteorPublish(PubSub.adLibPieces, async function (selector, token) {
 			timelineObjectsString: 0,
 		},
 	}
+	if (includeMetadata) delete modifier.fields?.metaData
 	if (
 		NoSecurityReadAccess.any() ||
 		(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
@@ -253,7 +284,12 @@ meteorPublish(PubSub.adLibPieces, async function (selector, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.pieceInstances, async function (selector, token) {
+meteorPublish(PubSub.pieceInstances, async function (selector, includeMetadata, token) {
+	// Backwards compatibility, token is the last argument
+	if (typeof includeMetadata === 'string' && token === undefined) {
+		token = includeMetadata
+		includeMetadata = false
+	}
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<PieceInstance> = {
 		fields: {
@@ -262,6 +298,7 @@ meteorPublish(PubSub.pieceInstances, async function (selector, token) {
 			'piece.timelineObjectsString': 0,
 		},
 	}
+	if (includeMetadata) delete modifier.fields?.['piece.metaData']
 
 	// Enforce only not-reset
 	selector.reset = { $ne: true }
@@ -348,7 +385,12 @@ meteorPublish(PubSub.ingestDataCache, async function (selector, token) {
 })
 meteorPublish(
 	PubSub.rundownBaselineAdLibPieces,
-	async function (selector: MongoQuery<RundownBaselineAdLibItem>, token?: string) {
+	async function (selector: MongoQuery<RundownBaselineAdLibItem>, includeMetadata, token?: string) {
+		// Backwards compatibility, token is the last argument
+		if (typeof includeMetadata === 'string' && token === undefined) {
+			token = includeMetadata
+			includeMetadata = false
+		}
 		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 		const modifier: FindOptions<RundownBaselineAdLibItem> = {
 			fields: {

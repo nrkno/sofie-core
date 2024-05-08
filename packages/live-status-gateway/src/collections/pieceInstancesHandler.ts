@@ -134,10 +134,14 @@ export class PieceInstancesHandler
 				if (!this._currentPlaylist) return
 				if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
 				this._subscriptionPending = true
-				this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, {
-					rundownId: { $in: this._currentPlaylist.rundownIdsInOrder },
-					partInstanceId: { $in: this._partInstanceIds },
-				})
+				this._subscriptionId = await this._coreHandler.setupSubscription(
+					this._publicationName,
+					{
+						rundownId: { $in: this._currentPlaylist.rundownIdsInOrder },
+						partInstanceId: { $in: this._partInstanceIds },
+					},
+					true
+				)
 				// this._subscriptionId = await this._coreHandler.setupSubscription(
 				// 	this._publicationName,
 				// 	this._currentPlaylist.rundownIdsInOrder,

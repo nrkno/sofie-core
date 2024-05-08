@@ -124,8 +124,14 @@ export class PartInstancesHandler
 				this._subscriptionId = await this._coreHandler.setupSubscription(
 					this._publicationName,
 					this._rundownIds,
-					this._activationId
+					this._activationId,
+					true
 				)
+				// this._subscriptionId = await this._coreHandler.setupSubscription(
+				// 	this._publicationName,
+				// 	this._rundownIds,
+				// 	this._activationId
+				// )
 				this._subscriptionPending = false
 				this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
 				this._dbObserver.added = (id) => {

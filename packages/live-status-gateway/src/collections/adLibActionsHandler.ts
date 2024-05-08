@@ -43,9 +43,13 @@ export class AdLibActionsHandler
 			if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
 			if (this._dbObserver) this._dbObserver.stop()
 			if (this._curRundownId && this._curPartInstance) {
-				this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, {
-					rundownId: this._curRundownId,
-				})
+				this._subscriptionId = await this._coreHandler.setupSubscription(
+					this._publicationName,
+					{
+						rundownId: this._curRundownId,
+					},
+					true
+				)
 				// this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, [
 				// 	this._curRundownId,
 				// ]) // R51
