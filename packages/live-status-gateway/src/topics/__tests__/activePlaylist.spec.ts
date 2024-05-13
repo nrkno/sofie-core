@@ -123,7 +123,7 @@ describe('ActivePlaylistTopic', () => {
 				},
 			},
 			rundownIds: unprotectStringArray(playlist.rundownIdsInOrder),
-			publicData: null, // { a: 'b' },
+			publicData: { a: 'b' },
 		}
 
 		// eslint-disable-next-line @typescript-eslint/unbound-method
