@@ -60,7 +60,7 @@ As you can tell from the table, you need to exactly match both the protocol, dom
 
 _The proxy idea_ is to use rewrite-rules in a proxy server (e.g. NGINX) to serve the plugin from a path on the Sofie server's domain. As this can't be done as subdomains, that leaves the option of having a folder underneath the top level of the Sofie server's domain.
 
-An example of this would be to serve Sofie at `https://mysofie.com` and then host the plugin (directly or via a proxy) at `https://mysofie.com/myplugin`. Technically this will work, but this solution is fragile. All links within the plugin will have to be either absolute or truly relative links that take the folder structure into account. This is doable if the plugin is being developed with this in mind. But it leads to a fragile tight coupling between the plugin and the host application (Sofie) which can break with any inconsiderate udate in the future.
+An example of this would be to serve Sofie at `https://mysofie.com` and then host the plugin (directly or via a proxy) at `https://mysofie.com/myplugin`. Technically this will work, but this solution is fragile. All links within the plugin will have to be either absolute or truly relative links that take the URL structure into account. This is doable if the plugin is being developed with this in mind. But it leads to a fragile tight coupling between the plugin and the host application (Sofie) which can break with any inconsiderate udate in the future.
 
 :::note Example of linking from a (potentially proxied) subfolder
 **Case:** `https://mysofie.com/myplugin/index.html` wants to acccess `https://mysofie.com/myplugin/static/images/logo.png`.
