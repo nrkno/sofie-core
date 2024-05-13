@@ -10,6 +10,7 @@ enum RundownListDragDropTypes {
 interface IRundownDragObject {
 	id: RundownId
 	rundownLayouts: Array<RundownLayoutBase>
+	isOnlyRundownInPlaylist: boolean
 }
 
 function isRundownDragObject(obj: unknown): obj is IRundownDragObject {

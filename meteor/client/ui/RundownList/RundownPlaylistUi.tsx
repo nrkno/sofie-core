@@ -158,6 +158,7 @@ export function RundownPlaylistUi({
 				rundownLayouts={rundownLayouts}
 				swapRundownOrder={handleRundownSwap}
 				playlistId={playlist._id}
+				isOnlyRundownInPlaylist={false}
 			/>
 		) : null
 	})
