@@ -14,6 +14,10 @@ module.exports = {
 	favicon: 'img/favicon.ico',
 	organizationName: 'nrkno',
 	projectName: 'sofie-core',
+	markdown: {
+		mermaid: true,
+	},
+	themes: ['@docusaurus/theme-mermaid'],
 	themeConfig: {
 		image: 'img/pilot_fredag-05.jpg',
 		colorMode: {
