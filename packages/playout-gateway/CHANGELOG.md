@@ -3,6 +3,61 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.50.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.6...v1.50.2) (2024-05-15)
+
+
+
+## [1.50.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.5-0...v1.50.1) (2024-03-11)
+
+
+### Bug Fixes
+
+* strip unused node dependencies from docker images ([#1159](https://github.com/nrkno/tv-automation-server-core/issues/1159)) ([6d86132](https://github.com/nrkno/tv-automation-server-core/commit/6d86132c1bc36219f04f00d5360940dfcbd6df7c))
+
+
+
+## [1.50.1-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0...v1.50.1-0) (2024-03-05)
+
+
+
+# [1.50.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.4...v1.50.0) (2024-02-23)
+
+
+### Bug Fixes
+
+* improve disposal of core connection ([dc52fe5](https://github.com/nrkno/tv-automation-server-core/commit/dc52fe5b362e308f157e5009b0f8359ba6c63630))
+* playout device config changes not being detected ([a28eae9](https://github.com/nrkno/tv-automation-server-core/commit/a28eae9f78f1aeb59316c2fb450b9da4e79213a9))
+* update tsr ([673e631](https://github.com/nrkno/tv-automation-server-core/commit/673e6313a30459ce1f8519f06df40b1b7363a7af))
+
+
+### Reverts
+
+* Revert "chore: improve logging" ([c2f4a11](https://github.com/nrkno/tv-automation-server-core/commit/c2f4a111bfeaf90ee9387c21184262354b9b60af))
+
+
+
+# [1.50.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.4...v1.50.0-in-testing.5) (2023-08-25)
+
+
+
+# [1.50.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.7...v1.50.0-in-testing.4) (2023-08-23)
+
+
+
+# [1.50.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.1...v1.50.0-in-testing.2) (2023-07-17)
+
+
+### Features
+
+* bumps nightly tsr and types ([77f0bf2](https://github.com/nrkno/tv-automation-server-core/commit/77f0bf2efe569ea7cc348f981c3f17e55273c6e4))
+* move gateway settings onto Studio SOFIE-1330 ([#907](https://github.com/nrkno/tv-automation-server-core/issues/907)) ([523c061](https://github.com/nrkno/tv-automation-server-core/commit/523c061c51296e21814deeeabbe9aafca21cd5a6))
+* peripheral device tidying ([#906](https://github.com/nrkno/tv-automation-server-core/issues/906)) ([0795ae5](https://github.com/nrkno/tv-automation-server-core/commit/0795ae5c0517114a34e350d5a5afbf7a731e9794))
+* trs actions in blueprints rundown hooks ([bb5e442](https://github.com/nrkno/tv-automation-server-core/commit/bb5e4422fa32e1af1e520e0c288360b304da4289))
+
+
+
+
+
 ## [1.50.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.1-0...v1.50.1) (2024-03-11)
 
 

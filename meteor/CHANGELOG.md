@@ -2,6 +2,350 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.50.2](///compare/v1.49.6...v1.50.2) (2024-05-15)
+
+
+### Bug Fixes
+
+* add { multi: true } to updates that can affect multiple documents f9294dd
+* add a way to take a heap snapshot. b73e4ea
+* deleting a segment can get stuck as orphaned hidden SOFIE-3048 ([#1183](undefined/undefined/undefined/issues/1183)) d4c4ba2
+* new algorithm for tieing the Prompter scroll position to content. ba54622
+* peripheraldevice child device pings not starting upon first connection SOFIE-3047 0379304
+* second try on Prompter scroll algorithm b6256cc
+
+### [1.50.1](///compare/v1.49.5-0...v1.50.1) (2024-03-11)
+
+
+### Bug Fixes
+
+* strip unused node dependencies from docker images ([#1159](undefined/undefined/undefined/issues/1159)) 6d86132
+
+### [1.50.1-0](///compare/v1.50.0...v1.50.1-0) (2024-03-05)
+
+
+### Features
+
+* support external url dropzones 489c17b
+* support prompter-editor SOFIE-2846 ([#1151](undefined/undefined/undefined/issues/1151)) fd936d0
+
+
+### Bug Fixes
+
+* bucket content status publication SOFIE-2993 f361c89
+* content status for PieceInstances can be under the id of the PieceInstance or the wrapped Piece SOFIE-2993 a5e7af4
+* **GUI:** remove Piece dependency for Part duration calculation c862582
+* PieceInstance ExpectedPackages generated with incorrect id 89880fe
+* statuses for PieceInstances should copy from the Piece until package-manager catches up 3158b09
+* thumbnail and scrub previews being reported as available too early 391bfc4
+* use the PartInstance instead of Part for PieceInstance content status SOFIE-2993 5d3a610
+
+## [1.50.0](///compare/v1.49.4...v1.50.0) (2024-02-23)
+
+
+### Features
+
+* add `node-fetch` as a global to blueprint execution SOFIE-1367 ([#1135](undefined/undefined/undefined/issues/1135)) 061d03a
+* allow blueprints to specify a custom resolution for NORA hover preview SOFIE-2840 ([#1123](undefined/undefined/undefined/issues/1123)) d2f3cef
+* **api:** allow setting segment as "immediate" next 2177b46
+* **EAV-23:** add budget and expected duration to segments topic acfaf84
+* **live-status-gw:** add `segments` topic 7a125ce
+* **live-status-gw:** add segments handler throttling 9a63519
+* **live-status-gw:** Expose AdLib tags in the `activePlaylist` topic ([#1038](undefined/undefined/undefined/issues/1038)) 1fd4ec4
+* **live-status-gw:** segment identifiers ([#1068](undefined/undefined/undefined/issues/1068)) ca592bf
+* provide a sensible notification to user when rate-limited on Snapshots 596be73
+
+
+### Bug Fixes
+
+* `rundownsForDevice` publication always failing 55bc10f
+* add handling for error 503 when generating single use token 0d1a315
+* AdLibs don't appear in Live Status Gateway until first take ([#1036](undefined/undefined/undefined/issues/1036)) bd5dbd3
+* **api:** type issues 358fba7
+* avoid doing `[0]` on a promise instead of on the awaited result ([#1047](undefined/undefined/undefined/issues/1047)) b8a79bc
+* CasparCG restart error: Timeout after 10000ms SOFIE-2588 ([#1042](undefined/undefined/undefined/issues/1042)) 394aa47
+* clear queued segment when setting one as next f79a6a5
+* debounce update of PeripheralDevice.lastSeen a63aca4
+* don't rely on winston types in `server-core-integration`, have own logger interface b418530
+* ensure `Studio.peripheralDeviceSettings` field is populated correctly by migrations aaa5606
+* ensure ExpectedPackageId values do not contain unsafe characters SOFIE-2825 fbb0431
+* expectedPackages from pieceInstances never producing ok status 3c5e11e
+* importing a snapshot loses rundown ordering SOFIE-2669 [#1034](undefined/undefined/undefined/issues/1034) c6fb01c
+* improve disposal of core connection dc52fe5
+* json-schema object-tables not handling nested tables correctly b6ae91b
+* **live-status-gw:** AdLib Pieces were missing in `activePlaylist` topic ([#1040](undefined/undefined/undefined/issues/1040)) 94857af
+* **live-status-gw:** do not include hidden segments in `segments` topic 1fae633
+* **live-status-gw:** exception in SegmentHandler 6e7edf3
+* log client side connection statuses 1d25a31
+* log connected client info, server side 56e0be0
+* merge error 685ddb6
+* missing usage of queueNextSegment 4f17b74
+* nora hoverscrub not showing content on first load SOFIE-2819 (r50) ([#1120](undefined/undefined/undefined/issues/1120)) 71892a8
+* **openapi:** change setNextSegment method to POST instead of PUT ([#1055](undefined/undefined/undefined/issues/1055)) 2436066
+* package-manager expectedPackages not removing documents when source documents are deleted d4eddcc
+* persist events to produce usable event info, add better log information when event context can't be constructed 6c4c135
+* playout device config changes not being detected a28eae9
+* prevent stale data when segments or parts are removed d133131
+* remove duplicated segment identifier 7cea357
+* rework Studio peripheralDeviceSettings definition migration to ensure it is structured correctly d3bb155
+* update influxdb to use app_host bae04f0
+* update tsr 673e631
+* use reportedStartedPlayback primarily eafabf7
+* zero duration pieces breaking ab resolver ([#1007](undefined/undefined/undefined/issues/1007)) df8aa59
+
+## [1.50.0-in-testing.5](///compare/v1.50.0-in-testing.4...v1.50.0-in-testing.5) (2023-08-25)
+
+## [1.50.0-in-testing.4](///compare/v1.49.0-in-testing.7...v1.50.0-in-testing.4) (2023-08-23)
+
+
+### Features
+
+* respect json schema required field in ui SOFIE-2436 ([#995](undefined/undefined/undefined/issues/995)) 35a95c7
+
+
+### Bug Fixes
+
+* **CameraView:** resolve issue after `remainingTimeOnCurrentPart` was reversed 695cc4c
+* **LiveStatus:** interpolate adlib names 3fcb186
+* **SegmentTimeline:** Parts don't display Part identifier labels 3f51ec7
+
+## [1.50.0-in-testing.2](///compare/v1.50.0-in-testing.1...v1.50.0-in-testing.2) (2023-07-17)
+
+
+### Bug Fixes
+
+* **RundownList:** vertical line does not line up with horizontal on last Rundown in a Playlist d511ff6
+* **server-core-integration:** `autosubscribe` will resubscribe to collections using the same subscriptionId as when initially subscribed f0f3383
+* simplify executeFunction triggerWriteAccess() check 0579716
+* some layout problems in the Settings that are only apparent when running in a clean system bac963d
+* terminate live-status-gateway if device has no studioId 3303a99
+* typo in live-status-gateway peripheralDeviceForDevice subscription b311602
+
+## [1.50.0-in-testing.1](///compare/v1.50.0-in-testing.0...v1.50.0-in-testing.1) (2023-07-05)
+
+
+### Bug Fixes
+
+* tsr actions not showing in peripheral device settings page ff85a93
+* tsr actions not showing in system status page 1c26b0a
+* webmanifest getLocale 3f98f66
+
+## [1.50.0-in-testing.0](///compare/v1.49.0-in-testing.4...v1.50.0-in-testing.0) (2023-07-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* mark `priority` as a required property in timeline objects, to prevent footguns (#961)
+* clean up deprecated Databases and DataTypes (#899)
+* json schemas for device config and mappings (#837)
+
+### Features
+
+* add `prompterTitle` property SOFIE-2404 ([#975](undefined/undefined/undefined/issues/975)) 6f0567d
+* add a hook to resolve Inspector position request to a position in document space c74c8a5
+* add centralized redirect to latest API d6f08b9
+* add milestone timing 5950fd5
+* Add ouputLayer to adlib actions cb0457e
+* add theoretical support for forward time 47db6fb
+* add will-change to Piece labels e132355
+* allow getting the Source and Output layers from the ShowStyle context ([#979](undefined/undefined/undefined/issues/979)) ab57fb4
+* allow nested config tables 544d32e
+* Allow specifying the part instance to take from 13491e6
+* always show end time if segment is live b355eb2
+* Better API structure 3286b9f
+* Better error handling for API f55bbcc
+* Better user events c8db0b9
+* blueprint settings overhaul ([#878](undefined/undefined/undefined/issues/878)) ee3307c
+* bumps nightly tsr and types 77f0bf2
+* clean up deprecated Databases and DataTypes ([#899](undefined/undefined/undefined/issues/899)) a9ccf3f
+* clean up typings 561531b
+* clear sourcelayer / recall sticky piece 57c07b1
+* continue work to use Popper for Hover Inspectors (WIP) cb034ba
+* correctly support Storyboard view with hoverscrub pop-ups f2e5090
+* disable user-select, add black browser theme, fullscreen, screen wake lock 299d27d
+* expose MOS ports in mos-gateway settings ([#917](undefined/undefined/undefined/issues/917)) 4cb1649
+* fallback to cumetime if no backtime 2cafbab
+* Implement new API structure 66d52dc
+* implement single-use tokens for heavy operations 1799825
+* improve the styling of Test Tools d695c16
+* improve the visual layout of all settings pages 687755a
+* json schemas for device config and mappings ([#837](undefined/undefined/undefined/issues/837)) fb8f1c3
+* Live status gateway example ba3774f
+* make it easier to determine Rundown is on air (SOFIE-1167) ([#896](undefined/undefined/undefined/issues/896)) 3c23fcd
+* Make live status gateway complain if it is not attached to a studio 2bcd291
+* make some job-worker collections readonly c9c61ce
+* make some meteor collections readonly 4472e94
+* make the minimum take span configurable on a per-studio basis ([#967](undefined/undefined/undefined/issues/967)) c7731a9
+* memoize RundownListItemView 42764d4
+* Migrations for DeviceType 8381522
+* Migrations from API 1c041f4
+* Migrations post bd14aa8
+* move `checkPieceContentStatus` calls to server in custom publication SOFIE-1281 ([#942](undefined/undefined/undefined/issues/942)) b09da5e
+* move blueprint ab logic into sofie SOFIE-2403 ([#946](undefined/undefined/undefined/issues/946)) cc37b75
+* move gateway settings onto Studio SOFIE-1330 ([#907](undefined/undefined/undefined/issues/907)) 523c061
+* optimize Parts completely when not in viewport c27d359
+* peripheral device tidying ([#906](undefined/undefined/undefined/issues/906)) 0795ae5
+* re-implement Escape using portals d2dd13b
+* Redirect /latest to latest API version 9f5c31f
+* refactor to use Popper for Hover Inspectors (WIP) e669a9b
+* remove MediaObjects collection from client SOFIE-2402 ([#964](undefined/undefined/undefined/issues/964)) a89a1d2
+* Remove remaining client side usage of `PackageContainerPackageStatuses` collection SOFIE-2401 ([#953](undefined/undefined/undefined/issues/953)) 8f3b8cf
+* Report adlib pieces e05e7bd
+* report inability to remove rundown to the caller SOFIE-1131 ([#886](undefined/undefined/undefined/issues/886)) 249ecc7
+* rework `/api` redirects to koa 8526b36
+* rework actionTriggers api to koa 6248e6d
+* rework blueprint http api to koa f9644ff
+* rework ingest http api to koa 1049282
+* rework peripheraldevice http api to koa (untested) f207070
+* rework rest v0 api to koa. remove picker 33d66ad
+* rework servicemessages api to koa (untested) 9cdd150
+* rework shelfLayouts api to koa 38f15a5
+* rework snapshots http api to koa 935bb3a
+* rework systemStatus api to koa 382bbc8
+* rework webmanifest api to koa 982e6dd
+* **SchemaForm:** a header component for Tables and objects 514f8e9
+* setup collection security at time of creating the server collection 5db4576
+* some intial work on CameraScreen 16da85c
+* Spinner when loading Rundown 31bdb4b
+* split package-manager publication into multiple more optimal publications SOFIE-1926 d1bb788
+* support resizing camera view efd8a8d
+* trs actions in blueprints rundown hooks bb5e442
+* upgrade react to 18.2 a7c9200
+* use transactions in job-worker a431a3f
+* working implementation of camera view cc900b8
+
+
+### Bug Fixes
+
+* `latest` api path alias 2dc7b18
+* accept a token generated in the previous validity period 459101a
+* add a migration for Peripheral Devices missing a deviceConfigSchema 897a49e
+* add transactions to some fetches 984cb5b
+* adjust budget gap line to account for new transform-based layout, which ensures that it doesn't go past the editorial line 5cb67b6
+* Adlib action find 2082825
+* AdLib find 49d236d
+* Allow JSON objects in config presets ([#949](undefined/undefined/undefined/issues/949)) 4e5a797
+* animations, timing e95f51b
+* Avoid async in process.nextTick 55411d9
+* basic parameter validation for custom publications c95ee10
+* blueprint upload f093576
+* Broken tests 5269f94
+* Broken tests 45f5bef
+* Build errors 721dbd3
+* cap on-air part duration of autonext part 6c37af9
+* **ClockView:** lower reactivity of of currentPartInstance, nextPartInstance 9cfb076
+* closer... a2f0db7
+* closer... 0ccb52c
+* consider current part when getting next rundown anchor 6b9237a
+* correct logic around end times and DRY it 9a1afc2
+* correctly working flipped hover inspectors for VTs 0fafa28
+* custom publications overly reactive ([#976](undefined/undefined/undefined/issues/976)) 3a4b184
+* Dependency links 0adf047
+* **DeviceTriggers:** make the cached Action invalidation faster 28e44b5
+* don't error when flattening timeline group children ([#944](undefined/undefined/undefined/issues/944)) 3635924
+* Don't expose rest API over DDP, reduce repeated code a29d006
+* don't show future shade on autoNext parts e8d131a
+* expectedPackage publication should be using `replace` not `insert` 3f01e1e
+* expose `deviceType` in `listPlayoutDevices` to blueprints 2b32c72
+* Expose OAuth credentials to peripheral device ([#950](undefined/undefined/undefined/issues/950)) 5d795f6
+* extract objects when source has been determined 6beefe7
+* Failing test 25e5db0
+* Failing test a32aa14
+* Failing test 92a1914
+* **FilterEditor:** some layouting of multiple components in a single properties-grid cell 13157b3
+* Generate interfaces on prepare 661c954
+* get rid of some tiny gaps between parts 757e7f4
+* getting closer 0caa097
+* handle promises in observeChanges/observe callbacks correctly 413007b
+* Headers type 0ed98e8
+* hide countdown and icicles on looping media 43da033
+* ignore `@sofie-automation/openapi` for local development 5c0acb2
+* Ignore openapi pacakge for node 14 092c345
+* Improve API responses f3cbded
+* improve timeOffset logic 405cf2e
+* Insert and update peripheralDevice type as number ([#895](undefined/undefined/undefined/issues/895)) 1e77c0a
+* install_swagger.js a6bfefc
+* Installing package for node 14 5a8dd81
+* **InvalidFloatingInspector:** resolve conditional hook execution af1e74f
+* Koa paths, blueprint tests work with Sofie da01557
+* label for OutOnRundownEnd is the same as for OutOnRundownChange AdLibs 9279d1b
+* label styling 55d62e2
+* lighten color to match existing grays on the page 3798344
+* lint b5a90b8
+* lint 024d8f5
+* Lint 259e8b6
+* linter errors 9444ade
+* make `uiPieceContentStatuses` publication be less reactive to changes in irrelevant properties on packages and mediaobjects e0eac19
+* Make DeviceType migration dependent on device migration 912ba8f
+* make openapi test port configurable and random by default. run tests in ci 888a3d0
+* make properties required but allow undefined c2d24f9
+* Make rest API independent of meteor methods class 409f97d
+* mark `priority` as a required property in timeline objects, to prevent footguns ([#961](undefined/undefined/undefined/issues/961)) 41f67ae
+* meteor crash during some http requests c992402
+* meteor ui crash with yarn3 SOFIE-2251 140619e
+* migrations for devicetype failing on some overrides [#955](undefined/undefined/undefined/issues/955) a1b8d22
+* Missing data 82038cb
+* more care with error returns, more testing 0287651
+* more correctness and fixes aff63fd
+* more test updates to run against Sofie 08a19e3
+* Move checks into API try blocks dffa23b
+* Move more type conversions to conversions file 9ef4931
+* Move server-side stuff to the server d239a2d
+* New yarn runner 4419d3f
+* Node 14 (again) 143117b
+* on some terminals, hasColors is undefined ([#924](undefined/undefined/undefined/issues/924)) 5dc3d5b
+* package status page styling ab2972f
+* package-container and package stauses should change when their Package Manager is offline 6f7ad7b
+* peripheralDeviceForDevice is not reactive on Studio changes 7684055
+* Piece preroll in Part preroll calculations ([#890](undefined/undefined/undefined/issues/890)) fc993a9
+* place the code in a blender; pulse until smooth. f41bb0a
+* playlist tests with Sofie server, logging for test errors bb45ae3
+* popper modifiers working correctly 20f0455
+* possibly closer, possibly a lateral move a72eeeb
+* reduce the amount of visual jitter on a playing timeline 83c222e
+* remove `mosRoStoryStatus` handler and `Part.status` property SOFIE-1478 ([#915](undefined/undefined/undefined/issues/915)) 5a53944
+* Remove `yarn` from script 4c3c4c1
+* Remove unused property 2901f83
+* Remove use of npx c72607a
+* remove virtual duration stuff which messes with alignment and timings c883063
+* require blueprint baseline objects to be of type `TimelineObjectCoreExt` instead of `TSR.TSRTimelineObj` [#961](undefined/undefined/undefined/issues/961) b8d0cf3
+* resetting old PartInstances and PieceInstances can affect other rundowns c364bb3
+* revert some greedy changes f611363
+* right behind you 59d508e
+* rundown view break 46bd22b
+* RundownList missing ShowStyle name. ([#971](undefined/undefined/undefined/issues/971)) 931c12c
+* **RundownList:** Tooltip alignment 20246e6
+* security warning on startup about generateSingleUseToken f99a0a0
+* seek time for hoverscrub while playing 98a17a8
+* **SegmentList:** indicator placement 470df23
+* servicemessages api tests 404c947
+* set a proper length for TOKEN_SECRET 609cf2d
+* setNextSegment behavior ([#930](undefined/undefined/undefined/issues/930)) c9dede2
+* **ShowStyleBaseSettings:** remove two-column layout in layer settings 80c7cf5
+* simplify, don't try to fix unrelated bugs 61fb201
+* simulate transactions in tests 356e480
+* small parts layout f244892
+* small parts positioning (WIP) 4c8d7f9
+* SmallPart Flag position during playback 4ecf963
+* some content-type issues c9ba4bb
+* StudioId should be undefined ([#923](undefined/undefined/undefined/issues/923)) 04953c4
+* subscription to uiSegmentPartNotes/uiPieceContentStatuses causes a crash if playlist can't be found c78cbd9
+* tests 40ee099
+* tests & add tests for nonzero default Part duration ae24924
+* tests and undo some reverted changes 84c23d6
+* throw when verifyHashedToken is false a473f37
+* **Timing:** expectedDuration=0 members of displayDuration groups countdown doesn't inherit displayDurationGroup duration 2bd5802
+* Tooltip arrow placement is incorrect cd29cea
+* Translate user errors e41b005
+* type error 8d23ab5
+* ui component crash a4f3d7d
+* use CollectionName, separate out colelction and publication 6f07428
+* use useCurrentTime b89a61a
+* Use yarn-exclude to ignore openapi f5878c0
+* usePopper placement of Inspectors b6dc9b8
+* verifyHashedToken compatible with securityVerify 7052f3d
+* working re-layouting of hover inspectors 87811a9
+
 ### [1.50.1](///compare/v1.50.1-0...v1.50.1) (2024-03-11)
 
 
