@@ -11,8 +11,7 @@ import { getCurrentTime } from '../../../lib/lib'
 import { RundownTiming } from '../RundownView/RundownTiming/RundownTiming'
 import { SegmentTimelinePartClass } from './Parts/SegmentTimelinePart'
 import { RundownTimingContext } from '../../lib/rundownTiming'
-import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
+import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 // We're cheating a little: Fontface
 declare class FontFace {
@@ -41,7 +40,6 @@ interface ITimelineGridProps {
 	scrollLeft: number
 	isLiveSegment: boolean
 	partInstances: PartUi[]
-	pieces: Map<PartId, CalculateTimingsPiece[]>
 	currentPartInstanceId: PartInstanceId | null
 	onResize: (size: number[]) => void
 }
@@ -332,7 +330,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 				total += duration
 			})
 		} else {
-			total = RundownUtils.getSegmentDuration(this.props.partInstances, this.props.pieces, true)
+			total = RundownUtils.getSegmentDuration(this.props.partInstances, true)
 		}
 		return total
 	}

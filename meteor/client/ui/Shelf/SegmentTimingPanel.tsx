@@ -23,7 +23,6 @@ import { getIsFilterActive } from '../../lib/rundownLayouts'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { PartId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
-import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 
 interface ISegmentTimingPanelProps {
 	visible?: boolean
@@ -36,7 +35,6 @@ interface ISegmentTimingPanelProps {
 interface ISegmentTimingPanelTrackedProps {
 	liveSegment?: Segment
 	parts?: PartExtended[]
-	pieces?: Map<PartId, CalculateTimingsPiece[]>
 	active: boolean
 }
 
@@ -68,11 +66,10 @@ class SegmentTimingPanelInner extends MeteorReactComponent<
 							{panel.timingType === 'count_down' ? t('Segment Count Down') : t('Segment Count Up')}
 						</span>
 					)}
-					{this.props.active && this.props.liveSegment && this.props.parts && this.props.pieces && (
+					{this.props.active && this.props.liveSegment && this.props.parts && (
 						<SegmentDuration
 							segmentId={this.props.liveSegment._id}
 							parts={this.props.parts}
-							pieces={this.props.pieces}
 							countUp={panel.timingType === 'count_up'}
 							className="segment-duration"
 						/>
@@ -144,7 +141,6 @@ export const SegmentTimingPanel = translateWithTracker<
 			const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(props.playlist)
 			const rundown = rundowns.find((r) => r._id === liveSegment.rundownId)
 			const segmentIndex = orderedSegmentsAndParts.segments.findIndex((s) => s._id === liveSegment._id)
-			const pieces = RundownPlaylistCollectionUtil.getPiecesForParts(orderedAllPartIds)
 
 			if (!rundown) return { active }
 
@@ -162,7 +158,6 @@ export const SegmentTimingPanel = translateWithTracker<
 				rundownOrder.slice(0, rundownIndex),
 				rundownsToShowstyles,
 				orderedAllPartIds,
-				pieces,
 				currentPartInstance,
 				nextPartInstance,
 				true,

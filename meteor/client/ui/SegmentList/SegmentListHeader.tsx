@@ -16,7 +16,6 @@ import { IContextMenuContext } from '../RundownView'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
 import { UIStudio } from '../../../lib/api/studios'
-import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 import { SegmentTimeAnchorTime } from '../RundownView/RundownTiming/SegmentTimeAnchorTime'
 
 export function SegmentListHeader({
@@ -24,7 +23,6 @@ export function SegmentListHeader({
 	isDetachedStick,
 	segment,
 	parts,
-	pieces,
 	playlist,
 	studio,
 	highlight,
@@ -47,7 +45,6 @@ export function SegmentListHeader({
 	playlist: RundownPlaylist
 	studio: UIStudio
 	parts: Array<PartUi>
-	pieces: Map<PartId, CalculateTimingsPiece[]>
 	segmentNoteCounts: SegmentNoteCounts
 	highlight: boolean
 	isLiveSegment: boolean
@@ -107,7 +104,6 @@ export function SegmentListHeader({
 						<SegmentDuration
 							segmentId={segment._id}
 							parts={parts}
-							pieces={pieces}
 							label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
 							fixed={fixedSegmentDuration}
 						/>

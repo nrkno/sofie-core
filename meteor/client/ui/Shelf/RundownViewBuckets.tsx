@@ -36,6 +36,7 @@ import RundownViewEventBus, {
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { BucketId, ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { DashboardLayoutExternalFrame } from '../../../lib/collections/RundownLayouts'
 
 export interface BucketAdLibUi extends BucketAdLib {
 	sourceLayer?: ISourceLayer
@@ -85,6 +86,7 @@ interface IBucketsProps {
 	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | IAdLibListItem | PieceUi | undefined
 
 	onSelectPiece?: (piece: BucketAdLibItem | undefined) => void
+	extFrames: DashboardLayoutExternalFrame[]
 }
 
 interface IState {
@@ -601,6 +603,12 @@ export const RundownViewBuckets = withTranslation()(
 												onAdLibContext={this.onAdLibContext}
 												onSelectAdlib={this.props.onSelectPiece}
 												selectedPiece={this.props.selectedPiece}
+												extFrameDropZones={this.props.extFrames
+													.filter((frame) => frame.dropzoneUrl)
+													.map<{ _id: string; url: string }>((frame) => ({
+														_id: frame._id,
+														url: frame.dropzoneUrl as string,
+													}))}
 											/>
 										)}
 									</ContextMenuTrigger>

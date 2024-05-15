@@ -27,7 +27,7 @@ RUN npm install
 
 # Install production dependencies for the worker
 WORKDIR /opt/core/packages
-RUN yarn workspaces focus --all --production
+RUN yarn workspaces focus --production @sofie-automation/job-worker @sofie-automation/corelib
 
 # DEPLOY IMAGE
 FROM node:14-alpine

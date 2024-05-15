@@ -47,6 +47,7 @@ import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import RundownViewEventBus, {
 	RundownViewEvents,
 	RevealInShelfEvent,
+	ToggleShelfDropzoneEvent,
 } from '../../../lib/api/triggers/RundownViewEventBus'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
@@ -178,6 +179,7 @@ const bucketTarget = {
 
 interface IState {
 	dropActive: boolean
+	dropFrameActive: string | null
 	bucketName: string
 	adLibPieces: BucketAdLibItem[]
 	singleClickMode: boolean
@@ -244,6 +246,7 @@ export interface IBucketPanelProps {
 	onSelectAdlib
 	onAdLibContext: (args: { contextBucket: Bucket; contextBucketAdLib: BucketAdLibItem }, callback: () => void) => void
 	onPieceNameRename: () => void
+	extFrameDropZones: { _id: string; url: string }[]
 }
 
 export interface IBucketPanelTrackedProps extends IDashboardPanelTrackedProps {
@@ -378,6 +381,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 
 					this.state = {
 						dropActive: false,
+						dropFrameActive: null,
 						bucketName: props.bucket.name,
 						adLibPieces: props.adLibPieces.slice(),
 						singleClickMode: false,
@@ -419,6 +423,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					window.addEventListener(MOSEvents.dragleave, this.onDragLeave)
 
 					RundownViewEventBus.on(RundownViewEvents.REVEAL_IN_SHELF, this.onRevealInShelf)
+					RundownViewEventBus.on(RundownViewEvents.TOGGLE_SHELF_DROPZONE, this.onToggleDropFrame)
 				}
 
 				componentDidUpdate(prevProps: IBucketPanelProps & IBucketPanelTrackedProps) {
@@ -436,6 +441,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 
 					window.removeEventListener(MOSEvents.dragenter, this.onDragEnter)
 					window.removeEventListener(MOSEvents.dragleave, this.onDragLeave)
+					RundownViewEventBus.removeListener(RundownViewEvents.TOGGLE_SHELF_DROPZONE, this.onToggleDropFrame)
 				}
 
 				onRevealInShelf = (e: RevealInShelfEvent) => {
@@ -791,6 +797,13 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					)
 				}
 
+				private onToggleDropFrame = (e: ToggleShelfDropzoneEvent) => {
+					this.setState({
+						// dropActive: e.display,
+						dropFrameActive: e.display ? e.id : null,
+					})
+				}
+
 				render(): JSX.Element | null {
 					const { connectDragSource, connectDragPreview, connectDropTarget } = this.props
 
@@ -830,7 +843,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 								<div
 									className={ClassNames('dashboard-panel', 'dashboard-panel__panel--bucket', {
 										'dashboard-panel__panel--bucket-active': this.state.dropActive,
-										'dashboard-panel__panel--sort-dragging': this.props.isDragging,
+										'dashboard-panel__panel--sort-dragging':
+											(this.props.isDragging || this.state.dropFrameActive) && !this.state.dropActive,
 									})}
 									data-bucket-id={this.props.bucket._id}
 									ref={this.setRef}
@@ -908,6 +922,18 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 												</BucketPieceButton>
 											</ContextMenuTrigger>
 										))}
+										{this.props.extFrameDropZones.map((dropZone) => (
+											<DropzoneHolder
+												key={dropZone._id}
+												bucketId={this.props.bucket._id}
+												id={dropZone._id}
+												url={dropZone.url}
+												hidden={this.state.dropFrameActive !== dropZone._id}
+												showStyleBaseId={this.props.showStyleBaseId}
+												onDragEnter={this.onDragEnter}
+												onDragLeave={this.onDragLeave}
+											/>
+										))}
 									</div>
 								</div>
 							)
@@ -919,3 +945,88 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		)
 	)
 )
+
+interface DropzoneHolderProps {
+	id: string
+	bucketId: BucketId
+	url: string
+	hidden: boolean
+	showStyleBaseId: ShowStyleBaseId
+
+	onDragEnter?: () => void
+	onDragLeave?: () => void
+}
+const DropzoneHolder = (props: DropzoneHolderProps) => {
+	const [dropzoneElementRef, setDropzoneElementRef] = React.useState<HTMLIFrameElement | null>(null)
+
+	const onMessage = React.useCallback(
+		(event: MessageEvent) => {
+			// filter out messages from this panel
+			if (event.source !== dropzoneElementRef?.contentWindow) return
+
+			switch (event.data?.event) {
+				case 'drop':
+					RundownViewEventBus.emit(RundownViewEvents.ITEM_DROPPED, {
+						id: props.id,
+						bucketId: props.bucketId,
+						ev: event,
+					})
+					if (props.onDragLeave) props.onDragLeave()
+					break
+				case 'data':
+					if (event.data.data.trim().endsWith('</mos>')) {
+						RundownViewEventBus.emit(RundownViewEvents.ITEM_DROPPED, {
+							id: props.id,
+							bucketId: props.bucketId,
+							message: event.data.data,
+							ev: event,
+						})
+					}
+					break
+				case 'error':
+					RundownViewEventBus.emit(RundownViewEvents.ITEM_DROPPED, {
+						id: props.id,
+						bucketId: props.bucketId,
+						error: event.data.message,
+						ev: event,
+					})
+					break
+				case 'dragEnter':
+					if (props.onDragEnter) props.onDragEnter()
+					break
+				case 'dragLeave':
+					if (props.onDragLeave) props.onDragLeave()
+					break
+			}
+		},
+		[dropzoneElementRef, props.onDragEnter, props.onDragLeave]
+	)
+
+	React.useEffect(() => {
+		if (!dropzoneElementRef) return
+
+		const registerHandlers = () => {
+			window.addEventListener('message', onMessage)
+		}
+		const unregisterHandlers = () => {
+			window.removeEventListener('message', onMessage)
+		}
+
+		registerHandlers()
+
+		return () => {
+			unregisterHandlers()
+		}
+	}, [dropzoneElementRef, onMessage])
+
+	return (
+		<div className="dropzone-panel" style={{ visibility: props.hidden ? 'hidden' : 'visible' }}>
+			<iframe
+				ref={setDropzoneElementRef}
+				className="external-frame-panel__iframe"
+				src={props.url}
+				sandbox="allow-forms allow-popups allow-scripts allow-same-origin"
+			></iframe>
+		</div>
+	)
+}

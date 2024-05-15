@@ -101,7 +101,7 @@ describe('RundownsObserver', () => {
 			// After debounce
 			await runAllTimers()
 			expect(onChanged).toHaveBeenCalledTimes(2)
-			expect(onChangedCleanup).toHaveBeenCalledTimes(0)
+			expect(onChangedCleanup).toHaveBeenCalledTimes(1)
 			expect(onChanged).toHaveBeenLastCalledWith([mockId0])
 		} finally {
 			// Make sure to cleanup
@@ -147,7 +147,7 @@ describe('RundownsObserver', () => {
 			// After debounce
 			await runAllTimers()
 			expect(onChanged).toHaveBeenCalledTimes(2)
-			expect(onChangedCleanup).toHaveBeenCalledTimes(0)
+			expect(onChangedCleanup).toHaveBeenCalledTimes(1)
 			expect(onChanged).toHaveBeenLastCalledWith([mockId0])
 		} finally {
 			// Make sure to cleanup
@@ -199,7 +199,7 @@ describe('RundownsObserver', () => {
 			// After debounce
 			await runAllTimers()
 			expect(onChanged).toHaveBeenCalledTimes(2)
-			expect(onChangedCleanup).toHaveBeenCalledTimes(0)
+			expect(onChangedCleanup).toHaveBeenCalledTimes(1)
 			expect(onChanged).toHaveBeenLastCalledWith([mockId0, mockId1, mockId2, mockId3])
 
 			// more documents changing
@@ -218,12 +218,12 @@ describe('RundownsObserver', () => {
 
 			// no debounced call yet
 			expect(onChanged).toHaveBeenCalledTimes(2)
-			expect(onChangedCleanup).toHaveBeenCalledTimes(0)
+			expect(onChangedCleanup).toHaveBeenCalledTimes(1)
 
 			// After debounce
 			await runAllTimers()
 			expect(onChanged).toHaveBeenCalledTimes(3)
-			expect(onChangedCleanup).toHaveBeenCalledTimes(0)
+			expect(onChangedCleanup).toHaveBeenCalledTimes(2)
 			expect(onChanged).toHaveBeenLastCalledWith([mockId0, mockId1, mockId3, mockId4])
 		} finally {
 			// Make sure to cleanup

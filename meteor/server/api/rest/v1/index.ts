@@ -1090,7 +1090,7 @@ class ServerRestAPI implements RestAPI {
 			}
 		}
 
-		await PeripheralDevices.updateAsync({ studioId }, { $unset: { studioId: 1 } })
+		await PeripheralDevices.updateAsync({ studioId }, { $unset: { studioId: 1 } }, { multi: true })
 
 		const rundownPlaylists = (await RundownPlaylists.findFetchAsync(
 			{ studioId },

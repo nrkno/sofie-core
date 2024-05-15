@@ -532,6 +532,18 @@ export default withTranslation()(
 					</label>
 
 					<label className="field">
+						<LabelActual label={t('Dropzone URL')} />
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute={`filters.${index}.dropzoneUrl`}
+							obj={item}
+							type="text"
+							collection={RundownLayouts}
+							className="input text-input input-l"
+						/>
+					</label>
+
+					<label className="field">
 						<LabelActual label={t('Display Rank')} />
 						<EditAttribute
 							modifiedClassName="bghl"

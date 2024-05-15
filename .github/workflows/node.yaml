@@ -335,7 +335,7 @@ jobs:
           yarn install
           yarn lerna run --scope \*\*/${{ matrix.gateway-name }} --include-dependencies --stream build
           yarn run pinst --disable
-          yarn workspaces focus --all --production
+          yarn workspaces focus ${{ matrix.gateway-name }} --production
       - name: Set up Docker Buildx
         if: steps.check-build-and-push.outputs.enable == 'true'
         uses: docker/setup-buildx-action@v3

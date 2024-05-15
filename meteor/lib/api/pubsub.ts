@@ -61,6 +61,7 @@ import {
 	PackageManagerPlayoutContext,
 } from '@sofie-automation/shared-lib/dist/package-manager/publications'
 import { logger } from '../logging'
+import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 
 /**
  * Ids of possible DDP subscriptions
@@ -220,6 +221,7 @@ export interface PubSubTypes {
 		selector: MongoQuery<PackageContainerStatusDB>,
 		token?: string
 	) => PackageContainerStatusDB
+	[PubSub.packageInfos]: (deviceId: PeripheralDeviceId, token?: string) => PackageInfoDB
 
 	// For a PeripheralDevice
 	[PubSub.rundownsForDevice]: (deviceId: PeripheralDeviceId, token: string) => DBRundown

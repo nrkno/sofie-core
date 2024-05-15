@@ -16,6 +16,7 @@ import { CoreSystem } from '../../collections'
 import { CollectionCleanupResult } from '../../../lib/api/system'
 import { LabelActual } from '../../lib/Components/LabelAndOverrides'
 import { catchError } from '../../lib/lib'
+import { useTranslation } from 'react-i18next'
 
 interface IProps {}
 
@@ -315,6 +316,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 							{t('Cleanup old data')}
 						</button>
 					</div>
+					<SystemManagementHeapSnapshot />
 				</div>
 			) : null
 		}
@@ -427,4 +429,52 @@ export function checkForOldDataAndCleanUp(t: TFunction, retriesLeft = 0): void {
 			}
 		})
 		.catch(catchError('system.cleanupOldData'))
+}
+function SystemManagementHeapSnapshot() {
+	const { t } = useTranslation()
+
+	const [displayWarning, setDisplayWarning] = React.useState(false)
+	const [active, setActive] = React.useState(false)
+
+	const onAreYouSure = React.useCallback(() => {
+		setDisplayWarning(true)
+	}, [])
+	const onReset = React.useCallback(() => {
+		setDisplayWarning(false)
+		setActive(false)
+	}, [])
+	const onConfirm = React.useCallback(() => {
+		setActive(true)
+		setTimeout(() => setActive(false), 20000)
+	}, [])
+	return (
+		<>
+			<h2 className="mhn">{t('Memory troubleshooting')}</h2>
+			<div>
+				{active ? (
+					<span>{t('Preparing, please wait...')}</span>
+				) : displayWarning ? (
+					<>
+						<div>{t(`Are you sure? This will cause the whole Sofie system to be unresponsive several seconds!`)}</div>
+
+						<a className="btn btn-primary" href="/api/private/heapSnapshot/retrieve?areYouSure=yes" onClick={onConfirm}>
+							{t(`Yes, Take and Download Memory Heap Snapshot`)}
+						</a>
+						<button className="btn btn-default" onClick={onReset}>
+							{t(`No`)}
+						</button>
+					</>
+				) : (
+					<button className="btn btn-primary" onClick={onAreYouSure}>
+						{t(`Take and Download Memory Heap Snapshot`)}
+					</button>
+				)}
+			</div>
+			<div>
+				<span className="text-s dimmed field-hint">
+					{t('To inspect the memory heap snapshot, use Chrome DevTools')}
+				</span>
+			</div>
+		</>
+	)
 }

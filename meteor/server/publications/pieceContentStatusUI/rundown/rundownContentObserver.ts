@@ -6,6 +6,7 @@ import {
 	adLibPieceFieldSpecifier,
 	ContentCache,
 	partFieldSpecifier,
+	partInstanceFieldSpecifier,
 	pieceFieldSpecifier,
 	pieceInstanceFieldSpecifier,
 	rundownFieldSpecifier,
@@ -17,6 +18,7 @@ import {
 import {
 	AdLibActions,
 	AdLibPieces,
+	PartInstances,
 	Parts,
 	PieceInstances,
 	Pieces,
@@ -138,6 +140,18 @@ export class RundownContentObserver {
 					projection: pieceFieldSpecifier,
 				}
 			),
+			PartInstances.observe(
+				{
+					rundownId: {
+						$in: rundownIds,
+					},
+					reset: { $ne: true },
+				},
+				cache.PartInstances.link(),
+				{
+					projection: partInstanceFieldSpecifier,
+				}
+			),
 			PieceInstances.observe(
 				{
 					rundownId: {
@@ -199,7 +213,7 @@ export class RundownContentObserver {
 
 	private updateShowStyleBaseIds = _.debounce(
 		Meteor.bindEnvironment(() => {
-			const newShowStyleBaseIds = this.#cache.Rundowns.find({}).map((rd) => rd.showStyleBaseId)
+			const newShowStyleBaseIds = _.uniq(this.#cache.Rundowns.find({}).map((rd) => rd.showStyleBaseId))
 
 			if (!equivalentArrays(newShowStyleBaseIds, this.#showStyleBaseIds)) {
 				logger.silly(

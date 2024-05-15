@@ -33,6 +33,7 @@ import { MOS_DATA_IS_STRICT } from '../../../lib/mos'
 import { getMosTypes, stringifyMosObject } from '@mos-connection/helper'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 import { logger } from '../../../lib/logging'
+import RundownViewEventBus, { ItemDroppedEvent, RundownViewEvents } from '../../../lib/api/triggers/RundownViewEventBus'
 
 const PackageInfo = require('../../../package.json')
 
@@ -100,6 +101,10 @@ export const ExternalFramePanel = withTranslation()(
 		mounted = false
 		initialized = false
 		failedDragTimeout: number | undefined
+		failedDropTimeout: number | undefined
+
+		waitForItemLoad: undefined | Promise<any>
+		resolveItemLoad: undefined | ((res: any) => void)
 
 		awaitingReply: {
 			[key: string]: {
@@ -141,6 +146,27 @@ export const ExternalFramePanel = withTranslation()(
 					this.actSofieMessage(data)
 				} else {
 					this.actMOSMessage(e, data)
+				}
+			} else if (this.props.panel.dropzoneUrl && e.source === this.frame?.contentWindow) {
+				if (e.data.event === 'dragStart' || e.data.event === 'dragEnd') {
+					RundownViewEventBus.emit(RundownViewEvents.TOGGLE_SHELF_DROPZONE, {
+						id: this.props.panel._id,
+						display: e.data.event === 'dragStart',
+					})
+				}
+
+				if (e.data.event === 'dragStart') {
+					// set timeout
+					this.failedDropTimeout = Meteor.setTimeout(() => {
+						this.failedDropTimeout = undefined
+						RundownViewEventBus.emit(RundownViewEvents.TOGGLE_SHELF_DROPZONE, {
+							id: this.props.panel._id,
+							display: false,
+						})
+					}, 10000)
+				} else {
+					// clear timeout
+					if (this.failedDropTimeout) Meteor.clearTimeout(this.failedDropTimeout)
 				}
 			}
 		}
@@ -184,19 +210,8 @@ export const ExternalFramePanel = withTranslation()(
 			return undefined
 		}
 
-		receiveMOSItem(e: any, mosItem: MOS.IMOSItem) {
-			const { t, playlist } = this.props
-
-			console.log('Object received, passing onto blueprints', mosItem)
-
-			const bucketId = this.findBucketId(e.target)
-			let targetBucket
-
-			if (bucketId) {
-				targetBucket = Buckets.findOne(bucketId)
-			} else {
-				targetBucket = Buckets.findOne()
-			}
+		private getShowStyleBaseId() {
+			const { playlist } = this.props
 
 			let targetRundown: Rundown | undefined
 			let currentPart: PartInstance | undefined
@@ -223,7 +238,25 @@ export const ExternalFramePanel = withTranslation()(
 			if (!targetRundown) {
 				throw new Meteor.Error('Target rundown could not be determined!')
 			}
-			const showStyleBaseId = targetRundown.showStyleBaseId
+
+			return targetRundown.showStyleBaseId
+		}
+
+		receiveMOSItem(e: any, mosItem: MOS.IMOSItem) {
+			const { t } = this.props
+
+			console.log('Object received, passing onto blueprints', mosItem)
+
+			const bucketId = this.findBucketId(e.target)
+			let targetBucket
+
+			if (bucketId) {
+				targetBucket = Buckets.findOne(bucketId)
+			} else {
+				targetBucket = Buckets.findOne()
+			}
+
+			const showStyleBaseId = this.getShowStyleBaseId()
 
 			const mosTypes = getMosTypes(MOS_DATA_IS_STRICT)
 
@@ -529,8 +562,66 @@ export const ExternalFramePanel = withTranslation()(
 			}
 		}
 
+		private onDropZoneDropped = (e: ItemDroppedEvent) => {
+			if (e.id !== this.props.panel._id) return
+
+			if (!e.message && !e.error) {
+				// start user action
+				this.waitForItemLoad = new Promise((resolve) => (this.resolveItemLoad = resolve))
+
+				const { t } = this.props
+				const bucketId = e.bucketId
+				const targetBucket = bucketId ? Buckets.findOne(bucketId) : Buckets.findOne()
+
+				const showStyleBaseId = this.getShowStyleBaseId()
+
+				const mosTypes = getMosTypes(MOS_DATA_IS_STRICT)
+
+				console.log('start transfer from ext panel')
+
+				doUserAction(t, e, UserAction.INGEST_BUCKET_ADLIB, async (e, ts) => {
+					const message = await this.waitForItemLoad
+
+					if (!message || !message.item) throw new Error(message.error ?? 'No MOS item found')
+					const mosItem = message.item
+
+					console.log('Object received, passing onto blueprints', mosItem)
+
+					const name = mosItem.Slug
+						? mosTypes.mosString128.stringify(mosItem.Slug)
+						: mosItem.ObjectSlug
+						? mosTypes.mosString128.stringify(mosItem.ObjectSlug)
+						: ''
+
+					return MeteorCall.userAction.bucketAdlibImport(
+						e,
+						ts,
+						targetBucket ? targetBucket._id : protectString(''),
+						showStyleBaseId,
+						literal<IngestAdlib>({
+							externalId: mosItem.ObjectID ? mosTypes.mosString128.stringify(mosItem.ObjectID) : '',
+							name,
+							payloadType: 'MOS',
+							payload: stringifyMosObject(mosItem, MOS_DATA_IS_STRICT),
+						})
+					)
+				})
+			} else if (this.resolveItemLoad) {
+				if (e.error) {
+					this.resolveItemLoad(e.error ? { error: e.error } : e.message)
+				} else if (e.message) {
+					const message = parseMosPluginMessageXml(e.message)
+					this.resolveItemLoad(message)
+				}
+			} else if (e.message) {
+				this.actMOSMessage(e.ev, e.message)
+			}
+		}
+
 		componentDidMount(): void {
 			window.addEventListener('message', this.onReceiveMessage)
+
+			RundownViewEventBus.addListener(RundownViewEvents.ITEM_DROPPED, this.onDropZoneDropped)
 		}
 
 		componentWillUnmount(): void {
@@ -538,6 +629,7 @@ export const ExternalFramePanel = withTranslation()(
 			_.each(this.awaitingReply, (promise) => promise.reject(new Error('ExternalFramePanel unmounting')))
 			this.unregisterHandlers()
 			window.removeEventListener('message', this.onReceiveMessage)
+			RundownViewEventBus.removeListener(RundownViewEvents.ITEM_DROPPED, this.onDropZoneDropped)
 		}
 
 		render(): JSX.Element {
