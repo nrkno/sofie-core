@@ -148,14 +148,6 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 	private _setIFrameElement = (e: HTMLIFrameElement | null) => {
 		if (!e) return
 		this.iframeElement = e
-
-		// set up IntersectionObserver to keep the preview inside the viewport
-		const options = {
-			threshold: [] as number[],
-		}
-		for (let i = 0; i < 50; i++) {
-			options.threshold.push(i / 50)
-		}
 	}
 
 	private _onNoraMessage = (msg: MessageEvent): void => {
