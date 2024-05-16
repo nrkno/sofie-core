@@ -785,7 +785,8 @@ export async function resetDatabaseVersions(): Promise<void> {
 					system: '',
 				},
 			},
-		}
+		},
+		{ multi: true }
 	)
 }
 

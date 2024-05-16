@@ -27,7 +27,7 @@ export interface CommitIngestData {
 	 * eg, whole segment is renamed and middle part deleted
 	 * Note: Only supported for MOS, not 'normal' ingest operations
 	 */
-	renamedSegments: Map<SegmentId, SegmentId>
+	renamedSegments: Map<SegmentId, SegmentId> | null
 
 	/** Set to true if the rundown should be removed or orphaned */
 	removeRundown: boolean

@@ -1,6 +1,6 @@
 {
 	"name": "automation-core",
-	"version": "1.50.1",
+	"version": "1.50.2",
 	"private": true,
 	"engines": {
 		"node": ">=14.19.1"
@@ -46,7 +46,7 @@
 		"@fortawesome/free-solid-svg-icons": "^6.4.0",
 		"@fortawesome/react-fontawesome": "^0.2.0",
 		"@jstarpl/react-contextmenu": "^2.15.0",
-		"@koa/cors": "^4.0.0",
+		"@koa/cors": "^5.0.0",
 		"@koa/router": "^12.0.0",
 		"@mos-connection/helper": "^3.0.4",
 		"@nrk/core-icons": "^9.6.0",
@@ -125,7 +125,7 @@
 		"@types/jest": "^29.5.0",
 		"@types/koa": "^2.13.5",
 		"@types/koa-bodyparser": "^4.3.8",
-		"@types/koa__cors": "^3.3.0",
+		"@types/koa__cors": "^5.0.0",
 		"@types/koa__router": "^12.0.0",
 		"@types/meteor": "^2.9.2",
 		"@types/node": "^14",

@@ -10,7 +10,7 @@ import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { calculatePartExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 import { getCurrentTime } from '../lib'
 import { JobContext } from '../jobs'
-import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getRundownIDsFromCache } from './cache'
+import { CacheForPlayout, getRundownIDsFromCache } from './cache'
 import {
 	fetchPiecesThatMayBeActiveForPart,
 	getPieceInstancesForPart,
@@ -20,8 +20,7 @@ import { convertAdLibToPieceInstance, getResolvedPieces, setupPieceInstanceInfin
 import { updateTimeline } from './timeline/generate'
 import { PieceLifespan, IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { updatePartInstanceRanksAfterAdlib } from '../rundown'
-import { selectNextPart } from './selectNextPart'
+import { updatePartInstanceRanksAfterAdlib } from '../updatePartInstanceRanksAndOrphanedState'
 import { setNextPart } from './setNext'
 import { calculateNowOffsetLatency } from './timeline/multi-gateway'
 import { logger } from '../logging'
@@ -215,19 +214,9 @@ export async function innerStartQueuedAdLib(
 	// Ensure it is labelled as dynamic
 	newPartInstance.orphaned = 'adlib-part'
 
-	// Find the following part, so we can pick a good rank
-	const followingPart = selectNextPart(
-		context,
-		cache.Playlist.doc,
-		currentPartInstance,
-		null,
-		getOrderedSegmentsAndPartsFromPlayoutCache(cache),
-		false // We want to insert it before any trailing invalid piece
-	)
-	newPartInstance.part._rank = getRank(
-		currentPartInstance.part,
-		followingPart?.part?.segmentId === newPartInstance.segmentId ? followingPart?.part : undefined
-	)
+	// Parts are always integers spaced by one, and orphaned PartInstances will be decimals spaced between two Part
+	// so we can predict a 'safe' rank to get the desired position with some simple maths
+	newPartInstance.part._rank = getRank(currentPartInstance.part._rank, Math.floor(currentPartInstance.part._rank + 1))
 
 	cache.PartInstances.insert(newPartInstance)
 
@@ -242,7 +231,7 @@ export async function innerStartQueuedAdLib(
 		cache.PieceInstances.insert(pieceInstance)
 	})
 
-	updatePartInstanceRanksAfterAdlib(cache, newPartInstance.part.segmentId)
+	updatePartInstanceRanksAfterAdlib(cache, currentPartInstance, newPartInstance)
 
 	// Find and insert any rundown defined infinites that we should inherit
 	newPartInstance = cache.PartInstances.findOne(newPartInstance._id) as DBPartInstance

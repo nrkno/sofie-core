@@ -1808,12 +1808,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@koa/cors@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "@koa/cors@npm:4.0.0"
+"@koa/cors@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "@koa/cors@npm:5.0.0"
   dependencies:
     vary: ^1.1.2
-  checksum: e0760544823532f2d71d792e3076858e38bab9b1c090abea175f1319fd91ea58a1da384a2fe7f5108f1c681e3830b01f62a1cafe271d6406751976af443187aa
+  checksum: 050701fb57dede2fefe0217459782bab7c9488fd07ff1f87fff680005cab43e03b7509e6015ea68082aadb1b31fe3eea7858ebdc93a2cf6f26d36d071190d50c
   languageName: node
   linkType: hard
 
@@ -2082,7 +2082,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@sofie-automation/blueprints-integration@portal:../packages/blueprints-integration::locator=automation-core%40workspace%3A."
   dependencies:
-    "@sofie-automation/shared-lib": 1.50.1
+    "@sofie-automation/shared-lib": 1.50.2
     tslib: ^2.4.0
     type-fest: ^2.19.0
   languageName: node
@@ -2123,8 +2123,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@sofie-automation/corelib@portal:../packages/corelib::locator=automation-core%40workspace%3A."
   dependencies:
-    "@sofie-automation/blueprints-integration": 1.50.1
-    "@sofie-automation/shared-lib": 1.50.1
+    "@sofie-automation/blueprints-integration": 1.50.2
+    "@sofie-automation/shared-lib": 1.50.2
     fast-clone: ^1.5.13
     i18next: ^21.9.1
     influx: ^5.9.3
@@ -2155,9 +2155,9 @@ __metadata:
   resolution: "@sofie-automation/job-worker@portal:../packages/job-worker::locator=automation-core%40workspace%3A."
   dependencies:
     "@slack/webhook": ^6.1.0
-    "@sofie-automation/blueprints-integration": 1.50.1
-    "@sofie-automation/corelib": 1.50.1
-    "@sofie-automation/shared-lib": 1.50.1
+    "@sofie-automation/blueprints-integration": 1.50.2
+    "@sofie-automation/corelib": 1.50.2
+    "@sofie-automation/shared-lib": 1.50.2
     amqplib: ^0.10.3
     deepmerge: ^4.3.1
     elastic-apm-node: ^3.43.0
@@ -2489,12 +2489,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/koa__cors@npm:^3.3.0":
-  version: 3.3.1
-  resolution: "@types/koa__cors@npm:3.3.1"
+"@types/koa__cors@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "@types/koa__cors@npm:5.0.0"
   dependencies:
     "@types/koa": "*"
-  checksum: 816303d34c1b92627cfaea5327d25cff86d8eb969e5866af4c3769ec158c4575ab5b6fa01145eec0eeb61019648bc165981becf3a13001ec67a83ef9994e0e29
+  checksum: ad8e6a482f1bb0e357e0051faec328a75e2978a24065a953032d5dba58ac08edf5ca66b03059551f0faf9e085b15ee7892e6ab03c9500af4be8bd258965479c9
   languageName: node
   linkType: hard
 
@@ -3459,7 +3459,7 @@ __metadata:
     "@fortawesome/free-solid-svg-icons": ^6.4.0
     "@fortawesome/react-fontawesome": ^0.2.0
     "@jstarpl/react-contextmenu": ^2.15.0
-    "@koa/cors": ^4.0.0
+    "@koa/cors": ^5.0.0
     "@koa/router": ^12.0.0
     "@mos-connection/helper": ^3.0.4
     "@nrk/core-icons": ^9.6.0
@@ -3481,7 +3481,7 @@ __metadata:
     "@types/jest": ^29.5.0
     "@types/koa": ^2.13.5
     "@types/koa-bodyparser": ^4.3.8
-    "@types/koa__cors": ^3.3.0
+    "@types/koa__cors": ^5.0.0
     "@types/koa__router": ^12.0.0
     "@types/meteor": ^2.9.2
     "@types/node": ^14

@@ -2,7 +2,7 @@ import { RundownId, SegmentId, PartId, PartInstanceId } from '@sofie-automation/
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { MockJobContext, setupDefaultJobEnvironment } from '../__mocks__/context'
 import { setupDefaultRundownPlaylist, setupMockShowStyleCompound } from '../__mocks__/presetCollections'
-import { updatePartInstanceRanks } from '../rundown'
+import { updatePartInstanceRanksAndOrphanedState } from '../updatePartInstanceRanksAndOrphanedState'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
@@ -122,7 +122,7 @@ describe('updatePartInstanceRanks', () => {
 
 			const changeMap = new Map<SegmentId, Array<{ id: PartId; rank: number }>>()
 			changeMap.set(segmentId, initialRanks)
-			await updatePartInstanceRanks(context, cache, [segmentId], changeMap)
+			await updatePartInstanceRanksAndOrphanedState(context, cache, [segmentId], changeMap)
 
 			await cache.saveAllToDatabase()
 		})
@@ -163,7 +163,6 @@ describe('updatePartInstanceRanks', () => {
 		newRank: number
 	): Promise<void> {
 		const partInstanceId = protectString(`${partId}_instance`)
-		await context.mockCollections.PartInstances.update(partInstanceId, { $set: { 'part._rank': newRank } })
 
 		for (const e of expectedRanks) {
 			if (e.id === partInstanceId) {
@@ -238,7 +237,7 @@ describe('updatePartInstanceRanks', () => {
 		await updatePartRank(initialInstanceRanks, 'part04', 3)
 		await updatePartRank(initialInstanceRanks, 'part05', 4)
 		await context.mockCollections.Parts.remove(protectString('part01'))
-		await updatePartRank(initialInstanceRanks, 'part01', 0)
+		await updatePartRank(initialInstanceRanks, 'part01', -1)
 
 		await updateRanksForSegment(context, segmentId, initialRanks)
 
@@ -279,7 +278,7 @@ describe('updatePartInstanceRanks', () => {
 			id: protectString(`${adlibId}_instance`),
 			partId: protectString(adlibId),
 			orphaned: 'adlib-part',
-			rank: 2.666666666666667,
+			rank: 2.6666666666666665,
 		})
 
 		await updateRanksForSegment(context, segmentId, initialRanks)
@@ -300,7 +299,7 @@ describe('updatePartInstanceRanks', () => {
 		// Delete the segment
 		await context.mockCollections.Parts.remove({ segmentId })
 		for (const e of initialInstanceRanks) {
-			e.rank-- // Offset to match the generated order
+			e.rank -= 6 // Offset to match the generated order
 			e.orphaned = 'deleted'
 		}
 
@@ -347,14 +346,128 @@ describe('updatePartInstanceRanks', () => {
 		await insertPart('part10', 0.5)
 		await insertPart('part11', 1)
 		await insertPart('part12', 2)
-		await updatePartInstanceRank(initialInstanceRanks, 'part01', -4.5)
-		await updatePartInstanceRank(initialInstanceRanks, 'part02', -3.5)
-		await updatePartInstanceRank(initialInstanceRanks, 'part03', -2.5)
-		await updatePartInstanceRank(initialInstanceRanks, 'part04', -1.5)
-		await updatePartInstanceRank(initialInstanceRanks, 'part05', -0.5)
+		await updatePartInstanceRank(initialInstanceRanks, 'part01', -5)
+		await updatePartInstanceRank(initialInstanceRanks, 'part02', -4)
+		await updatePartInstanceRank(initialInstanceRanks, 'part03', -3)
+		await updatePartInstanceRank(initialInstanceRanks, 'part04', -2)
+		await updatePartInstanceRank(initialInstanceRanks, 'part05', -1)
 
 		await updateRanksForSegment(context, segmentId, initialRanks)
 
+		const newInstanceRanks = await getPartInstanceRanks()
+		expect(newInstanceRanks).toEqual(initialInstanceRanks)
+	})
+
+	test('no instance for previous part', async () => {
+		const initialRanks = await getPartRanks()
+		expect(initialRanks).toHaveLength(5)
+
+		const initialInstanceRanks = await getPartInstanceRanks()
+		expect(initialInstanceRanks.filter((r) => r.orphaned)).toHaveLength(0)
+		expect(initialInstanceRanks).toHaveLength(0)
+
+		// insert an adlib part
+		const adlibId = 'adlib0'
+		await insertPartInstance(
+			{
+				_id: protectString(adlibId),
+				_rank: 3.5, // after part03
+				rundownId,
+				segmentId,
+				externalId: adlibId,
+				title: adlibId,
+				expectedDurationWithPreroll: undefined,
+			},
+			'adlib-part'
+		)
+
+		// remove one and offset the others
+		await updatePartRank(initialInstanceRanks, 'part04', 3)
+		await updatePartRank(initialInstanceRanks, 'part05', 4)
+		await context.mockCollections.Parts.remove(protectString('part03'))
+		await updatePartRank(initialInstanceRanks, 'part03', 2.3333333333333335)
+		initialInstanceRanks.push({
+			id: protectString(`${adlibId}_instance`),
+			partId: protectString(adlibId),
+			orphaned: 'adlib-part',
+			rank: 2.5,
+		})
+
+		await updateRanksForSegment(context, segmentId, initialRanks)
+
+		const newInstanceRanks = await getPartInstanceRanks()
+		expect(newInstanceRanks).toEqual(initialInstanceRanks)
+	})
+
+	test('rename segment: with orphaned part', async () => {
+		const initialRanks = await getPartRanks()
+		expect(initialRanks).toHaveLength(5)
+
+		await insertAllPartInstances()
+
+		const initialInstanceRanks = await getPartInstanceRanks()
+		expect(initialInstanceRanks.filter((r) => r.orphaned)).toHaveLength(0)
+		expect(initialInstanceRanks).toHaveLength(5)
+
+		// insert the adlib parts
+		const adlibId0 = 'adlib0'
+		await insertPartInstance(
+			{
+				_id: protectString(adlibId0),
+				_rank: 2.5, // after part02
+				rundownId,
+				segmentId,
+				externalId: adlibId0,
+				title: adlibId0,
+				expectedDurationWithPreroll: undefined,
+			},
+			'deleted'
+		)
+		const adlibId1 = 'adlib1'
+		await insertPartInstance(
+			{
+				_id: protectString(adlibId1),
+				_rank: 2.75, // after adlibId
+				rundownId,
+				segmentId,
+				externalId: adlibId1,
+				title: adlibId1,
+				expectedDurationWithPreroll: undefined,
+			},
+			'adlib-part'
+		)
+		initialInstanceRanks.push({
+			id: protectString(`${adlibId0}_instance`),
+			partId: protectString(adlibId0),
+			orphaned: 'deleted',
+			rank: 2.3333333333333335,
+		})
+		initialInstanceRanks.push({
+			id: protectString(`${adlibId1}_instance`),
+			partId: protectString(adlibId1),
+			orphaned: 'adlib-part',
+			rank: 2.6666666666666665,
+		})
+
+		await updateRanksForSegment(context, segmentId, initialRanks)
+
+		const newInstanceRanks0 = await getPartInstanceRanks()
+		expect(newInstanceRanks0).toEqual(initialInstanceRanks)
+
+		// Pretend the segment was renamed
+		const oldSegmentId = protectString(segmentId + '_2')
+
+		await runWithRundownLock(context, rundownId, async (_rundown, lock) => {
+			const cache = await CacheForIngest.create(context, lock, rundownExternalId)
+
+			const changeMap = new Map<SegmentId, Array<{ id: PartId; rank: number }>>()
+			changeMap.set(oldSegmentId, initialRanks)
+			await updatePartInstanceRanksAndOrphanedState(context, cache, [segmentId, oldSegmentId], changeMap)
+
+			await cache.saveAllToDatabase()
+		})
+
+		// Ranks should be unchanged
 		const newInstanceRanks = await getPartInstanceRanks()
 		expect(newInstanceRanks).toEqual(initialInstanceRanks)
 	})

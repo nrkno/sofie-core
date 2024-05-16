@@ -11,7 +11,8 @@ import { DbCacheReadCollection } from '../cache/CacheCollection'
 import { logger } from '../logging'
 import { CacheForPlayout } from '../playout/cache'
 import { isTooCloseToAutonext } from '../playout/lib'
-import { allowedToMoveRundownOutOfPlaylist, updatePartInstanceRanks } from '../rundown'
+import { allowedToMoveRundownOutOfPlaylist } from '../rundown'
+import { updatePartInstanceRanksAndOrphanedState } from '../updatePartInstanceRanksAndOrphanedState'
 import {
 	getPlaylistIdFromExternalId,
 	produceRundownPlaylistInfoFromRundown,
@@ -43,6 +44,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
+import { updateSegmentIdsForAdlibbedPartInstances } from './commit/updateSegmentIdsForAdlibbedPartInstances'
 
 export type BeforePartMapItem = { id: PartId; rank: number }
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<BeforePartMapItem>>
@@ -177,6 +179,12 @@ export async function CommitIngestOperation(
 				rundownsInPlaylist
 			)
 
+			// Ensure any adlibbed parts are updated to follow the segmentId of the previous part
+			await updateSegmentIdsForAdlibbedPartInstances(context, ingestCache, beforePartMap)
+
+			// ensure instances have matching segmentIds with the parts
+			await updatePartInstancesSegmentIds(context, ingestCache, data.renamedSegments)
+
 			// Do the segment removals
 			await removeSegments(
 				context,
@@ -193,12 +201,10 @@ export async function CommitIngestOperation(
 			// Save the rundowns and regenerated playlist
 			// This will reorder the rundowns a little before the playlist and the contents, but that is ok
 			await context.directCollections.RundownPlaylists.replace(newPlaylist)
-			// ensure instances are updated for rundown changes
-			await updatePartInstancesSegmentIds(context, ingestCache, data.renamedSegments)
 			await updatePartInstancesBasicProperties(context, ingestCache.Parts, ingestCache.RundownId, newPlaylist)
 
-			// Update the playout to use the updated rundown
-			await updatePartInstanceRanks(context, ingestCache, data.changedSegmentIds, beforePartMap)
+			// Ensure any adlibbed instances follow the same part they did before the operation
+			await updatePartInstanceRanksAndOrphanedState(context, ingestCache, data.changedSegmentIds, beforePartMap)
 
 			// Create the full playout cache, now we have the rundowns and playlist updated
 			const playoutCache = await CacheForPlayout.fromIngest(
@@ -266,6 +272,14 @@ function canRemoveSegment(
 		return false
 	}
 
+	if (nextPartInstance?.segmentId === segmentId && nextPartInstance.orphaned === 'adlib-part') {
+		// Don't allow removing an active rundown
+		logger.warn(
+			`Not allowing removal of segment "${segmentId}" which contains nexted adlibbed part, making segment unsynced instead`
+		)
+		return false
+	}
+
 	return true
 }
 
@@ -277,7 +291,7 @@ function canRemoveSegment(
 async function updatePartInstancesSegmentIds(
 	context: JobContext,
 	cache: CacheForIngest,
-	renamedSegments: ReadonlyMap<SegmentId, SegmentId>
+	renamedSegments: ReadonlyMap<SegmentId, SegmentId> | null
 ) {
 	// A set of rules which can be translated to mongo queries for PartInstances to update
 	const renameRules = new Map<
@@ -289,11 +303,13 @@ async function updatePartInstancesSegmentIds(
 	>()
 
 	// Add whole segment renames to the set of rules
-	for (const [fromSegmentId, toSegmentId] of renamedSegments) {
-		const rule = renameRules.get(toSegmentId) ?? { partIds: [], fromSegmentId: null }
-		renameRules.set(toSegmentId, rule)
+	if (renamedSegments) {
+		for (const [fromSegmentId, toSegmentId] of renamedSegments) {
+			const rule = renameRules.get(toSegmentId) ?? { partIds: [], fromSegmentId: null }
+			renameRules.set(toSegmentId, rule)
 
-		rule.fromSegmentId = fromSegmentId
+			rule.fromSegmentId = fromSegmentId
+		}
 	}
 
 	// Some parts may have gotten a different segmentId to the base rule, so track those seperately in the rules
@@ -740,7 +756,7 @@ async function removeSegments(
 					...s,
 					...oldSegments?.get(segmentId),
 					isHidden: false,
-					orphaned: SegmentOrphanedReason.HIDDEN,
+					orphaned: s.orphaned ?? SegmentOrphanedReason.HIDDEN,
 				}
 			})
 		})
