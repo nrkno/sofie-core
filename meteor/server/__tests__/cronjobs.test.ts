@@ -78,7 +78,8 @@ describe('cronjobs', () => {
 				$set: {
 					'cron.casparCGRestart.enabled': true,
 				},
-			}
+			},
+			{ multi: true }
 		)
 
 		jest.useFakeTimers()
@@ -542,7 +543,8 @@ describe('cronjobs', () => {
 					$set: {
 						'cron.casparCGRestart.enabled': false,
 					},
-				}
+				},
+				{ multi: true }
 			)
 			;(logger.info as jest.Mock).mockClear()
 			// set time to 2020/07/{date} 04:05 Local Time, should be more than 24 hours after 2020/07/19 00:00 UTC

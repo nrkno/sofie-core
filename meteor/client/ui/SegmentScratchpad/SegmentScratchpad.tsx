@@ -22,9 +22,8 @@ import { hidePointerLockCursor, showPointerLockCursor } from '../../lib/PointerL
 import { OptionalVelocityComponent } from '../../lib/utilComponents'
 import { filterSecondarySourceLayers } from '../SegmentStoryboard/StoryboardPartSecondaryPieces/StoryboardPartSecondaryPieces'
 import { UIStudio } from '../../../lib/api/studios'
-import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundownPlaylist, RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 
 interface IProps {
@@ -34,7 +33,6 @@ interface IProps {
 	playlist: DBRundownPlaylist
 	studio: UIStudio
 	parts: Array<PartUi>
-	pieces: Map<PartId, CalculateTimingsPiece[]>
 	segmentNoteCounts: SegmentNoteCounts
 	hasAlreadyPlayed: boolean
 	hasGuestItems: boolean

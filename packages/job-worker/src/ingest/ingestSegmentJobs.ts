@@ -84,7 +84,7 @@ export async function handleRemovedSegment(context: JobContext, data: IngestRemo
 				return literal<CommitIngestData>({
 					changedSegmentIds: [],
 					removedSegmentIds: [segmentId],
-					renamedSegments: new Map(),
+					renamedSegments: null,
 
 					removeRundown: false,
 				})
@@ -161,7 +161,7 @@ export async function handleUpdatedSegmentRanks(
 			return literal<CommitIngestData>({
 				changedSegmentIds,
 				removedSegmentIds: [],
-				renamedSegments: new Map(),
+				renamedSegments: null,
 				removeRundown: false,
 			})
 		}
@@ -234,7 +234,7 @@ export async function handleRemoveOrphanedSegemnts(
 			return literal<CommitIngestData>({
 				changedSegmentIds: changedHiddenSegments,
 				removedSegmentIds: stillDeletedSegmentIds,
-				renamedSegments: new Map(),
+				renamedSegments: null,
 				removeRundown: false,
 			})
 		}

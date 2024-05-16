@@ -70,7 +70,7 @@ export async function handleMosRundownData(context: JobContext, data: MosRundown
 
 			if (!canRundownBeUpdated(ingestModel.rundown, !data.isUpdateOperation)) return null
 
-			let renamedSegments: CommitIngestData['renamedSegments'] = new Map()
+			let renamedSegments: CommitIngestData['renamedSegments'] = null
 			if (ingestModel.rundown && oldIngestRundown) {
 				// If we already have a rundown, update any modified segment ids
 				renamedSegments = diffAndUpdateSegmentIds(context, ingestModel, oldIngestRundown, newIngestRundown)

@@ -37,7 +37,7 @@ export async function handleRemovedRundown(context: JobContext, data: IngestRemo
 			return literal<CommitIngestData>({
 				changedSegmentIds: [],
 				removedSegmentIds: [],
-				renamedSegments: new Map(),
+				renamedSegments: null,
 				removeRundown: true,
 				returnRemoveFailure: true,
 			})

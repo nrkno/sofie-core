@@ -313,8 +313,8 @@ export function objectPathDelete(obj: any, path: string): any {
  * @param count    If inserting multiple elements, this is total count of inserted elements
  */
 export function getRank<T extends { _rank: number }>(
-	before: T | null | undefined,
-	after: T | null | undefined,
+	before: T | number | null | undefined,
+	after: T | number | null | undefined,
 	i = 0,
 	count = 1
 ): number {
@@ -323,18 +323,18 @@ export function getRank<T extends { _rank: number }>(
 
 	if (after) {
 		if (before) {
-			newRankMin = before._rank
-			newRankMax = after._rank
+			newRankMin = objectOrRank(before)
+			newRankMax = objectOrRank(after)
 		} else {
 			// First
-			newRankMin = after._rank - 1
-			newRankMax = after._rank
+			newRankMin = objectOrRank(after) - 1
+			newRankMax = objectOrRank(after)
 		}
 	} else {
 		if (before) {
 			// Last
-			newRankMin = before._rank
-			newRankMax = before._rank + 1
+			newRankMin = objectOrRank(before)
+			newRankMax = objectOrRank(before) + 1
 		} else {
 			// Empty list
 			newRankMin = 0
@@ -342,6 +342,13 @@ export function getRank<T extends { _rank: number }>(
 		}
 	}
 	return newRankMin + ((i + 1) / (count + 1)) * (newRankMax - newRankMin)
+}
+function objectOrRank<T extends { _rank: number }>(obj: T | number): number {
+	if (typeof obj === 'number') {
+		return obj
+	} else {
+		return obj._rank
+	}
 }
 
 export interface ManualPromise<T> extends Promise<T> {

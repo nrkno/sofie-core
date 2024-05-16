@@ -110,7 +110,7 @@ export async function updateRundownFromIngestData(
 	return literal<CommitIngestData>({
 		changedSegmentIds: changedSegmentIds,
 		removedSegmentIds: removedSegmentIds,
-		renamedSegments: new Map(),
+		renamedSegments: null,
 
 		removeRundown: false,
 	})
@@ -209,7 +209,7 @@ export async function updateRundownMetadataFromIngestData(
 	return literal<CommitIngestData>({
 		changedSegmentIds: changedSegmentIds ?? [],
 		removedSegmentIds: removedSegmentIds ?? [],
-		renamedSegments: new Map(),
+		renamedSegments: null,
 
 		removeRundown: false,
 	})

@@ -194,7 +194,6 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 			key={unprotectString(props.segmentui._id)}
 			segment={props.segmentui}
 			parts={props.parts}
-			pieces={props.pieces}
 			playlist={props.playlist}
 			currentPartWillAutoNext={currentPartWillAutoNext}
 			segmentNoteCounts={props.segmentNoteCounts}

@@ -11,7 +11,8 @@ import { logger } from '../logging'
 import { PlayoutModel } from '../playout/model/PlayoutModel'
 import { PlayoutRundownModel } from '../playout/model/PlayoutRundownModel'
 import { isTooCloseToAutonext } from '../playout/lib'
-import { allowedToMoveRundownOutOfPlaylist, updatePartInstanceRanks } from '../rundown'
+import { allowedToMoveRundownOutOfPlaylist } from '../rundown'
+import { updatePartInstanceRanksAndOrphanedState } from '../updatePartInstanceRanksAndOrphanedState'
 import {
 	getPlaylistIdFromExternalId,
 	produceRundownPlaylistInfoFromRundown,
@@ -40,6 +41,7 @@ import { PlayoutSegmentModelImpl } from '../playout/model/implementation/Playout
 import { createPlayoutModelFromIngestModel } from '../playout/model/implementation/LoadPlayoutModel'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DatabasePersistedModel } from '../modelBase'
+import { updateSegmentIdsForAdlibbedPartInstances } from './commit/updateSegmentIdsForAdlibbedPartInstances'
 
 export type BeforePartMapItem = { id: PartId; rank: number }
 export type BeforeIngestOperationPartMap = ReadonlyMap<SegmentId, Array<BeforePartMapItem>>
@@ -171,6 +173,12 @@ export async function CommitIngestOperation(
 				rundownsInPlaylist
 			)
 
+			// Ensure any adlibbed parts are updated to follow the segmentId of the previous part
+			await updateSegmentIdsForAdlibbedPartInstances(context, ingestModel, beforePartMap)
+
+			// ensure instances have matching segmentIds with the parts
+			await updatePartInstancesSegmentIds(context, ingestModel, data.renamedSegments, beforePartMap)
+
 			// Do the segment removals
 			await removeSegments(
 				context,
@@ -184,16 +192,15 @@ export async function CommitIngestOperation(
 			// Save the rundowns and regenerated playlist
 			// This will reorder the rundowns a little before the playlist and the contents, but that is ok
 			await context.directCollections.RundownPlaylists.replace(newPlaylist)
-			// ensure instances are updated for rundown changes
-			await updatePartInstancesSegmentIds(context, ingestModel, data.renamedSegments, beforePartMap)
+
 			await updatePartInstancesBasicProperties(
 				context,
 				convertIngestModelToPlayoutRundownWithSegments(ingestModel),
 				newPlaylist
 			)
 
-			// Update the playout to use the updated rundown
-			await updatePartInstanceRanks(context, ingestModel, data.changedSegmentIds, beforePartMap)
+			// Ensure any adlibbed instances follow the same part they did before the operation
+			await updatePartInstanceRanksAndOrphanedState(context, ingestModel, data.changedSegmentIds, beforePartMap)
 
 			// Create the full playout model, now we have the rundowns and playlist updated
 			const playoutModel = await createPlayoutModelFromIngestModel(
@@ -263,6 +270,14 @@ function canRemoveSegment(
 		return false
 	}
 
+	if (nextPartInstance?.segmentId === segmentId && nextPartInstance.orphaned === 'adlib-part') {
+		// Don't allow removing an active rundown
+		logger.warn(
+			`Not allowing removal of segment "${segmentId}" which contains nexted adlibbed part, making segment unsynced instead`
+		)
+		return false
+	}
+
 	return true
 }
 
@@ -275,7 +290,7 @@ function canRemoveSegment(
 async function updatePartInstancesSegmentIds(
 	context: JobContext,
 	ingestModel: IngestModel,
-	renamedSegments: ReadonlyMap<SegmentId, SegmentId>,
+	renamedSegments: ReadonlyMap<SegmentId, SegmentId> | null,
 	beforePartMap: BeforeIngestOperationPartMap
 ) {
 	// A set of rules which can be translated to mongo queries for PartInstances to update
@@ -288,11 +303,13 @@ async function updatePartInstancesSegmentIds(
 	>()
 
 	// Add whole segment renames to the set of rules
-	for (const [fromSegmentId, toSegmentId] of renamedSegments) {
-		const rule = renameRules.get(toSegmentId) ?? { partIds: [], fromSegmentId: null }
-		renameRules.set(toSegmentId, rule)
+	if (renamedSegments) {
+		for (const [fromSegmentId, toSegmentId] of renamedSegments) {
+			const rule = renameRules.get(toSegmentId) ?? { partIds: [], fromSegmentId: null }
+			renameRules.set(toSegmentId, rule)
 
-		rule.fromSegmentId = fromSegmentId
+			rule.fromSegmentId = fromSegmentId
+		}
 	}
 
 	// Reverse the structure
@@ -718,7 +735,9 @@ async function removeSegments(
 			const segment = ingestModel.getSegment(segmentId)
 			if (segment) {
 				segment.setHidden(false)
-				segment.setOrphaned(SegmentOrphanedReason.HIDDEN)
+				if (!segment.segment.orphaned) {
+					segment.setOrphaned(SegmentOrphanedReason.HIDDEN)
+				}
 			}
 		})
 	}
