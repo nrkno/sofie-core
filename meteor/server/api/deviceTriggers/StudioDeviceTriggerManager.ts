@@ -234,6 +234,8 @@ function convertDocument(doc: ReadonlyObjectDeep<DBTriggeredActions>): UITrigger
 
 		actions: applyAndValidateOverrides<Record<string, SomeAction>>(doc.actionsWithOverrides).obj,
 		triggers: applyAndValidateOverrides<Record<string, SomeBlueprintTrigger>>(doc.triggersWithOverrides).obj,
+
+		stylePreset: doc.stylePreset,
 	})
 }
 

@@ -21,6 +21,9 @@ export interface UITriggeredActionsObj {
 
 	/** A list of actions to execute */
 	actions: Record<string, SomeAction>
+
+	/** Id of style preset to use when displaying this triggered actions */
+	stylePreset?: string
 }
 
 export interface DBTriggeredActions {
@@ -42,6 +45,9 @@ export interface DBTriggeredActions {
 
 	/** A list of actions to execute */
 	actionsWithOverrides: ObjectWithOverrides<Record<string, SomeAction>>
+
+	/** Id of style preset to use when displaying this triggered actions */
+	stylePreset?: string
 }
 
 /** Note: Use DBTriggeredActions instead */
