@@ -113,7 +113,9 @@ export const SchemaFormObjectTable = ({
 	const rowSchema = schema.patternProperties?.['']
 
 	const addNewItem = useCallback(() => {
-		overrideHelper.setItemValue(item.id, `${attr}.${getRandomString()}`, getSchemaDefaultValues(rowSchema))
+		const newRowId = getRandomString()
+		overrideHelper.setItemValue(item.id, `${attr}.${newRowId}`, getSchemaDefaultValues(rowSchema))
+		toggleExpanded(newRowId, true)
 	}, [rowSchema, overrideHelper, item.id, attr])
 
 	const doUndeleteRow = useCallback(
@@ -124,7 +126,7 @@ export const SchemaFormObjectTable = ({
 	)
 
 	const tableOverrideHelper = useMemo(
-		() => new OverrideOpHelperObjectTable(overrideHelper, item.id, wrappedRows, attr),
+		() => new OverrideOpHelperObjectTable(overrideHelper, item, wrappedRows, attr),
 		[overrideHelper, item.id, wrappedRows, attr]
 	)
 
