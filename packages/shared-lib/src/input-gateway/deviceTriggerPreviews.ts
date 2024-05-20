@@ -53,11 +53,14 @@ export type PreviewWrappedAdLib = Omit<IWrappedAdLibBase, '_id'> & {
 	showStyleBaseId: ShowStyleBaseId
 	triggeredActionId: TriggeredActionId
 	actionId: DeviceActionId
-	sourceLayerType?: SourceLayerType
-	sourceLayerName?: {
-		name?: string
-		abbreviation?: string
-	}
-	isCurrent?: boolean
-	isNext?: boolean
+	sourceLayerType: SourceLayerType | undefined
+	sourceLayerName:
+		| {
+				name?: string
+				abbreviation?: string
+		  }
+		| undefined
+	// isCurrent: boolean | undefined
+	// isNext: boolean | undefined
+	stylePreset: string | undefined
 }

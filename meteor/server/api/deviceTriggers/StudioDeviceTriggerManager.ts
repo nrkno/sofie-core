@@ -12,6 +12,7 @@ import {
 import {
 	DeviceActionId,
 	DeviceTriggerMountedActionId,
+	PreviewWrappedAdLib,
 	PreviewWrappedAdLibId,
 	ShiftRegisterActionArguments,
 } from '../../../lib/api/triggers/MountedTriggers'
@@ -145,7 +146,7 @@ export class StudioDeviceTriggerManager {
 						`${triggeredAction._id}_${studioId}_${key}_${adLib._id}`
 					)
 					DeviceTriggerMountedActionAdlibsPreview.upsert(adLibPreviewId, {
-						$set: {
+						$set: literal<PreviewWrappedAdLib>({
 							...adLib,
 							_id: adLibPreviewId,
 							triggeredActionId: triggeredAction._id,
@@ -159,8 +160,10 @@ export class StudioDeviceTriggerManager {
 										abbreviation: sourceLayers[adLib.sourceLayerId]?.abbreviation,
 								  }
 								: undefined,
-						},
+							stylePreset: triggeredAction.stylePreset,
+						}),
 					})
+
 					addedPreviewIds.push(adLibPreviewId)
 				})
 			})
