@@ -394,16 +394,11 @@ const JsonFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) => {
 	)
 }
 
-const Base64ImagePickerWithOverrides = ({ schema, commonAttrs }: FormComponentProps) => {
+const Base64ImagePickerWithOverrides = ({ commonAttrs }: FormComponentProps) => {
 	return (
 		<LabelAndOverridesForBase64Image {...commonAttrs}>
 			{(value, handleUpdate) => (
-				<Base64ImageInputControl
-					classNames="input text-input input-l"
-					placeholder={schema.default}
-					value={value}
-					handleUpdate={handleUpdate}
-				/>
+				<Base64ImageInputControl classNames="input text-input input-l" value={value} handleUpdate={handleUpdate} />
 			)}
 		</LabelAndOverridesForBase64Image>
 	)

@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next'
 interface IBase64ImageInputControlProps {
 	classNames?: string
 	disabled?: boolean
-	placeholder?: string
 
 	/** Call handleUpdate on every change, before focus is lost */
 	updateOnKey?: boolean
@@ -19,7 +18,6 @@ export function Base64ImageInputControl({
 	classNames,
 	value,
 	disabled,
-	placeholder,
 	handleUpdate,
 	updateOnKey,
 }: Readonly<IBase64ImageInputControlProps>): JSX.Element {
