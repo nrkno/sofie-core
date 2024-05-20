@@ -137,35 +137,58 @@ export class StudioDeviceTriggerManager {
 					upsertedDeviceTriggerMountedActionIds.push(deviceTriggerMountedActionId)
 				})
 
-				if (!isPreviewableAction(thisAction)) return
-
-				const previewedAdLibs = thisAction.preview(context)
-
-				previewedAdLibs.forEach((adLib) => {
-					const adLibPreviewId = protectString<PreviewWrappedAdLibId>(
-						`${triggeredAction._id}_${studioId}_${key}_${adLib._id}`
-					)
+				if (!isPreviewableAction(thisAction)) {
+					const adLibPreviewId = protectString(`${actionId}_preview`)
 					DeviceTriggerMountedActionAdlibsPreview.upsert(adLibPreviewId, {
 						$set: literal<PreviewWrappedAdLib>({
-							...adLib,
 							_id: adLibPreviewId,
+							_rank: 0,
+							partId: null,
+							type: undefined,
+							label: thisAction.action,
+							item: null,
 							triggeredActionId: triggeredAction._id,
 							actionId,
 							studioId,
 							showStyleBaseId,
-							sourceLayerType: adLib.sourceLayerId ? sourceLayers[adLib.sourceLayerId]?.type : undefined,
-							sourceLayerName: adLib.sourceLayerId
-								? {
-										name: sourceLayers[adLib.sourceLayerId]?.name,
-										abbreviation: sourceLayers[adLib.sourceLayerId]?.abbreviation,
-								  }
-								: undefined,
+							sourceLayerType: undefined,
+							sourceLayerName: undefined,
 							stylePreset: triggeredAction.stylePreset,
 						}),
 					})
 
 					addedPreviewIds.push(adLibPreviewId)
-				})
+				} else {
+					const previewedAdLibs = thisAction.preview(context)
+
+					previewedAdLibs.forEach((adLib) => {
+						const adLibPreviewId = protectString<PreviewWrappedAdLibId>(
+							`${triggeredAction._id}_${studioId}_${key}_${adLib._id}`
+						)
+						DeviceTriggerMountedActionAdlibsPreview.upsert(adLibPreviewId, {
+							$set: literal<PreviewWrappedAdLib>({
+								...adLib,
+								_id: adLibPreviewId,
+								triggeredActionId: triggeredAction._id,
+								actionId,
+								studioId,
+								showStyleBaseId,
+								sourceLayerType: adLib.sourceLayerId
+									? sourceLayers[adLib.sourceLayerId]?.type
+									: undefined,
+								sourceLayerName: adLib.sourceLayerId
+									? {
+											name: sourceLayers[adLib.sourceLayerId]?.name,
+											abbreviation: sourceLayers[adLib.sourceLayerId]?.abbreviation,
+									  }
+									: undefined,
+								stylePreset: triggeredAction.stylePreset,
+							}),
+						})
+
+						addedPreviewIds.push(adLibPreviewId)
+					})
+				}
 			})
 
 			DeviceTriggerMountedActionAdlibsPreview.remove({
