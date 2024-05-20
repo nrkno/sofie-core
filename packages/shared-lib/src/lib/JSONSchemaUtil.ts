@@ -26,7 +26,9 @@ export enum SchemaFormUIField {
 	ZeroBased = 'ui:zeroBased',
 	/**
 	 * Override the presentation with a special mode.
-	 * Currently only valid for string properties. Valid values are 'json'.
+	 * Currently only valid for:
+	 * - object properties. Valid values are 'json'.
+	 * - string properties. Valid values are 'base64-image'.
 	 */
 	DisplayType = 'ui:displayType',
 	/**
