@@ -27,6 +27,7 @@ export default function renderItem(props: ILayerItemRendererProps): JSX.Element 
 			return React.createElement(VTListItemRenderer, props)
 		case SourceLayerType.GRAPHICS:
 		case SourceLayerType.LOWER_THIRD:
+		case SourceLayerType.STUDIO_SCREEN:
 			return React.createElement(L3rdListItemRenderer, props)
 	}
 
