@@ -217,7 +217,11 @@ export const SchemaFormObjectTable = ({
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
 					{schema[SchemaFormUIField.SupportsImportExport] ? (
-						<ImportExportButtons overrideHelper={tableOverrideHelper} wrappedRows={wrappedRows} />
+						<ImportExportButtons
+							schema={schema.patternProperties['']}
+							overrideHelper={tableOverrideHelper}
+							wrappedRows={wrappedRows}
+						/>
 					) : (
 						''
 					)}
@@ -228,12 +232,15 @@ export const SchemaFormObjectTable = ({
 }
 
 interface ImportExportButtonsProps {
+	schema: JSONSchema
 	overrideHelper: () => OverrideOpHelperObjectTable
 	wrappedRows: WrappedOverridableItem<object>[]
 }
 
-function ImportExportButtons({ overrideHelper, wrappedRows }: Readonly<ImportExportButtonsProps>) {
+function ImportExportButtons({ schema, overrideHelper, wrappedRows }: Readonly<ImportExportButtonsProps>) {
 	const { t } = useTranslation()
+
+	console.log(schema)
 
 	const [uploadFileKey, setUploadFileKey] = useState(0)
 
@@ -245,8 +252,7 @@ function ImportExportButtons({ overrideHelper, wrappedRows }: Readonly<ImportExp
 
 		const exportContents = JSON.stringify(exportObject, undefined, 2)
 
-		// nocommit proper filename
-		const file = new File([exportContents], `${encodeURIComponent('test')}.json`, {
+		const file = new File([exportContents], `${encodeURIComponent(`${schema.title}`)}.json`, {
 			type: 'application/json',
 		})
 
