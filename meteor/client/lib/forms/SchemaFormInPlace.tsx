@@ -2,7 +2,6 @@ import { literal, objectPathSet } from '@sofie-automation/corelib/dist/lib'
 import React, { useCallback, useMemo, useState } from 'react'
 import {
 	WrappedOverridableItemNormal,
-	OverrideOpHelperForItemContents,
 	OverrideOpHelperForItemContentsBatcher,
 } from '../../ui/Settings/util/OverrideOpHelper'
 import { SchemaFormCommonProps } from './schemaFormUtil'
@@ -17,7 +16,7 @@ export function SchemaFormInPlace({ object, ...commonProps }: SchemaFormInPlaceP
 	const [editCount, setEditCount] = useState(0)
 	const forceRender = useCallback(() => setEditCount((v) => v + 1), [])
 
-	const helper = useMemo(() => new OverrideOpHelperInPlace(object, forceRender), [object, forceRender])
+	const helper = useCallback(() => new OverrideOpHelperInPlace(object, forceRender), [object, forceRender])
 
 	const wrappedItem = useMemo(
 		() =>
@@ -38,7 +37,7 @@ export function SchemaFormInPlace({ object, ...commonProps }: SchemaFormInPlaceP
  * An alternate OverrideOpHelper designed to directly mutate an object, instead of using the `ObjectWithOverrides` system.
  * This allows us to have one SchemaForm implementation that can handle working with `ObjectWithOverrides`, and simpler options
  */
-class OverrideOpHelperInPlace implements OverrideOpHelperForItemContents {
+class OverrideOpHelperInPlace implements OverrideOpHelperForItemContentsBatcher {
 	readonly #object: any
 	readonly #forceRender: () => void
 
@@ -47,29 +46,19 @@ class OverrideOpHelperInPlace implements OverrideOpHelperForItemContents {
 		this.#forceRender = forceRender
 	}
 
-	clearItemOverrides(_itemId: string, _subPath: string): void {
+	clearItemOverrides(_itemId: string, _subPath: string): this {
 		// Not supported as this is faking an item with overrides
+
+		return this
 	}
-	setItemValue(_itemId: string, subPath: string, value: any): void {
+	setItemValue(_itemId: string, subPath: string, value: any): this {
 		objectPathSet(this.#object, subPath, value)
 		this.#forceRender()
+
+		return this
 	}
 
-	beginBatch(): OverrideOpHelperForItemContentsBatcher {
-		const batcher: OverrideOpHelperForItemContentsBatcher = {
-			clearItemOverrides: () => {
-				// Not supported as this is faking an item with overrides
-				return batcher
-			},
-			setItemValue: (itemId: string, subPath: string, value: any) => {
-				this.setItemValue(itemId, subPath, value)
-				return batcher
-			},
-			commit: () => {
-				// Nothing to do
-			},
-		}
-
-		return batcher
+	commit(): void {
+		// Nothing to do
 	}
 }

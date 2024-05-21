@@ -1,47 +1,12 @@
 import { clone, objectPathSet } from '@sofie-automation/corelib/dist/lib'
-import {
-	OverrideOpHelperForItemContents,
-	OverrideOpHelperForItemContentsBatcher,
-} from '../../../ui/Settings/util/OverrideOpHelper'
+import { OverrideOpHelperForItemContentsBatcher } from '../../../ui/Settings/util/OverrideOpHelper'
 
 /**
  * The OverrideOp system does not support Arrays currently.
  * This is intended to be a break point to avoid tables from attempting to define operations on arrays,
  * and instead make the table be treated as a single blob.
  */
-export class OverrideOpHelperArrayTable implements OverrideOpHelperForItemContents {
-	readonly #baseHelper: OverrideOpHelperForItemContents
-	readonly #itemId: string
-	readonly #currentRows: unknown[]
-	readonly #path: string
-
-	constructor(baseHelper: OverrideOpHelperForItemContents, itemId: string, currentRows: unknown[], path: string) {
-		this.#baseHelper = baseHelper
-		this.#itemId = itemId
-		this.#currentRows = currentRows
-		this.#path = path
-	}
-
-	clearItemOverrides(itemId: string, subPath: string): void {
-		this.beginBatch().clearItemOverrides(itemId, subPath).commit()
-	}
-	deleteRow(rowId: string): void {
-		this.beginBatch().deleteRow(rowId).commit()
-	}
-	setItemValue(rowId: string, subPath: string, value: unknown): void {
-		this.beginBatch().setItemValue(rowId, subPath, value).commit()
-	}
-
-	beginBatch(): OverrideOpHelperArrayTableBatcher {
-		return new OverrideOpHelperArrayTableBatcher(
-			this.#baseHelper.beginBatch(),
-			this.#itemId,
-			this.#currentRows,
-			this.#path
-		)
-	}
-}
-class OverrideOpHelperArrayTableBatcher implements OverrideOpHelperForItemContentsBatcher {
+export class OverrideOpHelperArrayTable implements OverrideOpHelperForItemContentsBatcher {
 	readonly #baseHelper: OverrideOpHelperForItemContentsBatcher
 	readonly #itemId: string
 	readonly #currentRows: unknown[]

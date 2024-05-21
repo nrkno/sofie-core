@@ -4,11 +4,10 @@ import {
 	ObjectOverrideDeleteOp,
 	ObjectOverrideSetOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { MongoCollection } from '../../../lib/collections/lib'
 import {
 	WrappedOverridableItemNormal,
-	OverrideOpHelperForItemContents,
 	OverrideOpHelperForItemContentsBatcher,
 } from '../../ui/Settings/util/OverrideOpHelper'
 import { SchemaFormCommonProps } from './schemaFormUtil'
@@ -40,7 +39,7 @@ export function SchemaFormForCollection({
 	partialOverridesForObject,
 	...commonProps
 }: SchemaFormForCollectionProps): JSX.Element {
-	const helper = useMemo(
+	const helper = useCallback(
 		() => new OverrideOpHelperCollection(collection, objectId, basePath),
 		[collection, objectId, basePath]
 	)
@@ -92,29 +91,7 @@ export function SchemaFormForCollection({
  * An alternate OverrideOpHelper designed to directly mutate a collection, instead of using the `ObjectWithOverrides` system.
  * This allows us to have one SchemaForm implementation that can handle working with `ObjectWithOverrides`, and basic objects in mongodb
  */
-class OverrideOpHelperCollection implements OverrideOpHelperForItemContents {
-	readonly #collection: MongoCollection<any>
-	readonly #objectId: ProtectedString<any>
-	readonly #basePath: string
-
-	constructor(collection: MongoCollection<any>, objectId: ProtectedString<any>, basePath: string) {
-		this.#collection = collection
-		this.#objectId = objectId
-		this.#basePath = basePath
-	}
-
-	clearItemOverrides(itemId: string, subPath: string): void {
-		this.beginBatch().clearItemOverrides(itemId, subPath).commit()
-	}
-	setItemValue(itemId: string, subPath: string, value: any): void {
-		this.beginBatch().setItemValue(itemId, subPath, value).commit()
-	}
-
-	beginBatch(): OverrideOpHelperForItemContentsBatcher {
-		return new OverrideOpHelperCollectionBatcher(this.#collection, this.#objectId, this.#basePath)
-	}
-}
-class OverrideOpHelperCollectionBatcher implements OverrideOpHelperForItemContentsBatcher {
+class OverrideOpHelperCollection implements OverrideOpHelperForItemContentsBatcher {
 	readonly #collection: MongoCollection<any>
 	readonly #objectId: ProtectedString<any>
 	readonly #basePath: string

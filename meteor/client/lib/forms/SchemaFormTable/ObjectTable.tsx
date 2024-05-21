@@ -89,19 +89,19 @@ export const SchemaFormObjectTable = ({
 
 	const addNewItem = useCallback(() => {
 		const newRowId = getRandomString()
-		overrideHelper.setItemValue(item.id, `${attr}.${newRowId}`, getSchemaDefaultValues(rowSchema))
+		overrideHelper().setItemValue(item.id, `${attr}.${newRowId}`, getSchemaDefaultValues(rowSchema)).commit()
 		toggleExpanded(newRowId, true)
 	}, [rowSchema, overrideHelper, item.id, attr])
 
 	const doUndeleteRow = useCallback(
 		(rowId: string) => {
-			overrideHelper.clearItemOverrides(item.id, joinObjectPathFragments(attr, rowId))
+			overrideHelper().clearItemOverrides(item.id, joinObjectPathFragments(attr, rowId)).commit()
 		},
 		[overrideHelper, item.id, attr]
 	)
 
-	const tableOverrideHelper = useMemo(
-		() => new OverrideOpHelperObjectTable(overrideHelper, item, wrappedRows, attr),
+	const tableOverrideHelper = useCallback(
+		() => new OverrideOpHelperObjectTable(overrideHelper(), item, wrappedRows, attr),
 		[overrideHelper, item.id, wrappedRows, attr]
 	)
 
@@ -117,7 +117,9 @@ export const SchemaFormObjectTable = ({
 				no: t('Cancel'),
 				yes: t('Remove'),
 				onAccept: () => {
-					tableOverrideHelper.deleteRow(rowId + '')
+					tableOverrideHelper()
+						.deleteRow(rowId + '')
+						.commit()
 				},
 				message: (
 					<React.Fragment>
@@ -226,7 +228,7 @@ export const SchemaFormObjectTable = ({
 }
 
 interface ImportExportButtonsProps {
-	overrideHelper: OverrideOpHelperObjectTable
+	overrideHelper: () => OverrideOpHelperObjectTable
 	wrappedRows: WrappedOverridableItem<object>[]
 }
 
@@ -287,7 +289,7 @@ function ImportExportButtons({ overrideHelper, wrappedRows }: Readonly<ImportExp
 					</p>
 				),
 				onAccept: () => {
-					const batch = overrideHelper.beginBatch()
+					const batch = overrideHelper()
 
 					for (const row of wrappedRows) {
 						batch.deleteRow(row.id)
@@ -303,7 +305,7 @@ function ImportExportButtons({ overrideHelper, wrappedRows }: Readonly<ImportExp
 					{
 						label: t('Append rows'),
 						on: () => {
-							const batch = overrideHelper.beginBatch()
+							const batch = overrideHelper()
 
 							for (const [rowId, row] of Object.entries<unknown>(newRows)) {
 								batch.insertRow(rowId, row)

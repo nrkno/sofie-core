@@ -1,6 +1,5 @@
 import { clone, joinObjectPathFragments, objectPathSet } from '@sofie-automation/corelib/dist/lib'
 import {
-	OverrideOpHelperForItemContents,
 	OverrideOpHelperForItemContentsBatcher,
 	WrappedOverridableItem,
 } from '../../../ui/Settings/util/OverrideOpHelper'
@@ -9,45 +8,7 @@ import {
  * The OverrideOp system does not support tables of objects currently.
  * This is intended to be a break point to allow tables to provide their nested schemaForms with a way to work with this
  */
-export class OverrideOpHelperObjectTable implements OverrideOpHelperForItemContents {
-	readonly #baseHelper: OverrideOpHelperForItemContents
-	readonly #parentItem: WrappedOverridableItem<object>
-	readonly #currentRows: WrappedOverridableItem<object>[]
-	readonly #path: string
-
-	constructor(
-		baseHelper: OverrideOpHelperForItemContents,
-		parentItem: WrappedOverridableItem<object>,
-		currentRows: WrappedOverridableItem<object>[],
-		path: string
-	) {
-		this.#baseHelper = baseHelper
-		this.#parentItem = parentItem
-		this.#currentRows = currentRows
-		this.#path = path
-	}
-
-	clearItemOverrides(rowId: string, subPath: string): void {
-		this.beginBatch().clearItemOverrides(rowId, subPath).commit()
-	}
-	deleteRow(rowId: string): void {
-		this.beginBatch().deleteRow(rowId).commit()
-	}
-	setItemValue(rowId: string, subPath: string, value: unknown): void {
-		this.beginBatch().setItemValue(rowId, subPath, value).commit()
-	}
-
-	beginBatch(): OverrideOpHelperObjectTableBatcher {
-		return new OverrideOpHelperObjectTableBatcher(
-			this.#baseHelper.beginBatch(),
-			this.#parentItem,
-			this.#currentRows,
-			this.#path
-		)
-	}
-}
-
-export class OverrideOpHelperObjectTableBatcher implements OverrideOpHelperForItemContentsBatcher {
+export class OverrideOpHelperObjectTable implements OverrideOpHelperForItemContentsBatcher {
 	readonly #baseHelper: OverrideOpHelperForItemContentsBatcher
 	readonly #parentItem: WrappedOverridableItem<object>
 	readonly #currentRows: WrappedOverridableItem<object>[]
