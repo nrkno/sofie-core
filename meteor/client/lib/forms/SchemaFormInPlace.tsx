@@ -53,12 +53,11 @@ class OverrideOpHelperInPlace implements OverrideOpHelperForItemContentsBatcher 
 	}
 	setItemValue(_itemId: string, subPath: string, value: any): this {
 		objectPathSet(this.#object, subPath, value)
-		this.#forceRender()
 
 		return this
 	}
 
 	commit(): void {
-		// Nothing to do
+		this.#forceRender()
 	}
 }
