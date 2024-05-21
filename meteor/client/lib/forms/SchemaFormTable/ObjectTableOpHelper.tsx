@@ -1,5 +1,9 @@
 import { clone, joinObjectPathFragments, objectPathSet } from '@sofie-automation/corelib/dist/lib'
-import { OverrideOpHelperForItemContents, WrappedOverridableItem } from '../../../ui/Settings/util/OverrideOpHelper'
+import {
+	OverrideOpHelperForItemContents,
+	OverrideOpHelperForItemContentsBatcher,
+	WrappedOverridableItem,
+} from '../../../ui/Settings/util/OverrideOpHelper'
 
 /**
  * The OverrideOp system does not support tables of objects currently.
@@ -24,9 +28,56 @@ export class OverrideOpHelperObjectTable implements OverrideOpHelperForItemConte
 	}
 
 	clearItemOverrides(rowId: string, subPath: string): void {
-		this.#baseHelper.clearItemOverrides(this.#parentItem.id, joinObjectPathFragments(this.#path, rowId, subPath))
+		this.beginBatch().clearItemOverrides(rowId, subPath).commit()
 	}
 	deleteRow(rowId: string): void {
+		this.beginBatch().deleteRow(rowId).commit()
+	}
+	setItemValue(rowId: string, subPath: string, value: unknown): void {
+		this.beginBatch().setItemValue(rowId, subPath, value).commit()
+	}
+
+	beginBatch(): OverrideOpHelperObjectTableBatcher {
+		return new OverrideOpHelperObjectTableBatcher(
+			this.#baseHelper.beginBatch(),
+			this.#parentItem,
+			this.#currentRows,
+			this.#path
+		)
+	}
+}
+
+export class OverrideOpHelperObjectTableBatcher implements OverrideOpHelperForItemContentsBatcher {
+	readonly #baseHelper: OverrideOpHelperForItemContentsBatcher
+	readonly #parentItem: WrappedOverridableItem<object>
+	readonly #currentRows: WrappedOverridableItem<object>[]
+	readonly #path: string
+
+	constructor(
+		baseHelper: OverrideOpHelperForItemContentsBatcher,
+		parentItem: WrappedOverridableItem<object>,
+		currentRows: WrappedOverridableItem<object>[],
+		path: string
+	) {
+		this.#baseHelper = baseHelper
+		this.#parentItem = parentItem
+		this.#currentRows = currentRows
+		this.#path = path
+	}
+
+	clearItemOverrides(rowId: string, subPath: string): this {
+		this.#baseHelper.clearItemOverrides(this.#parentItem.id, joinObjectPathFragments(this.#path, rowId, subPath))
+
+		return this
+	}
+	insertRow(rowId: string, value: unknown): this {
+		const rowPath = joinObjectPathFragments(this.#path, rowId)
+
+		this.#baseHelper.setItemValue(this.#parentItem.id, rowPath, value)
+
+		return this
+	}
+	deleteRow(rowId: string): this {
 		const rowPath = joinObjectPathFragments(this.#path, rowId)
 
 		// If row was not user created (it has defaults), then don't store `undefined`
@@ -38,10 +89,12 @@ export class OverrideOpHelperObjectTable implements OverrideOpHelperForItemConte
 			// Clear any existing overrides
 			this.#baseHelper.clearItemOverrides(this.#parentItem.id, rowPath)
 		}
+
+		return this
 	}
-	setItemValue(rowId: string, subPath: string, value: unknown): void {
+	setItemValue(rowId: string, subPath: string, value: unknown): this {
 		const currentRow = this.#currentRows.find((r) => r.id === rowId)
-		if (!currentRow || currentRow.type === 'deleted') return // Unable to set value
+		if (!currentRow || currentRow.type === 'deleted') return this // Unable to set value
 
 		if (currentRow.defaults) {
 			// has defaults, so override the single value
@@ -54,5 +107,11 @@ export class OverrideOpHelperObjectTable implements OverrideOpHelperForItemConte
 			objectPathSet(newObj, subPath, value)
 			this.#baseHelper.setItemValue(this.#parentItem.id, joinObjectPathFragments(this.#path, rowId), newObj)
 		}
+
+		return this
+	}
+
+	commit(): void {
+		this.#baseHelper.commit()
 	}
 }

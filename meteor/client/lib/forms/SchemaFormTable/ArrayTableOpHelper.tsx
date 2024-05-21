@@ -1,5 +1,8 @@
 import { clone, objectPathSet } from '@sofie-automation/corelib/dist/lib'
-import { OverrideOpHelperForItemContents } from '../../../ui/Settings/util/OverrideOpHelper'
+import {
+	OverrideOpHelperForItemContents,
+	OverrideOpHelperForItemContentsBatcher,
+} from '../../../ui/Settings/util/OverrideOpHelper'
 
 /**
  * The OverrideOp system does not support Arrays currently.
@@ -19,23 +22,70 @@ export class OverrideOpHelperArrayTable implements OverrideOpHelperForItemConten
 		this.#path = path
 	}
 
-	clearItemOverrides(_itemId: string, _subPath: string): void {
-		// Not supported as this is faking an item with overrides
+	clearItemOverrides(itemId: string, subPath: string): void {
+		this.beginBatch().clearItemOverrides(itemId, subPath).commit()
 	}
 	deleteRow(rowId: string): void {
+		this.beginBatch().deleteRow(rowId).commit()
+	}
+	setItemValue(rowId: string, subPath: string, value: unknown): void {
+		this.beginBatch().setItemValue(rowId, subPath, value).commit()
+	}
+
+	beginBatch(): OverrideOpHelperArrayTableBatcher {
+		return new OverrideOpHelperArrayTableBatcher(
+			this.#baseHelper.beginBatch(),
+			this.#itemId,
+			this.#currentRows,
+			this.#path
+		)
+	}
+}
+class OverrideOpHelperArrayTableBatcher implements OverrideOpHelperForItemContentsBatcher {
+	readonly #baseHelper: OverrideOpHelperForItemContentsBatcher
+	readonly #itemId: string
+	readonly #currentRows: unknown[]
+	readonly #path: string
+
+	constructor(
+		baseHelper: OverrideOpHelperForItemContentsBatcher,
+		itemId: string,
+		currentRows: unknown[],
+		path: string
+	) {
+		this.#baseHelper = baseHelper
+		this.#itemId = itemId
+		this.#currentRows = currentRows
+		this.#path = path
+	}
+
+	clearItemOverrides(_itemId: string, _subPath: string): this {
+		// Not supported as this is faking an item with overrides
+
+		return this
+	}
+	deleteRow(rowId: string): this {
 		// Delete the row
 		const newObj = clone(this.#currentRows)
 		newObj.splice(Number(rowId), 1)
 
 		// Send it onwards
 		this.#baseHelper.setItemValue(this.#itemId, this.#path, newObj)
+
+		return this
 	}
-	setItemValue(rowId: string, subPath: string, value: unknown): void {
+	setItemValue(rowId: string, subPath: string, value: unknown): this {
 		// Build the new object
 		const newObj = clone(this.#currentRows)
 		objectPathSet(newObj, `${rowId}.${subPath}`, value)
 
 		// Send it onwards
 		this.#baseHelper.setItemValue(this.#itemId, this.#path, newObj)
+
+		return this
+	}
+
+	commit(): void {
+		this.#baseHelper.commit()
 	}
 }

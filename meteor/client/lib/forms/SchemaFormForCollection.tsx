@@ -6,9 +6,14 @@ import {
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import React, { useMemo } from 'react'
 import { MongoCollection } from '../../../lib/collections/lib'
-import { WrappedOverridableItemNormal, OverrideOpHelperForItemContents } from '../../ui/Settings/util/OverrideOpHelper'
+import {
+	WrappedOverridableItemNormal,
+	OverrideOpHelperForItemContents,
+	OverrideOpHelperForItemContentsBatcher,
+} from '../../ui/Settings/util/OverrideOpHelper'
 import { SchemaFormCommonProps } from './schemaFormUtil'
 import { SchemaFormWithOverrides } from './SchemaFormWithOverrides'
+import { MongoModifier } from '@sofie-automation/corelib/dist/mongo'
 
 interface SchemaFormForCollectionProps extends Omit<SchemaFormCommonProps, 'isRequired'> {
 	/** The collection to operate on */
@@ -98,26 +103,58 @@ class OverrideOpHelperCollection implements OverrideOpHelperForItemContents {
 		this.#basePath = basePath
 	}
 
-	clearItemOverrides(_itemId: string, subPath: string): void {
-		this.#collection.update(this.#objectId, {
-			$unset: {
-				[`${this.#basePath}.${subPath}`]: 1,
-			},
-		})
+	clearItemOverrides(itemId: string, subPath: string): void {
+		this.beginBatch().clearItemOverrides(itemId, subPath).commit()
 	}
-	setItemValue(_itemId: string, subPath: string, value: any): void {
+	setItemValue(itemId: string, subPath: string, value: any): void {
+		this.beginBatch().setItemValue(itemId, subPath, value).commit()
+	}
+
+	beginBatch(): OverrideOpHelperForItemContentsBatcher {
+		return new OverrideOpHelperCollectionBatcher(this.#collection, this.#objectId, this.#basePath)
+	}
+}
+class OverrideOpHelperCollectionBatcher implements OverrideOpHelperForItemContentsBatcher {
+	readonly #collection: MongoCollection<any>
+	readonly #objectId: ProtectedString<any>
+	readonly #basePath: string
+
+	#changes: MongoModifier<any> | undefined
+
+	constructor(collection: MongoCollection<any>, objectId: ProtectedString<any>, basePath: string) {
+		this.#collection = collection
+		this.#objectId = objectId
+		this.#basePath = basePath
+	}
+
+	clearItemOverrides(_itemId: string, subPath: string): this {
+		if (!this.#changes) this.#changes = {}
+		if (!this.#changes.$unset) this.#changes.$unset = {}
+
+		this.#changes.$unset[`${this.#basePath}.${subPath}`] = 1
+
+		return this
+	}
+	setItemValue(_itemId: string, subPath: string, value: any): this {
+		if (!this.#changes) this.#changes = {}
+
 		if (value === undefined) {
-			this.#collection.update(this.#objectId, {
-				$unset: {
-					[`${this.#basePath}.${subPath}`]: 1,
-				},
-			})
+			if (!this.#changes.$unset) this.#changes.$unset = {}
+			this.#changes.$unset[`${this.#basePath}.${subPath}`] = 1
 		} else {
-			this.#collection.update(this.#objectId, {
-				$set: {
-					[`${this.#basePath}.${subPath}`]: value,
-				},
-			})
+			if (!this.#changes.$set) this.#changes.$set = {}
+			;(this.#changes.$set[`${this.#basePath}.${subPath}`] as any) = value
+		}
+
+		return this
+	}
+
+	commit(): void {
+		if (!this.#changes) {
+			const changesToSave = this.#changes
+			this.#changes = undefined
+
+			this.#collection.update(this.#objectId, changesToSave)
 		}
 	}
 }

@@ -1,6 +1,10 @@
 import { literal, objectPathSet } from '@sofie-automation/corelib/dist/lib'
 import React, { useCallback, useMemo, useState } from 'react'
-import { WrappedOverridableItemNormal, OverrideOpHelperForItemContents } from '../../ui/Settings/util/OverrideOpHelper'
+import {
+	WrappedOverridableItemNormal,
+	OverrideOpHelperForItemContents,
+	OverrideOpHelperForItemContentsBatcher,
+} from '../../ui/Settings/util/OverrideOpHelper'
 import { SchemaFormCommonProps } from './schemaFormUtil'
 import { SchemaFormWithOverrides } from './SchemaFormWithOverrides'
 
@@ -49,5 +53,23 @@ class OverrideOpHelperInPlace implements OverrideOpHelperForItemContents {
 	setItemValue(_itemId: string, subPath: string, value: any): void {
 		objectPathSet(this.#object, subPath, value)
 		this.#forceRender()
+	}
+
+	beginBatch(): OverrideOpHelperForItemContentsBatcher {
+		const batcher: OverrideOpHelperForItemContentsBatcher = {
+			clearItemOverrides: () => {
+				// Not supported as this is faking an item with overrides
+				return batcher
+			},
+			setItemValue: (itemId: string, subPath: string, value: any) => {
+				this.setItemValue(itemId, subPath, value)
+				return batcher
+			},
+			commit: () => {
+				// Nothing to do
+			},
+		}
+
+		return batcher
 	}
 }

@@ -122,6 +122,31 @@ export interface OverrideOpHelperForItemContents {
 	 * Note: the id cannot be changed in this way
 	 */
 	setItemValue(itemId: string, subPath: string, value: unknown): void
+
+	/**
+	 * Perform a series of operations in a batch
+	 */
+	beginBatch(): OverrideOpHelperForItemContentsBatcher
+}
+
+export interface OverrideOpHelperForItemContentsBatcher {
+	/**
+	 * Clear all of the overrides for an value inside of an item
+	 * This acts as a reset of property of its child properties
+	 * Has no effect if there are no `overrideOps` on the `WrappedOverridableItemNormal`
+	 */
+	clearItemOverrides(itemId: string, subPath: string): this
+
+	/**
+	 * Set the value of a property of an item.
+	 * Note: the id cannot be changed in this way
+	 */
+	setItemValue(itemId: string, subPath: string, value: unknown): this
+
+	/**
+	 * Finish the batch operation
+	 */
+	commit(): void
 }
 
 export interface OverrideOpHelper extends OverrideOpHelperForItemContents {
@@ -165,11 +190,7 @@ class OverrideOpHelperImpl implements OverrideOpHelper {
 	clearItemOverrides = (itemId: string, subPath: string): void => {
 		if (!this.#objectWithOverridesRef.current) return
 
-		const opPath = `${itemId}.${subPath}`
-
-		const newOps = this.#objectWithOverridesRef.current.overrides.filter((op) => op.path !== opPath)
-
-		this.#saveOverrides(newOps)
+		this.beginBatch().clearItemOverrides(itemId, subPath).commit()
 	}
 
 	resetItem = (itemId: string): void => {
@@ -237,14 +258,60 @@ class OverrideOpHelperImpl implements OverrideOpHelper {
 	setItemValue = (itemId: string, subPath: string, value: unknown): void => {
 		if (!this.#objectWithOverridesRef.current) return
 
+		this.beginBatch().setItemValue(itemId, subPath, value).commit()
+	}
+
+	replaceItem = (itemId: string, value: unknown): void => {
+		if (!this.#objectWithOverridesRef.current) return
+
+		// Set a property
+		const { otherOps: newOps } = filterOverrideOpsForPrefix(this.#objectWithOverridesRef.current.overrides, itemId)
+
+		// TODO - is this too naive?
+
+		newOps.push(
+			literal<ObjectOverrideSetOp>({
+				op: 'set',
+				path: `${itemId}`,
+				value: value,
+			})
+		)
+
+		this.#saveOverrides(newOps)
+	}
+
+	beginBatch = (): OverrideOpHelperForItemContentsBatcher => {
+		if (!this.#objectWithOverridesRef.current) throw new Error('No current object!')
+
+		return new OverrideOpHelperBatchImpl(this.#saveOverrides, this.#objectWithOverridesRef.current)
+	}
+}
+
+class OverrideOpHelperBatchImpl implements OverrideOpHelperForItemContentsBatcher {
+	readonly #saveOverrides: SaveOverridesFunction
+	readonly #object: ObjectWithOverrides<any>
+
+	constructor(saveOverrides: SaveOverridesFunction, object: ObjectWithOverrides<any>) {
+		this.#saveOverrides = saveOverrides
+		this.#object = { ...object }
+	}
+
+	clearItemOverrides = (itemId: string, subPath: string): this => {
+		const opPath = `${itemId}.${subPath}`
+
+		const newOps = this.#object.overrides.filter((op) => op.path !== opPath)
+
+		this.#object.overrides = newOps
+
+		return this
+	}
+
+	setItemValue = (itemId: string, subPath: string, value: unknown): this => {
 		if (subPath === '_id') {
 			throw new Error('Item id cannot be changed through this helper')
 		} else {
 			// Set a property
-			const { otherOps: newOps, opsForPrefix: opsForId } = filterOverrideOpsForPrefix(
-				this.#objectWithOverridesRef.current.overrides,
-				itemId
-			)
+			const { otherOps: newOps, opsForPrefix: opsForId } = filterOverrideOpsForPrefix(this.#object.overrides, itemId)
 
 			const setRootOp = opsForId.find((op) => op.path === itemId)
 			if (setRootOp && setRootOp.op === 'set') {
@@ -288,27 +355,14 @@ class OverrideOpHelperImpl implements OverrideOpHelper {
 				}
 			}
 
-			this.#saveOverrides(newOps)
+			this.#object.overrides = newOps
 		}
+
+		return this
 	}
 
-	replaceItem = (itemId: string, value: unknown): void => {
-		if (!this.#objectWithOverridesRef.current) return
-
-		// Set a property
-		const { otherOps: newOps } = filterOverrideOpsForPrefix(this.#objectWithOverridesRef.current.overrides, itemId)
-
-		// TODO - is this too naive?
-
-		newOps.push(
-			literal<ObjectOverrideSetOp>({
-				op: 'set',
-				path: `${itemId}`,
-				value: value,
-			})
-		)
-
-		this.#saveOverrides(newOps)
+	commit = () => {
+		this.#saveOverrides(this.#object.overrides)
 	}
 }
 

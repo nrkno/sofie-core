@@ -214,7 +214,11 @@ export const SchemaFormObjectTable = ({
 					<button className="btn btn-primary" onClick={addNewItem}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
-					{schema[SchemaFormUIField.SupportsImportExport] ? <ImportExportButtons wrappedRows={wrappedRows} /> : ''}
+					{schema[SchemaFormUIField.SupportsImportExport] ? (
+						<ImportExportButtons overrideHelper={tableOverrideHelper} wrappedRows={wrappedRows} />
+					) : (
+						''
+					)}
 				</div>
 			</div>
 		)
@@ -222,20 +226,22 @@ export const SchemaFormObjectTable = ({
 }
 
 interface ImportExportButtonsProps {
+	overrideHelper: OverrideOpHelperObjectTable
 	wrappedRows: WrappedOverridableItem<object>[]
 }
 
-function ImportExportButtons({ wrappedRows }: Readonly<ImportExportButtonsProps>) {
+function ImportExportButtons({ overrideHelper, wrappedRows }: Readonly<ImportExportButtonsProps>) {
 	const { t } = useTranslation()
 
 	const [uploadFileKey, setUploadFileKey] = useState(0)
 
 	const exportTable = () => {
-		const exportContents = JSON.stringify(
-			wrappedRows.map((row) => row.computed),
-			undefined,
-			2
-		)
+		const exportObject: Record<string, any> = {}
+		for (const obj of wrappedRows) {
+			exportObject[obj.id] = obj.computed
+		}
+
+		const exportContents = JSON.stringify(exportObject, undefined, 2)
 
 		// nocommit proper filename
 		const file = new File([exportContents], `${encodeURIComponent('test')}.json`, {
@@ -254,11 +260,9 @@ function ImportExportButtons({ wrappedRows }: Readonly<ImportExportButtonsProps>
 		URL.revokeObjectURL(url)
 	}
 
-	const importTable = useCallback((e) => {
-		const file = e.target.files[0]
-		if (!file) {
-			return
-		}
+	const importTable = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0]
+		if (!file) return
 
 		const reader = new FileReader()
 		reader.onload = (e2) => {
@@ -268,28 +272,44 @@ function ImportExportButtons({ wrappedRows }: Readonly<ImportExportButtonsProps>
 			const uploadFileContents = e2.target?.result
 			if (!uploadFileContents) return
 
+			const newRows = JSON.parse(uploadFileContents as string)
+			if (!newRows || typeof newRows !== 'object') return
+
 			doModalDialog({
 				title: t('Import file?'),
 				yes: t('Replace rows'),
 				no: t('Cancel'),
 				message: (
-					<React.Fragment>
-						<p>
-							{t('Are you sure you want to import the contents of the file "{{fileName}}"?', {
-								fileName: file.name,
-							})}
-						</p>
-						,
-					</React.Fragment>
+					<p>
+						{t('Are you sure you want to import the contents of the file "{{fileName}}"?', {
+							fileName: file.name,
+						})}
+					</p>
 				),
 				onAccept: () => {
-					// TODO
+					const batch = overrideHelper.beginBatch()
+
+					for (const row of wrappedRows) {
+						batch.deleteRow(row.id)
+					}
+
+					for (const [rowId, row] of Object.entries<unknown>(newRows)) {
+						batch.insertRow(rowId, row)
+					}
+
+					batch.commit()
 				},
 				actions: [
 					{
 						label: t('Append rows'),
 						on: () => {
-							console.log('todo')
+							const batch = overrideHelper.beginBatch()
+
+							for (const [rowId, row] of Object.entries<unknown>(newRows)) {
+								batch.insertRow(rowId, row)
+							}
+
+							batch.commit()
 						},
 						classNames: 'btn-secondary',
 					},
@@ -297,7 +317,7 @@ function ImportExportButtons({ wrappedRows }: Readonly<ImportExportButtonsProps>
 			})
 		}
 		reader.readAsText(file)
-	}, [])
+	}
 
 	return (
 		<>
