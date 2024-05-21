@@ -1,12 +1,13 @@
-import { faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faDownload, faPlus, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { getRandomString, joinObjectPathFragments, objectPathGet } from '@sofie-automation/corelib/dist/lib'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
 	WrappedOverridableItemNormal,
 	OverrideOpHelperForItemContents,
 	getAllCurrentAndDeletedItemsFromOverrides,
+	WrappedOverridableItem,
 } from '../../../ui/Settings/util/OverrideOpHelper'
 import { useToggleExpandHelper } from '../../../ui/Settings/util/ToggleExpandedHelper'
 import { doModalDialog } from '../../ModalDialog'
@@ -23,6 +24,8 @@ import { SchemaTableSummaryRow } from '../SchemaTableSummaryRow'
 import { OverrideOpHelperObjectTable } from './ObjectTableOpHelper'
 import { ObjectTableDeletedRow } from './ObjectTableDeletedRow'
 import { SchemaFormSectionHeader } from '../SchemaFormSectionHeader'
+import { UploadButton } from '../../uploadButton'
+import Tooltip from 'rc-tooltip'
 
 interface SchemaFormObjectTableProps {
 	/** Schema for each row in the table */
@@ -209,8 +212,111 @@ export const SchemaFormObjectTable = ({
 					<button className="btn btn-primary" onClick={addNewItem}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
+					{schema[SchemaFormUIField.SupportsImportExport] ? <ImportExportButtons wrappedRows={wrappedRows} /> : ''}
 				</div>
 			</div>
 		)
 	}
+}
+
+interface ImportExportButtonsProps {
+	wrappedRows: WrappedOverridableItem<object>[]
+}
+
+function ImportExportButtons({ wrappedRows }: Readonly<ImportExportButtonsProps>) {
+	const { t } = useTranslation()
+
+	const [uploadFileKey, setUploadFileKey] = useState(0)
+
+	const exportTable = () => {
+		const exportContents = JSON.stringify(
+			wrappedRows.map((row) => row.computed),
+			undefined,
+			2
+		)
+
+		// nocommit proper filename
+		const file = new File([exportContents], `${encodeURIComponent('test')}.json`, {
+			type: 'application/json',
+		})
+
+		const link = document.createElement('a')
+		const url = URL.createObjectURL(file)
+
+		link.href = url
+		link.download = file.name
+		document.body.appendChild(link)
+		link.click()
+
+		document.body.removeChild(link)
+		URL.revokeObjectURL(url)
+	}
+
+	const importTable = useCallback((e) => {
+		const file = e.target.files[0]
+		if (!file) {
+			return
+		}
+
+		const reader = new FileReader()
+		reader.onload = (e2) => {
+			// On file upload
+			setUploadFileKey(Date.now())
+
+			const uploadFileContents = e2.target?.result
+			if (!uploadFileContents) return
+
+			doModalDialog({
+				title: t('Import file?'),
+				yes: t('Replace rows'),
+				no: t('Cancel'),
+				message: (
+					<React.Fragment>
+						<p>
+							{t('Are you sure you want to import the contents of the file "{{fileName}}"?', {
+								fileName: file.name,
+							})}
+						</p>
+						,
+					</React.Fragment>
+				),
+				onAccept: () => {
+					// TODO
+				},
+				actions: [
+					{
+						label: t('Append rows'),
+						on: () => {
+							console.log('todo')
+						},
+						classNames: 'btn-secondary',
+					},
+				],
+			})
+		}
+		reader.readAsText(file)
+	}, [])
+
+	return (
+		<>
+			<Tooltip overlay={t('Import')} placement="top">
+				<span className="inline-block">
+					<UploadButton
+						key={uploadFileKey}
+						className="btn btn-secondary mls"
+						onChange={importTable}
+						accept="application/json,.json"
+					>
+						<FontAwesomeIcon icon={faUpload} />
+					</UploadButton>
+				</span>
+			</Tooltip>
+
+			<Tooltip overlay={t('Export')} placement="top">
+				<button className="btn btn-secondary mls" onClick={exportTable}>
+					<FontAwesomeIcon icon={faDownload} />
+				</button>
+			</Tooltip>
+		</>
+	)
 }
