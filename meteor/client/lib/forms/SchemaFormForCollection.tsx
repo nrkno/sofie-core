@@ -127,7 +127,7 @@ class OverrideOpHelperCollection implements OverrideOpHelperForItemContentsBatch
 	}
 
 	commit(): void {
-		if (!this.#changes) {
+		if (this.#changes) {
 			const changesToSave = this.#changes
 			this.#changes = undefined
 
