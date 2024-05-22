@@ -1,6 +1,6 @@
 import { faDownload, faPlus, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { getRandomString, joinObjectPathFragments, objectPathGet } from '@sofie-automation/corelib/dist/lib'
+import { getRandomString, joinObjectPathFragments, literal, objectPathGet } from '@sofie-automation/corelib/dist/lib'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -62,31 +62,59 @@ export const SchemaFormObjectTable = ({
 	const { t } = useTranslation()
 
 	const wrappedRows = useMemo(() => {
-		const itemValue = item.defaults ?? item.computed // If this is sourced from an override, there are no defaults so we need to use the computed instead
-		const rawRows = (attr ? objectPathGet(itemValue, attr) : itemValue) || {}
+		if (item.defaults) {
+			// Table can be overriden with granularity
 
-		const prefix = joinObjectPathFragments(item.id, attr) + '.'
+			const rawRows = (attr ? objectPathGet(item.defaults, attr) : item.defaults) || {}
 
-		// Filter and strip the ops to be local to the row object
-		const ops: SomeObjectOverrideOp[] = []
-		for (const op of item.overrideOps) {
-			if (op.path.startsWith(prefix)) {
-				ops.push({
-					...op,
-					path: op.path.slice(prefix.length),
-				})
+			const prefix = joinObjectPathFragments(item.id, attr) + '.'
+
+			// Filter and strip the ops to be local to the row object
+			const ops: SomeObjectOverrideOp[] = []
+			for (const op of item.overrideOps) {
+				if (op.path.startsWith(prefix)) {
+					ops.push({
+						...op,
+						path: op.path.slice(prefix.length),
+					})
+				}
 			}
+
+			const wrappedRows = getAllCurrentAndDeletedItemsFromOverrides(
+				{
+					defaults: rawRows,
+					overrides: ops,
+				},
+				(a, b) => a[0].localeCompare(b[0]) // TODO - better comparitor?
+			)
+
+			console.log('obj', item, rawRows, ops, wrappedRows)
+
+			return wrappedRows
+		} else {
+			// Table is formed of purely of an override, so ignore any defaults
+
+			const rawRows = (attr ? objectPathGet(item.computed, attr) : item.computed) || {}
+
+			// Convert the items into an array
+			const validItems: Array<[id: string, obj: object]> = []
+			for (const [id, obj] of Object.entries<object | undefined>(rawRows)) {
+				if (obj) validItems.push([id, obj])
+			}
+
+			validItems.sort((a, b) => a[0].localeCompare(b[0])) // TODO - better comparitor?
+
+			// Sort and wrap in the return type
+			return validItems.map(([id, obj]) =>
+				literal<WrappedOverridableItemNormal<object>>({
+					type: 'normal',
+					id: id,
+					computed: obj,
+					defaults: undefined,
+					overrideOps: [],
+				})
+			)
 		}
-
-		const wrappedRows = getAllCurrentAndDeletedItemsFromOverrides(
-			{
-				defaults: rawRows,
-				overrides: ops,
-			},
-			(a, b) => a[0].localeCompare(b[0]) // TODO - better comparitor?
-		)
-
-		return wrappedRows
 	}, [attr, item])
 
 	const rowSchema = schema.patternProperties?.['']
