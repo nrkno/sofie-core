@@ -1,12 +1,13 @@
-import { faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faDownload, faPlus, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { getRandomString, joinObjectPathFragments, literal, objectPathGet } from '@sofie-automation/corelib/dist/lib'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
 	WrappedOverridableItemNormal,
 	OverrideOpHelperForItemContents,
 	getAllCurrentAndDeletedItemsFromOverrides,
+	WrappedOverridableItem,
 } from '../../../ui/Settings/util/OverrideOpHelper'
 import { useToggleExpandHelper } from '../../../ui/Settings/util/ToggleExpandedHelper'
 import { doModalDialog } from '../../ModalDialog'
@@ -23,6 +24,8 @@ import { SchemaTableSummaryRow } from '../SchemaTableSummaryRow'
 import { OverrideOpHelperObjectTable } from './ObjectTableOpHelper'
 import { ObjectTableDeletedRow } from './ObjectTableDeletedRow'
 import { SchemaFormSectionHeader } from '../SchemaFormSectionHeader'
+import { UploadButton } from '../../uploadButton'
+import Tooltip from 'rc-tooltip'
 
 interface SchemaFormObjectTableProps {
 	/** Schema for each row in the table */
@@ -114,19 +117,19 @@ export const SchemaFormObjectTable = ({
 
 	const addNewItem = useCallback(() => {
 		const newRowId = getRandomString()
-		overrideHelper.setItemValue(item.id, `${attr}.${newRowId}`, getSchemaDefaultValues(rowSchema))
+		overrideHelper().setItemValue(item.id, `${attr}.${newRowId}`, getSchemaDefaultValues(rowSchema)).commit()
 		toggleExpanded(newRowId, true)
 	}, [rowSchema, overrideHelper, item.id, attr])
 
 	const doUndeleteRow = useCallback(
 		(rowId: string) => {
-			overrideHelper.clearItemOverrides(item.id, joinObjectPathFragments(attr, rowId))
+			overrideHelper().clearItemOverrides(item.id, joinObjectPathFragments(attr, rowId)).commit()
 		},
 		[overrideHelper, item.id, attr]
 	)
 
-	const tableOverrideHelper = useMemo(
-		() => new OverrideOpHelperObjectTable(overrideHelper, item, wrappedRows, attr),
+	const tableOverrideHelper = useCallback(
+		() => new OverrideOpHelperObjectTable(overrideHelper(), item, wrappedRows, attr),
 		[overrideHelper, item.id, wrappedRows, attr]
 	)
 
@@ -142,7 +145,9 @@ export const SchemaFormObjectTable = ({
 				no: t('Cancel'),
 				yes: t('Remove'),
 				onAccept: () => {
-					tableOverrideHelper.deleteRow(rowId + '')
+					tableOverrideHelper()
+						.deleteRow(rowId + '')
+						.commit()
 				},
 				message: (
 					<React.Fragment>
@@ -239,8 +244,137 @@ export const SchemaFormObjectTable = ({
 					<button className="btn btn-primary" onClick={addNewItem}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
+					{schema[SchemaFormUIField.SupportsImportExport] ? (
+						<ImportExportButtons
+							schema={schema.patternProperties['']}
+							overrideHelper={tableOverrideHelper}
+							wrappedRows={wrappedRows}
+						/>
+					) : (
+						''
+					)}
 				</div>
 			</div>
 		)
 	}
+}
+
+interface ImportExportButtonsProps {
+	schema: JSONSchema
+	overrideHelper: () => OverrideOpHelperObjectTable
+	wrappedRows: WrappedOverridableItem<object>[]
+}
+
+function ImportExportButtons({ schema, overrideHelper, wrappedRows }: Readonly<ImportExportButtonsProps>) {
+	const { t } = useTranslation()
+
+	console.log(schema)
+
+	const [uploadFileKey, setUploadFileKey] = useState(0)
+
+	const exportTable = () => {
+		const exportObject: Record<string, any> = {}
+		for (const obj of wrappedRows) {
+			exportObject[obj.id] = obj.computed
+		}
+
+		const exportContents = JSON.stringify(exportObject, undefined, 2)
+
+		const file = new File([exportContents], `${encodeURIComponent(`${schema.title}`)}.json`, {
+			type: 'application/json',
+		})
+
+		const link = document.createElement('a')
+		const url = URL.createObjectURL(file)
+
+		link.href = url
+		link.download = file.name
+		document.body.appendChild(link)
+		link.click()
+
+		document.body.removeChild(link)
+		URL.revokeObjectURL(url)
+	}
+
+	const importTable = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0]
+		if (!file) return
+
+		const reader = new FileReader()
+		reader.onload = (e2) => {
+			// On file upload
+			setUploadFileKey(Date.now())
+
+			const uploadFileContents = e2.target?.result
+			if (!uploadFileContents) return
+
+			const newRows = JSON.parse(uploadFileContents as string)
+			if (!newRows || typeof newRows !== 'object') return
+
+			doModalDialog({
+				title: t('Import file?'),
+				yes: t('Replace rows'),
+				no: t('Cancel'),
+				message: (
+					<p>
+						{t('Are you sure you want to import the contents of the file "{{fileName}}"?', {
+							fileName: file.name,
+						})}
+					</p>
+				),
+				onAccept: () => {
+					const batch = overrideHelper()
+
+					for (const row of wrappedRows) {
+						batch.deleteRow(row.id)
+					}
+
+					for (const [rowId, row] of Object.entries<unknown>(newRows)) {
+						batch.insertRow(rowId, row)
+					}
+
+					batch.commit()
+				},
+				actions: [
+					{
+						label: t('Append rows'),
+						on: () => {
+							const batch = overrideHelper()
+
+							for (const [rowId, row] of Object.entries<unknown>(newRows)) {
+								batch.insertRow(rowId, row)
+							}
+
+							batch.commit()
+						},
+						classNames: 'btn-secondary',
+					},
+				],
+			})
+		}
+		reader.readAsText(file)
+	}
+
+	return (
+		<>
+			<Tooltip overlay={t('Import')} placement="top">
+				<span className="inline-block">
+					<UploadButton
+						key={uploadFileKey}
+						className="btn btn-secondary mls"
+						onChange={importTable}
+						accept="application/json,.json"
+					>
+						<FontAwesomeIcon icon={faUpload} />
+					</UploadButton>
+				</span>
+			</Tooltip>
+
+			<Tooltip overlay={t('Export')} placement="top">
+				<button className="btn btn-secondary mls" onClick={exportTable}>
+					<FontAwesomeIcon icon={faDownload} />
+				</button>
+			</Tooltip>
+		</>
+	)
 }
