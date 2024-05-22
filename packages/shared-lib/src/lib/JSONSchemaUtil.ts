@@ -44,6 +44,11 @@ export enum SchemaFormUIField {
 	 * When using `ui:sofie-enum`, filter the options by type
 	 */
 	SofieEnumFilter = 'ui:sofie-enum:filter',
+	/**
+	 * Whether a table supports being imported and exported
+	 * Valid only for tables
+	 */
+	SupportsImportExport = 'ui:import-export',
 }
 
 export function getSchemaUIField(schema: JSONSchema, field: SchemaFormUIField): any {

@@ -130,6 +130,8 @@ export function StudioMappings({
 
 	const overrideHelper = useOverrideOpHelper(saveOverrides, studio.mappingsWithOverrides)
 
+	const doUndelete = useCallback((itemId: string) => overrideHelper().resetItem(itemId).commit(), [overrideHelper])
+
 	return (
 		<div>
 			<h2 className="mhn">{t('Layer Mappings')}</h2>
@@ -149,7 +151,7 @@ export function StudioMappings({
 										manifestNames={manifestNames}
 										translationNamespaces={translationNamespaces}
 										mapping={item.defaults}
-										doUndelete={overrideHelper.resetItem}
+										doUndelete={doUndelete}
 									/>
 								) : (
 									<StudioMappingsEntry
@@ -269,7 +271,7 @@ function StudioMappingsEntry({
 			yes: t('Remove'),
 			no: t('Cancel'),
 			onAccept: () => {
-				overrideHelper.deleteItem(item.id)
+				overrideHelper().deleteItem(item.id).commit()
 			},
 			message: (
 				<React.Fragment>
@@ -285,7 +287,7 @@ function StudioMappingsEntry({
 			yes: t('Reset'),
 			no: t('Cancel'),
 			onAccept: () => {
-				overrideHelper.resetItem(item.id)
+				overrideHelper().resetItem(item.id).commit()
 			},
 			message: (
 				<React.Fragment>
@@ -302,7 +304,7 @@ function StudioMappingsEntry({
 
 	const doChangeItemId = useCallback(
 		(newItemId: string) => {
-			overrideHelper.changeItemId(item.id, newItemId)
+			overrideHelper().changeItemId(item.id, newItemId).commit()
 			toggleExpanded(newItemId, true)
 		},
 		[overrideHelper, toggleExpanded, item.id]

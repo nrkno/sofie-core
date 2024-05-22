@@ -38,11 +38,11 @@ export function LabelAndOverrides<T extends object, TValue = any>({
 	const { t } = useTranslation()
 
 	const clearOverride = useCallback(() => {
-		overrideHelper.clearItemOverrides(opPrefix, String(itemKey))
+		overrideHelper().clearItemOverrides(opPrefix, String(itemKey)).commit()
 	}, [overrideHelper, opPrefix, itemKey])
 	const setValue = useCallback(
 		(newValue: any) => {
-			overrideHelper.setItemValue(opPrefix, String(itemKey), newValue)
+			overrideHelper().setItemValue(opPrefix, String(itemKey), newValue).commit()
 		},
 		[overrideHelper, opPrefix, itemKey]
 	)
