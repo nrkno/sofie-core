@@ -17,6 +17,9 @@ import { ShowStyleBaseExt, ShowStyleBaseHandler } from '../collections/showStyle
 import { interpollateTranslation } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { AdLibsHandler } from '../collections/adLibsHandler'
 import { GlobalAdLibsHandler } from '../collections/globalAdLibsHandler'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { PartsHandler } from '../collections/partsHandler'
+import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 const THROTTLE_PERIOD_MS = 100
 
@@ -24,7 +27,7 @@ export interface AdLibsStatus {
 	event: 'adLibs'
 	rundownPlaylistId: string | null
 	adLibs: AdLibStatus[]
-	globalAdLibs: AdLibStatus[]
+	globalAdLibs: GlobalAdLibStatus[]
 }
 
 interface AdLibActionType {
@@ -32,7 +35,14 @@ interface AdLibActionType {
 	label: string
 }
 
-interface AdLibStatus {
+interface AdLibStatus extends AdLibStatusBase {
+	segmentId: string
+	partId: string
+}
+
+type GlobalAdLibStatus = AdLibStatusBase
+
+interface AdLibStatusBase {
 	id: string
 	name: string
 	sourceLayer: string
@@ -49,7 +59,8 @@ export class AdLibsTopic
 		CollectionObserver<DBRundownPlaylist>,
 		CollectionObserver<ShowStyleBaseExt>,
 		CollectionObserver<AdLibAction[]>,
-		CollectionObserver<RundownBaselineAdLibAction[]>
+		CollectionObserver<RundownBaselineAdLibAction[]>,
+		CollectionObserver<DBPart[]>
 {
 	public observerName = AdLibsTopic.name
 	private _activePlaylist: DBRundownPlaylist | undefined
@@ -57,6 +68,7 @@ export class AdLibsTopic
 	private _outputLayersMap: ReadonlyMap<string, string> = new Map()
 	private _adLibActions: AdLibAction[] | undefined
 	private _abLibs: AdLibPiece[] | undefined
+	private _parts: ReadonlyMap<PartId, DBPart> = new Map()
 	private _globalAdLibActions: RundownBaselineAdLibAction[] | undefined
 	private _globalAdLibs: RundownBaselineAdLibItem[] | undefined
 	private throttledSendStatusToAll: () => void
@@ -76,7 +88,7 @@ export class AdLibsTopic
 
 	sendStatus(subscribers: Iterable<WebSocket>): void {
 		const adLibs: AdLibStatus[] = []
-		const globalAdLibs: AdLibStatus[] = []
+		const globalAdLibs: GlobalAdLibStatus[] = []
 
 		if (this._adLibActions) {
 			adLibs.push(
@@ -95,9 +107,12 @@ export class AdLibsTopic
 								})
 						  )
 						: []
+					const segmentId = this._parts.get(action.partId)?.segmentId
 					return literal<AdLibStatus>({
 						id: unprotectString(action._id),
 						name: interpollateTranslation(action.display.label.key, action.display.label.args),
+						partId: unprotectString(action.partId),
+						segmentId: unprotectString(segmentId) ?? 'invalid',
 						sourceLayer: sourceLayerName ?? 'invalid',
 						outputLayer: outputLayerName ?? 'invalid',
 						actionType: triggerModes,
@@ -113,9 +128,12 @@ export class AdLibsTopic
 				...this._abLibs.map((adLib) => {
 					const sourceLayerName = this._sourceLayersMap.get(adLib.sourceLayerId)
 					const outputLayerName = this._outputLayersMap.get(adLib.outputLayerId)
+					const segmentId = adLib.partId ? this._parts.get(adLib.partId)?.segmentId : undefined
 					return literal<AdLibStatus>({
 						id: unprotectString(adLib._id),
 						name: adLib.name,
+						partId: unprotectString(adLib.partId) ?? 'invalid',
+						segmentId: unprotectString(segmentId) ?? 'invalid',
 						sourceLayer: sourceLayerName ?? 'invalid',
 						outputLayer: outputLayerName ?? 'invalid',
 						actionType: [],
@@ -143,7 +161,7 @@ export class AdLibsTopic
 								})
 						  )
 						: []
-					return literal<AdLibStatus>({
+					return literal<GlobalAdLibStatus>({
 						id: unprotectString(action._id),
 						name: interpollateTranslation(action.display.label.key, action.display.label.args),
 						sourceLayer: sourceLayerName ?? 'invalid',
@@ -161,7 +179,7 @@ export class AdLibsTopic
 				...this._globalAdLibs.map((adLib) => {
 					const sourceLayerName = this._sourceLayersMap.get(adLib.sourceLayerId)
 					const outputLayerName = this._outputLayersMap.get(adLib.outputLayerId)
-					return literal<AdLibStatus>({
+					return literal<GlobalAdLibStatus>({
 						id: unprotectString(adLib._id),
 						name: adLib.name,
 						sourceLayer: sourceLayerName ?? 'invalid',
@@ -197,6 +215,7 @@ export class AdLibsTopic
 			| RundownBaselineAdLibAction[]
 			| AdLibPiece[]
 			| RundownBaselineAdLibItem[]
+			| DBPart[]
 			| undefined
 	): Promise<void> {
 		switch (source) {
@@ -236,6 +255,16 @@ export class AdLibsTopic
 				this.logUpdateReceived('showStyleBase', source)
 				this._sourceLayersMap = showStyleBaseExt?.sourceLayerNamesById ?? new Map()
 				this._outputLayersMap = showStyleBaseExt?.outputLayerNamesById ?? new Map()
+				break
+			}
+			case PartsHandler.name: {
+				const parts = data ? (data as DBPart[]) : []
+				this.logUpdateReceived('parts', source)
+				const newParts = new Map()
+				parts.forEach((part) => {
+					newParts.set(part._id, part)
+				})
+				this._parts = newParts
 				break
 			}
 			default:
