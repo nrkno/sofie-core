@@ -70,7 +70,7 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 		(filterIndex: number, newVal: ChainLink) => {
 			action.filterChain.splice(filterIndex, 1, newVal)
 
-			overrideHelper.replaceItem(actionId, action)
+			overrideHelper().replaceItem(actionId, action).commit()
 		},
 		[action, overrideHelper]
 	)
@@ -90,7 +90,7 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 
 			action.filterChain.splice(filterIndex + 1, 0, obj)
 
-			overrideHelper.replaceItem(actionId, action)
+			overrideHelper().replaceItem(actionId, action).commit()
 		}
 
 		setOpenFilterIndex(filterIndex + 1)
@@ -100,11 +100,11 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 	function onFilterRemove(filterIndex: number) {
 		action.filterChain.splice(filterIndex, 1)
 
-		overrideHelper.replaceItem(actionId, action)
+		overrideHelper().replaceItem(actionId, action).commit()
 	}
 
 	function onChange(newVal: SomeAction) {
-		overrideHelper.replaceItem(actionId, newVal)
+		overrideHelper().replaceItem(actionId, newVal).commit()
 	}
 
 	function isFinished(): boolean {
