@@ -8,9 +8,6 @@ interface IBase64ImageInputControlProps {
 	classNames?: string
 	disabled?: boolean
 
-	/** Call handleUpdate on every change, before focus is lost */
-	updateOnKey?: boolean
-
 	value: string
 	handleUpdate: (value: string) => void
 }
@@ -19,7 +16,6 @@ export function Base64ImageInputControl({
 	value,
 	disabled,
 	handleUpdate,
-	updateOnKey,
 }: Readonly<IBase64ImageInputControlProps>): JSX.Element {
 	const { t } = useTranslation()
 
@@ -46,7 +42,7 @@ export function Base64ImageInputControl({
 			}
 			reader.readAsDataURL(file)
 		},
-		[handleUpdate, updateOnKey]
+		[handleUpdate]
 	)
 
 	return (
