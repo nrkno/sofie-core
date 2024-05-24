@@ -15,7 +15,7 @@ interface ArrayTableRowProps {
 	translationNamespaces: string[]
 	sofieEnumDefinitons: Record<string, SchemaFormSofieEnumDefinition> | undefined
 
-	overrideHelper: OverrideOpHelperArrayTable
+	overrideHelper: () => OverrideOpHelperArrayTable
 
 	rowId: number
 	rowObject: any

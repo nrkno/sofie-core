@@ -12,7 +12,9 @@ export const PieceMultistepChevron = function PieceMultistepChevron({
 	const noraContent = piece.instance.piece.content as NoraContent | undefined
 
 	const hasStepChevron =
-		(piece.sourceLayer?.type === SourceLayerType.GRAPHICS || piece.sourceLayer?.type === SourceLayerType.LOWER_THIRD) &&
+		(piece.sourceLayer?.type === SourceLayerType.GRAPHICS ||
+			piece.sourceLayer?.type === SourceLayerType.LOWER_THIRD ||
+			piece.sourceLayer?.type === SourceLayerType.STUDIO_SCREEN) &&
 		noraContent?.payload?.step?.enabled
 
 	if (!hasStepChevron) return null

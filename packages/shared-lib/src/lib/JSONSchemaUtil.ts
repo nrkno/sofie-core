@@ -26,7 +26,9 @@ export enum SchemaFormUIField {
 	ZeroBased = 'ui:zeroBased',
 	/**
 	 * Override the presentation with a special mode.
-	 * Currently only valid for string properties. Valid values are 'json'.
+	 * Currently only valid for:
+	 * - object properties. Valid values are 'json'.
+	 * - string properties. Valid values are 'base64-image'.
 	 */
 	DisplayType = 'ui:displayType',
 	/**
@@ -44,6 +46,11 @@ export enum SchemaFormUIField {
 	 * When using `ui:sofie-enum`, filter the options by type
 	 */
 	SofieEnumFilter = 'ui:sofie-enum:filter',
+	/**
+	 * Whether a table supports being imported and exported
+	 * Valid only for tables
+	 */
+	SupportsImportExport = 'ui:import-export',
 }
 
 export function getSchemaDefaultValues(schema: JSONSchema | undefined): any {

@@ -24,6 +24,7 @@ export interface IPropsHeader {
 
 const supportedLayers = new Set([
 	SourceLayerType.GRAPHICS,
+	SourceLayerType.STUDIO_SCREEN,
 	SourceLayerType.LIVE_SPEAK,
 	SourceLayerType.REMOTE,
 	SourceLayerType.SPLITS,

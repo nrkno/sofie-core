@@ -67,7 +67,7 @@ export function GenericSubDevicesTable({
 				no: t('Cancel'),
 				yes: t('Remove'),
 				onAccept: () => {
-					overrideHelper.deleteItem(subdeviceId)
+					overrideHelper().deleteItem(subdeviceId).commit()
 				},
 				message: (
 					<React.Fragment>
@@ -105,6 +105,11 @@ export function GenericSubDevicesTable({
 		return options
 	}, [peripheralDevicesMap])
 
+	const undeleteItemWithId = useCallback(
+		(itemId: string) => overrideHelper().resetItem(itemId).commit(),
+		[overrideHelper]
+	)
+
 	return (
 		<table className="expando settings-studio-device-table table">
 			<thead>
@@ -125,7 +130,7 @@ export function GenericSubDevicesTable({
 								key={item.id}
 								item={item}
 								peripheralDevice={peripheralDevice}
-								undeleteItemWithId={overrideHelper.resetItem}
+								undeleteItemWithId={undeleteItemWithId}
 							/>
 						)
 					} else {
@@ -259,7 +264,7 @@ function SubDeviceEditRow({
 		(newId: string) => {
 			if (item.id === newId) return
 
-			overrideHelper.changeItemId(item.id, newId)
+			overrideHelper().changeItemId(item.id, newId).commit()
 
 			// toggle ui visibility
 			editItemWithId(item.id, false)
