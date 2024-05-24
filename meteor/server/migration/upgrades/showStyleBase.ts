@@ -160,7 +160,7 @@ export async function runUpgradeForShowStyleBase(showStyleBaseId: ShowStyleBaseI
 						blueprintUniqueId: newTriggeredAction._id,
 						triggersWithOverrides: wrapDefaultObject(newTriggeredAction.triggers),
 						actionsWithOverrides: wrapDefaultObject(newTriggeredAction.actions),
-						stylePreset: newTriggeredAction.stylePreset,
+						styleClassNames: newTriggeredAction.styleClassNames,
 					}),
 				},
 			})

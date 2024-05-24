@@ -54,7 +54,7 @@ function convertDocument(doc: DBTriggeredActions): UITriggeredActionsObj {
 		actions: applyAndValidateOverrides(doc.actionsWithOverrides).obj,
 		triggers: applyAndValidateOverrides(doc.triggersWithOverrides).obj,
 
-		stylePreset: doc.stylePreset,
+		styleClassNames: doc.styleClassNames,
 	})
 }
 

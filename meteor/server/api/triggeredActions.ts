@@ -38,7 +38,7 @@ export async function createTriggeredActions(
 			actionsWithOverrides: convertObjectIntoOverrides(base?.actions),
 			triggersWithOverrides: convertObjectIntoOverrides(base?.triggers),
 
-			stylePreset: base?.stylePreset,
+			styleClassNames: base?.styleClassNames,
 		})
 	)
 	return id

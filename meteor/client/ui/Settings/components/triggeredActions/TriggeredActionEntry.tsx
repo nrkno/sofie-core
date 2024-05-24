@@ -544,16 +544,18 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 						<span className="mls text-s dimmed field-hint">{t('Optional description of the action')}</span>
 					</label>
 					<label className="mas">
-						<span className="mrs">{t('Style Preset')}</span>
+						<span className="mrs">{t('Style class names')}</span>
 						<EditAttribute
 							type="text"
 							obj={triggeredAction}
 							collection={TriggeredActions}
-							attribute="stylePreset"
+							attribute="styleClassNames"
 							className="input text-input input-l pan"
 							modifiedClassName="bghl"
 						/>
-						<span className="mls text-s dimmed field-hint">{t('Style Preset to use when displaying the action')}</span>
+						<span className="mls text-s dimmed field-hint">
+							{t('Space separated list of style class names to use when displaying the action')}
+						</span>
 					</label>
 				</>
 			) : null}

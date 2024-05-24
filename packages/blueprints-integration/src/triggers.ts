@@ -321,8 +321,8 @@ export interface IBlueprintTriggeredActions {
 	triggers: Record<string, SomeBlueprintTrigger>
 	/** A list of actions to execute */
 	actions: Record<string, SomeAction>
-	/** Id of style preset to use when displaying this triggered actions */
-	stylePreset?: string
+	/** Space separated list of class names to use when displaying this triggered actions */
+	styleClassNames?: string
 }
 
 export { SomeActionIdentifier, ClientActions, PlayoutActions }

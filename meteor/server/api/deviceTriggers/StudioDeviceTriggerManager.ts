@@ -153,7 +153,7 @@ export class StudioDeviceTriggerManager {
 							showStyleBaseId,
 							sourceLayerType: undefined,
 							sourceLayerName: undefined,
-							stylePreset: triggeredAction.stylePreset,
+							styleClassNames: triggeredAction.styleClassNames,
 						}),
 					})
 
@@ -182,7 +182,7 @@ export class StudioDeviceTriggerManager {
 											abbreviation: sourceLayers[adLib.sourceLayerId]?.abbreviation,
 									  }
 									: undefined,
-								stylePreset: triggeredAction.stylePreset,
+								styleClassNames: triggeredAction.styleClassNames,
 							}),
 						})
 
@@ -261,7 +261,7 @@ function convertDocument(doc: ReadonlyObjectDeep<DBTriggeredActions>): UITrigger
 		actions: applyAndValidateOverrides<Record<string, SomeAction>>(doc.actionsWithOverrides).obj,
 		triggers: applyAndValidateOverrides<Record<string, SomeBlueprintTrigger>>(doc.triggersWithOverrides).obj,
 
-		stylePreset: doc.stylePreset,
+		styleClassNames: doc.styleClassNames,
 	})
 }
 
