@@ -183,26 +183,19 @@ export class StudioObserver extends EventEmitter {
 				this.#rundownsLiveQuery = undefined
 
 				const activePlaylistId = this.activePlaylistId
-				const activationId = this.activationId
 				this.showStyleBaseId = showStyleBaseId
 
 				let cleanupChanges: (() => void) | undefined = undefined
 
 				this.#rundownsLiveQuery = new RundownsObserver(activePlaylistId, (rundownIds) => {
 					logger.silly(`Creating new RundownContentObserver`)
-					const obs1 = new RundownContentObserver(
-						activePlaylistId,
-						showStyleBaseId,
-						rundownIds,
-						activationId,
-						(cache) => {
-							cleanupChanges = this.#changed(showStyleBaseId, cache)
+					const obs1 = new RundownContentObserver(activePlaylistId, showStyleBaseId, rundownIds, (cache) => {
+						cleanupChanges = this.#changed(showStyleBaseId, cache)
 
-							return () => {
-								void 0
-							}
+						return () => {
+							void 0
 						}
-					)
+					})
 
 					return () => {
 						obs1.stop()
