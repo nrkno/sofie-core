@@ -37,6 +37,8 @@ export async function createTriggeredActions(
 			// User source objects should be formed purely of overrides
 			actionsWithOverrides: convertObjectIntoOverrides(base?.actions),
 			triggersWithOverrides: convertObjectIntoOverrides(base?.triggers),
+
+			styleClassNames: base?.styleClassNames,
 		})
 	)
 	return id

@@ -44,7 +44,7 @@ export class OverrideOpHelperObjectTable implements OverrideOpHelperForItemConte
 
 		// If row was not user created (it has defaults), then don't store `undefined`
 		const row = this.#currentRows.find((r) => r.id === rowId)
-		if (row && row.defaults) {
+		if (!this.#parentItem.defaults || row?.defaults) {
 			// This is a bit of a hack, but it isn't possible to create a delete op from here
 			this.#baseHelper.setItemValue(this.#parentItem.id, rowPath, undefined)
 		}

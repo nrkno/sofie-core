@@ -51,6 +51,7 @@ function convertTriggeredActionToBlueprints(triggeredAction: TriggeredActionsObj
 		name: triggeredAction.name,
 		triggers: clone(triggeredAction.triggersWithOverrides.defaults),
 		actions: clone(triggeredAction.actionsWithOverrides.defaults),
+		styleClassNames: triggeredAction.styleClassNames,
 	}
 
 	return obj

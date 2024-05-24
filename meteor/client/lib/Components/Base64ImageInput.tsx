@@ -36,8 +36,6 @@ export function Base64ImageInputControl({
 				const uploadResult = readEvent.target?.result
 				if (typeof uploadResult !== 'string' || !uploadResult) return
 
-				console.log('selected', readEvent.target?.result)
-
 				handleUpdate(uploadResult.toString())
 			}
 			reader.readAsDataURL(file)

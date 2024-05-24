@@ -88,8 +88,6 @@ export const SchemaFormObjectTable = ({
 				(a, b) => a[0].localeCompare(b[0]) // TODO - better comparitor?
 			)
 
-			console.log('obj', item, rawRows, ops, wrappedRows)
-
 			return wrappedRows
 		} else {
 			// Table is formed of purely of an override, so ignore any defaults
@@ -271,8 +269,6 @@ interface ImportExportButtonsProps {
 
 function ImportExportButtons({ schema, overrideHelper, wrappedRows }: Readonly<ImportExportButtonsProps>) {
 	const { t } = useTranslation()
-
-	console.log(schema)
 
 	const [uploadFileKey, setUploadFileKey] = useState(0)
 
