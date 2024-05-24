@@ -85,6 +85,8 @@ describe('ActivePlaylistTopic', () => {
 					sourceLayer: 'Layer 0',
 					tags: ['adlib_tag'],
 					publicData: { a: 'b' },
+					segmentId: 'segment0',
+					partId: 'part0',
 				},
 			],
 			globalAdLibs: [
