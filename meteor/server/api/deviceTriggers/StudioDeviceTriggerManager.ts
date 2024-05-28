@@ -71,22 +71,23 @@ export class StudioDeviceTriggerManager {
 			showStyleBaseId: {
 				$in: [showStyleBaseId, null],
 			},
-		}).map((pair) => convertDocument(pair))
-		const triggeredActions = allTriggeredActions.filter((pair) =>
-			Object.values<SomeBlueprintTrigger>(pair.triggers).find((trigger) => isDeviceTrigger(trigger))
-		)
+		})
 
 		const upsertedDeviceTriggerMountedActionIds: DeviceTriggerMountedActionId[] = []
 		const touchedActionIds: DeviceActionId[] = []
 
-		for (const triggeredAction of triggeredActions) {
+		for (const rawTriggeredAction of allTriggeredActions) {
+			const triggeredAction = convertDocument(rawTriggeredAction)
+
+			if (!Object.values<SomeBlueprintTrigger>(triggeredAction.triggers).find(isDeviceTrigger)) continue
+
 			const addedPreviewIds: PreviewWrappedAdLibId[] = []
 
 			Object.entries<SomeAction>(triggeredAction.actions).forEach(([key, action]) => {
-				// Since the compiled aciton is cached using this actionId as a key, having the action
-				// and the filterChain length allows for a quicker invalidation without doing a deepEquals
+				// Since the compiled action is cached using this actionId as a key, having the action
+				// and the filterChain allows for a quicker invalidation without doing a deepEquals
 				const actionId = protectString<DeviceActionId>(
-					`${studioId}_${triggeredAction._id}_${key}_${action.action}_${action.filterChain.length}`
+					`${studioId}_${triggeredAction._id}_${key}_${action.action}_${JSON.stringify(action.filterChain)}`
 				)
 				const existingAction = actionManager.getAction(actionId)
 				let thisAction: ExecutableAction
@@ -190,6 +191,8 @@ export class StudioDeviceTriggerManager {
 					})
 				}
 			})
+
+			console.log(`updating ${triggeredAction._id}, gen ${addedPreviewIds}`)
 
 			DeviceTriggerMountedActionAdlibsPreview.remove({
 				triggeredActionId: triggeredAction._id,
