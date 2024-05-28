@@ -55,16 +55,16 @@ export class CustomPublish<DBObj extends { _id: ProtectedString<any> }> {
 	changed(changes: CustomPublishChanges<DBObj>): void {
 		if (!this.#isReady) throw new Meteor.Error(500, 'CustomPublish has not been initialised')
 
+		for (const id of changes.removed.values()) {
+			this._meteorSubscription.removed(this._collectionName, unprotectString(id))
+		}
+
 		for (const doc of changes.added.values()) {
 			this._meteorSubscription.added(this._collectionName, unprotectString(doc._id), doc)
 		}
 
 		for (const doc of changes.changed.values()) {
 			this._meteorSubscription.changed(this._collectionName, unprotectString(doc._id), doc)
-		}
-
-		for (const id of changes.removed.values()) {
-			this._meteorSubscription.removed(this._collectionName, unprotectString(id))
 		}
 	}
 }
