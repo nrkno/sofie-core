@@ -43,8 +43,6 @@ function sourceLayerString(t: TFunction<'translation', undefined>, type: SourceL
 			return t('Lower Third')
 		// case SourceLayerType.MIC:
 		// 	return t('Studio Microphone')
-		case SourceLayerType.STUDIO_SCREEN:
-			return t('Studio Screen Graphics')
 		case SourceLayerType.REMOTE:
 			return t('Remote Source')
 		case SourceLayerType.SCRIPT:
@@ -64,7 +62,7 @@ function sourceLayerString(t: TFunction<'translation', undefined>, type: SourceL
 		case SourceLayerType.LOCAL:
 			return t('Local')
 		case SourceLayerType.STUDIO_SCREEN:
-			return t('Studio Screen')
+			return t('Studio Screen Graphics')
 		default:
 			assertNever(type)
 			return SourceLayerType[type]
