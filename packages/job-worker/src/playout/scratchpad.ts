@@ -36,7 +36,7 @@ export async function handleActivateScratchpad(context: JobContext, data: Activa
 				_id: getRandomId(),
 				_rank: 0,
 				externalId: '',
-				title: 'Scratchpad',
+				title: 'Adlib Testing',
 				expectedDuration: 0,
 				expectedDurationWithPreroll: 0, // Filled in later
 				untimed: true,

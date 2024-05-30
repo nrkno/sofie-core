@@ -1016,7 +1016,7 @@ const RundownHeader = withTranslation()(
 										<MenuItem onClick={(e) => this.deactivate(e)}>{t('Deactivate')}</MenuItem>
 									) : null}
 									{this.props.studio.settings.allowScratchpad && this.props.playlist.activationId ? (
-										<MenuItem onClick={(e) => this.activateScratchpad(e)}>{t('Activate Scratchpad')}</MenuItem>
+										<MenuItem onClick={(e) => this.activateScratchpad(e)}>{t('Rehearsal Mode')}</MenuItem>
 									) : null}
 									{this.props.playlist.activationId ? (
 										<MenuItem onClick={(e) => this.take(e)}>{t('Take')}</MenuItem>

@@ -161,7 +161,7 @@ function actionToLabel(t: TFunction, action: SomeAction['action']): string {
 		case PlayoutActions.deactivateRundownPlaylist:
 			return t('Deactivate Rundown')
 		case PlayoutActions.activateScratchpadMode:
-			return t('Activate Scratchpad')
+			return t('Rehearsal Mode')
 		case PlayoutActions.disableNextPiece:
 			return t('Disable next Piece')
 		case PlayoutActions.hold:

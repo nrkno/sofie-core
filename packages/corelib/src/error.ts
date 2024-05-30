@@ -110,8 +110,8 @@ const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
 	[UserErrorMessage.ShowStyleBaseNotFound]: t(`ShowStyleBase not found!`),
 	[UserErrorMessage.NoMigrationsToApply]: t(`No migrations to apply`),
 	[UserErrorMessage.ValidationFailed]: t('Validation failed!'),
-	[UserErrorMessage.ScratchpadNotAllowed]: t(`Scratchpad mode is not allowed`),
-	[UserErrorMessage.ScratchpadAlreadyActive]: t(`Scratchpad mode is already active`),
+	[UserErrorMessage.ScratchpadNotAllowed]: t(`Rehearsal mode is not allowed`),
+	[UserErrorMessage.ScratchpadAlreadyActive]: t(`Rehearsal mode is already active`),
 	[UserErrorMessage.BucketNotFound]: t(`Bucket not found!`),
 }
 

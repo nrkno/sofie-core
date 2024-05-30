@@ -113,7 +113,7 @@ function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
 		case UserAction.PERIPHERAL_DEVICE_REFRESH_DEBUG_STATES:
 			return t('Refreshing debug states')
 		case UserAction.ACTIVATE_SCRATCHPAD:
-			return t('Activate Scratchpad')
+			return t('Rehearsal Mode')
 		default:
 			assertNever(userAction)
 	}

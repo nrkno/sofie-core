@@ -184,7 +184,7 @@ export enum StudioJobs {
 	BlueprintIgnoreFixUpConfigForStudio = 'blueprintIgnoreFixUpConfigForStudio',
 
 	/**
-	 * Activate scratchpad mode for the Rundown containing the nexted Part.
+	 * Activate scratchpad (Rehearsal Mode) mode for the Rundown containing the nexted Part.
 	 */
 	ActivateScratchpad = 'activateScratchpad',
 }
