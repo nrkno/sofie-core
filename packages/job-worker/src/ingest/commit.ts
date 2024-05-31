@@ -215,7 +215,7 @@ export async function CommitIngestOperation(
 			const pSaveIngest = ingestModel.saveAllToDatabase()
 			pSaveIngest.catch(() => null) // Ensure promise isn't reported as unhandled
 
-			await validateScratchpad(context, playoutModel)
+			await validateAdlibTestingSegment(context, playoutModel)
 
 			try {
 				// sync changes to the 'selected' partInstances
@@ -746,8 +746,8 @@ async function removeSegments(
 	}
 }
 
-async function validateScratchpad(_context: JobContext, playoutModel: PlayoutModel) {
+async function validateAdlibTestingSegment(_context: JobContext, playoutModel: PlayoutModel) {
 	for (const rundown of playoutModel.rundowns) {
-		rundown.updateScratchpadSegmentRank()
+		rundown.updateAdlibTestingSegmentRank()
 	}
 }

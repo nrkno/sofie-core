@@ -56,7 +56,7 @@ export function generateNotesForSegment(
 					nrcs: nrcsName,
 				})
 				break
-			case SegmentOrphanedReason.SCRATCHPAD:
+			case SegmentOrphanedReason.ADLIB_TESTING:
 				// Ignore
 				break
 			default:

@@ -100,7 +100,7 @@ export function defaultStudio(_id: StudioId): DBStudio {
 			frameRate: 25,
 			mediaPreviewsUrl: '',
 			minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
-			allowScratchpad: true,
+			allowAdlibTestingSegment: true,
 		},
 		routeSets: {},
 		routeSetExclusivityGroups: {},

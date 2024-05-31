@@ -218,12 +218,12 @@ export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBa
 	createInstanceForPart(nextPart: ReadonlyDeep<DBPart>, pieceInstances: PieceInstance[]): PlayoutPartInstanceModel
 
 	/**
-	 * Insert an adlibbed PartInstance into the Scratchpad Segment of a Rundown in this RundownPlaylist
+	 * Insert an adlibbed PartInstance into the AdlibTesting Segment of a Rundown in this RundownPlaylist
 	 * @param rundown Rundown to insert for
 	 * @param part Part to insert
 	 * @returns The inserted PlayoutPartInstanceModel
 	 */
-	createScratchpadPartInstance(
+	createAdlibTestingPartInstance(
 		rundown: PlayoutRundownModel,
 		part: Omit<DBPart, 'segmentId' | 'rundownId'>
 	): PlayoutPartInstanceModel

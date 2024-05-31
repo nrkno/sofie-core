@@ -237,7 +237,7 @@ describe('Infinites', () => {
 			])
 		})
 
-		describe('scratchpad', () => {
+		describe('AdlibTesting', () => {
 			const playlistId = protectString('playlist0')
 			const rundownId = protectString('rundown0')
 			const segmentId = protectString('segment0')
@@ -271,33 +271,33 @@ describe('Infinites', () => {
 				expect(continuedInstances).toHaveLength(1)
 			})
 
-			test('into scratchpad', () => {
+			test('into AdlibTesting segment', () => {
 				const previousSegment: Pick<DBSegment, '_id' | 'orphaned'> = { _id: previousPartInstance.segmentId }
-				const scratchpadSegment: Pick<DBSegment, '_id' | 'orphaned'> = {
+				const adlibTestingSegment: Pick<DBSegment, '_id' | 'orphaned'> = {
 					_id: protectString('segment1'),
-					orphaned: SegmentOrphanedReason.SCRATCHPAD,
+					orphaned: SegmentOrphanedReason.ADLIB_TESTING,
 				}
 				const continuedInstances = runAndTidyResult(
 					previousPartInstance,
 					previousSegment,
 					previousPartPieces,
 					rundown,
-					scratchpadSegment,
+					adlibTestingSegment,
 					part,
 					instanceId
 				)
 				expect(continuedInstances).toHaveLength(0)
 			})
 
-			test('out of scratchpad', () => {
+			test('out of AdlibTesting', () => {
 				const segment: Pick<DBSegment, '_id' | 'orphaned'> = { _id: protectString('segment1') }
-				const scratchpadSegment: Pick<DBSegment, '_id' | 'orphaned'> = {
+				const adlibTestingSegment: Pick<DBSegment, '_id' | 'orphaned'> = {
 					_id: previousPartInstance.segmentId,
-					orphaned: SegmentOrphanedReason.SCRATCHPAD,
+					orphaned: SegmentOrphanedReason.ADLIB_TESTING,
 				}
 				const continuedInstances = runAndTidyResult(
 					previousPartInstance,
-					scratchpadSegment,
+					adlibTestingSegment,
 					previousPartPieces,
 					rundown,
 					segment,
@@ -307,15 +307,15 @@ describe('Infinites', () => {
 				expect(continuedInstances).toHaveLength(0)
 			})
 
-			test('within scratchpad', () => {
+			test('within AdlibTesting', () => {
 				const segment: Pick<DBSegment, '_id' | 'orphaned'> = { _id: previousPartInstance.segmentId }
-				const scratchpadSegment: Pick<DBSegment, '_id' | 'orphaned'> = {
+				const adlibTestingSegment: Pick<DBSegment, '_id' | 'orphaned'> = {
 					_id: previousPartInstance.segmentId,
-					orphaned: SegmentOrphanedReason.SCRATCHPAD,
+					orphaned: SegmentOrphanedReason.ADLIB_TESTING,
 				}
 				const continuedInstances = runAndTidyResult(
 					previousPartInstance,
-					scratchpadSegment,
+					adlibTestingSegment,
 					previousPartPieces,
 					rundown,
 					segment,

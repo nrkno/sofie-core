@@ -189,8 +189,8 @@ export interface IRundownPlaylistDeactivateAction extends ITriggeredActionBase {
 	filterChain: (IRundownPlaylistFilterLink | IGUIContextFilterLink)[]
 }
 
-export interface IRundownPlaylistActivateScratchpadAction extends ITriggeredActionBase {
-	action: PlayoutActions.activateScratchpadMode
+export interface IRundownPlaylistActivateAdlibTestingAction extends ITriggeredActionBase {
+	action: PlayoutActions.activateAdlibTestingMode
 	filterChain: (IRundownPlaylistFilterLink | IGUIContextFilterLink)[]
 }
 
@@ -301,7 +301,7 @@ export type SomeAction =
 	| IAdlibPlayoutAction
 	| IRundownPlaylistActivateAction
 	| IRundownPlaylistDeactivateAction
-	| IRundownPlaylistActivateScratchpadAction
+	| IRundownPlaylistActivateAdlibTestingAction
 	| ITakeAction
 	| IHoldAction
 	| IMoveNextAction

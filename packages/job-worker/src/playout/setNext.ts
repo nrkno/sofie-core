@@ -309,7 +309,7 @@ async function cleanupOrphanedItems(context: JobContext, playoutModel: PlayoutMo
 					rundownSegments.hidden.push(segment.segment._id)
 					break
 				}
-				case SegmentOrphanedReason.SCRATCHPAD:
+				case SegmentOrphanedReason.ADLIB_TESTING:
 					// Ignore, as these are owned by playout not ingest
 					break
 				case undefined:
@@ -376,8 +376,8 @@ export async function queueNextSegment(
 ): Promise<QueueNextSegmentResult> {
 	const span = context.startSpan('queueNextSegment')
 	if (queuedSegment) {
-		if (queuedSegment.segment.orphaned === SegmentOrphanedReason.SCRATCHPAD)
-			throw new Error(`Segment "${queuedSegment.segment._id}" is a scratchpad, and cannot be queued!`)
+		if (queuedSegment.segment.orphaned === SegmentOrphanedReason.ADLIB_TESTING)
+			throw new Error(`Segment "${queuedSegment.segment._id}" is an AdlibTesting segment, and cannot be queued!`)
 
 		// Just run so that errors will be thrown if something wrong:
 		const firstPlayablePart = findFirstPlayablePartOrThrow(queuedSegment)

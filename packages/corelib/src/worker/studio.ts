@@ -184,9 +184,9 @@ export enum StudioJobs {
 	BlueprintIgnoreFixUpConfigForStudio = 'blueprintIgnoreFixUpConfigForStudio',
 
 	/**
-	 * Activate scratchpad (Rehearsal Mode) mode for the Rundown containing the nexted Part.
+	 * Activate AdlibTesting (Rehearsal Mode) mode for the Rundown containing the nexted Part.
 	 */
-	ActivateScratchpad = 'activateScratchpad',
+	ActivateAdlibTesting = 'activateAdlibTesting',
 }
 
 export interface RundownPlayoutPropsBase {
@@ -330,7 +330,7 @@ export interface BlueprintFixUpConfigForStudioResult {
 	}>
 }
 
-export interface ActivateScratchpadProps extends RundownPlayoutPropsBase {
+export interface ActivateAdlibTestingProps extends RundownPlayoutPropsBase {
 	rundownId: RundownId
 }
 
@@ -384,7 +384,7 @@ export type StudioJobFunc = {
 	[StudioJobs.BlueprintFixUpConfigForStudio]: () => BlueprintFixUpConfigForStudioResult
 	[StudioJobs.BlueprintIgnoreFixUpConfigForStudio]: () => void
 
-	[StudioJobs.ActivateScratchpad]: (data: ActivateScratchpadProps) => void
+	[StudioJobs.ActivateAdlibTesting]: (data: ActivateAdlibTestingProps) => void
 }
 
 export function getStudioQueueName(id: StudioId): string {

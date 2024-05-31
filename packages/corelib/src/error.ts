@@ -54,8 +54,8 @@ export enum UserErrorMessage {
 	ShowStyleBaseNotFound = 39,
 	NoMigrationsToApply = 40,
 	ValidationFailed = 41,
-	ScratchpadNotAllowed = 42,
-	ScratchpadAlreadyActive = 43,
+	AdlibTestingNotAllowed = 42,
+	AdlibTestingAlreadyActive = 43,
 	BucketNotFound = 44,
 }
 
@@ -110,8 +110,8 @@ const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
 	[UserErrorMessage.ShowStyleBaseNotFound]: t(`ShowStyleBase not found!`),
 	[UserErrorMessage.NoMigrationsToApply]: t(`No migrations to apply`),
 	[UserErrorMessage.ValidationFailed]: t('Validation failed!'),
-	[UserErrorMessage.ScratchpadNotAllowed]: t(`Rehearsal mode is not allowed`),
-	[UserErrorMessage.ScratchpadAlreadyActive]: t(`Rehearsal mode is already active`),
+	[UserErrorMessage.AdlibTestingNotAllowed]: t(`Rehearsal mode is not allowed`),
+	[UserErrorMessage.AdlibTestingAlreadyActive]: t(`Rehearsal mode is already active`),
 	[UserErrorMessage.BucketNotFound]: t(`Bucket not found!`),
 }
 

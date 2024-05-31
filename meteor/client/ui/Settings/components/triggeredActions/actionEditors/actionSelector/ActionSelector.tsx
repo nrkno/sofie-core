@@ -43,7 +43,7 @@ function getArguments(t: TFunction, action: SomeAction): string[] {
 			break
 		case PlayoutActions.deactivateRundownPlaylist:
 			break
-		case PlayoutActions.activateScratchpadMode:
+		case PlayoutActions.activateAdlibTestingMode:
 			break
 		case PlayoutActions.disableNextPiece:
 			if (action.undo) {
@@ -116,7 +116,7 @@ function hasArguments(action: SomeAction): boolean {
 			return false
 		case PlayoutActions.deactivateRundownPlaylist:
 			return false
-		case PlayoutActions.activateScratchpadMode:
+		case PlayoutActions.activateAdlibTestingMode:
 			return false
 		case PlayoutActions.disableNextPiece:
 			return !!action.undo
@@ -160,7 +160,7 @@ function actionToLabel(t: TFunction, action: SomeAction['action']): string {
 			return t('Store Snapshot')
 		case PlayoutActions.deactivateRundownPlaylist:
 			return t('Deactivate Rundown')
-		case PlayoutActions.activateScratchpadMode:
+		case PlayoutActions.activateAdlibTestingMode:
 			return t('Rehearsal Mode')
 		case PlayoutActions.disableNextPiece:
 			return t('Disable next Piece')
@@ -253,7 +253,7 @@ function getActionParametersEditor(
 			return null
 		case PlayoutActions.deactivateRundownPlaylist:
 			return null
-		case PlayoutActions.activateScratchpadMode:
+		case PlayoutActions.activateAdlibTestingMode:
 			return null
 		case PlayoutActions.disableNextPiece:
 			return (

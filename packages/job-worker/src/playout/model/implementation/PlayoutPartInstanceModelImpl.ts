@@ -522,10 +522,10 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		return true
 	}
 
-	validateScratchpadSegmentProperties(): void {
+	validateAdlibTestingSegmentProperties(): void {
 		this.#compareAndSetPartInstanceValue('orphaned', 'adlib-part')
 
-		// Autonext isn't allowed to begin with, to avoid accidentally exiting the scratchpad
+		// Autonext isn't allowed to begin with, to avoid accidentally exiting the adlib testing segment
 		this.#compareAndSetPartValue('autoNext', undefined)
 
 		// Force this to not affect rundown timing

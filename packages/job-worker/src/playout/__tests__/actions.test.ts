@@ -9,7 +9,7 @@ import { executePeripheralDeviceFunction } from '../../peripheralDevice'
 import { removeRundownFromDb } from '../../rundownPlaylists'
 import { activateRundownPlaylist } from '../activePlaylistActions'
 import { runJobWithPlayoutModel } from '../lock'
-import { handleActivateScratchpad } from '../scratchpad'
+import { handleActivateAdlibTesting } from '../adlibTesting'
 
 jest.mock('../../peripheralDevice')
 type TexecutePeripheralDeviceFunction = jest.MockedFunction<typeof executePeripheralDeviceFunction>
@@ -88,7 +88,7 @@ describe('Playout Actions', () => {
 
 		expect(executePeripheralDeviceFunctionMock).toHaveBeenCalledTimes(0)
 	})
-	test('scratchpad', async () => {
+	test('AdlibTesting', async () => {
 		const { playlistId: playlistId0, rundownId: rundownId0 } = await setupDefaultRundownPlaylist(
 			context,
 			undefined,
@@ -124,15 +124,15 @@ describe('Playout Actions', () => {
 			name: 'Segment 0',
 		})
 
-		await handleActivateScratchpad(context, {
+		await handleActivateAdlibTesting(context, {
 			playlistId: playlistId0,
 			rundownId: rundownId0,
 		})
 
-		// Scratchpad segment should be at the top
+		// AdlibTesting segment should be at the top
 		const topSegment = await getFirstSegment()
 		expect(topSegment).toMatchObject({
-			orphaned: SegmentOrphanedReason.SCRATCHPAD,
+			orphaned: SegmentOrphanedReason.ADLIB_TESTING,
 		})
 
 		await expect(getCurrentPartInstance(playlistId0)).resolves.toMatchObject({
@@ -144,7 +144,7 @@ describe('Playout Actions', () => {
 			activateRundownPlaylist(context, playoutModel, false)
 		)
 
-		// Scratchpad segment should be gone
+		// AdlibTesting segment should be gone
 		await expect(getFirstSegment()).resolves.toMatchObject({
 			name: 'Segment 0',
 		})

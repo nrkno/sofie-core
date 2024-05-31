@@ -63,8 +63,8 @@ const PART_WIDTH = 166 // Must match SCSS: $segment-storyboard-part-width
 const PART_LIST_LEAD_IN = 0 // Must match SCSS: .segment-storyboard__part-list(padding-left)
 const PART_SHADE_WIDTH = 100
 
-export const SegmentScratchpad = React.memo(
-	React.forwardRef<HTMLDivElement, IProps>(function SegmentScratchpad(props: IProps, ref) {
+export const SegmentAdlibTesting = React.memo(
+	React.forwardRef<HTMLDivElement, IProps>(function SegmentAdlibTesting(props: IProps, ref) {
 		const innerRef = useRef<HTMLDivElement>(null)
 		const combinedRef = useCombinedRefs(null, ref, innerRef)
 		const listRef = useRef<HTMLDivElement>(null)
@@ -426,7 +426,7 @@ export const SegmentScratchpad = React.memo(
 		return (
 			<div
 				id={props.id}
-				className={classNames('segment-timeline', 'segment-storyboard', 'segment-scratchpad', {
+				className={classNames('segment-timeline', 'segment-storyboard', 'segment-alib-testing', {
 					// live: props.isLiveSegment,
 					// next: !props.isLiveSegment && props.isNextSegment,
 					// queued: props.isQueuedSegment,
@@ -554,4 +554,4 @@ export const SegmentScratchpad = React.memo(
 	})
 )
 
-SegmentScratchpad.displayName = 'SegmentStoryboard'
+SegmentAdlibTesting.displayName = 'SegmentStoryboard'

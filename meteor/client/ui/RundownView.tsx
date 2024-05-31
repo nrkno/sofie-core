@@ -147,7 +147,7 @@ import {
 } from '../collections'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlaylistUtil'
-import { SegmentScratchpadContainer } from './SegmentScratchpad/SegmentScratchpadContainer'
+import { SegmentAdlibTestingContainer } from './SegmentAdlibTesting/SegmentAdlibTestingContainer'
 import { PromiseButton } from '../lib/Components/PromiseButton'
 import { logger } from '../../lib/logging'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
@@ -823,19 +823,19 @@ const RundownHeader = withTranslation()(
 				}
 			}
 		}
-		private activateScratchpad = (e: any) => {
+		private activateAdlibTesting = (e: any) => {
 			const { t } = this.props
 			if (e.persist) e.persist()
 
 			if (
 				this.props.studioMode &&
-				this.props.studio.settings.allowScratchpad &&
+				this.props.studio.settings.allowAdlibTestingSegment &&
 				this.props.playlist.activationId &&
 				this.props.currentRundown
 			) {
 				const rundownId = this.props.currentRundown._id
-				doUserAction(t, e, UserAction.ACTIVATE_SCRATCHPAD, (e, ts) =>
-					MeteorCall.userAction.activateScratchpadMode(e, ts, this.props.playlist._id, rundownId)
+				doUserAction(t, e, UserAction.ACTIVATE_ADLIB_TESTING, (e, ts) =>
+					MeteorCall.userAction.activateAdlibTestingMode(e, ts, this.props.playlist._id, rundownId)
 				)
 			}
 		}
@@ -1015,8 +1015,8 @@ const RundownHeader = withTranslation()(
 									{this.props.playlist.activationId ? (
 										<MenuItem onClick={(e) => this.deactivate(e)}>{t('Deactivate')}</MenuItem>
 									) : null}
-									{this.props.studio.settings.allowScratchpad && this.props.playlist.activationId ? (
-										<MenuItem onClick={(e) => this.activateScratchpad(e)}>{t('Rehearsal Mode')}</MenuItem>
+									{this.props.studio.settings.allowAdlibTestingSegment && this.props.playlist.activationId ? (
+										<MenuItem onClick={(e) => this.activateAdlibTesting(e)}>{t('Rehearsal Mode')}</MenuItem>
 									) : null}
 									{this.props.playlist.activationId ? (
 										<MenuItem onClick={(e) => this.take(e)}>{t('Take')}</MenuItem>
@@ -2628,8 +2628,8 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 				showDurationSourceLayers: showDurationSourceLayers,
 			}
 
-			if (segment.orphaned === SegmentOrphanedReason.SCRATCHPAD) {
-				return <SegmentScratchpadContainer {...resolvedSegmentProps} />
+			if (segment.orphaned === SegmentOrphanedReason.ADLIB_TESTING) {
+				return <SegmentAdlibTestingContainer {...resolvedSegmentProps} />
 			}
 
 			switch (displayMode) {

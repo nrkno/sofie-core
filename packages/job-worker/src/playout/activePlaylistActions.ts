@@ -52,9 +52,9 @@ export async function activateRundownPlaylist(
 		if (!rundown) throw new Error(`Could not find rundown "${rundownId}"`)
 		const currentSegment = playoutModel.findSegment(currentPartInstance.partInstance.segmentId)
 		if (!currentSegment) throw new Error(`Could not find segment "${currentPartInstance.partInstance.segmentId}"`)
-		if (currentSegment.segment.orphaned === SegmentOrphanedReason.SCRATCHPAD) {
+		if (currentSegment.segment.orphaned === SegmentOrphanedReason.ADLIB_TESTING) {
 			currentPartInstance.markAsReset()
-			rundown.removeScratchpadSegment()
+			rundown.removeAdlibTestingSegment()
 		}
 	}
 

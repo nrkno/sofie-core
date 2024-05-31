@@ -9,38 +9,38 @@ import { PlayoutPartInstanceModelImpl } from './PlayoutPartInstanceModelImpl'
 import { PlayoutRundownModelImpl } from './PlayoutRundownModelImpl'
 
 /**
- * Save any changed Scratchpad Segments
+ * Save any changed AdlibTesting Segments
  * @param context Context from the job queue
- * @param rundowns Rundowns whose Scratchpad Segment may need saving
+ * @param rundowns Rundowns whose AdlibTesting Segment may need saving
  */
-export async function writeScratchpadSegments(
+export async function writeAdlibTestingSegments(
 	context: JobContext,
 	rundowns: readonly PlayoutRundownModelImpl[]
 ): Promise<void> {
 	const writeOps: AnyBulkWriteOperation<DBSegment>[] = []
 
 	for (const rundown of rundowns) {
-		if (rundown.ScratchPadSegmentHasChanged) {
-			rundown.clearScratchPadSegmentChangedFlag()
-			const scratchpadSegment = rundown.getScratchpadSegment()?.segment
+		if (rundown.AdlibTestingSegmentHasChanged) {
+			rundown.clearAdlibTestingSegmentChangedFlag()
+			const adlibTestingSegment = rundown.getAdlibTestingSegment()?.segment
 
-			// Delete a removed scratchpad, and any with the non-current id (just in case)
+			// Delete a removed AdlibTesting segment, and any with the non-current id (just in case)
 			writeOps.push({
 				deleteMany: {
 					filter: {
 						rundownId: rundown.rundown._id,
-						_id: { $ne: scratchpadSegment?._id ?? protectString('') },
-						orphaned: SegmentOrphanedReason.SCRATCHPAD,
+						_id: { $ne: adlibTestingSegment?._id ?? protectString('') },
+						orphaned: SegmentOrphanedReason.ADLIB_TESTING,
 					},
 				},
 			})
 
 			// Update/insert the segment
-			if (scratchpadSegment) {
+			if (adlibTestingSegment) {
 				writeOps.push({
 					replaceOne: {
-						filter: { _id: scratchpadSegment._id },
-						replacement: scratchpadSegment as DBSegment,
+						filter: { _id: adlibTestingSegment._id },
+						replacement: adlibTestingSegment as DBSegment,
 						upsert: true,
 					},
 				})

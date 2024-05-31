@@ -1196,7 +1196,7 @@ class ServerUserActionAPI
 		)
 	}
 
-	async activateScratchpadMode(
+	async activateAdlibTestingMode(
 		userEvent: string,
 		eventTime: number,
 		playlistId: RundownPlaylistId,
@@ -1211,7 +1211,7 @@ class ServerUserActionAPI
 				check(playlistId, String)
 				check(rundownId, String)
 			},
-			StudioJobs.ActivateScratchpad,
+			StudioJobs.ActivateAdlibTesting,
 			{
 				playlistId: playlistId,
 				rundownId: rundownId,

@@ -111,7 +111,7 @@ export interface ITrackedResolvedSegmentProps {
 	hasRemoteItems: boolean
 	hasGuestItems: boolean
 	hasAlreadyPlayed: boolean
-	isScratchpad: boolean
+	isAdlibTestingSegment: boolean
 	lastValidPartIndex: number | undefined
 	budgetDuration: number | undefined
 	displayLiveLineCounter: boolean
@@ -143,7 +143,7 @@ export function withResolvedSegment<T extends IResolvedSegmentProps, IState = {}
 					budgetDuration: undefined,
 					displayLiveLineCounter: true,
 					showCountdownToSegment: true,
-					isScratchpad: false,
+					isAdlibTestingSegment: false,
 				}
 			}
 
@@ -285,7 +285,7 @@ export function withResolvedSegment<T extends IResolvedSegmentProps, IState = {}
 				)
 			}
 
-			const isScratchpad = segment.orphaned === SegmentOrphanedReason.SCRATCHPAD
+			const isAdlibTestingSegment = segment.orphaned === SegmentOrphanedReason.ADLIB_TESTING
 
 			return {
 				segmentui: o.segmentExtended,
@@ -298,7 +298,7 @@ export function withResolvedSegment<T extends IResolvedSegmentProps, IState = {}
 				budgetDuration,
 				displayLiveLineCounter,
 				showCountdownToSegment,
-				isScratchpad,
+				isAdlibTestingSegment,
 			}
 		},
 		(

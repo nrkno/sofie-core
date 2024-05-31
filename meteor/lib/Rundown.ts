@@ -161,8 +161,8 @@ export function getPieceInstancesForPartInstance(
 	options?: FindOptions<PieceInstance>,
 	pieceInstanceSimulation?: boolean
 ): PieceInstance[] {
-	if (segment.orphaned === SegmentOrphanedReason.SCRATCHPAD) {
-		// When in the scratchpad, don't allow searching other segments/rundowns for infinites to continue
+	if (segment.orphaned === SegmentOrphanedReason.ADLIB_TESTING) {
+		// When in the AdlibTesting segment, don't allow searching other segments/rundowns for infinites to continue
 		segmentsToReceiveOnRundownEndFromSet = new Set()
 		rundownsToReceiveOnShowStyleEndFrom = []
 	}

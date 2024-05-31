@@ -321,7 +321,7 @@ export interface NewUserActionAPI extends MethodContext {
 		subDeviceId: string,
 		disable: boolean
 	): Promise<ClientAPI.ClientResponse<void>>
-	activateScratchpadMode(
+	activateAdlibTestingMode(
 		userEvent: string,
 		eventTime: number,
 		playlistId: RundownPlaylistId,
@@ -406,7 +406,7 @@ export enum UserActionAPIMethods {
 
 	'disablePeripheralSubDevice' = 'userAction.system.disablePeripheralSubDevice',
 
-	'activateScratchpadMode' = 'userAction.activateScratchpadMode',
+	'activateAdlibTestingMode' = 'userAction.activateAdlibTestingMode',
 }
 
 export interface ReloadRundownPlaylistResponse {

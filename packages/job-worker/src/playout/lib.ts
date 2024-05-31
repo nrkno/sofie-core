@@ -28,9 +28,9 @@ export async function resetRundownPlaylist(context: JobContext, playoutModel: Pl
 	playoutModel.removeAllRehearsalPartInstances()
 	resetPartInstancesWithPieceInstances(context, playoutModel)
 
-	// Remove the scratchpad
+	// Remove the AdlibTesting segment
 	for (const rundown of playoutModel.rundowns) {
-		rundown.removeScratchpadSegment()
+		rundown.removeAdlibTestingSegment()
 	}
 
 	if (playoutModel.playlist.activationId) {

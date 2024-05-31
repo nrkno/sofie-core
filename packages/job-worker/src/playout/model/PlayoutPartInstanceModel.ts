@@ -210,7 +210,7 @@ export interface PlayoutPartInstanceModel {
 	updatePartProps(props: Partial<IBlueprintMutatablePart>): boolean
 
 	/**
-	 * Ensure that this PartInstance is setup correctly for being in the Scratchpad Segment
+	 * Ensure that this PartInstance is setup correctly for being in the AdlibTesting Segment
 	 */
-	validateScratchpadSegmentProperties(): void
+	validateAdlibTestingSegmentProperties(): void
 }

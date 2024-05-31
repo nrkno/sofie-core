@@ -51,7 +51,7 @@ import { postProcessPieces, postProcessTimelineObjects } from '../../postProcess
 import { getCurrentTime } from '../../../lib'
 import _ = require('underscore')
 import { syncPlayheadInfinitesForNextPartInstance } from '../../../playout/infinites'
-import { validateScratchpartPartInstanceProperties } from '../../../playout/scratchpad'
+import { validateAdlibTestingPartInstanceProperties } from '../../../playout/adlibTesting'
 import { isTooCloseToAutonext } from '../../../playout/lib'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PlayoutRundownModel } from '../../../playout/model/PlayoutRundownModel'
@@ -528,14 +528,14 @@ export async function applyActionSideEffects(
 		if (nextPartInstance) {
 			nextPartInstance.recalculateExpectedDurationWithPreroll()
 
-			validateScratchpartPartInstanceProperties(context, playoutModel, nextPartInstance)
+			validateAdlibTestingPartInstanceProperties(context, playoutModel, nextPartInstance)
 		}
 	}
 
 	if (actionContext.currentPartState !== ActionPartChange.NONE) {
 		const currentPartInstance = playoutModel.currentPartInstance
 		if (currentPartInstance) {
-			validateScratchpartPartInstanceProperties(context, playoutModel, currentPartInstance)
+			validateAdlibTestingPartInstanceProperties(context, playoutModel, currentPartInstance)
 		}
 	}
 }
