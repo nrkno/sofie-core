@@ -56,7 +56,7 @@ export function ArrayTableRow({
 				summaryFields={summaryFields}
 				rowId={rowId}
 				showRowId={false}
-				object={rowObject}
+				rowItem={rowItem}
 				isEdited={isExpanded}
 				editItem={toggleExpanded}
 				removeItem={confirmRemove}
