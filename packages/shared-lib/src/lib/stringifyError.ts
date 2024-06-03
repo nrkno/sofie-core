@@ -39,5 +39,7 @@ export function stringifyError(error: unknown, noStack = false): string {
 		}
 	}
 
+	if (str.startsWith('Error: ')) str = str.slice('Error: '.length)
+
 	return str
 }

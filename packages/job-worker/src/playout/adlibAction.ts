@@ -211,7 +211,7 @@ export async function executeActionInner(
 		)
 	} catch (err) {
 		logger.error(`Error in showStyleBlueprint.executeAction: ${stringifyError(err)}`)
-		throw UserError.fromUnknown(err, UserErrorMessage.InternalError)
+		throw UserError.fromUnknown(err)
 	}
 
 	await applyAnyExecutionSideEffects(context, playoutModel, actionContext, now)
