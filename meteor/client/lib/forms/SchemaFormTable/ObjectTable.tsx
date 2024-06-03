@@ -163,6 +163,28 @@ export const SchemaFormObjectTable = ({
 		[t, tableOverrideHelper]
 	)
 
+	const confirmReset = useCallback(
+		(rowId: number | string) => {
+			doModalDialog({
+				title: t('Reset this item?'),
+				yes: t('Reset'),
+				no: t('Cancel'),
+				onAccept: () => {
+					tableOverrideHelper()
+						.clearItemOverrides(rowId + '', '')
+						.commit()
+				},
+				message: (
+					<React.Fragment>
+						<p>{t('Are you sure you want to reset all overrides for the selected row?')}</p>
+						<p>{t('Please note: This action is irreversible!')}</p>
+					</React.Fragment>
+				),
+			})
+		},
+		[t, tableOverrideHelper]
+	)
+
 	const title = schema[SchemaFormUIField.Title]
 	const description = schema[SchemaFormUIField.Description]
 	const titleElement = title && (
@@ -215,10 +237,11 @@ export const SchemaFormObjectTable = ({
 										summaryFields={summaryFields}
 										rowId={rowItem.id}
 										showRowId={false}
-										object={rowItem.computed}
+										rowItem={rowItem}
 										isEdited={isExpanded(rowItem.id)}
 										editItem={toggleExpanded}
 										removeItem={confirmRemove}
+										resetItem={confirmReset}
 									/>
 									{isExpanded(rowItem.id) && (
 										<SchemaFormTableEditRow

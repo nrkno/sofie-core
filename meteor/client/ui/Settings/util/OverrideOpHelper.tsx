@@ -177,7 +177,7 @@ class OverrideOpHelperImpl implements OverrideOpHelperBatcher {
 	clearItemOverrides = (itemId: string, subPath: string): this => {
 		const opPath = `${itemId}.${subPath}`
 
-		const newOps = this.#object.overrides.filter((op) => op.path !== opPath)
+		const newOps = filterOverrideOpsForPrefix(this.#object.overrides, opPath).otherOps
 
 		this.#object.overrides = newOps
 
