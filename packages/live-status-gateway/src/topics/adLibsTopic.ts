@@ -19,7 +19,11 @@ import { AdLibsHandler } from '../collections/adLibsHandler'
 import { GlobalAdLibsHandler } from '../collections/globalAdLibsHandler'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PartsHandler } from '../collections/partsHandler'
-import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { WithSortingMetadata, sortContent } from './helpers/contentSorting'
+import { isDeepStrictEqual } from 'util'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { SegmentsHandler } from '../collections/segmentsHandler'
 
 const THROTTLE_PERIOD_MS = 100
 
@@ -69,6 +73,7 @@ export class AdLibsTopic
 	private _adLibActions: AdLibAction[] | undefined
 	private _abLibs: AdLibPiece[] | undefined
 	private _parts: ReadonlyMap<PartId, DBPart> = new Map()
+	private _segments: ReadonlyMap<SegmentId, DBSegment> = new Map()
 	private _globalAdLibActions: RundownBaselineAdLibAction[] | undefined
 	private _globalAdLibs: RundownBaselineAdLibItem[] | undefined
 	private throttledSendStatusToAll: () => void
@@ -87,8 +92,8 @@ export class AdLibsTopic
 	}
 
 	sendStatus(subscribers: Iterable<WebSocket>): void {
-		const adLibs: AdLibStatus[] = []
-		const globalAdLibs: GlobalAdLibStatus[] = []
+		const adLibs: WithSortingMetadata<AdLibStatus>[] = []
+		const globalAdLibs: WithSortingMetadata<GlobalAdLibStatus>[] = []
 
 		if (this._adLibActions) {
 			adLibs.push(
@@ -108,16 +113,24 @@ export class AdLibsTopic
 						  )
 						: []
 					const segmentId = this._parts.get(action.partId)?.segmentId
-					return literal<AdLibStatus>({
+					const name = interpollateTranslation(action.display.label.key, action.display.label.args)
+					return literal<WithSortingMetadata<AdLibStatus>>({
+						obj: {
+							id: unprotectString(action._id),
+							name,
+							partId: unprotectString(action.partId),
+							segmentId: unprotectString(segmentId) ?? 'invalid',
+							sourceLayer: sourceLayerName ?? 'invalid',
+							outputLayer: outputLayerName ?? 'invalid',
+							actionType: triggerModes,
+							tags: action.display.tags,
+							publicData: action.userData, // tmp, publicData was introduced in R51
+						},
 						id: unprotectString(action._id),
-						name: interpollateTranslation(action.display.label.key, action.display.label.args),
-						partId: unprotectString(action.partId),
-						segmentId: unprotectString(segmentId) ?? 'invalid',
-						sourceLayer: sourceLayerName ?? 'invalid',
-						outputLayer: outputLayerName ?? 'invalid',
-						actionType: triggerModes,
-						tags: action.display.tags,
-						publicData: action.userData, // tmp, publicData was introduced in R51
+						label: name,
+						_rank: action.display._rank,
+						partId: action.partId,
+						segmentId: segmentId,
 					})
 				})
 			)
@@ -129,16 +142,23 @@ export class AdLibsTopic
 					const sourceLayerName = this._sourceLayersMap.get(adLib.sourceLayerId)
 					const outputLayerName = this._outputLayersMap.get(adLib.outputLayerId)
 					const segmentId = adLib.partId ? this._parts.get(adLib.partId)?.segmentId : undefined
-					return literal<AdLibStatus>({
+					return literal<WithSortingMetadata<AdLibStatus>>({
+						obj: {
+							id: unprotectString(adLib._id),
+							name: adLib.name,
+							partId: unprotectString(adLib.partId) ?? 'invalid',
+							segmentId: unprotectString(segmentId) ?? 'invalid',
+							sourceLayer: sourceLayerName ?? 'invalid',
+							outputLayer: outputLayerName ?? 'invalid',
+							actionType: [],
+							tags: adLib.tags,
+							publicData: adLib.metaData, // tmp, publicData was introduced in R51
+						},
 						id: unprotectString(adLib._id),
-						name: adLib.name,
-						partId: unprotectString(adLib.partId) ?? 'invalid',
-						segmentId: unprotectString(segmentId) ?? 'invalid',
-						sourceLayer: sourceLayerName ?? 'invalid',
-						outputLayer: outputLayerName ?? 'invalid',
-						actionType: [],
-						tags: adLib.tags,
-						publicData: adLib.metaData, // tmp, publicData was introduced in R51
+						label: adLib.name,
+						_rank: adLib._rank,
+						partId: adLib.partId,
+						segmentId: segmentId,
 					})
 				})
 			)
@@ -161,14 +181,21 @@ export class AdLibsTopic
 								})
 						  )
 						: []
-					return literal<GlobalAdLibStatus>({
+					const name = interpollateTranslation(action.display.label.key, action.display.label.args)
+					return literal<WithSortingMetadata<GlobalAdLibStatus>>({
+						obj: {
+							id: unprotectString(action._id),
+							name,
+							sourceLayer: sourceLayerName ?? 'invalid',
+							outputLayer: outputLayerName ?? 'invalid',
+							actionType: triggerModes,
+							tags: action.display.tags,
+							publicData: action.userData, // tmp, publicData was introduced in R51
+						},
 						id: unprotectString(action._id),
-						name: interpollateTranslation(action.display.label.key, action.display.label.args),
-						sourceLayer: sourceLayerName ?? 'invalid',
-						outputLayer: outputLayerName ?? 'invalid',
-						actionType: triggerModes,
-						tags: action.display.tags,
-						publicData: action.userData, // tmp, publicData was introduced in R51
+						label: name,
+						rundownId: action.rundownId,
+						_rank: action.display._rank,
 					})
 				})
 			)
@@ -179,14 +206,20 @@ export class AdLibsTopic
 				...this._globalAdLibs.map((adLib) => {
 					const sourceLayerName = this._sourceLayersMap.get(adLib.sourceLayerId)
 					const outputLayerName = this._outputLayersMap.get(adLib.outputLayerId)
-					return literal<GlobalAdLibStatus>({
+					return literal<WithSortingMetadata<GlobalAdLibStatus>>({
+						obj: {
+							id: unprotectString(adLib._id),
+							name: adLib.name,
+							sourceLayer: sourceLayerName ?? 'invalid',
+							outputLayer: outputLayerName ?? 'invalid',
+							actionType: [],
+							tags: adLib.tags,
+							publicData: adLib.metaData, // tmp, publicData was introduced in R51
+						},
 						id: unprotectString(adLib._id),
-						name: adLib.name,
-						sourceLayer: sourceLayerName ?? 'invalid',
-						outputLayer: outputLayerName ?? 'invalid',
-						actionType: [],
-						tags: adLib.tags,
-						publicData: adLib.metaData, // tmp, publicData was introduced in R51
+						label: adLib.name,
+						rundownId: adLib.rundownId,
+						_rank: adLib._rank,
 					})
 				})
 			)
@@ -196,8 +229,13 @@ export class AdLibsTopic
 			? {
 					event: 'adLibs',
 					rundownPlaylistId: unprotectString(this._activePlaylist._id),
-					adLibs,
-					globalAdLibs,
+					adLibs: sortContent(adLibs, this._activePlaylist.rundownIdsInOrder, this._segments, this._parts),
+					globalAdLibs: sortContent(
+						globalAdLibs,
+						this._activePlaylist.rundownIdsInOrder,
+						this._segments,
+						this._parts
+					),
 			  }
 			: { event: 'adLibs', rundownPlaylistId: null, adLibs: [], globalAdLibs: [] }
 
@@ -216,14 +254,21 @@ export class AdLibsTopic
 			| AdLibPiece[]
 			| RundownBaselineAdLibItem[]
 			| DBPart[]
+			| DBSegment[]
 			| undefined
 	): Promise<void> {
 		switch (source) {
 			case PlaylistHandler.name: {
-				const previousPlaylistId = this._activePlaylist?._id
-				this._activePlaylist = data as DBRundownPlaylist | undefined
+				const previousPlaylist = this._activePlaylist
 				this.logUpdateReceived('playlist', source)
-				if (previousPlaylistId === this._activePlaylist?._id) return
+				this._activePlaylist = data as DBRundownPlaylist | undefined
+				// PlaylistHandler is quite chatty (will update on every take), so let's make sure there's a point
+				// in sending a status
+				if (
+					previousPlaylist?._id === this._activePlaylist?._id &&
+					isDeepStrictEqual(previousPlaylist?.rundownIdsInOrder, this._activePlaylist?.rundownIdsInOrder)
+				)
+					return
 				break
 			}
 			case AdLibActionsHandler.name: {
@@ -255,6 +300,16 @@ export class AdLibsTopic
 				this.logUpdateReceived('showStyleBase', source)
 				this._sourceLayersMap = showStyleBaseExt?.sourceLayerNamesById ?? new Map()
 				this._outputLayersMap = showStyleBaseExt?.outputLayerNamesById ?? new Map()
+				break
+			}
+			case SegmentsHandler.name: {
+				const segments = data ? (data as DBPart[]) : []
+				this.logUpdateReceived('segments', source)
+				const newSegments = new Map()
+				segments.forEach((segment) => {
+					newSegments.set(segment._id, segment)
+				})
+				this._segments = newSegments
 				break
 			}
 			case PartsHandler.name: {
