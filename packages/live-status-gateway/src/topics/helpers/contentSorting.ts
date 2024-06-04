@@ -26,6 +26,7 @@ export function sortContent<T>(
 			)
 		if (a.segmentId !== b.segmentId) return getRank(segments, a.segmentId) - getRank(segments, b.segmentId)
 		if (a.partId !== b.partId) return getRank(parts, a.partId) - getRank(parts, b.partId)
+		if (a._rank !== b._rank) return (a._rank ?? 0) - (b._rank ?? 0)
 		if (a.label !== b.label) return a.label?.localeCompare(b.label)
 		// if everything else fails, fall back to sorting on the ID for a stable sort
 		return a.id.localeCompare(b.id)
