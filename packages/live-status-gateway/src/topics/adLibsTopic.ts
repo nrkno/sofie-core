@@ -20,7 +20,7 @@ import { GlobalAdLibsHandler } from '../collections/globalAdLibsHandler'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PartsHandler } from '../collections/partsHandler'
 import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { WithSortingMetadata, sortContent } from './helpers/contentSorting'
+import { WithSortingMetadata, getRank, sortContent } from './helpers/contentSorting'
 import { isDeepStrictEqual } from 'util'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { SegmentsHandler } from '../collections/segmentsHandler'
@@ -128,9 +128,10 @@ export class AdLibsTopic
 						},
 						id: unprotectString(action._id),
 						label: name,
-						_rank: action.display._rank,
-						partId: action.partId,
-						segmentId: segmentId,
+						itemRank: action.display._rank,
+						partRank: getRank(this._parts, action.partId),
+						segmentRank: getRank(this._segments, segmentId),
+						rundownRank: this._activePlaylist?.rundownIdsInOrder.indexOf(action.rundownId),
 					})
 				})
 			)
@@ -156,9 +157,10 @@ export class AdLibsTopic
 						},
 						id: unprotectString(adLib._id),
 						label: adLib.name,
-						_rank: adLib._rank,
-						partId: adLib.partId,
-						segmentId: segmentId,
+						itemRank: adLib._rank,
+						partRank: getRank(this._parts, adLib.partId),
+						segmentRank: getRank(this._segments, segmentId),
+						rundownRank: this._activePlaylist?.rundownIdsInOrder.indexOf(adLib.rundownId),
 					})
 				})
 			)
@@ -194,8 +196,8 @@ export class AdLibsTopic
 						},
 						id: unprotectString(action._id),
 						label: name,
-						rundownId: action.rundownId,
-						_rank: action.display._rank,
+						rundownRank: this._activePlaylist?.rundownIdsInOrder.indexOf(action.rundownId),
+						itemRank: action.display._rank,
 					})
 				})
 			)
@@ -218,8 +220,8 @@ export class AdLibsTopic
 						},
 						id: unprotectString(adLib._id),
 						label: adLib.name,
-						rundownId: adLib.rundownId,
-						_rank: adLib._rank,
+						rundownRank: this._activePlaylist?.rundownIdsInOrder.indexOf(adLib.rundownId),
+						itemRank: adLib._rank,
 					})
 				})
 			)
@@ -229,13 +231,8 @@ export class AdLibsTopic
 			? {
 					event: 'adLibs',
 					rundownPlaylistId: unprotectString(this._activePlaylist._id),
-					adLibs: sortContent(adLibs, this._activePlaylist.rundownIdsInOrder, this._segments, this._parts),
-					globalAdLibs: sortContent(
-						globalAdLibs,
-						this._activePlaylist.rundownIdsInOrder,
-						this._segments,
-						this._parts
-					),
+					adLibs: sortContent(adLibs),
+					globalAdLibs: sortContent(globalAdLibs),
 			  }
 			: { event: 'adLibs', rundownPlaylistId: null, adLibs: [], globalAdLibs: [] }
 
