@@ -48,7 +48,7 @@ export function sortContent<T>(contentData: WithSortingMetadata<T>[]): T[] {
 export function getRank<Key, Value extends { _rank?: number }>(
 	map: ReadonlyMap<Key, Value>,
 	key: Key | undefined
-): number {
-	if (key === undefined) return -1
-	return map.get(key)?._rank ?? -1
+): number | undefined {
+	if (key === undefined) return undefined
+	return map.get(key)?._rank
 }
