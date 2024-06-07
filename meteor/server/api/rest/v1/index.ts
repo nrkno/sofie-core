@@ -98,9 +98,7 @@ function restAPIUserEvent(
 		unknown
 	>
 ): string {
-	// due to how the router is mounted, the ctx.URL.pathname does not contain the /api portion,
-	// but contains the API version portion
-	return `REST API: ${ctx.method} /api${ctx.URL.pathname} ${ctx.URL.origin}`
+	return `rest_api_${ctx.method}_${ctx.URL.origin}/api/v1.0${ctx.URL.pathname}}`
 }
 
 class ServerRestAPI implements RestAPI {
@@ -1253,13 +1251,6 @@ function sofieAPIRequest<Params, Body, Response>(
 ) {
 	koaRouter[method](route, async (ctx, next) => {
 		try {
-			logger.info(`REST APIv1: ${ctx.socket.remoteAddress} ${method} "${ctx.url}"`, {
-				url: ctx.url,
-				method,
-				remoteAddress: ctx.socket.remoteAddress,
-				remotePort: ctx.socket.remotePort,
-				headers: ctx.headers,
-			})
 			const serverAPI = new ServerRestAPI()
 			const response = await handler(
 				serverAPI,
