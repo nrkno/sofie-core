@@ -27,7 +27,7 @@ function restAPIUserEvent(
 		unknown
 	>
 ): string {
-	return `rest_api_${ctx.method}_${ctx.URL.origin}/api/v1.0${ctx.URL.pathname}}`
+	return `REST API: ${ctx.method} /api${ctx.URL.pathname} ${ctx.URL.origin}`
 }
 
 class APIContext implements ServerAPIContext {
