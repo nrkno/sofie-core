@@ -27,7 +27,9 @@ function restAPIUserEvent(
 		unknown
 	>
 ): string {
-	return `rest_api_${ctx.method}_${ctx.URL.origin}/api/v1.0${ctx.URL.pathname}}`
+	// due to how the router is mounted, the ctx.URL.pathname does not contain the /api portion,
+	// but contains the API version portion
+	return `REST API: ${ctx.method} /api${ctx.URL.pathname} ${ctx.URL.origin}`
 }
 
 class APIContext implements ServerAPIContext {
@@ -112,6 +114,13 @@ function sofieAPIRequest<API, Params, Body, Response>(
 ) {
 	koaRouter[method](route, async (ctx, next) => {
 		try {
+			logger.info(`REST APIv1: ${ctx.socket.remoteAddress} ${method} "${ctx.url}"`, {
+				url: ctx.url,
+				method,
+				remoteAddress: ctx.socket.remoteAddress,
+				remotePort: ctx.socket.remotePort,
+				headers: ctx.headers,
+			})
 			const context = new APIContext()
 			const serverAPI = serverAPIFactory.createServerAPI(context)
 			const response = await handler(
@@ -136,9 +145,7 @@ function sofieAPIRequest<API, Params, Body, Response>(
 				}
 				errMsg = translateMessage(msgConcat, interpollateTranslation)
 			} else {
-				logger.error(
-					`${method.toUpperCase()} for route ${route} returned unexpected error code ${errCode} - ${errMsg}`
-				)
+				logger.error(`${method.toUpperCase()} for route ${route} returned unexpected error code ${errCode} - ${errMsg}`)
 			}
 
 			logger.error(`${method.toUpperCase()} failed for route ${route}: ${errCode} - ${errMsg}`)
