@@ -51,18 +51,18 @@ function getClientAddrFromXForwarded(headerVal: undefined | string | string[]): 
 	if (typeof headerVal !== 'string') {
 		headerVal = _.last(headerVal) as string
 	}
-	const remoteAddresses = headerVal.split(/\s*,\s*/)
-	return remoteAddresses[remoteAddresses.length - REVERSE_PROXY_COUNT] ?? remoteAddresses[0]
+	const remoteAddresses = headerVal.split(',')
+	return remoteAddresses[remoteAddresses.length - REVERSE_PROXY_COUNT]?.trim() ?? remoteAddresses[0]?.trim()
 }
 
 function getClientAddrFromForwarded(forwardedVal: string | undefined): string | undefined {
 	if (forwardedVal === undefined) return undefined
-	const allProxies = forwardedVal.split(/\s*,\s*/)
+	const allProxies = forwardedVal.split(',')
 	const proxyInfo = allProxies[allProxies.length - REVERSE_PROXY_COUNT] ?? allProxies[0]
-	const directives = proxyInfo?.split(/\s*;\s*/)
+	const directives = proxyInfo?.trim().split(';')
 	for (const directive of directives) {
 		let match: RegExpMatchArray | null
-		if ((match = directive.match(/^for=("\[)?([\w.:])+(\]")?/))) {
+		if ((match = directive.trim().match(/^for=("\[)?([\w.:])+(\]")?/))) {
 			return match[2]
 		}
 	}
