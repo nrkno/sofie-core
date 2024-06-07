@@ -98,7 +98,8 @@ function restAPIUserEvent(
 		unknown
 	>
 ): string {
-	return `rest_api_${ctx.method}_${ctx.URL.origin}/api/v1.0${ctx.URL.pathname}}`
+	// the ctx.URL.pathname will contain `/v1.0`, but will not contain `/api`
+	return `REST API: ${ctx.method} /api${ctx.URL.pathname} ${ctx.URL.origin}`
 }
 
 class ServerRestAPI implements RestAPI {
@@ -191,19 +192,17 @@ class ServerRestAPI implements RestAPI {
 		})
 		const segmentAdLibPiece = AdLibPieces.findOneAsync(adLibId as PieceId, { projection: { _id: 1 } })
 		const bucketAdLibPiece = BucketAdLibs.findOneAsync(adLibId as BucketAdLibId, { projection: { _id: 1 } })
-		const [baselineAdLibDoc, segmentAdLibDoc, bucketAdLibDoc, adLibAction, baselineAdLibAction] = await Promise.all(
-			[
-				baselineAdLibPiece,
-				segmentAdLibPiece,
-				bucketAdLibPiece,
-				AdLibActions.findOneAsync(adLibId as AdLibActionId, {
-					projection: { _id: 1, actionId: 1, userData: 1 },
-				}),
-				RundownBaselineAdLibActions.findOneAsync(adLibId as RundownBaselineAdLibActionId, {
-					projection: { _id: 1, actionId: 1, userData: 1 },
-				}),
-			]
-		)
+		const [baselineAdLibDoc, segmentAdLibDoc, bucketAdLibDoc, adLibAction, baselineAdLibAction] = await Promise.all([
+			baselineAdLibPiece,
+			segmentAdLibPiece,
+			bucketAdLibPiece,
+			AdLibActions.findOneAsync(adLibId as AdLibActionId, {
+				projection: { _id: 1, actionId: 1, userData: 1 },
+			}),
+			RundownBaselineAdLibActions.findOneAsync(adLibId as RundownBaselineAdLibActionId, {
+				projection: { _id: 1, actionId: 1, userData: 1 },
+			}),
+		])
 		const adLibActionDoc = adLibAction ?? baselineAdLibAction
 		const regularAdLibDoc = baselineAdLibDoc ?? segmentAdLibDoc ?? bucketAdLibDoc
 		if (regularAdLibDoc) {
@@ -214,10 +213,7 @@ class ServerRestAPI implements RestAPI {
 			})
 			if (!rundownPlaylist)
 				return ClientAPI.responseError(
-					UserError.from(
-						new Error(`Rundown playlist does not exist`),
-						UserErrorMessage.RundownPlaylistNotFound
-					),
+					UserError.from(new Error(`Rundown playlist does not exist`), UserErrorMessage.RundownPlaylistNotFound),
 					404
 				)
 			if (rundownPlaylist.currentPartInfo === null)
@@ -253,10 +249,7 @@ class ServerRestAPI implements RestAPI {
 
 			if (!rundownPlaylist)
 				return ClientAPI.responseError(
-					UserError.from(
-						new Error(`Rundown playlist does not exist`),
-						UserErrorMessage.RundownPlaylistNotFound
-					),
+					UserError.from(new Error(`Rundown playlist does not exist`), UserErrorMessage.RundownPlaylistNotFound),
 					404
 				)
 			if (!rundownPlaylist.activationId)
@@ -370,10 +363,7 @@ class ServerRestAPI implements RestAPI {
 				}, false)
 				return success
 					? {}
-					: UserError.from(
-							new Error(`Failed to reload playlist ${rundownPlaylistId}`),
-							UserErrorMessage.InternalError
-					  )
+					: UserError.from(new Error(`Failed to reload playlist ${rundownPlaylistId}`), UserErrorMessage.InternalError)
 			}
 		)
 	}
@@ -508,10 +498,7 @@ class ServerRestAPI implements RestAPI {
 				check(routeSetId, String)
 				check(state, Boolean)
 
-				const access = await StudioContentWriteAccess.routeSet(
-					ServerRestAPI.getCredentials(connection),
-					studioId
-				)
+				const access = await StudioContentWriteAccess.routeSet(ServerRestAPI.getCredentials(connection), studioId)
 				return ServerPlayoutAPI.switchRouteSet(access, routeSetId, state)
 			}
 		)
@@ -600,10 +587,7 @@ class ServerRestAPI implements RestAPI {
 		const device = await PeripheralDevices.findOneAsync(deviceId)
 		if (!device)
 			return ClientAPI.responseError(
-				UserError.from(
-					new Error(`Device ${deviceId} does not exist`),
-					UserErrorMessage.PeripheralDeviceNotFound
-				),
+				UserError.from(new Error(`Device ${deviceId} does not exist`), UserErrorMessage.PeripheralDeviceNotFound),
 				404
 			)
 		return ClientAPI.responseSuccess(APIPeripheralDeviceFrom(device))
@@ -618,10 +602,7 @@ class ServerRestAPI implements RestAPI {
 		const device = await PeripheralDevices.findOneAsync(deviceId)
 		if (!device)
 			return ClientAPI.responseError(
-				UserError.from(
-					new Error(`Device ${deviceId} does not exist`),
-					UserErrorMessage.PeripheralDeviceNotFound
-				),
+				UserError.from(new Error(`Device ${deviceId} does not exist`), UserErrorMessage.PeripheralDeviceNotFound),
 				404
 			)
 
@@ -716,10 +697,7 @@ class ServerRestAPI implements RestAPI {
 
 		if (device.studioId !== undefined && device.studioId !== studio._id) {
 			return ClientAPI.responseError(
-				UserError.from(
-					new Error(`Device already attached to studio`),
-					UserErrorMessage.DeviceAlreadyAttachedToStudio
-				),
+				UserError.from(new Error(`Device already attached to studio`), UserErrorMessage.DeviceAlreadyAttachedToStudio),
 				412
 			)
 		}
@@ -798,10 +776,9 @@ class ServerRestAPI implements RestAPI {
 
 		const existingShowStyle = await ShowStyleBases.findOneAsync(showStyleBaseId)
 		if (existingShowStyle) {
-			const rundowns = (await Rundowns.findFetchAsync(
-				{ showStyleBaseId },
-				{ projection: { playlistId: 1 } }
-			)) as Array<Pick<Rundown, 'playlistId'>>
+			const rundowns = (await Rundowns.findFetchAsync({ showStyleBaseId }, { projection: { playlistId: 1 } })) as Array<
+				Pick<Rundown, 'playlistId'>
+			>
 			const playlists = (await RundownPlaylists.findFetchAsync(
 				{ _id: { $in: rundowns.map((r) => r.playlistId) } },
 				{
@@ -840,10 +817,9 @@ class ServerRestAPI implements RestAPI {
 		_event: string,
 		showStyleBaseId: ShowStyleBaseId
 	): Promise<ClientAPI.ClientResponse<void>> {
-		const rundowns = (await Rundowns.findFetchAsync(
-			{ showStyleBaseId },
-			{ projection: { playlistId: 1 } }
-		)) as Array<Pick<Rundown, 'playlistId'>>
+		const rundowns = (await Rundowns.findFetchAsync({ showStyleBaseId }, { projection: { playlistId: 1 } })) as Array<
+			Pick<Rundown, 'playlistId'>
+		>
 		const playlists = (await RundownPlaylists.findFetchAsync(
 			{ _id: { $in: rundowns.map((r) => r.playlistId) } },
 			{
@@ -1274,9 +1250,7 @@ function sofieAPIRequest<Params, Body, Response>(
 				}
 				errMsg = translateMessage(msgConcat, interpollateTranslation)
 			} else {
-				logger.error(
-					`${method.toUpperCase()} for route ${route} returned unexpected error code ${errCode} - ${errMsg}`
-				)
+				logger.error(`${method.toUpperCase()} for route ${route} returned unexpected error code ${errCode} - ${errMsg}`)
 			}
 
 			logger.error(`${method.toUpperCase()} failed for route ${route}: ${errCode} - ${errMsg}`)
@@ -1355,9 +1329,7 @@ sofieAPIRequest<{ playlistId: string }, { adLibId: string; actionType?: string }
 	]),
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
-		const adLibId = protectString<AdLibActionId | RundownBaselineAdLibActionId | PieceId | BucketAdLibId>(
-			body.adLibId
-		)
+		const adLibId = protectString<AdLibActionId | RundownBaselineAdLibActionId | PieceId | BucketAdLibId>(body.adLibId)
 		const actionTypeObj = body
 		const triggerMode = actionTypeObj ? (actionTypeObj as { actionType: string }).actionType : undefined
 		logger.info(`API POST: execute-adlib ${rundownPlaylistId} ${adLibId} - triggerMode: ${triggerMode}`)
