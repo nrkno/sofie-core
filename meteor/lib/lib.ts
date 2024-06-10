@@ -35,7 +35,16 @@ export async function MeteorPromiseApply(
 	args: Parameters<typeof Meteor.apply>[1],
 	options?: Parameters<typeof Meteor.apply>[2]
 ): Promise<any> {
-	return MeteorApply(callName, args, options)
+	if (Meteor.isServer) {
+		return new Promise((resolve, reject) => {
+			Meteor.apply(callName, args, options, (err, res) => {
+				if (err) reject(err)
+				else resolve(res)
+			})
+		})
+	} else {
+		return MeteorApply(callName, args, options)
+	}
 }
 
 // The diff is currently only used client-side
