@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
+import { MeteorApply } from './MeteorApply'
 
 export const LOGGER_METHOD_NAME = 'logger'
 
@@ -35,7 +36,9 @@ if (Meteor.isServer) {
 			const stringifiedArgs: string[] = args.map((arg) => {
 				return stringifyError(arg)
 			})
-			return Meteor.call(LOGGER_METHOD_NAME, type, ...stringifiedArgs)
+
+			Meteor.call(LOGGER_METHOD_NAME, type, ...stringifiedArgs)
+			return logger
 		}
 	}
 
@@ -67,7 +70,8 @@ if (Meteor.isServer) {
 				const stringifiedArgs: string[] = args.map((arg) => {
 					return stringifyError(arg)
 				})
-				Meteor.call(LOGGER_METHOD_NAME, type, `Client ${type}`, ...stringifiedArgs)
+				MeteorApply(LOGGER_METHOD_NAME, [type, `Client ${type}`, ...stringifiedArgs]).catch(console.error)
+				return logger
 			}
 			return logger
 		}
