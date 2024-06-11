@@ -191,7 +191,7 @@ export class PieceInstancesHandler
 			(pieceInstance.partInstanceId === this._currentPlaylist?.previousPartInfo?.partInstanceId || // a piece from previous part instance may be active during transition
 				pieceInstance.partInstanceId === this._currentPlaylist?.currentPartInfo?.partInstanceId) &&
 			(pieceInstance.reportedStartedPlayback != null || // has been reported to have started by the Playout Gateway
-				pieceInstance.plannedStartedPlayback != null || // a time to stop playing has been set by Core
+				pieceInstance.plannedStartedPlayback != null || // a time to start playing has been set by Core
 				(pieceInstance.partInstanceId === this._currentPlaylist?.currentPartInfo?.partInstanceId &&
 					pieceInstance.piece.enable.start === 0) || // this is to speed things up immediately after a part instance is taken when not yet reported by the Playout Gateway
 				pieceInstance.infinite?.fromPreviousPart) // infinites from previous part also are on air from the start of the current part
