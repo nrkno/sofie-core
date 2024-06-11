@@ -87,7 +87,7 @@ export class StudioDeviceTriggerManager {
 				// Since the compiled action is cached using this actionId as a key, having the action
 				// and the filterChain allows for a quicker invalidation without doing a deepEquals
 				const actionId = protectString<DeviceActionId>(
-					`${studioId}_${triggeredAction._id}_${key}_${action.action}_${JSON.stringify(action.filterChain)}`
+					`${studioId}_${triggeredAction._id}_${key}_${JSON.stringify(action)}`
 				)
 				const existingAction = actionManager.getAction(actionId)
 				let thisAction: ExecutableAction
