@@ -136,7 +136,9 @@ function sofieAPIRequest<API, Params, Body, Response>(
 				}
 				errMsg = translateMessage(msgConcat, interpollateTranslation)
 			} else {
-				logger.error(`${method.toUpperCase()} for route ${route} returned unexpected error code ${errCode} - ${errMsg}`)
+				logger.error(
+					`${method.toUpperCase()} for route ${route} returned unexpected error code ${errCode} - ${errMsg}`
+				)
 			}
 
 			logger.error(`${method.toUpperCase()} failed for route ${route}: ${errCode} - ${errMsg}`)
