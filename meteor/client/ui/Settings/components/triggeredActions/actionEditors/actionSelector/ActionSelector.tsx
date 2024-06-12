@@ -12,6 +12,7 @@ import { faAngleRight, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { AdLibActionEditor } from './actionEditors/AdLibActionEditor'
 import { DeviceActions } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
 import { catchError } from '../../../../../../lib/lib'
+import { preventOverflow } from '@popperjs/core'
 
 interface IProps {
 	action: SomeAction
@@ -500,7 +501,9 @@ export const ActionSelector = function ActionSelector({
 	const [referenceElement, setReferenceElement] = useState<HTMLDivElement | null>(null)
 	const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null)
 	const { styles, attributes, update } = usePopper(referenceElement, popperElement, {
+		placement: 'bottom',
 		modifiers: [
+			preventOverflow,
 			{
 				name: 'offset',
 				options: {
@@ -558,7 +561,7 @@ export const ActionSelector = function ActionSelector({
 			</div>
 			{opened ? (
 				<div
-					className="expco expco-expanded expco-popper mod pas ptl expco-popper-rounded triggered-action-entry__action-editor"
+					className="expco expco-expanded expco-popper mod pas expco-popper-rounded triggered-action-entry__action-editor"
 					ref={setPopperElement}
 					style={styles.popper}
 					{...attributes.popper}
