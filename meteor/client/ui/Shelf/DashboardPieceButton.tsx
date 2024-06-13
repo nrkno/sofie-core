@@ -68,6 +68,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	IState
 > {
 	private element: HTMLDivElement | null = null
+	/** positionAndSize needs to be in document coordinate space */
 	private positionAndSize: {
 		top: number
 		left: number
@@ -206,8 +207,8 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		if (this.element) {
 			const { top, left, width, height } = this.element.getBoundingClientRect()
 			this.positionAndSize = {
-				top,
-				left,
+				top: window.scrollY + top,
+				left: window.scrollX + left,
 				width,
 				height,
 			}
@@ -224,8 +225,8 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		if (this.element) {
 			const { top, left, width, height } = this.element.getBoundingClientRect()
 			this.positionAndSize = {
-				top,
-				left,
+				top: window.scrollY + top,
+				left: window.scrollX + left,
 				width,
 				height,
 			}
