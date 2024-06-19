@@ -34,15 +34,22 @@ export abstract class WebSocketTopicBase {
 		this._logger.error(`Process ${this._name} message not expected '${JSON.stringify(msg)}'`)
 	}
 
-	sendMessage(ws: WebSocket, msg: object): void {
+	sendMessage(recipients: WebSocket | Iterable<WebSocket>, msg: object): void {
 		const msgStr = JSON.stringify(msg)
-		this._logger.debug(`Send ${this._name} message '${msgStr}'`)
-		ws.send(msgStr)
+
+		recipients = isIterable(recipients) ? recipients : [recipients]
+
+		let count = 0
+		for (const ws of recipients) {
+			count++
+			ws.send(msgStr)
+		}
+		this._logger.silly(`Send ${this._name} message '${msgStr}' to ${count} recipients`)
 	}
 
 	sendHeartbeat(ws: WebSocket): void {
 		const msgStr = JSON.stringify({ event: 'heartbeat' })
-		this._logger.silly(`Send ${this._name} message '${msgStr}'`)
+		// this._logger.silly(`Send ${this._name} message '${msgStr}'`)
 		ws.send(msgStr)
 	}
 
@@ -165,4 +172,11 @@ export interface Collection<T> {
 export interface CollectionObserver<T> {
 	observerName: string
 	update(source: string, data: T | undefined): Promise<void>
+}
+function isIterable<T>(obj: T | Iterable<T>): obj is Iterable<T> {
+	// checks for null and undefined
+	if (obj == null) {
+		return false
+	}
+	return typeof (obj as any)[Symbol.iterator] === 'function'
 }

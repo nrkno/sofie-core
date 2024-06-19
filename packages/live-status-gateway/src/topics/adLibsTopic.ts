@@ -236,9 +236,7 @@ export class AdLibsTopic
 			  }
 			: { event: 'adLibs', rundownPlaylistId: null, adLibs: [], globalAdLibs: [] }
 
-		for (const subscriber of subscribers) {
-			this.sendMessage(subscriber, adLibsStatus)
-		}
+		this.sendMessage(subscribers, adLibsStatus)
 	}
 
 	async update(
