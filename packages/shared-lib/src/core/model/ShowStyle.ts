@@ -24,6 +24,8 @@ export enum SourceLayerType {
 	// LIGHTS = 14,
 	/** Uncontrolled local sources, such as PowerPoint presentation inputs, Weather systems, EVS replay machines, etc. */
 	LOCAL = 15,
+	/** Sources that are intended for a studio screen, such as weather, presentations etc. */
+	STUDIO_SCREEN = 16,
 }
 
 /** A single source layer, f.g Cameras, VT, Graphics, Remotes */

@@ -67,6 +67,7 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 	IState
 > {
 	private element: HTMLDivElement | null = null
+	/** positionAndSize needs to be in document coordinate space */
 	private positionAndSize: {
 		top: number
 		left: number
@@ -204,8 +205,8 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 		if (this.element) {
 			const { top, left, width, height } = this.element.getBoundingClientRect()
 			this.positionAndSize = {
-				top,
-				left,
+				top: window.scrollY + top,
+				left: window.scrollX + left,
 				width,
 				height,
 			}
@@ -222,8 +223,8 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 		if (this.element) {
 			const { top, left, width, height } = this.element.getBoundingClientRect()
 			this.positionAndSize = {
-				top,
-				left,
+				top: window.scrollY + top,
+				left: window.scrollX + left,
 				width,
 				height,
 			}
@@ -453,7 +454,8 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 						: this.props.layer.type === SourceLayerType.SPLITS
 						? this.renderSplits(isList && this.props.showThumbnailsInList)
 						: this.props.layer.type === SourceLayerType.GRAPHICS ||
-						  this.props.layer.type === SourceLayerType.LOWER_THIRD
+						  this.props.layer.type === SourceLayerType.LOWER_THIRD ||
+						  this.props.layer.type === SourceLayerType.STUDIO_SCREEN
 						? this.renderGraphics(isButtons || (isList && this.props.showThumbnailsInList))
 						: null}
 

@@ -143,7 +143,7 @@ export class EventsWorkerChild {
 				} catch (e) {
 					const userError = UserError.fromUnknown(e)
 
-					logger.info(`Events job "${jobName}" errored: ${userError.toErrorString()}`)
+					logger.error(`Events job "${jobName}" errored: ${userError.toErrorString()}`)
 
 					return {
 						result: null,

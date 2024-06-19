@@ -61,6 +61,8 @@ function sourceLayerString(t: TFunction<'translation', undefined>, type: SourceL
 		// 	return t('Lights')
 		case SourceLayerType.LOCAL:
 			return t('Local')
+		case SourceLayerType.STUDIO_SCREEN:
+			return t('Studio Screen Graphics')
 		default:
 			assertNever(type)
 			return SourceLayerType[type]

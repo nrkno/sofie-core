@@ -125,7 +125,7 @@ export class IngestWorkerChild {
 				} catch (e) {
 					const userError = UserError.fromUnknown(e)
 
-					logger.info(`Ingest job "${jobName}" errored: ${userError.toErrorString()}`)
+					logger.error(`Ingest job "${jobName}" errored: ${userError.toErrorString()}`)
 
 					return {
 						result: null,

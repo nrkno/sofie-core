@@ -563,6 +563,7 @@ export const SourceLayerItem = withTranslation()(
 					)
 				case SourceLayerType.GRAPHICS:
 				case SourceLayerType.LOWER_THIRD:
+				case SourceLayerType.STUDIO_SCREEN:
 					return (
 						<L3rdSourceRenderer
 							key={unprotectString(this.props.piece.instance._id)}

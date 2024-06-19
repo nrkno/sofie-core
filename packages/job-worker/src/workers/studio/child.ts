@@ -127,7 +127,7 @@ export class StudioWorkerChild {
 					const userError = UserError.fromUnknown(e)
 					console.log('border', userError.toErrorString(), stringifyError(e))
 
-					logger.info(`Studio job "${jobName}" errored: ${userError.toErrorString()}`)
+					logger.error(`Studio job "${jobName}" errored: ${userError.toErrorString()}`)
 
 					return {
 						result: null,
