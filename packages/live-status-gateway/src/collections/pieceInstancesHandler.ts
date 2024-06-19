@@ -10,6 +10,12 @@ import throttleToNextTick from '@sofie-automation/shared-lib/dist/lib/throttleTo
 import _ = require('underscore')
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { PartInstanceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
+import { ShowStyleBaseExt, ShowStyleBaseHandler } from './showStyleBaseHandler'
+import { PlaylistHandler } from './playlistHandler'
+import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { PartInstancesHandler, SelectedPartInstances } from './partInstancesHandler'
+import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 
 export type PieceInstanceMin = Omit<PieceInstance, 'reportedStartedPlayback' | 'reportedStoppedPlayback'>
 
@@ -20,7 +26,7 @@ export interface SelectedPieceInstances {
 	// Pieces present in the current part instance
 	currentPartInstance: PieceInstanceMin[]
 
-	// Pieces present in the current part instance
+	// Pieces present in the next part instance
 	nextPartInstance: PieceInstanceMin[]
 }
 
@@ -33,6 +39,8 @@ export class PieceInstancesHandler
 	private _partInstanceIds: PartInstanceId[] = []
 	private _activationId: string | undefined
 	private _subscriptionPending = false
+	private _sourceLayers: SourceLayers = {}
+	private _partInstances: SelectedPartInstances | undefined
 
 	private _throttledUpdateAndNotify = throttleToNextTick(() => {
 		this.updateCollectionData()
@@ -61,19 +69,44 @@ export class PieceInstancesHandler
 		this._throttledUpdateAndNotify()
 	}
 
+	private processAndPrunePieceInstanceTimings(
+		partInstance: DBPartInstance | undefined,
+		pieceInstances: PieceInstance[]
+	): PieceInstance[] {
+		// Approximate when 'now' is in the PartInstance, so that any adlibbed Pieces will be timed roughly correctly
+		const partStarted = partInstance?.timings?.plannedStartedPlayback
+		const nowInPart = partStarted === undefined ? 0 : Date.now() - partStarted
+
+		return processAndPrunePieceInstanceTimings(this._sourceLayers, pieceInstances, nowInPart, false, false)
+	}
+
 	private updateCollectionData(): boolean {
 		if (!this._collectionName || !this._collectionData) return false
 		const collection = this._core.getCollection<PieceInstance>(this._collectionName)
 		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
-		const active = this._currentPlaylist?.currentPartInfo?.partInstanceId
-			? collection.find((pieceInstance: PieceInstance) => this.isPieceInstanceActive(pieceInstance))
+
+		const inPreviousPartInstance = this._currentPlaylist?.previousPartInfo?.partInstanceId
+			? this.processAndPrunePieceInstanceTimings(
+					this._partInstances?.previous,
+					collection.find({ partInstanceId: this._currentPlaylist.previousPartInfo.partInstanceId })
+			  )
 			: []
 		const inCurrentPartInstance = this._currentPlaylist?.currentPartInfo?.partInstanceId
-			? collection.find({ partInstanceId: this._currentPlaylist.currentPartInfo.partInstanceId })
+			? this.processAndPrunePieceInstanceTimings(
+					this._partInstances?.current,
+					collection.find({ partInstanceId: this._currentPlaylist.currentPartInfo.partInstanceId })
+			  )
 			: []
 		const inNextPartInstance = this._currentPlaylist?.nextPartInfo?.partInstanceId
-			? collection.find({ partInstanceId: this._currentPlaylist.nextPartInfo.partInstanceId })
+			? this.processAndPrunePieceInstanceTimings(
+					undefined,
+					collection.find({ partInstanceId: this._currentPlaylist.nextPartInfo.partInstanceId })
+			  )
 			: []
+
+		const active = [...inPreviousPartInstance, ...inCurrentPartInstance].filter((pieceInstance) =>
+			this.isPieceInstanceActive(pieceInstance)
+		)
 
 		let hasAnythingChanged = false
 		if (!areElementsShallowEqual(this._collectionData.active, active)) {
@@ -107,7 +140,32 @@ export class PieceInstancesHandler
 		this._collectionData.nextPartInstance = []
 	}
 
-	async update(source: string, data: DBRundownPlaylist | undefined): Promise<void> {
+	async update(
+		source: string,
+		data: DBRundownPlaylist | ShowStyleBaseExt | SelectedPartInstances | undefined
+	): Promise<void> {
+		switch (source) {
+			case PlaylistHandler.name:
+				return this.updateRundownPlaylist(source, data as DBRundownPlaylist | undefined)
+			case ShowStyleBaseHandler.name: {
+				this.logUpdateReceived('showStyleBase', source)
+				const showStyleBaseExt = data as ShowStyleBaseExt | undefined
+				this._sourceLayers = showStyleBaseExt?.sourceLayers ?? {}
+				this._throttledUpdateAndNotify()
+				break
+			}
+			case PartInstancesHandler.name: {
+				this.logUpdateReceived('partInstances', source)
+				this._partInstances = data as SelectedPartInstances
+				this._throttledUpdateAndNotify()
+				break
+			}
+			default:
+				throw new Error(`${this._name} received unsupported update from ${source}}`)
+		}
+	}
+
+	private async updateRundownPlaylist(source: string, data: DBRundownPlaylist | undefined): Promise<void> {
 		const prevPartInstanceIds = this._partInstanceIds
 		const prevActivationId = this._activationId
 
@@ -188,6 +246,7 @@ export class PieceInstancesHandler
 		return (
 			pieceInstance.reportedStoppedPlayback == null &&
 			pieceInstance.piece.virtual !== true &&
+			pieceInstance.disabled !== true &&
 			(pieceInstance.partInstanceId === this._currentPlaylist?.previousPartInfo?.partInstanceId || // a piece from previous part instance may be active during transition
 				pieceInstance.partInstanceId === this._currentPlaylist?.currentPartInfo?.partInstanceId) &&
 			(pieceInstance.reportedStartedPlayback != null || // has been reported to have started by the Playout Gateway
