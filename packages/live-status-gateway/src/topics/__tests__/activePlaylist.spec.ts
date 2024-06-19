@@ -12,6 +12,7 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 
 function makeEmptyTestPartInstances(): SelectedPartInstances {
 	return {
+		previous: undefined,
 		current: undefined,
 		firstInSegmentPlayout: undefined,
 		inCurrentSegment: [],
