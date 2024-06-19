@@ -27,6 +27,7 @@ function restAPIUserEvent(
 		unknown
 	>
 ): string {
+	// the ctx.URL.pathname will contain `/v1.0`, but will not contain `/api`
 	return `REST API: ${ctx.method} /api${ctx.URL.pathname} ${ctx.URL.origin}`
 }
 

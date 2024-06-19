@@ -185,7 +185,7 @@ export class StudioObserver extends EventEmitter {
 				this.currentProps = this.nextProps
 				this.nextProps = undefined
 
-				const { activationId, activePlaylistId } = this.currentProps
+				const { activePlaylistId } = this.currentProps
 
 				this.showStyleBaseId = showStyleBaseId
 
@@ -193,19 +193,13 @@ export class StudioObserver extends EventEmitter {
 
 				this.#rundownsLiveQuery = new RundownsObserver(activePlaylistId, (rundownIds) => {
 					logger.silly(`Creating new RundownContentObserver`)
-					const obs1 = new RundownContentObserver(
-						activePlaylistId,
-						showStyleBaseId,
-						rundownIds,
-						activationId,
-						(cache) => {
-							cleanupChanges = this.#changed(showStyleBaseId, cache)
+					const obs1 = new RundownContentObserver(activePlaylistId, showStyleBaseId, rundownIds, (cache) => {
+						cleanupChanges = this.#changed(showStyleBaseId, cache)
 
-							return () => {
-								void 0
-							}
+						return () => {
+							void 0
 						}
-					)
+					})
 
 					return () => {
 						obs1.stop()

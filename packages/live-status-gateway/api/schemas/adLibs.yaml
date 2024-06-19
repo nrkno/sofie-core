@@ -21,7 +21,7 @@ $defs:
         description: The available Global AdLibs for this playlist
         type: array
         items:
-          $ref: '#/$defs/adLib'
+          $ref: '#/$defs/globalAdLib'
     required: [event, rundownPlaylistId, adLibs, globalAdLibs]
     additionalProperties: false
     examples:
@@ -32,6 +32,18 @@ $defs:
         globalAdLibs:
           $ref: '#/$defs/adLib/examples'
   adLib:
+    allOf:
+      - $ref: '#/$defs/adLibBase'
+      - type: object
+        properties:
+          segmentId:
+            description: Unique id of the segment this adLib belongs to
+          partId:
+            description: Unique id of the part this adLib belongs to
+        required: [segmentId, partId]
+  globalAdLib:
+    $ref: '#/$defs/adLibBase'
+  adLibBase:
     type: object
     properties:
       id:
