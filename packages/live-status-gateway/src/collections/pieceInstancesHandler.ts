@@ -16,8 +16,9 @@ import { PlaylistHandler } from './playlistHandler'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { PartInstancesHandler, SelectedPartInstances } from './partInstancesHandler'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
+import { ReadonlyDeep } from 'type-fest'
 
-export type PieceInstanceMin = Omit<PieceInstance, 'reportedStartedPlayback' | 'reportedStoppedPlayback'>
+export type PieceInstanceMin = Omit<ReadonlyDeep<PieceInstance>, 'reportedStartedPlayback' | 'reportedStoppedPlayback'>
 
 export interface SelectedPieceInstances {
 	// Pieces reported by the Playout Gateway as active
@@ -72,7 +73,7 @@ export class PieceInstancesHandler
 	private processAndPrunePieceInstanceTimings(
 		partInstance: DBPartInstance | undefined,
 		pieceInstances: PieceInstance[]
-	): PieceInstance[] {
+	): ReadonlyDeep<PieceInstance>[] {
 		// Approximate when 'now' is in the PartInstance, so that any adlibbed Pieces will be timed roughly correctly
 		const partStarted = partInstance?.timings?.plannedStartedPlayback
 		const nowInPart = partStarted === undefined ? 0 : Date.now() - partStarted
@@ -117,10 +118,11 @@ export class PieceInstancesHandler
 			!areElementsShallowEqual(this._collectionData.currentPartInstance, inCurrentPartInstance) &&
 			(this._collectionData.currentPartInstance.length !== inCurrentPartInstance.length ||
 				this._collectionData.currentPartInstance.some((pieceInstance, index) => {
-					return !arePropertiesShallowEqual<PieceInstance>(inCurrentPartInstance[index], pieceInstance, [
-						'reportedStartedPlayback',
-						'reportedStoppedPlayback',
-					])
+					return !arePropertiesShallowEqual<ReadonlyDeep<PieceInstance>>(
+						inCurrentPartInstance[index],
+						pieceInstance,
+						['reportedStartedPlayback', 'reportedStoppedPlayback']
+					)
 				}))
 		) {
 			this._collectionData.currentPartInstance = inCurrentPartInstance
@@ -234,7 +236,7 @@ export class PieceInstancesHandler
 		}
 	}
 
-	private isPieceInstanceActive(pieceInstance: PieceInstance) {
+	private isPieceInstanceActive(pieceInstance: ReadonlyDeep<PieceInstance>) {
 		return (
 			pieceInstance.reportedStoppedPlayback == null &&
 			pieceInstance.piece.virtual !== true &&
