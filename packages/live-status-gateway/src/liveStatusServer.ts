@@ -96,6 +96,8 @@ export class LiveStatusServer {
 		await partInstancesHandler.subscribe(globalAdLibActionsHandler)
 		await partInstancesHandler.subscribe(adLibsHandler)
 		await partInstancesHandler.subscribe(globalAdLibsHandler)
+		await showStyleBaseHandler.subscribe(pieceInstancesHandler)
+		await partInstancesHandler.subscribe(pieceInstancesHandler)
 
 		// add observers for websocket topic updates
 		await studioHandler.subscribe(studioTopic)
