@@ -137,8 +137,9 @@ export class CoreHandler {
 		}
 		// setup observers
 		const observer = this.core.observe(PeripheralDevicePubSubCollectionsNames.peripheralDeviceForDevice)
-		observer.added = (id) => this.onDeviceChanged(id)
-		observer.changed = (id) => this.onDeviceChanged(id)
+		observer.added = () => this.onDeviceChanged()
+		observer.changed = () => this.onDeviceChanged()
+		this.onDeviceChanged() // set initial settings
 		this.setupObserverForPeripheralDeviceCommands(this)
 	}
 	async destroy(): Promise<void> {
@@ -178,15 +179,18 @@ export class CoreHandler {
 		this._onConnected = fcn
 	}
 
-	onDeviceChanged(id: PeripheralDeviceId): void {
-		if (id !== this.core.deviceId) return
+	onDeviceChanged(): void {
 		const col = this.core.getCollection<PeripheralDeviceForDevice>(
 			PeripheralDevicePubSubCollectionsNames.peripheralDeviceForDevice
 		)
 		if (!col) throw new Error('collection "peripheralDeviceForDevice" not found!')
-		const device = col.findOne(id)
 
-		this.deviceSettings = device?.deviceSettings || {}
+		const device = col.findOne(this.core.deviceId)
+		if (!device) {
+			throw new Error(`No "peripheralDeviceForDevice" with id "${this.core.deviceId}" found!`)
+		}
+
+		this.deviceSettings = device.deviceSettings || {}
 		const logLevel = this.deviceSettings['debugLogging'] ? 'debug' : 'info'
 		if (logLevel !== this.logger.level) {
 			this.logger.level = logLevel
@@ -198,7 +202,7 @@ export class CoreHandler {
 			this.logger.info('Loglevel: ' + this.logger.level)
 		}
 
-		const studioId = device?.studioId
+		const studioId = device.studioId
 		if (studioId === undefined) {
 			throw new Error(`Live status gateway must be attached to a studio`)
 		}
