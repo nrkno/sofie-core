@@ -43,15 +43,16 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 		studioId: context.studioId,
 		showStyleBaseId: protectString(''),
 		showStyleVariantId: protectString(''),
-		peripheralDeviceId: protectString(''),
 		created: 0,
 		modified: 0,
 		importVersions: {} as any,
 		playlistId: rundownPlaylistId,
-		externalNRCSName: 'mockNRCS',
 		organizationId: protectString(''),
 		timing: {
 			type: 'none' as any,
+		},
+		source: {
+			type: 'http',
 		},
 	})
 

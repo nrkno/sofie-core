@@ -22,8 +22,10 @@ describe('PlayoutRundownModelImpl', () => {
 			name: `my rundown`,
 			importVersions: null as any,
 			timing: null as any,
-			externalNRCSName: 'FAKE',
 			playlistId: protectString('playlist0'),
+			source: {
+				type: 'http',
+			},
 		}
 	}
 

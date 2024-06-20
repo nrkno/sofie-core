@@ -188,7 +188,6 @@ export async function setupDefaultRundown(
 	const sourceLayerIds = Object.keys(showStyleCompound.sourceLayers)
 
 	await context.mockCollections.Rundowns.insertOne({
-		peripheralDeviceId: undefined,
 		organizationId: null,
 		studioId: context.studioId,
 		showStyleBaseId: showStyleCompound._id,
@@ -210,10 +209,12 @@ export async function setupDefaultRundown(
 			core: '',
 		},
 
-		externalNRCSName: 'mock',
-
 		timing: {
 			type: PlaylistTimingType.None,
+		},
+
+		source: {
+			type: 'http',
 		},
 	})
 
