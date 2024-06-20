@@ -142,7 +142,7 @@ export namespace ServerClientAPI {
 		})
 	}
 
-	async function runStudioJob<T extends keyof StudioJobFunc>(
+	export async function runStudioJob<T extends keyof StudioJobFunc>(
 		studioId: StudioId,
 		jobName: T,
 		jobArguments: Parameters<StudioJobFunc[T]>[0],

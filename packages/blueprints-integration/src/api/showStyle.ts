@@ -19,7 +19,7 @@ import type {
 	IOnTakeContext,
 	IOnSetAsNextContext,
 } from '../context'
-import type { IngestAdlib, ExtendedIngestRundown, IngestSegment } from '../ingest'
+import type { IngestAdlib, ExtendedIngestRundown, IngestSegment, IngestRundown } from '../ingest'
 import type { IBlueprintExternalMessageQueueObj } from '../message'
 import type { MigrationStepShowStyle } from '../migrations'
 import type {
@@ -87,6 +87,12 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 		context: ISegmentUserContext,
 		ingestSegment: IngestSegment
 	) => BlueprintResultSegment | Promise<BlueprintResultSegment>
+
+	generateTestingRundown?: (
+		context: IShowStyleUserContext,
+		showStyleVariant: IBlueprintShowStyleVariant
+		// TODO - user defined options/values?
+	) => IngestRundown | Promise<IngestRundown>
 
 	/**
 	 * Allows the blueprint to custom-modify the PartInstance, on ingest data update (this is run after getSegment())

@@ -43,6 +43,7 @@ import {
 	RundownPlaylistId,
 	SegmentId,
 	ShowStyleBaseId,
+	ShowStyleVariantId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { IngestDataCache, Parts, Pieces, Rundowns } from '../collections'
@@ -1215,6 +1216,36 @@ class ServerUserActionAPI
 			{
 				playlistId: playlistId,
 				rundownId: rundownId,
+			}
+		)
+	}
+
+	async createTestingRundownForShowStyleVariant(
+		userEvent: string,
+		eventTime: number,
+		studioId: StudioId,
+		showStyleVariantId: ShowStyleVariantId
+	) {
+		const jobName = StudioJobs.CreateTestingRundownForShowStyleVariant
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			eventTime,
+			`worker.${jobName}`,
+			[showStyleVariantId],
+			async (_credentials, userActionMetadata) => {
+				check(studioId, String)
+				check(showStyleVariantId, String)
+
+				// TODO - checkAccessToStudio?
+				return ServerClientAPI.runStudioJob(
+					studioId,
+					jobName,
+					{
+						showStyleVariantId,
+					},
+					userActionMetadata
+				)
 			}
 		)
 	}

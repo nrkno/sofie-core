@@ -12,6 +12,7 @@ import {
 	RundownId,
 	RundownPlaylistId,
 	SegmentId,
+	ShowStyleVariantId,
 	StudioId,
 } from '../dataModel/Ids'
 import { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
@@ -187,6 +188,11 @@ export enum StudioJobs {
 	 * Activate AdlibTesting (Rehearsal Mode) mode for the Rundown containing the nexted Part.
 	 */
 	ActivateAdlibTesting = 'activateAdlibTesting',
+
+	/**
+	 * Create a testing rundown for the specified ShowStyleVariant
+	 */
+	CreateTestingRundownForShowStyleVariant = 'createTestingRundownForShowStyleVariant',
 }
 
 export interface RundownPlayoutPropsBase {
@@ -334,6 +340,10 @@ export interface ActivateAdlibTestingProps extends RundownPlayoutPropsBase {
 	rundownId: RundownId
 }
 
+export interface CreateTestingRundownForShowStyleVariantProps {
+	showStyleVariantId: ShowStyleVariantId
+}
+
 /**
  * Set of valid functions, of form:
  * `id: (data) => return`
@@ -385,6 +395,9 @@ export type StudioJobFunc = {
 	[StudioJobs.BlueprintIgnoreFixUpConfigForStudio]: () => void
 
 	[StudioJobs.ActivateAdlibTesting]: (data: ActivateAdlibTestingProps) => void
+	[StudioJobs.CreateTestingRundownForShowStyleVariant]: (
+		data: CreateTestingRundownForShowStyleVariantProps
+	) => RundownId
 }
 
 export function getStudioQueueName(id: StudioId): string {
