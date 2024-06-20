@@ -126,6 +126,11 @@ export enum IngestJobs {
 	BucketRemoveAdlibPiece = 'bucketRemoveAdlibPiece',
 	BucketRemoveAdlibAction = 'bucketRemoveAdlibAction',
 	BucketEmpty = 'bucketEmpty',
+
+	/**
+	 * Create a testing rundown for the specified ShowStyleVariant
+	 */
+	CreateTestingRundownForShowStyleVariant = 'createTestingRundownForShowStyleVariant',
 }
 
 export interface IngestPropsBase {
@@ -260,6 +265,10 @@ export interface BucketEmptyProps {
 	bucketId: BucketId
 }
 
+export interface CreateTestingRundownForShowStyleVariantProps {
+	showStyleVariantId: ShowStyleVariantId
+}
+
 /**
  * Set of valid functions, of form:
  * `id: (data) => return`
@@ -302,6 +311,10 @@ export type IngestJobFunc = {
 	[IngestJobs.BucketRemoveAdlibPiece]: (data: BucketRemoveAdlibPieceProps) => void
 	[IngestJobs.BucketRemoveAdlibAction]: (data: BucketRemoveAdlibActionProps) => void
 	[IngestJobs.BucketEmpty]: (data: BucketEmptyProps) => void
+
+	[IngestJobs.CreateTestingRundownForShowStyleVariant]: (
+		data: CreateTestingRundownForShowStyleVariantProps
+	) => RundownId
 }
 
 // Future: there should probably be a queue per rundown or something. To be improved later

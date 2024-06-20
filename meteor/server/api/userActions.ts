@@ -49,6 +49,8 @@ import {
 import { IngestDataCache, Parts, Pieces, Rundowns } from '../collections'
 import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 import { verifyHashedToken } from './singleUseTokens'
+import { runIngestOperation } from './ingest/lib'
+import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 
 async function pieceSetInOutPoints(
 	access: VerifiedRundownPlaylistContentAccess,
@@ -1226,26 +1228,21 @@ class ServerUserActionAPI
 		studioId: StudioId,
 		showStyleVariantId: ShowStyleVariantId
 	) {
-		const jobName = StudioJobs.CreateTestingRundownForShowStyleVariant
+		const jobName = IngestJobs.CreateTestingRundownForShowStyleVariant
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
 			eventTime,
-			`worker.${jobName}`,
+			`worker.ingest.${jobName}`,
 			[showStyleVariantId],
-			async (_credentials, userActionMetadata) => {
+			async (_credentials) => {
 				check(studioId, String)
 				check(showStyleVariantId, String)
 
 				// TODO - checkAccessToStudio?
-				return ServerClientAPI.runStudioJob(
-					studioId,
-					jobName,
-					{
-						showStyleVariantId,
-					},
-					userActionMetadata
-				)
+				return runIngestOperation(studioId, IngestJobs.CreateTestingRundownForShowStyleVariant, {
+					showStyleVariantId,
+				})
 			}
 		)
 	}

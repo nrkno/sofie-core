@@ -221,18 +221,20 @@ async function getCreateTestingRundownOptions(): Promise<CreateTestingRundownOpt
 			{
 				projection: {
 					_id: 1,
+					name: 1,
 					supportedShowStyleBase: 1,
 				},
 			}
-		) as Promise<Pick<DBStudio, '_id' | 'supportedShowStyleBase'>[]>,
+		) as Promise<Pick<DBStudio, '_id' | 'name' | 'supportedShowStyleBase'>[]>,
 		ShowStyleBases.findFetchAsync(
 			{},
 			{
 				projection: {
 					_id: 1,
+					name: 1,
 				},
 			}
-		) as Promise<Pick<DBShowStyleBase, '_id'>[]>,
+		) as Promise<Pick<DBShowStyleBase, '_id' | 'name'>[]>,
 		ShowStyleVariants.findFetchAsync(
 			{},
 			{
@@ -261,8 +263,8 @@ async function getCreateTestingRundownOptions(): Promise<CreateTestingRundownOpt
 
 				// Generate a descriptive label, but as minimal as possible
 				let label = showStyleVariant.name
-				if (showStyleBases.length > 1) label = `${showStyleBase._id} - ${label}`
-				if (studios.length > 1) label = `${label} (${studio._id})`
+				if (showStyleBases.length > 1) label = `${showStyleBase.name} - ${label}`
+				if (studios.length > 1) label = `${label} (${studio.name})`
 
 				options.push({
 					studioId: studio._id,

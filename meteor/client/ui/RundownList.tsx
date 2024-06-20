@@ -20,6 +20,7 @@ import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlay
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { CreateTestingRundownPanel } from './RundownList/CreateTestingRundownPanel'
 
 export enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',
@@ -184,6 +185,8 @@ export function RundownList(): JSX.Element {
 					<Spinner />
 				)}
 			</section>
+
+			<CreateTestingRundownPanel />
 
 			<RundownListFooter />
 		</>
