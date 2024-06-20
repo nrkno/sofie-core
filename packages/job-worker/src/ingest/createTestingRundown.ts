@@ -45,10 +45,10 @@ export async function handleCreateTestingRundownForShowStyleVariant(
 	return handleUpdatedRundown(context, {
 		rundownExternalId: ingestRundown.externalId,
 		ingestRundown,
+		isCreateAction: true,
 		rundownSource: {
 			type: 'testing',
 			showStyleVariantId: showStyleVariant._id,
 		},
-		isCreateAction: true,
 	})
 }

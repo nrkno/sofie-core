@@ -90,7 +90,7 @@ export interface Rundown {
 }
 
 /** A description of where a Rundown originated from */
-export type RundownSource = RundownSourceNrcs | RundownSourceSnapshot | RundownSourceHttp
+export type RundownSource = RundownSourceNrcs | RundownSourceSnapshot | RundownSourceHttp | RundownSourceTesting
 
 /** A description of the external NRCS source of a Rundown */
 export interface RundownSourceNrcs {
@@ -109,6 +109,12 @@ export interface RundownSourceSnapshot {
 /** A description of the source of a Rundown which was through the HTTP ingest API */
 export interface RundownSourceHttp {
 	type: 'http'
+}
+/** A description of the Adlib Testing source of a Rundown */
+export interface RundownSourceTesting {
+	type: 'testing'
+	/** The ShowStyleVariant the Rundown is created for */
+	showStyleVariantId: ShowStyleVariantId
 }
 
 export function getRundownNrcsName(rundown: ReadonlyDeep<Pick<DBRundown, 'source'>> | undefined): string {
