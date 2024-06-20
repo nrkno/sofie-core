@@ -47,7 +47,7 @@ export async function setupRundownBase(
 		},
 
 		source: {
-			type: 'unknown',
+			type: 'http',
 			// nrcsName: 'mock',
 		},
 	}

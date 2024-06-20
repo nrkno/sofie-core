@@ -1,5 +1,8 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
+import { Rundowns } from '../collections'
+import { RundownSource } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { PeripheralDeviceId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 /*
  * **************************************************************************************
@@ -11,6 +14,61 @@ import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
  * **************************************************************************************
  */
 
+interface RemovedRundownProps {
+	/** The peripheral device the rundown originates from */
+	peripheralDeviceId?: PeripheralDeviceId
+	restoredFromSnapshotId?: RundownId
+	externalNRCSName: string
+}
+
 export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
-	// Add your migration here
+	{
+		id: `Rundowns without source`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objects = await Rundowns.findFetchAsync({
+				source: { $exists: false },
+			})
+
+			if (objects) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			const objects = await Rundowns.findFetchAsync({
+				source: { $exists: false },
+			})
+			for (const obj of objects) {
+				const oldPartialObj = obj as any as RemovedRundownProps
+
+				let newSource: RundownSource = {
+					type: 'http', // Fallback
+				}
+				if (oldPartialObj.peripheralDeviceId) {
+					newSource = {
+						type: 'nrcs',
+						peripheralDeviceId: oldPartialObj.peripheralDeviceId,
+						nrcsName: oldPartialObj.externalNRCSName || 'NRCS',
+					}
+				} else if (oldPartialObj.restoredFromSnapshotId) {
+					newSource = {
+						type: 'snapshot',
+						rundownId: oldPartialObj.restoredFromSnapshotId,
+					}
+				}
+
+				await Rundowns.mutableCollection.updateAsync(obj._id, {
+					$set: {
+						source: newSource,
+					},
+					$unset: {
+						peripheralDeviceId: 1,
+						externalNrcsName: 1,
+						restoredFromSnapshotId: 1,
+					},
+				})
+			}
+		},
+	},
 ])
