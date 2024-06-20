@@ -35,22 +35,23 @@ export abstract class WebSocketTopicBase {
 	}
 
 	sendMessage(recipients: WebSocket | Iterable<WebSocket>, msg: object): void {
-		const msgStr = JSON.stringify(msg)
-
 		recipients = isIterable(recipients) ? recipients : [recipients]
 
 		let count = 0
+		let msgStr = ''
 		for (const ws of recipients) {
+			if (!msgStr) msgStr = JSON.stringify(msg) // Optimization: only stringify if there are any recipients
 			count++
 			ws.send(msgStr)
 		}
 		this._logger.silly(`Send ${this._name} message '${msgStr}' to ${count} recipients`)
 	}
 
-	sendHeartbeat(ws: WebSocket): void {
+	sendHeartbeat(recipients: Set<WebSocket>): void {
 		const msgStr = JSON.stringify({ event: 'heartbeat' })
-		// this._logger.silly(`Send ${this._name} message '${msgStr}'`)
-		ws.send(msgStr)
+		for (const ws of recipients.values()) {
+			ws.send(msgStr)
+		}
 	}
 
 	protected logUpdateReceived(collectionName: string, source: string, extraInfo?: string): void {
