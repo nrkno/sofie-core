@@ -17,7 +17,7 @@ export async function handleCreateTestingRundownForShowStyleVariant(
 
 	const generateTestingRundown = showStyleBlueprint.blueprint.generateTestingRundown
 	if (!generateTestingRundown) {
-		throw UserError.create(UserErrorMessage.AdlibTestingNotAllowed) // nocommit error message
+		throw UserError.create(UserErrorMessage.TestingRundownsNotSupported)
 	}
 
 	const blueprintContext = new ShowStyleUserContext(
@@ -36,7 +36,7 @@ export async function handleCreateTestingRundownForShowStyleVariant(
 			generateTestingRundown(blueprintContext, convertShowStyleVariantToBlueprints(showStyleVariant))
 		)
 		.catch(async (e) => {
-			throw UserError.from(e, UserErrorMessage.AdlibTestingNotAllowed) // nocommit error message
+			throw UserError.from(e, UserErrorMessage.TestingRundownsGenerationFailed, { message: e.toString() })
 		})
 
 	// const rundownId = getRundownId(context.studioId, data.rundownExternalId)
