@@ -40,10 +40,7 @@ export interface Rundown {
 	/** The ShowStyleBase this Rundown uses (its the parent of the showStyleVariant) */
 	showStyleBaseId: ShowStyleBaseId
 	showStyleVariantId: ShowStyleVariantId
-	// /** The peripheral device the rundown originates from */
-	// peripheralDeviceId?: PeripheralDeviceId
-	// restoredFromSnapshotId?: RundownId
-	source: RundownSource // nocommit - migration to fix up existing
+	source: RundownSource
 	created: Time
 	modified: Time
 
@@ -85,8 +82,6 @@ export interface Rundown {
 	playlistExternalId?: string
 	/** Whether the end of the rundown marks a commercial break */
 	endOfRundownIsShowBreak?: boolean
-	/** Name (user-facing) of the external NCS this rundown came from */
-	// externalNRCSName: string
 	/** The id of the Rundown Playlist this rundown is in */
 	playlistId: RundownPlaylistId
 	/** If the playlistId has ben set manually by a user in Sofie */
@@ -97,7 +92,9 @@ export type RundownSource = RundownSourceNrcs | RundownSourceSnapshot | RundownS
 
 export interface RundownSourceNrcs {
 	type: 'nrcs'
+	/** The peripheral device the rundown originates from */
 	peripheralDeviceId: PeripheralDeviceId
+	/** Name (user-facing) of the external NCS this rundown came from */
 	nrcsName: string
 }
 export interface RundownSourceSnapshot {
