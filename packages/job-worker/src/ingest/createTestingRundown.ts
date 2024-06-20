@@ -45,7 +45,10 @@ export async function handleCreateTestingRundownForShowStyleVariant(
 	return handleUpdatedRundown(context, {
 		rundownExternalId: ingestRundown.externalId,
 		ingestRundown,
-		peripheralDeviceId: null, // nocommit something here to indicate it can be resynced
+		rundownSource: {
+			type: 'testing',
+			showStyleVariantId: showStyleVariant._id,
+		},
 		isCreateAction: true,
 	})
 }
