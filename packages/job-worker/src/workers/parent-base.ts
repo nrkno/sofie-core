@@ -308,7 +308,7 @@ export abstract class WorkerParentBase {
 										result.result
 									)
 
-									logger.debug(`Completed work ${job.id} in ${endTime - startTime}ms`)
+									logger.verbose(`Completed work ${job.id} in ${endTime - startTime}ms`)
 								} catch (e: unknown) {
 									let error: Error
 									if (e instanceof Error) {
