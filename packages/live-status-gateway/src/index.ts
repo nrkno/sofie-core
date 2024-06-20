@@ -6,6 +6,16 @@ import { stringifyError } from '@sofie-automation/server-core-integration'
 
 console.log('process started') // This is a message all Sofie processes log upon startup
 
+// custom json stringifier
+const { splat, combine, printf } = Winston.format
+const myFormat = combine(
+	splat(),
+	printf((obj) => {
+		obj.localTimestamp = new Date().toISOString()
+		return JSON.stringify(obj) // make single line
+	})
+)
+
 // Setup logging --------------------------------------
 let logger: Winston.Logger
 if (logPath) {
@@ -19,7 +29,7 @@ if (logPath) {
 		handleExceptions: true,
 		handleRejections: true,
 		filename: logPath,
-		format: Winston.format.json(),
+		format: myFormat,
 	})
 
 	logger = Winston.createLogger({
@@ -37,20 +47,12 @@ if (logPath) {
 		}
 	}
 } else {
-	// custom json stringifier
-	const { splat, combine, printf } = Winston.format
-	const myFormat = printf((obj) => {
-		obj.localTimestamp = getCurrentTime()
-		obj.randomId = Math.round(Math.random() * 10000)
-		return JSON.stringify(obj) // make single line
-	})
-
 	// Log json to console
 	const transportConsole = new Winston.transports.Console({
 		level: logLevel || 'silly',
 		handleExceptions: true,
 		handleRejections: true,
-		format: combine(splat(), myFormat),
+		format: myFormat,
 	})
 
 	logger = Winston.createLogger({
@@ -65,10 +67,6 @@ if (logPath) {
 			logger.debug(args.join())
 		}
 	}
-}
-function getCurrentTime() {
-	const v = Date.now()
-	return new Date(v).toISOString()
 }
 
 // Because the default NodeJS-handler sucks and wont display error properly
