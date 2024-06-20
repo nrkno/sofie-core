@@ -59,7 +59,7 @@ export async function runIngestJob(
 		newIngestRundown: LocalIngestRundown | undefined,
 		oldIngestRundown: LocalIngestRundown | undefined
 	) => Promise<CommitIngestData | null>
-): Promise<void> {
+): Promise<RundownId> {
 	if (!data.rundownExternalId) {
 		throw new Error(`Job is missing rundownExternalId`)
 	}
@@ -128,6 +128,8 @@ export async function runIngestJob(
 		}
 
 		if (resultingError) throw resultingError
+
+		return rundownId
 	})
 }
 

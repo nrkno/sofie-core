@@ -27,7 +27,7 @@ export async function handleMosRundownData(context: JobContext, data: MosRundown
 	if (parseMosString(data.mosRunningOrder.ID) !== data.rundownExternalId)
 		throw new Error('mosRunningOrder.ID and rundownExternalId mismatch!')
 
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -99,7 +99,7 @@ export async function handleMosRundownData(context: JobContext, data: MosRundown
  * Update the payload of a mos rundown, without changing any parts or segments
  */
 export async function handleMosRundownMetadata(context: JobContext, data: MosRundownMetadataProps): Promise<void> {
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -144,7 +144,7 @@ export async function handleMosRundownStatus(context: JobContext, data: MosRundo
  * Update the ready to air state of a mos rundown
  */
 export async function handleMosRundownReadyToAir(context: JobContext, data: MosRundownReadyToAirProps): Promise<void> {
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {

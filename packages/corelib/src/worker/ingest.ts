@@ -275,7 +275,7 @@ export interface CreateTestingRundownForShowStyleVariantProps {
  */
 export type IngestJobFunc = {
 	[IngestJobs.RemoveRundown]: (data: IngestRemoveRundownProps) => void
-	[IngestJobs.UpdateRundown]: (data: IngestUpdateRundownProps) => void
+	[IngestJobs.UpdateRundown]: (data: IngestUpdateRundownProps) => RundownId
 	[IngestJobs.UpdateRundownMetaData]: (data: IngestUpdateRundownMetaDataProps) => void
 	[IngestJobs.RemoveSegment]: (data: IngestRemoveSegmentProps) => void
 	[IngestJobs.UpdateSegment]: (data: IngestUpdateSegmentProps) => void

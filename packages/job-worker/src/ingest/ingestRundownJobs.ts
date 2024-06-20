@@ -16,12 +16,13 @@ import {
 	UserUnsyncRundownProps,
 } from '@sofie-automation/corelib/dist/worker/ingest'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
+import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 /**
  * Attempt to remove a rundown, or orphan it
  */
 export async function handleRemovedRundown(context: JobContext, data: IngestRemoveRundownProps): Promise<void> {
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		() => {
@@ -90,7 +91,7 @@ export async function handleUserRemoveRundown(context: JobContext, data: UserRem
 /**
  * Insert or update a rundown with a new IngestRundown
  */
-export async function handleUpdatedRundown(context: JobContext, data: IngestUpdateRundownProps): Promise<void> {
+export async function handleUpdatedRundown(context: JobContext, data: IngestUpdateRundownProps): Promise<RundownId> {
 	return runIngestJob(
 		context,
 		data,
@@ -123,7 +124,7 @@ export async function handleUpdatedRundownMetaData(
 	context: JobContext,
 	data: IngestUpdateRundownMetaDataProps
 ): Promise<void> {
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -148,7 +149,7 @@ export async function handleUpdatedRundownMetaData(
  * Regnerate a Rundown from the cached IngestRundown
  */
 export async function handleRegenerateRundown(context: JobContext, data: IngestRegenerateRundownProps): Promise<void> {
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {

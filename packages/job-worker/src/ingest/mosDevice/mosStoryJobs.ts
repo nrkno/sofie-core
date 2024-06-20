@@ -43,7 +43,7 @@ export async function handleMosFullStory(context: JobContext, data: MosFullStory
 
 	const partExternalId = parseMosString(data.story.ID)
 
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -84,7 +84,7 @@ export async function handleMosFullStory(context: JobContext, data: MosFullStory
 export async function handleMosDeleteStory(context: JobContext, data: MosDeleteStoryProps): Promise<void> {
 	if (data.stories.length === 0) return
 
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -129,7 +129,7 @@ export async function handleMosDeleteStory(context: JobContext, data: MosDeleteS
  * Insert a mos story before the referenced existing story
  */
 export async function handleMosInsertStories(context: JobContext, data: MosInsertStoryProps): Promise<void> {
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -208,7 +208,7 @@ export async function handleMosSwapStories(context: JobContext, data: MosSwapSto
 		throw new Error(`Cannot swap part ${story0Str} with itself in rundown ${data.rundownExternalId}`)
 	}
 
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -246,7 +246,7 @@ export async function handleMosSwapStories(context: JobContext, data: MosSwapSto
  * Move a list of mos stories
  */
 export async function handleMosMoveStories(context: JobContext, data: MosMoveStoryProps): Promise<void> {
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {

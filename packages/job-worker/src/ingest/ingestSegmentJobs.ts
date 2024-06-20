@@ -20,7 +20,7 @@ import {
  * Regnerate a Segment from the cached IngestSegment
  */
 export async function handleRegenerateSegment(context: JobContext, data: IngestRegenerateSegmentProps): Promise<void> {
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -51,7 +51,7 @@ export async function handleRegenerateSegment(context: JobContext, data: IngestR
  * Attempt to remove a segment, or orphan it
  */
 export async function handleRemovedSegment(context: JobContext, data: IngestRemoveSegmentProps): Promise<void> {
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -98,7 +98,7 @@ export async function handleRemovedSegment(context: JobContext, data: IngestRemo
  */
 export async function handleUpdatedSegment(context: JobContext, data: IngestUpdateSegmentProps): Promise<void> {
 	const segmentExternalId = data.ingestSegment.externalId
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -128,7 +128,7 @@ export async function handleUpdatedSegmentRanks(
 	context: JobContext,
 	data: IngestUpdateSegmentRanksProps
 ): Promise<void> {
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -175,7 +175,7 @@ export async function handleRemoveOrphanedSegemnts(
 	context: JobContext,
 	data: RemoveOrphanedSegmentsProps
 ): Promise<void> {
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => ingestRundown ?? UpdateIngestRundownAction.DELETE,
