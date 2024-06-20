@@ -439,7 +439,14 @@ async function getTimelineRundown(
 			return {
 				objs: timelineObjs.map<TimelineObjRundown>((timelineObj) => {
 					return {
-						...omit(timelineObj, 'pieceInstanceId', 'infinitePieceInstanceId', 'partInstanceId'), // temporary fields from OnGenerateTimelineObj
+						...omit(
+							timelineObj,
+							// temporary fields from OnGenerateTimelineObj
+							'pieceInstanceId',
+							'infinitePieceInstanceId',
+							'partInstanceId',
+							'originalId'
+						),
 						objectType: TimelineObjType.RUNDOWN,
 					}
 				}),
