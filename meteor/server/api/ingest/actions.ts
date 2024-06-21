@@ -17,7 +17,9 @@ export namespace IngestActions {
 	export async function reloadRundown(
 		rundown: Pick<Rundown, '_id' | 'studioId' | 'externalId' | 'source'>
 	): Promise<TriggerReloadDataResponse> {
-		if (rundown.source.type === 'nrcs') {
+		if (rundown.source.type === 'snapshot') {
+			throw new Meteor.Error(400, `Cannot reload a snapshot rundown`)
+		} else if (rundown.source.type === 'nrcs') {
 			const device = await getPeripheralDeviceFromRundown(rundown)
 
 			// The Rundown.orphaned flag will be reset by the response update
