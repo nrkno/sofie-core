@@ -30,7 +30,7 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 				source: { $exists: false },
 			})
 
-			if (objects) {
+			if (objects.length > 0) {
 				return `object needs to be updated`
 			}
 			return false
