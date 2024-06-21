@@ -60,13 +60,7 @@ export async function handleUserRemoveRundown(context: JobContext, data: UserRem
 		return
 	}
 
-	if (tmpRundown.source.type === 'nrcs') {
-		// Its a real rundown, so defer to the proper route for deletion
-		return handleRemovedRundown(context, {
-			rundownExternalId: tmpRundown.externalId,
-			forceDelete: data.force,
-		})
-	} else {
+	if (tmpRundown.source.type === 'snapshot') {
 		// Its from a snapshot, so we need to use a lighter locking flow
 		return runWithRundownLock(context, data.rundownId, async (rundown, lock) => {
 			if (rundown) {
@@ -84,6 +78,12 @@ export async function handleUserRemoveRundown(context: JobContext, data: UserRem
 					await context.directCollections.RundownPlaylists.remove(rundown.playlistId)
 				}
 			}
+		})
+	} else {
+		// Its a real rundown, so defer to the proper route for deletion
+		return handleRemovedRundown(context, {
+			rundownExternalId: tmpRundown.externalId,
+			forceDelete: data.force,
 		})
 	}
 }
