@@ -64,7 +64,12 @@ export async function updateRundownFromIngestData(
 		context.getStudioBlueprintConfig()
 	)
 	// TODO-CONTEXT save any user notes from selectShowStyleContext
-	const showStyle = await selectShowStyleVariant(context, selectShowStyleContext, extendedIngestRundown)
+	const showStyle = await selectShowStyleVariant(
+		context,
+		selectShowStyleContext,
+		extendedIngestRundown,
+		rundownSource
+	)
 	if (!showStyle) {
 		logger.debug('Blueprint rejected the rundown')
 		throw new Error('Blueprint rejected the rundown')

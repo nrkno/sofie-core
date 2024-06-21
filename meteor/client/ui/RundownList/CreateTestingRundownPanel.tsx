@@ -43,13 +43,16 @@ export const CreateTestingRundownPanel = memo(function CreateTestingRundownPanel
 
 	return (
 		<div className="mtl gutter version-info">
-			{options.map((option) => (
-				<button key={option.label} className="btn btn-primary" onClick={(e) => doCreateTestingRundown(e, option)}>
-					{option.label}
-				</button>
-
-				// <p key={option.label}>{option.label}</p>
-			))}
+			<h2>{t('Create Testing Rundown')}</h2>
+			<p>
+				{options.map((option) => (
+					<>
+						<button key={option.label} className="btn btn-primary" onClick={(e) => doCreateTestingRundown(e, option)}>
+							{option.label}
+						</button>{' '}
+					</>
+				))}
+			</p>
 		</div>
 	)
 })
