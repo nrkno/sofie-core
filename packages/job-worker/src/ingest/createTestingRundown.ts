@@ -1,11 +1,16 @@
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
-import { CreateTestingRundownForShowStyleVariantProps } from '@sofie-automation/corelib/dist/worker/ingest'
-import { JobContext } from '../jobs'
-import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import type { CreateTestingRundownForShowStyleVariantProps } from '@sofie-automation/corelib/dist/worker/ingest'
+import type { JobContext } from '../jobs'
+import type { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { convertShowStyleVariantToBlueprints } from '../blueprints/context/lib'
 import { ShowStyleUserContext } from '../blueprints/context'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { handleUpdatedRundown } from './ingestRundownJobs'
+import type {
+	IShowStyleUserContext,
+	IBlueprintShowStyleVariant,
+	IngestRundown,
+} from '@sofie-automation/blueprints-integration'
 
 export async function handleCreateTestingRundownForShowStyleVariant(
 	context: JobContext,
@@ -15,11 +20,7 @@ export async function handleCreateTestingRundownForShowStyleVariant(
 	const showStyleCompound = await context.getShowStyleCompound(showStyleVariant._id)
 	const showStyleBlueprint = await context.getShowStyleBlueprint(showStyleCompound._id)
 
-	const generateTestingRundown = showStyleBlueprint.blueprint.generateTestingRundown
-	if (!generateTestingRundown) {
-		throw UserError.create(UserErrorMessage.TestingRundownsNotSupported)
-	}
-
+	const generateTestingRundown = showStyleBlueprint.blueprint.generateTestingRundown || fallbackBlueprintMethod
 	const blueprintContext = new ShowStyleUserContext(
 		{
 			name: `Create Testing Rundown`,
@@ -51,4 +52,17 @@ export async function handleCreateTestingRundownForShowStyleVariant(
 			showStyleVariantId: showStyleVariant._id,
 		},
 	})
+}
+
+function fallbackBlueprintMethod(
+	_context: IShowStyleUserContext,
+	showStyleVariant: IBlueprintShowStyleVariant
+): IngestRundown {
+	return {
+		externalId: '',
+		name: `Rehearsal: ${showStyleVariant.name}`,
+		type: 'rehearsal',
+		payload: {},
+		segments: [], // No contents
+	}
 }
