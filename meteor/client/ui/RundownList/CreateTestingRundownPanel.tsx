@@ -31,7 +31,7 @@ export const CreateTestingRundownPanel = memo(function CreateTestingRundownPanel
 			isDisposed = true
 			clearInterval(interval)
 		}
-	})
+	}, [])
 
 	const doCreateTestingRundown = (e: React.MouseEvent, option: CreateTestingRundownOption) => {
 		doUserAction(t, e, UserAction.CREATE_TESTING_RUNDOWN, (e, ts) =>
@@ -42,15 +42,17 @@ export const CreateTestingRundownPanel = memo(function CreateTestingRundownPanel
 	if (options.length === 0) return null
 
 	return (
-		<div className="mtl gutter version-info">
+		<div className="mtl gutter create-testing-rundown">
 			<h2>{t('Create Testing Rundown')}</h2>
 			<p>
 				{options.map((option) => (
-					<>
-						<button key={option.label} className="btn btn-primary" onClick={(e) => doCreateTestingRundown(e, option)}>
-							{option.label}
-						</button>{' '}
-					</>
+					<button
+						key={JSON.stringify(option)}
+						className="btn btn-primary"
+						onClick={(e) => doCreateTestingRundown(e, option)}
+					>
+						{option.label}
+					</button>
 				))}
 			</p>
 		</div>
