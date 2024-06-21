@@ -167,8 +167,10 @@ export async function handleRestorePlaylistSnapshot(
 		}
 
 		rd.playlistId = playlistId
-		rd.restoredFromSnapshotId = rd._id
-		delete rd.peripheralDeviceId
+		rd.source = {
+			type: 'snapshot',
+			rundownId: rd._id,
+		}
 		rd.studioId = snapshot.playlist.studioId
 		rd.notifiedCurrentPlayingPartExternalId = undefined
 	}

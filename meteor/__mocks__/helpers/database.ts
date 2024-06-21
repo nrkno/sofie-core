@@ -610,7 +610,6 @@ export async function setupDefaultRundown(
 	const sourceLayerIds = Object.keys(applyAndValidateOverrides(env.showStyleBase.sourceLayersWithOverrides).obj)
 
 	const rundown: DBRundown = {
-		peripheralDeviceId: env.ingestDevice._id,
 		organizationId: null,
 		studioId: env.studio._id,
 		showStyleBaseId: env.showStyleBase._id,
@@ -635,7 +634,11 @@ export async function setupDefaultRundown(
 			core: '',
 		},
 
-		externalNRCSName: 'mock',
+		source: {
+			type: 'nrcs',
+			peripheralDeviceId: env.ingestDevice._id,
+			nrcsName: 'mock',
+		},
 	}
 	await Rundowns.mutableCollection.insertAsync(rundown)
 

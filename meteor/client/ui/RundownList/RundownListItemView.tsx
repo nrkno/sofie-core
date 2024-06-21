@@ -2,7 +2,7 @@ import Tooltip from 'rc-tooltip'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { Rundown, getRundownNrcsName } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { getAllowStudio } from '../../lib/localStorage'
 import { RundownUtils } from '../../lib/rundown'
 import { iconDragHandle, iconRemove, iconResync } from './icons'
@@ -196,7 +196,7 @@ export default React.memo(function RundownListItemView({
 				{confirmReSyncRundownHandler ? (
 					<Tooltip
 						mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
-						overlay={t('Re-sync rundown data with {{nrcsName}}', { nrcsName: rundown.externalNRCSName || 'NRCS' })}
+						overlay={t('Re-sync rundown data with {{nrcsName}}', { nrcsName: getRundownNrcsName(rundown) })}
 						placement="top"
 					>
 						<button className="rundown-list-item__action" onClick={() => confirmReSyncRundownHandler()}>

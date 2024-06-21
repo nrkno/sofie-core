@@ -70,3 +70,13 @@ export function extendIngestRundownCore(
 	}
 	return extendedIngestRundown
 }
+
+// export async function createRundownSourceFromPeripheralDevice(
+// 	context: JobContext,
+// 	peripheralDeviceId: PeripheralDeviceId | null,
+// 	ingestModel: IngestModel
+// ): Promise<RundownSource> {
+// 	const pPeripheralDevice = peripheralDeviceId
+// 		? context.directCollections.PeripheralDevices.findOne(peripheralDeviceId)
+// 		: undefined
+// }

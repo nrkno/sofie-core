@@ -5,7 +5,7 @@ import { CustomCollectionName, MeteorPubSub } from '../../../lib/api/pubsub'
 import { UISegmentPartNote } from '../../../lib/api/rundownNotifications'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { Rundown, getRundownNrcsName } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { groupByToMap, literal, normalizeArrayToMap, protectString } from '../../../lib/lib'
 import {
@@ -198,7 +198,7 @@ function updateNotesForSegment(
 	const notesForSegment = generateNotesForSegment(
 		args.playlistId,
 		segment,
-		state.rundownsCache.get(segment.rundownId)?.externalNRCSName ?? 'NRCS',
+		getRundownNrcsName(state.rundownsCache.get(segment.rundownId)),
 		state.parts.get(segment._id) ?? [],
 		state.deletedPartInstances.get(segment._id) ?? []
 	)

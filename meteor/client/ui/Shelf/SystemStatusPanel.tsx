@@ -55,10 +55,10 @@ export function SystemStatusPanel({
 				},
 				{
 					fields: {
-						externalNRCSName: 1,
+						source: 1,
 					},
 				}
-			) as Pick<DBRundown, 'externalNRCSName'> | undefined
+			) as Pick<DBRundown, 'source'> | undefined
 		} else {
 			return undefined
 		}

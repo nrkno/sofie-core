@@ -14,7 +14,7 @@ export namespace IngestActions {
 	 * Trigger a reload of a rundown
 	 */
 	export async function reloadRundown(
-		rundown: Pick<Rundown, '_id' | 'studioId' | 'externalId' | 'peripheralDeviceId'>
+		rundown: Pick<Rundown, '_id' | 'studioId' | 'externalId' | 'source'>
 	): Promise<TriggerReloadDataResponse> {
 		const device = await getPeripheralDeviceFromRundown(rundown)
 

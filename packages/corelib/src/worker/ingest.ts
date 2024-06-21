@@ -3,7 +3,6 @@ import {
 	BucketAdLibActionId,
 	BucketId,
 	ExpectedPackageId,
-	PeripheralDeviceId,
 	PieceId,
 	RundownId,
 	SegmentId,
@@ -14,6 +13,7 @@ import {
 import type { MOS } from '@sofie-automation/shared-lib/dist/mos'
 import { IngestAdlib, IngestPart, IngestRundown, IngestSegment } from '@sofie-automation/blueprints-integration'
 import { BucketAdLibAction } from '../dataModel/BucketAdLibAction'
+import { RundownSource } from '../dataModel/Rundown'
 
 export enum IngestJobs {
 	/**
@@ -130,7 +130,6 @@ export enum IngestJobs {
 
 export interface IngestPropsBase {
 	rundownExternalId: string
-	peripheralDeviceId: PeripheralDeviceId | null
 }
 export interface IngestRemoveRundownProps extends IngestPropsBase {
 	forceDelete?: boolean
@@ -138,9 +137,13 @@ export interface IngestRemoveRundownProps extends IngestPropsBase {
 export interface IngestUpdateRundownProps extends IngestPropsBase {
 	ingestRundown: IngestRundown
 	isCreateAction: boolean // TODO: Document what isCreateAction means
+
+	rundownSource: RundownSource
 }
 export interface IngestUpdateRundownMetaDataProps extends IngestPropsBase {
 	ingestRundown: Omit<IngestRundown, 'segments'>
+
+	rundownSource: RundownSource
 }
 export interface IngestRemoveSegmentProps extends IngestPropsBase {
 	segmentExternalId: string
@@ -178,9 +181,12 @@ export interface MosRundownProps extends IngestPropsBase {
 	 * If true, it will fail if the Rundown does not already exist
 	 */
 	isUpdateOperation: boolean
+
+	rundownSource: RundownSource
 }
 export interface MosRundownMetadataProps extends IngestPropsBase {
 	mosRunningOrderBase: MOS.IMOSRunningOrderBase
+	rundownSource: RundownSource
 }
 export interface MosRundownStatusProps extends IngestPropsBase {
 	status: string

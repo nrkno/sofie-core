@@ -96,7 +96,6 @@ export async function handleRegenerateRundownPlaylist(
 		ingestData.map(async ({ rundownExternalId }) => {
 			await context.queueIngestJob(IngestJobs.RegenerateRundown, {
 				rundownExternalId: rundownExternalId,
-				peripheralDeviceId: null,
 			})
 		})
 	)

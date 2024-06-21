@@ -9,6 +9,7 @@ import {
 	ShowStyleVariantId,
 } from './Ids'
 import { RundownNote } from './Notes'
+import { ReadonlyDeep } from 'type-fest'
 
 export enum RundownOrphanedReason {
 	/** Rundown is deleted from the NRCS but we still need it */
@@ -39,9 +40,10 @@ export interface Rundown {
 	/** The ShowStyleBase this Rundown uses (its the parent of the showStyleVariant) */
 	showStyleBaseId: ShowStyleBaseId
 	showStyleVariantId: ShowStyleVariantId
-	/** The peripheral device the rundown originates from */
-	peripheralDeviceId?: PeripheralDeviceId
-	restoredFromSnapshotId?: RundownId
+	// /** The peripheral device the rundown originates from */
+	// peripheralDeviceId?: PeripheralDeviceId
+	// restoredFromSnapshotId?: RundownId
+	source: RundownSource // nocommit - migration to fix up existing
 	created: Time
 	modified: Time
 
@@ -84,11 +86,34 @@ export interface Rundown {
 	/** Whether the end of the rundown marks a commercial break */
 	endOfRundownIsShowBreak?: boolean
 	/** Name (user-facing) of the external NCS this rundown came from */
-	externalNRCSName: string
+	// externalNRCSName: string
 	/** The id of the Rundown Playlist this rundown is in */
 	playlistId: RundownPlaylistId
 	/** If the playlistId has ben set manually by a user in Sofie */
 	playlistIdIsSetInSofie?: boolean
+}
+
+export type RundownSource = RundownSourceNrcs | RundownSourceSnapshot | RundownSourceHttp
+
+export interface RundownSourceNrcs {
+	type: 'nrcs'
+	peripheralDeviceId: PeripheralDeviceId
+	nrcsName: string
+}
+export interface RundownSourceSnapshot {
+	type: 'snapshot'
+	rundownId: RundownId
+}
+export interface RundownSourceHttp {
+	type: 'http'
+}
+
+export function getRundownNrcsName(rundown: ReadonlyDeep<Pick<DBRundown, 'source'>>|undefined): string {
+	if (rundown?.source?.type === 'nrcs') {
+		return rundown.source.nrcsName
+	} else {
+		return 'NRCS'
+	}
 }
 
 /** Note: Use Rundown instead */

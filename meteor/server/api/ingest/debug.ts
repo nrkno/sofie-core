@@ -43,7 +43,6 @@ MeteorDebugMethods({
 
 		await runIngestOperation(rundown.studioId, IngestJobs.RegenerateSegment, {
 			rundownExternalId: rundown.externalId,
-			peripheralDeviceId: null,
 			segmentExternalId: segment.externalId,
 		})
 	},
