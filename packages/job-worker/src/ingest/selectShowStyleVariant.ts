@@ -46,8 +46,17 @@ async function selectShowStyleVariantFromRundownSource(
 	context: JobContext,
 	rundownSource: RundownSourceTesting
 ): Promise<SelectedShowStyleVariant | null> {
-	const showStyleVariant = await context.getShowStyleVariant(rundownSource.showStyleVariantId)
-	const showStyleBase = await context.getShowStyleBase(showStyleVariant.showStyleBaseId)
+	const showStyleVariant = await context.getShowStyleVariant(rundownSource.showStyleVariantId).catch(() => null)
+	if (!showStyleVariant) {
+		logger.debug(`ShowStyleVariant "${rundownSource.showStyleVariantId}" not found`)
+		return null
+	}
+
+	const showStyleBase = await context.getShowStyleBase(showStyleVariant.showStyleBaseId).catch(() => null)
+	if (!showStyleBase) {
+		logger.debug(`ShowStyleBase "${showStyleVariant.showStyleBaseId}" not found`)
+		return null
+	}
 
 	const compound = createShowStyleCompound(showStyleBase, showStyleVariant)
 	if (!compound) throw new Error(`no showStyleCompound for "${showStyleVariant._id}"`)
@@ -129,7 +138,12 @@ async function selectShowStyleVariantWithBlueprints(
 		return null
 	} else {
 		const showStyleVariant = showStyleVariants.find((s) => s._id === variantId)
-		if (!showStyleVariant) throw new Error(`Blueprint returned variantId "${variantId}", which was not found!`)
+		if (!showStyleVariant) {
+			logger.debug(
+				`No ShowStyleVariant found matching showStyleId "${variantId}", from studio "${studio._id}" blueprint`
+			)
+			return null
+		}
 
 		const compound = createShowStyleCompound(showStyleBase, showStyleVariant)
 		if (!compound) throw new Error(`no showStyleCompound for "${showStyleVariant._id}"`)

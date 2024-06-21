@@ -76,8 +76,8 @@ export class MockJobContext implements JobContext {
 	#mockCollections: Readonly<IMockCollections>
 	#studio: ReadonlyDeep<DBStudio>
 
-	#studioBlueprint: StudioBlueprintManifest
-	#showStyleBlueprint: ShowStyleBlueprintManifest
+	#studioBlueprint: ReadonlyDeep<StudioBlueprintManifest>
+	#showStyleBlueprint: ReadonlyDeep<ShowStyleBlueprintManifest>
 
 	constructor(
 		jobCollections: Readonly<IDirectCollections>,
@@ -113,6 +113,14 @@ export class MockJobContext implements JobContext {
 			blueprintId: this.studio.blueprintId || protectString('fake'),
 			blueprint: this.#studioBlueprint,
 		}
+	}
+
+	get rawStudioBlueprint(): ReadonlyDeep<StudioBlueprintManifest> {
+		return this.#studioBlueprint
+	}
+
+	get rawShowStyleBlueprint(): ReadonlyDeep<ShowStyleBlueprintManifest> {
+		return this.#showStyleBlueprint
 	}
 
 	trackCache(_model: BaseModel): void {
@@ -202,7 +210,7 @@ export class MockJobContext implements JobContext {
 
 		return compound
 	}
-	async getShowStyleBlueprint(id: ShowStyleBaseId): Promise<WrappedShowStyleBlueprint> {
+	async getShowStyleBlueprint(id: ShowStyleBaseId): Promise<ReadonlyDeep<WrappedShowStyleBlueprint>> {
 		const showStyle = await this.getShowStyleBase(id)
 
 		return {
@@ -225,7 +233,7 @@ export class MockJobContext implements JobContext {
 	setStudio(studio: ReadonlyDeep<DBStudio>): void {
 		this.#studio = clone(studio)
 	}
-	setShowStyleBlueprint(blueprint: ShowStyleBlueprintManifest): void {
+	setShowStyleBlueprint(blueprint: ReadonlyDeep<ShowStyleBlueprintManifest>): void {
 		this.#showStyleBlueprint = blueprint
 	}
 	updateShowStyleBlueprint(blueprint: Partial<ShowStyleBlueprintManifest>): void {
@@ -234,7 +242,7 @@ export class MockJobContext implements JobContext {
 			...blueprint,
 		}
 	}
-	setStudioBlueprint(blueprint: StudioBlueprintManifest): void {
+	setStudioBlueprint(blueprint: ReadonlyDeep<StudioBlueprintManifest>): void {
 		this.#studioBlueprint = blueprint
 	}
 	updateStudioBlueprint(blueprint: Partial<StudioBlueprintManifest>): void {
