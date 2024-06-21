@@ -5,7 +5,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { JobContext } from '../../jobs'
-import { ExpectedPackageId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ExpectedPackageId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Filter as FilterQuery } from 'mongodb'
 import { PackageInfo } from '@sofie-automation/blueprints-integration'
 import { unprotectObjectArray } from '@sofie-automation/corelib/dist/protectedString'
@@ -41,16 +41,15 @@ export class WatchedPackagesHelper {
 	 */
 	static async create<T extends ExpectedPackageDBBase = ExpectedPackageDBBase>(
 		context: JobContext,
-		studioId: StudioId,
 		filter: FilterQuery<Omit<T, 'studioId'>>
 	): Promise<WatchedPackagesHelper> {
 		// Load all the packages and the infos that are watched
 		const watchedPackages = await context.directCollections.ExpectedPackages.findFetch({
 			...filter,
-			studioId: studioId,
+			studioId: context.studioId,
 		} as any) // TODO: don't use any here
 		const watchedPackageInfos = await context.directCollections.PackageInfos.findFetch({
-			studioId: studioId,
+			studioId: context.studioId,
 			packageId: { $in: watchedPackages.map((p) => p._id) },
 		})
 

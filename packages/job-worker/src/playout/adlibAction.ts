@@ -70,7 +70,7 @@ export async function executeAdlibActionAndSaveModel(
 		throw UserError.create(UserErrorMessage.ActionsNotSupported)
 	}
 
-	const watchedPackages = await WatchedPackagesHelper.create(context, context.studio._id, {
+	const watchedPackages = await WatchedPackagesHelper.create(context, {
 		pieceId: data.actionDocId,
 		fromPieceType: {
 			$in: [
