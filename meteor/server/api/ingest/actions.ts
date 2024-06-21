@@ -6,6 +6,7 @@ import { TriggerReloadDataResponse } from '../../../lib/api/userActions'
 import { GenericDeviceActions } from './genericDevice/actions'
 import { PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
+import { assertNever } from '@sofie-automation/corelib/dist/lib'
 
 /*
 This file contains actions that can be performed on an ingest-device
@@ -15,29 +16,46 @@ export namespace IngestActions {
 	 * Trigger a reload of a rundown
 	 */
 	export async function reloadRundown(
-		rundown: Pick<Rundown, '_id' | 'studioId' | 'externalId' | 'source'>
+		rundown: Pick<Rundown, '_id' | 'studioId' | 'externalId' | 'showStyleVariantId' | 'source'>
 	): Promise<TriggerReloadDataResponse> {
-		if (rundown.source.type === 'snapshot') {
-			throw new Meteor.Error(400, `Cannot reload a snapshot rundown`)
-		} else if (rundown.source.type === 'nrcs') {
-			const device = await getPeripheralDeviceFromRundown(rundown)
+		const rundownSourceType = rundown.source.type
+		switch (rundown.source.type) {
+			case 'snapshot':
+				throw new Meteor.Error(400, `Cannot reload a snapshot rundown`)
+			case 'http': {
+				await runIngestOperation(rundown.studioId, IngestJobs.RegenerateRundown, {
+					rundownExternalId: rundown.externalId,
+				})
 
-			// The Rundown.orphaned flag will be reset by the response update
-
-			// TODO: refactor this into something nicer perhaps?
-			if (device.type === PeripheralDeviceType.MOS) {
-				return MOSDeviceActions.reloadRundown(device, rundown)
-			} else if (device.type === PeripheralDeviceType.SPREADSHEET || device.type === PeripheralDeviceType.INEWS) {
-				return GenericDeviceActions.reloadRundown(device, rundown)
-			} else {
-				throw new Meteor.Error(400, `The device ${device._id} does not support the method "reloadRundown"`)
+				return TriggerReloadDataResponse.COMPLETED
 			}
-		} else {
-			await runIngestOperation(rundown.studioId, IngestJobs.RegenerateRundown, {
-				rundownExternalId: rundown.externalId,
-			})
+			case 'testing': {
+				await runIngestOperation(rundown.studioId, IngestJobs.CreateTestingRundownForShowStyleVariant, {
+					showStyleVariantId: rundown.showStyleVariantId,
+				})
 
-			return TriggerReloadDataResponse.COMPLETED
+				return TriggerReloadDataResponse.COMPLETED
+			}
+			case 'nrcs': {
+				const device = await getPeripheralDeviceFromRundown(rundown)
+
+				// The Rundown.orphaned flag will be reset by the response update
+
+				// TODO: refactor this into something nicer perhaps?
+				if (device.type === PeripheralDeviceType.MOS) {
+					return MOSDeviceActions.reloadRundown(device, rundown)
+				} else if (
+					device.type === PeripheralDeviceType.SPREADSHEET ||
+					device.type === PeripheralDeviceType.INEWS
+				) {
+					return GenericDeviceActions.reloadRundown(device, rundown)
+				} else {
+					throw new Meteor.Error(400, `The device ${device._id} does not support the method "reloadRundown"`)
+				}
+			}
+			default:
+				assertNever(rundown.source)
+				throw new Meteor.Error(400, `Cannot reload rundown from source "${rundownSourceType}"`)
 		}
 	}
 }

@@ -11,6 +11,7 @@ import type {
 	IBlueprintShowStyleVariant,
 	IngestRundown,
 } from '@sofie-automation/blueprints-integration'
+import { logger } from '../logging'
 
 export async function handleCreateTestingRundownForShowStyleVariant(
 	context: JobContext,
@@ -42,6 +43,8 @@ export async function handleCreateTestingRundownForShowStyleVariant(
 
 	// const rundownId = getRundownId(context.studioId, data.rundownExternalId)
 	ingestRundown.externalId = `testing:${ingestRundown.externalId || showStyleVariant._id}`
+
+	logger.info(`Creating testing rundown "${ingestRundown.name}" for showStyleVariant "${showStyleVariant.name}"`)
 
 	return handleUpdatedRundown(context, {
 		rundownExternalId: ingestRundown.externalId,
