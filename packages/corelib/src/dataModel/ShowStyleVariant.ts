@@ -22,7 +22,7 @@ export interface DBShowStyleVariant {
 	blueprintConfigWithOverrides: ObjectWithOverrides<IBlueprintConfig>
 
 	/** Whether a testing rundown can be generated for this variant */
-	canGenerateTestingRundown?: boolean // nocommit make required?
+	canGenerateTestingRundown?: boolean
 
 	_rundownVersionHash: string
 }
