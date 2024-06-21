@@ -281,7 +281,8 @@ async function getIngestPlaylist(
 	playlistExternalId: string
 ): Promise<IngestPlaylist> {
 	const rundowns = await Rundowns.findFetchAsync({
-		peripheralDeviceId: peripheralDevice._id,
+		'source.type': 'nrcs',
+		'source.peripheralDeviceId': peripheralDevice._id,
 		playlistExternalId,
 	})
 
@@ -304,7 +305,8 @@ async function getIngestPlaylist(
 }
 async function getIngestRundown(peripheralDevice: PeripheralDevice, rundownExternalId: string): Promise<IngestRundown> {
 	const rundown = await Rundowns.findOneAsync({
-		peripheralDeviceId: peripheralDevice._id,
+		'source.type': 'nrcs',
+		'source.peripheralDeviceId': peripheralDevice._id,
 		externalId: rundownExternalId,
 	})
 	if (!rundown) {
@@ -323,7 +325,8 @@ async function getIngestSegment(
 	segmentExternalId: string
 ): Promise<IngestSegment> {
 	const rundown = await Rundowns.findOneAsync({
-		peripheralDeviceId: peripheralDevice._id,
+		'source.type': 'nrcs',
+		'source.peripheralDeviceId': peripheralDevice._id,
 		externalId: rundownExternalId,
 	})
 	if (!rundown) {
@@ -350,7 +353,8 @@ async function getIngestSegment(
 }
 async function listIngestRundowns(peripheralDevice: PeripheralDevice): Promise<string[]> {
 	const rundowns = await Rundowns.findFetchAsync({
-		peripheralDeviceId: peripheralDevice._id,
+		'source.type': 'nrcs',
+		'source.peripheralDeviceId': peripheralDevice._id,
 	})
 
 	return rundowns.map((r) => r.externalId)

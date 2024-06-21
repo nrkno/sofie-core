@@ -105,7 +105,7 @@ export interface RundownSourceHttp {
 	type: 'http'
 }
 
-export function getRundownNrcsName(rundown: ReadonlyDeep<Pick<DBRundown, 'source'>>|undefined): string {
+export function getRundownNrcsName(rundown: ReadonlyDeep<Pick<DBRundown, 'source'>> | undefined): string {
 	if (rundown?.source?.type === 'nrcs') {
 		return rundown.source.nrcsName
 	} else {
