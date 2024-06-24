@@ -12,24 +12,19 @@ export const CreateAdlibTestingRundownPanel = memo(function CreateAdlibTestingRu
 	useEffect(() => {
 		let isDisposed = false
 
-		const doPoll = () => {
-			MeteorCall.showstyles
-				.getCreateAdlibTestingRundownOptions()
-				.then((newOptions) => {
-					if (isDisposed) return
-					setOptions(newOptions)
-				})
-				.catch((e) => {
-					console.error(`Failed to get create testing rundown options: ${e}`)
-				})
-		}
-
-		const interval = setInterval(doPoll, 30000)
-		doPoll()
+		// Future: It would be nice for this to be more responsive in updates, but as this requires configuration changes to change, not updating shouldn't be an issue
+		MeteorCall.showstyles
+			.getCreateAdlibTestingRundownOptions()
+			.then((newOptions) => {
+				if (isDisposed) return
+				setOptions(newOptions)
+			})
+			.catch((e) => {
+				console.error(`Failed to get create testing rundown options: ${e}`)
+			})
 
 		return () => {
 			isDisposed = true
-			clearInterval(interval)
 		}
 	}, [])
 
