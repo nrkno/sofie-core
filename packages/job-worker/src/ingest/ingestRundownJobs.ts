@@ -2,7 +2,7 @@ import { JobContext } from '../jobs'
 import { logger } from '../logging'
 import { updateRundownFromIngestData, updateRundownMetadataFromIngestData } from './generationRundown'
 import { makeNewIngestRundown } from './ingestCache'
-import { canRundownBeUpdated } from './lib'
+import { canRundownBeUpdated, getRundownId } from './lib'
 import { CommitIngestData, runIngestJob, runWithRundownLock, UpdateIngestRundownAction } from './lock'
 import { removeRundownFromDb } from '../rundownPlaylists'
 import { literal } from '@sofie-automation/corelib/dist/lib'
@@ -50,18 +50,19 @@ export async function handleRemovedRundown(context: JobContext, data: IngestRemo
  * User requested removing a rundown
  */
 export async function handleUserRemoveRundown(context: JobContext, data: UserRemoveRundownProps): Promise<void> {
-	/**
-	 * As the user requested a delete, it may not be from an ingest gateway, and have a bad relationship between _id and externalId.
-	 * Because of this, we must do some more manual steps to ensure it is done correctly, and with as close to correct locking as is reasonable
-	 */
 	const tmpRundown = await context.directCollections.Rundowns.findOne(data.rundownId)
 	if (!tmpRundown || tmpRundown.studioId !== context.studioId) {
 		// Either not found, or belongs to someone else
 		return
 	}
 
-	if (tmpRundown.source.type === 'snapshot') {
-		// Its from a snapshot, so we need to use a lighter locking flow
+	if (tmpRundown._id !== getRundownId(context.studioId, tmpRundown.externalId)) {
+		/**
+		 * If the rundown is not created via an ingest method, there can be a bad relationship between _id and externalId, which causes the rundown to not be found.
+		 * This typically happens when a rundown is restored from a snapshot.
+		 * When this happens, we need to remove the rundown directly.
+		 */
+
 		return runWithRundownLock(context, data.rundownId, async (rundown, lock) => {
 			if (rundown) {
 				// It's from a snapshot, so should be removed directly, as that means it cannot run ingest operations
@@ -80,7 +81,7 @@ export async function handleUserRemoveRundown(context: JobContext, data: UserRem
 			}
 		})
 	} else {
-		// Its a real rundown, so defer to the proper route for deletion
+		// The ids match, meaning the typical ingest operation flow will work
 		return handleRemovedRundown(context, {
 			rundownExternalId: tmpRundown.externalId,
 			forceDelete: data.force,
