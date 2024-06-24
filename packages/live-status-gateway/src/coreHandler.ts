@@ -15,11 +15,7 @@ import {
 	PeripheralDeviceType,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
-import {
-	PeripheralDeviceCommandId,
-	PeripheralDeviceId,
-	StudioId,
-} from '@sofie-automation/shared-lib/dist/core/model/Ids'
+import { PeripheralDeviceCommandId, StudioId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
 import { PeripheralDeviceCommand } from '@sofie-automation/shared-lib/dist/core/model/PeripheralDeviceCommand'
 import { LiveStatusGatewayConfig } from './generated/options'
