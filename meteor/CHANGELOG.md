@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.50.3](https://github.com/nrkno/sofie-core/compare/v1.50.2...v1.50.3) (2024-06-24)
+
+
+### Bug Fixes
+
+* **DashboardPieceButton:** hover previews are not positioned correctly ([89fd219](https://github.com/nrkno/sofie-core/commit/89fd219d57fb775ed140ed2eaf5326a80194661f))
+* input gateway devices lose rundown actions on reset SOFIE-3134 ([#1190](https://github.com/nrkno/sofie-core/issues/1190)) ([aa69e5d](https://github.com/nrkno/sofie-core/commit/aa69e5d2df512f0e79bb1ada51ed61560258c0cd))
+
 ### [1.50.2](///compare/v1.49.6...v1.50.2) (2024-05-15)
 
 

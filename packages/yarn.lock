@@ -5030,11 +5030,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sofie-automation/blueprints-integration@1.50.2, @sofie-automation/blueprints-integration@workspace:blueprints-integration":
+"@sofie-automation/blueprints-integration@1.50.3, @sofie-automation/blueprints-integration@workspace:blueprints-integration":
   version: 0.0.0-use.local
   resolution: "@sofie-automation/blueprints-integration@workspace:blueprints-integration"
   dependencies:
-    "@sofie-automation/shared-lib": 1.50.2
+    "@sofie-automation/shared-lib": 1.50.3
     tslib: ^2.4.0
     type-fest: ^2.19.0
   languageName: unknown
@@ -5071,12 +5071,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sofie-automation/corelib@1.50.2, @sofie-automation/corelib@workspace:corelib":
+"@sofie-automation/corelib@1.50.3, @sofie-automation/corelib@workspace:corelib":
   version: 0.0.0-use.local
   resolution: "@sofie-automation/corelib@workspace:corelib"
   dependencies:
-    "@sofie-automation/blueprints-integration": 1.50.2
-    "@sofie-automation/shared-lib": 1.50.2
+    "@sofie-automation/blueprints-integration": 1.50.3
+    "@sofie-automation/shared-lib": 1.50.3
     fast-clone: ^1.5.13
     i18next: ^21.9.1
     influx: ^5.9.3
@@ -5107,9 +5107,9 @@ __metadata:
   resolution: "@sofie-automation/job-worker@workspace:job-worker"
   dependencies:
     "@slack/webhook": ^6.1.0
-    "@sofie-automation/blueprints-integration": 1.50.2
-    "@sofie-automation/corelib": 1.50.2
-    "@sofie-automation/shared-lib": 1.50.2
+    "@sofie-automation/blueprints-integration": 1.50.3
+    "@sofie-automation/corelib": 1.50.3
+    "@sofie-automation/shared-lib": 1.50.3
     amqplib: ^0.10.3
     deepmerge: ^4.3.1
     elastic-apm-node: ^3.43.0
@@ -5139,11 +5139,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@sofie-automation/server-core-integration@1.50.2, @sofie-automation/server-core-integration@workspace:server-core-integration":
+"@sofie-automation/server-core-integration@1.50.3, @sofie-automation/server-core-integration@workspace:server-core-integration":
   version: 0.0.0-use.local
   resolution: "@sofie-automation/server-core-integration@workspace:server-core-integration"
   dependencies:
-    "@sofie-automation/shared-lib": 1.50.2
+    "@sofie-automation/shared-lib": 1.50.3
     ejson: ^2.2.3
     eventemitter3: ^4.0.7
     faye-websocket: ^0.11.4
@@ -5153,7 +5153,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@sofie-automation/shared-lib@1.50.2, @sofie-automation/shared-lib@workspace:shared-lib":
+"@sofie-automation/shared-lib@1.50.3, @sofie-automation/shared-lib@workspace:shared-lib":
   version: 0.0.0-use.local
   resolution: "@sofie-automation/shared-lib@workspace:shared-lib"
   dependencies:
@@ -14992,10 +14992,10 @@ asn1@evs-broadcast/node-asn1:
     "@asyncapi/generator": 1.9.13
     "@asyncapi/html-template": 0.26.0
     "@asyncapi/nodejs-ws-template": 0.9.25
-    "@sofie-automation/blueprints-integration": 1.50.2
-    "@sofie-automation/corelib": 1.50.2
-    "@sofie-automation/server-core-integration": 1.50.2
-    "@sofie-automation/shared-lib": 1.50.2
+    "@sofie-automation/blueprints-integration": 1.50.3
+    "@sofie-automation/corelib": 1.50.3
+    "@sofie-automation/server-core-integration": 1.50.3
+    "@sofie-automation/shared-lib": 1.50.3
     debug: ^4.3.2
     fast-clone: ^1.5.13
     influx: ^5.9.2
@@ -16076,8 +16076,8 @@ asn1@evs-broadcast/node-asn1:
   resolution: "mos-gateway@workspace:mos-gateway"
   dependencies:
     "@mos-connection/connector": ^3.0.4
-    "@sofie-automation/server-core-integration": 1.50.2
-    "@sofie-automation/shared-lib": 1.50.2
+    "@sofie-automation/server-core-integration": 1.50.3
+    "@sofie-automation/shared-lib": 1.50.3
     tslib: ^2.4.0
     type-fest: ^2.19.0
     underscore: ^1.13.4
@@ -18053,8 +18053,8 @@ asn1@evs-broadcast/node-asn1:
   version: 0.0.0-use.local
   resolution: "playout-gateway@workspace:playout-gateway"
   dependencies:
-    "@sofie-automation/server-core-integration": 1.50.2
-    "@sofie-automation/shared-lib": 1.50.2
+    "@sofie-automation/server-core-integration": 1.50.3
+    "@sofie-automation/shared-lib": 1.50.3
     debug: ^4.3.3
     influx: ^5.9.3
     timeline-state-resolver: 9.0.1
