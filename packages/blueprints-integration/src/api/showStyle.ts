@@ -88,10 +88,13 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 		ingestSegment: IngestSegment
 	) => BlueprintResultSegment | Promise<BlueprintResultSegment>
 
+	/**
+	 * Generate an Adlib Testing IngestRundown for the specified ShowStyleVariant.
+	 * This is used to generate a rundown which can be used for testing adlibs, or minimal use of Sofie without a rundown from an NRCS.
+	 */
 	generateAdlibTestingIngestRundown?: (
 		context: IShowStyleUserContext,
 		showStyleVariant: IBlueprintShowStyleVariant
-		// TODO - user defined options/values?
 	) => IngestRundown | Promise<IngestRundown>
 
 	/**
