@@ -2786,7 +2786,7 @@ __metadata:
     react-focus-bounder: ^1.1.6
     react-hotkeys: ^2.0.0
     react-i18next: ^11.18.6
-    react-intersection-observer: ^9.6.0
+    react-intersection-observer: ^9.10.3
     react-moment: ^0.9.7
     react-popper: ^2.3.0
     react-router-dom: ^5.3.4
@@ -10149,16 +10149,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-intersection-observer@npm:^9.6.0":
-  version: 9.6.0
-  resolution: "react-intersection-observer@npm:9.6.0"
+"react-intersection-observer@npm:^9.10.3":
+  version: 9.10.3
+  resolution: "react-intersection-observer@npm:9.10.3"
   peerDependencies:
-    react: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
-    react-dom: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
+    react: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+    react-dom: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
   peerDependenciesMeta:
     react-dom:
       optional: true
-  checksum: fba57f1601b6c08ea0345de23c4e41b1e0042834dbef62fa419fc18952f9ceb577d180ef3d8c8e6b01c3d5cfc3265ae5a007a532892c376461bf655b0c764ef7
+  checksum: 482c89a432e582749f3cb3dd696e08638a92e41fbcb81bcb3dc3cadebcf8b40bc47e7a52d2a7e8c4f9eb2a3c1c29b4cb0f21007c1540da05893b5abb11d7a761
   languageName: node
   linkType: hard
 
