@@ -99,6 +99,7 @@ export interface RundownSourceNrcs {
 }
 export interface RundownSourceSnapshot {
 	type: 'snapshot'
+	/** Original id of the rundown the snapshot was created from */
 	rundownId: RundownId
 }
 export interface RundownSourceHttp {
