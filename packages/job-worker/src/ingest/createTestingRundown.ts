@@ -30,7 +30,7 @@ export async function handleCreateTestingRundownForShowStyleVariant(
 		},
 		context,
 		showStyleCompound,
-		WatchedPackagesHelper.empty(context) // Can't provide any packages here, as we don't have a scope to limit it to yet
+		WatchedPackagesHelper.empty(context) // No packages to provide here, as this is before there is a rundown
 	)
 
 	const ingestRundown = await Promise.resolve()
@@ -41,7 +41,7 @@ export async function handleCreateTestingRundownForShowStyleVariant(
 			throw UserError.from(e, UserErrorMessage.TestingRundownsGenerationFailed, { message: e.toString() })
 		})
 
-	// const rundownId = getRundownId(context.studioId, data.rundownExternalId)
+	// Prefix the externalId to avoid conflicts with real rundowns, and ensure it has a sensible value
 	ingestRundown.externalId = `testing:${ingestRundown.externalId || showStyleVariant._id}`
 
 	logger.info(`Creating testing rundown "${ingestRundown.name}" for showStyleVariant "${showStyleVariant.name}"`)
