@@ -25,7 +25,7 @@ export async function handleCreateAdlibTestingRundownForShowStyleVariant(
 		showStyleBlueprint.blueprint.generateAdlibTestingIngestRundown || fallbackBlueprintMethod
 	const blueprintContext = new ShowStyleUserContext(
 		{
-			name: `Create Testing Rundown`,
+			name: `Create Adlib Testing Rundown`,
 			identifier: `studioId=${context.studioId},showStyleBaseId=${showStyleCompound._id},showStyleVariantId=${showStyleCompound.showStyleVariantId}`,
 			tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT
 		},

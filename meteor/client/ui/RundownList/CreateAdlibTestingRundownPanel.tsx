@@ -20,7 +20,7 @@ export const CreateAdlibTestingRundownPanel = memo(function CreateAdlibTestingRu
 				setOptions(newOptions)
 			})
 			.catch((e) => {
-				console.error(`Failed to get create testing rundown options: ${e}`)
+				console.error(`Failed to get create adlib testing rundown options: ${e}`)
 			})
 
 		return () => {
@@ -43,7 +43,7 @@ export const CreateAdlibTestingRundownPanel = memo(function CreateAdlibTestingRu
 
 	return (
 		<div className="mtl gutter create-testing-rundown">
-			<h2>{t('Create Testing Rundown')}</h2>
+			<h2>{t('Create Adlib Testing Rundown')}</h2>
 			<p>
 				{options.map((option) => (
 					<button
