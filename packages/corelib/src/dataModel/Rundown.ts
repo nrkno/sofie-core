@@ -40,6 +40,7 @@ export interface Rundown {
 	/** The ShowStyleBase this Rundown uses (its the parent of the showStyleVariant) */
 	showStyleBaseId: ShowStyleBaseId
 	showStyleVariantId: ShowStyleVariantId
+	/** A description og where the Rundown originated from */
 	source: RundownSource
 	created: Time
 	modified: Time
@@ -88,8 +89,10 @@ export interface Rundown {
 	playlistIdIsSetInSofie?: boolean
 }
 
+/** A description of where a Rundown originated from */
 export type RundownSource = RundownSourceNrcs | RundownSourceSnapshot | RundownSourceHttp
 
+/** A description of the external NRCS source of a Rundown */
 export interface RundownSourceNrcs {
 	type: 'nrcs'
 	/** The peripheral device the rundown originates from */
@@ -97,11 +100,13 @@ export interface RundownSourceNrcs {
 	/** Name (user-facing) of the external NRCS this rundown came from, if known */
 	nrcsName: string | undefined
 }
+/** A description of the source of a Rundown which was restored from a snapshot */
 export interface RundownSourceSnapshot {
 	type: 'snapshot'
 	/** Original id of the rundown the snapshot was created from */
 	rundownId: RundownId
 }
+/** A description of the source of a Rundown which was through the HTTP ingest API */
 export interface RundownSourceHttp {
 	type: 'http'
 }
