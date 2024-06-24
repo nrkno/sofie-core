@@ -19,7 +19,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { Piece, PieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { DBRundown, RundownOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { DBRundown, RundownOrphanedReason, RundownSource } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
@@ -56,7 +56,6 @@ import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { IBlueprintRundown } from '@sofie-automation/blueprints-integration'
 import { getCurrentTime, getSystemVersion } from '../../../lib'
 import { WrappedShowStyleBlueprint } from '../../../blueprints/cache'
-import { getExternalNRCSName, PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { SaveIngestModelHelper } from './SaveIngestModel'
 import { generateWriteOpsForLazyDocuments } from './DocumentChangeTracker'
 import { IS_PRODUCTION } from '../../../environment'
@@ -421,7 +420,7 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 		showStyleBase: ReadonlyDeep<ProcessedShowStyleBase>,
 		showStyleVariant: ReadonlyDeep<ProcessedShowStyleVariant>,
 		showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
-		peripheralDevice: ReadonlyDeep<PeripheralDevice> | undefined,
+		source: RundownSource,
 		rundownNotes: RundownNote[]
 	): ReadonlyDeep<DBRundown> {
 		const newRundown = literal<Complete<DBRundown>>({
@@ -446,8 +445,7 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 			created: this.rundown?.created ?? getCurrentTime(),
 			modified: getCurrentTime(),
 
-			peripheralDeviceId: peripheralDevice?._id,
-			externalNRCSName: getExternalNRCSName(peripheralDevice),
+			source: source,
 
 			// validated later
 			playlistId: this.#rundownImpl?.playlistId ?? protectString(''),
@@ -456,7 +454,6 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 			// owned by elsewhere
 			airStatus: this.#rundownImpl?.airStatus,
 			status: this.#rundownImpl?.status,
-			restoredFromSnapshotId: undefined,
 			notifiedCurrentPlayingPartExternalId: this.#rundownImpl?.notifiedCurrentPlayingPartExternalId,
 		})
 		deleteAllUndefinedProperties(newRundown)

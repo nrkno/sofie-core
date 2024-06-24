@@ -9,6 +9,7 @@ import {
 	ShowStyleVariantId,
 } from './Ids'
 import { RundownNote } from './Notes'
+import { ReadonlyDeep } from 'type-fest'
 
 export enum RundownOrphanedReason {
 	/** Rundown is deleted from the NRCS but we still need it */
@@ -39,9 +40,8 @@ export interface Rundown {
 	/** The ShowStyleBase this Rundown uses (its the parent of the showStyleVariant) */
 	showStyleBaseId: ShowStyleBaseId
 	showStyleVariantId: ShowStyleVariantId
-	/** The peripheral device the rundown originates from */
-	peripheralDeviceId?: PeripheralDeviceId
-	restoredFromSnapshotId?: RundownId
+	/** A description og where the Rundown originated from */
+	source: RundownSource
 	created: Time
 	modified: Time
 
@@ -83,12 +83,40 @@ export interface Rundown {
 	playlistExternalId?: string
 	/** Whether the end of the rundown marks a commercial break */
 	endOfRundownIsShowBreak?: boolean
-	/** Name (user-facing) of the external NCS this rundown came from */
-	externalNRCSName: string
 	/** The id of the Rundown Playlist this rundown is in */
 	playlistId: RundownPlaylistId
 	/** If the playlistId has ben set manually by a user in Sofie */
 	playlistIdIsSetInSofie?: boolean
+}
+
+/** A description of where a Rundown originated from */
+export type RundownSource = RundownSourceNrcs | RundownSourceSnapshot | RundownSourceHttp
+
+/** A description of the external NRCS source of a Rundown */
+export interface RundownSourceNrcs {
+	type: 'nrcs'
+	/** The peripheral device the rundown originates from */
+	peripheralDeviceId: PeripheralDeviceId
+	/** Name (user-facing) of the external NRCS this rundown came from, if known */
+	nrcsName: string | undefined
+}
+/** A description of the source of a Rundown which was restored from a snapshot */
+export interface RundownSourceSnapshot {
+	type: 'snapshot'
+	/** Original id of the rundown the snapshot was created from */
+	rundownId: RundownId
+}
+/** A description of the source of a Rundown which was through the HTTP ingest API */
+export interface RundownSourceHttp {
+	type: 'http'
+}
+
+export function getRundownNrcsName(rundown: ReadonlyDeep<Pick<DBRundown, 'source'>> | undefined): string {
+	if (rundown?.source?.type === 'nrcs' && rundown.source.nrcsName) {
+		return rundown.source.nrcsName
+	} else {
+		return 'NRCS'
+	}
 }
 
 /** Note: Use Rundown instead */

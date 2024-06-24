@@ -81,7 +81,7 @@ export async function handleMosRundownData(context: JobContext, data: MosRundown
 				ingestModel,
 				newIngestRundown,
 				!data.isUpdateOperation,
-				data.peripheralDeviceId
+				data.rundownSource
 			)
 			if (res) {
 				return {
@@ -116,7 +116,7 @@ export async function handleMosRundownMetadata(context: JobContext, data: MosRun
 		async (context, ingestModel, ingestRundown) => {
 			if (!ingestRundown) throw new Error(`handleMosRundownMetadata lost the IngestRundown...`)
 
-			return updateRundownMetadataFromIngestData(context, ingestModel, ingestRundown, data.peripheralDeviceId)
+			return updateRundownMetadataFromIngestData(context, ingestModel, ingestRundown, data.rundownSource)
 		}
 	)
 }
@@ -165,7 +165,7 @@ export async function handleMosRundownReadyToAir(context: JobContext, data: MosR
 
 			ingestModel.setRundownAirStatus(data.status)
 
-			return updateRundownMetadataFromIngestData(context, ingestModel, ingestRundown, data.peripheralDeviceId)
+			return updateRundownMetadataFromIngestData(context, ingestModel, ingestRundown, ingestModel.rundown.source)
 		}
 	)
 }

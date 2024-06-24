@@ -23,7 +23,7 @@ import * as i18next from 'i18next'
 import Tooltip from 'rc-tooltip'
 import { NavLink, Route, Prompt } from 'react-router-dom'
 import { DBRundownPlaylist, RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { Rundown, getRundownNrcsName } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { StudioRouteSet } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
@@ -1033,7 +1033,7 @@ const RundownHeader = withTranslation()(
 									) : null}
 									<MenuItem onClick={(e) => this.reloadRundownPlaylist(e)}>
 										{t('Reload {{nrcsName}} Data', {
-											nrcsName: (this.props.firstRundown && this.props.firstRundown.externalNRCSName) || 'NRCS',
+											nrcsName: getRundownNrcsName(this.props.firstRundown),
 										})}
 									</MenuItem>
 									<MenuItem onClick={(e) => this.takeRundownSnapshot(e)}>{t('Store Snapshot')}</MenuItem>
@@ -3355,7 +3355,7 @@ export function handleRundownReloadResponse(
 			t(
 				'Rundown {{rundownName}} in Playlist {{playlistName}} is missing in the data from {{nrcsName}}. You can either leave it in Sofie and mark it as Unsynced or remove the rundown from Sofie. What do you want to do?',
 				{
-					nrcsName: rundown?.externalNRCSName || 'NRCS',
+					nrcsName: getRundownNrcsName(rundown),
 					rundownName: rundown?.name || t('(Unknown rundown)'),
 					playlistName: playlist?.name || t('(Unknown playlist)'),
 				}

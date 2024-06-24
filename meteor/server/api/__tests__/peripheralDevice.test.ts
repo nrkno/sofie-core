@@ -101,7 +101,6 @@ describe('test peripheralDevice general API methods', () => {
 			name: 'test rundown',
 			created: 1000,
 			playlistId: rundownPlaylistID,
-			peripheralDeviceId: env.ingestDevice._id,
 			modified: getCurrentTime(),
 			importVersions: {
 				studio: 'wibble',
@@ -110,7 +109,11 @@ describe('test peripheralDevice general API methods', () => {
 				blueprint: 'on',
 				core: 'plate',
 			},
-			externalNRCSName: 'mockNRCS',
+			source: {
+				type: 'nrcs',
+				peripheralDeviceId: env.ingestDevice._id,
+				nrcsName: 'mockNRCS',
+			},
 			organizationId: protectString(''),
 			timing: {
 				type: PlaylistTimingType.None,

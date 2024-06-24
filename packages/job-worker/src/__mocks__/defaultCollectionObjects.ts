@@ -56,7 +56,6 @@ export function defaultRundown(
 	showStyleVariantId: ShowStyleVariantId
 ): DBRundown {
 	return {
-		peripheralDeviceId: ingestDeviceId ?? undefined,
 		studioId: studioId,
 		showStyleBaseId: showStyleBaseId,
 		showStyleVariantId: showStyleVariantId,
@@ -79,11 +78,18 @@ export function defaultRundown(
 			core: '',
 		},
 
-		externalNRCSName: 'mock',
-
 		timing: {
 			type: PlaylistTimingType.None,
 		},
+		source: ingestDeviceId
+			? {
+					type: 'nrcs',
+					peripheralDeviceId: ingestDeviceId,
+					nrcsName: 'mock',
+			  }
+			: {
+					type: 'http',
+			  },
 	}
 }
 

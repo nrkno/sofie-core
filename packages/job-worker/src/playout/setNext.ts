@@ -325,13 +325,12 @@ async function cleanupOrphanedItems(context: JobContext, playoutModel: PlayoutMo
 	// We need to run this outside of the current lock, and within an ingest lock, so defer to the work queue
 	for (const [rundownId, candidateSegmentIds] of alterSegmentsFromRundowns) {
 		const rundown = playoutModel.getRundown(rundownId)
-		if (rundown?.rundown?.restoredFromSnapshotId) {
+		if (rundown?.rundown?.source?.type !== 'nrcs') {
 			// This is not valid as the rundownId won't match the externalId, so ingest will fail
 			// For now do nothing
 		} else if (rundown) {
 			await context.queueIngestJob(IngestJobs.RemoveOrphanedSegments, {
 				rundownExternalId: rundown.rundown.externalId,
-				peripheralDeviceId: null,
 				orphanedHiddenSegmentIds: candidateSegmentIds.hidden,
 				orphanedDeletedSegmentIds: candidateSegmentIds.deleted,
 			})

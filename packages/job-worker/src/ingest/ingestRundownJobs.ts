@@ -59,7 +59,13 @@ export async function handleUserRemoveRundown(context: JobContext, data: UserRem
 		return
 	}
 
-	if (tmpRundown.restoredFromSnapshotId) {
+	if (tmpRundown.source.type === 'nrcs') {
+		// Its a real rundown, so defer to the proper route for deletion
+		return handleRemovedRundown(context, {
+			rundownExternalId: tmpRundown.externalId,
+			forceDelete: data.force,
+		})
+	} else {
 		// Its from a snapshot, so we need to use a lighter locking flow
 		return runWithRundownLock(context, data.rundownId, async (rundown, lock) => {
 			if (rundown) {
@@ -77,13 +83,6 @@ export async function handleUserRemoveRundown(context: JobContext, data: UserRem
 					await context.directCollections.RundownPlaylists.remove(rundown.playlistId)
 				}
 			}
-		})
-	} else {
-		// Its a real rundown, so defer to the proper route for deletion
-		return handleRemovedRundown(context, {
-			rundownExternalId: tmpRundown.externalId,
-			peripheralDeviceId: null,
-			forceDelete: data.force,
 		})
 	}
 }
@@ -111,7 +110,7 @@ export async function handleUpdatedRundown(context: JobContext, data: IngestUpda
 				ingestModel,
 				ingestRundown,
 				data.isCreateAction,
-				data.peripheralDeviceId ?? ingestModel.rundown?.peripheralDeviceId ?? null
+				data.rundownSource
 			)
 		}
 	)
@@ -140,12 +139,7 @@ export async function handleUpdatedRundownMetaData(
 		async (context, ingestModel, ingestRundown) => {
 			if (!ingestRundown) throw new Error(`handleUpdatedRundownMetaData lost the IngestRundown...`)
 
-			return updateRundownMetadataFromIngestData(
-				context,
-				ingestModel,
-				ingestRundown,
-				data.peripheralDeviceId ?? ingestModel.rundown?.peripheralDeviceId ?? null
-			)
+			return updateRundownMetadataFromIngestData(context, ingestModel, ingestRundown, data.rundownSource)
 		}
 	)
 }
@@ -169,7 +163,9 @@ export async function handleRegenerateRundown(context: JobContext, data: IngestR
 			// If the rundown is orphaned, then we can't regenerate as there wont be any data to use!
 			if (!ingestRundown) return null
 
-			return updateRundownFromIngestData(context, ingestModel, ingestRundown, false, data.peripheralDeviceId)
+			if (!ingestModel.rundown) throw new Error(`Rundown "${data.rundownExternalId}" not found`)
+
+			return updateRundownFromIngestData(context, ingestModel, ingestRundown, false, ingestModel.rundown.source)
 		}
 	)
 }

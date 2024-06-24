@@ -105,10 +105,12 @@ describe('Infinites', () => {
 					blueprint: '0.0.0',
 					core: '0.0.0`',
 				},
-				externalNRCSName: 'test',
 				playlistId,
 				timing: {
 					type: PlaylistTimingType.None,
+				},
+				source: {
+					type: 'http',
 				},
 			})
 		}

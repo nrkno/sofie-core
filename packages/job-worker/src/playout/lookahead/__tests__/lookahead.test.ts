@@ -65,7 +65,6 @@ describe('Lookahead', () => {
 		})
 
 		await context.mockCollections.Rundowns.insertOne({
-			peripheralDeviceId: undefined,
 			organizationId: null,
 			studioId: context.studioId,
 			showStyleBaseId: protectString('showStyleBase0'),
@@ -83,9 +82,11 @@ describe('Lookahead', () => {
 				blueprint: '',
 				core: '',
 			},
-			externalNRCSName: 'mock',
 			timing: {
 				type: PlaylistTimingType.None,
+			},
+			source: {
+				type: 'http',
 			},
 		})
 

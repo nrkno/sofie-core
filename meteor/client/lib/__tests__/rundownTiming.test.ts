@@ -85,12 +85,15 @@ function makeMockRundown(id: string, playlist: DBRundownPlaylist) {
 		studioId: protectString('studio0'),
 		showStyleBaseId: protectString(''),
 		showStyleVariantId: protectString('variant0'),
-		peripheralDeviceId: protectString(''),
 		created: 0,
 		modified: 0,
 		importVersions: {} as any,
 		name: 'test',
-		externalNRCSName: 'mockNRCS',
+		source: {
+			type: 'nrcs',
+			peripheralDeviceId: protectString(''),
+			nrcsName: 'mockNRCS',
+		},
 		organizationId: protectString(''),
 		playlistId: playlist._id,
 	})

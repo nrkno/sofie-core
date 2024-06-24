@@ -23,8 +23,10 @@ describe('SavePlayoutModel', () => {
 			name: `my rundown`,
 			importVersions: null as any,
 			timing: null as any,
-			externalNRCSName: 'FAKE',
 			playlistId: protectString('playlist0'),
+			source: {
+				type: 'http',
+			},
 		}
 
 		const segmentModels = (segments ?? []).map((s) => new PlayoutSegmentModelImpl(s, []))
