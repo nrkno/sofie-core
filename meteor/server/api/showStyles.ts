@@ -1,6 +1,6 @@
 import { check } from '../../lib/check'
 import { registerClassToMeteorMethods } from '../methods'
-import { CreateTestingRundownOption, NewShowStylesAPI, ShowStylesAPIMethods } from '../../lib/api/showStyles'
+import { CreateAdlibTestingRundownOption, NewShowStylesAPI, ShowStylesAPIMethods } from '../../lib/api/showStyles'
 import { Meteor } from 'meteor/meteor'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
@@ -214,7 +214,7 @@ export async function reorderShowStyleVariant(
 	})
 }
 
-async function getCreateTestingRundownOptions(): Promise<CreateTestingRundownOption[]> {
+async function getCreateAdlibTestingRundownOptions(): Promise<CreateAdlibTestingRundownOption[]> {
 	const [studios, showStyleBases, showStyleVariants] = await Promise.all([
 		Studios.findFetchAsync(
 			{},
@@ -242,23 +242,23 @@ async function getCreateTestingRundownOptions(): Promise<CreateTestingRundownOpt
 					_id: 1,
 					showStyleBaseId: 1,
 					name: 1,
-					canGenerateTestingRundown: 1,
+					canGenerateAdlibTestingRundown: 1,
 				},
 				sort: {
 					_rank: 1,
 				},
 			}
-		) as Promise<Pick<DBShowStyleVariant, '_id' | 'showStyleBaseId' | 'name' | 'canGenerateTestingRundown'>[]>,
+		) as Promise<Pick<DBShowStyleVariant, '_id' | 'showStyleBaseId' | 'name' | 'canGenerateAdlibTestingRundown'>[]>,
 	])
 
-	const options: CreateTestingRundownOption[] = []
+	const options: CreateAdlibTestingRundownOption[] = []
 
 	for (const studio of studios) {
 		for (const showStyleBase of showStyleBases) {
 			if (!studio.supportedShowStyleBase.includes(showStyleBase._id)) continue
 
 			for (const showStyleVariant of showStyleVariants) {
-				if (!showStyleVariant.canGenerateTestingRundown) continue
+				if (!showStyleVariant.canGenerateAdlibTestingRundown) continue
 				if (showStyleVariant.showStyleBaseId !== showStyleBase._id) continue
 
 				// Generate a descriptive label, but as minimal as possible
@@ -301,8 +301,8 @@ class ServerShowStylesAPI extends MethodContextAPI implements NewShowStylesAPI {
 		return reorderShowStyleVariant(this, showStyleVariantId, newRank)
 	}
 
-	async getCreateTestingRundownOptions() {
-		return getCreateTestingRundownOptions()
+	async getCreateAdlibTestingRundownOptions() {
+		return getCreateAdlibTestingRundownOptions()
 	}
 }
 registerClassToMeteorMethods(ShowStylesAPIMethods, ServerShowStylesAPI, false)

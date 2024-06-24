@@ -329,7 +329,7 @@ export interface NewUserActionAPI extends MethodContext {
 		rundownId: RundownId
 	): Promise<ClientAPI.ClientResponse<void>>
 
-	createTestingRundownForShowStyleVariant(
+	createAdlibTestingRundownForShowStyleVariant(
 		userEvent: string,
 		eventTime: Time,
 		studioId: StudioId,
@@ -416,7 +416,7 @@ export enum UserActionAPIMethods {
 
 	'activateAdlibTestingMode' = 'userAction.activateAdlibTestingMode',
 
-	'createTestingRundownForShowStyleVariant' = 'userAction.createTestingRundownForShowStyleVariant',
+	'createAdlibTestingRundownForShowStyleVariant' = 'userAction.createAdlibTestingRundownForShowStyleVariant',
 }
 
 export interface ReloadRundownPlaylistResponse {

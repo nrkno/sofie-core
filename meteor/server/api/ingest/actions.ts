@@ -30,7 +30,7 @@ export namespace IngestActions {
 				return TriggerReloadDataResponse.COMPLETED
 			}
 			case 'testing': {
-				await runIngestOperation(rundown.studioId, IngestJobs.CreateTestingRundownForShowStyleVariant, {
+				await runIngestOperation(rundown.studioId, IngestJobs.CreateAdlibTestingRundownForShowStyleVariant, {
 					showStyleVariantId: rundown.showStyleVariantId,
 				})
 

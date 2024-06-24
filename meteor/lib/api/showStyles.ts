@@ -11,7 +11,7 @@ export interface NewShowStylesAPI {
 	removeShowStyleVariant(showStyleVariantId: ShowStyleVariantId): Promise<void>
 	reorderShowStyleVariant(showStyleVariantId: ShowStyleVariantId, newRank: number): Promise<void>
 
-	getCreateTestingRundownOptions(): Promise<CreateTestingRundownOption[]>
+	getCreateAdlibTestingRundownOptions(): Promise<CreateAdlibTestingRundownOption[]>
 }
 
 export enum ShowStylesAPIMethods {
@@ -23,7 +23,7 @@ export enum ShowStylesAPIMethods {
 	'removeShowStyleVariant' = 'showstyles.removeShowStyleVariant',
 	'reorderShowStyleVariant' = 'showstyles.reorderShowStyleVariant',
 
-	getCreateTestingRundownOptions = 'showstyles.getCreateTestingRundownOptions',
+	getCreateAdlibTestingRundownOptions = 'showstyles.getCreateAdlibTestingRundownOptions',
 }
 
 /**
@@ -46,7 +46,7 @@ export interface UIShowStyleBase {
 	sourceLayers: SourceLayers
 }
 
-export interface CreateTestingRundownOption {
+export interface CreateAdlibTestingRundownOption {
 	studioId: StudioId
 	showStyleVariantId: ShowStyleVariantId
 

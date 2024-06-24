@@ -88,7 +88,7 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 		ingestSegment: IngestSegment
 	) => BlueprintResultSegment | Promise<BlueprintResultSegment>
 
-	generateTestingRundown?: (
+	generateAdlibTestingIngestRundown?: (
 		context: IShowStyleUserContext,
 		showStyleVariant: IBlueprintShowStyleVariant
 		// TODO - user defined options/values?

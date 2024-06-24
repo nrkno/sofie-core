@@ -39,7 +39,7 @@ import {
 	handleBucketRemoveAdlibPiece,
 } from '../../ingest/bucket/bucketAdlibs'
 import { handleBucketItemImport, handleBucketItemRegenerate } from '../../ingest/bucket/import'
-import { handleCreateTestingRundownForShowStyleVariant } from '../../ingest/createTestingRundown'
+import { handleCreateAdlibTestingRundownForShowStyleVariant } from '../../ingest/createAdlibTestingRundown'
 
 type ExecutableFunction<T extends keyof IngestJobFunc> = (
 	context: JobContext,
@@ -89,5 +89,5 @@ export const ingestJobHandlers: IngestJobHandlers = {
 	[IngestJobs.BucketRemoveAdlibAction]: handleBucketRemoveAdlibAction,
 	[IngestJobs.BucketEmpty]: handleBucketEmpty,
 
-	[IngestJobs.CreateTestingRundownForShowStyleVariant]: handleCreateTestingRundownForShowStyleVariant,
+	[IngestJobs.CreateAdlibTestingRundownForShowStyleVariant]: handleCreateAdlibTestingRundownForShowStyleVariant,
 }

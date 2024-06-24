@@ -1222,13 +1222,13 @@ class ServerUserActionAPI
 		)
 	}
 
-	async createTestingRundownForShowStyleVariant(
+	async createAdlibTestingRundownForShowStyleVariant(
 		userEvent: string,
 		eventTime: number,
 		studioId: StudioId,
 		showStyleVariantId: ShowStyleVariantId
 	) {
-		const jobName = IngestJobs.CreateTestingRundownForShowStyleVariant
+		const jobName = IngestJobs.CreateAdlibTestingRundownForShowStyleVariant
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
@@ -1240,7 +1240,7 @@ class ServerUserActionAPI
 				check(showStyleVariantId, String)
 
 				// TODO - checkAccessToStudio?
-				return runIngestOperation(studioId, IngestJobs.CreateTestingRundownForShowStyleVariant, {
+				return runIngestOperation(studioId, IngestJobs.CreateAdlibTestingRundownForShowStyleVariant, {
 					showStyleVariantId,
 				})
 			}

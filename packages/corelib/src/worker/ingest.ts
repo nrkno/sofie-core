@@ -130,7 +130,7 @@ export enum IngestJobs {
 	/**
 	 * Create a testing rundown for the specified ShowStyleVariant
 	 */
-	CreateTestingRundownForShowStyleVariant = 'createTestingRundownForShowStyleVariant',
+	CreateAdlibTestingRundownForShowStyleVariant = 'createAdlibTestingRundownForShowStyleVariant',
 }
 
 export interface IngestPropsBase {
@@ -265,7 +265,7 @@ export interface BucketEmptyProps {
 	bucketId: BucketId
 }
 
-export interface CreateTestingRundownForShowStyleVariantProps {
+export interface CreateAdlibTestingRundownForShowStyleVariantProps {
 	showStyleVariantId: ShowStyleVariantId
 }
 
@@ -312,8 +312,8 @@ export type IngestJobFunc = {
 	[IngestJobs.BucketRemoveAdlibAction]: (data: BucketRemoveAdlibActionProps) => void
 	[IngestJobs.BucketEmpty]: (data: BucketEmptyProps) => void
 
-	[IngestJobs.CreateTestingRundownForShowStyleVariant]: (
-		data: CreateTestingRundownForShowStyleVariantProps
+	[IngestJobs.CreateAdlibTestingRundownForShowStyleVariant]: (
+		data: CreateAdlibTestingRundownForShowStyleVariantProps
 	) => RundownId
 }
 

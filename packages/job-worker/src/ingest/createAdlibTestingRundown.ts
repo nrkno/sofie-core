@@ -1,5 +1,5 @@
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
-import type { CreateTestingRundownForShowStyleVariantProps } from '@sofie-automation/corelib/dist/worker/ingest'
+import type { CreateAdlibTestingRundownForShowStyleVariantProps } from '@sofie-automation/corelib/dist/worker/ingest'
 import type { JobContext } from '../jobs'
 import type { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { convertShowStyleVariantToBlueprints } from '../blueprints/context/lib'
@@ -13,15 +13,16 @@ import type {
 } from '@sofie-automation/blueprints-integration'
 import { logger } from '../logging'
 
-export async function handleCreateTestingRundownForShowStyleVariant(
+export async function handleCreateAdlibTestingRundownForShowStyleVariant(
 	context: JobContext,
-	data: CreateTestingRundownForShowStyleVariantProps
+	data: CreateAdlibTestingRundownForShowStyleVariantProps
 ): Promise<RundownId> {
 	const showStyleVariant = await context.getShowStyleVariant(data.showStyleVariantId)
 	const showStyleCompound = await context.getShowStyleCompound(showStyleVariant._id)
 	const showStyleBlueprint = await context.getShowStyleBlueprint(showStyleCompound._id)
 
-	const generateTestingRundown = showStyleBlueprint.blueprint.generateTestingRundown || fallbackBlueprintMethod
+	const generateAdlibTestingIngestRundown =
+		showStyleBlueprint.blueprint.generateAdlibTestingIngestRundown || fallbackBlueprintMethod
 	const blueprintContext = new ShowStyleUserContext(
 		{
 			name: `Create Testing Rundown`,
@@ -35,10 +36,10 @@ export async function handleCreateTestingRundownForShowStyleVariant(
 
 	const ingestRundown = await Promise.resolve()
 		.then(async () =>
-			generateTestingRundown(blueprintContext, convertShowStyleVariantToBlueprints(showStyleVariant))
+			generateAdlibTestingIngestRundown(blueprintContext, convertShowStyleVariantToBlueprints(showStyleVariant))
 		)
 		.catch(async (e) => {
-			throw UserError.from(e, UserErrorMessage.TestingRundownsGenerationFailed, { message: e.toString() })
+			throw UserError.from(e, UserErrorMessage.AdlibTestingRundownsGenerationFailed, { message: e.toString() })
 		})
 
 	// Prefix the externalId to avoid conflicts with real rundowns, and ensure it has a sensible value
