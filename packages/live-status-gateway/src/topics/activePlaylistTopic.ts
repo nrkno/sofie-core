@@ -153,9 +153,7 @@ export class ActivePlaylistTopic
 					publicData: undefined,
 			  })
 
-		for (const subscriber of subscribers) {
-			this.sendMessage(subscriber, message)
-		}
+		this.sendMessage(subscribers, message)
 	}
 
 	private isDataInconsistent() {

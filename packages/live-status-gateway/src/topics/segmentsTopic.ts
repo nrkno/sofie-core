@@ -75,9 +75,7 @@ export class SegmentsTopic
 			}),
 		}
 
-		for (const subscriber of subscribers) {
-			this.sendMessage(subscriber, segmentsStatus)
-		}
+		this.sendMessage(subscribers, segmentsStatus)
 	}
 
 	async update(source: string, data: DBRundownPlaylist | DBSegment[] | DBPart[] | undefined): Promise<void> {
