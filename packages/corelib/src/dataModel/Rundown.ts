@@ -94,8 +94,8 @@ export interface RundownSourceNrcs {
 	type: 'nrcs'
 	/** The peripheral device the rundown originates from */
 	peripheralDeviceId: PeripheralDeviceId
-	/** Name (user-facing) of the external NCS this rundown came from */
-	nrcsName: string
+	/** Name (user-facing) of the external NRCS this rundown came from, if known */
+	nrcsName: string | undefined
 }
 export interface RundownSourceSnapshot {
 	type: 'snapshot'
@@ -107,7 +107,7 @@ export interface RundownSourceHttp {
 }
 
 export function getRundownNrcsName(rundown: ReadonlyDeep<Pick<DBRundown, 'source'>> | undefined): string {
-	if (rundown?.source?.type === 'nrcs') {
+	if (rundown?.source?.type === 'nrcs' && rundown.source.nrcsName) {
 		return rundown.source.nrcsName
 	} else {
 		return 'NRCS'

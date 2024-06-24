@@ -59,7 +59,7 @@ function createRundownSource(peripheralDevice: PeripheralDevice): RundownSource 
 	return {
 		type: 'nrcs',
 		peripheralDeviceId: peripheralDevice._id,
-		nrcsName: peripheralDevice.nrcsName || 'NRCS',
+		nrcsName: peripheralDevice.nrcsName,
 	}
 }
 

@@ -49,7 +49,7 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 					newSource = {
 						type: 'nrcs',
 						peripheralDeviceId: oldPartialObj.peripheralDeviceId,
-						nrcsName: oldPartialObj.externalNRCSName || 'NRCS',
+						nrcsName: oldPartialObj.externalNRCSName,
 					}
 				} else if (oldPartialObj.restoredFromSnapshotId) {
 					newSource = {

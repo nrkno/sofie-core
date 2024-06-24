@@ -1,11 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { getHash, getCurrentTime, protectString } from '../../../lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import {
-	PeripheralDevice,
-	PeripheralDeviceCategory,
-	getExternalNRCSName,
-} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import { PeripheralDevice, PeripheralDeviceCategory } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { Rundown, RundownSourceNrcs } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { logger } from '../../logging'
 import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
@@ -151,6 +147,6 @@ export function generateRundownSource(peripheralDevice: PeripheralDevice): Rundo
 	return {
 		type: 'nrcs',
 		peripheralDeviceId: peripheralDevice._id,
-		nrcsName: getExternalNRCSName(peripheralDevice),
+		nrcsName: peripheralDevice.category === PeripheralDeviceCategory.INGEST ? peripheralDevice.nrcsName : undefined,
 	}
 }
