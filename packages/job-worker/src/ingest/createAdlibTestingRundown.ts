@@ -45,7 +45,9 @@ export async function handleCreateAdlibTestingRundownForShowStyleVariant(
 	// Prefix the externalId to avoid conflicts with real rundowns, and ensure it has a sensible value
 	ingestRundown.externalId = `testing:${ingestRundown.externalId || showStyleVariant._id}`
 
-	logger.info(`Creating testing rundown "${ingestRundown.name}" for showStyleVariant "${showStyleVariant.name}"`)
+	logger.info(
+		`Creating adlib testing rundown "${ingestRundown.name}" for showStyleVariant "${showStyleVariant.name}"`
+	)
 
 	return handleUpdatedRundown(context, {
 		rundownExternalId: ingestRundown.externalId,

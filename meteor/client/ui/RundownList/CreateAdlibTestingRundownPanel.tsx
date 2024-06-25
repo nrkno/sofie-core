@@ -29,7 +29,7 @@ export const CreateAdlibTestingRundownPanel = memo(function CreateAdlibTestingRu
 	}, [])
 
 	const doCreateAdlibTestingRundown = (e: React.MouseEvent, option: CreateAdlibTestingRundownOption) => {
-		doUserAction(t, e, UserAction.CREATE_TESTING_RUNDOWN, (e, ts) =>
+		doUserAction(t, e, UserAction.CREATE_ADLIB_TESTING_RUNDOWN, (e, ts) =>
 			MeteorCall.userAction.createAdlibTestingRundownForShowStyleVariant(
 				e,
 				ts,

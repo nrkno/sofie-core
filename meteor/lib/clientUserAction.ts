@@ -114,8 +114,8 @@ function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
 			return t('Refreshing debug states')
 		case UserAction.ACTIVATE_ADLIB_TESTING:
 			return t('Rehearsal Mode')
-		case UserAction.CREATE_TESTING_RUNDOWN:
-			return t('Creating Testing Rundown')
+		case UserAction.CREATE_ADLIB_TESTING_RUNDOWN:
+			return t('Creating Adlib Testing Rundown')
 		default:
 			assertNever(userAction)
 	}
