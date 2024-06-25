@@ -43,11 +43,14 @@ import {
 	RundownPlaylistId,
 	SegmentId,
 	ShowStyleBaseId,
+	ShowStyleVariantId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { IngestDataCache, Parts, Pieces, Rundowns } from '../collections'
 import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 import { verifyHashedToken } from './singleUseTokens'
+import { runIngestOperation } from './ingest/lib'
+import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 
 async function pieceSetInOutPoints(
 	access: VerifiedRundownPlaylistContentAccess,
@@ -1215,6 +1218,31 @@ class ServerUserActionAPI
 			{
 				playlistId: playlistId,
 				rundownId: rundownId,
+			}
+		)
+	}
+
+	async createAdlibTestingRundownForShowStyleVariant(
+		userEvent: string,
+		eventTime: number,
+		studioId: StudioId,
+		showStyleVariantId: ShowStyleVariantId
+	) {
+		const jobName = IngestJobs.CreateAdlibTestingRundownForShowStyleVariant
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			eventTime,
+			`worker.ingest.${jobName}`,
+			[showStyleVariantId],
+			async (_credentials) => {
+				check(studioId, String)
+				check(showStyleVariantId, String)
+
+				// TODO - checkAccessToStudio?
+				return runIngestOperation(studioId, IngestJobs.CreateAdlibTestingRundownForShowStyleVariant, {
+					showStyleVariantId,
+				})
 			}
 		)
 	}

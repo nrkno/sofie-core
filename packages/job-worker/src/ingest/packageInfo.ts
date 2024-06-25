@@ -44,7 +44,7 @@ export async function handleUpdatedPackageInfoForRundown(
 		return
 	}
 
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {

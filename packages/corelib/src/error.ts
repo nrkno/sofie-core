@@ -58,6 +58,8 @@ export enum UserErrorMessage {
 	AdlibTestingNotAllowed = 42,
 	AdlibTestingAlreadyActive = 43,
 	BucketNotFound = 44,
+	AdlibTestingRundownsNotSupported = 45,
+	AdlibTestingRundownsGenerationFailed = 46,
 }
 
 const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
@@ -114,6 +116,8 @@ const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
 	[UserErrorMessage.AdlibTestingNotAllowed]: t(`Rehearsal mode is not allowed`),
 	[UserErrorMessage.AdlibTestingAlreadyActive]: t(`Rehearsal mode is already active`),
 	[UserErrorMessage.BucketNotFound]: t(`Bucket not found!`),
+	[UserErrorMessage.AdlibTestingRundownsNotSupported]: t(`Adlib rundowns are not supported for this ShowStyle!`),
+	[UserErrorMessage.AdlibTestingRundownsGenerationFailed]: t(`Failed to generate adlib rundown! {{message}}`),
 }
 
 export interface UserErrorObj {

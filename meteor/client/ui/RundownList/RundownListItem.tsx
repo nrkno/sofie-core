@@ -120,7 +120,10 @@ export function RundownListItem({
 			showStyleName={showStyleLabel}
 			showStyleBaseURL={userCanConfigure ? getShowStyleBaseLink(rundown.showStyleBaseId) : undefined}
 			confirmDeleteRundownHandler={
-				(rundown.orphaned && getAllowStudio()) || userCanConfigure || getAllowService()
+				(getAllowStudio() &&
+					(rundown.orphaned || rundown.source.type === 'testing' || rundown.source.type === 'snapshot')) ||
+				userCanConfigure ||
+				getAllowService()
 					? () => confirmDeleteRundown(rundown, t)
 					: undefined
 			}

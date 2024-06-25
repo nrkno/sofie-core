@@ -126,6 +126,11 @@ export enum IngestJobs {
 	BucketRemoveAdlibPiece = 'bucketRemoveAdlibPiece',
 	BucketRemoveAdlibAction = 'bucketRemoveAdlibAction',
 	BucketEmpty = 'bucketEmpty',
+
+	/**
+	 * Create a testing rundown for the specified ShowStyleVariant
+	 */
+	CreateAdlibTestingRundownForShowStyleVariant = 'createAdlibTestingRundownForShowStyleVariant',
 }
 
 export interface IngestPropsBase {
@@ -260,13 +265,17 @@ export interface BucketEmptyProps {
 	bucketId: BucketId
 }
 
+export interface CreateAdlibTestingRundownForShowStyleVariantProps {
+	showStyleVariantId: ShowStyleVariantId
+}
+
 /**
  * Set of valid functions, of form:
  * `id: (data) => return`
  */
 export type IngestJobFunc = {
 	[IngestJobs.RemoveRundown]: (data: IngestRemoveRundownProps) => void
-	[IngestJobs.UpdateRundown]: (data: IngestUpdateRundownProps) => void
+	[IngestJobs.UpdateRundown]: (data: IngestUpdateRundownProps) => RundownId
 	[IngestJobs.UpdateRundownMetaData]: (data: IngestUpdateRundownMetaDataProps) => void
 	[IngestJobs.RemoveSegment]: (data: IngestRemoveSegmentProps) => void
 	[IngestJobs.UpdateSegment]: (data: IngestUpdateSegmentProps) => void
@@ -302,6 +311,10 @@ export type IngestJobFunc = {
 	[IngestJobs.BucketRemoveAdlibPiece]: (data: BucketRemoveAdlibPieceProps) => void
 	[IngestJobs.BucketRemoveAdlibAction]: (data: BucketRemoveAdlibActionProps) => void
 	[IngestJobs.BucketEmpty]: (data: BucketEmptyProps) => void
+
+	[IngestJobs.CreateAdlibTestingRundownForShowStyleVariant]: (
+		data: CreateAdlibTestingRundownForShowStyleVariantProps
+	) => RundownId
 }
 
 // Future: there should probably be a queue per rundown or something. To be improved later

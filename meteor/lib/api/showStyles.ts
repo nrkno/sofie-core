@@ -1,4 +1,4 @@
-import { ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { HotkeyDefinition, OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 
@@ -10,6 +10,8 @@ export interface NewShowStylesAPI {
 	removeShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void>
 	removeShowStyleVariant(showStyleVariantId: ShowStyleVariantId): Promise<void>
 	reorderShowStyleVariant(showStyleVariantId: ShowStyleVariantId, newRank: number): Promise<void>
+
+	getCreateAdlibTestingRundownOptions(): Promise<CreateAdlibTestingRundownOption[]>
 }
 
 export enum ShowStylesAPIMethods {
@@ -20,6 +22,8 @@ export enum ShowStylesAPIMethods {
 	'removeShowStyleBase' = 'showstyles.removeShowStyleBase',
 	'removeShowStyleVariant' = 'showstyles.removeShowStyleVariant',
 	'reorderShowStyleVariant' = 'showstyles.reorderShowStyleVariant',
+
+	getCreateAdlibTestingRundownOptions = 'showstyles.getCreateAdlibTestingRundownOptions',
 }
 
 /**
@@ -40,4 +44,11 @@ export interface UIShowStyleBase {
 	outputLayers: OutputLayers
 	/** "Layers" in the GUI */
 	sourceLayers: SourceLayers
+}
+
+export interface CreateAdlibTestingRundownOption {
+	studioId: StudioId
+	showStyleVariantId: ShowStyleVariantId
+
+	label: string
 }

@@ -22,6 +22,7 @@ import {
 	RundownPlaylistId,
 	SegmentId,
 	ShowStyleBaseId,
+	ShowStyleVariantId,
 	SnapshotId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -327,6 +328,13 @@ export interface NewUserActionAPI extends MethodContext {
 		playlistId: RundownPlaylistId,
 		rundownId: RundownId
 	): Promise<ClientAPI.ClientResponse<void>>
+
+	createAdlibTestingRundownForShowStyleVariant(
+		userEvent: string,
+		eventTime: Time,
+		studioId: StudioId,
+		showStyleVariantId: ShowStyleVariantId
+	): Promise<ClientAPI.ClientResponse<RundownId>>
 }
 
 export enum UserActionAPIMethods {
@@ -407,6 +415,8 @@ export enum UserActionAPIMethods {
 	'disablePeripheralSubDevice' = 'userAction.system.disablePeripheralSubDevice',
 
 	'activateAdlibTestingMode' = 'userAction.activateAdlibTestingMode',
+
+	'createAdlibTestingRundownForShowStyleVariant' = 'userAction.createAdlibTestingRundownForShowStyleVariant',
 }
 
 export interface ReloadRundownPlaylistResponse {

@@ -3,7 +3,7 @@ import * as React from 'react'
 import { MeteorPubSub } from '../../lib/api/pubsub'
 import { GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { getAllowConfigure, getHelpMode } from '../lib/localStorage'
+import { getAllowConfigure, getAllowStudio, getHelpMode } from '../lib/localStorage'
 import { literal, unprotectString } from '../../lib/lib'
 import { useSubscription, useTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../lib/Spinner'
@@ -20,6 +20,7 @@ import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlay
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { CreateAdlibTestingRundownPanel } from './RundownList/CreateAdlibTestingRundownPanel'
 
 export enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',
@@ -184,6 +185,8 @@ export function RundownList(): JSX.Element {
 					<Spinner />
 				)}
 			</section>
+
+			{getAllowStudio() && <CreateAdlibTestingRundownPanel />}
 
 			<RundownListFooter />
 		</>

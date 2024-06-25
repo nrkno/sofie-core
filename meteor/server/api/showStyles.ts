@@ -1,6 +1,6 @@
 import { check } from '../../lib/check'
 import { registerClassToMeteorMethods } from '../methods'
-import { NewShowStylesAPI, ShowStylesAPIMethods } from '../../lib/api/showStyles'
+import { CreateAdlibTestingRundownOption, NewShowStylesAPI, ShowStylesAPIMethods } from '../../lib/api/showStyles'
 import { Meteor } from 'meteor/meteor'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
@@ -17,7 +17,8 @@ import {
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
 import { OrganizationId, ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownLayouts, ShowStyleBases, ShowStyleVariants } from '../collections'
+import { RundownLayouts, ShowStyleBases, ShowStyleVariants, Studios } from '../collections'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 
 export interface ShowStyleCompound extends Omit<DBShowStyleBase, 'blueprintConfigWithOverrides'> {
 	showStyleVariantId: ShowStyleVariantId
@@ -213,6 +214,70 @@ export async function reorderShowStyleVariant(
 	})
 }
 
+async function getCreateAdlibTestingRundownOptions(): Promise<CreateAdlibTestingRundownOption[]> {
+	const [studios, showStyleBases, showStyleVariants] = await Promise.all([
+		Studios.findFetchAsync(
+			{},
+			{
+				projection: {
+					_id: 1,
+					name: 1,
+					supportedShowStyleBase: 1,
+				},
+			}
+		) as Promise<Pick<DBStudio, '_id' | 'name' | 'supportedShowStyleBase'>[]>,
+		ShowStyleBases.findFetchAsync(
+			{},
+			{
+				projection: {
+					_id: 1,
+					name: 1,
+				},
+			}
+		) as Promise<Pick<DBShowStyleBase, '_id' | 'name'>[]>,
+		ShowStyleVariants.findFetchAsync(
+			{},
+			{
+				projection: {
+					_id: 1,
+					showStyleBaseId: 1,
+					name: 1,
+					canGenerateAdlibTestingRundown: 1,
+				},
+				sort: {
+					_rank: 1,
+				},
+			}
+		) as Promise<Pick<DBShowStyleVariant, '_id' | 'showStyleBaseId' | 'name' | 'canGenerateAdlibTestingRundown'>[]>,
+	])
+
+	const options: CreateAdlibTestingRundownOption[] = []
+
+	for (const studio of studios) {
+		for (const showStyleBase of showStyleBases) {
+			if (!studio.supportedShowStyleBase.includes(showStyleBase._id)) continue
+
+			for (const showStyleVariant of showStyleVariants) {
+				if (!showStyleVariant.canGenerateAdlibTestingRundown) continue
+				if (showStyleVariant.showStyleBaseId !== showStyleBase._id) continue
+
+				// Generate a descriptive label, but as minimal as possible
+				let label = showStyleVariant.name
+				if (showStyleBases.length > 1) label = `${showStyleBase.name} - ${label}`
+				if (studios.length > 1) label = `${label} (${studio.name})`
+
+				options.push({
+					studioId: studio._id,
+					showStyleVariantId: showStyleVariant._id,
+					label,
+				})
+			}
+		}
+	}
+
+	return options
+}
+
 class ServerShowStylesAPI extends MethodContextAPI implements NewShowStylesAPI {
 	async insertShowStyleBase() {
 		return insertShowStyleBase(this)
@@ -234,6 +299,10 @@ class ServerShowStylesAPI extends MethodContextAPI implements NewShowStylesAPI {
 	}
 	async reorderShowStyleVariant(showStyleVariantId: ShowStyleVariantId, newRank: number) {
 		return reorderShowStyleVariant(this, showStyleVariantId, newRank)
+	}
+
+	async getCreateAdlibTestingRundownOptions() {
+		return getCreateAdlibTestingRundownOptions()
 	}
 }
 registerClassToMeteorMethods(ShowStylesAPIMethods, ServerShowStylesAPI, false)
