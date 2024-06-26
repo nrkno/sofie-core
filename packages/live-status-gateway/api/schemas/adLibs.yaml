@@ -30,7 +30,7 @@ $defs:
         adLibs:
           $ref: '#/$defs/adLib/examples'
         globalAdLibs:
-          $ref: '#/$defs/adLib/examples'
+          $ref: '#/$defs/adLibBase/examples'
   adLib:
     allOf:
       - $ref: '#/$defs/adLibBase'
@@ -41,6 +41,18 @@ $defs:
           partId:
             description: Unique id of the part this adLib belongs to
         required: [segmentId, partId]
+    examples:
+    - id: 'C6K_yIMuGFUk8X_L9A9_jRT6aq4_'
+      name: Music video clip
+      sourceLayer: Video Clip
+      actionType:
+        - name: pvw
+          label: Preview
+      tags: ['music_video']
+      segmentId: 'n1mOVd5_K5tt4sfk6HYfTuwumGQ_'
+      partId: 'H5CBGYjThrMSmaYvRaa5FVKJIzk_'
+      publicData:
+        fileName: MV000123.mxf
   globalAdLib:
     $ref: '#/$defs/adLibBase'
   adLibBase:
