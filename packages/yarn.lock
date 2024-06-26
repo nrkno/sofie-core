@@ -4510,17 +4510,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mos-connection/model@npm:4.1.1-nightly-master-20240430-072032-ffb8bf6.0":
+"@mos-connection/model@npm:4.1.1-nightly-master-20240430-072032-ffb8bf6.0, @mos-connection/model@npm:^4.1.1-nightly-master-20240430-072032-ffb8bf6.0":
   version: 4.1.1-nightly-master-20240430-072032-ffb8bf6.0
   resolution: "@mos-connection/model@npm:4.1.1-nightly-master-20240430-072032-ffb8bf6.0"
   checksum: 07bd3ffc94a8c140d994de445c34158bb9f5f8950f6cea34d59657fe4da1f0f6b5d0c2c7ef1b2ad902b43c846485ab10cb9f19d707233b875fe739d731151bdc
-  languageName: node
-  linkType: hard
-
-"@mos-connection/model@npm:^4.1.0":
-  version: 4.1.0
-  resolution: "@mos-connection/model@npm:4.1.0"
-  checksum: b8e1f83d87c342959165956c19b4a8d03f2c7ae0b1caf02cd00451deb977c0c5ea4ad5b9c8915ba0cea199ce071efbbcfe2329b5e737f89f1725820740d12f60
   languageName: node
   linkType: hard
 
@@ -5874,7 +5867,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@sofie-automation/shared-lib@workspace:shared-lib"
   dependencies:
-    "@mos-connection/model": ^4.1.0
+    "@mos-connection/model": ^4.1.1-nightly-master-20240430-072032-ffb8bf6.0
     timeline-state-resolver-types: 9.1.0-nightly-release51-20240228-132329-b7ceb6950.0
     tslib: ^2.6.2
     type-fest: ^3.13.1
