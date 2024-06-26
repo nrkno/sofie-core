@@ -409,11 +409,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@asyncapi/generator-react-sdk@npm:^1.0.11, @asyncapi/generator-react-sdk@npm:^1.0.9":
-  version: 1.0.11
-  resolution: "@asyncapi/generator-react-sdk@npm:1.0.11"
+"@asyncapi/generator-react-sdk@npm:^1.0.18, @asyncapi/generator-react-sdk@npm:^1.0.20":
+  version: 1.0.20
+  resolution: "@asyncapi/generator-react-sdk@npm:1.0.20"
   dependencies:
-    "@asyncapi/parser": ^3.0.7
+    "@asyncapi/parser": ^3.1.0
     "@babel/core": 7.12.9
     "@babel/preset-env": ^7.12.7
     "@babel/preset-react": ^7.12.7
@@ -423,16 +423,16 @@ __metadata:
     react: ^17.0.1
     rollup: ^2.60.1
     source-map-support: ^0.5.19
-  checksum: b7201b8a95effa259f061fa45a7750a7527afb3969c2d23089241814ad4fcf925b8aa0b91057c2da793532f89156c880378e0d32229bcd1c7fdbc4f25544dabc
+  checksum: 59473d68935b939027c09da821fac794034020880dc3451c1486c63a6c486e7807abc604d97271dfcf15d4d0f060f8f119e5877c6b81b143661af77f8ad3f545
   languageName: node
   linkType: hard
 
-"@asyncapi/generator@npm:^1.17.7":
-  version: 1.17.7
-  resolution: "@asyncapi/generator@npm:1.17.7"
+"@asyncapi/generator@npm:^1.17.25":
+  version: 1.17.25
+  resolution: "@asyncapi/generator@npm:1.17.25"
   dependencies:
-    "@asyncapi/generator-react-sdk": ^1.0.11
-    "@asyncapi/parser": ^3.0.5
+    "@asyncapi/generator-react-sdk": ^1.0.18
+    "@asyncapi/parser": ^3.0.14
     "@npmcli/arborist": 5.6.3
     "@smoya/multi-parser": ^5.0.0
     ajv: ^8.12.0
@@ -458,33 +458,33 @@ __metadata:
   bin:
     ag: cli.js
     asyncapi-generator: cli.js
-  checksum: 4e916d409a2c431848481b29a77d5c5c00489712bef19b24ad0d00df94490596212f0e8e700b2a819d5381dc3ed913ab13efff2d713ed565c45bd58a738fceeb
+  checksum: 8ae96b0b59d4b13fe0e2493ddd3ee2738284e0d19eb15b8b05e64be7b110871c888cf979e357b234b2b4770eae9438d30fde8425e142acc9ea6e81b3e75bfaea
   languageName: node
   linkType: hard
 
-"@asyncapi/html-template@npm:^2.1.7":
-  version: 2.1.7
-  resolution: "@asyncapi/html-template@npm:2.1.7"
+"@asyncapi/html-template@npm:^2.3.9":
+  version: 2.3.9
+  resolution: "@asyncapi/html-template@npm:2.3.9"
   dependencies:
-    "@asyncapi/generator-react-sdk": ^1.0.9
-    "@asyncapi/parser": ^3.0.5
+    "@asyncapi/generator-react-sdk": ^1.0.20
+    "@asyncapi/parser": ^3.1.0
     "@asyncapi/react-component": ^1.2.13
     highlight.js: 10.7.3
     puppeteer: ^14.1.0
     react-dom: ^17.0.2
     rimraf: ^3.0.2
     sync-fetch: ^0.5.2
-  checksum: b3cda2c6f4a9a4146f85f8a3f6f7a72720453daa5e642844433965b81fadb94d77139b4ce9291ab91c90f4859e0195f0818b6f6e281745a5dc3fbb16eb130c4c
+  checksum: b48a51027decb9e1ebbeaafebbc2539f7b91c2fca0b241201d7cbd7bb10cd44206ecaa756001a252599e631ae80ef7e64f4617a7fba057684db0a0547e0033f2
   languageName: node
   linkType: hard
 
-"@asyncapi/nodejs-ws-template@npm:^0.9.33":
-  version: 0.9.33
-  resolution: "@asyncapi/nodejs-ws-template@npm:0.9.33"
+"@asyncapi/nodejs-ws-template@npm:^0.9.36":
+  version: 0.9.36
+  resolution: "@asyncapi/nodejs-ws-template@npm:0.9.36"
   dependencies:
     "@asyncapi/generator-filters": ^2.1.0
     "@asyncapi/generator-hooks": ^0.1.0
-  checksum: 847b7249223ce7733191b0ec3cd1f462e69ed55badcf32a1c6cc3a0a343864ee7f311529e4e4ce7dd0b783772ea5ab83f5e6c1a90c7c67ac413187a40703ba6c
+  checksum: 7bcc54c6b3066c5115ebd2fe5cac0328f52b4828e06dbf3cbbb05f3e9d10ab605de0f609ced4ac17f0d5ff18093a81c1051251f451d0e4a2378b768e01408b45
   languageName: node
   linkType: hard
 
@@ -501,7 +501,34 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@asyncapi/parser@npm:^3.0.5, @asyncapi/parser@npm:^3.0.7, parserapiv3@npm:@asyncapi/parser@^3.0.7":
+"@asyncapi/parser@npm:^3.0.14, @asyncapi/parser@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "@asyncapi/parser@npm:3.1.0"
+  dependencies:
+    "@asyncapi/specs": ^6.7.1
+    "@openapi-contrib/openapi-schema-to-json-schema": ~3.2.0
+    "@stoplight/json": ^3.20.2
+    "@stoplight/json-ref-readers": ^1.2.2
+    "@stoplight/json-ref-resolver": ^3.1.5
+    "@stoplight/spectral-core": ^1.16.1
+    "@stoplight/spectral-functions": ^1.7.2
+    "@stoplight/spectral-parsers": ^1.0.2
+    "@stoplight/spectral-ref-resolver": ^1.0.3
+    "@stoplight/types": ^13.12.0
+    "@types/json-schema": ^7.0.11
+    "@types/urijs": ^1.19.19
+    ajv: ^8.11.0
+    ajv-errors: ^3.0.0
+    ajv-formats: ^2.1.1
+    avsc: ^5.7.5
+    js-yaml: ^4.1.0
+    jsonpath-plus: ^7.2.0
+    node-fetch: 2.6.7
+  checksum: fcec3ecae6e4ceeed3814d7c0456b5189e5ba350a53c9cdacb7b9963637d42aba51606d2b9e4f924c64a624b4250dd2a6d457138a9742cc95280ce439f0f477d
+  languageName: node
+  linkType: hard
+
+"@asyncapi/parser@npm:^3.0.7, parserapiv3@npm:@asyncapi/parser@^3.0.7":
   version: 3.0.7
   resolution: "@asyncapi/parser@npm:3.0.7"
   dependencies:
@@ -586,6 +613,15 @@ __metadata:
   dependencies:
     "@types/json-schema": ^7.0.11
   checksum: 85c3719a9de8af1b0c5585e93be9967845a9c02fc3cc62dcce7f9ed5f31eb1bbab0b8488840da3a93da1e8e4dbb9a8e6a525b19fa6954f94c36b22971cab8788
+  languageName: node
+  linkType: hard
+
+"@asyncapi/specs@npm:^6.7.1":
+  version: 6.7.1
+  resolution: "@asyncapi/specs@npm:6.7.1"
+  dependencies:
+    "@types/json-schema": ^7.0.11
+  checksum: be09a276552f27fde349977e465555d961a6a27b369655c68ef31679bc921f4d492a438bb836160eec05ba78adfed9661e0a3ac39c739348f29036a8d62e64b7
   languageName: node
   linkType: hard
 
@@ -16645,9 +16681,9 @@ asn1@evs-broadcast/node-asn1:
   version: 0.0.0-use.local
   resolution: "live-status-gateway@workspace:live-status-gateway"
   dependencies:
-    "@asyncapi/generator": ^1.17.7
-    "@asyncapi/html-template": ^2.1.7
-    "@asyncapi/nodejs-ws-template": ^0.9.33
+    "@asyncapi/generator": ^1.17.25
+    "@asyncapi/html-template": ^2.3.9
+    "@asyncapi/nodejs-ws-template": ^0.9.36
     "@sofie-automation/blueprints-integration": 1.51.0-in-development
     "@sofie-automation/corelib": 1.51.0-in-development
     "@sofie-automation/server-core-integration": 1.51.0-in-development
