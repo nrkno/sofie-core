@@ -163,7 +163,7 @@ export async function handleRestorePlaylistSnapshot(
 
 	for (const rd of snapshot.rundowns) {
 		if (!rd.orphaned) {
-			rd.orphaned = RundownOrphanedReason.FROM_SNAPSHOT
+			rd.orphaned = RundownOrphanedReason.MANUAL
 		}
 
 		rd.playlistId = playlistId
