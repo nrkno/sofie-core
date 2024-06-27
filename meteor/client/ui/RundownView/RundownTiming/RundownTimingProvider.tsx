@@ -55,7 +55,6 @@ interface IRundownTimingProviderTrackedProps {
 	partInstances: Array<MinimalPartInstance>
 	partInstancesMap: Map<PartId, MinimalPartInstance>
 	pieces: Map<PartId, CalculateTimingsPiece[]>
-	segmentEntryPartInstances: MinimalPartInstance[]
 	segments: DBSegment[]
 	segmentsMap: Map<SegmentId, DBSegment>
 	partsInQuickLoop: Record<TimingId, boolean>
@@ -79,7 +78,6 @@ export const RundownTimingProvider = withTracker<
 			partInstances: [],
 			partInstancesMap: new Map(),
 			pieces: new Map(),
-			segmentEntryPartInstances: [],
 			segments: [],
 			segmentsMap: new Map(),
 			partsInQuickLoop: {},
@@ -87,13 +85,12 @@ export const RundownTimingProvider = withTracker<
 	}
 
 	const partInstancesMap = new Map<PartId, MinimalPartInstance>()
-	const segmentEntryPartInstances: MinimalPartInstance[] = []
 
 	const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)
-	const segments = RundownPlaylistCollectionUtil.getSegments(playlist)
+	const segments = RundownPlaylistClientUtil.getSegments(playlist)
 	const segmentsMap = new Map<SegmentId, DBSegment>(segments.map((segment) => [segment._id, segment]))
 	const unorderedParts = RundownPlaylistClientUtil.getUnorderedParts(playlist)
-	const activePartInstances = RundownPlaylistCollectionUtil.getActivePartInstances(playlist, undefined, {
+	const activePartInstances = RundownPlaylistClientUtil.getActivePartInstances(playlist, undefined, {
 		projection: {
 			_id: 1,
 			rundownId: 1,
@@ -120,7 +117,7 @@ export const RundownTimingProvider = withTracker<
 		>
 	>
 
-	const { currentPartInstance, previousPartInstance } = findCurrentAndPreviousPartInstance(
+	const { currentPartInstance } = findCurrentAndPreviousPartInstance(
 		activePartInstances,
 		playlist.currentPartInfo?.partInstanceId,
 		playlist.previousPartInfo?.partInstanceId
@@ -129,35 +126,12 @@ export const RundownTimingProvider = withTracker<
 	const currentRundown = currentPartInstance
 		? rundowns.find((r) => r._id === currentPartInstance.rundownId)
 		: rundowns[0]
-	// These are needed to retrieve the start time of a segment for calculating the remaining budget, in case the first partInstance was removed
-
-	let firstPartInstanceInCurrentSegmentPlay: MinimalPartInstance | undefined
-	let firstPartInstanceInCurrentSegmentPlayPartInstanceTakeCount = Number.POSITIVE_INFINITY
-	let firstPartInstanceInPreviousSegmentPlay: MinimalPartInstance | undefined
-	let firstPartInstanceInPreviousSegmentPlayPartInstanceTakeCount = Number.POSITIVE_INFINITY
 
 	let partInstances: MinimalPartInstance[] = []
 
 	const allPartIds: Set<PartId> = new Set()
 
 	for (const partInstance of activePartInstances) {
-		if (
-			currentPartInstance &&
-			partInstance.segmentPlayoutId === currentPartInstance.segmentPlayoutId &&
-			partInstance.takeCount < firstPartInstanceInCurrentSegmentPlayPartInstanceTakeCount
-		) {
-			firstPartInstanceInCurrentSegmentPlay = partInstance
-			firstPartInstanceInCurrentSegmentPlayPartInstanceTakeCount = partInstance.takeCount
-		}
-		if (
-			previousPartInstance &&
-			partInstance.segmentPlayoutId === previousPartInstance.segmentPlayoutId &&
-			partInstance.takeCount < firstPartInstanceInPreviousSegmentPlayPartInstanceTakeCount
-		) {
-			firstPartInstanceInPreviousSegmentPlay = partInstance
-			firstPartInstanceInPreviousSegmentPlayPartInstanceTakeCount = partInstance.takeCount
-		}
-
 		allPartIds.add(partInstance.part._id)
 	}
 
@@ -174,10 +148,7 @@ export const RundownTimingProvider = withTracker<
 
 	const partsInQuickLoop = findPartInstancesInQuickLoop(playlist, partInstances)
 
-	if (firstPartInstanceInCurrentSegmentPlay) segmentEntryPartInstances.push(firstPartInstanceInCurrentSegmentPlay)
-	if (firstPartInstanceInPreviousSegmentPlay) segmentEntryPartInstances.push(firstPartInstanceInPreviousSegmentPlay)
-
-	const pieces = RundownPlaylistCollectionUtil.getPiecesForParts(Array.from(allPartIds.values()))
+	const pieces = RundownPlaylistClientUtil.getPiecesForParts(Array.from(allPartIds.values()))
 
 	return {
 		rundowns,
@@ -185,7 +156,6 @@ export const RundownTimingProvider = withTracker<
 		partInstances,
 		partInstancesMap,
 		pieces,
-		segmentEntryPartInstances,
 		segments,
 		segmentsMap,
 		partsInQuickLoop,
@@ -318,16 +288,7 @@ export const RundownTimingProvider = withTracker<
 		}
 
 		updateDurations(now: number, isSynced: boolean) {
-			const {
-				playlist,
-				rundowns,
-				currentRundown,
-				partInstances,
-				partInstancesMap,
-				pieces,
-				segmentsMap,
-				segmentEntryPartInstances,
-			} = this.props
+			const { playlist, rundowns, currentRundown, partInstances, partInstancesMap, pieces, segmentsMap } = this.props
 			const updatedDurations = this.timingCalculator.updateDurations(
 				now,
 				isSynced,
@@ -339,7 +300,6 @@ export const RundownTimingProvider = withTracker<
 				pieces,
 				segmentsMap,
 				this.props.defaultDuration,
-				segmentEntryPartInstances,
 				this.props.partsInQuickLoop
 			)
 			if (!isSynced) {

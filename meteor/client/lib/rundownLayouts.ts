@@ -7,8 +7,9 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { getCurrentTime } from '../../lib/lib'
 import { invalidateAt } from './../../lib/invalidatingTime'
 import { memoizedIsolatedAutorun } from '../../lib/memoizedIsolatedAutorun'
-import { PartInstances, PieceInstances } from '../collections'
+import { PieceInstances } from '../collections'
 import { ReadonlyDeep } from 'type-fest'
+import { UIPartInstances } from '../ui/Collections'
 
 /**
  * If the conditions of the filter are met, activePieceInstance will include the first piece instance found that matches the filter, otherwise it will be undefined.
@@ -65,7 +66,7 @@ export function getUnfinishedPieceInstancesReactive(
 				const now = getCurrentTime()
 				let prospectivePieces: ReadonlyDeep<PieceInstance>[] = []
 
-				const partInstance = PartInstances.findOne(currentPartInstanceId)
+				const partInstance = UIPartInstances.findOne(currentPartInstanceId)
 
 				if (partInstance) {
 					prospectivePieces = PieceInstances.find({

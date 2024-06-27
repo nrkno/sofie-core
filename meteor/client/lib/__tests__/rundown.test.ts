@@ -48,7 +48,7 @@ describe('client/lib/rundown', () => {
 			if (!playlist) throw new Error('Rundown not found')
 
 			const { currentPartInstance, nextPartInstance } =
-				RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
+				RundownPlaylistClientUtil.getSelectedPartInstances(playlist)
 
 			const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)
 			const { parts, segments } = RundownPlaylistClientUtil.getSegmentsAndPartsSync(playlist)
@@ -92,7 +92,7 @@ describe('client/lib/rundown', () => {
 			if (!playlist) throw new Error('Playlist not found')
 
 			const { currentPartInstance, nextPartInstance } =
-				RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
+				RundownPlaylistClientUtil.getSelectedPartInstances(playlist)
 
 			const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)
 			const { parts, segments } = RundownPlaylistClientUtil.getSegmentsAndPartsSync(playlist)
@@ -165,7 +165,7 @@ describe('client/lib/rundown', () => {
 			if (!playlist) throw new Error('Playlist not found')
 
 			const { currentPartInstance, nextPartInstance } =
-				RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
+				RundownPlaylistClientUtil.getSelectedPartInstances(playlist)
 
 			const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)
 			const { parts, segments } = RundownPlaylistClientUtil.getSegmentsAndPartsSync(playlist)
@@ -364,7 +364,7 @@ describe('client/lib/rundown', () => {
 				playlist = RundownPlaylists.findOne(playlistId)
 				if (!playlist) throw new Error('Playlist not found')
 				const { currentPartInstance, nextPartInstance } =
-					RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
+					RundownPlaylistClientUtil.getSelectedPartInstances(playlist)
 
 				const resolvedSegment = RundownUtils.getResolvedSegment(
 					showStyleBase,

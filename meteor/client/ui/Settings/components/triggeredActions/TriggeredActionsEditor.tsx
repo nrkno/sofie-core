@@ -24,12 +24,12 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../../../../li
 import { Meteor } from 'meteor/meteor'
 import { doModalDialog } from '../../../../lib/ModalDialog'
 import { PartId, RundownId, ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PartInstances, RundownPlaylists, Rundowns, TriggeredActions } from '../../../../collections'
+import { RundownPlaylists, Rundowns, TriggeredActions } from '../../../../collections'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { SourceLayers, OutputLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { RundownPlaylistCollectionUtil } from '../../../../../lib/collections/rundownPlaylistUtil'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
-import { UIParts } from '../../../Collections'
+import { UIPartInstances, UIParts } from '../../../Collections'
 
 export interface PreviewContext {
 	rundownPlaylist: DBRundownPlaylist | null
@@ -192,7 +192,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 		null
 	)
 
-	useSubscription(CorelibPubSub.partInstances, rundown ? [rundown._id] : [], rundownPlaylist?.activationId ?? null)
+	useSubscription(MeteorPubSub.uiPartInstances, rundown ? [rundown._id] : [], rundownPlaylist?.activationId ?? null)
 	useSubscription(CorelibPubSub.parts, rundown ? [rundown._id] : [], null)
 
 	const previewContext = useTracker(
@@ -203,7 +203,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 			let thisNextSegmentPartIds: PartId[] = []
 			if (rundownPlaylist) {
 				if (rundownPlaylist.currentPartInfo) {
-					const currentPartInstance = PartInstances.findOne(rundownPlaylist.currentPartInfo.partInstanceId)
+					const currentPartInstance = UIPartInstances.findOne(rundownPlaylist.currentPartInfo.partInstanceId)
 					if (currentPartInstance) {
 						thisCurrentPart = currentPartInstance.part
 						thisCurrentSegmentPartIds = UIParts.find({
@@ -212,7 +212,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 					}
 				}
 				if (rundownPlaylist.nextPartInfo) {
-					const nextPartInstance = PartInstances.findOne(rundownPlaylist.nextPartInfo.partInstanceId)
+					const nextPartInstance = UIPartInstances.findOne(rundownPlaylist.nextPartInfo.partInstanceId)
 					if (nextPartInstance) {
 						thisNextPart = nextPartInstance.part
 						thisNextSegmentPartIds = UIParts.find({

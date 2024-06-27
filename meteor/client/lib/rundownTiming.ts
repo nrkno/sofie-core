@@ -68,7 +68,6 @@ export class RundownTimingCalculator {
 	private partDisplayDurationsNoPlayback: Record<TimingId, number> = {}
 	private displayDurationGroups: Record<string, number> = {}
 	private segmentBudgetDurations: Record<string, number> = {}
-	private segmentStartedPlayback: Record<string, number> = {}
 	private segmentAsPlayedDurations: Record<string, number> = {}
 	private breakProps: {
 		props: BreakProps | undefined
@@ -90,7 +89,6 @@ export class RundownTimingCalculator {
 	 * @param {CalculateTimingsPartInstance[]} partInstances
 	 * @param {Map<PartId, CalculateTimingsPartInstance>} partInstancesMap
 	 * @param {number} [defaultDuration]
-	 * @param {CalculateTimingsPartInstance[]} segmentEntryPartInstances
 	 * @return {*}  {RundownTimingContext}
 	 * @memberof RundownTimingCalculator
 	 */
@@ -106,13 +104,6 @@ export class RundownTimingCalculator {
 		segmentsMap: Map<SegmentId, DBSegment>,
 		/** Fallback duration for Parts that have no as-played duration of their own. */
 		defaultDuration: number = Settings.defaultDisplayDuration,
-		/** The first played-out PartInstance in the current playing segment and
-		 * optionally the first played-out PartInstance in the previously playing segment if the
-		 * previousPartInstance of the current RundownPlaylist is from a different Segment than
-		 * the currentPartInstance.
-		 *
-		 * This is being used for calculating Segment Duration Budget */
-		segmentEntryPartInstances: CalculateTimingsPartInstance[],
 		partsInQuickLoop: Record<TimingId, boolean>
 	): RundownTimingContext {
 		let totalRundownDuration = 0
@@ -135,7 +126,6 @@ export class RundownTimingCalculator {
 
 		Object.keys(this.displayDurationGroups).forEach((key) => delete this.displayDurationGroups[key])
 		Object.keys(this.segmentBudgetDurations).forEach((key) => delete this.segmentBudgetDurations[key])
-		Object.keys(this.segmentStartedPlayback).forEach((key) => delete this.segmentStartedPlayback[key])
 		Object.keys(this.segmentAsPlayedDurations).forEach((key) => delete this.segmentAsPlayedDurations[key])
 		this.untimedSegments.clear()
 		this.linearParts.length = 0
@@ -168,12 +158,6 @@ export class RundownTimingCalculator {
 						this.segmentBudgetDurations[unprotectString(origPart.segmentId)] = origPart.budgetDuration
 					}
 				}
-			})
-
-			segmentEntryPartInstances.forEach((partInstance) => {
-				if (partInstance.timings?.reportedStartedPlayback !== undefined)
-					this.segmentStartedPlayback[unprotectString(partInstance.segmentId)] =
-						partInstance.timings?.reportedStartedPlayback
 			})
 
 			partInstances.forEach((partInstance, itIndex) => {
@@ -303,7 +287,8 @@ export class RundownTimingCalculator {
 					partDisplayDuration = Math.max(partDisplayDurationNoPlayback, now - lastStartedPlayback)
 					this.partPlayed[partInstanceOrPartId] = now - lastStartedPlayback
 					const segmentStartedPlayback =
-						this.segmentStartedPlayback[unprotectString(partInstance.segmentId)] || lastStartedPlayback
+						playlist.segmentsStartedPlayback?.[unprotectString(partInstance.segmentId)] ??
+						lastStartedPlayback
 
 					// NOTE: displayDurationGroups are ignored here, when using budgetDuration
 					if (segmentUsesBudget) {
@@ -584,7 +569,7 @@ export class RundownTimingCalculator {
 				let valToAddToRundownAsPlayedDuration = 0
 				let valToAddToRundownRemainingDuration = 0
 				if (segment._id === liveSegmentId) {
-					const startedPlayback = this.segmentStartedPlayback[unprotectString(segment._id)]
+					const startedPlayback = playlist.segmentsStartedPlayback?.[unprotectString(segment._id)]
 					valToAddToRundownRemainingDuration = Math.max(
 						0,
 						segmentBudgetDuration - (startedPlayback ? now - startedPlayback : 0)
@@ -653,7 +638,6 @@ export class RundownTimingCalculator {
 			partExpectedDurations: this.partExpectedDurations,
 			partDisplayDurations: this.partDisplayDurations,
 			segmentBudgetDurations: this.segmentBudgetDurations,
-			segmentStartedPlayback: this.segmentStartedPlayback,
 			currentTime: now,
 			remainingTimeOnCurrentPart,
 			currentPartWillAutoNext,
@@ -747,8 +731,6 @@ export interface RundownTimingContext {
 	partExpectedDurations?: Record<string, number>
 	/** Budget durations of segments (sum of parts budget durations). */
 	segmentBudgetDurations?: Record<string, number>
-	/** Time when selected segments started playback. Contains only the current segment and the segment before, if we've just entered a new one */
-	segmentStartedPlayback?: Record<string, number>
 	/** Remaining time on current part */
 	remainingTimeOnCurrentPart?: number
 	/** Current part will autoNext */

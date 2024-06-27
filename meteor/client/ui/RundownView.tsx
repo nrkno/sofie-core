@@ -158,6 +158,7 @@ import { i18nTranslator } from './i18n'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { isEntirePlaylistLooping, isLoopRunning } from '../../lib/Rundown'
 import { useRundownAndShowStyleIdsForPlaylist } from './util/useRundownAndShowStyleIdsForPlaylist'
+import { RundownPlaylistClientUtil } from '../lib/rundownPlaylistUtil'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -1280,7 +1281,7 @@ export function RundownView(props: Readonly<IProps>): JSX.Element {
 	auxSubsReady.push(useSubscriptionIfEnabled(MeteorPubSub.uiParts, rundownIds.length > 0, playlistId))
 	auxSubsReady.push(
 		useSubscriptionIfEnabled(
-			CorelibPubSub.partInstances,
+			MeteorPubSub.uiPartInstances,
 			rundownIds.length > 0,
 			rundownIds,
 			playlistActivationId ?? null
@@ -1310,23 +1311,6 @@ export function RundownView(props: Readonly<IProps>): JSX.Element {
 				].filter((p): p is PartInstanceId => p !== null),
 				{}
 			)
-			const { previousPartInstance, currentPartInstance } =
-				RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
-
-			if (previousPartInstance) {
-				meteorSubscribe(
-					CorelibPubSub.partInstancesForSegmentPlayout,
-					previousPartInstance.rundownId,
-					previousPartInstance.segmentPlayoutId
-				)
-			}
-			if (currentPartInstance) {
-				meteorSubscribe(
-					CorelibPubSub.partInstancesForSegmentPlayout,
-					currentPartInstance.rundownId,
-					currentPartInstance.segmentPlayoutId
-				)
-			}
 		}
 	}, [playlistId])
 
@@ -1359,7 +1343,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 			'playlist.getRundowns',
 			playlistId
 		)
-		;({ currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist))
+		;({ currentPartInstance, nextPartInstance } = RundownPlaylistClientUtil.getSelectedPartInstances(playlist))
 		const somePartInstance = currentPartInstance || nextPartInstance
 		if (somePartInstance) {
 			currentRundown = rundowns.find((rundown) => rundown._id === somePartInstance?.rundownId)
@@ -1391,7 +1375,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 		rundowns,
 		currentRundown,
 		matchedSegments: playlist
-			? RundownPlaylistCollectionUtil.getRundownsAndSegments(playlist, {}).map((input, rundownIndex, rundownArray) => ({
+			? RundownPlaylistClientUtil.getRundownsAndSegments(playlist, {}).map((input, rundownIndex, rundownArray) => ({
 					...input,
 					segmentIdsBeforeEachSegment: input.segments.map(
 						(_segment, segmentIndex, segmentArray) =>

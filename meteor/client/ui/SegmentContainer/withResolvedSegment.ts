@@ -191,7 +191,7 @@ export function withResolvedSegment<T extends IResolvedSegmentProps, IState = {}
 						),
 						memoizedIsolatedAutorun(
 							(_playlistId: RundownPlaylistId, _currentPartInstanceId, _nextPartInstanceId) =>
-								RundownPlaylistCollectionUtil.getSelectedPartInstances(props.playlist),
+								RundownPlaylistClientUtil.getSelectedPartInstances(props.playlist),
 							'playlist.getSelectedPartInstances',
 							props.playlist._id,
 							props.playlist.currentPartInfo?.partInstanceId,
@@ -214,7 +214,7 @@ export function withResolvedSegment<T extends IResolvedSegmentProps, IState = {}
 			const rundownOrder = RundownPlaylistCollectionUtil.getRundownOrderedIDs(props.playlist)
 			const pieces = memoizedIsolatedAutorun(
 				(orderedParts) => {
-					return RundownPlaylistCollectionUtil.getPiecesForParts(orderedParts, {
+					return RundownPlaylistClientUtil.getPiecesForParts(orderedParts, {
 						fields: { enable: 1, prerollDuration: 1, postrollDuration: 1, pieceType: 1 },
 					})
 				},

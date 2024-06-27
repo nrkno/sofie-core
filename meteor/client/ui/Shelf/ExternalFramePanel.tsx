@@ -27,12 +27,13 @@ import { IngestAdlib } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../../lib/api/methods'
 import { check } from '../../../lib/check'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { Buckets, PartInstances, Rundowns } from '../../collections'
+import { Buckets, Rundowns } from '../../collections'
 import { BucketId, PartInstanceId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MOS_DATA_IS_STRICT } from '../../../lib/mos'
 import { getMosTypes, stringifyMosObject } from '@mos-connection/helper'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 import { logger } from '../../../lib/logging'
+import { UIPartInstances } from '../Collections'
 
 const PackageInfo = require('../../../package.json')
 
@@ -196,9 +197,9 @@ export const ExternalFramePanel = withTranslation()(
 			let currentPart: PartInstance | undefined
 			if (playlist.currentPartInfo || playlist.nextPartInfo) {
 				if (playlist.currentPartInfo !== null) {
-					currentPart = PartInstances.findOne(playlist.currentPartInfo.partInstanceId)
+					currentPart = UIPartInstances.findOne(playlist.currentPartInfo.partInstanceId)
 				} else if (playlist.nextPartInfo !== null) {
-					currentPart = PartInstances.findOne(playlist.nextPartInfo.partInstanceId)
+					currentPart = UIPartInstances.findOne(playlist.nextPartInfo.partInstanceId)
 				}
 
 				if (!currentPart) {

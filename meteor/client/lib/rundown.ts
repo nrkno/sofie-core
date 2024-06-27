@@ -47,7 +47,6 @@ import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { assertNever } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlaylistUtil'
 import { RundownPlaylistClientUtil } from './rundownPlaylistUtil'
 
 export namespace RundownUtils {
@@ -835,7 +834,7 @@ export namespace RundownUtils {
 			segmentsOptions,
 			partsOptions
 		)
-		const rawPartInstances = RundownPlaylistCollectionUtil.getActivePartInstances(
+		const rawPartInstances = RundownPlaylistClientUtil.getActivePartInstances(
 			playlist,
 			partInstancesQuery,
 			partInstancesOptions

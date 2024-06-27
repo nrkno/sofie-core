@@ -200,14 +200,14 @@ export const getPresenterScreenReactive = (props: PresenterScreenProps): Present
 	if (playlist) {
 		rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)
 		const orderedSegmentsAndParts = RundownPlaylistClientUtil.getSegmentsAndPartsSync(playlist)
-		pieces = RundownPlaylistCollectionUtil.getPiecesForParts(orderedSegmentsAndParts.parts.map((p) => p._id))
+		pieces = RundownPlaylistClientUtil.getPiecesForParts(orderedSegmentsAndParts.parts.map((p) => p._id))
 		rundownIds = rundowns.map((rundown) => rundown._id)
 		const rundownsToShowstyles: Map<RundownId, ShowStyleBaseId> = new Map()
 		for (const rundown of rundowns) {
 			rundownsToShowstyles.set(rundown._id, rundown.showStyleBaseId)
 		}
 		showStyleBaseIds = rundowns.map((rundown) => rundown.showStyleBaseId)
-		const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
+		const { currentPartInstance, nextPartInstance } = RundownPlaylistClientUtil.getSelectedPartInstances(playlist)
 		const partInstance = currentPartInstance ?? nextPartInstance
 		if (partInstance) {
 			// This is to register a reactive dependency on Rundown-spanning PieceInstances, that we may miss otherwise.
@@ -350,7 +350,7 @@ export function usePresenterScreenSubscriptions(props: PresenterScreenProps): vo
 
 	useSubscription(CorelibPubSub.segments, rundownIds, {})
 	useSubscription(CorelibPubSub.parts, rundownIds, null)
-	useSubscription(CorelibPubSub.partInstances, rundownIds, playlist?.activationId ?? null)
+	useSubscription(MeteorPubSub.uiPartInstances, rundownIds, playlist?.activationId ?? null)
 	useSubscriptions(
 		MeteorPubSub.uiShowStyleBase,
 		showStyleBaseIds.map((id) => [id])
@@ -370,7 +370,7 @@ export function usePresenterScreenSubscriptions(props: PresenterScreenProps): vo
 			}) as Pick<DBRundownPlaylist, '_id' | 'currentPartInfo' | 'nextPartInfo' | 'previousPartInfo'> | undefined
 
 			if (playlist) {
-				return RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
+				return RundownPlaylistClientUtil.getSelectedPartInstances(playlist)
 			} else {
 				return { currentPartInstance: undefined, nextPartInstance: undefined, previousPartInstance: undefined }
 			}

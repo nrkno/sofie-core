@@ -14,8 +14,8 @@ import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { dashboardElementStyle } from './DashboardPanel'
 import { Meteor } from 'meteor/meteor'
 import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PartInstances } from '../../collections'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { UIPartInstances } from '../Collections'
+import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil'
 
 interface IMiniRundownPanelProps {
 	key: string
@@ -123,14 +123,14 @@ export const MiniRundownPanel = withTracker<IMiniRundownPanelProps, IState, IMin
 
 		const currentPartInstanceId: PartInstanceId | undefined = props.playlist.currentPartInfo?.partInstanceId
 		if (currentPartInstanceId) {
-			currentPartInstance = PartInstances.findOne(currentPartInstanceId)
+			currentPartInstance = UIPartInstances.findOne(currentPartInstanceId)
 		}
 
 		if (props.playlist.nextPartInfo) {
-			nextPartInstance = PartInstances.findOne(props.playlist.nextPartInfo.partInstanceId)
+			nextPartInstance = UIPartInstances.findOne(props.playlist.nextPartInfo.partInstanceId)
 		}
 
-		const allSegments: DBSegment[] = RundownPlaylistCollectionUtil.getSegments(props.playlist)
+		const allSegments: DBSegment[] = RundownPlaylistClientUtil.getSegments(props.playlist)
 
 		return { currentPartInstance, nextPartInstance, allSegments }
 	},

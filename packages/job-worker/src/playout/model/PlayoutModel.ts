@@ -314,10 +314,17 @@ export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBa
 
 	/**
 	 * Track a Rundown as having started playback
-	 * @param rundownId If of the Rundown
+	 * @param rundownId Id of the Rundown
 	 * @param timestamp Timestamp playback started
 	 */
 	setRundownStartedPlayback(rundownId: RundownId, timestamp: number): void
+
+	/**
+	 * Track a Segment as having started playback
+	 * @param segmentId Id of the Segment
+	 * @param timestamp Timestamp playback started
+	 */
+	setSegmentStartedPlayback(segmentId: SegmentId, timestamp: number): void
 
 	/**
 	 * Set or clear a QuickLoop Marker

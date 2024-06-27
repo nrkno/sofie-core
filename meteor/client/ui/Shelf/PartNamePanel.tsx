@@ -15,7 +15,7 @@ import { pieceIconSupportedLayers } from '../PieceIcons/PieceIcon'
 import { RundownUtils } from '../../lib/rundown'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { PieceInstances } from '../../collections'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil'
 
 interface IPartNamePanelProps {
 	visible?: boolean
@@ -72,7 +72,7 @@ export const PartNamePanel = translateWithTracker<IPartNamePanelProps, IState, I
 		let instanceToShow: IFoundPieceInstance | undefined
 
 		if (selectedPartInstanceId) {
-			const selectedPartInstance = RundownPlaylistCollectionUtil.getActivePartInstances(props.playlist, {
+			const selectedPartInstance = RundownPlaylistClientUtil.getActivePartInstances(props.playlist, {
 				_id: selectedPartInstanceId,
 			})[0]
 			if (selectedPartInstance && props.panel.showPieceIconColor) {

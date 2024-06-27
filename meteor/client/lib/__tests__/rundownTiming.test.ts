@@ -140,7 +140,6 @@ describe('rundown Timing Calculator', () => {
 			new Map(),
 			segmentsMap,
 			DEFAULT_DURATION,
-			[],
 			{}
 		)
 		expect(result).toEqual(
@@ -167,7 +166,6 @@ describe('rundown Timing Calculator', () => {
 				remainingTimeOnCurrentPart: undefined,
 				rundownsBeforeNextBreak: undefined,
 				segmentBudgetDurations: {},
-				segmentStartedPlayback: {},
 			})
 		)
 	})
@@ -206,7 +204,6 @@ describe('rundown Timing Calculator', () => {
 			new Map(),
 			segmentsMap,
 			DEFAULT_DURATION,
-			[],
 			{}
 		)
 		expect(result).toEqual(
@@ -272,7 +269,6 @@ describe('rundown Timing Calculator', () => {
 				remainingTimeOnCurrentPart: undefined,
 				rundownsBeforeNextBreak: undefined,
 				segmentBudgetDurations: {},
-				segmentStartedPlayback: {},
 			})
 		)
 	})
@@ -311,7 +307,6 @@ describe('rundown Timing Calculator', () => {
 			new Map(),
 			segmentsMap,
 			DEFAULT_DURATION,
-			[],
 			{}
 		)
 		expect(result).toEqual(
@@ -377,7 +372,6 @@ describe('rundown Timing Calculator', () => {
 				remainingTimeOnCurrentPart: undefined,
 				rundownsBeforeNextBreak: undefined,
 				segmentBudgetDurations: {},
-				segmentStartedPlayback: {},
 			})
 		)
 	})
@@ -418,7 +412,6 @@ describe('rundown Timing Calculator', () => {
 			new Map(),
 			segmentsMap,
 			DEFAULT_DURATION,
-			[],
 			{}
 		)
 		expect(result).toEqual(
@@ -486,7 +479,6 @@ describe('rundown Timing Calculator', () => {
 				remainingTimeOnCurrentPart: undefined,
 				rundownsBeforeNextBreak: undefined,
 				segmentBudgetDurations: {},
-				segmentStartedPlayback: {},
 			})
 		)
 	})
@@ -550,7 +542,6 @@ describe('rundown Timing Calculator', () => {
 				new Map(),
 				segmentsMap,
 				DEFAULT_DURATION,
-				[],
 				{}
 			)
 			expect(result).toEqual(
@@ -616,7 +607,6 @@ describe('rundown Timing Calculator', () => {
 					remainingTimeOnCurrentPart: undefined,
 					rundownsBeforeNextBreak: undefined,
 					segmentBudgetDurations: {},
-					segmentStartedPlayback: {},
 				})
 			)
 		})
@@ -708,7 +698,6 @@ describe('rundown Timing Calculator', () => {
 				new Map(),
 				segmentsMap,
 				DEFAULT_DURATION,
-				[],
 				{}
 			)
 			expect(result).toEqual(
@@ -774,7 +763,6 @@ describe('rundown Timing Calculator', () => {
 					remainingTimeOnCurrentPart: 2500,
 					rundownsBeforeNextBreak: [],
 					segmentBudgetDurations: {},
-					segmentStartedPlayback: {},
 					nextRundownAnchor: undefined,
 				})
 			)
@@ -867,7 +855,6 @@ describe('rundown Timing Calculator', () => {
 				new Map(),
 				segmentsMap,
 				DEFAULT_DURATION,
-				[],
 				{}
 			)
 			expect(result).toEqual(
@@ -933,7 +920,6 @@ describe('rundown Timing Calculator', () => {
 					remainingTimeOnCurrentPart: -4000,
 					rundownsBeforeNextBreak: [],
 					segmentBudgetDurations: {},
-					segmentStartedPlayback: {},
 					nextRundownAnchor: undefined,
 				})
 			)
@@ -975,7 +961,6 @@ describe('rundown Timing Calculator', () => {
 				new Map(),
 				segmentsMap,
 				DEFAULT_NONZERO_DURATION,
-				[],
 				{}
 			)
 			expect(result).toEqual(
@@ -1041,7 +1026,6 @@ describe('rundown Timing Calculator', () => {
 					remainingTimeOnCurrentPart: undefined,
 					rundownsBeforeNextBreak: undefined,
 					segmentBudgetDurations: {},
-					segmentStartedPlayback: {},
 				})
 			)
 		})
@@ -1109,7 +1093,6 @@ describe('rundown Timing Calculator', () => {
 				new Map(),
 				segmentsMap,
 				DEFAULT_NONZERO_DURATION,
-				[],
 				{}
 			)
 			expect(result).toEqual(
@@ -1182,7 +1165,6 @@ describe('rundown Timing Calculator', () => {
 					remainingTimeOnCurrentPart: undefined,
 					rundownsBeforeNextBreak: undefined,
 					segmentBudgetDurations: {},
-					segmentStartedPlayback: {},
 				})
 			)
 		})
@@ -1237,7 +1219,6 @@ describe('rundown Timing Calculator', () => {
 			new Map(),
 			segmentsMap,
 			DEFAULT_DURATION,
-			[],
 			{}
 		)
 		expect(result).toEqual(
@@ -1306,7 +1287,6 @@ describe('rundown Timing Calculator', () => {
 					[segmentId1]: 5000,
 					[segmentId2]: 3000,
 				},
-				segmentStartedPlayback: {},
 			})
 		)
 	})
@@ -1364,7 +1344,6 @@ describe('rundown Timing Calculator', () => {
 			piecesMap,
 			segmentsMap,
 			DEFAULT_DURATION,
-			[],
 			{}
 		)
 		expect(result).toEqual(
@@ -1430,7 +1409,6 @@ describe('rundown Timing Calculator', () => {
 				remainingTimeOnCurrentPart: undefined,
 				rundownsBeforeNextBreak: undefined,
 				segmentBudgetDurations: {},
-				segmentStartedPlayback: {},
 				nextRundownAnchor: undefined,
 			})
 		)
@@ -1516,7 +1494,6 @@ describe('rundown Timing Calculator', () => {
 			new Map(),
 			segmentsMap,
 			DEFAULT_DURATION,
-			[],
 			{}
 		)
 		expect(result).toEqual(
@@ -1582,7 +1559,6 @@ describe('rundown Timing Calculator', () => {
 				remainingTimeOnCurrentPart: 500,
 				rundownsBeforeNextBreak: [],
 				segmentBudgetDurations: {},
-				segmentStartedPlayback: {},
 				nextRundownAnchor: 2000,
 			})
 		)
@@ -1668,7 +1644,6 @@ describe('rundown Timing Calculator', () => {
 			new Map(),
 			segmentsMap,
 			DEFAULT_DURATION,
-			[],
 			{}
 		)
 		expect(result).toEqual(
@@ -1734,7 +1709,6 @@ describe('rundown Timing Calculator', () => {
 				remainingTimeOnCurrentPart: -1500,
 				rundownsBeforeNextBreak: [],
 				segmentBudgetDurations: {},
-				segmentStartedPlayback: {},
 				nextRundownAnchor: 4000,
 			})
 		)
@@ -1826,7 +1800,6 @@ describe('rundown Timing Calculator', () => {
 			new Map(),
 			segmentsMap,
 			DEFAULT_DURATION,
-			[],
 			{}
 		)
 		expect(result).toEqual(
@@ -1892,7 +1865,6 @@ describe('rundown Timing Calculator', () => {
 				remainingTimeOnCurrentPart: 500,
 				rundownsBeforeNextBreak: [],
 				segmentBudgetDurations: {},
-				segmentStartedPlayback: {},
 				nextRundownAnchor: 3000,
 			})
 		)
@@ -1978,7 +1950,6 @@ describe('rundown Timing Calculator', () => {
 			new Map(),
 			segmentsMap,
 			DEFAULT_DURATION,
-			[],
 			{}
 		)
 		expect(result).toEqual(
@@ -2044,7 +2015,6 @@ describe('rundown Timing Calculator', () => {
 				remainingTimeOnCurrentPart: 500,
 				rundownsBeforeNextBreak: [],
 				segmentBudgetDurations: {},
-				segmentStartedPlayback: {},
 				nextRundownAnchor: 2000,
 			})
 		)
@@ -2130,7 +2100,6 @@ describe('rundown Timing Calculator', () => {
 			new Map(),
 			segmentsMap,
 			DEFAULT_DURATION,
-			[],
 			{}
 		)
 		expect(result).toEqual(
@@ -2196,7 +2165,6 @@ describe('rundown Timing Calculator', () => {
 				remainingTimeOnCurrentPart: -1500,
 				rundownsBeforeNextBreak: [],
 				segmentBudgetDurations: {},
-				segmentStartedPlayback: {},
 				nextRundownAnchor: 4000,
 			})
 		)
@@ -2288,7 +2256,6 @@ describe('rundown Timing Calculator', () => {
 			new Map(),
 			segmentsMap,
 			DEFAULT_DURATION,
-			[],
 			{}
 		)
 		expect(result).toEqual(
@@ -2354,7 +2321,6 @@ describe('rundown Timing Calculator', () => {
 				remainingTimeOnCurrentPart: 500,
 				rundownsBeforeNextBreak: [],
 				segmentBudgetDurations: {},
-				segmentStartedPlayback: {},
 				nextRundownAnchor: 3000,
 			})
 		)
@@ -2389,7 +2355,6 @@ describe('rundown Timing Calculator', () => {
 			new Map(),
 			segmentsMap,
 			DEFAULT_DURATION,
-			[],
 			{
 				part2: true,
 				part3: true,

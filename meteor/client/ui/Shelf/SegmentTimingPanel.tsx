@@ -86,11 +86,11 @@ export const SegmentTimingPanel = translateWithTracker<
 >(
 	(props: ISegmentTimingPanelProps) => {
 		if (props.playlist.currentPartInfo) {
-			const livePart = RundownPlaylistCollectionUtil.getActivePartInstances(props.playlist, {
+			const livePart = RundownPlaylistClientUtil.getActivePartInstances(props.playlist, {
 				_id: props.playlist.currentPartInfo.partInstanceId,
 			})[0]
 			const liveSegment = livePart
-				? RundownPlaylistCollectionUtil.getSegments(props.playlist, { _id: livePart.segmentId })[0]
+				? RundownPlaylistClientUtil.getSegments(props.playlist, { _id: livePart.segmentId })[0]
 				: undefined
 
 			const { active } = getIsFilterActive(props.playlist, props.showStyleBase, props.panel)
@@ -112,7 +112,7 @@ export const SegmentTimingPanel = translateWithTracker<
 						),
 						memoizedIsolatedAutorun(
 							(_playlistId: RundownPlaylistId, _currentPartInstanceId, _nextPartInstanceId) =>
-								RundownPlaylistCollectionUtil.getSelectedPartInstances(props.playlist),
+								RundownPlaylistClientUtil.getSelectedPartInstances(props.playlist),
 							'playlist.getSelectedPartInstances',
 							props.playlist._id,
 							props.playlist.currentPartInfo?.partInstanceId,
@@ -134,7 +134,7 @@ export const SegmentTimingPanel = translateWithTracker<
 			const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(props.playlist)
 			const rundown = rundowns.find((r) => r._id === liveSegment.rundownId)
 			const segmentIndex = orderedSegmentsAndParts.segments.findIndex((s) => s._id === liveSegment._id)
-			const pieces = RundownPlaylistCollectionUtil.getPiecesForParts(orderedAllPartIds)
+			const pieces = RundownPlaylistClientUtil.getPiecesForParts(orderedAllPartIds)
 
 			if (!rundown) return { active }
 

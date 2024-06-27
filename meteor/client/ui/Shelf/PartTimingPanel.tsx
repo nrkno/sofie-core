@@ -15,7 +15,7 @@ import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRe
 import { CurrentPartElapsed } from '../RundownView/RundownTiming/CurrentPartElapsed'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil'
 
 interface IPartTimingPanelProps {
 	visible?: boolean
@@ -72,7 +72,7 @@ class PartTimingPanelInner extends React.Component<
 export const PartTimingPanel = translateWithTracker<IPartTimingPanelProps, IState, IPartTimingPanelTrackedProps>(
 	(props: IPartTimingPanelProps) => {
 		if (props.playlist.currentPartInfo) {
-			const livePart = RundownPlaylistCollectionUtil.getActivePartInstances(props.playlist, {
+			const livePart = RundownPlaylistClientUtil.getActivePartInstances(props.playlist, {
 				_id: props.playlist.currentPartInfo.partInstanceId,
 			})[0]
 			const { active } = getIsFilterActive(props.playlist, props.showStyleBase, props.panel)

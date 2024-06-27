@@ -12,7 +12,8 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { dashboardElementStyle } from './DashboardPanel'
-import { PartInstances, Segments } from '../../collections'
+import { Segments } from '../../collections'
+import { UIPartInstances } from '../Collections'
 
 interface INextInfoPanelProps {
 	visible?: boolean
@@ -64,7 +65,7 @@ export const NextInfoPanel = withTracker<INextInfoPanelProps, {}, INextInfoPanel
 		let nextSegment: DBSegment | undefined = undefined
 
 		if (props.playlist.nextPartInfo) {
-			nextPartInstance = PartInstances.findOne(props.playlist.nextPartInfo.partInstanceId)
+			nextPartInstance = UIPartInstances.findOne(props.playlist.nextPartInfo.partInstanceId)
 		}
 		if (nextPartInstance) {
 			nextSegment = Segments.findOne(nextPartInstance.segmentId)

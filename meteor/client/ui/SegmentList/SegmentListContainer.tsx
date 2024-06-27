@@ -10,9 +10,9 @@ import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { SegmentList } from './SegmentList'
 import { unprotectString } from '../../../lib/lib'
 import { LIVELINE_HISTORY_SIZE as TIMELINE_LIVELINE_HISTORY_SIZE } from '../SegmentTimeline/SegmentTimelineContainer'
-import { PartInstances, Segments } from '../../collections'
+import { Segments } from '../../collections'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
-import { UIParts } from '../Collections'
+import { UIPartInstances, UIParts } from '../Collections'
 
 export const LIVELINE_HISTORY_SIZE = TIMELINE_LIVELINE_HISTORY_SIZE
 
@@ -46,7 +46,7 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 
 	const partInstanceIds = useTracker(
 		() =>
-			PartInstances.find(
+			UIPartInstances.find(
 				{
 					segmentId: segmentId,
 					reset: {
@@ -87,7 +87,7 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 				return false
 			}
 
-			const currentPartInstance = PartInstances.findOne(props.playlist.currentPartInfo.partInstanceId)
+			const currentPartInstance = UIPartInstances.findOne(props.playlist.currentPartInfo.partInstanceId)
 			if (!currentPartInstance) {
 				return false
 			}
@@ -104,7 +104,7 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 				return false
 			}
 
-			const partInstance = PartInstances.findOne(props.playlist.nextPartInfo.partInstanceId, {
+			const partInstance = UIPartInstances.findOne(props.playlist.nextPartInfo.partInstanceId, {
 				fields: {
 					segmentId: 1,
 					'part._id': 1,
@@ -126,7 +126,7 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 				return false
 			}
 
-			const currentPartInstance = PartInstances.findOne(props.playlist.currentPartInfo.partInstanceId, {
+			const currentPartInstance = UIPartInstances.findOne(props.playlist.currentPartInfo.partInstanceId, {
 				fields: {
 					'part.autoNext': 1,
 					'part.expectedDuration': 1,

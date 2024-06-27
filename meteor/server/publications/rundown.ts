@@ -39,7 +39,6 @@ import {
 	RundownPlaylistActivationId,
 	RundownPlaylistId,
 	SegmentId,
-	SegmentPlayoutId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
@@ -274,36 +273,6 @@ meteorPublish(
 					timings: 0,
 				}),
 			})
-		}
-		return null
-	}
-)
-meteorPublish(
-	CorelibPubSub.partInstancesForSegmentPlayout,
-	async function (rundownId: RundownId, segmentPlayoutId: SegmentPlayoutId, token: string | undefined) {
-		if (!rundownId) throw new Meteor.Error(400, 'rundownId argument missing')
-		if (!segmentPlayoutId) throw new Meteor.Error(400, 'segmentPlayoutId argument missing')
-
-		if (
-			NoSecurityReadAccess.any() ||
-			(await RundownReadAccess.rundownContent(rundownId, { userId: this.userId, token }))
-		) {
-			return PartInstances.findWithCursor(
-				{
-					rundownId,
-					segmentPlayoutId,
-				},
-				{
-					fields: {
-						// @ts-expect-error Mongo typings aren't clever enough yet
-						'part.privateData': 0,
-					},
-					sort: {
-						takeCount: 1,
-					},
-					limit: 1,
-				}
-			)
 		}
 		return null
 	}

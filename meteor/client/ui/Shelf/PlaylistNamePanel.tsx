@@ -13,7 +13,7 @@ import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Rundowns } from '../../collections'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { logger } from '../../../lib/logging'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil'
 
 interface IPlaylistNamePanelProps {
 	visible?: boolean
@@ -55,7 +55,7 @@ class PlaylistNamePanelInner extends React.Component<IPlaylistNamePanelProps & I
 export const PlaylistNamePanel = withTracker<IPlaylistNamePanelProps, IState, IPlaylistNamePanelTrackedProps>(
 	(props: IPlaylistNamePanelProps) => {
 		if (props.playlist.currentPartInfo) {
-			const livePart: PartInstance = RundownPlaylistCollectionUtil.getActivePartInstances(props.playlist, {
+			const livePart: PartInstance = RundownPlaylistClientUtil.getActivePartInstances(props.playlist, {
 				_id: props.playlist.currentPartInfo.partInstanceId,
 			})[0]
 			if (!livePart) {

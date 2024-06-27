@@ -11,12 +11,12 @@ import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { SegmentScratchpad } from './SegmentScratchpad'
 import { unprotectString } from '../../../lib/lib'
 import { LIVELINE_HISTORY_SIZE as TIMELINE_LIVELINE_HISTORY_SIZE } from '../SegmentTimeline/SegmentTimelineContainer'
-import { PartInstances, Segments } from '../../collections'
+import { Segments } from '../../collections'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
-import { UIParts } from '../Collections'
+import { UIPartInstances, UIParts } from '../Collections'
 
 export const LIVELINE_HISTORY_SIZE = TIMELINE_LIVELINE_HISTORY_SIZE
 
@@ -50,7 +50,7 @@ export const SegmentScratchpadContainer = withResolvedSegment<IProps>(function S
 
 	const partInstanceIds = useTracker(
 		() =>
-			PartInstances.find(
+			UIPartInstances.find(
 				{
 					segmentId: segmentId,
 					reset: {
@@ -91,7 +91,7 @@ export const SegmentScratchpadContainer = withResolvedSegment<IProps>(function S
 				return false
 			}
 
-			const currentPartInstance = PartInstances.findOne(props.playlist.currentPartInfo.partInstanceId)
+			const currentPartInstance = UIPartInstances.findOne(props.playlist.currentPartInfo.partInstanceId)
 			if (!currentPartInstance) {
 				return false
 			}
@@ -108,7 +108,7 @@ export const SegmentScratchpadContainer = withResolvedSegment<IProps>(function S
 				return false
 			}
 
-			const partInstance = PartInstances.findOne(props.playlist.nextPartInfo.partInstanceId, {
+			const partInstance = UIPartInstances.findOne(props.playlist.nextPartInfo.partInstanceId, {
 				fields: literal<MongoFieldSpecifierOnes<PartInstance>>({
 					segmentId: 1,
 					//@ts-expect-error typescript doesnt like it
@@ -131,7 +131,7 @@ export const SegmentScratchpadContainer = withResolvedSegment<IProps>(function S
 				return false
 			}
 
-			const currentPartInstance = PartInstances.findOne(props.playlist.currentPartInfo.partInstanceId, {
+			const currentPartInstance = UIPartInstances.findOne(props.playlist.currentPartInfo.partInstanceId, {
 				fields: {
 					//@ts-expect-error deep property
 					'part.autoNext': 1,

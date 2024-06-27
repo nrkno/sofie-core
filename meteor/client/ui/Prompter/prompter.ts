@@ -23,6 +23,7 @@ import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyle
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { RundownUtils } from '../../lib/rundown'
+import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil'
 
 // export interface NewPrompterAPI {
 // 	getPrompterData (playlistId: RundownPlaylistId): Promise<PrompterData>
@@ -73,8 +74,7 @@ export namespace PrompterAPI {
 		}
 		const rundownMap = normalizeArrayToMap(rundowns, '_id')
 
-		const { currentPartInstance, nextPartInstance } =
-			RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
+		const { currentPartInstance, nextPartInstance } = RundownPlaylistClientUtil.getSelectedPartInstances(playlist)
 
 		const currentSegment = currentPartInstance
 			? (Segments.findOne(currentPartInstance?.segmentId, {

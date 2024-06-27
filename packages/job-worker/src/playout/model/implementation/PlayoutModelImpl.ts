@@ -673,6 +673,24 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		this.#playlistHasChanged = true
 	}
 
+	setSegmentStartedPlayback(segmentId: SegmentId, timestamp: number): void {
+		const segmentIdsToKeep: string[] = []
+		if (this.previousPartInstance) {
+			segmentIdsToKeep.push(unprotectString(this.previousPartInstance.partInstance.segmentId))
+		}
+		if (this.currentPartInstance) {
+			segmentIdsToKeep.push(unprotectString(this.currentPartInstance.partInstance.segmentId))
+		}
+
+		this.playlistImpl.segmentsStartedPlayback = this.playlistImpl.segmentsStartedPlayback
+			? _.pick(this.playlistImpl.segmentsStartedPlayback, segmentIdsToKeep)
+			: {}
+
+		const segmentIdStr = unprotectString(segmentId)
+		this.playlistImpl.segmentsStartedPlayback[segmentIdStr] = timestamp
+		this.#playlistHasChanged = true
+	}
+
 	setTimeline(timelineObjs: TimelineObjGeneric[], generationVersions: TimelineCompleteGenerationVersions): void {
 		this.timelineImpl = {
 			_id: this.context.studioId,
