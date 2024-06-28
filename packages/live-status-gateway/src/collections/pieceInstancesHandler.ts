@@ -10,7 +10,10 @@ import throttleToNextTick from '@sofie-automation/shared-lib/dist/lib/throttleTo
 import _ = require('underscore')
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { PartInstanceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
+import {
+	processAndPrunePieceInstanceTimings,
+	resolvePrunedPieceInstance,
+} from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { ShowStyleBaseExt, ShowStyleBaseHandler } from './showStyleBaseHandler'
 import { PlaylistHandler } from './playlistHandler'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
@@ -72,13 +75,33 @@ export class PieceInstancesHandler
 
 	private processAndPrunePieceInstanceTimings(
 		partInstance: DBPartInstance | undefined,
-		pieceInstances: PieceInstance[]
+		pieceInstances: PieceInstance[],
+		filterActive: boolean
 	): ReadonlyDeep<PieceInstance>[] {
 		// Approximate when 'now' is in the PartInstance, so that any adlibbed Pieces will be timed roughly correctly
 		const partStarted = partInstance?.timings?.plannedStartedPlayback
 		const nowInPart = partStarted === undefined ? 0 : Date.now() - partStarted
 
-		return processAndPrunePieceInstanceTimings(this._sourceLayers, pieceInstances, nowInPart, false, false)
+		const prunedPieceInstances = processAndPrunePieceInstanceTimings(
+			this._sourceLayers,
+			pieceInstances,
+			nowInPart,
+			false,
+			false
+		)
+		if (!filterActive) return prunedPieceInstances
+
+		return prunedPieceInstances.filter((pieceInstance) => {
+			const resolvedPieceInstance = resolvePrunedPieceInstance(nowInPart, pieceInstance)
+
+			return (
+				resolvedPieceInstance.resolvedStart <= nowInPart &&
+				(resolvedPieceInstance.resolvedDuration == null ||
+					resolvedPieceInstance.resolvedStart + resolvedPieceInstance.resolvedDuration > nowInPart) &&
+				pieceInstance.piece.virtual !== true &&
+				pieceInstance.disabled !== true
+			)
+		})
 	}
 
 	private updateCollectionData(): boolean {
@@ -89,25 +112,26 @@ export class PieceInstancesHandler
 		const inPreviousPartInstance = this._currentPlaylist?.previousPartInfo?.partInstanceId
 			? this.processAndPrunePieceInstanceTimings(
 					this._partInstances?.previous,
-					collection.find({ partInstanceId: this._currentPlaylist.previousPartInfo.partInstanceId })
+					collection.find({ partInstanceId: this._currentPlaylist.previousPartInfo.partInstanceId }),
+					true
 			  )
 			: []
 		const inCurrentPartInstance = this._currentPlaylist?.currentPartInfo?.partInstanceId
 			? this.processAndPrunePieceInstanceTimings(
 					this._partInstances?.current,
-					collection.find({ partInstanceId: this._currentPlaylist.currentPartInfo.partInstanceId })
+					collection.find({ partInstanceId: this._currentPlaylist.currentPartInfo.partInstanceId }),
+					true
 			  )
 			: []
 		const inNextPartInstance = this._currentPlaylist?.nextPartInfo?.partInstanceId
 			? this.processAndPrunePieceInstanceTimings(
 					undefined,
-					collection.find({ partInstanceId: this._currentPlaylist.nextPartInfo.partInstanceId })
+					collection.find({ partInstanceId: this._currentPlaylist.nextPartInfo.partInstanceId }),
+					false
 			  )
 			: []
 
-		const active = [...inPreviousPartInstance, ...inCurrentPartInstance].filter((pieceInstance) =>
-			this.isPieceInstanceActive(pieceInstance)
-		)
+		const active = [...inPreviousPartInstance, ...inCurrentPartInstance]
 
 		let hasAnythingChanged = false
 		if (!areElementsShallowEqual(this._collectionData.active, active)) {
@@ -234,21 +258,6 @@ export class PieceInstancesHandler
 		if (hasAnythingChanged) {
 			await this.notify(this._collectionData)
 		}
-	}
-
-	private isPieceInstanceActive(pieceInstance: ReadonlyDeep<PieceInstance>) {
-		return (
-			pieceInstance.reportedStoppedPlayback == null &&
-			pieceInstance.piece.virtual !== true &&
-			pieceInstance.disabled !== true &&
-			(pieceInstance.partInstanceId === this._currentPlaylist?.previousPartInfo?.partInstanceId || // a piece from previous part instance may be active during transition
-				pieceInstance.partInstanceId === this._currentPlaylist?.currentPartInfo?.partInstanceId) &&
-			(pieceInstance.reportedStartedPlayback != null || // has been reported to have started by the Playout Gateway
-				pieceInstance.plannedStartedPlayback != null || // a time to start playing has been set by Core
-				(pieceInstance.partInstanceId === this._currentPlaylist?.currentPartInfo?.partInstanceId &&
-					pieceInstance.piece.enable.start === 0) || // this is to speed things up immediately after a part instance is taken when not yet reported by the Playout Gateway
-				pieceInstance.infinite?.fromPreviousPart) // infinites from previous part also are on air from the start of the current part
-		)
 	}
 }
 
