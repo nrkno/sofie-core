@@ -11,10 +11,13 @@ export function stringifyError(error: unknown, noStack = false): string {
 			// Has a custom toString() method
 			str = `${(error as any).toString()}`
 		} else {
-			str = ''
-			if ((error as Error).message) str += `${(error as Error).message} ` // Is an Error
-			if ((error as any).reason) str += `${(error as any).reason} ` // Is a Meteor.Error
-			if ((error as any).details) str += `${(error as any).details} `
+			const strings: string[] = []
+			if (typeof (error as any).rawError === 'string') strings.push(`${(error as any).rawError}`) // Is an UserError
+			if (typeof (error as Error).message === 'string') strings.push(`${(error as Error).message}`) // Is an Error
+			if (typeof (error as any).reason === 'string') strings.push(`${(error as any).reason}`) // Is a Meteor.Error
+			if (typeof (error as any).details === 'string') strings.push(` ${(error as any).details}`)
+
+			str = strings.join(', ')
 		}
 
 		if (!str) {
@@ -34,7 +37,7 @@ export function stringifyError(error: unknown, noStack = false): string {
 	}
 
 	if (!noStack) {
-		if (error && typeof error === 'object' && (error as any).stack) {
+		if (error && typeof error === 'object' && typeof (error as any).stack === 'string') {
 			str += ', ' + (error as any).stack
 		}
 	}
