@@ -227,9 +227,9 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 					/>
 					<div className="shelf-inspector__action-editor">
 						<div className="shelf-inspector__action-editor__panel">
-							{action.userDataManifest && action.userDataManifest.editableFields && !targetAction ? (
+							{action.userDataManifest && action.userDataManifest.optionsSchema && !targetAction ? (
 								<Spinner />
-							) : action.userDataManifest && action.userDataManifest.editableFields && targetAction ? (
+							) : action.userDataManifest && action.userDataManifest.optionsSchema && targetAction ? (
 								<span>Editable Fields are not currently supported.</span>
 							) : null}
 						</div>
