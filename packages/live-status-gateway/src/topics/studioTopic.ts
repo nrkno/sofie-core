@@ -54,9 +54,8 @@ export class StudioTopic
 					name: '',
 					playlists: [],
 			  }
-		for (const subscriber of subscribers) {
-			this.sendMessage(subscriber, studioStatus)
-		}
+
+		this.sendMessage(subscribers, studioStatus)
 	}
 
 	async update(source: string, data: DBStudio | DBRundownPlaylist[] | undefined): Promise<void> {
