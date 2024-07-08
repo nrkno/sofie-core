@@ -75,6 +75,15 @@ export interface StudioBlueprintManifest<TRawConfig = IBlueprintConfig, TProcess
 		config: TRawConfig,
 		coreConfig: BlueprintConfigCoreConfig
 	) => TProcessedConfig
+
+	/** Validate the blueprint config passed to this blueprint according to the API schema, returning a list of messages to display to the user. */
+	validateConfigFromAPI?: (context: ICommonContext, apiConfig: object) => Array<IConfigMessage>
+
+	/** transform API blueprint config to the database format */
+	blueprintConfigFromAPI?: (context: ICommonContext, config: object) => IBlueprintConfig
+
+	/** transform blueprint config to the API format */
+	blueprintConfigToAPI?: (context: ICommonContext, config: TRawConfig) => object
 }
 
 export interface BlueprintResultStudioBaseline {
