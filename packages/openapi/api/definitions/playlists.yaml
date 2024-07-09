@@ -109,15 +109,19 @@ resources:
             schema:
               type: object
               properties:
-                actionType:
-                  type: string
-                  description: An actionType string to specify a particular variation for the AdLibAction, valid strings are to be read from the status API
                 adLibId:
                   type: string
                   description: AdLib to execute
+                actionType:
+                  type: string
+                  description: An actionType string to specify a particular variation for the AdLibAction, valid strings are to be read from the status API
+                adLibOptions:
+                  type: object
+                  description: AdLibAction options object defined according to the optionsSchema provided in the adLib status API
               required:
                 - adLibId
               example:
+                adLibId: adlib_action_camera
                 actionType: pvw
       responses:
         200:

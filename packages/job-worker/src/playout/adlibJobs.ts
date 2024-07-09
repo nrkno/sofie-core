@@ -115,6 +115,7 @@ export async function handleTakePieceAsAdlibNow(context: JobContext, data: TakeP
 							...executeProps,
 							triggerMode: undefined,
 							privateData: undefined,
+							publicData: undefined,
 						}
 					)
 					break
