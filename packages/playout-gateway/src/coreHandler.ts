@@ -548,7 +548,7 @@ export class CoreTSRDeviceHandler {
 		)
 	}
 
-	async dispose(): Promise<void> {
+	async dispose(subdevice: 'keepSubDevice' | 'removeSubDevice' = 'keepSubDevice'): Promise<void> {
 		this._observers.forEach((obs) => obs.stop())
 
 		await this._tsrHandler.tsr.removeDevice(this._deviceId)
@@ -557,6 +557,7 @@ export class CoreTSRDeviceHandler {
 			messages: ['Uninitialized'],
 		})
 
+		if (subdevice === 'removeSubDevice') await this.core.unInitialize()
 		await this.core.destroy()
 	}
 	killProcess(): void {

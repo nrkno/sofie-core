@@ -1002,7 +1002,7 @@ export class TSRHandler {
 		let success = false
 		if (this._coreTsrHandlers[deviceId]) {
 			try {
-				await this._coreTsrHandlers[deviceId].dispose()
+				await this._coreTsrHandlers[deviceId].dispose('removeSubDevice')
 				this.logger.debug('Disposed device ' + deviceId)
 				success = true
 			} catch (error) {
