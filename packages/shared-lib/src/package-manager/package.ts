@@ -245,10 +245,16 @@ export namespace Accessor {
 		allowWrite: false
 
 		/** Base url (url to the host), for example http://myhost.com/fileShare/ */
-		baseUrl: string
+		baseUrl?: string
 
 		/** Name/Id of the network the share exists on. Used to differ between different local networks. Leave empty if globally accessible. */
 		networkId?: string
+
+		/** If true, assumes that a source never changes once it has been fetched. */
+		isImmutable?: boolean
+
+		/** If true, assumes that the source supports HEAD requests. Otherwise, GET requests will be sent to check availability. */
+		supportHEAD?: boolean
 	}
 	/** Definition of access to the HTTP-proxy server that comes with Package Manager. */
 	export interface HTTPProxy extends Base {
