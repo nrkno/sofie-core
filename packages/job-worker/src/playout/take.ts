@@ -522,7 +522,7 @@ export async function afterTake(
 					partExternalId: takePartInstance.part.externalId,
 				})
 				.catch((e) => {
-					logger.warn(`Failed to queue NotifyCurrentlyPlayingPart job: ${e}`)
+					logger.warn(`Failed to queue NotifyCurrentlyPlayingPart job: ${stringifyError(e)}`)
 				})
 		}
 	})

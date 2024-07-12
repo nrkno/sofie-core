@@ -10,6 +10,7 @@ import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import _ from 'underscore'
 import { PeripheralDevices } from '../collections'
 import { check } from 'meteor/check'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 const PUBLICATION_DEBOUNCE = 20
 
@@ -97,7 +98,7 @@ function cursorCustomPublish<T extends { _id: ProtectedString<any> }>(pub: Custo
 				removed: Array.from(bufferToSend.removed.values()),
 			})
 		} catch (e) {
-			logger.error(`Error while updating publication: ${e}`, e as any)
+			logger.error(`Error while updating publication: ${stringifyError(e)}`)
 		}
 	}, PUBLICATION_DEBOUNCE)
 

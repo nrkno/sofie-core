@@ -359,7 +359,7 @@ export class JobContextImpl extends StudioCacheContextImpl implements JobContext
 			if (lock.isLocked) {
 				logger.warn(`Lock never freed: ${lock}`)
 				await lock.release().catch((e) => {
-					logger.error(`Lock free failed: ${e}`)
+					logger.error(`Lock free failed: ${stringifyError(e)}`)
 				})
 			}
 		}

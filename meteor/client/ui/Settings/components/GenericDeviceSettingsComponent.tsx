@@ -9,6 +9,7 @@ import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { PeripheralDevices } from '../../../collections'
 import { MeteorCall } from '../../../../lib/api/methods'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 interface IGenericDeviceSettingsComponentProps {
 	device: PeripheralDevice
@@ -39,7 +40,7 @@ export function GenericDeviceSettingsComponent({
 						}
 						setDebugStates(states)
 					})
-					.catch((err) => console.log(`Error fetching device states: ${err}`))
+					.catch((err) => console.log(`Error fetching device states: ${stringifyError(err)}`))
 			}, 1000)
 
 			return () => {
