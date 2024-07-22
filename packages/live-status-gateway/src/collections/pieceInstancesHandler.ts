@@ -64,12 +64,6 @@ export class PieceInstancesHandler
 			currentPartInstance: [],
 			nextPartInstance: [],
 		}
-
-		setInterval(() => {
-			// HACK: This is a workaround for things that start in the future, we do a sample based on what is active right now,
-			// so if something starts/stops at a specific point in time, the emitted pieces won't automatically update
-			this._throttledUpdateAndNotify()
-		}, 1000)
 	}
 
 	async changed(id: PieceInstanceId, changeType: string): Promise<void> {
