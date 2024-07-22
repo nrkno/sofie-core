@@ -9,7 +9,7 @@ import {
 	PieceExtended,
 	PartExtended,
 	SegmentExtended,
-} from '../../../lib/Rundown'
+} from '../../lib/RundownResolver'
 import { IContextMenuContext } from '../RundownView'
 import { equalSets } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'

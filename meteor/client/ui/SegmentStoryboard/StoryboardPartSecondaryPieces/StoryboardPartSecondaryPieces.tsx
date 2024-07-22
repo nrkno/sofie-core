@@ -1,6 +1,6 @@
 import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import React from 'react'
-import { ISourceLayerExtended, PartExtended } from '../../../../lib/Rundown'
+import { ISourceLayerExtended, PartExtended } from '../../../lib/RundownResolver'
 import { getShowHiddenSourceLayers } from '../../../lib/localStorage'
 import { IOutputLayerUi } from '../../SegmentContainer/withResolvedSegment'
 import { StoryboardSourceLayer } from './StoryboardSourceLayer'

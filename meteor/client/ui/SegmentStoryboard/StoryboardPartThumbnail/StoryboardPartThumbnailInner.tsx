@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { PieceExtended } from '../../../../lib/Rundown'
+import { PieceExtended } from '../../../lib/RundownResolver'
 import { withMediaObjectStatus } from '../../SegmentTimeline/withMediaObjectStatus'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { getElementHeight, getElementWidth } from '../../../utils/dimensions'
