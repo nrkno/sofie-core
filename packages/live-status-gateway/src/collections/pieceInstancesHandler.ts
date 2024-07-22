@@ -47,8 +47,7 @@ export class PieceInstancesHandler
 	private _partInstances: SelectedPartInstances | undefined
 
 	private _throttledUpdateAndNotify = throttleToNextTick(() => {
-		this.updateCollectionData()
-		this.notify(this._collectionData).catch(this._logger.error)
+		this.updateAndNotify().catch(this._logger.error)
 	})
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
@@ -65,6 +64,12 @@ export class PieceInstancesHandler
 			currentPartInstance: [],
 			nextPartInstance: [],
 		}
+
+		setInterval(() => {
+			// HACK: This is a workaround for things that start in the future, we do a sample based on what is active right now,
+			// so if something starts/stops at a specific point in time, the emitted pieces won't automatically update
+			this._throttledUpdateAndNotify()
+		}, 1000)
 	}
 
 	async changed(id: PieceInstanceId, changeType: string): Promise<void> {
@@ -134,15 +139,15 @@ export class PieceInstancesHandler
 		const active = [...inPreviousPartInstance, ...inCurrentPartInstance]
 
 		let hasAnythingChanged = false
-		if (!areElementsShallowEqual(this._collectionData.active, active)) {
+		if (!_.isEqual(this._collectionData.active, active)) {
 			this._collectionData.active = active
 			hasAnythingChanged = true
 		}
 		if (
-			!areElementsShallowEqual(this._collectionData.currentPartInstance, inCurrentPartInstance) &&
+			!_.isEqual(this._collectionData.currentPartInstance, inCurrentPartInstance) &&
 			(this._collectionData.currentPartInstance.length !== inCurrentPartInstance.length ||
 				this._collectionData.currentPartInstance.some((pieceInstance, index) => {
-					return !arePropertiesShallowEqual<ReadonlyDeep<PieceInstance>>(
+					return !arePropertiesDeepEqual<ReadonlyDeep<PieceInstance>>(
 						inCurrentPartInstance[index],
 						pieceInstance,
 						['reportedStartedPlayback', 'reportedStoppedPlayback']
@@ -152,7 +157,7 @@ export class PieceInstancesHandler
 			this._collectionData.currentPartInstance = inCurrentPartInstance
 			hasAnythingChanged = true
 		}
-		if (!areElementsShallowEqual(this._collectionData.nextPartInstance, inNextPartInstance)) {
+		if (!_.isEqual(this._collectionData.nextPartInstance, inNextPartInstance)) {
 			this._collectionData.nextPartInstance = inNextPartInstance
 			hasAnythingChanged = true
 		}
@@ -261,11 +266,7 @@ export class PieceInstancesHandler
 	}
 }
 
-export function arePropertiesShallowEqual<T extends Record<string, any>>(
-	a: T,
-	b: T,
-	omitProperties: Array<keyof T>
-): boolean {
+function arePropertiesDeepEqual<T extends Record<string, any>>(a: T, b: T, omitProperties: Array<keyof T>): boolean {
 	if (typeof a !== 'object' || a == null || typeof b !== 'object' || b == null) {
 		return false
 	}
@@ -276,7 +277,7 @@ export function arePropertiesShallowEqual<T extends Record<string, any>>(
 	if (keysA.length !== keysB.length) return false
 
 	for (const key of keysA) {
-		if (!keysB.includes(key) || a[key] !== b[key]) {
+		if (!keysB.includes(key) || !_.isEqual(a[key], b[key])) {
 			return false
 		}
 	}
