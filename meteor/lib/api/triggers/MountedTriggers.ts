@@ -1,6 +1,7 @@
 import { ISourceLayer, ITranslatableMessage } from '@sofie-automation/blueprints-integration'
 import {
 	AdLibActionId,
+	PeripheralDeviceId,
 	PieceId,
 	RundownBaselineAdLibActionId,
 	TriggeredActionId,
@@ -70,3 +71,14 @@ export interface MountedAdLibTrigger extends MountedTriggerCommon {
 }
 
 export type MountedAdLibTriggerId = ProtectedString<'mountedAdLibTriggerId'>
+
+export type DeviceTriggerPreviewId = ProtectedString<'deviceTriggerPreviewId'>
+
+export interface UIDeviceTriggerPreview {
+	_id: DeviceTriggerPreviewId
+	peripheralDeviceId: PeripheralDeviceId
+	triggerDeviceId: string
+	triggerId: string
+	timestamp: number
+	values?: DeviceTriggerArguments
+}

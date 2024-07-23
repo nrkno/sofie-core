@@ -1,31 +1,20 @@
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { getRandomId } from '@sofie-automation/corelib/dist/lib'
-import { ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { check } from 'meteor/check'
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, MeteorPubSub } from '../../lib/api/pubsub'
-import { DeviceTriggerArguments } from '../../lib/api/triggers/MountedTriggers'
+import { DeviceTriggerArguments, UIDeviceTriggerPreview } from '../../lib/api/triggers/MountedTriggers'
 import { getCurrentTime } from '../../lib/lib'
 import { setUpOptimizedObserverArray, TriggerUpdate } from '../lib/customPublication'
 import { CustomPublish, meteorCustomPublish } from '../lib/customPublication/publish'
 import { StudioReadAccess } from '../security/studio'
 import { PeripheralDevices } from '../collections'
 
-type DeviceTriggerPreviewId = ProtectedString<'deviceTriggerPreviewId'>
-
 /** IDEA: This could potentially be a Capped Collection, thus enabling scaling Core horizontally:
  *  https://www.mongodb.com/docs/manual/core/capped-collections/ */
 const lastTriggers: Record<string, { triggers: UIDeviceTriggerPreview[]; updated?: (() => void) | undefined }> = {}
-
-export interface UIDeviceTriggerPreview {
-	_id: DeviceTriggerPreviewId
-	peripheralDeviceId: PeripheralDeviceId
-	triggerDeviceId: string
-	triggerId: string
-	timestamp: number
-	values?: DeviceTriggerArguments
-}
 
 meteorCustomPublish(
 	MeteorPubSub.deviceTriggersPreview,
