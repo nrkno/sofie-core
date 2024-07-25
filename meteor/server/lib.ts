@@ -4,6 +4,7 @@ import fs from 'fs'
 import path from 'path'
 import { logger } from './logging'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
+import { Meteor } from 'meteor/meteor'
 
 /** Returns absolute path to programs/server directory of your compiled application, without trailing slash. */
 export function getAbsolutePath(): string {

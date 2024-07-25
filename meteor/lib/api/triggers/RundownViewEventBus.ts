@@ -1,8 +1,4 @@
 import EventEmitter from 'events'
-import { ShelfTabs } from '../../../client/ui/Shelf/Shelf'
-import { PieceUi } from '../../../client/ui/SegmentTimeline/SegmentTimelineContainer'
-import { IAdLibListItem } from '../../../client/ui/Shelf/AdLibListItem'
-import { BucketAdLibItem } from '../../../client/ui/Shelf/RundownViewBuckets'
 import { Bucket } from '../../collections/Buckets'
 import {
 	BucketId,
@@ -49,6 +45,11 @@ export enum RundownViewEvents {
 	TOGGLE_SHELF_DROPZONE = 'toggleShelfDropzone',
 	ITEM_DROPPED = 'itemDropped',
 }
+
+type ShelfTabs = unknown
+type PieceUi = unknown
+type IAdLibListItem = unknown
+type BucketAdLibItem = unknown
 
 export interface IEventContext {
 	context?: any
