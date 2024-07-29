@@ -574,6 +574,48 @@ resources:
                     example: No Next point found, please set a part as Next before doing a TAKE.
         500:
           $ref: '#/components/responses/internalServerError'
+  sourceLayers:
+    delete:
+      operationId: clearSourceLayers
+      tags:
+        - sourceLayers
+      summary: Clears the target SourceLayers.
+      parameters:
+        - name: playlistId
+          in: path
+          description: Target playlist.
+          required: true
+          schema:
+            type: string
+        - name: sourceLayerIds
+          in: path
+          description: Target SourceLayers.
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        200:
+          $ref: '#/components/responses/putSuccess'
+        404:
+          $ref: '#/components/responses/playlistNotFound'
+        412:
+          description: Playlist is not active.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 412
+                  message:
+                    type: string
+                    example: Rundown must be active!
+        500:
+          $ref: '#/components/responses/internalServerError'
+
   sourceLayer:
     delete:
       operationId: clearSourceLayer
