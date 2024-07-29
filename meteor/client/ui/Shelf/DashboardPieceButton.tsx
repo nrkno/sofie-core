@@ -19,7 +19,7 @@ import { StyledTimecode } from '../../lib/StyledTimecode'
 import { VTFloatingInspector } from '../FloatingInspectors/VTFloatingInspector'
 import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
 import { L3rdFloatingInspector } from '../FloatingInspectors/L3rdFloatingInspector'
-import { withMediaObjectStatus, WithMediaObjectStatusProps } from '../SegmentTimeline/withMediaObjectStatus'
+import { useContentStatusForAdlibPiece, WithMediaObjectStatusProps } from '../SegmentTimeline/withMediaObjectStatus'
 
 import { isTouchDevice } from '../../lib/lib'
 import { AdLibPieceUi } from '../../lib/shelf'
@@ -489,6 +489,8 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 	}
 }
 
-export const DashboardPieceButton = withMediaObjectStatus<React.PropsWithChildren<IDashboardButtonProps>, {}>()(
-	DashboardPieceButtonBase
-)
+export function DashboardPieceButton(props: React.PropsWithChildren<IDashboardButtonProps>): JSX.Element {
+	const contentStatus = useContentStatusForAdlibPiece(props.piece)
+
+	return <DashboardPieceButtonBase {...props} contentStatus={contentStatus} />
+}

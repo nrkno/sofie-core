@@ -1,49 +1,16 @@
-import React, { useEffect, useState } from 'react'
 import { PieceUi } from './SegmentTimelineContainer'
-import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { RundownUtils } from '../../lib/rundown'
 import { IAdLibListItem } from '../Shelf/AdLibListItem'
 import { BucketAdLibUi, BucketAdLibActionUi } from '../Shelf/RundownViewBuckets'
 import { AdLibPieceUi } from '../../lib/shelf'
-import { UIStudio } from '../../../lib/api/studios'
 import { UIBucketContentStatuses, UIPieceContentStatuses } from '../Collections'
-import { Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PieceContentStatusObj } from '../../../lib/api/pieceContentStatus'
-import { deepFreeze } from '@sofie-automation/corelib/dist/lib'
 import { useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { UIBucketContentStatus, UIPieceContentStatus } from '../../../lib/api/rundownNotifications'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { ReadonlyDeep } from 'type-fest'
-
-type AnyPiece = {
-	piece?: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | BucketAdLibActionUi | undefined
-	layer?: ISourceLayer | undefined
-	isLiveLine?: boolean
-	studio: UIStudio | undefined
-}
-
-type IWrappedComponent<IProps extends AnyPiece, IState> = new (props: IProps, state: IState) => React.Component<
-	IProps,
-	IState
->
-
-const DEFAULT_STATUS = deepFreeze<PieceContentStatusObj>({
-	status: PieceStatusCode.UNKNOWN,
-	messages: [],
-	progress: undefined,
-
-	blacks: [],
-	freezes: [],
-	scenes: [],
-
-	thumbnailUrl: undefined,
-	previewUrl: undefined,
-
-	packageName: null,
-
-	contentDuration: undefined,
-})
 
 function unwrapPieceInstance(piece: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | BucketAdLibActionUi) {
 	if (RundownUtils.isPieceInstance(piece)) {
@@ -82,50 +49,9 @@ function getStatusDocForPiece(
 	})
 }
 
+/** @deprecated */
 export interface WithMediaObjectStatusProps {
 	contentStatus: ReadonlyDeep<PieceContentStatusObj> | undefined
-}
-
-/**
- * @deprecated This can now be achieved by a simple minimongo query against either UIPieceContentStatuses or UIBucketContentStatuses
- */
-export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
-	WrappedComponent:
-		| IWrappedComponent<IProps & WithMediaObjectStatusProps, IState>
-		| React.FC<IProps & WithMediaObjectStatusProps>
-) => React.FC<IProps> {
-	return (WrappedComponent) => {
-		return function WithMediaObjectStatusHOCComponent(props: IProps) {
-			const [invalidationToken, setInvalidationToken] = useState(Date.now())
-			useEffect(() => {
-				// Force an invalidation shortly after mounting
-				const callback = window.requestIdleCallback(
-					() => {
-						setInvalidationToken(Date.now())
-					},
-					{
-						timeout: 500,
-					}
-				)
-				return () => {
-					window.cancelIdleCallback(callback)
-				}
-			}, [])
-
-			const statusObj: ReadonlyDeep<PieceContentStatusObj> | undefined = useTracker(() => {
-				const { piece, studio, layer } = props
-
-				// Check item status
-				if (piece && (piece.sourceLayer || layer) && studio) {
-					// Extract the status or populate some default values
-					return getStatusDocForPiece(piece)?.status ?? DEFAULT_STATUS
-				}
-				return undefined
-			}, [props.piece, props.studio, props.isLiveLine, invalidationToken])
-
-			return <WrappedComponent {...props} contentStatus={statusObj} />
-		}
-	}
 }
 
 export function useContentStatusForAdlibPiece(
@@ -183,7 +109,7 @@ export function useContentStatusForPieceInstance(
 }
 
 export function useContentStatusForItem(
-	piece: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | BucketAdLibActionUi
+	piece: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | BucketAdLibActionUi | undefined
 ): ReadonlyDeep<PieceContentStatusObj> | undefined {
-	return useTracker(() => getStatusDocForPiece(piece)?.status, [piece])
+	return useTracker(() => piece && getStatusDocForPiece(piece)?.status, [piece])
 }

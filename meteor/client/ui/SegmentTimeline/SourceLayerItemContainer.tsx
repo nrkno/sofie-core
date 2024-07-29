@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { ISourceLayerItemProps, SourceLayerItem } from './SourceLayerItem'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { withMediaObjectStatus, WithMediaObjectStatusProps } from './withMediaObjectStatus'
+import { useContentStatusForPieceInstance } from './withMediaObjectStatus'
 import { UIStudio } from '../../../lib/api/studios'
 
 interface IPropsHeader extends Omit<ISourceLayerItemProps, 'contentStatus'> {
@@ -9,6 +9,8 @@ interface IPropsHeader extends Omit<ISourceLayerItemProps, 'contentStatus'> {
 	studio: UIStudio
 }
 
-export const SourceLayerItemContainer = withMediaObjectStatus<IPropsHeader, {}>()(
-	(props: IPropsHeader & WithMediaObjectStatusProps) => <SourceLayerItem {...props} />
-)
+export function SourceLayerItemContainer(props: IPropsHeader): JSX.Element {
+	const contentStatus = useContentStatusForPieceInstance(props.piece.instance)
+
+	return <SourceLayerItem {...props} contentStatus={contentStatus} />
+}

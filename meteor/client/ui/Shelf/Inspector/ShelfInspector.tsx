@@ -9,9 +9,7 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { IAdLibListItem } from '../AdLibListItem'
 import { UIShowStyleBase } from '../../../../lib/api/showStyles'
 import { UIStudio } from '../../../../lib/api/studios'
-import { withMediaObjectStatus, WithMediaObjectStatusProps } from '../../SegmentTimeline/withMediaObjectStatus'
-
-export { ShelfInspector }
+import { useContentStatusForItem } from '../../SegmentTimeline/withMediaObjectStatus'
 
 interface IShelfInspectorProps {
 	selected: BucketAdLibItem | IAdLibListItem | PieceUi | undefined
@@ -21,33 +19,27 @@ interface IShelfInspectorProps {
 	onSelectPiece: (piece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined) => void
 }
 
-const ShelfInspector = withMediaObjectStatus<IShelfInspectorProps, {}>()(
-	class ShelfInspector extends React.Component<IShelfInspectorProps & WithMediaObjectStatusProps> {
-		constructor(props: IShelfInspectorProps & WithMediaObjectStatusProps) {
-			super(props)
-		}
+export const ShelfInspector = React.memo(
+	function ShelfInspector({ selected, showStyleBase, studio, rundownPlaylist, onSelectPiece }: IShelfInspectorProps) {
+		const contentStatus = useContentStatusForItem(selected)
 
-		shouldComponentUpdate(nextProps: IShelfInspectorProps & WithMediaObjectStatusProps): boolean {
-			if (_.isEqual(nextProps, this.props)) return false
-			return true
-		}
+		const content =
+			selected && renderItem(selected, contentStatus, showStyleBase, studio, rundownPlaylist, onSelectPiece)
 
-		render(): JSX.Element {
-			const { selected, contentStatus, showStyleBase, studio, rundownPlaylist, onSelectPiece } = this.props
-			const content =
-				selected && renderItem(selected, contentStatus, showStyleBase, studio, rundownPlaylist, onSelectPiece)
-
-			return (
-				<ContextMenuTrigger
-					id="shelf-context-menu"
-					attributes={{
-						className: 'rundown-view__shelf__contents__pane shelf-inspector',
-					}}
-					holdToDisplay={contextMenuHoldToDisplayTime()}
-				>
-					{content || false}
-				</ContextMenuTrigger>
-			)
-		}
+		return (
+			<ContextMenuTrigger
+				id="shelf-context-menu"
+				attributes={{
+					className: 'rundown-view__shelf__contents__pane shelf-inspector',
+				}}
+				holdToDisplay={contextMenuHoldToDisplayTime()}
+			>
+				{content || false}
+			</ContextMenuTrigger>
+		)
+	},
+	(prevProps, nextProps) => {
+		if (_.isEqual(nextProps, prevProps)) return false
+		return true
 	}
 )
