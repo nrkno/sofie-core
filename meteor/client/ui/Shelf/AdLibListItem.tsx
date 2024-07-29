@@ -4,7 +4,7 @@ import { ISourceLayer, IOutputLayer, IBlueprintActionTriggerMode } from '@sofie-
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { unprotectString } from '../../../lib/lib'
 import renderItem from './Renderers/ItemRendererFactory'
-import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
+import { withMediaObjectStatus, WithMediaObjectStatusProps } from '../SegmentTimeline/withMediaObjectStatus'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { setShelfContextMenuContext, ContextType as MenuContextType } from './ShelfContextMenu'
@@ -31,8 +31,8 @@ interface IListViewItemProps {
 }
 
 export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
-	class AdLibListItem extends React.Component<IListViewItemProps> {
-		constructor(props: IListViewItemProps) {
+	class AdLibListItem extends React.Component<IListViewItemProps & WithMediaObjectStatusProps> {
+		constructor(props: IListViewItemProps & WithMediaObjectStatusProps) {
 			super(props)
 		}
 
@@ -72,11 +72,12 @@ export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 				>
 					{renderItem({
 						adLibListItem: this.props.piece,
+						contentStatus: this.props.contentStatus,
 						layer: this.props.layer,
 						outputLayer: this.props.piece.outputLayer,
 						selected: this.props.selected,
-						status: this.props.piece.contentStatus?.status,
-						messages: this.props.piece.contentStatus?.messages,
+						status: this.props.contentStatus?.status,
+						messages: this.props.contentStatus?.messages,
 						studio: this.props.studio,
 					})}
 				</ContextMenuTrigger>
