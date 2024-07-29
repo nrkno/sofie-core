@@ -40,6 +40,27 @@ describe('Network client', () => {
 		expect(take.status).toBe(200)
 	})
 
+	test('fails to clear the target SourceLayers with null playlistId', async () => {
+		await expect(
+			sourceLayersApi.clearSourceLayers({
+				playlistId: null,
+				sourceLayerIds: ['42'],
+			})
+		).rejects.toThrow()
+	})
+
+	if (testServer) {
+		test('can clear the target SourceLayers', async () => {
+			const sofieVersion = await sourceLayersApi.clearSourceLayers({
+				playlistId: playlistIds[0],
+				sourceLayerIds: ['42'],
+			})
+			expect(sofieVersion.status).toBe(200)
+		})
+	} else {
+		test.todo('Get SourceLayerIds for clear operation')
+	}
+
 	test('fails to clear the target SourceLayer with null playlistId', async () => {
 		await expect(
 			sourceLayersApi.clearSourceLayer({
