@@ -14,7 +14,7 @@ import { VTFloatingInspector } from '../../FloatingInspectors/VTFloatingInspecto
 import { RundownUtils } from '../../../lib/rundown'
 import { FreezeFrameIcon } from '../../../lib/ui/icons/freezeFrame'
 import StudioContext from '../../RundownView/StudioContext'
-import { Settings } from '../../../../lib/Settings'
+import { Settings } from '../../../lib/Settings'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { HourglassIconSmall } from '../../../lib/ui/icons/notifications'

@@ -22,7 +22,7 @@ import { scrollToPart, lockPointer, unlockPointer } from '../../lib/viewPort'
 
 import { getAllowSpeaking, getAllowVibrating, getShowHiddenSourceLayers } from '../../lib/localStorage'
 import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerLockCursor'
-import { Settings } from '../../../lib/Settings'
+import { Settings } from '../../lib/Settings'
 import { IContextMenuContext } from '../RundownView'
 import { literal, protectString, unprotectString } from '../../../lib/lib'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'

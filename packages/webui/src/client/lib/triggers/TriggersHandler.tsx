@@ -22,7 +22,7 @@ import RundownViewEventBus, {
 	TriggerActionEvent,
 } from '../../../lib/api/triggers/RundownViewEventBus'
 import { Tracker } from 'meteor/tracker'
-import { Settings } from '../../../lib/Settings'
+import { Settings } from '../../lib/Settings'
 import { createInMemorySyncMongoCollection } from '../../../lib/collections/lib'
 import { RundownPlaylists } from '../../collections'
 import { UIShowStyleBases, UITriggeredActions } from '../../ui/Collections'

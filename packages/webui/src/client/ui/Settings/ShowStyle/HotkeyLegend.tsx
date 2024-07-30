@@ -21,7 +21,7 @@ import { NotificationCenter, NoticeLevel, Notification } from '../../../lib/noti
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { UploadButton } from '../../../lib/uploadButton'
 import _ from 'underscore'
-import { Settings } from '../../../../lib/Settings'
+import { Settings } from '../../../lib/Settings'
 import { ShowStyleBases } from '../../../collections'
 import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
 
