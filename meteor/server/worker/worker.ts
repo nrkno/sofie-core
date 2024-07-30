@@ -17,7 +17,7 @@ import {
 	Time,
 } from '../../lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
+import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
 import { triggerFastTrackObserver, FastTrackObservers } from '../publications/fastTrack'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { fetchStudioLight } from '../optimizations'

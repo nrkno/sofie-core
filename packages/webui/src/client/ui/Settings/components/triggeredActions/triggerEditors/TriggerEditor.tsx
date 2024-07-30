@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { TFunction } from 'i18next'
 import { SomeBlueprintTrigger, TriggerType } from '@sofie-automation/blueprints-integration'
-import { DBBlueprintTrigger } from '../../../../../../lib/collections/TriggeredActions'
+import { DBBlueprintTrigger } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import { HotkeyTrigger } from './HotkeyTrigger'
 import { usePopper } from 'react-popper'
 import { sameWidth } from '../../../../../lib/popperUtils'

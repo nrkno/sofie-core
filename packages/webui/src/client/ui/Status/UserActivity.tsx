@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useLayoutEffect } from 'react'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Time, unprotectString } from '../../../lib/lib'
-import { UserActionsLogItem } from '../../../lib/collections/UserActionsLog'
+import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
 import { DatePickerFromTo } from '../../lib/datePicker'
 import moment from 'moment'
 import { MeteorPubSub } from '../../../lib/api/pubsub'

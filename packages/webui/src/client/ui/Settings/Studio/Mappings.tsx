@@ -1,7 +1,7 @@
 import ClassNames from 'classnames'
 import React, { useCallback, useMemo } from 'react'
 import Tooltip from 'rc-tooltip'
-import { getActiveRoutes } from '../../../../lib/collections/Studios'
+import { getActiveRoutes } from '@sofie-automation/meteor-lib/dist/collections/Studios'
 import { DBStudio, MappingExt, ResultingMappingRoutes } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'

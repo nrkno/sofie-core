@@ -9,7 +9,7 @@ import { allowAccessToShowStyleBase, allowAccessToShowStyleVariant } from './lib
 import { triggerWriteAccess } from './lib/securityVerify'
 import { Settings } from '../../lib/Settings'
 import { isProtectedString } from '../../lib/lib'
-import { TriggeredActionsObj } from '../../lib/collections/TriggeredActions'
+import { TriggeredActionsObj } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import { SystemWriteAccess } from './system'
 import { fetchShowStyleBaseLight, ShowStyleBaseLight } from '../optimizations'
 import {

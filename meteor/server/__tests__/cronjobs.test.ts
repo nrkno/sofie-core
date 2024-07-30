@@ -3,7 +3,7 @@ import { testInFiber, runAllTimers, beforeAllInFiber, waitUntil } from '../../__
 import { MeteorMock } from '../../__mocks__/meteor'
 import { logger } from '../logging'
 import { getRandomId, getRandomString, protectString } from '../../lib/lib'
-import { SnapshotType } from '../../lib/collections/Snapshots'
+import { SnapshotType } from '@sofie-automation/meteor-lib/dist/collections/Snapshots'
 import { IBlueprintPieceType, PieceLifespan, StatusCode, TSR } from '@sofie-automation/blueprints-integration'
 import {
 	PeripheralDeviceType,

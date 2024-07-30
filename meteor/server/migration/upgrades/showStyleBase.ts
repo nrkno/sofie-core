@@ -14,7 +14,7 @@ import { BlueprintValidateConfigForStudioResult } from '@sofie-automation/coreli
 import { Meteor } from 'meteor/meteor'
 import { Blueprints, ShowStyleBases, TriggeredActions } from '../../collections'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { DBTriggeredActions } from '../../../lib/collections/TriggeredActions'
+import { DBTriggeredActions } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import { evalBlueprint } from '../../api/blueprints/cache'
 import { logger } from '../../logging'
 import { CommonContext } from './context'

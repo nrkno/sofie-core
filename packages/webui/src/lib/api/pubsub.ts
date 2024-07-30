@@ -15,10 +15,13 @@ import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/Medi
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
 import { DBOrganization } from '../collections/Organization'
 import { RundownLayoutBase } from '../collections/RundownLayouts'
-import { SnapshotItem } from '../collections/Snapshots'
-import { TranslationsBundle } from '../collections/TranslationsBundles'
-import { DBTriggeredActions, UITriggeredActionsObj } from '../collections/TriggeredActions'
-import { UserActionsLogItem } from '../collections/UserActionsLog'
+import { SnapshotItem } from '@sofie-automation/meteor-lib/dist/collections/Snapshots'
+import { TranslationsBundle } from '@sofie-automation/meteor-lib/dist/collections/TranslationsBundles'
+import {
+	DBTriggeredActions,
+	UITriggeredActionsObj,
+} from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
+import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
 import { DBUser } from '../collections/Users'
 import { UIBucketContentStatus, UIPieceContentStatus, UISegmentPartNote } from './rundownNotifications'
 import { UIShowStyleBase } from './showStyles'

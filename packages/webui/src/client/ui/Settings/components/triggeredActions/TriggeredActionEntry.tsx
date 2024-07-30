@@ -9,7 +9,7 @@ import {
 	TriggerType,
 } from '@sofie-automation/blueprints-integration'
 import classNames from 'classnames'
-import { DBBlueprintTrigger } from '../../../../../lib/collections/TriggeredActions'
+import { DBBlueprintTrigger } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import { useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { ActionEditor } from './actionEditors/ActionEditor'
 import { OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'

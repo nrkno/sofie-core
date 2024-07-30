@@ -36,7 +36,7 @@ import {
 	PERIPHERAL_SUBTYPE_PROCESS,
 	PeripheralDeviceType,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { TriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
+import { TriggeredActionsObj } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import { Match } from 'meteor/check'
 import { MongoModifier } from '@sofie-automation/corelib/dist/mongo'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'

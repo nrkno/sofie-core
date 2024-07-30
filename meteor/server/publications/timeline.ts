@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { getRoutedTimeline } from '../../lib/collections/Timeline'
+import { getRoutedTimeline } from '@sofie-automation/meteor-lib/dist/collections/Timeline'
 import {
 	RoutedTimeline,
 	TimelineComplete,
@@ -17,7 +17,7 @@ import {
 	setUpOptimizedObserverArray,
 	TriggerUpdate,
 } from '../lib/customPublication'
-import { getActiveRoutes } from '../../lib/collections/Studios'
+import { getActiveRoutes } from '@sofie-automation/meteor-lib/dist/collections/Studios'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { StudioReadAccess } from '../security/studio'
 import { fetchStudioLight } from '../optimizations'

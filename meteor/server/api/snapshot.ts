@@ -12,8 +12,8 @@ import {
 	SnapshotDebug,
 	SnapshotBase,
 	SnapshotRundownPlaylist,
-} from '../../lib/collections/Snapshots'
-import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
+} from '@sofie-automation/meteor-lib/dist/collections/Snapshots'
+import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
 import { PieceGeneric } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import {
@@ -45,7 +45,7 @@ import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { importIngestRundown } from './ingest/http'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
-import { DBTriggeredActions } from '../../lib/collections/TriggeredActions'
+import { DBTriggeredActions } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import { Settings } from '../../lib/Settings'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { Credentials, isResolvedCredentials } from '../security/lib/credentials'

@@ -5,7 +5,7 @@ import { literal, getRandomId, protectString, Complete } from '../../lib/lib'
 import { logger } from '../logging'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { ShowStyleContentWriteAccess } from '../security/showStyle'
-import { DBTriggeredActions, TriggeredActionsObj } from '../../lib/collections/TriggeredActions'
+import { DBTriggeredActions, TriggeredActionsObj } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import {
 	CreateTriggeredActionsContent,
 	NewTriggeredActionsAPI,

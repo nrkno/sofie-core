@@ -17,7 +17,10 @@ import {
 	ShiftRegisterActionArguments,
 } from '../../../lib/api/triggers/MountedTriggers'
 import { isDeviceTrigger } from '../../../lib/api/triggers/triggerTypeSelectors'
-import { DBTriggeredActions, UITriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
+import {
+	DBTriggeredActions,
+	UITriggeredActionsObj,
+} from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import { DummyReactiveVar, protectString } from '../../../lib/lib'
 import { StudioActionManager, StudioActionManagers } from './StudioActionManagers'
 import { DeviceTriggerMountedActionAdlibsPreview, DeviceTriggerMountedActions } from './observer'

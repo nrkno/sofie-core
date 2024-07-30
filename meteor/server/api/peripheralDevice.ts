@@ -29,7 +29,7 @@ import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { checkAccessAndGetPeripheralDevice } from './ingest/lib'
-import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
+import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
 import { PackageManagerIntegration } from './integration/expectedPackages'
 import { profiler } from './profiler'
 import { QueueStudioJob } from '../worker/worker'

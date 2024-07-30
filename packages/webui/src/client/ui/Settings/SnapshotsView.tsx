@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Translated, useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { doModalDialog } from '../../lib/ModalDialog'
-import { SnapshotItem } from '../../../lib/collections/Snapshots'
+import { SnapshotItem } from '@sofie-automation/meteor-lib/dist/collections/Snapshots'
 import { unprotectString } from '../../../lib/lib'
 import * as _ from 'underscore'
 import { logger } from '../../../lib/logging'

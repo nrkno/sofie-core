@@ -30,11 +30,11 @@ import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/Perip
 import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { SnapshotItem } from '../../lib/collections/Snapshots'
+import { SnapshotItem } from '@sofie-automation/meteor-lib/dist/collections/Snapshots'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { TranslationsBundle } from '../../lib/collections/TranslationsBundles'
-import { DBTriggeredActions } from '../../lib/collections/TriggeredActions'
-import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
+import { TranslationsBundle } from '@sofie-automation/meteor-lib/dist/collections/TranslationsBundles'
+import { DBTriggeredActions } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
+import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
 import { DBUser } from '../../lib/collections/Users'
 
 // Future: remove the need for this

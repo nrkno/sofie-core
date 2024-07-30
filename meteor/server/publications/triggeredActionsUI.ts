@@ -3,7 +3,10 @@ import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settin
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, MeteorPubSub } from '../../lib/api/pubsub'
-import { DBTriggeredActions, UITriggeredActionsObj } from '../../lib/collections/TriggeredActions'
+import {
+	DBTriggeredActions,
+	UITriggeredActionsObj,
+} from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import { Complete, literal } from '../../lib/lib'
 import {
 	CustomPublishCollection,
