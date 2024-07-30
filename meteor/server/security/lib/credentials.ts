@@ -1,4 +1,4 @@
-import { User } from '../../../lib/collections/Users'
+import { User } from '@sofie-automation/meteor-lib/dist/collections/Users'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { cacheResult, isProtectedString, clearCacheResult } from '../../../lib/lib'
 import { LIMIT_CACHE_TIME } from './security'

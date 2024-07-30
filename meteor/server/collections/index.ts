@@ -24,7 +24,7 @@ import { DBTimelineDatastoreEntry } from '@sofie-automation/corelib/dist/dataMod
 import { TranslationsBundle } from '@sofie-automation/meteor-lib/dist/collections/TranslationsBundles'
 import { DBTriggeredActions } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
-import { DBUser } from '../../lib/collections/Users'
+import { DBUser } from '@sofie-automation/meteor-lib/dist/collections/Users'
 import { WorkerStatus } from '@sofie-automation/meteor-lib/dist/collections/Workers'
 import { registerIndex } from './indices'
 import { getCurrentTime, MeteorStartupAsync } from '../../lib/lib'

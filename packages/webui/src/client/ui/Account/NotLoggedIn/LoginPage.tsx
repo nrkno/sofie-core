@@ -5,7 +5,8 @@ import { Translated, translateWithTracker } from '../../../lib/ReactMeteorData/r
 import { Link } from 'react-router-dom'
 import type { RouteComponentProps } from 'react-router'
 import { StatusResponse } from '../../../../lib/api/systemStatus'
-import { getUser, User } from '../../../../lib/collections/Users'
+import { getUser } from '../../../lib/userInfo'
+import { User } from '@sofie-automation/meteor-lib/dist/collections/Users'
 import { NotLoggedInContainer } from './lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 

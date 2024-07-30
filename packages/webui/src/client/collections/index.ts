@@ -35,7 +35,7 @@ import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { TranslationsBundle } from '@sofie-automation/meteor-lib/dist/collections/TranslationsBundles'
 import { DBTriggeredActions } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
-import { DBUser } from '../../lib/collections/Users'
+import { DBUser } from '@sofie-automation/meteor-lib/dist/collections/Users'
 
 // Future: remove the need for this
 export * from '../../lib/collections/libCollections'

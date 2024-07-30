@@ -1,36 +1,9 @@
 import { Meteor } from 'meteor/meteor'
-import { unprotectString } from '../lib'
 import { UserRoles, DBOrganization } from '@sofie-automation/meteor-lib/dist/collections/Organization'
-import { UserId, OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Organizations } from '../collections/libCollections'
-
-export interface UserProfile {
-	name: string
-}
-
-export interface DBUser {
-	// Note: This interface is partly defined by the dataset from the Meteor.users collection
-
-	_id: UserId
-	createdAt: string
-	services: {
-		password: {
-			bcrypt: string
-		}
-	}
-	username: string
-	emails: [
-		{
-			address: string
-			verified: boolean
-		}
-	]
-	profile: UserProfile
-	organizationId: OrganizationId
-	superAdmin?: boolean
-}
-
-export type User = DBUser // to be replaced by a class somet ime later?
+import { Organizations } from '../../lib/collections/libCollections'
+import { User } from '@sofie-automation/meteor-lib/dist/collections/Users'
+import { UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 
 /** Returns the currently logged in user, or null if not logged in */
 export function getUser(): User | null {

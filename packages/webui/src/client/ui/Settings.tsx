@@ -11,7 +11,7 @@ import BlueprintSettings from './Settings/BlueprintSettings'
 import SystemManagement from './Settings/SystemManagement'
 
 import { MigrationView } from './Settings/Migration'
-import { getUser } from '../../lib/collections/Users'
+import { getUser } from '../lib/userInfo'
 import { Settings as MeteorSettings } from '../../lib/Settings'
 import { SettingsMenu } from './Settings/SettingsMenu'
 import { getAllowConfigure } from '../lib/localStorage'

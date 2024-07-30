@@ -22,7 +22,7 @@ import {
 	UITriggeredActionsObj,
 } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
-import { DBUser } from '../collections/Users'
+import { DBUser } from '@sofie-automation/meteor-lib/dist/collections/Users'
 import { UIBucketContentStatus, UIPieceContentStatus, UISegmentPartNote } from './rundownNotifications'
 import { UIShowStyleBase } from './showStyles'
 import { UIStudio } from './studios'

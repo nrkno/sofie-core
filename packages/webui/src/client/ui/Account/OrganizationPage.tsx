@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react'
 import { useSubscriptions, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { getUser, DBUser, getUserRolesFromLoadedDocuments } from '../../../lib/collections/Users'
+import { getUser, getUserRolesFromLoadedDocuments } from '../../lib/userInfo'
+import { DBUser } from '@sofie-automation/meteor-lib/dist/collections/Users'
 import { Spinner } from '../../lib/Spinner'
 import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { DBOrganization, UserRoles } from '@sofie-automation/meteor-lib/dist/collections/Organization'

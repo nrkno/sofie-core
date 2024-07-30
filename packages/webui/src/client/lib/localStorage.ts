@@ -1,5 +1,5 @@
 import { Settings } from '../../lib/Settings'
-import { getUserRoles } from '../../lib/collections/Users'
+import { getUserRoles } from '../lib/userInfo'
 import {
 	setReportNotifications as libSetReportNotifications,
 	getReportNotifications as libGetReportNotifications,
