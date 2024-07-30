@@ -3,7 +3,7 @@ import { Translated, useSubscription, useTracker } from '../../lib/ReactMeteorDa
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getCurrentTime } from '../../../lib/lib'
 import { invalidateAfter } from '../../lib/invalidatingTime'
-import { MeteorPubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import classNames from 'classnames'
 import { Clock } from './Clock'
 import { Countdown } from './Countdown'

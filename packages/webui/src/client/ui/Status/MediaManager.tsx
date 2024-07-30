@@ -12,7 +12,7 @@ import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/Medi
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
 import { useTranslation } from 'react-i18next'
 import { extendMandadory, unprotectString } from '../../../lib/lib'
-import { MeteorPubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { Spinner } from '../../lib/Spinner'
 import { sofieWarningIcon as WarningIcon } from '../../lib/notifications/warningIcon'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'

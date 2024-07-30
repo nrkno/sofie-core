@@ -6,7 +6,7 @@ import { Evaluation } from '@sofie-automation/meteor-lib/dist/collections/Evalua
 import { DatePickerFromTo } from '../../lib/datePicker'
 import moment from 'moment'
 import { getQuestionOptions } from '../AfterBroadcastForm'
-import { MeteorPubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { Evaluations } from '../../collections'
 import { DropdownInputOption } from '../../lib/Components/DropdownInput'
 import { useTranslation } from 'react-i18next'

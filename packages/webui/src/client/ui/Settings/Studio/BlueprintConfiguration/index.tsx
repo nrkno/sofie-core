@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { SelectConfigPreset } from './SelectConfigPreset'
 import { SelectBlueprint } from './SelectBlueprint'
-import { MeteorPubSub } from '../../../../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { UIBlueprintUpgradeStatuses } from '../../../Collections'
 import { getUpgradeStatusMessage, UpgradeStatusButtons } from '../../Upgrades/Components'
 

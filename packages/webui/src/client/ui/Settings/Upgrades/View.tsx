@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Spinner } from '../../../lib/Spinner'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { useSubscription, useTracker } from '../../../lib/ReactMeteorData/ReactMeteorData'
-import { MeteorPubSub } from '../../../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { UIBlueprintUpgradeStatuses } from '../../Collections'
 import {
 	UIBlueprintUpgradeStatusShowStyle,

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { meteorSubscribe } from '../../../lib/api/pubsub'
+import { meteorSubscribe } from '../../lib/meteorApi'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import {
 	// PartUi,

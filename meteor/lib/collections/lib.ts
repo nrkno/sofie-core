@@ -5,7 +5,7 @@ import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyE
 import type { Collection as RawCollection, Db as RawDb } from 'mongodb'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { MongoFieldSpecifier, MongoModifier, MongoQuery, SortSpecifier } from '@sofie-automation/corelib/dist/mongo'
-import { CustomCollectionName, MeteorPubSubCustomCollections } from '../api/pubsub'
+import { CustomCollectionName, MeteorPubSubCustomCollections } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import {
 	PeripheralDevicePubSubCollections,
 	PeripheralDevicePubSubCollectionsNames,

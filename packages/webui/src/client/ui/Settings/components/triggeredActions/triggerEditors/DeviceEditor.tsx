@@ -2,7 +2,7 @@ import { IBlueprintDeviceTrigger } from '@sofie-automation/blueprints-integratio
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import classNames from 'classnames'
 import { useMemo } from 'react'
-import { MeteorPubSub } from '../../../../../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { Studios } from '../../../../../collections'
 import { getCurrentTime } from '../../../../../../lib/lib'
 import { UIDeviceTriggerPreview } from '../../../../../../lib/api/triggers/MountedTriggers'

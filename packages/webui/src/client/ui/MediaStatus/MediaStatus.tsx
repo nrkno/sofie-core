@@ -1,6 +1,6 @@
 import { useMemo, JSX } from 'react'
 import { useSubscription, useSubscriptions, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { MeteorPubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { getSegmentsWithPartInstances } from '../../lib/RundownResolver'
 import {
 	AdLibActionId,

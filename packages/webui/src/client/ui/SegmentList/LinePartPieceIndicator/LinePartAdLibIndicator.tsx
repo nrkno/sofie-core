@@ -10,7 +10,7 @@ import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMes
 import StudioContext from '../../RundownView/StudioContext'
 import { AdLibActions, AdLibPieces } from '../../../collections'
 import RundownViewEventBus, { RundownViewEvents } from '../../../../lib/api/triggers/RundownViewEventBus'
-import { MeteorPubSub } from '../../../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 
 interface IProps {
 	sourceLayers: ISourceLayerExtended[]

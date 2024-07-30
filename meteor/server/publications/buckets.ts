@@ -1,7 +1,7 @@
 import { FindOptions } from '../../lib/collections/lib'
 import { BucketSecurity } from '../security/buckets'
 import { meteorPublish } from './lib'
-import { MeteorPubSub } from '../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
 import { StudioReadAccess } from '../security/studio'
 import { isProtectedString } from '@sofie-automation/corelib/dist/protectedString'

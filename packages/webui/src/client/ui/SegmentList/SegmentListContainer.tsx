@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { meteorSubscribe } from '../../../lib/api/pubsub'
+import { meteorSubscribe } from '../../lib/meteorApi'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import {
 	withResolvedSegment,

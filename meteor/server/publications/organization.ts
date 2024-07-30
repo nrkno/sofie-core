@@ -1,5 +1,5 @@
 import { meteorPublish, AutoFillSelector } from './lib'
-import { MeteorPubSub } from '../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { Evaluation } from '@sofie-automation/meteor-lib/dist/collections/Evaluations'
 import { SnapshotItem } from '@sofie-automation/meteor-lib/dist/collections/Snapshots'

@@ -1,6 +1,6 @@
 import { TranslationsBundlesSecurity } from '../security/translationsBundles'
 import { meteorPublish } from './lib'
-import { MeteorPubSub } from '../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { TranslationsBundles } from '../collections'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { TranslationsBundle } from '@sofie-automation/meteor-lib/dist/collections/TranslationsBundles'

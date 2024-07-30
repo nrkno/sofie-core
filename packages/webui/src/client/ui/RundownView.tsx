@@ -72,7 +72,8 @@ import {
 } from '@sofie-automation/meteor-lib/dist/api/userActions'
 import { hashSingleUseToken } from '../lib/lib'
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
-import { MeteorPubSub, meteorSubscribe } from '../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
+import { meteorSubscribe } from '../lib/meteorApi'
 import {
 	RundownLayoutType,
 	RundownLayoutBase,

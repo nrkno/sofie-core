@@ -1,6 +1,6 @@
 import { UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Meteor } from 'meteor/meteor'
-import { AllPubSubTypes } from '../../../lib/api/pubsub'
+import { AllPubSubTypes } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { ProtectedString, unprotectString } from '../../../lib/lib'
 import { PublishDocType, SubscriptionContext, meteorPublishUnsafe } from '../../publications/lib'
 

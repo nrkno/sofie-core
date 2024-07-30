@@ -1,4 +1,4 @@
-import { CustomCollectionName } from '../../lib/api/pubsub'
+import { CustomCollectionName } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { createSyncCustomPublicationMongoCollection } from '../../lib/collections/lib'
 
 /**

@@ -16,7 +16,7 @@ import {
 import { WithManagedTracker } from './reactiveData/reactiveDataHelper'
 import { withTranslation } from 'react-i18next'
 import { NotificationCenterPopUps } from './notifications/NotificationCenterPanel'
-import { MeteorPubSub } from '../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { ICoreSystem, ServiceMessage, Criticality } from '../../lib/collections/CoreSystem'
 import { TFunction } from 'react-i18next'
 import { getRandomId } from '@sofie-automation/corelib/dist/lib'

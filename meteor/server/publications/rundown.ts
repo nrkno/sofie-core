@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { meteorPublish, AutoFillSelector } from './lib'
-import { MeteorPubSub } from '../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { MongoFieldSpecifierZeroes, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { RundownReadAccess } from '../security/rundown'

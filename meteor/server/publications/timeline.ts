@@ -9,7 +9,7 @@ import {
 	TimelineBlob,
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { meteorPublish } from './lib'
-import { MeteorPubSub } from '../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { FindOptions } from '../../lib/collections/lib'
 import {
 	CustomPublish,

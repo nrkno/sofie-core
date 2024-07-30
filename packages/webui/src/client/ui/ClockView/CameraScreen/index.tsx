@@ -3,7 +3,7 @@ import { CameraContent, RemoteContent, SourceLayerType, SplitsContent } from '@s
 import { RundownId, ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { MeteorPubSub } from '../../../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PieceExtended } from '../../../lib/RundownResolver'

@@ -7,7 +7,7 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { MeteorMethodSignatures } from '../../../methods'
-import { MeteorPubSub } from '../../../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { MeteorPublications, MeteorPublicationSignatures } from '../../../publications/lib'
 import { UserActionAPIMethods } from '@sofie-automation/meteor-lib/dist/api/userActions'
 import { logger } from '../../../../lib/logging'

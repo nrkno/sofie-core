@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react'
 import { useTracker, useSubscription } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ICoreSystem, SofieLogo } from '../../../lib/collections/CoreSystem'
-import { MeteorPubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorCall } from '../../../lib/api/methods'

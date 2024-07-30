@@ -3,7 +3,7 @@ import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-met
 import * as _ from 'underscore'
 import { deserializeTimelineBlob, TimelineHash } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { applyToArray, clone, normalizeArray, protectString } from '../../../lib/lib'
-import { MeteorPubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import {
 	TimelineState,
 	ResolvedTimelineObjectInstance,

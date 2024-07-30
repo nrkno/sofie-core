@@ -1,5 +1,5 @@
 import { Meteor, Subscription } from 'meteor/meteor'
-import { AllPubSubCollections, AllPubSubTypes } from '../../lib/api/pubsub'
+import { AllPubSubCollections, AllPubSubTypes } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { extractFunctionSignature } from '../lib'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { ResolvedCredentials, resolveCredentials } from '../security/lib/credentials'

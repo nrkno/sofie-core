@@ -1,5 +1,5 @@
 import Tooltip from 'rc-tooltip'
-import { MeteorPubSub } from '../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getAllowConfigure, getAllowStudio, getHelpMode } from '../lib/localStorage'

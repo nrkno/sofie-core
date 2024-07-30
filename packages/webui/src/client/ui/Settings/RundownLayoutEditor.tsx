@@ -19,7 +19,7 @@ import {
 	CustomizableRegionSettingsManifest,
 	RundownLayoutsAPI,
 } from '../../../lib/api/rundownLayouts'
-import { MeteorPubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { getRandomString, literal, unprotectString } from '../../../lib/lib'
 import { UploadButton } from '../../lib/uploadButton'
 import { doModalDialog } from '../../lib/ModalDialog'
