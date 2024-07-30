@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { UserRoles, DBOrganization } from '@sofie-automation/meteor-lib/dist/collections/Organization'
-import { Organizations } from '../../lib/collections/libCollections'
+import { Organizations } from '../collections/index'
 import { User } from '@sofie-automation/meteor-lib/dist/collections/Users'
 import { UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'

@@ -15,7 +15,7 @@ import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRe
 import { CurrentPartElapsed } from '../RundownView/RundownTiming/CurrentPartElapsed'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 
 interface IPartTimingPanelProps {
 	visible?: boolean

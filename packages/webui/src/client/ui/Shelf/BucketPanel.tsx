@@ -70,7 +70,7 @@ import {
 	ShowStyleBaseId,
 	ShowStyleVariantId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { withTranslation } from 'react-i18next'
 import { useRundownAndShowStyleIdsForPlaylist } from '../util/useRundownAndShowStyleIdsForPlaylist'

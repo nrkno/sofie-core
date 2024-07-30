@@ -40,7 +40,7 @@ import {
 	MountedHotkeyMixin,
 } from '@sofie-automation/meteor-lib/dist/api/MountedTriggers'
 import { isHotkeyTrigger } from '../../../lib/api/triggers/triggerTypeSelectors'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 import { catchError } from '../lib'
 import { logger } from '../logging'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'

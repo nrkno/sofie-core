@@ -15,7 +15,7 @@ import { dashboardElementStyle } from './DashboardPanel'
 import { Meteor } from 'meteor/meteor'
 import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PartInstances } from '../../collections'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 
 interface IMiniRundownPanelProps {
 	key: string

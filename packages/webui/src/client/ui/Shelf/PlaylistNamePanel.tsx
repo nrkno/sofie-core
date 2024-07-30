@@ -13,7 +13,7 @@ import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Rundowns } from '../../collections'
 import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { logger } from '../../lib/logging'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 
 interface IPlaylistNamePanelProps {
 	visible?: boolean

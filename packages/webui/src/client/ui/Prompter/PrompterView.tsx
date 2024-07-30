@@ -29,7 +29,7 @@ import { PartInstanceId, PieceId, RundownPlaylistId, StudioId } from '@sofie-aut
 import { UIStudios } from '../Collections'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { RundownPlaylists, Rundowns } from '../../collections'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 import { logger } from '../../lib/logging'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { withTranslation } from 'react-i18next'

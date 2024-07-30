@@ -20,7 +20,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylists, PieceInstances, Pieces, Segments } from '../../collections'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 
 // export interface NewPrompterAPI {

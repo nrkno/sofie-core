@@ -15,7 +15,7 @@ import { pieceIconSupportedLayers } from '../PieceIcons/PieceIcon'
 import { RundownUtils } from '../../lib/rundown'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { PieceInstances } from '../../collections'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 
 interface IPartNamePanelProps {
 	visible?: boolean

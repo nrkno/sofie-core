@@ -27,7 +27,7 @@ import { PartId, RundownId, ShowStyleBaseId, TriggeredActionId } from '@sofie-au
 import { PartInstances, Parts, RundownPlaylists, Rundowns, TriggeredActions } from '../../../../collections'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { SourceLayers, OutputLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { RundownPlaylistCollectionUtil } from '../../../../../lib/collections/rundownPlaylistUtil'
+import { RundownPlaylistCollectionUtil } from '../../../../collections/rundownPlaylistUtil'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 export interface PreviewContext {

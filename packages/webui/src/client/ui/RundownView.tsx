@@ -151,7 +151,7 @@ import {
 	ShowStyleVariants,
 } from '../collections'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
-import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlaylistUtil'
+import { RundownPlaylistCollectionUtil } from '../collections/rundownPlaylistUtil'
 import { SegmentAdlibTestingContainer } from './SegmentAdlibTesting/SegmentAdlibTestingContainer'
 import { PromiseButton } from '../lib/Components/PromiseButton'
 import { logger } from '../lib/logging'

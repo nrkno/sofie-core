@@ -61,7 +61,7 @@ import {
 	RundownBaselineAdLibActions,
 	RundownBaselineAdLibPieces,
 } from '../../collections'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 
 export interface IAdLibPanelProps {
 	// liveSegment: Segment | undefined

@@ -34,7 +34,7 @@ import {
 	RundownPlaylists,
 	Rundowns,
 	Segments,
-} from '../../collections/libCollections'
+} from '../../../client/collections/index'
 import { MountedAdLibTriggerType } from '@sofie-automation/meteor-lib/dist/api/MountedTriggers'
 
 export type AdLibFilterChainLink = IRundownPlaylistFilterLink | IGUIContextFilterLink | IAdLibFilterLink

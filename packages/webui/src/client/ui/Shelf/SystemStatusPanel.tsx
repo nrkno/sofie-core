@@ -11,7 +11,7 @@ import { RundownSystemStatus } from '../RundownView/RundownSystemStatus'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylists, Rundowns } from '../../collections'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 import { useTranslation } from 'react-i18next'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 

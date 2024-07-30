@@ -11,7 +11,7 @@ import { RundownLayoutsAPI } from '../../lib/rundownLayouts'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 
 interface ISegmentNamePanelProps {
 	visible?: boolean

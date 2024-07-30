@@ -22,8 +22,8 @@ import {
 	SegmentId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PieceInstances, Pieces } from '../../lib/collections/libCollections'
-import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlaylistUtil'
+import { PieceInstances, Pieces } from '../collections/index'
+import { RundownPlaylistCollectionUtil } from '../collections/rundownPlaylistUtil'
 import { PieceContentStatusObj } from '@sofie-automation/meteor-lib/dist/api/pieceContentStatus'
 import { ReadonlyDeep } from 'type-fest'
 import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'

@@ -35,7 +35,7 @@ import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyle
 import { UIShowStyleBases, UIStudios } from '../Collections'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { PieceInstances, RundownLayouts, RundownPlaylists, Rundowns, ShowStyleVariants } from '../../collections'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { useSetDocumentClass } from '../util/useSetDocumentClass'
 import { useRundownAndShowStyleIdsForPlaylist } from '../util/useRundownAndShowStyleIdsForPlaylist'

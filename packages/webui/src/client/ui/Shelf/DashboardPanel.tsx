@@ -29,7 +29,7 @@ import {
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { UIStudios } from '../Collections'
 import { PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { useTranslation } from 'react-i18next'
 

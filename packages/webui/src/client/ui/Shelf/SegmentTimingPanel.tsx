@@ -21,7 +21,7 @@ import { RundownLayoutsAPI } from '../../lib/rundownLayouts'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { PartId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 
 interface ISegmentTimingPanelProps {
 	visible?: boolean

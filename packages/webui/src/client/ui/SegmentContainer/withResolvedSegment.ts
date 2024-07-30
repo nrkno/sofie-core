@@ -37,7 +37,7 @@ import {
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstances, Segments } from '../../collections'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 import { ReadonlyDeep } from 'type-fest'
 import { PieceContentStatusObj } from '@sofie-automation/meteor-lib/dist/api/pieceContentStatus'
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'

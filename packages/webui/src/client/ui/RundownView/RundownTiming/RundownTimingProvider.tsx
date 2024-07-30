@@ -10,7 +10,7 @@ import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { RundownTimingCalculator, RundownTimingContext } from '../../../lib/rundownTiming'
 import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownPlaylistCollectionUtil } from '../../../../lib/collections/rundownPlaylistUtil'
+import { RundownPlaylistCollectionUtil } from '../../../collections/rundownPlaylistUtil'
 import { sortPartInstancesInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
 
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
