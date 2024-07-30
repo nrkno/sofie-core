@@ -22,7 +22,7 @@ import { DBUser } from '../collections/Users'
 import { UIBucketContentStatus, UIPieceContentStatus, UISegmentPartNote } from './rundownNotifications'
 import { UIShowStyleBase } from './showStyles'
 import { UIStudio } from './studios'
-import { UIDeviceTriggerPreview } from './triggers/MountedTriggers'
+import { UIDeviceTriggerPreview } from './MountedTriggers'
 import { UIBlueprintUpgradeStatus } from './upgradeStatus'
 import {
 	PeripheralDevicePubSub,
