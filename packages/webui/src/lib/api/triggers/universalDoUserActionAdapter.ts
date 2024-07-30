@@ -2,7 +2,7 @@ import { TFunction } from 'i18next'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../client'
 import { doUserAction as clientDoUserAction } from '../../clientUserAction'
-import { UserAction } from '../../userAction'
+import { UserAction } from '@sofie-automation/meteor-lib/dist/userAction'
 import { getCurrentTime, Time } from '../../lib'
 
 export function doUserAction<Result>(

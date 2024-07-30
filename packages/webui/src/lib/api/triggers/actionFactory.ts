@@ -20,7 +20,7 @@ import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { assertNever, DummyReactiveVar } from '../../lib'
 import { logger } from '../../logging'
 import RundownViewEventBus, { RundownViewEvents } from './RundownViewEventBus'
-import { UserAction } from '../../userAction'
+import { UserAction } from '@sofie-automation/meteor-lib/dist/userAction'
 import { doUserAction } from './universalDoUserActionAdapter'
 import {
 	AdLibFilterChainLink,
