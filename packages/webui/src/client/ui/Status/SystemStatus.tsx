@@ -20,7 +20,7 @@ import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notific
 import { getAllowConfigure, getAllowDeveloper, getAllowStudio, getHelpMode } from '../../lib/localStorage'
 import ClassNames from 'classnames'
 import { StatusCode, TSR } from '@sofie-automation/blueprints-integration'
-import { ICoreSystem } from '../../../lib/collections/CoreSystem'
+import { ICoreSystem } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
 import { StatusResponse } from '@sofie-automation/meteor-lib/dist/api/systemStatus'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { MeteorCall } from '../../../lib/api/methods'

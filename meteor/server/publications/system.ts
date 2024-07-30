@@ -4,7 +4,7 @@ import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { SystemReadAccess } from '../security/system'
 import { OrganizationReadAccess } from '../security/organization'
 import { CoreSystem, Users } from '../collections'
-import { SYSTEM_ID } from '../../lib/collections/CoreSystem'
+import { SYSTEM_ID } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
 import { OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 meteorPublish(MeteorPubSub.coreSystem, async function (token: string | undefined) {

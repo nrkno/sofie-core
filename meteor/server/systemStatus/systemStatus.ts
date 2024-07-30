@@ -7,7 +7,7 @@ import {
 	stripVersion,
 	compareSemverVersions,
 	isPrerelease,
-} from '../../lib/collections/CoreSystem'
+} from './semverUtils'
 import {
 	StatusResponse,
 	CheckObj,

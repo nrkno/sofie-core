@@ -5,7 +5,7 @@ import { generateTranslation, literal, protectString, unprotectString } from '..
 import { MeteorMock } from '../../../__mocks__/meteor'
 import { status2ExternalStatus, setSystemStatus } from '../systemStatus'
 import { StatusResponse } from '@sofie-automation/meteor-lib/dist/api/systemStatus'
-import { stripVersion } from '../../../lib/collections/CoreSystem'
+import { stripVersion } from '../semverUtils'
 import semver from 'semver'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../../lib/api/methods'

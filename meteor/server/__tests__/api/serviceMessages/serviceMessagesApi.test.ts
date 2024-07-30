@@ -6,7 +6,7 @@ import {
 	ExternalServiceMessage,
 	ICoreSystem,
 	ServiceMessage,
-} from '../../../../lib/collections/CoreSystem'
+} from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
 import { CoreSystem } from '../../../collections'
 import { SupressLogMessages } from '../../../../__mocks__/suppressLogging'
 

@@ -18,7 +18,7 @@ import { deferAsync, normalizeArrayToMap } from '@sofie-automation/corelib/dist/
 import { getCoreSystemAsync } from './coreSystem/collection'
 import { cleanupOldDataInner } from './api/cleanup'
 import { CollectionCleanupResult } from '@sofie-automation/meteor-lib/dist/api/system'
-import { ICoreSystem } from '../lib/collections/CoreSystem'
+import { ICoreSystem } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
 import { executePeripheralDeviceFunctionWithCustomTimeout } from './api/peripheralDevice/executeFunction'
 import {
 	interpollateTranslation,

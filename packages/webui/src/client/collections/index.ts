@@ -18,7 +18,7 @@ import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/Medi
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
 import { Meteor } from 'meteor/meteor'
 import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
-import { ICoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
+import { ICoreSystem, SYSTEM_ID } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
 import { Evaluation } from '@sofie-automation/meteor-lib/dist/collections/Evaluations'
 import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import {

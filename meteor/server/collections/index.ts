@@ -10,7 +10,7 @@ import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataMode
 import { PeripheralDeviceCommand } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceCommand'
 import { WorkerThreadStatus } from '@sofie-automation/corelib/dist/dataModel/WorkerThreads'
 import { Meteor } from 'meteor/meteor'
-import { ICoreSystem } from '../../lib/collections/CoreSystem'
+import { ICoreSystem } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
 import { Evaluation } from '@sofie-automation/meteor-lib/dist/collections/Evaluations'
 import { DBOrganization } from '@sofie-automation/meteor-lib/dist/collections/Organization'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'

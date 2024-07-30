@@ -1,6 +1,6 @@
 import Tooltip from 'rc-tooltip'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
-import { GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
+import { GENESIS_SYSTEM_VERSION } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getAllowConfigure, getAllowStudio, getHelpMode } from '../lib/localStorage'
 import { literal, unprotectString } from '../../lib/lib'

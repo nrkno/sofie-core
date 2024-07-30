@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { setupEmptyEnvironment } from '../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
-import { ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../../lib/collections/CoreSystem'
+import { ICoreSystem, GENESIS_SYSTEM_VERSION } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
 import { clearMigrationSteps, addMigrationSteps, prepareMigration, PreparedMigration } from '../databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from '../currentSystemVersion'
 import { RunMigrationResult, GetMigrationStatusResult } from '@sofie-automation/meteor-lib/dist/api/migration'

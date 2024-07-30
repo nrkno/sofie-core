@@ -36,7 +36,8 @@ import {
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
-import { ICoreSystem, SYSTEM_ID, stripVersion } from '../../lib/collections/CoreSystem'
+import { ICoreSystem, SYSTEM_ID } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
+import { stripVersion } from '../../server/systemStatus/semverUtils'
 import { internalUploadBlueprint } from '../../server/api/blueprints/api'
 import {
 	literal,

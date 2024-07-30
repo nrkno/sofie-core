@@ -9,7 +9,7 @@ import {
 	parseRange,
 	isPrerelease,
 	parseCoreIntegrationCompatabilityRange,
-} from '../../lib/collections/CoreSystem'
+} from '../systemStatus/semverUtils'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { lazyIgnore } from '../../lib/lib'
