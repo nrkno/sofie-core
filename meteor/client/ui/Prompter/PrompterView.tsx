@@ -44,6 +44,7 @@ interface PrompterConfig {
 	joycon_rangeNeutralMin?: number
 	joycon_rangeNeutralMax?: number
 	joycon_rangeFwdMax?: number
+	joycon_rightHandOffset?: number
 	pedal_speedMap?: number[]
 	pedal_reverseSpeedMap?: number[]
 	pedal_rangeRevMin?: number
@@ -144,6 +145,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			joycon_rangeNeutralMin: parseInt(firstIfArray(queryParams['joycon_rangeNeutralMin']) as string, 10) || undefined,
 			joycon_rangeNeutralMax: parseInt(firstIfArray(queryParams['joycon_rangeNeutralMax']) as string, 10) || undefined,
 			joycon_rangeFwdMax: parseInt(firstIfArray(queryParams['joycon_rangeFwdMax']) as string, 10) || undefined,
+			joycon_rightHandOffset: parseInt(firstIfArray(queryParams['joycon_rightHandOffset']) as string, 10) || undefined,
 			pedal_speedMap:
 				queryParams['pedal_speedMap'] === undefined
 					? undefined
