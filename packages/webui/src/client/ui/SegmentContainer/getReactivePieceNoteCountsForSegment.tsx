@@ -1,7 +1,7 @@
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { assertNever, literal } from '@sofie-automation/corelib/dist/lib'
 import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
-import { UIPieceContentStatus, UISegmentPartNote } from '../../../lib/api/rundownNotifications'
+import { UIPieceContentStatus, UISegmentPartNote } from '@sofie-automation/meteor-lib/dist/api/rundownNotifications'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { getIgnorePieceContentStatus } from '../../lib/localStorage'
 import { UIPieceContentStatuses, UISegmentPartNotes } from '../Collections'

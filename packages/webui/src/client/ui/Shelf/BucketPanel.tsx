@@ -60,8 +60,8 @@ import {
 import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
 import { BucketAdLibActions, BucketAdLibs, PartInstances, Rundowns } from '../../collections'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { UIShowStyleBase } from '../../../lib/api/showStyles'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { UIStudios } from '../Collections'
 import {
 	AdLibActionId,

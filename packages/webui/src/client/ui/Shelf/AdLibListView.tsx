@@ -13,8 +13,8 @@ import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import { PieceUi } from '../SegmentContainer/withResolvedSegment'
 import { IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
 import { getRandomString } from '@sofie-automation/corelib/dist/lib'
-import { UIShowStyleBase } from '../../../lib/api/showStyles'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>

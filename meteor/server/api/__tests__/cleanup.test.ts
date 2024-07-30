@@ -48,7 +48,7 @@ import {
 } from '../../collections'
 import { Collections } from '../../collections/lib'
 import { generateTranslationBundleOriginId } from '../translationsBundles'
-import { CollectionCleanupResult } from '../../../lib/api/system'
+import { CollectionCleanupResult } from '@sofie-automation/meteor-lib/dist/api/system'
 
 describe('Cleanup', () => {
 	let env: DefaultEnvironment

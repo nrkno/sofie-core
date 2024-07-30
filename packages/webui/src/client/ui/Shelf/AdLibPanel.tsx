@@ -50,8 +50,8 @@ import { getShelfFollowsOnAir, getShowHiddenSourceLayers } from '../../lib/local
 import { sortAdlibs } from '@sofie-automation/meteor-lib/dist/adlibs'
 import { AdLibPanelToolbar } from './AdLibPanelToolbar'
 import { AdLibListView } from './AdLibListView'
-import { UIShowStyleBase } from '../../../lib/api/showStyles'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { UIStudios } from '../Collections'
 import { PartId, PartInstanceId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {

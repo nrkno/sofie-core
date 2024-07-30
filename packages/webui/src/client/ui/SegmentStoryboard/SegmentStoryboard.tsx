@@ -31,7 +31,7 @@ import { filterSecondarySourceLayers } from './StoryboardPartSecondaryPieces/Sto
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { SegmentTimeAnchorTime } from '../RundownView/RundownTiming/SegmentTimeAnchorTime'

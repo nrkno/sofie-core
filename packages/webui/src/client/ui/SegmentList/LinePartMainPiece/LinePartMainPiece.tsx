@@ -4,7 +4,7 @@ import { PieceExtended } from '../../../lib/RundownResolver'
 // TODO: Move to a shared lib file
 import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import classNames from 'classnames'
-import { UIStudio } from '../../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
 import { LoopingPieceIcon } from '../../../lib/ui/icons/looping'
 import { PieceStatusIcon } from '../../../lib/ui/PieceStatusIcon'

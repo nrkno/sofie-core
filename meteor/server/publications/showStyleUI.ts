@@ -4,7 +4,7 @@ import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settin
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, MeteorPubSub } from '../../lib/api/pubsub'
-import { UIShowStyleBase } from '../../lib/api/showStyles'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { Complete, literal } from '../../lib/lib'
 import { meteorCustomPublish, setUpOptimizedObserverArray, TriggerUpdate } from '../lib/customPublication'

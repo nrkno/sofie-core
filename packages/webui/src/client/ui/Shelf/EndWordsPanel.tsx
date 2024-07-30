@@ -14,7 +14,7 @@ import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceIns
 import { ScriptContent } from '@sofie-automation/blueprints-integration'
 import { getUnfinishedPieceInstancesReactive } from '../../lib/rundownLayouts'
 import { getScriptPreview } from '../../lib/ui/scriptPreview'
-import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { PieceInstances } from '../../collections'
 import { ReadonlyDeep } from 'type-fest'
 

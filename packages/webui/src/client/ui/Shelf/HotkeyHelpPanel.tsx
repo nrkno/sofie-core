@@ -9,7 +9,7 @@ import { codesToKeyLabels } from '../../lib/triggers/codesToKeyLabels'
 import { TFunction } from 'i18next'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { MongoCursor } from '../../../lib/collections/lib'
-import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { MountedTrigger } from '../../../lib/api/triggers/MountedTriggers'
 
 interface IProps {

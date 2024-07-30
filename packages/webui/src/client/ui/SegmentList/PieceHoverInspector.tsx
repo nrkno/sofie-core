@@ -6,7 +6,7 @@ import {
 	VTContent,
 } from '@sofie-automation/blueprints-integration'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { getNoticeLevelForPieceStatus } from '../../lib/notifications/notifications'
 import { RundownUtils } from '../../lib/rundown'
 import { OffsetPosition } from '../../utils/positions'

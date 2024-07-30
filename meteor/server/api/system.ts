@@ -8,7 +8,7 @@ import {
 	SystemAPI,
 	BenchmarkResult,
 	SystemBenchmarkResults,
-} from '../../lib/api/system'
+} from '@sofie-automation/meteor-lib/dist/api/system'
 import { CollectionIndexes, getTargetRegisteredIndexes } from '../collections/indices'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../logging'

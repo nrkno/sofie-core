@@ -7,7 +7,7 @@ import {
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { useTranslation } from 'react-i18next'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 
 interface IStudioNamePanelProps {
 	layout: RundownLayoutBase

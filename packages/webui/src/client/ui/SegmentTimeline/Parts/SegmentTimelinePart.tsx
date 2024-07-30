@@ -33,7 +33,7 @@ import { getPartInstanceTimingId, getPartInstanceTimingValue, RundownTimingConte
 import { OutputGroup } from './OutputGroup'
 import { InvalidPartCover } from './InvalidPartCover'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { UIStudio } from '../../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { LIVE_LINE_TIME_PADDING } from '../Constants'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'

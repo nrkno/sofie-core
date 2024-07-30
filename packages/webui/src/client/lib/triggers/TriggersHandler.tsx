@@ -26,7 +26,7 @@ import { Settings } from '../../../lib/Settings'
 import { createInMemorySyncMongoCollection } from '../../../lib/collections/lib'
 import { RundownPlaylists } from '../../collections'
 import { UIShowStyleBases, UITriggeredActions } from '../../ui/Collections'
-import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import {
 	PartId,
 	RundownId,

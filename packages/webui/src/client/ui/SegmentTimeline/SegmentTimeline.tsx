@@ -38,7 +38,7 @@ import { IOutputLayer, ISourceLayer, NoteSeverity } from '@sofie-automation/blue
 import { SegmentTimelineZoomButtons } from './SegmentTimelineZoomButtons'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { SegmentNoteCounts } from '../SegmentContainer/withResolvedSegment'

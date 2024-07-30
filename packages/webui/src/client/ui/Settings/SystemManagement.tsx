@@ -11,7 +11,7 @@ import { TFunction, useTranslation } from 'react-i18next'
 import { Meteor } from 'meteor/meteor'
 import { LogLevel } from '../../../lib/lib'
 import { CoreSystem } from '../../collections'
-import { CollectionCleanupResult } from '../../../lib/api/system'
+import { CollectionCleanupResult } from '@sofie-automation/meteor-lib/dist/api/system'
 import { LabelActual } from '../../lib/Components/LabelAndOverrides'
 import { catchError } from '../../lib/lib'
 

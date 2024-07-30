@@ -25,12 +25,12 @@ import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { handleRundownReloadResponse } from '../RundownView'
 import { MeteorCall } from '../../../lib/api/methods'
-import { UIPieceContentStatus, UISegmentPartNote } from '../../../lib/api/rundownNotifications'
+import { UIPieceContentStatus, UISegmentPartNote } from '@sofie-automation/meteor-lib/dist/api/rundownNotifications'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { NoteSeverity, StatusCode } from '@sofie-automation/blueprints-integration'
 import { getAllowStudio, getIgnorePieceContentStatus } from '../../lib/localStorage'
 import { RundownPlaylists } from '../../collections'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import {
 	PartId,
 	PeripheralDeviceId,

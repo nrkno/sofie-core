@@ -27,8 +27,8 @@ import {
 } from '../../lib/shelf'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { ContextType, setShelfContextMenuContext } from '../Shelf/ShelfContextMenu'
-import { UIShowStyleBase } from '../../../lib/api/showStyles'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { PartInstanceId, PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IRundownViewShelfProps {

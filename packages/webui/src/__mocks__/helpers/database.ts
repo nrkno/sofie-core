@@ -25,7 +25,7 @@ import {
 	applyAndValidateOverrides,
 	wrapDefaultObject,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { UIShowStyleBase } from '../../lib/api/showStyles'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import {
 	BlueprintId,
 	OrganizationId,

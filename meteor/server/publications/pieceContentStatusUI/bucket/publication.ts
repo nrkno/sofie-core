@@ -10,7 +10,7 @@ import {
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, MeteorPubSub } from '../../../../lib/api/pubsub'
-import { UIBucketContentStatus } from '../../../../lib/api/rundownNotifications'
+import { UIBucketContentStatus } from '@sofie-automation/meteor-lib/dist/api/rundownNotifications'
 import { Buckets, MediaObjects, PackageContainerPackageStatuses, PackageInfos, Studios } from '../../../collections'
 import { literal, protectString } from '../../../../lib/lib'
 import {

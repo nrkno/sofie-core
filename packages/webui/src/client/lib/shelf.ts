@@ -9,11 +9,11 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { getUnfinishedPieceInstancesReactive } from './rundownLayouts'
-import { UIShowStyleBase } from '../../lib/api/showStyles'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { PieceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstances } from '../collections'
 import { ReadonlyDeep } from 'type-fest'
-import { PieceContentStatusObj } from '../../lib/api/pieceContentStatus'
+import { PieceContentStatusObj } from '@sofie-automation/meteor-lib/dist/api/pieceContentStatus'
 
 export interface ShelfDisplayOptions {
 	enableBuckets: boolean

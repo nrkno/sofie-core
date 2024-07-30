@@ -2,19 +2,22 @@ import * as _ from 'underscore'
 import { MeteorPromiseApply } from '../lib'
 import { NewBlueprintAPI, BlueprintAPIMethods } from '@sofie-automation/meteor-lib/dist/api/blueprint'
 import { NewClientAPI, ClientAPIMethods } from '@sofie-automation/meteor-lib/dist/api/client'
-import { NewExternalMessageQueueAPI, ExternalMessageQueueAPIMethods } from './ExternalMessageQueue'
+import {
+	NewExternalMessageQueueAPI,
+	ExternalMessageQueueAPIMethods,
+} from '@sofie-automation/meteor-lib/dist/api/ExternalMessageQueue'
 import { NewMigrationAPI, MigrationAPIMethods } from './migration'
-import { NewPlayoutAPI, PlayoutAPIMethods } from './playout'
-import { NewRundownAPI, RundownAPIMethods } from './rundown'
+import { NewPlayoutAPI, PlayoutAPIMethods } from '@sofie-automation/meteor-lib/dist/api/playout'
+import { NewRundownAPI, RundownAPIMethods } from '@sofie-automation/meteor-lib/dist/api/rundown'
 import { NewRundownLayoutsAPI, RundownLayoutsAPIMethods } from './rundownLayouts'
-import { NewShowStylesAPI, ShowStylesAPIMethods } from './showStyles'
-import { NewSnapshotAPI, SnapshotAPIMethods } from './shapshot'
+import { NewShowStylesAPI, ShowStylesAPIMethods } from '@sofie-automation/meteor-lib/dist/api/showStyles'
+import { NewSnapshotAPI, SnapshotAPIMethods } from '@sofie-automation/meteor-lib/dist/api/shapshot'
 import { NewSystemStatusAPI, SystemStatusAPIMethods } from './systemStatus'
 import { NewUserActionAPI, UserActionAPIMethods } from '@sofie-automation/meteor-lib/dist/api/userActions'
-import { StudiosAPIMethods, NewStudiosAPI } from './studios'
-import { NewOrganizationAPI, OrganizationAPIMethods } from './organization'
+import { StudiosAPIMethods, NewStudiosAPI } from '@sofie-automation/meteor-lib/dist/api/studios'
+import { NewOrganizationAPI, OrganizationAPIMethods } from '@sofie-automation/meteor-lib/dist/api/organization'
 import { NewUserAPI, UserAPIMethods } from '@sofie-automation/meteor-lib/dist/api/user'
-import { SystemAPIMethods, SystemAPI } from './system'
+import { SystemAPIMethods, SystemAPI } from '@sofie-automation/meteor-lib/dist/api/system'
 import { Meteor } from 'meteor/meteor'
 import { NewTriggeredActionsAPI, TriggeredActionsAPIMethods } from './triggeredActions'
 import { UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -22,6 +25,7 @@ import {
 	NewPeripheralDeviceAPI,
 	PeripheralDeviceAPIMethods,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
+import { MeteorMethodsAPIBase } from '@sofie-automation/meteor-lib/dist/api/apiBase'
 
 /** All methods typings are defined here, the actual implementation is defined in other places */
 export type MethodsBase = {
@@ -88,7 +92,7 @@ export interface MethodContext extends Omit<Meteor.MethodThisType, 'userId'> {
 }
 
 /** Abstarct class to be used when defining Mehod-classes */
-export abstract class MethodContextAPI implements MethodContext {
+export abstract class MethodContextAPI implements MethodContext, MeteorMethodsAPIBase {
 	// These properties are added by Meteor to the `this` context when calling methods
 	public userId!: UserId | null
 	public isSimulation!: boolean

@@ -5,15 +5,15 @@ import { RundownUtils } from '../../lib/rundown'
 import { IAdLibListItem } from '../Shelf/AdLibListItem'
 import { BucketAdLibUi, BucketAdLibActionUi } from '../Shelf/RundownViewBuckets'
 import { AdLibPieceUi } from '../../lib/shelf'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { UIBucketContentStatuses, UIPieceContentStatuses } from '../Collections'
 import { Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { PieceContentStatusObj } from '../../../lib/api/pieceContentStatus'
+import { PieceContentStatusObj } from '@sofie-automation/meteor-lib/dist/api/pieceContentStatus'
 import { deepFreeze } from '@sofie-automation/corelib/dist/lib'
 import _ from 'underscore'
 import { useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { UIBucketContentStatus, UIPieceContentStatus } from '../../../lib/api/rundownNotifications'
+import { UIBucketContentStatus, UIPieceContentStatus } from '@sofie-automation/meteor-lib/dist/api/rundownNotifications'
 
 type AnyPiece = {
 	piece?: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | BucketAdLibActionUi | undefined

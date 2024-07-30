@@ -6,7 +6,7 @@ import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positio
 import { getElementHeight, getElementWidth } from '../../../utils/dimensions'
 import renderThumbnail from './Renderers/ThumbnailRendererFactory'
 import { PieceElement } from '../../SegmentContainer/PieceElement'
-import { UIStudio } from '../../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IProps {

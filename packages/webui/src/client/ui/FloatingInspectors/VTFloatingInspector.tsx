@@ -9,7 +9,7 @@ import { IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { VideoPreviewPlayer } from '../../lib/VideoPreviewPlayer'
 import classNames from 'classnames'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { ITranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { IFloatingInspectorPosition, useInspectorPosition } from './IFloatingInspectorPosition'
 import { ReadonlyDeep } from 'type-fest'

@@ -4,7 +4,7 @@ import { RundownId, ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { MeteorPubSub } from '../../../../lib/api/pubsub'
-import { UIStudio } from '../../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PieceExtended } from '../../../lib/RundownResolver'
 import { PartInstances, Rundowns } from '../../../collections'

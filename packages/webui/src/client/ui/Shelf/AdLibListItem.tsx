@@ -9,7 +9,7 @@ import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { setShelfContextMenuContext, ContextType as MenuContextType } from './ShelfContextMenu'
 import { AdLibPieceUi } from '../../lib/shelf'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 
 export interface IAdLibListItem extends AdLibPieceUi {
 	sourceLayer?: ISourceLayer

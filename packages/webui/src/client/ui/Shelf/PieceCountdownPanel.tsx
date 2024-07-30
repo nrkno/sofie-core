@@ -15,7 +15,7 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { VTContent } from '@sofie-automation/blueprints-integration'
 import { getUnfinishedPieceInstancesReactive } from '../../lib/rundownLayouts'
-import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { ReadonlyDeep } from 'type-fest'
 interface IPieceCountdownPanelProps {
 	visible?: boolean

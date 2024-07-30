@@ -17,7 +17,7 @@ import { internalStoreRundownPlaylistSnapshot } from './api/snapshot'
 import { deferAsync, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { getCoreSystemAsync } from './coreSystem/collection'
 import { cleanupOldDataInner } from './api/cleanup'
-import { CollectionCleanupResult } from '../lib/api/system'
+import { CollectionCleanupResult } from '@sofie-automation/meteor-lib/dist/api/system'
 import { ICoreSystem } from '../lib/collections/CoreSystem'
 import { executePeripheralDeviceFunctionWithCustomTimeout } from './api/peripheralDevice/executeFunction'
 import {

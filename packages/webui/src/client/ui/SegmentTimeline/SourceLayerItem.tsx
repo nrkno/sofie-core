@@ -18,7 +18,7 @@ import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../../..
 import { pieceUiClassNames } from '../../lib/ui/pieceUiClassNames'
 import { SourceDurationLabelAlignment } from './Renderers/CustomLayerItemRenderer'
 import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 const MARGINAL_ANCHORED_WIDTH = 5
 

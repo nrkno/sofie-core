@@ -8,8 +8,8 @@ import { withTranslation, WithTranslation } from 'react-i18next'
 import InspectorTitle from './InspectorTitle'
 import { ErrorBoundary } from '../../../../lib/ErrorBoundary'
 import { IAdLibListItem } from '../../AdLibListItem'
-import { UIShowStyleBase } from '../../../../../lib/api/showStyles'
-import { UIStudio } from '../../../../../lib/api/studios'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 
 export { isNoraItem }
 

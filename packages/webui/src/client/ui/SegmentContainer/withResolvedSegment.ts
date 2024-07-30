@@ -27,8 +27,8 @@ import { getReactivePieceNoteCountsForSegment } from './getReactivePieceNoteCoun
 import { SegmentViewMode } from './SegmentViewModes'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { AdlibSegmentUi } from '../../lib/shelf'
-import { UIShowStyleBase } from '../../../lib/api/showStyles'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import {
 	PartId,
 	RundownId,
@@ -39,7 +39,7 @@ import {
 import { PieceInstances, Segments } from '../../collections'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 import { ReadonlyDeep } from 'type-fest'
-import { PieceContentStatusObj } from '../../../lib/api/pieceContentStatus'
+import { PieceContentStatusObj } from '@sofie-automation/meteor-lib/dist/api/pieceContentStatus'
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 
 export interface SegmentUi extends SegmentExtended {

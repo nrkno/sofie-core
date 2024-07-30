@@ -19,7 +19,7 @@ import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/Part
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
-import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { PartId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 

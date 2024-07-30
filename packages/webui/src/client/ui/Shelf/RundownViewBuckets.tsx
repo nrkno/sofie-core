@@ -34,7 +34,7 @@ import RundownViewEventBus, {
 	IEventContext,
 } from '../../../lib/api/triggers/RundownViewEventBus'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { BucketId, ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DashboardLayoutExternalFrame } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 

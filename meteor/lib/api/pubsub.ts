@@ -23,9 +23,13 @@ import {
 } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
 import { DBUser } from '@sofie-automation/meteor-lib/dist/collections/Users'
-import { UIBucketContentStatus, UIPieceContentStatus, UISegmentPartNote } from './rundownNotifications'
-import { UIShowStyleBase } from './showStyles'
-import { UIStudio } from './studios'
+import {
+	UIBucketContentStatus,
+	UIPieceContentStatus,
+	UISegmentPartNote,
+} from '@sofie-automation/meteor-lib/dist/api/rundownNotifications'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { UIDeviceTriggerPreview } from './triggers/MountedTriggers'
 import { logger } from '../logging'
 import { UIBlueprintUpgradeStatus } from './upgradeStatus'

@@ -13,7 +13,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/Reac
 import { findPieceInstanceToShowFromInstances, IFoundPieceInstance } from '../PieceIcons/utils'
 import { pieceIconSupportedLayers } from '../PieceIcons/PieceIcon'
 import { RundownUtils } from '../../lib/rundown'
-import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { PieceInstances } from '../../collections'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 

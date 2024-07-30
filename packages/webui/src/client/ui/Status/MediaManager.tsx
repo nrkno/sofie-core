@@ -18,7 +18,7 @@ import { sofieWarningIcon as WarningIcon } from '../../lib/notifications/warning
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import Tooltip from 'rc-tooltip'
-import { MediaManagerAPI } from '../../../lib/api/mediaManager'
+import { MediaManagerAPI } from '@sofie-automation/meteor-lib/dist/api/mediaManager'
 import { getAllowConfigure, getAllowStudio } from '../../lib/localStorage'
 import { MediaWorkFlowId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MediaWorkFlows, MediaWorkFlowSteps } from '../../collections'

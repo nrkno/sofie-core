@@ -14,7 +14,7 @@ import { getAllowSpeaking, getAllowVibrating } from '../../lib/localStorage'
 import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRemaining'
 import { CurrentPartElapsed } from '../RundownView/RundownTiming/CurrentPartElapsed'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
-import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 
 interface IPartTimingPanelProps {

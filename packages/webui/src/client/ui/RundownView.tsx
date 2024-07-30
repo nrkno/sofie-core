@@ -130,7 +130,7 @@ import { SegmentListContainer } from './SegmentList/SegmentListContainer'
 import { getNextMode as getNextSegmentViewMode } from './SegmentContainer/SwitchViewModeButton'
 import { IResolvedSegmentProps } from './SegmentContainer/withResolvedSegment'
 import { UIShowStyleBases, UIStudios } from './Collections'
-import { UIStudio } from '../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import {
 	PartId,
 	PartInstanceId,
@@ -149,7 +149,7 @@ import {
 	Rundowns,
 	ShowStyleVariants,
 } from '../collections'
-import { UIShowStyleBase } from '../../lib/api/showStyles'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlaylistUtil'
 import { SegmentAdlibTestingContainer } from './SegmentAdlibTesting/SegmentAdlibTestingContainer'
 import { PromiseButton } from '../lib/Components/PromiseButton'

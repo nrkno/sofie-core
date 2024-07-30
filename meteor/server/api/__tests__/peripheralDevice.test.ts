@@ -24,7 +24,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/ingestDevice'
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
-import { MediaManagerAPI } from '../../../lib/api/mediaManager'
+import { MediaManagerAPI } from '@sofie-automation/meteor-lib/dist/api/mediaManager'
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import {
 	IBlueprintPieceType,

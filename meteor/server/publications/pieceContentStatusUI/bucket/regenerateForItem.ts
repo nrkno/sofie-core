@@ -1,6 +1,6 @@
 import { BucketAdLibActionId, BucketAdLibId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
-import { UIBucketContentStatus } from '../../../../lib/api/rundownNotifications'
+import { UIBucketContentStatus } from '@sofie-automation/meteor-lib/dist/api/rundownNotifications'
 import { literal, protectString } from '../../../../lib/lib'
 import { CustomPublishCollection } from '../../../lib/customPublication'
 import { BucketContentCache } from './bucketContentCache'

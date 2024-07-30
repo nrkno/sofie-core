@@ -24,7 +24,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstances, Pieces } from '../../lib/collections/libCollections'
 import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlaylistUtil'
-import { PieceContentStatusObj } from '../../lib/api/pieceContentStatus'
+import { PieceContentStatusObj } from '@sofie-automation/meteor-lib/dist/api/pieceContentStatus'
 import { ReadonlyDeep } from 'type-fest'
 import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 

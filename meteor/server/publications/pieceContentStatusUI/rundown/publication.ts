@@ -14,7 +14,7 @@ import {
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, MeteorPubSub } from '../../../../lib/api/pubsub'
-import { UIPieceContentStatus } from '../../../../lib/api/rundownNotifications'
+import { UIPieceContentStatus } from '@sofie-automation/meteor-lib/dist/api/rundownNotifications'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import {
 	MediaObjects,

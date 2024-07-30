@@ -1,6 +1,10 @@
 import { check } from '../../lib/check'
 import { registerClassToMeteorMethods } from '../methods'
-import { CreateAdlibTestingRundownOption, NewShowStylesAPI, ShowStylesAPIMethods } from '../../lib/api/showStyles'
+import {
+	CreateAdlibTestingRundownOption,
+	NewShowStylesAPI,
+	ShowStylesAPIMethods,
+} from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { Meteor } from 'meteor/meteor'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'

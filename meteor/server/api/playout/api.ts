@@ -1,5 +1,5 @@
 import { registerClassToMeteorMethods, MeteorDebugMethods } from '../../methods'
-import { NewPlayoutAPI, PlayoutAPIMethods } from '../../../lib/api/playout'
+import { NewPlayoutAPI, PlayoutAPIMethods } from '@sofie-automation/meteor-lib/dist/api/playout'
 import { ServerPlayoutAPI } from './playout'
 import { getCurrentTime } from '../../../lib/lib'
 import { logger } from '../../logging'

@@ -4,7 +4,7 @@ import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settin
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, MeteorPubSub } from '../../lib/api/pubsub'
-import { UIStudio } from '../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { Complete, literal } from '../../lib/lib'
 import {

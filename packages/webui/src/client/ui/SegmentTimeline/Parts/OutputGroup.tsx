@@ -9,7 +9,7 @@ import classNames from 'classnames'
 import { DEBUG_MODE } from '../SegmentTimelineDebugMode'
 import { RundownUtils } from '../../../lib/rundown'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { UIStudio } from '../../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 
 interface IOutputGroupProps {
 	layer: IOutputLayerUi

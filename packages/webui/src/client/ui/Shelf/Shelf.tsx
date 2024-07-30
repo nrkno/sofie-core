@@ -40,8 +40,8 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { ShelfDisplayOptions } from '../../lib/shelf'
-import { UIShowStyleBase } from '../../../lib/api/showStyles'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',

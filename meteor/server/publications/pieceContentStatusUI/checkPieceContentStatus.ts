@@ -31,7 +31,7 @@ import _ from 'underscore'
 import { getSideEffect } from '@sofie-automation/meteor-lib/dist/collections/ExpectedPackages'
 import { getActiveRoutes, getRoutedMappings } from '@sofie-automation/meteor-lib/dist/collections/Studios'
 import { ensureHasTrailingSlash, generateTranslation, unprotectString } from '../../../lib/lib'
-import { PieceContentStatusObj } from '../../../lib/api/pieceContentStatus'
+import { PieceContentStatusObj } from '@sofie-automation/meteor-lib/dist/api/pieceContentStatus'
 import { MediaObjects, PackageContainerPackageStatuses, PackageInfos } from '../../collections'
 import {
 	mediaObjectFieldSpecifier,

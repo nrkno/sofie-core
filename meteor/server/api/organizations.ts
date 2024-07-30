@@ -1,6 +1,6 @@
 import { literal, getRandomId, getCurrentTime } from '../../lib/lib'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
-import { NewOrganizationAPI, OrganizationAPIMethods } from '../../lib/api/organization'
+import { NewOrganizationAPI, OrganizationAPIMethods } from '@sofie-automation/meteor-lib/dist/api/organization'
 import { registerClassToMeteorMethods } from '../methods'
 import { DBOrganization, DBOrganizationBase } from '@sofie-automation/meteor-lib/dist/collections/Organization'
 import { OrganizationContentWriteAccess } from '../security/organization'

@@ -13,8 +13,8 @@ import {
 import { ShelfTabs } from './Shelf'
 import { useTranslation } from 'react-i18next'
 import { AdLibPieceUi } from '../../lib/shelf'
-import { UIShowStyleBase } from '../../../lib/api/showStyles'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 
 interface IProps {
 	playlist: DBRundownPlaylist

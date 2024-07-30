@@ -9,7 +9,7 @@ import { SegmentTimelinePartElementId } from './SegmentTimelinePart'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { SourceLayerItemContainer } from '../SourceLayerItemContainer'
 import { contextMenuHoldToDisplayTime } from '../../../lib/lib'
-import { UIStudio } from '../../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 
 export interface ISourceLayerPropsBase {
 	key: string

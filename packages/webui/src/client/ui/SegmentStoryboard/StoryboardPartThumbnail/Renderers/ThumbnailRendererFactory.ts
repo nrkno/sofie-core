@@ -1,6 +1,6 @@
 import { ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { UIStudio } from '../../../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { assertNever } from '../../../../../lib/lib'
 import { OffsetPosition } from '../../../../utils/positions'
 import { PieceUi } from '../../../SegmentContainer/withResolvedSegment'

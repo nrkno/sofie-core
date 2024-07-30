@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useState } from 'react'
-import { CreateAdlibTestingRundownOption } from '../../../lib/api/showStyles'
+import { CreateAdlibTestingRundownOption } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { MeteorCall } from '../../../lib/api/methods'
 import { UserAction, doUserAction } from '../../../lib/clientUserAction'
 import { useTranslation } from 'react-i18next'

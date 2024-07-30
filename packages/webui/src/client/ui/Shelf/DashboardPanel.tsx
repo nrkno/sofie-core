@@ -26,7 +26,7 @@ import {
 	isAdLibNext,
 	isAdLibOnAir,
 } from '../../lib/shelf'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { UIStudios } from '../Collections'
 import { PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'

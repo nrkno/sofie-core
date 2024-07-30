@@ -1,6 +1,6 @@
 import { PartInstanceId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
-import { UIShowStyleBase } from '../../lib/api/showStyles'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { RequiresActiveLayers } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
