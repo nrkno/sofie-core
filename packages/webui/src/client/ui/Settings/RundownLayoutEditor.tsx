@@ -18,7 +18,7 @@ import {
 	CustomizableRegionLayout,
 	CustomizableRegionSettingsManifest,
 	RundownLayoutsAPI,
-} from '../../../lib/api/rundownLayouts'
+} from '../../lib/rundownLayouts'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { getRandomString, literal, unprotectString } from '../../../lib/lib'
 import { UploadButton } from '../../lib/uploadButton'

@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import { useTranslation } from 'react-i18next'
-import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { RundownLayoutsAPI } from '../../lib/rundownLayouts'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export const RundownViewLayoutSelection = React.memo(function RundownViewLayoutSelection2({

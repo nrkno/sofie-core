@@ -1,5 +1,5 @@
 import { RundownLayout } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
-import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { RundownLayoutsAPI } from '../../lib/rundownLayouts'
 import { ExternalFramePanel } from './ExternalFramePanel'
 import { OverflowingContainer } from './OverflowingContainer'
 import ClassNames from 'classnames'

@@ -9,7 +9,7 @@ import {
 import { NewMigrationAPI, MigrationAPIMethods } from '@sofie-automation/meteor-lib/dist/api/migration'
 import { NewPlayoutAPI, PlayoutAPIMethods } from '@sofie-automation/meteor-lib/dist/api/playout'
 import { NewRundownAPI, RundownAPIMethods } from '@sofie-automation/meteor-lib/dist/api/rundown'
-import { NewRundownLayoutsAPI, RundownLayoutsAPIMethods } from './rundownLayouts'
+import { NewRundownLayoutsAPI, RundownLayoutsAPIMethods } from '@sofie-automation/meteor-lib/dist/api/rundownLayouts'
 import { NewShowStylesAPI, ShowStylesAPIMethods } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { NewSnapshotAPI, SnapshotAPIMethods } from '@sofie-automation/meteor-lib/dist/api/shapshot'
 import { NewSystemStatusAPI, SystemStatusAPIMethods } from '@sofie-automation/meteor-lib/dist/api/systemStatus'

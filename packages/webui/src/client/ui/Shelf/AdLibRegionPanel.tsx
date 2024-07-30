@@ -6,7 +6,7 @@ import {
 	DashboardLayoutAdLibRegion,
 	RundownLayoutAdLibRegionRole,
 } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
-import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { RundownLayoutsAPI } from '../../lib/rundownLayouts'
 import { dashboardElementStyle, IDashboardPanelTrackedProps } from './DashboardPanel'
 import ClassNames from 'classnames'
 import { IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter } from './AdLibPanel'

@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import ClassNames from 'classnames'
 import _ from 'underscore'
-import { RundownLayoutsAPI } from '../../../../lib/api/rundownLayouts'
+import { RundownLayoutsAPI } from '../../../lib/rundownLayouts'
 import {
 	DashboardPanelBase,
 	DashboardPanelUnit,

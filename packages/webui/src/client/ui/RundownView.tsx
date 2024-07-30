@@ -104,7 +104,7 @@ import RundownViewEventBus, {
 	RundownViewEvents,
 } from '../../lib/api/triggers/RundownViewEventBus'
 import StudioContext from './RundownView/StudioContext'
-import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
+import { RundownLayoutsAPI } from '../lib/rundownLayouts'
 import { TriggersHandler } from '../lib/triggers/TriggersHandler'
 import { SorensenContext } from '../lib/SorensenContext'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
