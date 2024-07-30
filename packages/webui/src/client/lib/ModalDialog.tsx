@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next'
 import ClassNames from 'classnames'
 // @ts-expect-error No types available
 import * as VelocityReact from 'velocity-react'
-import { logger } from '../../lib/logging'
+import { logger } from './logging'
 import * as _ from 'underscore'
 import { withTranslation } from 'react-i18next'
 import { Translated } from './ReactMeteorData/ReactMeteorData'

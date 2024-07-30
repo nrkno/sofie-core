@@ -32,7 +32,7 @@ import { BucketId, PartInstanceId, RundownPlaylistId } from '@sofie-automation/c
 import { MOS_DATA_IS_STRICT } from '../../../lib/mos'
 import { getMosTypes, stringifyMosObject } from '@mos-connection/helper'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
-import { logger } from '../../../lib/logging'
+import { logger } from '../../lib/logging'
 import RundownViewEventBus, { ItemDroppedEvent, RundownViewEvents } from '../../../lib/api/triggers/RundownViewEventBus'
 
 interface IProps {

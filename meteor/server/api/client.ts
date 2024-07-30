@@ -34,6 +34,7 @@ import {
 import { BasicAccessContext } from '../security/organization'
 import { UserActionsLog } from '../collections'
 import { executePeripheralDeviceFunctionWithCustomTimeout } from './peripheralDevice/executeFunction'
+import { LeveledLogMethodFixed } from '../logging'
 
 function rewrapError(methodName: string, e: any): ClientAPI.ClientResponseError {
 	const userError = UserError.fromUnknown(e)
@@ -412,6 +413,11 @@ export namespace ServerClientAPI {
 }
 
 class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
+	async clientLogger(type: string, ...args: string[]): Promise<void> {
+		const loggerFunction: LeveledLogMethodFixed = (logger as any)[type] || logger.log
+
+		loggerFunction(args.join(', '))
+	}
 	async clientErrorReport(timestamp: Time, errorString: string, location: string) {
 		check(timestamp, Number)
 		triggerWriteAccessBecauseNoCheckNecessary() // TODO: discuss if is this ok?

@@ -4,7 +4,7 @@ import { doModalDialog } from '../../lib/ModalDialog'
 import ClassNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faClipboardCheck, faDatabase, faCoffee, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
-import { logger } from '../../../lib/logging'
+import { logger } from '../../lib/logging'
 import {
 	GetMigrationStatusResult,
 	RunMigrationResult,

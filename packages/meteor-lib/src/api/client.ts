@@ -5,6 +5,7 @@ import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids
 import { TSR } from '@sofie-automation/blueprints-integration'
 
 export interface NewClientAPI {
+	clientLogger(type: string, ...args: string[]): Promise<void>
 	clientErrorReport(timestamp: Time, errorString: string, location: string): Promise<void>
 	clientLogNotification(timestamp: Time, from: string, severity: number, message: string, source?: any): Promise<void>
 	callPeripheralDeviceFunction(

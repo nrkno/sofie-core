@@ -36,7 +36,7 @@ import {
 	MigrationStepType,
 	RunMigrationResult,
 } from '@sofie-automation/meteor-lib/dist/api/migration'
-import { logger } from '../../lib/logging'
+import { logger } from '../logging'
 import { internalStoreSystemSnapshot } from '../api/snapshot'
 import { parseVersion, Version } from '../systemStatus/semverUtils'
 import { GENESIS_SYSTEM_VERSION } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'

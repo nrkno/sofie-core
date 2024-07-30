@@ -19,7 +19,7 @@ import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { HourglassIconSmall } from '../../../lib/ui/icons/notifications'
 import { IFloatingInspectorPosition } from '../../FloatingInspectors/IFloatingInspectorPosition'
-import { logger } from '../../../../lib/logging'
+import { logger } from '../../../lib/logging'
 
 interface IProps extends ICustomLayerItemProps {
 	studio: UIStudio | undefined

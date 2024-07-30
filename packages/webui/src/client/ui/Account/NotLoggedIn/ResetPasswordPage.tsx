@@ -5,7 +5,7 @@ import type { RouteComponentProps } from 'react-router'
 import { getUser } from '../../../lib/userInfo'
 import { NotLoggedInContainer } from './lib'
 import { Link } from 'react-router-dom'
-import { logger } from '../../../../lib/logging'
+import { logger } from '../../../lib/logging'
 
 type IResetPageProps = RouteComponentProps<{ token: string }>
 

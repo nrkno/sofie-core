@@ -18,7 +18,7 @@ import './client/lib/uncaughtErrorHandler'
 import './client/lib/dev'
 
 import App from './client/ui/App'
-import { logger } from './lib/logging'
+import { logger } from './client/lib/logging'
 import './client/lib/logStatus'
 
 if ('serviceWorker' in navigator) {

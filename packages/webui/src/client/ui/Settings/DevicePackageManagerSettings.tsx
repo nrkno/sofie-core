@@ -10,7 +10,7 @@ import { MeteorCall } from '../../lib/meteorApi'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevices } from '../../collections'
 import { eventContextForLog } from '../../../lib/clientUserAction'
-import { logger } from '../../../lib/logging'
+import { logger } from '../../lib/logging'
 
 interface IDevicePackageManagerSettingsProps {
 	deviceId: PeripheralDeviceId

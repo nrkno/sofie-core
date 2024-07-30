@@ -1,4 +1,4 @@
-import { logger } from '../../../lib/logging'
+import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
 import { Rundowns } from '../../collections'

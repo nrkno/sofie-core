@@ -43,7 +43,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { UIPieceContentStatuses, UISegmentPartNotes } from '../Collections'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
-import { logger } from '../../../lib/logging'
+import { logger } from '../../lib/logging'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)

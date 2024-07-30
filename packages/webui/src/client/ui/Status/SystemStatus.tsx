@@ -37,7 +37,7 @@ import { DebugStateTable } from './DebugState'
 import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { catchError } from '../../lib/lib'
-import { logger } from '../../../lib/logging'
+import { logger } from '../../lib/logging'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 interface IDeviceItemProps {

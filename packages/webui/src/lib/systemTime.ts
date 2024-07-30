@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { logger } from './logging'
+import { logger } from '../client/lib/logging'
 import { getCurrentTime, systemTime } from './lib'
 import { MeteorCall } from '../client/lib/meteorApi'
 

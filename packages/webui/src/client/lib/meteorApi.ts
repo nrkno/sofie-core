@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { logger } from '../../lib/logging'
+import { logger } from './logging'
 import { AllPubSubTypes } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { MakeMeteorCall } from '@sofie-automation/meteor-lib/dist/api/methods'
 import { MeteorApply } from './MeteorApply'

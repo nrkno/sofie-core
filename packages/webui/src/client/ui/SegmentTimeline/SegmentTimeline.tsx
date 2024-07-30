@@ -50,7 +50,7 @@ import {
 	WithTiming,
 } from '../RundownView/RundownTiming/withTiming'
 import { SegmentTimeAnchorTime } from '../RundownView/RundownTiming/SegmentTimeAnchorTime'
-import { logger } from '../../../lib/logging'
+import { logger } from '../../lib/logging'
 
 interface IProps {
 	id: string

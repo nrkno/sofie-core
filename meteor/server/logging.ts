@@ -65,7 +65,7 @@ interface LoggerInstanceFixed extends Winston.Logger {
 interface LogMeta {
 	[key: string]: any
 }
-interface LeveledLogMethodFixed {
+export interface LeveledLogMethodFixed {
 	(msg: any, callback: Winston.LogCallback): LoggerInstanceFixed
 	(msg: any, meta: LogMeta, callback: Winston.LogCallback): LoggerInstanceFixed
 	(msg: any, ...meta: LogMeta[]): LoggerInstanceFixed

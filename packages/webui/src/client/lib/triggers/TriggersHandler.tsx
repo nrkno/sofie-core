@@ -42,7 +42,7 @@ import {
 import { isHotkeyTrigger } from '../../../lib/api/triggers/triggerTypeSelectors'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 import { catchError } from '../lib'
-import { logger } from '../../../lib/logging'
+import { logger } from '../logging'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void

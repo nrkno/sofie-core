@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { logger } from '../../lib/logging'
+import { logger } from './logging'
 
 /*
  * MeteorApply is a wrapper around Meteor.apply(), and logs a warning if the method is sent late.

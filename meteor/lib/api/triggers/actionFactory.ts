@@ -18,7 +18,7 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { DBShowStyleBase, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { assertNever, DummyReactiveVar, getHash } from '../../lib'
-import { logger } from '../../logging'
+import { logger } from '../../../server/logging'
 import RundownViewEventBus, { RundownViewEvents } from './RundownViewEventBus'
 import { UserAction } from '@sofie-automation/meteor-lib/dist/userAction'
 import { doUserAction } from './universalDoUserActionAdapter'
