@@ -13,7 +13,7 @@ import {
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import _ from 'underscore'
 import { Rundowns, Segments, Parts, PartInstances, Pieces } from './index'
-import { FindOptions } from '../../lib/collections/lib'
+import { FindOptions } from './lib'
 import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'

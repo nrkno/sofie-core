@@ -8,7 +8,7 @@ import { SorensenContext } from '../../lib/SorensenContext'
 import { codesToKeyLabels } from '../../lib/triggers/codesToKeyLabels'
 import { TFunction } from 'i18next'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { MongoCursor } from '../../../lib/collections/lib'
+import { MongoCursor } from '../../collections/lib'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { MountedTrigger } from '@sofie-automation/meteor-lib/dist/api/MountedTriggers'
 

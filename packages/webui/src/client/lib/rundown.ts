@@ -31,7 +31,7 @@ import {
 import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { IAdLibListItem } from '../ui/Shelf/AdLibListItem'
 import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
-import { FindOptions } from '../../lib/collections/lib'
+import { FindOptions } from '../collections/lib'
 import { getShowHiddenSourceLayers } from './localStorage'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'

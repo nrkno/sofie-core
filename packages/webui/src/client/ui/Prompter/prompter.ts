@@ -4,7 +4,7 @@ import { ScriptContent, SourceLayerType } from '@sofie-automation/blueprints-int
 import { normalizeArrayToMap, protectString } from '../../../lib/lib'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { getPieceInstancesForPartInstance, getSegmentsWithPartInstances } from '../../lib/RundownResolver'
-import { FindOptions } from '../../../lib/collections/lib'
+import { FindOptions } from '../../collections/lib'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'

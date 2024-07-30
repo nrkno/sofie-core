@@ -14,7 +14,7 @@ import { getCurrentTime, groupByToMap, protectString } from '../../lib/lib'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { mongoWhereFilter, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
-import { FindOptions } from '../../lib/collections/lib'
+import { FindOptions } from '../collections/lib'
 import {
 	PartId,
 	RundownId,

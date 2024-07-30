@@ -21,11 +21,7 @@ import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
 import { ICoreSystem, SYSTEM_ID } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
 import { Evaluation } from '@sofie-automation/meteor-lib/dist/collections/Evaluations'
 import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import {
-	createSyncMongoCollection,
-	createSyncReadOnlyMongoCollection,
-	wrapMongoCollection,
-} from '../../lib/collections/lib'
+import { createSyncMongoCollection, createSyncReadOnlyMongoCollection, wrapMongoCollection } from './lib'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { RundownLayoutBase } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'

@@ -23,7 +23,7 @@ import RundownViewEventBus, {
 } from '../../../lib/api/triggers/RundownViewEventBus'
 import { Tracker } from 'meteor/tracker'
 import { Settings } from '../../lib/Settings'
-import { createInMemorySyncMongoCollection } from '../../../lib/collections/lib'
+import { createInMemorySyncMongoCollection } from '../../collections/lib'
 import { RundownPlaylists } from '../../collections'
 import { UIShowStyleBases, UITriggeredActions } from '../../ui/Collections'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'

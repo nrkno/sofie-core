@@ -15,7 +15,7 @@ import {
 	UpdateOptions,
 	UpsertOptions,
 	WrappedMongoCollection,
-} from '../lib/collections/lib'
+} from '../client/collections/lib'
 import {
 	mongoWhere,
 	mongoFindOptions,
