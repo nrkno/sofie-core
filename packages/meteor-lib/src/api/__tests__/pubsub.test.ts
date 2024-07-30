@@ -1,5 +1,5 @@
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
-import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
+import { MeteorPubSub } from '../pubsub'
 import { PeripheralDevicePubSub } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 
 describe('Pubsub', () => {
