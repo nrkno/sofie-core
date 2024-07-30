@@ -1,7 +1,7 @@
 import { meteorPublish, AutoFillSelector } from './lib'
 import { MeteorPubSub } from '../../lib/api/pubsub'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
-import { Evaluation } from '../../lib/collections/Evaluations'
+import { Evaluation } from '@sofie-automation/meteor-lib/dist/collections/Evaluations'
 import { SnapshotItem } from '../../lib/collections/Snapshots'
 import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { OrganizationReadAccess } from '../security/organization'

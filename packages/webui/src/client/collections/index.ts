@@ -17,9 +17,9 @@ import { PackageContainerStatusDB } from '@sofie-automation/corelib/dist/dataMod
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
 import { Meteor } from 'meteor/meteor'
-import { Bucket } from '../../lib/collections/Buckets'
+import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
 import { ICoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
-import { Evaluation } from '../../lib/collections/Evaluations'
+import { Evaluation } from '@sofie-automation/meteor-lib/dist/collections/Evaluations'
 import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import {
 	createSyncMongoCollection,

@@ -12,7 +12,7 @@ import { ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/d
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { check } from '../../../../lib/check'
 import { Meteor } from 'meteor/meteor'
-import { ClientAPI } from '../../../../lib/api/client'
+import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { RundownPlaylists, Rundowns, ShowStyleBases, ShowStyleVariants } from '../../../collections'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import {

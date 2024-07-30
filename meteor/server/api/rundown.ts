@@ -7,7 +7,10 @@ import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/Sho
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { PackageInfo } from '../coreSystem'
 import { IngestActions } from './ingest/actions'
-import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
+import {
+	ReloadRundownPlaylistResponse,
+	TriggerReloadDataResponse,
+} from '@sofie-automation/meteor-lib/dist/api/userActions'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { StudioContentWriteAccess } from '../security/studio'
 import { runIngestOperation } from './ingest/lib'

@@ -1,4 +1,4 @@
-import { ClientAPI } from '../../client'
+import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import {
 	AdLibActionId,
 	BucketAdLibId,

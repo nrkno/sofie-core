@@ -6,7 +6,7 @@ import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dat
 import { check } from '../../../../lib/check'
 import { APIStudio, StudioAction, StudioActionType, StudiosRestAPI } from '../../../../lib/api/rest/v1'
 import { Meteor } from 'meteor/meteor'
-import { ClientAPI } from '../../../../lib/api/client'
+import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { PeripheralDevices, RundownPlaylists, Studios } from '../../../collections'
 import { APIStudioFrom, studioFrom } from './typeConversion'
 import { runUpgradeForStudio, validateConfigForStudio } from '../../../migration/upgrades'

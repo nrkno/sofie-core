@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { MeteorMock } from '../../../__mocks__/meteor'
 import { UserActionsLogItem } from '../../../lib/collections/UserActionsLog'
-import { ClientAPIMethods } from '../../../lib/api/client'
+import { ClientAPIMethods } from '@sofie-automation/meteor-lib/dist/api/client'
 import { protectString, makePromise, LogLevel } from '../../../lib/lib'
 import { PeripheralDeviceCommand } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceCommand'
 import { setLogLevel } from '../../logging'

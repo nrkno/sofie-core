@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
-import { Bucket } from '../../lib/collections/Buckets'
+import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
 import { getRandomId, getRandomString, literal } from '../../lib/lib'
 import { BucketSecurity } from '../security/buckets'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'

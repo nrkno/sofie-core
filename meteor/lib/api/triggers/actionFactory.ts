@@ -17,7 +17,7 @@ import { PartInstance } from '../../collections/PartInstances'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBShowStyleBase, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { assertNever, DummyReactiveVar } from '../../lib'
+import { assertNever, DummyReactiveVar, getHash } from '../../lib'
 import { logger } from '../../logging'
 import RundownViewEventBus, { RundownViewEvents } from './RundownViewEventBus'
 import { UserAction } from '@sofie-automation/meteor-lib/dist/userAction'
@@ -28,19 +28,24 @@ import {
 	rundownPlaylistFilter,
 	IWrappedAdLib,
 } from './actionFilterChainCompilers'
-import { ClientAPI } from '../client'
+import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { PartId, PartInstanceId, RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PartInstances, Parts } from '../../collections/libCollections'
 import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
-import { hashSingleUseToken } from '../userActions'
 import { DeviceActions } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
+import { SINGLE_USE_TOKEN_SALT } from '@sofie-automation/meteor-lib/dist/api/userActions'
 
 // as described in this issue: https://github.com/Microsoft/TypeScript/issues/14094
 type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
 // eslint-disable-next-line @typescript-eslint/ban-types
 type XOR<T, U> = T | U extends object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U
+
+export function hashSingleUseToken(token: string): string {
+	// nocommit server only!
+	return getHash(SINGLE_USE_TOKEN_SALT + token)
+}
 
 export interface ReactivePlaylistActionContext {
 	rundownPlaylistId: ReactiveVar<RundownPlaylistId>

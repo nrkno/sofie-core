@@ -1,6 +1,6 @@
 import { TranslationsBundleId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { TranslationsBundle } from '../collections/TranslationsBundles'
-import { ClientAPI } from './client'
+import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 
 export interface CollectionCleanupResult {
 	[index: string]: {

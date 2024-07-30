@@ -4,7 +4,7 @@ import type { RouteComponentProps } from 'react-router'
 import { getUser } from '../../../../lib/collections/Users'
 import { NotLoggedInContainer } from './lib'
 import { Link } from 'react-router-dom'
-import { createUser } from '../../../../lib/api/user'
+import { createUser } from '@sofie-automation/meteor-lib/dist/api/user'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { logger } from '../../../../lib/logging'
 

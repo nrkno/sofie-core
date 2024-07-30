@@ -1,5 +1,5 @@
 import { WorkerId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { getWorkerId, WorkerStatus } from '../../lib/collections/Workers'
+import { getWorkerId, WorkerStatus } from '@sofie-automation/meteor-lib/dist/collections/Workers'
 import { getCurrentTime } from '../../lib/lib'
 import { Workers } from '../collections'
 

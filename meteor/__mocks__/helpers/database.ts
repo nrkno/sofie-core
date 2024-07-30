@@ -60,7 +60,7 @@ import { MongoMock } from '../mongo'
 import { defaultRundownPlaylist, defaultStudio } from '../defaultCollectionObjects'
 import { PackageInfo } from '../../server/coreSystem'
 import { DBTriggeredActions } from '../../lib/collections/TriggeredActions'
-import { WorkerStatus } from '../../lib/collections/Workers'
+import { WorkerStatus } from '@sofie-automation/meteor-lib/dist/collections/Workers'
 import { WorkerThreadStatus } from '@sofie-automation/corelib/dist/dataModel/WorkerThreads'
 import {
 	applyAndValidateOverrides,

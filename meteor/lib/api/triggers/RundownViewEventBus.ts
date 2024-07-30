@@ -1,5 +1,5 @@
 import EventEmitter from 'events'
-import { Bucket } from '../../collections/Buckets'
+import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
 import {
 	BucketId,
 	PartId,

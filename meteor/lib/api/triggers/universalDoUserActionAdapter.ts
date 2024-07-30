@@ -1,6 +1,6 @@
 import { TFunction } from 'i18next'
 import { Meteor } from 'meteor/meteor'
-import { ClientAPI } from '../client'
+import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { UserAction } from '@sofie-automation/meteor-lib/dist/userAction'
 import { getCurrentTime, Time } from '../../lib'
 

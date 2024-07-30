@@ -6,7 +6,7 @@ import { check } from '../../../../lib/check'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Meteor } from 'meteor/meteor'
-import { ClientAPI } from '../../../../lib/api/client'
+import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { MeteorCall } from '../../../../lib/api/methods'
 import { MigrationStepInputResult } from '@sofie-automation/blueprints-integration'
 

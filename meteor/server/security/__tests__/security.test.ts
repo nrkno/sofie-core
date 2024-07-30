@@ -18,7 +18,7 @@ import { OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel
 import { Organizations, Users } from '../../collections'
 import { SupressLogMessages } from '../../../__mocks__/suppressLogging'
 import { generateToken } from '../../api/singleUseTokens'
-import { hashSingleUseToken } from '../../../lib/api/userActions'
+import { hashSingleUseToken } from '../../../lib/api/triggers/actionFactory'
 
 describe('Security', () => {
 	function getContext(cred: Credentials): MethodContext {

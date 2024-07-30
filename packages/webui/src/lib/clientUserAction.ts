@@ -1,7 +1,7 @@
 import * as i18next from 'i18next'
 import _ from 'underscore'
 import { NotificationCenter, Notification, NoticeLevel } from '../client/lib/notifications/notifications'
-import { ClientAPI } from './api/client'
+import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { Meteor } from 'meteor/meteor'
 import { logger } from './logging'
 import { assertNever, getCurrentTime, systemTime, Time } from './lib'

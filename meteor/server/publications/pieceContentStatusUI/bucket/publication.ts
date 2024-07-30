@@ -25,7 +25,7 @@ import { NoSecurityReadAccess } from '../../../security/noSecurity'
 import { BucketContentCache, createReactiveContentCache } from './bucketContentCache'
 import { LiveQueryHandle } from '../../../lib/lib'
 import { StudioReadAccess } from '../../../security/studio'
-import { Bucket } from '../../../../lib/collections/Buckets'
+import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
 import {
 	addItemsWithDependenciesChangesToChangedSet,
 	fetchStudio,

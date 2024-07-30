@@ -11,8 +11,8 @@ import { doModalDialog } from '../../lib/ModalDialog'
 import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { ClientAPI } from '../../../lib/api/client'
-import { hashSingleUseToken } from '../../../lib/api/userActions'
+import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
+import { hashSingleUseToken } from '../../lib/lib'
 
 export interface IDashboardButtonGroupProps {
 	buttons: DashboardLayoutActionButton[]

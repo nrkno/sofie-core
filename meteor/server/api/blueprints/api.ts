@@ -12,7 +12,7 @@ import {
 	TranslationsBundle,
 } from '@sofie-automation/blueprints-integration'
 import { check, Match } from '../../../lib/check'
-import { NewBlueprintAPI, BlueprintAPIMethods } from '../../../lib/api/blueprint'
+import { NewBlueprintAPI, BlueprintAPIMethods } from '@sofie-automation/meteor-lib/dist/api/blueprint'
 import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments } from '../../methods'
 import { parseVersion, SYSTEM_ID } from '../../../lib/collections/CoreSystem'
 import { evalBlueprint } from './cache'

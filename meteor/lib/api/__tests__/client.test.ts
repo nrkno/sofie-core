@@ -1,4 +1,4 @@
-import { ClientAPI } from '../client'
+import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { Meteor } from 'meteor/meteor'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 

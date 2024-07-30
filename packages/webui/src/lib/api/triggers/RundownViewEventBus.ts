@@ -3,7 +3,7 @@ import { ShelfTabs } from '../../../client/ui/Shelf/Shelf'
 import { PieceUi } from '../../../client/ui/SegmentTimeline/SegmentTimelineContainer'
 import { IAdLibListItem } from '../../../client/ui/Shelf/AdLibListItem'
 import { BucketAdLibItem } from '../../../client/ui/Shelf/RundownViewBuckets'
-import { Bucket } from '../../collections/Buckets'
+import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
 import {
 	BucketId,
 	PartId,

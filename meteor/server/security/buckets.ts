@@ -1,4 +1,4 @@
-import { Bucket } from '../../lib/collections/Buckets'
+import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
 import { Credentials, ResolvedCredentials } from './lib/credentials'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { check } from '../../lib/check'
