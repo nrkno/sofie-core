@@ -7,7 +7,7 @@ import { i18nTranslator } from '../../i18n'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
-import { NotificationCenter, NoticeLevel, Notification } from '../../../../lib/notifications/notifications'
+import { NotificationCenter, NoticeLevel, Notification } from '../../../lib/notifications/notifications'
 import {
 	UIBlueprintUpgradeStatusBase,
 	UIBlueprintUpgradeStatusShowStyle,

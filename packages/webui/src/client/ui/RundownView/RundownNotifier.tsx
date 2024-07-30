@@ -9,7 +9,7 @@ import {
 	Notification,
 	NoticeLevel,
 	getNoticeLevelForPieceStatus,
-} from '../../../lib/notifications/notifications'
+} from '../../lib/notifications/notifications'
 import { WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
 import { reactiveData } from '../../lib/reactiveData/reactiveData'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'

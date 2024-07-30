@@ -11,7 +11,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { Spinner } from '../../lib/Spinner'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 
-import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
+import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { StatusCodePill } from '../Status/StatusCodePill'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'

@@ -1,6 +1,6 @@
 import type { ITranslatableMessage } from '@sofie-automation/blueprints-integration'
 import { isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import type { ProtectedString } from './lib'
+import type { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 
 function compareLabels(a: string | ITranslatableMessage, b: string | ITranslatableMessage) {
 	const actualA = isTranslatableMessage(a) ? a.key : (a as string)

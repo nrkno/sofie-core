@@ -15,7 +15,7 @@ import { DBShowStyleBase, SourceLayers } from '@sofie-automation/corelib/dist/da
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { NoticeLevel, NotificationCenter, Notification } from '../../../../lib/notifications/notifications'
+import { NoticeLevel, NotificationCenter, Notification } from '../../../lib/notifications/notifications'
 import { UploadButton } from '../../../lib/uploadButton'
 import update from 'immutability-helper'
 import { VariantListItem } from './VariantListItem'

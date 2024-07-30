@@ -1,19 +1,12 @@
 import * as _ from 'underscore'
 import { Time } from '../lib'
 import { UserError } from '@sofie-automation/corelib/dist/error'
-import { NoticeLevel } from '../notifications/notifications'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { TSR } from '@sofie-automation/blueprints-integration'
 
 export interface NewClientAPI {
 	clientErrorReport(timestamp: Time, errorString: string, location: string): Promise<void>
-	clientLogNotification(
-		timestamp: Time,
-		from: string,
-		severity: NoticeLevel,
-		message: string,
-		source?: any
-	): Promise<void>
+	clientLogNotification(timestamp: Time, from: string, severity: number, message: string, source?: any): Promise<void>
 	callPeripheralDeviceFunction(
 		context: string,
 		deviceId: PeripheralDeviceId,

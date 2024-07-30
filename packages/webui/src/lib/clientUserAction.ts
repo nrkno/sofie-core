@@ -1,6 +1,6 @@
 import * as i18next from 'i18next'
 import _ from 'underscore'
-import { NotificationCenter, Notification, NoticeLevel } from './notifications/notifications'
+import { NotificationCenter, Notification, NoticeLevel } from '../client/lib/notifications/notifications'
 import { ClientAPI } from './api/client'
 import { Meteor } from 'meteor/meteor'
 import { logger } from './logging'

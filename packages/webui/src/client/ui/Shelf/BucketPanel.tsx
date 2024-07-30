@@ -23,7 +23,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { doUserAction, getEventTimestamp, UserAction } from '../../../lib/clientUserAction'
-import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
+import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { literal, unprotectString, partial, protectString } from '../../../lib/lib'
 import { contextMenuHoldToDisplayTime, UserAgentPointer, USER_AGENT_POINTER_PROPERTY } from '../../lib/lib'
 import { IDashboardPanelTrackedProps } from './DashboardPanel'

@@ -5,7 +5,7 @@ import { StatusResponse } from '../../../lib/api/systemStatus'
 import { TOOLTIP_DEFAULT_DELAY } from '../../lib/lib'
 import { useTranslation } from 'react-i18next'
 import { MeteorCall } from '../../../lib/api/methods'
-import { NoticeLevel, Notification, NotificationCenter } from '../../../lib/notifications/notifications'
+import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
 
 export function RundownListFooter(): JSX.Element {
 	const { t } = useTranslation()

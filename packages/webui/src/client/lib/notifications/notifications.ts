@@ -12,10 +12,10 @@ import {
 	assertNever,
 	getRandomString,
 	LocalStorageProperty,
-} from '../lib'
+} from '../../../lib/lib'
 import { isTranslatableMessage, ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { MeteorCall } from '../api/methods'
+import { MeteorCall } from '../../../lib/api/methods'
 import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 let reportNotificationsId: string | null = null

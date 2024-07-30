@@ -12,7 +12,7 @@ import { DropdownInputControl, DropdownInputOption, getDropdownInputOptions } fr
 import { MultiLineTextInputControl } from '../lib/Components/MultiLineTextInput'
 import { TextInputControl } from '../lib/Components/TextInput'
 import { Spinner } from '../lib/Spinner'
-import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
 import { useTracker } from '../lib/ReactMeteorData/ReactMeteorData'
 import { CoreSystem } from '../collections'
 

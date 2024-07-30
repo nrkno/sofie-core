@@ -9,7 +9,7 @@ import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerIte
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { VTContent } from '@sofie-automation/blueprints-integration'
 import { PieceStatusIcon } from '../../../lib/ui/PieceStatusIcon'
-import { NoticeLevel, getNoticeLevelForPieceStatus } from '../../../../lib/notifications/notifications'
+import { NoticeLevel, getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
 import { VTFloatingInspector } from '../../FloatingInspectors/VTFloatingInspector'
 import { RundownUtils } from '../../../lib/rundown'
 import { FreezeFrameIcon } from '../../../lib/ui/icons/freezeFrame'

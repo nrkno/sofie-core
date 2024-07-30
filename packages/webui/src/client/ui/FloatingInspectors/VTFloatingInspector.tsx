@@ -3,7 +3,7 @@ import { TFunction, useTranslation } from 'react-i18next'
 
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
 import { FloatingInspector } from '../FloatingInspector'
-import { NoticeLevel } from '../../../lib/notifications/notifications'
+import { NoticeLevel } from '../../lib/notifications/notifications'
 import { VTContent } from '@sofie-automation/blueprints-integration'
 import { IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'

@@ -19,7 +19,7 @@ import {
 	SomeContent,
 } from '@sofie-automation/blueprints-integration'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
-import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
+import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import {
 	RundownLayoutFilter,
 	RundownLayoutFilterBase,
@@ -44,7 +44,7 @@ import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMes
 import { i18nTranslator } from '../i18n'
 import { AdLibPieceUi, AdlibSegmentUi } from '../../lib/shelf'
 import { getShelfFollowsOnAir, getShowHiddenSourceLayers } from '../../lib/localStorage'
-import { sortAdlibs } from '../../../lib/adlibs'
+import { sortAdlibs } from '@sofie-automation/meteor-lib/dist/adlibs'
 import { AdLibPanelToolbar } from './AdLibPanelToolbar'
 import { AdLibListView } from './AdLibListView'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'

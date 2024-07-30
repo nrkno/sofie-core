@@ -61,7 +61,7 @@ import {
 	reloadRundownPlaylistClick,
 } from './RundownView/RundownNotifier'
 import { NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
-import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
+import { NotificationCenter, NoticeLevel, Notification } from '../lib/notifications/notifications'
 import { SupportPopUp } from './SupportPopUp'
 import { KeyboardFocusIndicator } from '../lib/KeyboardFocusIndicator'
 import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'

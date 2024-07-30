@@ -17,7 +17,7 @@ import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import { DashboardPieceButtonSplitPreview } from './DashboardPieceButtonSplitPreview'
 import { StyledTimecode } from '../../lib/StyledTimecode'
 import { VTFloatingInspector } from '../FloatingInspectors/VTFloatingInspector'
-import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
+import { getNoticeLevelForPieceStatus } from '../../lib/notifications/notifications'
 import { L3rdFloatingInspector } from '../FloatingInspectors/L3rdFloatingInspector'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 

@@ -1,7 +1,7 @@
 import classNames from 'classnames'
 import { VTContent } from '@sofie-automation/blueprints-integration'
 import { VTFloatingInspector } from '../../../FloatingInspectors/VTFloatingInspector'
-import { getNoticeLevelForPieceStatus } from '../../../../../lib/notifications/notifications'
+import { getNoticeLevelForPieceStatus } from '../../../../lib/notifications/notifications'
 import { RundownUtils } from '../../../../lib/rundown'
 import { IProps } from './ThumbnailRendererFactory'
 import { RundownTimingConsumer } from '../../../RundownView/RundownTiming/RundownTimingConsumer'

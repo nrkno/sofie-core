@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { literal } from '../../../lib/lib'
 import { ReactNotification } from '../../lib/notifications/ReactNotification'
 import { ToolTipStep } from '../RundownList'
-import { NotificationAction } from '../../../lib/notifications/notifications'
+import { NotificationAction } from '../../lib/notifications/notifications'
 
 export interface IRegisterHelpProps {
 	step: ToolTipStep

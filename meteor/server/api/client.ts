@@ -32,7 +32,6 @@ import {
 	VerifiedRundownPlaylistContentAccess,
 } from './lib'
 import { BasicAccessContext } from '../security/organization'
-import { NoticeLevel } from '../../lib/notifications/notifications'
 import { UserActionsLog } from '../collections'
 import { executePeripheralDeviceFunctionWithCustomTimeout } from './peripheralDevice/executeFunction'
 
@@ -422,7 +421,7 @@ class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
 			}"\n  at ${new Date(timestamp).toISOString()}:\n"${errorString}`
 		)
 	}
-	async clientLogNotification(timestamp: Time, from: string, severity: NoticeLevel, message: string, source?: any) {
+	async clientLogNotification(timestamp: Time, from: string, severity: number, message: string, source?: any) {
 		check(timestamp, Number)
 		triggerWriteAccessBecauseNoCheckNecessary() // TODO: discuss if is this ok?
 		const address = this.connection ? this.connection.clientAddress : 'N/A'

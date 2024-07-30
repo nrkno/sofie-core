@@ -12,7 +12,7 @@ import {
 	Notification,
 	NotificationList,
 	NotifierHandle,
-} from '../../lib/notifications/notifications'
+} from './notifications/notifications'
 import { WithManagedTracker } from './reactiveData/reactiveDataHelper'
 import { withTranslation } from 'react-i18next'
 import { NotificationCenterPopUps } from './notifications/NotificationCenterPanel'

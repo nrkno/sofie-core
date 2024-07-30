@@ -7,12 +7,17 @@ import { HotkeyDefinition } from '@sofie-automation/corelib/dist/dataModel/ShowS
 import { literal, getRandomString } from '@sofie-automation/corelib/dist/lib'
 import { withTranslation } from 'react-i18next'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { AHKBaseHeader, AHKModifierMap, AHKKeyboardMap, useAHKComboTemplate } from '../../../../lib/tv2/AHKkeyboardMap'
+import {
+	AHKBaseHeader,
+	AHKModifierMap,
+	AHKKeyboardMap,
+	useAHKComboTemplate,
+} from '@sofie-automation/meteor-lib/dist/tv2/AHKkeyboardMap'
 import { defaultColorPickerPalette } from '../../../lib/colorPicker'
 import { downloadBlob } from '../../../lib/downloadBlob'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { hotkeyHelper } from '../../../lib/hotkeyHelper'
-import { NotificationCenter, NoticeLevel, Notification } from '../../../../lib/notifications/notifications'
+import { NotificationCenter, NoticeLevel, Notification } from '../../../lib/notifications/notifications'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { UploadButton } from '../../../lib/uploadButton'
 import _ from 'underscore'

@@ -3,7 +3,7 @@ import { getUserRoles } from '../../lib/collections/Users'
 import {
 	setReportNotifications as libSetReportNotifications,
 	getReportNotifications as libGetReportNotifications,
-} from '../../lib/notifications/notifications'
+} from './notifications/notifications'
 import { LocalStorageProperty } from '../../lib/lib'
 
 const GUI_FLAGS: {
