@@ -5,7 +5,7 @@ import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceIns
 import { RequiresActiveLayers } from '../../lib/collections/RundownLayouts'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getCurrentTime } from '../../lib/lib'
-import { invalidateAt } from './../../lib/invalidatingTime'
+import { invalidateAt } from './invalidatingTime'
 import { memoizedIsolatedAutorun } from '../../lib/memoizedIsolatedAutorun'
 import { PartInstances, PieceInstances } from '../collections'
 import { ReadonlyDeep } from 'type-fest'

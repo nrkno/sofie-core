@@ -1,5 +1,5 @@
 import { Tracker } from 'meteor/tracker'
-import { getCurrentTime } from './lib'
+import { getCurrentTime } from '../../lib/lib'
 
 /** Invalidate a reactive computation after a given amount of time */
 export function invalidateAfter(timeout: number): void {
