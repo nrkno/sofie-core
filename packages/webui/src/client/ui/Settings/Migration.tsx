@@ -13,7 +13,7 @@ import {
 import { MigrationStepInput, MigrationStepInputResult } from '@sofie-automation/blueprints-integration'
 import * as _ from 'underscore'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
-import { MeteorCall } from '../../../lib/api/methods'
+import { MeteorCall } from '../../lib/meteorApi'
 import { checkForOldDataAndCleanUp } from './SystemManagement'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { UpgradesView } from './Upgrades/View'

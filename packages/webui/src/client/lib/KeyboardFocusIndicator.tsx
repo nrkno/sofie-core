@@ -3,7 +3,7 @@ import * as React from 'react'
 
 import { getAllowStudio, getAllowConfigure, getAllowService } from '../lib/localStorage'
 
-import { MeteorCall } from '../../lib/api/methods'
+import { MeteorCall } from '../lib/meteorApi'
 import { getCurrentTime } from '../../lib/lib'
 import { catchError } from './lib'
 

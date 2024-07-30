@@ -3,7 +3,7 @@ import { ITranslatableMessage } from '@sofie-automation/corelib/dist/Translatabl
 import { check } from 'meteor/check'
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
-import { MethodContext } from '../../../lib/api/methods'
+import { MethodContext } from '../methodContext'
 import {
 	DeviceTriggerArguments,
 	DeviceTriggerMountedAction,

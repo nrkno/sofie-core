@@ -18,7 +18,7 @@ import {
 	Studios,
 	Timeline,
 } from '../../collections'
-import { MethodContextAPI, MethodContext } from '../../../lib/api/methods'
+import { MethodContextAPI, MethodContext } from '../methodContext'
 import { OrganizationContentWriteAccess } from '../../security/organization'
 import { Credentials } from '../../security/lib/credentials'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'

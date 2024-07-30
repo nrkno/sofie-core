@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Translated, translateWithTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import type { RouteComponentProps } from 'react-router'
 import { getUser } from '../../../lib/userInfo'
-import { MeteorCall } from '../../../../lib/api/methods'
+import { MeteorCall } from '../../../lib/meteorApi'
 import { NotLoggedInContainer } from './lib'
 import { Link } from 'react-router-dom'
 

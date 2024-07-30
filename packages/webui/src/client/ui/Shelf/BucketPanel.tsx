@@ -31,7 +31,7 @@ import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLi
 import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
 import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { MeteorCall } from '../../../lib/api/methods'
+import { MeteorCall } from '../../lib/meteorApi'
 import { DragDropItemTypes } from '../DragDropItemTypes'
 import { BucketPieceButton, IBucketPieceDropResult } from './BucketPieceButton'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'

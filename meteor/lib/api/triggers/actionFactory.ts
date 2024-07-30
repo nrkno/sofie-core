@@ -12,7 +12,7 @@ import {
 import { TFunction } from 'i18next'
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
-import { MeteorCall } from '../methods'
+import { MeteorCall } from '../../../server/api/methods'
 import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBShowStyleBase, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'

@@ -5,7 +5,7 @@ import { IBlueprintExternalMessageQueueType, PlaylistTimingType } from '@sofie-a
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { DefaultEnvironment, setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
 import { getCurrentTime, getRandomId, protectString } from '../../../lib/lib'
-import { MeteorCall } from '../../../lib/api/methods'
+import { MeteorCall } from '../methods'
 
 import '../ExternalMessageQueue'
 import { SupressLogMessages } from '../../../__mocks__/suppressLogging'

@@ -3,7 +3,7 @@ import { getCurrentTime } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import * as _ from 'underscore'
-import { MeteorCall } from '../../lib/api/methods'
+import { MeteorCall } from '../lib/meteorApi'
 import { ClientCollections, PublicationCollections } from '../../lib/collections/lib'
 import { logger } from '../../lib/logging'
 

@@ -5,7 +5,7 @@ import ClassNames from 'classnames'
 import { PackageContainerStatusDB } from '@sofie-automation/corelib/dist/dataModel/PackageContainerStatus'
 import { StatusCodePill } from '../StatusCodePill'
 import { doUserAction, UserAction } from '../../../../lib/clientUserAction'
-import { MeteorCall } from '../../../../lib/api/methods'
+import { MeteorCall } from '../../../lib/meteorApi'
 import { ExpectedPackageStatusAPI } from '@sofie-automation/blueprints-integration'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 

@@ -27,7 +27,7 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notific
 import { catchError, fetchFrom } from '../../lib/lib'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { Link } from 'react-router-dom'
-import { MeteorCall } from '../../../lib/api/methods'
+import { MeteorCall } from '../../lib/meteorApi'
 import { defaultColorPickerPalette } from '../../lib/colorPicker'
 import FilterEditor from './components/FilterEditor'
 import ShelfLayoutSettings from './components/rundownLayouts/ShelfLayoutSettings'

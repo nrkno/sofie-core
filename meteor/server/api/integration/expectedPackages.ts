@@ -1,6 +1,6 @@
 import { check } from '../../../lib/check'
 import { Meteor } from 'meteor/meteor'
-import { MethodContext } from '../../../lib/api/methods'
+import { MethodContext } from '../methodContext'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 import { ExpectedPackageStatusAPI, PackageInfo } from '@sofie-automation/blueprints-integration'
 import { ExpectedPackageWorkStatus } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackageWorkStatuses'

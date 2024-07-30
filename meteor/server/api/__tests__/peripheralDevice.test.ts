@@ -38,7 +38,7 @@ jest.mock('../../api/deviceTriggers/observer')
 
 import '../peripheralDevice'
 import { OnTimelineTriggerTimeProps, StudioJobFunc, StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import { MeteorCall } from '../../../lib/api/methods'
+import { MeteorCall } from '../methods'
 import { PeripheralDeviceForDevice } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 import {
 	PeripheralDeviceInitOptions,

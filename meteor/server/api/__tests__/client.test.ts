@@ -12,7 +12,7 @@ import {
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { setupMockPeripheralDevice, setupMockStudio } from '../../../__mocks__/helpers/database'
-import { MeteorCall } from '../../../lib/api/methods'
+import { MeteorCall } from '../methods'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDeviceCommands, UserActionsLog } from '../../collections'
 import { SupressLogMessages } from '../../../__mocks__/suppressLogging'

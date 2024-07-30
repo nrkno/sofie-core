@@ -7,7 +7,6 @@ import { logger } from './logging'
 import { Time, TimeDuration } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { ReactiveVar } from 'meteor/reactive-var'
-import { MeteorApply } from './MeteorApply'
 export type { Time, TimeDuration }
 
 // Legacy compatability
@@ -60,30 +59,6 @@ export type PromisifyCallbacks<T> = {
 type PromisifyFunction<T> = T extends (...args: any) => any
 	? (...args: Parameters<T>) => Promise<ReturnType<T>> | ReturnType<T>
 	: T
-
-/**
- * Convenience method to convert a Meteor.apply() into a Promise
- * @param callName {string} Method name
- * @param args {Array<any>} An array of arguments for the method call
- * @param options (Optional) An object with options for the call. See Meteor documentation.
- * @returns {Promise<any>} A promise containing the result of the called method.
- */
-export async function MeteorPromiseApply(
-	callName: Parameters<typeof Meteor.apply>[0],
-	args: Parameters<typeof Meteor.apply>[1],
-	options?: Parameters<typeof Meteor.apply>[2]
-): Promise<any> {
-	if (Meteor.isServer) {
-		return new Promise((resolve, reject) => {
-			Meteor.apply(callName, args, options, (err, res) => {
-				if (err) reject(err)
-				else resolve(res)
-			})
-		})
-	} else {
-		return MeteorApply(callName, args, options)
-	}
-}
 
 // The diff is currently only used client-side
 const systemTime = {

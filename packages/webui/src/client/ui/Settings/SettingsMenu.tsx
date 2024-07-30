@@ -10,7 +10,7 @@ import { faPlus, faTrash, faExclamationTriangle, faCaretRight, faCaretDown } fro
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
-import { MeteorCall } from '../../../lib/api/methods'
+import { MeteorCall } from '../../lib/meteorApi'
 import { Settings as MeteorSettings } from '../../../lib/Settings'
 import { IOutputLayer, StatusCode } from '@sofie-automation/blueprints-integration'
 import { TFunction, useTranslation } from 'react-i18next'

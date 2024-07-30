@@ -14,7 +14,7 @@ import { matchFilter } from './AdLibListView'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { MeteorCall } from '../../../lib/api/methods'
+import { MeteorCall } from '../../lib/meteorApi'
 import {
 	AdLibPieceUi,
 	getNextPieceInstancesGrouped,

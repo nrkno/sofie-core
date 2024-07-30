@@ -32,7 +32,7 @@ import {
 	findPartInstanceOrWrapToTemporary,
 	PartInstance,
 } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
-import { MeteorCall } from '../../../lib/api/methods'
+import { MeteorCall } from '../../lib/meteorApi'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { RundownUtils } from '../../lib/rundown'

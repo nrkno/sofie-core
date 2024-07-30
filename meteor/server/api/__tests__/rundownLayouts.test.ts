@@ -7,7 +7,7 @@ import {
 	RundownLayout,
 	CustomizableRegions,
 } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
-import { MeteorCall } from '../../../lib/api/methods'
+import { MeteorCall } from '../methods'
 import { RundownLayoutId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownLayouts } from '../../collections'
 import { SupressLogMessages } from '../../../__mocks__/suppressLogging'

@@ -3,7 +3,7 @@ import { check, Match } from '../../lib/check'
 import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments } from '../methods'
 import { literal, getRandomId, protectString, Complete } from '../../lib/lib'
 import { logger } from '../logging'
-import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
+import { MethodContext, MethodContextAPI } from './methodContext'
 import { ShowStyleContentWriteAccess } from '../security/showStyle'
 import { DBTriggeredActions, TriggeredActionsObj } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import {

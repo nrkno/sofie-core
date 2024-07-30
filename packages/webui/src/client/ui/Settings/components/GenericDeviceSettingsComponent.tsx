@@ -7,7 +7,7 @@ import { protectString, unprotectString } from '../../../../lib/lib'
 import { SchemaFormForCollection } from '../../../lib/forms/SchemaFormForCollection'
 import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { PeripheralDevices } from '../../../collections'
-import { MeteorCall } from '../../../../lib/api/methods'
+import { MeteorCall } from '../../../lib/meteorApi'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IGenericDeviceSettingsComponentProps {

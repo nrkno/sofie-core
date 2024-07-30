@@ -1,7 +1,8 @@
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../../lib/logging'
-
 import { AllPubSubTypes } from '@sofie-automation/meteor-lib/dist/api/pubsub'
+import { MakeMeteorCall } from '@sofie-automation/meteor-lib/dist/api/methods'
+import { MeteorApply } from './MeteorApply'
 
 /**
  * Type safe wrapper around Meteor.subscribe()
@@ -23,3 +24,5 @@ export function meteorSubscribe<K extends keyof AllPubSubTypes>(
 		return Meteor.subscribe(name, ...args, callbacks)
 	} else throw new Meteor.Error(500, 'meteorSubscribe is only available client-side')
 }
+
+export const MeteorCall = MakeMeteorCall(MeteorApply)

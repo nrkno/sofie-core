@@ -15,11 +15,8 @@ import {
 	equivalentArrays,
 	LogLevel,
 	makePromise,
-	MeteorPromiseApply,
 } from '../lib'
 import { MeteorMock } from '../../__mocks__/meteor'
-import { MeteorDebugMethods } from '../../server/methods'
-import { Settings } from '../Settings'
 
 // require('../../../../../server/api/ingest/mosDevice/api.ts') // include in order to create the Meteor methods needed
 
@@ -28,27 +25,6 @@ describe('lib/lib', () => {
 		MeteorMock.mockSetServerEnvironment()
 	})
 
-	testInFiber('MeteorPromiseApply', async () => {
-		// set up method:
-		Settings.enableUserAccounts = false
-		MeteorDebugMethods({
-			myMethod: async (value1: string, value2: string) => {
-				// Do an async operation, to ensure that asynchronous operations work:
-				const v = await new Promise((resolve) => {
-					setTimeout(() => {
-						resolve(value1 + value2)
-					}, 10)
-				})
-				return v
-			},
-		})
-		const pValue: any = MeteorPromiseApply('myMethod', ['myValue', 'AAA']).catch((e) => {
-			throw e
-		})
-		expect(pValue).toHaveProperty('then') // be a promise
-		const value = await pValue
-		expect(value).toEqual('myValueAAA')
-	})
 	testInFiber('getCurrentTime', () => {
 		systemTime.diff = 5439
 		MeteorMock.mockSetClientEnvironment()

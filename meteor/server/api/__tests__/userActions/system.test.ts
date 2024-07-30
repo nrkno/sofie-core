@@ -1,4 +1,4 @@
-import { MeteorCall } from '../../../../lib/api/methods'
+import { MeteorCall } from '../../methods'
 import {
 	PeripheralDevice,
 	PeripheralDeviceCategory,

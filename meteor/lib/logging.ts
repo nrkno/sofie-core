@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { MeteorApply } from './MeteorApply'
 
 export const LOGGER_METHOD_NAME = 'logger'
 
@@ -61,50 +60,8 @@ if (Meteor.isServer) {
 		notice: getLogMethod('notice'),
 	}
 } else {
-	const getLogMethod = (type: string) => {
-		return (...args: any[]) => {
-			console.log(type, ...args)
-
-			if (type === 'error' || type === 'warn' || type === 'info') {
-				// Also send log entry to server, for logging:
-				const stringifiedArgs: string[] = args.map((arg) => {
-					return stringifyError(arg)
-				})
-				MeteorApply(LOGGER_METHOD_NAME, [type, `Client ${type}`, ...stringifiedArgs]).catch(console.error)
-				return logger
-			}
-			return logger
-		}
-	}
-
-	const noop = (_type: string) => {
-		// do nothing
-		return logger
-	}
-
-	logger = {
-		error: getLogMethod('error'),
-		warn: getLogMethod('warn'),
-		help: getLogMethod('help'),
-		data: getLogMethod('data'),
-		info: getLogMethod('info'),
-		debug: getLogMethod('debug'),
-		prompt: getLogMethod('prompt'),
-		verbose: getLogMethod('verbose'),
-		input: getLogMethod('input'),
-		silly: getLogMethod('silly'),
-
-		emerg: getLogMethod('emerg'),
-		alert: getLogMethod('alert'),
-		crit: getLogMethod('crit'),
-		warning: getLogMethod('warn'),
-		notice: getLogMethod('notice'),
-	}
-	if (localStorage && localStorage.getItem('developerMode') !== '1') {
-		// not in developerMode, don't log everything then:
-		logger.debug = noop
-		logger.silly = noop
-	}
+	// nocommit - remove this flow
+	throw new Error('not supported')
 }
 
 export { logger }

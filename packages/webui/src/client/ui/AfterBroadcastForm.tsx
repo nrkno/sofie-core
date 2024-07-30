@@ -4,7 +4,7 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { TFunction, useTranslation } from 'react-i18next'
 import { EvaluationBase } from '@sofie-automation/meteor-lib/dist/collections/Evaluations'
 import { doUserAction, UserAction } from '../../lib/clientUserAction'
-import { MeteorCall } from '../../lib/api/methods'
+import { MeteorCall } from '../lib/meteorApi'
 import { SnapshotId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { hashSingleUseToken } from '../lib/lib'

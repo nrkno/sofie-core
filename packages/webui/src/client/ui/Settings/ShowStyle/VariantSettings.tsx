@@ -10,7 +10,7 @@ import {
 import { MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { useTranslation } from 'react-i18next'
-import { MeteorCall } from '../../../../lib/api/methods'
+import { MeteorCall } from '../../../lib/meteorApi'
 import { DBShowStyleBase, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { doModalDialog } from '../../../lib/ModalDialog'

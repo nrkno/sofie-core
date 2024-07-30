@@ -4,7 +4,7 @@ import { ICoreSystem, SofieLogo } from '@sofie-automation/meteor-lib/dist/collec
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
-import { MeteorCall } from '../../../lib/api/methods'
+import { MeteorCall } from '../../lib/meteorApi'
 import { languageAnd } from '../../lib/language'
 import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredActionsEditor'
 import { TFunction, useTranslation } from 'react-i18next'

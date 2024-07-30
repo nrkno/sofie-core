@@ -16,7 +16,7 @@ import {
 import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
 import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
-import { MeteorCall } from '../../../lib/api/methods'
+import { MeteorCall } from '../../lib/meteorApi'
 import {
 	AdLibPieceUi,
 	AdlibSegmentUi,

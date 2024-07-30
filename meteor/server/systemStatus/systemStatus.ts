@@ -27,7 +27,7 @@ import { PeripheralDevices, Workers, WorkerThreadStatuses } from '../collections
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ServerPeripheralDeviceAPI } from '../api/peripheralDevice'
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
-import { MethodContext } from '../../lib/api/methods'
+import { MethodContext } from '../api/methodContext'
 import { getBlueprintVersions } from './blueprintVersions'
 import { getUpgradeSystemStatusMessages } from './blueprintUpgradeStatus'
 

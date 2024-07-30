@@ -8,7 +8,7 @@ import { StatusResponse } from '@sofie-automation/meteor-lib/dist/api/systemStat
 import { stripVersion } from '../semverUtils'
 import semver from 'semver'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
-import { MeteorCall } from '../../../lib/api/methods'
+import { MeteorCall } from '../../api/methods'
 import { PeripheralDeviceStatusObject } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { PeripheralDevices } from '../../collections'
 import { UIBlueprintUpgradeStatus } from '@sofie-automation/meteor-lib/dist/api/upgradeStatus'

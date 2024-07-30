@@ -3,7 +3,7 @@ import { NewPlayoutAPI, PlayoutAPIMethods } from '@sofie-automation/meteor-lib/d
 import { ServerPlayoutAPI } from './playout'
 import { getCurrentTime } from '../../../lib/lib'
 import { logger } from '../../logging'
-import { MethodContextAPI } from '../../../lib/api/methods'
+import { MethodContextAPI } from '../methodContext'
 import { QueueStudioJob } from '../../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { StudioContentWriteAccess } from '../../security/studio'

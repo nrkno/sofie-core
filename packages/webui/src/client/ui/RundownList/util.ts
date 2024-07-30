@@ -2,7 +2,7 @@ import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { unprotectString } from '../../../lib/lib'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
-import { MeteorCall } from '../../../lib/api/methods'
+import { MeteorCall } from '../../lib/meteorApi'
 import { TFunction } from 'i18next'
 import { handleRundownReloadResponse } from '../RundownView'
 import {

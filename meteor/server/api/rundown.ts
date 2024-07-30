@@ -11,7 +11,7 @@ import {
 	ReloadRundownPlaylistResponse,
 	TriggerReloadDataResponse,
 } from '@sofie-automation/meteor-lib/dist/api/userActions'
-import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
+import { MethodContextAPI, MethodContext } from './methodContext'
 import { StudioContentWriteAccess } from '../security/studio'
 import { runIngestOperation } from './ingest/lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'

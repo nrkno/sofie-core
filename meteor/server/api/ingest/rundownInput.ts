@@ -12,7 +12,7 @@ import {
 	generateRundownSource,
 	runIngestOperation,
 } from './lib'
-import { MethodContext } from '../../../lib/api/methods'
+import { MethodContext } from '../methodContext'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import { PeripheralDeviceId, RundownId, SegmentId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'

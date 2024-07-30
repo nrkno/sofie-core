@@ -19,7 +19,7 @@ import { doModalDialog, ModalDialogQueueItem } from '../../lib/ModalDialog'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 
-import { MeteorCall } from '../../../lib/api/methods'
+import { MeteorCall } from '../../lib/meteorApi'
 import update from 'immutability-helper'
 
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'

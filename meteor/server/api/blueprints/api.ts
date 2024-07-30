@@ -18,7 +18,7 @@ import { SYSTEM_ID } from '@sofie-automation/meteor-lib/dist/collections/CoreSys
 import { parseVersion } from '../../systemStatus/semverUtils'
 import { evalBlueprint } from './cache'
 import { removeSystemStatus } from '../../systemStatus/systemStatus'
-import { MethodContext, MethodContextAPI } from '../../../lib/api/methods'
+import { MethodContext, MethodContextAPI } from '../methodContext'
 import { OrganizationContentWriteAccess, OrganizationReadAccess } from '../../security/organization'
 import { SystemWriteAccess } from '../../security/system'
 import { Credentials, isResolvedCredentials } from '../../security/lib/credentials'

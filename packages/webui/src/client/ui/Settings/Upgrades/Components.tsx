@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faDatabase, faEye, faWarning } from '@fortawesome/free-solid-svg-icons'
-import { MeteorCall } from '../../../../lib/api/methods'
+import { MeteorCall } from '../../../lib/meteorApi'
 import { TFunction, useTranslation } from 'react-i18next'
 import { i18nTranslator } from '../../i18n'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'

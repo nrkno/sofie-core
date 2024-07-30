@@ -18,7 +18,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { generateFakeBlueprint } from '../../api/blueprints/__tests__/lib'
-import { MeteorCall } from '../../../lib/api/methods'
+import { MeteorCall } from '../../api/methods'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../../collections'
 import { getCoreSystemAsync } from '../../coreSystem/collection'

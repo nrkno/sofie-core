@@ -9,7 +9,7 @@ import {
 } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { literal, getRandomId, protectString } from '../../lib/lib'
 import { logger } from '../logging'
-import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
+import { MethodContext, MethodContextAPI } from './methodContext'
 import { ShowStyleContentWriteAccess } from '../security/showStyle'
 import { fetchShowStyleBaseLight } from '../optimizations'
 import { BlueprintId, RundownLayoutId, ShowStyleBaseId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'

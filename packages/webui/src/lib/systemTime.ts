@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { logger } from './logging'
 import { getCurrentTime, systemTime } from './lib'
-import { MeteorCall } from './api/methods'
+import { MeteorCall } from '../client/lib/meteorApi'
 
 /** How often the client should sync its time to the server [ms] */
 const SYNC_TIME = 5 * 60 * 1000 // 5 minutes

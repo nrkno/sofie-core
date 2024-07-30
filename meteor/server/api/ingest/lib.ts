@@ -5,7 +5,7 @@ import { PeripheralDevice, PeripheralDeviceCategory } from '@sofie-automation/co
 import { Rundown, RundownSourceNrcs } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { logger } from '../../logging'
 import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
-import { MethodContext } from '../../../lib/api/methods'
+import { MethodContext } from '../methodContext'
 import { Credentials } from '../../security/lib/credentials'
 import { profiler } from '../profiler'
 import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'

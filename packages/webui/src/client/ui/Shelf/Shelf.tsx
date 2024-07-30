@@ -36,7 +36,7 @@ import RundownViewEventBus, {
 import { IAdLibListItem } from './AdLibListItem'
 import ShelfContextMenu from './ShelfContextMenu'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
-import { MeteorCall } from '../../../lib/api/methods'
+import { MeteorCall } from '../../lib/meteorApi'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { ShelfDisplayOptions } from '../../lib/shelf'

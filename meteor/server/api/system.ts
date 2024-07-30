@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { getCurrentTime, sleep, Time } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
-import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
+import { MethodContextAPI, MethodContext } from './methodContext'
 import {
 	SystemAPIMethods,
 	CollectionCleanupResult,

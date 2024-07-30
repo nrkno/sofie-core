@@ -8,7 +8,7 @@ import {
 	ExternalMessageQueueAPIMethods,
 } from '@sofie-automation/meteor-lib/dist/api/ExternalMessageQueue'
 import { StatusObject, setSystemStatus } from '../systemStatus/systemStatus'
-import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
+import { MethodContextAPI, MethodContext } from './methodContext'
 import { StudioContentWriteAccess } from '../security/studio'
 import { ExternalMessageQueueObjId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ExternalMessageQueue } from '../collections'

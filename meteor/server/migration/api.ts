@@ -8,7 +8,7 @@ import {
 } from '@sofie-automation/meteor-lib/dist/api/migration'
 import * as Migrations from './databaseMigration'
 import { MigrationStepInputResult } from '@sofie-automation/blueprints-integration'
-import { MethodContextAPI } from '../../lib/api/methods'
+import { MethodContextAPI } from '../api/methodContext'
 import { SystemWriteAccess } from '../security/system'
 import {
 	fixupConfigForShowStyleBase,

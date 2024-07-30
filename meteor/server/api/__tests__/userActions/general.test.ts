@@ -3,7 +3,7 @@ import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
 import { hashSingleUseToken } from '../../../../lib/api/triggers/actionFactory'
 import { getCurrentTime } from '../../../../lib/lib'
-import { MeteorCall } from '../../../../lib/api/methods'
+import { MeteorCall } from '../../methods'
 import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { UserActionsLog } from '../../../collections'
 

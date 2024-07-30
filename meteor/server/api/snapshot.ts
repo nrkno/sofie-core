@@ -48,7 +48,7 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { RundownLayoutBase } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { DBTriggeredActions } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import { Settings } from '../Settings'
-import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
+import { MethodContext, MethodContextAPI } from './methodContext'
 import { Credentials, isResolvedCredentials } from '../security/lib/credentials'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { StudioContentWriteAccess } from '../security/studio'
