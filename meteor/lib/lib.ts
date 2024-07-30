@@ -13,6 +13,7 @@ export { Time, TimeDuration }
 // Legacy compatability
 export * from '@sofie-automation/corelib/dist/protectedString'
 export * from '@sofie-automation/corelib/dist/lib'
+export * from '@sofie-automation/meteor-lib/dist/lib'
 
 export type PromisifyCallbacks<T> = {
 	[K in keyof T]: PromisifyFunction<T[K]>
@@ -467,16 +468,6 @@ export function generateTranslation(
 		args,
 		namespaces,
 	}
-}
-
-export enum LogLevel {
-	SILLY = 'silly',
-	DEBUG = 'debug',
-	VERBOSE = 'verbose',
-	INFO = 'info',
-	WARN = 'warn',
-	ERROR = 'error',
-	NONE = 'crit',
 }
 
 export enum LocalStorageProperty {

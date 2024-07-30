@@ -5,7 +5,7 @@ import { ClientAPI } from './api/client'
 import { Meteor } from 'meteor/meteor'
 import { logger } from './logging'
 import { assertNever, getCurrentTime, systemTime, Time } from './lib'
-import { UserAction } from './userAction'
+import { UserAction } from '@sofie-automation/meteor-lib/dist/userAction'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 export { UserAction }

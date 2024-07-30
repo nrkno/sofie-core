@@ -47,6 +47,7 @@
 		"@sofie-automation/blueprints-integration": "portal:../packages/blueprints-integration",
 		"@sofie-automation/corelib": "portal:../packages/corelib",
 		"@sofie-automation/job-worker": "portal:../packages/job-worker",
+		"@sofie-automation/meteor-lib": "portal:../packages/meteor-lib",
 		"@sofie-automation/shared-lib": "portal:../packages/shared-lib",
 		"app-root-path": "^3.1.0",
 		"bcrypt": "^5.1.1",

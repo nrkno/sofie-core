@@ -42,6 +42,7 @@
 		"@popperjs/core": "^2.11.8",
 		"@sofie-automation/blueprints-integration": "1.51.0-in-development",
 		"@sofie-automation/corelib": "1.51.0-in-development",
+		"@sofie-automation/meteor-lib": "1.51.0-in-development",
 		"@sofie-automation/shared-lib": "1.51.0-in-development",
 		"@sofie-automation/sorensen": "^1.4.2",
 		"@types/sinon": "^10.0.20",

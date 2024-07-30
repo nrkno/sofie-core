@@ -1219,6 +1219,22 @@ __metadata:
   languageName: node
   linkType: soft
 
+"@sofie-automation/meteor-lib@portal:../packages/meteor-lib::locator=automation-core%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@sofie-automation/meteor-lib@portal:../packages/meteor-lib::locator=automation-core%40workspace%3A."
+  dependencies:
+    "@sofie-automation/blueprints-integration": 1.51.0-in-development
+    "@sofie-automation/corelib": 1.51.0-in-development
+    "@sofie-automation/shared-lib": 1.51.0-in-development
+    deep-extend: 0.6.0
+    semver: ^7.5.4
+    type-fest: ^3.13.1
+    underscore: ^1.13.6
+  peerDependencies:
+    mongodb: ^5.5.0
+  languageName: node
+  linkType: soft
+
 "@sofie-automation/shared-lib@portal:../packages/shared-lib::locator=automation-core%40workspace%3A.":
   version: 0.0.0-use.local
   resolution: "@sofie-automation/shared-lib@portal:../packages/shared-lib::locator=automation-core%40workspace%3A."
@@ -2275,6 +2291,7 @@ __metadata:
     "@sofie-automation/corelib": "portal:../packages/corelib"
     "@sofie-automation/eslint-plugin": ^0.1.1
     "@sofie-automation/job-worker": "portal:../packages/job-worker"
+    "@sofie-automation/meteor-lib": "portal:../packages/meteor-lib"
     "@sofie-automation/shared-lib": "portal:../packages/shared-lib"
     "@types/app-root-path": ^1.2.8
     "@types/body-parser": ^1.19.5
