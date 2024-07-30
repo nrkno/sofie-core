@@ -28,7 +28,10 @@ import { literal, protectString, unprotectString } from '../../../lib/lib'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifications'
-import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../../../lib/api/triggers/RundownViewEventBus'
+import RundownViewEventBus, {
+	RundownViewEvents,
+	HighlightEvent,
+} from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
 import { wrapPartToTemporaryInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 
 import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'

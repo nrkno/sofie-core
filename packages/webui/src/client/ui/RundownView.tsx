@@ -102,7 +102,7 @@ import RundownViewEventBus, {
 	IEventContext,
 	MiniShelfQueueAdLibEvent,
 	RundownViewEvents,
-} from '../../lib/api/triggers/RundownViewEventBus'
+} from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
 import StudioContext from './RundownView/StudioContext'
 import { RundownLayoutsAPI } from '../lib/rundownLayouts'
 import { TriggersHandler } from '../lib/triggers/TriggersHandler'

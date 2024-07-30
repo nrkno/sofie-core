@@ -14,7 +14,7 @@ import RundownViewEventBus, {
 	RundownViewEvents,
 	GoToPartEvent,
 	GoToPartInstanceEvent,
-} from '../../../lib/api/triggers/RundownViewEventBus'
+} from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
 import { SegmentTimelinePartClass } from './Parts/SegmentTimelinePart'
 import {
 	PartUi,

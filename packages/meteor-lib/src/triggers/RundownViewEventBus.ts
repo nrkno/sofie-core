@@ -1,6 +1,8 @@
-import EventEmitter from 'events'
-import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
+import * as EventEmitter from 'events'
+import { Bucket } from '../collections/Buckets'
 import {
+	BucketAdLibActionId,
+	BucketAdLibId,
 	BucketId,
 	PartId,
 	PartInstanceId,
@@ -46,10 +48,16 @@ export enum RundownViewEvents {
 	ITEM_DROPPED = 'itemDropped',
 }
 
-type ShelfTabs = unknown
-type PieceUi = unknown
-type IAdLibListItem = unknown
-type BucketAdLibItem = unknown
+// These are UI types, and are not defined in the backend
+type ShelfTabs = string
+type PieceUi = { a: null }
+type IAdLibListItem = { name: string }
+type BucketAdLibItem = {
+	_id: BucketAdLibId
+	bucketId: BucketId
+	name: string
+	adlibAction?: { _id: BucketAdLibActionId }
+}
 
 export interface IEventContext {
 	context?: any

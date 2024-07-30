@@ -32,7 +32,7 @@ import RundownViewEventBus, {
 	SelectPieceEvent,
 	ShelfStateEvent,
 	SwitchToShelfTabEvent,
-} from '../../../lib/api/triggers/RundownViewEventBus'
+} from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
 import { IAdLibListItem } from './AdLibListItem'
 import ShelfContextMenu from './ShelfContextMenu'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'

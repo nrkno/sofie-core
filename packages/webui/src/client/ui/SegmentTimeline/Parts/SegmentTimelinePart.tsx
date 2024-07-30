@@ -24,7 +24,7 @@ import { CSSProperties } from '../../../styles/_cssVariables'
 import RundownViewEventBus, {
 	RundownViewEvents,
 	HighlightEvent,
-} from '../../../../lib/api/triggers/RundownViewEventBus'
+} from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
 import { LoopingIcon } from '../../../lib/ui/icons/looping'
 import { SegmentEnd } from '../../../lib/ui/icons/segment'
 import { getShowHiddenSourceLayers } from '../../../lib/localStorage'

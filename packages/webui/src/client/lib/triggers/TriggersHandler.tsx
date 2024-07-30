@@ -20,7 +20,7 @@ import { getFinalKey } from './codesToKeyLabels'
 import RundownViewEventBus, {
 	RundownViewEvents,
 	TriggerActionEvent,
-} from '../../../lib/api/triggers/RundownViewEventBus'
+} from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
 import { Tracker } from 'meteor/tracker'
 import { Settings } from '../../lib/Settings'
 import { createInMemorySyncMongoCollection } from '../../collections/lib'
@@ -39,7 +39,7 @@ import {
 	MountedGenericTrigger,
 	MountedHotkeyMixin,
 } from '@sofie-automation/meteor-lib/dist/api/MountedTriggers'
-import { isHotkeyTrigger } from '../../../lib/api/triggers/triggerTypeSelectors'
+import { isHotkeyTrigger } from '@sofie-automation/meteor-lib/dist/triggers/triggerTypeSelectors'
 import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 import { catchError } from '../lib'
 import { logger } from '../logging'

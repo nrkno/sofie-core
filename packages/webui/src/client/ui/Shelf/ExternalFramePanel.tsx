@@ -33,7 +33,10 @@ import { MOS_DATA_IS_STRICT } from '../../../lib/mos'
 import { getMosTypes, stringifyMosObject } from '@mos-connection/helper'
 import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 import { logger } from '../../lib/logging'
-import RundownViewEventBus, { ItemDroppedEvent, RundownViewEvents } from '../../../lib/api/triggers/RundownViewEventBus'
+import RundownViewEventBus, {
+	ItemDroppedEvent,
+	RundownViewEvents,
+} from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
 
 interface IProps {
 	layout: RundownLayoutBase

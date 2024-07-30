@@ -32,7 +32,7 @@ import RundownViewEventBus, {
 	BucketAdLibEvent,
 	BucketEvent,
 	IEventContext,
-} from '../../../lib/api/triggers/RundownViewEventBus'
+} from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { BucketId, ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -373,12 +373,13 @@ export const RundownViewBuckets = withTranslation()(
 							}
 						}
 
-						if (isAdLibAction(bucketAdLib)) {
+						if ('adlibAction' in bucketAdLib && bucketAdLib.adlibAction) {
+							const id = bucketAdLib.adlibAction._id
 							doUserAction(
 								t,
 								e.context,
 								UserAction.REMOVE_BUCKET_ADLIB,
-								(e, ts) => MeteorCall.userAction.bucketsRemoveBucketAdLibAction(e, ts, bucketAdLib.adlibAction._id),
+								(e, ts) => MeteorCall.userAction.bucketsRemoveBucketAdLibAction(e, ts, id),
 								clb
 							)
 						} else {

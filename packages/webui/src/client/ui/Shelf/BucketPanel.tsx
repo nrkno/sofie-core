@@ -46,7 +46,7 @@ import RundownViewEventBus, {
 	RundownViewEvents,
 	RevealInShelfEvent,
 	ToggleShelfDropzoneEvent,
-} from '../../../lib/api/triggers/RundownViewEventBus'
+} from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../i18n'

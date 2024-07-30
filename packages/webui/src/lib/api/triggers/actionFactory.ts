@@ -19,7 +19,7 @@ import { DBShowStyleBase, SourceLayers } from '@sofie-automation/corelib/dist/da
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { assertNever, DummyReactiveVar } from '../../lib'
 import { logger } from '../../../client/lib/logging'
-import RundownViewEventBus, { RundownViewEvents } from './RundownViewEventBus'
+import RundownViewEventBus, { RundownViewEvents } from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
 import { UserAction } from '@sofie-automation/meteor-lib/dist/userAction'
 import { doUserAction } from './universalDoUserActionAdapter'
 import {

@@ -20,7 +20,7 @@ import RundownViewEventBus, {
 	GoToPartInstanceEvent,
 	HighlightEvent,
 	RundownViewEvents,
-} from '../../../lib/api/triggers/RundownViewEventBus'
+} from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
 import { getElementWidth } from '../../utils/dimensions'
 import { HOVER_TIMEOUT } from '../Shelf/DashboardPieceButton'
 import { Meteor } from 'meteor/meteor'
