@@ -13,7 +13,7 @@ import {
 	ActionButtonType,
 	DashboardLayoutActionButton,
 	RundownLayoutElementType,
-} from '../../../lib/collections/RundownLayouts'
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import {
 	CustomizableRegionLayout,
 	CustomizableRegionSettingsManifest,

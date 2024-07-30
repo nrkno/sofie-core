@@ -5,7 +5,7 @@ import {
 	RundownLayoutBase,
 	RundownLayoutPieceCountdown,
 	DashboardLayoutPieceCountdown,
-} from '../../../lib/collections/RundownLayouts'
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementStyle } from './DashboardPanel'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'

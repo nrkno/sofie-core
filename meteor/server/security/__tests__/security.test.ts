@@ -1,7 +1,7 @@
 import '../../../__mocks__/_extendJest'
 
 import { MethodContext } from '../../../lib/api/methods'
-import { DBOrganization } from '../../../lib/collections/Organization'
+import { DBOrganization } from '@sofie-automation/meteor-lib/dist/collections/Organization'
 import { User } from '../../../lib/collections/Users'
 import { protectString } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'

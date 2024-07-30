@@ -14,12 +14,15 @@ import { IContextMenuContext } from '../RundownView'
 import { equalSets } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { PartInstance } from '../../../lib/collections/PartInstances'
+import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
 import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
-import { RundownLayoutFilterBase, RundownViewLayout } from '../../../lib/collections/RundownLayouts'
+import {
+	RundownLayoutFilterBase,
+	RundownViewLayout,
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { getReactivePieceNoteCountsForSegment } from './getReactivePieceNoteCountsForSegment'
 import { SegmentViewMode } from './SegmentViewModes'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'

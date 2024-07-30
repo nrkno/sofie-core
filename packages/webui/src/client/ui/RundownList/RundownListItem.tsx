@@ -9,7 +9,7 @@ import { IRundownDragObject, IRundownPlaylistUiAction, RundownListDragDropTypes 
 import { getEmptyImage } from 'react-dnd-html5-backend'
 import { unprotectString } from '../../../lib/lib'
 import RundownListItemView from './RundownListItemView'
-import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutBase } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ShowStyleBases, ShowStyleVariants } from '../../collections'
 import { useTranslation } from 'react-i18next'

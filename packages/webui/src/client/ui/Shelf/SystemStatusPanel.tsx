@@ -3,7 +3,7 @@ import {
 	DashboardLayoutSystemStatus,
 	RundownLayoutBase,
 	RundownLayoutSytemStatus,
-} from '../../../lib/collections/RundownLayouts'
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'

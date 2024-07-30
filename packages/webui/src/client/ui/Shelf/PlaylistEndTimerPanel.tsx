@@ -3,7 +3,7 @@ import {
 	DashboardLayoutPlaylistEndTimer,
 	RundownLayoutBase,
 	RundownLayoutPlaylistEndTimer,
-} from '../../../lib/collections/RundownLayouts'
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementStyle } from './DashboardPanel'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'

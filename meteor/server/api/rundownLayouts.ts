@@ -2,7 +2,11 @@ import { Meteor } from 'meteor/meteor'
 import { check, Match } from '../../lib/check'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewRundownLayoutsAPI, RundownLayoutsAPIMethods } from '../../lib/api/rundownLayouts'
-import { RundownLayoutType, RundownLayoutBase, CustomizableRegions } from '../../lib/collections/RundownLayouts'
+import {
+	RundownLayoutType,
+	RundownLayoutBase,
+	CustomizableRegions,
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { literal, getRandomId, protectString } from '../../lib/lib'
 import { logger } from '../logging'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'

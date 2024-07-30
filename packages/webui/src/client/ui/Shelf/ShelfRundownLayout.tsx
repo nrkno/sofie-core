@@ -1,4 +1,4 @@
-import { RundownLayout } from '../../../lib/collections/RundownLayouts'
+import { RundownLayout } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { ExternalFramePanel } from './ExternalFramePanel'
 import { OverflowingContainer } from './OverflowingContainer'

@@ -2,7 +2,7 @@ import { PartInstanceId, RundownPlaylistActivationId } from '@sofie-automation/c
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { RequiresActiveLayers } from '../../lib/collections/RundownLayouts'
+import { RequiresActiveLayers } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getCurrentTime } from '../../lib/lib'
 import { invalidateAt } from './invalidatingTime'

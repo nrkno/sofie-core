@@ -1,7 +1,10 @@
 import * as React from 'react'
 import ClassNames from 'classnames'
 
-import { ActionButtonType, DashboardLayoutActionButton } from '../../../lib/collections/RundownLayouts'
+import {
+	ActionButtonType,
+	DashboardLayoutActionButton,
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
 export interface IDashboardButtonProps {

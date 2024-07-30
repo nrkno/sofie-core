@@ -10,7 +10,7 @@ import {
 import deepExtend from 'deep-extend'
 import { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
-import { getSideEffect } from '../../../../lib/collections/ExpectedPackages'
+import { getSideEffect } from '@sofie-automation/meteor-lib/dist/collections/ExpectedPackages'
 import { DBStudio, StudioLight, StudioPackageContainer } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { clone, omit } from '../../../../lib/lib'
 import { CustomPublishCollection } from '../../../lib/customPublication'

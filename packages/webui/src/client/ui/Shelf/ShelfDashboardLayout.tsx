@@ -1,4 +1,4 @@
-import { DashboardLayout, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
+import { DashboardLayout, DashboardLayoutFilter } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { TimelineDashboardPanel } from './TimelineDashboardPanel'
 import { DashboardPanel } from './DashboardPanel'

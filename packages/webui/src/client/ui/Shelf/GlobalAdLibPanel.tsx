@@ -9,7 +9,7 @@ import {
 	PieceDisplayStyle,
 	RundownLayoutElementType,
 	RundownLayoutFilter,
-} from '../../../lib/collections/RundownLayouts'
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { ShelfTabs } from './Shelf'
 import { useTranslation } from 'react-i18next'
 import { AdLibPieceUi } from '../../lib/shelf'

@@ -6,7 +6,7 @@ import { SnapshotItem } from '@sofie-automation/meteor-lib/dist/collections/Snap
 import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
 import { OrganizationReadAccess } from '../security/organization'
 import { FindOptions } from '../../lib/collections/lib'
-import { DBOrganization } from '../../lib/collections/Organization'
+import { DBOrganization } from '@sofie-automation/meteor-lib/dist/collections/Organization'
 import { isProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Blueprints, Evaluations, Organizations, Snapshots, UserActionsLog } from '../collections'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'

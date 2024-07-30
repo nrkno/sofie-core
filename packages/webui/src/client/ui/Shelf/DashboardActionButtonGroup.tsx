@@ -1,6 +1,9 @@
 import * as React from 'react'
 
-import { DashboardLayoutActionButton, ActionButtonType } from '../../../lib/collections/RundownLayouts'
+import {
+	DashboardLayoutActionButton,
+	ActionButtonType,
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { DashboardActionButton } from './DashboardActionButton'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { withTranslation } from 'react-i18next'

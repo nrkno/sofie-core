@@ -3,7 +3,7 @@ import { useSubscriptions, useTracker } from '../../lib/ReactMeteorData/react-me
 import { getUser, DBUser, getUserRolesFromLoadedDocuments } from '../../../lib/collections/Users'
 import { Spinner } from '../../lib/Spinner'
 import { MeteorPubSub } from '../../../lib/api/pubsub'
-import { DBOrganization, UserRoles } from '../../../lib/collections/Organization'
+import { DBOrganization, UserRoles } from '@sofie-automation/meteor-lib/dist/collections/Organization'
 import { unprotectString } from '../../../lib/lib'
 import { MeteorCall } from '../../../lib/api/methods'
 import { EditAttribute } from '../../lib/EditAttribute'

@@ -3,7 +3,7 @@ import {
 	DashboardLayoutStudioName,
 	RundownLayoutBase,
 	RundownLayoutStudioName,
-} from '../../../lib/collections/RundownLayouts'
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { useTranslation } from 'react-i18next'

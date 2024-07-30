@@ -15,7 +15,7 @@ import {
 	RundownLayoutElementType,
 	RundownLayoutFilter,
 	RundownLayoutShelfBase,
-} from '../../../lib/collections/RundownLayouts'
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'

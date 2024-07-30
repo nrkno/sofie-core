@@ -27,7 +27,7 @@ import {
 	wrapMongoCollection,
 } from '../../lib/collections/lib'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
+import { RundownLayoutBase } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { SnapshotItem } from '@sofie-automation/meteor-lib/dist/collections/Snapshots'

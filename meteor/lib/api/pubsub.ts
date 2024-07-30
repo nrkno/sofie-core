@@ -13,8 +13,8 @@ import { Evaluation } from '@sofie-automation/meteor-lib/dist/collections/Evalua
 import { ExpectedPlayoutItem } from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
-import { DBOrganization } from '../collections/Organization'
-import { RundownLayoutBase } from '../collections/RundownLayouts'
+import { DBOrganization } from '@sofie-automation/meteor-lib/dist/collections/Organization'
+import { RundownLayoutBase } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { SnapshotItem } from '@sofie-automation/meteor-lib/dist/collections/Snapshots'
 import { TranslationsBundle } from '@sofie-automation/meteor-lib/dist/collections/TranslationsBundles'
 import {

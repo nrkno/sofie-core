@@ -35,7 +35,7 @@ import {
 	RundownLayoutPartName,
 	RundownLayoutColoredBox,
 	RundownLayoutMiniRundown,
-} from '../collections/RundownLayouts'
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import * as _ from 'underscore'
 import { literal } from '../lib'
 import { TFunction } from 'i18next'

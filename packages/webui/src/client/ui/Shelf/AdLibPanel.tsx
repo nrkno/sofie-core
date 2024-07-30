@@ -24,11 +24,14 @@ import {
 	RundownLayoutFilter,
 	RundownLayoutFilterBase,
 	DashboardLayoutFilter,
-} from '../../../lib/collections/RundownLayouts'
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { literal, unprotectString, protectString } from '../../../lib/lib'
 import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
-import { findPartInstanceOrWrapToTemporary, PartInstance } from '../../../lib/collections/PartInstances'
+import {
+	findPartInstanceOrWrapToTemporary,
+	PartInstance,
+} from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'

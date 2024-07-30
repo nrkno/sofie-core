@@ -10,7 +10,7 @@ import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '.
 import { logNotAllowed } from '../../server/security/lib/lib'
 import { User } from '../../lib/collections/Users'
 import { createOrganization } from './organizations'
-import { DBOrganizationBase } from '../../lib/collections/Organization'
+import { DBOrganizationBase } from '@sofie-automation/meteor-lib/dist/collections/Organization'
 import { resetCredentials } from '../security/lib/credentials'
 import { OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Organizations, Users } from '../collections'

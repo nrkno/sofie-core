@@ -6,7 +6,7 @@ import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { withTiming, WithTiming } from '../RundownView/RundownTiming/withTiming'
 import { useSubscription, useSubscriptions, useTracker, withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { extendMandadory, getCurrentTime, protectString, unprotectString } from '../../../lib/lib'
-import { PartInstance } from '../../../lib/collections/PartInstances'
+import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { PieceIconContainer } from '../PieceIcons/PieceIcon'
 import { PieceNameContainer } from '../PieceIcons/PieceName'
@@ -16,7 +16,7 @@ import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PieceCountdownContainer } from '../PieceIcons/PieceCountdown'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
-import { DashboardLayout, RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
+import { DashboardLayout, RundownLayoutBase } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import {
 	RundownId,
 	RundownLayoutId,

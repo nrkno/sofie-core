@@ -1,5 +1,5 @@
 import { isProtectedString } from '../../../lib/lib'
-import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutBase } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 enum RundownListDragDropTypes {

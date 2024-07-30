@@ -14,7 +14,7 @@ import {
 	RundownLayoutElementBase,
 	RundownLayoutElementType,
 	RundownLayoutFilterBase,
-} from '../../../../lib/collections/RundownLayouts'
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { IOutputLayer, ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'

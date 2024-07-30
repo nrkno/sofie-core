@@ -20,7 +20,7 @@ import {
 	PartInstanceLimited,
 	getSegmentsWithPartInstances,
 } from './RundownResolver'
-import { PartInstance } from '../../lib/collections/PartInstances'
+import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { literal, getCurrentTime } from '../../lib/lib'
