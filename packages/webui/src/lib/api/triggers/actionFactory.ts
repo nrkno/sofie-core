@@ -36,6 +36,7 @@ import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylist
 import { hashSingleUseToken } from '../../../client/lib/lib'
 import { DeviceActions } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
+import { MountedAdLibTriggerType } from '@sofie-automation/meteor-lib/dist/api/MountedTriggers'
 
 // as described in this issue: https://github.com/Microsoft/TypeScript/issues/14094
 type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
@@ -223,7 +224,7 @@ function createAdLibAction(
 			const sourceLayerIdsToClear: string[] = []
 			Tracker.nonreactive(() => compiledAdLibFilter(innerCtx)).forEach((wrappedAdLib) => {
 				switch (wrappedAdLib.type) {
-					case 'adLibPiece':
+					case MountedAdLibTriggerType.adLibPiece:
 						doUserAction(t, e, UserAction.START_ADLIB, async (e, ts) =>
 							currentPartInstanceId
 								? MeteorCall.userAction.segmentAdLibPieceStart(
@@ -237,7 +238,7 @@ function createAdLibAction(
 								: ClientAPI.responseSuccess<void>(undefined)
 						)
 						break
-					case 'rundownBaselineAdLibItem':
+					case MountedAdLibTriggerType.rundownBaselineAdLibItem:
 						doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, async (e, ts) =>
 							currentPartInstanceId
 								? MeteorCall.userAction.baselineAdLibPieceStart(
@@ -251,7 +252,7 @@ function createAdLibAction(
 								: ClientAPI.responseSuccess<void>(undefined)
 						)
 						break
-					case 'adLibAction':
+					case MountedAdLibTriggerType.adLibAction:
 						doUserAction(t, e, UserAction.START_ADLIB, async (e, ts) =>
 							MeteorCall.userAction.executeAction(
 								e,
@@ -264,7 +265,7 @@ function createAdLibAction(
 							)
 						)
 						break
-					case 'rundownBaselineAdLibAction':
+					case MountedAdLibTriggerType.rundownBaselineAdLibAction:
 						doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, async (e, ts) =>
 							MeteorCall.userAction.executeAction(
 								e,
@@ -277,11 +278,11 @@ function createAdLibAction(
 							)
 						)
 						break
-					case 'clearSourceLayer':
+					case MountedAdLibTriggerType.clearSourceLayer:
 						// defer this action to send a single clear action all at once
 						sourceLayerIdsToClear.push(wrappedAdLib.sourceLayerId)
 						break
-					case 'sticky':
+					case MountedAdLibTriggerType.sticky:
 						doUserAction(t, e, UserAction.START_STICKY_PIECE, async (e, ts) =>
 							MeteorCall.userAction.sourceLayerStickyPieceStart(
 								e,

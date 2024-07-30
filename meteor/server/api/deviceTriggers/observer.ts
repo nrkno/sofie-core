@@ -8,7 +8,7 @@ import {
 	DeviceTriggerArguments,
 	DeviceTriggerMountedAction,
 	PreviewWrappedAdLib,
-} from '../../../lib/api/triggers/MountedTriggers'
+} from '@sofie-automation/meteor-lib/dist/api/MountedTriggers'
 import { logger } from '../../logging'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 import { StudioActionManagers } from './StudioActionManagers'

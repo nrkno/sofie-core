@@ -15,7 +15,7 @@ import {
 	PreviewWrappedAdLib,
 	PreviewWrappedAdLibId,
 	ShiftRegisterActionArguments,
-} from '../../../lib/api/triggers/MountedTriggers'
+} from '@sofie-automation/meteor-lib/dist/api/MountedTriggers'
 import { isDeviceTrigger } from '../../../lib/api/triggers/triggerTypeSelectors'
 import {
 	DBTriggeredActions,

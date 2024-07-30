@@ -10,7 +10,7 @@ import { TFunction } from 'i18next'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { MongoCursor } from '../../../lib/collections/lib'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
-import { MountedTrigger } from '../../../lib/api/triggers/MountedTriggers'
+import { MountedTrigger } from '@sofie-automation/meteor-lib/dist/api/MountedTriggers'
 
 interface IProps {
 	visible?: boolean

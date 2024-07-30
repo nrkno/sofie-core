@@ -6,7 +6,7 @@ import { protectString, unprotectString } from '@sofie-automation/corelib/dist/p
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DeviceTriggerMountedAction, PreviewWrappedAdLib } from '../../../lib/api/triggers/MountedTriggers'
+import { DeviceTriggerMountedAction, PreviewWrappedAdLib } from '@sofie-automation/meteor-lib/dist/api/MountedTriggers'
 import { PeripheralDevices } from '../../collections'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import {

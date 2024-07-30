@@ -38,7 +38,7 @@ import {
 	MountedAdLibTrigger,
 	MountedGenericTrigger,
 	MountedHotkeyMixin,
-} from '../../../lib/api/triggers/MountedTriggers'
+} from '@sofie-automation/meteor-lib/dist/api/MountedTriggers'
 import { isHotkeyTrigger } from '../../../lib/api/triggers/triggerTypeSelectors'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 import { catchError } from '../lib'

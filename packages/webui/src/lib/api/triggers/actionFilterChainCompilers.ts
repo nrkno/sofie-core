@@ -35,6 +35,7 @@ import {
 	Rundowns,
 	Segments,
 } from '../../collections/libCollections'
+import { MountedAdLibTriggerType } from '@sofie-automation/meteor-lib/dist/api/MountedTriggers'
 
 export type AdLibFilterChainLink = IRundownPlaylistFilterLink | IGUIContextFilterLink | IAdLibFilterLink
 
@@ -59,7 +60,7 @@ type CompiledFilter<T> = {
 
 type SomeAdLib = RundownBaselineAdLibItem | RundownBaselineAdLibAction | AdLibPiece | AdLibAction
 
-interface IWrappedAdLibType<T extends SomeAdLib, typeName extends string> extends IWrappedAdLibBase {
+interface IWrappedAdLibType<T extends SomeAdLib, typeName extends MountedAdLibTriggerType> extends IWrappedAdLibBase {
 	_id: T['_id']
 	_rank: number
 	partId: PartId | null
@@ -73,7 +74,7 @@ interface IWrappedAdLibType<T extends SomeAdLib, typeName extends string> extend
 
 /** What follows are utility functions to wrap various AdLib objects to IWrappedAdLib */
 
-function wrapAdLibAction(adLib: AdLibAction, type: 'adLibAction'): IWrappedAdLib {
+function wrapAdLibAction(adLib: AdLibAction, type: MountedAdLibTriggerType.adLibAction): IWrappedAdLib {
 	return {
 		_id: adLib._id,
 		_rank: adLib.display?._rank || 0,
@@ -89,7 +90,7 @@ function wrapAdLibAction(adLib: AdLibAction, type: 'adLibAction'): IWrappedAdLib
 
 function wrapRundownBaselineAdLibAction(
 	adLib: RundownBaselineAdLibAction,
-	type: 'rundownBaselineAdLibAction'
+	type: MountedAdLibTriggerType.rundownBaselineAdLibAction
 ): IWrappedAdLib {
 	return {
 		_id: adLib._id,
@@ -106,7 +107,7 @@ function wrapRundownBaselineAdLibAction(
 
 function wrapAdLibPiece<T extends RundownBaselineAdLibItem | AdLibPiece>(
 	adLib: T,
-	type: 'adLibPiece' | 'rundownBaselineAdLibItem'
+	type: MountedAdLibTriggerType.adLibPiece | MountedAdLibTriggerType.rundownBaselineAdLibItem
 ): IWrappedAdLib {
 	return {
 		_id: adLib._id,
@@ -122,15 +123,15 @@ function wrapAdLibPiece<T extends RundownBaselineAdLibItem | AdLibPiece>(
 }
 
 export type IWrappedAdLib =
-	| IWrappedAdLibType<RundownBaselineAdLibItem, 'rundownBaselineAdLibItem'>
-	| IWrappedAdLibType<RundownBaselineAdLibAction, 'rundownBaselineAdLibAction'>
-	| IWrappedAdLibType<AdLibPiece, 'adLibPiece'>
-	| IWrappedAdLibType<AdLibAction, 'adLibAction'>
+	| IWrappedAdLibType<RundownBaselineAdLibItem, MountedAdLibTriggerType.rundownBaselineAdLibItem>
+	| IWrappedAdLibType<RundownBaselineAdLibAction, MountedAdLibTriggerType.rundownBaselineAdLibAction>
+	| IWrappedAdLibType<AdLibPiece, MountedAdLibTriggerType.adLibPiece>
+	| IWrappedAdLibType<AdLibAction, MountedAdLibTriggerType.adLibAction>
 	| {
 			_id: ISourceLayer['_id']
 			_rank: number
 			partId: PartId | null
-			type: 'clearSourceLayer'
+			type: MountedAdLibTriggerType.clearSourceLayer
 			label: string | ITranslatableMessage
 			sourceLayerId: ISourceLayer['_id']
 			outputLayerId: undefined
@@ -141,7 +142,7 @@ export type IWrappedAdLib =
 			_id: ISourceLayer['_id']
 			_rank: number
 			partId: PartId | null
-			type: 'sticky'
+			type: MountedAdLibTriggerType.sticky
 			label: string | ITranslatableMessage
 			sourceLayerId: ISourceLayer['_id']
 			outputLayerId: undefined
@@ -572,7 +573,7 @@ export function compileAdLibFilter(
 							rundownId: currentRundownId,
 						} as MongoQuery<RundownBaselineAdLibItem>,
 						adLibPieceTypeFilter.options
-					).map((item) => wrapAdLibPiece(item, 'rundownBaselineAdLibItem'))
+					).map((item) => wrapAdLibPiece(item, MountedAdLibTriggerType.rundownBaselineAdLibItem))
 				if (adLibPieceTypeFilter.global === undefined || adLibPieceTypeFilter.global === false)
 					adLibPieces = AdLibPieces.find(
 						{
@@ -581,7 +582,7 @@ export function compileAdLibFilter(
 							rundownId: currentRundownId,
 						} as MongoQuery<AdLibPiece>,
 						adLibPieceTypeFilter.options
-					).map((item) => wrapAdLibPiece(item, 'adLibPiece'))
+					).map((item) => wrapAdLibPiece(item, MountedAdLibTriggerType.adLibPiece))
 			}
 		}
 
@@ -609,7 +610,9 @@ export function compileAdLibFilter(
 							rundownId: currentRundownId,
 						} as MongoQuery<RundownBaselineAdLibAction>,
 						adLibActionTypeFilter.options
-					).map((item) => wrapRundownBaselineAdLibAction(item, 'rundownBaselineAdLibAction'))
+					).map((item) =>
+						wrapRundownBaselineAdLibAction(item, MountedAdLibTriggerType.rundownBaselineAdLibAction)
+					)
 				if (adLibActionTypeFilter.global === undefined || adLibActionTypeFilter.global === false)
 					adLibActions = AdLibActions.find(
 						{
@@ -618,7 +621,7 @@ export function compileAdLibFilter(
 							rundownId: currentRundownId,
 						} as MongoQuery<AdLibAction>,
 						adLibActionTypeFilter.options
-					).map((item) => wrapAdLibAction(item, 'adLibAction'))
+					).map((item) => wrapAdLibAction(item, MountedAdLibTriggerType.adLibAction))
 			}
 		}
 
