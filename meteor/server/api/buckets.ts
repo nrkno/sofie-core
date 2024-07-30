@@ -10,7 +10,7 @@ import { BucketAdLibActions, Buckets, Rundowns, ShowStyleVariants, Studios } fro
 import { runIngestOperation } from './ingest/lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { StudioContentAccess } from '../security/studio'
-import { Settings } from '../../lib/Settings'
+import { Settings } from '../Settings'
 import { IngestAdlib } from '@sofie-automation/blueprints-integration'
 import { getShowStyleCompound } from './showStyles'
 import { ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'

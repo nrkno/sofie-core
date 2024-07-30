@@ -3,7 +3,7 @@ import { AllPubSubCollections, AllPubSubTypes } from '@sofie-automation/meteor-l
 import { extractFunctionSignature } from '../lib'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { ResolvedCredentials, resolveCredentials } from '../security/lib/credentials'
-import { Settings } from '../../lib/Settings'
+import { Settings } from '../Settings'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { MongoCursor } from '../../lib/collections/lib'
 import {

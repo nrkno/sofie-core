@@ -9,7 +9,7 @@ import { SupportPopUpToggle, SupportPopUp } from './SupportPopUp'
 // @ts-expect-error No types available
 import * as VelocityReact from 'velocity-react'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
-import { Settings } from '../../lib/Settings'
+import { Settings } from '../lib/Settings'
 import { CoreSystem } from '../collections'
 
 interface IPropsHeader {

@@ -5,7 +5,7 @@ import { extractFunctionSignature } from './lib'
 import { MethodContext, MethodContextAPI } from '../lib/api/methods'
 import { isPromise, waitForPromise } from '../lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { Settings } from '../lib/Settings'
+import { Settings } from './Settings'
 
 type MeteorMethod = (this: MethodContext, ...args: any[]) => any
 

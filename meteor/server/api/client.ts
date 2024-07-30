@@ -6,7 +6,7 @@ import { ClientAPI, NewClientAPI, ClientAPIMethods } from '@sofie-automation/met
 import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
 import { registerClassToMeteorMethods } from '../methods'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
-import { Settings } from '../../lib/Settings'
+import { Settings } from '../Settings'
 import { resolveCredentials } from '../security/lib/credentials'
 import { isInTestWrite, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'

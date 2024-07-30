@@ -1,7 +1,7 @@
 import { SEGMENT_TIMELINE_ELEMENT_ID } from '../ui/SegmentTimeline/SegmentTimeline'
 import { isProtectedString } from '../../lib/lib'
 import RundownViewEventBus, { RundownViewEvents } from '../../lib/api/triggers/RundownViewEventBus'
-import { Settings } from '../../lib/Settings'
+import { Settings } from '../lib/Settings'
 import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PartInstances, Parts } from '../collections'
 import { logger } from '../../lib/logging'

@@ -44,7 +44,7 @@ import { BrowserRouter as Router, Route, Switch, Redirect, useHistory } from 're
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { PrompterView } from './Prompter/PrompterView'
 import { ModalDialogGlobalContainer, doModalDialog } from '../lib/ModalDialog'
-import { Settings } from '../../lib/Settings'
+import { Settings } from '../lib/Settings'
 import { LoginPage } from './Account/NotLoggedIn/LoginPage'
 import { SignupPage } from './Account/NotLoggedIn/SignupPage'
 import { LostPasswordPage } from './Account/NotLoggedIn/LostPassword'

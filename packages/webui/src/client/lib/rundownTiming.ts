@@ -20,7 +20,7 @@ import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/Part
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getCurrentTime, objectFromEntries } from '../../lib/lib'
-import { Settings } from '../../lib/Settings'
+import { Settings } from '../lib/Settings'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 

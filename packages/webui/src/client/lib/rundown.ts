@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { PieceUi, PartUi } from '../ui/SegmentTimeline/SegmentTimelineContainer'
 import { Timecode } from '@sofie-automation/corelib/dist/index'
-import { Settings } from '../../lib/Settings'
+import { Settings } from '../lib/Settings'
 import {
 	SourceLayerType,
 	PieceLifespan,

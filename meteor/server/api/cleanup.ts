@@ -8,7 +8,7 @@ import {
 	getOrphanedPackageInfos,
 	removePackageInfos,
 } from './studio/lib'
-import { Settings } from '../../lib/Settings'
+import { Settings } from '../Settings'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import {
 	BlueprintId,

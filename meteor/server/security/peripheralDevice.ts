@@ -7,7 +7,7 @@ import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/Medi
 import { MongoQueryKey } from '@sofie-automation/corelib/dist/mongo'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
 import { allowAccessToPeripheralDevice, allowAccessToPeripheralDeviceContent } from './lib/security'
-import { Settings } from '../../lib/Settings'
+import { Settings } from '../Settings'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { profiler } from '../api/profiler'
 import { StudioContentWriteAccess } from './studio'

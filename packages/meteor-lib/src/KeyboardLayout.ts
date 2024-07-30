@@ -76,6 +76,7 @@ const STANDARD_102_EXTENDED_TEMPLATE = [
 	'6.16:Numpad0,NumpadDecimal',
 ]
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace KeyboardLayouts {
 	// This is a small keyboard layout: 102-Standard keybord, without the Numpad
 	export const STANDARD_102_TKL: PhysicalLayout = createPhysicalLayout(STANDARD_102_TKL_TEMPLATE)

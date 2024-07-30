@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { Credentials, resolveAuthenticatedUser, resolveCredentials } from './lib/credentials'
 import { logNotAllowed } from './lib/lib'
 import { allowAccessToCoreSystem, allowAccessToCurrentUser, allowAccessToSystemStatus } from './lib/security'
-import { Settings } from '../../lib/Settings'
+import { Settings } from '../Settings'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 

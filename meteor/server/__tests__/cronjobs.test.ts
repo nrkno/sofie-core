@@ -60,7 +60,7 @@ import {
 	setupDefaultStudioEnvironment,
 } from '../../__mocks__/helpers/database'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { Settings } from '../../lib/Settings'
+import { Settings } from '../Settings'
 
 describe('cronjobs', () => {
 	let env: DefaultEnvironment

@@ -1,5 +1,3 @@
-import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
 import { KeyboardLayouts } from './KeyboardLayout'
 
 /**
@@ -66,7 +64,7 @@ export interface ISettings {
 /**
  * Default values for Settings
  */
-const DEFAULT_SETTINGS = Object.freeze<ISettings>({
+export const DEFAULT_SETTINGS = Object.freeze<ISettings>({
 	autoRewindLeavingSegment: true,
 	disableBlurBorder: false,
 	defaultTimeScale: 1,
@@ -83,20 +81,4 @@ const DEFAULT_SETTINGS = Object.freeze<ISettings>({
 	keyboardMapLayout: KeyboardLayouts.Names.STANDARD_102_TKL,
 	useCountdownToFreezeFrame: true,
 	confirmKeyCode: 'Enter',
-})
-
-/**
- * This is an object specifying installation-wide, User Interface settings.
- * There are default values for these settings that will be used, unless overriden
- * through Meteor.settings functionality.
- *
- * You can use METEOR_SETTING to inject the settings JSON or you can use the
- * --settings [filename] to provide a JSON file containing the settings
- */
-export let Settings: ISettings
-
-Settings = _.clone(DEFAULT_SETTINGS)
-
-Meteor.startup(() => {
-	Settings = _.extend(Settings, Meteor.settings.public)
 })

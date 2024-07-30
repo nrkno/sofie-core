@@ -17,7 +17,7 @@ import {
 	Component,
 } from '@sofie-automation/meteor-lib/dist/api/systemStatus'
 import { RelevantSystemVersions } from '../coreSystem'
-import { Settings } from '../../lib/Settings'
+import { Settings } from '../Settings'
 import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
 import { resolveCredentials, Credentials } from '../security/lib/credentials'

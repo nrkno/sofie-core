@@ -13,7 +13,7 @@ import * as _ from 'underscore'
 import { withTranslation } from 'react-i18next'
 import { Translated } from './ReactMeteorData/ReactMeteorData'
 import { EditAttribute, EditAttributeType, EditAttributeBase } from './EditAttribute'
-import { Settings } from '../../lib/Settings'
+import { Settings } from '../lib/Settings'
 
 interface IModalDialogAttributes {
 	show?: boolean

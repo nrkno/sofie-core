@@ -7,7 +7,7 @@ import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/cred
 import { triggerWriteAccess } from './lib/securityVerify'
 import { isProtectedString } from '../../lib/lib'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { Settings } from '../../lib/Settings'
+import { Settings } from '../Settings'
 import {
 	OrganizationId,
 	RundownId,
