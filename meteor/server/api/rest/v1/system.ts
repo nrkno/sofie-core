@@ -1,5 +1,5 @@
 import { UserErrorMessage } from '@sofie-automation/corelib/dist/error'
-import { MigrationData, PendingMigrations, SystemRestAPI } from '../../../../lib/api/rest/v1'
+import { MigrationData, PendingMigrations, SystemRestAPI } from '../../../lib/rest/v1'
 import { logger } from '../../../logging'
 import { APIFactory, APIRegisterHook, ServerAPIContext } from './types'
 import { check } from '../../../../lib/check'
