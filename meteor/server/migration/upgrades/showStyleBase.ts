@@ -21,7 +21,7 @@ import { CommonContext } from './context'
 import type { AnyBulkWriteOperation } from 'mongodb'
 import { FixUpBlueprintConfigContext } from '@sofie-automation/corelib/dist/fixUpBlueprintConfig/context'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
-import { BlueprintFixUpConfigMessage } from '../../../lib/api/migration'
+import { BlueprintFixUpConfigMessage } from '@sofie-automation/meteor-lib/dist/api/migration'
 
 export async function fixupConfigForShowStyleBase(
 	showStyleBaseId: ShowStyleBaseId

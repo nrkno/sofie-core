@@ -19,7 +19,10 @@ import { BlueprintMapEntry, checkDocUpgradeStatus } from './checkStatus'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { UIBlueprintUpgradeStatus, UIBlueprintUpgradeStatusId } from '../../../lib/api/upgradeStatus'
+import {
+	UIBlueprintUpgradeStatus,
+	UIBlueprintUpgradeStatusId,
+} from '@sofie-automation/meteor-lib/dist/api/upgradeStatus'
 
 type BlueprintUpgradeStatusArgs = Record<string, never>
 

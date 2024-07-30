@@ -18,7 +18,7 @@ import { generateTranslation } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { ShowStyleBaseFields, StudioFields } from './reactiveContentCache'
 import _ from 'underscore'
-import { UIBlueprintUpgradeStatusBase } from '../../../lib/api/upgradeStatus'
+import { UIBlueprintUpgradeStatusBase } from '@sofie-automation/meteor-lib/dist/api/upgradeStatus'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 export interface BlueprintMapEntry {

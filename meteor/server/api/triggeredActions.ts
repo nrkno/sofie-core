@@ -10,7 +10,7 @@ import {
 	CreateTriggeredActionsContent,
 	NewTriggeredActionsAPI,
 	TriggeredActionsAPIMethods,
-} from '../../lib/api/triggeredActions'
+} from '@sofie-automation/meteor-lib/dist/api/triggeredActions'
 import { SystemWriteAccess } from '../security/system'
 import { fetchShowStyleBaseLight } from '../optimizations'
 import {

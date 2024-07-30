@@ -12,7 +12,7 @@ import {
 	UIBlueprintUpgradeStatusBase,
 	UIBlueprintUpgradeStatusShowStyle,
 	UIBlueprintUpgradeStatusStudio,
-} from '../../../../lib/api/upgradeStatus'
+} from '@sofie-automation/meteor-lib/dist/api/upgradeStatus'
 import { assertNever } from '@sofie-automation/corelib/dist/lib'
 import { catchError } from '../../../lib/lib'
 

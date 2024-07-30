@@ -21,7 +21,7 @@ import { getAllowConfigure, getAllowDeveloper, getAllowStudio, getHelpMode } fro
 import ClassNames from 'classnames'
 import { StatusCode, TSR } from '@sofie-automation/blueprints-integration'
 import { ICoreSystem } from '../../../lib/collections/CoreSystem'
-import { StatusResponse } from '../../../lib/api/systemStatus'
+import { StatusResponse } from '@sofie-automation/meteor-lib/dist/api/systemStatus'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { hashSingleUseToken } from '../../lib/lib'

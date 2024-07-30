@@ -32,7 +32,7 @@ import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyle
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { UIDeviceTriggerPreview } from './triggers/MountedTriggers'
 import { logger } from '../logging'
-import { UIBlueprintUpgradeStatus } from './upgradeStatus'
+import { UIBlueprintUpgradeStatus } from '@sofie-automation/meteor-lib/dist/api/upgradeStatus'
 import {
 	PeripheralDevicePubSub,
 	PeripheralDevicePubSubTypes,

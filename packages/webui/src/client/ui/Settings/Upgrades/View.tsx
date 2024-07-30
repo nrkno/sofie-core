@@ -4,7 +4,10 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { useSubscription, useTracker } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorPubSub } from '../../../../lib/api/pubsub'
 import { UIBlueprintUpgradeStatuses } from '../../Collections'
-import { UIBlueprintUpgradeStatusShowStyle, UIBlueprintUpgradeStatusStudio } from '../../../../lib/api/upgradeStatus'
+import {
+	UIBlueprintUpgradeStatusShowStyle,
+	UIBlueprintUpgradeStatusStudio,
+} from '@sofie-automation/meteor-lib/dist/api/upgradeStatus'
 import { getUpgradeStatusMessage, UpgradeStatusButtons } from './Components'
 
 export function UpgradesView(): JSX.Element {

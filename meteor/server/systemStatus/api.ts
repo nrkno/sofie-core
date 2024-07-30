@@ -1,5 +1,9 @@
 import { registerClassToMeteorMethods } from '../methods'
-import { StatusResponse, NewSystemStatusAPI, SystemStatusAPIMethods } from '../../lib/api/systemStatus'
+import {
+	StatusResponse,
+	NewSystemStatusAPI,
+	SystemStatusAPIMethods,
+} from '@sofie-automation/meteor-lib/dist/api/systemStatus'
 import { getDebugStates, getSystemStatus } from './systemStatus'
 import { protectString } from '../../lib/lib'
 import { Settings } from '../../lib/Settings'

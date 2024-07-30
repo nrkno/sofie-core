@@ -15,7 +15,7 @@ import {
 	CheckError,
 	SystemInstanceId,
 	Component,
-} from '../../lib/api/systemStatus'
+} from '@sofie-automation/meteor-lib/dist/api/systemStatus'
 import { RelevantSystemVersions } from '../coreSystem'
 import { Settings } from '../../lib/Settings'
 import { StudioReadAccess } from '../security/studio'

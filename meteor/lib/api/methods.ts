@@ -6,20 +6,23 @@ import {
 	NewExternalMessageQueueAPI,
 	ExternalMessageQueueAPIMethods,
 } from '@sofie-automation/meteor-lib/dist/api/ExternalMessageQueue'
-import { NewMigrationAPI, MigrationAPIMethods } from './migration'
+import { NewMigrationAPI, MigrationAPIMethods } from '@sofie-automation/meteor-lib/dist/api/migration'
 import { NewPlayoutAPI, PlayoutAPIMethods } from '@sofie-automation/meteor-lib/dist/api/playout'
 import { NewRundownAPI, RundownAPIMethods } from '@sofie-automation/meteor-lib/dist/api/rundown'
 import { NewRundownLayoutsAPI, RundownLayoutsAPIMethods } from './rundownLayouts'
 import { NewShowStylesAPI, ShowStylesAPIMethods } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { NewSnapshotAPI, SnapshotAPIMethods } from '@sofie-automation/meteor-lib/dist/api/shapshot'
-import { NewSystemStatusAPI, SystemStatusAPIMethods } from './systemStatus'
+import { NewSystemStatusAPI, SystemStatusAPIMethods } from '@sofie-automation/meteor-lib/dist/api/systemStatus'
 import { NewUserActionAPI, UserActionAPIMethods } from '@sofie-automation/meteor-lib/dist/api/userActions'
 import { StudiosAPIMethods, NewStudiosAPI } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { NewOrganizationAPI, OrganizationAPIMethods } from '@sofie-automation/meteor-lib/dist/api/organization'
 import { NewUserAPI, UserAPIMethods } from '@sofie-automation/meteor-lib/dist/api/user'
 import { SystemAPIMethods, SystemAPI } from '@sofie-automation/meteor-lib/dist/api/system'
 import { Meteor } from 'meteor/meteor'
-import { NewTriggeredActionsAPI, TriggeredActionsAPIMethods } from './triggeredActions'
+import {
+	NewTriggeredActionsAPI,
+	TriggeredActionsAPIMethods,
+} from '@sofie-automation/meteor-lib/dist/api/triggeredActions'
 import { UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
 	NewPeripheralDeviceAPI,

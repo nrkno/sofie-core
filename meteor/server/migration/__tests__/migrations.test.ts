@@ -4,7 +4,7 @@ import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../../lib/collections/CoreSystem'
 import { clearMigrationSteps, addMigrationSteps, prepareMigration, PreparedMigration } from '../databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from '../currentSystemVersion'
-import { RunMigrationResult, GetMigrationStatusResult } from '../../../lib/api/migration'
+import { RunMigrationResult, GetMigrationStatusResult } from '@sofie-automation/meteor-lib/dist/api/migration'
 import { literal, protectString } from '../../../lib/lib'
 import {
 	MigrationStepInputResult,
