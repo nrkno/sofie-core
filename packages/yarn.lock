@@ -5189,7 +5189,7 @@ __metadata:
     "@sofie-automation/shared-lib": 1.51.0-in-development
     "@types/deep-extend": ^0.6.2
     "@types/semver": ^7.5.6
-    "@types/underscore": 1.11.15
+    "@types/underscore": ^1.11.15
     deep-extend: 0.6.0
     semver: ^7.5.4
     type-fest: ^3.13.1
@@ -6714,7 +6714,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/underscore@npm:1.11.15, @types/underscore@npm:^1.11.15":
+"@types/underscore@npm:^1.11.15":
   version: 1.11.15
   resolution: "@types/underscore@npm:1.11.15"
   checksum: 25fdf6da96e0d11ca39a4740aab6fa3bd717e57301be4cb9e7893dc0ad6ce330992d0c8e0b02cac5c5ea86df6f8949c5a8f1fb95f3666b85418d399d3b1112e9

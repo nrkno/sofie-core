@@ -93,7 +93,7 @@
 		"@types/node": "^14.18.63",
 		"@types/request": "^2.48.12",
 		"@types/semver": "^7.5.6",
-		"@types/underscore": "1.11.15",
+		"@types/underscore": "^1.11.15",
 		"@typescript-eslint/eslint-plugin": "^5.62.0",
 		"@typescript-eslint/parser": "^5.62.0",
 		"@typescript-eslint/utils": "^5.62.0",

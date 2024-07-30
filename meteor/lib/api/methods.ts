@@ -28,7 +28,6 @@ import {
 	NewPeripheralDeviceAPI,
 	PeripheralDeviceAPIMethods,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
-import { MeteorMethodsAPIBase } from '@sofie-automation/meteor-lib/dist/api/apiBase'
 
 /** All methods typings are defined here, the actual implementation is defined in other places */
 export type MethodsBase = {
@@ -95,7 +94,7 @@ export interface MethodContext extends Omit<Meteor.MethodThisType, 'userId'> {
 }
 
 /** Abstarct class to be used when defining Mehod-classes */
-export abstract class MethodContextAPI implements MethodContext, MeteorMethodsAPIBase {
+export abstract class MethodContextAPI implements MethodContext {
 	// These properties are added by Meteor to the `this` context when calling methods
 	public userId!: UserId | null
 	public isSimulation!: boolean
