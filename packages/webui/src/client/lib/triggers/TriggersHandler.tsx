@@ -44,6 +44,7 @@ import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylist
 import { catchError } from '../lib'
 import { logger } from '../logging'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { UiTriggersContext } from '../../../lib/api/triggers/triggersContext'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void
 
@@ -96,7 +97,9 @@ function createAction(
 	listener: HotkeyTriggerListener
 	preview: () => IWrappedAdLib[]
 } {
-	const executableActions = actions.map((value) => libCreateAction(value, showStyleBase.sourceLayers))
+	const executableActions = actions.map((value) =>
+		libCreateAction(UiTriggersContext, value, showStyleBase.sourceLayers)
+	)
 	return {
 		preview: () => {
 			const ctx = collectContext()

@@ -29,6 +29,7 @@ import { logger } from '../../logging'
 import { SomeAction, SomeBlueprintTrigger } from '@sofie-automation/blueprints-integration'
 import { DeviceActions } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
 import { DummyReactiveVar } from '@sofie-automation/meteor-lib/dist/triggers/reactive-var'
+import { MeteorTriggersContext } from '../../../lib/api/triggers/triggersContext'
 
 export class StudioDeviceTriggerManager {
 	#lastShowStyleBaseId: ShowStyleBaseId | null = null
@@ -99,7 +100,7 @@ export class StudioDeviceTriggerManager {
 				if (existingAction) {
 					thisAction = existingAction
 				} else {
-					const compiledAction = createAction(action, sourceLayers)
+					const compiledAction = createAction(MeteorTriggersContext, action, sourceLayers)
 					actionManager.setAction(actionId, compiledAction)
 					thisAction = compiledAction
 				}
