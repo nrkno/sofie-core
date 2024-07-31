@@ -161,7 +161,7 @@ function calculateExpectedDurationWithPreroll(rawDuration: number, timings: Part
 	return Math.max(0, rawDuration - (timings.fromPartRemaining - timings.toPartDelay))
 }
 
-export function calculatePartExpectedDurationWithPreroll(
+export function calculatePartExpectedDurationWithTransition(
 	part: DBPart,
 	pieces: PieceInstancePiece[]
 ): number | undefined {
@@ -172,7 +172,7 @@ export function calculatePartExpectedDurationWithPreroll(
 	return calculateExpectedDurationWithPreroll(part.expectedDuration, timings)
 }
 
-export function calculatePartInstanceExpectedDurationWithPreroll(
+export function calculatePartInstanceExpectedDurationWithTransition(
 	partInstance: Pick<DBPartInstance, 'part' | 'partPlayoutTimings'>
 	// pieces: CalculateTimingsPiece[]
 ): number | undefined {
@@ -182,6 +182,6 @@ export function calculatePartInstanceExpectedDurationWithPreroll(
 		// The timings needed are known, we can ensure that live data is used
 		return calculateExpectedDurationWithPreroll(partInstance.part.expectedDuration, partInstance.partPlayoutTimings)
 	} else {
-		return partInstance.part.expectedDurationWithPreroll
+		return partInstance.part.expectedDurationWithTransition
 	}
 }

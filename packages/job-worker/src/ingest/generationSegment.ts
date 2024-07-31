@@ -216,7 +216,7 @@ export async function calculateSegmentsFromIngestData(
 						  }
 						: undefined,
 
-					expectedDurationWithPreroll: undefined, // Below
+					expectedDurationWithTransition: undefined, // Below
 				})
 				res.parts.push(part)
 
@@ -250,7 +250,7 @@ export async function calculateSegmentsFromIngestData(
 					)
 				)
 
-				part.expectedDurationWithPreroll = calculatePartExpectedDurationWithPreroll(part, processedPieces)
+				part.expectedDurationWithTransition = calculatePartExpectedDurationWithPreroll(part, processedPieces)
 			})
 
 			preserveOrphanedSegmentPositionInRundown(context, cache, newSegment)

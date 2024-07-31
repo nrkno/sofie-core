@@ -56,7 +56,7 @@ export async function innerStartOrQueueAdLibPiece(
 				rundownId: rundown._id,
 				title: adLibPiece.name,
 				expectedDuration: adLibPiece.expectedDuration,
-				expectedDurationWithPreroll: adLibPiece.expectedDuration, // Filled in later
+				expectedDurationWithTransition: adLibPiece.expectedDuration, // Filled in later
 			},
 		}
 		const newPieceInstance = convertAdLibToPieceInstance(
@@ -67,7 +67,7 @@ export async function innerStartOrQueueAdLibPiece(
 			queue
 		)
 
-		newPartInstance.part.expectedDurationWithPreroll = calculatePartExpectedDurationWithPreroll(
+		newPartInstance.part.expectedDurationWithTransition = calculatePartExpectedDurationWithPreroll(
 			newPartInstance.part,
 			[newPieceInstance.piece]
 		)

@@ -33,7 +33,7 @@ describe('DatabaseCaches', () => {
 					rundownId: protectString(''),
 					segmentId: protectString(''),
 					externalId: 'test',
-					expectedDurationWithPreroll: undefined,
+					expectedDurationWithTransition: undefined,
 				})
 				cache.Parts.updateOne(id, (p) => {
 					p.title = 'Test2'
@@ -145,7 +145,7 @@ describe('DatabaseCaches', () => {
 					rundownId: protectString(''),
 					segmentId: protectString(''),
 					externalId: 'test',
-					expectedDurationWithPreroll: undefined,
+					expectedDurationWithTransition: undefined,
 				})
 				const deferFcn0 = jest.fn(async () => {
 					await expect(context.directCollections.Parts.findOne(id)).resolves.toBeFalsy()
@@ -277,7 +277,7 @@ describe('DatabaseCaches', () => {
 						rundownId: protectString(''),
 						segmentId: protectString(''),
 						externalId: 'test',
-						expectedDurationWithPreroll: undefined,
+						expectedDurationWithTransition: undefined,
 					})
 					cache.Parts.updateOne(id, (p) => {
 						p.title = 'insertthenupdate'

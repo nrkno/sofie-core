@@ -34,7 +34,7 @@ export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id
 	identifier?: string
 
 	/** A modified expectedDuration with the planned preroll and other timings factored in */
-	expectedDurationWithPreroll: number | undefined
+	expectedDurationWithTransition: number | undefined
 }
 
 export function isPartPlayable(part: DBPart): boolean {
