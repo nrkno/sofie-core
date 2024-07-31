@@ -157,11 +157,8 @@ export function getPartTimingsOrDefaults(
 }
 
 function calculateExpectedDurationWithPreroll(rawDuration: number, timings: PartCalculatedTimings): number {
-	// toPartDelay is accounted for twice, because it is added to `fromPartRemaining` when the `fromPartRemaining` value is calculated.
-	// If we only do `timings.toPartDelay - timings.fromPartRemaining`, the the values cancel out and the 'from' Part will
-	//  count overtime when prerolling into the 'to' Part.
-	// As a result, the 'to' Part will have a countdown which includes its own preroll.
-	return Math.max(0, rawDuration + timings.toPartDelay - (timings.fromPartRemaining - timings.toPartDelay))
+	// toPartDelay needs to be subtracted, because it is added to `fromPartRemaining` when the `fromPartRemaining` value is calculated.
+	return Math.max(0, rawDuration - (timings.fromPartRemaining - timings.toPartDelay))
 }
 
 export function calculatePartExpectedDurationWithPreroll(
@@ -182,13 +179,9 @@ export function calculatePartInstanceExpectedDurationWithPreroll(
 	if (partInstance.part.expectedDuration === undefined) return undefined
 
 	if (partInstance.partPlayoutTimings) {
+		// The timings needed are known, we can ensure that live data is used
 		return calculateExpectedDurationWithPreroll(partInstance.part.expectedDuration, partInstance.partPlayoutTimings)
 	} else {
-		const timings = calculatePartTimings(undefined, {}, [], partInstance.part, []) // TODO: Piece timings should be taken into account
-
-		return calculateExpectedDurationWithPreroll(
-			partInstance.part.expectedDurationWithPreroll ?? partInstance.part.expectedDuration,
-			timings
-		)
+		return partInstance.part.expectedDurationWithPreroll
 	}
 }
