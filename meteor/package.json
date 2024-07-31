@@ -42,7 +42,6 @@
 		"@babel/runtime": "^7.23.9",
 		"@koa/cors": "^5.0.0",
 		"@koa/router": "^12.0.1",
-		"@mos-connection/helper": "^4.1.1-nightly-master-20240430-072032-ffb8bf6.0",
 		"@slack/webhook": "^6.1.0",
 		"@sofie-automation/blueprints-integration": "portal:../packages/blueprints-integration",
 		"@sofie-automation/corelib": "portal:../packages/corelib",

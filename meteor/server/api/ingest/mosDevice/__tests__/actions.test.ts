@@ -1,7 +1,7 @@
 import '../../../../../__mocks__/_extendJest'
 import { Meteor } from 'meteor/meteor'
 
-import * as MOS from '@mos-connection/helper'
+import { MOS } from '@sofie-automation/meteor-lib/dist/mos'
 import { setupDefaultStudioEnvironment } from '../../../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../../../__mocks__/helpers/jest'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'

@@ -39,6 +39,7 @@
 		"/LICENSE"
 	],
 	"dependencies": {
+		"@mos-connection/helper": "^4.1.1-nightly-master-20240430-072032-ffb8bf6.0",
 		"@sofie-automation/blueprints-integration": "1.51.0-in-development",
 		"@sofie-automation/corelib": "1.51.0-in-development",
 		"@sofie-automation/shared-lib": "1.51.0-in-development",

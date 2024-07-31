@@ -19,7 +19,6 @@ import {
 	UIMetricMode as MOSUIMetricMode,
 	Events as MOSEvents,
 } from '../../lib/data/mos/plugin-support'
-import { MOS } from '@sofie-automation/corelib'
 import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { withTranslation } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -29,8 +28,8 @@ import { check } from '../../../lib/check'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Buckets, PartInstances, Rundowns } from '../../collections'
 import { BucketId, PartInstanceId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { MOS_DATA_IS_STRICT } from '../../../lib/mos'
-import { getMosTypes, stringifyMosObject } from '@mos-connection/helper'
+import { MOS_DATA_IS_STRICT } from '@sofie-automation/meteor-lib/dist/mos'
+import { mosTypes, MOS } from '@sofie-automation/meteor-lib/dist/mos'
 import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 import { logger } from '../../lib/logging'
 import RundownViewEventBus, {
@@ -253,8 +252,6 @@ export const ExternalFramePanel = withTranslation()(
 
 			const showStyleBaseId = this.getShowStyleBaseId()
 
-			const mosTypes = getMosTypes(MOS_DATA_IS_STRICT)
-
 			const name = mosItem.Slug
 				? mosTypes.mosString128.stringify(mosItem.Slug)
 				: mosItem.ObjectSlug
@@ -271,7 +268,7 @@ export const ExternalFramePanel = withTranslation()(
 						externalId: mosItem.ObjectID ? mosTypes.mosString128.stringify(mosItem.ObjectID) : '',
 						name,
 						payloadType: 'MOS',
-						payload: stringifyMosObject(mosItem, MOS_DATA_IS_STRICT),
+						payload: MOS.stringifyMosObject(mosItem, MOS_DATA_IS_STRICT),
 					})
 				)
 			)
@@ -570,8 +567,6 @@ export const ExternalFramePanel = withTranslation()(
 
 				const showStyleBaseId = this.getShowStyleBaseId()
 
-				const mosTypes = getMosTypes(MOS_DATA_IS_STRICT)
-
 				console.log('start transfer from ext panel')
 
 				doUserAction(t, e, UserAction.INGEST_BUCKET_ADLIB, async (e, ts) => {
@@ -597,7 +592,7 @@ export const ExternalFramePanel = withTranslation()(
 							externalId: mosItem.ObjectID ? mosTypes.mosString128.stringify(mosItem.ObjectID) : '',
 							name,
 							payloadType: 'MOS',
-							payload: stringifyMosObject(mosItem, MOS_DATA_IS_STRICT),
+							payload: MOS.stringifyMosObject(mosItem, MOS_DATA_IS_STRICT),
 						})
 					)
 				})
