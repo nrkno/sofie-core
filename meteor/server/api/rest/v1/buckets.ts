@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { APIBucket, APIBucketComplete, APIImportAdlib, BucketsRestAPI } from '../../../../lib/api/rest/v1/buckets'
+import { APIBucket, APIBucketComplete, APIImportAdlib, BucketsRestAPI } from '../../../lib/rest/v1/buckets'
 import { BucketAdLibActions, BucketAdLibs, Buckets } from '../../../collections'
 import { APIBucketFrom } from './typeConversion'
 import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
