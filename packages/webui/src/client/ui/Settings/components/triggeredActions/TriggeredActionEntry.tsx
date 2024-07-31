@@ -35,7 +35,7 @@ import { isHotkeyTrigger } from '@sofie-automation/meteor-lib/dist/triggers/trig
 import { getAllCurrentAndDeletedItemsFromOverrides, useOverrideOpHelper } from '../../util/OverrideOpHelper'
 import { TriggeredActions } from '../../../../collections'
 import { catchError } from '../../../../lib/lib'
-import { UiTriggersContext } from '../../../../../lib/api/triggers/triggersContext'
+import { UiTriggersContext } from '../../../../lib/triggers/triggersContext'
 
 interface IProps {
 	sourceLayers: SourceLayers | undefined

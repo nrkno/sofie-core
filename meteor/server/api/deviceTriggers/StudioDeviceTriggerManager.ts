@@ -29,7 +29,7 @@ import { logger } from '../../logging'
 import { SomeAction, SomeBlueprintTrigger } from '@sofie-automation/blueprints-integration'
 import { DeviceActions } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
 import { DummyReactiveVar } from '@sofie-automation/meteor-lib/dist/triggers/reactive-var'
-import { MeteorTriggersContext } from '../../../lib/api/triggers/triggersContext'
+import { MeteorTriggersContext } from './triggersContext'
 
 export class StudioDeviceTriggerManager {
 	#lastShowStyleBaseId: ShowStyleBaseId | null = null

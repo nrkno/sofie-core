@@ -15,9 +15,7 @@ import { LoggerInstanceFixed } from '@sofie-automation/corelib/dist/logging'
 import { IBaseFilterLink } from '@sofie-automation/blueprints-integration'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReactivePlaylistActionContext } from './actionFactory'
-
-// nocommit remove this hack
-type TFunction = any
+import { TFunction } from 'i18next'
 
 export interface TriggersContext {
 	readonly MeteorCall: IMeteorCall

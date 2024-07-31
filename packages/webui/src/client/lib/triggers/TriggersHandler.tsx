@@ -44,7 +44,7 @@ import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylist
 import { catchError } from '../lib'
 import { logger } from '../logging'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
-import { UiTriggersContext } from '../../../lib/api/triggers/triggersContext'
+import { UiTriggersContext } from './triggersContext'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void
 

@@ -1,9 +1,9 @@
 import { TriggersContext } from '@sofie-automation/meteor-lib/dist/triggers/triggersContext'
-import { hashSingleUseToken } from '../../../client/lib/lib'
-import { MeteorCall } from '../../../client/lib/meteorApi'
+import { hashSingleUseToken } from '../lib'
+import { MeteorCall } from '../meteorApi'
 import { IBaseFilterLink } from '@sofie-automation/blueprints-integration'
-import { doUserAction } from '../../clientUserAction'
-import { memoizedIsolatedAutorun } from '../../memoizedIsolatedAutorun'
+import { doUserAction } from '../../../lib/clientUserAction'
+import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
 import { Tracker } from 'meteor/tracker'
 import {
 	AdLibActions,
@@ -14,8 +14,8 @@ import {
 	RundownPlaylists,
 	Rundowns,
 	Segments,
-} from '../../../client/collections'
-import { logger } from '../../../client/lib/logging'
+} from '../../collections'
+import { logger } from '../logging'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReactivePlaylistActionContext } from '@sofie-automation/meteor-lib/dist/triggers/actionFactory'
 

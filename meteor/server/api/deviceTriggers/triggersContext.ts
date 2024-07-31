@@ -1,7 +1,7 @@
 import { TriggersContext } from '@sofie-automation/meteor-lib/dist/triggers/triggersContext'
 import { SINGLE_USE_TOKEN_SALT } from '@sofie-automation/meteor-lib/dist/api/userActions'
-import { assertNever, getCurrentTime, getHash, Time } from '../../lib'
-import { MeteorCall } from '../../../server/api/methods'
+import { assertNever, getCurrentTime, getHash, Time } from '../../../lib/lib'
+import { MeteorCall } from '../methods'
 import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { UserAction } from '@sofie-automation/meteor-lib/dist/userAction'
 import { TFunction } from 'i18next'
@@ -16,10 +16,10 @@ import {
 	RundownPlaylists,
 	Rundowns,
 	Segments,
-} from '../../collections/libCollections'
+} from '../../../lib/collections/libCollections'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
-import { logger } from '../../../server/logging'
+import { logger } from '../../logging'
 import { IBaseFilterLink, IRundownPlaylistFilterLink } from '@sofie-automation/blueprints-integration'
 import { PartId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DummyReactiveVar } from '@sofie-automation/meteor-lib/dist/triggers/reactive-var'

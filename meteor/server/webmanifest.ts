@@ -3,7 +3,7 @@ import type {
 	JSONSchemaForWebApplicationManifestFiles,
 	ManifestImageResource,
 	ShortcutItem,
-} from '../lib/typings/webmanifest'
+} from './typings/webmanifest'
 import { logger } from './logging'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'

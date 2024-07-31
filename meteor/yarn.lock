@@ -1231,6 +1231,7 @@ __metadata:
     type-fest: ^3.13.1
     underscore: ^1.13.6
   peerDependencies:
+    i18next: ^21.10.0
     mongodb: ^5.5.0
   languageName: node
   linkType: soft
