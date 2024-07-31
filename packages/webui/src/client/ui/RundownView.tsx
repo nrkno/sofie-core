@@ -65,7 +65,7 @@ import { NotificationCenter, NoticeLevel, Notification } from '../lib/notificati
 import { SupportPopUp } from './SupportPopUp'
 import { KeyboardFocusIndicator } from '../lib/KeyboardFocusIndicator'
 import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { doUserAction, UserAction } from '../../lib/clientUserAction'
+import { doUserAction, UserAction } from '../lib/clientUserAction'
 import {
 	ReloadRundownPlaylistResponse,
 	TriggerReloadDataResponse,
@@ -95,7 +95,7 @@ import { documentTitle } from '../lib/DocumentTitleProvider'
 import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
 import { PlaylistLoopingHeader } from './RundownView/PlaylistLoopingHeader'
-import { memoizedIsolatedAutorun } from '../../lib/memoizedIsolatedAutorun'
+import { memoizedIsolatedAutorun } from '../lib/memoizedIsolatedAutorun'
 import RundownViewEventBus, {
 	ActivateRundownPlaylistEvent,
 	DeactivateRundownPlaylistEvent,

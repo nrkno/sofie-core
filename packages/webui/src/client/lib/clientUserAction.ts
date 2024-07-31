@@ -1,10 +1,10 @@
 import * as i18next from 'i18next'
 import _ from 'underscore'
-import { NotificationCenter, Notification, NoticeLevel } from '../client/lib/notifications/notifications'
+import { NotificationCenter, Notification, NoticeLevel } from './notifications/notifications'
 import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { Meteor } from 'meteor/meteor'
-import { logger } from '../client/lib/logging'
-import { assertNever, getCurrentTime, systemTime, Time } from './lib'
+import { logger } from './logging'
+import { assertNever, getCurrentTime, systemTime, Time } from '../../lib/lib'
 import { UserAction } from '@sofie-automation/meteor-lib/dist/userAction'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 

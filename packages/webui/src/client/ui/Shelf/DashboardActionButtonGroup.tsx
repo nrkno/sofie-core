@@ -5,7 +5,7 @@ import {
 	ActionButtonType,
 } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { DashboardActionButton } from './DashboardActionButton'
-import { doUserAction, UserAction } from '../../../lib/clientUserAction'
+import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { withTranslation } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'

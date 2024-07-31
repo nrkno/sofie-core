@@ -12,7 +12,7 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
 import { PartExtended } from '../../lib/RundownResolver'
-import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
+import { memoizedIsolatedAutorun } from '../../lib/memoizedIsolatedAutorun'
 import { slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'

@@ -18,7 +18,7 @@ import {
 	IBlueprintActionTriggerMode,
 	SomeContent,
 } from '@sofie-automation/blueprints-integration'
-import { doUserAction, UserAction } from '../../../lib/clientUserAction'
+import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import {
 	RundownLayoutFilter,
@@ -27,7 +27,7 @@ import {
 } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { literal, unprotectString, protectString } from '../../../lib/lib'
-import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
+import { memoizedIsolatedAutorun } from '../../lib/memoizedIsolatedAutorun'
 import {
 	findPartInstanceOrWrapToTemporary,
 	PartInstance,

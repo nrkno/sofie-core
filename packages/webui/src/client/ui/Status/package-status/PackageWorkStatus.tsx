@@ -5,7 +5,7 @@ import Tooltip from 'rc-tooltip'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faRedo, faStopCircle, faChevronDown, faChevronRight, faExclamation } from '@fortawesome/free-solid-svg-icons'
 import { MeteorCall } from '../../../lib/meteorApi'
-import { doUserAction, UserAction } from '../../../../lib/clientUserAction'
+import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 
 import { DisplayFormattedTime } from '../../RundownList/DisplayFormattedTime'
 import { JobStatusIcon } from './JobStatusIcon'

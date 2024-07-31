@@ -2,8 +2,8 @@ import { TriggersContext } from '@sofie-automation/meteor-lib/dist/triggers/trig
 import { hashSingleUseToken } from '../lib'
 import { MeteorCall } from '../meteorApi'
 import { IBaseFilterLink } from '@sofie-automation/blueprints-integration'
-import { doUserAction } from '../../../lib/clientUserAction'
-import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
+import { doUserAction } from '../clientUserAction'
+import { memoizedIsolatedAutorun } from '../memoizedIsolatedAutorun'
 import { Tracker } from 'meteor/tracker'
 import {
 	AdLibActions,

@@ -11,7 +11,7 @@ import { dashboardElementStyle, IDashboardPanelTrackedProps } from './DashboardP
 import ClassNames from 'classnames'
 import { IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter } from './AdLibPanel'
 import { matchFilter } from './AdLibListView'
-import { doUserAction, UserAction } from '../../../lib/clientUserAction'
+import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { MeteorCall } from '../../lib/meteorApi'

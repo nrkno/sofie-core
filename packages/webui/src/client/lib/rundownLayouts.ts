@@ -49,7 +49,7 @@ import {
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getCurrentTime, literal } from '../../lib/lib'
 import { invalidateAt } from './invalidatingTime'
-import { memoizedIsolatedAutorun } from '../../lib/memoizedIsolatedAutorun'
+import { memoizedIsolatedAutorun } from './memoizedIsolatedAutorun'
 import { PartInstances, PieceInstances } from '../collections'
 import { ReadonlyDeep } from 'type-fest'
 import { TFunction } from 'i18next'

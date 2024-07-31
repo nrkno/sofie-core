@@ -4,7 +4,7 @@ import { ExpectedPackageWorkStatus } from '@sofie-automation/corelib/dist/dataMo
 import { normalizeArrayToMap, unprotectString } from '../../../../lib/lib'
 import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { MeteorCall } from '../../../lib/meteorApi'
-import { doUserAction, UserAction } from '../../../../lib/clientUserAction'
+import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { Meteor } from 'meteor/meteor'
 import { PackageStatus } from './PackageStatus'
 import { PackageContainerStatus } from './PackageContainerStatus'

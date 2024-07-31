@@ -11,7 +11,7 @@ import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
-import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
+import { memoizedIsolatedAutorun } from '../../lib/memoizedIsolatedAutorun'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
 import {
 	RundownLayoutFilterBase,

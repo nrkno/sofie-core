@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
 import { BucketPanel } from './BucketPanel'
-import { doUserAction, UserAction } from '../../../lib/clientUserAction'
+import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 
 import { withTranslation } from 'react-i18next'

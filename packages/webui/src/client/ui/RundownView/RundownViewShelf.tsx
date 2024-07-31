@@ -14,8 +14,8 @@ import {
 	RundownLayoutFilterBase,
 } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
-import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
-import { doUserAction, UserAction } from '../../../lib/clientUserAction'
+import { memoizedIsolatedAutorun } from '../../lib/memoizedIsolatedAutorun'
+import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { MeteorCall } from '../../lib/meteorApi'
 import {
 	AdLibPieceUi,

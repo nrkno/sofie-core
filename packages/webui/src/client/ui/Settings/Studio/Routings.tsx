@@ -20,7 +20,7 @@ import { faTrash, faPencilAlt, faCheck, faPlus } from '@fortawesome/free-solid-s
 import { withTranslation } from 'react-i18next'
 import { TSR } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../../lib/meteorApi'
-import { doUserAction, UserAction } from '../../../../lib/clientUserAction'
+import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { ReadonlyDeep } from 'type-fest'
 import { MappingsSettingsManifest, MappingsSettingsManifests } from './Mappings'
 import { SchemaFormForCollection } from '../../../lib/forms/SchemaFormForCollection'

@@ -20,7 +20,7 @@ import {
 	Events as MOSEvents,
 } from '../../lib/data/mos/plugin-support'
 import { MOS } from '@sofie-automation/corelib'
-import { doUserAction, UserAction } from '../../../lib/clientUserAction'
+import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { withTranslation } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { IngestAdlib } from '@sofie-automation/blueprints-integration'
