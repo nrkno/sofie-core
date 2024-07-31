@@ -7,7 +7,7 @@ import { PieceInstance, rewrapPieceToInstance } from '@sofie-automation/corelib/
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { assertNever, getRandomId, getRank } from '@sofie-automation/corelib/dist/lib'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
-import { calculatePartExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
+import { calculatePartExpectedDurationWithTransition } from '@sofie-automation/corelib/dist/playout/timings'
 import { getCurrentTime } from '../lib'
 import { JobContext } from '../jobs'
 import { CacheForPlayout, getRundownIDsFromCache } from './cache'
@@ -67,7 +67,7 @@ export async function innerStartOrQueueAdLibPiece(
 			queue
 		)
 
-		newPartInstance.part.expectedDurationWithTransition = calculatePartExpectedDurationWithPreroll(
+		newPartInstance.part.expectedDurationWithTransition = calculatePartExpectedDurationWithTransition(
 			newPartInstance.part,
 			[newPieceInstance.piece]
 		)

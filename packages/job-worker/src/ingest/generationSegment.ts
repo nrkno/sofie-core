@@ -18,7 +18,7 @@ import { getSegmentId, getPartId, getRundown, canSegmentBeUpdated } from './lib'
 import { JobContext } from '../jobs'
 import { CommitIngestData } from './lock'
 import { BlueprintResultSegment, NoteSeverity } from '@sofie-automation/blueprints-integration'
-import { calculatePartExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
+import { calculatePartExpectedDurationWithTransition } from '@sofie-automation/corelib/dist/playout/timings'
 import { wrapTranslatableMessageFromBlueprints } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { ReadOnlyCache } from '../cache/CacheBase'
 
@@ -250,7 +250,7 @@ export async function calculateSegmentsFromIngestData(
 					)
 				)
 
-				part.expectedDurationWithTransition = calculatePartExpectedDurationWithPreroll(part, processedPieces)
+				part.expectedDurationWithTransition = calculatePartExpectedDurationWithTransition(part, processedPieces)
 			})
 
 			preserveOrphanedSegmentPositionInRundown(context, cache, newSegment)

@@ -9,7 +9,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getRundownIDsFromCache } from './cache'
 import { logger } from '../logging'
 import { getCurrentTime } from '../lib'
-import { calculatePartExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
+import { calculatePartExpectedDurationWithTransition } from '@sofie-automation/corelib/dist/playout/timings'
 import { MongoQuery } from '../db'
 import { mongoWhere } from '@sofie-automation/corelib/dist/mongo'
 import _ = require('underscore')
@@ -317,7 +317,7 @@ export function updateExpectedDurationWithTransitionForPartInstance(
 		const pieceInstances = cache.PieceInstances.findAll((p) => p.partInstanceId === nextPartInstance._id)
 
 		// Update expectedDurationWithTransition of the next part instance, as it may have changed and is used by the ui until it is taken
-		const expectedDurationWithTransition = calculatePartExpectedDurationWithPreroll(
+		const expectedDurationWithTransition = calculatePartExpectedDurationWithTransition(
 			nextPartInstance.part,
 			pieceInstances.map((p) => p.piece)
 		)

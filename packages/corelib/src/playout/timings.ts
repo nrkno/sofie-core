@@ -156,7 +156,7 @@ export function getPartTimingsOrDefaults(
 	}
 }
 
-function calculateExpectedDurationWithPreroll(rawDuration: number, timings: PartCalculatedTimings): number {
+function calculateExpectedDurationWithTransition(rawDuration: number, timings: PartCalculatedTimings): number {
 	// toPartDelay needs to be subtracted, because it is added to `fromPartRemaining` when the `fromPartRemaining` value is calculated.
 	return Math.max(0, rawDuration - (timings.fromPartRemaining - timings.toPartDelay))
 }
@@ -169,7 +169,7 @@ export function calculatePartExpectedDurationWithTransition(
 
 	const timings = calculatePartTimings(undefined, {}, [], part, pieces)
 
-	return calculateExpectedDurationWithPreroll(part.expectedDuration, timings)
+	return calculateExpectedDurationWithTransition(part.expectedDuration, timings)
 }
 
 export function calculatePartInstanceExpectedDurationWithTransition(
@@ -180,7 +180,10 @@ export function calculatePartInstanceExpectedDurationWithTransition(
 
 	if (partInstance.partPlayoutTimings) {
 		// The timings needed are known, we can ensure that live data is used
-		return calculateExpectedDurationWithPreroll(partInstance.part.expectedDuration, partInstance.partPlayoutTimings)
+		return calculateExpectedDurationWithTransition(
+			partInstance.part.expectedDuration,
+			partInstance.partPlayoutTimings
+		)
 	} else {
 		return partInstance.part.expectedDurationWithTransition
 	}
