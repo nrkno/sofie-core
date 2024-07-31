@@ -2,7 +2,7 @@ import { TriggersContext } from '@sofie-automation/meteor-lib/dist/triggers/trig
 import { IMeteorCall } from '@sofie-automation/meteor-lib/dist/api/methods'
 import { hashSingleUseToken } from '../../../client/lib/lib'
 import { MeteorCall } from '../../../client/lib/meteorApi'
-import { Time } from '@sofie-automation/blueprints-integration'
+import { IBaseFilterLink, Time } from '@sofie-automation/blueprints-integration'
 import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { TFunction } from 'i18next'
 import { UserAction } from '../../clientUserAction'
@@ -19,12 +19,10 @@ import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataMod
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { MongoReadOnlyCollection } from '@sofie-automation/meteor-lib/dist/collections/lib'
-import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import {
 	AdLibActions,
 	AdLibPieces,
 	Parts,
-	PartInstances,
 	RundownBaselineAdLibActions,
 	RundownBaselineAdLibPieces,
 	RundownPlaylists,
@@ -33,6 +31,8 @@ import {
 } from '../../../client/collections'
 import { LoggerInstanceFixed } from '@sofie-automation/corelib/dist/logging'
 import { logger } from '../../../client/lib/logging'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ReactivePlaylistActionContext } from '@sofie-automation/meteor-lib/dist/triggers/actionFactory'
 
 export class UiTriggersContext implements TriggersContext {
 	get MeteorCall(): IMeteorCall {
@@ -46,9 +46,6 @@ export class UiTriggersContext implements TriggersContext {
 	get isClient(): boolean {
 		return Meteor.isClient
 	}
-	get isServer(): boolean {
-		return Meteor.isServer
-	}
 
 	get AdLibActions(): MongoReadOnlyCollection<AdLibAction> {
 		return AdLibActions
@@ -58,9 +55,6 @@ export class UiTriggersContext implements TriggersContext {
 	}
 	get Parts(): MongoReadOnlyCollection<DBPart> {
 		return Parts
-	}
-	get PartInstances(): MongoReadOnlyCollection<PartInstance> {
-		return PartInstances
 	}
 	get RundownBaselineAdLibActions(): MongoReadOnlyCollection<RundownBaselineAdLibAction> {
 		return RundownBaselineAdLibActions
@@ -102,5 +96,14 @@ export class UiTriggersContext implements TriggersContext {
 		...params: Parameters<T>
 	): ReturnType<T> {
 		return memoizedIsolatedAutorun(fnc, functionName, ...params)
+	}
+
+	createContextForRundownPlaylistChain(
+		_studioId: StudioId,
+		_filterChain: IBaseFilterLink[]
+	): ReactivePlaylistActionContext | undefined {
+		// Server only
+
+		throw new Error('Invalid filter combination')
 	}
 }

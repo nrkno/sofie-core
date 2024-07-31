@@ -20,7 +20,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { sortAdlibs } from '../adlibs'
 import { ReactivePlaylistActionContext } from './actionFactory'
-import { PartId, RundownId, SegmentId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { IWrappedAdLibBase } from '@sofie-automation/shared-lib/dist/input-gateway/deviceTriggerPreviews'
 import { MountedAdLibTriggerType } from '../api/MountedTriggers'
 import { assertNever } from '@sofie-automation/corelib/dist/lib'
@@ -754,45 +754,4 @@ export function compileAdLibFilter(
 		// remove any falsy values from the result set
 		return resultingAdLibs.filter(Boolean)
 	}
-}
-
-export function rundownPlaylistFilter(
-	triggersContext: TriggersContext,
-	studioId: StudioId,
-	filterChain: IRundownPlaylistFilterLink[]
-): DBRundownPlaylist | undefined {
-	const selector: MongoQuery<DBRundownPlaylist> = {
-		$and: [
-			{
-				studioId,
-			},
-		],
-	}
-
-	filterChain.forEach((link) => {
-		switch (link.field) {
-			case 'activationId':
-				selector['activationId'] = {
-					$exists: link.value,
-				}
-				break
-			case 'name':
-				selector['name'] = {
-					$regex: link.value,
-				}
-				break
-			case 'studioId':
-				selector['$and']?.push({
-					studioId: {
-						$regex: link.value as any,
-					},
-				})
-				break
-			default:
-				assertNever(link)
-				break
-		}
-	})
-
-	return triggersContext.RundownPlaylists.findOne(selector)
 }

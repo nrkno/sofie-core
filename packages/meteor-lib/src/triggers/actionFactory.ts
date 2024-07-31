@@ -3,25 +3,18 @@ import {
 	IAdlibPlayoutActionArguments,
 	IBaseFilterLink,
 	IGUIContextFilterLink,
-	IRundownPlaylistFilterLink,
 	ITriggeredActionBase,
 	PlayoutActions,
 	SomeAction,
 	Time,
 } from '@sofie-automation/blueprints-integration'
 import { TFunction } from 'i18next'
-import { PartInstance } from '../collections/PartInstances'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBShowStyleBase, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import RundownViewEventBus, { RundownViewEvents } from '../triggers/RundownViewEventBus'
 import { UserAction } from '../userAction'
-import {
-	AdLibFilterChainLink,
-	compileAdLibFilter,
-	rundownPlaylistFilter,
-	IWrappedAdLib,
-} from './actionFilterChainCompilers'
+import { AdLibFilterChainLink, compileAdLibFilter, IWrappedAdLib } from './actionFilterChainCompilers'
 import { ClientAPI } from '../api/client'
 import { PartId, PartInstanceId, RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DeviceActions } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
@@ -122,57 +115,8 @@ function createRundownPlaylistContext(
 				playlistContext.rundownPlaylist.currentPartInfo?.partInstanceId ?? null
 			),
 		}
-	} else if (filterChain[0].object === 'rundownPlaylist' && context.studio && triggersContext.isServer) {
-		const playlist = rundownPlaylistFilter(
-			triggersContext,
-			context.studio._id,
-			filterChain.filter((link) => link.object === 'rundownPlaylist') as IRundownPlaylistFilterLink[]
-		)
-
-		if (playlist) {
-			let currentPartId: PartId | null = null,
-				nextPartId: PartId | null = null,
-				currentPartInstance: PartInstance | null = null,
-				currentSegmentPartIds: PartId[] = [],
-				nextSegmentPartIds: PartId[] = []
-
-			if (playlist.currentPartInfo) {
-				currentPartInstance =
-					triggersContext.PartInstances.findOne(playlist.currentPartInfo.partInstanceId) ?? null
-				const currentPart = currentPartInstance?.part ?? null
-				if (currentPart) {
-					currentPartId = currentPart._id
-					currentSegmentPartIds = triggersContext.Parts.find({
-						segmentId: currentPart.segmentId,
-					}).map((part) => part._id)
-				}
-			}
-			if (playlist.nextPartInfo) {
-				const nextPart =
-					triggersContext.PartInstances.findOne(playlist.nextPartInfo.partInstanceId)?.part ?? null
-				if (nextPart) {
-					nextPartId = nextPart._id
-					nextSegmentPartIds = triggersContext.Parts.find({
-						segmentId: nextPart.segmentId,
-					}).map((part) => part._id)
-				}
-			}
-
-			return {
-				rundownPlaylistId: new DummyReactiveVar(playlist?._id),
-				rundownPlaylist: new DummyReactiveVar(playlist),
-				currentRundownId: new DummyReactiveVar(
-					currentPartInstance?.rundownId ?? playlist.rundownIdsInOrder[0] ?? null
-				),
-				currentPartId: new DummyReactiveVar(currentPartId),
-				currentSegmentPartIds: new DummyReactiveVar(currentSegmentPartIds),
-				nextPartId: new DummyReactiveVar(nextPartId),
-				nextSegmentPartIds: new DummyReactiveVar(nextSegmentPartIds),
-				currentPartInstanceId: new DummyReactiveVar(playlist.currentPartInfo?.partInstanceId ?? null),
-			}
-		} else {
-			return undefined
-		}
+	} else if (filterChain[0].object === 'rundownPlaylist' && context.studio) {
+		return triggersContext.createContextForRundownPlaylistChain(context.studio._id, filterChain)
 	} else {
 		throw new Error('Invalid filter combination')
 	}

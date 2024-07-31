@@ -5,7 +5,6 @@ import { logger } from '../server/logging'
 
 import { Time, TimeDuration } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { ReactiveVar } from 'meteor/reactive-var'
 export { Time, TimeDuration }
 
 // Legacy compatability
@@ -446,20 +445,6 @@ export enum LocalStorageProperty {
 	HELP_MODE = 'helpMode',
 	LOG_NOTIFICATIONS = 'logNotifications',
 	PROTO_ONE_PART_PER_LINE = 'proto:onePartPerLine',
-}
-
-/**
- * This just looks like a ReactiveVar, but is not reactive.
- * It's used to use the same interface/typings, but when code is run on both client and server side.
- * */
-export class DummyReactiveVar<T> implements ReactiveVar<T> {
-	constructor(private value: T) {}
-	public get(): T {
-		return this.value
-	}
-	public set(newValue: T): void {
-		this.value = newValue
-	}
 }
 
 export function ensureHasTrailingSlash(input: string | null): string | undefined {

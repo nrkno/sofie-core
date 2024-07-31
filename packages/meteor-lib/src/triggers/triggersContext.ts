@@ -11,8 +11,10 @@ import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataMod
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { PartInstance } from '../collections/PartInstances'
 import { LoggerInstanceFixed } from '@sofie-automation/corelib/dist/logging'
+import { IBaseFilterLink } from '@sofie-automation/blueprints-integration'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ReactivePlaylistActionContext } from './actionFactory'
 
 // nocommit remove this hack
 type TFunction = any
@@ -23,12 +25,10 @@ export interface TriggersContext {
 	readonly logger: LoggerInstanceFixed
 
 	readonly isClient: boolean
-	readonly isServer: boolean
 
 	readonly AdLibActions: MongoReadOnlyCollection<AdLibAction>
 	readonly AdLibPieces: MongoReadOnlyCollection<AdLibPiece>
 	readonly Parts: MongoReadOnlyCollection<DBPart>
-	readonly PartInstances: MongoReadOnlyCollection<PartInstance>
 	readonly RundownBaselineAdLibActions: MongoReadOnlyCollection<RundownBaselineAdLibAction>
 	readonly RundownBaselineAdLibPieces: MongoReadOnlyCollection<RundownBaselineAdLibItem>
 	readonly RundownPlaylists: MongoReadOnlyCollection<DBRundownPlaylist>
@@ -53,4 +53,9 @@ export interface TriggersContext {
 		functionName: string,
 		...params: Parameters<T>
 	): ReturnType<T>
+
+	createContextForRundownPlaylistChain(
+		_studioId: StudioId,
+		_filterChain: IBaseFilterLink[]
+	): ReactivePlaylistActionContext | undefined
 }
