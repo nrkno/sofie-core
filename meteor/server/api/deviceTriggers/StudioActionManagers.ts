@@ -1,5 +1,8 @@
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ExecutableAction, ReactivePlaylistActionContext } from '../../../lib/api/triggers/actionFactory'
+import {
+	ExecutableAction,
+	ReactivePlaylistActionContext,
+} from '@sofie-automation/meteor-lib/dist/triggers/actionFactory'
 import { DeviceActionId } from '@sofie-automation/meteor-lib/dist/api/MountedTriggers'
 
 /**

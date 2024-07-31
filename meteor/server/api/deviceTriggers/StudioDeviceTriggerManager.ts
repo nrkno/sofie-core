@@ -8,7 +8,7 @@ import {
 	ExecutableAction,
 	isPreviewableAction,
 	ReactivePlaylistActionContext,
-} from '../../../lib/api/triggers/actionFactory'
+} from '@sofie-automation/meteor-lib/dist/triggers/actionFactory'
 import {
 	DeviceActionId,
 	DeviceTriggerMountedActionId,
@@ -21,13 +21,14 @@ import {
 	DBTriggeredActions,
 	UITriggeredActionsObj,
 } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
-import { DummyReactiveVar, protectString } from '../../../lib/lib'
+import { protectString } from '../../../lib/lib'
 import { StudioActionManager, StudioActionManagers } from './StudioActionManagers'
 import { DeviceTriggerMountedActionAdlibsPreview, DeviceTriggerMountedActions } from './observer'
 import { ContentCache } from './reactiveContentCache'
 import { logger } from '../../logging'
 import { SomeAction, SomeBlueprintTrigger } from '@sofie-automation/blueprints-integration'
 import { DeviceActions } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
+import { DummyReactiveVar } from '@sofie-automation/meteor-lib/dist/triggers/reactive-var'
 
 export class StudioDeviceTriggerManager {
 	#lastShowStyleBaseId: ShowStyleBaseId | null = null

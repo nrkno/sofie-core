@@ -3,6 +3,7 @@ import { logger } from './logging'
 import { AllPubSubTypes } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { MakeMeteorCall } from '@sofie-automation/meteor-lib/dist/api/methods'
 import { MeteorApply } from './MeteorApply'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 /**
  * Type safe wrapper around Meteor.subscribe()
@@ -17,7 +18,9 @@ export function meteorSubscribe<K extends keyof AllPubSubTypes>(
 	if (Meteor.isClient) {
 		const callbacks = {
 			onError: (...errs: any[]) => {
-				logger.error('meteorSubscribe', name, ...args, ...errs)
+				logger.error(
+					`meteorSubscribe "${name}": ${JSON.stringify(args)}: ${errs.map((err) => stringifyError(err))}`
+				)
 			},
 		}
 

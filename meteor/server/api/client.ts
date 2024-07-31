@@ -34,7 +34,7 @@ import {
 import { BasicAccessContext } from '../security/organization'
 import { UserActionsLog } from '../collections'
 import { executePeripheralDeviceFunctionWithCustomTimeout } from './peripheralDevice/executeFunction'
-import { LeveledLogMethodFixed } from '../logging'
+import { LeveledLogMethodFixed } from '@sofie-automation/corelib/dist/logging'
 
 function rewrapError(methodName: string, e: any): ClientAPI.ClientResponseError {
 	const userError = UserError.fromUnknown(e)

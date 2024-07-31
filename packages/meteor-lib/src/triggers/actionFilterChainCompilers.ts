@@ -15,27 +15,18 @@ import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataM
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { assertNever, generateTranslation } from '../../lib'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { sortAdlibs } from '@sofie-automation/meteor-lib/dist/adlibs'
+import { sortAdlibs } from '../adlibs'
 import { ReactivePlaylistActionContext } from './actionFactory'
-import { FindOptions } from '../../collections/lib'
 import { PartId, RundownId, SegmentId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { IWrappedAdLibBase } from '@sofie-automation/shared-lib/dist/input-gateway/deviceTriggerPreviews'
-import { memoizedIsolatedAutorun } from '../../memoizedIsolatedAutorun'
-import {
-	AdLibActions,
-	AdLibPieces,
-	Parts,
-	RundownBaselineAdLibActions,
-	RundownBaselineAdLibPieces,
-	RundownPlaylists,
-	Rundowns,
-	Segments,
-} from '../../collections/libCollections'
-import { MountedAdLibTriggerType } from '@sofie-automation/meteor-lib/dist/api/MountedTriggers'
+import { MountedAdLibTriggerType } from '../api/MountedTriggers'
+import { assertNever } from '@sofie-automation/corelib/dist/lib'
+import { generateTranslation } from '../lib'
+import { FindOptions } from '../collections/lib'
+import { TriggersContext } from './triggersContext'
 
 export type AdLibFilterChainLink = IRundownPlaylistFilterLink | IGUIContextFilterLink | IAdLibFilterLink
 
@@ -497,6 +488,7 @@ function compileAdLibPieceFilter(
  * @returns
  */
 export function compileAdLibFilter(
+	triggersContext: TriggersContext,
 	filterChain: AdLibFilterChainLink[],
 	sourceLayers: SourceLayers
 ): (context: ReactivePlaylistActionContext) => IWrappedAdLib[] {
@@ -566,7 +558,7 @@ export function compileAdLibFilter(
 			const currentRundownId = context.currentRundownId.get()
 			if (!skip && currentRundownId) {
 				if (adLibPieceTypeFilter.global === undefined || adLibPieceTypeFilter.global === true)
-					rundownBaselineAdLibItems = RundownBaselineAdLibPieces.find(
+					rundownBaselineAdLibItems = triggersContext.RundownBaselineAdLibPieces.find(
 						{
 							...adLibPieceTypeFilter.selector,
 							...currentNextOverride,
@@ -575,7 +567,7 @@ export function compileAdLibFilter(
 						adLibPieceTypeFilter.options
 					).map((item) => wrapAdLibPiece(item, MountedAdLibTriggerType.rundownBaselineAdLibItem))
 				if (adLibPieceTypeFilter.global === undefined || adLibPieceTypeFilter.global === false)
-					adLibPieces = AdLibPieces.find(
+					adLibPieces = triggersContext.AdLibPieces.find(
 						{
 							...adLibPieceTypeFilter.selector,
 							...currentNextOverride,
@@ -603,7 +595,7 @@ export function compileAdLibFilter(
 			const currentRundownId = context.currentRundownId.get()
 			if (!skip && currentRundownId) {
 				if (adLibActionTypeFilter.global === undefined || adLibActionTypeFilter.global === true)
-					rundownBaselineAdLibActions = RundownBaselineAdLibActions.find(
+					rundownBaselineAdLibActions = triggersContext.RundownBaselineAdLibActions.find(
 						{
 							...adLibActionTypeFilter.selector,
 							...currentNextOverride,
@@ -614,7 +606,7 @@ export function compileAdLibFilter(
 						wrapRundownBaselineAdLibAction(item, MountedAdLibTriggerType.rundownBaselineAdLibAction)
 					)
 				if (adLibActionTypeFilter.global === undefined || adLibActionTypeFilter.global === false)
-					adLibActions = AdLibActions.find(
+					adLibActions = triggersContext.AdLibActions.find(
 						{
 							...adLibActionTypeFilter.selector,
 							...currentNextOverride,
@@ -634,8 +626,8 @@ export function compileAdLibFilter(
 				// because _.isEqual (used in memoizedIsolatedAutorun) doesn't work with Maps..
 
 				const rundownPlaylistId = context.rundownPlaylistId.get()
-				const rundownRanks = memoizedIsolatedAutorun(() => {
-					const playlist = RundownPlaylists.findOne(rundownPlaylistId, {
+				const rundownRanks = triggersContext.memoizedIsolatedAutorun(() => {
+					const playlist = triggersContext.RundownPlaylists.findOne(rundownPlaylistId, {
 						projection: {
 							rundownIdsInOrder: 1,
 						},
@@ -644,7 +636,7 @@ export function compileAdLibFilter(
 					if (playlist?.rundownIdsInOrder) {
 						return playlist.rundownIdsInOrder
 					} else {
-						const rundowns = Rundowns.find(
+						const rundowns = triggersContext.Rundowns.find(
 							{
 								playlistId: rundownPlaylistId,
 							},
@@ -662,9 +654,9 @@ export function compileAdLibFilter(
 					rundownRankMap.set(id, index)
 				})
 
-				const segmentRanks = memoizedIsolatedAutorun(
+				const segmentRanks = triggersContext.memoizedIsolatedAutorun(
 					() =>
-						Segments.find(
+						triggersContext.Segments.find(
 							{
 								rundownId: { $in: Array.from(rundownRankMap.keys()) },
 							},
@@ -681,9 +673,9 @@ export function compileAdLibFilter(
 					segmentRankMap.set(segment._id, segment._rank)
 				})
 
-				const partRanks = memoizedIsolatedAutorun(() => {
+				const partRanks = triggersContext.memoizedIsolatedAutorun(() => {
 					if (!partFilter) {
-						return Parts.find(
+						return triggersContext.Parts.find(
 							{
 								rundownId: { $in: Array.from(rundownRankMap.keys()) },
 							},
@@ -697,7 +689,7 @@ export function compileAdLibFilter(
 							}
 						).fetch() as Pick<DBPart, '_id' | '_rank' | 'segmentId' | 'rundownId'>[]
 					} else {
-						return Parts.find(
+						return triggersContext.Parts.find(
 							{ _id: { $in: partFilter } },
 							{
 								fields: {
@@ -765,6 +757,7 @@ export function compileAdLibFilter(
 }
 
 export function rundownPlaylistFilter(
+	triggersContext: TriggersContext,
 	studioId: StudioId,
 	filterChain: IRundownPlaylistFilterLink[]
 ): DBRundownPlaylist | undefined {
@@ -801,5 +794,5 @@ export function rundownPlaylistFilter(
 		}
 	})
 
-	return RundownPlaylists.findOne(selector)
+	return triggersContext.RundownPlaylists.findOne(selector)
 }

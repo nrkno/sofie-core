@@ -11,9 +11,9 @@ import {
 	isPreviewableAction,
 	ReactivePlaylistActionContext,
 	createAction as libCreateAction,
-} from '../../../lib/api/triggers/actionFactory'
+} from '@sofie-automation/meteor-lib/dist/triggers/actionFactory'
 import { flatten, protectString } from '../../../lib/lib'
-import { IWrappedAdLib } from '../../../lib/api/triggers/actionFilterChainCompilers'
+import { IWrappedAdLib } from '@sofie-automation/meteor-lib/dist/triggers/actionFilterChainCompilers'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { preventDefault } from '../SorensenContext'
 import { getFinalKey } from './codesToKeyLabels'

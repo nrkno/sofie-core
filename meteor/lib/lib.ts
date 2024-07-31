@@ -1,5 +1,4 @@
 import * as _ from 'underscore'
-import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { Meteor } from 'meteor/meteor'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { logger } from '../server/logging'
@@ -430,19 +429,6 @@ export function equalArrays<T>(a: T[], b: T[]): boolean {
 		if (b[i] !== a[i]) return false
 	}
 	return true
-}
-
-/** Generate the translation for a string, to be applied later when it gets rendered */
-export function generateTranslation(
-	key: string,
-	args?: { [k: string]: any },
-	namespaces?: string[]
-): ITranslatableMessage {
-	return {
-		key,
-		args,
-		namespaces,
-	}
 }
 
 export enum LocalStorageProperty {

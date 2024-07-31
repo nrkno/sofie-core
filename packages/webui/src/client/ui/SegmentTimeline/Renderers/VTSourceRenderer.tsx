@@ -20,6 +20,7 @@ import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { HourglassIconSmall } from '../../../lib/ui/icons/notifications'
 import { IFloatingInspectorPosition } from '../../FloatingInspectors/IFloatingInspectorPosition'
 import { logger } from '../../../lib/logging'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 interface IProps extends ICustomLayerItemProps {
 	studio: UIStudio | undefined
@@ -93,7 +94,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					try {
 						this.rightLabelContainer?.remove()
 					} catch (err) {
-						logger.error('Error in VTSourceRendererBase.mountRightLabelContainer 1', err)
+						logger.error(`Error in VTSourceRendererBase.mountRightLabelContainer 1: ${stringifyError(err)}`)
 					}
 					itemElement.appendChild(this.rightLabelContainer)
 					newState.rightLabelIsAppendage = false
@@ -107,7 +108,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					try {
 						this.rightLabelContainer?.remove()
 					} catch (err) {
-						logger.error('Error in VTSourceRendererBase.mountRightLabelContainer 2', err)
+						logger.error(`Error in VTSourceRendererBase.mountRightLabelContainer 2: ${stringifyError(err)}`)
 					}
 					itemElement.appendChild(this.rightLabelContainer)
 					newState.rightLabelIsAppendage = false
@@ -148,7 +149,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			try {
 				this.countdownContainer.remove()
 			} catch (err) {
-				logger.error('Error in VTSourceRendererBase.mountSourceEndedCountdownContainer 1', err)
+				logger.error(`Error in VTSourceRendererBase.mountSourceEndedCountdownContainer 1: ${stringifyError(err)}`)
 			}
 			newState.sourceEndCountdownAppendage = false
 		}
@@ -226,7 +227,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			try {
 				this.rightLabelContainer.remove()
 			} catch (err) {
-				logger.error('Error in VTSourceRendererBase.componentWillUnmount 1', err)
+				logger.error(`Error in VTSourceRendererBase.componentWillUnmount 1: ${stringifyError(err)}`)
 			}
 			this.rightLabelContainer = null
 		}
@@ -235,7 +236,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			try {
 				this.countdownContainer.remove()
 			} catch (err) {
-				logger.error('Error in VTSourceRendererBase.componentWillUnmount 2', err)
+				logger.error(`Error in VTSourceRendererBase.componentWillUnmount 2: ${stringifyError(err)}`)
 			}
 			this.countdownContainer = null
 		}

@@ -1,30 +1,6 @@
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { MeteorCall } from './meteorApi'
-
-export interface LoggerInstanceFixed {
-	error: LeveledLogMethodFixed
-	warn: LeveledLogMethodFixed
-	help: LeveledLogMethodFixed
-	data: LeveledLogMethodFixed
-	info: LeveledLogMethodFixed
-	debug: LeveledLogMethodFixed
-	prompt: LeveledLogMethodFixed
-	verbose: LeveledLogMethodFixed
-	input: LeveledLogMethodFixed
-	silly: LeveledLogMethodFixed
-
-	emerg: LeveledLogMethodFixed
-	alert: LeveledLogMethodFixed
-	crit: LeveledLogMethodFixed
-	warning: LeveledLogMethodFixed
-	notice: LeveledLogMethodFixed
-}
-type Winston_LogCallback = (error?: any, level?: string, msg?: string, meta?: any) => void
-export interface LeveledLogMethodFixed {
-	(msg: any, callback: Winston_LogCallback): LoggerInstanceFixed
-	(msg: any, meta: any, callback: Winston_LogCallback): LoggerInstanceFixed
-	(msg: any, ...meta: any[]): LoggerInstanceFixed
-}
+import { LoggerInstanceFixed } from '@sofie-automation/corelib/dist/logging'
 
 const getLogMethod = (type: string) => {
 	return (...args: any[]) => {
@@ -53,6 +29,7 @@ const logger: LoggerInstanceFixed = {
 	info: getLogMethod('info'),
 	debug: getLogMethod('debug'),
 	prompt: getLogMethod('prompt'),
+	http: getLogMethod('http'),
 	verbose: getLogMethod('verbose'),
 	input: getLogMethod('input'),
 	silly: getLogMethod('silly'),
@@ -62,6 +39,7 @@ const logger: LoggerInstanceFixed = {
 	crit: getLogMethod('crit'),
 	warning: getLogMethod('warn'),
 	notice: getLogMethod('notice'),
+	log: getLogMethod('log'),
 }
 if (localStorage && localStorage.getItem('developerMode') !== '1') {
 	// not in developerMode, don't log everything then:
