@@ -1,40 +1,22 @@
-import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import _ from 'underscore'
-import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
-import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { getUnfinishedPieceInstancesReactive } from './rundownLayouts'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
-import { PieceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstances } from '../collections'
 import { ReadonlyDeep } from 'type-fest'
-import { PieceContentStatusObj } from '@sofie-automation/meteor-lib/dist/api/pieceContentStatus'
+import { AdLibPieceUi } from '@sofie-automation/meteor-lib/dist/uiTypes/Adlib'
+
+export type { AdLibPieceUi } from '@sofie-automation/meteor-lib/dist/uiTypes/Adlib'
 
 export interface ShelfDisplayOptions {
 	enableBuckets: boolean
 	enableLayout: boolean
 	enableInspector: boolean
-}
-
-export interface AdLibPieceUi extends Omit<AdLibPiece, 'timelineObjectsString'> {
-	hotkey?: string
-	sourceLayer?: ISourceLayer
-	outputLayer?: IOutputLayer
-	isGlobal?: boolean
-	isHidden?: boolean
-	isSticky?: boolean
-	isAction?: boolean
-	isClearSourceLayer?: boolean
-	disabled?: boolean
-	adlibAction?: AdLibAction | RundownBaselineAdLibAction
-	segmentId?: SegmentId
-
-	contentStatus?: ReadonlyDeep<PieceContentStatusObj>
 }
 
 export interface AdlibSegmentUi extends DBSegment {

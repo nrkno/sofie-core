@@ -3,13 +3,7 @@ import * as _ from 'underscore'
 import { ISourceLayer, NoteSeverity, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import {
-	IOutputLayerExtended,
-	ISourceLayerExtended,
-	PieceExtended,
-	PartExtended,
-	SegmentExtended,
-} from '../../lib/RundownResolver'
+import { IOutputLayerExtended, ISourceLayerExtended, PartExtended, SegmentExtended } from '../../lib/RundownResolver'
 import { IContextMenuContext } from '../RundownView'
 import { equalSets } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
@@ -38,9 +32,10 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstances, Segments } from '../../collections'
 import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
-import { ReadonlyDeep } from 'type-fest'
-import { PieceContentStatusObj } from '@sofie-automation/meteor-lib/dist/api/pieceContentStatus'
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import type { PieceUi } from '@sofie-automation/meteor-lib/dist/uiTypes/Piece'
+
+export type { PieceUi } from '@sofie-automation/meteor-lib/dist/uiTypes/Piece'
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
@@ -58,12 +53,6 @@ export interface IOutputLayerUi extends IOutputLayerExtended {
 	collapsed?: boolean
 }
 export type ISourceLayerUi = ISourceLayerExtended
-export interface PieceUi extends PieceExtended {
-	/** This item has already been linked to the parent item of the spanning item group */
-	linked?: boolean
-
-	contentStatus?: ReadonlyDeep<PieceContentStatusObj>
-}
 
 export type MinimalRundown = Pick<Rundown, '_id' | 'name' | 'timing' | 'showStyleBaseId' | 'endOfRundownIsShowBreak'>
 

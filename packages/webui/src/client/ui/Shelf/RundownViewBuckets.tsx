@@ -1,10 +1,6 @@
 import * as React from 'react'
 import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
-import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { BucketPanel } from './BucketPanel'
-import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
-import { ISourceLayer, IOutputLayer } from '@sofie-automation/blueprints-integration'
-import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 
@@ -33,34 +29,16 @@ import RundownViewEventBus, {
 	BucketEvent,
 	IEventContext,
 } from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
-import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
-import { BucketId, ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BucketId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DashboardLayoutExternalFrame } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
+import { BucketAdLibItem, BucketAdLibUi, BucketAdLibActionUi } from '@sofie-automation/meteor-lib/dist/uiTypes/Bucket'
 
-export interface BucketAdLibUi extends BucketAdLib {
-	sourceLayer?: ISourceLayer
-	outputLayer?: IOutputLayer
-	status: PieceStatusCode
-}
-
-export interface BucketAdLibActionUi extends Omit<AdLibPiece, 'timelineObjectsString'> {
-	bucketId: BucketId
-	sourceLayer?: ISourceLayer
-	outputLayer?: IOutputLayer
-	isGlobal?: boolean
-	isHidden?: boolean
-	isSticky?: boolean
-	isAction: true
-	isClearSourceLayer?: boolean
-	adlibAction: BucketAdLibAction
-	message?: string | null
-	showStyleBaseId: ShowStyleBaseId
-	showStyleVariantId: ShowStyleVariantId | null
-	studioId: StudioId
-}
-
-export type BucketAdLibItem = BucketAdLibUi | BucketAdLibActionUi
+export type {
+	BucketAdLibItem,
+	BucketAdLibUi,
+	BucketAdLibActionUi,
+} from '@sofie-automation/meteor-lib/dist/uiTypes/Bucket'
 
 export function isAdLibAction(item: BucketAdLibItem): item is BucketAdLibActionUi {
 	if ('adlibAction' in item && item['adlibAction']) {

@@ -1,8 +1,6 @@
 import * as EventEmitter from 'events'
 import { Bucket } from '../collections/Buckets'
 import {
-	BucketAdLibActionId,
-	BucketAdLibId,
 	BucketId,
 	PartId,
 	PartInstanceId,
@@ -12,6 +10,10 @@ import {
 	SegmentId,
 	TriggeredActionId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import type { PieceUi } from '../uiTypes/Piece'
+import type { ShelfTabs } from '../uiTypes/ShelfTabs'
+import type { IAdLibListItem } from '../uiTypes/Adlib'
+import type { BucketAdLibItem } from '../uiTypes/Bucket'
 
 export enum RundownViewEvents {
 	ACTIVATE_RUNDOWN_PLAYLIST = 'activateRundownPlaylist',
@@ -46,17 +48,6 @@ export enum RundownViewEvents {
 
 	TOGGLE_SHELF_DROPZONE = 'toggleShelfDropzone',
 	ITEM_DROPPED = 'itemDropped',
-}
-
-// These are UI types, and are not defined in the backend
-type ShelfTabs = string
-type PieceUi = { a: null }
-type IAdLibListItem = { name: string }
-type BucketAdLibItem = {
-	_id: BucketAdLibId
-	bucketId: BucketId
-	name: string
-	adlibAction?: { _id: BucketAdLibActionId }
 }
 
 export interface IEventContext {

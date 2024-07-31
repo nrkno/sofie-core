@@ -43,12 +43,10 @@ import { ShelfDisplayOptions } from '../../lib/shelf'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 
-export enum ShelfTabs {
-	ADLIB = 'adlib',
-	ADLIB_LAYOUT_FILTER = 'adlib_layout_filter',
-	GLOBAL_ADLIB = 'global_adlib',
-	SYSTEM_HOTKEYS = 'system_hotkeys',
-}
+import { ShelfTabs } from '@sofie-automation/meteor-lib/dist/uiTypes/ShelfTabs'
+
+export { ShelfTabs } from '@sofie-automation/meteor-lib/dist/uiTypes/ShelfTabs'
+
 export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	isExpanded: boolean
 	buckets: Array<Bucket>

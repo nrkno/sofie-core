@@ -13,6 +13,7 @@ export function doUserAction<Result>(
 	_okMessage?: string
 ): void {
 	if (Meteor.isClient) {
+		// nocommit - the webui copy has an alternate implementation
 		throw new Error('This version of doUserAction cannot be called from the client')
 	} else {
 		fcn(userEvent, getCurrentTime()).then(
