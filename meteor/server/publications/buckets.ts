@@ -1,4 +1,4 @@
-import { FindOptions } from '../../lib/collections/lib'
+import { FindOptions } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import { BucketSecurity } from '../security/buckets'
 import { meteorPublish } from './lib'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'

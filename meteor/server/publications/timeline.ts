@@ -10,7 +10,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { meteorPublish } from './lib'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
-import { FindOptions } from '../../lib/collections/lib'
+import { FindOptions } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import {
 	CustomPublish,
 	meteorCustomPublish,

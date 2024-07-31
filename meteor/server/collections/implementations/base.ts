@@ -2,7 +2,13 @@ import { MongoModifier, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { ProtectedString, protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
-import { UpdateOptions, UpsertOptions, FindOptions, IndexSpecifier, MongoCursor } from '../../../lib/collections/lib'
+import {
+	UpdateOptions,
+	UpsertOptions,
+	FindOptions,
+	IndexSpecifier,
+	MongoCursor,
+} from '@sofie-automation/meteor-lib/dist/collections/lib'
 import type { Collection as RawCollection, Db as RawDb } from 'mongodb'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { PromisifyCallbacks, waitForPromise } from '../../../lib/lib'

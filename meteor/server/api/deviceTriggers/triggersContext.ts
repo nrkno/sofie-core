@@ -6,29 +6,45 @@ import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { UserAction } from '@sofie-automation/meteor-lib/dist/userAction'
 import { TFunction } from 'i18next'
 import { Tracker } from 'meteor/tracker'
-import {
-	AdLibActions,
-	AdLibPieces,
-	PartInstances,
-	Parts,
-	RundownBaselineAdLibActions,
-	RundownBaselineAdLibPieces,
-	RundownPlaylists,
-	Rundowns,
-	Segments,
-} from '../../../lib/collections/libCollections'
-import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
+
 import { logger } from '../../logging'
 import { IBaseFilterLink, IRundownPlaylistFilterLink } from '@sofie-automation/blueprints-integration'
 import { PartId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DummyReactiveVar } from '@sofie-automation/meteor-lib/dist/triggers/reactive-var'
 import { ReactivePlaylistActionContext } from '@sofie-automation/meteor-lib/dist/triggers/actionFactory'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
+import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
+import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
+import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { createSyncReadOnlyMongoCollection } from './triggersContextCollection'
 
 export function hashSingleUseToken(token: string): string {
 	return getHash(SINGLE_USE_TOKEN_SALT + token)
 }
+
+/**
+ * Some synchronous read-only collections to satisfy the TriggersContext interface
+ */
+const AdLibActions = createSyncReadOnlyMongoCollection<AdLibAction>(CollectionName.AdLibActions)
+const AdLibPieces = createSyncReadOnlyMongoCollection<AdLibPiece>(CollectionName.AdLibPieces)
+const PartInstances = createSyncReadOnlyMongoCollection<PartInstance>(CollectionName.PartInstances)
+const Parts = createSyncReadOnlyMongoCollection<DBPart>(CollectionName.Parts)
+const RundownBaselineAdLibActions = createSyncReadOnlyMongoCollection<RundownBaselineAdLibAction>(
+	CollectionName.RundownBaselineAdLibActions
+)
+const RundownBaselineAdLibPieces = createSyncReadOnlyMongoCollection<RundownBaselineAdLibItem>(
+	CollectionName.RundownBaselineAdLibPieces
+)
+const RundownPlaylists = createSyncReadOnlyMongoCollection<DBRundownPlaylist>(CollectionName.RundownPlaylists)
+const Rundowns = createSyncReadOnlyMongoCollection<DBRundown>(CollectionName.Rundowns)
+const Segments = createSyncReadOnlyMongoCollection<DBSegment>(CollectionName.Segments)
 
 export const MeteorTriggersContext: TriggersContext = {
 	MeteorCall,

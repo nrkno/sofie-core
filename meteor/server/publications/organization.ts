@@ -5,7 +5,7 @@ import { Evaluation } from '@sofie-automation/meteor-lib/dist/collections/Evalua
 import { SnapshotItem } from '@sofie-automation/meteor-lib/dist/collections/Snapshots'
 import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
 import { OrganizationReadAccess } from '../security/organization'
-import { FindOptions } from '../../lib/collections/lib'
+import { FindOptions } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import { DBOrganization } from '@sofie-automation/meteor-lib/dist/collections/Organization'
 import { isProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Blueprints, Evaluations, Organizations, Snapshots, UserActionsLog } from '../collections'

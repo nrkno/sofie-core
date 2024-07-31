@@ -5,7 +5,7 @@ import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { ResolvedCredentials, resolveCredentials } from '../security/lib/credentials'
 import { Settings } from '../Settings'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { MongoCursor } from '../../lib/collections/lib'
+import { MongoCursor } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import {
 	OrganizationId,
 	PeripheralDeviceId,

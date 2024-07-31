@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
-import { ProtectedString } from '../lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
@@ -10,24 +9,8 @@ import {
 	FindOptions,
 	FindOneOptions,
 } from '@sofie-automation/meteor-lib/dist/collections/lib'
-
-export * from '@sofie-automation/meteor-lib/dist/collections/lib'
-
-/**
- * Map of current collection objects.
- * Future: Could this weakly hold the collections?
- */
-export const collectionsCache = new Map<string, Mongo.Collection<any>>()
-export function getOrCreateMongoCollection(name: string): Mongo.Collection<any> {
-	const collection = collectionsCache.get(name)
-	if (collection) {
-		return collection
-	}
-
-	const newCollection = new Mongo.Collection(name)
-	collectionsCache.set(name, newCollection)
-	return newCollection
-}
+import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
+import { getOrCreateMongoCollection } from '../../collections/collection'
 
 /**
  * Create a Mongo Collection for use in the client (has sync apis)

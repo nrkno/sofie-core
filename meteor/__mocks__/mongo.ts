@@ -14,7 +14,7 @@ import {
 	ObserveChangesCallbacks,
 	UpdateOptions,
 	UpsertOptions,
-} from '../lib/collections/lib'
+} from '@sofie-automation/meteor-lib/dist/collections/lib'
 import {
 	mongoWhere,
 	mongoFindOptions,
