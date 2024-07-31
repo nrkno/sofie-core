@@ -1,5 +1,5 @@
 import { runTimersUntilNow, testInFiber } from '../../__mocks__/helpers/jest'
-import { TimeJumpDetector } from '../systemTime'
+import { TimeJumpDetector } from '../../server/systemTime'
 
 describe('lib/systemTime', () => {
 	testInFiber('TimeJumpDetector', async () => {

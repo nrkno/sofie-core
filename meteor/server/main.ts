@@ -36,7 +36,6 @@ import './api/ingest/debug'
 import './api/integration/expectedPackages'
 import './api/integration/media-scanner'
 import './api/integration/mediaWorkFlows'
-import './api/logger'
 import './api/peripheralDevice'
 import './api/playout/api'
 import './api/rundown'
@@ -69,6 +68,7 @@ import './email'
 import './prometheus'
 import './api/deviceTriggers/observer'
 import './logo'
+import './systemTime'
 // import './performanceMonitor' // called above
 
 // Setup publications and security:

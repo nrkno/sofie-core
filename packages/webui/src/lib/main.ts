@@ -17,4 +17,4 @@ import './collections/Users'
 import './collections/TriggeredActions'
 
 import './Settings'
-import './systemTime'
+import '../client/lib/systemTime'
