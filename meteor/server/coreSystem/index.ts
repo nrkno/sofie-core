@@ -1,6 +1,7 @@
 import { SYSTEM_ID, GENESIS_SYSTEM_VERSION } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
 import { parseVersion } from '../systemStatus/semverUtils'
-import { getCurrentTime, MeteorStartupAsync } from '../../lib/lib'
+import { MeteorStartupAsync } from '../lib/lib'
+import { getCurrentTime } from '../../lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { Meteor } from 'meteor/meteor'
 import { prepareMigration, runMigration } from '../migration/databaseMigration'

@@ -1,57 +1,15 @@
 import * as _ from 'underscore'
-import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { Meteor } from 'meteor/meteor'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { logger } from '../client/lib/logging'
 
 import { Time, TimeDuration } from '@sofie-automation/shared-lib/dist/lib/lib'
-import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { ReactiveVar } from 'meteor/reactive-var'
 export type { Time, TimeDuration }
 
 // Legacy compatability
-export type { ProtectedString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
-export {
-	protectString,
-	isProtectedString,
-	unprotectString,
-} from '@sofie-automation/shared-lib/dist/lib/protectedString'
-export type { Subtract, Complete, ArrayElement, ManualPromise } from '@sofie-automation/corelib/dist/lib'
-export {
-	getHash,
-	hashObj,
-	//
-	getSofieHostUrl,
-	omit,
-	flatten,
-	max,
-	min,
-	assertNever,
-	clone,
-	deepFreeze,
-	getRandomString,
-	getRandomId,
-	literal,
-	normalizeArrayFuncFilter,
-	normalizeArrayFunc,
-	normalizeArray,
-	normalizeArrayToMap,
-	normalizeArrayToMapFunc,
-	groupByToMap,
-	groupByToMapFunc,
-	deleteAllUndefinedProperties,
-	applyToArray,
-	objectPathGet,
-	objectPathSet,
-	objectPathDelete,
-	getRank,
-	createManualPromise,
-	formatDateAsTimecode,
-	formatDurationAsTimecode,
-	removeNullyProperties,
-	// deferAsync,
-	joinObjectPathFragments,
-} from '@sofie-automation/corelib/dist/lib'
+export * from '@sofie-automation/shared-lib/dist/lib/protectedString'
+export * from '@sofie-automation/corelib/dist/lib'
+export * from '@sofie-automation/meteor-lib/dist/lib'
 
 export type PromisifyCallbacks<T> = {
 	[K in keyof T]: PromisifyFunction<T[K]>
@@ -120,37 +78,6 @@ export function formatTime(time: number): string {
 	const hh = String(Math.floor(time / 3600000)).padStart(2, '0')
 
 	return `${hh}:${mm}:${ss}`
-}
-
-/**
- * Returns a string that can be used to compare objects for equality
- * @param objs
- */
-export function stringifyObjects(objs: unknown): string {
-	if (_.isArray(objs)) {
-		return _.map(objs, (obj) => {
-			if (obj !== undefined) {
-				return stringifyObjects(obj)
-			}
-		}).join(',')
-	} else if (_.isFunction(objs)) {
-		return ''
-	} else if (_.isObject(objs)) {
-		const objs0 = objs as any
-		const keys = _.sortBy(_.keys(objs), (k) => k)
-
-		return _.compact(
-			_.map(keys, (key) => {
-				if (objs0[key] !== undefined) {
-					return key + '=' + stringifyObjects(objs0[key])
-				} else {
-					return null
-				}
-			})
-		).join(',')
-	} else {
-		return objs + ''
-	}
 }
 
 /** Convenience function, to be used when length of array has previously been verified */
@@ -259,100 +186,7 @@ export function toc(name = 'default', logStr?: string | Promise<any>[]): number 
 	}
 }
 
-// /**
-//  * Make Meteor.startup support async functions
-//  */
-// export function MeteorStartupAsync(fcn: () => Promise<void>): void {
-// 	Meteor.startup(() => waitForPromise(fcn()))
-// }
-
-// /**
-//  * Make Meteor.wrapAsync a bit more type safe
-//  * The original version makes the callback be after the last non-undefined parameter, rather than after or replacing the last parameter.
-//  * Which makes it incredibly hard to find without iterating over all the parameters. This does that for you, so you dont need to check as many places
-//  */
-// export function MeteorWrapAsync(func: Function, context?: Object): any {
-// 	// A variant of Meteor.wrapAsync to fix the bug
-// 	// https://github.com/meteor/meteor/issues/11120
-
-// 	return Meteor.wrapAsync((...args: any[]) => {
-// 		// Find the callback-function:
-// 		for (let i = args.length - 1; i >= 0; i--) {
-// 			if (typeof args[i] === 'function') {
-// 				if (i < args.length - 1) {
-// 					// The callback is not the last argument, make it so then:
-// 					const callback = args[i]
-// 					const fixedArgs = args
-// 					fixedArgs[i] = undefined
-// 					fixedArgs.push(callback)
-
-// 					func.apply(context, fixedArgs)
-// 					return
-// 				} else {
-// 					// The callback is the last argument, that's okay
-// 					func.apply(context, args)
-// 					return
-// 				}
-// 			}
-// 		}
-// 		throw new Meteor.Error(500, `Error in MeteorWrapAsync: No callback found!`)
-// 	})
-// }
-
 export type Awaited<T> = T extends PromiseLike<infer U> ? Awaited<U> : T
-
-// /**
-//  * Convert a promise to a "synchronous" Fiber function
-//  * Makes the Fiber wait for the promise to resolve, then return the value of the promise.
-//  * If the fiber rejects, the function in the Fiber will "throw"
-//  */
-// export const waitForPromise: <T>(p: Promise<T> | T) => Awaited<T> = Meteor.wrapAsync(function waitForPromise<T>(
-// 	p: Promise<T> | T,
-// 	cb: (err: any | null, result?: any) => Awaited<T>
-// ) {
-// 	if (Meteor.isClient) throw new Meteor.Error(500, `waitForPromise can't be used client-side`)
-// 	if (cb === undefined && typeof p === 'function') {
-// 		cb = p as any
-// 		p = undefined as any
-// 	}
-
-// 	Promise.resolve(p)
-// 		.then((result) => {
-// 			cb(null, result)
-// 		})
-// 		.catch((e) => {
-// 			cb(e)
-// 		})
-// }) as <T>(p: Promise<T> | T) => Awaited<T> // `wrapAsync` has opaque `Function` type
-// /**
-//  * Convert a Fiber function into a promise
-//  * Makes the Fiber function to run in its own fiber and return a promise
-//  */
-// export async function makePromise<T>(fcn: () => T): Promise<T> {
-// 	const p = new Promise<T>((resolve, reject) => {
-// 		Meteor.defer(() => {
-// 			try {
-// 				resolve(fcn())
-// 			} catch (e) {
-// 				reject(e)
-// 			}
-// 		})
-// 	})
-
-// 	return (
-// 		await Promise.all([
-// 			p,
-// 			// Pause the current Fiber briefly, in order to allow for the deferred Fiber to start executing:
-// 			sleep(0),
-// 		])
-// 	)[0]
-// }
-
-export function deferAsync(fcn: () => Promise<void>): void {
-	Meteor.defer(() => {
-		fcn().catch((e) => logger.error(stringifyError(e)))
-	})
-}
 
 /**
  * Replaces all invalid characters in order to make the path a valid one
@@ -406,129 +240,4 @@ export function firstIfArray<T>(value: T | T[] | undefined): T | undefined
 export function firstIfArray<T>(value: T | T[]): T
 export function firstIfArray<T>(value: unknown): T {
 	return _.isArray(value) ? _.first(value) : value
-}
-
-/**
- * Wait for specified time
- * @param time
- */
-export async function sleep(ms: number): Promise<void> {
-	return new Promise((resolve) => Meteor.setTimeout(resolve, ms))
-}
-
-export function isPromise<T>(val: unknown): val is Promise<T> {
-	const val0 = val as any
-	return _.isObject(val0) && typeof val0.then === 'function' && typeof val0.catch === 'function'
-}
-
-/**
- * This is a fast, shallow compare of two Sets.
- *
- * **Note**: This is a shallow compare, so it will return false if the objects in the arrays are identical, but not the same.
- *
- * @param a
- * @param b
- */
-export function equalSets<T>(a: Set<T>, b: Set<T>): boolean {
-	if (a === b) return true
-	if (a.size !== b.size) return false
-	for (const val of a.values()) {
-		if (!b.has(val)) return false
-	}
-	return true
-}
-
-/**
- * This is a fast, shallow compare of two arrays that are used as unsorted lists. The ordering of the elements is ignored.
- *
- * **Note**: This is a shallow compare, so it will return false if the objects in the arrays are identical, but not the same.
- *
- * @param a
- * @param b
- */
-export function equivalentArrays<T>(a: T[], b: T[]): boolean {
-	if (a === b) return true
-	if (a.length !== b.length) return false
-	for (let i = 0; i < a.length; i++) {
-		if (!b.includes(a[i])) return false
-	}
-	return true
-}
-
-/**
- * This is a fast, shallow compare of two arrays of the same type.
- *
- * **Note**: This is a shallow compare, so it will return false if the objects in the arrays are identical, but not the same.
- * @param a
- * @param b
- */
-export function equalArrays<T>(a: T[], b: T[]): boolean {
-	if (a === b) return true
-	if (a.length !== b.length) return false
-	for (let i = 0; i < a.length; i++) {
-		if (b[i] !== a[i]) return false
-	}
-	return true
-}
-
-/** Generate the translation for a string, to be applied later when it gets rendered */
-export function generateTranslation(
-	key: string,
-	args?: { [k: string]: any },
-	namespaces?: string[]
-): ITranslatableMessage {
-	return {
-		key,
-		args,
-		namespaces,
-	}
-}
-
-export enum LogLevel {
-	SILLY = 'silly',
-	DEBUG = 'debug',
-	VERBOSE = 'verbose',
-	INFO = 'info',
-	WARN = 'warn',
-	ERROR = 'error',
-	NONE = 'crit',
-}
-
-export enum LocalStorageProperty {
-	STUDIO = 'studioMode',
-	CONFIGURE = 'configureMode',
-	DEVELOPER = 'developerMode',
-	TESTING = 'testingMode',
-	SPEAKING = 'speakingMode',
-	VIBRATING = 'vibratingMode',
-	SERVICE = 'serviceMode',
-	SHELF_FOLLOWS_ON_AIR = 'shelfFollowsOnAir',
-	SHOW_HIDDEN_SOURCE_LAYERS = 'showHiddenSourceLayers',
-	IGNORE_PIECE_CONTENT_STATUS = 'ignorePieceContentStatus',
-	UI_ZOOM_LEVEL = 'uiZoomLevel',
-	HELP_MODE = 'helpMode',
-	LOG_NOTIFICATIONS = 'logNotifications',
-	PROTO_ONE_PART_PER_LINE = 'proto:onePartPerLine',
-}
-
-/**
- * This just looks like a ReactiveVar, but is not reactive.
- * It's used to use the same interface/typings, but when code is run on both client and server side.
- * */
-export class DummyReactiveVar<T> implements ReactiveVar<T> {
-	constructor(private value: T) {}
-	public get(): T {
-		return this.value
-	}
-	public set(newValue: T): void {
-		this.value = newValue
-	}
-}
-
-export function ensureHasTrailingSlash(input: string | null): string | undefined {
-	if (input) {
-		return input.endsWith('/') ? input : input + '/'
-	} else {
-		return undefined
-	}
 }

@@ -12,7 +12,7 @@ import {
 } from '../systemStatus/semverUtils'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { lazyIgnore } from '../../lib/lib'
+import { lazyIgnore } from '../lib/lib'
 import { logger } from '../logging'
 import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
 import { setSystemStatus, removeSystemStatus } from '../systemStatus/systemStatus'

@@ -5,7 +5,7 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { IOutputLayerExtended, ISourceLayerExtended, PartExtended, SegmentExtended } from '../../lib/RundownResolver'
 import { IContextMenuContext } from '../RundownView'
-import { equalSets } from '../../../lib/lib'
+import { equalSets } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'

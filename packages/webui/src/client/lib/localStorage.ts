@@ -4,7 +4,23 @@ import {
 	setReportNotifications as libSetReportNotifications,
 	getReportNotifications as libGetReportNotifications,
 } from './notifications/notifications'
-import { LocalStorageProperty } from '../../lib/lib'
+
+export enum LocalStorageProperty {
+	STUDIO = 'studioMode',
+	CONFIGURE = 'configureMode',
+	DEVELOPER = 'developerMode',
+	TESTING = 'testingMode',
+	SPEAKING = 'speakingMode',
+	VIBRATING = 'vibratingMode',
+	SERVICE = 'serviceMode',
+	SHELF_FOLLOWS_ON_AIR = 'shelfFollowsOnAir',
+	SHOW_HIDDEN_SOURCE_LAYERS = 'showHiddenSourceLayers',
+	IGNORE_PIECE_CONTENT_STATUS = 'ignorePieceContentStatus',
+	UI_ZOOM_LEVEL = 'uiZoomLevel',
+	HELP_MODE = 'helpMode',
+	LOG_NOTIFICATIONS = 'logNotifications',
+	PROTO_ONE_PART_PER_LINE = 'proto:onePartPerLine',
+}
 
 const GUI_FLAGS: {
 	[key in LocalStorageProperty]?: string | null

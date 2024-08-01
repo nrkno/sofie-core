@@ -4,6 +4,7 @@ import {
 	formatDateAsTimecode,
 	formatDurationAsTimecode,
 	getHash,
+	getRank,
 	literal,
 	objectPathGet,
 	objectPathSet,
@@ -152,5 +153,42 @@ describe('Lib', () => {
 		expect(stringifyError(arr)).toMatch(/Error: Hello/)
 		expect(stringifyError(event)).toMatch(/MyTestEvent.*abc/)
 		expect(stringifyError(obj)).toMatch(/anotherProp.*abc/)
+	})
+	test('getRank', () => {
+		const objs: { _rank: number }[] = [
+			{ _rank: 0 },
+			{ _rank: 10 },
+			{ _rank: 20 },
+			{ _rank: 21 },
+			{ _rank: 22 },
+			{ _rank: 23 },
+		]
+
+		// First:
+		expect(getRank(null, objs[0])).toEqual(-0.5)
+		// Insert two:
+		expect(getRank(null, objs[0], 0, 2)).toEqual(-0.6666666666666667)
+		expect(getRank(null, objs[0], 1, 2)).toEqual(-0.33333333333333337)
+
+		// Center:
+		expect(getRank(objs[1], objs[2])).toEqual(15)
+		// Insert three:
+		expect(getRank(objs[1], objs[2], 0, 3)).toEqual(12.5)
+		expect(getRank(objs[1], objs[2], 1, 3)).toEqual(15)
+		expect(getRank(objs[1], objs[2], 2, 3)).toEqual(17.5)
+
+		// Last:
+		expect(getRank(objs[5], undefined)).toEqual(23.5)
+		// Insert three:
+		expect(getRank(objs[5], undefined, 0, 3)).toEqual(23.25)
+		expect(getRank(objs[5], undefined, 1, 3)).toEqual(23.5)
+		expect(getRank(objs[5], undefined, 2, 3)).toEqual(23.75)
+
+		// Insert in empty list
+		expect(getRank(undefined, undefined)).toEqual(0.5)
+
+		// Insert three:
+		expect(getRank(undefined, undefined, 0, 2)).toEqual(0.3333333333333333)
+		expect(getRank(undefined, undefined, 1, 2)).toEqual(0.6666666666666666)
 	})
 })

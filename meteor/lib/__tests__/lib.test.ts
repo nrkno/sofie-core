@@ -1,21 +1,9 @@
 import '../../__mocks__/_extendJest'
 
-import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { afterEachInFiber, testInFiber } from '../../__mocks__/helpers/jest'
 import { setLogLevel } from '../../server/logging'
-import {
-	getCurrentTime,
-	systemTime,
-	formatDateTime,
-	stringifyObjects,
-	partial,
-	protectString,
-	equalSets,
-	equivalentArrays,
-	LogLevel,
-	makePromise,
-} from '../lib'
+import { getCurrentTime, systemTime, formatDateTime, stringifyObjects, protectString, LogLevel } from '../lib'
 import { MeteorMock } from '../../__mocks__/meteor'
 
 // require('../../../../../server/api/ingest/mosDevice/api.ts') // include in order to create the Meteor methods needed
@@ -102,55 +90,7 @@ describe('lib/lib', () => {
 		expect(MyCollection.find({ rank: { $lt: 3 } }).fetch()).toHaveLength(3)
 		expect(MyCollection.find({ rank: { $lte: 3 } }).fetch()).toHaveLength(4)
 	})
-	// testInFiber('getRank', () => {
-	// 	const objs: { _rank: number }[] = [
-	// 		{ _rank: 0 },
-	// 		{ _rank: 10 },
-	// 		{ _rank: 20 },
-	// 		{ _rank: 21 },
-	// 		{ _rank: 22 },
-	// 		{ _rank: 23 },
-	// 	]
 
-	// 	// First:
-	// 	expect(getRank(null, objs[0])).toEqual(-0.5)
-	// 	// Insert two:
-	// 	expect(getRank(null, objs[0], 0, 2)).toEqual(-0.6666666666666667)
-	// 	expect(getRank(null, objs[0], 1, 2)).toEqual(-0.33333333333333337)
-
-	// 	// Center:
-	// 	expect(getRank(objs[1], objs[2])).toEqual(15)
-	// 	// Insert three:
-	// 	expect(getRank(objs[1], objs[2], 0, 3)).toEqual(12.5)
-	// 	expect(getRank(objs[1], objs[2], 1, 3)).toEqual(15)
-	// 	expect(getRank(objs[1], objs[2], 2, 3)).toEqual(17.5)
-
-	// 	// Last:
-	// 	expect(getRank(objs[5], undefined)).toEqual(23.5)
-	// 	// Insert three:
-	// 	expect(getRank(objs[5], undefined, 0, 3)).toEqual(23.25)
-	// 	expect(getRank(objs[5], undefined, 1, 3)).toEqual(23.5)
-	// 	expect(getRank(objs[5], undefined, 2, 3)).toEqual(23.75)
-
-	// 	// Insert in empty list
-	// 	expect(getRank(undefined, undefined)).toEqual(0.5)
-
-	// 	// Insert three:
-	// 	expect(getRank(undefined, undefined, 0, 2)).toEqual(0.3333333333333333)
-	// 	expect(getRank(undefined, undefined, 1, 2)).toEqual(0.6666666666666666)
-	// })
-	testInFiber('partial', () => {
-		const o = {
-			a: 1,
-			b: 'asdf',
-			c: {
-				d: 1,
-			},
-			e: null,
-			f: undefined,
-		}
-		expect(partial(o)).toEqual(o) // The function only affects typings
-	})
 	testInFiber('formatDateTime', () => {
 		if (process.platform === 'win32') {
 			// Due to a bug in how timezones are handled in Windows & Node, we just have to skip these tests when running tests locally..
@@ -165,47 +105,5 @@ describe('lib/lib', () => {
 		expect(formatDateTime(2579299201000)).toBe('2051-09-26 00:00:01')
 		expect(formatDateTime(2579299200000)).toBe('2051-09-26 00:00:00')
 		expect(formatDateTime(2579299344070)).toBe('2051-09-26 00:02:24')
-	})
-
-	testInFiber('equalSets', () => {
-		expect(equalSets(new Set(['a', 'b', 'c']), new Set(['c', 'b', 'a']))).toBe(true)
-		expect(equalSets(new Set(['a', 'b', 'c']), new Set(['d', 'b', 'a']))).toBe(false)
-	})
-	testInFiber('equivalentArrays', () => {
-		expect(equivalentArrays(['a', 'b', 'c'], ['c', 'a', 'b'])).toBe(true)
-		expect(equivalentArrays(['a', 'b', 'c'], ['b', 'g', 'a'])).toBe(false)
-	})
-	testInFiber('makePromise', async () => {
-		let a = 0
-		// Check that they are executed in order:
-		expect(
-			await Promise.all([
-				makePromise(() => {
-					return a++
-				}),
-				makePromise(() => {
-					return a++
-				}),
-			])
-		).toStrictEqual([0, 1])
-
-		// Handle an instant throw:
-		await expect(
-			makePromise(() => {
-				throw new Error('asdf')
-			})
-		).rejects.toMatchToString(/asdf/)
-
-		// Handle a delayed throw:
-		const delayedThrow = Meteor.wrapAsync((callback: (err: any, result: any) => void) => {
-			setTimeout(() => {
-				callback(new Error('asdf'), null)
-			}, 10)
-		})
-		await expect(
-			makePromise(() => {
-				delayedThrow()
-			})
-		).rejects.toMatchToString(/asdf/)
 	})
 })

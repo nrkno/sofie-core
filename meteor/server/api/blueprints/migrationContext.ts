@@ -9,9 +9,9 @@ import {
 	objectPathSet,
 	clone,
 	Complete,
-	waitForPromise,
 	objectPathDelete,
 } from '../../../lib/lib'
+import { waitForPromise } from '../../lib/lib'
 import { DBStudio, StudioPlayoutDevice } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { Meteor } from 'meteor/meteor'

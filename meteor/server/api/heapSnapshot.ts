@@ -4,12 +4,12 @@ import { Meteor } from 'meteor/meteor'
 import Koa from 'koa'
 import KoaRouter from '@koa/router'
 import { fixValidPath } from '../../lib/lib'
+import { sleep } from '../lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { logger } from '../logging'
 import { Settings } from '../Settings'
 import { Credentials } from '../security/lib/credentials'
 import { SystemWriteAccess } from '../security/system'
-import { sleep } from '@sofie-automation/corelib/dist/lib'
 
 async function retrieveHeapSnapshot(cred0: Credentials): Promise<Readable> {
 	if (Settings.enableUserAccounts) {

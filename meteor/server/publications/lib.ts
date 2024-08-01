@@ -12,7 +12,8 @@ import {
 	ShowStyleBaseId,
 	UserId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { protectStringObject, waitForPromise } from '../../lib/lib'
+import { protectStringObject } from '../../lib/lib'
+import { waitForPromise } from '../lib/lib'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { PeripheralDevices, ShowStyleBases } from '../collections'
 import { MetricsGauge } from '@sofie-automation/corelib/dist/prometheus'

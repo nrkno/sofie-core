@@ -1,7 +1,8 @@
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import * as _ from 'underscore'
-import { getRandomString, lazyIgnore, ProtectedString } from '../../lib/lib'
+import { getRandomString, ProtectedString } from '../../lib/lib'
+import { lazyIgnore } from '../lib/lib'
 
 /** The ReactiveStore is a Reactive key-value store.
  * Keeps track of when the reactive values aren't in use anymore and automatically cleans them up.

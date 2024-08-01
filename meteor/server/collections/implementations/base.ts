@@ -11,7 +11,8 @@ import {
 } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import type { Collection as RawCollection, Db as RawDb } from 'mongodb'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { PromisifyCallbacks, waitForPromise } from '../../../lib/lib'
+import { PromisifyCallbacks } from '@sofie-automation/shared-lib/dist/lib/types'
+import { waitForPromise } from '../../lib/lib'
 import { NpmModuleMongodb } from 'meteor/npm-mongo'
 
 export class WrappedMongoCollectionBase<DBInterface extends { _id: ProtectedString<any> }> {
