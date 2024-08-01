@@ -31,6 +31,7 @@ export interface NewClientAPI {
 }
 
 export enum ClientAPIMethods {
+	'clientLogger' = 'client.clientLogger',
 	'clientErrorReport' = 'client.clientErrorReport',
 	'clientLogNotification' = 'client.clientLogNotification',
 	'callPeripheralDeviceFunction' = 'client.callPeripheralDeviceFunction',

@@ -2,7 +2,6 @@ import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/erro
 import { Meteor } from 'meteor/meteor'
 import { clone } from '@sofie-automation/corelib/dist/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import '../server/api/logger'
 import _ from 'underscore'
 import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 

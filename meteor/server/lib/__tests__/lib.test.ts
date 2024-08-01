@@ -1,3 +1,4 @@
+import '../../../__mocks__/_extendJest'
 import { TSR } from '@sofie-automation/blueprints-integration'
 import {
 	TimelineObjGeneric,

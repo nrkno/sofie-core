@@ -23,8 +23,6 @@ setMinimumBrowserVersions(
 	'optional chaining'
 )
 
-import '../lib/main'
-
 // Import all files that register Meteor methods:
 import './api/blueprints/api'
 import './api/blueprints/http'
@@ -60,7 +58,6 @@ import './webmanifest'
 
 // import all files that calls Meteor.startup:
 import './api/rest/api'
-import './api/systemTime/startup'
 import './Connections'
 import './coreSystem'
 import './cronjobs'

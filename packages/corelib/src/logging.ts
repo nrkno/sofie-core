@@ -4,7 +4,7 @@ export interface LoggerInstanceFixed {
 	// for cli and npm levels
 	error: LeveledLogMethodFixed
 	warn: LeveledLogMethodFixed
-	help: LeveledLogMethodFixed
+	// help: LeveledLogMethodFixed
 	data: LeveledLogMethodFixed
 	info: LeveledLogMethodFixed
 	debug: LeveledLogMethodFixed

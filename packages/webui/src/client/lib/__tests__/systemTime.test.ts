@@ -10,9 +10,9 @@ test('TimeJumpDetector', async () => {
 	jest.useFakeTimers()
 	const mockCallback = jest.fn()
 	let now = Date.now()
-	let monotonicNow = BigInt(5000 * 1000000) // say it's running for 5 seconds
+	let monotonicNow = 5000 // say it's running for 5 seconds
 	const mockDateNow = jest.spyOn(global.Date, 'now').mockImplementation(() => now)
-	const mockProcessHrtime = jest.spyOn(global.process.hrtime, 'bigint').mockImplementation(() => monotonicNow)
+	const mockProcessHrtime = jest.spyOn(performance, 'now').mockImplementation(() => monotonicNow)
 
 	const timeJumpDetector = new TimeJumpDetector(10000, mockCallback)
 	timeJumpDetector.start()
@@ -22,7 +22,7 @@ test('TimeJumpDetector', async () => {
 	expect(mockCallback).toHaveBeenCalledTimes(0)
 
 	now += 11000
-	monotonicNow += BigInt(11051 * 1000000)
+	monotonicNow += 11051
 
 	jest.advanceTimersByTime(11000)
 	await runTimersUntilNow()
@@ -30,7 +30,7 @@ test('TimeJumpDetector', async () => {
 	mockCallback.mockClear()
 
 	now += 11000
-	monotonicNow += BigInt(10951 * 1000000)
+	monotonicNow += 10951
 
 	jest.advanceTimersByTime(11000)
 	await runTimersUntilNow()

@@ -34,8 +34,6 @@ jest.mock('meteor/webapp', (...args) => require('./webapp').setup(args), { virtu
 jest.mock('../server/api/integration/slack', (...args) => require('./slack').setup(args), { virtual: true })
 jest.mock('../server/worker/worker', (...args) => require('./worker').setup(args), { virtual: true })
 
-require('../server/api/logger.ts')
-
 SupressLogMessages.init()
 
 beforeEach(() => {
