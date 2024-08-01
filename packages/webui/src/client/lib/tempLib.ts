@@ -3,10 +3,31 @@
  * It should be removed entirely, but requires a bit of effort to update the hundreds of references to this file.
  */
 
-import { Time, TimeDuration } from '@sofie-automation/shared-lib/dist/lib/lib'
-export type { Time, TimeDuration }
-
 // Legacy compatability
-export * from '@sofie-automation/shared-lib/dist/lib/protectedString'
-export * from '@sofie-automation/corelib/dist/lib'
-export * from '@sofie-automation/meteor-lib/dist/lib'
+// Note: These have to be named explicity, to satisfy Vite
+export type { Time, TimeDuration } from '@sofie-automation/shared-lib/dist/lib/lib'
+export type { ProtectedString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+export {
+	protectString,
+	unprotectString,
+	isProtectedString,
+} from '@sofie-automation/shared-lib/dist/lib/protectedString'
+export {
+	stringifyObjects,
+	normalizeArray,
+	clone,
+	assertNever,
+	literal,
+	applyToArray,
+	omit,
+	getRandomId,
+	normalizeArrayToMap,
+	getRandomString,
+	flatten,
+	groupByToMap,
+	groupByToMapFunc,
+	formatDurationAsTimecode,
+	formatDateAsTimecode,
+} from '@sofie-automation/corelib/dist/lib'
+export type { Complete } from '@sofie-automation/corelib/dist/lib'
+export { LogLevel, generateTranslation } from '@sofie-automation/meteor-lib/dist/lib'

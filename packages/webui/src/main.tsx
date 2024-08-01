@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor'
+import 'meteor/ddp'
 import { createRoot } from 'react-dom/client'
 
 import { DndProvider } from 'react-dnd'

@@ -22,8 +22,6 @@ export async function MeteorApply(
 	options?: Parameters<typeof Meteor.apply>[2],
 	sendOptions?: SendOptions
 ): Promise<any> {
-	if (!Meteor.isClient) throw new Error('MeteorApply should only be called client side!')
-
 	return new Promise((resolve, reject) => {
 		const queuedMethod: QueuedMeteorMethod = {
 			queueTime: Date.now(),
