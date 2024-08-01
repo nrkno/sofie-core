@@ -112,7 +112,7 @@ function timelineTriggerTimeInner(
 						pieceInstance.piece.enable.start === 'now'
 					) {
 						pieceInstanceCache.updateOne(pieceInstance._id, (p) => {
-							p.piece.enable.start = o.time + (p.piece.prerollDuration ?? 0)
+							p.piece.enable.start = o.time
 							return p
 						})
 
