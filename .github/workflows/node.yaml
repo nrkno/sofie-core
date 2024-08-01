@@ -432,6 +432,7 @@ jobs:
           - job-worker
           - openapi
           - live-status-gateway
+          - webui
 
     steps:
       - uses: actions/checkout@v4
