@@ -24,7 +24,6 @@ import { withTranslation } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { IngestAdlib } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../lib/meteorApi'
-import { check } from '../../../lib/check'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Buckets, PartInstances, Rundowns } from '../../collections'
 import { BucketId, PartInstanceId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -283,8 +282,8 @@ export const ExternalFramePanel = withTranslation()(
 		}
 
 		actSofieMessage = (message: SofieExternalMessage) => {
-			check(message.id, String)
-			check(message.type, String)
+			if (typeof message.id !== 'string') throw new Error('Expected `message.id` to be a string')
+			if (typeof message.type !== 'string') throw new Error('Expected `message.type` to be a string')
 
 			if (Object.values<SofieExternalMessageType>(SofieExternalMessageType as any).indexOf(message.type) < 0) {
 				logger.error(`ExternalFramePanel: Unknown message type: ${message.type}`)

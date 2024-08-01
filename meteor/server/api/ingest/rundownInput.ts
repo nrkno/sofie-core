@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from '../../../lib/check'
+import { check } from '../../lib/check'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { IngestDataCache, MediaObjects, Parts, Rundowns, Segments } from '../../collections'
 import { literal } from '../../../lib/lib'

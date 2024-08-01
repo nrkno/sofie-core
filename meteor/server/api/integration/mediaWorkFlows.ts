@@ -1,4 +1,4 @@
-import { check, Match } from '../../../lib/check'
+import { check, Match } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../../logging'
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'

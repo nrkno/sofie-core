@@ -1,4 +1,4 @@
-import { check, Match } from '../../lib/check'
+import { check, Match } from '../lib/check'
 import { registerClassToMeteorMethods } from '../methods'
 import {
 	MigrationChunk,

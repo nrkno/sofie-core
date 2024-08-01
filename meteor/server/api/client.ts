@@ -1,4 +1,4 @@
-import { check } from '../../lib/check'
+import { check } from '../lib/check'
 import { literal, Time, getRandomId } from '../../lib/lib'
 import { getCurrentTime } from '../lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'

@@ -1,4 +1,4 @@
-import { check, Match } from '../../lib/check'
+import { check, Match } from '../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { Time } from '../../lib/lib'

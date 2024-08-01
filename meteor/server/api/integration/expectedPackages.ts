@@ -1,4 +1,4 @@
-import { check } from '../../../lib/check'
+import { check } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { MethodContext } from '../methodContext'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'

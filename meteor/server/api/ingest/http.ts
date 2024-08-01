@@ -1,6 +1,6 @@
 import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'
-import { check } from '../../../lib/check'
+import { check } from '../../lib/check'
 import { Rundowns } from '../../collections'
 import { getRundownId, runIngestOperation } from './lib'
 import { protectString } from '../../../lib/lib'

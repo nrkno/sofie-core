@@ -30,7 +30,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { check } from '../../../lib/check'
+import { check } from '../../lib/check'
 import {
 	PERIPHERAL_SUBTYPE_PROCESS,
 	PeripheralDeviceType,

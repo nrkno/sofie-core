@@ -1,5 +1,5 @@
-import { MeteorMock } from '../../__mocks__/meteor'
-import { memoizedIsolatedAutorun } from '../../client/lib/memoizedIsolatedAutorun'
+import { MeteorMock } from '../../../__mocks__/meteor'
+import { memoizedIsolatedAutorun } from '../memoizedIsolatedAutorun'
 import { Tracker } from 'meteor/tracker'
 
 describe('memoizedIsolatedAutorun', () => {

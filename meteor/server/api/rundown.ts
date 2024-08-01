@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { check } from '../../lib/check'
+import { check } from '../lib/check'
 import { logger } from '../logging'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewRundownAPI, RundownAPIMethods } from '@sofie-automation/meteor-lib/dist/api/rundown'

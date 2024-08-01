@@ -1,4 +1,4 @@
-import { logger } from '../../client/lib/logging'
+import { logger } from '../logging'
 
 describe('lib/logger', () => {
 	test('logger', () => {

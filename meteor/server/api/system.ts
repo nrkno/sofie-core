@@ -14,7 +14,7 @@ import { CollectionIndexes, getTargetRegisteredIndexes } from '../collections/in
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../logging'
 import { SystemWriteAccess } from '../security/system'
-import { check } from '../../lib/check'
+import { check } from '../lib/check'
 import { IndexSpecifier } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import { getBundle as getTranslationBundleInner } from './translationsBundles'
 import { TranslationsBundle } from '@sofie-automation/meteor-lib/dist/collections/TranslationsBundles'

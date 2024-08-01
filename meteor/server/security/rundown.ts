@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from '../../lib/check'
+import { check } from '../lib/check'
 import * as _ from 'underscore'
 import { Credentials, ResolvedCredentials } from './lib/credentials'
 import { logNotAllowed } from './lib/lib'

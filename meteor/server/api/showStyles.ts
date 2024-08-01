@@ -1,4 +1,4 @@
-import { check } from '../../lib/check'
+import { check } from '../lib/check'
 import { registerClassToMeteorMethods } from '../methods'
 import {
 	CreateAdlibTestingRundownOption,

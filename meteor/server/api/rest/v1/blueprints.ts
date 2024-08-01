@@ -1,5 +1,5 @@
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { check } from '../../../../lib/check'
+import { check } from '../../../lib/check'
 import { protectString, unprotectString } from '../../../../lib/lib'
 import { logger } from '../../../logging'
 import { APIFactory, APIRegisterHook, ServerAPIContext } from './types'

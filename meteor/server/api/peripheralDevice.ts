@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { check, Match } from '../../lib/check'
+import { check, Match } from '../lib/check'
 import * as _ from 'underscore'
 import { PeripheralDeviceType, PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { PeripheralDeviceCommands, PeripheralDevices, Rundowns, Studios, UserActionsLog } from '../collections'

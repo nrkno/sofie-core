@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { check, Match } from '../../lib/check'
+import { check, Match } from '../lib/check'
 import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments } from '../methods'
 import { literal, getRandomId, protectString, Complete } from '../../lib/lib'
 import { logger } from '../logging'

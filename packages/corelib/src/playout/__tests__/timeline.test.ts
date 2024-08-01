@@ -1,14 +1,9 @@
-import { testInFiber } from '../../__mocks__/helpers/jest'
-import { transformTimeline } from '@sofie-automation/corelib/dist/playout/timeline'
-import {
-	TimelineObjGeneric,
-	TimelineObjType,
-	TimelineObjRundown,
-} from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { TSR } from '@sofie-automation/blueprints-integration'
+import { TimelineObjGeneric, TimelineObjRundown, TimelineObjType } from '../../dataModel/Timeline'
+import { transformTimeline } from '../timeline'
 
 describe('lib/timeline', () => {
-	testInFiber('transformTimeline', () => {
+	test('transformTimeline', () => {
 		const timeline: TimelineObjRundown[] = [
 			{
 				id: '0',
@@ -136,7 +131,7 @@ describe('lib/timeline', () => {
 			},
 		})
 	})
-	testInFiber('missing id', () => {
+	test('missing id', () => {
 		expect(() => {
 			transformTimeline([
 				// @ts-ignore missing: id

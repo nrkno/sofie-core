@@ -16,6 +16,7 @@ import './lib/main'
 import './client/lib/currentTimeReactive'
 import './client/lib/uncaughtErrorHandler'
 import './client/lib/dev'
+import './client/lib/systemTime'
 
 import App from './client/ui/App'
 import { logger } from './client/lib/logging'

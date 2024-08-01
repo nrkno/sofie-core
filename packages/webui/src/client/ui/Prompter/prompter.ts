@@ -1,4 +1,3 @@
-import { check } from '../../../lib/check'
 import * as _ from 'underscore'
 import { ScriptContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { normalizeArrayToMap, protectString } from '../../../lib/lib'
@@ -54,7 +53,7 @@ export interface PrompterData {
 export namespace PrompterAPI {
 	// TODO: discuss: move this implementation to server-side?
 	export function getPrompterData(playlistId: RundownPlaylistId): PrompterData | null {
-		check(playlistId, String)
+		if (typeof playlistId !== 'string') throw new Error('Expected `playlistId` to be a string')
 
 		const playlist = RundownPlaylists.findOne(playlistId)
 

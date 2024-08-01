@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from '../../lib/check'
+import { check } from '../lib/check'
 import { logNotAllowed } from './lib/lib'
 import { allowAccessToRundownPlaylist } from './lib/security'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'

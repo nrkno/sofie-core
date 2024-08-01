@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from '../../lib/check'
+import { check } from '../lib/check'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { isProtectedString } from '../../lib/lib'
 import { logNotAllowed } from './lib/lib'
