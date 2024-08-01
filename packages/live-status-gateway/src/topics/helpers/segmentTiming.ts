@@ -42,8 +42,8 @@ export function calculateSegmentTiming(segmentParts: DBPart[]): SegmentTiming {
 			return part.budgetDuration != null && !part.untimed ? (sum ?? 0) + part.budgetDuration : sum
 		}, undefined),
 		expectedDurationMs: segmentParts.reduce<number>((sum, part): number => {
-			return part.expectedDurationWithPreroll != null && !part.untimed
-				? sum + part.expectedDurationWithPreroll
+			return part.expectedDurationWithTransition != null && !part.untimed
+				? sum + part.expectedDurationWithTransition
 				: sum
 		}, 0),
 	}

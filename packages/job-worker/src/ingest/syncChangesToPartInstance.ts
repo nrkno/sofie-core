@@ -15,7 +15,7 @@ import {
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
 } from '../playout/infinites'
-import { isTooCloseToAutonext, updateExpectedDurationWithPrerollForPartInstance } from '../playout/lib'
+import { isTooCloseToAutonext, updateExpectedDurationWithTransitionForPartInstance } from '../playout/lib'
 import _ = require('underscore')
 import { SyncIngestUpdateToPartInstanceContext } from '../blueprints/context'
 import {
@@ -185,7 +185,7 @@ export async function syncChangesToPartInstances(
 				}
 
 				if (playStatus === 'next') {
-					updateExpectedDurationWithPrerollForPartInstance(cache, existingPartInstance._id)
+					updateExpectedDurationWithTransitionForPartInstance(cache, existingPartInstance._id)
 				}
 
 				// Save notes:

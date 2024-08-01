@@ -464,7 +464,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 				invalid: false,
 				invalidReason: undefined,
 				floated: false,
-				expectedDurationWithPreroll: undefined, // Filled in later
+				expectedDurationWithTransition: undefined, // Filled in later
 			},
 		}
 
