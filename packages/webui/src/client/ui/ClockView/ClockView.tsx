@@ -10,7 +10,7 @@ import { OverlayScreenSaver } from './OverlayScreenSaver'
 import { RundownPlaylists } from '../../collections'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CameraScreen } from './CameraScreen'
-import { MeteorPubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 
 export function ClockView({ studioId }: Readonly<{ studioId: StudioId }>): JSX.Element {
 	useSubscription(MeteorPubSub.rundownPlaylistForStudio, studioId, true)

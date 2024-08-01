@@ -4,14 +4,17 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { RundownUtils } from '../../lib/rundown'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import { AdLibPieceUi, AdlibSegmentUi } from '../../lib/shelf'
-import { RundownLayoutFilter, RundownLayoutFilterBase } from '../../../lib/collections/RundownLayouts'
+import {
+	RundownLayoutFilter,
+	RundownLayoutFilterBase,
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import { PieceUi } from '../SegmentContainer/withResolvedSegment'
 import { IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
 import { getRandomString } from '@sofie-automation/corelib/dist/lib'
-import { UIShowStyleBase } from '../../../lib/api/showStyles'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>

@@ -3,7 +3,7 @@ import { createMosObjectXmlStringNoraBluePrintPiece } from '../../../../lib/data
 import { parseMosPluginMessageXml, MosPluginMessage } from '../../../../lib/parsers/mos/mosXml2Js'
 import { PieceGeneric } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { createMosAppInfoXmlString } from '../../../../lib/data/mos/plugin-support'
-import { logger } from '../../../../../lib/logging'
+import { logger } from '../../../../lib/logging'
 import { ReadonlyDeep } from 'type-fest'
 
 //TODO: figure out what the origin should be

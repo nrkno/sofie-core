@@ -4,12 +4,7 @@ import ClassNames from 'classnames'
 // @ts-expect-error No types available
 import * as VelocityReact from 'velocity-react'
 import { translateWithTracker, Translated, useTracker } from '../ReactMeteorData/ReactMeteorData'
-import {
-	NotificationCenter,
-	Notification,
-	NoticeLevel,
-	NotificationAction,
-} from '../../../lib/notifications/notifications'
+import { NotificationCenter, Notification, NoticeLevel, NotificationAction } from './notifications'
 import { ContextMenuTrigger, ContextMenu, MenuItem } from '@jstarpl/react-contextmenu'
 import { translateMessage, isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { CriticalIcon, WarningIcon, CollapseChevrons, InformationIcon } from '../ui/icons/notifications'

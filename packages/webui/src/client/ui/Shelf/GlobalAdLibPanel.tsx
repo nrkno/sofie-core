@@ -4,17 +4,17 @@ import { IAdLibListItem } from './AdLibListItem'
 import { AdLibPanel } from './AdLibPanel'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
-import { literal } from '../../../lib/lib'
+import { literal } from '../../lib/tempLib'
 import {
 	PieceDisplayStyle,
 	RundownLayoutElementType,
 	RundownLayoutFilter,
-} from '../../../lib/collections/RundownLayouts'
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { ShelfTabs } from './Shelf'
 import { useTranslation } from 'react-i18next'
 import { AdLibPieceUi } from '../../lib/shelf'
-import { UIShowStyleBase } from '../../../lib/api/showStyles'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 
 interface IProps {
 	playlist: DBRundownPlaylist

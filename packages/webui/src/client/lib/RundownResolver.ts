@@ -1,20 +1,20 @@
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { PartInstance, wrapPartToTemporaryInstance } from '../../lib/collections/PartInstances'
+import { PartInstance, wrapPartToTemporaryInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import {
 	getPieceInstancesForPart,
 	buildPiecesStartingInThisPartQuery,
 	buildPastInfinitePiecesForThisPartQuery,
 } from '@sofie-automation/corelib/dist/playout/infinites'
-import { invalidateAfter } from '../../lib/invalidatingTime'
-import { getCurrentTime, groupByToMap, protectString } from '../../lib/lib'
+import { invalidateAfter } from './invalidatingTime'
+import { groupByToMap, protectString } from './tempLib'
+import { getCurrentTime } from './systemTime'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { mongoWhereFilter, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
-import { FindOptions } from '../../lib/collections/lib'
+import { FindOptions } from '../collections/lib'
 import {
 	PartId,
 	RundownId,
@@ -22,11 +22,16 @@ import {
 	SegmentId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PieceInstances, Pieces } from '../../lib/collections/libCollections'
-import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlaylistUtil'
-import { PieceContentStatusObj } from '../../lib/api/pieceContentStatus'
-import { ReadonlyDeep } from 'type-fest'
-import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
+import { PieceInstances, Pieces } from '../collections/index'
+import { RundownPlaylistCollectionUtil } from '../collections/rundownPlaylistUtil'
+
+import { PieceExtended } from '@sofie-automation/meteor-lib/dist/uiTypes/Piece'
+import { ISourceLayerExtended } from '@sofie-automation/meteor-lib/dist/uiTypes/SourceLayer'
+import { IOutputLayerExtended } from '@sofie-automation/meteor-lib/dist/uiTypes/OutputLayer'
+
+export type { PieceExtended } from '@sofie-automation/meteor-lib/dist/uiTypes/Piece'
+export type { ISourceLayerExtended } from '@sofie-automation/meteor-lib/dist/uiTypes/SourceLayer'
+export type { IOutputLayerExtended } from '@sofie-automation/meteor-lib/dist/uiTypes/OutputLayer'
 
 export interface SegmentExtended extends DBSegment {
 	/** Output layers available in the installation used by this segment */
@@ -49,38 +54,6 @@ export interface PartExtended {
 	renderedDuration: number
 	startsAt: number
 	willProbablyAutoNext: boolean
-}
-
-export interface IOutputLayerExtended extends IOutputLayer {
-	/** Is this output layer used in this segment */
-	used: boolean
-	/** Source layers that will be used by this output layer */
-	sourceLayers: Array<ISourceLayerExtended>
-}
-export interface ISourceLayerExtended extends ISourceLayer {
-	/** Pieces present on this source layer */
-	pieces: Array<PieceExtended>
-	followingItems: Array<PieceExtended>
-}
-export interface PieceExtended {
-	instance: PieceInstanceWithTimings
-
-	/** Source layer that this piece belongs to */
-	sourceLayer?: ISourceLayerExtended
-	/** Output layer that this part uses */
-	outputLayer?: IOutputLayerExtended
-	/** Position in timeline, relative to the beginning of the Part */
-	renderedInPoint: number | null
-	/** Duration in timeline */
-	renderedDuration: number | null
-	/** If set, the item was cropped in runtime by another item following it */
-	cropped?: boolean
-	/** Maximum width of a label so as not to appear underneath the following item */
-	maxLabelWidth?: number
-	/** If this piece has a "buddy" piece in the preceeding part, then it's not neccessary to display it's left label */
-	hasOriginInPreceedingPart?: boolean
-
-	contentStatus?: ReadonlyDeep<PieceContentStatusObj>
 }
 
 function fetchPiecesThatMayBeActiveForPart(

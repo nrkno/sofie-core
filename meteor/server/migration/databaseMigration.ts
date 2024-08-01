@@ -35,11 +35,12 @@ import {
 	MigrationChunk,
 	MigrationStepType,
 	RunMigrationResult,
-} from '../../lib/api/migration'
-import { logger } from '../../lib/logging'
+} from '@sofie-automation/meteor-lib/dist/api/migration'
+import { logger } from '../logging'
 import { internalStoreSystemSnapshot } from '../api/snapshot'
-import { GENESIS_SYSTEM_VERSION, parseVersion, Version } from '../../lib/collections/CoreSystem'
-import { clone, getHash, omit, protectString, unprotectString } from '../../lib/lib'
+import { parseVersion, Version } from '../systemStatus/semverUtils'
+import { GENESIS_SYSTEM_VERSION } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
+import { clone, getHash, omit, protectString, unprotectString } from '../lib/tempLib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { evalBlueprint } from '../api/blueprints/cache'
 import {

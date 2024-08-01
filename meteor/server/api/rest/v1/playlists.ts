@@ -13,10 +13,10 @@ import {
 	RundownPlaylistId,
 	SegmentId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Match, check } from '../../../../lib/check'
-import { PlaylistsRestAPI } from '../../../../lib/api/rest/v1'
+import { Match, check } from '../../../lib/check'
+import { PlaylistsRestAPI } from '../../../lib/rest/v1'
 import { Meteor } from 'meteor/meteor'
-import { ClientAPI } from '../../../../lib/api/client'
+import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import {
 	AdLibActions,
 	AdLibPieces,
@@ -30,8 +30,8 @@ import {
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { ServerClientAPI } from '../../client'
 import { QueueNextSegmentResult, StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import { getCurrentTime } from '../../../../lib/lib'
-import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
+import { getCurrentTime } from '../../../lib/lib'
+import { TriggerReloadDataResponse } from '@sofie-automation/meteor-lib/dist/api/userActions'
 import { ServerRundownAPI } from '../../rundown'
 import { triggerWriteAccess } from '../../../security/lib/securityVerify'
 

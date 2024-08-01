@@ -1,7 +1,7 @@
 import { ReactNode } from 'react'
 import Moment from 'react-moment'
 import { withTiming, WithTiming } from './withTiming'
-import { unprotectString } from '../../../../lib/lib'
+import { unprotectString } from '../../../lib/tempLib'
 import { RundownUtils } from '../../../lib/rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'

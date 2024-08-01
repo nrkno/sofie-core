@@ -4,18 +4,18 @@ import {
 	DashboardLayoutPartCountDown,
 	RundownLayoutBase,
 	RundownLayoutPartTiming,
-} from '../../../lib/collections/RundownLayouts'
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { PartInstance } from '../../../lib/collections/PartInstances'
+import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { dashboardElementStyle } from './DashboardPanel'
-import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { RundownLayoutsAPI } from '../../lib/rundownLayouts'
 import { getAllowSpeaking, getAllowVibrating } from '../../lib/localStorage'
 import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRemaining'
 import { CurrentPartElapsed } from '../RundownView/RundownTiming/CurrentPartElapsed'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
-import { UIShowStyleBase } from '../../../lib/api/showStyles'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
+import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 
 interface IPartTimingPanelProps {
 	visible?: boolean

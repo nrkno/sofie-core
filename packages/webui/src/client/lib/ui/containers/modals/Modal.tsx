@@ -4,7 +4,7 @@ import * as CoreIcons from '@nrk/core-icons/jsx'
 import Escape from './../../../Escape'
 
 import { SorensenContext } from '../../../SorensenContext'
-import { Settings } from '../../../../../lib/Settings'
+import { Settings } from '../../../../lib/Settings'
 
 export interface IModalAttributes {
 	show?: boolean

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import ClassNames from 'classnames'
-import { logger } from '../../../lib/logging'
+import { logger } from '../logging'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { faCheck } from '@fortawesome/free-solid-svg-icons'
 

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Clock } from '../StudioScreenSaver/Clock'
 import { useTracker, useSubscription } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { MeteorPubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { findNextPlaylist } from '../StudioScreenSaver/StudioScreenSaver'
 // @ts-expect-error No types available
 import Velocity from 'velocity-animate'

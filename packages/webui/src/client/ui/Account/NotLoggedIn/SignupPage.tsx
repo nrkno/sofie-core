@@ -1,12 +1,12 @@
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import type { RouteComponentProps } from 'react-router'
-import { getUser } from '../../../../lib/collections/Users'
+import { getUser } from '../../../lib/userInfo'
 import { NotLoggedInContainer } from './lib'
 import { Link } from 'react-router-dom'
-import { createUser } from '../../../../lib/api/user'
+import { createUser } from '@sofie-automation/meteor-lib/dist/api/user'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { logger } from '../../../../lib/logging'
+import { logger } from '../../../lib/logging'
 
 type ISignupPageProps = RouteComponentProps
 

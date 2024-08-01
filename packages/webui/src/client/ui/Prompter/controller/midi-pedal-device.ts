@@ -3,7 +3,7 @@ import { PrompterViewContent, PrompterConfigMode } from '../PrompterView'
 import Spline from 'cubic-spline'
 
 import webmidi, { Input, InputEventControlchange } from 'webmidi'
-import { logger } from '../../../../lib/logging'
+import { logger } from '../../../lib/logging'
 
 /**
  * This class handles control of the prompter using

@@ -3,12 +3,12 @@ import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Meteor } from 'meteor/meteor'
 import Tooltip from 'rc-tooltip'
-import { MeteorCall } from '../../../../lib/api/methods'
+import { MeteorCall } from '../../../lib/meteorApi'
 import { getHelpMode } from '../../../lib/localStorage'
 import { useTranslation } from 'react-i18next'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
-import { logger } from '../../../../lib/logging'
+import { logger } from '../../../lib/logging'
 
 interface IStudioBaselineStatusProps {
 	studioId: StudioId

@@ -9,14 +9,14 @@ import {
 	TriggerType,
 } from '@sofie-automation/blueprints-integration'
 import classNames from 'classnames'
-import { DBBlueprintTrigger } from '../../../../../lib/collections/TriggeredActions'
+import { DBBlueprintTrigger } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import { useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { ActionEditor } from './actionEditors/ActionEditor'
 import { OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { flatten, getRandomString, last, literal } from '../../../../../lib/lib'
-import { createAction, isPreviewableAction } from '../../../../../lib/api/triggers/actionFactory'
+import { flatten, getRandomString } from '../../../../lib/tempLib'
+import { createAction, isPreviewableAction } from '@sofie-automation/meteor-lib/dist/triggers/actionFactory'
 import { PreviewContext } from './TriggeredActionsEditor'
-import { IWrappedAdLib } from '../../../../../lib/api/triggers/actionFilterChainCompilers'
+import { IWrappedAdLib } from '@sofie-automation/meteor-lib/dist/triggers/actionFilterChainCompilers'
 import { RundownUtils } from '../../../../lib/rundown'
 import { useTranslation } from 'react-i18next'
 import { TriggerEditor } from './triggerEditors/TriggerEditor'
@@ -31,10 +31,12 @@ import {
 	wrapDefaultObject,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { isHotkeyTrigger } from '../../../../../lib/api/triggers/triggerTypeSelectors'
+import { isHotkeyTrigger } from '@sofie-automation/meteor-lib/dist/triggers/triggerTypeSelectors'
 import { getAllCurrentAndDeletedItemsFromOverrides, useOverrideOpHelper } from '../../util/OverrideOpHelper'
 import { TriggeredActions } from '../../../../collections'
 import { catchError } from '../../../../lib/lib'
+import { UiTriggersContext } from '../../../../lib/triggers/triggersContext'
+import { last, literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 
 interface IProps {
 	sourceLayers: SourceLayers | undefined
@@ -182,7 +184,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 			try {
 				if (resolvedActions && selected && sourceLayers) {
 					const executableActions = Object.values<SomeAction>(resolvedActions).map((value) =>
-						createAction(value, sourceLayers)
+						createAction(UiTriggersContext, value, sourceLayers)
 					)
 					const ctx = previewContext
 					if (ctx && ctx.rundownPlaylist) {

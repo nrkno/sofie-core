@@ -1,6 +1,5 @@
-import * as MOS from '@mos-connection/helper'
 import * as XMLBuilder from 'xmlbuilder'
-import { MOS_DATA_IS_STRICT } from '../../../../lib/mos'
+import { MOS_DATA_IS_STRICT, MOS } from '@sofie-automation/meteor-lib/dist/mos'
 
 /**
  * Client side MOS XML to JavaScript object conversion. Not exhaustive, might cut

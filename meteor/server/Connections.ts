@@ -1,4 +1,4 @@
-import { deferAsync, getCurrentTime } from '../lib/lib'
+import { deferAsync, getCurrentTime } from './lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { logger } from './logging'
 import { sendTrace } from './api/integration/influx'

@@ -1,7 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { RundownLayouts } from '../../../../collections'
-import { RundownLayoutBase, RundownLayoutType } from '../../../../../lib/collections/RundownLayouts'
+import { RundownLayoutBase, RundownLayoutType } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { EditAttribute } from '../../../../lib/EditAttribute'
 import { LabelActual } from '../../../../lib/Components/LabelAndOverrides'
 

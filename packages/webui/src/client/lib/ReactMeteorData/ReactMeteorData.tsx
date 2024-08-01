@@ -5,8 +5,9 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
 import { withTranslation, WithTranslation } from 'react-i18next'
-import { meteorSubscribe, AllPubSubTypes } from '../../../lib/api/pubsub'
-import { stringifyObjects } from '../../../lib/lib'
+import { AllPubSubTypes } from '@sofie-automation/meteor-lib/dist/api/pubsub'
+import { meteorSubscribe } from '../meteorApi'
+import { stringifyObjects } from '../tempLib'
 import _ from 'underscore'
 
 const globalTrackerQueue: Array<Function> = []

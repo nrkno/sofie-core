@@ -2,8 +2,8 @@ import * as React from 'react'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
 import { deserializeTimelineBlob, TimelineHash } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { applyToArray, clone, normalizeArray, protectString } from '../../../lib/lib'
-import { MeteorPubSub } from '../../../lib/api/pubsub'
+import { applyToArray, clone, normalizeArray, protectString } from '../../lib/tempLib'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import {
 	TimelineState,
 	ResolvedTimelineObjectInstance,
@@ -20,7 +20,7 @@ import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Classnames from 'classnames'
-import { createSyncPeripheralDeviceCustomPublicationMongoCollection } from '../../../lib/collections/lib'
+import { createSyncPeripheralDeviceCustomPublicationMongoCollection } from '../../collections/lib'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevicePubSubCollectionsNames } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 

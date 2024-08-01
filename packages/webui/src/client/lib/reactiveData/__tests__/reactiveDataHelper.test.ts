@@ -1,7 +1,7 @@
 import { Tracker } from 'meteor/tracker'
 import { slowDownReactivity } from '../reactiveDataHelper'
-import { sleep } from '../../../../lib/lib'
 import { MeteorMock } from '../../../../__mocks__/meteor'
+import { sleep } from '@sofie-automation/shared-lib/dist/lib/lib'
 
 describe('client/lib/reactiveData/reactiveDataHelper', () => {
 	beforeAll(() => {

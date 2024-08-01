@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import ClassNames from 'classnames'
 import { Spinner } from '../../lib/Spinner'
-import { DashboardLayoutFilter, PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
+import { DashboardLayoutFilter, PieceDisplayStyle } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { IAdLibPanelProps, AdLibFetchAndFilterProps } from './AdLibPanel'
 import { AdLibPanelToolbar } from './AdLibPanelToolbar'
 import { matchFilter } from './AdLibListView'
@@ -17,7 +17,7 @@ import {
 	DashboardPanelInnerProps,
 	useDashboardPanelTrackedProps,
 } from './DashboardPanel'
-import { unprotectString } from '../../../lib/lib'
+import { unprotectString } from '../../lib/tempLib'
 import { RundownUtils } from '../../lib/rundown'
 import { AdLibPieceUi } from '../../lib/shelf'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'

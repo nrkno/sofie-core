@@ -2,10 +2,10 @@ import {
 	DashboardLayoutTimeOfDay,
 	RundownLayoutBase,
 	RundownLayoutTimeOfDay,
-} from '../../../lib/collections/RundownLayouts'
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { dashboardElementStyle } from './DashboardPanel'
-import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { RundownLayoutsAPI } from '../../lib/rundownLayouts'
 import { useTranslation } from 'react-i18next'
 import { TimeOfDay } from '../RundownView/RundownTiming/TimeOfDay'
 

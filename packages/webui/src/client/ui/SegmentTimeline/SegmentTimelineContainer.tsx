@@ -8,13 +8,14 @@ import { PartExtended } from '../../lib/RundownResolver'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment, getHeaderHeight } from '../../lib/viewPort'
-import { equivalentArrays, unprotectString } from '../../../lib/lib'
-import { Settings } from '../../../lib/Settings'
+import { unprotectString } from '../../lib/tempLib'
+import { equivalentArrays } from '@sofie-automation/shared-lib/dist/lib/lib'
+import { Settings } from '../../lib/Settings'
 import RundownViewEventBus, {
 	RundownViewEvents,
 	GoToPartEvent,
 	GoToPartInstanceEvent,
-} from '../../../lib/api/triggers/RundownViewEventBus'
+} from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
 import { SegmentTimelinePartClass } from './Parts/SegmentTimelinePart'
 import {
 	PartUi,
@@ -30,7 +31,7 @@ import { PartInstances, Parts } from '../../collections'
 import { catchError, useDebounce } from '../../lib/lib'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { logger } from '../../../lib/logging'
+import { logger } from '../../lib/logging'
 import {
 	FALLBACK_ZOOM_FACTOR,
 	LIVELINE_HISTORY_SIZE,

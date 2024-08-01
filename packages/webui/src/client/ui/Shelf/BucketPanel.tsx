@@ -21,32 +21,32 @@ import {
 	IBlueprintActionTriggerMode,
 	SomeContent,
 } from '@sofie-automation/blueprints-integration'
-import { MeteorPubSub } from '../../../lib/api/pubsub'
-import { doUserAction, getEventTimestamp, UserAction } from '../../../lib/clientUserAction'
-import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
-import { literal, unprotectString, partial, protectString } from '../../../lib/lib'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
+import { doUserAction, getEventTimestamp, UserAction } from '../../lib/clientUserAction'
+import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { literal, unprotectString, protectString } from '../../lib/tempLib'
 import { contextMenuHoldToDisplayTime, UserAgentPointer, USER_AGENT_POINTER_PROPERTY } from '../../lib/lib'
 import { IDashboardPanelTrackedProps } from './DashboardPanel'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
-import { Bucket } from '../../../lib/collections/Buckets'
+import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
 import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { MeteorCall } from '../../../lib/api/methods'
+import { MeteorCall } from '../../lib/meteorApi'
 import { DragDropItemTypes } from '../DragDropItemTypes'
 import { BucketPieceButton, IBucketPieceDropResult } from './BucketPieceButton'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import update from 'immutability-helper'
-import { PartInstance } from '../../../lib/collections/PartInstances'
+import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { RundownUtils } from '../../lib/rundown'
 import { BucketAdLibItem, BucketAdLibActionUi, isAdLibAction, isAdLib, BucketAdLibUi } from './RundownViewBuckets'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
+import { PieceDisplayStyle } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import RundownViewEventBus, {
 	RundownViewEvents,
 	RevealInShelfEvent,
 	ToggleShelfDropzoneEvent,
-} from '../../../lib/api/triggers/RundownViewEventBus'
+} from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
@@ -60,8 +60,8 @@ import {
 import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
 import { BucketAdLibActions, BucketAdLibs, PartInstances, Rundowns } from '../../collections'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { UIShowStyleBase } from '../../../lib/api/showStyles'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { UIStudios } from '../Collections'
 import {
 	AdLibActionId,
@@ -70,7 +70,7 @@ import {
 	ShowStyleBaseId,
 	ShowStyleVariantId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { withTranslation } from 'react-i18next'
 import { useRundownAndShowStyleIdsForPlaylist } from '../util/useRundownAndShowStyleIdsForPlaylist'
@@ -662,7 +662,7 @@ const BucketPanelContent = withTranslation()(
 									e,
 									getEventTimestamp(e),
 									piece._id,
-									partial<BucketAdLib>({
+									literal<Partial<BucketAdLib>>({
 										name: newName,
 									})
 								)
@@ -677,7 +677,7 @@ const BucketPanelContent = withTranslation()(
 									e,
 									getEventTimestamp(e),
 									piece.adlibAction._id,
-									partial<BucketAdLibAction>({
+									literal<Partial<BucketAdLibAction>>({
 										//@ts-expect-error deep property
 										'display.label': newName,
 									})
@@ -721,7 +721,7 @@ const BucketPanelContent = withTranslation()(
 										e,
 										getEventTimestamp(e),
 										draggedB._id,
-										partial<BucketAdLib>({
+										literal<Partial<BucketAdLib>>({
 											_rank: newRank,
 										})
 									)
@@ -732,7 +732,7 @@ const BucketPanelContent = withTranslation()(
 										e,
 										getEventTimestamp(e),
 										draggedB.adlibAction._id,
-										partial<BucketAdLibAction>({
+										literal<Partial<BucketAdLibAction>>({
 											//@ts-expect-error deep property
 											'display._rank': newRank,
 										})
@@ -754,7 +754,7 @@ const BucketPanelContent = withTranslation()(
 									e,
 									getEventTimestamp(e),
 									draggedB._id,
-									partial<BucketAdLib>({
+									literal<Partial<BucketAdLib>>({
 										bucketId,
 									})
 								)
@@ -765,7 +765,7 @@ const BucketPanelContent = withTranslation()(
 									e,
 									getEventTimestamp(e),
 									draggedB.adlibAction._id,
-									partial<BucketAdLibAction>({
+									literal<Partial<BucketAdLibAction>>({
 										bucketId,
 									})
 								)

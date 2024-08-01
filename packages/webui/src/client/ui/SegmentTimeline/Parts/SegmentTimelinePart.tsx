@@ -14,7 +14,7 @@ import {
 import { RundownTiming } from '../../RundownView/RundownTiming/RundownTiming'
 
 import { RundownUtils } from '../../../lib/rundown'
-import { getCurrentTime } from '../../../../lib/lib'
+import { getCurrentTime } from '../../../lib/systemTime'
 
 import { DEBUG_MODE } from '../SegmentTimelineDebugMode'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
@@ -24,7 +24,7 @@ import { CSSProperties } from '../../../styles/_cssVariables'
 import RundownViewEventBus, {
 	RundownViewEvents,
 	HighlightEvent,
-} from '../../../../lib/api/triggers/RundownViewEventBus'
+} from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
 import { LoopingIcon } from '../../../lib/ui/icons/looping'
 import { SegmentEnd } from '../../../lib/ui/icons/segment'
 import { getShowHiddenSourceLayers } from '../../../lib/localStorage'
@@ -33,7 +33,7 @@ import { getPartInstanceTimingId, getPartInstanceTimingValue, RundownTimingConte
 import { OutputGroup } from './OutputGroup'
 import { InvalidPartCover } from './InvalidPartCover'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { UIStudio } from '../../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { LIVE_LINE_TIME_PADDING } from '../Constants'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'

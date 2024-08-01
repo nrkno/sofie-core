@@ -1,18 +1,18 @@
 import { useCallback } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faDatabase, faEye, faWarning } from '@fortawesome/free-solid-svg-icons'
-import { MeteorCall } from '../../../../lib/api/methods'
+import { MeteorCall } from '../../../lib/meteorApi'
 import { TFunction, useTranslation } from 'react-i18next'
 import { i18nTranslator } from '../../i18n'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
-import { NotificationCenter, NoticeLevel, Notification } from '../../../../lib/notifications/notifications'
+import { NotificationCenter, NoticeLevel, Notification } from '../../../lib/notifications/notifications'
 import {
 	UIBlueprintUpgradeStatusBase,
 	UIBlueprintUpgradeStatusShowStyle,
 	UIBlueprintUpgradeStatusStudio,
-} from '../../../../lib/api/upgradeStatus'
+} from '@sofie-automation/meteor-lib/dist/api/upgradeStatus'
 import { assertNever } from '@sofie-automation/corelib/dist/lib'
 import { catchError } from '../../../lib/lib'
 

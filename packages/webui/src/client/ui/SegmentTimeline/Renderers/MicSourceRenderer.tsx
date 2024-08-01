@@ -7,9 +7,9 @@ import * as _ from 'underscore'
 import { getElementWidth } from '../../../utils/dimensions'
 import { MicFloatingInspector } from '../../FloatingInspectors/MicFloatingInspector'
 import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
-import { unprotectString } from '../../../../lib/lib'
+import { unprotectString } from '../../../lib/tempLib'
 import { IFloatingInspectorPosition } from '../../FloatingInspectors/IFloatingInspectorPosition'
-import { logger } from '../../../../lib/logging'
+import { logger } from '../../../lib/logging'
 
 type IProps = ICustomLayerItemProps
 interface IState {}

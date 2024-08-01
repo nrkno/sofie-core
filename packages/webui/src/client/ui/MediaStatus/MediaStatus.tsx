@@ -1,6 +1,6 @@
 import { useMemo, JSX } from 'react'
 import { useSubscription, useSubscriptions, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { MeteorPubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { getSegmentsWithPartInstances } from '../../lib/RundownResolver'
 import {
 	AdLibActionId,
@@ -29,7 +29,7 @@ import { ProtectedString, unprotectString } from '@sofie-automation/corelib/dist
 import { ExpectedPackage } from '@sofie-automation/shared-lib/dist/package-manager/package'
 import { PartInvalidReason } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { IBlueprintActionManifestDisplayContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
-import { PieceContentStatusObj } from '../../../lib/api/pieceContentStatus'
+import { PieceContentStatusObj } from '@sofie-automation/meteor-lib/dist/api/pieceContentStatus'
 import { Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { assertNever, literal } from '@sofie-automation/corelib/dist/lib'
 import { UIPieceContentStatuses, UIShowStyleBases } from '../Collections'

@@ -5,7 +5,7 @@ import { DefaultListItemRenderer } from './DefaultListItemRenderer'
 import { VTListItemRenderer } from './VTListItemRenderer'
 import { L3rdListItemRenderer } from './L3rdListItemRenderer'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { UIStudio } from '../../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { ReadonlyDeep } from 'type-fest'
 

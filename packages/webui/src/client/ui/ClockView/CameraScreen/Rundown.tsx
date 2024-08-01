@@ -1,7 +1,7 @@
 import { useContext } from 'react'
 import { useSubscription, useTracker } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { Rundown as RundownObj } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { MeteorPubSub } from '../../../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { Segments } from '../../../collections'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { Segment as SegmentComponent } from './Segment'

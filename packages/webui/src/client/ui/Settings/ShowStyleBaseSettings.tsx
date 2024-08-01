@@ -6,7 +6,7 @@ import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/Sho
 import RundownLayoutEditor from './RundownLayoutEditor'
 import { DBStudio, MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { BlueprintManifestType, IShowStyleConfigPreset } from '@sofie-automation/blueprints-integration'
-import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { RundownLayoutsAPI } from '../../lib/rundownLayouts'
 import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredActionsEditor'
 import { SourceLayerSettings } from './ShowStyle/SourceLayer'
 import { OutputLayerSettings } from './ShowStyle/OutputLayer'

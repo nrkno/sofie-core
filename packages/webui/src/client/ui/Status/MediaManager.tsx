@@ -11,14 +11,14 @@ import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-met
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
 import { useTranslation } from 'react-i18next'
-import { extendMandadory, unprotectString } from '../../../lib/lib'
-import { MeteorPubSub } from '../../../lib/api/pubsub'
+import { unprotectString } from '../../lib/tempLib'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { Spinner } from '../../lib/Spinner'
 import { sofieWarningIcon as WarningIcon } from '../../lib/notifications/warningIcon'
-import { doUserAction, UserAction } from '../../../lib/clientUserAction'
-import { MeteorCall } from '../../../lib/api/methods'
+import { doUserAction, UserAction } from '../../lib/clientUserAction'
+import { MeteorCall } from '../../lib/meteorApi'
 import Tooltip from 'rc-tooltip'
-import { MediaManagerAPI } from '../../../lib/api/mediaManager'
+import { MediaManagerAPI } from '@sofie-automation/meteor-lib/dist/api/mediaManager'
 import { getAllowConfigure, getAllowStudio } from '../../lib/localStorage'
 import { MediaWorkFlowId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MediaWorkFlows, MediaWorkFlowSteps } from '../../collections'
@@ -384,17 +384,16 @@ export function MediaManagerStatus(): JSX.Element {
 		[t]
 	)
 
-	const allWorkFlows = useTracker(
+	const allWorkFlows: MediaWorkFlowUi[] = useTracker(
 		() =>
 			MediaWorkFlows.find({})
 				.fetch()
-				.map((i) =>
-					extendMandadory<MediaWorkFlow, MediaWorkFlowUi>(i, {
-						steps: MediaWorkFlowSteps.find({
-							workFlowId: i._id,
-						}).fetch(),
-					})
-				),
+				.map((i) => ({
+					...i,
+					steps: MediaWorkFlowSteps.find({
+						workFlowId: i._id,
+					}).fetch(),
+				})),
 		[],
 		[]
 	)

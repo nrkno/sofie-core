@@ -7,7 +7,7 @@ import { IBlueprintPieceType, NoraContent, PieceLifespan } from '@sofie-automati
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { getElementWidth } from '../../../utils/dimensions'
 import { StyledTimecode } from '../../../lib/StyledTimecode'
-import { assertNever, protectString } from '../../../../lib/lib'
+import { assertNever, protectString } from '../../../lib/tempLib'
 import { L3rdFloatingInspector } from '../../FloatingInspectors/L3rdFloatingInspector'
 import { PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { AdLibPieceUi } from '../../../lib/shelf'

@@ -1,6 +1,5 @@
 import * as _ from 'underscore'
 import {
-	trimIfString,
 	getHash,
 	unprotectObject,
 	protectString,
@@ -9,9 +8,9 @@ import {
 	objectPathSet,
 	clone,
 	Complete,
-	waitForPromise,
 	objectPathDelete,
-} from '../../../lib/lib'
+} from '../../lib/tempLib'
+import { waitForPromise } from '../../lib/lib'
 import { DBStudio, StudioPlayoutDevice } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { Meteor } from 'meteor/meteor'
@@ -31,18 +30,23 @@ import {
 } from '@sofie-automation/blueprints-integration'
 
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { check } from '../../../lib/check'
+import { check } from '../../lib/check'
 import {
 	PERIPHERAL_SUBTYPE_PROCESS,
 	PeripheralDeviceType,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { TriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
+import { TriggeredActionsObj } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import { Match } from 'meteor/check'
 import { MongoModifier } from '@sofie-automation/corelib/dist/mongo'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleBaseId, ShowStyleVariantId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevices, ShowStyleBases, ShowStyleVariants, Studios, TriggeredActions } from '../../collections'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
+
+function trimIfString<T>(value: T): T | string {
+	if (_.isString(value)) return value.trim()
+	return value
+}
 
 function convertTriggeredActionToBlueprints(triggeredAction: TriggeredActionsObj): IBlueprintTriggeredActions {
 	const obj: Complete<IBlueprintTriggeredActions> = {

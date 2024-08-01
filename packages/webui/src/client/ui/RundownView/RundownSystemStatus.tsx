@@ -7,7 +7,7 @@ import {
 	PeripheralDeviceType,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { Rundown, getRundownNrcsName } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { Time, unprotectString } from '../../../lib/lib'
+import { Time, unprotectString } from '../../lib/tempLib'
 import { useTranslation } from 'react-i18next'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'

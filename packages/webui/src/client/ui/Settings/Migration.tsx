@@ -4,12 +4,16 @@ import { doModalDialog } from '../../lib/ModalDialog'
 import ClassNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faClipboardCheck, faDatabase, faCoffee, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
-import { logger } from '../../../lib/logging'
-import { GetMigrationStatusResult, RunMigrationResult, MigrationChunk } from '../../../lib/api/migration'
+import { logger } from '../../lib/logging'
+import {
+	GetMigrationStatusResult,
+	RunMigrationResult,
+	MigrationChunk,
+} from '@sofie-automation/meteor-lib/dist/api/migration'
 import { MigrationStepInput, MigrationStepInputResult } from '@sofie-automation/blueprints-integration'
 import * as _ from 'underscore'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
-import { MeteorCall } from '../../../lib/api/methods'
+import { MeteorCall } from '../../lib/meteorApi'
 import { checkForOldDataAndCleanUp } from './SystemManagement'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { UpgradesView } from './Upgrades/View'

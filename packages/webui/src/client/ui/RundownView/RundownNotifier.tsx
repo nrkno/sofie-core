@@ -9,28 +9,29 @@ import {
 	Notification,
 	NoticeLevel,
 	getNoticeLevelForPieceStatus,
-} from '../../../lib/notifications/notifications'
+} from '../../lib/notifications/notifications'
 import { WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
 import { reactiveData } from '../../lib/reactiveData/reactiveData'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { getCurrentTime, unprotectString } from '../../../lib/lib'
-import { meteorSubscribe } from '../../../lib/api/pubsub'
+import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+import { getCurrentTime } from '../../lib/systemTime'
+import { meteorSubscribe } from '../../lib/meteorApi'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { Rundown, getRundownNrcsName } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { doModalDialog } from '../../lib/ModalDialog'
-import { doUserAction, UserAction } from '../../../lib/clientUserAction'
+import { doUserAction, UserAction } from '../../lib/clientUserAction'
 // import { withTranslation, getI18n, getDefaults } from 'react-i18next'
 import { i18nTranslator as t } from '../i18n'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { handleRundownReloadResponse } from '../RundownView'
-import { MeteorCall } from '../../../lib/api/methods'
-import { UIPieceContentStatus, UISegmentPartNote } from '../../../lib/api/rundownNotifications'
+import { MeteorCall } from '../../lib/meteorApi'
+import { UIPieceContentStatus, UISegmentPartNote } from '@sofie-automation/meteor-lib/dist/api/rundownNotifications'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { NoteSeverity, StatusCode } from '@sofie-automation/blueprints-integration'
 import { getAllowStudio, getIgnorePieceContentStatus } from '../../lib/localStorage'
 import { RundownPlaylists } from '../../collections'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import {
 	PartId,
 	PeripheralDeviceId,
@@ -42,8 +43,8 @@ import {
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { UIPieceContentStatuses, UISegmentPartNotes } from '../Collections'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
-import { logger } from '../../../lib/logging'
+import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
+import { logger } from '../../lib/logging'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)

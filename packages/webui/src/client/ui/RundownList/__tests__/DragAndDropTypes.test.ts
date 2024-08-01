@@ -1,4 +1,4 @@
-import { protectString } from '../../../../lib/lib'
+import { protectString } from '../../../lib/tempLib'
 import { isRundownDragObject, isRundownPlaylistUiAction, RundownPlaylistUiActionTypes } from '../DragAndDropTypes'
 
 describe('ui/RundownList/DragAndDropTypes', () => {

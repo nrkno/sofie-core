@@ -4,16 +4,16 @@ import {
 	DashboardLayoutPlaylistName,
 	RundownLayoutBase,
 	RundownLayoutPlaylistName,
-} from '../../../lib/collections/RundownLayouts'
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { dashboardElementStyle } from './DashboardPanel'
-import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { RundownLayoutsAPI } from '../../lib/rundownLayouts'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Rundowns } from '../../collections'
-import { PartInstance } from '../../../lib/collections/PartInstances'
-import { logger } from '../../../lib/logging'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
+import { logger } from '../../lib/logging'
+import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 
 interface IPlaylistNamePanelProps {
 	visible?: boolean

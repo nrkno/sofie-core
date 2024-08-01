@@ -15,14 +15,14 @@ import {
 	RundownLayoutElementType,
 	RundownLayoutFilter,
 	RundownLayoutShelfBase,
-} from '../../../lib/collections/RundownLayouts'
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { UIStateStorage } from '../../lib/UIStateStorage'
-import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { RundownLayoutsAPI } from '../../lib/rundownLayouts'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { ShelfRundownLayout } from './ShelfRundownLayout'
 import { ShelfDashboardLayout } from './ShelfDashboardLayout'
-import { Bucket } from '../../../lib/collections/Buckets'
+import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
 import { RundownViewBuckets, BucketAdLibItem } from './RundownViewBuckets'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { ShelfInspector } from './Inspector/ShelfInspector'
@@ -32,23 +32,21 @@ import RundownViewEventBus, {
 	SelectPieceEvent,
 	ShelfStateEvent,
 	SwitchToShelfTabEvent,
-} from '../../../lib/api/triggers/RundownViewEventBus'
+} from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
 import { IAdLibListItem } from './AdLibListItem'
 import ShelfContextMenu from './ShelfContextMenu'
-import { doUserAction, UserAction } from '../../../lib/clientUserAction'
-import { MeteorCall } from '../../../lib/api/methods'
+import { doUserAction, UserAction } from '../../lib/clientUserAction'
+import { MeteorCall } from '../../lib/meteorApi'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { ShelfDisplayOptions } from '../../lib/shelf'
-import { UIShowStyleBase } from '../../../lib/api/showStyles'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 
-export enum ShelfTabs {
-	ADLIB = 'adlib',
-	ADLIB_LAYOUT_FILTER = 'adlib_layout_filter',
-	GLOBAL_ADLIB = 'global_adlib',
-	SYSTEM_HOTKEYS = 'system_hotkeys',
-}
+import { ShelfTabs } from '@sofie-automation/meteor-lib/dist/uiTypes/ShelfTabs'
+
+export { ShelfTabs } from '@sofie-automation/meteor-lib/dist/uiTypes/ShelfTabs'
+
 export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	isExpanded: boolean
 	buckets: Array<Bucket>

@@ -23,6 +23,7 @@ async function findCommonJsPathsForLibrary(prefix: string, rootPath: string) {
 await Promise.all([
 	findCommonJsPathsForLibrary('@sofie-automation/corelib/dist', '../corelib/dist'),
 	findCommonJsPathsForLibrary('@sofie-automation/shared-lib/dist', '../shared-lib/dist'),
+	findCommonJsPathsForLibrary('@sofie-automation/meteor-lib/dist', '../meteor-lib/dist'),
 ])
 
 // https://vitejs.dev/config/
@@ -39,7 +40,7 @@ export default defineConfig({
 	},
 	build: {
 		commonjsOptions: {
-			include: [/shared-lib/, /corelib/, /blueprints-integration/, /node_modules/],
+			include: [/shared-lib/, /meteor-lib/, /corelib/, /blueprints-integration/, /node_modules/],
 		},
 		chunkSizeWarningLimit: 10000,
 	},

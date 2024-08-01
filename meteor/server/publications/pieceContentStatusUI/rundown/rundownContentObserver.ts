@@ -29,10 +29,11 @@ import {
 	ShowStyleBases,
 } from '../../../collections'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { equivalentArrays, waitForPromise } from '../../../../lib/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ReactiveMongoObserverGroup, ReactiveMongoObserverGroupHandle } from '../../lib/observerGroup'
 import _ from 'underscore'
+import { equivalentArrays } from '@sofie-automation/shared-lib/dist/lib/lib'
+import { waitForPromise } from '../../../lib/lib'
 
 const REACTIVITY_DEBOUNCE = 20
 

@@ -31,7 +31,7 @@ import {
 	MediaStream,
 	MediaStreamType,
 } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
-import { UIStudio } from '../../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { defaultStudio } from '../../../../__mocks__/defaultCollectionObjects'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { MediaObjects } from '../../../collections'

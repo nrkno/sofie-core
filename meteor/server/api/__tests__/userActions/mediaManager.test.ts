@@ -1,8 +1,9 @@
 import '../../../../__mocks__/_extendJest'
 import { testInFiber, waitUntil } from '../../../../__mocks__/helpers/jest'
-import { getCurrentTime, getRandomId, protectString } from '../../../../lib/lib'
+import { getRandomId, protectString } from '../../../lib/tempLib'
+import { getCurrentTime } from '../../../lib/lib'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../../__mocks__/helpers/database'
-import { MeteorCall } from '../../../../lib/api/methods'
+import { MeteorCall } from '../../methods'
 import { MediaWorkFlowId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MediaWorkFlows, PeripheralDeviceCommands, PeripheralDevices } from '../../../collections'
 

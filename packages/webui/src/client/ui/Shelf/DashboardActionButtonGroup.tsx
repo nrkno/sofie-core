@@ -1,18 +1,21 @@
 import * as React from 'react'
 
-import { DashboardLayoutActionButton, ActionButtonType } from '../../../lib/collections/RundownLayouts'
+import {
+	DashboardLayoutActionButton,
+	ActionButtonType,
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { DashboardActionButton } from './DashboardActionButton'
-import { doUserAction, UserAction } from '../../../lib/clientUserAction'
+import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { withTranslation } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { MeteorCall } from '../../../lib/api/methods'
+import { MeteorCall } from '../../lib/meteorApi'
 import { doModalDialog } from '../../lib/ModalDialog'
-import { NoticeLevel, Notification, NotificationCenter } from '../../../lib/notifications/notifications'
+import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { ClientAPI } from '../../../lib/api/client'
-import { hashSingleUseToken } from '../../../lib/api/userActions'
+import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
+import { hashSingleUseToken } from '../../lib/lib'
 
 export interface IDashboardButtonGroupProps {
 	buttons: DashboardLayoutActionButton[]

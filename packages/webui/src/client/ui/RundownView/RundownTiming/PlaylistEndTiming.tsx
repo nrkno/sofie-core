@@ -1,7 +1,7 @@
 import React from 'react'
 import { WithTranslation, withTranslation } from 'react-i18next'
 import Moment from 'react-moment'
-import { getCurrentTime } from '../../../../lib/lib'
+import { getCurrentTime } from '../../../lib/systemTime'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../../lib/rundown'
 import { withTiming, WithTiming } from './withTiming'

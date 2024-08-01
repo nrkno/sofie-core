@@ -1,24 +1,25 @@
 import * as _ from 'underscore'
-import { getCurrentTime, sleep, Time } from '../../lib/lib'
+import { Time } from '../lib/tempLib'
+import { sleep, getCurrentTime } from '../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
-import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
+import { MethodContextAPI, MethodContext } from './methodContext'
 import {
 	SystemAPIMethods,
 	CollectionCleanupResult,
 	SystemAPI,
 	BenchmarkResult,
 	SystemBenchmarkResults,
-} from '../../lib/api/system'
+} from '@sofie-automation/meteor-lib/dist/api/system'
 import { CollectionIndexes, getTargetRegisteredIndexes } from '../collections/indices'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../logging'
 import { SystemWriteAccess } from '../security/system'
-import { check } from '../../lib/check'
-import { IndexSpecifier } from '../../lib/collections/lib'
+import { check } from '../lib/check'
+import { IndexSpecifier } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import { getBundle as getTranslationBundleInner } from './translationsBundles'
-import { TranslationsBundle } from '../../lib/collections/TranslationsBundles'
+import { TranslationsBundle } from '@sofie-automation/meteor-lib/dist/collections/TranslationsBundles'
 import { OrganizationContentWriteAccess } from '../security/organization'
-import { ClientAPI } from '../../lib/api/client'
+import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { cleanupOldDataInner } from './cleanup'
 import { IndexSpecification } from 'mongodb'
 import { nightlyCronjobInner } from '../cronjobs'

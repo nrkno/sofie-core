@@ -3,7 +3,7 @@ import { PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/Pie
 import { RundownUtils } from '../../../lib/rundown'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { TFunction, useTranslation } from 'react-i18next'
-import { Time } from '../../../../lib/lib'
+import { Time } from '../../../lib/tempLib'
 import Moment from 'react-moment'
 import { ReadonlyDeep } from 'type-fest'
 

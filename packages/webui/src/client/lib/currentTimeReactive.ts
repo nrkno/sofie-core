@@ -1,4 +1,5 @@
-import { getCurrentTime, Time } from '../../lib/lib'
+import { Time } from './tempLib'
+import { getCurrentTime } from './systemTime'
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 

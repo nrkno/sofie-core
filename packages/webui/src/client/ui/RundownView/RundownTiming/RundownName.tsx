@@ -7,7 +7,7 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { LoopingIcon } from '../../../lib/ui/icons/looping'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownUtils } from '../../../lib/rundown'
-import { getCurrentTime } from '../../../../lib/lib'
+import { getCurrentTime } from '../../../lib/systemTime'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 
 interface IRundownNameProps {

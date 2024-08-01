@@ -1,4 +1,4 @@
-import { NoticeLevel } from '../../../lib/notifications/notifications'
+import { NoticeLevel } from '../notifications/notifications'
 import { CriticalIconSmall, WarningIconSmall } from './icons/notifications'
 
 export interface IProps {

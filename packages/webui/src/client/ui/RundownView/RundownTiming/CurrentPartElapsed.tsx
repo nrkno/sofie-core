@@ -2,7 +2,7 @@ import * as React from 'react'
 import ClassNames from 'classnames'
 import { TimingDataResolution, TimingTickResolution, withTiming, WithTiming } from './withTiming'
 import { RundownUtils } from '../../../lib/rundown'
-import { unprotectString } from '../../../../lib/lib'
+import { unprotectString } from '../../../lib/tempLib'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IPartElapsedProps {

@@ -5,7 +5,7 @@ import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { withTiming, WithTiming } from './withTiming'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { RundownUtils } from '../../../lib/rundown'
-import { getCurrentTime } from '../../../../lib/lib'
+import { getCurrentTime } from '../../../lib/systemTime'
 import ClassNames from 'classnames'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 

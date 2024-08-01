@@ -4,7 +4,7 @@ import * as _ from 'underscore'
 import Koa from 'koa'
 import KoaRouter from '@koa/router'
 import bodyParser from 'koa-bodyparser'
-import { check } from '../../lib/check'
+import { check } from '../lib/check'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
 	SnapshotType,
@@ -12,21 +12,13 @@ import {
 	SnapshotDebug,
 	SnapshotBase,
 	SnapshotRundownPlaylist,
-} from '../../lib/collections/Snapshots'
-import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
+} from '@sofie-automation/meteor-lib/dist/collections/Snapshots'
+import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
 import { PieceGeneric } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
-import {
-	getCurrentTime,
-	Time,
-	formatDateTime,
-	fixValidPath,
-	protectString,
-	getRandomId,
-	omit,
-	unprotectStringArray,
-	unprotectString,
-} from '../../lib/lib'
+import { Time, protectString, getRandomId, omit, unprotectStringArray, unprotectString } from '../lib/tempLib'
+import { formatDateTime } from '@sofie-automation/meteor-lib/dist/time'
+import { getCurrentTime, fixValidPath } from '../lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
@@ -34,8 +26,9 @@ import { logger } from '../logging'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { PeripheralDeviceCommand } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceCommand'
 import { registerClassToMeteorMethods } from '../methods'
-import { NewSnapshotAPI, SnapshotAPIMethods } from '../../lib/api/shapshot'
-import { ICoreSystem, parseVersion } from '../../lib/collections/CoreSystem'
+import { NewSnapshotAPI, SnapshotAPIMethods } from '@sofie-automation/meteor-lib/dist/api/shapshot'
+import { ICoreSystem } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
+import { parseVersion } from '../systemStatus/semverUtils'
 import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
 import { isVersionSupported } from '../migration/databaseMigration'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
@@ -44,10 +37,10 @@ import { IngestRundown, VTContent } from '@sofie-automation/blueprints-integrati
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { importIngestRundown } from './ingest/http'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
-import { DBTriggeredActions } from '../../lib/collections/TriggeredActions'
-import { Settings } from '../../lib/Settings'
-import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
+import { RundownLayoutBase } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
+import { DBTriggeredActions } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
+import { Settings } from '../Settings'
+import { MethodContext, MethodContextAPI } from './methodContext'
 import { Credentials, isResolvedCredentials } from '../security/lib/credentials'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { StudioContentWriteAccess } from '../security/studio'

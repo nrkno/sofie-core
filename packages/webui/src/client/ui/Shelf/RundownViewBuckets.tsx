@@ -1,17 +1,13 @@
 import * as React from 'react'
-import { Bucket } from '../../../lib/collections/Buckets'
-import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
+import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
 import { BucketPanel } from './BucketPanel'
-import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
-import { ISourceLayer, IOutputLayer } from '@sofie-automation/blueprints-integration'
-import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
-import { doUserAction, UserAction } from '../../../lib/clientUserAction'
-import { ClientAPI } from '../../../lib/api/client'
+import { doUserAction, UserAction } from '../../lib/clientUserAction'
+import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 
 import { withTranslation } from 'react-i18next'
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { unprotectString, partial, literal, ProtectedString } from '../../../lib/lib'
+import { unprotectString, literal, ProtectedString } from '../../lib/tempLib'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getElementDocumentOffset } from '../../utils/positions'
 import { UIStateStorage } from '../../lib/UIStateStorage'
@@ -19,7 +15,7 @@ import { doModalDialog, ModalDialogQueueItem } from '../../lib/ModalDialog'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 
-import { MeteorCall } from '../../../lib/api/methods'
+import { MeteorCall } from '../../lib/meteorApi'
 import update from 'immutability-helper'
 
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
@@ -32,35 +28,17 @@ import RundownViewEventBus, {
 	BucketAdLibEvent,
 	BucketEvent,
 	IEventContext,
-} from '../../../lib/api/triggers/RundownViewEventBus'
-import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { UIShowStyleBase } from '../../../lib/api/showStyles'
-import { BucketId, ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DashboardLayoutExternalFrame } from '../../../lib/collections/RundownLayouts'
+} from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
+import { BucketId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { DashboardLayoutExternalFrame } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
+import { BucketAdLibItem, BucketAdLibUi, BucketAdLibActionUi } from '@sofie-automation/meteor-lib/dist/uiTypes/Bucket'
 
-export interface BucketAdLibUi extends BucketAdLib {
-	sourceLayer?: ISourceLayer
-	outputLayer?: IOutputLayer
-	status: PieceStatusCode
-}
-
-export interface BucketAdLibActionUi extends Omit<AdLibPiece, 'timelineObjectsString'> {
-	bucketId: BucketId
-	sourceLayer?: ISourceLayer
-	outputLayer?: IOutputLayer
-	isGlobal?: boolean
-	isHidden?: boolean
-	isSticky?: boolean
-	isAction: true
-	isClearSourceLayer?: boolean
-	adlibAction: BucketAdLibAction
-	message?: string | null
-	showStyleBaseId: ShowStyleBaseId
-	showStyleVariantId: ShowStyleVariantId | null
-	studioId: StudioId
-}
-
-export type BucketAdLibItem = BucketAdLibUi | BucketAdLibActionUi
+export type {
+	BucketAdLibItem,
+	BucketAdLibUi,
+	BucketAdLibActionUi,
+} from '@sofie-automation/meteor-lib/dist/uiTypes/Bucket'
 
 export function isAdLibAction(item: BucketAdLibItem): item is BucketAdLibActionUi {
 	if ('adlibAction' in item && item['adlibAction']) {
@@ -373,12 +351,13 @@ export const RundownViewBuckets = withTranslation()(
 							}
 						}
 
-						if (isAdLibAction(bucketAdLib)) {
+						if ('adlibAction' in bucketAdLib && bucketAdLib.adlibAction) {
+							const id = bucketAdLib.adlibAction._id
 							doUserAction(
 								t,
 								e.context,
 								UserAction.REMOVE_BUCKET_ADLIB,
-								(e, ts) => MeteorCall.userAction.bucketsRemoveBucketAdLibAction(e, ts, bucketAdLib.adlibAction._id),
+								(e, ts) => MeteorCall.userAction.bucketsRemoveBucketAdLibAction(e, ts, id),
 								clb
 							)
 						} else {
@@ -451,7 +430,7 @@ export const RundownViewBuckets = withTranslation()(
 					e,
 					ts,
 					bucket._id,
-					partial<Bucket>({
+					literal<Partial<Bucket>>({
 						name: newName,
 					})
 				)
@@ -513,7 +492,7 @@ export const RundownViewBuckets = withTranslation()(
 							e,
 							ts,
 							draggedB._id,
-							partial<Bucket>({
+							literal<Partial<Bucket>>({
 								_rank: newRank,
 							})
 						)

@@ -6,12 +6,12 @@ import {
 	RundownLayoutExternalFrame,
 	RundownLayoutBase,
 	DashboardLayoutExternalFrame,
-} from '../../../lib/collections/RundownLayouts'
-import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
+import { RundownLayoutsAPI } from '../../lib/rundownLayouts'
 import { dashboardElementStyle } from './DashboardPanel'
-import { assertNever, getRandomString, literal, protectString } from '../../../lib/lib'
+import { assertNever, getRandomString, literal, protectString } from '../../lib/tempLib'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { PartInstance } from '../../../lib/collections/PartInstances'
+import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { parseMosPluginMessageXml, MosPluginMessage } from '../../lib/parsers/mos/mosXml2Js'
 import {
 	createMosAppInfoXmlString,
@@ -19,21 +19,22 @@ import {
 	UIMetricMode as MOSUIMetricMode,
 	Events as MOSEvents,
 } from '../../lib/data/mos/plugin-support'
-import { MOS } from '@sofie-automation/corelib'
-import { doUserAction, UserAction } from '../../../lib/clientUserAction'
+import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { withTranslation } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { IngestAdlib } from '@sofie-automation/blueprints-integration'
-import { MeteorCall } from '../../../lib/api/methods'
-import { check } from '../../../lib/check'
+import { MeteorCall } from '../../lib/meteorApi'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Buckets, PartInstances, Rundowns } from '../../collections'
 import { BucketId, PartInstanceId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { MOS_DATA_IS_STRICT } from '../../../lib/mos'
-import { getMosTypes, stringifyMosObject } from '@mos-connection/helper'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
-import { logger } from '../../../lib/logging'
-import RundownViewEventBus, { ItemDroppedEvent, RundownViewEvents } from '../../../lib/api/triggers/RundownViewEventBus'
+import { MOS_DATA_IS_STRICT } from '@sofie-automation/meteor-lib/dist/mos'
+import { mosTypes, MOS } from '@sofie-automation/meteor-lib/dist/mos'
+import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
+import { logger } from '../../lib/logging'
+import RundownViewEventBus, {
+	ItemDroppedEvent,
+	RundownViewEvents,
+} from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
 
 interface IProps {
 	layout: RundownLayoutBase
@@ -250,8 +251,6 @@ export const ExternalFramePanel = withTranslation()(
 
 			const showStyleBaseId = this.getShowStyleBaseId()
 
-			const mosTypes = getMosTypes(MOS_DATA_IS_STRICT)
-
 			const name = mosItem.Slug
 				? mosTypes.mosString128.stringify(mosItem.Slug)
 				: mosItem.ObjectSlug
@@ -268,7 +267,7 @@ export const ExternalFramePanel = withTranslation()(
 						externalId: mosItem.ObjectID ? mosTypes.mosString128.stringify(mosItem.ObjectID) : '',
 						name,
 						payloadType: 'MOS',
-						payload: stringifyMosObject(mosItem, MOS_DATA_IS_STRICT),
+						payload: MOS.stringifyMosObject(mosItem, MOS_DATA_IS_STRICT),
 					})
 				)
 			)
@@ -283,8 +282,8 @@ export const ExternalFramePanel = withTranslation()(
 		}
 
 		actSofieMessage = (message: SofieExternalMessage) => {
-			check(message.id, String)
-			check(message.type, String)
+			if (typeof message.id !== 'string') throw new Error('Expected `message.id` to be a string')
+			if (typeof message.type !== 'string') throw new Error('Expected `message.type` to be a string')
 
 			if (Object.values<SofieExternalMessageType>(SofieExternalMessageType as any).indexOf(message.type) < 0) {
 				logger.error(`ExternalFramePanel: Unknown message type: ${message.type}`)
@@ -567,8 +566,6 @@ export const ExternalFramePanel = withTranslation()(
 
 				const showStyleBaseId = this.getShowStyleBaseId()
 
-				const mosTypes = getMosTypes(MOS_DATA_IS_STRICT)
-
 				console.log('start transfer from ext panel')
 
 				doUserAction(t, e, UserAction.INGEST_BUCKET_ADLIB, async (e, ts) => {
@@ -594,7 +591,7 @@ export const ExternalFramePanel = withTranslation()(
 							externalId: mosItem.ObjectID ? mosTypes.mosString128.stringify(mosItem.ObjectID) : '',
 							name,
 							payloadType: 'MOS',
-							payload: stringifyMosObject(mosItem, MOS_DATA_IS_STRICT),
+							payload: MOS.stringifyMosObject(mosItem, MOS_DATA_IS_STRICT),
 						})
 					)
 				})

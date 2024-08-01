@@ -3,29 +3,26 @@ import * as _ from 'underscore'
 import { ISourceLayer, NoteSeverity, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import {
-	IOutputLayerExtended,
-	ISourceLayerExtended,
-	PieceExtended,
-	PartExtended,
-	SegmentExtended,
-} from '../../lib/RundownResolver'
+import { IOutputLayerExtended, ISourceLayerExtended, PartExtended, SegmentExtended } from '../../lib/RundownResolver'
 import { IContextMenuContext } from '../RundownView'
-import { equalSets } from '../../../lib/lib'
+import { equalSets } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { PartInstance } from '../../../lib/collections/PartInstances'
+import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
-import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
+import { memoizedIsolatedAutorun } from '../../lib/memoizedIsolatedAutorun'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
-import { RundownLayoutFilterBase, RundownViewLayout } from '../../../lib/collections/RundownLayouts'
+import {
+	RundownLayoutFilterBase,
+	RundownViewLayout,
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { getReactivePieceNoteCountsForSegment } from './getReactivePieceNoteCountsForSegment'
 import { SegmentViewMode } from './SegmentViewModes'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { AdlibSegmentUi } from '../../lib/shelf'
-import { UIShowStyleBase } from '../../../lib/api/showStyles'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import {
 	PartId,
 	RundownId,
@@ -34,10 +31,11 @@ import {
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstances, Segments } from '../../collections'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
-import { ReadonlyDeep } from 'type-fest'
-import { PieceContentStatusObj } from '../../../lib/api/pieceContentStatus'
+import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import type { PieceUi } from '@sofie-automation/meteor-lib/dist/uiTypes/Piece'
+
+export type { PieceUi } from '@sofie-automation/meteor-lib/dist/uiTypes/Piece'
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
@@ -55,12 +53,6 @@ export interface IOutputLayerUi extends IOutputLayerExtended {
 	collapsed?: boolean
 }
 export type ISourceLayerUi = ISourceLayerExtended
-export interface PieceUi extends PieceExtended {
-	/** This item has already been linked to the parent item of the spanning item group */
-	linked?: boolean
-
-	contentStatus?: ReadonlyDeep<PieceContentStatusObj>
-}
 
 export type MinimalRundown = Pick<Rundown, '_id' | 'name' | 'timing' | 'showStyleBaseId' | 'endOfRundownIsShowBreak'>
 

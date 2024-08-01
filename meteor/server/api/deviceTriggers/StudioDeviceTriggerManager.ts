@@ -8,23 +8,28 @@ import {
 	ExecutableAction,
 	isPreviewableAction,
 	ReactivePlaylistActionContext,
-} from '../../../lib/api/triggers/actionFactory'
+} from '@sofie-automation/meteor-lib/dist/triggers/actionFactory'
 import {
 	DeviceActionId,
 	DeviceTriggerMountedActionId,
 	PreviewWrappedAdLib,
 	PreviewWrappedAdLibId,
 	ShiftRegisterActionArguments,
-} from '../../../lib/api/triggers/MountedTriggers'
-import { isDeviceTrigger } from '../../../lib/api/triggers/triggerTypeSelectors'
-import { DBTriggeredActions, UITriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
-import { DummyReactiveVar, protectString } from '../../../lib/lib'
+} from '@sofie-automation/meteor-lib/dist/api/MountedTriggers'
+import { isDeviceTrigger } from '@sofie-automation/meteor-lib/dist/triggers/triggerTypeSelectors'
+import {
+	DBTriggeredActions,
+	UITriggeredActionsObj,
+} from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
+import { protectString } from '../../lib/tempLib'
 import { StudioActionManager, StudioActionManagers } from './StudioActionManagers'
 import { DeviceTriggerMountedActionAdlibsPreview, DeviceTriggerMountedActions } from './observer'
 import { ContentCache } from './reactiveContentCache'
 import { logger } from '../../logging'
 import { SomeAction, SomeBlueprintTrigger } from '@sofie-automation/blueprints-integration'
 import { DeviceActions } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
+import { DummyReactiveVar } from '@sofie-automation/meteor-lib/dist/triggers/reactive-var'
+import { MeteorTriggersContext } from './triggersContext'
 
 export class StudioDeviceTriggerManager {
 	#lastShowStyleBaseId: ShowStyleBaseId | null = null
@@ -95,7 +100,7 @@ export class StudioDeviceTriggerManager {
 				if (existingAction) {
 					thisAction = existingAction
 				} else {
-					const compiledAction = createAction(action, sourceLayers)
+					const compiledAction = createAction(MeteorTriggersContext, action, sourceLayers)
 					actionManager.setAction(actionId, compiledAction)
 					thisAction = compiledAction
 				}

@@ -23,8 +23,6 @@ setMinimumBrowserVersions(
 	'optional chaining'
 )
 
-import '../lib/main'
-
 // Import all files that register Meteor methods:
 import './api/blueprints/api'
 import './api/blueprints/http'
@@ -36,7 +34,6 @@ import './api/ingest/debug'
 import './api/integration/expectedPackages'
 import './api/integration/media-scanner'
 import './api/integration/mediaWorkFlows'
-import './api/logger'
 import './api/peripheralDevice'
 import './api/playout/api'
 import './api/rundown'
@@ -61,7 +58,6 @@ import './webmanifest'
 
 // import all files that calls Meteor.startup:
 import './api/rest/api'
-import './api/systemTime/startup'
 import './Connections'
 import './coreSystem'
 import './cronjobs'
@@ -69,6 +65,7 @@ import './email'
 import './prometheus'
 import './api/deviceTriggers/observer'
 import './logo'
+import './systemTime'
 // import './performanceMonitor' // called above
 
 // Setup publications and security:

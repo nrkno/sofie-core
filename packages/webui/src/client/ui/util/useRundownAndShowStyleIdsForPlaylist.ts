@@ -5,7 +5,7 @@ import {
 	ShowStyleVariantId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 import { useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import _ from 'underscore'
 

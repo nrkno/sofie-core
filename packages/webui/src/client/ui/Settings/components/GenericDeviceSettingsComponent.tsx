@@ -3,11 +3,11 @@ import { useTranslation } from 'react-i18next'
 import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { DeviceItem } from '../../Status/SystemStatus'
 import { ConfigManifestOAuthFlowComponent } from './ConfigManifestOAuthFlow'
-import { protectString, unprotectString } from '../../../../lib/lib'
+import { protectString, unprotectString } from '../../../lib/tempLib'
 import { SchemaFormForCollection } from '../../../lib/forms/SchemaFormForCollection'
 import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { PeripheralDevices } from '../../../collections'
-import { MeteorCall } from '../../../../lib/api/methods'
+import { MeteorCall } from '../../../lib/meteorApi'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IGenericDeviceSettingsComponentProps {

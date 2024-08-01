@@ -3,8 +3,8 @@ import * as React from 'react'
 
 import { getAllowStudio, getAllowConfigure, getAllowService } from '../lib/localStorage'
 
-import { MeteorCall } from '../../lib/api/methods'
-import { getCurrentTime } from '../../lib/lib'
+import { MeteorCall } from '../lib/meteorApi'
+import { getCurrentTime } from './systemTime'
 import { catchError } from './lib'
 
 interface IKeyboardFocusIndicatorState {

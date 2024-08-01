@@ -1,5 +1,5 @@
 import React from 'react'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 
 type StudioFromContext = UIStudio | undefined
 

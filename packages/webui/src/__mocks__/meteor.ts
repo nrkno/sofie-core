@@ -1,5 +1,6 @@
 import * as _ from 'underscore'
 import { MongoMock } from './mongo'
+import type { DDP } from 'meteor/ddp'
 
 let controllableDefer = false
 
@@ -108,6 +109,14 @@ export namespace MeteorMock {
 	export const mockStartupFunctions: Function[] = []
 
 	export const absolutePath = process.cwd()
+
+	export function status(): DDP.DDPStatus {
+		return {
+			connected: true,
+			status: 'connected',
+			retryCount: 0,
+		}
+	}
 
 	export function user(): Meteor.User | undefined {
 		return mockUser

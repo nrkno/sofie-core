@@ -7,7 +7,7 @@ import {
 	setUpCollectionOptimizedObserver,
 	CustomPublishCollection,
 } from '../../../lib/customPublication'
-import { literal, omit, protectString } from '../../../../lib/lib'
+import { literal, omit, protectString } from '../../../lib/tempLib'
 import { logger } from '../../../logging'
 import { ReadonlyDeep } from 'type-fest'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
