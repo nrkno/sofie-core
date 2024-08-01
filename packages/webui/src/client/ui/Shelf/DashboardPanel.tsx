@@ -8,7 +8,7 @@ import { ISourceLayer, IBlueprintActionTriggerMode } from '@sofie-automation/blu
 import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { DashboardLayoutFilter, DashboardPanelUnit } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
-import { unprotectString } from '../../../lib/lib'
+import { unprotectString } from '../../lib/tempLib'
 import { IAdLibPanelProps, AdLibFetchAndFilterProps, useFetchAndFilter } from './AdLibPanel'
 import { AdLibPanelToolbar } from './AdLibPanelToolbar'
 import { matchFilter } from './AdLibListView'

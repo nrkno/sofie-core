@@ -8,7 +8,7 @@ import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/cred
 import { allowAccessToShowStyleBase, allowAccessToShowStyleVariant } from './lib/security'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { Settings } from '../Settings'
-import { isProtectedString } from '../../lib/lib'
+import { isProtectedString } from '../lib/tempLib'
 import { TriggeredActionsObj } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import { SystemWriteAccess } from './system'
 import { fetchShowStyleBaseLight, ShowStyleBaseLight } from '../optimizations'

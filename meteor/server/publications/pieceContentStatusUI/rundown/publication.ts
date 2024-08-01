@@ -23,7 +23,7 @@ import {
 	RundownPlaylists,
 	Studios,
 } from '../../../collections'
-import { literal, protectString } from '../../../../lib/lib'
+import { literal, protectString } from '../../../lib/tempLib'
 import {
 	CustomPublishCollection,
 	meteorCustomPublish,

@@ -11,7 +11,7 @@ import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-met
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
 import { useTranslation } from 'react-i18next'
-import { unprotectString } from '../../../lib/lib'
+import { unprotectString } from '../../lib/tempLib'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { Spinner } from '../../lib/Spinner'
 import { sofieWarningIcon as WarningIcon } from '../../lib/notifications/warningIcon'

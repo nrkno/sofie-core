@@ -3,7 +3,7 @@ import { PartInstance, wrapPartToTemporaryInstance } from '@sofie-automation/met
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { literal, protectString } from '../../../lib/lib'
+import { literal, protectString } from '../tempLib'
 import { RundownTimingCalculator, RundownTimingContext } from '../rundownTiming'
 import { PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 import { PartId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'

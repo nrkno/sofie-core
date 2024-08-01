@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../lib/check'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { isProtectedString } from '../../lib/lib'
+import { isProtectedString } from '../lib/tempLib'
 import { logNotAllowed } from './lib/lib'
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
 import { MongoQueryKey } from '@sofie-automation/corelib/dist/mongo'

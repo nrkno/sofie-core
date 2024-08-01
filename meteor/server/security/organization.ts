@@ -8,7 +8,7 @@ import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/cred
 import { Settings } from '../Settings'
 import { MethodContext } from '../api/methodContext'
 import { triggerWriteAccess } from './lib/securityVerify'
-import { isProtectedString } from '../../lib/lib'
+import { isProtectedString } from '../lib/tempLib'
 import { fetchShowStyleBaseLight, fetchStudioLight, ShowStyleBaseLight } from '../optimizations'
 import {
 	BlueprintId,

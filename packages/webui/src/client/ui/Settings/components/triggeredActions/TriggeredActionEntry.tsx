@@ -13,7 +13,7 @@ import { DBBlueprintTrigger } from '@sofie-automation/meteor-lib/dist/collection
 import { useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { ActionEditor } from './actionEditors/ActionEditor'
 import { OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { flatten, getRandomString } from '../../../../../lib/lib'
+import { flatten, getRandomString } from '../../../../lib/tempLib'
 import { createAction, isPreviewableAction } from '@sofie-automation/meteor-lib/dist/triggers/actionFactory'
 import { PreviewContext } from './TriggeredActionsEditor'
 import { IWrappedAdLib } from '@sofie-automation/meteor-lib/dist/triggers/actionFilterChainCompilers'

@@ -20,7 +20,7 @@ import {
 	RundownLayoutsAPI,
 } from '../../lib/rundownLayouts'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
-import { getRandomString, literal, unprotectString } from '../../../lib/lib'
+import { getRandomString, literal, unprotectString } from '../../lib/tempLib'
 import { UploadButton } from '../../lib/uploadButton'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'

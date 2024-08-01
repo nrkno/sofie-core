@@ -23,7 +23,7 @@ import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 
 import { isTouchDevice } from '../../lib/lib'
 import { AdLibPieceUi } from '../../lib/shelf'
-import { protectString } from '../../../lib/lib'
+import { protectString } from '../../lib/tempLib'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 

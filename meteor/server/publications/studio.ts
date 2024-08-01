@@ -14,7 +14,7 @@ import {
 	setUpOptimizedObserverArray,
 	TriggerUpdate,
 } from '../lib/customPublication'
-import { literal } from '../../lib/lib'
+import { literal } from '../lib/tempLib'
 import { ReadonlyDeep } from 'type-fest'
 import { FindOptions } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'

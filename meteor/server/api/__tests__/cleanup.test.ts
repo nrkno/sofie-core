@@ -1,4 +1,4 @@
-import { getRandomId } from '../../../lib/lib'
+import { getRandomId } from '../../lib/tempLib'
 import { beforeEachInFiber, testInFiber } from '../../../__mocks__/helpers/jest'
 
 import '../../collections' // include this in order to get all of the collection set up

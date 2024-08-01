@@ -5,7 +5,7 @@ import moment from 'moment'
 import 'react-datepicker/dist/react-datepicker.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronRight, faChevronLeft } from '@fortawesome/free-solid-svg-icons'
-import { Time } from '../../lib/lib'
+import { Time } from './tempLib'
 import { withTranslation, WithTranslation } from 'react-i18next'
 
 interface IProps {

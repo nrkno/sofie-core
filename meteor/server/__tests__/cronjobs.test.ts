@@ -2,7 +2,7 @@ import '../../__mocks__/_extendJest'
 import { testInFiber, runAllTimers, beforeAllInFiber, waitUntil } from '../../__mocks__/helpers/jest'
 import { MeteorMock } from '../../__mocks__/meteor'
 import { logger } from '../logging'
-import { getRandomId, getRandomString, protectString } from '../../lib/lib'
+import { getRandomId, getRandomString, protectString } from '../lib/tempLib'
 import { SnapshotType } from '@sofie-automation/meteor-lib/dist/collections/Snapshots'
 import { IBlueprintPieceType, PieceLifespan, StatusCode, TSR } from '@sofie-automation/blueprints-integration'
 import {

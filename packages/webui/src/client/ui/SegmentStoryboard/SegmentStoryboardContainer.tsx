@@ -9,7 +9,7 @@ import {
 } from '../SegmentContainer/withResolvedSegment'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { SegmentStoryboard } from './SegmentStoryboard'
-import { unprotectString } from '../../../lib/lib'
+import { unprotectString } from '../../lib/tempLib'
 import { LIVELINE_HISTORY_SIZE as TIMELINE_LIVELINE_HISTORY_SIZE } from '../SegmentTimeline/Constants'
 import { PartInstances, Parts, Segments } from '../../collections'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'

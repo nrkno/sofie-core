@@ -4,7 +4,7 @@ import { NotificationCenter, Notification, NoticeLevel } from './notifications/n
 import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { Meteor } from 'meteor/meteor'
 import { logger } from './logging'
-import { assertNever, Time } from '../../lib/lib'
+import { assertNever, Time } from './tempLib'
 import { getCurrentTime, systemTime } from './systemTime'
 import { UserAction } from '@sofie-automation/meteor-lib/dist/userAction'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'

@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import path from 'path'
 import { ReadStream, createReadStream, promises as fsp } from 'fs'
-import { unprotectString, getRandomId } from '../../../lib/lib'
+import { unprotectString, getRandomId } from '../../lib/tempLib'
 import { getCurrentTime } from '../../lib/lib'
 import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'

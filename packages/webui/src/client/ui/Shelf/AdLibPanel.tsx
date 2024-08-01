@@ -26,7 +26,7 @@ import {
 	DashboardLayoutFilter,
 } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
-import { literal, unprotectString, protectString } from '../../../lib/lib'
+import { literal, unprotectString, protectString } from '../../lib/tempLib'
 import { memoizedIsolatedAutorun } from '../../lib/memoizedIsolatedAutorun'
 import {
 	findPartInstanceOrWrapToTemporary,

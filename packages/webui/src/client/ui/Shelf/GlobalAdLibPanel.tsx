@@ -4,7 +4,7 @@ import { IAdLibListItem } from './AdLibListItem'
 import { AdLibPanel } from './AdLibPanel'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
-import { literal } from '../../../lib/lib'
+import { literal } from '../../lib/tempLib'
 import {
 	PieceDisplayStyle,
 	RundownLayoutElementType,

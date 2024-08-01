@@ -5,7 +5,7 @@ import { resolveCredentials, ResolvedCredentials, Credentials, isResolvedCredent
 import { allAccess, noAccess, combineAccess, Access } from './access'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { isProtectedString } from '../../../lib/lib'
+import { isProtectedString } from '../../lib/tempLib'
 import { DBOrganization } from '@sofie-automation/meteor-lib/dist/collections/Organization'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'

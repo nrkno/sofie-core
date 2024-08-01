@@ -7,7 +7,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import { UIPieceContentStatus } from '@sofie-automation/meteor-lib/dist/api/rundownNotifications'
-import { literal, protectString } from '../../../../lib/lib'
+import { literal, protectString } from '../../../lib/tempLib'
 import { CustomPublishCollection } from '../../../lib/customPublication'
 import { ContentCache } from './reactiveContentCache'
 import { wrapTranslatableMessageFromBlueprintsIfNotString } from '@sofie-automation/corelib/dist/TranslatableMessage'

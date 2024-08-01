@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { Time, unprotectString } from '../../../lib/lib'
+import { Time, unprotectString } from '../../lib/tempLib'
 import { getCurrentTime } from '../../lib/systemTime'
 import { MomentFromNow } from '../../lib/Moment'
 import { getAllowConfigure } from '../../lib/localStorage'

@@ -1,4 +1,4 @@
-import { ProtectedString } from '../../lib/lib'
+import { ProtectedString } from '../lib/tempLib'
 import { Meteor } from 'meteor/meteor'
 import { IndexSpecifier } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import { AsyncOnlyReadOnlyMongoCollection } from './collection'

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import * as _ from 'underscore'
-import { literal, ProtectedString, unprotectString, protectString, getRandomString } from '../lib/lib'
+import { literal, ProtectedString, unprotectString, protectString, getRandomString } from '../client/lib/tempLib'
 import { RandomMock } from './random'
 import { MeteorMock } from './meteor'
 import { Random } from 'meteor/random'

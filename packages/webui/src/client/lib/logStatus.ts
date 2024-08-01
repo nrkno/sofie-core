@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
-import { getRandomString } from '../../lib/lib'
+import { getRandomString } from './tempLib'
 import { getAllowStudio } from './localStorage'
 import { logger } from './logging'
 

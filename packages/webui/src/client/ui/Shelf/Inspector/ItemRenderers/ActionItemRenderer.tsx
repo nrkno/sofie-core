@@ -9,7 +9,7 @@ import { AdLibActionCommon } from '@sofie-automation/corelib/dist/dataModel/Adli
 import { createInMemorySyncMongoCollection } from '../../../../collections/lib'
 import { Spinner } from '../../../../lib/Spinner'
 import InspectorTitle from './InspectorTitle'
-import { ProtectedString } from '../../../../../lib/lib'
+import { ProtectedString } from '../../../../lib/tempLib'
 import { doUserAction, UserAction } from '../../../../lib/clientUserAction'
 import { MeteorCall } from '../../../../lib/meteorApi'
 import { BucketAdLibItem, BucketAdLibActionUi } from '../../RundownViewBuckets'

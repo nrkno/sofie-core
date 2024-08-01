@@ -13,7 +13,7 @@ import { LocalLayerItemRenderer } from './Renderers/LocalLayerItemRenderer'
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
-import { unprotectString } from '../../../lib/lib'
+import { unprotectString } from '../../lib/tempLib'
 import RundownViewEventBus, {
 	RundownViewEvents,
 	HighlightEvent,

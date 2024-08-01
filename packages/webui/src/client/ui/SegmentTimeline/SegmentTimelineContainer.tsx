@@ -8,7 +8,7 @@ import { PartExtended } from '../../lib/RundownResolver'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment, getHeaderHeight } from '../../lib/viewPort'
-import { unprotectString } from '../../../lib/lib'
+import { unprotectString } from '../../lib/tempLib'
 import { equivalentArrays } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { Settings } from '../../lib/Settings'
 import RundownViewEventBus, {

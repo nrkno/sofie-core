@@ -6,7 +6,7 @@ import { MultiSelect, MultiSelectEvent, MultiSelectOptions } from './multiSelect
 import ClassNames from 'classnames'
 import { ColorPickerEvent, ColorPicker } from './colorPicker'
 import { IconPicker, IconPickerEvent } from './iconPicker'
-import { assertNever, getRandomString } from '../../lib/lib'
+import { assertNever, getRandomString } from './tempLib'
 import { MongoCollection } from '../collections/lib'
 import { CheckboxControl } from './Components/Checkbox'
 import { TextInputControl } from './Components/TextInput'

@@ -4,7 +4,7 @@ import { ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-inte
 import { withMediaObjectStatus } from '../../SegmentTimeline/withMediaObjectStatus'
 import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
 import { DefaultRenderer } from './Renderers/DefaultRenderer'
-import { assertNever } from '../../../../lib/lib'
+import { assertNever } from '../../../lib/tempLib'
 import { ScriptRenderer } from './Renderers/ScriptRenderer'
 import { getElementDocumentOffset } from '../../../utils/positions'
 import { getElementWidth } from '../../../utils/dimensions'

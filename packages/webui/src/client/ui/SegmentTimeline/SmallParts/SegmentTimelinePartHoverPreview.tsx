@@ -1,7 +1,7 @@
 import { useState, useLayoutEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { unprotectString } from '../../../../lib/lib'
+import { unprotectString } from '../../../lib/tempLib'
 import { RundownUtils } from '../../../lib/rundown'
 import { PartUi, SegmentUi } from '../SegmentTimelineContainer'
 import { SegmentTimelinePart } from '../Parts/SegmentTimelinePart'

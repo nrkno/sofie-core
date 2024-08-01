@@ -7,7 +7,7 @@ import {
 	DBTriggeredActions,
 	UITriggeredActionsObj,
 } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
-import { Complete, literal } from '../../lib/lib'
+import { Complete, literal } from '../lib/tempLib'
 import {
 	CustomPublishCollection,
 	meteorCustomPublish,

@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 import { ScriptContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
-import { normalizeArrayToMap, protectString } from '../../../lib/lib'
+import { normalizeArrayToMap, protectString } from '../../lib/tempLib'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { getPieceInstancesForPartInstance, getSegmentsWithPartInstances } from '../../lib/RundownResolver'
 import { FindOptions } from '../../collections/lib'

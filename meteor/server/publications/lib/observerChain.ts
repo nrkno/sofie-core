@@ -2,7 +2,7 @@ import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Meteor } from 'meteor/meteor'
 import { MongoCursor } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import { Simplify } from 'type-fest'
-import { assertNever } from '../../../lib/lib'
+import { assertNever } from '../../lib/tempLib'
 import { waitForPromise } from '../../lib/lib'
 
 /**

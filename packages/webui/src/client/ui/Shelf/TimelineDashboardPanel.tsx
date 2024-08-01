@@ -17,7 +17,7 @@ import {
 	DashboardPanelInnerProps,
 	useDashboardPanelTrackedProps,
 } from './DashboardPanel'
-import { unprotectString } from '../../../lib/lib'
+import { unprotectString } from '../../lib/tempLib'
 import { RundownUtils } from '../../lib/rundown'
 import { AdLibPieceUi } from '../../lib/shelf'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'

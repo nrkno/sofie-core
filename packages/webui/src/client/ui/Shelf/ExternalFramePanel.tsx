@@ -9,7 +9,7 @@ import {
 } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../lib/rundownLayouts'
 import { dashboardElementStyle } from './DashboardPanel'
-import { assertNever, getRandomString, literal, protectString } from '../../../lib/lib'
+import { assertNever, getRandomString, literal, protectString } from '../../lib/tempLib'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { parseMosPluginMessageXml, MosPluginMessage } from '../../lib/parsers/mos/mosXml2Js'

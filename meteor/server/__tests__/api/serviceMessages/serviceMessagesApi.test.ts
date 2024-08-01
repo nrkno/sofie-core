@@ -1,6 +1,6 @@
 import { readAllMessages, writeMessage } from '../../../api/serviceMessages/serviceMessagesApi'
 import * as CoreSystemUtil from '../../../coreSystem/collection'
-import { protectString } from '../../../../lib/lib'
+import { protectString } from '../../../lib/tempLib'
 import {
 	Criticality,
 	ExternalServiceMessage,

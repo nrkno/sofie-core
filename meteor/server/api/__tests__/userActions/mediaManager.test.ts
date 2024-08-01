@@ -1,6 +1,6 @@
 import '../../../../__mocks__/_extendJest'
 import { testInFiber, waitUntil } from '../../../../__mocks__/helpers/jest'
-import { getRandomId, protectString } from '../../../../lib/lib'
+import { getRandomId, protectString } from '../../../lib/tempLib'
 import { getCurrentTime } from '../../../lib/lib'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../../__mocks__/helpers/database'
 import { MeteorCall } from '../../methods'

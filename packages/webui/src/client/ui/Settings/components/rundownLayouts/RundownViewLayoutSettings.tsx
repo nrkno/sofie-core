@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { RundownLayoutsAPI } from '../../../../lib/rundownLayouts'
 import { RundownLayouts } from '../../../../collections'
 import { RundownLayoutBase } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
-import { unprotectString } from '../../../../../lib/lib'
+import { unprotectString } from '../../../../lib/tempLib'
 import { EditAttribute } from '../../../../lib/EditAttribute'
 import { LabelActual } from '../../../../lib/Components/LabelAndOverrides'
 

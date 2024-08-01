@@ -1,6 +1,6 @@
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import React, { useContext, useState, useEffect } from 'react'
-import { assertNever } from '../../../lib/lib'
+import { assertNever } from '../tempLib'
 import { useTracker } from '../ReactMeteorData/ReactMeteorData'
 import { SorensenContext } from '../SorensenContext'
 import { MountedAdLibTriggers } from './TriggersHandler'

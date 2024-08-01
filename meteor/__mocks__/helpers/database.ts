@@ -47,7 +47,7 @@ import {
 	getRandomString,
 	Complete,
 	normalizeArray,
-} from '../../lib/lib'
+} from '../../server/lib/tempLib'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'

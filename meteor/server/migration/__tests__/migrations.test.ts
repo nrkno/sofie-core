@@ -5,7 +5,7 @@ import { ICoreSystem, GENESIS_SYSTEM_VERSION } from '@sofie-automation/meteor-li
 import { clearMigrationSteps, addMigrationSteps, prepareMigration, PreparedMigration } from '../databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from '../currentSystemVersion'
 import { RunMigrationResult, GetMigrationStatusResult } from '@sofie-automation/meteor-lib/dist/api/migration'
-import { literal, protectString } from '../../../lib/lib'
+import { literal, protectString } from '../../lib/tempLib'
 import {
 	MigrationStepInputResult,
 	BlueprintManifestType,

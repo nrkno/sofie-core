@@ -40,7 +40,7 @@ import { logger } from '../logging'
 import { internalStoreSystemSnapshot } from '../api/snapshot'
 import { parseVersion, Version } from '../systemStatus/semverUtils'
 import { GENESIS_SYSTEM_VERSION } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
-import { clone, getHash, omit, protectString, unprotectString } from '../../lib/lib'
+import { clone, getHash, omit, protectString, unprotectString } from '../lib/tempLib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { evalBlueprint } from '../api/blueprints/cache'
 import {

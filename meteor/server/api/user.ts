@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { Accounts } from 'meteor/accounts-base'
-import { unprotectString, protectString } from '../../lib/lib'
+import { unprotectString, protectString } from '../lib/tempLib'
 import { sleep, deferAsync } from '../lib/lib'
 import { MethodContextAPI, MethodContext } from './methodContext'
 import { NewUserAPI, UserAPIMethods, createUser, CreateNewUserData } from '@sofie-automation/meteor-lib/dist/api/user'

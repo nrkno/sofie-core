@@ -12,7 +12,7 @@ import {
 	ReactivePlaylistActionContext,
 	createAction as libCreateAction,
 } from '@sofie-automation/meteor-lib/dist/triggers/actionFactory'
-import { flatten, protectString } from '../../../lib/lib'
+import { flatten, protectString } from '../tempLib'
 import { IWrappedAdLib } from '@sofie-automation/meteor-lib/dist/triggers/actionFilterChainCompilers'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { preventDefault } from '../SorensenContext'

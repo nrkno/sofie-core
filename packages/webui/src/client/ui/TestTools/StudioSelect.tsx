@@ -1,6 +1,6 @@
 import { useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Link } from 'react-router-dom'
-import { unprotectString } from '../../../lib/lib'
+import { unprotectString } from '../../lib/tempLib'
 import { UIStudios } from '../Collections'
 import { useTranslation } from 'react-i18next'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'

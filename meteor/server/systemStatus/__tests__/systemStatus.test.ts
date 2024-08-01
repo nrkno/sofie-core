@@ -1,7 +1,7 @@
 import '../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
-import { generateTranslation, literal, protectString, unprotectString } from '../../../lib/lib'
+import { generateTranslation, literal, protectString, unprotectString } from '../../lib/tempLib'
 import { MeteorMock } from '../../../__mocks__/meteor'
 import { status2ExternalStatus, setSystemStatus } from '../systemStatus'
 import { StatusResponse } from '@sofie-automation/meteor-lib/dist/api/systemStatus'

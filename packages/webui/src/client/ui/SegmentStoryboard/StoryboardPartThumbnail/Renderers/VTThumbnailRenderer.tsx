@@ -5,7 +5,7 @@ import { getNoticeLevelForPieceStatus } from '../../../../lib/notifications/noti
 import { RundownUtils } from '../../../../lib/rundown'
 import { IProps } from './ThumbnailRendererFactory'
 import { RundownTimingConsumer } from '../../../RundownView/RundownTiming/RundownTimingConsumer'
-import { unprotectString } from '../../../../../lib/lib'
+import { unprotectString } from '../../../../lib/tempLib'
 import { FreezeFrameIcon } from '../../../../lib/ui/icons/freezeFrame'
 import { PieceStatusIcon } from '../../../../lib/ui/PieceStatusIcon'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'

@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
 import { deserializeTimelineBlob, TimelineHash } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { applyToArray, clone, normalizeArray, protectString } from '../../../lib/lib'
+import { applyToArray, clone, normalizeArray, protectString } from '../../lib/tempLib'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import {
 	TimelineState,

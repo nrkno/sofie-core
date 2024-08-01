@@ -9,7 +9,7 @@ import { User } from '@sofie-automation/meteor-lib/dist/collections/Users'
 import { DBOrganization, UserRoles } from '@sofie-automation/meteor-lib/dist/collections/Organization'
 import { Spinner } from '../../lib/Spinner'
 import { Link } from 'react-router-dom'
-import { unprotectString } from '../../../lib/lib'
+import { unprotectString } from '../../lib/tempLib'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { Organizations } from '../../collections'
 

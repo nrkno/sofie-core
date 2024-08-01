@@ -7,7 +7,7 @@ import {
 	RundownLayoutBase,
 	CustomizableRegions,
 } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
-import { literal, getRandomId, protectString } from '../../lib/lib'
+import { literal, getRandomId, protectString } from '../lib/tempLib'
 import { logger } from '../logging'
 import { MethodContext, MethodContextAPI } from './methodContext'
 import { ShowStyleContentWriteAccess } from '../security/showStyle'

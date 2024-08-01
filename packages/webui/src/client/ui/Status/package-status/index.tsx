@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import { useSubscription, useTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { ExpectedPackageWorkStatus } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackageWorkStatuses'
-import { normalizeArrayToMap, unprotectString } from '../../../../lib/lib'
+import { normalizeArrayToMap, unprotectString } from '../../../lib/tempLib'
 import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { MeteorCall } from '../../../lib/meteorApi'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'

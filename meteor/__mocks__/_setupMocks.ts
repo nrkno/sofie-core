@@ -2,7 +2,7 @@ import { setLogLevel } from '../server/logging'
 import { Fiber } from './Fibers'
 import { resetRandomId } from './random'
 import { makeCompatible } from 'meteor-promise'
-import { LogLevel } from '../lib/lib'
+import { LogLevel } from '../server/lib/tempLib'
 import { SupressLogMessages } from './suppressLogging'
 
 // This file is run before all tests start.

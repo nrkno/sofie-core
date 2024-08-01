@@ -7,7 +7,7 @@ import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/cred
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Settings } from '../Settings'
 import { triggerWriteAccess } from './lib/securityVerify'
-import { isProtectedString } from '../../lib/lib'
+import { isProtectedString } from '../lib/tempLib'
 import { fetchStudioLight } from '../optimizations'
 import {
 	ExternalMessageQueueObjId,

@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { unprotectString } from '../../../lib/lib'
+import { unprotectString } from '../../lib/tempLib'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { NavLink, useLocation } from 'react-router-dom'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'

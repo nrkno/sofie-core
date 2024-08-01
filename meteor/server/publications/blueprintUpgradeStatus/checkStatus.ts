@@ -14,7 +14,7 @@ import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowSt
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { joinObjectPathFragments, objectPathGet } from '@sofie-automation/corelib/dist/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { generateTranslation } from '../../../lib/lib'
+import { generateTranslation } from '../../lib/tempLib'
 import { logger } from '../../logging'
 import { ShowStyleBaseFields, StudioFields } from './reactiveContentCache'
 import _ from 'underscore'

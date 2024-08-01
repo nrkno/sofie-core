@@ -9,7 +9,7 @@ import {
 	buildPastInfinitePiecesForThisPartQuery,
 } from '@sofie-automation/corelib/dist/playout/infinites'
 import { invalidateAfter } from './invalidatingTime'
-import { groupByToMap, protectString } from '../../lib/lib'
+import { groupByToMap, protectString } from './tempLib'
 import { getCurrentTime } from './systemTime'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'

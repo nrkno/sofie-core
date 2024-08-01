@@ -8,7 +8,7 @@ import {
 import { Meteor } from 'meteor/meteor'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { protectString, getRandomId, omit } from '../../lib/lib'
+import { protectString, getRandomId, omit } from '../lib/tempLib'
 import { MethodContextAPI, MethodContext } from './methodContext'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { ShowStyleContentWriteAccess } from '../security/showStyle'

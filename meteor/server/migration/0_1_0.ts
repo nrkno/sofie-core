@@ -1,6 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
 import { logger } from '../logging'
-import { getRandomId, protectString, generateTranslation as t, getHash } from '../../lib/lib'
+import { getRandomId, protectString, generateTranslation as t, getHash } from '../lib/tempLib'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ShowStyleBases, ShowStyleVariants, Studios, TriggeredActions } from '../collections'

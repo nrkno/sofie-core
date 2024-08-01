@@ -7,7 +7,7 @@ import { confirmDeleteRundown, confirmReSyncRundown, getShowStyleBaseLink } from
 import { useDrag, useDrop } from 'react-dnd'
 import { IRundownDragObject, IRundownPlaylistUiAction, RundownListDragDropTypes } from './DragAndDropTypes'
 import { getEmptyImage } from 'react-dnd-html5-backend'
-import { unprotectString } from '../../../lib/lib'
+import { unprotectString } from '../../lib/tempLib'
 import RundownListItemView from './RundownListItemView'
 import { RundownLayoutBase } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'

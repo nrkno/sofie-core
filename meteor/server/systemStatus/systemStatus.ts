@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { Time, getRandomId, literal } from '../../lib/lib'
+import { Time, getRandomId, literal } from '../lib/tempLib'
 import { getCurrentTime } from '../lib/lib'
 import {
 	parseVersion,

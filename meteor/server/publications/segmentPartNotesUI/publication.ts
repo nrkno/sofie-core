@@ -7,7 +7,7 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { Rundown, getRundownNrcsName } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { groupByToMap, literal, normalizeArrayToMap, protectString } from '../../../lib/lib'
+import { groupByToMap, literal, normalizeArrayToMap, protectString } from '../../lib/tempLib'
 import {
 	CustomPublishCollection,
 	meteorCustomPublish,

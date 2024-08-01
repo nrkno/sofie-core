@@ -13,7 +13,7 @@ import { runUpgradeForStudio, validateConfigForStudio } from '../../../migration
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { ServerClientAPI } from '../../client'
-import { assertNever } from '../../../../lib/lib'
+import { assertNever } from '../../../lib/tempLib'
 import { getCurrentTime } from '../../../lib/lib'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'

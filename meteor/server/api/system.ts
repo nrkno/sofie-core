@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { Time } from '../../lib/lib'
+import { Time } from '../lib/tempLib'
 import { sleep, getCurrentTime } from '../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import { MethodContextAPI, MethodContext } from './methodContext'

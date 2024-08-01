@@ -9,7 +9,7 @@ import {
 	clone,
 	Complete,
 	objectPathDelete,
-} from '../../../lib/lib'
+} from '../../lib/tempLib'
 import { waitForPromise } from '../../lib/lib'
 import { DBStudio, StudioPlayoutDevice } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'

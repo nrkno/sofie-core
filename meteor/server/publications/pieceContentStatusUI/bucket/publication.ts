@@ -12,7 +12,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { UIBucketContentStatus } from '@sofie-automation/meteor-lib/dist/api/rundownNotifications'
 import { Buckets, MediaObjects, PackageContainerPackageStatuses, PackageInfos, Studios } from '../../../collections'
-import { literal, protectString } from '../../../../lib/lib'
+import { literal, protectString } from '../../../lib/tempLib'
 import {
 	CustomPublishCollection,
 	meteorCustomPublish,

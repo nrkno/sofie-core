@@ -1,7 +1,7 @@
 import '../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
-import { protectString, literal, getRandomString } from '../../../lib/lib'
+import { protectString, literal, getRandomString } from '../../lib/tempLib'
 import {
 	RundownLayoutType,
 	RundownLayout,

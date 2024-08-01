@@ -11,7 +11,7 @@ import {
 	protectString,
 	assertNever,
 	getRandomString,
-} from '../../../lib/lib'
+} from '../tempLib'
 import { isTranslatableMessage, ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { MeteorCall } from '../../lib/meteorApi'
