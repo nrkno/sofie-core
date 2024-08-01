@@ -10,8 +10,6 @@ import './client/lib/polyfill/polyfills'
 
 import './client/ui/i18n'
 
-import './lib/main'
-
 // Import files that call Meteor.startup:
 import './client/lib/currentTimeReactive'
 import './client/lib/uncaughtErrorHandler'
