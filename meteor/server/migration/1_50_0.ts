@@ -3,6 +3,8 @@ import {
 	AdLibActions,
 	AdLibPieces,
 	ExpectedPackages,
+	PartInstances,
+	Parts,
 	PeripheralDevices,
 	Pieces,
 	RundownPlaylists,
@@ -923,6 +925,71 @@ export const addSteps = addMigrationSteps('1.50.0', [
 				await ExpectedPackages.mutableCollection.updateAsync(expectedPackage._id, {
 					$set: {
 						partId: partIdLookup.get(expectedPackage.pieceId) ?? protectString(''),
+					},
+				})
+			}
+		},
+	},
+
+	{
+		id: `Part rename 'expectedDurationWithPreroll' to 'expectedDurationWithTransition'`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objectCount = await Parts.countDocuments({
+				expectedDurationWithTransition: { $exists: false },
+				expectedDurationWithPreroll: { $exists: true },
+			})
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			const objects = await Parts.findFetchAsync({
+				expectedDurationWithTransition: { $exists: false },
+				expectedDurationWithPreroll: { $exists: true },
+			})
+
+			for (const part of objects) {
+				await Parts.mutableCollection.updateAsync(part._id, {
+					$set: {
+						expectedDurationWithTransition: (part as any).expectedDurationWithPreroll,
+					},
+					$unset: {
+						expectedDurationWithPreroll: 1,
+					},
+				})
+			}
+		},
+	},
+	{
+		id: `PartInstance rename 'part.expectedDurationWithPreroll' to 'part.expectedDurationWithTransition'`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objectCount = await PartInstances.countDocuments({
+				'part.expectedDurationWithTransition': { $exists: false },
+				'part.expectedDurationWithPreroll': { $exists: true },
+			})
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			const objects = await PartInstances.findFetchAsync({
+				'part.expectedDurationWithTransition': { $exists: false },
+				'part.expectedDurationWithPreroll': { $exists: true },
+			})
+
+			for (const partInstance of objects) {
+				await PartInstances.mutableCollection.updateAsync(partInstance._id, {
+					$set: {
+						'part.expectedDurationWithTransition': (partInstance.part as any).expectedDurationWithPreroll,
+					},
+					$unset: {
+						'part.expectedDurationWithPreroll': 1,
 					},
 				})
 			}

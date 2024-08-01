@@ -53,7 +53,7 @@ describe('updatePartInstanceRanks', () => {
 			segmentId,
 			externalId: id,
 			title: id,
-			expectedDurationWithPreroll: undefined,
+			expectedDurationWithTransition: undefined,
 		})
 	}
 
@@ -264,7 +264,7 @@ describe('updatePartInstanceRanks', () => {
 				segmentId,
 				externalId: adlibId,
 				title: adlibId,
-				expectedDurationWithPreroll: undefined,
+				expectedDurationWithTransition: undefined,
 			},
 			'adlib-part'
 		)
@@ -376,7 +376,7 @@ describe('updatePartInstanceRanks', () => {
 				segmentId,
 				externalId: adlibId,
 				title: adlibId,
-				expectedDurationWithPreroll: undefined,
+				expectedDurationWithTransition: undefined,
 			},
 			'adlib-part'
 		)
@@ -419,7 +419,7 @@ describe('updatePartInstanceRanks', () => {
 				segmentId,
 				externalId: adlibId0,
 				title: adlibId0,
-				expectedDurationWithPreroll: undefined,
+				expectedDurationWithTransition: undefined,
 			},
 			'deleted'
 		)
@@ -432,7 +432,7 @@ describe('updatePartInstanceRanks', () => {
 				segmentId,
 				externalId: adlibId1,
 				title: adlibId1,
-				expectedDurationWithPreroll: undefined,
+				expectedDurationWithTransition: undefined,
 			},
 			'adlib-part'
 		)

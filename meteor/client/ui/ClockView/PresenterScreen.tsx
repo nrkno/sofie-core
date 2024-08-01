@@ -32,7 +32,7 @@ import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/Sho
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { ShelfDashboardLayout } from '../Shelf/ShelfDashboardLayout'
 import { parse as queryStringParse } from 'query-string'
-import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
+import { calculatePartInstanceExpectedDurationWithTransition } from '@sofie-automation/corelib/dist/playout/timings'
 import { getPlaylistTimingDiff } from '../../lib/rundownTiming'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { UIShowStyleBases, UIStudios } from '../Collections'
@@ -467,7 +467,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 										showStyleBaseId={currentShowStyleBaseId}
 										rundownIds={this.props.rundownIds}
 										partAutoNext={currentPart.instance.part.autoNext || false}
-										partExpectedDuration={calculatePartInstanceExpectedDurationWithPreroll(currentPart.instance)}
+										partExpectedDuration={calculatePartInstanceExpectedDurationWithTransition(currentPart.instance)}
 										partStartedPlayback={currentPart.instance.timings?.plannedStartedPlayback}
 										playlistActivationId={this.props.playlist?.activationId}
 									/>

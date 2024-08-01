@@ -69,7 +69,7 @@ export async function setupRundownBase(
 		_rank: 0,
 		externalId: 'MOCK_PART_0_0',
 		title: 'Part 0 0',
-		expectedDurationWithPreroll: undefined,
+		expectedDurationWithTransition: undefined,
 
 		...partPropsOverride,
 	}
@@ -139,7 +139,7 @@ export async function setupPart2(
 		_rank: 1,
 		externalId: 'MOCK_PART_0_1',
 		title: 'Part 0 1',
-		expectedDurationWithPreroll: undefined,
+		expectedDurationWithTransition: undefined,
 
 		...partPropsOverride,
 	}

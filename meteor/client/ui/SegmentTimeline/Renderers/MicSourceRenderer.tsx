@@ -8,7 +8,7 @@ import * as _ from 'underscore'
 
 import { getElementWidth } from '../../../utils/dimensions'
 import { MicFloatingInspector } from '../../FloatingInspectors/MicFloatingInspector'
-import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
+import { calculatePartInstanceExpectedDurationWithTransition } from '@sofie-automation/corelib/dist/playout/timings'
 import { unprotectString } from '../../../../lib/lib'
 import { IFloatingInspectorPosition } from '../../FloatingInspectors/IFloatingInspectorPosition'
 import { logger } from '../../../../lib/logging'
@@ -135,8 +135,8 @@ export const MicSourceRenderer = withTranslation()(
 				_forceSizingRecheck = true
 			}
 
-			const expectedDuration = calculatePartInstanceExpectedDurationWithPreroll(this.props.part.instance)
-			const prevExpectedDuration = calculatePartInstanceExpectedDurationWithPreroll(prevProps.part.instance)
+			const expectedDuration = calculatePartInstanceExpectedDurationWithTransition(this.props.part.instance)
+			const prevExpectedDuration = calculatePartInstanceExpectedDurationWithTransition(prevProps.part.instance)
 
 			if (
 				!_forceSizingRecheck &&

@@ -227,7 +227,7 @@ export const BUDGET_GAP_PART = {
 		gap: true,
 		title: 'gap',
 		invalid: true,
-		expectedDurationWithPreroll: undefined,
+		expectedDurationWithTransition: undefined,
 	}),
 	pieces: [],
 	renderedDuration: 0,

@@ -12,7 +12,7 @@ import { getCurrentTime } from '../lib'
 import { ReadonlyDeep } from 'type-fest'
 import { CacheForPlayoutPreInit, CacheForPlayout } from './cache'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
-import { updateExpectedDurationWithPrerollForPartInstance } from './lib'
+import { updateExpectedDurationWithTransitionForPartInstance } from './lib'
 import { runJobWithPlaylistLock } from './lock'
 import { updateTimeline } from './timeline/generate'
 import { performTakeToNextedPart } from './take'
@@ -192,7 +192,7 @@ async function applyAnyExecutionSideEffects(
 	if (actionContext.nextPartState !== ActionPartChange.NONE) {
 		const nextPartInstanceId = cache.Playlist.doc.nextPartInfo?.partInstanceId
 		if (nextPartInstanceId) {
-			updateExpectedDurationWithPrerollForPartInstance(cache, nextPartInstanceId)
+			updateExpectedDurationWithTransitionForPartInstance(cache, nextPartInstanceId)
 		}
 	}
 

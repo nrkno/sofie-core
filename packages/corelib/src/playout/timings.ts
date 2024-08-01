@@ -156,15 +156,12 @@ export function getPartTimingsOrDefaults(
 	}
 }
 
-function calculateExpectedDurationWithPreroll(rawDuration: number, timings: PartCalculatedTimings): number {
-	// toPartDelay is accounted for twice, because it is added to `fromPartRemaining` when the `fromPartRemaining` value is calculated.
-	// If we only do `timings.toPartDelay - timings.fromPartRemaining`, the the values cancel out and the 'from' Part will
-	//  count overtime when prerolling into the 'to' Part.
-	// As a result, the 'to' Part will have a countdown which includes its own preroll.
-	return Math.max(0, rawDuration + timings.toPartDelay - (timings.fromPartRemaining - timings.toPartDelay))
+function calculateExpectedDurationWithTransition(rawDuration: number, timings: PartCalculatedTimings): number {
+	// toPartDelay needs to be subtracted, because it is added to `fromPartRemaining` when the `fromPartRemaining` value is calculated.
+	return Math.max(0, rawDuration - (timings.fromPartRemaining - timings.toPartDelay))
 }
 
-export function calculatePartExpectedDurationWithPreroll(
+export function calculatePartExpectedDurationWithTransition(
 	part: DBPart,
 	pieces: PieceInstancePiece[]
 ): number | undefined {
@@ -172,23 +169,22 @@ export function calculatePartExpectedDurationWithPreroll(
 
 	const timings = calculatePartTimings(undefined, {}, [], part, pieces)
 
-	return calculateExpectedDurationWithPreroll(part.expectedDuration, timings)
+	return calculateExpectedDurationWithTransition(part.expectedDuration, timings)
 }
 
-export function calculatePartInstanceExpectedDurationWithPreroll(
+export function calculatePartInstanceExpectedDurationWithTransition(
 	partInstance: Pick<DBPartInstance, 'part' | 'partPlayoutTimings'>
 	// pieces: CalculateTimingsPiece[]
 ): number | undefined {
 	if (partInstance.part.expectedDuration === undefined) return undefined
 
 	if (partInstance.partPlayoutTimings) {
-		return calculateExpectedDurationWithPreroll(partInstance.part.expectedDuration, partInstance.partPlayoutTimings)
-	} else {
-		const timings = calculatePartTimings(undefined, {}, [], partInstance.part, []) // TODO: Piece timings should be taken into account
-
-		return calculateExpectedDurationWithPreroll(
-			partInstance.part.expectedDurationWithPreroll ?? partInstance.part.expectedDuration,
-			timings
+		// The timings needed are known, we can ensure that live data is used
+		return calculateExpectedDurationWithTransition(
+			partInstance.part.expectedDuration,
+			partInstance.partPlayoutTimings
 		)
+	} else {
+		return partInstance.part.expectedDurationWithTransition
 	}
 }
