@@ -7,7 +7,7 @@ import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { withTranslation } from 'react-i18next'
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { unprotectString, partial, literal, ProtectedString } from '../../../lib/lib'
+import { unprotectString, literal, ProtectedString } from '../../../lib/lib'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getElementDocumentOffset } from '../../utils/positions'
 import { UIStateStorage } from '../../lib/UIStateStorage'
@@ -430,7 +430,7 @@ export const RundownViewBuckets = withTranslation()(
 					e,
 					ts,
 					bucket._id,
-					partial<Bucket>({
+					literal<Partial<Bucket>>({
 						name: newName,
 					})
 				)
@@ -492,7 +492,7 @@ export const RundownViewBuckets = withTranslation()(
 							e,
 							ts,
 							draggedB._id,
-							partial<Bucket>({
+							literal<Partial<Bucket>>({
 								_rank: newRank,
 							})
 						)

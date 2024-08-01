@@ -4,7 +4,7 @@ import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { NavLink } from 'react-router-dom'
 import { RundownUtils } from '../../../lib/rundown'
 import classNames from 'classnames'
-import { formatTime } from '../../../../lib/lib'
+import { formatTime } from '@sofie-automation/meteor-lib/dist/time'
 import { MediaStatusIndicator } from '../../MediaStatus/MediaStatusIndicator'
 
 export function MediaStatusListItem({

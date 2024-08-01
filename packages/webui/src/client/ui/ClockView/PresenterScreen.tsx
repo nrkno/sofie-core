@@ -5,7 +5,6 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { withTiming, WithTiming } from '../RundownView/RundownTiming/withTiming'
 import { useSubscription, useSubscriptions, useTracker, withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { extendMandadory } from '../../../lib/lib'
 import { protectString, unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { getCurrentTime } from '../../lib/systemTime'
 import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
@@ -138,9 +137,10 @@ function getShowStyleBaseIdSegmentPartUi(
 				true
 			)
 
-			segment = extendMandadory<DBSegment, SegmentUi>(o.segmentExtended, {
+			segment = {
+				...o.segmentExtended,
 				items: o.parts,
-			})
+			}
 
 			partInstanceUi = o.parts.find((part) => part.instance._id === partInstance._id)
 		}

@@ -16,7 +16,8 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { parse as queryStringParse } from 'query-string'
 
 import { Spinner } from '../../lib/Spinner'
-import { firstIfArray, protectString } from '../../../lib/lib'
+import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+import { firstIfArray } from '../../lib/lib'
 import { PrompterData, PrompterAPI, PrompterDataPart } from './prompter'
 import { PrompterControlManager } from './controller/manager'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'

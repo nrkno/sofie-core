@@ -9,6 +9,7 @@ import {
 	objectPathGet,
 	objectPathSet,
 	removeNullyProperties,
+	stringifyObjects,
 } from '../lib'
 import { UserError, UserErrorMessage } from '../error'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
@@ -190,5 +191,17 @@ describe('Lib', () => {
 		// Insert three:
 		expect(getRank(undefined, undefined, 0, 2)).toEqual(0.3333333333333333)
 		expect(getRank(undefined, undefined, 1, 2)).toEqual(0.6666666666666666)
+	})
+	test('stringifyObjects', () => {
+		const o: any = {
+			a: 1,
+			b: {
+				c: '1',
+				d: {
+					e: 2,
+				},
+			},
+		}
+		expect(stringifyObjects(o)).toEqual(stringifyObjects(o))
 	})
 })

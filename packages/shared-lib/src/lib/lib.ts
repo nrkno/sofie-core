@@ -1,3 +1,5 @@
+import { ProtectedString } from './protectedString'
+
 export type Time = number
 export type TimeDuration = number
 
@@ -7,6 +9,18 @@ export function assertNever(_never: never): void {
 export function literal<T>(o: T): T {
 	return o
 }
+
+/** Convenience function, to be used when length of array has previously been verified */
+export function last<T>(values: T[]): T {
+	return values[values.length - 1]
+}
+
+export function objectFromEntries<Key extends ProtectedString<any>, Val>(
+	entries: Array<[Key, Val]>
+): Record<string, Val> {
+	return Object.fromEntries(entries)
+}
+
 export async function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms))
 }

@@ -16,6 +16,14 @@ export interface LiveQueryHandle {
 }
 
 /**
+ * Replaces all invalid characters in order to make the path a valid one
+ * @param path
+ */
+export function fixValidPath(path: string): string {
+	return path.replace(/([^a-z0-9_.@()-])/gi, '_')
+}
+
+/**
  * Make Meteor.wrapAsync a bit more type safe
  * The original version makes the callback be after the last non-undefined parameter, rather than after or replacing the last parameter.
  * Which makes it incredibly hard to find without iterating over all the parameters. This does that for you, so you dont need to check as many places

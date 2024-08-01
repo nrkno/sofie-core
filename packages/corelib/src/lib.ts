@@ -22,6 +22,7 @@ const nanoid = createNanoid(UNMISTAKABLE_CHARS, 17)
 export * from './hash'
 
 export type { Complete, ArrayElement, Subtract } from '@sofie-automation/shared-lib/dist/lib/types'
+export { assertNever, literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 
 export function getSofieHostUrl(): string {
 	const url = process.env.ROOT_URL
@@ -55,10 +56,6 @@ export function min<T>(vals: T[] | readonly T[], iterator: _.ListIterator<T, any
 	} else {
 		return _.min(vals, iterator) as T
 	}
-}
-
-export function assertNever(_never: never): void {
-	// Do nothing. This is a type guard
 }
 
 export function clone<T>(o: ReadonlyDeep<T> | Readonly<T> | T): T {
@@ -100,10 +97,6 @@ export function getRandomString(numberOfChars?: number): string {
 
 export function getRandomId<T extends ProtectedString<any>>(numberOfChars?: number): T {
 	return protectString(getRandomString(numberOfChars))
-}
-
-export function literal<T>(o: T): T {
-	return o
 }
 
 /**

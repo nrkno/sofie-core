@@ -16,17 +16,9 @@ import {
 import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
 import { PieceGeneric } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
-import {
-	Time,
-	formatDateTime,
-	fixValidPath,
-	protectString,
-	getRandomId,
-	omit,
-	unprotectStringArray,
-	unprotectString,
-} from '../../lib/lib'
-import { getCurrentTime } from '../lib/lib'
+import { Time, protectString, getRandomId, omit, unprotectStringArray, unprotectString } from '../../lib/lib'
+import { formatDateTime } from '@sofie-automation/meteor-lib/dist/time'
+import { getCurrentTime, fixValidPath } from '../lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'

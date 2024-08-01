@@ -1,21 +1,10 @@
-import '../../__mocks__/_extendJest'
-
 import { Mongo } from 'meteor/mongo'
-import { afterEachInFiber, testInFiber } from '../../__mocks__/helpers/jest'
-import { setLogLevel } from '../../server/logging'
-import { protectString, LogLevel } from '../lib'
-import { MeteorMock } from '../../__mocks__/meteor'
+import { protectString } from '../lib'
 
 // require('../../../../../server/api/ingest/mosDevice/api.ts') // include in order to create the Meteor methods needed
 
 describe('lib/lib', () => {
-	afterEachInFiber(() => {
-		MeteorMock.mockSetServerEnvironment()
-	})
-
-	testInFiber('mongowhere', () => {
-		setLogLevel(LogLevel.DEBUG)
-
+	test('mongowhere', () => {
 		// mongoWhere is used my Collection mock
 		const MyCollection = new Mongo.Collection<any>('mycollection')
 

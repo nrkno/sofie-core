@@ -211,6 +211,14 @@ export function mapOrFallback<T = any, K = any, L = any>(
 	return array.map(callbackFn)
 }
 
+export function firstIfArray<T>(value: T | T[] | null | undefined): T | null | undefined
+export function firstIfArray<T>(value: T | T[] | null): T | null
+export function firstIfArray<T>(value: T | T[] | undefined): T | undefined
+export function firstIfArray<T>(value: T | T[]): T
+export function firstIfArray<T>(value: unknown): T {
+	return _.isArray(value) ? _.first(value) : value
+}
+
 export const TOOLTIP_DEFAULT_DELAY = 0.5
 
 /**

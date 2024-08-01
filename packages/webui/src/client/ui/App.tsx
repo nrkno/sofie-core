@@ -57,8 +57,8 @@ import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { useTracker, useSubscription } from '../lib/ReactMeteorData/ReactMeteorData'
 import { DocumentTitleProvider } from '../lib/DocumentTitleProvider'
 import { Spinner } from '../lib/Spinner'
-import { catchError, isRunningInPWA } from '../lib/lib'
-import { firstIfArray, protectString } from '../../lib/lib'
+import { catchError, firstIfArray, isRunningInPWA } from '../lib/lib'
+import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 
 const NullComponent = () => null
 

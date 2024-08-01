@@ -11,7 +11,7 @@ import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-met
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
 import { useTranslation } from 'react-i18next'
-import { extendMandadory, unprotectString } from '../../../lib/lib'
+import { unprotectString } from '../../../lib/lib'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { Spinner } from '../../lib/Spinner'
 import { sofieWarningIcon as WarningIcon } from '../../lib/notifications/warningIcon'
@@ -384,17 +384,16 @@ export function MediaManagerStatus(): JSX.Element {
 		[t]
 	)
 
-	const allWorkFlows = useTracker(
+	const allWorkFlows: MediaWorkFlowUi[] = useTracker(
 		() =>
 			MediaWorkFlows.find({})
 				.fetch()
-				.map((i) =>
-					extendMandadory<MediaWorkFlow, MediaWorkFlowUi>(i, {
-						steps: MediaWorkFlowSteps.find({
-							workFlowId: i._id,
-						}).fetch(),
-					})
-				),
+				.map((i) => ({
+					...i,
+					steps: MediaWorkFlowSteps.find({
+						workFlowId: i._id,
+					}).fetch(),
+				})),
 		[],
 		[]
 	)

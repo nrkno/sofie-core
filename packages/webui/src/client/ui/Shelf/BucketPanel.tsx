@@ -24,7 +24,7 @@ import {
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { doUserAction, getEventTimestamp, UserAction } from '../../lib/clientUserAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { literal, unprotectString, partial, protectString } from '../../../lib/lib'
+import { literal, unprotectString, protectString } from '../../../lib/lib'
 import { contextMenuHoldToDisplayTime, UserAgentPointer, USER_AGENT_POINTER_PROPERTY } from '../../lib/lib'
 import { IDashboardPanelTrackedProps } from './DashboardPanel'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
@@ -662,7 +662,7 @@ const BucketPanelContent = withTranslation()(
 									e,
 									getEventTimestamp(e),
 									piece._id,
-									partial<BucketAdLib>({
+									literal<Partial<BucketAdLib>>({
 										name: newName,
 									})
 								)
@@ -677,7 +677,7 @@ const BucketPanelContent = withTranslation()(
 									e,
 									getEventTimestamp(e),
 									piece.adlibAction._id,
-									partial<BucketAdLibAction>({
+									literal<Partial<BucketAdLibAction>>({
 										//@ts-expect-error deep property
 										'display.label': newName,
 									})
@@ -721,7 +721,7 @@ const BucketPanelContent = withTranslation()(
 										e,
 										getEventTimestamp(e),
 										draggedB._id,
-										partial<BucketAdLib>({
+										literal<Partial<BucketAdLib>>({
 											_rank: newRank,
 										})
 									)
@@ -732,7 +732,7 @@ const BucketPanelContent = withTranslation()(
 										e,
 										getEventTimestamp(e),
 										draggedB.adlibAction._id,
-										partial<BucketAdLibAction>({
+										literal<Partial<BucketAdLibAction>>({
 											//@ts-expect-error deep property
 											'display._rank': newRank,
 										})
@@ -754,7 +754,7 @@ const BucketPanelContent = withTranslation()(
 									e,
 									getEventTimestamp(e),
 									draggedB._id,
-									partial<BucketAdLib>({
+									literal<Partial<BucketAdLib>>({
 										bucketId,
 									})
 								)
@@ -765,7 +765,7 @@ const BucketPanelContent = withTranslation()(
 									e,
 									getEventTimestamp(e),
 									draggedB.adlibAction._id,
-									partial<BucketAdLibAction>({
+									literal<Partial<BucketAdLibAction>>({
 										bucketId,
 									})
 								)

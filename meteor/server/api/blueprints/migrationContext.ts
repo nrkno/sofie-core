@@ -1,6 +1,5 @@
 import * as _ from 'underscore'
 import {
-	trimIfString,
 	getHash,
 	unprotectObject,
 	protectString,
@@ -43,6 +42,11 @@ import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objec
 import { ShowStyleBaseId, ShowStyleVariantId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevices, ShowStyleBases, ShowStyleVariants, Studios, TriggeredActions } from '../../collections'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
+
+function trimIfString<T>(value: T): T | string {
+	if (_.isString(value)) return value.trim()
+	return value
+}
 
 function convertTriggeredActionToBlueprints(triggeredAction: TriggeredActionsObj): IBlueprintTriggeredActions {
 	const obj: Complete<IBlueprintTriggeredActions> = {
