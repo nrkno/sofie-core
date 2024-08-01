@@ -24,7 +24,7 @@ const noop = (_type: string) => {
 const logger: LoggerInstanceFixed = {
 	error: getLogMethod('error'),
 	warn: getLogMethod('warn'),
-	help: getLogMethod('help'),
+	// help: getLogMethod('help'),
 	data: getLogMethod('data'),
 	info: getLogMethod('info'),
 	debug: getLogMethod('debug'),
