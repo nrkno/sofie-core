@@ -53,7 +53,7 @@ export function makeTestParts(): DBPart[] {
 			segmentId: protectString('segment0'),
 			notes: [],
 			externalId: 'NCS_PART_0',
-			expectedDurationWithPreroll: 1000,
+			expectedDurationWithTransition: 1000,
 			title: 'Part 0',
 		},
 	]
