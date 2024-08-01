@@ -18,24 +18,6 @@ type PromisifyFunction<T> = T extends (...args: any) => any
 	? (...args: Parameters<T>) => Promise<ReturnType<T>> | ReturnType<T>
 	: T
 
-// The diff is currently only used client-side
-const systemTime = {
-	hasBeenSet: false,
-	diff: 0,
-	stdDev: 9999,
-	lastSync: 0,
-	timeOriginDiff: 0,
-}
-/**
- * Returns the current (synced) time.
- * If NTP-syncing is enabled, it'll be unaffected of whether the client has a well-synced computer time or not.
- * @return {Time}
- */
-export function getCurrentTime(): Time {
-	return Math.floor(Date.now() - (Meteor.isServer ? 0 : systemTime.diff))
-}
-export { systemTime }
-
 export interface DBObj {
 	_id: ProtectedString<any>
 	[key: string]: any

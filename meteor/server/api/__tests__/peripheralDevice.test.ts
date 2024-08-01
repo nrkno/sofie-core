@@ -6,15 +6,8 @@ import {
 	PeripheralDeviceType,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import {
-	getCurrentTime,
-	literal,
-	protectString,
-	ProtectedString,
-	getRandomId,
-	LogLevel,
-	getRandomString,
-} from '../../../lib/lib'
+import { literal, protectString, ProtectedString, getRandomId, LogLevel, getRandomString } from '../../../lib/lib'
+import { getCurrentTime } from '../../lib/lib'
 import { testInFiber, waitUntil } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
 import { setLogLevel } from '../../logging'

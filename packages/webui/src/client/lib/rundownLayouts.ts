@@ -47,7 +47,8 @@ import {
 	RundownViewLayout,
 } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { getCurrentTime, literal } from '../../lib/lib'
+import { literal } from '../../lib/lib'
+import { getCurrentTime } from './systemTime'
 import { invalidateAt } from './invalidatingTime'
 import { memoizedIsolatedAutorun } from './memoizedIsolatedAutorun'
 import { PartInstances, PieceInstances } from '../collections'

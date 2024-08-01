@@ -1,5 +1,5 @@
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { clone, getCurrentTime, unprotectString } from '../lib/lib'
+import { clone, unprotectString } from '../lib/lib'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
@@ -37,8 +37,8 @@ export function defaultRundownPlaylist(_id: RundownPlaylistId, studioId: StudioI
 		studioId: studioId,
 
 		name: 'Default RundownPlaylist',
-		created: getCurrentTime(),
-		modified: getCurrentTime(),
+		created: Date.now(),
+		modified: Date.now(),
 
 		// activationId: undefined,
 		rehearsal: false,
@@ -72,8 +72,8 @@ export function defaultRundown(
 		externalId: externalId,
 		name: 'Default Rundown',
 
-		created: getCurrentTime(),
-		modified: getCurrentTime(),
+		created: Date.now(),
+		modified: Date.now(),
 		importVersions: {
 			studio: '',
 			showStyleBase: '',

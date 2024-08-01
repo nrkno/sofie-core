@@ -3,7 +3,7 @@ import '../../__mocks__/_extendJest'
 import { Mongo } from 'meteor/mongo'
 import { afterEachInFiber, testInFiber } from '../../__mocks__/helpers/jest'
 import { setLogLevel } from '../../server/logging'
-import { getCurrentTime, systemTime, formatDateTime, stringifyObjects, protectString, LogLevel } from '../lib'
+import { formatDateTime, stringifyObjects, protectString, LogLevel } from '../lib'
 import { MeteorMock } from '../../__mocks__/meteor'
 
 // require('../../../../../server/api/ingest/mosDevice/api.ts') // include in order to create the Meteor methods needed
@@ -11,14 +11,6 @@ import { MeteorMock } from '../../__mocks__/meteor'
 describe('lib/lib', () => {
 	afterEachInFiber(() => {
 		MeteorMock.mockSetServerEnvironment()
-	})
-
-	testInFiber('getCurrentTime', () => {
-		systemTime.diff = 5439
-		MeteorMock.mockSetClientEnvironment()
-		expect(getCurrentTime() / 1000).toBeCloseTo((Date.now() - 5439) / 1000, 1)
-		MeteorMock.mockSetServerEnvironment()
-		expect(getCurrentTime() / 1000).toBeCloseTo(Date.now() / 1000, 1)
 	})
 
 	testInFiber('formatDateTime', () => {

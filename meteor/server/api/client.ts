@@ -1,5 +1,6 @@
 import { check } from '../../lib/check'
-import { literal, getCurrentTime, Time, getRandomId } from '../../lib/lib'
+import { literal, Time, getRandomId } from '../../lib/lib'
+import { getCurrentTime } from '../lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { logger } from '../logging'
 import { ClientAPI, NewClientAPI, ClientAPIMethods } from '@sofie-automation/meteor-lib/dist/api/client'

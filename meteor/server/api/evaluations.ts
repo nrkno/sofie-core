@@ -1,5 +1,6 @@
 import { EvaluationBase } from '@sofie-automation/meteor-lib/dist/collections/Evaluations'
-import { getCurrentTime, getRandomId, getSofieHostUrl } from '../../lib/lib'
+import { getRandomId, getSofieHostUrl } from '../../lib/lib'
+import { getCurrentTime } from '../lib/lib'
 import { deferAsync } from '../lib/lib'
 import { logger } from '../logging'
 import { Meteor } from 'meteor/meteor'

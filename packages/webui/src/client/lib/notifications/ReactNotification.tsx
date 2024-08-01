@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { NoticeLevel, NotificationCenter, Notification, NotificationAction } from './notifications'
-import { getCurrentTime, getRandomString } from '../../../lib/lib'
+import { getRandomString } from '../../../lib/lib'
+import { getCurrentTime } from '../systemTime'
 
 export interface IProps {
 	level?: NoticeLevel

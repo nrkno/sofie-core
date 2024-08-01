@@ -1,6 +1,6 @@
 import { WorkerId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { getWorkerId, WorkerStatus } from '@sofie-automation/meteor-lib/dist/collections/Workers'
-import { getCurrentTime } from '../../lib/lib'
+import { getCurrentTime } from '../lib/lib'
 import { Workers } from '../collections'
 
 export async function initializeWorkerStatus(name: string, instanceId: string): Promise<WorkerId> {

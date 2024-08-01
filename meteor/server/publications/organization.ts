@@ -13,7 +13,7 @@ import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { BlueprintId, OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { check, Match } from '../../lib/check'
-import { getCurrentTime } from '../../lib/lib'
+import { getCurrentTime } from '../lib/lib'
 
 meteorPublish(
 	MeteorPubSub.organization,

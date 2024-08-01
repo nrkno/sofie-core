@@ -41,7 +41,6 @@ import { stripVersion } from '../../server/systemStatus/semverUtils'
 import { internalUploadBlueprint } from '../../server/api/blueprints/api'
 import {
 	literal,
-	getCurrentTime,
 	protectString,
 	unprotectString,
 	getRandomId,
@@ -625,8 +624,8 @@ export async function setupDefaultRundown(
 		externalId: 'MOCK_RUNDOWN_' + rundownId,
 		name: 'Default Rundown',
 
-		created: getCurrentTime(),
-		modified: getCurrentTime(),
+		created: Date.now(),
+		modified: Date.now(),
 		importVersions: {
 			studio: '',
 			showStyleBase: '',

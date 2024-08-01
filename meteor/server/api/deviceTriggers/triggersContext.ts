@@ -1,6 +1,7 @@
 import { TriggersContext } from '@sofie-automation/meteor-lib/dist/triggers/triggersContext'
 import { SINGLE_USE_TOKEN_SALT } from '@sofie-automation/meteor-lib/dist/api/userActions'
-import { assertNever, getCurrentTime, getHash, Time } from '../../../lib/lib'
+import { assertNever, getHash, Time } from '../../../lib/lib'
+import { getCurrentTime } from '../../lib/lib'
 import { MeteorCall } from '../methods'
 import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { UserAction } from '@sofie-automation/meteor-lib/dist/userAction'

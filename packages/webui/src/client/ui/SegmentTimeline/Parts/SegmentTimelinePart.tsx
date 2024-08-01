@@ -14,7 +14,7 @@ import {
 import { RundownTiming } from '../../RundownView/RundownTiming/RundownTiming'
 
 import { RundownUtils } from '../../../lib/rundown'
-import { getCurrentTime } from '../../../../lib/lib'
+import { getCurrentTime } from '../../../lib/systemTime'
 
 import { DEBUG_MODE } from '../SegmentTimelineDebugMode'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'

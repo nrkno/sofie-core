@@ -12,7 +12,7 @@ import {
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { SYSTEM_ID } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
-import * as lib from '../../lib/lib'
+import * as lib from '../lib/lib'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'

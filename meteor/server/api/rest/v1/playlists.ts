@@ -30,7 +30,7 @@ import {
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { ServerClientAPI } from '../../client'
 import { QueueNextSegmentResult, StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import { getCurrentTime } from '../../../../lib/lib'
+import { getCurrentTime } from '../../../lib/lib'
 import { TriggerReloadDataResponse } from '@sofie-automation/meteor-lib/dist/api/userActions'
 import { ServerRundownAPI } from '../../rundown'
 import { triggerWriteAccess } from '../../../security/lib/securityVerify'

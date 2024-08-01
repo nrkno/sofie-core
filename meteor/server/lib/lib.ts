@@ -1,6 +1,12 @@
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../logging'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
+import { Time } from '@sofie-automation/shared-lib/dist/lib/lib'
+
+export function getCurrentTime(): Time {
+	// We assume the os does NTP syncing, at a frequent interval.
+	return Date.now()
+}
 
 /**
  * Async version of Meteor.LiveQueryHandle

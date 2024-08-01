@@ -4,7 +4,8 @@ import { MethodContext } from '../methodContext'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 import { ExpectedPackageStatusAPI, PackageInfo } from '@sofie-automation/blueprints-integration'
 import { ExpectedPackageWorkStatus } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackageWorkStatuses'
-import { assertNever, getCurrentTime, literal, protectString } from '../../../lib/lib'
+import { assertNever, literal, protectString } from '../../../lib/lib'
+import { getCurrentTime } from '../../lib/lib'
 import {
 	getPackageContainerPackageId,
 	PackageContainerPackageStatusDB,

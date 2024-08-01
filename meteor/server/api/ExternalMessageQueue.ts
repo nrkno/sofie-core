@@ -1,8 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
-import { getCurrentTime } from '../../lib/lib'
-import { deferAsync } from '../lib/lib'
+import { deferAsync, getCurrentTime } from '../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import {
 	NewExternalMessageQueueAPI,

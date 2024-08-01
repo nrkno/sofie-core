@@ -17,7 +17,6 @@ import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collection
 import { PieceGeneric } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import {
-	getCurrentTime,
 	Time,
 	formatDateTime,
 	fixValidPath,
@@ -27,6 +26,7 @@ import {
 	unprotectStringArray,
 	unprotectString,
 } from '../../lib/lib'
+import { getCurrentTime } from '../lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'

@@ -4,7 +4,7 @@ import {
 	PeripheralDevice,
 	PeripheralDeviceType,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { getCurrentTime } from '../lib/lib'
+import { getCurrentTime } from './lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'

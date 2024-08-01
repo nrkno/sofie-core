@@ -10,7 +10,7 @@ import {
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { ICoreSystem, SYSTEM_ID } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
-import { literal, getCurrentTime, protectString, getRandomId, Complete, normalizeArray } from '../../lib/lib'
+import { literal, protectString, getRandomId, Complete, normalizeArray } from '../../lib/lib'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
@@ -313,8 +313,8 @@ export async function setupDefaultRundown(
 		externalId: 'MOCK_RUNDOWN_' + rundownId,
 		name: 'Default Rundown',
 
-		created: getCurrentTime(),
-		modified: getCurrentTime(),
+		created: Date.now(),
+		modified: Date.now(),
 		importVersions: {
 			studio: '',
 			showStyleBase: '',

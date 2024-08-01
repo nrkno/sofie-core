@@ -1,7 +1,24 @@
 import { Meteor } from 'meteor/meteor'
 import { logger } from './logging'
-import { getCurrentTime, systemTime } from '../../lib/lib'
 import { MeteorCall } from './meteorApi'
+import { Time } from '@sofie-automation/shared-lib/dist/lib/lib'
+
+export const systemTime = {
+	hasBeenSet: false,
+	diff: 0,
+	stdDev: 9999,
+	lastSync: 0,
+	timeOriginDiff: 0,
+}
+
+/**
+ * Returns the current (synced) time.
+ * If NTP-syncing is enabled, it'll be unaffected of whether the client has a well-synced computer time or not.
+ * @return {Time}
+ */
+export function getCurrentTime(): Time {
+	return Math.floor(Date.now() - systemTime.diff)
+}
 
 /** How often the client should sync its time to the server [ms] */
 const SYNC_TIME = 5 * 60 * 1000 // 5 minutes

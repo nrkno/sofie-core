@@ -9,7 +9,8 @@ import {
 	buildPastInfinitePiecesForThisPartQuery,
 } from '@sofie-automation/corelib/dist/playout/infinites'
 import { invalidateAfter } from './invalidatingTime'
-import { getCurrentTime, groupByToMap, protectString } from '../../lib/lib'
+import { groupByToMap, protectString } from '../../lib/lib'
+import { getCurrentTime } from './systemTime'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { mongoWhereFilter, MongoQuery } from '@sofie-automation/corelib/dist/mongo'

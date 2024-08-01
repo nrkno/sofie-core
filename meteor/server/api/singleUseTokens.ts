@@ -1,6 +1,7 @@
 import { createHmac, randomBytes } from 'crypto'
 import { Time } from '@sofie-automation/blueprints-integration'
-import { getCurrentTime, getHash } from '../../lib/lib'
+import { getHash } from '@sofie-automation/corelib/dist/hash'
+import { getCurrentTime } from '../lib/lib'
 import { SINGLE_USE_TOKEN_SALT } from '@sofie-automation/meteor-lib/dist/api/userActions'
 import { isInTestWrite } from '../security/lib/securityVerify'
 

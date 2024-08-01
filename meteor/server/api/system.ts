@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
-import { getCurrentTime, Time } from '../../lib/lib'
-import { sleep } from '../lib/lib'
+import { Time } from '../../lib/lib'
+import { sleep, getCurrentTime } from '../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import { MethodContextAPI, MethodContext } from './methodContext'
 import {

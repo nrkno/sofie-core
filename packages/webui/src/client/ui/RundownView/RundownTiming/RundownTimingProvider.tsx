@@ -2,7 +2,7 @@ import React, { PropsWithChildren } from 'react'
 import { Meteor } from 'meteor/meteor'
 import * as PropTypes from 'prop-types'
 import { withTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
-import { getCurrentTime, protectString } from '../../../../lib/lib'
+import { protectString } from '../../../../lib/lib'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PartInstance, wrapPartToTemporaryInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { RundownTiming, TimeEventArgs } from './RundownTiming'
@@ -12,6 +12,7 @@ import { RundownTimingCalculator, RundownTimingContext } from '../../../lib/rund
 import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylistCollectionUtil } from '../../../collections/rundownPlaylistUtil'
 import { sortPartInstancesInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
+import { getCurrentTime } from '../../../lib/systemTime'
 
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
 const LOW_RESOLUTION_TIMING_DECIMATOR = 15

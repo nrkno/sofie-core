@@ -23,7 +23,8 @@ import {
 import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { literal, getCurrentTime } from '../../lib/lib'
+import { literal } from '../../lib/lib'
+import { getCurrentTime } from './systemTime'
 import {
 	processAndPrunePieceInstanceTimings,
 	resolvePrunedPieceInstance,

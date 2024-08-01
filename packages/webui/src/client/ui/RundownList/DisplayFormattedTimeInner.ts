@@ -1,6 +1,6 @@
 import { TFunction } from 'i18next'
 import moment from 'moment'
-import { getCurrentTime } from '../../../lib/lib'
+import { getCurrentTime } from '../../lib/systemTime'
 
 export function DisplayFormattedTimeInner(
 	t: TFunction,
