@@ -634,4 +634,26 @@ describe('ensureNextPartIsValid', () => {
 			await context.mockCollections.Parts.remove(part._id)
 		}
 	})
+
+	test('Current part is last in rundown, next is missing', async () => {
+		await resetPartIds('mock_part_instance9', 'fake_part_instance', false)
+
+		await expect(ensureNextPartIsValid()).resolves.toBeTruthy()
+
+		expect(setNextPartMock).toHaveBeenCalledTimes(1)
+		expect(setNextPartMock).toHaveBeenCalledWith(
+			expect.objectContaining({}),
+			expect.objectContaining({ PlaylistId: rundownPlaylistId }),
+			null,
+			false
+		)
+	})
+
+	test('Current part is last in rundown, no-op to update', async () => {
+		await resetPartIds('mock_part_instance9', null, false)
+
+		await expect(ensureNextPartIsValid()).resolves.toBeFalsy()
+
+		expect(setNextPartMock).toHaveBeenCalledTimes(0)
+	})
 })

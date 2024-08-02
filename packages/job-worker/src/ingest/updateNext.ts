@@ -81,6 +81,12 @@ export async function ensureNextPartIsValid(context: JobContext, cache: CacheFor
 			allPartsAndSegments
 		)
 
+		if (!newNextPart && !cache.Playlist.doc?.nextPartInfo) {
+			// No currently nexted part, and nothing was selected, so nothing to update
+			span?.end()
+			return false
+		}
+
 		await setNextPart(context, cache, newNextPart ?? null, false)
 
 		span?.end()
