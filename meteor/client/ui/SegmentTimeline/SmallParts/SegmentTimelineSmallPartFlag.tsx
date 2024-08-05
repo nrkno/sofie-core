@@ -10,7 +10,7 @@ import RundownViewEventBus, { RundownViewEvents } from '../../../../lib/api/trig
 import { UIStudio } from '../../../../lib/api/studios'
 import { TimingDataResolution, TimingTickResolution, withTiming } from '../../RundownView/RundownTiming/withTiming'
 import { SegmentTimelinePartClass } from '../Parts/SegmentTimelinePart'
-import { PartExtended } from '../../../../lib/Rundown'
+import { PartExtended } from '../../../lib/RundownResolver'
 import { getPartInstanceTimingId } from '../../../lib/rundownTiming'
 
 export const SegmentTimelineSmallPartFlag = withTiming<

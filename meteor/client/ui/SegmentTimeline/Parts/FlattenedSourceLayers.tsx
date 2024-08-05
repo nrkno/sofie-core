@@ -5,7 +5,7 @@ import { ISourceLayerUi } from '../SegmentTimelineContainer'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { SourceLayerItemContainer } from '../SourceLayerItemContainer'
 import { ISourceLayerPropsBase, useMouseContext } from './SourceLayer'
-import { ISourceLayerExtended } from '../../../../lib/Rundown'
+import { ISourceLayerExtended } from '../../../lib/RundownResolver'
 
 interface IFlattenedSourceLayerProps extends ISourceLayerPropsBase {
 	layers: ISourceLayerUi[]

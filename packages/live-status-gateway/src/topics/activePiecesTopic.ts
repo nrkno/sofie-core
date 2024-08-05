@@ -60,9 +60,7 @@ export class ActivePiecesTopic
 					activePieces: [],
 			  })
 
-		for (const subscriber of subscribers) {
-			this.sendMessage(subscriber, message)
-		}
+		this.sendMessage(subscribers, message)
 	}
 
 	async update(

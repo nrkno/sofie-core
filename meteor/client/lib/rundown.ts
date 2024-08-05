@@ -19,7 +19,7 @@ import {
 	ISourceLayerExtended,
 	PartInstanceLimited,
 	getSegmentsWithPartInstances,
-} from '../../lib/Rundown'
+} from './RundownResolver'
 import { PartInstance } from '../../lib/collections/PartInstances'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'

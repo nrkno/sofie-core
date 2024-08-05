@@ -9,13 +9,13 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
+		"url": "git+https://github.com/nrkno/sofie-core.git",
 		"directory": "packages/server-core-integration"
 	},
 	"bugs": {
-		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
+		"url": "https://github.com/nrkno/sofie-core/issues"
 	},
-	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/server-core-integration#readme",
+	"homepage": "https://github.com/nrkno/sofie-core/blob/master/packages/server-core-integration#readme",
 	"author": {
 		"name": "Johan Nyman",
 		"email": "johan@superfly.tv",

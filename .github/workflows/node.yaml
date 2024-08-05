@@ -528,7 +528,6 @@ jobs:
   asyncapi-generation:
     name: AsyncAPI Generation
     runs-on: ubuntu-latest
-    continue-on-error: true
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -555,7 +554,6 @@ jobs:
   openapi-generation:
     name: OpenAPI Generation
     runs-on: ubuntu-latest
-    continue-on-error: true
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4

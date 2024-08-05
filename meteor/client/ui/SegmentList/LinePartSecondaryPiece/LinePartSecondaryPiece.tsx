@@ -1,6 +1,6 @@
 import classNames from 'classnames'
 import React, { CSSProperties, useCallback, useMemo, useRef, useState } from 'react'
-import { PieceExtended } from '../../../../lib/Rundown'
+import { PieceExtended } from '../../../lib/RundownResolver'
 import { RundownUtils } from '../../../lib/rundown'
 import { PieceHoverInspector } from '../PieceHoverInspector'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
