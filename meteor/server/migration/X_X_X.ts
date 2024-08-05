@@ -1,7 +1,7 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 import { Rundowns } from '../collections'
-import { RundownSource } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { RundownOrphanedReason, RundownSource } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { PeripheralDeviceId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 /*
@@ -69,6 +69,35 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 					},
 				})
 			}
+		},
+	},
+	{
+		id: `Rundowns remove orphaned FROM_SNAPSHOT`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objects = await Rundowns.findFetchAsync({
+				orphaned: 'from-snapshot' as any,
+			})
+
+			if (objects.length > 0) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			await Rundowns.mutableCollection.updateAsync(
+				{
+					orphaned: 'from-snapshot' as any,
+				},
+				{
+					$set: {
+						orphaned: RundownOrphanedReason.DELETED,
+					},
+				},
+				{
+					multi: true,
+				}
+			)
 		},
 	},
 ])
