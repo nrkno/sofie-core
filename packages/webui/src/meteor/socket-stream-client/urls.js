@@ -60,10 +60,6 @@ function translateUrl(url, newSchemeBase, subPath) {
   else return url + '/' + subPath;
 }
 
-export function toSockjsUrl(url) {
-  return translateUrl(url, 'http', 'sockjs');
-}
-
 export function toWebsocketUrl(url) {
   return translateUrl(url, 'ws', 'websocket');
 }

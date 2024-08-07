@@ -1,6 +1,6 @@
 const Meteor = {
-	_debug: (line) => {
-		console.debug(line)
+	_debug: (...args) => {
+		console.debug(...args)
 	},
 
 	_suppressed_log_expected: () => {

@@ -9,7 +9,6 @@ import { MongoID } from '../mongo-id'
 import EJSON from 'ejson'
 import { check, Match } from '../check'
 import { DDP } from '../ddp'
-import { AllowDeny } from '../allow-deny'
 import { LocalCollectionDriver } from './local_collection_driver.js'
 
 /**
@@ -35,7 +34,6 @@ LocalCollection.Mongo = Mongo;
 
 The default id generation technique is `'STRING'`.
  * @param {Function} options.transform An optional transformation function. Documents will be passed through this function before being returned from `fetch` or `findOne`, and before being passed to callbacks of `observe`, `map`, `forEach`, `allow`, and `deny`. Transforms are *not* applied for the callbacks of `observeChanges` or to cursors returned from publish functions.
- * @param {Boolean} options.defineMutationMethods Set to `false` to skip setting up the mutation methods that enable insert/update/remove from client code. Default `true`.
  */
 Mongo.Collection = function Collection(name, options) {
   if (!name && name !== null) {
@@ -130,9 +128,9 @@ Mongo.Collection = function Collection(name, options) {
   // server.
   if (options.defineMutationMethods !== false) {
     try {
-      this._defineMutationMethods({
-        useExisting: options._suppressSameNameError === true,
-      });
+      // this._defineMutationMethods({
+      //   useExisting: options._suppressSameNameError === true,
+      // });
     } catch (error) {
       // Throw a more understandable error on the server for same collection name
       if (
@@ -795,3 +793,54 @@ function popCallbackFromArgs(args) {
 }
 
 export { Mongo }
+
+
+Mongo.Collection.prototype._callMutatorMethod = function _callMutatorMethod(name, args, callback) {
+  if (!callback && !alreadyInSimulation()) {
+    // Client can't block, so it can't report errors by exception,
+    // only by callback. If they forget the callback, give them a
+    // default one that logs the error, so they aren't totally
+    // baffled if their writes don't work because their database is
+    // down.
+    // Don't give a default callback in simulation, because inside stubs we
+    // want to return the results from the local collection immediately and
+    // not force a callback.
+    callback = function (err) {
+      if (err)
+        Meteor._debug(name + " failed", err);
+    };
+  }
+
+  // For two out of three mutator methods, the first argument is a selector
+  const firstArgIsSelector = name === "update" || name === "remove";
+  if (firstArgIsSelector && !alreadyInSimulation()) {
+    // If we're about to actually send an RPC, we should throw an error if
+    // this is a non-ID selector, because the mutation methods only allow
+    // single-ID selectors. (If we don't throw here, we'll see flicker.)
+    throwIfSelectorIsNotId(args[0], name);
+  }
+
+  const mutatorMethodName = '/' + this._name + '/'+ name;
+  return this._connection.apply(
+    mutatorMethodName, args, { returnStubValue: true }, callback);
+}
+
+function throwIfSelectorIsNotId(selector, methodName) {
+  if (!LocalCollection._selectorIsIdPerhapsAsObject(selector)) {
+    throw new Meteor.Error(
+      403, "Not permitted. Untrusted code may only " + methodName +
+        " documents by ID.");
+  }
+};
+
+// Determine if we are in a DDP method simulation
+function alreadyInSimulation() {
+  var CurrentInvocation =
+    DDP._CurrentMethodInvocation ||
+    // For backwards compatibility, as explained in this issue:
+    // https://github.com/meteor/meteor/issues/8947
+    DDP._CurrentInvocation;
+
+  const enclosing = CurrentInvocation.get();
+  return enclosing && enclosing.isSimulation;
+}

@@ -195,8 +195,6 @@ export     namespace Mongo {
                      * `observe`, `map`, `forEach`, `allow`, and `deny`. Transforms are *not* applied for the callbacks of `observeChanges` or to cursors returned from publish functions.
                      */
                     transform?: (doc: T) => U;
-                    /** Set to `false` to skip setting up the mutation methods that enable insert/update/remove from client code. Default `true`. */
-                    defineMutationMethods?: boolean | undefined;
                 },
             ): Collection<T, U>;
         }
