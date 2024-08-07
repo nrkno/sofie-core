@@ -5,7 +5,6 @@ import EJSON from 'ejson';
 import { Random } from '../../random';
 import { MongoID } from '../../mongo-id';
 import { IdMap } from '../../id-map';
-import { Reload } from '../../reload';
 import { DDP } from './namespace.js';
 import { DiffSequence } from '../../diff-sequence';
 import MethodInvoker from './MethodInvoker.js';
@@ -243,20 +242,6 @@ export class Connection {
     // Reactive userId.
     self._userId = null;
     self._userIdDeps = new Tracker.Dependency();
-
-    // Block auto-reload while we're waiting for method responses.
-    if (Meteor.isClient &&
-        //Package.reload &&
-        ! options.reloadWithOutstanding) {
-      Reload._onMigrate(retry => {
-        if (! self._readyToMigrate()) {
-          self._retryMigrate = retry;
-          return [false];
-        } else {
-          return [true];
-        }
-      });
-    }
 
     const onDisconnect = () => {
       if (self._heartbeat) {

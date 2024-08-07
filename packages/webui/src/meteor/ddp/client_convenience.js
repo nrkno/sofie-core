@@ -1,7 +1,5 @@
 import { DDP } from './common/namespace.js';
 import { Meteor } from '../meteor';
-import { Retry } from '../retry'
-import { Reload } from '../reload'
 
 // Meteor.refresh can be called on the client (if you're in common code) but it
 // only has an effect on the server.
@@ -25,19 +23,8 @@ Meteor.refresh = () => {};
 const runtimeConfig = typeof window.__meteor_runtime_config__ !== 'undefined' ? window.__meteor_runtime_config__ : Object.create(null);
 const ddpUrl = runtimeConfig.DDP_DEFAULT_CONNECTION_URL || '/';
 
-const retry = new Retry();
-
 function onDDPVersionNegotiationFailure(description) {
   Meteor._debug(description);
-//   if (Package.reload) {
-    const migrationData = Reload._migrationData('livedata') || Object.create(null);
-    let failures = migrationData.DDPVersionNegotiationFailures || 0;
-    ++failures;
-    Reload._onMigrate('livedata', () => [true, { DDPVersionNegotiationFailures: failures }]);
-    retry.retryLater(failures, () => {
-      Reload._reload({ immediateMigration: true });
-    });
-//   }
 }
 
 Meteor.connection = DDP.connect(ddpUrl, {
