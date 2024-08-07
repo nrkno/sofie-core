@@ -7,25 +7,6 @@ import { DDP } from 'meteor/ddp'
 type global_Error = Error
 export namespace Meteor {
 	/** Global props **/
-	/** True if running in client environment. */
-	var isClient: boolean
-	/** True if running in a Cordova mobile environment. */
-	var isCordova: boolean
-	/** True if running in server environment. */
-	var isServer: boolean
-	/** True if running in production environment. */
-	var isProduction: boolean
-	/** True if running in production environment. */
-	var isTest: boolean
-	/** True if running in production environment. */
-	var isDevelopment: boolean
-
-	/**
-	 * `Meteor.release` is a string containing the name of the release with which the project was built (for example, `"1.2.3"`). It is `undefined` if the project was built using a git checkout
-	 * of Meteor.
-	 */
-	var release: string
-	/** Global props **/
 
 	/** Settings **/
 	interface Settings {
@@ -43,27 +24,8 @@ export namespace Meteor {
 	/** Settings **/
 
 	/** User **/
-	interface UserEmail {
-		address: string
-		verified: boolean
-	}
-	/**
-	 * UserProfile is left intentionally underspecified here, to allow you
-	 * to override it in your application (but keep in mind that the default
-	 * Meteor configuration allows users to write directly to their user
-	 * record's profile field)
-	 */
-	interface UserProfile {}
-	interface User {
-		_id: string
-		username?: string | undefined
-		emails?: UserEmail[] | undefined
-		createdAt?: Date | undefined
-		profile?: UserProfile
-		services?: any
-	}
 
-	function user(options?: { fields?: Mongo.FieldSpecifier | undefined }): User | null
+	function user(options?: { fields?: Mongo.FieldSpecifier | undefined }): unknown | null
 
 	function userId(): string | null
 	var users: Mongo.Collection<User>
@@ -142,12 +104,6 @@ export namespace Meteor {
 	}
 
 	/**
-	 * Defines functions that can be invoked over the network by clients.
-	 * @param methods Dictionary whose keys are method names and values are functions.
-	 */
-	function methods(methods: { [key: string]: (this: MethodThisType, ...args: any[]) => any }): void
-
-	/**
 	 * Invokes a method passing any number of arguments.
 	 * @param name Name of method to invoke
 	 * @param args Optional method arguments
@@ -171,29 +127,6 @@ export namespace Meteor {
 	): any
 	/** Method **/
 
-	/** Url **/
-	/**
-	 * Generate an absolute URL pointing to the application. The server reads from the `ROOT_URL` environment variable to determine where it is running. This is taken care of automatically for
-	 * apps deployed to Galaxy, but must be provided when using `meteor build`.
-	 */
-	var absoluteUrl: {
-		/**
-		 * @param path A path to append to the root URL. Do not include a leading "`/`".
-		 */
-		(path?: string, options?: absoluteUrlOptions): string
-		defaultOptions: absoluteUrlOptions
-	}
-
-	interface absoluteUrlOptions {
-		/** Create an HTTPS URL. */
-		secure?: boolean | undefined
-		/** Replace localhost with 127.0.0.1. Useful for services that don't recognize localhost as a domain name. */
-		replaceLocalhost?: boolean | undefined
-		/** Override the default ROOT_URL from the server environment. For example: "`http://foo.example.com`" */
-		rootUrl?: string | undefined
-	}
-	/** Url **/
-
 	/**
 	 * Defer execution of a function to run asynchronously in the background (similar to `setTimeout(func, 0)`.
 	 * @param func The function to run
@@ -208,27 +141,8 @@ export namespace Meteor {
 	 */
 	function startup(func: Function): void
 
-	/**
-	 * Wrap a function that takes a callback function as its final parameter.
-	 * The signature of the callback of the wrapped function should be `function(error, result){}`.
-	 * On the server, the wrapped function can be used either synchronously (without passing a callback) or asynchronously
-	 * (when a callback is passed). On the client, a callback is always required; errors will be logged if there is no callback.
-	 * If a callback is provided, the environment captured when the original function was called will be restored in the callback.
-	 * The parameters of the wrapped function must not contain any optional parameters or be undefined, as the callback function is expected to be the final, non-undefined parameter.
-	 * @param func A function that takes a callback as its final parameter
-	 * @param context Optional `this` object against which the original function will be invoked
-	 */
-	function wrapAsync(func: Function, context?: Object): any
-
 	function bindEnvironment<TFunc extends Function>(func: TFunc): TFunc
 
-	class EnvironmentVariable<T> {
-		readonly slot: number
-		constructor()
-		get(): T
-		getOrNullIfOutsideFiber(): T | null
-		withValue<U>(value: T, fn: () => U): U
-	}
 	/** utils **/
 
 	/** Pub/Sub **/
@@ -254,71 +168,14 @@ export namespace Meteor {
 		loginStyle?: string | undefined
 	}
 
-	function loginWithMeteorDeveloperAccount(
-		options?: Meteor.LoginWithExternalServiceOptions,
-		callback?: (error?: global_Error | Meteor.Error | Meteor.TypedError) => void
-	): void
-
-	function loginWithFacebook(
-		options?: Meteor.LoginWithExternalServiceOptions,
-		callback?: (error?: global_Error | Meteor.Error | Meteor.TypedError) => void
-	): void
-
-	function loginWithGithub(
-		options?: Meteor.LoginWithExternalServiceOptions,
-		callback?: (error?: global_Error | Meteor.Error | Meteor.TypedError) => void
-	): void
-
-	function loginWithGoogle(
-		options?: Meteor.LoginWithExternalServiceOptions,
-		callback?: (error?: global_Error | Meteor.Error | Meteor.TypedError) => void
-	): void
-
-	function loginWithMeetup(
-		options?: Meteor.LoginWithExternalServiceOptions,
-		callback?: (error?: global_Error | Meteor.Error | Meteor.TypedError) => void
-	): void
-
-	function loginWithTwitter(
-		options?: Meteor.LoginWithExternalServiceOptions,
-		callback?: (error?: global_Error | Meteor.Error | Meteor.TypedError) => void
-	): void
-
-	function loginWithWeibo(
-		options?: Meteor.LoginWithExternalServiceOptions,
-		callback?: (error?: global_Error | Meteor.Error | Meteor.TypedError) => void
-	): void
-
-	function loginWith<ExternalService>(
-		options?: {
-			requestPermissions?: ReadonlyArray<string> | undefined
-			requestOfflineToken?: boolean | undefined
-			loginUrlParameters?: Object | undefined
-			userEmail?: string | undefined
-			loginStyle?: string | undefined
-			redirectUrl?: string | undefined
-		},
-		callback?: (error?: global_Error | Meteor.Error | Meteor.TypedError) => void
-	): void
-
 	function loginWithPassword(
 		user: Object | string,
 		password: string,
 		callback?: (error?: global_Error | Meteor.Error | Meteor.TypedError) => void
 	): void
 
-	function loginWithToken(
-		token: string,
-		callback?: (error?: global_Error | Meteor.Error | Meteor.TypedError) => void
-	): void
-
-	function loggingIn(): boolean
-
-	function loggingOut(): boolean
-
 	function logout(callback?: (error?: global_Error | Meteor.Error | Meteor.TypedError) => void): void
 
-	function logoutOtherClients(callback?: (error?: global_Error | Meteor.Error | Meteor.TypedError) => void): void
 	/** Login **/
 
 	/** Event **/
@@ -379,80 +236,6 @@ export namespace Meteor {
 
 	function onConnection(callback: (connection: Connection) => void): void
 	/** Connection **/
-	/**
-	 * Publish a record set.
-	 * @param name If String, name of the record set.  If Object, publications Dictionary of publish functions by name. If `null`, the set has no name, and the record set is automatically sent to
-	 * all connected clients.
-	 * @param func Function called on the server each time a client subscribes. Inside the function, `this` is the publish handler object, described below. If the client passed arguments to
-	 * `subscribe`, the function is called with the same arguments.
-	 */
-	function publish(
-		name: string | null,
-		func: (this: Subscription, ...args: any[]) => void,
-		options?: { is_auto: boolean }
-	): void
 
 	function _debug(...args: any[]): void
 }
-
-export interface Subscription {
-	/**
-	 * Call inside the publish function.  Informs the subscriber that a document has been added to the record set.
-	 * @param collection The name of the collection that contains the new document.
-	 * @param id The new document's ID.
-	 * @param fields The fields in the new document.  If `_id` is present it is ignored.
-	 */
-	added(collection: string, id: string, fields: Object): void
-	/**
-	 * Call inside the publish function. Informs the subscriber that a document in the record set has been modified.
-	 * @param collection The name of the collection that contains the changed document.
-	 * @param id The changed document's ID.
-	 * @param fields The fields in the document that have changed, together with their new values.  If a field is not present in `fields` it was left unchanged; if it is present in `fields` and
-	 * has a value of `undefined` it was removed from the document.  If `_id` is present it is ignored.
-	 */
-	changed(collection: string, id: string, fields: Object): void
-	/** Access inside the publish function. The incoming connection for this subscription. */
-	connection: Meteor.Connection
-	/**
-	 * Call inside the publish function. Stops this client's subscription, triggering a call on the client to the `onStop` callback passed to `Meteor.subscribe`, if any. If `error` is not a
-	 * `Meteor.Error`, it will be sanitized.
-	 * @param error The error to pass to the client.
-	 */
-	error(error: Error): void
-	/**
-	 * Call inside the publish function. Registers a callback function to run when the subscription is stopped.
-	 * @param func The callback function
-	 */
-	onStop(func: Function): void
-	/**
-	 * Call inside the publish function. Informs the subscriber that an initial, complete snapshot of the record set has been sent.  This will trigger a call on the client to the `onReady`
-	 * callback passed to  `Meteor.subscribe`, if any.
-	 */
-	ready(): void
-	/**
-	 * Call inside the publish function. Informs the subscriber that a document has been removed from the record set.
-	 * @param collection The name of the collection that the document has been removed from.
-	 * @param id The ID of the document that has been removed.
-	 */
-	removed(collection: string, id: string): void
-	/**
-	 * Access inside the publish function. The incoming connection for this subscription.
-	 */
-	stop(): void
-	/**
-	 * Call inside the publish function. Allows subsequent methods or subscriptions for the client of this subscription
-	 * to begin running without waiting for the publishing to become ready.
-	 */
-	unblock(): void
-	/** Access inside the publish function. The id of the logged-in user, or `null` if no user is logged in. */
-	userId: string | null
-}
-
-// namespace Meteor {
-//     /** Global props **/
-//     /** True if running in development environment. */
-//     var isDevelopment: boolean;
-//     var isTest: boolean;
-//     var isAppTest: boolean;
-//     /** Global props **/
-// }

@@ -2978,7 +2978,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 									<KeyboardFocusIndicator>
 										<div
 											className={ClassNames('rundown-view__focus-lost-frame', {
-												'rundown-view__focus-lost-frame--reduce-animation': Meteor.isDevelopment,
+												'rundown-view__focus-lost-frame--reduce-animation': import.meta.env.DEV,
 											})}
 										></div>
 									</KeyboardFocusIndicator>

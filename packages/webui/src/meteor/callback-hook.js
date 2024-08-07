@@ -98,11 +98,6 @@ export class Hook {
    * @param iterator
    */
   forEach(iterator) {
-    // Invoking bindEnvironment'd callbacks outside of a Fiber in Node doesn't
-    // run them to completion (and exceptions thrown from onException are not
-    // propagated), so we need to be in a Fiber.
-    Meteor._nodeCodeMustBeInFiber();
-
     const ids = Object.keys(this.callbacks);
     for (let i = 0;  i < ids.length;  ++i) {
       const id = ids[i];

@@ -29,8 +29,6 @@ export function setReportNotifications(id: string | null): void {
 }
 
 Meteor.startup(() => {
-	if (!Meteor.isClient) return
-
 	reportNotificationsId = localStorage.getItem(LocalStorageProperty.LOG_NOTIFICATIONS)
 })
 
@@ -563,8 +561,6 @@ export function getNoticeLevelForPieceStatus(statusCode: PieceStatusCode | undef
 }
 
 Meteor.startup(() => {
-	if (!Meteor.isClient) return
-
 	const windowAny: any = window
 
 	windowAny['testNotification'] = function (

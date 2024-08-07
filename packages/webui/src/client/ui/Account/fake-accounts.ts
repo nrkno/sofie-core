@@ -49,7 +49,7 @@ export class Accounts {
 		username?: string | undefined
 		email?: string | undefined
 		password?: string | undefined
-		profile?: Meteor.UserProfile | undefined
+		profile?: unknown | undefined
 	}): Promise<string> {
 		// nocommit not implemented
 		throw new Error('Not implemented')

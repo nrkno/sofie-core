@@ -1,7 +1,6 @@
 /* eslint-disable react/prefer-stateless-function */
 
 import React, { useState, useEffect, useRef } from 'react'
-import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
 import { withTranslation, WithTranslation } from 'react-i18next'
@@ -110,12 +109,6 @@ class MeteorDataManager {
 
 		if (!component.getMeteorData) {
 			return null
-		}
-
-		// When rendering on the server, we don't want to use the Tracker.
-		// We only do the first rendering on the server so we can get the data right away
-		if (Meteor.isServer) {
-			return component.getMeteorData()
 		}
 
 		if (this.computation) {
