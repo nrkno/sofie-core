@@ -1,5 +1,4 @@
 import { Meteor } from "./meteor";
-import { Random } from "./random";
 
 // Retry logic with an exponential backoff.
 //
@@ -52,7 +51,7 @@ export class Retry {
         this.maxTimeout,
         this.baseTimeout * Math.pow(this.exponent, count)
       ) * (
-        Random.fraction() * this.fuzz + (1 - this.fuzz / 2)
+        Math.random() * this.fuzz + (1 - this.fuzz / 2)
       );
   
       return timeout;

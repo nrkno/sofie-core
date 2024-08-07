@@ -8,7 +8,6 @@ jest.mock('nanoid', (...args) => require('./random').setup(args), { virtual: tru
 // Add references to all "meteor" mocks below, so that jest resolves the imports properly.
 
 jest.mock('meteor/meteor', (...args) => require('./meteor').setup(args), { virtual: true })
-jest.mock('meteor/random', (...args) => require('./random').setup(args), { virtual: true })
 jest.mock('meteor/tracker', (...args) => require('./tracker').setup(args), { virtual: true })
 // jest.mock('meteor/ejson', (...args) => require('./ejson').setup(args), { virtual: true })
 // jest.mock('meteor/reactive-var', (...args) => require('./reactive-var').setup(args), { virtual: true })

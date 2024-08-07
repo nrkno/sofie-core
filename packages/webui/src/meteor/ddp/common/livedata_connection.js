@@ -2,7 +2,6 @@ import { Meteor } from '../../meteor';
 import { DDPCommon } from '../../ddp-common';
 import { Tracker } from '../../tracker';
 import EJSON from 'ejson';
-import { Random } from '../../random';
 import { MongoID } from '../../mongo-id';
 import { DDP } from './namespace.js';
 import { DiffSequence } from '../../diff-sequence';
@@ -15,6 +14,7 @@ import {
   last,
 } from "../../ddp-common/utils.js";
 import { ClientStream } from "../../socket-stream-client"
+import { getRandomString } from '@sofie-automation/corelib/dist/lib'
 
 
 // @param url {String|Object} URL to Meteor app,
@@ -376,7 +376,7 @@ export class Connection {
       }
     } else {
       // New sub! Generate an id, save it locally, and send message.
-      id = Random.id();
+      id = getRandomString();
       self._subscriptions[id] = {
         id: id,
         name: name,
