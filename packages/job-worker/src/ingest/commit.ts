@@ -241,6 +241,7 @@ export async function CommitIngestOperation(
 				await pSaveIngest
 
 				// do some final playout checks, which may load back some Parts data
+				// Note: This should trigger a timeline update, one is already queued in the `deferAfterSave` above
 				await ensureNextPartIsValid(context, playoutCache)
 
 				// save the final playout changes
@@ -510,9 +511,9 @@ export async function updatePlayoutAfterChangingRundownInPlaylist(
 			)
 		}
 
-		await ensureNextPartIsValid(context, playoutCache)
+		const shouldUpdateTimeline = await ensureNextPartIsValid(context, playoutCache)
 
-		if (playoutCache.Playlist.doc.activationId) {
+		if (playoutCache.Playlist.doc.activationId || shouldUpdateTimeline) {
 			triggerUpdateTimelineAfterIngestData(context, playoutCache.PlaylistId)
 		}
 	})
