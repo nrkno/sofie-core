@@ -4,12 +4,12 @@
 import { normalizeProjection } from "./mongo_utils";
 import { Meteor } from '../meteor'
 import { LocalCollection } from "../minimongo";
-import { Random } from '../random'
 import { MongoID } from '../mongo-id'
 import EJSON from 'ejson'
 import { check, Match } from '../check'
 import { DDP } from '../ddp'
 import { LocalCollectionDriver } from './local_collection_driver.js'
+import { getRandomString } from '@sofie-automation/corelib/dist/lib'
 
 /**
  * @summary Namespace for MongoDB-related items
@@ -64,7 +64,7 @@ Mongo.Collection = function Collection(name, options) {
   };
 
   this._makeNewID = function() {
-    return Random.insecure.id();
+    return getRandomString();
   };
 
   if (!name || options.connection === null)
@@ -357,7 +357,7 @@ Object.assign(Mongo.Collection, {
 
     if (!selector || ('_id' in selector && !selector._id)) {
       // can't match anything
-      return { _id: fallbackId || Random.id() };
+      return { _id: fallbackId || getRandomString() };
     }
 
     return selector;

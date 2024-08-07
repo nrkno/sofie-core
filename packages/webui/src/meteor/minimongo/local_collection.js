@@ -18,11 +18,11 @@ import {
 import { Meteor }  from '../meteor'
 import EJSON from 'ejson'
 import { MongoID } from '../mongo-id'
-import { Random } from '../random'
 import { DiffSequence } from '../diff-sequence'
 import { Tracker } from '../tracker'
 import { IdMap } from '../id-map'
 import { OrderedDict } from '../ordered-dict'
+import { getRandomString } from '@sofie-automation/corelib/dist/lib'
 
 // XXX type checking on selectors (graceful error if malformed)
 
@@ -111,7 +111,7 @@ export class LocalCollection {
     // if you really want to use ObjectIDs, set this global.
     // Mongo.Collection specifies its own ids and does not use this code.
     if (!hasOwn.call(doc, '_id')) {
-      doc._id = Random.id();
+      doc._id = getRandomString();
     }
 
     const id = doc._id;

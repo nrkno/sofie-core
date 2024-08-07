@@ -1,10 +1,6 @@
 import { DDP } from './common/namespace.js';
 import { Meteor } from '../meteor';
 
-// Meteor.refresh can be called on the client (if you're in common code) but it
-// only has an effect on the server.
-Meteor.refresh = () => {};
-
 // By default, try to connect back to the same endpoint as the page
 // was served from.
 //
@@ -23,13 +19,7 @@ Meteor.refresh = () => {};
 const runtimeConfig = typeof window.__meteor_runtime_config__ !== 'undefined' ? window.__meteor_runtime_config__ : Object.create(null);
 const ddpUrl = runtimeConfig.DDP_DEFAULT_CONNECTION_URL || '/';
 
-function onDDPVersionNegotiationFailure(description) {
-  Meteor._debug(description);
-}
-
-Meteor.connection = DDP.connect(ddpUrl, {
-  onDDPVersionNegotiationFailure: onDDPVersionNegotiationFailure
-});
+Meteor.connection = DDP.connect(ddpUrl);
 
 // Proxy the public methods of Meteor.connection so they can
 // be called directly on Meteor.
