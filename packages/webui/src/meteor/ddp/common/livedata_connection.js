@@ -3,7 +3,6 @@ import { DDPCommon } from '../../ddp-common';
 import { Tracker } from '../../tracker';
 import EJSON from 'ejson';
 import { Random } from '../../random';
-import { Hook } from '../../callback-hook';
 import { MongoID } from '../../mongo-id';
 import { IdMap } from '../../id-map';
 import { Reload } from '../../reload';
