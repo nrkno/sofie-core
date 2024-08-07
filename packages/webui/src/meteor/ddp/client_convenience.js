@@ -35,7 +35,6 @@ Meteor.connection = DDP.connect(ddpUrl, {
 // be called directly on Meteor.
 [
   'subscribe',
-  'methods',
   'call',
   'apply',
   'status',

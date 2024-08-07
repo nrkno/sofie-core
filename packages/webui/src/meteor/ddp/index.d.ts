@@ -31,7 +31,6 @@ export namespace DDPCommon {
   interface MethodInvocationOptions {
     userId: string | null;
     setUserId?: ((newUserId: string) => void) | undefined;
-    isSimulation: boolean;
     connection: Meteor.Connection;
     randomSeed: string;
   }
@@ -52,10 +51,6 @@ export namespace DDPCommon {
      * The id of the user that made this method call, or `null` if no user was logged in.
      */
     userId: string | null;
-    /**
-     * Access inside a method invocation.  Boolean value, true if this invocation is a stub.
-     */
-    isSimulation: boolean;
     /**
      * Access inside a method invocation. The [connection](#meteor_onconnection) that this method was received on. `null` if the method is not associated with a connection, eg. a server
      * initiated method call. Calls to methods made from a server method which was in turn initiated from the client share the same `connection`.

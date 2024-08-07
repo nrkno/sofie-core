@@ -4,7 +4,6 @@ import { Tracker } from '../../tracker';
 import EJSON from 'ejson';
 import { Random } from '../../random';
 import { MongoID } from '../../mongo-id';
-import { IdMap } from '../../id-map';
 import { DDP } from './namespace.js';
 import { DiffSequence } from '../../diff-sequence';
 import MethodInvoker from './MethodInvoker.js';
@@ -17,11 +16,6 @@ import {
 } from "../../ddp-common/utils.js";
 import { ClientStream } from "../../socket-stream-client"
 
-class MongoIDMap extends IdMap {
-  constructor() {
-    super(MongoID.idStringify, MongoID.idParse);
-  }
-}
 
 // @param url {String|Object} URL to Meteor app,
 //   or an object as a test hook (see code)
@@ -99,7 +93,6 @@ export class Connection {
     self._versionSuggestion = null; // The last proposed DDP version.
     self._version = null; // The DDP version agreed on by client and server.
     self._stores = Object.create(null); // name -> object with methods
-    self._methodHandlers = Object.create(null); // name -> func
     self._nextMethodId = 1;
     self._supportedDDPVersions = options.supportedDDPVersions;
 
@@ -456,18 +449,6 @@ export class Connection {
     return handle;
   }
 
-  methods(methods) {
-    Object.entries(methods).forEach(([name, func]) => {
-      if (typeof func !== 'function') {
-        throw new Error("Method '" + name + "' must be a function");
-      }
-      if (this._methodHandlers[name]) {
-        throw new Error("A method named '" + name + "' is already defined");
-      }
-      this._methodHandlers[name] = func;
-    });
-  }
-
   /**
    * @memberOf Meteor
    * @importFromPackage meteor
@@ -501,8 +482,6 @@ export class Connection {
    * @param {Boolean} options.wait (Client only) If true, don't send this method until all previous method calls have completed, and don't send any subsequent method calls until this one is completed.
    * @param {Function} options.onResultReceived (Client only) This callback is invoked with the error or result of the method (just like `asyncCallback`) as soon as the error or result is available. The local cache may not yet reflect the writes performed by the method.
    * @param {Boolean} options.noRetry (Client only) if true, don't send this method again on reload, simply call the callback an error with the error code 'invocation-failed'.
-   * @param {Boolean} options.throwStubExceptions (Client only) If true, exceptions thrown by method stubs will be thrown instead of logged, and the method will not be invoked on the server.
-   * @param {Boolean} options.returnStubValue (Client only) If true then in cases where we would have otherwise discarded the stub's return value and returned undefined, instead we go ahead and return it. Specifically, this is any time other than when (a) we are already inside a stub or (b) we are in Node and no callback was provided. Currently we require this flag to be explicitly passed to reduce the likelihood that stub return values will be confused with server return values; we may improve this in future.
    * @param {Function} [asyncCallback] Optional callback; same semantics as in [`Meteor.call`](#meteor_call).
    */
   apply(name, args, options, callback) {
@@ -530,90 +509,9 @@ export class Connection {
     // while because of a wait method).
     args = EJSON.clone(args);
 
-    const enclosing = DDP._CurrentMethodInvocation.get();
-    const alreadyInSimulation = enclosing && enclosing.isSimulation;
-
-    // Lazily generate a randomSeed, only if it is requested by the stub.
-    // The random streams only have utility if they're used on both the client
-    // and the server; if the client doesn't generate any 'random' values
-    // then we don't expect the server to generate any either.
-    // Less commonly, the server may perform different actions from the client,
-    // and may in fact generate values where the client did not, but we don't
-    // have any client-side values to match, so even here we may as well just
-    // use a random seed on the server.  In that case, we don't pass the
-    // randomSeed to save bandwidth, and we don't even generate it to save a
-    // bit of CPU and to avoid consuming entropy.
-    let randomSeed = null;
-    const randomSeedGenerator = () => {
-      if (randomSeed === null) {
-        randomSeed = DDPCommon.makeRpcSeed(enclosing, name);
-      }
-      return randomSeed;
-    };
-
-    // Run the stub, if we have one. The stub is supposed to make some
-    // temporary writes to the database to give the user a smooth experience
-    // until the actual result of executing the method comes back from the
-    // server (whereupon the temporary writes to the database will be reversed
-    // during the beginUpdate/endUpdate process.)
-    //
-    // Normally, we ignore the return value of the stub (even if it is an
-    // exception), in favor of the real return value from the server. The
-    // exception is if the *caller* is a stub. In that case, we're not going
-    // to do a RPC, so we use the return value of the stub as our return
-    // value.
-
-    let stubReturnValue;
-    let exception;
-    const stub = self._methodHandlers[name];
-    if (stub) {
-      const setUserId = userId => {
-        self.setUserId(userId);
-      };
-
-      const invocation = new DDPCommon.MethodInvocation({
-        isSimulation: true,
-        userId: self.userId(),
-        setUserId: setUserId,
-        randomSeed() {
-          return randomSeedGenerator();
-        }
-      });
-
-      if (!alreadyInSimulation) self._saveOriginals();
-
-      try {
-        // Note that unlike in the corresponding server code, we never audit
-        // that stubs check() their arguments.
-        stubReturnValue = DDP._CurrentMethodInvocation.withValue(
-          invocation,
-          () => {
-            return stub.apply(invocation, EJSON.clone(args));
-          }
-        );
-      } catch (e) {
-        exception = e;
-      }
-    }
-
-    // If we're in a simulation, stop and return the result we have,
-    // rather than going on to do an RPC. If there was no stub,
-    // we'll end up returning undefined.
-    if (alreadyInSimulation) {
-      if (callback) {
-        callback(exception, stubReturnValue);
-        return undefined;
-      }
-      if (exception) throw exception;
-      return stubReturnValue;
-    }
-
     // We only create the methodId here because we don't actually need one if
     // we're already in a simulation
     const methodId = '' + self._nextMethodId++;
-    if (stub) {
-      self._retrieveAndStoreOriginals(methodId);
-    }
 
     // Generate the DDP message for the method call. Note that on the client,
     // it is important that the stub have finished before we send the RPC, so
@@ -626,29 +524,10 @@ export class Connection {
       params: args
     };
 
-    // If an exception occurred in a stub, and we're ignoring it
-    // because we're doing an RPC and want to use what the server
-    // returns instead, log it so the developer knows
-    // (unless they explicitly ask to see the error).
-    //
-    // Tests can set the '_expectedByTest' flag on an exception so it won't
-    // go to log.
-    if (exception) {
-      if (options.throwStubExceptions) {
-        throw exception;
-      } else if (!exception._expectedByTest) {
-        Meteor._debug(
-          "Exception while simulating the effect of invoking '" + name + "'",
-          exception
-        );
-      }
-    }
-
     // At this point we're definitely doing an RPC, and we're going to
     // return the value of the RPC to the caller.
 
     // If the caller didn't give a callback, decide what to do.
-    let future;
     if (!callback) {
       // On the client, we don't have fibers, so we can't block. The
       // only thing we can do is to return undefined and discard the
@@ -657,11 +536,6 @@ export class Connection {
       callback = err => {
         err && Meteor._debug("Error invoking Method '" + name + "'", err);
       };
-    }
-
-    // Send the randomSeed only if we used it
-    if (randomSeed !== null) {
-      message.randomSeed = randomSeed;
     }
 
     const methodInvoker = new MethodInvoker({
@@ -697,82 +571,7 @@ export class Connection {
     // If we added it to the first block, send it out now.
     if (self._outstandingMethodBlocks.length === 1) methodInvoker.sendMessage();
 
-    // If we're using the default callback on the server,
-    // block waiting for the result.
-    if (future) {
-      return future.wait();
-    }
-    return options.returnStubValue ? stubReturnValue : undefined;
-  }
-
-  // Before calling a method stub, prepare all stores to track changes and allow
-  // _retrieveAndStoreOriginals to get the original versions of changed
-  // documents.
-  _saveOriginals() {
-    if (! this._waitingForQuiescence()) {
-      this._flushBufferedWrites();
-    }
-
-    Object.values(this._stores).forEach((store) => {
-      store.saveOriginals();
-    });
-  }
-
-  // Retrieves the original versions of all documents modified by the stub for
-  // method 'methodId' from all stores and saves them to _serverDocuments (keyed
-  // by document) and _documentsWrittenByStub (keyed by method ID).
-  _retrieveAndStoreOriginals(methodId) {
-    const self = this;
-    if (self._documentsWrittenByStub[methodId])
-      throw new Error('Duplicate methodId in _retrieveAndStoreOriginals');
-
-    const docsWritten = [];
-
-    Object.entries(self._stores).forEach(([collection, store]) => {
-      const originals = store.retrieveOriginals();
-      // not all stores define retrieveOriginals
-      if (! originals) return;
-      originals.forEach((doc, id) => {
-        docsWritten.push({ collection, id });
-        if (! hasOwn.call(self._serverDocuments, collection)) {
-          self._serverDocuments[collection] = new MongoIDMap();
-        }
-        const serverDoc = self._serverDocuments[collection].setDefault(
-          id,
-          Object.create(null)
-        );
-        if (serverDoc.writtenByStubs) {
-          // We're not the first stub to write this doc. Just add our method ID
-          // to the record.
-          serverDoc.writtenByStubs[methodId] = true;
-        } else {
-          // First stub! Save the original value and our method ID.
-          serverDoc.document = doc;
-          serverDoc.flushCallbacks = [];
-          serverDoc.writtenByStubs = Object.create(null);
-          serverDoc.writtenByStubs[methodId] = true;
-        }
-      });
-    });
-    if (! isEmpty(docsWritten)) {
-      self._documentsWrittenByStub[methodId] = docsWritten;
-    }
-  }
-
-  // This is very much a private function we use to make the tests
-  // take up fewer server resources after they complete.
-  _unsubscribeAll() {
-    Object.values(this._subscriptions).forEach((sub) => {
-      // Avoid killing the autoupdate subscription so that developers
-      // still get hot code pushes when writing tests.
-      //
-      // XXX it's a hack to encode knowledge about autoupdate here,
-      // but it doesn't seem worth it yet to have a special API for
-      // subscriptions to preserve after unit tests.
-      if (sub.name !== 'meteor_autoupdate_clientVersions') {
-        sub.stop();
-      }
-    });
+    return undefined;
   }
 
   // Sends the DDP stringification of the given message object

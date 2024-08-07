@@ -88,8 +88,6 @@ export namespace Meteor {
 
 	/** Method **/
 	interface MethodThisType {
-		/** Access inside a method invocation. Boolean value, true if this invocation is a stub. */
-		isSimulation: boolean
 		/** The id of the user that made this method call, or `null` if no user was logged in. */
 		userId: string | null
 		/**
@@ -118,18 +116,20 @@ export namespace Meteor {
 	 */
 	function call(name: string, ...args: any[]): any
 
-	/** Url **/
-	/**
-	 * Generate an absolute URL pointing to the application. The server reads from the `ROOT_URL` environment variable to determine where it is running. This is taken care of automatically for
-	 * apps deployed to Galaxy, but must be provided when using `meteor build`.
-	 */
-	var absoluteUrl: {
-		/**
-		 * @param path A path to append to the root URL. Do not include a leading "`/`".
-		 */
-		(path?: string, options?: absoluteUrlOptions): string
-		defaultOptions: absoluteUrlOptions
-	}
+	function apply<Result extends EJSONable | EJSONable[] | EJSONableProperty | EJSONableProperty[]>(
+		name: string,
+		args: ReadonlyArray<EJSONable | EJSONableProperty>,
+		options?: {
+			wait?: boolean | undefined
+			onResultReceived?: ((error: global_Error | Meteor.Error | undefined, result?: Result) => void) | undefined
+			/**
+			 * (Client only) if true, don't send this method again on reload, simply call the callback an error with the error code 'invocation-failed'.
+			 */
+			noRetry?: boolean | undefined
+		},
+		asyncCallback?: (error: global_Error | Meteor.Error | undefined, result?: Result) => void
+	): any
+	/** Method **/
 
 	/** Timeout **/
 	/**

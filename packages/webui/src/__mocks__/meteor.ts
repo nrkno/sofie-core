@@ -195,8 +195,6 @@ export namespace MeteorMock {
 		_options?: {
 			wait?: boolean
 			onResultReceived?: Function
-			returnStubValue?: boolean
-			throwStubExceptions?: boolean
 		},
 		asyncCallback?: Function
 	): any {
