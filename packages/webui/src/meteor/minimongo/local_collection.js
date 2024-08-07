@@ -762,58 +762,6 @@ LocalCollection._IdMap = class _IdMap extends IdMap {
   }
 };
 
-// Wrap a transform function to return objects that have the _id field
-// of the untransformed document. This ensures that subsystems such as
-// the observe-sequence package that call `observe` can keep track of
-// the documents identities.
-//
-// - Require that it returns objects
-// - If the return value has an _id field, verify that it matches the
-//   original _id field
-// - If the return value doesn't have an _id field, add it back.
-LocalCollection.wrapTransform = transform => {
-  if (!transform) {
-    return null;
-  }
-
-  // No need to doubly-wrap transforms.
-  if (transform.__wrappedTransform__) {
-    return transform;
-  }
-
-  const wrapped = doc => {
-    if (!hasOwn.call(doc, '_id')) {
-      // XXX do we ever have a transform on the oplog's collection? because that
-      // collection has no _id.
-      throw new Error('can only transform documents with _id');
-    }
-
-    const id = doc._id;
-
-    // XXX consider making tracker a weak dependency and checking
-    // Package.tracker here
-    const transformed = Tracker.nonreactive(() => transform(doc));
-
-    if (!LocalCollection._isPlainObject(transformed)) {
-      throw new Error('transform must return object');
-    }
-
-    if (hasOwn.call(transformed, '_id')) {
-      if (!EJSON.equals(transformed._id, id)) {
-        throw new Error('transformed document can\'t have different _id');
-      }
-    } else {
-      transformed._id = id;
-    }
-
-    return transformed;
-  };
-
-  wrapped.__wrappedTransform__ = true;
-
-  return wrapped;
-};
-
 // XXX the sorted-query logic below is laughably inefficient. we'll
 // need to come up with a better datastructure for this.
 //
@@ -1214,7 +1162,6 @@ LocalCollection._modify = (doc, modifier, options = {}) => {
 };
 
 LocalCollection._observeFromObserveChanges = (cursor, observeCallbacks) => {
-  const transform = cursor.getTransform() || (doc => doc);
   let suppressed = !!observeCallbacks._suppress_initial;
 
   let observeChangesCallbacks;
@@ -1231,7 +1178,7 @@ LocalCollection._observeFromObserveChanges = (cursor, observeCallbacks) => {
           return;
         }
 
-        const doc = transform(Object.assign(fields, {_id: id}));
+        const doc = Object.assign(fields, {_id: id});
 
         if (observeCallbacks.addedAt) {
           observeCallbacks.addedAt(
@@ -1257,18 +1204,18 @@ LocalCollection._observeFromObserveChanges = (cursor, observeCallbacks) => {
           throw new Error(`Unknown id for changed: ${id}`);
         }
 
-        const oldDoc = transform(EJSON.clone(doc));
+        const oldDoc = EJSON.clone(doc);
 
         DiffSequence.applyChanges(doc, fields);
 
         if (observeCallbacks.changedAt) {
           observeCallbacks.changedAt(
-            transform(doc),
+            doc,
             oldDoc,
             indices ? this.docs.indexOf(id) : -1
           );
         } else {
-          observeCallbacks.changed(transform(doc), oldDoc);
+          observeCallbacks.changed(doc, oldDoc);
         }
       },
       movedBefore(id, before) {
@@ -1290,7 +1237,7 @@ LocalCollection._observeFromObserveChanges = (cursor, observeCallbacks) => {
         }
 
         observeCallbacks.movedTo(
-          transform(EJSON.clone(this.docs.get(id))),
+          EJSON.clone(this.docs.get(id)),
           from,
           to,
           before || null
@@ -1303,7 +1250,7 @@ LocalCollection._observeFromObserveChanges = (cursor, observeCallbacks) => {
 
         // technically maybe there should be an EJSON.clone here, but it's about
         // to be removed from this.docs!
-        const doc = transform(this.docs.get(id));
+        const doc = this.docs.get(id);
 
         if (observeCallbacks.removedAt) {
           observeCallbacks.removedAt(doc, indices ? this.docs.indexOf(id) : -1);
@@ -1316,7 +1263,7 @@ LocalCollection._observeFromObserveChanges = (cursor, observeCallbacks) => {
     observeChangesCallbacks = {
       added(id, fields) {
         if (!suppressed && observeCallbacks.added) {
-          observeCallbacks.added(transform(Object.assign(fields, {_id: id})));
+          observeCallbacks.added(Object.assign(fields, {_id: id}));
         }
       },
       changed(id, fields) {
@@ -1327,14 +1274,14 @@ LocalCollection._observeFromObserveChanges = (cursor, observeCallbacks) => {
           DiffSequence.applyChanges(doc, fields);
 
           observeCallbacks.changed(
-            transform(doc),
-            transform(EJSON.clone(oldDoc))
+            doc,
+            EJSON.clone(oldDoc)
           );
         }
       },
       removed(id) {
         if (observeCallbacks.removed) {
-          observeCallbacks.removed(transform(this.docs.get(id)));
+          observeCallbacks.removed(this.docs.get(id));
         }
       },
     };
@@ -2500,8 +2447,6 @@ LocalCollection.Cursor = class Cursor {
 
     this._projectionFn = LocalCollection._compileProjection(this.fields || {});
 
-    this._transform = LocalCollection.wrapTransform(options.transform);
-
     // by default, queries register w/ Tracker when it is available.
     if (typeof Tracker !== 'undefined') {
       this.reactive = options.reactive === undefined ? true : options.reactive;
@@ -2563,9 +2508,6 @@ LocalCollection.Cursor = class Cursor {
           // This doubles as a clone operation.
           let element = this._projectionFn(objects[index++]);
 
-          if (this._transform)
-            element = this._transform(element);
-
           return {value: element};
         }
 
@@ -2606,16 +2548,8 @@ LocalCollection.Cursor = class Cursor {
       // This doubles as a clone operation.
       element = this._projectionFn(element);
 
-      if (this._transform) {
-        element = this._transform(element);
-      }
-
       callback.call(thisArg, element, i, this);
     });
-  }
-
-  getTransform() {
-    return this._transform;
   }
 
   /**
@@ -2948,27 +2882,6 @@ LocalCollection.Cursor = class Cursor {
     return results.slice(
       this.skip,
       this.limit ? this.limit + this.skip : results.length
-    );
-  }
-
-  _publishCursor(subscription) {
-    // // XXX minimongo should not depend on mongo-livedata!
-    // if (!Package.mongo) {
-    //   throw new Error(
-    //     'Can\'t publish from Minimongo without the `mongo` package.'
-    //   );
-    // }
-
-    if (!this.collection.name) {
-      throw new Error(
-        'Can\'t publish a cursor from a collection without a name.'
-      );
-    }
-
-    return LocalCollection.Mongo.Collection._publishCursor(
-      this,
-      subscription,
-      this.collection.name
     );
   }
 }

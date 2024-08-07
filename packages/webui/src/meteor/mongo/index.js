@@ -27,7 +27,6 @@ LocalCollection.Mongo = Mongo;
  * @param {String} name The name of the collection.  If null, creates an unmanaged (unsynchronized) local collection.
  * @param {Object} [options]
  * @param {Object} options.connection The server connection that will manage this collection. Uses the default connection if not specified.  Pass the return value of calling [`DDP.connect`](#ddp_connect) to specify a different server. Pass `null` to specify no connection. Unmanaged (`name` is null) collections cannot specify a connection.
- * @param {Function} options.transform An optional transformation function. Documents will be passed through this function before being returned from `fetch` or `findOne`, and before being passed to callbacks of `observe`, `map`, `forEach`, `allow`, and `deny`. Transforms are *not* applied for the callbacks of `observeChanges` or to cursors returned from publish functions.
  */
 Mongo.Collection = function Collection(name, options) {
   if (!name && name !== null) {
@@ -59,7 +58,6 @@ Mongo.Collection = function Collection(name, options) {
 
   options = {
     connection: undefined,
-    transform: null,
     _driver: undefined,
     _preventAutopublish: false,
     ...options,
@@ -72,8 +70,6 @@ Mongo.Collection = function Collection(name, options) {
     return src.id();
   };
 
-  this._transform = LocalCollection.wrapTransform(options.transform);
-
   if (!name || options.connection === null)
     // note: nameless collections never have a connection
     this._connection = null;
@@ -81,20 +77,7 @@ Mongo.Collection = function Collection(name, options) {
   else this._connection = Meteor.connection;
 
   if (!options._driver) {
-    // XXX This check assumes that webapp is loaded so that Meteor.server !==
-    // null. We should fully support the case of "want to use a Mongo-backed
-    // collection from Node code without webapp", but we don't yet.
-    // #MeteorServerNull
-    // if (
-    //   name &&
-    //   this._connection === Meteor.server &&
-    //   typeof MongoInternals !== 'undefined' &&
-    //   MongoInternals.defaultRemoteCollectionDriver
-    // ) {
-    //   options._driver = MongoInternals.defaultRemoteCollectionDriver();
-    // } else {
-      options._driver = LocalCollectionDriver;
-    // }
+    options._driver = LocalCollectionDriver;
   }
 
   this._collection = options._driver.open(name, this._connection);
@@ -102,36 +85,6 @@ Mongo.Collection = function Collection(name, options) {
   this._driver = options._driver;
 
   this._maybeSetUpReplication(name, options);
-
-  // XXX don't define these until allow or deny is actually used for this
-  // collection. Could be hard if the security rules are only defined on the
-  // server.
-  if (options.defineMutationMethods !== false) {
-    try {
-      // this._defineMutationMethods({
-      //   useExisting: options._suppressSameNameError === true,
-      // });
-    } catch (error) {
-      // Throw a more understandable error on the server for same collection name
-      if (
-        error.message === `A method named '/${name}/insert' is already defined`
-      )
-        throw new Error(`There is already a collection named "${name}"`);
-      throw error;
-    }
-  }
-
-  // // autopublish
-  // if (
-  //   Package.autopublish &&
-  //   !options._preventAutopublish &&
-  //   this._connection &&
-  //   this._connection.publish
-  // ) {
-  //   this._connection.publish(null, () => this.find(), {
-  //     is_auto: true,
-  //   });
-  // }
 };
 
 Object.assign(Mongo.Collection.prototype, {
@@ -312,7 +265,7 @@ Object.assign(Mongo.Collection.prototype, {
 
     var self = this;
     if (args.length < 2) {
-      return { transform: self._transform };
+      return { };
     } else {
       check(
         newOptions,
@@ -330,7 +283,6 @@ Object.assign(Mongo.Collection.prototype, {
 
 
       return {
-        transform: self._transform,
         ...newOptions,
       };
     }
@@ -349,7 +301,6 @@ Object.assign(Mongo.Collection.prototype, {
    * @param {Number} options.limit Maximum number of results to return
    * @param {MongoFieldSpecifier} options.fields Dictionary of fields to return or exclude.
    * @param {Boolean} options.reactive (Client only) Default `true`; pass `false` to disable reactivity
-   * @param {Function} options.transform Overrides `transform` on the  [`Collection`](#collections) for this cursor.  Pass `null` to disable transformation.
    * @param {Boolean} options.disableOplog (Server only) Pass true to disable oplog-tailing on this query. This affects the way server processes calls to `observe` on this query. Disabling the oplog can be useful when working with data that updates in large batches.
    * @param {Number} options.pollingIntervalMs (Server only) When oplog is disabled (through the use of `disableOplog` or when otherwise not available), the frequency (in milliseconds) of how often to poll this query when observing on the server. Defaults to 10000ms (10 seconds).
    * @param {Number} options.pollingThrottleMs (Server only) When oplog is disabled (through the use of `disableOplog` or when otherwise not available), the minimum time (in milliseconds) to allow between re-polling when observing on the server. Increasing this will save CPU and mongo load at the expense of slower updates to users. Decreasing this is not recommended. Defaults to 50ms.
@@ -380,7 +331,6 @@ Object.assign(Mongo.Collection.prototype, {
    * @param {Number} options.skip Number of results to skip at the beginning
    * @param {MongoFieldSpecifier} options.fields Dictionary of fields to return or exclude.
    * @param {Boolean} options.reactive (Client only) Default true; pass false to disable reactivity
-   * @param {Function} options.transform Overrides `transform` on the [`Collection`](#collections) for this cursor.  Pass `null` to disable transformation.
    * @param {String} options.readPreference (Server only) Specifies a custom MongoDB [`readPreference`](https://docs.mongodb.com/manual/core/read-preference) for fetching the document. Possible values are `primary`, `primaryPreferred`, `secondary`, `secondaryPreferred` and `nearest`.
    * @returns {Object}
    */
@@ -393,36 +343,6 @@ Object.assign(Mongo.Collection.prototype, {
 });
 
 Object.assign(Mongo.Collection, {
-  _publishCursor(cursor, sub, collection) {
-    var observeHandle = cursor.observeChanges(
-      {
-        added: function(id, fields) {
-          sub.added(collection, id, fields);
-        },
-        changed: function(id, fields) {
-          sub.changed(collection, id, fields);
-        },
-        removed: function(id) {
-          sub.removed(collection, id);
-        },
-      },
-      // Publications don't mutate the documents
-      // This is tested by the `livedata - publish callbacks clone` test
-      { nonMutatingCallbacks: true }
-    );
-
-    // We don't call sub.ready() here: it gets called in livedata_server, after
-    // possibly calling _publishCursor on multiple returned cursors.
-
-    // register stop callback (expects lambda w/ no args).
-    sub.onStop(function() {
-      observeHandle.stop();
-    });
-
-    // return the observeHandle in case it needs to be stopped early
-    return observeHandle;
-  },
-
   // protect against dangerous selectors.  falsey and {_id: falsey} are both
   // likely programmer error, and not what you want, particularly for destructive
   // operations. If a falsey _id is sent in, a new string _id will be

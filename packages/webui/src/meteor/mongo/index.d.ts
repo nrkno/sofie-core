@@ -159,15 +159,7 @@ export     namespace Mongo {
             hint?: Hint | undefined;
             /** (Client only) Default `true`; pass `false` to disable reactivity */
             reactive?: boolean | undefined;
-            /**  Overrides `transform` on the  [`Collection`](#collections) for this cursor.  Pass `null` to disable transformation. */
-            transform?: Transform<T> | undefined;
         };
-
-        type DispatchTransform<Transform, T, U> = Transform extends (...args: any) => any
-            ? ReturnType<Transform>
-            : Transform extends null
-            ? T
-            : U;
 
         var Collection: CollectionStatic;
         interface CollectionStatic {
@@ -175,7 +167,7 @@ export     namespace Mongo {
              * Constructor for a Collection
              * @param name The name of the collection. If null, creates an unmanaged (unsynchronized) local collection.
              */
-            new <T extends MongoNpmModule.Document, U = T>(
+            new <T extends MongoNpmModule.Document>(
                 name: string | null,
                 options?: {
                     /**
@@ -183,53 +175,20 @@ export     namespace Mongo {
                      * server. Pass `null` to specify no connection. Unmanaged (`name` is null) collections cannot specify a connection.
                      */
                     connection?: Object | null | undefined;
-                    /**
-                     * An optional transformation function. Documents will be passed through this function before being returned from `fetch` or `findOne`, and before being passed to callbacks of
-                     * `observe`, `map`, `forEach`, `allow`, and `deny`. Transforms are *not* applied for the callbacks of `observeChanges` or to cursors returned from publish functions.
-                     */
-                    transform?: (doc: T) => U;
                 },
-            ): Collection<T, U>;
+            ): Collection<T>;
         }
-        interface Collection<T extends MongoNpmModule.Document, U = T> {
-            allow<Fn extends Transform<T> = undefined>(options: {
-                insert?: ((userId: string, doc: DispatchTransform<Fn, T, U>) => boolean) | undefined;
-                update?:
-                    | ((
-                          userId: string,
-                          doc: DispatchTransform<Fn, T, U>,
-                          fieldNames: string[],
-                          modifier: any,
-                      ) => boolean)
-                    | undefined;
-                remove?: ((userId: string, doc: DispatchTransform<Fn, T, U>) => boolean) | undefined;
-                fetch?: string[] | undefined;
-                transform?: Fn | undefined;
-            }): boolean;
+        interface Collection<T extends MongoNpmModule.Document> {
             createCappedCollectionAsync(byteSize?: number, maxDocuments?: number): Promise<void>;
             createIndex(indexSpec: IndexSpecification, options?: CreateIndexesOptions): void;
             createIndexAsync(indexSpec: IndexSpecification, options?: CreateIndexesOptions): Promise<void>;
-            deny<Fn extends Transform<T> = undefined>(options: {
-                insert?: ((userId: string, doc: DispatchTransform<Fn, T, U>) => boolean) | undefined;
-                update?:
-                    | ((
-                          userId: string,
-                          doc: DispatchTransform<Fn, T, U>,
-                          fieldNames: string[],
-                          modifier: any,
-                      ) => boolean)
-                    | undefined;
-                remove?: ((userId: string, doc: DispatchTransform<Fn, T, U>) => boolean) | undefined;
-                fetch?: string[] | undefined;
-                transform?: Fn | undefined;
-            }): boolean;
             dropCollectionAsync(): Promise<void>;
             dropIndexAsync(indexName: string): void;
             /**
              * Find the documents in a collection that match the selector.
              * @param selector A query describing the documents to find
              */
-            find(selector?: Selector<T> | ObjectID | string): Cursor<T, U>;
+            find(selector?: Selector<T> | ObjectID | string): Cursor<T>;
             /**
              * Find the documents in a collection that match the selector.
              * @param selector A query describing the documents to find
@@ -237,12 +196,12 @@ export     namespace Mongo {
             find<O extends Options<T>>(
                 selector?: Selector<T> | ObjectID | string,
                 options?: O,
-            ): Cursor<T, DispatchTransform<O['transform'], T, U>>;
+            ): Cursor<T>;
             /**
              * Finds the first document that matches the selector, as ordered by sort and skip options. Returns `undefined` if no matching document is found.
              * @param selector A query describing the documents to find
              */
-            findOne(selector?: Selector<T> | ObjectID | string): U | undefined;
+            findOne(selector?: Selector<T> | ObjectID | string): T | undefined;
             /**
              * Finds the first document that matches the selector, as ordered by sort and skip options. Returns `undefined` if no matching document is found.
              * @param selector A query describing the documents to find
@@ -250,12 +209,12 @@ export     namespace Mongo {
             findOne<O extends Omit<Options<T>, 'limit'>>(
                 selector?: Selector<T> | ObjectID | string,
                 options?: O,
-            ): DispatchTransform<O['transform'], T, U> | undefined;
+            ): T | undefined;
             /**
              * Finds the first document that matches the selector, as ordered by sort and skip options. Returns `undefined` if no matching document is found.
              * @param selector A query describing the documents to find
              */
-            findOneAsync(selector?: Selector<T> | ObjectID | string): Promise<U | undefined>;
+            findOneAsync(selector?: Selector<T> | ObjectID | string): Promise<T | undefined>;
             /**
              * Finds the first document that matches the selector, as ordered by sort and skip options. Returns `undefined` if no matching document is found.
              * @param selector A query describing the documents to find
@@ -263,7 +222,7 @@ export     namespace Mongo {
             findOneAsync<O extends Omit<Options<T>, 'limit'>>(
                 selector?: Selector<T> | ObjectID | string,
                 options?: O,
-            ): Promise<DispatchTransform<O['transform'], T, U> | undefined>;
+            ): Promise<T | undefined>;
             /**
              * Insert a document in the collection.  Returns its unique _id.
              * @param doc The document to insert. May not yet have an _id attribute, in which case Meteor will generate one for you.
@@ -392,7 +351,7 @@ export     namespace Mongo {
             /**
              * To create a cursor, use find. To access the documents in a cursor, use forEach, map, or fetch.
              */
-            new <T, U = T>(): Cursor<T, U>;
+            new <T>(): Cursor<T>;
         }
         interface ObserveCallbacks<T> {
             added?(document: T): void;
@@ -410,7 +369,7 @@ export     namespace Mongo {
             movedBefore?(id: string, before: T | null): void;
             removed?(id: string): void;
         }
-        interface Cursor<T, U = T> {
+        interface Cursor<T> {
             /**
              * Returns the number of documents that match a query.
              * @param applySkipLimit If set to `false`, the value returned will reflect the total number of matching documents, ignoring any value supplied for limit. (Default: true)
@@ -424,42 +383,42 @@ export     namespace Mongo {
             /**
              * Return all matching documents as an Array.
              */
-            fetch(): Array<U>;
+            fetch(): Array<T>;
             /**
              * Return all matching documents as an Array.
              */
-            fetchAsync(): Promise<Array<U>>;
+            fetchAsync(): Promise<Array<T>>;
             /**
              * Call `callback` once for each matching document, sequentially and
              *          synchronously.
              * @param callback Function to call. It will be called with three arguments: the document, a 0-based index, and <em>cursor</em> itself.
              * @param thisArg An object which will be the value of `this` inside `callback`.
              */
-            forEach(callback: (doc: U, index: number, cursor: Cursor<T, U>) => void, thisArg?: any): void;
+            forEach(callback: (doc: T, index: number, cursor: Cursor<T>) => void, thisArg?: any): void;
             /**
              * Call `callback` once for each matching document, sequentially and
              *          synchronously.
              * @param callback Function to call. It will be called with three arguments: the document, a 0-based index, and <em>cursor</em> itself.
              * @param thisArg An object which will be the value of `this` inside `callback`.
              */
-            forEachAsync(callback: (doc: U, index: number, cursor: Cursor<T, U>) => void, thisArg?: any): Promise<void>;
+            forEachAsync(callback: (doc: T, index: number, cursor: Cursor<T>) => void, thisArg?: any): Promise<void>;
             /**
              * Map callback over all matching documents. Returns an Array.
              * @param callback Function to call. It will be called with three arguments: the document, a 0-based index, and <em>cursor</em> itself.
              * @param thisArg An object which will be the value of `this` inside `callback`.
              */
-            map<M>(callback: (doc: U, index: number, cursor: Cursor<T, U>) => M, thisArg?: any): Array<M>;
+            map<M>(callback: (doc: T, index: number, cursor: Cursor<T>) => M, thisArg?: any): Array<M>;
             /**
              * Map callback over all matching documents. Returns an Array.
              * @param callback Function to call. It will be called with three arguments: the document, a 0-based index, and <em>cursor</em> itself.
              * @param thisArg An object which will be the value of `this` inside `callback`.
              */
-            mapAsync<M>(callback: (doc: U, index: number, cursor: Cursor<T, U>) => M, thisArg?: any): Promise<Array<M>>;
+            mapAsync<M>(callback: (doc: T, index: number, cursor: Cursor<T>) => M, thisArg?: any): Promise<Array<M>>;
             /**
              * Watch a query. Receive callbacks as the result set changes.
              * @param callbacks Functions to call to deliver the result set as it changes
              */
-            observe(callbacks: ObserveCallbacks<U>): Meteor.LiveQueryHandle;
+            observe(callbacks: ObserveCallbacks<T>): Meteor.LiveQueryHandle;
             /**
              * Watch a query. Receive callbacks as the result set changes. Only the differences between the old and new documents are passed to the callbacks.
              * @param callbacks Functions to call to deliver the result set as it changes
@@ -488,14 +447,6 @@ export     namespace Mongo {
 
         function setConnectionOptions(options: any): void;
     
-        
-        interface AllowDenyOptions {
-            insert?: ((userId: string, doc: any) => boolean) | undefined;
-            update?: ((userId: string, doc: any, fieldNames: string[], modifier: any) => boolean) | undefined;
-            remove?: ((userId: string, doc: any) => boolean) | undefined;
-            fetch?: string[] | undefined;
-            transform?: Function | null | undefined;
-        }
     }
 
 
