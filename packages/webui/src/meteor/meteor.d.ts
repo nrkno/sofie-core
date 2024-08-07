@@ -208,15 +208,6 @@ export namespace Meteor {
 	/** Pub/Sub **/
 
 	/** Login **/
-	interface LoginWithExternalServiceOptions {
-		requestPermissions?: ReadonlyArray<string> | undefined
-		requestOfflineToken?: Boolean | undefined
-		forceApprovalPrompt?: Boolean | undefined
-		loginUrlParameters?: Object | undefined
-		redirectUrl?: string | undefined
-		loginHint?: string | undefined
-		loginStyle?: string | undefined
-	}
 
 	function loginWithPassword(
 		user: Object | string,
@@ -228,31 +219,9 @@ export namespace Meteor {
 
 	/** Login **/
 
-	/** Event **/
-	interface Event {
-		type: string
-		target: HTMLElement
-		currentTarget: HTMLElement
-		which: number
-		stopPropagation(): void
-		stopImmediatePropagation(): void
-		preventDefault(): void
-		isPropagationStopped(): boolean
-		isImmediatePropagationStopped(): boolean
-		isDefaultPrevented(): boolean
-	}
-	interface EventHandlerFunction extends Function {
-		(event?: Meteor.Event, templateInstance?: Blaze.TemplateInstance): void
-	}
-	interface EventMap {
-		[id: string]: Meteor.EventHandlerFunction
-	}
-	/** Event **/
-
 	/** Connection **/
 	function reconnect(): void
 
-	function disconnect(): void
 	/** Connection **/
 
 	/** Status **/
@@ -274,33 +243,4 @@ export namespace Meteor {
 	 */
 	function subscribe(name: string, ...args: any[]): Meteor.SubscriptionHandle
 	/** Pub/Sub **/
-
-	/** Connection **/
-	interface Connection {
-		id: string
-		close: () => void
-		onClose: (callback: () => void) => void
-		clientAddress: string
-		httpHeaders: Object
-	}
-
-	function onConnection(callback: (connection: Connection) => void): void
-	/** Connection **/
-	/**
-	 * Publish a record set.
-	 * @param name If String, name of the record set.  If Object, publications Dictionary of publish functions by name. If `null`, the set has no name, and the record set is automatically sent to
-	 * all connected clients.
-	 * @param func Function called on the server each time a client subscribes. Inside the function, `this` is the publish handler object, described below. If the client passed arguments to
-	 * `subscribe`, the function is called with the same arguments.
-	 */
-	function publish(
-		name: string | null,
-		func: (this: Subscription, ...args: any[]) => void,
-		options?: { is_auto: boolean }
-	): void
-
-	function onConnection(callback: (connection: Connection) => void): void
-	/** Connection **/
-
-	function _debug(...args: any[]): void
 }
