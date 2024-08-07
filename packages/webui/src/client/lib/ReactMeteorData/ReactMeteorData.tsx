@@ -12,7 +12,7 @@ import _ from 'underscore'
 
 const globalTrackerQueue: Array<Function> = []
 let globalTrackerTimestamp: number | undefined = undefined
-let globalTrackerTimeout: number | undefined = undefined
+let globalTrackerTimeout: NodeJS.Timeout | undefined = undefined
 
 /**
  * Delay an update to be batched with the global tracker invalidation queue
@@ -99,7 +99,7 @@ class MeteorDataManager {
 		}
 		globalTrackerQueue.push(func)
 		if (Date.now() - globalTrackerTimestamp < METEOR_DATA_DEBOUNCE_STALE) {
-			globalTrackerTimeout = Meteor.setTimeout(MeteorDataManager.runUpdates, METEOR_DATA_DEBOUNCE)
+			globalTrackerTimeout = setTimeout(MeteorDataManager.runUpdates, METEOR_DATA_DEBOUNCE)
 		} else {
 			MeteorDataManager.runUpdates()
 		}

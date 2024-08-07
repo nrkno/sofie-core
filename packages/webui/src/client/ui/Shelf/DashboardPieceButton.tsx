@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { Meteor } from 'meteor/meteor'
 import ClassNames from 'classnames'
 import { RundownUtils } from '../../lib/rundown'
 import {
@@ -76,7 +75,7 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 	} | null = null
 	private _labelEl: HTMLTextAreaElement | null = null
 	private pointerId: number | null = null
-	private hoverTimeout: number | null = null
+	private hoverTimeout: NodeJS.Timeout | null = null
 	protected inBucket = false
 
 	constructor(props: IDashboardButtonProps & T) {
@@ -238,7 +237,7 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 	private handleOnPointerLeave = (_e: React.PointerEvent<HTMLDivElement>) => {
 		this.setState({ isHovered: false })
 		if (this.hoverTimeout) {
-			Meteor.clearTimeout(this.hoverTimeout)
+			clearTimeout(this.hoverTimeout)
 			this.hoverTimeout = null
 		}
 		this.positionAndSize = null
@@ -264,13 +263,13 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 			timePosition: timePercentage * sourceDuration,
 		})
 		if (this.hoverTimeout) {
-			Meteor.clearTimeout(this.hoverTimeout)
+			clearTimeout(this.hoverTimeout)
 			this.startHoverTimeout()
 		}
 	}
 
 	private startHoverTimeout = () => {
-		this.hoverTimeout = Meteor.setTimeout(() => {
+		this.hoverTimeout = setTimeout(() => {
 			this.hoverTimeout = null
 			this.setState({ isHovered: false })
 		}, HOVER_TIMEOUT)

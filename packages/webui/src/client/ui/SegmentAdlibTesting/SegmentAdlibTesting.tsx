@@ -17,7 +17,6 @@ import RundownViewEventBus, {
 } from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
 import { getElementWidth } from '../../utils/dimensions'
 import { HOVER_TIMEOUT } from '../Shelf/DashboardPieceButton'
-import { Meteor } from 'meteor/meteor'
 import { hidePointerLockCursor, showPointerLockCursor } from '../../lib/PointerLockCursor'
 import { OptionalVelocityComponent } from '../../lib/utilComponents'
 import { filterSecondarySourceLayers } from '../SegmentStoryboard/StoryboardPartSecondaryPieces/StoryboardPartSecondaryPieces'
@@ -75,7 +74,7 @@ export const SegmentAdlibTesting = React.memo(
 		const [animateScrollLeft, setAnimateScrollLeft] = useState(true)
 		const { t } = useTranslation()
 		const [squishedHover, setSquishedHover] = useState<null | number>(null)
-		const squishedHoverTimeout = useRef<number | null>(null)
+		const squishedHoverTimeout = useRef<NodeJS.Timeout | null>(null)
 
 		const criticalNotes = props.segmentNoteCounts.criticial
 		const warningNotes = props.segmentNoteCounts.warning
@@ -264,13 +263,13 @@ export const SegmentAdlibTesting = React.memo(
 
 		const onSquishedPointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
 			if (e.pointerType === 'mouse') {
-				squishedHoverTimeout.current = Meteor.setTimeout(() => setSquishedHover(null), HOVER_TIMEOUT)
+				squishedHoverTimeout.current = setTimeout(() => setSquishedHover(null), HOVER_TIMEOUT)
 			}
 		}
 
 		const clearSquishedHoverTimeout = () => {
 			if (squishedHoverTimeout.current) {
-				Meteor.clearTimeout(squishedHoverTimeout.current)
+				clearTimeout(squishedHoverTimeout.current)
 				squishedHoverTimeout.current = null
 			}
 		}
@@ -285,7 +284,7 @@ export const SegmentAdlibTesting = React.memo(
 		const onSquishedPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
 			if (e.pointerType === 'mouse') {
 				clearSquishedHoverTimeout()
-				squishedHoverTimeout.current = Meteor.setTimeout(() => setSquishedHover(null), HOVER_TIMEOUT)
+				squishedHoverTimeout.current = setTimeout(() => setSquishedHover(null), HOVER_TIMEOUT)
 			}
 		}
 

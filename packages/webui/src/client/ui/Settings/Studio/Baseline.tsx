@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Meteor } from 'meteor/meteor'
 import Tooltip from 'rc-tooltip'
 import { MeteorCall } from '../../../lib/meteorApi'
 import { getHelpMode } from '../../../lib/localStorage'
@@ -32,11 +31,11 @@ export function StudioBaselineStatus({ studioId }: Readonly<IStudioBaselineStatu
 		}
 
 		const updatePeriod = 30000 // every 30s
-		const interval = Meteor.setInterval(() => updateStatus(), updatePeriod)
+		const interval = setInterval(() => updateStatus(), updatePeriod)
 		updateStatus()
 
 		return () => {
-			Meteor.clearInterval(interval)
+			clearInterval(interval)
 		}
 	}, [studioId])
 

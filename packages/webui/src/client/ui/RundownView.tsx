@@ -975,7 +975,7 @@ const RundownHeader = withTranslation()(
 			// Do a rewind later, when the UI has updated
 			Meteor.defer(() => {
 				Tracker.flush()
-				Meteor.setTimeout(() => {
+				setTimeout(() => {
 					this.rewindSegments()
 					RundownViewEventBus.emit(RundownViewEvents.GO_TO_TOP)
 				}, 500)
@@ -1477,7 +1477,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 	}
 })(
 	class RundownViewContent extends React.Component<Translated<IPropsWithReady & ITrackedProps>, IState> {
-		private _hideNotificationsAfterMount: number | undefined
+		private _hideNotificationsAfterMount: NodeJS.Timeout | undefined
 		/** MiniShelf data */
 		private keyboardQueuedPiece: AdLibPieceUi | undefined = undefined
 		private keyboardQueuedPartInstanceId: PartInstanceId | undefined = undefined
@@ -1733,7 +1733,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 			// Snooze notifications for a period after mounting the RundownView
 			if (HIDE_NOTIFICATIONS_AFTER_MOUNT) {
 				NotificationCenter.isOpen = true
-				this._hideNotificationsAfterMount = Meteor.setTimeout(() => {
+				this._hideNotificationsAfterMount = setTimeout(() => {
 					NotificationCenter.isOpen = this.state.isNotificationsCenterOpen !== undefined
 					this._hideNotificationsAfterMount = undefined
 				}, HIDE_NOTIFICATIONS_AFTER_MOUNT)
@@ -1986,7 +1986,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 			}
 
 			if (this._hideNotificationsAfterMount) {
-				Meteor.clearTimeout(this._hideNotificationsAfterMount)
+				clearTimeout(this._hideNotificationsAfterMount)
 			}
 			NotificationCenter.isConcentrationMode = false
 

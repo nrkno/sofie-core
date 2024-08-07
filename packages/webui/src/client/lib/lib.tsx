@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
 import { Time } from './tempLib'
 import { getCurrentTime, systemTime } from './systemTime'
@@ -100,13 +99,13 @@ export function useCombinedRefs<T>(initial: T | null, ...refs: MutableRef<T>[]):
  */
 export function useInvalidateTimeout<K>(func: () => [K, number], deps: any[]): K | null {
 	const [value, setValue] = useState<K | null>(null)
-	const invalidateHandle = useRef<number | null>(null)
+	const invalidateHandle = useRef<NodeJS.Timeout | null>(null)
 
 	useEffect(() => {
 		const reevaluate = () => {
 			const [newValue, revalidateIn] = func()
 			if (revalidateIn > 0) {
-				invalidateHandle.current = Meteor.setTimeout(reevaluate, revalidateIn)
+				invalidateHandle.current = setTimeout(reevaluate, revalidateIn)
 			} else {
 				invalidateHandle.current = null
 			}
@@ -119,12 +118,12 @@ export function useInvalidateTimeout<K>(func: () => [K, number], deps: any[]): K
 		setValue(mountValue)
 
 		if (timeout > 0) {
-			invalidateHandle.current = Meteor.setTimeout(reevaluate, timeout)
+			invalidateHandle.current = setTimeout(reevaluate, timeout)
 		}
 
 		return () => {
 			if (invalidateHandle.current !== null) {
-				Meteor.clearTimeout(invalidateHandle.current)
+				clearTimeout(invalidateHandle.current)
 				invalidateHandle.current = null
 			}
 		}

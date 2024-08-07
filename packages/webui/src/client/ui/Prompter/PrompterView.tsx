@@ -3,7 +3,6 @@ import _ from 'underscore'
 // @ts-expect-error No types available
 import Velocity from 'velocity-animate'
 import ClassNames from 'classnames'
-import { Meteor } from 'meteor/meteor'
 import { Route } from 'react-router-dom'
 import {
 	Translated,
@@ -110,7 +109,7 @@ export class PrompterViewContent extends React.Component<Translated<IProps & ITr
 	// @ts-expect-error The manager inspects this instance
 	private _controller: PrompterControlManager
 
-	private checkWindowScroll: number | null = null
+	private checkWindowScroll: NodeJS.Timeout | null = null
 
 	constructor(props: Translated<IProps & ITrackedProps>) {
 		super(props)
@@ -365,7 +364,7 @@ export class PrompterViewContent extends React.Component<Translated<IProps & ITr
 	private triggerCheckCurrentTakeMarkers = () => {
 		// Rate limit:
 		if (!this.checkWindowScroll) {
-			this.checkWindowScroll = Meteor.setTimeout(() => {
+			this.checkWindowScroll = setTimeout(() => {
 				this.checkWindowScroll = null
 
 				this.checkCurrentTakeMarkers()

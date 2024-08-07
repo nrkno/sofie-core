@@ -117,17 +117,17 @@ Meteor.startup(() => {
 	updateDiffTime()
 
 	// Also run it a few seconds in, to get a more accurate reading:
-	Meteor.setTimeout(() => {
+	setTimeout(() => {
 		updateDiffTime()
 	}, 5000)
 
 	// Also run it after 30 seconds, to get an even more accurate reading:
-	Meteor.setTimeout(() => {
+	setTimeout(() => {
 		updateDiffTime()
 	}, 30 * 1000)
 
 	// Then run it on an interval, to ensure it is kept up to date:
-	Meteor.setInterval(() => {
+	setInterval(() => {
 		if (Meteor.status().connected) {
 			updateDiffTime()
 		}

@@ -7,7 +7,6 @@ import StudioContext from '../../RundownView/StudioContext'
 import { StoryboardSecondaryPiece } from './StoryboardSecondaryPiece'
 import { getCurrentTime } from '../../../lib/systemTime'
 import { useInvalidateTimeout } from '../../../lib/lib'
-import { Meteor } from 'meteor/meteor'
 import { HOVER_TIMEOUT } from '../../Shelf/DashboardPieceButton'
 import { PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
@@ -102,7 +101,7 @@ const EMPTY_PLAYED_PIECE_IDS = { playedPieceIds: [], finishedPieceIds: [] }
 
 export function StoryboardSourceLayer({ pieces, sourceLayer, part }: Readonly<IProps>): JSX.Element {
 	const [hoverIndex, setHoverIndex] = useState<number | null>(null)
-	const hoverTimeout = useRef<number | null>(null)
+	const hoverTimeout = useRef<NodeJS.Timeout | null>(null)
 
 	const partId = part?.partId
 
@@ -148,13 +147,13 @@ export function StoryboardSourceLayer({ pieces, sourceLayer, part }: Readonly<IP
 
 	const onPointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
 		if (e.pointerType === 'mouse') {
-			hoverTimeout.current = Meteor.setTimeout(() => setHoverIndex(null), HOVER_TIMEOUT)
+			hoverTimeout.current = setTimeout(() => setHoverIndex(null), HOVER_TIMEOUT)
 		}
 	}
 
 	const clearHoverTimeout = () => {
 		if (hoverTimeout.current) {
-			Meteor.clearTimeout(hoverTimeout.current)
+			clearTimeout(hoverTimeout.current)
 			hoverTimeout.current = null
 		}
 	}
@@ -169,7 +168,7 @@ export function StoryboardSourceLayer({ pieces, sourceLayer, part }: Readonly<IP
 	const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
 		if (e.pointerType === 'mouse') {
 			clearHoverTimeout()
-			hoverTimeout.current = Meteor.setTimeout(() => setHoverIndex(null), HOVER_TIMEOUT)
+			hoverTimeout.current = setTimeout(() => setHoverIndex(null), HOVER_TIMEOUT)
 		}
 	}
 

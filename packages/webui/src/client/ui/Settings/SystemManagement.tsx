@@ -8,7 +8,6 @@ import { MeteorCall } from '../../lib/meteorApi'
 import { languageAnd } from '../../lib/language'
 import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredActionsEditor'
 import { TFunction, useTranslation } from 'react-i18next'
-import { Meteor } from 'meteor/meteor'
 import { LogLevel } from '../../lib/tempLib'
 import { CoreSystem } from '../../collections'
 import { CollectionCleanupResult } from '@sofie-automation/meteor-lib/dist/api/system'
@@ -432,7 +431,7 @@ export function checkForOldDataAndCleanUp(t: TFunction, retriesLeft = 0): void {
 					})
 				} else {
 					// Try again:
-					Meteor.setTimeout(() => {
+					setTimeout(() => {
 						checkForOldDataAndCleanUp(t, retriesLeft - 1)
 					}, 300)
 				}

@@ -3,7 +3,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
 import { doModalDialog } from '../../lib/ModalDialog'
-import { Meteor } from 'meteor/meteor'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { useTranslation } from 'react-i18next'
 import { MeteorCall } from '../../lib/meteorApi'
@@ -52,14 +51,14 @@ export const DevicePackageManagerSettings: React.FC<IDevicePackageManagerSetting
 		}, [])
 
 		useEffect(() => {
-			const reloadInterval = Meteor.setInterval(() => {
+			const reloadInterval = setInterval(() => {
 				if (deviceId) {
 					reloadStatus(true)
 				}
 			}, 1000)
 
 			return () => {
-				Meteor.clearInterval(reloadInterval)
+				clearInterval(reloadInterval)
 			}
 		}, [])
 

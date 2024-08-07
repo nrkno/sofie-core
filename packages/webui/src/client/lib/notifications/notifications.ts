@@ -416,7 +416,7 @@ class NotificationCenter0 {
 	 * @memberof NotificationCenter0
 	 */
 	private timeout(notice: Notification): void {
-		Meteor.setTimeout(() => {
+		setTimeout(() => {
 			if (notice) {
 				const id = notice.id
 				if (id && notifications[id]) {

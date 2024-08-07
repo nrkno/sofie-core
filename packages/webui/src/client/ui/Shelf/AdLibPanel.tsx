@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
 import _ from 'underscore'
-import { Meteor } from 'meteor/meteor'
 import { useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { useTranslation } from 'react-i18next'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
@@ -619,7 +618,7 @@ export function AdLibPanel({
 						tab: filter ? `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${filter._id}` : ShelfTabs.ADLIB,
 					})
 
-					Meteor.setTimeout(() => {
+					setTimeout(() => {
 						const el = document.querySelector(`.adlib-panel__list-view__list__segment__item[data-obj-id="${pieceId}"]`)
 						if (el) {
 							el.scrollIntoView({

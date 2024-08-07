@@ -2,7 +2,6 @@ import * as i18next from 'i18next'
 import _ from 'underscore'
 import { NotificationCenter, Notification, NoticeLevel } from './notifications/notifications'
 import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
-import { Meteor } from 'meteor/meteor'
 import { logger } from './logging'
 import { assertNever, Time } from './tempLib'
 import { getCurrentTime, systemTime } from './systemTime'
@@ -155,7 +154,7 @@ export function doUserAction<Result>(
 
 	// Display a progress message, if the method takes a long time to execute:
 	let timeoutMessage: Notification | null = null
-	const timeout = Meteor.setTimeout(() => {
+	const timeout = setTimeout(() => {
 		timeoutMessage = new Notification(
 			undefined,
 			NoticeLevel.NOTIFICATION,
@@ -168,7 +167,7 @@ export function doUserAction<Result>(
 	const clearMethodTimeout = () => {
 		if (!timeoutMessage) {
 			// cancel progress message:
-			Meteor.clearTimeout(timeout)
+			clearTimeout(timeout)
 		} else {
 			try {
 				timeoutMessage.drop()

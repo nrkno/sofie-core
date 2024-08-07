@@ -23,7 +23,6 @@ import RundownViewEventBus, {
 } from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
 import { getElementWidth } from '../../utils/dimensions'
 import { HOVER_TIMEOUT } from '../Shelf/DashboardPieceButton'
-import { Meteor } from 'meteor/meteor'
 import { hidePointerLockCursor, showPointerLockCursor } from '../../lib/PointerLockCursor'
 import { SegmentScrollbar } from './SegmentScrollbar'
 import { OptionalVelocityComponent } from '../../lib/utilComponents'
@@ -96,7 +95,7 @@ export const SegmentStoryboard = React.memo(
 		const { t } = useTranslation()
 		const [squishedHover, setSquishedHover] = useState<null | number>(null)
 		const [highlight, setHighlight] = useState(false)
-		const squishedHoverTimeout = useRef<number | null>(null)
+		const squishedHoverTimeout = useRef<NodeJS.Timeout | null>(null)
 
 		const identifiers: Array<{ partId: PartId; ident?: string }> = props.parts
 			.map((p) =>
@@ -295,20 +294,20 @@ export const SegmentStoryboard = React.memo(
 			[renderedParts, props.followLiveLine]
 		)
 
-		const highlightTimeout = useRef<number | null>(null)
+		const highlightTimeout = useRef<NodeJS.Timeout | null>(null)
 		const onHighlight = useCallback(
 			(e: HighlightEvent) => {
 				if (props.segment._id === e.segmentId && !e.partId) {
 					setHighlight(true)
-					if (highlightTimeout.current) Meteor.clearTimeout(highlightTimeout.current)
-					highlightTimeout.current = Meteor.setTimeout(() => setHighlight(false), 5000)
+					if (highlightTimeout.current) clearTimeout(highlightTimeout.current)
+					highlightTimeout.current = setTimeout(() => setHighlight(false), 5000)
 				}
 			},
 			[props.segment._id]
 		)
 		useEffect(() => {
 			return () => {
-				if (highlightTimeout.current) Meteor.clearTimeout(highlightTimeout.current)
+				if (highlightTimeout.current) clearTimeout(highlightTimeout.current)
 			}
 		}, [])
 		useEffect(() => {
@@ -349,13 +348,13 @@ export const SegmentStoryboard = React.memo(
 
 		const onSquishedPointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
 			if (e.pointerType === 'mouse') {
-				squishedHoverTimeout.current = Meteor.setTimeout(() => setSquishedHover(null), HOVER_TIMEOUT)
+				squishedHoverTimeout.current = setTimeout(() => setSquishedHover(null), HOVER_TIMEOUT)
 			}
 		}
 
 		const clearSquishedHoverTimeout = () => {
 			if (squishedHoverTimeout.current) {
-				Meteor.clearTimeout(squishedHoverTimeout.current)
+				clearTimeout(squishedHoverTimeout.current)
 				squishedHoverTimeout.current = null
 			}
 		}
@@ -370,7 +369,7 @@ export const SegmentStoryboard = React.memo(
 		const onSquishedPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
 			if (e.pointerType === 'mouse') {
 				clearSquishedHoverTimeout()
-				squishedHoverTimeout.current = Meteor.setTimeout(() => setSquishedHover(null), HOVER_TIMEOUT)
+				squishedHoverTimeout.current = setTimeout(() => setSquishedHover(null), HOVER_TIMEOUT)
 			}
 		}
 

@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 
 import { getAllowStudio, getAllowConfigure, getAllowService } from '../lib/localStorage'
@@ -18,7 +17,7 @@ export class KeyboardFocusIndicator extends React.Component<
 	React.PropsWithChildren<IKeyboardFocusIndicatorProps>,
 	IKeyboardFocusIndicatorState
 > {
-	private keyboardFocusInterval: number | undefined
+	private keyboardFocusInterval: NodeJS.Timeout | undefined
 
 	constructor(props: IKeyboardFocusIndicatorProps) {
 		super(props)
@@ -29,7 +28,7 @@ export class KeyboardFocusIndicator extends React.Component<
 	}
 
 	componentDidMount(): void {
-		this.keyboardFocusInterval = Meteor.setInterval(() => this.checkFocus(), 3000)
+		this.keyboardFocusInterval = setInterval(() => this.checkFocus(), 3000)
 		document.body.addEventListener('focusin', this.checkFocus)
 		document.body.addEventListener('focus', this.checkFocus)
 		document.body.addEventListener('mousedown', this.checkFocus)
@@ -37,7 +36,7 @@ export class KeyboardFocusIndicator extends React.Component<
 	}
 
 	componentWillUnmount(): void {
-		if (this.keyboardFocusInterval !== undefined) Meteor.clearInterval(this.keyboardFocusInterval)
+		if (this.keyboardFocusInterval !== undefined) clearInterval(this.keyboardFocusInterval)
 		document.body.removeEventListener('focusin', this.checkFocus)
 		document.body.removeEventListener('focus', this.checkFocus)
 		document.body.removeEventListener('mousedown', this.checkFocus)

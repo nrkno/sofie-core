@@ -17,7 +17,6 @@ import RundownViewEventBus, {
 	HighlightEvent,
 	RundownViewEvents,
 } from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
-import { Meteor } from 'meteor/meteor'
 import { StoryboardPartTransitions } from './StoryboardPartTransitions'
 import { PartDisplayDuration } from '../RundownView/RundownTiming/PartDuration'
 import { InvalidPartCover } from '../SegmentTimeline/Parts/InvalidPartCover'
@@ -88,21 +87,21 @@ export function StoryboardPart({
 		return ctx
 	}, [segment, part, onContextMenu])
 
-	const highlightTimeout = useRef<number | null>(null)
+	const highlightTimeout = useRef<NodeJS.Timeout | null>(null)
 	const onHighlight = useCallback(
 		(e: HighlightEvent) => {
 			if (e.partId == part.partId) {
 				// && !e.pieceId
 				setHighlight(true)
-				if (highlightTimeout.current) Meteor.clearTimeout(highlightTimeout.current)
-				highlightTimeout.current = Meteor.setTimeout(() => setHighlight(false), 5000)
+				if (highlightTimeout.current) clearTimeout(highlightTimeout.current)
+				highlightTimeout.current = setTimeout(() => setHighlight(false), 5000)
 			}
 		},
 		[part.partId]
 	)
 	useEffect(() => {
 		return () => {
-			if (highlightTimeout.current) Meteor.clearTimeout(highlightTimeout.current)
+			if (highlightTimeout.current) clearTimeout(highlightTimeout.current)
 		}
 	}, [])
 	useEffect(() => {

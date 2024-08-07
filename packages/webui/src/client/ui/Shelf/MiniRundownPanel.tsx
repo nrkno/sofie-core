@@ -12,7 +12,6 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { dashboardElementStyle } from './DashboardPanel'
-import { Meteor } from 'meteor/meteor'
 import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PartInstances } from '../../collections'
 import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
@@ -55,7 +54,7 @@ export class MiniRundownPanelInner extends React.Component<IMiniRundownPanelProp
 	}
 
 	private scrollIntoView() {
-		Meteor.setTimeout(() => {
+		setTimeout(() => {
 			const container = document.getElementById(MiniRundownPanelInner.panelContainerId)
 			if (!container) return
 			const nextElement = document.getElementById(MiniRundownPanelInner.nextSegmentId)

@@ -1,6 +1,5 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import {
 	NotificationCenter,
@@ -95,7 +94,7 @@ class RundownViewNotifier extends WithManagedTracker {
 	private _rundownShowStyleConfigStatuses: Record<string, Notification | undefined> = {}
 	private _rundownStudioConfigStatus: Notification | undefined = undefined
 	private _rundownImportVersionStatusDep: Tracker.Dependency
-	private _rundownImportVersionAndConfigInterval: number | undefined = undefined
+	private _rundownImportVersionAndConfigInterval: NodeJS.Timeout | undefined = undefined
 
 	private _unsentExternalMessagesStatus: Notification | undefined = undefined
 	private _unsentExternalMessageStatusDep: Tracker.Dependency
@@ -167,7 +166,7 @@ class RundownViewNotifier extends WithManagedTracker {
 	stop() {
 		super.stop()
 
-		if (this._rundownImportVersionAndConfigInterval) Meteor.clearInterval(this._rundownImportVersionAndConfigInterval)
+		if (this._rundownImportVersionAndConfigInterval) clearInterval(this._rundownImportVersionAndConfigInterval)
 
 		this._notifier.stop()
 	}
@@ -566,9 +565,9 @@ class RundownViewNotifier extends WithManagedTracker {
 	private reactiveVersionAndConfigStatus(playlistId: RundownPlaylistId) {
 		const updatePeriod = 30 * 1000 // every 30s
 
-		if (this._rundownImportVersionAndConfigInterval) Meteor.clearInterval(this._rundownImportVersionAndConfigInterval)
+		if (this._rundownImportVersionAndConfigInterval) clearInterval(this._rundownImportVersionAndConfigInterval)
 		this._rundownImportVersionAndConfigInterval = playlistId
-			? Meteor.setInterval(() => this.updateVersionAndConfigStatus(playlistId), updatePeriod)
+			? setInterval(() => this.updateVersionAndConfigStatus(playlistId), updatePeriod)
 			: undefined
 
 		this.autorun(() => {

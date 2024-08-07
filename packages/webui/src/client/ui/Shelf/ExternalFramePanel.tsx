@@ -100,7 +100,7 @@ export const ExternalFramePanel = withTranslation()(
 		mounted = false
 		initialized = false
 		failedDragTimeout: number | undefined
-		failedDropTimeout: number | undefined
+		failedDropTimeout: NodeJS.Timeout | undefined
 
 		waitForItemLoad: undefined | Promise<any>
 		resolveItemLoad: undefined | ((res: any) => void)
@@ -156,7 +156,7 @@ export const ExternalFramePanel = withTranslation()(
 
 				if (e.data.event === 'dragStart') {
 					// set timeout
-					this.failedDropTimeout = Meteor.setTimeout(() => {
+					this.failedDropTimeout = setTimeout(() => {
 						this.failedDropTimeout = undefined
 						RundownViewEventBus.emit(RundownViewEvents.TOGGLE_SHELF_DROPZONE, {
 							id: this.props.panel._id,
@@ -165,7 +165,7 @@ export const ExternalFramePanel = withTranslation()(
 					}, 10000)
 				} else {
 					// clear timeout
-					if (this.failedDropTimeout) Meteor.clearTimeout(this.failedDropTimeout)
+					if (this.failedDropTimeout) clearTimeout(this.failedDropTimeout)
 				}
 			}
 		}
@@ -401,7 +401,7 @@ export const ExternalFramePanel = withTranslation()(
 
 		onDragOver = (e: DragEvent) => {
 			if (this.failedDragTimeout) {
-				Meteor.clearTimeout(this.failedDragTimeout)
+				clearTimeout(this.failedDragTimeout)
 			}
 
 			let dragAllowed = false
@@ -443,7 +443,7 @@ export const ExternalFramePanel = withTranslation()(
 
 			e.preventDefault()
 
-			this.failedDragTimeout = Meteor.setTimeout(this.onDragLeave, 150)
+			this.failedDragTimeout = setTimeout(this.onDragLeave, 150)
 		}
 
 		onDragEnter = (e: DragEvent) => {

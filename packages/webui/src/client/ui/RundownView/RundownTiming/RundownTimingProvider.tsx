@@ -1,5 +1,4 @@
 import React, { PropsWithChildren } from 'react'
-import { Meteor } from 'meteor/meteor'
 import * as PropTypes from 'prop-types'
 import { withTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { protectString } from '../../../lib/tempLib'
@@ -194,7 +193,7 @@ export const RundownTimingProvider = withTracker<
 		syncedDurations: RundownTimingContext = {
 			isLowResolution: true,
 		}
-		refreshTimer: number | undefined
+		refreshTimer: NodeJS.Timeout | undefined
 		refreshTimerInterval: number
 		refreshDecimator: number
 
@@ -244,7 +243,7 @@ export const RundownTimingProvider = withTracker<
 		}
 
 		componentDidMount(): void {
-			this.refreshTimer = Meteor.setInterval(this.onRefreshTimer, this.refreshTimerInterval)
+			this.refreshTimer = setInterval(this.onRefreshTimer, this.refreshTimerInterval)
 			this.onRefreshTimer()
 			;(window as any)['rundownTimingContext'] = this.durations
 		}
@@ -253,8 +252,8 @@ export const RundownTimingProvider = withTracker<
 			// change refresh interval if needed
 			if (this.refreshTimerInterval !== this.props.refreshInterval && this.refreshTimer) {
 				this.refreshTimerInterval = this.props.refreshInterval || TIMING_DEFAULT_REFRESH_INTERVAL
-				Meteor.clearInterval(this.refreshTimer)
-				this.refreshTimer = Meteor.setInterval(this.onRefreshTimer, this.refreshTimerInterval)
+				clearInterval(this.refreshTimer)
+				this.refreshTimer = setInterval(this.onRefreshTimer, this.refreshTimerInterval)
 			}
 			if (
 				prevProps.partInstances !== this.props.partInstances ||
@@ -269,7 +268,7 @@ export const RundownTimingProvider = withTracker<
 
 		componentWillUnmount(): void {
 			delete (window as any)['rundownTimingContext']
-			if (this.refreshTimer !== undefined) Meteor.clearInterval(this.refreshTimer)
+			if (this.refreshTimer !== undefined) clearInterval(this.refreshTimer)
 		}
 
 		dispatchHREvent(now: number) {

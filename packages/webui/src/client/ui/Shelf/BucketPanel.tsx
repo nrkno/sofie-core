@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import { Translated, useSubscription, useSubscriptions, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { IAdLibListItem } from './AdLibListItem'
@@ -452,7 +451,7 @@ const BucketPanelContent = withTranslation()(
 						}
 
 						if (found) {
-							Meteor.setTimeout(() => {
+							setTimeout(() => {
 								const el = document.querySelector(`.dashboard-panel__panel__button[data-obj-id="${pieceId}"]`)
 								if (el) {
 									el.scrollIntoView({
