@@ -100,8 +100,7 @@ Mongo.Collection = function Collection(name, options) {
     // note: nameless collections never have a connection
     this._connection = null;
   else if (options.connection) this._connection = options.connection;
-  else if (Meteor.isClient) this._connection = Meteor.connection;
-  else this._connection = Meteor.server;
+  else this._connection = Meteor.connection;
 
   if (!options._driver) {
     // XXX This check assumes that webapp is loaded so that Meteor.server !==
@@ -205,19 +204,17 @@ Object.assign(Mongo.Collection.prototype, {
 
         //For more information, refer to discussion "Initial support for publication strategies in livedata server":
         //https://github.com/meteor/meteor/pull/11151
-        if (Meteor.isClient) {
-          if (msg.msg === 'added' && doc) {
-            msg.msg = 'changed';
-          } else if (msg.msg === 'removed' && !doc) {
-            return;
-          } else if (msg.msg === 'changed' && !doc) {
-            msg.msg = 'added';
-            let _ref = msg.fields;
-            for (let field in _ref) {
-              let value = _ref[field];
-              if (value === void 0) {
-                delete msg.fields[field];
-              }
+        if (msg.msg === 'added' && doc) {
+          msg.msg = 'changed';
+        } else if (msg.msg === 'removed' && !doc) {
+          return;
+        } else if (msg.msg === 'changed' && !doc) {
+          msg.msg = 'added';
+          let _ref = msg.fields;
+          for (let field in _ref) {
+            let value = _ref[field];
+            if (value === void 0) {
+              delete msg.fields[field];
             }
           }
         }

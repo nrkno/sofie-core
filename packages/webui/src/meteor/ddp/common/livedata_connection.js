@@ -17,13 +17,6 @@ import {
 } from "../../ddp-common/utils.js";
 import { ClientStream } from "../../socket-stream-client"
 
-let Fiber;
-let Future;
-// if (Meteor.isServer) {
-//   Fiber = Npm.require('fibers');
-//   Future = Npm.require('fibers/future');
-// }
-
 class MongoIDMap extends IdMap {
   constructor() {
     super(MongoID.idStringify, MongoID.idParse);
@@ -250,27 +243,9 @@ export class Connection {
       }
     };
 
-    if (Meteor.isServer) {
-      self._stream.on(
-        'message',
-        Meteor.bindEnvironment(
-          this.onMessage.bind(this),
-          'handling DDP message'
-        )
-      );
-      self._stream.on(
-        'reset',
-        Meteor.bindEnvironment(this.onReset.bind(this), 'handling DDP reset')
-      );
-      self._stream.on(
-        'disconnect',
-        Meteor.bindEnvironment(onDisconnect, 'handling DDP disconnect')
-      );
-    } else {
-      self._stream.on('message', this.onMessage.bind(this));
-      self._stream.on('reset', this.onReset.bind(this));
-      self._stream.on('disconnect', onDisconnect);
-    }
+    self._stream.on('message', this.onMessage.bind(this));
+    self._stream.on('reset', this.onReset.bind(this));
+    self._stream.on('disconnect', onDisconnect);
   }
 
   // 'name' is the name of the data on the wire that should go in the
@@ -481,30 +456,6 @@ export class Connection {
     return handle;
   }
 
-  // options:
-  // - onLateError {Function(error)} called if an error was received after the ready event.
-  //     (errors received before ready cause an error to be thrown)
-  _subscribeAndWait(name, args, options) {
-    const self = this;
-    const f = new Future();
-    let ready = false;
-    args = args || [];
-    args.push({
-      onReady() {
-        ready = true;
-        f['return']();
-      },
-      onError(e) {
-        if (!ready) f['throw'](e);
-        else options && options.onLateError && options.onLateError(e);
-      }
-    });
-
-    const handle = self.subscribe.apply(self, [name].concat(args));
-    f.wait();
-    return handle;
-  }
-
   methods(methods) {
     Object.entries(methods).forEach(([name, func]) => {
       if (typeof func !== 'function') {
@@ -637,16 +588,7 @@ export class Connection {
         stubReturnValue = DDP._CurrentMethodInvocation.withValue(
           invocation,
           () => {
-            if (Meteor.isServer) {
-              // Because saveOriginals and retrieveOriginals aren't reentrant,
-              // don't allow stubs to yield.
-              return Meteor._noYieldsAllowed(() => {
-                // re-clone, so that the stub can't affect our caller's values
-                return stub.apply(invocation, EJSON.clone(args));
-              });
-            } else {
-              return stub.apply(invocation, EJSON.clone(args));
-            }
+            return stub.apply(invocation, EJSON.clone(args));
           }
         );
       } catch (e) {
@@ -708,20 +650,13 @@ export class Connection {
     // If the caller didn't give a callback, decide what to do.
     let future;
     if (!callback) {
-      if (Meteor.isClient) {
-        // On the client, we don't have fibers, so we can't block. The
-        // only thing we can do is to return undefined and discard the
-        // result of the RPC. If an error occurred then print the error
-        // to the console.
-        callback = err => {
-          err && Meteor._debug("Error invoking Method '" + name + "'", err);
-        };
-      } else {
-        // On the server, make the function synchronous. Throw on
-        // errors, return on success.
-        future = new Future();
-        callback = future.resolver();
-      }
+      // On the client, we don't have fibers, so we can't block. The
+      // only thing we can do is to return undefined and discard the
+      // result of the RPC. If an error occurred then print the error
+      // to the console.
+      callback = err => {
+        err && Meteor._debug("Error invoking Method '" + name + "'", err);
+      };
     }
 
     // Send the randomSeed only if we used it

@@ -37,10 +37,6 @@ const Meteor = {
 	},
 
 	settings: { public: window.__meteor_runtime_config__?.PUBLIC_SETTINGS },
-
-	isClient: true,
-	isServer: false,
-	isTest: false,
 }
 
 function withoutInvocation(f) {
@@ -302,10 +298,6 @@ Meteor._inherits = function (Child, Parent) {
 			}
 			return ret
 		}
-	}
-
-	Meteor._nodeCodeMustBeInFiber = function () {
-		// no-op on browser
 	}
 }
 

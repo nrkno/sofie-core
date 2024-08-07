@@ -83,25 +83,10 @@ const $ = {
 	},
 }
 
-let mockIsClient = false
 const publications: Record<string, Function> = {}
-export class MeteorMock {
-	static get isClient(): boolean {
-		return mockIsClient
-	}
-	static get isServer(): boolean {
-		return !MeteorMock.isClient
-	}
-}
+export class MeteorMock {}
 
 export namespace MeteorMock {
-	export const isTest = true
-
-	export const isCordova = false
-
-	export const isProduction = false
-	export const release = ''
-
 	export const settings: any = {}
 
 	export const mockMethods: { [name: string]: Function } = {}
@@ -220,9 +205,6 @@ export namespace MeteorMock {
 		// but it'll do for now:
 		call(methodName, ...args, asyncCallback)
 	}
-	export function absoluteUrl(path?: string): string {
-		return path + '' // todo
-	}
 	export function setTimeout(fcn: () => void | Promise<void>, time: number): number {
 		return $.setTimeout(fcn, time) as number
 	}
@@ -241,23 +223,6 @@ export namespace MeteorMock {
 
 	export function startup(fcn: Function): void {
 		mockStartupFunctions.push(fcn)
-	}
-
-	export function wrapAsync(_fcn: Function, _context?: Object): any {
-		throw new Error(500, 'Not implemented')
-		// return (...args: any[]) => {
-		// 	const callback = (err: any, value: any) => {
-		// 		if (err) {
-		// 			fiber.throwInto(err)
-		// 		} else {
-		// 			fiber.run(value)
-		// 		}
-		// 	}
-		// 	fcn.apply(context, [...args, callback])
-
-		// 	const returnValue = Fiber.yield()
-		// 	return returnValue
-		// }
 	}
 
 	export function publish(publicationName: string, handler: Function): any {
@@ -299,12 +264,6 @@ export namespace MeteorMock {
 	}
 	export function mockSetUsersCollection(usersCollection: MongoMock.Collection<any>): void {
 		users = usersCollection
-	}
-	export function mockSetClientEnvironment(): void {
-		mockIsClient = true
-	}
-	export function mockSetServerEnvironment(): void {
-		mockIsClient = false
 	}
 	export function mockGetPublications(): Record<string, Function> {
 		return publications
