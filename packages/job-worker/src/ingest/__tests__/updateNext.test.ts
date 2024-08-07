@@ -344,7 +344,7 @@ describe('ensureNextPartIsValid', () => {
 		})
 	}
 	async function ensureNextPartIsValid() {
-		await runJobWithPlayoutCache(context, { playlistId: rundownPlaylistId }, null, async (cache) =>
+		return runJobWithPlayoutCache(context, { playlistId: rundownPlaylistId }, null, async (cache) =>
 			ensureNextPartIsValidRaw(context, cache)
 		)
 	}
@@ -352,7 +352,7 @@ describe('ensureNextPartIsValid', () => {
 	test('Start with null', async () => {
 		await resetPartIds(null, null)
 
-		await ensureNextPartIsValid()
+		await expect(ensureNextPartIsValid()).resolves.toBeTruthy()
 
 		expect(setNextPartMock).toHaveBeenCalledTimes(1)
 		expect(setNextPartMock).toHaveBeenCalledWith(
@@ -365,7 +365,7 @@ describe('ensureNextPartIsValid', () => {
 	test('Missing next PartInstance', async () => {
 		await resetPartIds('mock_part_instance3', 'fake_part')
 
-		await ensureNextPartIsValid()
+		await expect(ensureNextPartIsValid()).resolves.toBeTruthy()
 
 		expect(setNextPartMock).toHaveBeenCalledTimes(1)
 		expect(setNextPartMock).toHaveBeenCalledWith(
@@ -380,14 +380,14 @@ describe('ensureNextPartIsValid', () => {
 	test('Missing current PartInstance with valid next', async () => {
 		await resetPartIds('fake_part', 'mock_part_instance4')
 
-		await ensureNextPartIsValid()
+		await expect(ensureNextPartIsValid()).resolves.toBeFalsy()
 
 		expect(setNextPartMock).toHaveBeenCalledTimes(0)
 	})
 	test('Missing current and next PartInstance', async () => {
 		await resetPartIds('fake_part', 'not_real_either')
 
-		await ensureNextPartIsValid()
+		await expect(ensureNextPartIsValid()).resolves.toBeTruthy()
 
 		expect(setNextPartMock).toHaveBeenCalledTimes(1)
 		expect(setNextPartMock).toHaveBeenCalledWith(
@@ -400,21 +400,21 @@ describe('ensureNextPartIsValid', () => {
 	test('Ensure correct PartInstance doesnt change', async () => {
 		await resetPartIds('mock_part_instance3', 'mock_part_instance4')
 
-		await ensureNextPartIsValid()
+		await expect(ensureNextPartIsValid()).resolves.toBeFalsy()
 
 		expect(setNextPartMock).not.toHaveBeenCalled()
 	})
 	test('Ensure manual PartInstance doesnt change', async () => {
 		await resetPartIds('mock_part_instance3', 'mock_part_instance5', true)
 
-		await ensureNextPartIsValid()
+		await expect(ensureNextPartIsValid()).resolves.toBeFalsy()
 
 		expect(setNextPartMock).not.toHaveBeenCalled()
 	})
 	test('Ensure non-manual PartInstance does change', async () => {
 		await resetPartIds('mock_part_instance3', 'mock_part_instance5', false)
 
-		await ensureNextPartIsValid()
+		await expect(ensureNextPartIsValid()).resolves.toBeTruthy()
 
 		expect(setNextPartMock).toHaveBeenCalledTimes(1)
 		expect(setNextPartMock).toHaveBeenCalledWith(
@@ -427,7 +427,7 @@ describe('ensureNextPartIsValid', () => {
 	test('Ensure manual but missing PartInstance does change', async () => {
 		await resetPartIds('mock_part_instance3', 'fake_part', true)
 
-		await ensureNextPartIsValid()
+		await expect(ensureNextPartIsValid()).resolves.toBeTruthy()
 
 		expect(setNextPartMock).toHaveBeenCalledTimes(1)
 		expect(setNextPartMock).toHaveBeenCalledWith(
@@ -440,7 +440,7 @@ describe('ensureNextPartIsValid', () => {
 	test('Ensure manual but floated PartInstance does change', async () => {
 		await resetPartIds('mock_part_instance7', 'mock_part_instance8', true)
 
-		await ensureNextPartIsValid()
+		await expect(ensureNextPartIsValid()).resolves.toBeTruthy()
 
 		expect(setNextPartMock).toHaveBeenCalledTimes(1)
 		expect(setNextPartMock).toHaveBeenCalledWith(
@@ -453,7 +453,7 @@ describe('ensureNextPartIsValid', () => {
 	test('Ensure floated PartInstance does change', async () => {
 		await resetPartIds('mock_part_instance7', 'mock_part_instance8', false)
 
-		await ensureNextPartIsValid()
+		await expect(ensureNextPartIsValid()).resolves.toBeTruthy()
 
 		expect(setNextPartMock).toHaveBeenCalledTimes(1)
 		expect(setNextPartMock).toHaveBeenCalledWith(
@@ -490,7 +490,7 @@ describe('ensureNextPartIsValid', () => {
 
 		await resetPartIds(null, instanceId, false)
 
-		await ensureNextPartIsValid()
+		await expect(ensureNextPartIsValid()).resolves.toBeTruthy()
 
 		expect(setNextPartMock).toHaveBeenCalledTimes(1)
 		expect(setNextPartMock).toHaveBeenCalledWith(
@@ -527,7 +527,7 @@ describe('ensureNextPartIsValid', () => {
 
 		await resetPartIds(null, instanceId, true)
 
-		await ensureNextPartIsValid()
+		await expect(ensureNextPartIsValid()).resolves.toBeTruthy()
 
 		expect(setNextPartMock).toHaveBeenCalledTimes(1)
 		expect(setNextPartMock).toHaveBeenCalledWith(
@@ -568,7 +568,7 @@ describe('ensureNextPartIsValid', () => {
 
 		await resetPartIds('mock_part_instance1', instanceId, false)
 
-		await ensureNextPartIsValid()
+		await expect(ensureNextPartIsValid()).resolves.toBeFalsy()
 
 		expect(setNextPartMock).toHaveBeenCalledTimes(0)
 	})
@@ -601,7 +601,7 @@ describe('ensureNextPartIsValid', () => {
 		try {
 			// make sure it finds the part we expect
 			await resetPartIds('mock_part_instance9', null, false)
-			await ensureNextPartIsValid()
+			await expect(ensureNextPartIsValid()).resolves.toBeTruthy()
 
 			expect(setNextPartMock).toHaveBeenCalledTimes(1)
 			expect(setNextPartMock).toHaveBeenCalledWith(
@@ -619,7 +619,7 @@ describe('ensureNextPartIsValid', () => {
 			await context.mockCollections.Parts.remove(part._id)
 
 			// make sure the next part gets cleared
-			await ensureNextPartIsValid()
+			await expect(ensureNextPartIsValid()).resolves.toBeTruthy()
 
 			expect(setNextPartMock).toHaveBeenCalledTimes(1)
 			expect(setNextPartMock).toHaveBeenCalledWith(
@@ -633,5 +633,27 @@ describe('ensureNextPartIsValid', () => {
 			await context.mockCollections.PartInstances.remove(instanceId)
 			await context.mockCollections.Parts.remove(part._id)
 		}
+	})
+
+	test('Current part is last in rundown, next is missing', async () => {
+		await resetPartIds('mock_part_instance9', 'fake_part_instance', false)
+
+		await expect(ensureNextPartIsValid()).resolves.toBeTruthy()
+
+		expect(setNextPartMock).toHaveBeenCalledTimes(1)
+		expect(setNextPartMock).toHaveBeenCalledWith(
+			expect.objectContaining({}),
+			expect.objectContaining({ PlaylistId: rundownPlaylistId }),
+			null,
+			false
+		)
+	})
+
+	test('Current part is last in rundown, no-op to update', async () => {
+		await resetPartIds('mock_part_instance9', null, false)
+
+		await expect(ensureNextPartIsValid()).resolves.toBeFalsy()
+
+		expect(setNextPartMock).toHaveBeenCalledTimes(0)
 	})
 })
