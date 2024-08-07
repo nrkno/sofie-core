@@ -1,5 +1,4 @@
 import EJSON from 'ejson'
-import { MongoID } from '../mongo-id';
 
 export const hasOwn = Object.prototype.hasOwnProperty;
 
@@ -1194,8 +1193,7 @@ export function populateDocumentWithQueryFields(query, document = {}) {
 // Is this selector just shorthand for lookup by _id?
 export function selectorIsId (selector) {
   return typeof selector === 'number' ||
-  typeof selector === 'string' ||
-  selector instanceof MongoID.ObjectID
+  typeof selector === 'string'
 };
 
 
@@ -1361,10 +1359,6 @@ export const bigBlobF = {
 
     if (EJSON.isBinary(v)) {
       return 5;
-    }
-
-    if (v instanceof MongoID.ObjectID) {
-      return 7;
     }
 
     if (v instanceof Decimal) {
