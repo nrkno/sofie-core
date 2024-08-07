@@ -64,10 +64,7 @@ Mongo.Collection = function Collection(name, options) {
   };
 
   this._makeNewID = function() {
-    var src = name
-      ? DDP.randomStream('/collection/' + name)
-      : Random.insecure;
-    return src.id();
+    return Random.insecure.id();
   };
 
   if (!name || options.connection === null)

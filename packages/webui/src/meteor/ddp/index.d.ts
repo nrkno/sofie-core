@@ -32,7 +32,6 @@ export namespace DDPCommon {
     userId: string | null;
     setUserId?: ((newUserId: string) => void) | undefined;
     connection: Meteor.Connection;
-    randomSeed: string;
   }
 
   /** The state for a single invocation of a method, referenced by this inside a method definition. */
