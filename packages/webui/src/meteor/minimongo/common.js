@@ -1,5 +1,4 @@
 import EJSON from 'ejson'
-import { GeoJSON } from '../geojson-utils'
 import { MongoID } from '../mongo-id';
 
 export const hasOwn = Object.prototype.hasOwnProperty;
@@ -393,108 +392,7 @@ const VALUE_OPERATORS = {
     return andBranchedMatchers(branchedMatchers);
   },
   $near(operand, valueSelector, matcher, isRoot) {
-    if (!isRoot) {
-      throw Error('$near can\'t be inside another $ operator');
-    }
-
-    matcher._hasGeoQuery = true;
-
-    // There are two kinds of geodata in MongoDB: legacy coordinate pairs and
-    // GeoJSON. They use different distance metrics, too. GeoJSON queries are
-    // marked with a $geometry property, though legacy coordinates can be
-    // matched using $geometry.
-    let maxDistance, point, distance;
-    if (_isPlainObject(operand) && hasOwn.call(operand, '$geometry')) {
-      // GeoJSON "2dsphere" mode.
-      maxDistance = operand.$maxDistance;
-      point = operand.$geometry;
-      distance = value => {
-        // XXX: for now, we don't calculate the actual distance between, say,
-        // polygon and circle. If people care about this use-case it will get
-        // a priority.
-        if (!value) {
-          return null;
-        }
-
-        if (!value.type) {
-          return GeoJSON.pointDistance(
-            point,
-            {type: 'Point', coordinates: pointToArray(value)}
-          );
-        }
-
-        if (value.type === 'Point') {
-          return GeoJSON.pointDistance(point, value);
-        }
-
-        return GeoJSON.geometryWithinRadius(value, point, maxDistance)
-          ? 0
-          : maxDistance + 1;
-      };
-    } else {
-      maxDistance = valueSelector.$maxDistance;
-
-      if (!isIndexable(operand)) {
-        throw Error('$near argument must be coordinate pair or GeoJSON');
-      }
-
-      point = pointToArray(operand);
-
-      distance = value => {
-        if (!isIndexable(value)) {
-          return null;
-        }
-
-        return distanceCoordinatePairs(point, value);
-      };
-    }
-
-    return branchedValues => {
-      // There might be multiple points in the document that match the given
-      // field. Only one of them needs to be within $maxDistance, but we need to
-      // evaluate all of them and use the nearest one for the implicit sort
-      // specifier. (That's why we can't just use ELEMENT_OPERATORS here.)
-      //
-      // Note: This differs from MongoDB's implementation, where a document will
-      // actually show up *multiple times* in the result set, with one entry for
-      // each within-$maxDistance branching point.
-      const result = {result: false};
-      expandArraysInBranches(branchedValues).every(branch => {
-        // if operation is an update, don't skip branches, just return the first
-        // one (#3599)
-        let curDistance;
-        if (!matcher._isUpdate) {
-          if (!(typeof branch.value === 'object')) {
-            return true;
-          }
-
-          curDistance = distance(branch.value);
-
-          // Skip branches that aren't real points or are too far away.
-          if (curDistance === null || curDistance > maxDistance) {
-            return true;
-          }
-
-          // Skip anything that's a tie.
-          if (result.distance !== undefined && result.distance <= curDistance) {
-            return true;
-          }
-        }
-
-        result.result = true;
-        result.distance = curDistance;
-
-        if (branch.arrayIndices) {
-          result.arrayIndices = branch.arrayIndices;
-        } else {
-          delete result.arrayIndices;
-        }
-
-        return !matcher._isUpdate;
-      });
-
-      return result;
-    };
+	throw Error('$near is not implemented')
   },
 };
 
