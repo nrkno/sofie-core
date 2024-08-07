@@ -785,9 +785,6 @@ Mongo.Collection.ObjectID = Mongo.ObjectID;
  */
 Meteor.Collection = Mongo.Collection;
 
-// Allow deny stuff is now in the allow-deny package
-Object.assign(Meteor.Collection.prototype, AllowDeny.CollectionPrototype);
-
 function popCallbackFromArgs(args) {
   // Pull off any callback (or perhaps a 'callback' variable that was passed
   // in undefined, like how 'upsert' does it).
