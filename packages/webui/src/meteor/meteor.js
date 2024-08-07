@@ -48,11 +48,6 @@ function withoutInvocation(f) {
 			// https://github.com/meteor/meteor/issues/8947
 			DDP._CurrentInvocation
 
-		var invocation = CurrentInvocation.get()
-		if (invocation && invocation.isSimulation) {
-			throw new Error("Can't set timers inside simulations")
-		}
-
 		return function () {
 			CurrentInvocation.withValue(null, f)
 		}

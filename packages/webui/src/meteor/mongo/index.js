@@ -796,7 +796,7 @@ export { Mongo }
 
 
 Mongo.Collection.prototype._callMutatorMethod = function _callMutatorMethod(name, args, callback) {
-  if (!callback && !alreadyInSimulation()) {
+  if (!callback) {
     // Client can't block, so it can't report errors by exception,
     // only by callback. If they forget the callback, give them a
     // default one that logs the error, so they aren't totally
@@ -813,7 +813,7 @@ Mongo.Collection.prototype._callMutatorMethod = function _callMutatorMethod(name
 
   // For two out of three mutator methods, the first argument is a selector
   const firstArgIsSelector = name === "update" || name === "remove";
-  if (firstArgIsSelector && !alreadyInSimulation()) {
+  if (firstArgIsSelector) {
     // If we're about to actually send an RPC, we should throw an error if
     // this is a non-ID selector, because the mutation methods only allow
     // single-ID selectors. (If we don't throw here, we'll see flicker.)
@@ -822,7 +822,7 @@ Mongo.Collection.prototype._callMutatorMethod = function _callMutatorMethod(name
 
   const mutatorMethodName = '/' + this._name + '/'+ name;
   return this._connection.apply(
-    mutatorMethodName, args, { returnStubValue: true }, callback);
+    mutatorMethodName, args, { }, callback);
 }
 
 function throwIfSelectorIsNotId(selector, methodName) {
@@ -832,15 +832,3 @@ function throwIfSelectorIsNotId(selector, methodName) {
         " documents by ID.");
   }
 };
-
-// Determine if we are in a DDP method simulation
-function alreadyInSimulation() {
-  var CurrentInvocation =
-    DDP._CurrentMethodInvocation ||
-    // For backwards compatibility, as explained in this issue:
-    // https://github.com/meteor/meteor/issues/8947
-    DDP._CurrentInvocation;
-
-  const enclosing = CurrentInvocation.get();
-  return enclosing && enclosing.isSimulation;
-}

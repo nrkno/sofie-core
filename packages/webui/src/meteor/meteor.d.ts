@@ -86,8 +86,6 @@ export namespace Meteor {
 
 	/** Method **/
 	interface MethodThisType {
-		/** Access inside a method invocation. Boolean value, true if this invocation is a stub. */
-		isSimulation: boolean
 		/** The id of the user that made this method call, or `null` if no user was logged in. */
 		userId: string | null
 		/**
@@ -120,8 +118,6 @@ export namespace Meteor {
 			 * (Client only) if true, don't send this method again on reload, simply call the callback an error with the error code 'invocation-failed'.
 			 */
 			noRetry?: boolean | undefined
-			returnStubValue?: boolean | undefined
-			throwStubExceptions?: boolean | undefined
 		},
 		asyncCallback?: (error: global_Error | Meteor.Error | undefined, result?: Result) => void
 	): any
