@@ -42,11 +42,7 @@ const Meteor = {
 function withoutInvocation(f) {
 	var DDP = Meteor.DDP
 	if (DDP) {
-		var CurrentInvocation =
-			DDP._CurrentMethodInvocation ||
-			// For backwards compatibility, as explained in this issue:
-			// https://github.com/meteor/meteor/issues/8947
-			DDP._CurrentInvocation
+		var CurrentInvocation = DDP._CurrentMethodInvocation
 
 		return function () {
 			CurrentInvocation.withValue(null, f)

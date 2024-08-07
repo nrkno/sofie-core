@@ -111,7 +111,7 @@ export class LocalCollection {
     // if you really want to use ObjectIDs, set this global.
     // Mongo.Collection specifies its own ids and does not use this code.
     if (!hasOwn.call(doc, '_id')) {
-      doc._id = LocalCollection._useOID ? new MongoID.ObjectID() : Random.id();
+      doc._id = Random.id();
     }
 
     const id = doc._id;

@@ -27,12 +27,6 @@ LocalCollection.Mongo = Mongo;
  * @param {String} name The name of the collection.  If null, creates an unmanaged (unsynchronized) local collection.
  * @param {Object} [options]
  * @param {Object} options.connection The server connection that will manage this collection. Uses the default connection if not specified.  Pass the return value of calling [`DDP.connect`](#ddp_connect) to specify a different server. Pass `null` to specify no connection. Unmanaged (`name` is null) collections cannot specify a connection.
- * @param {String} options.idGeneration The method of generating the `_id` fields of new documents in this collection.  Possible values:
-
- - **`'STRING'`**: random strings
- - **`'MONGO'`**:  random [`Mongo.ObjectID`](#mongo_object_id) values
-
-The default id generation technique is `'STRING'`.
  * @param {Function} options.transform An optional transformation function. Documents will be passed through this function before being returned from `fetch` or `findOne`, and before being passed to callbacks of `observe`, `map`, `forEach`, `allow`, and `deny`. Transforms are *not* applied for the callbacks of `observeChanges` or to cursors returned from publish functions.
  */
 Mongo.Collection = function Collection(name, options) {
@@ -65,32 +59,18 @@ Mongo.Collection = function Collection(name, options) {
 
   options = {
     connection: undefined,
-    idGeneration: 'STRING',
     transform: null,
     _driver: undefined,
     _preventAutopublish: false,
     ...options,
   };
 
-  switch (options.idGeneration) {
-    case 'MONGO':
-      this._makeNewID = function() {
-        var src = name
-          ? DDP.randomStream('/collection/' + name)
-          : Random.insecure;
-        return new Mongo.ObjectID(src.hexString(24));
-      };
-      break;
-    case 'STRING':
-    default:
-      this._makeNewID = function() {
-        var src = name
-          ? DDP.randomStream('/collection/' + name)
-          : Random.insecure;
-        return src.id();
-      };
-      break;
-  }
+  this._makeNewID = function() {
+    var src = name
+      ? DDP.randomStream('/collection/' + name)
+      : Random.insecure;
+    return src.id();
+  };
 
   this._transform = LocalCollection.wrapTransform(options.transform);
 
@@ -522,7 +502,7 @@ Object.assign(Mongo.Collection.prototype, {
     if ('_id' in doc) {
       if (
         !doc._id ||
-        !(typeof doc._id === 'string' || doc._id instanceof Mongo.ObjectID)
+        !(typeof doc._id === 'string')
       ) {
         throw new Error(
           'Meteor requires document _id fields to be non-empty strings or ObjectIDs'
@@ -614,8 +594,7 @@ Object.assign(Mongo.Collection.prototype, {
       if (options.insertedId) {
         if (
           !(
-            typeof options.insertedId === 'string' ||
-            options.insertedId instanceof Mongo.ObjectID
+            typeof options.insertedId === 'string'
           )
         )
           throw new Error('insertedId must be string or ObjectID');
@@ -751,14 +730,6 @@ function wrapCallback(callback, convertResult) {
 }
 
 /**
- * @summary Create a Mongo-style `ObjectID`.  If you don't specify a `hexString`, the `ObjectID` will generated randomly (not using MongoDB's ID construction rules).
- * @locus Anywhere
- * @class
- * @param {String} [hexString] Optional.  The 24-character hexadecimal contents of the ObjectID to create
- */
-Mongo.ObjectID = MongoID.ObjectID;
-
-/**
  * @summary To create a cursor, use find. To access the documents in a cursor, use forEach, map, or fetch.
  * @class
  * @instanceName cursor
@@ -770,10 +741,6 @@ Mongo.Cursor = LocalCollection.Cursor;
  */
 Mongo.Collection.Cursor = Mongo.Cursor;
 
-/**
- * @deprecated in 0.9.1
- */
-Mongo.Collection.ObjectID = Mongo.ObjectID;
 
 /**
  * @deprecated in 0.9.1
