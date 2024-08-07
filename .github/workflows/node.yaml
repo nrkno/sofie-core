@@ -184,11 +184,18 @@ jobs:
         run: |
           cd meteor
           yarn inject-git-hash
+      - name: Prepare webui for meteor build
+        if: steps.check-build-and-push.outputs.enable == 'true'
+        run: |
+          rm -Rf meteor/public
+          cp -R packages/webui/dist meteor/public
       - name: Meteor Build
         if: steps.check-build-and-push.outputs.enable == 'true'
         run: |
           cd meteor
           NODE_OPTIONS="--max-old-space-size=4096" METEOR_DEBUG_BUILD=1 meteor build --allow-superuser --directory .
+          mv bundle/programs/web.browser/assets/ bundle/programs/web.browser/app/assets/ || true
+
       - name: Meteor Bundle NPM Build
         if: steps.check-build-and-push.outputs.enable == 'true'
         run: |
@@ -490,6 +497,8 @@ jobs:
           #   package-name: mos-gateway
           - node-version: 18.x
             package-name: live-status-gateway
+          - node-version: 18.x
+            package-name: webui
 
     steps:
       - uses: actions/checkout@v4

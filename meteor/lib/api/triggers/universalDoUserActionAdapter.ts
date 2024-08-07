@@ -1,20 +1,19 @@
 import { TFunction } from 'i18next'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../client'
-import { doUserAction as clientDoUserAction } from '../../clientUserAction'
 import { UserAction } from '../../userAction'
 import { getCurrentTime, Time } from '../../lib'
 
 export function doUserAction<Result>(
-	t: TFunction,
+	_t: TFunction,
 	userEvent: string,
-	action: UserAction,
+	_action: UserAction,
 	fcn: (event: string, timeStamp: Time) => Promise<ClientAPI.ClientResponse<Result>>,
 	callback?: (err: any, res?: Result) => void | boolean,
-	okMessage?: string
+	_okMessage?: string
 ): void {
 	if (Meteor.isClient) {
-		clientDoUserAction(t, userEvent, action, fcn, callback, okMessage)
+		throw new Error('This version of doUserAction cannot be called from the client')
 	} else {
 		fcn(userEvent, getCurrentTime()).then(
 			(value) =>
