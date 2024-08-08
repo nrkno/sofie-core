@@ -63,6 +63,8 @@ paths:
     $ref: 'definitions/playlists.yaml#/resources/queueNextSegment'
   /playlists/{playlistId}/take:
     $ref: 'definitions/playlists.yaml#/resources/take'
+  /playlists/{playlistId}/sourceLayers/{sourceLayerIds}:
+    $ref: 'definitions/playlists.yaml#/resources/sourceLayers'
   /playlists/{playlistId}/sourceLayer/{sourceLayerId}:
     $ref: 'definitions/playlists.yaml#/resources/sourceLayer'
   /playlists/{playlistId}/sourceLayer/{sourceLayerId}/sticky:
