@@ -1,10 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import {
-	RundownId,
-	RundownPlaylistActivationId,
-	RundownPlaylistId,
-	ShowStyleBaseId,
-} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownId, RundownPlaylistId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
 	PartInstances,
 	Parts,
@@ -44,10 +39,9 @@ export class RundownContentObserver {
 		rundownPlaylistId: RundownPlaylistId,
 		showStyleBaseId: ShowStyleBaseId,
 		rundownIds: RundownId[],
-		activationId: RundownPlaylistActivationId,
 		onChanged: ChangedHandler
 	) {
-		logger.silly(`Creating RundownContentObserver for playlist "${rundownPlaylistId}" activation "${activationId}"`)
+		logger.silly(`Creating RundownContentObserver for playlist "${rundownPlaylistId}"`)
 		const { cache, cancel: cancelCache } = createReactiveContentCache(() => {
 			this.#cleanup = onChanged(cache)
 			if (this.#disposed) this.#cleanup()
@@ -93,7 +87,9 @@ export class RundownContentObserver {
 			),
 			PartInstances.observe(
 				{
-					playlistActivationId: activationId,
+					rundownId: {
+						$in: rundownIds,
+					},
 					reset: {
 						$ne: true,
 					},

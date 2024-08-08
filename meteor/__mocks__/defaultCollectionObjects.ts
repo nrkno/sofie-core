@@ -138,7 +138,7 @@ export function defaultPart(_id: PartId, rundownId: RundownId, segmentId: Segmen
 		_rank: 0,
 		externalId: unprotectString(_id),
 		title: 'Default Part',
-		expectedDurationWithPreroll: undefined,
+		expectedDurationWithTransition: undefined,
 	}
 }
 export function defaultPiece(_id: PieceId, rundownId: RundownId, segmentId: SegmentId, partId: PartId): Piece {

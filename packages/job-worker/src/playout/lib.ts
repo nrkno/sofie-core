@@ -9,7 +9,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getRundownIDsFromCache } from './cache'
 import { logger } from '../logging'
 import { getCurrentTime } from '../lib'
-import { calculatePartExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
+import { calculatePartExpectedDurationWithTransition } from '@sofie-automation/corelib/dist/playout/timings'
 import { MongoQuery } from '../db'
 import { mongoWhere } from '@sofie-automation/corelib/dist/mongo'
 import _ = require('underscore')
@@ -305,10 +305,10 @@ export function isTooCloseToAutonext(
 }
 
 /**
- * Update the expectedDurationWithPreroll on the specified PartInstance.
+ * Update the expectedDurationWithTransition on the specified PartInstance.
  * The value is used by the UI to approximate the duration of a PartInstance as it will be played out
  */
-export function updateExpectedDurationWithPrerollForPartInstance(
+export function updateExpectedDurationWithTransitionForPartInstance(
 	cache: CacheForPlayout,
 	partInstanceId: PartInstanceId
 ): void {
@@ -316,14 +316,14 @@ export function updateExpectedDurationWithPrerollForPartInstance(
 	if (nextPartInstance) {
 		const pieceInstances = cache.PieceInstances.findAll((p) => p.partInstanceId === nextPartInstance._id)
 
-		// Update expectedDurationWithPreroll of the next part instance, as it may have changed and is used by the ui until it is taken
-		const expectedDurationWithPreroll = calculatePartExpectedDurationWithPreroll(
+		// Update expectedDurationWithTransition of the next part instance, as it may have changed and is used by the ui until it is taken
+		const expectedDurationWithTransition = calculatePartExpectedDurationWithTransition(
 			nextPartInstance.part,
 			pieceInstances.map((p) => p.piece)
 		)
 
 		cache.PartInstances.updateOne(nextPartInstance._id, (doc) => {
-			doc.part.expectedDurationWithPreroll = expectedDurationWithPreroll
+			doc.part.expectedDurationWithTransition = expectedDurationWithTransition
 			return doc
 		})
 	}
