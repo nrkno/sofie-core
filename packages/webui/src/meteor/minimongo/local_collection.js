@@ -20,9 +20,10 @@ import EJSON from 'ejson'
 import { MongoID } from '../mongo-id'
 import { DiffSequence } from '../diff-sequence'
 import { Tracker } from '../tracker'
-import { IdMap } from '../id-map'
-import { OrderedDict } from '../ordered-dict'
+import { IdMap } from './lib/id-map.js'
+import { OrderedDict } from './lib/ordered-dict.js'
 import { getRandomString } from '@sofie-automation/corelib/dist/lib'
+import { SynchronousQueue } from './lib/synchronous-queue.js';
 
 // XXX type checking on selectors (graceful error if malformed)
 
@@ -33,7 +34,7 @@ export class LocalCollection {
     // _id -> document (also containing id)
     this._docs = new LocalCollection._IdMap();
 
-    this._observeQueue = new Meteor._SynchronousQueue();
+    this._observeQueue = new SynchronousQueue();
 
     this.next_qid = 1; // live query id generator
 
