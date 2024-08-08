@@ -13,7 +13,6 @@ import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { PieceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstances } from '../collections'
 import { ReadonlyDeep } from 'type-fest'
-import { PieceContentStatusObj } from '../../lib/api/pieceContentStatus'
 
 export interface ShelfDisplayOptions {
 	enableBuckets: boolean
@@ -33,8 +32,6 @@ export interface AdLibPieceUi extends Omit<AdLibPiece, 'timelineObjectsString'> 
 	disabled?: boolean
 	adlibAction?: AdLibAction | RundownBaselineAdLibAction
 	segmentId?: SegmentId
-
-	contentStatus?: ReadonlyDeep<PieceContentStatusObj>
 }
 
 export interface AdlibSegmentUi extends DBSegment {

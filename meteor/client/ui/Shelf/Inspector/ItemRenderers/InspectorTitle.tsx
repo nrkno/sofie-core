@@ -4,7 +4,7 @@ import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
 import { BucketAdLibUi, BucketAdLibActionUi } from '../../RundownViewBuckets'
 import { RundownUtils } from '../../../../lib/rundown'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { withMediaObjectStatus } from '../../../SegmentTimeline/withMediaObjectStatus'
+import { useContentStatusForItem } from '../../../SegmentTimeline/withMediaObjectStatus'
 import { IAdLibListItem } from '../../AdLibListItem'
 import { AdLibPieceUi } from '../../../../lib/shelf'
 import { UIShowStyleBase } from '../../../../../lib/api/showStyles'
@@ -16,14 +16,12 @@ interface IProps {
 	studio: UIStudio
 }
 
-const InspectorTitle = withMediaObjectStatus<IProps, {}>()(function InspectorTitle(props: IProps) {
+function InspectorTitle(props: IProps): JSX.Element {
+	const contentStatus = useContentStatusForItem(props.piece)
+
 	const piece = RundownUtils.isPieceInstance(props.piece)
 		? (props.piece.instance.piece as Piece)
 		: (props.piece as AdLibPieceUi)
-
-	const status = RundownUtils.isPieceInstance(props.piece)
-		? props.piece.contentStatus?.status
-		: (props.piece as AdLibPieceUi).contentStatus?.status
 
 	const layer = props.showStyleBase.sourceLayers[piece.sourceLayerId]
 
@@ -33,7 +31,7 @@ const InspectorTitle = withMediaObjectStatus<IProps, {}>()(function InspectorTit
 				className={ClassNames(
 					'shelf-inspector__title__icon',
 					layer && RundownUtils.getSourceLayerClassName(layer.type),
-					RundownUtils.getPieceStatusClassName(status)
+					RundownUtils.getPieceStatusClassName(contentStatus?.status)
 				)}
 			>
 				<div className="shelf-inspector__title__layer">{layer && (layer.abbreviation || layer.name)}</div>
@@ -41,6 +39,6 @@ const InspectorTitle = withMediaObjectStatus<IProps, {}>()(function InspectorTit
 			<span className="shelf-inspector__title__label">{piece.name}</span>
 		</h2>
 	)
-})
+}
 
 export default InspectorTitle

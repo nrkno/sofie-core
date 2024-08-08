@@ -19,7 +19,7 @@ import { StyledTimecode } from '../../lib/StyledTimecode'
 import { VTFloatingInspector } from '../FloatingInspectors/VTFloatingInspector'
 import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
 import { L3rdFloatingInspector } from '../FloatingInspectors/L3rdFloatingInspector'
-import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
+import { useContentStatusForAdlibPiece, WithMediaObjectStatusProps } from '../SegmentTimeline/withMediaObjectStatus'
 
 import { isTouchDevice } from '../../lib/lib'
 import { AdLibPieceUi } from '../../lib/shelf'
@@ -63,7 +63,7 @@ interface IState {
 }
 
 export class DashboardPieceButtonBase<T = {}> extends React.Component<
-	React.PropsWithChildren<IDashboardButtonProps> & T,
+	React.PropsWithChildren<IDashboardButtonProps> & T & WithMediaObjectStatusProps,
 	IState
 > {
 	private element: HTMLDivElement | null = null
@@ -79,7 +79,7 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 	private hoverTimeout: number | null = null
 	protected inBucket = false
 
-	constructor(props: IDashboardButtonProps & T) {
+	constructor(props: IDashboardButtonProps & T & WithMediaObjectStatusProps) {
 		super(props)
 
 		this.state = {
@@ -137,7 +137,7 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 	}
 
 	private renderVTLiveSpeak(renderThumbnail?: boolean) {
-		const thumbnailUrl = this.props.piece.contentStatus?.thumbnailUrl
+		const thumbnailUrl = this.props.contentStatus?.thumbnailUrl
 		const vtContent = this.props.piece.content as VTContent | undefined
 		const sourceDuration = vtContent?.sourceDuration
 
@@ -151,7 +151,7 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 					</span>
 				)}
 				<VTFloatingInspector
-					status={this.props.piece.contentStatus?.status ?? PieceStatusCode.UNKNOWN}
+					status={this.props.contentStatus?.status ?? PieceStatusCode.UNKNOWN}
 					showMiniInspector={this.state.isHovered}
 					timePosition={this.state.timePosition}
 					content={vtContent}
@@ -163,11 +163,11 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 					}}
 					typeClass={this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)}
 					itemElement={null}
-					noticeMessages={this.props.piece.contentStatus?.messages || null}
-					noticeLevel={getNoticeLevelForPieceStatus(this.props.piece.contentStatus?.status)}
+					noticeMessages={this.props.contentStatus?.messages || null}
+					noticeLevel={getNoticeLevelForPieceStatus(this.props.contentStatus?.status)}
 					studio={this.props.studio}
 					displayOn="viewport"
-					previewUrl={this.props.piece.contentStatus?.previewUrl}
+					previewUrl={this.props.contentStatus?.previewUrl}
 				/>
 				{thumbnailUrl && renderThumbnail && (
 					<div className="dashboard-panel__panel__button__thumbnail">
@@ -416,7 +416,7 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 						selected: this.props.isNext || this.props.isSelected,
 					},
 					!this.inBucket && this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type),
-					RundownUtils.getPieceStatusClassName(this.props.piece.contentStatus?.status),
+					RundownUtils.getPieceStatusClassName(this.props.contentStatus?.status),
 					...(this.props.piece.tags ? this.props.piece.tags.map((tag) => `piece-tag--${tag}`) : [])
 				)}
 				style={{
@@ -489,6 +489,8 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 	}
 }
 
-export const DashboardPieceButton = withMediaObjectStatus<React.PropsWithChildren<IDashboardButtonProps>, {}>()(
-	DashboardPieceButtonBase
-)
+export function DashboardPieceButton(props: React.PropsWithChildren<IDashboardButtonProps>): JSX.Element {
+	const contentStatus = useContentStatusForAdlibPiece(props.piece)
+
+	return <DashboardPieceButtonBase {...props} contentStatus={contentStatus} />
+}

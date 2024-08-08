@@ -24,8 +24,6 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstances, Pieces } from '../../lib/collections/libCollections'
 import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlaylistUtil'
-import { PieceContentStatusObj } from '../../lib/api/pieceContentStatus'
-import { ReadonlyDeep } from 'type-fest'
 import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 
 export interface SegmentExtended extends DBSegment {
@@ -79,8 +77,6 @@ export interface PieceExtended {
 	maxLabelWidth?: number
 	/** If this piece has a "buddy" piece in the preceeding part, then it's not neccessary to display it's left label */
 	hasOriginInPreceedingPart?: boolean
-
-	contentStatus?: ReadonlyDeep<PieceContentStatusObj>
 }
 
 function fetchPiecesThatMayBeActiveForPart(

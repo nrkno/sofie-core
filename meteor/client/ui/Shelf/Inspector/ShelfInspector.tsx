@@ -9,8 +9,7 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { IAdLibListItem } from '../AdLibListItem'
 import { UIShowStyleBase } from '../../../../lib/api/showStyles'
 import { UIStudio } from '../../../../lib/api/studios'
-
-export { ShelfInspector }
+import { useContentStatusForItem } from '../../SegmentTimeline/withMediaObjectStatus'
 
 interface IShelfInspectorProps {
 	selected: BucketAdLibItem | IAdLibListItem | PieceUi | undefined
@@ -20,19 +19,12 @@ interface IShelfInspectorProps {
 	onSelectPiece: (piece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined) => void
 }
 
-class ShelfInspector extends React.Component<IShelfInspectorProps> {
-	constructor(props: IShelfInspectorProps) {
-		super(props)
-	}
+export const ShelfInspector = React.memo(
+	function ShelfInspector({ selected, showStyleBase, studio, rundownPlaylist, onSelectPiece }: IShelfInspectorProps) {
+		const contentStatus = useContentStatusForItem(selected)
 
-	shouldComponentUpdate(nextProps: IShelfInspectorProps): boolean {
-		if (_.isEqual(nextProps, this.props)) return false
-		return true
-	}
-
-	render(): JSX.Element {
-		const { selected, showStyleBase, studio, rundownPlaylist, onSelectPiece } = this.props
-		const content = selected && renderItem(selected, showStyleBase, studio, rundownPlaylist, onSelectPiece)
+		const content =
+			selected && renderItem(selected, contentStatus, showStyleBase, studio, rundownPlaylist, onSelectPiece)
 
 		return (
 			<ContextMenuTrigger
@@ -45,5 +37,9 @@ class ShelfInspector extends React.Component<IShelfInspectorProps> {
 				{content || false}
 			</ContextMenuTrigger>
 		)
+	},
+	(prevProps, nextProps) => {
+		if (_.isEqual(nextProps, prevProps)) return false
+		return true
 	}
-}
+)

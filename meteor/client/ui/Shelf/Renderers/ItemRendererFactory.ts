@@ -8,9 +8,11 @@ import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { UIStudio } from '../../../../lib/api/studios'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { ReadonlyDeep } from 'type-fest'
+import { PieceContentStatusObj } from '../../../../lib/api/pieceContentStatus'
 
 export interface ILayerItemRendererProps {
 	adLibListItem: IAdLibListItem
+	contentStatus: ReadonlyDeep<PieceContentStatusObj> | undefined
 	selected: boolean
 	layer: ISourceLayer | undefined
 	outputLayer: IOutputLayer | undefined

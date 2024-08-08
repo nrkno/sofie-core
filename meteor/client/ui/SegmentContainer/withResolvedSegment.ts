@@ -35,8 +35,6 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstances, Segments } from '../../collections'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
-import { ReadonlyDeep } from 'type-fest'
-import { PieceContentStatusObj } from '../../../lib/api/pieceContentStatus'
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 
 export interface SegmentUi extends SegmentExtended {
@@ -58,8 +56,6 @@ export type ISourceLayerUi = ISourceLayerExtended
 export interface PieceUi extends PieceExtended {
 	/** This item has already been linked to the parent item of the spanning item group */
 	linked?: boolean
-
-	contentStatus?: ReadonlyDeep<PieceContentStatusObj>
 }
 
 export type MinimalRundown = Pick<Rundown, '_id' | 'name' | 'timing' | 'showStyleBaseId' | 'endOfRundownIsShowBreak'>
