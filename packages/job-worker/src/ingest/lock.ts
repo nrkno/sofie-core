@@ -37,6 +37,7 @@ export interface CommitIngestData {
 }
 
 export enum UpdateIngestRundownAction {
+	REJECT = 'reject',
 	DELETE = 'delete',
 }
 
@@ -79,9 +80,9 @@ export async function runIngestJob(
 		const updatedIngestRundown = updateCacheFcn(clone(oldIngestRundown))
 		let newIngestRundown: LocalIngestRundown | undefined
 		switch (updatedIngestRundown) {
-			// case UpdateIngestRundownAction.REJECT:
-			// 	// Reject change
-			// 	return
+			case UpdateIngestRundownAction.REJECT:
+				// Reject change
+				return
 			case UpdateIngestRundownAction.DELETE:
 				ingestObjCache.delete()
 				newIngestRundown = undefined

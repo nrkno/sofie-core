@@ -82,6 +82,14 @@ async function onUpdatedPackageInfoForRundown(
 		)
 		return
 	}
+	if (tmpRundown.orphaned) {
+		logger.debug(
+			`onUpdatedPackageInfoForRundown: Ignoring Rundown "${rundownId}", because it is orphaned ("${
+				tmpRundown.orphaned
+			}"), for packages "${packageIds.join(', ')}"`
+		)
+		return
+	}
 
 	await runIngestOperation(tmpRundown.studioId, IngestJobs.PackageInfosUpdated, {
 		rundownExternalId: tmpRundown.externalId,
