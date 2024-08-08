@@ -593,7 +593,7 @@ Object.assign(Mongo.Collection.prototype, {
   // database on another server
   _isRemoteCollection() {
     // XXX see #MeteorServerNull
-    return this._connection && this._connection !== Meteor.server;
+    return !!this._connection;
   },
 
   /**
