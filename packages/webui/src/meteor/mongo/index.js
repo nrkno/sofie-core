@@ -6,7 +6,6 @@ import { Meteor } from '../meteor'
 import { LocalCollection } from "../minimongo";
 import { MongoID } from '../mongo-id'
 import EJSON from 'ejson'
-import { check, Match } from '../check'
 import { DDP } from '../ddp'
 import { LocalCollectionDriver } from './local_collection_driver.js'
 import { getRandomString } from '@sofie-automation/corelib/dist/lib'
@@ -264,19 +263,19 @@ Object.assign(Mongo.Collection.prototype, {
     if (args.length < 2) {
       return { };
     } else {
-      check(
-        newOptions,
-        Match.Optional(
-          Match.ObjectIncluding({
-            projection: Match.Optional(Match.OneOf(Object, undefined)),
-            sort: Match.Optional(
-              Match.OneOf(Object, Array, Function, undefined)
-            ),
-            limit: Match.Optional(Match.OneOf(Number, undefined)),
-            skip: Match.Optional(Match.OneOf(Number, undefined)),
-          })
-        )
-      );
+      // check(
+      //   newOptions,
+      //   Match.Optional(
+      //     Match.ObjectIncluding({
+      //       projection: Match.Optional(Match.OneOf(Object, undefined)),
+      //       sort: Match.Optional(
+      //         Match.OneOf(Object, Array, Function, undefined)
+      //       ),
+      //       limit: Match.Optional(Match.OneOf(Number, undefined)),
+      //       skip: Match.Optional(Match.OneOf(Number, undefined)),
+      //     })
+      //   )
+      // );
 
 
       return {
