@@ -99,7 +99,7 @@ export class TSRHandler {
 	private _coreHandler!: CoreHandler
 	private _triggerupdateExpectedPlayoutItemsTimeout: any = null
 	private _coreTsrHandlers: { [deviceId: string]: CoreTSRDeviceHandler } = {}
-	private _observers: Array<Observer> = []
+	private _observers: Array<Observer<any>> = []
 	private _cachedStudioId: StudioId | null = null
 
 	private _initialized = false
@@ -780,7 +780,7 @@ export class TSRHandler {
 
 				// When the status has changed, the deviceName might have changed:
 				device.reloadProps().catch((err) => {
-					this.logger.error(`Error in reloadProps: ${err}`)
+					this.logger.error(`Error in reloadProps: ${stringifyError(err)}`)
 				})
 				// hack to make sure atem has media after restart
 				if (

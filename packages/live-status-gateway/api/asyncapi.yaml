@@ -2,7 +2,7 @@ asyncapi: 2.5.0
 info:
   title: Sofie Live Status Service
   description: This service provides subscriptions for status updates from Sofie
-  version: 1.0.0
+  version: 2.0.0
   license:
     name: MIT License
     url: http://opensource.org/licenses/MIT
@@ -34,7 +34,9 @@ channels:
           - $ref: '#/components/messages/subscriptionStatus'
           - $ref: '#/components/messages/studio'
           - $ref: '#/components/messages/activePlaylist'
+          - $ref: '#/components/messages/activePieces'
           - $ref: '#/components/messages/segments'
+          - $ref: '#/components/messages/adLibs'
 components:
   messages:
     ping:
@@ -84,8 +86,19 @@ components:
       description: Active Playlist status
       payload:
         $ref: './schemas/activePlaylist.yaml#/$defs/activePlaylist'
+    activePieces:
+      name: activePieces
+      summary: Active Pieces status
+      description: Pieces from the active Playlist that are currently active (on air)
+      payload:
+        $ref: './schemas/activePieces.yaml#/$defs/activePieces'
     segments:
       name: segments
       description: Segments in active Playlist
       payload:
         $ref: './schemas/segments.yaml#/$defs/segments'
+    adLibs:
+      name: adLibs
+      description: AdLibs in active Playlist
+      payload:
+        $ref: './schemas/adLibs.yaml#/$defs/adLibs'

@@ -5,6 +5,7 @@ interface IProps {
 	accept?: string
 	onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
 	children?: React.ReactNode
+	disabled?: boolean
 }
 
 export const UploadButton: React.FunctionComponent<IProps> = function (props: IProps) {
@@ -22,6 +23,7 @@ export const UploadButton: React.FunctionComponent<IProps> = function (props: IP
 					display: 'inline',
 					position: 'absolute',
 				}}
+				disabled={props.disabled}
 			/>
 		</label>
 	)

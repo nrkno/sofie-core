@@ -17,6 +17,7 @@ export class JoyConController extends ControllerAbstract {
 	private rangeNeutralMin = -0.25 // pedal "back" position where reverse-range transistions to the neutral x
 	private rangeNeutralMax = 0.25 // pedal "front" position where scrolling starts, the 0 speed origin
 	private rangeFwdMax = 1 // pedal "all front" position where scrolling is maxed out
+	private rightHandOffset = 1.4 // factor increased by 1.4 to account for the R joystick being less sensitive than L
 	private speedMap = [1, 2, 3, 4, 5, 8, 12, 30]
 	private reverseSpeedMap = [1, 2, 3, 4, 5, 8, 12, 30]
 	private deadBand = 0.25
@@ -40,6 +41,7 @@ export class JoyConController extends ControllerAbstract {
 		this.rangeNeutralMin = view.configOptions.joycon_rangeNeutralMin || this.rangeNeutralMin
 		this.rangeNeutralMax = view.configOptions.joycon_rangeNeutralMax || this.rangeNeutralMax
 		this.rangeFwdMax = view.configOptions.joycon_rangeFwdMax || this.rangeFwdMax
+		this.rightHandOffset = view.configOptions.joycon_rightHandOffset || this.rightHandOffset
 		this.speedMap = view.configOptions.joycon_speedMap || this.speedMap
 		this.reverseSpeedMap = view.configOptions.joycon_reverseSpeedMap || this.reverseSpeedMap
 		this.deadBand = Math.min(Math.abs(this.rangeNeutralMin), Math.abs(this.rangeNeutralMax))
@@ -249,8 +251,8 @@ export class JoyConController extends ControllerAbstract {
 						if (joycon.mode === 'L') {
 							lastSeenSpeed = joycon.axes[0] * -1 // in this mode, L is "negative"
 						} else if (joycon.mode === 'R') {
-							lastSeenSpeed = joycon.axes[0] * 1.4 // in this mode, R is "positive"
-							// factor increased by 1.4 to account for the R joystick being less sensitive than L
+							lastSeenSpeed = joycon.axes[0] * this.rightHandOffset // in this mode, R is "positive"
+							// rightHandOffset allows for different rates between the two controllers
 						}
 						this.timestampOfLastUsedJoyconInput = joycon.timestamp
 					}
@@ -260,8 +262,8 @@ export class JoyConController extends ControllerAbstract {
 					if (Math.abs(joycon.axes[1]) > this.deadBand) {
 						lastSeenSpeed = joycon.axes[1] * -1 // in this mode, we are "negative" on both sticks....
 					} else if (Math.abs(joycon.axes[3]) > this.deadBand) {
-						lastSeenSpeed = joycon.axes[3] * -1.4 // in this mode, we are "negative" on both sticks....
-						// factor increased by 1.4 to account for the R joystick being less sensitive than L
+						lastSeenSpeed = joycon.axes[3] * this.rightHandOffset * -1 // in this mode, we are "negative" on both sticks....
+						// rightHandOffset allows for different rates between the two controllers
 					}
 					this.timestampOfLastUsedJoyconInput = joycon.timestamp
 				}

@@ -1,3 +1,4 @@
+import React from 'react'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../../ui/i18n'
 import { JSONSchema, TypeName } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
@@ -38,7 +39,7 @@ export function translateStringIfHasNamespaces(str: string, translationNamespace
 export interface SchemaSummaryField {
 	attr: string
 	name: string
-	transform?: (val: any) => string
+	transform?: (val: any) => string | JSX.Element
 }
 
 export function getSchemaSummaryFieldsForObject(
@@ -95,6 +96,14 @@ export function getSchemaSummaryFields(schema: JSONSchema, prefix?: string): Sch
 							return `${Number(val) + 1}`
 						} else {
 							return val
+						}
+					}
+				} else if (schema.type === 'string' && schema[SchemaFormUIField.DisplayType] === 'base64-image') {
+					transform = (val) => {
+						if (val && val.startsWith('data:image/')) {
+							return <img className="table-image-preview" src={val} />
+						} else {
+							return '-'
 						}
 					}
 				}

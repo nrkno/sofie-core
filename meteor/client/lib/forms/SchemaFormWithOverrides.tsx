@@ -9,6 +9,7 @@ import { IntInputControl } from '../Components/IntInput'
 import { JsonTextInputControl } from '../Components/JsonTextInput'
 import {
 	LabelAndOverrides,
+	LabelAndOverridesForBase64Image,
 	LabelAndOverridesForCheckbox,
 	LabelAndOverridesForDropdown,
 	LabelAndOverridesForInt,
@@ -22,6 +23,7 @@ import { MultiSelectInputControl } from '../Components/MultiSelectInput'
 import { SchemaFormObjectTable } from './SchemaFormTable/ObjectTable'
 import { SchemaFormUIField } from '@sofie-automation/blueprints-integration'
 import { SchemaFormSectionHeader } from './SchemaFormSectionHeader'
+import { Base64ImageInputControl } from '../Components/Base64ImageInput'
 
 interface SchemaFormWithOverridesProps extends SchemaFormCommonProps {
 	/** Base path of the schema within the document */
@@ -102,7 +104,9 @@ export function SchemaFormWithOverrides(props: SchemaFormWithOverridesProps): JS
 		case TypeName.Boolean:
 			return <BooleanFormWithOverrides {...childProps} />
 		case TypeName.String:
-			if (props.schema[SchemaFormUIField.SofieEnum]) {
+			if (props.schema[SchemaFormUIField.DisplayType] === 'base64-image') {
+				return <Base64ImagePickerWithOverrides {...childProps} />
+			} else if (props.schema[SchemaFormUIField.SofieEnum]) {
 				return (
 					<SofieEnumFormWithOverrides
 						{...childProps}
@@ -387,5 +391,15 @@ const JsonFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) => {
 				)}
 			</LabelAndOverrides>
 		</>
+	)
+}
+
+const Base64ImagePickerWithOverrides = ({ commonAttrs }: FormComponentProps) => {
+	return (
+		<LabelAndOverridesForBase64Image {...commonAttrs}>
+			{(value, handleUpdate) => (
+				<Base64ImageInputControl classNames="input input-l" value={value} handleUpdate={handleUpdate} />
+			)}
+		</LabelAndOverridesForBase64Image>
 	)
 }

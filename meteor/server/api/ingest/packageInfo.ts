@@ -6,6 +6,7 @@ import { logger } from '../../logging'
 import { runIngestOperation } from './lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { ExpectedPackageId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 export async function onUpdatedPackageInfo(packageId: ExpectedPackageId, _doc: PackageInfoDB | null): Promise<void> {
 	logger.info(`PackageInfo updated "${packageId}"`)
@@ -40,7 +41,11 @@ export async function onUpdatedPackageInfo(packageId: ExpectedPackageId, _doc: P
 						if (packageIds) {
 							pendingPackageUpdates.delete(pkg.rundownId)
 							onUpdatedPackageInfoForRundown(pkg.rundownId, packageIds).catch((e) => {
-								logger.error(`Updating ExpectedPackages for Rundown "${pkg.rundownId}" failed: ${e}`)
+								logger.error(
+									`Updating ExpectedPackages for Rundown "${pkg.rundownId}" failed: ${stringifyError(
+										e
+									)}`
+								)
 							})
 						}
 					},

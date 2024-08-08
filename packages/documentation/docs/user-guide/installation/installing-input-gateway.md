@@ -27,6 +27,18 @@ Currently, input gateway supports:
 * OSC
 * HTTP
 
+## Input Gateway-specific functions
+
+### Shift Registers
+
+Input Gateway supports the concept of _Shift Registers_. A Shift Register is an internal variable/state that can be modified using Actions, from within [Action Triggers](../configuration/settings-view.md#actions). This allows for things such as pagination, _Hold Shift + Another Button_ scenarios, and others on input devices that don't support these features natively. _Shift Registers_ are also global for all devices attached to a single Input Gateway. This allows combining multiple Input devices into a single Control Surface.
+
+When one of the _Shift Registers_ is set to a value other than `0` (their default state), all triggers sent from that Input Gateway become prefixed with a serialized state of the state registers, making the combination of a _Shift Registers_ state and a trigger unique.
+
+If you would like to have the same trigger cause the same action in various Shift Register states, add multiple Triggers to the same Action, with different Shift Register combinations.
+
+Input Gateway supports an unlimited number of Shift Registers, Shift Register numbering starts at 0.
+
 ### Further Reading
 
 * [Input Gateway Releases on GitHub](https://github.com/nrkno/sofie-input-gateway/releases)

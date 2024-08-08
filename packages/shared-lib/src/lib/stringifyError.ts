@@ -11,10 +11,13 @@ export function stringifyError(error: unknown, noStack = false): string {
 			// Has a custom toString() method
 			str = `${(error as any).toString()}`
 		} else {
-			str = ''
-			if ((error as Error).message) str += `${(error as Error).message} ` // Is an Error
-			if ((error as any).reason) str += `${(error as any).reason} ` // Is a Meteor.Error
-			if ((error as any).details) str += `${(error as any).details} `
+			const strings: (string | undefined)[] = [
+				stringify((error as any).rawError), // UserError
+				stringify((error as Error).message), // Error
+				stringify((error as any).reason), // Meteor.Error
+				stringify((error as any).details),
+			]
+			str = strings.filter(Boolean).join(', ')
 		}
 
 		if (!str) {
@@ -34,10 +37,24 @@ export function stringifyError(error: unknown, noStack = false): string {
 	}
 
 	if (!noStack) {
-		if (error && typeof error === 'object' && (error as any).stack) {
+		if (error && typeof error === 'object' && typeof (error as any).stack === 'string') {
 			str += ', ' + (error as any).stack
 		}
 	}
 
+	if (str.startsWith('Error: ')) str = str.slice('Error: '.length)
+
 	return str
+}
+
+function stringify(v: any): string | undefined {
+	// Tries to stringify objects if they have a toString() that returns something sensible
+	if (v === undefined) return undefined
+	if (v === null) return 'null'
+
+	if (typeof v === 'object') {
+		const str = `${v}`
+		if (str !== '[object Object]') return str
+		return undefined
+	} else return `${v}`
 }

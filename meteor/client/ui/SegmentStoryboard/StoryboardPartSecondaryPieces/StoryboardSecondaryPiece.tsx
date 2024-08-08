@@ -40,6 +40,7 @@ function renderPieceInside(
 			return ScriptRenderer({ ...props, elementOffset, hovering, typeClass })
 		case SourceLayerType.GRAPHICS:
 		case SourceLayerType.LOWER_THIRD:
+		case SourceLayerType.STUDIO_SCREEN:
 			return GraphicsRenderer({ ...props, elementOffset, hovering, typeClass })
 		case SourceLayerType.SPLITS:
 			return SplitsRenderer({ ...props, elementOffset, hovering, typeClass })

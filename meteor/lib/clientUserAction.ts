@@ -265,9 +265,10 @@ export function eventContextForLog(e: any): [string, Time] {
 		str = e.type
 	}
 	if (!str) {
-		logger.error(
-			'Could not create context in eventContextForLog, because provided event had no identifiable type',
-			e
+		logger.warn(
+			`Could not create context in eventContextForLog, because provided event had no identifiable type: ${JSON.stringify(
+				e
+			)}, stack: ${new Error().stack}`
 		)
 		str = 'N/A'
 	}

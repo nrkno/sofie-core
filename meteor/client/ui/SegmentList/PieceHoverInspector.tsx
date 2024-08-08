@@ -62,6 +62,7 @@ export function PieceHoverInspector({
 			)
 		case SourceLayerType.GRAPHICS:
 		case SourceLayerType.LOWER_THIRD:
+		case SourceLayerType.STUDIO_SCREEN:
 			return (
 				<L3rdFloatingInspector
 					showMiniInspector={hovering}

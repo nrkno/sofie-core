@@ -1,5 +1,6 @@
 import { createManualPromise, ManualPromise } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../logging'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 export type AnyLockEvent = LockEvent | UnLockEvent
 export interface LockEvent {
@@ -36,7 +37,7 @@ export class LocksManager {
 				// Pass on the result for processing
 				lock.manualResolve(locked)
 			} catch (e) {
-				logger.error(`LockChange "${lockId}":${locked} failed: ${e}`)
+				logger.error(`LockChange "${lockId}":${locked} failed: ${stringifyError(e)}`)
 			}
 		})
 	}
@@ -62,7 +63,7 @@ export class LocksManager {
 					completedPromise.manualReject(new Error('Lock aquire timed out!'))
 				}
 			} catch (e) {
-				logger.error(`Unexpected error when timing out acquiring a lock: "${lockId}": ${e}`)
+				logger.error(`Unexpected error when timing out acquiring a lock: "${lockId}": ${stringifyError(e)}`)
 			}
 		}, TimeoutAquireLock)
 
@@ -95,7 +96,7 @@ export class LocksManager {
 					completedPromise.manualResolve(true)
 				}
 			} catch (e) {
-				logger.error(`Unexpected error when timing out releasing a lock: "${lockId}": ${e}`)
+				logger.error(`Unexpected error when timing out releasing a lock: "${lockId}": ${stringifyError(e)}`)
 			}
 		}, TimeoutReleaseLock)
 

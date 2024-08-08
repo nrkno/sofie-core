@@ -1,6 +1,6 @@
 {
 	"name": "automation-core",
-	"version": "1.50.4",
+	"version": "1.50.5",
 	"private": true,
 	"engines": {
 		"node": ">=14.19.1"
@@ -93,7 +93,7 @@
 		"react-dom": "^18.2.0",
 		"react-hotkeys": "^2.0.0",
 		"react-i18next": "^11.18.6",
-		"react-intersection-observer": "^9.4.3",
+		"react-intersection-observer": "^9.10.3",
 		"react-moment": "^0.9.7",
 		"react-popper": "^2.2.5",
 		"react-router-dom": "^5.3.3",

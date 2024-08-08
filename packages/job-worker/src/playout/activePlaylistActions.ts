@@ -176,7 +176,7 @@ export async function deactivateRundownPlaylistInner(
 					partExternalId: null,
 				})
 				.catch((e) => {
-					logger.warn(`Failed to queue NotifyCurrentlyPlayingPart job: ${e}`)
+					logger.warn(`Failed to queue NotifyCurrentlyPlayingPart job: ${stringifyError(e)}`)
 				})
 		})
 	} else if (nextPartInstance) {

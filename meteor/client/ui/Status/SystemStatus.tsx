@@ -40,6 +40,7 @@ import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { ClientAPI } from '../../../lib/api/client'
 import { catchError } from '../../lib/lib'
 import { logger } from '../../../lib/logging'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 interface IDeviceItemProps {
 	parentDevice: PeripheralDevice | null
@@ -595,7 +596,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 								deviceDebugState: states,
 							})
 						})
-						.catch((err) => console.log(`Error fetching device states: ${err}`))
+						.catch((err) => console.log(`Error fetching device states: ${stringifyError(err)}`))
 				}
 			}
 		}

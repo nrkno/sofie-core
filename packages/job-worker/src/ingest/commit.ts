@@ -45,6 +45,7 @@ import {
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { updateSegmentIdsForAdlibbedPartInstances } from './commit/updateSegmentIdsForAdlibbedPartInstances'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 export type BeforePartMapItem = { id: PartId; rank: number }
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<BeforePartMapItem>>
@@ -231,7 +232,7 @@ export async function CommitIngestOperation(
 							rundownId: ingestCache.RundownId,
 						})
 						.catch((e) => {
-							logger.error(`Queue RundownDataChanged failed: ${e}`)
+							logger.error(`Queue RundownDataChanged failed: ${stringifyError(e)}`)
 						})
 
 					triggerUpdateTimelineAfterIngestData(context, playoutCache.PlaylistId)
@@ -541,7 +542,7 @@ export function triggerUpdateTimelineAfterIngestData(context: JobContext, playli
 					playlistId,
 				})
 				.catch((e) => {
-					logger.error(`triggerUpdateTimelineAfterIngestData: Execution failed: ${e}`)
+					logger.error(`triggerUpdateTimelineAfterIngestData: Execution failed: ${stringifyError(e)}`)
 				})
 		}
 	}, 1000)

@@ -15,13 +15,13 @@ import { JobContextImpl, QueueJobFunc } from '../context'
 import { AnyLockEvent, LocksManager } from '../locks'
 import { FastTrackTimelineFunc, LogLineWithSourceFunc } from '../../main'
 import { interceptLogging, logger } from '../../logging'
-import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { setupInfluxDb } from '../../influx'
 import { getEventsQueueName } from '@sofie-automation/corelib/dist/worker/events'
 import { ExternalMessageQueueRunner } from '../../events/ExternalMessageQueue'
 import { WorkerJobResult } from '../parent-base'
 import { endTrace, sendTrace, startTrace } from '@sofie-automation/corelib/dist/influxdb'
 import { getPrometheusMetricsString, setupPrometheusMetrics } from '@sofie-automation/corelib/dist/prometheus'
+import { UserError } from '@sofie-automation/corelib/dist/error'
 
 interface StaticData {
 	readonly mongoClient: MongoClient
@@ -141,10 +141,13 @@ export class EventsWorkerChild {
 						error: null,
 					}
 				} catch (e) {
-					logger.error(`Events job "${jobName}" errored: ${stringifyError(e)}`)
+					const userError = UserError.fromUnknown(e)
+
+					logger.error(`Events job "${jobName}" errored: ${userError.toErrorString()}`)
+
 					return {
 						result: null,
-						error: e,
+						error: UserError.toJSON(userError),
 					}
 				}
 			} else {

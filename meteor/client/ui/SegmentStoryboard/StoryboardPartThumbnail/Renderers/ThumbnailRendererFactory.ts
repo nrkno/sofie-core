@@ -40,6 +40,7 @@ export default function renderThumbnail(props: IProps): JSX.Element {
 			return SplitsThumbnailRenderer(props)
 		case SourceLayerType.GRAPHICS:
 		case SourceLayerType.LOWER_THIRD:
+		case SourceLayerType.STUDIO_SCREEN:
 			return GraphicsThumbnailRenderer(props)
 		case SourceLayerType.LOCAL:
 			return LocalThumbnailRenderer(props)

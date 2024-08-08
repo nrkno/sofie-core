@@ -95,6 +95,8 @@ export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps): JS
 
 	const overrideHelper = useOverrideOpHelper(saveOverrides, showStyleBase.outputLayersWithOverrides)
 
+	const doUndelete = useCallback((itemId: string) => overrideHelper().resetItem(itemId).commit(), [overrideHelper])
+
 	return (
 		<div>
 			<h2 className="mhn">
@@ -120,7 +122,7 @@ export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps): JS
 				<tbody>
 					{sortedOutputLayers.map((item) =>
 						item.type === 'deleted' ? (
-							<OutputLayerDeletedEntry key={item.id} item={item.defaults} doUndelete={overrideHelper.resetItem} />
+							<OutputLayerDeletedEntry key={item.id} item={item.defaults} doUndelete={doUndelete} />
 						) : (
 							<OutputLayerEntry
 								key={item.id}
@@ -181,10 +183,10 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 	const { t } = useTranslation()
 
 	const toggleEditItem = useCallback(() => toggleExpanded(item.id), [toggleExpanded, item.id])
-	const doResetItem = useCallback(() => overrideHelper.resetItem(item.id), [overrideHelper, item.id])
+	const doResetItem = useCallback(() => overrideHelper().resetItem(item.id).commit(), [overrideHelper, item.id])
 	const doChangeItemId = useCallback(
 		(newItemId: string) => {
-			overrideHelper.changeItemId(item.id, newItemId)
+			overrideHelper().changeItemId(item.id, newItemId).commit()
 			toggleExpanded(newItemId, true)
 		},
 		[overrideHelper, toggleExpanded, item.id]
@@ -196,7 +198,7 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 			no: t('Cancel'),
 			yes: t('Delete'),
 			onAccept: () => {
-				overrideHelper.deleteItem(item.id)
+				overrideHelper().deleteItem(item.id).commit()
 			},
 			message: (
 				<React.Fragment>
@@ -212,7 +214,7 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 			yes: t('Reset'),
 			no: t('Cancel'),
 			onAccept: () => {
-				overrideHelper.resetItem(item.id)
+				overrideHelper().resetItem(item.id).commit()
 			},
 			message: (
 				<React.Fragment>

@@ -753,6 +753,7 @@ export interface APISourceLayer {
 		| 'live-speak'
 		| 'transition'
 		| 'local'
+		| 'studio-screen'
 	exclusiveGroup?: string
 }
 

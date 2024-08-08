@@ -15,7 +15,7 @@ interface ArrayTableRowProps {
 	translationNamespaces: string[]
 	sofieEnumDefinitons: Record<string, SchemaFormSofieEnumDefinition> | undefined
 
-	overrideHelper: OverrideOpHelperArrayTable
+	overrideHelper: () => OverrideOpHelperArrayTable
 
 	rowId: number
 	rowObject: any
@@ -56,7 +56,7 @@ export function ArrayTableRow({
 				summaryFields={summaryFields}
 				rowId={rowId}
 				showRowId={false}
-				object={rowObject}
+				rowItem={rowItem}
 				isEdited={isExpanded}
 				editItem={toggleExpanded}
 				removeItem={confirmRemove}

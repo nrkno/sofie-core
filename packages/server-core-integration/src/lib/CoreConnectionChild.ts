@@ -202,7 +202,7 @@ export class CoreConnectionChild extends EventEmitter<ChildCoreConnectionEvents>
 		this.ddp.ddpClient?.unsubscribe(subscriptionId)
 		delete this._autoSubscriptions[subscriptionId]
 	}
-	observe(collectionName: string): Observer {
+	observe(collectionName: string): Observer<any> {
 		if (!this._parent) throw new Error('Connection has been destroyed')
 
 		return this._parent.observe(collectionName)

@@ -139,6 +139,6 @@ function updateDeviceLastDataReceived(deviceId: PeripheralDeviceId) {
 			lastDataReceived: getCurrentTime(),
 		},
 	}).catch((err) => {
-		logger.error(`Error in updateDeviceLastDataReceived "${deviceId}": ${err}`)
+		logger.error(`Error in updateDeviceLastDataReceived "${deviceId}": ${stringifyError(err)}`)
 	})
 }

@@ -61,6 +61,8 @@ function sourceLayerString(t: TFunction<'translation', undefined>, type: SourceL
 		// 	return t('Lights')
 		case SourceLayerType.LOCAL:
 			return t('Local')
+		case SourceLayerType.STUDIO_SCREEN:
+			return t('Studio Screen Graphics')
 		default:
 			assertNever(type)
 			return SourceLayerType[type]
@@ -129,6 +131,8 @@ export function SourceLayerSettings({ showStyleBase }: IStudioSourcesSettingsPro
 
 	const overrideHelper = useOverrideOpHelper(saveOverrides, showStyleBase.sourceLayersWithOverrides)
 
+	const doUndelete = useCallback((itemId: string) => overrideHelper().resetItem(itemId).commit(), [overrideHelper])
+
 	return (
 		<div>
 			<h2 className="mhn">
@@ -149,7 +153,7 @@ export function SourceLayerSettings({ showStyleBase }: IStudioSourcesSettingsPro
 				<tbody>
 					{sortedSourceLayers.map((item) =>
 						item.type === 'deleted' ? (
-							<SourceLayerDeletedEntry key={item.id} item={item.defaults} doUndelete={overrideHelper.resetItem} />
+							<SourceLayerDeletedEntry key={item.id} item={item.defaults} doUndelete={doUndelete} />
 						) : (
 							<SourceLayerEntry
 								key={item.id}
@@ -206,10 +210,10 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 	const { t } = useTranslation()
 
 	const toggleEditItem = useCallback(() => toggleExpanded(item.id), [toggleExpanded, item.id])
-	const doResetItem = useCallback(() => overrideHelper.resetItem(item.id), [overrideHelper, item.id])
+	const doResetItem = useCallback(() => overrideHelper().resetItem(item.id).commit(), [overrideHelper, item.id])
 	const doChangeItemId = useCallback(
 		(newItemId: string) => {
-			overrideHelper.changeItemId(item.id, newItemId)
+			overrideHelper().changeItemId(item.id, newItemId).commit()
 			toggleExpanded(newItemId, true)
 		},
 		[overrideHelper, toggleExpanded, item.id]
@@ -221,7 +225,7 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 			no: t('Cancel'),
 			yes: t('Delete'),
 			onAccept: () => {
-				overrideHelper.deleteItem(item.id)
+				overrideHelper().deleteItem(item.id).commit()
 			},
 			message: (
 				<React.Fragment>
@@ -241,7 +245,7 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 			yes: t('Reset'),
 			no: t('Cancel'),
 			onAccept: () => {
-				overrideHelper.resetItem(item.id)
+				overrideHelper().resetItem(item.id).commit()
 			},
 			message: (
 				<React.Fragment>
