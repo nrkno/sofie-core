@@ -503,12 +503,9 @@ export class CoreTSRDeviceHandler {
 	sendStatus(): void {
 		if (!this.core) return // not initialized yet
 
-		this.core.setStatus(this._deviceStatus).catch((e: any) =>
-			this._coreParentHandler.logger.error(`Error when setting status: ${e}`, {
-				error: e,
-				stacktrace: e.stack,
-			})
-		)
+		this.core
+			.setStatus(this._deviceStatus)
+			.catch((e: any) => this._coreParentHandler.logger.error(`Error when setting status: ${stringifyError(e)}`))
 	}
 	onCommandError(
 		_errorMessage: string,
@@ -524,28 +521,25 @@ export class CoreTSRDeviceHandler {
 		// this.core
 		// 		.callMethodLowPrio(PeripheralDeviceAPIMethods.reportCommandError, [errorMessage, ref])
 		// 		.catch((e: any) =>
-		// 			this._coreParentHandler.logger.error(`Error when callMethodLowPrio: ${e}`, {
-		// 				error: e,
-		// 				stacktrace: e.stack,
-		// 			})
+		// 			this._coreParentHandler.logger.error(`Error when callMethodLowPrio: ${stringifyError(e)}`)
 		// 		)
 		// }
 	}
 	onUpdateMediaObject(collectionId: string, docId: string, doc: MediaObject | null): void {
-		this.core.coreMethodsLowPriority.updateMediaObject(collectionId, docId, doc as any).catch((e: any) =>
-			this._coreParentHandler.logger.error(`Error when updating Media Object: ${e}`, {
-				error: e,
-				stacktrace: e.stack,
-			})
-		)
+		this.core.coreMethodsLowPriority
+			.updateMediaObject(collectionId, docId, doc as any)
+			.catch((e: any) =>
+				this._coreParentHandler.logger.error(`Error when updating Media Object: ${stringifyError(e)}`)
+			)
 	}
 	onClearMediaObjectCollection(collectionId: string): void {
-		this.core.coreMethodsLowPriority.clearMediaObjectCollection(collectionId).catch((e: any) =>
-			this._coreParentHandler.logger.error(`Error when clearing Media Objects collection: ${e}`, {
-				error: e,
-				stacktrace: e.stack,
-			})
-		)
+		this.core.coreMethodsLowPriority
+			.clearMediaObjectCollection(collectionId)
+			.catch((e: any) =>
+				this._coreParentHandler.logger.error(
+					`Error when clearing Media Objects collection: ${stringifyError(e)}`
+				)
+			)
 	}
 
 	async dispose(): Promise<void> {

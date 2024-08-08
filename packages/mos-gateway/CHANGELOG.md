@@ -3,9 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-## [1.50.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.3...v1.50.4) (2024-08-08)
+## [1.50.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.4-LSG-updates...v1.50.5) (2024-08-08)
 
 **Note:** Version bump only for package mos-gateway
+
+
+
+
+
+## [1.50.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.3-LSG-updates...v1.50.4) (2024-07-30)
+
+
+### Bug Fixes
+
+* improve error logging: use stringifyError() ([8da63de](https://github.com/nrkno/tv-automation-server-core/commit/8da63dec44915439ea436eee9697f3774241537b))
 
 
 

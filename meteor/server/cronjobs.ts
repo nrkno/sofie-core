@@ -51,14 +51,14 @@ export async function nightlyCronjobInner(): Promise<void> {
 
 	await Promise.allSettled([
 		cleanupOldDataCronjob().catch((error) => {
-			logger.error(`Cronjob: Error when cleaning up old data: ${error}`)
+			logger.error(`Cronjob: Error when cleaning up old data: ${stringifyError(error)}`)
 			logger.error(error)
 		}),
 		restartCasparCG(system, previousLastNightlyCronjob).catch((e) => {
-			logger.error(`Cron: Restart CasparCG error: ${e}`)
+			logger.error(`Cron: Restart CasparCG error: ${stringifyError(e)}`)
 		}),
 		storeSnapshots(system).catch((e) => {
-			logger.error(`Cron: Rundown Snapshots error: ${e}`)
+			logger.error(`Cron: Rundown Snapshots error: ${stringifyError(e)}`)
 		}),
 	])
 
@@ -202,7 +202,7 @@ Meteor.startup(() => {
 			timeSinceLast > 20 * 3600 * 1000 // was last run yesterday
 		) {
 			nightlyCronjobInner().catch((e) => {
-				logger.error(`Nightly cronjob: error: ${e}`)
+				logger.error(`Nightly cronjob: error: ${stringifyError(e)}`)
 			})
 		}
 	}
@@ -225,7 +225,7 @@ Meteor.startup(() => {
 					)
 				},
 				(e) => {
-					logger.error(`Cron: CleanupPlaylists error: ${e}`)
+					logger.error(`Cron: CleanupPlaylists error: ${stringifyError(e)}`)
 				}
 			)
 		}

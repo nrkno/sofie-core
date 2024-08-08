@@ -42,6 +42,7 @@ import { createPlayoutModelFromIngestModel } from '../playout/model/implementati
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DatabasePersistedModel } from '../modelBase'
 import { updateSegmentIdsForAdlibbedPartInstances } from './commit/updateSegmentIdsForAdlibbedPartInstances'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 export type BeforePartMapItem = { id: PartId; rank: number }
 export type BeforeIngestOperationPartMap = ReadonlyMap<SegmentId, Array<BeforePartMapItem>>
@@ -229,7 +230,7 @@ export async function CommitIngestOperation(
 							rundownId: ingestModel.rundownId,
 						})
 						.catch((e) => {
-							logger.error(`Queue RundownDataChanged failed: ${e}`)
+							logger.error(`Queue RundownDataChanged failed: ${stringifyError(e)}`)
 						})
 
 					triggerUpdateTimelineAfterIngestData(context, playoutModel.playlistId)
@@ -564,7 +565,7 @@ export function triggerUpdateTimelineAfterIngestData(context: JobContext, playli
 					playlistId,
 				})
 				.catch((e) => {
-					logger.error(`triggerUpdateTimelineAfterIngestData: Execution failed: ${e}`)
+					logger.error(`triggerUpdateTimelineAfterIngestData: Execution failed: ${stringifyError(e)}`)
 				})
 		}
 	}, 1000)

@@ -55,6 +55,7 @@ import { ExpectedPackageDBFromStudioBaselineObjects } from '@sofie-automation/co
 import { ExpectedPlayoutItemStudio } from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'
 import { StudioBaselineHelper } from '../../../studio/model/StudioBaselineHelper'
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 export class PlayoutModelReadonlyImpl implements PlayoutModelReadonly {
 	public readonly playlistId: RundownPlaylistId
@@ -587,7 +588,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 					partExternalId: partExternalId,
 				})
 				.catch((e) => {
-					logger.warn(`Failed to queue NotifyCurrentlyPlayingPart job: ${e}`)
+					logger.warn(`Failed to queue NotifyCurrentlyPlayingPart job: ${stringifyError(e)}`)
 				})
 		}
 		this.#pendingNotifyCurrentlyPlayingPartEvent.clear()

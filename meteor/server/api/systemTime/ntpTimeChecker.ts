@@ -4,6 +4,7 @@ import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { setSystemStatus } from '../../systemStatus/systemStatus'
 import { logger } from '../../logging'
 import { determineDiffTime } from './systemTime'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 const CHECK_INTERVAL = 60 * 1000
 
@@ -37,7 +38,7 @@ Meteor.startup(() => {
 					}
 				})
 				.catch((err) => {
-					logger.error(`Error in determineDiffTime: ${err}`)
+					logger.error(`Error in determineDiffTime: ${stringifyError(err)}`)
 					failCount++
 					if (failCount > 10) {
 						setSystemStatus('ntpTimeChecker', {
