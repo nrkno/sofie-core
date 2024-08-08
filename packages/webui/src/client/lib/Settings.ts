@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { ISettings, DEFAULT_SETTINGS } from '@sofie-automation/meteor-lib/dist/Settings'
 
@@ -12,6 +11,9 @@ import { ISettings, DEFAULT_SETTINGS } from '@sofie-automation/meteor-lib/dist/S
  */
 export let Settings: ISettings = _.clone(DEFAULT_SETTINGS)
 
-Meteor.startup(() => {
-	Settings = _.extend(Settings, Meteor.settings.public)
-})
+// @ts-expect-error no types defined
+const MeteorInjectedSettings: any = window.__meteor_runtime_config__
+
+if (MeteorInjectedSettings?.PUBLIC_SETTINGS) {
+	Settings = _.extend(Settings, MeteorInjectedSettings.PUBLIC_SETTINGS)
+}

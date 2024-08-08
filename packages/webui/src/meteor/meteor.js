@@ -35,8 +35,6 @@ const Meteor = {
 
 		return errorClass
 	},
-
-	settings: { public: window.__meteor_runtime_config__?.PUBLIC_SETTINGS },
 }
 
 function withoutInvocation(f) {

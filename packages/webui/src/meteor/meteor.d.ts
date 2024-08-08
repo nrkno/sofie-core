@@ -9,27 +9,6 @@ export namespace Meteor {
 	/** Global props **/
 
 	/** User **/
-	interface UserEmail {
-		address: string
-		verified: boolean
-	}
-	/**
-	 * UserProfile is left intentionally underspecified here, to allow you
-	 * to override it in your application (but keep in mind that the default
-	 * Meteor configuration allows users to write directly to their user
-	 * record's profile field)
-	 */
-	interface UserProfile {}
-	interface User {
-		_id: string
-		username?: string | undefined
-		emails?: UserEmail[] | undefined
-		createdAt?: Date | undefined
-		profile?: UserProfile
-		services?: any
-	}
-
-	/** User **/
 
 	function user(options?: { fields?: Mongo.FieldSpecifier | undefined }): unknown | null
 
