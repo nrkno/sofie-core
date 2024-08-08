@@ -1,4 +1,3 @@
-import { DDPCommon } from '../../ddp-common';
 import { Meteor } from '../../meteor';
 import { Hook } from '../../callback-hook';
 

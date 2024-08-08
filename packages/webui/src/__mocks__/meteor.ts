@@ -83,7 +83,6 @@ const $ = {
 	},
 }
 
-const publications: Record<string, Function> = {}
 export class MeteorMock {}
 
 export namespace MeteorMock {
@@ -92,8 +91,6 @@ export namespace MeteorMock {
 	export const mockMethods: { [name: string]: Function } = {}
 	export let mockUser: Meteor.User | undefined = undefined
 	export const mockStartupFunctions: Function[] = []
-
-	export const absolutePath = process.cwd()
 
 	export function status(): DDP.DDPStatus {
 		return {
@@ -223,26 +220,8 @@ export namespace MeteorMock {
 		mockStartupFunctions.push(fcn)
 	}
 
-	export function publish(publicationName: string, handler: Function): any {
-		publications[publicationName] = handler
-	}
-
 	export function bindEnvironment(_fcn: Function): any {
 		throw new Error(500, 'bindEnvironment not supported on client')
-		// {
-		// 	// the outer bindEnvironment must be called from a fiber
-		// 	const fiber = Fiber.current
-		// 	if (!fiber) throw new Error(500, `It appears that bindEnvironment isn't running in a fiber`)
-		// }
-
-		// return (...args: any[]) => {
-		// 	const fiber = Fiber.current
-		// 	if (fiber) {
-		// 		return fcn(...args)
-		// 	} else {
-		// 		return runInFiber(() => fcn(...args)).catch(console.error)
-		// 	}
-		// }
 	}
 	export let users: MongoMock.Collection<any> | undefined = undefined
 
@@ -262,9 +241,6 @@ export namespace MeteorMock {
 	}
 	export function mockSetUsersCollection(usersCollection: MongoMock.Collection<any>): void {
 		users = usersCollection
-	}
-	export function mockGetPublications(): Record<string, Function> {
-		return publications
 	}
 
 	/** Wait for time to pass ( unaffected by jest.useFakeTimers() ) */

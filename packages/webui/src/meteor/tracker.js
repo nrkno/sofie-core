@@ -93,15 +93,6 @@ function _throwOrLog(from, e) {
 	}
 }
 
-// Takes a function `f`, and wraps it in a `Meteor._noYieldsAllowed`
-// block if we are running on the server. On the client, returns the
-// original function (since `Meteor._noYieldsAllowed` is a
-// no-op). This has the benefit of not adding an unnecessary stack
-// frame on the client.
-function withNoYieldsAllowed(f) {
-	return f
-}
-
 var nextId = 1
 // computations whose callbacks we should call at flush time
 var pendingComputations = []
@@ -220,7 +211,7 @@ Tracker.Computation = class Computation {
 
 		if (this.invalidated) {
 			Tracker.nonreactive(() => {
-				withNoYieldsAllowed(f)(this)
+				f(this)
 			})
 		} else {
 			this._onInvalidateCallbacks.push(f)
@@ -237,7 +228,7 @@ Tracker.Computation = class Computation {
 
 		if (this.stopped) {
 			Tracker.nonreactive(() => {
-				withNoYieldsAllowed(f)(this)
+				f(this)
 			})
 		} else {
 			this._onStopCallbacks.push(f)
@@ -265,7 +256,7 @@ Tracker.Computation = class Computation {
 			// this.invalidated === true.
 			for (var i = 0, f; (f = this._onInvalidateCallbacks[i]); i++) {
 				Tracker.nonreactive(() => {
-					withNoYieldsAllowed(f)(this)
+					f(this)
 				})
 			}
 			this._onInvalidateCallbacks = []
@@ -284,7 +275,7 @@ Tracker.Computation = class Computation {
 			this.invalidate()
 			for (var i = 0, f; (f = this._onStopCallbacks[i]); i++) {
 				Tracker.nonreactive(() => {
-					withNoYieldsAllowed(f)(this)
+					f(this)
 				})
 			}
 			this._onStopCallbacks = []
@@ -299,7 +290,7 @@ Tracker.Computation = class Computation {
 		var previousInCompute = inCompute
 		inCompute = true
 		try {
-			withNoYieldsAllowed(this._func)(this)
+			this._func(this)
 		} finally {
 			setCurrentComputation(previous)
 			inCompute = previousInCompute
