@@ -8,7 +8,7 @@ import { APIStudio, StudioAction, StudioActionType, StudiosRestAPI } from '../..
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../../../lib/api/client'
 import { PeripheralDevices, RundownPlaylists, Studios } from '../../../collections'
-import { APIStudioFrom, studioFrom } from './typeConversion'
+import { APIStudioFrom, studioFrom, validateAPIBlueprintConfigForStudio } from './typeConversion'
 import { runUpgradeForStudio, validateConfigForStudio } from '../../../migration/upgrades'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
@@ -35,9 +35,24 @@ class StudiosServerAPI implements StudiosRestAPI {
 	async addStudio(
 		_connection: Meteor.Connection,
 		_event: string,
-		studio: APIStudio
+		apiStudio: APIStudio
 	): Promise<ClientAPI.ClientResponse<string>> {
-		const newStudio = await studioFrom(studio)
+		const blueprintConfigValidation = await validateAPIBlueprintConfigForStudio(apiStudio)
+		const blueprintConfigValidationOK = blueprintConfigValidation.reduce(
+			(acc, msg) => acc && msg.level === NoteSeverity.INFO,
+			true
+		)
+		if (!blueprintConfigValidationOK) {
+			const details = JSON.stringify(
+				blueprintConfigValidation.filter((msg) => msg.level < NoteSeverity.INFO).map((msg) => msg.message.key),
+				null,
+				2
+			)
+			logger.error(`addStudio failed blueprint config validation with errors: ${details}`)
+			throw new Meteor.Error(409, `Studio has failed blueprint config validation`, details)
+		}
+
+		const newStudio = await studioFrom(apiStudio)
 		if (!newStudio) throw new Meteor.Error(400, `Invalid Studio`)
 
 		const newStudioId = await Studios.insertAsync(newStudio)
@@ -66,16 +81,31 @@ class StudiosServerAPI implements StudiosRestAPI {
 		const studio = await Studios.findOneAsync(studioId)
 		if (!studio) throw new Meteor.Error(404, `Studio ${studioId} not found`)
 
-		return ClientAPI.responseSuccess(APIStudioFrom(studio))
+		return ClientAPI.responseSuccess(await APIStudioFrom(studio))
 	}
 
 	async addOrUpdateStudio(
 		_connection: Meteor.Connection,
 		_event: string,
 		studioId: StudioId,
-		studio: APIStudio
+		apiStudio: APIStudio
 	): Promise<ClientAPI.ClientResponse<void>> {
-		const newStudio = await studioFrom(studio, studioId)
+		const blueprintConfigValidation = await validateAPIBlueprintConfigForStudio(apiStudio)
+		const blueprintConfigValidationOK = blueprintConfigValidation.reduce(
+			(acc, msg) => acc && msg.level === NoteSeverity.INFO,
+			true
+		)
+		if (!blueprintConfigValidationOK) {
+			const details = JSON.stringify(
+				blueprintConfigValidation.filter((msg) => msg.level < NoteSeverity.INFO).map((msg) => msg.message.key),
+				null,
+				2
+			)
+			logger.error(`addOrUpdateStudio failed blueprint config validation with errors: ${details}`)
+			throw new Meteor.Error(409, `Studio ${studioId} has failed blueprint config validation`, details)
+		}
+
+		const newStudio = await studioFrom(apiStudio, studioId)
 		if (!newStudio) throw new Meteor.Error(400, `Invalid Studio`)
 
 		const existingStudio = await Studios.findOneAsync(studioId)
@@ -107,7 +137,77 @@ class StudiosServerAPI implements StudiosRestAPI {
 			throw new Meteor.Error(409, `Studio ${studioId} has failed validation`, details)
 		}
 
-		return ClientAPI.responseSuccess(await runUpgradeForStudio(studioId))
+		return ClientAPI.responseSuccess(
+			await new Promise<void>((resolve) =>
+				// wait for the upsert to complete before upgrade
+				setTimeout(async () => resolve(await runUpgradeForStudio(studioId)), 200)
+			)
+		)
+	}
+
+	async getStudioConfig(
+		_connection: Meteor.Connection,
+		_event: string,
+		studioId: StudioId
+	): Promise<ClientAPI.ClientResponse<object>> {
+		const studio = await Studios.findOneAsync(studioId)
+		if (!studio) throw new Meteor.Error(404, `Studio ${studioId} not found`)
+
+		return ClientAPI.responseSuccess((await APIStudioFrom(studio)).config)
+	}
+
+	async updateStudioConfig(
+		_connection: Meteor.Connection,
+		_event: string,
+		studioId: StudioId,
+		config: object
+	): Promise<ClientAPI.ClientResponse<void>> {
+		const existingStudio = await Studios.findOneAsync(studioId)
+		if (!existingStudio) {
+			throw new Meteor.Error(404, `Studio ${studioId} not found`)
+		}
+
+		const apiStudio = await APIStudioFrom(existingStudio)
+		apiStudio.config = config
+
+		const blueprintConfigValidation = await validateAPIBlueprintConfigForStudio(apiStudio)
+		const blueprintConfigValidationOK = blueprintConfigValidation.reduce(
+			(acc, msg) => acc && msg.level === NoteSeverity.INFO,
+			true
+		)
+		if (!blueprintConfigValidationOK) {
+			const details = JSON.stringify(
+				blueprintConfigValidation.filter((msg) => msg.level < NoteSeverity.INFO).map((msg) => msg.message.key),
+				null,
+				2
+			)
+			logger.error(`updateStudioConfig failed blueprint config validation with errors: ${details}`)
+			throw new Meteor.Error(409, `Studio ${studioId} has failed blueprint config validation`, details)
+		}
+
+		const newStudio = await studioFrom(apiStudio, studioId)
+		if (!newStudio) throw new Meteor.Error(400, `Invalid Studio`)
+
+		await Studios.upsertAsync(studioId, newStudio)
+
+		const validation = await validateConfigForStudio(studioId)
+		const validateOK = validation.messages.reduce((acc, msg) => acc && msg.level === NoteSeverity.INFO, true)
+		if (!validateOK) {
+			const details = JSON.stringify(
+				validation.messages.filter((msg) => msg.level < NoteSeverity.INFO).map((msg) => msg.message.key),
+				null,
+				2
+			)
+			logger.error(`updateStudioConfig failed validation with errors: ${details}`)
+			throw new Meteor.Error(409, `Studio ${studioId} has failed validation`, details)
+		}
+
+		return ClientAPI.responseSuccess(
+			await new Promise<void>((resolve) =>
+				// wait for the upsert to complete before upgrade
+				setTimeout(async () => resolve(await runUpgradeForStudio(studioId)), 200)
+			)
+		)
 	}
 
 	async deleteStudio(
@@ -334,6 +434,37 @@ export function registerRoutes(registerRoute: APIRegisterHook<StudiosRestAPI>): 
 
 			check(studioId, String)
 			return await serverAPI.addOrUpdateStudio(connection, event, studioId, body)
+		}
+	)
+
+	registerRoute<{ studioId: string }, never, object>(
+		'get',
+		'/studios/:studioId/config',
+		new Map([[404, [UserErrorMessage.StudioNotFound]]]),
+		studiosAPIFactory,
+		async (serverAPI, connection, event, params, _) => {
+			const studioId = protectString<StudioId>(params.studioId)
+			logger.info(`API GET: studio config ${studioId}`)
+
+			check(studioId, String)
+			return await serverAPI.getStudioConfig(connection, event, studioId)
+		}
+	)
+
+	registerRoute<{ studioId: string }, object, void>(
+		'put',
+		'/studios/:studioId/config',
+		new Map([
+			[404, [UserErrorMessage.StudioNotFound]],
+			[409, [UserErrorMessage.ValidationFailed]],
+		]),
+		studiosAPIFactory,
+		async (serverAPI, connection, event, params, body) => {
+			const studioId = protectString<StudioId>(params.studioId)
+			logger.info(`API PUT: Update studio config ${studioId}`)
+
+			check(studioId, String)
+			return await serverAPI.updateStudioConfig(connection, event, studioId, body)
 		}
 	)
 

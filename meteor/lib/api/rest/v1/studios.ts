@@ -57,6 +57,34 @@ export interface StudiosRestAPI {
 		studio: APIStudio
 	): Promise<ClientAPI.ClientResponse<void>>
 	/**
+	 * Gets a Studio config, if it exists.
+	 *
+	 * Throws if the specified Studio does not exist.
+	 * @param connection Connection data including client and header details
+	 * @param event User event string
+	 * @param studioId Id of the Studio to fetch
+	 */
+	getStudioConfig(
+		connection: Meteor.Connection,
+		event: string,
+		studioId: StudioId
+	): Promise<ClientAPI.ClientResponse<object>>
+	/**
+	 * Updates a Studio configuration.
+	 *
+	 * Throws if the Studio already exists and is in use in an active Rundown.
+	 * @param connection Connection data including client and header details
+	 * @param event User event string
+	 * @param studioId Id of the Studio to update
+	 * @param object Blueprint configuration object
+	 */
+	updateStudioConfig(
+		connection: Meteor.Connection,
+		event: string,
+		studioId: StudioId,
+		config: object
+	): Promise<ClientAPI.ClientResponse<void>>
+	/**
 	 * Deletes a Studio.
 	 *
 	 * Throws if the specified Studio is in use in an active Rundown.
