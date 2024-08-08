@@ -384,7 +384,7 @@ export class PartAndPieceInstanceActionService {
 			invalid: false,
 			invalidReason: undefined,
 			floated: false,
-			expectedDurationWithPreroll: undefined, // Filled in later
+			expectedDurationWithTransition: undefined, // Filled in later
 		}
 
 		const pieces = postProcessPieces(
@@ -526,7 +526,7 @@ export async function applyActionSideEffects(
 	if (actionContext.nextPartState !== ActionPartChange.NONE) {
 		const nextPartInstance = playoutModel.nextPartInstance
 		if (nextPartInstance) {
-			nextPartInstance.recalculateExpectedDurationWithPreroll()
+			nextPartInstance.recalculateExpectedDurationWithTransition()
 
 			validateAdlibTestingPartInstanceProperties(context, playoutModel, nextPartInstance)
 		}

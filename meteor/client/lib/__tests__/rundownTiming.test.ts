@@ -50,7 +50,7 @@ function makeMockPart(
 		_rank: rank,
 		rundownId: protectString(rundownId),
 		...durations,
-		expectedDurationWithPreroll: durations.expectedDuration,
+		expectedDurationWithTransition: durations.expectedDuration,
 	})
 }
 

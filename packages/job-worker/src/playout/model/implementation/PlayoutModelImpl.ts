@@ -331,7 +331,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 			partInstance.insertAdlibbedPiece(piece, fromAdlibId)
 		}
 
-		partInstance.recalculateExpectedDurationWithPreroll()
+		partInstance.recalculateExpectedDurationWithTransition()
 
 		this.allPartInstances.set(newPartInstance._id, partInstance)
 
@@ -367,7 +367,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		this.#fixupPieceInstancesForPartInstance(newPartInstance, pieceInstances)
 
 		const partInstance = new PlayoutPartInstanceModelImpl(newPartInstance, pieceInstances, true)
-		partInstance.recalculateExpectedDurationWithPreroll()
+		partInstance.recalculateExpectedDurationWithTransition()
 
 		this.allPartInstances.set(newPartInstance._id, partInstance)
 
@@ -406,7 +406,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		}
 
 		const partInstance = new PlayoutPartInstanceModelImpl(newPartInstance, [], true)
-		partInstance.recalculateExpectedDurationWithPreroll()
+		partInstance.recalculateExpectedDurationWithTransition()
 
 		this.allPartInstances.set(newPartInstance._id, partInstance)
 
