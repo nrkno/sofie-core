@@ -1,43 +1,36 @@
-import { Meteor } from '../../meteor';
-import { Hook } from '../../callback-hook';
+import { Meteor } from '../../meteor'
+import { Hook } from '../lib/callback-hook.js'
 
-import { Connection } from './livedata_connection.js';
+import { Connection } from './livedata_connection.js'
 
 // This array allows the `_allSubscriptionsReady` method below, which
 // is used by the `spiderable` package, to keep track of whether all
 // data is ready.
-const allConnections = [];
+const allConnections = []
 
 /**
  * @namespace DDP
  * @summary Namespace for DDP-related methods/classes.
  */
-export const DDP = {};
+export const DDP = {}
 
-Meteor.DDP = DDP;
+Meteor.DDP = DDP
 
 // This is private but it's used in a few places. accounts-base uses
 // it to get the current user. Meteor.setTimeout and friends clear
 // it. We can probably find a better way to factor this.
-DDP._CurrentMethodInvocation = new Meteor.EnvironmentVariable();
-DDP._CurrentPublicationInvocation = new Meteor.EnvironmentVariable();
+DDP._CurrentMethodInvocation = new Meteor.EnvironmentVariable()
+DDP._CurrentPublicationInvocation = new Meteor.EnvironmentVariable()
 
 // This is passed into a weird `makeErrorType` function that expects its thing
 // to be a constructor
 function connectionErrorConstructor(message) {
-  this.message = message;
+	this.message = message
 }
 
-DDP.ConnectionError = Meteor.makeErrorType(
-  'DDP.ConnectionError',
-  connectionErrorConstructor
-);
+DDP.ConnectionError = Meteor.makeErrorType('DDP.ConnectionError', connectionErrorConstructor)
 
-DDP.ForcedReconnectError = Meteor.makeErrorType(
-  'DDP.ForcedReconnectError',
-  () => {}
-);
-
+DDP.ForcedReconnectError = Meteor.makeErrorType('DDP.ForcedReconnectError', () => {})
 
 // @param url {String} URL to Meteor app,
 //     e.g.:
@@ -57,12 +50,12 @@ DDP.ForcedReconnectError = Meteor.makeErrorType(
  * @param {Function} options.onDDPNegotiationVersionFailure callback when version negotiation fails.
  */
 DDP.connect = (url, options) => {
-  const ret = new Connection(url, options);
-  allConnections.push(ret); // hack. see below.
-  return ret;
-};
+	const ret = new Connection(url, options)
+	allConnections.push(ret) // hack. see below.
+	return ret
+}
 
-DDP._reconnectHook = new Hook({ bindEnvironment: false });
+DDP._reconnectHook = new Hook({ bindEnvironment: false })
 
 /**
  * @summary Register a function to call as the first step of
@@ -73,11 +66,10 @@ DDP._reconnectHook = new Hook({ bindEnvironment: false });
  * @param {Function} callback The function to call. It will be called with a
  * single argument, the [connection object](#ddp_connect) that is reconnecting.
  */
-DDP.onReconnect = callback => DDP._reconnectHook.register(callback);
+DDP.onReconnect = (callback) => DDP._reconnectHook.register(callback)
 
 // Hack for `spiderable` package: a way to see if the page is done
 // loading all the data it needs.
 //
-DDP._allSubscriptionsReady = () => allConnections.every(
-  conn => Object.values(conn._subscriptions).every(sub => sub.ready)
-);
+DDP._allSubscriptionsReady = () =>
+	allConnections.every((conn) => Object.values(conn._subscriptions).every((sub) => sub.ready))
