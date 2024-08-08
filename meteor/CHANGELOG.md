@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.50.5](///compare/v1.50.4-LSG-updates...v1.50.5) (2024-08-08)
+
+
+### Bug Fixes
+
+* compensate for piece preroll for adlibbed pieces SOFIE-3369 ([#1236](undefined/undefined/undefined/issues/1236)) 195a7d9
+* rundown timing drifting when playing parts with preroll SOFIE-3291 ([#1234](undefined/undefined/undefined/issues/1234)) beee11a
+* unexpected timeline updates while playing final part in rundown SOFIE-3371 ([#1237](undefined/undefined/undefined/issues/1237)) 0fe74b4
+
 ### [1.50.4](https://github.com/nrkno/sofie-core/compare/v1.50.3-LSG-updates...v1.50.4) (2024-07-30)
 
 
