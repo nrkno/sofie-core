@@ -14,6 +14,8 @@ export function getPreviewPackageSettings(
 		packagePath = expectedPackage.content.guid || expectedPackage.content.title
 	} else if (expectedPackage.type === ExpectedPackage.PackageType.JSON_DATA) {
 		packagePath = undefined // Not supported
+	} else if (expectedPackage.type === ExpectedPackage.PackageType.HTML_TEMPLATE) {
+		packagePath = undefined // Not supported
 	} else {
 		assertNever(expectedPackage)
 	}
@@ -35,6 +37,8 @@ export function getThumbnailPackageSettings(
 		packagePath = expectedPackage.content.guid || expectedPackage.content.title
 	} else if (expectedPackage.type === ExpectedPackage.PackageType.JSON_DATA) {
 		packagePath = undefined // Not supported
+	} else if (expectedPackage.type === ExpectedPackage.PackageType.HTML_TEMPLATE) {
+		packagePath = undefined // Not supported (yet)
 	} else {
 		assertNever(expectedPackage)
 	}
