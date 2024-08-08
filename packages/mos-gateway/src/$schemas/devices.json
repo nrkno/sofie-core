@@ -105,6 +105,12 @@
 					"ui:description": "How often to ping NRCS to determine connection status",
 					"default": 30000
 				},
+				"hotStandby": {
+					"type": "boolean",
+					"ui:title": "Secondary: Hot Standby",
+					"ui:description": "Is the secondary connection a hot standby for the primary",
+					"default": false
+				},
 				"ports": {
 					"type": "object",
 					"ui:title": "Ports",
