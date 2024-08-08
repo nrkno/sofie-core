@@ -74,7 +74,8 @@ export interface PlaylistsRestAPI {
 		event: string,
 		rundownPlaylistId: RundownPlaylistId,
 		adLibId: AdLibActionId | RundownBaselineAdLibActionId | PieceId | BucketAdLibId,
-		triggerMode?: string
+		triggerMode?: string,
+		adLibOptions?: any
 	): Promise<ClientAPI.ClientResponse<object>>
 	/**
 	 * Executes the requested Bucket AdLib/AdLib Action. This is a Bucket AdLib (Action) that has been previously inserted into a Bucket.
