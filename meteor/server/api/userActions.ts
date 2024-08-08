@@ -43,11 +43,14 @@ import {
 	RundownPlaylistId,
 	SegmentId,
 	ShowStyleBaseId,
+	ShowStyleVariantId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { IngestDataCache, Parts, Pieces, Rundowns } from '../collections'
 import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 import { verifyHashedToken } from './singleUseTokens'
+import { runIngestOperation } from './ingest/lib'
+import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 
 async function pieceSetInOutPoints(
 	access: VerifiedRundownPlaylistContentAccess,
@@ -414,7 +417,7 @@ class ServerUserActionAPI
 				actionDocId,
 				actionId,
 				userData,
-				triggerMode: triggerMode || undefined,
+				triggerMode: triggerMode ?? undefined,
 			}
 		)
 	}
@@ -1192,6 +1195,54 @@ class ServerUserActionAPI
 
 				const access = await PeripheralDeviceContentWriteAccess.peripheralDevice(this, peripheralDeviceId)
 				return ServerPeripheralDeviceAPI.disableSubDevice(access, subDeviceId, disable)
+			}
+		)
+	}
+
+	async activateAdlibTestingMode(
+		userEvent: string,
+		eventTime: number,
+		playlistId: RundownPlaylistId,
+		rundownId: RundownId
+	): Promise<ClientAPI.ClientResponse<void>> {
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			eventTime,
+			playlistId,
+			() => {
+				check(playlistId, String)
+				check(rundownId, String)
+			},
+			StudioJobs.ActivateAdlibTesting,
+			{
+				playlistId: playlistId,
+				rundownId: rundownId,
+			}
+		)
+	}
+
+	async createAdlibTestingRundownForShowStyleVariant(
+		userEvent: string,
+		eventTime: number,
+		studioId: StudioId,
+		showStyleVariantId: ShowStyleVariantId
+	) {
+		const jobName = IngestJobs.CreateAdlibTestingRundownForShowStyleVariant
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			eventTime,
+			`worker.ingest.${jobName}`,
+			[showStyleVariantId],
+			async (_credentials) => {
+				check(studioId, String)
+				check(showStyleVariantId, String)
+
+				// TODO - checkAccessToStudio?
+				return runIngestOperation(studioId, IngestJobs.CreateAdlibTestingRundownForShowStyleVariant, {
+					showStyleVariantId,
+				})
 			}
 		)
 	}

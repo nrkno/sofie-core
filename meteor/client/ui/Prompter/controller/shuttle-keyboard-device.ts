@@ -1,5 +1,5 @@
 import { ControllerAbstract } from './lib'
-import { PrompterViewInner, PrompterConfigMode } from '../PrompterView'
+import { PrompterViewContent, PrompterConfigMode } from '../PrompterView'
 
 /**
  * This class handles control of the prompter using Keyboard keys sent from an xkeys
@@ -8,7 +8,7 @@ import { PrompterViewInner, PrompterConfigMode } from '../PrompterView'
  * Supports Page-up / Page-down keys for previous/next story
  */
 export class ShuttleKeyboardController extends ControllerAbstract {
-	private prompterView: PrompterViewInner
+	private prompterView: PrompterViewContent
 
 	private speedMap = [0, 1, 2, 3, 5, 7, 9, 30]
 	private speedStepMap = ShuttleKeyboardController.makeSpeedStepMap(this.speedMap)
@@ -19,14 +19,14 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 	private lastSpeedMapPosition = ShuttleKeyboardController.SPEEDMAPNEUTRALPOSITION
 	private currentPosition = 0
 
-	constructor(view: PrompterViewInner) {
+	constructor(view: PrompterViewContent) {
 		super()
 
 		this.prompterView = view
 		this.speedMap = view.configOptions.shuttle_speedMap || this.speedMap
 		this.speedStepMap = ShuttleKeyboardController.makeSpeedStepMap(this.speedMap)
 	}
-	private static makeSpeedStepMap(speedMap): number[] {
+	private static makeSpeedStepMap(speedMap: number[]): number[] {
 		return [
 			...speedMap
 				.slice(1)

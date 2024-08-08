@@ -2,9 +2,10 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import classNames from 'classnames'
 import React, { useContext } from 'react'
 import { AreaZoom } from '.'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { PieceExtended } from '../../../../lib/Rundown'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { PieceExtended } from '../../../lib/RundownResolver'
 import { getAllowSpeaking, getAllowVibrating } from '../../../lib/localStorage'
+import { getPartInstanceTimingValue } from '../../../lib/rundownTiming'
 import { AutoNextStatus } from '../../RundownView/RundownTiming/AutoNextStatus'
 import { CurrentPartRemaining } from '../../RundownView/RundownTiming/CurrentPartRemaining'
 import { PartCountdown } from '../../RundownView/RundownTiming/PartCountdown'
@@ -16,7 +17,7 @@ import { Piece } from './Piece'
 interface IProps {
 	part: PartUi
 	piece: PieceExtended
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	isLive: boolean
 	isNext: boolean
 }
@@ -28,9 +29,9 @@ export const Part = withTiming<IProps, {}>({
 	const areaZoom = useContext(AreaZoom)
 
 	let left =
-		timingDurations.partCountdown?.[unprotectString(part.partId)] ??
-		0 - (timingDurations.partPlayed?.[unprotectString(part.partId)] ?? 0)
-	let width: number | null = timingDurations.partDisplayDurations?.[unprotectString(part.partId)] ?? 0
+		(timingDurations.partCountdown?.[unprotectString(part.partId)] ?? 0) -
+		(getPartInstanceTimingValue(timingDurations.partPlayed, part.instance) || 0)
+	let width: number | null = getPartInstanceTimingValue(timingDurations.partDisplayDurations, part.instance) ?? null
 
 	if (isLive) {
 		left = 0

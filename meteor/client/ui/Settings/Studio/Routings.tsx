@@ -3,7 +3,6 @@ import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import {
-	Studio,
 	DBStudio,
 	StudioRouteSet,
 	StudioRouteBehavior,
@@ -12,7 +11,7 @@ import {
 	StudioRouteType,
 	MappingsExt,
 	MappingExt,
-} from '../../../../lib/collections/Studios'
+} from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
@@ -33,7 +32,7 @@ import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
 
 interface IStudioRoutingsProps {
 	translationNamespaces: string[]
-	studio: Studio
+	studio: DBStudio
 	studioMappings: ReadonlyDeep<MappingsExt>
 	manifest: MappingsSettingsManifests | undefined
 }
@@ -136,19 +135,19 @@ export const StudioRoutings = withTranslation()(
 			})
 		}
 		removeExclusivityGroup = (eGroupId: string) => {
-			const unsetObject = {}
+			const unsetObject: Record<string, 1> = {}
 			_.forEach(this.props.studio.routeSets, (routeSet, routeSetId) => {
 				if (routeSet.exclusivityGroup === eGroupId) {
 					unsetObject['routeSets.' + routeSetId + '.exclusivityGroup'] = 1
 				}
 			})
-			unsetObject['routeSetExclusivityGroups.' + eGroupId] = ''
+			unsetObject['routeSetExclusivityGroups.' + eGroupId] = 1
 			Studios.update(this.props.studio._id, {
 				$unset: unsetObject,
 			})
 		}
 		removeRouteSetRoute = (routeId: string, index: number) => {
-			const unsetObject = {}
+			const unsetObject: Record<string, any> = {}
 			const newRoutes = this.props.studio.routeSets[routeId].routes.slice()
 			newRoutes.splice(index, 1)
 			unsetObject['routeSets.' + routeId + '.routes'] = newRoutes
@@ -157,8 +156,8 @@ export const StudioRoutings = withTranslation()(
 			})
 		}
 		removeRouteSet = (routeId: string) => {
-			const unsetObject = {}
-			unsetObject['routeSets.' + routeId] = ''
+			const unsetObject: Record<string, 1> = {}
+			unsetObject['routeSets.' + routeId] = 1
 			Studios.update(this.props.studio._id, {
 				$unset: unsetObject,
 			})
@@ -176,7 +175,7 @@ export const StudioRoutings = withTranslation()(
 				remapping: {},
 				routeType: StudioRouteType.REROUTE,
 			}
-			const setObject = {}
+			const setObject: Record<string, any> = {}
 			setObject['routeSets.' + routeId + '.routes'] = newRoute
 
 			Studios.update(this.props.studio._id, {
@@ -197,7 +196,7 @@ export const StudioRoutings = withTranslation()(
 				routes: [],
 				behavior: StudioRouteBehavior.TOGGLE,
 			}
-			const setObject: Partial<DBStudio> = {}
+			const setObject: Record<string, any> = {}
 			setObject['routeSets.' + newRouteKeyName + iter] = newRoute
 
 			Studios.update(this.props.studio._id, {
@@ -214,7 +213,7 @@ export const StudioRoutings = withTranslation()(
 			const newGroup: StudioRouteSetExclusivityGroup = {
 				name: 'New Exclusivity Group',
 			}
-			const setObject: Partial<DBStudio> = {}
+			const setObject: Record<string, any> = {}
 			setObject['routeSetExclusivityGroups.' + newEGroupKeyName + iter] = newGroup
 
 			Studios.update(this.props.studio._id, {
@@ -230,8 +229,8 @@ export const StudioRoutings = withTranslation()(
 				throw new Meteor.Error(400, 'Route Set "' + newRouteId + '" already exists')
 			}
 
-			const mSet = {}
-			const mUnset = {}
+			const mSet: Record<string, any> = {}
+			const mUnset: Record<string, 1> = {}
 			mSet['routeSets.' + newRouteId] = route
 			mUnset['routeSets.' + oldRouteId] = 1
 
@@ -254,8 +253,8 @@ export const StudioRoutings = withTranslation()(
 				throw new Meteor.Error(400, 'Exclusivity Group "' + newRouteId + '" already exists')
 			}
 
-			const mSet = {}
-			const mUnset = {}
+			const mSet: Record<string, any> = {}
+			const mUnset: Record<string, 1> = {}
 			mSet['routeSetExclusivityGroups.' + newRouteId] = route
 			mUnset['routeSetExclusivityGroups.' + oldRouteId] = 1
 
@@ -733,7 +732,7 @@ export const StudioRoutings = withTranslation()(
 
 interface IDeviceMappingSettingsProps {
 	translationNamespaces: string[]
-	studio: Studio
+	studio: DBStudio
 	attribute: string
 	manifest: MappingsSettingsManifest | undefined
 	mappedLayer: ReadonlyDeep<MappingExt> | undefined

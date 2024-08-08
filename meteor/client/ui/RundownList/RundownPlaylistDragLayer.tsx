@@ -9,9 +9,9 @@ import { UIShowStyleBases } from '../Collections'
 
 export default function RundownPlaylistDragLayer({
 	draggedClassNames,
-}: {
+}: Readonly<{
 	draggedClassNames?: string[]
-}): JSX.Element | null {
+}>): JSX.Element | null {
 	const { isDragging, item, itemType, currentOffset, draggedWidth } = useDragLayer(collect)
 
 	if (!isDragging) {
@@ -34,7 +34,7 @@ export default function RundownPlaylistDragLayer({
 						connectDropTarget={(props) => props}
 						htmlElementId="drag-preview"
 						isDragLayer={true}
-						showStyleName={showStyle?.name || ''}
+						showStyleName={showStyle?.name ?? ''}
 					/>
 				)
 			}

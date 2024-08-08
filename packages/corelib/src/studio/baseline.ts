@@ -7,7 +7,7 @@ import { Blueprint } from '../dataModel/Blueprint'
 export function shouldUpdateStudioBaselineInner(
 	coreVersion: string,
 	studio: ReadonlyDeep<StudioLight>,
-	studioTimeline: ReadonlyDeep<TimelineComplete> | undefined,
+	studioTimeline: ReadonlyDeep<TimelineComplete> | null,
 	studioBlueprint: Pick<Blueprint, 'blueprintVersion'> | null
 ): string | false {
 	if (!studioTimeline) return 'noBaseline'

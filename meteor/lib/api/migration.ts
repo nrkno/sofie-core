@@ -3,6 +3,11 @@ import { BlueprintId, ShowStyleBaseId, SnapshotId, StudioId } from '@sofie-autom
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { BlueprintValidateConfigForStudioResult } from '@sofie-automation/corelib/dist/worker/studio'
 
+export interface BlueprintFixUpConfigMessage {
+	message: ITranslatableMessage
+	path: string
+}
+
 export interface NewMigrationAPI {
 	getMigrationStatus(): Promise<GetMigrationStatusResult>
 	runMigration(
@@ -15,9 +20,16 @@ export interface NewMigrationAPI {
 	resetDatabaseVersions(): Promise<void>
 
 	/**
-	 * Get the status information for each Studio and ShowStyle on their blueprintConfig upgrade status
+	 * Run `fixupConfig` on the blueprint for a Studio
+	 * @param studioId Id of the Studio
 	 */
-	getUpgradeStatus(): Promise<GetUpgradeStatusResult>
+	fixupConfigForStudio(studioId: StudioId): Promise<BlueprintFixUpConfigMessage[]>
+
+	/**
+	 * Ignore that `fixupConfig` needs to be run for a Studio
+	 * @param studioId Id of the Studio
+	 */
+	ignoreFixupConfigForStudio(studioId: StudioId): Promise<void>
 
 	/**
 	 * Run `validateConfig` on the blueprint for a Studio
@@ -31,6 +43,18 @@ export interface NewMigrationAPI {
 	 * @param studioId Id of the Studio
 	 */
 	runUpgradeForStudio(studioId: StudioId): Promise<void>
+
+	/**
+	 * Run `fixupConfig` on the blueprint for a ShowStyleBase
+	 * @param showStyleBaseId Id of the ShowStyleBase
+	 */
+	fixupConfigForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<BlueprintFixUpConfigMessage[]>
+
+	/**
+	 * Ignore that `fixupConfig` needs to be run for a ShowStyleBase
+	 * @param showStyleBaseId Id of the ShowStyleBase
+	 */
+	ignoreFixupConfigForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void>
 
 	/**
 	 * Run `validateConfig` on the blueprint for a ShowStyleBase
@@ -53,32 +77,14 @@ export enum MigrationAPIMethods {
 	'resetDatabaseVersions' = 'migration.resetDatabaseVersions',
 
 	'getUpgradeStatus' = 'migration.getUpgradeStatus',
+	'fixupConfigForStudio' = 'migration.fixupConfigForStudio',
+	'ignoreFixupConfigForStudio' = 'migration.ignoreFixupConfigForStudio',
 	'validateConfigForStudio' = 'migration.validateConfigForStudio',
 	'runUpgradeForStudio' = 'migration.runUpgradeForStudio',
+	'fixupConfigForShowStyleBase' = 'migration.fixupConfigForShowStyleBase',
+	'ignoreFixupConfigForShowStyleBase' = 'migration.ignoreFixupConfigForShowStyleBase',
 	'validateConfigForShowStyleBase' = 'migration.validateConfigForShowStyleBase',
 	'runUpgradeForShowStyleBase' = 'migration.runUpgradeForShowStyleBase',
-}
-
-export interface GetUpgradeStatusResultStudio {
-	studioId: StudioId
-	name: string
-
-	invalidReason?: ITranslatableMessage
-
-	changes: ITranslatableMessage[]
-}
-export interface GetUpgradeStatusResultShowStyleBase {
-	showStyleBaseId: ShowStyleBaseId
-	name: string
-
-	invalidReason?: ITranslatableMessage
-
-	changes: ITranslatableMessage[]
-}
-
-export interface GetUpgradeStatusResult {
-	studios: GetUpgradeStatusResultStudio[]
-	showStyleBases: GetUpgradeStatusResultShowStyleBase[]
 }
 
 export interface GetMigrationStatusResult {

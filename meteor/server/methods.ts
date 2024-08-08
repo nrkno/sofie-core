@@ -41,7 +41,7 @@ function getAllClassMethods(myClass: any): string[] {
 
 /** This expects an array of values (likely the output of Parameters<T>), and makes anything optional be nullable instead */
 export type ReplaceOptionalWithNullInArray<T extends any[]> = {
-	[K in keyof T]: undefined extends T[K] ? NonNullable<T[K]> | null : T[K]
+	[K in keyof T]-?: undefined extends T[K] ? NonNullable<T[K]> | null : T[K]
 }
 
 /**
@@ -72,14 +72,14 @@ export function registerClassToMeteorMethods(
 		if (wrapper) {
 			methods[enumValue] = {
 				wrapped: function (...args: any[]) {
-					return wrapper(this, enumValue, args, orgClass.prototype[classMethodName])
+					return wrapper(this, enumValue, args, (orgClass.prototype as any)[classMethodName])
 				},
-				original: orgClass.prototype[classMethodName],
+				original: (orgClass.prototype as any)[classMethodName],
 			}
 		} else {
 			methods[enumValue] = {
-				wrapped: orgClass.prototype[classMethodName],
-				original: orgClass.prototype[classMethodName],
+				wrapped: (orgClass.prototype as any)[classMethodName],
+				original: (orgClass.prototype as any)[classMethodName],
 			}
 		}
 	})
@@ -109,6 +109,9 @@ function setMeteorMethods(orgMethods: MethodsInner, secret?: boolean): void {
 					const result = method.apply(this, args)
 
 					if (isPromise(result)) {
+						// Don't block execution of other methods while waiting for this to resolve. (This is how meteor 2.7 behaved, added to avoid breaking Sofie)
+						this.unblock()
+
 						// The method result is a promise
 						return Promise.resolve(result)
 							.finally(() => {

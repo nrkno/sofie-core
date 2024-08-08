@@ -56,6 +56,12 @@
 			vertical-align: top;
 		}
 
+		> .segment-storyboard__thumbnail__label-icon {
+			float: right;
+			margin-top: -5px;
+			margin-bottom: -5px;
+		}
+
 		&.segment-storyboard__thumbnail__label--lg {
 			position: absolute;
 			text-align: center;
@@ -132,6 +138,10 @@
 
 			&:last-child {
 				margin-right: 0;
+			}
+
+			&.label-loop-icon {
+				margin-top: -3px;
 			}
 		}
 

@@ -4,6 +4,7 @@ import {
 	SomeActionIdentifier,
 	ClientActions,
 	PlayoutActions,
+	DeviceActions,
 } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
 
 export enum TriggerType {
@@ -188,6 +189,11 @@ export interface IRundownPlaylistDeactivateAction extends ITriggeredActionBase {
 	filterChain: (IRundownPlaylistFilterLink | IGUIContextFilterLink)[]
 }
 
+export interface IRundownPlaylistActivateAdlibTestingAction extends ITriggeredActionBase {
+	action: PlayoutActions.activateAdlibTestingMode
+	filterChain: (IRundownPlaylistFilterLink | IGUIContextFilterLink)[]
+}
+
 export interface ITakeAction extends ITriggeredActionBase {
 	action: PlayoutActions.take
 	filterChain: (IRundownPlaylistFilterLink | IGUIContextFilterLink)[]
@@ -281,10 +287,21 @@ export interface IMiniShelfQueueAdLib extends ITriggeredActionBase {
 	forward: boolean // TODO: Change this to use `delta: number`, as opposed to `forward: boolean`
 }
 
+export interface IModifyShiftRegister extends ITriggeredActionBase {
+	action: DeviceActions.modifyShiftRegister
+	filterChain: IGUIContextFilterLink[]
+	register: number
+	value: number
+	operation: '+' | '-' | '='
+	limitMin: number
+	limitMax: number
+}
+
 export type SomeAction =
 	| IAdlibPlayoutAction
 	| IRundownPlaylistActivateAction
 	| IRundownPlaylistDeactivateAction
+	| IRundownPlaylistActivateAdlibTestingAction
 	| ITakeAction
 	| IHoldAction
 	| IMoveNextAction
@@ -298,6 +315,7 @@ export type SomeAction =
 	| IRewindSegmentsAction
 	| IShowEntireCurrentSegmentAction
 	| IMiniShelfQueueAdLib
+	| IModifyShiftRegister
 
 export interface IBlueprintTriggeredActions {
 	_id: string
@@ -309,6 +327,8 @@ export interface IBlueprintTriggeredActions {
 	triggers: Record<string, SomeBlueprintTrigger>
 	/** A list of actions to execute */
 	actions: Record<string, SomeAction>
+	/** Space separated list of class names to use when displaying this triggered actions */
+	styleClassNames?: string
 }
 
 export { SomeActionIdentifier, ClientActions, PlayoutActions }

@@ -2,15 +2,12 @@ import { omit, protectString } from '../lib'
 import { LookaheadMode } from '@sofie-automation/blueprints-integration'
 import {
 	ResultingMappingRoutes,
-	DBStudio,
 	MappingExt,
 	StudioRouteType,
 	StudioRouteSet,
 	RouteMapping,
 } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { ReadonlyDeep } from 'type-fest'
-export * from '@sofie-automation/corelib/dist/dataModel/Studio'
-export { RoutedMappings } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 
 export function getActiveRoutes(routeSets: ReadonlyDeep<Record<string, StudioRouteSet>>): ResultingMappingRoutes {
 	const routes: ResultingMappingRoutes = {
@@ -99,5 +96,3 @@ export function getRoutedMappings<M extends MappingExt>(
 	}
 	return outputMappings
 }
-
-export type Studio = DBStudio

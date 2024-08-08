@@ -184,7 +184,7 @@ export async function queueExternalMessages(
 					}
 				}
 			} catch (e) {
-				logger.error(`Failed to save ExternalMessage: ${e} (${JSON.stringify(message)})`)
+				logger.error(`Failed to save ExternalMessage: ${stringifyError(e)} (${JSON.stringify(message)})`)
 			}
 		})
 	)
@@ -237,20 +237,20 @@ export async function handleNotifyCurrentlyPlayingPart(
 		return
 	}
 
-	if (!rundown.peripheralDeviceId) {
+	if (rundown.source.type !== 'nrcs') {
 		logger.warn(`Rundown "${rundown._id} has no peripheralDevice. Skipping notifyCurrentPlayingPart`)
 		return
 	}
 
 	const device = await context.directCollections.PeripheralDevices.findOne({
-		_id: rundown.peripheralDeviceId,
+		_id: rundown.source.peripheralDeviceId,
 		// Future: we really should be constraining this to the studio, but that is often only defined on the parent of this device
 		// studioId: context.studioId,
 		parentDeviceId: { $exists: true },
 	})
 	if (!device || !device.parentDeviceId) {
 		logger.warn(
-			`PeripheralDevice "${rundown.peripheralDeviceId}" for Rundown "${rundown._id} not found. Skipping notifyCurrentPlayingPart`
+			`PeripheralDevice "${rundown.source.peripheralDeviceId}" for Rundown "${rundown._id} not found. Skipping notifyCurrentPlayingPart`
 		)
 		return
 	}
@@ -261,7 +261,7 @@ export async function handleNotifyCurrentlyPlayingPart(
 	})
 	if (!parentDevice) {
 		logger.warn(
-			`PeripheralDevice "${rundown.peripheralDeviceId}" for Rundown "${rundown._id} not found. Skipping notifyCurrentPlayingPart`
+			`PeripheralDevice "${rundown.source.peripheralDeviceId}" for Rundown "${rundown._id} not found. Skipping notifyCurrentPlayingPart`
 		)
 		return
 	}

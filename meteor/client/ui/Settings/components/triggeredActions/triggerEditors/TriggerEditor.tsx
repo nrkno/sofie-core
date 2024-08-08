@@ -14,6 +14,7 @@ import { DeviceEditor } from './DeviceEditor'
 import { faCheck, faSync, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { DropdownInputControl, DropdownInputOption } from '../../../../../lib/Components/DropdownInput'
 import { catchError } from '../../../../../lib/lib'
+import { preventOverflow } from '@popperjs/core'
 
 interface IProps {
 	id: string
@@ -56,7 +57,9 @@ export const TriggerEditor = function TriggerEditor({
 	const [referenceElement, setReferenceElement] = useState<HTMLDivElement | null>(null)
 	const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null)
 	const { styles, attributes, update } = usePopper(referenceElement, popperElement, {
+		placement: 'bottom',
 		modifiers: [
+			preventOverflow,
 			{
 				name: 'offset',
 				options: {
@@ -168,7 +171,7 @@ export const TriggerEditor = function TriggerEditor({
 			{triggerPreview}
 			{opened ? (
 				<div
-					className="expco expco-expanded expco-popper mod pas ptl expco-popper-rounded triggered-action-entry__trigger-editor"
+					className="expco expco-expanded expco-popper mod pas expco-popper-rounded triggered-action-entry__trigger-editor"
 					ref={setPopperElement}
 					style={styles.popper}
 					{...attributes.popper}

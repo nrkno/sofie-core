@@ -4,8 +4,8 @@ import React, { useContext, useMemo } from 'react'
 import { ActivePartInstancesContext, PieceFilter } from '.'
 import {
 	withResolvedSegment,
-	IProps as IWithResolvedSegmentProps,
-	ITrackedProps as IWithResolvedSegmentInjectedProps,
+	IResolvedSegmentProps as IWithResolvedSegmentProps,
+	ITrackedResolvedSegmentProps as IWithResolvedSegmentInjectedProps,
 } from '../../SegmentContainer/withResolvedSegment'
 import { OrderedPartsContext } from './OrderedPartsProvider'
 import { Part } from './Part'

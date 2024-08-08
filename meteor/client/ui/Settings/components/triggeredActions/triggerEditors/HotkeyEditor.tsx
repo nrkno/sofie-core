@@ -31,7 +31,7 @@ export const MODIFIER_MAP = {
 export function convertToLenientModifiers(keys: string[]): string[] {
 	return keys.map((key) => {
 		if (key in MODIFIER_MAP) {
-			return MODIFIER_MAP[key]
+			return (MODIFIER_MAP as any)[key]
 		} else {
 			return key
 		}

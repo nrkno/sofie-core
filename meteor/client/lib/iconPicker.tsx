@@ -11,7 +11,7 @@ import { Translated } from './ReactMeteorData/ReactMeteorData'
 library.add(fas)
 
 export interface IconPickerEvent {
-	selectedValue: IconName
+	selectedValue: IconName | ''
 }
 
 interface IProps {
@@ -66,7 +66,7 @@ export const IconPicker = withTranslation()(
 			}
 		}
 
-		handleChange = (value) => {
+		handleChange = (value: IconName | '') => {
 			this.setState({
 				selectedValue: value,
 			})
@@ -77,7 +77,7 @@ export const IconPicker = withTranslation()(
 			this.toggleExpco()
 		}
 
-		handleSearchChange = (event) => {
+		handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 			this.setState({
 				searchText: event.target.value,
 			})
@@ -134,7 +134,11 @@ export const IconPicker = withTranslation()(
 								if (value) {
 									return (
 										<div className="expco-item" key={key}>
-											<label className="action-btn" title={value.iconName} onClick={() => this.handleChange(value)}>
+											<label
+												className="action-btn"
+												title={value.iconName}
+												onClick={() => this.handleChange(value.iconName)}
+											>
 												<FontAwesomeIcon icon={value.iconName} />
 											</label>
 										</div>

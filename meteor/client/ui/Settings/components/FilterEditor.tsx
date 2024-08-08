@@ -302,8 +302,10 @@ export default withTranslation()(
 								collection={RundownLayouts}
 								className="input text-input input-l"
 								label={t('Filter Disabled')}
-								mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? undefined : v.join(', '))}
-								mutateUpdateValue={(v) =>
+								mutateDisplayValue={(v: string[] | undefined) =>
+									v === undefined || v.length === 0 ? undefined : v.join(', ')
+								}
+								mutateUpdateValue={(v: string | undefined) =>
 									v === undefined || v.length === 0 ? undefined : v.split(',').map((i) => i.trim())
 								}
 							/>
@@ -331,8 +333,10 @@ export default withTranslation()(
 								collection={RundownLayouts}
 								className="input text-input input-l"
 								label={t('Filter Disabled')}
-								mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? undefined : v.join(', '))}
-								mutateUpdateValue={(v) =>
+								mutateDisplayValue={(v: string[] | undefined) =>
+									v === undefined || v.length === 0 ? undefined : v.join(', ')
+								}
+								mutateUpdateValue={(v: string | undefined) =>
 									v === undefined || v.length === 0 ? undefined : v.split(',').map((i) => i.trim())
 								}
 							/>
@@ -621,8 +625,10 @@ export default withTranslation()(
 							collection={RundownLayouts}
 							className="input text-input input-l"
 							label={t('Filter Disabled')}
-							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? undefined : v.join(', '))}
-							mutateUpdateValue={(v) =>
+							mutateDisplayValue={(v: string[] | undefined) =>
+								v === undefined || v.length === 0 ? undefined : v.join(', ')
+							}
+							mutateUpdateValue={(v: string | undefined) =>
 								v === undefined || v.length === 0 ? undefined : v.split(',').map((i) => i.trim())
 							}
 						/>
@@ -1318,7 +1324,7 @@ export default withTranslation()(
 			item: RundownLayoutBase,
 			index: number,
 			activeLayerTitle: string,
-			activeLayersLabel
+			activeLayersLabel: string
 		) {
 			const { t } = this.props
 			return (

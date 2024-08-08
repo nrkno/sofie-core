@@ -5,7 +5,7 @@ import { RundownUtils } from '../../lib/rundown'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import { AdLibPieceUi, AdlibSegmentUi } from '../../lib/shelf'
 import { RundownLayoutFilter, RundownLayoutFilterBase } from '../../../lib/collections/RundownLayouts'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import { PieceUi } from '../SegmentContainer/withResolvedSegment'
 import { IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
@@ -24,7 +24,7 @@ interface IListViewPropsHeader {
 	noSegments: boolean
 	filter: RundownLayoutFilter | undefined
 	rundownAdLibs?: Array<AdLibPieceUi>
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	studio: UIStudio
 }
 
@@ -58,16 +58,16 @@ export function matchFilter(
 		}
 		// Filter out items that are not within outputLayerIds filter
 		if (
-			filter.outputLayerIds !== undefined &&
-			filter.outputLayerIds.length &&
+			filter.outputLayerIds &&
+			filter.outputLayerIds.length > 0 &&
 			filter.outputLayerIds.indexOf(item.outputLayerId) < 0
 		) {
 			return false
 		}
 		// Source layers
 		if (
-			filter.sourceLayerIds !== undefined &&
-			filter.sourceLayerIds.length &&
+			filter.sourceLayerIds &&
+			filter.sourceLayerIds.length > 0 &&
 			filter.sourceLayerIds.indexOf(item.sourceLayerId) < 0
 		) {
 			return false
@@ -76,16 +76,16 @@ export function matchFilter(
 		const sourceLayerType = showStyleBase.sourceLayers[item.sourceLayerId]
 		if (
 			sourceLayerType &&
-			filter.sourceLayerTypes !== undefined &&
-			filter.sourceLayerTypes.length &&
+			filter.sourceLayerTypes &&
+			filter.sourceLayerTypes.length > 0 &&
 			filter.sourceLayerTypes.indexOf(sourceLayerType.type) < 0
 		) {
 			return false
 		}
 		// Item label needs at least one of the strings in the label array
 		if (
-			filter.label !== undefined &&
-			filter.label.length &&
+			filter.label &&
+			filter.label.length > 0 &&
 			filter.label.reduce((p, v) => {
 				return p || uppercaseLabel.indexOf(v.toUpperCase()) >= 0
 			}, false) === false
@@ -94,8 +94,8 @@ export function matchFilter(
 		}
 		// Item tags needs to contain all of the strings in the tags array
 		if (
-			filter.tags !== undefined &&
-			filter.tags.length &&
+			filter.tags &&
+			filter.tags.length > 0 &&
 			filter.tags.reduce((p, v) => {
 				if (v.startsWith('!')) {
 					// this is a "not" tag filter - i.e. this tag must not be present
@@ -139,7 +139,7 @@ export function matchTags(item: AdLibPieceUi, tags?: string[]): boolean {
 	return true
 }
 
-export function AdLibListView(props: IListViewPropsHeader): JSX.Element {
+export function AdLibListView(props: Readonly<IListViewPropsHeader>): JSX.Element {
 	const table = useRef<HTMLTableElement>(null)
 	const instanceId = useRef(getRandomString())
 

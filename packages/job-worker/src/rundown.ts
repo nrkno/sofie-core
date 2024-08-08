@@ -14,8 +14,8 @@ export function allowedToMoveRundownOutOfPlaylist(
 
 	if (!playlist.activationId) return true
 
-	return (
-		!playlist.activationId ||
-		(playlist.currentPartInfo?.rundownId !== rundown._id && playlist.nextPartInfo?.rundownId !== rundown._id)
-	)
+	// Can't delete last rundown in playlist when it is active
+	if (playlist.rundownIdsInOrder.length === 1) return false
+
+	return playlist.currentPartInfo?.rundownId !== rundown._id && playlist.nextPartInfo?.rundownId !== rundown._id
 }

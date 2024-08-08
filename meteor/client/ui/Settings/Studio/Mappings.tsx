@@ -1,14 +1,15 @@
 import ClassNames from 'classnames'
 import React, { useCallback, useMemo } from 'react'
 import Tooltip from 'rc-tooltip'
-import { Studio, MappingExt, getActiveRoutes, ResultingMappingRoutes } from '../../../../lib/collections/Studios'
+import { getActiveRoutes } from '../../../../lib/collections/Studios'
+import { DBStudio, MappingExt, ResultingMappingRoutes } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash, faPencilAlt, faCheck, faPlus, faSync } from '@fortawesome/free-solid-svg-icons'
 import { useTranslation } from 'react-i18next'
 import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
 import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/shared-lib/dist/core/constants'
-import { useToggleExpandHelper } from '../util/ToggleExpandedHelper'
+import { useToggleExpandHelper } from '../../util/useToggleExpandHelper'
 import {
 	getAllCurrentAndDeletedItemsFromOverrides,
 	OverrideOpHelper,
@@ -51,19 +52,23 @@ export interface MappingsSettingsManifest {
 export type MappingsSettingsManifests = Record<string | number, MappingsSettingsManifest>
 
 interface IStudioMappingsProps {
-	studio: Studio
+	studio: DBStudio
 	manifest: MappingsSettingsManifests | undefined
 	translationNamespaces: string[]
 }
 
-export function StudioMappings({ manifest, translationNamespaces, studio }: IStudioMappingsProps): JSX.Element {
+export function StudioMappings({
+	manifest,
+	translationNamespaces,
+	studio,
+}: Readonly<IStudioMappingsProps>): JSX.Element {
 	const { t } = useTranslation()
 
 	const { toggleExpanded, isExpanded } = useToggleExpandHelper()
 
 	const manifestNames = useMemo(() => {
 		return Object.fromEntries(
-			Object.entries<MappingsSettingsManifest>(manifest || {}).map(([id, val]) => [
+			Object.entries<MappingsSettingsManifest>(manifest ?? {}).map(([id, val]) => [
 				id,
 				translateStringIfHasNamespaces(val.displayName, translationNamespaces),
 			])
@@ -125,6 +130,8 @@ export function StudioMappings({ manifest, translationNamespaces, studio }: IStu
 
 	const overrideHelper = useOverrideOpHelper(saveOverrides, studio.mappingsWithOverrides)
 
+	const doUndelete = useCallback((itemId: string) => overrideHelper().resetItem(itemId).commit(), [overrideHelper])
+
 	return (
 		<div>
 			<h2 className="mhn">{t('Layer Mappings')}</h2>
@@ -144,7 +151,7 @@ export function StudioMappings({ manifest, translationNamespaces, studio }: IStu
 										manifestNames={manifestNames}
 										translationNamespaces={translationNamespaces}
 										mapping={item.defaults}
-										doUndelete={overrideHelper.resetItem}
+										doUndelete={doUndelete}
 									/>
 								) : (
 									<StudioMappingsEntry
@@ -191,7 +198,7 @@ function MappingDeletedEntry({
 	mapping,
 	layerId,
 	doUndelete,
-}: DeletedEntryProps) {
+}: Readonly<DeletedEntryProps>) {
 	const { t } = useTranslation()
 
 	const doUndeleteItem = useCallback(() => doUndelete(layerId), [doUndelete, layerId])
@@ -254,7 +261,7 @@ function StudioMappingsEntry({
 	isExpanded,
 	item,
 	overrideHelper,
-}: StudioMappingsEntryProps) {
+}: Readonly<StudioMappingsEntryProps>) {
 	const { t } = useTranslation()
 
 	const toggleEditItem = useCallback(() => toggleExpanded(item.id), [toggleExpanded, item.id])
@@ -264,7 +271,7 @@ function StudioMappingsEntry({
 			yes: t('Remove'),
 			no: t('Cancel'),
 			onAccept: () => {
-				overrideHelper.deleteItem(item.id)
+				overrideHelper().deleteItem(item.id).commit()
 			},
 			message: (
 				<React.Fragment>
@@ -280,7 +287,7 @@ function StudioMappingsEntry({
 			yes: t('Reset'),
 			no: t('Cancel'),
 			onAccept: () => {
-				overrideHelper.resetItem(item.id)
+				overrideHelper().resetItem(item.id).commit()
 			},
 			message: (
 				<React.Fragment>
@@ -297,7 +304,7 @@ function StudioMappingsEntry({
 
 	const doChangeItemId = useCallback(
 		(newItemId: string) => {
-			overrideHelper.changeItemId(item.id, newItemId)
+			overrideHelper().changeItemId(item.id, newItemId).commit()
 			toggleExpanded(newItemId, true)
 		},
 		[overrideHelper, toggleExpanded, item.id]
@@ -317,7 +324,7 @@ function StudioMappingsEntry({
 	}, [manifestNames])
 
 	const mappingTypeOptions = useMemo(() => {
-		return Object.entries<JSONSchema>(manifest?.mappingsSchema || {}).map(([id, entry], i) =>
+		return Object.entries<JSONSchema>(manifest?.mappingsSchema ?? {}).map(([id, entry], i) =>
 			literal<DropdownInputOption<string | number>>({
 				value: id + '',
 				name: entry?.title ?? id + '',
@@ -579,7 +586,7 @@ interface MappingSummaryProps {
 	fields: SchemaSummaryField[]
 	mapping: MappingExt
 }
-function MappingSummary({ translationNamespaces, fields, mapping }: MappingSummaryProps) {
+function MappingSummary({ translationNamespaces, fields, mapping }: Readonly<MappingSummaryProps>) {
 	if (fields.length > 0) {
 		return (
 			<span>

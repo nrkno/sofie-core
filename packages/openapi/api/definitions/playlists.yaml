@@ -139,6 +139,62 @@ resources:
                     example: AdLib could not be found!
         500:
           $ref: '#/components/responses/internalServerError'
+  executeBucketAdLib:
+    post:
+      operationId: executeBucketAdLib
+      tags:
+        - playlists
+      summary: Executes the requested Bucket AdLib/AdLib Action. This is a Bucket AdLib (Action) that has been previously inserted into a Bucket.
+      parameters:
+        - name: playlistId
+          in: path
+          description: Playlist to execute the Bucket AdLib in.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                actionType:
+                  type: string
+                  description: An actionType string to specify a particular variation for the AdLibAction, valid strings are to be read from the status API
+                bucketId:
+                  type: string
+                  description: Bucket to execute the adlib from
+                externalId:
+                  type: string
+                  description: External Id of the Bucket AdLib to execute
+              required:
+                - bucketId
+                - externalId
+              example:
+                bucketId: 6jZ6NvpoikxuXqcm4
+                externalId: my_lower_third
+                actionType: pvw
+      responses:
+        200:
+          $ref: '#/components/responses/executeActionSuccess'
+        404:
+          $ref: '#/components/responses/playlistNotFound'
+        412:
+          description: Specified Playlist is not active, there is not an on-air Part instance or an adLib for the provided `externalId` cannot be found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 412
+                  message:
+                    type: string
+                    example: AdLib could not be found!
+        500:
+          $ref: '#/components/responses/internalServerError'
   moveNextPart:
     post:
       operationId: moveNextPart

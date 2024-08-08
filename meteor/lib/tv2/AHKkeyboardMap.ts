@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 
-export const AHKKeyboardMap = {
+export const AHKKeyboardMap: Record<string, string | string[] | undefined> = {
 	'½': ['SC029', '{vkDCsc029}'],
 	f1: ['F1', '{F1}'],
 	f2: ['F2', '{F2}'],
@@ -56,7 +56,7 @@ export const AHKKeyboardMap = {
 	numdiv: ['NumpadDiv', '{NumpadDiv}'],
 }
 
-export const AHKModifierMap = {
+export const AHKModifierMap: Record<string, string | undefined> = {
 	ctrl: '^',
 	shift: '+',
 	alt: '!',

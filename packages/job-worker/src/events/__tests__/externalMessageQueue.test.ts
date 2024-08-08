@@ -66,7 +66,6 @@ describe('Test external message queue static methods', () => {
 			studioId: context.studio._id,
 			showStyleVariantId: showStyle.showStyleVariantId,
 			showStyleBaseId: showStyle._id,
-			peripheralDeviceId: undefined,
 			created: now,
 			modified: now,
 			importVersions: {
@@ -76,10 +75,13 @@ describe('Test external message queue static methods', () => {
 				blueprint: 'on',
 				core: 'plate',
 			},
-			externalNRCSName: 'mockNRCS',
 			organizationId: protectString(''),
 			timing: {
 				type: PlaylistTimingType.None,
+			},
+			source: {
+				type: 'http',
+				// nrcsName: 'mockNRCS',
 			},
 		})
 		rundown = (await context.mockCollections.Rundowns.findOne()) as Rundown
@@ -158,7 +160,6 @@ describe('Test sending messages to mocked endpoints', () => {
 			studioId: context.studio._id,
 			showStyleVariantId: showStyle.showStyleVariantId,
 			showStyleBaseId: showStyle._id,
-			peripheralDeviceId: undefined,
 			created: now,
 			modified: now,
 			importVersions: {
@@ -168,10 +169,13 @@ describe('Test sending messages to mocked endpoints', () => {
 				blueprint: 'on',
 				core: 'plate',
 			},
-			externalNRCSName: 'mockNRCS',
 			organizationId: protectString(''),
 			timing: {
 				type: PlaylistTimingType.None,
+			},
+			source: {
+				type: 'http',
+				// nrcsName: 'mockNRCS',
 			},
 		})
 		await context.mockCollections.RundownPlaylists.insertOne({

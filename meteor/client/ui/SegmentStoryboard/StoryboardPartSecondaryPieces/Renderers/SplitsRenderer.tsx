@@ -9,7 +9,7 @@ export function SplitsRenderer({
 	hovering,
 	elementOffset,
 	typeClass,
-}: IDefaultRendererProps): JSX.Element {
+}: Readonly<IDefaultRendererProps>): JSX.Element {
 	const splitItems = getSplitItems(pieceInstance, 'segment-storyboard__part__piece__contents__item')
 
 	return (

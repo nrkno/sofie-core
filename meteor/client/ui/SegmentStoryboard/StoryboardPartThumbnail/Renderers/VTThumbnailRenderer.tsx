@@ -11,6 +11,7 @@ import { FreezeFrameIcon } from '../../../../lib/ui/icons/freezeFrame'
 import { PieceStatusIcon } from '../../../../lib/ui/PieceStatusIcon'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { FREEZE_FRAME_FLASH } from '../../../SegmentContainer/withResolvedSegment'
+import { LoopingPieceIcon } from '../../../../lib/ui/icons/looping'
 
 export function VTThumbnailRenderer({
 	partId,
@@ -24,7 +25,7 @@ export function VTThumbnailRenderer({
 	studio,
 	layer,
 	height,
-}: IProps): JSX.Element {
+}: Readonly<IProps>): JSX.Element {
 	const status = pieceInstance.contentStatus?.status
 
 	const vtContent = pieceInstance.instance.piece.content as VTContent
@@ -37,7 +38,7 @@ export function VTThumbnailRenderer({
 	return (
 		<>
 			<VTFloatingInspector
-				status={status || PieceStatusCode.UNKNOWN}
+				status={status ?? PieceStatusCode.UNKNOWN}
 				showMiniInspector={hovering}
 				timePosition={hoverScrubTimePosition}
 				content={vtContent}
@@ -50,7 +51,7 @@ export function VTThumbnailRenderer({
 				}}
 				typeClass={layer && RundownUtils.getSourceLayerClassName(layer.type)}
 				itemElement={null}
-				noticeMessages={pieceInstance.contentStatus?.messages || null}
+				noticeMessages={pieceInstance.contentStatus?.messages ?? null}
 				noticeLevel={noticeLevel}
 				studio={studio}
 				previewUrl={pieceInstance.contentStatus?.previewUrl}
@@ -65,6 +66,7 @@ export function VTThumbnailRenderer({
 			>
 				{(timingContext) => {
 					if (!timingContext.partPlayed || !timingContext.partDisplayDurations) return null
+					if (pieceInstance.instance.piece.content?.loop) return null
 
 					const partPlayed = timingContext.partPlayed[unprotectString(partId)] ?? 0
 					const contentEnd =
@@ -104,6 +106,11 @@ export function VTThumbnailRenderer({
 					) : null
 				}}
 			</RundownTimingConsumer>
+			{pieceInstance.instance.piece.content?.loop && (
+				<div className="segment-storyboard__thumbnail__countdown">
+					<LoopingPieceIcon className="segment-storyboard__thumbnail__countdown-icon" playing={hovering} />
+				</div>
+			)}
 			<div className="segment-storyboard__thumbnail__label">
 				{noticeLevel !== null && <PieceStatusIcon noticeLevel={noticeLevel} />}
 				{pieceInstance.instance.piece.name}

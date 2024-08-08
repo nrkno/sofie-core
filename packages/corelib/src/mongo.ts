@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { ProtectedString } from './protectedString'
 import * as objectPath from 'object-path'
 // eslint-disable-next-line node/no-extraneous-import
-import type { Filter, UpdateFilter } from 'mongodb'
+import type { Condition, Filter, UpdateFilter } from 'mongodb'
 import { clone } from './lib'
 
 /** Hack's using typings pulled from meteor */
@@ -50,6 +50,7 @@ export interface FindOptions<TDoc> extends FindOneOptions<TDoc> {
  * Used for simplified expressions (ie not using $and, $or etc..)
  * */
 export type MongoQuery<TDoc> = Filter<TDoc>
+export type MongoQueryKey<T> = RegExp | T | Condition<T> // Allowed properties in a MongoQuery
 export type MongoModifier<TDoc> = UpdateFilter<TDoc>
 
 /** End of hacks */

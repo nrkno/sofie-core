@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
+import { MeteorApply } from './MeteorApply'
 
 export const LOGGER_METHOD_NAME = 'logger'
 
@@ -30,12 +31,14 @@ export interface LeveledLogMethodFixed {
 
 let logger: LoggerInstanceFixed
 if (Meteor.isServer) {
-	const getLogMethod = (type) => {
+	const getLogMethod = (type: string) => {
 		return (...args: any[]) => {
 			const stringifiedArgs: string[] = args.map((arg) => {
 				return stringifyError(arg)
 			})
-			return Meteor.call(LOGGER_METHOD_NAME, type, ...stringifiedArgs)
+
+			Meteor.call(LOGGER_METHOD_NAME, type, ...stringifiedArgs)
+			return logger
 		}
 	}
 
@@ -58,7 +61,7 @@ if (Meteor.isServer) {
 		notice: getLogMethod('notice'),
 	}
 } else {
-	const getLogMethod = (type) => {
+	const getLogMethod = (type: string) => {
 		return (...args: any[]) => {
 			console.log(type, ...args)
 
@@ -67,13 +70,14 @@ if (Meteor.isServer) {
 				const stringifiedArgs: string[] = args.map((arg) => {
 					return stringifyError(arg)
 				})
-				Meteor.call(LOGGER_METHOD_NAME, type, `Client ${type}`, ...stringifiedArgs)
+				MeteorApply(LOGGER_METHOD_NAME, [type, `Client ${type}`, ...stringifiedArgs]).catch(console.error)
+				return logger
 			}
 			return logger
 		}
 	}
 
-	const noop = (_type) => {
+	const noop = (_type: string) => {
 		// do nothing
 		return logger
 	}

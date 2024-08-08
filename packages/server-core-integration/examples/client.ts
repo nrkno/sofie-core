@@ -4,7 +4,7 @@ import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
-import { CoreConnection } from '../src/index'
+import { CoreConnection, PeripheralDevicePubSub, PeripheralDevicePubSubCollectionsNames } from '../src/index'
 
 const core = new CoreConnection({
 	deviceId: protectString('ExampleDevice'),
@@ -39,13 +39,13 @@ core.onFailed((err) => {
 
 const setupSubscription = async () => {
 	console.log('Setup subscription')
-	return core.subscribe('peripheralDeviceForDevice', core.deviceId).then(() => {
+	return core.autoSubscribe(PeripheralDevicePubSub.peripheralDeviceForDevice, core.deviceId).then(() => {
 		console.log('sub OK!')
 	})
 }
 const setupObserver = () => {
 	console.log('Setup observer')
-	const observer = core.observe('peripheralDeviceForDevice')
+	const observer = core.observe(PeripheralDevicePubSubCollectionsNames.peripheralDeviceForDevice)
 	observer.added = (id) => {
 		console.log('added', id)
 	}

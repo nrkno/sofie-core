@@ -7,11 +7,14 @@ import { PackageManagerPlayoutContext } from '@sofie-automation/shared-lib/dist/
 import { check } from 'meteor/check'
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
-import { PubSub, CustomCollectionName } from '../../../lib/api/pubsub'
 import { PeripheralDevices, RundownPlaylists, Rundowns } from '../../collections'
 import { meteorCustomPublish, setUpOptimizedObserverArray, TriggerUpdate } from '../../lib/customPublication'
 import { logger } from '../../logging'
 import { PeripheralDeviceReadAccess } from '../../security/peripheralDevice'
+import {
+	PeripheralDevicePubSub,
+	PeripheralDevicePubSubCollectionsNames,
+} from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 
 export type RundownPlaylistCompact = Pick<DBRundownPlaylist, '_id' | 'activationId' | 'rehearsal' | 'rundownIdsInOrder'>
 const rundownPlaylistFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<RundownPlaylistCompact>>({
@@ -101,8 +104,8 @@ async function manipulateExpectedPackagesPublicationData(
 }
 
 meteorCustomPublish(
-	PubSub.packageManagerPlayoutContext,
-	CustomCollectionName.PackageManagerPlayoutContext,
+	PeripheralDevicePubSub.packageManagerPlayoutContext,
+	PeripheralDevicePubSubCollectionsNames.packageManagerPlayoutContext,
 	async function (pub, deviceId: PeripheralDeviceId, token: string | undefined) {
 		check(deviceId, String)
 
@@ -123,7 +126,7 @@ meteorCustomPublish(
 				PackageManagerPlayoutContextState,
 				PackageManagerPlayoutContextUpdateProps
 			>(
-				`${PubSub.packageManagerPlayoutContext}_${studioId}_${deviceId}`,
+				`${PeripheralDevicePubSub.packageManagerPlayoutContext}_${studioId}_${deviceId}`,
 				{ studioId, deviceId },
 				setupExpectedPackagesPublicationObservers,
 				manipulateExpectedPackagesPublicationData,

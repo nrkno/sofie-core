@@ -1,10 +1,10 @@
 import { Meteor, Subscription } from 'meteor/meteor'
-import { PubSubTypes } from '../../lib/api/pubsub'
+import { AllPubSubCollections, AllPubSubTypes } from '../../lib/api/pubsub'
 import { extractFunctionSignature } from '../lib'
-import { MongoQuery } from '../../lib/typings/meteor'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { ResolvedCredentials, resolveCredentials } from '../security/lib/credentials'
 import { Settings } from '../../lib/Settings'
-import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { MongoCursor } from '../../lib/collections/lib'
 import {
 	OrganizationId,
@@ -59,17 +59,23 @@ export function meteorPublishUnsafe(
 	})
 }
 
+export type PublishDocType<K extends keyof AllPubSubTypes> = ReturnType<
+	AllPubSubTypes[K]
+> extends keyof AllPubSubCollections
+	? AllPubSubCollections[ReturnType<AllPubSubTypes[K]>]
+	: never
+
 /**
  * Wrapper around Meteor.publish with stricter typings
  * @param name
  * @param callback
  */
-export function meteorPublish<K extends keyof PubSubTypes>(
+export function meteorPublish<K extends keyof AllPubSubTypes>(
 	name: K,
 	callback: (
 		this: SubscriptionContext,
-		...args: Parameters<PubSubTypes[K]>
-	) => Promise<MongoCursor<ReturnType<PubSubTypes[K]>> | null>
+		...args: Parameters<AllPubSubTypes[K]>
+	) => Promise<MongoCursor<PublishDocType<K>> | null>
 ): void {
 	meteorPublishUnsafe(name, callback)
 }

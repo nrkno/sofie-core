@@ -1,6 +1,6 @@
 import { ScriptContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import React, { useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { PieceExtended } from '../../../../lib/Rundown'
+import { PieceExtended } from '../../../lib/RundownResolver'
 import { IFloatingInspectorPosition } from '../../FloatingInspectors/IFloatingInspectorPosition'
 import { MicFloatingInspector } from '../../FloatingInspectors/MicFloatingInspector'
 

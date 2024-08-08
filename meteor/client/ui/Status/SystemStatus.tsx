@@ -1,10 +1,10 @@
 import * as React from 'react'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { Translated, useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import {
 	PeripheralDevice,
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
-} from '../../../lib/collections/PeripheralDevices'
+} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import * as reacti18next from 'react-i18next'
 import * as i18next from 'i18next'
 import Moment from 'react-moment'
@@ -15,11 +15,9 @@ import { faTrash, faEye } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
 import { doModalDialog } from '../../lib/ModalDialog'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { callPeripheralDeviceAction, PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { NotificationCenter, NoticeLevel, Notification } from '../../../lib/notifications/notifications'
 import { getAllowConfigure, getAllowDeveloper, getAllowStudio, getHelpMode } from '../../lib/localStorage'
-import { PubSub } from '../../../lib/api/pubsub'
 import ClassNames from 'classnames'
 import { StatusCode, TSR } from '@sofie-automation/blueprints-integration'
 import { ICoreSystem } from '../../../lib/collections/CoreSystem'
@@ -40,6 +38,8 @@ import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { ClientAPI } from '../../../lib/api/client'
 import { catchError } from '../../lib/lib'
 import { logger } from '../../../lib/logging'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 interface IDeviceItemProps {
 	parentDevice: PeripheralDevice | null
@@ -517,13 +517,18 @@ interface DeviceInHierarchy {
 	children: Array<DeviceInHierarchy>
 }
 
-export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISystemStatusTrackedProps>(() => {
-	return {
-		coreSystem: CoreSystem.findOne(),
-		devices: PeripheralDevices.find({}, { sort: { lastConnected: -1 } }).fetch(),
-	}
-})(
-	class SystemStatus extends MeteorReactComponent<
+export default function SystemStatus(props: Readonly<ISystemStatusProps>): JSX.Element {
+	// Subscribe to data:
+	useSubscription(CorelibPubSub.peripheralDevices, null)
+
+	const coreSystem = useTracker(() => CoreSystem.findOne(), [])
+	const devices = useTracker(() => PeripheralDevices.find({}, { sort: { lastConnected: -1 } }).fetch(), [], [])
+
+	return <SystemStatusContent {...props} coreSystem={coreSystem} devices={devices} />
+}
+
+const SystemStatusContent = reacti18next.withTranslation()(
+	class SystemStatusContent extends React.Component<
 		Translated<ISystemStatusProps & ISystemStatusTrackedProps>,
 		ISystemStatusState
 	> {
@@ -531,7 +536,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 		private refreshDebugStatesInterval: NodeJS.Timer | undefined = undefined
 		private destroyed = false
 
-		constructor(props) {
+		constructor(props: Translated<ISystemStatusProps & ISystemStatusTrackedProps>) {
 			super(props)
 
 			this.state = {
@@ -544,9 +549,6 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 			this.refreshSystemStatus()
 			this.refreshInterval = setInterval(this.refreshSystemStatus, 5000)
 			this.refreshDebugStatesInterval = setInterval(this.refreshDebugStates, 1000)
-
-			// Subscribe to data:
-			this.subscribe(PubSub.peripheralDevices, {})
 		}
 
 		componentWillUnmount(): void {
@@ -583,7 +585,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 
 		refreshDebugStates = () => {
 			for (const device of this.props.devices) {
-				if (device.type === PeripheralDeviceType.PLAYOUT && device.settings && device.settings['debugState']) {
+				if (device.type === PeripheralDeviceType.PLAYOUT && device.settings && (device.settings as any)['debugState']) {
 					MeteorCall.systemStatus
 						.getDebugStates(device._id)
 						.then((res) => {
@@ -595,14 +597,14 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 								deviceDebugState: states,
 							})
 						})
-						.catch((err) => console.log(`Error fetching device states: ${err}`))
+						.catch((err) => console.log(`Error fetching device states: ${stringifyError(err)}`))
 				}
 			}
 		}
 
 		renderPeripheralDevices() {
 			const devices: Array<DeviceInHierarchy> = []
-			const refs = {}
+			const refs: Record<string, DeviceInHierarchy | undefined> = {}
 			const devicesToAdd: Record<string, DeviceInHierarchy> = {}
 			// First, add all as references:
 			_.each(this.props.devices, (device) => {
@@ -616,7 +618,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 			// Then, map and add devices:
 			_.each(devicesToAdd, (d: DeviceInHierarchy) => {
 				if (d.device.parentDeviceId) {
-					const parent: DeviceInHierarchy = refs[unprotectString(d.device.parentDeviceId)]
+					const parent = refs[unprotectString(d.device.parentDeviceId)]
 					if (parent) {
 						parent.children.push(d)
 					} else {

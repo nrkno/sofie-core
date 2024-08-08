@@ -15,6 +15,7 @@ export interface CreateTriggeredActionsContent {
 	name?: ITranslatableMessage | string
 	triggers?: Record<string, DBBlueprintTrigger>
 	actions?: Record<string, SomeAction>
+	styleClassNames?: string
 }
 
 export enum TriggeredActionsAPIMethods {

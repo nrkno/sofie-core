@@ -3,12 +3,12 @@ import { ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/d
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { logger } from '../logging'
 import { createShowStyleCompound } from '../showStyles'
-import _ = require('underscore')
 import { StudioUserContext } from '../blueprints/context'
 import { ProcessedShowStyleBase, ProcessedShowStyleVariant, JobContext, ProcessedShowStyleCompound } from '../jobs'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { ReadonlyDeep } from 'type-fest'
 import { convertShowStyleBaseToBlueprints, convertShowStyleVariantToBlueprints } from '../blueprints/context/lib'
+import { RundownSource, RundownSourceTesting } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 
 export interface SelectedShowStyleVariant {
 	variant: ReadonlyDeep<ProcessedShowStyleVariant>
@@ -26,16 +26,57 @@ export interface SelectedShowStyleVariant {
 export async function selectShowStyleVariant(
 	context: JobContext,
 	blueprintContext: StudioUserContext,
-	ingestRundown: ExtendedIngestRundown
+	ingestRundown: ExtendedIngestRundown,
+	rundownSource: RundownSource
 ): Promise<SelectedShowStyleVariant | null> {
-	const studio = blueprintContext.studio
+	const studio = context.studio
 	if (!studio.supportedShowStyleBase.length) {
 		logger.debug(`Studio "${studio._id}" does not have any supportedShowStyleBase`)
 		return null
 	}
 
+	if (rundownSource.type === 'testing') {
+		return selectShowStyleVariantFromRundownSource(context, rundownSource)
+	}
+
+	return selectShowStyleVariantWithBlueprints(context, blueprintContext, ingestRundown)
+}
+
+async function selectShowStyleVariantFromRundownSource(
+	context: JobContext,
+	rundownSource: RundownSourceTesting
+): Promise<SelectedShowStyleVariant | null> {
+	const showStyleVariant = await context.getShowStyleVariant(rundownSource.showStyleVariantId).catch(() => null)
+	if (!showStyleVariant) {
+		logger.debug(`ShowStyleVariant "${rundownSource.showStyleVariantId}" not found`)
+		return null
+	}
+
+	const showStyleBase = await context.getShowStyleBase(showStyleVariant.showStyleBaseId).catch(() => null)
+	if (!showStyleBase) {
+		logger.debug(`ShowStyleBase "${showStyleVariant.showStyleBaseId}" not found`)
+		return null
+	}
+
+	const compound = createShowStyleCompound(showStyleBase, showStyleVariant)
+	if (!compound) throw new Error(`no showStyleCompound for "${showStyleVariant._id}"`)
+
+	return {
+		variant: showStyleVariant,
+		base: showStyleBase,
+		compound,
+	}
+}
+
+async function selectShowStyleVariantWithBlueprints(
+	context: JobContext,
+	blueprintContext: StudioUserContext,
+	ingestRundown: ExtendedIngestRundown
+): Promise<SelectedShowStyleVariant | null> {
+	const studio = context.studio
+
 	const showStyleBases = await context.getShowStyleBases()
-	let showStyleBase = _.first(showStyleBases)
+	let showStyleBase: ReadonlyDeep<ProcessedShowStyleBase> | undefined = showStyleBases[0]
 	if (!showStyleBase) {
 		logger.debug(
 			`No showStyleBases matching with supportedShowStyleBase [${studio.supportedShowStyleBase}] from studio "${studio._id}"`
@@ -64,7 +105,7 @@ export async function selectShowStyleVariant(
 		logger.debug(`StudioBlueprint for studio "${studio._id}" returned showStyleId = null`)
 		return null
 	}
-	showStyleBase = _.find(showStyleBases, (s) => s._id === showStyleId)
+	showStyleBase = showStyleBases.find((s) => s._id === showStyleId)
 	if (!showStyleBase) {
 		logger.debug(
 			`No ShowStyleBase found matching showStyleId "${showStyleId}", from studio "${studio._id}" blueprint`
@@ -96,8 +137,13 @@ export async function selectShowStyleVariant(
 		logger.debug(`StudioBlueprint for studio "${studio._id}" returned variantId = null in .getShowStyleVariantId`)
 		return null
 	} else {
-		const showStyleVariant = _.find(showStyleVariants, (s) => s._id === variantId)
-		if (!showStyleVariant) throw new Error(`Blueprint returned variantId "${variantId}", which was not found!`)
+		const showStyleVariant = showStyleVariants.find((s) => s._id === variantId)
+		if (!showStyleVariant) {
+			logger.debug(
+				`No ShowStyleVariant found matching showStyleId "${variantId}", from studio "${studio._id}" blueprint`
+			)
+			return null
+		}
 
 		const compound = createShowStyleCompound(showStyleBase, showStyleVariant)
 		if (!compound) throw new Error(`no showStyleCompound for "${showStyleVariant._id}"`)

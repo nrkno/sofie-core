@@ -1,16 +1,16 @@
 import * as React from 'react'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import Moment from 'react-moment'
 import { TimingDataResolution, TimingTickResolution, withTiming, WithTiming } from './RundownTiming/withTiming'
 import { RundownUtils } from '../../lib/rundown'
 import { withTranslation } from 'react-i18next'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 
 interface IProps {
 	rundown: Pick<Rundown, '_id' | 'name' | 'timing'>
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 }
 
 const QUATER_DAY = 6 * 60 * 60 * 1000

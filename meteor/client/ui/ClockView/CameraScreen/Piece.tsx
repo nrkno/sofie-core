@@ -2,7 +2,7 @@ import React, { useContext, useMemo } from 'react'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import classNames from 'classnames'
 import { CanvasSizeContext } from '.'
-import { PieceExtended } from '../../../../lib/Rundown'
+import { PieceExtended } from '../../../lib/RundownResolver'
 import { PieceElement } from '../../SegmentContainer/PieceElement'
 import { getSplitItems } from '../../SegmentContainer/getSplitItems'
 

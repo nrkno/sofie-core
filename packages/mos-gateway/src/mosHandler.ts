@@ -27,7 +27,7 @@ import {
 import * as Winston from 'winston'
 import { CoreHandler } from './coreHandler'
 import { CoreMosDeviceHandler } from './CoreMosDeviceHandler'
-import { Observer } from '@sofie-automation/server-core-integration'
+import { Observer, PeripheralDevicePubSubCollectionsNames } from '@sofie-automation/server-core-integration'
 import {
 	DEFAULT_MOS_TIMEOUT_TIME,
 	DEFAULT_MOS_HEARTBEAT_INTERVAL,
@@ -60,7 +60,7 @@ export class MosHandler {
 	private _disposed = false
 	private _settings?: MosGatewayConfig
 	private _coreHandler: CoreHandler | undefined
-	private _observers: Array<Observer> = []
+	private _observers: Array<Observer<any>> = []
 	private _triggerupdateDevicesTimeout: any = null
 	private mosTypes: MosTypes
 
@@ -138,7 +138,9 @@ export class MosHandler {
 			throw Error('_coreHandler.core is undefined!')
 		}
 
-		const deviceObserver = this._coreHandler.core.observe('peripheralDeviceForDevice')
+		const deviceObserver = this._coreHandler.core.observe(
+			PeripheralDevicePubSubCollectionsNames.peripheralDeviceForDevice
+		)
 		deviceObserver.added = () => {
 			this._deviceOptionsChanged()
 		}
@@ -396,8 +398,9 @@ export class MosHandler {
 			throw Error('_coreHandler.core is undefined')
 		}
 
-		const peripheralDevices =
-			this._coreHandler.core.getCollection<PeripheralDeviceForDevice>('peripheralDeviceForDevice')
+		const peripheralDevices = this._coreHandler.core.getCollection(
+			PeripheralDevicePubSubCollectionsNames.peripheralDeviceForDevice
+		)
 		return peripheralDevices.findOne(this._coreHandler.core.deviceId)
 	}
 	private async _updateDevices(): Promise<void> {

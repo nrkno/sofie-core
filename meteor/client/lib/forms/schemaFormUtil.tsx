@@ -1,7 +1,8 @@
+import React from 'react'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../../ui/i18n'
 import { JSONSchema, TypeName } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
-import { SchemaFormUIField } from '@sofie-automation/blueprints-integration'
+import { getSchemaUIField, SchemaFormUIField } from '@sofie-automation/blueprints-integration'
 import { joinObjectPathFragments } from '@sofie-automation/corelib/dist/lib'
 
 export interface SchemaFormSofieEnumDefinition {
@@ -38,7 +39,7 @@ export function translateStringIfHasNamespaces(str: string, translationNamespace
 export interface SchemaSummaryField {
 	attr: string
 	name: string
-	transform?: (val: any) => string
+	transform?: (val: any) => string | JSX.Element
 }
 
 export function getSchemaSummaryFieldsForObject(
@@ -63,7 +64,7 @@ export function getSchemaSummaryFields(schema: JSONSchema, prefix?: string): Sch
 		case TypeName.Object:
 			return getSchemaSummaryFieldsForObject(schema.properties || {})
 		default: {
-			const summaryTitle: string = schema[SchemaFormUIField.SummaryTitle]
+			const summaryTitle: string = getSchemaUIField(schema, SchemaFormUIField.SummaryTitle)
 			if (summaryTitle && prefix) {
 				let transform: SchemaSummaryField['transform']
 
@@ -72,9 +73,9 @@ export function getSchemaSummaryFields(schema: JSONSchema, prefix?: string): Sch
 					schema.type === 'array' && (schema.items?.type === 'string' || schema.items?.type === 'integer')
 						? schema.items
 						: schema
-				if (schemaForEnum.enum && schemaForEnum[SchemaFormUIField.TsEnumNames]) {
+				if (schemaForEnum.enum && getSchemaUIField(schemaForEnum, SchemaFormUIField.TsEnumNames)) {
 					// For enum items, we should display the pretty name
-					const tsEnumNames = (schemaForEnum[SchemaFormUIField.TsEnumNames] || []) as string[]
+					const tsEnumNames = (getSchemaUIField(schemaForEnum, SchemaFormUIField.TsEnumNames) || []) as string[]
 					const valueToNameMap = new Map<string | number, string>()
 
 					schemaForEnum.enum.forEach((value: any, i: number) => {
@@ -88,13 +89,24 @@ export function getSchemaSummaryFields(schema: JSONSchema, prefix?: string): Sch
 							return valueToNameMap.get(val) ?? val
 						}
 					}
-				} else if (schema.type === 'integer' && schema[SchemaFormUIField.ZeroBased]) {
+				} else if (schema.type === 'integer' && getSchemaUIField(schema, SchemaFormUIField.ZeroBased)) {
 					// Int fields can be zero indexed
 					transform = (val) => {
 						if (!isNaN(val)) {
 							return `${Number(val) + 1}`
 						} else {
 							return val
+						}
+					}
+				} else if (
+					schema.type === 'string' &&
+					getSchemaUIField(schema, SchemaFormUIField.DisplayType) === 'base64-image'
+				) {
+					transform = (val) => {
+						if (val && val.startsWith('data:image/')) {
+							return <img className="table-image-preview" src={val} />
+						} else {
+							return '-'
 						}
 					}
 				}

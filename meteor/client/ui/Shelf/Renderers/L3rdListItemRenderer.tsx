@@ -9,7 +9,7 @@ import { getElementWidth } from '../../../utils/dimensions'
 import { StyledTimecode } from '../../../lib/StyledTimecode'
 import { assertNever, protectString } from '../../../../lib/lib'
 import { L3rdFloatingInspector } from '../../FloatingInspectors/L3rdFloatingInspector'
-import { PieceInstancePiece } from '../../../../lib/collections/PieceInstances'
+import { PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { AdLibPieceUi } from '../../../lib/shelf'
 import { ActionAdLibHotkeyPreview } from '../../../lib/triggers/ActionAdLibHotkeyPreview'
 
@@ -29,25 +29,25 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 	if (noraContent) {
 		switch (props.adLibListItem.lifespan) {
 			case PieceLifespan.WithinPart:
-				sourceDuration = t('Until next take') as string
+				sourceDuration = t('Until next take')
 				if (itemAsPieceUi.expectedDuration) {
 					sourceDuration = itemAsPieceUi.expectedDuration!
 				}
 				break
 			case PieceLifespan.OutOnSegmentChange:
-				sourceDuration = t('Until next segment') as string
+				sourceDuration = t('Until next segment')
 				break
 			case PieceLifespan.OutOnSegmentEnd:
-				sourceDuration = t('Until end of segment') as string
+				sourceDuration = t('Until end of segment')
 				break
 			case PieceLifespan.OutOnRundownChange:
-				sourceDuration = t('Until next rundown') as string
+				sourceDuration = t('Until next rundown')
 				break
 			case PieceLifespan.OutOnRundownEnd:
-				sourceDuration = t('Until end of rundown') as string
+				sourceDuration = t('Until end of rundown')
 				break
 			case PieceLifespan.OutOnShowStyleEnd:
-				sourceDuration = t('Until end of showstyle') as string
+				sourceDuration = t('Until end of showstyle')
 				break
 			default:
 				assertNever(props.adLibListItem.lifespan)

@@ -11,23 +11,23 @@ import BlueprintSettings from './Settings/BlueprintSettings'
 import SystemManagement from './Settings/SystemManagement'
 
 import { MigrationView } from './Settings/Migration'
-import { PubSub } from '../../lib/api/pubsub'
 import { getUser } from '../../lib/collections/Users'
 import { Settings as MeteorSettings } from '../../lib/Settings'
 import { SettingsMenu } from './Settings/SettingsMenu'
 import { getAllowConfigure } from '../lib/localStorage'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 export function Settings(): JSX.Element | null {
 	const user = useTracker(() => getUser(), [], null)
 
 	const history = useHistory()
 
-	useSubscription(PubSub.peripheralDevices, {})
-	useSubscription(PubSub.studios, {})
-	useSubscription(PubSub.showStyleBases, {})
-	useSubscription(PubSub.showStyleVariants, {})
-	useSubscription(PubSub.blueprints, {})
+	useSubscription(CorelibPubSub.peripheralDevices, null)
+	useSubscription(CorelibPubSub.studios, null)
+	useSubscription(CorelibPubSub.showStyleBases, null)
+	useSubscription(CorelibPubSub.showStyleVariants, null, null)
+	useSubscription(CorelibPubSub.blueprints, null)
 
 	useEffect(() => {
 		if (MeteorSettings.enableUserAccounts && user) {

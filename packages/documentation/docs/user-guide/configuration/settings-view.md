@@ -149,6 +149,8 @@ To edit a given trigger, click on the trigger pill on the left of the Trigger-Ac
 
 Device Triggers are valid in the scope of a Studio and will be evaluated on the currently active Rundown in a given Studio. To use Device Triggers, you need to have at least a single [Input Gateway](../installation/installing-input-gateway) attached to a Studio and a Device configured in the Input Gateway. Once that's done, when selecting a **Device** trigger type in the pop-up, you can invoke triggers on your Input Device and you will see a preview of the input events shown at the bottom of the pop-up. You can select which of these events should be the trigger by clicking on one of the previews. Note, that some devices differentiate between _Up_ and _Down_ triggers, while others don't. Some may also have other activites that can be done _to_ a trigger. What they are and how they are identified is device-specific and is best discovered through interaction with the device.
 
+If you would like to set up combination Triggers, using Device Triggers on an Input Device that does not support them natively, you may want to look into [Shift Registers](#shift-registers)
+
 #### Actions
 
 The actions are built using a base *action* (such as *Activate a Rundown* or *AdLib*) and a set of *filters*, limiting the scope of the *action*. Optionally, some of these *actions* can take additional *parameters*. These filters can operate on various types of objects, depending on the action in question. All actions currently require that the chain of filters starts with scoping out the Rundown the action is supposed to affect. Currently, there is only one type of Rundown-level filter supported: "The Rundown currently in view".
@@ -162,6 +164,12 @@ If the action provides a preview of the triggered items and there is an availabl
 ![A preview of the action, as scoped by the filters](/img/docs/main/features/action_triggers_4.png)
 
 Clicking on the action and filter pills allows you to edit the action parameters and filter parameters. *Limit* limits the amount of objects to only the first *N* objects matched - this can significantly improve performance on large data sets. *Pick* and *Pick last* filters end the chain of the filters by selecting a single item from the filtered set of objects (the *N-th* object from the beginning or the end, respectively). *Pick* implicitly contains a *Limit* for the performance improvement. This is not true for *Pick last*, though.
+
+##### Shift Registers
+
+Shift Register modification actions are a special type of an Action, that modifies an internal state memory of the [Input Gateway](../installation/installing-input-gateway.md) and allows combination triggers, pagination, etc. on devices that don't natively support them or combining multiple devices into a single Control Surface. Refer to _Input Gateway_ documentation for more information on Shift Registers.
+
+Shift Register actions have no effect in the browser, triggered from a _Hotkey_.
 
 ## Migrations
 

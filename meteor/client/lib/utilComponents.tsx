@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
+// @ts-expect-error No types available
 import * as VelocityReact from 'velocity-react'
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types

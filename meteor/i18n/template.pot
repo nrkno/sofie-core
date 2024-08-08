@@ -2113,9 +2113,6 @@ msgstr ""
 msgid "Is hidden"
 msgstr ""
 
-msgid "Display on Presenter's Screen"
-msgstr ""
-
 msgid "Display in a column in List View"
 msgstr ""
 

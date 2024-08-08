@@ -1,5 +1,5 @@
 import { ControllerAbstract, LONGPRESS_TIME } from './lib'
-import { PrompterViewInner, PrompterConfigMode } from '../PrompterView'
+import { PrompterViewContent, PrompterConfigMode } from '../PrompterView'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../../lib/notifications/notifications'
 
 const LOCALSTORAGE_MODE = 'prompter-controller-mouseish'
@@ -25,7 +25,7 @@ export class MouseIshController extends ControllerAbstract {
 
 	private _mouseKeyDown: { [button: string]: number } = {}
 
-	private _prompterView: PrompterViewInner
+	private _prompterView: PrompterViewContent
 
 	/** scroll speed, in pixels per frame */
 	private _scrollSpeedTarget = 4
@@ -44,7 +44,7 @@ export class MouseIshController extends ControllerAbstract {
 	private _nextPausePosition: number | null = null
 	private _lastWheelTime = 0
 
-	constructor(view: PrompterViewInner) {
+	constructor(view: PrompterViewContent) {
 		super()
 
 		this._prompterView = view

@@ -73,6 +73,10 @@ This will provide a dropdown of all source-layers in the show-style.
 
 Setting `ui:sofie-enum:filter` to an array of numbers will filter the dropdown by the specified SourceLayerType.
 
+### `ui:import-export`
+
+Valid only for tables, this allows for importing and exporting the contents of the table.
+
 ## Supported types
 
 Any JSON Schema property or type is allowed, but will be ignored if it is not supported.

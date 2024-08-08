@@ -28,7 +28,7 @@ To be able to facilitate various workflows and to Here's a short explanation abo
 - The **Organization** \(only available if user accounts are enabled\) defines things that are common for an organization. An organization consists of: **Users, Studios** and **ShowStyles**.
 - The **Studio** contains things that are related to the "hardware" or "rig". Technically, a Studio is defined as an entity that can have one \(or none\) rundown active at any given time. In most cases, this will be a representation of your gallery, with cameras, video playback and graphics systems, external inputs, sound mixers, lighting controls and so on. A single System can easily control multiple Studios.
 - The **Show Style** contains settings for the "show", for example if there's a "Morning Show" and an "Afternoon Show" - produced in the same gallery - they might be two different Show Styles \(played in the same Studio\). Most importantly, the Show Style decides the "look and feel" of the Show towards the producer/director, dictating how data ingested from the NRCS will be interpreted and how the user will interact with the system during playback (see: [Show Style](../configuration/settings-view#show-style) in Settings).
-  * A **Show Style Variant** is a set of Show Style _Blueprint_ configuration values, that allows to use the same interaction model across multiple Shows with potentially different assets, changing the outward look of the Show: for example news programs with different hosts produced from the same Studio, but with different light setups, backscreen and overlay graphics.
+  - A **Show Style Variant** is a set of Show Style _Blueprint_ configuration values, that allows to use the same interaction model across multiple Shows with potentially different assets, changing the outward look of the Show: for example news programs with different hosts produced from the same Studio, but with different light setups, backscreen and overlay graphics.
 
 ![Sofie Architecture Venn Diagram](/img/docs/main/features/sofie-venn-diagram.png)
 
@@ -88,9 +88,9 @@ An AdLib isn't added to the Part in the GUI until it starts playing, instead you
 
 A Bucket is a container for AdLib Pieces created by the producer/operator during production. They exist independently of the Rundowns and associated content created by ingesting data from the NRCS. Users can freely create, modify and remove Buckets.
 
-The primary use-case of these elements is for breaking news formats where quick turnaround video editing may require circumvention of the regular flow of show assets and programming via the NRCS. Currently, one way of creating AdLibs inside Buckets is using a MOS Plugin integration inside the Shelf, where MOS [ncsItem](https://mosprotocol.com/wp-content/MOS-Protocol-Documents/MOS-Protocol-2.8.4-Current.htm#ncsItem) elements can be dragged from the MOS Plugin onto a bucket and ingested.
+The primary use-case of these elements is for breaking-news formats where quick turnaround video editing may require circumvention of the regular flow of show assets and programming via the NRCS. Currently, one way of creating AdLibs inside Buckets is using a MOS Plugin integration inside the Shelf, where MOS [ncsItem](https://mosprotocol.com/wp-content/MOS-Protocol-Documents/MOSProtocolVersion40/index.html#calibre_link-72) elements can be dragged from the MOS Plugin onto a bucket and ingested.
 
-The ingest happens via the `getAdlibItem` method: [https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L215](https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L215)
+The ingest happens via the `getAdlibItem` method: [https://github.com/nrkno/sofie-core/blob/6c4edee7f352bb542c8a29317d59c0bf9ac340ba/packages/blueprints-integration/src/api/showStyle.ts#L122](https://github.com/nrkno/sofie-core/blob/6c4edee7f352bb542c8a29317d59c0bf9ac340ba/packages/blueprints-integration/src/api/showStyle.ts#L122)
 
 ## Views
 
@@ -127,7 +127,7 @@ Documentation on the interface to be exposed by the Blueprint:
 
 ## `PartInstances` and `PieceInstances`
 
-In order to be able to facilitate ingesting changes from the NRCS while continuing to provide a stable and predictable playback of the Rundowns, Sofie internally uses a concept of ["instantiation"](https://en.wikipedia.org/wiki/Instance_(computer_science)) of key Rundown elements. Before playback of a Part can begin, the Part and it's Pieces are copied into an Instance of a Part: a `PartInstance`. This protects the contents of the _Next_ and _On Air_ part, preventing accidental changes that could surprise the producer/director. This also makes it possible to inspect the "as played" state of the Rundown, independently of the "as planned" state ingested from the NRCS.
+In order to be able to facilitate ingesting changes from the NRCS while continuing to provide a stable and predictable playback of the Rundowns, Sofie internally uses a concept of ["instantiation"](<https://en.wikipedia.org/wiki/Instance_(computer_science)>) of key Rundown elements. Before playback of a Part can begin, the Part and it's Pieces are copied into an Instance of a Part: a `PartInstance`. This protects the contents of the _Next_ and _On Air_ part, preventing accidental changes that could surprise the producer/director. This also makes it possible to inspect the "as played" state of the Rundown, independently of the "as planned" state ingested from the NRCS.
 
 The blueprints can optionally allow some changes to the Parts and Pieces to be forwarded onto these `PartInstances`: [https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L190](https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L190)
 

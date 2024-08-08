@@ -6,11 +6,11 @@ import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../../lib/rundown'
 import { withTiming, WithTiming } from './withTiming'
 import ClassNames from 'classnames'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getPlaylistTimingDiff } from '../../../lib/rundownTiming'
 
 interface IEndTimingProps {
-	rundownPlaylist: RundownPlaylist
+	rundownPlaylist: DBRundownPlaylist
 	loop?: boolean
 	expectedStart?: number
 	expectedDuration?: number

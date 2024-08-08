@@ -19,7 +19,7 @@ export class PartEventContext extends RundownContext implements IPartEventContex
 		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		rundown: ReadonlyDeep<DBRundown>,
-		partInstance: DBPartInstance
+		partInstance: ReadonlyDeep<DBPartInstance>
 	) {
 		super(
 			{

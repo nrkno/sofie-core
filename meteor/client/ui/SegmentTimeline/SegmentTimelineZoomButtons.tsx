@@ -14,7 +14,7 @@ interface IProps {
 	onRecalculateMaxTimeScale: () => Promise<number>
 }
 
-export function SegmentTimelineZoomButtons(props: IProps): JSX.Element {
+export function SegmentTimelineZoomButtons(props: Readonly<IProps>): JSX.Element {
 	const { t } = useTranslation()
 	const zoomIn = (e: React.MouseEvent<HTMLElement>) => {
 		props.onZoomChange(props.timeScale * 2, e)
@@ -44,14 +44,14 @@ export function SegmentTimelineZoomButtons(props: IProps): JSX.Element {
 	}
 
 	const zoomNormalize = (e: React.MouseEvent<HTMLElement>) => {
-		props.onShowEntireSegment && props.onShowEntireSegment(e)
+		props.onShowEntireSegment?.(e)
 		if (!props.isLiveSegment && props.scrollLeft > 0) {
 			props.onScroll(0, e)
 		}
 	}
 
 	return (
-		<div className="segment-timeline__timeline-zoom-buttons">
+		<div className="segment-timeline__timeline-zoom-buttons" role="group">
 			<button
 				className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--out"
 				onClick={zoomOut}

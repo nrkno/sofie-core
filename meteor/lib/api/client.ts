@@ -7,7 +7,13 @@ import { TSR } from '@sofie-automation/blueprints-integration'
 
 export interface NewClientAPI {
 	clientErrorReport(timestamp: Time, errorString: string, location: string): Promise<void>
-	clientLogNotification(timestamp: Time, from: string, severity: NoticeLevel, message: string, source?: any)
+	clientLogNotification(
+		timestamp: Time,
+		from: string,
+		severity: NoticeLevel,
+		message: string,
+		source?: any
+	): Promise<void>
 	callPeripheralDeviceFunction(
 		context: string,
 		deviceId: PeripheralDeviceId,
@@ -57,7 +63,7 @@ export namespace ClientAPI {
 		/** On success, return success code (by default, use 200) */
 		success: number
 		/** Optionally, provide method result */
-		result?: Result
+		result: Result
 	}
 	export function responseSuccess<Result>(result: Result, code?: number): ClientResponseSuccess<Result> {
 		if (isClientResponseSuccess(result)) result = result.result

@@ -1,20 +1,21 @@
 import { EvsContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
-import React, { useMemo, useState, useRef } from 'react'
-import { PieceExtended } from '../../../../lib/Rundown'
+import React, { useMemo, useRef, useState } from 'react'
+import { PieceExtended } from '../../../lib/RundownResolver'
 // TODO: Move to a shared lib file
-import { getSplitItems } from '../../SegmentContainer/getSplitItems'
-import { withMediaObjectStatus } from '../../SegmentTimeline/withMediaObjectStatus'
-import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
-import { PieceElement } from '../../SegmentContainer/PieceElement'
+import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import classNames from 'classnames'
+import { UIStudio } from '../../../../lib/api/studios'
+import { getNoticeLevelForPieceStatus } from '../../../../lib/notifications/notifications'
+import { LoopingPieceIcon } from '../../../lib/ui/icons/looping'
+import { PieceStatusIcon } from '../../../lib/ui/PieceStatusIcon'
 import { getElementWidth } from '../../../utils/dimensions'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
+import { getSplitItems } from '../../SegmentContainer/getSplitItems'
+import { PieceElement } from '../../SegmentContainer/PieceElement'
+import { getPieceSteps, PieceMultistepChevron } from '../../SegmentContainer/PieceMultistepChevron'
+import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
+import { withMediaObjectStatus } from '../../SegmentTimeline/withMediaObjectStatus'
 import { PieceHoverInspector } from '../PieceHoverInspector'
-import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { getNoticeLevelForPieceStatus } from '../../../../lib/notifications/notifications'
-import { PieceStatusIcon } from '../../../lib/ui/PieceStatusIcon'
-import { UIStudio } from '../../../../lib/api/studios'
-import classNames from 'classnames'
-import { PieceMultistepChevron } from '../../SegmentContainer/PieceMultistepChevron'
 
 interface IProps {
 	partId: PartId
@@ -39,8 +40,9 @@ function getPieceDuration(
 		  Math.min(piece.renderedDuration ?? partDuration, partDuration)
 		: Math.max(
 				// renderedDuration can be null. If there is a sourceDuration, use that, if not, use timelineBase
-				piece.renderedDuration ?? (piece.instance.piece.content.sourceDuration ? 0 : timelineBase),
-				piece.instance.piece.content.sourceDuration ?? 0
+				piece.renderedDuration ??
+					(piece.instance.piece.content?.sourceDuration && !piece.instance.piece.content?.loop ? 0 : timelineBase),
+				piece.instance.piece.content?.sourceDuration ?? 0
 		  )
 }
 
@@ -161,10 +163,11 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 
 	const noticeLevel = getNoticeLevelForPieceStatus(piece.contentStatus?.status)
 
-	const multistepChevron = PieceMultistepChevron({
-		className: 'segment-opl__main-piece__label__step-chevron',
-		piece: piece,
-	})
+	const hasStepChevron = getPieceSteps(piece)
+
+	const multistepChevron = (
+		<PieceMultistepChevron className="segment-opl__main-piece__label__step-chevron" piece={piece} />
+	)
 
 	return (
 		<PieceElement
@@ -184,7 +187,7 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 			{anomalies}
 			<div
 				className={classNames('segment-opl__main-piece__label', {
-					mln: !!multistepChevron,
+					mln: hasStepChevron,
 				})}
 			>
 				{noticeLevel !== null && <PieceStatusIcon noticeLevel={noticeLevel} />}
@@ -193,6 +196,9 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 					<ColoredMark color={(piece.instance.piece.content as EvsContent).color} />
 				)}
 				{piece.instance.piece.name}
+				{piece.instance.piece.content?.loop && (
+					<LoopingPieceIcon className="segment-opl__main-piece__label-icon" playing={hover} />
+				)}
 			</div>
 			{studio && (
 				<PieceHoverInspector
@@ -209,7 +215,7 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 	)
 })
 
-function ColoredMark({ color }: { color: string | undefined }) {
+const ColoredMark = React.memo(function ColoredMark({ color }: { color: string | undefined }) {
 	if (!color) return null
 
 	return (
@@ -218,4 +224,4 @@ function ColoredMark({ color }: { color: string | undefined }) {
 			className="segment-opl__main-piece__label__colored-mark"
 		></span>
 	)
-}
+})

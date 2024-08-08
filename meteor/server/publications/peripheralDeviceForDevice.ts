@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
-import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
-import { PeripheralDevice, PeripheralDeviceCategory } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDeviceCategory } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevices, Studios } from '../collections'
 import { TriggerUpdate, meteorCustomPublish, setUpOptimizedObserverArray } from '../lib/customPublication'
@@ -10,9 +9,18 @@ import { ReadonlyDeep } from 'type-fest'
 import { ReactiveMongoObserverGroup } from './lib/observerGroup'
 import { Complete, assertNever, literal } from '@sofie-automation/corelib/dist/lib'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
-import { Studio, StudioIngestDevice, StudioInputDevice, StudioPlayoutDevice } from '../../lib/collections/Studios'
+import {
+	DBStudio,
+	StudioIngestDevice,
+	StudioInputDevice,
+	StudioPlayoutDevice,
+} from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { check } from 'meteor/check'
+import {
+	PeripheralDevicePubSub,
+	PeripheralDevicePubSubCollectionsNames,
+} from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 
 interface PeripheralDeviceForDeviceArgs {
 	readonly deviceId: PeripheralDeviceId
@@ -26,7 +34,7 @@ interface PeripheralDeviceForDeviceUpdateProps {
 }
 
 type StudioFields = '_id' | 'peripheralDeviceSettings'
-const studioFieldsSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<Studio, StudioFields>>>({
+const studioFieldsSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBStudio, StudioFields>>>({
 	_id: 1,
 	peripheralDeviceSettings: 1,
 })
@@ -44,7 +52,7 @@ const peripheralDeviceFieldsSpecifier = literal<
 
 export function convertPeripheralDeviceForGateway(
 	peripheralDevice: Pick<PeripheralDevice, PeripheralDeviceFields>,
-	studio: Pick<Studio, StudioFields> | undefined
+	studio: Pick<DBStudio, StudioFields> | undefined
 ): PeripheralDeviceForDevice {
 	const playoutDevices: PeripheralDeviceForDevice['playoutDevices'] = {}
 	const ingestDevices: PeripheralDeviceForDevice['ingestDevices'] = {}
@@ -182,16 +190,16 @@ async function manipulatePeripheralDevicePublicationData(
 	const studio =
 		peripheralDevice.studioId &&
 		((await Studios.findOneAsync(peripheralDevice.studioId, { projection: studioFieldsSpecifier })) as
-			| Pick<Studio, StudioFields>
+			| Pick<DBStudio, StudioFields>
 			| undefined)
 
 	return [convertPeripheralDeviceForGateway(peripheralDevice, studio)]
 }
 
 meteorCustomPublish(
-	PubSub.peripheralDeviceForDevice,
-	CustomCollectionName.PeripheralDeviceForDevice,
-	async function (pub, deviceId: PeripheralDeviceId, token) {
+	PeripheralDevicePubSub.peripheralDeviceForDevice,
+	PeripheralDevicePubSubCollectionsNames.peripheralDeviceForDevice,
+	async function (pub, deviceId: PeripheralDeviceId, token: string | undefined) {
 		check(deviceId, String)
 
 		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
@@ -208,7 +216,7 @@ meteorCustomPublish(
 				PeripheralDeviceForDeviceState,
 				PeripheralDeviceForDeviceUpdateProps
 			>(
-				`${CustomCollectionName.PeripheralDeviceForDevice}_${deviceId}`,
+				`${PeripheralDevicePubSubCollectionsNames.peripheralDeviceForDevice}_${deviceId}`,
 				{ deviceId },
 				setupPeripheralDevicePublicationObservers,
 				manipulatePeripheralDevicePublicationData,

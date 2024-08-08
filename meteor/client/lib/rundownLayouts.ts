@@ -1,24 +1,25 @@
 import { PartInstanceId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
-import { PieceInstance } from '../../lib/collections/PieceInstances'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { RequiresActiveLayers } from '../../lib/collections/RundownLayouts'
-import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getCurrentTime } from '../../lib/lib'
 import { invalidateAt } from './../../lib/invalidatingTime'
 import { memoizedIsolatedAutorun } from '../../lib/memoizedIsolatedAutorun'
 import { PartInstances, PieceInstances } from '../collections'
+import { ReadonlyDeep } from 'type-fest'
 
 /**
  * If the conditions of the filter are met, activePieceInstance will include the first piece instance found that matches the filter, otherwise it will be undefined.
  */
 export function getIsFilterActive(
-	playlist: RundownPlaylist,
+	playlist: DBRundownPlaylist,
 	showStyleBase: UIShowStyleBase,
 	panel: RequiresActiveLayers
-): { active: boolean; activePieceInstance: PieceInstance | undefined } {
+): { active: boolean; activePieceInstance: ReadonlyDeep<PieceInstance> | undefined } {
 	const unfinishedPieces = getUnfinishedPieceInstancesReactive(playlist, showStyleBase)
-	let activePieceInstance: PieceInstance | undefined
+	let activePieceInstance: ReadonlyDeep<PieceInstance> | undefined
 	const activeLayers = unfinishedPieces.map((p) => p.piece.sourceLayerId)
 	const containsEveryRequiredLayer = panel.requireAllAdditionalSourcelayers
 		? panel.additionalLayers?.length && panel.additionalLayers.every((s) => activeLayers.includes(s))
@@ -35,7 +36,7 @@ export function getIsFilterActive(
 	) {
 		activePieceInstance =
 			panel.requiredLayerIds && panel.requiredLayerIds.length
-				? unfinishedPieces.find((piece: PieceInstance) => {
+				? unfinishedPieces.find((piece: ReadonlyDeep<PieceInstance>) => {
 						return (
 							(panel.requiredLayerIds || []).indexOf(piece.piece.sourceLayerId) !== -1 &&
 							piece.partInstanceId === playlist.currentPartInfo?.partInstanceId
@@ -51,9 +52,9 @@ export function getIsFilterActive(
 }
 
 export function getUnfinishedPieceInstancesReactive(
-	playlist: RundownPlaylist,
+	playlist: DBRundownPlaylist,
 	showStyleBase: UIShowStyleBase
-): PieceInstance[] {
+): ReadonlyDeep<PieceInstance>[] {
 	if (playlist.activationId && playlist.currentPartInfo) {
 		return memoizedIsolatedAutorun(
 			(
@@ -62,7 +63,7 @@ export function getUnfinishedPieceInstancesReactive(
 				showStyleBase: UIShowStyleBase
 			) => {
 				const now = getCurrentTime()
-				let prospectivePieces: PieceInstance[] = []
+				let prospectivePieces: ReadonlyDeep<PieceInstance>[] = []
 
 				const partInstance = PartInstances.findOne(currentPartInstanceId)
 

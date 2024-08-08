@@ -10,7 +10,9 @@ import { EditAttribute } from '../../../../../../lib/EditAttribute'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleRight, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { AdLibActionEditor } from './actionEditors/AdLibActionEditor'
+import { DeviceActions } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
 import { catchError } from '../../../../../../lib/lib'
+import { preventOverflow } from '@popperjs/core'
 
 interface IProps {
 	action: SomeAction
@@ -41,6 +43,8 @@ function getArguments(t: TFunction, action: SomeAction): string[] {
 		case PlayoutActions.createSnapshotForDebug:
 			break
 		case PlayoutActions.deactivateRundownPlaylist:
+			break
+		case PlayoutActions.activateAdlibTestingMode:
 			break
 		case PlayoutActions.disableNextPiece:
 			if (action.undo) {
@@ -93,6 +97,9 @@ function getArguments(t: TFunction, action: SomeAction): string[] {
 		case ClientActions.miniShelfQueueAdLib:
 			result.push(t('Forward: {{forward}}', { forward: action.forward }))
 			break
+		case DeviceActions.modifyShiftRegister:
+			result.push(`${action.register ?? '?'}: ${action.operation ?? '?'}${action.value ?? '?'}`)
+			break
 		default:
 			assertNever(action)
 			return action
@@ -109,6 +116,8 @@ function hasArguments(action: SomeAction): boolean {
 		case PlayoutActions.createSnapshotForDebug:
 			return false
 		case PlayoutActions.deactivateRundownPlaylist:
+			return false
+		case PlayoutActions.activateAdlibTestingMode:
 			return false
 		case PlayoutActions.disableNextPiece:
 			return !!action.undo
@@ -134,6 +143,8 @@ function hasArguments(action: SomeAction): boolean {
 			return true
 		case ClientActions.miniShelfQueueAdLib:
 			return true
+		case DeviceActions.modifyShiftRegister:
+			return true
 		default:
 			assertNever(action)
 			return action
@@ -150,6 +161,8 @@ function actionToLabel(t: TFunction, action: SomeAction['action']): string {
 			return t('Store Snapshot')
 		case PlayoutActions.deactivateRundownPlaylist:
 			return t('Deactivate Rundown')
+		case PlayoutActions.activateAdlibTestingMode:
+			return t('Rehearsal Mode')
 		case PlayoutActions.disableNextPiece:
 			return t('Disable next Piece')
 		case PlayoutActions.hold:
@@ -174,6 +187,8 @@ function actionToLabel(t: TFunction, action: SomeAction['action']): string {
 			return t('Show entire On Air Segment')
 		case ClientActions.miniShelfQueueAdLib:
 			return t('Queue AdLib from Minishelf')
+		case DeviceActions.modifyShiftRegister:
+			return t('Modify Shift register')
 		default:
 			assertNever(action)
 			return action
@@ -181,7 +196,7 @@ function actionToLabel(t: TFunction, action: SomeAction['action']): string {
 }
 
 function getAvailableActions(t: TFunction): Record<string, string> {
-	const actionEnums = [PlayoutActions, ClientActions]
+	const actionEnums = [PlayoutActions, ClientActions, DeviceActions]
 
 	const result: Record<string, string> = {}
 
@@ -238,6 +253,8 @@ function getActionParametersEditor(
 		case PlayoutActions.createSnapshotForDebug:
 			return null
 		case PlayoutActions.deactivateRundownPlaylist:
+			return null
+		case PlayoutActions.activateAdlibTestingMode:
 			return null
 		case PlayoutActions.disableNextPiece:
 			return (
@@ -387,6 +404,85 @@ function getActionParametersEditor(
 					/>
 				</div>
 			)
+		case DeviceActions.modifyShiftRegister:
+			return (
+				<div className="mts">
+					<label className="block">{t('Register ID')}</label>
+					<EditAttribute
+						className="form-control input text-input input-m"
+						modifiedClassName="bghl"
+						type="int"
+						overrideDisplayValue={action.register}
+						updateFunction={(_e, newVal) => {
+							onChange({
+								...action,
+								register: Math.max(0, Number(newVal)),
+							})
+						}}
+					/>
+					<label className="block">{t('Operation')}</label>
+					<EditAttribute
+						className="form-control input text-input input-m"
+						modifiedClassName="bghl"
+						type="dropdown"
+						overrideDisplayValue={action.operation}
+						attribute={''}
+						options={{
+							[t('Set')]: '=',
+							[t('Add')]: '+',
+							[t('Subtract')]: '-',
+						}}
+						updateFunction={(_e, newVal) => {
+							onChange({
+								...action,
+								operation: newVal,
+							})
+						}}
+					/>
+					<label className="block">{t('Value')}</label>
+					<EditAttribute
+						className="form-control input text-input input-m"
+						modifiedClassName="bghl"
+						type="int"
+						overrideDisplayValue={action.value}
+						attribute={''}
+						updateFunction={(_e, newVal) => {
+							onChange({
+								...action,
+								value: newVal,
+							})
+						}}
+					/>
+					<label className="block">{t('Minimum register limit')}</label>
+					<EditAttribute
+						className="form-control input text-input input-m"
+						modifiedClassName="bghl"
+						type="int"
+						overrideDisplayValue={action.limitMin}
+						attribute={''}
+						updateFunction={(_e, newVal) => {
+							onChange({
+								...action,
+								limitMin: newVal,
+							})
+						}}
+					/>
+					<label className="block">{t('Maximum register limit')}</label>
+					<EditAttribute
+						className="form-control input text-input input-m"
+						modifiedClassName="bghl"
+						type="int"
+						overrideDisplayValue={action.limitMax}
+						attribute={''}
+						updateFunction={(_e, newVal) => {
+							onChange({
+								...action,
+								limitMax: newVal,
+							})
+						}}
+					/>
+				</div>
+			)
 		default:
 			assertNever(action)
 			return action
@@ -405,7 +501,9 @@ export const ActionSelector = function ActionSelector({
 	const [referenceElement, setReferenceElement] = useState<HTMLDivElement | null>(null)
 	const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null)
 	const { styles, attributes, update } = usePopper(referenceElement, popperElement, {
+		placement: 'bottom',
 		modifiers: [
+			preventOverflow,
 			{
 				name: 'offset',
 				options: {
@@ -463,7 +561,7 @@ export const ActionSelector = function ActionSelector({
 			</div>
 			{opened ? (
 				<div
-					className="expco expco-expanded expco-popper mod pas ptl expco-popper-rounded triggered-action-entry__action-editor"
+					className="expco expco-expanded expco-popper mod pas expco-popper-rounded triggered-action-entry__action-editor"
 					ref={setPopperElement}
 					style={styles.popper}
 					{...attributes.popper}

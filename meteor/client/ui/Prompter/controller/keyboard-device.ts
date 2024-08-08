@@ -1,5 +1,5 @@
 import { ControllerAbstract, LONGPRESS_TIME } from './lib'
-import { PrompterViewInner, PrompterConfigMode } from '../PrompterView'
+import { PrompterViewContent, PrompterConfigMode } from '../PrompterView'
 
 const LOCALSTORAGE_MODE = 'prompter-controller-arrowkeys'
 
@@ -15,7 +15,7 @@ export class KeyboardController extends ControllerAbstract {
 
 	private _keyDown: { [button: string]: number } = {}
 
-	private _prompterView: PrompterViewInner
+	private _prompterView: PrompterViewContent
 
 	/** Scroll speed, in pixels per frame */
 	private _maxSpeed = 100
@@ -29,7 +29,7 @@ export class KeyboardController extends ControllerAbstract {
 
 	private _updateSpeedHandle: number | null = null
 
-	constructor(view: PrompterViewInner) {
+	constructor(view: PrompterViewContent) {
 		super()
 
 		this._prompterView = view
@@ -132,13 +132,17 @@ export class KeyboardController extends ControllerAbstract {
 		// Nothing
 	}
 
-	private _getDistanceToStop(currentSpeed, stopAcceleration): number {
+	private _getDistanceToStop(currentSpeed: number, stopAcceleration: number): number {
 		if (!stopAcceleration) return 0
 		const timeToStop = currentSpeed / stopAcceleration // (not in seconds, but frames!)
 		if (!timeToStop) return 0
 		return (stopAcceleration * Math.pow(timeToStop, 2)) / 2 + currentSpeed * timeToStop
 	}
-	private _getAccelerationToStopInTime(currentSpeed, normalStopAcceleration, distanceLeft): number {
+	private _getAccelerationToStopInTime(
+		currentSpeed: number,
+		normalStopAcceleration: number,
+		distanceLeft: number
+	): number {
 		const timeToStop = currentSpeed / normalStopAcceleration // (not in seconds, but frames!)
 		if (!timeToStop) return 0
 		return (2 * (distanceLeft - currentSpeed * timeToStop)) / Math.pow(timeToStop, 2)

@@ -22,7 +22,6 @@ export async function setupRundownBase(
 	const sourceLayerIds = Object.keys(showStyle.sourceLayers)
 
 	const rundown: DBRundown = {
-		peripheralDeviceId: undefined,
 		organizationId: null,
 		studioId: context.studio._id,
 		showStyleBaseId: showStyle._id,
@@ -47,7 +46,10 @@ export async function setupRundownBase(
 			core: '',
 		},
 
-		externalNRCSName: 'mock',
+		source: {
+			type: 'http',
+			// nrcsName: 'mock',
+		},
 	}
 	await context.mockCollections.Rundowns.insertOne(rundown)
 

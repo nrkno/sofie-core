@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react'
 import Escape from './../../../lib/Escape'
-import { PieceExtended } from '../../../../lib/Rundown'
+import { PieceExtended } from '../../../lib/RundownResolver'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { usePopper } from 'react-popper'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'

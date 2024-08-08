@@ -9,7 +9,7 @@ export interface NewSnapshotAPI {
 		full?: boolean
 	): Promise<SnapshotId>
 	storeDebugSnapshot(hashedToken: string, studioId: StudioId, reason: string): Promise<SnapshotId>
-	restoreSnapshot(snapshotId: SnapshotId): Promise<void>
+	restoreSnapshot(snapshotId: SnapshotId, restoreDebugData: boolean): Promise<void>
 	removeSnapshot(snapshotId: SnapshotId): Promise<void>
 }
 

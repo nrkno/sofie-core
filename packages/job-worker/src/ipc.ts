@@ -1,3 +1,4 @@
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { interceptLogging, LogEntry, logger } from './logging'
 import { FastTrackTimelineFunc, JobSpec, JobWorkerBase } from './main'
 import { JobManager, JobStream } from './manager'
@@ -28,7 +29,7 @@ class IpcJobManager implements JobManager {
 			pop: async () => this.getNextJob(queueName),
 			interrupt: () => {
 				this.interruptJobStream(queueName).catch((e) =>
-					logger.error(`Failed to interupt job queue ${queueName}: ${e}`)
+					logger.error(`Failed to interupt job queue ${queueName}: ${stringifyError(e)}`)
 				)
 			},
 			close: async () => Promise.resolve(),

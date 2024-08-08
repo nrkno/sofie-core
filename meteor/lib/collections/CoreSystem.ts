@@ -10,7 +10,7 @@ export const SYSTEM_ID: CoreSystemId = protectString('core')
 /**
  * Criticality level for service messages. Specification of criticality in server
  * messages from sofie-monitor:
- * https://github.com/nrkno/tv-automation-sofie-monitor/blob/master/src/data/serviceMessages/ServiceMessage.ts
+ * https://github.com/nrkno/sofie-monitor/blob/master/src/data/serviceMessages/ServiceMessage.ts
  *
  * @export
  * @enum {number}
@@ -65,6 +65,12 @@ export interface ICoreSystem {
 	systemInfo?: {
 		message: string
 		enabled: boolean
+	}
+
+	evaluations?: {
+		enabled: boolean
+		heading: string
+		message: string
 	}
 
 	/** A user-defined name for the installation */

@@ -79,7 +79,7 @@ export class ExternalMessageQueueRunner {
 			try {
 				await this.#changesStream.close()
 			} catch (e) {
-				logger.warn(`Failed to stop changes stream: ${e}`)
+				logger.warn(`Failed to stop changes stream: ${stringifyError(e)}`)
 			}
 		}
 
@@ -112,7 +112,7 @@ export class ExternalMessageQueueRunner {
 			try {
 				await this.#changesStream.close()
 			} catch (e) {
-				logger.warn(`Failed to stop changes stream: ${e}`)
+				logger.warn(`Failed to stop changes stream: ${stringifyError(e)}`)
 			}
 		}
 

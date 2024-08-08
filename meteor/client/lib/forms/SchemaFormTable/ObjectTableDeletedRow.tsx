@@ -11,7 +11,12 @@ interface ObjectTableDeletedRowProps {
 	doUndelete: (itemId: string) => void
 }
 
-export function ObjectTableDeletedRow({ summaryFields, id, obj, doUndelete }: ObjectTableDeletedRowProps): JSX.Element {
+export function ObjectTableDeletedRow({
+	summaryFields,
+	id,
+	obj,
+	doUndelete,
+}: Readonly<ObjectTableDeletedRowProps>): JSX.Element {
 	const doUndeleteItem = useCallback(() => doUndelete(id), [doUndelete, id])
 
 	return (

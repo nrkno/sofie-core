@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { ISourceLayer, NoteSeverity, PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import {
 	IOutputLayerExtended,
@@ -9,13 +9,13 @@ import {
 	PieceExtended,
 	PartExtended,
 	SegmentExtended,
-} from '../../../lib/Rundown'
+} from '../../lib/RundownResolver'
 import { IContextMenuContext } from '../RundownView'
 import { equalSets } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import { Part } from '../../../lib/collections/Parts'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
 import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
@@ -36,7 +36,8 @@ import {
 import { PieceInstances, Segments } from '../../collections'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 import { ReadonlyDeep } from 'type-fest'
-import { PieceContentStatusObj } from '../../../lib/mediaObjects'
+import { PieceContentStatusObj } from '../../../lib/api/pieceContentStatus'
+import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
@@ -65,7 +66,7 @@ export type MinimalRundown = Pick<Rundown, '_id' | 'name' | 'timing' | 'showStyl
 
 export const FREEZE_FRAME_FLASH = 5000
 
-export interface IProps {
+export interface IResolvedSegmentProps {
 	// id: string
 	rundownId: RundownId
 	segmentId: SegmentId
@@ -74,7 +75,7 @@ export interface IProps {
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>
 	studio: UIStudio
 	showStyleBase: UIShowStyleBase
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	rundown: MinimalRundown
 	timeScale: number
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
@@ -103,13 +104,14 @@ export interface SegmentNoteCounts {
 	warning: number
 }
 
-export interface ITrackedProps {
+export interface ITrackedResolvedSegmentProps {
 	segmentui: SegmentUi | undefined
 	parts: Array<PartUi>
 	segmentNoteCounts: SegmentNoteCounts
 	hasRemoteItems: boolean
 	hasGuestItems: boolean
 	hasAlreadyPlayed: boolean
+	isAdlibTestingSegment: boolean
 	lastValidPartIndex: number | undefined
 	budgetDuration: number | undefined
 	displayLiveLineCounter: boolean
@@ -120,10 +122,10 @@ type IWrappedComponent<IProps, IState, TrackedProps> =
 	| React.ComponentClass<IProps & TrackedProps, IState>
 	| ((props: IProps & TrackedProps) => JSX.Element | null)
 
-export function withResolvedSegment<T extends IProps, IState = {}>(
-	WrappedComponent: IWrappedComponent<T, IState, ITrackedProps>
+export function withResolvedSegment<T extends IResolvedSegmentProps, IState = {}>(
+	WrappedComponent: IWrappedComponent<T, IState, ITrackedResolvedSegmentProps>
 ): new (props: T) => React.Component<T, IState> {
-	return withTracker<T, IState, ITrackedProps>(
+	return withTracker<T, IState, ITrackedResolvedSegmentProps>(
 		(props: T) => {
 			const segment = Segments.findOne(props.segmentId) as SegmentUi | undefined
 
@@ -141,6 +143,7 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 					budgetDuration: undefined,
 					displayLiveLineCounter: true,
 					showCountdownToSegment: true,
+					isAdlibTestingSegment: false,
 				}
 			}
 
@@ -178,9 +181,9 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 										{
 											fields: { _id: 1 },
 										}
-									).parts as Pick<Part, '_id' | 'segmentId' | '_rank'>[]
+									).parts as Pick<DBPart, '_id' | 'segmentId' | '_rank'>[]
 								).map((part) => part._id),
-							'playlist.getAllOrderedParts',
+							'playlist.getSegmentsAndPartsSync',
 							props.playlist._id
 						),
 						memoizedIsolatedAutorun(
@@ -282,6 +285,8 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				)
 			}
 
+			const isAdlibTestingSegment = segment.orphaned === SegmentOrphanedReason.ADLIB_TESTING
+
 			return {
 				segmentui: o.segmentExtended,
 				parts: o.parts,
@@ -293,9 +298,14 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				budgetDuration,
 				displayLiveLineCounter,
 				showCountdownToSegment,
+				isAdlibTestingSegment,
 			}
 		},
-		(data: ITrackedProps, props: IProps, nextProps: IProps): boolean => {
+		(
+			data: ITrackedResolvedSegmentProps,
+			props: IResolvedSegmentProps,
+			nextProps: IResolvedSegmentProps
+		): boolean => {
 			// This is a potentailly very dangerous hook into the React component lifecycle. Re-use with caution.
 			// Check obvious primitive changes
 			if (

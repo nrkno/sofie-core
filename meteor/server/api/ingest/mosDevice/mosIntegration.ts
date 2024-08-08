@@ -1,6 +1,11 @@
 import { MOS } from '@sofie-automation/corelib'
 import { logger } from '../../../logging'
-import { checkAccessAndGetPeripheralDevice, fetchStudioIdFromDevice, runIngestOperation } from '../lib'
+import {
+	checkAccessAndGetPeripheralDevice,
+	fetchStudioIdFromDevice,
+	generateRundownSource,
+	runIngestOperation,
+} from '../lib'
 import { parseMosString } from './lib'
 import { MethodContext } from '../../../../lib/api/methods'
 import { profiler } from '../../profiler'
@@ -28,9 +33,9 @@ export namespace MosIntegration {
 
 		await runIngestOperation(studioId, IngestJobs.MosRundown, {
 			rundownExternalId: rundownExternalId,
-			peripheralDeviceId: peripheralDevice._id,
 			isUpdateOperation: false,
 			mosRunningOrder: rundown,
+			rundownSource: generateRundownSource(peripheralDevice),
 		})
 		transaction?.end()
 	}
@@ -53,9 +58,9 @@ export namespace MosIntegration {
 
 		await runIngestOperation(studioId, IngestJobs.MosRundown, {
 			rundownExternalId: rundownExternalId,
-			peripheralDeviceId: peripheralDevice._id,
 			isUpdateOperation: false,
 			mosRunningOrder: rundown,
+			rundownSource: generateRundownSource(peripheralDevice),
 		})
 
 		transaction?.end()
@@ -78,7 +83,6 @@ export namespace MosIntegration {
 
 		await runIngestOperation(studioId, IngestJobs.RemoveRundown, {
 			rundownExternalId,
-			peripheralDeviceId: peripheralDevice._id,
 		})
 
 		transaction?.end()
@@ -102,8 +106,8 @@ export namespace MosIntegration {
 
 		await runIngestOperation(studioId, IngestJobs.MosRundownMetadata, {
 			rundownExternalId: rundownExternalId,
-			peripheralDeviceId: peripheralDevice._id,
 			mosRunningOrderBase: rundownData,
+			rundownSource: generateRundownSource(peripheralDevice),
 		})
 
 		transaction?.end()
@@ -127,7 +131,6 @@ export namespace MosIntegration {
 
 		await runIngestOperation(studioId, IngestJobs.MosRundownStatus, {
 			rundownExternalId: rundownExternalId,
-			peripheralDeviceId: peripheralDevice._id,
 			status: status.Status,
 		})
 
@@ -169,7 +172,6 @@ export namespace MosIntegration {
 
 		await runIngestOperation(studioId, IngestJobs.MosInsertStory, {
 			rundownExternalId: rundownExternalId,
-			peripheralDeviceId: peripheralDevice._id,
 			insertBeforeStoryId: Action.StoryID,
 			replace: false,
 			newStories: Stories,
@@ -196,7 +198,6 @@ export namespace MosIntegration {
 
 		await runIngestOperation(studioId, IngestJobs.MosInsertStory, {
 			rundownExternalId: rundownExternalId,
-			peripheralDeviceId: peripheralDevice._id,
 			insertBeforeStoryId: Action.StoryID,
 			replace: true,
 			newStories: Stories,
@@ -222,7 +223,6 @@ export namespace MosIntegration {
 
 		await runIngestOperation(studioId, IngestJobs.MosMoveStory, {
 			rundownExternalId: rundownExternalId,
-			peripheralDeviceId: peripheralDevice._id,
 			insertBeforeStoryId: Action.StoryID,
 			stories: Stories,
 		})
@@ -248,7 +248,6 @@ export namespace MosIntegration {
 
 		await runIngestOperation(studioId, IngestJobs.MosDeleteStory, {
 			rundownExternalId: rundownExternalId,
-			peripheralDeviceId: peripheralDevice._id,
 			stories: Stories,
 		})
 
@@ -274,7 +273,6 @@ export namespace MosIntegration {
 
 		await runIngestOperation(studioId, IngestJobs.MosSwapStory, {
 			rundownExternalId: rundownExternalId,
-			peripheralDeviceId: peripheralDevice._id,
 			story0: StoryID0,
 			story1: StoryID1,
 		})
@@ -300,7 +298,6 @@ export namespace MosIntegration {
 
 		await runIngestOperation(studioId, IngestJobs.MosRundownReadyToAir, {
 			rundownExternalId: rundownExternalId,
-			peripheralDeviceId: peripheralDevice._id,
 			status: Action.Status,
 		})
 
@@ -322,7 +319,6 @@ export namespace MosIntegration {
 
 		await runIngestOperation(studioId, IngestJobs.MosFullStory, {
 			rundownExternalId: parseMosString(story.RunningOrderId),
-			peripheralDeviceId: peripheralDevice._id,
 			story: story,
 		})
 

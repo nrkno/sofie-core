@@ -9,7 +9,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { assertNever, clone } from '@sofie-automation/corelib/dist/lib'
 import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
-import { createPieceGroupAndCap } from '@sofie-automation/corelib/dist/playout/pieces'
+import { createPieceGroupAndCap } from './pieceGroup'
 import { PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'

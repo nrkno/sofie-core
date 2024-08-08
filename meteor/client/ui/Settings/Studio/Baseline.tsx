@@ -14,7 +14,7 @@ interface IStudioBaselineStatusProps {
 	studioId: StudioId
 }
 
-export function StudioBaselineStatus({ studioId }: IStudioBaselineStatusProps): JSX.Element {
+export function StudioBaselineStatus({ studioId }: Readonly<IStudioBaselineStatusProps>): JSX.Element {
 	const { t } = useTranslation()
 
 	const [needsUpdate, setNeedsUpdate] = useState(false)
@@ -53,33 +53,31 @@ export function StudioBaselineStatus({ studioId }: IStudioBaselineStatusProps): 
 	}, [studioId])
 
 	return (
-		<>
-			<div className="field">
-				<LabelActual label={t('Studio Baseline needs update: ')}></LabelActual>
-				<div className="mhn">
-					<p className="mhn mvn">
-						{needsUpdate ? (
-							<Tooltip
-								overlay={t('Baseline needs reload, this studio may not work until reloaded')}
-								visible={getHelpMode()}
-								placement="right"
-							>
-								<span>{t('Yes')}</span>
-							</Tooltip>
-						) : (
-							t('No')
-						)}
-					</p>
-					<button className="btn btn-primary mts" onClick={reloadBaseline}>
-						{t('Reload Baseline')}
-					</button>
+		<div className="field">
+			<LabelActual label={t('Studio Baseline needs update: ')}></LabelActual>
+			<div className="mhn">
+				<p className="mhn mvn">
 					{needsUpdate ? (
-						<span className="error-notice inline">
-							{t('Reload Baseline')} <FontAwesomeIcon icon={faExclamationTriangle} />
-						</span>
-					) : null}
-				</div>
+						<Tooltip
+							overlay={t('Baseline needs reload, this studio may not work until reloaded')}
+							visible={getHelpMode()}
+							placement="right"
+						>
+							<span>{t('Yes')}</span>
+						</Tooltip>
+					) : (
+						t('No')
+					)}
+				</p>
+				<button className="btn btn-primary mts" onClick={reloadBaseline}>
+					{t('Reload Baseline')}
+				</button>
+				{needsUpdate ? (
+					<span className="error-notice inline">
+						{t('Reload Baseline')} <FontAwesomeIcon icon={faExclamationTriangle} />
+					</span>
+				) : null}
 			</div>
-		</>
+		</div>
 	)
 }

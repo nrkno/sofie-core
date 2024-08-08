@@ -20,10 +20,10 @@ export function getNextMode(currentMode: SegmentViewMode | undefined): SegmentVi
 export function SwitchViewModeButton({
 	currentMode,
 	onSwitchViewMode,
-}: {
+}: Readonly<{
 	currentMode: SegmentViewMode
 	onSwitchViewMode?: (viewMode: SegmentViewMode) => void
-}): JSX.Element {
+}>): JSX.Element {
 	const { t } = useTranslation()
 
 	const nextMode = getNextMode(currentMode)
@@ -45,7 +45,8 @@ export function SwitchViewModeButton({
 		<Tooltip overlay={label} destroyTooltipOnHide>
 			<button
 				className="segment-timeline__switch-view-mode-button"
-				onClick={() => onSwitchViewMode && onSwitchViewMode(nextMode)}
+				aria-label={label}
+				onClick={() => onSwitchViewMode?.(nextMode)}
 			>
 				<SegmentViewModeIcon />
 			</button>

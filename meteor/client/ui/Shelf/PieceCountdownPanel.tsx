@@ -9,31 +9,31 @@ import {
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementStyle } from './DashboardPanel'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
 import { RundownTiming, TimingEvent } from '../RundownView/RundownTiming/RundownTiming'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { PieceInstance } from '../../../lib/collections/PieceInstances'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { VTContent } from '@sofie-automation/blueprints-integration'
 import { getUnfinishedPieceInstancesReactive } from '../../lib/rundownLayouts'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { ReadonlyDeep } from 'type-fest'
 interface IPieceCountdownPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutPieceCountdown
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	showStyleBase: UIShowStyleBase
 }
 
 interface IPieceCountdownPanelTrackedProps {
-	livePieceInstance?: PieceInstance
+	livePieceInstance?: ReadonlyDeep<PieceInstance>
 }
 
 interface IState {
 	displayTimecode: number
 }
 
-export class PieceCountdownPanelInner extends MeteorReactComponent<
+export class PieceCountdownPanelInner extends React.Component<
 	IPieceCountdownPanelProps & IPieceCountdownPanelTrackedProps,
 	IState
 > {
@@ -106,9 +106,9 @@ export class PieceCountdownPanelInner extends MeteorReactComponent<
 export const PieceCountdownPanel = withTracker<IPieceCountdownPanelProps, IState, IPieceCountdownPanelTrackedProps>(
 	(props: IPieceCountdownPanelProps & IPieceCountdownPanelTrackedProps) => {
 		const unfinishedPieces = getUnfinishedPieceInstancesReactive(props.playlist, props.showStyleBase)
-		const livePieceInstance: PieceInstance | undefined =
+		const livePieceInstance: ReadonlyDeep<PieceInstance> | undefined =
 			props.panel.sourceLayerIds && props.panel.sourceLayerIds.length
-				? unfinishedPieces.find((piece: PieceInstance) => {
+				? unfinishedPieces.find((piece: ReadonlyDeep<PieceInstance>) => {
 						return (
 							(props.panel.sourceLayerIds || []).indexOf(piece.piece.sourceLayerId) !== -1 &&
 							piece.partInstanceId === props.playlist.currentPartInfo?.partInstanceId

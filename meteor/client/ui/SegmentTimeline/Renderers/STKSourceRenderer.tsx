@@ -3,10 +3,6 @@ import { withTranslation } from 'react-i18next'
 
 export const STKSourceRenderer = withTranslation()(
 	class STKSourceRenderer extends VTSourceRendererBase {
-		constructor(props) {
-			super(props)
-		}
-
 		render(): JSX.Element {
 			return super.render()
 		}

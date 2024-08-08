@@ -6,8 +6,7 @@ import {
 	RundownLayoutBase,
 	RundownLayoutPartName,
 } from '../../../lib/collections/RundownLayouts'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -22,7 +21,7 @@ interface IPartNamePanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutPartName
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	showStyleBase: UIShowStyleBase
 }
 
@@ -33,14 +32,7 @@ interface IPartNamePanelTrackedProps {
 	instanceToShow?: IFoundPieceInstance
 }
 
-class PartNamePanelInner extends MeteorReactComponent<
-	Translated<IPartNamePanelProps & IPartNamePanelTrackedProps>,
-	IState
-> {
-	constructor(props) {
-		super(props)
-	}
-
+class PartNamePanelInner extends React.Component<Translated<IPartNamePanelProps & IPartNamePanelTrackedProps>, IState> {
 	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 		const { t } = this.props

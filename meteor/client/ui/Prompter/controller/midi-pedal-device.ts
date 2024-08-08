@@ -1,5 +1,5 @@
 import { ControllerAbstract } from './lib'
-import { PrompterViewInner, PrompterConfigMode } from '../PrompterView'
+import { PrompterViewContent, PrompterConfigMode } from '../PrompterView'
 import Spline from 'cubic-spline'
 
 import webmidi, { Input, InputEventControlchange } from 'webmidi'
@@ -9,7 +9,7 @@ import { logger } from '../../../../lib/logging'
  * This class handles control of the prompter using
  */
 export class MidiPedalController extends ControllerAbstract {
-	private prompterView: PrompterViewInner
+	private prompterView: PrompterViewContent
 	private midiInputs: Input[] = []
 	private idleMidiInputs: { [midiId: string]: boolean } = {}
 
@@ -19,14 +19,14 @@ export class MidiPedalController extends ControllerAbstract {
 	private rangeFwdMax = 127 // pedal "all front" position where scrolling is maxed out
 	private speedMap = [1, 2, 3, 4, 5, 7, 9, 12, 17, 19, 30]
 	private reverseSpeedMap = [10, 30, 50]
-	private speedSpline: Spline
-	private reverseSpeedSpline: Spline
+	private speedSpline: Spline | undefined
+	private reverseSpeedSpline: Spline | undefined
 
 	private updateSpeedHandle: number | null = null
 	private lastSpeed = 0
 	private currentPosition = 0
 
-	constructor(view: PrompterViewInner) {
+	constructor(view: PrompterViewContent) {
 		super()
 		this.prompterView = view
 
@@ -135,6 +135,7 @@ export class MidiPedalController extends ControllerAbstract {
 	}
 
 	private onMidiInputCC = (e: InputEventControlchange) => {
+		if (!this.reverseSpeedSpline || !this.speedSpline) return
 		const { rangeRevMin, rangeNeutralMin, rangeNeutralMax, rangeFwdMax } = this
 		let inputValue = e.value || 0
 

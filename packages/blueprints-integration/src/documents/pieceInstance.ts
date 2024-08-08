@@ -1,7 +1,7 @@
 import type { Time } from '../common'
 import type { IBlueprintPieceDB } from './piece'
 
-export interface IBlueprintPieceInstance<TMetadata = unknown> {
+export interface IBlueprintPieceInstance<TPrivateData = unknown, TPublicData = unknown> {
 	_id: string
 	/** The part instace this piece belongs to */
 	partInstanceId: string
@@ -11,7 +11,7 @@ export interface IBlueprintPieceInstance<TMetadata = unknown> {
 	/** If this piece has been insterted during run of rundown (such as adLibs), then this is set to the timestamp it was inserted */
 	dynamicallyInserted?: Time
 
-	piece: IBlueprintPieceDB<TMetadata>
+	piece: IBlueprintPieceDB<TPrivateData, TPublicData>
 
 	/** The time the system started playback of this part, undefined if not yet played back (milliseconds since epoch) */
 	reportedStartedPlayback?: Time
@@ -31,7 +31,14 @@ export interface IBlueprintPieceInstance<TMetadata = unknown> {
 		fromPreviousPlayhead?: boolean
 	}
 }
-export interface IBlueprintResolvedPieceInstance<TMetadata = unknown> extends IBlueprintPieceInstance<TMetadata> {
+export interface IBlueprintResolvedPieceInstance<TPrivateData = unknown, TPublicData = unknown>
+	extends IBlueprintPieceInstance<TPrivateData, TPublicData> {
+	/**
+	 * Calculated start point within the PartInstance
+	 */
 	resolvedStart: number
+	/**
+	 * Calculated duration within the PartInstance
+	 */
 	resolvedDuration?: number
 }

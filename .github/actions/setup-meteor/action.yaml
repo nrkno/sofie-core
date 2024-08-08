@@ -3,7 +3,7 @@ description: "Setup Meteor"
 runs:
   using: "composite"
   steps:
-    - run: curl "https://install.meteor.com/?release=2.7.3" | sh
+    - run: curl "https://install.meteor.com/?release=2.13.3" | sh
       shell: bash
     - run: meteor npm install -g yarn
       shell: bash

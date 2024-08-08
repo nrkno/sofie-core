@@ -1,5 +1,5 @@
-title: studios
-description: Definitions for studios API
+title: blueprints
+description: Definitions for blueprints API
 resources:
   blueprints:
     get:

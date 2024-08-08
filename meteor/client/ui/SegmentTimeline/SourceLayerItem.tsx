@@ -34,7 +34,7 @@ export interface ISourceLayerItemProps {
 	/** Part definite duration (generally set after part is played) */
 	partDuration: number
 	/** Part expected duration (before playout) */
-	partExpectedDuration: number
+	partDisplayDuration: number
 	/** The piece being rendered in this layer */
 	piece: PieceUi
 	/** Scaling factor for this segment */
@@ -98,9 +98,9 @@ interface ISourceLayerItemState {
 }
 export const SourceLayerItem = withTranslation()(
 	class SourceLayerItem extends React.Component<ISourceLayerItemProps & WithTranslation, ISourceLayerItemState> {
-		animFrameHandle: number
+		animFrameHandle: number | undefined
 
-		constructor(props) {
+		constructor(props: ISourceLayerItemProps & WithTranslation) {
 			super(props)
 			this.state = {
 				showMiniInspector: false,
@@ -405,7 +405,7 @@ export const SourceLayerItem = withTranslation()(
 		// 	}
 		// }
 
-		private highlightTimeout: NodeJS.Timer
+		private highlightTimeout: NodeJS.Timer | undefined
 
 		private onHighlight = (e: HighlightEvent) => {
 			if (
@@ -509,7 +509,7 @@ export const SourceLayerItem = withTranslation()(
 					this.animFrameHandle = requestAnimationFrame(updatePos)
 				}
 				this.animFrameHandle = requestAnimationFrame(updatePos)
-			} else {
+			} else if (this.animFrameHandle !== undefined) {
 				cancelAnimationFrame(this.animFrameHandle)
 			}
 		}
@@ -563,6 +563,7 @@ export const SourceLayerItem = withTranslation()(
 					)
 				case SourceLayerType.GRAPHICS:
 				case SourceLayerType.LOWER_THIRD:
+				case SourceLayerType.STUDIO_SCREEN:
 					return (
 						<L3rdSourceRenderer
 							key={unprotectString(this.props.piece.instance._id)}

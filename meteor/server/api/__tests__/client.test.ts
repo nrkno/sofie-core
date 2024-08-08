@@ -3,14 +3,14 @@ import { MeteorMock } from '../../../__mocks__/meteor'
 import { UserActionsLogItem } from '../../../lib/collections/UserActionsLog'
 import { ClientAPIMethods } from '../../../lib/api/client'
 import { protectString, makePromise, LogLevel } from '../../../lib/lib'
-import { PeripheralDeviceCommand } from '../../../lib/collections/PeripheralDeviceCommands'
+import { PeripheralDeviceCommand } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceCommand'
 import { setLogLevel } from '../../logging'
 import { testInFiber, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
 import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
-} from '../../../lib/collections/PeripheralDevices'
+} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { setupMockPeripheralDevice, setupMockStudio } from '../../../__mocks__/helpers/database'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'

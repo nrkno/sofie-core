@@ -179,13 +179,17 @@ class NotificationCenter0 {
 								? notification.message
 								: '[React Element]'
 
-							MeteorCall.client.clientLogNotification(
-								notification.created,
-								notifLogUserId,
-								notification.status,
-								message,
-								notification.source
-							)
+							MeteorCall.client
+								.clientLogNotification(
+									notification.created,
+									notifLogUserId,
+									notification.status,
+									message,
+									notification.source
+								)
+								.catch((e) => {
+									console.log(e)
+								})
 						}
 					})
 
@@ -561,7 +565,9 @@ export function getNoticeLevelForPieceStatus(statusCode: PieceStatusCode | undef
 Meteor.startup(() => {
 	if (!Meteor.isClient) return
 
-	window['testNotification'] = function (
+	const windowAny: any = window
+
+	windowAny['testNotification'] = function (
 		delay: number,
 		level: NoticeLevel = NoticeLevel.CRITICAL,
 		fakePersistent = false
@@ -580,5 +586,5 @@ Meteor.startup(() => {
 			)
 		)
 	}
-	window['notificationCenter'] = NotificationCenter
+	windowAny['notificationCenter'] = NotificationCenter
 })

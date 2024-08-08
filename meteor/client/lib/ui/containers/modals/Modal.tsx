@@ -16,7 +16,7 @@ export type SomeEvent = Event | React.SyntheticEvent<object>
 
 export class Modal extends React.Component<React.PropsWithChildren<IModalAttributes>> {
 	boundKeys: Array<string> = []
-	sorensen: Sorensen
+	sorensen: Sorensen | undefined
 
 	constructor(props: IModalAttributes) {
 		super(props)
@@ -36,6 +36,8 @@ export class Modal extends React.Component<React.PropsWithChildren<IModalAttribu
 	}
 
 	private bindKeys = () => {
+		if (!this.sorensen) return
+
 		if (this.props.show) {
 			this.sorensen.bind(Settings.confirmKeyCode, this.preventDefault, {
 				up: false,
@@ -59,6 +61,7 @@ export class Modal extends React.Component<React.PropsWithChildren<IModalAttribu
 	}
 
 	private unbindKeys = () => {
+		if (!this.sorensen) return
 		this.sorensen.unbind(Settings.confirmKeyCode, this.preventDefault)
 		this.sorensen.unbind(Settings.confirmKeyCode, this.handleKey)
 		this.sorensen.unbind('Escape', this.preventDefault)

@@ -38,7 +38,8 @@ import {
 	handleBucketRemoveAdlibAction,
 	handleBucketRemoveAdlibPiece,
 } from '../../ingest/bucket/bucketAdlibs'
-import { handleBucketItemImport } from '../../ingest/bucket/import'
+import { handleBucketItemImport, handleBucketItemRegenerate } from '../../ingest/bucket/import'
+import { handleCreateAdlibTestingRundownForShowStyleVariant } from '../../ingest/createAdlibTestingRundown'
 
 type ExecutableFunction<T extends keyof IngestJobFunc> = (
 	context: JobContext,
@@ -74,16 +75,19 @@ export const ingestJobHandlers: IngestJobHandlers = {
 	[IngestJobs.MosSwapStory]: handleMosSwapStories,
 
 	[IngestJobs.ExpectedPackagesRegenerate]: handleExpectedPackagesRegenerate,
-	[IngestJobs.PackageInfosUpdated]: handleUpdatedPackageInfoForRundown,
+	[IngestJobs.PackageInfosUpdatedRundown]: handleUpdatedPackageInfoForRundown,
 
 	[IngestJobs.UserRemoveRundown]: handleUserRemoveRundown,
 	[IngestJobs.UserUnsyncRundown]: handleUserUnsyncRundown,
 
 	[IngestJobs.BucketItemImport]: handleBucketItemImport,
+	[IngestJobs.BucketItemRegenerate]: handleBucketItemRegenerate,
 	[IngestJobs.BucketActionRegenerateExpectedPackages]: handleBucketActionRegenerateExpectedPackages,
 	[IngestJobs.BucketActionModify]: handleBucketActionModify,
 	[IngestJobs.BucketPieceModify]: handleBucketPieceModify,
 	[IngestJobs.BucketRemoveAdlibPiece]: handleBucketRemoveAdlibPiece,
 	[IngestJobs.BucketRemoveAdlibAction]: handleBucketRemoveAdlibAction,
 	[IngestJobs.BucketEmpty]: handleBucketEmpty,
+
+	[IngestJobs.CreateAdlibTestingRundownForShowStyleVariant]: handleCreateAdlibTestingRundownForShowStyleVariant,
 }

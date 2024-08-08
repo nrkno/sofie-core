@@ -43,7 +43,7 @@ process.
 
 #### PlaylistLock
 
-This lock gives ownership of a specific `RundownPlaylist`. It is required to be able to load a `CacheForPlayout`, and
+This lock gives ownership of a specific `RundownPlaylist`. It is required to be able to load a `PlayoutModel`, and
 must be held during other times where the `RundownPlaylist` is modified or is expected to not change.
 
 This lock must be held while writing any changes to either a `RundownPlaylist` or any `Rundown` that belong to the
@@ -52,7 +52,7 @@ playout operation halfway through an ingest operation saving.
 
 #### RundownLock
 
-This lock gives ownership of a specific `Rundown`. It is required to be able to load a `CacheForIngest`, and must held
+This lock gives ownership of a specific `Rundown`. It is required to be able to load a `IngestModel`, and must held
 during other times where the `Rundown` is modified or is expected to not change.
 
 :::caution

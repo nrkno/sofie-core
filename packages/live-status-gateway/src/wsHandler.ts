@@ -1,9 +1,9 @@
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Observer } from '@sofie-automation/server-core-integration'
+import { CoreConnection, Observer, ProtectedString, SubscriptionId } from '@sofie-automation/server-core-integration'
 import { Logger } from 'winston'
 import { WebSocket } from 'ws'
 import { CoreHandler } from './coreHandler'
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import { CorelibPubSub, CorelibPubSubCollections, CorelibPubSubTypes } from '@sofie-automation/corelib/dist/pubsub'
 
 export abstract class WebSocketTopicBase {
 	protected _name: string
@@ -34,10 +34,32 @@ export abstract class WebSocketTopicBase {
 		this._logger.error(`Process ${this._name} message not expected '${JSON.stringify(msg)}'`)
 	}
 
-	sendMessage(ws: WebSocket, msg: object): void {
-		const msgStr = JSON.stringify(msg)
-		this._logger.info(`Send ${this._name} message '${msgStr}'`)
-		ws.send(msgStr)
+	sendMessage(recipients: WebSocket | Iterable<WebSocket>, msg: object): void {
+		recipients = isIterable(recipients) ? recipients : [recipients]
+
+		let count = 0
+		let msgStr = ''
+		for (const ws of recipients) {
+			if (!msgStr) msgStr = JSON.stringify(msg) // Optimization: only stringify if there are any recipients
+			count++
+			ws.send(msgStr)
+		}
+		this._logger.silly(`Send ${this._name} message '${msgStr}' to ${count} recipients`)
+	}
+
+	sendHeartbeat(recipients: Set<WebSocket>): void {
+		const msgStr = JSON.stringify({ event: 'heartbeat' })
+		for (const ws of recipients.values()) {
+			ws.send(msgStr)
+		}
+	}
+
+	protected logUpdateReceived(collectionName: string, source: string, extraInfo?: string): void {
+		let message = `${this._name} received ${collectionName} update from ${source}`
+		if (extraInfo) {
+			message += `, ${extraInfo}`
+		}
+		this._logger.debug(message)
 	}
 }
 
@@ -49,26 +71,32 @@ export interface WebSocketTopic {
 	sendMessage(ws: WebSocket, msg: object): void
 }
 
-export abstract class CollectionBase<T> {
+export type ObserverForCollection<T> = T extends keyof CorelibPubSubCollections
+	? Observer<CorelibPubSubCollections[T]>
+	: undefined
+
+export abstract class CollectionBase<
+	T,
+	TPubSub extends CorelibPubSub | undefined,
+	TCollection extends keyof CorelibPubSubCollections
+> {
 	protected _name: string
-	protected _collectionName: CollectionName | undefined
-	protected _publicationName: string | undefined
+	protected _collectionName: TCollection
+	protected _publicationName: TPubSub
 	protected _logger: Logger
 	protected _coreHandler: CoreHandler
 	protected _studioId!: StudioId
 	protected _subscribers: Set<WebSocket> = new Set()
 	protected _observers: Set<CollectionObserver<T>> = new Set()
 	protected _collectionData: T | undefined
-	protected _subscriptionId: string | undefined
-	protected _dbObserver: Observer | undefined
+	protected _subscriptionId: SubscriptionId | undefined
+	protected _dbObserver: ObserverForCollection<TCollection> | undefined
 
-	constructor(
-		name: string,
-		collection: CollectionName | undefined,
-		publication: string | undefined,
-		logger: Logger,
-		coreHandler: CoreHandler
-	) {
+	protected get _core(): CoreConnection<CorelibPubSubTypes, CorelibPubSubCollections> {
+		return this._coreHandler.core
+	}
+
+	constructor(name: string, collection: TCollection, publication: TPubSub, logger: Logger, coreHandler: CoreHandler) {
 		this._name = name
 		this._collectionName = collection
 		this._publicationName = publication
@@ -105,6 +133,32 @@ export abstract class CollectionBase<T> {
 			await observer.update(this._name, data)
 		}
 	}
+
+	protected logDocumentChange(documentId: string | ProtectedString<any>, changeType: string): void {
+		this._logger.silly(`${this._name} ${changeType} ${documentId}`)
+	}
+
+	protected logUpdateReceived(collectionName: string, updateCount: number | undefined): void
+	protected logUpdateReceived(collectionName: string, source: string, extraInfo?: string): void
+	protected logUpdateReceived(
+		collectionName: string,
+		sourceOrUpdateCount: string | number | undefined,
+		extraInfo?: string
+	): void {
+		if (typeof sourceOrUpdateCount === 'string') {
+			let message = `${this._name} received ${collectionName} update from ${sourceOrUpdateCount}`
+			if (extraInfo) {
+				message += `, ${extraInfo}`
+			}
+			this._logger.debug(message)
+		} else {
+			this._logger.debug(`'${this._name}' handler received ${sourceOrUpdateCount} ${collectionName}`)
+		}
+	}
+
+	protected logNotifyingUpdate(updateCount: number | undefined): void {
+		this._logger.debug(`${this._name} notifying update with ${updateCount} ${this._collectionName}`)
+	}
 }
 
 export interface Collection<T> {
@@ -118,4 +172,11 @@ export interface Collection<T> {
 export interface CollectionObserver<T> {
 	observerName: string
 	update(source: string, data: T | undefined): Promise<void>
+}
+function isIterable<T>(obj: T | Iterable<T>): obj is Iterable<T> {
+	// checks for null and undefined
+	if (obj == null) {
+		return false
+	}
+	return typeof (obj as any)[Symbol.iterator] === 'function'
 }

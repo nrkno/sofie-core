@@ -7,13 +7,15 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { MeteorMethodSignatures } from '../../../methods'
-import { PubSub } from '../../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../../lib/api/pubsub'
 import { MeteorPublications, MeteorPublicationSignatures } from '../../../publications/lib'
 import { UserActionAPIMethods } from '../../../../lib/api/userActions'
 import { logger } from '../../../../lib/logging'
 import { ClientAPI } from '../../../../lib/api/client'
 import Koa from 'koa'
 import KoaRouter from '@koa/router'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { PeripheralDevicePubSub } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 
 const LEGACY_API_VERSION = 0
 
@@ -82,8 +84,7 @@ export function createLegacyApiRouter(): KoaRouter {
 		})
 	}
 
-	// Expose publications:
-	for (const [pubName, pubValue] of Object.entries<any>(PubSub)) {
+	function exposePublication(pubName: string, pubValue: string) {
 		const signature = MeteorPublicationSignatures[pubValue] || []
 
 		const f = MeteorPublications[pubValue]
@@ -111,6 +112,17 @@ export function createLegacyApiRouter(): KoaRouter {
 				return []
 			})
 		}
+	}
+
+	// Expose publications:
+	for (const [pubName, pubValue] of Object.entries<string>(MeteorPubSub)) {
+		exposePublication(pubName, pubValue)
+	}
+	for (const [pubName, pubValue] of Object.entries<string>(CorelibPubSub)) {
+		exposePublication(pubName, pubValue)
+	}
+	for (const [pubName, pubValue] of Object.entries<string>(PeripheralDevicePubSub)) {
+		exposePublication(pubName, pubValue)
 	}
 
 	router.get('/', async (ctx) => {

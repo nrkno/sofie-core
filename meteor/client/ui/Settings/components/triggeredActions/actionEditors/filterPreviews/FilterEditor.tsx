@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleRight, faCheck, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { sameWidth } from '../../../../../../lib/popperUtils'
 import { catchError } from '../../../../../../lib/lib'
+import { preventOverflow } from '@popperjs/core'
 
 interface IProps {
 	fieldLabel: string
@@ -33,7 +34,9 @@ export const FilterEditor: React.FC<IProps> = function FilterEditor(props: IProp
 	const [referenceElement, setReferenceElement] = useState<HTMLDListElement | null>(null)
 	const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null)
 	const { styles, attributes, update } = usePopper(referenceElement, popperElement, {
+		placement: 'bottom',
 		modifiers: [
+			preventOverflow,
 			{
 				name: 'offset',
 				options: {
@@ -50,7 +53,7 @@ export const FilterEditor: React.FC<IProps> = function FilterEditor(props: IProp
 			if (
 				popperElement &&
 				referenceElement &&
-				!composedPath.includes(popperElement) &&
+				!composedPath.find((item) => item instanceof HTMLElement && item.className === popperElement.className) &&
 				!composedPath.includes(referenceElement)
 			) {
 				onClose(index)
@@ -88,7 +91,7 @@ export const FilterEditor: React.FC<IProps> = function FilterEditor(props: IProp
 			</dl>
 			{opened ? (
 				<div
-					className="expco expco-expanded expco-popper mod pas ptl expco-popper-rounded triggered-action-entry__action__filter-editor"
+					className="expco expco-expanded expco-popper mod pas expco-popper-rounded triggered-action-entry__action__filter-editor"
 					ref={setPopperElement}
 					style={styles.popper}
 					{...attributes.popper}

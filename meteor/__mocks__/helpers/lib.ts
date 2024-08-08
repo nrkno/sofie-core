@@ -42,7 +42,7 @@ const METHOD_NAMES = [
 export function mockupCollection<DBInterface extends { _id: ProtectedString<any> }>(
 	collection0: AsyncOnlyMongoCollection<DBInterface>
 ): AsyncOnlyMongoCollection<DBInterface> & MockedCollection {
-	const collection = collection0 as AsyncOnlyMongoCollection<DBInterface> & MockedCollection
+	const collection = collection0 as any
 
 	_.each(METHOD_NAMES, (methodName) => {
 		collection['__original' + methodName] = collection[methodName]
@@ -61,9 +61,10 @@ export function mockupCollection<DBInterface extends { _id: ProtectedString<any>
 export function resetMockupCollection<DBInterface extends { _id: ProtectedString<any> }>(
 	collection: AsyncOnlyMongoCollection<DBInterface>
 ): void {
+	const collectionAny = collection as any
 	_.each(METHOD_NAMES, (methodName) => {
-		collection[methodName] = collection['__original' + methodName]
-		delete collection['__original' + methodName]
+		collectionAny[methodName] = collectionAny['__original' + methodName]
+		delete collectionAny['__original' + methodName]
 	})
 }
 

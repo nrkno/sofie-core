@@ -15,7 +15,7 @@ Some parts of Sofie (specifically the Package Manager) require that [`FFmpeg`](h
 
    ![System Properties screenshot](/img/docs/system_properties.png)
 
-5. If you installed `FFmpeg` and `FFprobe` to a system-wide location such as `C:\Program Files\FFmpeg`, select and edit the `Path` variable under the "System variables" heading. Else, if you installed them to some place specific to your user account, edit the `Path` variable under the "User variables for <YOUR ACCOUNT NAME\>" heading.
+5. If you installed `FFmpeg` and `FFprobe` to a system-wide location such as `C:\Program Files\FFmpeg`, select and edit the `Path` variable under the "System variables" heading. Else, if you installed them to some place specific to your user account, edit the `Path` variable under the "User variables for \<YOUR ACCOUNT NAME>" heading.
 
    ![Environment Variables screenshot](/img/docs/environment_variables.png)
 

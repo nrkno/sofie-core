@@ -1,5 +1,5 @@
 import React from 'react'
-import { PieceExtended } from '../../../../lib/Rundown'
+import { PieceExtended } from '../../../lib/RundownResolver'
 
 interface IProps {
 	piece: PieceExtended

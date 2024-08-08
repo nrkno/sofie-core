@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { PieceLifespan, VTContent } from '@sofie-automation/blueprints-integration'
 import { OffsetPosition } from '../../../utils/positions'
 import { IFloatingInspectorPosition } from '../../FloatingInspectors/IFloatingInspectorPosition'
+import { LoopingPieceIcon } from '../../../lib/ui/icons/looping'
 
 export type SourceDurationLabelAlignment = 'left' | 'right'
 
@@ -20,9 +21,10 @@ export interface ICustomLayerItemProps {
 	isLiveLine: boolean
 	partStartsAt: number
 	partDuration: number // 0 if unknown
-	partExpectedDuration: number
+	partDisplayDuration: number
 	piece: PieceUi
 	timeScale: number
+	scrollLeft: number
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	relative?: boolean
 	followLiveLine: boolean
@@ -118,6 +120,11 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 			return time > 0 ? time : false
 		}
 		return false
+	}
+
+	protected renderLoopIcon(): JSX.Element | null {
+		if (!this.props.piece.instance.piece.content?.loop) return null
+		return <LoopingPieceIcon className="segment-timeline__piece__label-icon" playing={this.props.showMiniInspector} />
 	}
 
 	protected renderOverflowTimeLabel(): JSX.Element | null {

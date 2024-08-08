@@ -12,7 +12,7 @@ import { withTranslation } from 'react-i18next'
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { unprotectString, partial, literal, ProtectedString } from '../../../lib/lib'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getElementDocumentOffset } from '../../utils/positions'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { doModalDialog, ModalDialogQueueItem } from '../../lib/ModalDialog'
@@ -63,14 +63,14 @@ export interface BucketAdLibActionUi extends Omit<AdLibPiece, 'timelineObjectsSt
 export type BucketAdLibItem = BucketAdLibUi | BucketAdLibActionUi
 
 export function isAdLibAction(item: BucketAdLibItem): item is BucketAdLibActionUi {
-	if (item['adlibAction']) {
+	if ('adlibAction' in item && item['adlibAction']) {
 		return true
 	}
 	return false
 }
 
 export function isAdLib(item: BucketAdLibItem): item is BucketAdLibUi {
-	if (!item['adlibAction']) {
+	if (!('adlibAction' in item) || !item['adlibAction']) {
 		return true
 	}
 	return false
@@ -78,14 +78,14 @@ export function isAdLib(item: BucketAdLibItem): item is BucketAdLibUi {
 
 interface IBucketsProps {
 	buckets: Bucket[] | undefined
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	showStyleBase: UIShowStyleBase
 	shouldQueue: boolean
 	fullViewport: boolean
 	displayBuckets?: number[]
 	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | IAdLibListItem | PieceUi | undefined
 
-	onSelectPiece?: (piece: BucketAdLibItem | undefined) => void
+	onSelectPiece: (piece: BucketAdLibItem | undefined) => void
 	extFrames: DashboardLayoutExternalFrame[]
 }
 
@@ -361,7 +361,7 @@ export const RundownViewBuckets = withTranslation()(
 					message: t('Are you sure you want to delete this AdLib?'),
 					title: bucketAdLib.name,
 					onAccept: () => {
-						const clb = (err) => {
+						const clb = (err: any) => {
 							if (err) return
 
 							if (

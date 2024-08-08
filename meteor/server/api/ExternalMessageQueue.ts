@@ -10,7 +10,7 @@ import { StudioContentWriteAccess } from '../security/studio'
 import { ExternalMessageQueueObjId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ExternalMessageQueue } from '../collections'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
-import { MongoQuery } from '../../lib/typings/meteor'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 
 let updateExternalMessageQueueStatusTimeout = 0
 function updateExternalMessageQueueStatus(): void {

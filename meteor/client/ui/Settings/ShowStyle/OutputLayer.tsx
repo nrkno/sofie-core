@@ -20,7 +20,7 @@ import {
 } from '../util/OverrideOpHelper'
 import { TextInputControl } from '../../../lib/Components/TextInput'
 import { IntInputControl } from '../../../lib/Components/IntInput'
-import { useToggleExpandHelper } from '../util/ToggleExpandedHelper'
+import { useToggleExpandHelper } from '../../util/useToggleExpandHelper'
 import {
 	LabelActual,
 	LabelAndOverrides,
@@ -33,7 +33,7 @@ interface IOutputSettingsProps {
 	showStyleBase: DBShowStyleBase
 }
 
-export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps): JSX.Element {
+export function OutputLayerSettings({ showStyleBase }: Readonly<IOutputSettingsProps>): JSX.Element {
 	const { t } = useTranslation()
 
 	const { toggleExpanded, isExpanded } = useToggleExpandHelper()
@@ -95,6 +95,8 @@ export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps): JS
 
 	const overrideHelper = useOverrideOpHelper(saveOverrides, showStyleBase.outputLayersWithOverrides)
 
+	const doUndelete = useCallback((itemId: string) => overrideHelper().resetItem(itemId).commit(), [overrideHelper])
+
 	return (
 		<div>
 			<h2 className="mhn">
@@ -120,7 +122,7 @@ export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps): JS
 				<tbody>
 					{sortedOutputLayers.map((item) =>
 						item.type === 'deleted' ? (
-							<OutputLayerDeletedEntry key={item.id} item={item.defaults} doUndelete={overrideHelper.resetItem} />
+							<OutputLayerDeletedEntry key={item.id} item={item.defaults} doUndelete={doUndelete} />
 						) : (
 							<OutputLayerEntry
 								key={item.id}
@@ -146,7 +148,7 @@ interface DeletedEntryProps {
 	item: IOutputLayer
 	doUndelete: (itemId: string) => void
 }
-function OutputLayerDeletedEntry({ item, doUndelete }: DeletedEntryProps) {
+function OutputLayerDeletedEntry({ item, doUndelete }: Readonly<DeletedEntryProps>) {
 	const doUndeleteItem = useCallback(() => doUndelete(item._id), [doUndelete, item._id])
 
 	return (
@@ -177,14 +179,14 @@ interface EntryProps {
 	toggleExpanded: (itemId: string, forceState?: boolean) => void
 	overrideHelper: OverrideOpHelper
 }
-function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: EntryProps) {
+function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: Readonly<EntryProps>) {
 	const { t } = useTranslation()
 
 	const toggleEditItem = useCallback(() => toggleExpanded(item.id), [toggleExpanded, item.id])
-	const doResetItem = useCallback(() => overrideHelper.resetItem(item.id), [overrideHelper, item.id])
+	const doResetItem = useCallback(() => overrideHelper().resetItem(item.id).commit(), [overrideHelper, item.id])
 	const doChangeItemId = useCallback(
 		(newItemId: string) => {
-			overrideHelper.changeItemId(item.id, newItemId)
+			overrideHelper().changeItemId(item.id, newItemId).commit()
 			toggleExpanded(newItemId, true)
 		},
 		[overrideHelper, toggleExpanded, item.id]
@@ -196,7 +198,7 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 			no: t('Cancel'),
 			yes: t('Delete'),
 			onAccept: () => {
-				overrideHelper.deleteItem(item.id)
+				overrideHelper().deleteItem(item.id).commit()
 			},
 			message: (
 				<React.Fragment>
@@ -212,7 +214,7 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 			yes: t('Reset'),
 			no: t('Cancel'),
 			onAccept: () => {
-				overrideHelper.resetItem(item.id)
+				overrideHelper().resetItem(item.id).commit()
 			},
 			message: (
 				<React.Fragment>

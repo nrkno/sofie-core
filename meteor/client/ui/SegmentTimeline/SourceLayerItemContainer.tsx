@@ -1,11 +1,11 @@
 import * as React from 'react'
 import { ISourceLayerItemProps, SourceLayerItem } from './SourceLayerItem'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { withMediaObjectStatus } from './withMediaObjectStatus'
 import { UIStudio } from '../../../lib/api/studios'
 
 interface IPropsHeader extends ISourceLayerItemProps {
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	studio: UIStudio
 }
 

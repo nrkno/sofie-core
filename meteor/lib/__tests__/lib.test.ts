@@ -221,7 +221,7 @@ describe('lib/lib', () => {
 		).rejects.toMatchToString(/asdf/)
 
 		// Handle a delayed throw:
-		const delayedThrow = Meteor.wrapAsync((callback) => {
+		const delayedThrow = Meteor.wrapAsync((callback: (err: any, result: any) => void) => {
 			setTimeout(() => {
 				callback(new Error('asdf'), null)
 			}, 10)

@@ -1,7 +1,8 @@
-import React, { useEffect, useImperativeHandle } from 'react'
 import { NoraContent } from '@sofie-automation/blueprints-integration'
-import Escape from './../../lib/Escape'
+import React, { useEffect, useImperativeHandle } from 'react'
 import _ from 'underscore'
+import { getNoraContentSteps } from '../SegmentContainer/PieceMultistepChevron'
+import Escape from './../../lib/Escape'
 
 interface IPropsHeader {
 	noraContent: NoraContent | undefined
@@ -19,7 +20,7 @@ export const NoraFloatingInspector = React.forwardRef<HTMLDivElement, IPropsHead
 	useImperativeHandle(
 		ref,
 		() => {
-			return NoraPreviewRenderer._singletonRef.rootElement
+			return NoraPreviewRenderer._singletonRef.rootElement as HTMLDivElement
 		},
 		[]
 	)
@@ -47,7 +48,7 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 	static _singletonRef: NoraPreviewRenderer
 
 	iframeElement: HTMLIFrameElement | null = null
-	rootElement: HTMLDivElement
+	rootElement: HTMLDivElement | null = null
 
 	static update(noraContent: NoraContent, style: React.CSSProperties | undefined): void {
 		NoraPreviewRenderer._singletonRef._update(noraContent, style)
@@ -147,14 +148,6 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 	private _setIFrameElement = (e: HTMLIFrameElement | null) => {
 		if (!e) return
 		this.iframeElement = e
-
-		// set up IntersectionObserver to keep the preview inside the viewport
-		const options = {
-			threshold: [] as number[],
-		}
-		for (let i = 0; i < 50; i++) {
-			options.threshold.push(i / 50)
-		}
 	}
 
 	private _onNoraMessage = (msg: MessageEvent): void => {
@@ -177,12 +170,12 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 		}
 	}
 
-	private _setRootElement = (e: HTMLDivElement) => {
+	private _setRootElement = (e: HTMLDivElement | null) => {
 		this.rootElement = e
 	}
 
 	private getElStyle(dimensions: { width: number; height: number } | undefined) {
-		const style = { ...this.state.style }
+		const style: Record<string, any> = { ...this.state.style }
 		style.visibility = this.state.show ? 'visible' : 'hidden'
 
 		if (dimensions) {
@@ -194,8 +187,7 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 	}
 
 	render(): JSX.Element {
-		const stepContent = this.state.noraContent?.payload?.step
-		const isMultiStep = this.state.noraContent?.payload?.step?.enabled === true
+		const hasStepChevron = getNoraContentSteps(this.state.noraContent)
 
 		const rendererUrl = this.state.noraContent?.previewRenderer
 		const dimensions = this.state.noraContent?.previewRendererDimensions
@@ -218,12 +210,12 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 							></iframe>
 						)}
 					</div>
-					{isMultiStep && stepContent ? (
+					{hasStepChevron ? (
 						<div className="segment-timeline__mini-inspector--graphics--preview__step-chevron">
-							{stepContent.to === 'next' ? (stepContent.from || 0) + 1 : stepContent.to || 1}
-							{typeof stepContent.total === 'number' && stepContent.total > 0 ? (
+							{hasStepChevron.currentStep}
+							{typeof hasStepChevron.allSteps === 'number' && hasStepChevron.allSteps > 0 ? (
 								<span className="segment-timeline__mini-inspector--graphics--preview__step-chevron__total">
-									/{stepContent.total}
+									/{hasStepChevron.allSteps}
 								</span>
 							) : null}
 						</div>

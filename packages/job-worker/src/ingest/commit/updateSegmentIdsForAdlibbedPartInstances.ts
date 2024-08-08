@@ -2,8 +2,8 @@ import { SegmentId, PartInstanceId, RundownId } from '@sofie-automation/corelib/
 import { JobContext } from '../../jobs'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { BeforePartMap } from '../commit'
-import { CacheForIngest } from '../cache'
+import { BeforeIngestOperationPartMap } from '../commit'
+import { IngestModelReadonly } from '../model/IngestModel'
 
 async function fetchOrphanedPartInstancesInRundown(context: JobContext, rundownId: RundownId) {
 	const orphanedPartInstances = (await context.directCollections.PartInstances.findFetch(
@@ -42,13 +42,13 @@ type MinimalPartInstance = Pick<DBPartInstance, '_id' | 'segmentId' | 'orphaned'
  */
 export async function updateSegmentIdsForAdlibbedPartInstances(
 	context: JobContext,
-	cache: CacheForIngest,
-	beforePartMap: BeforePartMap
+	ingestModel: IngestModelReadonly,
+	beforePartMap: BeforeIngestOperationPartMap
 ): Promise<void> {
-	const orphanedPartInstances = await fetchOrphanedPartInstancesInRundown(context, cache.RundownId)
+	const orphanedPartInstances = await fetchOrphanedPartInstancesInRundown(context, ingestModel.rundownId)
 
 	const segmentIdChanges = await findChangesToSegmentIdsOfPartInstances(
-		cache,
+		ingestModel,
 		beforePartMap,
 		orphanedPartInstances.filter((p) => p.orphaned === 'adlib-part')
 	)
@@ -58,8 +58,8 @@ export async function updateSegmentIdsForAdlibbedPartInstances(
 }
 
 async function findChangesToSegmentIdsOfPartInstances(
-	cache: CacheForIngest,
-	beforePartMap: BeforePartMap,
+	ingestModel: IngestModelReadonly,
+	beforePartMap: BeforeIngestOperationPartMap,
 	adlibbedPartInstances: Array<MinimalPartInstance>
 ) {
 	const renameRules = new Map<PartInstanceId, SegmentId>()
@@ -75,11 +75,11 @@ async function findChangesToSegmentIdsOfPartInstances(
 
 		for (const partEntry of partsBefore) {
 			// Check if the Part still exists
-			const part = cache.Parts.findOne(partEntry.id)
+			const part = ingestModel.findPart(partEntry.id)
 			if (part) {
 				// Check if the part segmentId should be changed
-				if (part.segmentId !== partInstance.segmentId) {
-					renameRules.set(partInstance._id, part.segmentId)
+				if (part.part.segmentId !== partInstance.segmentId) {
+					renameRules.set(partInstance._id, part.part.segmentId)
 				}
 
 				break

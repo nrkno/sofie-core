@@ -1,3 +1,4 @@
+import { stringifyError } from '@sofie-automation/server-core-integration'
 import * as Winston from 'winston'
 
 export function getVersions(logger: Winston.Logger): { [packageName: string]: string } {
@@ -23,7 +24,7 @@ export function getVersions(logger: Winston.Logger): { [packageName: string]: st
 				const pkgInfo = require(`${pkgName}/package.json`)
 				versions[pkgName] = pkgInfo.version || 'N/A'
 			} catch (e) {
-				logger.error(`Failed to load package.json for lib "${pkgName}": ${e}`)
+				logger.error(`Failed to load package.json for lib "${pkgName}": ${stringifyError(e)}`)
 			}
 		}
 	} catch (e) {

@@ -1,7 +1,7 @@
 import classNames from 'classnames'
 import React, { useCallback, useEffect, useState } from 'react'
 import { UIStudio } from '../../../../lib/api/studios'
-import { ISourceLayerExtended } from '../../../../lib/Rundown'
+import { ISourceLayerExtended } from '../../../lib/RundownResolver'
 import { RundownUtils } from '../../../lib/rundown'
 import { AdLibPieceUi } from '../../../lib/shelf'
 import { PieceUi } from '../../SegmentContainer/withResolvedSegment'

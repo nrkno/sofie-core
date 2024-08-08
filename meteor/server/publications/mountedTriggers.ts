@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import { CustomPublish, meteorCustomPublish } from '../lib/customPublication'
-import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { logger } from '../logging'
@@ -10,13 +9,18 @@ import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import _ from 'underscore'
 import { PeripheralDevices } from '../collections'
 import { check } from 'meteor/check'
+import {
+	PeripheralDevicePubSub,
+	PeripheralDevicePubSubCollectionsNames,
+} from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 const PUBLICATION_DEBOUNCE = 20
 
 meteorCustomPublish(
-	PubSub.mountedTriggersForDevice,
-	CustomCollectionName.MountedTriggers,
-	async function (pub, deviceId: PeripheralDeviceId, deviceIds: string[], token) {
+	PeripheralDevicePubSub.mountedTriggersForDevice,
+	PeripheralDevicePubSubCollectionsNames.mountedTriggers,
+	async function (pub, deviceId: PeripheralDeviceId, deviceIds: string[], token: string | undefined) {
 		check(deviceId, String)
 		check(deviceIds, [String])
 
@@ -44,9 +48,9 @@ meteorCustomPublish(
 )
 
 meteorCustomPublish(
-	PubSub.mountedTriggersForDevicePreview,
-	CustomCollectionName.MountedTriggersPreviews,
-	async function (pub, deviceId: PeripheralDeviceId, token) {
+	PeripheralDevicePubSub.mountedTriggersForDevicePreview,
+	PeripheralDevicePubSubCollectionsNames.mountedTriggersPreviews,
+	async function (pub, deviceId: PeripheralDeviceId, token: string | undefined) {
 		check(deviceId, String)
 
 		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
@@ -97,7 +101,7 @@ function cursorCustomPublish<T extends { _id: ProtectedString<any> }>(pub: Custo
 				removed: Array.from(bufferToSend.removed.values()),
 			})
 		} catch (e) {
-			logger.error(`Error while updating publication: ${e}`, e as any)
+			logger.error(`Error while updating publication: ${stringifyError(e)}`)
 		}
 	}, PUBLICATION_DEBOUNCE)
 

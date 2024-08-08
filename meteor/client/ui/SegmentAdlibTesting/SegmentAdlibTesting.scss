@@ -1,0 +1,9 @@
+$segment-adlib-testing-header-color: #fff;
+
+.segment-timeline.segment-adlib-testing {
+	.segment-timeline__title {
+		background: $segment-adlib-testing-header-color;
+		color: #000;
+		text-shadow: none;
+	}
+}

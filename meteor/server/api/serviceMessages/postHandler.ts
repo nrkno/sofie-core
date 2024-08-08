@@ -8,9 +8,9 @@ export { postHandler }
 
 const INPUT_MISSING_PARTIAL = 'Missing data in input: '
 
-const validCriticalities = Object.keys(Criticality)
+const validCriticalities: Criticality[] = Object.keys(Criticality)
 	.filter((k) => typeof Criticality[k as any] === 'number')
-	.map((k) => Criticality[k])
+	.map((k: any) => Criticality[k]) as any
 
 /**
  * Create new or update existing service message.

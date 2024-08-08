@@ -22,15 +22,6 @@ export function pieceUiClassNames(
 	const innerPiece = pieceInstance.instance.piece
 
 	return classNames(baseClassName, typeClass, {
-		'with-in-transition':
-			innerPiece.transitions &&
-			innerPiece.transitions.inTransition &&
-			(innerPiece.transitions.inTransition.duration || 0) > 0,
-		'with-out-transition':
-			innerPiece.transitions &&
-			innerPiece.transitions.outTransition &&
-			(innerPiece.transitions.outTransition.duration || 0) > 0,
-
 		'hide-overflow-labels':
 			uiState && elementWidth
 				? uiState.leftAnchoredWidth > 0 && uiState.leftAnchoredWidth + uiState.rightAnchoredWidth > elementWidth

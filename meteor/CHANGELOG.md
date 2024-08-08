@@ -2,14 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [1.50.4](///compare/v1.50.3...v1.50.4) (2024-08-08)
+### [1.50.5](///compare/v1.50.4-LSG-updates...v1.50.5) (2024-08-08)
 
 
 ### Bug Fixes
 
-* compensate for piece preroll for adlibbed pieces SOFIE-3369 ([#1236](undefined/undefined/undefined/issues/1236)) c8f7c42
-* rundown timing drifting when playing parts with preroll SOFIE-3291 ([#1234](undefined/undefined/undefined/issues/1234)) a444857
-* unexpected timeline updates while playing final part in rundown SOFIE-3371 ([#1237](undefined/undefined/undefined/issues/1237)) 393f0c1
+* compensate for piece preroll for adlibbed pieces SOFIE-3369 ([#1236](undefined/undefined/undefined/issues/1236)) 195a7d9
+* rundown timing drifting when playing parts with preroll SOFIE-3291 ([#1234](undefined/undefined/undefined/issues/1234)) beee11a
+* unexpected timeline updates while playing final part in rundown SOFIE-3371 ([#1237](undefined/undefined/undefined/issues/1237)) 0fe74b4
+
+### [1.50.4](https://github.com/nrkno/sofie-core/compare/v1.50.3-LSG-updates...v1.50.4) (2024-07-30)
+
+
+### Bug Fixes
+
+* further improve stringifyError ([0233073](https://github.com/nrkno/sofie-core/commit/02330735fd4f3b03f9bff84e4c41fb9199a4623e))
+* improve error logging: use stringifyError() ([8da63de](https://github.com/nrkno/sofie-core/commit/8da63dec44915439ea436eee9697f3774241537b))
+* **LSG:** Token "examples" does not exist when running `yarn gendocs` ([a0ea9b4](https://github.com/nrkno/sofie-core/commit/a0ea9b48997fe39e8db5ababef744c103a68509f))
+* make stringifyError handle UserError better ([e2ecc7e](https://github.com/nrkno/sofie-core/commit/e2ecc7eb48b9ad6c0d95b299d954abac577e70a7))
+* refactor VirtualElement to be a FC ([bf81baf](https://github.com/nrkno/sofie-core/commit/bf81baf9ff520ad6a9fc9b6378ce6ceeac320645))
 
 ### [1.50.3](https://github.com/nrkno/sofie-core/compare/v1.50.2...v1.50.3) (2024-06-24)
 

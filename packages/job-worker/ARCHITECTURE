@@ -1,14 +1,13 @@
-
 ### Main thread
 
 The main thread acts as a coordinator.
 It joins to the various work queues, and distributes work into worker threads
 
 #### TODO
+
 It is also be tasked with watching for cache invalidations. Some things can be cached across jobs. For now that is blueprints, and their configs.
 Rather than making the workers maintain and coordinate detecting changes, we do that in the parent thread. We can then notify the worker thread of what needs invalidating between jobs.
 This will avoid some potential issues we could have with caches being cleared midway through jobs, which could cause weird or hidden data issues
-
 
 ### Studio thread
 
@@ -18,16 +17,14 @@ Anything else which wants the CacheForStudio must also be run here.
 
 Note: When running an operation on a playlist, the lock must be aquired for that playlist too, to ensure that the final phase of an ingest operation isnt run at the same time.
 
-
 ### Ingest thread(s?)
 
 For now there is one ingest thread, this will want to be expanded later on. (A pool for a studio, with up to one job per rundown at a time?)
 
 This thread is responsible for ingest/rundown scoped operations.
-Any use of CacheForIngest must be done here.
+Any use of IngestModel must be done here.
 
 Any saving of changes must be done while the playlist lock is held. This is to ensure that there isnt another operation running which could fetch data invalid data in the middle of the save.
-
 
 ### Buckets???
 

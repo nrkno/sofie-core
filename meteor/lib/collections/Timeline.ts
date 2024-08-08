@@ -1,4 +1,4 @@
-import { ResultingMappingRoutes } from './Studios'
+import { ResultingMappingRoutes } from '@sofie-automation/corelib/dist/dataModel/Studio'
 
 import { TimelineObjGeneric, updateLookaheadLayer } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 

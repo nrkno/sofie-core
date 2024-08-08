@@ -6,7 +6,7 @@ import {
 	withTiming,
 } from '../RundownView/RundownTiming/withTiming'
 import { SIMULATED_PLAYBACK_HARD_MARGIN } from '../SegmentTimeline/SegmentTimelineContainer'
-import { PartInstanceLimited } from '../../../lib/Rundown'
+import { PartInstanceLimited } from '../../lib/RundownResolver'
 import { useTranslation } from 'react-i18next'
 import { getAllowSpeaking, getAllowVibrating } from '../../lib/localStorage'
 import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRemaining'

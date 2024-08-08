@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Studio } from '../../../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
@@ -15,7 +15,7 @@ import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
 import { catchError } from '../../../lib/lib'
 
 interface IStudioGenericPropertiesProps {
-	studio: Studio
+	studio: DBStudio
 	availableShowStyleBases: Array<{
 		name: string
 		value: ShowStyleBaseId
@@ -213,16 +213,6 @@ export const StudioGenericProperties = withTranslation()(
 						/>
 					</label>
 					<label className="field">
-						<LabelActual label={t('Preserve contents of playing segment when unsynced')} />
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute="settings.preserveUnsyncedPlayingSegmentContents"
-							obj={this.props.studio}
-							type="checkbox"
-							collection={Studios}
-						/>
-					</label>
-					<label className="field">
 						<LabelActual label={t('Allow Rundowns to be reset while on-air')} />
 						<EditAttribute
 							modifiedClassName="bghl"
@@ -233,14 +223,24 @@ export const StudioGenericProperties = withTranslation()(
 						/>
 					</label>
 					<label className="field">
-						<LabelActual
-							label={t(
-								'Preserve position of segments when unsynced relative to other segments. Note: this has only been tested for the iNews gateway'
-							)}
-						/>
+						<LabelActual label={t('Preserve position of segments when unsynced relative to other segments')} />
 						<EditAttribute
 							modifiedClassName="bghl"
 							attribute="settings.preserveOrphanedSegmentPositionInRundown"
+							obj={this.props.studio}
+							type="checkbox"
+							collection={Studios}
+						/>
+						<span className="text-s dimmed field-hint">{t('This has only been tested for the iNews gateway')}</span>
+					</label>
+
+					<label className="field">
+						<LabelActual
+							label={t('Allow AdlibTesting (rehearsal) mode, for testing adlibs before taking the first Part')}
+						/>
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute="settings.allowAdlibTestingSegment"
 							obj={this.props.studio}
 							type="checkbox"
 							collection={Studios}

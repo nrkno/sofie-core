@@ -123,6 +123,9 @@ export namespace MeteorMock {
 			connection: {
 				clientAddress: '1.1.1.1',
 			},
+			unblock: () => {
+				// noop
+			},
 		}
 	}
 	export class Error {
@@ -244,7 +247,7 @@ export namespace MeteorMock {
 			const fiber = Fiber.current
 			if (!fiber) throw new Error(500, `It appears that wrapAsync isn't running in a fiber`)
 
-			const callback = (err, value) => {
+			const callback = (err: any, value: any) => {
 				if (err) {
 					fiber.throwInto(err)
 				} else {
