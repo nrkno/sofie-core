@@ -1424,10 +1424,10 @@ __metadata:
   languageName: node
   linkType: soft
 
-"@sofie-automation/sorensen@npm:^1.4.2":
-  version: 1.4.2
-  resolution: "@sofie-automation/sorensen@npm:1.4.2"
-  checksum: 0fb9d945af37a0dc278be05ed16e77ed8a0c69a5dee891ab0430fff7f4aace036baf96c9fe8f7c80e1addaea634e9bf9547f97818f5ba1279c77c32387079844
+"@sofie-automation/sorensen@npm:^1.4.3":
+  version: 1.4.3
+  resolution: "@sofie-automation/sorensen@npm:1.4.3"
+  checksum: 2ec7bd38fd6cf91456303cef103265c0dfb031074f601278d4fa55a355d0a1c043763a5f323bb12147385426dcb1f91869f01f788994bd3c51fa3cd8aaf431a8
   languageName: node
   linkType: hard
 
@@ -2700,7 +2700,7 @@ __metadata:
     "@sofie-automation/eslint-plugin": ^0.1.1
     "@sofie-automation/job-worker": "portal:../packages/job-worker"
     "@sofie-automation/shared-lib": "portal:../packages/shared-lib"
-    "@sofie-automation/sorensen": ^1.4.2
+    "@sofie-automation/sorensen": ^1.4.3
     "@types/app-root-path": ^1.2.8
     "@types/body-parser": ^1.19.5
     "@types/classnames": ^2.3.1

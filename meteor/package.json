@@ -56,7 +56,7 @@
 		"@sofie-automation/corelib": "portal:../packages/corelib",
 		"@sofie-automation/job-worker": "portal:../packages/job-worker",
 		"@sofie-automation/shared-lib": "portal:../packages/shared-lib",
-		"@sofie-automation/sorensen": "^1.4.2",
+		"@sofie-automation/sorensen": "^1.4.3",
 		"app-root-path": "^3.1.0",
 		"bcrypt": "^5.1.1",
 		"body-parser": "^1.20.2",
