@@ -25,7 +25,7 @@ import {
 } from '../../lib/shelf'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
+import { useContentStatusForPieceInstance, WithMediaObjectStatusProps } from '../SegmentTimeline/withMediaObjectStatus'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { UIStudios } from '../Collections'
 import { Meteor } from 'meteor/meteor'
@@ -49,12 +49,22 @@ interface IAdLibRegionPanelTrackedProps extends IDashboardPanelTrackedProps {
 }
 
 class AdLibRegionPanelBase extends React.Component<
-	Translated<IAdLibPanelProps & IAdLibRegionPanelProps & AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps>,
+	Translated<
+		IAdLibPanelProps &
+			IAdLibRegionPanelProps &
+			AdLibFetchAndFilterProps &
+			IAdLibRegionPanelTrackedProps &
+			WithMediaObjectStatusProps
+	>,
 	IState
 > {
 	constructor(
 		props: Translated<
-			IAdLibPanelProps & IAdLibRegionPanelProps & AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps
+			IAdLibPanelProps &
+				IAdLibRegionPanelProps &
+				AdLibFetchAndFilterProps &
+				IAdLibRegionPanelTrackedProps &
+				WithMediaObjectStatusProps
 		>
 	) {
 		super(props)
@@ -172,7 +182,7 @@ class AdLibRegionPanelBase extends React.Component<
 	}
 
 	private renderPreview() {
-		const thumbnailUrl = this.props.piece?.contentStatus?.thumbnailUrl
+		const thumbnailUrl = this.props.contentStatus?.thumbnailUrl
 		if (thumbnailUrl) {
 			return <img src={thumbnailUrl} className="adlib-region-panel__image" />
 		}
@@ -223,10 +233,15 @@ class AdLibRegionPanelBase extends React.Component<
 	}
 }
 
-export const AdLibRegionPanelWithStatus = withMediaObjectStatus<
-	Translated<IAdLibPanelProps & IAdLibRegionPanelProps & AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps>,
-	{}
->()(AdLibRegionPanelBase)
+function AdLibRegionPanelWithStatus(
+	props: Translated<
+		IAdLibPanelProps & IAdLibRegionPanelProps & AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps
+	>
+) {
+	const contentStatus = useContentStatusForPieceInstance(props.piece?.instance)
+
+	return <AdLibRegionPanelBase {...props} contentStatus={contentStatus} />
+}
 
 export const AdLibRegionPanel = translateWithTracker<
 	Translated<IAdLibPanelProps & IAdLibRegionPanelProps>,
