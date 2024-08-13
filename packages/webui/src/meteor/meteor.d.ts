@@ -12,6 +12,8 @@ export namespace Meteor {
 
 	function user(options?: { fields?: Mongo.FieldSpecifier | undefined }): unknown | null
 
+	function userId(): string | null
+
 	/** Error **/
 	/**
 	 * This class represents a symbolic error thrown by a method.

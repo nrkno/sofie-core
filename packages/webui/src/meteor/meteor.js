@@ -329,3 +329,7 @@ Meteor.startup = function (cb) {
 Meteor.user = function () {
 	return null
 }
+
+Meteor.userId = function () {
+	return null
+}

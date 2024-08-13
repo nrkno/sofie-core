@@ -8,6 +8,7 @@ import { AllPubSubTypes } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { meteorSubscribe } from '../meteorApi'
 import { stringifyObjects } from '../tempLib'
 import _ from 'underscore'
+import { Meteor } from 'meteor/meteor'
 
 const globalTrackerQueue: Array<Function> = []
 let globalTrackerTimestamp: number | undefined = undefined

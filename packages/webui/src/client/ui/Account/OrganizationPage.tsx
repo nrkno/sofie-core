@@ -8,7 +8,7 @@ import { DBOrganization, UserRoles } from '@sofie-automation/meteor-lib/dist/col
 import { unprotectString } from '../../lib/tempLib'
 import { MeteorCall } from '../../lib/meteorApi'
 import { EditAttribute } from '../../lib/EditAttribute'
-import { Organizations, Users } from '../../collections'
+import { Organizations } from '../../collections'
 import { useTranslation } from 'react-i18next'
 import { logger } from '../../lib/logging'
 
@@ -27,11 +27,12 @@ export function OrganizationPage(): JSX.Element {
 
 	const userIsAdmin = !!getUserRolesFromLoadedDocuments(loggedInUser, organization).admin
 
-	const usersInOrg = useTracker(
-		() => (userOrganizationId ? Users.find({ organizationId: userOrganizationId }).fetch() : []),
-		[userOrganizationId],
-		[]
-	)
+	const usersInOrg: DBUser[] = []
+	// const usersInOrg = useTracker(
+	// 	() => (userOrganizationId ? Users.find({ organizationId: userOrganizationId }).fetch() : []),
+	// 	[userOrganizationId],
+	// 	[]
+	// )
 
 	const [newUserEmail, setNewUserEmail] = useState('')
 	const [newUserName, setNewUserName] = useState('')
