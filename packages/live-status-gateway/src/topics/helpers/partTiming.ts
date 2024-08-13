@@ -21,7 +21,7 @@ export function calculateCurrentPartTiming(
 			(partInstance) => partInstance.part.displayDurationGroup === currentPartInstance.part.displayDurationGroup
 		)
 		const groupDuration = displayDurationGroup.reduce((sum, partInstance) => {
-			return sum + (partInstance.part.expectedDurationWithPreroll ?? 0)
+			return sum + (partInstance.part.expectedDurationWithTransition ?? 0)
 		}, 0)
 		const groupPlayed = displayDurationGroup.reduce((sum, partInstance) => {
 			return (partInstance.timings?.duration ?? 0) + sum

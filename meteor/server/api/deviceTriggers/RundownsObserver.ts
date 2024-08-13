@@ -50,6 +50,8 @@ export class RundownsObserver {
 
 	private innerUpdateRundownContent = () => {
 		if (!this.#changed) return
+		this.#cleanup?.()
+
 		const changed = this.#changed
 		this.#cleanup = changed(this.rundownIds)
 	}

@@ -21,6 +21,9 @@ export interface UITriggeredActionsObj {
 
 	/** A list of actions to execute */
 	actions: Record<string, SomeAction>
+
+	/** Space separated list of class names to use when displaying this triggered actions */
+	styleClassNames?: string
 }
 
 export interface DBTriggeredActions {
@@ -42,6 +45,9 @@ export interface DBTriggeredActions {
 
 	/** A list of actions to execute */
 	actionsWithOverrides: ObjectWithOverrides<Record<string, SomeAction>>
+
+	/** Space separated list of class names to use when displaying this triggered actions */
+	styleClassNames?: string
 }
 
 /** Note: Use DBTriggeredActions instead */

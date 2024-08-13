@@ -53,7 +53,8 @@ Meteor.onConnection((conn: Meteor.Connection) => {
 								connected: false,
 								// connectionId: ''
 							},
-						}
+						},
+						{ multi: true }
 					)
 				}
 			})
@@ -94,7 +95,8 @@ Meteor.startup(() => {
 				$set: {
 					connected: false,
 				},
-			}
+			},
+			{ multi: true }
 		)
 	})
 })

@@ -51,6 +51,7 @@ function convertTriggeredActionToBlueprints(triggeredAction: TriggeredActionsObj
 		name: triggeredAction.name,
 		triggers: clone(triggeredAction.triggersWithOverrides.defaults),
 		actions: clone(triggeredAction.actionsWithOverrides.defaults),
+		styleClassNames: triggeredAction.styleClassNames,
 	}
 
 	return obj
@@ -135,7 +136,8 @@ class AbstractMigrationContextWithTriggeredActions {
 					},
 					{
 						$set: newObj,
-					}
+					},
+					{ multi: true }
 				)
 			)
 		}
@@ -536,7 +538,8 @@ export class MigrationContextShowStyle
 					$set: {
 						[`sourceLayersWithOverrides.defaults.${sourceLayerId}`]: fullLayer,
 					},
-				}
+				},
+				{ multi: false }
 			)
 		)
 		this.showStyleBase.sourceLayersWithOverrides.defaults[sourceLayerId] = fullLayer // Update local

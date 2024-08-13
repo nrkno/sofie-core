@@ -1,13 +1,11 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import * as _ from 'underscore'
 import { unprotectString } from '../../../../lib/lib'
 import { ISourceLayerUi } from '../SegmentTimelineContainer'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { SourceLayerItemContainer } from '../SourceLayerItemContainer'
 import { ISourceLayerPropsBase, useMouseContext } from './SourceLayer'
-import { ISourceLayerExtended } from '../../../../lib/Rundown'
-import { PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { ReadonlyDeep } from 'type-fest'
+import { ISourceLayerExtended } from '../../../lib/RundownResolver'
 
 interface IFlattenedSourceLayerProps extends ISourceLayerPropsBase {
 	layers: ISourceLayerUi[]
@@ -16,17 +14,6 @@ interface IFlattenedSourceLayerProps extends ISourceLayerPropsBase {
 
 export function FlattenedSourceLayers(props: Readonly<IFlattenedSourceLayerProps>): JSX.Element {
 	const { getPartContext, onMouseDown } = useMouseContext(props)
-
-	const piecesForLayers = useMemo(() => {
-		const piecesForLayers: Map<string, ReadonlyDeep<PieceInstancePiece>[]> = new Map()
-		for (const layer of props.layers) {
-			piecesForLayers.set(
-				layer._id,
-				layer.pieces.map((p) => p.instance.piece)
-			)
-		}
-		return piecesForLayers
-	}, [props.layers])
 
 	return (
 		<ContextMenuTrigger
@@ -70,7 +57,6 @@ export function FlattenedSourceLayers(props: Readonly<IFlattenedSourceLayerProps
 									onClick={props.onPieceClick}
 									onDoubleClick={props.onPieceDoubleClick}
 									piece={piece}
-									pieces={piecesForLayers.get(layer._id) ?? []}
 									layer={layer}
 									outputLayer={props.outputLayer}
 									part={props.part}

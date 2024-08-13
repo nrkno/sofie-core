@@ -7,8 +7,8 @@ export enum SegmentOrphanedReason {
 	DELETED = 'deleted',
 	/** Segment should be hidden, but it is still playing */
 	HIDDEN = 'hidden',
-	/** Segment is owned by playout, and is the scratchpad for its rundown */
-	SCRATCHPAD = 'scratchpad',
+	/** Segment is owned by playout, and is for AdlibTesting in its rundown */
+	ADLIB_TESTING = 'adlib-testing',
 }
 
 /** A "Title" in NRK Lingo / "Stories" in ENPS Lingo. */

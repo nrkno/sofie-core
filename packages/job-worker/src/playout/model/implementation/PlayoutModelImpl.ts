@@ -48,13 +48,14 @@ import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedSt
 import { queuePartInstanceTimingEvent } from '../../timings/events'
 import { IS_PRODUCTION } from '../../../environment'
 import { DeferredAfterSaveFunction, DeferredFunction, PlayoutModel, PlayoutModelReadonly } from '../PlayoutModel'
-import { writePartInstancesAndPieceInstances, writeScratchpadSegments } from './SavePlayoutModel'
+import { writePartInstancesAndPieceInstances, writeAdlibTestingSegments } from './SavePlayoutModel'
 import { PlayoutPieceInstanceModel } from '../PlayoutPieceInstanceModel'
 import { DatabasePersistedModel } from '../../../modelBase'
 import { ExpectedPackageDBFromStudioBaselineObjects } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { ExpectedPlayoutItemStudio } from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'
 import { StudioBaselineHelper } from '../../../studio/model/StudioBaselineHelper'
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 export class PlayoutModelReadonlyImpl implements PlayoutModelReadonly {
 	public readonly playlistId: RundownPlaylistId
@@ -331,7 +332,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 			partInstance.insertAdlibbedPiece(piece, fromAdlibId)
 		}
 
-		partInstance.recalculateExpectedDurationWithPreroll()
+		partInstance.recalculateExpectedDurationWithTransition()
 
 		this.allPartInstances.set(newPartInstance._id, partInstance)
 
@@ -367,24 +368,24 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		this.#fixupPieceInstancesForPartInstance(newPartInstance, pieceInstances)
 
 		const partInstance = new PlayoutPartInstanceModelImpl(newPartInstance, pieceInstances, true)
-		partInstance.recalculateExpectedDurationWithPreroll()
+		partInstance.recalculateExpectedDurationWithTransition()
 
 		this.allPartInstances.set(newPartInstance._id, partInstance)
 
 		return partInstance
 	}
 
-	createScratchpadPartInstance(
+	createAdlibTestingPartInstance(
 		rundown: PlayoutRundownModel,
 		part: Omit<DBPart, 'segmentId' | 'rundownId'>
 	): PlayoutPartInstanceModel {
 		const currentPartInstance = this.currentPartInstance
-		if (currentPartInstance) throw new Error('Scratchpad can only be used before the first take')
+		if (currentPartInstance) throw new Error('AdlibTesting can only be used before the first take')
 
-		const scratchpadSegment = rundown.getScratchpadSegment()
-		if (!scratchpadSegment) throw new Error('No scratchpad segment')
-		if (this.loadedPartInstances.find((p) => p.partInstance.segmentId === scratchpadSegment.segment._id))
-			throw new Error('Scratchpad segment already has content')
+		const adlibTestingSegment = rundown.getAdlibTestingSegment()
+		if (!adlibTestingSegment) throw new Error('No AdlibTesting segment')
+		if (this.loadedPartInstances.find((p) => p.partInstance.segmentId === adlibTestingSegment.segment._id))
+			throw new Error('AdlibTesting segment already has content')
 
 		const activationId = this.playlist.activationId
 		if (!activationId) throw new Error('Playlist is not active')
@@ -392,7 +393,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		const newPartInstance: DBPartInstance = {
 			_id: getRandomId(),
 			rundownId: rundown.rundown._id,
-			segmentId: scratchpadSegment.segment._id,
+			segmentId: adlibTestingSegment.segment._id,
 			playlistActivationId: activationId,
 			segmentPlayoutId: getRandomId(),
 			takeCount: 1,
@@ -401,12 +402,12 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 			part: {
 				...part,
 				rundownId: rundown.rundown._id,
-				segmentId: scratchpadSegment.segment._id,
+				segmentId: adlibTestingSegment.segment._id,
 			},
 		}
 
 		const partInstance = new PlayoutPartInstanceModelImpl(newPartInstance, [], true)
-		partInstance.recalculateExpectedDurationWithPreroll()
+		partInstance.recalculateExpectedDurationWithTransition()
 
 		this.allPartInstances.set(newPartInstance._id, partInstance)
 
@@ -559,7 +560,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 				? this.context.directCollections.RundownPlaylists.replace(this.playlistImpl)
 				: undefined,
 			...writePartInstancesAndPieceInstances(this.context, this.allPartInstances),
-			writeScratchpadSegments(this.context, this.rundownsImpl),
+			writeAdlibTestingSegments(this.context, this.rundownsImpl),
 			this.#baselineHelper.saveAllToDatabase(),
 		])
 
@@ -587,7 +588,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 					partExternalId: partExternalId,
 				})
 				.catch((e) => {
-					logger.warn(`Failed to queue NotifyCurrentlyPlayingPart job: ${e}`)
+					logger.warn(`Failed to queue NotifyCurrentlyPlayingPart job: ${stringifyError(e)}`)
 				})
 		}
 		this.#pendingNotifyCurrentlyPlayingPartEvent.clear()
@@ -737,8 +738,8 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		if (this.#playlistHasChanged)
 			logOrThrowError(new Error(`Failed no changes in model assertion, Playlist has been changed`))
 
-		if (this.rundownsImpl.find((rd) => rd.ScratchPadSegmentHasChanged))
-			logOrThrowError(new Error(`Failed no changes in model assertion, a scratchpad Segment has been changed`))
+		if (this.rundownsImpl.find((rd) => rd.AdlibTestingSegmentHasChanged))
+			logOrThrowError(new Error(`Failed no changes in model assertion, an AdlibTesting Segment has been changed`))
 
 		if (
 			Array.from(this.allPartInstances.values()).find(

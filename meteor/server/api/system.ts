@@ -26,6 +26,7 @@ import { TranslationsBundleId } from '@sofie-automation/corelib/dist/dataModel/I
 import { createAsyncOnlyMongoCollection, AsyncOnlyMongoCollection } from '../collections/collection'
 import { generateToken } from './singleUseTokens'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 async function setupIndexes(removeOldIndexes = false): Promise<Array<IndexSpecification>> {
 	// Note: This function should NOT run on Meteor.startup, due to getCollectionIndexes failing if run before indexes have been created.
@@ -54,7 +55,9 @@ async function setupIndexes(removeOldIndexes = false): Promise<Array<IndexSpecif
 						if (removeOldIndexes) {
 							logger.info(`Removing index: ${JSON.stringify(existingIndex.key)}`)
 							rawCollection.dropIndex(existingIndex.name).catch((e) => {
-								logger.warn(`Failed to drop index: ${JSON.stringify(existingIndex.key)}: ${e}`)
+								logger.warn(
+									`Failed to drop index: ${JSON.stringify(existingIndex.key)}: ${stringifyError(e)}`
+								)
 							})
 						}
 					}

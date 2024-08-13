@@ -1,5 +1,6 @@
 import { ITranslatableMessage } from '@sofie-automation/blueprints-integration'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
+import { interpollateTranslation, translateMessage } from './TranslatableMessage'
 
 // Mock 't' function for i18next to find the keys
 function t(key: string): string {
@@ -54,9 +55,11 @@ export enum UserErrorMessage {
 	ShowStyleBaseNotFound = 39,
 	NoMigrationsToApply = 40,
 	ValidationFailed = 41,
-	ScratchpadNotAllowed = 42,
-	ScratchpadAlreadyActive = 43,
+	AdlibTestingNotAllowed = 42,
+	AdlibTestingAlreadyActive = 43,
 	BucketNotFound = 44,
+	AdlibTestingRundownsNotSupported = 45,
+	AdlibTestingRundownsGenerationFailed = 46,
 }
 
 const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
@@ -110,12 +113,25 @@ const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
 	[UserErrorMessage.ShowStyleBaseNotFound]: t(`ShowStyleBase not found!`),
 	[UserErrorMessage.NoMigrationsToApply]: t(`No migrations to apply`),
 	[UserErrorMessage.ValidationFailed]: t('Validation failed!'),
-	[UserErrorMessage.ScratchpadNotAllowed]: t(`Scratchpad mode is not allowed`),
-	[UserErrorMessage.ScratchpadAlreadyActive]: t(`Scratchpad mode is already active`),
+	[UserErrorMessage.AdlibTestingNotAllowed]: t(`Rehearsal mode is not allowed`),
+	[UserErrorMessage.AdlibTestingAlreadyActive]: t(`Rehearsal mode is already active`),
 	[UserErrorMessage.BucketNotFound]: t(`Bucket not found!`),
+	[UserErrorMessage.AdlibTestingRundownsNotSupported]: t(`Adlib rundowns are not supported for this ShowStyle!`),
+	[UserErrorMessage.AdlibTestingRundownsGenerationFailed]: t(`Failed to generate adlib rundown! {{message}}`),
 }
 
-export class UserError {
+export interface UserErrorObj {
+	readonly errorCode: number
+
+	/** The raw Error that was thrown */
+	readonly rawError: Error
+	/** The UserErrorMessage key (for matching certain error) */
+	readonly key: UserErrorMessage
+	/** The translatable string for the key */
+	readonly message: ITranslatableMessage
+}
+
+export class UserError implements UserErrorObj {
 	public readonly errorCode: number
 
 	private constructor(
@@ -139,15 +155,19 @@ export class UserError {
 	static from(err: Error, key: UserErrorMessage, args?: { [k: string]: any }, errCode?: number): UserError {
 		return new UserError(err, key, { key: UserErrorMessagesTranslations[key], args }, errCode)
 	}
-	/** Create a UserError with a custom error for the log */
-	static fromUnknown(
-		err: unknown,
-		key: UserErrorMessage,
-		args?: { [k: string]: any },
-		errorCode?: number
-	): UserError {
+	/** Create a UserError from an unknown possibly error input */
+	static fromUnknown(err: unknown, errorCode?: number): UserError {
+		if (err instanceof UserError) return err
+		if (this.isUserError(err))
+			return new UserError(new Error(err.rawError.toString()), err.key, err.message, err.errorCode)
+
 		const err2 = err instanceof Error ? err : new Error(stringifyError(err))
-		return new UserError(err2, key, { key: UserErrorMessagesTranslations[key], args }, errorCode)
+		return new UserError(
+			err2,
+			UserErrorMessage.InternalError,
+			{ key: UserErrorMessagesTranslations[UserErrorMessage.InternalError] },
+			errorCode
+		)
 	}
 
 	/** Create a UserError duplicating the same error for the log */
@@ -168,7 +188,7 @@ export class UserError {
 		}
 	}
 
-	static toJSON(e: UserError): string {
+	static toJSON(e: UserErrorObj): string {
 		return JSON.stringify({
 			rawError: stringifyError(e.rawError),
 			message: e.message,
@@ -177,7 +197,11 @@ export class UserError {
 		})
 	}
 
-	static isUserError(e: unknown): e is UserError {
+	static isUserError(e: unknown): e is UserErrorObj {
 		return !(e instanceof Error) && !!e && typeof e === 'object' && 'rawError' in e && 'message' in e && 'key' in e
+	}
+
+	toErrorString(): string {
+		return `${translateMessage(this.message, interpollateTranslation)}\n${stringifyError(this.rawError)}`
 	}
 }

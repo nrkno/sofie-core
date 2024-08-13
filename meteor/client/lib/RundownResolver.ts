@@ -1,21 +1,20 @@
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { IOutputLayer, ISourceLayer, ITranslatableMessage } from '@sofie-automation/blueprints-integration'
+import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { PartInstance, wrapPartToTemporaryInstance } from './collections/PartInstances'
+import { PartInstance, wrapPartToTemporaryInstance } from '../../lib/collections/PartInstances'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import {
 	getPieceInstancesForPart,
 	buildPiecesStartingInThisPartQuery,
 	buildPastInfinitePiecesForThisPartQuery,
 } from '@sofie-automation/corelib/dist/playout/infinites'
-import { invalidateAfter } from '../lib/invalidatingTime'
-import { getCurrentTime, groupByToMap, ProtectedString, protectString } from './lib'
+import { invalidateAfter } from '../../lib/invalidatingTime'
+import { getCurrentTime, groupByToMap, protectString } from '../../lib/lib'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { mongoWhereFilter, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
-import { FindOptions } from './collections/lib'
+import { FindOptions } from '../../lib/collections/lib'
 import {
 	PartId,
 	RundownId,
@@ -23,10 +22,8 @@ import {
 	SegmentId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PieceInstances, Pieces } from './collections/libCollections'
-import { RundownPlaylistCollectionUtil } from './collections/rundownPlaylistUtil'
-import { PieceContentStatusObj } from './api/pieceContentStatus'
-import { ReadonlyDeep } from 'type-fest'
+import { PieceInstances, Pieces } from '../../lib/collections/libCollections'
+import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlaylistUtil'
 import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 
 export interface SegmentExtended extends DBSegment {
@@ -80,8 +77,6 @@ export interface PieceExtended {
 	maxLabelWidth?: number
 	/** If this piece has a "buddy" piece in the preceeding part, then it's not neccessary to display it's left label */
 	hasOriginInPreceedingPart?: boolean
-
-	contentStatus?: ReadonlyDeep<PieceContentStatusObj>
 }
 
 function fetchPiecesThatMayBeActiveForPart(
@@ -161,8 +156,8 @@ export function getPieceInstancesForPartInstance(
 	options?: FindOptions<PieceInstance>,
 	pieceInstanceSimulation?: boolean
 ): PieceInstance[] {
-	if (segment.orphaned === SegmentOrphanedReason.SCRATCHPAD) {
-		// When in the scratchpad, don't allow searching other segments/rundowns for infinites to continue
+	if (segment.orphaned === SegmentOrphanedReason.ADLIB_TESTING) {
+		// When in the AdlibTesting segment, don't allow searching other segments/rundowns for infinites to continue
 		segmentsToReceiveOnRundownEndFromSet = new Set()
 		rundownsToReceiveOnShowStyleEndFrom = []
 	}
@@ -321,86 +316,4 @@ export function getSegmentsWithPartInstances(
 			}
 		}
 	})
-}
-
-// 1 reactivelly listen to data changes
-/*
-setup () {
-	RundownPlaylists.find().observeChanges(
-		asdf: onReactiveDataChange
-	)
-}
-
-onReactiveDataChange () {
-	setTimeoutIgnore(() => {
-		updateCalculatedData()
-	}, 200)
-}
-
-const cachedSegments = {}
-updateCalculatedData () {
-
-	const data = calculateBigDataSet()
-
-	data.segments
-}
-*/
-
-function compareLabels(a: string | ITranslatableMessage, b: string | ITranslatableMessage) {
-	const actualA = isTranslatableMessage(a) ? a.key : (a as string)
-	const actualB = isTranslatableMessage(b) ? b.key : (b as string)
-	// can't use .localeCompare, because this needs to be locale-independent and always return
-	// the same sorting order, because that's being relied upon by limit & pick/pickEnd.
-	if (actualA > actualB) return 1
-	if (actualA < actualB) return -1
-	return 0
-}
-
-/** Sort a list of adlibs */
-export function sortAdlibs<T>(
-	adlibs: {
-		adlib: T
-		label: string | ITranslatableMessage
-		adlibRank: number
-		adlibId: ProtectedString<any> | string
-		partRank: number | null
-		segmentRank: number | null
-		rundownRank: number | null
-	}[]
-): T[] {
-	adlibs = adlibs.sort((a, b) => {
-		// Sort by rundown rank, where applicable:
-		a.rundownRank = a.rundownRank ?? Number.POSITIVE_INFINITY
-		b.rundownRank = b.rundownRank ?? Number.POSITIVE_INFINITY
-		if (a.rundownRank > b.rundownRank) return 1
-		if (a.rundownRank < b.rundownRank) return -1
-
-		// Sort by segment rank, where applicable:
-		a.segmentRank = a.segmentRank ?? Number.POSITIVE_INFINITY
-		b.segmentRank = b.segmentRank ?? Number.POSITIVE_INFINITY
-		if (a.segmentRank > b.segmentRank) return 1
-		if (a.segmentRank < b.segmentRank) return -1
-
-		// Sort by part rank, where applicable:
-		a.partRank = a.partRank ?? Number.POSITIVE_INFINITY
-		b.partRank = b.partRank ?? Number.POSITIVE_INFINITY
-		if (a.partRank > b.partRank) return 1
-		if (a.partRank < b.partRank) return -1
-
-		// Sort by adlib rank
-		if (a.adlibRank > b.adlibRank) return 1
-		if (a.adlibRank < b.adlibRank) return -1
-
-		// Sort by labels:
-		const r = compareLabels(a.label, b.label)
-		if (r !== 0) return r
-
-		// As a last resort, sort by ids:
-		if (a.adlibId > b.adlibId) return 1
-		if (a.adlibId < b.adlibId) return -1
-
-		return 0
-	})
-
-	return adlibs.map((a) => a.adlib)
 }

@@ -1,11 +1,12 @@
 import classNames from 'classnames'
 import React, { CSSProperties, useCallback, useMemo, useRef, useState } from 'react'
-import { PieceExtended } from '../../../../lib/Rundown'
+import { PieceExtended } from '../../../lib/RundownResolver'
 import { RundownUtils } from '../../../lib/rundown'
 import { PieceHoverInspector } from '../PieceHoverInspector'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
 import StudioContext from '../../RundownView/StudioContext'
+import { useContentStatusForPieceInstance } from '../../SegmentTimeline/withMediaObjectStatus'
 
 interface IProps {
 	piece: PieceExtended
@@ -28,6 +29,8 @@ export const LinePartSecondaryPiece: React.FC<IProps> = React.memo(function Line
 	onClick: incomingOnClick,
 	onDoubleClick: incomingOnDoubleClick,
 }) {
+	const contentStatus = useContentStatusForPieceInstance(piece.instance)
+
 	const pieceEl = useRef<HTMLDivElement>(null)
 	const [hovering, setHover] = useState(false)
 	const [origin, setOrigin] = useState<OffsetPosition>({ left: 0, top: 0 })
@@ -109,6 +112,7 @@ export const LinePartSecondaryPiece: React.FC<IProps> = React.memo(function Line
 							mousePosition={mousePosition}
 							originPosition={origin}
 							pieceInstance={piece}
+							contentStatus={contentStatus}
 							studio={studio}
 						/>
 					)

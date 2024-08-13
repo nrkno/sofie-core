@@ -51,7 +51,7 @@ import { postProcessPieces, postProcessTimelineObjects } from '../../postProcess
 import { getCurrentTime } from '../../../lib'
 import _ = require('underscore')
 import { syncPlayheadInfinitesForNextPartInstance } from '../../../playout/infinites'
-import { validateScratchpartPartInstanceProperties } from '../../../playout/scratchpad'
+import { validateAdlibTestingPartInstanceProperties } from '../../../playout/adlibTesting'
 import { isTooCloseToAutonext } from '../../../playout/lib'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PlayoutRundownModel } from '../../../playout/model/PlayoutRundownModel'
@@ -384,7 +384,7 @@ export class PartAndPieceInstanceActionService {
 			invalid: false,
 			invalidReason: undefined,
 			floated: false,
-			expectedDurationWithPreroll: undefined, // Filled in later
+			expectedDurationWithTransition: undefined, // Filled in later
 		}
 
 		const pieces = postProcessPieces(
@@ -526,16 +526,16 @@ export async function applyActionSideEffects(
 	if (actionContext.nextPartState !== ActionPartChange.NONE) {
 		const nextPartInstance = playoutModel.nextPartInstance
 		if (nextPartInstance) {
-			nextPartInstance.recalculateExpectedDurationWithPreroll()
+			nextPartInstance.recalculateExpectedDurationWithTransition()
 
-			validateScratchpartPartInstanceProperties(context, playoutModel, nextPartInstance)
+			validateAdlibTestingPartInstanceProperties(context, playoutModel, nextPartInstance)
 		}
 	}
 
 	if (actionContext.currentPartState !== ActionPartChange.NONE) {
 		const currentPartInstance = playoutModel.currentPartInstance
 		if (currentPartInstance) {
-			validateScratchpartPartInstanceProperties(context, playoutModel, currentPartInstance)
+			validateAdlibTestingPartInstanceProperties(context, playoutModel, currentPartInstance)
 		}
 	}
 }

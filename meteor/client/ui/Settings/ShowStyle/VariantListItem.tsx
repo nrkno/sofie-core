@@ -169,6 +169,22 @@ export const VariantListItem = ({
 								</label>
 							</div>
 
+							<div className="properties-grid">
+								<label className="field">
+									<LabelActual label={t('Can Generate Adlib Testing Rundown')} />
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={'canGenerateAdlibTestingRundown'}
+										obj={showStyleVariant}
+										type="checkbox"
+										collection={ShowStyleVariants}
+									></EditAttribute>
+									<span className="text-s dimmed field-hint">
+										{t('This requires the blueprints to implement the `generateAdlibTestingIngestRundown` method')}
+									</span>
+								</label>
+							</div>
+
 							<div className="row">
 								<div className="col c12 r1-c12 phs">
 									<h3 className="mhn">{t('Blueprint Configuration')}</h3>

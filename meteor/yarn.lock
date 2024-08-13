@@ -1020,23 +1020,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mos-connection/helper@npm:3.0.7":
-  version: 3.0.7
-  resolution: "@mos-connection/helper@npm:3.0.7"
+"@mos-connection/helper@npm:^4.1.1-nightly-master-20240430-072032-ffb8bf6.0":
+  version: 4.1.1-nightly-master-20240430-072032-ffb8bf6.0
+  resolution: "@mos-connection/helper@npm:4.1.1-nightly-master-20240430-072032-ffb8bf6.0"
   dependencies:
-    "@mos-connection/model": 3.0.7
+    "@mos-connection/model": 4.1.1-nightly-master-20240430-072032-ffb8bf6.0
     iconv-lite: ^0.6.3
     tslib: ^2.5.3
     xml-js: ^1.6.11
     xmlbuilder: ^15.1.1
-  checksum: 802c95955328d89e62aa0addbaf79ce339c93bce499d96b6d314991cd77acbcbd573e4d6eb48408de234708f908d608b20941f846fceaa22813ddb2e6bdf6b4e
+  checksum: dcf7d5e800d08c007a4026b37ddcc6ebe77d020a311809bc379a5c7d15657c2d447b4149682aec17161d17217e2c6d5167c7ef81e954a4ed5a6283a7c75a7e0a
   languageName: node
   linkType: hard
 
-"@mos-connection/model@npm:3.0.7, @mos-connection/model@npm:^3.0.7":
-  version: 3.0.7
-  resolution: "@mos-connection/model@npm:3.0.7"
-  checksum: 4f7390a40fc5152bfcdb4e99eee243e3a1df248bf1f77e0a63d7d29d8db88cb8c9df5f231ab5d18e7cb1147ba8d39af5c621877221f343db630906e000c5b089
+"@mos-connection/model@npm:4.1.1-nightly-master-20240430-072032-ffb8bf6.0, @mos-connection/model@npm:^4.1.1-nightly-master-20240430-072032-ffb8bf6.0":
+  version: 4.1.1-nightly-master-20240430-072032-ffb8bf6.0
+  resolution: "@mos-connection/model@npm:4.1.1-nightly-master-20240430-072032-ffb8bf6.0"
+  checksum: 07bd3ffc94a8c140d994de445c34158bb9f5f8950f6cea34d59657fe4da1f0f6b5d0c2c7ef1b2ad902b43c846485ab10cb9f19d707233b875fe739d731151bdc
   languageName: node
   linkType: hard
 
@@ -1406,7 +1406,7 @@ __metadata:
     p-lazy: ^3.1.0
     p-timeout: ^4.1.0
     superfly-timeline: 9.0.0
-    threadedclass: ^1.2.1
+    threadedclass: ^1.2.2
     tslib: ^2.6.2
     type-fest: ^3.13.1
     underscore: ^1.13.6
@@ -1417,7 +1417,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@sofie-automation/shared-lib@portal:../packages/shared-lib::locator=automation-core%40workspace%3A."
   dependencies:
-    "@mos-connection/model": ^3.0.7
+    "@mos-connection/model": ^4.1.1-nightly-master-20240430-072032-ffb8bf6.0
     timeline-state-resolver-types: 9.1.0-nightly-release51-20240228-132329-b7ceb6950.0
     tslib: ^2.6.2
     type-fest: ^3.13.1
@@ -2689,7 +2689,7 @@ __metadata:
     "@jstarpl/react-contextmenu": ^2.15.0
     "@koa/cors": ^5.0.0
     "@koa/router": ^12.0.1
-    "@mos-connection/helper": 3.0.7
+    "@mos-connection/helper": ^4.1.1-nightly-master-20240430-072032-ffb8bf6.0
     "@nrk/core-icons": ^9.6.0
     "@popperjs/core": ^2.11.8
     "@shopify/jest-koa-mocks": ^5.1.1
@@ -2786,7 +2786,7 @@ __metadata:
     react-focus-bounder: ^1.1.6
     react-hotkeys: ^2.0.0
     react-i18next: ^11.18.6
-    react-intersection-observer: ^9.6.0
+    react-intersection-observer: ^9.10.3
     react-moment: ^0.9.7
     react-popper: ^2.3.0
     react-router-dom: ^5.3.4
@@ -2795,7 +2795,7 @@ __metadata:
     sinon: ^14.0.2
     standard-version: ^9.5.0
     superfly-timeline: 9.0.0
-    threadedclass: ^1.2.1
+    threadedclass: ^1.2.2
     timecode: 0.0.4
     ts-jest: ^29.1.2
     type-fest: ^3.13.1
@@ -10149,16 +10149,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-intersection-observer@npm:^9.6.0":
-  version: 9.6.0
-  resolution: "react-intersection-observer@npm:9.6.0"
+"react-intersection-observer@npm:^9.10.3":
+  version: 9.10.3
+  resolution: "react-intersection-observer@npm:9.10.3"
   peerDependencies:
-    react: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
-    react-dom: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
+    react: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+    react-dom: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
   peerDependenciesMeta:
     react-dom:
       optional: true
-  checksum: fba57f1601b6c08ea0345de23c4e41b1e0042834dbef62fa419fc18952f9ceb577d180ef3d8c8e6b01c3d5cfc3265ae5a007a532892c376461bf655b0c764ef7
+  checksum: 482c89a432e582749f3cb3dd696e08638a92e41fbcb81bcb3dc3cadebcf8b40bc47e7a52d2a7e8c4f9eb2a3c1c29b4cb0f21007c1540da05893b5abb11d7a761
   languageName: node
   linkType: hard
 
@@ -11703,15 +11703,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"threadedclass@npm:^1.2.1":
-  version: 1.2.1
-  resolution: "threadedclass@npm:1.2.1"
+"threadedclass@npm:^1.2.2":
+  version: 1.2.2
+  resolution: "threadedclass@npm:1.2.2"
   dependencies:
     callsites: ^3.1.0
     eventemitter3: ^4.0.4
     is-running: ^2.1.0
     tslib: ^1.13.0
-  checksum: 2f9cab0df9ed21865f6f874ff7e352bbc32c9970bb48f132ae9bd71d9203655089ad065fa8438bdb786e381c3e0284b43bf7f281ad607962ab365781ea9aef6f
+  checksum: 9bf8a0fab0105178885f7ad26b8f8a807935f66f59d348ab5c1bf5ac0bd19c1f4c64aebc3f017073a7f57d20658a53798bc8eae6f822d79ec071d3e0e009389d
   languageName: node
   linkType: hard
 

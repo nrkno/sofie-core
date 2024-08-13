@@ -11,7 +11,6 @@ import EventEmitter from 'events'
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
 import { MongoCursor } from '../../../lib/collections/lib'
-import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
@@ -20,7 +19,7 @@ import { observerChain } from '../../publications/lib/observerChain'
 import { ContentCache } from './reactiveContentCache'
 import { RundownContentObserver } from './RundownContentObserver'
 import { RundownsObserver } from './RundownsObserver'
-import { PartInstances, RundownPlaylists, Rundowns, ShowStyleBases } from '../../collections'
+import { RundownPlaylists, Rundowns, ShowStyleBases } from '../../collections'
 
 type ChangedHandler = (showStyleBaseId: ShowStyleBaseId, cache: ContentCache) => () => void
 
@@ -34,12 +33,6 @@ const rundownPlaylistFieldSpecifier = literal<
 	activationId: 1,
 	currentPartInfo: 1,
 	nextPartInfo: 1,
-})
-
-type PartInstanceFields = '_id' | 'rundownId'
-const partInstanceFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBPartInstance, PartInstanceFields>>>({
-	_id: 1,
-	rundownId: 1,
 })
 
 type RundownFields = '_id' | 'showStyleBaseId'
@@ -90,16 +83,6 @@ export class StudioObserver extends EventEmitter {
 						}
 					) as Promise<MongoCursor<Pick<DBRundownPlaylist, RundownPlaylistFields>>>
 			)
-			.next('activePartInstance', async (chain) => {
-				const activePartInstanceId =
-					chain.activePlaylist.currentPartInfo?.partInstanceId ??
-					chain.activePlaylist.nextPartInfo?.partInstanceId
-				if (!activePartInstanceId) return null
-				return PartInstances.findWithCursor(
-					{ _id: activePartInstanceId },
-					{ projection: partInstanceFieldSpecifier, limit: 1 }
-				) as Promise<MongoCursor<Pick<DBPartInstance, PartInstanceFields>>>
-			})
 			.end(this.updatePlaylistInStudio)
 	}
 
@@ -108,12 +91,12 @@ export class StudioObserver extends EventEmitter {
 			(
 				state: {
 					activePlaylist: Pick<DBRundownPlaylist, RundownPlaylistFields>
-					activePartInstance: Pick<DBPartInstance, PartInstanceFields>
 				} | null
 			): void => {
 				const activePlaylistId = state?.activePlaylist?._id
 				const activationId = state?.activePlaylist?.activationId
-				const currentRundownId = state?.activePartInstance?.rundownId
+				const currentRundownId =
+					state?.activePlaylist?.currentPartInfo?.rundownId ?? state?.activePlaylist?.nextPartInfo?.rundownId
 
 				if (!activePlaylistId || !activationId || !currentRundownId) {
 					this.#showStyleOfRundownLiveQuery?.stop()
@@ -202,7 +185,7 @@ export class StudioObserver extends EventEmitter {
 				this.currentProps = this.nextProps
 				this.nextProps = undefined
 
-				const { activationId, activePlaylistId } = this.currentProps
+				const { activePlaylistId } = this.currentProps
 
 				this.showStyleBaseId = showStyleBaseId
 
@@ -210,19 +193,13 @@ export class StudioObserver extends EventEmitter {
 
 				this.#rundownsLiveQuery = new RundownsObserver(activePlaylistId, (rundownIds) => {
 					logger.silly(`Creating new RundownContentObserver`)
-					const obs1 = new RundownContentObserver(
-						activePlaylistId,
-						showStyleBaseId,
-						rundownIds,
-						activationId,
-						(cache) => {
-							cleanupChanges = this.#changed(showStyleBaseId, cache)
+					const obs1 = new RundownContentObserver(activePlaylistId, showStyleBaseId, rundownIds, (cache) => {
+						cleanupChanges = this.#changed(showStyleBaseId, cache)
 
-							return () => {
-								void 0
-							}
+						return () => {
+							void 0
 						}
-					)
+					})
 
 					return () => {
 						obs1.stop()

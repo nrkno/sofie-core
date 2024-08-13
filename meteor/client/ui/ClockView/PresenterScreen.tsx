@@ -19,7 +19,6 @@ import { PieceCountdownContainer } from '../PieceIcons/PieceCountdown'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { DashboardLayout, RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
 import {
-	PartId,
 	RundownId,
 	RundownLayoutId,
 	RundownPlaylistId,
@@ -31,14 +30,13 @@ import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/Sho
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { ShelfDashboardLayout } from '../Shelf/ShelfDashboardLayout'
 import { parse as queryStringParse } from 'query-string'
-import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
+import { calculatePartInstanceExpectedDurationWithTransition } from '@sofie-automation/corelib/dist/playout/timings'
 import { getPlaylistTimingDiff } from '../../lib/rundownTiming'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { UIShowStyleBases, UIStudios } from '../Collections'
 import { UIStudio } from '../../../lib/api/studios'
 import { PieceInstances, RundownLayouts, RundownPlaylists, Rundowns, ShowStyleVariants } from '../../collections'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
-import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { useSetDocumentClass } from '../util/useSetDocumentClass'
 import { useRundownAndShowStyleIdsForPlaylist } from '../util/useRundownAndShowStyleIdsForPlaylist'
@@ -61,7 +59,6 @@ export interface PresenterScreenTrackedProps {
 	playlist: DBRundownPlaylist | undefined
 	rundowns: Rundown[]
 	segments: Array<SegmentUi>
-	pieces: Map<PartId, Piece[]>
 	currentSegment: SegmentUi | undefined
 	currentPartInstance: PartUi | undefined
 	nextSegment: SegmentUi | undefined
@@ -84,7 +81,6 @@ function getShowStyleBaseIdSegmentPartUi(
 		segments: DBSegment[]
 		parts: DBPart[]
 	},
-	pieces: Map<PartId, Piece[]>,
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 	currentPartInstance: PartInstance | undefined,
 	nextPartInstance: PartInstance | undefined
@@ -135,7 +131,6 @@ function getShowStyleBaseIdSegmentPartUi(
 				rundownOrder.slice(0, rundownIndex),
 				rundownsToShowstyles,
 				orderedSegmentsAndParts.parts.map((part) => part._id),
-				pieces,
 				currentPartInstance,
 				nextPartInstance,
 				true,
@@ -177,7 +172,6 @@ export const getPresenterScreenReactive = (props: PresenterScreenProps): Present
 			},
 		})
 	const segments: Array<SegmentUi> = []
-	let pieces: Map<PartId, Piece[]> = new Map()
 	let showStyleBaseIds: ShowStyleBaseId[] = []
 	let rundowns: Rundown[] = []
 	let rundownIds: RundownId[] = []
@@ -199,7 +193,6 @@ export const getPresenterScreenReactive = (props: PresenterScreenProps): Present
 	if (playlist) {
 		rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)
 		const orderedSegmentsAndParts = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(playlist)
-		pieces = RundownPlaylistCollectionUtil.getPiecesForParts(orderedSegmentsAndParts.parts.map((p) => p._id))
 		rundownIds = rundowns.map((rundown) => rundown._id)
 		const rundownsToShowstyles: Map<RundownId, ShowStyleBaseId> = new Map()
 		for (const rundown of rundowns) {
@@ -231,7 +224,6 @@ export const getPresenterScreenReactive = (props: PresenterScreenProps): Present
 					currentPartInstance,
 					playlist,
 					orderedSegmentsAndParts,
-					pieces,
 					rundownsToShowstyles,
 					currentPartInstance,
 					nextPartInstance
@@ -249,7 +241,6 @@ export const getPresenterScreenReactive = (props: PresenterScreenProps): Present
 					nextPartInstance,
 					playlist,
 					orderedSegmentsAndParts,
-					pieces,
 					rundownsToShowstyles,
 					currentPartInstance,
 					nextPartInstance
@@ -263,7 +254,6 @@ export const getPresenterScreenReactive = (props: PresenterScreenProps): Present
 	return {
 		studio,
 		segments,
-		pieces,
 		playlist,
 		rundowns,
 		showStyleBaseIds,
@@ -421,7 +411,6 @@ function PresenterScreenContentDashboardLayout({
 function PresenterScreenContentDefaultLayout({
 	playlist,
 	segments,
-	pieces,
 	currentShowStyleBaseId,
 	nextShowStyleBaseId,
 	playlistId,
@@ -476,9 +465,8 @@ function PresenterScreenContentDefaultLayout({
 									showStyleBaseId={currentShowStyleBaseId}
 									rundownIds={rundownIds}
 									partAutoNext={currentPartInstance.instance.part.autoNext || false}
-									partExpectedDuration={calculatePartInstanceExpectedDurationWithPreroll(
-										currentPartInstance.instance,
-										pieces.get(currentPartInstance.partId) ?? []
+									partExpectedDuration={calculatePartInstanceExpectedDurationWithTransition(
+										currentPartInstance.instance
 									)}
 									partStartedPlayback={currentPartInstance.instance.timings?.plannedStartedPlayback}
 									playlistActivationId={playlist?.activationId}

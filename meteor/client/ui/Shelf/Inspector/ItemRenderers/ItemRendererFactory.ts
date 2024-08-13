@@ -10,9 +10,12 @@ import { IAdLibListItem } from '../../AdLibListItem'
 import { AdLibPieceUi } from '../../../../lib/shelf'
 import { UIShowStyleBase } from '../../../../../lib/api/showStyles'
 import { UIStudio } from '../../../../../lib/api/studios'
+import { ReadonlyDeep } from 'type-fest'
+import { PieceContentStatusObj } from '../../../../../lib/api/pieceContentStatus'
 
 export default function renderItem(
 	piece: BucketAdLibItem | IAdLibListItem | PieceUi,
+	contentStatus: ReadonlyDeep<PieceContentStatusObj> | undefined,
 	showStyleBase: UIShowStyleBase,
 	studio: UIStudio,
 	rundownPlaylist: DBRundownPlaylist,
@@ -31,5 +34,5 @@ export default function renderItem(
 		})
 	}
 
-	return React.createElement(DefaultItemRenderer, { piece, showStyleBase, studio })
+	return React.createElement(DefaultItemRenderer, { piece, contentStatus, showStyleBase, studio })
 }

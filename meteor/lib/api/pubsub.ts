@@ -23,7 +23,7 @@ import { DBUser } from '../collections/Users'
 import { UIBucketContentStatus, UIPieceContentStatus, UISegmentPartNote } from './rundownNotifications'
 import { UIShowStyleBase } from './showStyles'
 import { UIStudio } from './studios'
-import { UIDeviceTriggerPreview } from '../../server/publications/deviceTriggersPreview'
+import { UIDeviceTriggerPreview } from './triggers/MountedTriggers'
 import { logger } from '../logging'
 import { UIBlueprintUpgradeStatus } from './upgradeStatus'
 import {
@@ -126,12 +126,12 @@ export enum MeteorPubSub {
 	uiShowStyleBase = 'uiShowStyleBase',
 	/**
 	 * Fetch the simplified playout UI view of the specified Studio.
-	 * If the id is null, nothing will be returned
+	 * If the id is null, all studios will be returned
 	 */
 	uiStudio = 'uiStudio',
 	/**
 	 * Fetch the simplified playout UI view of the TriggeredActions in the specified ShowStyleBase.
-	 * If the id is null, nothing will be returned
+	 * If the id is null, only global TriggeredActions will be returned
 	 */
 	uiTriggeredActions = 'uiTriggeredActions',
 

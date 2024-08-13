@@ -22,7 +22,6 @@ export async function setupRundownBase(
 	const sourceLayerIds = Object.keys(showStyle.sourceLayers)
 
 	const rundown: DBRundown = {
-		peripheralDeviceId: undefined,
 		organizationId: null,
 		studioId: context.studio._id,
 		showStyleBaseId: showStyle._id,
@@ -47,7 +46,10 @@ export async function setupRundownBase(
 			core: '',
 		},
 
-		externalNRCSName: 'mock',
+		source: {
+			type: 'http',
+			// nrcsName: 'mock',
+		},
 	}
 	await context.mockCollections.Rundowns.insertOne(rundown)
 
@@ -69,7 +71,7 @@ export async function setupRundownBase(
 		_rank: 0,
 		externalId: 'MOCK_PART_0_0',
 		title: 'Part 0 0',
-		expectedDurationWithPreroll: undefined,
+		expectedDurationWithTransition: undefined,
 
 		...partPropsOverride,
 	}
@@ -139,7 +141,7 @@ export async function setupPart2(
 		_rank: 1,
 		externalId: 'MOCK_PART_0_1',
 		title: 'Part 0 1',
-		expectedDurationWithPreroll: undefined,
+		expectedDurationWithTransition: undefined,
 
 		...partPropsOverride,
 	}

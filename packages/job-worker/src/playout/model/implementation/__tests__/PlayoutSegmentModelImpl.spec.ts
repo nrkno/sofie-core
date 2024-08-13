@@ -72,31 +72,31 @@ describe('PlayoutSegmentModelImpl', () => {
 		})
 	})
 
-	describe('setScratchpadRank', () => {
-		it('not scratchpad segment', async () => {
+	describe('setAdlibTestingRank', () => {
+		it('not AdlibTesting segment', async () => {
 			const segment = createBasicDBSegment()
 			const originalRank = segment._rank
 			const model = new PlayoutSegmentModelImpl(segment, [])
 
-			expect(() => model.setScratchpadRank(originalRank + 1)).toThrow(
-				/setScratchpadRank can only be used on a SCRATCHPAD segment/
+			expect(() => model.setAdlibTestingRank(originalRank + 1)).toThrow(
+				/setAdlibTestingRank can only be used on an AdlibTesting segment/
 			)
 			expect(model.segment._rank).toBe(originalRank)
 		})
 
-		it('is scratchpad segment', async () => {
+		it('is AdlibTesting segment', async () => {
 			const segment = createBasicDBSegment()
-			segment.orphaned = SegmentOrphanedReason.SCRATCHPAD
+			segment.orphaned = SegmentOrphanedReason.ADLIB_TESTING
 
 			const originalRank = segment._rank
 			const model = new PlayoutSegmentModelImpl(segment, [])
 
 			// Set should report change
-			expect(model.setScratchpadRank(originalRank + 1)).toBeTruthy()
+			expect(model.setAdlibTestingRank(originalRank + 1)).toBeTruthy()
 			expect(model.segment._rank).toBe(originalRank + 1)
 
 			// Set again should report no change
-			expect(model.setScratchpadRank(originalRank + 1)).toBeFalsy()
+			expect(model.setAdlibTestingRank(originalRank + 1)).toBeFalsy()
 			expect(model.segment._rank).toBe(originalRank + 1)
 		})
 
@@ -107,8 +107,8 @@ describe('PlayoutSegmentModelImpl', () => {
 			const originalRank = segment._rank
 			const model = new PlayoutSegmentModelImpl(segment, [])
 
-			expect(() => model.setScratchpadRank(originalRank + 1)).toThrow(
-				/setScratchpadRank can only be used on a SCRATCHPAD segment/
+			expect(() => model.setAdlibTestingRank(originalRank + 1)).toThrow(
+				/setAdlibTestingRank can only be used on an AdlibTesting segment/
 			)
 			expect(model.segment._rank).toBe(originalRank)
 		})

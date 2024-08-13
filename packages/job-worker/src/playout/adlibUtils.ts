@@ -19,8 +19,7 @@ import { getResolvedPiecesForCurrentPartInstance } from './resolvedPieces'
 import { updateTimeline } from './timeline/generate'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { updatePartInstanceRanksAfterAdlib } from '../rundown'
-import { selectNextPart } from './selectNextPart'
+import { updatePartInstanceRanksAfterAdlib } from '../updatePartInstanceRanksAndOrphanedState'
 import { setNextPart } from './setNext'
 import { calculateNowOffsetLatency } from './timeline/multi-gateway'
 import { logger } from '../logging'
@@ -46,7 +45,7 @@ export async function innerStartOrQueueAdLibPiece(
 			externalId: '',
 			title: adLibPiece.name,
 			expectedDuration: adLibPiece.expectedDuration,
-			expectedDurationWithPreroll: adLibPiece.expectedDuration, // Filled in later
+			expectedDurationWithTransition: adLibPiece.expectedDuration, // Filled in later
 		}
 
 		const genericAdlibPiece = convertAdLibToGenericPiece(adLibPiece, true)
@@ -188,31 +187,23 @@ export async function innerFindLastScriptedPieceOnLayer(
 }
 
 function updateRankForAdlibbedPartInstance(
-	context: JobContext,
+	_context: JobContext,
 	playoutModel: PlayoutModel,
 	newPartInstance: PlayoutPartInstanceModel
 ) {
 	const currentPartInstance = playoutModel.currentPartInstance
 	if (!currentPartInstance) throw new Error('CurrentPartInstance not found')
 
-	// Find the following part, so we can pick a good rank
-	const followingPart = selectNextPart(
-		context,
-		playoutModel.playlist,
-		currentPartInstance.partInstance,
-		null,
-		playoutModel.getAllOrderedSegments(),
-		playoutModel.getAllOrderedParts(),
-		false // We want to insert it before any trailing invalid piece
-	)
+	// Parts are always integers spaced by one, and orphaned PartInstances will be decimals spaced between two Part
+	// so we can predict a 'safe' rank to get the desired position with some simple maths
 	newPartInstance.setRank(
 		getRank(
-			currentPartInstance.partInstance.part,
-			followingPart?.part?.segmentId === newPartInstance.partInstance.segmentId ? followingPart?.part : undefined
+			currentPartInstance.partInstance.part._rank,
+			Math.floor(currentPartInstance.partInstance.part._rank + 1)
 		)
 	)
 
-	updatePartInstanceRanksAfterAdlib(playoutModel, newPartInstance.partInstance.segmentId)
+	updatePartInstanceRanksAfterAdlib(playoutModel, currentPartInstance, newPartInstance)
 }
 
 export async function insertQueuedPartWithPieces(

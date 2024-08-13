@@ -5,7 +5,6 @@ import { RundownUtils } from '../../lib/rundown'
 import { DefaultLayerItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { MicSourceRenderer } from './Renderers/MicSourceRenderer'
 import { VTSourceRenderer } from './Renderers/VTSourceRenderer'
-import { STKSourceRenderer } from './Renderers/STKSourceRenderer'
 import { L3rdSourceRenderer } from './Renderers/L3rdSourceRenderer'
 import { SplitsSourceRenderer } from './Renderers/SplitsSourceRenderer'
 import { LocalLayerItemRenderer } from './Renderers/LocalLayerItemRenderer'
@@ -19,7 +18,8 @@ import { pieceUiClassNames } from '../../lib/ui/pieceUiClassNames'
 import { SourceDurationLabelAlignment } from './Renderers/CustomLayerItemRenderer'
 import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
 import { UIStudio } from '../../../lib/api/studios'
-import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
+import { ReadonlyDeep } from 'type-fest'
+import { PieceContentStatusObj } from '../../../lib/api/pieceContentStatus'
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 const MARGINAL_ANCHORED_WIDTH = 5
 
@@ -38,8 +38,8 @@ export interface ISourceLayerItemProps {
 	partDisplayDuration: number
 	/** The piece being rendered in this layer */
 	piece: PieceUi
-	/** Pieces belonging to the Part */
-	pieces: CalculateTimingsPiece[]
+	/** The content status for the piece being rendered */
+	contentStatus: ReadonlyDeep<PieceContentStatusObj> | undefined
 	/** Scaling factor for this segment */
 	timeScale: number
 	/** Whether this part is live */
@@ -551,6 +551,7 @@ export const SourceLayerItem = withTranslation()(
 						/>
 					)
 				case SourceLayerType.VT:
+				case SourceLayerType.LIVE_SPEAK:
 					return (
 						<VTSourceRenderer
 							key={unprotectString(this.props.piece.instance._id)}
@@ -566,6 +567,7 @@ export const SourceLayerItem = withTranslation()(
 					)
 				case SourceLayerType.GRAPHICS:
 				case SourceLayerType.LOWER_THIRD:
+				case SourceLayerType.STUDIO_SCREEN:
 					return (
 						<L3rdSourceRenderer
 							key={unprotectString(this.props.piece.instance._id)}
@@ -589,21 +591,6 @@ export const SourceLayerItem = withTranslation()(
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
 							{...this.props}
 							{...this.state}
-						/>
-					)
-				case SourceLayerType.LIVE_SPEAK:
-					return (
-						<STKSourceRenderer
-							key={unprotectString(this.props.piece.instance._id)}
-							typeClass={typeClass}
-							getItemDuration={this.getItemDuration}
-							getSourceDurationLabelAlignment={this.getSourceDurationLabelAlignment}
-							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
-							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
-							setAnchoredElsWidths={this.setAnchoredElsWidths}
-							{...this.props}
-							{...this.state}
-							studio={this.props.studio}
 						/>
 					)
 
@@ -657,7 +644,6 @@ export const SourceLayerItem = withTranslation()(
 				this.props.scrollLeft,
 				this.props.scrollWidth,
 				this.props.part,
-				this.props.pieces,
 				this.props.partStartsAt,
 				this.props.partDuration,
 				this.props.piece
@@ -677,6 +663,7 @@ export const SourceLayerItem = withTranslation()(
 					<div
 						className={pieceUiClassNames(
 							piece,
+							this.props.contentStatus,
 							'segment-timeline__piece',
 							this.props.layer.type,
 							this.props.part.partId,

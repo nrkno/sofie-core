@@ -22,8 +22,10 @@ describe('PlayoutRundownModelImpl', () => {
 			name: `my rundown`,
 			importVersions: null as any,
 			timing: null as any,
-			externalNRCSName: 'FAKE',
 			playlistId: protectString('playlist0'),
+			source: {
+				type: 'http',
+			},
 		}
 	}
 
@@ -84,7 +86,7 @@ describe('PlayoutRundownModelImpl', () => {
 		expect(model.getSegmentIds()).toEqual([segment._id, segment2._id])
 	})
 
-	describe('insertScratchpadSegment', () => {
+	describe('insertAdlibTestingSegment', () => {
 		beforeEach(() => {
 			restartRandomId()
 		})
@@ -96,10 +98,10 @@ describe('PlayoutRundownModelImpl', () => {
 			const segmentModel = new PlayoutSegmentModelImpl(segment, [])
 
 			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
-			expect(model.ScratchPadSegmentHasChanged).toBeFalsy()
+			expect(model.AdlibTestingSegmentHasChanged).toBeFalsy()
 
 			const expectedId: SegmentId = protectString('randomId9000')
-			expect(model.insertScratchpadSegment()).toEqual(expectedId)
+			expect(model.insertAdlibTestingSegment()).toEqual(expectedId)
 
 			const createdSegment = model.getSegment(expectedId) as PlayoutSegmentModelImpl
 			expect(createdSegment).toBeTruthy()
@@ -112,14 +114,14 @@ describe('PlayoutRundownModelImpl', () => {
 			expect(fixedSegment).toEqual({
 				_id: expectedId,
 				rundownId: protectString('rd0'),
-				externalId: '__scratchpad__',
+				externalId: '__adlib-testing__',
 				externalModified: 0,
 				_rank: -1,
 				name: '',
-				orphaned: SegmentOrphanedReason.SCRATCHPAD,
+				orphaned: SegmentOrphanedReason.ADLIB_TESTING,
 			} satisfies DBSegment)
 
-			expect(model.ScratchPadSegmentHasChanged).toBeTruthy()
+			expect(model.AdlibTestingSegmentHasChanged).toBeTruthy()
 		})
 
 		it('check rank - first segment higher', async () => {
@@ -128,7 +130,7 @@ describe('PlayoutRundownModelImpl', () => {
 			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
 
 			const expectedId: SegmentId = protectString('randomId9000')
-			expect(model.insertScratchpadSegment()).toEqual(expectedId)
+			expect(model.insertAdlibTestingSegment()).toEqual(expectedId)
 
 			const createdSegment = model.getSegment(expectedId) as PlayoutSegmentModelImpl
 			expect(createdSegment).toBeTruthy()
@@ -140,7 +142,7 @@ describe('PlayoutRundownModelImpl', () => {
 			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
 
 			const expectedId: SegmentId = protectString('randomId9000')
-			expect(model.insertScratchpadSegment()).toEqual(expectedId)
+			expect(model.insertAdlibTestingSegment()).toEqual(expectedId)
 
 			const createdSegment = model.getSegment(expectedId) as PlayoutSegmentModelImpl
 			expect(createdSegment).toBeTruthy()
@@ -156,40 +158,40 @@ describe('PlayoutRundownModelImpl', () => {
 			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
 
 			const expectedId: SegmentId = protectString('randomId9000')
-			expect(model.insertScratchpadSegment()).toEqual(expectedId)
+			expect(model.insertAdlibTestingSegment()).toEqual(expectedId)
 
 			const createdSegment = model.getSegment(expectedId) as PlayoutSegmentModelImpl
 			expect(createdSegment).toBeTruthy()
 
-			model.clearScratchPadSegmentChangedFlag()
+			model.clearAdlibTestingSegmentChangedFlag()
 
 			// Expect a UserError
-			expect(() => model.insertScratchpadSegment()).toThrow(
-				expect.objectContaining({ key: UserErrorMessage.ScratchpadAlreadyActive })
+			expect(() => model.insertAdlibTestingSegment()).toThrow(
+				expect.objectContaining({ key: UserErrorMessage.AdlibTestingAlreadyActive })
 			)
 
-			expect(model.ScratchPadSegmentHasChanged).toBeFalsy()
+			expect(model.AdlibTestingSegmentHasChanged).toBeFalsy()
 		})
 
 		it('calling when predefined', async () => {
 			const rundown = createBasicDBRundown()
 
 			const segment = createBasicDBSegment('seg0', 0)
-			segment.orphaned = SegmentOrphanedReason.SCRATCHPAD
+			segment.orphaned = SegmentOrphanedReason.ADLIB_TESTING
 			const segmentModel = new PlayoutSegmentModelImpl(segment, [])
 
 			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
 
 			// Expect a UserError
-			expect(() => model.insertScratchpadSegment()).toThrow(
-				expect.objectContaining({ key: UserErrorMessage.ScratchpadAlreadyActive })
+			expect(() => model.insertAdlibTestingSegment()).toThrow(
+				expect.objectContaining({ key: UserErrorMessage.AdlibTestingAlreadyActive })
 			)
 
-			expect(model.ScratchPadSegmentHasChanged).toBeFalsy()
+			expect(model.AdlibTestingSegmentHasChanged).toBeFalsy()
 		})
 	})
 
-	describe('removeScratchpadSegment', () => {
+	describe('removeAdlibTestingSegment', () => {
 		beforeEach(() => {
 			restartRandomId()
 		})
@@ -198,37 +200,37 @@ describe('PlayoutRundownModelImpl', () => {
 			const rundown = createBasicDBRundown()
 
 			const segment = createBasicDBSegment('seg0', 0)
-			segment.orphaned = SegmentOrphanedReason.SCRATCHPAD
+			segment.orphaned = SegmentOrphanedReason.ADLIB_TESTING
 			const segmentModel = new PlayoutSegmentModelImpl(segment, [])
 
 			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
-			expect(model.ScratchPadSegmentHasChanged).toBeFalsy()
+			expect(model.AdlibTestingSegmentHasChanged).toBeFalsy()
 
-			expect(model.removeScratchpadSegment()).toBeTruthy()
-			expect(model.ScratchPadSegmentHasChanged).toBeTruthy()
+			expect(model.removeAdlibTestingSegment()).toBeTruthy()
+			expect(model.AdlibTestingSegmentHasChanged).toBeTruthy()
 		})
 
 		it('calling multiple times', async () => {
 			const rundown = createBasicDBRundown()
 
 			const segment = createBasicDBSegment('seg0', 0)
-			segment.orphaned = SegmentOrphanedReason.SCRATCHPAD
+			segment.orphaned = SegmentOrphanedReason.ADLIB_TESTING
 			const segmentModel = new PlayoutSegmentModelImpl(segment, [])
 
 			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
-			expect(model.ScratchPadSegmentHasChanged).toBeFalsy()
+			expect(model.AdlibTestingSegmentHasChanged).toBeFalsy()
 
-			expect(model.removeScratchpadSegment()).toBeTruthy()
-			expect(model.ScratchPadSegmentHasChanged).toBeTruthy()
+			expect(model.removeAdlibTestingSegment()).toBeTruthy()
+			expect(model.AdlibTestingSegmentHasChanged).toBeTruthy()
 
 			// call again
-			expect(model.removeScratchpadSegment()).toBeFalsy()
-			expect(model.ScratchPadSegmentHasChanged).toBeTruthy()
+			expect(model.removeAdlibTestingSegment()).toBeFalsy()
+			expect(model.AdlibTestingSegmentHasChanged).toBeTruthy()
 
 			// once more, after clearing changed flag
-			model.clearScratchPadSegmentChangedFlag()
-			expect(model.removeScratchpadSegment()).toBeFalsy()
-			expect(model.ScratchPadSegmentHasChanged).toBeFalsy()
+			model.clearAdlibTestingSegmentChangedFlag()
+			expect(model.removeAdlibTestingSegment()).toBeFalsy()
+			expect(model.AdlibTestingSegmentHasChanged).toBeFalsy()
 		})
 
 		it('insert then remove', async () => {
@@ -238,21 +240,21 @@ describe('PlayoutRundownModelImpl', () => {
 			const segmentModel = new PlayoutSegmentModelImpl(segment, [])
 
 			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
-			expect(model.ScratchPadSegmentHasChanged).toBeFalsy()
+			expect(model.AdlibTestingSegmentHasChanged).toBeFalsy()
 
 			const expectedId: SegmentId = protectString('randomId9000')
-			expect(model.insertScratchpadSegment()).toEqual(expectedId)
-			expect(model.ScratchPadSegmentHasChanged).toBeTruthy()
+			expect(model.insertAdlibTestingSegment()).toEqual(expectedId)
+			expect(model.AdlibTestingSegmentHasChanged).toBeTruthy()
 			expect(model.getSegmentIds()).toEqual([expectedId, segment._id])
 
-			model.clearScratchPadSegmentChangedFlag()
-			expect(model.removeScratchpadSegment()).toBeTruthy()
-			expect(model.ScratchPadSegmentHasChanged).toBeTruthy()
+			model.clearAdlibTestingSegmentChangedFlag()
+			expect(model.removeAdlibTestingSegment()).toBeTruthy()
+			expect(model.AdlibTestingSegmentHasChanged).toBeTruthy()
 			expect(model.getSegmentIds()).toEqual([segment._id])
 		})
 	})
 
-	describe('getScratchpadSegment', () => {
+	describe('getAdlibTestingSegment', () => {
 		beforeEach(() => {
 			restartRandomId()
 		})
@@ -261,26 +263,26 @@ describe('PlayoutRundownModelImpl', () => {
 			const rundown = createBasicDBRundown()
 
 			const segment = createBasicDBSegment('seg0', 0)
-			segment.orphaned = SegmentOrphanedReason.SCRATCHPAD
+			segment.orphaned = SegmentOrphanedReason.ADLIB_TESTING
 			const segmentModel = new PlayoutSegmentModelImpl(segment, [])
 
 			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
 
-			expect(model.getScratchpadSegment()).toBe(segmentModel)
+			expect(model.getAdlibTestingSegment()).toBe(segmentModel)
 		})
 
 		it('after remove', async () => {
 			const rundown = createBasicDBRundown()
 
 			const segment = createBasicDBSegment('seg0', 0)
-			segment.orphaned = SegmentOrphanedReason.SCRATCHPAD
+			segment.orphaned = SegmentOrphanedReason.ADLIB_TESTING
 			const segmentModel = new PlayoutSegmentModelImpl(segment, [])
 
 			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
 
-			expect(model.removeScratchpadSegment()).toBeTruthy()
+			expect(model.removeAdlibTestingSegment()).toBeTruthy()
 
-			expect(model.getScratchpadSegment()).toBe(undefined)
+			expect(model.getAdlibTestingSegment()).toBe(undefined)
 		})
 
 		it('after insert', async () => {
@@ -292,15 +294,15 @@ describe('PlayoutRundownModelImpl', () => {
 			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
 
 			const expectedId: SegmentId = protectString('randomId9000')
-			expect(model.insertScratchpadSegment()).toEqual(expectedId)
+			expect(model.insertAdlibTestingSegment()).toEqual(expectedId)
 
-			expect(model.getScratchpadSegment()).toMatchObject({
+			expect(model.getAdlibTestingSegment()).toMatchObject({
 				segment: { _id: expectedId },
 			})
 		})
 	})
 
-	describe('setScratchpadSegmentRank', () => {
+	describe('setAdlibTestingSegmentRank', () => {
 		beforeEach(() => {
 			restartRandomId()
 		})
@@ -309,50 +311,50 @@ describe('PlayoutRundownModelImpl', () => {
 			const rundown = createBasicDBRundown()
 
 			const segment = createBasicDBSegment('seg0', 99)
-			segment.orphaned = SegmentOrphanedReason.SCRATCHPAD
+			segment.orphaned = SegmentOrphanedReason.ADLIB_TESTING
 			const segmentModel = new PlayoutSegmentModelImpl(segment, [])
 
 			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
 
-			expect(model.getScratchpadSegment()?.segment._rank).toBe(99)
+			expect(model.getAdlibTestingSegment()?.segment._rank).toBe(99)
 
-			model.clearScratchPadSegmentChangedFlag()
-			model.updateScratchpadSegmentRank()
+			model.clearAdlibTestingSegmentChangedFlag()
+			model.updateAdlibTestingSegmentRank()
 
-			expect(model.getScratchpadSegment()?.segment._rank).toBe(-1)
-			expect(model.ScratchPadSegmentHasChanged).toBeTruthy()
+			expect(model.getAdlibTestingSegment()?.segment._rank).toBe(-1)
+			expect(model.AdlibTestingSegmentHasChanged).toBeTruthy()
 		})
 
 		it('pre-defined: no change', async () => {
 			const rundown = createBasicDBRundown()
 
 			const segment = createBasicDBSegment('seg0', -1)
-			segment.orphaned = SegmentOrphanedReason.SCRATCHPAD
+			segment.orphaned = SegmentOrphanedReason.ADLIB_TESTING
 			const segmentModel = new PlayoutSegmentModelImpl(segment, [])
 
 			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
 
-			model.clearScratchPadSegmentChangedFlag()
-			model.updateScratchpadSegmentRank()
+			model.clearAdlibTestingSegmentChangedFlag()
+			model.updateAdlibTestingSegmentRank()
 
-			expect(model.getScratchpadSegment()?.segment._rank).toBe(-1)
-			expect(model.ScratchPadSegmentHasChanged).toBeFalsy()
+			expect(model.getAdlibTestingSegment()?.segment._rank).toBe(-1)
+			expect(model.AdlibTestingSegmentHasChanged).toBeFalsy()
 		})
 
 		it('after remove', async () => {
 			const rundown = createBasicDBRundown()
 
 			const segment = createBasicDBSegment('seg0', 0)
-			segment.orphaned = SegmentOrphanedReason.SCRATCHPAD
+			segment.orphaned = SegmentOrphanedReason.ADLIB_TESTING
 			const segmentModel = new PlayoutSegmentModelImpl(segment, [])
 
 			const model = new PlayoutRundownModelImpl(rundown, [segmentModel], [])
 
-			expect(model.removeScratchpadSegment()).toBeTruthy()
+			expect(model.removeAdlibTestingSegment()).toBeTruthy()
 
-			model.clearScratchPadSegmentChangedFlag()
-			model.updateScratchpadSegmentRank()
-			expect(model.ScratchPadSegmentHasChanged).toBeFalsy()
+			model.clearAdlibTestingSegmentChangedFlag()
+			model.updateAdlibTestingSegmentRank()
+			expect(model.AdlibTestingSegmentHasChanged).toBeFalsy()
 		})
 	})
 })

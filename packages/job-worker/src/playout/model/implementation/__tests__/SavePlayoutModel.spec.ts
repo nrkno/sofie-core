@@ -4,7 +4,7 @@ import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { PlayoutRundownModelImpl } from '../PlayoutRundownModelImpl'
 import { setupDefaultJobEnvironment } from '../../../../__mocks__/context'
-import { writePartInstancesAndPieceInstances, writeScratchpadSegments } from '../SavePlayoutModel'
+import { writePartInstancesAndPieceInstances, writeAdlibTestingSegments } from '../SavePlayoutModel'
 import { PlayoutPartInstanceModelImpl } from '../PlayoutPartInstanceModelImpl'
 import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
@@ -23,55 +23,57 @@ describe('SavePlayoutModel', () => {
 			name: `my rundown`,
 			importVersions: null as any,
 			timing: null as any,
-			externalNRCSName: 'FAKE',
 			playlistId: protectString('playlist0'),
+			source: {
+				type: 'http',
+			},
 		}
 
 		const segmentModels = (segments ?? []).map((s) => new PlayoutSegmentModelImpl(s, []))
 		return new PlayoutRundownModelImpl(rundown, segmentModels, [])
 	}
 
-	describe('writeScratchpadSegments', () => {
+	describe('writeAdlibTestingSegments', () => {
 		it('no rundowns', async () => {
 			const context = setupDefaultJobEnvironment()
 
-			await writeScratchpadSegments(context, [])
+			await writeAdlibTestingSegments(context, [])
 
 			expect(context.mockCollections.Segments.operations).toHaveLength(0)
 		})
 
-		it('no scratchpad segment', async () => {
+		it('no AdlibTesting segment', async () => {
 			const context = setupDefaultJobEnvironment()
 
 			const rundown0 = createRundownModel()
 			const rundown1 = createRundownModel()
-			rundown1.insertScratchpadSegment()
-			rundown1.clearScratchPadSegmentChangedFlag()
+			rundown1.insertAdlibTestingSegment()
+			rundown1.clearAdlibTestingSegmentChangedFlag()
 
-			await writeScratchpadSegments(context, [rundown0, rundown1])
+			await writeAdlibTestingSegments(context, [rundown0, rundown1])
 
 			expect(context.mockCollections.Segments.operations).toHaveLength(0)
 		})
 
-		it('scratchpads with changes', async () => {
+		it('AdlibTestings with changes', async () => {
 			const context = setupDefaultJobEnvironment()
 
-			// create a rundown with an inserted scratchpad
+			// create a rundown with an inserted AdlibTesting segment
 			const rundown0 = createRundownModel()
-			rundown0.insertScratchpadSegment()
+			rundown0.insertAdlibTestingSegment()
 
-			// create a rundown with a removed scratchpad
+			// create a rundown with a removed AdlibTesting segment
 			const rundown1 = createRundownModel()
-			rundown1.insertScratchpadSegment()
-			rundown1.clearScratchPadSegmentChangedFlag()
-			rundown1.removeScratchpadSegment()
+			rundown1.insertAdlibTestingSegment()
+			rundown1.clearAdlibTestingSegmentChangedFlag()
+			rundown1.removeAdlibTestingSegment()
 
 			// create a rundown with no changes
 			const rundown2 = createRundownModel()
-			rundown2.insertScratchpadSegment()
-			rundown2.clearScratchPadSegmentChangedFlag()
+			rundown2.insertAdlibTestingSegment()
+			rundown2.clearAdlibTestingSegmentChangedFlag()
 
-			await writeScratchpadSegments(context, [rundown0, rundown1, rundown2])
+			await writeAdlibTestingSegments(context, [rundown0, rundown1, rundown2])
 
 			expect(context.mockCollections.Segments.operations).toMatchInlineSnapshot(`
 			[
@@ -87,7 +89,7 @@ describe('SavePlayoutModel', () => {
 			        "_id": {
 			          "$ne": "randomId9001",
 			        },
-			        "orphaned": "scratchpad",
+			        "orphaned": "adlib-testing",
 			        "rundownId": "rd0",
 			      },
 			    ],
@@ -105,7 +107,7 @@ describe('SavePlayoutModel', () => {
 			        "_id": {
 			          "$ne": "",
 			        },
-			        "orphaned": "scratchpad",
+			        "orphaned": "adlib-testing",
 			        "rundownId": "rd0",
 			      },
 			    ],

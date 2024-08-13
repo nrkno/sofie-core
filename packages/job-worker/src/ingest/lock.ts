@@ -25,7 +25,7 @@ export interface CommitIngestData {
 	 * eg, whole segment is renamed and middle part deleted
 	 * Note: Only supported for MOS, not 'normal' ingest operations
 	 */
-	renamedSegments: Map<SegmentId, SegmentId>
+	renamedSegments: Map<SegmentId, SegmentId> | null
 
 	/** Set to true if the rundown should be removed or orphaned */
 	removeRundown: boolean
@@ -59,7 +59,7 @@ export async function runIngestJob(
 		newIngestRundown: LocalIngestRundown | undefined,
 		oldIngestRundown: LocalIngestRundown | undefined
 	) => Promise<CommitIngestData | null>
-): Promise<void> {
+): Promise<RundownId> {
 	if (!data.rundownExternalId) {
 		throw new Error(`Job is missing rundownExternalId`)
 	}
@@ -128,6 +128,8 @@ export async function runIngestJob(
 		}
 
 		if (resultingError) throw resultingError
+
+		return rundownId
 	})
 }
 

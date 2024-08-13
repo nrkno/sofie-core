@@ -44,7 +44,7 @@ import {
 import { handleTimelineTriggerTime, handleOnPlayoutPlaybackChanged } from '../../playout/timings'
 import { handleExecuteAdlibAction } from '../../playout/adlibAction'
 import { handleTakeNextPart } from '../../playout/take'
-import { handleActivateScratchpad } from '../../playout/scratchpad'
+import { handleActivateAdlibTesting } from '../../playout/adlibTesting'
 import { handleExecuteBucketAdLibOrAction } from '../../playout/bucketAdlibJobs'
 
 type ExecutableFunction<T extends keyof StudioJobFunc> = (
@@ -102,5 +102,5 @@ export const studioJobHandlers: StudioJobHandlers = {
 	[StudioJobs.BlueprintFixUpConfigForStudio]: handleBlueprintFixUpConfigForStudio,
 	[StudioJobs.BlueprintIgnoreFixUpConfigForStudio]: handleBlueprintIgnoreFixUpConfigForStudio,
 
-	[StudioJobs.ActivateScratchpad]: handleActivateScratchpad,
+	[StudioJobs.ActivateAdlibTesting]: handleActivateAdlibTesting,
 }

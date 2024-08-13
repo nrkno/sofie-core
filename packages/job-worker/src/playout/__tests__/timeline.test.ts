@@ -1454,6 +1454,8 @@ describe('Timeline', () => {
 					// Simulate the piece timing confirmation from playout-gateway
 					await doSimulatePiecePlaybackTimings(playlistId, pieceOffset, 2)
 
+					const pieceOffsetWithPreroll = pieceOffset + 340
+
 					// Now we have a concrete time
 					await checkTimings({
 						previousPart: null,
@@ -1461,7 +1463,7 @@ describe('Timeline', () => {
 							piece000: {
 								controlObj: {
 									start: 500, // This one gave the preroll
-									end: pieceOffset,
+									end: pieceOffsetWithPreroll,
 								},
 								childGroup: {
 									preroll: 500,
@@ -1480,7 +1482,7 @@ describe('Timeline', () => {
 							[adlibbedPieceId]: {
 								// Our adlibbed piece
 								controlObj: {
-									start: pieceOffset,
+									start: pieceOffsetWithPreroll,
 								},
 								childGroup: {
 									preroll: 340,

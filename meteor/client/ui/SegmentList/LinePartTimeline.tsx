@@ -1,6 +1,6 @@
 import { PieceLifespan, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import React, { useMemo } from 'react'
-import { PartExtended, PieceExtended } from '../../../lib/Rundown'
+import { PartExtended, PieceExtended } from '../../lib/RundownResolver'
 import { findPieceExtendedToShowFromOrderedResolvedInstances } from '../PieceIcons/utils'
 import { LinePartMainPiece } from './LinePartMainPiece/LinePartMainPiece'
 import { OnAirLine } from './OnAirLine'

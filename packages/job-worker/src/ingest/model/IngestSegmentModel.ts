@@ -92,4 +92,4 @@ export interface IngestSegmentModel extends IngestSegmentModelReadonly {
 	): IngestPartModel
 }
 
-export type IngestReplacePartType = Omit<DBPart, '_id' | 'rundownId' | 'segmentId' | 'expectedDurationWithPreroll'>
+export type IngestReplacePartType = Omit<DBPart, '_id' | 'rundownId' | 'segmentId' | 'expectedDurationWithTransition'>

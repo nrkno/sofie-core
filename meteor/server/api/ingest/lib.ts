@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { getHash, getCurrentTime, protectString } from '../../../lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { PeripheralDevice, PeripheralDeviceCategory } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { Rundown, RundownSourceNrcs } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { logger } from '../../logging'
 import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
 import { MethodContext } from '../../../lib/api/methods'
@@ -114,21 +114,21 @@ export async function fetchStudioIdFromDevice(peripheralDevice: PeripheralDevice
 	return studioId
 }
 export async function getPeripheralDeviceFromRundown(
-	rundown: Pick<Rundown, '_id' | 'peripheralDeviceId'>
+	rundown: Pick<Rundown, '_id' | 'source'>
 ): Promise<PeripheralDevice> {
-	if (!rundown.peripheralDeviceId)
-		throw new Meteor.Error(500, `Rundown "${rundown._id}" does not have a peripheralDeviceId`)
+	if (rundown.source.type !== 'nrcs' || !rundown.source.peripheralDeviceId)
+		throw new Meteor.Error(404, `Rundown "${rundown._id}" is not from a NRCS`)
 
-	const device = await PeripheralDevices.findOneAsync(rundown.peripheralDeviceId)
+	const device = await PeripheralDevices.findOneAsync(rundown.source.peripheralDeviceId)
 	if (!device)
 		throw new Meteor.Error(
 			404,
-			`PeripheralDevice "${rundown.peripheralDeviceId}" of rundown "${rundown._id}" not found`
+			`PeripheralDevice "${rundown.source.peripheralDeviceId}" of rundown "${rundown._id}" not found`
 		)
 	if (device.category !== PeripheralDeviceCategory.INGEST)
 		throw new Meteor.Error(
 			404,
-			`PeripheralDevice "${rundown.peripheralDeviceId}" of rundown "${rundown._id}" is not an INGEST device!`
+			`PeripheralDevice "${rundown.source.peripheralDeviceId}" of rundown "${rundown._id}" is not an INGEST device!`
 		)
 	return device
 }
@@ -139,6 +139,14 @@ function updateDeviceLastDataReceived(deviceId: PeripheralDeviceId) {
 			lastDataReceived: getCurrentTime(),
 		},
 	}).catch((err) => {
-		logger.error(`Error in updateDeviceLastDataReceived "${deviceId}": ${err}`)
+		logger.error(`Error in updateDeviceLastDataReceived "${deviceId}": ${stringifyError(err)}`)
 	})
+}
+
+export function generateRundownSource(peripheralDevice: PeripheralDevice): RundownSourceNrcs {
+	return {
+		type: 'nrcs',
+		peripheralDeviceId: peripheralDevice._id,
+		nrcsName: peripheralDevice.category === PeripheralDeviceCategory.INGEST ? peripheralDevice.nrcsName : undefined,
+	}
 }

@@ -60,7 +60,6 @@ export function defaultRundown(
 	showStyleVariantId: ShowStyleVariantId
 ): DBRundown {
 	return {
-		peripheralDeviceId: ingestDeviceId,
 		studioId: studioId,
 		showStyleBaseId: showStyleBaseId,
 		showStyleVariantId: showStyleVariantId,
@@ -83,9 +82,13 @@ export function defaultRundown(
 			core: '',
 		},
 
-		externalNRCSName: 'mock',
 		timing: {
 			type: 'none' as any,
+		},
+		source: {
+			type: 'nrcs',
+			peripheralDeviceId: ingestDeviceId,
+			nrcsName: 'mock',
 		},
 	}
 }
@@ -139,7 +142,7 @@ export function defaultPart(_id: PartId, rundownId: RundownId, segmentId: Segmen
 		_rank: 0,
 		externalId: unprotectString(_id),
 		title: 'Default Part',
-		expectedDurationWithPreroll: undefined,
+		expectedDurationWithTransition: undefined,
 	}
 }
 export function defaultPiece(_id: PieceId, rundownId: RundownId, segmentId: SegmentId, partId: PartId): Piece {

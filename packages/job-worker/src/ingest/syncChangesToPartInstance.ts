@@ -29,7 +29,7 @@ import {
 	convertPartToBlueprints,
 	convertPieceInstanceToBlueprints,
 } from '../blueprints/context/lib'
-import { validateScratchpartPartInstanceProperties } from '../playout/scratchpad'
+import { validateAdlibTestingPartInstanceProperties } from '../playout/adlibTesting'
 import { ReadonlyDeep } from 'type-fest'
 import { convertIngestModelToPlayoutRundownWithSegments } from './commit'
 
@@ -192,7 +192,7 @@ export async function syncChangesToPartInstances(
 				}
 
 				if (playStatus === 'next') {
-					existingPartInstance.recalculateExpectedDurationWithPreroll()
+					existingPartInstance.recalculateExpectedDurationWithTransition()
 				}
 
 				// Save notes:
@@ -213,7 +213,7 @@ export async function syncChangesToPartInstances(
 					// TODO - old notes from the sync may need to be pruned, or we will end up with duplicates and 'stuck' notes?+
 					existingPartInstance.appendNotes(newNotes)
 
-					validateScratchpartPartInstanceProperties(context, playoutModel, existingPartInstance)
+					validateAdlibTestingPartInstanceProperties(context, playoutModel, existingPartInstance)
 				}
 
 				if (existingPartInstance.partInstance._id === playoutModel.playlist.currentPartInfo?.partInstanceId) {

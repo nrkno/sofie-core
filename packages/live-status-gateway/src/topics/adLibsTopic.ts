@@ -17,6 +17,13 @@ import { ShowStyleBaseExt, ShowStyleBaseHandler } from '../collections/showStyle
 import { interpollateTranslation } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { AdLibsHandler } from '../collections/adLibsHandler'
 import { GlobalAdLibsHandler } from '../collections/globalAdLibsHandler'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { PartsHandler } from '../collections/partsHandler'
+import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { WithSortingMetadata, getRank, sortContent } from './helpers/contentSorting'
+import { isDeepStrictEqual } from 'util'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { SegmentsHandler } from '../collections/segmentsHandler'
 
 const THROTTLE_PERIOD_MS = 100
 
@@ -24,7 +31,7 @@ export interface AdLibsStatus {
 	event: 'adLibs'
 	rundownPlaylistId: string | null
 	adLibs: AdLibStatus[]
-	globalAdLibs: AdLibStatus[]
+	globalAdLibs: GlobalAdLibStatus[]
 }
 
 interface AdLibActionType {
@@ -32,7 +39,14 @@ interface AdLibActionType {
 	label: string
 }
 
-interface AdLibStatus {
+interface AdLibStatus extends AdLibStatusBase {
+	segmentId: string
+	partId: string
+}
+
+type GlobalAdLibStatus = AdLibStatusBase
+
+interface AdLibStatusBase {
 	id: string
 	name: string
 	sourceLayer: string
@@ -49,7 +63,8 @@ export class AdLibsTopic
 		CollectionObserver<DBRundownPlaylist>,
 		CollectionObserver<ShowStyleBaseExt>,
 		CollectionObserver<AdLibAction[]>,
-		CollectionObserver<RundownBaselineAdLibAction[]>
+		CollectionObserver<RundownBaselineAdLibAction[]>,
+		CollectionObserver<DBPart[]>
 {
 	public observerName = AdLibsTopic.name
 	private _activePlaylist: DBRundownPlaylist | undefined
@@ -57,6 +72,8 @@ export class AdLibsTopic
 	private _outputLayersMap: ReadonlyMap<string, string> = new Map()
 	private _adLibActions: AdLibAction[] | undefined
 	private _abLibs: AdLibPiece[] | undefined
+	private _parts: ReadonlyMap<PartId, DBPart> = new Map()
+	private _segments: ReadonlyMap<SegmentId, DBSegment> = new Map()
 	private _globalAdLibActions: RundownBaselineAdLibAction[] | undefined
 	private _globalAdLibs: RundownBaselineAdLibItem[] | undefined
 	private throttledSendStatusToAll: () => void
@@ -75,8 +92,8 @@ export class AdLibsTopic
 	}
 
 	sendStatus(subscribers: Iterable<WebSocket>): void {
-		const adLibs: AdLibStatus[] = []
-		const globalAdLibs: AdLibStatus[] = []
+		const adLibs: WithSortingMetadata<AdLibStatus>[] = []
+		const globalAdLibs: WithSortingMetadata<GlobalAdLibStatus>[] = []
 
 		if (this._adLibActions) {
 			adLibs.push(
@@ -95,14 +112,26 @@ export class AdLibsTopic
 								})
 						  )
 						: []
-					return literal<AdLibStatus>({
+					const segmentId = this._parts.get(action.partId)?.segmentId
+					const name = interpollateTranslation(action.display.label.key, action.display.label.args)
+					return literal<WithSortingMetadata<AdLibStatus>>({
+						obj: {
+							id: unprotectString(action._id),
+							name,
+							partId: unprotectString(action.partId),
+							segmentId: unprotectString(segmentId) ?? 'invalid',
+							sourceLayer: sourceLayerName ?? 'invalid',
+							outputLayer: outputLayerName ?? 'invalid',
+							actionType: triggerModes,
+							tags: action.display.tags,
+							publicData: action.publicData,
+						},
 						id: unprotectString(action._id),
-						name: interpollateTranslation(action.display.label.key, action.display.label.args),
-						sourceLayer: sourceLayerName ?? 'invalid',
-						outputLayer: outputLayerName ?? 'invalid',
-						actionType: triggerModes,
-						tags: action.display.tags,
-						publicData: action.publicData,
+						label: name,
+						itemRank: action.display._rank,
+						partRank: getRank(this._parts, action.partId),
+						segmentRank: getRank(this._segments, segmentId),
+						rundownRank: this._activePlaylist?.rundownIdsInOrder.indexOf(action.rundownId),
 					})
 				})
 			)
@@ -113,14 +142,25 @@ export class AdLibsTopic
 				...this._abLibs.map((adLib) => {
 					const sourceLayerName = this._sourceLayersMap.get(adLib.sourceLayerId)
 					const outputLayerName = this._outputLayersMap.get(adLib.outputLayerId)
-					return literal<AdLibStatus>({
+					const segmentId = adLib.partId ? this._parts.get(adLib.partId)?.segmentId : undefined
+					return literal<WithSortingMetadata<AdLibStatus>>({
+						obj: {
+							id: unprotectString(adLib._id),
+							name: adLib.name,
+							partId: unprotectString(adLib.partId) ?? 'invalid',
+							segmentId: unprotectString(segmentId) ?? 'invalid',
+							sourceLayer: sourceLayerName ?? 'invalid',
+							outputLayer: outputLayerName ?? 'invalid',
+							actionType: [],
+							tags: adLib.tags,
+							publicData: adLib.publicData,
+						},
 						id: unprotectString(adLib._id),
-						name: adLib.name,
-						sourceLayer: sourceLayerName ?? 'invalid',
-						outputLayer: outputLayerName ?? 'invalid',
-						actionType: [],
-						tags: adLib.tags,
-						publicData: adLib.publicData,
+						label: adLib.name,
+						itemRank: adLib._rank,
+						partRank: getRank(this._parts, adLib.partId),
+						segmentRank: getRank(this._segments, segmentId),
+						rundownRank: this._activePlaylist?.rundownIdsInOrder.indexOf(adLib.rundownId),
 					})
 				})
 			)
@@ -143,14 +183,21 @@ export class AdLibsTopic
 								})
 						  )
 						: []
-					return literal<AdLibStatus>({
+					const name = interpollateTranslation(action.display.label.key, action.display.label.args)
+					return literal<WithSortingMetadata<GlobalAdLibStatus>>({
+						obj: {
+							id: unprotectString(action._id),
+							name,
+							sourceLayer: sourceLayerName ?? 'invalid',
+							outputLayer: outputLayerName ?? 'invalid',
+							actionType: triggerModes,
+							tags: action.display.tags,
+							publicData: action.publicData,
+						},
 						id: unprotectString(action._id),
-						name: interpollateTranslation(action.display.label.key, action.display.label.args),
-						sourceLayer: sourceLayerName ?? 'invalid',
-						outputLayer: outputLayerName ?? 'invalid',
-						actionType: triggerModes,
-						tags: action.display.tags,
-						publicData: action.publicData,
+						label: name,
+						rundownRank: this._activePlaylist?.rundownIdsInOrder.indexOf(action.rundownId),
+						itemRank: action.display._rank,
 					})
 				})
 			)
@@ -161,14 +208,20 @@ export class AdLibsTopic
 				...this._globalAdLibs.map((adLib) => {
 					const sourceLayerName = this._sourceLayersMap.get(adLib.sourceLayerId)
 					const outputLayerName = this._outputLayersMap.get(adLib.outputLayerId)
-					return literal<AdLibStatus>({
+					return literal<WithSortingMetadata<GlobalAdLibStatus>>({
+						obj: {
+							id: unprotectString(adLib._id),
+							name: adLib.name,
+							sourceLayer: sourceLayerName ?? 'invalid',
+							outputLayer: outputLayerName ?? 'invalid',
+							actionType: [],
+							tags: adLib.tags,
+							publicData: adLib.publicData,
+						},
 						id: unprotectString(adLib._id),
-						name: adLib.name,
-						sourceLayer: sourceLayerName ?? 'invalid',
-						outputLayer: outputLayerName ?? 'invalid',
-						actionType: [],
-						tags: adLib.tags,
-						publicData: adLib.publicData,
+						label: adLib.name,
+						rundownRank: this._activePlaylist?.rundownIdsInOrder.indexOf(adLib.rundownId),
+						itemRank: adLib._rank,
 					})
 				})
 			)
@@ -178,14 +231,12 @@ export class AdLibsTopic
 			? {
 					event: 'adLibs',
 					rundownPlaylistId: unprotectString(this._activePlaylist._id),
-					adLibs,
-					globalAdLibs,
+					adLibs: sortContent(adLibs),
+					globalAdLibs: sortContent(globalAdLibs),
 			  }
 			: { event: 'adLibs', rundownPlaylistId: null, adLibs: [], globalAdLibs: [] }
 
-		for (const subscriber of subscribers) {
-			this.sendMessage(subscriber, adLibsStatus)
-		}
+		this.sendMessage(subscribers, adLibsStatus)
 	}
 
 	async update(
@@ -197,14 +248,22 @@ export class AdLibsTopic
 			| RundownBaselineAdLibAction[]
 			| AdLibPiece[]
 			| RundownBaselineAdLibItem[]
+			| DBPart[]
+			| DBSegment[]
 			| undefined
 	): Promise<void> {
 		switch (source) {
 			case PlaylistHandler.name: {
-				const previousPlaylistId = this._activePlaylist?._id
-				this._activePlaylist = data as DBRundownPlaylist | undefined
+				const previousPlaylist = this._activePlaylist
 				this.logUpdateReceived('playlist', source)
-				if (previousPlaylistId === this._activePlaylist?._id) return
+				this._activePlaylist = data as DBRundownPlaylist | undefined
+				// PlaylistHandler is quite chatty (will update on every take), so let's make sure there's a point
+				// in sending a status
+				if (
+					previousPlaylist?._id === this._activePlaylist?._id &&
+					isDeepStrictEqual(previousPlaylist?.rundownIdsInOrder, this._activePlaylist?.rundownIdsInOrder)
+				)
+					return
 				break
 			}
 			case AdLibActionsHandler.name: {
@@ -236,6 +295,26 @@ export class AdLibsTopic
 				this.logUpdateReceived('showStyleBase', source)
 				this._sourceLayersMap = showStyleBaseExt?.sourceLayerNamesById ?? new Map()
 				this._outputLayersMap = showStyleBaseExt?.outputLayerNamesById ?? new Map()
+				break
+			}
+			case SegmentsHandler.name: {
+				const segments = data ? (data as DBPart[]) : []
+				this.logUpdateReceived('segments', source)
+				const newSegments = new Map()
+				segments.forEach((segment) => {
+					newSegments.set(segment._id, segment)
+				})
+				this._segments = newSegments
+				break
+			}
+			case PartsHandler.name: {
+				const parts = data ? (data as DBPart[]) : []
+				this.logUpdateReceived('parts', source)
+				const newParts = new Map()
+				parts.forEach((part) => {
+					newParts.set(part._id, part)
+				})
+				this._parts = newParts
 				break
 			}
 			default:

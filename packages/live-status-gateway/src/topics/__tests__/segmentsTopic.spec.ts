@@ -36,7 +36,7 @@ function makeTestPart(
 		_rank: rank,
 		rundownId: protectString(rundownId),
 		segmentId: protectString(segmentId),
-		expectedDurationWithPreroll: undefined,
+		expectedDurationWithTransition: undefined,
 		...partProps,
 	}
 }
@@ -354,25 +354,25 @@ describe('SegmentsTopic', () => {
 		mockSubscriber.send.mockClear()
 		await topic.update(PartsHandler.name, [
 			makeTestPart('1_2_1', 1, RUNDOWN_1_ID, segment_1_2_id, {
-				expectedDurationWithPreroll: 10000,
+				expectedDurationWithTransition: 10000,
 			}),
 			makeTestPart('2_2_1', 1, RUNDOWN_1_ID, segment_2_2_id, {
-				expectedDurationWithPreroll: 40000,
+				expectedDurationWithTransition: 40000,
 			}),
 			makeTestPart('1_2_2', 2, RUNDOWN_1_ID, segment_1_2_id, {
-				expectedDurationWithPreroll: 5000,
+				expectedDurationWithTransition: 5000,
 			}),
 			makeTestPart('1_1_2', 2, RUNDOWN_1_ID, segment_1_1_id, {
-				expectedDurationWithPreroll: 1000,
+				expectedDurationWithTransition: 1000,
 			}),
 			makeTestPart('1_1_1', 1, RUNDOWN_1_ID, segment_1_1_id, {
-				expectedDurationWithPreroll: 3000,
+				expectedDurationWithTransition: 3000,
 			}),
 			makeTestPart('2_2_2', 2, RUNDOWN_1_ID, segment_2_2_id, {
-				expectedDurationWithPreroll: 11000,
+				expectedDurationWithTransition: 11000,
 			}),
 			makeTestPart('1_1_2', 2, RUNDOWN_1_ID, segment_1_1_id, {
-				expectedDurationWithPreroll: 1000,
+				expectedDurationWithTransition: 1000,
 			}),
 		])
 		jest.advanceTimersByTime(THROTTLE_PERIOD_MS)

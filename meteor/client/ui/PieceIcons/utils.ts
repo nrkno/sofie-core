@@ -2,7 +2,7 @@ import { SourceLayerType, ISourceLayer } from '@sofie-automation/blueprints-inte
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { IPropsHeader } from './PieceIcon'
-import { PieceExtended } from '../../../lib/Rundown'
+import { PieceExtended } from '../../lib/RundownResolver'
 import { UIShowStyleBases } from '../Collections'
 import { PieceInstances } from '../../collections'
 import { ReadonlyDeep } from 'type-fest'

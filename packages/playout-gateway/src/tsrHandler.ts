@@ -796,7 +796,7 @@ export class TSRHandler {
 
 				// When the status has changed, the deviceName might have changed:
 				device.reloadProps().catch((err) => {
-					this.logger.error(`Error in reloadProps: ${err}`)
+					this.logger.error(`Error in reloadProps: ${stringifyError(err)}`)
 				})
 				// hack to make sure atem has media after restart
 				if (

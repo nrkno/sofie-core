@@ -31,6 +31,10 @@ RUN --mount=type=cache,target=/opt/core/meteor/.meteor/local NODE_OPTIONS="--max
 WORKDIR /opt/bundle/programs/server/
 RUN npm install
 
+# Install production dependencies for the worker
+WORKDIR /opt/core/packages
+RUN yarn workspaces focus --production @sofie-automation/job-worker @sofie-automation/corelib
+
 # DEPLOY IMAGE
 FROM alpine:3.19
 

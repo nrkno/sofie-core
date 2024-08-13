@@ -68,8 +68,7 @@ export class CoreConnectionChild<
 	}
 
 	private doTriggerPing = (connected: boolean) => {
-		this._pinger.setConnected(connected)
-		this._pinger.triggerPing()
+		this._pinger.setConnectedAndTriggerPing(connected)
 	}
 
 	async init(
@@ -93,6 +92,8 @@ export class CoreConnectionChild<
 			this._parent.ddp,
 			parentOptions.deviceToken
 		)
+
+		this._pinger.setConnectedAndTriggerPing(parent.connected)
 
 		return this._sendInit()
 	}

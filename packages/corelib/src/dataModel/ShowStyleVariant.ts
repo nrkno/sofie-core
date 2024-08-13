@@ -21,5 +21,8 @@ export interface DBShowStyleVariant {
 	/** Config values are used by the Blueprints */
 	blueprintConfigWithOverrides: ObjectWithOverrides<IBlueprintConfig>
 
+	/** Whether a testing rundown can be generated for this variant */
+	canGenerateAdlibTestingRundown?: boolean
+
 	_rundownVersionHash: string
 }

@@ -50,8 +50,10 @@ export function canSegmentBeUpdated(
 		return false
 	}
 
-	if (segment.segment.orphaned === SegmentOrphanedReason.SCRATCHPAD) {
-		logger.error(`Ingest cannot update Segment "${segment.segment._id}" which is owned by the Scratchpad.`)
+	if (segment.segment.orphaned === SegmentOrphanedReason.ADLIB_TESTING) {
+		logger.error(
+			`Ingest cannot update Segment "${segment.segment._id}" which is owned by the AdlibTesting Segment.`
+		)
 		return false
 	}
 

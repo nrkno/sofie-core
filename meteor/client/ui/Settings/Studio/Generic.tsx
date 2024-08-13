@@ -235,10 +235,12 @@ export const StudioGenericProperties = withTranslation()(
 					</label>
 
 					<label className="field">
-						<LabelActual label={t('Enable Scratchpad mode, for testing adlibs before taking the first Part')} />
+						<LabelActual
+							label={t('Allow AdlibTesting (rehearsal) mode, for testing adlibs before taking the first Part')}
+						/>
 						<EditAttribute
 							modifiedClassName="bghl"
-							attribute="settings.allowScratchpad"
+							attribute="settings.allowAdlibTestingSegment"
 							obj={this.props.studio}
 							type="checkbox"
 							collection={Studios}

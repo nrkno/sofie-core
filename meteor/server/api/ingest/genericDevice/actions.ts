@@ -6,7 +6,7 @@ import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyE
 import { logger } from '../../../logging'
 import * as _ from 'underscore'
 import { IngestRundown } from '@sofie-automation/blueprints-integration'
-import { runIngestOperation } from '../lib'
+import { generateRundownSource, runIngestOperation } from '../lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { DEFAULT_NRCS_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
 import { executePeripheralDeviceFunctionWithCustomTimeout } from '../../peripheralDevice/executeFunction'
@@ -42,9 +42,9 @@ export namespace GenericDeviceActions {
 
 				await runIngestOperation(rundown.studioId, IngestJobs.UpdateRundown, {
 					rundownExternalId: ingestRundown.externalId,
-					peripheralDeviceId: peripheralDevice._id,
 					ingestRundown: ingestRundown,
 					isCreateAction: true,
+					rundownSource: generateRundownSource(peripheralDevice),
 				})
 
 				return TriggerReloadDataResponse.COMPLETED

@@ -10,7 +10,6 @@ import { logger } from '../logging'
 import { getCurrentTime } from '../lib'
 import { MongoQuery } from '../db'
 import { mongoWhere } from '@sofie-automation/corelib/dist/mongo'
-import _ = require('underscore')
 import { setNextPart } from './setNext'
 import { selectNextPart } from './selectNextPart'
 
@@ -28,9 +27,9 @@ export async function resetRundownPlaylist(context: JobContext, playoutModel: Pl
 	playoutModel.removeAllRehearsalPartInstances()
 	resetPartInstancesWithPieceInstances(context, playoutModel)
 
-	// Remove the scratchpad
+	// Remove the AdlibTesting segment
 	for (const rundown of playoutModel.rundowns) {
-		rundown.removeScratchpadSegment()
+		rundown.removeAdlibTestingSegment()
 	}
 
 	if (playoutModel.playlist.activationId) {
@@ -147,34 +146,20 @@ export function substituteObjectIds(
 
 	return enable
 }
-export function prefixSingleObjectId<T extends TimelineObjGeneric>(
-	obj: T,
-	prefix: string,
-	ignoreOriginal?: never
-): string {
-	let id = obj.id
-	if (!ignoreOriginal) {
-		if (!obj.originalId) {
-			obj.originalId = obj.id
-		}
-		id = obj.originalId
-	}
-	return prefix + id
+export function prefixSingleObjectId<T extends TimelineObjGeneric>(obj: T, prefix: string): string {
+	return prefix + (obj.originalId ?? obj.id)
 }
-export function prefixAllObjectIds<T extends TimelineObjGeneric>(
-	objList: T[],
-	prefix: string,
-	ignoreOriginal?: never
-): T[] {
+export function prefixAllObjectIds<T extends TimelineObjGeneric>(objList: T[], prefix: string): T[] {
 	const idMap: { [oldId: string]: string | undefined } = {}
-	_.each(objList, (o) => {
-		idMap[o.id] = prefixSingleObjectId(o, prefix, ignoreOriginal)
-	})
+	for (const obj of objList) {
+		idMap[obj.id] = prefixSingleObjectId(obj, prefix)
+	}
 
 	return objList.map((rawObj) => {
 		const obj = clone(rawObj)
 
-		obj.id = prefixSingleObjectId(obj, prefix, ignoreOriginal)
+		if (!obj.originalId) obj.originalId = obj.id
+		obj.id = prefixSingleObjectId(obj, prefix)
 		obj.enable = substituteObjectIds(obj.enable, idMap)
 
 		if (typeof obj.inGroup === 'string') {

@@ -49,7 +49,6 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			activationId: protectString('active'),
 		})
 		await context.mockCollections.Rundowns.insertOne({
-			peripheralDeviceId: undefined,
 			organizationId: null,
 			studioId: context.studioId,
 			showStyleBaseId: protectString('showStyleBase0'),
@@ -71,9 +70,11 @@ describe('getOrderedPartsAfterPlayhead', () => {
 				core: '',
 			},
 
-			externalNRCSName: 'mock',
 			timing: {
 				type: PlaylistTimingType.None,
+			},
+			source: {
+				type: 'http',
 			},
 		})
 
@@ -115,7 +116,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 				_rank: index,
 				externalId: 'MOCK_PART_' + index,
 				title: 'Part ' + index,
-				expectedDurationWithPreroll: undefined,
+				expectedDurationWithTransition: undefined,
 			}
 		}
 

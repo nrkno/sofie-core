@@ -6,7 +6,7 @@ import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { Rundown, getRundownNrcsName } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Time, unprotectString } from '../../../lib/lib'
 import { useTranslation } from 'react-i18next'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
@@ -43,7 +43,7 @@ const MOSLastUpdateStatus = React.memo(function MOSLastUpdateStatus({ lastUpdate
 interface IProps {
 	studioId: StudioId
 	playlistId: RundownPlaylistId
-	firstRundown: Pick<Rundown, 'externalNRCSName'> | undefined
+	firstRundown: Pick<Rundown, 'source'> | undefined
 }
 
 interface OnLineOffLineList {
@@ -172,7 +172,7 @@ function RundownSystemStatusContent({
 					<div className="indicator__tooltip">
 						<h4>
 							{t('{{nrcsName}} Connection', {
-								nrcsName: firstRundown?.externalNRCSName || 'NRCS',
+								nrcsName: getRundownNrcsName(firstRundown),
 							})}
 						</h4>
 						<div>

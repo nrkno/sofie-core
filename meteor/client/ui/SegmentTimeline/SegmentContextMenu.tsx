@@ -45,7 +45,7 @@ export const SegmentContextMenu = withTranslation()(
 			return this.props.studioMode &&
 				this.props.playlist &&
 				this.props.playlist.activationId &&
-				segment?.orphaned !== SegmentOrphanedReason.SCRATCHPAD ? (
+				segment?.orphaned !== SegmentOrphanedReason.ADLIB_TESTING ? (
 				<Escape to="document">
 					<ContextMenu id="segment-timeline-context-menu">
 						{part && timecode === null && (

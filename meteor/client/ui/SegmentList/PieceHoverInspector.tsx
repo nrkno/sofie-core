@@ -15,10 +15,13 @@ import { FloatingInspector } from '../FloatingInspector'
 import { L3rdFloatingInspector } from '../FloatingInspectors/L3rdFloatingInspector'
 import { VTFloatingInspector } from '../FloatingInspectors/VTFloatingInspector'
 import { PieceUi } from '../SegmentContainer/withResolvedSegment'
+import { ReadonlyDeep } from 'type-fest'
+import { PieceContentStatusObj } from '../../../lib/api/pieceContentStatus'
 
 export function PieceHoverInspector({
 	studio,
 	pieceInstance,
+	contentStatus,
 	hovering,
 	hoverScrubTimePosition,
 	originPosition,
@@ -27,19 +30,18 @@ export function PieceHoverInspector({
 }: Readonly<{
 	studio: UIStudio
 	pieceInstance: PieceUi
+	contentStatus: ReadonlyDeep<PieceContentStatusObj> | undefined
 	hovering: boolean
 	hoverScrubTimePosition: number
 	originPosition: OffsetPosition
 	mousePosition: number
 	layer: ISourceLayer | undefined
 }>): JSX.Element | null {
-	const status = pieceInstance.contentStatus?.status
-
 	const vtContent = pieceInstance.instance.piece.content as VTContent
 	const graphicsContent = pieceInstance.instance.piece.content as GraphicsContent
 	const transitionContent = pieceInstance.instance.piece.content as TransitionContent
 
-	const noticeLevel = getNoticeLevelForPieceStatus(status)
+	const noticeLevel = getNoticeLevelForPieceStatus(contentStatus?.status)
 
 	switch (layer?.type) {
 		case SourceLayerType.TRANSITION:
@@ -62,6 +64,7 @@ export function PieceHoverInspector({
 			)
 		case SourceLayerType.GRAPHICS:
 		case SourceLayerType.LOWER_THIRD:
+		case SourceLayerType.STUDIO_SCREEN:
 			return (
 				<L3rdFloatingInspector
 					showMiniInspector={hovering}
@@ -84,7 +87,7 @@ export function PieceHoverInspector({
 		case SourceLayerType.LIVE_SPEAK:
 			return (
 				<VTFloatingInspector
-					status={status ?? PieceStatusCode.UNKNOWN}
+					status={contentStatus?.status ?? PieceStatusCode.UNKNOWN}
 					showMiniInspector={hovering}
 					timePosition={hoverScrubTimePosition}
 					content={vtContent}
@@ -96,10 +99,10 @@ export function PieceHoverInspector({
 					}}
 					typeClass={layer && RundownUtils.getSourceLayerClassName(layer.type)}
 					itemElement={null}
-					noticeMessages={pieceInstance.contentStatus?.messages ?? null}
+					noticeMessages={contentStatus?.messages ?? null}
 					noticeLevel={noticeLevel}
 					studio={studio}
-					previewUrl={pieceInstance.contentStatus?.previewUrl}
+					previewUrl={contentStatus?.previewUrl}
 				/>
 			)
 	}

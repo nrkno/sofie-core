@@ -9,7 +9,7 @@ import { IngestRemovePartProps, IngestUpdatePartProps } from '@sofie-automation/
  * Remove a Part from a Segment
  */
 export async function handleRemovedPart(context: JobContext, data: IngestRemovePartProps): Promise<void> {
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -41,7 +41,7 @@ export async function handleRemovedPart(context: JobContext, data: IngestRemoveP
  * Insert or update a Part in a Segment
  */
 export async function handleUpdatedPart(context: JobContext, data: IngestUpdatePartProps): Promise<void> {
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {

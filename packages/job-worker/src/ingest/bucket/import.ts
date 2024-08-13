@@ -244,7 +244,7 @@ async function generateBucketAdlibForVariant(
 	// pieceId: BucketAdLibId | BucketAdLibActionId,
 	payload: IngestAdlib
 ): Promise<IBlueprintAdLibPiece | IBlueprintActionManifest | null> {
-	const watchedPackages = await WatchedPackagesHelper.create(context, context.studio._id, {
+	const watchedPackages = await WatchedPackagesHelper.create(context, {
 		// We don't know what the `pieceId` will be, but we do know the `externalId`
 		pieceExternalId: payload.externalId,
 		fromPieceType: {

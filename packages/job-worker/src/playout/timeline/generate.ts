@@ -96,7 +96,7 @@ export async function updateStudioTimeline(
 
 	const studioBlueprint = context.studioBlueprint
 	if (studioBlueprint) {
-		const watchedPackages = await WatchedPackagesHelper.create(context, studio._id, {
+		const watchedPackages = await WatchedPackagesHelper.create(context, {
 			fromPieceType: ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS,
 		})
 
@@ -439,7 +439,14 @@ async function getTimelineRundown(
 			return {
 				objs: timelineObjs.map<TimelineObjRundown>((timelineObj) => {
 					return {
-						...omit(timelineObj, 'pieceInstanceId', 'infinitePieceInstanceId', 'partInstanceId'), // temporary fields from OnGenerateTimelineObj
+						...omit(
+							timelineObj,
+							// temporary fields from OnGenerateTimelineObj
+							'pieceInstanceId',
+							'infinitePieceInstanceId',
+							'partInstanceId',
+							'originalId'
+						),
 						objectType: TimelineObjType.RUNDOWN,
 					}
 				}),

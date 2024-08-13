@@ -27,7 +27,7 @@ export async function handleMosRundownData(context: JobContext, data: MosRundown
 	if (parseMosString(data.mosRunningOrder.ID) !== data.rundownExternalId)
 		throw new Error('mosRunningOrder.ID and rundownExternalId mismatch!')
 
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -70,7 +70,7 @@ export async function handleMosRundownData(context: JobContext, data: MosRundown
 
 			if (!canRundownBeUpdated(ingestModel.rundown, !data.isUpdateOperation)) return null
 
-			let renamedSegments: CommitIngestData['renamedSegments'] = new Map()
+			let renamedSegments: CommitIngestData['renamedSegments'] = null
 			if (ingestModel.rundown && oldIngestRundown) {
 				// If we already have a rundown, update any modified segment ids
 				renamedSegments = diffAndUpdateSegmentIds(context, ingestModel, oldIngestRundown, newIngestRundown)
@@ -81,7 +81,7 @@ export async function handleMosRundownData(context: JobContext, data: MosRundown
 				ingestModel,
 				newIngestRundown,
 				!data.isUpdateOperation,
-				data.peripheralDeviceId
+				data.rundownSource
 			)
 			if (res) {
 				return {
@@ -99,7 +99,7 @@ export async function handleMosRundownData(context: JobContext, data: MosRundown
  * Update the payload of a mos rundown, without changing any parts or segments
  */
 export async function handleMosRundownMetadata(context: JobContext, data: MosRundownMetadataProps): Promise<void> {
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -116,7 +116,7 @@ export async function handleMosRundownMetadata(context: JobContext, data: MosRun
 		async (context, ingestModel, ingestRundown) => {
 			if (!ingestRundown) throw new Error(`handleMosRundownMetadata lost the IngestRundown...`)
 
-			return updateRundownMetadataFromIngestData(context, ingestModel, ingestRundown, data.peripheralDeviceId)
+			return updateRundownMetadataFromIngestData(context, ingestModel, ingestRundown, data.rundownSource)
 		}
 	)
 }
@@ -144,7 +144,7 @@ export async function handleMosRundownStatus(context: JobContext, data: MosRundo
  * Update the ready to air state of a mos rundown
  */
 export async function handleMosRundownReadyToAir(context: JobContext, data: MosRundownReadyToAirProps): Promise<void> {
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -165,7 +165,7 @@ export async function handleMosRundownReadyToAir(context: JobContext, data: MosR
 
 			ingestModel.setRundownAirStatus(data.status)
 
-			return updateRundownMetadataFromIngestData(context, ingestModel, ingestRundown, data.peripheralDeviceId)
+			return updateRundownMetadataFromIngestData(context, ingestModel, ingestRundown, ingestModel.rundown.source)
 		}
 	)
 }

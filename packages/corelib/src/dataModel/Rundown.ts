@@ -9,12 +9,11 @@ import {
 	ShowStyleVariantId,
 } from './Ids'
 import { RundownNote } from './Notes'
+import { ReadonlyDeep } from 'type-fest'
 
 export enum RundownOrphanedReason {
-	/** Rundown is deleted from the NRCS but we still need it */
+	/** Rundown is deleted from the source but we still need it */
 	DELETED = 'deleted',
-	/** Rundown was restored from a snapshot and does not correspond with a rundown in the NRCS */
-	FROM_SNAPSHOT = 'from-snapshot',
 	/** Rundown was unsynced by the user */
 	MANUAL = 'manual',
 }
@@ -28,7 +27,6 @@ export interface RundownImportVersions {
 	core: string
 }
 
-/** This is a very uncomplete mock-up of the Rundown object */
 export interface Rundown {
 	_id: RundownId
 	/** ID of the organization that owns the rundown */
@@ -39,9 +37,8 @@ export interface Rundown {
 	/** The ShowStyleBase this Rundown uses (its the parent of the showStyleVariant) */
 	showStyleBaseId: ShowStyleBaseId
 	showStyleVariantId: ShowStyleVariantId
-	/** The peripheral device the rundown originates from */
-	peripheralDeviceId?: PeripheralDeviceId
-	restoredFromSnapshotId?: RundownId
+	/** A description og where the Rundown originated from */
+	source: RundownSource
 	created: Time
 	modified: Time
 
@@ -53,9 +50,10 @@ export interface Rundown {
 	/** Air-status, comes from NCS, examples: "READY" | "NOT READY" */
 	airStatus?: string
 
-	// There should be something like a Owner user here somewhere?
-
-	/** Is the rundown in an unsynced (has been unpublished from ENPS) state? */
+	/**
+	 * Is the rundown in an unsynced state?
+	 * This can be because the rundown was deleted from the source, or because the user manually unsynced it
+	 */
 	orphaned?: RundownOrphanedReason
 
 	/** Last sent storyStatus to ingestDevice (MOS) */
@@ -83,12 +81,46 @@ export interface Rundown {
 	playlistExternalId?: string
 	/** Whether the end of the rundown marks a commercial break */
 	endOfRundownIsShowBreak?: boolean
-	/** Name (user-facing) of the external NCS this rundown came from */
-	externalNRCSName: string
 	/** The id of the Rundown Playlist this rundown is in */
 	playlistId: RundownPlaylistId
 	/** If the playlistId has ben set manually by a user in Sofie */
 	playlistIdIsSetInSofie?: boolean
+}
+
+/** A description of where a Rundown originated from */
+export type RundownSource = RundownSourceNrcs | RundownSourceSnapshot | RundownSourceHttp | RundownSourceTesting
+
+/** A description of the external NRCS source of a Rundown */
+export interface RundownSourceNrcs {
+	type: 'nrcs'
+	/** The peripheral device the rundown originates from */
+	peripheralDeviceId: PeripheralDeviceId
+	/** Name (user-facing) of the external NRCS this rundown came from, if known */
+	nrcsName: string | undefined
+}
+/** A description of the source of a Rundown which was restored from a snapshot */
+export interface RundownSourceSnapshot {
+	type: 'snapshot'
+	/** Original id of the rundown the snapshot was created from */
+	rundownId: RundownId
+}
+/** A description of the source of a Rundown which was through the HTTP ingest API */
+export interface RundownSourceHttp {
+	type: 'http'
+}
+/** A description of the Adlib Testing source of a Rundown */
+export interface RundownSourceTesting {
+	type: 'testing'
+	/** The ShowStyleVariant the Rundown is created for */
+	showStyleVariantId: ShowStyleVariantId
+}
+
+export function getRundownNrcsName(rundown: ReadonlyDeep<Pick<DBRundown, 'source'>> | undefined): string {
+	if (rundown?.source?.type === 'nrcs' && rundown.source.nrcsName) {
+		return rundown.source.nrcsName
+	} else {
+		return 'NRCS'
+	}
 }
 
 /** Note: Use Rundown instead */

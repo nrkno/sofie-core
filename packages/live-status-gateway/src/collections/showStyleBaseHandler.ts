@@ -12,6 +12,7 @@ import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integra
 export interface ShowStyleBaseExt extends DBShowStyleBase {
 	sourceLayerNamesById: ReadonlyMap<string, string>
 	outputLayerNamesById: ReadonlyMap<string, string>
+	sourceLayers: SourceLayers
 }
 
 export class ShowStyleBaseHandler
@@ -113,10 +114,11 @@ export class ShowStyleBaseHandler
 			if (outputLayer === undefined || outputLayer === null) continue
 			this._outputLayersMap.set(layerId, outputLayer.name)
 		}
-		const showStyleBaseExt = {
+		const showStyleBaseExt: ShowStyleBaseExt = {
 			...showStyleBase,
 			sourceLayerNamesById: this._sourceLayersMap,
 			outputLayerNamesById: this._outputLayersMap,
+			sourceLayers,
 		}
 		this._collectionData = showStyleBaseExt
 	}
