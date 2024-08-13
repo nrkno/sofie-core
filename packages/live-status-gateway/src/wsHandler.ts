@@ -1,5 +1,5 @@
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { CoreConnection, Observer, SubscriptionId } from '@sofie-automation/server-core-integration'
+import { CoreConnection, Observer, ProtectedString, SubscriptionId } from '@sofie-automation/server-core-integration'
 import { Logger } from 'winston'
 import { WebSocket } from 'ws'
 import { CoreHandler } from './coreHandler'
@@ -34,10 +34,32 @@ export abstract class WebSocketTopicBase {
 		this._logger.error(`Process ${this._name} message not expected '${JSON.stringify(msg)}'`)
 	}
 
-	sendMessage(ws: WebSocket, msg: object): void {
-		const msgStr = JSON.stringify(msg)
-		this._logger.info(`Send ${this._name} message '${msgStr}'`)
-		ws.send(msgStr)
+	sendMessage(recipients: WebSocket | Iterable<WebSocket>, msg: object): void {
+		recipients = isIterable(recipients) ? recipients : [recipients]
+
+		let count = 0
+		let msgStr = ''
+		for (const ws of recipients) {
+			if (!msgStr) msgStr = JSON.stringify(msg) // Optimization: only stringify if there are any recipients
+			count++
+			ws.send(msgStr)
+		}
+		this._logger.silly(`Send ${this._name} message '${msgStr}' to ${count} recipients`)
+	}
+
+	sendHeartbeat(recipients: Set<WebSocket>): void {
+		const msgStr = JSON.stringify({ event: 'heartbeat' })
+		for (const ws of recipients.values()) {
+			ws.send(msgStr)
+		}
+	}
+
+	protected logUpdateReceived(collectionName: string, source: string, extraInfo?: string): void {
+		let message = `${this._name} received ${collectionName} update from ${source}`
+		if (extraInfo) {
+			message += `, ${extraInfo}`
+		}
+		this._logger.debug(message)
 	}
 }
 
@@ -56,7 +78,7 @@ export type ObserverForCollection<T> = T extends keyof CorelibPubSubCollections
 export abstract class CollectionBase<
 	T,
 	TPubSub extends CorelibPubSub | undefined,
-	TCollection extends keyof CorelibPubSubCollections | undefined
+	TCollection extends keyof CorelibPubSubCollections
 > {
 	protected _name: string
 	protected _collectionName: TCollection
@@ -111,6 +133,32 @@ export abstract class CollectionBase<
 			await observer.update(this._name, data)
 		}
 	}
+
+	protected logDocumentChange(documentId: string | ProtectedString<any>, changeType: string): void {
+		this._logger.silly(`${this._name} ${changeType} ${documentId}`)
+	}
+
+	protected logUpdateReceived(collectionName: string, updateCount: number | undefined): void
+	protected logUpdateReceived(collectionName: string, source: string, extraInfo?: string): void
+	protected logUpdateReceived(
+		collectionName: string,
+		sourceOrUpdateCount: string | number | undefined,
+		extraInfo?: string
+	): void {
+		if (typeof sourceOrUpdateCount === 'string') {
+			let message = `${this._name} received ${collectionName} update from ${sourceOrUpdateCount}`
+			if (extraInfo) {
+				message += `, ${extraInfo}`
+			}
+			this._logger.debug(message)
+		} else {
+			this._logger.debug(`'${this._name}' handler received ${sourceOrUpdateCount} ${collectionName}`)
+		}
+	}
+
+	protected logNotifyingUpdate(updateCount: number | undefined): void {
+		this._logger.debug(`${this._name} notifying update with ${updateCount} ${this._collectionName}`)
+	}
 }
 
 export interface Collection<T> {
@@ -124,4 +172,11 @@ export interface Collection<T> {
 export interface CollectionObserver<T> {
 	observerName: string
 	update(source: string, data: T | undefined): Promise<void>
+}
+function isIterable<T>(obj: T | Iterable<T>): obj is Iterable<T> {
+	// checks for null and undefined
+	if (obj == null) {
+		return false
+	}
+	return typeof (obj as any)[Symbol.iterator] === 'function'
 }

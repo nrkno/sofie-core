@@ -11,7 +11,8 @@ import { logger } from '../logging'
 import { PlayoutModel } from '../playout/model/PlayoutModel'
 import { PlayoutRundownModel } from '../playout/model/PlayoutRundownModel'
 import { isTooCloseToAutonext } from '../playout/lib'
-import { allowedToMoveRundownOutOfPlaylist, updatePartInstanceRanks } from '../rundown'
+import { allowedToMoveRundownOutOfPlaylist } from '../rundown'
+import { updatePartInstanceRanksAndOrphanedState } from '../updatePartInstanceRanksAndOrphanedState'
 import {
 	getPlaylistIdFromExternalId,
 	produceRundownPlaylistInfoFromRundown,
@@ -40,6 +41,8 @@ import { PlayoutSegmentModelImpl } from '../playout/model/implementation/Playout
 import { createPlayoutModelFromIngestModel } from '../playout/model/implementation/LoadPlayoutModel'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DatabasePersistedModel } from '../modelBase'
+import { updateSegmentIdsForAdlibbedPartInstances } from './commit/updateSegmentIdsForAdlibbedPartInstances'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 export type BeforePartMapItem = { id: PartId; rank: number }
 export type BeforeIngestOperationPartMap = ReadonlyMap<SegmentId, Array<BeforePartMapItem>>
@@ -171,6 +174,12 @@ export async function CommitIngestOperation(
 				rundownsInPlaylist
 			)
 
+			// Ensure any adlibbed parts are updated to follow the segmentId of the previous part
+			await updateSegmentIdsForAdlibbedPartInstances(context, ingestModel, beforePartMap)
+
+			// ensure instances have matching segmentIds with the parts
+			await updatePartInstancesSegmentIds(context, ingestModel, data.renamedSegments, beforePartMap)
+
 			// Do the segment removals
 			await removeSegments(
 				context,
@@ -184,16 +193,15 @@ export async function CommitIngestOperation(
 			// Save the rundowns and regenerated playlist
 			// This will reorder the rundowns a little before the playlist and the contents, but that is ok
 			await context.directCollections.RundownPlaylists.replace(newPlaylist)
-			// ensure instances are updated for rundown changes
-			await updatePartInstancesSegmentIds(context, ingestModel, data.renamedSegments, beforePartMap)
+
 			await updatePartInstancesBasicProperties(
 				context,
 				convertIngestModelToPlayoutRundownWithSegments(ingestModel),
 				newPlaylist
 			)
 
-			// Update the playout to use the updated rundown
-			await updatePartInstanceRanks(context, ingestModel, data.changedSegmentIds, beforePartMap)
+			// Ensure any adlibbed instances follow the same part they did before the operation
+			await updatePartInstanceRanksAndOrphanedState(context, ingestModel, data.changedSegmentIds, beforePartMap)
 
 			// Create the full playout model, now we have the rundowns and playlist updated
 			const playoutModel = await createPlayoutModelFromIngestModel(
@@ -208,7 +216,7 @@ export async function CommitIngestOperation(
 			const pSaveIngest = ingestModel.saveAllToDatabase()
 			pSaveIngest.catch(() => null) // Ensure promise isn't reported as unhandled
 
-			await validateScratchpad(context, playoutModel)
+			await validateAdlibTestingSegment(context, playoutModel)
 
 			try {
 				// sync changes to the 'selected' partInstances
@@ -222,7 +230,7 @@ export async function CommitIngestOperation(
 							rundownId: ingestModel.rundownId,
 						})
 						.catch((e) => {
-							logger.error(`Queue RundownDataChanged failed: ${e}`)
+							logger.error(`Queue RundownDataChanged failed: ${stringifyError(e)}`)
 						})
 
 					triggerUpdateTimelineAfterIngestData(context, playoutModel.playlistId)
@@ -232,6 +240,7 @@ export async function CommitIngestOperation(
 				await pSaveIngest
 
 				// do some final playout checks, which may load back some Parts data
+				// Note: This should trigger a timeline update, one is already queued in the `deferAfterSave` above
 				await ensureNextPartIsValid(context, playoutModel)
 
 				// save the final playout changes
@@ -263,6 +272,14 @@ function canRemoveSegment(
 		return false
 	}
 
+	if (nextPartInstance?.segmentId === segmentId && nextPartInstance.orphaned === 'adlib-part') {
+		// Don't allow removing an active rundown
+		logger.warn(
+			`Not allowing removal of segment "${segmentId}" which contains nexted adlibbed part, making segment unsynced instead`
+		)
+		return false
+	}
+
 	return true
 }
 
@@ -275,7 +292,7 @@ function canRemoveSegment(
 async function updatePartInstancesSegmentIds(
 	context: JobContext,
 	ingestModel: IngestModel,
-	renamedSegments: ReadonlyMap<SegmentId, SegmentId>,
+	renamedSegments: ReadonlyMap<SegmentId, SegmentId> | null,
 	beforePartMap: BeforeIngestOperationPartMap
 ) {
 	// A set of rules which can be translated to mongo queries for PartInstances to update
@@ -288,11 +305,13 @@ async function updatePartInstancesSegmentIds(
 	>()
 
 	// Add whole segment renames to the set of rules
-	for (const [fromSegmentId, toSegmentId] of renamedSegments) {
-		const rule = renameRules.get(toSegmentId) ?? { partIds: [], fromSegmentId: null }
-		renameRules.set(toSegmentId, rule)
+	if (renamedSegments) {
+		for (const [fromSegmentId, toSegmentId] of renamedSegments) {
+			const rule = renameRules.get(toSegmentId) ?? { partIds: [], fromSegmentId: null }
+			renameRules.set(toSegmentId, rule)
 
-		rule.fromSegmentId = fromSegmentId
+			rule.fromSegmentId = fromSegmentId
+		}
 	}
 
 	// Reverse the structure
@@ -516,9 +535,9 @@ export async function updatePlayoutAfterChangingRundownInPlaylist(
 			}
 		}
 
-		await ensureNextPartIsValid(context, playoutModel)
+		const shouldUpdateTimeline = await ensureNextPartIsValid(context, playoutModel)
 
-		if (playoutModel.playlist.activationId) {
+		if (playoutModel.playlist.activationId || shouldUpdateTimeline) {
 			triggerUpdateTimelineAfterIngestData(context, playoutModel.playlistId)
 		}
 	})
@@ -546,7 +565,7 @@ export function triggerUpdateTimelineAfterIngestData(context: JobContext, playli
 					playlistId,
 				})
 				.catch((e) => {
-					logger.error(`triggerUpdateTimelineAfterIngestData: Execution failed: ${e}`)
+					logger.error(`triggerUpdateTimelineAfterIngestData: Execution failed: ${stringifyError(e)}`)
 				})
 		}
 	}, 1000)
@@ -718,7 +737,9 @@ async function removeSegments(
 			const segment = ingestModel.getSegment(segmentId)
 			if (segment) {
 				segment.setHidden(false)
-				segment.setOrphaned(SegmentOrphanedReason.HIDDEN)
+				if (!segment.segment.orphaned) {
+					segment.setOrphaned(SegmentOrphanedReason.HIDDEN)
+				}
 			}
 		})
 	}
@@ -727,18 +748,8 @@ async function removeSegments(
 	}
 }
 
-async function validateScratchpad(_context: JobContext, playoutModel: PlayoutModel) {
+async function validateAdlibTestingSegment(_context: JobContext, playoutModel: PlayoutModel) {
 	for (const rundown of playoutModel.rundowns) {
-		const scratchpadSegment = rundown.getScratchpadSegment()
-
-		if (scratchpadSegment) {
-			// Ensure the _rank is just before the real content
-			const otherSegmentsInRundown = rundown.segments.filter(
-				(s) => s.segment.orphaned !== SegmentOrphanedReason.SCRATCHPAD
-			)
-			const minNormalRank = Math.min(0, ...otherSegmentsInRundown.map((s) => s.segment._rank))
-
-			rundown.setScratchpadSegmentRank(minNormalRank - 1)
-		}
+		rundown.updateAdlibTestingSegmentRank()
 	}
 }

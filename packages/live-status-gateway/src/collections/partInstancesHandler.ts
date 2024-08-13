@@ -11,6 +11,7 @@ import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { PartInstanceId, RundownId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface SelectedPartInstances {
+	previous: DBPartInstance | undefined
 	current: DBPartInstance | undefined
 	next: DBPartInstance | undefined
 	firstInSegmentPlayout: DBPartInstance | undefined
@@ -36,6 +37,7 @@ export class PartInstancesHandler
 		super(PartInstancesHandler.name, CollectionName.PartInstances, CorelibPubSub.partInstances, logger, coreHandler)
 		this.observerName = this._name
 		this._collectionData = {
+			previous: undefined,
 			current: undefined,
 			next: undefined,
 			firstInSegmentPlayout: undefined,
@@ -44,7 +46,7 @@ export class PartInstancesHandler
 	}
 
 	async changed(id: PartInstanceId, changeType: string): Promise<void> {
-		this._logger.info(`${this._name} ${changeType} ${id}`)
+		this.logDocumentChange(id, changeType)
 		if (!this._collectionName || this._subscriptionPending) return
 
 		this._throttledUpdateAndNotify()
@@ -54,6 +56,9 @@ export class PartInstancesHandler
 		if (!this._collectionName || !this._collectionData) return false
 		const collection = this._core.getCollection(this._collectionName)
 		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
+		const previousPartInstance = this._currentPlaylist?.previousPartInfo?.partInstanceId
+			? collection.findOne(this._currentPlaylist.previousPartInfo.partInstanceId)
+			: undefined
 		const currentPartInstance = this._currentPlaylist?.currentPartInfo?.partInstanceId
 			? collection.findOne(this._currentPlaylist.currentPartInfo.partInstanceId)
 			: undefined
@@ -70,6 +75,10 @@ export class PartInstancesHandler
 		) as DBPartInstance
 
 		let hasAnythingChanged = false
+		if (previousPartInstance !== this._collectionData.previous) {
+			this._collectionData.previous = previousPartInstance
+			hasAnythingChanged = true
+		}
 		if (currentPartInstance !== this._collectionData.current) {
 			this._collectionData.current = currentPartInstance
 			hasAnythingChanged = true
@@ -91,6 +100,7 @@ export class PartInstancesHandler
 
 	private clearCollectionData() {
 		if (!this._collectionName || !this._collectionData) return
+		this._collectionData.previous = undefined
 		this._collectionData.current = undefined
 		this._collectionData.next = undefined
 		this._collectionData.firstInSegmentPlayout = undefined
@@ -101,10 +111,10 @@ export class PartInstancesHandler
 		const prevRundownIds = this._rundownIds.map((rid) => rid)
 		const prevActivationId = this._activationId
 
-		this._logger.info(
-			`${this._name} received playlist update ${data?._id}, active ${
-				data?.activationId ? true : false
-			} from ${source}`
+		this.logUpdateReceived(
+			'playlist',
+			source,
+			`rundownPlaylistId ${data?._id}, active ${data?.activationId ? true : false}`
 		)
 		this._currentPlaylist = data
 		if (!this._collectionName) return

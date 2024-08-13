@@ -28,14 +28,17 @@ export class PlayoutSegmentModelImpl implements PlayoutSegmentModel {
 	}
 
 	/**
-	 * Internal mutation 'hack' to modify the rank of the ScratchPad segment
+	 * Internal mutation 'hack' to modify the rank of the AdlibTesting segment
 	 * This segment belongs to Playout, so is allowed to be modified in this way
 	 * @param rank New rank for the segment
 	 */
-	setScratchpadRank(rank: number): void {
-		if (this.#segment.orphaned !== SegmentOrphanedReason.SCRATCHPAD)
-			throw new Error('setScratchpadRank can only be used on a SCRATCHPAD segment')
+	setAdlibTestingRank(rank: number): boolean {
+		if (this.#segment.orphaned !== SegmentOrphanedReason.ADLIB_TESTING)
+			throw new Error('setAdlibTestingRank can only be used on an AdlibTesting segment')
+
+		if (this.#segment._rank == rank) return false
 
 		this.#segment._rank = rank
+		return true
 	}
 }

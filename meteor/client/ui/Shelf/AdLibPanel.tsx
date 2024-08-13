@@ -44,7 +44,7 @@ import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMes
 import { i18nTranslator } from '../i18n'
 import { AdLibPieceUi, AdlibSegmentUi } from '../../lib/shelf'
 import { getShelfFollowsOnAir, getShowHiddenSourceLayers } from '../../lib/localStorage'
-import { sortAdlibs } from '../../../lib/Rundown'
+import { sortAdlibs } from '../../../lib/adlibs'
 import { AdLibPanelToolbar } from './AdLibPanelToolbar'
 import { AdLibListView } from './AdLibListView'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
@@ -760,7 +760,6 @@ export function AdLibPanel({
 				showStyleBase={showStyleBase}
 				searchFilter={searchFilter}
 				filter={filter as RundownLayoutFilter}
-				playlist={playlist}
 				studio={studio}
 				noSegments={!withSegments}
 			/>

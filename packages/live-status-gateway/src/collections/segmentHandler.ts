@@ -25,7 +25,7 @@ export class SegmentHandler
 	}
 
 	async changed(id: SegmentId, changeType: string): Promise<void> {
-		this._logger.info(`${this._name} ${changeType} ${id}`)
+		this.logDocumentChange(id, changeType)
 		if (!this._collectionName) return
 		const collection = this._core.getCollection(this._collectionName)
 		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
@@ -43,13 +43,13 @@ export class SegmentHandler
 
 		switch (source) {
 			case PartInstancesHandler.name: {
-				this._logger.info(`${this._name} received update from ${source}`)
+				this.logUpdateReceived('partInstances', source)
 				const partInstanceMap = data as SelectedPartInstances
 				this._currentSegmentId = data ? partInstanceMap.current?.segmentId : undefined
 				break
 			}
 			case PlaylistHandler.name: {
-				this._logger.info(`${this._name} received update from ${source}`)
+				this.logUpdateReceived('playlist', source)
 				this._rundownIds = (data as DBRundownPlaylist | undefined)?.rundownIdsInOrder ?? []
 				break
 			}

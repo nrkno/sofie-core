@@ -17,18 +17,18 @@ export class PlayoutRundownModelImpl implements PlayoutRundownModel {
 
 	readonly baselineObjects: ReadonlyDeep<RundownBaselineObj[]>
 
-	#scratchPadSegmentHasChanged = false
+	#adlibTestingSegmentHasChanged = false
 	/**
-	 * Check if the Scratchpad Segment has unsaved changes
+	 * Check if the AdlibTesting Segment has unsaved changes
 	 */
-	get ScratchPadSegmentHasChanged(): boolean {
-		return this.#scratchPadSegmentHasChanged
+	get AdlibTestingSegmentHasChanged(): boolean {
+		return this.#adlibTestingSegmentHasChanged
 	}
 	/**
-	 * Clear the `ScratchPadSegmentHasChanged` flag
+	 * Clear the `AdlibTestingSegmentHasChanged` flag
 	 */
-	clearScratchPadSegmentChangedFlag(): void {
-		this.#scratchPadSegmentHasChanged = false
+	clearAdlibTestingSegmentChangedFlag(): void {
+		this.#adlibTestingSegmentHasChanged = false
 	}
 
 	constructor(
@@ -63,55 +63,65 @@ export class PlayoutRundownModelImpl implements PlayoutRundownModel {
 		return this.segments.flatMap((segment) => segment.parts)
 	}
 
-	insertScratchpadSegment(): SegmentId {
-		const existingSegment = this.segments.find((s) => s.segment.orphaned === SegmentOrphanedReason.SCRATCHPAD)
-		if (existingSegment) throw UserError.create(UserErrorMessage.ScratchpadAlreadyActive)
-
-		const minSegmentRank = Math.min(0, ...this.segments.map((s) => s.segment._rank))
+	insertAdlibTestingSegment(): SegmentId {
+		const existingSegment = this.segments.find((s) => s.segment.orphaned === SegmentOrphanedReason.ADLIB_TESTING)
+		if (existingSegment) throw UserError.create(UserErrorMessage.AdlibTestingAlreadyActive)
 
 		const segmentId: SegmentId = getRandomId()
 		this.#segments.unshift(
 			new PlayoutSegmentModelImpl(
 				{
 					_id: segmentId,
-					_rank: minSegmentRank - 1,
-					externalId: '__scratchpad__',
+					_rank: calculateRankForAdlibTestingSegment(this.#segments),
+					externalId: '__adlib-testing__',
 					externalModified: getCurrentTime(),
 					rundownId: this.rundown._id,
-					orphaned: SegmentOrphanedReason.SCRATCHPAD,
+					orphaned: SegmentOrphanedReason.ADLIB_TESTING,
 					name: '',
 				},
 				[]
 			)
 		)
 
-		this.#scratchPadSegmentHasChanged = true
+		this.#adlibTestingSegmentHasChanged = true
 
 		return segmentId
 	}
 
-	removeScratchpadSegment(): boolean {
-		const index = this.#segments.findIndex((s) => s.segment.orphaned === SegmentOrphanedReason.SCRATCHPAD)
+	removeAdlibTestingSegment(): boolean {
+		const index = this.#segments.findIndex((s) => s.segment.orphaned === SegmentOrphanedReason.ADLIB_TESTING)
 		if (index === -1) return false
 
 		this.#segments.splice(index, 1)
-		this.#scratchPadSegmentHasChanged = true
+		this.#adlibTestingSegmentHasChanged = true
 
 		return true
 	}
 
-	getScratchpadSegment(): PlayoutSegmentModel | undefined {
+	getAdlibTestingSegment(): PlayoutSegmentModel | undefined {
 		// Note: this assumes there will be up to one per rundown
-		return this.#segments.find((s) => s.segment.orphaned === SegmentOrphanedReason.SCRATCHPAD)
+		return this.#segments.find((s) => s.segment.orphaned === SegmentOrphanedReason.ADLIB_TESTING)
 	}
 
-	setScratchpadSegmentRank(rank: number): void {
-		const segment = this.#segments.find((s) => s.segment.orphaned === SegmentOrphanedReason.SCRATCHPAD)
-		if (!segment) throw new Error('Scratchpad segment does not exist!')
+	updateAdlibTestingSegmentRank(): void {
+		const segment = this.#segments.find((s) => s.segment.orphaned === SegmentOrphanedReason.ADLIB_TESTING)
+		if (!segment) return
 
-		segment.setScratchpadRank(rank)
+		const changed = segment.setAdlibTestingRank(calculateRankForAdlibTestingSegment(this.#segments))
+		if (!changed) return
+
 		this.#segments.sort((a, b) => a.segment._rank - b.segment._rank)
-
-		this.#scratchPadSegmentHasChanged = true
+		this.#adlibTestingSegmentHasChanged = true
 	}
+}
+
+function calculateRankForAdlibTestingSegment(segments: readonly PlayoutSegmentModel[]) {
+	// Ensure the _rank is just before the real content
+
+	return (
+		Math.min(
+			0,
+			...segments.map((s) => (s.segment.orphaned === SegmentOrphanedReason.ADLIB_TESTING ? 0 : s.segment._rank))
+		) - 1
+	)
 }

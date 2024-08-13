@@ -9,14 +9,13 @@ import { literal } from '@sofie-automation/corelib/dist/lib'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { LinePart } from './LinePart'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { ISourceLayerExtended } from '../../../lib/Rundown'
+import { ISourceLayerExtended } from '../../lib/RundownResolver'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 import { SegmentListHeader } from './SegmentListHeader'
 import { useInView } from 'react-intersection-observer'
 import { getHeaderHeight } from '../../lib/viewPort'
-import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
-import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 
 interface IProps {
 	id: string
@@ -31,7 +30,6 @@ interface IProps {
 	segment: SegmentUi
 	playlist: DBRundownPlaylist
 	parts: Array<PartUi>
-	pieces: Map<PartId, CalculateTimingsPiece[]>
 	segmentNoteCounts: SegmentNoteCounts
 
 	fixedSegmentDuration: boolean
@@ -221,7 +219,6 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 				isDetached={isHeaderDetached}
 				isDetachedStick={isHeaderDetachedStick}
 				parts={props.parts}
-				pieces={props.pieces}
 				segment={props.segment}
 				playlist={props.playlist}
 				segmentNoteCounts={props.segmentNoteCounts}

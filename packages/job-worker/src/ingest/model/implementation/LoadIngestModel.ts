@@ -99,7 +99,7 @@ async function loadExistingRundownData(
 	] = await Promise.all([
 		context.directCollections.Segments.findFetch({
 			rundownId: rundownId,
-			orphaned: { $ne: SegmentOrphanedReason.SCRATCHPAD },
+			orphaned: { $ne: SegmentOrphanedReason.ADLIB_TESTING },
 		}),
 		context.directCollections.Parts.findFetch({
 			rundownId: rundownId,

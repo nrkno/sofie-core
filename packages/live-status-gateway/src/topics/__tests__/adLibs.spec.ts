@@ -1,5 +1,5 @@
 import { protectString, unprotectString } from '@sofie-automation/server-core-integration'
-import { makeMockLogger, makeMockSubscriber, makeTestPlaylist, makeTestShowStyleBase } from './utils'
+import { makeMockLogger, makeMockSubscriber, makeTestParts, makeTestPlaylist, makeTestShowStyleBase } from './utils'
 import { AdLibsStatus, AdLibsTopic } from '../adLibsTopic'
 import { PlaylistHandler } from '../../collections/playlistHandler'
 import { ShowStyleBaseExt, ShowStyleBaseHandler } from '../../collections/showStyleBaseHandler'
@@ -7,6 +7,7 @@ import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibActio
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 import { AdLibActionsHandler } from '../../collections/adLibActionsHandler'
 import { GlobalAdLibActionsHandler } from '../../collections/globalAdLibActionsHandler'
+import { PartsHandler } from '../../collections/partsHandler'
 
 function makeTestAdLibActions(): AdLibAction[] {
 	return [
@@ -60,6 +61,9 @@ describe('ActivePlaylistTopic', () => {
 		playlist.activationId = protectString('somethingRandom')
 		await topic.update(PlaylistHandler.name, playlist)
 
+		const parts = makeTestParts()
+		await topic.update(PartsHandler.name, parts)
+
 		const testShowStyleBase = makeTestShowStyleBase()
 		await topic.update(ShowStyleBaseHandler.name, testShowStyleBase as ShowStyleBaseExt)
 
@@ -85,6 +89,8 @@ describe('ActivePlaylistTopic', () => {
 					sourceLayer: 'Layer 0',
 					tags: ['adlib_tag'],
 					publicData: { a: 'b' },
+					segmentId: 'segment0',
+					partId: 'part0',
 				},
 			],
 			globalAdLibs: [

@@ -6,7 +6,12 @@ import { lazyIgnore, literal } from '../../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart, IngestPlaylist } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { RundownIngestDataCache } from './ingestCache'
-import { checkAccessAndGetPeripheralDevice, fetchStudioIdFromDevice, runIngestOperation } from './lib'
+import {
+	checkAccessAndGetPeripheralDevice,
+	fetchStudioIdFromDevice,
+	generateRundownSource,
+	runIngestOperation,
+} from './lib'
 import { MethodContext } from '../../../lib/api/methods'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
@@ -60,7 +65,6 @@ export namespace RundownInput {
 
 		await runIngestOperation(studioId, IngestJobs.RemoveRundown, {
 			rundownExternalId,
-			peripheralDeviceId: peripheralDevice._id,
 		})
 	}
 	export async function dataRundownCreate(
@@ -76,9 +80,9 @@ export namespace RundownInput {
 
 		await runIngestOperation(studioId, IngestJobs.UpdateRundown, {
 			rundownExternalId: ingestRundown.externalId,
-			peripheralDeviceId: peripheralDevice._id,
 			ingestRundown: ingestRundown,
 			isCreateAction: true,
+			rundownSource: generateRundownSource(peripheralDevice),
 		})
 	}
 	export async function dataRundownUpdate(
@@ -94,9 +98,9 @@ export namespace RundownInput {
 
 		await runIngestOperation(studioId, IngestJobs.UpdateRundown, {
 			rundownExternalId: ingestRundown.externalId,
-			peripheralDeviceId: peripheralDevice._id,
 			ingestRundown: ingestRundown,
 			isCreateAction: false,
+			rundownSource: generateRundownSource(peripheralDevice),
 		})
 	}
 	export async function dataRundownMetaDataUpdate(
@@ -112,8 +116,8 @@ export namespace RundownInput {
 
 		await runIngestOperation(studioId, IngestJobs.UpdateRundownMetaData, {
 			rundownExternalId: ingestRundown.externalId,
-			peripheralDeviceId: peripheralDevice._id,
 			ingestRundown: ingestRundown,
+			rundownSource: generateRundownSource(peripheralDevice),
 		})
 	}
 	export async function dataSegmentGet(
@@ -145,7 +149,6 @@ export namespace RundownInput {
 
 		await runIngestOperation(studioId, IngestJobs.RemoveSegment, {
 			rundownExternalId,
-			peripheralDeviceId: peripheralDevice._id,
 			segmentExternalId,
 		})
 	}
@@ -164,7 +167,6 @@ export namespace RundownInput {
 
 		await runIngestOperation(studioId, IngestJobs.UpdateSegment, {
 			rundownExternalId,
-			peripheralDeviceId: peripheralDevice._id,
 			ingestSegment,
 			isCreateAction: true,
 		})
@@ -184,7 +186,6 @@ export namespace RundownInput {
 
 		await runIngestOperation(studioId, IngestJobs.UpdateSegment, {
 			rundownExternalId,
-			peripheralDeviceId: peripheralDevice._id,
 			ingestSegment,
 			isCreateAction: false,
 		})
@@ -204,7 +205,6 @@ export namespace RundownInput {
 
 		await runIngestOperation(studioId, IngestJobs.UpdateSegmentRanks, {
 			rundownExternalId,
-			peripheralDeviceId: peripheralDevice._id,
 			newRanks,
 		})
 	}
@@ -226,7 +226,6 @@ export namespace RundownInput {
 
 		await runIngestOperation(studioId, IngestJobs.RemovePart, {
 			rundownExternalId,
-			peripheralDeviceId: peripheralDevice._id,
 			segmentExternalId,
 			partExternalId,
 		})
@@ -248,7 +247,6 @@ export namespace RundownInput {
 
 		await runIngestOperation(studioId, IngestJobs.UpdatePart, {
 			rundownExternalId,
-			peripheralDeviceId: peripheralDevice._id,
 			segmentExternalId,
 			ingestPart,
 			isCreateAction: true,
@@ -271,7 +269,6 @@ export namespace RundownInput {
 
 		await runIngestOperation(studioId, IngestJobs.UpdatePart, {
 			rundownExternalId,
-			peripheralDeviceId: peripheralDevice._id,
 			segmentExternalId,
 			ingestPart,
 			isCreateAction: false,
@@ -284,7 +281,8 @@ async function getIngestPlaylist(
 	playlistExternalId: string
 ): Promise<IngestPlaylist> {
 	const rundowns = await Rundowns.findFetchAsync({
-		peripheralDeviceId: peripheralDevice._id,
+		'source.type': 'nrcs',
+		'source.peripheralDeviceId': peripheralDevice._id,
 		playlistExternalId,
 	})
 
@@ -307,7 +305,8 @@ async function getIngestPlaylist(
 }
 async function getIngestRundown(peripheralDevice: PeripheralDevice, rundownExternalId: string): Promise<IngestRundown> {
 	const rundown = await Rundowns.findOneAsync({
-		peripheralDeviceId: peripheralDevice._id,
+		'source.type': 'nrcs',
+		'source.peripheralDeviceId': peripheralDevice._id,
 		externalId: rundownExternalId,
 	})
 	if (!rundown) {
@@ -326,7 +325,8 @@ async function getIngestSegment(
 	segmentExternalId: string
 ): Promise<IngestSegment> {
 	const rundown = await Rundowns.findOneAsync({
-		peripheralDeviceId: peripheralDevice._id,
+		'source.type': 'nrcs',
+		'source.peripheralDeviceId': peripheralDevice._id,
 		externalId: rundownExternalId,
 	})
 	if (!rundown) {
@@ -353,7 +353,8 @@ async function getIngestSegment(
 }
 async function listIngestRundowns(peripheralDevice: PeripheralDevice): Promise<string[]> {
 	const rundowns = await Rundowns.findFetchAsync({
-		peripheralDeviceId: peripheralDevice._id,
+		'source.type': 'nrcs',
+		'source.peripheralDeviceId': peripheralDevice._id,
 	})
 
 	return rundowns.map((r) => r.externalId)
@@ -453,6 +454,5 @@ async function updateSegmentFromCache(studioId: StudioId, mediaObjectUpdatedIds:
 	await runIngestOperation(studioId, IngestJobs.RegenerateSegment, {
 		segmentExternalId: segment.externalId,
 		rundownExternalId: rundown.externalId,
-		peripheralDeviceId: null,
 	})
 }

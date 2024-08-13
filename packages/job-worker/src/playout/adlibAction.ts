@@ -70,7 +70,7 @@ export async function executeAdlibActionAndSaveModel(
 		throw UserError.create(UserErrorMessage.ActionsNotSupported)
 	}
 
-	const watchedPackages = await WatchedPackagesHelper.create(context, context.studio._id, {
+	const watchedPackages = await WatchedPackagesHelper.create(context, {
 		pieceId: data.actionDocId,
 		fromPieceType: {
 			$in: [
@@ -211,7 +211,7 @@ export async function executeActionInner(
 		)
 	} catch (err) {
 		logger.error(`Error in showStyleBlueprint.executeAction: ${stringifyError(err)}`)
-		throw UserError.fromUnknown(err, UserErrorMessage.InternalError)
+		throw UserError.fromUnknown(err)
 	}
 
 	await applyAnyExecutionSideEffects(context, playoutModel, actionContext, now)

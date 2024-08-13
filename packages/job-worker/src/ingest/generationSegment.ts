@@ -222,7 +222,7 @@ async function generateSegmentWithBlueprints(
 } | null> {
 	const blueprintContext = new SegmentUserContext(
 		{
-			name: `getSegment=${ingestSegment.name}`,
+			name: `getSegment=${ingestSegment.name};${getSegmentId(rundown._id, ingestSegment.externalId)}`,
 			// Note: this intentionally does not include the segmentId, as parts may be moved between segemnts later on
 			// This isn't much entropy, blueprints may want to add more for each Part they generate
 			identifier: `rundownId=${rundown._id}`,
@@ -498,7 +498,7 @@ export async function updateSegmentFromIngestData(
 	return {
 		changedSegmentIds: changedSegmentIds,
 		removedSegmentIds: [],
-		renamedSegments: new Map(),
+		renamedSegments: null,
 
 		removeRundown: false,
 	}
@@ -550,7 +550,7 @@ export async function regenerateSegmentsFromIngestData(
 	const result: CommitIngestData = {
 		changedSegmentIds: changedSegmentIds,
 		removedSegmentIds: [],
-		renamedSegments: new Map(),
+		renamedSegments: null,
 
 		removeRundown: false,
 	}

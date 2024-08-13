@@ -191,9 +191,9 @@ async function loadRundowns(
 					rundownId: { $in: loadRundownIds },
 				},
 				{
-					// Is the scratchpad
+					// Is the AdlibTesting segment
 					rundownId: { $in: rundownIds },
-					orphaned: SegmentOrphanedReason.SCRATCHPAD,
+					orphaned: SegmentOrphanedReason.ADLIB_TESTING,
 				},
 			],
 		}),

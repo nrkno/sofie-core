@@ -338,7 +338,7 @@ export class CoreMosDeviceHandler {
 		const result = await this._mosDevice.sendRunningOrderStatus({
 			ID: this.mosTypes.mosString128.create(roId),
 			Status: status,
-			Time: this.mosTypes.mosTime.create(undefined),
+			Time: this.mosTypes.mosTime.create(new Date()),
 		})
 
 		// console.log('got result', result)
@@ -350,7 +350,7 @@ export class CoreMosDeviceHandler {
 			RunningOrderId: this.mosTypes.mosString128.create(roId),
 			ID: this.mosTypes.mosString128.create(storyId),
 			Status: status,
-			Time: this.mosTypes.mosTime.create(undefined),
+			Time: this.mosTypes.mosTime.create(new Date()),
 		})
 
 		// console.log('got result', result)
@@ -363,7 +363,7 @@ export class CoreMosDeviceHandler {
 			StoryId: this.mosTypes.mosString128.create(storyId),
 			ID: this.mosTypes.mosString128.create(itemId),
 			Status: status,
-			Time: this.mosTypes.mosTime.create(undefined),
+			Time: this.mosTypes.mosTime.create(new Date()),
 		})
 
 		// console.log('got result', result)

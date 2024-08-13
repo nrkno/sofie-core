@@ -4,7 +4,7 @@ import * as _ from 'underscore'
 import { SegmentTimeline, SegmentTimelineClass } from './SegmentTimeline'
 import { computeSegmentDisplayDuration, RundownTiming, TimingEvent } from '../RundownView/RundownTiming/RundownTiming'
 import { UIStateStorage } from '../../lib/UIStateStorage'
-import { PartExtended } from '../../../lib/Rundown'
+import { PartExtended } from '../../lib/RundownResolver'
 import { MAGIC_TIME_SCALE_FACTOR } from '../RundownView'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { getElementWidth } from '../../utils/dimensions'
@@ -675,7 +675,6 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 							segment={this.props.segmentui}
 							studio={this.props.studio}
 							parts={this.props.parts}
-							pieces={this.props.pieces}
 							segmentNoteCounts={this.props.segmentNoteCounts}
 							timeScale={this.state.timeScale}
 							maxTimeScale={this.state.maxTimeScale}

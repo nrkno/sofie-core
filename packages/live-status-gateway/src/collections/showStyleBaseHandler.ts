@@ -12,6 +12,7 @@ import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integra
 export interface ShowStyleBaseExt extends DBShowStyleBase {
 	sourceLayerNamesById: ReadonlyMap<string, string>
 	outputLayerNamesById: ReadonlyMap<string, string>
+	sourceLayers: SourceLayers
 }
 
 export class ShowStyleBaseHandler
@@ -35,7 +36,7 @@ export class ShowStyleBaseHandler
 	}
 
 	async changed(id: ShowStyleBaseId, changeType: string): Promise<void> {
-		this._logger.info(`${this._name} ${changeType} ${id}`)
+		this.logDocumentChange(id, changeType)
 		if (!this._collectionName) return
 		if (this._showStyleBaseId) {
 			this.updateCollectionData()
@@ -44,9 +45,7 @@ export class ShowStyleBaseHandler
 	}
 
 	async update(source: string, data: DBRundown | undefined): Promise<void> {
-		this._logger.info(
-			`${this._name} received rundown update ${data?._id}, showStyleBaseId ${data?.showStyleBaseId} from ${source}`
-		)
+		this.logUpdateReceived('rundown', source, `rundownId ${data?._id}, showStyleBaseId ${data?.showStyleBaseId}`)
 		const prevShowStyleBaseId = this._showStyleBaseId
 		this._showStyleBaseId = data?.showStyleBaseId
 
@@ -115,10 +114,11 @@ export class ShowStyleBaseHandler
 			if (outputLayer === undefined || outputLayer === null) continue
 			this._outputLayersMap.set(layerId, outputLayer.name)
 		}
-		const showStyleBaseExt = {
+		const showStyleBaseExt: ShowStyleBaseExt = {
 			...showStyleBase,
 			sourceLayerNamesById: this._sourceLayersMap,
 			outputLayerNamesById: this._outputLayersMap,
+			sourceLayers,
 		}
 		this._collectionData = showStyleBaseExt
 	}

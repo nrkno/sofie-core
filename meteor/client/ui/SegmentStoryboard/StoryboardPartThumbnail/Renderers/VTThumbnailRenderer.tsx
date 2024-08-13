@@ -12,6 +12,7 @@ import { PieceStatusIcon } from '../../../../lib/ui/PieceStatusIcon'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { FREEZE_FRAME_FLASH } from '../../../SegmentContainer/withResolvedSegment'
 import { LoopingPieceIcon } from '../../../../lib/ui/icons/looping'
+import { useContentStatusForPieceInstance } from '../../../SegmentTimeline/withMediaObjectStatus'
 
 export function VTThumbnailRenderer({
 	partId,
@@ -26,19 +27,19 @@ export function VTThumbnailRenderer({
 	layer,
 	height,
 }: Readonly<IProps>): JSX.Element {
-	const status = pieceInstance.contentStatus?.status
+	const contentStatus = useContentStatusForPieceInstance(pieceInstance.instance)
 
 	const vtContent = pieceInstance.instance.piece.content as VTContent
 
-	const previewUrl: string | undefined = pieceInstance.contentStatus?.previewUrl
-	const thumbnailUrl: string | undefined = pieceInstance.contentStatus?.thumbnailUrl
+	const previewUrl: string | undefined = contentStatus?.previewUrl
+	const thumbnailUrl: string | undefined = contentStatus?.thumbnailUrl
 
-	const noticeLevel = getNoticeLevelForPieceStatus(status)
+	const noticeLevel = getNoticeLevelForPieceStatus(contentStatus?.status)
 
 	return (
 		<>
 			<VTFloatingInspector
-				status={status ?? PieceStatusCode.UNKNOWN}
+				status={contentStatus?.status ?? PieceStatusCode.UNKNOWN}
 				showMiniInspector={hovering}
 				timePosition={hoverScrubTimePosition}
 				content={vtContent}
@@ -51,10 +52,10 @@ export function VTThumbnailRenderer({
 				}}
 				typeClass={layer && RundownUtils.getSourceLayerClassName(layer.type)}
 				itemElement={null}
-				noticeMessages={pieceInstance.contentStatus?.messages ?? null}
+				noticeMessages={contentStatus?.messages ?? null}
 				noticeLevel={noticeLevel}
 				studio={studio}
-				previewUrl={pieceInstance.contentStatus?.previewUrl}
+				previewUrl={contentStatus?.previewUrl}
 			/>
 			<RundownTimingConsumer
 				filter={(timingContext) => ({

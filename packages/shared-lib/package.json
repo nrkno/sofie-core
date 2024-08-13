@@ -7,13 +7,13 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
+		"url": "git+https://github.com/nrkno/sofie-core.git",
 		"directory": "packages/sharelib"
 	},
 	"bugs": {
-		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
+		"url": "https://github.com/nrkno/sofie-core/issues"
 	},
-	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/sharelib#readme",
+	"homepage": "https://github.com/nrkno/sofie-core/blob/master/packages/sharelib#readme",
 	"scripts": {
 		"build": "run -T rimraf dist && run build:main",
 		"build:main": "run -T tsc -p tsconfig.build.json",
@@ -38,7 +38,7 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"@mos-connection/model": "^3.0.7",
+		"@mos-connection/model": "^4.1.1-nightly-master-20240430-072032-ffb8bf6.0",
 		"timeline-state-resolver-types": "9.1.0-nightly-release51-20240228-132329-b7ceb6950.0",
 		"tslib": "^2.6.2",
 		"type-fest": "^3.13.1"

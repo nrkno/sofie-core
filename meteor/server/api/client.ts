@@ -12,7 +12,7 @@ import { isInTestWrite, triggerWriteAccessBecauseNoCheckNecessary } from '../sec
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
 import { endTrace, sendTrace, startTrace } from './integration/influx'
 import { interpollateTranslation, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
+import { UserError } from '@sofie-automation/corelib/dist/error'
 import { StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
 import { QueueStudioJob } from '../worker/worker'
 import { profiler } from './profiler'
@@ -37,16 +37,9 @@ import { UserActionsLog } from '../collections'
 import { executePeripheralDeviceFunctionWithCustomTimeout } from './peripheralDevice/executeFunction'
 
 function rewrapError(methodName: string, e: any): ClientAPI.ClientResponseError {
-	let userError: UserError
-	if (UserError.isUserError(e)) {
-		userError = e
-	} else {
-		// Rewrap errors as a UserError
-		const err = e instanceof Error ? e : new Error(stringifyError(e))
-		userError = UserError.from(err, UserErrorMessage.InternalError, undefined, e.error)
-	}
+	const userError = UserError.fromUnknown(e)
 
-	logger.info(`UserAction "${methodName}" failed: ${stringifyError(userError)}`)
+	logger.info(`UserAction "${methodName}" failed: ${userError.toErrorString()}`)
 
 	// Forward the error to the caller
 	return ClientAPI.responseError(userError, userError.errorCode)

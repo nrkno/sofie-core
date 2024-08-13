@@ -263,7 +263,7 @@ export namespace Accessor {
 	export interface Quantel extends Base {
 		type: AccessType.QUANTEL
 
-		/** URL to a Quantel-gateway (https://github.com/nrkno/tv-automation-quantel-gateway) */
+		/** URL to a Quantel-gateway (https://github.com/nrkno/sofie-quantel-gateway) */
 		quantelGatewayUrl: string
 
 		/** Locations of the Quantel ISA:s (in order of importance) */

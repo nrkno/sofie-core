@@ -6,6 +6,7 @@ import { mock, MockProxy } from 'jest-mock-extended'
 import { ShowStyleBaseExt } from '../../collections/showStyleBaseHandler'
 import { Logger } from 'winston'
 import { WebSocket } from 'ws'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 
 const RUNDOWN_1_ID = 'RUNDOWN_1'
 const RUNDOWN_2_ID = 'RUNDOWN_2'
@@ -41,4 +42,19 @@ export function makeTestShowStyleBase(): Pick<ShowStyleBaseExt, 'sourceLayerName
 		sourceLayerNamesById: new Map([['layer0', 'Layer 0']]),
 		outputLayerNamesById: new Map([['pgm', 'PGM']]),
 	}
+}
+
+export function makeTestParts(): DBPart[] {
+	return [
+		{
+			_id: protectString('part0'),
+			_rank: 0,
+			rundownId: protectString(RUNDOWN_1_ID),
+			segmentId: protectString('segment0'),
+			notes: [],
+			externalId: 'NCS_PART_0',
+			expectedDurationWithTransition: 1000,
+			title: 'Part 0',
+		},
+	]
 }

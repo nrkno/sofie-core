@@ -3,6 +3,7 @@ import {
 	AdLibActionId,
 	BucketAdLibActionId,
 	BucketId,
+	ExpectedPackageId,
 	PartId,
 	PartInstanceId,
 	PieceId,
@@ -183,9 +184,9 @@ export enum StudioJobs {
 	BlueprintIgnoreFixUpConfigForStudio = 'blueprintIgnoreFixUpConfigForStudio',
 
 	/**
-	 * Activate scratchpad mode for the Rundown containing the nexted Part.
+	 * Activate AdlibTesting (Rehearsal Mode) mode for the Rundown containing the nexted Part.
 	 */
-	ActivateScratchpad = 'activateScratchpad',
+	ActivateAdlibTesting = 'activateAdlibTesting',
 }
 
 export interface RundownPlayoutPropsBase {
@@ -306,6 +307,13 @@ export interface RestorePlaylistSnapshotProps {
 }
 export interface RestorePlaylistSnapshotResult {
 	playlistId: RundownPlaylistId
+	remappedIds: {
+		rundownId: [RundownId, RundownId][]
+		segmentId: [SegmentId, SegmentId][]
+		partId: [PartId, PartId][]
+		partInstanceId: [PartInstanceId, PartInstanceId][]
+		expectedPackageId: [ExpectedPackageId, ExpectedPackageId][]
+	}
 }
 
 export interface BlueprintValidateConfigForStudioResult {
@@ -322,7 +330,7 @@ export interface BlueprintFixUpConfigForStudioResult {
 	}>
 }
 
-export interface ActivateScratchpadProps extends RundownPlayoutPropsBase {
+export interface ActivateAdlibTestingProps extends RundownPlayoutPropsBase {
 	rundownId: RundownId
 }
 
@@ -376,7 +384,7 @@ export type StudioJobFunc = {
 	[StudioJobs.BlueprintFixUpConfigForStudio]: () => BlueprintFixUpConfigForStudioResult
 	[StudioJobs.BlueprintIgnoreFixUpConfigForStudio]: () => void
 
-	[StudioJobs.ActivateScratchpad]: (data: ActivateScratchpadProps) => void
+	[StudioJobs.ActivateAdlibTesting]: (data: ActivateAdlibTestingProps) => void
 }
 
 export function getStudioQueueName(id: StudioId): string {

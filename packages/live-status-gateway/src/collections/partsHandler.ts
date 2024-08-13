@@ -22,15 +22,13 @@ export class PartsHandler
 	}
 
 	async setParts(parts: DBPart[]): Promise<void> {
-		this._logger.info(`'${this._name}' handler received parts update with ${parts.length} parts`)
+		this.logUpdateReceived('parts', parts.length)
 		this._collectionData = parts
 		await this.throttledNotify(this._collectionData)
 	}
 
 	async notify(data: DBPart[] | undefined): Promise<void> {
-		this._logger.info(
-			`${this._name} notifying all observers of an update with ${this._collectionData?.length} parts`
-		)
+		this.logNotifyingUpdate(this._collectionData?.length)
 		if (data !== undefined) {
 			for (const observer of this._observers) {
 				await observer.update(this._name, data)

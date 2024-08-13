@@ -389,9 +389,8 @@ export class CoreConnection<
 			if (connected) this.emit('connected')
 			else this.emit('disconnected')
 			this.emit('connectionChanged', connected)
-			this._pinger.setConnected(connected)
-			this._pinger.triggerPing()
 		}
+		this._pinger.setConnectedAndTriggerPing(connected)
 	}
 	private async _maybeSendInit(): Promise<any> {
 		// If the connectionId has changed, we should report that to Core:

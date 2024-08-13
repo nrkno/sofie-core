@@ -1,14 +1,15 @@
+import { IBlueprintPieceType, PieceLifespan, PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import {
-	RundownPlaylistId,
-	StudioId,
+	PartId,
 	PeripheralDeviceId,
+	PieceId,
+	RundownId,
+	RundownPlaylistId,
+	SegmentId,
 	ShowStyleBaseId,
 	ShowStyleVariantId,
-	SegmentId,
-	RundownId,
-	PartId,
-	PieceId,
+	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { EmptyPieceTimelineObjectsBlob, Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
@@ -17,11 +18,10 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { getRundownId } from '../ingest/lib'
-import { getCurrentTime } from '../lib'
-import { IBlueprintPieceType, PieceLifespan, PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
+import { getRundownId } from '../ingest/lib'
+import { getCurrentTime } from '../lib'
 
 export function defaultRundownPlaylist(_id: RundownPlaylistId, studioId: StudioId): DBRundownPlaylist {
 	return {
@@ -56,7 +56,6 @@ export function defaultRundown(
 	showStyleVariantId: ShowStyleVariantId
 ): DBRundown {
 	return {
-		peripheralDeviceId: ingestDeviceId ?? undefined,
 		studioId: studioId,
 		showStyleBaseId: showStyleBaseId,
 		showStyleVariantId: showStyleVariantId,
@@ -79,11 +78,18 @@ export function defaultRundown(
 			core: '',
 		},
 
-		externalNRCSName: 'mock',
-
 		timing: {
 			type: PlaylistTimingType.None,
 		},
+		source: ingestDeviceId
+			? {
+					type: 'nrcs',
+					peripheralDeviceId: ingestDeviceId,
+					nrcsName: 'mock',
+			  }
+			: {
+					type: 'http',
+			  },
 	}
 }
 
@@ -100,6 +106,7 @@ export function defaultStudio(_id: StudioId): DBStudio {
 			frameRate: 25,
 			mediaPreviewsUrl: '',
 			minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
+			allowAdlibTestingSegment: true,
 		},
 		routeSets: {},
 		routeSetExclusivityGroups: {},
@@ -136,7 +143,7 @@ export function defaultPart(_id: PartId, rundownId: RundownId, segmentId: Segmen
 		_rank: 0,
 		externalId: unprotectString(_id),
 		title: 'Default Part',
-		expectedDurationWithPreroll: undefined,
+		expectedDurationWithTransition: undefined,
 	}
 }
 export function defaultPiece(_id: PieceId, rundownId: RundownId, segmentId: SegmentId, partId: PartId): Piece {

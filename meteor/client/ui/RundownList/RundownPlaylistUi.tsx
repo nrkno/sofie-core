@@ -7,7 +7,7 @@ import { unprotectString } from '../../../lib/lib'
 import { ActiveProgressBar } from './ActiveProgressBar'
 import { RundownListItem } from './RundownListItem'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { Rundown, getRundownNrcsName } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFolderOpen } from '@fortawesome/free-solid-svg-icons'
@@ -158,6 +158,7 @@ export function RundownPlaylistUi({
 				rundownLayouts={rundownLayouts}
 				swapRundownOrder={handleRundownSwap}
 				playlistId={playlist._id}
+				isOnlyRundownInPlaylist={false}
 			/>
 		) : null
 	})
@@ -207,7 +208,7 @@ export function RundownPlaylistUi({
 					{getAllowStudio() ? (
 						<PlaylistRankResetButton
 							manualSortingActive={playlist.rundownRanksAreSetInSofie === true}
-							nrcsName={playlist.rundowns[0]?.externalNRCSName || 'NRCS'}
+							nrcsName={getRundownNrcsName(playlist.rundowns[0])}
 							toggleCallbackHandler={handleResetRundownOrderClick}
 						/>
 					) : null}

@@ -175,9 +175,6 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 	async remove(selector: MongoQuery<TDoc> | TDoc['_id']): Promise<number> {
 		this.#ops.push({ type: 'remove', args: [selector] })
 
-		return this.removeInner(selector)
-	}
-	private async removeInner(selector: MongoQuery<TDoc> | TDoc['_id']): Promise<number> {
 		const docs: Pick<TDoc, '_id'>[] = await this.findFetchInner(selector, { projection: { _id: 1 } })
 		for (const doc of docs) {
 			this.#documents.delete(doc._id)
@@ -186,8 +183,6 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 		return docs.length
 	}
 	async update(selector: MongoQuery<TDoc> | TDoc['_id'], modifier: MongoModifier<TDoc>): Promise<number> {
-		this.#ops.push({ type: 'update', args: [selector, modifier] })
-
 		return this.updateInner(selector, modifier, false)
 	}
 	private async updateInner(
@@ -195,6 +190,8 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 		modifier: MongoModifier<TDoc>,
 		single: boolean
 	) {
+		this.#ops.push({ type: 'update', args: [selector, modifier] })
+
 		const docs = await this.findFetchInner(selector)
 
 		for (const doc of docs) {
@@ -210,9 +207,6 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 	async replace(doc: TDoc | ReadonlyDeep<TDoc>): Promise<boolean> {
 		this.#ops.push({ type: 'replace', args: [doc._id] })
 
-		return this.replaceInner(doc)
-	}
-	private async replaceInner(doc: TDoc | ReadonlyDeep<TDoc>): Promise<boolean> {
 		if (!doc._id) throw new Error(`replace requires document to have an _id`)
 
 		const exists = this.#documents.has(doc._id)
@@ -228,9 +222,9 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 			} else if ('updateOne' in op) {
 				await this.updateInner(op.updateOne.filter, op.updateOne.update, true)
 			} else if ('replaceOne' in op) {
-				await this.replaceInner(op.replaceOne.replacement as any)
+				await this.replace(op.replaceOne.replacement as any)
 			} else if ('deleteMany' in op) {
-				await this.removeInner(op.deleteMany.filter)
+				await this.remove(op.deleteMany.filter)
 			} else {
 				// Note: implement more as we start using them
 				throw new Error(`Unknown mongo Bulk Operation: ${JSON.stringify(op)}`)

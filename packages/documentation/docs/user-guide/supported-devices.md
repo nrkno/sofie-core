@@ -18,7 +18,7 @@ We support almost all features of these devices except fairlight audio, camera c
 
 ## CasparCG&nbsp;Server<a id="casparcg"></a>
 
-Tested and developed against [a fork of version 2.1](https://github.com/nrkno/sofie-casparcg-server) with more support for version 2.3 being added in the future.
+Tested and developed against [a fork of version 2.4](https://github.com/nrkno/sofie-casparcg-server)
 
 * Video playback
 * Graphics playback
@@ -29,6 +29,8 @@ Tested and developed against [a fork of version 2.1](https://github.com/nrkno/so
 ## HTTP Protocol <a id="http-protocol"></a>
 
 * GET/POST/PUT/DELETE methods
+* Pre-shared "Bearer" token authorization
+* OAuth 2.0 Client Credentials flow
 * Interval based watcher for status monitoring
 
 ## Blackmagic Design HyperDeck <a id="blackmagic-design-hyperdeck"></a>
@@ -74,8 +76,6 @@ _Note: some features are controlled through the Package Manager_
 ## Singular Live <a id="singular-live"></a>
 
 * Control nodes
-
-_Note: this is not currently used in production by anyone we know of_
 
 ## Sisyfos <a id="sisyfos"></a>
 

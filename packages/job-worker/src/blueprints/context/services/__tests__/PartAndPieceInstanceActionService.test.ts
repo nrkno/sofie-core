@@ -1183,7 +1183,7 @@ describe('Test blueprint api context', () => {
 					)!
 					expect(newPartInstance).toBeTruthy()
 					expect(newPartInstance.partInstance.part._rank).toBeLessThan(9000)
-					expect(newPartInstance.partInstance.part._rank).toBeGreaterThan(partInstance.part._rank)
+					expect(newPartInstance.partInstance.part._rank).toEqual(0.5)
 					expect(newPartInstance.partInstance.orphaned).toEqual('adlib-part')
 
 					const newNextPartInstances = await service.getPieceInstances('next')

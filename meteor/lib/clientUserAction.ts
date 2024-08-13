@@ -112,8 +112,10 @@ function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
 			return t('Resetting Playlist to default order')
 		case UserAction.PERIPHERAL_DEVICE_REFRESH_DEBUG_STATES:
 			return t('Refreshing debug states')
-		case UserAction.ACTIVATE_SCRATCHPAD:
-			return t('Activate Scratchpad')
+		case UserAction.ACTIVATE_ADLIB_TESTING:
+			return t('Rehearsal Mode')
+		case UserAction.CREATE_ADLIB_TESTING_RUNDOWN:
+			return t('Creating Adlib Testing Rundown')
 		default:
 			assertNever(userAction)
 	}
@@ -267,9 +269,10 @@ export function eventContextForLog(e: any): [string, Time] {
 		str = e.type
 	}
 	if (!str) {
-		logger.error(
-			'Could not create context in eventContextForLog, because provided event had no identifiable type',
-			e
+		logger.warn(
+			`Could not create context in eventContextForLog, because provided event had no identifiable type: ${JSON.stringify(
+				e
+			)}, stack: ${new Error().stack}`
 		)
 		str = 'N/A'
 	}

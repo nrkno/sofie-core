@@ -390,7 +390,7 @@ describe('Resolved Pieces', () => {
 					externalId: '',
 					title: '',
 
-					expectedDurationWithPreroll: undefined,
+					expectedDurationWithTransition: undefined,
 
 					...partProps,
 				},

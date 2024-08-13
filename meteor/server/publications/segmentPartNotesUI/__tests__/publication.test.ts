@@ -76,7 +76,11 @@ describe('manipulateUISegmentPartNotesPublicationData', () => {
 		newCache.Rundowns.insert({
 			_id: rundownId,
 			playlistId: playlistId,
-			externalNRCSName: 'NRCS+ 2000',
+			source: {
+				type: 'nrcs',
+				peripheralDeviceId: protectString('device0'),
+				nrcsName: 'NRCS+ 2000',
+			},
 		})
 
 		newCache.Segments.insert({

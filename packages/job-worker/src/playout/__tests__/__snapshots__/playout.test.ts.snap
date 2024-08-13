@@ -22,7 +22,6 @@ exports[`Playout API Basic rundown control 2`] = `
   "_id": "randomId9000",
   "created": 0,
   "externalId": "MOCK_RUNDOWN",
-  "externalNRCSName": "mock",
   "importVersions": {
     "blueprint": "",
     "core": "",
@@ -36,6 +35,9 @@ exports[`Playout API Basic rundown control 2`] = `
   "playlistId": "playlist_randomId9000",
   "showStyleBaseId": "mockShowStyleBase0",
   "showStyleVariantId": "mockShowStyleVariant0",
+  "source": {
+    "type": "http",
+  },
   "studioId": "mockStudio0",
   "timing": {
     "type": "none",
@@ -88,7 +90,6 @@ exports[`Playout API Basic rundown control 5`] = `
   "_id": "randomId9000",
   "created": 0,
   "externalId": "MOCK_RUNDOWN",
-  "externalNRCSName": "mock",
   "importVersions": {
     "blueprint": "",
     "core": "",
@@ -102,6 +103,9 @@ exports[`Playout API Basic rundown control 5`] = `
   "playlistId": "playlist_randomId9000",
   "showStyleBaseId": "mockShowStyleBase0",
   "showStyleVariantId": "mockShowStyleVariant0",
+  "source": {
+    "type": "http",
+  },
   "studioId": "mockStudio0",
   "timing": {
     "type": "none",

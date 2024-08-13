@@ -153,9 +153,7 @@ export class ActivePlaylistTopic
 					publicData: undefined,
 			  })
 
-		for (const subscriber of subscribers) {
-			this.sendMessage(subscriber, message)
-		}
+		this.sendMessage(subscribers, message)
 	}
 
 	private isDataInconsistent() {
@@ -183,8 +181,10 @@ export class ActivePlaylistTopic
 		switch (source) {
 			case PlaylistHandler.name: {
 				const rundownPlaylist = data ? (data as DBRundownPlaylist) : undefined
-				this._logger.info(
-					`${this._name} received playlist update ${rundownPlaylist?._id}, activationId ${rundownPlaylist?.activationId}`
+				this.logUpdateReceived(
+					'playlist',
+					source,
+					`rundownPlaylistId ${rundownPlaylist?._id}, activationId ${rundownPlaylist?.activationId}`
 				)
 				this._activePlaylist = unprotectString(rundownPlaylist?.activationId) ? rundownPlaylist : undefined
 				hasAnythingChanged = true
@@ -192,15 +192,17 @@ export class ActivePlaylistTopic
 			}
 			case ShowStyleBaseHandler.name: {
 				const showStyleBaseExt = data ? (data as ShowStyleBaseExt) : undefined
-				this._logger.info(`${this._name} received showStyleBase update from ${source}`)
+				this.logUpdateReceived('showStyleBase', source)
 				this._showStyleBaseExt = showStyleBaseExt
 				hasAnythingChanged = true
 				break
 			}
 			case PartInstancesHandler.name: {
 				const partInstances = data as SelectedPartInstances
-				this._logger.info(
-					`${this._name} received partInstances update from ${source} with ${partInstances.inCurrentSegment.length} instances in segment`
+				this.logUpdateReceived(
+					'partInstances',
+					source,
+					`${partInstances.inCurrentSegment.length} instances in segment`
 				)
 				this._currentPartInstance = partInstances.current
 				this._nextPartInstance = partInstances.next
@@ -211,13 +213,13 @@ export class ActivePlaylistTopic
 			}
 			case PartsHandler.name: {
 				this._partsBySegmentId = _.groupBy(data as DBPart[], 'segmentId')
-				this._logger.info(`${this._name} received parts update from ${source}`)
+				this.logUpdateReceived('parts', source)
 				hasAnythingChanged = true // TODO: can this be smarter?
 				break
 			}
 			case PieceInstancesHandler.name: {
 				const pieceInstances = data as SelectedPieceInstances
-				this._logger.info(`${this._name} received pieceInstances update from ${source}`)
+				this.logUpdateReceived('pieceInstances', source)
 				if (
 					pieceInstances.currentPartInstance !== this._pieceInstancesInCurrentPartInstance ||
 					pieceInstances.nextPartInstance !== this._pieceInstancesInNextPartInstance

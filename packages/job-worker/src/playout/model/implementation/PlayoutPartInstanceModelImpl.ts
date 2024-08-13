@@ -11,7 +11,7 @@ import { clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { getCurrentTime } from '../../../lib'
 import { setupPieceInstanceInfiniteProperties } from '../../pieces'
 import {
-	calculatePartExpectedDurationWithPreroll,
+	calculatePartExpectedDurationWithTransition,
 	PartCalculatedTimings,
 } from '@sofie-automation/corelib/dist/playout/timings'
 import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
@@ -350,13 +350,13 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		}
 	}
 
-	recalculateExpectedDurationWithPreroll(): void {
-		const newDuration = calculatePartExpectedDurationWithPreroll(
+	recalculateExpectedDurationWithTransition(): void {
+		const newDuration = calculatePartExpectedDurationWithTransition(
 			this.partInstanceImpl.part,
 			this.pieceInstances.map((p) => p.pieceInstance.piece)
 		)
 
-		this.#compareAndSetPartValue('expectedDurationWithPreroll', newDuration)
+		this.#compareAndSetPartValue('expectedDurationWithTransition', newDuration)
 	}
 
 	removePieceInstance(id: PieceInstanceId): boolean {
@@ -384,7 +384,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		}
 
 		for (const pieceInstance of pieceInstances) {
-			if (this.pieceInstancesImpl.has(pieceInstance._id))
+			if (this.pieceInstancesImpl.get(pieceInstance._id))
 				throw new Error(
 					`Cannot replace infinite PieceInstance "${pieceInstance._id}" as it replaces a non-infinite`
 				)
@@ -522,10 +522,10 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		return true
 	}
 
-	validateScratchpadSegmentProperties(): void {
+	validateAdlibTestingSegmentProperties(): void {
 		this.#compareAndSetPartInstanceValue('orphaned', 'adlib-part')
 
-		// Autonext isn't allowed to begin with, to avoid accidentally exiting the scratchpad
+		// Autonext isn't allowed to begin with, to avoid accidentally exiting the adlib testing segment
 		this.#compareAndSetPartValue('autoNext', undefined)
 
 		// Force this to not affect rundown timing
