@@ -6,7 +6,7 @@ import { IExecuteTSRActionsContext } from './executeTsrActionContext'
 import { IBlueprintPart, IBlueprintPartInstance, IBlueprintPiece } from '..'
 
 /** Actions */
-export interface IDataStoreActionExecutionContext extends IShowStyleUserContext, IEventContext {
+export interface IDataStoreMethods {
 	/**
 	 * Setting a value in the datastore allows us to overwrite parts of a timeline content object with that value
 	 * @param key Key to use when referencing from the timeline object
@@ -17,11 +17,12 @@ export interface IDataStoreActionExecutionContext extends IShowStyleUserContext,
 	/** Deletes a previously set value from the datastore */
 	removeTimelineDatastoreValue(key: string): Promise<void>
 }
+export interface IDataStoreActionExecutionContext extends IDataStoreMethods, IShowStyleUserContext, IEventContext {}
 
 export interface IActionExecutionContext
 	extends IShowStyleUserContext,
 		IEventContext,
-		IDataStoreActionExecutionContext,
+		IDataStoreMethods,
 		IPartAndPieceActionContext,
 		IExecuteTSRActionsContext {
 	/** Fetch the showstyle config for the specified part */
