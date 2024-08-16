@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import 'moment/min/locales'
 import { parse as queryStringParse } from 'query-string'
@@ -40,23 +40,12 @@ import { RundownView } from './RundownView'
 import { ActiveRundownView } from './ActiveRundownView'
 import { ClockView } from './ClockView/ClockView'
 import { ConnectionStatusNotification } from '../lib/ConnectionStatusNotification'
-import { BrowserRouter as Router, Route, Switch, Redirect, useHistory } from 'react-router-dom'
+import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { PrompterView } from './Prompter/PrompterView'
 import { ModalDialogGlobalContainer, doModalDialog } from '../lib/ModalDialog'
 import { Settings } from '../lib/Settings'
-import { LoginPage } from './Account/NotLoggedIn/LoginPage'
-import { SignupPage } from './Account/NotLoggedIn/SignupPage'
-import { LostPasswordPage } from './Account/NotLoggedIn/LostPassword'
-import { ResetPasswordPage } from './Account/NotLoggedIn/ResetPasswordPage'
-import { AccountPage } from './Account/AccountPage'
-import { OrganizationPage } from './Account/OrganizationPage'
-import { getUser } from '../lib/userInfo'
-import { User } from '@sofie-automation/meteor-lib/dist/collections/Users'
-import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
-import { useTracker, useSubscription } from '../lib/ReactMeteorData/ReactMeteorData'
 import { DocumentTitleProvider } from '../lib/DocumentTitleProvider'
-import { Spinner } from '../lib/Spinner'
 import { catchError, firstIfArray, isRunningInPWA } from '../lib/lib'
 import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 
@@ -67,44 +56,13 @@ const LAST_RESTART_LATENCY = 3 * 60 * 60 * 1000
 const WINDOW_START_HOUR = 3
 const WINDOW_END_HOUR = 5
 
-const UserContext = React.createContext<User | null>(null)
-const UserSubscriptionReadyContext = React.createContext<boolean>(false)
-
 export const App: React.FC = function App() {
 	const { t } = useTranslation()
-	const user = useTracker(
-		() => {
-			return getUser()
-		},
-		[],
-		null
-	)
 
 	const [lastStart] = useState(Date.now())
-	const [requestedRoute, setRequestedRoute] = useState<undefined | string>()
 
-	const userReady = useSubscription(MeteorPubSub.loggedInUser)
-	const orgReady = useSubscription(MeteorPubSub.organization, user?.organizationId ?? null)
-
-	const subsReady = userReady && orgReady
-
-	const roles = useRoles(user, subsReady)
+	const roles = useRoles()
 	const featureFlags = useFeatureFlags()
-
-	useEffect(() => {
-		if (user) return
-
-		const path = String(window.location.pathname)
-		if (Settings.enableUserAccounts && !path.match(/verify-email/)) {
-			setRequestedRoute(path)
-		}
-	}, [user])
-
-	useEffect(() => {
-		if (!user) return
-
-		setRequestedRoute(undefined)
-	}, [user])
 
 	useEffect(() => {
 		function cronJob() {
@@ -183,9 +141,6 @@ export const App: React.FC = function App() {
 		}
 	}, [mountPWAFullScreenTrigger])
 
-	const isAuthenticated = !Settings.enableUserAccounts || user
-	const shouldUseAuthentication = Settings.enableUserAccounts
-
 	const onNavigationUserConfirmation = useCallback((message: string, callback: (result: boolean) => void) => {
 		doModalDialog({
 			title: t('Are you sure?'),
@@ -200,268 +155,134 @@ export const App: React.FC = function App() {
 	}, [])
 
 	return (
-		<UserContext.Provider value={user}>
-			<UserSubscriptionReadyContext.Provider value={subsReady}>
-				<Router getUserConfirmation={onNavigationUserConfirmation}>
-					<div className="container-fluid header-clear">
-						{/* Header switch - render the usual header for all pages but the rundown view */}
-						{isAuthenticated && (
-							<ErrorBoundary>
-								<Switch>
-									<Route path="/rundown/:playlistId" component={NullComponent} />
-									<Route path="/countdowns/:studioId" component={NullComponent} />
-									<Route path="/activeRundown" component={NullComponent} />
-									<Route path="/prompter/:studioId" component={NullComponent} />
-									<Route
-										path="/"
-										render={(props) => (
-											<Header
-												{...props}
-												loggedIn={user ? true : false}
-												allowConfigure={roles.configure}
-												allowTesting={roles.testing}
-												allowDeveloper={roles.developer}
-											/>
-										)}
-									/>
-								</Switch>
-							</ErrorBoundary>
-						)}
-						{/* Main app switch */}
-						<ErrorBoundary>
-							<Switch>
-								{shouldUseAuthentication ? (
-									<>
-										<Route
-											exact
-											path="/"
-											render={(props) => <LoginPage {...props} requestedRoute={requestedRoute} />}
-										/>
-										<Route exact path="/login" render={() => <Redirect to="/" />} />
-										<Route
-											exact
-											path="/login/verify-email/:token"
-											render={(props) => <LoginPage {...props} requestedRoute={requestedRoute} />}
-										/>
-										<Route exact path="/signup" component={SignupPage} />
-										<Route exact path="/reset" component={LostPasswordPage} />
-										<Route exact path="/reset/:token" component={ResetPasswordPage} />
-										<Route
-											exact
-											path="/account"
-											render={() => (
-												<RequireAuth>
-													<AccountPage />
-												</RequireAuth>
-											)}
-										/>
-										<Route
-											exact
-											path="/organization"
-											render={() => (
-												<RequireAuth>
-													<OrganizationPage />
-												</RequireAuth>
-											)}
-										/>
-									</>
-								) : (
-									<Route exact path="/" component={RundownList} />
-								)}
-								<Route
-									path="/rundowns"
-									render={() => (
-										<RequireAuth>
-											<RundownList />
-										</RequireAuth>
-									)}
+		<Router getUserConfirmation={onNavigationUserConfirmation}>
+			<div className="container-fluid header-clear">
+				{/* Header switch - render the usual header for all pages but the rundown view */}
+				<ErrorBoundary>
+					<Switch>
+						<Route path="/rundown/:playlistId" component={NullComponent} />
+						<Route path="/countdowns/:studioId" component={NullComponent} />
+						<Route path="/activeRundown" component={NullComponent} />
+						<Route path="/prompter/:studioId" component={NullComponent} />
+						<Route
+							path="/"
+							render={(props) => (
+								<Header
+									{...props}
+									allowConfigure={roles.configure}
+									allowTesting={roles.testing}
+									allowDeveloper={roles.developer}
 								/>
-								<Route
-									path="/rundown/:playlistId/shelf"
-									exact
-									render={(props) => (
-										<RequireAuth>
-											<RundownView
-												playlistId={protectString(decodeURIComponent(props.match.params.playlistId))}
-												onlyShelf={true}
-											/>
-										</RequireAuth>
-									)}
+							)}
+						/>
+					</Switch>
+				</ErrorBoundary>
+				{/* Main app switch */}
+				<ErrorBoundary>
+					<Switch>
+						<Route exact path="/" component={RundownList} />
+						<Route path="/rundowns" render={() => <RundownList />} />
+						<Route
+							path="/rundown/:playlistId/shelf"
+							exact
+							render={(props) => (
+								<RundownView
+									playlistId={protectString(decodeURIComponent(props.match.params.playlistId))}
+									onlyShelf={true}
 								/>
-								<Route
-									path="/rundown/:playlistId"
-									render={(props) => (
-										<RequireAuth>
-											<RundownView playlistId={protectString(decodeURIComponent(props.match.params.playlistId))} />
-										</RequireAuth>
-									)}
-								/>
-								<Route
-									path="/activeRundown/:studioId"
-									render={(props) => (
-										<RequireAuth>
-											<ActiveRundownView studioId={protectString(decodeURIComponent(props.match.params.studioId))} />
-										</RequireAuth>
-									)}
-								/>
-								<Route
-									path="/prompter/:studioId"
-									render={(props) => (
-										<RequireAuth>
-											<PrompterView studioId={protectString(decodeURIComponent(props.match.params.studioId))} />
-										</RequireAuth>
-									)}
-								/>
-								{/* We switch to the general ClockView component, and allow it to do the switch between various types of countdowns */}
-								<Route
-									path="/countdowns/:studioId"
-									render={(props) => (
-										<RequireAuth>
-											<ClockView studioId={protectString(decodeURIComponent(props.match.params.studioId))} />
-										</RequireAuth>
-									)}
-								/>
-								<Route
-									path="/status"
-									render={() => (
-										<RequireAuth>
-											<Status />
-										</RequireAuth>
-									)}
-								/>
-								<Route
-									path="/settings"
-									render={() => (
-										<RequireAuth>
-											<SettingsView />
-										</RequireAuth>
-									)}
-								/>
-								<Route
-									path="/testTools"
-									render={() => (
-										<RequireAuth>
-											<TestTools />
-										</RequireAuth>
-									)}
-								/>
-								<Route>
-									<Redirect to="/" />
-								</Route>
-							</Switch>
-						</ErrorBoundary>
-						<ErrorBoundary>
-							<Switch>
-								{/* Put views that should NOT have the Notification center here: */}
-								<Route path="/countdowns/:studioId" component={NullComponent} />
-								<Route path="/prompter/:studioId" component={NullComponent} />
-								<Route path="/" component={ConnectionStatusNotification} />
-							</Switch>
-						</ErrorBoundary>
-						<ErrorBoundary>
-							<DocumentTitleProvider />
-						</ErrorBoundary>
-						<ErrorBoundary>
-							<ModalDialogGlobalContainer />
-						</ErrorBoundary>
-					</div>
-				</Router>
-			</UserSubscriptionReadyContext.Provider>
-		</UserContext.Provider>
+							)}
+						/>
+						<Route
+							path="/rundown/:playlistId"
+							render={(props) => (
+								<RundownView playlistId={protectString(decodeURIComponent(props.match.params.playlistId))} />
+							)}
+						/>
+						<Route
+							path="/activeRundown/:studioId"
+							render={(props) => (
+								<ActiveRundownView studioId={protectString(decodeURIComponent(props.match.params.studioId))} />
+							)}
+						/>
+						<Route
+							path="/prompter/:studioId"
+							render={(props) => (
+								<PrompterView studioId={protectString(decodeURIComponent(props.match.params.studioId))} />
+							)}
+						/>
+						{/* We switch to the general ClockView component, and allow it to do the switch between various types of countdowns */}
+						<Route
+							path="/countdowns/:studioId"
+							render={(props) => (
+								<ClockView studioId={protectString(decodeURIComponent(props.match.params.studioId))} />
+							)}
+						/>
+						<Route path="/status" render={() => <Status />} />
+						<Route path="/settings" render={() => <SettingsView />} />
+						<Route path="/testTools" render={() => <TestTools />} />
+						<Route>
+							<Redirect to="/" />
+						</Route>
+					</Switch>
+				</ErrorBoundary>
+				<ErrorBoundary>
+					<Switch>
+						{/* Put views that should NOT have the Notification center here: */}
+						<Route path="/countdowns/:studioId" component={NullComponent} />
+						<Route path="/prompter/:studioId" component={NullComponent} />
+						<Route path="/" component={ConnectionStatusNotification} />
+					</Switch>
+				</ErrorBoundary>
+				<ErrorBoundary>
+					<DocumentTitleProvider />
+				</ErrorBoundary>
+				<ErrorBoundary>
+					<ModalDialogGlobalContainer />
+				</ErrorBoundary>
+			</div>
+		</Router>
 	)
 }
 
-/**
- * This is a poly-fill, replicating the behavior of a <Navigate> element in React-Router-DOM v6.
- * TODO: Use React-Router-DOM element once React-Router-DOM is upgraded to v6.
- */
-const Navigate = React.memo(function Navigate({ to }: { to: string }): null {
-	const history = useHistory()
-
-	useEffect(() => {
-		history.push(to)
-	}, [to])
-
-	return null
-})
-
-const RequireAuth = React.memo(function RequireAuth({ children }: React.PropsWithChildren<{}>) {
-	const user = useContext(UserContext)
-	const ready = useContext(UserSubscriptionReadyContext)
-
-	let isAuthenticated = false
-	let isWorking = false
-	if (!Settings.enableUserAccounts || (ready && user)) {
-		isAuthenticated = true
-	} else if (!ready) {
-		isWorking = true
-	}
-
-	if (isWorking) return <Spinner />
-	if (isAuthenticated) return <>{children}</>
-
-	return <Navigate to="/" />
-})
-
-function useRoles(user: User | null, subsReady: boolean) {
+function useRoles() {
 	const location = window.location
 
-	const [roles, setRoles] = useState(
-		Settings.enableUserAccounts
-			? {
-					studio: false,
-					configure: false,
-					developer: false,
-					testing: false,
-					service: false,
-			  }
-			: {
-					studio: getAllowStudio(),
-					configure: getAllowConfigure(),
-					developer: getAllowDeveloper(),
-					testing: getAllowTesting(),
-					service: getAllowService(),
-			  }
-	)
+	const [roles, setRoles] = useState({
+		studio: getAllowStudio(),
+		configure: getAllowConfigure(),
+		developer: getAllowDeveloper(),
+		testing: getAllowTesting(),
+		service: getAllowService(),
+	})
 
 	useEffect(() => {
-		if (!Settings.enableUserAccounts) {
-			if (!location.search) return
+		if (!location.search) return
 
-			const params = queryStringParse(location.search)
+		const params = queryStringParse(location.search)
 
-			if (params['studio']) setAllowStudio(params['studio'] === '1')
-			if (params['configure']) setAllowConfigure(params['configure'] === '1')
-			if (params['develop']) setAllowDeveloper(params['develop'] === '1')
-			if (params['testing']) setAllowTesting(params['testing'] === '1')
-			if (params['service']) setAllowService(params['service'] === '1')
+		if (params['studio']) setAllowStudio(params['studio'] === '1')
+		if (params['configure']) setAllowConfigure(params['configure'] === '1')
+		if (params['develop']) setAllowDeveloper(params['develop'] === '1')
+		if (params['testing']) setAllowTesting(params['testing'] === '1')
+		if (params['service']) setAllowService(params['service'] === '1')
 
-			if (params['admin']) {
-				const val = params['admin'] === '1'
-				setAllowStudio(val)
-				setAllowConfigure(val)
-				setAllowDeveloper(val)
-				setAllowTesting(val)
-				setAllowService(val)
-			}
-
-			setRoles({
-				studio: getAllowStudio(),
-				configure: getAllowConfigure(),
-				developer: getAllowDeveloper(),
-				testing: getAllowTesting(),
-				service: getAllowService(),
-			})
-		} else if (user && subsReady) {
-			setRoles({
-				studio: getAllowStudio(),
-				configure: getAllowConfigure(),
-				developer: getAllowDeveloper(),
-				testing: getAllowTesting(),
-				service: getAllowService(),
-			})
+		if (params['admin']) {
+			const val = params['admin'] === '1'
+			setAllowStudio(val)
+			setAllowConfigure(val)
+			setAllowDeveloper(val)
+			setAllowTesting(val)
+			setAllowService(val)
 		}
-	}, [location.search, user, subsReady])
+
+		setRoles({
+			studio: getAllowStudio(),
+			configure: getAllowConfigure(),
+			developer: getAllowDeveloper(),
+			testing: getAllowTesting(),
+			service: getAllowService(),
+		})
+	}, [location.search])
 
 	return roles
 }

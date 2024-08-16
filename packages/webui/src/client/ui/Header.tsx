@@ -1,19 +1,16 @@
 import * as React from 'react'
 import { WithTranslation } from 'react-i18next'
-import { Meteor } from 'meteor/meteor'
 import { NavLink, Link } from 'react-router-dom'
 import { NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
-import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
+import { NotificationCenter, NoticeLevel } from '../lib/notifications/notifications'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { SupportPopUpToggle, SupportPopUp } from './SupportPopUp'
 // @ts-expect-error No types available
 import * as VelocityReact from 'velocity-react'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
-import { Settings } from '../lib/Settings'
 import { CoreSystem } from '../collections'
 
 interface IPropsHeader {
-	loggedIn: boolean
 	allowConfigure?: boolean
 	allowTesting?: boolean
 	allowDeveloper?: boolean
@@ -36,22 +33,6 @@ class Header extends React.Component<Translated<IPropsHeader & ITrackedPropsHead
 			isNotificationCenterOpen: undefined,
 			isSupportPanelOpen: false,
 		}
-	}
-
-	private handleLogout(e: React.MouseEvent<HTMLAnchorElement>) {
-		e.preventDefault()
-		Meteor.logout((error) => {
-			if (error) {
-				NotificationCenter.push(
-					new Notification(
-						undefined,
-						NoticeLevel.WARNING,
-						`Error when trying to log out: ${error.toString()}`,
-						'Page Header'
-					)
-				)
-			}
-		})
 	}
 
 	onToggleNotifications = (_e: React.MouseEvent<HTMLButtonElement>, filter: NoticeLevel | undefined) => {
@@ -174,16 +155,6 @@ class Header extends React.Component<Translated<IPropsHeader & ITrackedPropsHead
 									{this.props.allowConfigure && (
 										<NavLink to="/settings" activeClassName="active">
 											{t('Settings')}
-										</NavLink>
-									)}
-									{Settings.enableUserAccounts && this.props.loggedIn && (
-										<NavLink to="/account" activeClassName="active">
-											{t('Account')}
-										</NavLink>
-									)}
-									{Settings.enableUserAccounts && this.props.loggedIn && (
-										<NavLink to="/" activeClassName="active" onClick={this.handleLogout}>
-											{t('Logout')}
 										</NavLink>
 									)}
 								</nav>

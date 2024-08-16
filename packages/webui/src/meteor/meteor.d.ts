@@ -8,12 +8,6 @@ type global_Error = Error
 export namespace Meteor {
 	/** Global props **/
 
-	/** User **/
-
-	function user(options?: { fields?: Mongo.FieldSpecifier | undefined }): unknown | null
-
-	function userId(): string | null
-
 	/** Error **/
 	/**
 	 * This class represents a symbolic error thrown by a method.
@@ -66,23 +60,6 @@ export namespace Meteor {
 		errorType: string
 	}
 	/** Error **/
-
-	/** Method **/
-	interface MethodThisType {
-		/** The id of the user that made this method call, or `null` if no user was logged in. */
-		userId: string | null
-		/**
-		 * Access inside a method invocation. The connection that this method was received on. `null` if the method is not associated with a connection, eg. a server initiated method call. Calls
-		 * to methods made from a server method which was in turn initiated from the client share the same `connection`. */
-		connection: Connection | null
-		/**
-		 * Set the logged in user.
-		 * @param userId The value that should be returned by `userId` on this connection.
-		 */
-		setUserId(userId: string | null): void
-		/** Call inside a method invocation. Allow subsequent method from this client to begin running in a new fiber. */
-		unblock(): void
-	}
 
 	/**
 	 * Defines functions that can be invoked over the network by clients.

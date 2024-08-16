@@ -35,7 +35,6 @@ import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { DBOrganization } from '@sofie-automation/meteor-lib/dist/collections/Organization'
 import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
@@ -76,8 +75,6 @@ export const MediaWorkFlows = createSyncReadOnlyMongoCollection<MediaWorkFlow>(C
 export const MediaWorkFlowSteps = createSyncReadOnlyMongoCollection<MediaWorkFlowStep>(
 	CollectionName.MediaWorkFlowSteps
 )
-
-export const Organizations = createSyncMongoCollection<DBOrganization>(CollectionName.Organizations)
 
 export const PackageContainerStatuses = createSyncReadOnlyMongoCollection<PackageContainerStatusDB>(
 	CollectionName.PackageContainerStatuses
@@ -124,9 +121,6 @@ export const TranslationsBundles = createSyncReadOnlyMongoCollection<Translation
 export const TriggeredActions = createSyncMongoCollection<DBTriggeredActions>(CollectionName.TriggeredActions)
 
 export const UserActionsLog = createSyncReadOnlyMongoCollection<UserActionsLogItem>(CollectionName.UserActionsLog)
-
-// // This is a somewhat special collection, as it draws from the Meteor.users collection from the Accounts package
-// export const Users = wrapMongoCollection<DBUser>(Meteor.users as any, CollectionName.Users)
 
 export function getCoreSystem(): ICoreSystem | undefined {
 	return CoreSystem.findOne(SYSTEM_ID)

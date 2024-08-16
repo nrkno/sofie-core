@@ -1,5 +1,3 @@
-import { Settings } from '../lib/Settings'
-import { getUserRoles } from '../lib/userInfo'
 import {
 	setReportNotifications as libSetReportNotifications,
 	getReportNotifications as libGetReportNotifications,
@@ -50,9 +48,6 @@ export function setAllowStudio(studioMode: boolean): void {
 	localStorageSetCachedItem(LocalStorageProperty.STUDIO, studioMode ? '1' : '0')
 }
 export function getAllowStudio(): boolean {
-	if (Settings.enableUserAccounts) {
-		return !!getUserRoles().studio
-	}
 	return localStorageGetCachedItem(LocalStorageProperty.STUDIO) === '1'
 }
 
@@ -60,9 +55,6 @@ export function setAllowConfigure(configureMode: boolean): void {
 	localStorageSetCachedItem(LocalStorageProperty.CONFIGURE, configureMode ? '1' : '0')
 }
 export function getAllowConfigure(): boolean {
-	if (Settings.enableUserAccounts) {
-		return !!getUserRoles().configurator
-	}
 	return localStorageGetCachedItem(LocalStorageProperty.CONFIGURE) === '1'
 }
 
@@ -77,9 +69,6 @@ export function setAllowDeveloper(developerMode: boolean): void {
 	localStorageSetCachedItem(LocalStorageProperty.DEVELOPER, developerMode ? '1' : '0')
 }
 export function getAllowDeveloper(): boolean {
-	if (Settings.enableUserAccounts) {
-		return !!getUserRoles().developer
-	}
 	return localStorageGetCachedItem(LocalStorageProperty.DEVELOPER) === '1'
 }
 
@@ -87,9 +76,6 @@ export function setAllowTesting(testingMode: boolean): void {
 	localStorageSetCachedItem(LocalStorageProperty.TESTING, testingMode ? '1' : '0')
 }
 export function getAllowTesting(): boolean {
-	if (Settings.enableUserAccounts) {
-		return !!getUserRoles().developer
-	}
 	return localStorageGetCachedItem(LocalStorageProperty.TESTING) === '1'
 }
 

@@ -1,6 +1,5 @@
-import { useEffect } from 'react'
-import { useSubscription, useTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { Route, Switch, Redirect, useHistory } from 'react-router-dom'
+import { useSubscription } from '../lib/ReactMeteorData/react-meteor-data'
+import { Route, Switch, Redirect } from 'react-router-dom'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 
 import StudioSettings from './Settings/StudioSettings'
@@ -11,30 +10,16 @@ import BlueprintSettings from './Settings/BlueprintSettings'
 import SystemManagement from './Settings/SystemManagement'
 
 import { MigrationView } from './Settings/Migration'
-import { getUser } from '../lib/userInfo'
-import { Settings as MeteorSettings } from '../lib/Settings'
 import { SettingsMenu } from './Settings/SettingsMenu'
-import { getAllowConfigure } from '../lib/localStorage'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 export function Settings(): JSX.Element | null {
-	const user = useTracker(() => getUser(), [], null)
-
-	const history = useHistory()
-
 	useSubscription(CorelibPubSub.peripheralDevices, null)
 	useSubscription(CorelibPubSub.studios, null)
 	useSubscription(CorelibPubSub.showStyleBases, null)
 	useSubscription(CorelibPubSub.showStyleVariants, null, null)
 	useSubscription(CorelibPubSub.blueprints, null)
-
-	useEffect(() => {
-		if (MeteorSettings.enableUserAccounts && user) {
-			const access = getAllowConfigure()
-			if (!access) history.push('/')
-		}
-	}, [user])
 
 	return (
 		<div className="mtl gutter has-statusbar">
@@ -42,7 +27,7 @@ export function Settings(): JSX.Element | null {
 				<div className="row">
 					<div className="col c12 rm-c3 settings-menu">
 						<ErrorBoundary>
-							<SettingsMenu superAdmin={user?.superAdmin ?? false} />
+							<SettingsMenu />
 						</ErrorBoundary>
 					</div>
 					<div className="col c12 rm-c9 settings-dialog">
@@ -57,7 +42,6 @@ export function Settings(): JSX.Element | null {
 									render={(props) => (
 										<BlueprintSettings
 											blueprintId={protectString(decodeURIComponent(props.match.params.blueprintId))}
-											userId={user?._id}
 										/>
 									)}
 								/>

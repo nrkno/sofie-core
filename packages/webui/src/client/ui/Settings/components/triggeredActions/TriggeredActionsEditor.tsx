@@ -21,7 +21,6 @@ import { keyLabelsToCodes } from '../../../../lib/triggers/codesToKeyLabels'
 import classNames from 'classnames'
 import { catchError, fetchFrom } from '../../../../lib/lib'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../../lib/notifications/notifications'
-import { Meteor } from 'meteor/meteor'
 import { doModalDialog } from '../../../../lib/ModalDialog'
 import { PartId, RundownId, ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PartInstances, Parts, RundownPlaylists, Rundowns, TriggeredActions } from '../../../../collections'
@@ -340,7 +339,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 						body: uploadFileContents,
 						headers: {
 							'content-type': 'application/json',
-							authorization: 'id ' + Meteor.userId(),
+							// authorization: 'id ' + Meteor.userId(),
 						},
 					})
 						.then(() => {
