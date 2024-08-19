@@ -21,12 +21,11 @@ import { UserContextInfo } from './CommonContext'
 import { ShowStyleUserContext } from './ShowStyleUserContext'
 import { WatchedPackagesHelper } from './watchedPackages'
 import { getCurrentTime } from '../../lib'
-import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
 import { moveNextPart } from '../../playout/moveNextPart'
 import { ProcessedShowStyleConfig } from '../config'
 import { DatastorePersistenceMode } from '@sofie-automation/shared-lib/dist/core/model/TimelineDatastore'
-import { getDatastoreId } from '../../playout/datastore'
+import { removeTimelineDatastoreValue, setTimelineDatastoreValue } from '../../playout/datastore'
 import { executePeripheralDeviceAction, listPlayoutDevices } from '../../peripheralDevice'
 import { ActionPartChange, PartAndPieceInstanceActionService } from './services/PartAndPieceInstanceActionService'
 
@@ -47,28 +46,11 @@ export class DatastoreActionExecutionContext
 	}
 
 	async setTimelineDatastoreValue(key: string, value: unknown, mode: DatastorePersistenceMode): Promise<void> {
-		const studioId = this._context.studioId
-		const id = protectString(`${studioId}_${key}`)
-		const collection = this._context.directCollections.TimelineDatastores
-
-		await collection.replace({
-			_id: id,
-			studioId: studioId,
-
-			key,
-			value,
-
-			modified: Date.now(),
-			mode,
-		})
+		await setTimelineDatastoreValue(this._context, key, value, mode)
 	}
 
 	async removeTimelineDatastoreValue(key: string): Promise<void> {
-		const studioId = this._context.studioId
-		const id = getDatastoreId(studioId, key)
-		const collection = this._context.directCollections.TimelineDatastores
-
-		await collection.remove({ _id: id })
+		await removeTimelineDatastoreValue(this._context, key)
 	}
 
 	getCurrentTime(): number {
@@ -219,31 +201,14 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	}
 
 	async setTimelineDatastoreValue(key: string, value: unknown, mode: DatastorePersistenceMode): Promise<void> {
-		const studioId = this._context.studioId
-		const id = protectString(`${studioId}_${key}`)
-		const collection = this._context.directCollections.TimelineDatastores
-
 		this._playoutModel.deferAfterSave(async () => {
-			await collection.replace({
-				_id: id,
-				studioId: studioId,
-
-				key,
-				value,
-
-				modified: Date.now(),
-				mode,
-			})
+			await setTimelineDatastoreValue(this._context, key, value, mode)
 		})
 	}
 
 	async removeTimelineDatastoreValue(key: string): Promise<void> {
-		const studioId = this._context.studioId
-		const id = getDatastoreId(studioId, key)
-		const collection = this._context.directCollections.TimelineDatastores
-
 		this._playoutModel.deferAfterSave(async () => {
-			await collection.remove({ _id: id })
+			await removeTimelineDatastoreValue(this._context, key)
 		})
 	}
 
