@@ -3,118 +3,111 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.51.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.50.4...v1.51.0-in-testing.0) (2024-08-19)
+
+### Features
+
+- Ensure peripheralDevice subdevice removal when requested ([#1227](https://github.com/nrkno/sofie-core/issues/1227)) ([d5cafe8](https://github.com/nrkno/sofie-core/commit/d5cafe8db5e453f87f8d46262f23e118b580d4d5))
+
+## [1.50.5-LSG-updates](https://github.com/nrkno/sofie-core/compare/v1.50.4-LSG-updates...v1.50.5-LSG-updates) (2024-08-08)
+
+## [1.50.4-LSG-updates](https://github.com/nrkno/sofie-core/compare/v1.50.3-LSG-updates...v1.50.4-LSG-updates) (2024-07-30)
+
+### Bug Fixes
+
+- create new mosTimes correctly ([e8cec88](https://github.com/nrkno/sofie-core/commit/e8cec88f8b9d8c298f1b2ddec8d45f6f80fea9bf))
+- improve error logging: use stringifyError() ([8da63de](https://github.com/nrkno/sofie-core/commit/8da63dec44915439ea436eee9697f3774241537b))
+
+### Features
+
+- backport of release51 live-status-gateway onto release50 ([0a87a95](https://github.com/nrkno/sofie-core/commit/0a87a9519ca1f344429e9b4d47a44c1a9acddff2))
+- refactor server-core-integration subscription handling to reduce duplication ([8eaedd2](https://github.com/nrkno/sofie-core/commit/8eaedd22e8efb9750f00ff472301c6b3f2d0f0af))
+- typed publications in gateways/peripheraldevices SOFIE-1183 ([#1056](https://github.com/nrkno/sofie-core/issues/1056)) ([0c3c1bf](https://github.com/nrkno/sofie-core/commit/0c3c1bfd2bb779034976dc34e49aa6e664ea874b))
+- update meteor to 2.12 SOFIE-2368 ([#931](https://github.com/nrkno/sofie-core/issues/931)) ([d7dfb71](https://github.com/nrkno/sofie-core/commit/d7dfb71d19405267cab5e2abc39794a80acb30b1))
+
+# [1.51.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.50.4...v1.51.0-in-testing.0) (2024-08-19)
+
+### Features
+
+- Ensure peripheralDevice subdevice removal when requested ([#1227](https://github.com/nrkno/sofie-core/issues/1227)) ([d5cafe8](https://github.com/nrkno/sofie-core/commit/d5cafe8db5e453f87f8d46262f23e118b580d4d5))
+
+## [1.50.5-LSG-updates](https://github.com/nrkno/sofie-core/compare/v1.50.4-LSG-updates...v1.50.5-LSG-updates) (2024-08-08)
+
+## [1.50.4-LSG-updates](https://github.com/nrkno/sofie-core/compare/v1.50.3-LSG-updates...v1.50.4-LSG-updates) (2024-07-30)
+
+### Bug Fixes
+
+- create new mosTimes correctly ([e8cec88](https://github.com/nrkno/sofie-core/commit/e8cec88f8b9d8c298f1b2ddec8d45f6f80fea9bf))
+- improve error logging: use stringifyError() ([8da63de](https://github.com/nrkno/sofie-core/commit/8da63dec44915439ea436eee9697f3774241537b))
+
+### Features
+
+- backport of release51 live-status-gateway onto release50 ([0a87a95](https://github.com/nrkno/sofie-core/commit/0a87a9519ca1f344429e9b4d47a44c1a9acddff2))
+- refactor server-core-integration subscription handling to reduce duplication ([8eaedd2](https://github.com/nrkno/sofie-core/commit/8eaedd22e8efb9750f00ff472301c6b3f2d0f0af))
+- typed publications in gateways/peripheraldevices SOFIE-1183 ([#1056](https://github.com/nrkno/sofie-core/issues/1056)) ([0c3c1bf](https://github.com/nrkno/sofie-core/commit/0c3c1bfd2bb779034976dc34e49aa6e664ea874b))
+- update meteor to 2.12 SOFIE-2368 ([#931](https://github.com/nrkno/sofie-core/issues/931)) ([d7dfb71](https://github.com/nrkno/sofie-core/commit/d7dfb71d19405267cab5e2abc39794a80acb30b1))
+
 ## [1.50.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.4-LSG-updates...v1.50.5) (2024-08-08)
 
 **Note:** Version bump only for package mos-gateway
 
-
-
-
-
 ## [1.50.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.3-LSG-updates...v1.50.4) (2024-07-30)
-
 
 ### Bug Fixes
 
-* improve error logging: use stringifyError() ([8da63de](https://github.com/nrkno/tv-automation-server-core/commit/8da63dec44915439ea436eee9697f3774241537b))
-
-
-
-
+- improve error logging: use stringifyError() ([8da63de](https://github.com/nrkno/tv-automation-server-core/commit/8da63dec44915439ea436eee9697f3774241537b))
 
 ## [1.50.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.2...v1.50.3) (2024-06-24)
 
 **Note:** Version bump only for package mos-gateway
 
-
-
-
-
 ## [1.50.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.6...v1.50.2) (2024-05-15)
-
-
 
 ## [1.50.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.5-0...v1.50.1) (2024-03-11)
 
-
 ### Bug Fixes
 
-* strip unused node dependencies from docker images ([#1159](https://github.com/nrkno/tv-automation-server-core/issues/1159)) ([6d86132](https://github.com/nrkno/tv-automation-server-core/commit/6d86132c1bc36219f04f00d5360940dfcbd6df7c))
-
-
+- strip unused node dependencies from docker images ([#1159](https://github.com/nrkno/tv-automation-server-core/issues/1159)) ([6d86132](https://github.com/nrkno/tv-automation-server-core/commit/6d86132c1bc36219f04f00d5360940dfcbd6df7c))
 
 ## [1.50.1-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0...v1.50.1-0) (2024-03-05)
 
-
-
 # [1.50.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.4...v1.50.0) (2024-02-23)
-
-
 
 # [1.50.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.4...v1.50.0-in-testing.5) (2023-08-25)
 
-
-
 # [1.50.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.7...v1.50.0-in-testing.4) (2023-08-23)
-
-
 
 # [1.50.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.1...v1.50.0-in-testing.2) (2023-07-17)
 
-
 ### Features
 
-* expose MOS ports in mos-gateway settings ([#917](https://github.com/nrkno/tv-automation-server-core/issues/917)) ([4cb1649](https://github.com/nrkno/tv-automation-server-core/commit/4cb16493107c07be9c8a2a804f6bcb7e54072de2))
-* move gateway settings onto Studio SOFIE-1330 ([#907](https://github.com/nrkno/tv-automation-server-core/issues/907)) ([523c061](https://github.com/nrkno/tv-automation-server-core/commit/523c061c51296e21814deeeabbe9aafca21cd5a6))
-* peripheral device tidying ([#906](https://github.com/nrkno/tv-automation-server-core/issues/906)) ([0795ae5](https://github.com/nrkno/tv-automation-server-core/commit/0795ae5c0517114a34e350d5a5afbf7a731e9794))
-
-
-
-
+- expose MOS ports in mos-gateway settings ([#917](https://github.com/nrkno/tv-automation-server-core/issues/917)) ([4cb1649](https://github.com/nrkno/tv-automation-server-core/commit/4cb16493107c07be9c8a2a804f6bcb7e54072de2))
+- move gateway settings onto Studio SOFIE-1330 ([#907](https://github.com/nrkno/tv-automation-server-core/issues/907)) ([523c061](https://github.com/nrkno/tv-automation-server-core/commit/523c061c51296e21814deeeabbe9aafca21cd5a6))
+- peripheral device tidying ([#906](https://github.com/nrkno/tv-automation-server-core/issues/906)) ([0795ae5](https://github.com/nrkno/tv-automation-server-core/commit/0795ae5c0517114a34e350d5a5afbf7a731e9794))
 
 ## [1.50.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.1-0...v1.50.1) (2024-03-11)
 
-
 ### Bug Fixes
 
-* strip unused node dependencies from docker images ([#1159](https://github.com/nrkno/tv-automation-server-core/issues/1159)) ([6d86132](https://github.com/nrkno/tv-automation-server-core/commit/6d86132c1bc36219f04f00d5360940dfcbd6df7c))
-
-
-
-
+- strip unused node dependencies from docker images ([#1159](https://github.com/nrkno/tv-automation-server-core/issues/1159)) ([6d86132](https://github.com/nrkno/tv-automation-server-core/commit/6d86132c1bc36219f04f00d5360940dfcbd6df7c))
 
 ## [1.50.1-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0...v1.50.1-0) (2024-03-05)
 
 **Note:** Version bump only for package mos-gateway
 
-
-
-
-
 # [1.50.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.4...v1.50.0) (2024-02-23)
 
-
-
 # [1.50.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.4...v1.50.0-in-testing.5) (2023-08-25)
-
-
 
 # [1.50.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.7...v1.50.0-in-testing.4) (2023-08-23)
 
-
-
 # [1.50.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.1...v1.50.0-in-testing.2) (2023-07-17)
-
 
 ### Features
 
-* expose MOS ports in mos-gateway settings ([#917](https://github.com/nrkno/tv-automation-server-core/issues/917)) ([4cb1649](https://github.com/nrkno/tv-automation-server-core/commit/4cb16493107c07be9c8a2a804f6bcb7e54072de2))
-* move gateway settings onto Studio SOFIE-1330 ([#907](https://github.com/nrkno/tv-automation-server-core/issues/907)) ([523c061](https://github.com/nrkno/tv-automation-server-core/commit/523c061c51296e21814deeeabbe9aafca21cd5a6))
-* peripheral device tidying ([#906](https://github.com/nrkno/tv-automation-server-core/issues/906)) ([0795ae5](https://github.com/nrkno/tv-automation-server-core/commit/0795ae5c0517114a34e350d5a5afbf7a731e9794))
-
-
-
-
+- expose MOS ports in mos-gateway settings ([#917](https://github.com/nrkno/tv-automation-server-core/issues/917)) ([4cb1649](https://github.com/nrkno/tv-automation-server-core/commit/4cb16493107c07be9c8a2a804f6bcb7e54072de2))
+- move gateway settings onto Studio SOFIE-1330 ([#907](https://github.com/nrkno/tv-automation-server-core/issues/907)) ([523c061](https://github.com/nrkno/tv-automation-server-core/commit/523c061c51296e21814deeeabbe9aafca21cd5a6))
+- peripheral device tidying ([#906](https://github.com/nrkno/tv-automation-server-core/issues/906)) ([0795ae5](https://github.com/nrkno/tv-automation-server-core/commit/0795ae5c0517114a34e350d5a5afbf7a731e9794))
 
 # [1.50.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.4...v1.50.0-in-testing.5) (2023-08-25)
 
@@ -141,21 +134,14 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 - peripheral device tidying ([#906](https://github.com/nrkno/tv-automation-server-core/issues/906)) ([0795ae5](https://github.com/nrkno/tv-automation-server-core/commit/0795ae5c0517114a34e350d5a5afbf7a731e9794))
 
 # [1.50.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.1...v1.50.0-in-testing.2) (2023-07-17)
+
 ## [1.49.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.2...v1.49.3) (2023-12-21)
 
 **Note:** Version bump only for package mos-gateway
 
-
-
-
-
 ## [1.49.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.1...v1.49.2) (2023-11-29)
 
 **Note:** Version bump only for package mos-gateway
-
-
-
-
 
 ## [1.49.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0...v1.49.1) (2023-10-20)
 

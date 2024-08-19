@@ -1321,7 +1321,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@sofie-automation/blueprints-integration@portal:../packages/blueprints-integration::locator=automation-core%40workspace%3A."
   dependencies:
-    "@sofie-automation/shared-lib": 1.51.0-in-development
+    "@sofie-automation/shared-lib": 1.52.0-in-development
     tslib: ^2.6.2
     type-fest: ^3.13.1
   languageName: node
@@ -1362,8 +1362,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@sofie-automation/corelib@portal:../packages/corelib::locator=automation-core%40workspace%3A."
   dependencies:
-    "@sofie-automation/blueprints-integration": 1.51.0-in-development
-    "@sofie-automation/shared-lib": 1.51.0-in-development
+    "@sofie-automation/blueprints-integration": 1.52.0-in-development
+    "@sofie-automation/shared-lib": 1.52.0-in-development
     fast-clone: ^1.5.13
     i18next: ^21.10.0
     influx: ^5.9.3
@@ -1394,9 +1394,9 @@ __metadata:
   resolution: "@sofie-automation/job-worker@portal:../packages/job-worker::locator=automation-core%40workspace%3A."
   dependencies:
     "@slack/webhook": ^6.1.0
-    "@sofie-automation/blueprints-integration": 1.51.0-in-development
-    "@sofie-automation/corelib": 1.51.0-in-development
-    "@sofie-automation/shared-lib": 1.51.0-in-development
+    "@sofie-automation/blueprints-integration": 1.52.0-in-development
+    "@sofie-automation/corelib": 1.52.0-in-development
+    "@sofie-automation/shared-lib": 1.52.0-in-development
     amqplib: ^0.10.3
     deepmerge: ^4.3.1
     elastic-apm-node: ^3.51.0
@@ -1418,7 +1418,7 @@ __metadata:
   resolution: "@sofie-automation/shared-lib@portal:../packages/shared-lib::locator=automation-core%40workspace%3A."
   dependencies:
     "@mos-connection/model": ^4.1.1-nightly-master-20240430-072032-ffb8bf6.0
-    timeline-state-resolver-types: 9.1.0-nightly-release51-20240228-132329-b7ceb6950.0
+    timeline-state-resolver-types: 9.1.0
     tslib: ^2.6.2
     type-fest: ^3.13.1
   languageName: node
@@ -11748,12 +11748,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"timeline-state-resolver-types@npm:9.1.0-nightly-release51-20240228-132329-b7ceb6950.0":
-  version: 9.1.0-nightly-release51-20240228-132329-b7ceb6950.0
-  resolution: "timeline-state-resolver-types@npm:9.1.0-nightly-release51-20240228-132329-b7ceb6950.0"
+"timeline-state-resolver-types@npm:9.1.0":
+  version: 9.1.0
+  resolution: "timeline-state-resolver-types@npm:9.1.0"
   dependencies:
     tslib: ^2.6.2
-  checksum: da20544cc1ce9118c318ceccec240cc2f05c7eb415da9365625bdeffafb508b358d4f51842ca7ec9f10f44f25e6c9956cda2d74c22bf138bb869bcceacbbc2f2
+  checksum: dab48013908d588a4a9357aeb824117316ce1666d972575c4fc89a0f70647bee4aacdfddb73bce5db7f7bdc5920f9e31b3669b47d6e97cf627e41f9f205e3f03
   languageName: node
   linkType: hard
 

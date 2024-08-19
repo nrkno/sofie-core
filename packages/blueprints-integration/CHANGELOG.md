@@ -3,141 +3,157 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.51.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.50.4...v1.51.0-in-testing.0) (2024-08-19)
+
+## [1.50.5-LSG-updates](https://github.com/nrkno/sofie-core/compare/v1.50.4-LSG-updates...v1.50.5-LSG-updates) (2024-08-08)
+
+## [1.50.4-LSG-updates](https://github.com/nrkno/sofie-core/compare/v1.50.3-LSG-updates...v1.50.4-LSG-updates) (2024-07-30)
+
+### Bug Fixes
+
+- Add missing metadata types ([71eb739](https://github.com/nrkno/sofie-core/commit/71eb739bc87f64db50f06ab4647cb6972e58c7fa))
+- Add missing piece metadata types ([#1133](https://github.com/nrkno/sofie-core/issues/1133)) ([70c5739](https://github.com/nrkno/sofie-core/commit/70c5739c5e9848e57c21bde78ee16d4c78da8e1a))
+- blueprint-integration missed typing in [#1077](https://github.com/nrkno/sofie-core/issues/1077) ([bd5e36f](https://github.com/nrkno/sofie-core/commit/bd5e36f9c0b390999ef465a5e1554b8faa2c456f))
+
+### Features
+
+- A/B player Ids as strings ([#1054](https://github.com/nrkno/sofie-core/issues/1054)) ([d9dee47](https://github.com/nrkno/sofie-core/commit/d9dee473068c4d96d15a6ef799ace830cf1fe1c0))
+- action triggers styleClassNames SOFIE-3138 ([#1192](https://github.com/nrkno/sofie-core/issues/1192)) ([fa306dc](https://github.com/nrkno/sofie-core/commit/fa306dc16d5f6ee31418e282180d4c704f5d9feb))
+- action triggers styleClassNames SOFIE-3138 ([#1192](https://github.com/nrkno/sofie-core/issues/1192)) ([49274d6](https://github.com/nrkno/sofie-core/commit/49274d64bdc0532f294be34b0a4413d848321e40))
+- add onTake and onSetAsNext blueprint callbacks SOFIE-2897 SOFIE-2808 ([#1117](https://github.com/nrkno/sofie-core/issues/1117)) ([0bd621c](https://github.com/nrkno/sofie-core/commit/0bd621c13b08cb20c923ea573baca9db003c7df1))
+- blueprint config fixup step SOFIE-2258 ([#1050](https://github.com/nrkno/sofie-core/issues/1050)) ([ea6c343](https://github.com/nrkno/sofie-core/commit/ea6c3435079172c682dd1e23d7813ae33fcdee78))
+- cleanup deprecations ([#996](https://github.com/nrkno/sofie-core/issues/996)) ([f04f18f](https://github.com/nrkno/sofie-core/commit/f04f18f8e94b706dd1a3da1525feb9787f6eb85f))
+- create adlib testing rundowns SOFIE-2963 ([#1211](https://github.com/nrkno/sofie-core/issues/1211)) ([a831989](https://github.com/nrkno/sofie-core/commit/a8319898c73d7233a2a665fd0bf5b9d6da83d713))
+- **Device Triggers:** add support for setting shift register operations ([aa19fcc](https://github.com/nrkno/sofie-core/commit/aa19fcc3b5bfad05158677701b838673578a4dcb))
+- **Device Triggers:** add support for setting shift register operations SOFIE-3136 ([c5a6292](https://github.com/nrkno/sofie-core/commit/c5a6292a85821d67653eebef75bbd929ff0cd44d))
+- **EAV-31:** add blueprintsData on adlib actions ([114c064](https://github.com/nrkno/sofie-core/commit/114c06466ff1f35660454b66d1e35b3d339b9a80))
+- Editable fields as JSON ([ddfb66a](https://github.com/nrkno/sofie-core/commit/ddfb66a1ef8afbd507535037d12752742c7dfeda))
+- implement `loop` content property for Graphics ([2cf38ba](https://github.com/nrkno/sofie-core/commit/2cf38baadd5e7ba16d624b9ad75cfff9d48297a6))
+- introduce `privateData` and `publicData` ([d94f1aa](https://github.com/nrkno/sofie-core/commit/d94f1aa82cec779c7eebddae42e1c4fab91ac494))
+- remove supertimeline from Parts and Pieces resolving SOFIE-2373 ([#983](https://github.com/nrkno/sofie-core/issues/983)) ([55e02cb](https://github.com/nrkno/sofie-core/commit/55e02cb1a0b6d237ae9bcd02ebf54e06cf08fb26))
+- rename internal 'scratchpad' naming to 'adlib testing' SOFIE-3015 ([afb2f43](https://github.com/nrkno/sofie-core/commit/afb2f43c8f199ff5da4ea6c3ccc3bd1e97a80f4f))
+- rundown scratchpad SOFIE-2432 ([5e16632](https://github.com/nrkno/sofie-core/commit/5e16632908b8dd62e4470a9ba6089a56aa571b9f))
+- support packageinfo update flow for buckets and studio baseline SOFIE-2655 ([#1051](https://github.com/nrkno/sofie-core/issues/1051)) ([df7ed0c](https://github.com/nrkno/sofie-core/commit/df7ed0c653b897774f01a33c9e60a5e22fac99e4))
+- typed publications in gateways/peripheraldevices SOFIE-1183 ([#1056](https://github.com/nrkno/sofie-core/issues/1056)) ([0c3c1bf](https://github.com/nrkno/sofie-core/commit/0c3c1bfd2bb779034976dc34e49aa6e664ea874b))
+- update meteor to 2.12 SOFIE-2368 ([#931](https://github.com/nrkno/sofie-core/issues/931)) ([d7dfb71](https://github.com/nrkno/sofie-core/commit/d7dfb71d19405267cab5e2abc39794a80acb30b1))
+
+# [1.51.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.50.4...v1.51.0-in-testing.0) (2024-08-19)
+
+## [1.50.5-LSG-updates](https://github.com/nrkno/sofie-core/compare/v1.50.4-LSG-updates...v1.50.5-LSG-updates) (2024-08-08)
+
+## [1.50.4-LSG-updates](https://github.com/nrkno/sofie-core/compare/v1.50.3-LSG-updates...v1.50.4-LSG-updates) (2024-07-30)
+
+### Bug Fixes
+
+- Add missing metadata types ([71eb739](https://github.com/nrkno/sofie-core/commit/71eb739bc87f64db50f06ab4647cb6972e58c7fa))
+- Add missing piece metadata types ([#1133](https://github.com/nrkno/sofie-core/issues/1133)) ([70c5739](https://github.com/nrkno/sofie-core/commit/70c5739c5e9848e57c21bde78ee16d4c78da8e1a))
+- blueprint-integration missed typing in [#1077](https://github.com/nrkno/sofie-core/issues/1077) ([bd5e36f](https://github.com/nrkno/sofie-core/commit/bd5e36f9c0b390999ef465a5e1554b8faa2c456f))
+
+### Features
+
+- A/B player Ids as strings ([#1054](https://github.com/nrkno/sofie-core/issues/1054)) ([d9dee47](https://github.com/nrkno/sofie-core/commit/d9dee473068c4d96d15a6ef799ace830cf1fe1c0))
+- action triggers styleClassNames SOFIE-3138 ([#1192](https://github.com/nrkno/sofie-core/issues/1192)) ([fa306dc](https://github.com/nrkno/sofie-core/commit/fa306dc16d5f6ee31418e282180d4c704f5d9feb))
+- action triggers styleClassNames SOFIE-3138 ([#1192](https://github.com/nrkno/sofie-core/issues/1192)) ([49274d6](https://github.com/nrkno/sofie-core/commit/49274d64bdc0532f294be34b0a4413d848321e40))
+- add onTake and onSetAsNext blueprint callbacks SOFIE-2897 SOFIE-2808 ([#1117](https://github.com/nrkno/sofie-core/issues/1117)) ([0bd621c](https://github.com/nrkno/sofie-core/commit/0bd621c13b08cb20c923ea573baca9db003c7df1))
+- blueprint config fixup step SOFIE-2258 ([#1050](https://github.com/nrkno/sofie-core/issues/1050)) ([ea6c343](https://github.com/nrkno/sofie-core/commit/ea6c3435079172c682dd1e23d7813ae33fcdee78))
+- cleanup deprecations ([#996](https://github.com/nrkno/sofie-core/issues/996)) ([f04f18f](https://github.com/nrkno/sofie-core/commit/f04f18f8e94b706dd1a3da1525feb9787f6eb85f))
+- create adlib testing rundowns SOFIE-2963 ([#1211](https://github.com/nrkno/sofie-core/issues/1211)) ([a831989](https://github.com/nrkno/sofie-core/commit/a8319898c73d7233a2a665fd0bf5b9d6da83d713))
+- **Device Triggers:** add support for setting shift register operations ([aa19fcc](https://github.com/nrkno/sofie-core/commit/aa19fcc3b5bfad05158677701b838673578a4dcb))
+- **Device Triggers:** add support for setting shift register operations SOFIE-3136 ([c5a6292](https://github.com/nrkno/sofie-core/commit/c5a6292a85821d67653eebef75bbd929ff0cd44d))
+- **EAV-31:** add blueprintsData on adlib actions ([114c064](https://github.com/nrkno/sofie-core/commit/114c06466ff1f35660454b66d1e35b3d339b9a80))
+- Editable fields as JSON ([ddfb66a](https://github.com/nrkno/sofie-core/commit/ddfb66a1ef8afbd507535037d12752742c7dfeda))
+- implement `loop` content property for Graphics ([2cf38ba](https://github.com/nrkno/sofie-core/commit/2cf38baadd5e7ba16d624b9ad75cfff9d48297a6))
+- introduce `privateData` and `publicData` ([d94f1aa](https://github.com/nrkno/sofie-core/commit/d94f1aa82cec779c7eebddae42e1c4fab91ac494))
+- remove supertimeline from Parts and Pieces resolving SOFIE-2373 ([#983](https://github.com/nrkno/sofie-core/issues/983)) ([55e02cb](https://github.com/nrkno/sofie-core/commit/55e02cb1a0b6d237ae9bcd02ebf54e06cf08fb26))
+- rename internal 'scratchpad' naming to 'adlib testing' SOFIE-3015 ([afb2f43](https://github.com/nrkno/sofie-core/commit/afb2f43c8f199ff5da4ea6c3ccc3bd1e97a80f4f))
+- rundown scratchpad SOFIE-2432 ([5e16632](https://github.com/nrkno/sofie-core/commit/5e16632908b8dd62e4470a9ba6089a56aa571b9f))
+- support packageinfo update flow for buckets and studio baseline SOFIE-2655 ([#1051](https://github.com/nrkno/sofie-core/issues/1051)) ([df7ed0c](https://github.com/nrkno/sofie-core/commit/df7ed0c653b897774f01a33c9e60a5e22fac99e4))
+- typed publications in gateways/peripheraldevices SOFIE-1183 ([#1056](https://github.com/nrkno/sofie-core/issues/1056)) ([0c3c1bf](https://github.com/nrkno/sofie-core/commit/0c3c1bfd2bb779034976dc34e49aa6e664ea874b))
+- update meteor to 2.12 SOFIE-2368 ([#931](https://github.com/nrkno/sofie-core/issues/931)) ([d7dfb71](https://github.com/nrkno/sofie-core/commit/d7dfb71d19405267cab5e2abc39794a80acb30b1))
+
 ## [1.50.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.4-LSG-updates...v1.50.5) (2024-08-08)
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
-
-
-
-
 
 ## [1.50.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.3-LSG-updates...v1.50.4) (2024-07-30)
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
 
-
-
-
-
 ## [1.50.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.2...v1.50.3) (2024-06-24)
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
 
-
-
-
-
 ## [1.50.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.6...v1.50.2) (2024-05-15)
-
-
 
 ## [1.50.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.5-0...v1.50.1) (2024-03-11)
 
-
-
 ## [1.50.1-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0...v1.50.1-0) (2024-03-05)
-
-
 
 # [1.50.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.4...v1.50.0) (2024-02-23)
 
-
 ### Features
 
-* allow blueprints to specify a custom resolution for NORA hover preview SOFIE-2840 ([#1123](https://github.com/nrkno/tv-automation-server-core/issues/1123)) ([d2f3cef](https://github.com/nrkno/tv-automation-server-core/commit/d2f3cef03259f594feba8814046614d1ed16cf62))
-
-
+- allow blueprints to specify a custom resolution for NORA hover preview SOFIE-2840 ([#1123](https://github.com/nrkno/tv-automation-server-core/issues/1123)) ([d2f3cef](https://github.com/nrkno/tv-automation-server-core/commit/d2f3cef03259f594feba8814046614d1ed16cf62))
 
 # [1.50.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.4...v1.50.0-in-testing.5) (2023-08-25)
 
-
-
 # [1.50.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.7...v1.50.0-in-testing.4) (2023-08-23)
-
-
 
 # [1.50.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.1...v1.50.0-in-testing.2) (2023-07-17)
 
-
 ### Bug Fixes
 
-* Allow JSON objects in config presets ([#949](https://github.com/nrkno/tv-automation-server-core/issues/949)) ([4e5a797](https://github.com/nrkno/tv-automation-server-core/commit/4e5a79752d6c06f91ce070b1d67e7bed97a4f0f2))
-* expose `deviceType` in `listPlayoutDevices` to blueprints ([2b32c72](https://github.com/nrkno/tv-automation-server-core/commit/2b32c7256762716071d467193f344646af484f18))
-* require blueprint baseline objects to be of type `TimelineObjectCoreExt` instead of `TSR.TSRTimelineObj` [#961](https://github.com/nrkno/tv-automation-server-core/issues/961) ([b8d0cf3](https://github.com/nrkno/tv-automation-server-core/commit/b8d0cf313c88e29fd08f6405b86a55d3579e7692))
-
+- Allow JSON objects in config presets ([#949](https://github.com/nrkno/tv-automation-server-core/issues/949)) ([4e5a797](https://github.com/nrkno/tv-automation-server-core/commit/4e5a79752d6c06f91ce070b1d67e7bed97a4f0f2))
+- expose `deviceType` in `listPlayoutDevices` to blueprints ([2b32c72](https://github.com/nrkno/tv-automation-server-core/commit/2b32c7256762716071d467193f344646af484f18))
+- require blueprint baseline objects to be of type `TimelineObjectCoreExt` instead of `TSR.TSRTimelineObj` [#961](https://github.com/nrkno/tv-automation-server-core/issues/961) ([b8d0cf3](https://github.com/nrkno/tv-automation-server-core/commit/b8d0cf313c88e29fd08f6405b86a55d3579e7692))
 
 ### Features
 
-* add `prompterTitle` property SOFIE-2404 ([#975](https://github.com/nrkno/tv-automation-server-core/issues/975)) ([6f0567d](https://github.com/nrkno/tv-automation-server-core/commit/6f0567de958cede745e918529bae660305ceb66e))
-* add milestone timing ([5950fd5](https://github.com/nrkno/tv-automation-server-core/commit/5950fd5e202cfab5e7f5b36942ffb7525c713e0a))
-* allow getting the Source and Output layers from the ShowStyle context ([#979](https://github.com/nrkno/tv-automation-server-core/issues/979)) ([ab57fb4](https://github.com/nrkno/tv-automation-server-core/commit/ab57fb4871bf23e37b99e73f5f809738fd8fdd1b))
-* blueprint settings overhaul ([#878](https://github.com/nrkno/tv-automation-server-core/issues/878)) ([ee3307c](https://github.com/nrkno/tv-automation-server-core/commit/ee3307cae10076e2d91d624f783e40c54c297b91))
-* fallback to cumetime if no backtime ([2cafbab](https://github.com/nrkno/tv-automation-server-core/commit/2cafbab2f03d49b92c121a7206ddfed62bf770fa))
-* move blueprint ab logic into sofie SOFIE-2403 ([#946](https://github.com/nrkno/tv-automation-server-core/issues/946)) ([cc37b75](https://github.com/nrkno/tv-automation-server-core/commit/cc37b751d674be7f8631d0315e52f8fa29a8d3c4))
-* move gateway settings onto Studio SOFIE-1330 ([#907](https://github.com/nrkno/tv-automation-server-core/issues/907)) ([523c061](https://github.com/nrkno/tv-automation-server-core/commit/523c061c51296e21814deeeabbe9aafca21cd5a6))
-* trs actions in blueprints rundown hooks ([bb5e442](https://github.com/nrkno/tv-automation-server-core/commit/bb5e4422fa32e1af1e520e0c288360b304da4289))
-
-
-
-
+- add `prompterTitle` property SOFIE-2404 ([#975](https://github.com/nrkno/tv-automation-server-core/issues/975)) ([6f0567d](https://github.com/nrkno/tv-automation-server-core/commit/6f0567de958cede745e918529bae660305ceb66e))
+- add milestone timing ([5950fd5](https://github.com/nrkno/tv-automation-server-core/commit/5950fd5e202cfab5e7f5b36942ffb7525c713e0a))
+- allow getting the Source and Output layers from the ShowStyle context ([#979](https://github.com/nrkno/tv-automation-server-core/issues/979)) ([ab57fb4](https://github.com/nrkno/tv-automation-server-core/commit/ab57fb4871bf23e37b99e73f5f809738fd8fdd1b))
+- blueprint settings overhaul ([#878](https://github.com/nrkno/tv-automation-server-core/issues/878)) ([ee3307c](https://github.com/nrkno/tv-automation-server-core/commit/ee3307cae10076e2d91d624f783e40c54c297b91))
+- fallback to cumetime if no backtime ([2cafbab](https://github.com/nrkno/tv-automation-server-core/commit/2cafbab2f03d49b92c121a7206ddfed62bf770fa))
+- move blueprint ab logic into sofie SOFIE-2403 ([#946](https://github.com/nrkno/tv-automation-server-core/issues/946)) ([cc37b75](https://github.com/nrkno/tv-automation-server-core/commit/cc37b751d674be7f8631d0315e52f8fa29a8d3c4))
+- move gateway settings onto Studio SOFIE-1330 ([#907](https://github.com/nrkno/tv-automation-server-core/issues/907)) ([523c061](https://github.com/nrkno/tv-automation-server-core/commit/523c061c51296e21814deeeabbe9aafca21cd5a6))
+- trs actions in blueprints rundown hooks ([bb5e442](https://github.com/nrkno/tv-automation-server-core/commit/bb5e4422fa32e1af1e520e0c288360b304da4289))
 
 ## [1.50.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.1-0...v1.50.1) (2024-03-11)
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
 
-
-
-
-
 ## [1.50.1-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0...v1.50.1-0) (2024-03-05)
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
 
-
-
-
-
 # [1.50.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.4...v1.50.0) (2024-02-23)
-
 
 ### Features
 
-* allow blueprints to specify a custom resolution for NORA hover preview SOFIE-2840 ([#1123](https://github.com/nrkno/tv-automation-server-core/issues/1123)) ([d2f3cef](https://github.com/nrkno/tv-automation-server-core/commit/d2f3cef03259f594feba8814046614d1ed16cf62))
-
-
+- allow blueprints to specify a custom resolution for NORA hover preview SOFIE-2840 ([#1123](https://github.com/nrkno/tv-automation-server-core/issues/1123)) ([d2f3cef](https://github.com/nrkno/tv-automation-server-core/commit/d2f3cef03259f594feba8814046614d1ed16cf62))
 
 # [1.50.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.4...v1.50.0-in-testing.5) (2023-08-25)
 
-
-
 # [1.50.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.7...v1.50.0-in-testing.4) (2023-08-23)
-
-
 
 # [1.50.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.1...v1.50.0-in-testing.2) (2023-07-17)
 
-
 ### Bug Fixes
 
-* Allow JSON objects in config presets ([#949](https://github.com/nrkno/tv-automation-server-core/issues/949)) ([4e5a797](https://github.com/nrkno/tv-automation-server-core/commit/4e5a79752d6c06f91ce070b1d67e7bed97a4f0f2))
-* expose `deviceType` in `listPlayoutDevices` to blueprints ([2b32c72](https://github.com/nrkno/tv-automation-server-core/commit/2b32c7256762716071d467193f344646af484f18))
-* require blueprint baseline objects to be of type `TimelineObjectCoreExt` instead of `TSR.TSRTimelineObj` [#961](https://github.com/nrkno/tv-automation-server-core/issues/961) ([b8d0cf3](https://github.com/nrkno/tv-automation-server-core/commit/b8d0cf313c88e29fd08f6405b86a55d3579e7692))
-
+- Allow JSON objects in config presets ([#949](https://github.com/nrkno/tv-automation-server-core/issues/949)) ([4e5a797](https://github.com/nrkno/tv-automation-server-core/commit/4e5a79752d6c06f91ce070b1d67e7bed97a4f0f2))
+- expose `deviceType` in `listPlayoutDevices` to blueprints ([2b32c72](https://github.com/nrkno/tv-automation-server-core/commit/2b32c7256762716071d467193f344646af484f18))
+- require blueprint baseline objects to be of type `TimelineObjectCoreExt` instead of `TSR.TSRTimelineObj` [#961](https://github.com/nrkno/tv-automation-server-core/issues/961) ([b8d0cf3](https://github.com/nrkno/tv-automation-server-core/commit/b8d0cf313c88e29fd08f6405b86a55d3579e7692))
 
 ### Features
 
-* add `prompterTitle` property SOFIE-2404 ([#975](https://github.com/nrkno/tv-automation-server-core/issues/975)) ([6f0567d](https://github.com/nrkno/tv-automation-server-core/commit/6f0567de958cede745e918529bae660305ceb66e))
-* add milestone timing ([5950fd5](https://github.com/nrkno/tv-automation-server-core/commit/5950fd5e202cfab5e7f5b36942ffb7525c713e0a))
-* allow getting the Source and Output layers from the ShowStyle context ([#979](https://github.com/nrkno/tv-automation-server-core/issues/979)) ([ab57fb4](https://github.com/nrkno/tv-automation-server-core/commit/ab57fb4871bf23e37b99e73f5f809738fd8fdd1b))
-* blueprint settings overhaul ([#878](https://github.com/nrkno/tv-automation-server-core/issues/878)) ([ee3307c](https://github.com/nrkno/tv-automation-server-core/commit/ee3307cae10076e2d91d624f783e40c54c297b91))
-* fallback to cumetime if no backtime ([2cafbab](https://github.com/nrkno/tv-automation-server-core/commit/2cafbab2f03d49b92c121a7206ddfed62bf770fa))
-* move blueprint ab logic into sofie SOFIE-2403 ([#946](https://github.com/nrkno/tv-automation-server-core/issues/946)) ([cc37b75](https://github.com/nrkno/tv-automation-server-core/commit/cc37b751d674be7f8631d0315e52f8fa29a8d3c4))
-* move gateway settings onto Studio SOFIE-1330 ([#907](https://github.com/nrkno/tv-automation-server-core/issues/907)) ([523c061](https://github.com/nrkno/tv-automation-server-core/commit/523c061c51296e21814deeeabbe9aafca21cd5a6))
-* trs actions in blueprints rundown hooks ([bb5e442](https://github.com/nrkno/tv-automation-server-core/commit/bb5e4422fa32e1af1e520e0c288360b304da4289))
-
-
-
-
+- add `prompterTitle` property SOFIE-2404 ([#975](https://github.com/nrkno/tv-automation-server-core/issues/975)) ([6f0567d](https://github.com/nrkno/tv-automation-server-core/commit/6f0567de958cede745e918529bae660305ceb66e))
+- add milestone timing ([5950fd5](https://github.com/nrkno/tv-automation-server-core/commit/5950fd5e202cfab5e7f5b36942ffb7525c713e0a))
+- allow getting the Source and Output layers from the ShowStyle context ([#979](https://github.com/nrkno/tv-automation-server-core/issues/979)) ([ab57fb4](https://github.com/nrkno/tv-automation-server-core/commit/ab57fb4871bf23e37b99e73f5f809738fd8fdd1b))
+- blueprint settings overhaul ([#878](https://github.com/nrkno/tv-automation-server-core/issues/878)) ([ee3307c](https://github.com/nrkno/tv-automation-server-core/commit/ee3307cae10076e2d91d624f783e40c54c297b91))
+- fallback to cumetime if no backtime ([2cafbab](https://github.com/nrkno/tv-automation-server-core/commit/2cafbab2f03d49b92c121a7206ddfed62bf770fa))
+- move blueprint ab logic into sofie SOFIE-2403 ([#946](https://github.com/nrkno/tv-automation-server-core/issues/946)) ([cc37b75](https://github.com/nrkno/tv-automation-server-core/commit/cc37b751d674be7f8631d0315e52f8fa29a8d3c4))
+- move gateway settings onto Studio SOFIE-1330 ([#907](https://github.com/nrkno/tv-automation-server-core/issues/907)) ([523c061](https://github.com/nrkno/tv-automation-server-core/commit/523c061c51296e21814deeeabbe9aafca21cd5a6))
+- trs actions in blueprints rundown hooks ([bb5e442](https://github.com/nrkno/tv-automation-server-core/commit/bb5e4422fa32e1af1e520e0c288360b304da4289))
 
 # [1.50.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.4...v1.50.0-in-testing.5) (2023-08-25)
 
@@ -184,21 +200,14 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 - move blueprint ab logic into sofie SOFIE-2403 ([#946](https://github.com/nrkno/tv-automation-server-core/issues/946)) ([cc37b75](https://github.com/nrkno/tv-automation-server-core/commit/cc37b751d674be7f8631d0315e52f8fa29a8d3c4))
 - move gateway settings onto Studio SOFIE-1330 ([#907](https://github.com/nrkno/tv-automation-server-core/issues/907)) ([523c061](https://github.com/nrkno/tv-automation-server-core/commit/523c061c51296e21814deeeabbe9aafca21cd5a6))
 - trs actions in blueprints rundown hooks ([bb5e442](https://github.com/nrkno/tv-automation-server-core/commit/bb5e4422fa32e1af1e520e0c288360b304da4289))
+
 ## [1.49.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.2...v1.49.3) (2023-12-21)
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
 
-
-
-
-
 ## [1.49.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.1...v1.49.2) (2023-11-29)
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
-
-
-
-
 
 ## [1.49.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0...v1.49.1) (2023-10-20)
 
