@@ -1,0 +1,17 @@
+.collapse-json__block {
+	cursor: pointer;
+}
+
+.collapse-json__collapser {
+	display: inline-block;
+	background: #eee;
+	border-radius: 3px;
+	line-height: 1.3em;
+	padding: 0 0.3em;
+	border: none;
+}
+
+.collapse-json__collapser:focus {
+	outline: none;
+	box-shadow: 0 0 0 2px #00feff;
+}

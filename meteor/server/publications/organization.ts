@@ -102,7 +102,9 @@ meteorPublish(
 			token
 		)
 		if (!cred || (await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) {
-			return UserActionsLog.findWithCursor(selector)
+			return UserActionsLog.findWithCursor(selector, {
+				limit: 10_000,
+			})
 		}
 		return null
 	}
