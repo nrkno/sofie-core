@@ -278,7 +278,11 @@ export abstract class WorkerParentBase {
 
 								try {
 									logger.verbose(`Starting work ${job.id}: "${job.name}"`)
-									logger.debug(`Payload ${job.id}: ${JSON.stringify(job.data)}`)
+									logger.silly(
+										`Starting work ${job.id}: "${job.name}", payload ${job.id}: ${JSON.stringify(
+											job.data
+										)}`
+									)
 
 									// Future - extend the job lock on an interval
 									let result: WorkerJobResult
