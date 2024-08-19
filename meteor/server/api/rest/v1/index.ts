@@ -363,7 +363,7 @@ class ServerRestAPI implements RestAPI {
 				check(rundownPlaylistId, String)
 			},
 			'reloadPlaylist',
-			[rundownPlaylistId],
+			{ rundownPlaylistId },
 			async (access) => {
 				const reloadResponse = await ServerRundownAPI.resyncRundownPlaylist(access)
 				const success = !reloadResponse.rundownsResponses.reduce((missing, rundownsResponse) => {
@@ -503,7 +503,7 @@ class ServerRestAPI implements RestAPI {
 			event,
 			getCurrentTime(),
 			'switchRouteSet',
-			[studioId, routeSetId, state],
+			{ studioId, routeSetId, state },
 			async () => {
 				check(studioId, String)
 				check(routeSetId, String)
