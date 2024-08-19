@@ -5,18 +5,9 @@ import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { TranslationsBundles } from '../collections'
 
-/*
- * **************************************************************************************
- *
- *  These migrations are destined for the next release
- *
- * (This file is to be renamed to the correct version number when doing the release)
- *
- * **************************************************************************************
- */
+// Release 48
 
 export const addSteps = addMigrationSteps('1.48.0', [
-	// Add some migrations!
 	{
 		id: `TranslationBundles originId`,
 		canBeRunAutomatically: true,
