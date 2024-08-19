@@ -3,6 +3,74 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.51.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.50.4...v1.51.0-in-testing.0) (2024-08-19)
+
+
+### Features
+
+* Ensure peripheralDevice subdevice removal when requested ([#1227](https://github.com/nrkno/sofie-core/issues/1227)) ([d5cafe8](https://github.com/nrkno/sofie-core/commit/d5cafe8db5e453f87f8d46262f23e118b580d4d5))
+
+
+
+## [1.50.5-LSG-updates](https://github.com/nrkno/sofie-core/compare/v1.50.4-LSG-updates...v1.50.5-LSG-updates) (2024-08-08)
+
+
+
+## [1.50.4-LSG-updates](https://github.com/nrkno/sofie-core/compare/v1.50.3-LSG-updates...v1.50.4-LSG-updates) (2024-07-30)
+
+
+### Bug Fixes
+
+* improve error logging: use stringifyError() ([8da63de](https://github.com/nrkno/sofie-core/commit/8da63dec44915439ea436eee9697f3774241537b))
+* include timestamp when logging to file ([#1207](https://github.com/nrkno/sofie-core/issues/1207)) ([2dcca21](https://github.com/nrkno/sofie-core/commit/2dcca215403cc0256c78f5f8f5f6befa2a1ca683))
+* **playout-gateway:** improve handling and typing of TSR events (fixes some logging issues) ([26a8613](https://github.com/nrkno/sofie-core/commit/26a8613cd64d7e077dfd7ff2092555c1b7805f4d))
+* use helper function to keep the scope of 'unsafe' code small ([c58a6de](https://github.com/nrkno/sofie-core/commit/c58a6de80597373e158316d33661ac0e8a07956a))
+
+
+### Features
+
+* backport of release51 live-status-gateway onto release50 ([0a87a95](https://github.com/nrkno/sofie-core/commit/0a87a9519ca1f344429e9b4d47a44c1a9acddff2))
+* refactor server-core-integration subscription handling to reduce duplication ([8eaedd2](https://github.com/nrkno/sofie-core/commit/8eaedd22e8efb9750f00ff472301c6b3f2d0f0af))
+* typed publications in gateways/peripheraldevices SOFIE-1183 ([#1056](https://github.com/nrkno/sofie-core/issues/1056)) ([0c3c1bf](https://github.com/nrkno/sofie-core/commit/0c3c1bfd2bb779034976dc34e49aa6e664ea874b))
+
+
+
+
+
+# [1.51.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.50.4...v1.51.0-in-testing.0) (2024-08-19)
+
+
+### Features
+
+* Ensure peripheralDevice subdevice removal when requested ([#1227](https://github.com/nrkno/sofie-core/issues/1227)) ([d5cafe8](https://github.com/nrkno/sofie-core/commit/d5cafe8db5e453f87f8d46262f23e118b580d4d5))
+
+
+
+## [1.50.5-LSG-updates](https://github.com/nrkno/sofie-core/compare/v1.50.4-LSG-updates...v1.50.5-LSG-updates) (2024-08-08)
+
+
+
+## [1.50.4-LSG-updates](https://github.com/nrkno/sofie-core/compare/v1.50.3-LSG-updates...v1.50.4-LSG-updates) (2024-07-30)
+
+
+### Bug Fixes
+
+* improve error logging: use stringifyError() ([8da63de](https://github.com/nrkno/sofie-core/commit/8da63dec44915439ea436eee9697f3774241537b))
+* include timestamp when logging to file ([#1207](https://github.com/nrkno/sofie-core/issues/1207)) ([2dcca21](https://github.com/nrkno/sofie-core/commit/2dcca215403cc0256c78f5f8f5f6befa2a1ca683))
+* **playout-gateway:** improve handling and typing of TSR events (fixes some logging issues) ([26a8613](https://github.com/nrkno/sofie-core/commit/26a8613cd64d7e077dfd7ff2092555c1b7805f4d))
+* use helper function to keep the scope of 'unsafe' code small ([c58a6de](https://github.com/nrkno/sofie-core/commit/c58a6de80597373e158316d33661ac0e8a07956a))
+
+
+### Features
+
+* backport of release51 live-status-gateway onto release50 ([0a87a95](https://github.com/nrkno/sofie-core/commit/0a87a9519ca1f344429e9b4d47a44c1a9acddff2))
+* refactor server-core-integration subscription handling to reduce duplication ([8eaedd2](https://github.com/nrkno/sofie-core/commit/8eaedd22e8efb9750f00ff472301c6b3f2d0f0af))
+* typed publications in gateways/peripheraldevices SOFIE-1183 ([#1056](https://github.com/nrkno/sofie-core/issues/1056)) ([0c3c1bf](https://github.com/nrkno/sofie-core/commit/0c3c1bfd2bb779034976dc34e49aa6e664ea874b))
+
+
+
+
+
 ## [1.50.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.4-LSG-updates...v1.50.5) (2024-08-08)
 
 **Note:** Version bump only for package playout-gateway
