@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useLayoutEffect } from 'react'
+import React, { useEffect, useState, useLayoutEffect, useMemo } from 'react'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Time, unprotectString } from '../../../lib/lib'
 import { UserActionsLogItem } from '../../../lib/collections/UserActionsLog'
@@ -26,11 +26,62 @@ interface IUserActionsListProps {
 	renderButtons?: (item: UserActionsLogItem) => React.ReactElement
 }
 
-function prettyPrintJsonString(str: string): string {
-	try {
-		return JSON.stringify(JSON.parse(str), undefined, 4)
-	} catch (_e) {
-		return str
+/**
+ * pretty-prints JSON content, and collapses it if it's too long.
+ */
+function CollapseContent(props: { content: any }): JSX.Element {
+	const [expanded, setExpanded] = useState(false)
+
+	const originalString = useMemo(() => {
+		try {
+			let str = JSON.stringify(JSON.parse(props.content), undefined, 2) // Pretty print JSON
+
+			// If the JSON string is a pretty short one, use a condensed JSON instead:
+			if (str.length < 200) {
+				str = JSON.stringify(JSON.parse(props.content)) // Condensed JSON
+			}
+			return str
+		} catch (_e) {
+			// Ignore parsing error
+			return '' + props.content
+		}
+	}, [props.content])
+
+	/** Position of the 5th line in the string, 0 if not found */
+	const indexOf5thLine = useMemo(() => {
+		let indexOf5thLine = 0
+		let foundIndex = 0
+		for (let foundCount = 0; foundCount < 10; foundCount++) {
+			foundIndex = originalString.indexOf('\n', foundIndex + 1)
+			if (foundIndex === -1) {
+				break
+			} else {
+				if (foundCount >= 5) {
+					indexOf5thLine = foundIndex
+					break
+				}
+			}
+		}
+		return indexOf5thLine
+	}, [originalString])
+
+	if (originalString.length < 100 && indexOf5thLine === 0) {
+		return <pre>{originalString}</pre>
+	} else {
+		const displayStr = expanded
+			? originalString
+			: originalString.substring(0, Math.min(indexOf5thLine || 100, 100)) + '...'
+		return (
+			<a
+				href="#"
+				onClick={(e) => {
+					e.preventDefault()
+					setExpanded(!expanded)
+				}}
+			>
+				<pre>{displayStr}</pre>
+			</a>
+		)
 	}
 }
 
@@ -133,7 +184,9 @@ function UserActionsList(props: Readonly<IUserActionsListProps>) {
 							<td className="user-action-log__status">
 								{msg.success ? 'Success' : msg.success === false ? 'Error: ' + msg.errorMessage : null}
 							</td>
-							<td className="user-action-log__args">{prettyPrintJsonString(msg.args)}</td>
+							<td className="user-action-log__args">
+								<CollapseContent content={msg.args} />
+							</td>
 							{props.renderButtons ? <td className="user-action-log__buttons">{props.renderButtons(msg)}</td> : null}
 						</tr>
 					)
