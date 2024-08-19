@@ -12,11 +12,51 @@ import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { PlayoutPartInstanceModel } from '../PlayoutPartInstanceModel'
 import { JobContext } from '../../../jobs'
-import { DEFAULT_FALLBACK_PART_DURATION } from '@sofie-automation/shared-lib/dist/core/constants'
 import { clone } from '@sofie-automation/corelib/dist/lib'
+import { DEFAULT_FALLBACK_PART_DURATION } from '@sofie-automation/shared-lib/dist/core/constants'
 
 export class QuickLoopService {
 	constructor(private readonly context: JobContext, private readonly playoutModel: PlayoutModelReadonly) {}
+
+	isPartWithinQuickLoop(partInstanceModel: PlayoutPartInstanceModel | null): boolean | null {
+		const quickLoopProps = this.playoutModel.playlist.quickLoop
+		if (quickLoopProps?.start == null || quickLoopProps?.end == null) return false
+
+		const orderedParts = this.playoutModel.getAllOrderedParts()
+		const rundownIds = this.playoutModel.getRundownIds()
+
+		const startPosition = this.findQuickLoopMarkerPosition(quickLoopProps.start, 'start', orderedParts, rundownIds)
+		const endPosition = this.findQuickLoopMarkerPosition(quickLoopProps.end, 'end', orderedParts, rundownIds)
+
+		if (this.areMarkersFlipped(startPosition, endPosition)) return null
+
+		const partPosition = this.findPartPosition(partInstanceModel, rundownIds)
+		const isPartBetweenMarkers = partPosition
+			? compareMarkerPositions(startPosition, partPosition) >= 0 &&
+			  compareMarkerPositions(partPosition, endPosition) >= 0
+			: false
+
+		return isPartBetweenMarkers
+	}
+
+	getOverridenValues(partInstanceModel: PlayoutPartInstanceModel): Partial<DBPart> {
+		let { fallbackPartDuration } = this.context.studio.settings
+		const quickLoopProps = this.playoutModel.playlist.quickLoop
+		const isLoopingOverriden = quickLoopProps?.forceAutoNext !== ForceQuickLoopAutoNext.DISABLED
+
+		fallbackPartDuration = fallbackPartDuration ?? DEFAULT_FALLBACK_PART_DURATION
+
+		let { autoNext, expectedDuration, expectedDurationWithPreroll } = partInstanceModel.partInstance.part
+
+		if (isLoopingOverriden && (expectedDuration ?? 0) < fallbackPartDuration) {
+			if (quickLoopProps?.forceAutoNext === ForceQuickLoopAutoNext.ENABLED_FORCING_MIN_DURATION) {
+				expectedDuration = fallbackPartDuration
+				expectedDurationWithPreroll = fallbackPartDuration
+			}
+		}
+		autoNext = autoNext || (isLoopingOverriden && (expectedDuration ?? 0) > 0)
+		return { autoNext, expectedDuration, expectedDurationWithPreroll }
+	}
 
 	getUpdatedProps(hasJustSetMarker?: 'start' | 'end'): QuickLoopProps | undefined {
 		if (this.playoutModel.playlist.quickLoop == null) return undefined
@@ -25,60 +65,21 @@ export class QuickLoopService {
 
 		this.resetDynamicallyInsertedPartOverrideIfNoLongerNeeded(quickLoopProps)
 
-		let isNextBetweenMarkers = false
 		if (quickLoopProps.start == null || quickLoopProps.end == null) {
 			quickLoopProps.running = false
 		} else {
-			const orderedParts = this.playoutModel.getAllOrderedParts()
+			const isCurrentBetweenMarkers = this.isPartWithinQuickLoop(this.playoutModel.currentPartInstance)
 
-			const rundownIds = this.playoutModel.getRundownIds()
-
-			const startPosition = this.findQuickLoopMarkerPosition(
-				quickLoopProps.start,
-				'start',
-				orderedParts,
-				rundownIds
-			)
-			const endPosition = this.findQuickLoopMarkerPosition(quickLoopProps.end, 'end', orderedParts, rundownIds)
-
-			let isCurrentBetweenMarkers = false
-
-			if (this.areMarkersFlipped(startPosition, endPosition)) {
+			if (isCurrentBetweenMarkers === null) {
 				if (hasJustSetMarker === 'start') {
 					delete quickLoopProps.end
 				} else if (hasJustSetMarker === 'end') {
 					delete quickLoopProps.start
 				}
-			} else {
-				const currentPartPosition = this.findPartPosition(this.playoutModel.currentPartInstance, rundownIds)
-				const nextPartPosition = this.findPartPosition(this.playoutModel.nextPartInstance, rundownIds)
-
-				isCurrentBetweenMarkers = currentPartPosition
-					? compareMarkerPositions(startPosition, currentPartPosition) >= 0 &&
-					  compareMarkerPositions(currentPartPosition, endPosition) >= 0
-					: false
-				isNextBetweenMarkers = nextPartPosition
-					? compareMarkerPositions(startPosition, nextPartPosition) >= 0 &&
-					  compareMarkerPositions(nextPartPosition, endPosition) >= 0
-					: false
-
-				if (this.playoutModel.nextPartInstance && isNextBetweenMarkers) {
-					this.updateQuickLoopPartOverrides(this.playoutModel.nextPartInstance, quickLoopProps.forceAutoNext)
-				}
 			}
 
 			quickLoopProps.running =
-				quickLoopProps.start != null && quickLoopProps.end != null && isCurrentBetweenMarkers
-		}
-
-		if (this.playoutModel.currentPartInstance && quickLoopProps.running) {
-			this.updateQuickLoopPartOverrides(this.playoutModel.currentPartInstance, quickLoopProps.forceAutoNext)
-		} else if (this.playoutModel.currentPartInstance && wasLoopRunning) {
-			this.revertQuickLoopPartOverrides(this.playoutModel.currentPartInstance)
-		}
-
-		if (this.playoutModel.nextPartInstance && !isNextBetweenMarkers) {
-			this.revertQuickLoopPartOverrides(this.playoutModel.nextPartInstance)
+				quickLoopProps.start != null && quickLoopProps.end != null && !!isCurrentBetweenMarkers
 		}
 
 		if (wasLoopRunning && !quickLoopProps.running) {
@@ -173,41 +174,6 @@ export class QuickLoopService {
 			partRank: part?._rank ?? fallback,
 			segmentRank: segment?._rank ?? fallback,
 			rundownRank: rundownRank ?? fallback,
-		}
-	}
-
-	private updateQuickLoopPartOverrides(
-		partInstance: PlayoutPartInstanceModel,
-		forceAutoNext: ForceQuickLoopAutoNext
-	): void {
-		const partPropsToUpdate: Partial<DBPart> = {}
-		if (
-			!partInstance.partInstance.part.expectedDuration &&
-			forceAutoNext === ForceQuickLoopAutoNext.ENABLED_FORCING_MIN_DURATION
-		) {
-			partPropsToUpdate.expectedDuration =
-				this.context.studio.settings.fallbackPartDuration ?? DEFAULT_FALLBACK_PART_DURATION
-		}
-		if (
-			(partInstance.partInstance.part.expectedDuration || partPropsToUpdate.expectedDuration) &&
-			forceAutoNext !== ForceQuickLoopAutoNext.DISABLED &&
-			!partInstance.partInstance.part.autoNext
-		) {
-			partPropsToUpdate.autoNext = true
-		}
-		if (Object.keys(partPropsToUpdate).length) {
-			partInstance.overridePartProps(partPropsToUpdate)
-			if (partPropsToUpdate.expectedDuration) partInstance.recalculateExpectedDurationWithPreroll()
-		}
-	}
-
-	private revertQuickLoopPartOverrides(partInstance: PlayoutPartInstanceModel) {
-		const overridenProperties = partInstance.partInstance.part.overridenProperties
-		if (overridenProperties) {
-			partInstance.revertOverridenPartProps()
-			if (overridenProperties.expectedDuration) {
-				partInstance.recalculateExpectedDurationWithPreroll()
-			}
 		}
 	}
 

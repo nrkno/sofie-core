@@ -27,6 +27,8 @@ import { PlayoutPartInstanceModel } from './PlayoutPartInstanceModel'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { PlayoutPieceInstanceModel } from './PlayoutPieceInstanceModel'
+import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
+import { PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/timings'
 
 export type DeferredFunction = (playoutModel: PlayoutModel) => void | Promise<void>
 export type DeferredAfterSaveFunction = (playoutModel: PlayoutModelReadonly) => void | Promise<void>
@@ -332,6 +334,12 @@ export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBa
 	 * @param marker
 	 */
 	setQuickLoopMarker(type: 'start' | 'end', marker: QuickLoopMarker | null): void
+
+	calculatePartTimings(
+		fromPartInstance: PlayoutPartInstanceModel | null,
+		toPartInstance: PlayoutPartInstanceModel,
+		toPieceInstances: PieceInstanceWithTimings[]
+	): PartCalculatedTimings
 
 	/** Lifecycle */
 

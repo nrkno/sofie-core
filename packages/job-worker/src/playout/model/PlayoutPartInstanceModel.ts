@@ -6,7 +6,6 @@ import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { IBlueprintMutatablePart, PieceLifespan, Time } from '@sofie-automation/blueprints-integration'
 import { PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { PlayoutPieceInstanceModel } from './PlayoutPieceInstanceModel'
-import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 
 /**
  * Token returned when making a backup copy of a PlayoutPartInstanceModel
@@ -211,21 +210,18 @@ export interface PlayoutPartInstanceModel {
 	updatePartProps(props: Partial<IBlueprintMutatablePart>): boolean
 
 	/**
-	 * Update some properties for the wrapped Part in a way that can be reverted
-	 * @param props New properties for the Part being wrapped
-	 * @returns True if any valid properties were provided
-	 */
-	overridePartProps(props: Partial<DBPart>): boolean
-
-	/**
-	 * Reverts overriden Part props
-	 * @param props New properties for the Part being wrapped
-	 * @returns True if properties were reverted
-	 */
-	revertOverridenPartProps(): boolean
-
-	/**
 	 * Ensure that this PartInstance is setup correctly for being in the Scratchpad Segment
 	 */
 	validateScratchpadSegmentProperties(): void
+
+	/**
+	 * Whether this part instance is too close to autoNexting out of, to perform operations that might cause glitches
+	 * @param isTake
+	 */
+	isTooCloseToAutonext(isTake: boolean): boolean
+
+	/**
+	 * Returns the contained partInstance, with QuickLoop overrides applied, if needed
+	 */
+	getPartInstanceWithQuickLoopOverrides(): ReadonlyDeep<DBPartInstance>
 }

@@ -104,7 +104,7 @@ export async function getLookeaheadObjects(
 		partInstancesInfo0.next
 			? removeInfiniteContinuations({
 					part: partInstancesInfo0.next.partInstance,
-					onTimeline: !!partInstancesInfo0.current?.partInstance?.part?.autoNext,
+					onTimeline: !!partInstancesInfo0.current?.partInstance?.part?.autoNext, //TODO -QL
 					nowInPart: partInstancesInfo0.next.nowInPart,
 					allPieces: partInstancesInfo0.next.pieceInstances,
 					calculatedTimings: partInstancesInfo0.next.calculatedTimings,

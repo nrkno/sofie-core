@@ -55,7 +55,8 @@ const getResolvedPiecesForCurrentPartInstanceMock =
 jest.mock('../../../postProcess')
 import { postProcessPieces, postProcessTimelineObjects } from '../../../postProcess'
 import { ActionPartChange, PartAndPieceInstanceActionService } from '../PartAndPieceInstanceActionService'
-import { isTooCloseToAutonext } from '../../../../playout/lib'
+import { mock } from 'jest-mock-extended'
+import { QuickLoopService } from '../../../../playout/model/services/QuickLoopService'
 const { postProcessPieces: postProcessPiecesOrig, postProcessTimelineObjects: postProcessTimelineObjectsOrig } =
 	jest.requireActual('../../../postProcess')
 
@@ -138,7 +139,7 @@ describe('Test blueprint api context', () => {
 				const pieceInstances = await context.mockCollections.PieceInstances.findFetch({
 					partInstanceId: partInstance._id,
 				})
-				return new PlayoutPartInstanceModelImpl(partInstance, pieceInstances, false)
+				return new PlayoutPartInstanceModelImpl(partInstance, pieceInstances, false, mock<QuickLoopService>())
 			})
 		)
 	}
@@ -1126,7 +1127,7 @@ describe('Test blueprint api context', () => {
 					})
 					partInstanceModel.setPlannedStartedPlayback(getCurrentTime())
 
-					expect(isTooCloseToAutonext(partInstanceModel.partInstance, true)).toBeTruthy()
+					expect(partInstanceModel.isTooCloseToAutonext(true)).toBeTruthy()
 					await expect(service.queuePart({} as any, [{}] as any)).rejects.toThrow(
 						'Too close to an autonext to queue a part'
 					)

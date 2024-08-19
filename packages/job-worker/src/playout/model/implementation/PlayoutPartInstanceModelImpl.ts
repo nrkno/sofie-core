@@ -29,6 +29,13 @@ import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/da
 import _ = require('underscore')
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { IBlueprintMutatablePartSampleKeys } from '../../../blueprints/context/lib'
+import { QuickLoopService } from '../services/QuickLoopService'
+
+/**
+ * time in ms before an autotake when we don't accept takes/updates
+ */
+const AUTOTAKE_UPDATE_DEBOUNCE = 5000
+const AUTOTAKE_TAKE_DEBOUNCE = 1000
 
 interface PlayoutPieceInstanceModelSnapshotImpl {
 	PieceInstance: PieceInstance
@@ -64,6 +71,7 @@ class PlayoutPartInstanceModelSnapshotImpl implements PlayoutPartInstanceModelSn
 export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 	partInstanceImpl: DBPartInstance
 	pieceInstancesImpl: Map<PieceInstanceId, PlayoutPieceInstanceModelImpl | null>
+	quickLoopService: QuickLoopService
 
 	#setPartInstanceValue<T extends keyof DBPartInstance>(key: T, newValue: DBPartInstance[T]): void {
 		if (newValue === undefined) {
@@ -154,14 +162,28 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		return result
 	}
 
-	constructor(partInstance: DBPartInstance, pieceInstances: PieceInstance[], hasChanges: boolean) {
+	constructor(
+		partInstance: DBPartInstance,
+		pieceInstances: PieceInstance[],
+		hasChanges: boolean,
+		quickLoopService: QuickLoopService
+	) {
 		this.partInstanceImpl = partInstance
 		this.#partInstanceHasChanges = hasChanges
+		this.quickLoopService = quickLoopService
 
 		this.pieceInstancesImpl = new Map()
 		for (const pieceInstance of pieceInstances) {
 			this.pieceInstancesImpl.set(pieceInstance._id, new PlayoutPieceInstanceModelImpl(pieceInstance, hasChanges))
 		}
+	}
+
+	getPartInstanceWithQuickLoopOverrides(): ReadonlyDeep<DBPartInstance> {
+		if (!this.quickLoopService.isPartWithinQuickLoop(this)) return this.partInstance
+		const overrides = this.quickLoopService.getOverridenValues(this)
+		const part = { ...this.partInstance.part, ...overrides }
+		const partInstance = { ...this.partInstance, part }
+		return partInstance
 	}
 
 	snapshotMakeCopy(): PlayoutPartInstanceModelSnapshot {
@@ -522,53 +544,6 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		return true
 	}
 
-	overridePartProps(props: Partial<DBPart>): boolean {
-		const keys = Object.keys(props) as Array<keyof Partial<DBPart>>
-		if (keys.length === 0) return false
-
-		const overridenProperties: DBPart['overridenProperties'] = _.pick(this.partInstanceImpl.part, keys)
-		keys.forEach((key) => {
-			if (overridenProperties[key] === undefined) {
-				overridenProperties[key] = null
-			}
-		})
-
-		this.#compareAndSetPartInstanceValue(
-			'part',
-			{
-				...this.partInstanceImpl.part,
-				...props,
-				overridenProperties,
-			},
-			true
-		)
-
-		return true
-	}
-
-	revertOverridenPartProps(): boolean {
-		const overridenProperties = { ...this.partInstanceImpl.part.overridenProperties }
-		if (!overridenProperties) return false
-		const keys = Object.keys(overridenProperties) as Array<keyof Partial<IBlueprintMutatablePart>>
-
-		keys.forEach((key) => {
-			if (overridenProperties[key] === null) {
-				overridenProperties[key] = undefined
-			}
-		})
-
-		this.#compareAndSetPartInstanceValue(
-			'part',
-			{
-				...this.partInstanceImpl.part,
-				...(overridenProperties as Partial<IBlueprintMutatablePart>),
-			},
-			true
-		)
-
-		return true
-	}
-
 	validateScratchpadSegmentProperties(): void {
 		this.#compareAndSetPartInstanceValue('orphaned', 'adlib-part')
 
@@ -577,6 +552,26 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 
 		// Force this to not affect rundown timing
 		this.#compareAndSetPartValue('untimed', true)
+	}
+
+	isTooCloseToAutonext(isTake?: boolean): boolean {
+		const partInstance = this.getPartInstanceWithQuickLoopOverrides()
+		if (!partInstance.part.autoNext) return false
+
+		const debounce = isTake ? AUTOTAKE_TAKE_DEBOUNCE : AUTOTAKE_UPDATE_DEBOUNCE
+
+		const start = partInstance.timings?.plannedStartedPlayback
+		if (start !== undefined && partInstance.part.expectedDuration) {
+			// date.now - start = playback duration, duration + offset gives position in part
+			const playbackDuration = getCurrentTime() - start
+
+			// If there is an auto next planned
+			if (Math.abs(partInstance.part.expectedDuration - playbackDuration) < debounce) {
+				return true
+			}
+		}
+
+		return false
 	}
 }
 

@@ -58,10 +58,12 @@ export function modifyPartForQuickLoop(
 		compareMarkerPositions(quickLoopStartPosition, partPosition) >= 0 &&
 		compareMarkerPositions(partPosition, quickLoopEndPosition) >= 0
 
-	if (isLoopingOverriden && (part.expectedDuration ?? 0) <= 0) {
+	const fallbackPartDuration = studio.settings.fallbackPartDuration ?? DEFAULT_FALLBACK_PART_DURATION
+
+	if (isLoopingOverriden && (part.expectedDuration ?? 0) < fallbackPartDuration) {
 		if (playlist.quickLoop?.forceAutoNext === ForceQuickLoopAutoNext.ENABLED_FORCING_MIN_DURATION) {
-			part.expectedDuration = studio.settings.fallbackPartDuration ?? DEFAULT_FALLBACK_PART_DURATION
-			part.expectedDurationWithPreroll = studio.settings.fallbackPartDuration ?? DEFAULT_FALLBACK_PART_DURATION
+			part.expectedDuration = fallbackPartDuration
+			part.expectedDurationWithPreroll = fallbackPartDuration
 		} else if (playlist.quickLoop?.forceAutoNext === ForceQuickLoopAutoNext.ENABLED_WHEN_VALID_DURATION) {
 			part.invalid = true
 			part.invalidReason = {

@@ -1,4 +1,3 @@
-import { isTooCloseToAutonext } from '../playout/lib'
 import { selectNextPart } from '../playout/selectNextPart'
 import { PlayoutModel } from '../playout/model/PlayoutModel'
 import { JobContext } from '../jobs'
@@ -33,7 +32,7 @@ export async function ensureNextPartIsValid(context: JobContext, playoutModel: P
 		}
 
 		// If we are close to an autonext, then leave it to avoid glitches
-		if (isTooCloseToAutonext(currentPartInstance?.partInstance) && nextPartInstance) {
+		if (currentPartInstance?.isTooCloseToAutonext(false) && nextPartInstance) {
 			span?.end()
 			return
 		}
