@@ -17,6 +17,7 @@ import {
 	SlowFulfilledCommandInfo,
 	DeviceStatus,
 	StatusCode,
+	Datastore,
 } from 'timeline-state-resolver'
 import { CoreHandler, CoreTSRDeviceHandler } from './coreHandler'
 import * as crypto from 'crypto'
@@ -229,6 +230,7 @@ export class TSRHandler {
 		this._triggerupdateTimelineAndMappings('TSRHandler.init(), later')
 		this.onSettingsChanged()
 		this._triggerUpdateDevices()
+		this._triggerUpdateDatastore()
 		this.logger.debug('tsr init done')
 	}
 
@@ -1085,12 +1087,12 @@ export class TSRHandler {
 		const datastoreObjs = datastoreCollection.find({
 			studioId: peripheralDevice.studioId,
 		})
-		const datastore: Record<string, any> = {}
+		const datastore: Datastore = {}
 		for (const { key, value, modified } of datastoreObjs) {
 			datastore[key] = { value, modified }
 		}
 
-		this.logger.debug(datastore)
+		this.logger.debug('datastore', datastore)
 		this.tsr.setDatastore(datastore)
 	}
 	/**
