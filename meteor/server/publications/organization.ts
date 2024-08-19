@@ -58,7 +58,9 @@ meteorPublish(PubSub.snapshots, async function (selector0, token) {
 meteorPublish(PubSub.userActionsLog, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.organizationId<UserActionsLogItem>(this.userId, selector0, token)
 	if (!cred || (await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) {
-		return UserActionsLog.findWithCursor(selector)
+		return UserActionsLog.findWithCursor(selector, {
+			limit: 10_000,
+		})
 	}
 	return null
 })

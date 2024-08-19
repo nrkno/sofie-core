@@ -1,22 +1,24 @@
-import React, { useEffect, useState, useLayoutEffect, useMemo } from 'react'
-import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { Time, unprotectString } from '../../../lib/lib'
-import { UserActionsLogItem } from '../../../lib/collections/UserActionsLog'
-import { DatePickerFromTo } from '../../lib/datePicker'
-import moment from 'moment'
-import { PubSub } from '../../../lib/api/pubsub'
-import { useTranslation } from 'react-i18next'
-import { parse as queryStringParse } from 'query-string'
-import { Link, useHistory, useLocation } from 'react-router-dom'
-import classNames from 'classnames'
-import { getCoreSystem, UserActionsLog } from '../../collections'
-import Tooltip from 'rc-tooltip'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faDownload } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import classNames from 'classnames'
+import moment from 'moment'
+import { parse as queryStringParse } from 'query-string'
+import Tooltip from 'rc-tooltip'
+import React, { useEffect, useLayoutEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link, useHistory, useLocation } from 'react-router-dom'
+import { PubSub } from '../../../lib/api/pubsub'
+import { UserActionsLogItem } from '../../../lib/collections/UserActionsLog'
+import { Time, unprotectString } from '../../../lib/lib'
+import { getCoreSystem, UserActionsLog } from '../../collections'
+import { DatePickerFromTo } from '../../lib/datePicker'
 import { downloadBlob } from '../../lib/downloadBlob'
+import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { CollapseJSON } from '../../lib/collapseJSON'
 
-const PARAM_DATE_FORMAT = 'YYYY-MM-DD'
+const PARAM_DATE_FORMAT = 'YYYY-MM-DDTHHmm'
 const PARAM_NAME_FROM_DATE = 'fromDate'
+const PARAM_NAME_TO_DATE = 'toDate'
 
 interface IUserActionsListProps {
 	logItems: UserActionsLogItem[]
@@ -24,65 +26,6 @@ interface IUserActionsListProps {
 	highlighted?: string
 	onItemClick?: (item: UserActionsLogItem) => void
 	renderButtons?: (item: UserActionsLogItem) => React.ReactElement
-}
-
-/**
- * pretty-prints JSON content, and collapses it if it's too long.
- */
-function CollapseContent(props: { content: any }): JSX.Element {
-	const [expanded, setExpanded] = useState(false)
-
-	const originalString = useMemo(() => {
-		try {
-			let str = JSON.stringify(JSON.parse(props.content), undefined, 2) // Pretty print JSON
-
-			// If the JSON string is a pretty short one, use a condensed JSON instead:
-			if (str.length < 200) {
-				str = JSON.stringify(JSON.parse(props.content)) // Condensed JSON
-			}
-			return str
-		} catch (_e) {
-			// Ignore parsing error
-			return '' + props.content
-		}
-	}, [props.content])
-
-	/** Position of the 5th line in the string, 0 if not found */
-	const indexOf5thLine = useMemo(() => {
-		let indexOf5thLine = 0
-		let foundIndex = 0
-		for (let foundCount = 0; foundCount < 10; foundCount++) {
-			foundIndex = originalString.indexOf('\n', foundIndex + 1)
-			if (foundIndex === -1) {
-				break
-			} else {
-				if (foundCount >= 5) {
-					indexOf5thLine = foundIndex
-					break
-				}
-			}
-		}
-		return indexOf5thLine
-	}, [originalString])
-
-	if (originalString.length < 100 && indexOf5thLine === 0) {
-		return <pre>{originalString}</pre>
-	} else {
-		const displayStr = expanded
-			? originalString
-			: originalString.substring(0, Math.min(indexOf5thLine || 100, 100)) + '...'
-		return (
-			<a
-				href="#"
-				onClick={(e) => {
-					e.preventDefault()
-					setExpanded(!expanded)
-				}}
-			>
-				<pre>{displayStr}</pre>
-			</a>
-		)
-	}
 }
 
 function UserActionsList(props: IUserActionsListProps) {
@@ -98,7 +41,7 @@ function UserActionsList(props: IUserActionsListProps) {
 					<th className="c2 user-action-log__clientAddress">{t('Client IP')}</th>
 					<th className="c3 user-action-log__context">{t('Action')}</th>
 					<th className="c3 user-action-log__method">{t('Method')}</th>
-					<th className="c1 user-action-log__status">{t('Status')}</th>
+					<th className="c3 user-action-log__status">{t('Status')}</th>
 					<th className="c1 user-action-log__args">{t('Parameters')}</th>
 					{props.renderButtons ? <th className="c1 user-action-log__buttons"></th> : null}
 				</tr>
@@ -185,12 +128,19 @@ function UserActionsList(props: IUserActionsListProps) {
 								{msg.success ? 'Success' : msg.success === false ? 'Error: ' + msg.errorMessage : null}
 							</td>
 							<td className="user-action-log__args">
-								<CollapseContent content={msg.args} />
+								<CollapseJSON json={msg.args} />
 							</td>
 							{props.renderButtons ? <td className="user-action-log__buttons">{props.renderButtons(msg)}</td> : null}
 						</tr>
 					)
 				})}
+				{props.logItems.length >= 10_000 && (
+					<tr>
+						<td colSpan={10}>
+							<em>{t('Amount of documents exceeds the limt of 10 000 entries.')}</em>
+						</td>
+					</tr>
+				)}
 			</tbody>
 		</table>
 	)
@@ -199,6 +149,7 @@ function UserActionsList(props: IUserActionsListProps) {
 function UserActivity(): JSX.Element {
 	const { t } = useTranslation()
 
+	// TODO: This needs to be set to the correct values on Component boot-up
 	const [dateFrom, setDateFrom] = useState<Time>(moment().startOf('day').valueOf())
 	const [dateTo, setDateTo] = useState<Time>(moment().add(1, 'days').startOf('day').valueOf())
 
@@ -231,18 +182,32 @@ function UserActivity(): JSX.Element {
 			arrayFormat: 'comma',
 		})
 
-		const qsStartDate = moment(queryParams[PARAM_NAME_FROM_DATE], PARAM_DATE_FORMAT, true)
+		let qsStartDate: ReturnType<typeof moment> | null = null
+		let qsEndDate: ReturnType<typeof moment> | null = null
+		if (queryParams[PARAM_NAME_FROM_DATE]) {
+			qsStartDate = moment(queryParams[PARAM_NAME_FROM_DATE], PARAM_DATE_FORMAT, true)
+		}
+		if (queryParams[PARAM_NAME_TO_DATE]) {
+			qsEndDate = moment(queryParams[PARAM_NAME_TO_DATE], PARAM_DATE_FORMAT, true)
+		}
 
-		if (qsStartDate.isValid()) {
-			setDateFrom(qsStartDate.startOf('day').valueOf())
-			setDateTo(qsStartDate.add(1, 'days').startOf('day').valueOf())
+		if (qsStartDate?.isValid()) {
+			setDateFrom(qsStartDate.valueOf())
+			if (!qsEndDate) setDateTo(qsStartDate.add(1, 'days').valueOf())
+		}
+		if (qsEndDate?.isValid()) {
+			setDateTo(qsEndDate.valueOf())
+			if (!qsStartDate) setDateFrom(qsEndDate.subtract(1, 'days').valueOf())
 		}
 	}, [location])
 
 	function onDateChange(from: Time, to: Time) {
 		setDateFrom(from)
 		setDateTo(to)
-		location.search = `?${PARAM_NAME_FROM_DATE}=` + moment(from).format(PARAM_DATE_FORMAT)
+		const newParams = new URLSearchParams(location.search)
+		newParams.set(PARAM_NAME_FROM_DATE, moment(from).format(PARAM_DATE_FORMAT))
+		newParams.set(PARAM_NAME_TO_DATE, moment(to).format(PARAM_DATE_FORMAT))
+		location.search = `?${newParams.toString()}`
 		history.replace(location)
 	}
 
