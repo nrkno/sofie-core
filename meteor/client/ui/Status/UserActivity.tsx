@@ -146,12 +146,50 @@ function UserActionsList(props: Readonly<IUserActionsListProps>) {
 	)
 }
 
+function getStartAndEndDateFromLocationSearch(locationSearch: string): { from: Time; to: Time } {
+	const queryParams = queryStringParse(locationSearch, {
+		arrayFormat: 'comma',
+	})
+
+	let qsStartDate: ReturnType<typeof moment> | null = null
+	let qsEndDate: ReturnType<typeof moment> | null = null
+	if (queryParams[PARAM_NAME_FROM_DATE]) {
+		qsStartDate = moment(queryParams[PARAM_NAME_FROM_DATE], PARAM_DATE_FORMAT, true)
+	}
+	if (queryParams[PARAM_NAME_TO_DATE]) {
+		qsEndDate = moment(queryParams[PARAM_NAME_TO_DATE], PARAM_DATE_FORMAT, true)
+	}
+
+	return qsStartDate?.isValid()
+		? {
+				from: qsStartDate.valueOf(),
+				to: qsEndDate?.isValid() ? qsEndDate.valueOf() : qsStartDate.add(1, 'days').valueOf(),
+		  }
+		: qsEndDate?.isValid()
+		? {
+				to: qsEndDate.valueOf(),
+				from: qsStartDate?.isValid() ? qsStartDate.valueOf() : qsEndDate.add(1, 'days').valueOf(),
+		  }
+		: {
+				from: moment().startOf('day').valueOf(),
+				to: moment().add(1, 'days').startOf('day').valueOf(),
+		  }
+}
+
 function UserActivity(): JSX.Element {
 	const { t } = useTranslation()
 
+	const location = useLocation()
+
 	// TODO: This needs to be set to the correct values on Component boot-up
-	const [dateFrom, setDateFrom] = useState<Time>(moment().startOf('day').valueOf())
-	const [dateTo, setDateTo] = useState<Time>(moment().add(1, 'days').startOf('day').valueOf())
+	const [dateFrom, setDateFrom] = useState<Time>(() => {
+		const { from } = getStartAndEndDateFromLocationSearch(location.search)
+		return from
+	})
+	const [dateTo, setDateTo] = useState<Time>(() => {
+		const { to } = getStartAndEndDateFromLocationSearch(location.search)
+		return to
+	})
 
 	useSubscription(MeteorPubSub.userActionsLog, dateFrom, dateTo)
 
@@ -169,31 +207,12 @@ function UserActivity(): JSX.Element {
 		[]
 	)
 
-	const location = useLocation()
 	const history = useHistory()
 
 	useEffect(() => {
-		const queryParams = queryStringParse(location.search, {
-			arrayFormat: 'comma',
-		})
-
-		let qsStartDate: ReturnType<typeof moment> | null = null
-		let qsEndDate: ReturnType<typeof moment> | null = null
-		if (queryParams[PARAM_NAME_FROM_DATE]) {
-			qsStartDate = moment(queryParams[PARAM_NAME_FROM_DATE], PARAM_DATE_FORMAT, true)
-		}
-		if (queryParams[PARAM_NAME_TO_DATE]) {
-			qsEndDate = moment(queryParams[PARAM_NAME_TO_DATE], PARAM_DATE_FORMAT, true)
-		}
-
-		if (qsStartDate?.isValid()) {
-			setDateFrom(qsStartDate.valueOf())
-			if (!qsEndDate) setDateTo(qsStartDate.add(1, 'days').valueOf())
-		}
-		if (qsEndDate?.isValid()) {
-			setDateTo(qsEndDate.valueOf())
-			if (!qsStartDate) setDateFrom(qsEndDate.subtract(1, 'days').valueOf())
-		}
+		const { from, to } = getStartAndEndDateFromLocationSearch(location.search)
+		setDateFrom(from)
+		setDateTo(to)
 	}, [location])
 
 	function onDateChange(from: Time, to: Time) {

@@ -24,20 +24,18 @@ export function DatePickerFromTo({
 	const [localTo, setLocalTo] = useState<Date>(to ? new Date(to) : moment().startOf('day').toDate())
 
 	function onClickPrevious() {
-		const from = localFrom.valueOf()
-		const to = localTo.valueOf()
-		const range = to - from
+		const from = moment(localFrom).subtract(1, 'days').valueOf()
+		const to = moment(localTo).subtract(1, 'days').valueOf()
 
-		setLocalFrom(new Date(from - range))
-		setLocalTo(new Date(to - range))
+		setLocalFrom(new Date(from))
+		setLocalTo(new Date(to))
 	}
 	function onClickNext() {
-		const from = localFrom.valueOf()
-		const to = localTo.valueOf()
-		const range = to - from
+		const from = moment(localFrom).add(1, 'days').valueOf()
+		const to = moment(localTo).add(1, 'days').valueOf()
 
-		setLocalFrom(new Date(from + range))
-		setLocalTo(new Date(to + range))
+		setLocalFrom(new Date(from))
+		setLocalTo(new Date(to))
 	}
 	function handleChangeFrom(date: Date | null) {
 		if (!date) return
