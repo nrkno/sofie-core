@@ -1020,23 +1020,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mos-connection/helper@npm:^4.1.1-nightly-master-20240430-072032-ffb8bf6.0":
-  version: 4.1.1-nightly-master-20240430-072032-ffb8bf6.0
-  resolution: "@mos-connection/helper@npm:4.1.1-nightly-master-20240430-072032-ffb8bf6.0"
+"@mos-connection/helper@npm:^4.1.1":
+  version: 4.1.1
+  resolution: "@mos-connection/helper@npm:4.1.1"
   dependencies:
-    "@mos-connection/model": 4.1.1-nightly-master-20240430-072032-ffb8bf6.0
+    "@mos-connection/model": 4.1.1
     iconv-lite: ^0.6.3
     tslib: ^2.5.3
     xml-js: ^1.6.11
     xmlbuilder: ^15.1.1
-  checksum: dcf7d5e800d08c007a4026b37ddcc6ebe77d020a311809bc379a5c7d15657c2d447b4149682aec17161d17217e2c6d5167c7ef81e954a4ed5a6283a7c75a7e0a
+  checksum: 3ff0982889d33e97bb573de101706aba59936b0413651425c900a433b3f2981668c7099898c3385a3a4c691813b9fb73d22b77647d09c6a4fd5e513fbb18b115
   languageName: node
   linkType: hard
 
-"@mos-connection/model@npm:4.1.1-nightly-master-20240430-072032-ffb8bf6.0, @mos-connection/model@npm:^4.1.1-nightly-master-20240430-072032-ffb8bf6.0":
-  version: 4.1.1-nightly-master-20240430-072032-ffb8bf6.0
-  resolution: "@mos-connection/model@npm:4.1.1-nightly-master-20240430-072032-ffb8bf6.0"
-  checksum: 07bd3ffc94a8c140d994de445c34158bb9f5f8950f6cea34d59657fe4da1f0f6b5d0c2c7ef1b2ad902b43c846485ab10cb9f19d707233b875fe739d731151bdc
+"@mos-connection/model@npm:4.1.1, @mos-connection/model@npm:^4.1.1":
+  version: 4.1.1
+  resolution: "@mos-connection/model@npm:4.1.1"
+  checksum: 31332dcf977ca6735b6c39729bc1c31c750dc965e540d0dbbde34695c69651dfa1fdb97d8347f81ad6a66ad39062ff84bc2d93e8bcb142fe953e49490cf63d2d
   languageName: node
   linkType: hard
 
@@ -1417,7 +1417,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@sofie-automation/shared-lib@portal:../packages/shared-lib::locator=automation-core%40workspace%3A."
   dependencies:
-    "@mos-connection/model": ^4.1.1-nightly-master-20240430-072032-ffb8bf6.0
+    "@mos-connection/model": ^4.1.1
     timeline-state-resolver-types: 9.1.0
     tslib: ^2.6.2
     type-fest: ^3.13.1
@@ -2689,7 +2689,7 @@ __metadata:
     "@jstarpl/react-contextmenu": ^2.15.0
     "@koa/cors": ^5.0.0
     "@koa/router": ^12.0.1
-    "@mos-connection/helper": ^4.1.1-nightly-master-20240430-072032-ffb8bf6.0
+    "@mos-connection/helper": ^4.1.1
     "@nrk/core-icons": ^9.6.0
     "@popperjs/core": ^2.11.8
     "@shopify/jest-koa-mocks": ^5.1.1
