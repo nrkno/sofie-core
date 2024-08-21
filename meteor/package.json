@@ -1,6 +1,6 @@
 {
 	"name": "automation-core",
-	"version": "1.51.0-in-development",
+	"version": "1.51.0-in-testing.0",
 	"private": true,
 	"engines": {
 		"node": ">=14.19.1"
@@ -48,7 +48,7 @@
 		"@jstarpl/react-contextmenu": "^2.15.0",
 		"@koa/cors": "^5.0.0",
 		"@koa/router": "^12.0.1",
-		"@mos-connection/helper": "^4.1.1-nightly-master-20240430-072032-ffb8bf6.0",
+		"@mos-connection/helper": "^4.1.1",
 		"@nrk/core-icons": "^9.6.0",
 		"@popperjs/core": "^2.11.8",
 		"@slack/webhook": "^6.1.0",
@@ -56,7 +56,7 @@
 		"@sofie-automation/corelib": "portal:../packages/corelib",
 		"@sofie-automation/job-worker": "portal:../packages/job-worker",
 		"@sofie-automation/shared-lib": "portal:../packages/shared-lib",
-		"@sofie-automation/sorensen": "^1.4.2",
+		"@sofie-automation/sorensen": "^1.4.3",
 		"app-root-path": "^3.1.0",
 		"bcrypt": "^5.1.1",
 		"body-parser": "^1.20.2",

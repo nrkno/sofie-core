@@ -111,10 +111,10 @@ export interface PlayoutPartInstanceModel {
 	markAsReset(): void
 
 	/**
-	 * Recalculate the `expectedDurationWithPreroll` property for this PartInstance
+	 * Recalculate the `expectedDurationWithTransition` property for this PartInstance
 	 * Future: is this needed? should this be handled internally?
 	 */
-	recalculateExpectedDurationWithPreroll(): void
+	recalculateExpectedDurationWithTransition(): void
 
 	/**
 	 * Remove a PieceInstance from the model.

@@ -118,7 +118,7 @@ export const RelevantSystemVersions = PLazy.from(async () => {
 				const pkgInfo = require(name + '/package.json')
 				return pkgInfo.version
 			} catch (e) {
-				logger.warn(`Failed to read version of package "${name}": ${e}`)
+				logger.warn(`Failed to read version of package "${name}": ${stringifyError(e)}`)
 				return parseVersion(fallback)
 			}
 		}

@@ -77,7 +77,7 @@ describe('ActivePlaylistTopic', () => {
 			_id: protectString('PART_1'),
 			title: 'Test Part',
 			segmentId: protectString('SEGMENT_1'),
-			expectedDurationWithPreroll: 10000,
+			expectedDurationWithTransition: 10000,
 			expectedDuration: 10000,
 			publicData: { b: 'c' },
 		}

@@ -192,7 +192,7 @@ export async function syncChangesToPartInstances(
 				}
 
 				if (playStatus === 'next') {
-					existingPartInstance.recalculateExpectedDurationWithPreroll()
+					existingPartInstance.recalculateExpectedDurationWithTransition()
 				}
 
 				// Save notes:

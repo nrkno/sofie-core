@@ -49,6 +49,8 @@
  * 1.47.0: Release 47 (?)
  * 1.49.0: Release 49 (?)
  * 1.50.0: Release 50 (2024-02-23)
+ * 1.51.0: Release 51 (TBD)
+ * 1.52.0: Release 52 (TBD)
  */
 
 // Note: Only set this to release versions, (ie X.Y.Z), not pre-releases (ie X.Y.Z-0-pre-release)

@@ -4,19 +4,19 @@ import { addMigrationSteps } from './databaseMigration'
 // Release 39
 export const addSteps = addMigrationSteps('1.39.0', [
 	{
-		id: `Parts.expectedDurationWithPreroll`,
+		id: `Parts.expectedDurationWithTransition`,
 		canBeRunAutomatically: true,
 		validate: async () => {
 			const objects = await Parts.countDocuments({
 				expectedDuration: {
 					$exists: true,
 				},
-				expectedDurationWithPreroll: {
+				expectedDurationWithTransition: {
 					$exists: false,
 				},
 			})
 			if (objects > 0) {
-				return `timing is expectedDurationWithPreroll on ${objects} objects`
+				return `timing is expectedDurationWithTransition on ${objects} objects`
 			}
 			return false
 		},
@@ -25,14 +25,14 @@ export const addSteps = addMigrationSteps('1.39.0', [
 				expectedDuration: {
 					$exists: true,
 				},
-				expectedDurationWithPreroll: {
+				expectedDurationWithTransition: {
 					$exists: false,
 				},
 			})
 			for (const obj of objects) {
 				await Parts.mutableCollection.updateAsync(obj._id, {
 					$set: {
-						expectedDurationWithPreroll: obj.expectedDuration,
+						expectedDurationWithTransition: obj.expectedDuration,
 					},
 				})
 			}
