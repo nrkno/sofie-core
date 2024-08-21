@@ -7,6 +7,10 @@
 
 import { StatusCode } from '../lib/status'
 
+type AccessorId = string
+type ExpectedPackageId = string
+type PackageContainerId = string
+
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace ExpectedPackage {
 	export type Any = ExpectedPackageMediaFile | ExpectedPackageQuantelClip | ExpectedPackageJSONData
@@ -24,7 +28,7 @@ export namespace ExpectedPackage {
 	/** Generic (used in extends) */
 	export interface Base {
 		/** Unique id of the expectedPackage */
-		_id: string
+		_id: ExpectedPackageId
 		/** Reference to which timeline-layer(s) the Package is going to be used in.
 		 * (Used to route the package to the right playout-device (targets))
 		 */
@@ -54,19 +58,21 @@ export namespace ExpectedPackage {
 		 */
 		sources: {
 			/** Reference to a PackageContainer */
-			containerId: string
+			containerId: PackageContainerId
 			/** Locally defined Accessors, these are combined (deep extended) with the PackageContainer (if it is found) Accessors */
-			accessors: { [accessorId: string]: AccessorOnPackage.Any }
+			accessors: {
+				[accessorId: AccessorId]: AccessorOnPackage.Any
+			}
 		}[]
 
 		/** The sideEffect is used by the Package Manager to generate extra artifacts, such as thumbnails & previews */
 		sideEffect: {
 			/** Which container previews are to be put into */
-			previewContainerId?: string | null // null is used to disable the sideEffect
+			previewContainerId?: PackageContainerId | null // null is used to disable the sideEffect
 			previewPackageSettings?: SideEffectPreviewSettings | null
 
 			/** Which container thumbnails are to be put into */
-			thumbnailContainerId?: string | null // null is used to disable the sideEffect
+			thumbnailContainerId?: PackageContainerId | null // null is used to disable the sideEffect
 			thumbnailPackageSettings?: SideEffectThumbnailSettings | null
 
 			/** Should the package be scanned for loudness */
@@ -110,7 +116,7 @@ export namespace ExpectedPackage {
 	export interface ExpectedPackageMediaFile extends Base {
 		type: PackageType.MEDIA_FILE
 		content: {
-			/** Local file path on the playout device */
+			/** Local file path on the package container */
 			filePath: string
 		}
 		version: {
@@ -120,9 +126,9 @@ export namespace ExpectedPackage {
 			checkSumType?: 'sha' | 'md5' | 'whatever'
 		}
 		sources: {
-			containerId: string
+			containerId: PackageContainerId
 			accessors: {
-				[accessorId: string]:
+				[accessorId: AccessorId]:
 					| AccessorOnPackage.LocalFolder
 					| AccessorOnPackage.FileShare
 					| AccessorOnPackage.HTTP
@@ -149,8 +155,8 @@ export namespace ExpectedPackage {
 			cloneId?: number
 		}
 		sources: {
-			containerId: string
-			accessors: { [accessorId: string]: AccessorOnPackage.Quantel }
+			containerId: PackageContainerId
+			accessors: { [accessorId: AccessorId]: AccessorOnPackage.Quantel }
 		}[]
 	}
 
@@ -162,9 +168,9 @@ export namespace ExpectedPackage {
 		}
 		version: any // {}
 		sources: {
-			containerId: string
+			containerId: PackageContainerId
 			accessors: {
-				[accessorId: string]:
+				[accessorId: AccessorId]:
 					| AccessorOnPackage.HTTP
 					| AccessorOnPackage.HTTPProxy
 					| AccessorOnPackage.LocalFolder
