@@ -132,18 +132,23 @@ export interface NoraContentSteps {
 }
 
 export interface NoraContent extends BaseContent {
-	previewPayload: JSONBlob<NoraPayload>
+	/** URL of the preview renderer */
 	previewRenderer: string
+	/** Payload for the preview renderer to display the graphic */
+	previewPayload: JSONBlob<NoraPayload>
 	/** Dimensions of the rendered hover-preview viewport in pixels. Defaults to 1920x1080. */
 	previewRendererDimensions?: { width: number; height: number }
 
+	/** Basic display info about the template */
 	templateInfo?: {
 		name: string
 		variant?: string
 	}
 
+	/** Time the graphic was last changed in the NRCS (if known) */
 	changed?: Time
 
+	/** If set, the graphic supports steps */
 	step?: NoraContentSteps
 }
 
