@@ -576,7 +576,7 @@ resources:
           $ref: '#/components/responses/internalServerError'
 
   clearSourceLayers:
-    delete:
+    put:
       operationId: clearSourceLayers
       tags:
         - playlists

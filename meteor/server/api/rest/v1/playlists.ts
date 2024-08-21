@@ -787,7 +787,7 @@ export function registerRoutes(registerRoute: APIRegisterHook<PlaylistsRestAPI>)
 	)
 
 	registerRoute<{ playlistId: string }, { sourceLayerIds: string[] }, void>(
-		'post',
+		'put',
 		'/playlists/:playlistId/clear-sourcelayers',
 		new Map([
 			[404, [UserErrorMessage.RundownPlaylistNotFound]],
