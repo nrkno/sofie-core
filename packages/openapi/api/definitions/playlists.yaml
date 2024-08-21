@@ -574,11 +574,12 @@ resources:
                     example: No Next point found, please set a part as Next before doing a TAKE.
         500:
           $ref: '#/components/responses/internalServerError'
-  sourceLayers:
+
+  clearSourceLayers:
     delete:
       operationId: clearSourceLayers
       tags:
-        - sourceLayers
+        - playlists
       summary: Clears the target SourceLayers.
       parameters:
         - name: playlistId
@@ -587,14 +588,23 @@ resources:
           required: true
           schema:
             type: string
-        - name: sourceLayerIds
-          in: path
-          description: Target SourceLayers.
-          required: true
-          schema:
-            type: array
-            items:
-              type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sourceLayerIds:
+                  description: Target SourceLayers.
+                  type: array
+                  items:
+                    type: string
+              required:
+                - sourceLayerIds
+              example:
+                sourceLayerIds:
+                  - 'mySourceLayerId'
       responses:
         200:
           $ref: '#/components/responses/putSuccess'
@@ -618,10 +628,13 @@ resources:
 
   sourceLayer:
     delete:
+      deprecated: true
       operationId: clearSourceLayer
       tags:
         - sourceLayers
-      summary: Clears the target SourceLayer.
+      summary: |
+        Clears the target SourceLayer.
+        This endpoint is deprecated, use the `clear-sourcelayers` endpoint instead.
       parameters:
         - name: playlistId
           in: path

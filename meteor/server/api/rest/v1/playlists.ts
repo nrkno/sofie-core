@@ -786,23 +786,22 @@ export function registerRoutes(registerRoute: APIRegisterHook<PlaylistsRestAPI>)
 		}
 	)
 
-	registerRoute<{ playlistId: string; sourceLayerIds: string }, never, void>(
-		'delete',
-		'/playlists/:playlistId/sourceLayers/:sourceLayerIds',
+	registerRoute<{ playlistId: string }, { sourceLayerIds: string[] }, void>(
+		'post',
+		'/playlists/:playlistId/clear-sourcelayers',
 		new Map([
 			[404, [UserErrorMessage.RundownPlaylistNotFound]],
 			[412, [UserErrorMessage.InactiveRundown]],
 		]),
 		playlistsAPIFactory,
-		async (serverAPI, connection, event, params, _) => {
+		async (serverAPI, connection, event, params, body) => {
 			const playlistId = protectString<RundownPlaylistId>(params.playlistId)
-			const sourceLayerIdsStr = params.sourceLayerIds
-			logger.info(`API DELETE: sourceLayers ${playlistId} ${sourceLayerIdsStr}`)
+			const sourceLayerIds = body?.sourceLayerIds
+			logger.info(`API POST: clear-sourcelayers ${playlistId} ${sourceLayerIds}`)
 
 			check(playlistId, String)
-			check(sourceLayerIdsStr, String)
+			check(sourceLayerIds, Array<String>)
 
-			const sourceLayerIds = sourceLayerIdsStr.split(',')
 			return await serverAPI.clearSourceLayers(connection, event, playlistId, sourceLayerIds)
 		}
 	)
