@@ -59,7 +59,7 @@ meteorPublish(PubSub.userActionsLog, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.organizationId<UserActionsLogItem>(this.userId, selector0, token)
 	if (!cred || (await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) {
 		return UserActionsLog.findWithCursor(selector, {
-			limit: 10_000,
+			limit: 10_000, // this is to prevent having a publication that produces a very large array
 		})
 	}
 	return null

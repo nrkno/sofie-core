@@ -134,10 +134,10 @@ function UserActionsList(props: IUserActionsListProps) {
 						</tr>
 					)
 				})}
-				{props.logItems.length >= 10_000 && (
+				{props.logItems.length >= 10_000 && ( // The publication is capped at this amount of documents
 					<tr>
 						<td colSpan={10}>
-							<em>{t('Amount of documents exceeds the limt of 10 000 entries.')}</em>
+							<em>{t('Amount of entries exceeds the limt of 10 000 items.')}</em>
 						</td>
 					</tr>
 				)}
@@ -181,7 +181,6 @@ function UserActivity(): JSX.Element {
 
 	const location = useLocation()
 
-	// TODO: This needs to be set to the correct values on Component boot-up
 	const [dateFrom, setDateFrom] = useState<Time>(() => {
 		const { from } = getStartAndEndDateFromLocationSearch(location.search)
 		return from
