@@ -330,7 +330,7 @@ class PlaylistsServerAPI implements PlaylistsRestAPI {
 				check(rundownPlaylistId, String)
 			},
 			'reloadPlaylist',
-			[rundownPlaylistId],
+			{ rundownPlaylistId },
 			async (access) => {
 				const reloadResponse = await ServerRundownAPI.resyncRundownPlaylist(access)
 				const success = !reloadResponse.rundownsResponses.reduce((missing, rundownsResponse) => {
