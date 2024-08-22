@@ -103,7 +103,7 @@ meteorPublish(
 		)
 		if (!cred || (await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) {
 			return UserActionsLog.findWithCursor(selector, {
-				limit: 10_000,
+				limit: 10_000, // this is to prevent having a publication that produces a very large array
 			})
 		}
 		return null
