@@ -35,7 +35,9 @@ export const PackageStatus: React.FC<{
 			return p2.content.path || unprotectString(props.package._id)
 		} else {
 			assertNever(p2)
-			return unprotectString(props.package._id)
+
+			const anyContent = (p2 as any).content
+			return anyContent.path || anyContent.filePath || anyContent.title || unprotectString(props.package._id)
 		}
 	}, [props.package])
 
