@@ -4942,6 +4942,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@shuttle-lib/core@npm:0.0.2":
+  version: 0.0.2
+  resolution: "@shuttle-lib/core@npm:0.0.2"
+  dependencies:
+    tslib: ^2.4.0
+  checksum: edbb825940fee2d5fc22fb4c8c44607f6f75197ade72204876356153a6274045efcea8f9cc6ab6a6bec08da1a65e87ea4b9e15678bbfb9721b72aa4104d29598
+  languageName: node
+  linkType: hard
+
 "@sideway/address@npm:^4.1.5":
   version: 4.1.5
   resolution: "@sideway/address@npm:4.1.5"
@@ -5369,6 +5378,7 @@ __metadata:
     sass: ^1.77.8
     semver: ^7.6.3
     sha.js: ^2.4.11
+    shuttle-webhid: ^0.0.2
     sinon: ^14.0.2
     type-fest: ^3.13.1
     typescript: ^5.2.2
@@ -6867,6 +6877,13 @@ __metadata:
   version: 1.19.20
   resolution: "@types/urijs@npm:1.19.20"
   checksum: 9e2e0e5ba19a27bdb5bdd258518082e555500d7efe957f9b09d68d98d99c472d0efa7616ec6e55262514189d8e22e482175576229cbbcf539a72f1e1c20d1df1
+  languageName: node
+  linkType: hard
+
+"@types/w3c-web-hid@npm:^1.0.3":
+  version: 1.0.6
+  resolution: "@types/w3c-web-hid@npm:1.0.6"
+  checksum: 14773befa9c458b3459cdb530a8269937e623e6b72c6bd2d7f88b42f8d47c02d8a64ddc98f79c81c930b6eadf1dc1c94917b553ead72acc13c8406f65310c85d
   languageName: node
   linkType: hard
 
@@ -24821,6 +24838,18 @@ asn1@evs-broadcast/node-asn1:
     vscode-oniguruma: ^1.7.0
     vscode-textmate: ^8.0.0
   checksum: 1173f6fa9531690a8cd4bf1d8e28c9eb9295af38a4c150cba6546e95f6e32bc96c7dd98826e39e688f1ca9d36b683a9a02ef77d51ce6495900b3a46ada64f828
+  languageName: node
+  linkType: hard
+
+"shuttle-webhid@npm:^0.0.2":
+  version: 0.0.2
+  resolution: "shuttle-webhid@npm:0.0.2"
+  dependencies:
+    "@shuttle-lib/core": 0.0.2
+    "@types/w3c-web-hid": ^1.0.3
+    buffer: ^6.0.3
+    p-queue: ^6.6.2
+  checksum: 87db16e6dc7e942a79caf816844382ae2e367735494ce753bd2d75009b8fd6e1d736858a53ec66983e35b2ea63579b32b381f33d25cb8989af002870447d8392
   languageName: node
   linkType: hard
 
