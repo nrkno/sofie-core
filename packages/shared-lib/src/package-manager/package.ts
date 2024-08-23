@@ -193,7 +193,9 @@ export namespace ExpectedPackage {
 		}
 		version: {
 			renderer?: {
+				/** Renderer width, defaults to 1920 */
 				width?: number
+				/** Renderer height, defaults to 1080 */
 				height?: number
 				/**
 				 * Scale the rendered width and height with this value, and also zoom the content accordingly.
@@ -280,7 +282,7 @@ export interface PackageContainer {
 	label: string
 
 	/** A list of ways to access the PackageContainer. Note: The accessors are different ways to access THE SAME PackageContainer. */
-	accessors: { [accessorId: string]: Accessor.Any }
+	accessors: { [accessorId: AccessorId]: Accessor.Any }
 }
 
 /** Defines different ways of accessing a PackageContainer.
@@ -340,10 +342,16 @@ export namespace Accessor {
 		allowWrite: false
 
 		/** Base url (url to the host), for example http://myhost.com/fileShare/ */
-		baseUrl: string
+		baseUrl?: string
 
 		/** Name/Id of the network the share exists on. Used to differ between different local networks. Leave empty if globally accessible. */
 		networkId?: string
+
+		/** If true, assumes that a source never changes once it has been fetched. */
+		isImmutable?: boolean
+
+		/** If true, assumes that the source doesn't support HEAD requests and will use GET instead. If false, HEAD requests will be sent to check availability. */
+		useGETinsteadOfHEAD?: boolean
 	}
 	/** Definition of access to the HTTP-proxy server that comes with Package Manager. */
 	export interface HTTPProxy extends Base {
@@ -438,11 +446,11 @@ export namespace AccessorOnPackage {
 }
 
 export interface PackageContainerOnPackage extends Omit<PackageContainer, 'accessors'> {
-	containerId: string
+	containerId: PackageContainerId
 	/** Short name, for displaying to user */
 	label: string
 
-	accessors: { [accessorId: string]: AccessorOnPackage.Any }
+	accessors: { [accessorId: AccessorId]: AccessorOnPackage.Any }
 }
 
 // todo: should this be moved into core-integration?
