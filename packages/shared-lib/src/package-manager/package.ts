@@ -23,6 +23,7 @@ export namespace ExpectedPackage {
 		MEDIA_FILE = 'media_file',
 		QUANTEL_CLIP = 'quantel_clip',
 		JSON_DATA = 'json_data',
+		HTML_TEMPLATE = 'html_template',
 
 		// TALLY_LABEL = 'tally_label'
 
@@ -192,9 +193,7 @@ export namespace ExpectedPackage {
 		}
 		version: {
 			renderer?: {
-				/** Renderer width, defaults to 1920 */
 				width?: number
-				/** Renderer width, defaults to 1080 */
 				height?: number
 				/**
 				 * Scale the rendered width and height with this value, and also zoom the content accordingly.
@@ -225,11 +224,36 @@ export namespace ExpectedPackage {
 			steps?: (
 				| { do: 'waitForLoad' }
 				| { do: 'sleep'; duration: number }
+				| {
+						do: 'sendHTTPCommand'
+						url: string
+						/** GET, POST, PUT etc.. */
+						method: string
+						body?: ArrayBuffer | ArrayBufferView | NodeJS.ReadableStream | string | URLSearchParams
+
+						headers?: Record<string, string>
+				  }
 				| { do: 'takeScreenshot'; fileName: string }
 				| { do: 'startRecording'; fileName: string }
 				| { do: 'stopRecording' }
 				| { do: 'cropRecording'; fileName: string }
 				| { do: 'executeJs'; js: string }
+				// Store an object in memory
+				| {
+						do: 'storeObject'
+						key: string
+						/** The value to store into memory. Either an object, or a JSON-stringified object */
+						value: Record<string, any> | string
+				  }
+				// Modify an object in memory. Path is a dot-separated string
+				| { do: 'modifyObject'; key: string; path: string; value: any }
+				// Send an object to the renderer as a postMessage (so basically does a executeJs: window.postMessage(memory[key]))
+				| {
+						do: 'injectObject'
+						key: string
+						/** The method to receive the value. Defaults to window.postMessage */
+						receivingFunction?: string
+				  }
 			)[]
 		}
 		sources: {
