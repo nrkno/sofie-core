@@ -188,8 +188,6 @@ export namespace ExpectedPackage {
 		content: {
 			/** path to the HTML template */
 			path: string
-			/** Add prefix to output artifacts */
-			outputPrefix: string
 		}
 		version: {
 			renderer?: {
