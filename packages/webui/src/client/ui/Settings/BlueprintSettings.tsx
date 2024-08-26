@@ -17,13 +17,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUpload, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { unprotectString } from '../../lib/tempLib'
 import { MeteorCall } from '../../lib/meteorApi'
-import { BlueprintId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Blueprints, CoreSystem, ShowStyleBases, Studios } from '../../collections'
 import { LabelActual } from '../../lib/Components/LabelAndOverrides'
 
 interface IProps {
 	blueprintId: BlueprintId
-	userId?: UserId
 }
 interface IState {
 	uploadFileKey: number // Used to force clear the input after use
@@ -93,7 +92,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								body: uploadFileContents,
 								headers: {
 									'content-type': 'text/javascript',
-									authorization: 'id ' + this.props.userId,
+									// authorization: 'id ' + this.props.userId,
 								},
 							})
 								.then(() => {
@@ -133,7 +132,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 														body: uploadFileContents,
 														headers: {
 															'content-type': 'text/javascript',
-															authorization: 'id ' + this.props.userId,
+															// authorization: 'id ' + this.props.userId,
 														},
 													})
 														.then(() => {

@@ -11,7 +11,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { MeteorCall } from '../../lib/meteorApi'
-import { Settings as MeteorSettings } from '../../lib/Settings'
 import { IOutputLayer, StatusCode } from '@sofie-automation/blueprints-integration'
 import { TFunction, useTranslation } from 'react-i18next'
 import { RundownLayoutsAPI } from '../../lib/rundownLayouts'
@@ -20,10 +19,7 @@ import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settin
 import { catchError } from '../../lib/lib'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
-interface ISettingsMenuProps {
-	superAdmin?: boolean
-}
-export function SettingsMenu({ superAdmin }: Readonly<ISettingsMenuProps>): JSX.Element {
+export function SettingsMenu(): JSX.Element {
 	const { t } = useTranslation()
 
 	return (
@@ -32,13 +28,13 @@ export function SettingsMenu({ superAdmin }: Readonly<ISettingsMenuProps>): JSX.
 
 			<SettingsMenuShowStyles />
 
-			{(!MeteorSettings.enableUserAccounts || superAdmin) && <SettingsMenuBlueprints />}
+			{<SettingsMenuBlueprints />}
 
 			<SettingsMenuPeripheralDevices />
 
 			<h2 className="mhs">{t('Tools')}</h2>
 			<hr className="vsubtle man" />
-			{(!MeteorSettings.enableUserAccounts || superAdmin) && (
+			{
 				<React.Fragment>
 					<NavLink
 						activeClassName="selectable-selected"
@@ -62,7 +58,7 @@ export function SettingsMenu({ superAdmin }: Readonly<ISettingsMenuProps>): JSX.
 						<h3>{t('Manage Snapshots')}</h3>
 					</NavLink>
 				</React.Fragment>
-			)}
+			}
 		</div>
 	)
 }

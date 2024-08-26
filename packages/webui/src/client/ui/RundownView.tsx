@@ -1776,9 +1776,6 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 					documentTitle.set(null)
 				}
 			}
-			if (Settings.enableUserAccounts && getAllowStudio() !== this.state.studioMode) {
-				this.setState({ studioMode: getAllowStudio() })
-			}
 
 			this.handleMiniShelfRequeue(prevProps)
 		}
