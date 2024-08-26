@@ -14,6 +14,7 @@ import { logger } from './logging'
 import { PlayoutModel } from './playout/model/PlayoutModel'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { SubdeviceAction } from '@sofie-automation/corelib/dist/deviceConfig'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 export async function executePeripheralDeviceAction(
 	context: JobContext,
@@ -95,10 +96,14 @@ async function executePeripheralDeviceGenericFunction(
 					}
 
 					Promise.resolve(watcher.close()).catch((e) => {
-						logger.error(`Cleanup PeripheralDeviceCommand "${commandId}" watcher failed: ${e}`)
+						logger.error(
+							`Cleanup PeripheralDeviceCommand "${commandId}" watcher failed: ${stringifyError(e)}`
+						)
 					})
 					context.directCollections.PeripheralDeviceCommands.remove(cmdId).catch((e) => {
-						logger.error(`Cleanup PeripheralDeviceCommand "${commandId}" document failed: ${e}`)
+						logger.error(
+							`Cleanup PeripheralDeviceCommand "${commandId}" document failed: ${stringifyError(e)}`
+						)
 					})
 				}
 
@@ -144,7 +149,7 @@ async function executePeripheralDeviceGenericFunction(
 
 	const doCheckReply = () => {
 		checkReply().catch((e) => {
-			logger.error(`PeripheralDeviceCommand "${commandId}" check failed: ${e}`)
+			logger.error(`PeripheralDeviceCommand "${commandId}" check failed: ${stringifyError(e)}`)
 		})
 	}
 
@@ -159,7 +164,7 @@ async function executePeripheralDeviceGenericFunction(
 	})
 	watcher.on('error', (err) => {
 		Promise.resolve(watcher.close()).catch((e) => {
-			logger.error(`Cleanup PeripheralDeviceCommand "${commandId}" watcher failed: ${e}`)
+			logger.error(`Cleanup PeripheralDeviceCommand "${commandId}" watcher failed: ${stringifyError(e)}`)
 		})
 
 		if (!completed) {
@@ -180,7 +185,7 @@ async function executePeripheralDeviceGenericFunction(
 		})
 	} catch (e) {
 		Promise.resolve(watcher.close()).catch((e) => {
-			logger.error(`Cleanup PeripheralDeviceCommand "${commandId}" watcher failed: ${e}`)
+			logger.error(`Cleanup PeripheralDeviceCommand "${commandId}" watcher failed: ${stringifyError(e)}`)
 		})
 		throw e
 	}

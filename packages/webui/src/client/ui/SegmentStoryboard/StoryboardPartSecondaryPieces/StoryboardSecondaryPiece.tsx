@@ -1,7 +1,6 @@
 import React, { useRef, useState } from 'react'
 import { RundownUtils } from '../../../lib/rundown'
 import { ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
-import { withMediaObjectStatus } from '../../SegmentTimeline/withMediaObjectStatus'
 import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
 import { DefaultRenderer } from './Renderers/DefaultRenderer'
 import { assertNever } from '../../../lib/tempLib'
@@ -62,9 +61,7 @@ function renderPieceInside(
 
 type MousePagePosition = { pageX: number; pageY: number }
 
-export const StoryboardSecondaryPiece = withMediaObjectStatus<IProps, {}>()(function StoryboardSecondaryPiece(
-	props: IProps
-) {
+export function StoryboardSecondaryPiece(props: IProps): JSX.Element {
 	const {
 		piece,
 		partId,
@@ -75,6 +72,7 @@ export const StoryboardSecondaryPiece = withMediaObjectStatus<IProps, {}>()(func
 		onClick,
 		onDoubleClick,
 	} = props
+
 	const [highlight] = useState(false)
 	const element = useRef<HTMLDivElement>(null)
 	const [hovering, setHovering] = useState<MousePagePosition | null>(null)
@@ -126,4 +124,4 @@ export const StoryboardSecondaryPiece = withMediaObjectStatus<IProps, {}>()(func
 			{renderPieceInside(props, elementOffset, hovering, typeClass)}
 		</PieceElement>
 	)
-})
+}

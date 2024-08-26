@@ -21,9 +21,12 @@ import { HourglassIconSmall } from '../../../lib/ui/icons/notifications'
 import { IFloatingInspectorPosition } from '../../FloatingInspectors/IFloatingInspectorPosition'
 import { logger } from '../../../lib/logging'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
+import { ReadonlyDeep } from 'type-fest'
+import { PieceContentStatusObj } from '@sofie-automation/meteor-lib/dist/api/pieceContentStatus'
 
 interface IProps extends ICustomLayerItemProps {
 	studio: UIStudio | undefined
+	contentStatus: ReadonlyDeep<PieceContentStatusObj> | undefined
 }
 interface IState {
 	rightLabelIsAppendage?: boolean
@@ -33,7 +36,7 @@ interface IState {
 
 	sourceEndCountdownAppendage?: boolean
 }
-export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithTranslation, IState> {
+class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithTranslation, IState> {
 	private leftLabel: HTMLSpanElement | null = null
 	private rightLabel: HTMLSpanElement | null = null
 
@@ -51,7 +54,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		const labelItems = innerPiece.name.split('||')
 
 		this.state = {
-			noticeLevel: getNoticeLevelForPieceStatus(props.piece.contentStatus?.status),
+			noticeLevel: getNoticeLevelForPieceStatus(props.contentStatus?.status),
 			begin: labelItems[0] || '',
 			end: labelItems[1] || '',
 		}
@@ -198,10 +201,10 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		let newState: Partial<IState> = {}
 		if (
 			innerPiece.name !== prevProps.piece.instance.piece.name ||
-			this.props.piece.contentStatus?.status !== prevProps.piece.contentStatus?.status
+			this.props.contentStatus?.status !== prevProps.contentStatus?.status
 		) {
 			const labelItems = innerPiece.name.split('||')
-			newState.noticeLevel = getNoticeLevelForPieceStatus(this.props.piece.contentStatus?.status)
+			newState.noticeLevel = getNoticeLevelForPieceStatus(this.props.contentStatus?.status)
 			newState.begin = labelItems[0] || ''
 			newState.end = labelItems[1] || ''
 		}
@@ -250,7 +253,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		return !this.props.piece.hasOriginInPreceedingPart || this.props.isLiveLine ? (
 			<span className="segment-timeline__piece__label" ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 				{noticeLevel !== null && <PieceStatusIcon noticeLevel={noticeLevel} />}
-				{this.props.piece.contentStatus?.status === PieceStatusCode.SOURCE_NOT_READY && (
+				{this.props.contentStatus?.status === PieceStatusCode.SOURCE_NOT_READY && (
 					<div className="piece__status-icon type-hourglass">
 						<HourglassIconSmall />
 					</div>
@@ -330,8 +333,8 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 			if (Settings.useCountdownToFreezeFrame) {
 				const lastFreeze =
-					this.props.piece.contentStatus?.freezes &&
-					this.props.piece.contentStatus?.freezes[this.props.piece.contentStatus?.freezes.length - 1]
+					this.props.contentStatus?.freezes &&
+					this.props.contentStatus?.freezes[this.props.contentStatus?.freezes.length - 1]
 				const endingFreezeStart =
 					lastFreeze &&
 					lastFreeze.start >= vtContent.sourceDuration &&
@@ -391,8 +394,8 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					<>
 						{this.renderInfiniteItemContentEnded()}
 						{this.renderContentEndCountdown()}
-						{this.props.piece.contentStatus?.scenes &&
-							this.props.piece.contentStatus?.scenes.map(
+						{this.props.contentStatus?.scenes &&
+							this.props.contentStatus?.scenes.map(
 								(i) =>
 									i < itemDuration &&
 									i - seek >= 0 && (
@@ -403,8 +406,8 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 										></span>
 									)
 							)}
-						{this.props.piece.contentStatus?.freezes &&
-							this.props.piece.contentStatus?.freezes.map(
+						{this.props.contentStatus?.freezes &&
+							this.props.contentStatus?.freezes.map(
 								(i) =>
 									i.start < itemDuration &&
 									i.start - seek >= 0 && (
@@ -421,8 +424,8 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 										></span>
 									)
 							)}
-						{this.props.piece.contentStatus?.blacks &&
-							this.props.piece.contentStatus?.blacks.map(
+						{this.props.contentStatus?.blacks &&
+							this.props.contentStatus?.blacks.map(
 								(i) =>
 									i.start < itemDuration &&
 									i.start - seek >= 0 && (
@@ -443,7 +446,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				{this.leftLabelNodes}
 				{this.rightLabelContainer && ReactDOM.createPortal(this.rightLabelNodes, this.rightLabelContainer)}
 				<VTFloatingInspector
-					status={this.props.piece.contentStatus?.status}
+					status={this.props.contentStatus?.status}
 					position={this.getFloatingInspectorStyle()}
 					content={vtContent}
 					itemElement={this.props.itemElement}
@@ -451,10 +454,10 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					showMiniInspector={this.props.showMiniInspector}
 					timePosition={realCursorTimePosition}
 					typeClass={this.props.typeClass}
-					noticeMessages={this.props.piece.contentStatus?.messages || []}
+					noticeMessages={this.props.contentStatus?.messages || []}
 					renderedDuration={this.props.piece.renderedDuration || undefined}
 					studio={this.props.studio}
-					previewUrl={this.props.piece.contentStatus?.previewUrl}
+					previewUrl={this.props.contentStatus?.previewUrl}
 				/>
 			</React.Fragment>
 		)

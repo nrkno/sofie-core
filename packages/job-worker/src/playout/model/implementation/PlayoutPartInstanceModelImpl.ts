@@ -11,7 +11,7 @@ import { clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { getCurrentTime } from '../../../lib'
 import { setupPieceInstanceInfiniteProperties } from '../../pieces'
 import {
-	calculatePartExpectedDurationWithPreroll,
+	calculatePartExpectedDurationWithTransition,
 	PartCalculatedTimings,
 } from '@sofie-automation/corelib/dist/playout/timings'
 import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
@@ -350,13 +350,13 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		}
 	}
 
-	recalculateExpectedDurationWithPreroll(): void {
-		const newDuration = calculatePartExpectedDurationWithPreroll(
+	recalculateExpectedDurationWithTransition(): void {
+		const newDuration = calculatePartExpectedDurationWithTransition(
 			this.partInstanceImpl.part,
 			this.pieceInstances.map((p) => p.pieceInstance.piece)
 		)
 
-		this.#compareAndSetPartValue('expectedDurationWithPreroll', newDuration)
+		this.#compareAndSetPartValue('expectedDurationWithTransition', newDuration)
 	}
 
 	removePieceInstance(id: PieceInstanceId): boolean {

@@ -45,7 +45,7 @@ export async function innerStartOrQueueAdLibPiece(
 			externalId: '',
 			title: adLibPiece.name,
 			expectedDuration: adLibPiece.expectedDuration,
-			expectedDurationWithPreroll: adLibPiece.expectedDuration, // Filled in later
+			expectedDurationWithTransition: adLibPiece.expectedDuration, // Filled in later
 		}
 
 		const genericAdlibPiece = convertAdLibToGenericPiece(adLibPiece, true)

@@ -36,7 +36,7 @@ import { FindOptions } from '../collections/lib'
 import { getShowHiddenSourceLayers } from './localStorage'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
+import { calculatePartInstanceExpectedDurationWithTransition } from '@sofie-automation/corelib/dist/playout/timings'
 import { AdLibPieceUi } from './shelf'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { PartId, PieceId, RundownId, SegmentId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -59,7 +59,7 @@ export namespace RundownUtils {
 			return (
 				memo +
 				(part.instance.timings?.duration ||
-					calculatePartInstanceExpectedDurationWithPreroll(part.instance) ||
+					calculatePartInstanceExpectedDurationWithTransition(part.instance) ||
 					part.renderedDuration ||
 					(display ? Settings.defaultDisplayDuration : 0))
 			)
@@ -214,7 +214,7 @@ export namespace RundownUtils {
 								? part.instance.timings.duration + (part.instance.timings?.playOffset || 0)
 								: (partDuration ||
 										part.renderedDuration ||
-										calculatePartInstanceExpectedDurationWithPreroll(part.instance) ||
+										calculatePartInstanceExpectedDurationWithTransition(part.instance) ||
 										0) - (piece.renderedInPoint || 0)))
 					: part.instance.timings?.duration !== undefined
 					? part.instance.timings.duration + (part.instance.timings?.playOffset || 0)
@@ -415,7 +415,7 @@ export namespace RundownUtils {
 			const showHiddenSourceLayers = getShowHiddenSourceLayers()
 
 			partsE = segmentInfo.partInstances.map((partInstance, itIndex) => {
-				const partExpectedDuration = calculatePartInstanceExpectedDurationWithPreroll(partInstance)
+				const partExpectedDuration = calculatePartInstanceExpectedDurationWithTransition(partInstance)
 
 				// extend objects to match the Extended interface
 				const partE = literal<PartExtended>({

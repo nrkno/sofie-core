@@ -5,6 +5,7 @@ import { getCurrentTime } from '../../lib/lib'
 import { PeripheralDeviceCommands } from '../../collections'
 import { logger } from '../../logging'
 import { TSR } from '@sofie-automation/blueprints-integration'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 export async function executePeripheralDeviceFunctionWithCustomTimeout(
 	deviceId: PeripheralDeviceId,
@@ -71,7 +72,9 @@ export async function executePeripheralDeviceFunctionWithCustomTimeout(
 
 					observer?.stop()
 					PeripheralDeviceCommands.removeAsync(cmdId).catch((e) => {
-						logger.error(`Cleanup PeripheralDeviceCommand "${commandId}" document failed: ${e}`)
+						logger.error(
+							`Cleanup PeripheralDeviceCommand "${commandId}" document failed: ${stringifyError(e)}`
+						)
 					})
 				}
 
@@ -119,7 +122,7 @@ export async function executePeripheralDeviceFunctionWithCustomTimeout(
 
 	const doCheckReply = () => {
 		checkReply().catch((e) => {
-			logger.error(`PeripheralDeviceCommand "${commandId}" check failed: ${e}`)
+			logger.error(`PeripheralDeviceCommand "${commandId}" check failed: ${stringifyError(e)}`)
 		})
 	}
 

@@ -8,7 +8,6 @@ import {
 	RundownLayoutFilter,
 	RundownLayoutFilterBase,
 } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
-import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import { PieceUi } from '../SegmentContainer/withResolvedSegment'
 import { IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
@@ -27,7 +26,6 @@ interface IListViewPropsHeader {
 	noSegments: boolean
 	filter: RundownLayoutFilter | undefined
 	rundownAdLibs?: Array<AdLibPieceUi>
-	playlist: DBRundownPlaylist
 	studio: UIStudio
 }
 
@@ -211,7 +209,6 @@ export function AdLibListView(props: Readonly<IListViewPropsHeader>): JSX.Elemen
 				disabled={adLibPiece.disabled ?? false}
 				onToggleAdLib={props.onToggleAdLib}
 				onSelectAdLib={props.onSelectAdLib}
-				playlist={props.playlist}
 			/>
 		)
 	}

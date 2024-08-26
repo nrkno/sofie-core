@@ -666,7 +666,7 @@ export async function setupDefaultRundown(
 		_rank: 0,
 		externalId: 'MOCK_PART_0_0',
 		title: 'Part 0 0',
-		expectedDurationWithPreroll: undefined,
+		expectedDurationWithTransition: undefined,
 	}
 	await Parts.mutableCollection.insertAsync(part00)
 
@@ -734,7 +734,7 @@ export async function setupDefaultRundown(
 		_rank: 1,
 		externalId: 'MOCK_PART_0_1',
 		title: 'Part 0 1',
-		expectedDurationWithPreroll: undefined,
+		expectedDurationWithTransition: undefined,
 	}
 	await Parts.mutableCollection.insertAsync(part01)
 
@@ -775,7 +775,7 @@ export async function setupDefaultRundown(
 		_rank: 0,
 		externalId: 'MOCK_PART_1_0',
 		title: 'Part 1 0',
-		expectedDurationWithPreroll: undefined,
+		expectedDurationWithTransition: undefined,
 	}
 	await Parts.mutableCollection.insertAsync(part10)
 
@@ -786,7 +786,7 @@ export async function setupDefaultRundown(
 		_rank: 1,
 		externalId: 'MOCK_PART_1_1',
 		title: 'Part 1 1',
-		expectedDurationWithPreroll: undefined,
+		expectedDurationWithTransition: undefined,
 	}
 	await Parts.mutableCollection.insertAsync(part11)
 
@@ -797,7 +797,7 @@ export async function setupDefaultRundown(
 		_rank: 2,
 		externalId: 'MOCK_PART_1_2',
 		title: 'Part 1 2',
-		expectedDurationWithPreroll: undefined,
+		expectedDurationWithTransition: undefined,
 	}
 	await Parts.mutableCollection.insertAsync(part12)
 

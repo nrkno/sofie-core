@@ -8,6 +8,7 @@ import { getRandomString, normalizeArray } from '@sofie-automation/corelib/dist/
 import { IBlueprintConfig, IOutputLayer, ISourceLayer, SomeAction } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBases, ShowStyleVariants, Studios, TriggeredActions } from '../collections'
 
+// Release 47
 interface StudioOld {
 	mappings: MappingsExt
 	blueprintConfig: IBlueprintConfig
@@ -33,18 +34,7 @@ function normalizeArrayRandomId<T>(array: Array<T>): { [indexKey: string]: T } {
 	return normalizedObject as { [key: string]: T }
 }
 
-/*
- * **************************************************************************************
- *
- *  These migrations are destined for the next release
- *
- * (This file is to be renamed to the correct version number when doing the release)
- *
- * **************************************************************************************
- */
-
 export const addSteps = addMigrationSteps('1.47.0', [
-	// Add some migrations!
 	{
 		id: `Studios generate *withOverrides`,
 		canBeRunAutomatically: true,

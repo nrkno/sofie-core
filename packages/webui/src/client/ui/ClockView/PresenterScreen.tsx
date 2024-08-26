@@ -30,7 +30,7 @@ import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/Sho
 import { RundownLayoutsAPI } from '../../lib/rundownLayouts'
 import { ShelfDashboardLayout } from '../Shelf/ShelfDashboardLayout'
 import { parse as queryStringParse } from 'query-string'
-import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
+import { calculatePartInstanceExpectedDurationWithTransition } from '@sofie-automation/corelib/dist/playout/timings'
 import { getPlaylistTimingDiff } from '../../lib/rundownTiming'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { UIShowStyleBases, UIStudios } from '../Collections'
@@ -466,7 +466,9 @@ function PresenterScreenContentDefaultLayout({
 									showStyleBaseId={currentShowStyleBaseId}
 									rundownIds={rundownIds}
 									partAutoNext={currentPartInstance.instance.part.autoNext || false}
-									partExpectedDuration={calculatePartInstanceExpectedDurationWithPreroll(currentPartInstance.instance)}
+									partExpectedDuration={calculatePartInstanceExpectedDurationWithTransition(
+										currentPartInstance.instance
+									)}
 									partStartedPlayback={currentPartInstance.instance.timings?.plannedStartedPlayback}
 									playlistActivationId={playlist?.activationId}
 								/>

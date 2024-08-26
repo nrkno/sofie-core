@@ -4,6 +4,7 @@ import { IDefaultRendererProps } from './DefaultRenderer'
 import { getNoticeLevelForPieceStatus } from '../../../../lib/notifications/notifications'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { LoopingPieceIcon } from '../../../../lib/ui/icons/looping'
+import { useContentStatusForPieceInstance } from '../../../SegmentTimeline/withMediaObjectStatus'
 
 export function VTRenderer({
 	piece: pieceInstance,
@@ -12,7 +13,7 @@ export function VTRenderer({
 	studio,
 	typeClass,
 }: Readonly<IDefaultRendererProps>): JSX.Element {
-	const status = pieceInstance.contentStatus?.status
+	const contentStatus = useContentStatusForPieceInstance(pieceInstance.instance)
 
 	const vtContent = pieceInstance.instance.piece.content as VTContent
 
@@ -21,7 +22,7 @@ export function VTRenderer({
 	return (
 		<>
 			<VTFloatingInspector
-				status={status || PieceStatusCode.UNKNOWN}
+				status={contentStatus?.status || PieceStatusCode.UNKNOWN}
 				showMiniInspector={!!hovering}
 				timePosition={timePosition}
 				content={vtContent}
@@ -33,10 +34,10 @@ export function VTRenderer({
 				}}
 				typeClass={typeClass}
 				itemElement={null}
-				noticeMessages={pieceInstance.contentStatus?.messages || null}
-				noticeLevel={getNoticeLevelForPieceStatus(status)}
+				noticeMessages={contentStatus?.messages || null}
+				noticeLevel={getNoticeLevelForPieceStatus(contentStatus?.status)}
 				studio={studio}
-				previewUrl={pieceInstance.contentStatus?.previewUrl}
+				previewUrl={contentStatus?.previewUrl}
 			/>
 			{pieceInstance.instance.piece.name}
 			{pieceInstance.instance.piece.content?.loop && (

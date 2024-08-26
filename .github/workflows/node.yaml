@@ -219,7 +219,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push to GHCR
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./meteor/Dockerfile.circle
@@ -230,7 +230,7 @@ jobs:
           github-token: ${{ github.token }}
       - name: Build and push to DockerHub
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.dockerhub.outputs.dockerhub-publish == '1'
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./meteor/Dockerfile.circle
@@ -246,7 +246,7 @@ jobs:
           echo "image=$image" >> $GITHUB_OUTPUT
       - name: Trivy scanning
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
-        uses: aquasecurity/trivy-action@0.17.0
+        uses: aquasecurity/trivy-action@0.24.0
         with:
           image-ref: "${{ steps.trivy-image.outputs.image }}"
           format: "table"
@@ -369,7 +369,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push to GHCR
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./packages
           file: ./packages/${{ matrix.gateway-name }}/Dockerfile.circle
@@ -379,7 +379,7 @@ jobs:
           tags: "${{ steps.ghcr-tag.outputs.tags }}"
       - name: Build and push to DockerHub
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.dockerhub.outputs.dockerhub-publish == '1'
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./packages
           file: ./packages/${{ matrix.gateway-name }}/Dockerfile.circle
@@ -395,7 +395,7 @@ jobs:
           echo "image=$image" >> $GITHUB_OUTPUT
       - name: Trivy scanning
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
-        uses: aquasecurity/trivy-action@0.17.0
+        uses: aquasecurity/trivy-action@0.24.0
         with:
           image-ref: "${{ steps.trivy-image.outputs.image }}"
           format: "table"
@@ -476,7 +476,7 @@ jobs:
           - blueprints-integration
           - server-core-integration
           - shared-lib
-        node-version: [14.x, 16.x, 18.x, 20.x]
+        node-version: [14.x, 18.x, 20.x, 22.x]
         include:
           # include additional configs, to run certain packages only for a certain version of node
           - node-version: 14.x
@@ -486,11 +486,11 @@ jobs:
             package-name: job-worker
             send-coverage: true
           # manual openapi to avoid testing for 14.x
-          - node-version: 16.x
-            package-name: openapi
           - node-version: 18.x
             package-name: openapi
           - node-version: 20.x
+            package-name: openapi
+          - node-version: 22.x
             package-name: openapi
           # No tests for the gateways yet
           # - node-version: 18.x
@@ -499,11 +499,13 @@ jobs:
           #   package-name: mos-gateway
           - node-version: 18.x
             package-name: live-status-gateway
+            send-coverage: true
           - node-version: 18.x
             package-name: webui
           # manual meteor-lib as it only needs a couple of versions
           - node-version: 18.x
             package-name: meteor-lib
+            send-coverage: true
           - node-version: 14.x
             package-name: meteor-lib
 
@@ -536,7 +538,7 @@ jobs:
         env:
           CI: true
       - name: Send coverage
-        if: (matrix.node-version == '16.x' || matrix.send-coverage == true) && ((github.event_name == 'pull_request') && ((!startsWith(github.head_ref, 'release'))) || ((github.event_name == 'push') && (!startsWith(github.ref_name, 'release'))))
+        if: (matrix.node-version == '18.x' || matrix.send-coverage == true) && ((github.event_name == 'pull_request') && ((!startsWith(github.head_ref, 'release'))) || ((github.event_name == 'push') && (!startsWith(github.ref_name, 'release'))))
         uses: codecov/codecov-action@v4
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
@@ -638,7 +640,7 @@ jobs:
           CI: true
       - name: Publish
         if: github.ref == 'refs/heads/master' # always publish for just the master branch
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./packages/documentation/build

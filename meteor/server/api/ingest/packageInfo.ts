@@ -17,6 +17,7 @@ import { ExpectedPackageId, RundownId } from '@sofie-automation/corelib/dist/dat
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { QueueStudioJob } from '../../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 export async function onUpdatedPackageInfo(packageId: ExpectedPackageId, _doc: PackageInfoDB | null): Promise<void> {
 	logger.info(`PackageInfo updated "${packageId}"`)
@@ -69,7 +70,9 @@ function onUpdatedPackageInfoForRundownDebounce(pkg: ExpectedPackageFromRundown 
 			if (packageIds) {
 				pendingRundownPackageUpdates.delete(pkg.rundownId)
 				onUpdatedPackageInfoForRundown(pkg.rundownId, packageIds).catch((e) => {
-					logger.error(`Updating ExpectedPackages for Rundown "${pkg.rundownId}" failed: ${e}`)
+					logger.error(
+						`Updating ExpectedPackages for Rundown "${pkg.rundownId}" failed: ${stringifyError(e)}`
+					)
 				})
 			}
 		},
@@ -115,7 +118,9 @@ function onUpdatedPackageInfoForBucketItemDebounce(
 				externalId: pkg.pieceExternalId,
 			}).catch((err) => {
 				logger.error(
-					`Updating ExpectedPackages for Bucket "${pkg.bucketId}" Item "${pkg.pieceExternalId}" failed: ${err}`
+					`Updating ExpectedPackages for Bucket "${pkg.bucketId}" Item "${
+						pkg.pieceExternalId
+					}" failed: ${stringifyError(err)}`
 				)
 			})
 		},
@@ -132,7 +137,9 @@ function onUpdatedPackageInfoForStudioBaselineDebounce(pkg: ExpectedPackageDBFro
 					await job.complete
 				})
 				.catch((err) => {
-					logger.error(`Updating ExpectedPackages for StudioBaseline "${pkg.studioId}" failed: ${err}`)
+					logger.error(
+						`Updating ExpectedPackages for StudioBaseline "${pkg.studioId}" failed: ${stringifyError(err)}`
+					)
 				})
 		},
 		1000

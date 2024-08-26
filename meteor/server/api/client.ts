@@ -236,14 +236,21 @@ export namespace ServerClientAPI {
 					const result = await fcn(credentials, userActionMetadata)
 
 					const completeTime = Date.now()
-					await UserActionsLog.updateAsync(actionId, {
-						$set: {
-							success: true,
-							doneTime: completeTime,
-							executionTime: completeTime - startTime,
-							workerTime: userActionMetadata.workerDuration,
-						},
-					})
+					pInitialInsert
+						.then(async () =>
+							UserActionsLog.updateAsync(actionId, {
+								$set: {
+									success: true,
+									doneTime: completeTime,
+									executionTime: completeTime - startTime,
+									workerTime: userActionMetadata.workerDuration,
+								},
+							})
+						)
+						.catch((err) => {
+							// If this fails make sure it is handled
+							logger.warn(`Failed to update UserActionsLog: ${stringifyError(err)}`)
+						})
 
 					return ClientAPI.responseSuccess(result)
 				} catch (e) {

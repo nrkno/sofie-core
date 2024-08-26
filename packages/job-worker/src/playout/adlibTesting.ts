@@ -39,7 +39,7 @@ export async function handleActivateAdlibTesting(context: JobContext, data: Acti
 				externalId: '',
 				title: 'Adlib Testing',
 				expectedDuration: 0,
-				expectedDurationWithPreroll: 0, // Filled in later
+				expectedDurationWithTransition: 0, // Filled in later
 				untimed: true,
 			})
 

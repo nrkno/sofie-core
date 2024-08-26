@@ -1649,7 +1649,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 							_rank: 0,
 							externalId: `after_${currentPartInstance.partInstance._id}_externalId`,
 							title: 'New part',
-							expectedDurationWithPreroll: undefined,
+							expectedDurationWithTransition: undefined,
 						},
 						[],
 						undefined

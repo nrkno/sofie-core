@@ -1,5 +1,3 @@
-import type { PieceContentStatusObj } from '../api/pieceContentStatus'
-import type { ReadonlyDeep } from 'type-fest'
 import type { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import type { IOutputLayerExtended } from './OutputLayer'
 import type { ISourceLayerExtended } from './SourceLayer'
@@ -21,13 +19,9 @@ export interface PieceExtended {
 	maxLabelWidth?: number
 	/** If this piece has a "buddy" piece in the preceeding part, then it's not neccessary to display it's left label */
 	hasOriginInPreceedingPart?: boolean
-
-	contentStatus?: ReadonlyDeep<PieceContentStatusObj>
 }
 
 export interface PieceUi extends PieceExtended {
 	/** This item has already been linked to the parent item of the spanning item group */
 	linked?: boolean
-
-	contentStatus?: ReadonlyDeep<PieceContentStatusObj>
 }

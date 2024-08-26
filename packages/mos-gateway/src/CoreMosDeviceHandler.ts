@@ -427,7 +427,7 @@ export class CoreMosDeviceHandler {
 			}, 2000)
 		})
 	}
-	async dispose(): Promise<void> {
+	async dispose(subdevice: 'keepSubDevice' | 'removeSubDevice' = 'keepSubDevice'): Promise<void> {
 		this._observers.forEach((obs) => obs.stop())
 
 		await this.core.setStatus({
@@ -435,6 +435,7 @@ export class CoreMosDeviceHandler {
 			messages: ['Uninitialized'],
 		})
 
+		if (subdevice === 'removeSubDevice') await this.core.unInitialize()
 		await this.core.destroy()
 	}
 	killProcess(): void {

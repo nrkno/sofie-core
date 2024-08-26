@@ -129,7 +129,7 @@ describe('test peripheralDevice general API methods', () => {
 			segmentId: segmentID,
 			rundownId: rundownID,
 			title: 'Part 000',
-			expectedDurationWithPreroll: undefined,
+			expectedDurationWithTransition: undefined,
 		})
 		await Pieces.mutableCollection.insertAsync({
 			_id: protectString('piece0001'),
@@ -156,7 +156,7 @@ describe('test peripheralDevice general API methods', () => {
 			segmentId: segmentID,
 			rundownId: rundownID,
 			title: 'Part 001',
-			expectedDurationWithPreroll: undefined,
+			expectedDurationWithTransition: undefined,
 		})
 		await Segments.mutableCollection.insertAsync({
 			_id: protectString('segment1'),

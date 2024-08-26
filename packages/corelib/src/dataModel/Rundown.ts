@@ -12,10 +12,8 @@ import { RundownNote } from './Notes'
 import { ReadonlyDeep } from 'type-fest'
 
 export enum RundownOrphanedReason {
-	/** Rundown is deleted from the NRCS but we still need it */
+	/** Rundown is deleted from the source but we still need it */
 	DELETED = 'deleted',
-	/** Rundown was restored from a snapshot and does not correspond with a rundown in the NRCS */
-	FROM_SNAPSHOT = 'from-snapshot',
 	/** Rundown was unsynced by the user */
 	MANUAL = 'manual',
 }
@@ -29,7 +27,6 @@ export interface RundownImportVersions {
 	core: string
 }
 
-/** This is a very uncomplete mock-up of the Rundown object */
 export interface Rundown {
 	_id: RundownId
 	/** ID of the organization that owns the rundown */
@@ -53,9 +50,10 @@ export interface Rundown {
 	/** Air-status, comes from NCS, examples: "READY" | "NOT READY" */
 	airStatus?: string
 
-	// There should be something like a Owner user here somewhere?
-
-	/** Is the rundown in an unsynced (has been unpublished from ENPS) state? */
+	/**
+	 * Is the rundown in an unsynced state?
+	 * This can be because the rundown was deleted from the source, or because the user manually unsynced it
+	 */
 	orphaned?: RundownOrphanedReason
 
 	/** Last sent storyStatus to ingestDevice (MOS) */

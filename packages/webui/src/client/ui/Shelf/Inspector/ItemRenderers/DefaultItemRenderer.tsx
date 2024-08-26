@@ -8,10 +8,13 @@ import { AdLibPieceUi } from '../../../../lib/shelf'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { ReadonlyDeep } from 'type-fest'
+import { PieceContentStatusObj } from '@sofie-automation/meteor-lib/dist/api/pieceContentStatus'
 
 export default function DefaultItemRenderer(
 	props: Readonly<{
 		piece: PieceUi | IAdLibListItem | BucketAdLibUi
+		contentStatus: ReadonlyDeep<PieceContentStatusObj> | undefined
 		showStyleBase: UIShowStyleBase
 		studio: UIStudio
 	}>
@@ -19,7 +22,7 @@ export default function DefaultItemRenderer(
 	if (RundownUtils.isAdLibPiece(props.piece)) {
 		const piece = props.piece as IAdLibListItem
 
-		const packageName = piece.contentStatus?.packageName ?? null
+		const packageName = props.contentStatus?.packageName ?? null
 
 		return (
 			<>
@@ -48,7 +51,7 @@ export default function DefaultItemRenderer(
 	} else {
 		const piece = props.piece.instance.piece as Piece
 
-		const packageName = props.piece.contentStatus?.packageName ?? null
+		const packageName = props.contentStatus?.packageName ?? null
 
 		return (
 			<>

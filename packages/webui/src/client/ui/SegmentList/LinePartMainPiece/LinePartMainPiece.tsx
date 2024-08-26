@@ -13,8 +13,7 @@ import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positio
 import { getSplitItems } from '../../SegmentContainer/getSplitItems'
 import { PieceElement } from '../../SegmentContainer/PieceElement'
 import { getPieceSteps, PieceMultistepChevron } from '../../SegmentContainer/PieceMultistepChevron'
-import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
-import { withMediaObjectStatus } from '../../SegmentTimeline/withMediaObjectStatus'
+import { useContentStatusForPieceInstance } from '../../SegmentTimeline/withMediaObjectStatus'
 import { PieceHoverInspector } from '../PieceHoverInspector'
 
 interface IProps {
@@ -52,14 +51,16 @@ function widthInBase(pieceMaxDuration: number, timelineBase: number): number {
 }
 
 // TODO: Create useMediaObjectStatus that would set up new subscriptions
-export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function LinePartMainPiece({
+export function LinePartMainPiece({
 	partId,
 	piece,
 	partDuration,
 	timelineBase,
 	capToPartDuration,
 	studio,
-}) {
+}: IProps): JSX.Element {
+	const contentStatus = useContentStatusForPieceInstance(piece.instance)
+
 	const [hover, setHover] = useState(false)
 	const [origin, setOrigin] = useState<OffsetPosition>({ left: 0, top: 0 })
 	const [width, setWidth] = useState(0)
@@ -75,15 +76,13 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 		}
 	}, [pieceMaxDuration, timelineBase])
 
-	const pieceUi = piece as PieceUi
-
 	const seek = (piece.instance.piece.content as any).seek ?? 0
 
 	const anomalies = useMemo(
 		() => (
 			<>
-				{pieceUi.contentStatus?.scenes &&
-					pieceUi.contentStatus?.scenes.map(
+				{contentStatus?.scenes &&
+					contentStatus?.scenes.map(
 						(i) =>
 							i < pieceMaxDuration &&
 							i - seek >= 0 && (
@@ -94,8 +93,8 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 								></span>
 							)
 					)}
-				{pieceUi.contentStatus?.freezes &&
-					pieceUi.contentStatus?.freezes.map(
+				{contentStatus?.freezes &&
+					contentStatus?.freezes.map(
 						(i) =>
 							i.start < pieceMaxDuration &&
 							i.start - seek >= 0 && (
@@ -109,8 +108,8 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 								></span>
 							)
 					)}
-				{pieceUi.contentStatus?.blacks &&
-					pieceUi.contentStatus?.blacks.map(
+				{contentStatus?.blacks &&
+					contentStatus?.blacks.map(
 						(i) =>
 							i.start < pieceMaxDuration &&
 							i.start - seek >= 0 && (
@@ -126,7 +125,7 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 					)}
 			</>
 		),
-		[pieceUi.contentStatus?.blacks, pieceUi.contentStatus?.freezes, pieceUi.contentStatus?.scenes]
+		[contentStatus?.blacks, contentStatus?.freezes, contentStatus?.scenes]
 	)
 
 	const onPointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -161,7 +160,7 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 		setMousePosition(e.pageX - origin.left)
 	}
 
-	const noticeLevel = getNoticeLevelForPieceStatus(piece.contentStatus?.status)
+	const noticeLevel = getNoticeLevelForPieceStatus(contentStatus?.status)
 
 	const hasStepChevron = getPieceSteps(piece)
 
@@ -205,6 +204,7 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 					hoverScrubTimePosition={mouseTimePosition * (piece.instance.piece.content.sourceDuration || 0)}
 					hovering={hover}
 					pieceInstance={piece}
+					contentStatus={contentStatus}
 					layer={piece.sourceLayer}
 					originPosition={origin}
 					mousePosition={mousePosition}
@@ -213,7 +213,7 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 			)}
 		</PieceElement>
 	)
-})
+}
 
 const ColoredMark = React.memo(function ColoredMark({ color }: { color: string | undefined }) {
 	if (!color) return null

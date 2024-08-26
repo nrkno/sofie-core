@@ -763,7 +763,6 @@ export function AdLibPanel({
 				showStyleBase={showStyleBase}
 				searchFilter={searchFilter}
 				filter={filter as RundownLayoutFilter}
-				playlist={playlist}
 				studio={studio}
 				noSegments={!withSegments}
 			/>

@@ -13,6 +13,8 @@ require('../../userActions') // include in order to create the Meteor methods ne
 
 describe('User Actions - General', () => {
 	beforeEach(async () => {
+		await UserActionsLog.removeAsync({})
+
 		await setupDefaultStudioEnvironment()
 	})
 
