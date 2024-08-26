@@ -16,12 +16,11 @@ import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataMode
 import { PackageContainerStatusDB } from '@sofie-automation/corelib/dist/dataModel/PackageContainerStatus'
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
-import { Meteor } from 'meteor/meteor'
 import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
 import { ICoreSystem, SYSTEM_ID } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
 import { Evaluation } from '@sofie-automation/meteor-lib/dist/collections/Evaluations'
 import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import { createSyncMongoCollection, createSyncReadOnlyMongoCollection, wrapMongoCollection } from './lib'
+import { createSyncMongoCollection, createSyncReadOnlyMongoCollection } from './lib'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { RundownLayoutBase } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
@@ -31,7 +30,6 @@ import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { TranslationsBundle } from '@sofie-automation/meteor-lib/dist/collections/TranslationsBundles'
 import { DBTriggeredActions } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
-import { DBUser } from '@sofie-automation/meteor-lib/dist/collections/Users'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
@@ -127,8 +125,8 @@ export const TriggeredActions = createSyncMongoCollection<DBTriggeredActions>(Co
 
 export const UserActionsLog = createSyncReadOnlyMongoCollection<UserActionsLogItem>(CollectionName.UserActionsLog)
 
-// This is a somewhat special collection, as it draws from the Meteor.users collection from the Accounts package
-export const Users = wrapMongoCollection<DBUser>(Meteor.users as any, CollectionName.Users)
+// // This is a somewhat special collection, as it draws from the Meteor.users collection from the Accounts package
+// export const Users = wrapMongoCollection<DBUser>(Meteor.users as any, CollectionName.Users)
 
 export function getCoreSystem(): ICoreSystem | undefined {
 	return CoreSystem.findOne(SYSTEM_ID)

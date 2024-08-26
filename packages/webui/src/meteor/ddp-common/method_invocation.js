@@ -18,16 +18,7 @@ import { DDPCommon } from './namespace'
       // purposes). not currently true except in a client such as a browser,
       // since there's usually no point in running stubs unless you have a
       // zero-latency connection to the user.
-  
-      /**
-       * @summary Access inside a method invocation.  Boolean value, true if this invocation is a stub.
-       * @locus Anywhere
-       * @name  isSimulation
-       * @memberOf DDPCommon.MethodInvocation
-       * @instance
-       * @type {Boolean}
-       */
-      this.isSimulation = options.isSimulation;
+
   
       // call this function to allow other method invocations (from the
       // same client) to continue running without waiting for this one to
@@ -60,12 +51,6 @@ import { DDPCommon } from './namespace'
        * @instance
        */
       this.connection = options.connection;
-  
-      // The seed for randomStream value generation
-      this.randomSeed = options.randomSeed;
-  
-      // This is set by RandomStream.get; and holds the random stream state
-      this.randomStream = null;
     }
   
     /**

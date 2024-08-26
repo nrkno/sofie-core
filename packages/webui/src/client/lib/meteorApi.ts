@@ -15,17 +15,15 @@ export function meteorSubscribe<K extends keyof AllPubSubTypes>(
 	name: K,
 	...args: Parameters<AllPubSubTypes[K]>
 ): Meteor.SubscriptionHandle {
-	if (Meteor.isClient) {
-		const callbacks = {
-			onError: (...errs: any[]) => {
-				logger.error(
-					`meteorSubscribe "${name}": ${JSON.stringify(args)}: ${errs.map((err) => stringifyError(err))}`
-				)
-			},
-		}
+	const callbacks = {
+		onError: (...errs: any[]) => {
+			logger.error(
+				`meteorSubscribe "${name}": ${JSON.stringify(args)}: ${errs.map((err) => stringifyError(err))}`
+			)
+		},
+	}
 
-		return Meteor.subscribe(name, ...args, callbacks)
-	} else throw new Meteor.Error(500, 'meteorSubscribe is only available client-side')
+	return Meteor.subscribe(name, ...args, callbacks)
 }
 
 export const MeteorCall = MakeMeteorCall(MeteorApply)

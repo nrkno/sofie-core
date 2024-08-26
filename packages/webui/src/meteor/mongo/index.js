@@ -4,13 +4,11 @@
 import { normalizeProjection } from "./mongo_utils";
 import { Meteor } from '../meteor'
 import { LocalCollection } from "../minimongo";
-import { Random } from '../random'
 import { MongoID } from '../mongo-id'
 import EJSON from 'ejson'
-import { check, Match } from '../check'
 import { DDP } from '../ddp'
-import { AllowDeny } from '../allow-deny'
 import { LocalCollectionDriver } from './local_collection_driver.js'
+import { getRandomString } from '@sofie-automation/corelib/dist/lib'
 
 /**
  * @summary Namespace for MongoDB-related items
@@ -28,14 +26,6 @@ LocalCollection.Mongo = Mongo;
  * @param {String} name The name of the collection.  If null, creates an unmanaged (unsynchronized) local collection.
  * @param {Object} [options]
  * @param {Object} options.connection The server connection that will manage this collection. Uses the default connection if not specified.  Pass the return value of calling [`DDP.connect`](#ddp_connect) to specify a different server. Pass `null` to specify no connection. Unmanaged (`name` is null) collections cannot specify a connection.
- * @param {String} options.idGeneration The method of generating the `_id` fields of new documents in this collection.  Possible values:
-
- - **`'STRING'`**: random strings
- - **`'MONGO'`**:  random [`Mongo.ObjectID`](#mongo_object_id) values
-
-The default id generation technique is `'STRING'`.
- * @param {Function} options.transform An optional transformation function. Documents will be passed through this function before being returned from `fetch` or `findOne`, and before being passed to callbacks of `observe`, `map`, `forEach`, `allow`, and `deny`. Transforms are *not* applied for the callbacks of `observeChanges` or to cursors returned from publish functions.
- * @param {Boolean} options.defineMutationMethods Set to `false` to skip setting up the mutation methods that enable insert/update/remove from client code. Default `true`.
  */
 Mongo.Collection = function Collection(name, options) {
   if (!name && name !== null) {
@@ -67,57 +57,23 @@ Mongo.Collection = function Collection(name, options) {
 
   options = {
     connection: undefined,
-    idGeneration: 'STRING',
-    transform: null,
     _driver: undefined,
     _preventAutopublish: false,
     ...options,
   };
 
-  switch (options.idGeneration) {
-    case 'MONGO':
-      this._makeNewID = function() {
-        var src = name
-          ? DDP.randomStream('/collection/' + name)
-          : Random.insecure;
-        return new Mongo.ObjectID(src.hexString(24));
-      };
-      break;
-    case 'STRING':
-    default:
-      this._makeNewID = function() {
-        var src = name
-          ? DDP.randomStream('/collection/' + name)
-          : Random.insecure;
-        return src.id();
-      };
-      break;
-  }
-
-  this._transform = LocalCollection.wrapTransform(options.transform);
+  this._makeNewID = function() {
+    return getRandomString();
+  };
 
   if (!name || options.connection === null)
     // note: nameless collections never have a connection
     this._connection = null;
   else if (options.connection) this._connection = options.connection;
-  else if (Meteor.isClient) this._connection = Meteor.connection;
-  else this._connection = Meteor.server;
+  else this._connection = Meteor.connection;
 
   if (!options._driver) {
-    // XXX This check assumes that webapp is loaded so that Meteor.server !==
-    // null. We should fully support the case of "want to use a Mongo-backed
-    // collection from Node code without webapp", but we don't yet.
-    // #MeteorServerNull
-    // if (
-    //   name &&
-    //   this._connection === Meteor.server &&
-    //   typeof MongoInternals !== 'undefined' &&
-    //   MongoInternals.defaultRemoteCollectionDriver
-    // ) {
-    //   options._driver = MongoInternals.defaultRemoteCollectionDriver();
-    // } else {
-      options._driver = LocalCollectionDriver;
-    // }
+    options._driver = LocalCollectionDriver;
   }
 
   this._collection = options._driver.open(name, this._connection);
@@ -125,36 +81,6 @@ Mongo.Collection = function Collection(name, options) {
   this._driver = options._driver;
 
   this._maybeSetUpReplication(name, options);
-
-  // XXX don't define these until allow or deny is actually used for this
-  // collection. Could be hard if the security rules are only defined on the
-  // server.
-  if (options.defineMutationMethods !== false) {
-    try {
-      this._defineMutationMethods({
-        useExisting: options._suppressSameNameError === true,
-      });
-    } catch (error) {
-      // Throw a more understandable error on the server for same collection name
-      if (
-        error.message === `A method named '/${name}/insert' is already defined`
-      )
-        throw new Error(`There is already a collection named "${name}"`);
-      throw error;
-    }
-  }
-
-  // // autopublish
-  // if (
-  //   Package.autopublish &&
-  //   !options._preventAutopublish &&
-  //   this._connection &&
-  //   this._connection.publish
-  // ) {
-  //   this._connection.publish(null, () => this.find(), {
-  //     is_auto: true,
-  //   });
-  // }
 };
 
 Object.assign(Mongo.Collection.prototype, {
@@ -205,19 +131,17 @@ Object.assign(Mongo.Collection.prototype, {
 
         //For more information, refer to discussion "Initial support for publication strategies in livedata server":
         //https://github.com/meteor/meteor/pull/11151
-        if (Meteor.isClient) {
-          if (msg.msg === 'added' && doc) {
-            msg.msg = 'changed';
-          } else if (msg.msg === 'removed' && !doc) {
-            return;
-          } else if (msg.msg === 'changed' && !doc) {
-            msg.msg = 'added';
-            let _ref = msg.fields;
-            for (let field in _ref) {
-              let value = _ref[field];
-              if (value === void 0) {
-                delete msg.fields[field];
-              }
+        if (msg.msg === 'added' && doc) {
+          msg.msg = 'changed';
+        } else if (msg.msg === 'removed' && !doc) {
+          return;
+        } else if (msg.msg === 'changed' && !doc) {
+          msg.msg = 'added';
+          let _ref = msg.fields;
+          for (let field in _ref) {
+            let value = _ref[field];
+            if (value === void 0) {
+              delete msg.fields[field];
             }
           }
         }
@@ -337,25 +261,24 @@ Object.assign(Mongo.Collection.prototype, {
 
     var self = this;
     if (args.length < 2) {
-      return { transform: self._transform };
+      return { };
     } else {
-      check(
-        newOptions,
-        Match.Optional(
-          Match.ObjectIncluding({
-            projection: Match.Optional(Match.OneOf(Object, undefined)),
-            sort: Match.Optional(
-              Match.OneOf(Object, Array, Function, undefined)
-            ),
-            limit: Match.Optional(Match.OneOf(Number, undefined)),
-            skip: Match.Optional(Match.OneOf(Number, undefined)),
-          })
-        )
-      );
+      // check(
+      //   newOptions,
+      //   Match.Optional(
+      //     Match.ObjectIncluding({
+      //       projection: Match.Optional(Match.OneOf(Object, undefined)),
+      //       sort: Match.Optional(
+      //         Match.OneOf(Object, Array, Function, undefined)
+      //       ),
+      //       limit: Match.Optional(Match.OneOf(Number, undefined)),
+      //       skip: Match.Optional(Match.OneOf(Number, undefined)),
+      //     })
+      //   )
+      // );
 
 
       return {
-        transform: self._transform,
         ...newOptions,
       };
     }
@@ -374,7 +297,6 @@ Object.assign(Mongo.Collection.prototype, {
    * @param {Number} options.limit Maximum number of results to return
    * @param {MongoFieldSpecifier} options.fields Dictionary of fields to return or exclude.
    * @param {Boolean} options.reactive (Client only) Default `true`; pass `false` to disable reactivity
-   * @param {Function} options.transform Overrides `transform` on the  [`Collection`](#collections) for this cursor.  Pass `null` to disable transformation.
    * @param {Boolean} options.disableOplog (Server only) Pass true to disable oplog-tailing on this query. This affects the way server processes calls to `observe` on this query. Disabling the oplog can be useful when working with data that updates in large batches.
    * @param {Number} options.pollingIntervalMs (Server only) When oplog is disabled (through the use of `disableOplog` or when otherwise not available), the frequency (in milliseconds) of how often to poll this query when observing on the server. Defaults to 10000ms (10 seconds).
    * @param {Number} options.pollingThrottleMs (Server only) When oplog is disabled (through the use of `disableOplog` or when otherwise not available), the minimum time (in milliseconds) to allow between re-polling when observing on the server. Increasing this will save CPU and mongo load at the expense of slower updates to users. Decreasing this is not recommended. Defaults to 50ms.
@@ -405,7 +327,6 @@ Object.assign(Mongo.Collection.prototype, {
    * @param {Number} options.skip Number of results to skip at the beginning
    * @param {MongoFieldSpecifier} options.fields Dictionary of fields to return or exclude.
    * @param {Boolean} options.reactive (Client only) Default true; pass false to disable reactivity
-   * @param {Function} options.transform Overrides `transform` on the [`Collection`](#collections) for this cursor.  Pass `null` to disable transformation.
    * @param {String} options.readPreference (Server only) Specifies a custom MongoDB [`readPreference`](https://docs.mongodb.com/manual/core/read-preference) for fetching the document. Possible values are `primary`, `primaryPreferred`, `secondary`, `secondaryPreferred` and `nearest`.
    * @returns {Object}
    */
@@ -418,36 +339,6 @@ Object.assign(Mongo.Collection.prototype, {
 });
 
 Object.assign(Mongo.Collection, {
-  _publishCursor(cursor, sub, collection) {
-    var observeHandle = cursor.observeChanges(
-      {
-        added: function(id, fields) {
-          sub.added(collection, id, fields);
-        },
-        changed: function(id, fields) {
-          sub.changed(collection, id, fields);
-        },
-        removed: function(id) {
-          sub.removed(collection, id);
-        },
-      },
-      // Publications don't mutate the documents
-      // This is tested by the `livedata - publish callbacks clone` test
-      { nonMutatingCallbacks: true }
-    );
-
-    // We don't call sub.ready() here: it gets called in livedata_server, after
-    // possibly calling _publishCursor on multiple returned cursors.
-
-    // register stop callback (expects lambda w/ no args).
-    sub.onStop(function() {
-      observeHandle.stop();
-    });
-
-    // return the observeHandle in case it needs to be stopped early
-    return observeHandle;
-  },
-
   // protect against dangerous selectors.  falsey and {_id: falsey} are both
   // likely programmer error, and not what you want, particularly for destructive
   // operations. If a falsey _id is sent in, a new string _id will be
@@ -465,7 +356,7 @@ Object.assign(Mongo.Collection, {
 
     if (!selector || ('_id' in selector && !selector._id)) {
       // can't match anything
-      return { _id: fallbackId || Random.id() };
+      return { _id: fallbackId || getRandomString() };
     }
 
     return selector;
@@ -527,7 +418,7 @@ Object.assign(Mongo.Collection.prototype, {
     if ('_id' in doc) {
       if (
         !doc._id ||
-        !(typeof doc._id === 'string' || doc._id instanceof Mongo.ObjectID)
+        !(typeof doc._id === 'string')
       ) {
         throw new Error(
           'Meteor requires document _id fields to be non-empty strings or ObjectIDs'
@@ -619,8 +510,7 @@ Object.assign(Mongo.Collection.prototype, {
       if (options.insertedId) {
         if (
           !(
-            typeof options.insertedId === 'string' ||
-            options.insertedId instanceof Mongo.ObjectID
+            typeof options.insertedId === 'string'
           )
         )
           throw new Error('insertedId must be string or ObjectID');
@@ -703,7 +593,7 @@ Object.assign(Mongo.Collection.prototype, {
   // database on another server
   _isRemoteCollection() {
     // XXX see #MeteorServerNull
-    return this._connection && this._connection !== Meteor.server;
+    return !!this._connection;
   },
 
   /**
@@ -756,14 +646,6 @@ function wrapCallback(callback, convertResult) {
 }
 
 /**
- * @summary Create a Mongo-style `ObjectID`.  If you don't specify a `hexString`, the `ObjectID` will generated randomly (not using MongoDB's ID construction rules).
- * @locus Anywhere
- * @class
- * @param {String} [hexString] Optional.  The 24-character hexadecimal contents of the ObjectID to create
- */
-Mongo.ObjectID = MongoID.ObjectID;
-
-/**
  * @summary To create a cursor, use find. To access the documents in a cursor, use forEach, map, or fetch.
  * @class
  * @instanceName cursor
@@ -775,18 +657,11 @@ Mongo.Cursor = LocalCollection.Cursor;
  */
 Mongo.Collection.Cursor = Mongo.Cursor;
 
-/**
- * @deprecated in 0.9.1
- */
-Mongo.Collection.ObjectID = Mongo.ObjectID;
 
 /**
  * @deprecated in 0.9.1
  */
 Meteor.Collection = Mongo.Collection;
-
-// Allow deny stuff is now in the allow-deny package
-Object.assign(Meteor.Collection.prototype, AllowDeny.CollectionPrototype);
 
 function popCallbackFromArgs(args) {
   // Pull off any callback (or perhaps a 'callback' variable that was passed
@@ -801,3 +676,42 @@ function popCallbackFromArgs(args) {
 }
 
 export { Mongo }
+
+
+Mongo.Collection.prototype._callMutatorMethod = function _callMutatorMethod(name, args, callback) {
+  if (!callback) {
+    // Client can't block, so it can't report errors by exception,
+    // only by callback. If they forget the callback, give them a
+    // default one that logs the error, so they aren't totally
+    // baffled if their writes don't work because their database is
+    // down.
+    // Don't give a default callback in simulation, because inside stubs we
+    // want to return the results from the local collection immediately and
+    // not force a callback.
+    callback = function (err) {
+      if (err)
+        Meteor._debug(name + " failed", err);
+    };
+  }
+
+  // For two out of three mutator methods, the first argument is a selector
+  const firstArgIsSelector = name === "update" || name === "remove";
+  if (firstArgIsSelector) {
+    // If we're about to actually send an RPC, we should throw an error if
+    // this is a non-ID selector, because the mutation methods only allow
+    // single-ID selectors. (If we don't throw here, we'll see flicker.)
+    throwIfSelectorIsNotId(args[0], name);
+  }
+
+  const mutatorMethodName = '/' + this._name + '/'+ name;
+  return this._connection.apply(
+    mutatorMethodName, args, { }, callback);
+}
+
+function throwIfSelectorIsNotId(selector, methodName) {
+  if (!LocalCollection._selectorIsIdPerhapsAsObject(selector)) {
+    throw new Meteor.Error(
+      403, "Not permitted. Untrusted code may only " + methodName +
+        " documents by ID.");
+  }
+};

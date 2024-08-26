@@ -1,12 +1,8 @@
-import { MeteorMock } from '../../../__mocks__/meteor'
 import { memoizedIsolatedAutorun } from '../memoizedIsolatedAutorun'
 import { Tracker } from 'meteor/tracker'
 
 describe('memoizedIsolatedAutorun', () => {
 	describe('Meteor.isClient', () => {
-		beforeAll(() => {
-			MeteorMock.mockSetClientEnvironment()
-		})
 		test('it returns the result of the autorun function', () => {
 			const dep = new Tracker.Dependency()
 			const result0 = memoizedIsolatedAutorun(() => {

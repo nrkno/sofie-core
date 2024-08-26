@@ -83,32 +83,14 @@ const $ = {
 	},
 }
 
-let mockIsClient = false
-const publications: Record<string, Function> = {}
-export class MeteorMock {
-	static get isClient(): boolean {
-		return mockIsClient
-	}
-	static get isServer(): boolean {
-		return !MeteorMock.isClient
-	}
-}
+export class MeteorMock {}
 
 export namespace MeteorMock {
-	export const isTest = true
-
-	export const isCordova = false
-
-	export const isProduction = false
-	export const release = ''
-
 	export const settings: any = {}
 
 	export const mockMethods: { [name: string]: Function } = {}
 	export let mockUser: Meteor.User | undefined = undefined
 	export const mockStartupFunctions: Function[] = []
-
-	export const absolutePath = process.cwd()
 
 	export function status(): DDP.DDPStatus {
 		return {
@@ -210,8 +192,6 @@ export namespace MeteorMock {
 		_options?: {
 			wait?: boolean
 			onResultReceived?: Function
-			returnStubValue?: boolean
-			throwStubExceptions?: boolean
 		},
 		asyncCallback?: Function
 	): any {
@@ -219,9 +199,6 @@ export namespace MeteorMock {
 		// This is a bad mock, since it doesn't support any of the options..
 		// but it'll do for now:
 		call(methodName, ...args, asyncCallback)
-	}
-	export function absoluteUrl(path?: string): string {
-		return path + '' // todo
 	}
 	export function setTimeout(fcn: () => void | Promise<void>, time: number): number {
 		return $.setTimeout(fcn, time) as number
@@ -243,43 +220,8 @@ export namespace MeteorMock {
 		mockStartupFunctions.push(fcn)
 	}
 
-	export function wrapAsync(_fcn: Function, _context?: Object): any {
-		throw new Error(500, 'Not implemented')
-		// return (...args: any[]) => {
-		// 	const callback = (err: any, value: any) => {
-		// 		if (err) {
-		// 			fiber.throwInto(err)
-		// 		} else {
-		// 			fiber.run(value)
-		// 		}
-		// 	}
-		// 	fcn.apply(context, [...args, callback])
-
-		// 	const returnValue = Fiber.yield()
-		// 	return returnValue
-		// }
-	}
-
-	export function publish(publicationName: string, handler: Function): any {
-		publications[publicationName] = handler
-	}
-
 	export function bindEnvironment(_fcn: Function): any {
 		throw new Error(500, 'bindEnvironment not supported on client')
-		// {
-		// 	// the outer bindEnvironment must be called from a fiber
-		// 	const fiber = Fiber.current
-		// 	if (!fiber) throw new Error(500, `It appears that bindEnvironment isn't running in a fiber`)
-		// }
-
-		// return (...args: any[]) => {
-		// 	const fiber = Fiber.current
-		// 	if (fiber) {
-		// 		return fcn(...args)
-		// 	} else {
-		// 		return runInFiber(() => fcn(...args)).catch(console.error)
-		// 	}
-		// }
 	}
 	export let users: MongoMock.Collection<any> | undefined = undefined
 
@@ -299,15 +241,6 @@ export namespace MeteorMock {
 	}
 	export function mockSetUsersCollection(usersCollection: MongoMock.Collection<any>): void {
 		users = usersCollection
-	}
-	export function mockSetClientEnvironment(): void {
-		mockIsClient = true
-	}
-	export function mockSetServerEnvironment(): void {
-		mockIsClient = false
-	}
-	export function mockGetPublications(): Record<string, Function> {
-		return publications
 	}
 
 	/** Wait for time to pass ( unaffected by jest.useFakeTimers() ) */

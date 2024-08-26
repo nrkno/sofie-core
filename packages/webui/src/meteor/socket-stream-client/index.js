@@ -1,15 +1,9 @@
 import {
-    toSockjsUrl,
     toWebsocketUrl,
   } from "./urls.js";
   
   import { StreamClientCommon } from "./common.js";
-  
-  // Statically importing SockJS here will prevent native WebSocket usage
-  // below (in favor of SockJS), but will ensure maximum compatibility for
-  // clients stuck in unusual networking environments.
-  import { SockJS } from "./sockjs-0.3.4.js";
-  
+    
   export class ClientStream extends StreamClientCommon {
     // @param url {String} URL to Meteor app
     //   "http://subdomain.meteor.com/" or "/" or
@@ -127,49 +121,10 @@ import {
       );
     }
   
-    _sockjsProtocolsWhitelist() {
-      // only allow polling protocols. no streaming.  streaming
-      // makes safari spin.
-      var protocolsWhitelist = [
-        'xdr-polling',
-        'xhr-polling',
-        'iframe-xhr-polling',
-        'jsonp-polling'
-      ];
-  
-      // iOS 4 and 5 and below crash when using websockets over certain
-      // proxies. this seems to be resolved with iOS 6. eg
-      // https://github.com/LearnBoost/socket.io/issues/193#issuecomment-7308865.
-      //
-      // iOS <4 doesn't support websockets at all so sockjs will just
-      // immediately fall back to http
-      var noWebsockets =
-        navigator &&
-        /iPhone|iPad|iPod/.test(navigator.userAgent) &&
-        /OS 4_|OS 5_/.test(navigator.userAgent);
-  
-      if (!noWebsockets)
-        protocolsWhitelist = ['websocket'].concat(protocolsWhitelist);
-  
-      return protocolsWhitelist;
-    }
-  
     _launchConnection() {
       this._cleanup(); // cleanup the old socket, if there was one.
   
-      var options = {
-        protocols_whitelist: this._sockjsProtocolsWhitelist(),
-        ...this.options._sockjsOptions
-      };
-  
-      const hasSockJS = typeof SockJS === "function";
-      const disableSockJS = typeof window.__meteor_runtime_config__ !== 'undefined' ? window.__meteor_runtime_config__.DISABLE_SOCKJS : false;  
-      this.socket = hasSockJS && !disableSockJS
-        // Convert raw URL to SockJS URL each time we open a connection, so
-        // that we can connect to random hostnames and get around browser
-        // per-host connection limits.
-        ? new SockJS(toSockjsUrl(this.rawUrl), undefined, options)
-        : new WebSocket(toWebsocketUrl(this.rawUrl));
+      this.socket = new WebSocket(toWebsocketUrl(this.rawUrl));
   
       this.socket.onopen = data => {
         this.lastError = null;

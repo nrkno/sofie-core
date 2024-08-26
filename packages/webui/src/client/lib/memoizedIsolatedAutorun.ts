@@ -33,10 +33,6 @@ export function memoizedIsolatedAutorun<T extends (...args: any) => any>(
 	functionName: string,
 	...params: Parameters<T>
 ): ReturnType<T> {
-	if (Meteor.isServer) {
-		return fnc(...(params as any))
-	}
-
 	function hashFncAndParams(fName: string, p: any): string {
 		return fName + '_' + JSON.stringify(p)
 	}

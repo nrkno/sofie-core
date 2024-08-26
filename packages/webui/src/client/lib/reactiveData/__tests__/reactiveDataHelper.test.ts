@@ -1,12 +1,8 @@
 import { Tracker } from 'meteor/tracker'
 import { slowDownReactivity } from '../reactiveDataHelper'
-import { MeteorMock } from '../../../../__mocks__/meteor'
 import { sleep } from '@sofie-automation/shared-lib/dist/lib/lib'
 
 describe('client/lib/reactiveData/reactiveDataHelper', () => {
-	beforeAll(() => {
-		MeteorMock.mockSetClientEnvironment()
-	})
 	describe('slowDownReactivity', () => {
 		test('it invalidates the parent computation immediately, when delay === 0', () => {
 			let runCount = 0

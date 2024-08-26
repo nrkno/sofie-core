@@ -142,7 +142,6 @@ export interface SendOptions {
 	/** Log a warning if the method was completed later than this time. Defaults to 1000. [milliseconds] */
 	warnCompleteTime?: number
 }
-if (Meteor.isClient) {
-	// @ts-expect-error hack for dev
-	window.MeteorApply = MeteorApply
-}
+
+// @ts-expect-error hack for dev
+window.MeteorApply = MeteorApply

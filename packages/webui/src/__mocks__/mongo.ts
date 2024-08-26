@@ -3,7 +3,6 @@ import * as _ from 'underscore'
 import { literal, ProtectedString, unprotectString, protectString, getRandomString } from '../client/lib/tempLib'
 import { RandomMock } from './random'
 import { MeteorMock } from './meteor'
-import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
 import type { AnyBulkWriteOperation } from 'mongodb'
 import {
@@ -103,7 +102,7 @@ export namespace MongoMock {
 					return docs.length
 				},
 				observe(clbs: ObserveCallbacks<T>): Meteor.LiveQueryHandle {
-					const id = Random.id(5)
+					const id = getRandomString(5)
 					observers.push(
 						literal<ObserverEntry<T>>({
 							id: id,
@@ -119,7 +118,7 @@ export namespace MongoMock {
 				},
 				observeChanges(clbs: ObserveChangesCallbacks<T>): Meteor.LiveQueryHandle {
 					// todo - finish implementing uses of callbacks
-					const id = Random.id(5)
+					const id = getRandomString(5)
 					observers.push(
 						literal<ObserverEntry<T>>({
 							id: id,

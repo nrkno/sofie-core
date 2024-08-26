@@ -1,4 +1,4 @@
-import { Retry } from '../retry';
+import { Retry } from './lib/retry';
 import { Tracker } from '../tracker';
 
 const forcedReconnectError = new Error("forced reconnect");

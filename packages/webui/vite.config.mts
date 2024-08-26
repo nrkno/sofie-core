@@ -59,10 +59,6 @@ export default defineConfig({
 			'/api': 'http://localhost:3000',
 			'/site.webmanifest': 'http://localhost:3000',
 			'/meteor-runtime-config.js': 'http://localhost:3000',
-			'/sockjs': {
-				target: 'http://localhost:3000',
-				ws: true,
-			},
 		},
 	},
 
