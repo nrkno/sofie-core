@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { SegmentUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { unprotectString } from '../../../lib/lib'
+import { unprotectString } from '../../lib/tempLib'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DashboardPieceButton } from '../Shelf/DashboardPieceButton'
@@ -12,11 +12,11 @@ import {
 	DashboardLayoutFilter,
 	PieceDisplayStyle,
 	RundownLayoutFilterBase,
-} from '../../../lib/collections/RundownLayouts'
-import { NoticeLevel, Notification, NotificationCenter } from '../../../lib/notifications/notifications'
-import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
-import { doUserAction, UserAction } from '../../../lib/clientUserAction'
-import { MeteorCall } from '../../../lib/api/methods'
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
+import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
+import { memoizedIsolatedAutorun } from '../../lib/memoizedIsolatedAutorun'
+import { doUserAction, UserAction } from '../../lib/clientUserAction'
+import { MeteorCall } from '../../lib/meteorApi'
 import {
 	AdLibPieceUi,
 	AdlibSegmentUi,
@@ -27,8 +27,8 @@ import {
 } from '../../lib/shelf'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { ContextType, setShelfContextMenuContext } from '../Shelf/ShelfContextMenu'
-import { UIShowStyleBase } from '../../../lib/api/showStyles'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { PartInstanceId, PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IRundownViewShelfProps {

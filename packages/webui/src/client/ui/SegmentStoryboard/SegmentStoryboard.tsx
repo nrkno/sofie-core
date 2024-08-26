@@ -11,7 +11,7 @@ import { contextMenuHoldToDisplayTime, useCombinedRefs } from '../../lib/lib'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { useTranslation } from 'react-i18next'
 import { UIStateStorage } from '../../lib/UIStateStorage'
-import { literal, unprotectString } from '../../../lib/lib'
+import { literal, unprotectString } from '../../lib/tempLib'
 import { lockPointer, scrollToPart, unlockPointer } from '../../lib/viewPort'
 import { StoryboardPart } from './StoryboardPart'
 import classNames from 'classnames'
@@ -20,7 +20,7 @@ import RundownViewEventBus, {
 	GoToPartInstanceEvent,
 	HighlightEvent,
 	RundownViewEvents,
-} from '../../../lib/api/triggers/RundownViewEventBus'
+} from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
 import { getElementWidth } from '../../utils/dimensions'
 import { HOVER_TIMEOUT } from '../Shelf/DashboardPieceButton'
 import { Meteor } from 'meteor/meteor'
@@ -31,11 +31,11 @@ import { filterSecondarySourceLayers } from './StoryboardPartSecondaryPieces/Sto
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { SegmentTimeAnchorTime } from '../RundownView/RundownTiming/SegmentTimeAnchorTime'
-import { logger } from '../../../lib/logging'
+import { logger } from '../../lib/logging'
 
 interface IProps {
 	id: string

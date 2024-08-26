@@ -1,7 +1,7 @@
 import * as React from 'react'
 
 import { translateWithTracker, Translated } from './ReactMeteorData/ReactMeteorData'
-import { ICoreSystem } from '../../lib/collections/CoreSystem'
+import { ICoreSystem } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
 
 import { ReactiveVar } from 'meteor/reactive-var'
 import { isRunningInPWA } from './lib'

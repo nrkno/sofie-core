@@ -4,8 +4,8 @@ import {
 	DashboardLayoutNextBreakTiming,
 	RundownLayoutBase,
 	RundownLayoutNextBreakTiming,
-} from '../../../lib/collections/RundownLayouts'
-import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
+import { RundownLayoutsAPI } from '../../lib/rundownLayouts'
 import { dashboardElementStyle } from './DashboardPanel'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'

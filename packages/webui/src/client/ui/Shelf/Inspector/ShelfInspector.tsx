@@ -7,8 +7,8 @@ import { contextMenuHoldToDisplayTime } from '../../../lib/lib'
 import { BucketAdLibItem } from '../RundownViewBuckets'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { IAdLibListItem } from '../AdLibListItem'
-import { UIShowStyleBase } from '../../../../lib/api/showStyles'
-import { UIStudio } from '../../../../lib/api/studios'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 
 export { ShelfInspector }
 

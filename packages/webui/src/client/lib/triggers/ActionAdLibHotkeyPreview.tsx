@@ -1,12 +1,16 @@
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import React, { useContext, useState, useEffect } from 'react'
-import { assertNever } from '../../../lib/lib'
+import { assertNever } from '../tempLib'
 import { useTracker } from '../ReactMeteorData/ReactMeteorData'
 import { SorensenContext } from '../SorensenContext'
 import { MountedAdLibTriggers } from './TriggersHandler'
 import { codesToKeyLabels } from './codesToKeyLabels'
 import { AdLibActionId, PieceId, RundownBaselineAdLibActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { MountedAdLibTrigger, MountedHotkeyMixin } from '../../../lib/api/triggers/MountedTriggers'
+import {
+	MountedAdLibTrigger,
+	MountedAdLibTriggerType,
+	MountedHotkeyMixin,
+} from '@sofie-automation/meteor-lib/dist/api/MountedTriggers'
 import { FindOptions, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 
 type IProps =
@@ -66,37 +70,37 @@ export const ActionAdLibHotkeyPreview: React.FC<IProps> = function AdLibActionHo
 		switch (props.type) {
 			case 'adLibAction':
 				selector = {
-					type: 'adLibAction',
+					type: MountedAdLibTriggerType.adLibAction,
 					targetId: props.targetId,
 				}
 				break
 			case 'adLibPiece':
 				selector = {
-					type: 'adLibPiece',
+					type: MountedAdLibTriggerType.adLibPiece,
 					targetId: props.targetId,
 				}
 				break
 			case 'rundownBaselineAdLibAction':
 				selector = {
-					type: 'rundownBaselineAdLibAction',
+					type: MountedAdLibTriggerType.rundownBaselineAdLibAction,
 					targetId: props.targetId,
 				}
 				break
 			case 'rundownBaselineAdLibItem':
 				selector = {
-					type: 'rundownBaselineAdLibItem',
+					type: MountedAdLibTriggerType.rundownBaselineAdLibItem,
 					targetId: props.targetId,
 				}
 				break
 			case 'clearSourceLayer':
 				selector = {
-					type: 'clearSourceLayer',
+					type: MountedAdLibTriggerType.clearSourceLayer,
 					targetId: props.targetId,
 				}
 				break
 			case 'sticky':
 				selector = {
-					type: 'sticky',
+					type: MountedAdLibTriggerType.sticky,
 					targetId: props.targetId,
 				}
 				break

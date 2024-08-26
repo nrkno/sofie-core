@@ -17,28 +17,37 @@ import { PackageContainerStatusDB } from '@sofie-automation/corelib/dist/dataMod
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
 import { Meteor } from 'meteor/meteor'
-import { Bucket } from '../../lib/collections/Buckets'
-import { ICoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
-import { Evaluation } from '../../lib/collections/Evaluations'
+import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
+import { ICoreSystem, SYSTEM_ID } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
+import { Evaluation } from '@sofie-automation/meteor-lib/dist/collections/Evaluations'
 import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import {
-	createSyncMongoCollection,
-	createSyncReadOnlyMongoCollection,
-	wrapMongoCollection,
-} from '../../lib/collections/lib'
+import { createSyncMongoCollection, createSyncReadOnlyMongoCollection, wrapMongoCollection } from './lib'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
+import { RundownLayoutBase } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { SnapshotItem } from '../../lib/collections/Snapshots'
+import { SnapshotItem } from '@sofie-automation/meteor-lib/dist/collections/Snapshots'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { TranslationsBundle } from '../../lib/collections/TranslationsBundles'
-import { DBTriggeredActions } from '../../lib/collections/TriggeredActions'
-import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
-import { DBUser } from '../../lib/collections/Users'
+import { TranslationsBundle } from '@sofie-automation/meteor-lib/dist/collections/TranslationsBundles'
+import { DBTriggeredActions } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
+import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
+import { DBUser } from '@sofie-automation/meteor-lib/dist/collections/Users'
+import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
+import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { DBOrganization } from '@sofie-automation/meteor-lib/dist/collections/Organization'
+import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
+import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
+import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 
-// Future: remove the need for this
-export * from '../../lib/collections/libCollections'
+export const AdLibActions = createSyncReadOnlyMongoCollection<AdLibAction>(CollectionName.AdLibActions)
+
+export const AdLibPieces = createSyncReadOnlyMongoCollection<AdLibPiece>(CollectionName.AdLibPieces)
 
 export const Blueprints = createSyncMongoCollection<Blueprint>(CollectionName.Blueprints)
 
@@ -70,13 +79,37 @@ export const MediaWorkFlowSteps = createSyncReadOnlyMongoCollection<MediaWorkFlo
 	CollectionName.MediaWorkFlowSteps
 )
 
+export const Organizations = createSyncMongoCollection<DBOrganization>(CollectionName.Organizations)
+
 export const PackageContainerStatuses = createSyncReadOnlyMongoCollection<PackageContainerStatusDB>(
 	CollectionName.PackageContainerStatuses
 )
 
+export const PartInstances = createSyncReadOnlyMongoCollection<PartInstance>(CollectionName.PartInstances)
+
+export const Parts = createSyncReadOnlyMongoCollection<DBPart>(CollectionName.Parts)
+
 export const PeripheralDevices = createSyncMongoCollection<PeripheralDevice>(CollectionName.PeripheralDevices)
 
+export const PieceInstances = createSyncReadOnlyMongoCollection<PieceInstance>(CollectionName.PieceInstances)
+
+export const Pieces = createSyncReadOnlyMongoCollection<Piece>(CollectionName.Pieces)
+
+export const RundownBaselineAdLibActions = createSyncReadOnlyMongoCollection<RundownBaselineAdLibAction>(
+	CollectionName.RundownBaselineAdLibActions
+)
+
+export const RundownBaselineAdLibPieces = createSyncReadOnlyMongoCollection<RundownBaselineAdLibItem>(
+	CollectionName.RundownBaselineAdLibPieces
+)
+
 export const RundownLayouts = createSyncMongoCollection<RundownLayoutBase>(CollectionName.RundownLayouts)
+
+export const RundownPlaylists = createSyncReadOnlyMongoCollection<DBRundownPlaylist>(CollectionName.RundownPlaylists)
+
+export const Rundowns = createSyncReadOnlyMongoCollection<DBRundown>(CollectionName.Rundowns)
+
+export const Segments = createSyncReadOnlyMongoCollection<DBSegment>(CollectionName.Segments)
 
 export const ShowStyleBases = createSyncMongoCollection<DBShowStyleBase>(CollectionName.ShowStyleBases)
 

@@ -1,15 +1,16 @@
 import React, { useCallback, useState } from 'react'
 import { useSubscriptions, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { getUser, DBUser, getUserRolesFromLoadedDocuments } from '../../../lib/collections/Users'
+import { getUser, getUserRolesFromLoadedDocuments } from '../../lib/userInfo'
+import { DBUser } from '@sofie-automation/meteor-lib/dist/collections/Users'
 import { Spinner } from '../../lib/Spinner'
-import { MeteorPubSub } from '../../../lib/api/pubsub'
-import { DBOrganization, UserRoles } from '../../../lib/collections/Organization'
-import { unprotectString } from '../../../lib/lib'
-import { MeteorCall } from '../../../lib/api/methods'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
+import { DBOrganization, UserRoles } from '@sofie-automation/meteor-lib/dist/collections/Organization'
+import { unprotectString } from '../../lib/tempLib'
+import { MeteorCall } from '../../lib/meteorApi'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { Organizations, Users } from '../../collections'
 import { useTranslation } from 'react-i18next'
-import { logger } from '../../../lib/logging'
+import { logger } from '../../lib/logging'
 
 export function OrganizationPage(): JSX.Element {
 	const { t } = useTranslation()

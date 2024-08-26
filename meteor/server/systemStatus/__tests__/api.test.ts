@@ -1,14 +1,14 @@
 import '../../../__mocks__/_extendJest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
-import { literal, unprotectString } from '../../../lib/lib'
+import { literal, unprotectString } from '../../lib/tempLib'
 import { MeteorMock } from '../../../__mocks__/meteor'
 import { status2ExternalStatus, setSystemStatus } from '../systemStatus'
-import { StatusResponse } from '../../../lib/api/systemStatus'
+import { StatusResponse } from '@sofie-automation/meteor-lib/dist/api/systemStatus'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
-import { MeteorCall } from '../../../lib/api/methods'
+import { MeteorCall } from '../../api/methods'
 import { callKoaRoute } from '../../../__mocks__/koa-util'
 import { healthRouter } from '../api'
-import { UIBlueprintUpgradeStatus } from '../../../lib/api/upgradeStatus'
+import { UIBlueprintUpgradeStatus } from '@sofie-automation/meteor-lib/dist/api/upgradeStatus'
 
 // we don't want the deviceTriggers observer to start up at this time
 jest.mock('../../api/deviceTriggers/observer')

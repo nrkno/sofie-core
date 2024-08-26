@@ -5,7 +5,7 @@ import {
 	ObjectOverrideSetOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { useCallback, useMemo } from 'react'
-import { MongoCollection } from '../../../lib/collections/lib'
+import { MongoCollection } from '../../collections/lib'
 import {
 	WrappedOverridableItemNormal,
 	OverrideOpHelperForItemContentsBatcher,

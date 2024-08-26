@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import ClassNames from 'classnames'
 import _ from 'underscore'
-import { RundownLayoutsAPI } from '../../../../lib/api/rundownLayouts'
+import { RundownLayoutsAPI } from '../../../lib/rundownLayouts'
 import {
 	DashboardPanelBase,
 	DashboardPanelUnit,
@@ -14,7 +14,7 @@ import {
 	RundownLayoutElementBase,
 	RundownLayoutElementType,
 	RundownLayoutFilterBase,
-} from '../../../../lib/collections/RundownLayouts'
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { IOutputLayer, ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'

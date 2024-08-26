@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import Tooltip from 'rc-tooltip'
 import { getHelpMode } from '../../lib/localStorage'
-import { StatusResponse } from '../../../lib/api/systemStatus'
+import { StatusResponse } from '@sofie-automation/meteor-lib/dist/api/systemStatus'
 import { TOOLTIP_DEFAULT_DELAY } from '../../lib/lib'
 import { useTranslation } from 'react-i18next'
-import { MeteorCall } from '../../../lib/api/methods'
-import { NoticeLevel, Notification, NotificationCenter } from '../../../lib/notifications/notifications'
+import { MeteorCall } from '../../lib/meteorApi'
+import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
 
 export function RundownListFooter(): JSX.Element {
 	const { t } = useTranslation()

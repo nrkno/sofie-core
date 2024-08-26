@@ -3,7 +3,7 @@ import {
 	SplitsContentBoxContent,
 	SplitsContentBoxProperties,
 } from '@sofie-automation/blueprints-integration'
-import { literal } from '../../../lib/lib'
+import { literal } from '../tempLib'
 
 const DEFAULT_POSITIONS = [
 	{

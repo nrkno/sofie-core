@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { MappingExt, MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { IBlueprintConfig, ISourceLayer, SchemaFormUIField } from '@sofie-automation/blueprints-integration'
-import { groupByToMapFunc, literal } from '../../../../lib/lib'
+import { groupByToMapFunc, literal } from '../../../lib/tempLib'
 import { useTranslation } from 'react-i18next'
 import {
 	applyAndValidateOverrides,

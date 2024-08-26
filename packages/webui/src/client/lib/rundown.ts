@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { PieceUi, PartUi } from '../ui/SegmentTimeline/SegmentTimelineContainer'
 import { Timecode } from '@sofie-automation/corelib/dist/index'
-import { Settings } from '../../lib/Settings'
+import { Settings } from '../lib/Settings'
 import {
 	SourceLayerType,
 	PieceLifespan,
@@ -20,10 +20,11 @@ import {
 	PartInstanceLimited,
 	getSegmentsWithPartInstances,
 } from './RundownResolver'
-import { PartInstance } from '../../lib/collections/PartInstances'
+import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { literal, getCurrentTime } from '../../lib/lib'
+import { literal } from './tempLib'
+import { getCurrentTime } from './systemTime'
 import {
 	processAndPrunePieceInstanceTimings,
 	resolvePrunedPieceInstance,
@@ -31,13 +32,13 @@ import {
 import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { IAdLibListItem } from '../ui/Shelf/AdLibListItem'
 import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
-import { FindOptions } from '../../lib/collections/lib'
+import { FindOptions } from '../collections/lib'
 import { getShowHiddenSourceLayers } from './localStorage'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 import { AdLibPieceUi } from './shelf'
-import { UIShowStyleBase } from '../../lib/api/showStyles'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { PartId, PieceId, RundownId, SegmentId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstances, Segments } from '../collections'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'

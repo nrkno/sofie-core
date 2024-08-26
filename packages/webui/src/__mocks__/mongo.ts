@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import * as _ from 'underscore'
-import { literal, ProtectedString, unprotectString, protectString, sleep, getRandomString } from '../lib/lib'
+import { literal, ProtectedString, unprotectString, protectString, getRandomString } from '../client/lib/tempLib'
 import { RandomMock } from './random'
 import { MeteorMock } from './meteor'
 import { Random } from 'meteor/random'
@@ -15,7 +15,7 @@ import {
 	UpdateOptions,
 	UpsertOptions,
 	WrappedMongoCollection,
-} from '../lib/collections/lib'
+} from '../client/collections/lib'
 import {
 	mongoWhere,
 	mongoFindOptions,
@@ -24,6 +24,7 @@ import {
 	MongoModifier,
 } from '@sofie-automation/corelib/dist/mongo'
 import { Mongo } from 'meteor/mongo'
+import { sleep } from '@sofie-automation/shared-lib/dist/lib/lib'
 const clone = require('fast-clone')
 
 export namespace MongoMock {

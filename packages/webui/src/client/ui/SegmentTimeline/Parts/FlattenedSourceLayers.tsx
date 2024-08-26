@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { unprotectString } from '../../../../lib/lib'
+import { unprotectString } from '../../../lib/tempLib'
 import { ISourceLayerUi } from '../SegmentTimelineContainer'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { SourceLayerItemContainer } from '../SourceLayerItemContainer'

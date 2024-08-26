@@ -9,8 +9,8 @@ import { useTranslation } from 'react-i18next'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import StudioContext from '../../RundownView/StudioContext'
 import { AdLibActions, AdLibPieces } from '../../../collections'
-import RundownViewEventBus, { RundownViewEvents } from '../../../../lib/api/triggers/RundownViewEventBus'
-import { MeteorPubSub } from '../../../../lib/api/pubsub'
+import RundownViewEventBus, { RundownViewEvents } from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 
 interface IProps {
 	sourceLayers: ISourceLayerExtended[]

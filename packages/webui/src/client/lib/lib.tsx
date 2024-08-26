@@ -1,8 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
-import { getCurrentTime, systemTime, Time } from '../../lib/lib'
-import { logger } from '../../lib/logging'
+import { Time } from './tempLib'
+import { getCurrentTime, systemTime } from './systemTime'
+import { logger } from './logging'
+import shajs from 'sha.js'
+import { SINGLE_USE_TOKEN_SALT } from '@sofie-automation/meteor-lib/dist/api/userActions'
 
 export { multilineText, isEventInInputField }
 
@@ -208,6 +211,14 @@ export function mapOrFallback<T = any, K = any, L = any>(
 	return array.map(callbackFn)
 }
 
+export function firstIfArray<T>(value: T | T[] | null | undefined): T | null | undefined
+export function firstIfArray<T>(value: T | T[] | null): T | null
+export function firstIfArray<T>(value: T | T[] | undefined): T | undefined
+export function firstIfArray<T>(value: T | T[]): T
+export function firstIfArray<T>(value: unknown): T {
+	return _.isArray(value) ? _.first(value) : value
+}
+
 export const TOOLTIP_DEFAULT_DELAY = 0.5
 
 /**
@@ -217,4 +228,12 @@ export const TOOLTIP_DEFAULT_DELAY = 0.5
  */
 export function catchError(context: string): (...errs: any[]) => void {
 	return (...errs: any[]) => logger.error(context, ...errs)
+}
+
+export function hashSingleUseToken(token: string): string {
+	// nocommit - a hack because the crypto polyfill doesn't work for some reason
+	return shajs('sha1')
+		.update(SINGLE_USE_TOKEN_SALT + token)
+		.digest('base64')
+		.replace(/[+/=]/g, '_')
 }

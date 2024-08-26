@@ -4,14 +4,14 @@ import { ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-inte
 import { withMediaObjectStatus } from '../../SegmentTimeline/withMediaObjectStatus'
 import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
 import { DefaultRenderer } from './Renderers/DefaultRenderer'
-import { assertNever } from '../../../../lib/lib'
+import { assertNever } from '../../../lib/tempLib'
 import { ScriptRenderer } from './Renderers/ScriptRenderer'
 import { getElementDocumentOffset } from '../../../utils/positions'
 import { getElementWidth } from '../../../utils/dimensions'
 import { GraphicsRenderer } from './Renderers/GraphicsRenderer'
 import { SplitsRenderer } from './Renderers/SplitsRenderer'
 import { PieceElement } from '../../SegmentContainer/PieceElement'
-import { UIStudio } from '../../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IProps {

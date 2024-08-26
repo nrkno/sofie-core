@@ -13,21 +13,21 @@ import {
 	ActionButtonType,
 	DashboardLayoutActionButton,
 	RundownLayoutElementType,
-} from '../../../lib/collections/RundownLayouts'
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import {
 	CustomizableRegionLayout,
 	CustomizableRegionSettingsManifest,
 	RundownLayoutsAPI,
-} from '../../../lib/api/rundownLayouts'
-import { MeteorPubSub } from '../../../lib/api/pubsub'
-import { getRandomString, literal, unprotectString } from '../../../lib/lib'
+} from '../../lib/rundownLayouts'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
+import { getRandomString, literal, unprotectString } from '../../lib/tempLib'
 import { UploadButton } from '../../lib/uploadButton'
 import { doModalDialog } from '../../lib/ModalDialog'
-import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
+import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { catchError, fetchFrom } from '../../lib/lib'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { Link } from 'react-router-dom'
-import { MeteorCall } from '../../../lib/api/methods'
+import { MeteorCall } from '../../lib/meteorApi'
 import { defaultColorPickerPalette } from '../../lib/colorPicker'
 import FilterEditor from './components/FilterEditor'
 import ShelfLayoutSettings from './components/rundownLayouts/ShelfLayoutSettings'

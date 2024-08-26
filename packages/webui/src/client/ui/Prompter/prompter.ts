@@ -1,10 +1,9 @@
-import { check } from '../../../lib/check'
 import * as _ from 'underscore'
 import { ScriptContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
-import { normalizeArrayToMap, protectString } from '../../../lib/lib'
+import { normalizeArrayToMap, protectString } from '../../lib/tempLib'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { getPieceInstancesForPartInstance, getSegmentsWithPartInstances } from '../../lib/RundownResolver'
-import { FindOptions } from '../../../lib/collections/lib'
+import { FindOptions } from '../../collections/lib'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
@@ -20,7 +19,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylists, PieceInstances, Pieces, Segments } from '../../collections'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 
 // export interface NewPrompterAPI {
@@ -54,7 +53,7 @@ export interface PrompterData {
 export namespace PrompterAPI {
 	// TODO: discuss: move this implementation to server-side?
 	export function getPrompterData(playlistId: RundownPlaylistId): PrompterData | null {
-		check(playlistId, String)
+		if (typeof playlistId !== 'string') throw new Error('Expected `playlistId` to be a string')
 
 		const playlist = RundownPlaylists.findOne(playlistId)
 

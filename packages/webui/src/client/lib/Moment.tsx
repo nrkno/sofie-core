@@ -1,6 +1,6 @@
 import Moment, { MomentProps } from 'react-moment'
 import moment from 'moment'
-import { getCurrentTime } from '../../lib/lib'
+import { getCurrentTime } from './systemTime'
 import timer from 'react-timer-hoc'
 
 /**

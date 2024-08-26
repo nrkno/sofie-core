@@ -1,23 +1,17 @@
 import * as React from 'react'
 import ClassNames from 'classnames'
-import { ISourceLayer, IOutputLayer, IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
+import { ISourceLayer, IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { unprotectString } from '../../../lib/lib'
+import { unprotectString } from '../../lib/tempLib'
 import renderItem from './Renderers/ItemRendererFactory'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { setShelfContextMenuContext, ContextType as MenuContextType } from './ShelfContextMenu'
-import { AdLibPieceUi } from '../../lib/shelf'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
+import { IAdLibListItem } from '@sofie-automation/meteor-lib/dist/uiTypes/Adlib'
 
-export interface IAdLibListItem extends AdLibPieceUi {
-	sourceLayer?: ISourceLayer
-	outputLayer?: IOutputLayer
-	isHidden?: boolean
-	invalid?: boolean
-	floated?: boolean
-}
+export type { IAdLibListItem } from '@sofie-automation/meteor-lib/dist/uiTypes/Adlib'
 
 interface IListViewItemProps {
 	piece: IAdLibListItem

@@ -1,6 +1,6 @@
 import { RundownId, RundownPlaylistId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ProtectedString, protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { UISegmentPartNote } from '../../../../lib/api/rundownNotifications'
+import { UISegmentPartNote } from '@sofie-automation/meteor-lib/dist/api/rundownNotifications'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { CustomPublishCollection } from '../../../lib/customPublication'
 import { ReactiveCacheCollection } from '../../lib/ReactiveCacheCollection'

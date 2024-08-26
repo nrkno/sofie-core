@@ -1,11 +1,12 @@
-import { MeteorCall } from '../../../../lib/api/methods'
+import { MeteorCall } from '../../methods'
 import {
 	PeripheralDevice,
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { getCurrentTime, protectString } from '../../../../lib/lib'
+import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+import { getCurrentTime } from '../../../lib/lib'
 import {
 	DefaultEnvironment,
 	setupDefaultStudioEnvironment,

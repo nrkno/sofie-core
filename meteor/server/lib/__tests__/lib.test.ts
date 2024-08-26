@@ -1,3 +1,4 @@
+import '../../../__mocks__/_extendJest'
 import { TSR } from '@sofie-automation/blueprints-integration'
 import {
 	TimelineObjGeneric,
@@ -6,10 +7,12 @@ import {
 	deserializeTimelineBlob,
 	serializeTimelineBlob,
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { protectString } from '../../../lib/lib'
+import { protectString } from '../tempLib'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { Timeline } from '../../collections'
 import { SaveIntoDbHooks, saveIntoDb, sumChanges, anythingChanged } from '../database'
+import { makePromise } from '../lib'
+import { Meteor } from 'meteor/meteor'
 
 describe('server/lib', () => {
 	testInFiber('saveIntoDb', async () => {
@@ -190,5 +193,39 @@ describe('server/lib', () => {
 				removed: 547,
 			})
 		).toBeTruthy()
+	})
+
+	testInFiber('makePromise', async () => {
+		let a = 0
+		// Check that they are executed in order:
+		expect(
+			await Promise.all([
+				makePromise(() => {
+					return a++
+				}),
+				makePromise(() => {
+					return a++
+				}),
+			])
+		).toStrictEqual([0, 1])
+
+		// Handle an instant throw:
+		await expect(
+			makePromise(() => {
+				throw new Error('asdf')
+			})
+		).rejects.toMatchToString(/asdf/)
+
+		// Handle a delayed throw:
+		const delayedThrow = Meteor.wrapAsync((callback: (err: any, result: any) => void) => {
+			setTimeout(() => {
+				callback(new Error('asdf'), null)
+			}, 10)
+		})
+		await expect(
+			makePromise(() => {
+				delayedThrow()
+			})
+		).rejects.toMatchToString(/asdf/)
 	})
 })

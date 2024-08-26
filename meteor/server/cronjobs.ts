@@ -4,7 +4,7 @@ import {
 	PeripheralDevice,
 	PeripheralDeviceType,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { getCurrentTime } from '../lib/lib'
+import { getCurrentTime } from './lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
@@ -17,8 +17,8 @@ import { internalStoreRundownPlaylistSnapshot } from './api/snapshot'
 import { deferAsync, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { getCoreSystemAsync } from './coreSystem/collection'
 import { cleanupOldDataInner } from './api/cleanup'
-import { CollectionCleanupResult } from '../lib/api/system'
-import { ICoreSystem } from '../lib/collections/CoreSystem'
+import { CollectionCleanupResult } from '@sofie-automation/meteor-lib/dist/api/system'
+import { ICoreSystem } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
 import { executePeripheralDeviceFunctionWithCustomTimeout } from './api/peripheralDevice/executeFunction'
 import {
 	interpollateTranslation,

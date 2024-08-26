@@ -5,16 +5,16 @@ import {
 	RundownLayoutAdLibRegion,
 	DashboardLayoutAdLibRegion,
 	RundownLayoutAdLibRegionRole,
-} from '../../../lib/collections/RundownLayouts'
-import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
+import { RundownLayoutsAPI } from '../../lib/rundownLayouts'
 import { dashboardElementStyle, IDashboardPanelTrackedProps } from './DashboardPanel'
 import ClassNames from 'classnames'
 import { IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter } from './AdLibPanel'
 import { matchFilter } from './AdLibListView'
-import { doUserAction, UserAction } from '../../../lib/clientUserAction'
+import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
-import { MeteorCall } from '../../../lib/api/methods'
+import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { MeteorCall } from '../../lib/meteorApi'
 import {
 	AdLibPieceUi,
 	getNextPieceInstancesGrouped,

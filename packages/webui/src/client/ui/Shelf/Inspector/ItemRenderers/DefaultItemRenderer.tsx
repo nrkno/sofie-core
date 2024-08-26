@@ -5,8 +5,8 @@ import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import InspectorTitle from './InspectorTitle'
 import { BucketAdLibUi } from '../../RundownViewBuckets'
 import { AdLibPieceUi } from '../../../../lib/shelf'
-import { UIShowStyleBase } from '../../../../../lib/api/showStyles'
-import { UIStudio } from '../../../../../lib/api/studios'
+import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 
 export default function DefaultItemRenderer(

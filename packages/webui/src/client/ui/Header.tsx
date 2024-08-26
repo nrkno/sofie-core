@@ -3,13 +3,13 @@ import { WithTranslation } from 'react-i18next'
 import { Meteor } from 'meteor/meteor'
 import { NavLink, Link } from 'react-router-dom'
 import { NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
-import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { SupportPopUpToggle, SupportPopUp } from './SupportPopUp'
 // @ts-expect-error No types available
 import * as VelocityReact from 'velocity-react'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
-import { Settings } from '../../lib/Settings'
+import { Settings } from '../lib/Settings'
 import { CoreSystem } from '../collections'
 
 interface IPropsHeader {

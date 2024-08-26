@@ -1,28 +1,26 @@
 import { UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { MongoModifier, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
+import { FindOptions, MongoModifier, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { ProtectedString, protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { NpmModuleMongodb } from 'meteor/npm-mongo'
-import {
-	UpdateOptions,
-	UpsertOptions,
-	FieldNames,
-	getOrCreateMongoCollection,
-	FindOptions,
-	collectionsCache,
-	IndexSpecifier,
-	MongoCursor,
-	ObserveChangesCallbacks,
-	ObserveCallbacks,
-} from '../../lib/collections/lib'
-import { PromisifyCallbacks, waitForPromise } from '../../lib/lib'
+import { PromisifyCallbacks } from '@sofie-automation/shared-lib/dist/lib/types'
+import { waitForPromise } from '../lib/lib'
 import type { AnyBulkWriteOperation, Collection as RawCollection } from 'mongodb'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { registerCollection } from './lib'
 import { WrappedMockCollection } from './implementations/mock'
 import { WrappedAsyncMongoCollection } from './implementations/asyncCollection'
 import { WrappedReadOnlyMongoCollection } from './implementations/readonlyWrapper'
+import {
+	FieldNames,
+	IndexSpecifier,
+	MongoCursor,
+	ObserveCallbacks,
+	ObserveChangesCallbacks,
+	UpdateOptions,
+	UpsertOptions,
+} from '@sofie-automation/meteor-lib/dist/collections/lib'
 
 export interface MongoAllowRules<DBInterface> {
 	insert?: (userId: UserId, doc: DBInterface) => Promise<boolean> | boolean
@@ -33,6 +31,22 @@ export interface MongoAllowRules<DBInterface> {
 		modifier: MongoModifier<DBInterface>
 	) => Promise<boolean> | boolean
 	remove?: (userId: UserId, doc: DBInterface) => Promise<boolean> | boolean
+}
+
+/**
+ * Map of current collection objects.
+ * Future: Could this weakly hold the collections?
+ */
+export const collectionsCache = new Map<string, Mongo.Collection<any>>()
+export function getOrCreateMongoCollection(name: string): Mongo.Collection<any> {
+	const collection = collectionsCache.get(name)
+	if (collection) {
+		return collection
+	}
+
+	const newCollection = new Mongo.Collection(name)
+	collectionsCache.set(name, newCollection)
+	return newCollection
 }
 
 /**

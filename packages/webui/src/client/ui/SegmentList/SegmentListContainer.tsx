@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { meteorSubscribe } from '../../../lib/api/pubsub'
+import { meteorSubscribe } from '../../lib/meteorApi'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import {
 	withResolvedSegment,
@@ -8,7 +8,7 @@ import {
 } from '../SegmentContainer/withResolvedSegment'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { SegmentList } from './SegmentList'
-import { unprotectString } from '../../../lib/lib'
+import { unprotectString } from '../../lib/tempLib'
 import { LIVELINE_HISTORY_SIZE as TIMELINE_LIVELINE_HISTORY_SIZE } from '../SegmentTimeline/Constants'
 import { PartInstances, Parts, Segments } from '../../collections'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'

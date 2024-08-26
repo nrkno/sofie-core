@@ -45,7 +45,7 @@ export class Accounts {
 		throw new Error('Not implemented')
 	}
 
-	public static createUserAsync(_options: {
+	public static async createUserAsync(_options: {
 		username?: string | undefined
 		email?: string | undefined
 		password?: string | undefined

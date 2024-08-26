@@ -3,11 +3,11 @@ import {
 	DashboardLayoutStudioName,
 	RundownLayoutBase,
 	RundownLayoutStudioName,
-} from '../../../lib/collections/RundownLayouts'
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { dashboardElementStyle } from './DashboardPanel'
-import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { RundownLayoutsAPI } from '../../lib/rundownLayouts'
 import { useTranslation } from 'react-i18next'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 
 interface IStudioNamePanelProps {
 	layout: RundownLayoutBase

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
-import { assertNever } from '../../../lib/lib'
+import { assertNever } from '../../lib/tempLib'
 import ClassNames from 'classnames'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { statusCodeToString } from './SystemStatus'

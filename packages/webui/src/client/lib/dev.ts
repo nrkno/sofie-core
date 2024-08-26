@@ -1,11 +1,10 @@
-import { getCurrentTime } from '../../lib/lib'
-// import { Session } from 'meteor/session'
+import { getCurrentTime } from './systemTime'
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import * as _ from 'underscore'
-import { MeteorCall } from '../../lib/api/methods'
-import { ClientCollections, PublicationCollections } from '../../lib/collections/lib'
-import { logger } from '../../lib/logging'
+import { MeteorCall } from '../lib/meteorApi'
+import { ClientCollections, PublicationCollections } from '../collections/lib'
+import { logger } from './logging'
 
 // Note: These things are convenience functions to be used during development:
 
@@ -17,7 +16,6 @@ Meteor.startup(() => {
 })
 
 windowAny['getCurrentTime'] = getCurrentTime
-// windowAny['Session'] = Session
 
 function setDebugData() {
 	Tracker.autorun(() => {

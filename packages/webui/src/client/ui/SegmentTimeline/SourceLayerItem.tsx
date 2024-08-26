@@ -13,12 +13,15 @@ import { LocalLayerItemRenderer } from './Renderers/LocalLayerItemRenderer'
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
-import { unprotectString } from '../../../lib/lib'
-import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../../../lib/api/triggers/RundownViewEventBus'
+import { unprotectString } from '../../lib/tempLib'
+import RundownViewEventBus, {
+	RundownViewEvents,
+	HighlightEvent,
+} from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
 import { pieceUiClassNames } from '../../lib/ui/pieceUiClassNames'
 import { SourceDurationLabelAlignment } from './Renderers/CustomLayerItemRenderer'
 import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 const MARGINAL_ANCHORED_WIDTH = 5
 

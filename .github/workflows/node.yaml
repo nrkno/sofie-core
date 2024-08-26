@@ -429,6 +429,7 @@ jobs:
           - mos-gateway
           - corelib
           - shared-lib
+          - meteor-lib
           - job-worker
           - openapi
           - live-status-gateway
@@ -500,6 +501,11 @@ jobs:
             package-name: live-status-gateway
           - node-version: 18.x
             package-name: webui
+          # manual meteor-lib as it only needs a couple of versions
+          - node-version: 18.x
+            package-name: meteor-lib
+          - node-version: 14.x
+            package-name: meteor-lib
 
     steps:
       - uses: actions/checkout@v4

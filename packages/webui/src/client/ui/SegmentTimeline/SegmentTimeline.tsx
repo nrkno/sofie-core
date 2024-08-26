@@ -22,14 +22,17 @@ import { scrollToPart, lockPointer, unlockPointer } from '../../lib/viewPort'
 
 import { getAllowSpeaking, getAllowVibrating, getShowHiddenSourceLayers } from '../../lib/localStorage'
 import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerLockCursor'
-import { Settings } from '../../../lib/Settings'
+import { Settings } from '../../lib/Settings'
 import { IContextMenuContext } from '../RundownView'
-import { literal, protectString, unprotectString } from '../../../lib/lib'
+import { literal, protectString, unprotectString } from '../../lib/tempLib'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifications'
-import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../../../lib/api/triggers/RundownViewEventBus'
-import { wrapPartToTemporaryInstance } from '../../../lib/collections/PartInstances'
+import RundownViewEventBus, {
+	RundownViewEvents,
+	HighlightEvent,
+} from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
+import { wrapPartToTemporaryInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 
 import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
 import { UIStateStorage } from '../../lib/UIStateStorage'
@@ -38,7 +41,7 @@ import { IOutputLayer, ISourceLayer, NoteSeverity } from '@sofie-automation/blue
 import { SegmentTimelineZoomButtons } from './SegmentTimelineZoomButtons'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { SegmentNoteCounts } from '../SegmentContainer/withResolvedSegment'
@@ -50,7 +53,7 @@ import {
 	WithTiming,
 } from '../RundownView/RundownTiming/withTiming'
 import { SegmentTimeAnchorTime } from '../RundownView/RundownTiming/SegmentTimeAnchorTime'
-import { logger } from '../../../lib/logging'
+import { logger } from '../../lib/logging'
 
 interface IProps {
 	id: string

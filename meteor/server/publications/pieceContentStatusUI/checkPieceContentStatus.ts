@@ -28,10 +28,10 @@ import {
 import { literal, Complete, assertNever } from '@sofie-automation/corelib/dist/lib'
 import { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
-import { getSideEffect } from '../../../lib/collections/ExpectedPackages'
-import { getActiveRoutes, getRoutedMappings } from '../../../lib/collections/Studios'
-import { ensureHasTrailingSlash, generateTranslation, unprotectString } from '../../../lib/lib'
-import { PieceContentStatusObj } from '../../../lib/api/pieceContentStatus'
+import { getSideEffect } from '@sofie-automation/meteor-lib/dist/collections/ExpectedPackages'
+import { getActiveRoutes, getRoutedMappings } from '@sofie-automation/meteor-lib/dist/collections/Studios'
+import { ensureHasTrailingSlash, generateTranslation, unprotectString } from '../../lib/tempLib'
+import { PieceContentStatusObj } from '@sofie-automation/meteor-lib/dist/api/pieceContentStatus'
 import { MediaObjects, PackageContainerPackageStatuses, PackageInfos } from '../../collections'
 import {
 	mediaObjectFieldSpecifier,

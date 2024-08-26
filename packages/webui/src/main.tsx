@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor'
+import 'meteor/ddp'
 import { createRoot } from 'react-dom/client'
 
 import { DndProvider } from 'react-dnd'
@@ -10,15 +11,14 @@ import './client/lib/polyfill/polyfills'
 
 import './client/ui/i18n'
 
-import './lib/main'
-
 // Import files that call Meteor.startup:
 import './client/lib/currentTimeReactive'
 import './client/lib/uncaughtErrorHandler'
 import './client/lib/dev'
+import './client/lib/systemTime'
 
 import App from './client/ui/App'
-import { logger } from './lib/logging'
+import { logger } from './client/lib/logging'
 import './client/lib/logStatus'
 
 if ('serviceWorker' in navigator) {

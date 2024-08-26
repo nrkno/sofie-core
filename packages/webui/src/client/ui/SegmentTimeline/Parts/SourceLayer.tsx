@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react'
 import _ from 'underscore'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { literal, unprotectString } from '../../../../lib/lib'
+import { literal, unprotectString } from '../../../lib/tempLib'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { IContextMenuContext } from '../../RundownView'
 import { IOutputLayerUi, ISourceLayerUi, PartUi, PieceUi, SegmentUi } from '../SegmentTimelineContainer'
@@ -9,7 +9,7 @@ import { SegmentTimelinePartElementId } from './SegmentTimelinePart'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { SourceLayerItemContainer } from '../SourceLayerItemContainer'
 import { contextMenuHoldToDisplayTime } from '../../../lib/lib'
-import { UIStudio } from '../../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 
 export interface ISourceLayerPropsBase {
 	key: string

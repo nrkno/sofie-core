@@ -10,7 +10,7 @@ import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { Studios } from '../../../collections'
 import { useHistory } from 'react-router-dom'
-import { MeteorCall } from '../../../../lib/api/methods'
+import { MeteorCall } from '../../../lib/meteorApi'
 import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
 import { catchError } from '../../../lib/lib'
 

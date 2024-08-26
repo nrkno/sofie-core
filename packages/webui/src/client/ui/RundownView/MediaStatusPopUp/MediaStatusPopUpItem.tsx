@@ -8,7 +8,7 @@ import { RundownUtils } from '../../../lib/rundown'
 import classNames from 'classnames'
 import { MediaStatusIndicator } from '../../MediaStatus/MediaStatusIndicator'
 import { scrollToPart, scrollToSegment } from '../../../lib/viewPort'
-import { logger } from '../../../../lib/logging'
+import { logger } from '../../../lib/logging'
 
 export const MediaStatusPopUpItem = withTiming<
 	{

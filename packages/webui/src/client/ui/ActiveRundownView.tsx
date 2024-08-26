@@ -3,7 +3,7 @@ import { useSubscription, useTracker } from '../lib/ReactMeteorData/ReactMeteorD
 
 import { Spinner } from '../lib/Spinner'
 import { RundownView } from './RundownView'
-import { MeteorPubSub } from '../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { UIStudios } from './Collections'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylists } from '../collections'

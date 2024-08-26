@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 import { TFunction } from 'i18next'
 import { IRundownPlaylistFilterLink } from '@sofie-automation/blueprints-integration'
-import { assertNever } from '../../../../../../../lib/lib'
+import { assertNever } from '../../../../../../lib/tempLib'
 import classNames from 'classnames'
 
 interface IProps {

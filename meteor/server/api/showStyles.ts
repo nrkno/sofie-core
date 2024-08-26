@@ -1,11 +1,15 @@
-import { check } from '../../lib/check'
+import { check } from '../lib/check'
 import { registerClassToMeteorMethods } from '../methods'
-import { CreateAdlibTestingRundownOption, NewShowStylesAPI, ShowStylesAPIMethods } from '../../lib/api/showStyles'
+import {
+	CreateAdlibTestingRundownOption,
+	NewShowStylesAPI,
+	ShowStylesAPIMethods,
+} from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { Meteor } from 'meteor/meteor'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { protectString, getRandomId, omit } from '../../lib/lib'
-import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
+import { protectString, getRandomId, omit } from '../lib/tempLib'
+import { MethodContextAPI, MethodContext } from './methodContext'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { ShowStyleContentWriteAccess } from '../security/showStyle'
 import { Credentials } from '../security/lib/credentials'

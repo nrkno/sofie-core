@@ -25,7 +25,7 @@ import './triggeredActionsUI'
 import './mountedTriggers'
 import './deviceTriggersPreview'
 
-import { AllPubSubNames } from '../../lib/api/pubsub'
+import { AllPubSubNames } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { MeteorPublications } from './lib'
 import { logger } from '../logging'
 

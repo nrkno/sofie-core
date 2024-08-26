@@ -1,9 +1,9 @@
 import { useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Link } from 'react-router-dom'
-import { unprotectString } from '../../../lib/lib'
+import { unprotectString } from '../../lib/tempLib'
 import { UIStudios } from '../Collections'
 import { useTranslation } from 'react-i18next'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 
 function StudioSelect({ title, path }: Readonly<{ title: string; path: string }>): JSX.Element {
 	const studios = useTracker(

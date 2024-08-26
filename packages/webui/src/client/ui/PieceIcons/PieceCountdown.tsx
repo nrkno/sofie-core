@@ -1,9 +1,9 @@
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { SourceLayerType, VTContent } from '@sofie-automation/blueprints-integration'
-import { MeteorPubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { findPieceInstanceToShow } from './utils'
 import { Timediff } from '../ClockView/Timediff'
-import { getCurrentTime } from '../../../lib/lib'
+import { getCurrentTime } from '../../lib/systemTime'
 import {
 	PartInstanceId,
 	RundownId,
