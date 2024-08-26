@@ -438,6 +438,41 @@ describe('Infinites', () => {
 			// don't expect virtual Pieces in the results, but 'one' should be pruned too
 			expect(resolvedInstances).toEqual([])
 		})
+		test('stop onSegmentChange continuation with planned onSegmentEnd start=0', () => {
+			const pieceInstances = [
+				createPieceInstance('one', { start: 0 }, 'one', PieceLifespan.OutOnSegmentChange, false, {
+					fromPreviousPart: true,
+					fromPreviousPlayhead: true,
+					infiniteInstanceId: protectString('one_a'),
+					infiniteInstanceIndex: 1,
+					infinitePieceId: protectString('one_b'),
+				}),
+				createPieceInstance('two', { start: 0 }, 'one', PieceLifespan.OutOnSegmentEnd, false, {
+					fromPreviousPart: false,
+					infiniteInstanceId: protectString('two_a'),
+					infiniteInstanceIndex: 0,
+					infinitePieceId: protectString('two_b'),
+				}),
+			]
+
+			// Set the first as adlibbed during the previous part
+			pieceInstances[0].dynamicallyInserted = 1
+
+			// Pieces should have preroll
+			pieceInstances[0].piece.prerollDuration = 200
+			pieceInstances[1].piece.prerollDuration = 200
+
+			const resolvedInstances = runAndTidyResult(pieceInstances, 500)
+
+			expect(resolvedInstances).toEqual([
+				{
+					_id: 'two',
+					end: undefined,
+					priority: 2,
+					start: 0,
+				},
+			])
+		})
 	})
 	describe('getPlayheadTrackingInfinitesForPart', () => {
 		function runAndTidyResult(
