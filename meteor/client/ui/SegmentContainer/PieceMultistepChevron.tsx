@@ -30,7 +30,7 @@ export function getPieceSteps(piece: PieceExtended): { currentStep: number; allS
 		(piece.sourceLayer?.type === SourceLayerType.GRAPHICS ||
 			piece.sourceLayer?.type === SourceLayerType.LOWER_THIRD ||
 			piece.sourceLayer?.type === SourceLayerType.STUDIO_SCREEN) &&
-		noraContent?.payload?.step?.enabled
+		!!noraContent?.step
 
 	if (!noraContent || !hasStepChevron) return null
 
@@ -40,16 +40,11 @@ export function getPieceSteps(piece: PieceExtended): { currentStep: number; allS
 export function getNoraContentSteps(
 	noraContent: NoraContent | undefined
 ): { currentStep: number; allSteps: number } | null {
-	const hasStepChevron = noraContent?.payload?.step?.enabled
+	if (!noraContent?.step) return null
 
-	if (!hasStepChevron) return null
+	const currentStep = noraContent.step.current || 1
 
-	const currentStep =
-		noraContent?.payload?.step?.to === 'next'
-			? (noraContent.payload.step?.from || 0) + 1
-			: noraContent.payload.step?.to || 1
-
-	const allSteps = (noraContent?.payload?.content?.steps as any[])?.length ?? 0
+	const allSteps = noraContent.step.count
 
 	return { currentStep, allSteps }
 }
