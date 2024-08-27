@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useMemo, useRef } from 'react'
 import * as _ from 'underscore'
 
 import { GraphicsContent, JSONBlobParse, NoraContent } from '@sofie-automation/blueprints-integration'
@@ -36,41 +36,40 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 }) => {
 	const noraContent = (content as NoraContent)?.previewPayload ? (content as NoraContent | undefined) : undefined
 
-	let properties: Array<KeyValue> = []
-	if (noraContent && noraContent.previewPayload) {
+	const properties: Array<KeyValue> = useMemo(() => {
+		if (!noraContent?.previewPayload) return []
 		const payload = JSONBlobParse(noraContent.previewPayload)
-		if (payload?.content) {
-			properties = _.compact(
-				_.map(
-					payload.content,
-					(
-						value,
-						key: string
-					):
-						| {
-								key: string
-								value: string
-						  }
-						| undefined => {
-						let str: string
-						if (key.startsWith('_') || key.startsWith('@') || value === '') {
-							return undefined
+		if (!payload?.content) return []
+		return _.compact(
+			_.map(
+				payload.content,
+				(
+					value,
+					key: string
+				):
+					| {
+							key: string
+							value: string
+					  }
+					| undefined => {
+					let str: string
+					if (key.startsWith('_') || key.startsWith('@') || value === '') {
+						return undefined
+					} else {
+						if (_.isObject(value)) {
+							str = JSON.stringify(value, undefined, 2)
 						} else {
-							if (_.isObject(value)) {
-								str = JSON.stringify(value, undefined, 2)
-							} else {
-								str = value + ''
-							}
-							return {
-								key: key,
-								value: str,
-							}
+							str = value + ''
+						}
+						return {
+							key: key,
+							value: str,
 						}
 					}
-				)
-			) as Array<KeyValue>
-		}
-	}
+				}
+			)
+		) as Array<KeyValue>
+	}, [noraContent?.previewPayload])
 
 	const changed: Time | undefined = noraContent?.changed ?? undefined
 
