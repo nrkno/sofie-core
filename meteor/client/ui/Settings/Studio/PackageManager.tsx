@@ -488,6 +488,36 @@ export const StudioPackageManagerSettings = withTranslation()(
 														{t('Base url to the resource (example: http://myserver/folder)')}
 													</span>
 												</label>
+												<label className="field">
+													<LabelActual label={t('Is Immutable')} />
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.isImmutable`}
+														obj={this.props.studio}
+														type="checkbox"
+														collection={Studios}
+														className="input text-input input-l"
+													></EditAttribute>
+													<span className="text-s dimmed field-hint">
+														{t('When set, resources are considered immutable, ie they will not change')}
+													</span>
+												</label>
+												<label className="field">
+													<LabelActual label={t('Supports HEAD requests')} />
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.supportHEAD`}
+														obj={this.props.studio}
+														type="checkbox"
+														collection={Studios}
+														className="input text-input input-l"
+													></EditAttribute>
+													<span className="text-s dimmed field-hint">
+														{t(
+															'Set to true if the HTTP server supports HEAD requests. (otherwise GET requests will be used to check availability)'
+														)}
+													</span>
+												</label>
 
 												<label className="field">
 													<LabelActual label={t('Network Id')} />
