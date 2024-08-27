@@ -503,10 +503,10 @@ export const StudioPackageManagerSettings = withTranslation()(
 													</span>
 												</label>
 												<label className="field">
-													<LabelActual label={t('Supports HEAD requests')} />
+													<LabelActual label={t('Does NOT support HEAD requests')} />
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.supportHEAD`}
+														attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.useGETinsteadOfHEAD`}
 														obj={this.props.studio}
 														type="checkbox"
 														collection={Studios}
@@ -514,7 +514,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 													></EditAttribute>
 													<span className="text-s dimmed field-hint">
 														{t(
-															'Set to true if the HTTP server supports HEAD requests. (otherwise GET requests will be used to check availability)'
+															"If set, Package Manager assumes that the source doesn't support HEAD requests and will use GET instead. If false, HEAD requests will be sent to check availability."
 														)}
 													</span>
 												</label>
