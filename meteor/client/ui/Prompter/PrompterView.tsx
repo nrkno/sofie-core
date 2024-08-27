@@ -1,6 +1,5 @@
 import React, { PropsWithChildren } from 'react'
 import _ from 'underscore'
-// @ts-expect-error No types available
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import ClassNames from 'classnames'
 import { Meteor } from 'meteor/meteor'
@@ -289,7 +288,7 @@ export class PrompterViewContent extends React.Component<Translated<IProps & ITr
 	}
 	scrollToPartInstance(partInstanceId: PartInstanceId): void {
 		const scrollMargin = this.calculateScrollPosition()
-		const target = document.querySelector(`#partInstance_${partInstanceId}`)
+		const target = document.querySelector<HTMLElement>(`#partInstance_${partInstanceId}`)
 
 		if (target) {
 			Velocity(document.body, 'finish')
@@ -298,7 +297,8 @@ export class PrompterViewContent extends React.Component<Translated<IProps & ITr
 	}
 	scrollToLive(): void {
 		const scrollMargin = this.calculateScrollPosition()
-		const current = document.querySelector('.prompter .live') || document.querySelector('.prompter .next')
+		const current =
+			document.querySelector<HTMLElement>('.prompter .live') || document.querySelector<HTMLElement>('.prompter .next')
 
 		if (current) {
 			Velocity(document.body, 'finish')
@@ -307,7 +307,7 @@ export class PrompterViewContent extends React.Component<Translated<IProps & ITr
 	}
 	scrollToNext(): void {
 		const scrollMargin = this.calculateScrollPosition()
-		const next = document.querySelector('.prompter .next')
+		const next = document.querySelector<HTMLElement>('.prompter .next')
 
 		if (next) {
 			Velocity(document.body, 'finish')
