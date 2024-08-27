@@ -255,8 +255,8 @@ export interface NewUserActionAPI extends MethodContext {
 		playlistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<void>>
 	restartCore(userEvent: string, eventTime: Time, token: string): Promise<ClientAPI.ClientResponse<string>>
-	guiFocused(userEvent: string, eventTime: Time, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
-	guiBlurred(userEvent: string, eventTime: Time, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
+	guiFocused(userEvent: string, eventTime: Time, viewInfo?: unknown): Promise<ClientAPI.ClientResponse<void>>
+	guiBlurred(userEvent: string, eventTime: Time, viewInfo?: unknown): Promise<ClientAPI.ClientResponse<void>>
 	bucketsRemoveBucket(userEvent: string, eventTime: Time, id: BucketId): Promise<ClientAPI.ClientResponse<void>>
 	bucketsModifyBucket(
 		userEvent: string,
