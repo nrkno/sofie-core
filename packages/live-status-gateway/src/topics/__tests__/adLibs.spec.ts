@@ -24,9 +24,9 @@ function makeTestAdLibActions(): AdLibAction[] {
 				tags: ['adlib_tag'],
 			},
 			externalId: 'NCS_ACTION_0',
-			// userData: {},
+			userData: {},
 			userDataManifest: {},
-			userData: { a: 'b' }, // tmp, publicData was introduced in R51
+			publicData: { a: 'b' },
 		},
 	]
 }
@@ -45,9 +45,9 @@ function makeTestGlobalAdLibActions(): RundownBaselineAdLibAction[] {
 				tags: ['global_adlib_tag'],
 			},
 			externalId: 'NCS_GLOBAL_ACTION_0',
-			// userData: {},
+			userData: {},
 			userDataManifest: {},
-			userData: { c: 'd' }, // tmp, publicData was introduced in R51
+			publicData: { c: 'd' },
 		},
 	]
 }

@@ -8,7 +8,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
-import { ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BucketId, ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBStudio, IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { assertNever, getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
@@ -20,6 +20,8 @@ import {
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import {
 	APIBlueprint,
+	APIBucket,
+	APIBucketComplete,
 	APIOutputLayer,
 	APIPeripheralDevice,
 	APIShowStyleBase,
@@ -27,12 +29,12 @@ import {
 	APISourceLayer,
 	APIStudio,
 	APIStudioSettings,
-} from '../../../../lib/api/rest'
+} from '../../../../lib/api/rest/v1'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { Studio } from '../../../../lib/collections/Studios'
 import { Blueprints, ShowStyleBases, Studios } from '../../../collections'
 import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
+import { Bucket } from '../../../../lib/collections/Buckets'
 
 /*
 This file contains functions that convert between the internal Sofie-Core types and types exposed to the external API.
@@ -81,6 +83,7 @@ export async function showStyleBaseFrom(
 		blueprintConfigWithOverrides: blueprintConfig,
 		_rundownVersionHash: '',
 		lastBlueprintConfig: undefined,
+		lastBlueprintFixUpHash: undefined,
 	}
 }
 
@@ -244,7 +247,7 @@ export function APISourceLayerFrom(sourceLayer: ISourceLayer): APISourceLayer {
 	}
 }
 
-export async function studioFrom(apiStudio: APIStudio, existingId?: StudioId): Promise<Studio | undefined> {
+export async function studioFrom(apiStudio: APIStudio, existingId?: StudioId): Promise<DBStudio | undefined> {
 	let blueprint: Blueprint | undefined
 	if (apiStudio.blueprintId) {
 		blueprint = await Blueprints.findOneAsync(protectString(apiStudio.blueprintId))
@@ -281,10 +284,11 @@ export async function studioFrom(apiStudio: APIStudio, existingId?: StudioId): P
 			inputDevices: wrapDefaultObject({}),
 		},
 		lastBlueprintConfig: undefined,
+		lastBlueprintFixUpHash: undefined,
 	}
 }
 
-export function APIStudioFrom(studio: Studio): APIStudio {
+export function APIStudioFrom(studio: DBStudio): APIStudio {
 	const studioSettings = APIStudioSettingsFrom(studio.settings)
 
 	return {
@@ -307,7 +311,6 @@ export function studioSettingsFrom(apiStudioSettings: APIStudioSettings): IStudi
 		enablePlayFromAnywhere: apiStudioSettings.enablePlayFromAnywhere,
 		forceMultiGatewayMode: apiStudioSettings.forceMultiGatewayMode,
 		multiGatewayNowSafeLatency: apiStudioSettings.multiGatewayNowSafeLatency,
-		preserveUnsyncedPlayingSegmentContents: apiStudioSettings.preserveUnsyncedPlayingSegmentContents,
 		allowRundownResetOnAir: apiStudioSettings.allowRundownResetOnAir,
 		preserveOrphanedSegmentPositionInRundown: apiStudioSettings.preserveOrphanedSegmentPositionInRundown,
 		minimumTakeSpan: apiStudioSettings.minimumTakeSpan ?? DEFAULT_MINIMUM_TAKE_SPAN,
@@ -324,7 +327,6 @@ export function APIStudioSettingsFrom(settings: IStudioSettings): APIStudioSetti
 		enablePlayFromAnywhere: settings.enablePlayFromAnywhere,
 		forceMultiGatewayMode: settings.forceMultiGatewayMode,
 		multiGatewayNowSafeLatency: settings.multiGatewayNowSafeLatency,
-		preserveUnsyncedPlayingSegmentContents: settings.preserveUnsyncedPlayingSegmentContents,
 		allowRundownResetOnAir: settings.allowRundownResetOnAir,
 		preserveOrphanedSegmentPositionInRundown: settings.preserveOrphanedSegmentPositionInRundown,
 		minimumTakeSpan: settings.minimumTakeSpan,
@@ -413,5 +415,25 @@ export function APIOutputLayerFrom(outputLayer: IOutputLayer): APIOutputLayer {
 		name: outputLayer.name,
 		rank: outputLayer._rank,
 		isPgm: outputLayer.isPGM,
+	}
+}
+
+export function bucketFrom(apiBucket: APIBucket, existingId?: BucketId): Bucket {
+	return {
+		_id: existingId ?? getRandomId(),
+		studioId: protectString(apiBucket.studioId),
+		name: apiBucket.name,
+		_rank: 0,
+		width: undefined,
+		buttonWidthScale: 1,
+		buttonHeightScale: 1,
+	}
+}
+
+export function APIBucketFrom(bucket: Bucket): APIBucketComplete {
+	return {
+		id: unprotectString(bucket._id),
+		name: bucket.name,
+		studioId: unprotectString(bucket.studioId),
 	}
 }

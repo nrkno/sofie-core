@@ -22,12 +22,11 @@ export class StudioHandler
 		if (!this._collectionName) return
 		if (!this._publicationName) return
 		if (!this._studioId) return
-		this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, { _id: this._studioId })
-		// this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, [this._studioId]) // in R51
+		this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, [this._studioId])
 		this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
 
 		if (this._collectionName) {
-			const col = this._core.getCollection<DBStudio>(this._collectionName)
+			const col = this._core.getCollection(this._collectionName)
 			if (!col) throw new Error(`collection '${this._collectionName}' not found!`)
 			const studio = col.findOne(this._studioId)
 			if (!studio) throw new Error(`studio '${this._studioId}' not found!`)
@@ -44,7 +43,7 @@ export class StudioHandler
 	async changed(id: StudioId, changeType: string): Promise<void> {
 		this.logDocumentChange(id, changeType)
 		if (!(id === this._studioId && this._collectionName)) return
-		const collection = this._core.getCollection<DBStudio>(this._collectionName)
+		const collection = this._core.getCollection(this._collectionName)
 		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
 		const studio = collection.findOne(id)
 		if (!studio) throw new Error(`studio '${this._studioId}' not found on changed!`)

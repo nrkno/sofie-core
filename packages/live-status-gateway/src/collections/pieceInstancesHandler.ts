@@ -10,14 +10,18 @@ import throttleToNextTick from '@sofie-automation/shared-lib/dist/lib/throttleTo
 import _ = require('underscore')
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { PartInstanceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
+import {
+	processAndPrunePieceInstanceTimings,
+	resolvePrunedPieceInstance,
+} from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { ShowStyleBaseExt, ShowStyleBaseHandler } from './showStyleBaseHandler'
 import { PlaylistHandler } from './playlistHandler'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { PartInstancesHandler, SelectedPartInstances } from './partInstancesHandler'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
+import { ReadonlyDeep } from 'type-fest'
 
-export type PieceInstanceMin = Omit<PieceInstance, 'reportedStartedPlayback' | 'reportedStoppedPlayback'>
+export type PieceInstanceMin = Omit<ReadonlyDeep<PieceInstance>, 'reportedStartedPlayback' | 'reportedStoppedPlayback'>
 
 export interface SelectedPieceInstances {
 	// Pieces reported by the Playout Gateway as active
@@ -43,8 +47,7 @@ export class PieceInstancesHandler
 	private _partInstances: SelectedPartInstances | undefined
 
 	private _throttledUpdateAndNotify = throttleToNextTick(() => {
-		this.updateCollectionData()
-		this.notify(this._collectionData).catch(this._logger.error)
+		this.updateAndNotify().catch(this._logger.error)
 	})
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
@@ -71,62 +74,84 @@ export class PieceInstancesHandler
 
 	private processAndPrunePieceInstanceTimings(
 		partInstance: DBPartInstance | undefined,
-		pieceInstances: PieceInstance[]
-	): PieceInstance[] {
+		pieceInstances: PieceInstance[],
+		filterActive: boolean
+	): ReadonlyDeep<PieceInstance>[] {
 		// Approximate when 'now' is in the PartInstance, so that any adlibbed Pieces will be timed roughly correctly
 		const partStarted = partInstance?.timings?.plannedStartedPlayback
 		const nowInPart = partStarted === undefined ? 0 : Date.now() - partStarted
 
-		return processAndPrunePieceInstanceTimings(this._sourceLayers, pieceInstances, nowInPart, false, false)
+		const prunedPieceInstances = processAndPrunePieceInstanceTimings(
+			this._sourceLayers,
+			pieceInstances,
+			nowInPart,
+			false,
+			false
+		)
+		if (!filterActive) return prunedPieceInstances
+
+		return prunedPieceInstances.filter((pieceInstance) => {
+			const resolvedPieceInstance = resolvePrunedPieceInstance(nowInPart, pieceInstance)
+
+			return (
+				resolvedPieceInstance.resolvedStart <= nowInPart &&
+				(resolvedPieceInstance.resolvedDuration == null ||
+					resolvedPieceInstance.resolvedStart + resolvedPieceInstance.resolvedDuration > nowInPart) &&
+				pieceInstance.piece.virtual !== true &&
+				pieceInstance.disabled !== true
+			)
+		})
 	}
 
 	private updateCollectionData(): boolean {
 		if (!this._collectionName || !this._collectionData) return false
-		const collection = this._core.getCollection<PieceInstance>(this._collectionName)
+		const collection = this._core.getCollection(this._collectionName)
 		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
 
 		const inPreviousPartInstance = this._currentPlaylist?.previousPartInfo?.partInstanceId
 			? this.processAndPrunePieceInstanceTimings(
 					this._partInstances?.previous,
-					collection.find({ partInstanceId: this._currentPlaylist.previousPartInfo.partInstanceId })
+					collection.find({ partInstanceId: this._currentPlaylist.previousPartInfo.partInstanceId }),
+					true
 			  )
 			: []
 		const inCurrentPartInstance = this._currentPlaylist?.currentPartInfo?.partInstanceId
 			? this.processAndPrunePieceInstanceTimings(
 					this._partInstances?.current,
-					collection.find({ partInstanceId: this._currentPlaylist.currentPartInfo.partInstanceId })
+					collection.find({ partInstanceId: this._currentPlaylist.currentPartInfo.partInstanceId }),
+					true
 			  )
 			: []
 		const inNextPartInstance = this._currentPlaylist?.nextPartInfo?.partInstanceId
 			? this.processAndPrunePieceInstanceTimings(
 					undefined,
-					collection.find({ partInstanceId: this._currentPlaylist.nextPartInfo.partInstanceId })
+					collection.find({ partInstanceId: this._currentPlaylist.nextPartInfo.partInstanceId }),
+					false
 			  )
 			: []
 
-		const active = [...inPreviousPartInstance, ...inCurrentPartInstance].filter((pieceInstance) =>
-			this.isPieceInstanceActive(pieceInstance)
-		)
+		const active = [...inPreviousPartInstance, ...inCurrentPartInstance]
 
 		let hasAnythingChanged = false
-		if (!areElementsShallowEqual(this._collectionData.active, active)) {
+		if (!_.isEqual(this._collectionData.active, active)) {
 			this._collectionData.active = active
 			hasAnythingChanged = true
 		}
 		if (
-			!areElementsShallowEqual(this._collectionData.currentPartInstance, inCurrentPartInstance) &&
+			!_.isEqual(this._collectionData.currentPartInstance, inCurrentPartInstance) &&
 			(this._collectionData.currentPartInstance.length !== inCurrentPartInstance.length ||
 				this._collectionData.currentPartInstance.some((pieceInstance, index) => {
-					return !arePropertiesShallowEqual<PieceInstance>(inCurrentPartInstance[index], pieceInstance, [
-						'reportedStartedPlayback',
-						'reportedStoppedPlayback',
-					])
+					return !arePropertiesDeepEqual<ReadonlyDeep<PieceInstance>>(
+						inCurrentPartInstance[index],
+						pieceInstance,
+						['reportedStartedPlayback', 'reportedStoppedPlayback']
+					)
 				}))
 		) {
 			this._collectionData.currentPartInstance = inCurrentPartInstance
 			hasAnythingChanged = true
 		}
-		if (!areElementsShallowEqual(this._collectionData.nextPartInstance, inNextPartInstance)) {
+		if (!_.isEqual(this._collectionData.nextPartInstance, inNextPartInstance)) {
 			this._collectionData.nextPartInstance = inNextPartInstance
 			hasAnythingChanged = true
 		}
@@ -194,18 +219,10 @@ export class PieceInstancesHandler
 				this._subscriptionPending = true
 				this._subscriptionId = await this._coreHandler.setupSubscription(
 					this._publicationName,
-					{
-						rundownId: { $in: this._currentPlaylist.rundownIdsInOrder },
-						partInstanceId: { $in: this._partInstanceIds },
-					},
-					true
+					this._currentPlaylist.rundownIdsInOrder,
+					this._partInstanceIds,
+					{}
 				)
-				// this._subscriptionId = await this._coreHandler.setupSubscription(
-				// 	this._publicationName,
-				// 	this._currentPlaylist.rundownIdsInOrder,
-				// 	this._partInstanceIds,
-				// 	{}
-				// )
 				this._subscriptionPending = false
 				this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
 				this._dbObserver.added = (id) => {
@@ -241,28 +258,9 @@ export class PieceInstancesHandler
 			await this.notify(this._collectionData)
 		}
 	}
-
-	private isPieceInstanceActive(pieceInstance: PieceInstance) {
-		return (
-			pieceInstance.reportedStoppedPlayback == null &&
-			pieceInstance.piece.virtual !== true &&
-			pieceInstance.disabled !== true &&
-			(pieceInstance.partInstanceId === this._currentPlaylist?.previousPartInfo?.partInstanceId || // a piece from previous part instance may be active during transition
-				pieceInstance.partInstanceId === this._currentPlaylist?.currentPartInfo?.partInstanceId) &&
-			(pieceInstance.reportedStartedPlayback != null || // has been reported to have started by the Playout Gateway
-				pieceInstance.plannedStartedPlayback != null || // a time to start playing has been set by Core
-				(pieceInstance.partInstanceId === this._currentPlaylist?.currentPartInfo?.partInstanceId &&
-					pieceInstance.piece.enable.start === 0) || // this is to speed things up immediately after a part instance is taken when not yet reported by the Playout Gateway
-				pieceInstance.infinite?.fromPreviousPart) // infinites from previous part also are on air from the start of the current part
-		)
-	}
 }
 
-export function arePropertiesShallowEqual<T extends Record<string, any>>(
-	a: T,
-	b: T,
-	omitProperties: Array<keyof T>
-): boolean {
+function arePropertiesDeepEqual<T extends Record<string, any>>(a: T, b: T, omitProperties: Array<keyof T>): boolean {
 	if (typeof a !== 'object' || a == null || typeof b !== 'object' || b == null) {
 		return false
 	}
@@ -273,7 +271,7 @@ export function arePropertiesShallowEqual<T extends Record<string, any>>(
 	if (keysA.length !== keysB.length) return false
 
 	for (const key of keysA) {
-		if (!keysB.includes(key) || a[key] !== b[key]) {
+		if (!keysB.includes(key) || !_.isEqual(a[key], b[key])) {
 			return false
 		}
 	}

@@ -39,7 +39,7 @@ describe('ActivePiecesTopic', () => {
 						outputLayerId: 'pgm',
 						sourceLayerId: 'layer0',
 						tags: ['my_tag'],
-						metaData: { c: 'd' }, // tmp, introduced in R51
+						publicData: { c: 'd' },
 					},
 				}),
 			] as PieceInstance[],

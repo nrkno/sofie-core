@@ -9,12 +9,12 @@ import { AdLibActions, RundownBaselineAdLibActions } from '../../../../../../../
 export function AdLibActionEditor({
 	action,
 	onChange,
-}: {
+}: Readonly<{
 	action: SomeAction
 	onChange: (newVal: Partial<typeof action>) => void
-}): JSX.Element | null {
+}>): JSX.Element | null {
 	const { t } = useTranslation()
-	const allTriggerModes = useTracker(
+	const allTriggerModes = useTracker<string[]>(
 		() => {
 			return _.chain([
 				...RundownBaselineAdLibActions.find().map((action) =>
@@ -25,7 +25,7 @@ export function AdLibActionEditor({
 				.flatten()
 				.compact()
 				.uniq()
-				.value() as string[]
+				.value()
 		},
 		[],
 		[]
@@ -53,27 +53,25 @@ export function AdLibActionEditor({
 				/>
 			</div>
 			{action.arguments && (
-				<>
-					<div className="mts">
-						<label className="block">{t('Trigger Mode')}</label>
-						<EditAttribute
-							className="form-control input text-input input-m"
-							type="dropdowntext"
-							options={allTriggerModes}
-							overrideDisplayValue={action.arguments.triggerMode}
-							attribute={''}
-							updateFunction={(_e, newVal) => {
-								onChange({
-									...action,
-									arguments: {
-										...action.arguments,
-										triggerMode: newVal,
-									},
-								})
-							}}
-						/>
-					</div>
-				</>
+				<div className="mts">
+					<label className="block">{t('Trigger Mode')}</label>
+					<EditAttribute
+						className="form-control input text-input input-m"
+						type="dropdowntext"
+						options={allTriggerModes}
+						overrideDisplayValue={action.arguments.triggerMode}
+						attribute={''}
+						updateFunction={(_e, newVal) => {
+							onChange({
+								...action,
+								arguments: {
+									...action.arguments,
+									triggerMode: newVal,
+								},
+							})
+						}}
+					/>
+				</div>
 			)}
 		</>
 	)

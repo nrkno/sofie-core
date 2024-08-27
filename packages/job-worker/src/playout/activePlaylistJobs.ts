@@ -7,7 +7,7 @@ import {
 	ResetRundownPlaylistProps,
 } from '@sofie-automation/corelib/dist/worker/studio'
 import { JobContext } from '../jobs'
-import { runJobWithPlayoutCache } from './lock'
+import { runJobWithPlayoutModel } from './lock'
 import { resetRundownPlaylist } from './lib'
 import { updateTimeline } from './timeline/generate'
 import { getActiveRundownPlaylistsInStudioFromDb } from '../studio/lib'
@@ -43,19 +43,19 @@ export async function handlePrepareRundownPlaylistForBroadcast(
 	context: JobContext,
 	data: PrepareRundownForBroadcastProps
 ): Promise<void> {
-	return runJobWithPlayoutCache(
+	return runJobWithPlayoutModel(
 		context,
 		data,
-		async (cache) => {
-			const playlist = cache.Playlist.doc
+		async (playoutModel) => {
+			const playlist = playoutModel.playlist
 			if (playlist.activationId) throw UserError.create(UserErrorMessage.RundownAlreadyActive)
 
 			await checkNoOtherPlaylistsActive(context, playlist)
 		},
-		async (cache) => {
-			await resetRundownPlaylist(context, cache)
+		async (playoutModel) => {
+			await resetRundownPlaylist(context, playoutModel)
 
-			await activateRundownPlaylist(context, cache, true) // Activate rundownPlaylist (rehearsal)
+			await activateRundownPlaylist(context, playoutModel, true) // Activate rundownPlaylist (rehearsal)
 		}
 	)
 }
@@ -66,11 +66,11 @@ export async function handlePrepareRundownPlaylistForBroadcast(
  * Optionally activate the rundown at the end.
  */
 export async function handleResetRundownPlaylist(context: JobContext, data: ResetRundownPlaylistProps): Promise<void> {
-	return runJobWithPlayoutCache(
+	return runJobWithPlayoutModel(
 		context,
 		data,
-		async (cache) => {
-			const playlist = cache.Playlist.doc
+		async (playoutModel) => {
+			const playlist = playoutModel.playlist
 			if (playlist.activationId && !playlist.rehearsal && !context.studio.settings.allowRundownResetOnAir) {
 				throw UserError.create(UserErrorMessage.RundownResetWhileActive)
 			}
@@ -87,13 +87,13 @@ export async function handleResetRundownPlaylist(context: JobContext, data: Rese
 						// Try deactivating everything in parallel, although there should only ever be one active
 						await Promise.allSettled(
 							anyOtherActivePlaylists.map(async (otherRundownPlaylist) =>
-								runJobWithPlayoutCache(
+								runJobWithPlayoutModel(
 									context,
 									// 'forceResetAndActivateRundownPlaylist',
 									{ playlistId: otherRundownPlaylist._id },
 									null,
-									async (otherCache) => {
-										await deactivateRundownPlaylistInner(context, otherCache)
+									async (otherPlayoutModel) => {
+										await deactivateRundownPlaylistInner(context, otherPlayoutModel)
 									}
 								).catch((e) => errors.push(e))
 							)
@@ -109,15 +109,15 @@ export async function handleResetRundownPlaylist(context: JobContext, data: Rese
 				}
 			}
 		},
-		async (cache) => {
-			await resetRundownPlaylist(context, cache)
+		async (playoutModel) => {
+			await resetRundownPlaylist(context, playoutModel)
 
 			if (data.activate) {
 				// Do the activation
-				await activateRundownPlaylist(context, cache, data.activate !== 'active') // Activate rundown
-			} else if (cache.Playlist.doc.activationId) {
+				await activateRundownPlaylist(context, playoutModel, data.activate !== 'active') // Activate rundown
+			} else if (playoutModel.playlist.activationId) {
 				// Only update the timeline if this is the active playlist
-				await updateTimeline(context, cache)
+				await updateTimeline(context, playoutModel)
 			}
 		}
 	)
@@ -130,16 +130,16 @@ export async function handleActivateRundownPlaylist(
 	context: JobContext,
 	data: ActivateRundownPlaylistProps
 ): Promise<void> {
-	return runJobWithPlayoutCache(
+	return runJobWithPlayoutModel(
 		context,
 		// 'activateRundownPlaylist',
 		data,
-		async (cache) => {
-			const playlist = cache.Playlist.doc
+		async (playoutModel) => {
+			const playlist = playoutModel.playlist
 			await checkNoOtherPlaylistsActive(context, playlist)
 		},
-		async (cache) => {
-			await activateRundownPlaylist(context, cache, data.rehearsal)
+		async (playoutModel) => {
+			await activateRundownPlaylist(context, playoutModel, data.rehearsal)
 		}
 	)
 }
@@ -151,13 +151,13 @@ export async function handleDeactivateRundownPlaylist(
 	context: JobContext,
 	data: DeactivateRundownPlaylistProps
 ): Promise<void> {
-	return runJobWithPlayoutCache(
+	return runJobWithPlayoutModel(
 		context,
 		// 'deactivateRundownPlaylist',
 		data,
 		null,
-		async (cache) => {
-			await deactivateRundownPlaylist(context, cache)
+		async (playoutModel) => {
+			await deactivateRundownPlaylist(context, playoutModel)
 		}
 	)
 }

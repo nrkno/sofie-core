@@ -11,7 +11,7 @@ interface SchemaFormInPlaceProps extends Omit<SchemaFormCommonProps, 'isRequired
 	/** The object to be modified in place */
 	object: any
 }
-export function SchemaFormInPlace({ object, ...commonProps }: SchemaFormInPlaceProps): JSX.Element {
+export function SchemaFormInPlace({ object, ...commonProps }: Readonly<SchemaFormInPlaceProps>): JSX.Element {
 	// This is a hack to avoid issues with the UI re-rendering as 'nothing' changed
 	const [editCount, setEditCount] = useState(0)
 	const forceRender = useCallback(() => setEditCount((v) => v + 1), [])

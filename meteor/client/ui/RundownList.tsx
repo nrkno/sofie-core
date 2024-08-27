@@ -1,9 +1,9 @@
 import Tooltip from 'rc-tooltip'
 import * as React from 'react'
-import { PubSub } from '../../lib/api/pubsub'
+import { MeteorPubSub } from '../../lib/api/pubsub'
 import { GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
-import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { getAllowConfigure, getHelpMode } from '../lib/localStorage'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { getAllowConfigure, getAllowStudio, getHelpMode } from '../lib/localStorage'
 import { literal, unprotectString } from '../../lib/lib'
 import { useSubscription, useTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../lib/Spinner'
@@ -19,6 +19,8 @@ import { getCoreSystem, RundownLayouts, RundownPlaylists, Rundowns } from '../co
 import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlaylistUtil'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { CreateAdlibTestingRundownPanel } from './RundownList/CreateAdlibTestingRundownPanel'
 
 export enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',
@@ -59,19 +61,14 @@ export function RundownList(): JSX.Element {
 	)
 
 	const baseSubsReady = [
-		useSubscription(PubSub.rundownPlaylists, {}),
-		useSubscription(PubSub.uiStudio, null),
-		useSubscription(PubSub.rundownLayouts, {}),
+		useSubscription(CorelibPubSub.rundownPlaylists, null, null),
+		useSubscription(MeteorPubSub.uiStudio, null),
+		useSubscription(MeteorPubSub.rundownLayouts, null),
 
-		useSubscription(PubSub.rundowns, playlistIds, null),
+		useSubscription(CorelibPubSub.rundownsInPlaylists, playlistIds),
 
-		useSubscription(PubSub.showStyleBases, {
-			_id: { $in: showStyleBaseIds },
-		}),
-
-		useSubscription(PubSub.showStyleVariants, {
-			_id: { $in: showStyleVariantIds },
-		}),
+		useSubscription(CorelibPubSub.showStyleBases, showStyleBaseIds),
+		useSubscription(CorelibPubSub.showStyleVariants, null, showStyleVariantIds),
 	].reduce((prev, current) => prev && current, true)
 
 	const [subsReady, setSubsReady] = useState(false)
@@ -91,7 +88,7 @@ export function RundownList(): JSX.Element {
 	)
 	const rundownPlaylists = useTracker(
 		() =>
-			RundownPlaylists.find({}, { sort: { created: -1 } }).map((playlist: RundownPlaylist) => {
+			RundownPlaylists.find({}, { sort: { created: -1 } }).map((playlist: DBRundownPlaylist) => {
 				const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)
 
 				const unsyncedRundowns = rundowns.filter((rundown) => !!rundown.orphaned)
@@ -150,9 +147,9 @@ export function RundownList(): JSX.Element {
 					<h1>{t('Rundowns')}</h1>
 				</header>
 				{subsReady ? (
-					<section className="mod mvl rundown-list">
+					<section className="mod mvl rundown-list" role="treegrid">
 						<header className="rundown-list__header">
-							<span className="rundown-list-item__name">
+							<span className="rundown-list-item__name" role="columnheader">
 								<Tooltip
 									overlay={t('Click on a rundown to control your studio')}
 									visible={getHelpMode()}
@@ -162,20 +159,20 @@ export function RundownList(): JSX.Element {
 								</Tooltip>
 							</span>
 							{/* <span className="rundown-list-item__problems">{t('Problems')}</span> */}
-							<span>{t('Show Style')}</span>
-							<span>{t('On Air Start Time')}</span>
-							<span>{t('Duration')}</span>
+							<span role="columnheader">{t('Show Style')}</span>
+							<span role="columnheader">{t('On Air Start Time')}</span>
+							<span role="columnheader">{t('Duration')}</span>
 							{rundownPlaylists.some(
 								(p) =>
 									!!PlaylistTiming.getExpectedEnd(p.timing) ||
 									p.rundowns.some((r) => PlaylistTiming.getExpectedEnd(r.timing))
-							) && <span>{t('Expected End Time')}</span>}
-							<span>{t('Last updated')}</span>
+							) && <span role="columnheader">{t('Expected End Time')}</span>}
+							<span role="columnheader">{t('Last updated')}</span>
 							{rundownLayouts.some(
 								(l) =>
 									(RundownLayoutsAPI.isLayoutForShelf(l) && l.exposeAsStandalone) ||
 									(RundownLayoutsAPI.isLayoutForRundownView(l) && l.exposeAsSelectableLayout)
-							) && <span>{t('View Layout')}</span>}
+							) && <span role="columnheader">{t('View Layout')}</span>}
 							<span>&nbsp;</span>
 						</header>
 						{renderRundownPlaylists()}
@@ -188,6 +185,8 @@ export function RundownList(): JSX.Element {
 					<Spinner />
 				)}
 			</section>
+
+			{getAllowStudio() && <CreateAdlibTestingRundownPanel />}
 
 			<RundownListFooter />
 		</>

@@ -1,18 +1,18 @@
-import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { unprotectString } from '@sofie-automation/server-core-integration'
 import { ShowStyleBaseExt } from '../../collections/showStyleBaseHandler'
+import { PieceInstanceMin } from '../../collections/pieceInstancesHandler'
 
 export interface PieceStatus {
 	id: string
 	name: string
 	sourceLayer: string
 	outputLayer: string
-	tags: string[] | undefined
+	tags: readonly string[] | undefined
 	publicData: unknown
 }
 
 export function toPieceStatus(
-	pieceInstance: PieceInstance,
+	pieceInstance: PieceInstanceMin,
 	showStyleBaseExt: ShowStyleBaseExt | undefined
 ): PieceStatus {
 	const sourceLayerName = showStyleBaseExt?.sourceLayerNamesById.get(pieceInstance.piece.sourceLayerId)
@@ -23,6 +23,6 @@ export function toPieceStatus(
 		sourceLayer: sourceLayerName ?? 'invalid',
 		outputLayer: outputLayerName ?? 'invalid',
 		tags: pieceInstance.piece.tags,
-		publicData: pieceInstance.piece.metaData, // tmp, publicData was introduced in R51
+		publicData: pieceInstance.piece.publicData,
 	}
 }

@@ -13,14 +13,14 @@ jobs:
         image: ["server-core", "playout-gateway", "mos-gateway"]
     steps:
       - name: Run Trivy vulnerability scanner (json)
-        uses: aquasecurity/trivy-action@0.17.0
+        uses: aquasecurity/trivy-action@0.24.0
         with:
           image-ref: ghcr.io/nrkno/sofie-core-${{ matrix.image }}:latest
           format: json
           output: '${{ matrix.image }}-trivy-scan-results.json'
 
       - name: Run Trivy vulnerability scanner (table)
-        uses: aquasecurity/trivy-action@0.17.0
+        uses: aquasecurity/trivy-action@0.24.0
         with:
           image-ref: ghcr.io/nrkno/sofie-core-${{ matrix.image }}:latest
           output: '${{ matrix.image }}-trivy-scan-results.txt'
@@ -36,7 +36,7 @@ jobs:
           echo $CODE_BLOCK >> $GITHUB_STEP_SUMMARY
 
       - name: Run Trivy in GitHub SBOM mode and submit results to Dependency Graph
-        uses: aquasecurity/trivy-action@0.17.0
+        uses: aquasecurity/trivy-action@0.24.0
         with:
           format: 'github'
           output: 'dependency-results-${{ matrix.image }}.sbom.json'
@@ -54,7 +54,7 @@ jobs:
           echo ${{ env.SUMMARY }}
 
       - name: Send Slack Notification
-        uses: slackapi/slack-github-action@v1.25.0
+        uses: slackapi/slack-github-action@v1.26.0
         with:
           payload: |
             {

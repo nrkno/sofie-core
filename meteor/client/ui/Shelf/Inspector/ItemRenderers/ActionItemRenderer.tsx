@@ -2,23 +2,18 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
 import { RundownUtils } from '../../../../lib/rundown'
-import { Piece } from '../../../../../lib/collections/Pieces'
-import {
-	ConfigManifestEntry as BlueprintConfigManifestEntry,
-	IBlueprintActionTriggerMode,
-} from '@sofie-automation/blueprints-integration'
-import { MeteorReactComponent } from '../../../../lib/MeteorReactComponent'
+import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
 import { translateWithTracker, Translated } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { AdLibActionCommon } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { createInMemorySyncMongoCollection } from '../../../../../lib/collections/lib'
-import { ConfigManifestEntryComponent } from '../../../Settings/components/ConfigManifestEntryComponent'
 import { Spinner } from '../../../../lib/Spinner'
 import InspectorTitle from './InspectorTitle'
 import { ProtectedString } from '../../../../../lib/lib'
 import { doUserAction, UserAction } from '../../../../../lib/clientUserAction'
 import { MeteorCall } from '../../../../../lib/api/methods'
 import { BucketAdLibItem, BucketAdLibActionUi } from '../../RundownViewBuckets'
-import { RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { actionToAdLibPieceUi } from '../../BucketPanel'
 import RundownViewEventBus, { RundownViewEvents } from '../../../../../lib/api/triggers/RundownViewEventBus'
 import { IAdLibListItem } from '../../AdLibListItem'
@@ -36,7 +31,7 @@ export interface IProps {
 	piece: PieceUi | IAdLibListItem | BucketAdLibActionUi
 	showStyleBase: UIShowStyleBase
 	studio: UIStudio
-	rundownPlaylist: RundownPlaylist
+	rundownPlaylist: DBRundownPlaylist
 	onSelectPiece: (piece: BucketAdLibItem | AdLibPieceUi | PieceUi | undefined) => void
 }
 
@@ -90,7 +85,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 			.map((bucket) => bucket._id),
 	}
 })(
-	class ActionItemRenderer extends MeteorReactComponent<Translated<IProps & ITrackedProps>> {
+	class ActionItemRenderer extends React.Component<Translated<IProps & ITrackedProps>> {
 		componentDidMount(): void {
 			const action = this.getActionItem()
 
@@ -138,8 +133,6 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 		}
 
 		componentWillUnmount(): void {
-			super.componentWillUnmount()
-
 			if (this.props.targetAction) {
 				LocalActionItems.remove(this.props.targetAction._id)
 			}
@@ -153,27 +146,6 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 			const action = (piece as AdLibPieceUi).adlibAction
 
 			return action
-		}
-
-		renderConfigFields(configManifest: Array<BlueprintConfigManifestEntry>, obj: any, prefix?: string) {
-			const { t } = this.props
-
-			return configManifest.length ? (
-				<div>
-					{configManifest.map((configField) => (
-						<ConfigManifestEntryComponent
-							key={configField.id}
-							collection={LocalActionItems}
-							configField={configField}
-							obj={obj}
-							prefix={prefix}
-							className=""
-						/>
-					))}
-				</div>
-			) : (
-				<span>{t('AdLib does not provide any options')}</span>
-			)
 		}
 
 		onRevealSelectedItem = () => {
@@ -258,13 +230,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 							{action.userDataManifest && action.userDataManifest.editableFields && !targetAction ? (
 								<Spinner />
 							) : action.userDataManifest && action.userDataManifest.editableFields && targetAction ? (
-								<>
-									{this.renderConfigFields(
-										action.userDataManifest.editableFields,
-										targetAction,
-										'transformedUserData.'
-									)}
-								</>
+								<span>Editable Fields are not currently supported.</span>
 							) : null}
 						</div>
 						<div className="shelf-inspector__action-editor__actions">

@@ -1,9 +1,9 @@
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { CoreConnection, Observer, ProtectedString } from '@sofie-automation/server-core-integration'
+import { CoreConnection, Observer, ProtectedString, SubscriptionId } from '@sofie-automation/server-core-integration'
 import { Logger } from 'winston'
 import { WebSocket } from 'ws'
 import { CoreHandler } from './coreHandler'
-import { CorelibPubSub, CorelibPubSubCollections } from '@sofie-automation/corelib/dist/pubsub'
+import { CorelibPubSub, CorelibPubSubCollections, CorelibPubSubTypes } from '@sofie-automation/corelib/dist/pubsub'
 
 export abstract class WebSocketTopicBase {
 	protected _name: string
@@ -89,11 +89,10 @@ export abstract class CollectionBase<
 	protected _subscribers: Set<WebSocket> = new Set()
 	protected _observers: Set<CollectionObserver<T>> = new Set()
 	protected _collectionData: T | undefined
-	protected _subscriptionId: string | undefined
+	protected _subscriptionId: SubscriptionId | undefined
 	protected _dbObserver: ObserverForCollection<TCollection> | undefined
 
-	protected get _core(): CoreConnection {
-		// In R51: CoreConnection<CorelibPubSubTypes, CorelibPubSubCollections> {
+	protected get _core(): CoreConnection<CorelibPubSubTypes, CorelibPubSubCollections> {
 		return this._coreHandler.core
 	}
 

@@ -1,24 +1,25 @@
 import * as React from 'react'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { Translated, useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { doModalDialog } from '../../lib/ModalDialog'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { SnapshotItem } from '../../../lib/collections/Snapshots'
-import { getCurrentTime, unprotectString } from '../../../lib/lib'
+import { unprotectString } from '../../../lib/lib'
 import * as _ from 'underscore'
 import { logger } from '../../../lib/logging'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { faWindowClose, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Studio } from '../../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { multilineText, fetchFrom } from '../../lib/lib'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { UploadButton } from '../../lib/uploadButton'
-import { PubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { MeteorCall } from '../../../lib/api/methods'
 import { SnapshotId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Snapshots, Studios } from '../../collections'
 import { ClientAPI } from '../../../lib/api/client'
 import { hashSingleUseToken } from '../../../lib/api/userActions'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { withTranslation } from 'react-i18next'
 
 interface IProps {
 	match: {
@@ -28,49 +29,55 @@ interface IProps {
 	}
 }
 interface IState {
-	uploadFileKey: number // Used to force clear the input after use
+	uploadFileKey: string // Used to force clear the input after use
+	uploadFileKey2: string // Used to force clear the input after use
 	editSnapshotId: SnapshotId | null
 	removeSnapshots: boolean
 }
 interface ITrackedProps {
 	snapshots: Array<SnapshotItem>
-	studios: Array<Studio>
+	studios: Array<DBStudio>
 }
-export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
-	return {
-		snapshots: Snapshots.find(
-			{},
-			{
-				sort: {
-					created: -1,
-				},
-			}
-		).fetch(),
-		studios: Studios.find({}, {}).fetch(),
-	}
-})(
-	class SnapshotsView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+
+export default function SnapshotsView(props: Readonly<IProps>): JSX.Element {
+	// // Subscribe to data:
+	useSubscription(MeteorPubSub.snapshots)
+	useSubscription(CorelibPubSub.studios, null)
+
+	const snapshots = useTracker(
+		() =>
+			Snapshots.find(
+				{},
+				{
+					sort: {
+						created: -1,
+					},
+				}
+			).fetch(),
+		[],
+		[]
+	)
+	const studios = useTracker(() => Studios.find({}, {}).fetch(), [], [])
+
+	return <SnapshotsViewContent {...props} snapshots={snapshots} studios={studios} />
+}
+
+const SnapshotsViewContent = withTranslation()(
+	class SnapshotsViewContent extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		constructor(props: Translated<IProps & ITrackedProps>) {
 			super(props)
 			this.state = {
-				uploadFileKey: Date.now(),
+				uploadFileKey: `${Date.now()}_1`,
+				uploadFileKey2: `${Date.now()}_2`,
 				editSnapshotId: null,
 				removeSnapshots: false,
 			}
 		}
-		componentDidMount(): void {
-			this.subscribe(PubSub.snapshots, {
-				created: {
-					$gt: getCurrentTime() - 30 * 24 * 3600 * 1000, // last 30 days
-				},
-			})
-			this.subscribe(PubSub.studios, {})
-		}
 
-		onUploadFile(e) {
+		onUploadFile(e: React.ChangeEvent<HTMLInputElement>, restoreDebugData: boolean) {
 			const { t } = this.props
 
-			const file = e.target.files[0]
+			const file = e.target.files?.[0]
 			if (!file) {
 				return
 			}
@@ -78,7 +85,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 			const reader = new FileReader()
 			reader.onload = (e2) => {
 				this.setState({
-					uploadFileKey: Date.now(),
+					uploadFileKey: `${Date.now()}_1`,
+					uploadFileKey2: `${Date.now()}_2`,
 				})
 				const uploadFileContents = ((e2.target as any) || {}).result
 
@@ -93,6 +101,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 							body: uploadFileContents,
 							headers: {
 								'content-type': 'application/json',
+								'restore-debug-data': restoreDebugData ? '1' : '0',
 							},
 						})
 							.then(() => {
@@ -118,7 +127,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 					},
 					onDiscard: () => {
 						this.setState({
-							uploadFileKey: Date.now(), // to clear input field
+							// to clear input field:
+							uploadFileKey: `${Date.now()}_1`,
+							uploadFileKey2: `${Date.now()}_2`,
 						})
 					},
 				})
@@ -126,7 +137,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 
 			reader.readAsText(file)
 		}
-		restoreStoredSnapshot = (snapshotId) => {
+		restoreStoredSnapshot = (snapshotId: SnapshotId) => {
 			const snapshot = Snapshots.findOne(snapshotId)
 			if (snapshot) {
 				doModalDialog({
@@ -134,7 +145,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 					message: `Do you really want to restore the snapshot ${snapshot.name}?`,
 					onAccept: () => {
 						MeteorCall.snapshot
-							.restoreSnapshot(snapshotId)
+							.restoreSnapshot(snapshotId, false)
 							.then(() => {
 								// todo: replace this with something else
 								doModalDialog({
@@ -211,7 +222,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 					})
 				})
 		}
-		editSnapshot = (snapshotId) => {
+		editSnapshot = (snapshotId: SnapshotId) => {
 			if (this.state.editSnapshotId === snapshotId) {
 				this.setState({
 					editSnapshotId: null,
@@ -305,11 +316,20 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 							<UploadButton
 								accept="application/json,.json"
 								className="btn btn-secondary"
-								onChange={(e) => this.onUploadFile(e)}
+								onChange={(e) => this.onUploadFile(e, false)}
 								key={this.state.uploadFileKey}
 							>
 								<FontAwesomeIcon icon={faUpload} />
 								<span>{t('Upload Snapshot')}</span>
+							</UploadButton>
+							<UploadButton
+								accept="application/json,.json"
+								className="btn btn-secondary"
+								onChange={(e) => this.onUploadFile(e, true)}
+								key={this.state.uploadFileKey2}
+							>
+								<FontAwesomeIcon icon={faUpload} />
+								<span>{t('Upload Snapshot (for debugging)')}</span>
 							</UploadButton>
 						</div>
 						<h2 className="mhn">{t('Restore from Stored Snapshots')}</h2>

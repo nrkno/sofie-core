@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
-import { CustomCollectionName, PubSub } from '../../../../lib/api/pubsub'
 import { PeripheralDeviceReadAccess } from '../../../security/peripheralDevice'
-import { Studio } from '../../../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
 	TriggerUpdate,
 	meteorCustomPublish,
@@ -26,6 +25,10 @@ import { ExpectedPackagesContentObserver } from './contentObserver'
 import { createReactiveContentCache, ExpectedPackagesContentCache } from './contentCache'
 import { buildMappingsToDeviceIdMap } from './util'
 import { updateCollectionForExpectedPackageIds, updateCollectionForPieceInstanceIds } from './generate'
+import {
+	PeripheralDevicePubSub,
+	PeripheralDevicePubSubCollectionsNames,
+} from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 
 interface ExpectedPackagesPublicationArgs {
 	readonly studioId: StudioId
@@ -43,7 +46,7 @@ interface ExpectedPackagesPublicationUpdateProps {
 }
 
 interface ExpectedPackagesPublicationState {
-	studio: Pick<Studio, StudioFields> | undefined
+	studio: Pick<DBStudio, StudioFields> | undefined
 	layerNameToDeviceIds: Map<string, PeripheralDeviceId[]>
 
 	contentCache: ReadonlyDeep<ExpectedPackagesContentCache>
@@ -56,7 +59,7 @@ export type StudioFields =
 	| 'packageContainers'
 	| 'previewContainerIds'
 	| 'thumbnailContainerIds'
-const studioFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<Studio, StudioFields>>>({
+const studioFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBStudio, StudioFields>>>({
 	_id: 1,
 	routeSets: 1,
 	mappingsWithOverrides: 1,
@@ -133,7 +136,7 @@ async function manipulateExpectedPackagesPublicationData(
 	// Reload the studio, and the layerNameToDeviceIds lookup
 	if (!updateProps || updateProps.invalidateStudio) {
 		state.studio = (await Studios.findOneAsync(args.studioId, { fields: studioFieldSpecifier })) as
-			| Pick<Studio, StudioFields>
+			| Pick<DBStudio, StudioFields>
 			| undefined
 		if (!state.studio) {
 			logger.warn(`Pub.expectedPackagesForDevice: studio "${args.studioId}" not found!`)
@@ -182,8 +185,8 @@ async function manipulateExpectedPackagesPublicationData(
 }
 
 meteorCustomPublish(
-	PubSub.packageManagerExpectedPackages,
-	CustomCollectionName.PackageManagerExpectedPackages,
+	PeripheralDevicePubSub.packageManagerExpectedPackages,
+	PeripheralDevicePubSubCollectionsNames.packageManagerExpectedPackages,
 	async function (
 		pub,
 		deviceId: PeripheralDeviceId,
@@ -210,7 +213,7 @@ meteorCustomPublish(
 				ExpectedPackagesPublicationState,
 				ExpectedPackagesPublicationUpdateProps
 			>(
-				`${PubSub.packageManagerExpectedPackages}_${studioId}_${deviceId}_${JSON.stringify(
+				`${PeripheralDevicePubSub.packageManagerExpectedPackages}_${studioId}_${deviceId}_${JSON.stringify(
 					(filterPlayoutDeviceIds || []).sort()
 				)}`,
 				{ studioId, deviceId, filterPlayoutDeviceIds },

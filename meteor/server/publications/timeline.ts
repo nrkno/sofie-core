@@ -9,7 +9,7 @@ import {
 	TimelineBlob,
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { meteorPublish } from './lib'
-import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
+import { MeteorPubSub } from '../../lib/api/pubsub'
 import { FindOptions } from '../../lib/collections/lib'
 import {
 	CustomPublish,
@@ -17,10 +17,10 @@ import {
 	setUpOptimizedObserverArray,
 	TriggerUpdate,
 } from '../lib/customPublication'
-import { getActiveRoutes, ResultingMappingRoutes } from '../../lib/collections/Studios'
+import { getActiveRoutes } from '../../lib/collections/Studios'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { StudioReadAccess } from '../security/studio'
-import { fetchStudioLight, StudioLight } from '../optimizations'
+import { fetchStudioLight } from '../optimizations'
 import { FastTrackObservers, setupFastTrackObserver } from './fastTrack'
 import { logger } from '../logging'
 import { getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
@@ -30,18 +30,14 @@ import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dat
 import { DBTimelineDatastoreEntry } from '@sofie-automation/corelib/dist/dataModel/TimelineDatastore'
 import { PeripheralDevices, Studios, Timeline, TimelineDatastore } from '../collections'
 import { check } from 'meteor/check'
+import { ResultingMappingRoutes, StudioLight } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import {
+	PeripheralDevicePubSub,
+	PeripheralDevicePubSubCollectionsNames,
+} from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 
-meteorPublish(PubSub.timeline, async function (selector, token) {
-	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-	const modifier: FindOptions<TimelineComplete> = {
-		fields: {},
-	}
-	if (await StudioReadAccess.studioContent(selector._id, { userId: this.userId, token })) {
-		return Timeline.findWithCursor(selector, modifier)
-	}
-	return null
-})
-meteorPublish(PubSub.timelineDatastore, async function (studioId, token) {
+meteorPublish(CorelibPubSub.timelineDatastore, async function (studioId: StudioId, token: string | undefined) {
 	if (!studioId) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<DBTimelineDatastoreEntry> = {
 		fields: {},
@@ -53,9 +49,9 @@ meteorPublish(PubSub.timelineDatastore, async function (studioId, token) {
 })
 
 meteorCustomPublish(
-	PubSub.timelineForDevice,
-	CustomCollectionName.StudioTimeline,
-	async function (pub, deviceId: PeripheralDeviceId, token) {
+	PeripheralDevicePubSub.timelineForDevice,
+	PeripheralDevicePubSubCollectionsNames.studioTimeline,
+	async function (pub, deviceId: PeripheralDeviceId, token: string | undefined) {
 		check(deviceId, String)
 
 		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
@@ -70,29 +66,32 @@ meteorCustomPublish(
 		}
 	}
 )
-meteorPublish(PubSub.timelineDatastoreForDevice, async function (deviceId, token) {
-	check(deviceId, String)
+meteorPublish(
+	PeripheralDevicePubSub.timelineDatastoreForDevice,
+	async function (deviceId: PeripheralDeviceId, token: string | undefined) {
+		check(deviceId, String)
 
-	if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
-		const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
+		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
+			const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 
-		if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
+			if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
 
-		const studioId = peripheralDevice.studioId
-		if (!studioId) return null
-		const modifier: FindOptions<DBTimelineDatastoreEntry> = {
-			fields: {},
+			const studioId = peripheralDevice.studioId
+			if (!studioId) return null
+			const modifier: FindOptions<DBTimelineDatastoreEntry> = {
+				fields: {},
+			}
+
+			return TimelineDatastore.findWithCursor({ studioId }, modifier)
 		}
-
-		return TimelineDatastore.findWithCursor({ studioId }, modifier)
+		return null
 	}
-	return null
-})
+)
 
 meteorCustomPublish(
-	PubSub.timelineForStudio,
-	CustomCollectionName.StudioTimeline,
-	async function (pub, studioId: StudioId, token) {
+	MeteorPubSub.timelineForStudio,
+	PeripheralDevicePubSubCollectionsNames.studioTimeline,
+	async function (pub, studioId: StudioId, token: string | undefined) {
 		if (await StudioReadAccess.studio(studioId, { userId: this.userId, token })) {
 			await createObserverForTimelinePublication(pub, studioId)
 		}
@@ -245,7 +244,7 @@ async function createObserverForTimelinePublication(pub: CustomPublish<RoutedTim
 		RoutedTimelineState,
 		RoutedTimelineUpdateProps
 	>(
-		`${CustomCollectionName.StudioTimeline}_${studioId}`,
+		`${PeripheralDevicePubSubCollectionsNames.studioTimeline}_${studioId}`,
 		{ studioId },
 		setupTimelinePublicationObservers,
 		manipulateTimelinePublicationData,

@@ -16,7 +16,7 @@ import { handleTakeNextPart } from '../take'
 import { handleActivateHold } from '../holdJobs'
 import { handleActivateRundownPlaylist, handleDeactivateRundownPlaylist } from '../activePlaylistJobs'
 import { fixSnapshot } from '../../__mocks__/helpers/snapshot'
-import { runJobWithPlayoutCache } from '../lock'
+import { runJobWithPlayoutModel } from '../lock'
 import { updateTimeline } from '../timeline/generate'
 import { getSelectedPartInstances, getSortedPartsForRundown } from './lib'
 import { PieceLifespan, IBlueprintPieceType, Time } from '@sofie-automation/blueprints-integration'
@@ -61,8 +61,10 @@ import {
 	PlayoutChangedResult,
 	PlayoutChangedType,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
-import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import * as _ from 'underscore'
+import { PlayoutRundownModel } from '../model/PlayoutRundownModel'
+import { PlayoutPartInstanceModel } from '../model/PlayoutPartInstanceModel'
+import { PlayoutPartInstanceModelImpl } from '../model/implementation/PlayoutPartInstanceModelImpl'
 
 /**
  * An object used to represent the simplified timeline structure.
@@ -175,19 +177,18 @@ function parsePieceGroupPrerollAndPostroll(
  * Check the timings of objects in the timeline to an expected result
  * Note: this ensures that every piece for the currentPartInstance is accounted for in the expected result
  */
-async function checkTimingsRaw(
-	context: MockJobContext,
+function checkTimingsRaw(
 	rundownId: RundownId,
 	timeline: TimelineComplete | undefined,
-	currentPartInstance: DBPartInstance,
-	previousPartInstance: DBPartInstance | undefined,
+	currentPartInstance: PlayoutPartInstanceModel,
+	previousPartInstance: PlayoutPartInstanceModel | undefined,
 	expectedTimings: PartTimelineTimings
 ) {
 	const timelineObjs = timeline ? deserializeTimelineBlob(timeline?.timelineBlob) : []
 	const objs = normalizeArrayToMap(timelineObjs, 'id')
 
 	// previous part group
-	const prevPartTlObj = previousPartInstance ? objs.get(getPartGroupId(previousPartInstance)) : undefined
+	const prevPartTlObj = previousPartInstance ? objs.get(getPartGroupId(previousPartInstance.partInstance)) : undefined
 	if (expectedTimings.previousPart) {
 		expect(prevPartTlObj).toBeTruthy()
 		expect(prevPartTlObj?.enable).toMatchObject(expectedTimings.previousPart)
@@ -198,19 +199,17 @@ async function checkTimingsRaw(
 	// current part group is assumed to start at now
 
 	// Current pieces
-	const currentPieces = await context.directCollections.PieceInstances.findFetch({
-		partInstanceId: currentPartInstance._id,
-	})
+	const currentPieces = currentPartInstance.pieceInstances
 	const targetCurrentPieces: PartTimelineTimings['currentPieces'] = {}
 	const targetCurrentInfinitePieces: PartTimelineTimings['currentInfinitePieces'] = {}
 	for (const piece of currentPieces) {
-		let entryId = unprotectString(piece.piece._id)
+		let entryId = unprotectString(piece.pieceInstance.piece._id)
 		if (entryId.startsWith(unprotectString(rundownId)))
 			entryId = entryId.substring(unprotectString(rundownId).length + 1)
 
-		if (piece.piece.lifespan === PieceLifespan.WithinPart) {
-			const pieceObj = objs.get(getPieceGroupId(piece))
-			const controlObj = objs.get(getPieceControlObjectId(piece))
+		if (piece.pieceInstance.piece.lifespan === PieceLifespan.WithinPart) {
+			const pieceObj = objs.get(getPieceGroupId(piece.pieceInstance))
+			const controlObj = objs.get(getPieceControlObjectId(piece.pieceInstance))
 
 			targetCurrentPieces[entryId] = controlObj
 				? {
@@ -219,13 +218,14 @@ async function checkTimingsRaw(
 				  }
 				: null
 		} else {
-			const partGroupId = getPartGroupId(protectString<PartInstanceId>(unprotectString(piece._id))) + '_infinite'
+			const partGroupId =
+				getPartGroupId(protectString<PartInstanceId>(unprotectString(piece.pieceInstance._id))) + '_infinite'
 			const partObj = objs.get(partGroupId)
 			if (!partObj) {
 				targetCurrentInfinitePieces[entryId] = null
 			} else {
-				const pieceObj = objs.get(getPieceGroupId(piece))
-				const controlObj = objs.get(getPieceControlObjectId(piece))
+				const pieceObj = objs.get(getPieceGroupId(piece.pieceInstance))
+				const controlObj = objs.get(getPieceControlObjectId(piece.pieceInstance))
 
 				targetCurrentInfinitePieces[entryId] = {
 					partGroup: partObj.enable,
@@ -242,16 +242,14 @@ async function checkTimingsRaw(
 
 	if (previousPartInstance) {
 		// Previous pieces
-		const previousPieces = await context.directCollections.PieceInstances.findFetch({
-			partInstanceId: previousPartInstance._id,
-		})
+		const previousPieces = previousPartInstance.pieceInstances
 		let previousOutTransition: PartTimelineTimings['previousOutTransition']
 		for (const piece of previousPieces) {
-			if (piece.piece.pieceType === IBlueprintPieceType.OutTransition) {
+			if (piece.pieceInstance.piece.pieceType === IBlueprintPieceType.OutTransition) {
 				if (previousOutTransition !== undefined) throw new Error('Too many out transition pieces were found')
 
-				const pieceObj = objs.get(getPieceGroupId(piece))
-				const controlObj = objs.get(getPieceControlObjectId(piece))
+				const pieceObj = objs.get(getPieceGroupId(piece.pieceInstance))
+				const controlObj = objs.get(getPieceControlObjectId(piece.pieceInstance))
 				previousOutTransition = controlObj
 					? {
 							childGroup: parsePieceGroupPrerollAndPostroll(pieceObj?.enable ?? []),
@@ -437,23 +435,23 @@ async function doDeactivatePlaylist(context: MockJobContext, playlistId: Rundown
 }
 
 /** perform an update of the timeline */
-async function doUpdateTimeline(context: MockJobContext, playlistId: RundownPlaylistId, forceNowToTime?: Time) {
-	await runJobWithPlayoutCache(
+async function doUpdateTimeline(context: MockJobContext, playlistId: RundownPlaylistId) {
+	await runJobWithPlayoutModel(
 		context,
 		{
 			playlistId: playlistId,
 		},
 		null,
-		async (cache) => {
-			await updateTimeline(context, cache, forceNowToTime)
+		async (playoutModel) => {
+			await updateTimeline(context, playoutModel)
 		}
 	)
 }
 
 interface SelectedPartInstances {
-	currentPartInstance: DBPartInstance | undefined
-	nextPartInstance: DBPartInstance | undefined
-	previousPartInstance: DBPartInstance | undefined
+	currentPartInstance: PlayoutPartInstanceModel | undefined
+	nextPartInstance: PlayoutPartInstanceModel | undefined
+	previousPartInstance: PlayoutPartInstanceModel | undefined
 }
 
 describe('Timeline', () => {
@@ -542,8 +540,8 @@ describe('Timeline', () => {
 			// })
 		}
 
-		await runJobWithPlayoutCache(context, { playlistId: playlistId0 }, null, async (cache) => {
-			await updateTimeline(context, cache)
+		await runJobWithPlayoutModel(context, { playlistId: playlistId0 }, null, async (playoutModel) => {
+			await updateTimeline(context, playoutModel)
 		})
 
 		expect(fixSnapshot(await context.directCollections.Timelines.findFetch())).toMatchSnapshot()
@@ -703,10 +701,22 @@ describe('Timeline', () => {
 			)) as DBRundownPlaylist
 			expect(playlist).toBeTruthy()
 			const res = await getSelectedPartInstances(context, playlist)
+
+			async function wrapPartInstance(
+				partInstance: DBPartInstance | null
+			): Promise<PlayoutPartInstanceModel | undefined> {
+				if (!partInstance) return undefined
+
+				const pieceInstances = await context.directCollections.PieceInstances.findFetch({
+					partInstanceId: partInstance?._id,
+				})
+				return new PlayoutPartInstanceModelImpl(partInstance, pieceInstances, false)
+			}
+
 			return {
-				currentPartInstance: res.currentPartInstance ?? undefined,
-				nextPartInstance: res.nextPartInstance ?? undefined,
-				previousPartInstance: res.previousPartInstance ?? undefined,
+				currentPartInstance: await wrapPartInstance(res.currentPartInstance),
+				nextPartInstance: await wrapPartInstance(res.nextPartInstance),
+				previousPartInstance: await wrapPartInstance(res.previousPartInstance),
 			}
 		}
 
@@ -720,7 +730,7 @@ describe('Timeline', () => {
 			await doUpdateTimeline(context, playlistId0)
 
 			const { currentPartInstance, previousPartInstance } = await getPartInstances()
-			return checkTimingsRaw(context, rundownId0, timeline, currentPartInstance!, previousPartInstance, timings)
+			return checkTimingsRaw(rundownId0, timeline, currentPartInstance!, previousPartInstance, timings)
 		}
 
 		// Run the required steps
@@ -945,7 +955,7 @@ describe('Timeline', () => {
 					const { currentPartInstance } = await getPartInstances()
 					await checkTimings({
 						// old part ends immediately
-						previousPart: { end: `#${getPartGroupId(currentPartInstance!)}.start + 0` },
+						previousPart: { end: `#${getPartGroupId(currentPartInstance!.partInstance)}.start + 0` },
 						currentPieces: {
 							// pieces are not delayed
 							piece010: {
@@ -1105,7 +1115,7 @@ describe('Timeline', () => {
 
 					const { currentPartInstance } = await getPartInstances()
 					await checkTimings({
-						previousPart: { end: `#${getPartGroupId(currentPartInstance!)}.start + 500` }, // note: this seems odd, but the pieces are delayed to compensate
+						previousPart: { end: `#${getPartGroupId(currentPartInstance!.partInstance)}.start + 500` }, // note: this seems odd, but the pieces are delayed to compensate
 						currentPieces: {
 							piece010: {
 								controlObj: { start: 500 }, // note: Offset matches extension of previous partGroup
@@ -1120,16 +1130,24 @@ describe('Timeline', () => {
 	})
 
 	describe('Adlib pieces', () => {
-		async function doStartAdlibPiece(
-			playlistId: RundownPlaylistId,
-			currentPartInstance: DBPartInstance,
-			adlibSource: AdLibPiece
-		) {
-			await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) => {
-				const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId) as Rundown
+		async function doStartAdlibPiece(playlistId: RundownPlaylistId, adlibSource: AdLibPiece) {
+			await runJobWithPlayoutModel(context, { playlistId }, null, async (playoutModel) => {
+				const currentPartInstance = playoutModel.currentPartInstance as PlayoutPartInstanceModel
+				expect(currentPartInstance).toBeTruthy()
+
+				const rundown = playoutModel.getRundown(
+					currentPartInstance.partInstance.rundownId
+				) as PlayoutRundownModel
 				expect(rundown).toBeTruthy()
 
-				return innerStartOrQueueAdLibPiece(context, cache, rundown, false, currentPartInstance, adlibSource)
+				return innerStartOrQueueAdLibPiece(
+					context,
+					playoutModel,
+					rundown,
+					false,
+					currentPartInstance,
+					adlibSource
+				)
 			})
 		}
 
@@ -1142,11 +1160,6 @@ describe('Timeline', () => {
 			const rawTimelineObjs = deserializeTimelineBlob(timelineComplete.timelineBlob)
 			const nowObjs = rawTimelineObjs.filter((obj) => !Array.isArray(obj.enable) && obj.enable.start === 'now')
 			expect(nowObjs).toHaveLength(objectCount)
-
-			// All should be inside a PartGroup
-			expect(
-				nowObjs.find((obj) => !obj.inGroup || !obj.inGroup.startsWith(getPartGroupId(protectString(''))))
-			).toBeFalsy()
 
 			const results = nowObjs.map((obj) => ({
 				id: obj.id,
@@ -1183,7 +1196,7 @@ describe('Timeline', () => {
 
 					return rundownId
 				},
-				async (playlistId, _rundownId, parts, getPartInstances, checkTimings) => {
+				async (playlistId, rundownId, parts, getPartInstances, checkTimings) => {
 					const outputLayerIds = Object.keys(showStyle.outputLayers)
 					const sourceLayerIds = Object.keys(showStyle.sourceLayers)
 
@@ -1213,10 +1226,9 @@ describe('Timeline', () => {
 					// Insert an adlib piece
 					await doStartAdlibPiece(
 						playlistId,
-						currentPartInstance!,
 						literal<AdLibPiece>({
 							_id: protectString('adlib1'),
-							rundownId: currentPartInstance!.rundownId,
+							rundownId: currentPartInstance!.partInstance.rundownId,
 							externalId: 'fake',
 							name: 'Adlibbed piece',
 							lifespan: PieceLifespan.WithinPart,
@@ -1228,7 +1240,7 @@ describe('Timeline', () => {
 						})
 					)
 
-					const adlibbedPieceId = 'randomId9007'
+					const adlibbedPieceId = 'randomId9010'
 
 					// The adlib should be starting at 'now'
 					await checkTimings({
@@ -1237,7 +1249,9 @@ describe('Timeline', () => {
 							piece000: {
 								controlObj: {
 									start: 500, // This one gave the preroll
-									end: `#piece_group_control_${currentPartInstance!._id}_${adlibbedPieceId}.start`,
+									end: `#piece_group_control_${
+										currentPartInstance!.partInstance._id
+									}_${rundownId}_piece000_cap_now.start + 0`,
 								},
 								childGroup: {
 									preroll: 500,
@@ -1270,7 +1284,7 @@ describe('Timeline', () => {
 
 					const pieceOffset = 12560
 					// Simulate the piece timing confirmation from playout-gateway
-					await doSimulatePiecePlaybackTimings(playlistId, pieceOffset, 1)
+					await doSimulatePiecePlaybackTimings(playlistId, pieceOffset, 2)
 
 					// Now we have a concrete time
 					await checkTimings({
@@ -1377,10 +1391,9 @@ describe('Timeline', () => {
 					// Insert an adlib piece
 					await doStartAdlibPiece(
 						playlistId,
-						currentPartInstance!,
 						literal<AdLibPiece>({
 							_id: protectString('adlib1'),
-							rundownId: currentPartInstance!.rundownId,
+							rundownId: currentPartInstance!.partInstance.rundownId,
 							externalId: 'fake',
 							name: 'Adlibbed piece',
 							lifespan: PieceLifespan.WithinPart,
@@ -1393,7 +1406,7 @@ describe('Timeline', () => {
 						})
 					)
 
-					const adlibbedPieceId = 'randomId9007'
+					const adlibbedPieceId = 'randomId9010'
 
 					// The adlib should be starting at 'now'
 					await checkTimings({
@@ -1402,7 +1415,9 @@ describe('Timeline', () => {
 							piece000: {
 								controlObj: {
 									start: 500, // This one gave the preroll
-									end: `#piece_group_control_${currentPartInstance!._id}_${adlibbedPieceId}.start`,
+									end: `#piece_group_control_${
+										currentPartInstance!.partInstance._id
+									}_${_rundownId}_piece000_cap_now.start + 0`,
 								},
 								childGroup: {
 									preroll: 500,
@@ -1422,7 +1437,7 @@ describe('Timeline', () => {
 								// Our adlibbed piece
 								controlObj: {
 									start: `#piece_group_control_${
-										currentPartInstance!._id
+										currentPartInstance!.partInstance._id
 									}_${adlibbedPieceId}_start_now + 340`,
 								},
 								childGroup: {
@@ -1437,7 +1452,9 @@ describe('Timeline', () => {
 
 					const pieceOffset = 12560
 					// Simulate the piece timing confirmation from playout-gateway
-					await doSimulatePiecePlaybackTimings(playlistId, pieceOffset, 1)
+					await doSimulatePiecePlaybackTimings(playlistId, pieceOffset, 2)
+
+					const pieceOffsetWithPreroll = pieceOffset + 340
 
 					// Now we have a concrete time
 					await checkTimings({
@@ -1446,7 +1463,7 @@ describe('Timeline', () => {
 							piece000: {
 								controlObj: {
 									start: 500, // This one gave the preroll
-									end: pieceOffset,
+									end: pieceOffsetWithPreroll,
 								},
 								childGroup: {
 									preroll: 500,
@@ -1465,7 +1482,7 @@ describe('Timeline', () => {
 							[adlibbedPieceId]: {
 								// Our adlibbed piece
 								controlObj: {
-									start: pieceOffset,
+									start: pieceOffsetWithPreroll,
 								},
 								childGroup: {
 									preroll: 340,
@@ -1481,12 +1498,6 @@ describe('Timeline', () => {
 	})
 
 	describe('Infinite Pieces', () => {
-		async function getPieceInstances(partInstanceId: PartInstanceId): Promise<PieceInstance[]> {
-			return context.directCollections.PieceInstances.findFetch({
-				partInstanceId,
-			})
-		}
-
 		test('Infinite Piece has stable timing across timeline regenerations with/without plannedStartedPlayback', async () =>
 			runTimelineTimings(
 				async (
@@ -1550,31 +1561,31 @@ describe('Timeline', () => {
 									},
 								},
 								partGroup: {
-									start: `#part_group_${currentPartInstance._id}.start`,
+									start: `#part_group_${currentPartInstance.partInstance._id}.start`,
 								},
 							},
 						},
 						previousOutTransition: undefined,
 					})
 
-					const currentPieceInstances = await getPieceInstances(currentPartInstance._id)
+					const currentPieceInstances = currentPartInstance.pieceInstances
 					const pieceInstance0 = currentPieceInstances.find(
-						(instance) => instance.piece._id === protectString(`${rundownId}_piece000`)
+						(instance) => instance.pieceInstance.piece._id === protectString(`${rundownId}_piece000`)
 					)
 					if (!pieceInstance0) throw new Error('pieceInstance0 must be defined')
 					const pieceInstance1 = currentPieceInstances.find(
-						(instance) => instance.piece._id === protectString(`${rundownId}_piece001`)
+						(instance) => instance.pieceInstance.piece._id === protectString(`${rundownId}_piece001`)
 					)
 					if (!pieceInstance1) throw new Error('pieceInstance1 must be defined')
 
 					const currentTime = 12300
 					await doOnPlayoutPlaybackChanged(context, playlistId, {
 						baseTime: currentTime,
-						partId: currentPartInstance._id,
+						partId: currentPartInstance.partInstance._id,
 						includePart: true,
 						pieceOffsets: {
-							[unprotectString(pieceInstance0._id)]: 500,
-							[unprotectString(pieceInstance1._id)]: 500,
+							[unprotectString(pieceInstance0.pieceInstance._id)]: 500,
+							[unprotectString(pieceInstance1.pieceInstance._id)]: 500,
 						},
 					})
 

@@ -1,23 +1,21 @@
+import React from 'react'
 import { IDashboardButtonProps, DashboardPieceButtonBase } from './DashboardPieceButton'
 
 import {
-	DragSource,
-	DropTarget,
 	ConnectDragSource,
 	ConnectDropTarget,
 	DragSourceMonitor,
-	DropTargetMonitor,
 	ConnectDragPreview,
 	ConnectableElement,
+	useDrop,
+	useDrag,
 } from 'react-dnd'
 import { DragDropItemTypes } from '../DragDropItemTypes'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
-import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
+import { useContentStatusForAdlibPiece } from '../SegmentTimeline/withMediaObjectStatus'
 import { BucketAdLibActionUi, BucketAdLibItem } from './RundownViewBuckets'
 import { IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
 import { BucketId, PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-
-type IDashboardButtonPropsCombined = BucketPieceButtonBaseProps & IDashboardButtonProps
 
 interface IBucketPieceDragObject {
 	id: PieceId
@@ -29,69 +27,6 @@ export interface IBucketPieceDropResult {
 	index: number
 	bucketId: BucketId
 	action: 'reorder' | 'move' | undefined
-}
-
-const buttonSource = {
-	beginDrag(props: IDashboardButtonPropsCombined, _monitor: DragSourceMonitor, _component: any) {
-		return {
-			id: props.piece._id,
-			originalIndex: props.findAdLib(props.piece._id).index,
-			bucketId: props.bucketId,
-		}
-	},
-
-	endDrag(
-		props: IDashboardButtonPropsCombined,
-		monitor: DragSourceMonitor<IBucketPieceDragObject, IBucketPieceDropResult>
-	) {
-		const { id: droppedId, originalIndex } = monitor.getItem()
-		const didDrop = monitor.didDrop()
-
-		if (!didDrop) {
-			props.moveAdLib(droppedId, originalIndex)
-		} else {
-			const dropResult = monitor.getDropResult()
-			if (!dropResult) return
-
-			const { action } = dropResult
-			if (action === 'reorder') {
-				const { index: newIndex } = props.findAdLib(droppedId)
-				props.onAdLibReorder(droppedId, newIndex, originalIndex)
-			} else if (action === 'move') {
-				const { bucketId } = dropResult
-				props.onAdLibMove(droppedId, bucketId)
-			}
-		}
-	},
-}
-
-const buttonTarget = {
-	canDrop(_props: IDashboardButtonPropsCombined, _monitor: DropTargetMonitor) {
-		return true
-	},
-
-	hover(
-		props: IDashboardButtonPropsCombined,
-		monitor: DropTargetMonitor<IBucketPieceDragObject, IBucketPieceDropResult>,
-		_component: any
-	) {
-		const { id: draggedId } = monitor.getItem()
-		const overId = props.piece._id
-
-		if (draggedId !== overId) {
-			const { index: overIndex } = props.findAdLib(overId)
-			props.moveAdLib(draggedId, overIndex)
-		}
-	},
-
-	drop(props: IDashboardButtonPropsCombined, _monitor: DropTargetMonitor) {
-		const { index } = props.findAdLib(props.piece._id)
-
-		return {
-			index,
-			action: 'reorder',
-		}
-	},
 }
 
 export interface BucketPieceButtonBaseProps {
@@ -122,17 +57,85 @@ class BucketPieceButtonBase extends DashboardPieceButtonBase<ButtonSourceCollect
 	}
 }
 
-export const BucketPieceButton = withMediaObjectStatus<
-	React.PropsWithChildren<IDashboardButtonProps> & BucketPieceButtonBaseProps,
-	{}
->()(
-	DropTarget(DragDropItemTypes.BUCKET_ADLIB_PIECE, buttonTarget, (connect) => ({
-		connectDropTarget: connect.dropTarget(),
-	}))(
-		DragSource(DragDropItemTypes.BUCKET_ADLIB_PIECE, buttonSource, (connect, monitor) => ({
-			connectDragSource: connect.dragSource(),
-			connectDragPreview: connect.dragPreview(),
+export function BucketPieceButton(
+	props: React.PropsWithChildren<IDashboardButtonProps> & BucketPieceButtonBaseProps
+): JSX.Element {
+	const contentStatus = useContentStatusForAdlibPiece(props.piece)
+
+	const [, connectDropTarget] = useDrop<IBucketPieceDragObject, {}, {}>({
+		accept: DragDropItemTypes.BUCKET_ADLIB_PIECE,
+		canDrop(_props, _monitor) {
+			return true
+		},
+
+		hover(item, _monitor) {
+			const { id: draggedId } = item
+			const overId = props.piece._id
+
+			if (draggedId !== overId) {
+				const { index: overIndex } = props.findAdLib(overId)
+				props.moveAdLib(draggedId, overIndex)
+			}
+		},
+
+		drop(item, _monitor) {
+			const { index } = props.findAdLib(item.id)
+
+			return {
+				index,
+				action: 'reorder',
+			}
+		},
+	})
+
+	const [collectedProps, connectDragSource, connectDragPreview] = useDrag<
+		IBucketPieceDragObject,
+		{},
+		{ isDragging: boolean }
+	>({
+		type: DragDropItemTypes.BUCKET_ADLIB_PIECE,
+		item: (_monitor: DragSourceMonitor) => {
+			return {
+				id: props.piece._id,
+				originalIndex: props.findAdLib(props.piece._id).index,
+				bucketId: props.bucketId,
+			}
+		},
+
+		end: (item, monitor: DragSourceMonitor<IBucketPieceDragObject, IBucketPieceDropResult>) => {
+			const { id: droppedId, originalIndex } = item
+			const didDrop = monitor.didDrop()
+
+			if (!didDrop) {
+				props.moveAdLib(droppedId, originalIndex)
+			} else {
+				const dropResult = monitor.getDropResult()
+				if (!dropResult) return
+
+				const { action } = dropResult
+				if (action === 'reorder') {
+					const { index: newIndex } = props.findAdLib(droppedId)
+					props.onAdLibReorder(droppedId, newIndex, originalIndex)
+				} else if (action === 'move') {
+					const { bucketId } = dropResult
+					props.onAdLibMove(droppedId, bucketId)
+				}
+			}
+		},
+
+		collect: (monitor) => ({
 			isDragging: monitor.isDragging(),
-		}))(BucketPieceButtonBase)
-	) as any
-)
+		}),
+	})
+
+	return (
+		<BucketPieceButtonBase
+			{...props}
+			contentStatus={contentStatus}
+			connectDropTarget={connectDropTarget}
+			connectDragPreview={connectDragPreview}
+			connectDragSource={connectDragSource}
+			isDragging={collectedProps.isDragging}
+		/>
+	)
+}

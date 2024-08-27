@@ -31,7 +31,7 @@ export interface LeveledLogMethodFixed {
 
 let logger: LoggerInstanceFixed
 if (Meteor.isServer) {
-	const getLogMethod = (type) => {
+	const getLogMethod = (type: string) => {
 		return (...args: any[]) => {
 			const stringifiedArgs: string[] = args.map((arg) => {
 				return stringifyError(arg)
@@ -61,7 +61,7 @@ if (Meteor.isServer) {
 		notice: getLogMethod('notice'),
 	}
 } else {
-	const getLogMethod = (type) => {
+	const getLogMethod = (type: string) => {
 		return (...args: any[]) => {
 			console.log(type, ...args)
 
@@ -77,7 +77,7 @@ if (Meteor.isServer) {
 		}
 	}
 
-	const noop = (_type) => {
+	const noop = (_type: string) => {
 		// do nothing
 		return logger
 	}

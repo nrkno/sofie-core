@@ -63,7 +63,7 @@ export namespace ServerClientAPI {
 			userEvent,
 			eventTime,
 			`worker.${jobName}`,
-			[jobArguments],
+			jobArguments as any,
 			async (_credentials, userActionMetadata) => {
 				checkArgs()
 
@@ -90,7 +90,7 @@ export namespace ServerClientAPI {
 			userEvent,
 			eventTime,
 			`worker.${jobName}`,
-			[jobArguments],
+			jobArguments as any,
 			async (_credentials, userActionMetadata) => {
 				checkArgs()
 
@@ -110,7 +110,7 @@ export namespace ServerClientAPI {
 		playlistId: RundownPlaylistId,
 		checkArgs: () => void,
 		methodName: string,
-		args: any[],
+		args: Record<string, unknown>,
 		fcn: (access: VerifiedRundownPlaylistContentAccess) => Promise<T>
 	): Promise<ClientAPI.ClientResponse<T>> {
 		return runUserActionInLog(context, userEvent, eventTime, methodName, args, async () => {
@@ -131,7 +131,7 @@ export namespace ServerClientAPI {
 		rundownId: RundownId,
 		checkArgs: () => void,
 		methodName: string,
-		args: any[],
+		args: Record<string, unknown>,
 		fcn: (access: VerifiedRundownContentAccess) => Promise<T>
 	): Promise<ClientAPI.ClientResponse<T>> {
 		return runUserActionInLog(context, userEvent, eventTime, methodName, args, async () => {
@@ -183,7 +183,7 @@ export namespace ServerClientAPI {
 		userEvent: string,
 		eventTime: Time,
 		methodName: string,
-		methodArgs: unknown[],
+		methodArgs: Record<string, unknown>,
 		fcn: (credentials: BasicAccessContext, userActionMetadata: UserActionMetadata) => Promise<TRes>
 	): Promise<ClientAPI.ClientResponse<TRes>> {
 		// If we are in the test write auth check mode, then bypass all special logic to ensure errors dont get mangled
@@ -235,14 +235,21 @@ export namespace ServerClientAPI {
 					const result = await fcn(credentials, userActionMetadata)
 
 					const completeTime = Date.now()
-					await UserActionsLog.updateAsync(actionId, {
-						$set: {
-							success: true,
-							doneTime: completeTime,
-							executionTime: completeTime - startTime,
-							workerTime: userActionMetadata.workerDuration,
-						},
-					})
+					pInitialInsert
+						.then(async () =>
+							UserActionsLog.updateAsync(actionId, {
+								$set: {
+									success: true,
+									doneTime: completeTime,
+									executionTime: completeTime - startTime,
+									workerTime: userActionMetadata.workerDuration,
+								},
+							})
+						)
+						.catch((err) => {
+							// If this fails make sure it is handled
+							logger.warn(`Failed to update UserActionsLog: ${stringifyError(err)}`)
+						})
 
 					return ClientAPI.responseSuccess(result)
 				} catch (e) {

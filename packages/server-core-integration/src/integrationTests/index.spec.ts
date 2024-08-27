@@ -1,5 +1,4 @@
 jest.dontMock('ddp')
-import { PeripheralDeviceForDevice } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
 import {
@@ -7,7 +6,7 @@ import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
-import { CoreConnection } from '../index'
+import { CoreConnection, PeripheralDevicePubSub, PeripheralDevicePubSubCollectionsNames } from '../index'
 
 process.on('unhandledRejection', (reason) => {
 	console.log('Unhandled Promise rejection!', reason)
@@ -85,16 +84,17 @@ test('Integration: Test connection and basic Core functionality', async () => {
 	})
 
 	// Observe data:
-	const observer = core.observe('peripheralDeviceForDevice')
+	const observer = core.observe(PeripheralDevicePubSubCollectionsNames.peripheralDeviceForDevice)
 	observer.added = jest.fn()
 	observer.changed = jest.fn()
 	observer.removed = jest.fn()
 
 	// Subscribe to data:
-	const coll0 = core.getCollection<PeripheralDeviceForDevice>('peripheralDeviceForDevice')
+	const coll0 = core.getCollection(PeripheralDevicePubSubCollectionsNames.peripheralDeviceForDevice)
 	expect(coll0.findOne(id)).toBeFalsy()
-	const subId = await core.subscribe('peripheralDeviceForDevice', id)
-	const coll1 = core.getCollection<PeripheralDeviceForDevice>('peripheralDeviceForDevice')
+	const subId = await core.autoSubscribe(PeripheralDevicePubSub.peripheralDeviceForDevice, id)
+
+	const coll1 = core.getCollection(PeripheralDevicePubSubCollectionsNames.peripheralDeviceForDevice)
 	expect(coll1.findOne(id)).toMatchObject({
 		_id: id,
 	})
@@ -274,12 +274,12 @@ test('Integration: autoSubscription', async () => {
 	const observerAdded = jest.fn()
 	const observerChanged = jest.fn()
 	const observerRemoved = jest.fn()
-	const observer = core.observe('peripheralDeviceForDevice')
+	const observer = core.observe(PeripheralDevicePubSubCollectionsNames.peripheralDeviceForDevice)
 	observer.added = observerAdded
 	observer.changed = observerChanged
 	observer.removed = observerRemoved
 
-	await core.autoSubscribe('peripheralDeviceForDevice', defaultDeviceId)
+	await core.autoSubscribe(PeripheralDevicePubSub.peripheralDeviceForDevice, defaultDeviceId)
 
 	expect(observerAdded).toHaveBeenCalledTimes(1)
 

@@ -124,7 +124,7 @@ export class AdLibsTopic
 							outputLayer: outputLayerName ?? 'invalid',
 							actionType: triggerModes,
 							tags: action.display.tags,
-							publicData: action.userData, // tmp, publicData was introduced in R51
+							publicData: action.publicData,
 						},
 						id: unprotectString(action._id),
 						label: name,
@@ -153,7 +153,7 @@ export class AdLibsTopic
 							outputLayer: outputLayerName ?? 'invalid',
 							actionType: [],
 							tags: adLib.tags,
-							publicData: adLib.metaData, // tmp, publicData was introduced in R51
+							publicData: adLib.publicData,
 						},
 						id: unprotectString(adLib._id),
 						label: adLib.name,
@@ -192,7 +192,7 @@ export class AdLibsTopic
 							outputLayer: outputLayerName ?? 'invalid',
 							actionType: triggerModes,
 							tags: action.display.tags,
-							publicData: action.userData, // tmp, publicData was introduced in R51
+							publicData: action.publicData,
 						},
 						id: unprotectString(action._id),
 						label: name,
@@ -216,7 +216,7 @@ export class AdLibsTopic
 							outputLayer: outputLayerName ?? 'invalid',
 							actionType: [],
 							tags: adLib.tags,
-							publicData: adLib.metaData, // tmp, publicData was introduced in R51
+							publicData: adLib.publicData,
 						},
 						id: unprotectString(adLib._id),
 						label: adLib.name,

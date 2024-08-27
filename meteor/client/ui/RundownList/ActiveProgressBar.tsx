@@ -1,9 +1,11 @@
 import React from 'react'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { useCurrentTime } from '../../lib/lib'
 
-export function ActiveProgressBar({ rundownPlaylist }: { rundownPlaylist: RundownPlaylist }): JSX.Element | null {
+export function ActiveProgressBar({
+	rundownPlaylist,
+}: Readonly<{ rundownPlaylist: DBRundownPlaylist }>): JSX.Element | null {
 	const currentTime = useCurrentTime()
 
 	const { startedPlayback, timing } = rundownPlaylist

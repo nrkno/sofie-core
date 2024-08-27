@@ -5,20 +5,23 @@ import ActionItemRenderer, { isActionItem } from './ActionItemRenderer'
 
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
 import { BucketAdLibItem } from '../../RundownViewBuckets'
-import { RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { IAdLibListItem } from '../../AdLibListItem'
 import { AdLibPieceUi } from '../../../../lib/shelf'
 import { UIShowStyleBase } from '../../../../../lib/api/showStyles'
 import { UIStudio } from '../../../../../lib/api/studios'
+import { ReadonlyDeep } from 'type-fest'
+import { PieceContentStatusObj } from '../../../../../lib/api/pieceContentStatus'
 
 export default function renderItem(
 	piece: BucketAdLibItem | IAdLibListItem | PieceUi,
+	contentStatus: ReadonlyDeep<PieceContentStatusObj> | undefined,
 	showStyleBase: UIShowStyleBase,
 	studio: UIStudio,
-	rundownPlaylist: RundownPlaylist,
+	rundownPlaylist: DBRundownPlaylist,
 	onSelectPiece: (piece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined) => void
 ): JSX.Element {
-	if (!piece['isAction'] && isNoraItem(piece as AdLibPieceUi | PieceUi)) {
+	if ((!('isAction' in piece) || !piece['isAction']) && isNoraItem(piece as AdLibPieceUi | PieceUi)) {
 		const noraPiece = piece as AdLibPieceUi | PieceUi
 		return React.createElement(NoraItemRenderer, { piece: noraPiece, showStyleBase, studio })
 	} else if (isActionItem(piece)) {
@@ -31,5 +34,5 @@ export default function renderItem(
 		})
 	}
 
-	return React.createElement(DefaultItemRenderer, { piece, showStyleBase, studio })
+	return React.createElement(DefaultItemRenderer, { piece, contentStatus, showStyleBase, studio })
 }

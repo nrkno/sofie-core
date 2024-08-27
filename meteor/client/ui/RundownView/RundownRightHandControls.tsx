@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from 'react'
+// @ts-expect-error No types available
 import * as VelocityReact from 'velocity-react'
 
-import { StudioRouteSet, StudioRouteBehavior, StudioRouteSetExclusivityGroup } from '../../../lib/collections/Studios'
+import {
+	StudioRouteSet,
+	StudioRouteBehavior,
+	StudioRouteSetExclusivityGroup,
+} from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { RewindAllSegmentsIcon } from '../../lib/ui/icons/rewindAllSegmentsIcon'
 
 import { Lottie } from '@crello/react-lottie'
@@ -18,8 +23,12 @@ import { SwitchboardIcon, RouteSetOverrideIcon } from '../../lib/ui/icons/switch
 import { SwitchboardPopUp } from './SwitchboardPopUp'
 import { useTranslation } from 'react-i18next'
 import { SegmentViewMode } from '../../lib/ui/icons/listView'
+import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { MediaStatusPopUp } from './MediaStatusPopUp'
+import { MediaStatusIcon } from '../../lib/ui/icons/mediaStatus'
 
 interface IProps {
+	playlistId: RundownPlaylistId
 	studioRouteSets: {
 		[id: string]: StudioRouteSet
 	}
@@ -62,10 +71,11 @@ const ONAIR_OVER = {
 	animationData: On_Air_MouseOver,
 }
 
-export function RundownRightHandControls(props: IProps): JSX.Element {
+export function RundownRightHandControls(props: Readonly<IProps>): JSX.Element {
 	const { t } = useTranslation()
 	const [onAirHover, setOnAirHover] = useState(false)
 	const [switchboardOpen, setSwitchboardOpen] = useState(false)
+	const [mediaStatusOpen, setMediaStatusOpen] = useState(false)
 
 	const {
 		onFollowOnAir: onOnAirClick,
@@ -90,6 +100,12 @@ export function RundownRightHandControls(props: IProps): JSX.Element {
 
 	const onRouteSetsToggle = (_e: React.MouseEvent<HTMLButtonElement>) => {
 		setSwitchboardOpen(!switchboardOpen)
+		setMediaStatusOpen(false)
+	}
+
+	const onMediaStatusToggle = (_e: React.MouseEvent<HTMLButtonElement>) => {
+		setMediaStatusOpen(!mediaStatusOpen)
+		setSwitchboardOpen(false)
 	}
 
 	const availableRouteSets = Object.entries<StudioRouteSet>(props.studioRouteSets).filter(
@@ -115,27 +131,25 @@ export function RundownRightHandControls(props: IProps): JSX.Element {
 				className="status-bar__cell status-bar__cell--align-start"
 			>
 				<NotificationCenterPanelToggle
-					onClick={(e) => props.onToggleNotifications && props.onToggleNotifications(e, NoticeLevel.CRITICAL)}
+					onClick={(e) => props.onToggleNotifications?.(e, NoticeLevel.CRITICAL)}
 					isOpen={props.isNotificationCenterOpen === NoticeLevel.CRITICAL}
 					filter={NoticeLevel.CRITICAL}
 					className="type-critical"
 					title={t('Critical Problems')}
 				/>
 				<NotificationCenterPanelToggle
-					onClick={(e) => props.onToggleNotifications && props.onToggleNotifications(e, NoticeLevel.WARNING)}
+					onClick={(e) => props.onToggleNotifications?.(e, NoticeLevel.WARNING)}
 					isOpen={props.isNotificationCenterOpen === NoticeLevel.WARNING}
 					filter={NoticeLevel.WARNING}
 					className="type-warning"
 					title={t('Warnings')}
 				/>
 				<NotificationCenterPanelToggle
-					onClick={(e) =>
-						props.onToggleNotifications && props.onToggleNotifications(e, NoticeLevel.NOTIFICATION | NoticeLevel.TIP)
-					}
+					onClick={(e) => props.onToggleNotifications?.(e, NoticeLevel.NOTIFICATION | NoticeLevel.TIP)}
 					isOpen={props.isNotificationCenterOpen === (NoticeLevel.NOTIFICATION | NoticeLevel.TIP)}
 					filter={NoticeLevel.NOTIFICATION | NoticeLevel.TIP}
 					className="type-notification"
-					title={t('Notifications')}
+					title={t('Notes')}
 				/>
 				<button
 					className="status-bar__controls__button"
@@ -176,6 +190,44 @@ export function RundownRightHandControls(props: IProps): JSX.Element {
 						Take
 					</button>
 				)}
+				<>
+					<button
+						className={classNames(
+							'status-bar__controls__button',
+							'status-bar__controls__button--media-status',
+							'notifications-s notifications-text',
+							{
+								'status-bar__controls__button--open': mediaStatusOpen,
+							}
+						)}
+						role="button"
+						onClick={onMediaStatusToggle}
+						tabIndex={0}
+						aria-label={t('Media Status')}
+						aria-haspopup="dialog"
+						aria-pressed={mediaStatusOpen ? 'true' : 'false'}
+					>
+						<MediaStatusIcon />
+					</button>
+					<VelocityReact.VelocityTransitionGroup
+						enter={{
+							animation: {
+								width: ['28rem', '0rem'],
+							},
+							easing: 'ease-out',
+							duration: 300,
+						}}
+						leave={{
+							animation: {
+								width: ['0rem'],
+							},
+							easing: 'ease-in',
+							duration: 500,
+						}}
+					>
+						{mediaStatusOpen && <MediaStatusPopUp playlistId={props.playlistId} />}
+					</VelocityReact.VelocityTransitionGroup>
+				</>
 				<button
 					className="status-bar__controls__button status-bar__controls__button--segment-view-mode"
 					role="button"
@@ -202,7 +254,7 @@ export function RundownRightHandControls(props: IProps): JSX.Element {
 								role="button"
 								onClick={onRouteSetsToggle}
 								tabIndex={0}
-								aria-label={t('Toggle Switchboard Panel')}
+								aria-label={t('Switchboard Panel')}
 								aria-haspopup="dialog"
 								aria-pressed={switchboardOpen ? 'true' : 'false'}
 							>

@@ -3,7 +3,6 @@ import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { ReactiveCacheCollection } from '../../lib/ReactiveCacheCollection'
 import { DBShowStyleBase, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { DBRundown, Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
@@ -11,13 +10,12 @@ import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
-import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BlueprintId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 
-export type SourceLayersDocId = ProtectedString<'SourceLayersDocId'>
 export interface SourceLayersDoc {
-	_id: SourceLayersDocId
+	_id: ShowStyleBaseId
 	blueprintId: BlueprintId
 	sourceLayers: SourceLayers
 }

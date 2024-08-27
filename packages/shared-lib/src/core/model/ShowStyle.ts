@@ -94,6 +94,7 @@ export enum PlayoutActions {
 	resetRundownPlaylist = 'resetRundownPlaylist',
 	reloadRundownPlaylistData = 'reloadRundownPlaylistData',
 	disableNextPiece = 'disableNextPiece',
+	activateAdlibTestingMode = 'activateAdlibTestingMode',
 }
 
 export enum ClientActions {

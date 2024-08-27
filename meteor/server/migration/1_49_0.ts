@@ -2,15 +2,7 @@ import { addMigrationSteps } from './databaseMigration'
 import { Blueprints, ShowStyleVariants } from '../collections'
 import { getRandomId } from '@sofie-automation/corelib/dist/lib'
 
-/*
- * **************************************************************************************
- *
- *  These migrations are destined for the next release
- *
- * (This file is to be renamed to the correct version number when doing the release)
- *
- * **************************************************************************************
- */
+// Release 49
 
 export const addSteps = addMigrationSteps('1.49.0', [
 	{

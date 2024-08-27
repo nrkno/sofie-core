@@ -1,18 +1,18 @@
 {
 	"name": "live-status-gateway",
-	"version": "1.50.3",
+	"version": "1.51.0-in-testing.0",
 	"private": true,
 	"description": "Provides state from Sofie over sockets",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
+		"url": "git+https://github.com/nrkno/sofie-core.git",
 		"directory": "packages/live-status-gateway"
 	},
 	"bugs": {
-		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
+		"url": "https://github.com/nrkno/sofie-core/issues"
 	},
-	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/live-status-gateway#readme",
+	"homepage": "https://github.com/nrkno/sofie-core/blob/master/packages/live-status-gateway#readme",
 	"contributors": [],
 	"scripts": {
 		"build": "run -T rimraf dist && run build:main",
@@ -53,24 +53,23 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/blueprints-integration": "1.50.3",
-		"@sofie-automation/corelib": "1.50.3",
-		"@sofie-automation/server-core-integration": "1.50.3",
-		"@sofie-automation/shared-lib": "1.50.3",
-		"debug": "^4.3.2",
+		"@sofie-automation/blueprints-integration": "1.51.0-in-testing.0",
+		"@sofie-automation/corelib": "1.51.0-in-testing.0",
+		"@sofie-automation/server-core-integration": "1.51.0-in-testing.0",
+		"@sofie-automation/shared-lib": "1.51.0-in-testing.0",
+		"debug": "^4.3.4",
 		"fast-clone": "^1.5.13",
-		"influx": "^5.9.2",
-		"tslib": "^2.4.0",
+		"influx": "^5.9.3",
+		"tslib": "^2.6.2",
 		"underscore": "^1.13.6",
-		"winston": "^3.8.1",
-		"ws": "^8.10.0"
+		"winston": "^3.11.0",
+		"ws": "^8.16.0"
 	},
 	"devDependencies": {
-		"@asyncapi/generator": "1.9.13",
-		"@asyncapi/html-template": "0.26.0",
-		"@asyncapi/nodejs-ws-template": "0.9.25",
-		"jest-mock-extended": "^3.0.5",
-		"type-fest": "^4.5.0"
+		"@asyncapi/generator": "^1.17.25",
+		"@asyncapi/html-template": "^2.3.9",
+		"@asyncapi/nodejs-ws-template": "^0.9.36",
+		"type-fest": "^4.10.2"
 	},
 	"lint-staged": {
 		"*.{css,json,md,scss}": [

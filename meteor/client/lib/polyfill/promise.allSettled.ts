@@ -4,6 +4,7 @@
  * This polyfill can be removed once CasparCG HTML renderer is updated to Chromium >= 76.
  * 	   -- 2021/02/22, Jan Starzak <jan.starzak@gmail.com>
  */
+// @ts-expect-error No types available
 import allSettled from 'promise.allsettled'
 
 // will be a no-op if not needed

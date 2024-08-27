@@ -27,7 +27,7 @@ export class SegmentHandler
 	async changed(id: SegmentId, changeType: string): Promise<void> {
 		this.logDocumentChange(id, changeType)
 		if (!this._collectionName) return
-		const collection = this._core.getCollection<DBSegment>(this._collectionName)
+		const collection = this._core.getCollection(this._collectionName)
 		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
 		const allSegments = collection.find(undefined)
 		await this._segmentsHandler.setSegments(allSegments)
@@ -67,19 +67,11 @@ export class SegmentHandler
 			if (this._rundownIds.length) {
 				this._subscriptionId = await this._coreHandler.setupSubscription(
 					this._publicationName,
+					this._rundownIds,
 					{
-						rundownId: { $in: this._rundownIds },
-						isHidden: { $ne: true },
-					},
-					true
+						omitHidden: true,
+					}
 				)
-				// this._subscriptionId = await this._coreHandler.setupSubscription(
-				// 	this._publicationName,
-				// 	this._rundownIds,
-				// 	{
-				// 		omitHidden: true,
-				// 	}
-				// ) // in R51
 				this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
 				this._dbObserver.added = (id) => {
 					void this.changed(id, 'added').catch(this._logger.error)
@@ -93,7 +85,7 @@ export class SegmentHandler
 			}
 		}
 
-		const collection = this._core.getCollection<DBSegment>(this._collectionName)
+		const collection = this._core.getCollection(this._collectionName)
 		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
 		if (rundownsChanged) {
 			const allSegments = collection.find(undefined)

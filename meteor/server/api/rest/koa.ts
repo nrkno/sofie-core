@@ -35,6 +35,7 @@ export function bindKoaRouter(koaRouter: KoaRouter, bindPath: string): void {
 	})
 	app.use(
 		cors({
+			// Allow anything
 			origin(ctx) {
 				return ctx.get('Origin') || '*'
 			},
@@ -45,6 +46,9 @@ export function bindKoaRouter(koaRouter: KoaRouter, bindPath: string): void {
 
 const REVERSE_PROXY_COUNT = process.env.HTTP_FORWARDED_COUNT ? parseInt(process.env.HTTP_FORWARDED_COUNT) : 0
 
+// X-Forwarded-For (a de-facto standard) has the following syntax by convention
+// X-Forwarded-For: 203.0.113.195, 2001:db8:85a3:8d3:1319:8a2e:370:7348
+// X-Forwarded-For: 203.0.113.195,2001:db8:85a3:8d3:1319:8a2e:370:7348,198.51.100.178
 function getClientAddrFromXForwarded(headerVal: undefined | string | string[]): string | undefined {
 	if (headerVal === undefined) return undefined
 	if (typeof headerVal !== 'string') {
@@ -54,6 +58,9 @@ function getClientAddrFromXForwarded(headerVal: undefined | string | string[]): 
 	return remoteAddresses[remoteAddresses.length - REVERSE_PROXY_COUNT]?.trim() ?? remoteAddresses[0]?.trim()
 }
 
+// Forwarded uses the following syntax:
+// Forwarded: for=192.0.2.60;proto=http;by=203.0.113.43
+// Forwarded: for=192.0.2.43, for="[2001:db8:cafe::17]"
 function getClientAddrFromForwarded(forwardedVal: string | undefined): string | undefined {
 	if (forwardedVal === undefined) return undefined
 	const allProxies = forwardedVal.split(',')

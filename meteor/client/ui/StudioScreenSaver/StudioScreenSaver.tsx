@@ -1,10 +1,9 @@
 import * as React from 'react'
-import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { Translated, useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getCurrentTime } from '../../../lib/lib'
 import { invalidateAfter } from '../../../lib/invalidatingTime'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { PubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
 import classNames from 'classnames'
 import { Clock } from './Clock'
 import { Countdown } from './Countdown'
@@ -13,6 +12,8 @@ import { UIStudios } from '../Collections'
 import { UIStudio } from '../../../lib/api/studios'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylists } from '../../collections'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { withTranslation } from 'react-i18next'
 
 interface IProps {
 	// the studio to be displayed in the screen saver
@@ -23,7 +24,8 @@ interface IProps {
 
 interface ITrackedProps {
 	studio: Pick<UIStudio, 'name'> | undefined
-	rundownPlaylist: Pick<RundownPlaylist, '_id' | 'studioId' | 'name' | 'timing'> | undefined
+	rundownPlaylist: Pick<DBRundownPlaylist, '_id' | 'studioId' | 'name' | 'timing'> | undefined
+	subsReady: boolean
 }
 
 interface IState {
@@ -36,20 +38,18 @@ interface IState {
 		width: number | undefined
 		height: number | undefined
 	}
-	// are all subscribtions ready?
-	subsReady: boolean
 }
 
 interface FindNextPlaylistResult {
 	studio: Pick<UIStudio, 'name'> | undefined
-	rundownPlaylist: Pick<RundownPlaylist, '_id' | 'studioId' | 'name' | 'timing'> | undefined
+	rundownPlaylist: Pick<DBRundownPlaylist, '_id' | 'studioId' | 'name' | 'timing'> | undefined
 }
-export const findNextPlaylist = (props: IProps): FindNextPlaylistResult => {
+export const findNextPlaylist = (studioId: StudioId): FindNextPlaylistResult => {
 	invalidateAfter(5000)
 	const now = getCurrentTime()
 
 	return {
-		studio: UIStudios.findOne(props.studioId, {
+		studio: UIStudios.findOne(studioId, {
 			fields: {
 				name: 1,
 			},
@@ -57,7 +57,7 @@ export const findNextPlaylist = (props: IProps): FindNextPlaylistResult => {
 		rundownPlaylist: (
 			RundownPlaylists.find(
 				{
-					studioId: props.studioId,
+					studioId: studioId,
 				},
 				{
 					fields: {
@@ -66,7 +66,7 @@ export const findNextPlaylist = (props: IProps): FindNextPlaylistResult => {
 						studioId: 1,
 					},
 				}
-			).fetch() as Pick<RundownPlaylist, '_id' | 'studioId' | 'name' | 'timing'>[]
+			).fetch() as Pick<DBRundownPlaylist, '_id' | 'studioId' | 'name' | 'timing'>[]
 		)
 			.sort(PlaylistTiming.sortTimings)
 			.find((rundownPlaylist) => {
@@ -93,12 +93,28 @@ export const findNextPlaylist = (props: IProps): FindNextPlaylistResult => {
  * This component renders a **nice**, animated screen saver with information about upcoming
  * shows planned in the studio and the time remaining to the expectedStart time of said show.
  */
-export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
-	class StudioScreenSaver extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+export function StudioScreenSaver(props: Readonly<IProps>): JSX.Element {
+	const subReadyStudio = useSubscription(MeteorPubSub.uiStudio, props.studioId)
+	const subReadyPlaylist = useSubscription(CorelibPubSub.rundownPlaylists, [], [props.studioId])
+	const subsReady = subReadyStudio && subReadyPlaylist
+
+	const data = useTracker(() => findNextPlaylist(props.studioId), [props.studioId])
+
+	return (
+		<StudioScreenSaverContent
+			{...props}
+			studio={data?.studio}
+			rundownPlaylist={data?.rundownPlaylist}
+			subsReady={subsReady}
+		/>
+	)
+}
+const StudioScreenSaverContent = withTranslation()(
+	class StudioScreenSaverContent extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		private _nextAnimationFrameRequest: number | undefined
 		private readonly SPEED = 0.5 // non-unit value
 		private readonly FRAME_MARGIN: [number, number, number, number] = [10, 28, 10, 10] // margin, specified in vmin CSS units
-		private FRAME_PIXEL_MARGIN: [number, number, number, number] // margin, calculated to pixels on resize
+		private FRAME_PIXEL_MARGIN: [number, number, number, number] = [0, 0, 0, 0] // margin, calculated to pixels on resize
 		private PIXEL_SPEED = 0.5
 
 		private position: {
@@ -110,7 +126,7 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 		}
 		private speedVector: [number, number] = [0, 0]
 
-		constructor(props) {
+		constructor(props: Translated<IProps & ITrackedProps>) {
 			super(props)
 			this.state = {
 				infoElement: undefined,
@@ -119,28 +135,15 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 					width: undefined,
 					height: undefined,
 				},
-				subsReady: false,
 			}
 		}
 
 		componentDidMount(): void {
-			this.subscribe(PubSub.uiStudio, this.props.studioId)
-			this.subscribe(PubSub.rundownPlaylists, {
-				studioId: this.props.studioId,
-			})
-
 			if (this.props.ownBackground) {
 				document.body.classList.add('dark', 'xdark')
 			}
 
 			window.addEventListener('resize', this.measureElement)
-
-			this.autorun(() => {
-				const subsReady = this.subscriptionsReady()
-				this.setState({
-					subsReady,
-				})
-			})
 		}
 
 		componentDidUpdate(prevProps: Translated<IProps & ITrackedProps>, prevState: IState) {
@@ -156,8 +159,6 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 		}
 
 		componentWillUnmount(): void {
-			super.componentWillUnmount()
-
 			if (this.props.ownBackground) {
 				document.body.classList.remove('dark', 'xdark')
 			}
@@ -166,7 +167,7 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 			window.removeEventListener('resize', this.measureElement)
 		}
 
-		private static defaultPosition = (size: { width?: number; height?: number }) => {
+		private static defaultPosition(size: { width?: number; height?: number }) {
 			return {
 				x: (window.innerWidth - (size.width || 0)) / 2,
 				y: (window.innerHeight - (size.height || 0)) / 2,
@@ -187,7 +188,7 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 
 				// this is a first measure, place the info-box in the center of the screen
 				if (this.state.infoElementSize.height === undefined || this.state.infoElementSize.width === undefined) {
-					this.position = StudioScreenSaver.defaultPosition(infoElementSize)
+					this.position = StudioScreenSaverContent.defaultPosition(infoElementSize)
 
 					infoElement.style.transform = `translate3d(${this.position.x}px, ${this.position.y}px, 0.1px)`
 				}
@@ -215,7 +216,7 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 		 * @private
 		 * @param {*} timestamp
 		 */
-		private animatePongFrame = (timestamp) => {
+		private animatePongFrame = (timestamp: number) => {
 			const frameTime = timestamp - this.lastFrameTime
 			const { infoElement, infoElementSize } = this.state
 			let { targetSpeedVector } = this.state
@@ -272,7 +273,7 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 					this.position.x + infoElementSize.width > windowWidth ||
 					this.position.y + infoElementSize.height > windowHeight
 				) {
-					this.position = StudioScreenSaver.defaultPosition(infoElementSize)
+					this.position = StudioScreenSaverContent.defaultPosition(infoElementSize)
 				}
 
 				infoElement.style.transform = `translate3d(${this.position.x}px, ${this.position.y}px, 0.1px)`
@@ -331,7 +332,7 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 			return (
 				<div
 					className={classNames('studio-screen-saver', {
-						loading: !this.state.subsReady,
+						loading: !this.props.subsReady,
 					})}
 				>
 					<object

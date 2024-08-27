@@ -7,15 +7,13 @@ import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerIte
 import { FloatingInspector } from '../../FloatingInspector'
 import { IFloatingInspectorPosition, useInspectorPosition } from '../../FloatingInspectors/IFloatingInspectorPosition'
 
-// type KeyValue = { key: string, value: string }
-
 type IProps = ICustomLayerItemProps
 interface IState {
 	iconFailed: boolean
 }
 export class TransitionSourceRenderer extends CustomLayerItemRenderer<IProps, IState> {
-	leftLabel: HTMLElement
-	rightLabel: HTMLElement
+	leftLabel: HTMLElement | null = null
+	rightLabel: HTMLElement | null = null
 
 	constructor(props: IProps) {
 		super(props)
@@ -68,7 +66,7 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<IProps, IS
 						style={this.getItemLabelOffsetLeft()}
 					>
 						{this.props.piece.instance.piece.name}
-						{content && content.icon && !this.state.iconFailed && (
+						{content?.icon && !this.state.iconFailed && (
 							<img
 								src={'/api/private/blueprints/assets/' + content.icon}
 								className="segment-timeline__piece__label__transition-icon"
@@ -87,7 +85,10 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<IProps, IS
 	}
 }
 
-function TransitionFloatingInspector({ preview, position }: { preview: string; position: IFloatingInspectorPosition }) {
+function TransitionFloatingInspector({
+	preview,
+	position,
+}: Readonly<{ preview: string; position: IFloatingInspectorPosition }>) {
 	const ref = useRef<HTMLDivElement>(null)
 	const { style: floatingInspectorStyle } = useInspectorPosition(position, ref)
 

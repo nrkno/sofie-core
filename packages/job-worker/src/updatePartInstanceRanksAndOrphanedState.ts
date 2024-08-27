@@ -3,15 +3,14 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { groupByToMap, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { AnyBulkWriteOperation } from 'mongodb'
 import { ReadonlyDeep } from 'type-fest'
-import { CacheForIngest } from './ingest/cache'
-import { BeforePartMap, BeforePartMapItem } from './ingest/commit'
+import { BeforeIngestOperationPartMap, BeforePartMapItem } from './ingest/commit'
 import { JobContext } from './jobs'
 import { logger } from './logging'
-import { CacheForPlayout } from './playout/cache'
 import _ = require('underscore')
-import { ReadOnlyCache } from './cache/CacheBase'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { DbCacheReadCollection } from './cache/CacheCollection'
+import { PlayoutModel } from './playout/model/PlayoutModel'
+import { IngestModelReadonly } from './ingest/model/IngestModel'
+import { PlayoutPartInstanceModel } from './playout/model/PlayoutPartInstanceModel'
 
 type MinimalPartInstance = Pick<DBPartInstance, '_id' | 'segmentId' | 'orphaned'> & {
 	part: Pick<DBPart, '_id' | '_rank'>
@@ -23,41 +22,41 @@ type MinimalPartInstance = Pick<DBPartInstance, '_id' | 'segmentId' | 'orphaned'
  */
 
 export function updatePartInstanceRanksAfterAdlib(
-	cache: CacheForPlayout,
-	_currentPartInstance: ReadonlyDeep<DBPartInstance>,
-	partInstance: DBPartInstance
+	playoutModel: PlayoutModel,
+	_currentPartInstance: PlayoutPartInstanceModel,
+	partInstance: PlayoutPartInstanceModel
 ): void {
-	const segmentId = partInstance.segmentId
-	const orphanedPartInstances = cache.PartInstances.findAll(
-		(p) => !p.reset && !!p.orphaned && p.segmentId === segmentId
+	const segmentId = partInstance.partInstance.segmentId
+	const orphanedPartInstances = playoutModel.loadedPartInstances.filter(
+		(p) => !p.partInstance.reset && !!p.partInstance.orphaned && p.partInstance.segmentId === segmentId
 	)
 
 	const beforePartMap = new Map<SegmentId, BeforePartMapItem[]>()
-	beforePartMap.set(
-		segmentId,
-		cache.Parts.findAll((p) => p.segmentId === segmentId).map((p) => ({ id: p._id, rank: p._rank }))
-	)
+	const playoutSegment = playoutModel.findSegment(segmentId)
+	if (playoutSegment) {
+		beforePartMap.set(
+			segmentId,
+			playoutSegment.parts.map((p) => ({ id: p._id, rank: p._rank }))
+		)
+	}
+
+	const partsMap = new Map<PartId, ReadonlyDeep<DBPart>>()
+	for (const part of playoutModel.getAllOrderedParts()) {
+		partsMap.set(part._id, part)
+	}
 
 	const newPartInstanceRanks = compileNewPartInstanceRanks(
-		cache.Parts,
+		partsMap,
 		[segmentId],
 		beforePartMap,
-		orphanedPartInstances
+		orphanedPartInstances.map((p) => p.partInstance)
 	)
 
 	for (const [partInstanceId, rank] of newPartInstanceRanks.entries()) {
-		cache.PartInstances.updateOne(
-			partInstanceId,
-			(partInstance) => {
-				if (partInstance.part._rank !== rank) {
-					partInstance.part._rank = rank
-					return partInstance
-				} else {
-					return false
-				}
-			},
-			true
-		)
+		const partInstance = playoutModel.getPartInstance(partInstanceId)
+		if (!partInstance) continue
+
+		partInstance.setRank(rank)
 	}
 
 	logger.debug(`updatePartRanks: ${newPartInstanceRanks.size} PartInstances updated`)
@@ -72,24 +71,35 @@ export function updatePartInstanceRanksAfterAdlib(
 
 export async function updatePartInstanceRanksAndOrphanedState(
 	context: JobContext,
-	cache: ReadOnlyCache<CacheForIngest>,
+	ingestModel: IngestModelReadonly,
 	changedSegmentIds: ReadonlyDeep<SegmentId[]>,
-	beforePartMap: BeforePartMap
+	beforePartMap: BeforeIngestOperationPartMap
 ): Promise<void> {
+	const partsMap = new Map<PartId, ReadonlyDeep<DBPart>>()
+	for (const part of ingestModel.getAllOrderedParts()) {
+		partsMap.set(part.part._id, part.part)
+	}
+
 	const { writeOps, orphanedPartInstances } = await updateNormalPartInstanceRanksAndFindOrphans(
 		context,
-		cache,
+		partsMap,
 		changedSegmentIds
 	)
 
 	const newPartInstanceRanks = compileNewPartInstanceRanks(
-		cache.Parts,
+		partsMap,
 		changedSegmentIds,
 		beforePartMap,
 		orphanedPartInstances
 	)
 
+	const orphanedPartInstancesMap = normalizeArrayToMap(orphanedPartInstances, '_id')
+
 	for (const [partInstanceId, rank] of newPartInstanceRanks.entries()) {
+		// Make sure the rank has changed
+		const existingRank = orphanedPartInstancesMap.get(partInstanceId)?.part?._rank
+		if (existingRank === rank) continue
+
 		writeOps.push({
 			updateOne: {
 				filter: { _id: partInstanceId },
@@ -109,17 +119,17 @@ export async function updatePartInstanceRanksAndOrphanedState(
 }
 
 function compileNewPartInstanceRanks(
-	partCache: DbCacheReadCollection<DBPart>,
+	partsMap: ReadonlyMap<PartId, ReadonlyDeep<DBPart>>,
 	changedSegmentIds: ReadonlyDeep<SegmentId[]>,
-	beforePartMap: BeforePartMap,
-	orphanedPartInstances: MinimalPartInstance[]
+	beforePartMap: BeforeIngestOperationPartMap,
+	orphanedPartInstances: ReadonlyDeep<MinimalPartInstance>[]
 ) {
 	const partInstancesMap = compileOriginalPartInstanceOrderMap(beforePartMap, orphanedPartInstances)
 
 	const orphanedPartInstancesInUpdatedSegmentsMap = normalizeArrayToMap(orphanedPartInstances, '_id')
 
 	const { targetPartInstancesParentMap, partInstancesAtStartOfSegment } = groupPartInstancesByThePartTheyFollow(
-		partCache,
+		partsMap,
 		changedSegmentIds,
 		partInstancesMap
 	)
@@ -164,7 +174,7 @@ function compileNewPartInstanceRanks(
  */
 async function updateNormalPartInstanceRanksAndFindOrphans(
 	context: JobContext,
-	cache: ReadOnlyCache<CacheForIngest>,
+	partsMap: ReadonlyMap<PartId, ReadonlyDeep<DBPart>>,
 	changedSegmentIds: ReadonlyDeep<SegmentId[]>
 ) {
 	const orphanedPartInstances: MinimalPartInstance[] = []
@@ -190,7 +200,7 @@ async function updateNormalPartInstanceRanksAndFindOrphans(
 	)) as Array<MinimalPartInstance>
 
 	for (const partInstance of partInstancesInChangedSegments) {
-		const part = cache.Parts.findOne(partInstance.part._id)
+		const part = partsMap.get(partInstance.part._id)
 		if (!part) {
 			if (!partInstance.orphaned) {
 				writeOps.push({
@@ -212,16 +222,20 @@ async function updateNormalPartInstanceRanksAndFindOrphans(
 				updateOne: {
 					filter: { _id: partInstance._id },
 					update: {
-						$set: {
-							'part._rank': part._rank,
-						},
+						...(partInstance.part._rank !== part._rank
+							? {
+									$set: {
+										'part._rank': part._rank,
+									},
+							  }
+							: ''),
 						$unset: {
 							orphaned: 1,
 						},
 					},
 				},
 			})
-		} else {
+		} else if (partInstance.part._rank !== part._rank) {
 			writeOps.push({
 				updateOne: {
 					filter: { _id: partInstance._id },
@@ -249,7 +263,7 @@ interface OriginalPartInstanceOrderMapItem {
  * Group the PartInstances by the Part they are supposed to be after, based on the description of Parts from before the ingest update
  */
 function compileOriginalPartInstanceOrderMap(
-	beforePartMap: BeforePartMap,
+	beforePartMap: BeforeIngestOperationPartMap,
 	adlibbedPartInstances: MinimalPartInstance[]
 ) {
 	const beforePartInstanceMap = new Map<SegmentId, Array<OriginalPartInstanceOrderMapItem>>()
@@ -314,7 +328,7 @@ interface PartInstancesAfterPartInfo {
 	partInstanceIds: PartInstanceId[]
 }
 function groupPartInstancesByThePartTheyFollow(
-	partCache: DbCacheReadCollection<DBPart>,
+	partsMap: ReadonlyMap<PartId, ReadonlyDeep<DBPart>>,
 	changedSegmentIds: ReadonlyDeep<SegmentId[]>,
 	partInstancesMap: ReadonlyMap<SegmentId, OriginalPartInstanceOrderMapItem[]>
 ) {
@@ -341,7 +355,7 @@ function groupPartInstancesByThePartTheyFollow(
 			}
 
 			// Find the new part, it could have moved or been removed
-			const newPart = partCache.findOne(partInstanceGroup.afterPartId)
+			const newPart = partsMap.get(partInstanceGroup.afterPartId)
 			if (!newPart) {
 				// The Part was removed, so add them to the previous part
 				if (previousPartInstancesGroup) {

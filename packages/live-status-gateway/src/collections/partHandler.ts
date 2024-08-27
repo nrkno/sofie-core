@@ -28,7 +28,7 @@ export class PartHandler
 	async changed(id: PartId, changeType: string): Promise<void> {
 		this.logDocumentChange(id, changeType)
 		if (!this._collectionName) return
-		const collection = this._core.getCollection<DBPart>(this._collectionName)
+		const collection = this._core.getCollection(this._collectionName)
 		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
 		const allParts = collection.find(undefined)
 		await this._partsHandler.setParts(allParts)
@@ -69,14 +69,8 @@ export class PartHandler
 				this._subscriptionId = await this._coreHandler.setupSubscription(
 					this._publicationName,
 					rundownIds,
-					true,
 					null
 				)
-				// this._subscriptionId = await this._coreHandler.setupSubscription(
-				// 	this._publicationName,
-				// 	rundownIds,
-				// 	null,
-				// )
 				this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
 				this._dbObserver.added = (id) => {
 					void this.changed(id, 'added').catch(this._logger.error)
@@ -89,7 +83,7 @@ export class PartHandler
 				}
 			}
 		}
-		const collection = this._core.getCollection<DBPart>(this._collectionName)
+		const collection = this._core.getCollection(this._collectionName)
 		if (rundownsChanged) {
 			const allParts = collection.find(undefined)
 			await this._partsHandler.setParts(allParts)

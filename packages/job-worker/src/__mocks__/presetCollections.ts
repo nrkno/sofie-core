@@ -124,6 +124,7 @@ export async function setupMockShowStyleBase(
 		// hotkeyLegend?: Array<HotkeyDefinition>
 		_rundownVersionHash: '',
 		lastBlueprintConfig: undefined,
+		lastBlueprintFixUpHash: undefined,
 	}
 	const showStyleBase = _.extend(defaultShowStyleBase, doc)
 	await context.mockCollections.ShowStyleBases.insertOne(showStyleBase)
@@ -187,7 +188,6 @@ export async function setupDefaultRundown(
 	const sourceLayerIds = Object.keys(showStyleCompound.sourceLayers)
 
 	await context.mockCollections.Rundowns.insertOne({
-		peripheralDeviceId: undefined,
 		organizationId: null,
 		studioId: context.studioId,
 		showStyleBaseId: showStyleCompound._id,
@@ -209,10 +209,12 @@ export async function setupDefaultRundown(
 			core: '',
 		},
 
-		externalNRCSName: 'mock',
-
 		timing: {
 			type: PlaylistTimingType.None,
+		},
+
+		source: {
+			type: 'http',
 		},
 	})
 
@@ -232,7 +234,7 @@ export async function setupDefaultRundown(
 		_rank: 0,
 		externalId: 'MOCK_PART_0_0',
 		title: 'Part 0 0',
-		expectedDurationWithPreroll: undefined,
+		expectedDurationWithTransition: undefined,
 	}
 	await context.mockCollections.Parts.insertOne(part00)
 
@@ -300,7 +302,7 @@ export async function setupDefaultRundown(
 		_rank: 1,
 		externalId: 'MOCK_PART_0_1',
 		title: 'Part 0 1',
-		expectedDurationWithPreroll: undefined,
+		expectedDurationWithTransition: undefined,
 	}
 	await context.mockCollections.Parts.insertOne(part01)
 
@@ -340,7 +342,7 @@ export async function setupDefaultRundown(
 		_rank: 0,
 		externalId: 'MOCK_PART_1_0',
 		title: 'Part 1 0',
-		expectedDurationWithPreroll: undefined,
+		expectedDurationWithTransition: undefined,
 	}
 	await context.mockCollections.Parts.insertOne(part10)
 
@@ -351,7 +353,7 @@ export async function setupDefaultRundown(
 		_rank: 1,
 		externalId: 'MOCK_PART_1_1',
 		title: 'Part 1 1',
-		expectedDurationWithPreroll: undefined,
+		expectedDurationWithTransition: undefined,
 	}
 	await context.mockCollections.Parts.insertOne(part11)
 
@@ -362,7 +364,7 @@ export async function setupDefaultRundown(
 		_rank: 2,
 		externalId: 'MOCK_PART_1_2',
 		title: 'Part 1 2',
-		expectedDurationWithPreroll: undefined,
+		expectedDurationWithTransition: undefined,
 	}
 	await context.mockCollections.Parts.insertOne(part12)
 

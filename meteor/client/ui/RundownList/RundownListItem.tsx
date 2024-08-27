@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import classNames from 'classnames'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { getAllowConfigure, getAllowService, getAllowStudio } from '../../lib/localStorage'
 import { useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { confirmDeleteRundown, confirmReSyncRundown, getShowStyleBaseLink } from './util'
@@ -25,16 +25,16 @@ export function RundownListItem({
 	rundownLayouts,
 	swapRundownOrder,
 	isOnlyRundownInPlaylist,
-}: {
+}: Readonly<{
 	isActive: boolean
 	rundown: Rundown
 	rundownViewUrl?: string
 	rundownLayouts: Array<RundownLayoutBase>
 	swapRundownOrder: (a: RundownId, b: RundownId) => void
 	playlistId: RundownPlaylistId
-	isOnlyRundownInPlaylist?: boolean
+	isOnlyRundownInPlaylist: boolean
 	action?: IRundownPlaylistUiAction
-}): JSX.Element | null {
+}>): JSX.Element | null {
 	const { t } = useTranslation()
 
 	const showStyleBase = useTracker(
@@ -65,6 +65,7 @@ export function RundownListItem({
 			item: {
 				id: rundown._id,
 				rundownLayouts,
+				isOnlyRundownInPlaylist,
 			},
 		},
 		[rundown._id, rundownLayouts]
@@ -98,7 +99,7 @@ export function RundownListItem({
 					showStyleVariant: showStyleVariant.name,
 					showStyleBase: showStyleBase.name,
 			  })
-			: showStyleBase?.name || ''
+			: showStyleBase?.name ?? ''
 
 	return (
 		<RundownListItemView
@@ -119,7 +120,10 @@ export function RundownListItem({
 			showStyleName={showStyleLabel}
 			showStyleBaseURL={userCanConfigure ? getShowStyleBaseLink(rundown.showStyleBaseId) : undefined}
 			confirmDeleteRundownHandler={
-				(rundown.orphaned && getAllowStudio()) || userCanConfigure || getAllowService()
+				(getAllowStudio() &&
+					(rundown.orphaned || rundown.source.type === 'testing' || rundown.source.type === 'snapshot')) ||
+				userCanConfigure ||
+				getAllowService()
 					? () => confirmDeleteRundown(rundown, t)
 					: undefined
 			}

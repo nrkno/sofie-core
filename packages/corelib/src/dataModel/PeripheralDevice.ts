@@ -87,12 +87,3 @@ export interface PeripheralDevice {
 	/** If an ingest device performing an oauth flow */
 	accessTokenUrl?: string
 }
-
-export function getExternalNRCSName(device: PeripheralDevice | undefined): string {
-	if (device?.nrcsName && device.category === PeripheralDeviceCategory.INGEST) {
-		return device.nrcsName
-	} else {
-		// undefined NRCS:
-		return 'NRCS'
-	}
-}

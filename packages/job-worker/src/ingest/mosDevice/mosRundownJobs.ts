@@ -27,7 +27,7 @@ export async function handleMosRundownData(context: JobContext, data: MosRundown
 	if (parseMosString(data.mosRunningOrder.ID) !== data.rundownExternalId)
 		throw new Error('mosRunningOrder.ID and rundownExternalId mismatch!')
 
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -65,23 +65,23 @@ export async function handleMosRundownData(context: JobContext, data: MosRundown
 				modified: getCurrentTime(),
 			})
 		},
-		async (context, cache, newIngestRundown, oldIngestRundown) => {
+		async (context, ingestModel, newIngestRundown, oldIngestRundown) => {
 			if (!newIngestRundown) throw new Error(`handleMosRundownData lost the IngestRundown...`)
 
-			if (!canRundownBeUpdated(cache.Rundown.doc, !data.isUpdateOperation)) return null
+			if (!canRundownBeUpdated(ingestModel.rundown, !data.isUpdateOperation)) return null
 
 			let renamedSegments: CommitIngestData['renamedSegments'] = null
-			if (cache.Rundown.doc && oldIngestRundown) {
+			if (ingestModel.rundown && oldIngestRundown) {
 				// If we already have a rundown, update any modified segment ids
-				renamedSegments = diffAndUpdateSegmentIds(context, cache, oldIngestRundown, newIngestRundown)
+				renamedSegments = diffAndUpdateSegmentIds(context, ingestModel, oldIngestRundown, newIngestRundown)
 			}
 
 			const res = await updateRundownFromIngestData(
 				context,
-				cache,
+				ingestModel,
 				newIngestRundown,
 				!data.isUpdateOperation,
-				data.peripheralDeviceId
+				data.rundownSource
 			)
 			if (res) {
 				return {
@@ -99,7 +99,7 @@ export async function handleMosRundownData(context: JobContext, data: MosRundown
  * Update the payload of a mos rundown, without changing any parts or segments
  */
 export async function handleMosRundownMetadata(context: JobContext, data: MosRundownMetadataProps): Promise<void> {
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -113,10 +113,10 @@ export async function handleMosRundownMetadata(context: JobContext, data: MosRun
 				throw new Error(`Rundown "${data.rundownExternalId}" not found`)
 			}
 		},
-		async (context, cache, ingestRundown) => {
+		async (context, ingestModel, ingestRundown) => {
 			if (!ingestRundown) throw new Error(`handleMosRundownMetadata lost the IngestRundown...`)
 
-			return updateRundownMetadataFromIngestData(context, cache, ingestRundown, data.peripheralDeviceId)
+			return updateRundownMetadataFromIngestData(context, ingestModel, ingestRundown, data.rundownSource)
 		}
 	)
 }
@@ -144,7 +144,7 @@ export async function handleMosRundownStatus(context: JobContext, data: MosRundo
  * Update the ready to air state of a mos rundown
  */
 export async function handleMosRundownReadyToAir(context: JobContext, data: MosRundownReadyToAirProps): Promise<void> {
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -155,20 +155,17 @@ export async function handleMosRundownReadyToAir(context: JobContext, data: MosR
 				throw new Error(`Rundown "${data.rundownExternalId}" not found`)
 			}
 		},
-		async (context, cache, ingestRundown) => {
+		async (context, ingestModel, ingestRundown) => {
 			if (!ingestRundown) throw new Error(`handleMosRundownReadyToAir lost the IngestRundown...`)
 
-			if (!cache.Rundown.doc || cache.Rundown.doc.airStatus === data.status) return null
+			if (!ingestModel.rundown || ingestModel.rundown.airStatus === data.status) return null
 
 			// If rundown is orphaned, then it should be ignored
-			if (cache.Rundown.doc.orphaned) return null
+			if (ingestModel.rundown.orphaned) return null
 
-			cache.Rundown.update((rd) => {
-				rd.airStatus = data.status
-				return rd
-			})
+			ingestModel.setRundownAirStatus(data.status)
 
-			return updateRundownMetadataFromIngestData(context, cache, ingestRundown, data.peripheralDeviceId)
+			return updateRundownMetadataFromIngestData(context, ingestModel, ingestRundown, ingestModel.rundown.source)
 		}
 	)
 }

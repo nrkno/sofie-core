@@ -1,10 +1,10 @@
 import { addMigrationSteps } from './databaseMigration'
-import { StudioRouteSet, StudioRouteType } from '../../lib/collections/Studios'
+import { StudioRouteSet, StudioRouteType } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { Studios } from '../collections'
 
-export const addSteps = addMigrationSteps('1.42.0', [
-	// Add some migrations!
+// Release 42
 
+export const addSteps = addMigrationSteps('1.42.0', [
 	{
 		id: 'Add new routeType property to routeSets where missing',
 		canBeRunAutomatically: true,

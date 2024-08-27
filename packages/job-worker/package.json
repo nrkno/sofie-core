@@ -1,19 +1,19 @@
 {
 	"name": "@sofie-automation/job-worker",
-	"version": "1.50.3",
+	"version": "1.51.0-in-testing.0",
 	"description": "Worker for things",
 	"main": "dist/index.js",
 	"license": "MIT",
 	"private": true,
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
+		"url": "git+https://github.com/nrkno/sofie-core.git",
 		"directory": "packages/job-worker"
 	},
 	"bugs": {
-		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
+		"url": "https://github.com/nrkno/sofie-core/issues"
 	},
-	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/job-worker#readme",
+	"homepage": "https://github.com/nrkno/sofie-core/blob/master/packages/job-worker#readme",
 	"scripts": {
 		"dev": "run -T nodemon --config nodemon.json src/index.ts",
 		"dev:debug": "run -T nodemon --config nodemon.json --inspect-brk src/index.ts",
@@ -23,7 +23,7 @@
 		"lint": "run lint:raw .",
 		"unit": "run -T jest",
 		"test": "run lint && run unit",
-		"watch": "run -T jest --watch",
+		"watch": "run -T jest --watch --coverage=false",
 		"cov": "run -T jest --coverage; open-cli coverage/lcov-report/index.html",
 		"cov-open": "open-cli coverage/lcov-report/index.html",
 		"validate:dependencies": "yarn npm audit --environment production && run license-validate",
@@ -41,23 +41,22 @@
 	],
 	"dependencies": {
 		"@slack/webhook": "^6.1.0",
-		"@sofie-automation/blueprints-integration": "1.50.3",
-		"@sofie-automation/corelib": "1.50.3",
-		"@sofie-automation/shared-lib": "1.50.3",
+		"@sofie-automation/blueprints-integration": "1.51.0-in-testing.0",
+		"@sofie-automation/corelib": "1.51.0-in-testing.0",
+		"@sofie-automation/shared-lib": "1.51.0-in-testing.0",
 		"amqplib": "^0.10.3",
 		"deepmerge": "^4.3.1",
-		"elastic-apm-node": "^3.43.0",
+		"elastic-apm-node": "^3.51.0",
 		"eventemitter3": "^4.0.7",
-		"mongodb": "^4.13.0",
+		"mongodb": "^5.9.2",
 		"node-fetch": "^2.7.0",
 		"p-lazy": "^3.1.0",
 		"p-timeout": "^4.1.0",
-		"superfly-timeline": "^8.3.1",
-		"threadedclass": "^1.1.2",
-		"tslib": "^2.4.0",
-		"type-fest": "^2.19.0",
-		"underscore": "^1.13.4",
-		"vm2": "^3.9.14"
+		"superfly-timeline": "9.0.0",
+		"threadedclass": "^1.2.2",
+		"tslib": "^2.6.2",
+		"type-fest": "^3.13.1",
+		"underscore": "^1.13.6"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {
@@ -68,5 +67,8 @@
 			"yarn lint:raw"
 		]
 	},
-	"packageManager": "yarn@3.5.0"
+	"packageManager": "yarn@3.5.0",
+	"devDependencies": {
+		"jest-mock-extended": "^3.0.5"
+	}
 }

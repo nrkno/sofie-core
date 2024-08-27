@@ -936,6 +936,77 @@ describe('Playout API', () => {
 			expect(nextPartInstance?.part._id).toBe(firstPartOfQueuedSegment?._id)
 		}
 	})
+
+	test('onSetAsNext callback', async () => {
+		const { rundownId: rundownId0, playlistId: playlistId0 } = await setupRundownWithAutoplayPart0(
+			context,
+			protectString('rundown0'),
+			showStyle
+		)
+		expect(rundownId0).toBeTruthy()
+		expect(playlistId0).toBeTruthy()
+
+		const mockOnSetAsNext = jest.fn()
+		context.updateShowStyleBlueprint({
+			onSetAsNext: mockOnSetAsNext,
+		})
+
+		// Prepare and activate
+		await handleResetRundownPlaylist(context, { playlistId: playlistId0, activate: 'active' })
+
+		expect(mockOnSetAsNext).toHaveBeenCalledTimes(1)
+		mockOnSetAsNext.mockClear()
+
+		// Take first part
+		await handleTakeNextPart(context, { playlistId: playlistId0, fromPartInstanceId: null })
+
+		expect(mockOnSetAsNext).toHaveBeenCalledTimes(1)
+		mockOnSetAsNext.mockClear()
+
+		// Set third part as Next
+		await handleSetNextPart(context, {
+			playlistId: playlistId0,
+			nextPartId: (await getAllParts(rundownId0))[2]._id,
+		})
+
+		expect(mockOnSetAsNext).toHaveBeenCalledTimes(1)
+	})
+
+	test('onTake callback', async () => {
+		const { rundownId: rundownId0, playlistId: playlistId0 } = await setupRundownWithAutoplayPart0(
+			context,
+			protectString('rundown0'),
+			showStyle
+		)
+		expect(rundownId0).toBeTruthy()
+		expect(playlistId0).toBeTruthy()
+
+		const getPlaylist0 = async () => {
+			const playlist = (await context.mockCollections.RundownPlaylists.findOne(playlistId0)) as DBRundownPlaylist
+			playlist.activationId = playlist.activationId ?? undefined
+			return playlist
+		}
+
+		const mockOnTake = jest.fn()
+		context.updateShowStyleBlueprint({
+			onTake: mockOnTake,
+		})
+
+		// Prepare and activate
+		await handleResetRundownPlaylist(context, { playlistId: playlistId0, activate: 'active' })
+		// Take first part
+		await handleTakeNextPart(context, { playlistId: playlistId0, fromPartInstanceId: null })
+
+		expect(mockOnTake).toHaveBeenCalledTimes(1)
+		mockOnTake.mockClear()
+
+		// Take another part
+		await handleTakeNextPart(context, {
+			playlistId: playlistId0,
+			fromPartInstanceId: (await getPlaylist0()).currentPartInfo?.partInstanceId ?? null,
+		})
+		expect(mockOnTake).toHaveBeenCalledTimes(1)
+	})
 })
 
 async function setupRundownWithAutoplayPart0(

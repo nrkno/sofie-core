@@ -2,23 +2,28 @@ import * as React from 'react'
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
 import { IAdLibListItem } from '../../AdLibListItem'
 import { RundownUtils } from '../../../../lib/rundown'
-import { Piece } from '../../../../../lib/collections/Pieces'
+import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import InspectorTitle from './InspectorTitle'
 import { BucketAdLibUi } from '../../RundownViewBuckets'
 import { AdLibPieceUi } from '../../../../lib/shelf'
 import { UIShowStyleBase } from '../../../../../lib/api/showStyles'
 import { UIStudio } from '../../../../../lib/api/studios'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { ReadonlyDeep } from 'type-fest'
+import { PieceContentStatusObj } from '../../../../../lib/api/pieceContentStatus'
 
-export default function DefaultItemRenderer(props: {
-	piece: PieceUi | IAdLibListItem | BucketAdLibUi
-	showStyleBase: UIShowStyleBase
-	studio: UIStudio
-}): JSX.Element {
+export default function DefaultItemRenderer(
+	props: Readonly<{
+		piece: PieceUi | IAdLibListItem | BucketAdLibUi
+		contentStatus: ReadonlyDeep<PieceContentStatusObj> | undefined
+		showStyleBase: UIShowStyleBase
+		studio: UIStudio
+	}>
+): JSX.Element {
 	if (RundownUtils.isAdLibPiece(props.piece)) {
 		const piece = props.piece as IAdLibListItem
 
-		const packageName = piece.contentStatus?.packageName ?? null
+		const packageName = props.contentStatus?.packageName ?? null
 
 		return (
 			<>
@@ -39,15 +44,15 @@ export default function DefaultItemRenderer(props: {
 					<dt>{piece.sourceLayerId}</dt>
 					<dd>outputLayerId</dd>
 					<dt>{piece.outputLayerId}</dt>
-					<dd>metaData</dd>
-					<dt>{JSON.stringify(piece.metaData || {})}</dt>
+					<dd>publicData</dd>
+					<dt>{JSON.stringify(piece.publicData || {})}</dt>
 				</dl>
 			</>
 		)
 	} else {
 		const piece = props.piece.instance.piece as Piece
 
-		const packageName = props.piece.contentStatus?.packageName ?? null
+		const packageName = props.contentStatus?.packageName ?? null
 
 		return (
 			<>
@@ -64,8 +69,8 @@ export default function DefaultItemRenderer(props: {
 					<dt>{piece.sourceLayerId}</dt>
 					<dd>outputLayerId</dd>
 					<dt>{piece.outputLayerId}</dt>
-					<dd>metaData</dd>
-					<dt>{JSON.stringify(piece.metaData || {})}</dt>
+					<dd>publicData</dd>
+					<dt>{JSON.stringify(piece.publicData || {})}</dt>
 				</dl>
 			</>
 		)

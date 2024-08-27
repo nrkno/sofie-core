@@ -14,9 +14,9 @@ import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import { MeteorCall } from '../methods'
 import { PartInstance } from '../../collections/PartInstances'
-import { RundownPlaylist } from '../../collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBShowStyleBase, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { Studio } from '../../collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { assertNever, DummyReactiveVar } from '../../lib'
 import { logger } from '../../logging'
 import RundownViewEventBus, { RundownViewEvents } from './RundownViewEventBus'
@@ -35,6 +35,7 @@ import { PartInstances, Parts } from '../../collections/libCollections'
 import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 import { hashSingleUseToken } from '../userActions'
 import { DeviceActions } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
+import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 
 // as described in this issue: https://github.com/Microsoft/TypeScript/issues/14094
 type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
@@ -44,7 +45,7 @@ type XOR<T, U> = T | U extends object ? (Without<T, U> & U) | (Without<U, T> & T
 export interface ReactivePlaylistActionContext {
 	rundownPlaylistId: ReactiveVar<RundownPlaylistId>
 	rundownPlaylist: ReactiveVar<
-		Pick<RundownPlaylist, '_id' | 'name' | 'activationId' | 'nextPartInfo' | 'currentPartInfo'>
+		Pick<DBRundownPlaylist, '_id' | 'name' | 'activationId' | 'nextPartInfo' | 'currentPartInfo'>
 	>
 
 	currentRundownId: ReactiveVar<RundownId | null>
@@ -56,7 +57,7 @@ export interface ReactivePlaylistActionContext {
 }
 
 interface PlainPlaylistContext {
-	rundownPlaylist: RundownPlaylist
+	rundownPlaylist: DBRundownPlaylist
 	currentRundownId: RundownId | null
 	currentSegmentPartIds: PartId[]
 	nextSegmentPartIds: PartId[]
@@ -65,7 +66,7 @@ interface PlainPlaylistContext {
 }
 
 interface PlainStudioContext {
-	studio: Studio
+	studio: DBStudio
 	showStyleBase: DBShowStyleBase
 }
 
@@ -102,7 +103,7 @@ interface ExecutableAdLibAction extends PreviewableAction {
 }
 
 export function isPreviewableAction(action: ExecutableAction): action is PreviewableAction {
-	return action.action && typeof action['preview'] === 'function'
+	return action.action && 'preview' in action && typeof action['preview'] === 'function'
 }
 function createRundownPlaylistContext(
 	context: ActionContext,
@@ -508,6 +509,15 @@ export function createAction(action: SomeAction, sourceLayers: SourceLayers): Ex
 			return createUserActionWithCtx(action, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, async (e, ts, ctx) =>
 				MeteorCall.userAction.deactivate(e, ts, ctx.rundownPlaylistId.get())
 			)
+		case PlayoutActions.activateAdlibTestingMode:
+			return createUserActionWithCtx(action, UserAction.ACTIVATE_ADLIB_TESTING, async (e, ts, ctx) => {
+				const rundownId = ctx.currentRundownId.get()
+				if (rundownId) {
+					return MeteorCall.userAction.activateAdlibTestingMode(e, ts, ctx.rundownPlaylistId.get(), rundownId)
+				} else {
+					return ClientAPI.responseError(UserError.create(UserErrorMessage.InactiveRundown))
+				}
+			})
 		case PlayoutActions.take:
 			if (isActionTriggeredFromUiContext(action)) {
 				return createRundownPlaylistSoftTakeAction(action.filterChain as IGUIContextFilterLink[])

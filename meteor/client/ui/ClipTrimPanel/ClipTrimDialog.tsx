@@ -9,16 +9,17 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/noti
 import { protectString } from '../../../lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { ClientAPI } from '../../../lib/api/client'
-import { Rundown } from '../../../lib/collections/Rundowns'
-import { PieceInstancePiece } from '../../../lib/collections/PieceInstances'
+import { Rundown, getRundownNrcsName } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { UIStudio } from '../../../lib/api/studios'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ReadonlyDeep } from 'type-fest'
 
 export interface IProps {
 	playlistId: RundownPlaylistId
 	rundown: Rundown
 	studio: UIStudio
-	selectedPiece: PieceInstancePiece
+	selectedPiece: ReadonlyDeep<PieceInstancePiece>
 
 	onClose?: () => void
 }
@@ -35,7 +36,7 @@ export function ClipTrimDialog({
 	selectedPiece,
 
 	onClose,
-}: IProps): JSX.Element {
+}: Readonly<IProps>): JSX.Element {
 	const { t } = useTranslation()
 
 	const vtContent = selectedPiece.content as VTContent | undefined
@@ -53,7 +54,7 @@ export function ClipTrimDialog({
 	}, [])
 
 	const handleAccept = useCallback((e: SomeEvent) => {
-		onClose && onClose()
+		onClose?.()
 
 		doUserAction(
 			t,
@@ -75,7 +76,7 @@ export function ClipTrimDialog({
 				if (
 					ClientAPI.isClientResponseError(err) &&
 					err.error.rawError &&
-					stringifyError(err.error.rawError).match(/timed out/)
+					RegExp(/timed out/).exec(stringifyError(err.error.rawError))
 				) {
 					NotificationCenter.push(
 						new Notification(
@@ -86,7 +87,7 @@ export function ClipTrimDialog({
 									<strong>{selectedPiece.name}</strong>:&ensp;
 									{t(
 										"Trimming this clip has timed out. It's possible that the story is currently locked for writing in {{nrcsName}} and will eventually be updated. Make sure that the story is not being edited by other users.",
-										{ nrcsName: rundown?.externalNRCSName || 'NRCS' }
+										{ nrcsName: getRundownNrcsName(rundown) }
 									)}
 								</>
 							),
@@ -138,7 +139,7 @@ export function ClipTrimDialog({
 							<strong>{selectedPiece.name}</strong>:&ensp;
 							{t(
 								"Trimming this clip is taking longer than expected. It's possible that the story is locked for writing in {{nrcsName}}.",
-								{ nrcsName: rundown?.externalNRCSName || 'NRCS' }
+								{ nrcsName: getRundownNrcsName(rundown) }
 							)}
 						</>
 					),

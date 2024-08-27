@@ -58,13 +58,10 @@ export class PlaylistHandler
 		if (!this._studioId) return
 		if (!this._collectionName) return
 		if (!this._publicationName) return
-		this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, {
-			studioId: this._studioId,
-		})
-		// this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, null, [this._studioId]) // in R51
+		this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, null, [this._studioId])
 		this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
 		if (this._collectionName) {
-			const col = this._core.getCollection<DBRundownPlaylist>(this._collectionName)
+			const col = this._core.getCollection(this._collectionName)
 			if (!col) throw new Error(`collection '${this._collectionName}' not found!`)
 			const playlists = col.find(undefined)
 			this._collectionData = playlists.find((p) => p.activationId)
@@ -81,7 +78,7 @@ export class PlaylistHandler
 	async changed(id: RundownPlaylistId, changeType: string): Promise<void> {
 		this.logDocumentChange(id, changeType)
 		if (!this._collectionName) return
-		const collection = this._core.getCollection<DBRundownPlaylist>(this._collectionName)
+		const collection = this._core.getCollection(this._collectionName)
 		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
 		const playlists = collection.find(undefined)
 		await this._playlistsHandler.setPlaylists(playlists)

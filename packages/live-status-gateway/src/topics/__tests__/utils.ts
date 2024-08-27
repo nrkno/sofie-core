@@ -33,7 +33,7 @@ export function makeTestPlaylist(id?: string): DBRundownPlaylist {
 		rundownIdsInOrder: [protectString(RUNDOWN_1_ID), protectString(RUNDOWN_2_ID)],
 		studioId: protectString('STUDIO_1'),
 		timing: { type: PlaylistTimingType.None },
-		metaData: { a: 'b' }, // tmp, publicData was introduced in R51
+		publicData: { a: 'b' },
 	}
 }
 
@@ -53,7 +53,7 @@ export function makeTestParts(): DBPart[] {
 			segmentId: protectString('segment0'),
 			notes: [],
 			externalId: 'NCS_PART_0',
-			expectedDurationWithPreroll: 1000,
+			expectedDurationWithTransition: 1000,
 			title: 'Part 0',
 		},
 	]

@@ -112,7 +112,7 @@ export class ActivePlaylistTopic
 										this._pieceInstancesInCurrentPartInstance?.map((piece) =>
 											toPieceStatus(piece, this._showStyleBaseExt)
 										) ?? [],
-									publicData: currentPart.metaData, // tmp, publicData was introduced in R51
+									publicData: currentPart.publicData,
 							  })
 							: null,
 					currentSegment:
@@ -137,10 +137,10 @@ export class ActivePlaylistTopic
 									this._pieceInstancesInNextPartInstance?.map((piece) =>
 										toPieceStatus(piece, this._showStyleBaseExt)
 									) ?? [],
-								publicData: nextPart.metaData, // tmp, publicData was introduced in R51
+								publicData: nextPart.publicData,
 						  })
 						: null,
-					publicData: this._activePlaylist.metaData, // null, // this._activePlaylist.publicData, tmp, introduced in R51
+					publicData: this._activePlaylist.publicData,
 			  })
 			: literal<ActivePlaylistStatus>({
 					event: 'activePlaylist',

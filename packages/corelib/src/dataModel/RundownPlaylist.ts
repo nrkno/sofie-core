@@ -27,7 +27,7 @@ export interface ABSessionInfo {
 
 export interface ABSessionAssignment {
 	sessionId: string
-	playerId: number
+	playerId: number | string
 	lookahead: boolean // purely informational for debugging
 }
 
@@ -75,8 +75,10 @@ export interface DBRundownPlaylist {
 	outOfOrderTiming?: boolean
 	/** Should time-of-day clocks be used instead of countdowns by default */
 	timeOfDayCountdowns?: boolean
-	/** Arbitraty data used by rundowns */
-	metaData?: unknown
+	/** Arbitraty data storage for internal use in the blueprints */
+	privateData?: unknown
+	/** Arbitraty data relevant for other systems and exposed to them via APIs */
+	publicData?: unknown
 
 	/** the id of the Live Part - if empty, no part in this rundown is live */
 	currentPartInfo: SelectedPartInstance | null

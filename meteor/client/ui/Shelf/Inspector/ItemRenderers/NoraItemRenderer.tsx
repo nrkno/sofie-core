@@ -85,7 +85,7 @@ function isNoraItem(item: IAdLibListItem | PieceUi): boolean {
 		? (item.content as NoraContent)
 		: (item.instance.piece.content as NoraContent)
 
-	if (!content || !content.payload || !content.payload.template) {
+	if (!content || !content.previewPayload) {
 		return false
 	}
 

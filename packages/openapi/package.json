@@ -1,11 +1,11 @@
 {
 	"name": "@sofie-automation/openapi",
-	"version": "1.50.3",
+	"version": "1.51.0-in-testing.0",
 	"private": true,
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
+		"url": "git+https://github.com/nrkno/sofie-core.git",
 		"directory": "packages/openapi"
 	},
 	"main": "dist/index.js",
@@ -36,13 +36,13 @@
 		"install_swagger.js"
 	],
 	"dependencies": {
-		"tslib": "^2.4.0"
+		"tslib": "^2.6.2"
 	},
 	"devDependencies": {
-		"@openapitools/openapi-generator-cli": "^2.5.2",
-		"eslint-plugin-yml": "^1.2.0",
+		"@openapitools/openapi-generator-cli": "^2.9.0",
+		"eslint-plugin-yml": "^1.12.2",
 		"js-yaml": "^4.1.0",
-		"wget-improved": "^3.3.1"
+		"wget-improved": "^3.4.0"
 	},
 	"lint-staged": {
 		"*.{css,json,md,scss}": [

@@ -54,7 +54,7 @@ export class PartInstancesHandler
 
 	private updateCollectionData(): boolean {
 		if (!this._collectionName || !this._collectionData) return false
-		const collection = this._core.getCollection<DBPartInstance>(this._collectionName)
+		const collection = this._core.getCollection(this._collectionName)
 		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
 		const previousPartInstance = this._currentPlaylist?.previousPartInfo?.partInstanceId
 			? collection.findOne(this._currentPlaylist.previousPartInfo.partInstanceId)
@@ -134,14 +134,8 @@ export class PartInstancesHandler
 				this._subscriptionId = await this._coreHandler.setupSubscription(
 					this._publicationName,
 					this._rundownIds,
-					this._activationId,
-					true
+					this._activationId
 				)
-				// this._subscriptionId = await this._coreHandler.setupSubscription(
-				// 	this._publicationName,
-				// 	this._rundownIds,
-				// 	this._activationId
-				// )
 				this._subscriptionPending = false
 				this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
 				this._dbObserver.added = (id) => {

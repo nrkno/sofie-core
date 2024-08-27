@@ -19,7 +19,7 @@ export class RundownContentObserver {
 		this.#cache = cache
 
 		this.#observers = [
-			Rundowns.observe(
+			Rundowns.observeChanges(
 				{
 					_id: {
 						$in: rundownIds,
@@ -30,7 +30,7 @@ export class RundownContentObserver {
 					projection: rundownFieldSpecifier,
 				}
 			),
-			Segments.observe(
+			Segments.observeChanges(
 				{
 					rundownId: {
 						$in: rundownIds,
@@ -41,7 +41,7 @@ export class RundownContentObserver {
 					projection: segmentFieldSpecifier,
 				}
 			),
-			Parts.observe(
+			Parts.observeChanges(
 				{
 					rundownId: {
 						$in: rundownIds,
@@ -52,7 +52,7 @@ export class RundownContentObserver {
 					projection: partFieldSpecifier,
 				}
 			),
-			PartInstances.observe(
+			PartInstances.observeChanges(
 				{ rundownId: { $in: rundownIds }, reset: { $ne: true }, orphaned: 'deleted' },
 				cache.DeletedPartInstances.link(),
 				{ fields: partInstanceFieldSpecifier }

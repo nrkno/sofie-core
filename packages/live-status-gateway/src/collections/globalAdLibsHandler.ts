@@ -32,7 +32,7 @@ export class GlobalAdLibsHandler
 	async changed(id: PieceId, changeType: string): Promise<void> {
 		this.logDocumentChange(id, changeType)
 		if (!this._collectionName) return
-		const collection = this._core.getCollection<RundownBaselineAdLibItem>(this._collectionName)
+		const collection = this._core.getCollection(this._collectionName)
 		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
 		this._collectionData = collection.find({ rundownId: this._currentRundownId })
 		await this.notify(this._collectionData)
@@ -51,16 +51,9 @@ export class GlobalAdLibsHandler
 			if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
 			if (this._dbObserver) this._dbObserver.stop()
 			if (this._currentRundownId) {
-				this._subscriptionId = await this._coreHandler.setupSubscription(
-					this._publicationName,
-					{
-						rundownId: this._currentRundownId,
-					},
-					true
-				)
-				// this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, [
-				// 	this._currentRundownId,
-				// ]) // In R51
+				this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, [
+					this._currentRundownId,
+				])
 				this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
 				this._dbObserver.added = (id) => {
 					void this.changed(id, 'added').catch(this._logger.error)
@@ -72,7 +65,7 @@ export class GlobalAdLibsHandler
 					void this.changed(id, 'removed').catch(this._logger.error)
 				}
 
-				const collection = this._core.getCollection<RundownBaselineAdLibItem>(this._collectionName)
+				const collection = this._core.getCollection(this._collectionName)
 				if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
 				this._collectionData = collection.find({ rundownId: this._currentRundownId })
 				await this.notify(this._collectionData)

@@ -70,7 +70,7 @@ export class SegmentsTopic
 					name: segment.name,
 					timing: calculateSegmentTiming(this._partsBySegment[segmentId] ?? []),
 					identifier: segment.identifier,
-					publicData: segment.metaData, // segment.publicData, tmp, introduced in R51
+					publicData: segment.publicData,
 				}
 			}),
 		}

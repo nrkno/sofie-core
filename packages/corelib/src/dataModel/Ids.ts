@@ -29,9 +29,7 @@ export type EvaluationId = ProtectedString<'EvaluationId'>
  */
 export type ExpectedMediaItemId = ProtectedString<'ExpectedMediaItemId'>
 
-/** A string, identifying a Rundown
- * @deprecated
- */
+/** A string, identifying a Rundown */
 export type ExpectedPlayoutItemId = ProtectedString<'ExpectedPlayoutItemId'>
 
 /** A string, identifying a ExternalMessageQueueObj */

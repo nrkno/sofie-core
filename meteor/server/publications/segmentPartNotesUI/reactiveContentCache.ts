@@ -6,11 +6,11 @@ import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mo
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 
-export type RundownFields = '_id' | 'playlistId' | 'externalNRCSName'
+export type RundownFields = '_id' | 'playlistId' | 'source'
 export const rundownFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<Rundown, RundownFields>>>({
 	_id: 1,
 	playlistId: 1,
-	externalNRCSName: 1,
+	source: 1,
 })
 
 export type SegmentFields = '_id' | '_rank' | 'rundownId' | 'name' | 'notes' | 'orphaned'

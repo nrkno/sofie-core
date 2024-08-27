@@ -18,10 +18,13 @@ Follow these instructions to start up Sofie Core in development mode. (For produ
 
 ### Prerequisites
 
-- Install [Node.js](https://nodejs.org) 18 (14 should also work) (using [nvm](https://github.com/nvm-sh/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows) is the recommended way to install Node.js)
-- If on Windows: `npm install --global windows-build-tools`
+- Install [Node.js](https://nodejs.org) 14 (using [nvm](https://github.com/nvm-sh/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows) is the recommended way to install Node.js)
 - Install [Meteor](https://www.meteor.com/install) (`npm install --global meteor`)
+- Install [Node.js](https://nodejs.org) 18 (using the same method you used above, you can uninstall node 14 if needed)
+- Install an older version of corepack (`npm install --global corepack@0.15.3`)
 - Enable [corepack](https://nodejs.org/api/corepack.html#corepack) (`corepack enable`) as administrator/root. If `corepack` is not found, you may need to install it first with `npm install --global corepack`
+
+- If on Windows, you may need to `npm install --global windows-build-tools` but this is not always necessary
 
 ### Quick Start
 
@@ -128,6 +131,30 @@ yarn i18n-compile-json
 The resulting JSON file will be placed in `meteor/public/locales/xx`, where it will be available to the Sofie UI for use and auto-detection.
 
 Then submit this as a PR.
+
+## Deprecations
+
+### ConfigManifests
+
+The ConfigManifests for Blueprints and Gateways was replaced with JSONSchema in R50.  
+However, one usage by AdlibActions for their userDataManifest remains as this is not something we are actively using.
+
+## Blueprint Migrations
+
+In R49, a replacement flow was added consisting of `validateConfig` and `applyConfig`.  
+It is no longer recommended to use the old migrations flow for showstyle and studio blueprints.
+
+### ExpectedMediaItems
+
+These are used for Media-manager which is no longer being developed.
+
+### Blueprints: getPieceABSessionId & getTimelineObjectAbSessionId
+
+With AB being a native concept supported by Sofie since R50, these are likely no longer useful to Blueprints.
+
+### MongoQuery `fields` specifier
+
+It is recommended to use `projection` instead, as it is functionally identical but follows recommended naming from mongodb.
 
 ## Other info
 

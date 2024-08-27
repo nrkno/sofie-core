@@ -75,7 +75,7 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 		[action, overrideHelper]
 	)
 
-	function onFilterInsertNext(filterIndex) {
+	function onFilterInsertNext(filterIndex: number) {
 		if (action.filterChain.length === filterIndex + 1) {
 			const obj =
 				filterIndex > -1
@@ -178,7 +178,7 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 					<RundownPlaylistFilter link={chainLink} key={chainIndex} />
 				) : (
 					<dl className="triggered-action-entry__action__filter" key={chainIndex}>
-						<dt>{chainLink.object}</dt>
+						<dt>{(chainLink as any).object}</dt>
 					</dl>
 				)
 			)}

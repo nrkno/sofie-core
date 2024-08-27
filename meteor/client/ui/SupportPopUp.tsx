@@ -8,7 +8,7 @@ import { CoreSystem } from '../collections'
 
 interface IProps {}
 
-export function SupportPopUp({ children }: React.PropsWithChildren<IProps>): JSX.Element {
+export function SupportPopUp({ children }: Readonly<React.PropsWithChildren<IProps>>): JSX.Element {
 	const { t } = useTranslation()
 
 	const { supportMessage } = useTracker(
@@ -43,7 +43,7 @@ interface IToggleProps {
 	title?: string
 }
 
-export function SupportPopUpToggle({ isOpen, title, onClick }: IToggleProps): JSX.Element {
+export function SupportPopUpToggle({ isOpen, title, onClick }: Readonly<IToggleProps>): JSX.Element {
 	return (
 		<button
 			className={ClassNames('status-bar__controls__button', 'support__toggle-button', {
@@ -66,7 +66,7 @@ export function DocumentationLink(): JSX.Element {
 	const { t } = useTranslation()
 
 	return (
-		<p className="mod mhn mbn">
+		<div className="mod mhn mbn">
 			{getHelpMode() ? (
 				<div>
 					{t('Disable hints by adding this to the URL:')}&nbsp;
@@ -78,8 +78,10 @@ export function DocumentationLink(): JSX.Element {
 					<a href="?help=1">?help=1</a>
 				</div>
 			)}
-			{t('More documentation available at:')}&nbsp;
-			<a href="https://nrkno.github.io/sofie-core/">https://nrkno.github.io/sofie-core/</a>
-		</p>
+			<p>
+				{t('More documentation available at:')}&nbsp;
+				<a href="https://nrkno.github.io/sofie-core/">https://nrkno.github.io/sofie-core/</a>
+			</p>
+		</div>
 	)
 }

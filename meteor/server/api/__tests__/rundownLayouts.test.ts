@@ -116,13 +116,14 @@ describe('Rundown Layouts', () => {
 
 			{
 				// try not to send a request body
-				SupressLogMessages.suppressLogMessage(/Invalid request body/i)
+				SupressLogMessages.suppressLogMessage(/Missing request body/i)
 				const ctx = await callKoaRoute(shelfLayoutsRouter, {
 					method: 'POST',
 					url: `/upload/${env.showStyleBaseId}`,
 					headers: {
 						'content-type': 'application/json',
 					},
+					requestBody: null,
 				})
 
 				expect(ctx.response.status).toBe(500)

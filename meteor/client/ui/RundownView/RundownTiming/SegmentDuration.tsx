@@ -4,8 +4,9 @@ import { withTiming, WithTiming } from './withTiming'
 import { unprotectString } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import { PartUi } from '../../SegmentTimeline/SegmentTimelineContainer'
-import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
+import { calculatePartInstanceExpectedDurationWithTransition } from '@sofie-automation/corelib/dist/playout/timings'
 import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { getPartInstanceTimingId } from '../../../lib/rundownTiming'
 
 interface ISegmentDurationProps {
 	segmentId: SegmentId
@@ -45,11 +46,11 @@ export const SegmentDuration = withTiming<ISegmentDurationProps, {}>()(function 
 				budget +=
 					part.instance.orphaned || part.instance.part.untimed
 						? 0
-						: calculatePartInstanceExpectedDurationWithPreroll(part.instance) || 0
+						: calculatePartInstanceExpectedDurationWithTransition(part.instance) || 0
 			})
 		}
 		props.parts.forEach((part) => {
-			playedOut += (!part.instance.part.untimed ? partPlayed[unprotectString(part.instance.part._id)] : 0) || 0
+			playedOut += (!part.instance.part.untimed ? partPlayed[getPartInstanceTimingId(part.instance)] : 0) || 0
 		})
 	}
 

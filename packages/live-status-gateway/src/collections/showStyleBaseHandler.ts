@@ -56,12 +56,9 @@ export class ShowStyleBaseHandler
 			if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
 			if (this._dbObserver) this._dbObserver.stop()
 			if (this._showStyleBaseId) {
-				this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, {
-					_id: this._showStyleBaseId,
-				})
-				// this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, [
-				// 	this._showStyleBaseId,
-				// ]) // In R51
+				this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, [
+					this._showStyleBaseId,
+				])
 				this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
 				this._dbObserver.added = (id) => {
 					void this.changed(id, 'added').catch(this._logger.error)
@@ -77,7 +74,7 @@ export class ShowStyleBaseHandler
 	}
 
 	updateCollectionData(): void {
-		const collection = this._core.getCollection<DBShowStyleBase>(this._collectionName)
+		const collection = this._core.getCollection(this._collectionName)
 		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
 		if (!this._showStyleBaseId) return
 		const showStyleBase = collection.findOne(this._showStyleBaseId)

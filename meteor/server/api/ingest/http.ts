@@ -7,11 +7,11 @@ import { protectString } from '../../../lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { IngestRundown } from '@sofie-automation/blueprints-integration'
-import { getExternalNRCSName } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { checkStudioExists } from '../../optimizations'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import KoaRouter from '@koa/router'
 import bodyParser from 'koa-bodyparser'
+import { getRundownNrcsName } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 
 export const ingestRouter = new KoaRouter()
 
@@ -56,16 +56,19 @@ export async function importIngestRundown(studioId: StudioId, ingestRundown: Ing
 
 	const existingDbRundown = await Rundowns.findOneAsync(rundownId)
 	// If the RO exists and is not from http then don't replace it. Otherwise, it is free to be replaced
-	if (existingDbRundown && existingDbRundown.externalNRCSName !== getExternalNRCSName(undefined))
+	if (existingDbRundown && existingDbRundown.source.type !== 'http') {
 		throw new Meteor.Error(
 			403,
-			`Cannot replace existing rundown from '${existingDbRundown.externalNRCSName}' with http data`
+			`Cannot replace existing rundown from '${getRundownNrcsName(existingDbRundown)}' with http data`
 		)
+	}
 
 	await runIngestOperation(studioId, IngestJobs.UpdateRundown, {
 		rundownExternalId: ingestRundown.externalId,
-		peripheralDeviceId: null,
 		ingestRundown: ingestRundown,
 		isCreateAction: true,
+		rundownSource: {
+			type: 'http',
+		},
 	})
 }

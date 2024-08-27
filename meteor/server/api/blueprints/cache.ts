@@ -1,30 +1,28 @@
-import * as _ from 'underscore'
-import { VM, VMScript } from 'vm2'
+import * as vm from 'vm'
 import { logger } from '../../logging'
-import { Blueprint } from '../../../lib/collections/Blueprints'
+import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { SomeBlueprintManifest } from '@sofie-automation/blueprints-integration'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 export function evalBlueprint(blueprint: Pick<Blueprint, '_id' | 'name' | 'code'>): SomeBlueprintManifest {
-	const vm = new VM({
-		sandbox: {},
-	})
-
 	const blueprintPath = `db:///blueprint/${blueprint.name || blueprint._id}-bundle.js`
-	const script = new VMScript(
+	const context = vm.createContext({}, {})
+	const script = new vm.Script(
 		`__run_result = ${blueprint.code}
 __run_result || blueprint`,
-		blueprintPath
+		{
+			filename: blueprintPath,
+		}
 	)
-	const entry = vm.run(script)
+	const entry = script.runInContext(context)
 
 	const manifest: SomeBlueprintManifest = entry.default
 
 	// Wrap the functions, to emit better errors
-	_.each(_.keys(manifest), (key) => {
-		const value = manifest[key]
-		if (_.isFunction(value)) {
-			manifest[key] = (...args: any[]) => {
+	for (const key of Object.keys(manifest)) {
+		const value = (manifest as any)[key]
+		if (typeof value === 'function') {
+			;(manifest as any)[key] = (...args: any[]) => {
 				try {
 					return value(...args)
 				} catch (e) {
@@ -33,7 +31,7 @@ __run_result || blueprint`,
 				}
 			}
 		}
-	})
+	}
 
 	return manifest
 }

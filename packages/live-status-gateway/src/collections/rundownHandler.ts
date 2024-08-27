@@ -12,7 +12,7 @@ import { RundownsHandler } from './rundownsHandler'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 export class RundownHandler
-	extends CollectionBase<DBRundown, CorelibPubSub.rundowns, CollectionName.Rundowns>
+	extends CollectionBase<DBRundown, CorelibPubSub.rundownsInPlaylists, CollectionName.Rundowns>
 	implements Collection<DBRundown>, CollectionObserver<DBRundownPlaylist>, CollectionObserver<SelectedPartInstances>
 {
 	public observerName: string
@@ -20,7 +20,7 @@ export class RundownHandler
 	private _currentRundownId: RundownId | undefined
 
 	constructor(logger: Logger, coreHandler: CoreHandler, private _rundownsHandler?: RundownsHandler) {
-		super(RundownHandler.name, CollectionName.Rundowns, CorelibPubSub.rundowns, logger, coreHandler)
+		super(RundownHandler.name, CollectionName.Rundowns, CorelibPubSub.rundownsInPlaylists, logger, coreHandler)
 		this.observerName = this._name
 	}
 
@@ -29,7 +29,7 @@ export class RundownHandler
 		if (id !== this._currentRundownId)
 			throw new Error(`${this._name} received change with unexpected id ${id} !== ${this._currentRundownId}`)
 		if (!this._collectionName) return
-		const collection = this._core.getCollection<DBRundown>(this._collectionName)
+		const collection = this._core.getCollection(this._collectionName)
 		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
 		await this._rundownsHandler?.setRundowns(collection.find(undefined))
 		if (this._collectionData) this._collectionData = collection.findOne(this._collectionData._id)
@@ -61,14 +61,9 @@ export class RundownHandler
 			if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
 			if (this._dbObserver) this._dbObserver.stop()
 			if (this._currentPlaylistId) {
-				this._subscriptionId = await this._coreHandler.setupSubscription(
-					this._publicationName,
-					[this._currentPlaylistId],
-					undefined
-				)
-				// this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, [
-				// 	this._currentPlaylistId,
-				// ]) // R51
+				this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, [
+					this._currentPlaylistId,
+				])
 				this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
 				this._dbObserver.added = (id) => {
 					void this.changed(id, 'added').catch(this._logger.error)
@@ -82,7 +77,7 @@ export class RundownHandler
 		if (prevCurRundownId !== this._currentPlaylistId) {
 			const currentPlaylistId = this._currentRundownId
 			if (currentPlaylistId) {
-				const collection = this._core.getCollection<DBRundown>(this._collectionName)
+				const collection = this._core.getCollection(this._collectionName)
 				if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
 				const rundown = collection.findOne(currentPlaylistId)
 				if (!rundown) throw new Error(`rundown '${currentPlaylistId}' not found!`)

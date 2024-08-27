@@ -3,17 +3,17 @@ import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model
 import { ReadonlyDeep } from 'type-fest'
 import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
 import { executePeripheralDeviceAction, listPlayoutDevices } from '../../peripheralDevice'
-import { CacheForPlayout } from '../../playout/cache'
+import { PlayoutModel } from '../../playout/model/PlayoutModel'
 import { RundownEventContext } from './RundownEventContext'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 
 export class RundownActivationContext extends RundownEventContext implements IRundownActivationContext {
-	private readonly _cache: CacheForPlayout
+	private readonly _playoutModel: PlayoutModel
 	private readonly _context: JobContext
 
 	constructor(
 		context: JobContext,
-		cache: CacheForPlayout,
+		playoutModel: PlayoutModel,
 		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		rundown: ReadonlyDeep<DBRundown>
 	) {
@@ -26,11 +26,11 @@ export class RundownActivationContext extends RundownEventContext implements IRu
 		)
 
 		this._context = context
-		this._cache = cache
+		this._playoutModel = playoutModel
 	}
 
 	async listPlayoutDevices(): Promise<IBlueprintPlayoutDevice[]> {
-		return listPlayoutDevices(this._context, this._cache)
+		return listPlayoutDevices(this._context, this._playoutModel)
 	}
 
 	async executeTSRAction(

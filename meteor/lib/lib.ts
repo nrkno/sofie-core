@@ -3,8 +3,6 @@ import { ITranslatableMessage } from '@sofie-automation/corelib/dist/Translatabl
 import { Meteor } from 'meteor/meteor'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { logger } from './logging'
-import { MongoQuery } from './typings/meteor'
-import { MongoQuery as CoreLibMongoQuery } from '@sofie-automation/corelib/dist/mongo'
 
 import { Time, TimeDuration } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
@@ -100,6 +98,15 @@ export function formatDateTime(time: Time): string {
 
 	return `${yyyy}-${mm}-${dd} ${hh}:${ii}:${ss}`
 }
+
+export function formatTime(time: number): string {
+	const ss = String(Math.ceil(time / 1000) % 60).padStart(2, '0')
+	const mm = String(Math.floor(time / 60000) % 60).padStart(2, '0')
+	const hh = String(Math.floor(time / 3600000)).padStart(2, '0')
+
+	return `${hh}:${mm}:${ss}`
+}
+
 /**
  * Returns a string that can be used to compare objects for equality
  * @param objs
@@ -114,7 +121,7 @@ export function stringifyObjects(objs: unknown): string {
 	} else if (_.isFunction(objs)) {
 		return ''
 	} else if (_.isObject(objs)) {
-		const objs0 = objs as object
+		const objs0 = objs as any
 		const keys = _.sortBy(_.keys(objs), (k) => k)
 
 		return _.compact(
@@ -210,7 +217,7 @@ export function lazyIgnore(name: string, f1: () => Promise<void> | void, t: numb
 	}, t)
 }
 
-const ticCache = {}
+const ticCache: Record<NamedCurve, number> = {}
 /**
  * Performance debugging. tic() starts a timer, toc() traces the time since tic()
  * @param name
@@ -487,17 +494,6 @@ export enum LocalStorageProperty {
 	HELP_MODE = 'helpMode',
 	LOG_NOTIFICATIONS = 'logNotifications',
 	PROTO_ONE_PART_PER_LINE = 'proto:onePartPerLine',
-}
-
-/**
- * Convert a MongoQuery from @sofie-automation/corelib typings to Meteor typings.
- * They aren't compatible yet because Meteor is using some 'loose' custom typings, rather than corelib which uses the strong typings given by the mongodb library
- * Note: This assumes the queries are compatible. Due to how meteor uses the query they should be, but this has not been verified
- * @param query MongoQuery as written in @sofie-automation/corelib syntax
- * @returns MongoQuery as written in Meteor syntax
- */
-export function convertCorelibToMeteorMongoQuery<T>(query: CoreLibMongoQuery<T>): MongoQuery<T> {
-	return query as any
 }
 
 /**

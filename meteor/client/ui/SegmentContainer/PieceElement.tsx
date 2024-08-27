@@ -1,8 +1,9 @@
 import React from 'react'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { PieceExtended } from '../../../lib/Rundown'
+import { PieceExtended } from '../../lib/RundownResolver'
 import { pieceUiClassNames } from '../../lib/ui/pieceUiClassNames'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { useContentStatusForItem } from '../SegmentTimeline/withMediaObjectStatus'
 
 interface IProps {
 	className: string
@@ -36,9 +37,20 @@ export const PieceElement = React.forwardRef<HTMLDivElement, React.PropsWithChil
 	}: React.PropsWithChildren<IProps>,
 	ref
 ) {
+	const contentStatus = useContentStatusForItem(piece)
+
 	return (
 		<div
-			className={pieceUiClassNames(piece, className, layer?.type, partId, highlight, undefined, undefined)}
+			className={pieceUiClassNames(
+				piece,
+				contentStatus,
+				className,
+				layer?.type,
+				partId,
+				highlight,
+				undefined,
+				undefined
+			)}
 			data-obj-id={piece.instance._id}
 			onPointerEnter={onPointerEnter}
 			onPointerLeave={onPointerLeave}
