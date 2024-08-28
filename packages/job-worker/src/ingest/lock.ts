@@ -80,7 +80,7 @@ export async function runIngestJob(
 		switch (updatedIngestRundown) {
 			case UpdateIngestRundownAction.REJECT:
 				// Reject change
-				return
+				return rundownId
 			case UpdateIngestRundownAction.DELETE:
 				ingestObjCache.delete()
 				newIngestRundown = undefined
