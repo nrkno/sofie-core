@@ -100,7 +100,7 @@ export default function Status(props: Readonly<IStatusProps>): JSX.Element {
 							<Route path="/status/system" component={SystemStatus} />
 							<Route path="/status/userLog" component={UserActivity} />
 							<Route path="/status/evaluations" component={EvaluationView} />
-							<Redirect to="/status/media" />
+							<Redirect to="/status/system" />
 						</Switch>
 					</div>
 				</div>
