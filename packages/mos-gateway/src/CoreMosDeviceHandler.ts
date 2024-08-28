@@ -152,6 +152,8 @@ export class CoreMosDeviceHandler {
 					messages.push(connectionStatus.SecondaryStatus || 'Running NRCS on hot standby')
 				} else {
 					statusCode = StatusCode.BAD
+					// Send messages for both connections
+					messages.push(connectionStatus.PrimaryStatus || 'Primary and hot standby are not connected')
 					messages.push(connectionStatus.SecondaryStatus || 'Primary and hot standby are not connected')
 				}
 			}
