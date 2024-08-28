@@ -32,7 +32,8 @@ export default defineConfig({
 
 	optimizeDeps: {
 		include: [
-			...commonJsPaths,
+			// Add all sofie paths, ensuring they use unix path syntax
+			...commonJsPaths.map((p) => p.replaceAll('\\', '/')),
 
 			// Commonjs monorepo dependencies
 			'@sofie-automation/blueprints-integration',
@@ -56,9 +57,9 @@ export default defineConfig({
 
 	server: {
 		proxy: {
-			'/api': 'http://localhost:3000',
-			'/site.webmanifest': 'http://localhost:3000',
-			'/meteor-runtime-config.js': 'http://localhost:3000',
+			'/api': 'http://127.0.0.1:3000',
+			'/site.webmanifest': 'http://127.0.0.1:3000',
+			'/meteor-runtime-config.js': 'http://127.0.0.1:3000',
 		},
 	},
 
