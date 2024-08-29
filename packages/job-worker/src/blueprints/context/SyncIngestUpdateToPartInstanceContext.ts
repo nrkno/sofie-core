@@ -94,11 +94,13 @@ export class SyncIngestUpdateToPartInstanceContext
 			  )[0]
 			: proposedPieceInstance.piece
 
+		const newExpectedPackages = modifiedPiece ? piece.expectedPackages : proposedPieceInstance.expectedPackages // nocommit - these need solving
+
 		const newPieceInstance: ReadonlyDeep<PieceInstance> = {
 			...proposedPieceInstance,
 			piece: piece,
 		}
-		this.partInstance.mergeOrInsertPieceInstance(newPieceInstance)
+		this.partInstance.mergeOrInsertPieceInstance(newPieceInstance, newExpectedPackages)
 
 		return convertPieceInstanceToBlueprints(newPieceInstance)
 	}

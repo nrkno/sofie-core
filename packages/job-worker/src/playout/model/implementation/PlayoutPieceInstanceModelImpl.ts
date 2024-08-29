@@ -20,7 +20,7 @@ export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel 
 	PieceInstanceImpl: PieceInstance
 
 	#expectedPackages: ExpectedPackageDBFromPieceInstance[]
-	#expectedPackagesWithChanges = new Set<ExpectedPackageId>()
+	ExpectedPackagesWithChanges = new Set<ExpectedPackageId>()
 
 	/**
 	 * Set/delete a value for this PieceInstance, and track that there are changes
@@ -67,7 +67,7 @@ export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel 
 	 */
 	get HasChanges(): boolean {
 		// nocommit - should this be two properties?
-		return this.#hasChanges || this.#expectedPackagesWithChanges.size > 0
+		return this.#hasChanges || this.ExpectedPackagesWithChanges.size > 0
 	}
 
 	/**
@@ -75,7 +75,7 @@ export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel 
 	 */
 	clearChangedFlag(): void {
 		this.#hasChanges = false
-		this.#expectedPackagesWithChanges.clear()
+		this.ExpectedPackagesWithChanges.clear()
 	}
 
 	get pieceInstance(): ReadonlyDeep<PieceInstance> {
@@ -87,7 +87,7 @@ export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel 
 	}
 
 	get expectedPackagesChanges(): DocumentChanges<ExpectedPackageDBFromPieceInstance> {
-		return getDocumentChanges(this.#expectedPackagesWithChanges, this.#expectedPackages)
+		return getDocumentChanges(this.ExpectedPackagesWithChanges, this.#expectedPackages)
 	}
 
 	constructor(
@@ -99,7 +99,7 @@ export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel 
 		this.PieceInstanceImpl = pieceInstances
 		this.#expectedPackages = expectedPackages
 		this.#hasChanges = hasChanges
-		this.#expectedPackagesWithChanges = new Set(expectedPackagesWithChanges)
+		this.ExpectedPackagesWithChanges = new Set(expectedPackagesWithChanges)
 	}
 
 	/**
@@ -178,7 +178,7 @@ export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel 
 		}))
 
 		this.#expectedPackages = diffAndReturnLatestObjects(
-			this.#expectedPackagesWithChanges,
+			this.ExpectedPackagesWithChanges,
 			this.#expectedPackages,
 			newExpectedPackages,
 			mutateExpectedPackage

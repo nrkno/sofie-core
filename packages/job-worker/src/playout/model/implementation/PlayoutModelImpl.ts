@@ -406,7 +406,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 			},
 		}
 
-		const partInstance = new PlayoutPartInstanceModelImpl(newPartInstance, [], true)
+		const partInstance = new PlayoutPartInstanceModelImpl(newPartInstance, [], [], true)
 		partInstance.recalculateExpectedDurationWithTransition()
 
 		this.allPartInstances.set(newPartInstance._id, partInstance)

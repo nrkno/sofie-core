@@ -6,6 +6,10 @@ import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { IBlueprintMutatablePart, PieceLifespan, Time } from '@sofie-automation/blueprints-integration'
 import { PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { PlayoutPieceInstanceModel } from './PlayoutPieceInstanceModel'
+import {
+	ExpectedPackageDBFromPiece,
+	ExpectedPackageDBFromPieceInstance,
+} from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 
 /**
  * Token returned when making a backup copy of a PlayoutPartInstanceModel
@@ -64,11 +68,13 @@ export interface PlayoutPartInstanceModel {
 	 * Insert a Piece into this PartInstance as an adlibbed PieceInstance
 	 * @param piece Piece to insert
 	 * @param fromAdlibId Id of the source Adlib, if any
+	 * @param pieceExpectedPackages ExpectedPackages for the Piece
 	 * @returns The inserted PlayoutPieceInstanceModel
 	 */
 	insertAdlibbedPiece(
 		piece: Omit<PieceInstancePiece, 'startPartId'>,
-		fromAdlibId: PieceId | undefined
+		fromAdlibId: PieceId | undefined,
+		pieceExpectedPackages: ExpectedPackageDBFromPiece[]
 	): PlayoutPieceInstanceModel
 
 	/**
@@ -83,9 +89,13 @@ export interface PlayoutPartInstanceModel {
 	 * Insert a Piece as if it were originally planned at the time of ingest
 	 * This is a weird operation to have for playout, but it is a needed part of the SyncIngestChanges flow
 	 * @param piece Piece to insert into this PartInstance
+	 * @param pieceExpectedPackages ExpectedPackages for the Piece
 	 * @returns The inserted PlayoutPieceInstanceModel
 	 */
-	insertPlannedPiece(piece: Omit<PieceInstancePiece, 'startPartId'>): PlayoutPieceInstanceModel
+	insertPlannedPiece(
+		piece: Omit<PieceInstancePiece, 'startPartId'>,
+		pieceExpectedPackages: ExpectedPackageDBFromPiece[]
+	): PlayoutPieceInstanceModel
 
 	/**
 	 * Insert a virtual adlib Piece into this PartInstance
@@ -137,9 +147,13 @@ export interface PlayoutPartInstanceModel {
 	 * If there is an existing PieceInstance with the same id, it will be merged onto that
 	 * Note: this can replace any playout owned properties too
 	 * @param pieceInstance Replacement PieceInstance to use
+	 * @param expectedPackages Replacement ExpectedPackages for the PieceInstance
 	 * @returns The inserted PlayoutPieceInstanceModel
 	 */
-	mergeOrInsertPieceInstance(pieceInstance: ReadonlyDeep<PieceInstance>): PlayoutPieceInstanceModel
+	mergeOrInsertPieceInstance(
+		pieceInstance: ReadonlyDeep<PieceInstance>,
+		expectedPackages: ExpectedPackageDBFromPieceInstance[]
+	): PlayoutPieceInstanceModel
 
 	/**
 	 * Mark this PartInstance as being orphaned
