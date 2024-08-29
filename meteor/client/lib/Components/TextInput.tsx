@@ -6,6 +6,12 @@ interface ITextInputControlProps {
 	modifiedClassName?: string
 	disabled?: boolean
 	placeholder?: string
+	spellCheck?: boolean
+	/**
+	 * Link a `datalist` to this field as suggestions.
+	 * Future: this should be reworked into a new component that wraps this one.
+	 */
+	dataListId?: string
 
 	/** Call handleUpdate on every change, before focus is lost */
 	updateOnKey?: boolean
@@ -19,6 +25,8 @@ export function TextInputControl({
 	value,
 	disabled,
 	placeholder,
+	spellCheck,
+	dataListId,
 	handleUpdate,
 	updateOnKey,
 }: Readonly<ITextInputControlProps>): JSX.Element {
@@ -71,6 +79,8 @@ export function TextInputControl({
 			onFocus={handleFocus}
 			onKeyUp={handleKeyUp}
 			disabled={disabled}
+			spellCheck={spellCheck}
+			list={dataListId}
 		/>
 	)
 }

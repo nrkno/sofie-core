@@ -508,24 +508,16 @@ const EditAttributeDropdownText = wrapEditAttribute(
 		render(): JSX.Element {
 			return (
 				<div className="input-dropdowntext">
-					<input
-						type="text"
-						className={
-							'form-control' +
-							' ' +
-							(this.state.valueError ? 'error ' : '') +
-							(this.props.className || '') +
-							' ' +
-							(this.state.editing ? this.props.modifiedClassName || '' : '')
-						}
-						placeholder={this.props.label}
-						value={this.getEditAttribute() || ''}
-						onChange={this.handleChangeText}
-						onBlur={this.handleBlurText}
-						onKeyUp={this.handleEscape}
+					<TextInputControl
+						classNames={`${this.props.className || ''} ${this.state.valueError ? 'error ' : ''}`}
+						modifiedClassName={this.props.modifiedClassName}
 						disabled={this.props.disabled}
+						placeholder={this.props.label}
+						updateOnKey={this.props.updateOnKey}
+						value={this.getAttribute() ?? ''}
+						handleUpdate={this.handleUpdate}
 						spellCheck={false}
-						list={this._id}
+						dataListId={this._id}
 					/>
 
 					<datalist id={this._id}>

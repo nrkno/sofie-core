@@ -59,6 +59,7 @@ export function AdLibActionEditor({
 						className="form-control input text-input input-m"
 						type="dropdowntext"
 						options={allTriggerModes}
+						updateOnKey={true}
 						overrideDisplayValue={action.arguments.triggerMode}
 						attribute={''}
 						updateFunction={(_e, newVal) => {
