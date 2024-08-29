@@ -1,38 +1,37 @@
 import React, { PropsWithChildren } from 'react'
 import _ from 'underscore'
-// @ts-expect-error No types available
-import Velocity from 'velocity-animate'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import ClassNames from 'classnames'
 import { Meteor } from 'meteor/meteor'
+import { parse as queryStringParse } from 'query-string'
 import { Route } from 'react-router-dom'
+import Velocity from 'velocity-animate'
 import {
 	Translated,
-	useTracker,
 	useGlobalDelayedTrackerUpdateState,
 	useSubscription,
 	useSubscriptions,
+	useTracker,
 } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { parse as queryStringParse } from 'query-string'
 
-import { Spinner } from '../../lib/Spinner'
-import { firstIfArray, protectString } from '../../../lib/lib'
-import { PrompterData, PrompterAPI, PrompterDataPart } from './prompter'
-import { PrompterControlManager } from './controller/manager'
-import { MeteorPubSub } from '../../../lib/api/pubsub'
-import { documentTitle } from '../../lib/DocumentTitleProvider'
-import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
-import { RundownTimingProvider } from '../RundownView/RundownTiming/RundownTimingProvider'
-import { OverUnderTimer } from './OverUnderTimer'
-import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { PartInstanceId, PieceId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { UIStudios } from '../Collections'
-import { UIStudio } from '../../../lib/api/studios'
-import { RundownPlaylists, Rundowns } from '../../collections'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
-import { logger } from '../../../lib/logging'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { withTranslation } from 'react-i18next'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
+import { UIStudio } from '../../../lib/api/studios'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { firstIfArray, protectString } from '../../../lib/lib'
+import { logger } from '../../../lib/logging'
+import { RundownPlaylists, Rundowns } from '../../collections'
+import { documentTitle } from '../../lib/DocumentTitleProvider'
+import { Spinner } from '../../lib/Spinner'
+import { UIStudios } from '../Collections'
+import { RundownTimingProvider } from '../RundownView/RundownTiming/RundownTimingProvider'
+import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
+import { PrompterControlManager } from './controller/manager'
+import { OverUnderTimer } from './OverUnderTimer'
+import { PrompterAPI, PrompterData, PrompterDataPart } from './prompter'
 
 const DEFAULT_UPDATE_THROTTLE = 250 //ms
 const PIECE_MISSING_UPDATE_THROTTLE = 2000 //ms
@@ -289,7 +288,7 @@ export class PrompterViewContent extends React.Component<Translated<IProps & ITr
 	}
 	scrollToPartInstance(partInstanceId: PartInstanceId): void {
 		const scrollMargin = this.calculateScrollPosition()
-		const target = document.querySelector(`#partInstance_${partInstanceId}`)
+		const target = document.querySelector<HTMLElement>(`#partInstance_${partInstanceId}`)
 
 		if (target) {
 			Velocity(document.body, 'finish')
@@ -298,7 +297,8 @@ export class PrompterViewContent extends React.Component<Translated<IProps & ITr
 	}
 	scrollToLive(): void {
 		const scrollMargin = this.calculateScrollPosition()
-		const current = document.querySelector('.prompter .live') || document.querySelector('.prompter .next')
+		const current =
+			document.querySelector<HTMLElement>('.prompter .live') || document.querySelector<HTMLElement>('.prompter .next')
 
 		if (current) {
 			Velocity(document.body, 'finish')
@@ -307,7 +307,7 @@ export class PrompterViewContent extends React.Component<Translated<IProps & ITr
 	}
 	scrollToNext(): void {
 		const scrollMargin = this.calculateScrollPosition()
-		const next = document.querySelector('.prompter .next')
+		const next = document.querySelector<HTMLElement>('.prompter .next')
 
 		if (next) {
 			Velocity(document.body, 'finish')
@@ -775,23 +775,27 @@ const PrompterContent = withTranslation()(
 				return
 			}
 
+			// TODO: In The 4 months this has been here (2024/09/19), not a single log line was recorded
+			// - does this still make sense?
 			for (const scrollAnchor of scrollAnchors) {
-				for (const segment of this.props.prompterData.segments) {
-					if (scrollAnchor.anchorId === `segment_${segment.id}`) {
-						logger.error(`Read anchor troubleshooting: segment "${segment.id}" was found in prompterData!`)
-						return
-					}
-
-					for (const part of segment.parts) {
-						if (scrollAnchor.anchorId === `partInstance_${part.id}`) {
-							logger.error(`Read anchor troubleshooting: part "${part.id}" was found in prompterData!`)
+				for (const rundown of this.props.prompterData.rundowns) {
+					for (const segment of rundown.segments) {
+						if (scrollAnchor.anchorId === `segment_${segment.id}`) {
+							logger.error(`Read anchor troubleshooting: segment "${segment.id}" was found in prompterData!`)
 							return
 						}
 
-						for (const piece of part.pieces) {
-							if (scrollAnchor.anchorId === `line_${piece.id}`) {
-								logger.error(`Read anchor troubleshooting: piece "${piece.id}" was found in prompterData!`)
+						for (const part of segment.parts) {
+							if (scrollAnchor.anchorId === `partInstance_${part.id}`) {
+								logger.error(`Read anchor troubleshooting: part "${part.id}" was found in prompterData!`)
 								return
+							}
+
+							for (const piece of part.pieces) {
+								if (scrollAnchor.anchorId === `line_${piece.id}`) {
+									logger.error(`Read anchor troubleshooting: piece "${piece.id}" was found in prompterData!`)
+									return
+								}
 							}
 						}
 					}
@@ -804,18 +808,22 @@ const PrompterContent = withTranslation()(
 			const { prompterData: nextPrompterData } = nextProps
 
 			const currentPrompterPieces = _.flatten(
-				prompterData?.segments.map((segment) =>
-					segment.parts.map((part) =>
-						// collect all the PieceId's of all the non-empty pieces of script
-						_.compact(part.pieces.map((dataPiece) => (dataPiece.text !== '' ? dataPiece.id : null)))
+				prompterData?.rundowns.map((rundown) =>
+					rundown.segments.map((segment) =>
+						segment.parts.map((part) =>
+							// collect all the PieceId's of all the non-empty pieces of script
+							_.compact(part.pieces.map((dataPiece) => (dataPiece.text !== '' ? dataPiece.id : null)))
+						)
 					)
 				) ?? []
 			) as PieceId[]
 			const nextPrompterPieces = _.flatten(
-				nextPrompterData?.segments.map((segment) =>
-					segment.parts.map((part) =>
-						// collect all the PieceId's of all the non-empty pieces of script
-						_.compact(part.pieces.map((dataPiece) => (dataPiece.text !== '' ? dataPiece.id : null)))
+				nextPrompterData?.rundowns.map((rundown) =>
+					rundown.segments.map((segment) =>
+						segment.parts.map((part) =>
+							// collect all the PieceId's of all the non-empty pieces of script
+							_.compact(part.pieces.map((dataPiece) => (dataPiece.text !== '' ? dataPiece.id : null)))
+						)
 					)
 				) ?? []
 			) as PieceId[]
@@ -864,138 +872,154 @@ const PrompterContent = withTranslation()(
 		}
 
 		private renderPrompterData(prompterData: PrompterData) {
+			const { t } = this.props
+
 			const lines: React.ReactNode[] = []
+			let hasInsertedScript = false
 
-			prompterData.segments.forEach((segment) => {
-				if (segment.parts.length === 0) {
-					return
-				}
-
-				const firstPart = segment.parts[0]
-				const firstPartStatus = this.getPartStatus(prompterData, firstPart)
-
-				lines.push(
-					<div
-						id={`segment_${segment.id}`}
-						data-obj-id={segment.id}
-						key={'segment_' + segment.id}
-						className={ClassNames('prompter-segment', 'scroll-anchor', firstPartStatus)}
-					>
-						{segment.title || 'N/A'}
-					</div>
-				)
-
-				segment.parts.forEach((part) => {
+			for (const rundown of prompterData.rundowns) {
+				if (prompterData.rundowns.length > 1) {
 					lines.push(
 						<div
-							id={`partInstance_${part.id}`}
-							data-obj-id={segment.id + '_' + part.id}
-							key={'partInstance_' + part.id}
-							className={ClassNames('prompter-part', 'scroll-anchor', this.getPartStatus(prompterData, part))}
+							id={`rundown_${rundown.id}`}
+							data-obj-id={rundown.id}
+							key={'rundown_' + rundown.id}
+							className={ClassNames('prompter-rundown')}
 						>
-							{part.title || 'N/A'}
+							{rundown.title || 'N/A'}
+						</div>
+					)
+				}
+
+				for (const segment of rundown.segments) {
+					if (segment.parts.length === 0) {
+						return
+					}
+
+					const firstPart = segment.parts[0]
+					const firstPartStatus = this.getPartStatus(prompterData, firstPart)
+
+					lines.push(
+						<div
+							id={`segment_${segment.id}`}
+							data-obj-id={segment.id}
+							key={'segment_' + segment.id}
+							className={ClassNames('prompter-segment', 'scroll-anchor', firstPartStatus)}
+						>
+							{segment.title || 'N/A'}
 						</div>
 					)
 
-					part.pieces.forEach((line) => {
+					hasInsertedScript = true
+
+					for (const part of segment.parts) {
 						lines.push(
 							<div
-								id={`line_${line.id}`}
-								data-obj-id={segment.id + '_' + part.id + '_' + line.id}
-								key={'line_' + part.id + '_' + segment.id + '_' + line.id}
-								className={ClassNames(
-									'prompter-line',
-									this.props.config.addBlankLine ? 'add-blank' : undefined,
-									!line.text ? 'empty' : undefined
-								)}
+								id={`partInstance_${part.id}`}
+								data-obj-id={segment.id + '_' + part.id}
+								key={'partInstance_' + part.id}
+								className={ClassNames('prompter-part', 'scroll-anchor', this.getPartStatus(prompterData, part))}
 							>
-								{line.text || ''}
+								{part.title || 'N/A'}
 							</div>
 						)
-					})
-				})
-			})
+
+						for (const line of part.pieces) {
+							lines.push(
+								<div
+									id={`line_${line.id}`}
+									data-obj-id={segment.id + '_' + part.id + '_' + line.id}
+									key={'line_' + part.id + '_' + segment.id + '_' + line.id}
+									className={ClassNames(
+										'prompter-line',
+										this.props.config.addBlankLine ? 'add-blank' : undefined,
+										!line.text ? 'empty' : undefined
+									)}
+								>
+									{line.text || ''}
+								</div>
+							)
+						}
+					}
+				}
+			}
+
+			if (hasInsertedScript) {
+				lines.push(<div className="prompter-break end">—{t('End of script')}—</div>)
+			}
 
 			return lines
 		}
 		render(): JSX.Element {
-			const { t } = this.props
-
-			if (this.props.prompterData) {
-				return (
-					<div
-						className={ClassNames(
-							'prompter',
-							this.props.config.mirror ? 'mirror' : undefined,
-							this.props.config.mirrorv ? 'mirrorv' : undefined
-						)}
-						style={{
-							fontSize: this.props.config.fontSize ? this.props.config.fontSize + 'vh' : undefined,
-						}}
-					>
-						{this.props.children}
-
-						<div className="overlay-fix">
-							<div
-								className={
-									'read-marker ' + (!this.props.config.showMarker ? 'hide' : this.props.config.marker || 'hide')
-								}
-							></div>
-
-							<div
-								className="indicators"
-								style={{
-									marginTop: this.props.config.margin ? `${this.props.config.margin}vh` : undefined,
-									marginLeft: this.props.config.margin ? `${this.props.config.margin}vw` : undefined,
-									marginRight: this.props.config.margin ? `${this.props.config.margin}vw` : undefined,
-									fontSize: (this.props.config.fontSize ?? 0) > 12 ? `12vmin` : undefined,
-								}}
-							>
-								<div className="take-indicator hidden"></div>
-								<div className="next-indicator hidden"></div>
-							</div>
-						</div>
-
-						<div
-							className="prompter-display"
-							style={{
-								paddingLeft: this.props.config.margin ? this.props.config.margin + 'vw' : undefined,
-								paddingRight: this.props.config.margin ? this.props.config.margin + 'vw' : undefined,
-								paddingTop:
-									this.props.config.marker === 'center'
-										? '50vh'
-										: this.props.config.marker === 'bottom'
-										? '100vh'
-										: this.props.config.margin
-										? this.props.config.margin + 'vh'
-										: undefined,
-								paddingBottom:
-									this.props.config.marker === 'center'
-										? '50vh'
-										: this.props.config.marker === 'top'
-										? '100vh'
-										: this.props.config.margin
-										? this.props.config.margin + 'vh'
-										: undefined,
-							}}
-						>
-							<div className="prompter-break begin">{this.props.prompterData.title}</div>
-
-							{this.renderPrompterData(this.props.prompterData)}
-
-							{this.props.prompterData.segments.length ? (
-								<div className="prompter-break end">—{t('End of script')}—</div>
-							) : null}
-						</div>
-					</div>
-				)
-			} else {
+			if (!this.props.prompterData) {
 				return (
 					<div className="prompter prompter--loading">
 						<Spinner />
 					</div>
 				)
 			}
+
+			return (
+				<div
+					className={ClassNames(
+						'prompter',
+						this.props.config.mirror ? 'mirror' : undefined,
+						this.props.config.mirrorv ? 'mirrorv' : undefined
+					)}
+					style={{
+						fontSize: this.props.config.fontSize ? this.props.config.fontSize + 'vh' : undefined,
+					}}
+				>
+					{this.props.children}
+
+					<div className="overlay-fix">
+						<div
+							className={'read-marker ' + (!this.props.config.showMarker ? 'hide' : this.props.config.marker || 'hide')}
+						></div>
+
+						<div
+							className="indicators"
+							style={{
+								marginTop: this.props.config.margin ? `${this.props.config.margin}vh` : undefined,
+								marginLeft: this.props.config.margin ? `${this.props.config.margin}vw` : undefined,
+								marginRight: this.props.config.margin ? `${this.props.config.margin}vw` : undefined,
+								fontSize: (this.props.config.fontSize ?? 0) > 12 ? `12vmin` : undefined,
+							}}
+						>
+							<div className="take-indicator hidden"></div>
+							<div className="next-indicator hidden"></div>
+						</div>
+					</div>
+
+					<div
+						className="prompter-display"
+						style={{
+							paddingLeft: this.props.config.margin ? this.props.config.margin + 'vw' : undefined,
+							paddingRight: this.props.config.margin ? this.props.config.margin + 'vw' : undefined,
+							paddingTop:
+								this.props.config.marker === 'center'
+									? '50vh'
+									: this.props.config.marker === 'bottom'
+									? '100vh'
+									: this.props.config.margin
+									? this.props.config.margin + 'vh'
+									: undefined,
+							paddingBottom:
+								this.props.config.marker === 'center'
+									? '50vh'
+									: this.props.config.marker === 'top'
+									? '100vh'
+									: this.props.config.margin
+									? this.props.config.margin + 'vh'
+									: undefined,
+						}}
+					>
+						<div className="prompter-break begin">{this.props.prompterData.title}</div>
+
+						{this.renderPrompterData(this.props.prompterData)}
+					</div>
+				</div>
+			)
 		}
 	}
 )

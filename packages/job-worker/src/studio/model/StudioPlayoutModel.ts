@@ -45,7 +45,10 @@ export interface StudioPlayoutModelBase extends StudioPlayoutModelBaseReadonly {
 	 * @param timelineObjs Timeline objects to be run in the Studio
 	 * @param generationVersions Details about the versions where these objects were generated
 	 */
-	setTimeline(timelineObjs: TimelineObjGeneric[], generationVersions: TimelineCompleteGenerationVersions): void
+	setTimeline(
+		timelineObjs: TimelineObjGeneric[],
+		generationVersions: TimelineCompleteGenerationVersions
+	): ReadonlyDeep<TimelineComplete>
 }
 
 /**

@@ -1,49 +1,54 @@
 import { ExpectedPackage } from '@sofie-automation/blueprints-integration'
 import { assertNever, literal } from '../lib'
 import { StudioLight } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import {
+	htmlTemplateGetSteps,
+	htmlTemplateGetFileNamesFromSteps,
+} from '@sofie-automation/shared-lib/dist/package-manager/helpers'
 import deepExtend from 'deep-extend'
 
 export function getPreviewPackageSettings(
 	expectedPackage: ExpectedPackage.Any
 ): ExpectedPackage.SideEffectPreviewSettings | undefined {
-	let packagePath: string | undefined
-
 	if (expectedPackage.type === ExpectedPackage.PackageType.MEDIA_FILE) {
-		packagePath = expectedPackage.content.filePath
+		const packagePath = expectedPackage.content.filePath
+		if (packagePath) return { path: packagePath + '_preview.webm' }
 	} else if (expectedPackage.type === ExpectedPackage.PackageType.QUANTEL_CLIP) {
-		packagePath = expectedPackage.content.guid || expectedPackage.content.title
+		const packagePath = expectedPackage.content.guid || expectedPackage.content.title
+		if (packagePath) return { path: packagePath + '_preview.webm' }
 	} else if (expectedPackage.type === ExpectedPackage.PackageType.JSON_DATA) {
-		packagePath = undefined // Not supported
+		return undefined // Not supported
+	} else if (expectedPackage.type === ExpectedPackage.PackageType.HTML_TEMPLATE) {
+		const steps = htmlTemplateGetSteps(expectedPackage.version)
+		const o = htmlTemplateGetFileNamesFromSteps(steps)
+		if (o.mainRecording) return { path: o.mainRecording }
+		else return undefined
 	} else {
 		assertNever(expectedPackage)
+		return undefined
 	}
-	if (packagePath) {
-		return {
-			path: packagePath + '_preview.webm',
-		}
-	}
-	return undefined
 }
 export function getThumbnailPackageSettings(
 	expectedPackage: ExpectedPackage.Any
 ): ExpectedPackage.SideEffectThumbnailSettings | undefined {
-	let packagePath: string | undefined
-
 	if (expectedPackage.type === ExpectedPackage.PackageType.MEDIA_FILE) {
-		packagePath = expectedPackage.content.filePath
+		const packagePath = expectedPackage.content.filePath
+		if (packagePath) return { path: packagePath + '_thumbnail.png' }
 	} else if (expectedPackage.type === ExpectedPackage.PackageType.QUANTEL_CLIP) {
-		packagePath = expectedPackage.content.guid || expectedPackage.content.title
+		const packagePath = expectedPackage.content.guid || expectedPackage.content.title
+		if (packagePath) return { path: packagePath + '_thumbnail.png' }
 	} else if (expectedPackage.type === ExpectedPackage.PackageType.JSON_DATA) {
-		packagePath = undefined // Not supported
+		return undefined // Not supported
+	} else if (expectedPackage.type === ExpectedPackage.PackageType.HTML_TEMPLATE) {
+		// temporary implementation:
+		const steps = htmlTemplateGetSteps(expectedPackage.version)
+		const o = htmlTemplateGetFileNamesFromSteps(steps)
+		if (o.mainScreenShot) return { path: o.mainScreenShot }
+		else return undefined
 	} else {
 		assertNever(expectedPackage)
+		return undefined
 	}
-	if (packagePath) {
-		return {
-			path: packagePath + '_thumbnail.png',
-		}
-	}
-	return undefined
 }
 export function getSideEffect(
 	expectedPackage: ExpectedPackage.Base,

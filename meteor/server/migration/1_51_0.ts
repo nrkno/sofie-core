@@ -1,8 +1,9 @@
 import { addMigrationSteps } from './databaseMigration'
 
-import { Rundowns } from '../collections'
+import { PieceInstances, Pieces, Rundowns } from '../collections'
 import { RundownOrphanedReason, RundownSource } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { PeripheralDeviceId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { JSONBlobStringify } from '@sofie-automation/blueprints-integration'
 
 // Release 51
 
@@ -90,6 +91,74 @@ export const addSteps = addMigrationSteps('1.51.0', [
 					multi: true,
 				}
 			)
+		},
+	},
+	{
+		id: `Pieces update NoraContent`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objects = await Pieces.findFetchAsync({
+				'content.previewRenderer': { $exists: true },
+				'content.payload': { $exists: true },
+				'content.previewPayload': { $exists: false },
+			})
+
+			if (objects.length > 0) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			const objects = await Pieces.findFetchAsync({
+				'content.previewRenderer': { $exists: true },
+				'content.payload': { $exists: true },
+				'content.previewPayload': { $exists: false },
+			})
+
+			for (const piece of objects) {
+				await Pieces.mutableCollection.updateAsync(piece._id, {
+					$set: {
+						'content.previewPayload': JSONBlobStringify((piece.content as any).payload),
+					},
+					$unset: {
+						'content.payload': 1,
+					},
+				})
+			}
+		},
+	},
+	{
+		id: `PieceInstances update NoraContent`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objects = await PieceInstances.findFetchAsync({
+				'piece.content.previewRenderer': { $exists: true },
+				'piece.content.payload': { $exists: true },
+				'piece.content.previewPayload': { $exists: false },
+			})
+
+			if (objects.length > 0) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			const objects = await PieceInstances.findFetchAsync({
+				'piece.content.previewRenderer': { $exists: true },
+				'piece.content.payload': { $exists: true },
+				'piece.content.previewPayload': { $exists: false },
+			})
+
+			for (const piece of objects) {
+				await PieceInstances.mutableCollection.updateAsync(piece._id, {
+					$set: {
+						'piece.content.previewPayload': JSONBlobStringify((piece.piece.content as any).payload),
+					},
+					$unset: {
+						'piece.content.payload': 1,
+					},
+				})
+			}
 		},
 	},
 ])

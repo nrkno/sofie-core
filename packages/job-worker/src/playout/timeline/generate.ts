@@ -11,8 +11,6 @@ import {
 import {
 	deserializeTimelineBlob,
 	OnGenerateTimelineObjExt,
-	serializeTimelineBlob,
-	TimelineComplete,
 	TimelineCompleteGenerationVersions,
 	TimelineEnableExt,
 	TimelineObjGeneric,
@@ -21,7 +19,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { applyToArray, clone, getRandomId, literal, normalizeArray, omit } from '@sofie-automation/corelib/dist/lib'
+import { applyToArray, clone, literal, normalizeArray, omit } from '@sofie-automation/corelib/dist/lib'
 import { PlayoutModel } from '../model/PlayoutModel'
 import { logger } from '../../logging'
 import { getCurrentTime, getSystemVersion } from '../../lib'
@@ -238,15 +236,7 @@ export function saveTimeline(
 	timelineObjs: TimelineObjGeneric[],
 	generationVersions: TimelineCompleteGenerationVersions
 ): void {
-	const newTimeline: TimelineComplete = {
-		_id: context.studio._id,
-		timelineHash: getRandomId(), // randomized on every timeline change
-		generated: getCurrentTime(),
-		timelineBlob: serializeTimelineBlob(timelineObjs),
-		generationVersions: generationVersions,
-	}
-
-	studioPlayoutModel.setTimeline(timelineObjs, generationVersions)
+	const newTimeline = studioPlayoutModel.setTimeline(timelineObjs, generationVersions)
 
 	// Also do a fast-track for the timeline to be published faster:
 	context.hackPublishTimelineToFastTrack(newTimeline)

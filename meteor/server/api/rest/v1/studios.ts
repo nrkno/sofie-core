@@ -175,7 +175,7 @@ class StudiosServerAPI implements StudiosRestAPI {
 			event,
 			getCurrentTime(),
 			'switchRouteSet',
-			[studioId, routeSetId, state],
+			{ studioId, routeSetId, state },
 			async () => {
 				check(studioId, String)
 				check(routeSetId, String)

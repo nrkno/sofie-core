@@ -41,9 +41,15 @@ export const MediaStatusIndicator = React.memo(function MediaStatusIndicator({
 			break
 	}
 
+	const content = <span data-overlay={overlay}>{icon}</span>
+
+	if (!overlay) {
+		return content
+	}
+
 	return (
 		<Tooltip overlay={overlay} trigger={['hover']} placement="top">
-			<span data-overlay={overlay}>{icon}</span>
+			{content}
 		</Tooltip>
 	)
 })

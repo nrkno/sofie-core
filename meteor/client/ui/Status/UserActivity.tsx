@@ -12,11 +12,13 @@ import classNames from 'classnames'
 import { getCoreSystem, UserActionsLog } from '../../collections'
 import Tooltip from 'rc-tooltip'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { CollapseJSON } from '../../lib/collapseJSON'
 import { faDownload } from '@fortawesome/free-solid-svg-icons'
 import { downloadBlob } from '../../lib/downloadBlob'
 
-const PARAM_DATE_FORMAT = 'YYYY-MM-DD'
+const PARAM_DATE_FORMAT = 'YYYY-MM-DDTHHmm'
 const PARAM_NAME_FROM_DATE = 'fromDate'
+const PARAM_NAME_TO_DATE = 'toDate'
 
 interface IUserActionsListProps {
 	logItems: UserActionsLogItem[]
@@ -24,14 +26,6 @@ interface IUserActionsListProps {
 	highlighted?: string
 	onItemClick?: (item: UserActionsLogItem) => void
 	renderButtons?: (item: UserActionsLogItem) => React.ReactElement
-}
-
-function prettyPrintJsonString(str: string): string {
-	try {
-		return JSON.stringify(JSON.parse(str), undefined, 4)
-	} catch (_e) {
-		return str
-	}
 }
 
 function UserActionsList(props: Readonly<IUserActionsListProps>) {
@@ -47,7 +41,7 @@ function UserActionsList(props: Readonly<IUserActionsListProps>) {
 					<th className="c2 user-action-log__clientAddress">{t('Client IP')}</th>
 					<th className="c3 user-action-log__context">{t('Action')}</th>
 					<th className="c3 user-action-log__method">{t('Method')}</th>
-					<th className="c1 user-action-log__status">{t('Status')}</th>
+					<th className="c3 user-action-log__status">{t('Status')}</th>
 					<th className="c1 user-action-log__args">{t('Parameters')}</th>
 					{props.renderButtons ? <th className="c1 user-action-log__buttons"></th> : null}
 				</tr>
@@ -133,21 +127,68 @@ function UserActionsList(props: Readonly<IUserActionsListProps>) {
 							<td className="user-action-log__status">
 								{msg.success ? 'Success' : msg.success === false ? 'Error: ' + msg.errorMessage : null}
 							</td>
-							<td className="user-action-log__args">{prettyPrintJsonString(msg.args)}</td>
+							<td className="user-action-log__args">
+								<CollapseJSON json={msg.args} />
+							</td>
 							{props.renderButtons ? <td className="user-action-log__buttons">{props.renderButtons(msg)}</td> : null}
 						</tr>
 					)
 				})}
+				{props.logItems.length >= 10_000 && ( // The publication is capped at this amount of documents
+					<tr>
+						<td colSpan={10}>
+							<em>{t('Amount of entries exceeds the limt of 10 000 items.')}</em>
+						</td>
+					</tr>
+				)}
 			</tbody>
 		</table>
 	)
 }
 
+function getStartAndEndDateFromLocationSearch(locationSearch: string): { from: Time; to: Time } {
+	const queryParams = queryStringParse(locationSearch, {
+		arrayFormat: 'comma',
+	})
+
+	let qsStartDate: ReturnType<typeof moment> | null = null
+	let qsEndDate: ReturnType<typeof moment> | null = null
+	if (queryParams[PARAM_NAME_FROM_DATE]) {
+		qsStartDate = moment(queryParams[PARAM_NAME_FROM_DATE], PARAM_DATE_FORMAT, true)
+	}
+	if (queryParams[PARAM_NAME_TO_DATE]) {
+		qsEndDate = moment(queryParams[PARAM_NAME_TO_DATE], PARAM_DATE_FORMAT, true)
+	}
+
+	return qsStartDate?.isValid()
+		? {
+				from: qsStartDate.valueOf(),
+				to: qsEndDate?.isValid() ? qsEndDate.valueOf() : qsStartDate.add(1, 'days').valueOf(),
+		  }
+		: qsEndDate?.isValid()
+		? {
+				to: qsEndDate.valueOf(),
+				from: qsStartDate?.isValid() ? qsStartDate.valueOf() : qsEndDate.add(1, 'days').valueOf(),
+		  }
+		: {
+				from: moment().startOf('day').valueOf(),
+				to: moment().add(1, 'days').startOf('day').valueOf(),
+		  }
+}
+
 function UserActivity(): JSX.Element {
 	const { t } = useTranslation()
 
-	const [dateFrom, setDateFrom] = useState<Time>(moment().startOf('day').valueOf())
-	const [dateTo, setDateTo] = useState<Time>(moment().add(1, 'days').startOf('day').valueOf())
+	const location = useLocation()
+
+	const [dateFrom, setDateFrom] = useState<Time>(() => {
+		const { from } = getStartAndEndDateFromLocationSearch(location.search)
+		return from
+	})
+	const [dateTo, setDateTo] = useState<Time>(() => {
+		const { to } = getStartAndEndDateFromLocationSearch(location.search)
+		return to
+	})
 
 	useSubscription(MeteorPubSub.userActionsLog, dateFrom, dateTo)
 
@@ -165,26 +206,21 @@ function UserActivity(): JSX.Element {
 		[]
 	)
 
-	const location = useLocation()
 	const history = useHistory()
 
 	useEffect(() => {
-		const queryParams = queryStringParse(location.search, {
-			arrayFormat: 'comma',
-		})
-
-		const qsStartDate = moment(queryParams[PARAM_NAME_FROM_DATE], PARAM_DATE_FORMAT, true)
-
-		if (qsStartDate.isValid()) {
-			setDateFrom(qsStartDate.startOf('day').valueOf())
-			setDateTo(qsStartDate.add(1, 'days').startOf('day').valueOf())
-		}
+		const { from, to } = getStartAndEndDateFromLocationSearch(location.search)
+		setDateFrom(from)
+		setDateTo(to)
 	}, [location])
 
 	function onDateChange(from: Time, to: Time) {
 		setDateFrom(from)
 		setDateTo(to)
-		location.search = `?${PARAM_NAME_FROM_DATE}=` + moment(from).format(PARAM_DATE_FORMAT)
+		const newParams = new URLSearchParams(location.search)
+		newParams.set(PARAM_NAME_FROM_DATE, moment(from).format(PARAM_DATE_FORMAT))
+		newParams.set(PARAM_NAME_TO_DATE, moment(to).format(PARAM_DATE_FORMAT))
+		location.search = `?${newParams.toString()}`
 		history.replace(location)
 	}
 
