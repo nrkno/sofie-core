@@ -94,18 +94,6 @@ export const DeviceEditor = function DeviceEditor({ trigger, modified, readonly,
 					</li>
 				))}
 			</ul>
-			{/* <EditAttribute
-				type={'toggle'}
-				className="sb-nocolor"
-				overrideDisplayValue={trigger.up}
-				updateFunction={(_e, newValue) =>
-					onChange({
-						...trigger,
-						up: newValue,
-					})
-				}
-				label={t('On release')}
-			/> */}
 		</>
 	)
 }

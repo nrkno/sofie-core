@@ -5,6 +5,7 @@ import { PlayoutActions, SomeAction } from '@sofie-automation/blueprints-integra
 import { EditAttribute } from '../../../../../../../lib/EditAttribute'
 import { useTracker } from '../../../../../../../lib/ReactMeteorData/ReactMeteorData'
 import { AdLibActions, RundownBaselineAdLibActions } from '../../../../../../../collections'
+import { ToggleSwitchControl } from '../../../../../../../lib/Components/ToggleSwitch'
 
 export function AdLibActionEditor({
 	action,
@@ -37,14 +38,11 @@ export function AdLibActionEditor({
 	return (
 		<>
 			<div className="mts">
-				<EditAttribute
-					className="form-control"
-					modifiedClassName="bghl"
-					type={'toggle'}
+				<ToggleSwitchControl
+					classNames={'form-control'}
+					value={!!action.arguments}
 					label={t('Use Trigger Mode')}
-					overrideDisplayValue={!!action.arguments}
-					attribute={''}
-					updateFunction={(_e, newVal) => {
+					handleUpdate={(newVal) => {
 						onChange({
 							...action,
 							arguments: newVal ? { triggerMode: '' } : null,

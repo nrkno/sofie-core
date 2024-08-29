@@ -13,6 +13,7 @@ import { AdLibActionEditor } from './actionEditors/AdLibActionEditor'
 import { DeviceActions } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
 import { catchError } from '../../../../../../lib/lib'
 import { preventOverflow } from '@popperjs/core'
+import { ToggleSwitchControl } from '../../../../../../lib/Components/ToggleSwitch'
 
 interface IProps {
 	action: SomeAction
@@ -218,28 +219,23 @@ function getActionParametersEditor(
 		case PlayoutActions.activateRundownPlaylist:
 			return (
 				<div className="mts">
-					<EditAttribute
-						className="form-control"
-						modifiedClassName="bghl"
-						type={'toggle'}
+					<ToggleSwitchControl
+						classNames={'form-control'}
+						value={action.rehearsal}
 						label={t('Rehearsal')}
-						overrideDisplayValue={action.rehearsal}
-						attribute={''}
-						updateFunction={(_e, newVal) => {
+						handleUpdate={(newVal) => {
 							onChange({
 								...action,
 								rehearsal: newVal,
 							})
 						}}
 					/>
-					<EditAttribute
-						className="form-control"
-						modifiedClassName="bghl"
-						type={'toggle'}
+
+					<ToggleSwitchControl
+						classNames={'form-control'}
+						value={!!action.force}
 						label={t('Force (deactivate others)')}
-						overrideDisplayValue={action.force}
-						attribute={''}
-						updateFunction={(_e, newVal) => {
+						handleUpdate={(newVal) => {
 							onChange({
 								...action,
 								force: newVal,
@@ -259,14 +255,11 @@ function getActionParametersEditor(
 		case PlayoutActions.disableNextPiece:
 			return (
 				<div className="mts">
-					<EditAttribute
-						className="form-control"
-						modifiedClassName="bghl"
-						type={'toggle'}
+					<ToggleSwitchControl
+						classNames={'form-control'}
+						value={!!action.undo}
 						label={t('Undo')}
-						overrideDisplayValue={action.undo}
-						attribute={''}
-						updateFunction={(_e, newVal) => {
+						handleUpdate={(newVal) => {
 							onChange({
 								...action,
 								undo: newVal,
@@ -278,14 +271,11 @@ function getActionParametersEditor(
 		case PlayoutActions.hold:
 			return (
 				<div className="mts">
-					<EditAttribute
-						className="form-control"
-						modifiedClassName="bghl"
-						type={'toggle'}
+					<ToggleSwitchControl
+						classNames={'form-control'}
+						value={!!action.undo}
 						label={t('Undo')}
-						overrideDisplayValue={action.undo}
-						attribute={''}
-						updateFunction={(_e, newVal) => {
+						handleUpdate={(newVal) => {
 							onChange({
 								...action,
 								undo: newVal,
@@ -369,14 +359,11 @@ function getActionParametersEditor(
 		case ClientActions.showEntireCurrentSegment:
 			return (
 				<div className="mts">
-					<EditAttribute
-						className="form-control"
-						modifiedClassName="bghl"
-						type={'toggle'}
+					<ToggleSwitchControl
+						classNames={'form-control'}
+						value={!!action.on}
 						label={t('On')}
-						overrideDisplayValue={action.on}
-						attribute={''}
-						updateFunction={(_e, newVal) => {
+						handleUpdate={(newVal) => {
 							onChange({
 								...action,
 								on: newVal,
@@ -388,14 +375,11 @@ function getActionParametersEditor(
 		case ClientActions.miniShelfQueueAdLib:
 			return (
 				<div className="mts">
-					<EditAttribute
-						className="form-control"
-						modifiedClassName="bghl"
-						type={'toggle'}
+					<ToggleSwitchControl
+						classNames={'form-control'}
+						value={!!action.forward}
 						label={t('Forward')}
-						overrideDisplayValue={action.forward}
-						attribute={''}
-						updateFunction={(_e, newVal) => {
+						handleUpdate={(newVal) => {
 							onChange({
 								...action,
 								forward: newVal,
