@@ -29,7 +29,6 @@ export type EditAttributeType =
 	| 'toggle'
 	| 'dropdown'
 	| 'dropdowntext'
-	| 'switch'
 	| 'multiselect'
 	| 'json'
 	| 'colorpicker'
@@ -47,8 +46,6 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 			return <EditAttributeFloat {...this.props} />
 		} else if (this.props.type === 'checkbox') {
 			return <EditAttributeCheckbox {...this.props} />
-		} else if (this.props.type === 'switch') {
-			return <EditAttributeSwitch {...this.props} />
 		} else if (this.props.type === 'toggle') {
 			return <EditAttributeToggle {...this.props} />
 		} else if (this.props.type === 'dropdown') {
@@ -376,42 +373,6 @@ const EditAttributeToggle = wrapEditAttribute(
 					label={this.props.label}
 					handleUpdate={this.handleUpdate}
 				/>
-			)
-		}
-	}
-)
-const EditAttributeSwitch = wrapEditAttribute(
-	class EditAttributeSwitch extends EditAttributeBase {
-		constructor(props: any) {
-			super(props)
-		}
-		isChecked() {
-			return !!this.getEditAttribute()
-		}
-		handleChange = () => {
-			this.handleUpdate(!this.state.value)
-		}
-		handleClick = () => {
-			this.handleChange()
-		}
-		render(): JSX.Element {
-			return (
-				<div
-					className={
-						'switch ' +
-						' ' +
-						(this.props.className || '') +
-						' ' +
-						(this.state.editing ? this.props.modifiedClassName || '' : '') +
-						' ' +
-						(this.isChecked() ? 'switch-active' : '') +
-						' ' +
-						(this.props.disabled ? 'disabled' : '')
-					}
-					onClick={this.handleClick}
-				>
-					{this.props.label}
-				</div>
 			)
 		}
 	}
