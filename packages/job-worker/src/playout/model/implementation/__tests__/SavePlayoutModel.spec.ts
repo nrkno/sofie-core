@@ -4,7 +4,7 @@ import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { PlayoutRundownModelImpl } from '../PlayoutRundownModelImpl'
 import { setupDefaultJobEnvironment } from '../../../../__mocks__/context'
-import { writePartInstancesAndPieceInstances, writeAdlibTestingSegments } from '../SavePlayoutModel'
+import { writePartInstancesAndPieceInstancesAndExpectedPackages, writeAdlibTestingSegments } from '../SavePlayoutModel'
 import { PlayoutPartInstanceModelImpl } from '../PlayoutPartInstanceModelImpl'
 import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
@@ -122,7 +122,7 @@ describe('SavePlayoutModel', () => {
 		it('no PartInstances', async () => {
 			const context = setupDefaultJobEnvironment()
 
-			await Promise.all(writePartInstancesAndPieceInstances(context, new Map()))
+			await Promise.all(writePartInstancesAndPieceInstancesAndExpectedPackages(context, new Map()))
 
 			expect(context.mockCollections.PartInstances.operations).toHaveLength(0)
 			expect(context.mockCollections.PieceInstances.operations).toHaveLength(0)
@@ -135,7 +135,7 @@ describe('SavePlayoutModel', () => {
 			partInstances.set(protectString('id0'), null)
 			partInstances.set(protectString('id1'), null)
 
-			await Promise.all(writePartInstancesAndPieceInstances(context, partInstances))
+			await Promise.all(writePartInstancesAndPieceInstancesAndExpectedPackages(context, partInstances))
 
 			expect(context.mockCollections.PartInstances.operations).toHaveLength(2)
 			expect(context.mockCollections.PartInstances.operations).toMatchInlineSnapshot(`
@@ -197,7 +197,7 @@ describe('SavePlayoutModel', () => {
 			const partInstances = new Map<PartInstanceId, PlayoutPartInstanceModelImpl | null>()
 			partInstances.set(protectString('id0'), partInstanceModel)
 
-			await Promise.all(writePartInstancesAndPieceInstances(context, partInstances))
+			await Promise.all(writePartInstancesAndPieceInstancesAndExpectedPackages(context, partInstances))
 
 			expect(context.mockCollections.PartInstances.operations).toHaveLength(0)
 
@@ -237,7 +237,7 @@ describe('SavePlayoutModel', () => {
 			const partInstances = new Map<PartInstanceId, PlayoutPartInstanceModelImpl | null>()
 			partInstances.set(protectString('id0'), partInstanceModel)
 
-			await Promise.all(writePartInstancesAndPieceInstances(context, partInstances))
+			await Promise.all(writePartInstancesAndPieceInstancesAndExpectedPackages(context, partInstances))
 
 			expect(context.mockCollections.PartInstances.operations).toHaveLength(2)
 			expect(context.mockCollections.PartInstances.operations).toMatchInlineSnapshot(`
@@ -273,7 +273,7 @@ describe('SavePlayoutModel', () => {
 			const partInstances = new Map<PartInstanceId, PlayoutPartInstanceModelImpl | null>()
 			partInstances.set(protectString('id0'), partInstanceModel)
 
-			await Promise.all(writePartInstancesAndPieceInstances(context, partInstances))
+			await Promise.all(writePartInstancesAndPieceInstancesAndExpectedPackages(context, partInstances))
 
 			expect(context.mockCollections.PartInstances.operations).toHaveLength(0)
 
@@ -319,7 +319,7 @@ describe('SavePlayoutModel', () => {
 			partInstances.set(protectString('id0'), partInstanceModel)
 			partInstances.set(protectString('id1'), null)
 
-			await Promise.all(writePartInstancesAndPieceInstances(context, partInstances))
+			await Promise.all(writePartInstancesAndPieceInstancesAndExpectedPackages(context, partInstances))
 
 			expect(context.mockCollections.PartInstances.operations).toHaveLength(3)
 			expect(context.mockCollections.PartInstances.operations).toMatchInlineSnapshot(`

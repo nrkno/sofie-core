@@ -44,6 +44,9 @@ export async function onUpdatedPackageInfo(packageId: ExpectedPackageId, _doc: P
 			case ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS:
 				onUpdatedPackageInfoForStudioBaselineDebounce(pkg)
 				break
+			case ExpectedPackageDBType.PIECE_INSTANCE:
+				// No-op, we can't handle these updates
+				break
 			default:
 				assertNever(pkg)
 				break

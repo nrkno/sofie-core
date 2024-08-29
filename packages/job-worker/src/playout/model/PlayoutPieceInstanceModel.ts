@@ -2,12 +2,18 @@ import { PieceInstanceInfiniteId } from '@sofie-automation/corelib/dist/dataMode
 import { ReadonlyDeep } from 'type-fest'
 import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { Time } from '@sofie-automation/blueprints-integration'
+import { ExpectedPackageDBFromPieceInstance } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 
 export interface PlayoutPieceInstanceModel {
 	/**
 	 * The PieceInstance properties
 	 */
 	readonly pieceInstance: ReadonlyDeep<PieceInstance>
+
+	/**
+	 * The ExpectedPackages for the PieceInstance
+	 */
+	readonly expectedPackages: ReadonlyDeep<ExpectedPackageDBFromPieceInstance[]>
 
 	/**
 	 * Prepare this PieceInstance to be continued during HOLD
@@ -57,4 +63,10 @@ export interface PlayoutPieceInstanceModel {
 	 * @param props New properties for the Piece being wrapped
 	 */
 	updatePieceProps(props: Partial<PieceInstancePiece>): void
+
+	/**
+	 * Update the expected packages for the PieceInstance
+	 * @param expectedPackages The new packages
+	 */
+	setExpectedPackages(expectedPackages: ExpectedPackageDBFromPieceInstance[]): void
 }

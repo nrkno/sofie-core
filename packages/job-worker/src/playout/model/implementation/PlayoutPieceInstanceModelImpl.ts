@@ -1,10 +1,16 @@
-import { PieceInstanceInfiniteId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ExpectedPackageId, PieceInstanceInfiniteId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { Time } from '@sofie-automation/blueprints-integration'
 import { PlayoutPieceInstanceModel } from '../PlayoutPieceInstanceModel'
 import _ = require('underscore')
+import { ExpectedPackageDBFromPieceInstance } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import {
+	DocumentChanges,
+	getDocumentChanges,
+	diffAndReturnLatestObjects,
+} from '../../../ingest/model/implementation/utils'
 
 export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel {
 	/**
@@ -12,6 +18,9 @@ export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel 
 	 * Danger: This should not be modified externally, this is exposed for cloning and saving purposes
 	 */
 	PieceInstanceImpl: PieceInstance
+
+	#expectedPackages: ExpectedPackageDBFromPieceInstance[]
+	#expectedPackagesWithChanges = new Set<ExpectedPackageId>()
 
 	/**
 	 * Set/delete a value for this PieceInstance, and track that there are changes
@@ -57,7 +66,8 @@ export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel 
 	 * Whether this PieceInstance has unsaved changes
 	 */
 	get HasChanges(): boolean {
-		return this.#hasChanges
+		// nocommit - should this be two properties?
+		return this.#hasChanges || this.#expectedPackagesWithChanges.size > 0
 	}
 
 	/**
@@ -65,15 +75,31 @@ export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel 
 	 */
 	clearChangedFlag(): void {
 		this.#hasChanges = false
+		this.#expectedPackagesWithChanges.clear()
 	}
 
 	get pieceInstance(): ReadonlyDeep<PieceInstance> {
 		return this.PieceInstanceImpl
 	}
 
-	constructor(pieceInstances: PieceInstance, hasChanges: boolean) {
+	get expectedPackages(): ReadonlyDeep<ExpectedPackageDBFromPieceInstance[]> {
+		return [...this.#expectedPackages]
+	}
+
+	get expectedPackagesChanges(): DocumentChanges<ExpectedPackageDBFromPieceInstance> {
+		return getDocumentChanges(this.#expectedPackagesWithChanges, this.#expectedPackages)
+	}
+
+	constructor(
+		pieceInstances: PieceInstance,
+		expectedPackages: ExpectedPackageDBFromPieceInstance[],
+		hasChanges: boolean,
+		expectedPackagesWithChanges: ExpectedPackageId[] | null
+	) {
 		this.PieceInstanceImpl = pieceInstances
+		this.#expectedPackages = expectedPackages
 		this.#hasChanges = hasChanges
+		this.#expectedPackagesWithChanges = new Set(expectedPackagesWithChanges)
 	}
 
 	/**
@@ -135,5 +161,39 @@ export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel 
 			},
 			true
 		)
+	}
+
+	/**
+	 * Update the expected packages for the PieceInstance
+	 * @param expectedPackages The new packages
+	 */
+	setExpectedPackages(expectedPackages: ExpectedPackageDBFromPieceInstance[]): void {
+		// nocommit - refactor this into a simpler type than `ExpectedPackagesStore` or just reuse that?
+
+		const newExpectedPackages: ExpectedPackageDBFromPieceInstance[] = expectedPackages.map((pkg) => ({
+			...pkg,
+			partInstanceId: this.PieceInstanceImpl.partInstanceId,
+			pieceInstanceId: this.PieceInstanceImpl._id,
+			rundownId: this.PieceInstanceImpl.rundownId,
+		}))
+
+		this.#expectedPackages = diffAndReturnLatestObjects(
+			this.#expectedPackagesWithChanges,
+			this.#expectedPackages,
+			newExpectedPackages,
+			mutateExpectedPackage
+		)
+	}
+}
+
+// nocommit - this is copied from elsewhere
+function mutateExpectedPackage(
+	oldObj: ExpectedPackageDBFromPieceInstance,
+	newObj: ExpectedPackageDBFromPieceInstance
+): ExpectedPackageDBFromPieceInstance {
+	return {
+		...newObj,
+		// Retain the created property
+		created: oldObj.created,
 	}
 }

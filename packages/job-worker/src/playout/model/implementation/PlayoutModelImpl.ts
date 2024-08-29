@@ -48,7 +48,7 @@ import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedSt
 import { queuePartInstanceTimingEvent } from '../../timings/events'
 import { IS_PRODUCTION } from '../../../environment'
 import { DeferredAfterSaveFunction, DeferredFunction, PlayoutModel, PlayoutModelReadonly } from '../PlayoutModel'
-import { writePartInstancesAndPieceInstances, writeAdlibTestingSegments } from './SavePlayoutModel'
+import { writePartInstancesAndPieceInstancesAndExpectedPackages, writeAdlibTestingSegments } from './SavePlayoutModel'
 import { PlayoutPieceInstanceModel } from '../PlayoutPieceInstanceModel'
 import { DatabasePersistedModel } from '../../../modelBase'
 import { ExpectedPackageDBFromStudioBaselineObjects } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
@@ -559,7 +559,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 			this.#playlistHasChanged
 				? this.context.directCollections.RundownPlaylists.replace(this.playlistImpl)
 				: undefined,
-			...writePartInstancesAndPieceInstances(this.context, this.allPartInstances),
+			...writePartInstancesAndPieceInstancesAndExpectedPackages(this.context, this.allPartInstances),
 			writeAdlibTestingSegments(this.context, this.rundownsImpl),
 			this.#baselineHelper.saveAllToDatabase(),
 		])
