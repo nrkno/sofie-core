@@ -1,11 +1,21 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import ClassNames from 'classnames'
+import { DropdownInputOption } from './DropdownInput'
+import { getRandomString } from '@sofie-automation/corelib/dist/lib'
 
+export type TextInputSuggestion = DropdownInputOption<string>
+export interface TextInputSuggestionGroup {
+	name: string
+	options: TextInputSuggestion[]
+}
 interface ITextInputControlProps {
 	classNames?: string
 	modifiedClassName?: string
 	disabled?: boolean
 	placeholder?: string
+	spellCheck?: boolean
+
+	suggestions?: Array<TextInputSuggestionGroup | TextInputSuggestion>
 
 	/** Call handleUpdate on every change, before focus is lost */
 	updateOnKey?: boolean
@@ -19,6 +29,8 @@ export function TextInputControl({
 	value,
 	disabled,
 	placeholder,
+	spellCheck,
+	suggestions,
 	handleUpdate,
 	updateOnKey,
 }: Readonly<ITextInputControlProps>): JSX.Element {
@@ -60,7 +72,9 @@ export function TextInputControl({
 		[handleUpdate]
 	)
 
-	return (
+	const fieldId = useMemo(() => getRandomString(), [])
+
+	const textInput = (
 		<input
 			type="text"
 			className={ClassNames('form-control', classNames, editingValue !== null && modifiedClassName)}
@@ -71,6 +85,34 @@ export function TextInputControl({
 			onFocus={handleFocus}
 			onKeyUp={handleKeyUp}
 			disabled={disabled}
+			spellCheck={spellCheck}
+			list={suggestions ? fieldId : undefined}
 		/>
 	)
+
+	if (!suggestions) {
+		return textInput
+	} else {
+		return (
+			<div className="input-dropdowntext">
+				{textInput}
+
+				<datalist id={fieldId}>
+					{suggestions.map((o, j) =>
+						'options' in o ? (
+							<optgroup key={j} label={o.name}>
+								{o.options.map((v, i) => (
+									<option key={i} value={v + ''}></option>
+								))}
+							</optgroup>
+						) : (
+							<option key={o.i} value={o.value + ''}>
+								{o.value !== o.name ? o.name : null}
+							</option>
+						)
+					)}
+				</datalist>
+			</div>
+		)
+	}
 }

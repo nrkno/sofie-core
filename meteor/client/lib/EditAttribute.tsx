@@ -6,12 +6,12 @@ import { MultiSelect, MultiSelectEvent, MultiSelectOptions } from './multiSelect
 import ClassNames from 'classnames'
 import { ColorPickerEvent, ColorPicker } from './colorPicker'
 import { IconPicker, IconPickerEvent } from './iconPicker'
-import { assertNever, getRandomString } from '../../lib/lib'
+import { assertNever } from '../../lib/lib'
 import { MongoCollection } from '../../lib/collections/lib'
 import { CheckboxControl } from './Components/Checkbox'
 import { TextInputControl } from './Components/TextInput'
 import { IntInputControl } from './Components/IntInput'
-import { DropdownInputControl, getDropdownInputOptions } from './Components/DropdownInput'
+import { DropdownInputControl, DropdownInputOption, getDropdownInputOptions } from './Components/DropdownInput'
 import { FloatInputControl } from './Components/FloatInput'
 import { joinLines, MultiLineTextInputControl, splitValueIntoLines } from './Components/MultiLineTextInput'
 import { JsonTextInputControl, tryParseJson } from './Components/JsonTextInput'
@@ -469,81 +469,22 @@ const EditAttributeDropdown = wrapEditAttribute(
 )
 const EditAttributeDropdownText = wrapEditAttribute(
 	class EditAttributeDropdownText extends EditAttributeBase {
-		private _id: string
-
-		constructor(props: any) {
-			super(props)
-
-			this.handleChangeDropdown = this.handleChangeDropdown.bind(this)
-			this.handleChangeText = this.handleChangeText.bind(this)
-			this.handleBlurText = this.handleBlurText.bind(this)
-			this.handleEscape = this.handleEscape.bind(this)
-
-			this._id = getRandomString()
-		}
-		handleChangeDropdown(event: React.ChangeEvent<HTMLInputElement>) {
-			// because event.target.value is always a string, use the original value instead
-			const option = _.find(this.getOptions(), (o) => {
-				return o.value + '' === event.target.value + ''
-			})
-
-			const value = option ? option.value : event.target.value
-
-			this.handleUpdate(this.props.optionsAreNumbers ? Number(value) : value)
-		}
-		handleChangeText(event: React.ChangeEvent<HTMLInputElement>) {
-			this.handleChangeDropdown(event)
-		}
-		handleBlurText(event: React.FocusEvent<HTMLInputElement>) {
-			this.handleUpdate(event.target.value)
-		}
-		handleEscape(e: React.KeyboardEvent<HTMLInputElement>) {
-			if (e.key === 'Escape') {
-				this.handleDiscard()
-			}
-		}
-		getOptions() {
+		private getOptions(): DropdownInputOption<string>[] {
 			return getDropdownInputOptions(this.props.options)
 		}
 		render(): JSX.Element {
 			return (
-				<div className="input-dropdowntext">
-					<input
-						type="text"
-						className={
-							'form-control' +
-							' ' +
-							(this.state.valueError ? 'error ' : '') +
-							(this.props.className || '') +
-							' ' +
-							(this.state.editing ? this.props.modifiedClassName || '' : '')
-						}
-						placeholder={this.props.label}
-						value={this.getEditAttribute() || ''}
-						onChange={this.handleChangeText}
-						onBlur={this.handleBlurText}
-						onKeyUp={this.handleEscape}
-						disabled={this.props.disabled}
-						spellCheck={false}
-						list={this._id}
-					/>
-
-					<datalist id={this._id}>
-						{this.getOptions().map((o, j) =>
-							Array.isArray(o.value) ? (
-								<optgroup key={j} label={o.name}>
-									{o.value.map((v, i) => (
-										<option key={i} value={v + ''}></option>
-									))}
-								</optgroup>
-							) : (
-								<option key={o.i} value={o.value + ''}>
-									{o.value !== o.name ? o.name : null}
-								</option>
-							)
-						)}
-					</datalist>
-				</div>
+				<TextInputControl
+					classNames={`${this.props.className || ''} ${this.state.valueError ? 'error ' : ''}`}
+					modifiedClassName={this.props.modifiedClassName}
+					disabled={this.props.disabled}
+					placeholder={this.props.label}
+					updateOnKey={this.props.updateOnKey}
+					value={this.getAttribute() ?? ''}
+					handleUpdate={this.handleUpdate}
+					spellCheck={false}
+					suggestions={this.getOptions()}
+				/>
 			)
 		}
 	}
