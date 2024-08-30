@@ -77,7 +77,17 @@ export function CollapseJSON({ json }: { json: string }): JSX.Element {
 	)
 
 	return (
-		<pre tabIndex={0} onClick={() => setExpanded(!expanded)} className="collapse-json__block">
+		<pre
+			tabIndex={0}
+			onClick={() => {
+				// Don't expand when user is selecting text:
+				const selection = window.getSelection()
+				if (selection?.type != 'Range') {
+					setExpanded(!expanded)
+				}
+			}}
+			className="collapse-json__block"
+		>
 			{displayContents}
 		</pre>
 	)
