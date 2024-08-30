@@ -130,7 +130,13 @@ export class PieceInstancesHandler
 			  )
 			: []
 
-		const active = [...inPreviousPartInstance, ...inCurrentPartInstance]
+		const active = [...inCurrentPartInstance]
+		if (
+			this._partInstances?.previous?.timings &&
+			(this._partInstances.previous.timings.plannedStoppedPlayback ?? 0) > Date.now()
+		) {
+			active.push(...inPreviousPartInstance)
+		}
 
 		let hasAnythingChanged = false
 		if (!_.isEqual(this._collectionData.active, active)) {
