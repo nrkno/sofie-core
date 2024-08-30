@@ -131,6 +131,7 @@ export class PieceInstancesHandler
 			: []
 
 		const active = [...inCurrentPartInstance]
+		// Only include the pieces from the previous part if the part is still considered to be playing
 		if (
 			this._partInstances?.previous?.timings &&
 			(this._partInstances.previous.timings.plannedStoppedPlayback ?? 0) > Date.now()
