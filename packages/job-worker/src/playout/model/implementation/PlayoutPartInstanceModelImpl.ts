@@ -11,8 +11,9 @@ import {
 	omitPiecePropertiesForInstance,
 	PieceInstance,
 	PieceInstancePiece,
+	PieceInstanceWithExpectedPackages,
 } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { clone, getRandomId, omit } from '@sofie-automation/corelib/dist/lib'
+import { clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { getCurrentTime } from '../../../lib'
 import { setupPieceInstanceInfiniteProperties } from '../../pieces'
 import {
@@ -35,9 +36,9 @@ import _ = require('underscore')
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { IBlueprintMutatablePartSampleKeys } from '../../../blueprints/context/lib'
 import {
+	convertPieceExpectedPackageToPieceInstance,
 	ExpectedPackageDBFromPiece,
 	ExpectedPackageDBFromPieceInstance,
-	ExpectedPackageDBType,
 } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 
 interface PlayoutPieceInstanceModelSnapshotImpl {
@@ -170,25 +171,25 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 
 	constructor(
 		partInstance: DBPartInstance,
-		pieceInstances: PieceInstance[],
-		expectedPackages: ExpectedPackageDBFromPieceInstance[],
+		pieceInstances: PieceInstanceWithExpectedPackages[],
 		hasChanges: boolean
 	) {
 		this.partInstanceImpl = partInstance
 		this.#partInstanceHasChanges = hasChanges
 
 		this.pieceInstancesImpl = new Map()
-		for (const pieceInstance of pieceInstances) {
-			// nocommit - avoid multiple iterations?
-			const pieceInstancePackages = expectedPackages.filter((p) => p.pieceInstanceId === pieceInstance._id)
+		for (const { pieceInstance, expectedPackages } of pieceInstances) {
+			const expectedPackagesConverted = expectedPackages.map((p) =>
+				convertPieceExpectedPackageToPieceInstance(p, pieceInstance._id, partInstance)
+			)
 
 			this.pieceInstancesImpl.set(
 				pieceInstance._id,
 				new PlayoutPieceInstanceModelImpl(
 					pieceInstance,
-					pieceInstancePackages,
+					expectedPackagesConverted,
 					hasChanges,
-					hasChanges ? pieceInstancePackages.map((p) => p._id) : null
+					hasChanges ? expectedPackagesConverted.map((p) => p._id) : null
 				)
 			)
 		}
@@ -323,17 +324,11 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 
 	#convertExpectedPackagesForPieceInstance(
 		pieceInstance: ReadonlyDeep<PieceInstance>,
-		expectedPackages: ExpectedPackageDBFromPiece[]
+		expectedPackages: ReadonlyDeep<Array<ExpectedPackageDBFromPiece | ExpectedPackageDBFromPieceInstance>>
 	): ExpectedPackageDBFromPieceInstance[] {
-		return expectedPackages.map((p) => ({
-			...omit(p, 'pieceId', 'partId'),
-			fromPieceType: ExpectedPackageDBType.PIECE_INSTANCE,
-			partInstanceId: this.partInstance._id,
-			pieceInstanceId: pieceInstance._id,
-			segmentId: this.partInstance.segmentId,
-			rundownId: this.partInstance.rundownId,
-			pieceId: null,
-		}))
+		return expectedPackages.map((p) =>
+			convertPieceExpectedPackageToPieceInstance(p, pieceInstance._id, this.partInstanceImpl)
+		)
 	}
 
 	insertPlannedPiece(
@@ -440,7 +435,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		return false
 	}
 
-	replaceInfinitesFromPreviousPlayhead(pieceInstances: PieceInstance[]): void {
+	replaceInfinitesFromPreviousPlayhead(pieceInstances: PieceInstanceWithExpectedPackages[]): void {
 		// Future: this should do some of the wrapping from a Piece into a PieceInstance
 
 		// Remove old infinite pieces
@@ -452,7 +447,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 			}
 		}
 
-		for (const pieceInstance of pieceInstances) {
+		for (const { pieceInstance, expectedPackages } of pieceInstances) {
 			if (this.pieceInstancesImpl.get(pieceInstance._id))
 				throw new Error(
 					`Cannot replace infinite PieceInstance "${pieceInstance._id}" as it replaces a non-infinite`
@@ -463,7 +458,15 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 
 			// Future: should this do any deeper validation of the PieceInstances?
 
-			this.pieceInstancesImpl.set(pieceInstance._id, new PlayoutPieceInstanceModelImpl(pieceInstance, true))
+			this.pieceInstancesImpl.set(
+				pieceInstance._id,
+				new PlayoutPieceInstanceModelImpl(
+					pieceInstance,
+					this.#convertExpectedPackagesForPieceInstance(pieceInstance, expectedPackages),
+					true,
+					expectedPackages.map((p) => p._id)
+				)
+			)
 		}
 	}
 

@@ -132,7 +132,7 @@ export async function syncChangesToPartInstances(
 					pieceInstances: pieceInstancesInPart.map((p) => convertPieceInstanceToBlueprints(p.pieceInstance)),
 				}
 
-				const proposedPieceInstances = getPieceInstancesForPart(
+				const proposedPieceInstances = await getPieceInstancesForPart(
 					context,
 					playoutModel,
 					previousPartInstance,
@@ -154,7 +154,9 @@ export async function syncChangesToPartInstances(
 
 				const newResultData: BlueprintSyncIngestNewData = {
 					part: newPart ? convertPartToBlueprints(newPart) : undefined,
-					pieceInstances: proposedPieceInstances.map(convertPieceInstanceToBlueprints),
+					pieceInstances: proposedPieceInstances.map((p) =>
+						convertPieceInstanceToBlueprints(p.pieceInstance, p.expectedPackages)
+					),
 					adLibPieces: newPart && ingestPart ? ingestPart.adLibPieces.map(convertAdLibPieceToBlueprints) : [],
 					actions: newPart && ingestPart ? ingestPart.adLibActions.map(convertAdLibActionToBlueprints) : [],
 					referencedAdlibs: referencedAdlibs,

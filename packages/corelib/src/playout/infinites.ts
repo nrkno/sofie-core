@@ -258,11 +258,9 @@ export function getPlayheadTrackingInfinitesForPart(
 		return undefined
 	}
 
-	return flatten(
-		Array.from(piecesOnSourceLayers.values()).map((ps) => {
-			return _.compact(Object.values<PieceInstance | undefined>(ps as any).map(rewrapInstance))
-		})
-	)
+	return Array.from(piecesOnSourceLayers.values()).flatMap((ps) => {
+		return _.compact(Object.values<PieceInstance | undefined>(ps as any).map(rewrapInstance))
+	})
 }
 
 function markPieceInstanceAsContinuation(previousInstance: ReadonlyDeep<PieceInstance>, instance: PieceInstance) {

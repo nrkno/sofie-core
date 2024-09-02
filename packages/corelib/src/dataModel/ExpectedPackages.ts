@@ -1,6 +1,6 @@
 import { ExpectedPackage, Time } from '@sofie-automation/blueprints-integration'
 import { protectString } from '../protectedString'
-import { getHash, hashObj } from '../lib'
+import { getHash, hashObj, omit } from '../lib'
 import {
 	AdLibActionId,
 	BucketAdLibActionId,
@@ -17,6 +17,7 @@ import {
 	StudioId,
 } from './Ids'
 import { ReadonlyDeep } from 'type-fest'
+import { DBPartInstance } from './PartInstance'
 
 /*
  Expected Packages are created from Pieces in the rundown.
@@ -175,4 +176,32 @@ export function getExpectedPackageId(
 	localExpectedPackageId: ExpectedPackage.Base['_id']
 ): ExpectedPackageId {
 	return protectString(`${ownerId}_${getHash(localExpectedPackageId)}`)
+}
+
+export function convertPieceExpectedPackageToPieceInstance(
+	expectedPackage: ReadonlyDeep<ExpectedPackageDBFromPiece | ExpectedPackageDBFromPieceInstance>,
+	pieceInstanceId: PieceInstanceId,
+	partInstance: ReadonlyDeep<DBPartInstance>
+): ExpectedPackageDBFromPieceInstance {
+	if (expectedPackage.fromPieceType === ExpectedPackageDBType.PIECE_INSTANCE) {
+		return {
+			...expectedPackage,
+			fromPieceType: ExpectedPackageDBType.PIECE_INSTANCE,
+			partInstanceId: partInstance._id,
+			pieceInstanceId: pieceInstanceId,
+			segmentId: partInstance.segmentId,
+			rundownId: partInstance.rundownId,
+			pieceId: null,
+		}
+	} else {
+		return {
+			...omit(expectedPackage, 'pieceId', 'partId'),
+			fromPieceType: ExpectedPackageDBType.PIECE_INSTANCE,
+			partInstanceId: partInstance._id,
+			pieceInstanceId: pieceInstanceId,
+			segmentId: partInstance.segmentId,
+			rundownId: partInstance.rundownId,
+			pieceId: null,
+		}
+	}
 }

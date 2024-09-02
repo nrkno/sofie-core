@@ -11,6 +11,7 @@ import {
 import { Piece } from './Piece'
 import { omit } from '../lib'
 import { ReadonlyDeep } from 'type-fest'
+import { ExpectedPackageDBFromPiece, ExpectedPackageDBFromPieceInstance } from './ExpectedPackages'
 
 export type PieceInstancePiece = Omit<Piece, 'startRundownId' | 'startSegmentId'>
 
@@ -91,6 +92,11 @@ export interface ResolvedPieceInstance {
 
 	/** Timeline priority of the PieceInstance */
 	timelinePriority: number
+}
+
+export interface PieceInstanceWithExpectedPackages {
+	pieceInstance: PieceInstance
+	expectedPackages: ExpectedPackageDBFromPieceInstance[] | ExpectedPackageDBFromPiece[]
 }
 
 export function omitPiecePropertiesForInstance(piece: Piece | PieceInstancePiece): PieceInstancePiece {

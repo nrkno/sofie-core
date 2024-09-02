@@ -204,7 +204,7 @@ async function preparePartInstanceForPartBeingNexted(
 	if (!rundown) throw new Error(`Could not find rundown ${nextPart.rundownId}`)
 
 	const possiblePieces = await fetchPiecesThatMayBeActiveForPart(context, playoutModel, undefined, nextPart)
-	const newPieceInstances = getPieceInstancesForPart(
+	const newPieceInstances = await getPieceInstancesForPart(
 		context,
 		playoutModel,
 		currentPartInstance,

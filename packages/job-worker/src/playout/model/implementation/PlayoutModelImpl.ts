@@ -23,8 +23,8 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import {
 	getPieceInstanceIdForPiece,
-	PieceInstance,
 	PieceInstancePiece,
+	PieceInstanceWithExpectedPackages,
 } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import {
 	serializeTimelineBlob,
@@ -291,8 +291,11 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		this.#playlistHasChanged = true
 	}
 
-	#fixupPieceInstancesForPartInstance(partInstance: DBPartInstance, pieceInstances: PieceInstance[]): void {
-		for (const pieceInstance of pieceInstances) {
+	#fixupPieceInstancesForPartInstance(
+		partInstance: DBPartInstance,
+		pieceInstances: PieceInstanceWithExpectedPackages[]
+	): void {
+		for (const { pieceInstance } of pieceInstances) {
 			// Future: should these be PieceInstance already, or should that be handled here?
 			pieceInstance._id = getPieceInstanceIdForPiece(partInstance._id, pieceInstance.piece._id)
 			pieceInstance.partInstanceId = partInstance._id
@@ -303,7 +306,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		part: Omit<DBPart, 'segmentId' | 'rundownId'>,
 		pieces: Omit<PieceInstancePiece, 'startPartId'>[],
 		fromAdlibId: PieceId | undefined,
-		infinitePieceInstances: PieceInstance[]
+		infinitePieceInstances: PieceInstanceWithExpectedPackages[]
 	): PlayoutPartInstanceModel {
 		const currentPartInstance = this.currentPartInstance
 		if (!currentPartInstance) throw new Error('No currentPartInstance')
@@ -329,7 +332,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		const partInstance = new PlayoutPartInstanceModelImpl(newPartInstance, infinitePieceInstances, true)
 
 		for (const piece of pieces) {
-			partInstance.insertAdlibbedPiece(piece, fromAdlibId)
+			partInstance.insertAdlibbedPiece(piece, fromAdlibId, piece.expectedPackages ?? [])
 		}
 
 		partInstance.recalculateExpectedDurationWithTransition()
@@ -339,7 +342,10 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		return partInstance
 	}
 
-	createInstanceForPart(nextPart: ReadonlyDeep<DBPart>, pieceInstances: PieceInstance[]): PlayoutPartInstanceModel {
+	createInstanceForPart(
+		nextPart: ReadonlyDeep<DBPart>,
+		pieceInstances: PieceInstanceWithExpectedPackages[]
+	): PlayoutPartInstanceModel {
 		const playlistActivationId = this.playlist.activationId
 		if (!playlistActivationId) throw new Error(`Playlist is not active`)
 
@@ -406,7 +412,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 			},
 		}
 
-		const partInstance = new PlayoutPartInstanceModelImpl(newPartInstance, [], [], true)
+		const partInstance = new PlayoutPartInstanceModelImpl(newPartInstance, [], true)
 		partInstance.recalculateExpectedDurationWithTransition()
 
 		this.allPartInstances.set(newPartInstance._id, partInstance)

@@ -1,7 +1,11 @@
 import { PieceId, PieceInstanceId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import {
+	PieceInstance,
+	PieceInstancePiece,
+	PieceInstanceWithExpectedPackages,
+} from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { IBlueprintMutatablePart, PieceLifespan, Time } from '@sofie-automation/blueprints-integration'
 import { PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/timings'
@@ -140,7 +144,7 @@ export interface PlayoutPartInstanceModel {
 	 * This allows them to be replaced without embedding the infinite logic inside the model
 	 * @param pieceInstances New infinite pieces from previous playhead
 	 */
-	replaceInfinitesFromPreviousPlayhead(pieceInstances: PieceInstance[]): void
+	replaceInfinitesFromPreviousPlayhead(pieceInstances: PieceInstanceWithExpectedPackages[]): void
 
 	/**
 	 * Merge a PieceInstance with a new version, or insert as a new PieceInstance.

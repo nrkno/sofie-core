@@ -22,6 +22,10 @@ import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/Perip
 import { PlayoutModel, PlayoutModelPreInit } from '../PlayoutModel'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
+import {
+	ExpectedPackageDBFromPieceInstance,
+	ExpectedPackageDBType,
+} from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 
 /**
  * Load a PlayoutModelPreInit for the given RundownPlaylist
@@ -295,20 +299,30 @@ async function loadPartInstances(
 	// Filter the PieceInstances to the activationId, if possible
 	pieceInstancesSelector.playlistActivationId = playlist.activationId || { $exists: false }
 
-	const [partInstances, pieceInstances] = await Promise.all([
+	const [partInstances, pieceInstances, expectedPackages] = await Promise.all([
 		partInstancesCollection,
 		context.directCollections.PieceInstances.findFetch(pieceInstancesSelector),
+		context.directCollections.ExpectedPackages.findFetch({
+			fromPieceType: ExpectedPackageDBType.PIECE_INSTANCE,
+			// Future: this could be optimised to only limit the loading to only those which match `activationId`
+			partInstanceId: { $in: selectedPartInstanceIds },
+			rundownId: { $in: rundownIds },
+		}) as Promise<ExpectedPackageDBFromPieceInstance[]>,
 	])
 
 	const groupedPieceInstances = groupByToMap(pieceInstances, 'partInstanceId')
+	const groupedExpectedPackages = groupByToMap(expectedPackages, 'pieceInstanceId')
 
 	const allPartInstances: PlayoutPartInstanceModelImpl[] = []
 	for (const partInstance of partInstances) {
-		const wrappedPartInstance = new PlayoutPartInstanceModelImpl(
-			partInstance,
-			groupedPieceInstances.get(partInstance._id) ?? [],
-			false
-		)
+		const rawPieceInstances = groupedPieceInstances.get(partInstance._id) ?? []
+
+		const pieceInstancesAndPackages = rawPieceInstances.map((pieceInstance) => ({
+			pieceInstance,
+			expectedPackages: groupedExpectedPackages.get(pieceInstance._id) ?? [],
+		}))
+
+		const wrappedPartInstance = new PlayoutPartInstanceModelImpl(partInstance, pieceInstancesAndPackages, false)
 		allPartInstances.push(wrappedPartInstance)
 	}
 

@@ -18,7 +18,10 @@ import {
 import { ReadonlyDeep } from 'type-fest'
 import { StudioPlayoutModelBase, StudioPlayoutModelBaseReadonly } from '../../studio/model/StudioPlayoutModel'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import {
+	PieceInstancePiece,
+	PieceInstanceWithExpectedPackages,
+} from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { PlaylistLock } from '../../jobs/lock'
 import { PlayoutRundownModel } from './PlayoutRundownModel'
 import { PlayoutSegmentModel } from './PlayoutSegmentModel'
@@ -203,9 +206,9 @@ export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBa
 	 */
 	createAdlibbedPartInstance(
 		part: Omit<DBPart, 'segmentId' | 'rundownId'>,
-		pieces: Omit<PieceInstancePiece, 'startPartId'>[],
+		pieces: Omit<PieceInstancePiece, 'startPartId'>[], // nocommit - expectedPackages?
 		fromAdlibId: PieceId | undefined,
-		infinitePieceInstances: PieceInstance[]
+		infinitePieceInstances: PieceInstanceWithExpectedPackages[]
 	): PlayoutPartInstanceModel
 
 	/**
@@ -215,7 +218,10 @@ export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBa
 	 * @param pieceInstances All the PieceInstances to insert
 	 * @returns The inserted PlayoutPartInstanceModel
 	 */
-	createInstanceForPart(nextPart: ReadonlyDeep<DBPart>, pieceInstances: PieceInstance[]): PlayoutPartInstanceModel
+	createInstanceForPart(
+		nextPart: ReadonlyDeep<DBPart>,
+		pieceInstances: PieceInstanceWithExpectedPackages[]
+	): PlayoutPartInstanceModel
 
 	/**
 	 * Insert an adlibbed PartInstance into the AdlibTesting Segment of a Rundown in this RundownPlaylist

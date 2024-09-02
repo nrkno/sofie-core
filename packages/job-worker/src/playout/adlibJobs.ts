@@ -142,7 +142,11 @@ async function pieceTakeNowAsAdlib(
 		| undefined
 ): Promise<void> {
 	const genericAdlibPiece = convertAdLibToGenericPiece(pieceToCopy, false)
-	/*const newPieceInstance = */ currentPartInstance.insertAdlibbedPiece(genericAdlibPiece, pieceToCopy._id)
+	/*const newPieceInstance = */ currentPartInstance.insertAdlibbedPiece(
+		genericAdlibPiece,
+		pieceToCopy._id,
+		genericAdlibPiece.expectedPackages ?? []
+	)
 
 	// Disable the original piece if from the same Part
 	if (

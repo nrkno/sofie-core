@@ -63,7 +63,7 @@ export async function innerStartOrQueueAdLibPiece(
 		// syncPlayheadInfinitesForNextPartInstance is handled by setNextPart
 	} else {
 		const genericAdlibPiece = convertAdLibToGenericPiece(adLibPiece, false)
-		currentPartInstance.insertAdlibbedPiece(genericAdlibPiece, adLibPiece._id)
+		currentPartInstance.insertAdlibbedPiece(genericAdlibPiece, adLibPiece._id, adLibPiece.expectedPackages)
 
 		await syncPlayheadInfinitesForNextPartInstance(
 			context,
@@ -225,7 +225,7 @@ export async function insertQueuedPartWithPieces(
 
 	// Find any rundown defined infinites that we should inherit
 	const possiblePieces = await fetchPiecesThatMayBeActiveForPart(context, playoutModel, undefined, newPartFull)
-	const infinitePieceInstances = getPieceInstancesForPart(
+	const infinitePieceInstances = await getPieceInstancesForPart(
 		context,
 		playoutModel,
 		currentPartInstance,
