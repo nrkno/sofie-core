@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import classNames from 'classnames'
 import { useTranslation } from 'react-i18next'
-import { PartExtended } from '../../../lib/Rundown'
+import { PartExtended } from '../../lib/RundownResolver'
 import { IOutputLayerUi, SegmentUi } from '../SegmentContainer/withResolvedSegment'
 import { StoryboardPartSecondaryPieces } from './StoryboardPartSecondaryPieces/StoryboardPartSecondaryPieces'
 import { StoryboardPartThumbnail } from './StoryboardPartThumbnail/StoryboardPartThumbnail'

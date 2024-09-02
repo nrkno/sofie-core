@@ -316,7 +316,7 @@ export class CoreMosDeviceHandler {
 		const result = await this._mosDevice.sendRunningOrderStatus({
 			ID: this.mosTypes.mosString128.create(roId),
 			Status: status,
-			Time: this.mosTypes.mosTime.create(undefined),
+			Time: this.mosTypes.mosTime.create(new Date()),
 		})
 
 		// console.log('got result', result)
@@ -328,7 +328,7 @@ export class CoreMosDeviceHandler {
 			RunningOrderId: this.mosTypes.mosString128.create(roId),
 			ID: this.mosTypes.mosString128.create(storyId),
 			Status: status,
-			Time: this.mosTypes.mosTime.create(undefined),
+			Time: this.mosTypes.mosTime.create(new Date()),
 		})
 
 		// console.log('got result', result)
@@ -341,7 +341,7 @@ export class CoreMosDeviceHandler {
 			StoryId: this.mosTypes.mosString128.create(storyId),
 			ID: this.mosTypes.mosString128.create(itemId),
 			Status: status,
-			Time: this.mosTypes.mosTime.create(undefined),
+			Time: this.mosTypes.mosTime.create(new Date()),
 		})
 
 		// console.log('got result', result)
@@ -427,7 +427,7 @@ export class CoreMosDeviceHandler {
 			}, 2000)
 		})
 	}
-	async dispose(): Promise<void> {
+	async dispose(subdevice: 'keepSubDevice' | 'removeSubDevice' = 'keepSubDevice'): Promise<void> {
 		this._observers.forEach((obs) => obs.stop())
 
 		await this.core.setStatus({
@@ -435,6 +435,7 @@ export class CoreMosDeviceHandler {
 			messages: ['Uninitialized'],
 		})
 
+		if (subdevice === 'removeSubDevice') await this.core.unInitialize()
 		await this.core.destroy()
 	}
 	killProcess(): void {

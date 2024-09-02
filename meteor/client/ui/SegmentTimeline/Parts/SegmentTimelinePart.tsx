@@ -34,8 +34,7 @@ import { OutputGroup } from './OutputGroup'
 import { InvalidPartCover } from './InvalidPartCover'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { UIStudio } from '../../../../lib/api/studios'
-import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
-import * as RundownLib from '../../../../lib/Rundown'
+import * as RundownResolver from '../../../lib/RundownResolver'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -51,7 +50,6 @@ interface IProps {
 	playlist: DBRundownPlaylist
 	studio: UIStudio
 	part: PartUi
-	pieces: CalculateTimingsPiece[]
 	timeToPixelRatio: number
 	onCollapseOutputToggle?: (layer: IOutputLayerUi, event: any) => void
 	collapsedOutputs: {
@@ -206,7 +204,6 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 				nextProps.scrollLeft,
 				nextProps.scrollWidth,
 				nextProps.part,
-				nextProps.pieces,
 				SegmentTimelinePartClass.getPartStartsAt(nextProps),
 				partDisplayDuration
 			)
@@ -472,7 +469,6 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 								sourceLayers={sourceLayers}
 								segment={this.props.segment}
 								part={part}
-								pieces={this.props.pieces}
 								playlist={this.props.playlist}
 								studio={this.props.studio}
 								startsAt={SegmentTimelinePartClass.getPartStartsAt(this.props) || this.props.part.startsAt || 0}
@@ -639,8 +635,8 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 			this.props.isLastSegment &&
 			this.props.isLastInSegment &&
 			(!this.state.isLive || (this.state.isLive && !this.props.playlist.nextPartInfo))
-		const isPlaylistLooping = RundownLib.isLoopRunning(this.props.playlist)
-		const isPartEndOfLoopingShow = RundownLib.isEndOfLoopingShow(
+		const isPlaylistLooping = RundownResolver.isLoopRunning(this.props.playlist)
+		const isPartEndOfLoopingShow = RundownResolver.isEndOfLoopingShow(
 			this.props.playlist,
 			this.props.isLastSegment,
 			this.props.isLastInSegment,
@@ -658,9 +654,9 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		}
 
 		const isOutsideActiveQuickLoop =
-			!this.state.isInQuickLoop && RundownLib.isLoopRunning(this.props.playlist) && !this.state.isNext
-		const isQuickLoopStart = RundownLib.isQuickLoopStart(this.props.part.partId, this.props.playlist)
-		const isQuickLoopEnd = RundownLib.isQuickLoopEnd(this.props.part.partId, this.props.playlist)
+			!this.state.isInQuickLoop && RundownResolver.isLoopRunning(this.props.playlist) && !this.state.isNext
+		const isQuickLoopStart = RundownResolver.isQuickLoopStart(this.props.part.partId, this.props.playlist)
+		const isQuickLoopEnd = RundownResolver.isQuickLoopEnd(this.props.part.partId, this.props.playlist)
 
 		if (
 			this.state.isInsideViewport &&

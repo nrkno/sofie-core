@@ -1,5 +1,15 @@
 import { addMigrationSteps } from './databaseMigration'
-import { PeripheralDevices, RundownPlaylists, Studios } from '../collections'
+import {
+	AdLibActions,
+	AdLibPieces,
+	ExpectedPackages,
+	PartInstances,
+	Parts,
+	PeripheralDevices,
+	Pieces,
+	RundownPlaylists,
+	Studios,
+} from '../collections'
 import { assertNever, clone, literal } from '@sofie-automation/corelib/dist/lib'
 import {
 	MappingExt,
@@ -21,16 +31,15 @@ import {
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { JSONBlobStringify, JSONSchema, TSR } from '@sofie-automation/blueprints-integration'
 import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
+import { PartId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import { AdLibActionId, PieceId, RundownBaselineAdLibActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
+import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 
-/*
- * **************************************************************************************
- *
- *  These migrations are destined for the next release
- *
- * (This file is to be renamed to the correct version number when doing the release)
- *
- * **************************************************************************************
- */
+// Release 50
 
 const mappingBaseOptions: Array<keyof MappingExt> = [
 	'_id' as any,
@@ -144,6 +153,12 @@ const oldDeviceTypeToNewMapping = {
 	[OldDeviceType.TRICASTER]: TSR.DeviceType.TRICASTER,
 	[OldDeviceType.MULTI_OSC]: TSR.DeviceType.MULTI_OSC,
 }
+
+const EXPECTED_PACKAGE_TYPES_ADDED_PART_ID = [
+	ExpectedPackageDBType.PIECE,
+	ExpectedPackageDBType.ADLIB_PIECE,
+	ExpectedPackageDBType.ADLIB_ACTION,
+]
 
 export const addSteps = addMigrationSteps('1.50.0', [
 	{
@@ -820,8 +835,156 @@ export const addSteps = addMigrationSteps('1.50.0', [
 					$set: {
 						'settings.minimumTakeSpan': DEFAULT_MINIMUM_TAKE_SPAN,
 					},
-				}
+				},
+				{ multi: true }
 			)
+		},
+	},
+
+	{
+		id: `ExpectedPackageDBFromAdLibAction and ExpectedPackageDBFromPiece add partId`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objectCount = await ExpectedPackages.countDocuments({
+				fromPieceType: { $in: EXPECTED_PACKAGE_TYPES_ADDED_PART_ID as any }, // Force the types, as the query does not match due to the interfaces
+				partId: { $exists: false },
+			})
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			const objects = await ExpectedPackages.findFetchAsync({
+				fromPieceType: { $in: EXPECTED_PACKAGE_TYPES_ADDED_PART_ID as any }, // Force the types, as the query does not match due to the interfaces
+				partId: { $exists: false },
+			})
+
+			const neededPieceIds: Array<PieceId | AdLibActionId | RundownBaselineAdLibActionId> = _.compact(
+				objects.map((obj) => obj.pieceId)
+			)
+			const [pieces, adlibPieces, adlibActions] = await Promise.all([
+				Pieces.findFetchAsync(
+					{
+						_id: { $in: neededPieceIds as PieceId[] },
+					},
+					{
+						projection: {
+							_id: 1,
+							startPartId: 1,
+						},
+					}
+				) as Promise<Pick<Piece, '_id' | 'startPartId'>[]>,
+				AdLibPieces.findFetchAsync(
+					{
+						_id: { $in: neededPieceIds as PieceId[] },
+					},
+					{
+						projection: {
+							_id: 1,
+							partId: 1,
+						},
+					}
+				) as Promise<Pick<AdLibPiece, '_id' | 'partId'>[]>,
+				AdLibActions.findFetchAsync(
+					{
+						_id: { $in: neededPieceIds as AdLibActionId[] },
+					},
+					{
+						projection: {
+							_id: 1,
+							partId: 1,
+						},
+					}
+				) as Promise<Pick<AdLibAction, '_id' | 'partId'>[]>,
+			])
+
+			const partIdLookup = new Map<PieceId | AdLibActionId | RundownBaselineAdLibActionId, PartId>()
+			for (const piece of pieces) {
+				partIdLookup.set(piece._id, piece.startPartId)
+			}
+			for (const adlib of adlibPieces) {
+				if (adlib.partId) partIdLookup.set(adlib._id, adlib.partId)
+			}
+			for (const action of adlibActions) {
+				partIdLookup.set(action._id, action.partId)
+			}
+
+			for (const expectedPackage of objects) {
+				if (!expectedPackage.pieceId) continue
+
+				await ExpectedPackages.mutableCollection.updateAsync(expectedPackage._id, {
+					$set: {
+						partId: partIdLookup.get(expectedPackage.pieceId) ?? protectString(''),
+					},
+				})
+			}
+		},
+	},
+
+	{
+		id: `Part rename 'expectedDurationWithPreroll' to 'expectedDurationWithTransition'`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objectCount = await Parts.countDocuments({
+				expectedDurationWithTransition: { $exists: false },
+				expectedDurationWithPreroll: { $exists: true },
+			})
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			const objects = await Parts.findFetchAsync({
+				expectedDurationWithTransition: { $exists: false },
+				expectedDurationWithPreroll: { $exists: true },
+			})
+
+			for (const part of objects) {
+				await Parts.mutableCollection.updateAsync(part._id, {
+					$set: {
+						expectedDurationWithTransition: (part as any).expectedDurationWithPreroll,
+					},
+					$unset: {
+						expectedDurationWithPreroll: 1,
+					},
+				})
+			}
+		},
+	},
+	{
+		id: `PartInstance rename 'part.expectedDurationWithPreroll' to 'part.expectedDurationWithTransition'`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objectCount = await PartInstances.countDocuments({
+				'part.expectedDurationWithTransition': { $exists: false },
+				'part.expectedDurationWithPreroll': { $exists: true },
+			})
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			const objects = await PartInstances.findFetchAsync({
+				'part.expectedDurationWithTransition': { $exists: false },
+				'part.expectedDurationWithPreroll': { $exists: true },
+			})
+
+			for (const partInstance of objects) {
+				await PartInstances.mutableCollection.updateAsync(partInstance._id, {
+					$set: {
+						'part.expectedDurationWithTransition': (partInstance.part as any).expectedDurationWithPreroll,
+					},
+					$unset: {
+						'part.expectedDurationWithPreroll': 1,
+					},
+				})
+			}
 		},
 	},
 ])

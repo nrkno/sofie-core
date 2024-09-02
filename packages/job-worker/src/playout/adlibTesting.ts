@@ -1,7 +1,7 @@
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { getRandomId } from '@sofie-automation/corelib/dist/lib'
-import { ActivateScratchpadProps } from '@sofie-automation/corelib/dist/worker/studio'
+import { ActivateAdlibTestingProps } from '@sofie-automation/corelib/dist/worker/studio'
 import { getCurrentTime } from '../lib'
 import { JobContext } from '../jobs'
 import { runJobWithPlayoutModel } from './lock'
@@ -9,8 +9,9 @@ import { performTakeToNextedPart } from './take'
 import { PlayoutModel } from './model/PlayoutModel'
 import { PlayoutPartInstanceModel } from './model/PlayoutPartInstanceModel'
 
-export async function handleActivateScratchpad(context: JobContext, data: ActivateScratchpadProps): Promise<void> {
-	if (!context.studio.settings.allowScratchpad) throw UserError.create(UserErrorMessage.ScratchpadNotAllowed)
+export async function handleActivateAdlibTesting(context: JobContext, data: ActivateAdlibTestingProps): Promise<void> {
+	if (!context.studio.settings.allowAdlibTestingSegment)
+		throw UserError.create(UserErrorMessage.AdlibTestingNotAllowed)
 
 	return runJobWithPlayoutModel(
 		context,
@@ -29,16 +30,16 @@ export async function handleActivateScratchpad(context: JobContext, data: Activa
 			if (!rundown) throw new Error(`Rundown "${data.rundownId}" not found!`)
 
 			// Create the segment
-			rundown.insertScratchpadSegment()
+			rundown.insertAdlibTestingSegment()
 
 			// Create the first PartInstance for the segment
-			const newPartInstance = playoutModel.createScratchpadPartInstance(rundown, {
+			const newPartInstance = playoutModel.createAdlibTestingPartInstance(rundown, {
 				_id: getRandomId(),
 				_rank: 0,
 				externalId: '',
-				title: 'Scratchpad',
+				title: 'Adlib Testing',
 				expectedDuration: 0,
-				expectedDurationWithPreroll: 0, // Filled in later
+				expectedDurationWithTransition: 0, // Filled in later
 				untimed: true,
 			})
 
@@ -52,10 +53,10 @@ export async function handleActivateScratchpad(context: JobContext, data: Activa
 }
 
 /**
- * Validate and cleanup a PartInstance being added to a SCRATCHPAD segment.
- * If PartInstance is not in the scratchpad, do nothing
+ * Validate and cleanup a PartInstance being added to a ADLIB_TESTING segment.
+ * If PartInstance is not in the AdlibTesting segment, do nothing
  */
-export function validateScratchpartPartInstanceProperties(
+export function validateAdlibTestingPartInstanceProperties(
 	_context: JobContext,
 	playoutModel: PlayoutModel,
 	partInstance: PlayoutPartInstanceModel
@@ -73,7 +74,7 @@ export function validateScratchpartPartInstanceProperties(
 		)
 
 	// Check if this applies
-	if (segment.segment.orphaned !== SegmentOrphanedReason.SCRATCHPAD) return
+	if (segment.segment.orphaned !== SegmentOrphanedReason.ADLIB_TESTING) return
 
-	partInstance.validateScratchpadSegmentProperties()
+	partInstance.validateAdlibTestingSegmentProperties()
 }

@@ -14,7 +14,7 @@ import { IContextMenuContext } from '../RundownView'
 import { PartUi, SegmentUi } from './SegmentTimelineContainer'
 import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import * as RundownLib from '../../../lib/Rundown'
+import * as RundownResolver from '../../lib/RundownResolver'
 
 interface IProps {
 	onSetNext: (part: DBPart | undefined, e: any, offset?: number, take?: boolean) => void
@@ -53,7 +53,7 @@ export const SegmentContextMenu = withTranslation()(
 			return this.props.studioMode &&
 				this.props.playlist &&
 				this.props.playlist.activationId &&
-				segment?.orphaned !== SegmentOrphanedReason.SCRATCHPAD ? (
+				segment?.orphaned !== SegmentOrphanedReason.ADLIB_TESTING ? (
 				<Escape to="document">
 					<ContextMenu id="segment-timeline-context-menu">
 						{part && timecode === null && (
@@ -107,9 +107,9 @@ export const SegmentContextMenu = withTranslation()(
 										</MenuItem>
 									</>
 								) : null}
-								{this.props.enableQuickLoop && !RundownLib.isLoopLocked(this.props.playlist) && (
+								{this.props.enableQuickLoop && !RundownResolver.isLoopLocked(this.props.playlist) && (
 									<>
-										{RundownLib.isQuickLoopStart(part.partId, this.props.playlist) ? (
+										{RundownResolver.isQuickLoopStart(part.partId, this.props.playlist) ? (
 											<MenuItem onClick={(e) => this.props.onSetQuickLoopStart(null, e)}>
 												<span>{t('Clear QuickLoop Start')}</span>
 											</MenuItem>
@@ -126,7 +126,7 @@ export const SegmentContextMenu = withTranslation()(
 												<span>{t('Set as QuickLoop Start')}</span>
 											</MenuItem>
 										)}
-										{RundownLib.isQuickLoopEnd(part.partId, this.props.playlist) ? (
+										{RundownResolver.isQuickLoopEnd(part.partId, this.props.playlist) ? (
 											<MenuItem onClick={(e) => this.props.onSetQuickLoopEnd(null, e)}>
 												<span>{t('Clear QuickLoop End')}</span>
 											</MenuItem>

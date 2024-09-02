@@ -6,10 +6,12 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import areElementsShallowEqual from '@sofie-automation/shared-lib/dist/lib/isShallowEqual'
 import _ = require('underscore')
+import throttleToNextTick from '@sofie-automation/shared-lib/dist/lib/throttleToNextTick'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { PartInstanceId, RundownId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface SelectedPartInstances {
+	previous: DBPartInstance | undefined
 	current: DBPartInstance | undefined
 	next: DBPartInstance | undefined
 	firstInSegmentPlayout: DBPartInstance | undefined
@@ -24,11 +26,18 @@ export class PartInstancesHandler
 	private _currentPlaylist: DBRundownPlaylist | undefined
 	private _rundownIds: RundownId[] = []
 	private _activationId: RundownPlaylistActivationId | undefined
+	private _subscriptionPending = false
+
+	private _throttledUpdateAndNotify = throttleToNextTick(() => {
+		this.updateCollectionData()
+		this.notify(this._collectionData).catch(this._logger.error)
+	})
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
 		super(PartInstancesHandler.name, CollectionName.PartInstances, CorelibPubSub.partInstances, logger, coreHandler)
 		this.observerName = this._name
 		this._collectionData = {
+			previous: undefined,
 			current: undefined,
 			next: undefined,
 			firstInSegmentPlayout: undefined,
@@ -37,17 +46,19 @@ export class PartInstancesHandler
 	}
 
 	async changed(id: PartInstanceId, changeType: string): Promise<void> {
-		this._logger.info(`${this._name} ${changeType} ${id}`)
-		if (!this._collectionName) return
-		this.updateCollectionData()
+		this.logDocumentChange(id, changeType)
+		if (!this._collectionName || this._subscriptionPending) return
 
-		await this.notify(this._collectionData)
+		this._throttledUpdateAndNotify()
 	}
 
 	private updateCollectionData(): boolean {
 		if (!this._collectionName || !this._collectionData) return false
 		const collection = this._core.getCollection(this._collectionName)
 		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
+		const previousPartInstance = this._currentPlaylist?.previousPartInfo?.partInstanceId
+			? collection.findOne(this._currentPlaylist.previousPartInfo.partInstanceId)
+			: undefined
 		const currentPartInstance = this._currentPlaylist?.currentPartInfo?.partInstanceId
 			? collection.findOne(this._currentPlaylist.currentPartInfo.partInstanceId)
 			: undefined
@@ -64,6 +75,10 @@ export class PartInstancesHandler
 		) as DBPartInstance
 
 		let hasAnythingChanged = false
+		if (previousPartInstance !== this._collectionData.previous) {
+			this._collectionData.previous = previousPartInstance
+			hasAnythingChanged = true
+		}
 		if (currentPartInstance !== this._collectionData.current) {
 			this._collectionData.current = currentPartInstance
 			hasAnythingChanged = true
@@ -85,6 +100,7 @@ export class PartInstancesHandler
 
 	private clearCollectionData() {
 		if (!this._collectionName || !this._collectionData) return
+		this._collectionData.previous = undefined
 		this._collectionData.current = undefined
 		this._collectionData.next = undefined
 		this._collectionData.firstInSegmentPlayout = undefined
@@ -95,10 +111,10 @@ export class PartInstancesHandler
 		const prevRundownIds = this._rundownIds.map((rid) => rid)
 		const prevActivationId = this._activationId
 
-		this._logger.info(
-			`${this._name} received playlist update ${data?._id}, active ${
-				data?.activationId ? true : false
-			} from ${source}`
+		this.logUpdateReceived(
+			'playlist',
+			source,
+			`rundownPlaylistId ${data?._id}, active ${data?.activationId ? true : false}`
 		)
 		this._currentPlaylist = data
 		if (!this._collectionName) return
@@ -114,11 +130,13 @@ export class PartInstancesHandler
 				if (!this._publicationName) return
 				if (!this._currentPlaylist) return
 				if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
+				this._subscriptionPending = true
 				this._subscriptionId = await this._coreHandler.setupSubscription(
 					this._publicationName,
 					this._rundownIds,
 					this._activationId
 				)
+				this._subscriptionPending = false
 				this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
 				this._dbObserver.added = (id) => {
 					void this.changed(id, 'added').catch(this._logger.error)
@@ -130,21 +148,25 @@ export class PartInstancesHandler
 					void this.changed(id, 'removed').catch(this._logger.error)
 				}
 
-				const hasAnythingChanged = this.updateCollectionData()
-				if (hasAnythingChanged) {
-					await this.notify(this._collectionData)
-				}
+				await this.updateAndNotify()
 			} else if (this._subscriptionId) {
-				const hasAnythingChanged = this.updateCollectionData()
-				if (hasAnythingChanged) {
-					await this.notify(this._collectionData)
-				}
+				await this.updateAndNotify()
 			} else {
-				this.clearCollectionData()
-				await this.notify(this._collectionData)
+				await this.clearAndNotify()
 			}
 		} else {
-			this.clearCollectionData()
+			await this.clearAndNotify()
+		}
+	}
+
+	private async clearAndNotify() {
+		this.clearCollectionData()
+		await this.notify(this._collectionData)
+	}
+
+	private async updateAndNotify() {
+		const hasAnythingChanged = this.updateCollectionData()
+		if (hasAnythingChanged) {
 			await this.notify(this._collectionData)
 		}
 	}

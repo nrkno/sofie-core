@@ -5,10 +5,11 @@ import {
 	StudioBlueprintManifest,
 	SystemBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
-import { VM, VMScript } from 'vm2'
+import * as vm from 'vm'
 import { ReadonlyDeep } from 'type-fest'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
+import fetch from 'node-fetch'
 
 export interface WrappedSystemBlueprint {
 	blueprintId: BlueprintId
@@ -53,18 +54,22 @@ export async function parseBlueprintDocument(
 	if (blueprint.code) {
 		let manifest: SomeBlueprintManifest
 		try {
-			const vm = new VM({
-				sandbox: {},
-			})
-
 			const blueprintPath = `db:///blueprint/${blueprint.name || blueprint._id}-bundle.js`
-			const script = new VMScript(
+			const context = vm.createContext(
+				{
+					fetch: fetch, // Future: This should be removed once node18 native fetch is available
+				},
+				{}
+			)
+			const script = new vm.Script(
 				`__run_result = ${blueprint.code}
 __run_result || blueprint`,
-				blueprintPath
+				{
+					filename: blueprintPath,
+				}
 			)
 			// Future: we should look at freezing the object inside the vm
-			const entry = vm.run(script)
+			const entry = script.runInContext(context)
 			manifest = entry.default
 		} catch (e) {
 			throw new Error(`Syntax error in blueprint "${blueprint._id}": ${stringifyError(e)}`)

@@ -1,4 +1,3 @@
-import '../../../__mocks__/_vm2'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import {
 	setupDefaultStudioEnvironment,
@@ -31,6 +30,7 @@ jest.mock('../../ui/Collections', () => {
 	return {
 		...mockClientCollections,
 		UIParts: mockLibCollections.Parts, // for most purposes they're equivalent
+		UIPartInstances: mockLibCollections.PartInstances, // for most purposes they're equivalent
 	}
 })
 
@@ -64,7 +64,6 @@ describe('client/lib/rundown', () => {
 				[],
 				new Map(),
 				parts.map((part) => part._id),
-				new Map(),
 				currentPartInstance,
 				nextPartInstance
 			)
@@ -126,7 +125,6 @@ describe('client/lib/rundown', () => {
 				[],
 				new Map(),
 				parts.map((part) => part._id),
-				new Map(),
 				currentPartInstance,
 				nextPartInstance
 			)
@@ -212,7 +210,6 @@ describe('client/lib/rundown', () => {
 				[],
 				new Map(),
 				parts.map((part) => part._id),
-				new Map(),
 				currentPartInstance,
 				nextPartInstance
 			)
@@ -375,7 +372,6 @@ describe('client/lib/rundown', () => {
 					[],
 					new Map(),
 					parts.map((part) => part._id),
-					new Map(),
 					currentPartInstance,
 					nextPartInstance
 				)

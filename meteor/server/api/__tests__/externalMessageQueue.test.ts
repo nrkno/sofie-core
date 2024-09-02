@@ -50,7 +50,6 @@ describe('Test external message queue static methods', () => {
 			studioId: studioEnv.studio._id,
 			showStyleVariantId: studioEnv.showStyleVariant._id,
 			showStyleBaseId: studioEnv.showStyleBase._id,
-			peripheralDeviceId: studioEnv.ingestDevice._id,
 			created: now,
 			modified: now,
 			importVersions: {
@@ -60,7 +59,11 @@ describe('Test external message queue static methods', () => {
 				blueprint: 'on',
 				core: 'plate',
 			},
-			externalNRCSName: 'mockNRCS',
+			source: {
+				type: 'nrcs',
+				peripheralDeviceId: studioEnv.ingestDevice._id,
+				nrcsName: 'mockNRCS',
+			},
 			organizationId: protectString(''),
 			timing: {
 				type: PlaylistTimingType.None,

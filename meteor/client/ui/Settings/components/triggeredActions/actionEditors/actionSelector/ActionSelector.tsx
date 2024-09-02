@@ -12,6 +12,7 @@ import { faAngleRight, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { AdLibActionEditor } from './actionEditors/AdLibActionEditor'
 import { DeviceActions } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
 import { catchError } from '../../../../../../lib/lib'
+import { preventOverflow } from '@popperjs/core'
 
 interface IProps {
 	action: SomeAction
@@ -43,7 +44,7 @@ function getArguments(t: TFunction, action: SomeAction): string[] {
 			break
 		case PlayoutActions.deactivateRundownPlaylist:
 			break
-		case PlayoutActions.activateScratchpadMode:
+		case PlayoutActions.activateAdlibTestingMode:
 			break
 		case PlayoutActions.disableNextPiece:
 			if (action.undo) {
@@ -116,7 +117,7 @@ function hasArguments(action: SomeAction): boolean {
 			return false
 		case PlayoutActions.deactivateRundownPlaylist:
 			return false
-		case PlayoutActions.activateScratchpadMode:
+		case PlayoutActions.activateAdlibTestingMode:
 			return false
 		case PlayoutActions.disableNextPiece:
 			return !!action.undo
@@ -160,8 +161,8 @@ function actionToLabel(t: TFunction, action: SomeAction['action']): string {
 			return t('Store Snapshot')
 		case PlayoutActions.deactivateRundownPlaylist:
 			return t('Deactivate Rundown')
-		case PlayoutActions.activateScratchpadMode:
-			return t('Activate Scratchpad')
+		case PlayoutActions.activateAdlibTestingMode:
+			return t('Rehearsal Mode')
 		case PlayoutActions.disableNextPiece:
 			return t('Disable next Piece')
 		case PlayoutActions.hold:
@@ -253,7 +254,7 @@ function getActionParametersEditor(
 			return null
 		case PlayoutActions.deactivateRundownPlaylist:
 			return null
-		case PlayoutActions.activateScratchpadMode:
+		case PlayoutActions.activateAdlibTestingMode:
 			return null
 		case PlayoutActions.disableNextPiece:
 			return (
@@ -500,7 +501,9 @@ export const ActionSelector = function ActionSelector({
 	const [referenceElement, setReferenceElement] = useState<HTMLDivElement | null>(null)
 	const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null)
 	const { styles, attributes, update } = usePopper(referenceElement, popperElement, {
+		placement: 'bottom',
 		modifiers: [
+			preventOverflow,
 			{
 				name: 'offset',
 				options: {
@@ -558,7 +561,7 @@ export const ActionSelector = function ActionSelector({
 			</div>
 			{opened ? (
 				<div
-					className="expco expco-expanded expco-popper mod pas ptl expco-popper-rounded triggered-action-entry__action-editor"
+					className="expco expco-expanded expco-popper mod pas expco-popper-rounded triggered-action-entry__action-editor"
 					ref={setPopperElement}
 					style={styles.popper}
 					{...attributes.popper}

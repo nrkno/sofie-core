@@ -12,7 +12,7 @@ Example: "This pull request is posted on behalf of the NRK."
 
 ## Type of Contribution
 
-This is a: 
+This is a:
 <!-- (pick one) -->
 Bug fix / Feature / Code improvement / Documentation improvement / Other (please specify)
 
@@ -30,13 +30,37 @@ What is the new behavior?
 -->
 
 
-## Testing Instructions
+## Testing
 <!--
-Please provide some instructions and other information for how to verify that the feature works.
+When you add a feature, you should also provide relevant unit tests, in order to 
+* ensure that the feature works as expected
+* ensure that the feature will continue to work in the future
+-->
+
+- [ ] I have added one or more unit tests for this PR
+- [ ] I have updated the relevant unit tests
+- [ ] No unit test changes are needed for this PR
+
+### Affected areas
+
+<!--
+Please provide some details on what areas of the system that are affected by this PR.
+This is useful for testers to know where to focus their testing efforts.
 Examples:
-* "Do a Take for a part that contains an adlib, verify that the adlib plays out."
-* "Open the Switchboard panel and toggle a route, verify that the route toggles in the GUI."
-* "This feature also affects 'feature X', so that needs to be tested for regressions as well."
+* This PR affects the playout logic in general.
+* This PR affects the timing calculation in the Rundown during playout.
+* This PR affects the NRC/MOS integration
+* 
+-->
+
+
+## Time Frame
+<!--
+Please provide a note about the urgency or development plan for this PR.
+Example:
+* This Bug Fix is critical for us, please review and merge it as soon as possible.
+* We intend to finish the development on this feature in two weeks time.
+* Not urgent, but we would like to get this merged into the in-development release.
 -->
 
 

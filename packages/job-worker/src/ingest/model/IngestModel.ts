@@ -14,7 +14,7 @@ import {
 	RundownPlaylistId,
 	SegmentId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DBRundown, RundownOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { DBRundown, RundownOrphanedReason, RundownSource } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { LazyInitialiseReadonly } from '../../lib/lazy'
@@ -29,7 +29,6 @@ import { RundownNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { ProcessedShowStyleBase, ProcessedShowStyleVariant } from '../../jobs/showStyle'
 import { WrappedShowStyleBlueprint } from '../../blueprints/cache'
-import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { IBlueprintRundown } from '@sofie-automation/blueprints-integration'
 
 export type ExpectedPackageForIngestModelBaseline =
@@ -97,6 +96,12 @@ export interface IngestModelReadonly {
 	 * @param id Id of the Segment
 	 */
 	getSegmentByExternalId(externalId: string): IngestSegmentModelReadonly | undefined
+
+	/**
+	 * Get the internal `_id` of a segment from the `externalId`
+	 * @param externalId External id of the Segment
+	 */
+	getSegmentIdFromExternalId(externalId: string): SegmentId
 
 	/**
 	 * Get a Segment from the Rundown
@@ -185,7 +190,7 @@ export interface IngestModel extends IngestModelReadonly, BaseModel {
 	 * Replace or insert a Segment in this Rundown
 	 * @param segment New Segment data
 	 */
-	replaceSegment(segment: DBSegment): IngestSegmentModel
+	replaceSegment(segment: IngestReplaceSegmentType): IngestSegmentModel
 
 	/**
 	 * Change the id of a Segment in this Rundown.
@@ -228,7 +233,7 @@ export interface IngestModel extends IngestModelReadonly, BaseModel {
 		showStyleBase: ReadonlyDeep<ProcessedShowStyleBase>,
 		showStyleVariant: ReadonlyDeep<ProcessedShowStyleVariant>,
 		showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
-		peripheralDevice: ReadonlyDeep<PeripheralDevice> | undefined,
+		source: RundownSource,
 		rundownNotes: RundownNote[]
 	): ReadonlyDeep<DBRundown>
 
@@ -271,3 +276,5 @@ export interface IngestModel extends IngestModelReadonly, BaseModel {
 	 */
 	appendRundownNotes(...notes: RundownNote[]): void
 }
+
+export type IngestReplaceSegmentType = Omit<DBSegment, '_id' | 'rundownId'>

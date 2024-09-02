@@ -3,7 +3,7 @@ import CoreIcon from '@nrk/core-icons/jsx'
 import ClassNames from 'classnames'
 // @ts-expect-error No types available
 import * as VelocityReact from 'velocity-react'
-import { translateWithTracker, Translated, withTracker } from '../ReactMeteorData/ReactMeteorData'
+import { translateWithTracker, Translated, useTracker } from '../ReactMeteorData/ReactMeteorData'
 import {
 	NotificationCenter,
 	Notification,
@@ -16,6 +16,7 @@ import { CriticalIcon, WarningIcon, CollapseChevrons, InformationIcon } from '..
 import update from 'immutability-helper'
 import { i18nTranslator } from '../../ui/i18n'
 import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { useTranslation } from 'react-i18next'
 
 interface IPopUpProps {
 	id?: string
@@ -487,83 +488,79 @@ interface IToggleProps {
 	title?: string
 }
 
-interface ITrackedCountProps {
-	count: number
-}
-
 /**
  * A button for with a count of notifications in the Notification Center
  * @export
  * @class NotificationCenterPanelToggle
  * @extends React.Component<IToggleProps>
  */
-export const NotificationCenterPanelToggle = withTracker<IToggleProps, {}, ITrackedCountProps>(
-	(props: IToggleProps) => {
-		return {
-			count: NotificationCenter.count(props.filter),
-		}
-	}
-)(
-	class NotificationCenterPanelToggle extends React.Component<IToggleProps & ITrackedCountProps> {
-		render(): JSX.Element {
-			return (
-				<button
-					className={ClassNames(
-						'status-bar__controls__button',
-						'notifications__toggle-button',
-						{
-							'status-bar__controls__button--open': this.props.isOpen,
-							'has-items': this.props.count > 0,
-						},
-						this.props.className
-					)}
-					role="button"
-					onClick={this.props.onClick}
-					tabIndex={0}
-					aria-label={this.props.title}
-				>
-					<VelocityReact.VelocityTransitionGroup
-						enter={{
-							animation: {
-								translateX: [0, '-3em'],
-								opacity: [1, 0],
-							},
-							duration: 500,
-						}}
-						leave={{
-							animation: {
-								translateX: ['3em', 0],
-								opacity: [0, 1],
-							},
-							duration: 500,
-						}}
-					>
-						{!this.props.isOpen ? (
-							<div className="notifications__toggle-button__icon notifications__toggle-button__icon--default">
-								{((this.props.filter || 0) & NoticeLevel.CRITICAL) !== 0 ? (
-									<CriticalIcon />
-								) : ((this.props.filter || 0) & NoticeLevel.CRITICAL) !== 0 ? (
-									<WarningIcon />
-								) : ((this.props.filter || 0) & (NoticeLevel.NOTIFICATION | NoticeLevel.TIP)) !== 0 ? (
-									<InformationIcon />
-								) : (
-									<WarningIcon />
-								)}
-								{this.props.count > 0 && (
-									<span className="notifications__toggle-button__count">
-										{this.props.count > 99 ? '99+' : this.props.count}
-									</span>
-								)}
-							</div>
-						) : undefined}
-						{this.props.isOpen ? (
-							<div className="notifications__toggle-button__icon notifications__toggle-button__icon--collapse">
-								<CollapseChevrons />
-							</div>
-						) : undefined}
-					</VelocityReact.VelocityTransitionGroup>
-				</button>
-			)
-		}
-	}
-)
+export function NotificationCenterPanelToggle({
+	className,
+	filter,
+	isOpen,
+	title,
+	onClick,
+}: IToggleProps): JSX.Element | null {
+	const count = useTracker(() => NotificationCenter.count(filter), [filter], 0)
+	const { t } = useTranslation()
+
+	return (
+		<button
+			className={ClassNames(
+				'status-bar__controls__button',
+				'notifications__toggle-button',
+				{
+					'status-bar__controls__button--open': isOpen,
+					'has-items': count > 0,
+				},
+				className
+			)}
+			role="button"
+			aria-pressed={isOpen ? 'true' : 'false'}
+			onClick={onClick}
+			tabIndex={0}
+			aria-label={title}
+		>
+			<VelocityReact.VelocityTransitionGroup
+				enter={{
+					animation: {
+						translateX: [0, '-3em'],
+						opacity: [1, 0],
+					},
+					duration: 500,
+				}}
+				leave={{
+					animation: {
+						translateX: ['3em', 0],
+						opacity: [0, 1],
+					},
+					duration: 500,
+				}}
+			>
+				{!isOpen ? (
+					<div className="notifications__toggle-button__icon notifications__toggle-button__icon--default">
+						{((filter || 0) & NoticeLevel.CRITICAL) !== 0 ? (
+							<CriticalIcon />
+						) : ((filter || 0) & NoticeLevel.CRITICAL) !== 0 ? (
+							<WarningIcon />
+						) : ((filter || 0) & (NoticeLevel.NOTIFICATION | NoticeLevel.TIP)) !== 0 ? (
+							<InformationIcon />
+						) : (
+							<WarningIcon />
+						)}
+						{count > 0 && (
+							<span className="notifications__toggle-button__count" aria-label={t('{{count}} items', { count })}>
+								{count > 99 ? '99+' : count}
+							</span>
+						)}
+					</div>
+				) : undefined}
+				{isOpen ? (
+					<div className="notifications__toggle-button__icon notifications__toggle-button__icon--collapse">
+						<CollapseChevrons />
+					</div>
+				) : undefined}
+			</VelocityReact.VelocityTransitionGroup>
+		</button>
+	)
+}

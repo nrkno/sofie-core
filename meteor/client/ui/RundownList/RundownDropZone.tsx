@@ -17,7 +17,7 @@ export function RundownDropZone(): JSX.Element {
 		accept: RundownListDragDropTypes.RUNDOWN,
 		collect: (monitor) => {
 			return {
-				activated: !!monitor.getItemType(),
+				activated: !!monitor.getItemType() && !monitor.getItem<IRundownDragObject>()?.isOnlyRundownInPlaylist,
 			}
 		},
 		drop: (item) => {

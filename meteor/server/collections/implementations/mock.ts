@@ -90,7 +90,7 @@ export class WrappedMockCollection<DBInterface extends { _id: ProtectedString<an
 	}
 
 	async updateAsync(
-		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		selector: MongoQuery<DBInterface> | DBInterface['_id'] | { _id: DBInterface['_id'] },
 		modifier: MongoModifier<DBInterface>,
 		options?: UpdateOptions
 	): Promise<number> {
@@ -99,7 +99,7 @@ export class WrappedMockCollection<DBInterface extends { _id: ProtectedString<an
 	}
 
 	async upsertAsync(
-		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		selector: MongoQuery<DBInterface> | DBInterface['_id'] | { _id: DBInterface['_id'] },
 		modifier: MongoModifier<DBInterface>,
 		options?: UpsertOptions
 	): Promise<{ numberAffected?: number; insertedId?: DBInterface['_id'] }> {

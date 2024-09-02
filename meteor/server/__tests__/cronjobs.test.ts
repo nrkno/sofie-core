@@ -78,7 +78,8 @@ describe('cronjobs', () => {
 				$set: {
 					'cron.casparCGRestart.enabled': true,
 				},
-			}
+			},
+			{ multi: true }
 		)
 
 		jest.useFakeTimers()
@@ -229,7 +230,7 @@ describe('cronjobs', () => {
 				segmentId: segment0._id,
 				externalId: '',
 				title: '',
-				expectedDurationWithPreroll: undefined,
+				expectedDurationWithTransition: undefined,
 			}
 			await Parts.mutableCollection.insertAsync(part0)
 			const part1: DBPart = {
@@ -239,7 +240,7 @@ describe('cronjobs', () => {
 				segmentId: getRandomId<SegmentId>(), // non-existent
 				externalId: '',
 				title: '',
-				expectedDurationWithPreroll: undefined,
+				expectedDurationWithTransition: undefined,
 			}
 			await Parts.mutableCollection.insertAsync(part1)
 
@@ -542,7 +543,8 @@ describe('cronjobs', () => {
 					$set: {
 						'cron.casparCGRestart.enabled': false,
 					},
-				}
+				},
+				{ multi: true }
 			)
 			;(logger.info as jest.Mock).mockClear()
 			// set time to 2020/07/{date} 04:05 Local Time, should be more than 24 hours after 2020/07/19 00:00 UTC

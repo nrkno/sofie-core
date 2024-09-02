@@ -42,8 +42,6 @@ const OldSettings = Settings as Partial<ISettingsOld>
 const oldFrameRate = OldSettings.frameRate ?? 25
 
 export const addSteps = addMigrationSteps('1.40.0', [
-	// Add some migrations!
-
 	{
 		id: `Studio.settings.frameRate`,
 		canBeRunAutomatically: true,
@@ -67,7 +65,8 @@ export const addSteps = addMigrationSteps('1.40.0', [
 					$set: {
 						'settings.frameRate': oldFrameRate,
 					},
-				}
+				},
+				{ multi: true }
 			)
 		},
 	},
@@ -97,7 +96,8 @@ export const addSteps = addMigrationSteps('1.40.0', [
 						$set: {
 							'settings.allowRundownResetOnAir': OldSettings.allowRundownResetOnAir,
 						},
-					}
+					},
+					{ multi: true }
 				)
 			}
 		},

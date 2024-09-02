@@ -16,7 +16,7 @@ import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/Perip
 import { getCurrentTime, unprotectString } from '../../../lib/lib'
 import { meteorSubscribe } from '../../../lib/api/pubsub'
 import { ReactiveVar } from 'meteor/reactive-var'
-import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { Rundown, getRundownNrcsName } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 // import { withTranslation, getI18n, getDefaults } from 'react-i18next'
@@ -180,9 +180,9 @@ class RundownViewNotifier extends WithManagedTracker {
 				orphaned: 1,
 				notes: 1,
 				name: 1,
-				externalNRCSName: 1,
+				source: 1,
 			},
-		}) as ReactiveVar<Pick<Rundown, '_id' | 'orphaned' | 'notes' | 'name' | 'externalNRCSName'>[]>
+		}) as ReactiveVar<Pick<Rundown, '_id' | 'orphaned' | 'notes' | 'name' | 'source'>[]>
 		this.autorun(() => {
 			const newNoteIds: Array<string> = []
 
@@ -202,7 +202,7 @@ class RundownViewNotifier extends WithManagedTracker {
 								'The rundown "{{rundownName}}" is not published or activated in {{nrcsName}}! No data updates will currently come through.',
 								{
 									rundownName: rundown.name,
-									nrcsName: rundown.externalNRCSName ?? 'NRCS',
+									nrcsName: getRundownNrcsName(rundown),
 								}
 							),
 							rundown._id,
@@ -623,7 +623,7 @@ class RundownViewNotifier extends WithManagedTracker {
 						[
 							{
 								label: t('Reload {{nrcsName}} Data', {
-									nrcsName: (firstRundown && firstRundown.externalNRCSName) || 'NRCS',
+									nrcsName: getRundownNrcsName(firstRundown),
 								}),
 								type: 'primary',
 								disabled: !getAllowStudio(),

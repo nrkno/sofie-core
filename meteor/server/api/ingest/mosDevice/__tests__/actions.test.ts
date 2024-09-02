@@ -16,6 +16,7 @@ import { IngestJobs, MosRundownProps } from '@sofie-automation/corelib/dist/work
 import { PeripheralDeviceCommands } from '../../../../collections'
 import { SupressLogMessages } from '../../../../../__mocks__/suppressLogging'
 import { logger } from '../../../../logging'
+import { generateRundownSource } from '../../lib'
 
 const mosTypes = MOS.getMosTypes(true)
 
@@ -132,9 +133,9 @@ describe('Test sending mos actions', () => {
 			fakeRundown.studioId,
 			literal<MosRundownProps>({
 				rundownExternalId: fakeRundown.externalId,
-				peripheralDeviceId: device._id,
 				isUpdateOperation: true,
 				mosRunningOrder: roData,
+				rundownSource: generateRundownSource(device),
 			})
 		)
 	})

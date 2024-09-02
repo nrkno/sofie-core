@@ -20,7 +20,7 @@ import {
  * Regnerate a Segment from the cached IngestSegment
  */
 export async function handleRegenerateSegment(context: JobContext, data: IngestRegenerateSegmentProps): Promise<void> {
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -51,7 +51,7 @@ export async function handleRegenerateSegment(context: JobContext, data: IngestR
  * Attempt to remove a segment, or orphan it
  */
 export async function handleRemovedSegment(context: JobContext, data: IngestRemoveSegmentProps): Promise<void> {
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -84,7 +84,7 @@ export async function handleRemovedSegment(context: JobContext, data: IngestRemo
 				return literal<CommitIngestData>({
 					changedSegmentIds: [],
 					removedSegmentIds: [segmentId],
-					renamedSegments: new Map(),
+					renamedSegments: null,
 
 					removeRundown: false,
 				})
@@ -98,7 +98,7 @@ export async function handleRemovedSegment(context: JobContext, data: IngestRemo
  */
 export async function handleUpdatedSegment(context: JobContext, data: IngestUpdateSegmentProps): Promise<void> {
 	const segmentExternalId = data.ingestSegment.externalId
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -128,7 +128,7 @@ export async function handleUpdatedSegmentRanks(
 	context: JobContext,
 	data: IngestUpdateSegmentRanksProps
 ): Promise<void> {
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -161,7 +161,7 @@ export async function handleUpdatedSegmentRanks(
 			return literal<CommitIngestData>({
 				changedSegmentIds,
 				removedSegmentIds: [],
-				renamedSegments: new Map(),
+				renamedSegments: null,
 				removeRundown: false,
 			})
 		}
@@ -175,7 +175,7 @@ export async function handleRemoveOrphanedSegemnts(
 	context: JobContext,
 	data: RemoveOrphanedSegmentsProps
 ): Promise<void> {
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => ingestRundown ?? UpdateIngestRundownAction.DELETE,
@@ -186,7 +186,7 @@ export async function handleRemoveOrphanedSegemnts(
 			// We flag them for deletion again, and they will either be kept if they are somehow playing, or purged if they are not
 			const stillOrphanedSegments = ingestModel.getOrderedSegments().filter((s) => !!s.segment.orphaned)
 
-			// Note: scratchpad segments are ignored here, as they will never be in the ingestModel
+			// Note: AdlibTesting segments are ignored here, as they will never be in the ingestModel
 
 			const stillHiddenSegments = stillOrphanedSegments.filter(
 				(s) =>
@@ -234,7 +234,7 @@ export async function handleRemoveOrphanedSegemnts(
 			return literal<CommitIngestData>({
 				changedSegmentIds: changedHiddenSegments,
 				removedSegmentIds: stillDeletedSegmentIds,
-				renamedSegments: new Map(),
+				renamedSegments: null,
 				removeRundown: false,
 			})
 		}

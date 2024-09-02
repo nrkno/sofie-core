@@ -108,6 +108,7 @@ function createAction(
 		},
 		listener: (e) => {
 			e.preventDefault()
+			e.stopPropagation()
 
 			const ctx = collectContext()
 			if (ctx) {
@@ -241,7 +242,6 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			'Digit9',
 			'Digit0',
 		]
-		const systemActionKeys = [Settings.confirmKeyCode, 'Tab']
 
 		const poisonKey: string | null = Settings.poisonKey
 
@@ -267,12 +267,6 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 					ordered: false,
 					preventDefaultPartials: false,
 				})
-				systemActionKeys.forEach((key) =>
-					localSorensen.bind(key, preventDefault, {
-						global: false,
-						exclusive: true,
-					})
-				)
 				fKeys.forEach((key) =>
 					localSorensen.bind(key, preventDefault, {
 						exclusive: false,
@@ -296,7 +290,6 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			}
 			localSorensen.unbind('Control+KeyF', preventDefault)
 			localSorensen.unbind('Control+F5', preventDefault)
-			systemActionKeys.forEach((key) => localSorensen.unbind(key, preventDefault))
 			fKeys.forEach((key) => localSorensen.unbind(key, preventDefault))
 			ctrlDigitKeys.forEach((key) => localSorensen.unbind(`Control+${key}`, preventDefault))
 		}

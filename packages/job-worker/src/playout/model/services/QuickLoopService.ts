@@ -46,16 +46,16 @@ export class QuickLoopService {
 
 		fallbackPartDuration = fallbackPartDuration ?? DEFAULT_FALLBACK_PART_DURATION
 
-		let { autoNext, expectedDuration, expectedDurationWithPreroll } = partInstanceModel.partInstance.part
+		let { autoNext, expectedDuration, expectedDurationWithTransition } = partInstanceModel.partInstance.part
 
 		if (isLoopingOverriden && (expectedDuration ?? 0) < fallbackPartDuration) {
 			if (quickLoopProps?.forceAutoNext === ForceQuickLoopAutoNext.ENABLED_FORCING_MIN_DURATION) {
 				expectedDuration = fallbackPartDuration
-				expectedDurationWithPreroll = fallbackPartDuration
+				expectedDurationWithTransition = fallbackPartDuration
 			}
 		}
 		autoNext = autoNext || (isLoopingOverriden && (expectedDuration ?? 0) > 0)
-		return { autoNext, expectedDuration, expectedDurationWithPreroll }
+		return { autoNext, expectedDuration, expectedDurationWithTransition }
 	}
 
 	getUpdatedProps(hasJustSetMarker?: 'start' | 'end'): QuickLoopProps | undefined {

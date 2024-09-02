@@ -49,8 +49,8 @@ export interface IStudioSettings {
 	 */
 	minimumTakeSpan: number
 
-	/** Whether to allow scratchpad mode, before a Part is playing in a Playlist */
-	allowScratchpad?: boolean
+	/** Whether to allow adlib testing mode, before a Part is playing in a Playlist */
+	allowAdlibTestingSegment?: boolean
 
 	/** Should QuickLoop context menu options be available to the users. It does not affect Playlist loop enabled by the NRCS. */
 	enableQuickLoop?: boolean

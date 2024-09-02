@@ -18,7 +18,6 @@ import {
 import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylistCollectionUtil } from '../../../../lib/collections/rundownPlaylistUtil'
 import { sortPartInstancesInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
-import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 import { RundownUtils } from '../../../lib/rundown'
 import { RundownPlaylistClientUtil } from '../../../lib/rundownPlaylistUtil'
 
@@ -54,7 +53,6 @@ interface IRundownTimingProviderTrackedProps {
 	currentRundown: Rundown | undefined
 	partInstances: Array<MinimalPartInstance>
 	partInstancesMap: Map<PartId, MinimalPartInstance>
-	pieces: Map<PartId, CalculateTimingsPiece[]>
 	segments: DBSegment[]
 	segmentsMap: Map<SegmentId, DBSegment>
 	partsInQuickLoop: Record<TimingId, boolean>
@@ -77,7 +75,6 @@ export const RundownTimingProvider = withTracker<
 			currentRundown: undefined,
 			partInstances: [],
 			partInstancesMap: new Map(),
-			pieces: new Map(),
 			segments: [],
 			segmentsMap: new Map(),
 			partsInQuickLoop: {},
@@ -148,14 +145,11 @@ export const RundownTimingProvider = withTracker<
 
 	const partsInQuickLoop = findPartInstancesInQuickLoop(playlist, partInstances)
 
-	const pieces = RundownPlaylistClientUtil.getPiecesForParts(Array.from(allPartIds.values()))
-
 	return {
 		rundowns,
 		currentRundown,
 		partInstances,
 		partInstancesMap,
-		pieces,
 		segments,
 		segmentsMap,
 		partsInQuickLoop,
@@ -288,7 +282,8 @@ export const RundownTimingProvider = withTracker<
 		}
 
 		updateDurations(now: number, isSynced: boolean) {
-			const { playlist, rundowns, currentRundown, partInstances, partInstancesMap, pieces, segmentsMap } = this.props
+			const { playlist, rundowns, currentRundown, partInstances, partInstancesMap, segmentsMap } = this.props
+
 			const updatedDurations = this.timingCalculator.updateDurations(
 				now,
 				isSynced,
@@ -297,7 +292,6 @@ export const RundownTimingProvider = withTracker<
 				currentRundown,
 				partInstances,
 				partInstancesMap,
-				pieces,
 				segmentsMap,
 				this.props.defaultDuration,
 				this.props.partsInQuickLoop

@@ -39,6 +39,7 @@ import { ClientAPI } from '../../../lib/api/client'
 import { catchError } from '../../lib/lib'
 import { logger } from '../../../lib/logging'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 interface IDeviceItemProps {
 	parentDevice: PeripheralDevice | null
@@ -596,7 +597,7 @@ const SystemStatusContent = reacti18next.withTranslation()(
 								deviceDebugState: states,
 							})
 						})
-						.catch((err) => console.log(`Error fetching device states: ${err}`))
+						.catch((err) => console.log(`Error fetching device states: ${stringifyError(err)}`))
 				}
 			}
 		}

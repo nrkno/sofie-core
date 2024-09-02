@@ -43,6 +43,22 @@ function findLargestLookaheadDistance(mappings: Array<[string, MappingExt]>): nu
 
 type ValidLookaheadMode = LookaheadMode.PRELOAD | LookaheadMode.WHEN_CLEAR
 
+function getPrunedEndedPieceInstances(info: SelectedPartInstanceTimelineInfo) {
+	if (!info.partInstance.timings?.plannedStartedPlayback) {
+		return info.pieceInstances
+	} else {
+		return info.pieceInstances.filter((p) => !hasPieceInstanceDefinitelyEnded(p, info.nowInPart))
+	}
+}
+function removeInfiniteContinuations(info: PartInstanceAndPieceInstances): PartInstanceAndPieceInstances {
+	const partId = info.part.part._id
+	return {
+		...info,
+		// Ignore PieceInstances that continue from the previous part, as they will not need lookahead
+		allPieces: info.allPieces.filter((inst) => !inst.infinite || inst.piece.startPartId === partId),
+	}
+}
+
 export async function getLookeaheadObjects(
 	context: JobContext,
 	playoutModel: PlayoutModel,
@@ -75,22 +91,6 @@ export async function getLookeaheadObjects(
 		},
 	})
 
-	function removeInfiniteContinuations(info: PartInstanceAndPieceInstances): PartInstanceAndPieceInstances {
-		const partId = info.part.part._id
-		return {
-			...info,
-			// Ignore PieceInstances that continue from the previous part, as they will not need lookahead
-			allPieces: info.allPieces.filter((inst) => !inst.infinite || inst.piece.startPartId === partId),
-		}
-	}
-
-	function getPrunedEndedPieceInstances(info: SelectedPartInstanceTimelineInfo) {
-		if (!info.partInstance.timings?.plannedStartedPlayback) {
-			return info.pieceInstances
-		} else {
-			return info.pieceInstances.filter((p) => !hasPieceInstanceDefinitelyEnded(p, info.nowInPart))
-		}
-	}
 	const partInstancesInfo: PartInstanceAndPieceInstances[] = _.compact([
 		partInstancesInfo0.current
 			? removeInfiniteContinuations({

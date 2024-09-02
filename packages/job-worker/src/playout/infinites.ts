@@ -74,7 +74,7 @@ export function candidatePartIsAfterPreviewPartInstance(
 
 /**
  * Get the ids of parts, segments and rundowns before a given part in the playlist.
- * Note: this will return no segments and rundowns if the part is in the scratchpad
+ * Note: this will return no segments and rundowns if the part is in the AdlibTesting segment.
  */
 function getIdsBeforeThisPart(context: JobContext, playoutModel: PlayoutModel, nextPart: ReadonlyDeep<DBPart>) {
 	const span = context.startSpan('getIdsBeforeThisPart')
@@ -97,7 +97,7 @@ function getIdsBeforeThisPart(context: JobContext, playoutModel: PlayoutModel, n
 	const partsBeforeThisInSegmentSorted = _.sortBy(partsBeforeThisInSegment, (p) => p._rank).map((p) => p._id)
 
 	const nextPartSegment = currentRundown?.getSegment(nextPart.segmentId)
-	if (nextPartSegment?.segment?.orphaned === SegmentOrphanedReason.SCRATCHPAD) {
+	if (nextPartSegment?.segment?.orphaned === SegmentOrphanedReason.ADLIB_TESTING) {
 		if (span) span.end()
 		return {
 			partsToReceiveOnSegmentEndFrom: partsBeforeThisInSegmentSorted,
@@ -105,7 +105,7 @@ function getIdsBeforeThisPart(context: JobContext, playoutModel: PlayoutModel, n
 			rundownsToReceiveOnShowStyleEndFrom: [],
 		}
 	} else {
-		// Note: In theory we should ignore any scratchpad segments here, but they will never produce any planned `Pieces`, only `PieceInstances`
+		// Note: In theory we should ignore any AdlibTesting segments here, but they will never produce any planned `Pieces`, only `PieceInstances`
 
 		const currentSegment = currentRundown?.getSegment(nextPart.segmentId)
 		const segmentsToReceiveOnRundownEndFrom =
@@ -115,7 +115,7 @@ function getIdsBeforeThisPart(context: JobContext, playoutModel: PlayoutModel, n
 							(s) =>
 								s.segment.rundownId === nextPart.rundownId &&
 								s.segment._rank < currentSegment.segment._rank &&
-								s.segment.orphaned !== SegmentOrphanedReason.SCRATCHPAD
+								s.segment.orphaned !== SegmentOrphanedReason.ADLIB_TESTING
 						)
 						.map((p) => p.segment._id)
 				: []

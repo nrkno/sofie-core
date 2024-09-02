@@ -2,17 +2,27 @@ import { Logger } from 'winston'
 import { CoreHandler } from '../coreHandler'
 import { CollectionBase, Collection, CollectionObserver } from '../wsHandler'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleBase, OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
+
+export interface ShowStyleBaseExt extends DBShowStyleBase {
+	sourceLayerNamesById: ReadonlyMap<string, string>
+	outputLayerNamesById: ReadonlyMap<string, string>
+	sourceLayers: SourceLayers
+}
 
 export class ShowStyleBaseHandler
-	extends CollectionBase<DBShowStyleBase, CorelibPubSub.showStyleBases, CollectionName.ShowStyleBases>
-	implements Collection<DBShowStyleBase>, CollectionObserver<DBRundown>
+	extends CollectionBase<ShowStyleBaseExt, CorelibPubSub.showStyleBases, CollectionName.ShowStyleBases>
+	implements Collection<ShowStyleBaseExt>, CollectionObserver<DBRundown>
 {
 	public observerName: string
 	private _showStyleBaseId: ShowStyleBaseId | undefined
+	private _sourceLayersMap: Map<string, string> = new Map()
+	private _outputLayersMap: Map<string, string> = new Map()
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
 		super(
@@ -26,20 +36,16 @@ export class ShowStyleBaseHandler
 	}
 
 	async changed(id: ShowStyleBaseId, changeType: string): Promise<void> {
-		this._logger.info(`${this._name} ${changeType} ${id}`)
+		this.logDocumentChange(id, changeType)
 		if (!this._collectionName) return
-		const collection = this._core.getCollection(this._collectionName)
-		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
 		if (this._showStyleBaseId) {
-			this._collectionData = collection.findOne(this._showStyleBaseId)
+			this.updateCollectionData()
 			await this.notify(this._collectionData)
 		}
 	}
 
 	async update(source: string, data: DBRundown | undefined): Promise<void> {
-		this._logger.info(
-			`${this._name} received rundown update ${data?._id}, showStyleBaseId ${data?.showStyleBaseId} from ${source}`
-		)
+		this.logUpdateReceived('rundown', source, `rundownId ${data?._id}, showStyleBaseId ${data?.showStyleBaseId}`)
 		const prevShowStyleBaseId = this._showStyleBaseId
 		this._showStyleBaseId = data?.showStyleBaseId
 
@@ -61,11 +67,59 @@ export class ShowStyleBaseHandler
 					void this.changed(id, 'changed').catch(this._logger.error)
 				}
 
-				const collection = this._core.getCollection(this._collectionName)
-				if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
-				this._collectionData = collection.findOne(this._showStyleBaseId)
+				this.updateCollectionData()
 				await this.notify(this._collectionData)
 			}
 		}
+	}
+
+	updateCollectionData(): void {
+		const collection = this._core.getCollection(this._collectionName)
+		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
+		if (!this._showStyleBaseId) return
+		const showStyleBase = collection.findOne(this._showStyleBaseId)
+		if (!showStyleBase) {
+			this._collectionData = undefined
+			return
+		}
+		const sourceLayers: SourceLayers = showStyleBase
+			? applyAndValidateOverrides(showStyleBase.sourceLayersWithOverrides).obj
+			: {}
+		const outputLayers: OutputLayers = showStyleBase
+			? applyAndValidateOverrides(showStyleBase.outputLayersWithOverrides).obj
+			: {}
+		this._logger.info(
+			`${this._name} received showStyleBase update with sourceLayers [${Object.values<ISourceLayer | undefined>(
+				sourceLayers
+			).map(
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				(s) => s!.name
+			)}]`
+		)
+		this._logger.info(
+			`${this._name} received showStyleBase update with outputLayers [${Object.values<IOutputLayer | undefined>(
+				outputLayers
+			).map(
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				(s) => s!.name
+			)}]`
+		)
+		this._sourceLayersMap.clear()
+		this._outputLayersMap.clear()
+		for (const [layerId, sourceLayer] of Object.entries<ISourceLayer | undefined>(sourceLayers)) {
+			if (sourceLayer === undefined || sourceLayer === null) continue
+			this._sourceLayersMap.set(layerId, sourceLayer.name)
+		}
+		for (const [layerId, outputLayer] of Object.entries<IOutputLayer | undefined>(outputLayers)) {
+			if (outputLayer === undefined || outputLayer === null) continue
+			this._outputLayersMap.set(layerId, outputLayer.name)
+		}
+		const showStyleBaseExt: ShowStyleBaseExt = {
+			...showStyleBase,
+			sourceLayerNamesById: this._sourceLayersMap,
+			outputLayerNamesById: this._outputLayersMap,
+			sourceLayers,
+		}
+		this._collectionData = showStyleBaseExt
 	}
 }

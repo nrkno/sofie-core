@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { ISourceLayerExtended, PieceExtended } from '../../../../lib/Rundown'
+import { ISourceLayerExtended, PieceExtended } from '../../../lib/RundownResolver'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import StudioContext from '../../RundownView/StudioContext'
 import { LinePartIndicator } from './LinePartIndicator'

@@ -248,7 +248,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 
 	const removeTrigger = useCallback(
 		(id: string) => {
-			triggersOverridesHelper.deleteItem(id)
+			triggersOverridesHelper().deleteItem(id).commit()
 
 			setSelectedTrigger(null)
 		},
@@ -273,7 +273,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 				LAST_UP_SETTING = !!newVal.up
 			}
 
-			triggersOverridesHelper.replaceItem(id, newVal)
+			triggersOverridesHelper().replaceItem(id, newVal).commit()
 
 			setSelectedTrigger(null)
 		},
@@ -284,7 +284,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 		(id: string) => {
 			if (!triggeredAction?._id) return
 
-			triggersOverridesHelper.resetItem(id)
+			triggersOverridesHelper().resetItem(id).commit()
 
 			setSelectedTrigger(null)
 		},
@@ -344,7 +344,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 		(id: string) => {
 			if (!triggeredAction?._id) return
 
-			actionsOverridesHelper.deleteItem(id)
+			actionsOverridesHelper().deleteItem(id).commit()
 
 			setSelectedAction(null)
 		},
@@ -357,7 +357,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 
 	const restoreAction = useCallback(
 		(id: string) => {
-			actionsOverridesHelper.resetItem(id)
+			actionsOverridesHelper().resetItem(id).commit()
 		},
 		[actionsOverridesHelper]
 	)
@@ -542,6 +542,20 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 							}
 						/>
 						<span className="mls text-s dimmed field-hint">{t('Optional description of the action')}</span>
+					</label>
+					<label className="mas">
+						<span className="mrs">{t('Style class names')}</span>
+						<EditAttribute
+							type="text"
+							obj={triggeredAction}
+							collection={TriggeredActions}
+							attribute="styleClassNames"
+							className="input text-input input-l pan"
+							modifiedClassName="bghl"
+						/>
+						<span className="mls text-s dimmed field-hint">
+							{t('Space separated list of style class names to use when displaying the action')}
+						</span>
 					</label>
 				</>
 			) : null}

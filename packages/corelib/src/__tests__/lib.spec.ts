@@ -132,7 +132,7 @@ describe('Lib', () => {
 		expect(stringifyError(obj)).toMatch(/anotherProp.*abc/)
 
 		// UserError:
-		const userError = UserError.fromUnknown(error, UserErrorMessage.ValidationFailed, {}, 42)
+		const userError = UserError.from(error, UserErrorMessage.ValidationFailed, {}, 42)
 		// The stringification should trigger .toString() -> .toJSON() in UserError:
 		const str = stringifyError(userError)
 		expect(str).toMatch(/^UserError: /)

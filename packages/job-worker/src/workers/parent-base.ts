@@ -20,6 +20,7 @@ import { Promisify, ThreadedClassManager } from 'threadedclass'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { WorkerThreadStatus } from '@sofie-automation/corelib/dist/dataModel/WorkerThreads'
+import { UserError } from '@sofie-automation/corelib/dist/error'
 
 export enum ThreadStatus {
 	Closed = 0,
@@ -56,7 +57,7 @@ export interface WorkerParentBaseOptions extends WorkerParentOptions {
  * Wrap up the result of a job to an object. This allows us to use special types in the error, as anything thrown can get mangled by threadedClass or other wrappings
  */
 export interface WorkerJobResult {
-	error: any
+	error: string | null // string must be formatted as a UserError
 	result: any
 }
 
@@ -277,7 +278,11 @@ export abstract class WorkerParentBase {
 
 								try {
 									logger.verbose(`Starting work ${job.id}: "${job.name}"`)
-									logger.debug(`Payload ${job.id}: ${JSON.stringify(job.data)}`)
+									logger.silly(
+										`Starting work ${job.id}: "${job.name}", payload ${job.id}: ${JSON.stringify(
+											job.data
+										)}`
+									)
 
 									// Future - extend the job lock on an interval
 									let result: WorkerJobResult
@@ -301,11 +306,13 @@ export abstract class WorkerParentBase {
 										job.id,
 										startTime,
 										endTime,
-										result.error,
+										result.error
+											? UserError.tryFromJSON(result.error) ?? new Error(result.error)
+											: null,
 										result.result
 									)
 
-									logger.debug(`Completed work ${job.id} in ${endTime - startTime}ms`)
+									logger.verbose(`Completed work ${job.id} in ${endTime - startTime}ms`)
 								} catch (e: unknown) {
 									let error: Error
 									if (e instanceof Error) {

@@ -24,6 +24,7 @@ import {
 	ExpectedPackageWorkStatuses,
 	ExternalMessageQueue,
 	PackageContainerStatuses,
+	PackageInfos,
 	PeripheralDevices,
 	Studios,
 } from '../collections'
@@ -115,6 +116,15 @@ meteorPublish(
 		return null
 	}
 )
+
+meteorPublish(CorelibPubSub.packageInfos, async function (deviceId: PeripheralDeviceId, token: string | undefined) {
+	if (!deviceId) throw new Meteor.Error(400, 'deviceId argument missing')
+
+	if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
+		return PackageInfos.findWithCursor({ deviceId })
+	}
+	return null
+})
 
 meteorCustomPublish(
 	PeripheralDevicePubSub.mappingsForDevice,

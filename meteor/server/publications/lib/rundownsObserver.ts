@@ -53,6 +53,8 @@ export class RundownsObserver implements Meteor.LiveQueryHandle {
 
 	private innerUpdateRundownContent = () => {
 		if (!this.#changed) return
+		this.#cleanup?.()
+
 		const changed = this.#changed
 		this.#cleanup = changed(this.rundownIds)
 	}

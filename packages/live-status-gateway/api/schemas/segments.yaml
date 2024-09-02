@@ -49,6 +49,8 @@ $defs:
             description: Budget duration of the segment (milliseconds)
             type: number
         required: [expectedDurationMs]
+      publicData:
+        description: Optional arbitrary data
     required: [id, rundownId, name, timing]
     additionalProperties: false
     examples:
@@ -58,3 +60,5 @@ $defs:
         timing:
           expectedDurationMs: 15000
           budgetDurationMs: 20000
+        publicData:
+          containsLiveSource: true

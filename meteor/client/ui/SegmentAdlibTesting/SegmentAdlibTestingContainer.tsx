@@ -8,7 +8,7 @@ import {
 	ITrackedResolvedSegmentProps,
 } from '../SegmentContainer/withResolvedSegment'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
-import { SegmentScratchpad } from './SegmentScratchpad'
+import { SegmentAdlibTesting } from './SegmentAdlibTesting'
 import { unprotectString } from '../../../lib/lib'
 import { LIVELINE_HISTORY_SIZE as TIMELINE_LIVELINE_HISTORY_SIZE } from '../SegmentTimeline/SegmentTimelineContainer'
 import { Segments } from '../../collections'
@@ -24,7 +24,7 @@ interface IProps extends IResolvedSegmentProps {
 	id: string
 }
 
-export const SegmentScratchpadContainer = withResolvedSegment<IProps>(function SegmentScratchpadContainer({
+export const SegmentAdlibTestingContainer = withResolvedSegment<IProps>(function SegmentAdlibTestingContainer({
 	rundownId,
 	rundownIdsBefore,
 	segmentId,
@@ -201,14 +201,13 @@ export const SegmentScratchpadContainer = withResolvedSegment<IProps>(function S
 	}
 
 	return (
-		<SegmentScratchpad
+		<SegmentAdlibTesting
 			id={props.id}
 			ref={segmentRef}
 			key={unprotectString(props.segmentui._id)}
 			segment={props.segmentui}
 			studio={props.studio}
 			parts={props.parts}
-			pieces={props.pieces}
 			segmentNoteCounts={props.segmentNoteCounts}
 			onItemClick={props.onPieceClick}
 			onItemDoubleClick={props.onPieceDoubleClick}

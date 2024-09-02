@@ -18,11 +18,13 @@ Meteor.onConnection((conn: Meteor.Connection) => {
 	// var clientAddress = conn.clientAddress; // ip-adress
 
 	connections.add(conn.id)
+	logger.debug(`Client connected: "${conn.id}", "${conn.clientAddress}"`)
 	traceConnections()
 
 	conn.onClose(() => {
 		// called when a connection is closed
 		connections.delete(conn.id)
+		logger.debug(`Client disconnected: "${conn.id}", "${conn.clientAddress}"`)
 		traceConnections()
 
 		if (connectionId) {
@@ -51,7 +53,8 @@ Meteor.onConnection((conn: Meteor.Connection) => {
 								connected: false,
 								// connectionId: ''
 							},
-						}
+						},
+						{ multi: true }
 					)
 				}
 			})
@@ -92,7 +95,8 @@ Meteor.startup(() => {
 				$set: {
 					connected: false,
 				},
-			}
+			},
+			{ multi: true }
 		)
 	})
 })

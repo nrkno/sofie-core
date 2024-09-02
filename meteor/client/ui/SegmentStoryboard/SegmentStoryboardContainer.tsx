@@ -208,7 +208,6 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 			segment={props.segmentui}
 			studio={props.studio}
 			parts={props.parts}
-			pieces={props.pieces}
 			segmentNoteCounts={props.segmentNoteCounts}
 			onItemClick={props.onPieceClick}
 			onItemDoubleClick={props.onPieceDoubleClick}

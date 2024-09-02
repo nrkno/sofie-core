@@ -13,7 +13,7 @@ import { MultiLineTextInputControl } from '../lib/Components/MultiLineTextInput'
 import { TextInputControl } from '../lib/Components/TextInput'
 import { Spinner } from '../lib/Spinner'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { isLoopRunning } from '../../lib/Rundown'
+import { isLoopRunning } from '../lib/RundownResolver'
 import { useTracker } from '../lib/ReactMeteorData/ReactMeteorData'
 import { CoreSystem } from '../collections'
 
@@ -40,7 +40,8 @@ export function AfterBroadcastForm({ playlist }: Readonly<{ playlist: DBRundownP
 		setBusy(false)
 	}
 
-	function saveForm(e: React.MouseEvent<HTMLElement>) {
+	function saveForm(e: React.FormEvent<HTMLElement>) {
+		e.preventDefault()
 		setBusy(true)
 
 		const answers = {
@@ -119,54 +120,49 @@ export function AfterBroadcastForm({ playlist }: Readonly<{ playlist: DBRundownP
 	return (
 		<div className="afterbroadcastform-container" role="complementary" aria-labelledby="evaluation-header">
 			<div className="afterbroadcastform">
-				<EvaluationInfoBubble />
+				<form className="form" onSubmit={saveForm}>
+					<EvaluationInfoBubble />
 
-				<h2 id="evaluation-header">{t('How did the show go?')}</h2>
+					<h2 id="evaluation-header">{t('How did the show go?')}</h2>
 
-				<p>{t('Keyboard shortcuts and Stream Deck buttons will not work while filling out the form!')}</p>
+					<p>{t('Keyboard shortcuts and Stream Deck buttons will not work while filling out the form!')}</p>
 
-				<div className="form">
-					<div className="question">
-						<p>
-							<b>{t('Did you have any problems with the broadcast?')}</b>
-						</p>
-						<div className="input q0">
+					<div className="question q0">
+						<label>
+							<span>{t('Did you have any problems with the broadcast?')}</span>
 							<DropdownInputControl
 								value={problems}
 								options={problemOptions}
 								handleUpdate={setProblems}
 								disabled={busy}
 							/>
-						</div>
+						</label>
 					</div>
 					<div className="question q1">
-						<p>
-							<b>{t('Please explain the problems you experienced')}</b>
-							<br />
-							{t(
-								'(what happened and when, what should have happened, what could have triggered the problems, etcetera...)'
-							)}
-						</p>
-						<div className="input">
+						<label>
+							<span>{t('Please explain the problems you experienced')}</span>
+							<span className="secondary">
+								{t(
+									'(what happened and when, what should have happened, what could have triggered the problems, etcetera...)'
+								)}
+							</span>
 							<MultiLineTextInputControl value={description} handleUpdate={setDescription} disabled={busy} />
-						</div>
+						</label>
 					</div>
 					<div className="question q2">
-						<p>
-							<b>{t('Your name')}</b>
-						</p>
-						<div className="input">
+						<label>
+							<span>{t('Your name')}</span>
 							<TextInputControl value={userName} handleUpdate={setUserName} disabled={busy} />
-						</div>
+						</label>
 					</div>
 
 					<div>
-						<button className="btn btn-primary" onClick={saveForm} disabled={busy}>
+						<button type="submit" className="btn btn-primary" disabled={busy}>
 							{!shouldDeactivateRundown ? t('Send message') : t('Send message and Deactivate Rundown')}
 						</button>
 						{busy ? <Spinner className="afterbroadcastform-spinner" size="small" /> : null}
 					</div>
-				</div>
+				</form>
 			</div>
 		</div>
 	)

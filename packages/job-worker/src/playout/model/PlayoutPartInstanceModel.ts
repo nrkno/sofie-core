@@ -111,10 +111,10 @@ export interface PlayoutPartInstanceModel {
 	markAsReset(): void
 
 	/**
-	 * Recalculate the `expectedDurationWithPreroll` property for this PartInstance
+	 * Recalculate the `expectedDurationWithTransition` property for this PartInstance
 	 * Future: is this needed? should this be handled internally?
 	 */
-	recalculateExpectedDurationWithPreroll(): void
+	recalculateExpectedDurationWithTransition(): void
 
 	/**
 	 * Remove a PieceInstance from the model.
@@ -210,9 +210,9 @@ export interface PlayoutPartInstanceModel {
 	updatePartProps(props: Partial<IBlueprintMutatablePart>): boolean
 
 	/**
-	 * Ensure that this PartInstance is setup correctly for being in the Scratchpad Segment
+	 * Ensure that this PartInstance is setup correctly for being in the AdlibTesting Segment
 	 */
-	validateScratchpadSegmentProperties(): void
+	validateAdlibTestingSegmentProperties(): void
 
 	/**
 	 * Whether this part instance is too close to autoNexting out of, to perform operations that might cause glitches

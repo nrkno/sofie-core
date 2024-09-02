@@ -13,7 +13,11 @@ export interface PartInvalidReason {
 /** A "Line" in NRK Lingo. */
 export interface DBPart extends IBlueprintPart {
 	_id: PartId
-	/** Position inside the segment */
+	/**
+	 * Position inside the segment
+	 * Parts always have a integer rank, spaced by one. This is defined during the core portion of ingest.
+	 * When an orphaned PartInstance this can be a decimal value.
+	 */
 	_rank: number
 
 	/** The rundown this line belongs to */
@@ -29,8 +33,8 @@ export interface DBPart extends IBlueprintPart {
 	/** Human readable unqiue identifier of the part */
 	identifier?: string
 
-	/** A modified expectedDuration with the planned preroll and other timings factored in */
-	expectedDurationWithPreroll: number | undefined
+	/** A modified expectedDuration with the piece/transition derived timings factored in */
+	expectedDurationWithTransition: number | undefined
 }
 
 export function isPartPlayable(part: Pick<ReadonlyDeep<DBPart>, 'invalid' | 'floated'>): boolean {

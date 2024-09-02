@@ -10,7 +10,12 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getElementDocumentOffset } from '../../utils/positions'
-import { RundownLayoutFilter, RundownLayoutShelfBase } from '../../../lib/collections/RundownLayouts'
+import {
+	DashboardLayoutExternalFrame,
+	RundownLayoutElementType,
+	RundownLayoutFilter,
+	RundownLayoutShelfBase,
+} from '../../../lib/collections/RundownLayouts'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
@@ -244,7 +249,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		e.preventDefault()
 	}
 
-	private grabHandle = (e: React.MouseEvent<HTMLDivElement>) => {
+	private grabHandle = (e: React.MouseEvent<HTMLButtonElement>) => {
 		if (e.button !== 0) {
 			return
 		}
@@ -276,7 +281,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		e.preventDefault()
 	}
 
-	private touchOnHandle = (e: React.TouchEvent<HTMLDivElement>) => {
+	private touchOnHandle = (e: React.TouchEvent<HTMLButtonElement>) => {
 		document.addEventListener('touchmove', this.touchMoveHandle, {
 			passive: false,
 		})
@@ -293,6 +298,11 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		this.beginResize(e.touches[0].clientX, e.touches[0].clientY, e.currentTarget)
 
 		e.preventDefault()
+	}
+
+	private toggleHandle = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+		if (e.key !== 'Enter') return
+		this.props.onChangeExpanded(!this.props.isExpanded)
 	}
 
 	private endResize = () => {
@@ -379,7 +389,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 	}
 
 	render(): JSX.Element {
-		const { fullViewport, shelfDisplayOptions } = this.props
+		const { fullViewport, shelfDisplayOptions, isExpanded, t } = this.props
 		return (
 			<div
 				className={ClassNames('rundown-view__shelf dark', {
@@ -396,14 +406,17 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 					/>
 				)}
 				{!fullViewport && (
-					<div
+					<button
 						className="rundown-view__shelf__handle dark"
 						tabIndex={0}
+						onKeyDown={this.toggleHandle}
 						onMouseDown={this.grabHandle}
 						onTouchStart={this.touchOnHandle}
+						aria-label={t('Shelf')}
+						aria-pressed={isExpanded ? 'true' : 'false'}
 					>
 						<FontAwesomeIcon icon={faBars} />
-					</div>
+					</button>
 				)}
 				<div className="rundown-view__shelf__contents">
 					{shelfDisplayOptions.enableLayout ? (
@@ -476,6 +489,12 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 								displayBuckets={this.props.bucketDisplayFilter}
 								selectedPiece={this.state.selectedPiece}
 								onSelectPiece={this.selectPiece}
+								extFrames={
+									this.props.rundownLayout?.filters.filter(
+										(panel): panel is DashboardLayoutExternalFrame =>
+											panel.type === RundownLayoutElementType.EXTERNAL_FRAME
+									) ?? []
+								}
 							/>
 						</ErrorBoundary>
 					) : null}

@@ -20,6 +20,7 @@ import './lib/dev'
 
 import App from './ui/App'
 import { logger } from '../lib/logging'
+import './lib/logStatus'
 
 if ('serviceWorker' in navigator) {
 	// Use the window load event to keep the page load performant

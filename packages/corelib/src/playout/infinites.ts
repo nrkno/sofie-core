@@ -107,10 +107,10 @@ export function getPlayheadTrackingInfinitesForPart(
 ): PieceInstance[] {
 	if (
 		intoSegment._id !== playingSegment._id &&
-		(intoSegment.orphaned === SegmentOrphanedReason.SCRATCHPAD ||
-			playingSegment.orphaned === SegmentOrphanedReason.SCRATCHPAD)
+		(intoSegment.orphaned === SegmentOrphanedReason.ADLIB_TESTING ||
+			playingSegment.orphaned === SegmentOrphanedReason.ADLIB_TESTING)
 	) {
-		// If crossing the boundary between of the scratchpad, don't continue any infinites
+		// If crossing the boundary between of the AdlibTesting segment, don't continue any infinites
 		return []
 	}
 

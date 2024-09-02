@@ -33,6 +33,11 @@ export function maintainFocusOnPartInstance(
 			quitFocusOnPart()
 		}
 	}
+	document.addEventListener('wheel', onWheelWhenMaintainingFocus, {
+		once: true,
+		capture: true,
+		passive: true,
+	})
 	focusInterval = setInterval(focus, 500)
 	focus()
 }
@@ -41,7 +46,14 @@ export function isMaintainingFocus(): boolean {
 	return !!focusInterval
 }
 
+function onWheelWhenMaintainingFocus() {
+	quitFocusOnPart()
+}
+
 function quitFocusOnPart() {
+	document.removeEventListener('wheel', onWheelWhenMaintainingFocus, {
+		capture: true,
+	})
 	if (!_dontClearInterval && focusInterval) {
 		clearInterval(focusInterval)
 		focusInterval = undefined

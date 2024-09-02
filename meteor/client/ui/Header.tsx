@@ -123,18 +123,21 @@ class Header extends React.Component<Translated<IPropsHeader & ITrackedPropsHead
 							isOpen={this.state.isNotificationCenterOpen === NoticeLevel.CRITICAL}
 							filter={NoticeLevel.CRITICAL}
 							className="type-critical"
+							title={t('Critical Problems')}
 						/>
 						<NotificationCenterPanelToggle
 							onClick={(e) => this.onToggleNotifications(e, NoticeLevel.WARNING)}
 							isOpen={this.state.isNotificationCenterOpen === NoticeLevel.WARNING}
 							filter={NoticeLevel.WARNING}
 							className="type-warning"
+							title={t('Warnings')}
 						/>
 						<NotificationCenterPanelToggle
 							onClick={(e) => this.onToggleNotifications(e, NoticeLevel.NOTIFICATION | NoticeLevel.TIP)}
 							isOpen={this.state.isNotificationCenterOpen === (NoticeLevel.NOTIFICATION | NoticeLevel.TIP)}
 							filter={NoticeLevel.NOTIFICATION | NoticeLevel.TIP}
 							className="type-notification"
+							title={t('Notes')}
 						/>
 						<SupportPopUpToggle onClick={this.onToggleSupportPanel} isOpen={this.state.isSupportPanelOpen} />
 					</div>

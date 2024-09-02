@@ -176,6 +176,9 @@ export function sourceLayerFrom(apiSourceLayer: APISourceLayer): ISourceLayer {
 		case 'vt':
 			layerType = SourceLayerType.VT
 			break
+		case 'studio-screen':
+			layerType = SourceLayerType.STUDIO_SCREEN
+			break
 		default:
 			layerType = SourceLayerType.UNKNOWN
 			assertNever(apiSourceLayer.layerType)
@@ -229,6 +232,9 @@ export function APISourceLayerFrom(sourceLayer: ISourceLayer): APISourceLayer {
 			break
 		case SourceLayerType.VT:
 			layerType = 'vt'
+			break
+		case SourceLayerType.STUDIO_SCREEN:
+			layerType = 'studio-screen'
 			break
 		default:
 			layerType = 'unknown'

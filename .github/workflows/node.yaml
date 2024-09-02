@@ -25,7 +25,7 @@ jobs:
           node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
       - name: restore node_modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             node_modules
@@ -64,7 +64,7 @@ jobs:
           node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
       - name: restore node_modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             node_modules
@@ -90,7 +90,9 @@ jobs:
           CI: true
       - name: Send coverage
         if: ((github.event_name == 'pull_request') && (!startsWith(github.head_ref, 'release'))) || ((github.event_name == 'push') && (!startsWith(github.ref_name, 'release')))
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   build-core:
     # TODO - should this be dependant on tests or something passing if we are on a tag?
@@ -161,7 +163,7 @@ jobs:
       - uses: ./.github/actions/setup-meteor
         if: steps.check-build-and-push.outputs.enable == 'true'
       - name: restore node_modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: steps.check-build-and-push.outputs.enable == 'true'
         with:
           path: |
@@ -210,7 +212,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push to GHCR
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./meteor/Dockerfile.circle
@@ -221,7 +223,7 @@ jobs:
           github-token: ${{ github.token }}
       - name: Build and push to DockerHub
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.dockerhub.outputs.dockerhub-publish == '1'
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./meteor/Dockerfile.circle
@@ -237,7 +239,7 @@ jobs:
           echo "image=$image" >> $GITHUB_OUTPUT
       - name: Trivy scanning
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
-        uses: aquasecurity/trivy-action@0.16.0
+        uses: aquasecurity/trivy-action@0.24.0
         with:
           image-ref: "${{ steps.trivy-image.outputs.image }}"
           format: "table"
@@ -329,7 +331,7 @@ jobs:
           node-version-file: ".node-version"
       - name: restore node_modules
         if: steps.check-build-and-push.outputs.enable == 'true'
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             packages/node_modules
@@ -341,7 +343,7 @@ jobs:
           yarn install
           yarn lerna run --scope \*\*/${{ matrix.gateway-name }} --include-dependencies --stream build
           yarn run pinst --disable
-          yarn workspaces focus --all --production
+          yarn workspaces focus ${{ matrix.gateway-name }} --production
       - name: Set up Docker Buildx
         if: steps.check-build-and-push.outputs.enable == 'true'
         uses: docker/setup-buildx-action@v3
@@ -360,7 +362,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push to GHCR
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./packages
           file: ./packages/${{ matrix.gateway-name }}/Dockerfile.circle
@@ -370,7 +372,7 @@ jobs:
           tags: "${{ steps.ghcr-tag.outputs.tags }}"
       - name: Build and push to DockerHub
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.dockerhub.outputs.dockerhub-publish == '1'
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./packages
           file: ./packages/${{ matrix.gateway-name }}/Dockerfile.circle
@@ -386,7 +388,7 @@ jobs:
           echo "image=$image" >> $GITHUB_OUTPUT
       - name: Trivy scanning
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
-        uses: aquasecurity/trivy-action@0.16.0
+        uses: aquasecurity/trivy-action@0.24.0
         with:
           image-ref: "${{ steps.trivy-image.outputs.image }}"
           format: "table"
@@ -433,7 +435,7 @@ jobs:
         with:
           node-version-file: ".node-version"
       - name: restore node_modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             packages/node_modules
@@ -465,7 +467,7 @@ jobs:
           - blueprints-integration
           - server-core-integration
           - shared-lib
-        node-version: [14.x, 16.x, 18.x]
+        node-version: [14.x, 16.x, 18.x, 20.x]
         include:
           # include additional configs, to run certain packages only for a certain version of node
           - node-version: 14.x
@@ -478,6 +480,8 @@ jobs:
           - node-version: 16.x
             package-name: openapi
           - node-version: 18.x
+            package-name: openapi
+          - node-version: 20.x
             package-name: openapi
           # No tests for the gateways yet
           # - node-version: 18.x
@@ -496,7 +500,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: restore node_modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             packages/node_modules
@@ -517,7 +521,63 @@ jobs:
           CI: true
       - name: Send coverage
         if: (matrix.node-version == '16.x' || matrix.send-coverage == true) && ((github.event_name == 'pull_request') && ((!startsWith(github.head_ref, 'release'))) || ((github.event_name == 'push') && (!startsWith(github.ref_name, 'release'))))
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  asyncapi-generation:
+    name: AsyncAPI Generation
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".node-version"
+      - name: Prepare Environment
+        run: |
+          cd packages
+          yarn
+        env:
+          CI: true
+      - name: Run generator
+        run: |
+          cd packages/live-status-gateway
+
+          yarn gendocs
+          yarn genserver
+        env:
+          CI: true
+  openapi-generation:
+    name: OpenAPI Generation
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".node-version"
+      - name: Prepare Environment
+        run: |
+          cd packages
+          yarn
+        env:
+          CI: true
+      - name: Run generator
+        run: |
+          cd packages/openapi
+
+          yarn gendocs
+          yarn genserver
+          yarn genclient:ts
+        env:
+          CI: true
 
   publish-docs:
     name: Publish Docs
@@ -534,7 +594,7 @@ jobs:
         with:
           node-version-file: ".node-version"
       - name: restore node_modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             packages/node_modules
@@ -562,7 +622,7 @@ jobs:
           CI: true
       - name: Publish
         if: github.ref == 'refs/heads/master' # always publish for just the master branch
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./packages/documentation/build
@@ -658,7 +718,7 @@ jobs:
           node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
       - name: restore node_modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             node_modules

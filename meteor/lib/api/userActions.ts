@@ -22,6 +22,7 @@ import {
 	RundownPlaylistId,
 	SegmentId,
 	ShowStyleBaseId,
+	ShowStyleVariantId,
 	SnapshotId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -255,8 +256,8 @@ export interface NewUserActionAPI extends MethodContext {
 		playlistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<void>>
 	restartCore(userEvent: string, eventTime: Time, token: string): Promise<ClientAPI.ClientResponse<string>>
-	guiFocused(userEvent: string, eventTime: Time, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
-	guiBlurred(userEvent: string, eventTime: Time, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
+	guiFocused(userEvent: string, eventTime: Time, viewInfo?: unknown): Promise<ClientAPI.ClientResponse<void>>
+	guiBlurred(userEvent: string, eventTime: Time, viewInfo?: unknown): Promise<ClientAPI.ClientResponse<void>>
 	bucketsRemoveBucket(userEvent: string, eventTime: Time, id: BucketId): Promise<ClientAPI.ClientResponse<void>>
 	bucketsModifyBucket(
 		userEvent: string,
@@ -322,12 +323,20 @@ export interface NewUserActionAPI extends MethodContext {
 		subDeviceId: string,
 		disable: boolean
 	): Promise<ClientAPI.ClientResponse<void>>
-	activateScratchpadMode(
+	activateAdlibTestingMode(
 		userEvent: string,
 		eventTime: number,
 		playlistId: RundownPlaylistId,
 		rundownId: RundownId
 	): Promise<ClientAPI.ClientResponse<void>>
+
+	createAdlibTestingRundownForShowStyleVariant(
+		userEvent: string,
+		eventTime: Time,
+		studioId: StudioId,
+		showStyleVariantId: ShowStyleVariantId
+	): Promise<ClientAPI.ClientResponse<RundownId>>
+
 	setQuickLoopStart(
 		userEvent: string,
 		eventTime: Time,
@@ -419,7 +428,9 @@ export enum UserActionAPIMethods {
 
 	'disablePeripheralSubDevice' = 'userAction.system.disablePeripheralSubDevice',
 
-	'activateScratchpadMode' = 'userAction.activateScratchpadMode',
+	'activateAdlibTestingMode' = 'userAction.activateAdlibTestingMode',
+
+	'createAdlibTestingRundownForShowStyleVariant' = 'userAction.createAdlibTestingRundownForShowStyleVariant',
 
 	'setQuickLoopStart' = 'userAction.setQuickLoopStart',
 	'setQuickLoopEnd' = 'userAction.setQuickLoopEnd',

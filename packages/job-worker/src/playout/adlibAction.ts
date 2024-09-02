@@ -70,7 +70,7 @@ export async function executeAdlibActionAndSaveModel(
 		throw UserError.create(UserErrorMessage.ActionsNotSupported)
 	}
 
-	const watchedPackages = await WatchedPackagesHelper.create(context, context.studio._id, {
+	const watchedPackages = await WatchedPackagesHelper.create(context, {
 		pieceId: data.actionDocId,
 		fromPieceType: {
 			$in: [
@@ -81,30 +81,27 @@ export async function executeAdlibActionAndSaveModel(
 		},
 	})
 
-	if (data.privateData === null) {
-		const [adLibAction, baselineAdLibAction, bucketAdLibAction] = await Promise.all([
-			context.directCollections.AdLibActions.findOne(data.actionDocId as AdLibActionId, {
+	const [adLibAction, baselineAdLibAction, bucketAdLibAction] = await Promise.all([
+		context.directCollections.AdLibActions.findOne(data.actionDocId as AdLibActionId, {
+			projection: { _id: 1, privateData: 1 },
+		}),
+		context.directCollections.RundownBaselineAdLibActions.findOne(
+			data.actionDocId as RundownBaselineAdLibActionId,
+			{
 				projection: { _id: 1, privateData: 1 },
-			}),
-			context.directCollections.RundownBaselineAdLibActions.findOne(
-				data.actionDocId as RundownBaselineAdLibActionId,
-				{
-					projection: { _id: 1, privateData: 1 },
-				}
-			),
-			context.directCollections.BucketAdLibActions.findOne(data.actionDocId as BucketAdLibActionId, {
-				projection: { _id: 1, privateData: 1 },
-			}),
-		])
-		const adLibActionDoc = adLibAction ?? baselineAdLibAction ?? bucketAdLibAction
-		data.privateData = adLibActionDoc?.privateData
-	}
+			}
+		),
+		context.directCollections.BucketAdLibActions.findOne(data.actionDocId as BucketAdLibActionId, {
+			projection: { _id: 1, privateData: 1 },
+		}),
+	])
+	const adLibActionDoc = adLibAction ?? baselineAdLibAction ?? bucketAdLibAction
 
 	const actionParameters: ExecuteActionParameters = {
 		actionId: data.actionId,
 		userData: data.userData,
 		triggerMode: data.triggerMode,
-		privateData: data.privateData,
+		privateData: adLibActionDoc?.privateData,
 	}
 
 	try {
@@ -198,10 +195,11 @@ export async function executeActionInner(
 	// If any action cannot be done due to timings, that needs to be rejected by the context
 	if (!blueprint.blueprint.executeAction) throw UserError.create(UserErrorMessage.ActionsNotSupported)
 
-	logger.info(
-		`Executing AdlibAction "${actionParameters.actionId}": ${JSON.stringify(actionParameters.userData)} (${
-			actionParameters.triggerMode
-		})`
+	logger.info(`Executing AdlibAction "${actionParameters.actionId}"`)
+	logger.silly(
+		`Executing AdlibAction Payload "${actionParameters.actionId}" Payload: ${JSON.stringify(
+			actionParameters.userData
+		)} (${actionParameters.triggerMode})`
 	)
 
 	try {
@@ -214,7 +212,7 @@ export async function executeActionInner(
 		)
 	} catch (err) {
 		logger.error(`Error in showStyleBlueprint.executeAction: ${stringifyError(err)}`)
-		throw UserError.fromUnknown(err, UserErrorMessage.InternalError)
+		throw UserError.fromUnknown(err)
 	}
 
 	await applyAnyExecutionSideEffects(context, playoutModel, actionContext, now)
@@ -267,11 +265,9 @@ async function executeDataStoreAction(
 			showStyle,
 			watchedPackages
 		)
-
-		logger.info(
-			`Executing Datastore AdlibAction "${actionParameters.actionId}": ${JSON.stringify(
-				actionParameters.userData
-			)}`
+		logger.info(`Executing Datastore AdlibAction "${actionParameters.actionId}"`)
+		logger.silly(
+			`Datastore AdlibAction "${actionParameters.actionId}" Payload: ${JSON.stringify(actionParameters.userData)}`
 		)
 
 		try {

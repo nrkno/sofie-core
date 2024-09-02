@@ -63,7 +63,7 @@ export function modifyPartForQuickLoop(
 	if (isLoopingOverriden && (part.expectedDuration ?? 0) < fallbackPartDuration) {
 		if (playlist.quickLoop?.forceAutoNext === ForceQuickLoopAutoNext.ENABLED_FORCING_MIN_DURATION) {
 			part.expectedDuration = fallbackPartDuration
-			part.expectedDurationWithPreroll = fallbackPartDuration
+			part.expectedDurationWithTransition = fallbackPartDuration
 		} else if (playlist.quickLoop?.forceAutoNext === ForceQuickLoopAutoNext.ENABLED_WHEN_VALID_DURATION) {
 			part.invalid = true
 			part.invalidReason = {

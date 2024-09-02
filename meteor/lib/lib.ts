@@ -7,6 +7,7 @@ import { logger } from './logging'
 import { Time, TimeDuration } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { ReactiveVar } from 'meteor/reactive-var'
+import { MeteorApply } from './MeteorApply'
 export { Time, TimeDuration }
 
 // Legacy compatability
@@ -32,12 +33,16 @@ export async function MeteorPromiseApply(
 	args: Parameters<typeof Meteor.apply>[1],
 	options?: Parameters<typeof Meteor.apply>[2]
 ): Promise<any> {
-	return new Promise((resolve, reject) => {
-		Meteor.apply(callName, args, options, (err, res) => {
-			if (err) reject(err)
-			else resolve(res)
+	if (Meteor.isServer) {
+		return new Promise((resolve, reject) => {
+			Meteor.apply(callName, args, options, (err, res) => {
+				if (err) reject(err)
+				else resolve(res)
+			})
 		})
-	})
+	} else {
+		return MeteorApply(callName, args, options)
+	}
 }
 
 // The diff is currently only used client-side

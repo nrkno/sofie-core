@@ -92,17 +92,24 @@
 		&:focus-within {
 			background: #ffffff;
 		}
+
+		&:focus-visible {
+			outline: none;
+		}
 	}
 
 	.media-status-panel-header__clear-search-input {
 		position: absolute;
-		right: 1em;
-		top: 0.2em;
+		right: 0.6em;
+		top: 0.05em;
 		opacity: 0.3;
 		cursor: pointer;
+		border: none;
+		background: none;
 
 		&:hover {
 			opacity: 0.7;
+			background: none;
 		}
 	}
 

@@ -1,17 +1,18 @@
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { getActiveRundownPlaylistsInStudioFromDb } from '../studio/lib'
+import { ReadonlyDeep } from 'type-fest'
+import { RundownActivationContext } from '../blueprints/context/RundownActivationContext'
 import { JobContext } from '../jobs'
+import { getCurrentTime } from '../lib'
 import { logger } from '../logging'
-import { PlayoutModel } from './model/PlayoutModel'
+import { getActiveRundownPlaylistsInStudioFromDb } from '../studio/lib'
+import { cleanTimelineDatastore } from './datastore'
 import { resetRundownPlaylist } from './lib'
+import { PlayoutModel } from './model/PlayoutModel'
 import { selectNextPart } from './selectNextPart'
 import { setNextPart } from './setNext'
 import { updateStudioTimeline, updateTimeline } from './timeline/generate'
-import { getCurrentTime } from '../lib'
-import { cleanTimelineDatastore } from './datastore'
-import { RundownActivationContext } from '../blueprints/context/RundownActivationContext'
-import { ReadonlyDeep } from 'type-fest'
 
 export async function activateRundownPlaylist(
 	context: JobContext,
@@ -44,9 +45,21 @@ export async function activateRundownPlaylist(
 
 	const newActivationId = playoutModel.activatePlaylist(rehearsal)
 
+	const currentPartInstance = playoutModel.currentPartInstance
+	if (currentPartInstance && !rehearsal) {
+		const rundownId = currentPartInstance.partInstance.rundownId
+		const rundown = playoutModel.getRundown(rundownId)
+		if (!rundown) throw new Error(`Could not find rundown "${rundownId}"`)
+		const currentSegment = playoutModel.findSegment(currentPartInstance.partInstance.segmentId)
+		if (!currentSegment) throw new Error(`Could not find segment "${currentPartInstance.partInstance.segmentId}"`)
+		if (currentSegment.segment.orphaned === SegmentOrphanedReason.ADLIB_TESTING) {
+			currentPartInstance.markAsReset()
+			rundown.removeAdlibTestingSegment()
+		}
+	}
+
 	let rundown: ReadonlyDeep<DBRundown> | undefined
 
-	const currentPartInstance = playoutModel.currentPartInstance
 	if (!currentPartInstance || currentPartInstance.partInstance.reset) {
 		playoutModel.clearSelectedPartInstances()
 

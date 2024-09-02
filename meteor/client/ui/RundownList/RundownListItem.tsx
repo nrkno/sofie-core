@@ -32,7 +32,7 @@ export function RundownListItem({
 	rundownLayouts: Array<RundownLayoutBase>
 	swapRundownOrder: (a: RundownId, b: RundownId) => void
 	playlistId: RundownPlaylistId
-	isOnlyRundownInPlaylist?: boolean
+	isOnlyRundownInPlaylist: boolean
 	action?: IRundownPlaylistUiAction
 }>): JSX.Element | null {
 	const { t } = useTranslation()
@@ -65,6 +65,7 @@ export function RundownListItem({
 			item: {
 				id: rundown._id,
 				rundownLayouts,
+				isOnlyRundownInPlaylist,
 			},
 		},
 		[rundown._id, rundownLayouts]
@@ -119,7 +120,10 @@ export function RundownListItem({
 			showStyleName={showStyleLabel}
 			showStyleBaseURL={userCanConfigure ? getShowStyleBaseLink(rundown.showStyleBaseId) : undefined}
 			confirmDeleteRundownHandler={
-				(rundown.orphaned && getAllowStudio()) || userCanConfigure || getAllowService()
+				(getAllowStudio() &&
+					(rundown.orphaned || rundown.source.type === 'testing' || rundown.source.type === 'snapshot')) ||
+				userCanConfigure ||
+				getAllowService()
 					? () => confirmDeleteRundown(rundown, t)
 					: undefined
 			}

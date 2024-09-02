@@ -509,11 +509,11 @@ export function createAction(action: SomeAction, sourceLayers: SourceLayers): Ex
 			return createUserActionWithCtx(action, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, async (e, ts, ctx) =>
 				MeteorCall.userAction.deactivate(e, ts, ctx.rundownPlaylistId.get())
 			)
-		case PlayoutActions.activateScratchpadMode:
-			return createUserActionWithCtx(action, UserAction.ACTIVATE_SCRATCHPAD, async (e, ts, ctx) => {
+		case PlayoutActions.activateAdlibTestingMode:
+			return createUserActionWithCtx(action, UserAction.ACTIVATE_ADLIB_TESTING, async (e, ts, ctx) => {
 				const rundownId = ctx.currentRundownId.get()
 				if (rundownId) {
-					return MeteorCall.userAction.activateScratchpadMode(e, ts, ctx.rundownPlaylistId.get(), rundownId)
+					return MeteorCall.userAction.activateAdlibTestingMode(e, ts, ctx.rundownPlaylistId.get(), rundownId)
 				} else {
 					return ClientAPI.responseError(UserError.create(UserErrorMessage.InactiveRundown))
 				}

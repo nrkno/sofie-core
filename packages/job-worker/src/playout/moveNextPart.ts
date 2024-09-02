@@ -34,7 +34,7 @@ export async function moveNextPart(
 			(s) =>
 				s.segment._id === refPart.segmentId ||
 				!s.segment.isHidden ||
-				s.segment.orphaned === SegmentOrphanedReason.SCRATCHPAD
+				s.segment.orphaned === SegmentOrphanedReason.ADLIB_TESTING
 		)
 		const refSegmentIndex = considerSegments.findIndex((s) => s.segment._id === refPart.segmentId)
 		if (refSegmentIndex === -1) throw new Error(`Segment "${refPart.segmentId}" not found!`)

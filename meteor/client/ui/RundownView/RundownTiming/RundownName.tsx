@@ -9,7 +9,7 @@ import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownUtils } from '../../../lib/rundown'
 import { getCurrentTime } from '../../../../lib/lib'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
-import { isLoopDefined } from '../../../../lib/Rundown'
+import { isLoopDefined } from '../../../lib/RundownResolver'
 
 interface IRundownNameProps {
 	rundownPlaylist: DBRundownPlaylist
@@ -26,7 +26,7 @@ export const RundownName = withTranslation()(
 				const expectedStart = PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
 				const isPlaylistLooping = isLoopDefined(rundownPlaylist)
 				return (
-					<span
+					<div
 						className={ClassNames('timing-clock countdown left', {
 							'plan-start': !(
 								rundownPlaylist.startedPlayback &&
@@ -42,7 +42,7 @@ export const RundownName = withTranslation()(
 						})}
 					>
 						{currentRundown && (rundownPlaylist.name !== currentRundown.name || rundownCount > 1) ? (
-							<span
+							<h1
 								className="timing-clock-label left hide-overflow rundown-name"
 								title={
 									isPlaylistLooping
@@ -58,9 +58,9 @@ export const RundownName = withTranslation()(
 								id="rundown-playlist-name"
 							>
 								{isPlaylistLooping && <LoopingIcon />} <strong>{currentRundown.name}</strong> {rundownPlaylist.name}
-							</span>
+							</h1>
 						) : (
-							<span
+							<h1
 								className="timing-clock-label left hide-overflow rundown-name"
 								title={
 									isPlaylistLooping
@@ -72,7 +72,7 @@ export const RundownName = withTranslation()(
 								id="rundown-playlist-name"
 							>
 								{isPlaylistLooping && <LoopingIcon />} {rundownPlaylist.name}
-							</span>
+							</h1>
 						)}
 						{!this.props.hideDiff &&
 						rundownPlaylist.startedPlayback &&
@@ -89,7 +89,7 @@ export const RundownName = withTranslation()(
 							  )
 							: expectedStart &&
 							  RundownUtils.formatDiffToTimecode(getCurrentTime() - expectedStart, true, false, true, true, true)}
-					</span>
+					</div>
 				)
 			}
 		}

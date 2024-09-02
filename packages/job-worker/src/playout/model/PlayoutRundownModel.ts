@@ -49,23 +49,21 @@ export interface PlayoutRundownModel {
 	getAllOrderedParts(): ReadonlyDeep<DBPart>[]
 
 	/**
-	 * Insert the Scratchpad Segment for this Rundown
+	 * Insert the AdlibTesting Segment for this Rundown
 	 * Throws if the segment already exists
 	 */
-	insertScratchpadSegment(): SegmentId
+	insertAdlibTestingSegment(): SegmentId
 	/**
-	 * Remove the Scratchpad Segment for this Rundown
+	 * Remove the AdlibTesting Segment for this Rundown
 	 * @returns true if the Segment was found
 	 */
-	removeScratchpadSegment(): boolean
+	removeAdlibTestingSegment(): boolean
 	/**
-	 * Get the Scratchpad Segment for this Rundown, if it exists
+	 * Get the AdlibTesting Segment for this Rundown, if it exists
 	 */
-	getScratchpadSegment(): PlayoutSegmentModel | undefined
+	getAdlibTestingSegment(): PlayoutSegmentModel | undefined
 	/**
-	 * Set the rank of the Scratchpad Segment in this Rundown
-	 * Throws if the segment does not exists
-	 * @param rank New rank
+	 * Update the rank of the AdlibTesting Segment in this Rundown, if it exists
 	 */
-	setScratchpadSegmentRank(rank: number): void
+	updateAdlibTestingSegmentRank(): void
 }

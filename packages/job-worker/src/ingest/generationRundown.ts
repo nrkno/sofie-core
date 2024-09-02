@@ -1,8 +1,8 @@
 import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import { BlueprintId, PeripheralDeviceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BlueprintId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { serializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { DBRundown, RundownSource } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
@@ -21,7 +21,6 @@ import { extendIngestRundownCore, canRundownBeUpdated } from './lib'
 import { JobContext } from '../jobs'
 import { CommitIngestData } from './lock'
 import { SelectedShowStyleVariant, selectShowStyleVariant } from './selectShowStyleVariant'
-import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { updateExpectedPackagesForRundownBaseline } from './expectedPackages'
 import { ReadonlyDeep } from 'type-fest'
 import { BlueprintResultRundown, ExtendedIngestRundown } from '@sofie-automation/blueprints-integration'
@@ -35,7 +34,7 @@ import { calculateSegmentsAndRemovalsFromIngestData } from './generationSegment'
  * @param ingestModel The ingest model of the rundown
  * @param ingestRundown The rundown to regenerate
  * @param isCreateAction Whether this operation is to create the Rundown or update it
- * @param peripheralDeviceId Id of the PeripheralDevice the Rundown originated from
+ * @param rundownSource Source of this Rundown
  * @returns CommitIngestData describing the change
  */
 export async function updateRundownFromIngestData(
@@ -43,7 +42,7 @@ export async function updateRundownFromIngestData(
 	ingestModel: IngestModel,
 	ingestRundown: LocalIngestRundown,
 	isCreateAction: boolean,
-	peripheralDeviceId: PeripheralDeviceId | null
+	rundownSource: RundownSource
 ): Promise<CommitIngestData | null> {
 	const span = context.startSpan('ingest.rundownInput.updateRundownFromIngestData')
 
@@ -55,10 +54,6 @@ export async function updateRundownFromIngestData(
 
 	const extendedIngestRundown = extendIngestRundownCore(ingestRundown, ingestModel.rundown)
 
-	const pPeripheralDevice = peripheralDeviceId
-		? context.directCollections.PeripheralDevices.findOne(peripheralDeviceId)
-		: undefined
-
 	const selectShowStyleContext = new StudioUserContext(
 		{
 			name: 'selectShowStyleVariant',
@@ -69,7 +64,12 @@ export async function updateRundownFromIngestData(
 		context.getStudioBlueprintConfig()
 	)
 	// TODO-CONTEXT save any user notes from selectShowStyleContext
-	const showStyle = await selectShowStyleVariant(context, selectShowStyleContext, extendedIngestRundown)
+	const showStyle = await selectShowStyleVariant(
+		context,
+		selectShowStyleContext,
+		extendedIngestRundown,
+		rundownSource
+	)
 	if (!showStyle) {
 		logger.debug('Blueprint rejected the rundown')
 		throw new Error('Blueprint rejected the rundown')
@@ -85,7 +85,7 @@ export async function updateRundownFromIngestData(
 		context,
 		ingestModel,
 		extendedIngestRundown,
-		pPeripheralDevice,
+		rundownSource,
 		showStyle,
 		showStyleBlueprint,
 		allRundownWatchedPackages
@@ -110,7 +110,7 @@ export async function updateRundownFromIngestData(
 	return literal<CommitIngestData>({
 		changedSegmentIds: changedSegmentIds,
 		removedSegmentIds: removedSegmentIds,
-		renamedSegments: new Map(),
+		renamedSegments: null,
 
 		removeRundown: false,
 	})
@@ -122,24 +122,20 @@ export async function updateRundownFromIngestData(
  * @param context Context for the running job
  * @param ingestModel The ingest model of the rundown
  * @param ingestRundown The rundown to regenerate
- * @param peripheralDeviceId Id of the PeripheralDevice the Rundown originated from
+ * @param rundownSource Source of this Rundown
  * @returns CommitIngestData describing the change
  */
 export async function updateRundownMetadataFromIngestData(
 	context: JobContext,
 	ingestModel: IngestModel,
 	ingestRundown: LocalIngestRundown,
-	peripheralDeviceId: PeripheralDeviceId | null
+	rundownSource: RundownSource
 ): Promise<CommitIngestData | null> {
 	if (!canRundownBeUpdated(ingestModel.rundown, false)) return null
 	const existingRundown = ingestModel.rundown
 	if (!existingRundown) {
 		throw new Error(`Rundown "${ingestRundown.externalId}" does not exist`)
 	}
-
-	const pPeripheralDevice = peripheralDeviceId
-		? context.directCollections.PeripheralDevices.findOne(peripheralDeviceId)
-		: undefined
 
 	const span = context.startSpan('ingest.rundownInput.handleUpdatedRundownMetaDataInner')
 
@@ -158,7 +154,12 @@ export async function updateRundownMetadataFromIngestData(
 	)
 
 	// TODO-CONTEXT save any user notes from selectShowStyleContext
-	const showStyle = await selectShowStyleVariant(context, selectShowStyleContext, extendedIngestRundown)
+	const showStyle = await selectShowStyleVariant(
+		context,
+		selectShowStyleContext,
+		extendedIngestRundown,
+		rundownSource
+	)
 	if (!showStyle) {
 		logger.debug('Blueprint rejected the rundown')
 		throw new Error('Blueprint rejected the rundown')
@@ -174,7 +175,7 @@ export async function updateRundownMetadataFromIngestData(
 		context,
 		ingestModel,
 		extendedIngestRundown,
-		pPeripheralDevice,
+		rundownSource,
 		showStyle,
 		showStyleBlueprint,
 		allRundownWatchedPackages
@@ -209,7 +210,7 @@ export async function updateRundownMetadataFromIngestData(
 	return literal<CommitIngestData>({
 		changedSegmentIds: changedSegmentIds ?? [],
 		removedSegmentIds: removedSegmentIds ?? [],
-		renamedSegments: new Map(),
+		renamedSegments: null,
 
 		removeRundown: false,
 	})
@@ -230,7 +231,7 @@ export async function regenerateRundownAndBaselineFromIngestData(
 	context: JobContext,
 	ingestModel: IngestModel,
 	extendedIngestRundown: ExtendedIngestRundown,
-	pPeripheralDevice: Promise<PeripheralDevice | undefined> | undefined,
+	rundownSource: RundownSource,
 	showStyle: SelectedShowStyleVariant,
 	showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 	allRundownWatchedPackages: WatchedPackagesHelper
@@ -306,14 +307,12 @@ export async function regenerateRundownAndBaselineFromIngestData(
 		})
 	)
 
-	const peripheralDevice = await pPeripheralDevice
-
 	ingestModel.setRundownData(
 		rundownRes.rundown,
 		showStyle.base,
 		showStyle.variant,
 		showStyleBlueprint,
-		peripheralDevice,
+		rundownSource,
 		rundownNotes
 	)
 

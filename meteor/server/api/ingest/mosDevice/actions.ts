@@ -9,10 +9,9 @@ import { parseMosString } from './lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import * as _ from 'underscore'
 import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
-import { runIngestOperation } from '../lib'
+import { generateRundownSource, getPeripheralDeviceFromRundown, runIngestOperation } from '../lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { DEFAULT_MOS_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
-import { PeripheralDevices } from '../../../collections'
 import { executePeripheralDeviceFunctionWithCustomTimeout } from '../../peripheralDevice/executeFunction'
 
 export namespace MOSDeviceActions {
@@ -43,9 +42,9 @@ export namespace MOSDeviceActions {
 
 			await runIngestOperation(rundown.studioId, IngestJobs.MosRundown, {
 				rundownExternalId: rundown.externalId,
-				peripheralDeviceId: peripheralDevice._id,
 				mosRunningOrder: mosRunningOrder,
 				isUpdateOperation: true,
+				rundownSource: generateRundownSource(peripheralDevice),
 			})
 
 			// Since the Reload reply is asynchronously followed by ROFullStories, the reload is technically not completed at this point
@@ -89,12 +88,9 @@ export namespace MOSDeviceActions {
 			modifiedFields.EditorialStart = undefined
 		}
 
-		const peripheralDevice =
-			rundown.peripheralDeviceId && (await PeripheralDevices.findOneAsync(rundown.peripheralDeviceId))
-		if (!peripheralDevice)
-			throw new Meteor.Error(404, 'PeripheralDevice "' + rundown.peripheralDeviceId + '" not found')
+		const peripheralDevice = await getPeripheralDeviceFromRundown(rundown)
 
-		await executePeripheralDeviceFunctionWithCustomTimeout(
+		const response = await executePeripheralDeviceFunctionWithCustomTimeout(
 			peripheralDevice._id,
 			// we need a very long timeout to make sure we receive notification from the device
 			120 * 1000,
@@ -102,10 +98,9 @@ export namespace MOSDeviceActions {
 				functionName: 'replaceStoryItem',
 				args: [mosPayload.RunningOrderId, mosPayload.ID, story, modifiedFields],
 			}
-		).then(async (response) => {
-			// If the response was a failed write, then reject
-			if (response && response.mos && response.mos.roAck && response.mos.roAck.roStatus !== 'OK')
-				return Promise.reject(response)
-		})
+		)
+
+		// If the response was a failed write, then reject
+		if (response && response.mos && response.mos.roAck && response.mos.roAck.roStatus !== 'OK') throw response
 	}
 }

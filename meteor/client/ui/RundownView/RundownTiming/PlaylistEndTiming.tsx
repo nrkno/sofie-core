@@ -8,7 +8,7 @@ import { withTiming, WithTiming } from './withTiming'
 import ClassNames from 'classnames'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getPlaylistTimingDiff } from '../../../lib/rundownTiming'
-import { isLoopRunning } from '../../../../lib/Rundown'
+import { isLoopRunning } from '../../../lib/RundownResolver'
 
 interface IEndTimingProps {
 	rundownPlaylist: DBRundownPlaylist

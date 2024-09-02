@@ -43,12 +43,15 @@ import {
 	RundownPlaylistId,
 	SegmentId,
 	ShowStyleBaseId,
+	ShowStyleVariantId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { IngestDataCache, Parts, Pieces, Rundowns } from '../collections'
 import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 import { verifyHashedToken } from './singleUseTokens'
 import { QuickLoopMarker } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { runIngestOperation } from './ingest/lib'
+import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 
 async function pieceSetInOutPoints(
 	access: VerifiedRundownPlaylistContentAccess,
@@ -382,7 +385,7 @@ class ServerUserActionAPI
 				check(duration, Number)
 			},
 			'pieceSetInOutPoints',
-			[rundownPlaylistId, partId, pieceId, inPoint, duration],
+			{ rundownPlaylistId, partId, pieceId, inPoint, duration },
 			async (access) => {
 				return pieceSetInOutPoints(access, partId, pieceId, inPoint, duration)
 			}
@@ -416,7 +419,6 @@ class ServerUserActionAPI
 				actionId,
 				userData,
 				triggerMode: triggerMode ?? undefined,
-				privateData: null,
 			}
 		)
 	}
@@ -537,7 +539,7 @@ class ServerUserActionAPI
 			userEvent,
 			eventTime,
 			'bucketAdlibImport',
-			[bucketId, showStyleBaseId, ingestItem],
+			{ bucketId, showStyleBaseId, ingestItem },
 			async () => {
 				check(bucketId, String)
 				check(showStyleBaseId, String)
@@ -618,7 +620,7 @@ class ServerUserActionAPI
 				//
 			},
 			'saveEvaluation',
-			[evaluation],
+			{ evaluation },
 			async (access) => {
 				return saveEvaluation(access, evaluation)
 			}
@@ -642,7 +644,7 @@ class ServerUserActionAPI
 				check(reason, String)
 			},
 			'storeRundownSnapshot',
-			[playlistId, reason, full],
+			{ playlistId, reason, full },
 			async (access) => {
 				return storeRundownPlaylistSnapshot(access, hashedToken, reason, full)
 			}
@@ -691,7 +693,7 @@ class ServerUserActionAPI
 				check(playlistId, String)
 			},
 			'resyncRundownPlaylist',
-			[playlistId],
+			{ playlistId },
 			async (access) => {
 				return ServerRundownAPI.resyncRundownPlaylist(access)
 			}
@@ -707,7 +709,7 @@ class ServerUserActionAPI
 				check(rundownId, String)
 			},
 			'unsyncRundown',
-			[rundownId],
+			{ rundownId },
 			async (access) => {
 				return ServerRundownAPI.unsyncRundown(access)
 			}
@@ -723,7 +725,7 @@ class ServerUserActionAPI
 				check(rundownId, String)
 			},
 			'removeRundown',
-			[rundownId],
+			{ rundownId },
 			async (access) => {
 				return ServerRundownAPI.removeRundown(access)
 			}
@@ -739,7 +741,7 @@ class ServerUserActionAPI
 				check(rundownId, String)
 			},
 			'resyncRundown',
-			[rundownId],
+			{ rundownId },
 			async (access) => {
 				return ServerRundownAPI.resyncRundown(access)
 			}
@@ -751,7 +753,7 @@ class ServerUserActionAPI
 			userEvent,
 			eventTime,
 			'mediaRestartWorkflow',
-			[workflowId],
+			{ workflowId },
 			async () => {
 				check(workflowId, String)
 
@@ -766,7 +768,7 @@ class ServerUserActionAPI
 			userEvent,
 			eventTime,
 			'mediaAbortWorkflow',
-			[workflowId],
+			{ workflowId },
 			async () => {
 				check(workflowId, String)
 
@@ -781,7 +783,7 @@ class ServerUserActionAPI
 			userEvent,
 			eventTime,
 			'mediaPrioritizeWorkflow',
-			[workflowId],
+			{ workflowId },
 			async () => {
 				check(workflowId, String)
 
@@ -796,7 +798,7 @@ class ServerUserActionAPI
 			userEvent,
 			eventTime,
 			'mediaRestartAllWorkflows',
-			[],
+			{},
 			async () => {
 				const access = await OrganizationContentWriteAccess.mediaWorkFlows(this)
 				return MediaManagerAPI.restartAllWorkflows(access)
@@ -809,7 +811,7 @@ class ServerUserActionAPI
 			userEvent,
 			eventTime,
 			'mediaAbortAllWorkflows',
-			[],
+			{},
 			async () => {
 				const access = await OrganizationContentWriteAccess.mediaWorkFlows(this)
 				return MediaManagerAPI.abortAllWorkflows(access)
@@ -827,7 +829,7 @@ class ServerUserActionAPI
 			userEvent,
 			eventTime,
 			'packageManagerRestartExpectation',
-			[deviceId, workId],
+			{ deviceId, workId },
 			async () => {
 				check(deviceId, String)
 				check(workId, String)
@@ -843,7 +845,7 @@ class ServerUserActionAPI
 			userEvent,
 			eventTime,
 			'packageManagerRestartAllExpectations',
-			[studioId],
+			{ studioId },
 			async () => {
 				check(studioId, String)
 
@@ -863,7 +865,7 @@ class ServerUserActionAPI
 			userEvent,
 			eventTime,
 			'packageManagerAbortExpectation',
-			[deviceId, workId],
+			{ deviceId, workId },
 			async () => {
 				check(deviceId, String)
 				check(workId, String)
@@ -884,7 +886,7 @@ class ServerUserActionAPI
 			userEvent,
 			eventTime,
 			'packageManagerRestartPackageContainer',
-			[deviceId, containerId],
+			{ deviceId, containerId },
 			async () => {
 				check(deviceId, String)
 				check(containerId, String)
@@ -915,7 +917,7 @@ class ServerUserActionAPI
 			userEvent,
 			eventTime,
 			'restartCore',
-			[hashedToken],
+			{ hashedToken },
 			async () => {
 				check(hashedToken, String)
 
@@ -934,13 +936,13 @@ class ServerUserActionAPI
 		)
 	}
 
-	async guiFocused(userEvent: string, eventTime: Time, viewInfo: any[] | null) {
-		return ServerClientAPI.runUserActionInLog(this, userEvent, eventTime, 'guiFocused', [viewInfo], async () => {
+	async guiFocused(userEvent: string, eventTime: Time, viewInfo: unknown | null) {
+		return ServerClientAPI.runUserActionInLog(this, userEvent, eventTime, 'guiFocused', { viewInfo }, async () => {
 			triggerWriteAccessBecauseNoCheckNecessary()
 		})
 	}
-	async guiBlurred(userEvent: string, eventTime: Time, viewInfo: any[] | null) {
-		return ServerClientAPI.runUserActionInLog(this, userEvent, eventTime, 'guiBlurred', [viewInfo], async () => {
+	async guiBlurred(userEvent: string, eventTime: Time, viewInfo: unknown | null) {
+		return ServerClientAPI.runUserActionInLog(this, userEvent, eventTime, 'guiBlurred', { viewInfo }, async () => {
 			triggerWriteAccessBecauseNoCheckNecessary()
 		})
 	}
@@ -951,7 +953,7 @@ class ServerUserActionAPI
 			userEvent,
 			eventTime,
 			'bucketsRemoveBucket',
-			[bucketId],
+			{ bucketId },
 			async () => {
 				check(bucketId, String)
 
@@ -971,7 +973,7 @@ class ServerUserActionAPI
 			userEvent,
 			eventTime,
 			'bucketsModifyBucket',
-			[bucketId, bucketProps],
+			{ bucketId, bucketProps },
 			async () => {
 				check(bucketId, String)
 				check(bucketProps, Object)
@@ -987,7 +989,7 @@ class ServerUserActionAPI
 			userEvent,
 			eventTime,
 			'bucketsEmptyBucket',
-			[bucketId],
+			{ bucketId },
 			async () => {
 				check(bucketId, String)
 
@@ -1002,7 +1004,7 @@ class ServerUserActionAPI
 			userEvent,
 			eventTime,
 			'bucketsCreateNewBucket',
-			[name, studioId],
+			{ name, studioId },
 			async () => {
 				check(studioId, String)
 				check(name, String)
@@ -1020,7 +1022,7 @@ class ServerUserActionAPI
 			userEvent,
 			eventTime,
 			'bucketsRemoveBucketAdLib',
-			[adlibId],
+			{ adlibId },
 			async () => {
 				const access = await BucketSecurity.allowWriteAccessPiece(this, adlibId)
 				return BucketsAPI.removeBucketAdLib(access)
@@ -1033,7 +1035,7 @@ class ServerUserActionAPI
 			userEvent,
 			eventTime,
 			'bucketsRemoveBucketAdLibAction',
-			[actionId],
+			{ actionId },
 			async () => {
 				check(actionId, String)
 
@@ -1053,7 +1055,7 @@ class ServerUserActionAPI
 			userEvent,
 			eventTime,
 			'bucketsModifyBucketAdLib',
-			[adlibId, adlibProps],
+			{ adlibId, adlibProps },
 			async () => {
 				check(adlibId, String)
 				check(adlibProps, Object)
@@ -1074,7 +1076,7 @@ class ServerUserActionAPI
 			userEvent,
 			eventTime,
 			'bucketsModifyBucketAdLib',
-			[actionId, actionProps],
+			{ actionId, actionProps },
 			async () => {
 				check(actionId, String)
 				check(actionProps, Object)
@@ -1096,7 +1098,7 @@ class ServerUserActionAPI
 			userEvent,
 			eventTime,
 			'bucketsSaveActionIntoBucket',
-			[studioId, bucketId, action],
+			{ studioId, bucketId, action },
 			async () => {
 				check(studioId, String)
 				check(bucketId, String)
@@ -1119,7 +1121,7 @@ class ServerUserActionAPI
 			userEvent,
 			eventTime,
 			'packageManagerRestartAllExpectations',
-			[studioId, routeSetId, state],
+			{ studioId, routeSetId, state },
 			async () => {
 				check(studioId, String)
 				check(routeSetId, String)
@@ -1186,7 +1188,7 @@ class ServerUserActionAPI
 			userEvent,
 			eventTime,
 			'packageManagerRestartAllExpectations',
-			[peripheralDeviceId, subDeviceId, disable],
+			{ peripheralDeviceId, subDeviceId, disable },
 			async () => {
 				check(peripheralDeviceId, String)
 				check(subDeviceId, String)
@@ -1198,7 +1200,7 @@ class ServerUserActionAPI
 		)
 	}
 
-	async activateScratchpadMode(
+	async activateAdlibTestingMode(
 		userEvent: string,
 		eventTime: number,
 		playlistId: RundownPlaylistId,
@@ -1213,7 +1215,7 @@ class ServerUserActionAPI
 				check(playlistId, String)
 				check(rundownId, String)
 			},
-			StudioJobs.ActivateScratchpad,
+			StudioJobs.ActivateAdlibTesting,
 			{
 				playlistId: playlistId,
 				rundownId: rundownId,
@@ -1263,6 +1265,31 @@ class ServerUserActionAPI
 				playlistId,
 				marker,
 				type: 'end',
+			}
+		)
+	}
+
+	async createAdlibTestingRundownForShowStyleVariant(
+		userEvent: string,
+		eventTime: number,
+		studioId: StudioId,
+		showStyleVariantId: ShowStyleVariantId
+	) {
+		const jobName = IngestJobs.CreateAdlibTestingRundownForShowStyleVariant
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			eventTime,
+			`worker.ingest.${jobName}`,
+			{ showStyleVariantId },
+			async (_credentials) => {
+				check(studioId, String)
+				check(showStyleVariantId, String)
+
+				// TODO - checkAccessToStudio?
+				return runIngestOperation(studioId, IngestJobs.CreateAdlibTestingRundownForShowStyleVariant, {
+					showStyleVariantId,
+				})
 			}
 		)
 	}

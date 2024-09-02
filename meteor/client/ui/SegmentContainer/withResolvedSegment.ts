@@ -9,7 +9,7 @@ import {
 	PieceExtended,
 	PartExtended,
 	SegmentExtended,
-} from '../../../lib/Rundown'
+} from '../../lib/RundownResolver'
 import { IContextMenuContext } from '../RundownView'
 import { equalSets } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
@@ -35,9 +35,6 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstances, Segments } from '../../collections'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
-import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
-import { ReadonlyDeep } from 'type-fest'
-import { PieceContentStatusObj } from '../../../lib/api/pieceContentStatus'
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil'
 
@@ -60,8 +57,6 @@ export type ISourceLayerUi = ISourceLayerExtended
 export interface PieceUi extends PieceExtended {
 	/** This item has already been linked to the parent item of the spanning item group */
 	linked?: boolean
-
-	contentStatus?: ReadonlyDeep<PieceContentStatusObj>
 }
 
 export type MinimalRundown = Pick<Rundown, '_id' | 'name' | 'timing' | 'showStyleBaseId' | 'endOfRundownIsShowBreak'>
@@ -109,12 +104,11 @@ export interface SegmentNoteCounts {
 export interface ITrackedResolvedSegmentProps {
 	segmentui: SegmentUi | undefined
 	parts: Array<PartUi>
-	pieces: Map<PartId, CalculateTimingsPiece[]>
 	segmentNoteCounts: SegmentNoteCounts
 	hasRemoteItems: boolean
 	hasGuestItems: boolean
 	hasAlreadyPlayed: boolean
-	isScratchpad: boolean
+	isAdlibTestingSegment: boolean
 	lastValidPartIndex: number | undefined
 	budgetDuration: number | undefined
 	displayLiveLineCounter: boolean
@@ -146,7 +140,7 @@ export function withResolvedSegment<T extends IResolvedSegmentProps, IState = {}
 					budgetDuration: undefined,
 					displayLiveLineCounter: true,
 					showCountdownToSegment: true,
-					isScratchpad: false,
+					isAdlibTestingSegment: false,
 				}
 			}
 
@@ -212,15 +206,6 @@ export function withResolvedSegment<T extends IResolvedSegmentProps, IState = {}
 			)
 
 			const rundownOrder = RundownPlaylistCollectionUtil.getRundownOrderedIDs(props.playlist)
-			const pieces = memoizedIsolatedAutorun(
-				(orderedParts) => {
-					return RundownPlaylistClientUtil.getPiecesForParts(orderedParts, {
-						fields: { enable: 1, prerollDuration: 1, postrollDuration: 1, pieceType: 1 },
-					})
-				},
-				'playlist.getPiecesForParts',
-				orderedAllPartIds
-			)
 			const rundownIndex = rundownOrder.indexOf(segment.rundownId)
 
 			const o = RundownUtils.getResolvedSegment(
@@ -232,7 +217,6 @@ export function withResolvedSegment<T extends IResolvedSegmentProps, IState = {}
 				rundownOrder.slice(0, rundownIndex),
 				props.rundownsToShowstyles,
 				orderedAllPartIds,
-				pieces,
 				currentPartInstance,
 				nextPartInstance,
 				true,
@@ -298,12 +282,11 @@ export function withResolvedSegment<T extends IResolvedSegmentProps, IState = {}
 				)
 			}
 
-			const isScratchpad = segment.orphaned === SegmentOrphanedReason.SCRATCHPAD
+			const isAdlibTestingSegment = segment.orphaned === SegmentOrphanedReason.ADLIB_TESTING
 
 			return {
 				segmentui: o.segmentExtended,
 				parts: o.parts,
-				pieces,
 				segmentNoteCounts,
 				hasAlreadyPlayed: o.hasAlreadyPlayed,
 				hasRemoteItems: o.hasRemoteItems,
@@ -312,7 +295,7 @@ export function withResolvedSegment<T extends IResolvedSegmentProps, IState = {}
 				budgetDuration,
 				displayLiveLineCounter,
 				showCountdownToSegment,
-				isScratchpad,
+				isAdlibTestingSegment,
 			}
 		},
 		(

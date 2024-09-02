@@ -22,11 +22,10 @@ import { hidePointerLockCursor, showPointerLockCursor } from '../../lib/PointerL
 import { OptionalVelocityComponent } from '../../lib/utilComponents'
 import { filterSecondarySourceLayers } from '../SegmentStoryboard/StoryboardPartSecondaryPieces/StoryboardPartSecondaryPieces'
 import { UIStudio } from '../../../lib/api/studios'
-import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundownPlaylist, RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { isLoopRunning } from '../../../lib/Rundown'
+import { isLoopRunning } from '../../lib/RundownResolver'
 
 interface IProps {
 	id: string
@@ -35,7 +34,6 @@ interface IProps {
 	playlist: DBRundownPlaylist
 	studio: UIStudio
 	parts: Array<PartUi>
-	pieces: Map<PartId, CalculateTimingsPiece[]>
 	segmentNoteCounts: SegmentNoteCounts
 	hasAlreadyPlayed: boolean
 	hasGuestItems: boolean
@@ -66,8 +64,8 @@ const PART_WIDTH = 166 // Must match SCSS: $segment-storyboard-part-width
 const PART_LIST_LEAD_IN = 0 // Must match SCSS: .segment-storyboard__part-list(padding-left)
 const PART_SHADE_WIDTH = 100
 
-export const SegmentScratchpad = React.memo(
-	React.forwardRef<HTMLDivElement, IProps>(function SegmentScratchpad(props: IProps, ref) {
+export const SegmentAdlibTesting = React.memo(
+	React.forwardRef<HTMLDivElement, IProps>(function SegmentAdlibTesting(props: IProps, ref) {
 		const innerRef = useRef<HTMLDivElement>(null)
 		const combinedRef = useCombinedRefs(null, ref, innerRef)
 		const listRef = useRef<HTMLDivElement>(null)
@@ -431,7 +429,7 @@ export const SegmentScratchpad = React.memo(
 		return (
 			<div
 				id={props.id}
-				className={classNames('segment-timeline', 'segment-storyboard', 'segment-scratchpad', {
+				className={classNames('segment-timeline', 'segment-storyboard', 'segment-alib-testing', {
 					// live: props.isLiveSegment,
 					// next: !props.isLiveSegment && props.isNextSegment,
 					// queued: props.isQueuedSegment,
@@ -467,7 +465,7 @@ export const SegmentScratchpad = React.memo(
 						className={'segment-timeline__title__label' + (props.segment.identifier ? ' identifier' : '')}
 						data-identifier={props.segment.identifier}
 					>
-						{t('Scratchpad')}
+						{t('Adlib Testing')}
 					</h2>
 					{(criticalNotes > 0 || warningNotes > 0) && (
 						<div className="segment-timeline__title__notes">
@@ -559,4 +557,4 @@ export const SegmentScratchpad = React.memo(
 	})
 )
 
-SegmentScratchpad.displayName = 'SegmentStoryboard'
+SegmentAdlibTesting.displayName = 'SegmentStoryboard'

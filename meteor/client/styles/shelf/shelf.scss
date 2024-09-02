@@ -26,6 +26,7 @@
 
 	.rundown-view__shelf__handle {
 		position: absolute;
+		display: flex;
 		top: 0;
 		left: 50%;
 		width: 80px;
@@ -37,9 +38,10 @@
 		box-shadow: 0 0 20px #000;
 		cursor: row-resize;
 		touch-action: none;
+		border: none;
 
-		text-align: center;
-		padding-top: 0.5em;
+		justify-content: center;
+		padding-top: 0.6em;
 		font-size: 1.3em;
 		color: #444;
 
@@ -126,6 +128,9 @@
 		}
 
 		.rundown-view__shelf__tabs__tab {
+			display: block;
+			background: none;
+			border: none;
 			position: relative;
 			flex: 1 1;
 			max-width: 7em;
@@ -138,6 +143,8 @@
 			line-height: $inspector-shelf-tabs-height;
 			cursor: pointer;
 			user-select: none;
+
+			outline-offset: -5px;
 
 			&:hover {
 				color: #fff;

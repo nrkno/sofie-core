@@ -7,7 +7,7 @@ import { unprotectString } from '../../../lib/lib'
 import { ActiveProgressBar } from './ActiveProgressBar'
 import { RundownListItem } from './RundownListItem'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { Rundown, getRundownNrcsName } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFolderOpen } from '@fortawesome/free-solid-svg-icons'
@@ -26,7 +26,7 @@ import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { TOOLTIP_DEFAULT_DELAY } from '../../lib/lib'
 import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { isLoopDefined } from '../../../lib/Rundown'
+import { isLoopDefined } from '../../lib/RundownResolver'
 
 export interface RundownPlaylistUi extends DBRundownPlaylist {
 	rundowns: Rundown[]
@@ -159,6 +159,7 @@ export function RundownPlaylistUi({
 				rundownLayouts={rundownLayouts}
 				swapRundownOrder={handleRundownSwap}
 				playlistId={playlist._id}
+				isOnlyRundownInPlaylist={false}
 			/>
 		) : null
 	})
@@ -189,11 +190,15 @@ export function RundownPlaylistUi({
 		))
 
 	return (
-		<li className={ClassNames('rundown-playlist', { droptarget: dropState.isActiveDropZone })} ref={connectDropTarget}>
+		<li
+			className={ClassNames('rundown-playlist', { droptarget: dropState.isActiveDropZone })}
+			ref={connectDropTarget}
+			role="rowgroup"
+		>
 			{/* Drop target { droptarget: isActiveDropZone } */}
 			<header className="rundown-playlist__header">
 				<span>
-					<h2 className="rundown-playlist__heading">
+					<h2 className="rundown-playlist__heading" role="rowheader">
 						<FontAwesomeIcon icon={faFolderOpen} />
 						<span className="rundown-playlist__heading-text">
 							<Link to={playlistViewURL}>
@@ -205,12 +210,12 @@ export function RundownPlaylistUi({
 					{getAllowStudio() ? (
 						<PlaylistRankResetButton
 							manualSortingActive={playlist.rundownRanksAreSetInSofie === true}
-							nrcsName={playlist.rundowns[0]?.externalNRCSName || 'NRCS'}
+							nrcsName={getRundownNrcsName(playlist.rundowns[0])}
 							toggleCallbackHandler={handleResetRundownOrderClick}
 						/>
 					) : null}
 				</span>
-				<span className="rundown-list-item__text">
+				<span className="rundown-list-item__text" role="gridcell">
 					{playlistExpectedStart ? (
 						<DisplayFormattedTime displayTimestamp={playlistExpectedStart} t={t} />
 					) : playlistExpectedEnd && playlistExpectedDuration ? (
@@ -219,7 +224,7 @@ export function RundownPlaylistUi({
 						<span className="dimmed">{t('Not set')}</span>
 					)}
 				</span>
-				<span className="rundown-list-item__text">
+				<span className="rundown-list-item__text" role="gridcell">
 					{expectedDuration ? (
 						expectedDuration
 					) : isPlaylistLooping ? (
@@ -234,7 +239,7 @@ export function RundownPlaylistUi({
 						<span className="dimmed">{t('Not set')}</span>
 					)}
 				</span>
-				<span className="rundown-list-item__text">
+				<span className="rundown-list-item__text" role="gridcell">
 					{playlistExpectedEnd ? (
 						<DisplayFormattedTime displayTimestamp={playlistExpectedEnd} t={t} />
 					) : playlistExpectedStart && playlistExpectedDuration ? (
@@ -243,7 +248,7 @@ export function RundownPlaylistUi({
 						<span className="dimmed">{t('Not set')}</span>
 					)}
 				</span>
-				<span className="rundown-list-item__text">
+				<span className="rundown-list-item__text" role="gridcell">
 					<DisplayFormattedTime displayTimestamp={playlist.modified} t={t} />
 				</span>
 				{rundownLayouts.some(
@@ -251,7 +256,7 @@ export function RundownPlaylistUi({
 						(RundownLayoutsAPI.isLayoutForShelf(l) && l.exposeAsStandalone) ||
 						(RundownLayoutsAPI.isLayoutForRundownView(l) && l.exposeAsSelectableLayout)
 				) && (
-					<span className="rundown-list-item__text">
+					<span className="rundown-list-item__text" role="gridcell">
 						<RundownViewLayoutSelection
 							rundowns={playlist.rundowns}
 							rundownLayouts={rundownLayouts}
@@ -259,7 +264,7 @@ export function RundownPlaylistUi({
 						/>
 					</span>
 				)}
-				<span className="rundown-list-item__actions"></span>
+				<span className="rundown-list-item__actions" role="gridcell"></span>
 			</header>
 			<ol className="rundown-playlist__rundowns">{rundownListComponents}</ol>
 			<footer>

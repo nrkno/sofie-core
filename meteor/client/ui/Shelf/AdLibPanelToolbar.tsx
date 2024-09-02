@@ -47,9 +47,13 @@ export function AdLibPanelToolbar(props: Readonly<IToolbarPropsHeader>): JSX.Ele
 					value={props.searchFilter || ''}
 				/>
 				{props.searchFilter && (
-					<div className="adlib-panel__list-view__toolbar__filter__clear" onClick={clearSearchInput}>
+					<button
+						className="adlib-panel__list-view__toolbar__filter__clear"
+						aria-label={t('Clear filter')}
+						onClick={clearSearchInput}
+					>
 						<FontAwesomeIcon icon={faTimes} />
-					</div>
+					</button>
 				)}
 			</div>
 			<div className="adlib-panel__list-view__toolbar__buttons" style={{ display: 'none' }}>

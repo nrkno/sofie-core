@@ -30,7 +30,7 @@ export class GlobalAdLibActionsHandler
 	}
 
 	async changed(id: RundownBaselineAdLibActionId, changeType: string): Promise<void> {
-		this._logger.info(`${this._name} ${changeType} ${id}`)
+		this.logDocumentChange(id, changeType)
 		if (!this._collectionName) return
 		const col = this._core.getCollection(this._collectionName)
 		if (!col) throw new Error(`collection '${this._collectionName}' not found!`)
@@ -39,7 +39,7 @@ export class GlobalAdLibActionsHandler
 	}
 
 	async update(source: string, data: SelectedPartInstances | undefined): Promise<void> {
-		this._logger.info(`${this._name} received partInstances update from ${source}`)
+		this.logUpdateReceived('partInstances', source)
 		const prevRundownId = this._currentRundownId
 		const partInstance = data ? data.current ?? data.next : undefined
 		this._currentRundownId = partInstance?.rundownId
@@ -61,6 +61,9 @@ export class GlobalAdLibActionsHandler
 				this._dbObserver.changed = (id) => {
 					void this.changed(id, 'changed').catch(this._logger.error)
 				}
+				this._dbObserver.removed = (id) => {
+					void this.changed(id, 'removed').catch(this._logger.error)
+				}
 
 				const collection = this._core.getCollection(this._collectionName)
 				if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
@@ -72,7 +75,7 @@ export class GlobalAdLibActionsHandler
 
 	// override notify to implement empty array handling
 	async notify(data: RundownBaselineAdLibAction[] | undefined): Promise<void> {
-		this._logger.info(`${this._name} notifying update with ${data?.length} globalAdLibActions`)
+		this.logNotifyingUpdate(data?.length)
 		if (data !== undefined) {
 			for (const observer of this._observers) {
 				await observer.update(this._name, data)
