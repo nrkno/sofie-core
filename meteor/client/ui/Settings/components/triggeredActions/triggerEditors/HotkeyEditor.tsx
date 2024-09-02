@@ -4,9 +4,9 @@ import React, { useContext, useState } from 'react'
 import { useLayoutEffect } from 'react'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { EditAttribute } from '../../../../../lib/EditAttribute'
 import { SorensenContext } from '../../../../../lib/SorensenContext'
 import { codesToKeyLabels } from '../../../../../lib/triggers/codesToKeyLabels'
+import { ToggleSwitchControl } from '../../../../../lib/Components/ToggleSwitch'
 
 interface IProps {
 	trigger: IBlueprintHotkeyTrigger
@@ -98,18 +98,17 @@ export const HotkeyEditor = function HotkeyEditor({ trigger, modified, readonly,
 				}}
 				disabled={readonly}
 			/>
-			<EditAttribute
-				type={'toggle'}
-				className="sb-nocolor"
-				overrideDisplayValue={trigger.up}
-				updateFunction={(_e, newValue) =>
-					onChange({
-						...trigger,
-						up: newValue,
-					})
-				}
+			<ToggleSwitchControl
+				classNames={'sb-nocolor'}
+				value={!!trigger.up}
 				label={t('On release')}
 				disabled={readonly}
+				handleUpdate={(newVal) => {
+					onChange({
+						...trigger,
+						up: newVal,
+					})
+				}}
 			/>
 		</>
 	)

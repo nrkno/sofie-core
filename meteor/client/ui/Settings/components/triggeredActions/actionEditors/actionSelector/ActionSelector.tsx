@@ -6,13 +6,15 @@ import { assertNever } from '../../../../../../../lib/lib'
 import { sameWidth } from '../../../../../../lib/popperUtils'
 import { usePopper } from 'react-popper'
 import classNames from 'classnames'
-import { EditAttribute } from '../../../../../../lib/EditAttribute'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleRight, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { AdLibActionEditor } from './actionEditors/AdLibActionEditor'
 import { DeviceActions } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
 import { catchError } from '../../../../../../lib/lib'
 import { preventOverflow } from '@popperjs/core'
+import { ToggleSwitchControl } from '../../../../../../lib/Components/ToggleSwitch'
+import { DropdownInputControl, DropdownInputOption } from '../../../../../../lib/Components/DropdownInput'
+import { IntInputControl } from '../../../../../../lib/Components/IntInput'
 
 interface IProps {
 	action: SomeAction
@@ -195,18 +197,12 @@ function actionToLabel(t: TFunction, action: SomeAction['action']): string {
 	}
 }
 
-function getAvailableActions(t: TFunction): Record<string, string> {
+function getAvailableActions(t: TFunction): DropdownInputOption<string>[] {
 	const actionEnums = [PlayoutActions, ClientActions, DeviceActions]
 
-	const result: Record<string, string> = {}
+	const allOptions = actionEnums.flatMap((enumList) => Object.values<any>(enumList))
 
-	actionEnums.forEach((enumList) => {
-		Object.values<any>(enumList).forEach((key) => {
-			result[actionToLabel(t, key)] = key
-		})
-	})
-
-	return result
+	return allOptions.map((key, i) => ({ value: key, name: actionToLabel(t, key), i }))
 }
 
 function getActionParametersEditor(
@@ -218,28 +214,23 @@ function getActionParametersEditor(
 		case PlayoutActions.activateRundownPlaylist:
 			return (
 				<div className="mts">
-					<EditAttribute
-						className="form-control"
-						modifiedClassName="bghl"
-						type={'toggle'}
+					<ToggleSwitchControl
+						classNames={'form-control'}
+						value={action.rehearsal}
 						label={t('Rehearsal')}
-						overrideDisplayValue={action.rehearsal}
-						attribute={''}
-						updateFunction={(_e, newVal) => {
+						handleUpdate={(newVal) => {
 							onChange({
 								...action,
 								rehearsal: newVal,
 							})
 						}}
 					/>
-					<EditAttribute
-						className="form-control"
-						modifiedClassName="bghl"
-						type={'toggle'}
+
+					<ToggleSwitchControl
+						classNames={'form-control'}
+						value={!!action.force}
 						label={t('Force (deactivate others)')}
-						overrideDisplayValue={action.force}
-						attribute={''}
-						updateFunction={(_e, newVal) => {
+						handleUpdate={(newVal) => {
 							onChange({
 								...action,
 								force: newVal,
@@ -259,14 +250,11 @@ function getActionParametersEditor(
 		case PlayoutActions.disableNextPiece:
 			return (
 				<div className="mts">
-					<EditAttribute
-						className="form-control"
-						modifiedClassName="bghl"
-						type={'toggle'}
+					<ToggleSwitchControl
+						classNames={'form-control'}
+						value={!!action.undo}
 						label={t('Undo')}
-						overrideDisplayValue={action.undo}
-						attribute={''}
-						updateFunction={(_e, newVal) => {
+						handleUpdate={(newVal) => {
 							onChange({
 								...action,
 								undo: newVal,
@@ -278,14 +266,11 @@ function getActionParametersEditor(
 		case PlayoutActions.hold:
 			return (
 				<div className="mts">
-					<EditAttribute
-						className="form-control"
-						modifiedClassName="bghl"
-						type={'toggle'}
+					<ToggleSwitchControl
+						classNames={'form-control'}
+						value={!!action.undo}
 						label={t('Undo')}
-						overrideDisplayValue={action.undo}
-						attribute={''}
-						updateFunction={(_e, newVal) => {
+						handleUpdate={(newVal) => {
 							onChange({
 								...action,
 								undo: newVal,
@@ -298,34 +283,30 @@ function getActionParametersEditor(
 			return (
 				<div className="mts">
 					<label className="block">{t('Move Segments')}</label>
-					<EditAttribute
-						className="form-control input text-input input-m"
+					<IntInputControl
+						classNames="input text-input input-m"
 						modifiedClassName="bghl"
-						type={'int'}
-						label={t('By Segments')}
-						overrideDisplayValue={action.segments}
-						attribute={''}
-						updateFunction={(_e, newVal) => {
+						value={action.segments}
+						placeholder={t('By Segments')}
+						handleUpdate={(newVal) =>
 							onChange({
 								...action,
 								segments: newVal,
 							})
-						}}
+						}
 					/>
 					<label className="block">{t('Move Parts')}</label>
-					<EditAttribute
-						className="form-control input text-input input-m"
+					<IntInputControl
+						classNames="input text-input input-m"
 						modifiedClassName="bghl"
-						type={'int'}
-						label={t('By Parts')}
-						overrideDisplayValue={action.parts}
-						attribute={''}
-						updateFunction={(_e, newVal) => {
+						value={action.parts}
+						placeholder={t('By Parts')}
+						handleUpdate={(newVal) =>
 							onChange({
 								...action,
 								parts: newVal,
 							})
-						}}
+						}
 					/>
 				</div>
 			)
@@ -341,19 +322,28 @@ function getActionParametersEditor(
 			return (
 				<div className="mts">
 					<label className="block">{t('State')}</label>
-					<EditAttribute
-						className="form-control input text-input input-m"
-						modifiedClassName="bghl"
-						type={'dropdown'}
-						label={t('State')}
-						options={{
-							[t('Open')]: true,
-							[t('Close')]: false,
-							[t('Toggle')]: 'toggle',
-						}}
-						overrideDisplayValue={action.state}
-						attribute={''}
-						updateFunction={(_e, newVal) => {
+					<DropdownInputControl<typeof action.state>
+						classNames="input text-input input-m"
+						value={action.state}
+						// placholder={t('State')}
+						options={[
+							{
+								name: t('Open'),
+								value: true,
+								i: 0,
+							},
+							{
+								name: t('Close'),
+								value: false,
+								i: 1,
+							},
+							{
+								name: t('Toggle'),
+								value: 'toggle',
+								i: 2,
+							},
+						]}
+						handleUpdate={(newVal) => {
 							onChange({
 								...action,
 								state: newVal,
@@ -369,14 +359,11 @@ function getActionParametersEditor(
 		case ClientActions.showEntireCurrentSegment:
 			return (
 				<div className="mts">
-					<EditAttribute
-						className="form-control"
-						modifiedClassName="bghl"
-						type={'toggle'}
+					<ToggleSwitchControl
+						classNames={'form-control'}
+						value={!!action.on}
 						label={t('On')}
-						overrideDisplayValue={action.on}
-						attribute={''}
-						updateFunction={(_e, newVal) => {
+						handleUpdate={(newVal) => {
 							onChange({
 								...action,
 								on: newVal,
@@ -388,14 +375,11 @@ function getActionParametersEditor(
 		case ClientActions.miniShelfQueueAdLib:
 			return (
 				<div className="mts">
-					<EditAttribute
-						className="form-control"
-						modifiedClassName="bghl"
-						type={'toggle'}
+					<ToggleSwitchControl
+						classNames={'form-control'}
+						value={!!action.forward}
 						label={t('Forward')}
-						overrideDisplayValue={action.forward}
-						attribute={''}
-						updateFunction={(_e, newVal) => {
+						handleUpdate={(newVal) => {
 							onChange({
 								...action,
 								forward: newVal,
@@ -408,78 +392,82 @@ function getActionParametersEditor(
 			return (
 				<div className="mts">
 					<label className="block">{t('Register ID')}</label>
-					<EditAttribute
-						className="form-control input text-input input-m"
+					<IntInputControl
+						classNames="input text-input input-m"
 						modifiedClassName="bghl"
-						type="int"
-						overrideDisplayValue={action.register}
-						updateFunction={(_e, newVal) => {
+						value={action.register}
+						handleUpdate={(newVal) =>
 							onChange({
 								...action,
 								register: Math.max(0, Number(newVal)),
 							})
-						}}
+						}
 					/>
+
 					<label className="block">{t('Operation')}</label>
-					<EditAttribute
-						className="form-control input text-input input-m"
-						modifiedClassName="bghl"
-						type="dropdown"
-						overrideDisplayValue={action.operation}
-						attribute={''}
-						options={{
-							[t('Set')]: '=',
-							[t('Add')]: '+',
-							[t('Subtract')]: '-',
-						}}
-						updateFunction={(_e, newVal) => {
+					<DropdownInputControl<typeof action.operation>
+						classNames="input text-input input-m"
+						value={action.operation}
+						options={[
+							{
+								name: t('Set'),
+								value: '=',
+								i: 0,
+							},
+							{
+								name: t('Add'),
+								value: '+',
+								i: 1,
+							},
+							{
+								name: t('Subtract'),
+								value: '-',
+								i: 2,
+							},
+						]}
+						handleUpdate={(newVal) => {
 							onChange({
 								...action,
 								operation: newVal,
 							})
 						}}
 					/>
+
 					<label className="block">{t('Value')}</label>
-					<EditAttribute
-						className="form-control input text-input input-m"
+					<IntInputControl
+						classNames="input text-input input-m"
 						modifiedClassName="bghl"
-						type="int"
-						overrideDisplayValue={action.value}
-						attribute={''}
-						updateFunction={(_e, newVal) => {
+						value={action.value}
+						handleUpdate={(newVal) =>
 							onChange({
 								...action,
 								value: newVal,
 							})
-						}}
+						}
 					/>
 					<label className="block">{t('Minimum register limit')}</label>
-					<EditAttribute
-						className="form-control input text-input input-m"
+					<IntInputControl
+						classNames="input text-input input-m"
 						modifiedClassName="bghl"
-						type="int"
-						overrideDisplayValue={action.limitMin}
-						attribute={''}
-						updateFunction={(_e, newVal) => {
+						value={action.limitMin}
+						handleUpdate={(newVal) =>
 							onChange({
 								...action,
 								limitMin: newVal,
 							})
-						}}
+						}
 					/>
 					<label className="block">{t('Maximum register limit')}</label>
-					<EditAttribute
-						className="form-control input text-input input-m"
+					<IntInputControl
+						classNames="input text-input input-m"
 						modifiedClassName="bghl"
-						type="int"
-						overrideDisplayValue={action.limitMax}
-						attribute={''}
-						updateFunction={(_e, newVal) => {
+						value={action.limitMax}
+						handleUpdate={(newVal) =>
 							onChange({
 								...action,
 								limitMax: newVal,
 							})
-						}}
+						}
 					/>
 				</div>
 			)
@@ -567,20 +555,18 @@ export const ActionSelector = function ActionSelector({
 					{...attributes.popper}
 				>
 					<div>
-						<EditAttribute
-							className="form-control input text-input input-m"
-							modifiedClassName="bghl"
-							type={'dropdown'}
-							label={t('Action')}
+						<p>ACT</p>
+						<DropdownInputControl
+							classNames="input text-input input-m"
+							value={action.action}
 							options={getAvailableActions(t)}
-							overrideDisplayValue={action.action}
-							attribute={''}
-							updateFunction={(_e, newVal) => {
+							// placeholder={t('Action')}
+							handleUpdate={(newVal) =>
 								onChange({
 									...action,
-									action: newVal,
+									action: newVal as any,
 								})
-							}}
+							}
 						/>
 					</div>
 					{getActionParametersEditor(t, action, (newVal: Partial<typeof action>) => {

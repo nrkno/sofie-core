@@ -7,6 +7,7 @@ import { faAngleRight, faCheck, faTrash } from '@fortawesome/free-solid-svg-icon
 import { sameWidth } from '../../../../../../lib/popperUtils'
 import { catchError } from '../../../../../../lib/lib'
 import { preventOverflow } from '@popperjs/core'
+import { DropdownInputControl, getDropdownInputOptions } from '../../../../../../lib/Components/DropdownInput'
 
 interface IProps {
 	fieldLabel: string
@@ -98,15 +99,12 @@ export const FilterEditor: React.FC<IProps> = function FilterEditor(props: IProp
 				>
 					{props.description && <p className="man">{props.description}</p>}
 					<div>
-						<EditAttribute
-							className="form-control input text-input input-m"
-							modifiedClassName="bghl"
-							type={'dropdown'}
-							label={props.fieldLabel}
-							options={props.fields}
-							overrideDisplayValue={props.field}
-							attribute={''}
-							updateFunction={(_e, newVal) => props.onChangeField(newVal)}
+						<DropdownInputControl
+							classNames="input text-input input-m"
+							value={props.field}
+							options={getDropdownInputOptions(props.fields)}
+							// placeholder={props.fieldLabel}
+							handleUpdate={(newVal) => props.onChangeField(newVal)}
 						/>
 					</div>
 					<div>

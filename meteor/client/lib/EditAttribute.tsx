@@ -15,6 +15,7 @@ import { DropdownInputControl, getDropdownInputOptions } from './Components/Drop
 import { FloatInputControl } from './Components/FloatInput'
 import { joinLines, MultiLineTextInputControl, splitValueIntoLines } from './Components/MultiLineTextInput'
 import { JsonTextInputControl, tryParseJson } from './Components/JsonTextInput'
+import { ToggleSwitchControl } from './Components/ToggleSwitch'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -28,7 +29,6 @@ export type EditAttributeType =
 	| 'toggle'
 	| 'dropdown'
 	| 'dropdowntext'
-	| 'switch'
 	| 'multiselect'
 	| 'json'
 	| 'colorpicker'
@@ -46,8 +46,6 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 			return <EditAttributeFloat {...this.props} />
 		} else if (this.props.type === 'checkbox') {
 			return <EditAttributeCheckbox {...this.props} />
-		} else if (this.props.type === 'switch') {
-			return <EditAttributeSwitch {...this.props} />
 		} else if (this.props.type === 'toggle') {
 			return <EditAttributeToggle {...this.props} />
 		} else if (this.props.type === 'dropdown') {
@@ -362,81 +360,19 @@ const EditAttributeToggle = wrapEditAttribute(
 		constructor(props: any) {
 			super(props)
 		}
-		isChecked() {
+		private isChecked() {
 			return !!this.getEditAttribute()
 		}
-		handleChange = () => {
-			if (!this.props.disabled) {
-				this.handleUpdate(!this.state.value)
-			}
-		}
-		handleClick = () => {
-			this.handleChange()
-		}
+
 		render(): JSX.Element {
 			return (
-				<div className="mvs">
-					<a
-						className={ClassNames(
-							'switch-button',
-							'mrs',
-							this.props.className,
-							this.state.editing ? this.props.modifiedClassName : undefined,
-							this.props.disabled ? 'disabled' : '',
-							{
-								'sb-on': this.isChecked(),
-							}
-						)}
-						role="button"
-						onClick={this.handleClick}
-						tabIndex={0}
-					>
-						<div className="sb-content">
-							<div className="sb-label">
-								<span className="mls">&nbsp;</span>
-								<span className="mrs right">&nbsp;</span>
-							</div>
-							<div className="sb-switch"></div>
-						</div>
-					</a>
-					<span>{this.props.label}</span>
-				</div>
-			)
-		}
-	}
-)
-const EditAttributeSwitch = wrapEditAttribute(
-	class EditAttributeSwitch extends EditAttributeBase {
-		constructor(props: any) {
-			super(props)
-		}
-		isChecked() {
-			return !!this.getEditAttribute()
-		}
-		handleChange = () => {
-			this.handleUpdate(!this.state.value)
-		}
-		handleClick = () => {
-			this.handleChange()
-		}
-		render(): JSX.Element {
-			return (
-				<div
-					className={
-						'switch ' +
-						' ' +
-						(this.props.className || '') +
-						' ' +
-						(this.state.editing ? this.props.modifiedClassName || '' : '') +
-						' ' +
-						(this.isChecked() ? 'switch-active' : '') +
-						' ' +
-						(this.props.disabled ? 'disabled' : '')
-					}
-					onClick={this.handleClick}
-				>
-					{this.props.label}
-				</div>
+				<ToggleSwitchControl
+					classNames={this.props.className}
+					value={this.isChecked()}
+					disabled={this.props.disabled}
+					label={this.props.label}
+					handleUpdate={this.handleUpdate}
+				/>
 			)
 		}
 	}
