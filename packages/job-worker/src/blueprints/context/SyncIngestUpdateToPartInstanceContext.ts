@@ -101,7 +101,7 @@ export class SyncIngestUpdateToPartInstanceContext
 
 		const newExpectedPackages: ReadonlyDeep<ExpectedPackage.Any[]> = postProcessedPiece
 			? postProcessedPiece.expectedPackages
-			: unwrapExpectedPackages(proposedPieceInstance.expectedPackages)
+			: proposedPieceInstance.expectedPackages
 
 		const newPieceInstance: ReadonlyDeep<PieceInstance> = {
 			...proposedPieceInstance.pieceInstance,
@@ -174,7 +174,10 @@ export class SyncIngestUpdateToPartInstanceContext
 			pieceInstance.setExpectedPackages(trimmedPiece.expectedPackages)
 		}
 
-		return convertPieceInstanceToBlueprints(pieceInstance.pieceInstance, pieceInstance.expectedPackages)
+		return convertPieceInstanceToBlueprints(
+			pieceInstance.pieceInstance,
+			unwrapExpectedPackages(pieceInstance.expectedPackages)
+		)
 	}
 	updatePartInstance(updatePart: Partial<IBlueprintMutatablePart>): IBlueprintPartInstance {
 		if (!this.partInstance) throw new Error(`PartInstance has been removed`)

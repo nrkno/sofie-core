@@ -19,7 +19,7 @@ import { PlayoutModel } from './model/PlayoutModel'
 import { PlayoutPartInstanceModel } from './model/PlayoutPartInstanceModel'
 import { PlayoutSegmentModel } from './model/PlayoutSegmentModel'
 import { getCurrentTime } from '../lib'
-import { clone, flatten, groupByToMap, normalizeArrayToMapFunc } from '@sofie-automation/corelib/dist/lib'
+import { flatten, groupByToMap, normalizeArrayToMapFunc } from '@sofie-automation/corelib/dist/lib'
 import _ = require('underscore')
 import { IngestModelReadonly } from '../ingest/model/IngestModel'
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
@@ -28,8 +28,8 @@ import { mongoWhere } from '@sofie-automation/corelib/dist/mongo'
 import { PlayoutRundownModel } from './model/PlayoutRundownModel'
 import {
 	ExpectedPackageDBFromPiece,
-	ExpectedPackageDBFromPieceInstance,
 	ExpectedPackageDBType,
+	unwrapExpectedPackages,
 } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { PlayoutPieceInstanceModel } from './model/PlayoutPieceInstanceModel'
 
@@ -298,7 +298,7 @@ export async function syncPlayheadInfinitesForNextPartInstance(
 
 			return {
 				pieceInstance: pieceInstance,
-				expectedPackages: clone<ExpectedPackageDBFromPieceInstance[]>(expectedPackages ?? []),
+				expectedPackages: unwrapExpectedPackages(expectedPackages ?? []),
 			}
 		})
 
@@ -398,7 +398,7 @@ async function wrapPieceInstancesWithExpectedPackages(
 		const expectedPackages = playingPieceInstanceMap.get(pieceInstance._id)?.expectedPackages
 		const pieceInstanceWithExpectedPackages: PieceInstanceWithExpectedPackages = {
 			pieceInstance: pieceInstance,
-			expectedPackages: clone<ExpectedPackageDBFromPieceInstance[]>(expectedPackages ?? []),
+			expectedPackages: unwrapExpectedPackages(expectedPackages ?? []),
 		}
 
 		if (!expectedPackages) {
@@ -420,7 +420,7 @@ async function wrapPieceInstancesWithExpectedPackages(
 		for (const [pieceId, expectedPackages] of expectedPackagesByPieceId.entries()) {
 			const pieceInstance = pieceIdsToLoad.get(pieceId)
 			if (pieceInstance) {
-				pieceInstance.expectedPackages = expectedPackages
+				pieceInstance.expectedPackages = unwrapExpectedPackages(expectedPackages)
 			}
 		}
 	}

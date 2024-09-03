@@ -17,7 +17,6 @@ import {
 	StudioId,
 } from './Ids'
 import { ReadonlyDeep } from 'type-fest'
-import { DBPartInstance } from './PartInstance'
 
 /*
  Expected Packages are created from Pieces in the rundown.
@@ -180,46 +179,6 @@ export function getExpectedPackageId(
 	localExpectedPackageId: ExpectedPackage.Base['_id']
 ): ExpectedPackageId {
 	return protectString(`${ownerId}_${getHash(localExpectedPackageId)}`)
-}
-
-export function convertPieceExpectedPackageToPieceInstance(
-	expectedPackage: ReadonlyDeep<ExpectedPackageDBFromPiece | ExpectedPackageDBFromPieceInstance>,
-	pieceInstanceId: PieceInstanceId,
-	partInstance: ReadonlyDeep<DBPartInstance>
-): ExpectedPackageDBFromPieceInstance {
-	const baseProps: ExpectedPackageDBBaseSimple = {
-		blueprintPackageId: expectedPackage.blueprintPackageId,
-		contentVersionHash: expectedPackage.contentVersionHash,
-		created: expectedPackage.created,
-		studioId: expectedPackage.studioId,
-
-		package: expectedPackage.package,
-		_id: getExpectedPackageId(pieceInstanceId, expectedPackage.package._id),
-	}
-
-	if (expectedPackage.fromPieceType === ExpectedPackageDBType.PIECE_INSTANCE) {
-		return {
-			...baseProps,
-
-			fromPieceType: ExpectedPackageDBType.PIECE_INSTANCE,
-			partInstanceId: partInstance._id,
-			pieceInstanceId: pieceInstanceId,
-			segmentId: partInstance.segmentId,
-			rundownId: partInstance.rundownId,
-			pieceId: null,
-		}
-	} else {
-		return {
-			...baseProps,
-
-			fromPieceType: ExpectedPackageDBType.PIECE_INSTANCE,
-			partInstanceId: partInstance._id,
-			pieceInstanceId: pieceInstanceId,
-			segmentId: partInstance.segmentId,
-			rundownId: partInstance.rundownId,
-			pieceId: null,
-		}
-	}
 }
 
 export function unwrapExpectedPackages(

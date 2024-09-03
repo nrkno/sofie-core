@@ -12,6 +12,7 @@ import {
 	PieceInstance,
 	PieceInstancePiece,
 	PieceInstanceWithExpectedPackages,
+	PieceInstanceWithExpectedPackagesFull,
 } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { getCurrentTime } from '../../../lib'
@@ -36,10 +37,7 @@ import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/da
 import _ = require('underscore')
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { IBlueprintMutatablePartSampleKeys } from '../../../blueprints/context/lib'
-import {
-	convertPieceExpectedPackageToPieceInstance,
-	ExpectedPackageDBFromPieceInstance,
-} from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import { ExpectedPackageDBFromPieceInstance } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { wrapPackagesForPieceInstance } from '../../../ingest/expectedPackages'
 
 interface PlayoutPieceInstanceModelSnapshotImpl {
@@ -172,7 +170,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 
 	constructor(
 		partInstance: DBPartInstance,
-		pieceInstances: PieceInstanceWithExpectedPackages[],
+		pieceInstances: PieceInstanceWithExpectedPackagesFull[],
 		hasChanges: boolean
 	) {
 		this.partInstanceImpl = partInstance
@@ -180,17 +178,20 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 
 		this.pieceInstancesImpl = new Map()
 		for (const { pieceInstance, expectedPackages } of pieceInstances) {
-			const expectedPackagesConverted = expectedPackages.map((p) =>
-				convertPieceExpectedPackageToPieceInstance(p, pieceInstance._id, partInstance)
-			)
+			// const expectedPackagesConverted = wrapPackagesForPieceInstance(
+			// 	studio._id,
+			// 	partInstance,
+			// 	pieceInstance._id,
+			// 	expectedPackages
+			// )
 
 			this.pieceInstancesImpl.set(
 				pieceInstance._id,
 				new PlayoutPieceInstanceModelImpl(
 					pieceInstance,
-					expectedPackagesConverted,
+					expectedPackages,
 					hasChanges,
-					hasChanges ? expectedPackagesConverted.map((p) => p._id) : null
+					hasChanges ? expectedPackages.map((p) => p._id) : null
 				)
 			)
 		}
@@ -457,13 +458,15 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 
 			// Future: should this do any deeper validation of the PieceInstances?
 
+			const newExpectedPackages = this.#convertExpectedPackagesForPieceInstance(pieceInstance, expectedPackages)
+
 			this.pieceInstancesImpl.set(
 				pieceInstance._id,
 				new PlayoutPieceInstanceModelImpl(
 					pieceInstance,
-					this.#convertExpectedPackagesForPieceInstance(pieceInstance, expectedPackages),
+					newExpectedPackages,
 					true,
-					expectedPackages.map((p) => p._id)
+					newExpectedPackages.map((p) => p._id)
 				)
 			)
 		}

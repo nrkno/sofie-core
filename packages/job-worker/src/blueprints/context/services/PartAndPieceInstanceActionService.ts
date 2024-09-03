@@ -55,6 +55,7 @@ import { validateAdlibTestingPartInstanceProperties } from '../../../playout/adl
 import { isTooCloseToAutonext } from '../../../playout/lib'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PlayoutRundownModel } from '../../../playout/model/PlayoutRundownModel'
+import { unwrapExpectedPackages } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -111,7 +112,7 @@ export class PartAndPieceInstanceActionService {
 		const partInstance = this._getPartInstance(part)
 		return (
 			partInstance?.pieceInstances?.map((p) =>
-				convertPieceInstanceToBlueprints(p.pieceInstance, p.expectedPackages)
+				convertPieceInstanceToBlueprints(p.pieceInstance, unwrapExpectedPackages(p.expectedPackages))
 			) ?? []
 		)
 	}
@@ -274,7 +275,10 @@ export class PartAndPieceInstanceActionService {
 			this.nextPartState = Math.max(this.nextPartState, ActionPartChange.SAFE_CHANGE)
 		}
 
-		return convertPieceInstanceToBlueprints(newPieceInstance.pieceInstance, newPieceInstance.expectedPackages)
+		return convertPieceInstanceToBlueprints(
+			newPieceInstance.pieceInstance,
+			unwrapExpectedPackages(newPieceInstance.expectedPackages)
+		)
 	}
 
 	async updatePieceInstance(
@@ -331,7 +335,10 @@ export class PartAndPieceInstanceActionService {
 		this.nextPartState = Math.max(this.nextPartState, updatesNextPart)
 		this.currentPartState = Math.max(this.currentPartState, updatesCurrentPart)
 
-		return convertPieceInstanceToBlueprints(pieceInstance.pieceInstance, pieceInstance.expectedPackages)
+		return convertPieceInstanceToBlueprints(
+			pieceInstance.pieceInstance,
+			unwrapExpectedPackages(pieceInstance.expectedPackages)
+		)
 	}
 
 	async updatePartInstance(

@@ -56,6 +56,7 @@ import { ExpectedPlayoutItemStudio } from '@sofie-automation/corelib/dist/dataMo
 import { StudioBaselineHelper } from '../../../studio/model/StudioBaselineHelper'
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
+import { wrapPackagesForPieceInstance } from '../../../ingest/expectedPackages'
 
 export class PlayoutModelReadonlyImpl implements PlayoutModelReadonly {
 	public readonly playlistId: RundownPlaylistId
@@ -329,7 +330,17 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 
 		this.#fixupPieceInstancesForPartInstance(newPartInstance, infinitePieceInstances)
 
-		const partInstance = new PlayoutPartInstanceModelImpl(newPartInstance, infinitePieceInstances, true)
+		const infinitePieceInstances2 = infinitePieceInstances.map((p) => ({
+			pieceInstance: p.pieceInstance,
+			expectedPackages: wrapPackagesForPieceInstance(
+				this.studio._id,
+				newPartInstance,
+				p.pieceInstance._id,
+				p.expectedPackages
+			),
+		}))
+
+		const partInstance = new PlayoutPartInstanceModelImpl(newPartInstance, infinitePieceInstances2, true)
 
 		for (const piece of pieces) {
 			partInstance.insertAdlibbedPiece(piece, fromAdlibId, piece.expectedPackages ?? [])
@@ -373,7 +384,17 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 
 		this.#fixupPieceInstancesForPartInstance(newPartInstance, pieceInstances)
 
-		const partInstance = new PlayoutPartInstanceModelImpl(newPartInstance, pieceInstances, true)
+		const pieceInstances2 = pieceInstances.map((p) => ({
+			pieceInstance: p.pieceInstance,
+			expectedPackages: wrapPackagesForPieceInstance(
+				this.studio._id,
+				newPartInstance,
+				p.pieceInstance._id,
+				p.expectedPackages
+			),
+		}))
+
+		const partInstance = new PlayoutPartInstanceModelImpl(newPartInstance, pieceInstances2, true)
 		partInstance.recalculateExpectedDurationWithTransition()
 
 		this.allPartInstances.set(newPartInstance._id, partInstance)

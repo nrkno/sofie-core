@@ -115,7 +115,7 @@ export class RundownTimingEventContext extends RundownDataChangedEventContext im
 			partInstanceId: { $in: protectStringArray(partInstanceIds) },
 		})
 
-		return pieceInstances.map(convertPieceInstanceToBlueprints)
+		return pieceInstances.map((p) => convertPieceInstanceToBlueprints(p, []))
 	}
 
 	async getSegment(segmentId: string): Promise<Readonly<IBlueprintSegmentDB<unknown>> | undefined> {

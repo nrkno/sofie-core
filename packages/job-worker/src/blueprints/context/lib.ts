@@ -44,7 +44,6 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { JobContext, ProcessedShowStyleBase, ProcessedShowStyleVariant } from '../../jobs'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { ExpectedPackageDBFromPieceInstance } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 
 /**
  * Convert an object to have all the values of all keys (including optionals) be 'true'
