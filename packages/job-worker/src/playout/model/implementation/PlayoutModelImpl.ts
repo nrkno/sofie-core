@@ -23,7 +23,6 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import {
 	getPieceInstanceIdForPiece,
-	PieceInstancePiece,
 	PieceInstanceWithExpectedPackages,
 } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import {
@@ -47,7 +46,13 @@ import { getCurrentTime } from '../../../lib'
 import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { queuePartInstanceTimingEvent } from '../../timings/events'
 import { IS_PRODUCTION } from '../../../environment'
-import { DeferredAfterSaveFunction, DeferredFunction, PlayoutModel, PlayoutModelReadonly } from '../PlayoutModel'
+import {
+	AdlibPieceWithPackages,
+	DeferredAfterSaveFunction,
+	DeferredFunction,
+	PlayoutModel,
+	PlayoutModelReadonly,
+} from '../PlayoutModel'
 import { writePartInstancesAndPieceInstancesAndExpectedPackages, writeAdlibTestingSegments } from './SavePlayoutModel'
 import { PlayoutPieceInstanceModel } from '../PlayoutPieceInstanceModel'
 import { DatabasePersistedModel } from '../../../modelBase'
@@ -305,7 +310,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 
 	createAdlibbedPartInstance(
 		part: Omit<DBPart, 'segmentId' | 'rundownId'>,
-		pieces: Omit<PieceInstancePiece, 'startPartId'>[],
+		pieces: AdlibPieceWithPackages[],
 		fromAdlibId: PieceId | undefined,
 		infinitePieceInstances: PieceInstanceWithExpectedPackages[]
 	): PlayoutPartInstanceModel {
@@ -348,7 +353,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		)
 
 		for (const piece of pieces) {
-			partInstance.insertAdlibbedPiece(piece, fromAdlibId, piece.expectedPackages ?? [])
+			partInstance.insertAdlibbedPiece(piece.piece, fromAdlibId, piece.expectedPackages)
 		}
 
 		partInstance.recalculateExpectedDurationWithTransition()

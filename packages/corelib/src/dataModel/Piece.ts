@@ -38,16 +38,18 @@ export enum PieceStatusCode {
 }
 
 /** A Single item in a Part: script, VT, cameras */
-export interface PieceGeneric extends Omit<IBlueprintPieceGeneric, 'content'> {
+export interface PieceGeneric extends Omit<IBlueprintPieceGeneric, 'content' | 'expectedPackages'> {
 	_id: PieceId // TODO - this should be moved to the implementation types
 
 	content: SomeContent
+
+	expectedPackages: PieceExpectedPackage[]
 
 	/** Stringified timelineObjects */
 	timelineObjectsString: PieceTimelineObjectsBlob
 }
 
-export interface Piece extends PieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'content'> {
+export interface Piece extends PieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'content' | 'expectedPackages'> {
 	/**
 	 * This is the id of the rundown this piece starts playing in.
 	 * Currently this is the only rundown the piece could be playing in

@@ -163,7 +163,13 @@ export class PartAndPieceInstanceActionService {
 			query
 		)
 
-		return lastPieceInstance && convertPieceInstanceToBlueprints(lastPieceInstance)
+		return (
+			lastPieceInstance &&
+			convertPieceInstanceToBlueprints(
+				lastPieceInstance.pieceInstance,
+				unwrapExpectedPackages(lastPieceInstance.expectedPackages)
+			)
+		)
 	}
 
 	async findLastScriptedPieceOnLayer(
@@ -190,14 +196,17 @@ export class PartAndPieceInstanceActionService {
 
 		const sourceLayerId = Array.isArray(sourceLayerId0) ? sourceLayerId0 : [sourceLayerId0]
 
-		const lastPiece = await innerFindLastScriptedPieceOnLayer(
+		const lastPieceAndPackages = await innerFindLastScriptedPieceOnLayer(
 			this._context,
 			this._playoutModel,
 			sourceLayerId,
 			query
 		)
 
-		return lastPiece && convertPieceToBlueprints(lastPiece)
+		return (
+			lastPieceAndPackages &&
+			convertPieceToBlueprints(lastPieceAndPackages.doc, lastPieceAndPackages.expectedPackages)
+		)
 	}
 
 	async getPartInstanceForPreviousPiece(piece: IBlueprintPieceInstance): Promise<IBlueprintPartInstance> {
@@ -419,7 +428,7 @@ export class PartAndPieceInstanceActionService {
 			this._rundown,
 			currentPartInstance,
 			newPart,
-			pieces,
+			pieces.map((p) => ({ piece: p.doc, expectedPackages: p.expectedPackages })),
 			undefined
 		)
 

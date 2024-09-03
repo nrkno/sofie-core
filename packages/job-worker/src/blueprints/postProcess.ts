@@ -62,7 +62,7 @@ function getIdHash(docType: string, usedIds: Map<string, number>, uniqueId: stri
 
 export interface PostProcessDoc<T> {
 	doc: T
-	expectedPackages: ExpectedPackage.Any[]
+	expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
 }
 
 export function unwrapPostProccessDocs<T>(docs: PostProcessDoc<T>[]): T[] {
@@ -288,7 +288,7 @@ export function postProcessAdLibPieces(
 			externalId: orgAdlib.externalId,
 			_rank: orgAdlib._rank,
 
-			expectedPackages: processedExpectedPackages, // convertExpectedPackages(processedExpectedPackages),
+			expectedPackages: convertExpectedPackages(processedExpectedPackages),
 			expectedPlayoutItems: orgAdlib.expectedPlayoutItems,
 
 			privateData: orgAdlib.privateData,

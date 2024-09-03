@@ -2,12 +2,15 @@ import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { PartInstanceId, PieceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import {
+	PieceInstance,
+	PieceInstanceWithExpectedPackagesFull,
+} from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { assertNever, getRandomId, getRank } from '@sofie-automation/corelib/dist/lib'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { getCurrentTime } from '../lib'
 import { JobContext } from '../jobs'
-import { PlayoutModel } from './model/PlayoutModel'
+import { AdlibPieceWithPackages, PlayoutModel } from './model/PlayoutModel'
 import { PlayoutPartInstanceModel } from './model/PlayoutPartInstanceModel'
 import {
 	fetchPiecesThatMayBeActiveForPart,
@@ -17,7 +20,7 @@ import {
 import { convertAdLibToGenericPiece } from './pieces'
 import { getResolvedPiecesForCurrentPartInstance } from './resolvedPieces'
 import { updateTimeline } from './timeline/generate'
-import { PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { ExpectedPackage, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { updatePartInstanceRanksAfterAdlib } from '../updatePartInstanceRanksAndOrphanedState'
 import { setNextPart } from './setNext'
@@ -27,6 +30,12 @@ import { ReadonlyDeep } from 'type-fest'
 import { PlayoutRundownModel } from './model/PlayoutRundownModel'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import {
+	ExpectedPackageDBFromPieceInstance,
+	ExpectedPackageDBType,
+	unwrapExpectedPackages,
+} from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import { PostProcessDoc } from '../blueprints/postProcess'
 
 export async function innerStartOrQueueAdLibPiece(
 	context: JobContext,
@@ -34,7 +43,8 @@ export async function innerStartOrQueueAdLibPiece(
 	rundown: PlayoutRundownModel,
 	queue: boolean,
 	currentPartInstance: PlayoutPartInstanceModel,
-	adLibPiece: AdLibPiece | BucketAdLib
+	adLibPiece: AdLibPiece | BucketAdLib,
+	expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
 ): Promise<PartInstanceId | undefined> {
 	const span = context.startSpan('innerStartOrQueueAdLibPiece')
 	let queuedPartInstanceId: PartInstanceId | undefined
@@ -55,7 +65,7 @@ export async function innerStartOrQueueAdLibPiece(
 			rundown,
 			currentPartInstance,
 			adlibbedPart,
-			[genericAdlibPiece],
+			[{ piece: genericAdlibPiece, expectedPackages }],
 			adLibPiece._id
 		)
 		queuedPartInstanceId = newPartInstance.partInstance._id
@@ -63,7 +73,7 @@ export async function innerStartOrQueueAdLibPiece(
 		// syncPlayheadInfinitesForNextPartInstance is handled by setNextPart
 	} else {
 		const genericAdlibPiece = convertAdLibToGenericPiece(adLibPiece, false)
-		currentPartInstance.insertAdlibbedPiece(genericAdlibPiece, adLibPiece._id, adLibPiece.expectedPackages ?? [])
+		currentPartInstance.insertAdlibbedPiece(genericAdlibPiece, adLibPiece._id, expectedPackages)
 
 		await syncPlayheadInfinitesForNextPartInstance(
 			context,
@@ -85,7 +95,7 @@ export async function innerFindLastPieceOnLayer(
 	sourceLayerId: string[],
 	originalOnly: boolean,
 	customQuery?: MongoQuery<PieceInstance>
-): Promise<PieceInstance | undefined> {
+): Promise<PieceInstanceWithExpectedPackagesFull | undefined> {
 	const span = context.startSpan('innerFindLastPieceOnLayer')
 	const rundownIds = playoutModel.getRundownIds()
 
@@ -110,11 +120,22 @@ export async function innerFindLastPieceOnLayer(
 
 	// Note: This does not want to use the in-memory model, as we want to search as far back as we can
 	// TODO - will this cause problems?
-	return context.directCollections.PieceInstances.findOne(query, {
+	const pieceInstance = await context.directCollections.PieceInstances.findOne(query, {
 		sort: {
 			plannedStartedPlayback: -1,
 		},
 	})
+
+	if (!pieceInstance) return undefined
+
+	const expectedPackages = (await context.directCollections.ExpectedPackages.findFetch({
+		fromPieceType: ExpectedPackageDBType.PIECE_INSTANCE,
+		pieceInstanceId: pieceInstance._id,
+		partInstanceId: pieceInstance.partInstanceId,
+		rundownId: { $in: rundownIds },
+	})) as ExpectedPackageDBFromPieceInstance[]
+
+	return { pieceInstance, expectedPackages }
 }
 
 export async function innerFindLastScriptedPieceOnLayer(
@@ -122,7 +143,7 @@ export async function innerFindLastScriptedPieceOnLayer(
 	playoutModel: PlayoutModel,
 	sourceLayerId: string[],
 	customQuery?: MongoQuery<Piece>
-): Promise<Piece | undefined> {
+): Promise<PostProcessDoc<Piece> | undefined> {
 	const span = context.startSpan('innerFindLastScriptedPieceOnLayer')
 
 	const playlist = playoutModel.playlist
@@ -179,11 +200,20 @@ export async function innerFindLastScriptedPieceOnLayer(
 		return
 	}
 
-	const fullPiece = await context.directCollections.Pieces.findOne(piece._id)
-	if (!fullPiece) return
+	const [fullPiece, expectedPackages] = await Promise.all([
+		context.directCollections.Pieces.findOne(piece._id),
+		context.directCollections.ExpectedPackages.findFetch({
+			fromPieceType: ExpectedPackageDBType.PIECE,
+			pieceId: piece._id,
+			rundownId: { $in: rundownIds },
+		}),
+	])
 
 	if (span) span.end()
-	return fullPiece
+
+	if (!fullPiece) return
+
+	return { doc: fullPiece, expectedPackages: unwrapExpectedPackages(expectedPackages) }
 }
 
 function updateRankForAdlibbedPartInstance(
@@ -212,7 +242,7 @@ export async function insertQueuedPartWithPieces(
 	rundown: PlayoutRundownModel,
 	currentPartInstance: PlayoutPartInstanceModel,
 	newPart: Omit<DBPart, 'segmentId' | 'rundownId'>,
-	initialPieces: Omit<PieceInstancePiece, 'startPartId'>[],
+	initialPieces: AdlibPieceWithPackages[],
 	fromAdlibId: PieceId | undefined
 ): Promise<PlayoutPartInstanceModel> {
 	const span = context.startSpan('insertQueuedPartWithPieces')

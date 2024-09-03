@@ -23,13 +23,21 @@ import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { PieceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { IBlueprintDirectPlayType, IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
+import {
+	ExpectedPackage,
+	IBlueprintDirectPlayType,
+	IBlueprintPieceType,
+} from '@sofie-automation/blueprints-integration'
 import { ReadonlyDeep } from 'type-fest'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { innerFindLastPieceOnLayer, innerStartOrQueueAdLibPiece, innerStopPieces } from './adlibUtils'
 import _ = require('underscore')
 import { executeActionInner } from './adlibAction'
 import { PlayoutPieceInstanceModel } from './model/PlayoutPieceInstanceModel'
+import {
+	ExpectedPackageDBType,
+	unwrapExpectedPackages,
+} from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 
 /**
  * Play an existing Piece in the Rundown as an AdLib
@@ -226,16 +234,29 @@ export async function handleAdLibPieceStart(context: JobContext, data: AdlibPiec
 				.map((r) => r.rundown._id)
 
 			let adLibPiece: AdLibPiece | BucketAdLib | undefined
+			let expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
 			if (data.pieceType === 'baseline') {
 				adLibPiece = await context.directCollections.RundownBaselineAdLibPieces.findOne({
 					_id: data.adLibPieceId,
 					rundownId: { $in: safeRundownIds },
 				})
+				const rawExpectedPackages = await context.directCollections.ExpectedPackages.findFetch({
+					fromPieceType: ExpectedPackageDBType.BASELINE_ADLIB_PIECE,
+					fromPieceId: data.adLibPieceId,
+					rundownId: { $in: safeRundownIds },
+				})
+				expectedPackages = unwrapExpectedPackages(rawExpectedPackages)
 			} else if (data.pieceType === 'normal') {
 				adLibPiece = await context.directCollections.AdLibPieces.findOne({
 					_id: data.adLibPieceId,
 					rundownId: { $in: safeRundownIds },
 				})
+				const rawExpectedPackages = await context.directCollections.ExpectedPackages.findFetch({
+					fromPieceType: ExpectedPackageDBType.ADLIB_PIECE,
+					fromPieceId: data.adLibPieceId,
+					rundownId: { $in: safeRundownIds },
+				})
+				expectedPackages = unwrapExpectedPackages(rawExpectedPackages)
 			} else if (data.pieceType === 'bucket') {
 				const bucketAdlib = await context.directCollections.BucketAdLibPieces.findOne({
 					_id: data.adLibPieceId,
@@ -252,6 +273,12 @@ export async function handleAdLibPieceStart(context: JobContext, data: AdlibPiec
 				}
 
 				adLibPiece = bucketAdlib
+				expectedPackages = bucketAdlib?.expectedPackages ?? []
+			} else {
+				throw UserError.from(
+					new Error(`AdLib type "${data.pieceType}" not supported!`),
+					UserErrorMessage.AdlibNotFound
+				)
 			}
 
 			if (!adLibPiece)
@@ -270,7 +297,15 @@ export async function handleAdLibPieceStart(context: JobContext, data: AdlibPiec
 					UserErrorMessage.AdlibUnplayable
 				)
 
-			await innerStartOrQueueAdLibPiece(context, playoutModel, rundown, !!data.queue, partInstance, adLibPiece)
+			await innerStartOrQueueAdLibPiece(
+				context,
+				playoutModel,
+				rundown,
+				!!data.queue,
+				partInstance,
+				adLibPiece,
+				expectedPackages
+			)
 		}
 	)
 }
@@ -320,8 +355,16 @@ export async function handleStartStickyPieceOnSourceLayer(
 				throw UserError.create(UserErrorMessage.SourceLayerStickyNothingFound)
 			}
 
-			const lastPiece = convertPieceToAdLibPiece(context, lastPieceInstance.piece)
-			await innerStartOrQueueAdLibPiece(context, playoutModel, rundown, false, currentPartInstance, lastPiece)
+			const lastPiece = convertPieceToAdLibPiece(context, lastPieceInstance.pieceInstance.piece)
+			await innerStartOrQueueAdLibPiece(
+				context,
+				playoutModel,
+				rundown,
+				false,
+				currentPartInstance,
+				lastPiece,
+				unwrapExpectedPackages(lastPieceInstance.expectedPackages)
+			)
 		}
 	)
 }

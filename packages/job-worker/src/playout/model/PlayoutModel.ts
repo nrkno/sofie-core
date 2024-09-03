@@ -29,9 +29,15 @@ import { PlayoutPartInstanceModel } from './PlayoutPartInstanceModel'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { PlayoutPieceInstanceModel } from './PlayoutPieceInstanceModel'
+import { ExpectedPackage } from '@sofie-automation/blueprints-integration'
 
 export type DeferredFunction = (playoutModel: PlayoutModel) => void | Promise<void>
 export type DeferredAfterSaveFunction = (playoutModel: PlayoutModelReadonly) => void | Promise<void>
+
+export interface AdlibPieceWithPackages {
+	piece: Omit<PieceInstancePiece, 'startPartId'>
+	expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
+}
 
 /**
  * A lightweight version of the `PlayoutModel`, used to perform some pre-checks before loading the full model
@@ -206,7 +212,7 @@ export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBa
 	 */
 	createAdlibbedPartInstance(
 		part: Omit<DBPart, 'segmentId' | 'rundownId'>,
-		pieces: Omit<PieceInstancePiece, 'startPartId'>[], // nocommit - expectedPackages?
+		pieces: AdlibPieceWithPackages[],
 		fromAdlibId: PieceId | undefined,
 		infinitePieceInstances: PieceInstanceWithExpectedPackages[]
 	): PlayoutPartInstanceModel

@@ -129,7 +129,7 @@ function convertPieceInstanceToBlueprintsInner(
 					fromPreviousPlayhead: pieceInstance.infinite.fromPreviousPlayhead,
 			  })
 			: undefined,
-		piece: convertPieceToBlueprints(pieceInstance.piece),
+		piece: convertPieceToBlueprints(pieceInstance.piece, expectedPackages),
 	}
 
 	return obj
@@ -156,7 +156,7 @@ export function convertResolvedPieceInstanceToBlueprints(
 	pieceInstance: ResolvedPieceInstance
 ): IBlueprintResolvedPieceInstance {
 	const obj: Complete<IBlueprintResolvedPieceInstance> = {
-		...convertPieceInstanceToBlueprintsInner(pieceInstance.instance, undefined),
+		...convertPieceInstanceToBlueprintsInner(pieceInstance.instance, []), // nocommit - is this ok?
 		resolvedStart: pieceInstance.resolvedStart,
 		resolvedDuration: pieceInstance.resolvedDuration,
 	}
@@ -184,7 +184,10 @@ export function convertPartInstanceToBlueprints(partInstance: ReadonlyDeep<DBPar
 	return obj
 }
 
-function convertPieceGenericToBlueprintsInner(piece: ReadonlyDeep<PieceGeneric>): Complete<IBlueprintPieceGeneric> {
+function convertPieceGenericToBlueprintsInner(
+	piece: ReadonlyDeep<PieceGeneric>,
+	expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
+): Complete<IBlueprintPieceGeneric> {
 	const obj: Complete<IBlueprintPieceGeneric> = {
 		externalId: piece.externalId,
 		name: piece.name,
@@ -199,7 +202,7 @@ function convertPieceGenericToBlueprintsInner(piece: ReadonlyDeep<PieceGeneric>)
 		expectedPlayoutItems: clone<ExpectedPlayoutItemGeneric[] | undefined>(piece.expectedPlayoutItems),
 		tags: clone<string[] | undefined>(piece.tags),
 		allowDirectPlay: clone<IBlueprintPieceDB['allowDirectPlay']>(piece.allowDirectPlay),
-		expectedPackages: clone<ExpectedPackage.Any[] | undefined>(piece.expectedPackages),
+		expectedPackages: clone<ExpectedPackage.Any[] | undefined>(expectedPackages),
 		hasSideEffects: piece.hasSideEffects,
 		content: {
 			...clone(piece.content),
@@ -216,9 +219,12 @@ function convertPieceGenericToBlueprintsInner(piece: ReadonlyDeep<PieceGeneric>)
  * @param piece the Piece to convert
  * @returns a cloned complete and clean IBlueprintPieceDB
  */
-export function convertPieceToBlueprints(piece: ReadonlyDeep<PieceInstancePiece>): IBlueprintPieceDB {
+export function convertPieceToBlueprints(
+	piece: ReadonlyDeep<PieceInstancePiece>,
+	expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
+): IBlueprintPieceDB {
 	const obj: Complete<IBlueprintPieceDB> = {
-		...convertPieceGenericToBlueprintsInner(piece),
+		...convertPieceGenericToBlueprintsInner(piece, expectedPackages),
 		_id: unprotectString(piece._id),
 		enable: clone(piece.enable),
 		virtual: piece.virtual,
@@ -276,9 +282,12 @@ export function convertPartToBlueprints(part: ReadonlyDeep<DBPart>): IBlueprintP
  * @param adLib the AdLibPiece to convert
  * @returns a cloned complete and clean IBlueprintAdLibPieceDB
  */
-export function convertAdLibPieceToBlueprints(adLib: ReadonlyDeep<AdLibPiece>): IBlueprintAdLibPieceDB {
+export function convertAdLibPieceToBlueprints(
+	adLib: ReadonlyDeep<AdLibPiece>,
+	expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
+): IBlueprintAdLibPieceDB {
 	const obj: Complete<IBlueprintAdLibPieceDB> = {
-		...convertPieceGenericToBlueprintsInner(adLib),
+		...convertPieceGenericToBlueprintsInner(adLib, expectedPackages),
 		_id: unprotectString(adLib._id),
 		_rank: adLib._rank,
 		invalid: adLib.invalid,

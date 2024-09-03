@@ -399,6 +399,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 				virtual: true,
 				content: {},
 				timelineObjectsString: EmptyPieceTimelineObjectsBlob,
+				expectedPackages: [],
 			},
 
 			dynamicallyInserted: getCurrentTime(),

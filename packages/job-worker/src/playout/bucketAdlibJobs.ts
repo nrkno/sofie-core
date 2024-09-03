@@ -53,7 +53,8 @@ export async function handleExecuteBucketAdLibOrAction(
 				fullRundown,
 				!!bucketAdLib.toBeQueued,
 				partInstance,
-				bucketAdLib
+				bucketAdLib,
+				bucketAdLib.expectedPackages ?? []
 			)
 			await playoutModel.saveAllToDatabase()
 			return {}
