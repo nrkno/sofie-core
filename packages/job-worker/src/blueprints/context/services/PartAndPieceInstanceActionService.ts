@@ -259,10 +259,10 @@ export class PartAndPieceInstanceActionService {
 			partInstance.partInstance.part._id,
 			part === 'current'
 		)[0]
-		piece._id = getRandomId() // Make id random, as postProcessPieces is too predictable (for ingest)
+		piece.doc._id = getRandomId() // Make id random, as postProcessPieces is too predictable (for ingest)
 
 		// Do the work
-		const newPieceInstance = partInstance.insertAdlibbedPiece(piece, undefined, piece.expectedPackages ?? [])
+		const newPieceInstance = partInstance.insertAdlibbedPiece(piece.doc, undefined, piece.expectedPackages ?? [])
 
 		if (part === 'current') {
 			this.currentPartState = Math.max(this.currentPartState, ActionPartChange.SAFE_CHANGE)

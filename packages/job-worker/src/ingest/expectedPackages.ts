@@ -381,14 +381,18 @@ export function updateBaselineExpectedPackagesOnStudio(
 	)
 }
 
-export function setDefaultIdOnExpectedPackages(expectedPackages: ExpectedPackage.Any[] | undefined): void {
+export function setDefaultIdOnExpectedPackages(
+	expectedPackages: ExpectedPackage.Any[] | undefined
+): ExpectedPackage.Any[] {
 	// Fill in ids of unnamed expectedPackage
-	if (expectedPackages) {
-		for (let i = 0; i < expectedPackages.length; i++) {
-			const expectedPackage = expectedPackages[i]
-			if (!expectedPackage._id) {
-				expectedPackage._id = `__index${i}`
-			}
+	if (!expectedPackages) return []
+
+	for (let i = 0; i < expectedPackages.length; i++) {
+		const expectedPackage = expectedPackages[i]
+		if (!expectedPackage._id) {
+			expectedPackage._id = `__index${i}`
 		}
 	}
+
+	return expectedPackages
 }

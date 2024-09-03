@@ -13,6 +13,7 @@ import {
 	PieceLifespan,
 	IBlueprintPieceType,
 	ITranslatableMessage,
+	ExpectedPackage,
 } from '@sofie-automation/blueprints-integration'
 import {
 	AdLibActionId,
@@ -27,12 +28,13 @@ import { JobContext, ProcessedShowStyleCompound } from '../jobs'
 import {
 	EmptyPieceTimelineObjectsBlob,
 	Piece,
+	PieceExpectedPackage,
 	serializePieceTimelineObjectsBlob,
 } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
-import { ArrayElement, getHash, literal, omit } from '@sofie-automation/corelib/dist/lib'
+import { ArrayElement, Complete, getHash, literal, omit } from '@sofie-automation/corelib/dist/lib'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { RundownImportVersions } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { BucketAdLib, BucketAdLibIngestInfo } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
@@ -58,6 +60,11 @@ function getIdHash(docType: string, usedIds: Map<string, number>, uniqueId: stri
 	}
 }
 
+export interface PostProcessDoc<T> {
+	doc: T
+	expectedPackages: ExpectedPackage.Any[]
+}
+
 /**
  * Process and validate some IBlueprintPiece into Piece
  * @param context Context from the job queue
@@ -78,13 +85,13 @@ export function postProcessPieces(
 	partId: PartId,
 	allowNowForPiece: boolean,
 	setInvalid?: boolean
-): Piece[] {
+): PostProcessDoc<Piece>[] {
 	const span = context.startSpan('blueprints.postProcess.postProcessPieces')
 
 	const uniqueIds = new Map<string, number>()
 	const timelineUniqueIds = new Set<string>()
 
-	const processedPieces = pieces.map((orgPiece: IBlueprintPiece) => {
+	const processedPieces = pieces.map((orgPiece: IBlueprintPiece): PostProcessDoc<Piece> => {
 		if (!orgPiece.externalId)
 			throw new Error(
 				`Error in blueprint "${blueprintId}" externalId not set for adlib piece in ${partId}! ("${orgPiece.name}")`
@@ -96,10 +103,12 @@ export function postProcessPieces(
 			`${rundownId}_${blueprintId}_${partId}_piece_${orgPiece.sourceLayerId}_${orgPiece.externalId}`
 		)
 
-		const piece: Piece = {
+		// Fill in ids of unnamed expectedPackages
+		const processedExpectedPackages = setDefaultIdOnExpectedPackages(orgPiece.expectedPackages)
+
+		const piece: Complete<Piece> = {
 			pieceType: IBlueprintPieceType.Normal,
 
-			...orgPiece,
 			content: omit(orgPiece.content, 'timelineObjects'),
 
 			_id: protectString(docId),
@@ -108,6 +117,29 @@ export function postProcessPieces(
 			startPartId: partId,
 			invalid: setInvalid ?? false,
 			timelineObjectsString: EmptyPieceTimelineObjectsBlob,
+
+			virtual: orgPiece.virtual,
+			externalId: orgPiece.externalId,
+			sourceLayerId: orgPiece.sourceLayerId,
+			outputLayerId: orgPiece.outputLayerId,
+			enable: orgPiece.enable,
+			lifespan: orgPiece.lifespan,
+			extendOnHold: orgPiece.extendOnHold,
+			name: orgPiece.name,
+			privateData: orgPiece.privateData,
+			publicData: orgPiece.publicData,
+
+			prerollDuration: orgPiece.prerollDuration,
+			postrollDuration: orgPiece.postrollDuration,
+
+			toBeQueued: orgPiece.toBeQueued,
+			allowDirectPlay: orgPiece.allowDirectPlay,
+			expectedPlayoutItems: orgPiece.expectedPlayoutItems,
+			tags: orgPiece.tags,
+			hasSideEffects: orgPiece.hasSideEffects,
+			abSessions: orgPiece.abSessions,
+			notInVision: orgPiece.notInVision,
+			expectedPackages: processedExpectedPackages, // convertExpectedPackages(processedExpectedPackages),
 		}
 
 		if (piece.pieceType !== IBlueprintPieceType.Normal) {
@@ -132,10 +164,10 @@ export function postProcessPieces(
 		)
 		piece.timelineObjectsString = serializePieceTimelineObjectsBlob(timelineObjects)
 
-		// Fill in ids of unnamed expectedPackages
-		setDefaultIdOnExpectedPackages(piece.expectedPackages)
-
-		return piece
+		return {
+			doc: piece,
+			expectedPackages: processedExpectedPackages,
+		}
 	})
 
 	span?.end()
@@ -222,7 +254,7 @@ export function postProcessAdLibPieces(
 	rundownId: RundownId,
 	partId: PartId | undefined,
 	adLibPieces: Array<IBlueprintAdLibPiece>
-): AdLibPiece[] {
+): PostProcessDoc<AdLibPiece>[] {
 	const span = context.startSpan('blueprints.postProcess.postProcessAdLibPieces')
 
 	const uniqueIds = new Map<string, number>()
@@ -240,13 +272,46 @@ export function postProcessAdLibPieces(
 			`${rundownId}_${blueprintId}_${partId}_adlib_piece_${orgAdlib.sourceLayerId}_${orgAdlib.externalId}`
 		)
 
-		const piece: AdLibPiece = {
-			...orgAdlib,
+		// Fill in ids of unnamed expectedPackages
+		const processedExpectedPackages = setDefaultIdOnExpectedPackages(orgAdlib.expectedPackages)
+
+		const piece: Complete<AdLibPiece> = {
 			content: omit(orgAdlib.content, 'timelineObjects'),
 			_id: protectString(docId),
 			rundownId: rundownId,
 			partId: partId,
 			timelineObjectsString: EmptyPieceTimelineObjectsBlob,
+			externalId: orgAdlib.externalId,
+			_rank: orgAdlib._rank,
+
+			expectedPackages: processedExpectedPackages, // convertExpectedPackages(processedExpectedPackages),
+			expectedPlayoutItems: orgAdlib.expectedPlayoutItems,
+
+			privateData: orgAdlib.privateData,
+			publicData: orgAdlib.publicData,
+			invalid: orgAdlib.invalid,
+			floated: orgAdlib.floated,
+			name: orgAdlib.name,
+			expectedDuration: orgAdlib.expectedDuration,
+
+			currentPieceTags: orgAdlib.currentPieceTags,
+			nextPieceTags: orgAdlib.nextPieceTags,
+			uniquenessId: orgAdlib.uniquenessId,
+			invertOnAirState: orgAdlib.invertOnAirState,
+
+			lifespan: orgAdlib.lifespan,
+			sourceLayerId: orgAdlib.sourceLayerId,
+			outputLayerId: orgAdlib.outputLayerId,
+
+			prerollDuration: orgAdlib.prerollDuration,
+			postrollDuration: orgAdlib.postrollDuration,
+			toBeQueued: orgAdlib.toBeQueued,
+
+			allowDirectPlay: orgAdlib.allowDirectPlay,
+			tags: orgAdlib.tags,
+
+			hasSideEffects: orgAdlib.hasSideEffects,
+			abSessions: orgAdlib.abSessions,
 		}
 
 		if (!piece.externalId)
@@ -262,10 +327,10 @@ export function postProcessAdLibPieces(
 		)
 		piece.timelineObjectsString = serializePieceTimelineObjectsBlob(timelineObjects)
 
-		// Fill in ids of unnamed expectedPackages
-		setDefaultIdOnExpectedPackages(piece.expectedPackages)
-
-		return piece
+		return {
+			doc: piece,
+			expectedPackages: processedExpectedPackages,
+		}
 	})
 
 	span?.end()
@@ -282,7 +347,7 @@ export function postProcessGlobalAdLibActions(
 	blueprintId: BlueprintId,
 	rundownId: RundownId,
 	adlibActions: IBlueprintActionManifest[]
-): RundownBaselineAdLibAction[] {
+): PostProcessDoc<RundownBaselineAdLibAction>[] {
 	const uniqueIds = new Map<string, number>()
 
 	return adlibActions.map((action) => {
@@ -300,16 +365,34 @@ export function postProcessGlobalAdLibActions(
 		)
 
 		// Fill in ids of unnamed expectedPackages
-		setDefaultIdOnExpectedPackages(action.expectedPackages)
+		const processedExpectedPackages = setDefaultIdOnExpectedPackages(action.expectedPackages)
 
-		return literal<RundownBaselineAdLibAction>({
-			...action,
-			actionId: action.actionId,
+		const processedAction = literal<Complete<RundownBaselineAdLibAction>>({
+			externalId: action.externalId,
 			_id: protectString(docId),
 			rundownId: rundownId,
 			partId: undefined,
 			...processAdLibActionITranslatableMessages(action, blueprintId),
+
+			expectedPackages: processedExpectedPackages, // convertExpectedPackages(processedExpectedPackages),
+			expectedPlayoutItems: action.expectedPlayoutItems,
+
+			privateData: action.privateData,
+			publicData: action.publicData,
+
+			actionId: action.actionId,
+			userData: action.userData,
+			userDataManifest: action.userDataManifest,
+			allVariants: action.allVariants,
+
+			// Not used?
+			uniquenessId: undefined,
 		})
+
+		return {
+			doc: processedAction,
+			expectedPackages: processedExpectedPackages,
+		}
 	})
 }
 
@@ -325,7 +408,7 @@ export function postProcessAdLibActions(
 	rundownId: RundownId,
 	partId: PartId,
 	adlibActions: IBlueprintActionManifest[]
-): AdLibAction[] {
+): PostProcessDoc<AdLibAction>[] {
 	const uniqueIds = new Map<string, number>()
 
 	return adlibActions.map((action) => {
@@ -341,16 +424,34 @@ export function postProcessAdLibActions(
 		)
 
 		// Fill in ids of unnamed expectedPackages
-		setDefaultIdOnExpectedPackages(action.expectedPackages)
+		const processedExpectedPackages = setDefaultIdOnExpectedPackages(action.expectedPackages)
 
-		return literal<AdLibAction>({
-			...action,
-			actionId: action.actionId,
+		const processedAction = literal<Complete<AdLibAction>>({
+			externalId: action.externalId,
 			_id: protectString(docId),
 			rundownId: rundownId,
 			partId: partId,
 			...processAdLibActionITranslatableMessages(action, blueprintId),
+
+			expectedPackages: processedExpectedPackages, // convertExpectedPackages(processedExpectedPackages),
+			expectedPlayoutItems: action.expectedPlayoutItems,
+
+			privateData: action.privateData,
+			publicData: action.publicData,
+
+			actionId: action.actionId,
+			userData: action.userData,
+			userDataManifest: action.userDataManifest,
+			allVariants: action.allVariants,
+
+			// Not used?
+			uniquenessId: undefined,
 		})
+
+		return {
+			doc: processedAction,
+			expectedPackages: processedExpectedPackages,
+		}
 	})
 }
 
@@ -398,14 +499,17 @@ export function postProcessBucketAdLib(
 	bucketId: BucketId,
 	rank: number | undefined,
 	importVersions: RundownImportVersions
-): BucketAdLib {
+): PostProcessDoc<BucketAdLib> {
 	const id: PieceId = protectString(
 		getHash(
 			`${showStyleCompound.showStyleVariantId}_${context.studioId}_${bucketId}_bucket_adlib_${ingestInfo.payload.externalId}`
 		)
 	)
-	const piece: BucketAdLib = {
-		...itemOrig,
+
+	// Fill in ids of unnamed expectedPackages
+	const processedExpectedPackages = setDefaultIdOnExpectedPackages(itemOrig.expectedPackages)
+
+	const piece: Complete<BucketAdLib> = {
 		content: omit(itemOrig.content, 'timelineObjects'),
 		_id: id,
 		externalId: ingestInfo.payload.externalId,
@@ -417,14 +521,44 @@ export function postProcessBucketAdLib(
 		ingestInfo,
 		_rank: rank || itemOrig._rank,
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
+
+		expectedPackages: processedExpectedPackages, // convertExpectedPackages(processedExpectedPackages),
+		expectedPlayoutItems: itemOrig.expectedPlayoutItems,
+
+		privateData: itemOrig.privateData,
+		publicData: itemOrig.publicData,
+		invalid: itemOrig.invalid,
+		floated: itemOrig.floated,
+		name: itemOrig.name,
+		expectedDuration: itemOrig.expectedDuration,
+
+		currentPieceTags: itemOrig.currentPieceTags,
+		nextPieceTags: itemOrig.nextPieceTags,
+		uniquenessId: itemOrig.uniquenessId,
+		invertOnAirState: itemOrig.invertOnAirState,
+
+		lifespan: itemOrig.lifespan,
+		sourceLayerId: itemOrig.sourceLayerId,
+		outputLayerId: itemOrig.outputLayerId,
+
+		prerollDuration: itemOrig.prerollDuration,
+		postrollDuration: itemOrig.postrollDuration,
+		toBeQueued: itemOrig.toBeQueued,
+
+		allowDirectPlay: itemOrig.allowDirectPlay,
+		tags: itemOrig.tags,
+
+		hasSideEffects: itemOrig.hasSideEffects,
+		abSessions: itemOrig.abSessions,
 	}
-	// Fill in ids of unnamed expectedPackages
-	setDefaultIdOnExpectedPackages(piece.expectedPackages)
 
 	const timelineObjects = postProcessTimelineObjects(piece._id, blueprintId, itemOrig.content.timelineObjects)
 	piece.timelineObjectsString = serializePieceTimelineObjectsBlob(timelineObjects)
 
-	return piece
+	return {
+		doc: piece,
+		expectedPackages: processedExpectedPackages,
+	}
 }
 
 /**
@@ -447,14 +581,17 @@ export function postProcessBucketAction(
 	bucketId: BucketId,
 	rank: number | undefined,
 	importVersions: RundownImportVersions
-): BucketAdLibAction {
+): PostProcessDoc<BucketAdLibAction> {
 	const id: AdLibActionId = protectString(
 		getHash(
 			`${showStyleCompound.showStyleVariantId}_${context.studioId}_${bucketId}_bucket_adlib_${ingestInfo.payload.externalId}`
 		)
 	)
-	const action: BucketAdLibAction = {
-		...omit(itemOrig, 'partId'),
+
+	// Fill in ids of unnamed expectedPackages
+	const processedExpectedPackages = setDefaultIdOnExpectedPackages(itemOrig.expectedPackages)
+
+	const action: Complete<BucketAdLibAction> = {
 		_id: id,
 		externalId: ingestInfo.payload.externalId,
 		studioId: context.studioId,
@@ -464,12 +601,26 @@ export function postProcessBucketAction(
 		importVersions,
 		ingestInfo,
 		...processAdLibActionITranslatableMessages(itemOrig, blueprintId, rank),
+		expectedPackages: processedExpectedPackages, // convertExpectedPackages(processedExpectedPackages),
+		expectedPlayoutItems: itemOrig.expectedPlayoutItems,
+
+		privateData: itemOrig.privateData,
+		publicData: itemOrig.publicData,
+
+		actionId: itemOrig.actionId,
+		userData: itemOrig.userData,
+		userDataManifest: itemOrig.userDataManifest,
+		allVariants: itemOrig.allVariants,
+
+		// Not used?
+		partId: undefined,
+		uniquenessId: undefined,
 	}
 
-	// Fill in ids of unnamed expectedPackages
-	setDefaultIdOnExpectedPackages(action.expectedPackages)
-
-	return action
+	return {
+		doc: action,
+		expectedPackages: processedExpectedPackages,
+	}
 }
 
 /**
@@ -498,7 +649,7 @@ function processAdLibActionITranslatableMessages<
 		})[]
 	},
 	T extends IBlueprintActionManifest
->(itemOrig: T, blueprintId: BlueprintId, rank?: number): Pick<K, 'display' | 'triggerModes'> {
+>(itemOrig: T, blueprintId: BlueprintId, rank?: number): Complete<Pick<K, 'display' | 'triggerModes'>> {
 	return {
 		display: {
 			...itemOrig.display,
@@ -526,4 +677,12 @@ function processAdLibActionITranslatableMessages<
 				})
 			),
 	}
+}
+
+function convertExpectedPackages(expectedPackages: ExpectedPackage.Any[]): Complete<PieceExpectedPackage>[] {
+	if (!expectedPackages) return []
+
+	return expectedPackages.map((expectedPackage) => ({
+		_id: expectedPackage._id,
+	}))
 }

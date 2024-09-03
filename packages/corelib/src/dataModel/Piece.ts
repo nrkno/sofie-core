@@ -43,9 +43,6 @@ export interface PieceGeneric extends Omit<IBlueprintPieceGeneric, 'content'> {
 
 	content: SomeContent
 
-	/** A flag to signal that a given Piece has no content, and exists only as a marker on the timeline */
-	virtual?: boolean
-
 	/** Stringified timelineObjects */
 	timelineObjectsString: PieceTimelineObjectsBlob
 }
@@ -72,6 +69,14 @@ export interface Piece extends PieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'co
 
 	/** This is set when the part is invalid and these pieces should be ignored */
 	invalid: boolean
+}
+
+/**
+ * Minimal information about an Expected Package, to be able to link to one from a Piece
+ */
+export interface PieceExpectedPackage {
+	/** Unique id of the expectedPackage */
+	_id: string
 }
 
 export type PieceTimelineObjectsBlob = ProtectedString<'PieceTimelineObjectsBlob'>
