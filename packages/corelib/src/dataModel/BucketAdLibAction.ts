@@ -2,10 +2,14 @@ import { BucketAdLibActionId, BucketId, StudioId, ShowStyleVariantId, ShowStyleB
 import { RundownImportVersions } from './Rundown'
 import { AdLibActionCommon } from './AdlibAction'
 import { BucketAdLibIngestInfo } from './BucketAdLibPiece'
+import { IBlueprintActionManifest } from '@sofie-automation/blueprints-integration'
 
 export interface BucketAdLibAction extends Omit<AdLibActionCommon, 'rundownId'> {
 	_id: BucketAdLibActionId
 	bucketId: BucketId
+
+	// nocommit - temporary copy to avoid type errors
+	expectedPackages: IBlueprintActionManifest['expectedPackages']
 
 	externalId: string
 

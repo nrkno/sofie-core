@@ -96,16 +96,26 @@ export async function handleTakePieceAsAdlibNow(context: JobContext, data: TakeP
 			}
 
 			switch (pieceToCopy.allowDirectPlay.type) {
-				case IBlueprintDirectPlayType.AdLibPiece:
+				case IBlueprintDirectPlayType.AdLibPiece: {
+					const expectedPackages = pieceInstanceToCopy
+						? pieceInstanceToCopy.pieceInstance.expectedPackages
+						: await context.directCollections.ExpectedPackages.findFetch({
+								fromPieceType: ExpectedPackageDBType.PIECE,
+								fromPieceId: pieceToCopy._id,
+								rundownId: { $in: rundownIds },
+						  })
+
 					await pieceTakeNowAsAdlib(
 						context,
 						playoutModel,
 						showStyleCompound,
 						currentPartInstance,
 						pieceToCopy,
+						unwrapExpectedPackages(expectedPackages),
 						pieceInstanceToCopy
 					)
 					break
+				}
 				case IBlueprintDirectPlayType.AdLibAction: {
 					const executeProps = pieceToCopy.allowDirectPlay
 
@@ -145,6 +155,7 @@ async function pieceTakeNowAsAdlib(
 	showStyleBase: ReadonlyDeep<ProcessedShowStyleCompound>,
 	currentPartInstance: PlayoutPartInstanceModel,
 	pieceToCopy: PieceInstancePiece,
+	expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>,
 	pieceInstanceToCopy:
 		| { partInstance: PlayoutPartInstanceModel; pieceInstance: PlayoutPieceInstanceModel }
 		| undefined
@@ -153,7 +164,7 @@ async function pieceTakeNowAsAdlib(
 	/*const newPieceInstance = */ currentPartInstance.insertAdlibbedPiece(
 		genericAdlibPiece,
 		pieceToCopy._id,
-		genericAdlibPiece.expectedPackages ?? []
+		expectedPackages
 	)
 
 	// Disable the original piece if from the same Part

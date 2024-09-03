@@ -143,7 +143,7 @@ export function postProcessPieces(
 			hasSideEffects: orgPiece.hasSideEffects,
 			abSessions: orgPiece.abSessions,
 			notInVision: orgPiece.notInVision,
-			expectedPackages: processedExpectedPackages, // convertExpectedPackages(processedExpectedPackages),
+			expectedPackages: convertExpectedPackages(processedExpectedPackages),
 		}
 
 		if (piece.pieceType !== IBlueprintPieceType.Normal) {
@@ -375,10 +375,9 @@ export function postProcessGlobalAdLibActions(
 			externalId: action.externalId,
 			_id: protectString(docId),
 			rundownId: rundownId,
-			partId: undefined,
 			...processAdLibActionITranslatableMessages(action, blueprintId),
 
-			expectedPackages: processedExpectedPackages, // convertExpectedPackages(processedExpectedPackages),
+			expectedPackages: convertExpectedPackages(processedExpectedPackages),
 			expectedPlayoutItems: action.expectedPlayoutItems,
 
 			privateData: action.privateData,
@@ -437,7 +436,7 @@ export function postProcessAdLibActions(
 			partId: partId,
 			...processAdLibActionITranslatableMessages(action, blueprintId),
 
-			expectedPackages: processedExpectedPackages, // convertExpectedPackages(processedExpectedPackages),
+			expectedPackages: convertExpectedPackages(processedExpectedPackages),
 			expectedPlayoutItems: action.expectedPlayoutItems,
 
 			privateData: action.privateData,
@@ -503,7 +502,7 @@ export function postProcessBucketAdLib(
 	bucketId: BucketId,
 	rank: number | undefined,
 	importVersions: RundownImportVersions
-): PostProcessDoc<BucketAdLib> {
+): BucketAdLib {
 	const id: PieceId = protectString(
 		getHash(
 			`${showStyleCompound.showStyleVariantId}_${context.studioId}_${bucketId}_bucket_adlib_${ingestInfo.payload.externalId}`
@@ -559,10 +558,12 @@ export function postProcessBucketAdLib(
 	const timelineObjects = postProcessTimelineObjects(piece._id, blueprintId, itemOrig.content.timelineObjects)
 	piece.timelineObjectsString = serializePieceTimelineObjectsBlob(timelineObjects)
 
-	return {
-		doc: piece,
-		expectedPackages: processedExpectedPackages,
-	}
+	// nocommit: TODO
+	// return {
+	// 	doc: piece,
+	// 	expectedPackages: processedExpectedPackages,
+	// }
+	return piece
 }
 
 /**
@@ -585,7 +586,7 @@ export function postProcessBucketAction(
 	bucketId: BucketId,
 	rank: number | undefined,
 	importVersions: RundownImportVersions
-): PostProcessDoc<BucketAdLibAction> {
+): BucketAdLibAction {
 	const id: AdLibActionId = protectString(
 		getHash(
 			`${showStyleCompound.showStyleVariantId}_${context.studioId}_${bucketId}_bucket_adlib_${ingestInfo.payload.externalId}`
@@ -617,14 +618,15 @@ export function postProcessBucketAction(
 		allVariants: itemOrig.allVariants,
 
 		// Not used?
-		partId: undefined,
 		uniquenessId: undefined,
 	}
 
-	return {
-		doc: action,
-		expectedPackages: processedExpectedPackages,
-	}
+	// nocommit: TODO
+	// return {
+	// 	doc: action,
+	// 	expectedPackages: processedExpectedPackages,
+	// }
+	return action
 }
 
 /**

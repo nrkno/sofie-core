@@ -1,13 +1,13 @@
 import { IBlueprintActionManifest } from '@sofie-automation/blueprints-integration'
 import { ArrayElement } from '../lib'
 import { ITranslatableMessage } from '../TranslatableMessage'
-import { ProtectedStringProperties } from '../protectedString'
 import { RundownId, AdLibActionId, PartId } from './Ids'
+import { PieceExpectedPackage } from './Piece'
 
 /** The following extended interface allows assigning namespace information to the actions as they are stored in the
  *  database after being emitted from the blueprints
  */
-export interface AdLibActionCommon extends ProtectedStringProperties<IBlueprintActionManifest, 'partId'> {
+export interface AdLibActionCommon extends Omit<IBlueprintActionManifest, 'partId' | 'expectedPackages'> {
 	rundownId: RundownId
 	display: IBlueprintActionManifest['display'] & {
 		// this property can be a string if the name is modified by the User
@@ -21,6 +21,8 @@ export interface AdLibActionCommon extends ProtectedStringProperties<IBlueprintA
 			description?: ITranslatableMessage
 		}
 	})[]
+
+	expectedPackages: PieceExpectedPackage[]
 
 	/**
 	 * String that can be used to identify adlibs that are equivalent to each other,

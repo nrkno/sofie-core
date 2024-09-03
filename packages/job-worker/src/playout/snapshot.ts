@@ -279,7 +279,7 @@ export async function handleRestorePlaylistSnapshot(
 		...snapshot.baselineAdLibActions,
 	]) {
 		const oldId = adlib._id
-		if (adlib.partId) adlib.partId = partIdMap.get(adlib.partId)
+		if ('partId' in adlib && adlib.partId) adlib.partId = partIdMap.get(adlib.partId)
 		adlib._id = getRandomId()
 		pieceIdMap.set(oldId, adlib._id)
 	}

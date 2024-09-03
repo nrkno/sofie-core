@@ -2,6 +2,7 @@ import { ExpectedMediaItemRundown } from '@sofie-automation/corelib/dist/dataMod
 import {
 	ExpectedPackageDBFromBaselineAdLibAction,
 	ExpectedPackageDBFromBaselineAdLibPiece,
+	ExpectedPackageDBFromPiece,
 	ExpectedPackageDBFromRundownBaselineObjects,
 	ExpectedPackageFromRundown,
 } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
@@ -138,7 +139,9 @@ export interface IngestModelReadonly {
 	 * Search for an AdLibPiece in all Parts of the Rundown
 	 * @param id Id of the AdLib Piece
 	 */
-	findAdlibPiece(adLibPieceId: PieceId): ReadonlyDeep<AdLibPiece> | undefined
+	findAdlibPieceAndPackages(
+		adLibPieceId: PieceId
+	): { adlib: ReadonlyDeep<AdLibPiece>; expectedPackages: ReadonlyDeep<ExpectedPackageDBFromPiece>[] } | undefined
 
 	/**
 	 * Search for an ExpectedPackage through the whole Rundown

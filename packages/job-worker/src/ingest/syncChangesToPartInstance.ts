@@ -151,8 +151,14 @@ export async function syncChangesToPartInstances(
 
 				const referencedAdlibs: IBlueprintAdLibPieceDB[] = []
 				for (const adLibPieceId of _.compact(pieceInstancesInPart.map((p) => p.pieceInstance.adLibSourceId))) {
-					const adLibPiece = ingestModel.findAdlibPiece(adLibPieceId)
-					if (adLibPiece) referencedAdlibs.push(convertAdLibPieceToBlueprints(adLibPiece))
+					const adLibPiece = ingestModel.findAdlibPieceAndPackages(adLibPieceId)
+					if (adLibPiece)
+						referencedAdlibs.push(
+							convertAdLibPieceToBlueprints(
+								adLibPiece.adlib,
+								unwrapExpectedPackages(adLibPiece.expectedPackages)
+							)
+						)
 				}
 
 				const newResultData: BlueprintSyncIngestNewData = {

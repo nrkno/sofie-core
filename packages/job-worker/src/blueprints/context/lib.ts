@@ -307,7 +307,10 @@ export function convertAdLibPieceToBlueprints(
  * @param action the AdLibAction to convert
  * @returns a cloned complete and clean IBlueprintActionManifest
  */
-export function convertAdLibActionToBlueprints(action: ReadonlyDeep<AdLibAction>): IBlueprintActionManifest {
+export function convertAdLibActionToBlueprints(
+	action: ReadonlyDeep<AdLibAction>,
+	expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
+): IBlueprintActionManifest {
 	const obj: Complete<IBlueprintActionManifest> = {
 		externalId: action.externalId,
 		actionId: action.actionId,
@@ -320,7 +323,7 @@ export function convertAdLibActionToBlueprints(action: ReadonlyDeep<AdLibAction>
 		display: clone<IBlueprintActionManifestDisplay | IBlueprintActionManifestDisplayContent>(action.display), // TODO - type mismatch
 		triggerModes: clone<IBlueprintActionTriggerMode[] | undefined>(action.triggerModes), // TODO - type mismatch
 		expectedPlayoutItems: clone<ExpectedPlayoutItemGeneric[] | undefined>(action.expectedPlayoutItems),
-		expectedPackages: clone<ExpectedPackage.Any[] | undefined>(action.expectedPackages),
+		expectedPackages: clone<ExpectedPackage.Any[] | undefined>(expectedPackages),
 	}
 
 	return obj

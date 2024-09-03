@@ -3,6 +3,7 @@ import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { ExpectedMediaItemRundown } from '@sofie-automation/corelib/dist/dataModel/ExpectedMediaItem'
 import {
 	ExpectedPackageDB,
+	ExpectedPackageDBFromPiece,
 	ExpectedPackageDBType,
 	ExpectedPackageFromRundown,
 } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
@@ -337,10 +338,21 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 		return undefined
 	}
 
-	findAdlibPiece(adLibPieceId: PieceId): ReadonlyDeep<AdLibPiece> | undefined {
+	findAdlibPieceAndPackages(
+		adLibPieceId: PieceId
+	): { adlib: ReadonlyDeep<AdLibPiece>; expectedPackages: ReadonlyDeep<ExpectedPackageDBFromPiece>[] } | undefined {
 		for (const part of this.getAllOrderedParts()) {
 			for (const adlib of part.adLibPieces) {
-				if (adlib._id === adLibPieceId) return adlib
+				if (adlib._id === adLibPieceId) {
+					const expectedPackages = part.expectedPackages.filter(
+						(p): p is ReadonlyDeep<ExpectedPackageDBFromPiece> =>
+							p.fromPieceType === ExpectedPackageDBType.ADLIB_PIECE && p.pieceId === adLibPieceId
+					)
+					return {
+						adlib,
+						expectedPackages,
+					}
+				}
 			}
 		}
 		return undefined

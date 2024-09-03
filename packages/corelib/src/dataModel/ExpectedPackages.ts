@@ -72,6 +72,48 @@ export interface ExpectedPackageDBBaseSimple {
 	created: Time
 }
 
+/*
+ * What about this new concept. The aim here is to avoid the constant inserting and deleting of expectedPackages during playout, and avoiding duplicate packages with the same content.
+ * The idea is to have a single expectedPackage for each 'content'.
+ * Ingest will 'deduplicate' the packages produced by the blueprints, with playout able to reference them with pieceInstanceIds.
+ *
+ * During the ingest save phase, it will need to reload the `playoutSources` property, in case it has changed. And if there are uses remaining, it will need to keep the package after clearing the `ingestSources`.
+ * During playout operations, pieceInstanceIds will be added and removed as needed. If there remains no sources (of either type), then the document can be removed. If an in-progress ingest tried to reclaim it, it will get reinserted.
+ *
+ * Playout can then load just the ones referenced by piece instances, and just before it needs to use them (for bluerpint types or something), can ensure that everything needed has been loaded.
+ * During a take, any packages referenced by the previous(?) partinstance must be removed.
+ * When doing a reset of the rundown, all playout references must be removed.
+ * When inserting/removing pieceinstances, the expectedPackages must be updated.
+ */
+export interface ExpectedPackageDBNew extends ExpectedPackageDBBase {
+	/** The rundown of the Piece this package belongs to */
+	rundownId: RundownId
+
+	_id: ExpectedPackageId // derived from rundownId and contentVersionHash
+
+	ingestSources: Array<
+		| {
+				fromPieceType: ExpectedPackageDBType.PIECE | ExpectedPackageDBType.ADLIB_PIECE
+				/** The Piece this package belongs to */
+				pieceId: PieceId
+				/** The Part this package belongs to */
+				partId: PartId
+				/** The Segment this package belongs to */
+				segmentId: SegmentId
+		  }
+		| {
+				fromPieceType: ExpectedPackageDBType.BASELINE_ADLIB_PIECE
+				/** The Piece this package belongs to */
+				pieceId: PieceId
+		  }
+	>
+
+	playoutSources: {
+		/** Any playout PieceInstance. This is limited to the current and next partInstances */ // nocommit - verify this
+		pieceInstanceIds: PieceInstanceId[]
+	}
+}
+
 export interface ExpectedPackageDBBase extends ExpectedPackageDBBaseSimple {
 	fromPieceType: ExpectedPackageDBType
 }
@@ -85,6 +127,9 @@ export interface ExpectedPackageDBFromPiece extends ExpectedPackageDBBase {
 	segmentId: SegmentId
 	/** The rundown of the Piece this package belongs to */
 	rundownId: RundownId
+
+	/** Any PieceInstance */
+	pieceInstanceIds: PieceInstanceId[]
 }
 
 export interface ExpectedPackageDBFromBaselineAdLibPiece extends ExpectedPackageDBBase {
@@ -143,6 +188,7 @@ export interface ExpectedPackageDBFromBucketAdLibAction extends ExpectedPackageD
 }
 export interface ExpectedPackageDBFromPieceInstance extends ExpectedPackageDBBase {
 	fromPieceType: ExpectedPackageDBType.PIECE_INSTANCE
+
 	/** The PieceInstance this package belongs to */
 	pieceInstanceId: PieceInstanceId
 	/** The PartInstance this package belongs to */

@@ -119,7 +119,7 @@ function generateExpectedMediaItemsFull(
 			...generateExpectedMediaItems<ExpectedMediaItemRundown>(
 				doc._id,
 				{
-					partId: doc.partId,
+					partId: 'partId' in doc ? doc.partId : undefined,
 					rundownId: rundownId,
 				},
 				studioId,
