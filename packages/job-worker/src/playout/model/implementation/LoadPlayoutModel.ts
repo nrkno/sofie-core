@@ -322,7 +322,12 @@ async function loadPartInstances(
 			expectedPackages: groupedExpectedPackages.get(pieceInstance._id) ?? [],
 		}))
 
-		const wrappedPartInstance = new PlayoutPartInstanceModelImpl(partInstance, pieceInstancesAndPackages, false)
+		const wrappedPartInstance = new PlayoutPartInstanceModelImpl(
+			context,
+			partInstance,
+			pieceInstancesAndPackages,
+			false
+		)
 		allPartInstances.push(wrappedPartInstance)
 	}
 

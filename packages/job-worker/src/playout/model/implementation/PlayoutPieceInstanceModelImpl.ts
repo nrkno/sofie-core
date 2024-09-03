@@ -15,8 +15,11 @@ import {
 	diffAndReturnLatestObjects,
 } from '../../../ingest/model/implementation/utils'
 import { generateExpectedPackageBases } from '../../../ingest/expectedPackages'
+import { JobContext } from '../../../jobs'
 
 export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel {
+	#context: JobContext
+
 	/**
 	 * The raw mutable PieceInstance
 	 * Danger: This should not be modified externally, this is exposed for cloning and saving purposes
@@ -95,11 +98,13 @@ export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel 
 	}
 
 	constructor(
+		context: JobContext,
 		pieceInstances: PieceInstance,
 		expectedPackages: ExpectedPackageDBFromPieceInstance[],
 		hasChanges: boolean,
 		expectedPackagesWithChanges: ExpectedPackageId[] | null
 	) {
+		this.#context = context
 		this.PieceInstanceImpl = pieceInstances
 		this.#expectedPackages = expectedPackages
 		this.#hasChanges = hasChanges
@@ -174,7 +179,7 @@ export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel 
 	setExpectedPackages(expectedPackages: ReadonlyDeep<ExpectedPackage.Any>[]): void {
 		// nocommit - refactor this into a simpler type than `ExpectedPackagesStore` or just reuse that?
 
-		const bases = generateExpectedPackageBases(studio._id, this.PieceInstanceImpl._id, expectedPackages)
+		const bases = generateExpectedPackageBases(this.#context.studioId, this.PieceInstanceImpl._id, expectedPackages)
 		const newExpectedPackages: ExpectedPackageDBFromPieceInstance[] = bases.map((base) => ({
 			...base,
 

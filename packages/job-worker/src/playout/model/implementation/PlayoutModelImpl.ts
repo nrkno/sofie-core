@@ -333,14 +333,19 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		const infinitePieceInstances2 = infinitePieceInstances.map((p) => ({
 			pieceInstance: p.pieceInstance,
 			expectedPackages: wrapPackagesForPieceInstance(
-				this.studio._id,
+				this.context.studioId,
 				newPartInstance,
 				p.pieceInstance._id,
 				p.expectedPackages
 			),
 		}))
 
-		const partInstance = new PlayoutPartInstanceModelImpl(newPartInstance, infinitePieceInstances2, true)
+		const partInstance = new PlayoutPartInstanceModelImpl(
+			this.context,
+			newPartInstance,
+			infinitePieceInstances2,
+			true
+		)
 
 		for (const piece of pieces) {
 			partInstance.insertAdlibbedPiece(piece, fromAdlibId, piece.expectedPackages ?? [])
@@ -387,14 +392,14 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		const pieceInstances2 = pieceInstances.map((p) => ({
 			pieceInstance: p.pieceInstance,
 			expectedPackages: wrapPackagesForPieceInstance(
-				this.studio._id,
+				this.context.studioId,
 				newPartInstance,
 				p.pieceInstance._id,
 				p.expectedPackages
 			),
 		}))
 
-		const partInstance = new PlayoutPartInstanceModelImpl(newPartInstance, pieceInstances2, true)
+		const partInstance = new PlayoutPartInstanceModelImpl(this.context, newPartInstance, pieceInstances2, true)
 		partInstance.recalculateExpectedDurationWithTransition()
 
 		this.allPartInstances.set(newPartInstance._id, partInstance)
@@ -433,7 +438,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 			},
 		}
 
-		const partInstance = new PlayoutPartInstanceModelImpl(newPartInstance, [], true)
+		const partInstance = new PlayoutPartInstanceModelImpl(this.context, newPartInstance, [], true)
 		partInstance.recalculateExpectedDurationWithTransition()
 
 		this.allPartInstances.set(newPartInstance._id, partInstance)

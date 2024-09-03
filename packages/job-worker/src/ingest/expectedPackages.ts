@@ -282,12 +282,12 @@ export function setDefaultIdOnExpectedPackages(
 }
 
 export function wrapPackagesForPieceInstance(
-	studio: ReadonlyDeep<DBStudio>,
+	studioId: StudioId,
 	partInstance: ReadonlyDeep<DBPartInstance>,
 	pieceInstanceId: PieceInstanceId,
 	expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
 ): ExpectedPackageDBFromPieceInstance[] {
-	const bases = generateExpectedPackageBases(studio._id, pieceInstanceId, expectedPackages)
+	const bases = generateExpectedPackageBases(studioId, pieceInstanceId, expectedPackages)
 	return bases.map((base) => ({
 		...base,
 

@@ -39,6 +39,7 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { IBlueprintMutatablePartSampleKeys } from '../../../blueprints/context/lib'
 import { ExpectedPackageDBFromPieceInstance } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { wrapPackagesForPieceInstance } from '../../../ingest/expectedPackages'
+import { JobContext } from '../../../jobs'
 
 interface PlayoutPieceInstanceModelSnapshotImpl {
 	PieceInstance: PieceInstance
@@ -76,6 +77,8 @@ class PlayoutPartInstanceModelSnapshotImpl implements PlayoutPartInstanceModelSn
 	}
 }
 export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
+	#context: JobContext
+
 	partInstanceImpl: DBPartInstance
 	pieceInstancesImpl: Map<PieceInstanceId, PlayoutPieceInstanceModelImpl | null>
 
@@ -169,25 +172,21 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 	}
 
 	constructor(
+		context: JobContext,
 		partInstance: DBPartInstance,
 		pieceInstances: PieceInstanceWithExpectedPackagesFull[],
 		hasChanges: boolean
 	) {
+		this.#context = context
 		this.partInstanceImpl = partInstance
 		this.#partInstanceHasChanges = hasChanges
 
 		this.pieceInstancesImpl = new Map()
 		for (const { pieceInstance, expectedPackages } of pieceInstances) {
-			// const expectedPackagesConverted = wrapPackagesForPieceInstance(
-			// 	studio._id,
-			// 	partInstance,
-			// 	pieceInstance._id,
-			// 	expectedPackages
-			// )
-
 			this.pieceInstancesImpl.set(
 				pieceInstance._id,
 				new PlayoutPieceInstanceModelImpl(
+					this.#context,
 					pieceInstance,
 					expectedPackages,
 					hasChanges,
@@ -219,6 +218,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 				this.pieceInstancesImpl.set(
 					pieceInstanceId,
 					new PlayoutPieceInstanceModelImpl(
+						this.#context,
 						pieceInstance.PieceInstance,
 						pieceInstance.ExpectedPackages,
 						pieceInstance.HasChanges,
@@ -273,6 +273,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		const expectedPackages = this.#convertExpectedPackagesForPieceInstance(pieceInstance, pieceExpectedPackages)
 
 		const pieceInstanceModel = new PlayoutPieceInstanceModelImpl(
+			this.#context,
 			pieceInstance,
 			expectedPackages,
 			true,
@@ -318,7 +319,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		}
 
 		// Don't preserve any ExpectedPackages, the existing ones will suffice
-		const pieceInstanceModel = new PlayoutPieceInstanceModelImpl(newInstance, [], true, null)
+		const pieceInstanceModel = new PlayoutPieceInstanceModelImpl(this.#context, newInstance, [], true, null)
 		this.pieceInstancesImpl.set(newInstance._id, pieceInstanceModel)
 
 		return pieceInstanceModel
@@ -328,7 +329,12 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		pieceInstance: ReadonlyDeep<PieceInstance>,
 		expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
 	): ExpectedPackageDBFromPieceInstance[] {
-		return wrapPackagesForPieceInstance(this.studioId, this.partInstanceImpl, pieceInstance._id, expectedPackages)
+		return wrapPackagesForPieceInstance(
+			this.#context.studioId,
+			this.partInstanceImpl,
+			pieceInstance._id,
+			expectedPackages
+		)
 	}
 
 	insertPlannedPiece(
@@ -356,6 +362,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		const expectedPackages = this.#convertExpectedPackagesForPieceInstance(newPieceInstance, pieceExpectedPackages)
 
 		const pieceInstanceModel = new PlayoutPieceInstanceModelImpl(
+			this.#context,
 			newPieceInstance,
 			expectedPackages,
 			true,
@@ -398,7 +405,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		}
 		setupPieceInstanceInfiniteProperties(newPieceInstance)
 
-		const pieceInstanceModel = new PlayoutPieceInstanceModelImpl(newPieceInstance, [], true, null)
+		const pieceInstanceModel = new PlayoutPieceInstanceModelImpl(this.#context, newPieceInstance, [], true, null)
 		this.pieceInstancesImpl.set(newPieceInstance._id, pieceInstanceModel)
 
 		return pieceInstanceModel
@@ -463,6 +470,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 			this.pieceInstancesImpl.set(
 				pieceInstance._id,
 				new PlayoutPieceInstanceModelImpl(
+					this.#context,
 					pieceInstance,
 					newExpectedPackages,
 					true,
@@ -486,13 +494,14 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 			return existingPieceInstance
 		} else {
 			const newExpectedPackages = wrapPackagesForPieceInstance(
-				studio._id,
+				this.#context.studioId,
 				this.partInstanceImpl,
 				doc._id,
 				expectedPackages
 			)
 
 			const newPieceInstance = new PlayoutPieceInstanceModelImpl(
+				this.#context,
 				clone<PieceInstance>(doc),
 				newExpectedPackages,
 				true,
