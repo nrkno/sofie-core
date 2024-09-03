@@ -410,10 +410,10 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 	setExpectedMediaItemsForRundownBaseline(expectedMediaItems: ExpectedMediaItemRundown[]): void {
 		this.#rundownBaselineExpectedPackagesStore.setExpectedMediaItems(expectedMediaItems)
 	}
-	setExpectedPackagesForRundownBaseline(expectedPackages: ExpectedPackageForIngestModelBaseline[]): void {
-		// Future: should these be here, or held as part of each adlib?
-		this.#rundownBaselineExpectedPackagesStore.setExpectedPackages(expectedPackages)
-	}
+	// setExpectedPackagesForRundownBaseline(expectedPackages: ExpectedPackageForIngestModelBaseline[]): void {
+	// 	// Future: should these be here, or held as part of each adlib?
+	// 	this.#rundownBaselineExpectedPackagesStore.setExpectedPackages(expectedPackages)
+	// }
 
 	setRundownData(
 		rundownData: IBlueprintRundown,
@@ -469,7 +469,8 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 	async setRundownBaseline(
 		timelineObjectsBlob: PieceTimelineObjectsBlob,
 		adlibPieces: RundownBaselineAdLibItem[],
-		adlibActions: RundownBaselineAdLibAction[]
+		adlibActions: RundownBaselineAdLibAction[],
+		expectedPackages: ExpectedPackageForIngestModelBaseline[]
 	): Promise<void> {
 		const [loadedRundownBaselineObjs, loadedRundownBaselineAdLibPieces, loadedRundownBaselineAdLibActions] =
 			await Promise.all([
@@ -517,6 +518,9 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 				newAdlibActions
 			)
 		)
+
+		// Future: should these be here, or held as part of each adlib?
+		this.#rundownBaselineExpectedPackagesStore.setExpectedPackages(expectedPackages)
 	}
 
 	setRundownOrphaned(orphaned: RundownOrphanedReason | undefined): void {

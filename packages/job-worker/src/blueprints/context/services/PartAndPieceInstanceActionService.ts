@@ -109,7 +109,11 @@ export class PartAndPieceInstanceActionService {
 	}
 	async getPieceInstances(part: 'current' | 'next'): Promise<IBlueprintPieceInstance[]> {
 		const partInstance = this._getPartInstance(part)
-		return partInstance?.pieceInstances?.map((p) => convertPieceInstanceToBlueprints(p.pieceInstance)) ?? []
+		return (
+			partInstance?.pieceInstances?.map((p) =>
+				convertPieceInstanceToBlueprints(p.pieceInstance, p.expectedPackages)
+			) ?? []
+		)
 	}
 	async getResolvedPieceInstances(part: 'current' | 'next'): Promise<IBlueprintResolvedPieceInstance[]> {
 		const partInstance = this._getPartInstance(part)

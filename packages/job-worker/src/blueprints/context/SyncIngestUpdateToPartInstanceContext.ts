@@ -3,7 +3,7 @@ import {
 	PieceInstance,
 	PieceInstanceWithExpectedPackages,
 } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { normalizeArrayToMap, normalizeArrayToMapFunc, omit } from '@sofie-automation/corelib/dist/lib'
+import { normalizeArrayToMapFunc, omit } from '@sofie-automation/corelib/dist/lib'
 import { protectString, protectStringArray, unprotectStringArray } from '@sofie-automation/corelib/dist/protectedString'
 import { PlayoutPartInstanceModel } from '../../playout/model/PlayoutPartInstanceModel'
 import { ReadonlyDeep } from 'type-fest'
@@ -97,10 +97,12 @@ export class SyncIngestUpdateToPartInstanceContext
 			  )[0]
 			: null
 
-		const newExpectedPackages = postProcessedPiece?.expectedPackages ?? proposedPieceInstance.expectedPackages
+		const newExpectedPackages = postProcessedPiece
+			? postProcessedPiece.expectedPackages
+			: proposedPieceInstance.expectedPackages
 
 		const newPieceInstance: ReadonlyDeep<PieceInstance> = {
-			...proposedPieceInstance,
+			...proposedPieceInstance.pieceInstance,
 			piece: postProcessedPiece?.doc ?? proposedPieceInstance.pieceInstance.piece,
 		}
 		this.partInstance.mergeOrInsertPieceInstance(newPieceInstance, newExpectedPackages)

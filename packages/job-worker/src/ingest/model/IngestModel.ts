@@ -212,11 +212,11 @@ export interface IngestModel extends IngestModelReadonly, BaseModel {
 	 */
 	setExpectedMediaItemsForRundownBaseline(expectedMediaItems: ExpectedMediaItemRundown[]): void
 
-	/**
-	 * Set the ExpectedPackages for the baseline of this Rundown
-	 * @param expectedPackages The new ExpectedPackages
-	 */
-	setExpectedPackagesForRundownBaseline(expectedPackages: ExpectedPackageForIngestModelBaseline[]): void
+	// /**
+	//  * Set the ExpectedPackages for the baseline of this Rundown
+	//  * @param expectedPackages The new ExpectedPackages
+	//  */
+	// setExpectedPackagesForRundownBaseline(expectedPackages: ExpectedPackageForIngestModelBaseline[]): void
 
 	/**
 	 * Set the data for this Rundown.
@@ -246,7 +246,8 @@ export interface IngestModel extends IngestModelReadonly, BaseModel {
 	setRundownBaseline(
 		timelineObjectsBlob: PieceTimelineObjectsBlob,
 		adlibPieces: RundownBaselineAdLibItem[],
-		adlibActions: RundownBaselineAdLibAction[]
+		adlibActions: RundownBaselineAdLibAction[],
+		expectedPackages: ExpectedPackageForIngestModelBaseline[]
 	): Promise<void>
 
 	/**

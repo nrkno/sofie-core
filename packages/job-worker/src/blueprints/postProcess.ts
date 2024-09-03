@@ -65,6 +65,10 @@ export interface PostProcessDoc<T> {
 	expectedPackages: ExpectedPackage.Any[]
 }
 
+export function unwrapPostProccessDocs<T>(docs: PostProcessDoc<T>[]): T[] {
+	return docs.map((doc) => doc.doc)
+}
+
 /**
  * Process and validate some IBlueprintPiece into Piece
  * @param context Context from the job queue

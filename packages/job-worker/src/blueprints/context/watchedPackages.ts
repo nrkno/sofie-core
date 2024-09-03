@@ -77,7 +77,7 @@ export class WatchedPackagesHelper {
 
 		return this.#createFromPackages(
 			context,
-			packages.filter((pkg) => !!pkg.listenToPackageInfoUpdates)
+			packages.filter((pkg) => !!pkg.package.listenToPackageInfoUpdates)
 		)
 	}
 
@@ -105,7 +105,7 @@ export class WatchedPackagesHelper {
 
 		return this.#createFromPackages(
 			context,
-			packages.filter((pkg) => !!pkg.listenToPackageInfoUpdates)
+			packages.filter((pkg) => !!pkg.package.listenToPackageInfoUpdates)
 		)
 	}
 

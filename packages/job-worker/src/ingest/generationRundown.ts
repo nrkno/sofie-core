@@ -1,5 +1,10 @@
-import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import { BlueprintId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	ExpectedPackageDBFromBaselineAdLibAction,
+	ExpectedPackageDBFromBaselineAdLibPiece,
+	ExpectedPackageDBFromRundownBaselineObjects,
+	ExpectedPackageDBType,
+} from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import { BlueprintId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { serializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { DBRundown, RundownSource } from '@sofie-automation/corelib/dist/dataModel/Rundown'
@@ -10,23 +15,31 @@ import { StudioUserContext, GetRundownContext } from '../blueprints/context'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import {
 	postProcessAdLibPieces,
+	PostProcessDoc,
 	postProcessGlobalAdLibActions,
 	postProcessRundownBaselineItems,
+	unwrapPostProccessDocs,
 } from '../blueprints/postProcess'
 import { logger } from '../logging'
 import _ = require('underscore')
-import { IngestModel } from './model/IngestModel'
+import { ExpectedPackageForIngestModelBaseline, IngestModel } from './model/IngestModel'
 import { LocalIngestRundown } from './ingestCache'
 import { extendIngestRundownCore, canRundownBeUpdated } from './lib'
 import { JobContext } from '../jobs'
 import { CommitIngestData } from './lock'
 import { SelectedShowStyleVariant, selectShowStyleVariant } from './selectShowStyleVariant'
-import { updateExpectedPackagesForRundownBaseline } from './expectedPackages'
+import { generateExpectedPackageBases, updateExpectedMediaAndPlayoutItemsForRundownBaseline } from './expectedPackages'
 import { ReadonlyDeep } from 'type-fest'
-import { BlueprintResultRundown, ExtendedIngestRundown } from '@sofie-automation/blueprints-integration'
+import {
+	BlueprintResultRundown,
+	ExpectedPackage,
+	ExtendedIngestRundown,
+} from '@sofie-automation/blueprints-integration'
 import { wrapTranslatableMessageFromBlueprints } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { convertRundownToBlueprintSegmentRundown } from '../blueprints/context/lib'
 import { calculateSegmentsAndRemovalsFromIngestData } from './generationSegment'
+import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
+import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 
 /**
  * Regenerate and save a whole Rundown
@@ -342,9 +355,71 @@ export async function regenerateRundownAndBaselineFromIngestData(
 		rundownRes.globalActions || []
 	)
 
-	await ingestModel.setRundownBaseline(timelineObjectsBlob, adlibPieces, adlibActions)
+	const expectedPackages: ExpectedPackageForIngestModelBaseline[] = [
+		...generateRundownBaselineExpectedPackages(context, dbRundown._id, rundownRes.baseline.expectedPackages ?? []),
+		...generateGlobalAdLibPieceExpectedPackages(context, dbRundown._id, adlibPieces),
+		...generateGlobalAdLibActionExpectedPackages(context, dbRundown._id, adlibActions),
+	]
 
-	await updateExpectedPackagesForRundownBaseline(context, ingestModel, rundownRes.baseline)
+	await ingestModel.setRundownBaseline(
+		timelineObjectsBlob,
+		unwrapPostProccessDocs(adlibPieces),
+		unwrapPostProccessDocs(adlibActions),
+		expectedPackages
+	)
+
+	await updateExpectedMediaAndPlayoutItemsForRundownBaseline(context, ingestModel, rundownRes.baseline)
 
 	return dbRundown
+}
+
+function generateGlobalAdLibPieceExpectedPackages(
+	context: JobContext,
+	rundownId: RundownId,
+	adlibPieces: PostProcessDoc<AdLibPiece>[]
+): ExpectedPackageDBFromBaselineAdLibPiece[] {
+	return adlibPieces.flatMap(({ doc, expectedPackages }) => {
+		const bases = generateExpectedPackageBases(context.studio, doc._id, expectedPackages)
+
+		return bases.map((base) => ({
+			...base,
+			rundownId,
+			pieceId: doc._id,
+			fromPieceType: ExpectedPackageDBType.BASELINE_ADLIB_PIECE,
+		}))
+	})
+}
+
+function generateGlobalAdLibActionExpectedPackages(
+	context: JobContext,
+	rundownId: RundownId,
+	adlibActions: PostProcessDoc<RundownBaselineAdLibAction>[]
+): ExpectedPackageDBFromBaselineAdLibAction[] {
+	return adlibActions.flatMap(({ doc, expectedPackages }) => {
+		const bases = generateExpectedPackageBases(context.studio, doc._id, expectedPackages)
+
+		return bases.map((base) => ({
+			...base,
+			rundownId,
+			pieceId: doc._id,
+			fromPieceType: ExpectedPackageDBType.BASELINE_ADLIB_ACTION,
+		}))
+	})
+}
+
+function generateRundownBaselineExpectedPackages(
+	context: JobContext,
+	rundownId: RundownId,
+	expectedPackages: ExpectedPackage.Any[]
+): ExpectedPackageDBFromRundownBaselineObjects[] {
+	const bases = generateExpectedPackageBases(context.studio, rundownId, expectedPackages)
+
+	return bases.map((item) => {
+		return {
+			...item,
+			fromPieceType: ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS,
+			rundownId: rundownId,
+			pieceId: null,
+		}
+	})
 }

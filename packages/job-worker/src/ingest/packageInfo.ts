@@ -8,7 +8,7 @@ import { logger } from '../logging'
 import { JobContext } from '../jobs'
 import { regenerateSegmentsFromIngestData } from './generationSegment'
 import { UpdateIngestRundownAction, runIngestJob, runWithRundownLock } from './lock'
-import { updateExpectedPackagesForPartModel, updateExpectedPackagesForRundownBaseline } from './expectedPackages'
+import { updateExpectedPackagesForPartModel } from './expectedPackages'
 import { loadIngestModelFromRundown } from './model/implementation/LoadIngestModel'
 
 /**
@@ -27,7 +27,8 @@ export async function handleExpectedPackagesRegenerate(
 			updateExpectedPackagesForPartModel(context, part)
 		}
 
-		await updateExpectedPackagesForRundownBaseline(context, ingestModel, undefined, true)
+		// nocommit - reimplement?
+		// await updateExpectedPackagesForRundownBaseline(context, ingestModel, undefined, true)
 
 		await ingestModel.saveAllToDatabase()
 	})

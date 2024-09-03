@@ -13,7 +13,7 @@ import { PieceInstance, PieceInstancePiece, rewrapPieceToInstance } from '../dat
 import { DBPartInstance } from '../dataModel/PartInstance'
 import { DBRundown } from '../dataModel/Rundown'
 import { ReadonlyDeep } from 'type-fest'
-import { assertNever, clone, flatten, getRandomId, groupByToMapFunc, max, normalizeArrayToMapFunc } from '../lib'
+import { assertNever, clone, getRandomId, groupByToMapFunc, max, normalizeArrayToMapFunc } from '../lib'
 import { protectString } from '../protectedString'
 import _ = require('underscore')
 import { MongoQuery } from '../mongo'

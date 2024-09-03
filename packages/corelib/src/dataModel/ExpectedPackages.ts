@@ -1,6 +1,6 @@
 import { ExpectedPackage, Time } from '@sofie-automation/blueprints-integration'
 import { protectString } from '../protectedString'
-import { getHash, hashObj, omit } from '../lib'
+import { getHash, hashObj } from '../lib'
 import {
 	AdLibActionId,
 	BucketAdLibActionId,
@@ -56,10 +56,13 @@ export enum ExpectedPackageDBType {
 	STUDIO_BASELINE_OBJECTS = 'studio_baseline_objects',
 	PIECE_INSTANCE = 'piece_instance',
 }
-export interface ExpectedPackageDBBase extends Omit<ExpectedPackage.Base, '_id'> {
+export interface ExpectedPackageDBBaseSimple {
 	_id: ExpectedPackageId
+
+	package: ReadonlyDeep<ExpectedPackage.Any>
+
 	/** The local package id - as given by the blueprints */
-	blueprintPackageId: string
+	blueprintPackageId: string // TODO - remove this?
 
 	/** The studio of the Rundown of the Piece this package belongs to */
 	studioId: StudioId
@@ -67,10 +70,11 @@ export interface ExpectedPackageDBBase extends Omit<ExpectedPackage.Base, '_id'>
 	/** Hash that changes whenever the content or version changes. See getContentVersionHash() */
 	contentVersionHash: string
 
-	// pieceId: ProtectedString<any> | null
-	fromPieceType: ExpectedPackageDBType
-
 	created: Time
+}
+
+export interface ExpectedPackageDBBase extends ExpectedPackageDBBaseSimple {
+	fromPieceType: ExpectedPackageDBType
 }
 export interface ExpectedPackageDBFromPiece extends ExpectedPackageDBBase {
 	fromPieceType: ExpectedPackageDBType.PIECE | ExpectedPackageDBType.ADLIB_PIECE
@@ -183,9 +187,20 @@ export function convertPieceExpectedPackageToPieceInstance(
 	pieceInstanceId: PieceInstanceId,
 	partInstance: ReadonlyDeep<DBPartInstance>
 ): ExpectedPackageDBFromPieceInstance {
+	const baseProps: ExpectedPackageDBBaseSimple = {
+		blueprintPackageId: expectedPackage.blueprintPackageId,
+		contentVersionHash: expectedPackage.contentVersionHash,
+		created: expectedPackage.created,
+		studioId: expectedPackage.studioId,
+
+		package: expectedPackage.package,
+		_id: getExpectedPackageId(pieceInstanceId, expectedPackage.package._id),
+	}
+
 	if (expectedPackage.fromPieceType === ExpectedPackageDBType.PIECE_INSTANCE) {
 		return {
-			...expectedPackage,
+			...baseProps,
+
 			fromPieceType: ExpectedPackageDBType.PIECE_INSTANCE,
 			partInstanceId: partInstance._id,
 			pieceInstanceId: pieceInstanceId,
@@ -195,7 +210,8 @@ export function convertPieceExpectedPackageToPieceInstance(
 		}
 	} else {
 		return {
-			...omit(expectedPackage, 'pieceId', 'partId'),
+			...baseProps,
+
 			fromPieceType: ExpectedPackageDBType.PIECE_INSTANCE,
 			partInstanceId: partInstance._id,
 			pieceInstanceId: pieceInstanceId,
