@@ -61,9 +61,9 @@ export interface IngestPartModel extends IngestPartModelReadonly {
 	 */
 	setExpectedMediaItems(expectedMediaItems: ExpectedMediaItemRundown[]): void
 
-	/**
-	 * Set the ExpectedPackages for the contents of this Part
-	 * @param expectedPackages The new ExpectedPackages
-	 */
-	setExpectedPackages(expectedPackages: ExpectedPackageFromRundown[]): void
+	// /**
+	//  * Set the ExpectedPackages for the contents of this Part
+	//  * @param expectedPackages The new ExpectedPackages
+	//  */
+	// setExpectedPackages(expectedPackages: ExpectedPackageFromRundown[]): void
 }

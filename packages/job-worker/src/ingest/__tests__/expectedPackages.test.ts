@@ -6,7 +6,7 @@ import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { defaultPart, defaultPiece, defaultAdLibPiece } from '../../__mocks__/defaultCollectionObjects'
 import { LAYER_IDS } from '../../__mocks__/presetCollections'
 import { ExpectedPackage, PieceLifespan, VTContent } from '@sofie-automation/blueprints-integration'
-import { updateExpectedPackagesForPartModel } from '../expectedPackages'
+import { updateExpectedMediaAndPlayoutItemsForPartModel } from '../expectedPackages'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { ReadonlyDeep } from 'type-fest'
 import { IngestPartModel } from '../model/IngestPartModel'
@@ -141,7 +141,7 @@ describe('Expected Media Items', () => {
 			},
 		}
 
-		updateExpectedPackagesForPartModel(context, partModel)
+		updateExpectedMediaAndPlayoutItemsForPartModel(context, partModel)
 
 		expect(setExpectedPackages).toHaveBeenCalledTimes(1)
 		expect(setExpectedPackages.mock.calls[0][0]).toHaveLength(4)

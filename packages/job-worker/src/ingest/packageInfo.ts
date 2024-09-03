@@ -8,7 +8,6 @@ import { logger } from '../logging'
 import { JobContext } from '../jobs'
 import { regenerateSegmentsFromIngestData } from './generationSegment'
 import { UpdateIngestRundownAction, runIngestJob, runWithRundownLock } from './lock'
-import { updateExpectedPackagesForPartModel } from './expectedPackages'
 import { loadIngestModelFromRundown } from './model/implementation/LoadIngestModel'
 
 /**
@@ -23,11 +22,12 @@ export async function handleExpectedPackagesRegenerate(
 
 		const ingestModel = await loadIngestModelFromRundown(context, rundownLock, rundown)
 
-		for (const part of ingestModel.getAllOrderedParts()) {
-			updateExpectedPackagesForPartModel(context, part)
-		}
-
 		// nocommit - reimplement?
+
+		// for (const part of ingestModel.getAllOrderedParts()) {
+		// 	updateExpectedMediaAndPlayoutItemsForPartModel(context, part)
+		// }
+
 		// await updateExpectedPackagesForRundownBaseline(context, ingestModel, undefined, true)
 
 		await ingestModel.saveAllToDatabase()

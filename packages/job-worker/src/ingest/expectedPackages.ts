@@ -1,22 +1,16 @@
-import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
-import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import {
 	ExpectedPackageDBType,
-	ExpectedPackageDBFromPiece,
-	ExpectedPackageDBFromAdLibAction,
 	ExpectedPackageDBFromBucketAdLib,
 	ExpectedPackageDBFromBucketAdLibAction,
 	ExpectedPackageDBFromStudioBaselineObjects,
 	getContentVersionHash,
 	getExpectedPackageId,
-	ExpectedPackageFromRundown,
 	ExpectedPackageDBBaseSimple,
 	ExpectedPackageDBFromPieceInstance,
 } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import {
-	SegmentId,
 	RundownId,
 	AdLibActionId,
 	PieceId,
@@ -26,7 +20,6 @@ import {
 	StudioId,
 	PieceInstanceId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { saveIntoDb } from '../db/changes'
 import { PlayoutModel } from '../playout/model/PlayoutModel'
 import { StudioPlayoutModel } from '../studio/model/StudioPlayoutModel'
@@ -45,34 +38,9 @@ import { IngestPartModel } from './model/IngestPartModel'
 import { clone } from '@sofie-automation/corelib/dist/lib'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 
-export function updateExpectedPackagesForPartModel(context: JobContext, part: IngestPartModel): void {
+export function updateExpectedMediaAndPlayoutItemsForPartModel(context: JobContext, part: IngestPartModel): void {
 	updateExpectedMediaItemsForPartModel(context, part)
 	updateExpectedPlayoutItemsForPartModel(context, part)
-
-	const expectedPackages: ExpectedPackageFromRundown[] = [
-		...generateExpectedPackagesForPiece(
-			context.studio,
-			part.part.rundownId,
-			part.part.segmentId,
-			part.pieces,
-			ExpectedPackageDBType.PIECE
-		),
-		...generateExpectedPackagesForPiece(
-			context.studio,
-			part.part.rundownId,
-			part.part.segmentId,
-			part.adLibPieces,
-			ExpectedPackageDBType.ADLIB_PIECE
-		),
-		...generateExpectedPackagesForAdlibAction(
-			context.studio,
-			part.part.rundownId,
-			part.part.segmentId,
-			part.adLibActions
-		),
-	]
-
-	part.setExpectedPackages(expectedPackages)
 }
 
 export async function updateExpectedMediaAndPlayoutItemsForRundownBaseline(
@@ -84,56 +52,6 @@ export async function updateExpectedMediaAndPlayoutItemsForRundownBaseline(
 	await updateExpectedPlayoutItemsForRundownBaseline(context, ingestModel, baseline)
 }
 
-function generateExpectedPackagesForPiece(
-	studio: ReadonlyDeep<DBStudio>,
-	rundownId: RundownId,
-	segmentId: SegmentId,
-	pieces: ReadonlyDeep<Piece | AdLibPiece>[],
-	type: ExpectedPackageDBType.PIECE | ExpectedPackageDBType.ADLIB_PIECE
-) {
-	const packages: ExpectedPackageDBFromPiece[] = []
-	for (const piece of pieces) {
-		const partId = 'startPartId' in piece ? piece.startPartId : piece.partId
-		if (piece.expectedPackages && partId) {
-			const bases = generateExpectedPackageBases(studio._id, piece._id, piece.expectedPackages)
-			for (const base of bases) {
-				packages.push({
-					...base,
-					rundownId,
-					segmentId,
-					partId,
-					pieceId: piece._id,
-					fromPieceType: type,
-				})
-			}
-		}
-	}
-	return packages
-}
-function generateExpectedPackagesForAdlibAction(
-	studio: ReadonlyDeep<DBStudio>,
-	rundownId: RundownId,
-	segmentId: SegmentId,
-	actions: ReadonlyDeep<AdLibAction[]>
-) {
-	const packages: ExpectedPackageDBFromAdLibAction[] = []
-	for (const action of actions) {
-		if (action.expectedPackages) {
-			const bases = generateExpectedPackageBases(studio._id, action._id, action.expectedPackages)
-			for (const base of bases) {
-				packages.push({
-					...base,
-					rundownId,
-					segmentId,
-					partId: action.partId,
-					pieceId: action._id,
-					fromPieceType: ExpectedPackageDBType.ADLIB_ACTION,
-				})
-			}
-		}
-	}
-	return packages
-}
 function generateExpectedPackagesForBucketAdlib(studio: ReadonlyDeep<DBStudio>, adlibs: BucketAdLib[]) {
 	const packages: ExpectedPackageDBFromBucketAdLib[] = []
 	for (const adlib of adlibs) {

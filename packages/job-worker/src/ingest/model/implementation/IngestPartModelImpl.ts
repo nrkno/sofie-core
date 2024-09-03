@@ -234,8 +234,8 @@ export class IngestPartModelImpl implements IngestPartModel {
 	setExpectedMediaItems(expectedMediaItems: ExpectedMediaItemRundown[]): void {
 		this.expectedPackagesStore.setExpectedMediaItems(expectedMediaItems)
 	}
-	setExpectedPackages(expectedPackages: ExpectedPackageFromRundown[]): void {
-		// Future: should these be here, or held as part of each adlib/piece?
-		this.expectedPackagesStore.setExpectedPackages(expectedPackages)
-	}
+	// setExpectedPackages(expectedPackages: ExpectedPackageFromRundown[]): void {
+	// 	// Future: should these be here, or held as part of each adlib/piece?
+	// 	this.expectedPackagesStore.setExpectedPackages(expectedPackages)
+	// }
 }

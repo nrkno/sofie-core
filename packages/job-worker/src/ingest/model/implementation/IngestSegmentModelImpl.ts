@@ -1,4 +1,4 @@
-import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartId, RundownId, SegmentId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { IngestReplacePartType, IngestSegmentModel } from '../IngestSegmentModel'
@@ -12,6 +12,15 @@ import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { calculatePartExpectedDurationWithTransition } from '@sofie-automation/corelib/dist/playout/timings'
 import { clone } from '@sofie-automation/corelib/dist/lib'
 import { getPartId } from '../../lib'
+import { PostProcessDoc, unwrapPostProccessDocs } from '../../../blueprints/postProcess'
+import {
+	ExpectedPackageDBFromAdLibAction,
+	ExpectedPackageDBFromPiece,
+	ExpectedPackageDBType,
+	ExpectedPackageFromRundown,
+} from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import { generateExpectedPackageBases } from '../../expectedPackages'
+import { JobContext } from '../../../jobs'
 
 /**
  * A light wrapper around the IngestPartModel, so that we can track the deletions while still accessing the contents
@@ -22,6 +31,7 @@ interface PartWrapper {
 }
 
 export class IngestSegmentModelImpl implements IngestSegmentModel {
+	readonly #context: JobContext
 	readonly segmentImpl: DBSegment
 	readonly partsImpl: Map<PartId, PartWrapper>
 
@@ -105,11 +115,14 @@ export class IngestSegmentModelImpl implements IngestSegmentModel {
 	}
 
 	constructor(
+		context: JobContext,
 		isBeingCreated: boolean,
 		segment: DBSegment,
 		currentParts: IngestPartModelImpl[],
 		previousSegment?: IngestSegmentModelImpl
 	) {
+		this.#context = context
+
 		currentParts.sort((a, b) => a.part._rank - b.part._rank)
 
 		this.#segmentHasChanges = isBeingCreated
@@ -206,16 +219,19 @@ export class IngestSegmentModelImpl implements IngestSegmentModel {
 
 	replacePart(
 		rawPart: IngestReplacePartType,
-		pieces: Piece[],
-		adLibPiece: AdLibPiece[],
-		adLibActions: AdLibAction[]
+		pieces: PostProcessDoc<Piece>[],
+		adLibPieces: PostProcessDoc<AdLibPiece>[],
+		adLibActions: PostProcessDoc<AdLibAction>[]
 	): IngestPartModel {
 		const part: DBPart = {
 			...rawPart,
 			_id: this.getPartIdFromExternalId(rawPart.externalId),
 			rundownId: this.segment.rundownId,
 			segmentId: this.segment._id,
-			expectedDurationWithTransition: calculatePartExpectedDurationWithTransition(rawPart, pieces),
+			expectedDurationWithTransition: calculatePartExpectedDurationWithTransition(
+				rawPart,
+				unwrapPostProccessDocs(pieces)
+			),
 		}
 
 		// We don't need to worry about this being present on other Segments. The caller must make sure it gets removed if needed,
@@ -224,15 +240,38 @@ export class IngestSegmentModelImpl implements IngestSegmentModel {
 
 		const oldPart = this.partsImpl.get(part._id)
 
+		const expectedPackages: ExpectedPackageFromRundown[] = [
+			...generateExpectedPackagesForPiece(
+				this.#context.studioId,
+				part.rundownId,
+				part.segmentId,
+				pieces,
+				ExpectedPackageDBType.PIECE
+			),
+			...generateExpectedPackagesForPiece(
+				this.#context.studioId,
+				part.rundownId,
+				part.segmentId,
+				adLibPieces,
+				ExpectedPackageDBType.ADLIB_PIECE
+			),
+			...generateExpectedPackagesForAdlibAction(
+				this.#context.studioId,
+				part.rundownId,
+				part.segmentId,
+				adLibActions
+			),
+		]
+
 		const partModel = new IngestPartModelImpl(
 			!oldPart,
 			clone(part),
-			clone(pieces),
-			clone(adLibPiece),
-			clone(adLibActions),
+			clone(unwrapPostProccessDocs(pieces)),
+			clone(unwrapPostProccessDocs(adLibPieces)),
+			clone(unwrapPostProccessDocs(adLibActions)),
 			[],
 			[],
-			[]
+			expectedPackages
 		)
 		partModel.setOwnerIds(this.segment.rundownId, this.segment._id)
 
@@ -242,4 +281,53 @@ export class IngestSegmentModelImpl implements IngestSegmentModel {
 
 		return partModel
 	}
+}
+
+function generateExpectedPackagesForPiece(
+	studioId: StudioId,
+	rundownId: RundownId,
+	segmentId: SegmentId,
+	pieces: ReadonlyDeep<PostProcessDoc<Piece | AdLibPiece>>[],
+	type: ExpectedPackageDBType.PIECE | ExpectedPackageDBType.ADLIB_PIECE
+): ExpectedPackageDBFromPiece[] {
+	const packages: ExpectedPackageDBFromPiece[] = []
+	for (const { doc, expectedPackages } of pieces) {
+		const partId = 'startPartId' in doc ? doc.startPartId : doc.partId
+		if (partId) {
+			const bases = generateExpectedPackageBases(studioId, doc._id, expectedPackages)
+			for (const base of bases) {
+				packages.push({
+					...base,
+					rundownId,
+					segmentId,
+					partId,
+					pieceId: doc._id,
+					fromPieceType: type,
+				})
+			}
+		}
+	}
+	return packages
+}
+function generateExpectedPackagesForAdlibAction(
+	studioId: StudioId,
+	rundownId: RundownId,
+	segmentId: SegmentId,
+	actions: ReadonlyDeep<PostProcessDoc<AdLibAction>[]>
+): ExpectedPackageDBFromAdLibAction[] {
+	const packages: ExpectedPackageDBFromAdLibAction[] = []
+	for (const { doc, expectedPackages } of actions) {
+		const bases = generateExpectedPackageBases(studioId, doc._id, expectedPackages)
+		for (const base of bases) {
+			packages.push({
+				...base,
+				rundownId,
+				segmentId,
+				partId: doc.partId,
+				pieceId: doc._id,
+				fromPieceType: ExpectedPackageDBType.ADLIB_ACTION,
+			})
+		}
+	}
+	return packages
 }

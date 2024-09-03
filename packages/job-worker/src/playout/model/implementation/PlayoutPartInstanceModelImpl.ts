@@ -77,7 +77,7 @@ class PlayoutPartInstanceModelSnapshotImpl implements PlayoutPartInstanceModelSn
 	}
 }
 export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
-	#context: JobContext
+	readonly #context: JobContext
 
 	partInstanceImpl: DBPartInstance
 	pieceInstancesImpl: Map<PieceInstanceId, PlayoutPieceInstanceModelImpl | null>

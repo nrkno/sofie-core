@@ -215,7 +215,7 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 						)
 				)
 				this.segmentsImpl.set(segment._id, {
-					segmentModel: new IngestSegmentModelImpl(false, segment, parts),
+					segmentModel: new IngestSegmentModelImpl(this.context, false, segment, parts),
 					deleted: false,
 				})
 			}
@@ -375,7 +375,7 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 		}
 		const oldSegment = this.segmentsImpl.get(segment._id)
 
-		const newSegment = new IngestSegmentModelImpl(true, segment, [], oldSegment?.segmentModel)
+		const newSegment = new IngestSegmentModelImpl(this.context, true, segment, [], oldSegment?.segmentModel)
 		this.segmentsImpl.set(segment._id, {
 			segmentModel: newSegment,
 			deleted: false,
@@ -394,7 +394,12 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 
 		this.segmentsImpl.set(oldId, {
 			// Make a minimal clone of the old segment, the reference is needed to issue a mongo delete
-			segmentModel: new IngestSegmentModelImpl(false, clone<DBSegment>(existingSegment.segmentModel.segment), []),
+			segmentModel: new IngestSegmentModelImpl(
+				this.context,
+				false,
+				clone<DBSegment>(existingSegment.segmentModel.segment),
+				[]
+			),
 			deleted: true,
 		})
 

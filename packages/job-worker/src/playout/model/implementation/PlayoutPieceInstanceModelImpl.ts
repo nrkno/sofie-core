@@ -18,7 +18,7 @@ import { generateExpectedPackageBases } from '../../../ingest/expectedPackages'
 import { JobContext } from '../../../jobs'
 
 export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel {
-	#context: JobContext
+	readonly #context: JobContext
 
 	/**
 	 * The raw mutable PieceInstance

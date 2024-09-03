@@ -19,7 +19,7 @@ import {
 	NoteSeverity,
 } from '@sofie-automation/blueprints-integration'
 import { wrapTranslatableMessageFromBlueprints } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { updateExpectedPackagesForPartModel } from './expectedPackages'
+import { updateExpectedMediaAndPlayoutItemsForPartModel } from './expectedPackages'
 import { IngestReplacePartType, IngestSegmentModel } from './model/IngestSegmentModel'
 import { ReadonlyDeep } from 'type-fest'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
@@ -402,7 +402,7 @@ function updateModelWithGeneratedPart(
 	)
 
 	const partModel = segmentModel.replacePart(part, processedPieces, adlibPieces, adlibActions)
-	updateExpectedPackagesForPartModel(context, partModel)
+	updateExpectedMediaAndPlayoutItemsForPartModel(context, partModel)
 }
 
 /**
