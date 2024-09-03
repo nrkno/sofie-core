@@ -1,11 +1,14 @@
+import { ReadonlyDeep } from 'type-fest'
 import { ExpectedPackage } from './package'
 
 // Note: These functions are copied from Package Manager
 
 type Steps = Required<ExpectedPackage.ExpectedPackageHtmlTemplate['version']>['steps']
 
-export function htmlTemplateGetSteps(version: ExpectedPackage.ExpectedPackageHtmlTemplate['version']): Steps {
-	let steps: Steps
+export function htmlTemplateGetSteps(
+	version: ReadonlyDeep<ExpectedPackage.ExpectedPackageHtmlTemplate['version']>
+): ReadonlyDeep<Steps> {
+	let steps: ReadonlyDeep<Steps>
 	if (version.casparCG) {
 		// Generate a set of steps for standard CasparCG templates
 		const casparData = version.casparCG.data
@@ -29,7 +32,7 @@ export function htmlTemplateGetSteps(version: ExpectedPackage.ExpectedPackageHtm
 	}
 	return steps
 }
-export function htmlTemplateGetFileNamesFromSteps(steps: Steps): {
+export function htmlTemplateGetFileNamesFromSteps(steps: ReadonlyDeep<Steps>): {
 	/** List of all file names that will be output from in the steps */
 	fileNames: string[]
 	/** The "main file", ie the file that will carry the main metadata */

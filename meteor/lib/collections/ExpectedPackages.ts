@@ -6,9 +6,10 @@ import {
 	htmlTemplateGetFileNamesFromSteps,
 } from '@sofie-automation/shared-lib/dist/package-manager/helpers'
 import deepExtend from 'deep-extend'
+import { ReadonlyDeep } from 'type-fest'
 
 export function getPreviewPackageSettings(
-	expectedPackage: ExpectedPackage.Any
+	expectedPackage: ReadonlyDeep<ExpectedPackage.Any>
 ): ExpectedPackage.SideEffectPreviewSettings | undefined {
 	if (expectedPackage.type === ExpectedPackage.PackageType.MEDIA_FILE) {
 		const packagePath = expectedPackage.content.filePath
@@ -29,7 +30,7 @@ export function getPreviewPackageSettings(
 	}
 }
 export function getThumbnailPackageSettings(
-	expectedPackage: ExpectedPackage.Any
+	expectedPackage: ReadonlyDeep<ExpectedPackage.Any>
 ): ExpectedPackage.SideEffectThumbnailSettings | undefined {
 	if (expectedPackage.type === ExpectedPackage.PackageType.MEDIA_FILE) {
 		const packagePath = expectedPackage.content.filePath
@@ -51,7 +52,7 @@ export function getThumbnailPackageSettings(
 	}
 }
 export function getSideEffect(
-	expectedPackage: ExpectedPackage.Base,
+	expectedPackage: ReadonlyDeep<ExpectedPackage.Base>,
 	studio: Pick<StudioLight, 'previewContainerIds' | 'thumbnailContainerIds'>
 ): ExpectedPackage.Base['sideEffect'] {
 	return deepExtend(
@@ -59,8 +60,8 @@ export function getSideEffect(
 		literal<ExpectedPackage.Base['sideEffect']>({
 			previewContainerId: studio.previewContainerIds[0], // just pick the first. Todo: something else?
 			thumbnailContainerId: studio.thumbnailContainerIds[0], // just pick the first. Todo: something else?
-			previewPackageSettings: getPreviewPackageSettings(expectedPackage as ExpectedPackage.Any),
-			thumbnailPackageSettings: getThumbnailPackageSettings(expectedPackage as ExpectedPackage.Any),
+			previewPackageSettings: getPreviewPackageSettings(expectedPackage as ReadonlyDeep<ExpectedPackage.Any>),
+			thumbnailPackageSettings: getThumbnailPackageSettings(expectedPackage as ReadonlyDeep<ExpectedPackage.Any>),
 		}),
 		expectedPackage.sideEffect
 	)

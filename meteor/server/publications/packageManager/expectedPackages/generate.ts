@@ -47,7 +47,7 @@ export async function updateCollectionForExpectedPackageIds(
 
 		// Map the expectedPackages onto their specified layer:
 		const allDeviceIds = new Set<PeripheralDeviceId>()
-		for (const layerName of packageDoc.layers) {
+		for (const layerName of packageDoc.package.layers) {
 			const layerDeviceIds = layerNameToDeviceIds.get(layerName)
 			for (const deviceId of layerDeviceIds || []) {
 				allDeviceIds.add(deviceId)
@@ -61,8 +61,9 @@ export async function updateCollectionForExpectedPackageIds(
 			const routedPackage = generateExpectedPackageForDevice(
 				studio,
 				{
-					...packageDoc,
+					...packageDoc.package,
 					_id: unprotectString(packageDoc._id),
+					rundownId: 'rundownId' in packageDoc ? packageDoc.rundownId : undefined,
 				},
 				deviceId,
 				null,
@@ -207,11 +208,13 @@ function generateExpectedPackageForDevice(
 	if (!combinedTargets.length) {
 		logger.warn(`Pub.expectedPackagesForDevice: No targets found for "${expectedPackage._id}"`)
 	}
-	expectedPackage.sideEffect = getSideEffect(expectedPackage, studio)
 
 	return {
 		_id: protectString(`${expectedPackage._id}_${deviceId}_${pieceInstanceId}`),
-		expectedPackage: expectedPackage,
+		expectedPackage: {
+			...expectedPackage,
+			sideEffect: getSideEffect(expectedPackage, studio),
+		},
 		sources: combinedSources,
 		targets: combinedTargets,
 		priority: priority,
@@ -239,7 +242,7 @@ function calculateCombinedSource(
 	for (const accessorId of accessorIds) {
 		const sourceAccessor: Accessor.Any | undefined = lookedUpSource.container.accessors[accessorId]
 
-		const packageAccessor: AccessorOnPackage.Any | undefined = packageSource.accessors?.[accessorId]
+		const packageAccessor: ReadonlyDeep<AccessorOnPackage.Any> | undefined = packageSource.accessors?.[accessorId]
 
 		if (packageAccessor && sourceAccessor && packageAccessor.type === sourceAccessor.type) {
 			combinedSource.accessors[accessorId] = deepExtend({}, sourceAccessor, packageAccessor)

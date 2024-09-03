@@ -1,6 +1,7 @@
 import { ExpectedPackage, PackageContainer, PackageContainerOnPackage } from './package'
 import { PeripheralDeviceId, PieceInstanceId, RundownId, RundownPlaylistId } from '../core/model/Ids'
 import { ProtectedString } from '../lib/protectedString'
+import { ReadonlyDeep } from 'type-fest'
 
 export interface PackageManagerPlayoutContext {
 	_id: PeripheralDeviceId
@@ -27,7 +28,7 @@ export interface PackageManagerPackageContainers {
 
 export type PackageManagerExpectedPackageId = ProtectedString<'PackageManagerExpectedPackage'>
 
-export type PackageManagerExpectedPackageBase = ExpectedPackage.Base & { rundownId?: RundownId }
+export type PackageManagerExpectedPackageBase = ReadonlyDeep<ExpectedPackage.Base> & { rundownId?: RundownId }
 
 export interface PackageManagerExpectedPackage {
 	/** Unique id of the expectedPackage */

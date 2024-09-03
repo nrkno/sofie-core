@@ -27,7 +27,7 @@ export async function onUpdatedPackageInfo(packageId: ExpectedPackageId, _doc: P
 		return
 	}
 
-	if (pkg.listenToPackageInfoUpdates) {
+	if (pkg.package.listenToPackageInfoUpdates) {
 		switch (pkg.fromPieceType) {
 			case ExpectedPackageDBType.PIECE:
 			case ExpectedPackageDBType.ADLIB_PIECE:
