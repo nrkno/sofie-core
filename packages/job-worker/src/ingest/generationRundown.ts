@@ -379,7 +379,7 @@ function generateGlobalAdLibPieceExpectedPackages(
 	adlibPieces: PostProcessDoc<AdLibPiece>[]
 ): ExpectedPackageDBFromBaselineAdLibPiece[] {
 	return adlibPieces.flatMap(({ doc, expectedPackages }) => {
-		const bases = generateExpectedPackageBases(context.studio, doc._id, expectedPackages)
+		const bases = generateExpectedPackageBases(context.studio._id, doc._id, expectedPackages)
 
 		return bases.map((base) => ({
 			...base,
@@ -396,7 +396,7 @@ function generateGlobalAdLibActionExpectedPackages(
 	adlibActions: PostProcessDoc<RundownBaselineAdLibAction>[]
 ): ExpectedPackageDBFromBaselineAdLibAction[] {
 	return adlibActions.flatMap(({ doc, expectedPackages }) => {
-		const bases = generateExpectedPackageBases(context.studio, doc._id, expectedPackages)
+		const bases = generateExpectedPackageBases(context.studio._id, doc._id, expectedPackages)
 
 		return bases.map((base) => ({
 			...base,
@@ -412,7 +412,7 @@ function generateRundownBaselineExpectedPackages(
 	rundownId: RundownId,
 	expectedPackages: ExpectedPackage.Any[]
 ): ExpectedPackageDBFromRundownBaselineObjects[] {
-	const bases = generateExpectedPackageBases(context.studio, rundownId, expectedPackages)
+	const bases = generateExpectedPackageBases(context.studio._id, rundownId, expectedPackages)
 
 	return bases.map((item) => {
 		return {

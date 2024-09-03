@@ -32,6 +32,7 @@ import {
 import { validateAdlibTestingPartInstanceProperties } from '../playout/adlibTesting'
 import { ReadonlyDeep } from 'type-fest'
 import { convertIngestModelToPlayoutRundownWithSegments } from './commit'
+import { unwrapExpectedPackages } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 
 type PlayStatus = 'previous' | 'current' | 'next'
 type SyncedInstance = {
@@ -129,7 +130,9 @@ export async function syncChangesToPartInstances(
 				const partId = existingPartInstance.partInstance.part._id
 				const existingResultPartInstance: BlueprintSyncIngestPartInstance = {
 					partInstance: convertPartInstanceToBlueprints(existingPartInstance.partInstance),
-					pieceInstances: pieceInstancesInPart.map((p) => convertPieceInstanceToBlueprints(p.pieceInstance)),
+					pieceInstances: pieceInstancesInPart.map((p) =>
+						convertPieceInstanceToBlueprints(p.pieceInstance, unwrapExpectedPackages(p.expectedPackages))
+					),
 				}
 
 				const proposedPieceInstances = await getPieceInstancesForPart(
@@ -155,7 +158,7 @@ export async function syncChangesToPartInstances(
 				const newResultData: BlueprintSyncIngestNewData = {
 					part: newPart ? convertPartToBlueprints(newPart) : undefined,
 					pieceInstances: proposedPieceInstances.map((p) =>
-						convertPieceInstanceToBlueprints(p.pieceInstance, p.expectedPackages)
+						convertPieceInstanceToBlueprints(p.pieceInstance, unwrapExpectedPackages(p.expectedPackages))
 					),
 					adLibPieces: newPart && ingestPart ? ingestPart.adLibPieces.map(convertAdLibPieceToBlueprints) : [],
 					actions: newPart && ingestPart ? ingestPart.adLibActions.map(convertAdLibActionToBlueprints) : [],

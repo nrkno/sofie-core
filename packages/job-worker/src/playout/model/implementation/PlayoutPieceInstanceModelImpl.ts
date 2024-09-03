@@ -2,15 +2,19 @@ import { ExpectedPackageId, PieceInstanceInfiniteId } from '@sofie-automation/co
 import { ReadonlyDeep } from 'type-fest'
 import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
-import { Time } from '@sofie-automation/blueprints-integration'
+import { ExpectedPackage, Time } from '@sofie-automation/blueprints-integration'
 import { PlayoutPieceInstanceModel } from '../PlayoutPieceInstanceModel'
 import _ = require('underscore')
-import { ExpectedPackageDBFromPieceInstance } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import {
+	ExpectedPackageDBFromPieceInstance,
+	ExpectedPackageDBType,
+} from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import {
 	DocumentChanges,
 	getDocumentChanges,
 	diffAndReturnLatestObjects,
 } from '../../../ingest/model/implementation/utils'
+import { generateExpectedPackageBases } from '../../../ingest/expectedPackages'
 
 export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel {
 	/**
@@ -167,14 +171,19 @@ export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel 
 	 * Update the expected packages for the PieceInstance
 	 * @param expectedPackages The new packages
 	 */
-	setExpectedPackages(expectedPackages: ExpectedPackageDBFromPieceInstance[]): void {
+	setExpectedPackages(expectedPackages: ReadonlyDeep<ExpectedPackage.Any>[]): void {
 		// nocommit - refactor this into a simpler type than `ExpectedPackagesStore` or just reuse that?
 
-		const newExpectedPackages: ExpectedPackageDBFromPieceInstance[] = expectedPackages.map((pkg) => ({
-			...pkg,
+		const bases = generateExpectedPackageBases(studio._id, this.PieceInstanceImpl._id, expectedPackages)
+		const newExpectedPackages: ExpectedPackageDBFromPieceInstance[] = bases.map((base) => ({
+			...base,
+
+			fromPieceType: ExpectedPackageDBType.PIECE_INSTANCE,
 			partInstanceId: this.PieceInstanceImpl.partInstanceId,
 			pieceInstanceId: this.PieceInstanceImpl._id,
+			segmentId: this.PieceInstanceImpl.segmentId, // TODO
 			rundownId: this.PieceInstanceImpl.rundownId,
+			pieceId: null,
 		}))
 
 		this.#expectedPackages = diffAndReturnLatestObjects(

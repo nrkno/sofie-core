@@ -63,7 +63,7 @@ export async function innerStartOrQueueAdLibPiece(
 		// syncPlayheadInfinitesForNextPartInstance is handled by setNextPart
 	} else {
 		const genericAdlibPiece = convertAdLibToGenericPiece(adLibPiece, false)
-		currentPartInstance.insertAdlibbedPiece(genericAdlibPiece, adLibPiece._id, adLibPiece.expectedPackages)
+		currentPartInstance.insertAdlibbedPiece(genericAdlibPiece, adLibPiece._id, adLibPiece.expectedPackages ?? [])
 
 		await syncPlayheadInfinitesForNextPartInstance(
 			context,

@@ -221,3 +221,10 @@ export function convertPieceExpectedPackageToPieceInstance(
 		}
 	}
 }
+
+export function unwrapExpectedPackages(
+	expectedPackages: ReadonlyDeep<ExpectedPackageDBBase[]> | undefined
+): ReadonlyDeep<ExpectedPackage.Any[]> {
+	if (!expectedPackages) return []
+	return expectedPackages.map((p) => p.package)
+}

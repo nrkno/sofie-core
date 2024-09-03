@@ -7,13 +7,9 @@ import {
 	PieceInstanceWithExpectedPackages,
 } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
-import { IBlueprintMutatablePart, PieceLifespan, Time } from '@sofie-automation/blueprints-integration'
+import { ExpectedPackage, IBlueprintMutatablePart, PieceLifespan, Time } from '@sofie-automation/blueprints-integration'
 import { PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { PlayoutPieceInstanceModel } from './PlayoutPieceInstanceModel'
-import {
-	ExpectedPackageDBFromPiece,
-	ExpectedPackageDBFromPieceInstance,
-} from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 
 /**
  * Token returned when making a backup copy of a PlayoutPartInstanceModel
@@ -78,7 +74,7 @@ export interface PlayoutPartInstanceModel {
 	insertAdlibbedPiece(
 		piece: Omit<PieceInstancePiece, 'startPartId'>,
 		fromAdlibId: PieceId | undefined,
-		pieceExpectedPackages: ExpectedPackageDBFromPiece[]
+		pieceExpectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
 	): PlayoutPieceInstanceModel
 
 	/**
@@ -98,7 +94,7 @@ export interface PlayoutPartInstanceModel {
 	 */
 	insertPlannedPiece(
 		piece: Omit<PieceInstancePiece, 'startPartId'>,
-		pieceExpectedPackages: ExpectedPackageDBFromPiece[]
+		pieceExpectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
 	): PlayoutPieceInstanceModel
 
 	/**
@@ -156,7 +152,7 @@ export interface PlayoutPartInstanceModel {
 	 */
 	mergeOrInsertPieceInstance(
 		pieceInstance: ReadonlyDeep<PieceInstance>,
-		expectedPackages: ExpectedPackageDBFromPieceInstance[]
+		expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
 	): PlayoutPieceInstanceModel
 
 	/**

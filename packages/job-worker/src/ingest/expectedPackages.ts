@@ -13,6 +13,7 @@ import {
 	getExpectedPackageId,
 	ExpectedPackageFromRundown,
 	ExpectedPackageDBBaseSimple,
+	ExpectedPackageDBFromPieceInstance,
 } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import {
 	SegmentId,
@@ -23,6 +24,7 @@ import {
 	BucketAdLibActionId,
 	BucketAdLibId,
 	StudioId,
+	PieceInstanceId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { saveIntoDb } from '../db/changes'
@@ -41,6 +43,7 @@ import { IngestModel } from './model/IngestModel'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { IngestPartModel } from './model/IngestPartModel'
 import { clone } from '@sofie-automation/corelib/dist/lib'
+import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 
 export function updateExpectedPackagesForPartModel(context: JobContext, part: IngestPartModel): void {
 	updateExpectedMediaItemsForPartModel(context, part)
@@ -92,7 +95,7 @@ function generateExpectedPackagesForPiece(
 	for (const piece of pieces) {
 		const partId = 'startPartId' in piece ? piece.startPartId : piece.partId
 		if (piece.expectedPackages && partId) {
-			const bases = generateExpectedPackageBases(studio, piece._id, piece.expectedPackages)
+			const bases = generateExpectedPackageBases(studio._id, piece._id, piece.expectedPackages)
 			for (const base of bases) {
 				packages.push({
 					...base,
@@ -116,7 +119,7 @@ function generateExpectedPackagesForAdlibAction(
 	const packages: ExpectedPackageDBFromAdLibAction[] = []
 	for (const action of actions) {
 		if (action.expectedPackages) {
-			const bases = generateExpectedPackageBases(studio, action._id, action.expectedPackages)
+			const bases = generateExpectedPackageBases(studio._id, action._id, action.expectedPackages)
 			for (const base of bases) {
 				packages.push({
 					...base,
@@ -135,7 +138,7 @@ function generateExpectedPackagesForBucketAdlib(studio: ReadonlyDeep<DBStudio>, 
 	const packages: ExpectedPackageDBFromBucketAdLib[] = []
 	for (const adlib of adlibs) {
 		if (adlib.expectedPackages) {
-			const bases = generateExpectedPackageBases(studio, adlib._id, adlib.expectedPackages)
+			const bases = generateExpectedPackageBases(studio._id, adlib._id, adlib.expectedPackages)
 			for (const base of bases) {
 				packages.push({
 					...base,
@@ -156,7 +159,7 @@ function generateExpectedPackagesForBucketAdlibAction(
 	const packages: ExpectedPackageDBFromBucketAdLibAction[] = []
 	for (const action of adlibActions) {
 		if (action.expectedPackages) {
-			const bases = generateExpectedPackageBases(studio, action._id, action.expectedPackages)
+			const bases = generateExpectedPackageBases(studio._id, action._id, action.expectedPackages)
 			for (const base of bases) {
 				packages.push({
 					...base,
@@ -171,7 +174,7 @@ function generateExpectedPackagesForBucketAdlibAction(
 	return packages
 }
 export function generateExpectedPackageBases(
-	studio: ReadonlyDeep<DBStudio>,
+	studioId: StudioId,
 	ownerId:
 		| PieceId
 		| AdLibActionId
@@ -179,7 +182,8 @@ export function generateExpectedPackageBases(
 		| BucketAdLibId
 		| BucketAdLibActionId
 		| RundownId
-		| StudioId,
+		| StudioId
+		| PieceInstanceId,
 	expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
 ): ExpectedPackageDBBaseSimple[] {
 	const bases: ExpectedPackageDBBaseSimple[] = []
@@ -193,7 +197,7 @@ export function generateExpectedPackageBases(
 			_id: getExpectedPackageId(ownerId, id),
 			blueprintPackageId: id,
 			contentVersionHash: getContentVersionHash(expectedPackage),
-			studioId: studio._id,
+			studioId: studioId,
 			created: Date.now(),
 		})
 	}
@@ -249,7 +253,7 @@ export function updateBaselineExpectedPackagesOnStudio(
 	// Fill in ids of unnamed expectedPackages
 	setDefaultIdOnExpectedPackages(baseline.expectedPackages)
 
-	const bases = generateExpectedPackageBases(context.studio, context.studio._id, baseline.expectedPackages ?? [])
+	const bases = generateExpectedPackageBases(context.studio._id, context.studio._id, baseline.expectedPackages ?? [])
 	playoutModel.setExpectedPackagesForStudioBaseline(
 		bases.map((item): ExpectedPackageDBFromStudioBaselineObjects => {
 			return {
@@ -275,4 +279,23 @@ export function setDefaultIdOnExpectedPackages(
 	}
 
 	return expectedPackages
+}
+
+export function wrapPackagesForPieceInstance(
+	studio: ReadonlyDeep<DBStudio>,
+	partInstance: ReadonlyDeep<DBPartInstance>,
+	pieceInstanceId: PieceInstanceId,
+	expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
+): ExpectedPackageDBFromPieceInstance[] {
+	const bases = generateExpectedPackageBases(studio._id, pieceInstanceId, expectedPackages)
+	return bases.map((base) => ({
+		...base,
+
+		fromPieceType: ExpectedPackageDBType.PIECE_INSTANCE,
+		partInstanceId: partInstance._id,
+		pieceInstanceId: pieceInstanceId,
+		segmentId: partInstance.segmentId,
+		rundownId: partInstance.rundownId,
+		pieceId: null,
+	}))
 }

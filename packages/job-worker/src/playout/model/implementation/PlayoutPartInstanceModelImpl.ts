@@ -22,6 +22,7 @@ import {
 } from '@sofie-automation/corelib/dist/playout/timings'
 import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import {
+	ExpectedPackage,
 	IBlueprintMutatablePart,
 	IBlueprintPieceType,
 	PieceLifespan,
@@ -37,9 +38,9 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { IBlueprintMutatablePartSampleKeys } from '../../../blueprints/context/lib'
 import {
 	convertPieceExpectedPackageToPieceInstance,
-	ExpectedPackageDBFromPiece,
 	ExpectedPackageDBFromPieceInstance,
 } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import { wrapPackagesForPieceInstance } from '../../../ingest/expectedPackages'
 
 interface PlayoutPieceInstanceModelSnapshotImpl {
 	PieceInstance: PieceInstance
@@ -244,7 +245,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 	insertAdlibbedPiece(
 		piece: Omit<PieceInstancePiece, 'startPartId'>,
 		fromAdlibId: PieceId | undefined,
-		pieceExpectedPackages: ExpectedPackageDBFromPiece[]
+		pieceExpectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
 	): PlayoutPieceInstanceModel {
 		const pieceInstance: PieceInstance = {
 			_id: protectString(`${this.partInstance._id}_${piece._id}`),
@@ -324,16 +325,14 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 
 	#convertExpectedPackagesForPieceInstance(
 		pieceInstance: ReadonlyDeep<PieceInstance>,
-		expectedPackages: ReadonlyDeep<Array<ExpectedPackageDBFromPiece | ExpectedPackageDBFromPieceInstance>>
+		expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
 	): ExpectedPackageDBFromPieceInstance[] {
-		return expectedPackages.map((p) =>
-			convertPieceExpectedPackageToPieceInstance(p, pieceInstance._id, this.partInstanceImpl)
-		)
+		return wrapPackagesForPieceInstance(this.studioId, this.partInstanceImpl, pieceInstance._id, expectedPackages)
 	}
 
 	insertPlannedPiece(
 		piece: Omit<PieceInstancePiece, 'startPartId'>,
-		pieceExpectedPackages: ExpectedPackageDBFromPiece[]
+		pieceExpectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
 	): PlayoutPieceInstanceModel {
 		const pieceInstanceId = getPieceInstanceIdForPiece(this.partInstance._id, piece._id)
 		if (this.pieceInstancesImpl.has(pieceInstanceId))
@@ -472,7 +471,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 
 	mergeOrInsertPieceInstance(
 		doc: ReadonlyDeep<PieceInstance>,
-		expectedPackages: ExpectedPackageDBFromPieceInstance[]
+		expectedPackages: ReadonlyDeep<ExpectedPackage.Any>[]
 	): PlayoutPieceInstanceModel {
 		// Future: this should do some validation of the new PieceInstance
 
@@ -483,11 +482,18 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 
 			return existingPieceInstance
 		} else {
+			const newExpectedPackages = wrapPackagesForPieceInstance(
+				studio._id,
+				this.partInstanceImpl,
+				doc._id,
+				expectedPackages
+			)
+
 			const newPieceInstance = new PlayoutPieceInstanceModelImpl(
 				clone<PieceInstance>(doc),
-				expectedPackages,
+				newExpectedPackages,
 				true,
-				expectedPackages.map((p) => p._id)
+				newExpectedPackages.map((p) => p._id)
 			)
 			this.pieceInstancesImpl.set(newPieceInstance.pieceInstance._id, newPieceInstance)
 			return newPieceInstance

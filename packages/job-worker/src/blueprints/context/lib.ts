@@ -113,7 +113,7 @@ export const IBlueprintMutatablePartSampleKeys = allKeysOfObject<IBlueprintMutat
 
 function convertPieceInstanceToBlueprintsInner(
 	pieceInstance: ReadonlyDeep<PieceInstance>,
-	expectedPackages: ReadonlyDeep<ExpectedPackageDBFromPieceInstance[]>
+	expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
 ): Complete<IBlueprintPieceInstance> {
 	const obj: Complete<IBlueprintPieceInstance> = {
 		_id: unprotectString(pieceInstance._id),
@@ -143,7 +143,7 @@ function convertPieceInstanceToBlueprintsInner(
  */
 export function convertPieceInstanceToBlueprints(
 	pieceInstance: ReadonlyDeep<PieceInstance>,
-	expectedPackages: ReadonlyDeep<ExpectedPackageDBFromPieceInstance[]>
+	expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
 ): IBlueprintPieceInstance {
 	return convertPieceInstanceToBlueprintsInner(pieceInstance, expectedPackages)
 }

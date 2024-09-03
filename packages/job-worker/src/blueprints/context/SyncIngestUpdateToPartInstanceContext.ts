@@ -19,6 +19,7 @@ import {
 	IBlueprintPartInstance,
 	SomeContent,
 	WithTimeline,
+	ExpectedPackage,
 } from '@sofie-automation/blueprints-integration'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
 import {
@@ -34,6 +35,7 @@ import {
 	serializePieceTimelineObjectsBlob,
 } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { EXPECTED_INGEST_TO_PLAYOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
+import { unwrapExpectedPackages } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 
 export class SyncIngestUpdateToPartInstanceContext
 	extends RundownUserContext
@@ -97,9 +99,9 @@ export class SyncIngestUpdateToPartInstanceContext
 			  )[0]
 			: null
 
-		const newExpectedPackages = postProcessedPiece
+		const newExpectedPackages: ReadonlyDeep<ExpectedPackage.Any[]> = postProcessedPiece
 			? postProcessedPiece.expectedPackages
-			: proposedPieceInstance.expectedPackages
+			: unwrapExpectedPackages(proposedPieceInstance.expectedPackages)
 
 		const newPieceInstance: ReadonlyDeep<PieceInstance> = {
 			...proposedPieceInstance.pieceInstance,
@@ -127,7 +129,10 @@ export class SyncIngestUpdateToPartInstanceContext
 
 		const newPieceInstance = this.partInstance.insertPlannedPiece(piece.doc, piece.expectedPackages)
 
-		return convertPieceInstanceToBlueprints(newPieceInstance.pieceInstance, newPieceInstance.expectedPackages)
+		return convertPieceInstanceToBlueprints(
+			newPieceInstance.pieceInstance,
+			unwrapExpectedPackages(newPieceInstance.expectedPackages)
+		)
 	}
 	updatePieceInstance(pieceInstanceId: string, updatedPiece: Partial<IBlueprintPiece>): IBlueprintPieceInstance {
 		// filter the submission to the allowed ones
