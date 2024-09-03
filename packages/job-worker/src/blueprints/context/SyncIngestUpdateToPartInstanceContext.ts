@@ -1,6 +1,9 @@
 import { PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { normalizeArrayToMap, omit } from '@sofie-automation/corelib/dist/lib'
+import {
+	PieceInstance,
+	PieceInstanceWithExpectedPackages,
+} from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { normalizeArrayToMap, normalizeArrayToMapFunc, omit } from '@sofie-automation/corelib/dist/lib'
 import { protectString, protectStringArray, unprotectStringArray } from '@sofie-automation/corelib/dist/protectedString'
 import { PlayoutPartInstanceModel } from '../../playout/model/PlayoutPartInstanceModel'
 import { ReadonlyDeep } from 'type-fest'
@@ -36,7 +39,7 @@ export class SyncIngestUpdateToPartInstanceContext
 	extends RundownUserContext
 	implements ISyncIngestUpdateToPartInstanceContext
 {
-	private readonly _proposedPieceInstances: Map<PieceInstanceId, ReadonlyDeep<PieceInstance>>
+	private readonly _proposedPieceInstances: Map<PieceInstanceId, ReadonlyDeep<PieceInstanceWithExpectedPackages>>
 
 	private partInstance: PlayoutPartInstanceModel | null
 
@@ -47,7 +50,7 @@ export class SyncIngestUpdateToPartInstanceContext
 		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		rundown: ReadonlyDeep<DBRundown>,
 		partInstance: PlayoutPartInstanceModel,
-		proposedPieceInstances: ReadonlyDeep<PieceInstance[]>,
+		proposedPieceInstances: ReadonlyDeep<PieceInstanceWithExpectedPackages[]>,
 		private playStatus: 'previous' | 'current' | 'next'
 	) {
 		super(
@@ -61,7 +64,7 @@ export class SyncIngestUpdateToPartInstanceContext
 
 		this.partInstance = partInstance
 
-		this._proposedPieceInstances = normalizeArrayToMap(proposedPieceInstances, '_id')
+		this._proposedPieceInstances = normalizeArrayToMapFunc(proposedPieceInstances, (p) => p.pieceInstance._id)
 	}
 
 	syncPieceInstance(
@@ -76,14 +79,14 @@ export class SyncIngestUpdateToPartInstanceContext
 		if (!this.partInstance) throw new Error(`PartInstance has been removed`)
 
 		// filter the submission to the allowed ones
-		const piece = modifiedPiece
+		const postProcessedPiece = modifiedPiece
 			? postProcessPieces(
 					this._context,
 					[
 						{
 							...modifiedPiece,
 							// Some properties arent allowed to be changed
-							lifespan: proposedPieceInstance.piece.lifespan,
+							lifespan: proposedPieceInstance.pieceInstance.piece.lifespan,
 						},
 					],
 					this.showStyleCompound.blueprintId,
@@ -92,17 +95,17 @@ export class SyncIngestUpdateToPartInstanceContext
 					this.partInstance.partInstance.part._id,
 					this.playStatus === 'current'
 			  )[0]
-			: proposedPieceInstance.piece
+			: null
 
-		const newExpectedPackages = modifiedPiece ? piece.expectedPackages : proposedPieceInstance.expectedPackages // nocommit - these need solving
+		const newExpectedPackages = postProcessedPiece?.expectedPackages ?? proposedPieceInstance.expectedPackages
 
 		const newPieceInstance: ReadonlyDeep<PieceInstance> = {
 			...proposedPieceInstance,
-			piece: piece,
+			piece: postProcessedPiece?.doc ?? proposedPieceInstance.pieceInstance.piece,
 		}
 		this.partInstance.mergeOrInsertPieceInstance(newPieceInstance, newExpectedPackages)
 
-		return convertPieceInstanceToBlueprints(newPieceInstance)
+		return convertPieceInstanceToBlueprints(newPieceInstance, newExpectedPackages)
 	}
 
 	insertPieceInstance(piece0: IBlueprintPiece): IBlueprintPieceInstance {
@@ -120,9 +123,9 @@ export class SyncIngestUpdateToPartInstanceContext
 			this.playStatus === 'current'
 		)[0]
 
-		const newPieceInstance = this.partInstance.insertPlannedPiece(piece)
+		const newPieceInstance = this.partInstance.insertPlannedPiece(piece.doc, piece.expectedPackages)
 
-		return convertPieceInstanceToBlueprints(newPieceInstance.pieceInstance)
+		return convertPieceInstanceToBlueprints(newPieceInstance.pieceInstance, newPieceInstance.expectedPackages)
 	}
 	updatePieceInstance(pieceInstanceId: string, updatedPiece: Partial<IBlueprintPiece>): IBlueprintPieceInstance {
 		// filter the submission to the allowed ones
@@ -160,8 +163,11 @@ export class SyncIngestUpdateToPartInstanceContext
 				timelineObjectsString,
 			})
 		}
+		if (trimmedPiece.expectedPackages) {
+			pieceInstance.setExpectedPackages(trimmedPiece.expectedPackages)
+		}
 
-		return convertPieceInstanceToBlueprints(pieceInstance.pieceInstance)
+		return convertPieceInstanceToBlueprints(pieceInstance.pieceInstance, pieceInstance.expectedPackages)
 	}
 	updatePartInstance(updatePart: Partial<IBlueprintMutatablePart>): IBlueprintPartInstance {
 		if (!this.partInstance) throw new Error(`PartInstance has been removed`)

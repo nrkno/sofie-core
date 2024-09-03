@@ -44,6 +44,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { JobContext, ProcessedShowStyleBase, ProcessedShowStyleVariant } from '../../jobs'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { ExpectedPackageDBFromPieceInstance } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 
 /**
  * Convert an object to have all the values of all keys (including optionals) be 'true'
@@ -111,7 +112,8 @@ export const IBlueprintMutatablePartSampleKeys = allKeysOfObject<IBlueprintMutat
  */
 
 function convertPieceInstanceToBlueprintsInner(
-	pieceInstance: ReadonlyDeep<PieceInstance>
+	pieceInstance: ReadonlyDeep<PieceInstance>,
+	expectedPackages: ReadonlyDeep<ExpectedPackageDBFromPieceInstance[]>
 ): Complete<IBlueprintPieceInstance> {
 	const obj: Complete<IBlueprintPieceInstance> = {
 		_id: unprotectString(pieceInstance._id),
@@ -139,8 +141,11 @@ function convertPieceInstanceToBlueprintsInner(
  * @param pieceInstance the PieceInstance to convert
  * @returns a cloned complete and clean IBlueprintPieceInstance
  */
-export function convertPieceInstanceToBlueprints(pieceInstance: ReadonlyDeep<PieceInstance>): IBlueprintPieceInstance {
-	return convertPieceInstanceToBlueprintsInner(pieceInstance)
+export function convertPieceInstanceToBlueprints(
+	pieceInstance: ReadonlyDeep<PieceInstance>,
+	expectedPackages: ReadonlyDeep<ExpectedPackageDBFromPieceInstance[]>
+): IBlueprintPieceInstance {
+	return convertPieceInstanceToBlueprintsInner(pieceInstance, expectedPackages)
 }
 
 /**
@@ -152,7 +157,7 @@ export function convertResolvedPieceInstanceToBlueprints(
 	pieceInstance: ResolvedPieceInstance
 ): IBlueprintResolvedPieceInstance {
 	const obj: Complete<IBlueprintResolvedPieceInstance> = {
-		...convertPieceInstanceToBlueprintsInner(pieceInstance.instance),
+		...convertPieceInstanceToBlueprintsInner(pieceInstance.instance, undefined),
 		resolvedStart: pieceInstance.resolvedStart,
 		resolvedDuration: pieceInstance.resolvedDuration,
 	}

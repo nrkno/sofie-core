@@ -270,7 +270,7 @@ export class PartAndPieceInstanceActionService {
 			this.nextPartState = Math.max(this.nextPartState, ActionPartChange.SAFE_CHANGE)
 		}
 
-		return convertPieceInstanceToBlueprints(newPieceInstance.pieceInstance)
+		return convertPieceInstanceToBlueprints(newPieceInstance.pieceInstance, newPieceInstance.expectedPackages)
 	}
 
 	async updatePieceInstance(
@@ -327,7 +327,7 @@ export class PartAndPieceInstanceActionService {
 		this.nextPartState = Math.max(this.nextPartState, updatesNextPart)
 		this.currentPartState = Math.max(this.currentPartState, updatesCurrentPart)
 
-		return convertPieceInstanceToBlueprints(pieceInstance.pieceInstance)
+		return convertPieceInstanceToBlueprints(pieceInstance.pieceInstance, pieceInstance.expectedPackages)
 	}
 
 	async updatePartInstance(
