@@ -41,7 +41,6 @@ export type ExpectedPackageDB =
 	| ExpectedPackageDBFromBucket
 	| ExpectedPackageFromRundownBaseline
 	| ExpectedPackageDBFromStudioBaselineObjects
-	| ExpectedPackageDBFromPieceInstance
 
 export enum ExpectedPackageDBType {
 	PIECE = 'piece',
@@ -226,21 +225,6 @@ export interface ExpectedPackageDBFromBucketAdLibAction extends ExpectedPackageD
 	pieceId: BucketAdLibActionId
 	/** The `externalId` of the Bucket adlib-action this package belongs to */
 	pieceExternalId: string
-}
-export interface ExpectedPackageDBFromPieceInstance extends ExpectedPackageDBBase {
-	fromPieceType: ExpectedPackageDBType.PIECE_INSTANCE
-
-	/** The PieceInstance this package belongs to */
-	pieceInstanceId: PieceInstanceId
-	/** The PartInstance this package belongs to */
-	partInstanceId: PartInstanceId
-	/** The Segment this package belongs to */
-	segmentId: SegmentId
-	/** The rundown of the Piece this package belongs to */
-	rundownId: RundownId
-
-	// For type compatibility:
-	pieceId: null
 }
 
 export function getContentVersionHash(expectedPackage: ReadonlyDeep<Omit<ExpectedPackage.Any, '_id'>>): string {

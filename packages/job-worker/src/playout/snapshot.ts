@@ -342,9 +342,6 @@ export async function handleRestorePlaylistSnapshot(
 				logger.warn(`Unexpected ExpectedPackage in snapshot: ${JSON.stringify(expectedPackage)}`)
 				break
 			}
-			case ExpectedPackageDBType.PIECE_INSTANCE:
-				// nocommit implement me!
-				break
 
 			default:
 				assertNever(expectedPackage)

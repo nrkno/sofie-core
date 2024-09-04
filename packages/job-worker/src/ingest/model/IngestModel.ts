@@ -1,10 +1,6 @@
 import { ExpectedMediaItemRundown } from '@sofie-automation/corelib/dist/dataModel/ExpectedMediaItem'
 import {
-	ExpectedPackageDBFromBaselineAdLibAction,
-	ExpectedPackageDBFromBaselineAdLibPiece,
-	ExpectedPackageDBFromRundownBaselineObjects,
 	ExpectedPackageDBNew,
-	ExpectedPackageFromRundown,
 	ExpectedPackageIngestSource,
 } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { ExpectedPlayoutItemRundown } from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'
@@ -33,12 +29,6 @@ import { ProcessedShowStyleBase, ProcessedShowStyleVariant } from '../../jobs/sh
 import { WrappedShowStyleBlueprint } from '../../blueprints/cache'
 import { IBlueprintRundown } from '@sofie-automation/blueprints-integration'
 import { IngestExpectedPackage } from './implementation/IngestExpectedPackage'
-
-export type ExpectedPackageForIngestModelBaseline =
-	| ExpectedPackageDBFromBaselineAdLibAction
-	| ExpectedPackageDBFromBaselineAdLibPiece
-	| ExpectedPackageDBFromRundownBaselineObjects
-export type ExpectedPackageForIngestModel = ExpectedPackageFromRundown | ExpectedPackageForIngestModelBaseline
 
 export interface IngestModelReadonly {
 	/**
