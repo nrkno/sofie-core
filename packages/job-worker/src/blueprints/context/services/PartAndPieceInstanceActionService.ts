@@ -264,7 +264,7 @@ export class PartAndPieceInstanceActionService {
 
 		const trimmedPiece: IBlueprintPiece = _.pick(rawPiece, IBlueprintPieceObjectsSampleKeys)
 
-		const piece = postProcessPieces(
+		const postProcessed = postProcessPieces(
 			this._context,
 			[trimmedPiece],
 			this.showStyleCompound.blueprintId,
@@ -272,11 +272,17 @@ export class PartAndPieceInstanceActionService {
 			partInstance.partInstance.segmentId,
 			partInstance.partInstance.part._id,
 			part === 'current'
-		)[0]
-		piece.doc._id = getRandomId() // Make id random, as postProcessPieces is too predictable (for ingest)
+		)
+		const piece = postProcessed.docs[0]
+		piece._id = getRandomId() // Make id random, as postProcessPieces is too predictable (for ingest)
+
+		this._playoutModel.expectedPackages.ensurePackagesExistMap(
+			this._rundown.rundown._id,
+			postProcessed.expectedPackages
+		)
 
 		// Do the work
-		const newPieceInstance = partInstance.insertAdlibbedPiece(piece.doc, undefined, piece.expectedPackages ?? [])
+		const newPieceInstance = partInstance.insertAdlibbedPiece(piece, undefined)
 
 		if (part === 'current') {
 			this.currentPartState = Math.max(this.currentPartState, ActionPartChange.SAFE_CHANGE)
@@ -421,6 +427,8 @@ export class PartAndPieceInstanceActionService {
 			throw new Error('Cannot queue a part which is not playable')
 		}
 
+		this._playoutModel.expectedPackages.ensurePackagesExistMap(this._rundown.rundown._id, pieces.expectedPackages)
+
 		// Do the work
 		const newPartInstance = await insertQueuedPartWithPieces(
 			this._context,
@@ -428,7 +436,7 @@ export class PartAndPieceInstanceActionService {
 			this._rundown,
 			currentPartInstance,
 			newPart,
-			pieces.map((p) => ({ piece: p.doc, expectedPackages: p.expectedPackages })),
+			pieces.docs,
 			undefined
 		)
 

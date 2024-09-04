@@ -14,6 +14,11 @@ export interface PlayoutExpectedPackagesModelReadonly {
 export interface PlayoutExpectedPackagesModel extends PlayoutExpectedPackagesModelReadonly {
 	ensurePackagesExist(rundownId: RundownId, expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>): void
 
+	ensurePackagesExistMap(
+		rundownId: RundownId,
+		expectedPackages: ReadonlyMap<ExpectedPackageId, ReadonlyDeep<ExpectedPackage.Any>>
+	): void
+
 	setPieceInstanceReferenceToPackages(
 		rundownId: RundownId,
 		partInstanceId: PartInstanceId,

@@ -13,6 +13,13 @@ export class PlayoutExpectedPackagesModelImpl implements PlayoutExpectedPackages
 		throw new Error('Method not implemented.')
 	}
 
+	ensurePackagesExistMap(
+		_rundownId: RundownId,
+		_expectedPackages: ReadonlyMap<ExpectedPackageId, ReadonlyDeep<ExpectedPackage.Any>>
+	): void {
+		throw new Error('Method not implemented.')
+	}
+
 	setPieceInstanceReferenceToPackages(
 		_rundownId: RundownId,
 		_partInstanceId: PartInstanceId,
