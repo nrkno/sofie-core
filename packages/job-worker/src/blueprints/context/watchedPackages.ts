@@ -1,16 +1,13 @@
-import {
-	ExpectedPackageDB,
-	ExpectedPackageDBBase,
-	ExpectedPackageFromRundown,
-} from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import { ExpectedPackageDB, ExpectedPackageDBBase } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { JobContext } from '../../jobs'
 import { ExpectedPackageId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Filter as FilterQuery } from 'mongodb'
 import { PackageInfo } from '@sofie-automation/blueprints-integration'
 import { unprotectObjectArray } from '@sofie-automation/corelib/dist/protectedString'
-import { ExpectedPackageForIngestModel, IngestModelReadonly } from '../../ingest/model/IngestModel'
+import { IngestModelReadonly } from '../../ingest/model/IngestModel'
 import { ReadonlyDeep } from 'type-fest'
+import { IngestExpectedPackage } from '../../ingest/model/implementation/IngestExpectedPackage'
 
 /**
  * This is a helper class to simplify exposing packageInfo to various places in the blueprints
@@ -65,7 +62,7 @@ export class WatchedPackagesHelper {
 		context: JobContext,
 		ingestModel: IngestModelReadonly
 	): Promise<WatchedPackagesHelper> {
-		const packages: ReadonlyDeep<ExpectedPackageForIngestModel>[] = []
+		const packages: ReadonlyDeep<IngestExpectedPackage>[] = []
 
 		packages.push(...ingestModel.expectedPackagesForRundownBaseline)
 
@@ -92,7 +89,7 @@ export class WatchedPackagesHelper {
 		ingestModel: IngestModelReadonly,
 		segmentExternalIds: string[]
 	): Promise<WatchedPackagesHelper> {
-		const packages: ReadonlyDeep<ExpectedPackageFromRundown>[] = []
+		const packages: ReadonlyDeep<IngestExpectedPackage>[] = []
 
 		for (const externalId of segmentExternalIds) {
 			const segment = ingestModel.getSegmentByExternalId(externalId)
@@ -109,7 +106,7 @@ export class WatchedPackagesHelper {
 		)
 	}
 
-	static async #createFromPackages(context: JobContext, packages: ReadonlyDeep<ExpectedPackageDB>[]) {
+	static async #createFromPackages(context: JobContext, packages: ReadonlyDeep<IngestExpectedPackage>[]) {
 		// Load all the packages and the infos that are watched
 		const watchedPackageInfos =
 			packages.length > 0

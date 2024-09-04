@@ -2,7 +2,6 @@ import { ExpectedMediaItemRundown } from '@sofie-automation/corelib/dist/dataMod
 import {
 	ExpectedPackageDBFromBaselineAdLibAction,
 	ExpectedPackageDBFromBaselineAdLibPiece,
-	ExpectedPackageDBFromPiece,
 	ExpectedPackageDBFromRundownBaselineObjects,
 	ExpectedPackageDBNew,
 	ExpectedPackageFromRundown,
@@ -33,6 +32,7 @@ import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { ProcessedShowStyleBase, ProcessedShowStyleVariant } from '../../jobs/showStyle'
 import { WrappedShowStyleBlueprint } from '../../blueprints/cache'
 import { IBlueprintRundown } from '@sofie-automation/blueprints-integration'
+import { IngestExpectedPackage } from './implementation/IngestExpectedPackage'
 
 export type ExpectedPackageForIngestModelBaseline =
 	| ExpectedPackageDBFromBaselineAdLibAction
@@ -67,7 +67,7 @@ export interface IngestModelReadonly {
 	/**
 	 * The ExpectedPackages for the baseline of this Rundown
 	 */
-	readonly expectedPackagesForRundownBaseline: ReadonlyDeep<ExpectedPackageForIngestModelBaseline>[]
+	readonly expectedPackagesForRundownBaseline: ReadonlyDeep<IngestExpectedPackage>[]
 
 	/**
 	 * The baseline Timeline objects of this Rundown
@@ -141,9 +141,7 @@ export interface IngestModelReadonly {
 	 * Search for an AdLibPiece in all Parts of the Rundown
 	 * @param id Id of the AdLib Piece
 	 */
-	findAdlibPieceAndPackages(
-		adLibPieceId: PieceId
-	): { adlib: ReadonlyDeep<AdLibPiece>; expectedPackages: ReadonlyDeep<ExpectedPackageDBFromPiece>[] } | undefined
+	findAdlibPiece(adLibPieceId: PieceId): ReadonlyDeep<AdLibPiece> | undefined
 
 	/**
 	 * Search for an ExpectedPackage through the whole Rundown

@@ -7,10 +7,7 @@ import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { ExpectedMediaItemRundown } from '@sofie-automation/corelib/dist/dataModel/ExpectedMediaItem'
 import { ExpectedPlayoutItemRundown } from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'
-import {
-	ExpectedPackageDBNew,
-	ExpectedPackageFromRundown,
-} from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import { ExpectedPackageDBNew } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { ExpectedPackagesStore } from './ExpectedPackagesStore'
 import {
@@ -20,13 +17,14 @@ import {
 	getDocumentChanges,
 	setValuesAndTrackChanges,
 } from './utils'
+import { IngestExpectedPackage } from './IngestExpectedPackage'
 
 export class IngestPartModelImpl implements IngestPartModel {
 	readonly partImpl: DBPart
 	readonly #pieces: Piece[]
 	readonly #adLibPieces: AdLibPiece[]
 	readonly #adLibActions: AdLibAction[]
-	readonly expectedPackagesStore: ExpectedPackagesStore<ExpectedPackageFromRundown>
+	readonly expectedPackagesStore: ExpectedPackagesStore
 
 	#setPartValue<T extends keyof DBPart>(key: T, newValue: DBPart[T]): void {
 		if (newValue === undefined) {
@@ -93,7 +91,7 @@ export class IngestPartModelImpl implements IngestPartModel {
 	get expectedPlayoutItems(): ReadonlyDeep<ExpectedPlayoutItemRundown>[] {
 		return [...this.expectedPackagesStore.expectedPlayoutItems]
 	}
-	get expectedPackages(): ReadonlyDeep<ExpectedPackageFromRundown>[] {
+	get expectedPackages(): ReadonlyDeep<IngestExpectedPackage>[] {
 		return [...this.expectedPackagesStore.expectedPackages]
 	}
 

@@ -2,7 +2,6 @@ import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibActio
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { ExpectedMediaItemRundown } from '@sofie-automation/corelib/dist/dataModel/ExpectedMediaItem'
 import {
-	ExpectedPackageDBFromPiece,
 	ExpectedPackageDBNew,
 	ExpectedPackageDBType,
 	ExpectedPackageIngestSource,
@@ -48,7 +47,7 @@ import { IngestPartModelImpl } from './IngestPartModelImpl'
 import { DatabasePersistedModel } from '../../../modelBase'
 import { ExpectedPackagesStore } from './ExpectedPackagesStore'
 import { ReadonlyDeep } from 'type-fest'
-import { ExpectedPackageForIngestModelBaseline, IngestModel, IngestReplaceSegmentType } from '../IngestModel'
+import { IngestModel, IngestReplaceSegmentType } from '../IngestModel'
 import { RundownNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { diffAndReturnLatestObjects } from './utils'
 import _ = require('underscore')
@@ -60,6 +59,7 @@ import { SaveIngestModelHelper } from './SaveIngestModel'
 import { generateWriteOpsForLazyDocuments } from './DocumentChangeTracker'
 import { IS_PRODUCTION } from '../../../environment'
 import { logger } from '../../../logging'
+import { IngestExpectedPackage } from './IngestExpectedPackage'
 
 export interface IngestModelImplExistingData {
 	rundown: DBRundown
@@ -145,7 +145,7 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 	get expectedPlayoutItemsForRundownBaseline(): ReadonlyDeep<ExpectedPlayoutItemRundown>[] {
 		return [...this.#rundownBaselineExpectedPackagesStore.expectedPlayoutItems]
 	}
-	get expectedPackagesForRundownBaseline(): ReadonlyDeep<ExpectedPackageForIngestModelBaseline>[] {
+	get expectedPackagesForRundownBaseline(): ReadonlyDeep<IngestExpectedPackage>[] {
 		return [...this.#rundownBaselineExpectedPackagesStore.expectedPackages]
 	}
 
@@ -327,20 +327,11 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 		return undefined
 	}
 
-	findAdlibPieceAndPackages(
-		adLibPieceId: PieceId
-	): { adlib: ReadonlyDeep<AdLibPiece>; expectedPackages: ReadonlyDeep<ExpectedPackageDBFromPiece>[] } | undefined {
+	findAdlibPiece(adLibPieceId: PieceId): ReadonlyDeep<AdLibPiece> | undefined {
 		for (const part of this.getAllOrderedParts()) {
 			for (const adlib of part.adLibPieces) {
 				if (adlib._id === adLibPieceId) {
-					const expectedPackages = part.expectedPackages.filter(
-						(p): p is ReadonlyDeep<ExpectedPackageDBFromPiece> =>
-							p.fromPieceType === ExpectedPackageDBType.ADLIB_PIECE && p.pieceId === adLibPieceId
-					)
-					return {
-						adlib,
-						expectedPackages,
-					}
+					return adlib
 				}
 			}
 		}

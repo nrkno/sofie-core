@@ -3,9 +3,9 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { ExpectedMediaItemRundown } from '@sofie-automation/corelib/dist/dataModel/ExpectedMediaItem'
-import { ExpectedPackageFromRundown } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { ExpectedPlayoutItemRundown } from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { IngestExpectedPackage } from './implementation/IngestExpectedPackage'
 
 export interface IngestPartModelReadonly {
 	/**
@@ -37,7 +37,7 @@ export interface IngestPartModelReadonly {
 	/**
 	 * The ExpectedPackages belonging to this Part
 	 */
-	readonly expectedPackages: ReadonlyDeep<ExpectedPackageFromRundown>[]
+	readonly expectedPackages: ReadonlyDeep<IngestExpectedPackage>[]
 }
 /**
  * Wrap a Part and its contents in a view for Ingest operations
