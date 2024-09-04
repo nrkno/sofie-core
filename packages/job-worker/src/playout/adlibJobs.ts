@@ -364,7 +364,10 @@ export async function handleStartStickyPieceOnSourceLayer(
 				throw UserError.create(UserErrorMessage.SourceLayerStickyNothingFound)
 			}
 
-			const lastPiece = convertPieceToAdLibPiece(context, lastPieceInstance.pieceInstance.piece)
+			// Ensure that any referenced packages are loaded into memory
+			await playoutModel.expectedPackages.ensurePackagesAreLoaded(lastPieceInstance.piece.expectedPackages)
+
+			const lastPiece = convertPieceToAdLibPiece(context, lastPieceInstance.piece)
 			await innerStartOrQueueAdLibPiece(
 				context,
 				playoutModel,
@@ -372,7 +375,10 @@ export async function handleStartStickyPieceOnSourceLayer(
 				false,
 				currentPartInstance,
 				lastPiece,
-				unwrapExpectedPackages(lastPieceInstance.expectedPackages)
+				playoutModel.expectedPackages.getPackagesForPieceInstance(
+					lastPieceInstance.rundownId,
+					lastPieceInstance._id
+				)
 			)
 		}
 	)

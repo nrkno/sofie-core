@@ -7,6 +7,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import { PlayoutExpectedPackagesModel, PlayoutExpectedPackagesModelSnapshot } from '../PlayoutExpectedPackagesModel'
+import { PieceExpectedPackage } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 export class PlayoutExpectedPackagesModelImpl implements PlayoutExpectedPackagesModel {
 	getPackagesForPieceInstance(
@@ -21,6 +22,10 @@ export class PlayoutExpectedPackagesModelImpl implements PlayoutExpectedPackages
 	}
 
 	snapshotRestore(_snapshot: PlayoutExpectedPackagesModelSnapshot): void {
+		throw new Error('Method not implemented.')
+	}
+
+	async ensurePackagesAreLoaded(_expectedPackages: PieceExpectedPackage[]): Promise<ExpectedPackage.Any[]> {
 		throw new Error('Method not implemented.')
 	}
 

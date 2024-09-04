@@ -55,7 +55,6 @@ import { validateAdlibTestingPartInstanceProperties } from '../../../playout/adl
 import { isTooCloseToAutonext } from '../../../playout/lib'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PlayoutRundownModel } from '../../../playout/model/PlayoutRundownModel'
-import { unwrapExpectedPackages } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -112,7 +111,13 @@ export class PartAndPieceInstanceActionService {
 		const partInstance = this._getPartInstance(part)
 		return (
 			partInstance?.pieceInstances?.map((p) =>
-				convertPieceInstanceToBlueprints(p.pieceInstance, unwrapExpectedPackages(p.expectedPackages))
+				convertPieceInstanceToBlueprints(
+					p.pieceInstance,
+					this._playoutModel.expectedPackages.getPackagesForPieceInstance(
+						p.pieceInstance.rundownId,
+						p.pieceInstance._id
+					)
+				)
 			) ?? []
 		)
 	}
@@ -163,11 +168,16 @@ export class PartAndPieceInstanceActionService {
 			query
 		)
 
-		return (
-			lastPieceInstance &&
-			convertPieceInstanceToBlueprints(
-				lastPieceInstance.pieceInstance,
-				unwrapExpectedPackages(lastPieceInstance.expectedPackages)
+		if (!lastPieceInstance) return undefined
+
+		// Ensure that any referenced packages are loaded into memory
+		await this._playoutModel.expectedPackages.ensurePackagesAreLoaded(lastPieceInstance.piece.expectedPackages)
+
+		return convertPieceInstanceToBlueprints(
+			lastPieceInstance,
+			this._playoutModel.expectedPackages.getPackagesForPieceInstance(
+				lastPieceInstance.rundownId,
+				lastPieceInstance._id
 			)
 		)
 	}
@@ -196,17 +206,18 @@ export class PartAndPieceInstanceActionService {
 
 		const sourceLayerId = Array.isArray(sourceLayerId0) ? sourceLayerId0 : [sourceLayerId0]
 
-		const lastPieceAndPackages = await innerFindLastScriptedPieceOnLayer(
+		const lastPiece = await innerFindLastScriptedPieceOnLayer(
 			this._context,
 			this._playoutModel,
 			sourceLayerId,
 			query
 		)
 
-		return (
-			lastPieceAndPackages &&
-			convertPieceToBlueprints(lastPieceAndPackages.doc, lastPieceAndPackages.expectedPackages)
-		)
+		if (!lastPiece) return undefined
+
+		const packages = await this._playoutModel.expectedPackages.ensurePackagesAreLoaded(lastPiece.expectedPackages)
+
+		return convertPieceToBlueprints(lastPiece, packages)
 	}
 
 	async getPartInstanceForPreviousPiece(piece: IBlueprintPieceInstance): Promise<IBlueprintPartInstance> {
@@ -292,7 +303,10 @@ export class PartAndPieceInstanceActionService {
 
 		return convertPieceInstanceToBlueprints(
 			newPieceInstance.pieceInstance,
-			unwrapExpectedPackages(newPieceInstance.expectedPackages)
+			this._playoutModel.expectedPackages.getPackagesForPieceInstance(
+				newPieceInstance.pieceInstance.rundownId,
+				newPieceInstance.pieceInstance._id
+			)
 		)
 	}
 
@@ -342,6 +356,14 @@ export class PartAndPieceInstanceActionService {
 			trimmedPiece.content = omit(trimmedPiece.content, 'timelineObjects') as WithTimeline<SomeContent>
 		}
 
+		if (trimmedPiece.expectedPackages) {
+			// nocommit - this needs to go through some postProcess
+			this._playoutModel.expectedPackages.ensurePackagesExist(
+				pieceInstance.pieceInstance.rundownId,
+				trimmedPiece.expectedPackages
+			)
+		}
+
 		pieceInstance.updatePieceProps(trimmedPiece as any) // TODO: this needs to be more type safe
 		if (timelineObjectsString !== undefined) pieceInstance.updatePieceProps({ timelineObjectsString })
 
@@ -352,7 +374,10 @@ export class PartAndPieceInstanceActionService {
 
 		return convertPieceInstanceToBlueprints(
 			pieceInstance.pieceInstance,
-			unwrapExpectedPackages(pieceInstance.expectedPackages)
+			this._playoutModel.expectedPackages.getPackagesForPieceInstance(
+				pieceInstance.pieceInstance.rundownId,
+				pieceInstance.pieceInstance._id
+			)
 		)
 	}
 

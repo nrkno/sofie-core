@@ -2,11 +2,7 @@ import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { PartInstanceId, PieceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import {
-	PieceInstance,
-	PieceInstancePiece,
-	PieceInstanceWithExpectedPackagesFull,
-} from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { assertNever, getRandomId, getRank } from '@sofie-automation/corelib/dist/lib'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { getCurrentTime } from '../lib'
@@ -31,12 +27,6 @@ import { ReadonlyDeep } from 'type-fest'
 import { PlayoutRundownModel } from './model/PlayoutRundownModel'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import {
-	ExpectedPackageDBFromPieceInstance,
-	ExpectedPackageDBType,
-	unwrapExpectedPackages,
-} from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import { PostProcessDoc } from '../blueprints/postProcess'
 
 export async function innerStartOrQueueAdLibPiece(
 	context: JobContext,
@@ -100,7 +90,7 @@ export async function innerFindLastPieceOnLayer(
 	sourceLayerId: string[],
 	originalOnly: boolean,
 	customQuery?: MongoQuery<PieceInstance>
-): Promise<PieceInstanceWithExpectedPackagesFull | undefined> {
+): Promise<PieceInstance | undefined> {
 	const span = context.startSpan('innerFindLastPieceOnLayer')
 	const rundownIds = playoutModel.getRundownIds()
 
@@ -125,22 +115,11 @@ export async function innerFindLastPieceOnLayer(
 
 	// Note: This does not want to use the in-memory model, as we want to search as far back as we can
 	// TODO - will this cause problems?
-	const pieceInstance = await context.directCollections.PieceInstances.findOne(query, {
+	return context.directCollections.PieceInstances.findOne(query, {
 		sort: {
 			plannedStartedPlayback: -1,
 		},
 	})
-
-	if (!pieceInstance) return undefined
-
-	const expectedPackages = (await context.directCollections.ExpectedPackages.findFetch({
-		fromPieceType: ExpectedPackageDBType.PIECE_INSTANCE,
-		pieceInstanceId: pieceInstance._id,
-		partInstanceId: pieceInstance.partInstanceId,
-		rundownId: { $in: rundownIds },
-	})) as ExpectedPackageDBFromPieceInstance[]
-
-	return { pieceInstance, expectedPackages }
 }
 
 export async function innerFindLastScriptedPieceOnLayer(
@@ -148,7 +127,7 @@ export async function innerFindLastScriptedPieceOnLayer(
 	playoutModel: PlayoutModel,
 	sourceLayerId: string[],
 	customQuery?: MongoQuery<Piece>
-): Promise<PostProcessDoc<Piece> | undefined> {
+): Promise<Piece | undefined> {
 	const span = context.startSpan('innerFindLastScriptedPieceOnLayer')
 
 	const playlist = playoutModel.playlist
@@ -205,20 +184,11 @@ export async function innerFindLastScriptedPieceOnLayer(
 		return
 	}
 
-	const [fullPiece, expectedPackages] = await Promise.all([
-		context.directCollections.Pieces.findOne(piece._id),
-		context.directCollections.ExpectedPackages.findFetch({
-			fromPieceType: ExpectedPackageDBType.PIECE,
-			pieceId: piece._id,
-			rundownId: { $in: rundownIds },
-		}),
-	])
+	const fullPiece = await context.directCollections.Pieces.findOne(piece._id)
 
 	if (span) span.end()
 
-	if (!fullPiece) return
-
-	return { doc: fullPiece, expectedPackages: unwrapExpectedPackages(expectedPackages) }
+	return fullPiece
 }
 
 function updateRankForAdlibbedPartInstance(

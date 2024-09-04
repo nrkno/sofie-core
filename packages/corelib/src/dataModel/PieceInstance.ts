@@ -1,4 +1,4 @@
-import { ExpectedPackage, Time } from '@sofie-automation/blueprints-integration'
+import { Time } from '@sofie-automation/blueprints-integration'
 import { protectString } from '../protectedString'
 import {
 	PieceInstanceInfiniteId,
@@ -11,7 +11,6 @@ import {
 import { Piece } from './Piece'
 import { omit } from '../lib'
 import { ReadonlyDeep } from 'type-fest'
-import { ExpectedPackageDBFromPieceInstance } from './ExpectedPackages'
 
 export type PieceInstancePiece = Omit<Piece, 'startRundownId' | 'startSegmentId'>
 
@@ -92,12 +91,6 @@ export interface ResolvedPieceInstance {
 
 	/** Timeline priority of the PieceInstance */
 	timelinePriority: number
-}
-
-// nocommit - remove me
-export interface PieceInstanceWithExpectedPackagesFull {
-	pieceInstance: PieceInstance
-	expectedPackages: ExpectedPackageDBFromPieceInstance[]
 }
 
 export function omitPiecePropertiesForInstance(piece: Piece | PieceInstancePiece): PieceInstancePiece {

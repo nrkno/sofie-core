@@ -5,6 +5,7 @@ import {
 	PieceInstanceId,
 	RundownId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PieceExpectedPackage } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { ReadonlyDeep } from 'type-fest'
 
 /**
@@ -36,6 +37,8 @@ export interface PlayoutExpectedPackagesModel extends PlayoutExpectedPackagesMod
 	 * @param snapshot Snapshot to restore
 	 */
 	snapshotRestore(snapshot: PlayoutExpectedPackagesModelSnapshot): void
+
+	ensurePackagesAreLoaded(expectedPackages: PieceExpectedPackage[]): Promise<ExpectedPackage.Any[]>
 
 	ensurePackagesExist(rundownId: RundownId, expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>): void
 
