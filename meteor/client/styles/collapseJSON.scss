@@ -8,20 +8,36 @@
 	}
 }
 
-.collapse-json__collapser {
+.collapse-json__tools {
 	display: block;
-	background: #eee;
-	border-radius: 3px;
-	line-height: 1.3em;
-	padding: 0 0.3em;
-	margin-top: 0.2em;
-	border: none;
 	float: right;
 	clear: both;
-	user-select: none;
 }
 
-.collapse-json__collapser:focus {
-	outline: none;
-	box-shadow: 0 0 0 2px #00feff;
+.collapse-json__tools > button {
+	background: #eee;
+	border-radius: 3px;
+	line-height: 1rem;
+	padding: 0 0.3rem;
+	margin-top: 0.2rem;
+	border: none;
+	user-select: none;
+	margin-left: 0.2rem;
+	vertical-align: top;
+
+	&:focus {
+		outline: none;
+		box-shadow: 0 0 0 2px #00feff;
+	}
+
+	&:active {
+		background-color: #ddd;
+	}
+}
+
+.collapse-json__copy {
+	font-family: Roboto, arial, sans-serif;
+	font-weight: 500;
+	font-size: 0.8em;
+	color: #888;
 }
