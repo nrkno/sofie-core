@@ -131,7 +131,14 @@ export async function syncChangesToPartInstances(
 				const existingResultPartInstance: BlueprintSyncIngestPartInstance = {
 					partInstance: convertPartInstanceToBlueprints(existingPartInstance.partInstance),
 					pieceInstances: pieceInstancesInPart.map((p) =>
-						convertPieceInstanceToBlueprints(p.pieceInstance, unwrapExpectedPackages(p.expectedPackages))
+						convertPieceInstanceToBlueprints(
+							p.pieceInstance,
+							// nocommit - make sure the expectedPackages are loaded?
+							playoutModel.expectedPackages.getPackagesForPieceInstance(
+								p.pieceInstance.rundownId,
+								p.pieceInstance._id
+							)
+						)
 					),
 				}
 
@@ -164,7 +171,11 @@ export async function syncChangesToPartInstances(
 				const newResultData: BlueprintSyncIngestNewData = {
 					part: newPart ? convertPartToBlueprints(newPart) : undefined,
 					pieceInstances: proposedPieceInstances.map((p) =>
-						convertPieceInstanceToBlueprints(p, p.expectedPackages)
+						convertPieceInstanceToBlueprints(
+							p,
+							// nocommit - make sure the expectedPackages are loaded?
+							playoutModel.expectedPackages.getPackagesForPieceInstance(p.rundownId, p._id)
+						)
 					),
 					adLibPieces: newPart && ingestPart ? ingestPart.adLibPieces.map(convertAdLibPieceToBlueprints) : [],
 					actions: newPart && ingestPart ? ingestPart.adLibActions.map(convertAdLibActionToBlueprints) : [],
@@ -172,6 +183,8 @@ export async function syncChangesToPartInstances(
 				}
 
 				const partInstanceSnapshot = existingPartInstance.snapshotMakeCopy()
+
+				const expectedPackagesSnapshot = playoutModel.expectedPackages.snapshotMakeCopy()
 
 				const syncContext = new SyncIngestUpdateToPartInstanceContext(
 					context,
@@ -184,6 +197,7 @@ export async function syncChangesToPartInstances(
 					playoutRundownModel.rundown,
 					existingPartInstance,
 					proposedPieceInstances,
+					playoutModel.expectedPackages,
 					playStatus
 				)
 				// TODO - how can we limit the frequency we run this? (ie, how do we know nothing affecting this has changed)
@@ -200,6 +214,7 @@ export async function syncChangesToPartInstances(
 
 					// Operation failed, rollback the changes
 					existingPartInstance.snapshotRestore(partInstanceSnapshot)
+					playoutModel.expectedPackages.snapshotRestore(expectedPackagesSnapshot)
 				}
 
 				if (playStatus === 'next') {

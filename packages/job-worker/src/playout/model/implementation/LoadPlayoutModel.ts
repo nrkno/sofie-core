@@ -88,8 +88,11 @@ export async function createPlayoutModelFromIngestModel(
 	const [peripheralDevices, playlist, rundowns] = await loadInitData(context, loadedPlaylist, false, newRundowns)
 	const rundownIds = rundowns.map((r) => r._id)
 
+	const expectedPackages = new PlayoutExpectedPackagesModelImpl()
+	// nocommit - populate some content from the ingestModel
+
 	const [partInstances, rundownsWithContent, timeline] = await Promise.all([
-		loadPartInstances(context, loadedPlaylist, rundownIds),
+		loadPartInstances(context, expectedPackages, loadedPlaylist, rundownIds),
 		loadRundowns(context, ingestModel, rundowns),
 		loadTimeline(context),
 	])
@@ -102,7 +105,8 @@ export async function createPlayoutModelFromIngestModel(
 		playlist,
 		partInstances,
 		rundownsWithContent,
-		timeline
+		timeline,
+		expectedPackages
 	)
 
 	return res

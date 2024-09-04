@@ -6,9 +6,24 @@ import {
 	RundownId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
-import { PlayoutExpectedPackagesModel } from '../PlayoutExpectedPackagesModel'
+import { PlayoutExpectedPackagesModel, PlayoutExpectedPackagesModelSnapshot } from '../PlayoutExpectedPackagesModel'
 
 export class PlayoutExpectedPackagesModelImpl implements PlayoutExpectedPackagesModel {
+	getPackagesForPieceInstance(
+		_rundownId: RundownId,
+		_pieceInstanceId: PieceInstanceId
+	): ReadonlyDeep<ExpectedPackage.Any>[] {
+		throw new Error('Method not implemented.')
+	}
+
+	snapshotMakeCopy(): PlayoutExpectedPackagesModelSnapshot {
+		throw new Error('Method not implemented.')
+	}
+
+	snapshotRestore(_snapshot: PlayoutExpectedPackagesModelSnapshot): void {
+		throw new Error('Method not implemented.')
+	}
+
 	ensurePackagesExist(_rundownId: RundownId, _expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>): void {
 		throw new Error('Method not implemented.')
 	}
@@ -28,8 +43,6 @@ export class PlayoutExpectedPackagesModelImpl implements PlayoutExpectedPackages
 	): void {
 		throw new Error('Method not implemented.')
 	}
-
-	readonly TODO: null = null
 
 	async saveAllToDatabase(): Promise<void> {
 		throw new Error('Method not implemented.')

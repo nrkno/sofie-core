@@ -31,7 +31,7 @@ import {
 	serializePieceTimelineObjectsBlob,
 } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { EXPECTED_INGEST_TO_PLAYOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
-import { unwrapExpectedPackages } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import { PlayoutExpectedPackagesModel } from '../../playout/model/PlayoutExpectedPackagesModel'
 
 export class SyncIngestUpdateToPartInstanceContext
 	extends RundownUserContext
@@ -49,6 +49,7 @@ export class SyncIngestUpdateToPartInstanceContext
 		rundown: ReadonlyDeep<DBRundown>,
 		partInstance: PlayoutPartInstanceModel,
 		proposedPieceInstances: ReadonlyDeep<PieceInstance[]>,
+		private readonly expectedPackages: PlayoutExpectedPackagesModel,
 		private playStatus: 'previous' | 'current' | 'next'
 	) {
 		super(
@@ -77,7 +78,7 @@ export class SyncIngestUpdateToPartInstanceContext
 		if (!this.partInstance) throw new Error(`PartInstance has been removed`)
 
 		// filter the submission to the allowed ones
-		const postProcessedPiece = modifiedPiece
+		const postProcessed = modifiedPiece
 			? postProcessPieces(
 					this._context,
 					[
@@ -92,22 +93,25 @@ export class SyncIngestUpdateToPartInstanceContext
 					this.partInstance.partInstance.segmentId,
 					this.partInstance.partInstance.part._id,
 					this.playStatus === 'current'
-			  )[0]
+			  )
 			: null
 
-		if (postProcessedPiece) {
-			this.expectedPackages.ensurePackages(postProcessedPiece.expectedPackages)
+		if (postProcessed) {
+			this.expectedPackages.ensurePackagesExistMap(
+				this.partInstance.partInstance.rundownId,
+				postProcessed.expectedPackages
+			)
 		}
 
 		const newPieceInstance: ReadonlyDeep<PieceInstance> = {
 			...proposedPieceInstance,
-			piece: postProcessedPiece?.doc ?? proposedPieceInstance.piece,
+			piece: postProcessed?.docs[0] ?? proposedPieceInstance.piece,
 		}
 		this.partInstance.mergeOrInsertPieceInstance(newPieceInstance)
 
 		return convertPieceInstanceToBlueprints(
 			newPieceInstance,
-			this.expectedPackages.getPackagesForPieceInstance(newPieceInstance)
+			this.expectedPackages.getPackagesForPieceInstance(newPieceInstance.rundownId, newPieceInstance._id)
 		)
 	}
 
@@ -116,7 +120,7 @@ export class SyncIngestUpdateToPartInstanceContext
 
 		if (!this.partInstance) throw new Error(`PartInstance has been removed`)
 
-		const piece = postProcessPieces(
+		const processedPieces = postProcessPieces(
 			this._context,
 			[trimmedPiece],
 			this.showStyleCompound.blueprintId,
@@ -124,15 +128,22 @@ export class SyncIngestUpdateToPartInstanceContext
 			this.partInstance.partInstance.segmentId,
 			this.partInstance.partInstance.part._id,
 			this.playStatus === 'current'
-		)[0]
+		)
+		const piece = processedPieces.docs[0]
 
-		this.expectedPackages.ensurePackages(piece.expectedPackages)
+		this.expectedPackages.ensurePackagesExistMap(
+			this.partInstance.partInstance.rundownId,
+			processedPieces.expectedPackages
+		)
 
-		const newPieceInstance = this.partInstance.insertPlannedPiece(piece.doc)
+		const newPieceInstance = this.partInstance.insertPlannedPiece(piece)
 
 		return convertPieceInstanceToBlueprints(
 			newPieceInstance.pieceInstance,
-			unwrapExpectedPackages(newPieceInstance.expectedPackages)
+			this.expectedPackages.getPackagesForPieceInstance(
+				newPieceInstance.pieceInstance.rundownId,
+				newPieceInstance.pieceInstance._id
+			)
 		)
 	}
 	updatePieceInstance(pieceInstanceId: string, updatedPiece: Partial<IBlueprintPiece>): IBlueprintPieceInstance {
@@ -172,12 +183,25 @@ export class SyncIngestUpdateToPartInstanceContext
 			})
 		}
 		if (trimmedPiece.expectedPackages) {
-			pieceInstance.setExpectedPackages(trimmedPiece.expectedPackages)
+			this.expectedPackages.ensurePackagesExist(
+				pieceInstance.pieceInstance.rundownId,
+				trimmedPiece.expectedPackages
+			)
+
+			this.expectedPackages.setPieceInstanceReferenceToPackages(
+				pieceInstance.pieceInstance.rundownId,
+				pieceInstance.pieceInstance.partInstanceId,
+				pieceInstance.pieceInstance._id,
+				pieceInstance.pieceInstance.piece.expectedPackages.map((p) => p.expectedPackageId)
+			)
 		}
 
 		return convertPieceInstanceToBlueprints(
 			pieceInstance.pieceInstance,
-			unwrapExpectedPackages(pieceInstance.expectedPackages)
+			this.expectedPackages.getPackagesForPieceInstance(
+				pieceInstance.pieceInstance.rundownId,
+				pieceInstance.pieceInstance._id
+			)
 		)
 	}
 	updatePartInstance(updatePart: Partial<IBlueprintMutatablePart>): IBlueprintPartInstance {
