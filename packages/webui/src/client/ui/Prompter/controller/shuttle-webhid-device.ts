@@ -11,19 +11,14 @@ export class ShuttleWebHidController extends ControllerAbstract {
 	private prompterView: PrompterViewInner
 
 	private speedMap = [0, 1, 2, 3, 5, 7, 9, 30]
-	private jogMultiplierMap = this.speedMap.slice(1)
 
-	private readonly MIN_JOG_MULTIPLIER = 0
-	private readonly MAX_JOG_MULTIPLIER = this.jogMultiplierMap.length - 1
-	private readonly JOG_BASE_MOVEMENT_PX = 20
+	private readonly JOG_BASE_MOVEMENT_PX = 100
 
 	private updateSpeedHandle: number | null = null
 	private lastSpeed = 0
 	private currentPosition = 0
 
 	private connectedShuttle: Shuttle | undefined
-
-	private jogMultiplierIndex = 3
 
 	private accessRequestCallback: AccessRequestCallback = {
 		callback: this.requestAccess.bind(this),
@@ -127,7 +122,7 @@ export class ShuttleWebHidController extends ControllerAbstract {
 	protected onButtonPressed(keyIndex: number): void {
 		switch (keyIndex) {
 			case 0:
-				this.onJogMultipierDelta(-1)
+				// no-op
 				break
 			case 1:
 				this.resetSpeed()
@@ -142,23 +137,16 @@ export class ShuttleWebHidController extends ControllerAbstract {
 				this.prompterView.scrollToFollowing()
 				break
 			case 4:
-				this.onJogMultipierDelta(1)
+				this.prompterView.take('Shuttle button 4 press')
 				break
 		}
-	}
-
-	protected onJogMultipierDelta(delta: number): void {
-		this.jogMultiplierIndex = Math.min(
-			Math.max(this.jogMultiplierIndex + delta, this.MIN_JOG_MULTIPLIER),
-			this.MAX_JOG_MULTIPLIER
-		)
 	}
 
 	protected onJog(delta: number): void {
 		if (Math.abs(delta) > 1) return // this is a hack because sometimes, right after connecting to the device, the delta would be larger than 1 or -1
 
 		this.resetSpeed()
-		window.scrollBy(0, this.JOG_BASE_MOVEMENT_PX * delta * this.jogMultiplierMap[this.jogMultiplierIndex])
+		window.scrollBy(0, this.JOG_BASE_MOVEMENT_PX * delta)
 	}
 
 	protected onShuttle(value: number): void {

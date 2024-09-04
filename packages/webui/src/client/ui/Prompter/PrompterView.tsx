@@ -33,6 +33,8 @@ import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
 import { PrompterControlManager } from './controller/manager'
 import { OverUnderTimer } from './OverUnderTimer'
 import { PrompterAPI, PrompterData, PrompterDataPart } from './prompter'
+import { doUserAction, UserAction } from '../../lib/clientUserAction'
+import { MeteorCall } from '../../lib/meteorApi'
 
 const DEFAULT_UPDATE_THROTTLE = 250 //ms
 const PIECE_MISSING_UPDATE_THROTTLE = 2000 //ms
@@ -383,6 +385,17 @@ export class PrompterViewContent extends React.Component<Translated<IProps & ITr
 	}
 	findAnchorPosition(startY: number, endY: number, sortDirection = 1): number | null {
 		return (this.listAnchorPositions(startY, endY, sortDirection)[0] || [])[0] || null
+	}
+	take(e: Event | string): void {
+		const { t } = this.props
+		if (!this.props.rundownPlaylist) {
+			logger.error('No active Rundown Playlist to perform a Take in')
+			return
+		}
+		const playlist = this.props.rundownPlaylist
+		doUserAction(t, e, UserAction.TAKE, (e, ts) =>
+			MeteorCall.userAction.take(e, ts, playlist._id, playlist.currentPartInfo?.partInstanceId ?? null)
+		)
 	}
 	private onWindowScroll = () => {
 		this.triggerCheckCurrentTakeMarkers()
