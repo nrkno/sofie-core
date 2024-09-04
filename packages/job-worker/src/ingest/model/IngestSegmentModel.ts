@@ -6,7 +6,7 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
-import { PostProcessDoc } from '../../blueprints/postProcess'
+import { PostProcessDocs } from '../../blueprints/postProcess'
 
 export interface IngestSegmentModelReadonly {
 	/**
@@ -87,9 +87,9 @@ export interface IngestSegmentModel extends IngestSegmentModelReadonly {
 	 */
 	replacePart(
 		part: IngestReplacePartType,
-		pieces: PostProcessDoc<Piece>[],
-		adLibPieces: PostProcessDoc<AdLibPiece>[],
-		adLibActions: PostProcessDoc<AdLibAction>[]
+		pieces: PostProcessDocs<Piece>,
+		adLibPieces: PostProcessDocs<AdLibPiece>,
+		adLibActions: PostProcessDocs<AdLibAction>
 	): IngestPartModel
 }
 

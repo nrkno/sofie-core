@@ -1,33 +1,17 @@
-import { ExpectedPackageId, PieceInstanceInfiniteId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PieceInstanceInfiniteId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
-import { ExpectedPackage, Time } from '@sofie-automation/blueprints-integration'
+import { Time } from '@sofie-automation/blueprints-integration'
 import { PlayoutPieceInstanceModel } from '../PlayoutPieceInstanceModel'
 import _ = require('underscore')
-import {
-	ExpectedPackageDBFromPieceInstance,
-	ExpectedPackageDBType,
-} from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import {
-	DocumentChanges,
-	getDocumentChanges,
-	diffAndReturnLatestObjects,
-} from '../../../ingest/model/implementation/utils'
-import { generateExpectedPackageBases } from '../../../ingest/expectedPackages'
-import { JobContext } from '../../../jobs'
 
 export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel {
-	readonly #context: JobContext
-
 	/**
 	 * The raw mutable PieceInstance
 	 * Danger: This should not be modified externally, this is exposed for cloning and saving purposes
 	 */
 	PieceInstanceImpl: PieceInstance
-
-	#expectedPackages: ExpectedPackageDBFromPieceInstance[]
-	ExpectedPackagesWithChanges = new Set<ExpectedPackageId>()
 
 	/**
 	 * Set/delete a value for this PieceInstance, and track that there are changes
@@ -73,8 +57,7 @@ export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel 
 	 * Whether this PieceInstance has unsaved changes
 	 */
 	get HasChanges(): boolean {
-		// nocommit - should this be two properties?
-		return this.#hasChanges || this.ExpectedPackagesWithChanges.size > 0
+		return this.#hasChanges
 	}
 
 	/**
@@ -82,33 +65,15 @@ export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel 
 	 */
 	clearChangedFlag(): void {
 		this.#hasChanges = false
-		this.ExpectedPackagesWithChanges.clear()
 	}
 
 	get pieceInstance(): ReadonlyDeep<PieceInstance> {
 		return this.PieceInstanceImpl
 	}
 
-	get expectedPackages(): ReadonlyDeep<ExpectedPackageDBFromPieceInstance[]> {
-		return [...this.#expectedPackages]
-	}
-
-	get expectedPackagesChanges(): DocumentChanges<ExpectedPackageDBFromPieceInstance> {
-		return getDocumentChanges(this.ExpectedPackagesWithChanges, this.#expectedPackages)
-	}
-
-	constructor(
-		context: JobContext,
-		pieceInstances: PieceInstance,
-		expectedPackages: ExpectedPackageDBFromPieceInstance[],
-		hasChanges: boolean,
-		expectedPackagesWithChanges: ExpectedPackageId[] | null
-	) {
-		this.#context = context
+	constructor(pieceInstances: PieceInstance, hasChanges: boolean) {
 		this.PieceInstanceImpl = pieceInstances
-		this.#expectedPackages = expectedPackages
 		this.#hasChanges = hasChanges
-		this.ExpectedPackagesWithChanges = new Set(expectedPackagesWithChanges)
 	}
 
 	/**
@@ -172,42 +137,30 @@ export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel 
 		)
 	}
 
-	/**
-	 * Update the expected packages for the PieceInstance
-	 * @param expectedPackages The new packages
-	 */
-	setExpectedPackages(expectedPackages: ReadonlyDeep<ExpectedPackage.Any>[]): void {
-		// nocommit - refactor this into a simpler type than `ExpectedPackagesStore` or just reuse that?
+	// /**
+	//  * Update the expected packages for the PieceInstance
+	//  * @param expectedPackages The new packages
+	//  */
+	// setExpectedPackages(expectedPackages: ReadonlyDeep<ExpectedPackage.Any>[]): void {
+	// 	// nocommit - refactor this into a simpler type than `ExpectedPackagesStore` or just reuse that?
 
-		const bases = generateExpectedPackageBases(this.#context.studioId, this.PieceInstanceImpl._id, expectedPackages)
-		const newExpectedPackages: ExpectedPackageDBFromPieceInstance[] = bases.map((base) => ({
-			...base,
+	// 	const bases = generateExpectedPackageBases(this.#context.studioId, this.PieceInstanceImpl._id, expectedPackages)
+	// 	const newExpectedPackages: ExpectedPackageDBFromPieceInstance[] = bases.map((base) => ({
+	// 		...base,
 
-			fromPieceType: ExpectedPackageDBType.PIECE_INSTANCE,
-			partInstanceId: this.PieceInstanceImpl.partInstanceId,
-			pieceInstanceId: this.PieceInstanceImpl._id,
-			segmentId: this.PieceInstanceImpl.segmentId, // TODO
-			rundownId: this.PieceInstanceImpl.rundownId,
-			pieceId: null,
-		}))
+	// 		fromPieceType: ExpectedPackageDBType.PIECE_INSTANCE,
+	// 		partInstanceId: this.PieceInstanceImpl.partInstanceId,
+	// 		pieceInstanceId: this.PieceInstanceImpl._id,
+	// 		segmentId: this.PieceInstanceImpl.segmentId, // TODO
+	// 		rundownId: this.PieceInstanceImpl.rundownId,
+	// 		pieceId: null,
+	// 	}))
 
-		this.#expectedPackages = diffAndReturnLatestObjects(
-			this.ExpectedPackagesWithChanges,
-			this.#expectedPackages,
-			newExpectedPackages,
-			mutateExpectedPackage
-		)
-	}
-}
-
-// nocommit - this is copied from elsewhere
-function mutateExpectedPackage(
-	oldObj: ExpectedPackageDBFromPieceInstance,
-	newObj: ExpectedPackageDBFromPieceInstance
-): ExpectedPackageDBFromPieceInstance {
-	return {
-		...newObj,
-		// Retain the created property
-		created: oldObj.created,
-	}
+	// 	this.#expectedPackages = diffAndReturnLatestObjects(
+	// 		this.ExpectedPackagesWithChanges,
+	// 		this.#expectedPackages,
+	// 		newExpectedPackages,
+	// 		mutateExpectedPackage
+	// 	)
+	// }
 }

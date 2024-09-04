@@ -2,9 +2,18 @@ import {
 	ExpectedPackageDBFromBaselineAdLibAction,
 	ExpectedPackageDBFromBaselineAdLibPiece,
 	ExpectedPackageDBFromRundownBaselineObjects,
+	ExpectedPackageDBNew,
 	ExpectedPackageDBType,
+	getContentVersionHash,
+	getExpectedPackageIdNew,
 } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import { BlueprintId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	BlueprintId,
+	ExpectedPackageId,
+	RundownId,
+	SegmentId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { serializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { DBRundown, RundownSource } from '@sofie-automation/corelib/dist/dataModel/Rundown'
@@ -15,20 +24,19 @@ import { StudioUserContext, GetRundownContext } from '../blueprints/context'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import {
 	postProcessAdLibPieces,
-	PostProcessDoc,
+	PostProcessDocs,
 	postProcessGlobalAdLibActions,
 	postProcessRundownBaselineItems,
-	unwrapPostProccessDocs,
 } from '../blueprints/postProcess'
 import { logger } from '../logging'
 import _ = require('underscore')
-import { ExpectedPackageForIngestModelBaseline, IngestModel } from './model/IngestModel'
+import { IngestModel } from './model/IngestModel'
 import { LocalIngestRundown } from './ingestCache'
 import { extendIngestRundownCore, canRundownBeUpdated } from './lib'
 import { JobContext } from '../jobs'
 import { CommitIngestData } from './lock'
 import { SelectedShowStyleVariant, selectShowStyleVariant } from './selectShowStyleVariant'
-import { generateExpectedPackageBases, updateExpectedMediaAndPlayoutItemsForRundownBaseline } from './expectedPackages'
+import { updateExpectedMediaAndPlayoutItemsForRundownBaseline } from './expectedPackages'
 import { ReadonlyDeep } from 'type-fest'
 import {
 	BlueprintResultRundown,
@@ -355,71 +363,98 @@ export async function regenerateRundownAndBaselineFromIngestData(
 		rundownRes.globalActions || []
 	)
 
-	const expectedPackages: ExpectedPackageForIngestModelBaseline[] = [
-		...generateRundownBaselineExpectedPackages(context, dbRundown._id, rundownRes.baseline.expectedPackages ?? []),
-		...generateGlobalAdLibPieceExpectedPackages(context, dbRundown._id, adlibPieces),
-		...generateGlobalAdLibActionExpectedPackages(context, dbRundown._id, adlibActions),
-	]
-
-	await ingestModel.setRundownBaseline(
-		timelineObjectsBlob,
-		unwrapPostProccessDocs(adlibPieces),
-		unwrapPostProccessDocs(adlibActions),
-		expectedPackages
+	const expectedPackages = generateExpectedPackagesForBaseline(
+		context.studioId,
+		dbRundown._id,
+		adlibPieces,
+		adlibActions,
+		rundownRes.baseline.expectedPackages ?? []
 	)
+
+	await ingestModel.setRundownBaseline(timelineObjectsBlob, adlibPieces.docs, adlibActions.docs, expectedPackages)
 
 	await updateExpectedMediaAndPlayoutItemsForRundownBaseline(context, ingestModel, rundownRes.baseline)
 
 	return dbRundown
 }
 
-function generateGlobalAdLibPieceExpectedPackages(
-	context: JobContext,
+function generateExpectedPackagesForBaseline(
+	studioId: StudioId,
 	rundownId: RundownId,
-	adlibPieces: PostProcessDoc<AdLibPiece>[]
-): ExpectedPackageDBFromBaselineAdLibPiece[] {
-	return adlibPieces.flatMap(({ doc, expectedPackages }) => {
-		const bases = generateExpectedPackageBases(context.studio._id, doc._id, expectedPackages)
-
-		return bases.map((base) => ({
-			...base,
-			rundownId,
-			pieceId: doc._id,
-			fromPieceType: ExpectedPackageDBType.BASELINE_ADLIB_PIECE,
-		}))
-	})
-}
-
-function generateGlobalAdLibActionExpectedPackages(
-	context: JobContext,
-	rundownId: RundownId,
-	adlibActions: PostProcessDoc<RundownBaselineAdLibAction>[]
-): ExpectedPackageDBFromBaselineAdLibAction[] {
-	return adlibActions.flatMap(({ doc, expectedPackages }) => {
-		const bases = generateExpectedPackageBases(context.studio._id, doc._id, expectedPackages)
-
-		return bases.map((base) => ({
-			...base,
-			rundownId,
-			pieceId: doc._id,
-			fromPieceType: ExpectedPackageDBType.BASELINE_ADLIB_ACTION,
-		}))
-	})
-}
-
-function generateRundownBaselineExpectedPackages(
-	context: JobContext,
-	rundownId: RundownId,
+	adLibPieces: PostProcessDocs<AdLibPiece>,
+	adLibActions: PostProcessDocs<RundownBaselineAdLibAction>,
 	expectedPackages: ExpectedPackage.Any[]
-): ExpectedPackageDBFromRundownBaselineObjects[] {
-	const bases = generateExpectedPackageBases(context.studio._id, rundownId, expectedPackages)
+): ExpectedPackageDBNew[] {
+	const packages = new Map<ExpectedPackageId, ExpectedPackageDBNew>()
 
-	return bases.map((item) => {
-		return {
-			...item,
-			fromPieceType: ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS,
-			rundownId: rundownId,
-			pieceId: null,
+	const baselineExpectedPackages = new Map<ExpectedPackageId, ReadonlyDeep<ExpectedPackage.Any>>()
+	for (const expectedPackage of expectedPackages) {
+		const packageId = getExpectedPackageIdNew(rundownId, expectedPackage)
+		baselineExpectedPackages.set(packageId, expectedPackage)
+	}
+
+	// Generate the full version of each expectedPackage
+	// nocommit - deduplicate this work with the other files
+	const allRawPackages = [
+		...adLibPieces.expectedPackages,
+		...adLibActions.expectedPackages,
+		...baselineExpectedPackages,
+	]
+	for (const [packageId, expectedPackage] of allRawPackages) {
+		if (packages.has(packageId)) continue
+
+		packages.set(packageId, {
+			_id: packageId,
+
+			studioId,
+			rundownId,
+
+			contentVersionHash: getContentVersionHash(expectedPackage),
+
+			created: Date.now(), // nocommit - avoid churn on this?
+
+			package: expectedPackage,
+
+			ingestSources: [],
+
+			playoutSources: {
+				// nocommit - avoid this here?
+				pieceInstanceIds: [],
+			},
+		})
+	}
+
+	// Populate the ingestSources
+	for (const piece of adLibPieces.docs) {
+		for (const expectedPackage of piece.expectedPackages) {
+			const expectedPackageDoc = packages.get(expectedPackage.expectedPackageId)
+			if (!expectedPackageDoc) continue // nocommit - log error? this should never happen
+
+			expectedPackageDoc.ingestSources.push({
+				fromPieceType: ExpectedPackageDBType.BASELINE_ADLIB_PIECE,
+				pieceId: piece._id,
+			})
 		}
-	})
+	}
+	for (const piece of adLibActions.docs) {
+		for (const expectedPackage of piece.expectedPackages) {
+			const expectedPackageDoc = packages.get(expectedPackage.expectedPackageId)
+			if (!expectedPackageDoc) continue // nocommit - log error? this should never happen
+
+			expectedPackageDoc.ingestSources.push({
+				fromPieceType: ExpectedPackageDBType.BASELINE_ADLIB_ACTION,
+				pieceId: piece._id,
+			})
+		}
+	}
+	for (const packageId of baselineExpectedPackages.keys()) {
+		const expectedPackageDoc = packages.get(packageId)
+		if (!expectedPackageDoc) continue // nocommit - log error? this should never happen
+
+		expectedPackageDoc.ingestSources.push({
+			fromPieceType: ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS,
+		})
+	}
+
+	return Array.from(packages.values())
 }

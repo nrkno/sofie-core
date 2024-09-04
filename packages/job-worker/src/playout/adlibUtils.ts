@@ -4,13 +4,14 @@ import { PartInstanceId, PieceId, PieceInstanceId } from '@sofie-automation/core
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import {
 	PieceInstance,
+	PieceInstancePiece,
 	PieceInstanceWithExpectedPackagesFull,
 } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { assertNever, getRandomId, getRank } from '@sofie-automation/corelib/dist/lib'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { getCurrentTime } from '../lib'
 import { JobContext } from '../jobs'
-import { AdlibPieceWithPackages, PlayoutModel } from './model/PlayoutModel'
+import { PlayoutModel } from './model/PlayoutModel'
 import { PlayoutPartInstanceModel } from './model/PlayoutPartInstanceModel'
 import {
 	fetchPiecesThatMayBeActiveForPart,
@@ -58,6 +59,8 @@ export async function innerStartOrQueueAdLibPiece(
 			expectedDurationWithTransition: adLibPiece.expectedDuration, // Filled in later
 		}
 
+		playoutModel.expectedPackages.ensurePackagesExist(currentPartInstance.partInstance.rundownId, expectedPackages) // nocommit - what if the genericAdlibPiece doesn't quite match the set of packages?
+
 		const genericAdlibPiece = convertAdLibToGenericPiece(adLibPiece, true)
 		const newPartInstance = await insertQueuedPartWithPieces(
 			context,
@@ -65,15 +68,17 @@ export async function innerStartOrQueueAdLibPiece(
 			rundown,
 			currentPartInstance,
 			adlibbedPart,
-			[{ piece: genericAdlibPiece, expectedPackages }],
+			[genericAdlibPiece],
 			adLibPiece._id
 		)
 		queuedPartInstanceId = newPartInstance.partInstance._id
 
 		// syncPlayheadInfinitesForNextPartInstance is handled by setNextPart
 	} else {
+		playoutModel.expectedPackages.ensurePackagesExist(currentPartInstance.partInstance.rundownId, expectedPackages) // nocommit - what if the adLibPiece doesn't quite match the set of packages?
+
 		const genericAdlibPiece = convertAdLibToGenericPiece(adLibPiece, false)
-		currentPartInstance.insertAdlibbedPiece(genericAdlibPiece, adLibPiece._id, expectedPackages)
+		currentPartInstance.insertAdlibbedPiece(genericAdlibPiece, adLibPiece._id)
 
 		await syncPlayheadInfinitesForNextPartInstance(
 			context,
@@ -242,7 +247,7 @@ export async function insertQueuedPartWithPieces(
 	rundown: PlayoutRundownModel,
 	currentPartInstance: PlayoutPartInstanceModel,
 	newPart: Omit<DBPart, 'segmentId' | 'rundownId'>,
-	initialPieces: AdlibPieceWithPackages[],
+	initialPieces: Omit<PieceInstancePiece, 'startPartId'>[],
 	fromAdlibId: PieceId | undefined
 ): Promise<PlayoutPartInstanceModel> {
 	const span = context.startSpan('insertQueuedPartWithPieces')

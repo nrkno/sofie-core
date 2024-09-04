@@ -22,10 +22,7 @@ import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/Perip
 import { PlayoutModel, PlayoutModelPreInit } from '../PlayoutModel'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
-import {
-	ExpectedPackageDBFromPieceInstance,
-	ExpectedPackageDBType,
-} from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import { PlayoutExpectedPackagesModelImpl } from './PlayoutExpectedPackagesModelImpl'
 
 /**
  * Load a PlayoutModelPreInit for the given RundownPlaylist
@@ -154,8 +151,10 @@ export async function createPlayoutModelfromInitModel(
 
 	const rundownIds = initModel.rundowns.map((r) => r._id)
 
+	const expectedPackages = new PlayoutExpectedPackagesModelImpl()
+
 	const [partInstances, rundownsWithContent, timeline] = await Promise.all([
-		loadPartInstances(context, initModel.playlist, rundownIds),
+		loadPartInstances(context, expectedPackages, initModel.playlist, rundownIds),
 		loadRundowns(context, null, initModel.rundowns),
 		loadTimeline(context),
 	])
@@ -168,7 +167,8 @@ export async function createPlayoutModelfromInitModel(
 		clone<DBRundownPlaylist>(initModel.playlist),
 		partInstances,
 		rundownsWithContent,
-		timeline
+		timeline,
+		expectedPackages
 	)
 
 	if (span) span.end()
@@ -248,6 +248,7 @@ async function loadRundowns(
 
 async function loadPartInstances(
 	context: JobContext,
+	expectedPackages: PlayoutExpectedPackagesModelImpl,
 	playlist: ReadonlyDeep<DBRundownPlaylist>,
 	rundownIds: RundownId[]
 ): Promise<PlayoutPartInstanceModelImpl[]> {
@@ -299,33 +300,29 @@ async function loadPartInstances(
 	// Filter the PieceInstances to the activationId, if possible
 	pieceInstancesSelector.playlistActivationId = playlist.activationId || { $exists: false }
 
-	const [partInstances, pieceInstances, expectedPackages] = await Promise.all([
+	const [partInstances, pieceInstances /*expectedPackageDocs*/] = await Promise.all([
 		partInstancesCollection,
 		context.directCollections.PieceInstances.findFetch(pieceInstancesSelector),
-		context.directCollections.ExpectedPackages.findFetch({
-			fromPieceType: ExpectedPackageDBType.PIECE_INSTANCE,
-			// Future: this could be optimised to only limit the loading to only those which match `activationId`
-			partInstanceId: { $in: selectedPartInstanceIds },
-			rundownId: { $in: rundownIds },
-		}) as Promise<ExpectedPackageDBFromPieceInstance[]>,
+		// context.directCollections.ExpectedPackages.findFetch({
+		// 	fromPieceType: ExpectedPackageDBType.PIECE_INSTANCE,
+		// 	// Future: this could be optimised to only limit the loading to only those which match `activationId`
+		// 	partInstanceId: { $in: selectedPartInstanceIds },
+		// 	rundownId: { $in: rundownIds },
+		// }) as Promise<ExpectedPackageDBFromPieceInstance[]>,
 	])
 
+	// nocommit - populate expectedPackagesStore based on the partInstances/pieceInstances?
+
 	const groupedPieceInstances = groupByToMap(pieceInstances, 'partInstanceId')
-	const groupedExpectedPackages = groupByToMap(expectedPackages, 'pieceInstanceId')
 
 	const allPartInstances: PlayoutPartInstanceModelImpl[] = []
 	for (const partInstance of partInstances) {
-		const rawPieceInstances = groupedPieceInstances.get(partInstance._id) ?? []
-
-		const pieceInstancesAndPackages = rawPieceInstances.map((pieceInstance) => ({
-			pieceInstance,
-			expectedPackages: groupedExpectedPackages.get(pieceInstance._id) ?? [],
-		}))
+		const pieceInstances = groupedPieceInstances.get(partInstance._id) ?? []
 
 		const wrappedPartInstance = new PlayoutPartInstanceModelImpl(
-			context,
+			expectedPackages,
 			partInstance,
-			pieceInstancesAndPackages,
+			pieceInstances,
 			false
 		)
 		allPartInstances.push(wrappedPartInstance)

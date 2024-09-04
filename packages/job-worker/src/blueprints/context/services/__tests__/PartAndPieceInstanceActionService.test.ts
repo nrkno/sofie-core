@@ -32,7 +32,7 @@ import { PlayoutPartInstanceModel } from '../../../../playout/model/PlayoutPartI
 import { convertPartInstanceToBlueprints, convertPieceInstanceToBlueprints } from '../../lib'
 import { TimelineObjRundown, TimelineObjType } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { PlayoutPartInstanceModelImpl } from '../../../../playout/model/implementation/PlayoutPartInstanceModelImpl'
-import { writePartInstancesAndPieceInstancesAndExpectedPackages } from '../../../../playout/model/implementation/SavePlayoutModel'
+import { writePartInstancesAndPieceInstances } from '../../../../playout/model/implementation/SavePlayoutModel'
 import { PlayoutPieceInstanceModel } from '../../../../playout/model/PlayoutPieceInstanceModel'
 import { DatabasePersistedModel } from '../../../../modelBase'
 
@@ -217,7 +217,7 @@ describe('Test blueprint api context', () => {
 	) {
 		// We need to push changes back to 'mongo' for these tests
 		await Promise.all(
-			writePartInstancesAndPieceInstancesAndExpectedPackages(
+			writePartInstancesAndPieceInstances(
 				context,
 				normalizeArrayToMapFunc(allPartInstances as PlayoutPartInstanceModelImpl[], (p) => p.partInstance._id)
 			)

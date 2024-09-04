@@ -4,6 +4,7 @@ import {
 	ExpectedPackageDBFromBaselineAdLibPiece,
 	ExpectedPackageDBFromPiece,
 	ExpectedPackageDBFromRundownBaselineObjects,
+	ExpectedPackageDBNew,
 	ExpectedPackageFromRundown,
 } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { ExpectedPlayoutItemRundown } from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'
@@ -250,7 +251,7 @@ export interface IngestModel extends IngestModelReadonly, BaseModel {
 		timelineObjectsBlob: PieceTimelineObjectsBlob,
 		adlibPieces: RundownBaselineAdLibItem[],
 		adlibActions: RundownBaselineAdLibAction[],
-		expectedPackages: ExpectedPackageForIngestModelBaseline[]
+		expectedPackages: ExpectedPackageDBNew[]
 	): Promise<void>
 
 	/**

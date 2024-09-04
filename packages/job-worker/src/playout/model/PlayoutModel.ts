@@ -18,10 +18,7 @@ import {
 import { ReadonlyDeep } from 'type-fest'
 import { StudioPlayoutModelBase, StudioPlayoutModelBaseReadonly } from '../../studio/model/StudioPlayoutModel'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import {
-	PieceInstancePiece,
-	PieceInstanceWithExpectedPackages,
-} from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { PlaylistLock } from '../../jobs/lock'
 import { PlayoutRundownModel } from './PlayoutRundownModel'
 import { PlayoutSegmentModel } from './PlayoutSegmentModel'
@@ -29,15 +26,10 @@ import { PlayoutPartInstanceModel } from './PlayoutPartInstanceModel'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { PlayoutPieceInstanceModel } from './PlayoutPieceInstanceModel'
-import { ExpectedPackage } from '@sofie-automation/blueprints-integration'
+import { PlayoutExpectedPackagesModel, PlayoutExpectedPackagesModelReadonly } from './PlayoutExpectedPackagesModel'
 
 export type DeferredFunction = (playoutModel: PlayoutModel) => void | Promise<void>
 export type DeferredAfterSaveFunction = (playoutModel: PlayoutModelReadonly) => void | Promise<void>
-
-export interface AdlibPieceWithPackages {
-	piece: Omit<PieceInstancePiece, 'startPartId'>
-	expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
-}
 
 /**
  * A lightweight version of the `PlayoutModel`, used to perform some pre-checks before loading the full model
@@ -89,6 +81,8 @@ export interface PlayoutModelReadonly extends StudioPlayoutModelBaseReadonly {
 	 * Reference to the lock for the RundownPlaylist
 	 */
 	readonly playlistLock: PlaylistLock
+
+	readonly expectedPackages: PlayoutExpectedPackagesModelReadonly
 
 	/**
 	 * The RundownPlaylist this PlayoutModel operates for
@@ -185,6 +179,8 @@ export interface PlayoutModelReadonly extends StudioPlayoutModelBaseReadonly {
  * A view of a `RundownPlaylist` and its content in a `Studio`
  */
 export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBase, BaseModel {
+	readonly expectedPackages: PlayoutExpectedPackagesModel
+
 	/**
 	 * Temporary hack for debug logging
 	 */
@@ -212,9 +208,9 @@ export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBa
 	 */
 	createAdlibbedPartInstance(
 		part: Omit<DBPart, 'segmentId' | 'rundownId'>,
-		pieces: AdlibPieceWithPackages[],
+		pieces: Omit<PieceInstancePiece, 'startPartId'>[],
 		fromAdlibId: PieceId | undefined,
-		infinitePieceInstances: PieceInstanceWithExpectedPackages[]
+		infinitePieceInstances: PieceInstance[]
 	): PlayoutPartInstanceModel
 
 	/**
@@ -224,10 +220,7 @@ export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBa
 	 * @param pieceInstances All the PieceInstances to insert
 	 * @returns The inserted PlayoutPartInstanceModel
 	 */
-	createInstanceForPart(
-		nextPart: ReadonlyDeep<DBPart>,
-		pieceInstances: PieceInstanceWithExpectedPackages[]
-	): PlayoutPartInstanceModel
+	createInstanceForPart(nextPart: ReadonlyDeep<DBPart>, pieceInstances: PieceInstance[]): PlayoutPartInstanceModel
 
 	/**
 	 * Insert an adlibbed PartInstance into the AdlibTesting Segment of a Rundown in this RundownPlaylist

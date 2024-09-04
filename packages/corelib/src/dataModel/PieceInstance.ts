@@ -94,11 +94,7 @@ export interface ResolvedPieceInstance {
 	timelinePriority: number
 }
 
-export interface PieceInstanceWithExpectedPackages {
-	pieceInstance: PieceInstance
-	expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
-}
-
+// nocommit - remove me
 export interface PieceInstanceWithExpectedPackagesFull {
 	pieceInstance: PieceInstance
 	expectedPackages: ExpectedPackageDBFromPieceInstance[]

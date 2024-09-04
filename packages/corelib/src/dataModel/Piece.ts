@@ -6,7 +6,7 @@ import {
 	SomeContent,
 } from '@sofie-automation/blueprints-integration'
 import { ProtectedString, protectString, unprotectString } from '../protectedString'
-import { PieceId, RundownId, SegmentId, PartId } from './Ids'
+import { PieceId, RundownId, SegmentId, PartId, ExpectedPackageId } from './Ids'
 
 /** A generic list of playback availability statuses for a Piece */
 export enum PieceStatusCode {
@@ -77,8 +77,11 @@ export interface Piece extends PieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'co
  * Minimal information about an Expected Package, to be able to link to one from a Piece
  */
 export interface PieceExpectedPackage {
-	/** Unique id of the expectedPackage */
-	_id: string
+	/** The local package id - as given by the blueprints */
+	blueprintPackageId: string
+
+	/** The id of the package in the database */
+	expectedPackageId: ExpectedPackageId
 }
 
 export type PieceTimelineObjectsBlob = ProtectedString<'PieceTimelineObjectsBlob'>

@@ -8,7 +8,6 @@ import {
 	getContentVersionHash,
 	getExpectedPackageId,
 	ExpectedPackageDBBaseSimple,
-	ExpectedPackageDBFromPieceInstance,
 } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import {
 	RundownId,
@@ -36,7 +35,6 @@ import { IngestModel } from './model/IngestModel'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { IngestPartModel } from './model/IngestPartModel'
 import { clone } from '@sofie-automation/corelib/dist/lib'
-import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 
 export function updateExpectedMediaAndPlayoutItemsForPartModel(context: JobContext, part: IngestPartModel): void {
 	updateExpectedMediaItemsForPartModel(context, part)
@@ -91,7 +89,7 @@ function generateExpectedPackagesForBucketAdlibAction(
 	}
 	return packages
 }
-export function generateExpectedPackageBases(
+function generateExpectedPackageBases(
 	studioId: StudioId,
 	ownerId:
 		| PieceId
@@ -197,23 +195,4 @@ export function setDefaultIdOnExpectedPackages(
 	}
 
 	return expectedPackages
-}
-
-export function wrapPackagesForPieceInstance(
-	studioId: StudioId,
-	partInstance: ReadonlyDeep<DBPartInstance>,
-	pieceInstanceId: PieceInstanceId,
-	expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
-): ExpectedPackageDBFromPieceInstance[] {
-	const bases = generateExpectedPackageBases(studioId, pieceInstanceId, expectedPackages)
-	return bases.map((base) => ({
-		...base,
-
-		fromPieceType: ExpectedPackageDBType.PIECE_INSTANCE,
-		partInstanceId: partInstance._id,
-		pieceInstanceId: pieceInstanceId,
-		segmentId: partInstance.segmentId,
-		rundownId: partInstance.rundownId,
-		pieceId: null,
-	}))
 }

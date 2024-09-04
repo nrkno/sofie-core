@@ -1,13 +1,9 @@
 import { PieceId, PieceInstanceId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import {
-	PieceInstance,
-	PieceInstancePiece,
-	PieceInstanceWithExpectedPackages,
-} from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
-import { ExpectedPackage, IBlueprintMutatablePart, PieceLifespan, Time } from '@sofie-automation/blueprints-integration'
+import { IBlueprintMutatablePart, PieceLifespan, Time } from '@sofie-automation/blueprints-integration'
 import { PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { PlayoutPieceInstanceModel } from './PlayoutPieceInstanceModel'
 
@@ -68,13 +64,11 @@ export interface PlayoutPartInstanceModel {
 	 * Insert a Piece into this PartInstance as an adlibbed PieceInstance
 	 * @param piece Piece to insert
 	 * @param fromAdlibId Id of the source Adlib, if any
-	 * @param pieceExpectedPackages ExpectedPackages for the Piece
 	 * @returns The inserted PlayoutPieceInstanceModel
 	 */
 	insertAdlibbedPiece(
 		piece: Omit<PieceInstancePiece, 'startPartId'>,
-		fromAdlibId: PieceId | undefined,
-		pieceExpectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
+		fromAdlibId: PieceId | undefined
 	): PlayoutPieceInstanceModel
 
 	/**
@@ -89,13 +83,9 @@ export interface PlayoutPartInstanceModel {
 	 * Insert a Piece as if it were originally planned at the time of ingest
 	 * This is a weird operation to have for playout, but it is a needed part of the SyncIngestChanges flow
 	 * @param piece Piece to insert into this PartInstance
-	 * @param pieceExpectedPackages ExpectedPackages for the Piece
 	 * @returns The inserted PlayoutPieceInstanceModel
 	 */
-	insertPlannedPiece(
-		piece: Omit<PieceInstancePiece, 'startPartId'>,
-		pieceExpectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
-	): PlayoutPieceInstanceModel
+	insertPlannedPiece(piece: Omit<PieceInstancePiece, 'startPartId'>): PlayoutPieceInstanceModel
 
 	/**
 	 * Insert a virtual adlib Piece into this PartInstance
@@ -140,20 +130,16 @@ export interface PlayoutPartInstanceModel {
 	 * This allows them to be replaced without embedding the infinite logic inside the model
 	 * @param pieceInstances New infinite pieces from previous playhead
 	 */
-	replaceInfinitesFromPreviousPlayhead(pieceInstances: PieceInstanceWithExpectedPackages[]): void
+	replaceInfinitesFromPreviousPlayhead(pieceInstances: PieceInstance[]): void
 
 	/**
 	 * Merge a PieceInstance with a new version, or insert as a new PieceInstance.
 	 * If there is an existing PieceInstance with the same id, it will be merged onto that
 	 * Note: this can replace any playout owned properties too
 	 * @param pieceInstance Replacement PieceInstance to use
-	 * @param expectedPackages Replacement ExpectedPackages for the PieceInstance
 	 * @returns The inserted PlayoutPieceInstanceModel
 	 */
-	mergeOrInsertPieceInstance(
-		pieceInstance: ReadonlyDeep<PieceInstance>,
-		expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
-	): PlayoutPieceInstanceModel
+	mergeOrInsertPieceInstance(pieceInstance: ReadonlyDeep<PieceInstance>): PlayoutPieceInstanceModel
 
 	/**
 	 * Mark this PartInstance as being orphaned

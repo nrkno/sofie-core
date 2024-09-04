@@ -164,7 +164,7 @@ export async function syncChangesToPartInstances(
 				const newResultData: BlueprintSyncIngestNewData = {
 					part: newPart ? convertPartToBlueprints(newPart) : undefined,
 					pieceInstances: proposedPieceInstances.map((p) =>
-						convertPieceInstanceToBlueprints(p.pieceInstance, p.expectedPackages)
+						convertPieceInstanceToBlueprints(p, p.expectedPackages)
 					),
 					adLibPieces: newPart && ingestPart ? ingestPart.adLibPieces.map(convertAdLibPieceToBlueprints) : [],
 					actions: newPart && ingestPart ? ingestPart.adLibActions.map(convertAdLibActionToBlueprints) : [],

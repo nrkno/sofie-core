@@ -1,11 +1,8 @@
-import { PartInstanceId, PieceId, RundownId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstanceId, RundownId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import {
-	PieceInstance,
-	PieceInstanceWithExpectedPackages,
-} from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import {
 	getPieceInstancesForPart as libgetPieceInstancesForPart,
 	getPlayheadTrackingInfinitesForPart as libgetPlayheadTrackingInfinitesForPart,
@@ -19,19 +16,13 @@ import { PlayoutModel } from './model/PlayoutModel'
 import { PlayoutPartInstanceModel } from './model/PlayoutPartInstanceModel'
 import { PlayoutSegmentModel } from './model/PlayoutSegmentModel'
 import { getCurrentTime } from '../lib'
-import { flatten, groupByToMap, normalizeArrayToMapFunc } from '@sofie-automation/corelib/dist/lib'
+import { flatten } from '@sofie-automation/corelib/dist/lib'
 import _ = require('underscore')
 import { IngestModelReadonly } from '../ingest/model/IngestModel'
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { sortRundownIDsInPlaylist } from '@sofie-automation/corelib/dist/playout/playlist'
 import { mongoWhere } from '@sofie-automation/corelib/dist/mongo'
 import { PlayoutRundownModel } from './model/PlayoutRundownModel'
-import {
-	ExpectedPackageDBFromPiece,
-	ExpectedPackageDBType,
-	unwrapExpectedPackages,
-} from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import { PlayoutPieceInstanceModel } from './model/PlayoutPieceInstanceModel'
 
 /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
 export const DEFINITELY_ENDED_FUTURE_DURATION = 1 * 1000
@@ -289,20 +280,7 @@ export async function syncPlayheadInfinitesForNextPartInstance(
 			false
 		)
 
-		const playingPieceInstancesMap = normalizeArrayToMapFunc(
-			fromPartInstance.pieceInstances,
-			(o) => o.pieceInstance.piece._id
-		)
-		const wrappedInfinites = infinites.map((pieceInstance): PieceInstanceWithExpectedPackages => {
-			const expectedPackages = playingPieceInstancesMap.get(pieceInstance.piece._id)?.expectedPackages
-
-			return {
-				pieceInstance: pieceInstance,
-				expectedPackages: unwrapExpectedPackages(expectedPackages ?? []),
-			}
-		})
-
-		toPartInstance.replaceInfinitesFromPreviousPlayhead(wrappedInfinites)
+		toPartInstance.replaceInfinitesFromPreviousPlayhead(infinites)
 	}
 	if (span) span.end()
 }
@@ -326,7 +304,7 @@ export async function getPieceInstancesForPart(
 	part: ReadonlyDeep<DBPart>,
 	possiblePieces: ReadonlyDeep<Piece>[],
 	newInstanceId: PartInstanceId
-): Promise<PieceInstanceWithExpectedPackages[]> {
+): Promise<PieceInstance[]> {
 	const span = context.startSpan('getPieceInstancesForPart')
 	const { partsToReceiveOnSegmentEndFrom, segmentsToReceiveOnRundownEndFrom, rundownsToReceiveOnShowStyleEndFrom } =
 		getIdsBeforeThisPart(context, playoutModel, part)
@@ -377,53 +355,6 @@ export async function getPieceInstancesForPart(
 		false
 	)
 
-	// Pair the pieceInstances with their expectedPackages
-	const resWithExpectedPackages = wrapPieceInstancesWithExpectedPackages(context, playingPieceInstances, res)
-
 	if (span) span.end()
-	return resWithExpectedPackages
-}
-
-async function wrapPieceInstancesWithExpectedPackages(
-	context: JobContext,
-	playingPieceInstances: PlayoutPieceInstanceModel[],
-	res: PieceInstance[]
-) {
-	const playingPieceInstanceMap = normalizeArrayToMapFunc(playingPieceInstances, (o) => o.pieceInstance._id)
-	const pieceIdsToLoad = new Map<PieceId, PieceInstanceWithExpectedPackages>()
-
-	// Pair the PieceInstances with their expectedPackages
-	// The side effects of this is a little dirty, but avoids a lot of extra loops
-	const resWithExpectedPackages = res.map((pieceInstance) => {
-		const expectedPackages = playingPieceInstanceMap.get(pieceInstance._id)?.expectedPackages
-		const pieceInstanceWithExpectedPackages: PieceInstanceWithExpectedPackages = {
-			pieceInstance: pieceInstance,
-			expectedPackages: unwrapExpectedPackages(expectedPackages ?? []),
-		}
-
-		if (!expectedPackages) {
-			// Mark this piece as needing instances to be loaded
-			pieceIdsToLoad.set(pieceInstance.piece._id, pieceInstanceWithExpectedPackages)
-		}
-
-		return pieceInstanceWithExpectedPackages
-	})
-
-	// Any Pieces which were auto-wrapped don't have their expectedPackages loaded yet
-	if (pieceIdsToLoad.size > 0) {
-		const expectedPackages = (await context.directCollections.ExpectedPackages.findFetch({
-			fromPieceType: ExpectedPackageDBType.PIECE,
-			pieceId: { $in: Array.from(pieceIdsToLoad.keys()) },
-		})) as ExpectedPackageDBFromPiece[]
-		const expectedPackagesByPieceId = groupByToMap(expectedPackages, 'pieceId')
-
-		for (const [pieceId, expectedPackages] of expectedPackagesByPieceId.entries()) {
-			const pieceInstance = pieceIdsToLoad.get(pieceId)
-			if (pieceInstance) {
-				pieceInstance.expectedPackages = unwrapExpectedPackages(expectedPackages)
-			}
-		}
-	}
-
-	return resWithExpectedPackages
+	return res
 }

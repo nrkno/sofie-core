@@ -85,33 +85,75 @@ export interface ExpectedPackageDBBaseSimple {
  * When doing a reset of the rundown, all playout references must be removed.
  * When inserting/removing pieceinstances, the expectedPackages must be updated.
  */
-export interface ExpectedPackageDBNew extends ExpectedPackageDBBase {
+export interface ExpectedPackageDBNew {
+	_id: ExpectedPackageId // derived from rundownId and hash of `package`
+
+	// /** The local package id - as given by the blueprints */
+	// blueprintPackageId: string // TODO - remove this?
+
+	/** The studio of the Rundown of the Piece this package belongs to */
+	studioId: StudioId
+
 	/** The rundown of the Piece this package belongs to */
 	rundownId: RundownId
 
-	_id: ExpectedPackageId // derived from rundownId and contentVersionHash
+	/** Hash that changes whenever the content or version changes. See getContentVersionHash() */
+	contentVersionHash: string
 
-	ingestSources: Array<
-		| {
-				fromPieceType: ExpectedPackageDBType.PIECE | ExpectedPackageDBType.ADLIB_PIECE
-				/** The Piece this package belongs to */
-				pieceId: PieceId
-				/** The Part this package belongs to */
-				partId: PartId
-				/** The Segment this package belongs to */
-				segmentId: SegmentId
-		  }
-		| {
-				fromPieceType: ExpectedPackageDBType.BASELINE_ADLIB_PIECE
-				/** The Piece this package belongs to */
-				pieceId: PieceId
-		  }
-	>
+	created: Time
+
+	package: ReadonlyDeep<ExpectedPackage.Any>
+
+	ingestSources: ExpectedPackageIngestSource[]
 
 	playoutSources: {
 		/** Any playout PieceInstance. This is limited to the current and next partInstances */ // nocommit - verify this
 		pieceInstanceIds: PieceInstanceId[]
 	}
+}
+
+export interface ExpectedPackageIngestSourcePiece {
+	fromPieceType: ExpectedPackageDBType.PIECE | ExpectedPackageDBType.ADLIB_PIECE
+	/** The Piece this package belongs to */
+	pieceId: PieceId
+	/** The Part this package belongs to */
+	partId: PartId
+	/** The Segment this package belongs to */
+	segmentId: SegmentId
+}
+export interface ExpectedPackageIngestSourceAdlibAction {
+	fromPieceType: ExpectedPackageDBType.ADLIB_ACTION
+	/** The Piece this package belongs to */
+	pieceId: AdLibActionId
+	/** The Part this package belongs to */
+	partId: PartId
+	/** The Segment this package belongs to */
+	segmentId: SegmentId
+}
+export interface ExpectedPackageIngestSourceBaselineAdlibPiece {
+	fromPieceType: ExpectedPackageDBType.BASELINE_ADLIB_PIECE
+	/** The Piece this package belongs to */
+	pieceId: PieceId
+}
+export interface ExpectedPackageIngestSourceBaselineAdlibAction {
+	fromPieceType: ExpectedPackageDBType.BASELINE_ADLIB_ACTION
+	/** The Piece this package belongs to */
+	pieceId: RundownBaselineAdLibActionId
+}
+export interface ExpectedPackageIngestSourceBaselineObjects {
+	fromPieceType: ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS
+}
+
+export type ExpectedPackageIngestSource =
+	| ExpectedPackageIngestSourcePiece
+	| ExpectedPackageIngestSourceAdlibAction
+	| ExpectedPackageIngestSourceBaselineAdlibPiece
+	| ExpectedPackageIngestSourceBaselineAdlibAction
+	| ExpectedPackageIngestSourceBaselineObjects
+
+export interface ExpectedPackageWithId {
+	_id: ExpectedPackageId
+	expectedPackage: ReadonlyDeep<ExpectedPackage.Any>
 }
 
 export interface ExpectedPackageDBBase extends ExpectedPackageDBBaseSimple {
@@ -127,9 +169,6 @@ export interface ExpectedPackageDBFromPiece extends ExpectedPackageDBBase {
 	segmentId: SegmentId
 	/** The rundown of the Piece this package belongs to */
 	rundownId: RundownId
-
-	/** Any PieceInstance */
-	pieceInstanceIds: PieceInstanceId[]
 }
 
 export interface ExpectedPackageDBFromBaselineAdLibPiece extends ExpectedPackageDBBase {
@@ -225,6 +264,21 @@ export function getExpectedPackageId(
 	localExpectedPackageId: ExpectedPackage.Base['_id']
 ): ExpectedPackageId {
 	return protectString(`${ownerId}_${getHash(localExpectedPackageId)}`)
+}
+
+export function getExpectedPackageIdNew(
+	/** _id of the rundown*/
+	rundownId: RundownId,
+	/** The locally unique id of the expectedPackage */
+	expectedPackage: ReadonlyDeep<ExpectedPackage.Any>
+): ExpectedPackageId {
+	// This may be too agressive, but we don't know how to merge some of the properties
+	const objHash = hashObj({
+		...expectedPackage,
+		listenToPackageInfoUpdates: false, // Not relevant for the hash
+	} satisfies ReadonlyDeep<ExpectedPackage.Any>)
+
+	return protectString(`${rundownId}_${getHash(objHash)}`)
 }
 
 export function unwrapExpectedPackages(

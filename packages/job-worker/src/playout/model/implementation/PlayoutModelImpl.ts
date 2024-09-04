@@ -23,7 +23,8 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import {
 	getPieceInstanceIdForPiece,
-	PieceInstanceWithExpectedPackages,
+	PieceInstance,
+	PieceInstancePiece,
 } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import {
 	serializeTimelineBlob,
@@ -46,14 +47,8 @@ import { getCurrentTime } from '../../../lib'
 import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { queuePartInstanceTimingEvent } from '../../timings/events'
 import { IS_PRODUCTION } from '../../../environment'
-import {
-	AdlibPieceWithPackages,
-	DeferredAfterSaveFunction,
-	DeferredFunction,
-	PlayoutModel,
-	PlayoutModelReadonly,
-} from '../PlayoutModel'
-import { writePartInstancesAndPieceInstancesAndExpectedPackages, writeAdlibTestingSegments } from './SavePlayoutModel'
+import { DeferredAfterSaveFunction, DeferredFunction, PlayoutModel, PlayoutModelReadonly } from '../PlayoutModel'
+import { writePartInstancesAndPieceInstances, writeAdlibTestingSegments } from './SavePlayoutModel'
 import { PlayoutPieceInstanceModel } from '../PlayoutPieceInstanceModel'
 import { DatabasePersistedModel } from '../../../modelBase'
 import { ExpectedPackageDBFromStudioBaselineObjects } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
@@ -61,7 +56,8 @@ import { ExpectedPlayoutItemStudio } from '@sofie-automation/corelib/dist/dataMo
 import { StudioBaselineHelper } from '../../../studio/model/StudioBaselineHelper'
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { wrapPackagesForPieceInstance } from '../../../ingest/expectedPackages'
+import { PlayoutExpectedPackagesModel, PlayoutExpectedPackagesModelReadonly } from '../PlayoutExpectedPackagesModel'
+import { PlayoutExpectedPackagesModelImpl } from './PlayoutExpectedPackagesModelImpl'
 
 export class PlayoutModelReadonlyImpl implements PlayoutModelReadonly {
 	public readonly playlistId: RundownPlaylistId
@@ -85,6 +81,11 @@ export class PlayoutModelReadonlyImpl implements PlayoutModelReadonly {
 		return this.timelineImpl
 	}
 
+	protected readonly expectedPackagesImpl: PlayoutExpectedPackagesModelImpl
+	public get expectedPackages(): PlayoutExpectedPackagesModelReadonly {
+		return this.expectedPackagesImpl
+	}
+
 	protected allPartInstances: Map<PartInstanceId, PlayoutPartInstanceModelImpl | null>
 
 	public constructor(
@@ -95,7 +96,8 @@ export class PlayoutModelReadonlyImpl implements PlayoutModelReadonly {
 		playlist: DBRundownPlaylist,
 		partInstances: PlayoutPartInstanceModelImpl[],
 		rundowns: PlayoutRundownModelImpl[],
-		timeline: TimelineComplete | undefined
+		timeline: TimelineComplete | undefined,
+		expectedPackages: PlayoutExpectedPackagesModelImpl
 	) {
 		this.playlistId = playlistId
 		this.playlistLock = playlistLock
@@ -106,6 +108,8 @@ export class PlayoutModelReadonlyImpl implements PlayoutModelReadonly {
 		this.rundownsImpl = rundowns
 
 		this.timelineImpl = timeline ?? null
+
+		this.expectedPackagesImpl = expectedPackages
 
 		this.allPartInstances = normalizeArrayToMapFunc(partInstances, (p) => p.partInstance._id)
 	}
@@ -248,6 +252,10 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 	#pendingPartInstanceTimingEvents = new Set<PartInstanceId>()
 	#pendingNotifyCurrentlyPlayingPartEvent = new Map<RundownId, string | null>()
 
+	get expectedPackages(): PlayoutExpectedPackagesModel {
+		return this.expectedPackagesImpl
+	}
+
 	get hackDeletedPartInstanceIds(): PartInstanceId[] {
 		const result: PartInstanceId[] = []
 		for (const [id, doc] of this.allPartInstances) {
@@ -264,9 +272,20 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		playlist: DBRundownPlaylist,
 		partInstances: PlayoutPartInstanceModelImpl[],
 		rundowns: PlayoutRundownModelImpl[],
-		timeline: TimelineComplete | undefined
+		timeline: TimelineComplete | undefined,
+		expectedPackages: PlayoutExpectedPackagesModelImpl
 	) {
-		super(context, playlistLock, playlistId, peripheralDevices, playlist, partInstances, rundowns, timeline)
+		super(
+			context,
+			playlistLock,
+			playlistId,
+			peripheralDevices,
+			playlist,
+			partInstances,
+			rundowns,
+			timeline,
+			expectedPackages
+		)
 		context.trackCache(this)
 
 		this.#baselineHelper = new StudioBaselineHelper(context)
@@ -297,11 +316,8 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		this.#playlistHasChanged = true
 	}
 
-	#fixupPieceInstancesForPartInstance(
-		partInstance: DBPartInstance,
-		pieceInstances: PieceInstanceWithExpectedPackages[]
-	): void {
-		for (const { pieceInstance } of pieceInstances) {
+	#fixupPieceInstancesForPartInstance(partInstance: DBPartInstance, pieceInstances: PieceInstance[]): void {
+		for (const pieceInstance of pieceInstances) {
 			// Future: should these be PieceInstance already, or should that be handled here?
 			pieceInstance._id = getPieceInstanceIdForPiece(partInstance._id, pieceInstance.piece._id)
 			pieceInstance.partInstanceId = partInstance._id
@@ -310,9 +326,9 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 
 	createAdlibbedPartInstance(
 		part: Omit<DBPart, 'segmentId' | 'rundownId'>,
-		pieces: AdlibPieceWithPackages[],
+		pieces: Omit<PieceInstancePiece, 'startPartId'>[],
 		fromAdlibId: PieceId | undefined,
-		infinitePieceInstances: PieceInstanceWithExpectedPackages[]
+		infinitePieceInstances: PieceInstance[]
 	): PlayoutPartInstanceModel {
 		const currentPartInstance = this.currentPartInstance
 		if (!currentPartInstance) throw new Error('No currentPartInstance')
@@ -335,25 +351,15 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 
 		this.#fixupPieceInstancesForPartInstance(newPartInstance, infinitePieceInstances)
 
-		const infinitePieceInstances2 = infinitePieceInstances.map((p) => ({
-			pieceInstance: p.pieceInstance,
-			expectedPackages: wrapPackagesForPieceInstance(
-				this.context.studioId,
-				newPartInstance,
-				p.pieceInstance._id,
-				p.expectedPackages
-			),
-		}))
-
 		const partInstance = new PlayoutPartInstanceModelImpl(
-			this.context,
+			this.expectedPackages,
 			newPartInstance,
-			infinitePieceInstances2,
+			infinitePieceInstances,
 			true
 		)
 
 		for (const piece of pieces) {
-			partInstance.insertAdlibbedPiece(piece.piece, fromAdlibId, piece.expectedPackages)
+			partInstance.insertAdlibbedPiece(piece, fromAdlibId)
 		}
 
 		partInstance.recalculateExpectedDurationWithTransition()
@@ -363,10 +369,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		return partInstance
 	}
 
-	createInstanceForPart(
-		nextPart: ReadonlyDeep<DBPart>,
-		pieceInstances: PieceInstanceWithExpectedPackages[]
-	): PlayoutPartInstanceModel {
+	createInstanceForPart(nextPart: ReadonlyDeep<DBPart>, pieceInstances: PieceInstance[]): PlayoutPartInstanceModel {
 		const playlistActivationId = this.playlist.activationId
 		if (!playlistActivationId) throw new Error(`Playlist is not active`)
 
@@ -394,20 +397,24 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 
 		this.#fixupPieceInstancesForPartInstance(newPartInstance, pieceInstances)
 
-		const pieceInstances2 = pieceInstances.map((p) => ({
-			pieceInstance: p.pieceInstance,
-			expectedPackages: wrapPackagesForPieceInstance(
-				this.context.studioId,
-				newPartInstance,
-				p.pieceInstance._id,
-				p.expectedPackages
-			),
-		}))
-
-		const partInstance = new PlayoutPartInstanceModelImpl(this.context, newPartInstance, pieceInstances2, true)
+		const partInstance = new PlayoutPartInstanceModelImpl(
+			this.expectedPackages,
+			newPartInstance,
+			pieceInstances,
+			true
+		)
 		partInstance.recalculateExpectedDurationWithTransition()
 
 		this.allPartInstances.set(newPartInstance._id, partInstance)
+
+		for (const pieceInstance of partInstance.pieceInstances) {
+			this.expectedPackages.setPieceInstanceReferenceToPackages(
+				partInstance.partInstance.rundownId,
+				partInstance.partInstance._id,
+				pieceInstance.pieceInstance._id,
+				pieceInstance.pieceInstance.piece.expectedPackages.map((p) => p.expectedPackageId)
+			)
+		}
 
 		return partInstance
 	}
@@ -443,7 +450,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 			},
 		}
 
-		const partInstance = new PlayoutPartInstanceModelImpl(this.context, newPartInstance, [], true)
+		const partInstance = new PlayoutPartInstanceModelImpl(this.expectedPackages, newPartInstance, [], true)
 		partInstance.recalculateExpectedDurationWithTransition()
 
 		this.allPartInstances.set(newPartInstance._id, partInstance)
@@ -596,9 +603,10 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 			this.#playlistHasChanged
 				? this.context.directCollections.RundownPlaylists.replace(this.playlistImpl)
 				: undefined,
-			...writePartInstancesAndPieceInstancesAndExpectedPackages(this.context, this.allPartInstances),
+			...writePartInstancesAndPieceInstances(this.context, this.allPartInstances),
 			writeAdlibTestingSegments(this.context, this.rundownsImpl),
 			this.#baselineHelper.saveAllToDatabase(),
+			this.expectedPackagesImpl.saveAllToDatabase(),
 		])
 
 		this.#playlistHasChanged = false

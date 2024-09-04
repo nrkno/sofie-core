@@ -7,8 +7,6 @@ import { AnyBulkWriteOperation } from 'mongodb'
 import { JobContext } from '../../../jobs'
 import { PlayoutPartInstanceModelImpl } from './PlayoutPartInstanceModelImpl'
 import { PlayoutRundownModelImpl } from './PlayoutRundownModelImpl'
-import { DocumentChangeTracker } from '../../../ingest/model/implementation/DocumentChangeTracker'
-import { ExpectedPackageDB, ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 
 /**
  * Save any changed AdlibTesting Segments
@@ -60,13 +58,12 @@ export async function writeAdlibTestingSegments(
  * @param context Context from the job queue
  * @param partInstances Map of PartInstances to check for changes or deletion
  */
-export function writePartInstancesAndPieceInstancesAndExpectedPackages(
+export function writePartInstancesAndPieceInstances(
 	context: JobContext,
 	partInstances: Map<PartInstanceId, PlayoutPartInstanceModelImpl | null>
-): [Promise<unknown>, Promise<unknown>, Promise<unknown>] {
+): [Promise<unknown>, Promise<unknown>] {
 	const partInstanceOps: AnyBulkWriteOperation<DBPartInstance>[] = []
 	const pieceInstanceOps: AnyBulkWriteOperation<PieceInstance>[] = []
-	const expectedPackagesChanges = new DocumentChangeTracker<ExpectedPackageDB>()
 
 	const deletedPartInstanceIds: PartInstanceId[] = []
 	const deletedPieceInstanceIds: PieceInstanceId[] = []
@@ -96,16 +93,12 @@ export function writePartInstancesAndPieceInstancesAndExpectedPackages(
 							upsert: true,
 						},
 					})
-
-					expectedPackagesChanges.addChanges(pieceInstance.expectedPackagesChanges, false)
 				}
 			}
 
 			partInstance.clearChangedFlags()
 		}
 	}
-
-	const expectedPackagesOps = expectedPackagesChanges.generateWriteOps()
 
 	// Delete any removed PartInstances
 	if (deletedPartInstanceIds.length) {
@@ -123,15 +116,6 @@ export function writePartInstancesAndPieceInstancesAndExpectedPackages(
 				},
 			},
 		})
-
-		expectedPackagesOps.push({
-			deleteMany: {
-				filter: {
-					fromPieceType: ExpectedPackageDBType.PIECE_INSTANCE,
-					partInstanceId: { $in: deletedPartInstanceIds },
-				},
-			},
-		})
 	}
 
 	// Delete any removed PieceInstances
@@ -143,23 +127,12 @@ export function writePartInstancesAndPieceInstancesAndExpectedPackages(
 				},
 			},
 		})
-		expectedPackagesOps.push({
-			deleteMany: {
-				filter: {
-					fromPieceType: ExpectedPackageDBType.PIECE_INSTANCE,
-					pieceInstanceId: { $in: deletedPieceInstanceIds },
-				},
-			},
-		})
 	}
 
 	return [
 		partInstanceOps.length ? context.directCollections.PartInstances.bulkWrite(partInstanceOps) : Promise.resolve(),
 		pieceInstanceOps.length
 			? context.directCollections.PieceInstances.bulkWrite(pieceInstanceOps)
-			: Promise.resolve(),
-		expectedPackagesOps.length
-			? context.directCollections.ExpectedPackages.bulkWrite(expectedPackagesOps)
 			: Promise.resolve(),
 	]
 }

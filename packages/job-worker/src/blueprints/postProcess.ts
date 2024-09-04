@@ -19,6 +19,7 @@ import {
 	AdLibActionId,
 	BlueprintId,
 	BucketId,
+	ExpectedPackageId,
 	PartId,
 	PieceId,
 	RundownId,
@@ -46,6 +47,7 @@ import { setDefaultIdOnExpectedPackages } from '../ingest/expectedPackages'
 import { logger } from '../logging'
 import { validateTimeline } from 'superfly-timeline'
 import { ReadonlyDeep } from 'type-fest'
+import { getExpectedPackageIdNew } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 
 function getIdHash(docType: string, usedIds: Map<string, number>, uniqueId: string): string {
 	const count = usedIds.get(uniqueId)
@@ -60,14 +62,14 @@ function getIdHash(docType: string, usedIds: Map<string, number>, uniqueId: stri
 	}
 }
 
-export interface PostProcessDoc<T> {
-	doc: T
-	expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
+export interface PostProcessDocs<T> {
+	docs: T[]
+	expectedPackages: Map<ExpectedPackageId, ReadonlyDeep<ExpectedPackage.Any>>
 }
 
-export function unwrapPostProccessDocs<T>(docs: PostProcessDoc<T>[]): T[] {
-	return docs.map((doc) => doc.doc)
-}
+// export function unwrapPostProccessDocs<T>(docs: PostProcessDoc<T>[]): T[] {
+// 	return docs.map((doc) => doc.doc)
+// }
 
 /**
  * Process and validate some IBlueprintPiece into Piece
@@ -89,13 +91,15 @@ export function postProcessPieces(
 	partId: PartId,
 	allowNowForPiece: boolean,
 	setInvalid?: boolean
-): PostProcessDoc<Piece>[] {
+): PostProcessDocs<Piece> {
 	const span = context.startSpan('blueprints.postProcess.postProcessPieces')
+
+	const expectedPackages = new Map<ExpectedPackageId, ReadonlyDeep<ExpectedPackage.Any>>()
 
 	const uniqueIds = new Map<string, number>()
 	const timelineUniqueIds = new Set<string>()
 
-	const processedPieces = pieces.map((orgPiece: IBlueprintPiece): PostProcessDoc<Piece> => {
+	const processedPieces = pieces.map((orgPiece: IBlueprintPiece): Piece => {
 		if (!orgPiece.externalId)
 			throw new Error(
 				`Error in blueprint "${blueprintId}" externalId not set for adlib piece in ${partId}! ("${orgPiece.name}")`
@@ -143,7 +147,7 @@ export function postProcessPieces(
 			hasSideEffects: orgPiece.hasSideEffects,
 			abSessions: orgPiece.abSessions,
 			notInVision: orgPiece.notInVision,
-			expectedPackages: convertExpectedPackages(processedExpectedPackages),
+			expectedPackages: convertExpectedPackages(rundownId, processedExpectedPackages, expectedPackages),
 		}
 
 		if (piece.pieceType !== IBlueprintPieceType.Normal) {
@@ -168,14 +172,14 @@ export function postProcessPieces(
 		)
 		piece.timelineObjectsString = serializePieceTimelineObjectsBlob(timelineObjects)
 
-		return {
-			doc: piece,
-			expectedPackages: processedExpectedPackages,
-		}
+		return piece
 	})
 
 	span?.end()
-	return processedPieces
+	return {
+		docs: processedPieces,
+		expectedPackages,
+	}
 }
 
 function isNow(enable: TimelineObjectCoreExt<any>['enable']): boolean {
@@ -258,8 +262,10 @@ export function postProcessAdLibPieces(
 	rundownId: RundownId,
 	partId: PartId | undefined,
 	adLibPieces: Array<IBlueprintAdLibPiece>
-): PostProcessDoc<AdLibPiece>[] {
+): PostProcessDocs<AdLibPiece> {
 	const span = context.startSpan('blueprints.postProcess.postProcessAdLibPieces')
+
+	const expectedPackages = new Map<ExpectedPackageId, ReadonlyDeep<ExpectedPackage.Any>>()
 
 	const uniqueIds = new Map<string, number>()
 	const timelineUniqueIds = new Set<string>()
@@ -288,7 +294,7 @@ export function postProcessAdLibPieces(
 			externalId: orgAdlib.externalId,
 			_rank: orgAdlib._rank,
 
-			expectedPackages: convertExpectedPackages(processedExpectedPackages),
+			expectedPackages: convertExpectedPackages(rundownId, processedExpectedPackages, expectedPackages),
 			expectedPlayoutItems: orgAdlib.expectedPlayoutItems,
 
 			privateData: orgAdlib.privateData,
@@ -331,14 +337,14 @@ export function postProcessAdLibPieces(
 		)
 		piece.timelineObjectsString = serializePieceTimelineObjectsBlob(timelineObjects)
 
-		return {
-			doc: piece,
-			expectedPackages: processedExpectedPackages,
-		}
+		return piece
 	})
 
 	span?.end()
-	return processedPieces
+	return {
+		docs: processedPieces,
+		expectedPackages,
+	}
 }
 
 /**
@@ -351,10 +357,12 @@ export function postProcessGlobalAdLibActions(
 	blueprintId: BlueprintId,
 	rundownId: RundownId,
 	adlibActions: IBlueprintActionManifest[]
-): PostProcessDoc<RundownBaselineAdLibAction>[] {
+): PostProcessDocs<RundownBaselineAdLibAction> {
+	const expectedPackages = new Map<ExpectedPackageId, ReadonlyDeep<ExpectedPackage.Any>>()
+
 	const uniqueIds = new Map<string, number>()
 
-	return adlibActions.map((action) => {
+	const processedActions = adlibActions.map((action) => {
 		if (!action.externalId)
 			throw new Error(
 				`Error in blueprint "${blueprintId}" externalId not set for baseline adlib action! ("${
@@ -371,13 +379,13 @@ export function postProcessGlobalAdLibActions(
 		// Fill in ids of unnamed expectedPackages
 		const processedExpectedPackages = setDefaultIdOnExpectedPackages(action.expectedPackages)
 
-		const processedAction = literal<Complete<RundownBaselineAdLibAction>>({
+		return literal<Complete<RundownBaselineAdLibAction>>({
 			externalId: action.externalId,
 			_id: protectString(docId),
 			rundownId: rundownId,
 			...processAdLibActionITranslatableMessages(action, blueprintId),
 
-			expectedPackages: convertExpectedPackages(processedExpectedPackages),
+			expectedPackages: convertExpectedPackages(rundownId, processedExpectedPackages, expectedPackages),
 			expectedPlayoutItems: action.expectedPlayoutItems,
 
 			privateData: action.privateData,
@@ -391,12 +399,12 @@ export function postProcessGlobalAdLibActions(
 			// Not used?
 			uniquenessId: undefined,
 		})
-
-		return {
-			doc: processedAction,
-			expectedPackages: processedExpectedPackages,
-		}
 	})
+
+	return {
+		docs: processedActions,
+		expectedPackages,
+	}
 }
 
 /**
@@ -411,10 +419,12 @@ export function postProcessAdLibActions(
 	rundownId: RundownId,
 	partId: PartId,
 	adlibActions: IBlueprintActionManifest[]
-): PostProcessDoc<AdLibAction>[] {
+): PostProcessDocs<AdLibAction> {
+	const expectedPackages = new Map<ExpectedPackageId, ReadonlyDeep<ExpectedPackage.Any>>()
+
 	const uniqueIds = new Map<string, number>()
 
-	return adlibActions.map((action) => {
+	const processedActions = adlibActions.map((action) => {
 		if (!action.externalId)
 			throw new Error(
 				`Error in blueprint "${blueprintId}" externalId not set for adlib action in ${partId}! ("${action.display.label}")`
@@ -436,7 +446,7 @@ export function postProcessAdLibActions(
 			partId: partId,
 			...processAdLibActionITranslatableMessages(action, blueprintId),
 
-			expectedPackages: convertExpectedPackages(processedExpectedPackages),
+			expectedPackages: convertExpectedPackages(rundownId, processedExpectedPackages, expectedPackages),
 			expectedPlayoutItems: action.expectedPlayoutItems,
 
 			privateData: action.privateData,
@@ -451,11 +461,10 @@ export function postProcessAdLibActions(
 			uniquenessId: undefined,
 		})
 
-		return {
-			doc: processedAction,
-			expectedPackages: processedExpectedPackages,
-		}
+		return processedAction
 	})
+
+	return { docs: processedActions, expectedPackages }
 }
 
 /**
@@ -685,10 +694,17 @@ function processAdLibActionITranslatableMessages<
 	}
 }
 
-function convertExpectedPackages(expectedPackages: ExpectedPackage.Any[]): Complete<PieceExpectedPackage>[] {
+function convertExpectedPackages(
+	rundownId: RundownId,
+	expectedPackages: ExpectedPackage.Any[],
+	expectedPackagesMap: Map<ExpectedPackageId, ReadonlyDeep<ExpectedPackage.Any>>
+): Complete<PieceExpectedPackage>[] {
 	if (!expectedPackages) return []
 
-	return expectedPackages.map((expectedPackage) => ({
-		_id: expectedPackage._id,
-	}))
+	return expectedPackages.map((expectedPackage) => {
+		const expectedPackageId = getExpectedPackageIdNew(rundownId, expectedPackage)
+		expectedPackagesMap.set(expectedPackageId, expectedPackage)
+
+		return { blueprintPackageId: expectedPackage._id, expectedPackageId }
+	})
 }

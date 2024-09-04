@@ -1,4 +1,4 @@
-import { PartId, RundownId, SegmentId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ExpectedPackageId, PartId, RundownId, SegmentId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { IngestReplacePartType, IngestSegmentModel } from '../IngestSegmentModel'
@@ -12,15 +12,13 @@ import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { calculatePartExpectedDurationWithTransition } from '@sofie-automation/corelib/dist/playout/timings'
 import { clone } from '@sofie-automation/corelib/dist/lib'
 import { getPartId } from '../../lib'
-import { PostProcessDoc, unwrapPostProccessDocs } from '../../../blueprints/postProcess'
 import {
-	ExpectedPackageDBFromAdLibAction,
-	ExpectedPackageDBFromPiece,
+	ExpectedPackageDBNew,
 	ExpectedPackageDBType,
-	ExpectedPackageFromRundown,
+	getContentVersionHash,
 } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import { generateExpectedPackageBases } from '../../expectedPackages'
 import { JobContext } from '../../../jobs'
+import { PostProcessDocs } from '../../../blueprints/postProcess'
 
 /**
  * A light wrapper around the IngestPartModel, so that we can track the deletions while still accessing the contents
@@ -219,19 +217,16 @@ export class IngestSegmentModelImpl implements IngestSegmentModel {
 
 	replacePart(
 		rawPart: IngestReplacePartType,
-		pieces: PostProcessDoc<Piece>[],
-		adLibPieces: PostProcessDoc<AdLibPiece>[],
-		adLibActions: PostProcessDoc<AdLibAction>[]
+		pieces: PostProcessDocs<Piece>,
+		adLibPieces: PostProcessDocs<AdLibPiece>,
+		adLibActions: PostProcessDocs<AdLibAction>
 	): IngestPartModel {
 		const part: DBPart = {
 			...rawPart,
 			_id: this.getPartIdFromExternalId(rawPart.externalId),
 			rundownId: this.segment.rundownId,
 			segmentId: this.segment._id,
-			expectedDurationWithTransition: calculatePartExpectedDurationWithTransition(
-				rawPart,
-				unwrapPostProccessDocs(pieces)
-			),
+			expectedDurationWithTransition: calculatePartExpectedDurationWithTransition(rawPart, pieces.docs),
 		}
 
 		// We don't need to worry about this being present on other Segments. The caller must make sure it gets removed if needed,
@@ -240,35 +235,22 @@ export class IngestSegmentModelImpl implements IngestSegmentModel {
 
 		const oldPart = this.partsImpl.get(part._id)
 
-		const expectedPackages: ExpectedPackageFromRundown[] = [
-			...generateExpectedPackagesForPiece(
-				this.#context.studioId,
-				part.rundownId,
-				part.segmentId,
-				pieces,
-				ExpectedPackageDBType.PIECE
-			),
-			...generateExpectedPackagesForPiece(
-				this.#context.studioId,
-				part.rundownId,
-				part.segmentId,
-				adLibPieces,
-				ExpectedPackageDBType.ADLIB_PIECE
-			),
-			...generateExpectedPackagesForAdlibAction(
-				this.#context.studioId,
-				part.rundownId,
-				part.segmentId,
-				adLibActions
-			),
-		]
+		const expectedPackages = generateExpectedPackagesForPart(
+			this.#context.studioId,
+			part.rundownId,
+			part.segmentId,
+			part._id,
+			pieces,
+			adLibPieces,
+			adLibActions
+		)
 
 		const partModel = new IngestPartModelImpl(
 			!oldPart,
 			clone(part),
-			clone(unwrapPostProccessDocs(pieces)),
-			clone(unwrapPostProccessDocs(adLibPieces)),
-			clone(unwrapPostProccessDocs(adLibActions)),
+			clone(pieces.docs),
+			clone(adLibPieces.docs),
+			clone(adLibActions.docs),
 			[],
 			[],
 			expectedPackages
@@ -283,51 +265,87 @@ export class IngestSegmentModelImpl implements IngestSegmentModel {
 	}
 }
 
-function generateExpectedPackagesForPiece(
+function generateExpectedPackagesForPart(
 	studioId: StudioId,
 	rundownId: RundownId,
 	segmentId: SegmentId,
-	pieces: ReadonlyDeep<PostProcessDoc<Piece | AdLibPiece>>[],
-	type: ExpectedPackageDBType.PIECE | ExpectedPackageDBType.ADLIB_PIECE
-): ExpectedPackageDBFromPiece[] {
-	const packages: ExpectedPackageDBFromPiece[] = []
-	for (const { doc, expectedPackages } of pieces) {
-		const partId = 'startPartId' in doc ? doc.startPartId : doc.partId
-		if (partId) {
-			const bases = generateExpectedPackageBases(studioId, doc._id, expectedPackages)
-			for (const base of bases) {
-				packages.push({
-					...base,
-					rundownId,
-					segmentId,
-					partId,
-					pieceId: doc._id,
-					fromPieceType: type,
-				})
-			}
-		}
+	partId: PartId,
+	pieces: PostProcessDocs<Piece>,
+	adLibPieces: PostProcessDocs<AdLibPiece>,
+	adLibActions: PostProcessDocs<AdLibAction>
+): ExpectedPackageDBNew[] {
+	const packages = new Map<ExpectedPackageId, ExpectedPackageDBNew>()
+
+	// Generate the full version of each expectedPackage
+	const allRawPackages = [
+		...pieces.expectedPackages,
+		...adLibPieces.expectedPackages,
+		...adLibActions.expectedPackages,
+	]
+	for (const [packageId, expectedPackage] of allRawPackages) {
+		if (packages.has(packageId)) continue
+
+		packages.set(packageId, {
+			_id: packageId,
+
+			studioId,
+			rundownId,
+
+			contentVersionHash: getContentVersionHash(expectedPackage),
+
+			created: Date.now(), // nocommit - avoid churn on this?
+
+			package: expectedPackage,
+
+			ingestSources: [],
+
+			playoutSources: {
+				// nocommit - avoid this here?
+				pieceInstanceIds: [],
+			},
+		})
 	}
-	return packages
-}
-function generateExpectedPackagesForAdlibAction(
-	studioId: StudioId,
-	rundownId: RundownId,
-	segmentId: SegmentId,
-	actions: ReadonlyDeep<PostProcessDoc<AdLibAction>[]>
-): ExpectedPackageDBFromAdLibAction[] {
-	const packages: ExpectedPackageDBFromAdLibAction[] = []
-	for (const { doc, expectedPackages } of actions) {
-		const bases = generateExpectedPackageBases(studioId, doc._id, expectedPackages)
-		for (const base of bases) {
-			packages.push({
-				...base,
-				rundownId,
-				segmentId,
-				partId: doc.partId,
-				pieceId: doc._id,
-				fromPieceType: ExpectedPackageDBType.ADLIB_ACTION,
+
+	// Populate the ingestSources
+	for (const piece of pieces.docs) {
+		for (const expectedPackage of piece.expectedPackages) {
+			const expectedPackageDoc = packages.get(expectedPackage.expectedPackageId)
+			if (!expectedPackageDoc) continue // nocommit - log error? this should never happen
+
+			expectedPackageDoc.ingestSources.push({
+				fromPieceType: ExpectedPackageDBType.PIECE,
+				pieceId: piece._id,
+				partId: partId,
+				segmentId: segmentId,
 			})
 		}
 	}
-	return packages
+	for (const piece of adLibPieces.docs) {
+		for (const expectedPackage of piece.expectedPackages) {
+			const expectedPackageDoc = packages.get(expectedPackage.expectedPackageId)
+			if (!expectedPackageDoc) continue // nocommit - log error? this should never happen
+
+			expectedPackageDoc.ingestSources.push({
+				fromPieceType: ExpectedPackageDBType.ADLIB_PIECE,
+				pieceId: piece._id,
+				partId: partId,
+				segmentId: segmentId,
+			})
+		}
+	}
+	for (const piece of adLibActions.docs) {
+		for (const expectedPackage of piece.expectedPackages) {
+			const expectedPackageDoc = packages.get(expectedPackage.expectedPackageId)
+			if (!expectedPackageDoc) continue // nocommit - log error? this should never happen
+
+			expectedPackageDoc.ingestSources.push({
+				fromPieceType: ExpectedPackageDBType.ADLIB_ACTION,
+				pieceId: piece._id,
+				partId: partId,
+				segmentId: segmentId,
+			})
+		}
+	}
+
+	return Array.from(packages.values())
 }

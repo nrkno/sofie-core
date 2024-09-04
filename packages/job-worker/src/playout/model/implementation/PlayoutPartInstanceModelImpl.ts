@@ -1,9 +1,4 @@
-import {
-	ExpectedPackageId,
-	PieceId,
-	PieceInstanceId,
-	RundownPlaylistActivationId,
-} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PieceId, PieceInstanceId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import {
@@ -11,8 +6,6 @@ import {
 	omitPiecePropertiesForInstance,
 	PieceInstance,
 	PieceInstancePiece,
-	PieceInstanceWithExpectedPackages,
-	PieceInstanceWithExpectedPackagesFull,
 } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { getCurrentTime } from '../../../lib'
@@ -23,7 +16,6 @@ import {
 } from '@sofie-automation/corelib/dist/playout/timings'
 import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import {
-	ExpectedPackage,
 	IBlueprintMutatablePart,
 	IBlueprintPieceType,
 	PieceLifespan,
@@ -37,15 +29,11 @@ import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/da
 import _ = require('underscore')
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { IBlueprintMutatablePartSampleKeys } from '../../../blueprints/context/lib'
-import { ExpectedPackageDBFromPieceInstance } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import { wrapPackagesForPieceInstance } from '../../../ingest/expectedPackages'
-import { JobContext } from '../../../jobs'
+import { PlayoutExpectedPackagesModel } from '../PlayoutExpectedPackagesModel'
 
 interface PlayoutPieceInstanceModelSnapshotImpl {
 	PieceInstance: PieceInstance
-	ExpectedPackages: ExpectedPackageDBFromPieceInstance[]
 	HasChanges: boolean
-	ExpectedPackageChanges: ExpectedPackageId[]
 }
 class PlayoutPartInstanceModelSnapshotImpl implements PlayoutPartInstanceModelSnapshot {
 	readonly __isPlayoutPartInstanceModelBackup = true
@@ -60,14 +48,14 @@ class PlayoutPartInstanceModelSnapshotImpl implements PlayoutPartInstanceModelSn
 		this.partInstance = clone(copyFrom.partInstanceImpl)
 		this.partInstanceHasChanges = copyFrom.partInstanceHasChanges
 
+		//  nocommit - should this be concerned with expectedPackages?
+
 		const pieceInstances = new Map<PieceInstanceId, PlayoutPieceInstanceModelSnapshotImpl | null>()
 		for (const [pieceInstanceId, pieceInstance] of copyFrom.pieceInstancesImpl) {
 			if (pieceInstance) {
 				pieceInstances.set(pieceInstanceId, {
 					PieceInstance: clone(pieceInstance.PieceInstanceImpl),
-					ExpectedPackages: clone<ExpectedPackageDBFromPieceInstance[]>(pieceInstance.expectedPackages),
 					HasChanges: pieceInstance.HasChanges,
-					ExpectedPackageChanges: Array.from(pieceInstance.ExpectedPackagesWithChanges),
 				})
 			} else {
 				pieceInstances.set(pieceInstanceId, null)
@@ -77,7 +65,7 @@ class PlayoutPartInstanceModelSnapshotImpl implements PlayoutPartInstanceModelSn
 	}
 }
 export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
-	readonly #context: JobContext
+	#expectedPackages: PlayoutExpectedPackagesModel
 
 	partInstanceImpl: DBPartInstance
 	pieceInstancesImpl: Map<PieceInstanceId, PlayoutPieceInstanceModelImpl | null>
@@ -172,27 +160,18 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 	}
 
 	constructor(
-		context: JobContext,
+		expectedPackages: PlayoutExpectedPackagesModel,
 		partInstance: DBPartInstance,
-		pieceInstances: PieceInstanceWithExpectedPackagesFull[],
+		pieceInstances: PieceInstance[],
 		hasChanges: boolean
 	) {
-		this.#context = context
+		this.#expectedPackages = expectedPackages
 		this.partInstanceImpl = partInstance
 		this.#partInstanceHasChanges = hasChanges
 
 		this.pieceInstancesImpl = new Map()
-		for (const { pieceInstance, expectedPackages } of pieceInstances) {
-			this.pieceInstancesImpl.set(
-				pieceInstance._id,
-				new PlayoutPieceInstanceModelImpl(
-					this.#context,
-					pieceInstance,
-					expectedPackages,
-					hasChanges,
-					hasChanges ? expectedPackages.map((p) => p._id) : null
-				)
-			)
+		for (const pieceInstance of pieceInstances) {
+			this.pieceInstancesImpl.set(pieceInstance._id, new PlayoutPieceInstanceModelImpl(pieceInstance, hasChanges))
 		}
 	}
 
@@ -217,13 +196,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 			if (pieceInstance) {
 				this.pieceInstancesImpl.set(
 					pieceInstanceId,
-					new PlayoutPieceInstanceModelImpl(
-						this.#context,
-						pieceInstance.PieceInstance,
-						pieceInstance.ExpectedPackages,
-						pieceInstance.HasChanges,
-						pieceInstance.ExpectedPackageChanges
-					)
+					new PlayoutPieceInstanceModelImpl(pieceInstance.PieceInstance, pieceInstance.HasChanges)
 				)
 			} else {
 				this.pieceInstancesImpl.set(pieceInstanceId, null)
@@ -245,8 +218,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 
 	insertAdlibbedPiece(
 		piece: Omit<PieceInstancePiece, 'startPartId'>,
-		fromAdlibId: PieceId | undefined,
-		pieceExpectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
+		fromAdlibId: PieceId | undefined
 	): PlayoutPieceInstanceModel {
 		const pieceInstance: PieceInstance = {
 			_id: protectString(`${this.partInstance._id}_${piece._id}`),
@@ -270,16 +242,15 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 
 		setupPieceInstanceInfiniteProperties(pieceInstance)
 
-		const expectedPackages = this.#convertExpectedPackagesForPieceInstance(pieceInstance, pieceExpectedPackages)
-
-		const pieceInstanceModel = new PlayoutPieceInstanceModelImpl(
-			this.#context,
-			pieceInstance,
-			expectedPackages,
-			true,
-			expectedPackages.map((p) => p._id)
-		)
+		const pieceInstanceModel = new PlayoutPieceInstanceModelImpl(pieceInstance, true)
 		this.pieceInstancesImpl.set(pieceInstance._id, pieceInstanceModel)
+
+		this.#expectedPackages.setPieceInstanceReferenceToPackages(
+			this.partInstanceImpl.rundownId,
+			this.partInstanceImpl._id,
+			pieceInstance._id,
+			pieceInstance.piece.expectedPackages.map((p) => p.expectedPackageId)
+		)
 
 		return pieceInstanceModel
 	}
@@ -318,29 +289,21 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 			plannedStoppedPlayback: extendPieceInstance.pieceInstance.plannedStoppedPlayback,
 		}
 
-		// Don't preserve any ExpectedPackages, the existing ones will suffice
-		const pieceInstanceModel = new PlayoutPieceInstanceModelImpl(this.#context, newInstance, [], true, null)
+		const pieceInstanceModel = new PlayoutPieceInstanceModelImpl(newInstance, true)
 		this.pieceInstancesImpl.set(newInstance._id, pieceInstanceModel)
+
+		// Don't preserve any ExpectedPackages, the existing ones will suffice // nocommit - verify this
+		// this.#expectedPackages.setPieceInstanceReferenceToPackages(
+		//  this.partInstanceImpl.rundownId,
+		// 	this.partInstanceImpl._id,
+		// 	newPieceInstance._id,
+		// 	newPieceInstance.piece.expectedPackages.map((p) => p.expectedPackageId)
+		// )
 
 		return pieceInstanceModel
 	}
 
-	#convertExpectedPackagesForPieceInstance(
-		pieceInstance: ReadonlyDeep<PieceInstance>,
-		expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
-	): ExpectedPackageDBFromPieceInstance[] {
-		return wrapPackagesForPieceInstance(
-			this.#context.studioId,
-			this.partInstanceImpl,
-			pieceInstance._id,
-			expectedPackages
-		)
-	}
-
-	insertPlannedPiece(
-		piece: Omit<PieceInstancePiece, 'startPartId'>,
-		pieceExpectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>
-	): PlayoutPieceInstanceModel {
+	insertPlannedPiece(piece: Omit<PieceInstancePiece, 'startPartId'>): PlayoutPieceInstanceModel {
 		const pieceInstanceId = getPieceInstanceIdForPiece(this.partInstance._id, piece._id)
 		if (this.pieceInstancesImpl.has(pieceInstanceId))
 			throw new Error(`PieceInstance "${pieceInstanceId}" already exists`)
@@ -359,16 +322,15 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		// Ensure the infinite-ness is setup correctly
 		setupPieceInstanceInfiniteProperties(newPieceInstance)
 
-		const expectedPackages = this.#convertExpectedPackagesForPieceInstance(newPieceInstance, pieceExpectedPackages)
-
-		const pieceInstanceModel = new PlayoutPieceInstanceModelImpl(
-			this.#context,
-			newPieceInstance,
-			expectedPackages,
-			true,
-			expectedPackages.map((p) => p._id)
-		)
+		const pieceInstanceModel = new PlayoutPieceInstanceModelImpl(newPieceInstance, true)
 		this.pieceInstancesImpl.set(pieceInstanceId, pieceInstanceModel)
+
+		this.#expectedPackages.setPieceInstanceReferenceToPackages(
+			this.partInstanceImpl.rundownId,
+			this.partInstanceImpl._id,
+			newPieceInstance._id,
+			newPieceInstance.piece.expectedPackages.map((p) => p.expectedPackageId)
+		)
 
 		return pieceInstanceModel
 	}
@@ -406,7 +368,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		}
 		setupPieceInstanceInfiniteProperties(newPieceInstance)
 
-		const pieceInstanceModel = new PlayoutPieceInstanceModelImpl(this.#context, newPieceInstance, [], true, null)
+		const pieceInstanceModel = new PlayoutPieceInstanceModelImpl(newPieceInstance, true)
 		this.pieceInstancesImpl.set(newPieceInstance._id, pieceInstanceModel)
 
 		return pieceInstanceModel
@@ -443,7 +405,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		return false
 	}
 
-	replaceInfinitesFromPreviousPlayhead(pieceInstances: PieceInstanceWithExpectedPackages[]): void {
+	replaceInfinitesFromPreviousPlayhead(pieceInstances: PieceInstance[]): void {
 		// Future: this should do some of the wrapping from a Piece into a PieceInstance
 
 		// Remove old infinite pieces
@@ -455,7 +417,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 			}
 		}
 
-		for (const { pieceInstance, expectedPackages } of pieceInstances) {
+		for (const pieceInstance of pieceInstances) {
 			if (this.pieceInstancesImpl.get(pieceInstance._id))
 				throw new Error(
 					`Cannot replace infinite PieceInstance "${pieceInstance._id}" as it replaces a non-infinite`
@@ -466,49 +428,42 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 
 			// Future: should this do any deeper validation of the PieceInstances?
 
-			const newExpectedPackages = this.#convertExpectedPackagesForPieceInstance(pieceInstance, expectedPackages)
+			this.pieceInstancesImpl.set(pieceInstance._id, new PlayoutPieceInstanceModelImpl(pieceInstance, true))
 
-			this.pieceInstancesImpl.set(
+			this.#expectedPackages.setPieceInstanceReferenceToPackages(
+				this.partInstanceImpl.rundownId,
+				this.partInstanceImpl._id,
 				pieceInstance._id,
-				new PlayoutPieceInstanceModelImpl(
-					this.#context,
-					pieceInstance,
-					newExpectedPackages,
-					true,
-					newExpectedPackages.map((p) => p._id)
-				)
+				pieceInstance.piece.expectedPackages.map((p) => p.expectedPackageId)
 			)
 		}
 	}
 
-	mergeOrInsertPieceInstance(
-		doc: ReadonlyDeep<PieceInstance>,
-		expectedPackages: ReadonlyDeep<ExpectedPackage.Any>[]
-	): PlayoutPieceInstanceModel {
+	mergeOrInsertPieceInstance(doc: ReadonlyDeep<PieceInstance>): PlayoutPieceInstanceModel {
 		// Future: this should do some validation of the new PieceInstance
 
 		const existingPieceInstance = this.pieceInstancesImpl.get(doc._id)
 		if (existingPieceInstance) {
 			existingPieceInstance.mergeProperties(doc)
-			existingPieceInstance.setExpectedPackages(expectedPackages)
+
+			this.#expectedPackages.setPieceInstanceReferenceToPackages(
+				this.partInstanceImpl.rundownId,
+				this.partInstanceImpl._id,
+				existingPieceInstance.pieceInstance._id,
+				existingPieceInstance.pieceInstance.piece.expectedPackages.map((p) => p.expectedPackageId)
+			)
 
 			return existingPieceInstance
 		} else {
-			const newExpectedPackages = wrapPackagesForPieceInstance(
-				this.#context.studioId,
-				this.partInstanceImpl,
-				doc._id,
-				expectedPackages
-			)
-
-			const newPieceInstance = new PlayoutPieceInstanceModelImpl(
-				this.#context,
-				clone<PieceInstance>(doc),
-				newExpectedPackages,
-				true,
-				newExpectedPackages.map((p) => p._id)
-			)
+			const newPieceInstance = new PlayoutPieceInstanceModelImpl(clone<PieceInstance>(doc), true)
 			this.pieceInstancesImpl.set(newPieceInstance.pieceInstance._id, newPieceInstance)
+
+			this.#expectedPackages.setPieceInstanceReferenceToPackages(
+				this.partInstanceImpl.rundownId,
+				this.partInstanceImpl._id,
+				newPieceInstance.pieceInstance._id,
+				newPieceInstance.pieceInstance.piece.expectedPackages.map((p) => p.expectedPackageId)
+			)
 			return newPieceInstance
 		}
 	}

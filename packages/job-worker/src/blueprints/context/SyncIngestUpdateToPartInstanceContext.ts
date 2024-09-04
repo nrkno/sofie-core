@@ -1,8 +1,5 @@
 import { PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import {
-	PieceInstance,
-	PieceInstanceWithExpectedPackages,
-} from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { normalizeArrayToMapFunc, omit } from '@sofie-automation/corelib/dist/lib'
 import { protectString, protectStringArray, unprotectStringArray } from '@sofie-automation/corelib/dist/protectedString'
 import { PlayoutPartInstanceModel } from '../../playout/model/PlayoutPartInstanceModel'
@@ -19,7 +16,6 @@ import {
 	IBlueprintPartInstance,
 	SomeContent,
 	WithTimeline,
-	ExpectedPackage,
 } from '@sofie-automation/blueprints-integration'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
 import {
@@ -41,7 +37,7 @@ export class SyncIngestUpdateToPartInstanceContext
 	extends RundownUserContext
 	implements ISyncIngestUpdateToPartInstanceContext
 {
-	private readonly _proposedPieceInstances: Map<PieceInstanceId, ReadonlyDeep<PieceInstanceWithExpectedPackages>>
+	private readonly _proposedPieceInstances: Map<PieceInstanceId, ReadonlyDeep<PieceInstance>>
 
 	private partInstance: PlayoutPartInstanceModel | null
 
@@ -52,7 +48,7 @@ export class SyncIngestUpdateToPartInstanceContext
 		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		rundown: ReadonlyDeep<DBRundown>,
 		partInstance: PlayoutPartInstanceModel,
-		proposedPieceInstances: ReadonlyDeep<PieceInstanceWithExpectedPackages[]>,
+		proposedPieceInstances: ReadonlyDeep<PieceInstance[]>,
 		private playStatus: 'previous' | 'current' | 'next'
 	) {
 		super(
@@ -66,7 +62,7 @@ export class SyncIngestUpdateToPartInstanceContext
 
 		this.partInstance = partInstance
 
-		this._proposedPieceInstances = normalizeArrayToMapFunc(proposedPieceInstances, (p) => p.pieceInstance._id)
+		this._proposedPieceInstances = normalizeArrayToMapFunc(proposedPieceInstances, (p) => p._id)
 	}
 
 	syncPieceInstance(
@@ -88,7 +84,7 @@ export class SyncIngestUpdateToPartInstanceContext
 						{
 							...modifiedPiece,
 							// Some properties arent allowed to be changed
-							lifespan: proposedPieceInstance.pieceInstance.piece.lifespan,
+							lifespan: proposedPieceInstance.piece.lifespan,
 						},
 					],
 					this.showStyleCompound.blueprintId,
@@ -99,17 +95,20 @@ export class SyncIngestUpdateToPartInstanceContext
 			  )[0]
 			: null
 
-		const newExpectedPackages: ReadonlyDeep<ExpectedPackage.Any[]> = postProcessedPiece
-			? postProcessedPiece.expectedPackages
-			: proposedPieceInstance.expectedPackages
+		if (postProcessedPiece) {
+			this.expectedPackages.ensurePackages(postProcessedPiece.expectedPackages)
+		}
 
 		const newPieceInstance: ReadonlyDeep<PieceInstance> = {
-			...proposedPieceInstance.pieceInstance,
-			piece: postProcessedPiece?.doc ?? proposedPieceInstance.pieceInstance.piece,
+			...proposedPieceInstance,
+			piece: postProcessedPiece?.doc ?? proposedPieceInstance.piece,
 		}
-		this.partInstance.mergeOrInsertPieceInstance(newPieceInstance, newExpectedPackages)
+		this.partInstance.mergeOrInsertPieceInstance(newPieceInstance)
 
-		return convertPieceInstanceToBlueprints(newPieceInstance, newExpectedPackages)
+		return convertPieceInstanceToBlueprints(
+			newPieceInstance,
+			this.expectedPackages.getPackagesForPieceInstance(newPieceInstance)
+		)
 	}
 
 	insertPieceInstance(piece0: IBlueprintPiece): IBlueprintPieceInstance {
@@ -127,7 +126,9 @@ export class SyncIngestUpdateToPartInstanceContext
 			this.playStatus === 'current'
 		)[0]
 
-		const newPieceInstance = this.partInstance.insertPlannedPiece(piece.doc, piece.expectedPackages)
+		this.expectedPackages.ensurePackages(piece.expectedPackages)
+
+		const newPieceInstance = this.partInstance.insertPlannedPiece(piece.doc)
 
 		return convertPieceInstanceToBlueprints(
 			newPieceInstance.pieceInstance,
