@@ -1,3 +1,4 @@
+import classNames from 'classnames'
 import React, { useMemo, useState } from 'react'
 
 /**
@@ -41,7 +42,7 @@ export function CollapseJSON({ json }: { json: string }): JSX.Element {
 	}, [originalString])
 
 	if (originalString.length < 100 && indexOf5thLine === null) {
-		return <pre>{originalString}</pre>
+		return <pre className="collapse-json__block">{originalString}</pre>
 	}
 
 	const displayContents = expanded ? (
@@ -79,6 +80,9 @@ export function CollapseJSON({ json }: { json: string }): JSX.Element {
 	return (
 		<pre
 			tabIndex={0}
+			className={classNames('collapse-json__block', 'expanding', {
+				expanded,
+			})}
 			onClick={() => {
 				// Don't expand when user is selecting text:
 				const selection = window.getSelection()
@@ -86,7 +90,6 @@ export function CollapseJSON({ json }: { json: string }): JSX.Element {
 					setExpanded(!expanded)
 				}
 			}}
-			className="collapse-json__block"
 		>
 			{displayContents}
 		</pre>

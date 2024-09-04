@@ -1,14 +1,24 @@
 .collapse-json__block {
-	cursor: pointer;
+	text-wrap: wrap;
+	white-space: pre-wrap;
+	word-break: break-all;
+
+	&.expanding {
+		cursor: pointer;
+	}
 }
 
 .collapse-json__collapser {
-	display: inline-block;
+	display: block;
 	background: #eee;
 	border-radius: 3px;
 	line-height: 1.3em;
 	padding: 0 0.3em;
+	margin-top: 0.2em;
 	border: none;
+	float: right;
+	clear: both;
+	user-select: none;
 }
 
 .collapse-json__collapser:focus {
