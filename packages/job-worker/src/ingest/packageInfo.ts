@@ -9,6 +9,7 @@ import { JobContext } from '../jobs'
 import { regenerateSegmentsFromIngestData } from './generationSegment'
 import { UpdateIngestRundownAction, runIngestJob, runWithRundownLock } from './lock'
 import { loadIngestModelFromRundown } from './model/implementation/LoadIngestModel'
+import { assertNever } from '@sofie-automation/corelib/dist/lib'
 
 /**
  * Debug: Regenerate ExpectedPackages for a Rundown
@@ -65,23 +66,26 @@ export async function handleUpdatedPackageInfoForRundown(
 			let regenerateRundownBaseline = false
 
 			for (const packageId of data.packageIds) {
-				const pkg = ingestModel.findExpectedPackage(packageId)
-				if (pkg) {
-					if (
-						pkg.fromPieceType === ExpectedPackageDBType.PIECE ||
-						pkg.fromPieceType === ExpectedPackageDBType.ADLIB_PIECE ||
-						pkg.fromPieceType === ExpectedPackageDBType.ADLIB_ACTION
-					) {
-						segmentsToUpdate.add(pkg.segmentId)
-					} else if (
-						pkg.fromPieceType === ExpectedPackageDBType.BASELINE_ADLIB_ACTION ||
-						pkg.fromPieceType === ExpectedPackageDBType.BASELINE_ADLIB_PIECE ||
-						pkg.fromPieceType === ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS
-					) {
-						regenerateRundownBaseline = true
+				const pkgIngestSources = ingestModel.findExpectedPackageIngestSources(packageId)
+				for (const source of pkgIngestSources) {
+					switch (source.fromPieceType) {
+						case ExpectedPackageDBType.PIECE:
+						case ExpectedPackageDBType.ADLIB_PIECE:
+						case ExpectedPackageDBType.ADLIB_ACTION:
+							segmentsToUpdate.add(source.segmentId)
+							break
+
+						case ExpectedPackageDBType.BASELINE_ADLIB_ACTION:
+						case ExpectedPackageDBType.BASELINE_ADLIB_PIECE:
+						case ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS:
+							regenerateRundownBaseline = true
+							break
+						default:
+							assertNever(source)
 					}
-				} else {
-					logger.warn(`onUpdatedPackageInfoForRundown: Missing package: "${packageId}"`)
+				}
+				if (pkgIngestSources.length === 0) {
+					logger.warn(`onUpdatedPackageInfoForRundown: Missing ingestSources for package: "${packageId}"`)
 				}
 			}
 

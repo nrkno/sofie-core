@@ -144,12 +144,14 @@ export interface ExpectedPackageIngestSourceBaselineObjects {
 	fromPieceType: ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS
 }
 
-export type ExpectedPackageIngestSource =
-	| ExpectedPackageIngestSourcePiece
-	| ExpectedPackageIngestSourceAdlibAction
+export type ExpectedPackageIngestSourcePart = ExpectedPackageIngestSourcePiece | ExpectedPackageIngestSourceAdlibAction
+
+export type ExpectedPackageIngestSourceRundownBaseline =
 	| ExpectedPackageIngestSourceBaselineAdlibPiece
 	| ExpectedPackageIngestSourceBaselineAdlibAction
 	| ExpectedPackageIngestSourceBaselineObjects
+
+export type ExpectedPackageIngestSource = ExpectedPackageIngestSourcePart | ExpectedPackageIngestSourceRundownBaseline
 
 export interface ExpectedPackageWithId {
 	_id: ExpectedPackageId

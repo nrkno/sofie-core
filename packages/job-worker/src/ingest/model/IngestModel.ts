@@ -6,6 +6,7 @@ import {
 	ExpectedPackageDBFromRundownBaselineObjects,
 	ExpectedPackageDBNew,
 	ExpectedPackageFromRundown,
+	ExpectedPackageIngestSource,
 } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { ExpectedPlayoutItemRundown } from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'
 import {
@@ -148,7 +149,7 @@ export interface IngestModelReadonly {
 	 * Search for an ExpectedPackage through the whole Rundown
 	 * @param id Id of the ExpectedPackage
 	 */
-	findExpectedPackage(packageId: ExpectedPackageId): ReadonlyDeep<ExpectedPackageForIngestModel> | undefined
+	findExpectedPackageIngestSources(packageId: ExpectedPackageId): ReadonlyDeep<ExpectedPackageIngestSource>[]
 }
 
 export interface IngestModel extends IngestModelReadonly, BaseModel {
