@@ -4,7 +4,7 @@ import { AdLibActionCommon } from './AdlibAction'
 import { BucketAdLibIngestInfo } from './BucketAdLibPiece'
 import { IBlueprintActionManifest } from '@sofie-automation/blueprints-integration'
 
-export interface BucketAdLibAction extends Omit<AdLibActionCommon, 'rundownId'> {
+export interface BucketAdLibAction extends Omit<AdLibActionCommon, 'rundownId' | 'expectedPackages'> {
 	_id: BucketAdLibActionId
 	bucketId: BucketId
 
