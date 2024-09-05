@@ -19419,7 +19419,7 @@ asn1@evs-broadcast/node-asn1:
     "@sofie-automation/shared-lib": 1.51.0-in-testing.0
     debug: ^4.3.4
     influx: ^5.9.3
-    timeline-state-resolver: 9.1.1-nightly-release51-20240904-105552-81af9f7a1.0
+    timeline-state-resolver: 9.1.1-nightly-chore-osc-logging-20240905-144230-a4931cb20.0
     tslib: ^2.6.2
     underscore: ^1.13.6
     winston: ^3.11.0
@@ -23024,6 +23024,15 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
+"timeline-state-resolver-types@npm:9.1.1-nightly-chore-osc-logging-20240905-144230-a4931cb20.0":
+  version: 9.1.1-nightly-chore-osc-logging-20240905-144230-a4931cb20.0
+  resolution: "timeline-state-resolver-types@npm:9.1.1-nightly-chore-osc-logging-20240905-144230-a4931cb20.0"
+  dependencies:
+    tslib: ^2.6.2
+  checksum: 37ebfd2c547a71890b31a45c5484dbc02115f886857a2c88b0901906bebaa989a58161d0179dc8f72b3788d76479f3b7006ed859f42a384bc7e230d49f23cf2c
+  languageName: node
+  linkType: hard
+
 "timeline-state-resolver-types@npm:9.1.1-nightly-release51-20240904-105552-81af9f7a1.0":
   version: 9.1.1-nightly-release51-20240904-105552-81af9f7a1.0
   resolution: "timeline-state-resolver-types@npm:9.1.1-nightly-release51-20240904-105552-81af9f7a1.0"
@@ -23033,9 +23042,9 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"timeline-state-resolver@npm:9.1.1-nightly-release51-20240904-105552-81af9f7a1.0":
-  version: 9.1.1-nightly-release51-20240904-105552-81af9f7a1.0
-  resolution: "timeline-state-resolver@npm:9.1.1-nightly-release51-20240904-105552-81af9f7a1.0"
+"timeline-state-resolver@npm:9.1.1-nightly-chore-osc-logging-20240905-144230-a4931cb20.0":
+  version: 9.1.1-nightly-chore-osc-logging-20240905-144230-a4931cb20.0
+  resolution: "timeline-state-resolver@npm:9.1.1-nightly-chore-osc-logging-20240905-144230-a4931cb20.0"
   dependencies:
     "@tv2media/v-connection": ^7.3.2
     atem-connection: 3.5.0
@@ -23060,7 +23069,7 @@ asn1@evs-broadcast/node-asn1:
     sprintf-js: ^1.1.3
     superfly-timeline: ^9.0.1
     threadedclass: ^1.2.1
-    timeline-state-resolver-types: 9.1.1-nightly-release51-20240904-105552-81af9f7a1.0
+    timeline-state-resolver-types: 9.1.1-nightly-chore-osc-logging-20240905-144230-a4931cb20.0
     tslib: ^2.6.2
     tv-automation-quantel-gateway-client: ^3.1.7
     type-fest: ^3.13.1
@@ -23068,7 +23077,7 @@ asn1@evs-broadcast/node-asn1:
     utf-8-validate: ^5.0.10
     ws: ^7.5.10
     xml-js: ^1.6.11
-  checksum: 1be4c906881041d99410790eff0986503fb45adeae8f9eeb58811e8ac2f80038fc41eef7fa26a52c0f531922aa801dbbf5b5066d2866bf2f098bca5ca82b4c01
+  checksum: ddf3d76ed0a1d7efb7b003624ce89a5794b5071cb001bea5dc91e11efdfb6e0e14573a79374b24ac4f474e9e5085e51bbbb4e80a10286780e941419133644656
   languageName: node
   linkType: hard
 
