@@ -13,12 +13,11 @@
 	"MosExternalMetaData": [
 		{
 			"MosScope": "OBJECT",
-			"MosSchema": "undefined",
+			"MosSchema": "",
 			"MosPayload": {
 				"objType": "VIDEO"
 			}
 		}
 	],
-	"mosAbstract": "[object Object]",
 	"ObjectSlug": "bts-finnmark-bil_navnekonflikt(2)"
 }
