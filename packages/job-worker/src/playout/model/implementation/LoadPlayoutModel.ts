@@ -23,6 +23,7 @@ import { PlayoutModel, PlayoutModelPreInit } from '../PlayoutModel'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
 import { PlayoutExpectedPackagesModelImpl } from './PlayoutExpectedPackagesModelImpl'
+import { ExpectedPackageDBNew } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 
 /**
  * Load a PlayoutModelPreInit for the given RundownPlaylist
@@ -91,11 +92,14 @@ export async function createPlayoutModelFromIngestModel(
 	const expectedPackages = new PlayoutExpectedPackagesModelImpl()
 	// nocommit - populate some content from the ingestModel
 
-	const [partInstances, rundownsWithContent, timeline] = await Promise.all([
+	const [partInstances, rundownsWithContent, timeline, expectedPackagesDocs] = await Promise.all([
 		loadPartInstances(context, expectedPackages, loadedPlaylist, rundownIds),
 		loadRundowns(context, ingestModel, rundowns),
 		loadTimeline(context),
+		loadExpectedPackages(context),
 	])
+
+	expectedPackages.populateWithPackages(expectedPackagesDocs)
 
 	const res = new PlayoutModelImpl(
 		context,
@@ -157,11 +161,14 @@ export async function createPlayoutModelfromInitModel(
 
 	const expectedPackages = new PlayoutExpectedPackagesModelImpl()
 
-	const [partInstances, rundownsWithContent, timeline] = await Promise.all([
+	const [partInstances, rundownsWithContent, timeline, expectedPackagesDocs] = await Promise.all([
 		loadPartInstances(context, expectedPackages, initModel.playlist, rundownIds),
 		loadRundowns(context, null, initModel.rundowns),
 		loadTimeline(context),
+		loadExpectedPackages(context),
 	])
+
+	expectedPackages.populateWithPackages(expectedPackagesDocs)
 
 	const res = new PlayoutModelImpl(
 		context,
@@ -333,4 +340,9 @@ async function loadPartInstances(
 	}
 
 	return allPartInstances
+}
+
+async function loadExpectedPackages(context: JobContext): Promise<ExpectedPackageDBNew[]> {
+	// nocommit: load the expectedPackages from the database
+	return []
 }

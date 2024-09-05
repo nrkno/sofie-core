@@ -29,11 +29,11 @@ export class PlayoutExpectedPackagesModelImpl implements PlayoutExpectedPackages
 		throw new Error('Method not implemented.')
 	}
 
-	ensurePackagesExist(_rundownId: RundownId, _expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>): void {
+	createPackagesIfMissing(_rundownId: RundownId, _expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>): void {
 		throw new Error('Method not implemented.')
 	}
 
-	ensurePackagesExistMap(
+	createPackagesIfMissingFromMap(
 		_rundownId: RundownId,
 		_expectedPackages: ReadonlyMap<ExpectedPackageId, ReadonlyDeep<ExpectedPackage.Any>>
 	): void {
@@ -48,6 +48,8 @@ export class PlayoutExpectedPackagesModelImpl implements PlayoutExpectedPackages
 	): void {
 		throw new Error('Method not implemented.')
 	}
+
+	populateWithPackages(packages: ExpectedPackageDBNew[]): void {}
 
 	async saveAllToDatabase(): Promise<void> {
 		throw new Error('Method not implemented.')

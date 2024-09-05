@@ -40,9 +40,9 @@ export interface PlayoutExpectedPackagesModel extends PlayoutExpectedPackagesMod
 
 	ensurePackagesAreLoaded(expectedPackages: PieceExpectedPackage[]): Promise<ExpectedPackage.Any[]>
 
-	ensurePackagesExist(rundownId: RundownId, expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>): void
+	createPackagesIfMissing(rundownId: RundownId, expectedPackages: ReadonlyDeep<ExpectedPackage.Any[]>): void
 
-	ensurePackagesExistMap(
+	createPackagesIfMissingFromMap(
 		rundownId: RundownId,
 		expectedPackages: ReadonlyMap<ExpectedPackageId, ReadonlyDeep<ExpectedPackage.Any>>
 	): void

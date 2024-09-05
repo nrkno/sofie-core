@@ -287,7 +287,7 @@ export class PartAndPieceInstanceActionService {
 		const piece = postProcessed.docs[0]
 		piece._id = getRandomId() // Make id random, as postProcessPieces is too predictable (for ingest)
 
-		this._playoutModel.expectedPackages.ensurePackagesExistMap(
+		this._playoutModel.expectedPackages.createPackagesIfMissingFromMap(
 			this._rundown.rundown._id,
 			postProcessed.expectedPackages
 		)
@@ -358,7 +358,7 @@ export class PartAndPieceInstanceActionService {
 
 		if (trimmedPiece.expectedPackages) {
 			// nocommit - this needs to go through some postProcess
-			this._playoutModel.expectedPackages.ensurePackagesExist(
+			this._playoutModel.expectedPackages.createPackagesIfMissing(
 				pieceInstance.pieceInstance.rundownId,
 				trimmedPiece.expectedPackages
 			)
@@ -452,7 +452,10 @@ export class PartAndPieceInstanceActionService {
 			throw new Error('Cannot queue a part which is not playable')
 		}
 
-		this._playoutModel.expectedPackages.ensurePackagesExistMap(this._rundown.rundown._id, pieces.expectedPackages)
+		this._playoutModel.expectedPackages.createPackagesIfMissingFromMap(
+			this._rundown.rundown._id,
+			pieces.expectedPackages
+		)
 
 		// Do the work
 		const newPartInstance = await insertQueuedPartWithPieces(

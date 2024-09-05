@@ -160,7 +160,7 @@ async function pieceTakeNowAsAdlib(
 		| { partInstance: PlayoutPartInstanceModel; pieceInstance: PlayoutPieceInstanceModel }
 		| undefined
 ): Promise<void> {
-	playoutModel.expectedPackages.ensurePackagesExist(currentPartInstance.partInstance.rundownId, expectedPackages) // nocommit - what if the genericAdlibPiece doesn't quite match the set of packages?
+	playoutModel.expectedPackages.createPackagesIfMissing(currentPartInstance.partInstance.rundownId, expectedPackages) // nocommit - what if the genericAdlibPiece doesn't quite match the set of packages?
 
 	const genericAdlibPiece = convertAdLibToGenericPiece(pieceToCopy, false)
 	/*const newPieceInstance = */ currentPartInstance.insertAdlibbedPiece(genericAdlibPiece, pieceToCopy._id)

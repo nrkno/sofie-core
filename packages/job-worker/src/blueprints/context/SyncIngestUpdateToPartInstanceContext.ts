@@ -97,7 +97,7 @@ export class SyncIngestUpdateToPartInstanceContext
 			: null
 
 		if (postProcessed) {
-			this.expectedPackages.ensurePackagesExistMap(
+			this.expectedPackages.createPackagesIfMissingFromMap(
 				this.partInstance.partInstance.rundownId,
 				postProcessed.expectedPackages
 			)
@@ -131,7 +131,7 @@ export class SyncIngestUpdateToPartInstanceContext
 		)
 		const piece = processedPieces.docs[0]
 
-		this.expectedPackages.ensurePackagesExistMap(
+		this.expectedPackages.createPackagesIfMissingFromMap(
 			this.partInstance.partInstance.rundownId,
 			processedPieces.expectedPackages
 		)
@@ -183,7 +183,7 @@ export class SyncIngestUpdateToPartInstanceContext
 			})
 		}
 		if (trimmedPiece.expectedPackages) {
-			this.expectedPackages.ensurePackagesExist(
+			this.expectedPackages.createPackagesIfMissing(
 				pieceInstance.pieceInstance.rundownId,
 				trimmedPiece.expectedPackages
 			)

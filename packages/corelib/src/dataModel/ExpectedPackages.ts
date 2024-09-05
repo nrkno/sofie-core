@@ -5,10 +5,8 @@ import {
 	AdLibActionId,
 	BucketAdLibActionId,
 	BucketAdLibId,
-	BucketId,
 	ExpectedPackageId,
 	PartId,
-	PartInstanceId,
 	PieceId,
 	PieceInstanceId,
 	RundownBaselineAdLibActionId,
@@ -27,20 +25,13 @@ import { ReadonlyDeep } from 'type-fest'
    The Package Manager will then copy the file to the right place.
 */
 
-export type ExpectedPackageFromRundown = ExpectedPackageDBFromPiece | ExpectedPackageDBFromAdLibAction
-
-export type ExpectedPackageFromRundownBaseline =
-	| ExpectedPackageDBFromBaselineAdLibAction
-	| ExpectedPackageDBFromBaselineAdLibPiece
-	| ExpectedPackageDBFromRundownBaselineObjects
-
 export type ExpectedPackageDBFromBucket = ExpectedPackageDBFromBucketAdLib | ExpectedPackageDBFromBucketAdLibAction
 
-export type ExpectedPackageDB =
-	| ExpectedPackageFromRundown
-	| ExpectedPackageDBFromBucket
-	| ExpectedPackageFromRundownBaseline
-	| ExpectedPackageDBFromStudioBaselineObjects
+// export type ExpectedPackageDB =
+// 	| ExpectedPackageFromRundown
+// 	| ExpectedPackageDBFromBucket
+// 	| ExpectedPackageFromRundownBaseline
+// 	| ExpectedPackageDBFromStudioBaselineObjects
 
 export enum ExpectedPackageDBType {
 	PIECE = 'piece',
@@ -53,22 +44,6 @@ export enum ExpectedPackageDBType {
 	RUNDOWN_BASELINE_OBJECTS = 'rundown_baseline_objects',
 	STUDIO_BASELINE_OBJECTS = 'studio_baseline_objects',
 	PIECE_INSTANCE = 'piece_instance',
-}
-export interface ExpectedPackageDBBaseSimple {
-	_id: ExpectedPackageId
-
-	package: ReadonlyDeep<ExpectedPackage.Any>
-
-	/** The local package id - as given by the blueprints */
-	blueprintPackageId: string // TODO - remove this?
-
-	/** The studio of the Rundown of the Piece this package belongs to */
-	studioId: StudioId
-
-	/** Hash that changes whenever the content or version changes. See getContentVersionHash() */
-	contentVersionHash: string
-
-	created: Time
 }
 
 /*
@@ -152,80 +127,27 @@ export type ExpectedPackageIngestSourceRundownBaseline =
 
 export type ExpectedPackageIngestSource = ExpectedPackageIngestSourcePart | ExpectedPackageIngestSourceRundownBaseline
 
-export interface ExpectedPackageWithId {
-	_id: ExpectedPackageId
-	expectedPackage: ReadonlyDeep<ExpectedPackage.Any>
-}
+// export interface ExpectedPackageDBFromStudioBaselineObjects extends ExpectedPackageDBBase {
+// 	fromPieceType: ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS
+// 	pieceId: null
+// }
 
-export interface ExpectedPackageDBBase extends ExpectedPackageDBBaseSimple {
-	fromPieceType: ExpectedPackageDBType
-}
-export interface ExpectedPackageDBFromPiece extends ExpectedPackageDBBase {
-	fromPieceType: ExpectedPackageDBType.PIECE | ExpectedPackageDBType.ADLIB_PIECE
-	/** The Piece this package belongs to */
-	pieceId: PieceId
-	/** The Part this package belongs to */
-	partId: PartId
-	/** The Segment this package belongs to */
-	segmentId: SegmentId
-	/** The rundown of the Piece this package belongs to */
-	rundownId: RundownId
-}
-
-export interface ExpectedPackageDBFromBaselineAdLibPiece extends ExpectedPackageDBBase {
-	fromPieceType: ExpectedPackageDBType.BASELINE_ADLIB_PIECE
-	/** The Piece this package belongs to */
-	pieceId: PieceId
-	/** The rundown of the Piece this package belongs to */
-	rundownId: RundownId
-}
-
-export interface ExpectedPackageDBFromAdLibAction extends ExpectedPackageDBBase {
-	fromPieceType: ExpectedPackageDBType.ADLIB_ACTION
-	/** The Adlib Action this package belongs to */
-	pieceId: AdLibActionId
-	/** The Part this package belongs to */
-	partId: PartId
-	/** The Segment this package belongs to */
-	segmentId: SegmentId
-	/** The rundown of the Piece this package belongs to */
-	rundownId: RundownId
-}
-export interface ExpectedPackageDBFromBaselineAdLibAction extends ExpectedPackageDBBase {
-	fromPieceType: ExpectedPackageDBType.BASELINE_ADLIB_ACTION
-	/** The Piece this package belongs to */
-	pieceId: RundownBaselineAdLibActionId
-	/** The rundown of the Piece this package belongs to */
-	rundownId: RundownId
-}
-
-export interface ExpectedPackageDBFromRundownBaselineObjects extends ExpectedPackageDBBase {
-	fromPieceType: ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS
-	/** The rundown of the Piece this package belongs to */
-	rundownId: RundownId
-	pieceId: null
-}
-export interface ExpectedPackageDBFromStudioBaselineObjects extends ExpectedPackageDBBase {
-	fromPieceType: ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS
-	pieceId: null
-}
-
-export interface ExpectedPackageDBFromBucketAdLib extends ExpectedPackageDBBase {
-	fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB
-	bucketId: BucketId
-	/** The Bucket adlib this package belongs to */
-	pieceId: BucketAdLibId
-	/** The `externalId` of the Bucket adlib this package belongs to */
-	pieceExternalId: string
-}
-export interface ExpectedPackageDBFromBucketAdLibAction extends ExpectedPackageDBBase {
-	fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB_ACTION
-	bucketId: BucketId
-	/** The Bucket adlib-action this package belongs to */
-	pieceId: BucketAdLibActionId
-	/** The `externalId` of the Bucket adlib-action this package belongs to */
-	pieceExternalId: string
-}
+// export interface ExpectedPackageDBFromBucketAdLib extends ExpectedPackageDBBase {
+// 	fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB
+// 	bucketId: BucketId
+// 	/** The Bucket adlib this package belongs to */
+// 	pieceId: BucketAdLibId
+// 	/** The `externalId` of the Bucket adlib this package belongs to */
+// 	pieceExternalId: string
+// }
+// export interface ExpectedPackageDBFromBucketAdLibAction extends ExpectedPackageDBBase {
+// 	fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB_ACTION
+// 	bucketId: BucketId
+// 	/** The Bucket adlib-action this package belongs to */
+// 	pieceId: BucketAdLibActionId
+// 	/** The `externalId` of the Bucket adlib-action this package belongs to */
+// 	pieceExternalId: string
+// }
 
 export function getContentVersionHash(expectedPackage: ReadonlyDeep<Omit<ExpectedPackage.Any, '_id'>>): string {
 	return hashObj({
@@ -265,11 +187,4 @@ export function getExpectedPackageIdNew(
 	} satisfies ReadonlyDeep<ExpectedPackage.Any>)
 
 	return protectString(`${rundownId}_${getHash(objHash)}`)
-}
-
-export function unwrapExpectedPackages(
-	expectedPackages: ReadonlyDeep<ExpectedPackageDBBase[]> | undefined
-): ReadonlyDeep<ExpectedPackage.Any[]> {
-	if (!expectedPackages) return []
-	return expectedPackages.map((p) => p.package)
 }

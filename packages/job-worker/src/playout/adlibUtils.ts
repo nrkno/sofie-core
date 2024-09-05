@@ -49,7 +49,10 @@ export async function innerStartOrQueueAdLibPiece(
 			expectedDurationWithTransition: adLibPiece.expectedDuration, // Filled in later
 		}
 
-		playoutModel.expectedPackages.ensurePackagesExist(currentPartInstance.partInstance.rundownId, expectedPackages) // nocommit - what if the genericAdlibPiece doesn't quite match the set of packages?
+		playoutModel.expectedPackages.createPackagesIfMissing(
+			currentPartInstance.partInstance.rundownId,
+			expectedPackages
+		) // nocommit - what if the genericAdlibPiece doesn't quite match the set of packages?
 
 		const genericAdlibPiece = convertAdLibToGenericPiece(adLibPiece, true)
 		const newPartInstance = await insertQueuedPartWithPieces(
@@ -65,7 +68,10 @@ export async function innerStartOrQueueAdLibPiece(
 
 		// syncPlayheadInfinitesForNextPartInstance is handled by setNextPart
 	} else {
-		playoutModel.expectedPackages.ensurePackagesExist(currentPartInstance.partInstance.rundownId, expectedPackages) // nocommit - what if the adLibPiece doesn't quite match the set of packages?
+		playoutModel.expectedPackages.createPackagesIfMissing(
+			currentPartInstance.partInstance.rundownId,
+			expectedPackages
+		) // nocommit - what if the adLibPiece doesn't quite match the set of packages?
 
 		const genericAdlibPiece = convertAdLibToGenericPiece(adLibPiece, false)
 		currentPartInstance.insertAdlibbedPiece(genericAdlibPiece, adLibPiece._id)
