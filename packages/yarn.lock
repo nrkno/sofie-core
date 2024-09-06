@@ -4672,7 +4672,7 @@ __metadata:
     node-fetch: ^2.7.0
     p-lazy: ^3.1.0
     p-timeout: ^4.1.0
-    superfly-timeline: 9.0.0
+    superfly-timeline: 9.0.1
     threadedclass: ^1.2.2
     tslib: ^2.6.2
     type-fest: ^3.13.1
@@ -22649,16 +22649,7 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"superfly-timeline@npm:9.0.0":
-  version: 9.0.0
-  resolution: "superfly-timeline@npm:9.0.0"
-  dependencies:
-    tslib: ^2.6.0
-  checksum: bb56fc6d6884f2956cdc1f18edceff48bc693c2329b009170e4d399ce70b8123ef38ddada0f0479eb359690eae39e7e578a9ec4ba326d6e4704653f74cde1a6d
-  languageName: node
-  linkType: hard
-
-"superfly-timeline@npm:^9.0.1":
+"superfly-timeline@npm:9.0.1, superfly-timeline@npm:^9.0.1":
   version: 9.0.1
   resolution: "superfly-timeline@npm:9.0.1"
   dependencies:
