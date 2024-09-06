@@ -8,6 +8,7 @@ import _ from 'underscore'
 import { public_dir } from '../../lib'
 import staticServe from 'koa-static'
 import { logger } from '../../logging'
+import { PackageInfo } from '../../coreSystem'
 
 declare module 'http' {
 	interface IncomingMessage {
@@ -55,8 +56,13 @@ Meteor.startup(() => {
 
 	// Serve the meteor runtime config
 	rootRouter.get('/meteor-runtime-config.js', async (ctx) => {
-		// @ts-expect-error missing types for internal meteor detail
-		ctx.body = `window.__meteor_runtime_config__ = (${JSON.stringify(__meteor_runtime_config__)})`
+		const versionExtended: string = PackageInfo.versionExtended || PackageInfo.version // package version
+
+		ctx.body = `window.__meteor_runtime_config__ = (${JSON.stringify({
+			// @ts-expect-error missing types for internal meteor detail
+			...__meteor_runtime_config__,
+			sofieVersionExtended: versionExtended,
+		})})`
 	})
 
 	koaApp.use(rootRouter.routes()).use(rootRouter.allowedMethods())

@@ -6,6 +6,7 @@ import { TOOLTIP_DEFAULT_DELAY } from '../../lib/lib'
 import { useTranslation } from 'react-i18next'
 import { MeteorCall } from '../../lib/meteorApi'
 import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
+import { APP_VERSION_EXTENDED } from '../../lib/Settings'
 
 export function RundownListFooter(): JSX.Element {
 	const { t } = useTranslation()
@@ -40,7 +41,7 @@ export function RundownListFooter(): JSX.Element {
 	}, [])
 
 	const version = __APP_VERSION__ || 'UNSTABLE'
-	const versionExtended = __APP_VERSION_EXTENDED__ || version
+	const versionExtended = APP_VERSION_EXTENDED || version
 
 	return (
 		<div className="mtl gutter version-info">

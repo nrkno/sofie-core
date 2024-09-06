@@ -231,7 +231,7 @@ export function catchError(context: string): (...errs: any[]) => void {
 }
 
 export function hashSingleUseToken(token: string): string {
-	// nocommit - a hack because the crypto polyfill doesn't work for some reason
+	// Future: it would be nice for this to use a better webcrypto/better library, but this works
 	return shajs('sha1')
 		.update(SINGLE_USE_TOKEN_SALT + token)
 		.digest('base64')

@@ -17,3 +17,5 @@ const MeteorInjectedSettings: any = window.__meteor_runtime_config__
 if (MeteorInjectedSettings?.PUBLIC_SETTINGS) {
 	Settings = _.extend(Settings, MeteorInjectedSettings.PUBLIC_SETTINGS)
 }
+
+export const APP_VERSION_EXTENDED: string | undefined = MeteorInjectedSettings?.sofieVersionExtended
