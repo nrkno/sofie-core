@@ -21,7 +21,7 @@ const supportedSourceLayerTypes = new Set(
 
 function findMainPiece(pieces: PieceExtended[]) {
 	return findPieceExtendedToShowFromOrderedResolvedInstances(
-		pieces.filter((piece) => piece.outputLayer?.isPGM),
+		pieces.filter((piece) => piece.outputLayer?.isPGM && piece.sourceLayer?.onPresenterScreen),
 		supportedSourceLayerTypes
 	)
 }
