@@ -52,7 +52,7 @@ export class BucketsServerAPI implements BucketsRestAPI {
 			event,
 			getCurrentTime(),
 			'bucketsCreateNewBucket',
-			[bucket],
+			{ bucket },
 			async () => {
 				check(bucket.studioId, String)
 				check(bucket.name, String)
@@ -80,7 +80,7 @@ export class BucketsServerAPI implements BucketsRestAPI {
 			event,
 			getCurrentTime(),
 			'bucketsRemoveBucket',
-			[bucketId],
+			{ bucketId },
 			async () => {
 				check(bucketId, String)
 
@@ -100,7 +100,7 @@ export class BucketsServerAPI implements BucketsRestAPI {
 			event,
 			getCurrentTime(),
 			'bucketsEmptyBucket',
-			[bucketId],
+			{ bucketId },
 			async () => {
 				check(bucketId, String)
 
@@ -120,7 +120,7 @@ export class BucketsServerAPI implements BucketsRestAPI {
 			event,
 			getCurrentTime(),
 			'bucketsRemoveBucketAdLib',
-			[externalId],
+			{ externalId },
 			async () => {
 				const bucketAdLibPiecePromise = BucketAdLibs.findOneAsync(
 					{ externalId },
@@ -167,7 +167,7 @@ export class BucketsServerAPI implements BucketsRestAPI {
 			event,
 			getCurrentTime(),
 			'bucketAdlibImport',
-			[bucketId, showStyleBaseId, ingestItem],
+			{ bucketId, showStyleBaseId, ingestItem },
 			async () => {
 				check(bucketId, String)
 				check(showStyleBaseId, String)

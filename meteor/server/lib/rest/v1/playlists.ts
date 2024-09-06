@@ -227,19 +227,19 @@ export interface PlaylistsRestAPI {
 		fromPartInstanceId: PartInstanceId | undefined
 	): Promise<ClientAPI.ClientResponse<void>>
 	/**
-	 * Clears the specified SourceLayer.
+	 * Clears the specified SourceLayers.
 	 *
 	 * Throws if specified playlist is not active.
 	 * @param connection Connection data including client and header details
 	 * @param event User event string
 	 * @param rundownPlaylistId Target Playlist.
-	 * @param sourceLayerId Target SourceLayer.
+	 * @param sourceLayerIds Target SourceLayers.
 	 */
-	clearSourceLayer(
+	clearSourceLayers(
 		connection: Meteor.Connection,
 		event: string,
 		rundownPlaylistId: RundownPlaylistId,
-		sourceLayerId: string
+		sourceLayerIds: string[]
 	): Promise<ClientAPI.ClientResponse<void>>
 	/**
 	 * Recalls the last sticky Piece on the specified SourceLayer, if there is any.

@@ -50,14 +50,14 @@ export class KeyboardFocusIndicator extends React.Component<
 			this.setState({
 				inFocus: focusNow,
 			})
-			const viewInfo = [
-				window.location.href + window.location.search,
-				window.innerWidth,
-				window.innerHeight,
-				getAllowStudio(),
-				getAllowConfigure(),
-				getAllowService(),
-			]
+			const viewInfo = {
+				url: window.location.href + window.location.search,
+				width: window.innerWidth,
+				height: window.innerHeight,
+				studio: getAllowStudio(),
+				configure: getAllowConfigure(),
+				service: getAllowService(),
+			}
 			if (focusNow) {
 				MeteorCall.userAction
 					.guiFocused('checkFocus', getCurrentTime(), viewInfo)

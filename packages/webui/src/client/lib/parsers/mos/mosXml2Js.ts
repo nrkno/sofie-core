@@ -22,7 +22,7 @@ export function parseMosPluginMessageXml(xmlString: string): MosPluginMessage | 
 		}
 
 		if (doc.mos.ncsItem && doc.mos.ncsItem.item) {
-			res.item = MOS.MosModel.XMLMosItem.fromXML(doc.mos.ncsItem.item, MOS_DATA_IS_STRICT)
+			res.item = MOS.MosModel.XMLMosItem.fromXML('ncsItem.item', doc.mos.ncsItem.item, MOS_DATA_IS_STRICT)
 		}
 
 		return res

@@ -1,9 +1,10 @@
 import _ from 'underscore'
 import { useTranslation } from 'react-i18next'
 import { PlayoutActions, SomeAction } from '@sofie-automation/blueprints-integration'
-import { EditAttribute } from '../../../../../../../lib/EditAttribute'
 import { useTracker } from '../../../../../../../lib/ReactMeteorData/ReactMeteorData'
 import { AdLibActions, RundownBaselineAdLibActions } from '../../../../../../../collections'
+import { ToggleSwitchControl } from '../../../../../../../lib/Components/ToggleSwitch'
+import { TextInputControl, TextInputSuggestion } from '../../../../../../../lib/Components/TextInput'
 
 export function AdLibActionEditor({
 	action,
@@ -13,9 +14,9 @@ export function AdLibActionEditor({
 	onChange: (newVal: Partial<typeof action>) => void
 }>): JSX.Element | null {
 	const { t } = useTranslation()
-	const allTriggerModes = useTracker<string[]>(
+	const allTriggerModes = useTracker<TextInputSuggestion[]>(
 		() => {
-			return _.chain([
+			const triggerModes = _.chain([
 				...RundownBaselineAdLibActions.find().map((action) =>
 					action.triggerModes?.map((triggerMode) => triggerMode.data)
 				),
@@ -24,7 +25,10 @@ export function AdLibActionEditor({
 				.flatten()
 				.compact()
 				.uniq()
+				.sort()
 				.value()
+
+			return triggerModes.map((triggerMode, i): TextInputSuggestion => ({ name: triggerMode, value: triggerMode, i }))
 		},
 		[],
 		[]
@@ -36,14 +40,11 @@ export function AdLibActionEditor({
 	return (
 		<>
 			<div className="mts">
-				<EditAttribute
-					className="form-control"
-					modifiedClassName="bghl"
-					type={'toggle'}
+				<ToggleSwitchControl
+					classNames={'form-control'}
+					value={!!action.arguments}
 					label={t('Use Trigger Mode')}
-					overrideDisplayValue={!!action.arguments}
-					attribute={''}
-					updateFunction={(_e, newVal) => {
+					handleUpdate={(newVal) => {
 						onChange({
 							...action,
 							arguments: newVal ? { triggerMode: '' } : null,
@@ -54,13 +55,11 @@ export function AdLibActionEditor({
 			{action.arguments && (
 				<div className="mts">
 					<label className="block">{t('Trigger Mode')}</label>
-					<EditAttribute
-						className="form-control input text-input input-m"
-						type="dropdowntext"
-						options={allTriggerModes}
-						overrideDisplayValue={action.arguments.triggerMode}
-						attribute={''}
-						updateFunction={(_e, newVal) => {
+					<TextInputControl
+						classNames={`input text-input input-m`}
+						updateOnKey={true}
+						value={action.arguments.triggerMode ?? ''}
+						handleUpdate={(newVal) =>
 							onChange({
 								...action,
 								arguments: {
@@ -68,7 +67,9 @@ export function AdLibActionEditor({
 									triggerMode: newVal,
 								},
 							})
-						}}
+						}
+						spellCheck={false}
+						suggestions={allTriggerModes}
 					/>
 				</div>
 			)}

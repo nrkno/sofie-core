@@ -35,14 +35,9 @@ const supportedSourceLayerTypes = new Set(
 	)
 )
 
-function findMainPiece(pieces: PieceExtended[], original?: boolean) {
+function findMainPiece(pieces: PieceExtended[]) {
 	return findPieceExtendedToShowFromOrderedResolvedInstances(
-		pieces.filter(
-			(piece) =>
-				piece.outputLayer?.isPGM &&
-				piece.sourceLayer?.onPresenterScreen &&
-				(!original || !piece.instance.dynamicallyInserted)
-		),
+		pieces.filter((piece) => piece.outputLayer?.isPGM && piece.sourceLayer?.onPresenterScreen),
 		supportedSourceLayerTypes
 	)
 }
@@ -55,17 +50,20 @@ function findTransitionPiece(pieces: PieceExtended[]) {
 	})
 }
 
-function findTimedGraphics(pieces: PieceExtended[]) {
-	return pieces.slice().filter((piece) => {
-		if (
-			piece.sourceLayer?.type === SourceLayerType.LOWER_THIRD &&
-			!piece.sourceLayer?.isHidden &&
-			piece.instance.piece.lifespan === PieceLifespan.WithinPart &&
-			piece.instance.piece.enable.duration
-		) {
-			return true
-		}
-	})
+function findTimelineGraphics(pieces: PieceExtended[]) {
+	return pieces
+		.slice()
+		.filter((piece) => {
+			if (
+				piece.sourceLayer?.type === SourceLayerType.LOWER_THIRD &&
+				!piece.sourceLayer?.isHidden &&
+				((piece.instance.piece.lifespan === PieceLifespan.WithinPart && piece.instance.piece.enable.duration) ||
+					!piece.sourceLayer?.onListViewColumn)
+			) {
+				return true
+			}
+		})
+		.sort((a, b) => (a.sourceLayer?._rank ?? 0) - (b.sourceLayer?._rank ?? 0))
 }
 
 export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
@@ -80,9 +78,8 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 	// const [highlight] = useState(false)
 
 	const mainPiece = useMemo(() => findMainPiece(part.pieces), [part.pieces])
-	// const mainDisplayPiece = useMemo(() => findMainPiece(part.pieces), [part.pieces])
 	const transitionPiece = useMemo(() => findTransitionPiece(part.pieces), [part.pieces])
-	const timedGraphics = useMemo(() => findTimedGraphics(part.pieces), [part.pieces])
+	const timedGraphics = useMemo(() => findTimelineGraphics(part.pieces), [part.pieces])
 
 	const timings = part.instance.partPlayoutTimings
 	const toPartDelay = (timings?.toPartDelay ?? 0) - ((timings?.fromPartRemaining ?? 0) - (timings?.toPartDelay ?? 0))

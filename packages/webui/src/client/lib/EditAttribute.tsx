@@ -6,15 +6,16 @@ import { MultiSelect, MultiSelectEvent, MultiSelectOptions } from './multiSelect
 import ClassNames from 'classnames'
 import { ColorPickerEvent, ColorPicker } from './colorPicker'
 import { IconPicker, IconPickerEvent } from './iconPicker'
-import { assertNever, getRandomString } from './tempLib'
+import { assertNever } from './tempLib'
 import { MongoCollection } from '../collections/lib'
 import { CheckboxControl } from './Components/Checkbox'
 import { TextInputControl } from './Components/TextInput'
 import { IntInputControl } from './Components/IntInput'
-import { DropdownInputControl, getDropdownInputOptions } from './Components/DropdownInput'
+import { DropdownInputControl, DropdownInputOption, getDropdownInputOptions } from './Components/DropdownInput'
 import { FloatInputControl } from './Components/FloatInput'
 import { joinLines, MultiLineTextInputControl, splitValueIntoLines } from './Components/MultiLineTextInput'
 import { JsonTextInputControl, tryParseJson } from './Components/JsonTextInput'
+import { ToggleSwitchControl } from './Components/ToggleSwitch'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -28,7 +29,6 @@ export type EditAttributeType =
 	| 'toggle'
 	| 'dropdown'
 	| 'dropdowntext'
-	| 'switch'
 	| 'multiselect'
 	| 'json'
 	| 'colorpicker'
@@ -46,8 +46,6 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 			return <EditAttributeFloat {...this.props} />
 		} else if (this.props.type === 'checkbox') {
 			return <EditAttributeCheckbox {...this.props} />
-		} else if (this.props.type === 'switch') {
-			return <EditAttributeSwitch {...this.props} />
 		} else if (this.props.type === 'toggle') {
 			return <EditAttributeToggle {...this.props} />
 		} else if (this.props.type === 'dropdown') {
@@ -362,81 +360,19 @@ const EditAttributeToggle = wrapEditAttribute(
 		constructor(props: any) {
 			super(props)
 		}
-		isChecked() {
+		private isChecked() {
 			return !!this.getEditAttribute()
 		}
-		handleChange = () => {
-			if (!this.props.disabled) {
-				this.handleUpdate(!this.state.value)
-			}
-		}
-		handleClick = () => {
-			this.handleChange()
-		}
+
 		render(): JSX.Element {
 			return (
-				<div className="mvs">
-					<a
-						className={ClassNames(
-							'switch-button',
-							'mrs',
-							this.props.className,
-							this.state.editing ? this.props.modifiedClassName : undefined,
-							this.props.disabled ? 'disabled' : '',
-							{
-								'sb-on': this.isChecked(),
-							}
-						)}
-						role="button"
-						onClick={this.handleClick}
-						tabIndex={0}
-					>
-						<div className="sb-content">
-							<div className="sb-label">
-								<span className="mls">&nbsp;</span>
-								<span className="mrs right">&nbsp;</span>
-							</div>
-							<div className="sb-switch"></div>
-						</div>
-					</a>
-					<span>{this.props.label}</span>
-				</div>
-			)
-		}
-	}
-)
-const EditAttributeSwitch = wrapEditAttribute(
-	class EditAttributeSwitch extends EditAttributeBase {
-		constructor(props: any) {
-			super(props)
-		}
-		isChecked() {
-			return !!this.getEditAttribute()
-		}
-		handleChange = () => {
-			this.handleUpdate(!this.state.value)
-		}
-		handleClick = () => {
-			this.handleChange()
-		}
-		render(): JSX.Element {
-			return (
-				<div
-					className={
-						'switch ' +
-						' ' +
-						(this.props.className || '') +
-						' ' +
-						(this.state.editing ? this.props.modifiedClassName || '' : '') +
-						' ' +
-						(this.isChecked() ? 'switch-active' : '') +
-						' ' +
-						(this.props.disabled ? 'disabled' : '')
-					}
-					onClick={this.handleClick}
-				>
-					{this.props.label}
-				</div>
+				<ToggleSwitchControl
+					classNames={this.props.className}
+					value={this.isChecked()}
+					disabled={this.props.disabled}
+					label={this.props.label}
+					handleUpdate={this.handleUpdate}
+				/>
 			)
 		}
 	}
@@ -469,81 +405,22 @@ const EditAttributeDropdown = wrapEditAttribute(
 )
 const EditAttributeDropdownText = wrapEditAttribute(
 	class EditAttributeDropdownText extends EditAttributeBase {
-		private _id: string
-
-		constructor(props: any) {
-			super(props)
-
-			this.handleChangeDropdown = this.handleChangeDropdown.bind(this)
-			this.handleChangeText = this.handleChangeText.bind(this)
-			this.handleBlurText = this.handleBlurText.bind(this)
-			this.handleEscape = this.handleEscape.bind(this)
-
-			this._id = getRandomString()
-		}
-		handleChangeDropdown(event: React.ChangeEvent<HTMLInputElement>) {
-			// because event.target.value is always a string, use the original value instead
-			const option = _.find(this.getOptions(), (o) => {
-				return o.value + '' === event.target.value + ''
-			})
-
-			const value = option ? option.value : event.target.value
-
-			this.handleUpdate(this.props.optionsAreNumbers ? Number(value) : value)
-		}
-		handleChangeText(event: React.ChangeEvent<HTMLInputElement>) {
-			this.handleChangeDropdown(event)
-		}
-		handleBlurText(event: React.FocusEvent<HTMLInputElement>) {
-			this.handleUpdate(event.target.value)
-		}
-		handleEscape(e: React.KeyboardEvent<HTMLInputElement>) {
-			if (e.key === 'Escape') {
-				this.handleDiscard()
-			}
-		}
-		getOptions() {
+		private getOptions(): DropdownInputOption<string>[] {
 			return getDropdownInputOptions(this.props.options)
 		}
 		render(): JSX.Element {
 			return (
-				<div className="input-dropdowntext">
-					<input
-						type="text"
-						className={
-							'form-control' +
-							' ' +
-							(this.state.valueError ? 'error ' : '') +
-							(this.props.className || '') +
-							' ' +
-							(this.state.editing ? this.props.modifiedClassName || '' : '')
-						}
-						placeholder={this.props.label}
-						value={this.getEditAttribute() || ''}
-						onChange={this.handleChangeText}
-						onBlur={this.handleBlurText}
-						onKeyUp={this.handleEscape}
-						disabled={this.props.disabled}
-						spellCheck={false}
-						list={this._id}
-					/>
-
-					<datalist id={this._id}>
-						{this.getOptions().map((o, j) =>
-							Array.isArray(o.value) ? (
-								<optgroup key={j} label={o.name}>
-									{o.value.map((v, i) => (
-										<option key={i} value={v + ''}></option>
-									))}
-								</optgroup>
-							) : (
-								<option key={o.i} value={o.value + ''}>
-									{o.value !== o.name ? o.name : null}
-								</option>
-							)
-						)}
-					</datalist>
-				</div>
+				<TextInputControl
+					classNames={`${this.props.className || ''} ${this.state.valueError ? 'error ' : ''}`}
+					modifiedClassName={this.props.modifiedClassName}
+					disabled={this.props.disabled}
+					placeholder={this.props.label}
+					updateOnKey={this.props.updateOnKey}
+					value={this.getAttribute() ?? ''}
+					handleUpdate={this.handleUpdate}
+					spellCheck={false}
+					suggestions={this.getOptions()}
+				/>
 			)
 		}
 	}

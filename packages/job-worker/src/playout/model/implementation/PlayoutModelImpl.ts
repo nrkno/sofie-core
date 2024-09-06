@@ -668,7 +668,10 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		this.#playlistHasChanged = true
 	}
 
-	setTimeline(timelineObjs: TimelineObjGeneric[], generationVersions: TimelineCompleteGenerationVersions): void {
+	setTimeline(
+		timelineObjs: TimelineObjGeneric[],
+		generationVersions: TimelineCompleteGenerationVersions
+	): ReadonlyDeep<TimelineComplete> {
 		this.timelineImpl = {
 			_id: this.context.studioId,
 			timelineHash: getRandomId(), // randomized on every timeline change
@@ -677,6 +680,8 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 			generationVersions: generationVersions,
 		}
 		this.#timelineHasChanged = true
+
+		return this.timelineImpl
 	}
 
 	setExpectedPackagesForStudioBaseline(packages: ExpectedPackageDBFromStudioBaselineObjects[]): void {
