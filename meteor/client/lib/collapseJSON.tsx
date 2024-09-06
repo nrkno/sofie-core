@@ -1,3 +1,4 @@
+import classNames from 'classnames'
 import React, { useMemo, useState } from 'react'
 
 /**
@@ -40,44 +41,77 @@ export function CollapseJSON({ json }: { json: string }): JSX.Element {
 		return indexOf5thLine
 	}, [originalString])
 
+	function copyContents() {
+		if (!navigator.clipboard) return
+
+		navigator.clipboard.writeText(json).catch((e) => console.error('Unable to copy JSON contents to clipboard', e))
+	}
+
 	if (originalString.length < 100 && indexOf5thLine === null) {
-		return <pre>{originalString}</pre>
+		return <pre className="collapse-json__block">{originalString}</pre>
 	}
 
 	const displayContents = expanded ? (
 		<>
 			{originalString}
-			<button
-				key={'collapse'}
-				className="collapse-json__collapser"
-				tabIndex={0}
-				onClick={(e) => {
-					e.stopPropagation()
-					setExpanded(false)
-				}}
-			>
-				⮥
-			</button>
+			<div className="collapse-json__tools">
+				<button
+					key={'collapse'}
+					className="collapse-json__copy"
+					tabIndex={0}
+					onClick={(e) => {
+						e.stopPropagation()
+						copyContents()
+					}}
+				>
+					Copy
+				</button>
+				<button
+					key={'collapse'}
+					className="collapse-json__collapser"
+					tabIndex={0}
+					onClick={(e) => {
+						e.stopPropagation()
+						setExpanded(false)
+					}}
+				>
+					⮥
+				</button>
+			</div>
 		</>
 	) : (
 		<>
 			{originalString.substring(0, Math.min(indexOf5thLine || 100, 100))}
-			<button
-				key={'expand'}
-				className="collapse-json__collapser"
-				tabIndex={0}
-				onClick={(e) => {
-					e.stopPropagation()
-					setExpanded(true)
-				}}
-			>
-				…
-			</button>
+			<div className="collapse-json__tools">
+				<button
+					key={'expand'}
+					className="collapse-json__collapser"
+					tabIndex={0}
+					onClick={(e) => {
+						e.stopPropagation()
+						setExpanded(true)
+					}}
+				>
+					…
+				</button>
+			</div>
 		</>
 	)
 
 	return (
-		<pre tabIndex={0} onClick={() => setExpanded(!expanded)} className="collapse-json__block">
+		<pre
+			tabIndex={0}
+			className={classNames('collapse-json__block', 'expanding', {
+				expanded,
+			})}
+			onClick={() => {
+				// Don't expand when user is selecting text:
+				const selection = window.getSelection()
+				if (selection?.type != 'Range') {
+					setExpanded(!expanded)
+				}
+			}}
+		>
 			{displayContents}
 		</pre>
 	)
