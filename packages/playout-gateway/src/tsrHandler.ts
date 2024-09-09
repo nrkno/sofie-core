@@ -223,6 +223,8 @@ export class TSRHandler {
 		})
 		this.tsr.on('timeTrace', (trace: FinishedTrace) => sendTrace(trace))
 
+		this.attachTSRConnectionEvents()
+
 		this.logger.debug('tsr init')
 		await this.tsr.init()
 
@@ -232,6 +234,178 @@ export class TSRHandler {
 		this._triggerUpdateDevices()
 		this._triggerUpdateDatastore()
 		this.logger.debug('tsr init done')
+	}
+
+	private attachTSRConnectionEvents () {
+		this.tsr.connectionManager.on('connectionAdded', (id, container) => {
+			const coreTsrHandler = new CoreTSRDeviceHandler(this._coreHandler, Promise.resolve(container), id, this)
+			this._coreTsrHandlers[id] = coreTsrHandler
+
+			// set the status to uninitialized for now:
+			coreTsrHandler.statusChanged({
+				statusCode: StatusCode.BAD,
+				messages: ['Device initialising...'],
+			})
+		})
+
+		this.tsr.connectionManager.on('connectionInitialised', (id) => {
+			const coreTsrHandler = this._coreTsrHandlers[id]
+
+			if (!coreTsrHandler) {
+				this.logger.error('TSR Connection initialised when there was not CoreTSRHandler for it')
+				return
+			}
+
+			coreTsrHandler.init().catch(e => this.logger.error('CoreTSRHandler failed to initialise', e)) // todo - is this the right way to log this?
+		})
+
+		this.tsr.connectionManager.on('connectionRemoved', (id) => {
+			const coreTsrHandler = this._coreTsrHandlers[id]
+
+			if (!coreTsrHandler) {
+				this.logger.error('TSR Connection was removed when but there was not CoreTSRHandler to handle that')
+				return
+			}
+
+			coreTsrHandler.dispose('removeSubDevice')
+			delete this._coreTsrHandlers[id]
+		})
+
+		const fixLog = (id: string, e: string): string => {
+			const device = this._coreTsrHandlers[id]?._device
+
+			return `Device "${device?.deviceName ?? id}" (${device?.instanceId ?? 'instance unknown'})` + e
+		}
+		const fixError = (id: string, e: Error): any => {
+			const device = this._coreTsrHandlers[id]?._device
+			const name = `Device "${device?.deviceName ??  id}" (${device?.instanceId ?? 'instance unknown'})`
+
+			return {
+				message: e.message && name + ': ' + e.message,
+				name: e.name && name + ': ' + e.name,
+				stack: e.stack && e.stack + '\nAt device' + name,
+			}
+		}
+		const fixContext = (...context: any[]): any => {
+			return {
+				context,
+			}
+		}
+
+		this.tsr.connectionManager.on('connectionEvent:connectionChanged', (id, status) => {
+			const coreTsrHandler = this._coreTsrHandlers[id]
+			if (!coreTsrHandler) return
+			
+			coreTsrHandler.statusChanged(status)
+
+			// When the status has changed, the deviceName might have changed:
+			coreTsrHandler._device.reloadProps().catch((err) => {
+				this.logger.error(`Error in reloadProps: ${stringifyError(err)}`)
+			})
+			// hack to make sure atem has media after restart
+			if (
+				(status.statusCode === StatusCode.GOOD ||
+					status.statusCode === StatusCode.WARNING_MINOR ||
+					status.statusCode === StatusCode.WARNING_MAJOR) &&
+				coreTsrHandler._device.deviceType === DeviceType.ATEM &&
+				!disableAtemUpload
+			) {
+				const assets = (coreTsrHandler._device.deviceOptions as DeviceOptionsAtem).options?.mediaPoolAssets
+				if (assets && assets.length > 0) {
+					try {
+						this.uploadFilesToAtem(
+							coreTsrHandler._device,
+							assets.filter((asset) => _.isNumber(asset.position) && asset.path)
+						)
+					} catch (e) {
+						// don't worry about it.
+					}
+				}
+			}
+		})
+		this.tsr.connectionManager.on('connectionEvent:slowSentCommand', (id, info) => {
+			// If the internalDelay is too large, it should be logged as an error,
+			// since something took too long internally.
+
+			if (info.internalDelay > 100) {
+				this.logger.error('slowSentCommand', {
+					id,
+					...info,
+				})
+			} else {
+				this.logger.warn('slowSentCommand', {
+					id,
+					...info,
+				})
+			}
+		})
+		this.tsr.connectionManager.on('connectionEvent:slowFulfilledCommand', (id, info) => {
+			// Note: we don't emit slow fulfilled commands as error, since
+				// the fulfillment of them lies on the device being controlled, not on us.
+
+				this.logger.warn('slowFulfilledCommand', {
+					id,
+					...info,
+				})
+		})
+		this.tsr.connectionManager.on('connectionEvent:commandError', (id, error, context) => {
+			// todo: handle this better
+			this.logger.error(fixError(id, error), { context })
+		})
+		this.tsr.connectionManager.on('connectionEvent:commandReport', (_id, commandReport) => {
+			if (this._reportAllCommands) {
+				// Todo: send these to Core
+				this.logger.info('commandReport', {
+					commandReport: commandReport,
+				})
+			}
+		})
+		this.tsr.connectionManager.on('connectionEvent:updateMediaObject', (id, collectionId, docId, doc) => {
+			const coreTsrHandler = this._coreTsrHandlers[id]
+			if (!coreTsrHandler) return
+
+			coreTsrHandler.onUpdateMediaObject(collectionId, docId, doc)
+		})
+		this.tsr.connectionManager.on('connectionEvent:clearMediaObjects', (id, collectionId) => {
+			const coreTsrHandler = this._coreTsrHandlers[id]
+			if (!coreTsrHandler) return
+
+			coreTsrHandler.onClearMediaObjectCollection(collectionId)
+		})
+		this.tsr.connectionManager.on('connectionEvent:info', (id, info) => {
+			this.logger.info(fixLog(id, info))
+		})
+		this.tsr.connectionManager.on('connectionEvent:warning', (id, warning) => {
+			this.logger.warn(fixLog(id, warning))
+		})
+		this.tsr.connectionManager.on('connectionEvent:error', (id, context, error) => {
+			this.logger.error(fixError(id, error), fixContext(context))
+		})
+		this.tsr.connectionManager.on('connectionEvent:debug', (id, ...args) => {
+			const device = this._coreTsrHandlers[id]?._device
+
+			if (!device?.debugLogging && !this._coreHandler.logDebug) {
+				return
+			}
+			if (args.length === 0) {
+				this.logger.debug('>empty message<')
+				return
+			}
+			const data = args.map((arg) => (typeof arg === 'object' ? JSON.stringify(arg) : arg))
+			this.logger.debug(`Device "${device?.deviceName || id}" (${device?.instanceId})`, { data })
+		})
+		this.tsr.connectionManager.on('connectionEvent:debugState', (id, state) => {
+			const device = this._coreTsrHandlers[id]?._device
+
+			if (device?.debugState && this._coreHandler.logDebug) {
+				// Fetch the Id that core knows this device by
+				const coreId = this._coreTsrHandlers[device.deviceId].core.deviceId
+				this._debugStates.set(unprotectString(coreId), state)
+			}
+		})
+		this.tsr.connectionManager.on('connectionEvent:timeTrace', (_id, trace) => {
+			sendTrace(trace)
+		})
 	}
 
 	private loadSubdeviceConfigurations(): { [deviceType: string]: Record<string, any> } {
