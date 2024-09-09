@@ -131,6 +131,21 @@ jobs:
           yarn build
         env:
           CI: true
+      - name: Generate OpenAPI client library
+        if: ${{ steps.do-publish.outputs.tag }}
+        uses: hatamiarash7/openapi-generator@v0.3.0
+        with:
+          generator: typescript-fetch
+          openapi-file: ./packages/openapi/api/actions.yaml
+          output-dir: ./packages/openapi/client/ts
+          command-args: -p supportsES6=true
+      - name: Build OpenAPI client library
+        if: ${{ steps.do-publish.outputs.tag }}
+        run: |
+          cd packages/openapi
+          yarn build:main
+        env:
+          CI: true
       - name: Modify dependencies to use npm packages
         run: node scripts/prepublish.js
       - name: Publish to NPM
