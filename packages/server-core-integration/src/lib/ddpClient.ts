@@ -34,6 +34,7 @@ export interface TLSOpts {
 export interface DDPConnectorOptions {
 	host: string
 	port: number
+	headers?: { [header: string]: string }
 	path?: string
 	ssl?: boolean
 	debug?: boolean
@@ -343,6 +344,10 @@ export class DDPClient extends EventEmitter<DDPClientEvents> {
 	public get port(): number {
 		return this.portInt
 	}
+	private headersInt: { [header: string]: string } = {}
+	public get headers(): { [header: string]: string } {
+		return this.headersInt
+	}
 	private pathInt?: string
 	public get path(): string | undefined {
 		return this.pathInt
@@ -410,6 +415,7 @@ export class DDPClient extends EventEmitter<DDPClientEvents> {
 		// console.log(opts)
 		this.hostInt = opts.host || '127.0.0.1'
 		this.portInt = opts.port || 3000
+		this.headersInt = opts.headers || {}
 		this.pathInt = opts.path
 		this.sslInt = opts.ssl || this.port === 443
 		this.tlsOpts = opts.tlsOpts || {}
@@ -722,6 +728,7 @@ export class DDPClient extends EventEmitter<DDPClientEvents> {
 
 		try {
 			const response = await got(url, {
+				headers: this.headers,
 				https: {
 					certificateAuthority: this.tlsOpts.ca,
 					key: this.tlsOpts.key,
@@ -762,7 +769,7 @@ export class DDPClient extends EventEmitter<DDPClientEvents> {
 
 	private makeWebSocketConnection(url: string): void {
 		// console.log('About to create WebSocket client')
-		this.socket = new WebSocket.Client(url, null, { tls: this.tlsOpts })
+		this.socket = new WebSocket.Client(url, null, { tls: this.tlsOpts, headers: this.headers })
 
 		this.socket.on('open', () => {
 			// just go ahead and open the connection on connect
