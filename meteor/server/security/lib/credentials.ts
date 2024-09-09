@@ -1,10 +1,11 @@
-import { User } from '../../../lib/collections/Users'
+import { User } from '@sofie-automation/meteor-lib/dist/collections/Users'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { cacheResult, isProtectedString, clearCacheResult } from '../../../lib/lib'
+import { cacheResult, clearCacheResult } from '../../lib/cacheResult'
 import { LIMIT_CACHE_TIME } from './security'
 import { profiler } from '../../api/profiler'
 import { OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevices, Users } from '../../collections'
+import { isProtectedString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 
 export interface Credentials {
 	userId: UserId | null

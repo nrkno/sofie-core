@@ -8,16 +8,10 @@ import { FORCE_CLEAR_CACHES_JOB, IS_INSPECTOR_ENABLED } from '@sofie-automation/
 import { threadedClass, Promisify, ThreadedClassManager } from 'threadedclass'
 import type { JobSpec } from '@sofie-automation/job-worker/dist/main'
 import type { IpcJobWorker } from '@sofie-automation/job-worker/dist/ipc'
-import {
-	createManualPromise,
-	getCurrentTime,
-	getRandomString,
-	ManualPromise,
-	MeteorStartupAsync,
-	Time,
-} from '../../lib/lib'
+import { createManualPromise, getRandomString, ManualPromise, Time } from '../lib/tempLib'
+import { MeteorStartupAsync, getCurrentTime } from '../lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
+import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
 import { triggerFastTrackObserver, FastTrackObservers } from '../publications/fastTrack'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { fetchStudioLight } from '../optimizations'

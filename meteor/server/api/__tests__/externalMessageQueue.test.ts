@@ -4,8 +4,9 @@ import { ExternalMessageQueue, RundownPlaylists, Rundowns } from '../../collecti
 import { IBlueprintExternalMessageQueueType, PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { DefaultEnvironment, setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
-import { getCurrentTime, getRandomId, protectString } from '../../../lib/lib'
-import { MeteorCall } from '../../../lib/api/methods'
+import { getRandomId, protectString } from '../../lib/tempLib'
+import { getCurrentTime } from '../../lib/lib'
+import { MeteorCall } from '../methods'
 
 import '../ExternalMessageQueue'
 import { SupressLogMessages } from '../../../__mocks__/suppressLogging'

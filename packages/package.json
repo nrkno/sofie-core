@@ -8,7 +8,9 @@
 			"openapi",
 			"shared-lib",
 			"job-worker",
-			"documentation"
+			"meteor-lib",
+			"documentation",
+			"webui"
 		]
 	},
 	"scripts": {
@@ -49,7 +51,9 @@
 		"@types/underscore": "^1.11.15",
 		"babel-jest": "^29.7.0",
 		"copyfiles": "^2.4.1",
+		"eslint-plugin-react": "latest",
 		"jest": "^29.7.0",
+		"jest-environment-jsdom": "^29.7.0",
 		"jest-mock-extended": "^3.0.5",
 		"json-schema-to-typescript": "^10.1.5",
 		"lerna": "^6.6.2",

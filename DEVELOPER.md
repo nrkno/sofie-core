@@ -36,6 +36,8 @@ yarn start
 
 > 💡 First startup may take a while, especially on Windows. To speed things up, consider adding `%LOCALAPPDATA%\.meteor` and the directory where you cloned `server-core` to your Windows Defender virus protection exclusions.
 
+The Sofie ui (served by Vite) can be accessed at `http://localhost:3005`. The meteor http server can be access directly at `http://localhost:3000`
+
 ### Slightly more Involved Start
 
 1. Clone the repository (for development, it is recommended to base your work on the latest unstable release branch)
