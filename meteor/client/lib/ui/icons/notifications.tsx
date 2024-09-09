@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React, { JSX } from 'react'
 
 export function CriticalIcon(): JSX.Element {
 	return (
@@ -153,6 +153,23 @@ export function WarningIconSmall(): JSX.Element {
 	)
 }
 
+// const WARNING_WORKING_ON_IT_CONFIG = {
+// 	loop: true,
+// 	autoplay: true,
+// 	animationData: WarningIconSmallWorkingOnItAnimation,
+// 	rendererSettings: {
+// 		preserveAspectRatio: 'xMidYMid meet',
+// 	},
+// }
+
+// export function WarningIconSmallWorkingOnIt(): JSX.Element {
+// 	return <Lottie config={WARNING_WORKING_ON_IT_CONFIG} width="20" height="20" playingState="playing" />
+// }
+
+export function WarningIconSmallWorkingOnIt(): JSX.Element {
+	return <img src="/images/warning-transferring.webp" width="20" height="20" alt="Warning" />
+}
+
 export function InformationIconSmall(): JSX.Element {
 	return (
 		<svg
@@ -180,6 +197,22 @@ export function InformationIconSmall(): JSX.Element {
 	)
 }
 
+export function OKIconSmall(): JSX.Element {
+	return (
+		<svg
+			width="21"
+			height="21"
+			viewBox="0 0 21 21"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			role="presentation"
+			className="ok"
+		>
+			<path d="M15.882 5L8.376 13.427L5.414 10.631L4 12.046L8.452 16.332L17.368 6.338V6.337L15.882 5Z" fill="#04B800" />
+		</svg>
+	)
+}
+
 export function CollapseChevrons(): JSX.Element {
 	return (
 		<svg width="37" height="29" viewBox="0 0 37 29" fill="none" xmlns="http://www.w3.org/2000/svg" role="presentation">
@@ -191,7 +224,15 @@ export function CollapseChevrons(): JSX.Element {
 
 export function HourglassIconSmall(): JSX.Element {
 	return (
-		<svg width="16" height="14" viewBox="0 0 16 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+		<svg
+			width="16"
+			height="14"
+			viewBox="0 0 16 14"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			role="presentation"
+			className="hourglass"
+		>
 			<g clipPath="url(#clip0_5400_19956)">
 				<path
 					d="M7 5.44444L9.75741 2.52055C10.2941 1.94036 9.88203 1 9.09107 1L1.90893 1C1.11797 1 0.705885 1.94036 1.24259 2.52055L9.75741 11.4795C10.2941 12.0596 9.88203 13 9.09107 13C6.28627 13 4.71373 13 1.90893 13C1.11797 13 0.705883 12.0596 1.24259 11.4795L3.88888 8.55556"

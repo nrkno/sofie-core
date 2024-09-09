@@ -43,7 +43,7 @@ export async function handleMosFullStory(context: JobContext, data: MosFullStory
 
 	const partExternalId = parseMosString(data.story.ID)
 
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -68,12 +68,12 @@ export async function handleMosFullStory(context: JobContext, data: MosFullStory
 				throw new Error(`handleMosFullStory: Missing MOS Rundown "${data.rundownExternalId}"`)
 			}
 		},
-		async (context, cache, ingestRundown) => {
+		async (context, ingestModel, ingestRundown) => {
 			const ingestSegment = ingestRundown?.segments?.find((s) =>
 				s.parts.find((p) => p.externalId === partExternalId)
 			)
 			if (!ingestSegment) throw new Error(`IngestSegment for story "${partExternalId}" is missing!`)
-			return updateSegmentFromIngestData(context, cache, ingestSegment, false)
+			return updateSegmentFromIngestData(context, ingestModel, ingestSegment, false)
 		}
 	)
 }
@@ -84,7 +84,7 @@ export async function handleMosFullStory(context: JobContext, data: MosFullStory
 export async function handleMosDeleteStory(context: JobContext, data: MosDeleteStoryProps): Promise<void> {
 	if (data.stories.length === 0) return
 
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -129,7 +129,7 @@ export async function handleMosDeleteStory(context: JobContext, data: MosDeleteS
  * Insert a mos story before the referenced existing story
  */
 export async function handleMosInsertStories(context: JobContext, data: MosInsertStoryProps): Promise<void> {
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -208,7 +208,7 @@ export async function handleMosSwapStories(context: JobContext, data: MosSwapSto
 		throw new Error(`Cannot swap part ${story0Str} with itself in rundown ${data.rundownExternalId}`)
 	}
 
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -246,7 +246,7 @@ export async function handleMosSwapStories(context: JobContext, data: MosSwapSto
  * Move a list of mos stories
  */
 export async function handleMosMoveStories(context: JobContext, data: MosMoveStoryProps): Promise<void> {
-	return runIngestJob(
+	await runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {

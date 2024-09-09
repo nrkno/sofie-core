@@ -1,115 +1,102 @@
-import * as React from 'react'
-import * as _ from 'underscore'
+import React, { useState, useEffect } from 'react'
 import DatePicker from 'react-datepicker'
 import moment from 'moment'
 import 'react-datepicker/dist/react-datepicker.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronRight, faChevronLeft } from '@fortawesome/free-solid-svg-icons'
 import { Time } from '../../lib/lib'
-import { withTranslation, WithTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 
-interface IProps {
-	from: Time
-	to: Time
+export function DatePickerFromTo({
+	from,
+	to,
+	onChange,
+}: {
+	from?: Time
+	to?: Time
 	onChange: (from: Time, to: Time) => void
-}
-interface IState {
-	dateFrom: Date
-	dateTo: Date
-}
-export const DatePickerFromTo = withTranslation()(
-	class DatePickerFromTo extends React.Component<IProps & WithTranslation, IState> {
-		constructor(props: IProps & WithTranslation) {
-			super(props)
+}): JSX.Element {
+	const { t } = useTranslation()
 
-			this.state = {
-				dateFrom: props.from ? new Date(props.from) : moment().subtract(1, 'days').startOf('day').toDate(),
-				dateTo: props.to ? new Date(props.to) : moment().startOf('day').toDate(),
-			}
-		}
-		static getDerivedStateFromProps(props: Readonly<IProps>): IState {
-			return {
-				dateFrom: props.from ? new Date(props.from) : moment().subtract(1, 'days').startOf('day').toDate(),
-				dateTo: props.to ? new Date(props.to) : moment().startOf('day').toDate(),
-			}
-		}
-		triggerOnchange = (state: IState) => {
-			this.props.onChange(state.dateFrom.valueOf(), state.dateTo.valueOf())
-		}
-		updateData = (o: Partial<IState>) => {
-			this.setState(o as any)
+	const [localFrom, setLocalFrom] = useState<Date>(
+		from ? new Date(from) : moment().subtract(1, 'days').startOf('day').toDate()
+	)
+	const [localTo, setLocalTo] = useState<Date>(to ? new Date(to) : moment().startOf('day').toDate())
 
-			const newState: IState = _.extend(_.clone(this.state), o)
-			this.triggerOnchange(newState)
-		}
-		handleChangeFrom = (date: Date | null) => {
-			if (date) {
-				this.updateData({
-					dateFrom: date,
-				})
-			}
-		}
-		handleChangeTo = (date: Date | null) => {
-			if (date) {
-				this.updateData({
-					dateTo: date,
-				})
-			}
-		}
-		onClickPrevious = () => {
-			const from = this.state.dateFrom.valueOf()
-			const to = this.state.dateTo.valueOf()
-			const range = to - from
+	function onClickPrevious() {
+		const from = moment(localFrom).subtract(1, 'days').valueOf()
+		const to = moment(localTo).subtract(1, 'days').valueOf()
 
-			this.updateData({
-				dateFrom: new Date(from - range),
-				dateTo: new Date(to - range),
-			})
-		}
-		onClickNext = () => {
-			const from = this.state.dateFrom.valueOf()
-			const to = this.state.dateTo.valueOf()
-			const range = to - from
-
-			this.updateData({
-				dateFrom: new Date(from + range),
-				dateTo: new Date(to + range),
-			})
-		}
-		render(): JSX.Element {
-			const { t } = this.props
-			return (
-				<div className="datepicker-from-to">
-					<button className="action-btn mod mhm" onClick={this.onClickPrevious}>
-						<FontAwesomeIcon icon={faChevronLeft} />
-					</button>
-					<label className="mod mhs mvn">
-						{t('From')}
-						<div className="picker expco">
-							<DatePicker
-								dateFormat="yyyy-MM-dd"
-								selected={this.state.dateFrom}
-								onChange={this.handleChangeFrom}
-								className="expco-title"
-							/>
-						</div>
-					</label>
-					<label className="mod mhs mvn">
-						{t('Until')}
-						<div className="picker expco">
-							<DatePicker
-								dateFormat="yyyy-MM-dd"
-								selected={this.state.dateTo}
-								onChange={this.handleChangeTo}
-								className="expco-title"
-							/>
-						</div>
-					</label>
-					<button className="action-btn mod mhm" onClick={this.onClickNext}>
-						<FontAwesomeIcon icon={faChevronRight} />
-					</button>
-				</div>
-			)
-		}
+		setLocalFrom(new Date(from))
+		setLocalTo(new Date(to))
 	}
-)
+	function onClickNext() {
+		const from = moment(localFrom).add(1, 'days').valueOf()
+		const to = moment(localTo).add(1, 'days').valueOf()
+
+		setLocalFrom(new Date(from))
+		setLocalTo(new Date(to))
+	}
+	function handleChangeFrom(date: Date | null) {
+		if (!date) return
+		if (date.valueOf() >= localTo.valueOf()) {
+			setLocalTo(moment(date).add(1, 'days').startOf('day').toDate())
+		}
+		setLocalFrom(date)
+	}
+	function handleChangeTo(date: Date | null) {
+		if (!date) return
+		if (date.valueOf() <= localFrom.valueOf()) {
+			setLocalFrom(moment(date).subtract(1, 'days').startOf('day').toDate())
+		}
+		setLocalTo(date)
+	}
+
+	useEffect(() => {
+		onChange(localFrom.valueOf(), localTo.valueOf())
+	}, [localFrom, localTo])
+
+	useEffect(() => {
+		if (from) {
+			setLocalFrom(from ? new Date(from) : moment().subtract(1, 'days').startOf('day').toDate())
+		}
+		if (to) {
+			setLocalTo(to ? new Date(to) : moment().startOf('day').toDate())
+		}
+	}, [from, to])
+
+	return (
+		<div className="datepicker-from-to">
+			<button className="action-btn mod mhm" onClick={onClickPrevious}>
+				<FontAwesomeIcon icon={faChevronLeft} />
+			</button>
+			<label className="mod mhs mvn">
+				{t('From')}
+				<div className="picker expco">
+					<DatePicker
+						dateFormat="yyyy-MM-dd HH:mm"
+						showTimeInput
+						selected={localFrom}
+						onChange={handleChangeFrom}
+						className="expco-title"
+					/>
+				</div>
+			</label>
+			<label className="mod mhs mvn">
+				{t('Until')}
+				<div className="picker expco">
+					<DatePicker
+						dateFormat="yyyy-MM-dd HH:mm"
+						showTimeInput
+						selected={localTo}
+						onChange={handleChangeTo}
+						className="expco-title"
+					/>
+				</div>
+			</label>
+			<button className="action-btn mod mhm" onClick={onClickNext}>
+				<FontAwesomeIcon icon={faChevronRight} />
+			</button>
+		</div>
+	)
+}

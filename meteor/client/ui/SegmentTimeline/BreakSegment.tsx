@@ -1,7 +1,6 @@
 import React from 'react'
 import { WithTranslation, withTranslation } from 'react-i18next'
 import Moment from 'react-moment'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 import { WithTiming, withTiming } from '../RundownView/RundownTiming/withTiming'
@@ -10,7 +9,7 @@ interface IProps {
 	breakTime: number | undefined
 }
 
-class BreakSegmentInner extends MeteorReactComponent<Translated<WithTiming<IProps>>> {
+class BreakSegmentInner extends React.Component<Translated<WithTiming<IProps>>> {
 	constructor(props: Translated<WithTiming<IProps>>) {
 		super(props)
 	}

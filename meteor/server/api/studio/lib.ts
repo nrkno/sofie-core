@@ -1,14 +1,15 @@
 import { RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getCurrentTime, protectString } from '../../../lib/lib'
 import { ExpectedPackages, PackageInfos, PeripheralDevices, RundownPlaylists } from '../../collections'
+import { logger } from '../../logging'
 
 export async function getActiveRundownPlaylistsInStudioFromDb(
 	studioId: StudioId,
 	excludeRundownPlaylistId?: RundownPlaylistId
-): Promise<RundownPlaylist[]> {
+): Promise<DBRundownPlaylist[]> {
 	return RundownPlaylists.findFetchAsync({
 		studioId: studioId,
 		activationId: { $exists: true },
@@ -61,6 +62,7 @@ export async function removePackageInfos(ids: PackageInfoDB['_id'][], mode: 'def
 		// Mark for later removal
 		const removeDelay = 3600 * 24 // Arbitrary value of 24 hours
 
+		logger.info(`PackageInfo cleanup, mark for later removal: ${JSON.stringify(ids)}`)
 		await PackageInfos.updateAsync(
 			{
 				_id: { $in: ids },
@@ -69,7 +71,8 @@ export async function removePackageInfos(ids: PackageInfoDB['_id'][], mode: 'def
 				$set: {
 					removeTime: getCurrentTime() + removeDelay,
 				},
-			}
+			},
+			{ multi: true }
 		)
 	} else {
 		// Remove now

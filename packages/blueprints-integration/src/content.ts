@@ -1,3 +1,4 @@
+import { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { Time } from './common'
 import { TSR, TimelineObjectCoreExt } from './timeline'
 import { SourceLayerType } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
@@ -9,6 +10,10 @@ export type WithTimeline<T extends BaseContent> = T & {
 export interface BaseContent {
 	editable?: BaseEditableParameters
 
+	/** Is this content looping, or will it only play once. This property is used to show a "looping" icon on the Piece. Default is `false` */
+	loop?: boolean
+
+	/** Length of the source content (in milliseconds). This property is used to show "freeze-frame" icons and countdowns. Default is `undefined`, meaning the content has no specific duration */
 	sourceDuration?: number
 	ignoreMediaObjectStatus?: boolean
 	ignoreBlackFrames?: boolean
@@ -43,7 +48,6 @@ export type UnknownContent = BaseContent
 export interface VTContent extends BaseContent {
 	fileName: string
 	path: string
-	loop?: boolean
 	/** Frame that media manager should grab for thumbnail preview */
 	previewFrame?: number
 	mediaFlowIds?: string[]
@@ -115,18 +119,37 @@ export interface NoraPayload {
 		name: string
 	}
 	metadata?: {
-		templateName: string | undefined
+		templateName: string
 		templateVariant: string | undefined
 	}
 	changed?: Time
 	step?: NoraPayloadStepData
 }
 
+export interface NoraContentSteps {
+	current: number
+	count: number
+}
+
 export interface NoraContent extends BaseContent {
-	payload: NoraPayload
+	/** URL of the preview renderer */
 	previewRenderer: string
+	/** Payload for the preview renderer to display the graphic */
+	previewPayload: JSONBlob<NoraPayload>
 	/** Dimensions of the rendered hover-preview viewport in pixels. Defaults to 1920x1080. */
 	previewRendererDimensions?: { width: number; height: number }
+
+	/** Basic display info about the template */
+	templateInfo?: {
+		name: string
+		variant?: string
+	}
+
+	/** Time the graphic was last changed in the NRCS (if known) */
+	changed?: Time
+
+	/** If set, the graphic supports steps */
+	step?: NoraContentSteps
 }
 
 export interface SplitsContentBoxProperties {
@@ -155,7 +178,6 @@ export interface SplitsContent extends BaseContent {
 export interface AudioContent extends BaseContent {
 	fileName: string
 	path: string
-	loop?: boolean
 }
 
 // export type LowerThirdContent = GraphicsContent

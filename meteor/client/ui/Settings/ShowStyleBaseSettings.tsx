@@ -1,11 +1,10 @@
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { OutputLayers, DBShowStyleBase, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import RundownLayoutEditor from './RundownLayoutEditor'
-import { Studio, MappingsExt } from '../../../lib/collections/Studios'
+import { DBStudio, MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { BlueprintManifestType, IShowStyleConfigPreset } from '@sofie-automation/blueprints-integration'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredActionsEditor'
@@ -41,7 +40,7 @@ interface IState {
 interface ITrackedProps {
 	showStyleBase?: DBShowStyleBase
 	showStyleVariants: Array<DBShowStyleVariant>
-	compatibleStudios: Array<Studio>
+	compatibleStudios: Array<DBStudio>
 	blueprintConfigSchema: JSONSchema | undefined
 	blueprintConfigPreset: IShowStyleConfigPreset | undefined
 	sourceLayers: SourceLayers
@@ -100,7 +99,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		layerMappings: mappings,
 	}
 })(
-	class ShowStyleBaseSettings extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+	class ShowStyleBaseSettings extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		constructor(props: Translated<IProps & ITrackedProps>) {
 			super(props)
 			this.state = {
@@ -109,8 +108,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			}
 		}
 
-		onUploadFile(e) {
-			const file = e.target.files[0]
+		onUploadFile(e: React.ChangeEvent<HTMLInputElement>) {
+			const file = e.target.files?.[0]
 			if (!file) {
 				return
 			}

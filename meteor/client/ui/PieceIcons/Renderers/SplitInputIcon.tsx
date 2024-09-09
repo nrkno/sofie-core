@@ -1,15 +1,18 @@
 import * as React from 'react'
-import { PieceGeneric } from '../../../../lib/collections/Pieces'
+import { PieceGeneric } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { SplitsContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { RundownUtils } from '../../../lib/rundown'
 import classNames from 'classnames'
+import { ReadonlyDeep } from 'type-fest'
+
+type SplitIconPieceType = ReadonlyDeep<Omit<PieceGeneric, 'timelineObjectsString'>>
 
 export default class SplitInputIcon extends React.Component<{
-	abbreviation?: string
-	piece?: Omit<PieceGeneric, 'timelineObjectsString'>
+	abbreviation: string | undefined
+	piece: SplitIconPieceType | undefined
 	hideLabel?: boolean
 }> {
-	private getCameraLabel(piece: Omit<PieceGeneric, 'timelineObjectsString'> | undefined) {
+	private getCameraLabel(piece: SplitIconPieceType | undefined) {
 		if (piece && piece.content) {
 			const c = piece.content as SplitsContent
 			const camera = c.boxSourceConfiguration.find((i) => i.type === SourceLayerType.CAMERA)
@@ -29,7 +32,7 @@ export default class SplitInputIcon extends React.Component<{
 		}
 	}
 
-	private getLeftSourceType(piece: Omit<PieceGeneric, 'timelineObjectsString'> | undefined): string {
+	private getLeftSourceType(piece: SplitIconPieceType | undefined): string {
 		if (piece && piece.content) {
 			const c = piece.content as SplitsContent
 			const left = (c.boxSourceConfiguration && c.boxSourceConfiguration[0])?.type || SourceLayerType.CAMERA
@@ -38,7 +41,7 @@ export default class SplitInputIcon extends React.Component<{
 		return 'camera'
 	}
 
-	private getRightSourceType(piece: Omit<PieceGeneric, 'timelineObjectsString'> | undefined): string {
+	private getRightSourceType(piece: SplitIconPieceType | undefined): string {
 		if (piece && piece.content) {
 			const c = piece.content as SplitsContent
 			const right = (c.boxSourceConfiguration && c.boxSourceConfiguration[1])?.type || SourceLayerType.REMOTE

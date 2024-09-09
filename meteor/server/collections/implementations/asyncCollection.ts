@@ -1,4 +1,4 @@
-import { MongoModifier, MongoQuery } from '../../../lib/typings/meteor'
+import { MongoModifier, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Meteor } from 'meteor/meteor'
 import {
@@ -74,7 +74,7 @@ export class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedStr
 	}
 
 	async updateAsync(
-		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		selector: MongoQuery<DBInterface> | DBInterface['_id'] | { _id: DBInterface['_id'] },
 		modifier: MongoModifier<DBInterface>,
 		options?: UpdateOptions
 	): Promise<number> {
@@ -84,7 +84,7 @@ export class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedStr
 	}
 
 	async upsertAsync(
-		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		selector: MongoQuery<DBInterface> | DBInterface['_id'] | { _id: DBInterface['_id'] },
 		modifier: MongoModifier<DBInterface>,
 		options?: UpsertOptions
 	): Promise<{ numberAffected?: number; insertedId?: DBInterface['_id'] }> {

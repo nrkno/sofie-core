@@ -1,6 +1,6 @@
-import { PieceLifespan, SourceLayerType, VTContent } from '@sofie-automation/blueprints-integration'
+import { PieceLifespan, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import React, { useMemo } from 'react'
-import { PartExtended, PieceExtended } from '../../../lib/Rundown'
+import { PartExtended, PieceExtended } from '../../lib/RundownResolver'
 import { findPieceExtendedToShowFromOrderedResolvedInstances } from '../PieceIcons/utils'
 import { LinePartMainPiece } from './LinePartMainPiece/LinePartMainPiece'
 import { OnAirLine } from './OnAirLine'
@@ -13,6 +13,7 @@ import { PartAutoNextMarker } from './PartAutoNextMarker'
 import { PieceUi } from '../SegmentContainer/withResolvedSegment'
 import StudioContext from '../RundownView/StudioContext'
 import { InvalidPartCover } from '../SegmentTimeline/Parts/InvalidPartCover'
+import { getPartInstanceTimingId } from '../../lib/rundownTiming'
 
 const TIMELINE_DEFAULT_BASE = 30 * 1000
 
@@ -34,14 +35,9 @@ const supportedSourceLayerTypes = new Set(
 	)
 )
 
-function findMainPiece(pieces: PieceExtended[], original?: boolean) {
+function findMainPiece(pieces: PieceExtended[]) {
 	return findPieceExtendedToShowFromOrderedResolvedInstances(
-		pieces.filter(
-			(piece) =>
-				piece.outputLayer?.isPGM &&
-				piece.sourceLayer?.onPresenterScreen &&
-				(!original || !piece.instance.dynamicallyInserted)
-		),
+		pieces.filter((piece) => piece.outputLayer?.isPGM && piece.sourceLayer?.onPresenterScreen),
 		supportedSourceLayerTypes
 	)
 }
@@ -54,17 +50,20 @@ function findTransitionPiece(pieces: PieceExtended[]) {
 	})
 }
 
-function findTimedGraphics(pieces: PieceExtended[]) {
-	return pieces.slice().filter((piece) => {
-		if (
-			piece.sourceLayer?.type === SourceLayerType.LOWER_THIRD &&
-			!piece.sourceLayer?.isHidden &&
-			piece.instance.piece.lifespan === PieceLifespan.WithinPart &&
-			piece.instance.piece.enable.duration
-		) {
-			return true
-		}
-	})
+function findTimelineGraphics(pieces: PieceExtended[]) {
+	return pieces
+		.slice()
+		.filter((piece) => {
+			if (
+				piece.sourceLayer?.type === SourceLayerType.LOWER_THIRD &&
+				!piece.sourceLayer?.isHidden &&
+				((piece.instance.piece.lifespan === PieceLifespan.WithinPart && piece.instance.piece.enable.duration) ||
+					!piece.sourceLayer?.onListViewColumn)
+			) {
+				return true
+			}
+		})
+		.sort((a, b) => (a.sourceLayer?._rank ?? 0) - (b.sourceLayer?._rank ?? 0))
 }
 
 export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
@@ -79,14 +78,13 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 	// const [highlight] = useState(false)
 
 	const mainPiece = useMemo(() => findMainPiece(part.pieces), [part.pieces])
-	// const mainDisplayPiece = useMemo(() => findMainPiece(part.pieces), [part.pieces])
 	const transitionPiece = useMemo(() => findTransitionPiece(part.pieces), [part.pieces])
-	const timedGraphics = useMemo(() => findTimedGraphics(part.pieces), [part.pieces])
+	const timedGraphics = useMemo(() => findTimelineGraphics(part.pieces), [part.pieces])
 
 	const timings = part.instance.partPlayoutTimings
 	const toPartDelay = (timings?.toPartDelay ?? 0) - ((timings?.fromPartRemaining ?? 0) - (timings?.toPartDelay ?? 0))
 	const renderedPartDuration = part.renderedDuration + toPartDelay
-	const mainPieceSourceDuration = mainPiece?.instance.piece.content.sourceDuration
+	const mainPieceSourceDuration = mainPiece?.instance.piece.content?.sourceDuration
 	const mainPieceInPoint = mainPiece?.renderedInPoint
 	const maxDuration = Math.max((mainPieceInPoint ?? 0) + (mainPieceSourceDuration ?? 0), renderedPartDuration)
 	const timelineBase = Math.max(TIMELINE_DEFAULT_BASE, maxDuration)
@@ -96,8 +94,8 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 
 	const isInvalid = !!part.instance.part.invalid
 
-	const loop = !(mainPiece?.instance.piece.content as VTContent)?.loop
-	const endsInFreeze = !part.instance.part.autoNext && !loop && !!mainPiece?.instance.piece.content.sourceDuration
+	const loop = mainPiece?.instance.piece.content?.loop
+	const endsInFreeze = !part.instance.part.autoNext && !loop && !!mainPiece?.instance.piece.content?.sourceDuration
 	const mainSourceEnd = mainPiece?.instance.piece.content.sourceDuration
 		? (mainPieceInPoint ?? 0) + mainPiece?.instance.piece.content.sourceDuration
 		: null
@@ -141,7 +139,7 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 			{transitionPiece && <LinePartTransitionPiece piece={transitionPiece} />}
 			{!willAutoNextOut && !isInvalid && (
 				<OvertimeShadow
-					partId={part.instance.part._id}
+					partInstanceTimingId={getPartInstanceTimingId(part.instance)}
 					timelineBase={timelineBase}
 					maxDuration={maxDuration}
 					mainSourceEnd={mainSourceEnd ?? renderedPartDuration}

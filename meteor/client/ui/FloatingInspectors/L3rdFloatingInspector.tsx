@@ -1,17 +1,18 @@
-import React, { useRef } from 'react'
+import React, { useMemo, useRef } from 'react'
 import * as _ from 'underscore'
 
-import { GraphicsContent, NoraContent } from '@sofie-automation/blueprints-integration'
+import { GraphicsContent, JSONBlobParse, NoraContent } from '@sofie-automation/blueprints-integration'
 
 import { NoraFloatingInspector } from './NoraFloatingInspector'
 import { FloatingInspector } from '../FloatingInspector'
 import { Time } from '../../../lib/lib'
-import { PieceInstancePiece } from '../../../lib/collections/PieceInstances'
+import { PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { FloatingInspectorTimeInformationRow } from './FloatingInspectorHelpers/FloatingInspectorTimeInformationRow'
 import { IFloatingInspectorPosition, useInspectorPosition } from './IFloatingInspectorPosition'
+import { ReadonlyDeep } from 'type-fest'
 
 interface IProps {
-	piece: Omit<PieceInstancePiece, 'timelineObjectsString'>
+	piece: ReadonlyDeep<Omit<PieceInstancePiece, 'timelineObjectsString'>>
 	pieceRenderedDuration: number | null
 	pieceRenderedIn: number | null
 	showMiniInspector: boolean
@@ -33,13 +34,15 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 	pieceRenderedDuration,
 	typeClass,
 }) => {
-	const noraContent = (content as NoraContent)?.payload?.content ? (content as NoraContent | undefined) : undefined
+	const noraContent = (content as NoraContent)?.previewPayload ? (content as NoraContent | undefined) : undefined
 
-	let properties: Array<KeyValue> = []
-	if (noraContent && noraContent.payload && noraContent.payload.content) {
-		properties = _.compact(
+	const properties: Array<KeyValue> = useMemo(() => {
+		if (!noraContent?.previewPayload) return []
+		const payload = JSONBlobParse(noraContent.previewPayload)
+		if (!payload?.content) return []
+		return _.compact(
 			_.map(
-				noraContent.payload.content,
+				payload.content,
 				(
 					value,
 					key: string
@@ -66,22 +69,22 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 				}
 			)
 		) as Array<KeyValue>
-	}
+	}, [noraContent?.previewPayload])
 
-	const changed: Time | undefined = noraContent?.payload?.changed ?? undefined
+	const changed: Time | undefined = noraContent?.changed ?? undefined
 
 	const graphicContent = (content as GraphicsContent)?.fileName ? (content as GraphicsContent | undefined) : undefined
 
-	const templateName = noraContent?.payload?.metadata?.templateName ?? piece.name
+	const templateName = noraContent?.templateInfo?.name ?? piece.name
 	const templateVariant =
-		noraContent?.payload?.metadata?.templateVariant ??
+		noraContent?.templateInfo?.variant ??
 		(piece.name !== graphicContent?.fileName ? graphicContent?.fileName : undefined)
 
 	const ref = useRef<HTMLDivElement>(null)
 
 	const { style: floatingInspectorStyle } = useInspectorPosition(position, ref, showMiniInspector)
 
-	return noraContent && noraContent.payload && noraContent.previewRenderer ? (
+	return noraContent && noraContent.previewPayload && noraContent.previewRenderer ? (
 		showMiniInspector ? (
 			<NoraFloatingInspector ref={ref} noraContent={noraContent} style={floatingInspectorStyle} />
 		) : null

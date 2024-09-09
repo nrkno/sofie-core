@@ -1,7 +1,7 @@
 /* tslint:disable:no-use-before-declare */
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { StudioRouteBehavior } from '../../../lib/collections/Studios'
+import { StudioRouteBehavior } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { PackageInfo } from '../../coreSystem'
 import { StudioContentAccess } from '../../security/studio'
 import { shouldUpdateStudioBaselineInner } from '@sofie-automation/corelib/dist/studio/baseline'
@@ -29,7 +29,7 @@ export namespace ServerPlayoutAPI {
 			])
 			if (blueprint === undefined) return 'missingBlueprint'
 
-			return shouldUpdateStudioBaselineInner(PackageInfo.version, studio, timeline, blueprint)
+			return shouldUpdateStudioBaselineInner(PackageInfo.version, studio, timeline ?? null, blueprint)
 		} else {
 			return false
 		}
@@ -50,7 +50,7 @@ export namespace ServerPlayoutAPI {
 		if (routeSet.behavior === StudioRouteBehavior.ACTIVATE_ONLY && state === false)
 			throw new Meteor.Error(400, `RouteSet "${routeSetId}" is ACTIVATE_ONLY`)
 
-		const modification = {}
+		const modification: Record<string, any> = {}
 		modification[`routeSets.${routeSetId}.active`] = state
 
 		if (studio.routeSets[routeSetId].exclusivityGroup && state === true) {

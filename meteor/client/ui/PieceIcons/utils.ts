@@ -2,13 +2,14 @@ import { SourceLayerType, ISourceLayer } from '@sofie-automation/blueprints-inte
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { IPropsHeader } from './PieceIcon'
-import { PieceExtended } from '../../../lib/Rundown'
+import { PieceExtended } from '../../lib/RundownResolver'
 import { UIShowStyleBases } from '../Collections'
 import { PieceInstances } from '../../collections'
+import { ReadonlyDeep } from 'type-fest'
 
 export interface IFoundPieceInstance {
 	sourceLayer: ISourceLayer | undefined
-	pieceInstance: PieceInstance | undefined
+	pieceInstance: ReadonlyDeep<PieceInstance> | undefined
 }
 
 export function findPieceInstanceToShow(
@@ -31,12 +32,12 @@ export function findPieceInstanceToShow(
 }
 
 export function findPieceInstanceToShowFromInstances(
-	pieceInstances: PieceInstance[],
+	pieceInstances: ReadonlyDeep<PieceInstance[]>,
 	sourceLayers: SourceLayers,
 	selectedLayerTypes: Set<SourceLayerType>
 ): IFoundPieceInstance {
 	let foundSourceLayer: ISourceLayer | undefined
-	let foundPiece: PieceInstance | undefined
+	let foundPiece: ReadonlyDeep<PieceInstance> | undefined
 
 	for (const pieceInstance of pieceInstances) {
 		const layer = sourceLayers[pieceInstance.piece.sourceLayerId]

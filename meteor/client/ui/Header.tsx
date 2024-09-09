@@ -6,8 +6,8 @@ import { NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/n
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { SupportPopUpToggle, SupportPopUp } from './SupportPopUp'
+// @ts-expect-error No types available
 import * as VelocityReact from 'velocity-react'
-import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { Settings } from '../../lib/Settings'
 import { CoreSystem } from '../collections'
@@ -28,7 +28,7 @@ interface IStateHeader {
 	isSupportPanelOpen: boolean
 }
 
-class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedPropsHeader>, IStateHeader> {
+class Header extends React.Component<Translated<IPropsHeader & ITrackedPropsHeader>, IStateHeader> {
 	constructor(props: Translated<IPropsHeader & ITrackedPropsHeader>) {
 		super(props)
 
@@ -123,18 +123,21 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 							isOpen={this.state.isNotificationCenterOpen === NoticeLevel.CRITICAL}
 							filter={NoticeLevel.CRITICAL}
 							className="type-critical"
+							title={t('Critical Problems')}
 						/>
 						<NotificationCenterPanelToggle
 							onClick={(e) => this.onToggleNotifications(e, NoticeLevel.WARNING)}
 							isOpen={this.state.isNotificationCenterOpen === NoticeLevel.WARNING}
 							filter={NoticeLevel.WARNING}
 							className="type-warning"
+							title={t('Warnings')}
 						/>
 						<NotificationCenterPanelToggle
 							onClick={(e) => this.onToggleNotifications(e, NoticeLevel.NOTIFICATION | NoticeLevel.TIP)}
 							isOpen={this.state.isNotificationCenterOpen === (NoticeLevel.NOTIFICATION | NoticeLevel.TIP)}
 							filter={NoticeLevel.NOTIFICATION | NoticeLevel.TIP}
 							className="type-notification"
+							title={t('Notes')}
 						/>
 						<SupportPopUpToggle onClick={this.onToggleSupportPanel} isOpen={this.state.isSupportPanelOpen} />
 					</div>

@@ -59,7 +59,7 @@ export function max<T>(vals: T[], iterator: _.ListIterator<T, any>): T | undefin
 	}
 }
 
-export function min<T>(vals: T[], iterator: _.ListIterator<T, any>): T | undefined {
+export function min<T>(vals: T[] | readonly T[], iterator: _.ListIterator<T, any>): T | undefined {
 	if (vals.length <= 1) {
 		return vals[0]
 	} else {
@@ -165,7 +165,7 @@ export function normalizeArrayFunc<T>(array: Array<T>, getKey: (o: T) => string)
  * normalizeArray([{ a: '1', b: 2}], 'a')
  * ```
  */
-export function normalizeArray<T>(array: Array<T>, indexKey: keyof T): { [indexKey: string]: T } {
+export function normalizeArray<T>(array: Array<T> | readonly T[], indexKey: keyof T): { [indexKey: string]: T } {
 	const normalizedObject: any = {}
 	for (const obj of array) {
 		normalizedObject[obj[indexKey]] = obj
@@ -196,7 +196,10 @@ export function normalizeArrayToMap<T, K extends keyof T>(array: readonly T[], i
  * normalizeArrayToMapFunc([{ a: 1, b: 2}], (o) => o.a + o.b)
  * ```
  */
-export function normalizeArrayToMapFunc<T, K>(array: Array<T>, getKey: (o: T) => K | undefined): Map<K, T> {
+export function normalizeArrayToMapFunc<T, K>(
+	array: Array<T> | readonly T[],
+	getKey: (o: T) => K | undefined
+): Map<K, T> {
 	const normalizedObject = new Map<K, T>()
 	for (const item of array) {
 		const key = getKey(item)
@@ -213,7 +216,10 @@ export function normalizeArrayToMapFunc<T, K>(array: Array<T>, getKey: (o: T) =>
  * @param array Array of items to group
  * @param indexKey Name of the property to use as the group-key
  */
-export function groupByToMap<T, K extends keyof T>(array: Array<T> | IterableIterator<T>, indexKey: K): Map<T[K], T[]> {
+export function groupByToMap<T, K extends keyof T>(
+	array: Array<T> | readonly T[] | IterableIterator<T>,
+	indexKey: K
+): Map<T[K], T[]> {
 	const groupedItems = new Map<T[K], T[]>()
 	for (const item of array) {
 		const key = item[indexKey]
@@ -234,7 +240,7 @@ export function groupByToMap<T, K extends keyof T>(array: Array<T> | IterableIte
  * @param getKey Function to get the group-key of the object
  */
 export function groupByToMapFunc<T, K>(
-	array: Array<T> | IterableIterator<T>,
+	array: Array<T> | readonly T[] | IterableIterator<T>,
 	getKey: (o: T) => K | undefined
 ): Map<K, T[]> {
 	const groupedItems = new Map<K, T[]>()
@@ -293,6 +299,11 @@ export function objectPathSet(obj: any, path: string, value: any): any {
 	objectPath.set(obj, path, value)
 	return obj
 }
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function objectPathDelete(obj: any, path: string): any {
+	objectPath.del(obj, path)
+	return obj
+}
 
 /**
  * Returns a rank number, to be used to insert new objects in a ranked list
@@ -302,8 +313,8 @@ export function objectPathSet(obj: any, path: string, value: any): any {
  * @param count    If inserting multiple elements, this is total count of inserted elements
  */
 export function getRank<T extends { _rank: number }>(
-	before: T | null | undefined,
-	after: T | null | undefined,
+	before: T | number | null | undefined,
+	after: T | number | null | undefined,
 	i = 0,
 	count = 1
 ): number {
@@ -312,18 +323,18 @@ export function getRank<T extends { _rank: number }>(
 
 	if (after) {
 		if (before) {
-			newRankMin = before._rank
-			newRankMax = after._rank
+			newRankMin = objectOrRank(before)
+			newRankMax = objectOrRank(after)
 		} else {
 			// First
-			newRankMin = after._rank - 1
-			newRankMax = after._rank
+			newRankMin = objectOrRank(after) - 1
+			newRankMax = objectOrRank(after)
 		}
 	} else {
 		if (before) {
 			// Last
-			newRankMin = before._rank
-			newRankMax = before._rank + 1
+			newRankMin = objectOrRank(before)
+			newRankMax = objectOrRank(before) + 1
 		} else {
 			// Empty list
 			newRankMin = 0
@@ -331,6 +342,13 @@ export function getRank<T extends { _rank: number }>(
 		}
 	}
 	return newRankMin + ((i + 1) / (count + 1)) * (newRankMax - newRankMin)
+}
+function objectOrRank<T extends { _rank: number }>(obj: T | number): number {
+	if (typeof obj === 'number') {
+		return obj
+	} else {
+		return obj._rank
+	}
 }
 
 export interface ManualPromise<T> extends Promise<T> {

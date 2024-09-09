@@ -1,85 +1,70 @@
-import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
-import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
-import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BlueprintId, ExpectedPackageId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { SegmentNote, PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
-import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { SegmentUserContext } from '../blueprints/context'
+import { RawPartNote, SegmentUserContext } from '../blueprints/context'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { postProcessAdLibActions, postProcessAdLibPieces, postProcessPieces } from '../blueprints/postProcess'
-import { saveIntoCache, logChanges } from '../cache/lib'
 import { logger } from '../logging'
-import { CacheForIngest } from './cache'
+import { IngestModel, IngestModelReadonly, IngestReplaceSegmentType } from './model/IngestModel'
 import { LocalIngestSegment, LocalIngestRundown } from './ingestCache'
-import { getSegmentId, getPartId, getRundown, canSegmentBeUpdated } from './lib'
-import { JobContext } from '../jobs'
+import { getSegmentId, canSegmentBeUpdated } from './lib'
+import { JobContext, ProcessedShowStyleCompound } from '../jobs'
 import { CommitIngestData } from './lock'
-import { BlueprintResultSegment, NoteSeverity } from '@sofie-automation/blueprints-integration'
-import { calculatePartExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
+import {
+	BlueprintResultPart,
+	BlueprintResultSegment,
+	IngestSegment,
+	NoteSeverity,
+} from '@sofie-automation/blueprints-integration'
 import { wrapTranslatableMessageFromBlueprints } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { ReadOnlyCache } from '../cache/CacheBase'
-
-export interface UpdateSegmentsResult {
-	segments: DBSegment[]
-	parts: DBPart[]
-	pieces: Piece[]
-	adlibPieces: AdLibPiece[]
-	adlibActions: AdLibAction[]
-}
+import { updateExpectedPackagesForPartModel } from './expectedPackages'
+import { IngestReplacePartType, IngestSegmentModel } from './model/IngestSegmentModel'
+import { ReadonlyDeep } from 'type-fest'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 
 async function getWatchedPackagesHelper(
 	context: JobContext,
 	allRundownWatchedPackages0: WatchedPackagesHelper | null,
-	cache: ReadOnlyCache<CacheForIngest>,
+	ingestModel: IngestModelReadonly,
 	ingestSegments: LocalIngestSegment[]
 ): Promise<WatchedPackagesHelper> {
 	if (allRundownWatchedPackages0) {
 		return allRundownWatchedPackages0
 	} else {
-		const segmentIds = new Set(ingestSegments.map((s) => getSegmentId(cache.RundownId, s.externalId)))
-		return WatchedPackagesHelper.createForIngest(
-			context,
-			cache,
-			(p) => 'segmentId' in p && segmentIds.has(p.segmentId)
-		)
+		const segmentExternalIds = ingestSegments.map((s) => s.externalId)
+		return WatchedPackagesHelper.createForIngestSegments(context, ingestModel, segmentExternalIds)
 	}
 }
 
 /**
  * Generate and return the content for an array segments
  * @param context Context for the running job
- * @param cache The ingest cache of the rundown
+ * @param ingestModel The ingest model of the rundown
  * @param ingestSegments The segments to regenerate
  * @param allRundownWatchedPackages0 Optional WatchedPackagesHelper for all Packages in the Rundown. If not provided, packages will be loaded from the database
  * @returns Newly generated documents
  */
 export async function calculateSegmentsFromIngestData(
 	context: JobContext,
-	cache: ReadOnlyCache<CacheForIngest>,
+	ingestModel: IngestModel,
 	ingestSegments: LocalIngestSegment[],
 	allRundownWatchedPackages0: WatchedPackagesHelper | null
-): Promise<UpdateSegmentsResult> {
+): Promise<SegmentId[]> {
 	const span = context.startSpan('ingest.rundownInput.calculateSegmentsFromIngestData')
 
-	const rundown = getRundown(cache)
+	const rundown = ingestModel.getRundown()
 
-	const res: Omit<UpdateSegmentsResult, 'showStyle' | 'blueprint'> = {
-		segments: [],
-		parts: [],
-		pieces: [],
-		adlibPieces: [],
-		adlibActions: [],
-	}
+	let changedSegmentIds: SegmentId[] = []
 
 	if (ingestSegments.length > 0) {
 		const pShowStyle = context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
 		const pAllRundownWatchedPackages = getWatchedPackagesHelper(
 			context,
 			allRundownWatchedPackages0,
-			cache,
+			ingestModel,
 			ingestSegments
 		)
 
@@ -88,177 +73,336 @@ export async function calculateSegmentsFromIngestData(
 
 		const allRundownWatchedPackages = await pAllRundownWatchedPackages
 
-		for (const ingestSegment of ingestSegments) {
-			const segmentId = getSegmentId(cache.RundownId, ingestSegment.externalId)
-
-			// Ensure the parts are sorted by rank
-			ingestSegment.parts.sort((a, b) => a.rank - b.rank)
-
-			// Filter down to the packages for this segment
-			const watchedPackages = allRundownWatchedPackages.filter(
-				context,
-				(p) => 'segmentId' in p && p.segmentId === segmentId
-			)
-
-			const context2 = new SegmentUserContext(
-				{
-					name: `getSegment=${ingestSegment.name}`,
-					// Note: this intentionally does not include the segmentId, as parts may be moved between segemnts later on
-					// This isn't much entropy, blueprints may want to add more for each Part they generate
-					identifier: `rundownId=${rundown._id}`,
-				},
-				context,
-				showStyle,
-				rundown,
-				watchedPackages
-			)
-			let blueprintSegment0: BlueprintResultSegment | null = null
-			try {
-				blueprintSegment0 = await blueprint.blueprint.getSegment(context2, ingestSegment)
-			} catch (err) {
-				logger.error(`Error in showStyleBlueprint.getSegment: ${stringifyError(err)}`)
-				blueprintSegment0 = null
-			}
-
-			if (!blueprintSegment0) {
-				// Something went wrong when generating the segment
-
-				const newSegment = literal<DBSegment>({
-					_id: segmentId,
-					rundownId: rundown._id,
-					externalId: ingestSegment.externalId,
-					externalModified: ingestSegment.modified,
-					_rank: ingestSegment.rank,
-					notes: [
-						{
-							type: NoteSeverity.ERROR,
-							message: wrapTranslatableMessageFromBlueprints(
-								{
-									key: 'Internal Error generating segment',
-								},
-								[blueprint.blueprintId]
-							),
-							origin: {
-								name: '', // TODO
-							},
-						},
-					],
-					name: ingestSegment.name,
-				})
-				res.segments.push(newSegment)
-
-				continue // Don't generate any content for the faulty segment
-			}
-			const blueprintSegment: BlueprintResultSegment = blueprintSegment0
-
-			// Ensure all parts have a valid externalId set on them
-			const knownPartExternalIds = blueprintSegment.parts.map((p) => p.part.externalId)
-
-			const segmentNotes: SegmentNote[] = []
-			for (const note of context2.notes) {
-				if (!note.partExternalId || knownPartExternalIds.indexOf(note.partExternalId) === -1) {
-					segmentNotes.push(
-						literal<SegmentNote>({
-							type: note.type,
-							message: wrapTranslatableMessageFromBlueprints(note.message, [blueprint.blueprintId]),
-							origin: {
-								name: '', // TODO
-							},
-						})
-					)
-				}
-			}
-
-			const newSegment = literal<DBSegment>({
-				...blueprintSegment.segment,
-				_id: segmentId,
-				rundownId: rundown._id,
-				externalId: ingestSegment.externalId,
-				externalModified: ingestSegment.modified,
-				_rank: ingestSegment.rank,
-				notes: segmentNotes,
-			})
-			res.segments.push(newSegment)
-
-			blueprintSegment.parts.forEach((blueprintPart, i) => {
-				const partId = getPartId(rundown._id, blueprintPart.part.externalId)
-
-				const notes: PartNote[] = []
-
-				for (const note of context2.notes) {
-					if (note.partExternalId === blueprintPart.part.externalId) {
-						notes.push(
-							literal<PartNote>({
-								type: note.type,
-								message: wrapTranslatableMessageFromBlueprints(note.message, [blueprint.blueprintId]),
-								origin: {
-									name: '', // TODO
-								},
-							})
-						)
-					}
-				}
-
-				const part = literal<DBPart>({
-					...blueprintPart.part,
-					_id: partId,
-					rundownId: rundown._id,
-					segmentId: newSegment._id,
-					_rank: i, // This gets updated to a rank unique within its segment in a later step
-					notes: notes,
-					invalidReason: blueprintPart.part.invalidReason
-						? {
-								...blueprintPart.part.invalidReason,
-								message: wrapTranslatableMessageFromBlueprints(
-									blueprintPart.part.invalidReason.message,
-									[blueprint.blueprintId]
-								),
-						  }
-						: undefined,
-
-					expectedDurationWithPreroll: undefined, // Below
-				})
-				res.parts.push(part)
-
-				// Update pieces
-				const processedPieces = postProcessPieces(
+		changedSegmentIds = await Promise.all(
+			ingestSegments.map(async (ingestSegment) =>
+				regenerateSegmentAndUpdateModelFull(
 					context,
-					blueprintPart.pieces,
-					blueprint.blueprintId,
-					rundown._id,
-					newSegment._id,
-					part._id,
-					false,
-					part.invalid
+					showStyle,
+					blueprint,
+					allRundownWatchedPackages,
+					ingestModel,
+					ingestSegment
 				)
-				res.pieces.push(...processedPieces)
-				res.adlibPieces.push(
-					...postProcessAdLibPieces(
-						context,
-						blueprint.blueprintId,
-						rundown._id,
-						part._id,
-						blueprintPart.adLibPieces
-					)
-				)
-				res.adlibActions.push(
-					...postProcessAdLibActions(
-						blueprint.blueprintId,
-						rundown._id,
-						part._id,
-						blueprintPart.actions || []
-					)
-				)
-
-				part.expectedDurationWithPreroll = calculatePartExpectedDurationWithPreroll(part, processedPieces)
-			})
-
-			preserveOrphanedSegmentPositionInRundown(context, cache, newSegment)
-		}
+			)
+		)
 	}
 
 	span?.end()
-	return res
+	return changedSegmentIds
+}
+
+async function regenerateSegmentAndUpdateModelFull(
+	context: JobContext,
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
+	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
+	allRundownWatchedPackages: WatchedPackagesHelper,
+	ingestModel: IngestModel,
+	ingestSegment: LocalIngestSegment
+): Promise<SegmentId> {
+	// Ensure the parts are sorted by rank
+	ingestSegment.parts.sort((a, b) => a.rank - b.rank)
+
+	// Filter down to the packages for this segment
+	const segmentId = ingestModel.getSegmentIdFromExternalId(ingestSegment.externalId)
+	const segmentWatchedPackages = allRundownWatchedPackages.filter(
+		context,
+		(p) => 'segmentId' in p && p.segmentId === segmentId
+	)
+
+	let updatedSegmentModel = await regenerateSegmentAndUpdateModel(
+		context,
+		showStyle,
+		blueprint,
+		ingestModel,
+		ingestSegment,
+		segmentWatchedPackages
+	)
+
+	// Future: this would be better to go before `updateModelWithGeneratedSegment`, but we need the final ids of the ExpectedPackages
+	const shouldRegenerateSegment = await checkIfSegmentReferencesUnloadedPackageInfos(
+		context,
+		updatedSegmentModel,
+		segmentWatchedPackages
+	)
+	if (shouldRegenerateSegment) {
+		logger.info(`Regenerating segment ${ingestSegment.name} due to existing PackageInfos being found`)
+		const reloadedWatchedPackages = await WatchedPackagesHelper.createForIngestSegments(context, ingestModel, [
+			ingestSegment.externalId,
+		])
+
+		// Regenerate the segment once, with the updated packages
+		updatedSegmentModel = await regenerateSegmentAndUpdateModel(
+			context,
+			showStyle,
+			blueprint,
+			ingestModel,
+			ingestSegment,
+			reloadedWatchedPackages
+		)
+	}
+
+	preserveOrphanedSegmentPositionInRundown(context, ingestModel, updatedSegmentModel.segment)
+
+	return updatedSegmentModel.segment._id
+}
+
+async function regenerateSegmentAndUpdateModel(
+	context: JobContext,
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
+	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
+	ingestModel: IngestModel,
+	ingestSegment: LocalIngestSegment,
+	watchedPackages: WatchedPackagesHelper
+): Promise<IngestSegmentModel> {
+	const rundown = ingestModel.getRundown()
+
+	const blueprintResult = await generateSegmentWithBlueprints(
+		context,
+		showStyle,
+		blueprint,
+		rundown,
+		ingestSegment,
+		watchedPackages
+	)
+
+	if (!blueprintResult) {
+		// Something went wrong when generating the segment
+
+		return ingestModel.replaceSegment(createInternalErrorSegment(blueprint.blueprintId, ingestSegment))
+	}
+
+	return updateModelWithGeneratedSegment(
+		context,
+		blueprint.blueprintId,
+		ingestModel,
+		ingestSegment,
+		blueprintResult.blueprintSegment,
+		blueprintResult.blueprintNotes
+	)
+}
+
+async function checkIfSegmentReferencesUnloadedPackageInfos(
+	context: JobContext,
+	segmentModel: IngestSegmentModel,
+	segmentWatchedPackages: WatchedPackagesHelper
+) {
+	const expectedPackageIdsToCheck = new Set<ExpectedPackageId>()
+	// check if there are any updates right away?
+	for (const part of segmentModel.parts) {
+		for (const expectedPackage of part.expectedPackages) {
+			if (expectedPackage.listenToPackageInfoUpdates) {
+				const loadedPackage = segmentWatchedPackages.getPackage(expectedPackage._id)
+				if (!loadedPackage) {
+					// The package didn't exist prior to the blueprint running
+					expectedPackageIdsToCheck.add(expectedPackage._id)
+				}
+			}
+		}
+	}
+
+	if (expectedPackageIdsToCheck.size > 0) {
+		const areThereAnyData = await context.directCollections.PackageInfos.count({
+			packageId: { $in: Array.from(expectedPackageIdsToCheck) },
+		})
+		return areThereAnyData > 0
+	}
+	return false
+}
+
+async function generateSegmentWithBlueprints(
+	context: JobContext,
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
+	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
+	rundown: ReadonlyDeep<Rundown>,
+	ingestSegment: IngestSegment,
+	watchedPackages: WatchedPackagesHelper
+): Promise<{
+	blueprintSegment: BlueprintResultSegment
+	blueprintNotes: RawPartNote[]
+} | null> {
+	const blueprintContext = new SegmentUserContext(
+		{
+			name: `getSegment=${ingestSegment.name};${getSegmentId(rundown._id, ingestSegment.externalId)}`,
+			// Note: this intentionally does not include the segmentId, as parts may be moved between segemnts later on
+			// This isn't much entropy, blueprints may want to add more for each Part they generate
+			identifier: `rundownId=${rundown._id}`,
+		},
+		context,
+		showStyle,
+		rundown,
+		watchedPackages
+	)
+
+	try {
+		const blueprintSegment = await blueprint.blueprint.getSegment(blueprintContext, ingestSegment)
+		return {
+			blueprintSegment,
+			blueprintNotes: blueprintContext.notes,
+		}
+	} catch (err) {
+		logger.error(`Error in showStyleBlueprint.getSegment: ${stringifyError(err)}`)
+		return null
+	}
+}
+
+function createInternalErrorSegment(
+	blueprintId: BlueprintId,
+	ingestSegment: LocalIngestSegment
+): IngestReplaceSegmentType {
+	return {
+		externalId: ingestSegment.externalId,
+		externalModified: ingestSegment.modified,
+		_rank: ingestSegment.rank,
+		notes: [
+			{
+				type: NoteSeverity.ERROR,
+				message: wrapTranslatableMessageFromBlueprints(
+					{
+						key: 'Internal Error generating segment',
+					},
+					[blueprintId]
+				),
+				origin: {
+					name: '', // TODO
+				},
+			},
+		],
+		name: ingestSegment.name,
+	}
+}
+
+function updateModelWithGeneratedSegment(
+	context: JobContext,
+	blueprintId: BlueprintId,
+	ingestModel: IngestModel,
+	ingestSegment: LocalIngestSegment,
+	blueprintSegment: BlueprintResultSegment,
+	blueprintNotes: RawPartNote[]
+): IngestSegmentModel {
+	// Ensure all parts have a valid externalId set on them
+	const knownPartExternalIds = new Set(blueprintSegment.parts.map((p) => p.part.externalId))
+
+	const segmentNotes = extractAndWrapSegmentNotes(blueprintId, blueprintNotes, knownPartExternalIds)
+
+	const segmentModel = ingestModel.replaceSegment(
+		literal<IngestReplaceSegmentType>({
+			...blueprintSegment.segment,
+			externalId: ingestSegment.externalId,
+			externalModified: ingestSegment.modified,
+			_rank: ingestSegment.rank,
+			notes: segmentNotes,
+		})
+	)
+
+	blueprintSegment.parts.forEach((blueprintPart, i) => {
+		updateModelWithGeneratedPart(context, blueprintId, segmentModel, blueprintNotes, blueprintPart, i)
+	})
+
+	return segmentModel
+}
+
+function extractAndWrapSegmentNotes(
+	blueprintId: BlueprintId,
+	blueprintNotes: RawPartNote[],
+	knownPartExternalIds: Set<string>
+): SegmentNote[] {
+	const segmentNotes: SegmentNote[] = []
+
+	for (const note of blueprintNotes) {
+		if (!note.partExternalId || !knownPartExternalIds.has(note.partExternalId)) {
+			segmentNotes.push(
+				literal<SegmentNote>({
+					type: note.type,
+					message: wrapTranslatableMessageFromBlueprints(note.message, [blueprintId]),
+					origin: {
+						name: '', // TODO
+					},
+				})
+			)
+		}
+	}
+
+	return segmentNotes
+}
+
+function extractAndWrapPartNotes(
+	blueprintId: BlueprintId,
+	blueprintNotes: RawPartNote[],
+	partExternalId: string
+): PartNote[] {
+	const partNotes: PartNote[] = []
+
+	for (const note of blueprintNotes) {
+		if (note.partExternalId === partExternalId) {
+			partNotes.push(
+				literal<PartNote>({
+					type: note.type,
+					message: wrapTranslatableMessageFromBlueprints(note.message, [blueprintId]),
+					origin: {
+						name: '', // TODO
+					},
+				})
+			)
+		}
+	}
+
+	return partNotes
+}
+
+function updateModelWithGeneratedPart(
+	context: JobContext,
+	blueprintId: BlueprintId,
+	segmentModel: IngestSegmentModel,
+	blueprintNotes: RawPartNote[],
+	blueprintPart: BlueprintResultPart,
+	i: number
+): void {
+	const partId = segmentModel.getPartIdFromExternalId(blueprintPart.part.externalId)
+
+	const partNotes = extractAndWrapPartNotes(blueprintId, blueprintNotes, blueprintPart.part.externalId)
+
+	const part = literal<IngestReplacePartType>({
+		...blueprintPart.part,
+		_rank: i, // This gets updated to a rank unique within its segment in a later step
+		notes: partNotes,
+		invalidReason: blueprintPart.part.invalidReason
+			? {
+					...blueprintPart.part.invalidReason,
+					message: wrapTranslatableMessageFromBlueprints(blueprintPart.part.invalidReason.message, [
+						blueprintId,
+					]),
+			  }
+			: undefined,
+	})
+
+	// Update pieces
+	const processedPieces = postProcessPieces(
+		context,
+		blueprintPart.pieces,
+		blueprintId,
+		segmentModel.segment.rundownId,
+		segmentModel.segment._id,
+		partId,
+		false,
+		part.invalid
+	)
+	const adlibPieces = postProcessAdLibPieces(
+		context,
+		blueprintId,
+		segmentModel.segment.rundownId,
+		partId,
+		blueprintPart.adLibPieces
+	)
+
+	const adlibActions = postProcessAdLibActions(
+		blueprintId,
+		segmentModel.segment.rundownId,
+		partId,
+		blueprintPart.actions || []
+	)
+
+	const partModel = segmentModel.replacePart(part, processedPieces, adlibPieces, adlibActions)
+	updateExpectedPackagesForPartModel(context, partModel)
 }
 
 /**
@@ -266,161 +410,95 @@ export async function calculateSegmentsFromIngestData(
  * Danger: This has been written and tested only for the iNews gateway.
  * It may work for mos-gateway, but this has not yet been tested and so is behind a feature/config field until it has been verified or adapted
  * @param context Context for the running job
- * @param cache The ingest cache of the rundown
+ * @param ingestModel The ingest model of the rundown
  * @param newSegment The changed Segment that could affect ordering
  */
 function preserveOrphanedSegmentPositionInRundown(
 	context: JobContext,
-	cache0: ReadOnlyCache<CacheForIngest>,
-	newSegment: DBSegment
+	ingestModel: IngestModel,
+	newSegment: ReadonlyDeep<DBSegment>
 ) {
-	// TODO - is this safe? The caller does not mutate the Cache!
-	const cache = cache0 as CacheForIngest
-
 	if (context.studio.settings.preserveOrphanedSegmentPositionInRundown) {
 		// When we have orphaned segments, try to keep the order correct when adding and removing other segments
-		const orphanedDeletedSegments = cache.Segments.findAll((s) => s.orphaned === SegmentOrphanedReason.DELETED)
+		const allSegmentsByRank = ingestModel.getOrderedSegments()
+		const orphanedDeletedSegments = allSegmentsByRank.filter(
+			(s) => s.segment.orphaned === SegmentOrphanedReason.DELETED
+		)
 		if (orphanedDeletedSegments.length) {
-			const allSegmentsByRank = cache.Segments.findAll(null, { sort: { _rank: -1 } })
-
 			// Rank padding
 			const rankPad = 0.0001
 			for (const orphanedSegment of orphanedDeletedSegments) {
-				const removedInd = allSegmentsByRank.findIndex((s) => s._id === orphanedSegment._id)
+				const removedInd = allSegmentsByRank.findIndex((s) => s.segment._id === orphanedSegment.segment._id)
 				let newRank = Number.MIN_SAFE_INTEGER
 				const previousSegment = allSegmentsByRank[removedInd + 1]
 				const nextSegment = allSegmentsByRank[removedInd - 1]
 				const previousPreviousSegment = allSegmentsByRank[removedInd + 2]
 
 				if (previousSegment) {
-					newRank = previousSegment._rank + rankPad
-					if (previousSegment._id === newSegment._id) {
-						if (previousSegment._rank > newSegment._rank) {
+					newRank = previousSegment.segment._rank + rankPad
+					if (previousSegment.segment._id === newSegment._id) {
+						if (previousSegment.segment._rank > newSegment._rank) {
 							// Moved previous segment up: follow it
 							newRank = newSegment._rank + rankPad
-						} else if (previousSegment._rank < newSegment._rank && previousPreviousSegment) {
+						} else if (previousSegment.segment._rank < newSegment._rank && previousPreviousSegment) {
 							// Moved previous segment down: stay behind more previous
-							newRank = previousPreviousSegment._rank + rankPad
+							newRank = previousPreviousSegment.segment._rank + rankPad
 						}
 					} else if (
 						nextSegment &&
-						nextSegment._id === newSegment._id &&
-						nextSegment._rank > newSegment._rank
+						nextSegment.segment._id === newSegment._id &&
+						nextSegment.segment._rank > newSegment._rank
 					) {
 						// Next segment was moved uo
 						if (previousPreviousSegment) {
-							if (previousPreviousSegment._rank < newSegment._rank) {
+							if (previousPreviousSegment.segment._rank < newSegment._rank) {
 								// Swapped segments directly before and after
 								// Will always result in both going below the unsynced
 								// Will also affect multiple segents moved directly above the previous
-								newRank = previousPreviousSegment._rank + rankPad
+								newRank = previousPreviousSegment.segment._rank + rankPad
 							}
 						} else {
 							newRank = Number.MIN_SAFE_INTEGER
 						}
 					}
 				}
-				cache.Segments.updateOne(orphanedSegment._id, (s) => {
-					s._rank = newRank
-					return s
-				})
+				orphanedSegment.setRank(newRank)
 			}
 		}
 	}
 }
 
 /**
- * Save the calculated UpdateSegmentsResult into the cache
- * Note: this will NOT remove any segments, it is expected for that to be done later
- * @param context Context for the running job
- * @param cache The cache to save into
- * @param data The data to save
- * @param isWholeRundownUpdate Whether this is a whole rundown change (This will remove any stray items)
- */
-export function saveSegmentChangesToCache(
-	context: JobContext,
-	cache: CacheForIngest,
-	data: UpdateSegmentsResult,
-	isWholeRundownUpdate: boolean
-): void {
-	const newPartIds = new Set(data.parts.map((p) => p._id))
-	const newSegmentIds = new Set(data.segments.map((p) => p._id))
-
-	const partChanges = saveIntoCache<DBPart>(
-		context,
-		cache.Parts,
-		isWholeRundownUpdate ? null : (p) => newSegmentIds.has(p.segmentId) || newPartIds.has(p._id),
-		data.parts
-	)
-	logChanges('Parts', partChanges)
-	const affectedPartIds = new Set([...partChanges.removed, ...newPartIds.values()])
-
-	logChanges(
-		'Pieces',
-		saveIntoCache<Piece>(
-			context,
-			cache.Pieces,
-			isWholeRundownUpdate ? null : (p) => affectedPartIds.has(p.startPartId),
-			data.pieces
-		)
-	)
-	logChanges(
-		'AdLibActions',
-		saveIntoCache<AdLibAction>(
-			context,
-			cache.AdLibActions,
-			isWholeRundownUpdate ? null : (p) => affectedPartIds.has(p.partId),
-			data.adlibActions
-		)
-	)
-	logChanges(
-		'AdLibPieces',
-		saveIntoCache<AdLibPiece>(
-			context,
-			cache.AdLibPieces,
-			isWholeRundownUpdate ? null : (p) => !!p.partId && affectedPartIds.has(p.partId),
-			data.adlibPieces
-		)
-	)
-
-	// Update Segments: Only update, never remove
-	for (const segment of data.segments) {
-		cache.Segments.replace(segment)
-	}
-}
-
-/**
  * Regenerate and save the content for a Segment
  * @param context Context for the running job
- * @param cache The ingest cache of the rundown
+ * @param ingestModel The ingest model of the rundown
  * @param ingestSegment The segment to regenerate
  * @param isNewSegment True if the segment is being created.
  * @returns Details on the changes
  */
 export async function updateSegmentFromIngestData(
 	context: JobContext,
-	cache: CacheForIngest,
+	ingestModel: IngestModel,
 	ingestSegment: LocalIngestSegment,
 	isNewSegment: boolean
 ): Promise<CommitIngestData | null> {
 	const span = context.startSpan('ingest.rundownInput.handleUpdatedPartInner')
 
-	const rundown = getRundown(cache)
+	const rundown = ingestModel.getRundown()
 
 	// Updated OR created part
 	const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
-	const segment = cache.Segments.findOne(segmentId)
+	const segment = ingestModel.getSegment(segmentId)
 	if (!isNewSegment && !segment) throw new Error(`Segment "${segmentId}" not found`)
 	if (!canSegmentBeUpdated(rundown, segment, isNewSegment)) return null
 
-	const segmentChanges = await calculateSegmentsFromIngestData(context, cache, [ingestSegment], null)
-	saveSegmentChangesToCache(context, cache, segmentChanges, false)
+	const changedSegmentIds = await calculateSegmentsFromIngestData(context, ingestModel, [ingestSegment], null)
 
 	span?.end()
 	return {
-		changedSegmentIds: segmentChanges.segments.map((s) => s._id),
+		changedSegmentIds: changedSegmentIds,
 		removedSegmentIds: [],
-		renamedSegments: new Map(),
+		renamedSegments: null,
 
 		removeRundown: false,
 	}
@@ -429,14 +507,14 @@ export async function updateSegmentFromIngestData(
 /**
  * Regenerate and save the content for all list of Segment Ids in a Rundown
  * @param context Context for the running job
- * @param cache The ingest cache of the rundown
+ * @param ingestModel The ingest model of the rundown
  * @param ingestRundown The rundown to regenerate
  * @param segmentIds Ids of the segments to regenerate
  * @returns Details on the changes, and any SegmentIds that were not found in the ingestRundown
  */
 export async function regenerateSegmentsFromIngestData(
 	context: JobContext,
-	cache: CacheForIngest,
+	ingestModel: IngestModel,
 	ingestRundown: LocalIngestRundown,
 	segmentIds: SegmentId[]
 ): Promise<{ result: CommitIngestData | null; skippedSegments: SegmentId[] }> {
@@ -446,19 +524,19 @@ export async function regenerateSegmentsFromIngestData(
 		return { result: null, skippedSegments: [] }
 	}
 
-	const rundown = getRundown(cache)
+	const rundown = ingestModel.getRundown()
 
 	const skippedSegments: SegmentId[] = []
 	const ingestSegments: LocalIngestSegment[] = []
 
 	for (const segmentId of segmentIds) {
-		const segment = cache.Segments.findOne(segmentId)
+		const segment = ingestModel.getSegment(segmentId)
 		if (!segment) {
 			skippedSegments.push(segmentId)
 		} else if (!canSegmentBeUpdated(rundown, segment, false)) {
 			skippedSegments.push(segmentId)
 		} else {
-			const ingestSegment = ingestRundown.segments.find((s) => s.externalId === segment.externalId)
+			const ingestSegment = ingestRundown.segments.find((s) => s.externalId === segment.segment.externalId)
 			if (!ingestSegment) {
 				skippedSegments.push(segmentId)
 			} else {
@@ -467,14 +545,12 @@ export async function regenerateSegmentsFromIngestData(
 		}
 	}
 
-	const segmentChanges = await calculateSegmentsFromIngestData(context, cache, ingestSegments, null)
-
-	saveSegmentChangesToCache(context, cache, segmentChanges, false)
+	const changedSegmentIds = await calculateSegmentsFromIngestData(context, ingestModel, ingestSegments, null)
 
 	const result: CommitIngestData = {
-		changedSegmentIds: segmentChanges.segments.map((s) => s._id),
+		changedSegmentIds: changedSegmentIds,
 		removedSegmentIds: [],
-		renamedSegments: new Map(),
+		renamedSegments: null,
 
 		removeRundown: false,
 	}
@@ -489,33 +565,33 @@ export async function regenerateSegmentsFromIngestData(
 /**
  * Generate and return the content for all Segments in a Rundown, along with Segments which should be removed
  * @param context Context for the running job
- * @param cache The ingest cache of the rundown
+ * @param ingestModel The ingest model of the rundown
  * @param ingestRundown The Rundown to regenerate
  * @param allRundownWatchedPackages0 WatchedPackagesHelper for all Packages used in the Rundown
  * @returns Newly generated documents, and list of those to remove
  */
 export async function calculateSegmentsAndRemovalsFromIngestData(
 	context: JobContext,
-	cache: CacheForIngest,
+	ingestModel: IngestModel,
 	ingestRundown: LocalIngestRundown,
 	allRundownWatchedPackages: WatchedPackagesHelper
-): Promise<{ segmentChanges: UpdateSegmentsResult; removedSegments: DBSegment[] }> {
-	const segmentChanges = await calculateSegmentsFromIngestData(
+): Promise<{ changedSegmentIds: SegmentId[]; removedSegmentIds: SegmentId[] }> {
+	const changedSegmentIds = await calculateSegmentsFromIngestData(
 		context,
-		cache,
+		ingestModel,
 		ingestRundown.segments,
 		allRundownWatchedPackages
 	)
 
 	/** Don't remove segments for now, orphan them instead. The 'commit' phase will clean them up if possible */
-	const changedSegmentIds = new Set(segmentChanges.segments.map((s) => s._id))
-	const removedSegments = cache.Segments.findAll((s) => !changedSegmentIds.has(s._id))
-	for (const oldSegment of removedSegments) {
-		segmentChanges.segments.push({
-			...oldSegment,
-			orphaned: SegmentOrphanedReason.DELETED,
-		})
+	const changedSegmentIdsSet = new Set(changedSegmentIds)
+	const segmentsToBeRemoved = ingestModel.getAllSegments().filter((s) => !changedSegmentIdsSet.has(s.segment._id))
+	const removedSegmentIds: SegmentId[] = []
+	for (const oldSegment of segmentsToBeRemoved) {
+		removedSegmentIds.push(oldSegment.segment._id)
+		changedSegmentIds.push(oldSegment.segment._id)
+		oldSegment.setOrphaned(SegmentOrphanedReason.DELETED)
 	}
 
-	return { segmentChanges, removedSegments }
+	return { changedSegmentIds, removedSegmentIds }
 }

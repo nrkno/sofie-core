@@ -11,7 +11,7 @@ import { faCheck, faPencilAlt, faSync, faTrash } from '@fortawesome/free-solid-s
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { JSONBlob, JSONBlobParse, JSONSchema } from '@sofie-automation/blueprints-integration'
 import { DropdownInputControl, DropdownInputOption } from '../../../../lib/Components/DropdownInput'
-import { useToggleExpandHelper } from '../../util/ToggleExpandedHelper'
+import { useToggleExpandHelper } from '../../../util/useToggleExpandHelper'
 import { doModalDialog } from '../../../../lib/ModalDialog'
 import classNames from 'classnames'
 import { SubdeviceManifest } from '@sofie-automation/corelib/dist/deviceConfig'
@@ -38,7 +38,7 @@ export function GenericSubDevicesTable({
 	subDevices,
 	overrideHelper,
 	peripheralDevices,
-}: SubDevicesTableProps): JSX.Element {
+}: Readonly<SubDevicesTableProps>): JSX.Element {
 	const { t } = useTranslation()
 	const { toggleExpanded, isExpanded } = useToggleExpandHelper()
 
@@ -67,7 +67,7 @@ export function GenericSubDevicesTable({
 				no: t('Cancel'),
 				yes: t('Remove'),
 				onAccept: () => {
-					overrideHelper.deleteItem(subdeviceId)
+					overrideHelper().deleteItem(subdeviceId).commit()
 				},
 				message: (
 					<React.Fragment>
@@ -105,6 +105,11 @@ export function GenericSubDevicesTable({
 		return options
 	}, [peripheralDevicesMap])
 
+	const undeleteItemWithId = useCallback(
+		(itemId: string) => overrideHelper().resetItem(itemId).commit(),
+		[overrideHelper]
+	)
+
 	return (
 		<table className="expando settings-studio-device-table table">
 			<thead>
@@ -125,7 +130,7 @@ export function GenericSubDevicesTable({
 								key={item.id}
 								item={item}
 								peripheralDevice={peripheralDevice}
-								undeleteItemWithId={overrideHelper.resetItem}
+								undeleteItemWithId={undeleteItemWithId}
 							/>
 						)
 					} else {
@@ -172,7 +177,7 @@ function SummaryRow({
 	isEdited,
 	editItemWithId,
 	removeItemWithId,
-}: SummaryRowProps): JSX.Element {
+}: Readonly<SummaryRowProps>): JSX.Element {
 	const editItem = useCallback(() => editItemWithId(item.id), [editItemWithId, item.id])
 	const removeItem = useCallback(() => removeItemWithId(item.id), [removeItemWithId, item.id])
 
@@ -211,7 +216,11 @@ interface DeletedSummaryRowProps {
 	peripheralDevice: PeripheralDeviceTranslated | undefined
 	undeleteItemWithId: (itemId: string) => void
 }
-function DeletedSummaryRow({ item, peripheralDevice, undeleteItemWithId }: DeletedSummaryRowProps): JSX.Element {
+function DeletedSummaryRow({
+	item,
+	peripheralDevice,
+	undeleteItemWithId,
+}: Readonly<DeletedSummaryRowProps>): JSX.Element {
 	const undeleteItem = useCallback(() => undeleteItemWithId(item.id), [undeleteItemWithId, item.id])
 
 	const deviceType = peripheralDevice
@@ -250,7 +259,7 @@ function SubDeviceEditRow({
 	editItemWithId,
 	item,
 	overrideHelper,
-}: SubDeviceEditRowProps) {
+}: Readonly<SubDeviceEditRowProps>) {
 	const { t } = useTranslation()
 
 	const finishEditItem = useCallback(() => editItemWithId(item.id, false), [editItemWithId, item.id])
@@ -259,7 +268,7 @@ function SubDeviceEditRow({
 		(newId: string) => {
 			if (item.id === newId) return
 
-			overrideHelper.changeItemId(item.id, newId)
+			overrideHelper().changeItemId(item.id, newId).commit()
 
 			// toggle ui visibility
 			editItemWithId(item.id, false)
@@ -325,7 +334,7 @@ interface SubDeviceEditFormProps {
 	item: WrappedOverridableItemNormal<any>
 	overrideHelper: OverrideOpHelper
 }
-function SubDeviceEditForm({ peripheralDevice, item, overrideHelper }: SubDeviceEditFormProps) {
+function SubDeviceEditForm({ peripheralDevice, item, overrideHelper }: Readonly<SubDeviceEditFormProps>) {
 	const { t } = useTranslation()
 
 	const parsedCommonSchema = useMemo((): JSONSchema | undefined => {

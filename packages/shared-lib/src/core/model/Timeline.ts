@@ -51,14 +51,14 @@ export interface TimelineObjectCoreExt<
 }
 
 export interface TimelineKeyframeCoreExt<TContent extends { deviceType: TSR.DeviceType }, TKeyframeMetadata = unknown>
-	extends TSR.Timeline.TimelineKeyframe<TContent> {
+	extends TSR.Timeline.TimelineKeyframe<Partial<TContent>> {
 	metaData?: TKeyframeMetadata
 	/** Whether to keep this keyframe when the object is copied for lookahead. By default all keyframes are removed */
 	preserveForLookahead?: boolean
 
 	abSession?: {
 		poolName: string
-		playerIndex: number
+		playerId: number | string
 	}
 }
 

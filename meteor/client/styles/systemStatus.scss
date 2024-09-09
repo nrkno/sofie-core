@@ -217,30 +217,46 @@
 		min-width: 12em;
 	}
 	.user-action-log__userId {
-		min-width: 5em;
+		min-width: 2em;
 	}
 	.user-action-log__executionTime {
 		min-width: 5em;
 
-		td {
-			white-space: nowrap;
+		> table {
+			width: 100%;
+
+			> tbody > tr:first-child td {
+				border-top: none;
+			}
+
+			td {
+				white-space: nowrap;
+
+				&:first-child {
+					width: 4.5em;
+				}
+			}
 		}
 	}
 	.user-action-log__clientAddress {
-		min-width: 7em;
+		min-width: 8em;
 	}
 	.user-action-log__context {
 		min-width: 10em;
 	}
 	.user-action-log__method {
-		min-width: 23em;
+		min-width: 17em;
 	}
 	.user-action-log__status {
-		min-width: 23em;
+		min-width: 6em;
+	}
+	.user-action-log__args {
+		min-width: 30em;
 	}
 	td.user-action-log__args {
 		position: relative;
-		font-family: 'Consolas', 'Courier New', Courier, monospace;
+		font-family: 'Consolas', 'SF Mono', SFMono-Regular, 'DejaVu Sans Mono', Menlo, ui-monospace, 'Courier New', Courier,
+			monospace;
 		color: #555;
 		white-space: pre;
 		overflow: hidden;
@@ -248,11 +264,8 @@
 		font-size: 0.8em;
 		line-height: 1.7em;
 
-		&:hover {
-			// white-space: normal;
-			overflow: visible;
-			text-overflow: unset;
-			word-break: break-all;
+		pre {
+			margin: 0;
 		}
 	}
 }

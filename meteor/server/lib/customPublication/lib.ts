@@ -10,10 +10,13 @@ const hasOwn = Object.prototype.hasOwnProperty
  * @returns The difference, or null if nothing changed
  */
 export function diffObject<T extends { _id: ProtectedString<any> }>(oldDoc: T, newDoc: T): Partial<T> | null {
-	const fields: Partial<T> = {}
-	Object.keys(oldDoc).forEach((key) => {
+	const oldDocAny: Record<string, any> = oldDoc
+	const newDocAny: Record<string, any> = newDoc
+
+	const fields: Record<string, any> = {}
+	Object.keys(oldDocAny).forEach((key) => {
 		if (hasOwn.call(newDoc, key)) {
-			if (!EJSON.equals(oldDoc[key], newDoc[key])) fields[key] = newDoc[key]
+			if (!EJSON.equals(oldDocAny[key], newDocAny[key])) fields[key] = newDocAny[key]
 		} else {
 			fields[key] = undefined
 		}
@@ -21,10 +24,10 @@ export function diffObject<T extends { _id: ProtectedString<any> }>(oldDoc: T, n
 
 	Object.keys(newDoc).forEach((key) => {
 		if (!hasOwn.call(oldDoc, key)) {
-			fields[key] = newDoc[key]
+			fields[key] = newDocAny[key]
 		}
 	})
 
-	if (Object.keys(fields).length) return fields
+	if (Object.keys(fields).length) return fields as Partial<T>
 	return null
 }

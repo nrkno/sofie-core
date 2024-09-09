@@ -4,9 +4,9 @@ import { Meteor } from 'meteor/meteor'
 import * as MOS from '@mos-connection/helper'
 import { setupDefaultStudioEnvironment } from '../../../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../../../__mocks__/helpers/jest'
-import { PeripheralDevice } from '../../../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { MOSDeviceActions } from '../actions'
-import { PeripheralDeviceCommand } from '../../../../../lib/collections/PeripheralDeviceCommands'
+import { PeripheralDeviceCommand } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceCommand'
 import { TriggerReloadDataResponse } from '../../../../../lib/api/userActions'
 import { deferAsync, getRandomId, getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
@@ -16,6 +16,7 @@ import { IngestJobs, MosRundownProps } from '@sofie-automation/corelib/dist/work
 import { PeripheralDeviceCommands } from '../../../../collections'
 import { SupressLogMessages } from '../../../../../__mocks__/suppressLogging'
 import { logger } from '../../../../logging'
+import { generateRundownSource } from '../../lib'
 
 const mosTypes = MOS.getMosTypes(true)
 
@@ -132,9 +133,9 @@ describe('Test sending mos actions', () => {
 			fakeRundown.studioId,
 			literal<MosRundownProps>({
 				rundownExternalId: fakeRundown.externalId,
-				peripheralDeviceId: device._id,
 				isUpdateOperation: true,
 				mosRunningOrder: roData,
+				rundownSource: generateRundownSource(device),
 			})
 		)
 	})

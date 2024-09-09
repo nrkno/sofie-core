@@ -127,6 +127,18 @@ describe('Network client', () => {
 		test.todo('execute adlib - need to have an adlib to run')
 	}
 
+	if (testServer) {
+		test('can execute a bucket adLib', async () => {
+			const execute = await playlistsApi.executeBucketAdLib({
+				playlistId: playlistIds[0],
+				executeBucketAdLibRequest: { bucketId: 'cIt0kEWuHOvQVMD', externalId: 'MDEKzCrBpgGWSs_' },
+			})
+			expect(execute.status).toBe(200)
+		})
+	} else {
+		test.todo('execute a bucket adlib - need to have an adlib to run')
+	}
+
 	test('can deactivate a playlist', async () => {
 		const deactive = await playlistsApi.deactivate({ playlistId: playlistIds[0] })
 		expect(deactive.status).toBe(200)
@@ -139,5 +151,30 @@ describe('Network client', () => {
 		})
 	} else {
 		test.todo('Reload playlist can be dependant on test order')
+	}
+
+	test('fails to clear the target SourceLayers with null playlistId', async () => {
+		await expect(
+			playlistsApi.clearSourceLayers({
+				playlistId: null,
+				clearSourceLayersRequest: {
+					sourceLayerIds: ['42'],
+				},
+			})
+		).rejects.toThrow()
+	})
+
+	if (testServer) {
+		test('can clear the target SourceLayers', async () => {
+			const sofieVersion = await playlistsApi.clearSourceLayers({
+				playlistId: playlistIds[0],
+				clearSourceLayersRequest: {
+					sourceLayerIds: ['42'],
+				},
+			})
+			expect(sofieVersion.status).toBe(200)
+		})
+	} else {
+		test.todo('Get SourceLayerIds for clear operation')
 	}
 })

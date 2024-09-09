@@ -13,10 +13,11 @@ import { logger } from '../../logging'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 import { StudioActionManagers } from './StudioActionManagers'
 import { JobQueueWithClasses } from '@sofie-automation/shared-lib/dist/lib/JobQueueWithClasses'
-import { ReactiveCacheCollection } from '../../publications/lib/ReactiveCacheCollection'
 import { StudioDeviceTriggerManager } from './StudioDeviceTriggerManager'
 import { StudioObserver } from './StudioObserver'
 import { Studios } from '../../collections'
+import { ReactiveCacheCollection } from '../../publications/lib/ReactiveCacheCollection'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 type ObserverAndManager = {
 	observer: StudioObserver
@@ -34,8 +35,7 @@ Meteor.startup(() => {
 
 	function workInQueue(fnc: () => Promise<void>) {
 		jobQueue.add(fnc).catch((e) => {
-			logger.error(`Error in DeviceTriggers Studio observer reaction: ${e}`)
-			logger.error(e)
+			logger.error(`Error in DeviceTriggers Studio observer reaction: ${stringifyError(e)}`)
 		})
 	}
 

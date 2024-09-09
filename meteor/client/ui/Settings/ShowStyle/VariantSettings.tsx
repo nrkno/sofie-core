@@ -42,7 +42,7 @@ export const ShowStyleVariantsSettings = ({
 	blueprintTranslationNamespaces,
 	layerMappings,
 	sourceLayers,
-}: IShowStyleVariantsProps): JSX.Element => {
+}: Readonly<IShowStyleVariantsProps>): JSX.Element => {
 	const [localVariants, setLocalVariants] = useState<DBShowStyleVariant[]>([])
 	const [editedVariants, setEditedVariants] = useState<ShowStyleVariantId[]>([])
 	const [timestampedFileKey, setTimestampedFileKey] = useState(0)
@@ -62,7 +62,7 @@ export const ShowStyleVariantsSettings = ({
 					_id: showStyleBase.blueprintId,
 				})
 
-				if (blueprint && blueprint.showStyleConfigPresets) {
+				if (blueprint?.showStyleConfigPresets) {
 					const basePreset = blueprint.showStyleConfigPresets[showStyleBase.blueprintConfigPresetId]
 					if (basePreset) {
 						for (const [id, preset] of Object.entries<IShowStyleVariantConfigPreset>(basePreset.variants)) {

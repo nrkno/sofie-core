@@ -15,14 +15,14 @@ interface SplitDropdownItemObj {
 	node?: ReactNode
 }
 
-export function SplitDropdownItem(props: SplitDropdownItemObj): SplitDropdownItemObj {
+export function SplitDropdownItem(props: Readonly<SplitDropdownItemObj>): SplitDropdownItemObj {
 	return {
 		key: props.key,
 		node: props.node,
 	}
 }
 
-export function SplitDropdown(props: IProps): JSX.Element {
+export function SplitDropdown(props: Readonly<IProps>): JSX.Element {
 	const [expanded, setExpanded] = useState(false)
 	const toggleExpco = useCallback(() => setExpanded((oldVal) => !oldVal), [])
 

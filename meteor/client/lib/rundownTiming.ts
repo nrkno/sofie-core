@@ -14,15 +14,11 @@
 import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
-import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
-import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import {
-	findPartInstanceInMapOrWrapToTemporary,
-	PartInstance,
-	wrapPartToTemporaryInstance,
-} from '../../lib/collections/PartInstances'
-import { Part } from '../../lib/collections/Parts'
-import { DBRundownPlaylist, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { calculatePartInstanceExpectedDurationWithTransition } from '@sofie-automation/corelib/dist/playout/timings'
+import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { PartInstance } from '../../lib/collections/PartInstances'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getCurrentTime, objectFromEntries } from '../../lib/lib'
 import { Settings } from '../../lib/Settings'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
@@ -36,6 +32,13 @@ interface BreakProps {
 	breakIsLastRundown: boolean
 }
 
+type CalculateTimingsPartInstance = Pick<
+	PartInstance,
+	'_id' | 'isTemporary' | 'segmentId' | 'orphaned' | 'timings' | 'part'
+>
+
+export type TimingId = string
+
 /**
  * This is a class for calculating timings in a Rundown playlist used by RundownTimingProvider.
  *
@@ -43,8 +46,6 @@ interface BreakProps {
  * @class RundownTimingCalculator
  */
 export class RundownTimingCalculator {
-	private temporaryPartInstances: Map<PartId, PartInstance> = new Map<PartId, PartInstance>()
-
 	private linearParts: Array<[PartId, number | null]> = []
 
 	// we need to keep the nextSegmentId here for the brief moment when the next partinstance can't be found
@@ -54,13 +55,13 @@ export class RundownTimingCalculator {
 	// Note, that these objects are created when an instance is created and are reused for the lifetime
 	// of the component. This is to avoid GC running all the time on discarded objects.
 	// Only the RundownTimingContext object is unique for a call to `updateDurations`.
-	private partDurations: Record<string, number> = {}
-	private partExpectedDurations: Record<string, number> = {}
-	private partPlayed: Record<string, number> = {}
-	private partStartsAt: Record<string, number> = {}
-	private partDisplayStartsAt: Record<string, number> = {}
-	private partDisplayDurations: Record<string, number> = {}
-	private partDisplayDurationsNoPlayback: Record<string, number> = {}
+	private partDurations: Record<TimingId, number> = {}
+	private partExpectedDurations: Record<TimingId, number> = {}
+	private partPlayed: Record<TimingId, number> = {}
+	private partStartsAt: Record<TimingId, number> = {}
+	private partDisplayStartsAt: Record<TimingId, number> = {}
+	private partDisplayDurations: Record<TimingId, number> = {}
+	private partDisplayDurationsNoPlayback: Record<TimingId, number> = {}
 	private displayDurationGroups: Record<string, number> = {}
 	private segmentBudgetDurations: Record<string, number> = {}
 	private segmentStartedPlayback: Record<string, number> = {}
@@ -79,23 +80,24 @@ export class RundownTimingCalculator {
 	 *
 	 * @param {number} now
 	 * @param {boolean} isLowResolution
-	 * @param {(RundownPlaylist | undefined)} playlist
+	 * @param {(DBRundownPlaylist | undefined)} playlist
 	 * @param {Rundown[]} rundowns
 	 * @param {(Rundown | undefined)} currentRundown
-	 * @param {Part[]} parts
-	 * @param {Map<PartId, PartInstance>} partInstancesMap
+	 * @param {CalculateTimingsPartInstance[]} partInstances
+	 * @param {Map<PartId, CalculateTimingsPartInstance>} partInstancesMap
 	 * @param {number} [defaultDuration]
+	 * @param {CalculateTimingsPartInstance[]} segmentEntryPartInstances
 	 * @return {*}  {RundownTimingContext}
 	 * @memberof RundownTimingCalculator
 	 */
 	updateDurations(
 		now: number,
 		isLowResolution: boolean,
-		playlist: RundownPlaylist | undefined,
+		playlist: DBRundownPlaylist | undefined,
 		rundowns: Rundown[],
 		currentRundown: Rundown | undefined,
-		parts: Part[],
-		partInstancesMap: Map<PartId, PartInstance>,
+		partInstances: CalculateTimingsPartInstance[],
+		partInstancesMap: Map<PartId, CalculateTimingsPartInstance>,
 		segmentsMap: Map<SegmentId, DBSegment>,
 		/** Fallback duration for Parts that have no as-played duration of their own. */
 		defaultDuration: number = Settings.defaultDisplayDuration,
@@ -105,7 +107,7 @@ export class RundownTimingCalculator {
 		 * the currentPartInstance.
 		 *
 		 * This is being used for calculating Segment Duration Budget */
-		segmentEntryPartInstances: PartInstance[]
+		segmentEntryPartInstances: CalculateTimingsPartInstance[]
 	): RundownTimingContext {
 		let totalRundownDuration = 0
 		let remainingRundownDuration = 0
@@ -150,7 +152,8 @@ export class RundownTimingCalculator {
 				this.nextSegmentId = undefined
 			}
 
-			parts.forEach((origPart) => {
+			partInstances.forEach((partInstance) => {
+				const origPart = partInstance.part
 				if (origPart.budgetDuration !== undefined) {
 					const segmentId = unprotectString(origPart.segmentId)
 					if (this.segmentBudgetDurations[segmentId] !== undefined) {
@@ -167,8 +170,10 @@ export class RundownTimingCalculator {
 						partInstance.timings?.reportedStartedPlayback
 			})
 
-			parts.forEach((origPart, itIndex) => {
-				const partInstance = this.getPartInstanceOrGetCachedTemp(partInstancesMap, origPart)
+			partInstances.forEach((partInstance, itIndex) => {
+				const partId = partInstance.part._id
+				const partInstanceId = !partInstance.isTemporary ? partInstance._id : null
+				const partInstanceOrPartId = unprotectString(partInstanceId ?? partId)
 
 				if (partInstance.segmentId !== lastSegmentId) {
 					this.untimedSegments.add(partInstance.segmentId)
@@ -181,7 +186,7 @@ export class RundownTimingCalculator {
 				}
 
 				// add piece to accumulator
-				const aIndex = this.linearParts.push([partInstance.part._id, waitAccumulator]) - 1
+				const aIndex = this.linearParts.push([partId, waitAccumulator]) - 1
 
 				// if this is next Part, clear previous countdowns and clear accumulator
 				if (playlist.nextPartInfo?.partInstanceId === partInstance._id) {
@@ -211,7 +216,7 @@ export class RundownTimingCalculator {
 				// if the Part is using budgetDuration, this budget is calculated when going through all the segments
 				// in the Rundown (see further down)
 				if (!segmentUsesBudget && !partIsUntimed) {
-					totalRundownDuration += calculatePartInstanceExpectedDurationWithPreroll(partInstance) || 0
+					totalRundownDuration += calculatePartInstanceExpectedDurationWithTransition(partInstance) || 0
 				}
 
 				const lastStartedPlayback = partInstance.timings?.plannedStartedPlayback
@@ -225,7 +230,7 @@ export class RundownTimingCalculator {
 				let displayDurationFromGroup = 0
 
 				partExpectedDuration =
-					calculatePartInstanceExpectedDurationWithPreroll(partInstance) ||
+					calculatePartInstanceExpectedDurationWithTransition(partInstance) ||
 					partInstance.timings?.duration ||
 					0
 
@@ -241,14 +246,15 @@ export class RundownTimingCalculator {
 					// either this is not the first element of the displayDurationGroup
 					(this.displayDurationGroups[partInstance.part.displayDurationGroup] !== undefined ||
 						// or there is a following member of this displayDurationGroup
-						(parts[itIndex + 1] &&
-							parts[itIndex + 1].displayDurationGroup === partInstance.part.displayDurationGroup)) &&
+						(partInstances[itIndex + 1] &&
+							partInstances[itIndex + 1].part.displayDurationGroup ===
+								partInstance.part.displayDurationGroup)) &&
 					!partInstance.part.floated &&
 					!partIsUntimed
 				) {
 					this.displayDurationGroups[partInstance.part.displayDurationGroup] =
 						(this.displayDurationGroups[partInstance.part.displayDurationGroup] || 0) +
-						(calculatePartInstanceExpectedDurationWithPreroll(partInstance) || 0)
+						(calculatePartInstanceExpectedDurationWithTransition(partInstance) || 0)
 					displayDurationFromGroup =
 						partInstance.part.displayDuration ||
 						Math.max(
@@ -272,7 +278,7 @@ export class RundownTimingCalculator {
 							: undefined)
 					partDuration =
 						Math.max(
-							duration || calculatePartInstanceExpectedDurationWithPreroll(partInstance) || 0,
+							duration || calculatePartInstanceExpectedDurationWithTransition(partInstance) || 0,
 							now - lastStartedPlayback
 						) - playOffset
 					// because displayDurationGroups have no actual timing on them, we need to have a copy of the
@@ -282,10 +288,10 @@ export class RundownTimingCalculator {
 						duration ||
 						(memberOfDisplayDurationGroup
 							? displayDurationFromGroup
-							: calculatePartInstanceExpectedDurationWithPreroll(partInstance)) ||
+							: calculatePartInstanceExpectedDurationWithTransition(partInstance)) ||
 						defaultDuration
 					partDisplayDuration = Math.max(partDisplayDurationNoPlayback, now - lastStartedPlayback)
-					this.partPlayed[unprotectString(partInstance.part._id)] = now - lastStartedPlayback
+					this.partPlayed[partInstanceOrPartId] = now - lastStartedPlayback
 					const segmentStartedPlayback =
 						this.segmentStartedPlayback[unprotectString(partInstance.segmentId)] || lastStartedPlayback
 
@@ -304,7 +310,7 @@ export class RundownTimingCalculator {
 							(duration ||
 								(memberOfDisplayDurationGroup
 									? displayDurationFromGroup
-									: calculatePartInstanceExpectedDurationWithPreroll(partInstance)) ||
+									: calculatePartInstanceExpectedDurationWithTransition(partInstance)) ||
 								0) -
 								(now - lastStartedPlayback)
 						)
@@ -312,7 +318,7 @@ export class RundownTimingCalculator {
 				} else {
 					partDuration =
 						(partInstance.timings?.duration ||
-							calculatePartInstanceExpectedDurationWithPreroll(partInstance) ||
+							calculatePartInstanceExpectedDurationWithTransition(partInstance) ||
 							0) - playOffset
 					partDisplayDurationNoPlayback = Math.max(
 						0,
@@ -320,13 +326,12 @@ export class RundownTimingCalculator {
 							displayDurationFromGroup ||
 							ensureMinimumDefaultDurationIfNotAuto(
 								partInstance,
-								calculatePartInstanceExpectedDurationWithPreroll(partInstance),
+								calculatePartInstanceExpectedDurationWithTransition(partInstance),
 								defaultDuration
 							)
 					)
 					partDisplayDuration = partDisplayDurationNoPlayback
-					this.partPlayed[unprotectString(partInstance.part._id)] =
-						(partInstance.timings?.duration || 0) - playOffset
+					this.partPlayed[partInstanceOrPartId] = (partInstance.timings?.duration || 0) - playOffset
 				}
 
 				// asPlayed is the actual duration so far and expected durations in unplayed lines.
@@ -344,7 +349,7 @@ export class RundownTimingCalculator {
 							valToAddToAsPlayedDuration = partInstance.timings.duration
 						} else if (partCounts) {
 							valToAddToAsPlayedDuration =
-								calculatePartInstanceExpectedDurationWithPreroll(partInstance) || 0
+								calculatePartInstanceExpectedDurationWithTransition(partInstance) || 0
 						}
 
 						asPlayedRundownDuration += valToAddToAsPlayedDuration
@@ -381,15 +386,15 @@ export class RundownTimingCalculator {
 						memberOfDisplayDurationGroup
 							? Math.max(
 									partExpectedDuration,
-									calculatePartInstanceExpectedDurationWithPreroll(partInstance) || 0
+									calculatePartInstanceExpectedDurationWithTransition(partInstance) || 0
 							  )
-							: calculatePartInstanceExpectedDurationWithPreroll(partInstance) || 0,
+							: calculatePartInstanceExpectedDurationWithTransition(partInstance) || 0,
 						now - lastStartedPlayback
 					)
 				} else {
 					asDisplayedRundownDuration +=
 						partInstance.timings?.duration ||
-						calculatePartInstanceExpectedDurationWithPreroll(partInstance) ||
+						calculatePartInstanceExpectedDurationWithTransition(partInstance) ||
 						0
 				}
 
@@ -401,7 +406,7 @@ export class RundownTimingCalculator {
 				// Handle invalid parts by overriding the values to preset values for Invalid parts
 				if (partInstance.part.invalid && !partInstance.part.gap) {
 					partDisplayDuration = defaultDuration
-					this.partPlayed[unprotectString(partInstance.part._id)] = 0
+					this.partPlayed[partInstanceOrPartId] = 0
 				}
 
 				if (
@@ -416,15 +421,14 @@ export class RundownTimingCalculator {
 						this.displayDurationGroups[partInstance.part.displayDurationGroup] - partDisplayDuration
 				}
 
-				const partInstancePartId = unprotectString(partInstance.part._id)
-				this.partExpectedDurations[partInstancePartId] = partExpectedDuration
-				this.partStartsAt[partInstancePartId] = startsAtAccumulator
-				this.partDisplayStartsAt[partInstancePartId] = displayStartsAtAccumulator
-				this.partDurations[partInstancePartId] = partDuration
-				this.partDisplayDurations[partInstancePartId] = partDisplayDuration
-				this.partDisplayDurationsNoPlayback[partInstancePartId] = partDisplayDurationNoPlayback
-				startsAtAccumulator += this.partDurations[partInstancePartId]
-				displayStartsAtAccumulator += this.partDisplayDurations[partInstancePartId]
+				this.partExpectedDurations[partInstanceOrPartId] = partExpectedDuration
+				this.partStartsAt[partInstanceOrPartId] = startsAtAccumulator
+				this.partDisplayStartsAt[partInstanceOrPartId] = displayStartsAtAccumulator
+				this.partDurations[partInstanceOrPartId] = partDuration
+				this.partDisplayDurations[partInstanceOrPartId] = partDisplayDuration
+				this.partDisplayDurationsNoPlayback[partInstanceOrPartId] = partDisplayDurationNoPlayback
+				startsAtAccumulator += this.partDurations[partInstanceOrPartId]
+				displayStartsAtAccumulator += this.partDisplayDurations[partInstanceOrPartId]
 
 				// waitAccumulator is used to calculate the countdowns for Parts relative to the current Part
 				// always add the full duration, in case by some manual intervention this segment should play twice
@@ -433,12 +437,12 @@ export class RundownTimingCalculator {
 					waitDuration =
 						partInstance.timings?.duration ||
 						partDisplayDuration ||
-						calculatePartInstanceExpectedDurationWithPreroll(partInstance) ||
+						calculatePartInstanceExpectedDurationWithTransition(partInstance) ||
 						0
 				} else {
 					waitDuration =
 						partInstance.timings?.duration ||
-						calculatePartInstanceExpectedDurationWithPreroll(partInstance) ||
+						calculatePartInstanceExpectedDurationWithTransition(partInstance) ||
 						0
 				}
 				if (segmentUsesBudget) {
@@ -462,7 +466,8 @@ export class RundownTimingCalculator {
 						// this needs to use partInstance.part.expectedDuration as opposed to partExpectedDuration, because
 						// partExpectedDuration is affected by displayGroups, and if it hasn't played yet then it shouldn't
 						// add any duration to the "remaining" time pool
-						remainingRundownDuration += calculatePartInstanceExpectedDurationWithPreroll(partInstance) || 0
+						remainingRundownDuration +=
+							calculatePartInstanceExpectedDurationWithTransition(partInstance) || 0
 						// item is onAir right now, and it's is currently shorter than expectedDuration
 					} else if (
 						lastStartedPlayback &&
@@ -476,9 +481,11 @@ export class RundownTimingCalculator {
 				}
 
 				if (!rundownExpectedDurations[unprotectString(partInstance.part.rundownId)]) {
-					rundownExpectedDurations[unprotectString(partInstance.part.rundownId)] = partExpectedDuration
+					rundownExpectedDurations[unprotectString(partInstance.part.rundownId)] =
+						partInstance.part.expectedDuration ?? 0
 				} else {
-					rundownExpectedDurations[unprotectString(partInstance.part.rundownId)] += partExpectedDuration
+					rundownExpectedDurations[unprotectString(partInstance.part.rundownId)] +=
+						partInstance.part.expectedDuration ?? 0
 				}
 			})
 
@@ -592,21 +599,22 @@ export class RundownTimingCalculator {
 		let remainingTimeOnCurrentPart: number | undefined = undefined
 		let currentPartWillAutoNext = false
 		if (currentAIndex >= 0) {
-			const currentLivePart = parts[currentAIndex]
-			const currentLivePartInstance = findPartInstanceInMapOrWrapToTemporary(partInstancesMap, currentLivePart)
+			const currentLivePartInstance = partInstances[currentAIndex]
+			const currentLivePart = currentLivePartInstance.part
 
 			const lastStartedPlayback = currentLivePartInstance.timings?.plannedStartedPlayback
 
 			let onAirPartDuration =
 				currentLivePartInstance.timings?.duration ||
-				calculatePartInstanceExpectedDurationWithPreroll(currentLivePartInstance) ||
+				calculatePartInstanceExpectedDurationWithTransition(currentLivePartInstance) ||
 				0
 			if (
 				currentLivePart.displayDurationGroup &&
 				(currentLivePart.expectedDuration === undefined || currentLivePart.expectedDuration === 0)
 			) {
 				onAirPartDuration =
-					this.partDisplayDurationsNoPlayback[unprotectString(currentLivePart._id)] || onAirPartDuration
+					getPartInstanceTimingValue(this.partDisplayDurationsNoPlayback, currentLivePartInstance) ??
+					onAirPartDuration
 			}
 
 			remainingTimeOnCurrentPart =
@@ -625,7 +633,7 @@ export class RundownTimingCalculator {
 			asPlayedPlaylistDuration: asPlayedRundownDuration,
 			rundownExpectedDurations,
 			rundownAsPlayedDurations,
-			partCountdown: objectFromEntries(this.linearParts) as Record<string, number | null>,
+			partCountdown: objectFromEntries(this.linearParts),
 			partDurations: this.partDurations,
 			partPlayed: this.partPlayed,
 			partStartsAt: this.partStartsAt,
@@ -642,27 +650,6 @@ export class RundownTimingCalculator {
 			isLowResolution,
 			nextRundownAnchor,
 		})
-	}
-
-	clearTempPartInstances(): void {
-		this.temporaryPartInstances.clear()
-	}
-
-	private getPartInstanceOrGetCachedTemp(partInstancesMap: Map<PartId, PartInstance>, part: Part): PartInstance {
-		const origPartId = part._id
-		const partInstance = partInstancesMap.get(origPartId)
-		if (partInstance !== undefined) {
-			return partInstance
-		} else {
-			let tempPartInstance = this.temporaryPartInstances.get(origPartId)
-			if (tempPartInstance !== undefined) {
-				return tempPartInstance
-			} else {
-				tempPartInstance = wrapPartToTemporaryInstance(protectString(''), part)
-				this.temporaryPartInstances.set(origPartId, tempPartInstance)
-				return tempPartInstance
-			}
-		}
 	}
 
 	private getRundownsBeforeNextBreak(
@@ -721,7 +708,7 @@ export interface RundownTimingContext {
 	rundownExpectedDurations?: Record<string, number>
 	/** This is the complete duration of each rundown: as planned for the unplayed content, and as-run for the played-out, but ignoring unplayed/unplayable parts in order */
 	rundownAsPlayedDurations?: Record<string, number>
-	/** this is the countdown to each of the parts relative to the current on air part. */
+	/** this is the countdown to each of the parts relative to the current on air part. This allways uses PartId's as the index */
 	partCountdown?: Record<string, number | null>
 	/** The calculated durations of each of the Parts: as-planned/as-run depending on state. */
 	partDurations?: Record<string, number>
@@ -792,6 +779,26 @@ export function computeSegmentDuration(
 	}, 0)
 }
 
+export function getPartInstanceTimingId(
+	partInstance: Pick<PartInstance, '_id' | 'isTemporary'> & { part: Pick<DBPart, '_id'> }
+): TimingId {
+	return !partInstance.isTemporary ? unprotectString(partInstance._id) : unprotectString(partInstance.part._id)
+}
+
+/**
+ * Get a timing value from a timing context map for a given (temporary) PartInstance. Will return `null` if not found.
+ */
+export function getPartInstanceTimingValue(
+	values: Record<string, number> | undefined,
+	partInstance: Pick<PartInstance, '_id' | 'isTemporary'> & { part: Pick<DBPart, '_id'> }
+): number | null {
+	if (!values) return null
+	if (partInstance.isTemporary) {
+		return values[unprotectString(partInstance.part._id)] ?? null
+	}
+	return values[unprotectString(partInstance._id)] ?? values[unprotectString(partInstance.part._id)] ?? null
+}
+
 export function getPlaylistTimingDiff(
 	playlist: Pick<DBRundownPlaylist, 'timing' | 'startedPlayback' | 'activationId'>,
 	timingContext: RundownTimingContext
@@ -845,7 +852,7 @@ export function getPlaylistTimingDiff(
 }
 
 function ensureMinimumDefaultDurationIfNotAuto(
-	partInstance: PartInstance,
+	partInstance: CalculateTimingsPartInstance,
 	incomingDuration: number | undefined,
 	defaultDuration: number
 ): number {
@@ -865,7 +872,7 @@ function ensureMinimumDefaultDurationIfNotAuto(
  */
 function getSegmentRundownAnchorFromPart(
 	partId: PartId,
-	partInstancesMap: Map<PartId, PartInstance>,
+	partInstancesMap: Map<PartId, CalculateTimingsPartInstance>,
 	segmentsMap: Map<SegmentId, DBSegment>,
 	now: number
 ): number | undefined {

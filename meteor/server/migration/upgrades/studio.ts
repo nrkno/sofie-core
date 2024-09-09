@@ -1,19 +1,56 @@
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { BlueprintValidateConfigForStudioResult, StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { Meteor } from 'meteor/meteor'
-import { Studio } from '../../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { profiler } from '../../api/profiler'
 import { Studios } from '../../collections'
 import { logger } from '../../logging'
 import { QueueStudioJob } from '../../worker/worker'
+import { BlueprintFixUpConfigMessage } from '../../../lib/api/migration'
 
-export async function validateConfigForStudio(studioId: StudioId): Promise<BlueprintValidateConfigForStudioResult> {
+async function getStudio(studioId: StudioId): Promise<Pick<DBStudio, '_id'>> {
 	const studio = (await Studios.findOneAsync(studioId, {
 		fields: {
 			_id: 1,
 		},
-	})) as Pick<Studio, '_id'> | undefined
+	})) as Pick<DBStudio, '_id'> | undefined
 	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found!`)
+
+	return studio
+}
+
+export async function fixupConfigForStudio(studioId: StudioId): Promise<BlueprintFixUpConfigMessage[]> {
+	await getStudio(studioId)
+
+	const queuedJob = await QueueStudioJob(StudioJobs.BlueprintFixUpConfigForStudio, studioId, undefined)
+
+	const span = profiler.startSpan('queued-job')
+	try {
+		const res = await queuedJob.complete
+		// explicitly await before returning
+		return res.messages
+	} finally {
+		span?.end()
+	}
+}
+
+export async function ignoreFixupConfigForStudio(studioId: StudioId): Promise<void> {
+	await getStudio(studioId)
+
+	const queuedJob = await QueueStudioJob(StudioJobs.BlueprintIgnoreFixUpConfigForStudio, studioId, undefined)
+
+	const span = profiler.startSpan('queued-job')
+	try {
+		const res = await queuedJob.complete
+		// explicitly await before returning
+		return res
+	} finally {
+		span?.end()
+	}
+}
+
+export async function validateConfigForStudio(studioId: StudioId): Promise<BlueprintValidateConfigForStudioResult> {
+	await getStudio(studioId)
 
 	const queuedJob = await QueueStudioJob(StudioJobs.BlueprintValidateConfigForStudio, studioId, undefined)
 
@@ -29,12 +66,7 @@ export async function validateConfigForStudio(studioId: StudioId): Promise<Bluep
 
 export async function runUpgradeForStudio(studioId: StudioId): Promise<void> {
 	logger.info(`Running upgrade for Studio "${studioId}"`)
-	const studio = (await Studios.findOneAsync(studioId, {
-		fields: {
-			_id: 1,
-		},
-	})) as Pick<Studio, '_id'> | undefined
-	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found!`)
+	await getStudio(studioId)
 
 	const queuedJob = await QueueStudioJob(StudioJobs.BlueprintUpgradeForStudio, studioId, undefined)
 

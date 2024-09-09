@@ -1,12 +1,15 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
-import { MongoModifier, MongoQuery } from '../typings/meteor'
 import { ProtectedString, protectString } from '../lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import type { Collection as RawCollection, Db as RawDb } from 'mongodb'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-import { MongoFieldSpecifier, SortSpecifier } from '@sofie-automation/corelib/dist/mongo'
-import { CustomCollectionName, CustomCollectionType } from '../api/pubsub'
+import { MongoFieldSpecifier, MongoModifier, MongoQuery, SortSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { CustomCollectionName, MeteorPubSubCustomCollections } from '../api/pubsub'
+import {
+	PeripheralDevicePubSubCollections,
+	PeripheralDevicePubSubCollectionsNames,
+} from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 
 export const ClientCollections = new Map<CollectionName, MongoCollection<any> | WrappedMongoReadOnlyCollection<any>>()
 function registerClientCollection(
@@ -17,7 +20,10 @@ function registerClientCollection(
 	ClientCollections.set(name, collection)
 }
 
-export const PublicationCollections = new Map<CustomCollectionName, WrappedMongoReadOnlyCollection<any>>()
+export const PublicationCollections = new Map<
+	CustomCollectionName | PeripheralDevicePubSubCollectionsNames,
+	WrappedMongoReadOnlyCollection<any>
+>()
 
 /**
  * Map of current collection objects.
@@ -96,11 +102,23 @@ export function createSyncReadOnlyMongoCollection<DBInterface extends { _id: Pro
  * Create a Mongo Collection for a virtual collection populated by a custom-publication
  * @param name Name of the custom-collection
  */
-export function createSyncCustomPublicationMongoCollection<K extends keyof CustomCollectionType>(
-	name: K
-): MongoReadOnlyCollection<CustomCollectionType[K]> {
-	const collection = new Mongo.Collection<CustomCollectionType[K]>(name)
-	const wrapped = new WrappedMongoReadOnlyCollection<CustomCollectionType[K]>(collection, name)
+export function createSyncCustomPublicationMongoCollection<
+	K extends CustomCollectionName & keyof MeteorPubSubCustomCollections
+>(name: K): MongoReadOnlyCollection<MeteorPubSubCustomCollections[K]> {
+	const collection = new Mongo.Collection<MeteorPubSubCustomCollections[K]>(name)
+	const wrapped = new WrappedMongoReadOnlyCollection<MeteorPubSubCustomCollections[K]>(collection, name)
+
+	if (PublicationCollections.has(name)) throw new Meteor.Error(`Cannot re-register collection "${name}"`)
+	PublicationCollections.set(name, wrapped)
+
+	return wrapped
+}
+
+export function createSyncPeripheralDeviceCustomPublicationMongoCollection<
+	K extends PeripheralDevicePubSubCollectionsNames & keyof PeripheralDevicePubSubCollections
+>(name: K): MongoReadOnlyCollection<PeripheralDevicePubSubCollections[K]> {
+	const collection = new Mongo.Collection<PeripheralDevicePubSubCollections[K]>(name)
+	const wrapped = new WrappedMongoReadOnlyCollection<PeripheralDevicePubSubCollections[K]>(collection, name)
 
 	if (PublicationCollections.has(name)) throw new Meteor.Error(`Cannot re-register collection "${name}"`)
 	PublicationCollections.set(name, wrapped)
@@ -181,7 +199,7 @@ export class WrappedMongoCollection<DBInterface extends { _id: ProtectedString<a
 		}
 	}
 	update(
-		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		selector: MongoQuery<DBInterface> | DBInterface['_id'] | { _id: DBInterface['_id'] },
 		modifier: MongoModifier<DBInterface>,
 		options?: UpdateOptions
 	): number {
@@ -266,9 +284,15 @@ export interface MongoCollection<DBInterface extends { _id: ProtectedString<any>
 	 * @param modifier Specifies how to modify the documents
 	 */
 	update(
-		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		selector: DBInterface['_id'] | { _id: DBInterface['_id'] },
 		modifier: MongoModifier<DBInterface>,
 		options?: UpdateOptions
+	): number
+	update(
+		selector: MongoQuery<DBInterface>,
+		modifier: MongoModifier<DBInterface>,
+		// Require { multi } to be set when selecting multiple documents to be updated, otherwise only the first found document will be updated
+		options: UpdateOptions & Required<Pick<UpdateOptions, 'multi'>>
 	): number
 
 	/**

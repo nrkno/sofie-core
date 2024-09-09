@@ -12,6 +12,7 @@ import * as WebSocket from 'faye-websocket'
 import * as EJSON from 'ejson'
 import { EventEmitter } from 'eventemitter3'
 import got from 'got'
+import { ProtectedString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 
 export interface TLSOpts {
 	// Described in https://nodejs.org/api/tls.html#tls_tls_connect_options_callback
@@ -48,27 +49,22 @@ export interface DDPConnectorOptions {
 /**
  * Observer watching for changes to a collection.
  */
-export interface Observer {
+export interface Observer<Doc extends { _id: ProtectedString<any> | string }> {
 	/** Name of the collection being observed */
 	readonly name: string
 	/** Identifier of this observer */
-	readonly id: string
+	readonly id: Doc['_id']
 	/**
 	 * Callback when a document is added to a collection.
 	 * @callback
 	 * @param id Identifier of the document added
 	 * @param fields The added document
 	 */
-	added: (id: string, fields?: { [attr: string]: unknown }) => void
+	added: (id: Doc['_id'], fields?: Partial<Doc>) => void
 	/** Callback when a document is changed in a collection. */
-	changed: (
-		id: string,
-		oldFields: { [attr: string]: unknown },
-		clearedFields: Array<string>,
-		newFields: { [attr: string]: unknown }
-	) => void
+	changed: (id: Doc['_id'], oldFields: Partial<Doc>, clearedFields: Array<keyof Doc>, newFields: Partial<Doc>) => void
 	/** Callback when a document is removed from a collection. */
-	removed: (id: string, oldValue: { [attr: string]: unknown }) => void
+	removed: (id: Doc['_id'], oldValue: Partial<Doc>) => void
 	/** Request to stop observing the collection */
 	stop: () => void
 }
@@ -398,7 +394,7 @@ export class DDPClient extends EventEmitter<DDPClientEvents> {
 	private callbacks: { [id: string]: (error?: DDPError, result?: unknown) => void } = {}
 	private updatedCallbacks: { [name: string]: () => void } = {}
 	private pendingMethods: { [id: string]: boolean } = {}
-	private observers: { [name: string]: { [_id: string]: Observer } } = {}
+	private observers: { [name: string]: { [_id: string]: Observer<any> } } = {}
 	private reconnectTimeout: NodeJS.Timeout | null = null
 
 	constructor(opts?: DDPConnectorOptions) {
@@ -531,7 +527,7 @@ export class DDPClient extends EventEmitter<DDPClientEvents> {
 			this.collections[name][id] = addedDocument
 
 			if (this.observers[name]) {
-				Object.values<Observer>(this.observers[name]).forEach((ob) => ob.added(id, data.fields))
+				Object.values<Observer<any>>(this.observers[name]).forEach((ob) => ob.added(id, data.fields))
 			}
 		}
 	}
@@ -550,7 +546,7 @@ export class DDPClient extends EventEmitter<DDPClientEvents> {
 			delete this.collections[name][id]
 
 			if (this.observers[name]) {
-				Object.values<Observer>(this.observers[name]).forEach((ob) => ob.removed(id, oldValue))
+				Object.values<Observer<any>>(this.observers[name]).forEach((ob) => ob.removed(id, oldValue))
 			}
 		}
 	}
@@ -591,7 +587,7 @@ export class DDPClient extends EventEmitter<DDPClientEvents> {
 			this.collections[name][id] = updatedDocument
 
 			if (this.observers[name]) {
-				Object.values<Observer>(this.observers[name]).forEach((ob) =>
+				Object.values<Observer<any>>(this.observers[name]).forEach((ob) =>
 					ob.changed(id, oldFields, clearedFields, newFields)
 				)
 			}
@@ -646,14 +642,14 @@ export class DDPClient extends EventEmitter<DDPClientEvents> {
 		return (this.nextId += 1).toString()
 	}
 
-	private addObserver(observer: Observer): void {
+	private addObserver(observer: Observer<any>): void {
 		if (!this.observers[observer.name]) {
 			this.observers[observer.name] = {}
 		}
 		this.observers[observer.name][observer.id] = observer
 	}
 
-	private removeObserver(observer: Observer): void {
+	private removeObserver(observer: Observer<any>): void {
 		if (!this.observers[observer.name]) {
 			return
 		}
@@ -878,11 +874,11 @@ export class DDPClient extends EventEmitter<DDPClientEvents> {
 	 */
 	observe(
 		collectionName: string,
-		added?: Observer['added'],
-		changed?: Observer['changed'],
-		removed?: Observer['removed']
-	): Observer {
-		const observer: Observer = {
+		added?: Observer<any>['added'],
+		changed?: Observer<any>['changed'],
+		removed?: Observer<any>['removed']
+	): Observer<any> {
+		const observer: Observer<any> = {
 			id: this.getNextId(),
 			name: collectionName,
 			added:

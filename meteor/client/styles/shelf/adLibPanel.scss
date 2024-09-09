@@ -110,14 +110,20 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 					color: #000;
 					transition: 0.2s background-color;
 				}
+
+				&:focus-visible {
+					outline: none;
+				}
 			}
 
 			> .adlib-panel__list-view__toolbar__filter__clear {
 				position: absolute;
-				right: 1em;
-				top: 0.4em;
+				right: 0.5em;
+				top: 0.35em;
 				opacity: 0.3;
 				cursor: pointer;
+				background: none;
+				border: none;
 
 				&:hover {
 					opacity: 0.7;

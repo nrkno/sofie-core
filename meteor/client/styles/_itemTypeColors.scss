@@ -33,11 +33,13 @@ $segment-layer-background-mic: #1e6820;
 $segment-layer-background-guest: #008a92;
 $segment-layer-background-local: #9a2bd8;
 $segment-layer-background-local--second: darken($segment-layer-background-local, 10%);
+$segment-layer-background-studio-screen: #641fb3;
 
 $segment-item-disabled-background: #898989;
 $segment-item-disabled-color: #c9c9c9;
 
-$layer-types-solid: 'unknown', 'camera', 'lower-third', 'graphics', 'remote', 'vt', 'local', 'script', 'mic', 'guest';
+$layer-types-solid: 'unknown', 'camera', 'lower-third', 'graphics', 'remote', 'vt', 'local', 'script', 'mic', 'guest',
+	'studio-screen';
 $layer-types-gradient: 'live-speak'; //
 
 $layer-types: join($layer-types-solid, $layer-types-gradient);
@@ -457,4 +459,5 @@ $layer-types: join($layer-types-solid, $layer-types-gradient);
 	--segment-layer-background-script: #{$segment-layer-background-script};
 	--segment-layer-background-mic: #{$segment-layer-background-mic};
 	--segment-layer-background-guest: #{$segment-layer-background-guest};
+	--segment-layer-background-studio-screen: #{$segment-layer-background-studio-screen};
 }

@@ -145,7 +145,7 @@ describe('Service messages internal API', () => {
 		})
 
 		it('should write message to CoreSystem.serviceMessages', async () => {
-			const expected = {}
+			const expected: Record<string, ServiceMessage> = {}
 			expected[message2.id] = convertExternalToServiceMessage(message2)
 			const cs = Object.assign({}, fakeCoreSystem, {
 				serviceMessages: {},
@@ -163,7 +163,7 @@ describe('Service messages internal API', () => {
 		})
 
 		it('should leave existing messages untouched', async () => {
-			const expected = {}
+			const expected: Record<string, ServiceMessage> = {}
 			expected[message1.id] = convertExternalToServiceMessage(message1)
 			expected[message2.id] = convertExternalToServiceMessage(message2)
 			const cs = Object.assign({}, fakeCoreSystem, {

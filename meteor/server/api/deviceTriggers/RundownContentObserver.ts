@@ -1,10 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import {
-	RundownId,
-	RundownPlaylistActivationId,
-	RundownPlaylistId,
-	ShowStyleBaseId,
-} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownId, RundownPlaylistId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
 	PartInstances,
 	Parts,
@@ -37,17 +32,18 @@ export class RundownContentObserver {
 	#observers: Meteor.LiveQueryHandle[] = []
 	#cache: ContentCache
 	#cancelCache: () => void
-	#cleanup: (() => void) | undefined
+	#cleanup: () => void = () => {
+		throw new Error('RundownContentObserver.#cleanup has not been set!')
+	}
 	#disposed = false
 
 	constructor(
 		rundownPlaylistId: RundownPlaylistId,
 		showStyleBaseId: ShowStyleBaseId,
 		rundownIds: RundownId[],
-		activationId: RundownPlaylistActivationId,
 		onChanged: ChangedHandler
 	) {
-		logger.silly(`Creating RundownContentObserver for playlist "${rundownPlaylistId}" activation "${activationId}"`)
+		logger.silly(`Creating RundownContentObserver for playlist "${rundownPlaylistId}"`)
 		const { cache, cancel: cancelCache } = createReactiveContentCache(() => {
 			this.#cleanup = onChanged(cache)
 			if (this.#disposed) this.#cleanup()
@@ -57,11 +53,11 @@ export class RundownContentObserver {
 		this.#cancelCache = cancelCache
 
 		this.#observers = [
-			RundownPlaylists.observe(rundownPlaylistId, cache.RundownPlaylists.link(), {
+			RundownPlaylists.observeChanges(rundownPlaylistId, cache.RundownPlaylists.link(), {
 				projection: rundownPlaylistFieldSpecifier,
 			}),
-			ShowStyleBases.observe(showStyleBaseId, cache.ShowStyleBases.link()),
-			TriggeredActions.observe(
+			ShowStyleBases.observeChanges(showStyleBaseId, cache.ShowStyleBases.link()),
+			TriggeredActions.observeChanges(
 				{
 					showStyleBaseId: {
 						$in: [showStyleBaseId, null],
@@ -69,7 +65,7 @@ export class RundownContentObserver {
 				},
 				cache.TriggeredActions.link()
 			),
-			Segments.observe(
+			Segments.observeChanges(
 				{
 					rundownId: {
 						$in: rundownIds,
@@ -80,7 +76,7 @@ export class RundownContentObserver {
 					projection: segmentFieldSpecifier,
 				}
 			),
-			Parts.observe(
+			Parts.observeChanges(
 				{
 					rundownId: {
 						$in: rundownIds,
@@ -91,9 +87,11 @@ export class RundownContentObserver {
 					projection: partFieldSpecifier,
 				}
 			),
-			PartInstances.observe(
+			PartInstances.observeChanges(
 				{
-					playlistActivationId: activationId,
+					rundownId: {
+						$in: rundownIds,
+					},
 					reset: {
 						$ne: true,
 					},
@@ -103,7 +101,7 @@ export class RundownContentObserver {
 					projection: partInstanceFieldSpecifier,
 				}
 			),
-			RundownBaselineAdLibActions.observe(
+			RundownBaselineAdLibActions.observeChanges(
 				{
 					rundownId: {
 						$in: rundownIds,
@@ -114,7 +112,7 @@ export class RundownContentObserver {
 					projection: adLibActionFieldSpecifier,
 				}
 			),
-			RundownBaselineAdLibPieces.observe(
+			RundownBaselineAdLibPieces.observeChanges(
 				{
 					rundownId: {
 						$in: rundownIds,
@@ -125,7 +123,7 @@ export class RundownContentObserver {
 					projection: adLibPieceFieldSpecifier,
 				}
 			),
-			AdLibActions.observe(
+			AdLibActions.observeChanges(
 				{
 					rundownId: {
 						$in: rundownIds,
@@ -136,7 +134,7 @@ export class RundownContentObserver {
 					projection: adLibActionFieldSpecifier,
 				}
 			),
-			AdLibPieces.observe(
+			AdLibPieces.observeChanges(
 				{
 					rundownId: {
 						$in: rundownIds,

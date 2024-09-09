@@ -55,6 +55,9 @@ export interface Blueprint {
 
 	/** Hash for the blueprint, changed each time it is changed */
 	blueprintHash: BlueprintHash
+
+	/** Whether the blueprint this wraps has a `fixUpConfig` function defined */
+	hasFixUpFunction: boolean
 }
 
 /** Describes the last state a Blueprint document was in when applying config changes */

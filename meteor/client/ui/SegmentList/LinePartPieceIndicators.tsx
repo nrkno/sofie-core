@@ -1,5 +1,5 @@
 import React from 'react'
-import { ISourceLayerExtended, PieceExtended } from '../../../lib/Rundown'
+import { ISourceLayerExtended, PieceExtended } from '../../lib/RundownResolver'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { LinePartAdLibIndicator } from './LinePartPieceIndicator/LinePartAdLibIndicator'
 import { LinePartPieceIndicator } from './LinePartPieceIndicator/LinePartPieceIndicator'
@@ -15,7 +15,7 @@ interface IProps {
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 }
 
-export const LinePartPieceIndicators: React.FC<IProps> = function LinePartPieceIndicators({
+export const LinePartPieceIndicators: React.FC<Readonly<IProps>> = function LinePartPieceIndicators({
 	partId,
 	pieces,
 	indicatorColumns,

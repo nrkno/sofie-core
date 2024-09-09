@@ -70,12 +70,12 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 		(filterIndex: number, newVal: ChainLink) => {
 			action.filterChain.splice(filterIndex, 1, newVal)
 
-			overrideHelper.replaceItem(actionId, action)
+			overrideHelper().replaceItem(actionId, action).commit()
 		},
 		[action, overrideHelper]
 	)
 
-	function onFilterInsertNext(filterIndex) {
+	function onFilterInsertNext(filterIndex: number) {
 		if (action.filterChain.length === filterIndex + 1) {
 			const obj =
 				filterIndex > -1
@@ -90,7 +90,7 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 
 			action.filterChain.splice(filterIndex + 1, 0, obj)
 
-			overrideHelper.replaceItem(actionId, action)
+			overrideHelper().replaceItem(actionId, action).commit()
 		}
 
 		setOpenFilterIndex(filterIndex + 1)
@@ -100,11 +100,11 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 	function onFilterRemove(filterIndex: number) {
 		action.filterChain.splice(filterIndex, 1)
 
-		overrideHelper.replaceItem(actionId, action)
+		overrideHelper().replaceItem(actionId, action).commit()
 	}
 
 	function onChange(newVal: SomeAction) {
-		overrideHelper.replaceItem(actionId, newVal)
+		overrideHelper().replaceItem(actionId, newVal).commit()
 	}
 
 	function isFinished(): boolean {
@@ -178,7 +178,7 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 					<RundownPlaylistFilter link={chainLink} key={chainIndex} />
 				) : (
 					<dl className="triggered-action-entry__action__filter" key={chainIndex}>
-						<dt>{chainLink.object}</dt>
+						<dt>{(chainLink as any).object}</dt>
 					</dl>
 				)
 			)}

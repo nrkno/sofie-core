@@ -12,7 +12,8 @@ jobs:
   sonarcloud:
     name: SonarCloud
     runs-on: ubuntu-latest
-    if: ${{ github.repository_owner == 'nrkno' }}
+    if: ${{ github.repository_owner == 'nrkno' && !github.event.pull_request.head.repo.fork }}
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v4

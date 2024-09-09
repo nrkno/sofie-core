@@ -11,7 +11,7 @@ interface IStudioDevicesProps {
 	studioId: StudioId
 }
 
-export function StudioDevices({ studioId }: IStudioDevicesProps): JSX.Element {
+export function StudioDevices({ studioId }: Readonly<IStudioDevicesProps>): JSX.Element {
 	const studioDevices = useTracker(
 		() =>
 			PeripheralDevices.find({

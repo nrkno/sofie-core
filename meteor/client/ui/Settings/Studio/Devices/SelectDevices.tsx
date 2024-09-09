@@ -3,7 +3,7 @@ import Tooltip from 'rc-tooltip'
 import { doModalDialog } from '../../../../lib/ModalDialog'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle, faTrash, faPlus } from '@fortawesome/free-solid-svg-icons'
-import { PeripheralDevice, PeripheralDeviceType } from '../../../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { Link } from 'react-router-dom'
 import { MomentFromNow } from '../../../../lib/Moment'
 import { useTranslation } from 'react-i18next'
@@ -17,7 +17,7 @@ interface StudioSelectDevicesProps {
 	studioId: StudioId
 	studioDevices: PeripheralDevice[]
 }
-export function StudioSelectDevices({ studioId, studioDevices }: StudioSelectDevicesProps): JSX.Element {
+export function StudioSelectDevices({ studioId, studioDevices }: Readonly<StudioSelectDevicesProps>): JSX.Element {
 	const { t } = useTranslation()
 
 	const availableDevices = useTracker(
@@ -129,7 +129,7 @@ interface StudioDeviceEntryProps {
 	device: PeripheralDevice
 	confirmRemove: (deviceId: PeripheralDeviceId, deviceName: string | undefined) => void
 }
-function StudioDeviceEntry({ device, confirmRemove }: StudioDeviceEntryProps) {
+function StudioDeviceEntry({ device, confirmRemove }: Readonly<StudioDeviceEntryProps>) {
 	const doConfirmRemove = useCallback(
 		() => confirmRemove(device._id, device.name),
 		[confirmRemove, device._id, device.name]
@@ -156,7 +156,7 @@ interface AvailableDeviceEntryProps {
 	device: PeripheralDevice
 	addDevice: (deviceId: PeripheralDeviceId) => void
 }
-function AvailableDeviceEntry({ device, addDevice }: AvailableDeviceEntryProps) {
+function AvailableDeviceEntry({ device, addDevice }: Readonly<AvailableDeviceEntryProps>) {
 	const doAddDevice = useCallback(() => {
 		addDevice(device._id)
 	}, [addDevice, device._id])

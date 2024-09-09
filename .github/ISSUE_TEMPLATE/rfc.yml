@@ -1,5 +1,5 @@
 name: Request for Comments ❗
-description: Use this to initiate a discussion about a new feature or a larger change
+description: Use this to initiate a discussion about a new feature or a larger change.
 title: "RFC: [Short description of the feature/change]"
 labels:
   - RFC
@@ -14,7 +14,7 @@ body:
 
   - type: textarea
     attributes:
-      label: About me
+      label: About Me
       description: Tell us who / which organization you are representing, and how the Sofie team will be able to contact you.
       placeholder: Example "This RFC is posted on behalf of the NRK."
     validations:
@@ -22,7 +22,7 @@ body:
 
   - type: textarea
     attributes:
-      label: Use case
+      label: Use Case
       description: "Please write some background information here, such as: What is your use case? What problem are you trying to solve?"
     validations:
       required: true

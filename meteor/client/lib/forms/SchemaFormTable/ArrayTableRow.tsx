@@ -15,7 +15,7 @@ interface ArrayTableRowProps {
 	translationNamespaces: string[]
 	sofieEnumDefinitons: Record<string, SchemaFormSofieEnumDefinition> | undefined
 
-	overrideHelper: OverrideOpHelperArrayTable
+	overrideHelper: () => OverrideOpHelperArrayTable
 
 	rowId: number
 	rowObject: any
@@ -37,7 +37,7 @@ export function ArrayTableRow({
 	isExpanded,
 	toggleExpanded,
 	confirmRemove,
-}: ArrayTableRowProps): JSX.Element {
+}: Readonly<ArrayTableRowProps>): JSX.Element {
 	const rowItem = useMemo(
 		() =>
 			literal<WrappedOverridableItemNormal<any>>({
@@ -56,7 +56,7 @@ export function ArrayTableRow({
 				summaryFields={summaryFields}
 				rowId={rowId}
 				showRowId={false}
-				object={rowObject}
+				rowItem={rowItem}
 				isEdited={isExpanded}
 				editItem={toggleExpanded}
 				removeItem={confirmRemove}

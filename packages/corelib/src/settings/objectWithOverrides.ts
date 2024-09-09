@@ -177,6 +177,12 @@ function applySetOp<T extends object>(result: ApplyOverridesResult<T>, operation
 	} else {
 		result.preserve.push(operation)
 
+		if (!canApplyToPath(result.obj, operation.path)) {
+			// Can't set at this path
+			result.invalid.push(operation)
+			return
+		}
+
 		const existingValue = objectPath.get(result.obj, operation.path)
 		if (_.isEqual(existingValue, operation.value)) {
 			// Same value
@@ -193,6 +199,12 @@ function applySetOp<T extends object>(result: ApplyOverridesResult<T>, operation
 }
 
 function applyDeleteOp<T extends object>(result: ApplyOverridesResult<T>, operation: ObjectOverrideDeleteOp): void {
+	if (!canApplyToPath(result.obj, operation.path)) {
+		// Can't set at this path
+		result.invalid.push(operation)
+		return
+	}
+
 	if (objectPath.has(result.obj, operation.path)) {
 		// It exists in the path, so do the delete
 		objectPath.del(result.obj, operation.path)
@@ -202,4 +214,81 @@ function applyDeleteOp<T extends object>(result: ApplyOverridesResult<T>, operat
 	}
 	// Always keep the delete op
 	result.preserve.push(operation)
+}
+
+function canApplyToPath<T extends object>(resultObj: T, path: string): boolean {
+	let parentPath: string | undefined = path
+	while ((parentPath = getParentObjectPath(parentPath)) !== undefined) {
+		const parentValue = objectPath.get(resultObj, parentPath)
+		if (parentValue) {
+			return typeof parentValue === 'object' || Array.isArray(parentValue)
+		}
+	}
+
+	return true
+}
+
+/**
+ * Split a list of SomeObjectOverrideOp based on whether they match a specified prefix
+ * @param allOps The array of SomeObjectOverrideOp
+ * @param prefix The prefix to match, without a trailing `.`
+ */
+export function filterOverrideOpsForPrefix(
+	allOps: ReadonlyDeep<SomeObjectOverrideOp[]>,
+	prefix: string
+): { opsForPrefix: ReadonlyDeep<SomeObjectOverrideOp>[]; otherOps: ReadonlyDeep<SomeObjectOverrideOp>[] } {
+	const res: { opsForPrefix: ReadonlyDeep<SomeObjectOverrideOp>[]; otherOps: ReadonlyDeep<SomeObjectOverrideOp>[] } =
+		{
+			opsForPrefix: [],
+			otherOps: [],
+		}
+
+	const pathAsPrefix = prefix.endsWith('.') ? prefix : `${prefix}.`
+
+	for (const op of allOps) {
+		if (op.path === prefix || op.path.startsWith(pathAsPrefix)) {
+			res.opsForPrefix.push(op)
+		} else {
+			res.otherOps.push(op)
+		}
+	}
+
+	return res
+}
+
+export function findParentOpToUpdate(
+	opsForId: SomeObjectOverrideOp[],
+	subPath: string
+):
+	| {
+			op: ObjectOverrideSetOp
+			newSubPath: string
+	  }
+	| undefined {
+	const revOps = [...opsForId].reverse()
+
+	for (const op of revOps) {
+		if (subPath === op.path) {
+			// There is an op at the same path, this should be replaced by the current one
+			return undefined
+		}
+
+		if (subPath.startsWith(`${op.path}.`)) {
+			// The new value is inside of this op
+			if (op.op === 'delete') {
+				// Can't mutate a delete op like this
+				return undefined
+			}
+
+			// It's a set op, so we would be better to modify in place rather than add another mutate op
+			return {
+				op,
+				newSubPath: subPath.slice(op.path.length + 1),
+			}
+		}
+	}
+	//
+
+	// Nothing matched
+	return undefined
 }

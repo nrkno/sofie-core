@@ -7,7 +7,7 @@ import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/
 import { clone, getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { UISegmentPartNote } from '../../../../lib/api/rundownNotifications'
-import { Segment } from '../../../../lib/collections/Segments'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { generateTranslation } from '../../../../lib/lib'
 import { generateNotesForSegment } from '../generateNotesForSegment'
 import { PartFields, PartInstanceFields, SegmentFields } from '../reactiveContentCache'
@@ -16,7 +16,7 @@ describe('generateNotesForSegment', () => {
 	test('no notes', async () => {
 		const playlistId = protectString<RundownPlaylistId>('playlist0')
 		const nrcsName = 'some nrcs'
-		const segment: Pick<Segment, SegmentFields> = {
+		const segment: Pick<DBSegment, SegmentFields> = {
 			_id: protectString('segment0'),
 			_rank: 1,
 			rundownId: protectString('rundown0'),
@@ -32,7 +32,7 @@ describe('generateNotesForSegment', () => {
 	test('orphaned: deleted segment', async () => {
 		const playlistId = protectString<RundownPlaylistId>('playlist0')
 		const nrcsName = 'some nrcs'
-		const segment: Pick<Segment, SegmentFields> = {
+		const segment: Pick<DBSegment, SegmentFields> = {
 			_id: protectString('segment0'),
 			_rank: 1,
 			rundownId: protectString('rundown0'),
@@ -67,7 +67,7 @@ describe('generateNotesForSegment', () => {
 	test('orphaned: hidden segment', async () => {
 		const playlistId = protectString<RundownPlaylistId>('playlist0')
 		const nrcsName = 'some nrcs'
-		const segment: Pick<Segment, SegmentFields> = {
+		const segment: Pick<DBSegment, SegmentFields> = {
 			_id: protectString('segment0'),
 			_rank: 1,
 			rundownId: protectString('rundown0'),
@@ -118,7 +118,7 @@ describe('generateNotesForSegment', () => {
 			},
 		})
 
-		const segment: Pick<Segment, SegmentFields> = {
+		const segment: Pick<DBSegment, SegmentFields> = {
 			_id: protectString('segment0'),
 			_rank: 1,
 			rundownId: protectString('rundown0'),
@@ -172,7 +172,7 @@ describe('generateNotesForSegment', () => {
 		const playlistId = protectString<RundownPlaylistId>('playlist0')
 		const nrcsName = 'some nrcs'
 
-		const segment: Pick<Segment, SegmentFields> = {
+		const segment: Pick<DBSegment, SegmentFields> = {
 			_id: protectString('segment0'),
 			_rank: 1,
 			rundownId: protectString('rundown0'),
@@ -264,7 +264,7 @@ describe('generateNotesForSegment', () => {
 		const playlistId = protectString<RundownPlaylistId>('playlist0')
 		const nrcsName = 'some nrcs'
 
-		const segment: Pick<Segment, SegmentFields> = {
+		const segment: Pick<DBSegment, SegmentFields> = {
 			_id: protectString('segment0'),
 			_rank: 1,
 			rundownId: protectString('rundown0'),
@@ -295,7 +295,7 @@ describe('generateNotesForSegment', () => {
 		const playlistId = protectString<RundownPlaylistId>('playlist0')
 		const nrcsName = 'some nrcs'
 
-		const segment: Pick<Segment, SegmentFields> = {
+		const segment: Pick<DBSegment, SegmentFields> = {
 			_id: protectString('segment0'),
 			_rank: 1,
 			rundownId: protectString('rundown0'),
@@ -325,7 +325,7 @@ describe('generateNotesForSegment', () => {
 		const playlistId = protectString<RundownPlaylistId>('playlist0')
 		const nrcsName = 'some nrcs'
 
-		const segment: Pick<Segment, SegmentFields> = {
+		const segment: Pick<DBSegment, SegmentFields> = {
 			_id: protectString('segment0'),
 			_rank: 1,
 			rundownId: protectString('rundown0'),
@@ -355,7 +355,7 @@ describe('generateNotesForSegment', () => {
 		const playlistId = protectString<RundownPlaylistId>('playlist0')
 		const nrcsName = 'some nrcs'
 
-		const segment: Pick<Segment, SegmentFields> = {
+		const segment: Pick<DBSegment, SegmentFields> = {
 			_id: protectString('segment0'),
 			_rank: 1,
 			rundownId: protectString('rundown0'),
@@ -407,7 +407,7 @@ describe('generateNotesForSegment', () => {
 		const playlistId = protectString<RundownPlaylistId>('playlist0')
 		const nrcsName = 'some nrcs'
 
-		const segment: Pick<Segment, SegmentFields> = {
+		const segment: Pick<DBSegment, SegmentFields> = {
 			_id: protectString('segment0'),
 			_rank: 1,
 			rundownId: protectString('rundown0'),

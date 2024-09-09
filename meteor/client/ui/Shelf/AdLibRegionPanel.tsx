@@ -13,7 +13,6 @@ import { IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter } from './Ad
 import { matchFilter } from './AdLibListView'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { MeteorCall } from '../../../lib/api/methods'
 import {
@@ -24,12 +23,13 @@ import {
 	isAdLibNext,
 	isAdLibOnAir,
 } from '../../lib/shelf'
-import { PieceInstance } from '../../../lib/collections/PieceInstances'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
+import { useContentStatusForPieceInstance, WithMediaObjectStatusProps } from '../SegmentTimeline/withMediaObjectStatus'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { UIStudios } from '../Collections'
 import { Meteor } from 'meteor/meteor'
+import { ReadonlyDeep } from 'type-fest'
 
 interface IState {
 	objId?: string
@@ -48,13 +48,23 @@ interface IAdLibRegionPanelTrackedProps extends IDashboardPanelTrackedProps {
 	isLiveLine: boolean
 }
 
-class AdLibRegionPanelBase extends MeteorReactComponent<
-	Translated<IAdLibPanelProps & IAdLibRegionPanelProps & AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps>,
+class AdLibRegionPanelBase extends React.Component<
+	Translated<
+		IAdLibPanelProps &
+			IAdLibRegionPanelProps &
+			AdLibFetchAndFilterProps &
+			IAdLibRegionPanelTrackedProps &
+			WithMediaObjectStatusProps
+	>,
 	IState
 > {
 	constructor(
 		props: Translated<
-			IAdLibPanelProps & IAdLibRegionPanelProps & AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps
+			IAdLibPanelProps &
+				IAdLibRegionPanelProps &
+				AdLibFetchAndFilterProps &
+				IAdLibRegionPanelTrackedProps &
+				WithMediaObjectStatusProps
 		>
 	) {
 		super(props)
@@ -172,7 +182,7 @@ class AdLibRegionPanelBase extends MeteorReactComponent<
 	}
 
 	private renderPreview() {
-		const thumbnailUrl = this.props.piece?.contentStatus?.thumbnailUrl
+		const thumbnailUrl = this.props.contentStatus?.thumbnailUrl
 		if (thumbnailUrl) {
 			return <img src={thumbnailUrl} className="adlib-region-panel__image" />
 		}
@@ -223,10 +233,15 @@ class AdLibRegionPanelBase extends MeteorReactComponent<
 	}
 }
 
-export const AdLibRegionPanelWithStatus = withMediaObjectStatus<
-	Translated<IAdLibPanelProps & IAdLibRegionPanelProps & AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps>,
-	{}
->()(AdLibRegionPanelBase)
+function AdLibRegionPanelWithStatus(
+	props: Translated<
+		IAdLibPanelProps & IAdLibRegionPanelProps & AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps
+	>
+) {
+	const contentStatus = useContentStatusForPieceInstance(props.piece?.instance)
+
+	return <AdLibRegionPanelBase {...props} contentStatus={contentStatus} />
+}
 
 export const AdLibRegionPanel = translateWithTracker<
 	Translated<IAdLibPanelProps & IAdLibRegionPanelProps>,
@@ -247,13 +262,13 @@ export const AdLibRegionPanel = translateWithTracker<
 		)
 
 		// Pick thumbnails to display
-		const nextThumbnail: PieceInstance | undefined = nextPieceInstances.find((p) =>
+		const nextThumbnail: ReadonlyDeep<PieceInstance> | undefined = nextPieceInstances.find((p) =>
 			props.panel.thumbnailSourceLayerIds?.includes(p.piece.sourceLayerId)
 		)
-		const currentThumbnail: PieceInstance | undefined = !props.panel.hideThumbnailsForActivePieces
+		const currentThumbnail: ReadonlyDeep<PieceInstance> | undefined = !props.panel.hideThumbnailsForActivePieces
 			? unfinishedPieceInstances.find((p) => props.panel.thumbnailSourceLayerIds?.includes(p.piece.sourceLayerId))
 			: undefined
-		const thumbnailPiece: PieceInstance | undefined = props.panel.thumbnailPriorityNextPieces
+		const thumbnailPiece: ReadonlyDeep<PieceInstance> | undefined = props.panel.thumbnailPriorityNextPieces
 			? nextThumbnail ?? currentThumbnail
 			: currentThumbnail ?? nextThumbnail
 

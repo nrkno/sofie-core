@@ -1,14 +1,14 @@
 import { Meteor } from 'meteor/meteor'
 import { allowAccessToStudio } from './lib/security'
-import { MongoQueryKey } from '../../lib/typings/meteor'
+import { MongoQueryKey } from '@sofie-automation/corelib/dist/mongo'
 import { logNotAllowed } from './lib/lib'
-import { ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
+import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
-import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Settings } from '../../lib/Settings'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { isProtectedString } from '../../lib/lib'
-import { fetchStudioLight, StudioLight } from '../optimizations'
+import { fetchStudioLight } from '../optimizations'
 import {
 	ExternalMessageQueueObjId,
 	OrganizationId,
@@ -17,6 +17,7 @@ import {
 	UserId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ExternalMessageQueue, RundownPlaylists } from '../collections'
+import { StudioLight } from '@sofie-automation/corelib/dist/dataModel/Studio'
 
 export namespace StudioReadAccess {
 	/** Handles read access for all studio document */
@@ -62,8 +63,8 @@ export namespace StudioContentWriteAccess {
 
 	export async function rundownPlaylist(
 		cred0: Credentials,
-		existingPlaylist: RundownPlaylist | RundownPlaylistId
-	): Promise<StudioContentAccess & { playlist: RundownPlaylist }> {
+		existingPlaylist: DBRundownPlaylist | RundownPlaylistId
+	): Promise<StudioContentAccess & { playlist: DBRundownPlaylist }> {
 		triggerWriteAccess()
 		if (existingPlaylist && isProtectedString(existingPlaylist)) {
 			const playlistId = existingPlaylist

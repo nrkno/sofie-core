@@ -1,7 +1,7 @@
 import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import classNames from 'classnames'
 import React, { useEffect, useState } from 'react'
-import { PartExtended, PieceExtended } from '../../../../lib/Rundown'
+import { PartExtended, PieceExtended } from '../../../lib/RundownResolver'
 import { findPieceExtendedToShowFromOrderedResolvedInstances } from '../../PieceIcons/utils'
 import StudioContext from '../../RundownView/StudioContext'
 import { StoryboardPartThumbnailInner } from './StoryboardPartThumbnailInner'
@@ -26,7 +26,11 @@ function findMainPiece(pieces: PieceExtended[]) {
 	)
 }
 
-export const StoryboardPartThumbnail = React.memo(function StoryboardPartThumbnail({ part, isLive, isNext }: IProps) {
+export const StoryboardPartThumbnail = React.memo(function StoryboardPartThumbnail({
+	part,
+	isLive,
+	isNext,
+}: Readonly<IProps>) {
 	const [mainPiece, setMainPiece] = useState<PieceExtended | undefined>(findMainPiece(part.pieces))
 	const [highlight] = useState(false)
 
@@ -47,7 +51,7 @@ export const StoryboardPartThumbnail = React.memo(function StoryboardPartThumbna
 					partId={part.partId}
 					partInstanceId={part.instance._id}
 					highlight={highlight}
-					partAutoNext={part.instance.part.autoNext || false}
+					partAutoNext={part.instance.part.autoNext ?? false}
 					partPlannedStoppedPlayback={part.instance.timings?.plannedStoppedPlayback}
 				/>
 			)}

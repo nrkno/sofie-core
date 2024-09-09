@@ -11,11 +11,10 @@ import { PartCountdown } from '../RundownView/RundownTiming/PartCountdown'
 import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
 import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { useTranslation } from 'react-i18next'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { IContextMenuContext } from '../RundownView'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
-import { UIStudio } from '../../../lib/api/studios'
 import { SegmentTimeAnchorTime } from '../RundownView/RundownTiming/SegmentTimeAnchorTime'
 
 export function SegmentListHeader({
@@ -24,7 +23,6 @@ export function SegmentListHeader({
 	segment,
 	parts,
 	playlist,
-	studio,
 	highlight,
 	segmentNoteCounts,
 	isLiveSegment,
@@ -38,12 +36,11 @@ export function SegmentListHeader({
 	getSegmentContext,
 	onTimeUntilClick,
 	onHeaderNoteClick,
-}: {
+}: Readonly<{
 	isDetached: boolean
 	isDetachedStick: boolean
 	segment: SegmentUi
-	playlist: RundownPlaylist
-	studio: UIStudio
+	playlist: DBRundownPlaylist
 	parts: Array<PartUi>
 	segmentNoteCounts: SegmentNoteCounts
 	highlight: boolean
@@ -58,7 +55,7 @@ export function SegmentListHeader({
 	onTimeUntilClick: () => void
 	getSegmentContext: () => IContextMenuContext
 	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteSeverity) => void
-}): JSX.Element {
+}>): JSX.Element {
 	const { t } = useTranslation()
 
 	// TODO: This still needs to detect when it should stop being detached, because the original segment is no longer
@@ -147,9 +144,6 @@ export function SegmentListHeader({
 									)
 								}
 							/>
-						)}
-						{studio.settings.preserveUnsyncedPlayingSegmentContents && segment.orphaned && (
-							<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
 						)}
 					</div>
 				)}

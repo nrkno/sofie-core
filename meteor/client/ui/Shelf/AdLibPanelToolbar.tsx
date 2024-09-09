@@ -10,11 +10,11 @@ interface IToolbarPropsHeader {
 	searchFilter: string | undefined
 }
 
-export function AdLibPanelToolbar(props: IToolbarPropsHeader): JSX.Element {
+export function AdLibPanelToolbar(props: Readonly<IToolbarPropsHeader>): JSX.Element {
 	const { t } = useTranslation()
 
 	function searchInputChanged(e?: React.ChangeEvent<HTMLInputElement>) {
-		const newValue = e?.target.value || undefined
+		const newValue = e?.target.value
 		props.onFilterChange && typeof props.onFilterChange === 'function' && props.onFilterChange(newValue)
 	}
 
@@ -22,7 +22,7 @@ export function AdLibPanelToolbar(props: IToolbarPropsHeader): JSX.Element {
 		if (e.key === 'Escape' || e.key === 'Enter') {
 			if (!(document.activeElement instanceof HTMLElement)) return
 			document.activeElement.blur()
-		} else if (e.key.match(/^F\d+$/)) {
+		} else if (RegExp(/^F\d+$/).exec(e.key)) {
 			e.preventDefault()
 		}
 	}
@@ -47,9 +47,13 @@ export function AdLibPanelToolbar(props: IToolbarPropsHeader): JSX.Element {
 					value={props.searchFilter || ''}
 				/>
 				{props.searchFilter && (
-					<div className="adlib-panel__list-view__toolbar__filter__clear" onClick={clearSearchInput}>
+					<button
+						className="adlib-panel__list-view__toolbar__filter__clear"
+						aria-label={t('Clear filter')}
+						onClick={clearSearchInput}
+					>
 						<FontAwesomeIcon icon={faTimes} />
-					</div>
+					</button>
 				)}
 			</div>
 			<div className="adlib-panel__list-view__toolbar__buttons" style={{ display: 'none' }}>

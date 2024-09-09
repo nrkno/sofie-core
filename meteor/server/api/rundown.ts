@@ -13,8 +13,8 @@ import { StudioContentWriteAccess } from '../security/studio'
 import { runIngestOperation } from './ingest/lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { VerifiedRundownContentAccess, VerifiedRundownPlaylistContentAccess } from './lib'
-import { Blueprint } from '../../lib/collections/Blueprints'
-import { Studio } from '../../lib/collections/Studios'
+import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Blueprints, Rundowns, ShowStyleBases, ShowStyleVariants, Studios } from '../collections'
 
@@ -117,7 +117,7 @@ export namespace ClientRundownAPI {
 						_id: 1,
 						_rundownVersionHash: 1,
 					},
-				})) as Pick<Studio, '_id' | '_rundownVersionHash'>
+				})) as Pick<DBStudio, '_id' | '_rundownVersionHash'>
 				if (!studio) return 'missing studio'
 				if (rundown.importVersions.studio !== (studio._rundownVersionHash || 0)) return 'studio'
 			})

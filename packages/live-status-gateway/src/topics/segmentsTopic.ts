@@ -21,6 +21,7 @@ interface SegmentStatus {
 	rundownId: string
 	name: string
 	timing: SegmentTiming
+	publicData: unknown
 }
 
 export interface SegmentsStatus {
@@ -69,13 +70,12 @@ export class SegmentsTopic
 					name: segment.name,
 					timing: calculateSegmentTiming(this._partsBySegment[segmentId] ?? []),
 					identifier: segment.identifier,
+					publicData: segment.publicData,
 				}
 			}),
 		}
 
-		for (const subscriber of subscribers) {
-			this.sendMessage(subscriber, segmentsStatus)
-		}
+		this.sendMessage(subscribers, segmentsStatus)
 	}
 
 	async update(source: string, data: DBRundownPlaylist | DBSegment[] | DBPart[] | undefined): Promise<void> {
@@ -86,17 +86,17 @@ export class SegmentsTopic
 		switch (source) {
 			case PlaylistHandler.name: {
 				this._activePlaylist = data as DBRundownPlaylist | undefined
-				this._logger.info(`${this._name} received playlist update from ${source}`)
+				this.logUpdateReceived('playlist', source)
 				break
 			}
 			case SegmentsHandler.name: {
 				this._segments = data as DBSegment[]
-				this._logger.info(`${this._name} received segments update from ${source}`)
+				this.logUpdateReceived('segments', source)
 				break
 			}
 			case PartsHandler.name: {
 				this._partsBySegment = _.groupBy(data as DBPart[], 'segmentId')
-				this._logger.info(`${this._name} received parts update from ${source}`)
+				this.logUpdateReceived('parts', source)
 				break
 			}
 			default:

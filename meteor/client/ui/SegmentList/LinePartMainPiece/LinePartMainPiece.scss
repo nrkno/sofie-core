@@ -34,6 +34,7 @@
 		z-index: 0;
 
 		> .piece__status-icon {
+			margin-top: -1px;
 			margin-bottom: -1em;
 			vertical-align: top;
 		}
@@ -54,6 +55,15 @@
 				box-shadow: 0 0 4px black;
 				vertical-align: top;
 				margin-top: 0.25em;
+			}
+		}
+
+		> .segment-opl__main-piece__label-icon {
+			display: inline-block;
+			vertical-align: top;
+			
+			&.label-loop-icon {
+				margin: -3px 0 -2px 0;
 			}
 		}
 	}

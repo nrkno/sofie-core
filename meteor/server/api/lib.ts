@@ -1,8 +1,8 @@
 import { RundownId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Meteor } from 'meteor/meteor'
 import { MethodContext } from '../../lib/api/methods'
-import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { Rundown } from '../../lib/collections/Rundowns'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import {
 	RundownContentAccess,
 	RundownPlaylistContentAccess,
@@ -15,7 +15,7 @@ import {
  * It is identical to RundownPlaylistContentAccess, except for confirming access is allowed
  */
 export interface VerifiedRundownPlaylistContentAccess extends RundownPlaylistContentAccess {
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	studioId: StudioId
 }
 /**

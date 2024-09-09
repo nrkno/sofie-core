@@ -1,4 +1,4 @@
-import { MongoModifier, MongoQuery } from '../../../lib/typings/meteor'
+import { MongoModifier, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
@@ -12,7 +12,6 @@ import {
 } from '../../../lib/collections/lib'
 import { PromisifyCallbacks } from '../../../lib/lib'
 import type { AnyBulkWriteOperation } from 'mongodb'
-import _ from 'underscore'
 import { AsyncOnlyMongoCollection } from '../collection'
 import { WrappedMongoCollectionBase, dePromiseObjectOfFunctions } from './base'
 
@@ -91,7 +90,7 @@ export class WrappedMockCollection<DBInterface extends { _id: ProtectedString<an
 	}
 
 	async updateAsync(
-		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		selector: MongoQuery<DBInterface> | DBInterface['_id'] | { _id: DBInterface['_id'] },
 		modifier: MongoModifier<DBInterface>,
 		options?: UpdateOptions
 	): Promise<number> {
@@ -100,7 +99,7 @@ export class WrappedMockCollection<DBInterface extends { _id: ProtectedString<an
 	}
 
 	async upsertAsync(
-		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		selector: MongoQuery<DBInterface> | DBInterface['_id'] | { _id: DBInterface['_id'] },
 		modifier: MongoModifier<DBInterface>,
 		options?: UpsertOptions
 	): Promise<{ numberAffected?: number; insertedId?: DBInterface['_id'] }> {
@@ -137,14 +136,10 @@ export class WrappedMockCollection<DBInterface extends { _id: ProtectedString<an
 			const bulkWriteResult = await rawCollection.bulkWrite(ops, {
 				ordered: false,
 			})
-			if (
-				bulkWriteResult &&
-				_.isArray(bulkWriteResult.result?.writeErrors) &&
-				bulkWriteResult.result.writeErrors.length
-			) {
+			if (bulkWriteResult && bulkWriteResult.hasWriteErrors()) {
 				throw new Meteor.Error(
 					500,
-					`Errors in rawCollection.bulkWrite: ${bulkWriteResult.result.writeErrors.join(',')}`
+					`Errors in rawCollection.bulkWrite: ${bulkWriteResult.getWriteErrors().join(',')}`
 				)
 			}
 		}

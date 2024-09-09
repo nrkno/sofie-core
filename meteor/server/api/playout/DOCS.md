@@ -63,7 +63,6 @@ _Prerequisites: rundown playlist is active and there is no current hold_
 *   If part instance isn't current or next, queue the segment for removal
 *   Outside the playout lock, inside a ingest lock, check the orphaned segments again for removal (_why?)_
 *   Queue part instances for removal
-    *   if `Settings.preserveUnsyncedPlayingSegmentContents` is true and the segment is orphaned as well, do not remove the part instance
 
 ### How Sofie Executes a Take
 

@@ -5,8 +5,8 @@ import {
 	PeripheralDeviceCategory,
 	PERIPHERAL_SUBTYPE_PROCESS,
 	PeripheralDeviceSubType,
-} from '../../lib/collections/PeripheralDevices'
-import { Studio, DBStudio } from '../../lib/collections/Studios'
+} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
 	PieceLifespan,
 	IOutputLayer,
@@ -35,7 +35,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { Blueprint } from '../../lib/collections/Blueprints'
+import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { ICoreSystem, SYSTEM_ID, stripVersion } from '../../lib/collections/CoreSystem'
 import { internalUploadBlueprint } from '../../server/api/blueprints/api'
 import {
@@ -48,11 +48,11 @@ import {
 	Complete,
 	normalizeArray,
 } from '../../lib/lib'
-import { DBRundown } from '../../lib/collections/Rundowns'
-import { DBSegment } from '../../lib/collections/Segments'
-import { DBPart } from '../../lib/collections/Parts'
-import { EmptyPieceTimelineObjectsBlob, Piece } from '../../lib/collections/Pieces'
-import { DBRundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { EmptyPieceTimelineObjectsBlob, Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { restartRandomId } from '../random'
@@ -118,7 +118,7 @@ export async function setupMockPeripheralDevice(
 	category: PeripheralDeviceCategory,
 	type: PeripheralDeviceType,
 	subType: PeripheralDeviceSubType,
-	studio?: Pick<Studio, '_id'>,
+	studio?: Pick<DBStudio, '_id'>,
 	doc?: Partial<PeripheralDevice>
 ): Promise<PeripheralDevice> {
 	doc = doc || {}
@@ -220,7 +220,7 @@ export async function setupMockTriggeredActions(
 	}
 	return mocks
 }
-export async function setupMockStudio(doc?: Partial<DBStudio>): Promise<Studio> {
+export async function setupMockStudio(doc?: Partial<DBStudio>): Promise<DBStudio> {
 	doc = doc || {}
 
 	const studio: DBStudio = {
@@ -293,6 +293,7 @@ export async function setupMockShowStyleBase(
 		// hotkeyLegend?: Array<HotkeyDefinition>
 		_rundownVersionHash: '',
 		lastBlueprintConfig: undefined,
+		lastBlueprintFixUpHash: undefined,
 	}
 	const showStyleBase = _.extend(defaultShowStyleBase, doc)
 	await ShowStyleBases.insertAsync(showStyleBase)
@@ -434,7 +435,7 @@ export async function setupMockShowStyleBlueprint(
 						name: ingestRundown.name,
 						// expectedStart?:
 						// expectedDuration?: number;
-						metaData: ingestRundown.payload,
+						privateData: ingestRundown.payload,
 						timing: {
 							type: 'none' as any,
 						},
@@ -454,7 +455,7 @@ export async function setupMockShowStyleBlueprint(
 				getSegment: (_context: unknown, ingestSegment: IngestSegment): BlueprintResultSegment => {
 					const segment: IBlueprintSegment = {
 						name: ingestSegment.name ? ingestSegment.name : ingestSegment.externalId,
-						metaData: ingestSegment.payload,
+						privateData: ingestSegment.payload,
 						isHidden: ingestSegment.payload?.hidden,
 					}
 					const parts: BlueprintResultPart[] = []
@@ -463,7 +464,7 @@ export async function setupMockShowStyleBlueprint(
 						const part: IBlueprintPart = {
 							externalId: ingestPart.externalId,
 							title: ingestPart.name,
-							metaData: ingestPart.payload,
+							privateData: ingestPart.payload,
 							// autoNext?: boolean;
 							// autoNextOverlap?: number;
 							// prerollDuration?: number;
@@ -519,7 +520,7 @@ export interface DefaultEnvironment {
 	showStyleBase: DBShowStyleBase
 	triggeredActions: DBTriggeredActions[]
 	showStyleVariant: DBShowStyleVariant
-	studio: Studio
+	studio: DBStudio
 	core: ICoreSystem
 	systemTriggeredActions: DBTriggeredActions[]
 
@@ -609,7 +610,6 @@ export async function setupDefaultRundown(
 	const sourceLayerIds = Object.keys(applyAndValidateOverrides(env.showStyleBase.sourceLayersWithOverrides).obj)
 
 	const rundown: DBRundown = {
-		peripheralDeviceId: env.ingestDevice._id,
 		organizationId: null,
 		studioId: env.studio._id,
 		showStyleBaseId: env.showStyleBase._id,
@@ -634,7 +634,11 @@ export async function setupDefaultRundown(
 			core: '',
 		},
 
-		externalNRCSName: 'mock',
+		source: {
+			type: 'nrcs',
+			peripheralDeviceId: env.ingestDevice._id,
+			nrcsName: 'mock',
+		},
 	}
 	await Rundowns.mutableCollection.insertAsync(rundown)
 
@@ -662,7 +666,7 @@ export async function setupDefaultRundown(
 		_rank: 0,
 		externalId: 'MOCK_PART_0_0',
 		title: 'Part 0 0',
-		expectedDurationWithPreroll: undefined,
+		expectedDurationWithTransition: undefined,
 	}
 	await Parts.mutableCollection.insertAsync(part00)
 
@@ -730,7 +734,7 @@ export async function setupDefaultRundown(
 		_rank: 1,
 		externalId: 'MOCK_PART_0_1',
 		title: 'Part 0 1',
-		expectedDurationWithPreroll: undefined,
+		expectedDurationWithTransition: undefined,
 	}
 	await Parts.mutableCollection.insertAsync(part01)
 
@@ -771,7 +775,7 @@ export async function setupDefaultRundown(
 		_rank: 0,
 		externalId: 'MOCK_PART_1_0',
 		title: 'Part 1 0',
-		expectedDurationWithPreroll: undefined,
+		expectedDurationWithTransition: undefined,
 	}
 	await Parts.mutableCollection.insertAsync(part10)
 
@@ -782,7 +786,7 @@ export async function setupDefaultRundown(
 		_rank: 1,
 		externalId: 'MOCK_PART_1_1',
 		title: 'Part 1 1',
-		expectedDurationWithPreroll: undefined,
+		expectedDurationWithTransition: undefined,
 	}
 	await Parts.mutableCollection.insertAsync(part11)
 
@@ -793,7 +797,7 @@ export async function setupDefaultRundown(
 		_rank: 2,
 		externalId: 'MOCK_PART_1_2',
 		title: 'Part 1 2',
-		expectedDurationWithPreroll: undefined,
+		expectedDurationWithTransition: undefined,
 	}
 	await Parts.mutableCollection.insertAsync(part12)
 
