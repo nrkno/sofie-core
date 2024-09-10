@@ -5301,7 +5301,7 @@ __metadata:
   resolution: "@sofie-automation/shared-lib@workspace:shared-lib"
   dependencies:
     "@mos-connection/model": v4.2.0-alpha.1
-    timeline-state-resolver-types: 9.2.0-nightly-release52-20240909-111856-517f0ee37.0
+    timeline-state-resolver-types: 9.2.0-nightly-feat-connection-mgmt-SOFIE-1152-20240909-113333-004243e02.0
     tslib: ^2.6.2
     type-fest: ^3.13.1
   languageName: unknown
@@ -26052,15 +26052,6 @@ asn1@evs-broadcast/node-asn1:
   dependencies:
     tslib: ^2.6.3
   checksum: 08fb51f32cae7ad790ad6a8ec56518e54b280268c83b9614f75c43656b4d0f4f1d00c5637cf5d3a03e8c3e17c93d37ece9a50b07eb4928816f22e1fed25bc2dc
-  languageName: node
-  linkType: hard
-
-"timeline-state-resolver-types@npm:9.2.0-nightly-release52-20240909-111856-517f0ee37.0":
-  version: 9.2.0-nightly-release52-20240909-111856-517f0ee37.0
-  resolution: "timeline-state-resolver-types@npm:9.2.0-nightly-release52-20240909-111856-517f0ee37.0"
-  dependencies:
-    tslib: ^2.6.3
-  checksum: 6f9526e3e60021b722fd152272a7697a2b78517fb800a9e0879170388dcfeaaa2d386f80b9868b20bffe058033c9158077f93294cff7907c5d8a6d7b27e186f6
   languageName: node
   linkType: hard
 
