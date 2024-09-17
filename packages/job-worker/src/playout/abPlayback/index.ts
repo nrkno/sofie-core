@@ -6,7 +6,7 @@ import { WrappedShowStyleBlueprint } from '../../blueprints/cache'
 import { ReadonlyDeep } from 'type-fest'
 import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
 import { getCurrentTime } from '../../lib'
-import { resolveAbAssignmentsFromRequests } from './abPlaybackResolver'
+import { resolveAbAssignmentsFromRequests, SessionRequest } from './abPlaybackResolver'
 import { calculateSessionTimeRanges } from './abPlaybackSessions'
 import { applyAbPlayerObjectAssignments } from './applyAssignments'
 import { AbSessionHelper } from './abSessionHelper'
@@ -48,6 +48,17 @@ export function applyAbPlaybackForTimeline(
 	)
 
 	const previousAbSessionAssignments: Record<string, ABSessionAssignments> = playlist.assignedAbSessions || {}
+	logger.silly(`ABPlayback: Starting AB playback resolver ----------------------------`)
+	for (const [pool, assignments] of Object.entries<ABSessionAssignments>(previousAbSessionAssignments)) {
+		for (const assignment of Object.values<ABSessionAssignment | undefined>(assignments)) {
+			if (assignment) {
+				logger.silly(
+					`ABPlayback: Previous assignment "${pool}"-"${assignment.sessionId}" to player "${assignment.playerId}"`
+				)
+			}
+		}
+	}
+
 	const newAbSessionsResult: Record<string, ABSessionAssignments> = {}
 
 	const span = context.startSpan('blueprint.abPlaybackResolver')
@@ -73,7 +84,13 @@ export function applyAbPlaybackForTimeline(
 			now
 		)
 
-		logger.silly(`ABPlayback resolved sessions for "${poolName}": ${JSON.stringify(assignments)}`)
+		for (const assignment of Object.values<SessionRequest>(assignments.requests)) {
+			logger.silly(
+				`ABPlayback resolved session "${poolName}"-"${assignment.id}" to player "${
+					assignment.playerId
+				}" (${JSON.stringify(assignment)})`
+			)
+		}
 		if (assignments.failedRequired.length > 0) {
 			logger.warn(
 				`ABPlayback failed to assign sessions for "${poolName}": ${JSON.stringify(assignments.failedRequired)}`

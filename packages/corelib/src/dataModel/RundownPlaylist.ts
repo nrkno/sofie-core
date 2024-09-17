@@ -17,6 +17,8 @@ export interface ABSessionInfo {
 	id: string
 	/** The name of the session from the blueprints */
 	name: string
+	/** Whether the name is treated as globally unique */
+	isUniqueName: boolean
 	/** Set if the session is being by lookahead for a future part */
 	lookaheadForPartId?: PartId
 	/** Set if the session is being used by an infinite PieceInstance */
