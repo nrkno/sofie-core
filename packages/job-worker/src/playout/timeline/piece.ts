@@ -90,7 +90,8 @@ export function transformPieceGroupAndObjects(
 export function getPieceEnableInsidePart(
 	pieceInstance: ReadonlyDeep<PieceInstanceWithTimings>,
 	partTimings: PartCalculatedTimings,
-	partGroupId: string
+	partGroupId: string,
+	partHasEndTime: boolean
 ): TSR.Timeline.TimelineEnable {
 	const pieceEnable: TSR.Timeline.TimelineEnable = { ...pieceInstance.piece.enable }
 	if (typeof pieceEnable.start === 'number') {
@@ -103,7 +104,8 @@ export function getPieceEnableInsidePart(
 		}
 	}
 
-	if (partTimings.toPartPostroll) {
+	// If the part has an end time, we can consider post-roll
+	if (partHasEndTime && partTimings.toPartPostroll) {
 		if (!pieceEnable.duration) {
 			// make sure that the control object is shortened correctly
 			pieceEnable.duration = `#${partGroupId} - ${partTimings.toPartPostroll}`
