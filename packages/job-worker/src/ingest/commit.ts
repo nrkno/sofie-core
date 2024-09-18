@@ -221,6 +221,9 @@ export async function CommitIngestOperation(
 				// sync changes to the 'selected' partInstances
 				await syncChangesToPartInstances(context, playoutModel, ingestModel)
 
+				// update the quickloop in case we did any changes to things involving marker
+				playoutModel.updateQuickLoopState()
+
 				playoutModel.deferAfterSave(() => {
 					// Run in the background, we don't want to hold onto the lock to do this
 					context

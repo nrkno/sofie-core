@@ -65,6 +65,10 @@ export class QuickLoopService {
 
 		this.resetDynamicallyInsertedPartOverrideIfNoLongerNeeded(quickLoopProps)
 
+		// remove the marker if it no longer exists inside the rundown
+		if (quickLoopProps.start && !this.doesMarkerExist(quickLoopProps.start)) delete quickLoopProps.start
+		if (quickLoopProps.end && !this.doesMarkerExist(quickLoopProps.end)) delete quickLoopProps.end
+
 		if (quickLoopProps.start == null || quickLoopProps.end == null) {
 			quickLoopProps.running = false
 		} else {
@@ -175,6 +179,27 @@ export class QuickLoopService {
 			segmentRank: segment?._rank ?? fallback,
 			rundownRank: rundownRank ?? fallback,
 		}
+	}
+
+	/**
+	 * Check whether the thing a marker references still exists within the playlist
+	 * @param marker Marker to find
+	 */
+	private doesMarkerExist(marker: QuickLoopMarker) {
+		let found = false
+
+		if (marker.type === QuickLoopMarkerType.PART) {
+			found = !!this.playoutModel.findPart(marker.id)
+		} else if (marker.type === QuickLoopMarkerType.SEGMENT) {
+			found = !!this.playoutModel.findSegment(marker.id)
+		} else if (marker.type === QuickLoopMarkerType.RUNDOWN) {
+			found = !!this.playoutModel.getRundown(marker.id)
+		} else {
+			// we can't lose the playlist so that marker is always valid
+			found = true
+		}
+
+		return found
 	}
 
 	private findPartPosition(
