@@ -38,7 +38,7 @@ export const LinePartSecondaryPiece: React.FC<IProps> = React.memo(function Line
 	const typeClass = piece?.sourceLayer?.type ? RundownUtils.getSourceLayerClassName(piece?.sourceLayer?.type) : ''
 
 	const pieceStyle = useMemo<CSSProperties>(() => {
-		const width = timeInBase(piece.renderedDuration ?? partDuration, timelineBase, timelineBase)
+		const width = timeInBase(piece.renderedDuration ?? Math.max(timelineBase, partDuration), timelineBase, timelineBase)
 		const left = timeInBase(piece.renderedInPoint ?? 0, timelineBase, timelineBase)
 		const overflow = Math.max(0, left + width - 100)
 		return {
