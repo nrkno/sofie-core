@@ -25,7 +25,7 @@ describe('PlayoutPartInstanceModelImpl', () => {
 				externalId: '',
 				title: '',
 
-				expectedDurationWithPreroll: undefined,
+				expectedDurationWithTransition: undefined,
 			},
 		}
 	}
