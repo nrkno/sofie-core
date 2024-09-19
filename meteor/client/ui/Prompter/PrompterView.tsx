@@ -288,7 +288,7 @@ export class PrompterViewContent extends React.Component<Translated<IProps & ITr
 	}
 	scrollToPartInstance(partInstanceId: PartInstanceId): void {
 		const scrollMargin = this.calculateScrollPosition()
-		const target = document.querySelector<HTMLElement>(`#partInstance_${partInstanceId}`)
+		const target = document.querySelector<HTMLElement>(`[data-part-instance-id="${partInstanceId}"]`)
 
 		if (target) {
 			Velocity(document.body, 'finish')
@@ -376,63 +376,60 @@ export class PrompterViewContent extends React.Component<Translated<IProps & ITr
 	private checkCurrentTakeMarkers = () => {
 		const playlist = this.props.rundownPlaylist
 
-		if (playlist !== undefined) {
-			const positionTop = window.scrollY
-			const positionBottom = positionTop + window.innerHeight
+		if (playlist === undefined) return
+		const positionTop = window.scrollY
+		const positionBottom = positionTop + window.innerHeight
 
-			let currentPartElement: Element | null = null
-			let currentPartElementAfter: Element | null = null
-			let nextPartElementAfter: Element | null = null
+		let currentPartElement: Element | null = null
+		let currentPartElementAfter: Element | null = null
+		let nextPartElementAfter: Element | null = null
 
-			const anchors: Array<Element> = Array.from(document.querySelectorAll('.scroll-anchor'))
+		const anchors: Array<Element> = Array.from(document.querySelectorAll('.scroll-anchor'))
 
-			for (let index = 0; index < anchors.length; index++) {
-				const current = anchors[index]
-				const next = index + 1 < anchors.length ? anchors[index + 1] : null
+		for (let index = 0; index < anchors.length; index++) {
+			const current = anchors[index]
+			const next = index + 1 < anchors.length ? anchors[index + 1] : null
 
-				if (playlist.currentPartInfo && current.classList.contains(`live`)) {
-					currentPartElement = current
-					currentPartElementAfter = next
-				}
-				if (playlist.nextPartInfo && current.classList.contains(`next`)) {
-					nextPartElementAfter = next
-				}
+			if (playlist.currentPartInfo && current.classList.contains(`live`)) {
+				currentPartElement = current
+				currentPartElementAfter = next
 			}
-
-			const currentPositionStart = currentPartElement
-				? currentPartElement.getBoundingClientRect().top + positionTop
-				: null
-			const currentPositionEnd = currentPartElementAfter
-				? currentPartElementAfter.getBoundingClientRect().top + positionTop
-				: null
-
-			const nextPositionEnd = nextPartElementAfter
-				? nextPartElementAfter.getBoundingClientRect().top + positionTop
-				: null
-
-			const takeIndicator = document.querySelector('.take-indicator')
-			if (takeIndicator) {
-				if (currentPositionEnd && currentPositionEnd < positionTop) {
-					// Display take "^" indicator
-					takeIndicator.classList.remove('hidden')
-					takeIndicator.classList.add('top')
-				} else if (currentPositionStart && currentPositionStart > positionBottom) {
-					// Display take "v" indicator
-					takeIndicator.classList.remove('hidden', 'top')
-				} else {
-					takeIndicator.classList.add('hidden')
-				}
+			if (playlist.nextPartInfo && current.classList.contains(`next`)) {
+				nextPartElementAfter = next
 			}
+		}
 
-			const nextIndicator = document.querySelector('.next-indicator')
-			if (nextIndicator) {
-				if (nextPositionEnd && nextPositionEnd < positionTop) {
-					// Display next "^" indicator
-					nextIndicator.classList.remove('hidden')
-					nextIndicator.classList.add('top')
-				} else {
-					nextIndicator.classList.add('hidden')
-				}
+		const currentPositionStart = currentPartElement
+			? currentPartElement.getBoundingClientRect().top + positionTop
+			: null
+		const currentPositionEnd = currentPartElementAfter
+			? currentPartElementAfter.getBoundingClientRect().top + positionTop
+			: null
+
+		const nextPositionEnd = nextPartElementAfter ? nextPartElementAfter.getBoundingClientRect().top + positionTop : null
+
+		const takeIndicator = document.querySelector('.take-indicator')
+		if (takeIndicator) {
+			if (currentPositionEnd && currentPositionEnd < positionTop) {
+				// Display take "^" indicator
+				takeIndicator.classList.remove('hidden')
+				takeIndicator.classList.add('top')
+			} else if (currentPositionStart && currentPositionStart > positionBottom) {
+				// Display take "v" indicator
+				takeIndicator.classList.remove('hidden', 'top')
+			} else {
+				takeIndicator.classList.add('hidden')
+			}
+		}
+
+		const nextIndicator = document.querySelector('.next-indicator')
+		if (nextIndicator) {
+			if (nextPositionEnd && nextPositionEnd < positionTop) {
+				// Display next "^" indicator
+				nextIndicator.classList.remove('hidden')
+				nextIndicator.classList.add('top')
+			} else {
+				nextIndicator.classList.add('hidden')
 			}
 		}
 	}
@@ -740,24 +737,32 @@ const PrompterContent = withTranslation()(
 			// Go through the anchors and use the first one that we find:
 			for (const scrollAnchor of scrollAnchors) {
 				const anchor = document.getElementById(scrollAnchor.anchorId)
-				if (anchor) {
-					const { top } = anchor.getBoundingClientRect()
+				if (!anchor) continue
 
-					if (scrollAnchor.offset !== null) {
-						window.scrollBy({
-							top: top - scrollAnchor.offset,
-						})
-						// We've scrolled, exit the function!
-						return
-					} else {
-						// Note: config.margin does not have to be taken into account here,
-						// the css margins magically does it for us.
-						window.scrollBy({
-							top: top - readPosition,
-						})
-						// We've scrolled, exit the function!
-						return
-					}
+				const { top } = anchor.getBoundingClientRect()
+
+				if (scrollAnchor.offset !== null) {
+					this.props.config.debug &&
+						logger.debug(
+							`Selected anchor ${scrollAnchor.anchorId} as anchor element in view, restoring position ${scrollAnchor.offset}`
+						)
+
+					window.scrollBy({
+						top: top - scrollAnchor.offset,
+					})
+					// We've scrolled, exit the function!
+					return
+				} else {
+					this.props.config.debug &&
+						logger.debug(`Selected anchor ${scrollAnchor.anchorId} as anchor element outside of view, jumping to it`)
+
+					// Note: config.margin does not have to be taken into account here,
+					// the css margins magically does it for us.
+					window.scrollBy({
+						top: top - readPosition,
+					})
+					// We've scrolled, exit the function!
+					return
 				}
 			}
 			// None of the anchors where found at this point.
@@ -769,6 +774,7 @@ const PrompterContent = withTranslation()(
 					.join(', ')}`
 			)
 
+			// TODO: In the past 4 months this has been here, this hasn't logged a single line, should we keep it?
 			// Below is for troubleshooting, see if the anchor is in prompterData:
 			if (!this.props.prompterData) {
 				logger.error(`Read anchor troubleshooting: no prompterData`)
@@ -862,9 +868,9 @@ const PrompterContent = withTranslation()(
 		}
 
 		private getPartStatus(prompterData: PrompterData, part: PrompterDataPart) {
-			if (prompterData.currentPartInstanceId === part.id) {
+			if (prompterData.currentPartInstanceId === part.partInstanceId) {
 				return 'live'
-			} else if (prompterData.nextPartInstanceId === part.id) {
+			} else if (prompterData.nextPartInstanceId === part.partInstanceId) {
 				return 'next'
 			} else {
 				return null
@@ -915,9 +921,10 @@ const PrompterContent = withTranslation()(
 					for (const part of segment.parts) {
 						lines.push(
 							<div
-								id={`partInstance_${part.id}`}
+								id={`part_${part.id}`}
 								data-obj-id={segment.id + '_' + part.id}
-								key={'partInstance_' + part.id}
+								data-part-instance-id={part.partInstanceId}
+								key={'part_' + part.id}
 								className={ClassNames('prompter-part', 'scroll-anchor', this.getPartStatus(prompterData, part))}
 							>
 								{part.title || 'N/A'}
