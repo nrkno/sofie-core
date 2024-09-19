@@ -35,7 +35,8 @@ export interface PrompterDataSegment {
 	parts: PrompterDataPart[]
 }
 export interface PrompterDataPart {
-	id: PartInstanceId
+	id: PartId
+	partInstanceId: PartInstanceId
 	title: string | undefined
 	pieces: PrompterDataPiece[]
 }
@@ -183,7 +184,8 @@ export namespace PrompterAPI {
 			for (let partIndex = 0; partIndex < partInstances.length; partIndex++) {
 				const partInstance = partInstances[partIndex]
 				const partData: PrompterDataPart = {
-					id: partInstance._id,
+					id: partInstance.part._id,
+					partInstanceId: partInstance._id,
 					title: partInstance.part.prompterTitle || partInstance.part.title,
 					pieces: [],
 				}
