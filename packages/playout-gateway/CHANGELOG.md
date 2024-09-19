@@ -95,7 +95,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
-## [1.50.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.4-LSG-updates...v1.50.5) (2024-08-08)
+## [1.50.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.4...v1.50.5) (2024-09-19)
+
+**Note:** Version bump only for package playout-gateway
 
 **Note:** Version bump only for package playout-gateway
 
