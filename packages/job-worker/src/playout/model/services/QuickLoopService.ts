@@ -14,6 +14,7 @@ import { PlayoutPartInstanceModel } from '../PlayoutPartInstanceModel'
 import { JobContext } from '../../../jobs'
 import { clone } from '@sofie-automation/corelib/dist/lib'
 import { DEFAULT_FALLBACK_PART_DURATION } from '@sofie-automation/shared-lib/dist/core/constants'
+import { getCurrentTime } from '../../../lib'
 
 export class QuickLoopService {
 	constructor(private readonly context: JobContext, private readonly playoutModel: PlayoutModelReadonly) {}
@@ -54,7 +55,23 @@ export class QuickLoopService {
 				expectedDurationWithTransition = fallbackPartDuration
 			}
 		}
-		autoNext = autoNext || (isLoopingOverriden && (expectedDuration ?? 0) > 0)
+
+		const tooCloseToAutonext = () => {
+			const start = partInstanceModel.partInstance.timings?.plannedStartedPlayback
+			if (start !== undefined && partInstanceModel.partInstance.part.expectedDuration) {
+				// date.now - start = playback duration, duration + offset gives position in part
+				const playbackDuration = getCurrentTime() - start
+
+				// If there is an auto next planned
+				if (partInstanceModel.partInstance.part.expectedDuration - playbackDuration < 0) {
+					return true
+				}
+			}
+
+			return false
+		}
+
+		autoNext = autoNext || (isLoopingOverriden && (expectedDuration ?? 0) > 0 && !tooCloseToAutonext())
 		return { autoNext, expectedDuration, expectedDurationWithTransition }
 	}
 

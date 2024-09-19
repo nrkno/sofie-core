@@ -147,6 +147,18 @@ export function buildTimelineObjsForRundown(
 			currentPartEnable.duration =
 				partInstancesInfo.current.partInstance.part.expectedDuration +
 				partInstancesInfo.current.calculatedTimings.toPartDelay
+
+			if (
+				typeof currentPartEnable.start === 'number' &&
+				currentPartEnable.start + currentPartEnable.duration < getCurrentTime()
+			) {
+				logger.warn('Prevented setting the end of an autonext in the past')
+				// note - this will cause a small glitch on air where the next part is skipped into because this calculation does not account
+				// for the time it takes between timeline generation and timeline execution. That small glitch is preferable to setting the time
+				// very far in the past however. To do this properly we should support setting the "end" to "now" and have that calculated after
+				// timeline generation as we do for start times.
+				currentPartEnable.duration = getCurrentTime() - currentPartEnable.start
+			}
 		}
 		const currentPartGroup = createPartGroup(partInstancesInfo.current.partInstance, currentPartEnable)
 

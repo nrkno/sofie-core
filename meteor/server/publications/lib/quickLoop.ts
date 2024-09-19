@@ -8,7 +8,7 @@ import {
 import { MarkerPosition, compareMarkerPositions } from '@sofie-automation/corelib/dist/playout/playlist'
 import { ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { DEFAULT_FALLBACK_PART_DURATION } from '@sofie-automation/shared-lib/dist/core/constants'
-import { generateTranslation } from '../../../lib/lib'
+import { generateTranslation, getCurrentTime } from '../../../lib/lib'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
@@ -48,7 +48,8 @@ export function modifyPartForQuickLoop(
 	playlist: Pick<DBRundownPlaylist, 'quickLoop'>,
 	studio: Pick<DBStudio, 'settings'>,
 	quickLoopStartPosition: MarkerPosition | undefined,
-	quickLoopEndPosition: MarkerPosition | undefined
+	quickLoopEndPosition: MarkerPosition | undefined,
+	canSetAutoNext = () => true
 ): void {
 	const partPosition = findPartPosition(part, segmentRanks, rundownRanks)
 	const isLoopDefined = quickLoopStartPosition && quickLoopEndPosition
@@ -71,7 +72,45 @@ export function modifyPartForQuickLoop(
 			}
 		}
 	}
+	if (!canSetAutoNext()) return
 	part.autoNext = part.autoNext || (isLoopingOverriden && (part.expectedDuration ?? 0) > 0)
+}
+
+export function modifyPartInstanceForQuickLoop(
+	partInstance: Omit<DBPartInstance, 'part.privateData'>,
+	segmentRanks: Record<string, number>,
+	rundownRanks: Record<string, number>,
+	playlist: Pick<DBRundownPlaylist, 'quickLoop'>,
+	studio: Pick<DBStudio, 'settings'>,
+	quickLoopStartPosition: MarkerPosition | undefined,
+	quickLoopEndPosition: MarkerPosition | undefined
+): void {
+	// note that the logic for when a part does not do autonext in quickloop should reflect the logic in the QuickLoopService in job worker
+	const canAutoNext = () => {
+		const start = partInstance.timings?.plannedStartedPlayback
+		if (start !== undefined && partInstance.part.expectedDuration) {
+			// date.now - start = playback duration, duration + offset gives position in part
+			const playbackDuration = getCurrentTime() - start
+
+			// If there is an auto next planned soon or was in the past
+			if (partInstance.part.expectedDuration - playbackDuration < 0) {
+				return false
+			}
+		}
+
+		return true
+	}
+
+	modifyPartForQuickLoop(
+		partInstance.part,
+		segmentRanks,
+		rundownRanks,
+		playlist,
+		studio,
+		quickLoopStartPosition,
+		quickLoopEndPosition,
+		canAutoNext // do not adjust the part instance if we have passed the time where we can still enable auto next
+	)
 }
 
 export function findMarkerPosition(

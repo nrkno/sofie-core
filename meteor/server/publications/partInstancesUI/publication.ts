@@ -28,7 +28,12 @@ import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { Match } from '../../../lib/check'
 import { RundownReadAccess } from '../../security/rundown'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { extractRanks, findMarkerPosition, modifyPartForQuickLoop, stringsToIndexLookup } from '../lib/quickLoop'
+import {
+	extractRanks,
+	findMarkerPosition,
+	modifyPartInstanceForQuickLoop,
+	stringsToIndexLookup,
+} from '../lib/quickLoop'
 
 interface UIPartInstancesArgs {
 	readonly playlistActivationId: RundownPlaylistActivationId
@@ -183,8 +188,8 @@ export async function manipulateUIPartInstancesPublicationData(
 			invalidatedSegmentsSet.has(partInstance.segmentId) ||
 			invalidatedPartInstancesSet.has(partInstance._id)
 		) {
-			modifyPartForQuickLoop(
-				partInstance.part,
+			modifyPartInstanceForQuickLoop(
+				partInstance,
 				segmentRanks,
 				rundownRanks,
 				playlist,
