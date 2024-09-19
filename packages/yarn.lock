@@ -5030,11 +5030,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sofie-automation/blueprints-integration@1.50.4, @sofie-automation/blueprints-integration@workspace:blueprints-integration":
+"@sofie-automation/blueprints-integration@1.50.5, @sofie-automation/blueprints-integration@workspace:blueprints-integration":
   version: 0.0.0-use.local
   resolution: "@sofie-automation/blueprints-integration@workspace:blueprints-integration"
   dependencies:
-    "@sofie-automation/shared-lib": 1.50.4
+    "@sofie-automation/shared-lib": 1.50.5
     tslib: ^2.4.0
     type-fest: ^2.19.0
   languageName: unknown
@@ -5071,12 +5071,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sofie-automation/corelib@1.50.4, @sofie-automation/corelib@workspace:corelib":
+"@sofie-automation/corelib@1.50.5, @sofie-automation/corelib@workspace:corelib":
   version: 0.0.0-use.local
   resolution: "@sofie-automation/corelib@workspace:corelib"
   dependencies:
-    "@sofie-automation/blueprints-integration": 1.50.4
-    "@sofie-automation/shared-lib": 1.50.4
+    "@sofie-automation/blueprints-integration": 1.50.5
+    "@sofie-automation/shared-lib": 1.50.5
     fast-clone: ^1.5.13
     i18next: ^21.9.1
     influx: ^5.9.3
@@ -5107,9 +5107,9 @@ __metadata:
   resolution: "@sofie-automation/job-worker@workspace:job-worker"
   dependencies:
     "@slack/webhook": ^6.1.0
-    "@sofie-automation/blueprints-integration": 1.50.4
-    "@sofie-automation/corelib": 1.50.4
-    "@sofie-automation/shared-lib": 1.50.4
+    "@sofie-automation/blueprints-integration": 1.50.5
+    "@sofie-automation/corelib": 1.50.5
+    "@sofie-automation/shared-lib": 1.50.5
     amqplib: ^0.10.3
     deepmerge: ^4.3.1
     elastic-apm-node: ^3.43.0
@@ -5139,11 +5139,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@sofie-automation/server-core-integration@1.50.4, @sofie-automation/server-core-integration@workspace:server-core-integration":
+"@sofie-automation/server-core-integration@1.50.5, @sofie-automation/server-core-integration@workspace:server-core-integration":
   version: 0.0.0-use.local
   resolution: "@sofie-automation/server-core-integration@workspace:server-core-integration"
   dependencies:
-    "@sofie-automation/shared-lib": 1.50.4
+    "@sofie-automation/shared-lib": 1.50.5
     ejson: ^2.2.3
     eventemitter3: ^4.0.7
     faye-websocket: ^0.11.4
@@ -5153,12 +5153,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@sofie-automation/shared-lib@1.50.4, @sofie-automation/shared-lib@workspace:shared-lib":
+"@sofie-automation/shared-lib@1.50.5, @sofie-automation/shared-lib@workspace:shared-lib":
   version: 0.0.0-use.local
   resolution: "@sofie-automation/shared-lib@workspace:shared-lib"
   dependencies:
     "@mos-connection/model": ^3.0.4
-    timeline-state-resolver-types: 9.0.1
+    timeline-state-resolver-types: 9.0.2
     tslib: ^2.4.0
     type-fest: ^2.19.0
   languageName: unknown
@@ -14992,10 +14992,10 @@ asn1@evs-broadcast/node-asn1:
     "@asyncapi/generator": 1.9.13
     "@asyncapi/html-template": 0.26.0
     "@asyncapi/nodejs-ws-template": 0.9.25
-    "@sofie-automation/blueprints-integration": 1.50.4
-    "@sofie-automation/corelib": 1.50.4
-    "@sofie-automation/server-core-integration": 1.50.4
-    "@sofie-automation/shared-lib": 1.50.4
+    "@sofie-automation/blueprints-integration": 1.50.5
+    "@sofie-automation/corelib": 1.50.5
+    "@sofie-automation/server-core-integration": 1.50.5
+    "@sofie-automation/shared-lib": 1.50.5
     debug: ^4.3.2
     fast-clone: ^1.5.13
     influx: ^5.9.2
@@ -16076,8 +16076,8 @@ asn1@evs-broadcast/node-asn1:
   resolution: "mos-gateway@workspace:mos-gateway"
   dependencies:
     "@mos-connection/connector": ^3.0.4
-    "@sofie-automation/server-core-integration": 1.50.4
-    "@sofie-automation/shared-lib": 1.50.4
+    "@sofie-automation/server-core-integration": 1.50.5
+    "@sofie-automation/shared-lib": 1.50.5
     tslib: ^2.4.0
     type-fest: ^2.19.0
     underscore: ^1.13.4
@@ -18053,11 +18053,11 @@ asn1@evs-broadcast/node-asn1:
   version: 0.0.0-use.local
   resolution: "playout-gateway@workspace:playout-gateway"
   dependencies:
-    "@sofie-automation/server-core-integration": 1.50.4
-    "@sofie-automation/shared-lib": 1.50.4
+    "@sofie-automation/server-core-integration": 1.50.5
+    "@sofie-automation/shared-lib": 1.50.5
     debug: ^4.3.3
     influx: ^5.9.3
-    timeline-state-resolver: 9.0.1
+    timeline-state-resolver: 9.0.2
     tslib: ^2.4.0
     underscore: ^1.13.4
     winston: ^3.8.2
@@ -21687,18 +21687,18 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"timeline-state-resolver-types@npm:9.0.1":
-  version: 9.0.1
-  resolution: "timeline-state-resolver-types@npm:9.0.1"
+"timeline-state-resolver-types@npm:9.0.2":
+  version: 9.0.2
+  resolution: "timeline-state-resolver-types@npm:9.0.2"
   dependencies:
     tslib: ^2.5.1
-  checksum: b814088e1118f0c5f80459958c5008e9bc9cf4484f5d0f3858e4bcb5146685f42a8328ef4e4764c1f95e1670b33109a8dd74c4582d6204a3f61b57efb216e013
+  checksum: be24c805246cea986f19c051c3fa71d9730bbc5baa17dba83d910e0aa139a758571ece15ac96da833a815186705a146bf051a2985dc5abaf034bd9fed2a067e0
   languageName: node
   linkType: hard
 
-"timeline-state-resolver@npm:9.0.1":
-  version: 9.0.1
-  resolution: "timeline-state-resolver@npm:9.0.1"
+"timeline-state-resolver@npm:9.0.2":
+  version: 9.0.2
+  resolution: "timeline-state-resolver@npm:9.0.2"
   dependencies:
     "@tv2media/v-connection": ^7.3.2
     atem-connection: 2.5.0
@@ -21720,7 +21720,7 @@ asn1@evs-broadcast/node-asn1:
     sprintf-js: ^1.1.2
     superfly-timeline: ^8.3.1
     threadedclass: ^1.2.1
-    timeline-state-resolver-types: 9.0.1
+    timeline-state-resolver-types: 9.0.2
     tslib: ^2.5.1
     tv-automation-quantel-gateway-client: ^3.1.7
     underscore: ^1.13.6
@@ -21728,7 +21728,7 @@ asn1@evs-broadcast/node-asn1:
     utf-8-validate: ^5.0.10
     ws: ^7.5.9
     xml-js: ^1.6.11
-  checksum: 3769f084c29d0bee4bf6f80e48a395e838956d8ec9d0f57539fd8d90c9e71f9abab24167edfcf8d103e86e31e965bcf77acd85fab8f111e47208aa908b0ac8bc
+  checksum: 3d3d5ecbdf40358499acd17d2c6ff219a2fb5b1a9b878915a31a3f9136db544ce57dce84cdec0f44b8681f334f7ba4988be78acbccbabca1aa3e654856bb6887
   languageName: node
   linkType: hard
 
