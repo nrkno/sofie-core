@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import { getRandomString } from './tempLib'
-import { getAllowStudio } from './localStorage'
 import { logger } from './logging'
 
 /*
@@ -12,7 +11,7 @@ import { logger } from './logging'
 const browserSessionId = getRandomString(8)
 
 // Only log status for studio users
-const logStatusEnable = getAllowStudio()
+const logStatusEnable = true // getAllowStudio() HACK: this needs to be setup to be reactive if this is wanted to work correctly
 
 const previouslyLogged: {
 	connected?: boolean
