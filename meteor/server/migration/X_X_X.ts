@@ -2,7 +2,11 @@ import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 import { Studios } from '../collections'
 import { convertObjectIntoOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { StudioRouteSet, StudioRouteSetExclusivityGroup } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import {
+	StudioRouteSet,
+	StudioRouteSetExclusivityGroup,
+	StudioPackageContainer,
+} from '@sofie-automation/corelib/dist/dataModel/Studio'
 
 /*
  * **************************************************************************************
@@ -94,6 +98,43 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 					},
 					$unset: {
 						routeSetExclusivityGroups: 1,
+					},
+				})
+			}
+		},
+	},
+	{
+		id: `convert packageContainers to ObjectWithOverrides`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const studios = await Studios.findFetchAsync({ packageContainers: { $exists: true } })
+
+			for (const studio of studios) {
+				//@ts-expect-error packageContainers is not typed as ObjectWithOverrides
+				if (studio.packageContainers) {
+					return 'packageContainers must be converted to an ObjectWithOverrides'
+				}
+			}
+
+			return false
+		},
+		migrate: async () => {
+			const studios = await Studios.findFetchAsync({ packageContainers: { $exists: true } })
+
+			for (const studio of studios) {
+				//@ts-expect-error packageContainers is not typed as ObjectWithOverrides
+				if (!studio.packageContainers) continue
+				//@ts-expect-error packageContainers is not typed as ObjectWithOverrides
+				const oldPackageContainers = studio.packageContainers as any as Record<string, StudioPackageContainer>
+
+				const newPackageContainers = convertObjectIntoOverrides(oldPackageContainers)
+
+				await Studios.updateAsync(studio._id, {
+					$set: {
+						packageContainersWithOverrides: newPackageContainers,
+					},
+					$unset: {
+						packageContainers: 1,
 					},
 				})
 			}

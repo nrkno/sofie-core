@@ -56,14 +56,14 @@ export type StudioFields =
 	| '_id'
 	| 'routeSetsWithOverrides'
 	| 'mappingsWithOverrides'
-	| 'packageContainers'
+	| 'packageContainersWithOverrides'
 	| 'previewContainerIds'
 	| 'thumbnailContainerIds'
 const studioFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBStudio, StudioFields>>>({
 	_id: 1,
 	routeSetsWithOverrides: 1,
 	mappingsWithOverrides: 1,
-	packageContainers: 1,
+	packageContainersWithOverrides: 1,
 	previewContainerIds: 1,
 	thumbnailContainerIds: 1,
 })
