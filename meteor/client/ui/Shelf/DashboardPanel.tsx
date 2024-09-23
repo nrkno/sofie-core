@@ -627,6 +627,6 @@ export const DashboardPanel = React.memo(
 		)
 	},
 	(props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
-		return !_.isEqual(props, nextProps)
+		return _.isEqual(props, nextProps)
 	}
 )
