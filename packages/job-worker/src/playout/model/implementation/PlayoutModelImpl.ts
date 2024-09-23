@@ -480,6 +480,10 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		return partInstance
 	}
 
+	switchRouteSet(routeSetId: string, isActive: boolean): void {
+		this.#baselineHelper.updateRouteSetActive(routeSetId, isActive)
+	}
+
 	cycleSelectedPartInstances(): void {
 		this.playlistImpl.previousPartInfo = this.playlistImpl.currentPartInfo
 		this.playlistImpl.currentPartInfo = this.playlistImpl.nextPartInfo

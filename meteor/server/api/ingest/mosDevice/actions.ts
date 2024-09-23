@@ -1,4 +1,3 @@
-import { MOS } from '@sofie-automation/corelib'
 import { logger } from '../../../logging'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Meteor } from 'meteor/meteor'
@@ -13,7 +12,7 @@ import { generateRundownSource, getPeripheralDeviceFromRundown, runIngestOperati
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { DEFAULT_MOS_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
 import { executePeripheralDeviceFunctionWithCustomTimeout } from '../../peripheralDevice/executeFunction'
-import { getMosTypes } from '@mos-connection/helper'
+import { MOS } from '@sofie-automation/meteor-lib/dist/mos'
 
 export namespace MOSDeviceActions {
 	export async function reloadRundown(
@@ -73,7 +72,7 @@ export namespace MOSDeviceActions {
 		if (!mosPayload.Body)
 			throw new Meteor.Error(500, `Part Cache for "${partCache.externalId}" missing FullStory content!`)
 
-		const mosTypes = getMosTypes(false)
+		const mosTypes = MOS.getMosTypes(false)
 
 		const story = mosPayload.Body.find(
 			(item) =>

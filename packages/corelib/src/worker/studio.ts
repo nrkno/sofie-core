@@ -193,6 +193,12 @@ export enum StudioJobs {
 	 * Set QuickLoop marker
 	 */
 	SetQuickLoopMarker = 'setQuickLoopMarker',
+
+	/**
+	 * Switch the route of the studio
+	 * for use in ad.lib actions and other triggers
+	 */
+	SwitchRouteSet = 'switchRouteSet',
 }
 
 export interface RundownPlayoutPropsBase {
@@ -345,6 +351,11 @@ export interface SetQuickLoopMarkerProps extends RundownPlayoutPropsBase {
 	marker: QuickLoopMarker | null
 }
 
+export interface SwitchRouteSetProps {
+	routeSetId: string
+	state: boolean | 'toggle'
+}
+
 /**
  * Set of valid functions, of form:
  * `id: (data) => return`
@@ -398,6 +409,8 @@ export type StudioJobFunc = {
 	[StudioJobs.ActivateAdlibTesting]: (data: ActivateAdlibTestingProps) => void
 
 	[StudioJobs.SetQuickLoopMarker]: (data: SetQuickLoopMarkerProps) => void
+
+	[StudioJobs.SwitchRouteSet]: (data: SwitchRouteSetProps) => void
 }
 
 export function getStudioQueueName(id: StudioId): string {

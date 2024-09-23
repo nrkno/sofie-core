@@ -47,6 +47,7 @@ import { handleTakeNextPart } from '../../playout/take'
 import { handleSetQuickLoopMarker } from '../../playout/quickLoopMarkers'
 import { handleActivateAdlibTesting } from '../../playout/adlibTesting'
 import { handleExecuteBucketAdLibOrAction } from '../../playout/bucketAdlibJobs'
+import { handleSwitchRouteSet } from '../../studio/routeSet'
 
 type ExecutableFunction<T extends keyof StudioJobFunc> = (
 	context: JobContext,
@@ -106,4 +107,6 @@ export const studioJobHandlers: StudioJobHandlers = {
 	[StudioJobs.ActivateAdlibTesting]: handleActivateAdlibTesting,
 
 	[StudioJobs.SetQuickLoopMarker]: handleSetQuickLoopMarker,
+
+	[StudioJobs.SwitchRouteSet]: handleSwitchRouteSet,
 }

@@ -184,6 +184,10 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		partInstance.blockTakeUntil(time)
 	}
 
+	async switchRouteSet(routeSetId: string, state: boolean): Promise<void> {
+		this._playoutModel.switchRouteSet(routeSetId, state)
+	}
+
 	async hackGetMediaObjectDuration(mediaId: string): Promise<number | undefined> {
 		return this.partAndPieceInstanceService.hackGetMediaObjectDuration(mediaId)
 	}

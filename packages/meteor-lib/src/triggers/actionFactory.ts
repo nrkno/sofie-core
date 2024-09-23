@@ -16,7 +16,13 @@ import RundownViewEventBus, { RundownViewEvents } from '../triggers/RundownViewE
 import { UserAction } from '../userAction'
 import { AdLibFilterChainLink, compileAdLibFilter, IWrappedAdLib } from './actionFilterChainCompilers'
 import { ClientAPI } from '../api/client'
-import { PartId, PartInstanceId, RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	PartId,
+	PartInstanceId,
+	RundownId,
+	RundownPlaylistId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DeviceActions } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { MountedAdLibTriggerType } from '../api/MountedTriggers'
@@ -30,6 +36,7 @@ type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
 type XOR<T, U> = T | U extends object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U
 
 export interface ReactivePlaylistActionContext {
+	studioId: ReactiveVar<StudioId>
 	rundownPlaylistId: ReactiveVar<RundownPlaylistId>
 	rundownPlaylist: ReactiveVar<
 		Pick<DBRundownPlaylist, '_id' | 'name' | 'activationId' | 'nextPartInfo' | 'currentPartInfo'>
@@ -104,6 +111,7 @@ function createRundownPlaylistContext(
 	} else if (filterChain[0].object === 'view' && context.rundownPlaylist) {
 		const playlistContext = context as PlainPlaylistContext
 		return {
+			studioId: new DummyReactiveVar(playlistContext.rundownPlaylist.studioId),
 			rundownPlaylistId: new DummyReactiveVar(playlistContext.rundownPlaylist._id),
 			rundownPlaylist: new DummyReactiveVar(playlistContext.rundownPlaylist),
 			currentRundownId: new DummyReactiveVar(playlistContext.currentRundownId),
@@ -588,6 +596,16 @@ export function createAction(
 				UserAction.RESYNC_RUNDOWN_PLAYLIST,
 				async (e, ts, ctx) =>
 					triggersContext.MeteorCall.userAction.resyncRundownPlaylist(e, ts, ctx.rundownPlaylistId.get())
+			)
+		case PlayoutActions.switchRouteSet:
+			return createUserActionWithCtx(triggersContext, action, UserAction.SWITCH_ROUTE_SET, async (e, ts, ctx) =>
+				triggersContext.MeteorCall.userAction.switchRouteSet(
+					e,
+					ts,
+					ctx.studioId.get(),
+					action.routeSetId,
+					'toggle'
+				)
 			)
 		case ClientActions.showEntireCurrentSegment:
 			return createShowEntireCurrentSegmentAction(action.filterChain, action.on)

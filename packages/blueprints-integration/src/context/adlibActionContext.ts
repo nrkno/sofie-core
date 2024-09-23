@@ -38,6 +38,8 @@ export interface IActionExecutionContext
 	/** Insert a queued part to follow the current part */
 	queuePart(part: IBlueprintPart, pieces: IBlueprintPiece[]): Promise<IBlueprintPartInstance>
 
+	/** Switch RouteSet State*/
+	switchRouteSet(routeSetId: string, state: boolean): Promise<void>
 	/** Misc actions */
 	// updateAction(newManifest: Pick<IBlueprintAdLibActionManifest, 'description' | 'payload'>): void // only updates itself. to allow for the next one to do something different
 	// executePeripheralDeviceAction(deviceId: string, functionName: string, args: any[]): Promise<any>

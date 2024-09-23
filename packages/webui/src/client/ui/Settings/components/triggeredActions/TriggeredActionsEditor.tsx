@@ -22,7 +22,13 @@ import classNames from 'classnames'
 import { catchError, fetchFrom } from '../../../../lib/lib'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../../lib/notifications/notifications'
 import { doModalDialog } from '../../../../lib/ModalDialog'
-import { PartId, RundownId, ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	PartId,
+	RundownId,
+	ShowStyleBaseId,
+	StudioId,
+	TriggeredActionId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylists, Rundowns, TriggeredActions } from '../../../../collections'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { SourceLayers, OutputLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
@@ -40,6 +46,7 @@ export interface PreviewContext {
 }
 
 interface IProps {
+	studioId: StudioId | null
 	showStyleBaseId: ShowStyleBaseId | null
 	sourceLayers: SourceLayers
 	outputLayers: OutputLayers
@@ -74,7 +81,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 		},
 	})
 
-	const { showStyleBaseId, sourceLayers, outputLayers } = props
+	const { studioId, showStyleBaseId, sourceLayers, outputLayers } = props
 
 	useSubscription(MeteorPubSub.triggeredActions, showStyleBaseId ? [showStyleBaseId] : null)
 	useSubscription(CorelibPubSub.rundownsWithShowStyleBases, showStyleBaseId ? [showStyleBaseId] : [])
@@ -385,11 +392,12 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 
 	return (
 		<div>
-			{sorensen && previewContext.rundownPlaylist && showStyleBaseId && (
+			{sorensen && previewContext.rundownPlaylist && showStyleBaseId && studioId && (
 				<ErrorBoundary>
 					<TriggersHandler
 						sorensen={sorensen}
 						simulateTriggerBinding={true}
+						studioId={studioId}
 						showStyleBaseId={showStyleBaseId}
 						currentRundownId={previewContext.currentRundownId}
 						rundownPlaylistId={previewContext.rundownPlaylist._id}
