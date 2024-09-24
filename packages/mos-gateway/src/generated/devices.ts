@@ -24,7 +24,7 @@ export interface MosDeviceConfig {
 		dontUseQueryPort?: boolean
 		timeout?: number
 		heartbeatInterval?: number
-		hotStandby?: boolean
+		openMediaHotStandby?: boolean
 		ports?: {
 			lower: number
 			upper: number

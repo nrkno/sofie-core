@@ -75,15 +75,15 @@ export class CoreMosDeviceHandler {
 	private _pendingStoryItemChanges: Array<IStoryItemChange> = []
 	private _pendingChangeTimeout: number = 60 * 1000
 	private mosTypes: MosTypes
-	private _hotStandby: boolean
+	private _openMediaHotStandby: boolean
 
 	private _messageQueue: Queue
 
-	constructor(parent: CoreHandler, mosDevice: IMOSDevice, mosHandler: MosHandler, hotStandby: boolean) {
+	constructor(parent: CoreHandler, mosDevice: IMOSDevice, mosHandler: MosHandler, openMediaHotStandby: boolean) {
 		this._coreParentHandler = parent
 		this._mosDevice = mosDevice
 		this._mosHandler = mosHandler
-		this._hotStandby = hotStandby
+		this._openMediaHotStandby = openMediaHotStandby
 
 		this._messageQueue = new Queue()
 
@@ -140,7 +140,7 @@ export class CoreMosDeviceHandler {
 		let statusCode: StatusCode
 		const messages: Array<string> = []
 
-		if (this._hotStandby) {
+		if (this._openMediaHotStandby) {
 			// OpenMedia treats secondary server as hot-standby
 			// And thus is not considered as a warning if it's not connected
 			if (connectionStatus.PrimaryConnected) {
