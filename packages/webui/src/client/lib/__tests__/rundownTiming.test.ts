@@ -1,6 +1,8 @@
-import { DBRundownPlaylist,
+import {
+	DBRundownPlaylist,
 	ForceQuickLoopAutoNext,
-	QuickLoopMarkerType, } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+	QuickLoopMarkerType,
+} from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PartInstance, wrapPartToTemporaryInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
