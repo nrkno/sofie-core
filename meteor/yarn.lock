@@ -1321,7 +1321,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@sofie-automation/blueprints-integration@portal:../packages/blueprints-integration::locator=automation-core%40workspace%3A."
   dependencies:
-    "@sofie-automation/shared-lib": 1.51.0-in-testing.1
+    "@sofie-automation/shared-lib": 1.51.0-in-testing.2
     tslib: ^2.6.2
     type-fest: ^3.13.1
   languageName: node
@@ -1362,8 +1362,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@sofie-automation/corelib@portal:../packages/corelib::locator=automation-core%40workspace%3A."
   dependencies:
-    "@sofie-automation/blueprints-integration": 1.51.0-in-testing.1
-    "@sofie-automation/shared-lib": 1.51.0-in-testing.1
+    "@sofie-automation/blueprints-integration": 1.51.0-in-testing.2
+    "@sofie-automation/shared-lib": 1.51.0-in-testing.2
     fast-clone: ^1.5.13
     i18next: ^21.10.0
     influx: ^5.9.3
@@ -1394,9 +1394,9 @@ __metadata:
   resolution: "@sofie-automation/job-worker@portal:../packages/job-worker::locator=automation-core%40workspace%3A."
   dependencies:
     "@slack/webhook": ^6.1.0
-    "@sofie-automation/blueprints-integration": 1.51.0-in-testing.1
-    "@sofie-automation/corelib": 1.51.0-in-testing.1
-    "@sofie-automation/shared-lib": 1.51.0-in-testing.1
+    "@sofie-automation/blueprints-integration": 1.51.0-in-testing.2
+    "@sofie-automation/corelib": 1.51.0-in-testing.2
+    "@sofie-automation/shared-lib": 1.51.0-in-testing.2
     amqplib: ^0.10.3
     deepmerge: ^4.3.1
     elastic-apm-node: ^3.51.0
