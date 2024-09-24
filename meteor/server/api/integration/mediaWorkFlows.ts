@@ -1,4 +1,4 @@
-import { check, Match } from '../../../lib/check'
+import { check, Match } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../../logging'
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
@@ -8,7 +8,7 @@ import {
 	MediaWorkFlowStepRevision,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/mediaManager'
 import { PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { MethodContext } from '../../../lib/api/methods'
+import { MethodContext } from '../methodContext'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 import { MediaWorkFlowId, MediaWorkFlowStepId, PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MediaWorkFlows, MediaWorkFlowSteps } from '../../collections'

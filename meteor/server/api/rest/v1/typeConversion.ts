@@ -29,15 +29,15 @@ import {
 	APISourceLayer,
 	APIStudio,
 	APIStudioSettings,
-} from '../../../../lib/api/rest/v1'
+} from '../../../lib/rest/v1'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { Blueprints, ShowStyleBases, Studios } from '../../../collections'
 import {
-	DEFAULT_FALLBACK_PART_DURATION,
 	DEFAULT_MINIMUM_TAKE_SPAN,
+	DEFAULT_FALLBACK_PART_DURATION,
 } from '@sofie-automation/shared-lib/dist/core/constants'
-import { Bucket } from '../../../../lib/collections/Buckets'
+import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
 import { ForceQuickLoopAutoNext } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
 /*

@@ -7,7 +7,7 @@ import {
 	setUpCollectionOptimizedObserver,
 } from '../../lib/customPublication'
 import { logger } from '../../logging'
-import { CustomCollectionName, MeteorPubSub } from '../../../lib/api/pubsub'
+import { CustomCollectionName, MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { RundownPlaylistReadAccess } from '../../security/rundownPlaylist'
 import { resolveCredentials } from '../../security/lib/credentials'
 import { NoSecurityReadAccess } from '../../security/noSecurity'

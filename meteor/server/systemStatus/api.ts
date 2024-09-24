@@ -1,9 +1,13 @@
 import { registerClassToMeteorMethods } from '../methods'
-import { StatusResponse, NewSystemStatusAPI, SystemStatusAPIMethods } from '../../lib/api/systemStatus'
+import {
+	StatusResponse,
+	NewSystemStatusAPI,
+	SystemStatusAPIMethods,
+} from '@sofie-automation/meteor-lib/dist/api/systemStatus'
 import { getDebugStates, getSystemStatus } from './systemStatus'
-import { protectString } from '../../lib/lib'
-import { Settings } from '../../lib/Settings'
-import { MethodContextAPI } from '../../lib/api/methods'
+import { protectString } from '../lib/tempLib'
+import { Settings } from '../Settings'
+import { MethodContextAPI } from '../api/methodContext'
 import { profiler } from '../api/profiler'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PrometheusHTTPContentType, getPrometheusMetricsString } from '@sofie-automation/corelib/dist/prometheus'

@@ -8,7 +8,9 @@
 			"openapi",
 			"shared-lib",
 			"job-worker",
-			"documentation"
+			"meteor-lib",
+			"documentation",
+			"webui"
 		]
 	},
 	"scripts": {
@@ -49,7 +51,9 @@
 		"@types/underscore": "^1.11.15",
 		"babel-jest": "^29.7.0",
 		"copyfiles": "^2.4.1",
+		"eslint-plugin-react": "latest",
 		"jest": "^29.7.0",
+		"jest-environment-jsdom": "^29.7.0",
 		"jest-mock-extended": "^3.0.5",
 		"json-schema-to-typescript": "^10.1.5",
 		"lerna": "^6.6.2",
@@ -66,7 +70,7 @@
 	"name": "packages",
 	"packageManager": "yarn@3.5.0",
 	"resolutions": {
-		"@asyncapi/generator-react-sdk@^1.0.20": "patch:@asyncapi/generator-react-sdk@npm%3A1.0.20#./.yarn/patches/@asyncapi-generator-react-sdk-npm-1.0.20-af18b2f42b.patch",
-		"@asyncapi/generator-react-sdk@^1.0.18": "patch:@asyncapi/generator-react-sdk@npm%3A1.0.20#./.yarn/patches/@asyncapi-generator-react-sdk-npm-1.0.20-af18b2f42b.patch"
+		"@asyncapi/generator-react-sdk@^1.1.1": "patch:@asyncapi/generator-react-sdk@npm%3A1.1.1#./.yarn/patches/@asyncapi-generator-react-sdk-npm-1.0.20-af18b2f42b.patch",
+		"@asyncapi/generator-react-sdk@^1.0.18": "patch:@asyncapi/generator-react-sdk@npm%3A1.1.1#./.yarn/patches/@asyncapi-generator-react-sdk-npm-1.0.20-af18b2f42b.patch"
 	}
 }

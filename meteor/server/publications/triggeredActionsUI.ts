@@ -2,9 +2,12 @@ import { ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/di
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
-import { CustomCollectionName, MeteorPubSub } from '../../lib/api/pubsub'
-import { DBTriggeredActions, UITriggeredActionsObj } from '../../lib/collections/TriggeredActions'
-import { Complete, literal } from '../../lib/lib'
+import { CustomCollectionName, MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
+import {
+	DBTriggeredActions,
+	UITriggeredActionsObj,
+} from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
+import { Complete, literal } from '../lib/tempLib'
 import {
 	CustomPublishCollection,
 	meteorCustomPublish,

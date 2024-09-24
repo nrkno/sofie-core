@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.51.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.51.0-in-testing.0...v1.51.0-in-testing.1) (2024-09-06)
+
+
+### Bug Fixes
+
+* playout-gateway not passing datastore to tsr at startup ([82f6fb2](https://github.com/nrkno/sofie-core/commit/82f6fb2720992581f26ff18d161e787784195c95))
+* update TSR dependency (to fix timeline bug) ([746e0d2](https://github.com/nrkno/sofie-core/commit/746e0d2c822b95927172e76cbd6a4436d1a99192))
+
+
+
+
+
+# [1.51.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.51.0-in-testing.0...v1.51.0-in-testing.1) (2024-09-06)
+
+
+### Bug Fixes
+
+* playout-gateway not passing datastore to tsr at startup ([82f6fb2](https://github.com/nrkno/sofie-core/commit/82f6fb2720992581f26ff18d161e787784195c95))
+* update TSR dependency (to fix timeline bug) ([746e0d2](https://github.com/nrkno/sofie-core/commit/746e0d2c822b95927172e76cbd6a4436d1a99192))
+
+
+
+
+
 # [1.51.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.50.4...v1.51.0-in-testing.0) (2024-08-19)
 
 
@@ -71,7 +95,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
-## [1.50.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.4-LSG-updates...v1.50.5) (2024-08-08)
+## [1.50.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.4...v1.50.5) (2024-09-19)
+
+**Note:** Version bump only for package playout-gateway
 
 **Note:** Version bump only for package playout-gateway
 

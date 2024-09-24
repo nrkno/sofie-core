@@ -130,7 +130,14 @@ export class PieceInstancesHandler
 			  )
 			: []
 
-		const active = [...inPreviousPartInstance, ...inCurrentPartInstance]
+		const active = [...inCurrentPartInstance]
+		// Only include the pieces from the previous part if the part is still considered to be playing
+		if (
+			this._partInstances?.previous?.timings &&
+			(this._partInstances.previous.timings.plannedStoppedPlayback ?? 0) > Date.now()
+		) {
+			active.push(...inPreviousPartInstance)
+		}
 
 		let hasAnythingChanged = false
 		if (!_.isEqual(this._collectionData.active, active)) {

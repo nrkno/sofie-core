@@ -12,7 +12,7 @@ import {
 	setUpCollectionOptimizedObserver,
 } from '../../lib/customPublication'
 import { logger } from '../../logging'
-import { CustomCollectionName, MeteorPubSub } from '../../../lib/api/pubsub'
+import { CustomCollectionName, MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { resolveCredentials } from '../../security/lib/credentials'
 import { NoSecurityReadAccess } from '../../security/noSecurity'
 import { ContentCache, PartInstanceOmitedFields, createReactiveContentCache } from './reactiveContentCache'
@@ -25,7 +25,7 @@ import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mo
 import { RundownsObserver } from '../lib/rundownsObserver'
 import { RundownContentObserver } from './rundownContentObserver'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { Match } from '../../../lib/check'
+import { Match } from '../../lib/check'
 import { RundownReadAccess } from '../../security/rundown'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import {

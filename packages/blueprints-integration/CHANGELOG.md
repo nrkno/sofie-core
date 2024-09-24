@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.51.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.51.0-in-testing.0...v1.51.0-in-testing.1) (2024-09-06)
+
+
+### Features
+
+* stringify piece NoraContent payload SOFIE-3398 ([#1248](https://github.com/nrkno/sofie-core/issues/1248)) ([0613f74](https://github.com/nrkno/sofie-core/commit/0613f740c1e2f740d7d9c39bc72178e301f5f72f))
+
+# [1.51.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.51.0-in-testing.0...v1.51.0-in-testing.1) (2024-09-06)
+
+
+### Features
+
+* stringify piece NoraContent payload SOFIE-3398 ([#1248](https://github.com/nrkno/sofie-core/issues/1248)) ([0613f74](https://github.com/nrkno/sofie-core/commit/0613f740c1e2f740d7d9c39bc72178e301f5f72f))
+
+
 # [1.51.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.50.4...v1.51.0-in-testing.0) (2024-08-19)
 
 ## [1.50.5-LSG-updates](https://github.com/nrkno/sofie-core/compare/v1.50.4-LSG-updates...v1.50.5-LSG-updates) (2024-08-08)
@@ -71,7 +86,8 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 - typed publications in gateways/peripheraldevices SOFIE-1183 ([#1056](https://github.com/nrkno/sofie-core/issues/1056)) ([0c3c1bf](https://github.com/nrkno/sofie-core/commit/0c3c1bfd2bb779034976dc34e49aa6e664ea874b))
 - update meteor to 2.12 SOFIE-2368 ([#931](https://github.com/nrkno/sofie-core/issues/931)) ([d7dfb71](https://github.com/nrkno/sofie-core/commit/d7dfb71d19405267cab5e2abc39794a80acb30b1))
 
-## [1.50.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.4-LSG-updates...v1.50.5) (2024-08-08)
+
+## [1.50.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.4...v1.50.5) (2024-09-19)
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
 

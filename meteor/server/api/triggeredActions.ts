@@ -1,16 +1,16 @@
 import { Meteor } from 'meteor/meteor'
-import { check, Match } from '../../lib/check'
+import { check, Match } from '../lib/check'
 import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments } from '../methods'
-import { literal, getRandomId, protectString, Complete } from '../../lib/lib'
+import { literal, getRandomId, protectString, Complete } from '../lib/tempLib'
 import { logger } from '../logging'
-import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
+import { MethodContext, MethodContextAPI } from './methodContext'
 import { ShowStyleContentWriteAccess } from '../security/showStyle'
-import { DBTriggeredActions, TriggeredActionsObj } from '../../lib/collections/TriggeredActions'
+import { DBTriggeredActions, TriggeredActionsObj } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import {
 	CreateTriggeredActionsContent,
 	NewTriggeredActionsAPI,
 	TriggeredActionsAPIMethods,
-} from '../../lib/api/triggeredActions'
+} from '@sofie-automation/meteor-lib/dist/api/triggeredActions'
 import { SystemWriteAccess } from '../security/system'
 import { fetchShowStyleBaseLight } from '../optimizations'
 import {
