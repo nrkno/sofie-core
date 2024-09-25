@@ -664,7 +664,7 @@ jobs:
           else
             # make dependencies of `determine-npm-tag` available
             yarn install --mode=skip-build
-            
+
             cd packages
             PACKAGE_NAME="@sofie-automation/shared-lib"
             PUBLISHED_VERSION=$(yarn npm info --json $PACKAGE_NAME | jq -c '.version' -r)
@@ -682,21 +682,22 @@ jobs:
           yarn build
         env:
           CI: true
-      - name: Generate OpenAPI client library
-        if: ${{ steps.do-publish.outputs.tag }}
-        uses: hatamiarash7/openapi-generator@v0.3.0
-        with:
-          generator: typescript-fetch
-          openapi-file: ./packages/openapi/api/actions.yaml
-          output-dir: ./packages/openapi/client/ts
-          command-args: -p supportsES6=true
-      - name: Build OpenAPI client library
-        if: ${{ steps.do-publish.outputs.tag }}
-        run: |
-          cd packages/openapi
-          yarn build:main
-        env:
-          CI: true
+      # Temporarily disabled due to failing in CI:
+      # - name: Generate OpenAPI client library
+      #   if: ${{ steps.do-publish.outputs.tag }}
+      #   uses: hatamiarash7/openapi-generator@v0.3.0
+      #   with:
+      #     generator: typescript-fetch
+      #     openapi-file: ./packages/openapi/api/actions.yaml
+      #     output-dir: ./packages/openapi/client/ts
+      #     command-args: -p supportsES6=true
+      # - name: Build OpenAPI client library
+      #   if: ${{ steps.do-publish.outputs.tag }}
+      #   run: |
+      #     cd packages/openapi
+      #     yarn build:main
+      #   env:
+      #     CI: true
       - name: Modify dependencies to use npm packages
         run: node scripts/prepublish.js
       - name: Publish to NPM
