@@ -266,7 +266,9 @@ function generateCurrentInfinitePieceObjects(
 	const pieceEnable = getPieceEnableInsidePart(
 		pieceInstance,
 		currentPartInstanceTimings,
-		timingContext.currentPartGroup.id
+		timingContext.currentPartGroup.id,
+		timingContext.currentPartGroup.enable.end !== undefined ||
+			timingContext.currentPartGroup.enable.duration !== undefined
 	)
 
 	let nowInParent = currentPartInfo.nowInPart // Where is 'now' inside of the infiniteGroup?

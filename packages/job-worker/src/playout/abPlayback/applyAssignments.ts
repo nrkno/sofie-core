@@ -5,7 +5,7 @@ import {
 	ICommonContext,
 	ABTimelineLayerChangeRules,
 } from '@sofie-automation/blueprints-integration'
-import { ABSessionAssignments } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { ABSessionAssignment, ABSessionAssignments } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { OnGenerateTimelineObjExt } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { logger } from '../../logging'
 import * as _ from 'underscore'
@@ -47,10 +47,7 @@ export function applyAbPlayerObjectAssignments(
 		if (obj.abSessions && obj.pieceInstanceId) {
 			for (const session of obj.abSessions) {
 				if (session.poolName === poolName) {
-					const sessionId = abSessionHelper.getTimelineObjectAbSessionId(
-						obj,
-						abSessionHelper.validateSessionName(obj.pieceInstanceId, session)
-					)
+					const sessionId = abSessionHelper.getTimelineObjectAbSessionId(obj, session)
 					if (sessionId) {
 						const existing = groupedObjectsMap.get(sessionId)
 						groupedObjectsMap.set(sessionId, existing ? [...existing, obj] : [obj])
@@ -108,7 +105,12 @@ export function applyAbPlayerObjectAssignments(
 		logger.debug(`Unexpected sessions are: ${unexpectedSessions.join(', ')}`)
 	}
 
-	logger.silly(`ABPlayback calculated assignments for "${poolName}": ${JSON.stringify(newAssignments)}`)
+	for (const assignment of Object.values<ABSessionAssignment | undefined>(newAssignments)) {
+		if (!assignment) continue
+		logger.silly(
+			`ABPlayback: Assigned session "${poolName}"-"${assignment.sessionId}" to player "${assignment.playerId}" (lookahead: ${assignment.lookahead})`
+		)
+	}
 
 	return newAssignments
 }
