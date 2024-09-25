@@ -575,6 +575,13 @@ jobs:
           yarn build
         env:
           CI: true
+      - name: Generate OpenAPI docs and server
+        run: |
+          cd packages/openapi
+          yarn gendocs
+          yarn genserver
+        env:
+          CI: true
 
   publish-docs:
     name: Publish Docs
