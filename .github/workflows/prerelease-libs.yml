@@ -133,7 +133,7 @@ jobs:
           CI: true
 
       - name: Build OpenAPI client library
-        if: ${{ steps.do-publish.outputs.tag }}
+        if: ${{ steps.do-publish.outputs.publish }}
         run: |
           cd packages/openapi
           yarn build
