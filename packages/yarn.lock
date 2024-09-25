@@ -277,9 +277,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@asyncapi/generator-react-sdk@npm:1.1.1":
-  version: 1.1.1
-  resolution: "@asyncapi/generator-react-sdk@npm:1.1.1"
+"@asyncapi/generator-react-sdk@npm:^1.0.18, @asyncapi/generator-react-sdk@npm:^1.1.1":
+  version: 1.1.2
+  resolution: "@asyncapi/generator-react-sdk@npm:1.1.2"
   dependencies:
     "@asyncapi/parser": ^3.1.0
     "@babel/core": 7.12.9
@@ -291,25 +291,7 @@ __metadata:
     react: ^17.0.1
     rollup: ^2.60.1
     source-map-support: ^0.5.19
-  checksum: 2d0178a3fc6f21f9a8e1f64cc48d3e077fce9822e4aa06416de86c7d772a53e1b8ae311c9434cf67443ffb8d6effb796e736d0dad0518c3153f4ceb42913cff4
-  languageName: node
-  linkType: hard
-
-"@asyncapi/generator-react-sdk@patch:@asyncapi/generator-react-sdk@npm%3A1.1.1#./.yarn/patches/@asyncapi-generator-react-sdk-npm-1.0.20-af18b2f42b.patch::locator=packages%40workspace%3A.":
-  version: 1.1.1
-  resolution: "@asyncapi/generator-react-sdk@patch:@asyncapi/generator-react-sdk@npm%3A1.1.1#./.yarn/patches/@asyncapi-generator-react-sdk-npm-1.0.20-af18b2f42b.patch::version=1.1.1&hash=4ff360&locator=packages%40workspace%3A."
-  dependencies:
-    "@asyncapi/parser": ^3.1.0
-    "@babel/core": 7.12.9
-    "@babel/preset-env": ^7.12.7
-    "@babel/preset-react": ^7.12.7
-    "@rollup/plugin-babel": ^5.2.1
-    babel-plugin-source-map-support: ^2.1.3
-    prop-types: ^15.7.2
-    react: ^17.0.1
-    rollup: ^2.60.1
-    source-map-support: ^0.5.19
-  checksum: fddfb6ff98559e0b35f27647a2a8aedee7eef22b7d0b775fc129c594f00a265d4a66cae82f7f6a14caa19fb989b692e3e24e705bb93320475cd855a17634edd9
+  checksum: 431ff8bfc7e131797af3d4377130742be49ec50ac4095458faf3851fdcfd75e0622e5cd8be3d8a2029c0bf0a8f134b2765873d78d9fda278475cea191bcf2cd0
   languageName: node
   linkType: hard
 
