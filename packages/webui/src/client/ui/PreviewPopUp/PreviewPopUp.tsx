@@ -7,7 +7,7 @@ export const PreviewPopUp = React.forwardRef<
 	{
 		update: () => void
 	},
-	{
+	React.PropsWithChildren<{
 		anchor: HTMLElement | VirtualElement | null
 		padding: Padding
 		placement: Placement
@@ -17,9 +17,9 @@ export const PreviewPopUp = React.forwardRef<
 		controls?: React.ReactNode
 		contentInfo?: React.ReactNode
 		warnings?: React.ReactNode
-	}
+	}>
 >(function PreviewPopUp(
-	{ anchor, padding, placement, hidden, size, preview, controls, contentInfo, warnings },
+	{ anchor, padding, placement, hidden, size, children, controls, contentInfo, warnings },
 	ref
 ): React.JSX.Element {
 	const warningsCount = React.Children.count(warnings)
@@ -92,7 +92,7 @@ export const PreviewPopUp = React.forwardRef<
 			style={styles.popper}
 			{...attributes.popper}
 		>
-			{preview && <div className="preview-popUp__preview">{preview}</div>}
+			{children && <div className="preview-popUp__preview">{children}</div>}
 			{controls && <div className="preview-popUp__controls">{controls}</div>}
 			{contentInfo && <div className="preview-popUp__content-info">{contentInfo}</div>}
 			{warnings && warningsCount > 0 && (
