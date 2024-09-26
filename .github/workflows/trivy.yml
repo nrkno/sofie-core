@@ -6,6 +6,8 @@ on:
 
 jobs:
   trivy:
+    if: ${{ github.repository_owner == 'nrkno' }}
+
     name: Trivy scan
     runs-on: ubuntu-latest
     strategy:
