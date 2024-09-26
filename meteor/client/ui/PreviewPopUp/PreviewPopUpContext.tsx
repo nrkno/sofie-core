@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef, useState } from 'react'
 
 type VirtualElement = {
 	getBoundingClientRect: () => DOMRect
@@ -26,8 +26,14 @@ export type PreviewContent =
 			content: string
 	  }
 
+interface IPreviewPopUpHandle {
+	update: Readonly<(content?: PreviewContent) => void>
+	close: Readonly<() => void>
+	onClosed?: () => void
+}
+
 interface IPreviewPopUpContext {
-	display: (
+	requestPreview(
 		anchor: HTMLElement | VirtualElement,
 		content: PreviewContent,
 		opts?: {
@@ -36,19 +42,34 @@ interface IPreviewPopUpContext {
 			contentInfo?: React.ReactNode
 			warnings?: React.ReactNode
 		}
-	) => void
-	hide: () => void
+	): IPreviewPopUpHandle
 }
 
 const PreviewPopUpContext = React.createContext<IPreviewPopUpContext>({
-	display: () => void {},
-	hide: () => void {},
+	requestPreview: () => {
+		throw new Error('Preview PopUp needs to set up with `PreviewPopUpContextProvider`.')
+	},
 })
 
 export function PreviewPopUpContextProvider({ children }: React.PropsWithChildren<{}>): React.ReactNode {
+	const [isVisible, setVisible] = useState(false)
+	const [currentHandle, setCurrentHandle] = useRef()
+
 	const context: IPreviewPopUpContext = {
-		display: () => void {},
-		hide: () => void {},
+		requestPreview: (anchor, content, opts) => {
+			setVisible(true)
+
+			const handle: IPreviewPopUpHandle = {
+				close: () => {
+					setVisible(false)
+				},
+				update: () => {
+					// todo test
+				},
+			}
+
+			return handle
+		},
 	}
 
 	return <PreviewPopUpContext.Provider value={context}>{children}</PreviewPopUpContext.Provider>
