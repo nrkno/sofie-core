@@ -1,29 +1,27 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import classNames from 'classnames'
 import { usePopper } from 'react-popper'
 import { Padding, Placement, VirtualElement } from '@popperjs/core'
 
-export function PreviewPopUp({
-	anchor,
-	padding,
-	placement,
-	hidden,
-	size,
-	preview,
-	controls,
-	contentInfo,
-	warnings,
-}: {
-	anchor: HTMLElement | VirtualElement | null
-	padding: Padding
-	placement: Placement
-	size: 'small' | 'large'
-	hidden?: boolean
-	preview?: React.ReactNode
-	controls?: React.ReactNode
-	contentInfo?: React.ReactNode
-	warnings?: React.ReactNode
-}): React.JSX.Element {
+export const PreviewPopUp = React.forwardRef<
+	{
+		update: () => void
+	},
+	{
+		anchor: HTMLElement | VirtualElement | null
+		padding: Padding
+		placement: Placement
+		size: 'small' | 'large'
+		hidden?: boolean
+		preview?: React.ReactNode
+		controls?: React.ReactNode
+		contentInfo?: React.ReactNode
+		warnings?: React.ReactNode
+	}
+>(function PreviewPopUp(
+	{ anchor, padding, placement, hidden, size, preview, controls, contentInfo, warnings },
+	ref
+): React.JSX.Element {
 	const warningsCount = React.Children.count(warnings)
 
 	const [popperEl, setPopperEl] = useState<HTMLDivElement | null>(null)
@@ -62,7 +60,26 @@ export function PreviewPopUp({
 		}),
 		[padding]
 	)
-	const { styles, attributes } = usePopper(anchor, popperEl, popperOptions)
+	const { styles, attributes, update } = usePopper(anchor, popperEl, popperOptions)
+
+	const updateRef = useRef(update)
+
+	useEffect(() => {
+		updateRef.current = update
+	}, [update])
+
+	useImperativeHandle(
+		ref,
+		() => {
+			return {
+				update: () => {
+					if (!updateRef.current) return
+					updateRef.current().catch(console.error)
+				},
+			}
+		},
+		[]
+	)
 
 	return (
 		<div
@@ -87,4 +104,4 @@ export function PreviewPopUp({
 			)}
 		</div>
 	)
-}
+})
