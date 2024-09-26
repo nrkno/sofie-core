@@ -1,0 +1,43 @@
+.preview-popUp {
+	display: grid;
+	grid-template-columns: 1fr;
+	grid-template-rows: repeat(4, auto);
+	grid-template-areas:
+		'preview'
+		'controls'
+		'content-info'
+		'warnings';
+
+	border: 1px solid var(--sofie-segment-layer-hover-popup-border);
+	background: var(--sofie-segment-layer-hover-popup-background);
+	box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.5);
+	border-radius: 5px;
+	overflow: hidden;
+	pointer-events: none;
+
+	box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.6);
+
+	&--large {
+	}
+
+	&-small {
+	}
+}
+
+.preview-popUp__preview {
+}
+
+.preview-popUp__controls {
+}
+
+.preview-popUp__content-info {
+}
+
+.preview-popUp__warnings {
+}
+
+.preview-popUp__warning-row {
+	display: grid;
+	grid-template-columns: 1fr;
+	grid-auto-rows: auto;
+}
