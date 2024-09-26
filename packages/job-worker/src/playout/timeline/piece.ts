@@ -106,7 +106,7 @@ export function getPieceEnableInsidePart(
 	if (partTimings.toPartPostroll) {
 		if (!pieceEnable.duration) {
 			// make sure that the control object is shortened correctly
-			pieceEnable.duration = `#${partGroupId} - ${partTimings.toPartPostroll}`
+			pieceEnable.end = `#${partGroupId} - ${partTimings.toPartPostroll}`
 		}
 	}
 

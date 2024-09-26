@@ -146,7 +146,8 @@ export function buildTimelineObjsForRundown(
 			// If there is a valid autonext out of the current part, then calculate the duration
 			currentPartEnable.duration =
 				partInstancesInfo.current.partInstance.part.expectedDuration +
-				partInstancesInfo.current.calculatedTimings.toPartDelay
+				partInstancesInfo.current.calculatedTimings.toPartDelay +
+				partInstancesInfo.current.calculatedTimings.toPartPostroll // autonext should have the postroll added to it to not confuse the timeline
 		}
 		const currentPartGroup = createPartGroup(partInstancesInfo.current.partInstance, currentPartEnable)
 
