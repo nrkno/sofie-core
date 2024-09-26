@@ -18,26 +18,39 @@
 	box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.6);
 
 	&--large {
+		width: 480px;
 	}
 
 	&-small {
+		width: 320px;
+	}
+
+	&--hidden {
+		visibility: none;
 	}
 }
 
 .preview-popUp__preview {
+	grid-area: 'preview';
 }
 
 .preview-popUp__controls {
+	grid-area: 'controls';
 }
 
 .preview-popUp__content-info {
+	grid-area: 'content-info';
 }
 
 .preview-popUp__warnings {
+	grid-area: 'warnings';
+	display: grid;
+	grid-template-columns: 1fr;
+	grid-auto-rows: auto;
 }
 
 .preview-popUp__warning-row {
 	display: grid;
-	grid-template-columns: 1fr;
+	grid-template-columns: 2em auto;
 	grid-auto-rows: auto;
 }
