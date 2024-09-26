@@ -7,16 +7,18 @@ export function PreviewPopUp({
 	anchor,
 	padding,
 	placement,
+	hidden,
 	size,
 	preview,
 	controls,
 	contentInfo,
 	warnings,
 }: {
-	anchor: HTMLElement | VirtualElement
+	anchor: HTMLElement | VirtualElement | null
 	padding: Padding
 	placement: Placement
 	size: 'small' | 'large'
+	hidden?: boolean
 	preview?: React.ReactNode
 	controls?: React.ReactNode
 	contentInfo?: React.ReactNode
@@ -68,6 +70,7 @@ export function PreviewPopUp({
 			className={classNames('preview-popUp', {
 				'preview-popUp--large': size === 'large',
 				'preview-popUp--small': size === 'small',
+				'preview-popUp--hidden': hidden,
 			})}
 			style={styles.popper}
 			{...attributes.popper}
