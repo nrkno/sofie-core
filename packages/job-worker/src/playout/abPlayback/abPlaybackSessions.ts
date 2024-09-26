@@ -35,10 +35,7 @@ export function calculateSessionTimeRanges(
 		for (const session of abSessions) {
 			if (session.poolName !== poolName) continue
 
-			const sessionId = abSessionHelper.getPieceABSessionId(
-				p.instance,
-				abSessionHelper.validateSessionName(p.instance._id, session)
-			)
+			const sessionId = abSessionHelper.getPieceABSessionId(p.instance, session)
 
 			// Note: multiple generated sessionIds for a single piece will not work as there will not be enough info to assign objects to different players. TODO is this still true?
 			const val = sessionRequests[sessionId]
@@ -81,10 +78,7 @@ export function calculateSessionTimeRanges(
 		) {
 			for (const session of obj.abSessions) {
 				if (session.poolName === poolName) {
-					const sessionId = abSessionHelper.getTimelineObjectAbSessionId(
-						obj,
-						abSessionHelper.validateSessionName(obj.pieceInstanceId, session)
-					)
+					const sessionId = abSessionHelper.getTimelineObjectAbSessionId(obj, session)
 					if (sessionId) {
 						const existing = groupedLookaheadMap.get(sessionId)
 						groupedLookaheadMap.set(sessionId, existing ? [...existing, obj] : [obj])

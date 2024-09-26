@@ -394,6 +394,47 @@ describe('resolveAbAssignmentsFromRequests', () => {
 		expectGotPlayer(res, 'c', undefined)
 		expectGotPlayer(res, 'd', undefined)
 	})
+	test('Run timed adlib bts', () => {
+		const requests: SessionRequest[] = [
+			// current part
+			{
+				id: 'a',
+				start: 1000,
+				end: 10500,
+				playerId: 2,
+			},
+			// adlib
+			{
+				id: 'b',
+				start: 10000,
+				end: 15000,
+			},
+			// lookaheads (in order of future use)
+			{
+				id: 'c',
+				start: Number.POSITIVE_INFINITY,
+				end: undefined,
+				playerId: 1,
+				lookaheadRank: 1,
+			},
+			{
+				id: 'd',
+				start: Number.POSITIVE_INFINITY,
+				end: undefined,
+				playerId: 2,
+				lookaheadRank: 2,
+			},
+		]
+
+		const res = resolveAbAssignmentsFromRequests(resolverOptions, TWO_SLOTS, requests, 10000)
+		expect(res).toBeTruthy()
+		expect(res.failedOptional).toEqual([])
+		expect(res.failedRequired).toEqual([])
+		expectGotPlayer(res, 'a', 2)
+		expectGotPlayer(res, 'b', 1)
+		expectGotPlayer(res, 'c', 2) // moved so that it alternates
+		expectGotPlayer(res, 'd', 1)
+	})
 
 	test('Autonext run bts', () => {
 		const requests: SessionRequest[] = [
