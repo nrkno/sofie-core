@@ -11,11 +11,12 @@ import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { SegmentStoryboard } from './SegmentStoryboard'
 import { unprotectString } from '../../lib/tempLib'
 import { LIVELINE_HISTORY_SIZE as TIMELINE_LIVELINE_HISTORY_SIZE } from '../SegmentTimeline/Constants'
-import { PartInstances, Parts, Segments } from '../../collections'
+import { Segments } from '../../collections'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
 import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { UIPartInstances, UIParts } from '../Collections'
 
 export const LIVELINE_HISTORY_SIZE = TIMELINE_LIVELINE_HISTORY_SIZE
 
@@ -32,7 +33,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 }: IProps & ITrackedResolvedSegmentProps) {
 	const partIds = useTracker(
 		() =>
-			Parts.find(
+			UIParts.find(
 				{
 					segmentId,
 				},
@@ -49,7 +50,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 
 	const partInstanceIds = useTracker(
 		() =>
-			PartInstances.find(
+			UIPartInstances.find(
 				{
 					segmentId: segmentId,
 					reset: {
@@ -90,7 +91,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 				return false
 			}
 
-			const currentPartInstance = PartInstances.findOne(props.playlist.currentPartInfo.partInstanceId)
+			const currentPartInstance = UIPartInstances.findOne(props.playlist.currentPartInfo.partInstanceId)
 			if (!currentPartInstance) {
 				return false
 			}
@@ -107,7 +108,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 				return false
 			}
 
-			const partInstance = PartInstances.findOne(props.playlist.nextPartInfo.partInstanceId, {
+			const partInstance = UIPartInstances.findOne(props.playlist.nextPartInfo.partInstanceId, {
 				fields: literal<MongoFieldSpecifierOnes<PartInstance>>({
 					segmentId: 1,
 					//@ts-expect-error typescript doesnt like it
@@ -130,7 +131,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 				return false
 			}
 
-			const currentPartInstance = PartInstances.findOne(props.playlist.currentPartInfo.partInstanceId, {
+			const currentPartInstance = UIPartInstances.findOne(props.playlist.currentPartInfo.partInstanceId, {
 				fields: {
 					//@ts-expect-error deep property
 					'part.autoNext': 1,

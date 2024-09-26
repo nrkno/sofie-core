@@ -16,6 +16,7 @@ import { useInView } from 'react-intersection-observer'
 import { getHeaderHeight } from '../../lib/viewPort'
 import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
+import * as RundownResolver from '../../lib/RundownResolver'
 
 interface IProps {
 	id: string
@@ -153,6 +154,9 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 				doesPlaylistHaveNextPart={playlistHasNextPart}
 				onPieceDoubleClick={props.onPieceDoubleClick}
 				onContextMenu={props.onContextMenu}
+				isPlaylistLooping={RundownResolver.isLoopRunning(props.playlist)}
+				isQuickLoopStart={RundownResolver.isQuickLoopStart(part.partId, props.playlist)}
+				isQuickLoopEnd={RundownResolver.isQuickLoopEnd(part.partId, props.playlist)}
 			/>
 		)
 

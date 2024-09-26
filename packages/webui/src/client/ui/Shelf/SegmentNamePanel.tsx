@@ -11,7 +11,7 @@ import { RundownLayoutsAPI } from '../../lib/rundownLayouts'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
-import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
+import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil'
 
 interface ISegmentNamePanelProps {
 	visible?: boolean
@@ -55,7 +55,7 @@ class SegmentNamePanelInner extends React.Component<
 
 function getSegmentName(selectedSegment: 'current' | 'next', playlist: DBRundownPlaylist): string | undefined {
 	const currentPartInstance = playlist.currentPartInfo
-		? (RundownPlaylistCollectionUtil.getActivePartInstances(playlist, {
+		? (RundownPlaylistClientUtil.getActivePartInstances(playlist, {
 				_id: playlist.currentPartInfo.partInstanceId,
 		  })[0] as PartInstance | undefined)
 		: undefined
@@ -64,18 +64,18 @@ function getSegmentName(selectedSegment: 'current' | 'next', playlist: DBRundown
 
 	if (selectedSegment === 'current') {
 		if (currentPartInstance) {
-			const segment = RundownPlaylistCollectionUtil.getSegments(playlist, { _id: currentPartInstance.segmentId })[0] as
+			const segment = RundownPlaylistClientUtil.getSegments(playlist, { _id: currentPartInstance.segmentId })[0] as
 				| DBSegment
 				| undefined
 			return segment?.name
 		}
 	} else {
 		if (playlist.nextPartInfo) {
-			const nextPartInstance = RundownPlaylistCollectionUtil.getActivePartInstances(playlist, {
+			const nextPartInstance = RundownPlaylistClientUtil.getActivePartInstances(playlist, {
 				_id: playlist.nextPartInfo.partInstanceId,
 			})[0] as PartInstance | undefined
 			if (nextPartInstance && nextPartInstance.segmentId !== currentPartInstance.segmentId) {
-				const segment = RundownPlaylistCollectionUtil.getSegments(playlist, { _id: nextPartInstance.segmentId })[0] as
+				const segment = RundownPlaylistClientUtil.getSegments(playlist, { _id: nextPartInstance.segmentId })[0] as
 					| DBSegment
 					| undefined
 				return segment?.name
@@ -84,7 +84,7 @@ function getSegmentName(selectedSegment: 'current' | 'next', playlist: DBRundown
 
 		// Current and next part are same segment, or next is not set
 		// Find next segment in order
-		const orderedSegmentsAndParts = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(playlist)
+		const orderedSegmentsAndParts = RundownPlaylistClientUtil.getSegmentsAndPartsSync(playlist)
 		const segmentIndex = orderedSegmentsAndParts.segments.findIndex((s) => s._id === currentPartInstance.segmentId)
 		if (segmentIndex === -1) return
 

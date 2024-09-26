@@ -26,6 +26,7 @@ import { RundownLayoutsAPI } from '../../lib/rundownLayouts'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { TOOLTIP_DEFAULT_DELAY } from '../../lib/lib'
 import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { isLoopDefined } from '../../lib/RundownResolver'
 
 export interface RundownPlaylistUi extends DBRundownPlaylist {
 	rundowns: Rundown[]
@@ -166,10 +167,11 @@ export function RundownPlaylistUi({
 	const playlistExpectedDuration = PlaylistTiming.getExpectedDuration(playlist.timing)
 	const playlistExpectedStart = PlaylistTiming.getExpectedStart(playlist.timing)
 	const playlistExpectedEnd = PlaylistTiming.getExpectedEnd(playlist.timing)
+	const isPlaylistLooping = isLoopDefined(playlist)
 
 	const expectedDuration =
 		playlistExpectedDuration !== undefined &&
-		(playlist.loop ? (
+		(isPlaylistLooping ? (
 			<Tooltip
 				overlay={t('This rundown will loop indefinitely')}
 				mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
@@ -200,7 +202,7 @@ export function RundownPlaylistUi({
 						<FontAwesomeIcon icon={faFolderOpen} />
 						<span className="rundown-playlist__heading-text">
 							<Link to={playlistViewURL}>
-								{playlist.loop && <LoopingIcon />}
+								{isPlaylistLooping && <LoopingIcon />}
 								{playlist.name}
 							</Link>
 						</span>
@@ -225,7 +227,7 @@ export function RundownPlaylistUi({
 				<span className="rundown-list-item__text" role="gridcell">
 					{expectedDuration ? (
 						expectedDuration
-					) : playlist.loop ? (
+					) : isPlaylistLooping ? (
 						<Tooltip
 							mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
 							overlay={t('This rundown will loop indefinitely')}

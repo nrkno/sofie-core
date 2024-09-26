@@ -3,6 +3,7 @@ import { ObjectWithOverrides } from '../settings/objectWithOverrides'
 import { StudioId, OrganizationId, BlueprintId, ShowStyleBaseId, MappingsHash, PeripheralDeviceId } from './Ids'
 import { BlueprintHash, LastBlueprintConfig } from './Blueprint'
 import { MappingsExt, MappingExt } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
+import { ForceQuickLoopAutoNext } from './RundownPlaylist'
 
 export { MappingsExt, MappingExt, MappingsHash }
 
@@ -50,6 +51,18 @@ export interface IStudioSettings {
 
 	/** Whether to allow adlib testing mode, before a Part is playing in a Playlist */
 	allowAdlibTestingSegment?: boolean
+
+	/** Should QuickLoop context menu options be available to the users. It does not affect Playlist loop enabled by the NRCS. */
+	enableQuickLoop?: boolean
+
+	/** If and how to force auto-nexting in a looping Playlist */
+	forceQuickLoopAutoNext?: ForceQuickLoopAutoNext
+
+	/**
+	 * The duration to apply on too short Parts Within QuickLoop when ForceQuickLoopAutoNext.ENABLED_FORCING_MIN_DURATION is selected
+	 * Default: 3000
+	 */
+	fallbackPartDuration?: number
 }
 
 export type StudioLight = Omit<DBStudio, 'mappingsWithOverrides' | 'blueprintConfigWithOverrides'>

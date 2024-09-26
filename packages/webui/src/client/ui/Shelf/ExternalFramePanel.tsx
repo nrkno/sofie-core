@@ -25,7 +25,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { IngestAdlib } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../lib/meteorApi'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { Buckets, PartInstances, Rundowns } from '../../collections'
+import { Buckets, Rundowns } from '../../collections'
 import { BucketId, PartInstanceId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MOS_DATA_IS_STRICT } from '@sofie-automation/meteor-lib/dist/mos'
 import { mosTypes, MOS } from '@sofie-automation/meteor-lib/dist/mos'
@@ -35,6 +35,7 @@ import RundownViewEventBus, {
 	ItemDroppedEvent,
 	RundownViewEvents,
 } from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
+import { UIPartInstances } from '../Collections'
 
 interface IProps {
 	layout: RundownLayoutBase
@@ -216,9 +217,9 @@ export const ExternalFramePanel = withTranslation()(
 			let currentPart: PartInstance | undefined
 			if (playlist.currentPartInfo || playlist.nextPartInfo) {
 				if (playlist.currentPartInfo !== null) {
-					currentPart = PartInstances.findOne(playlist.currentPartInfo.partInstanceId)
+					currentPart = UIPartInstances.findOne(playlist.currentPartInfo.partInstanceId)
 				} else if (playlist.nextPartInfo !== null) {
-					currentPart = PartInstances.findOne(playlist.nextPartInfo.partInstanceId)
+					currentPart = UIPartInstances.findOne(playlist.nextPartInfo.partInstanceId)
 				}
 
 				if (!currentPart) {

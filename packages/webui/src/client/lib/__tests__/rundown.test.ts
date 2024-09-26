@@ -15,11 +15,23 @@ import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PartInstances, PieceInstances, Pieces, RundownPlaylists } from '../../collections'
 import { MongoMock } from '../../../__mocks__/mongo'
 import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
+import { RundownPlaylistClientUtil } from '../rundownPlaylistUtil'
 
 const mockRundownPlaylistsCollection = MongoMock.getInnerMockCollection(RundownPlaylists)
 const mockPartInstancesCollection = MongoMock.getInnerMockCollection(PartInstances)
 const mockPieceInstancesCollection = MongoMock.getInnerMockCollection(PieceInstances)
 const mockPiecesCollection = MongoMock.getInnerMockCollection(Pieces)
+
+// This is a hack, the tests should be rewriten to not use methods unrelated to the testee
+jest.mock('../../ui/Collections', () => {
+	const mockClientCollections = jest.requireActual('../../ui/Collections')
+	const mockLibCollections = jest.requireActual('../../collections/index')
+	return {
+		...mockClientCollections,
+		UIParts: mockLibCollections.Parts, // for most purposes they're equivalent
+		UIPartInstances: mockLibCollections.PartInstances, // for most purposes they're equivalent
+	}
+})
 
 describe('client/lib/rundown', () => {
 	let env: DefaultEnvironment
@@ -35,10 +47,10 @@ describe('client/lib/rundown', () => {
 			if (!playlist) throw new Error('Rundown not found')
 
 			const { currentPartInstance, nextPartInstance } =
-				RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
+				RundownPlaylistClientUtil.getSelectedPartInstances(playlist)
 
 			const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)
-			const { parts, segments } = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(playlist)
+			const { parts, segments } = RundownPlaylistClientUtil.getSegmentsAndPartsSync(playlist)
 			const rundown = rundowns[0]
 			const segment = segments[0]
 
@@ -78,10 +90,10 @@ describe('client/lib/rundown', () => {
 			if (!playlist) throw new Error('Playlist not found')
 
 			const { currentPartInstance, nextPartInstance } =
-				RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
+				RundownPlaylistClientUtil.getSelectedPartInstances(playlist)
 
 			const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)
-			const { parts, segments } = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(playlist)
+			const { parts, segments } = RundownPlaylistClientUtil.getSegmentsAndPartsSync(playlist)
 			const rundown = rundowns[0]
 			const rundownId = rundown._id
 			const segment = segments[1]
@@ -150,10 +162,10 @@ describe('client/lib/rundown', () => {
 			if (!playlist) throw new Error('Playlist not found')
 
 			const { currentPartInstance, nextPartInstance } =
-				RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
+				RundownPlaylistClientUtil.getSelectedPartInstances(playlist)
 
 			const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)
-			const { parts, segments } = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(playlist)
+			const { parts, segments } = RundownPlaylistClientUtil.getSegmentsAndPartsSync(playlist)
 			const rundown = rundowns[0]
 			const rundownId = rundown._id
 			const segment = segments[1]
@@ -248,7 +260,7 @@ describe('client/lib/rundown', () => {
 			if (!playlist) throw new Error('Playlist not found')
 
 			const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)
-			const { parts, segments } = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(playlist)
+			const { parts, segments } = RundownPlaylistClientUtil.getSegmentsAndPartsSync(playlist)
 			const rundown = rundowns[0]
 			const rundownId = rundown._id
 			const segment = segments[1]
@@ -336,7 +348,7 @@ describe('client/lib/rundown', () => {
 			playlist = RundownPlaylists.findOne(playlistId)
 			if (!playlist) throw new Error('Playlist not found')
 			const { currentPartInstance, nextPartInstance } =
-				RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
+				RundownPlaylistClientUtil.getSelectedPartInstances(playlist)
 
 			const resolvedSegment = RundownUtils.getResolvedSegment(
 				showStyleBase,

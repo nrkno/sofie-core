@@ -12,6 +12,8 @@ import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { RundownUtils } from '../../lib/rundown'
+import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import * as _ from 'underscore'
@@ -19,7 +21,7 @@ import { FindOptions } from '../../collections/lib'
 import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 import { normalizeArrayToMap, protectString } from '../../lib/tempLib'
 import { PieceInstances, Pieces, RundownPlaylists, Segments } from '../../collections'
-import { getPieceInstancesForPartInstance, getSegmentsWithPartInstances } from '../../lib/RundownResolver'
+import { getPieceInstancesForPartInstance } from '../../lib/RundownResolver'
 import { UIShowStyleBases } from '../Collections'
 
 // export interface NewPrompterAPI {
@@ -78,8 +80,7 @@ export namespace PrompterAPI {
 		}
 		const rundownMap = normalizeArrayToMap(rundowns, '_id')
 
-		const { currentPartInstance, nextPartInstance } =
-			RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
+		const { currentPartInstance, nextPartInstance } = RundownPlaylistClientUtil.getSelectedPartInstances(playlist)
 
 		const currentSegment = currentPartInstance
 			? (Segments.findOne(currentPartInstance?.segmentId, {
@@ -90,7 +91,7 @@ export namespace PrompterAPI {
 			  }) as Pick<DBSegment, '_id' | 'orphaned'>)
 			: undefined
 
-		const groupedParts = getSegmentsWithPartInstances(
+		const groupedParts = RundownUtils.getSegmentsWithPartInstances(
 			playlist,
 			undefined,
 			undefined,

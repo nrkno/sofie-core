@@ -117,6 +117,10 @@ function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
 			return t('Rehearsal Mode')
 		case UserAction.CREATE_ADLIB_TESTING_RUNDOWN:
 			return t('Creating Adlib Testing Rundown')
+		case UserAction.SET_QUICK_LOOP_START:
+			return t('Setting as QuickLoop Start')
+		case UserAction.SET_QUICK_LOOP_END:
+			return t('Setting as QuickLoop End')
 		default:
 			assertNever(userAction)
 	}

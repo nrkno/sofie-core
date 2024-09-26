@@ -13,6 +13,7 @@ import { useHistory } from 'react-router-dom'
 import { MeteorCall } from '../../../lib/meteorApi'
 import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
 import { catchError } from '../../../lib/lib'
+import { ForceQuickLoopAutoNext } from '@sofie-automation/corelib/src/dataModel/RundownPlaylist'
 
 interface IStudioGenericPropertiesProps {
 	studio: DBStudio
@@ -245,6 +246,54 @@ export const StudioGenericProperties = withTranslation()(
 							type="checkbox"
 							collection={Studios}
 						/>
+					</label>
+
+					<label className="field">
+						<LabelActual label={t('Enable QuickLoop')} />
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute="settings.enableQuickLoop"
+							obj={this.props.studio}
+							type="checkbox"
+							collection={Studios}
+						/>
+					</label>
+
+					<label className="field">
+						<LabelActual label={t('Force Auto in a Loop')} />
+						<div className="mdi">
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute="settings.forceQuickLoopAutoNext"
+								obj={this.props.studio}
+								mutateDisplayValue={(v) => v ?? ForceQuickLoopAutoNext.DISABLED}
+								options={{
+									[t('Disabled')]: ForceQuickLoopAutoNext.DISABLED,
+									[t('Enabled, but skipping parts with undefined or 0 duration')]:
+										ForceQuickLoopAutoNext.ENABLED_WHEN_VALID_DURATION,
+									[t('Enabled on all Parts, applying QuickLoop Fallback Part Duration if needed')]:
+										ForceQuickLoopAutoNext.ENABLED_FORCING_MIN_DURATION,
+								}}
+								type="dropdown"
+								collection={Studios}
+								className="mdinput"
+							/>
+							<span className="mdfx"></span>
+						</div>
+					</label>
+
+					<label className="field">
+						<LabelActual label={t('QuickLoop Fallback Part Duration')} />
+						<div className="mdi">
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute="settings.fallbackPartDuration"
+								obj={this.props.studio}
+								type="int"
+								collection={Studios}
+								className="mdinput"
+							/>
+						</div>
 					</label>
 
 					<StudioBaselineStatus studioId={this.props.studio._id} />

@@ -51,11 +51,12 @@ import { literal } from './tempLib'
 import { getCurrentTime } from './systemTime'
 import { invalidateAt } from './invalidatingTime'
 import { memoizedIsolatedAutorun } from './memoizedIsolatedAutorun'
-import { PartInstances, PieceInstances } from '../collections'
+import { PieceInstances } from '../collections'
 import { ReadonlyDeep } from 'type-fest'
 import { TFunction } from 'i18next'
 import _ from 'underscore'
 import { Settings } from './Settings'
+import { UIPartInstances } from '../ui/Collections'
 
 export interface LayoutDescriptor {
 	supportedFilters: RundownLayoutElementType[]
@@ -131,7 +132,7 @@ export function getUnfinishedPieceInstancesReactive(
 				const now = getCurrentTime()
 				let prospectivePieces: ReadonlyDeep<PieceInstance>[] = []
 
-				const partInstance = PartInstances.findOne(currentPartInstanceId)
+				const partInstance = UIPartInstances.findOne(currentPartInstanceId)
 
 				if (partInstance) {
 					prospectivePieces = PieceInstances.find({

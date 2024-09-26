@@ -18,12 +18,12 @@ import {
 	IOutputLayerExtended,
 	ISourceLayerExtended,
 	PartInstanceLimited,
-	getSegmentsWithPartInstances,
+	isLoopRunning,
 } from './RundownResolver'
-import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
+import { PartInstance, wrapPartToTemporaryInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { literal } from './tempLib'
+import { literal, protectString, groupByToMap } from './tempLib'
 import { getCurrentTime } from './systemTime'
 import {
 	processAndPrunePieceInstanceTimings,
@@ -43,6 +43,9 @@ import { PartId, PieceId, RundownId, SegmentId, ShowStyleBaseId } from '@sofie-a
 import { PieceInstances, Segments } from '../collections'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { assertNever } from '@sofie-automation/shared-lib/dist/lib/lib'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { RundownPlaylistClientUtil } from './rundownPlaylistUtil'
 
 export namespace RundownUtils {
 	export function padZeros(input: number, places?: number): string {
@@ -386,8 +389,15 @@ export namespace RundownUtils {
 
 			let startsAt = 0
 			let previousPart: PartExtended | undefined
+
+			const deduplicatedPartInstances = RundownUtils.deduplicatePartInstancesForQuickLoop(
+				playlist,
+				segmentInfo.partInstances,
+				currentPartInstance
+			)
+
 			// fetch all the pieces for the parts
-			const partIds = segmentInfo.partInstances.map((part) => part.part._id)
+			const partIds = deduplicatedPartInstances.map((part) => part.part._id)
 
 			let nextPartIsAfterCurrentPart = false
 			if (nextPartInstance && currentPartInstance) {
@@ -414,7 +424,7 @@ export namespace RundownUtils {
 
 			const showHiddenSourceLayers = getShowHiddenSourceLayers()
 
-			partsE = segmentInfo.partInstances.map((partInstance, itIndex) => {
+			partsE = deduplicatedPartInstances.map((partInstance, itIndex) => {
 				const partExpectedDuration = calculatePartInstanceExpectedDurationWithTransition(partInstance)
 
 				// extend objects to match the Extended interface
@@ -769,5 +779,95 @@ export namespace RundownUtils {
 		piece: IAdLibListItem | PieceUi | AdLibPieceUi | BucketAdLibItem
 	): piece is BucketAdLibItem {
 		return 'bucketId' in piece && !!piece['bucketId']
+	}
+
+	export function deduplicatePartInstancesForQuickLoop<T extends Pick<PartInstance, '_id' | 'part'>>(
+		playlist: DBRundownPlaylist,
+		sortedPartInstances: T[],
+		currentPartInstance: T | undefined
+	): T[] {
+		if (!isLoopRunning(playlist)) return sortedPartInstances
+		return sortedPartInstances.filter((partInstance) => {
+			return (
+				partInstance.part._id !== currentPartInstance?.part._id || partInstance._id === currentPartInstance._id
+			)
+		})
+	}
+
+	/**
+	 * Get all PartInstances (or temporary PartInstances) all segments in all rundowns in a playlist, using given queries
+	 * to limit the data, in correct order.
+	 *
+	 * @export
+	 * @param {DBRundownPlaylist} playlist
+	 * @param {(MongoQuery<DBSegment>)} [segmentsQuery]
+	 * @param {(MongoQuery<DBPart>)} [partsQuery]
+	 * @param {MongoQuery<PartInstance>} [partInstancesQuery]
+	 * @param {FindOptions<DBSegment>} [segmentsOptions]
+	 * @param {FindOptions<DBPart>} [partsOptions]
+	 * @param {FindOptions<PartInstance>} [partInstancesOptions]
+	 * @return {*}  {Array<{ segment: Segment; partInstances: PartInstance[] }>}
+	 */
+	export function getSegmentsWithPartInstances(
+		playlist: DBRundownPlaylist,
+		segmentsQuery?: MongoQuery<DBSegment>,
+		partsQuery?: MongoQuery<DBPart>,
+		partInstancesQuery?: MongoQuery<PartInstance>,
+		segmentsOptions?: FindOptions<DBSegment>,
+		partsOptions?: FindOptions<DBPart>,
+		partInstancesOptions?: FindOptions<PartInstance>
+	): Array<{ segment: DBSegment; partInstances: PartInstance[] }> {
+		const { segments, parts: rawParts } = RundownPlaylistClientUtil.getSegmentsAndPartsSync(
+			playlist,
+			segmentsQuery,
+			partsQuery,
+			segmentsOptions,
+			partsOptions
+		)
+		const rawPartInstances = RundownPlaylistClientUtil.getActivePartInstances(
+			playlist,
+			partInstancesQuery,
+			partInstancesOptions
+		)
+		const playlistActivationId = playlist.activationId ?? protectString('')
+
+		const partsBySegment = groupByToMap(rawParts, 'segmentId')
+		const partInstancesBySegment = groupByToMap(rawPartInstances, 'segmentId')
+
+		return segments.map((segment) => {
+			const segmentParts = partsBySegment.get(segment._id) ?? []
+			const segmentPartInstances = partInstancesBySegment.get(segment._id) ?? []
+
+			if (segmentPartInstances.length === 0) {
+				return {
+					segment,
+					partInstances: segmentParts.map((p) => wrapPartToTemporaryInstance(playlistActivationId, p)),
+				}
+			} else if (segmentParts.length === 0) {
+				return {
+					segment,
+					partInstances: segmentPartInstances.sort(
+						(a, b) => a.part._rank - b.part._rank || a.takeCount - b.takeCount
+					),
+				}
+			} else {
+				const partIds: Set<PartId> = new Set()
+				for (const partInstance of segmentPartInstances) {
+					partIds.add(partInstance.part._id)
+				}
+				for (const part of segmentParts) {
+					if (partIds.has(part._id)) continue
+					segmentPartInstances.push(wrapPartToTemporaryInstance(playlistActivationId, part))
+				}
+				const allPartInstances = segmentPartInstances.sort(
+					(a, b) => a.part._rank - b.part._rank || a.takeCount - b.takeCount
+				)
+
+				return {
+					segment,
+					partInstances: allPartInstances,
+				}
+			}
+		})
 	}
 }

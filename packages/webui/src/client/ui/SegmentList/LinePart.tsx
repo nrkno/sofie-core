@@ -14,6 +14,9 @@ import { LinePartIdentifier } from './LinePartIdentifier'
 import { LinePartPieceIndicators } from './LinePartPieceIndicators'
 import { LinePartTimeline } from './LinePartTimeline'
 import { LinePartTitle } from './LinePartTitle'
+import { TimingDataResolution, TimingTickResolution, withTiming } from '../RundownView/RundownTiming/withTiming'
+import { RundownTimingContext, getPartInstanceTimingId } from '../../lib/rundownTiming'
+import { LoopingIcon } from '../../lib/ui/icons/looping'
 
 interface IProps {
 	segment: SegmentUi
@@ -22,9 +25,11 @@ interface IProps {
 	isNextPart: boolean
 	isSinglePartInSegment: boolean
 	hasAlreadyPlayed: boolean
+	isQuickLoopStart: boolean
+	isQuickLoopEnd: boolean
 	// isLastSegment?: boolean
 	// isLastPartInSegment?: boolean
-	// isPlaylistLooping?: boolean
+	isPlaylistLooping: boolean
 	indicatorColumns: Record<string, ISourceLayerExtended[]>
 	adLibIndicatorColumns: Record<string, ISourceLayerExtended[]>
 	doesPlaylistHaveNextPart?: boolean
@@ -39,7 +44,18 @@ interface IProps {
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 }
 
-export const LinePart: React.FC<IProps> = function LinePart({
+export const LinePart = withTiming<IProps, {}>((props: IProps) => {
+	return {
+		tickResolution: TimingTickResolution.Synced,
+		dataResolution: TimingDataResolution.High,
+		filter: (durations: RundownTimingContext) => {
+			durations = durations || {}
+
+			const timingId = getPartInstanceTimingId(props.part.instance)
+			return [(durations.partsInQuickLoop || {})[timingId]]
+		},
+	}
+})(function LinePart({
 	part,
 	segment,
 	isNextPart,
@@ -49,6 +65,10 @@ export const LinePart: React.FC<IProps> = function LinePart({
 	currentPartWillAutonext,
 	indicatorColumns,
 	adLibIndicatorColumns,
+	isPlaylistLooping,
+	timingDurations,
+	isQuickLoopStart,
+	isQuickLoopEnd,
 	onContextMenu,
 	onPieceClick,
 	onPieceDoubleClick,
@@ -56,6 +76,10 @@ export const LinePart: React.FC<IProps> = function LinePart({
 	const isFinished =
 		(part.instance.timings?.reportedStoppedPlayback ?? part.instance.timings?.plannedStoppedPlayback) !== undefined
 	const [highlight] = useState(false)
+
+	const timingId = getPartInstanceTimingId(part.instance)
+	const isInsideQuickLoop = (timingDurations.partsInQuickLoop || {})[timingId]
+	const isOutsideActiveQuickLoop = isPlaylistLooping && !isInsideQuickLoop && !isNextPart && !hasAlreadyPlayed
 
 	const getPartContext = useCallback(() => {
 		const partElement = document.querySelector('#' + SegmentTimelinePartElementId + part.instance._id)
@@ -111,7 +135,9 @@ export const LinePart: React.FC<IProps> = function LinePart({
 					'invert-flash': highlight,
 					'segment-opl__part--next': isNextPart,
 					'segment-opl__part--live': isLivePart,
-					'segment-opl__part--has-played': hasAlreadyPlayed,
+					'segment-opl__part--has-played': hasAlreadyPlayed && (!isPlaylistLooping || !isInsideQuickLoop),
+					'segment-opl__part--outside-quickloop': isOutsideActiveQuickLoop,
+					'segment-opl__part--quickloop-start': isQuickLoopStart,
 					'segment-opl__part--invalid': part.instance.part.invalid,
 					'segment-opl__part--timing-sibling': isPreceededByTimingGroupSibling,
 				}),
@@ -143,6 +169,17 @@ export const LinePart: React.FC<IProps> = function LinePart({
 				{part.instance.part.identifier !== undefined && (
 					<LinePartIdentifier identifier={part.instance.part.identifier} />
 				)}
+				{isQuickLoopStart && (
+					<div className="segment-opl__quickloop-start">
+						<LoopingIcon />
+					</div>
+				)}
+				{isQuickLoopEnd && (
+					<div className="segment-opl__quickloop-end">
+						<LoopingIcon />
+					</div>
+				)}
+				{isInsideQuickLoop && <div className="segment-opl__quickloop-background"></div>}
 			</div>
 			<LinePartPieceIndicators
 				partId={part.partId}
@@ -160,7 +197,9 @@ export const LinePart: React.FC<IProps> = function LinePart({
 				currentPartWillAutonext={currentPartWillAutonext}
 				hasAlreadyPlayed={hasAlreadyPlayed}
 				onPieceDoubleClick={onPieceDoubleClick}
+				isQuickLoopStart={isQuickLoopStart}
+				isQuickLoopEnd={isQuickLoopEnd}
 			/>
 		</ContextMenuTrigger>
 	)
-}
+})

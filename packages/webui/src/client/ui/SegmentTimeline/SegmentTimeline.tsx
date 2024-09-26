@@ -54,6 +54,7 @@ import {
 } from '../RundownView/RundownTiming/withTiming'
 import { SegmentTimeAnchorTime } from '../RundownView/RundownTiming/SegmentTimeAnchorTime'
 import { logger } from '../../lib/logging'
+import * as RundownResolver from '../../lib/RundownResolver'
 
 interface IProps {
 	id: string
@@ -668,12 +669,14 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 
 		return (
 			<>
-				<div
-					className="segment-timeline__liveline-shade"
-					style={{
-						width: lineStyle.left,
-					}}
-				/>
+				{!RundownResolver.isLoopRunning(this.props.playlist) && (
+					<div
+						className="segment-timeline__liveline-shade"
+						style={{
+							width: lineStyle.left,
+						}}
+					/>
+				)}
 				<div className="segment-timeline__liveline" style={lineStyle}>
 					<div
 						className="segment-timeline__liveline__label"

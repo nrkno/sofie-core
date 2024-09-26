@@ -49,6 +49,7 @@ import {
 import { IngestDataCache, Parts, Pieces, Rundowns } from '../collections'
 import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 import { verifyHashedToken } from './singleUseTokens'
+import { QuickLoopMarker } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { runIngestOperation } from './ingest/lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 
@@ -1218,6 +1219,52 @@ class ServerUserActionAPI
 			{
 				playlistId: playlistId,
 				rundownId: rundownId,
+			}
+		)
+	}
+
+	async setQuickLoopStart(
+		userEvent: string,
+		eventTime: number,
+		playlistId: RundownPlaylistId,
+		marker: QuickLoopMarker | null
+	): Promise<ClientAPI.ClientResponse<void>> {
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			eventTime,
+			playlistId,
+			() => {
+				check(playlistId, String)
+			},
+			StudioJobs.SetQuickLoopMarker,
+			{
+				playlistId,
+				marker,
+				type: 'start',
+			}
+		)
+	}
+
+	async setQuickLoopEnd(
+		userEvent: string,
+		eventTime: number,
+		playlistId: RundownPlaylistId,
+		marker: QuickLoopMarker | null
+	): Promise<ClientAPI.ClientResponse<void>> {
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			eventTime,
+			playlistId,
+			() => {
+				check(playlistId, String)
+			},
+			StudioJobs.SetQuickLoopMarker,
+			{
+				playlistId,
+				marker,
+				type: 'end',
 			}
 		)
 	}

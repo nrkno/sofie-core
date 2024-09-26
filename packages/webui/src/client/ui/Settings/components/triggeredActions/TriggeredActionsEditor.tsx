@@ -23,11 +23,12 @@ import { catchError, fetchFrom } from '../../../../lib/lib'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../../lib/notifications/notifications'
 import { doModalDialog } from '../../../../lib/ModalDialog'
 import { PartId, RundownId, ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PartInstances, Parts, RundownPlaylists, Rundowns, TriggeredActions } from '../../../../collections'
+import { RundownPlaylists, Rundowns, TriggeredActions } from '../../../../collections'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { SourceLayers, OutputLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { RundownPlaylistCollectionUtil } from '../../../../collections/rundownPlaylistUtil'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { UIPartInstances, UIParts } from '../../../Collections'
 
 export interface PreviewContext {
 	rundownPlaylist: DBRundownPlaylist | null
@@ -190,7 +191,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 		null
 	)
 
-	useSubscription(CorelibPubSub.partInstances, rundown ? [rundown._id] : [], rundownPlaylist?.activationId ?? null)
+	useSubscription(MeteorPubSub.uiPartInstances, rundown ? [rundown._id] : [], rundownPlaylist?.activationId ?? null)
 	useSubscription(CorelibPubSub.parts, rundown ? [rundown._id] : [], null)
 
 	const previewContext = useTracker(
@@ -201,19 +202,19 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 			let thisNextSegmentPartIds: PartId[] = []
 			if (rundownPlaylist) {
 				if (rundownPlaylist.currentPartInfo) {
-					const currentPartInstance = PartInstances.findOne(rundownPlaylist.currentPartInfo.partInstanceId)
+					const currentPartInstance = UIPartInstances.findOne(rundownPlaylist.currentPartInfo.partInstanceId)
 					if (currentPartInstance) {
 						thisCurrentPart = currentPartInstance.part
-						thisCurrentSegmentPartIds = Parts.find({
+						thisCurrentSegmentPartIds = UIParts.find({
 							segmentId: currentPartInstance.segmentId,
 						}).map((part) => part._id)
 					}
 				}
 				if (rundownPlaylist.nextPartInfo) {
-					const nextPartInstance = PartInstances.findOne(rundownPlaylist.nextPartInfo.partInstanceId)
+					const nextPartInstance = UIPartInstances.findOne(rundownPlaylist.nextPartInfo.partInstanceId)
 					if (nextPartInstance) {
 						thisNextPart = nextPartInstance.part
-						thisNextSegmentPartIds = Parts.find({
+						thisNextSegmentPartIds = UIParts.find({
 							segmentId: nextPartInstance.segmentId,
 						}).map((part) => part._id)
 					}
