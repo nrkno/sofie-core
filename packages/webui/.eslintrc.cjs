@@ -42,7 +42,7 @@ const tsBase = {
 	extends: [...tsExtends],
 	plugins: tsPlugins,
 	...tsParser,
-	parserOptions: { project: './tsconfig.eslint.json' },
+	parserOptions: { project: './packages/webui/tsconfig.eslint.json' },
 	settings: {
 		node: {
 			tryExtensions: ['.js', '.json', '.node', '.ts', '.tsx', '.d.ts'],
