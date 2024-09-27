@@ -317,13 +317,3 @@ export class OverrideOpHelperImpl implements OverrideOpHelperBatcher {
 		this.#saveOverrides(this.#object.overrides)
 	}
 }
-
-/**
- * A helper to work with modifying an ObjectWithOverrides<T>
- */
-export function useOverrideOpHelperBackend<T extends object>(
-	saveOverrides: (newOps: SomeObjectOverrideOp[]) => void,
-	objectWithOverrides: ObjectWithOverrides<T>
-): OverrideOpHelperBatcher {
-	return new OverrideOpHelperImpl(saveOverrides, objectWithOverrides)
-}

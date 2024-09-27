@@ -85,6 +85,7 @@ export async function handleBlueprintUpgradeForStudio(context: JobContext, _data
 				behavior: dev[1].behavior ?? StudioRouteBehavior.TOGGLE,
 				exclusivityGroup: dev[1].exclusivityGroup ?? undefined,
 				routes: dev[1].routes ?? [],
+				abPlayers: dev[1].abPlayers ?? [],
 			}),
 		])
 	)

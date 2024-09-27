@@ -9,8 +9,9 @@ import { ABSessionAssignment, ABSessionAssignments } from '@sofie-automation/cor
 import { OnGenerateTimelineObjExt } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { logger } from '../../logging'
 import * as _ from 'underscore'
-import { SessionRequest } from './abPlaybackResolver'
+import { PlayerId, SessionRequest } from './abPlaybackResolver'
 import { AbSessionHelper } from './abSessionHelper'
+import { ReadonlyDeep } from 'type-fest'
 
 /**
  * Apply the ab assignments for a pool to the timeline
@@ -28,12 +29,12 @@ export function applyAbPlayerObjectAssignments(
 	blueprintContext: ICommonContext,
 	abConfiguration: Pick<ABResolverConfiguration, 'timelineObjectLayerChangeRules' | 'customApplyToObject'>,
 	timelineObjs: OnGenerateTimelineObjExt[],
-	previousAssignmentMap: ABSessionAssignments,
+	previousAssignmentMap: ReadonlyDeep<ABSessionAssignments> | undefined,
 	resolvedAssignments: Readonly<SessionRequest[]>,
 	poolName: string
 ): ABSessionAssignments {
 	const newAssignments: ABSessionAssignments = {}
-	const persistAssignment = (sessionId: string, playerId: number | string, lookahead: boolean): void => {
+	const persistAssignment = (sessionId: string, playerId: PlayerId, lookahead: boolean): void => {
 		// Track the assignment, so that the next onTimelineGenerate can try to reuse the same session
 		if (newAssignments[sessionId]) {
 			// TODO - warn?
@@ -86,7 +87,7 @@ export function applyAbPlayerObjectAssignments(
 			unexpectedSessions.push(`${sessionId}(${objs.map((obj) => obj.id).join(',')})`)
 
 			// If there was a previous assignment, hopefully that is better than nothing
-			const prev = previousAssignmentMap[sessionId]
+			const prev = previousAssignmentMap?.[sessionId]
 			if (prev) {
 				failedObjects.push(
 					...updateObjectsToAbPlayer(blueprintContext, abConfiguration, poolName, prev.playerId, objs)
@@ -119,7 +120,7 @@ function updateObjectsToAbPlayer(
 	context: ICommonContext,
 	abConfiguration: Pick<ABResolverConfiguration, 'timelineObjectLayerChangeRules' | 'customApplyToObject'>,
 	poolName: string,
-	playerId: number | string,
+	playerId: PlayerId,
 	objs: OnGenerateTimelineObj<TSR.TSRTimelineContent>[]
 ): OnGenerateTimelineObj<TSR.TSRTimelineContent>[] {
 	const failedObjects: OnGenerateTimelineObj<TSR.TSRTimelineContent>[] = []
@@ -142,7 +143,7 @@ function updateObjectsToAbPlayer(
 
 function applyUpdateToKeyframes(
 	poolName: string,
-	playerId: number | string,
+	playerId: PlayerId,
 	obj: OnGenerateTimelineObj<TSR.TSRTimelineContent>
 ): boolean {
 	if (!obj.keyframes) return false
@@ -174,7 +175,7 @@ function applyUpdateToKeyframes(
 function applylayerMoveRule(
 	timelineObjectLayerChangeRules: ABTimelineLayerChangeRules | undefined,
 	poolName: string,
-	playerId: number | string,
+	playerId: PlayerId,
 	obj: OnGenerateTimelineObj<TSR.TSRTimelineContent>
 ): boolean {
 	const ruleId = obj.isLookahead ? obj.lookaheadForLayer || obj.layer : obj.layer

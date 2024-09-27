@@ -10,7 +10,7 @@ import { ABSessionAssignments } from '@sofie-automation/corelib/dist/dataModel/R
 import { OnGenerateTimelineObjExt } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { AssignmentResult, resolveAbAssignmentsFromRequests } from '../abPlaybackResolver'
+import { AssignmentResult, PlayerId, resolveAbAssignmentsFromRequests } from '../abPlaybackResolver'
 import { calculateSessionTimeRanges } from '../abPlaybackSessions'
 import { AbSessionHelper } from '../abSessionHelper'
 
@@ -79,7 +79,7 @@ function resolveAbSessions(
 	timelineObjs: OnGenerateTimelineObjExt[],
 	previousAssignmentMap: ABSessionAssignments,
 	sessionPool: string,
-	playerIds: Array<number | string>,
+	playerIds: Array<PlayerId>,
 	now: number
 ): AssignmentResult {
 	const sessionRequests = calculateSessionTimeRanges(
@@ -458,7 +458,7 @@ describe('resolveMediaPlayers', () => {
 			},
 			inst_1_clip_def: {
 				sessionId: 'inst_1_clip_def',
-				playerId: 3,
+				playerId: 1,
 				lookahead: true,
 			},
 		}
@@ -482,13 +482,13 @@ describe('resolveMediaPlayers', () => {
 			[1, 2],
 			0
 		)
-		expect(assignments.failedRequired).toHaveLength(0)
+		expect(assignments.failedRequired).toEqual(['inst_2_clip_ghi'])
 		expect(assignments.failedOptional).toHaveLength(0)
 		expect(assignments.requests).toHaveLength(3)
 		expect(assignments.requests).toEqual([
-			{ end: 7400, id: 'inst_0_clip_abc', playerId: 5, start: 2400, optional: false },
-			{ end: 7400, id: 'inst_1_clip_def', playerId: 3, start: 2400, optional: false },
-			{ end: 6800, id: 'inst_2_clip_ghi', playerId: 1, start: 2800, optional: false },
+			{ end: 7400, id: 'inst_0_clip_abc', playerId: 2, start: 2400, optional: false },
+			{ end: 7400, id: 'inst_1_clip_def', playerId: 1, start: 2400, optional: false },
+			{ end: 6800, id: 'inst_2_clip_ghi', playerId: undefined, start: 2800, optional: false },
 		])
 
 		expect(mockGetPieceSessionId).toHaveBeenCalledTimes(3)
