@@ -3375,6 +3375,21 @@ svg.icon {
 		left: 50%;
 		transform: translate(-150%, -50%);
 	}
+
+	> .rundown-view__label {
+		position: absolute;
+		top: 60%;
+		left: 1%;
+		right: 0;
+		text-align: center;
+		font-size: 3em;
+		transform: translateY(-50%);
+
+		> p {
+			margin: 20px auto;
+			max-width: 1200px;
+		}
+	}
 }
 
 .rundown-view {
