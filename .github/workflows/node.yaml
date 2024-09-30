@@ -587,13 +587,17 @@ jobs:
           yarn
         env:
           CI: true
-      - name: Run generator
+      - name: Build OpenAPI client library
         run: |
           cd packages/openapi
-
+          yarn build
+        env:
+          CI: true
+      - name: Generate OpenAPI docs and server
+        run: |
+          cd packages/openapi
           yarn gendocs
           yarn genserver
-          yarn genclient:ts
         env:
           CI: true
 
@@ -682,7 +686,7 @@ jobs:
           else
             # make dependencies of `determine-npm-tag` available
             yarn install --mode=skip-build
-            
+
             cd packages
             PACKAGE_NAME="@sofie-automation/shared-lib"
             PUBLISHED_VERSION=$(yarn npm info --json $PACKAGE_NAME | jq -c '.version' -r)
@@ -700,19 +704,11 @@ jobs:
           yarn build
         env:
           CI: true
-      - name: Generate OpenAPI client library
-        if: ${{ steps.do-publish.outputs.tag }}
-        uses: hatamiarash7/openapi-generator@v0.3.0
-        with:
-          generator: typescript-fetch
-          openapi-file: ./packages/openapi/api/actions.yaml
-          output-dir: ./packages/openapi/client/ts
-          command-args: -p supportsES6=true
       - name: Build OpenAPI client library
         if: ${{ steps.do-publish.outputs.tag }}
         run: |
           cd packages/openapi
-          yarn build:main
+          yarn build
         env:
           CI: true
       - name: Modify dependencies to use npm packages

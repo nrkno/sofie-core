@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.51.0-in-testing.3](https://github.com/nrkno/sofie-core/compare/v1.51.0-in-testing.2...v1.51.0-in-testing.3) (2024-09-25)
+
+## [1.51.0-in-testing.2](https://github.com/nrkno/sofie-core/compare/v1.51.0-in-testing.1...v1.51.0-in-testing.2) (2024-09-24)
+
+
+### Bug Fixes
+
+* allow replacement in replaceInfinitesFromPreviousPlayhead ([ebb154d](https://github.com/nrkno/sofie-core/commit/ebb154d6b59369588da400d8d921a00e41b84dc8))
+* **BucketPanel:** Bucket AdLibs don't trigger when created before Rundown activation (SOFIE-3478) ([a16d977](https://github.com/nrkno/sofie-core/commit/a16d9777a301a6d7d69ea00be02b70c53cb9bdcc))
+* **LinePartTimeline:** make rules for findMainPiece consistent, make infinite graphics Pieces display correctly ([153d100](https://github.com/nrkno/sofie-core/commit/153d100fb659546201a654af5c566b513951df88))
+* **NoraFloatingInspector:** prevent Segment crash when trying to show a Piece with an invalid Nora `previewPayload` ([4a3a2e7](https://github.com/nrkno/sofie-core/commit/4a3a2e779c144b1c9e88c187cce2e5c80d34626d))
+* resolve an issue with prompter moving when Parts become PartInstances and the prompter position is juuuust right ([a670a73](https://github.com/nrkno/sofie-core/commit/a670a73fa6bfb8331921a2bedd9c927952cfffcf))
+
 ## [1.51.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.50.4...v1.51.0-in-testing.0) (2024-08-19)
 
 

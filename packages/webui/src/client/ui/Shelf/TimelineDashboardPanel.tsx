@@ -32,7 +32,7 @@ export const TimelineDashboardPanel = React.memo(
 		return <TimelineDashboardPanelContent {...props} {...trackedProps} studio={trackedProps.studio} />
 	},
 	(props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
-		return !_.isEqual(props, nextProps)
+		return _.isEqual(props, nextProps)
 	}
 )
 

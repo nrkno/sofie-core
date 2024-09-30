@@ -380,7 +380,7 @@ export const BucketPanel = React.memo(
 		)
 	},
 	(props: IBucketPanelProps, nextProps: IBucketPanelProps) => {
-		return !_.isEqual(props, nextProps)
+		return _.isEqual(props, nextProps)
 	}
 )
 
