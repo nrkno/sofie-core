@@ -408,6 +408,7 @@ export function useSubscriptionIfEnabled<K extends keyof AllPubSubTypes>(
 
 	useEffect(() => {
 		if (!enable) {
+			setReady(false)
 			return
 		}
 
