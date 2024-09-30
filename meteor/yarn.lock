@@ -1418,7 +1418,7 @@ __metadata:
   resolution: "@sofie-automation/shared-lib@portal:../packages/shared-lib::locator=automation-core%40workspace%3A."
   dependencies:
     "@mos-connection/model": ^4.1.1
-    timeline-state-resolver-types: 9.2.0-nightly-fix-quantel-clear-port-20240930-125507-5a68cc88d.0
+    timeline-state-resolver-types: 9.2.0-nightly-fix-revert-quantel-device-20240930-142652-36817aadc.0
     tslib: ^2.6.2
     type-fest: ^3.13.1
   languageName: node
@@ -11748,12 +11748,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"timeline-state-resolver-types@npm:9.2.0-nightly-fix-quantel-clear-port-20240930-125507-5a68cc88d.0":
-  version: 9.2.0-nightly-fix-quantel-clear-port-20240930-125507-5a68cc88d.0
-  resolution: "timeline-state-resolver-types@npm:9.2.0-nightly-fix-quantel-clear-port-20240930-125507-5a68cc88d.0"
+"timeline-state-resolver-types@npm:9.2.0-nightly-fix-revert-quantel-device-20240930-142652-36817aadc.0":
+  version: 9.2.0-nightly-fix-revert-quantel-device-20240930-142652-36817aadc.0
+  resolution: "timeline-state-resolver-types@npm:9.2.0-nightly-fix-revert-quantel-device-20240930-142652-36817aadc.0"
   dependencies:
     tslib: ^2.6.2
-  checksum: 0eb093a3892da222d002b799698066dd1106ecb604ae03507765ff00e3e63fa38778a2bbda66b4b79440093e65af24c96dde37af2ac0379424730d4d01dd1fd2
+  checksum: 4f660e7e901e7345dad8a87f2fb4bed8a4985fe7011c70cb9361ee430d03234b38ac104129f674b6df5aeab2b425254581eaad27405800234300d0d74f444f7d
   languageName: node
   linkType: hard
 
