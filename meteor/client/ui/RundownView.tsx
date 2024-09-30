@@ -3257,27 +3257,9 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 		}
 
 		render(): JSX.Element {
-			const { t } = this.props
 			if (!this.props.subsReady) {
 				return (
 					<div className="rundown-view rundown-view--loading">
-						<div className="rundown-view__label">
-							<p>
-								<Route
-									render={({ history }) => (
-										<button
-											className="btn btn-primary"
-											onClick={() => {
-												history.push('/rundowns')
-											}}
-										>
-											{t('Return to list')}
-										</button>
-									)}
-								/>
-							</p>
-						</div>
-
 						<Spinner />
 					</div>
 				)
