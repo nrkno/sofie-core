@@ -391,6 +391,7 @@ export function useSubscription<K extends keyof AllPubSubTypes>(
 /**
  * A Meteor Subscription hook that allows using React Functional Components and the Hooks API with Meteor subscriptions.
  * Subscriptions will be torn down 1000ms after unmounting the component.
+ * If the subscription is not enabled, the subscription will not be created, and the ready state will always be true.
  *
  * @export
  * @param {PubSub} sub The subscription to be subscribed to
@@ -407,7 +408,6 @@ export function useSubscriptionIfEnabled<K extends keyof AllPubSubTypes>(
 
 	useEffect(() => {
 		if (!enable) {
-			setReady(false)
 			return
 		}
 
@@ -421,7 +421,7 @@ export function useSubscriptionIfEnabled<K extends keyof AllPubSubTypes>(
 		}
 	}, [sub, enable, stringifyObjects(args)])
 
-	return ready
+	return !enable || ready
 }
 
 /**
