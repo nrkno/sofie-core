@@ -30,7 +30,6 @@ input {
 @import 'prompter';
 @import 'rundownList';
 @import 'rundownSystemStatus';
-@import 'rundownView';
 @import 'settings';
 @import 'splitDropdown';
 @import 'statusbar';
@@ -103,6 +102,8 @@ input {
 @import '../ui/RundownView/MediaStatusPopUp/MediaStatusPopUpHeader.scss';
 @import '../ui/RundownView/MediaStatusPopUp/MediaStatusPopUpSegmentRule.scss';
 @import '../ui/SegmentAdlibTesting/SegmentAdlibTesting.scss';
+
+@import 'rundownView';
 
 body {
 	overscroll-behavior: none;
