@@ -18,6 +18,7 @@ declare module 'http' {
 }
 
 const rootRouter = new KoaRouter()
+const boundRouterPaths: string[] = []
 
 Meteor.startup(() => {
 	const koaApp = new Koa()
@@ -51,7 +52,8 @@ Meteor.startup(() => {
 
 	// serve the webui through koa
 	// This is to avoid meteor injecting anything into the served html
-	koaApp.use(staticServe(public_dir))
+	const webuiServer = staticServe(public_dir)
+	koaApp.use(webuiServer)
 	logger.debug(`Serving static files from ${public_dir}`)
 
 	// Serve the meteor runtime config
@@ -66,9 +68,31 @@ Meteor.startup(() => {
 	})
 
 	koaApp.use(rootRouter.routes()).use(rootRouter.allowedMethods())
+
+	koaApp.use(async (ctx, next) => {
+		if (ctx.method !== 'GET') return next()
+
+		// Don't use the fallback for certain paths
+		if (ctx.path.startsWith('/assets/')) return next()
+
+		// Don't use the fallback for anything handled by another router
+		// This does not feel efficient, but koa doesn't appear to have any shared state between the router handlers
+		for (const bindPath of boundRouterPaths) {
+			if (ctx.path.startsWith(bindPath)) return next()
+		}
+
+		// fallback to the root file
+		ctx.path = '/'
+		return webuiServer(ctx, next)
+	})
 })
 
 export function bindKoaRouter(koaRouter: KoaRouter, bindPath: string): void {
+	// Track this path as having a router
+	let bindPathFull = bindPath
+	if (!bindPathFull.endsWith('/')) bindPathFull += '/'
+	boundRouterPaths.push(bindPathFull)
+
 	rootRouter.use(bindPath, koaRouter.routes()).use(bindPath, koaRouter.allowedMethods())
 }
 
