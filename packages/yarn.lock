@@ -26028,6 +26028,13 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
+"timecode@patch:timecode@npm%3A0.0.4#./.yarn/patches/timecode-npm-0.0.4-82bde9e6fe.patch::locator=packages%40workspace%3A.":
+  version: 0.0.4
+  resolution: "timecode@patch:timecode@npm%3A0.0.4#./.yarn/patches/timecode-npm-0.0.4-82bde9e6fe.patch::version=0.0.4&hash=4d4986&locator=packages%40workspace%3A."
+  checksum: da05fb8e2f907a5bdb538c00ccaf216447337a568d9efddcb3835c130929fef2aeb864a5eba0381847e9404dbb412012806e0e02fd881562c82ae23c61ef139c
+  languageName: node
+  linkType: hard
+
 "timeline-state-resolver-types@npm:9.2.0-nightly-release52-20240909-111856-517f0ee37.0":
   version: 9.2.0-nightly-release52-20240909-111856-517f0ee37.0
   resolution: "timeline-state-resolver-types@npm:9.2.0-nightly-release52-20240909-111856-517f0ee37.0"
