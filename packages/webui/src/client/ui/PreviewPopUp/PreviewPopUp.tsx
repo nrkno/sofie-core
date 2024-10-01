@@ -4,9 +4,7 @@ import { usePopper } from 'react-popper'
 import { Padding, Placement, VirtualElement } from '@popperjs/core'
 
 export const PreviewPopUp = React.forwardRef<
-	{
-		update: () => void
-	},
+	PreviewPopUpHandle,
 	React.PropsWithChildren<{
 		anchor: HTMLElement | VirtualElement | null
 		padding: Padding
@@ -16,13 +14,13 @@ export const PreviewPopUp = React.forwardRef<
 		preview?: React.ReactNode
 		controls?: React.ReactNode
 		contentInfo?: React.ReactNode
-		warnings?: React.ReactNode
+		warnings?: React.ReactNode[]
 	}>
 >(function PreviewPopUp(
 	{ anchor, padding, placement, hidden, size, children, controls, contentInfo, warnings },
 	ref
 ): React.JSX.Element {
-	const warningsCount = React.Children.count(warnings)
+	const warningsCount = warnings?.length ?? 0
 
 	const [popperEl, setPopperEl] = useState<HTMLDivElement | null>(null)
 	const popperOptions = useMemo(
@@ -97,11 +95,17 @@ export const PreviewPopUp = React.forwardRef<
 			{contentInfo && <div className="preview-popUp__content-info">{contentInfo}</div>}
 			{warnings && warningsCount > 0 && (
 				<div className="preview-popUp__warnings">
-					{React.Children.map(warnings, (child) => (
-						<div className="preview-popUp__warning-row">{child}</div>
+					{React.Children.map(warnings, (child, index) => (
+						<div className="preview-popUp__warning-row" key={index}>
+							{child}
+						</div>
 					))}
 				</div>
 			)}
 		</div>
 	)
 })
+
+export type PreviewPopUpHandle = {
+	readonly update: () => void
+}
