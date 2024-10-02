@@ -61,6 +61,7 @@ export async function loadPlayoutModelPreInit(
 
 		playlist: Playlist,
 		rundowns: sortRundownsWithinPlaylist(Playlist.rundownIdsInOrder, Rundowns),
+		// rundowns: Rundowns,
 
 		getRundown: (id: RundownId) => Rundowns.find((rd) => rd._id === id),
 	}

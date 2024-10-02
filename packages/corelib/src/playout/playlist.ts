@@ -101,9 +101,9 @@ export function sortRundownsWithinPlaylist(
 		if (indexA === -1 && indexB === -1) {
 			return a._id.toString().localeCompare(b._id.toString())
 		} else if (indexA === -1) {
-			return -1
-		} else if (indexB === -1) {
 			return 1
+		} else if (indexB === -1) {
+			return -1
 		}
 
 		return indexA - indexB
