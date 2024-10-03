@@ -60,6 +60,34 @@ export interface ShowStylesRestAPI {
 		showStyleBase: APIShowStyleBase
 	): Promise<ClientAPI.ClientResponse<void>>
 	/**
+	 * Gets a ShowStyle config, if the ShowStyle id exists.
+	 *
+	 * Throws if the specified ShowStyle does not exist.
+	 * @param connection Connection data including client and header details
+	 * @param event User event string
+	 * @param showStyleBaseId ShowStyleBaseId to fetch
+	 */
+	getShowStyleConfig(
+		connection: Meteor.Connection,
+		event: string,
+		showStyleBaseId: ShowStyleBaseId
+	): Promise<ClientAPI.ClientResponse<object>>
+	/**
+	 * Updates a ShowStyle configuration.
+	 *
+	 * Throws if the ShowStyle is in use in an active Rundown.
+	 * @param connection Connection data including client and header details
+	 * @param event User event string
+	 * @param showStyleBaseId Id of the ShowStyleBase to update
+	 * @param object Blueprint configuration object
+	 */
+	updateShowStyleConfig(
+		connection: Meteor.Connection,
+		event: string,
+		showStyleBaseId: ShowStyleBaseId,
+		config: object
+	): Promise<ClientAPI.ClientResponse<void>>
+	/**
 	 * Removed a ShowStyleBase.
 	 *
 	 * Throws if the ShowStyleBase is in use in an active Rundown.
@@ -192,6 +220,7 @@ export interface APIShowStyleBase {
 export interface APIShowStyleVariant {
 	name: string
 	showStyleBaseId: string
+	blueprintConfigPresetId?: string
 	config: object
 	rank: number
 }
