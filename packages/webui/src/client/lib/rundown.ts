@@ -105,7 +105,8 @@ export namespace RundownUtils {
 		useSmartHours?: boolean,
 		minusPrefix?: string,
 		floorTime?: boolean,
-		hardFloor?: boolean
+		hardFloor?: boolean,
+		invertedSignIndicator?: boolean
 	): string {
 		let isNegative = milliseconds < 0
 		if (isNegative) {
@@ -175,6 +176,11 @@ export namespace RundownUtils {
 			if (hours === 0 && minutes === 0 && secondsRest === 0) {
 				isNegative = true
 			}
+		}
+
+		// Reverse the + indicator to show overtime:
+		if (invertedSignIndicator && !(hours === 0 && minutes === 0 && secondsRest === 0)) {
+			isNegative = !isNegative
 		}
 
 		return (
