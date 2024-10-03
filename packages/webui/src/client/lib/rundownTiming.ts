@@ -24,6 +24,7 @@ import { getCurrentTime } from './systemTime'
 import { Settings } from '../lib/Settings'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { CountdownType } from '@sofie-automation/blueprints-integration'
 import { isLoopDefined, isEntirePlaylistLooping, isLoopRunning } from '../lib/RundownResolver'
 
 // Minimum duration that a part can be assigned. Used by gap parts to allow them to "compress" to indicate time running out.
@@ -65,7 +66,6 @@ export class RundownTimingCalculator {
 	private partDisplayDurations: Record<TimingId, number> = {}
 	private partDisplayDurationsNoPlayback: Record<TimingId, number> = {}
 	private displayDurationGroups: Record<string, number> = {}
-	private segmentBudgetDurations: Record<string, number> = {}
 	private segmentAsPlayedDurations: Record<string, number> = {}
 	private breakProps: {
 		props: BreakProps | undefined
@@ -113,6 +113,7 @@ export class RundownTimingCalculator {
 		let displayStartsAtAccumulator = 0
 		let segmentDisplayDuration = 0
 		let segmentBudgetDurationLeft = 0
+		let remainingBudgetOnCurrentSegment: undefined | number
 
 		const rundownExpectedDurations: Record<string, number> = {}
 		const rundownAsPlayedDurations: Record<string, number> = {}
@@ -122,7 +123,6 @@ export class RundownTimingCalculator {
 		let liveSegmentId: SegmentId | undefined
 
 		Object.keys(this.displayDurationGroups).forEach((key) => delete this.displayDurationGroups[key])
-		Object.keys(this.segmentBudgetDurations).forEach((key) => delete this.segmentBudgetDurations[key])
 		Object.keys(this.segmentAsPlayedDurations).forEach((key) => delete this.segmentAsPlayedDurations[key])
 		this.untimedSegments.clear()
 		this.linearParts.length = 0
@@ -145,31 +145,35 @@ export class RundownTimingCalculator {
 				this.nextSegmentId = undefined
 			}
 
-			partInstances.forEach((partInstance) => {
-				const origPart = partInstance.part
-				if (origPart.budgetDuration !== undefined) {
-					const segmentId = unprotectString(origPart.segmentId)
-					if (this.segmentBudgetDurations[segmentId] !== undefined) {
-						this.segmentBudgetDurations[unprotectString(origPart.segmentId)] += origPart.budgetDuration
-					} else {
-						this.segmentBudgetDurations[unprotectString(origPart.segmentId)] = origPart.budgetDuration
-					}
-				}
-			})
-
 			partInstances.forEach((partInstance, itIndex) => {
 				const partId = partInstance.part._id
 				const partInstanceId = !partInstance.isTemporary ? partInstance._id : null
 				const partInstanceOrPartId = unprotectString(partInstanceId ?? partId)
+				const partsSegment = segmentsMap.get(partInstance.segmentId)
+				const segmentBudget = partsSegment?.segmentTiming?.budgetDuration
+				const segmentUsesBudget = segmentBudget !== undefined
+				const lastStartedPlayback = partInstance.timings?.plannedStartedPlayback
 
 				if (partInstance.segmentId !== lastSegmentId) {
 					this.untimedSegments.add(partInstance.segmentId)
-					lastSegmentId = partInstance.segmentId
+					if (liveSegmentId && lastSegmentId === liveSegmentId) {
+						const liveSegment = segmentsMap.get(liveSegmentId)
+
+						if (liveSegment?.segmentTiming?.countdownType === CountdownType.SEGMENT_BUDGET_DURATION) {
+							remainingBudgetOnCurrentSegment =
+								(playlist.segmentsStartedPlayback?.[unprotectString(liveSegmentId)] ??
+									lastStartedPlayback ??
+									now) +
+								(liveSegment.segmentTiming.budgetDuration ?? 0) -
+								now
+						}
+					}
 					segmentDisplayDuration = 0
 					if (segmentBudgetDurationLeft > 0) {
 						waitAccumulator += segmentBudgetDurationLeft
 					}
-					segmentBudgetDurationLeft = this.segmentBudgetDurations[unprotectString(partInstance.segmentId)]
+					segmentBudgetDurationLeft = segmentBudget ?? 0
+					lastSegmentId = partInstance.segmentId
 				}
 
 				// add piece to accumulator
@@ -190,9 +194,6 @@ export class RundownTimingCalculator {
 					(itIndex >= currentAIndex && currentAIndex >= 0) ||
 					(itIndex >= nextAIndex && nextAIndex >= 0 && currentAIndex === -1)
 
-				const segmentUsesBudget =
-					this.segmentBudgetDurations[unprotectString(partInstance.segmentId)] !== undefined
-
 				const partIsUntimed = partInstance.part.untimed || false
 
 				if (!partIsUntimed) {
@@ -206,7 +207,6 @@ export class RundownTimingCalculator {
 					totalRundownDuration += calculatePartInstanceExpectedDurationWithTransition(partInstance) || 0
 				}
 
-				const lastStartedPlayback = partInstance.timings?.plannedStartedPlayback
 				const playOffset = partInstance.timings?.playOffset || 0
 
 				let partDuration = 0
@@ -287,9 +287,7 @@ export class RundownTimingCalculator {
 					if (segmentUsesBudget) {
 						currentRemaining = Math.max(
 							0,
-							this.segmentBudgetDurations[unprotectString(partInstance.segmentId)] -
-								segmentDisplayDuration -
-								(now - segmentStartedPlayback)
+							segmentBudget - segmentDisplayDuration - (now - segmentStartedPlayback)
 						)
 						segmentBudgetDurationLeft = 0
 					} else {
@@ -551,7 +549,7 @@ export class RundownTimingCalculator {
 				if (segment._id === this.nextSegmentId) {
 					nextSegmentIndex = itIndex
 				}
-				const segmentBudgetDuration = this.segmentBudgetDurations[unprotectString(segment._id)]
+				const segmentBudgetDuration = segment.segmentTiming?.budgetDuration
 
 				// If all of the Parts in a Segment are untimed, do not consider the Segment for
 				// Playlist Remaining and As-Played durations.
@@ -629,9 +627,9 @@ export class RundownTimingCalculator {
 			partDisplayStartsAt: this.partDisplayStartsAt,
 			partExpectedDurations: this.partExpectedDurations,
 			partDisplayDurations: this.partDisplayDurations,
-			segmentBudgetDurations: this.segmentBudgetDurations,
 			currentTime: now,
 			remainingTimeOnCurrentPart,
+			remainingBudgetOnCurrentSegment,
 			currentPartWillAutoNext,
 			rundownsBeforeNextBreak,
 			breakIsLastRundown,
@@ -721,10 +719,10 @@ export interface RundownTimingContext {
 	 * if the Part does not have an expected duration.
 	 */
 	partExpectedDurations?: Record<string, number>
-	/** Budget durations of segments (sum of parts budget durations). */
-	segmentBudgetDurations?: Record<string, number>
 	/** Remaining time on current part */
 	remainingTimeOnCurrentPart?: number
+	/** Remaining budget on current segment, if its countdownType === CountdownType.SEGMENT_BUDGET_DURATION */
+	remainingBudgetOnCurrentSegment?: number
 	/** Current part will autoNext */
 	currentPartWillAutoNext?: boolean
 	/** Current time of this calculation */

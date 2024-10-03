@@ -11,7 +11,7 @@ import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/Part
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../lib/rundownLayouts'
 import { getAllowSpeaking, getAllowVibrating } from '../../lib/localStorage'
-import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRemaining'
+import { CurrentPartOrSegmentRemaining } from '../RundownView/RundownTiming/CurrentPartOrSegmentRemaining'
 import { CurrentPartElapsed } from '../RundownView/RundownTiming/CurrentPartElapsed'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
@@ -53,7 +53,7 @@ class PartTimingPanelInner extends React.Component<
 					)}
 					{this.props.active &&
 						(panel.timingType === 'count_down' ? (
-							<CurrentPartRemaining
+							<CurrentPartOrSegmentRemaining
 								currentPartInstanceId={this.props.playlist.currentPartInfo?.partInstanceId ?? null}
 								speaking={getAllowSpeaking() && panel.speakCountDown}
 								vibrating={getAllowVibrating() && panel.speakCountDown}

@@ -143,6 +143,12 @@ $defs:
           projectedEndTime:
             description: Unix timestamp of when the segment is projected to end (milliseconds). The time this segment started, offset by its budget duration, if the segment has a defined budget duration. Otherwise, the time the current part started, offset by the difference between expected durations of all parts in this segment and the as-played durations of the parts that already stopped.
             type: number
+          countdownType:
+            description: 'Countdown type within the segment. Default: `part_expected_duration`'
+            type: string
+            enum:
+              - part_expected_duration
+              - segment_budget_duration
         required: [expectedDurationMs, projectedEndTime]
     required: [id, timing]
     additionalProperties: false
@@ -152,6 +158,7 @@ $defs:
           expectedDurationMs: 15000
           budgetDurationMs: 20000
           projectedEndTime: 1600000075000
+          countdownType: segment_budget_duration
   piece:
     type: object
     properties:
