@@ -158,8 +158,8 @@ export function getPartTimingsOrDefaults(
 }
 
 function calculateExpectedDurationWithTransition(rawDuration: number, timings: PartCalculatedTimings): number {
-	// toPartDelay needs to be subtracted, because it is added to `fromPartRemaining` when the `fromPartRemaining` value is calculated.
-	return Math.max(0, rawDuration - (timings.fromPartRemaining - timings.toPartDelay))
+	// toPartDelay and fromPartPostroll needs to be subtracted, because it is added to `fromPartRemaining` when the `fromPartRemaining` value is calculated.
+	return Math.max(0, rawDuration - (timings.fromPartRemaining - timings.toPartDelay - timings.fromPartPostroll))
 }
 
 export type CalculateExpectedDurationPart = Pick<DBPart, 'inTransition' | 'expectedDuration'>
