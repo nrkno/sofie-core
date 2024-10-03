@@ -75,7 +75,7 @@ export const SegmentDuration = withTiming<ISegmentDurationProps, {}>()(function 
 					})}
 					role="timer"
 				>
-					{RundownUtils.formatDiffToTimecode(value, false, false, true, false, true, '+')}
+					{RundownUtils.formatDiffToTimecode(value, false, false, true, false, true, '+', false, true)}
 				</span>
 			</>
 		)
