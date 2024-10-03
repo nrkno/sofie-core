@@ -68,5 +68,8 @@
 		"typescript": "~4.9.5"
 	},
 	"name": "packages",
-	"packageManager": "yarn@3.5.0"
+	"packageManager": "yarn@3.5.0",
+	"resolutions": {
+		"timecode@0.0.4": "patch:timecode@npm%3A0.0.4#./.yarn/patches/timecode-npm-0.0.4-82bde9e6fe.patch"
+	}
 }
