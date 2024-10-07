@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.51.0](https://github.com/nrkno/sofie-core/compare/v1.51.0-in-testing.3...v1.51.0) (2024-10-07)
+
+**Note:** Version bump only for package @sofie-automation/server-core-integration
+
+
+
+
+
+# [1.51.0](https://github.com/nrkno/sofie-core/compare/v1.51.0-in-testing.3...v1.51.0) (2024-10-07)
+
+**Note:** Version bump only for package @sofie-automation/server-core-integration
+
+
+
+
+
 # [1.51.0-in-testing.3](https://github.com/nrkno/sofie-core/compare/v1.51.0-in-testing.2...v1.51.0-in-testing.3) (2024-09-25)
 
 **Note:** Version bump only for package @sofie-automation/server-core-integration
