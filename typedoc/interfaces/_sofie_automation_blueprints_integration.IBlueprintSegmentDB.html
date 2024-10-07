@@ -15,7 +15,7 @@
 <li><a href="../index.html">Sofie Integration Libraries</a></li>
 <li><a href="../modules/_sofie_automation_blueprints_integration.html">@sofie-automation/blueprints-integration</a></li>
 <li><a href="_sofie_automation_blueprints_integration.IBlueprintSegmentDB.html">IBlueprintSegmentDB</a></li></ul>
-<h1>Interface IBlueprintSegmentDB&lt;TMetadata&gt;</h1></div>
+<h1>Interface IBlueprintSegmentDB&lt;TPrivateData, TPublicData&gt;</h1></div>
 <section class="tsd-panel tsd-comment">
 <div class="tsd-comment tsd-typography"><p>The Segment sent from Core</p>
 </div></section> 
@@ -23,15 +23,17 @@
 <h4>Type Parameters</h4>
 <ul class="tsd-type-parameters">
 <li>
-<h4>TMetadata = <span class="tsd-signature-type">unknown</span></h4></li></ul></section> 
+<h4>TPrivateData = <span class="tsd-signature-type">unknown</span></h4></li>
+<li>
+<h4>TPublicData = <span class="tsd-signature-type">unknown</span></h4></li></ul></section> 
 <section class="tsd-panel tsd-hierarchy">
 <h4>Hierarchy</h4>
 <ul class="tsd-hierarchy">
-<li><a href="_sofie_automation_blueprints_integration.IBlueprintSegment.html" class="tsd-signature-type" data-tsd-kind="Interface">IBlueprintSegment</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">TMetadata</span><span class="tsd-signature-symbol">&gt;</span>
+<li><a href="_sofie_automation_blueprints_integration.IBlueprintSegment.html" class="tsd-signature-type" data-tsd-kind="Interface">IBlueprintSegment</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">TPrivateData</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type" data-tsd-kind="Type parameter">TPublicData</span><span class="tsd-signature-symbol">&gt;</span>
 <ul class="tsd-hierarchy">
 <li><span class="target">IBlueprintSegmentDB</span></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/segment.ts#L35">blueprints-integration/src/documents/segment.ts:35</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/segment.ts#L37">blueprints-integration/src/documents/segment.ts:37</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -43,8 +45,9 @@
 <a href="_sofie_automation_blueprints_integration.IBlueprintSegmentDB.html#displayAs" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>display<wbr/>As?</span></a>
 <a href="_sofie_automation_blueprints_integration.IBlueprintSegmentDB.html#identifier" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>identifier?</span></a>
 <a href="_sofie_automation_blueprints_integration.IBlueprintSegmentDB.html#isHidden" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>is<wbr/>Hidden?</span></a>
-<a href="_sofie_automation_blueprints_integration.IBlueprintSegmentDB.html#metaData" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>meta<wbr/>Data?</span></a>
 <a href="_sofie_automation_blueprints_integration.IBlueprintSegmentDB.html#name" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>name</span></a>
+<a href="_sofie_automation_blueprints_integration.IBlueprintSegmentDB.html#privateData" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>private<wbr/>Data?</span></a>
+<a href="_sofie_automation_blueprints_integration.IBlueprintSegmentDB.html#publicData" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>public<wbr/>Data?</span></a>
 <a href="_sofie_automation_blueprints_integration.IBlueprintSegmentDB.html#segmentTiming" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>segment<wbr/>Timing?</span></a>
 <a href="_sofie_automation_blueprints_integration.IBlueprintSegmentDB.html#showShelf" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>show<wbr/>Shelf?</span></a>
 </div></section></div></details></section></section>
@@ -54,7 +57,7 @@
 <h3 class="tsd-anchor-link"><span>_id</span><a href="#_id" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" id="icon-anchor-a"></path><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" id="icon-anchor-b"></path><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" id="icon-anchor-c"></path></svg></a></h3>
 <div class="tsd-signature">_id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/segment.ts#L36">blueprints-integration/src/documents/segment.ts:36</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/segment.ts#L39">blueprints-integration/src/documents/segment.ts:39</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a id="displayAs" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>display<wbr/>As</span><a href="#displayAs" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">display<wbr/>As<span class="tsd-signature-symbol">?:</span> <a href="../enums/_sofie_automation_blueprints_integration.SegmentDisplayMode.html" class="tsd-signature-type" data-tsd-kind="Enumeration">SegmentDisplayMode</a></div>
@@ -62,7 +65,7 @@
 </div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.IBlueprintSegment.html">IBlueprintSegment</a>.<a href="_sofie_automation_blueprints_integration.IBlueprintSegment.html#displayAs">displayAs</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/segment.ts#L29">blueprints-integration/src/documents/segment.ts:29</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/segment.ts#L31">blueprints-integration/src/documents/segment.ts:31</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a id="identifier" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>identifier</span><a href="#identifier" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">identifier<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span></div>
@@ -70,7 +73,7 @@
 </div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.IBlueprintSegment.html">IBlueprintSegment</a>.<a href="_sofie_automation_blueprints_integration.IBlueprintSegment.html#identifier">identifier</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/segment.ts#L24">blueprints-integration/src/documents/segment.ts:24</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/segment.ts#L26">blueprints-integration/src/documents/segment.ts:26</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a id="isHidden" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>is<wbr/>Hidden</span><a href="#isHidden" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">is<wbr/>Hidden<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
@@ -78,15 +81,7 @@
 </div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.IBlueprintSegment.html">IBlueprintSegment</a>.<a href="_sofie_automation_blueprints_integration.IBlueprintSegment.html#isHidden">isHidden</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/segment.ts#L22">blueprints-integration/src/documents/segment.ts:22</a></li></ul></aside></section>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a id="metaData" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>meta<wbr/>Data</span><a href="#metaData" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">meta<wbr/>Data<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type" data-tsd-kind="Type parameter">TMetadata</span></div>
-<div class="tsd-comment tsd-typography"><p>Arbitrary data storage for plugins</p>
-</div><aside class="tsd-sources">
-<p>Inherited from <a href="_sofie_automation_blueprints_integration.IBlueprintSegment.html">IBlueprintSegment</a>.<a href="_sofie_automation_blueprints_integration.IBlueprintSegment.html#metaData">metaData</a></p>
-<ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/segment.ts#L20">blueprints-integration/src/documents/segment.ts:20</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/segment.ts#L24">blueprints-integration/src/documents/segment.ts:24</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a id="name" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>name</span><a href="#name" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
@@ -94,7 +89,23 @@
 </div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.IBlueprintSegment.html">IBlueprintSegment</a>.<a href="_sofie_automation_blueprints_integration.IBlueprintSegment.html#name">name</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/segment.ts#L18">blueprints-integration/src/documents/segment.ts:18</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/segment.ts#L18">blueprints-integration/src/documents/segment.ts:18</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a id="privateData" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>private<wbr/>Data</span><a href="#privateData" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<div class="tsd-signature">private<wbr/>Data<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type" data-tsd-kind="Type parameter">TPrivateData</span></div>
+<div class="tsd-comment tsd-typography"><p>Arbitraty data storage for internal use in the blueprints</p>
+</div><aside class="tsd-sources">
+<p>Inherited from <a href="_sofie_automation_blueprints_integration.IBlueprintSegment.html">IBlueprintSegment</a>.<a href="_sofie_automation_blueprints_integration.IBlueprintSegment.html#privateData">privateData</a></p>
+<ul>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/segment.ts#L20">blueprints-integration/src/documents/segment.ts:20</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a id="publicData" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>public<wbr/>Data</span><a href="#publicData" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<div class="tsd-signature">public<wbr/>Data<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type" data-tsd-kind="Type parameter">TPublicData</span></div>
+<div class="tsd-comment tsd-typography"><p>Arbitraty data relevant for other systems, made available to them through APIs</p>
+</div><aside class="tsd-sources">
+<p>Inherited from <a href="_sofie_automation_blueprints_integration.IBlueprintSegment.html">IBlueprintSegment</a>.<a href="_sofie_automation_blueprints_integration.IBlueprintSegment.html#publicData">publicData</a></p>
+<ul>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/segment.ts#L22">blueprints-integration/src/documents/segment.ts:22</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a id="segmentTiming" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>segment<wbr/>Timing</span><a href="#segmentTiming" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">segment<wbr/>Timing<span class="tsd-signature-symbol">?:</span> <a href="_sofie_automation_blueprints_integration.SegmentTimingInfo.html" class="tsd-signature-type" data-tsd-kind="Interface">SegmentTimingInfo</a></div>
@@ -102,7 +113,7 @@
 </div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.IBlueprintSegment.html">IBlueprintSegment</a>.<a href="_sofie_automation_blueprints_integration.IBlueprintSegment.html#segmentTiming">segmentTiming</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/segment.ts#L32">blueprints-integration/src/documents/segment.ts:32</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/segment.ts#L34">blueprints-integration/src/documents/segment.ts:34</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a id="showShelf" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>show<wbr/>Shelf</span><a href="#showShelf" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">show<wbr/>Shelf<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
@@ -110,7 +121,7 @@
 </div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.IBlueprintSegment.html">IBlueprintSegment</a>.<a href="_sofie_automation_blueprints_integration.IBlueprintSegment.html#showShelf">showShelf</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/segment.ts#L27">blueprints-integration/src/documents/segment.ts:27</a></li></ul></aside></section></section></div>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/segment.ts#L29">blueprints-integration/src/documents/segment.ts:29</a></li></ul></aside></section></section></div>
 <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
@@ -160,8 +171,9 @@
 <li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="_sofie_automation_blueprints_integration.IBlueprintSegmentDB.html#displayAs" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>display<wbr/>As?</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="_sofie_automation_blueprints_integration.IBlueprintSegmentDB.html#identifier" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>identifier?</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="_sofie_automation_blueprints_integration.IBlueprintSegmentDB.html#isHidden" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>is<wbr/>Hidden?</a></li>
-<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="_sofie_automation_blueprints_integration.IBlueprintSegmentDB.html#metaData" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>meta<wbr/>Data?</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="_sofie_automation_blueprints_integration.IBlueprintSegmentDB.html#name" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>name</a></li>
+<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="_sofie_automation_blueprints_integration.IBlueprintSegmentDB.html#privateData" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>private<wbr/>Data?</a></li>
+<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="_sofie_automation_blueprints_integration.IBlueprintSegmentDB.html#publicData" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>public<wbr/>Data?</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="_sofie_automation_blueprints_integration.IBlueprintSegmentDB.html#segmentTiming" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>segment<wbr/>Timing?</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="_sofie_automation_blueprints_integration.IBlueprintSegmentDB.html#showShelf" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>show<wbr/>Shelf?</a></li></ul></li></ul></nav></div></div>
 <div class="container tsd-generator">

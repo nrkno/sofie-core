@@ -15,12 +15,14 @@
 <li><a href="../index.html">Sofie Integration Libraries</a></li>
 <li><a href="../modules/_sofie_automation_blueprints_integration.html">@sofie-automation/blueprints-integration</a></li>
 <li><a href="_sofie_automation_blueprints_integration.IBlueprintMutatablePart.html">IBlueprintMutatablePart</a></li></ul>
-<h1>Interface IBlueprintMutatablePart&lt;TMetadata&gt;</h1></div> 
+<h1>Interface IBlueprintMutatablePart&lt;TPrivateData, TPublicData&gt;</h1></div> 
 <section class="tsd-panel tsd-type-parameters">
 <h4>Type Parameters</h4>
 <ul class="tsd-type-parameters">
 <li>
-<h4>TMetadata = <span class="tsd-signature-type">unknown</span></h4></li></ul></section> 
+<h4>TPrivateData = <span class="tsd-signature-type">unknown</span></h4></li>
+<li>
+<h4>TPublicData = <span class="tsd-signature-type">unknown</span></h4></li></ul></section> 
 <section class="tsd-panel tsd-hierarchy">
 <h4>Hierarchy</h4>
 <ul class="tsd-hierarchy">
@@ -28,7 +30,7 @@
 <ul class="tsd-hierarchy">
 <li><a href="_sofie_automation_blueprints_integration.IBlueprintPart.html" class="tsd-signature-type" data-tsd-kind="Interface">IBlueprintPart</a></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/part.ts#L26">blueprints-integration/src/documents/part.ts:26</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/part.ts#L26">blueprints-integration/src/documents/part.ts:26</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -49,9 +51,10 @@
 <a href="_sofie_automation_blueprints_integration.IBlueprintMutatablePart.html#holdMode" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>hold<wbr/>Mode?</span></a>
 <a href="_sofie_automation_blueprints_integration.IBlueprintMutatablePart.html#identifier" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>identifier?</span></a>
 <a href="_sofie_automation_blueprints_integration.IBlueprintMutatablePart.html#inTransition" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>in<wbr/>Transition?</span></a>
-<a href="_sofie_automation_blueprints_integration.IBlueprintMutatablePart.html#metaData" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>meta<wbr/>Data?</span></a>
 <a href="_sofie_automation_blueprints_integration.IBlueprintMutatablePart.html#outTransition" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>out<wbr/>Transition?</span></a>
+<a href="_sofie_automation_blueprints_integration.IBlueprintMutatablePart.html#privateData" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>private<wbr/>Data?</span></a>
 <a href="_sofie_automation_blueprints_integration.IBlueprintMutatablePart.html#prompterTitle" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>prompter<wbr/>Title?</span></a>
+<a href="_sofie_automation_blueprints_integration.IBlueprintMutatablePart.html#publicData" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>public<wbr/>Data?</span></a>
 <a href="_sofie_automation_blueprints_integration.IBlueprintMutatablePart.html#shouldNotifyCurrentPlayingPart" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>should<wbr/>Notify<wbr/>Current<wbr/>Playing<wbr/>Part?</span></a>
 <a href="_sofie_automation_blueprints_integration.IBlueprintMutatablePart.html#title" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>title</span></a>
 </div></section></div></details></section></section>
@@ -63,42 +66,42 @@
 <div class="tsd-comment tsd-typography"><p>Should this item should progress to the next automatically</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/part.ts#L39">blueprints-integration/src/documents/part.ts:39</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/part.ts#L41">blueprints-integration/src/documents/part.ts:41</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="autoNextOverlap" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>auto<wbr/>Next<wbr/>Overlap</span><a href="#autoNextOverlap" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">auto<wbr/>Next<wbr/>Overlap<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
 <div class="tsd-comment tsd-typography"><p>How much to overlap on when doing autonext</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/part.ts#L41">blueprints-integration/src/documents/part.ts:41</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/part.ts#L43">blueprints-integration/src/documents/part.ts:43</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="budgetDuration" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>budget<wbr/>Duration</span><a href="#budgetDuration" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">budget<wbr/>Duration<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
 <div class="tsd-comment tsd-typography"><p>Budget duration of this part, in milliseconds</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/part.ts#L56">blueprints-integration/src/documents/part.ts:56</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/part.ts#L58">blueprints-integration/src/documents/part.ts:58</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="classes" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>classes</span><a href="#classes" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">classes<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
 <div class="tsd-comment tsd-typography"><p>Classes to set on the TimelineGroupObj for this part</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/part.ts#L65">blueprints-integration/src/documents/part.ts:65</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/part.ts#L67">blueprints-integration/src/documents/part.ts:67</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="classesForNext" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>classes<wbr/>For<wbr/>Next</span><a href="#classesForNext" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">classes<wbr/>For<wbr/>Next<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
 <div class="tsd-comment tsd-typography"><p>Classes to set on the TimelineGroupObj for the following part</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/part.ts#L67">blueprints-integration/src/documents/part.ts:67</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/part.ts#L69">blueprints-integration/src/documents/part.ts:69</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="disableNextInTransition" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>disable<wbr/>Next<wbr/>In<wbr/>Transition</span><a href="#disableNextInTransition" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">disable<wbr/>Next<wbr/>In<wbr/>Transition<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
 <div class="tsd-comment tsd-typography"><p>Should we block the inTransition when starting the next Part</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/part.ts#L47">blueprints-integration/src/documents/part.ts:47</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/part.ts#L49">blueprints-integration/src/documents/part.ts:49</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="displayDuration" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>display<wbr/>Duration</span><a href="#displayDuration" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">display<wbr/>Duration<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -106,7 +109,7 @@
 <p><strong>NOTE</strong>: The behavior of the system is undefined when using both <code>displayDurationGroups</code> and <code>budgetDuration</code></p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/part.ts#L79">blueprints-integration/src/documents/part.ts:79</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/part.ts#L81">blueprints-integration/src/documents/part.ts:81</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="displayDurationGroup" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>display<wbr/>Duration<wbr/>Group</span><a href="#displayDurationGroup" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">display<wbr/>Duration<wbr/>Group<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span></div>
@@ -114,56 +117,56 @@
 <p><strong>NOTE</strong>: The behavior of the system is undefined when using both <code>displayDurationGroups</code> and <code>budgetDuration</code></p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/part.ts#L74">blueprints-integration/src/documents/part.ts:74</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/part.ts#L76">blueprints-integration/src/documents/part.ts:76</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="expectedDuration" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>expected<wbr/>Duration</span><a href="#expectedDuration" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">expected<wbr/>Duration<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
 <div class="tsd-comment tsd-typography"><p>Expected duration of the line, in milliseconds</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/part.ts#L53">blueprints-integration/src/documents/part.ts:53</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/part.ts#L55">blueprints-integration/src/documents/part.ts:55</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="hackListenToMediaObjectUpdates" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>hack<wbr/>Listen<wbr/>To<wbr/>Media<wbr/>Object<wbr/>Updates</span><a href="#hackListenToMediaObjectUpdates" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">hack<wbr/>Listen<wbr/>To<wbr/>Media<wbr/>Object<wbr/>Updates<span class="tsd-signature-symbol">?:</span> <a href="_sofie_automation_blueprints_integration.HackPartMediaObjectSubscription.html" class="tsd-signature-type" data-tsd-kind="Interface">HackPartMediaObjectSubscription</a><span class="tsd-signature-symbol">[]</span></div>
 <div class="tsd-comment tsd-typography"><p>MediaObjects that when created/updated, should cause the blueprint to be rerun for the Segment of this Part</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/part.ts#L85">blueprints-integration/src/documents/part.ts:85</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/part.ts#L87">blueprints-integration/src/documents/part.ts:87</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="holdMode" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>hold<wbr/>Mode</span><a href="#holdMode" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">hold<wbr/>Mode<span class="tsd-signature-symbol">?:</span> <a href="../enums/_sofie_automation_blueprints_integration.PartHoldMode.html" class="tsd-signature-type" data-tsd-kind="Enumeration">PartHoldMode</a></div>
 <div class="tsd-comment tsd-typography"><p>Whether this segment line supports being used in HOLD</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/part.ts#L59">blueprints-integration/src/documents/part.ts:59</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/part.ts#L61">blueprints-integration/src/documents/part.ts:61</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="identifier" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>identifier</span><a href="#identifier" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">identifier<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span></div>
 <div class="tsd-comment tsd-typography"><p>User-facing identifier that can be used by the User to identify the contents of a segment in the Rundown source system</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/part.ts#L82">blueprints-integration/src/documents/part.ts:82</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/part.ts#L84">blueprints-integration/src/documents/part.ts:84</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="inTransition" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>in<wbr/>Transition</span><a href="#inTransition" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">in<wbr/>Transition<span class="tsd-signature-symbol">?:</span> <a href="_sofie_automation_blueprints_integration.IBlueprintPartInTransition.html" class="tsd-signature-type" data-tsd-kind="Interface">IBlueprintPartInTransition</a></div>
 <div class="tsd-comment tsd-typography"><p>Timings for the inTransition, when supported and allowed</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/part.ts#L44">blueprints-integration/src/documents/part.ts:44</a></li></ul></aside></section>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="metaData" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>meta<wbr/>Data</span><a href="#metaData" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">meta<wbr/>Data<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type" data-tsd-kind="Type parameter">TMetadata</span></div>
-<div class="tsd-comment tsd-typography"><p>Arbitrary data storage for plugins</p>
-</div><aside class="tsd-sources">
-<ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/part.ts#L36">blueprints-integration/src/documents/part.ts:36</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/part.ts#L46">blueprints-integration/src/documents/part.ts:46</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="outTransition" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>out<wbr/>Transition</span><a href="#outTransition" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">out<wbr/>Transition<span class="tsd-signature-symbol">?:</span> <a href="_sofie_automation_blueprints_integration.IBlueprintPartOutTransition.html" class="tsd-signature-type" data-tsd-kind="Interface">IBlueprintPartOutTransition</a></div>
 <div class="tsd-comment tsd-typography"><p>Timings for the outTransition, when supported and allowed</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/part.ts#L50">blueprints-integration/src/documents/part.ts:50</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/part.ts#L52">blueprints-integration/src/documents/part.ts:52</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="privateData" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>private<wbr/>Data</span><a href="#privateData" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<div class="tsd-signature">private<wbr/>Data<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type" data-tsd-kind="Type parameter">TPrivateData</span></div>
+<div class="tsd-comment tsd-typography"><p>Arbitraty data storage for internal use in the blueprints</p>
+</div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/part.ts#L36">blueprints-integration/src/documents/part.ts:36</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="prompterTitle" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>prompter<wbr/>Title</span><a href="#prompterTitle" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">prompter<wbr/>Title<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span></div>
@@ -171,21 +174,28 @@
 If unset, <code>title</code> is used instead</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/part.ts#L33">blueprints-integration/src/documents/part.ts:33</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/part.ts#L33">blueprints-integration/src/documents/part.ts:33</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="publicData" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>public<wbr/>Data</span><a href="#publicData" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<div class="tsd-signature">public<wbr/>Data<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type" data-tsd-kind="Type parameter">TPublicData</span></div>
+<div class="tsd-comment tsd-typography"><p>Arbitraty data relevant for other systems, made available to them through APIs</p>
+</div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/part.ts#L38">blueprints-integration/src/documents/part.ts:38</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="shouldNotifyCurrentPlayingPart" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>should<wbr/>Notify<wbr/>Current<wbr/>Playing<wbr/>Part</span><a href="#shouldNotifyCurrentPlayingPart" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">should<wbr/>Notify<wbr/>Current<wbr/>Playing<wbr/>Part<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
 <div class="tsd-comment tsd-typography"><p>Set to true if ingest-device should be notified when this part starts playing</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/part.ts#L62">blueprints-integration/src/documents/part.ts:62</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/part.ts#L64">blueprints-integration/src/documents/part.ts:64</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="title" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>title</span><a href="#title" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">title<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 <div class="tsd-comment tsd-typography"><p>The story title</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/6cd6825/packages/blueprints-integration/src/documents/part.ts#L28">blueprints-integration/src/documents/part.ts:28</a></li></ul></aside></section></section></div>
+<li>Defined in <a href="https://github.com/nrkno/sofie-core/blob/8a3e60c/packages/blueprints-integration/src/documents/part.ts#L28">blueprints-integration/src/documents/part.ts:28</a></li></ul></aside></section></section></div>
 <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
@@ -244,9 +254,10 @@ If unset, <code>title</code> is used instead</p>
 <li class="tsd-kind-property tsd-parent-kind-interface"><a href="_sofie_automation_blueprints_integration.IBlueprintMutatablePart.html#holdMode" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>hold<wbr/>Mode?</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface"><a href="_sofie_automation_blueprints_integration.IBlueprintMutatablePart.html#identifier" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>identifier?</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface"><a href="_sofie_automation_blueprints_integration.IBlueprintMutatablePart.html#inTransition" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>in<wbr/>Transition?</a></li>
-<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_sofie_automation_blueprints_integration.IBlueprintMutatablePart.html#metaData" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>meta<wbr/>Data?</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface"><a href="_sofie_automation_blueprints_integration.IBlueprintMutatablePart.html#outTransition" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>out<wbr/>Transition?</a></li>
+<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_sofie_automation_blueprints_integration.IBlueprintMutatablePart.html#privateData" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>private<wbr/>Data?</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface"><a href="_sofie_automation_blueprints_integration.IBlueprintMutatablePart.html#prompterTitle" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>prompter<wbr/>Title?</a></li>
+<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_sofie_automation_blueprints_integration.IBlueprintMutatablePart.html#publicData" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>public<wbr/>Data?</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface"><a href="_sofie_automation_blueprints_integration.IBlueprintMutatablePart.html#shouldNotifyCurrentPlayingPart" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>should<wbr/>Notify<wbr/>Current<wbr/>Playing<wbr/>Part?</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface"><a href="_sofie_automation_blueprints_integration.IBlueprintMutatablePart.html#title" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>title</a></li></ul></li></ul></nav></div></div>
 <div class="container tsd-generator">

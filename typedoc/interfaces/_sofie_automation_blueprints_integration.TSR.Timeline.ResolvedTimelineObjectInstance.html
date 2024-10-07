@@ -22,7 +22,7 @@
 <h4>Type Parameters</h4>
 <ul class="tsd-type-parameters">
 <li>
-<h4>TContent = <span class="tsd-signature-type">unknown</span></h4></li></ul></section> 
+<h4>TContent<span class="tsd-signature-symbol"> extends </span><a href="../types/_sofie_automation_blueprints_integration.TSR.Timeline.Content.html" class="tsd-signature-type" data-tsd-kind="Type alias">Content</a> = <a href="../types/_sofie_automation_blueprints_integration.TSR.Timeline.Content.html" class="tsd-signature-type" data-tsd-kind="Type alias">Content</a></h4></li></ul></section> 
 <section class="tsd-panel tsd-hierarchy">
 <h4>Hierarchy</h4>
 <ul class="tsd-hierarchy">
@@ -33,7 +33,7 @@
 <li><a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimelineObjectInstanceKeyframe.html" class="tsd-signature-type" data-tsd-kind="Interface">ResolvedTimelineObjectInstanceKeyframe</a></li>
 <li><a href="_sofie_automation_blueprints_integration.TSR.ResolvedTimelineObjectInstanceExtended.html" class="tsd-signature-type" data-tsd-kind="Interface">ResolvedTimelineObjectInstanceExtended</a></li></ul></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline.d.ts:173</li></ul></aside>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline/api/resolvedTimeline.d.ts:120</li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -59,106 +59,135 @@
 <h2>Properties</h2>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited tsd-is-external"><a id="children" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>children</span><a href="#children" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" id="icon-anchor-a"></path><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" id="icon-anchor-b"></path><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" id="icon-anchor-c"></path></svg></a></h3>
-<div class="tsd-signature">children<span class="tsd-signature-symbol">?:</span> <a href="_sofie_automation_blueprints_integration.TSR.Timeline.TimelineObject.html" class="tsd-signature-type" data-tsd-kind="Interface">TimelineObject</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></div>
-<div class="tsd-comment tsd-typography"><p>Group children</p>
+<div class="tsd-signature">children<span class="tsd-signature-symbol">?:</span> <a href="_sofie_automation_blueprints_integration.TSR.Timeline.TimelineObject.html" class="tsd-signature-type" data-tsd-kind="Interface">TimelineObject</a><span class="tsd-signature-symbol">&lt;</span><a href="../types/_sofie_automation_blueprints_integration.TSR.Timeline.Content.html" class="tsd-signature-type" data-tsd-kind="Type alias">Content</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></div>
+<div class="tsd-comment tsd-typography"><p>Children object of the group.
+If provided, also set .isGroup property to true.</p>
 </div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimelineObject.html">ResolvedTimelineObject</a>.<a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimelineObject.html#children">children</a></p>
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline.d.ts:31</li></ul></aside></section>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline/api/timeline.d.ts:18</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited tsd-is-external"><a id="classes" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>classes</span><a href="#classes" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">classes<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div><aside class="tsd-sources">
+<div class="tsd-signature">classes<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
+<div class="tsd-comment tsd-typography"><p>A list of classes on this Timeline-object. classes can be referenced by other objects using the syntax: &quot;.className&quot;</p>
+</div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimelineObject.html">ResolvedTimelineObject</a>.<a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimelineObject.html#classes">classes</a></p>
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline.d.ts:34</li></ul></aside></section>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline/api/timeline.d.ts:28</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited tsd-is-external"><a id="content" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>content</span><a href="#content" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">content<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type" data-tsd-kind="Type parameter">TContent</span></div><aside class="tsd-sources">
+<div class="tsd-signature">content<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type" data-tsd-kind="Type parameter">TContent</span></div>
+<div class="tsd-comment tsd-typography"><p>The payload of the timeline-object. Can be anything you want.</p>
+</div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimelineObject.html">ResolvedTimelineObject</a>.<a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimelineObject.html#content">content</a></p>
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline.d.ts:40</li></ul></aside></section>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline/api/timeline.d.ts:44</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited tsd-is-external"><a id="disabled" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>disabled</span><a href="#disabled" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">disabled<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div><aside class="tsd-sources">
+<div class="tsd-signature">disabled<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
+<div class="tsd-comment tsd-typography"><p>If set to true, the object will be excluded when resolving the timeline.</p>
+</div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimelineObject.html">ResolvedTimelineObject</a>.<a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimelineObject.html#disabled">disabled</a></p>
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline.d.ts:35</li></ul></aside></section>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline/api/timeline.d.ts:30</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited tsd-is-external"><a id="enable" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>enable</span><a href="#enable" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">enable<span class="tsd-signature-symbol">:</span> <a href="_sofie_automation_blueprints_integration.TSR.Timeline.TimelineEnable.html" class="tsd-signature-type" data-tsd-kind="Interface">TimelineEnable</a><span class="tsd-signature-symbol"> | </span><a href="_sofie_automation_blueprints_integration.TSR.Timeline.TimelineEnable.html" class="tsd-signature-type" data-tsd-kind="Interface">TimelineEnable</a><span class="tsd-signature-symbol">[]</span></div><aside class="tsd-sources">
+<div class="tsd-signature">enable<span class="tsd-signature-symbol">:</span> <a href="_sofie_automation_blueprints_integration.TSR.Timeline.TimelineEnable.html" class="tsd-signature-type" data-tsd-kind="Interface">TimelineEnable</a><span class="tsd-signature-symbol"> | </span><a href="_sofie_automation_blueprints_integration.TSR.Timeline.TimelineEnable.html" class="tsd-signature-type" data-tsd-kind="Interface">TimelineEnable</a><span class="tsd-signature-symbol">[]</span></div>
+<div class="tsd-comment tsd-typography"><p>Expression (or array of expressions) defining when the Timeline-object will play</p>
+</div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimelineObject.html">ResolvedTimelineObject</a>.<a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimelineObject.html#enable">enable</a></p>
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline.d.ts:28</li></ul></aside></section>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline/api/timeline.d.ts:7</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited tsd-is-external"><a id="id" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>id</span><a href="#id" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div><aside class="tsd-sources">
+<div class="tsd-signature">id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+<div class="tsd-comment tsd-typography"><p>ID of the object. Must be unique!</p>
+</div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimelineObject.html">ResolvedTimelineObject</a>.<a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimelineObject.html#id">id</a></p>
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline.d.ts:27</li></ul></aside></section>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline/api/timeline.d.ts:5</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a id="instance" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>instance</span><a href="#instance" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">instance<span class="tsd-signature-symbol">:</span> <a href="_sofie_automation_blueprints_integration.TSR.Timeline.TimelineObjectInstance.html" class="tsd-signature-type" data-tsd-kind="Interface">TimelineObjectInstance</a></div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline.d.ts:174</li></ul></aside></section>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline/api/resolvedTimeline.d.ts:121</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited tsd-is-external"><a id="isGroup" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>is<wbr/>Group</span><a href="#isGroup" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">is<wbr/>Group<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimelineObject.html">ResolvedTimelineObject</a>.<a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimelineObject.html#isGroup">isGroup</a></p>
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline.d.ts:36</li></ul></aside></section>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline/api/timeline.d.ts:19</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited tsd-is-external"><a id="keyframes" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>keyframes</span><a href="#keyframes" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">keyframes<span class="tsd-signature-symbol">?:</span> <a href="_sofie_automation_blueprints_integration.TSR.Timeline.TimelineKeyframe.html" class="tsd-signature-type" data-tsd-kind="Interface">TimelineKeyframe</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">TContent</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></div>
-<div class="tsd-comment tsd-typography"><p>Keyframes can be used to modify the content of an object</p>
+<div class="tsd-signature">keyframes<span class="tsd-signature-symbol">?:</span> <a href="_sofie_automation_blueprints_integration.TSR.Timeline.TimelineKeyframe.html" class="tsd-signature-type" data-tsd-kind="Interface">TimelineKeyframe</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Partial</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">TContent</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></div>
+<div class="tsd-comment tsd-typography"><p>Keyframes can be used to modify the content of an object.
+When a keyframe is active, the content of the keyframe will be merged into the parent object.</p>
 </div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimelineObject.html">ResolvedTimelineObject</a>.<a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimelineObject.html#keyframes">keyframes</a></p>
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline.d.ts:33</li></ul></aside></section>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline/api/timeline.d.ts:24</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited tsd-is-external"><a id="layer" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>layer</span><a href="#layer" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">layer<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div><aside class="tsd-sources">
+<div class="tsd-signature">layer<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
+<div class="tsd-comment tsd-typography"><p>The layer where the object is played.
+If set to undefined, &quot;&quot; or null, the object is treated as &quot;transparent&quot;,
+ie it won&#39;t collide with other objects, nor be present in the resolved state.</p>
+</div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimelineObject.html">ResolvedTimelineObject</a>.<a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimelineObject.html#layer">layer</a></p>
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline.d.ts:29</li></ul></aside></section>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline/api/timeline.d.ts:13</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited tsd-is-external"><a id="priority" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>priority</span><a href="#priority" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">priority<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div><aside class="tsd-sources">
+<div class="tsd-signature">priority<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
+<div class="tsd-comment tsd-typography"><p>Priority. Affects which object &quot;wins&quot; when there are two colliding objects on the same layer.
+If the two colliding objects have the same priority, the one who started playing last wins.
+Otherwise, the one with the highest priority wins (ie 9 wins over 0).
+Defaults to 0</p>
+</div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimelineObject.html">ResolvedTimelineObject</a>.<a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimelineObject.html#priority">priority</a></p>
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline.d.ts:37</li></ul></aside></section>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline/api/timeline.d.ts:37</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited tsd-is-external"><a id="resolved" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>resolved</span><a href="#resolved" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">resolved<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span><br/><span>    </span>directReferences<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>instances<span class="tsd-signature-symbol">: </span><a href="_sofie_automation_blueprints_integration.TSR.Timeline.TimelineObjectInstance.html" class="tsd-signature-type" data-tsd-kind="Interface">TimelineObjectInstance</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>isKeyframe<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>isSelfReferencing<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>levelDeep<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>parentId<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>resolved<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>resolving<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span></div>
+<div class="tsd-signature">resolved<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span><br/><span>    </span>directReferences<span class="tsd-signature-symbol">: </span><a href="../types/_sofie_automation_blueprints_integration.TSR.Timeline.Reference.html" class="tsd-signature-type" data-tsd-kind="Type alias">Reference</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>firstResolved<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>instances<span class="tsd-signature-symbol">: </span><a href="_sofie_automation_blueprints_integration.TSR.Timeline.TimelineObjectInstance.html" class="tsd-signature-type" data-tsd-kind="Interface">TimelineObjectInstance</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>isKeyframe<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>isSelfReferencing<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>levelDeep<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>parentId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>resolvedConflicts<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>resolvedReferences<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>resolving<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span></div>
 <div class="tsd-type-declaration">
 <h4>Type declaration</h4>
 <ul class="tsd-parameters">
 <li class="tsd-parameter">
-<h5>direct<wbr/>References<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
+<h5>direct<wbr/>References<span class="tsd-signature-symbol">: </span><a href="../types/_sofie_automation_blueprints_integration.TSR.Timeline.Reference.html" class="tsd-signature-type" data-tsd-kind="Type alias">Reference</a><span class="tsd-signature-symbol">[]</span></h5>
 <div class="tsd-comment tsd-typography"><p>Ids of all other objects that directly affects this object (ie through direct reference, classes, etc)</p>
+</div></li>
+<li class="tsd-parameter">
+<h5>first<wbr/>Resolved<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></h5>
+<div class="tsd-comment tsd-typography"><p>Is set to true when object is resolved first time, and isn&#39;t reset thereafter</p>
 </div></li>
 <li class="tsd-parameter">
 <h5>instances<span class="tsd-signature-symbol">: </span><a href="_sofie_automation_blueprints_integration.TSR.Timeline.TimelineObjectInstance.html" class="tsd-signature-type" data-tsd-kind="Interface">TimelineObjectInstance</a><span class="tsd-signature-symbol">[]</span></h5>
 <div class="tsd-comment tsd-typography"><p>Instances of the object on the timeline</p>
 </div></li>
 <li class="tsd-parameter">
-<h5><code class="tsd-tag ts-flagOptional">Optional</code> is<wbr/>Keyframe<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span></h5>
+<h5>is<wbr/>Keyframe<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></h5>
 <div class="tsd-comment tsd-typography"><p>True if object is a keyframe</p>
 </div></li>
 <li class="tsd-parameter">
-<h5><code class="tsd-tag ts-flagOptional">Optional</code> is<wbr/>Self<wbr/>Referencing<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span></h5>
+<h5>is<wbr/>Self<wbr/>Referencing<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></h5>
 <div class="tsd-comment tsd-typography"><p>True if object is referencing itself (only directly, not indirectly via another object)</p>
 </div></li>
 <li class="tsd-parameter">
-<h5><code class="tsd-tag ts-flagOptional">Optional</code> level<wbr/>Deep<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span></h5>
-<div class="tsd-comment tsd-typography"><p>Increases the more levels inside of a group the objects is</p>
+<h5>level<wbr/>Deep<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></h5>
+<div class="tsd-comment tsd-typography"><p>A number that increases the more levels inside of a group the objects is. 0 = no parent</p>
 </div></li>
 <li class="tsd-parameter">
-<h5><code class="tsd-tag ts-flagOptional">Optional</code> parent<wbr/>Id<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span></h5>
-<div class="tsd-comment tsd-typography"><p>Id of the parent object</p>
+<h5>parent<wbr/>Id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+<div class="tsd-comment tsd-typography"><p>Id of the parent object (for children in groups or keyframes)</p>
 </div></li>
 <li class="tsd-parameter">
-<h5>resolved<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></h5>
-<div class="tsd-comment tsd-typography"><p>Is set to true when object has been resolved</p>
+<h5>resolved<wbr/>Conflicts<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></h5>
+<div class="tsd-comment tsd-typography"><p>Is set to true when object&#39;s conflicts has been resolved</p>
+</div></li>
+<li class="tsd-parameter">
+<h5>resolved<wbr/>References<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></h5>
+<div class="tsd-comment tsd-typography"><p>Is set to true when object&#39;s references has been resolved</p>
 </div></li>
 <li class="tsd-parameter">
 <h5>resolving<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></h5>
@@ -166,15 +195,16 @@
 </div></li></ul></div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimelineObject.html">ResolvedTimelineObject</a>.<a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimelineObject.html#resolved">resolved</a></p>
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline.d.ts:104</li></ul></aside></section>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline/api/resolvedTimeline.d.ts:48</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited tsd-is-external"><a id="seamless" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>seamless</span><a href="#seamless" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">seamless<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
-<div class="tsd-comment tsd-typography"><p>If set to true, colliding timeline-instances will be merged into one</p>
+<div class="tsd-comment tsd-typography"><p>If set to true, colliding timeline-instances will be merged into a single one.
+This could be useful if want the instance.start times to not be reset unexpectedly.</p>
 </div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimelineObject.html">ResolvedTimelineObject</a>.<a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimelineObject.html#seamless">seamless</a></p>
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline.d.ts:39</li></ul></aside></section></section></div>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline/api/timeline.d.ts:42</li></ul></aside></section></section></div>
 <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">

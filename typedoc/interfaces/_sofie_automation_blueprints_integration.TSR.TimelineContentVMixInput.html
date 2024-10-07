@@ -24,7 +24,7 @@
 <ul class="tsd-hierarchy">
 <li><span class="target">TimelineContentVMixInput</span></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/vmix.d.ts:112</li></ul></aside>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/integrations/vmix.d.ts:116</li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -35,9 +35,10 @@
 <div class="tsd-index-list"><a href="_sofie_automation_blueprints_integration.TSR.TimelineContentVMixInput.html#deviceType" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-inherited tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="#FF984D" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="12" id="icon-1024-path"></rect><path d="M9.354 16V7.24H12.174C12.99 7.24 13.638 7.476 14.118 7.948C14.606 8.412 14.85 9.036 14.85 9.82C14.85 10.604 14.606 11.232 14.118 11.704C13.638 12.168 12.99 12.4 12.174 12.4H10.434V16H9.354ZM10.434 11.428H12.174C12.646 11.428 13.022 11.284 13.302 10.996C13.59 10.7 13.734 10.308 13.734 9.82C13.734 9.324 13.59 8.932 13.302 8.644C13.022 8.356 12.646 8.212 12.174 8.212H10.434V11.428Z" fill="var(--color-text)" id="icon-1024-text"></path></svg><span>device<wbr/>Type</span></a>
 <a href="_sofie_automation_blueprints_integration.TSR.TimelineContentVMixInput.html#filePath" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>file<wbr/>Path?</span></a>
 <a href="_sofie_automation_blueprints_integration.TSR.TimelineContentVMixInput.html#inputType" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>input<wbr/>Type?</span></a>
+<a href="_sofie_automation_blueprints_integration.TSR.TimelineContentVMixInput.html#layers" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>layers?</span></a>
 <a href="_sofie_automation_blueprints_integration.TSR.TimelineContentVMixInput.html#listFilePaths" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>list<wbr/>File<wbr/>Paths?</span></a>
 <a href="_sofie_automation_blueprints_integration.TSR.TimelineContentVMixInput.html#loop" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>loop?</span></a>
-<a href="_sofie_automation_blueprints_integration.TSR.TimelineContentVMixInput.html#overlays" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>overlays?</span></a>
+<a href="_sofie_automation_blueprints_integration.TSR.TimelineContentVMixInput.html#overlays" class="tsd-index-link deprecated tsd-kind-property tsd-parent-kind-interface tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>overlays?</span></a>
 <a href="_sofie_automation_blueprints_integration.TSR.TimelineContentVMixInput.html#playing" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>playing?</span></a>
 <a href="_sofie_automation_blueprints_integration.TSR.TimelineContentVMixInput.html#restart" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>restart?</span></a>
 <a href="_sofie_automation_blueprints_integration.TSR.TimelineContentVMixInput.html#seek" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>seek?</span></a>
@@ -51,74 +52,85 @@
 <div class="tsd-signature">device<wbr/>Type<span class="tsd-signature-symbol">:</span> <a href="../enums/_sofie_automation_blueprints_integration.TSR.DeviceType.html#VMIX" class="tsd-signature-type" data-tsd-kind="Enumeration Member">VMIX</a></div><aside class="tsd-sources">
 <p>Inherited from <a href="_sofie_automation_blueprints_integration.TSR.TimelineContentVMixBase.html">TimelineContentVMixBase</a>.<a href="_sofie_automation_blueprints_integration.TSR.TimelineContentVMixBase.html#deviceType">deviceType</a></p>
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/vmix.d.ts:60</li></ul></aside></section>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/integrations/vmix.d.ts:64</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a id="filePath" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>file<wbr/>Path</span><a href="#filePath" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">file<wbr/>Path<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span></div>
 <div class="tsd-comment tsd-typography"><p>Media file path</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/vmix.d.ts:115</li></ul></aside></section>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/integrations/vmix.d.ts:119</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a id="inputType" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>input<wbr/>Type</span><a href="#inputType" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">input<wbr/>Type<span class="tsd-signature-symbol">?:</span> <a href="../enums/_sofie_automation_blueprints_integration.TSR.VMixInputType.html" class="tsd-signature-type" data-tsd-kind="Enumeration">VMixInputType</a></div>
 <div class="tsd-comment tsd-typography"><p>Set only when dealing with media. If provided, TSR will attempt to automatically create <strong>and potentially remove</strong> the input.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/vmix.d.ts:117</li></ul></aside></section>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/integrations/vmix.d.ts:121</li></ul></aside></section>
+<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a id="layers" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>layers</span><a href="#layers" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<div class="tsd-signature">layers<span class="tsd-signature-symbol">?:</span> <a href="_sofie_automation_blueprints_integration.TSR.VMixLayers.html" class="tsd-signature-type" data-tsd-kind="Interface">VMixLayers</a></div>
+<div class="tsd-comment tsd-typography"><p>List of input Layers.
+Indexes start from 1.
+Requires vMix 27+.</p>
+</div><aside class="tsd-sources">
+<ul>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/integrations/vmix.d.ts:139</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a id="listFilePaths" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>list<wbr/>File<wbr/>Paths</span><a href="#listFilePaths" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">list<wbr/>File<wbr/>Paths<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
 <div class="tsd-comment tsd-typography"><p>An array of file paths to load into a List input. Uses Windows-style path separators (\). Only applies to List inputs.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/vmix.d.ts:128</li></ul></aside></section>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/integrations/vmix.d.ts:141</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a id="loop" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>loop</span><a href="#loop" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">loop<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
 <div class="tsd-comment tsd-typography"><p>If media should loop</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/vmix.d.ts:123</li></ul></aside></section>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/integrations/vmix.d.ts:127</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a id="overlays" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>overlays</span><a href="#overlays" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span class="deprecated">overlays</span><a href="#overlays" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">overlays<span class="tsd-signature-symbol">?:</span> <a href="_sofie_automation_blueprints_integration.TSR.VMixInputOverlays.html" class="tsd-signature-type" data-tsd-kind="Interface">VMixInputOverlays</a></div>
 <div class="tsd-comment tsd-typography"><p>List of input (Multi View) overlays; indexes start from 1</p>
+
+<h3>Deprecated</h3><p>Use <code>layers</code> instead. If both <code>layers</code> and <code>overlays</code> are provided, <code>overlays</code> will be discarded</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/vmix.d.ts:126</li></ul></aside></section>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/integrations/vmix.d.ts:133</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a id="playing" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>playing</span><a href="#playing" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">playing<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
 <div class="tsd-comment tsd-typography"><p>If media should be playing</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/vmix.d.ts:119</li></ul></aside></section>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/integrations/vmix.d.ts:123</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a id="restart" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>restart</span><a href="#restart" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">restart<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
 <div class="tsd-comment tsd-typography"><p>If media should start from the beginning or resume from where it left off</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/vmix.d.ts:130</li></ul></aside></section>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/integrations/vmix.d.ts:143</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a id="seek" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>seek</span><a href="#seek" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">seek<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
 <div class="tsd-comment tsd-typography"><p>Media starting position in milliseconds</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/vmix.d.ts:121</li></ul></aside></section>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/integrations/vmix.d.ts:125</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a id="transform" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>transform</span><a href="#transform" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">transform<span class="tsd-signature-symbol">?:</span> <a href="_sofie_automation_blueprints_integration.TSR.VMixTransform.html" class="tsd-signature-type" data-tsd-kind="Interface">VMixTransform</a></div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/vmix.d.ts:124</li></ul></aside></section>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/integrations/vmix.d.ts:128</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a id="type" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>type</span><a href="#type" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">type<span class="tsd-signature-symbol">:</span> <a href="../enums/_sofie_automation_blueprints_integration.TSR.TimelineContentTypeVMix.html#INPUT" class="tsd-signature-type" data-tsd-kind="Enumeration Member">INPUT</a></div><aside class="tsd-sources">
 <p>Overrides <a href="_sofie_automation_blueprints_integration.TSR.TimelineContentVMixBase.html">TimelineContentVMixBase</a>.<a href="_sofie_automation_blueprints_integration.TSR.TimelineContentVMixBase.html#type">type</a></p>
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/vmix.d.ts:113</li></ul></aside></section></section></div>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/integrations/vmix.d.ts:117</li></ul></aside></section></section></div>
 <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
@@ -167,9 +179,10 @@
 <li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited tsd-is-external"><a href="_sofie_automation_blueprints_integration.TSR.TimelineContentVMixInput.html#deviceType" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>device<wbr/>Type</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a href="_sofie_automation_blueprints_integration.TSR.TimelineContentVMixInput.html#filePath" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>file<wbr/>Path?</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a href="_sofie_automation_blueprints_integration.TSR.TimelineContentVMixInput.html#inputType" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>input<wbr/>Type?</a></li>
+<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a href="_sofie_automation_blueprints_integration.TSR.TimelineContentVMixInput.html#layers" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>layers?</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a href="_sofie_automation_blueprints_integration.TSR.TimelineContentVMixInput.html#listFilePaths" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>list<wbr/>File<wbr/>Paths?</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a href="_sofie_automation_blueprints_integration.TSR.TimelineContentVMixInput.html#loop" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>loop?</a></li>
-<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a href="_sofie_automation_blueprints_integration.TSR.TimelineContentVMixInput.html#overlays" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>overlays?</a></li>
+<li class="deprecated tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a href="_sofie_automation_blueprints_integration.TSR.TimelineContentVMixInput.html#overlays" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>overlays?</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a href="_sofie_automation_blueprints_integration.TSR.TimelineContentVMixInput.html#playing" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>playing?</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a href="_sofie_automation_blueprints_integration.TSR.TimelineContentVMixInput.html#restart" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>restart?</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a href="_sofie_automation_blueprints_integration.TSR.TimelineContentVMixInput.html#seek" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>seek?</a></li>

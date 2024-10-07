@@ -17,18 +17,23 @@
 <li><a href="../modules/_sofie_automation_blueprints_integration.TSR.html">TSR</a></li>
 <li><a href="../modules/_sofie_automation_blueprints_integration.TSR.Timeline.html">Timeline</a></li>
 <li><a href="_sofie_automation_blueprints_integration.TSR.Timeline.TimelineState.html">TimelineState</a></li></ul>
-<h1>Interface TimelineState&lt;TContent&gt;</h1></div> 
+<h1>Interface TimelineState&lt;TContent&gt;</h1></div>
+<section class="tsd-panel tsd-comment">
+<div class="tsd-comment tsd-typography"><p>A TimelineState is a moment in time,
+containing a cross-section of the timeline,
+ie all objects that are active at that point in time.</p>
+</div></section> 
 <section class="tsd-panel tsd-type-parameters">
 <h4>Type Parameters</h4>
 <ul class="tsd-type-parameters">
 <li>
-<h4>TContent = <span class="tsd-signature-type">unknown</span></h4></li></ul></section> 
+<h4>TContent<span class="tsd-signature-symbol"> extends </span><a href="../types/_sofie_automation_blueprints_integration.TSR.Timeline.Content.html" class="tsd-signature-type" data-tsd-kind="Type alias">Content</a> = <a href="../types/_sofie_automation_blueprints_integration.TSR.Timeline.Content.html" class="tsd-signature-type" data-tsd-kind="Type alias">Content</a></h4></li></ul></section> 
 <section class="tsd-panel tsd-hierarchy">
 <h4>Hierarchy</h4>
 <ul class="tsd-hierarchy">
 <li><span class="target">TimelineState</span></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline.d.ts:168</li></ul></aside>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline/api/state.d.ts:9</li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -44,19 +49,26 @@
 <h2>Properties</h2>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a id="layers" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>layers</span><a href="#layers" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" id="icon-anchor-a"></path><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" id="icon-anchor-b"></path><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" id="icon-anchor-c"></path></svg></a></h3>
-<div class="tsd-signature">layers<span class="tsd-signature-symbol">:</span> <a href="_sofie_automation_blueprints_integration.TSR.Timeline.StateInTime.html" class="tsd-signature-type" data-tsd-kind="Interface">StateInTime</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">TContent</span><span class="tsd-signature-symbol">&gt;</span></div><aside class="tsd-sources">
+<div class="tsd-signature">layers<span class="tsd-signature-symbol">:</span> <a href="_sofie_automation_blueprints_integration.TSR.Timeline.StateInTime.html" class="tsd-signature-type" data-tsd-kind="Interface">StateInTime</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">TContent</span><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>All objects that are active on each respective layer</p>
+</div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline.d.ts:170</li></ul></aside></section>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline/api/state.d.ts:13</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a id="nextEvents" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>next<wbr/>Events</span><a href="#nextEvents" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">next<wbr/>Events<span class="tsd-signature-symbol">:</span> <a href="_sofie_automation_blueprints_integration.TSR.Timeline.NextEvent.html" class="tsd-signature-type" data-tsd-kind="Interface">NextEvent</a><span class="tsd-signature-symbol">[]</span></div><aside class="tsd-sources">
+<div class="tsd-signature">next<wbr/>Events<span class="tsd-signature-symbol">:</span> <a href="_sofie_automation_blueprints_integration.TSR.Timeline.NextEvent.html" class="tsd-signature-type" data-tsd-kind="Interface">NextEvent</a><span class="tsd-signature-symbol">[]</span></div>
+<div class="tsd-comment tsd-typography"><p>A sorted list of the points in time where the next thing will happen on the timeline.
+.nextEvents[0] is the next event to happen.</p>
+</div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline.d.ts:171</li></ul></aside></section>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline/api/state.d.ts:18</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a id="time" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>time</span><a href="#time" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">time<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div><aside class="tsd-sources">
+<div class="tsd-signature">time<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+<div class="tsd-comment tsd-typography"><p>The timestamp for this state</p>
+</div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline.d.ts:169</li></ul></aside></section></section></div>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline/api/state.d.ts:11</li></ul></aside></section></section></div>
 <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">

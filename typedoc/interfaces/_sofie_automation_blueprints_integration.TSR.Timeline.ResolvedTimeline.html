@@ -17,18 +17,27 @@
 <li><a href="../modules/_sofie_automation_blueprints_integration.TSR.html">TSR</a></li>
 <li><a href="../modules/_sofie_automation_blueprints_integration.TSR.Timeline.html">Timeline</a></li>
 <li><a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimeline.html">ResolvedTimeline</a></li></ul>
-<h1>Interface ResolvedTimeline&lt;TContent&gt;</h1></div> 
+<h1>Interface ResolvedTimeline&lt;TContent&gt;</h1></div>
+<section class="tsd-panel tsd-comment">
+<div class="tsd-comment tsd-typography"><p>The ResolvedTimeline contains all objects on the timeline, resolved.
+All references and all conflicts have been resolved.
+The absolute times of all objects can be found in objects[id].resolved.instances.</p>
+<p>To retrieve a state at a certain time, use getResolvedState(resolvedTimeline).</p>
+<p>Note: If <code>limitTime</code> was specified in the ResolveOptions,
+the ResolvedTimeline is only valid up until that time and
+needs to be re-resolved afterwards.</p>
+</div></section> 
 <section class="tsd-panel tsd-type-parameters">
 <h4>Type Parameters</h4>
 <ul class="tsd-type-parameters">
 <li>
-<h4>TContent = <span class="tsd-signature-type">unknown</span></h4></li></ul></section> 
+<h4>TContent<span class="tsd-signature-symbol"> extends </span><a href="../types/_sofie_automation_blueprints_integration.TSR.Timeline.Content.html" class="tsd-signature-type" data-tsd-kind="Type alias">Content</a> = <a href="../types/_sofie_automation_blueprints_integration.TSR.Timeline.Content.html" class="tsd-signature-type" data-tsd-kind="Type alias">Content</a></h4></li></ul></section> 
 <section class="tsd-panel tsd-hierarchy">
 <h4>Hierarchy</h4>
 <ul class="tsd-hierarchy">
 <li><span class="target">ResolvedTimeline</span></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline.d.ts:72</li></ul></aside>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline/api/resolvedTimeline.d.ts:14</li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -38,8 +47,8 @@
 <h3 class="tsd-index-heading">Properties</h3>
 <div class="tsd-index-list"><a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimeline.html#classes" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="#FF984D" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="12" id="icon-1024-path"></rect><path d="M9.354 16V7.24H12.174C12.99 7.24 13.638 7.476 14.118 7.948C14.606 8.412 14.85 9.036 14.85 9.82C14.85 10.604 14.606 11.232 14.118 11.704C13.638 12.168 12.99 12.4 12.174 12.4H10.434V16H9.354ZM10.434 11.428H12.174C12.646 11.428 13.022 11.284 13.302 10.996C13.59 10.7 13.734 10.308 13.734 9.82C13.734 9.324 13.59 8.932 13.302 8.644C13.022 8.356 12.646 8.212 12.174 8.212H10.434V11.428Z" fill="var(--color-text)" id="icon-1024-text"></path></svg><span>classes</span></a>
 <a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimeline.html#layers" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>layers</span></a>
+<a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimeline.html#nextEvents" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>next<wbr/>Events</span></a>
 <a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimeline.html#objects" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>objects</span></a>
-<a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimeline.html#options" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>options</span></a>
 <a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimeline.html#statistics" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>statistics</span></a>
 </div></section></div></details></section></section>
 <section class="tsd-panel-group tsd-member-group">
@@ -55,7 +64,7 @@
 <li class="tsd-parameter-index-signature">
 <h5><span class="tsd-signature-symbol">[</span>className: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5></li></ul></div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline.d.ts:78</li></ul></aside></section>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline/api/resolvedTimeline.d.ts:19</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a id="layers" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>layers</span><a href="#layers" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">layers<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span><br/><span>    </span>[layer: <span class="tsd-signature-type">string</span>]<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span></div>
@@ -67,21 +76,19 @@
 <li class="tsd-parameter-index-signature">
 <h5><span class="tsd-signature-symbol">[</span>layer: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5></li></ul></div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline.d.ts:82</li></ul></aside></section>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline/api/resolvedTimeline.d.ts:23</li></ul></aside></section>
+<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a id="nextEvents" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>next<wbr/>Events</span><a href="#nextEvents" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<div class="tsd-signature">next<wbr/>Events<span class="tsd-signature-symbol">:</span> <a href="_sofie_automation_blueprints_integration.TSR.Timeline.NextEvent.html" class="tsd-signature-type" data-tsd-kind="Interface">NextEvent</a><span class="tsd-signature-symbol">[]</span></div><aside class="tsd-sources">
+<ul>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline/api/resolvedTimeline.d.ts:26</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a id="objects" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>objects</span><a href="#objects" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">objects<span class="tsd-signature-symbol">:</span> <a href="../types/_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimelineObjects.html" class="tsd-signature-type" data-tsd-kind="Type alias">ResolvedTimelineObjects</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">TContent</span><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-signature">objects<span class="tsd-signature-symbol">:</span> <a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimelineObjects.html" class="tsd-signature-type" data-tsd-kind="Interface">ResolvedTimelineObjects</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">TContent</span><span class="tsd-signature-symbol">&gt;</span></div>
 <div class="tsd-comment tsd-typography"><p>Map of all objects on timeline</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline.d.ts:76</li></ul></aside></section>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a id="options" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><span>options</span><a href="#options" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">options<span class="tsd-signature-symbol">:</span> <a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolveOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">ResolveOptions</a></div>
-<div class="tsd-comment tsd-typography"><p>The options used to resolve the timeline</p>
-</div><aside class="tsd-sources">
-<ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline.d.ts:74</li></ul></aside></section>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline/api/resolvedTimeline.d.ts:17</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a id="statistics" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>statistics</span><a href="#statistics" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">statistics<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span><br/><span>    </span>resolvedCount<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>resolvedGroupCount<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>resolvedInstanceCount<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>resolvedKeyframeCount<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>resolvedObjectCount<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>resolvingCount<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>unresolvedCount<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span></div>
@@ -117,7 +124,7 @@
 <div class="tsd-comment tsd-typography"><p>Number of objects that were unable to resolve</p>
 </div></li></ul></div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline.d.ts:85</li></ul></aside></section></section></div>
+<li>Defined in node_modules/timeline-state-resolver-types/dist/superfly-timeline/api/resolvedTimeline.d.ts:27</li></ul></aside></section></section></div>
 <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
@@ -165,8 +172,8 @@
 <ul>
 <li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimeline.html#classes" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>classes</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimeline.html#layers" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>layers</a></li>
+<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimeline.html#nextEvents" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>next<wbr/>Events</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimeline.html#objects" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>objects</a></li>
-<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimeline.html#options" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>options</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a href="_sofie_automation_blueprints_integration.TSR.Timeline.ResolvedTimeline.html#statistics" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>statistics</a></li></ul></li></ul></nav></div></div>
 <div class="container tsd-generator">
 <p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></div>

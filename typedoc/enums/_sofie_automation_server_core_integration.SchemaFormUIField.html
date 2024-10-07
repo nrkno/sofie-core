@@ -34,6 +34,7 @@
 <a href="_sofie_automation_server_core_integration.SchemaFormUIField.html#SofieEnum" class="tsd-index-link tsd-kind-enum-member tsd-parent-kind-enum"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>Sofie<wbr/>Enum</span></a>
 <a href="_sofie_automation_server_core_integration.SchemaFormUIField.html#SofieEnumFilter" class="tsd-index-link tsd-kind-enum-member tsd-parent-kind-enum"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>Sofie<wbr/>Enum<wbr/>Filter</span></a>
 <a href="_sofie_automation_server_core_integration.SchemaFormUIField.html#SummaryTitle" class="tsd-index-link tsd-kind-enum-member tsd-parent-kind-enum"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>Summary<wbr/>Title</span></a>
+<a href="_sofie_automation_server_core_integration.SchemaFormUIField.html#SupportsImportExport" class="tsd-index-link tsd-kind-enum-member tsd-parent-kind-enum"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>Supports<wbr/>Import<wbr/>Export</span></a>
 <a href="_sofie_automation_server_core_integration.SchemaFormUIField.html#Title" class="tsd-index-link tsd-kind-enum-member tsd-parent-kind-enum"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>Title</span></a>
 <a href="_sofie_automation_server_core_integration.SchemaFormUIField.html#TsEnumNames" class="tsd-index-link tsd-kind-enum-member tsd-parent-kind-enum"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>Ts<wbr/>Enum<wbr/>Names</span></a>
 <a href="_sofie_automation_server_core_integration.SchemaFormUIField.html#ZeroBased" class="tsd-index-link tsd-kind-enum-member tsd-parent-kind-enum"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>Zero<wbr/>Based</span></a>
@@ -58,10 +59,14 @@
 <h3 class="tsd-anchor-link"><span>Display<wbr/>Type</span><a href="#DisplayType" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">Display<wbr/>Type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">&quot;ui:displayType&quot;</span></div>
 <div class="tsd-comment tsd-typography"><p>Override the presentation with a special mode.
-Currently only valid for string properties. Valid values are &#39;json&#39;.</p>
+Currently only valid for:</p>
+<ul>
+<li>object properties. Valid values are &#39;json&#39;.</li>
+<li>string properties. Valid values are &#39;base64-image&#39;.</li>
+</ul>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in shared-lib/dist/lib/JSONSchemaUtil.d.ts:30</li></ul></aside></section>
+<li>Defined in shared-lib/dist/lib/JSONSchemaUtil.d.ts:32</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum"><a id="SofieEnum" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>Sofie<wbr/>Enum</span><a href="#SofieEnum" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">Sofie<wbr/>Enum<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">&quot;ui:sofie-enum&quot;</span></div>
@@ -70,14 +75,14 @@ Only valid for string properties or arrays of strings
 Valid values are &#39;mappings&#39; and &#39;source-layers&#39;, any other value will result in an empty dropdown</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in shared-lib/dist/lib/JSONSchemaUtil.d.ts:41</li></ul></aside></section>
+<li>Defined in shared-lib/dist/lib/JSONSchemaUtil.d.ts:43</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum"><a id="SofieEnumFilter" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>Sofie<wbr/>Enum<wbr/>Filter</span><a href="#SofieEnumFilter" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">Sofie<wbr/>Enum<wbr/>Filter<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">&quot;ui:sofie-enum:filter&quot;</span></div>
 <div class="tsd-comment tsd-typography"><p>When using <code>ui:sofie-enum</code>, filter the options by type</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in shared-lib/dist/lib/JSONSchemaUtil.d.ts:45</li></ul></aside></section>
+<li>Defined in shared-lib/dist/lib/JSONSchemaUtil.d.ts:47</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum"><a id="SummaryTitle" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>Summary<wbr/>Title</span><a href="#SummaryTitle" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">Summary<wbr/>Title<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">&quot;ui:summaryTitle&quot;</span></div>
@@ -85,6 +90,14 @@ Valid values are &#39;mappings&#39; and &#39;source-layers&#39;, any other value
 </div><aside class="tsd-sources">
 <ul>
 <li>Defined in shared-lib/dist/lib/JSONSchemaUtil.d.ts:21</li></ul></aside></section>
+<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum"><a id="SupportsImportExport" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>Supports<wbr/>Import<wbr/>Export</span><a href="#SupportsImportExport" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<div class="tsd-signature">Supports<wbr/>Import<wbr/>Export<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">&quot;ui:import-export&quot;</span></div>
+<div class="tsd-comment tsd-typography"><p>Whether a table supports being imported and exported
+Valid only for tables</p>
+</div><aside class="tsd-sources">
+<ul>
+<li>Defined in shared-lib/dist/lib/JSONSchemaUtil.d.ts:52</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum"><a id="Title" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>Title</span><a href="#Title" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">Title<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">&quot;ui:title&quot;</span></div>
@@ -99,7 +112,7 @@ Valid values are &#39;mappings&#39; and &#39;source-layers&#39;, any other value
 Future: a new field should probably be added for the UI to use.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in shared-lib/dist/lib/JSONSchemaUtil.d.ts:35</li></ul></aside></section>
+<li>Defined in shared-lib/dist/lib/JSONSchemaUtil.d.ts:37</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum"><a id="ZeroBased" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>Zero<wbr/>Based</span><a href="#ZeroBased" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">Zero<wbr/>Based<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">&quot;ui:zeroBased&quot;</span></div>
@@ -158,6 +171,7 @@ Future: a new field should probably be added for the UI to use.</p>
 <li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="_sofie_automation_server_core_integration.SchemaFormUIField.html#SofieEnum" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>Sofie<wbr/>Enum</a></li>
 <li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="_sofie_automation_server_core_integration.SchemaFormUIField.html#SofieEnumFilter" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>Sofie<wbr/>Enum<wbr/>Filter</a></li>
 <li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="_sofie_automation_server_core_integration.SchemaFormUIField.html#SummaryTitle" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>Summary<wbr/>Title</a></li>
+<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="_sofie_automation_server_core_integration.SchemaFormUIField.html#SupportsImportExport" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>Supports<wbr/>Import<wbr/>Export</a></li>
 <li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="_sofie_automation_server_core_integration.SchemaFormUIField.html#Title" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>Title</a></li>
 <li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="_sofie_automation_server_core_integration.SchemaFormUIField.html#TsEnumNames" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>Ts<wbr/>Enum<wbr/>Names</a></li>
 <li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="_sofie_automation_server_core_integration.SchemaFormUIField.html#ZeroBased" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>Zero<wbr/>Based</a></li></ul></li></ul></nav></div></div>
