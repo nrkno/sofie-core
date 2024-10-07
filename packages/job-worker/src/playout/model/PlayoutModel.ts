@@ -335,6 +335,8 @@ export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBa
 	 */
 	setQuickLoopMarker(type: 'start' | 'end', marker: QuickLoopMarker | null): void
 
+	getSegmentsBetweenQuickLoopMarker(start: QuickLoopMarker, end: QuickLoopMarker): SegmentId[]
+
 	calculatePartTimings(
 		fromPartInstance: PlayoutPartInstanceModel | null,
 		toPartInstance: PlayoutPartInstanceModel,

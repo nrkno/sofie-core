@@ -8,7 +8,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { PlayoutPartInstanceModel } from '../PlayoutPartInstanceModel'
 import { JobContext } from '../../../jobs'
@@ -147,6 +147,38 @@ export class QuickLoopService {
 		quickLoopProps.running = false
 
 		return quickLoopProps
+	}
+
+	getSegmentsBetweenMarkers(startMarker: QuickLoopMarker, endMarker: QuickLoopMarker): SegmentId[] {
+		const orderedParts = this.playoutModel.getAllOrderedParts()
+		const rundownIds = this.playoutModel.getRundownIds()
+
+		const start = this.findQuickLoopMarkerPosition(startMarker, 'start', orderedParts, rundownIds)
+		const end = this.findQuickLoopMarkerPosition(endMarker, 'end', orderedParts, rundownIds)
+
+		if (this.areMarkersFlipped(start, end)) return []
+
+		const segmentIds: Set<SegmentId> = new Set()
+
+		for (const part of orderedParts) {
+			const currentSegment = this.playoutModel.findSegment(part.segmentId)?.segment
+			const currentRundownIndex = rundownIds.findIndex((id) => id === part.rundownId)
+
+			if (!currentSegment) continue // ???
+
+			if (
+				currentRundownIndex >= start.rundownRank &&
+				currentRundownIndex <= end.rundownRank &&
+				currentSegment._rank >= start.segmentRank &&
+				currentSegment._rank <= end.segmentRank &&
+				part._rank >= start.partRank &&
+				part._rank <= start.partRank
+			) {
+				segmentIds.add(currentSegment._id)
+			}
+		}
+
+		return Array.from(segmentIds.values())
 	}
 
 	private areMarkersFlipped(startPosition: MarkerPosition, endPosition: MarkerPosition) {
