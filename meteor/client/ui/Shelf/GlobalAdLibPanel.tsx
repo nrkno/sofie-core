@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { IAdLibListItem } from './AdLibListItem'
 import { AdLibPanel } from './AdLibPanel'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
@@ -17,7 +17,7 @@ import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { UIStudio } from '../../../lib/api/studios'
 
 interface IProps {
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	showStyleBase: UIShowStyleBase
 	studio: UIStudio
 	visible: boolean
@@ -35,7 +35,7 @@ export function GlobalAdLibPanel({
 	studioMode,
 	visible,
 	onSelectPiece,
-}: IProps): JSX.Element {
+}: Readonly<IProps>): JSX.Element {
 	const { t } = useTranslation()
 
 	const GLOBAL_ADLIB_FILTER: RundownLayoutFilter = useMemo(

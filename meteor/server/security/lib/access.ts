@@ -56,7 +56,7 @@ export function combineAccess<T>(
 ): Access<T> {
 	const a: any = {}
 	_.each(_.keys(access0).concat(_.keys(access1)), (key) => {
-		a[key] = access0[key] && access1[key]
+		a[key] = (access0 as any)[key] && (access1 as any)[key]
 	})
 	a.reason = _.compact([access0.reason, access1.reason]).join(',')
 	a.document = access0.document || access1.document || null

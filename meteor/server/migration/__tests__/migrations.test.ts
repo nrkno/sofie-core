@@ -16,13 +16,14 @@ import {
 	ShowStyleBlueprintManifest,
 	StudioBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
-import { Studio } from '../../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { generateFakeBlueprint } from '../../api/blueprints/__tests__/lib'
 import { MeteorCall } from '../../../lib/api/methods'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../../collections'
 import { getCoreSystemAsync } from '../../coreSystem/collection'
 import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
+import fs from 'fs'
 
 require('../../api/peripheralDevice.ts') // include in order to create the Meteor methods needed
 require('../api') // include in order to create the Meteor methods needed
@@ -32,14 +33,12 @@ require('../migrations') // include in order to create the migration steps
 
 // Include all migration scripts:
 const normalizedPath = require('path').join(__dirname, '../')
-require('fs')
-	.readdirSync(normalizedPath)
-	.forEach((fileName) => {
-		if (fileName.match(/\d+_\d+_\d+\.ts/)) {
-			// x_y_z.ts
-			require('../' + fileName)
-		}
-	})
+fs.readdirSync(normalizedPath).forEach((fileName) => {
+	if (fileName.match(/\d+_\d+_\d+\.ts/)) {
+		// x_y_z.ts
+		require('../' + fileName)
+	}
+})
 
 describe('Migrations', () => {
 	beforeAll(async () => {
@@ -142,6 +141,7 @@ describe('Migrations', () => {
 							inputDevices: wrapDefaultObject({}),
 						},
 						lastBlueprintConfig: undefined,
+						lastBlueprintFixUpHash: undefined,
 					})
 				},
 			},
@@ -179,6 +179,7 @@ describe('Migrations', () => {
 							inputDevices: wrapDefaultObject({}),
 						},
 						lastBlueprintConfig: undefined,
+						lastBlueprintFixUpHash: undefined,
 					})
 				},
 			},
@@ -216,6 +217,7 @@ describe('Migrations', () => {
 							inputDevices: wrapDefaultObject({}),
 						},
 						lastBlueprintConfig: undefined,
+						lastBlueprintFixUpHash: undefined,
 					})
 				},
 			},
@@ -234,7 +236,7 @@ describe('Migrations', () => {
 		expect(_.find(migration.steps, (s) => !!s.id.match(/myCoreMockStep2/))).toBeTruthy()
 		expect(_.find(migration.steps, (s) => !!s.id.match(/myCoreMockStep3/))).toBeTruthy()
 
-		const studio = (await Studios.findOneAsync({})) as Studio
+		const studio = (await Studios.findOneAsync({})) as DBStudio
 		expect(studio).toBeTruthy()
 
 		const studioManifest = (): StudioBlueprintManifest => ({
@@ -402,6 +404,7 @@ describe('Migrations', () => {
 			blueprintConfigWithOverrides: wrapDefaultObject({}),
 			_rundownVersionHash: '',
 			lastBlueprintConfig: undefined,
+			lastBlueprintFixUpHash: undefined,
 		})
 
 		await ShowStyleVariants.insertAsync({

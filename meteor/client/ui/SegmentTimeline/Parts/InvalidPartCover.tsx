@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { DBPart } from '../../../../lib/collections/Parts'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { InvalidFloatingInspector } from '../../FloatingInspectors/InvalidFloatingInspector'
 
 interface IProps {
@@ -8,7 +8,7 @@ interface IProps {
 	align?: 'start' | 'center' | 'end'
 }
 
-export function InvalidPartCover({ className, part, align }: IProps): JSX.Element {
+export function InvalidPartCover({ className, part, align }: Readonly<IProps>): JSX.Element {
 	const element = React.createRef<HTMLDivElement>()
 	const [hover, setHover] = useState(false)
 	const [position, setPosition] = useState({ left: 0, top: 0, width: 0, right: 0 })

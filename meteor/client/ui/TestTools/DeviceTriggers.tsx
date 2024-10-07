@@ -1,16 +1,25 @@
 import React, { Fragment, useState } from 'react'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Mongo } from 'meteor/mongo'
-import { CustomCollectionName, PubSub } from '../../../lib/api/pubsub'
+import {} from '../../../lib/api/pubsub'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DeviceTriggerMountedAction, PreviewWrappedAdLib } from '../../../lib/api/triggers/MountedTriggers'
 import { PeripheralDevices } from '../../collections'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import {
+	PeripheralDevicePubSub,
+	PeripheralDevicePubSubCollectionsNames,
+} from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 
-const MountedTriggers = new Mongo.Collection<DeviceTriggerMountedAction>(CustomCollectionName.MountedTriggers)
-const MountedTriggersPreviews = new Mongo.Collection<PreviewWrappedAdLib>(CustomCollectionName.MountedTriggersPreviews)
+const MountedTriggers = new Mongo.Collection<DeviceTriggerMountedAction>(
+	PeripheralDevicePubSubCollectionsNames.mountedTriggers
+)
+const MountedTriggersPreviews = new Mongo.Collection<PreviewWrappedAdLib>(
+	PeripheralDevicePubSubCollectionsNames.mountedTriggersPreviews
+)
 
 interface DeviceTriggersViewRouteParams {
 	peripheralDeviceId: string
@@ -39,10 +48,10 @@ const DeviceTriggersView: React.FC = function TimelineDatastoreView() {
 interface IDatastoreControlsProps {
 	peripheralDeviceId: PeripheralDeviceId
 }
-function DeviceTriggersControls({ peripheralDeviceId }: IDatastoreControlsProps) {
+function DeviceTriggersControls({ peripheralDeviceId }: Readonly<IDatastoreControlsProps>) {
 	const [deviceIds, setDeviceIds] = useState<string[]>([])
-	useSubscription(PubSub.mountedTriggersForDevice, peripheralDeviceId, deviceIds)
-	useSubscription(PubSub.mountedTriggersForDevicePreview, peripheralDeviceId)
+	useSubscription(PeripheralDevicePubSub.mountedTriggersForDevice, peripheralDeviceId, deviceIds)
+	useSubscription(PeripheralDevicePubSub.mountedTriggersForDevicePreview, peripheralDeviceId)
 
 	const mountedTriggers = useTracker<DeviceTriggerMountedAction[]>(
 		() =>
@@ -100,15 +109,17 @@ function DeviceTriggersControls({ peripheralDeviceId }: IDatastoreControlsProps)
 								</tr>
 								<tr>
 									<td colSpan={5}>
-										{mountedTriggersPreviews
-											.filter((preview) => preview.actionId === entry.actionId)
-											.map((preview) => (
-												<span key={unprotectString(preview._id)}>
-													{JSON.stringify(preview.label)}: {preview.type} {preview.sourceLayerType}{' '}
-													{preview.sourceLayerName?.name}{' '}
-													{preview.sourceLayerName?.abbreviation ? `(${preview.sourceLayerName.abbreviation})` : null}
-												</span>
-											))}
+										<ul className="mod mhn mvn">
+											{mountedTriggersPreviews
+												.filter((preview) => preview.actionId === entry.actionId)
+												.map((preview) => (
+													<li key={unprotectString(preview._id)}>
+														{JSON.stringify(preview.label)}: {String(preview.type)} {preview.sourceLayerType}{' '}
+														{preview.sourceLayerName?.name}{' '}
+														{preview.sourceLayerName?.abbreviation ? `(${preview.sourceLayerName.abbreviation})` : null}
+													</li>
+												))}
+										</ul>
 									</td>
 								</tr>
 							</Fragment>
@@ -120,22 +131,20 @@ function DeviceTriggersControls({ peripheralDeviceId }: IDatastoreControlsProps)
 	)
 }
 
-const DeviceTriggersDeviceSelect: React.FC = function DeviceTriggersDeviceSelect() {
-	useSubscription(PubSub.peripheralDevices, {})
+function DeviceTriggersDeviceSelect(): JSX.Element | null {
+	useSubscription(CorelibPubSub.peripheralDevices, null)
 	const devices = useTracker(() => PeripheralDevices.find().fetch(), [])
 
 	if (!devices) return null
 
 	return (
-		<>
-			<ul>
-				{devices.map((device) => (
-					<li key={unprotectString(device._id)}>
-						<Link to={`devicetriggers/${device._id}`}>{device.name}</Link>
-					</li>
-				))}
-			</ul>
-		</>
+		<ul>
+			{devices.map((device) => (
+				<li key={unprotectString(device._id)}>
+					<Link to={`devicetriggers/${device._id}`}>{device.name}</Link>
+				</li>
+			))}
+		</ul>
 	)
 }
 

@@ -13,12 +13,12 @@ import { Meteor } from 'meteor/meteor'
 import { ICoreSystem } from '../../lib/collections/CoreSystem'
 import { Evaluation } from '../../lib/collections/Evaluations'
 import { DBOrganization } from '../../lib/collections/Organization'
-import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { SnapshotItem } from '../../lib/collections/Snapshots'
-import { Studio } from '../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { DBTimelineDatastoreEntry } from '@sofie-automation/corelib/dist/dataModel/TimelineDatastore'
 import { TranslationsBundle } from '../../lib/collections/TranslationsBundles'
@@ -64,7 +64,17 @@ export const CoreSystem = createAsyncOnlyMongoCollection<ICoreSystem>(Collection
 		const cred = await resolveCredentials({ userId: userId })
 		const access = await allowAccessToCoreSystem(cred)
 		if (!access.update) return logNotAllowed('CoreSystem', access.reason)
-		return allowOnlyFields(doc, fields, ['support', 'systemInfo', 'name', 'logLevel', 'apm', 'cron', 'logo'])
+
+		return allowOnlyFields(doc, fields, [
+			'support',
+			'systemInfo',
+			'name',
+			'logLevel',
+			'apm',
+			'cron',
+			'logo',
+			'evaluations',
+		])
 	},
 })
 
@@ -188,7 +198,7 @@ registerIndex(Snapshots, {
 	created: 1,
 })
 
-export const Studios = createAsyncOnlyMongoCollection<Studio>(CollectionName.Studios, {
+export const Studios = createAsyncOnlyMongoCollection<DBStudio>(CollectionName.Studios, {
 	async update(userId, doc, fields, _modifier) {
 		const access = await allowAccessToStudio({ userId: userId }, doc._id)
 		if (!access.update) return logNotAllowed('Studio', access.reason)

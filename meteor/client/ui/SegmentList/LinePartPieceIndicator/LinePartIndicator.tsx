@@ -1,11 +1,10 @@
 import classNames from 'classnames'
 import React, { useCallback, useEffect, useState } from 'react'
 import { UIStudio } from '../../../../lib/api/studios'
-import { ISourceLayerExtended } from '../../../../lib/Rundown'
+import { ISourceLayerExtended } from '../../../lib/RundownResolver'
 import { RundownUtils } from '../../../lib/rundown'
 import { AdLibPieceUi } from '../../../lib/shelf'
 import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
-import { withMediaObjectStatus } from '../../SegmentTimeline/withMediaObjectStatus'
 
 interface IProps {
 	overlay?: (ref: HTMLDivElement | null, setIsOver: (isOver: boolean) => void) => React.ReactNode
@@ -20,7 +19,7 @@ interface IProps {
 	onDoubleClick?: React.EventHandler<React.MouseEvent<HTMLDivElement>>
 }
 
-export const LinePartIndicator = withMediaObjectStatus<IProps, {}>()(function LinePartIndicator({
+export function LinePartIndicator({
 	overlay,
 	count,
 	allSourceLayers,
@@ -29,7 +28,7 @@ export const LinePartIndicator = withMediaObjectStatus<IProps, {}>()(function Li
 	label,
 	onClick: onClickExternal,
 	onDoubleClick,
-}) {
+}: IProps): JSX.Element {
 	let typeClass = thisSourceLayer?.type ? RundownUtils.getSourceLayerClassName(thisSourceLayer.type) : undefined
 	const [element, setElement] = useState<HTMLDivElement | null>(null)
 	const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -98,4 +97,4 @@ export const LinePartIndicator = withMediaObjectStatus<IProps, {}>()(function Li
 			{isMenuOpen && !!overlay && overlay(element, setIsMenuOpen)}
 		</>
 	)
-})
+}

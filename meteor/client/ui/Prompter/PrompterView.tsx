@@ -1,30 +1,37 @@
 import React, { PropsWithChildren } from 'react'
 import _ from 'underscore'
-import Velocity from 'velocity-animate'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import ClassNames from 'classnames'
 import { Meteor } from 'meteor/meteor'
-import { Route } from 'react-router-dom'
-import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { parse as queryStringParse } from 'query-string'
+import { Route } from 'react-router-dom'
+import Velocity from 'velocity-animate'
+import {
+	Translated,
+	useGlobalDelayedTrackerUpdateState,
+	useSubscription,
+	useSubscriptions,
+	useTracker,
+} from '../../lib/ReactMeteorData/ReactMeteorData'
 
-import { Spinner } from '../../lib/Spinner'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { firstIfArray, literal, protectString } from '../../../lib/lib'
-import { PrompterData, PrompterAPI, PrompterDataPart } from './prompter'
-import { PrompterControlManager } from './controller/manager'
-import { PubSub } from '../../../lib/api/pubsub'
-import { documentTitle } from '../../lib/DocumentTitleProvider'
-import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
-import { RundownTimingProvider } from '../RundownView/RundownTiming/RundownTimingProvider'
-import { OverUnderTimer } from './OverUnderTimer'
-import { Rundown } from '../../../lib/collections/Rundowns'
 import { PartInstanceId, PieceId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { UIStudios } from '../Collections'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { withTranslation } from 'react-i18next'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { UIStudio } from '../../../lib/api/studios'
-import { RundownPlaylists, Rundowns } from '../../collections'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { firstIfArray, protectString } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
+import { RundownPlaylists, Rundowns } from '../../collections'
+import { documentTitle } from '../../lib/DocumentTitleProvider'
+import { Spinner } from '../../lib/Spinner'
+import { UIStudios } from '../Collections'
+import { RundownTimingProvider } from '../RundownView/RundownTiming/RundownTimingProvider'
+import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
+import { PrompterControlManager } from './controller/manager'
+import { OverUnderTimer } from './OverUnderTimer'
+import { PrompterAPI, PrompterData, PrompterDataPart } from './prompter'
 
 const DEFAULT_UPDATE_THROTTLE = 250 //ms
 const PIECE_MISSING_UPDATE_THROTTLE = 2000 //ms
@@ -44,6 +51,7 @@ interface PrompterConfig {
 	joycon_rangeNeutralMin?: number
 	joycon_rangeNeutralMax?: number
 	joycon_rangeFwdMax?: number
+	joycon_rightHandOffset?: number
 	pedal_speedMap?: number[]
 	pedal_reverseSpeedMap?: number[]
 	pedal_rangeRevMin?: number
@@ -78,11 +86,8 @@ interface IProps {
 }
 
 interface ITrackedProps {
-	rundownPlaylist?: RundownPlaylist
+	rundownPlaylist?: DBRundownPlaylist
 	studio?: UIStudio
-}
-
-interface IState {
 	subsReady: boolean
 }
 
@@ -96,9 +101,7 @@ function asArray<T>(value: T | T[] | null): T[] {
 	}
 }
 
-export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
-	usedHotkeys: Array<string> = []
-
+export class PrompterViewContent extends React.Component<Translated<IProps & ITrackedProps>> {
 	autoScrollPreviousPartInstanceId: PartInstanceId | null = null
 
 	configOptions: PrompterConfig
@@ -144,6 +147,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			joycon_rangeNeutralMin: parseInt(firstIfArray(queryParams['joycon_rangeNeutralMin']) as string, 10) || undefined,
 			joycon_rangeNeutralMax: parseInt(firstIfArray(queryParams['joycon_rangeNeutralMax']) as string, 10) || undefined,
 			joycon_rangeFwdMax: parseInt(firstIfArray(queryParams['joycon_rangeFwdMax']) as string, 10) || undefined,
+			joycon_rightHandOffset: parseInt(firstIfArray(queryParams['joycon_rightHandOffset']) as string, 10) || undefined,
 			pedal_speedMap:
 				queryParams['pedal_speedMap'] === undefined
 					? undefined
@@ -201,41 +205,6 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	}
 
 	componentDidMount(): void {
-		if (this.props.studioId) {
-			this.subscribe(PubSub.uiStudio, this.props.studioId)
-
-			this.subscribe(PubSub.rundownPlaylists, {
-				activationId: { $exists: true },
-				studioId: this.props.studioId,
-			})
-		}
-
-		this.autorun(() => {
-			const playlist = RundownPlaylists.findOne(
-				{
-					studioId: this.props.studioId,
-					activationId: { $exists: true },
-				},
-				{
-					fields: {
-						_id: 1,
-					},
-				}
-			) as Pick<RundownPlaylist, '_id'> | undefined
-			if (playlist?._id) {
-				this.subscribe(PubSub.rundowns, [playlist._id], null)
-			}
-		})
-
-		this.autorun(() => {
-			const subsReady = this.subscriptionsReady()
-			if (subsReady !== this.state.subsReady) {
-				this.setState({
-					subsReady: subsReady,
-				})
-			}
-		})
-
 		const themeColor = document.head.querySelector('meta[name="theme-color"]')
 		if (themeColor) {
 			themeColor.setAttribute('data-content', themeColor.getAttribute('content') || '')
@@ -257,8 +226,6 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	}
 
 	componentWillUnmount(): void {
-		super.componentWillUnmount()
-
 		documentTitle.set(null)
 
 		const themeColor = document.head.querySelector('meta[name="theme-color"]')
@@ -321,7 +288,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	}
 	scrollToPartInstance(partInstanceId: PartInstanceId): void {
 		const scrollMargin = this.calculateScrollPosition()
-		const target = document.querySelector(`[data-part-instance-id="${partInstanceId}"]`)
+		const target = document.querySelector<HTMLElement>(`[data-part-instance-id="${partInstanceId}"]`)
 
 		if (target) {
 			Velocity(document.body, 'finish')
@@ -330,7 +297,8 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	}
 	scrollToLive(): void {
 		const scrollMargin = this.calculateScrollPosition()
-		const current = document.querySelector('.prompter .live') || document.querySelector('.prompter .next')
+		const current =
+			document.querySelector<HTMLElement>('.prompter .live') || document.querySelector<HTMLElement>('.prompter .next')
 
 		if (current) {
 			Velocity(document.body, 'finish')
@@ -339,7 +307,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	}
 	scrollToNext(): void {
 		const scrollMargin = this.calculateScrollPosition()
-		const next = document.querySelector('.prompter .next')
+		const next = document.querySelector<HTMLElement>('.prompter .next')
 
 		if (next) {
 			Velocity(document.body, 'finish')
@@ -505,7 +473,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 		return (
 			<React.Fragment>
-				{!this.state.subsReady ? (
+				{!this.props.subsReady ? (
 					<div className="rundown-view rundown-view--loading">
 						<Spinner />
 					</div>
@@ -541,27 +509,61 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		)
 	}
 }
-export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>(({ studioId }: IProps) => {
-	const studio = UIStudios.findOne(studioId)
 
-	const rundownPlaylist = RundownPlaylists.findOne(
-		{
-			activationId: { $exists: true },
-			studioId: studioId,
-		},
-		{
-			projection: {
-				trackedAbSessions: 0,
-				lastIncorrectPartPlaybackReported: 0,
-			},
-		}
-	) as Omit<RundownPlaylist, 'trackedAbSessions'> | undefined
+const PrompterViewContentWithTranslation = withTranslation()(PrompterViewContent)
 
-	return literal<ITrackedProps>({
-		rundownPlaylist,
-		studio,
-	})
-})(PrompterViewInner)
+export function PrompterView(props: Readonly<IProps>): JSX.Element {
+	const subsReady: boolean[] = []
+	subsReady.push(useSubscription(MeteorPubSub.uiStudio, props.studioId))
+	subsReady.push(useSubscription(MeteorPubSub.rundownPlaylistForStudio, props.studioId, true))
+
+	const playlist = useTracker(
+		() =>
+			RundownPlaylists.findOne(
+				{
+					studioId: props.studioId,
+					activationId: { $exists: true },
+				},
+				{
+					fields: {
+						_id: 1,
+					},
+				}
+			) as Pick<DBRundownPlaylist, '_id'> | undefined,
+		[props.studioId]
+	)
+	subsReady.push(useSubscription(CorelibPubSub.rundownsInPlaylists, playlist ? [playlist._id] : []))
+
+	const allSubsReady = subsReady.findIndex((ready) => !ready) === -1
+
+	const studio = useTracker(() => UIStudios.findOne(props.studioId), [props.studioId])
+
+	const rundownPlaylist = useTracker(
+		() =>
+			RundownPlaylists.findOne(
+				{
+					activationId: { $exists: true },
+					studioId: props.studioId,
+				},
+				{
+					projection: {
+						trackedAbSessions: 0,
+						lastIncorrectPartPlaybackReported: 0,
+					},
+				}
+			) as Omit<DBRundownPlaylist, 'trackedAbSessions'> | undefined,
+		[props.studioId]
+	)
+
+	return (
+		<PrompterViewContentWithTranslation
+			{...props}
+			studio={studio}
+			rundownPlaylist={rundownPlaylist}
+			subsReady={allSubsReady}
+		/>
+	)
+}
 
 interface IPrompterProps {
 	rundownPlaylistId: RundownPlaylistId
@@ -578,67 +580,68 @@ interface ScrollAnchor {
 }
 type PrompterSnapshot = ScrollAnchor[] | null
 
-export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, {}, IPrompterTrackedProps>(
-	(props: IPrompterProps) => ({
-		prompterData: PrompterAPI.getPrompterData(props.rundownPlaylistId),
-	}),
-	undefined,
-	true
-)(
-	class Prompter extends MeteorReactComponent<
+function Prompter(props: Readonly<PropsWithChildren<IPrompterProps>>): JSX.Element {
+	useSubscription(CorelibPubSub.rundownsInPlaylists, [props.rundownPlaylistId])
+
+	const playlist = useTracker(
+		() =>
+			RundownPlaylists.findOne(props.rundownPlaylistId, {
+				fields: {
+					_id: 1,
+					activationId: 1,
+				},
+			}) as Pick<DBRundownPlaylist, '_id' | 'activationId'> | undefined,
+		[props.rundownPlaylistId]
+	)
+	const rundownIDs = playlist ? RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist) : []
+	useSubscription(CorelibPubSub.segments, rundownIDs, {})
+	useSubscription(CorelibPubSub.parts, rundownIDs, null)
+	useSubscription(CorelibPubSub.partInstances, rundownIDs, playlist?.activationId ?? null)
+	useSubscription(CorelibPubSub.pieces, rundownIDs, null)
+	useSubscription(CorelibPubSub.pieceInstancesSimple, rundownIDs, null)
+
+	const rundowns = useTracker(
+		() =>
+			Rundowns.find(
+				{ playlistId: props.rundownPlaylistId },
+				{
+					fields: {
+						_id: 1,
+						showStyleBaseId: 1,
+					},
+				}
+			).fetch() as Pick<Rundown, '_id' | 'showStyleBaseId'>[],
+		[props.rundownPlaylistId],
+		[]
+	)
+	useSubscriptions(
+		MeteorPubSub.uiShowStyleBase,
+		rundowns.map((rundown) => [rundown.showStyleBaseId])
+	)
+
+	const nextTrackedProps = useTracker(
+		() => PrompterAPI.getPrompterData(props.rundownPlaylistId),
+		[props.rundownPlaylistId],
+		null
+	)
+
+	const delayedTrackedProps = useGlobalDelayedTrackerUpdateState(nextTrackedProps)
+
+	return <PrompterContent {...props} prompterData={delayedTrackedProps} />
+}
+
+const PrompterContent = withTranslation()(
+	class PrompterContent extends React.Component<
 		Translated<PropsWithChildren<IPrompterProps> & IPrompterTrackedProps>,
 		{}
 	> {
-		private _debounceUpdate: NodeJS.Timer
+		private _debounceUpdate: NodeJS.Timer | undefined
 
-		constructor(props) {
+		constructor(props: Translated<PropsWithChildren<IPrompterProps> & IPrompterTrackedProps>) {
 			super(props)
 			this.state = {
 				subsReady: false,
 			}
-		}
-
-		componentDidMount(): void {
-			this.subscribe(PubSub.rundowns, [this.props.rundownPlaylistId], null)
-
-			this.autorun(() => {
-				const playlist = RundownPlaylists.findOne(this.props.rundownPlaylistId, {
-					fields: {
-						_id: 1,
-						activationId: 1,
-					},
-				}) as Pick<RundownPlaylist, '_id' | 'activationId'> | undefined
-				if (playlist) {
-					const rundownIDs = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
-					this.subscribe(PubSub.segments, {
-						rundownId: { $in: rundownIDs },
-					})
-					this.subscribe(PubSub.parts, rundownIDs)
-					this.subscribe(PubSub.partInstances, rundownIDs, playlist.activationId)
-					this.subscribe(PubSub.pieces, {
-						startRundownId: { $in: rundownIDs },
-					})
-					this.subscribe(PubSub.pieceInstancesSimple, {
-						rundownId: { $in: rundownIDs },
-						reset: { $ne: true },
-					})
-				}
-			})
-
-			this.autorun(() => {
-				const rundowns = Rundowns.find(
-					{ playlistId: this.props.rundownPlaylistId },
-					{
-						fields: {
-							_id: 1,
-							showStyleBaseId: 1,
-						},
-					}
-				).fetch() as Pick<Rundown, '_id' | 'showStyleBaseId'>[]
-				for (const rundown of rundowns) {
-					this.subscribe(PubSub.uiShowStyleBase, rundown.showStyleBaseId)
-				}
-			})
 		}
 
 		private getReadPosition(): number {
@@ -778,23 +781,27 @@ export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, 
 				return
 			}
 
+			// TODO: In The 4 months this has been here (2024/09/19), not a single log line was recorded
+			// - does this still make sense?
 			for (const scrollAnchor of scrollAnchors) {
-				for (const segment of this.props.prompterData.segments) {
-					if (scrollAnchor.anchorId === `segment_${segment.id}`) {
-						logger.error(`Read anchor troubleshooting: segment "${segment.id}" was found in prompterData!`)
-						return
-					}
-
-					for (const part of segment.parts) {
-						if (scrollAnchor.anchorId === `partInstance_${part.id}`) {
-							logger.error(`Read anchor troubleshooting: part "${part.id}" was found in prompterData!`)
+				for (const rundown of this.props.prompterData.rundowns) {
+					for (const segment of rundown.segments) {
+						if (scrollAnchor.anchorId === `segment_${segment.id}`) {
+							logger.error(`Read anchor troubleshooting: segment "${segment.id}" was found in prompterData!`)
 							return
 						}
 
-						for (const piece of part.pieces) {
-							if (scrollAnchor.anchorId === `line_${piece.id}`) {
-								logger.error(`Read anchor troubleshooting: piece "${piece.id}" was found in prompterData!`)
+						for (const part of segment.parts) {
+							if (scrollAnchor.anchorId === `partInstance_${part.id}`) {
+								logger.error(`Read anchor troubleshooting: part "${part.id}" was found in prompterData!`)
 								return
+							}
+
+							for (const piece of part.pieces) {
+								if (scrollAnchor.anchorId === `line_${piece.id}`) {
+									logger.error(`Read anchor troubleshooting: piece "${piece.id}" was found in prompterData!`)
+									return
+								}
 							}
 						}
 					}
@@ -807,18 +814,22 @@ export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, 
 			const { prompterData: nextPrompterData } = nextProps
 
 			const currentPrompterPieces = _.flatten(
-				prompterData?.segments.map((segment) =>
-					segment.parts.map((part) =>
-						// collect all the PieceId's of all the non-empty pieces of script
-						_.compact(part.pieces.map((dataPiece) => (dataPiece.text !== '' ? dataPiece.id : null)))
+				prompterData?.rundowns.map((rundown) =>
+					rundown.segments.map((segment) =>
+						segment.parts.map((part) =>
+							// collect all the PieceId's of all the non-empty pieces of script
+							_.compact(part.pieces.map((dataPiece) => (dataPiece.text !== '' ? dataPiece.id : null)))
+						)
 					)
 				) ?? []
 			) as PieceId[]
 			const nextPrompterPieces = _.flatten(
-				nextPrompterData?.segments.map((segment) =>
-					segment.parts.map((part) =>
-						// collect all the PieceId's of all the non-empty pieces of script
-						_.compact(part.pieces.map((dataPiece) => (dataPiece.text !== '' ? dataPiece.id : null)))
+				nextPrompterData?.rundowns.map((rundown) =>
+					rundown.segments.map((segment) =>
+						segment.parts.map((part) =>
+							// collect all the PieceId's of all the non-empty pieces of script
+							_.compact(part.pieces.map((dataPiece) => (dataPiece.text !== '' ? dataPiece.id : null)))
+						)
 					)
 				) ?? []
 			) as PieceId[]
@@ -848,7 +859,11 @@ export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, 
 			return this.getScrollAnchors()
 		}
 
-		componentDidUpdate(_prevProps, _prevState, snapshot: PrompterSnapshot) {
+		componentDidUpdate(
+			_prevProps: Readonly<Translated<PropsWithChildren<IPrompterProps> & IPrompterTrackedProps>>,
+			_prevState: Readonly<{}>,
+			snapshot: PrompterSnapshot
+		) {
 			this.restoreScrollAnchor(snapshot)
 		}
 
@@ -863,139 +878,155 @@ export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, 
 		}
 
 		private renderPrompterData(prompterData: PrompterData) {
+			const { t } = this.props
+
 			const lines: React.ReactNode[] = []
+			let hasInsertedScript = false
 
-			prompterData.segments.forEach((segment) => {
-				if (segment.parts.length === 0) {
-					return
-				}
-
-				const firstPart = segment.parts[0]
-				const firstPartStatus = this.getPartStatus(prompterData, firstPart)
-
-				lines.push(
-					<div
-						id={`segment_${segment.id}`}
-						data-obj-id={segment.id}
-						key={'segment_' + segment.id}
-						className={ClassNames('prompter-segment', 'scroll-anchor', firstPartStatus)}
-					>
-						{segment.title || 'N/A'}
-					</div>
-				)
-
-				segment.parts.forEach((part) => {
+			for (const rundown of prompterData.rundowns) {
+				if (prompterData.rundowns.length > 1) {
 					lines.push(
 						<div
-							id={`part_${part.id}`}
-							data-obj-id={segment.id + '_' + part.id}
-							data-part-instance-id={part.partInstanceId}
-							key={'part_' + part.id}
-							className={ClassNames('prompter-part', 'scroll-anchor', this.getPartStatus(prompterData, part))}
+							id={`rundown_${rundown.id}`}
+							data-obj-id={rundown.id}
+							key={'rundown_' + rundown.id}
+							className={ClassNames('prompter-rundown')}
 						>
-							{part.title || 'N/A'}
+							{rundown.title || 'N/A'}
+						</div>
+					)
+				}
+
+				for (const segment of rundown.segments) {
+					if (segment.parts.length === 0) {
+						return
+					}
+
+					const firstPart = segment.parts[0]
+					const firstPartStatus = this.getPartStatus(prompterData, firstPart)
+
+					lines.push(
+						<div
+							id={`segment_${segment.id}`}
+							data-obj-id={segment.id}
+							key={'segment_' + segment.id}
+							className={ClassNames('prompter-segment', 'scroll-anchor', firstPartStatus)}
+						>
+							{segment.title || 'N/A'}
 						</div>
 					)
 
-					part.pieces.forEach((line) => {
+					hasInsertedScript = true
+
+					for (const part of segment.parts) {
 						lines.push(
 							<div
-								id={`line_${line.id}`}
-								data-obj-id={segment.id + '_' + part.id + '_' + line.id}
-								key={'line_' + part.id + '_' + segment.id + '_' + line.id}
-								className={ClassNames(
-									'prompter-line',
-									this.props.config.addBlankLine ? 'add-blank' : undefined,
-									!line.text ? 'empty' : undefined
-								)}
+								id={`part_${part.id}`}
+								data-obj-id={segment.id + '_' + part.id}
+								data-part-instance-id={part.partInstanceId}
+								key={'part_' + part.id}
+								className={ClassNames('prompter-part', 'scroll-anchor', this.getPartStatus(prompterData, part))}
 							>
-								{line.text || ''}
+								{part.title || 'N/A'}
 							</div>
 						)
-					})
-				})
-			})
+
+						for (const line of part.pieces) {
+							lines.push(
+								<div
+									id={`line_${line.id}`}
+									data-obj-id={segment.id + '_' + part.id + '_' + line.id}
+									key={'line_' + part.id + '_' + segment.id + '_' + line.id}
+									className={ClassNames(
+										'prompter-line',
+										this.props.config.addBlankLine ? 'add-blank' : undefined,
+										!line.text ? 'empty' : undefined
+									)}
+								>
+									{line.text || ''}
+								</div>
+							)
+						}
+					}
+				}
+			}
+
+			if (hasInsertedScript) {
+				lines.push(<div className="prompter-break end">—{t('End of script')}—</div>)
+			}
 
 			return lines
 		}
 		render(): JSX.Element {
-			const { t } = this.props
-
-			if (this.props.prompterData) {
-				return (
-					<div
-						className={ClassNames(
-							'prompter',
-							this.props.config.mirror ? 'mirror' : undefined,
-							this.props.config.mirrorv ? 'mirrorv' : undefined
-						)}
-						style={{
-							fontSize: this.props.config.fontSize ? this.props.config.fontSize + 'vh' : undefined,
-						}}
-					>
-						{this.props.children}
-
-						<div className="overlay-fix">
-							<div
-								className={
-									'read-marker ' + (!this.props.config.showMarker ? 'hide' : this.props.config.marker || 'hide')
-								}
-							></div>
-
-							<div
-								className="indicators"
-								style={{
-									marginTop: this.props.config.margin ? `${this.props.config.margin}vh` : undefined,
-									marginLeft: this.props.config.margin ? `${this.props.config.margin}vw` : undefined,
-									marginRight: this.props.config.margin ? `${this.props.config.margin}vw` : undefined,
-									fontSize: (this.props.config.fontSize ?? 0) > 12 ? `12vmin` : undefined,
-								}}
-							>
-								<div className="take-indicator hidden"></div>
-								<div className="next-indicator hidden"></div>
-							</div>
-						</div>
-
-						<div
-							className="prompter-display"
-							style={{
-								paddingLeft: this.props.config.margin ? this.props.config.margin + 'vw' : undefined,
-								paddingRight: this.props.config.margin ? this.props.config.margin + 'vw' : undefined,
-								paddingTop:
-									this.props.config.marker === 'center'
-										? '50vh'
-										: this.props.config.marker === 'bottom'
-										? '100vh'
-										: this.props.config.margin
-										? this.props.config.margin + 'vh'
-										: undefined,
-								paddingBottom:
-									this.props.config.marker === 'center'
-										? '50vh'
-										: this.props.config.marker === 'top'
-										? '100vh'
-										: this.props.config.margin
-										? this.props.config.margin + 'vh'
-										: undefined,
-							}}
-						>
-							<div className="prompter-break begin">{this.props.prompterData.title}</div>
-
-							{this.renderPrompterData(this.props.prompterData)}
-
-							{this.props.prompterData.segments.length ? (
-								<div className="prompter-break end">—{t('End of script')}—</div>
-							) : null}
-						</div>
-					</div>
-				)
-			} else {
+			if (!this.props.prompterData) {
 				return (
 					<div className="prompter prompter--loading">
 						<Spinner />
 					</div>
 				)
 			}
+
+			return (
+				<div
+					className={ClassNames(
+						'prompter',
+						this.props.config.mirror ? 'mirror' : undefined,
+						this.props.config.mirrorv ? 'mirrorv' : undefined
+					)}
+					style={{
+						fontSize: this.props.config.fontSize ? this.props.config.fontSize + 'vh' : undefined,
+					}}
+				>
+					{this.props.children}
+
+					<div className="overlay-fix">
+						<div
+							className={'read-marker ' + (!this.props.config.showMarker ? 'hide' : this.props.config.marker || 'hide')}
+						></div>
+
+						<div
+							className="indicators"
+							style={{
+								marginTop: this.props.config.margin ? `${this.props.config.margin}vh` : undefined,
+								marginLeft: this.props.config.margin ? `${this.props.config.margin}vw` : undefined,
+								marginRight: this.props.config.margin ? `${this.props.config.margin}vw` : undefined,
+								fontSize: (this.props.config.fontSize ?? 0) > 12 ? `12vmin` : undefined,
+							}}
+						>
+							<div className="take-indicator hidden"></div>
+							<div className="next-indicator hidden"></div>
+						</div>
+					</div>
+
+					<div
+						className="prompter-display"
+						style={{
+							paddingLeft: this.props.config.margin ? this.props.config.margin + 'vw' : undefined,
+							paddingRight: this.props.config.margin ? this.props.config.margin + 'vw' : undefined,
+							paddingTop:
+								this.props.config.marker === 'center'
+									? '50vh'
+									: this.props.config.marker === 'bottom'
+									? '100vh'
+									: this.props.config.margin
+									? this.props.config.margin + 'vh'
+									: undefined,
+							paddingBottom:
+								this.props.config.marker === 'center'
+									? '50vh'
+									: this.props.config.marker === 'top'
+									? '100vh'
+									: this.props.config.margin
+									? this.props.config.margin + 'vh'
+									: undefined,
+						}}
+					>
+						<div className="prompter-break begin">{this.props.prompterData.title}</div>
+
+						{this.renderPrompterData(this.props.prompterData)}
+					</div>
+				</div>
+			)
 		}
 	}
 )

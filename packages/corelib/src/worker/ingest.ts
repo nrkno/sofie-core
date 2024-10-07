@@ -3,7 +3,6 @@ import {
 	BucketAdLibActionId,
 	BucketId,
 	ExpectedPackageId,
-	PeripheralDeviceId,
 	PieceId,
 	RundownId,
 	SegmentId,
@@ -14,6 +13,7 @@ import {
 import type { MOS } from '@sofie-automation/shared-lib/dist/mos'
 import { IngestAdlib, IngestPart, IngestRundown, IngestSegment } from '@sofie-automation/blueprints-integration'
 import { BucketAdLibAction } from '../dataModel/BucketAdLibAction'
+import { RundownSource } from '../dataModel/Rundown'
 
 export enum IngestJobs {
 	/**
@@ -106,7 +106,7 @@ export enum IngestJobs {
 	/**
 	 * Some PackageInfos have been updated, regenerate any Parts which depend on these PackageInfos
 	 */
-	PackageInfosUpdated = 'packageInfosUpdated',
+	PackageInfosUpdatedRundown = 'packageInfosUpdatedRundown',
 
 	/**
 	 * User requested removing a rundown
@@ -119,17 +119,22 @@ export enum IngestJobs {
 
 	// For now these are in this queue, but if this gets split up to be per rundown, then a single bucket queue will be needed
 	BucketItemImport = 'bucketItemImport',
+	BucketItemRegenerate = 'bucketItemRegenerate',
 	BucketActionRegenerateExpectedPackages = 'bucketActionRegenerateExpectedPackages',
 	BucketActionModify = 'bucketActionModify',
 	BucketPieceModify = 'bucketPieceModify',
 	BucketRemoveAdlibPiece = 'bucketRemoveAdlibPiece',
 	BucketRemoveAdlibAction = 'bucketRemoveAdlibAction',
 	BucketEmpty = 'bucketEmpty',
+
+	/**
+	 * Create a testing rundown for the specified ShowStyleVariant
+	 */
+	CreateAdlibTestingRundownForShowStyleVariant = 'createAdlibTestingRundownForShowStyleVariant',
 }
 
 export interface IngestPropsBase {
 	rundownExternalId: string
-	peripheralDeviceId: PeripheralDeviceId | null
 }
 export interface IngestRemoveRundownProps extends IngestPropsBase {
 	forceDelete?: boolean
@@ -137,9 +142,13 @@ export interface IngestRemoveRundownProps extends IngestPropsBase {
 export interface IngestUpdateRundownProps extends IngestPropsBase {
 	ingestRundown: IngestRundown
 	isCreateAction: boolean // TODO: Document what isCreateAction means
+
+	rundownSource: RundownSource
 }
 export interface IngestUpdateRundownMetaDataProps extends IngestPropsBase {
 	ingestRundown: Omit<IngestRundown, 'segments'>
+
+	rundownSource: RundownSource
 }
 export interface IngestRemoveSegmentProps extends IngestPropsBase {
 	segmentExternalId: string
@@ -177,9 +186,12 @@ export interface MosRundownProps extends IngestPropsBase {
 	 * If true, it will fail if the Rundown does not already exist
 	 */
 	isUpdateOperation: boolean
+
+	rundownSource: RundownSource
 }
 export interface MosRundownMetadataProps extends IngestPropsBase {
 	mosRunningOrderBase: MOS.IMOSRunningOrderBase
+	rundownSource: RundownSource
 }
 export interface MosRundownStatusProps extends IngestPropsBase {
 	status: string
@@ -210,7 +222,7 @@ export interface MosSwapStoryProps extends IngestPropsBase {
 export interface ExpectedPackagesRegenerateProps {
 	rundownId: RundownId
 }
-export interface PackageInfosUpdatedProps extends IngestPropsBase {
+export interface PackageInfosUpdatedRundownProps extends IngestPropsBase {
 	packageIds: ExpectedPackageId[]
 }
 
@@ -227,6 +239,10 @@ export interface BucketItemImportProps {
 	showStyleBaseId: ShowStyleBaseId
 	showStyleVariantIds?: ShowStyleVariantId[]
 	payload: IngestAdlib
+}
+export interface BucketItemRegenerateProps {
+	bucketId: BucketId
+	externalId: string
 }
 export interface BucketActionRegenerateExpectedPackagesProps {
 	actionId: BucketAdLibActionId
@@ -249,13 +265,17 @@ export interface BucketEmptyProps {
 	bucketId: BucketId
 }
 
+export interface CreateAdlibTestingRundownForShowStyleVariantProps {
+	showStyleVariantId: ShowStyleVariantId
+}
+
 /**
  * Set of valid functions, of form:
  * `id: (data) => return`
  */
 export type IngestJobFunc = {
 	[IngestJobs.RemoveRundown]: (data: IngestRemoveRundownProps) => void
-	[IngestJobs.UpdateRundown]: (data: IngestUpdateRundownProps) => void
+	[IngestJobs.UpdateRundown]: (data: IngestUpdateRundownProps) => RundownId
 	[IngestJobs.UpdateRundownMetaData]: (data: IngestUpdateRundownMetaDataProps) => void
 	[IngestJobs.RemoveSegment]: (data: IngestRemoveSegmentProps) => void
 	[IngestJobs.UpdateSegment]: (data: IngestUpdateSegmentProps) => void
@@ -278,18 +298,23 @@ export type IngestJobFunc = {
 	[IngestJobs.MosSwapStory]: (data: MosSwapStoryProps) => void
 
 	[IngestJobs.ExpectedPackagesRegenerate]: (data: ExpectedPackagesRegenerateProps) => void
-	[IngestJobs.PackageInfosUpdated]: (data: PackageInfosUpdatedProps) => void
+	[IngestJobs.PackageInfosUpdatedRundown]: (data: PackageInfosUpdatedRundownProps) => void
 
 	[IngestJobs.UserRemoveRundown]: (data: UserRemoveRundownProps) => void
 	[IngestJobs.UserUnsyncRundown]: (data: UserUnsyncRundownProps) => void
 
 	[IngestJobs.BucketItemImport]: (data: BucketItemImportProps) => void
+	[IngestJobs.BucketItemRegenerate]: (data: BucketItemRegenerateProps) => void
 	[IngestJobs.BucketActionModify]: (data: BucketActionModifyProps) => void
 	[IngestJobs.BucketPieceModify]: (data: BucketPieceModifyProps) => void
 	[IngestJobs.BucketActionRegenerateExpectedPackages]: (data: BucketActionRegenerateExpectedPackagesProps) => void
 	[IngestJobs.BucketRemoveAdlibPiece]: (data: BucketRemoveAdlibPieceProps) => void
 	[IngestJobs.BucketRemoveAdlibAction]: (data: BucketRemoveAdlibActionProps) => void
 	[IngestJobs.BucketEmpty]: (data: BucketEmptyProps) => void
+
+	[IngestJobs.CreateAdlibTestingRundownForShowStyleVariant]: (
+		data: CreateAdlibTestingRundownForShowStyleVariantProps
+	) => RundownId
 }
 
 // Future: there should probably be a queue per rundown or something. To be improved later

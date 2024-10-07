@@ -1,19 +1,19 @@
 {
 	"name": "@sofie-automation/blueprints-integration",
-	"version": "1.50.5",
+	"version": "1.51.0",
 	"description": "Library to define the interaction between core and the blueprints.",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
+		"url": "git+https://github.com/nrkno/sofie-core.git",
 		"directory": "packages/blueprints-integration"
 	},
 	"bugs": {
-		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
+		"url": "https://github.com/nrkno/sofie-core/issues"
 	},
-	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/blueprints-integration#readme",
+	"homepage": "https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration#readme",
 	"scripts": {
 		"build": "run -T rimraf dist && run build:main",
 		"build:main": "run -T tsc -p tsconfig.build.json",
@@ -38,9 +38,9 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"@sofie-automation/shared-lib": "1.50.5",
-		"tslib": "^2.4.0",
-		"type-fest": "^2.19.0"
+		"@sofie-automation/shared-lib": "1.51.0",
+		"tslib": "^2.6.2",
+		"type-fest": "^3.13.1"
 	},
 	"lint-staged": {
 		"*.{css,json,md,scss}": [

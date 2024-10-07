@@ -6,7 +6,7 @@ import * as _ from 'underscore'
 import { fetchStudioLight } from '../optimizations'
 import { sendSlackMessageToWebhook } from './integration/slack'
 import { OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Evaluations, RundownPlaylists } from '../collections'
 
 export async function saveEvaluation(
@@ -66,7 +66,7 @@ export async function saveEvaluation(
 						_id: 1,
 						name: 1,
 					},
-				})) as Pick<RundownPlaylist, '_id' | 'name'>
+				})) as Pick<DBRundownPlaylist, '_id' | 'name'>
 
 				const hostUrl = getSofieHostUrl()
 

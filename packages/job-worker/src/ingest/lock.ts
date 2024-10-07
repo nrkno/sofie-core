@@ -1,17 +1,15 @@
 import { SegmentId, PartId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ReadOnlyCache } from '../cache/CacheBase'
-import { clone } from 'underscore'
-import { CacheForIngest } from './cache'
-import { BeforePartMap, CommitIngestOperation } from './commit'
+import { IngestModel, IngestModelReadonly } from './model/IngestModel'
+import { BeforeIngestOperationPartMap, CommitIngestOperation } from './commit'
 import { LocalIngestRundown, RundownIngestDataCache } from './ingestCache'
 import { getRundownId } from './lib'
 import { JobContext } from '../jobs'
 import { IngestPropsBase } from '@sofie-automation/corelib/dist/worker/ingest'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownLock } from '../jobs/lock'
-import { groupByToMap } from '@sofie-automation/corelib/dist/lib'
 import { UserError } from '@sofie-automation/corelib/dist/error'
-import { getOrderedSegmentsAndPartsFromCacheCollections } from '../cache/utils'
+import { loadIngestModelFromRundownExternalId } from './model/implementation/LoadIngestModel'
+import { clone } from '@sofie-automation/corelib/dist/lib'
 
 /**
  * The result of the initial stage of an Ingest operation
@@ -37,6 +35,7 @@ export interface CommitIngestData {
 }
 
 export enum UpdateIngestRundownAction {
+	REJECT = 'reject',
 	DELETE = 'delete',
 }
 
@@ -57,21 +56,21 @@ export async function runIngestJob(
 	) => LocalIngestRundown | UpdateIngestRundownAction,
 	calcFcn: (
 		context: JobContext,
-		cache: CacheForIngest,
+		ingestModel: IngestModel,
 		newIngestRundown: LocalIngestRundown | undefined,
 		oldIngestRundown: LocalIngestRundown | undefined
 	) => Promise<CommitIngestData | null>
-): Promise<void> {
+): Promise<RundownId> {
 	if (!data.rundownExternalId) {
 		throw new Error(`Job is missing rundownExternalId`)
 	}
 
 	const rundownId = getRundownId(context.studioId, data.rundownExternalId)
 	return runWithRundownLockInner(context, rundownId, async (rundownLock) => {
-		const span = context.startSpan(`ingestLockFunction.${context}`)
+		const span = context.startSpan(`ingestLockFunction.${context.studioId}`)
 
 		// Load the old ingest data
-		const pIngestCache = CacheForIngest.create(context, rundownLock, data.rundownExternalId)
+		const pIngestModel = loadIngestModelFromRundownExternalId(context, rundownLock, data.rundownExternalId)
 		const ingestObjCache = await RundownIngestDataCache.create(context, rundownId)
 
 		// Recalculate the ingest data
@@ -79,9 +78,9 @@ export async function runIngestJob(
 		const updatedIngestRundown = updateCacheFcn(clone(oldIngestRundown))
 		let newIngestRundown: LocalIngestRundown | undefined
 		switch (updatedIngestRundown) {
-			// case UpdateIngestRundownAction.REJECT:
-			// 	// Reject change
-			// 	return
+			case UpdateIngestRundownAction.REJECT:
+				// Reject change
+				return rundownId
 			case UpdateIngestRundownAction.DELETE:
 				ingestObjCache.delete()
 				newIngestRundown = undefined
@@ -94,17 +93,17 @@ export async function runIngestJob(
 		// Start saving the ingest data
 		const pSaveIngestChanges = ingestObjCache.saveToDatabase()
 
-		let resultingError: UserError | void
+		let resultingError: UserError | void | undefined
 
 		try {
-			const ingestCache = await pIngestCache
+			const ingestModel = await pIngestModel
 
 			// Load any 'before' data for the commit
-			const beforeRundown = ingestCache.Rundown.doc
-			const beforePartMap = generatePartMap(ingestCache)
+			const beforeRundown = ingestModel.rundown
+			const beforePartMap = generatePartMap(ingestModel)
 
 			const span = context.startSpan('ingest.calcFcn')
-			const commitData = await calcFcn(context, ingestCache, newIngestRundown, oldIngestRundown)
+			const commitData = await calcFcn(context, ingestModel, newIngestRundown, oldIngestRundown)
 			span?.end()
 
 			if (commitData) {
@@ -112,7 +111,7 @@ export async function runIngestJob(
 				// The change is accepted. Perform some playout calculations and save it all
 				resultingError = await CommitIngestOperation(
 					context,
-					ingestCache,
+					ingestModel,
 					beforeRundown,
 					beforePartMap,
 					commitData
@@ -120,7 +119,7 @@ export async function runIngestJob(
 				span?.end()
 			} else {
 				// Should be no changes
-				ingestCache.assertNoChanges()
+				ingestModel.assertNoChanges()
 			}
 		} finally {
 			// Ensure we save the ingest data
@@ -130,6 +129,8 @@ export async function runIngestJob(
 		}
 
 		if (resultingError) throw resultingError
+
+		return rundownId
 	})
 }
 
@@ -178,20 +179,15 @@ async function runWithRundownLockInner<TRes>(
 	}
 }
 
-function generatePartMap(cache: ReadOnlyCache<CacheForIngest>): BeforePartMap {
-	const rundown = cache.Rundown.doc
+function generatePartMap(ingestModel: IngestModelReadonly): BeforeIngestOperationPartMap {
+	const rundown = ingestModel.rundown
 	if (!rundown) return new Map()
 
-	const segmentsAndParts = getOrderedSegmentsAndPartsFromCacheCollections(cache.Parts, cache.Segments, [
-		cache.RundownId,
-	])
-	const existingRundownParts = groupByToMap(segmentsAndParts.parts, 'segmentId')
-
 	const res = new Map<SegmentId, Array<{ id: PartId; rank: number }>>()
-	for (const [segmentId, parts] of existingRundownParts.entries()) {
+	for (const segment of ingestModel.getAllSegments()) {
 		res.set(
-			segmentId,
-			parts.map((p) => ({ id: p._id, rank: p._rank }))
+			segment.segment._id,
+			segment.parts.map((p) => ({ id: p.part._id, rank: p.part._rank }))
 		)
 	}
 	return res

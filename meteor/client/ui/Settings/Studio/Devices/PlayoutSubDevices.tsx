@@ -23,7 +23,10 @@ interface StudioPlayoutSubDevicesProps {
 	studioId: StudioId
 	studioDevices: PeripheralDevice[]
 }
-export function StudioPlayoutSubDevices({ studioId, studioDevices }: StudioPlayoutSubDevicesProps): JSX.Element {
+export function StudioPlayoutSubDevices({
+	studioId,
+	studioDevices,
+}: Readonly<StudioPlayoutSubDevicesProps>): JSX.Element {
 	const { t } = useTranslation()
 
 	const studio = useTracker(() => Studios.findOne(studioId), [studioId])

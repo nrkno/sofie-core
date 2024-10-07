@@ -42,6 +42,10 @@ jobs:
       - name: Run typecheck and linter
         run: |
           cd meteor
+
+          # setup zodern:types. No linters are setup, so this simply installs the packages
+          meteor lint
+
           meteor yarn ci:lint
         env:
           CI: true
@@ -77,6 +81,10 @@ jobs:
       - name: Run Tests
         run: |
           cd meteor
+
+          # setup zodern:types. No linters are setup, so this simply installs the packages
+          meteor lint
+
           NODE_OPTIONS="--max-old-space-size=6144" meteor yarn unitci --force-exit
         env:
           CI: true
@@ -463,7 +471,7 @@ jobs:
           - blueprints-integration
           - server-core-integration
           - shared-lib
-        node-version: [14.x, 16.x, 18.x]
+        node-version: [14.x, 16.x, 18.x, 20.x]
         include:
           # include additional configs, to run certain packages only for a certain version of node
           - node-version: 14.x
@@ -476,6 +484,8 @@ jobs:
           - node-version: 16.x
             package-name: openapi
           - node-version: 18.x
+            package-name: openapi
+          - node-version: 20.x
             package-name: openapi
           # No tests for the gateways yet
           # - node-version: 18.x
@@ -518,6 +528,64 @@ jobs:
         uses: codecov/codecov-action@v4
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  asyncapi-generation:
+    name: AsyncAPI Generation
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".node-version"
+      - name: Prepare Environment
+        run: |
+          cd packages
+          yarn
+        env:
+          CI: true
+      - name: Run generator
+        run: |
+          cd packages/live-status-gateway
+
+          yarn gendocs
+          yarn genserver
+        env:
+          CI: true
+  openapi-generation:
+    name: OpenAPI Generation
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".node-version"
+      - name: Prepare Environment
+        run: |
+          cd packages
+          yarn
+        env:
+          CI: true
+      - name: Build OpenAPI client library
+        run: |
+          cd packages/openapi
+          yarn build
+        env:
+          CI: true
+      - name: Generate OpenAPI docs and server
+        run: |
+          cd packages/openapi
+          yarn gendocs
+          yarn genserver
+        env:
+          CI: true
 
   publish-docs:
     name: Publish Docs
@@ -604,7 +672,7 @@ jobs:
           else
             # make dependencies of `determine-npm-tag` available
             yarn install --mode=skip-build
-            
+
             cd packages
             PACKAGE_NAME="@sofie-automation/shared-lib"
             PUBLISHED_VERSION=$(yarn npm info --json $PACKAGE_NAME | jq -c '.version' -r)
@@ -619,6 +687,13 @@ jobs:
         if: ${{ steps.do-publish.outputs.tag }}
         run: |
           cd packages
+          yarn build
+        env:
+          CI: true
+      - name: Build OpenAPI client library
+        if: ${{ steps.do-publish.outputs.tag }}
+        run: |
+          cd packages/openapi
           yarn build
         env:
           CI: true

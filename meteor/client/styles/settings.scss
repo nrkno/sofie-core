@@ -46,7 +46,7 @@
 
 		.table-item-actions {
 			text-align: right;
-			min-width: 4em;
+			min-width: 5em;
 
 			.action-btn {
 				vertical-align: top;
@@ -126,16 +126,16 @@
 		}
 	}
 
-  .settings-studio-showStyleVariants-table__drag {
-	color: #a2a2a2;
-	cursor: grab;
-	margin-right: 10px;
+	.settings-studio-showStyleVariants-table__drag {
+		color: #a2a2a2;
+		cursor: grab;
+		margin-right: 10px;
 
-	svg {
-		width: 10px;
-		position: relative;
+		svg {
+			width: 10px;
+			position: relative;
+		}
 	}
-  }
 
 	.settings-studio-accessors {
 		border-left: 0.5em solid #999;

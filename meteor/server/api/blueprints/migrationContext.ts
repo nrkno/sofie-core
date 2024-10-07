@@ -1,5 +1,4 @@
 import * as _ from 'underscore'
-import * as objectPath from 'object-path'
 import {
 	trimIfString,
 	getHash,
@@ -11,8 +10,9 @@ import {
 	clone,
 	Complete,
 	waitForPromise,
+	objectPathDelete,
 } from '../../../lib/lib'
-import { Studio, DBStudio, StudioPlayoutDevice } from '../../../lib/collections/Studios'
+import { DBStudio, StudioPlayoutDevice } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { Meteor } from 'meteor/meteor'
 import {
@@ -32,10 +32,13 @@ import {
 
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { check } from '../../../lib/check'
-import { PERIPHERAL_SUBTYPE_PROCESS, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
+import {
+	PERIPHERAL_SUBTYPE_PROCESS,
+	PeripheralDeviceType,
+} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { TriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
 import { Match } from 'meteor/check'
-import { MongoModifier } from '../../../lib/typings/meteor'
+import { MongoModifier } from '@sofie-automation/corelib/dist/mongo'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleBaseId, ShowStyleVariantId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevices, ShowStyleBases, ShowStyleVariants, Studios, TriggeredActions } from '../../collections'
@@ -48,6 +51,7 @@ function convertTriggeredActionToBlueprints(triggeredAction: TriggeredActionsObj
 		name: triggeredAction.name,
 		triggers: clone(triggeredAction.triggersWithOverrides.defaults),
 		actions: clone(triggeredAction.actionsWithOverrides.defaults),
+		styleClassNames: triggeredAction.styleClassNames,
 	}
 
 	return obj
@@ -161,9 +165,9 @@ export class MigrationContextSystem
 	implements IMigrationContextSystem {}
 
 export class MigrationContextStudio implements IMigrationContextStudio {
-	private studio: Studio
+	private studio: DBStudio
 
-	constructor(studio: Studio) {
+	constructor(studio: DBStudio) {
 		this.studio = studio
 	}
 
@@ -239,7 +243,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 					[`blueprintConfigWithOverrides.defaults.${configId}`]: 1,
 				},
 			}
-			objectPath.del(this.studio.blueprintConfigWithOverrides.defaults, configId) // Update local
+			objectPathDelete(this.studio.blueprintConfigWithOverrides.defaults, configId) // Update local
 		} else {
 			modifier = {
 				$set: {
@@ -274,7 +278,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 				)
 			)
 			// Update local:
-			objectPath.del(this.studio.blueprintConfigWithOverrides.defaults, configId)
+			objectPathDelete(this.studio.blueprintConfigWithOverrides.defaults, configId)
 		}
 	}
 
@@ -697,7 +701,7 @@ export class MigrationContextShowStyle
 				)
 			)
 			// Update local:
-			objectPath.del(this.showStyleBase.blueprintConfigWithOverrides.defaults, configId)
+			objectPathDelete(this.showStyleBase.blueprintConfigWithOverrides.defaults, configId)
 		}
 	}
 	getVariantConfig(variantId: string, configId: string): ConfigItemValue | undefined {
@@ -762,7 +766,7 @@ export class MigrationContextShowStyle
 				)
 			)
 			// Update local:
-			objectPath.del(variant.blueprintConfigWithOverrides.defaults, configId)
+			objectPathDelete(variant.blueprintConfigWithOverrides.defaults, configId)
 		}
 	}
 }

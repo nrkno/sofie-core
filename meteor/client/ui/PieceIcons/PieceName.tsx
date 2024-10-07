@@ -2,11 +2,13 @@ import React from 'react'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { EvsContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 
-import { PubSub } from '../../../lib/api/pubsub'
+import { MeteorPubSub } from '../../../lib/api/pubsub'
 import { IPropsHeader } from './PieceIcon'
 import { findPieceInstanceToShow } from './utils'
-import { PieceGeneric } from '../../../lib/collections/Pieces'
+import { PieceGeneric } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ReadonlyDeep } from 'type-fest'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 interface INamePropsHeader extends IPropsHeader {
 	partName: string
@@ -20,7 +22,7 @@ const supportedLayers = new Set([
 	SourceLayerType.LOCAL,
 ])
 
-function getLocalPieceLabel(piece: PieceGeneric): JSX.Element | null {
+function getLocalPieceLabel(piece: ReadonlyDeep<PieceGeneric>): JSX.Element | null {
 	const { color } = piece.content as EvsContent
 	return (
 		<>
@@ -34,7 +36,7 @@ function getLocalPieceLabel(piece: PieceGeneric): JSX.Element | null {
 	)
 }
 
-function getPieceLabel(piece: PieceGeneric, type: SourceLayerType): JSX.Element | null {
+function getPieceLabel(piece: ReadonlyDeep<PieceGeneric>, type: SourceLayerType): JSX.Element | null {
 	switch (type) {
 		case SourceLayerType.LOCAL:
 			return getLocalPieceLabel(piece)
@@ -43,7 +45,7 @@ function getPieceLabel(piece: PieceGeneric, type: SourceLayerType): JSX.Element 
 	}
 }
 
-export function PieceNameContainer(props: INamePropsHeader): JSX.Element | null {
+export function PieceNameContainer(props: Readonly<INamePropsHeader>): JSX.Element | null {
 	const { sourceLayer, pieceInstance } = useTracker(
 		() => findPieceInstanceToShow(props, supportedLayers),
 		[props.partInstanceId, props.showStyleBaseId],
@@ -53,12 +55,9 @@ export function PieceNameContainer(props: INamePropsHeader): JSX.Element | null 
 		}
 	)
 
-	useSubscription(PubSub.pieceInstancesSimple, {
-		rundownId: { $in: props.rundownIds },
-		playlistActivationId: props.playlistActivationId,
-	})
+	useSubscription(CorelibPubSub.pieceInstancesSimple, props.rundownIds, props.playlistActivationId ?? null)
 
-	useSubscription(PubSub.uiShowStyleBase, props.showStyleBaseId)
+	useSubscription(MeteorPubSub.uiShowStyleBase, props.showStyleBaseId)
 
 	if (pieceInstance && sourceLayer && supportedLayers.has(sourceLayer.type)) {
 		return getPieceLabel(pieceInstance.piece, sourceLayer.type)

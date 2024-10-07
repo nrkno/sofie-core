@@ -30,7 +30,7 @@ export function FloatInputControl({
 	min,
 	max,
 	step,
-}: IFloatInputControlProps): JSX.Element {
+}: Readonly<IFloatInputControlProps>): JSX.Element {
 	const [editingValue, setEditingValue] = useState<number | null>(null)
 
 	const handleChange = useCallback(

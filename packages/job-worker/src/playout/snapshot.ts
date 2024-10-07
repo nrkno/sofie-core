@@ -1,6 +1,7 @@
 import { ExpectedPackageDBType, getExpectedPackageId } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import {
 	AdLibActionId,
+	ExpectedPackageId,
 	PartId,
 	PartInstanceId,
 	PieceId,
@@ -34,6 +35,7 @@ import { assertNever, getRandomId, literal } from '@sofie-automation/corelib/dis
 import { logger } from '../logging'
 import { JSONBlobParse, JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { RundownOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 
 /**
  * Generate the Playlist owned portions of a Playlist snapshot
@@ -161,12 +163,14 @@ export async function handleRestorePlaylistSnapshot(
 
 	for (const rd of snapshot.rundowns) {
 		if (!rd.orphaned) {
-			rd.orphaned = 'from-snapshot'
+			rd.orphaned = RundownOrphanedReason.MANUAL
 		}
 
 		rd.playlistId = playlistId
-		rd.restoredFromSnapshotId = rd._id
-		delete rd.peripheralDeviceId
+		rd.source = {
+			type: 'snapshot',
+			rundownId: rd._id,
+		}
 		rd.studioId = snapshot.playlist.studioId
 		rd.notifiedCurrentPlayingPartExternalId = undefined
 	}
@@ -267,6 +271,7 @@ export async function handleRestorePlaylistSnapshot(
 		piece._id = getRandomId()
 		pieceIdMap.set(oldId, piece._id)
 	}
+
 	for (const adlib of [
 		...snapshot.adLibPieces,
 		...snapshot.adLibActions,
@@ -285,7 +290,7 @@ export async function handleRestorePlaylistSnapshot(
 		pieceInstance.piece._id = (pieceIdMap.get(pieceInstance.piece._id) || getRandomId()) as PieceId // Note: don't warn if not found, as the piece may have been deleted
 		if (pieceInstance.infinite) {
 			pieceInstance.infinite.infinitePieceId =
-				pieceIdMap.get(pieceInstance.infinite.infinitePieceId) || getRandomId() // Note: don't warn if not found, as the piece may have been deleted
+				(pieceIdMap.get(pieceInstance.infinite.infinitePieceId) as PieceId) || getRandomId() // Note: don't warn if not found, as the piece may have been deleted
 		}
 	}
 
@@ -305,7 +310,10 @@ export async function handleRestorePlaylistSnapshot(
 		'previous'
 	)
 
+	const expectedPackageIdMap = new Map<ExpectedPackageId, ExpectedPackageId>()
 	for (const expectedPackage of snapshot.expectedPackages) {
+		const oldId = expectedPackage._id
+
 		switch (expectedPackage.fromPieceType) {
 			case ExpectedPackageDBType.PIECE:
 			case ExpectedPackageDBType.ADLIB_PIECE:
@@ -315,6 +323,7 @@ export async function handleRestorePlaylistSnapshot(
 				expectedPackage.pieceId =
 					pieceIdMap.get(expectedPackage.pieceId) ||
 					getRandomIdAndWarn(`expectedPackage.pieceId=${expectedPackage.pieceId}`)
+
 				expectedPackage._id = getExpectedPackageId(expectedPackage.pieceId, expectedPackage.blueprintPackageId)
 
 				break
@@ -338,6 +347,8 @@ export async function handleRestorePlaylistSnapshot(
 				assertNever(expectedPackage)
 				break
 		}
+
+		expectedPackageIdMap.set(oldId, expectedPackage._id)
 	}
 
 	snapshot.playlist.rundownIdsInOrder = snapshot.playlist.rundownIdsInOrder.map((id) => rundownIdMap.get(id) ?? id)
@@ -479,6 +490,13 @@ export async function handleRestorePlaylistSnapshot(
 	logger.info(`Restore done`)
 	return {
 		playlistId: playlistId,
+		remappedIds: {
+			rundownId: Array.from(rundownIdMap.entries()),
+			segmentId: Array.from(segmentIdMap.entries()),
+			partId: Array.from(partIdMap.entries()),
+			partInstanceId: Array.from(partInstanceIdMap.entries()),
+			expectedPackageId: Array.from(expectedPackageIdMap.entries()),
+		},
 	}
 }
 

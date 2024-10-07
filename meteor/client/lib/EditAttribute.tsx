@@ -6,12 +6,12 @@ import { MultiSelect, MultiSelectEvent, MultiSelectOptions } from './multiSelect
 import ClassNames from 'classnames'
 import { ColorPickerEvent, ColorPicker } from './colorPicker'
 import { IconPicker, IconPickerEvent } from './iconPicker'
-import { assertNever, getRandomString } from '../../lib/lib'
+import { assertNever } from '../../lib/lib'
 import { MongoCollection } from '../../lib/collections/lib'
 import { CheckboxControl } from './Components/Checkbox'
 import { TextInputControl } from './Components/TextInput'
 import { IntInputControl } from './Components/IntInput'
-import { DropdownInputControl, getDropdownInputOptions } from './Components/DropdownInput'
+import { DropdownInputControl, DropdownInputOption, getDropdownInputOptions } from './Components/DropdownInput'
 import { FloatInputControl } from './Components/FloatInput'
 import { joinLines, MultiLineTextInputControl, splitValueIntoLines } from './Components/MultiLineTextInput'
 import { JsonTextInputControl, tryParseJson } from './Components/JsonTextInput'
@@ -154,7 +154,7 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 		// Returns a value deep inside an object
 		// Example: deepAttribute(company,"ceo.address.street");
 
-		const f = (obj: any, attr: string) => {
+		const f = (obj: any, attr: string): any => {
 			if (obj) {
 				const attributes = attr.split('.')
 
@@ -185,7 +185,7 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 	protected getEditAttribute(): any {
 		return this.state.editing ? this.state.value : this.getAttribute()
 	}
-	private updateValue(newValue) {
+	private updateValue(newValue: any) {
 		if (this.props.mutateUpdateValue) {
 			try {
 				newValue = this.props.mutateUpdateValue(newValue)
@@ -206,11 +206,11 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 		} else {
 			if (this.props.collection && this.props.attribute) {
 				if (newValue === undefined) {
-					const m = {}
+					const m: Record<string, 1> = {}
 					m[this.props.attribute] = 1
 					this.props.collection.update(this.props.obj._id, { $unset: m })
 				} else {
-					const m = {}
+					const m: Record<string, any> = {}
 					m[this.props.attribute] = newValue
 					this.props.collection.update(this.props.obj._id, { $set: m })
 				}
@@ -218,7 +218,7 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 		}
 	}
 }
-function wrapEditAttribute(newClass) {
+function wrapEditAttribute(newClass: any) {
 	return withTracker((props: IEditAttributeBaseProps) => {
 		// These properties will be exposed under this.props
 		// Note that these properties are reactively recalculated
@@ -230,7 +230,7 @@ function wrapEditAttribute(newClass) {
 
 const EditAttributeText = wrapEditAttribute(
 	class EditAttributeText extends EditAttributeBase {
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
@@ -255,7 +255,7 @@ const EditAttributeText = wrapEditAttribute(
 )
 const EditAttributeMultilineText = wrapEditAttribute(
 	class EditAttributeMultilineText extends EditAttributeBase {
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
@@ -280,7 +280,7 @@ const EditAttributeMultilineText = wrapEditAttribute(
 )
 const EditAttributeInt = wrapEditAttribute(
 	class EditAttributeInt extends EditAttributeBase {
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
@@ -305,7 +305,7 @@ const EditAttributeInt = wrapEditAttribute(
 )
 const EditAttributeFloat = wrapEditAttribute(
 	class EditAttributeFloat extends EditAttributeBase {
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
@@ -330,7 +330,7 @@ const EditAttributeFloat = wrapEditAttribute(
 )
 const EditAttributeCheckbox = wrapEditAttribute(
 	class EditAttributeCheckbox extends EditAttributeBase {
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
@@ -359,7 +359,7 @@ const EditAttributeCheckbox = wrapEditAttribute(
 )
 const EditAttributeToggle = wrapEditAttribute(
 	class EditAttributeToggle extends EditAttributeBase {
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 		}
 		isChecked() {
@@ -407,7 +407,7 @@ const EditAttributeToggle = wrapEditAttribute(
 )
 const EditAttributeSwitch = wrapEditAttribute(
 	class EditAttributeSwitch extends EditAttributeBase {
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 		}
 		isChecked() {
@@ -444,7 +444,7 @@ const EditAttributeSwitch = wrapEditAttribute(
 
 const EditAttributeDropdown = wrapEditAttribute(
 	class EditAttributeDropdown extends EditAttributeBase {
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
@@ -469,82 +469,22 @@ const EditAttributeDropdown = wrapEditAttribute(
 )
 const EditAttributeDropdownText = wrapEditAttribute(
 	class EditAttributeDropdownText extends EditAttributeBase {
-		private _id: string
-
-		constructor(props) {
-			super(props)
-
-			this.handleChangeDropdown = this.handleChangeDropdown.bind(this)
-			this.handleChangeText = this.handleChangeText.bind(this)
-			this.handleBlurText = this.handleBlurText.bind(this)
-			this.handleEscape = this.handleEscape.bind(this)
-
-			this._id = getRandomString()
-		}
-		handleChangeDropdown(event) {
-			// because event.target.value is always a string, use the original value instead
-			const option = _.find(this.getOptions(), (o) => {
-				return o.value + '' === event.target.value + ''
-			})
-
-			const value = option ? option.value : event.target.value
-
-			this.handleUpdate(this.props.optionsAreNumbers ? parseInt(value, 10) : value)
-		}
-		handleChangeText(event) {
-			this.handleChangeDropdown(event)
-		}
-		handleBlurText(event) {
-			this.handleUpdate(event.target.value)
-		}
-		handleEscape(event) {
-			const e = event as KeyboardEvent
-			if (e.key === 'Escape') {
-				this.handleDiscard()
-			}
-		}
-		getOptions() {
+		private getOptions(): DropdownInputOption<string>[] {
 			return getDropdownInputOptions(this.props.options)
 		}
 		render(): JSX.Element {
 			return (
-				<div className="input-dropdowntext">
-					<input
-						type="text"
-						className={
-							'form-control' +
-							' ' +
-							(this.state.valueError ? 'error ' : '') +
-							(this.props.className || '') +
-							' ' +
-							(this.state.editing ? this.props.modifiedClassName || '' : '')
-						}
-						placeholder={this.props.label}
-						value={this.getEditAttribute() || ''}
-						onChange={this.handleChangeText}
-						onBlur={this.handleBlurText}
-						onKeyUp={this.handleEscape}
-						disabled={this.props.disabled}
-						spellCheck={false}
-						list={this._id}
-					/>
-
-					<datalist id={this._id}>
-						{this.getOptions().map((o, j) =>
-							Array.isArray(o.value) ? (
-								<optgroup key={j} label={o.name}>
-									{o.value.map((v, i) => (
-										<option key={i} value={v + ''}></option>
-									))}
-								</optgroup>
-							) : (
-								<option key={o.i} value={o.value + ''}>
-									{o.value !== o.name ? o.name : null}
-								</option>
-							)
-						)}
-					</datalist>
-				</div>
+				<TextInputControl
+					classNames={`${this.props.className || ''} ${this.state.valueError ? 'error ' : ''}`}
+					modifiedClassName={this.props.modifiedClassName}
+					disabled={this.props.disabled}
+					placeholder={this.props.label}
+					updateOnKey={this.props.updateOnKey}
+					value={this.getAttribute() ?? ''}
+					handleUpdate={this.handleUpdate}
+					spellCheck={false}
+					suggestions={this.getOptions()}
+				/>
 			)
 		}
 	}
@@ -557,7 +497,7 @@ interface EditAttributeMultiSelectOptionsResult {
 
 const EditAttributeMultiSelect = wrapEditAttribute(
 	class EditAttributeMultiSelect extends EditAttributeBase {
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
@@ -631,7 +571,7 @@ const EditAttributeMultiSelect = wrapEditAttribute(
 
 const EditAttributeJson = wrapEditAttribute(
 	class EditAttributeJson extends EditAttributeBase {
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
@@ -662,7 +602,7 @@ const EditAttributeJson = wrapEditAttribute(
 )
 const EditAttributeArray = wrapEditAttribute(
 	class EditAttributeArray extends EditAttributeBase {
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
@@ -700,7 +640,7 @@ const EditAttributeArray = wrapEditAttribute(
 			}
 			return { parsed: values }
 		}
-		handleChange(event) {
+		handleChange(event: React.ChangeEvent<HTMLInputElement>) {
 			const v = event.target.value
 
 			const arrayObj = this.isArray(v)
@@ -713,7 +653,7 @@ const EditAttributeArray = wrapEditAttribute(
 				this.handleUpdateButDontSave(v, true)
 			}
 		}
-		handleBlur(event) {
+		handleBlur(event: React.FocusEvent<HTMLInputElement>) {
 			const v = event.target.value
 
 			const arrayObj = this.isArray(v)
@@ -729,8 +669,7 @@ const EditAttributeArray = wrapEditAttribute(
 				})
 			}
 		}
-		handleEscape(event) {
-			const e = event as KeyboardEvent
+		handleEscape(e: React.KeyboardEvent<HTMLInputElement>) {
 			if (e.key === 'Escape') {
 				this.handleDiscard()
 			}
@@ -770,7 +709,7 @@ const EditAttributeArray = wrapEditAttribute(
 
 const EditAttributeColorPicker = wrapEditAttribute(
 	class EditAttributeColorPicker extends EditAttributeBase {
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
@@ -793,7 +732,7 @@ const EditAttributeColorPicker = wrapEditAttribute(
 )
 const EditAttributeIconPicker = wrapEditAttribute(
 	class extends EditAttributeBase {
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)

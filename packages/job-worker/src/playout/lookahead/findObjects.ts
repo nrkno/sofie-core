@@ -12,9 +12,9 @@ import { protectString, unprotectString } from '@sofie-automation/corelib/dist/p
 import { JobContext } from '../../jobs'
 import { PartAndPieces, PieceInstanceWithObjectMap } from './util'
 import { deserializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { SetRequired } from 'type-fest'
+import { ReadonlyDeep, SetRequired } from 'type-fest'
 
-function getBestPieceInstanceId(piece: PieceInstance): string {
+function getBestPieceInstanceId(piece: ReadonlyDeep<PieceInstance>): string {
 	if (!piece.isTemporary || piece.partInstanceId) {
 		return unprotectString(piece._id)
 	}
@@ -25,7 +25,7 @@ function getBestPieceInstanceId(piece: PieceInstance): string {
 function tryActivateKeyframesForObject(
 	obj: TimelineObjectCoreExt<TSR.TSRTimelineContent>,
 	hasTransition: boolean,
-	classesFromPreviousPart: string[] | undefined
+	classesFromPreviousPart: readonly string[] | undefined
 ): TSR.TSRTimelineContent {
 	// Try and find a keyframe that is used when in a transition
 	if (hasTransition) {
@@ -90,7 +90,7 @@ export function findLookaheadObjectsForPart(
 	_context: JobContext,
 	currentPartInstanceId: PartInstanceId | null,
 	layer: string,
-	previousPart: DBPart | undefined,
+	previousPart: ReadonlyDeep<DBPart> | undefined,
 	partInfo: PartAndPieces,
 	partInstanceId: PartInstanceId | null
 ): Array<LookaheadTimelineObject> {
@@ -123,7 +123,7 @@ export function findLookaheadObjectsForPart(
 		return []
 	}
 
-	let classesFromPreviousPart: string[] = []
+	let classesFromPreviousPart: readonly string[] = []
 	if (previousPart && currentPartInstanceId && partInstanceId) {
 		classesFromPreviousPart = previousPart.classesForNext || []
 	}

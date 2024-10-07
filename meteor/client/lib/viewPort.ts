@@ -33,6 +33,11 @@ export function maintainFocusOnPartInstance(
 			quitFocusOnPart()
 		}
 	}
+	document.addEventListener('wheel', onWheelWhenMaintainingFocus, {
+		once: true,
+		capture: true,
+		passive: true,
+	})
 	focusInterval = setInterval(focus, 500)
 	focus()
 }
@@ -41,7 +46,14 @@ export function isMaintainingFocus(): boolean {
 	return !!focusInterval
 }
 
+function onWheelWhenMaintainingFocus() {
+	quitFocusOnPart()
+}
+
 function quitFocusOnPart() {
+	document.removeEventListener('wheel', onWheelWhenMaintainingFocus, {
+		capture: true,
+	})
 	if (!_dontClearInterval && focusInterval) {
 		clearInterval(focusInterval)
 		focusInterval = undefined
@@ -62,7 +74,7 @@ export async function scrollToPartInstance(
 		})
 		return scrollToSegment(partInstance.segmentId, forceScroll, noAnimation, partInstanceId)
 	}
-	return Promise.reject('Could not find PartInstance')
+	throw new Error('Could not find PartInstance')
 }
 
 export async function scrollToPart(
@@ -84,7 +96,7 @@ export async function scrollToPart(
 
 		return true // rather meaningless as we don't know what happened
 	}
-	return Promise.reject('Could not find part')
+	throw new Error('Could not find part')
 }
 
 let HEADER_HEIGHT: number | undefined = undefined
@@ -120,7 +132,7 @@ export async function scrollToSegment(
 				let i = Settings.followOnAirSegmentsHistory
 				while (i > 0) {
 					// Segment timeline is wrapped by <div><div>...</div></div> when rendered
-					const next = targetElement?.parentElement?.parentElement?.previousElementSibling?.children
+					const next: any = targetElement?.parentElement?.parentElement?.previousElementSibling?.children
 						.item(0)
 						?.children.item(0)
 					if (next) {
@@ -143,7 +155,7 @@ export async function scrollToSegment(
 
 	// historyTarget will be === to elementToScrollTo if history is not used / not found
 	if (!elementToScrollTo || !historyTarget) {
-		return Promise.reject('Could not find segment element')
+		throw new Error('Could not find segment element')
 	}
 
 	return innerScrollToSegment(
@@ -165,7 +177,7 @@ async function innerScrollToSegment(
 	if (!secondStage) {
 		currentScrollingElement = elementToScrollTo
 	} else if (secondStage && elementToScrollTo !== currentScrollingElement) {
-		return Promise.reject('Scroll overriden by another scroll')
+		throw new Error('Scroll overriden by another scroll')
 	}
 
 	let { top, bottom } = elementToScrollTo.getBoundingClientRect()
@@ -188,7 +200,7 @@ async function innerScrollToSegment(
 					pendingSecondStageScroll = window.requestIdleCallback(
 						() => {
 							if (!secondStage) {
-								let { top, bottom } = elementToScrollTo!.getBoundingClientRect()
+								let { top, bottom } = elementToScrollTo.getBoundingClientRect()
 								top = Math.floor(top)
 								bottom = Math.floor(bottom)
 
@@ -283,15 +295,16 @@ let pointerHandlerAttached = false
 function pointerLockChange(_e: Event): void {
 	if (!document.pointerLockElement) {
 		// noOp, if the pointer is unlocked, good. That's a safe position
-	} else {
-		// if a pointer has been locked, check if it should be. We might have already
-		// changed our mind
-		if (pointerLockTurnstile <= 0) {
-			// this means that the we've received an equal amount of locks and unlocks (or even more unlocks)
-			// we should request an exit from the pointer lock
-			pointerLockTurnstile = 0
-			document.exitPointerLock()
-		}
+		return
+	}
+
+	// if a pointer has been locked, check if it should be. We might have already
+	// changed our mind
+	if (pointerLockTurnstile <= 0) {
+		// this means that the we've received an equal amount of locks and unlocks (or even more unlocks)
+		// we should request an exit from the pointer lock
+		pointerLockTurnstile = 0
+		document.exitPointerLock()
 	}
 }
 

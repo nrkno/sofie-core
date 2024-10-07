@@ -1,4 +1,4 @@
-import { MongoModifier, MongoQuery } from '../../../lib/typings/meteor'
+import { MongoModifier, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Meteor } from 'meteor/meteor'
 import {

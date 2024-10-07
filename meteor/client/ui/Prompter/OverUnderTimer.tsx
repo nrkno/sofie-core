@@ -1,12 +1,12 @@
 import * as React from 'react'
 import { withTiming, WithTiming } from '../RundownView/RundownTiming/withTiming'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { RundownUtils } from '../../lib/rundown'
 import ClassNames from 'classnames'
 import { getPlaylistTimingDiff } from '../../lib/rundownTiming'
 
 interface IProps {
-	rundownPlaylist: RundownPlaylist
+	rundownPlaylist: DBRundownPlaylist
 	style?: React.CSSProperties | undefined
 }
 

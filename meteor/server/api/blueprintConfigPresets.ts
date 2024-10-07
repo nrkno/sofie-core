@@ -3,7 +3,7 @@ import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../collections'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { Studio } from '../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { ObserveChangesHelper } from '../collections/lib'
 import { MeteorStartupAsync } from '../../lib/lib'
 
@@ -19,7 +19,7 @@ const ObserveChangeBufferTimeout = 100
  * We want it synced across, so that if the config-preset is removed, then there is some config that can be used
  */
 MeteorStartupAsync(async () => {
-	const doUpdate = async (doc: Studio): Promise<void> => {
+	const doUpdate = async (doc: DBStudio): Promise<void> => {
 		const markUnlinked = async () => {
 			await Studios.updateAsync(doc._id, {
 				$set: {

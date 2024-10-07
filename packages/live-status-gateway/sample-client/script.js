@@ -1,6 +1,7 @@
 const ws = new WebSocket(`ws://localhost:8080`)
 ws.addEventListener('message', (message) => {
 	const data = JSON.parse(message.data)
+	console.log('Received message', data)
 	switch (data.event) {
 		case 'pong':
 			handlePong(data)
@@ -20,6 +21,12 @@ ws.addEventListener('message', (message) => {
 		case 'segments':
 			handleSegments(data)
 			break
+		case 'activePieces':
+			handleActivePieces(data)
+			break
+		case 'adLibs':
+			handleAdLibs(data)
+			break
 	}
 })
 
@@ -29,6 +36,8 @@ ws.addEventListener('open', () => {
 	ws.send(JSON.stringify({ event: 'subscribe', subscription: { name: 'activePlaylist' }, reqid: 1 }))
 
 	ws.send(JSON.stringify({ event: 'subscribe', subscription: { name: 'segments' }, reqid: 2 }))
+	ws.send(JSON.stringify({ event: 'subscribe', subscription: { name: 'activePieces' }, reqid: 3 }))
+	ws.send(JSON.stringify({ event: 'subscribe', subscription: { name: 'adLibs' }, reqid: 4 }))
 })
 
 ws.addEventListener('close', () => {
@@ -59,13 +68,39 @@ const TIME_OF_DAY_SPAN_ID = 'time-of-day'
 const SEGMENT_DURATION_SPAN_CLASS = 'segment-duration'
 const SEGMENT_REMAINIG_SPAN_ID = 'segment-remaining'
 const PART_REMAINIG_SPAN_ID = 'part-remaining'
+const ACTIVE_PIECES_SPAN_ID = 'active-pieces'
+const NEXT_PIECES_SPAN_ID = 'next-pieces'
 const SEGMENTS_DIV_ID = 'segments'
+const ADLIBS_DIV_ID = 'adlibs'
+const GLOBAL_ADLIBS_DIV_ID = 'global-adlibs'
 const ENABLE_SYNCED_TICKS = true
 
 let activePlaylist = {}
-
 function handleActivePlaylist(data) {
 	activePlaylist = data
+
+	const nextPiecesEl = document.getElementById(NEXT_PIECES_SPAN_ID)
+	nextPiecesEl.innerHTML =
+		'<ul><li>' +
+		activePlaylist.nextPart.pieces.map((p) => `${p.name} [${p.tags || []}]`).join('</li><li>') +
+		'</li><ul>'
+}
+let activePieces = {}
+function handleActivePieces(data) {
+	activePieces = data
+	const activePiecesEl = document.getElementById(ACTIVE_PIECES_SPAN_ID)
+	activePiecesEl.innerHTML =
+		'<ul><li>' + activePieces.activePieces.map((p) => `${p.name} [${p.tags || []}]`).join('</li><li>') + '</li><ul>'
+}
+let adLibs = {}
+function handleAdLibs(data) {
+	adLibs = data
+	const activePiecesEl = document.getElementById(ADLIBS_DIV_ID)
+	activePiecesEl.innerHTML =
+		'<ul><li>' + adLibs.adLibs.map((p) => `${p.name} [${p.tags || []}]`).join('</li><li>') + '</li><ul>'
+	const globalActivePiecesEl = document.getElementById(GLOBAL_ADLIBS_DIV_ID)
+	globalActivePiecesEl.innerHTML =
+		'<ul><li>' + adLibs.globalAdLibs.map((p) => `${p.name}`).join('</li><li>') + '</li><ul>'
 }
 
 setInterval(() => {
@@ -85,6 +120,7 @@ setInterval(() => {
 	}
 	if (segmentEndTime) segmentRemainingEl.textContent = formatMillisecondsToTime(segmentEndTime - now)
 	if (partEndTime) partRemainingEl.textContent = formatMillisecondsToTime(Math.ceil(partEndTime / 1000) * 1000 - now)
+
 	updateClock()
 }, 100)
 

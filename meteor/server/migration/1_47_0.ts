@@ -1,5 +1,5 @@
 import { addMigrationSteps } from './databaseMigration'
-import { DBStudio, MappingsExt } from '../../lib/collections/Studios'
+import { DBStudio, MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { DBShowStyleBase, OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
@@ -8,6 +8,7 @@ import { getRandomString, normalizeArray } from '@sofie-automation/corelib/dist/
 import { IBlueprintConfig, IOutputLayer, ISourceLayer, SomeAction } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBases, ShowStyleVariants, Studios, TriggeredActions } from '../collections'
 
+// Release 47
 interface StudioOld {
 	mappings: MappingsExt
 	blueprintConfig: IBlueprintConfig
@@ -28,23 +29,12 @@ interface TriggeredActionsOld {
 function normalizeArrayRandomId<T>(array: Array<T>): { [indexKey: string]: T } {
 	const normalizedObject: any = {}
 	for (const obj of array) {
-		normalizedObject[obj[getRandomString()]] = obj
+		normalizedObject[getRandomString()] = obj
 	}
 	return normalizedObject as { [key: string]: T }
 }
 
-/*
- * **************************************************************************************
- *
- *  These migrations are destined for the next release
- *
- * (This file is to be renamed to the correct version number when doing the release)
- *
- * **************************************************************************************
- */
-
 export const addSteps = addMigrationSteps('1.47.0', [
-	// Add some migrations!
 	{
 		id: `Studios generate *withOverrides`,
 		canBeRunAutomatically: true,

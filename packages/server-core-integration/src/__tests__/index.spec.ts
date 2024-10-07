@@ -5,7 +5,7 @@ import {
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
-import { CoreConnection } from '../index'
+import { CoreConnection, PeripheralDevicePubSub, PeripheralDevicePubSubCollectionsNames } from '../index'
 import { DDPConnectorOptions } from '../lib/ddpClient'
 jest.mock('faye-websocket')
 jest.mock('got')
@@ -110,16 +110,16 @@ describe('coreConnection', () => {
 		})
 
 		// Observe data:
-		const observer = core.observe('peripheralDeviceForDevice')
+		const observer = core.observe(PeripheralDevicePubSubCollectionsNames.peripheralDeviceForDevice)
 		observer.added = jest.fn()
 		observer.changed = jest.fn()
 		observer.removed = jest.fn()
 
 		// Subscribe to data:
-		const coll0 = core.getCollection<any>('peripheralDeviceForDevice')
+		const coll0 = core.getCollection(PeripheralDevicePubSubCollectionsNames.peripheralDeviceForDevice)
 		expect(coll0.findOne(id)).toBeFalsy()
-		const subId = await core.subscribe('peripheralDeviceForDevice', id)
-		const coll1 = core.getCollection<any>('peripheralDeviceForDevice')
+		const subId = await core.autoSubscribe(PeripheralDevicePubSub.peripheralDeviceForDevice, id)
+		const coll1 = core.getCollection(PeripheralDevicePubSubCollectionsNames.peripheralDeviceForDevice)
 		expect(coll1.findOne(id)).toMatchObject({
 			_id: id,
 		})
@@ -294,12 +294,12 @@ describe('coreConnection', () => {
 		const observerAdded = jest.fn()
 		const observerChanged = jest.fn()
 		const observerRemoved = jest.fn()
-		const observer = core.observe('peripheralDeviceForDevice')
+		const observer = core.observe(PeripheralDevicePubSubCollectionsNames.peripheralDeviceForDevice)
 		observer.added = observerAdded
 		observer.changed = observerChanged
 		observer.removed = observerRemoved
 
-		await core.autoSubscribe('peripheralDeviceForDevice', defaultDeviceId)
+		await core.autoSubscribe(PeripheralDevicePubSub.peripheralDeviceForDevice, defaultDeviceId)
 
 		expect(observerAdded).toHaveBeenCalledTimes(1)
 

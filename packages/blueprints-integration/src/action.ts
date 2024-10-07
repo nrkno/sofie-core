@@ -1,21 +1,22 @@
 import { ExpectedPackage } from './package'
-import { ConfigManifestEntry } from './config'
 import { SomeContent } from './content'
 import { ITranslatableMessage } from './translations'
 import { ExpectedPlayoutItemGeneric } from './documents'
+import { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 
 export interface ActionUserData {
 	[key: string]: any
 }
 
-export enum ActionExecuteAfterChanged {
-	/** Do not execute the action after userData has changed, unless specifically triggered by the user */
-	none = 'none',
-	/** Execute the action immediately after userData has changed */
-	immediately = 'immediately',
-	/** Execute the action after userData has changed and there was an identifiable period of calm in the changes */
-	debounce = 'debounce',
-}
+// export enum ActionExecuteAfterChanged {
+// 	/** Do not execute the action after userData has changed, unless specifically triggered by the user */
+// 	none = 'none',
+// 	/** Execute the action immediately after userData has changed */
+// 	immediately = 'immediately',
+// 	/** Execute the action after userData has changed and there was an identifiable period of calm in the changes */
+// 	debounce = 'debounce',
+// }
 
 export interface IBlueprintActionManifestDisplay {
 	/** A label to be displayed to the user */
@@ -64,7 +65,7 @@ export interface IBlueprintActionTriggerMode {
 	}
 }
 
-export interface IBlueprintActionManifest {
+export interface IBlueprintActionManifest<TPrivateData = unknown, TPublicData = unknown> {
 	/**
 	 * An identifier for this Action
 	 * It should be unique within the part it belongs to, and consistent across ingest updates
@@ -73,9 +74,16 @@ export interface IBlueprintActionManifest {
 
 	/** Id of the action */
 	actionId: string
-	/** Properties defining the action behaviour */
+	/** Arbitraty data storage for internal use in the blueprints */
+	privateData?: TPrivateData
+	/** Arbitraty data relevant for other systems, made available to them through APIs */
+	publicData?: TPublicData
+	/**
+	 * Arbitrary data relevant for other systems and/or users, available through APIs.
+	 * It can be overriden when executing the action.
+	 * It can be made user-editable with userDataManifest.
+	 */
 	userData: ActionUserData
-
 	/**
 	 * Set if ad-lib action should be limited in context to the current part/segment
 	 * Note: Only valid for items returned from getSegment
@@ -92,10 +100,10 @@ export interface IBlueprintActionManifest {
 
 	userDataManifest: {
 		/** List of editable fields in userData, to allow for customising */
-		editableFields?: ConfigManifestEntry[]
-		/** Execute the action after userData is changed. If not present ActionExecuteAfterChanged.none is assumed. */
-		executeOnUserDataChanged?: ActionExecuteAfterChanged
+		editableFields?: JSONBlob<JSONSchema>
 		// Potential future properties:
+		// /** Execute the action after userData is changed. If not present ActionExecuteAfterChanged.none is assumed. */
+		// executeOnUserDataChanged?: ActionExecuteAfterChanged
 		// asloDisplayACtionButton: boolean
 	}
 
@@ -104,9 +112,7 @@ export interface IBlueprintActionManifest {
 	/** Optional ways of executing this action. The default option is computed from the display properties */
 	triggerModes?: IBlueprintActionTriggerMode[]
 
-	/** Array of items expected to be played out. This is used by playout-devices to preload stuff.
-	 * @deprecated replaced by .expectedPackages
-	 */
+	/** Array of items expected to be played out. This is used by playout-devices to preload stuff. */
 	expectedPlayoutItems?: ExpectedPlayoutItemGeneric[]
 	/**
 	 * An array of which Packages this Action uses. This is used by a Package Manager to ensure that the Package is in place for playout.

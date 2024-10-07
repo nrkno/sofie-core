@@ -2,7 +2,7 @@ const { exec } = require('child_process')
 
 const PACKAGE_VERSION = require('../package.json').version
 
-const cmd = 'cd ../packages && yarn set-version ' + PACKAGE_VERSION
+const cmd = `cd ../packages && yarn set-version ${PACKAGE_VERSION} --force-publish`
 console.log(cmd)
 const child = exec(cmd, (error, stdout, stderr) => {
 	if (error) {

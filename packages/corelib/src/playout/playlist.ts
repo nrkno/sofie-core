@@ -1,5 +1,7 @@
+import { DBRundown } from '../dataModel/Rundown'
 import { DBSegment } from '../dataModel/Segment'
 import { DBPart } from '../dataModel/Part'
+import { DBPartInstance } from '../dataModel/PartInstance'
 import { RundownId, SegmentId } from '../dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 
@@ -47,6 +49,29 @@ export function sortPartsInSortedSegments<P extends Pick<DBPart, '_id' | 'segmen
 	})
 }
 
+type SortableDBPartInstance = Pick<DBPartInstance, '_id' | 'segmentId' | 'takeCount'> & {
+	part: Pick<DBPart, '_id' | '_rank'>
+}
+export function sortPartInstancesInSortedSegments<P extends SortableDBPartInstance>(
+	partInstances: P[],
+	sortedSegments: Array<Pick<DBSegment, '_id'>>
+): P[] {
+	const segmentRanks = new Map<SegmentId, number>()
+	for (let i = 0; i < sortedSegments.length; i++) {
+		segmentRanks.set(sortedSegments[i]._id, i)
+	}
+
+	return partInstances.sort((a, b) => {
+		if (a.segmentId === b.segmentId) {
+			return a.part._rank - b.part._rank || a.takeCount - b.takeCount
+		} else {
+			const segA = segmentRanks.get(a.segmentId) ?? Number.POSITIVE_INFINITY
+			const segB = segmentRanks.get(b.segmentId) ?? Number.POSITIVE_INFINITY
+			return segA - segB
+		}
+	})
+}
+
 /**
  * Sort an array of RundownIds based on a reference list
  * @param sortedPossibleIds The already sorted ids. This may be missing some of the unsorted ones
@@ -64,4 +89,23 @@ export function sortRundownIDsInPlaylist(
 		.sort((a, b) => a.toString().localeCompare(b.toString()))
 
 	return [...sortedVerifiedExisting, ...missingIds]
+}
+
+export function sortRundownsWithinPlaylist(
+	sortedPossibleIds: ReadonlyDeep<RundownId[]>,
+	unsortedRundowns: DBRundown[]
+): DBRundown[] {
+	return unsortedRundowns.slice().sort((a, b) => {
+		const indexA = sortedPossibleIds.indexOf(a._id)
+		const indexB = sortedPossibleIds.indexOf(b._id)
+		if (indexA === -1 && indexB === -1) {
+			return a._id.toString().localeCompare(b._id.toString())
+		} else if (indexA === -1) {
+			return 1
+		} else if (indexB === -1) {
+			return -1
+		}
+
+		return indexA - indexB
+	})
 }

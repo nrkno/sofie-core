@@ -191,7 +191,7 @@ blueprintsRouter.get('/assets/(.*)', async (ctx) => {
 	// for now just check it's a png to prevent snapshots being downloaded
 
 	const filePath = ctx.params[0]
-	if (filePath.match(/\.(png|svg)?$/)) {
+	if (filePath.match(/\.(png|svg|gif)?$/)) {
 		const userId = ctx.headers.authorization ? ctx.headers.authorization.split(' ')[1] : ''
 		try {
 			const dataStream = retrieveBlueprintAsset({ userId: protectString(userId) }, filePath)
@@ -200,6 +200,8 @@ blueprintsRouter.get('/assets/(.*)', async (ctx) => {
 				ctx.response.type = 'image/svg+xml'
 			} else if (extension === '.png') {
 				ctx.response.type = 'image/png'
+			} else if (extension === '.gif') {
+				ctx.response.type = 'image/gif'
 			}
 			// assets are supposed to have a unique ID/file name, if the asset changes, so must the filename
 			ctx.set('Cache-Control', `public, max-age=${BLUEPRINT_ASSET_MAX_AGE}, immutable`)
@@ -207,10 +209,8 @@ blueprintsRouter.get('/assets/(.*)', async (ctx) => {
 			ctx.body = dataStream
 		} catch {
 			ctx.statusCode = 404 // Probably
-			ctx.end()
 		}
 	} else {
 		ctx.statusCode = 403
-		ctx.end()
 	}
 })

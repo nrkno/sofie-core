@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react'
 import { useSubscription, useTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
-import { PubSub } from '../../../../lib/api/pubsub'
 import { ExpectedPackageWorkStatus } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackageWorkStatuses'
 import { normalizeArrayToMap, unprotectString } from '../../../../lib/lib'
 import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
@@ -19,7 +18,8 @@ import {
 	PeripheralDevices,
 } from '../../../collections'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesStatus(_props: {}) {
 	const { t } = useTranslation()
@@ -34,15 +34,9 @@ export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesSta
 
 	const allSubsReady: boolean =
 		[
-			useSubscription(PubSub.expectedPackageWorkStatuses, {
-				studioId: { $in: studioIds },
-			}),
-			useSubscription(PubSub.expectedPackages, {
-				studioId: { $in: studioIds },
-			}),
-			useSubscription(PubSub.packageContainerStatuses, {
-				studioId: { $in: studioIds },
-			}),
+			useSubscription(CorelibPubSub.expectedPackageWorkStatuses, studioIds ?? []),
+			useSubscription(CorelibPubSub.expectedPackages, studioIds ?? []),
+			useSubscription(CorelibPubSub.packageContainerStatuses, studioIds ?? []),
 			studioIds && studioIds.length > 0,
 		].reduce((memo, value) => memo && value, true) || false
 
@@ -56,9 +50,7 @@ export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesSta
 		expectedPackageWorkStatuses.forEach((epws) => devices.add(epws.deviceId))
 		return Array.from(devices)
 	}, [packageContainerStatuses, expectedPackageWorkStatuses])
-	const peripheralDeviceSubReady = useSubscription(PubSub.peripheralDevices, {
-		_id: { $in: deviceIds },
-	})
+	const peripheralDeviceSubReady = useSubscription(CorelibPubSub.peripheralDevices, deviceIds)
 	const peripheralDevices = useTracker(() => PeripheralDevices.find().fetch(), [], [])
 	const peripheralDevicesMap = normalizeArrayToMap(peripheralDevices, '_id')
 

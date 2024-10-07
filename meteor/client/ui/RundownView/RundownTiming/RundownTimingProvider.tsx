@@ -2,18 +2,16 @@ import React, { PropsWithChildren } from 'react'
 import { Meteor } from 'meteor/meteor'
 import * as PropTypes from 'prop-types'
 import { withTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
-import { Part } from '../../../../lib/collections/Parts'
-import { getCurrentTime } from '../../../../lib/lib'
-import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { PartInstance } from '../../../../lib/collections/PartInstances'
+import { getCurrentTime, protectString } from '../../../../lib/lib'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { PartInstance, wrapPartToTemporaryInstance } from '../../../../lib/collections/PartInstances'
 import { RundownTiming, TimeEventArgs } from './RundownTiming'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { RundownTimingCalculator, RundownTimingContext } from '../../../lib/rundownTiming'
-import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PartInstances } from '../../../collections'
+import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylistCollectionUtil } from '../../../../lib/collections/rundownPlaylistUtil'
+import { sortPartInstancesInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
 
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
 const LOW_RESOLUTION_TIMING_DECIMATOR = 15
@@ -28,7 +26,7 @@ const CURRENT_TIME_GRANULARITY = 1000 / 60
  */
 interface IRundownTimingProviderProps {
 	/** Rundown Playlist that is to be used for generating the timing information. */
-	playlist?: RundownPlaylist
+	playlist?: DBRundownPlaylist
 
 	/** Interval for high-resolution timing events. If undefined, it will fall back
 	 * onto TIMING_DEFAULT_REFRESH_INTERVAL.
@@ -45,12 +43,17 @@ interface IRundownTimingProviderState {}
 interface IRundownTimingProviderTrackedProps {
 	rundowns: Array<Rundown>
 	currentRundown: Rundown | undefined
-	parts: Array<Part>
-	partInstancesMap: Map<PartId, PartInstance>
-	segmentEntryPartInstances: PartInstance[]
+	partInstances: Array<MinimalPartInstance>
+	partInstancesMap: Map<PartId, MinimalPartInstance>
+	segmentEntryPartInstances: MinimalPartInstance[]
 	segments: DBSegment[]
 	segmentsMap: Map<SegmentId, DBSegment>
 }
+
+type MinimalPartInstance = Pick<
+	PartInstance,
+	'_id' | 'isTemporary' | 'rundownId' | 'segmentId' | 'segmentPlayoutId' | 'takeCount' | 'part' | 'timings' | 'orphaned'
+>
 
 /**
  * RundownTimingProvider is a container component that provides a timing context to all child elements.
@@ -62,99 +65,110 @@ export const RundownTimingProvider = withTracker<
 	PropsWithChildren<IRundownTimingProviderProps>,
 	IRundownTimingProviderState,
 	IRundownTimingProviderTrackedProps
->((props) => {
-	let rundowns: Array<Rundown> = []
-	let parts: Array<Part> = []
-	let segments: Array<DBSegment> = []
-	const partInstancesMap = new Map<PartId, PartInstance>()
-	let currentRundown: Rundown | undefined
-	const segmentEntryPartInstances: PartInstance[] = []
-	if (props.playlist) {
-		rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(props.playlist)
-		const { parts: incomingParts, segments: incomingSegments } = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(
-			props.playlist
-		)
-		parts = incomingParts
-		segments = incomingSegments
-		const partInstances = RundownPlaylistCollectionUtil.getActivePartInstances(props.playlist)
-
-		const currentPartInstance = partInstances.find((p) => p._id === props.playlist?.currentPartInfo?.partInstanceId)
-		const previousPartInstance = partInstances.find((p) => p._id === props.playlist?.previousPartInfo?.partInstanceId)
-
-		currentRundown = currentPartInstance ? rundowns.find((r) => r._id === currentPartInstance.rundownId) : rundowns[0]
-		// These are needed to retrieve the start time of a segment for calculating the remaining budget, in case the first partInstance was removed
-
-		const firstPartInstanceInCurrentSegmentPlay =
-			currentPartInstance &&
-			PartInstances.findOne(
-				{
-					rundownId: currentPartInstance.rundownId,
-					segmentPlayoutId: currentPartInstance.segmentPlayoutId,
-				},
-				{ sort: { takeCount: 1 } }
-			)
-		if (firstPartInstanceInCurrentSegmentPlay) segmentEntryPartInstances.push(firstPartInstanceInCurrentSegmentPlay)
-
-		const firstPartInstanceInPreviousSegmentPlay =
-			previousPartInstance &&
-			previousPartInstance.segmentPlayoutId !== currentPartInstance?.segmentPlayoutId &&
-			PartInstances.findOne(
-				{
-					rundownId: previousPartInstance.rundownId,
-					segmentPlayoutId: previousPartInstance.segmentPlayoutId,
-				},
-				{ sort: { takeCount: 1 } }
-			)
-		if (firstPartInstanceInPreviousSegmentPlay) segmentEntryPartInstances.push(firstPartInstanceInPreviousSegmentPlay)
-
-		partInstances.forEach((partInstance) => {
-			partInstancesMap.set(partInstance.part._id, partInstance)
-
-			// if the part is orphaned, we need to inject it's part into the incoming parts in the correct position
-			if (partInstance.orphaned) {
-				let foundSegment = false
-				let insertBefore: number | null = null
-				for (let i = 0; i < parts.length; i++) {
-					if (parts[i].segmentId === partInstance.segmentId) {
-						// mark that we have found parts from the segment we're looking for
-						foundSegment = true
-
-						if (parts[i]._id === partInstance.part._id) {
-							// the PartInstance is orphaned, but there's still the underlying part in the collection
-							// let's skip for now.
-							// this needs to be updated at some time since it should be treated as a different part at
-							// this point.
-							break
-						} else if (parts[i]._rank > partInstance.part._rank) {
-							// we have found a part with a rank greater than the rank of the orphaned PartInstance
-							insertBefore = i
-							break
-						}
-					} else if (foundSegment && parts[i].segmentId !== partInstance.segmentId) {
-						// we have found parts from the segment we're looking for, but none of them had a rank
-						// greater than the rank of the orphaned PartInstance. Lets insert the part before the first
-						// part of the next segment
-						insertBefore = i
-						break
-					}
-				}
-
-				if (insertBefore !== null) {
-					parts.splice(insertBefore, 0, partInstance.part)
-				} else if (foundSegment && partInstance.orphaned === 'adlib-part') {
-					// Part is right at the end of the rundown
-					parts.push(partInstance.part)
-				}
-			}
-		})
+>(({ playlist }) => {
+	if (!playlist) {
+		return {
+			rundowns: [],
+			currentRundown: undefined,
+			partInstances: [],
+			partInstancesMap: new Map(),
+			segmentEntryPartInstances: [],
+			segments: [],
+			segmentsMap: new Map(),
+		}
 	}
 
+	const partInstancesMap = new Map<PartId, MinimalPartInstance>()
+	const segmentEntryPartInstances: MinimalPartInstance[] = []
+
+	const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)
+	const segments = RundownPlaylistCollectionUtil.getSegments(playlist)
 	const segmentsMap = new Map<SegmentId, DBSegment>(segments.map((segment) => [segment._id, segment]))
+	const unorderedParts = RundownPlaylistCollectionUtil.getUnorderedParts(playlist)
+	const activePartInstances = RundownPlaylistCollectionUtil.getActivePartInstances(playlist, undefined, {
+		projection: {
+			_id: 1,
+			rundownId: 1,
+			segmentId: 1,
+			isTemporary: 1,
+			segmentPlayoutId: 1,
+			takeCount: 1,
+			part: 1,
+			timings: 1,
+			orphaned: 1,
+		},
+	}) as Array<
+		Pick<
+			PartInstance,
+			| '_id'
+			| 'rundownId'
+			| 'segmentId'
+			| 'isTemporary'
+			| 'segmentPlayoutId'
+			| 'takeCount'
+			| 'part'
+			| 'timings'
+			| 'orphaned'
+		>
+	>
+
+	const { currentPartInstance, previousPartInstance } = findCurrentAndPreviousPartInstance(
+		activePartInstances,
+		playlist.currentPartInfo?.partInstanceId,
+		playlist.previousPartInfo?.partInstanceId
+	)
+
+	const currentRundown = currentPartInstance
+		? rundowns.find((r) => r._id === currentPartInstance.rundownId)
+		: rundowns[0]
+	// These are needed to retrieve the start time of a segment for calculating the remaining budget, in case the first partInstance was removed
+
+	let firstPartInstanceInCurrentSegmentPlay: MinimalPartInstance | undefined
+	let firstPartInstanceInCurrentSegmentPlayPartInstanceTakeCount = Number.POSITIVE_INFINITY
+	let firstPartInstanceInPreviousSegmentPlay: MinimalPartInstance | undefined
+	let firstPartInstanceInPreviousSegmentPlayPartInstanceTakeCount = Number.POSITIVE_INFINITY
+
+	let partInstances: MinimalPartInstance[] = []
+
+	const allPartIds: Set<PartId> = new Set()
+
+	for (const partInstance of activePartInstances) {
+		if (
+			currentPartInstance &&
+			partInstance.segmentPlayoutId === currentPartInstance.segmentPlayoutId &&
+			partInstance.takeCount < firstPartInstanceInCurrentSegmentPlayPartInstanceTakeCount
+		) {
+			firstPartInstanceInCurrentSegmentPlay = partInstance
+			firstPartInstanceInCurrentSegmentPlayPartInstanceTakeCount = partInstance.takeCount
+		}
+		if (
+			previousPartInstance &&
+			partInstance.segmentPlayoutId === previousPartInstance.segmentPlayoutId &&
+			partInstance.takeCount < firstPartInstanceInPreviousSegmentPlayPartInstanceTakeCount
+		) {
+			firstPartInstanceInPreviousSegmentPlay = partInstance
+			firstPartInstanceInPreviousSegmentPlayPartInstanceTakeCount = partInstance.takeCount
+		}
+
+		allPartIds.add(partInstance.part._id)
+	}
+
+	partInstances = activePartInstances
+
+	for (const part of unorderedParts) {
+		if (allPartIds.has(part._id)) continue
+		partInstances.push(wrapPartToTemporaryInstance(playlist.activationId ?? protectString(''), part))
+	}
+
+	partInstances = sortPartInstancesInSortedSegments(partInstances, segments)
+
+	if (firstPartInstanceInCurrentSegmentPlay) segmentEntryPartInstances.push(firstPartInstanceInCurrentSegmentPlay)
+	if (firstPartInstanceInPreviousSegmentPlay) segmentEntryPartInstances.push(firstPartInstanceInPreviousSegmentPlay)
 
 	return {
 		rundowns,
 		currentRundown,
-		parts,
+		partInstances,
 		partInstancesMap,
 		segmentEntryPartInstances,
 		segments,
@@ -162,7 +176,7 @@ export const RundownTimingProvider = withTracker<
 	}
 })(
 	class RundownTimingProvider
-		extends MeteorReactComponent<
+		extends React.Component<
 			PropsWithChildren<IRundownTimingProviderProps> & IRundownTimingProviderTrackedProps,
 			IRundownTimingProviderState
 		>
@@ -179,7 +193,7 @@ export const RundownTimingProvider = withTracker<
 		syncedDurations: RundownTimingContext = {
 			isLowResolution: true,
 		}
-		refreshTimer: number
+		refreshTimer: number | undefined
 		refreshTimerInterval: number
 		refreshDecimator: number
 
@@ -231,8 +245,7 @@ export const RundownTimingProvider = withTracker<
 		componentDidMount(): void {
 			this.refreshTimer = Meteor.setInterval(this.onRefreshTimer, this.refreshTimerInterval)
 			this.onRefreshTimer()
-
-			window['rundownTimingContext'] = this.durations
+			;(window as any)['rundownTimingContext'] = this.durations
 		}
 
 		componentDidUpdate(prevProps: IRundownTimingProviderProps & IRundownTimingProviderTrackedProps) {
@@ -243,12 +256,10 @@ export const RundownTimingProvider = withTracker<
 				this.refreshTimer = Meteor.setInterval(this.onRefreshTimer, this.refreshTimerInterval)
 			}
 			if (
-				prevProps.parts !== this.props.parts ||
+				prevProps.partInstances !== this.props.partInstances ||
 				prevProps.playlist?.nextPartInfo?.partInstanceId !== this.props.playlist?.nextPartInfo?.partInstanceId ||
 				prevProps.playlist?.currentPartInfo?.partInstanceId !== this.props.playlist?.currentPartInfo?.partInstanceId
 			) {
-				// empty the temporary Part Instances cache
-				this.timingCalculator.clearTempPartInstances()
 				this.refreshDecimator = 0 // Force LR update
 				this.lastSyncedTime = 0 // Force synced update
 				this.onRefreshTimer()
@@ -256,9 +267,8 @@ export const RundownTimingProvider = withTracker<
 		}
 
 		componentWillUnmount(): void {
-			this._cleanUp()
-			delete window['rundownTimingContext']
-			Meteor.clearInterval(this.refreshTimer)
+			delete (window as any)['rundownTimingContext']
+			if (this.refreshTimer !== undefined) Meteor.clearInterval(this.refreshTimer)
 		}
 
 		dispatchHREvent(now: number) {
@@ -292,15 +302,23 @@ export const RundownTimingProvider = withTracker<
 		}
 
 		updateDurations(now: number, isSynced: boolean) {
-			const { playlist, rundowns, currentRundown, parts, partInstancesMap, segmentsMap, segmentEntryPartInstances } =
-				this.props
+			const {
+				playlist,
+				rundowns,
+				currentRundown,
+				partInstances,
+				partInstancesMap,
+				segmentsMap,
+				segmentEntryPartInstances,
+			} = this.props
+
 			const updatedDurations = this.timingCalculator.updateDurations(
 				now,
 				isSynced,
 				playlist,
 				rundowns,
 				currentRundown,
-				parts,
+				partInstances,
 				partInstancesMap,
 				segmentsMap,
 				this.props.defaultDuration,
@@ -318,3 +336,30 @@ export const RundownTimingProvider = withTracker<
 		}
 	}
 )
+
+function findCurrentAndPreviousPartInstance(
+	activePartInstances: MinimalPartInstance[],
+	currentPartInstanceId: PartInstanceId | undefined,
+	previousPartInstanceId: PartInstanceId | undefined
+) {
+	let currentPartInstance: MinimalPartInstance | undefined
+	let previousPartInstance: MinimalPartInstance | undefined
+	// the activePartInstances are usually sorted ascending by takeCount, so it makes sense to start
+	// at the end of the array, since that's where the latest PartInstances generally will be
+	for (let i = activePartInstances.length - 1; i >= 0; i--) {
+		const partInstance = activePartInstances[i]
+		if (partInstance._id === currentPartInstanceId) currentPartInstance = partInstance
+		if (partInstance._id === previousPartInstanceId) previousPartInstance = partInstance
+		// we've found what we were looking for, we can stop
+		if (
+			(currentPartInstance || currentPartInstanceId === undefined) &&
+			(previousPartInstance || previousPartInstanceId === undefined)
+		)
+			break
+	}
+
+	return {
+		currentPartInstance,
+		previousPartInstance,
+	}
+}

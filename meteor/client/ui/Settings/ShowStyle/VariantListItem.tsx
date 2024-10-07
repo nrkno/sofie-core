@@ -58,7 +58,7 @@ export const VariantListItem = ({
 	onFinishEdit,
 	onDelete,
 	onSaveOverrides,
-}: {
+}: Readonly<{
 	showStyleVariant: DBShowStyleVariant
 	onDragVariant: (draggingId: ShowStyleVariantId, hoverId: ShowStyleVariantId) => void
 	onDragEnd: (draggedId: ShowStyleVariantId) => void
@@ -77,7 +77,7 @@ export const VariantListItem = ({
 	onFinishEdit: (showStyleVariantId: ShowStyleVariantId) => void
 	onDelete: (showStyleVariant: DBShowStyleVariant) => void
 	onSaveOverrides: (showStyleVariantId: ShowStyleVariantId, newOps: SomeObjectOverrideOp[]) => void
-}): JSX.Element => {
+}>): JSX.Element => {
 	const ref = useRef<HTMLTableRowElement>(null)
 	const [{ handlerId }, drop] = useDrop<DraggableVariant, DraggableDropResult, { handlerId: string | symbol | null }>({
 		accept: ShowStyleDragDropTypes.VARIANT,
@@ -166,6 +166,22 @@ export const VariantListItem = ({
 										collection={ShowStyleVariants}
 										className="input text-input input-l"
 									></EditAttribute>
+								</label>
+							</div>
+
+							<div className="properties-grid">
+								<label className="field">
+									<LabelActual label={t('Can Generate Adlib Testing Rundown')} />
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={'canGenerateAdlibTestingRundown'}
+										obj={showStyleVariant}
+										type="checkbox"
+										collection={ShowStyleVariants}
+									></EditAttribute>
+									<span className="text-s dimmed field-hint">
+										{t('This requires the blueprints to implement the `generateAdlibTestingIngestRundown` method')}
+									</span>
 								</label>
 							</div>
 

@@ -12,7 +12,9 @@ import {
 import {
 	DeviceActionId,
 	DeviceTriggerMountedActionId,
+	PreviewWrappedAdLib,
 	PreviewWrappedAdLibId,
+	ShiftRegisterActionArguments,
 } from '../../../lib/api/triggers/MountedTriggers'
 import { isDeviceTrigger } from '../../../lib/api/triggers/triggerTypeSelectors'
 import { DBTriggeredActions, UITriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
@@ -22,6 +24,7 @@ import { DeviceTriggerMountedActionAdlibsPreview, DeviceTriggerMountedActions } 
 import { ContentCache } from './reactiveContentCache'
 import { logger } from '../../logging'
 import { SomeAction, SomeBlueprintTrigger } from '@sofie-automation/blueprints-integration'
+import { DeviceActions } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
 
 export class StudioDeviceTriggerManager {
 	#lastShowStyleBaseId: ShowStyleBaseId | null = null
@@ -68,22 +71,23 @@ export class StudioDeviceTriggerManager {
 			showStyleBaseId: {
 				$in: [showStyleBaseId, null],
 			},
-		}).map((pair) => convertDocument(pair))
-		const triggeredActions = allTriggeredActions.filter((pair) =>
-			Object.values<SomeBlueprintTrigger>(pair.triggers).find((trigger) => isDeviceTrigger(trigger))
-		)
+		})
 
 		const upsertedDeviceTriggerMountedActionIds: DeviceTriggerMountedActionId[] = []
 		const touchedActionIds: DeviceActionId[] = []
 
-		for (const triggeredAction of triggeredActions) {
+		for (const rawTriggeredAction of allTriggeredActions) {
+			const triggeredAction = convertDocument(rawTriggeredAction)
+
+			if (!Object.values<SomeBlueprintTrigger>(triggeredAction.triggers).find(isDeviceTrigger)) continue
+
 			const addedPreviewIds: PreviewWrappedAdLibId[] = []
 
 			Object.entries<SomeAction>(triggeredAction.actions).forEach(([key, action]) => {
-				// Since the compiled aciton is cached using this actionId as a key, having the action
-				// and the filterChain length allows for a quicker invalidation without doing a deepEquals
+				// Since the compiled action is cached using this actionId as a key, having the action
+				// and the filterChain allows for a quicker invalidation without doing a deepEquals
 				const actionId = protectString<DeviceActionId>(
-					`${studioId}_${triggeredAction._id}_${key}_${action.action}_${action.filterChain.length}`
+					`${studioId}_${triggeredAction._id}_${key}_${JSON.stringify(action)}`
 				)
 				const existingAction = actionManager.getAction(actionId)
 				let thisAction: ExecutableAction
@@ -102,6 +106,19 @@ export class StudioDeviceTriggerManager {
 						return
 					}
 
+					let deviceActionArguments: ShiftRegisterActionArguments | undefined = undefined
+
+					if (action.action === DeviceActions.modifyShiftRegister) {
+						deviceActionArguments = {
+							type: 'modifyRegister',
+							register: action.register,
+							operation: action.operation,
+							value: action.value,
+							limitMin: action.limitMin,
+							limitMax: action.limitMax,
+						}
+					}
+
 					const deviceTriggerMountedActionId = protectString<DeviceTriggerMountedActionId>(
 						`${actionId}_${key}`
 					)
@@ -114,39 +131,65 @@ export class StudioDeviceTriggerManager {
 							deviceId: trigger.deviceId,
 							deviceTriggerId: trigger.triggerId,
 							values: trigger.values,
+							deviceActionArguments,
 							name: triggeredAction.name,
 						},
 					})
 					upsertedDeviceTriggerMountedActionIds.push(deviceTriggerMountedActionId)
 				})
 
-				if (!isPreviewableAction(thisAction)) return
-
-				const previewedAdLibs = thisAction.preview(context)
-
-				previewedAdLibs.forEach((adLib) => {
-					const adLibPreviewId = protectString<PreviewWrappedAdLibId>(
-						`${triggeredAction._id}_${studioId}_${key}_${adLib._id}`
-					)
+				if (!isPreviewableAction(thisAction)) {
+					const adLibPreviewId = protectString(`${actionId}_preview`)
 					DeviceTriggerMountedActionAdlibsPreview.upsert(adLibPreviewId, {
-						$set: {
-							...adLib,
+						$set: literal<PreviewWrappedAdLib>({
 							_id: adLibPreviewId,
+							_rank: 0,
+							partId: null,
+							type: undefined,
+							label: thisAction.action,
+							item: null,
 							triggeredActionId: triggeredAction._id,
 							actionId,
 							studioId,
 							showStyleBaseId,
-							sourceLayerType: adLib.sourceLayerId ? sourceLayers[adLib.sourceLayerId]?.type : undefined,
-							sourceLayerName: adLib.sourceLayerId
-								? {
-										name: sourceLayers[adLib.sourceLayerId]?.name,
-										abbreviation: sourceLayers[adLib.sourceLayerId]?.abbreviation,
-								  }
-								: undefined,
-						},
+							sourceLayerType: undefined,
+							sourceLayerName: undefined,
+							styleClassNames: triggeredAction.styleClassNames,
+						}),
 					})
+
 					addedPreviewIds.push(adLibPreviewId)
-				})
+				} else {
+					const previewedAdLibs = thisAction.preview(context)
+
+					previewedAdLibs.forEach((adLib) => {
+						const adLibPreviewId = protectString<PreviewWrappedAdLibId>(
+							`${triggeredAction._id}_${studioId}_${key}_${adLib._id}`
+						)
+						DeviceTriggerMountedActionAdlibsPreview.upsert(adLibPreviewId, {
+							$set: literal<PreviewWrappedAdLib>({
+								...adLib,
+								_id: adLibPreviewId,
+								triggeredActionId: triggeredAction._id,
+								actionId,
+								studioId,
+								showStyleBaseId,
+								sourceLayerType: adLib.sourceLayerId
+									? sourceLayers[adLib.sourceLayerId]?.type
+									: undefined,
+								sourceLayerName: adLib.sourceLayerId
+									? {
+											name: sourceLayers[adLib.sourceLayerId]?.name,
+											abbreviation: sourceLayers[adLib.sourceLayerId]?.abbreviation,
+									  }
+									: undefined,
+								styleClassNames: triggeredAction.styleClassNames,
+							}),
+						})
+
+						addedPreviewIds.push(adLibPreviewId)
+					})
+				}
 			})
 
 			DeviceTriggerMountedActionAdlibsPreview.remove({
@@ -218,6 +261,8 @@ function convertDocument(doc: ReadonlyObjectDeep<DBTriggeredActions>): UITrigger
 
 		actions: applyAndValidateOverrides<Record<string, SomeAction>>(doc.actionsWithOverrides).obj,
 		triggers: applyAndValidateOverrides<Record<string, SomeBlueprintTrigger>>(doc.triggersWithOverrides).obj,
+
+		styleClassNames: doc.styleClassNames,
 	})
 }
 

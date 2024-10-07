@@ -89,8 +89,8 @@ export const HotkeyHelpPanel: React.FC<IProps> = function HotkeyHelpPanel({ visi
 						.concat(genericMountedTriggers)
 						.concat(adLibMountedTriggers)
 						.concat(showStyleBase.hotkeyLegend || [])
-						.map((hotkey) => (
-							<div className="adlib-panel__hotkeys__hotkey" key={hotkey.key}>
+						.map((hotkey, index) => (
+							<div className="adlib-panel__hotkeys__hotkey" key={`${hotkey.key}_${index}`}>
 								<div className="adlib-panel__hotkeys__hotkey__keys">
 									{hotkeyHelper.shortcutLabel(hotkey.key, _isMacLike)}
 								</div>

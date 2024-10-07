@@ -30,7 +30,7 @@ export const DebugStateTable = reacti18next.withTranslation()(
 			 * @param currentKey Current key within the object being recursed (initially blank)
 			 * @returns "Flattened" object
 			 */
-			function toDotNotation(acc: object, obj: object, currentKey?: string): object {
+			function toDotNotation(acc: any, obj: any, currentKey?: string): object {
 				for (const key in obj) {
 					const value = obj[key]
 					const newKey = currentKey ? currentKey + '.' + key : key // joined key with dot

@@ -1,18 +1,18 @@
 {
 	"name": "mos-gateway",
-	"version": "1.50.5",
+	"version": "1.51.0",
 	"private": true,
 	"description": "MOS-Gateway for the Sofie project",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
+		"url": "git+https://github.com/nrkno/sofie-core.git",
 		"directory": "packages/mos-gateway"
 	},
 	"bugs": {
-		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
+		"url": "https://github.com/nrkno/sofie-core/issues"
 	},
-	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/mos-gateway#readme",
+	"homepage": "https://github.com/nrkno/sofie-core/blob/master/packages/mos-gateway#readme",
 	"author": {
 		"name": "Johan Nyman",
 		"email": "johan@superfly.tv",
@@ -65,13 +65,13 @@
 		"production"
 	],
 	"dependencies": {
-		"@mos-connection/connector": "^3.0.4",
-		"@sofie-automation/server-core-integration": "1.50.5",
-		"@sofie-automation/shared-lib": "1.50.5",
-		"tslib": "^2.4.0",
-		"type-fest": "^2.19.0",
-		"underscore": "^1.13.4",
-		"winston": "^3.8.2"
+		"@mos-connection/connector": "4.1.1",
+		"@sofie-automation/server-core-integration": "1.51.0",
+		"@sofie-automation/shared-lib": "1.51.0",
+		"tslib": "^2.6.2",
+		"type-fest": "^3.13.1",
+		"underscore": "^1.13.6",
+		"winston": "^3.11.0"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {

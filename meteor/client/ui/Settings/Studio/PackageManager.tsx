@@ -2,7 +2,7 @@ import ClassNames from 'classnames'
 import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { Studio, DBStudio, StudioPackageContainer } from '../../../../lib/collections/Studios'
+import { DBStudio, StudioPackageContainer } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
@@ -15,7 +15,7 @@ import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settin
 import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
 
 interface IStudioPackageManagerSettingsProps {
-	studio: Studio
+	studio: DBStudio
 }
 interface IStudioPackageManagerSettingsState {
 	editedPackageContainer: Array<string>
@@ -79,8 +79,8 @@ export const StudioPackageManagerSettings = withTranslation()(
 			})
 		}
 		removePackageContainer = (containerId: string) => {
-			const unsetObject = {}
-			unsetObject['packageContainers.' + containerId] = ''
+			const unsetObject: Record<string, 1> = {}
+			unsetObject['packageContainers.' + containerId] = 1
 			Studios.update(this.props.studio._id, {
 				$unset: unsetObject,
 			})
@@ -100,7 +100,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 					accessors: {},
 				},
 			}
-			const setObject: Partial<DBStudio> = {}
+			const setObject: Record<string, any> = {}
 			setObject['packageContainers.' + newKeyName + iter] = newPackageContainer
 
 			Studios.update(this.props.studio._id, {
@@ -116,8 +116,8 @@ export const StudioPackageManagerSettings = withTranslation()(
 				throw new Meteor.Error(400, 'PackageContainer "' + newContainerId + '" already exists')
 			}
 
-			const mSet = {}
-			const mUnset = {}
+			const mSet: Record<string, any> = {}
+			const mUnset: Record<string, 1> = {}
 			mSet['packageContainers.' + newContainerId] = packageContainer
 			mUnset['packageContainers.' + oldContainerId] = 1
 
@@ -296,8 +296,8 @@ export const StudioPackageManagerSettings = withTranslation()(
 			})
 		}
 		removeAccessor = (containerId: string, accessorId: string) => {
-			const unsetObject = {}
-			unsetObject[`packageContainers.${containerId}.container.accessors.${accessorId}`] = ''
+			const unsetObject: Record<string, 1> = {}
+			unsetObject[`packageContainers.${containerId}.container.accessors.${accessorId}`] = 1
 			Studios.update(this.props.studio._id, {
 				$unset: unsetObject,
 			})
@@ -321,7 +321,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 				allowWrite: false,
 				folderPath: '',
 			}
-			const setObject: Partial<DBStudio> = {}
+			const setObject: Record<string, any> = {}
 			setObject[`packageContainers.${containerId}.container.accessors.${accessorId}`] = newAccessor
 
 			Studios.update(this.props.studio._id, {
@@ -342,8 +342,8 @@ export const StudioPackageManagerSettings = withTranslation()(
 				throw new Meteor.Error(400, 'Accessor "' + newAccessorId + '" already exists')
 			}
 
-			const mSet = {}
-			const mUnset = {}
+			const mSet: Record<string, any> = {}
+			const mUnset: Record<string, 1> = {}
 			mSet[`packageContainers.${containerId}.container.accessors.${newAccessorId}`] = accessor
 			mUnset[`packageContainers.${containerId}.container.accessors.${oldAccessorId}`] = 1
 
@@ -486,6 +486,36 @@ export const StudioPackageManagerSettings = withTranslation()(
 													></EditAttribute>
 													<span className="text-s dimmed field-hint">
 														{t('Base url to the resource (example: http://myserver/folder)')}
+													</span>
+												</label>
+												<label className="field">
+													<LabelActual label={t('Is Immutable')} />
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.isImmutable`}
+														obj={this.props.studio}
+														type="checkbox"
+														collection={Studios}
+														className="input text-input input-l"
+													></EditAttribute>
+													<span className="text-s dimmed field-hint">
+														{t('When set, resources are considered immutable, ie they will not change')}
+													</span>
+												</label>
+												<label className="field">
+													<LabelActual label={t('Does NOT support HEAD requests')} />
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.useGETinsteadOfHEAD`}
+														obj={this.props.studio}
+														type="checkbox"
+														collection={Studios}
+														className="input text-input input-l"
+													></EditAttribute>
+													<span className="text-s dimmed field-hint">
+														{t(
+															"If set, Package Manager assumes that the source doesn't support HEAD requests and will use GET instead. If false, HEAD requests will be sent to check availability."
+														)}
 													</span>
 												</label>
 

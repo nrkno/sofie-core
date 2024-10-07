@@ -3,6 +3,7 @@ import {
 	StatusCode,
 	protectString,
 	Observer,
+	PeripheralDevicePubSub,
 } from '@sofie-automation/server-core-integration'
 import {
 	IMOSConnectionStatus,
@@ -66,11 +67,10 @@ interface IStoryItemChange {
 
 export class CoreMosDeviceHandler {
 	core!: CoreConnectionChild
-	public _observers: Array<Observer> = []
+	public _observers: Array<Observer<any>> = []
 	public _mosDevice: IMOSDevice
 	private _coreParentHandler: CoreHandler
 	private _mosHandler: MosHandler
-	private _subscriptions: Array<string> = []
 
 	private _pendingStoryItemChanges: Array<IStoryItemChange> = []
 	private _pendingChangeTimeout: number = 60 * 1000
@@ -123,14 +123,11 @@ export class CoreMosDeviceHandler {
 				this._mosDevice.idPrimary +
 				' ..'
 		)
-		this._subscriptions = []
-		Promise.all([this.core.autoSubscribe('peripheralDeviceCommands', this.core.deviceId)])
-			.then((subs) => {
-				this._subscriptions = this._subscriptions.concat(subs)
-			})
-			.catch((e) => {
-				this._coreParentHandler.logger.error(e)
-			})
+		Promise.all([
+			this.core.autoSubscribe(PeripheralDevicePubSub.peripheralDeviceCommands, this.core.deviceId),
+		]).catch((e) => {
+			this._coreParentHandler.logger.error(e)
+		})
 
 		this._coreParentHandler.logger.info('CoreMos: Setting up observers..')
 
@@ -319,7 +316,7 @@ export class CoreMosDeviceHandler {
 		const result = await this._mosDevice.sendRunningOrderStatus({
 			ID: this.mosTypes.mosString128.create(roId),
 			Status: status,
-			Time: this.mosTypes.mosTime.create(undefined),
+			Time: this.mosTypes.mosTime.create(new Date()),
 		})
 
 		// console.log('got result', result)
@@ -331,7 +328,7 @@ export class CoreMosDeviceHandler {
 			RunningOrderId: this.mosTypes.mosString128.create(roId),
 			ID: this.mosTypes.mosString128.create(storyId),
 			Status: status,
-			Time: this.mosTypes.mosTime.create(undefined),
+			Time: this.mosTypes.mosTime.create(new Date()),
 		})
 
 		// console.log('got result', result)
@@ -344,7 +341,7 @@ export class CoreMosDeviceHandler {
 			StoryId: this.mosTypes.mosString128.create(storyId),
 			ID: this.mosTypes.mosString128.create(itemId),
 			Status: status,
-			Time: this.mosTypes.mosTime.create(undefined),
+			Time: this.mosTypes.mosTime.create(new Date()),
 		})
 
 		// console.log('got result', result)
@@ -430,17 +427,16 @@ export class CoreMosDeviceHandler {
 			}, 2000)
 		})
 	}
-	async dispose(): Promise<void> {
+	async dispose(subdevice: 'keepSubDevice' | 'removeSubDevice' = 'keepSubDevice'): Promise<void> {
 		this._observers.forEach((obs) => obs.stop())
-
-		for (const subId of this._subscriptions) {
-			this.core.unsubscribe(subId)
-		}
 
 		await this.core.setStatus({
 			statusCode: StatusCode.BAD,
 			messages: ['Uninitialized'],
 		})
+
+		if (subdevice === 'removeSubDevice') await this.core.unInitialize()
+		await this.core.destroy()
 	}
 	killProcess(): void {
 		this._coreParentHandler.killProcess()

@@ -9,6 +9,7 @@ import { IntInputControl } from '../Components/IntInput'
 import { JsonTextInputControl } from '../Components/JsonTextInput'
 import {
 	LabelAndOverrides,
+	LabelAndOverridesForBase64Image,
 	LabelAndOverridesForCheckbox,
 	LabelAndOverridesForDropdown,
 	LabelAndOverridesForInt,
@@ -20,8 +21,9 @@ import { SchemaFormArrayTable } from './SchemaFormTable/ArrayTable'
 import { SchemaFormCommonProps, SchemaFormSofieEnumDefinition, translateStringIfHasNamespaces } from './schemaFormUtil'
 import { MultiSelectInputControl } from '../Components/MultiSelectInput'
 import { SchemaFormObjectTable } from './SchemaFormTable/ObjectTable'
-import { SchemaFormUIField } from '@sofie-automation/blueprints-integration'
+import { getSchemaUIField, SchemaFormUIField } from '@sofie-automation/blueprints-integration'
 import { SchemaFormSectionHeader } from './SchemaFormSectionHeader'
+import { Base64ImageInputControl } from '../Components/Base64ImageInput'
 
 interface SchemaFormWithOverridesProps extends SchemaFormCommonProps {
 	/** Base path of the schema within the document */
@@ -50,10 +52,10 @@ interface FormComponentProps {
 	isRequired: boolean
 }
 
-function useChildPropsForFormComponent(props: SchemaFormWithOverridesProps) {
+function useChildPropsForFormComponent(props: Readonly<SchemaFormWithOverridesProps>) {
 	return useMemo(() => {
-		const title = props.schema[SchemaFormUIField.Title] || props.attr
-		const description = props.schema[SchemaFormUIField.Description]
+		const title = getSchemaUIField(props.schema, SchemaFormUIField.Title) || props.attr
+		const description = getSchemaUIField(props.schema, SchemaFormUIField.Description)
 
 		return {
 			schema: props.schema,
@@ -71,7 +73,7 @@ function useChildPropsForFormComponent(props: SchemaFormWithOverridesProps) {
 	}, [props.schema, props.translationNamespaces, props.attr, props.item, props.overrideHelper, props.isRequired])
 }
 
-export function SchemaFormWithOverrides(props: SchemaFormWithOverridesProps): JSX.Element {
+export function SchemaFormWithOverrides(props: Readonly<SchemaFormWithOverridesProps>): JSX.Element {
 	const { t } = useTranslation()
 
 	const childProps = useChildPropsForFormComponent(props)
@@ -80,7 +82,7 @@ export function SchemaFormWithOverrides(props: SchemaFormWithOverridesProps): JS
 		case TypeName.Array:
 			return <ArrayFormWithOverrides {...props} />
 		case TypeName.Object:
-			if (props.schema[SchemaFormUIField.DisplayType] === 'json') {
+			if (getSchemaUIField(props.schema, SchemaFormUIField.DisplayType) === 'json') {
 				return <JsonFormWithOverrides {...childProps} />
 			} else if (props.schema.patternProperties) {
 				if (props.allowTables) {
@@ -102,7 +104,9 @@ export function SchemaFormWithOverrides(props: SchemaFormWithOverridesProps): JS
 		case TypeName.Boolean:
 			return <BooleanFormWithOverrides {...childProps} />
 		case TypeName.String:
-			if (props.schema[SchemaFormUIField.SofieEnum]) {
+			if (getSchemaUIField(props.schema, SchemaFormUIField.DisplayType) === 'base64-image') {
+				return <Base64ImagePickerWithOverrides {...childProps} />
+			} else if (getSchemaUIField(props.schema, SchemaFormUIField.SofieEnum)) {
 				return (
 					<SofieEnumFormWithOverrides
 						{...childProps}
@@ -120,14 +124,14 @@ export function SchemaFormWithOverrides(props: SchemaFormWithOverridesProps): JS
 	}
 }
 
-const ArrayFormWithOverrides = (props: SchemaFormWithOverridesProps) => {
+const ArrayFormWithOverrides = (props: Readonly<SchemaFormWithOverridesProps>) => {
 	const { t } = useTranslation()
 
 	const childProps = useChildPropsForFormComponent(props)
 
 	switch (props.schema.items?.type) {
 		case TypeName.String:
-			if (props.schema[SchemaFormUIField.SofieEnum]) {
+			if (getSchemaUIField(props.schema, SchemaFormUIField.SofieEnum)) {
 				return (
 					<SofieEnumFormWithOverrides
 						{...childProps}
@@ -151,9 +155,9 @@ const ArrayFormWithOverrides = (props: SchemaFormWithOverridesProps) => {
 	}
 }
 
-const ObjectFormWithOverrides = (props: SchemaFormWithOverridesProps) => {
-	const title = props.schema[SchemaFormUIField.Title]
-	const description = props.schema[SchemaFormUIField.Description]
+const ObjectFormWithOverrides = (props: Readonly<SchemaFormWithOverridesProps>) => {
+	const title = getSchemaUIField(props.schema, SchemaFormUIField.Title)
+	const description = getSchemaUIField(props.schema, SchemaFormUIField.Description)
 
 	return (
 		<>
@@ -162,7 +166,7 @@ const ObjectFormWithOverrides = (props: SchemaFormWithOverridesProps) => {
 				description={description}
 				translationNamespaces={props.translationNamespaces}
 			/>{' '}
-			{Object.entries<JSONSchema>(props.schema.properties || {}).map(([index, schema]) => {
+			{Object.entries<JSONSchema>(props.schema.properties ?? {}).map(([index, schema]) => {
 				const path = joinObjectPathFragments(props.attr, index)
 				return (
 					<SchemaFormWithOverrides
@@ -189,8 +193,8 @@ interface SofieEnumFormComponentProps extends FormComponentProps {
 }
 
 const SofieEnumFormWithOverrides = ({ sofieEnumDefinitions, ...props }: SofieEnumFormComponentProps) => {
-	const sofieEnum = props.schema[SchemaFormUIField.SofieEnum]
-	const sofieEnumFilter = props.schema[SchemaFormUIField.SofieEnumFilter]
+	const sofieEnum = getSchemaUIField(props.schema, SchemaFormUIField.SofieEnum)
+	const sofieEnumFilter = getSchemaUIField(props.schema, SchemaFormUIField.SofieEnumFilter)
 	const sofieEnumDefinition = sofieEnum && sofieEnumDefinitions ? sofieEnumDefinitions[sofieEnum] : undefined
 
 	const options: DropdownInputOption<any>[] = useMemo(() => {
@@ -215,9 +219,9 @@ interface EnumFormComponentProps extends FormComponentProps {
 }
 
 const EnumFormWithOverrides = (props: EnumFormComponentProps) => {
-	const tsEnumNames = (props.schema[SchemaFormUIField.TsEnumNames] || []) as string[]
+	const tsEnumNames = (getSchemaUIField(props.schema, SchemaFormUIField.TsEnumNames) || []) as string[]
 	const options = useMemo(() => {
-		return (props.schema.enum || []).map((value: any, i: number) =>
+		return (props.schema.enum ?? []).map((value: any, i: number) =>
 			literal<DropdownInputOption<any>>({
 				value,
 				name: tsEnumNames[i] || value,
@@ -234,7 +238,12 @@ interface EnumFormControlWrapperProps extends FormComponentProps {
 
 	options: DropdownInputOption<any>[]
 }
-const EnumFormControlWrapper = ({ commonAttrs, multiple, options, isRequired }: EnumFormControlWrapperProps) => {
+const EnumFormControlWrapper = ({
+	commonAttrs,
+	multiple,
+	options,
+	isRequired,
+}: Readonly<EnumFormControlWrapperProps>) => {
 	const { t } = useTranslation()
 
 	const optionsWithNoneField = useMemo(() => {
@@ -253,139 +262,135 @@ const EnumFormControlWrapper = ({ commonAttrs, multiple, options, isRequired }: 
 	}, [t, options, isRequired, multiple])
 
 	return (
-		<>
-			<LabelAndOverridesForDropdown {...commonAttrs} options={optionsWithNoneField}>
-				{(value, handleUpdate, options) => {
-					if (multiple) {
-						return (
-							<MultiSelectInputControl
-								classNames="input text-input dropdown input-l"
-								options={options}
-								value={value}
-								handleUpdate={handleUpdate}
-							/>
-						)
-					} else {
-						return (
-							<DropdownInputControl
-								classNames="input text-input input-l"
-								options={options}
-								value={value}
-								handleUpdate={handleUpdate}
-							/>
-						)
-					}
-				}}
-			</LabelAndOverridesForDropdown>
-		</>
+		<LabelAndOverridesForDropdown {...commonAttrs} options={optionsWithNoneField}>
+			{(value, handleUpdate, options) => {
+				if (multiple) {
+					return (
+						<MultiSelectInputControl
+							classNames="input text-input dropdown input-l"
+							options={options}
+							value={value}
+							handleUpdate={handleUpdate}
+						/>
+					)
+				} else {
+					return (
+						<DropdownInputControl
+							classNames="input text-input input-l"
+							options={options}
+							value={value}
+							handleUpdate={handleUpdate}
+						/>
+					)
+				}
+			}}
+		</LabelAndOverridesForDropdown>
 	)
 }
 
-const IntegerFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) => {
-	const zeroBased = !!schema[SchemaFormUIField.ZeroBased]
+const IntegerFormWithOverrides = ({ schema, commonAttrs }: Readonly<FormComponentProps>) => {
+	const zeroBased = !!getSchemaUIField(schema, SchemaFormUIField.ZeroBased)
 
 	return (
-		<>
-			<LabelAndOverridesForInt {...commonAttrs} zeroBased={zeroBased}>
-				{(value, handleUpdate) => (
-					<IntInputControl
-						modifiedClassName="bghl"
-						classNames="input text-input input-l"
-						placeholder={schema.default}
-						zeroBased={zeroBased}
-						value={value}
-						handleUpdate={handleUpdate}
-						min={schema['minimum']}
-						max={schema['maximum']}
-					/>
-				)}
-			</LabelAndOverridesForInt>
-		</>
+		<LabelAndOverridesForInt {...commonAttrs} zeroBased={zeroBased}>
+			{(value, handleUpdate) => (
+				<IntInputControl
+					modifiedClassName="bghl"
+					classNames="input text-input input-l"
+					placeholder={schema.default}
+					zeroBased={zeroBased}
+					value={value}
+					handleUpdate={handleUpdate}
+					min={schema['minimum']}
+					max={schema['maximum']}
+				/>
+			)}
+		</LabelAndOverridesForInt>
 	)
 }
 
-const NumberFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) => {
+const NumberFormWithOverrides = ({ schema, commonAttrs }: Readonly<FormComponentProps>) => {
 	return (
-		<>
-			<LabelAndOverrides {...commonAttrs}>
-				{(value, handleUpdate) => (
-					<FloatInputControl
-						modifiedClassName="bghl"
-						classNames="input text-input input-l"
-						placeholder={schema.default}
-						value={value}
-						handleUpdate={handleUpdate}
-						min={schema['minimum']}
-						max={schema['maximum']}
-					/>
-				)}
-			</LabelAndOverrides>
-		</>
+		<LabelAndOverrides {...commonAttrs}>
+			{(value, handleUpdate) => (
+				<FloatInputControl
+					modifiedClassName="bghl"
+					classNames="input text-input input-l"
+					placeholder={schema.default}
+					value={value}
+					handleUpdate={handleUpdate}
+					min={schema['minimum']}
+					max={schema['maximum']}
+				/>
+			)}
+		</LabelAndOverrides>
 	)
 }
 
-const BooleanFormWithOverrides = ({ commonAttrs }: FormComponentProps) => {
+const BooleanFormWithOverrides = ({ commonAttrs }: Readonly<FormComponentProps>) => {
 	return (
-		<>
-			<LabelAndOverridesForCheckbox {...commonAttrs}>
-				{(value, handleUpdate) => (
-					<CheckboxControl classNames="input" value={value ?? false} handleUpdate={handleUpdate} />
-				)}
-			</LabelAndOverridesForCheckbox>
-		</>
+		<LabelAndOverridesForCheckbox {...commonAttrs}>
+			{(value, handleUpdate) => (
+				<CheckboxControl classNames="input" value={value ?? false} handleUpdate={handleUpdate} />
+			)}
+		</LabelAndOverridesForCheckbox>
 	)
 }
 
-const StringFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) => {
+const StringFormWithOverrides = ({ schema, commonAttrs }: Readonly<FormComponentProps>) => {
 	return (
-		<>
-			<LabelAndOverrides {...commonAttrs}>
-				{(value, handleUpdate) => (
-					<TextInputControl
-						modifiedClassName="bghl"
-						classNames="input text-input input-l"
-						placeholder={schema.default}
-						value={value}
-						handleUpdate={handleUpdate}
-					/>
-				)}
-			</LabelAndOverrides>
-		</>
+		<LabelAndOverrides {...commonAttrs}>
+			{(value, handleUpdate) => (
+				<TextInputControl
+					modifiedClassName="bghl"
+					classNames="input text-input input-l"
+					placeholder={schema.default}
+					value={value}
+					handleUpdate={handleUpdate}
+				/>
+			)}
+		</LabelAndOverrides>
 	)
 }
 
-const StringArrayFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) => {
+const StringArrayFormWithOverrides = ({ schema, commonAttrs }: Readonly<FormComponentProps>) => {
 	return (
-		<>
-			<LabelAndOverrides {...commonAttrs}>
-				{(value, handleUpdate) => (
-					<MultiLineTextInputControl
-						modifiedClassName="bghl"
-						classNames="input text-input input-l"
-						placeholder={schema.default?.join('\n')}
-						value={value || []}
-						handleUpdate={handleUpdate}
-					/>
-				)}
-			</LabelAndOverrides>
-		</>
+		<LabelAndOverrides {...commonAttrs}>
+			{(value, handleUpdate) => (
+				<MultiLineTextInputControl
+					modifiedClassName="bghl"
+					classNames="input text-input input-l"
+					placeholder={schema.default?.join('\n')}
+					value={value || []}
+					handleUpdate={handleUpdate}
+				/>
+			)}
+		</LabelAndOverrides>
 	)
 }
 
-const JsonFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) => {
+const JsonFormWithOverrides = ({ schema, commonAttrs }: Readonly<FormComponentProps>) => {
 	return (
-		<>
-			<LabelAndOverrides {...commonAttrs}>
-				{(value, handleUpdate) => (
-					<JsonTextInputControl
-						modifiedClassName="bghl"
-						classNames="input text-input input-l"
-						placeholder={JSON.stringify(schema.default)}
-						value={value}
-						handleUpdate={handleUpdate}
-					/>
-				)}
-			</LabelAndOverrides>
-		</>
+		<LabelAndOverrides {...commonAttrs}>
+			{(value, handleUpdate) => (
+				<JsonTextInputControl
+					modifiedClassName="bghl"
+					classNames="input text-input input-l"
+					placeholder={JSON.stringify(schema.default)}
+					value={value}
+					handleUpdate={handleUpdate}
+				/>
+			)}
+		</LabelAndOverrides>
+	)
+}
+
+const Base64ImagePickerWithOverrides = ({ commonAttrs }: FormComponentProps) => {
+	return (
+		<LabelAndOverridesForBase64Image {...commonAttrs}>
+			{(value, handleUpdate) => (
+				<Base64ImageInputControl classNames="input input-l" value={value} handleUpdate={handleUpdate} />
+			)}
+		</LabelAndOverridesForBase64Image>
 	)
 }

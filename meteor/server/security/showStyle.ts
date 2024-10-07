@@ -3,7 +3,7 @@ import { check } from '../../lib/check'
 import { logNotAllowed } from './lib/lib'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
-import { MongoQuery, MongoQueryKey } from '../../lib/typings/meteor'
+import { MongoQuery, MongoQueryKey } from '@sofie-automation/corelib/dist/mongo'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
 import { allowAccessToShowStyleBase, allowAccessToShowStyleVariant } from './lib/security'
 import { triggerWriteAccess } from './lib/securityVerify'
@@ -33,10 +33,10 @@ export interface ShowStyleContentAccess {
 export namespace ShowStyleReadAccess {
 	/** Handles read access for all showstyle document */
 	export async function showStyleBase(
-		selector: MongoQuery<{ _id: ShowStyleBaseId }>,
+		showStyleBaseId: MongoQueryKey<ShowStyleBaseId>,
 		cred: Credentials | ResolvedCredentials
 	): Promise<boolean> {
-		return showStyleBaseContent({ showStyleBaseId: selector._id }, cred)
+		return showStyleBaseContent({ showStyleBaseId }, cred)
 	}
 
 	/** Handles read access for all showstyle content */

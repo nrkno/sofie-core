@@ -16,8 +16,8 @@ interface IState {
 }
 
 export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState> {
-	leftLabel: HTMLSpanElement | null
-	rightLabel: HTMLSpanElement | null
+	leftLabel: HTMLSpanElement | null = null
+	rightLabel: HTMLSpanElement | null = null
 
 	constructor(props: IProps) {
 		super(props)

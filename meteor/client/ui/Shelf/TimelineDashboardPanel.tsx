@@ -1,91 +1,65 @@
-import * as React from 'react'
+import React from 'react'
 import * as _ from 'underscore'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import ClassNames from 'classnames'
-
 import { Spinner } from '../../lib/Spinner'
 import { DashboardLayoutFilter, PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
-import { IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter } from './AdLibPanel'
+import { IAdLibPanelProps, AdLibFetchAndFilterProps } from './AdLibPanel'
 import { AdLibPanelToolbar } from './AdLibPanelToolbar'
 import { matchFilter } from './AdLibListView'
 import { DashboardPieceButton } from './DashboardPieceButton'
-import { contextMenuHoldToDisplayTime, UserAgentPointer, USER_AGENT_POINTER_PROPERTY } from '../../lib/lib'
+import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import {
 	DashboardPanelInner,
 	dashboardElementStyle,
-	IDashboardPanelTrackedProps,
 	IDashboardPanelProps,
+	IDashboardPanelState,
+	DashboardPanelInnerProps,
+	useDashboardPanelTrackedProps,
 } from './DashboardPanel'
 import { unprotectString } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
-import { AdLibPieceUi, getNextPieceInstancesGrouped, getUnfinishedPieceInstancesGrouped } from '../../lib/shelf'
+import { AdLibPieceUi } from '../../lib/shelf'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { ContextType, setShelfContextMenuContext } from './ShelfContextMenu'
-import { UIStudios } from '../Collections'
-import { Meteor } from 'meteor/meteor'
+import { withTranslation } from 'react-i18next'
 
-export const TimelineDashboardPanel = translateWithTracker<
-	Translated<IAdLibPanelProps & IDashboardPanelProps>,
-	DashboardPanelInner['state'],
-	AdLibFetchAndFilterProps & IDashboardPanelTrackedProps
->(
-	(props: Translated<IAdLibPanelProps & IDashboardPanelProps>) => {
-		const studio = UIStudios.findOne(props.playlist.studioId)
-		if (!studio) throw new Meteor.Error(404, 'Studio "' + props.playlist.studioId + '" not found!')
+export const TimelineDashboardPanel = React.memo(
+	function TimelineDashboardPanel(props: IAdLibPanelProps & IDashboardPanelProps) {
+		const trackedProps = useDashboardPanelTrackedProps(props)
+		if (!trackedProps.studio) return null
 
-		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
-			props.playlist,
-			props.showStyleBase
-		)
-		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist, props.showStyleBase)
-		return {
-			...fetchAndFilter(props),
-			studio,
-			unfinishedAdLibIds,
-			unfinishedTags,
-			nextAdLibIds,
-			nextTags,
-		}
+		return <TimelineDashboardPanelContent {...props} {...trackedProps} studio={trackedProps.studio} />
 	},
-	(_data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
-		return !_.isEqual(props, nextProps)
+	(props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
+		return _.isEqual(props, nextProps)
 	}
-)(
-	class TimelineDashboardPanel extends DashboardPanelInner {
-		liveLine: HTMLDivElement
+)
+
+const TimelineDashboardPanelContent = withTranslation()(
+	class TimelineDashboardPanelContent extends DashboardPanelInner {
+		liveLine: HTMLDivElement | null = null
 		scrollIntoViewTimeout: NodeJS.Timer | undefined = undefined
 
-		constructor(props) {
+		constructor(props: Translated<DashboardPanelInnerProps>) {
 			super(props)
 		}
 
-		setRef = (ref: HTMLDivElement) => {
+		private setRefExt = (ref: HTMLDivElement | null) => {
 			this.liveLine = ref
 			this.ensureLiveLineVisible()
 
-			const _panel = ref
-			if (_panel) {
-				const style = window.getComputedStyle(_panel)
-				// check if a special variable is set through CSS to indicate that we shouldn't expect
-				// double clicks to trigger AdLibs
-				const value = style.getPropertyValue(USER_AGENT_POINTER_PROPERTY)
-				const shouldBeSingleClick = !!value.match(UserAgentPointer.NO_POINTER)
-				if (this.state.singleClickMode !== shouldBeSingleClick) {
-					this.setState({
-						singleClickMode: shouldBeSingleClick,
-					})
-				}
-			}
+			this.setRef(ref)
 		}
-		componentDidUpdate(prevProps, prevState) {
+		componentDidUpdate(prevProps: IAdLibPanelProps & AdLibFetchAndFilterProps, prevState: IDashboardPanelState) {
 			super.componentDidUpdate(prevProps, prevState)
 			this.ensureLiveLineVisible()
 		}
 		componentDidMount(): void {
-			super.componentDidMount()
+			super.componentDidMount?.()
 			this.ensureLiveLineVisible()
 		}
-		ensureLiveLineVisible = _.debounce(() => {
+		private ensureLiveLineVisible = _.debounce(() => {
 			if (this.liveLine) {
 				this.liveLine.scrollIntoView({
 					behavior: 'smooth',
@@ -156,8 +130,8 @@ export const TimelineDashboardPanel = translateWithTracker<
 														key={unprotectString(adLibListItem._id)}
 														piece={adLibListItem}
 														studio={this.props.studio}
-														layer={this.state.sourceLayers[adLibListItem.sourceLayerId]}
-														outputLayer={this.state.outputLayers[adLibListItem.outputLayerId]}
+														layer={this.props.showStyleBase.sourceLayers[adLibListItem.sourceLayerId]}
+														outputLayer={this.props.showStyleBase.outputLayers[adLibListItem.outputLayerId]}
 														onToggleAdLib={this.onToggleOrSelectAdLib}
 														onSelectAdLib={this.onSelectAdLib}
 														isSelected={
@@ -206,7 +180,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 											})}
 										>
 											{(seg.isLive || (seg.isNext && !this.props.playlist.currentPartInfo)) && (
-												<div className="dashboard-panel__panel__group__liveline" ref={this.setRef}></div>
+												<div className="dashboard-panel__panel__group__liveline" ref={this.setRefExt}></div>
 											)}
 											{filteredPieces.map((adLibListItem: AdLibPieceUi) => {
 												return (
@@ -238,8 +212,8 @@ export const TimelineDashboardPanel = translateWithTracker<
 														<DashboardPieceButton
 															key={unprotectString(adLibListItem._id)}
 															piece={adLibListItem}
-															layer={this.state.sourceLayers[adLibListItem.sourceLayerId]}
-															outputLayer={this.state.outputLayers[adLibListItem.outputLayerId]}
+															layer={this.props.showStyleBase.sourceLayers[adLibListItem.sourceLayerId]}
+															outputLayer={this.props.showStyleBase.outputLayers[adLibListItem.outputLayerId]}
 															onToggleAdLib={this.onToggleOrSelectAdLib}
 															onSelectAdLib={this.onSelectAdLib}
 															isSelected={

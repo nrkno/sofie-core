@@ -1,17 +1,15 @@
 import React from 'react'
 import _ from 'underscore'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { Translated, useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import ClassNames from 'classnames'
 
 import { Spinner } from '../../lib/Spinner'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ISourceLayer, IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
-import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { DashboardLayoutFilter, DashboardPanelUnit } from '../../../lib/collections/RundownLayouts'
 import { unprotectString } from '../../../lib/lib'
-import { IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter } from './AdLibPanel'
+import { IAdLibPanelProps, AdLibFetchAndFilterProps, useFetchAndFilter } from './AdLibPanel'
 import { AdLibPanelToolbar } from './AdLibPanelToolbar'
 import { matchFilter } from './AdLibListView'
 import { DashboardPieceButton } from './DashboardPieceButton'
@@ -28,16 +26,14 @@ import {
 	isAdLibNext,
 	isAdLibOnAir,
 } from '../../lib/shelf'
-import { OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { UIStudio } from '../../../lib/api/studios'
 import { UIStudios } from '../Collections'
-import { Meteor } from 'meteor/meteor'
 import { PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { useTranslation } from 'react-i18next'
 
-interface IState {
-	outputLayers: OutputLayers
-	sourceLayers: SourceLayers
+export interface IDashboardPanelState {
 	searchFilter: string | undefined
 	selectedAdLib?: AdLibPieceUi
 	singleClickMode: boolean
@@ -51,9 +47,9 @@ export interface IDashboardPanelProps {
 export interface IDashboardPanelTrackedProps {
 	studio: UIStudio | undefined
 	unfinishedAdLibIds: PieceId[]
-	unfinishedTags: string[]
+	unfinishedTags: readonly string[]
 	nextAdLibIds: PieceId[]
-	nextTags: string[]
+	nextTags: readonly string[]
 }
 
 interface DashboardPositionableElement {
@@ -131,89 +127,39 @@ export function dashboardElementStyle(el: DashboardPositionableElement): React.C
 	}
 }
 
-export class DashboardPanelInner extends MeteorReactComponent<
-	Translated<IAdLibPanelProps & IDashboardPanelProps & AdLibFetchAndFilterProps & IDashboardPanelTrackedProps>,
-	IState
-> {
-	constructor(
-		props: Translated<IAdLibPanelProps & IDashboardPanelProps & AdLibFetchAndFilterProps & IDashboardPanelTrackedProps>
-	) {
+export function filterOutAdLibsForDashboardPanel(
+	props: IAdLibPanelProps & AdLibFetchAndFilterProps,
+	state: IDashboardPanelState,
+	uniquenessIds?: Set<string>
+): AdLibPieceUi[] {
+	const liveSegment = props.uiSegments.find((i) => i.isLive === true)
+	return props.rundownBaselineAdLibs
+		.concat(props.uiSegments.map((seg) => seg.pieces).flat())
+		.filter((item) =>
+			matchFilter(item, props.showStyleBase, liveSegment, props.filter, state.searchFilter, uniquenessIds)
+		)
+}
+
+export type DashboardPanelInnerProps = IAdLibPanelProps &
+	IDashboardPanelProps &
+	AdLibFetchAndFilterProps &
+	IDashboardPanelTrackedProps
+
+export class DashboardPanelInner extends React.Component<Translated<DashboardPanelInnerProps>, IDashboardPanelState> {
+	constructor(props: Translated<DashboardPanelInnerProps>) {
 		super(props)
 
 		this.state = {
-			outputLayers: {},
-			sourceLayers: {},
 			searchFilter: undefined,
 			singleClickMode: false,
 		}
 	}
 
-	static getDerivedStateFromProps(
-		props: Translated<IAdLibPanelProps & AdLibFetchAndFilterProps>
-	): Partial<IState> | null {
-		if (props.showStyleBase && props.showStyleBase.outputLayers && props.showStyleBase.sourceLayers) {
-			const tOLayers = props.showStyleBase.outputLayers
-			const tSLayers = props.showStyleBase.sourceLayers
-
-			return {
-				outputLayers: tOLayers,
-				sourceLayers: tSLayers,
-			}
-		}
-		return null
-	}
-
-	componentDidMount(): void {
-		this.autorun(() => {
-			const unorderedRundownIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(this.props.playlist)
-			if (unorderedRundownIds.length > 0) {
-				this.subscribe(PubSub.pieceInstances, {
-					rundownId: {
-						$in: unorderedRundownIds,
-					},
-					plannedStartedPlayback: {
-						$exists: true,
-					},
-					$and: [
-						{
-							$or: [
-								{
-									adLibSourceId: {
-										$exists: true,
-									},
-								},
-								{
-									'piece.tags': {
-										$exists: true,
-									},
-								},
-							],
-						},
-						{
-							$or: [
-								{
-									plannedStoppedPlayback: {
-										$eq: 0,
-									},
-								},
-								{
-									plannedStoppedPlayback: {
-										$exists: false,
-									},
-								},
-							],
-						},
-					],
-				})
-			}
-		})
-	}
-
-	componentDidUpdate(prevProps: IAdLibPanelProps & AdLibFetchAndFilterProps, prevState: IState): void {
+	componentDidUpdate(prevProps: IAdLibPanelProps & AdLibFetchAndFilterProps, prevState: IDashboardPanelState): void {
 		const { selectedAdLib } = this.state
 		const { selectedPiece } = this.props
 
-		const newState: Partial<IState> = {}
+		const newState: Partial<IDashboardPanelState> = {}
 
 		// Synchronize the internal selectedAdlib state with the outer selectedPiece
 		if (
@@ -236,7 +182,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 			// If the outer selectedPiece is changing, we should check if it's present in this Panel. If it is
 			// we should change our inner selectedAdLib state. If it isn't, we should leave it be, so that it
 			// doesn't affect any selections the user may have made when using "displayTakeButtons".
-			const memberAdLib = DashboardPanelInner.filterOutAdLibs(this.props, this.state).find(
+			const memberAdLib = filterOutAdLibsForDashboardPanel(this.props, this.state).find(
 				(adLib) => adLib._id === selectedPiece._id
 			)
 			if (memberAdLib) {
@@ -245,21 +191,8 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		}
 
 		if (Object.keys(newState).length > 0) {
-			this.setState(newState as IState)
+			this.setState(newState as IDashboardPanelState)
 		}
-	}
-
-	protected static filterOutAdLibs(
-		props: IAdLibPanelProps & AdLibFetchAndFilterProps,
-		state: IState,
-		uniquenessIds?: Set<string>
-	): AdLibPieceUi[] {
-		const liveSegment = props.uiSegments.find((i) => i.isLive === true)
-		return props.rundownBaselineAdLibs
-			.concat(props.uiSegments.map((seg) => seg.pieces).flat())
-			.filter((item) =>
-				matchFilter(item, props.showStyleBase, liveSegment, props.filter, state.searchFilter, uniquenessIds)
-			)
 	}
 
 	protected isAdLibOnAir(adLib: AdLibPieceUi): boolean {
@@ -481,7 +414,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		})
 	}
 
-	protected setRef = (ref: HTMLDivElement): void => {
+	protected setRef = (ref: HTMLDivElement | null): void => {
 		const _panel = ref
 		if (_panel) {
 			const style = window.getComputedStyle(_panel)
@@ -500,7 +433,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 	render(): JSX.Element | null {
 		const { t } = this.props
 		const uniquenessIds = new Set<string>()
-		const filteredAdLibs = this.findNext(DashboardPanelInner.filterOutAdLibs(this.props, this.state, uniquenessIds))
+		const filteredAdLibs = this.findNext(filterOutAdLibsForDashboardPanel(this.props, this.state, uniquenessIds))
 		if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 			const filter = this.props.filter as DashboardLayoutFilter
 			if (!this.props.uiSegments || !this.props.playlist) {
@@ -548,8 +481,8 @@ export class DashboardPanelInner extends MeteorReactComponent<
 										<DashboardPieceButton
 											piece={adLibPiece}
 											studio={this.props.studio}
-											layer={this.state.sourceLayers[adLibPiece.sourceLayerId]}
-											outputLayer={this.state.outputLayers[adLibPiece.outputLayerId]}
+											layer={this.props.showStyleBase.sourceLayers[adLibPiece.sourceLayerId]}
+											outputLayer={this.props.showStyleBase.outputLayers[adLibPiece.outputLayerId]}
 											onToggleAdLib={this.onToggleOrSelectAdLib}
 											onSelectAdLib={this.onSelectAdLib}
 											playlist={this.props.playlist}
@@ -638,30 +571,62 @@ export function findNext(
 	})
 }
 
-export const DashboardPanel = translateWithTracker<
-	Translated<IAdLibPanelProps & IDashboardPanelProps>,
-	IState,
-	AdLibFetchAndFilterProps & IDashboardPanelTrackedProps
->(
-	(props: Translated<IAdLibPanelProps>) => {
-		const studio = UIStudios.findOne(props.playlist.studioId)
-		if (!studio) throw new Meteor.Error(404, 'Studio "' + props.playlist.studioId + '" not found!')
+export function useDashboardPanelTrackedProps(
+	props: IAdLibPanelProps
+): AdLibFetchAndFilterProps & IDashboardPanelTrackedProps {
+	const unorderedRundownIds = useTracker(
+		() => RundownPlaylistCollectionUtil.getRundownUnorderedIDs(props.playlist),
+		[props.playlist._id],
+		[]
+	)
+	useSubscription(CorelibPubSub.pieceInstances, unorderedRundownIds, null, {
+		onlyPlayingAdlibsOrWithTags: true,
+	})
 
-		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
-			props.playlist,
-			props.showStyleBase
-		)
-		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist, props.showStyleBase)
-		return {
-			...fetchAndFilter(props),
-			studio,
-			unfinishedAdLibIds,
-			unfinishedTags,
-			nextAdLibIds,
-			nextTags,
-		}
-	},
-	(_data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
-		return !_.isEqual(props, nextProps)
+	const studio = useTracker(() => UIStudios.findOne(props.playlist.studioId), [props.playlist.studioId])
+
+	const { unfinishedAdLibIds, unfinishedTags } = useTracker(
+		() => getUnfinishedPieceInstancesGrouped(props.playlist, props.showStyleBase),
+		[props.playlist, props.showStyleBase],
+		{ unfinishedAdLibIds: [], unfinishedPieceInstances: [], unfinishedTags: [] }
+	)
+	const { nextAdLibIds, nextTags } = useTracker(
+		() => getNextPieceInstancesGrouped(props.playlist, props.showStyleBase),
+		[props.playlist, props.showStyleBase],
+		{ nextAdLibIds: [], nextPieceInstances: [], nextTags: [] }
+	)
+
+	const otherProps = useFetchAndFilter(props.playlist, props.showStyleBase, props.filter, props.includeGlobalAdLibs)
+
+	return {
+		...otherProps,
+		studio,
+		unfinishedAdLibIds,
+		unfinishedTags,
+		nextAdLibIds,
+		nextTags,
 	}
-)(DashboardPanelInner)
+}
+
+export const DashboardPanel = React.memo(
+	function DashboardPanel(props: IAdLibPanelProps & IDashboardPanelProps) {
+		const i18next = useTranslation()
+
+		const trackedProps = useDashboardPanelTrackedProps(props)
+		if (!trackedProps.studio) return null
+
+		return (
+			<DashboardPanelInner
+				{...props}
+				{...trackedProps}
+				studio={trackedProps.studio}
+				t={i18next.t}
+				tReady={i18next.ready}
+				i18n={i18next.i18n}
+			/>
+		)
+	},
+	(props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
+		return _.isEqual(props, nextProps)
+	}
+)

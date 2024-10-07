@@ -1,4 +1,4 @@
-import { NoraContent } from '@sofie-automation/blueprints-integration'
+import { JSONBlobParse, NoraContent } from '@sofie-automation/blueprints-integration'
 import { PieceGeneric } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { objectToXML } from '../util/object-to-xml'
 
@@ -6,7 +6,7 @@ export { createMosObjectXmlStringNoraBluePrintPiece }
 
 function createMosObjectXmlStringNoraBluePrintPiece(piece: Pick<PieceGeneric, 'content' | 'externalId'>): string {
 	const noraContent = piece.content as NoraContent | undefined
-	const noraPayload = noraContent?.payload
+	const noraPayload = noraContent?.previewPayload ? JSONBlobParse(noraContent.previewPayload) : undefined
 	if (!noraContent || !noraPayload) {
 		throw new Error('Not a Nora blueprint piece')
 	}

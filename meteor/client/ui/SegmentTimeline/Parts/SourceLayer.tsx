@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react'
 import _ from 'underscore'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { literal, unprotectString } from '../../../../lib/lib'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { IContextMenuContext } from '../../RundownView'
@@ -14,13 +14,13 @@ import { UIStudio } from '../../../../lib/api/studios'
 export interface ISourceLayerPropsBase {
 	key: string
 	outputLayer: IOutputLayerUi
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	studio: UIStudio
 	segment: SegmentUi
 	part: PartUi
 	startsAt: number
 	duration: number
-	expectedDuration: number
+	displayDuration: number
 	timeScale: number
 	isLiveLine: boolean
 	isNextLine: boolean
@@ -47,7 +47,7 @@ interface ISourceLayerProps extends ISourceLayerPropsBase {
 
 export function useMouseContext(props: ISourceLayerPropsBase): {
 	getPartContext(): IContextMenuContext
-	onMouseUp(e: React.MouseEvent<HTMLDivElement>): void
+	onMouseDown(e: React.MouseEvent<HTMLElement>): void
 } {
 	const [mousePosition, setMousePosition] = useState<OffsetPosition>({ left: 0, top: 0 })
 
@@ -71,14 +71,14 @@ export function useMouseContext(props: ISourceLayerPropsBase): {
 
 			return ctx
 		}, [props.segment, props.part, props.timeScale, props.startsAt, props.onContextMenu, mousePosition]),
-		onMouseUp: (e: React.MouseEvent<HTMLDivElement>) => {
+		onMouseDown: (e: React.MouseEvent<HTMLElement>) => {
 			setMousePosition({ left: e.pageX, top: e.pageY })
 		},
 	}
 }
 
-export function SourceLayer(props: ISourceLayerProps): JSX.Element {
-	const { getPartContext, onMouseUp } = useMouseContext(props)
+export function SourceLayer(props: Readonly<ISourceLayerProps>): JSX.Element {
+	const { getPartContext, onMouseDown } = useMouseContext(props)
 
 	return (
 		<ContextMenuTrigger
@@ -87,7 +87,7 @@ export function SourceLayer(props: ISourceLayerProps): JSX.Element {
 				className: 'segment-timeline__layer',
 				//@ts-expect-error A Data attribue is perfectly fine
 				'data-layer-id': props.layer._id,
-				onMouseUpCapture: (e) => onMouseUp(e),
+				onMouseDownCapture: (e) => onMouseDown(e),
 				role: 'log',
 				'aria-live': 'assertive',
 				'aria-label': props.layer.name,
@@ -119,7 +119,7 @@ export function SourceLayer(props: ISourceLayerProps): JSX.Element {
 									part={props.part}
 									partStartsAt={props.startsAt}
 									partDuration={props.duration}
-									partExpectedDuration={props.expectedDuration}
+									partDisplayDuration={props.displayDuration}
 									timeScale={props.timeScale}
 									autoNextPart={props.autoNextPart}
 									liveLinePadding={props.liveLinePadding}

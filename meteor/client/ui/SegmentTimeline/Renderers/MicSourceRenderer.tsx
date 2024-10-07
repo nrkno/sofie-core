@@ -18,16 +18,15 @@ interface IState {}
 
 export const MicSourceRenderer = withTranslation()(
 	class MicSourceRenderer extends CustomLayerItemRenderer<IProps & WithTranslation, IState> {
-		itemPosition: number
-		itemWidth: number
-		itemElement: HTMLElement | null
-		lineItem: HTMLElement
-		linePosition: number
-		leftLabel: HTMLSpanElement | null
-		rightLabel: HTMLSpanElement | null
+		itemPosition = 0
+		itemElement: HTMLElement | null = null
+		lineItem: HTMLElement | null = null
+		linePosition: number | undefined
+		leftLabel: HTMLSpanElement | null = null
+		rightLabel: HTMLSpanElement | null = null
 
-		readTime: number
-		lastPartDuration: number
+		readTime: number | undefined
+		lastPartDuration: number | undefined
 
 		private _lineAtEnd = false
 
@@ -36,14 +35,17 @@ export const MicSourceRenderer = withTranslation()(
 		}
 
 		repositionLine = () => {
+			if (!this.lineItem) return
 			this.lineItem.style.left = this.linePosition + 'px'
 		}
 
 		addClassToLine = (className: string) => {
+			if (!this.lineItem) return
 			this.lineItem.classList.add(className)
 		}
 
 		removeClassFromLine = (className: string) => {
+			if (!this.lineItem) return
 			this.lineItem.classList.remove(className)
 		}
 
@@ -149,7 +151,7 @@ export const MicSourceRenderer = withTranslation()(
 
 			// Move the line element
 			if (this.itemElement !== this.props.itemElement) {
-				if (this.itemElement) {
+				if (this.itemElement && this.lineItem) {
 					try {
 						this.lineItem.remove()
 					} catch (err) {
@@ -157,7 +159,7 @@ export const MicSourceRenderer = withTranslation()(
 					}
 				}
 				this.itemElement = this.props.itemElement
-				if (this.itemElement) {
+				if (this.itemElement && this.lineItem) {
 					this.itemElement.parentElement?.parentElement?.parentElement?.appendChild(this.lineItem)
 					_forceSizingRecheck = true
 				}

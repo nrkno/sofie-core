@@ -2,19 +2,20 @@ import * as React from 'react'
 import Escape from './../../lib/Escape'
 import { withTranslation } from 'react-i18next'
 import { ContextMenu, MenuItem } from '@jstarpl/react-contextmenu'
-import { Part } from '../../../lib/collections/Parts'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 import { IContextMenuContext } from '../RundownView'
 import { PartUi, SegmentUi } from './SegmentTimelineContainer'
 import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 
 interface IProps {
-	onSetNext: (part: Part | undefined, e: any, offset?: number, take?: boolean) => void
+	onSetNext: (part: DBPart | undefined, e: any, offset?: number, take?: boolean) => void
 	onSetNextSegment: (segmentId: SegmentId, e: any) => void
 	onQueueNextSegment: (segmentId: SegmentId | null, e: any) => void
-	playlist?: RundownPlaylist
+	playlist?: DBRundownPlaylist
 	studioMode: boolean
 	contextMenuContext: IContextMenuContext | null
 	enablePlayFromAnywhere: boolean
@@ -31,6 +32,7 @@ export const SegmentContextMenu = withTranslation()(
 			const { t } = this.props
 
 			const part = this.getPartFromContext()
+			const segment = this.getSegmentFromContext()
 			const timecode = this.getTimePosition()
 			const startsAt = this.getPartStartsAt()
 
@@ -40,7 +42,10 @@ export const SegmentContextMenu = withTranslation()(
 
 			const canSetAsNext = !!this.props.playlist?.activationId
 
-			return this.props.studioMode && this.props.playlist && this.props.playlist.activationId ? (
+			return this.props.studioMode &&
+				this.props.playlist &&
+				this.props.playlist.activationId &&
+				segment?.orphaned !== SegmentOrphanedReason.ADLIB_TESTING ? (
 				<Escape to="document">
 					<ContextMenu id="segment-timeline-context-menu">
 						{part && timecode === null && (
@@ -70,7 +75,7 @@ export const SegmentContextMenu = withTranslation()(
 							<>
 								<MenuItem
 									onClick={(e) => this.props.onSetNext(part.instance.part, e)}
-									disabled={isCurrentPart || !!part.instance.orphaned || !canSetAsNext}
+									disabled={!!part.instance.orphaned || !canSetAsNext}
 								>
 									<span dangerouslySetInnerHTML={{ __html: t('Set this part as <strong>Next</strong>') }}></span>
 									{startsAt !== null &&
@@ -87,9 +92,9 @@ export const SegmentContextMenu = withTranslation()(
 										</MenuItem> */}
 										<MenuItem
 											onClick={(e) => this.onPlayFromHere(part.instance.part, e)}
-											disabled={isCurrentPart || !!part.instance.orphaned || !canSetAsNext}
+											disabled={!!part.instance.orphaned || !canSetAsNext}
 										>
-											<span dangerouslySetInnerHTML={{ __html: t('Play from Here') }}></span> (
+											<span>{t('Play from Here')}</span> (
 											{RundownUtils.formatTimeToShortTime(Math.floor((startsAt + timecode) / 1000) * 1000)})
 										</MenuItem>
 									</>
@@ -117,12 +122,12 @@ export const SegmentContextMenu = withTranslation()(
 			}
 		}
 
-		onSetAsNextFromHere = (part: Part, e) => {
-			const offset = this.getTimePosition()
-			this.props.onSetNext(part, e, offset || 0)
-		}
+		// private onSetAsNextFromHere = (part: DBPart, e) => {
+		// 	const offset = this.getTimePosition()
+		// 	this.props.onSetNext(part, e, offset || 0)
+		// }
 
-		onPlayFromHere = (part: Part, e) => {
+		private onPlayFromHere = (part: DBPart, e: React.MouseEvent | React.TouchEvent) => {
 			const offset = this.getTimePosition()
 			this.props.onSetNext(part, e, offset || 0, true)
 		}

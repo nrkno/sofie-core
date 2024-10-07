@@ -1,18 +1,15 @@
 import { TimelineObjGeneric } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { applyToArray, clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
+import { applyToArray, clone } from '@sofie-automation/corelib/dist/lib'
 import { TSR } from '@sofie-automation/blueprints-integration'
 import { JobContext } from '../jobs'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
-import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getRundownIDsFromCache } from './cache'
+import { PlayoutModel } from './model/PlayoutModel'
 import { logger } from '../logging'
 import { getCurrentTime } from '../lib'
-import { calculatePartExpectedDurationWithTransition } from '@sofie-automation/corelib/dist/playout/timings'
 import { MongoQuery } from '../db'
 import { mongoWhere } from '@sofie-automation/corelib/dist/mongo'
-import _ = require('underscore')
 import { setNextPart } from './setNext'
 import { selectNextPart } from './selectNextPart'
 
@@ -20,86 +17,59 @@ import { selectNextPart } from './selectNextPart'
  * Reset the rundownPlaylist (all of the rundowns within the playlist):
  * Remove all dynamically inserted/updated pieces, parts, timings etc..
  */
-export async function resetRundownPlaylist(context: JobContext, cache: CacheForPlayout): Promise<void> {
-	logger.info('resetRundownPlaylist ' + cache.Playlist.doc._id)
+export async function resetRundownPlaylist(context: JobContext, playoutModel: PlayoutModel): Promise<void> {
+	logger.info('resetRundownPlaylist ' + playoutModel.playlist._id)
 	// Remove all dunamically inserted pieces (adlibs etc)
-	// const rundownIds = new Set(getRundownIDsFromCache(cache))
+	// const rundownIds = new Set((playoutModel.getRundownIds()))
 
-	removePartInstancesWithPieceInstances(context, cache, { rehearsal: true })
-	resetPartInstancesWithPieceInstances(context, cache)
+	playoutModel.resetPlaylist(!!playoutModel.playlist.activationId)
 
-	cache.Playlist.update((p) => {
-		p.previousPartInfo = null
-		p.currentPartInfo = null
-		p.holdState = RundownHoldState.NONE
-		p.resetTime = getCurrentTime()
+	playoutModel.removeAllRehearsalPartInstances()
+	resetPartInstancesWithPieceInstances(context, playoutModel)
 
-		delete p.lastTakeTime
-		delete p.startedPlayback
-		delete p.rundownsStartedPlayback
-		delete p.previousPersistentState
-		delete p.trackedAbSessions
-		delete p.queuedSegmentId
+	// Remove the AdlibTesting segment
+	for (const rundown of playoutModel.rundowns) {
+		rundown.removeAdlibTestingSegment()
+	}
 
-		return p
-	})
-
-	if (cache.Playlist.doc.activationId) {
-		// generate a new activationId
-		cache.Playlist.update((p) => {
-			p.activationId = getRandomId()
-			return p
-		})
-
+	if (playoutModel.playlist.activationId) {
 		// put the first on queue:
 		const firstPart = selectNextPart(
 			context,
-			cache.Playlist.doc,
+			playoutModel.playlist,
 			null,
 			null,
-			getOrderedSegmentsAndPartsFromPlayoutCache(cache)
+			playoutModel.getAllOrderedSegments(),
+			playoutModel.getAllOrderedParts()
 		)
-		await setNextPart(context, cache, firstPart, false)
+		await setNextPart(context, playoutModel, firstPart, false)
 	} else {
-		await setNextPart(context, cache, null, false)
+		await setNextPart(context, playoutModel, null, false)
 	}
 }
 
 /**
  * Reset selected or all partInstances with their pieceInstances
- * @param cache
+ * @param playoutModel
  * @param selector if not provided, all partInstances will be reset
  */
 export function resetPartInstancesWithPieceInstances(
 	context: JobContext,
-	cache: CacheForPlayout,
+	playoutModel: PlayoutModel,
 	selector?: MongoQuery<DBPartInstance>
 ): void {
-	const partInstancesToReset = cache.PartInstances.updateAll((p) => {
-		if (!p.reset && (!selector || mongoWhere(p, selector))) {
-			p.reset = true
-			return p
-		} else {
-			return false
+	const partInstanceIdsToReset: PartInstanceId[] = []
+	for (const partInstance of playoutModel.loadedPartInstances) {
+		if (!partInstance.partInstance.reset && (!selector || mongoWhere(partInstance.partInstance, selector))) {
+			partInstance.markAsReset()
+			partInstanceIdsToReset.push(partInstance.partInstance._id)
 		}
-	})
-
-	// Reset any in the cache now
-	if (partInstancesToReset.length) {
-		cache.PieceInstances.updateAll((p) => {
-			if (!p.reset && partInstancesToReset.includes(p.partInstanceId)) {
-				p.reset = true
-				return p
-			} else {
-				return false
-			}
-		})
 	}
 
 	// Defer ones which arent loaded
-	cache.deferAfterSave(async (cache) => {
-		const rundownIds = getRundownIDsFromCache(cache)
-		const partInstanceIdsInCache = cache.PartInstances.findAll(null).map((p) => p._id)
+	playoutModel.deferAfterSave(async (playoutModel) => {
+		const rundownIds = playoutModel.getRundownIds()
+		const partInstanceIdsInModel = playoutModel.loadedPartInstances.map((p) => p.partInstance._id)
 
 		// Find all the partInstances which are not loaded, but should be reset
 		const resetInDb = await context.directCollections.PartInstances.findFetch(
@@ -107,8 +77,8 @@ export function resetPartInstancesWithPieceInstances(
 				$and: [
 					selector ?? {},
 					{
-						// Not any which are in the cache, as they have already been done if needed
-						_id: { $nin: partInstanceIdsInCache },
+						// Not any which are in the model, as they have already been done if needed
+						_id: { $nin: partInstanceIdsInModel },
 						rundownId: { $in: rundownIds },
 						reset: { $ne: true },
 					},
@@ -118,7 +88,7 @@ export function resetPartInstancesWithPieceInstances(
 		).then((ps) => ps.map((p) => p._id))
 
 		// Do the reset
-		const allToReset = [...resetInDb, ...partInstancesToReset]
+		const allToReset = [...resetInDb, ...partInstanceIdsToReset]
 		await Promise.all([
 			resetInDb.length
 				? context.directCollections.PartInstances.update(
@@ -152,61 +122,6 @@ export function resetPartInstancesWithPieceInstances(
 	})
 }
 
-/**
- * Remove selected partInstances with their pieceInstances
- */
-function removePartInstancesWithPieceInstances(
-	context: JobContext,
-	cache: CacheForPlayout,
-	selector: MongoQuery<DBPartInstance>
-): void {
-	const partInstancesToRemove = cache.PartInstances.remove((p) => mongoWhere(p, selector))
-
-	// Reset any in the cache now
-	if (partInstancesToRemove.length) {
-		cache.PieceInstances.remove((p) => partInstancesToRemove.includes(p.partInstanceId))
-	}
-
-	// Defer ones which arent loaded
-	cache.deferAfterSave(async (cache) => {
-		const rundownIds = getRundownIDsFromCache(cache)
-		// We need to keep any for PartInstances which are still existent in the cache (as they werent removed)
-		const partInstanceIdsInCache = cache.PartInstances.findAll(null).map((p) => p._id)
-
-		// Find all the partInstances which are not loaded, but should be removed
-		const removeFromDb = await context.directCollections.PartInstances.findFetch(
-			{
-				$and: [
-					selector,
-					{
-						// Not any which are in the cache, as they have already been done if needed
-						_id: { $nin: partInstanceIdsInCache },
-						rundownId: { $in: rundownIds },
-					},
-				],
-			},
-			{ projection: { _id: 1 } }
-		).then((ps) => ps.map((p) => p._id))
-
-		// Do the remove
-		const allToRemove = [...removeFromDb, ...partInstancesToRemove]
-		await Promise.all([
-			removeFromDb.length > 0
-				? context.directCollections.PartInstances.remove({
-						_id: { $in: removeFromDb },
-						rundownId: { $in: rundownIds },
-				  })
-				: undefined,
-			allToRemove.length > 0
-				? context.directCollections.PieceInstances.remove({
-						partInstanceId: { $in: allToRemove },
-						rundownId: { $in: rundownIds },
-				  })
-				: undefined,
-		])
-	})
-}
-
 export function substituteObjectIds(
 	rawEnable: TSR.Timeline.TimelineEnable | TSR.Timeline.TimelineEnable[],
 	idMap: { [oldId: string]: string | undefined }
@@ -231,34 +146,20 @@ export function substituteObjectIds(
 
 	return enable
 }
-export function prefixSingleObjectId<T extends TimelineObjGeneric>(
-	obj: T,
-	prefix: string,
-	ignoreOriginal?: never
-): string {
-	let id = obj.id
-	if (!ignoreOriginal) {
-		if (!obj.originalId) {
-			obj.originalId = obj.id
-		}
-		id = obj.originalId
-	}
-	return prefix + id
+export function prefixSingleObjectId<T extends TimelineObjGeneric>(obj: T, prefix: string): string {
+	return prefix + (obj.originalId ?? obj.id)
 }
-export function prefixAllObjectIds<T extends TimelineObjGeneric>(
-	objList: T[],
-	prefix: string,
-	ignoreOriginal?: never
-): T[] {
+export function prefixAllObjectIds<T extends TimelineObjGeneric>(objList: T[], prefix: string): T[] {
 	const idMap: { [oldId: string]: string | undefined } = {}
-	_.each(objList, (o) => {
-		idMap[o.id] = prefixSingleObjectId(o, prefix, ignoreOriginal)
-	})
+	for (const obj of objList) {
+		idMap[obj.id] = prefixSingleObjectId(obj, prefix)
+	}
 
 	return objList.map((rawObj) => {
 		const obj = clone(rawObj)
 
-		obj.id = prefixSingleObjectId(obj, prefix, ignoreOriginal)
+		if (!obj.originalId) obj.originalId = obj.id
+		obj.id = prefixSingleObjectId(obj, prefix)
 		obj.enable = substituteObjectIds(obj.enable, idMap)
 
 		if (typeof obj.inGroup === 'string') {
@@ -302,29 +203,4 @@ export function isTooCloseToAutonext(
 	}
 
 	return false
-}
-
-/**
- * Update the expectedDurationWithTransition on the specified PartInstance.
- * The value is used by the UI to approximate the duration of a PartInstance as it will be played out
- */
-export function updateExpectedDurationWithTransitionForPartInstance(
-	cache: CacheForPlayout,
-	partInstanceId: PartInstanceId
-): void {
-	const nextPartInstance = cache.PartInstances.findOne(partInstanceId)
-	if (nextPartInstance) {
-		const pieceInstances = cache.PieceInstances.findAll((p) => p.partInstanceId === nextPartInstance._id)
-
-		// Update expectedDurationWithTransition of the next part instance, as it may have changed and is used by the ui until it is taken
-		const expectedDurationWithTransition = calculatePartExpectedDurationWithTransition(
-			nextPartInstance.part,
-			pieceInstances.map((p) => p.piece)
-		)
-
-		cache.PartInstances.updateOne(nextPartInstance._id, (doc) => {
-			doc.part.expectedDurationWithTransition = expectedDurationWithTransition
-			return doc
-		})
-	}
 }

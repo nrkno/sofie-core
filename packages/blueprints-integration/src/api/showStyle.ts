@@ -15,8 +15,11 @@ import type {
 	IDataStoreActionExecutionContext,
 	IRundownActivationContext,
 	IShowStyleContext,
+	IFixUpConfigContext,
+	IOnTakeContext,
+	IOnSetAsNextContext,
 } from '../context'
-import type { IngestAdlib, ExtendedIngestRundown, IngestSegment } from '../ingest'
+import type { IngestAdlib, ExtendedIngestRundown, IngestSegment, IngestRundown } from '../ingest'
 import type { IBlueprintExternalMessageQueueObj } from '../message'
 import type { MigrationStepShowStyle } from '../migrations'
 import type {
@@ -52,7 +55,9 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 
 	/** A list of config items this blueprint expects to be available on the ShowStyle */
 	showStyleConfigSchema: JSONBlob<JSONSchema>
-	/** A list of Migration steps related to a ShowStyle */
+	/** A list of Migration steps related to a ShowStyle
+	 * @deprecated This has been replaced with `validateConfig` and `applyConfig`
+	 */
 	showStyleMigrations: MigrationStepShowStyle[]
 
 	/** The config presets exposed by this blueprint */
@@ -82,6 +87,15 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 		context: ISegmentUserContext,
 		ingestSegment: IngestSegment
 	) => BlueprintResultSegment | Promise<BlueprintResultSegment>
+
+	/**
+	 * Generate an Adlib Testing IngestRundown for the specified ShowStyleVariant.
+	 * This is used to generate a rundown which can be used for testing adlibs, or minimal use of Sofie without a rundown from an NRCS.
+	 */
+	generateAdlibTestingIngestRundown?: (
+		context: IShowStyleUserContext,
+		showStyleVariant: IBlueprintShowStyleVariant
+	) => IngestRundown | Promise<IngestRundown>
 
 	/**
 	 * Allows the blueprint to custom-modify the PartInstance, on ingest data update (this is run after getSegment())
@@ -115,14 +129,25 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 		context: IActionExecutionContext,
 		actionId: string,
 		userData: ActionUserData,
-		triggerMode?: string
+		triggerMode: string | undefined,
+		privateData?: unknown
 	) => Promise<void>
 
 	/** Generate adlib piece from ingest data */
 	getAdlibItem?: (
 		context: IShowStyleUserContext,
 		ingestItem: IngestAdlib
-	) => IBlueprintAdLibPiece | IBlueprintActionManifest | null
+	) =>
+		| Promise<IBlueprintAdLibPiece | IBlueprintActionManifest | null>
+		| IBlueprintAdLibPiece
+		| IBlueprintActionManifest
+		| null
+
+	/**
+	 * Apply automatic upgrades to the structure of user specified config overrides
+	 * This lets you apply various changes to the user's values in an abstract way
+	 */
+	fixUpConfig?: (context: IFixUpConfigContext<TRawConfig>) => void
 
 	/**
 	 * Validate the config passed to this blueprint
@@ -150,9 +175,21 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 	onRundownFirstTake?: (context: IPartEventContext) => Promise<void>
 	onRundownDeActivate?: (context: IRundownActivationContext) => Promise<void>
 
-	/** Called after a Take action */
+	/** Called before a Take action */
 	onPreTake?: (context: IPartEventContext) => Promise<void>
+	/**
+	 * Called during a Take action.
+	 * Allows for part modification or aborting the take.
+	 */
+	onTake?: (context: IOnTakeContext) => Promise<void>
+	/** Called after a Take action */
 	onPostTake?: (context: IPartEventContext) => Promise<void>
+
+	/**
+	 * Called when a part is set as Next, including right after a Take.
+	 * Allows for part modification.
+	 */
+	onSetAsNext?: (context: IOnSetAsNextContext) => Promise<void>
 
 	/** Called after the timeline has been generated, used to manipulate the timeline */
 	onTimelineGenerate?: (
@@ -193,7 +230,6 @@ export interface BlueprintResultTimeline {
 }
 export interface BlueprintResultBaseline {
 	timelineObjects: TimelineObjectCoreExt<TSR.TSRTimelineContent>[]
-	/** @deprecated */
 	expectedPlayoutItems?: ExpectedPlayoutItemGeneric[]
 	expectedPackages?: ExpectedPackage.Any[]
 }

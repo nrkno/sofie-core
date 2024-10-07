@@ -105,7 +105,7 @@ function getVersions(): Record<string, string> {
 		const pkgInfo = require(`timeline-state-resolver/package.json`)
 		versions['tsrVersion'] = pkgInfo.version || 'N/A'
 	} catch (e) {
-		// this.logger.error(`Failed to load package.json for lib "${pkgName}": ${e}`)
+		// this.logger.error(`Failed to load package.json for lib "${pkgName}": ${stringifyError(e)}`)
 	}
 
 	return versions

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { withTranslation } from 'react-i18next'
-import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { IngestDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/ingestDevice'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../../lib/notifications/notifications'
@@ -19,10 +19,10 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 			super(props)
 			this.state = {}
 		}
-		onUploadCredentialsFile(e) {
+		onUploadCredentialsFile(e: React.ChangeEvent<HTMLInputElement>) {
 			const { t } = this.props
 
-			const file = e.target.files[0]
+			const file = e.target.files?.[0]
 			if (!file) {
 				return
 			}

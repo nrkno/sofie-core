@@ -28,7 +28,8 @@ $segment-editorialline-color: rgba(255, 255, 255, 0.25);
 $rundown-divider-color: #000000;
 $rundown-divider-background-color: #dddddd;
 
-$segment-piece-step-counter: #ffff00;
+$segment-piece-step-counter: #ffffff;
+$segment-piece-step-counter-background: #6f3010;
 
 $previewline-color: rgb(38, 137, 186);
 
@@ -233,6 +234,7 @@ body.no-overflow {
 		text-align: center;
 
 		.timing-clock {
+			display: inline;
 			position: relative;
 			margin-right: 1em;
 			font-family: 'Roboto', Helvetica Neue, Arial, sans-serif;
@@ -287,6 +289,7 @@ body.no-overflow {
 
 			.timing-clock-label {
 				position: absolute;
+				display: inline;
 				top: -1em;
 				color: #b8b8b8;
 				text-transform: uppercase;
@@ -316,6 +319,7 @@ body.no-overflow {
 					width: auto;
 					max-width: calc(40vw - 138px);
 					min-width: 100%;
+					margin: 0;
 
 					> strong {
 						margin-right: 0.4em;
@@ -428,7 +432,8 @@ body.no-overflow {
 .header.rundown.not-active .first-row {
 	background-color: rgb(38, 137, 186);
 }
-.header.rundown.not-active .first-row span {
+.header.rundown.not-active .first-row .timing-clock,
+.header.rundown.not-active .first-row .timing-clock-label {
 	color: #fff !important;
 }
 // .header.rundown.active .first-row  {
@@ -737,10 +742,6 @@ svg.icon {
 
 	.segment-timeline__expectedTime {
 		grid-column: duration-onAirIn-split / segment-group-controls;
-	}
-
-	.segment-timeline__unsynced {
-		text-transform: uppercase;
 	}
 }
 
@@ -1755,6 +1756,12 @@ svg.icon {
 						box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5);
 						cursor: default;
 
+						.piece__status-icon {
+							> svg.type-warning {
+								margin-top: 2px;
+							}
+						}
+
 						// TODO: This is just temporary styling, to indicate that the layers are clickable
 						&:hover {
 							transition: none;
@@ -2098,7 +2105,8 @@ svg.icon {
 						margin: 0 -10px 0 0;
 					}
 
-					> .label-icon.label-infinite-icon {
+					> .label-icon.label-infinite-icon,
+					> .label-icon.label-loop-icon {
 						margin: 0 0 0 0;
 					}
 				}
@@ -2130,17 +2138,33 @@ svg.icon {
 					margin: 0;
 				}
 
-				.segment-timeline__piece__step-chevron {
+				&.with-steps {
+					> .segment-timeline__piece__label {
+						padding-right: 3em;
+					}
+				}
+
+				.segment-timeline__piece__step {
 					position: relative;
 					vertical-align: top;
 					margin-right: 0.2em;
-					background: rgba(0, 0, 0, 0.4);
+					margin-top: 0.1em;
+					background: $segment-piece-step-counter-background;
 					display: inline-block;
-					padding: 0 1em 0 0.4em;
+					padding: 0 0.3em;
 					color: $segment-piece-step-counter;
 					text-shadow: 0 0 1px #000, 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
-					clip-path: polygon(0 0, calc(100% - 0.6em) 0, 100% 50%, calc(100% - 0.6em) 100%, 0 100%);
-					line-height: 1.4em;
+					line-height: 1.2em;
+					border-radius: 3px;
+					z-index: 3;
+					text-align: center;
+
+					&.fixed-width {
+						padding: 0;
+						max-width: 3em;
+						min-width: 3em;
+						overflow: hidden;
+					}
 				}
 
 				> .segment-timeline__piece__label {
@@ -2161,6 +2185,13 @@ svg.icon {
 					object-fit: contain;
 					object-position: center center;
 					margin-left: 0.5em;
+				}
+
+				.segment-timeline__piece__label-icon {
+					display: inline-block;
+					vertical-align: top;
+					margin-top: 0;
+					margin-bottom: -5px;
 				}
 
 				&.with-duration {
@@ -2876,9 +2907,8 @@ svg.icon {
 			position: absolute;
 			top: 0;
 			left: 0;
-			background: $segment-layer-background-graphics;
-			padding: 0 0.75em;
-			clip-path: polygon(0 0, calc(100% - 0.6em) 0, 100% 50%, calc(100% - 0.6em) 100%, 0 100%, 0.6em 50%);
+			background: $segment-piece-step-counter-background;
+			padding: 0 0.2em;
 			font-weight: 400;
 			text-shadow: 0 0 1px #000, 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
 			color: $segment-piece-step-counter;
@@ -3252,17 +3282,15 @@ svg.icon {
 .segment-storyboard__piece__step-chevron,
 .segment-opl__main-piece__label__step-chevron {
 	margin-right: 0.2em;
-	background: rgba(0, 0, 0, 0.4);
+	background: $segment-piece-step-counter-background;
 	display: inline-block;
-	padding: 0 1em 0 0.4em;
+	padding: 0 0.2em;
 	color: $segment-piece-step-counter;
 	text-shadow: 0 0 1px #000, 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
-	clip-path: polygon(0 0, calc(100% - 0.6em) 0, 100% 50%, calc(100% - 0.6em) 100%, 0 100%);
 }
 
 .segment-storyboard__piece__step-chevron {
 	margin-left: -0.3em;
-	padding-left: 0.6em;
 }
 
 .segment-opl__main-piece__label__step-chevron {

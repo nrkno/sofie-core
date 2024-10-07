@@ -55,7 +55,6 @@ registerIndex(ExpectedPackageWorkStatuses, {
 // 	deviceId: 1,
 // })
 
-/** @deprecated */
 export const ExpectedPlayoutItems = createAsyncOnlyReadOnlyMongoCollection<ExpectedPlayoutItem>(
 	CollectionName.ExpectedPlayoutItems
 )

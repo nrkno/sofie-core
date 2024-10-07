@@ -76,7 +76,7 @@ function usePortal(id: string, style?: Partial<Record<keyof React.CSSProperties,
 			const el = document.createElement('div')
 			if (style) {
 				for (const [prop, value] of Object.entries<string>(style)) {
-					el.style[prop] = value
+					el.style[prop as any] = value
 				}
 			}
 

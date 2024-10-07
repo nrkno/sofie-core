@@ -31,9 +31,13 @@ export const PackageStatus: React.FC<{
 			return p2.content.title || p2.content.guid || unprotectString(props.package._id)
 		} else if (p2.type === ExpectedPackage.PackageType.JSON_DATA) {
 			return p2.content.path || unprotectString(props.package._id)
+		} else if (p2.type === ExpectedPackage.PackageType.HTML_TEMPLATE) {
+			return p2.content.path || unprotectString(props.package._id)
 		} else {
 			assertNever(p2)
-			return unprotectString(props.package._id)
+
+			const anyContent = (p2 as any).content
+			return anyContent.path || anyContent.filePath || anyContent.title || unprotectString(props.package._id)
 		}
 	}, [props.package])
 
@@ -155,7 +159,9 @@ export const PackageStatus: React.FC<{
 	)
 }
 
-function PackageStatusIcon(props: { progress: number | undefined; label: string; isWorking: boolean }): JSX.Element {
+function PackageStatusIcon(
+	props: Readonly<{ progress: number | undefined; label: string; isWorking: boolean }>
+): JSX.Element {
 	const svgCircleSector = (x: number, y: number, radius: number, v: number, color: string) => {
 		if (v >= 1) {
 			return <circle cx={x} cy={y} r={radius} fill={color}></circle>

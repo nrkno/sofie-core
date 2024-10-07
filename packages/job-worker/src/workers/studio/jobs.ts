@@ -35,10 +35,17 @@ import {
 	handleRestoreRundownsInPlaylistToDefaultOrder,
 } from '../../rundownPlaylists'
 import { handleGeneratePlaylistSnapshot, handleRestorePlaylistSnapshot } from '../../playout/snapshot'
-import { handleBlueprintUpgradeForStudio, handleBlueprintValidateConfigForStudio } from '../../playout/upgrade'
+import {
+	handleBlueprintFixUpConfigForStudio,
+	handleBlueprintIgnoreFixUpConfigForStudio,
+	handleBlueprintUpgradeForStudio,
+	handleBlueprintValidateConfigForStudio,
+} from '../../playout/upgrade'
 import { handleTimelineTriggerTime, handleOnPlayoutPlaybackChanged } from '../../playout/timings'
 import { handleExecuteAdlibAction } from '../../playout/adlibAction'
 import { handleTakeNextPart } from '../../playout/take'
+import { handleActivateAdlibTesting } from '../../playout/adlibTesting'
+import { handleExecuteBucketAdLibOrAction } from '../../playout/bucketAdlibJobs'
 
 type ExecutableFunction<T extends keyof StudioJobFunc> = (
 	context: JobContext,
@@ -68,6 +75,7 @@ export const studioJobHandlers: StudioJobHandlers = {
 	[StudioJobs.SetNextSegment]: handleSetNextSegment,
 	[StudioJobs.QueueNextSegment]: handleQueueNextSegment,
 	[StudioJobs.ExecuteAction]: handleExecuteAdlibAction,
+	[StudioJobs.ExecuteBucketAdLibOrAction]: handleExecuteBucketAdLibOrAction,
 	[StudioJobs.TakeNextPart]: handleTakeNextPart,
 	[StudioJobs.DisableNextPiece]: handleDisableNextPiece,
 	[StudioJobs.RemovePlaylist]: handleRemoveRundownPlaylist,
@@ -91,4 +99,8 @@ export const studioJobHandlers: StudioJobHandlers = {
 
 	[StudioJobs.BlueprintUpgradeForStudio]: handleBlueprintUpgradeForStudio,
 	[StudioJobs.BlueprintValidateConfigForStudio]: handleBlueprintValidateConfigForStudio,
+	[StudioJobs.BlueprintFixUpConfigForStudio]: handleBlueprintFixUpConfigForStudio,
+	[StudioJobs.BlueprintIgnoreFixUpConfigForStudio]: handleBlueprintIgnoreFixUpConfigForStudio,
+
+	[StudioJobs.ActivateAdlibTesting]: handleActivateAdlibTesting,
 }
