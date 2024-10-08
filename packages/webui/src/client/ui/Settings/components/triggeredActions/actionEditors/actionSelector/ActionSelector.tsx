@@ -15,6 +15,7 @@ import { preventOverflow } from '@popperjs/core'
 import { ToggleSwitchControl } from '../../../../../../lib/Components/ToggleSwitch'
 import { DropdownInputControl, DropdownInputOption } from '../../../../../../lib/Components/DropdownInput'
 import { IntInputControl } from '../../../../../../lib/Components/IntInput'
+import { SwitchRouteSetEditor } from './actionEditors/SwitchRouteSetEditor'
 
 interface IProps {
 	action: SomeAction
@@ -75,9 +76,7 @@ function getArguments(t: TFunction, action: SomeAction): string[] {
 		case PlayoutActions.resyncRundownPlaylist:
 			break
 		case PlayoutActions.switchRouteSet:
-			if (action.routeSetId) {
-				result.push(t('Route Set: {{routeSet}}', { routeSet: action.routeSetId }))
-			}
+			result.push(t('State "{{state}}"', { state: action.state }))
 			break
 		case ClientActions.shelf:
 			if (action.state === true) {
@@ -257,7 +256,7 @@ function getActionParametersEditor(
 		case PlayoutActions.activateAdlibTestingMode:
 			return null
 		case PlayoutActions.switchRouteSet:
-			return null
+			return <SwitchRouteSetEditor action={action} onChange={onChange} />
 		case PlayoutActions.disableNextPiece:
 			return (
 				<div className="mts">
