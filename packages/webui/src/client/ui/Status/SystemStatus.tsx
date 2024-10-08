@@ -1,11 +1,11 @@
-import * as React from 'react'
+import React, { useContext } from 'react'
 import { Translated, useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import {
 	PeripheralDevice,
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import * as reacti18next from 'react-i18next'
+import { useTranslation, withTranslation } from 'react-i18next'
 import * as i18next from 'i18next'
 import Moment from 'react-moment'
 import { assertNever, protectString, unprotectString } from '../../lib/tempLib'
@@ -74,9 +74,9 @@ export function statusCodeToString(t: i18next.TFunction, statusCode: StatusCode)
 }
 
 export function DeviceItem(props: IDeviceItemProps): JSX.Element {
-	const { t, i18n, ready } = reacti18next.useTranslation()
+	const { t, i18n, ready } = useTranslation()
 
-	const userPermissions = React.useContext(UserPermissionsContext)
+	const userPermissions = useContext(UserPermissionsContext)
 
 	return <DeviceItemInner {...props} t={t} tReady={ready} i18n={i18n} userPermissions={userPermissions} />
 }
@@ -384,9 +384,9 @@ interface ICoreItemProps {
 }
 
 export function CoreItem({ systemStatus, coreSystem }: ICoreItemProps): JSX.Element {
-	const { t } = reacti18next.useTranslation()
+	const { t } = useTranslation()
 
-	const userPermissions = React.useContext(UserPermissionsContext)
+	const userPermissions = useContext(UserPermissionsContext)
 
 	return (
 		<div key={unprotectString(coreSystem._id)} className="device-item">
@@ -528,7 +528,7 @@ export default function SystemStatus(props: Readonly<ISystemStatusProps>): JSX.E
 	return <SystemStatusContent {...props} coreSystem={coreSystem} devices={devices} />
 }
 
-const SystemStatusContent = reacti18next.withTranslation()(
+const SystemStatusContent = withTranslation()(
 	class SystemStatusContent extends React.Component<
 		Translated<ISystemStatusProps & ISystemStatusTrackedProps>,
 		ISystemStatusState

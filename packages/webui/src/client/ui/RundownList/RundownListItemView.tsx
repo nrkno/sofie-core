@@ -1,5 +1,5 @@
 import Tooltip from 'rc-tooltip'
-import React from 'react'
+import React, { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Rundown, getRundownNrcsName } from '@sofie-automation/corelib/dist/dataModel/Rundown'
@@ -55,7 +55,7 @@ export default React.memo(function RundownListItemView({
 }: IRundownListItemViewProps): JSX.Element | null {
 	const { t } = useTranslation()
 
-	const userPermissions = React.useContext(UserPermissionsContext)
+	const userPermissions = useContext(UserPermissionsContext)
 
 	if (!rundown.playlistId) throw new Meteor.Error(500, 'Rundown is not a part of a rundown playlist!')
 	const playlist = RundownPlaylists.findOne(rundown.playlistId)

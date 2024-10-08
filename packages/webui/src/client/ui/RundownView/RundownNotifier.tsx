@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React, { useContext } from 'react'
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
@@ -719,7 +719,7 @@ interface RundownNotifierProps {
 }
 
 export function RundownNotifier({ playlistId, studio }: RundownNotifierProps): JSX.Element | null {
-	const userPermissions = React.useContext(UserPermissionsContext)
+	const userPermissions = useContext(UserPermissionsContext)
 
 	React.useEffect(() => {
 		const notifier = new RundownViewNotifier(playlistId, studio, userPermissions)

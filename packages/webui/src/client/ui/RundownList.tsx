@@ -16,12 +16,11 @@ import { RundownLayoutsAPI } from '../lib/rundownLayouts'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { getCoreSystem, RundownLayouts, RundownPlaylists, Rundowns } from '../collections'
 import { RundownPlaylistCollectionUtil } from '../collections/rundownPlaylistUtil'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { CreateAdlibTestingRundownPanel } from './RundownList/CreateAdlibTestingRundownPanel'
 import { UserPermissionsContext } from './UserPermissions'
-import React from 'react'
 
 export enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',
@@ -32,7 +31,7 @@ export enum ToolTipStep {
 export function RundownList(): JSX.Element {
 	const { t } = useTranslation()
 
-	const userPermissions = React.useContext(UserPermissionsContext)
+	const userPermissions = useContext(UserPermissionsContext)
 
 	const playlistIds = useTracker(
 		() =>

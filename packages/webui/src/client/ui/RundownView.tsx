@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import * as React from 'react'
+import React, { useContext } from 'react'
 import { parse as queryStringParse } from 'query-string'
 // @ts-expect-error No types available
 import * as VelocityReact from 'velocity-react'
@@ -1221,7 +1221,7 @@ interface ITrackedProps {
 	nextSegmentPartIds: PartId[]
 }
 export function RundownView(props: Readonly<IProps>): JSX.Element {
-	const userPermissions = React.useContext(UserPermissionsContext)
+	const userPermissions = useContext(UserPermissionsContext)
 
 	const playlistId = props.playlistId
 
