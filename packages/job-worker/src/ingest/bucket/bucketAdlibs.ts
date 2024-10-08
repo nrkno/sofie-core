@@ -20,7 +20,7 @@ import {
 	updateExpectedMediaItemForBucketAdLibAction,
 	updateExpectedMediaItemForBucketAdLibPiece,
 } from '../expectedMediaItems'
-import { omit } from '@sofie-automation/corelib/dist/lib'
+import { assertNever } from '@sofie-automation/corelib/dist/lib'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
@@ -103,26 +103,44 @@ export async function handleBucketActionModify(context: JobContext, data: Bucket
 	if (!orgAction || orgAction.studioId !== context.studioId)
 		throw new Error(`Bucket Action "${data.actionId}" not found in this studio`)
 
-	const newProps = omit(
-		data.props as Partial<BucketAdLibAction>,
-		'_id',
-		'studioId',
-		'importVersions',
-		'showStyleVariantId'
-	)
-
 	// Also update adlibs that are grouped together with this adlib in the GUI:
 	const actionsToUpdate = await getGroupedAdlibActions(context, orgAction)
 
 	for (const action of actionsToUpdate) {
 		const newAction = {
 			...action,
-			...newProps,
 		}
+
+		switch (data.props.type) {
+			case 'move':
+				await context.directCollections.BucketAdLibActions.update(action._id, {
+					$set: {
+						bucketId: data.props.newBucketId,
+					},
+				})
+				newAction.bucketId = data.props.newBucketId
+				break
+			case 'rename':
+				await context.directCollections.BucketAdLibActions.update(action._id, {
+					$set: {
+						'display.label': data.props.newName,
+					},
+				})
+				newAction.display.label = data.props.newName as any
+				break
+			case 'rerank':
+				await context.directCollections.BucketAdLibActions.update(action._id, {
+					$set: {
+						'display._rank': data.props.newRank,
+					},
+				})
+				newAction.display._rank = data.props.newRank
+				break
+			default:
+				assertNever(data.props)
+		}
+
 		await Promise.all([
-			context.directCollections.BucketAdLibActions.update(action._id, {
-				$set: newProps,
-			}),
 			updateExpectedMediaItemForBucketAdLibAction(context, newAction),
 			updateExpectedPackagesForBucketAdLibAction(context, newAction),
 		])
@@ -134,19 +152,41 @@ export async function handleBucketPieceModify(context: JobContext, data: BucketP
 	if (!orgPiece || orgPiece.studioId !== context.studioId)
 		throw new Error(`Bucket Piece "${data.pieceId}" not found in this studio`)
 
-	const newProps = omit(data.props as Partial<BucketAdLib>, '_id', 'studioId', 'importVersions', 'showStyleVariantId')
-
 	// Also update adlibs that are grouped together with this adlib in the GUI:
 	const piecesToUpdate = await getGroupedAdlibs(context, orgPiece)
 
 	for (const piece of piecesToUpdate) {
-		await context.directCollections.BucketAdLibPieces.update(piece._id, {
-			$set: newProps,
-		})
-
 		const newPiece = {
 			...piece,
-			...newProps,
+		}
+
+		switch (data.props.type) {
+			case 'move':
+				await context.directCollections.BucketAdLibPieces.update(piece._id, {
+					$set: {
+						bucketId: data.props.newBucketId,
+					},
+				})
+				newPiece.bucketId = data.props.newBucketId
+				break
+			case 'rename':
+				await context.directCollections.BucketAdLibPieces.update(piece._id, {
+					$set: {
+						name: data.props.newName,
+					},
+				})
+				newPiece.name = data.props.newName
+				break
+			case 'rerank':
+				await context.directCollections.BucketAdLibPieces.update(piece._id, {
+					$set: {
+						_rank: data.props.newRank,
+					},
+				})
+				newPiece._rank = data.props.newRank
+				break
+			default:
+				assertNever(data.props)
 		}
 
 		await Promise.all([

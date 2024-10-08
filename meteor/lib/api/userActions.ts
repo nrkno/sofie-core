@@ -3,7 +3,6 @@ import { MethodContext } from './methods'
 import { EvaluationBase } from '../collections/Evaluations'
 import { Bucket } from '../collections/Buckets'
 import { IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integration'
-import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { AdLibActionCommon } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { getHash, Time } from '../lib'
@@ -277,17 +276,41 @@ export interface NewUserActionAPI extends MethodContext {
 		eventTime: Time,
 		id: AdLibActionId
 	): Promise<ClientAPI.ClientResponse<void>>
-	bucketsModifyBucketAdLib(
+	bucketsRenameBucketAdLib(
 		userEvent: string,
 		eventTime: Time,
-		id: PieceId,
-		bucket: Partial<Omit<BucketAdLib, '_id'>>
+		externalId: PieceId,
+		newName: string
 	): Promise<ClientAPI.ClientResponse<void>>
-	bucketsModifyBucketAdLibAction(
+	bucketsRenameBucketAdLibAction(
 		userEvent: string,
 		eventTime: Time,
 		id: AdLibActionId,
-		action: Partial<Omit<BucketAdLibAction, '_id'>>
+		newName: string
+	): Promise<ClientAPI.ClientResponse<void>>
+	bucketsRerankBucketAdLib(
+		userEvent: string,
+		eventTime: Time,
+		id: PieceId,
+		newRank: number
+	): Promise<ClientAPI.ClientResponse<void>>
+	bucketsRerankBucketAdLibAction(
+		userEvent: string,
+		eventTime: Time,
+		id: AdLibActionId,
+		newRank: number
+	): Promise<ClientAPI.ClientResponse<void>>
+	bucketsMoveBucketAdLib(
+		userEvent: string,
+		eventTime: Time,
+		id: PieceId,
+		newBucketId: BucketId
+	): Promise<ClientAPI.ClientResponse<void>>
+	bucketsMoveBucketAdLibAction(
+		userEvent: string,
+		eventTime: Time,
+		id: AdLibActionId,
+		newBucketId: BucketId
 	): Promise<ClientAPI.ClientResponse<void>>
 	bucketsSaveActionIntoBucket(
 		userEvent: string,
@@ -366,8 +389,12 @@ export enum UserActionAPIMethods {
 	'bucketsModifyBucket' = 'userAction.modifyBucket',
 	'bucketsRemoveBucketAdLib' = 'userAction.removeBucketAdLib',
 	'bucketsRemoveBucketAdLibAction' = 'userAction.removeBucketAdLibAction',
-	'bucketsModifyBucketAdLib' = 'userAction.bucketsModifyBucketAdLib',
-	'bucketsModifyBucketAdLibAction' = 'userAction.bucketsModifyBucketAdLibAction',
+	'bucketsRenameBucketAdLib' = 'userAction.bucketsRenameBucketAdLib',
+	'bucketsRenameBucketAdLibAction' = 'userAction.bucketsRenameBucketAdLibAction',
+	'bucketsRerankBucketAdLib' = 'userAction.bucketsRerankBucketAdLib',
+	'bucketsRerankBucketAdLibAction' = 'userAction.bucketsRerankBucketAdLibAction',
+	'bucketsMoveBucketAdLib' = 'userAction.bucketsMoveBucketAdLib',
+	'bucketsMoveBucketAdLibAction' = 'userAction.bucketsMoveBucketAdLibAction',
 	'bucketsSaveActionIntoBucket' = 'userAction.bucketsSaveActionIntoBucket',
 
 	'segmentAdLibPieceStart' = 'userAction.segmentAdLibPieceStart',

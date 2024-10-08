@@ -3,7 +3,6 @@ import { Meteor } from 'meteor/meteor'
 import { Bucket } from '../../lib/collections/Buckets'
 import { getRandomId, getRandomString, literal } from '../../lib/lib'
 import { BucketSecurity } from '../security/buckets'
-import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { AdLibAction, AdLibActionCommon } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { BucketAdLibActions, Buckets, Rundowns, ShowStyleVariants, Studios } from '../collections'
@@ -13,7 +12,7 @@ import { StudioContentAccess } from '../security/studio'
 import { Settings } from '../../lib/Settings'
 import { IngestAdlib } from '@sofie-automation/blueprints-integration'
 import { getShowStyleCompound } from './showStyles'
-import { ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BucketId, ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 const DEFAULT_BUCKET_WIDTH = undefined
 
@@ -98,17 +97,74 @@ export namespace BucketsAPI {
 		return newBucket
 	}
 
-	export async function modifyBucketAdLibAction(
+	export async function renameBucketAdLibAction(
 		access: BucketSecurity.BucketAdlibActionContentAccess,
-		actionProps: Partial<Omit<BucketAdLibAction, '_id'>>
+		newName: string
 	): Promise<void> {
 		const oldAction = access.action
 
-		let moveIntoBucket: Bucket | undefined
-		if (actionProps.bucketId && actionProps.bucketId !== oldAction.bucketId) {
-			moveIntoBucket = await Buckets.findOneAsync(actionProps.bucketId)
-			if (!moveIntoBucket) throw new Meteor.Error(`Could not find bucket: "${actionProps.bucketId}"`)
-		}
+		await runIngestOperation(oldAction.studioId, IngestJobs.BucketActionModify, {
+			actionId: oldAction._id,
+			props: {
+				type: 'rename',
+				newName,
+			},
+		})
+	}
+
+	export async function renameBucketAdLib(
+		access: BucketSecurity.BucketAdlibPieceContentAccess,
+		newName: string
+	): Promise<void> {
+		const oldAdLib = access.adlib
+
+		await runIngestOperation(oldAdLib.studioId, IngestJobs.BucketPieceModify, {
+			pieceId: oldAdLib._id,
+			props: {
+				type: 'rename',
+				newName,
+			},
+		})
+	}
+
+	export async function rerankBucketAdLibAction(
+		access: BucketSecurity.BucketAdlibActionContentAccess,
+		newRank: number
+	): Promise<void> {
+		const oldAction = access.action
+
+		await runIngestOperation(oldAction.studioId, IngestJobs.BucketActionModify, {
+			actionId: oldAction._id,
+			props: {
+				type: 'rerank',
+				newRank,
+			},
+		})
+	}
+
+	export async function rerankBucketAdLib(
+		access: BucketSecurity.BucketAdlibPieceContentAccess,
+		newRank: number
+	): Promise<void> {
+		const oldAdLib = access.adlib
+
+		await runIngestOperation(oldAdLib.studioId, IngestJobs.BucketPieceModify, {
+			pieceId: oldAdLib._id,
+			props: {
+				type: 'rerank',
+				newRank,
+			},
+		})
+	}
+
+	export async function moveBucketAdLibAction(
+		access: BucketSecurity.BucketAdlibActionContentAccess,
+		newBucketId: BucketId
+	): Promise<void> {
+		const oldAction = access.action
+
+		const moveIntoBucket = await Buckets.findOneAsync(newBucketId)
+		if (!moveIntoBucket) throw new Meteor.Error(`Could not find bucket: "${newBucketId}"`)
 
 		// Check we are allowed to move into the new bucket
 		if (Settings.enableUserAccounts && moveIntoBucket) {
@@ -125,7 +181,41 @@ export namespace BucketsAPI {
 
 		await runIngestOperation(oldAction.studioId, IngestJobs.BucketActionModify, {
 			actionId: oldAction._id,
-			props: actionProps,
+			props: {
+				type: 'move',
+				newBucketId: moveIntoBucket._id,
+			},
+		})
+	}
+
+	export async function moveBucketAdLib(
+		access: BucketSecurity.BucketAdlibPieceContentAccess,
+		newBucketId: BucketId
+	): Promise<void> {
+		const oldAdLib = access.adlib
+
+		const moveIntoBucket = await Buckets.findOneAsync(newBucketId)
+		if (!moveIntoBucket) throw new Meteor.Error(`Could not find bucket: "${newBucketId}"`)
+
+		// Check we are allowed to move into the new bucket
+		if (Settings.enableUserAccounts && moveIntoBucket) {
+			// Shouldn't be moved across orgs
+			const newBucketStudio = await Studios.findOneAsync(moveIntoBucket.studioId, {
+				fields: { organizationId: 1 },
+			})
+			if (!newBucketStudio) throw new Meteor.Error(`Could not find studio: "${moveIntoBucket.studioId}"`)
+
+			if (newBucketStudio.organizationId !== access.studio.organizationId) {
+				throw new Meteor.Error(403, 'Access denied')
+			}
+		}
+
+		await runIngestOperation(oldAdLib.studioId, IngestJobs.BucketPieceModify, {
+			pieceId: oldAdLib._id,
+			props: {
+				type: 'move',
+				newBucketId: moveIntoBucket._id,
+			},
 		})
 	}
 
@@ -183,37 +273,6 @@ export namespace BucketsAPI {
 		})
 
 		return adLibAction
-	}
-
-	export async function modifyBucketAdLib(
-		access: BucketSecurity.BucketAdlibPieceContentAccess,
-		adlibProps: Partial<Omit<BucketAdLib, '_id'>>
-	): Promise<void> {
-		const oldAdLib = access.adlib
-
-		let moveIntoBucket: Bucket | undefined
-		if (adlibProps.bucketId && adlibProps.bucketId !== oldAdLib.bucketId) {
-			moveIntoBucket = await Buckets.findOneAsync(adlibProps.bucketId)
-			if (!moveIntoBucket) throw new Meteor.Error(`Could not find bucket: "${adlibProps.bucketId}"`)
-		}
-
-		// Check we are allowed to move into the new bucket
-		if (Settings.enableUserAccounts && moveIntoBucket) {
-			// Shouldn't be moved across orgs
-			const newBucketStudio = await Studios.findOneAsync(moveIntoBucket.studioId, {
-				fields: { organizationId: 1 },
-			})
-			if (!newBucketStudio) throw new Meteor.Error(`Could not find studio: "${moveIntoBucket.studioId}"`)
-
-			if (newBucketStudio.organizationId !== access.studio.organizationId) {
-				throw new Meteor.Error(403, 'Access denied')
-			}
-		}
-
-		await runIngestOperation(oldAdLib.studioId, IngestJobs.BucketPieceModify, {
-			pieceId: oldAdLib._id,
-			props: adlibProps,
-		})
 	}
 
 	export async function removeBucket(access: BucketSecurity.BucketContentAccess): Promise<void> {

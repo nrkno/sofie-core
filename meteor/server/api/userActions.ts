@@ -19,7 +19,6 @@ import { SystemWriteAccess } from '../security/system'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { Bucket } from '../../lib/collections/Buckets'
 import { BucketsAPI } from './buckets'
-import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { AdLibActionCommon } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { VerifiedRundownPlaylistContentAccess } from './lib'
@@ -1043,45 +1042,104 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async bucketsModifyBucketAdLib(
-		userEvent: string,
-		eventTime: Time,
-		adlibId: PieceId,
-		adlibProps: Partial<Omit<BucketAdLib, '_id'>>
-	) {
+	async bucketsRenameBucketAdLib(userEvent: string, eventTime: Time, adlibId: PieceId, newName: string) {
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
 			eventTime,
 			'bucketsModifyBucketAdLib',
-			{ adlibId, adlibProps },
+			{ adlibId, newName },
 			async () => {
 				check(adlibId, String)
-				check(adlibProps, Object)
+				check(newName, String)
 
 				const access = await BucketSecurity.allowWriteAccessPiece(this, adlibId)
-				return BucketsAPI.modifyBucketAdLib(access, adlibProps)
+				return BucketsAPI.renameBucketAdLib(access, newName)
 			}
 		)
 	}
-	async bucketsModifyBucketAdLibAction(
+	async bucketsRenameBucketAdLibAction(userEvent: string, eventTime: Time, actionId: AdLibActionId, newName: string) {
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			eventTime,
+			'bucketsModifyBucketAdLib',
+			{ actionId, newName },
+			async () => {
+				check(actionId, String)
+				check(newName, String)
+
+				const access = await BucketSecurity.allowWriteAccessAction(this, actionId)
+				return BucketsAPI.renameBucketAdLibAction(access, newName)
+			}
+		)
+	}
+	async bucketsRerankBucketAdLib(userEvent: string, eventTime: Time, adlibId: PieceId, newRank: number) {
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			eventTime,
+			'bucketsModifyBucketAdLib',
+			{ adlibId, newRank },
+			async () => {
+				check(adlibId, String)
+				check(newRank, Number)
+
+				const access = await BucketSecurity.allowWriteAccessPiece(this, adlibId)
+				return BucketsAPI.rerankBucketAdLib(access, newRank)
+			}
+		)
+	}
+	async bucketsRerankBucketAdLibAction(userEvent: string, eventTime: Time, actionId: AdLibActionId, newRank: number) {
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			eventTime,
+			'bucketsModifyBucketAdLib',
+			{ actionId, newRank },
+			async () => {
+				check(actionId, String)
+				check(newRank, Number)
+
+				const access = await BucketSecurity.allowWriteAccessAction(this, actionId)
+				return BucketsAPI.rerankBucketAdLibAction(access, newRank)
+			}
+		)
+	}
+	async bucketsMoveBucketAdLib(userEvent: string, eventTime: Time, adlibId: PieceId, newBucketId: BucketId) {
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			eventTime,
+			'bucketsModifyBucketAdLib',
+			{ adlibId, newBucketId },
+			async () => {
+				check(adlibId, String)
+				check(newBucketId, String)
+
+				const access = await BucketSecurity.allowWriteAccessPiece(this, adlibId)
+				return BucketsAPI.moveBucketAdLib(access, newBucketId)
+			}
+		)
+	}
+	async bucketsMoveBucketAdLibAction(
 		userEvent: string,
 		eventTime: Time,
 		actionId: AdLibActionId,
-		actionProps: Partial<Omit<BucketAdLibAction, '_id'>>
+		newBucketId: BucketId
 	) {
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
 			eventTime,
 			'bucketsModifyBucketAdLib',
-			{ actionId, actionProps },
+			{ actionId, newBucketId },
 			async () => {
 				check(actionId, String)
-				check(actionProps, Object)
+				check(newBucketId, String)
 
 				const access = await BucketSecurity.allowWriteAccessAction(this, actionId)
-				return BucketsAPI.modifyBucketAdLibAction(access, actionProps)
+				return BucketsAPI.moveBucketAdLibAction(access, newBucketId)
 			}
 		)
 	}

@@ -12,7 +12,6 @@ import {
 } from '../dataModel/Ids'
 import type { MOS } from '@sofie-automation/shared-lib/dist/mos'
 import { IngestAdlib, IngestPart, IngestRundown, IngestSegment } from '@sofie-automation/blueprints-integration'
-import { BucketAdLibAction } from '../dataModel/BucketAdLibAction'
 import { RundownSource } from '../dataModel/Rundown'
 
 export enum IngestJobs {
@@ -249,11 +248,35 @@ export interface BucketActionRegenerateExpectedPackagesProps {
 }
 export interface BucketActionModifyProps {
 	actionId: BucketAdLibActionId
-	props: Partial<Omit<BucketAdLibAction, '_id'>>
+	props:
+		| {
+				type: 'rerank'
+				newRank: number
+		  }
+		| {
+				type: 'rename'
+				newName: string
+		  }
+		| {
+				type: 'move'
+				newBucketId: BucketId
+		  }
 }
 export interface BucketPieceModifyProps {
 	pieceId: PieceId
-	props: Partial<Omit<BucketAdLibAction, '_id'>>
+	props:
+		| {
+				type: 'rerank'
+				newRank: number
+		  }
+		| {
+				type: 'rename'
+				newName: string
+		  }
+		| {
+				type: 'move'
+				newBucketId: BucketId
+		  }
 }
 export interface BucketRemoveAdlibPieceProps {
 	pieceId: PieceId
