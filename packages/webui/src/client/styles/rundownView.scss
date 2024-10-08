@@ -36,7 +36,7 @@ $previewline-color: rgb(38, 137, 186);
 /** The top padding of the timeline has to be equal to the header-height, so that the
 	functional part of the timeline starts at the same level as the segment title
 */
-$segment-timeline-padding: $segment-header-height 0 1.5em;
+$segment-timeline-padding: $segment-header-height 0 1.5em 2px;
 
 $segment-layer-height: 1.5em;
 $segment-layer-separator-color: transparentize(#000, 0.5);
@@ -1089,6 +1089,7 @@ svg.icon {
 			$output-layer-group-collapse-animation-duration margin-bottom
 				($output-layer-group-collapse-animation-duration * 1/2);
 		margin-bottom: 1.5em;
+		margin-left: 2px;
 	}
 
 	.segment-timeline__timeline-grid {
@@ -1102,6 +1103,7 @@ svg.icon {
 		min-width: 0;
 		overflow: hidden;
 		margin-bottom: 1.15em;
+		margin-left: 2px;
 
 		opacity: 1;
 		visibility: visible;
@@ -1381,6 +1383,7 @@ svg.icon {
 				position: absolute;
 				top: -10px;
 				left: 0;
+				right: 0;
 				bottom: -1.3em;
 				flex: 0;
 				border-left: 2px solid $part-start-color;
@@ -1391,6 +1394,21 @@ svg.icon {
 					left: auto;
 					right: -1px;
 					z-index: 30;
+				}
+
+				&.quickloop-start {
+					left: -2px;
+
+					&::before, &::after {
+						z-index: 1;
+						margin-left: 5px;
+						border-left-color: white;
+					}
+					
+					.segment-timeline__part__nextline__label {
+						z-index: 5;
+						left: 5px;
+					}
 				}
 
 				.segment-timeline__part__nextline__label {
@@ -1435,6 +1453,38 @@ svg.icon {
 					bottom: -1px;
 					left: -2px;
 					@include take-arrow();
+				}
+
+				.segment-timeline__part__nextline__quickloop-start {
+					border-left: 3px solid white;
+					border-right: 1px solid white;
+					display: block;
+					position: absolute;
+					top: 0;
+					bottom: 0;
+					left: -2px;
+					width: 6px;
+				}
+			}
+
+			.segment-timeline__part__nextline__quickloop-end {
+				border-right: 3px solid white;
+				display: block;
+				position: absolute;
+				top: -12px;
+				bottom: -1.3em;
+				right: 0px;
+				z-index: 40;
+				width: 6px;
+
+				&::before {
+					content: ' ';
+					border-left: 1px solid white;
+					display: block;
+					position: absolute;
+					top: 0;
+					bottom: 0;
+					right: 2px;
 				}
 			}
 
@@ -1512,6 +1562,30 @@ svg.icon {
 				flex: 1;
 				z-index: -1;
 			}
+
+			&.quickloop-start {
+				z-index: 1;
+			}
+
+			&.quickloop-end {
+				z-index: 1;
+			}
+
+			&.outside-quickloop {
+				&::before {
+					content: ' ';
+					display: block;
+					position: absolute;
+					top: 0;
+					left: 0;
+					bottom: 0;
+					right: 0;
+					background: rgba(0, 0, 0, 0.5);
+					z-index: 2;
+					pointer-events: none;
+				}
+			}
+
 
 			&:not(.live) {
 				.segment-timeline__part__nextline.auto-next:not(.segment-timeline__part__nextline--endline),
@@ -1627,9 +1701,6 @@ svg.icon {
 						> svg {
 							margin-left: 1px;
 							margin-right: 5px;
-							> path {
-								stroke: $general-next-color;
-							}
 						}
 					}
 				}
@@ -1695,6 +1766,11 @@ svg.icon {
 							filter: drop-shadow(2px 2px 0px black) drop-shadow(-2px -2px 0px black) drop-shadow(0 0 5px black);
 						}
 					}
+
+					.segment-timeline__part__nextline__quickloop-start {
+						border-left-color: $general-next-color;
+						border-right-color: $general-next-color;
+					}
 				}
 			}
 
@@ -1729,6 +1805,51 @@ svg.icon {
 					.segment-timeline__part__nextline__label {
 						padding: 0 0 0 7px;
 					}
+				}
+			}
+
+			.segment-timeline__part__bottom-line {
+				min-height: $segment-layer-height;
+				font-weight: 400;
+				display: flex;
+				flex-direction: row;
+				align-items: flex-end;
+				position: absolute;
+				bottom: 0;
+				left: 1px;
+				right: 1px;
+				overflow: hidden;
+
+				.segment-timeline__part__quickloop-background {
+					position: absolute;
+					z-index: -2;
+					min-height: 1em;
+					background-image: linear-gradient(to right, white 20%, rgba(255, 255, 255, 0) 0%);
+					background-position: center left;
+					background-size: 10px 2px;
+					background-repeat: repeat-x;
+					left: 6px;
+					right: 0;
+				}
+
+				.segment-timeline__part__quickloop-start, .segment-timeline__part__quickloop-end {
+					background: $segment-background-color;
+					padding: 0 0.3em;
+					margin-bottom: -2px;
+					white-space: nowrap;
+					color: white;
+				}
+				.segment-timeline__part__quickloop-start {
+					padding-left: 0.6em;
+				}
+
+				.segment-timeline__identifier + .segment-timeline__part__quickloop-start {
+					padding-left: 0.3em;
+				}
+
+				.segment-timeline__part__quickloop-end {
+					padding-right: 0.6em;
+					margin-left: auto
 				}
 			}
 
@@ -2267,8 +2388,6 @@ svg.icon {
 			}
 
 			.segment-timeline__identifier {
-				position: absolute;
-				bottom: 0;
 				z-index: -1;
 				padding: 0 4px 0 10px;
 				box-sizing: border-box;

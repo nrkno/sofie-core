@@ -3,7 +3,7 @@ import { isProtectedString } from './tempLib'
 import RundownViewEventBus, { RundownViewEvents } from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
 import { Settings } from '../lib/Settings'
 import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PartInstances, Parts } from '../collections'
+import { UIPartInstances, UIParts } from '../ui/Collections'
 import { logger } from './logging'
 
 const HEADER_MARGIN = 24 // TODOSYNC: TV2 uses 15. If it's needed to be different, it needs to be made generic somehow..
@@ -66,7 +66,7 @@ export async function scrollToPartInstance(
 	noAnimation?: boolean
 ): Promise<boolean> {
 	quitFocusOnPart()
-	const partInstance = PartInstances.findOne(partInstanceId)
+	const partInstance = UIPartInstances.findOne(partInstanceId)
 	if (partInstance) {
 		RundownViewEventBus.emit(RundownViewEvents.GO_TO_PART_INSTANCE, {
 			segmentId: partInstance.segmentId,
@@ -84,7 +84,7 @@ export async function scrollToPart(
 	zoomInToFit?: boolean
 ): Promise<boolean> {
 	quitFocusOnPart()
-	const part = Parts.findOne(partId)
+	const part = UIParts.findOne(partId)
 	if (part) {
 		await scrollToSegment(part.segmentId, forceScroll, noAnimation)
 

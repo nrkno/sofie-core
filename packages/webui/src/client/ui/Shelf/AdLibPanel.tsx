@@ -52,16 +52,11 @@ import { AdLibPanelToolbar } from './AdLibPanelToolbar'
 import { AdLibListView } from './AdLibListView'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
-import { UIStudios } from '../Collections'
+import { UIPartInstances, UIStudios } from '../Collections'
 import { PartId, PartInstanceId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import {
-	AdLibActions,
-	AdLibPieces,
-	PartInstances,
-	RundownBaselineAdLibActions,
-	RundownBaselineAdLibPieces,
-} from '../../collections'
+import { AdLibActions, AdLibPieces, RundownBaselineAdLibActions, RundownBaselineAdLibPieces } from '../../collections'
 import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
+import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil'
 
 export interface IAdLibPanelProps {
 	// liveSegment: Segment | undefined
@@ -196,7 +191,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 
 	const { segments, rundowns } = memoizedIsolatedAutorun(
 		(playlist) => {
-			const rundownsAndSegments = RundownPlaylistCollectionUtil.getRundownsAndSegments(playlist)
+			const rundownsAndSegments = RundownPlaylistClientUtil.getRundownsAndSegments(playlist)
 			const segments: DBSegment[] = []
 			const rundowns: Record<string, MinimalRundown> = {}
 			rundownsAndSegments.forEach((pair) => {
@@ -222,7 +217,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 		) => {
 			const currentPartInstance =
 				currentPartInstanceId &&
-				(PartInstances.findOne(currentPartInstanceId, {
+				(UIPartInstances.findOne(currentPartInstanceId, {
 					projection: {
 						_id: 1,
 						segmentId: 1,
@@ -231,7 +226,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 				}) as Pick<PartInstance, '_id' | 'segmentId' | 'rundownId'> | undefined)
 			const nextPartInstance =
 				nextPartInstanceId &&
-				(PartInstances.findOne(nextPartInstanceId, {
+				(UIPartInstances.findOne(nextPartInstanceId, {
 					projection: {
 						_id: 1,
 						segmentId: 1,
@@ -253,7 +248,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 				}
 			}
 
-			const partInstances = RundownPlaylistCollectionUtil.getActivePartInstancesMap(props.playlist)
+			const partInstances = RundownPlaylistClientUtil.getActivePartInstancesMap(props.playlist)
 
 			let liveSegment: AdlibSegmentUi | undefined
 			const uiSegmentMap = new Map<SegmentId, AdlibSegmentUi>()
@@ -275,7 +270,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 				return segmentUi
 			})
 
-			RundownPlaylistCollectionUtil.getUnorderedParts(props.playlist, {
+			RundownPlaylistClientUtil.getUnorderedParts(props.playlist, {
 				segmentId: {
 					$in: Array.from(uiSegmentMap.keys()),
 				},
@@ -431,7 +426,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 		currentRundown = rundowns[0]
 		const partInstanceId = props.playlist.currentPartInfo?.partInstanceId || props.playlist.nextPartInfo?.partInstanceId
 		if (partInstanceId) {
-			const partInstance = PartInstances.findOne(partInstanceId)
+			const partInstance = UIPartInstances.findOne(partInstanceId)
 			if (partInstance) {
 				currentRundown = rundowns.find((rd) => rd._id === partInstance.rundownId)
 			}

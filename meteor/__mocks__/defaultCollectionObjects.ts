@@ -26,7 +26,10 @@ import {
 	ShowStyleVariantId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
+import {
+	DEFAULT_FALLBACK_PART_DURATION,
+	DEFAULT_MINIMUM_TAKE_SPAN,
+} from '@sofie-automation/shared-lib/dist/core/constants'
 
 export function defaultRundownPlaylist(_id: RundownPlaylistId, studioId: StudioId): DBRundownPlaylist {
 	return {
@@ -106,6 +109,7 @@ export function defaultStudio(_id: StudioId): DBStudio {
 			frameRate: 25,
 			mediaPreviewsUrl: '',
 			minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
+			fallbackPartDuration: DEFAULT_FALLBACK_PART_DURATION,
 		},
 		_rundownVersionHash: '',
 		routeSets: {},

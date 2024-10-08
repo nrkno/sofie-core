@@ -39,7 +39,6 @@ export const ShelfInspector = React.memo(
 		)
 	},
 	(prevProps, nextProps) => {
-		if (_.isEqual(nextProps, prevProps)) return false
-		return true
+		return _.isEqual(nextProps, prevProps)
 	}
 )

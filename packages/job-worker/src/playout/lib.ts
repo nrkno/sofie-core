@@ -4,10 +4,8 @@ import { TSR } from '@sofie-automation/blueprints-integration'
 import { JobContext } from '../jobs'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ReadonlyDeep } from 'type-fest'
 import { PlayoutModel } from './model/PlayoutModel'
 import { logger } from '../logging'
-import { getCurrentTime } from '../lib'
 import { MongoQuery } from '../db'
 import { mongoWhere } from '@sofie-automation/corelib/dist/mongo'
 import { setNextPart } from './setNext'
@@ -40,7 +38,8 @@ export async function resetRundownPlaylist(context: JobContext, playoutModel: Pl
 			null,
 			null,
 			playoutModel.getAllOrderedSegments(),
-			playoutModel.getAllOrderedParts()
+			playoutModel.getAllOrderedParts(),
+			{ ignoreUnplayable: true, ignoreQuickLoop: false }
 		)
 		await setNextPart(context, playoutModel, firstPart, false)
 	} else {
@@ -175,32 +174,4 @@ export function prefixAllObjectIds<T extends TimelineObjGeneric>(objList: T[], p
 
 		return obj
 	})
-}
-
-/**
- * time in ms before an autotake when we don't accept takes/updates
- */
-const AUTOTAKE_UPDATE_DEBOUNCE = 5000
-const AUTOTAKE_TAKE_DEBOUNCE = 1000
-
-export function isTooCloseToAutonext(
-	currentPartInstance: ReadonlyDeep<DBPartInstance> | undefined,
-	isTake?: boolean
-): boolean {
-	if (!currentPartInstance?.part?.autoNext) return false
-
-	const debounce = isTake ? AUTOTAKE_TAKE_DEBOUNCE : AUTOTAKE_UPDATE_DEBOUNCE
-
-	const start = currentPartInstance.timings?.plannedStartedPlayback
-	if (start !== undefined && currentPartInstance.part.expectedDuration) {
-		// date.now - start = playback duration, duration + offset gives position in part
-		const playbackDuration = getCurrentTime() - start
-
-		// If there is an auto next planned
-		if (Math.abs(currentPartInstance.part.expectedDuration - playbackDuration) < debounce) {
-			return true
-		}
-	}
-
-	return false
 }

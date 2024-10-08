@@ -35,6 +35,7 @@ import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { SegmentTimeAnchorTime } from '../RundownView/RundownTiming/SegmentTimeAnchorTime'
+import * as RundownResolver from '../../lib/RundownResolver'
 import { logger } from '../../lib/logging'
 
 interface IProps {
@@ -195,7 +196,7 @@ export const SegmentStoryboard = React.memo(
 			squishedPartsNum > 1 ? Math.max(4, (spaceLeft - PART_WIDTH) / (squishedPartsNum - 1)) : null
 
 		const playlistHasNextPart = !!props.playlist.nextPartInfo
-		const playlistIsLooping = props.playlist.loop
+		const playlistIsLooping = RundownResolver.isLoopRunning(props.playlist)
 
 		renderedParts.forEach((part, index) => {
 			const isLivePart = part.instance._id === props.playlist.currentPartInfo?.partInstanceId
@@ -216,6 +217,14 @@ export const SegmentStoryboard = React.memo(
 					isNextPart={isNextPart}
 					isLastPartInSegment={part.instance._id === lastValidPartId}
 					isLastSegment={props.isLastSegment}
+					isEndOfLoopingShow={RundownResolver.isEndOfLoopingShow(
+						props.playlist,
+						props.isLastSegment,
+						part.instance._id === lastValidPartId,
+						part.instance.part
+					)}
+					isQuickLoopStart={RundownResolver.isQuickLoopStart(part.partId, props.playlist)}
+					isQuickLoopEnd={RundownResolver.isQuickLoopEnd(part.partId, props.playlist)}
 					isPlaylistLooping={playlistIsLooping}
 					doesPlaylistHaveNextPart={playlistHasNextPart}
 					displayLiveLineCounter={props.displayLiveLineCounter}

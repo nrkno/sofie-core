@@ -58,11 +58,11 @@ import {
 	isAdLibOnAir,
 } from '../../lib/shelf'
 import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
-import { BucketAdLibActions, BucketAdLibs, PartInstances, Rundowns } from '../../collections'
+import { BucketAdLibActions, BucketAdLibs, Rundowns } from '../../collections'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
-import { UIStudios } from '../Collections'
+import { UIPartInstances, UIStudios } from '../Collections'
 import {
 	AdLibActionId,
 	BucketId,
@@ -292,7 +292,7 @@ export const BucketPanel = React.memo(
 			() => {
 				const selectedPartInstanceId =
 					props.playlist.currentPartInfo?.partInstanceId ?? props.playlist.nextPartInfo?.partInstanceId
-				const partInstance = PartInstances.findOne(selectedPartInstanceId, {
+				const partInstance = UIPartInstances.findOne(selectedPartInstanceId, {
 					fields: literal<MongoFieldSpecifierOnes<PartInstance>>({
 						rundownId: 1,
 						//@ts-expect-error deep property
@@ -380,7 +380,7 @@ export const BucketPanel = React.memo(
 		)
 	},
 	(props: IBucketPanelProps, nextProps: IBucketPanelProps) => {
-		return !_.isEqual(props, nextProps)
+		return _.isEqual(props, nextProps)
 	}
 )
 

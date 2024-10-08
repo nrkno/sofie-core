@@ -7,9 +7,9 @@ import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PieceExtended } from '../../../lib/RundownResolver'
-import { PartInstances, Rundowns } from '../../../collections'
+import { Rundowns } from '../../../collections'
 import { useSubscription, useTracker } from '../../../lib/ReactMeteorData/ReactMeteorData'
-import { UIStudios } from '../../Collections'
+import { UIPartInstances, UIStudios } from '../../Collections'
 import { Rundown as RundownComponent } from './Rundown'
 import { useLocation } from 'react-router-dom'
 import { parse as queryStringParse } from 'query-string'
@@ -100,7 +100,7 @@ export function CameraScreen({ playlist, studioId }: Readonly<IProps>): JSX.Elem
 	useSubscription(CorelibPubSub.segments, rundownIds, {})
 
 	const studioReady = useSubscription(MeteorPubSub.uiStudio, studioId)
-	useSubscription(CorelibPubSub.partInstances, rundownIds, playlist?.activationId ?? null)
+	useSubscription(MeteorPubSub.uiPartInstances, rundownIds, playlist?.activationId ?? null)
 
 	useSubscription(CorelibPubSub.parts, rundownIds, null)
 
@@ -116,7 +116,7 @@ export function CameraScreen({ playlist, studioId }: Readonly<IProps>): JSX.Elem
 	const currentPartInstanceVolatile = useTracker(
 		() =>
 			playlist?.currentPartInfo?.partInstanceId
-				? PartInstances.findOne(playlist?.currentPartInfo?.partInstanceId)
+				? UIPartInstances.findOne(playlist?.currentPartInfo?.partInstanceId)
 				: undefined,
 		[playlist?.currentPartInfo?.partInstanceId],
 		undefined
@@ -124,7 +124,7 @@ export function CameraScreen({ playlist, studioId }: Readonly<IProps>): JSX.Elem
 	const nextPartInstanceVolatile = useTracker(
 		() =>
 			playlist?.nextPartInfo?.partInstanceId
-				? PartInstances.findOne(playlist?.nextPartInfo?.partInstanceId)
+				? UIPartInstances.findOne(playlist?.nextPartInfo?.partInstanceId)
 				: undefined,
 		[playlist?.nextPartInfo?.partInstanceId],
 		undefined

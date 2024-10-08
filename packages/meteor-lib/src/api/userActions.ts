@@ -25,6 +25,7 @@ import {
 	SnapshotId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { QuickLoopMarker } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
 export interface NewUserActionAPI {
 	take(
@@ -334,6 +335,19 @@ export interface NewUserActionAPI {
 		studioId: StudioId,
 		showStyleVariantId: ShowStyleVariantId
 	): Promise<ClientAPI.ClientResponse<RundownId>>
+
+	setQuickLoopStart(
+		userEvent: string,
+		eventTime: Time,
+		rundownPlaylistId: RundownPlaylistId,
+		marker: QuickLoopMarker | null
+	): Promise<ClientAPI.ClientResponse<void>>
+	setQuickLoopEnd(
+		userEvent: string,
+		eventTime: Time,
+		rundownPlaylistId: RundownPlaylistId,
+		marker: QuickLoopMarker | null
+	): Promise<ClientAPI.ClientResponse<void>>
 }
 
 export enum UserActionAPIMethods {
@@ -416,6 +430,9 @@ export enum UserActionAPIMethods {
 	'activateAdlibTestingMode' = 'userAction.activateAdlibTestingMode',
 
 	'createAdlibTestingRundownForShowStyleVariant' = 'userAction.createAdlibTestingRundownForShowStyleVariant',
+
+	'setQuickLoopStart' = 'userAction.setQuickLoopStart',
+	'setQuickLoopEnd' = 'userAction.setQuickLoopEnd',
 }
 
 export interface ReloadRundownPlaylistResponse {

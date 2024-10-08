@@ -21,7 +21,10 @@ declare class FontFace {
 	load(): void
 }
 
-const LABEL_FONT_URL = 'url("/fonts/roboto-gh-pages/fonts/Light/Roboto-Light.woff")'
+const LABEL_FONT_URL = `url("${new URL(
+	'../../../fonts/roboto-gh-pages/fonts/Light/Roboto-Light.woff2',
+	import.meta.url
+)}")`
 const LABEL_COLOR = 'rgb(80,80,80)'
 const SHORT_LINE_GRID_COLOR = 'rgb(112,112,112)'
 const LONG_LINE_GRID_COLOR = 'rgb(80,80,80)'

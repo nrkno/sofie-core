@@ -149,6 +149,41 @@ $identifier-area-width: 3em;
 						width: max-content;
 					}
 				}
+
+				> .segment-opl__quickloop-start, > .segment-opl__quickloop-end {
+					position: absolute;
+					right: -10px;
+					filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.6));
+				}
+
+				> .segment-opl__quickloop-start {
+					top: -2px;
+				}
+
+				> .segment-opl__quickloop-end {
+					bottom: -2px;
+				}
+
+				> .segment-opl__quickloop-background {
+					position: absolute;
+					top: 0;
+					bottom: 0;
+					width: 2px;
+					right: -1px;
+					background-image: linear-gradient(to bottom, white 20%, rgba(255, 255, 255, 0) 0%);
+					background-position: top 5px left;
+					background-size: 2px 10px;
+					background-repeat: repeat-y;
+					filter: drop-shadow(0px 0px 1px rgba(0, 0, 0, 0.6));
+				}
+
+				> .segment-opl__quickloop-start ~ .segment-opl__quickloop-background {
+					top: 10px;
+				}
+
+				> .segment-opl__quickloop-end ~ .segment-opl__quickloop-background {
+					bottom: 20px;
+				}
 			}
 
 			&--next {
@@ -191,6 +226,21 @@ $identifier-area-width: 3em;
 					bottom: 0;
 					right: 0;
 					background: rgba(0, 0, 0, 0.7);
+					z-index: 2;
+					pointer-events: none;
+				}
+			}
+
+			&--outside-quickloop {
+				&::before {
+					content: ' ';
+					display: block;
+					position: absolute;
+					top: 0;
+					left: 0;
+					bottom: 0;
+					right: 0;
+					background: rgba(0, 0, 0, 0.5);
 					z-index: 2;
 					pointer-events: none;
 				}
@@ -256,6 +306,18 @@ $identifier-area-width: 3em;
 							@include take-arrow();
 							z-index: 1;
 						}
+
+						&.quickloop-start {
+							&::before, &::after {
+								left: 6px;
+							}
+
+							&:not(.next) {
+								&::before, &::after {
+									border-left-color: white;
+								}
+							}
+						}
 					}
 
 					&.next {
@@ -308,6 +370,27 @@ $identifier-area-width: 3em;
 						font-weight: 400;
 						text-shadow: 0 0 5px rgba(0, 0, 0, 1);
 					}
+
+				}
+
+				> .segment-opl__take-line__quickloop-start {
+					border-left: 3px solid white;
+					border-right: 1px solid white;
+					position: absolute;
+					top: -0.4em;
+					bottom: 0.3em;
+					left: 0;
+					width: 6px;
+				}
+
+				> .segment-opl__take-line__quickloop-end {
+					border-right: 3px solid white;
+					border-left: 1px solid white;
+					position: absolute;
+					top: -0.4em;
+					bottom: 0.3em;
+					margin-left: -4px;
+					width: 6px;
 				}
 
 				> .segment-opl__on-air-line {
@@ -481,6 +564,11 @@ $identifier-area-width: 3em;
 						color: $next-marker;
 						left: 0.1em;
 					}
+				}
+			}
+			&--next {
+				> .segment-opl__part-timeline > .segment-opl__take-line__quickloop-start {
+					border-color: $general-next-color;
 				}
 			}
 

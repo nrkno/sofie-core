@@ -131,6 +131,14 @@ jobs:
           yarn build
         env:
           CI: true
+
+      - name: Build OpenAPI client library
+        if: ${{ steps.do-publish.outputs.publish }}
+        run: |
+          cd packages/openapi
+          yarn build
+        env:
+          CI: true
       - name: Modify dependencies to use npm packages
         run: node scripts/prepublish.js
       - name: Publish to NPM

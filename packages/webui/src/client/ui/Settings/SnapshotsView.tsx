@@ -324,7 +324,7 @@ const SnapshotsViewContent = withTranslation()(
 							</UploadButton>
 							<UploadButton
 								accept="application/json,.json"
-								className="btn btn-secondary"
+								className="btn btn-secondary mls"
 								onChange={(e) => this.onUploadFile(e, true)}
 								key={this.state.uploadFileKey2}
 							>

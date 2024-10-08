@@ -466,6 +466,17 @@ components:
         preserveOrphanedSegmentPositionInRundown:
           type: boolean
           description: Preserve unsynced segments psoition in the rundown, relative to the other segments
+        enableQuickLoop:
+          type: boolean
+          description: Should QuickLoop context menu options be available to the users
+        forceQuickLoopAutoNext:
+          type: string
+          enum: [disabled, enabled_when_valid_duration, enabled_forcing_min_duration]
+          description: If and how to force auto-nexting in a looping Playlist
+        fallbackPartDuration:
+          type: number
+          description: The duration to apply on too short Parts Within QuickLoop when forceQuickLoopAutoNext is set to `enabled_forcing_min_duration`
+
       required:
         - frameRate
         - mediaPreviewsUrl

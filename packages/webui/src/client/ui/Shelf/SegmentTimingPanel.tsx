@@ -22,6 +22,7 @@ import { getIsFilterActive } from '../../lib/rundownLayouts'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { PartId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
+import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil'
 
 interface ISegmentTimingPanelProps {
 	visible?: boolean
@@ -82,11 +83,11 @@ export const SegmentTimingPanel = translateWithTracker<
 >(
 	(props: ISegmentTimingPanelProps) => {
 		if (props.playlist.currentPartInfo) {
-			const livePart = RundownPlaylistCollectionUtil.getActivePartInstances(props.playlist, {
+			const livePart = RundownPlaylistClientUtil.getActivePartInstances(props.playlist, {
 				_id: props.playlist.currentPartInfo.partInstanceId,
 			})[0]
 			const liveSegment = livePart
-				? RundownPlaylistCollectionUtil.getSegments(props.playlist, { _id: livePart.segmentId })[0]
+				? RundownPlaylistClientUtil.getSegments(props.playlist, { _id: livePart.segmentId })[0]
 				: undefined
 
 			const { active } = getIsFilterActive(props.playlist, props.showStyleBase, props.panel)
@@ -99,22 +100,16 @@ export const SegmentTimingPanel = translateWithTracker<
 						memoizedIsolatedAutorun(
 							(_playlistId: RundownPlaylistId) =>
 								(
-									RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(
-										props.playlist,
-										undefined,
-										undefined,
-										undefined,
-										{
-											fields: { _id: 1 },
-										}
-									).parts as Pick<DBPart, '_id'>[]
+									RundownPlaylistClientUtil.getSegmentsAndPartsSync(props.playlist, undefined, undefined, undefined, {
+										fields: { _id: 1 },
+									}).parts as Pick<DBPart, '_id'>[]
 								).map((part) => part._id),
 							'playlist.getAllOrderedParts',
 							props.playlist._id
 						),
 						memoizedIsolatedAutorun(
 							(_playlistId: RundownPlaylistId, _currentPartInstanceId, _nextPartInstanceId) =>
-								RundownPlaylistCollectionUtil.getSelectedPartInstances(props.playlist),
+								RundownPlaylistClientUtil.getSelectedPartInstances(props.playlist),
 							'playlist.getSelectedPartInstances',
 							props.playlist._id,
 							props.playlist.currentPartInfo?.partInstanceId,
@@ -130,7 +125,7 @@ export const SegmentTimingPanel = translateWithTracker<
 				props.playlist.activationId === undefined ? 0 : Math.random() * 2000 + 500
 			)
 
-			const orderedSegmentsAndParts = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(props.playlist)
+			const orderedSegmentsAndParts = RundownPlaylistClientUtil.getSegmentsAndPartsSync(props.playlist)
 			const rundownOrder = RundownPlaylistCollectionUtil.getRundownOrderedIDs(props.playlist)
 			const rundownIndex = rundownOrder.indexOf(liveSegment.rundownId)
 			const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(props.playlist)

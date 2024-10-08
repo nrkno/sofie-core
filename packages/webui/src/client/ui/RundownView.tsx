@@ -22,7 +22,11 @@ import Escape from './../lib/Escape'
 import * as i18next from 'i18next'
 import Tooltip from 'rc-tooltip'
 import { NavLink, Route, Prompt } from 'react-router-dom'
-import { DBRundownPlaylist, RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import {
+	DBRundownPlaylist,
+	QuickLoopMarker,
+	RundownHoldState,
+} from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Rundown, getRundownNrcsName } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { StudioRouteSet } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -131,7 +135,7 @@ import { ExecuteActionResult } from '@sofie-automation/corelib/dist/worker/studi
 import { SegmentListContainer } from './SegmentList/SegmentListContainer'
 import { getNextMode as getNextSegmentViewMode } from './SegmentContainer/SwitchViewModeButton'
 import { IResolvedSegmentProps } from './SegmentContainer/withResolvedSegment'
-import { UIShowStyleBases, UIStudios } from './Collections'
+import { UIParts, UIShowStyleBases, UIStudios } from './Collections'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import {
 	PartId,
@@ -144,7 +148,6 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
 	Buckets,
-	Parts,
 	PeripheralDevices,
 	RundownLayouts,
 	RundownPlaylists,
@@ -159,7 +162,10 @@ import { logger } from '../lib/logging'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from './i18n'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { isEntirePlaylistLooping, isLoopRunning } from '../lib/RundownResolver'
 import { useRundownAndShowStyleIdsForPlaylist } from './util/useRundownAndShowStyleIdsForPlaylist'
+import { RundownPlaylistClientUtil } from '../lib/rundownPlaylistUtil'
+
 import { MAGIC_TIME_SCALE_FACTOR } from './SegmentTimeline/Constants'
 
 const REHEARSAL_MARGIN = 1 * 60 * 1000
@@ -317,7 +323,7 @@ const TimingDisplay = withTranslation()(
 						{showEndTiming ? (
 							<PlaylistEndTiming
 								rundownPlaylist={rundownPlaylist}
-								loop={rundownPlaylist.loop}
+								loop={isLoopRunning(rundownPlaylist)}
 								expectedStart={expectedStart}
 								expectedEnd={expectedEnd}
 								expectedDuration={expectedDuration}
@@ -1278,10 +1284,10 @@ export function RundownView(props: Readonly<IProps>): JSX.Element {
 	auxSubsReady.push(
 		useSubscriptionIfEnabled(CorelibPubSub.rundownBaselineAdLibActions, rundownIds.length > 0, rundownIds)
 	)
-	auxSubsReady.push(useSubscriptionIfEnabled(CorelibPubSub.parts, rundownIds.length > 0, rundownIds, null))
+	auxSubsReady.push(useSubscriptionIfEnabled(MeteorPubSub.uiParts, rundownIds.length > 0, playlistId))
 	auxSubsReady.push(
 		useSubscriptionIfEnabled(
-			CorelibPubSub.partInstances,
+			MeteorPubSub.uiPartInstances,
 			rundownIds.length > 0,
 			rundownIds,
 			playlistActivationId ?? null
@@ -1311,23 +1317,6 @@ export function RundownView(props: Readonly<IProps>): JSX.Element {
 				].filter((p): p is PartInstanceId => p !== null),
 				{}
 			)
-			const { previousPartInstance, currentPartInstance } =
-				RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
-
-			if (previousPartInstance) {
-				meteorSubscribe(
-					CorelibPubSub.partInstancesForSegmentPlayout,
-					previousPartInstance.rundownId,
-					previousPartInstance.segmentPlayoutId
-				)
-			}
-			if (currentPartInstance) {
-				meteorSubscribe(
-					CorelibPubSub.partInstancesForSegmentPlayout,
-					currentPartInstance.rundownId,
-					currentPartInstance.segmentPlayoutId
-				)
-			}
 		}
 	}, [playlistId])
 
@@ -1360,7 +1349,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 			'playlist.getRundowns',
 			playlistId
 		)
-		;({ currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist))
+		;({ currentPartInstance, nextPartInstance } = RundownPlaylistClientUtil.getSelectedPartInstances(playlist))
 		const somePartInstance = currentPartInstance || nextPartInstance
 		if (somePartInstance) {
 			currentRundown = rundowns.find((rundown) => rundown._id === somePartInstance?.rundownId)
@@ -1392,7 +1381,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 		rundowns,
 		currentRundown,
 		matchedSegments: playlist
-			? RundownPlaylistCollectionUtil.getRundownsAndSegments(playlist, {}).map((input, rundownIndex, rundownArray) => ({
+			? RundownPlaylistClientUtil.getRundownsAndSegments(playlist, {}).map((input, rundownIndex, rundownArray) => ({
 					...input,
 					segmentIdsBeforeEachSegment: input.segments.map(
 						(_segment, segmentIndex, segmentArray) =>
@@ -1451,7 +1440,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 		currentPartInstance,
 		nextPartInstance,
 		currentSegmentPartIds: currentPartInstance
-			? Parts.find(
+			? UIParts.find(
 					{
 						segmentId: currentPartInstance?.part.segmentId,
 					},
@@ -1463,7 +1452,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 			  ).map((part) => part._id)
 			: [],
 		nextSegmentPartIds: nextPartInstance
-			? Parts.find(
+			? UIParts.find(
 					{
 						segmentId: nextPartInstance?.part.segmentId,
 					},
@@ -2177,6 +2166,38 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 			}
 		}
 
+		onSetQuickLoopStart = (marker: QuickLoopMarker | null, e: any) => {
+			const { t } = this.props
+			if (this.state.studioMode && this.props.playlist) {
+				const playlistId = this.props.playlist._id
+				doUserAction(
+					t,
+					e,
+					UserAction.SET_QUICK_LOOP_START,
+					(e, ts) => MeteorCall.userAction.setQuickLoopStart(e, ts, playlistId, marker),
+					(err) => {
+						if (err) logger.error(err)
+					}
+				)
+			}
+		}
+
+		onSetQuickLoopEnd = (marker: QuickLoopMarker | null, e: any) => {
+			const { t } = this.props
+			if (this.state.studioMode && this.props.playlist) {
+				const playlistId = this.props.playlist._id
+				doUserAction(
+					t,
+					e,
+					UserAction.SET_QUICK_LOOP_END,
+					(e, ts) => MeteorCall.userAction.setQuickLoopEnd(e, ts, playlistId, marker),
+					(err) => {
+						if (err) logger.error(err)
+					}
+				)
+			}
+		}
+
 		onPieceDoubleClick = (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => {
 			const { t } = this.props
 			if (
@@ -2201,7 +2222,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 
 				if (!segmentId) {
 					if (e.sourceLocator.partId) {
-						const part = Parts.findOne(e.sourceLocator.partId)
+						const part = UIParts.findOne(e.sourceLocator.partId)
 						if (part) {
 							segmentId = part.segmentId
 						}
@@ -2652,16 +2673,15 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 					</div>
 				)
 			}
-
 			return (
 				<React.Fragment>
-					{this.props.playlist?.loop && (
+					{isEntirePlaylistLooping(this.props.playlist) && (
 						<PlaylistLoopingHeader position="start" multiRundown={this.props.matchedSegments.length > 1} />
 					)}
 					<div className="segment-timeline-container" role="main" aria-labelledby="rundown-playlist-name">
 						{this.renderSegments()}
 					</div>
-					{this.props.playlist?.loop && (
+					{isEntirePlaylistLooping(this.props.playlist) && (
 						<PlaylistLoopingHeader
 							position="end"
 							multiRundown={this.props.matchedSegments.length > 1}
@@ -3092,8 +3112,11 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 									onSetNext={this.onSetNext}
 									onSetNextSegment={this.onSetNextSegment}
 									onQueueNextSegment={this.onQueueNextSegment}
+									onSetQuickLoopStart={this.onSetQuickLoopStart}
+									onSetQuickLoopEnd={this.onSetQuickLoopEnd}
 									studioMode={this.state.studioMode}
 									enablePlayFromAnywhere={!!studio.settings.enablePlayFromAnywhere}
+									enableQuickLoop={!!studio.settings.enableQuickLoop}
 								/>
 							</ErrorBoundary>
 							<ErrorBoundary>

@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.51.0-in-testing.3](https://github.com/nrkno/sofie-core/compare/v1.51.0-in-testing.2...v1.51.0-in-testing.3) (2024-09-25)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
+# [1.51.0-in-testing.2](https://github.com/nrkno/sofie-core/compare/v1.51.0-in-testing.1...v1.51.0-in-testing.2) (2024-09-24)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
 # [1.51.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.51.0-in-testing.0...v1.51.0-in-testing.1) (2024-09-06)
 
 
@@ -95,7 +111,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
-## [1.50.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.4-LSG-updates...v1.50.5) (2024-08-08)
+## [1.50.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.4...v1.50.5) (2024-09-19)
+
+**Note:** Version bump only for package playout-gateway
 
 **Note:** Version bump only for package playout-gateway
 

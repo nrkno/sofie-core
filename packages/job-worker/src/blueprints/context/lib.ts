@@ -43,7 +43,7 @@ import {
 	RundownPlaylistTiming,
 } from '@sofie-automation/blueprints-integration'
 import { JobContext, ProcessedShowStyleBase, ProcessedShowStyleVariant } from '../../jobs'
-import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { DBRundownPlaylist, QuickLoopMarkerType } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
 /**
  * Convert an object to have all the values of all keys (including optionals) be 'true'
@@ -392,7 +392,9 @@ export function convertRundownPlaylistToBlueprints(
 
 		timing: clone<RundownPlaylistTiming>(playlist.timing),
 		outOfOrderTiming: playlist.outOfOrderTiming,
-		loop: playlist.loop,
+		loop:
+			playlist.quickLoop?.start?.type === QuickLoopMarkerType.PLAYLIST &&
+			playlist.quickLoop.end?.type === QuickLoopMarkerType.PLAYLIST,
 		timeOfDayCountdowns: playlist.timeOfDayCountdowns,
 
 		privateData: clone(playlist.privateData),
