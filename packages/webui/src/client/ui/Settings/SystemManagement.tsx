@@ -38,12 +38,7 @@ export default function SystemManagement(): JSX.Element | null {
 
 			<div className="row">
 				<div className="col c12 r1-c12">
-					<TriggeredActionsEditor
-						studioId={null}
-						showStyleBaseId={null}
-						sourceLayers={emptyObject}
-						outputLayers={emptyObject}
-					/>
+					<TriggeredActionsEditor showStyleBaseId={null} sourceLayers={emptyObject} outputLayers={emptyObject} />
 				</div>
 			</div>
 

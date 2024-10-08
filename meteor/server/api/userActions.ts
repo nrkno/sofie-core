@@ -1125,7 +1125,7 @@ class ServerUserActionAPI
 			async () => {
 				check(studioId, String)
 				check(routeSetId, String)
-				check(state, Boolean)
+				check(state, Match.OneOf('toggle', Boolean))
 
 				const access = await StudioContentWriteAccess.routeSet(this, studioId)
 				return ServerPlayoutAPI.switchRouteSet(access, routeSetId, state)

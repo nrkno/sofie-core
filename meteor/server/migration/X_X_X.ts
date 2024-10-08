@@ -19,7 +19,10 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 		id: `convert routesets to ObjectWithOverrides`,
 		canBeRunAutomatically: true,
 		validate: async () => {
-			const studios = await Studios.findFetchAsync({ routeSets: { $exists: true } })
+			const studios = await Studios.findFetchAsync({
+				routeSets: { $exists: true },
+				routeSetsWithOverrides: { $exists: false },
+			})
 
 			for (const studio of studios) {
 				//@ts-expect-error routeSets is not typed as ObjectWithOverrides
@@ -31,15 +34,16 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			return false
 		},
 		migrate: async () => {
-			const studios = await Studios.findFetchAsync({ routeSets: { $exists: true } })
+			const studios = await Studios.findFetchAsync({
+				routeSets: { $exists: true },
+				routeSetsWithOverrides: { $exists: false },
+			})
 
 			for (const studio of studios) {
-				//@ts-expect-error routeSets is not typed as ObjectWithOverrides
-				if (!studio.routeSets) continue
-				//@ts-expect-error routeSets is not typed as ObjectWithOverrides
-				const oldRouteSets = studio.routeSets as any as Record<string, StudioRouteSet>
+				//@ts-expect-error routeSets is typed as Record<string, StudioRouteSet>
+				const oldRouteSets = studio.routeSets
 
-				const newRouteSets = convertObjectIntoOverrides(oldRouteSets)
+				const newRouteSets = convertObjectIntoOverrides<StudioRouteSet>(oldRouteSets || {})
 
 				await Studios.updateAsync(studio._id, {
 					$set: {
@@ -56,7 +60,10 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 		id: `convert routeSetExclusivityGroups to ObjectWithOverrides`,
 		canBeRunAutomatically: true,
 		validate: async () => {
-			const studios = await Studios.findFetchAsync({ routeSetExclusivityGroups: { $exists: true } })
+			const studios = await Studios.findFetchAsync({
+				routeSetExclusivityGroups: { $exists: true },
+				routeSetExclusivityGroupsWithOverrides: { $exists: false },
+			})
 
 			for (const studio of studios) {
 				//@ts-expect-error routeSetExclusivityGroups is not typed as ObjectWithOverrides
@@ -68,18 +75,18 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			return false
 		},
 		migrate: async () => {
-			const studios = await Studios.findFetchAsync({ routeSetExclusivityGroups: { $exists: true } })
+			const studios = await Studios.findFetchAsync({
+				routeSetExclusivityGroups: { $exists: true },
+				routeSetExclusivityGroupsWithOverrides: { $exists: false },
+			})
 
 			for (const studio of studios) {
-				//@ts-expect-error routeSetExclusivityGroups is not typed as ObjectWithOverrides
-				if (!studio.routeSetExclusivityGroups) return
-				//@ts-expect-error routeSetExclusivityGroups is not typed as ObjectWithOverrides
-				const oldRouteSetExclusivityGroups = studio.routeSetExclusivityGroups as any as Record<
-					string,
-					StudioRouteSetExclusivityGroup
-				>
+				//@ts-expect-error routeSets is typed as Record<string, StudioRouteSetExclusivityGroup>
+				const oldRouteSetExclusivityGroups = studio.routeSetExclusivityGroups
 
-				const newRouteSetExclusivityGroups = convertObjectIntoOverrides(oldRouteSetExclusivityGroups)
+				const newRouteSetExclusivityGroups = convertObjectIntoOverrides<StudioRouteSetExclusivityGroup>(
+					oldRouteSetExclusivityGroups || {}
+				)
 
 				await Studios.updateAsync(studio._id, {
 					$set: {

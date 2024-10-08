@@ -566,7 +566,6 @@ export const ActionSelector = function ActionSelector({
 					{...attributes.popper}
 				>
 					<div>
-						<p>ACT</p>
 						<DropdownInputControl
 							classNames="input text-input input-m"
 							value={action.action}

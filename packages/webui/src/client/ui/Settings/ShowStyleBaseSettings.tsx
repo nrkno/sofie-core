@@ -150,7 +150,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									</Route>
 									<Route path={`${this.props.match.path}/action-triggers`}>
 										<TriggeredActionsEditor
-											studioId={protectString('fakeStudio')} // A studioId is needed to enable the preview renders
 											showStyleBaseId={showStyleBase._id}
 											sourceLayers={this.props.sourceLayers}
 											outputLayers={this.props.outputLayers}

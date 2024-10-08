@@ -198,7 +198,7 @@ export interface ISwitchRouteSetAction extends ITriggeredActionBase {
 	action: PlayoutActions.switchRouteSet
 	filterChain: (IRundownPlaylistFilterLink | IGUIContextFilterLink)[]
 	routeSetId: string
-	state: boolean
+	state: boolean | 'toggle'
 }
 
 export interface ITakeAction extends ITriggeredActionBase {

@@ -604,7 +604,7 @@ export function createAction(
 					ts,
 					ctx.studioId.get(),
 					action.routeSetId,
-					'toggle'
+					action.state
 				)
 			)
 		case ClientActions.showEntireCurrentSegment:

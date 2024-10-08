@@ -196,7 +196,7 @@ export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBa
 	 * @param routeSetId
 	 * @param isActive
 	 */
-	switchRouteSet(routeSetId: string, isActive: boolean): void
+	switchRouteSet(routeSetId: string, isActive: boolean | 'toggle'): void
 
 	/**
 	 * Clear the currently selected PartInstances, so that nothing is selected for playback

@@ -86,7 +86,6 @@ export class StudioBaselineHelper {
 	updateRouteSetActive(routeSetId: string, isActive: boolean | 'toggle'): void {
 		const studio = this.#context.studio
 		const saveOverrides = (newOps: SomeObjectOverrideOp[]) => {
-			// this.#overridesRouteSetBuffer = { defaults: this.#overridesRouteSetBuffer.defaults, overrides: newOps }
 			this.#overridesRouteSetBuffer.overrides = newOps
 			this.#routeSetChanged = true
 		}

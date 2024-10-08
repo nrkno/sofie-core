@@ -1,4 +1,10 @@
-import { BlueprintMapping, BlueprintMappings, JSONBlobParse, TSR } from '@sofie-automation/blueprints-integration'
+import {
+	BlueprintMapping,
+	BlueprintMappings,
+	JSONBlobParse,
+	StudioRouteBehavior,
+	TSR,
+} from '@sofie-automation/blueprints-integration'
 import {
 	MappingsExt,
 	StudioIngestDevice,
@@ -70,23 +76,23 @@ export async function handleBlueprintUpgradeForStudio(context: JobContext, _data
 		])
 	)
 	const routeSets = Object.fromEntries(
-		Object.entries<unknown>(result.routeSets ?? {}).map((dev) => [
+		Object.entries<Partial<StudioRouteSet>>(result.routeSets ?? {}).map((dev) => [
 			dev[0],
 			literal<Complete<StudioRouteSet>>({
-				name: (dev[1] as StudioRouteSet).name ?? '',
-				active: (dev[1] as StudioRouteSet).active ?? false,
-				defaultActive: (dev[1] as StudioRouteSet).defaultActive ?? false,
-				behavior: (dev[1] as StudioRouteSet).behavior ?? {},
-				exclusivityGroup: (dev[1] as StudioRouteSet).exclusivityGroup ?? undefined,
-				routes: (dev[1] as StudioRouteSet).routes,
+				name: dev[1].name ?? '',
+				active: dev[1].active ?? false,
+				defaultActive: dev[1].defaultActive ?? false,
+				behavior: dev[1].behavior ?? StudioRouteBehavior.TOGGLE,
+				exclusivityGroup: dev[1].exclusivityGroup ?? undefined,
+				routes: dev[1].routes ?? [],
 			}),
 		])
 	)
 	const routeSetExclusivityGroups = Object.fromEntries(
-		Object.entries<unknown>(result.routeSetExclusivityGroups ?? {}).map((dev) => [
+		Object.entries<Partial<StudioRouteSetExclusivityGroup>>(result.routeSetExclusivityGroups ?? {}).map((dev) => [
 			dev[0],
 			literal<Complete<StudioRouteSetExclusivityGroup>>({
-				name: (dev[1] as StudioRouteSetExclusivityGroup).name,
+				name: dev[1].name ?? '',
 			}),
 		])
 	)
