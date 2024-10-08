@@ -589,7 +589,9 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 
 		if (regenerateActivationId) this.playlistImpl.activationId = getRandomId()
 
-		if (this.playlistImpl.quickLoop?.running) this.playlistImpl.quickLoop.running = false
+		// reset quickloop:
+		this.setQuickLoopMarker('start', null)
+		this.setQuickLoopMarker('end', null)
 
 		this.#playlistHasChanged = true
 	}
