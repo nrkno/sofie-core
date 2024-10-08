@@ -20,7 +20,7 @@ Bug fix / Feature / Code improvement / Documentation improvement / Other (please
 ## Current Behavior
 <!--
 Please describe how things worked before this PR.
-If it's a bug fixe: Describe the bug (what was happening?)
+If it's a bug fix: Describe the bug (what was happening?)
 -->
 
 
