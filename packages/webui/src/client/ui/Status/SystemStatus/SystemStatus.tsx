@@ -1,11 +1,10 @@
-import React from 'react'
-import { Translated, useSubscription, useTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
+import { useEffect, useMemo, useState } from 'react'
+import { useSubscription, useTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { withTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { protectString, unprotectString } from '../../../lib/tempLib'
 import * as _ from 'underscore'
 import { NotificationCenter, NoticeLevel, Notification } from '../../../lib/notifications/notifications'
-import { ICoreSystem } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
 import { StatusResponse } from '@sofie-automation/meteor-lib/dist/api/systemStatus'
 import { MeteorCall } from '../../../lib/meteorApi'
 import { CoreSystem, PeripheralDevices } from '../../../collections'
@@ -16,15 +15,34 @@ import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyE
 import { CoreItem } from './CoreItem'
 import { DeviceItem } from './DeviceItem'
 
-interface ISystemStatusProps {}
-interface ISystemStatusState {
-	systemStatus: StatusResponse | undefined
-	deviceDebugState: Map<PeripheralDeviceId, object>
-}
+export function SystemStatus(): JSX.Element {
+	const { t } = useTranslation()
 
-interface ISystemStatusTrackedProps {
-	coreSystem: ICoreSystem | undefined
-	devices: Array<PeripheralDevice>
+	// Subscribe to data:
+	useSubscription(CorelibPubSub.peripheralDevices, null)
+
+	const coreSystem = useTracker(() => CoreSystem.findOne(), [])
+	const devices = useTracker(() => PeripheralDevices.find({}, { sort: { lastConnected: -1 } }).fetch(), [], [])
+
+	const systemStatus = useSystemStatus()
+	const playoutDebugStates = usePlayoutDebugStates(devices)
+
+	const devicesHeirarchy = convertDevicesIntoHeirarchy(devices)
+
+	return (
+		<div className="mhl gutter system-status">
+			<header className="mbs">
+				<h1>{t('System Status')}</h1>
+			</header>
+			<div className="mod mvl">
+				{coreSystem && <CoreItem coreSystem={coreSystem} systemStatus={systemStatus} />}
+
+				{devicesHeirarchy.map((d) => (
+					<DeviceItemWithChildren playoutDebugStates={playoutDebugStates} parentDevice={null} device={d} />
+				))}
+			</div>
+		</div>
+	)
 }
 
 interface DeviceInHierarchy {
@@ -32,59 +50,24 @@ interface DeviceInHierarchy {
 	children: Array<DeviceInHierarchy>
 }
 
-export default function SystemStatus(props: Readonly<ISystemStatusProps>): JSX.Element {
-	// Subscribe to data:
-	useSubscription(CorelibPubSub.peripheralDevices, null)
+function useSystemStatus(): StatusResponse | undefined {
+	const { t } = useTranslation()
 
-	const coreSystem = useTracker(() => CoreSystem.findOne(), [])
-	const devices = useTracker(() => PeripheralDevices.find({}, { sort: { lastConnected: -1 } }).fetch(), [], [])
+	const [sytemStatus, setSystemStatus] = useState<StatusResponse | undefined>()
 
-	return <SystemStatusContent {...props} coreSystem={coreSystem} devices={devices} />
-}
+	useEffect(() => {
+		let destroyed = false
 
-const SystemStatusContent = withTranslation()(
-	class SystemStatusContent extends React.Component<
-		Translated<ISystemStatusProps & ISystemStatusTrackedProps>,
-		ISystemStatusState
-	> {
-		private refreshInterval: NodeJS.Timer | undefined = undefined
-		private refreshDebugStatesInterval: NodeJS.Timer | undefined = undefined
-		private destroyed = false
-
-		constructor(props: Translated<ISystemStatusProps & ISystemStatusTrackedProps>) {
-			super(props)
-
-			this.state = {
-				systemStatus: undefined,
-				deviceDebugState: new Map(),
-			}
-		}
-
-		componentDidMount(): void {
-			this.refreshSystemStatus()
-			this.refreshInterval = setInterval(this.refreshSystemStatus, 5000)
-			this.refreshDebugStatesInterval = setInterval(this.refreshDebugStates, 1000)
-		}
-
-		componentWillUnmount(): void {
-			if (this.refreshInterval) clearInterval(this.refreshInterval)
-			if (this.refreshDebugStatesInterval) clearInterval(this.refreshDebugStatesInterval)
-			this.destroyed = true
-		}
-
-		refreshSystemStatus = () => {
-			const { t } = this.props
+		const refreshSystemStatus = () => {
 			MeteorCall.systemStatus
 				.getSystemStatus()
-				.then((systemStatus: StatusResponse) => {
-					if (this.destroyed) return
+				.then((newSystemStatus: StatusResponse) => {
+					if (destroyed) return
 
-					this.setState({
-						systemStatus: systemStatus,
-					})
+					setSystemStatus(newSystemStatus)
 				})
 				.catch((err) => {
-					if (this.destroyed) return
+					if (destroyed) return
 
 					logger.error('systemStatus.getSystemStatus', err)
 					NotificationCenter.push(
@@ -98,106 +81,131 @@ const SystemStatusContent = withTranslation()(
 				})
 		}
 
-		refreshDebugStates = () => {
-			for (const device of this.props.devices) {
-				if (device.type === PeripheralDeviceType.PLAYOUT && device.settings && (device.settings as any)['debugState']) {
-					MeteorCall.systemStatus
-						.getDebugStates(device._id)
-						.then((res) => {
-							const states: Map<PeripheralDeviceId, object> = new Map()
+		refreshSystemStatus()
+
+		const interval = setInterval(refreshSystemStatus, 5000)
+
+		return () => {
+			clearInterval(interval)
+			destroyed = true
+		}
+	}, [t])
+
+	return sytemStatus
+}
+
+function usePlayoutDebugStates(devices: PeripheralDevice[]): Map<PeripheralDeviceId, object> {
+	const { t } = useTranslation()
+
+	const [playoutDebugStates, setPlayoutDebugStates] = useState<Map<PeripheralDeviceId, object>>(new Map())
+
+	const playoutDeviceIds = useMemo(() => {
+		const deviceIds: PeripheralDeviceId[] = []
+
+		for (const device of devices) {
+			if (device.type === PeripheralDeviceType.PLAYOUT && device.settings && (device.settings as any)['debugState']) {
+				deviceIds.push(device._id)
+			}
+		}
+
+		deviceIds.sort()
+		return deviceIds
+	}, [devices])
+
+	useEffect(() => {
+		let destroyed = false
+
+		const refreshDebugStates = () => {
+			for (const deviceId of playoutDeviceIds) {
+				MeteorCall.systemStatus
+					.getDebugStates(deviceId)
+					.then((res) => {
+						if (destroyed) return
+
+						setPlayoutDebugStates((oldState) => {
+							// Create a new map based on the old one
+							const newStates = new Map(oldState.entries())
 							for (const [key, state] of Object.entries<any>(res)) {
-								states.set(protectString(key), state)
+								newStates.set(protectString(key), state)
 							}
-							this.setState({
-								deviceDebugState: states,
-							})
+							return newStates
 						})
-						.catch((err) => console.log(`Error fetching device states: ${stringifyError(err)}`))
-				}
+					})
+					.catch((err) => console.log(`Error fetching device states: ${stringifyError(err)}`))
 			}
 		}
 
-		renderPeripheralDevices() {
-			const devices: Array<DeviceInHierarchy> = []
-			const refs: Record<string, DeviceInHierarchy | undefined> = {}
-			const devicesToAdd: Record<string, DeviceInHierarchy> = {}
-			// First, add all as references:
-			_.each(this.props.devices, (device) => {
-				const d: DeviceInHierarchy = {
-					device: device,
-					children: [],
-				}
-				refs[unprotectString(device._id)] = d
-				devicesToAdd[unprotectString(device._id)] = d
-			})
-			// Then, map and add devices:
-			_.each(devicesToAdd, (d: DeviceInHierarchy) => {
-				if (d.device.parentDeviceId) {
-					const parent = refs[unprotectString(d.device.parentDeviceId)]
-					if (parent) {
-						parent.children.push(d)
-					} else {
-						// not found, add on top level then:
-						devices.push(d)
-					}
-				} else {
-					devices.push(d)
-				}
-			})
+		const interval = setInterval(refreshDebugStates, 1000)
 
-			const getDeviceContent = (parentDevice: DeviceInHierarchy | null, d: DeviceInHierarchy): JSX.Element => {
-				const content: JSX.Element[] = [
-					<DeviceItem
-						key={'device' + d.device._id}
-						parentDevice={parentDevice?.device ?? null}
-						device={d.device}
-						hasChildren={d.children.length !== 0}
-						debugState={this.state.deviceDebugState.get(d.device._id)}
-					/>,
-				]
-				if (d.children.length) {
-					const children: JSX.Element[] = []
-					_.each(d.children, (child: DeviceInHierarchy) =>
-						children.push(
-							<li key={'childdevice' + child.device._id} className="child-device-li">
-								{getDeviceContent(d, child)}
-							</li>
-						)
-					)
-					content.push(
-						<div key={d.device._id + '_children'} className="children">
-							<ul className="childlist">{children}</ul>
-						</div>
-					)
-				}
-				return (
-					<div key={d.device._id + '_parent'} className="device-item-container">
-						{content}
-					</div>
-				)
-			}
-
-			return (
-				<React.Fragment>
-					{this.props.coreSystem && (
-						<CoreItem coreSystem={this.props.coreSystem} systemStatus={this.state.systemStatus} />
-					)}
-					{_.map(devices, (d) => getDeviceContent(null, d))}
-				</React.Fragment>
-			)
+		return () => {
+			clearInterval(interval)
+			destroyed = true
 		}
+	}, [t, JSON.stringify(playoutDeviceIds)])
 
-		render(): JSX.Element {
-			const { t } = this.props
+	return playoutDebugStates
+}
 
-			return (
-				<div className="mhl gutter system-status">
-					<header className="mbs">
-						<h1>{t('System Status')}</h1>
-					</header>
-					<div className="mod mvl">{this.renderPeripheralDevices()}</div>
-				</div>
-			)
+function convertDevicesIntoHeirarchy(devices: PeripheralDevice[]): DeviceInHierarchy[] {
+	const devicesMap = new Map<PeripheralDeviceId, DeviceInHierarchy>()
+	const devicesToAdd: DeviceInHierarchy[] = []
+
+	// First, add all as references:
+	for (const device of devices) {
+		const entry: DeviceInHierarchy = {
+			device: device,
+			children: [],
+		}
+		devicesMap.set(device._id, entry)
+		devicesToAdd.push(entry)
+	}
+
+	// Then, map and add devices:
+	const devicesHeirarchy: Array<DeviceInHierarchy> = []
+	for (const entry of devicesToAdd) {
+		if (entry.device.parentDeviceId) {
+			const parent = devicesMap.get(entry.device.parentDeviceId)
+			if (parent) {
+				parent.children.push(entry)
+			} else {
+				// not found, add on top level then:
+				devicesHeirarchy.push(entry)
+			}
+		} else {
+			devicesHeirarchy.push(entry)
 		}
 	}
-)
+
+	return devicesHeirarchy
+}
+
+interface DeviceItemWithChildrenProps {
+	playoutDebugStates: Map<PeripheralDeviceId, object>
+	parentDevice: DeviceInHierarchy | null
+	device: DeviceInHierarchy
+}
+
+function DeviceItemWithChildren({ playoutDebugStates, device, parentDevice }: DeviceItemWithChildrenProps) {
+	return (
+		<div key={device.device._id + '_parent'} className="device-item-container">
+			<DeviceItem
+				parentDevice={parentDevice?.device ?? null}
+				device={device.device}
+				hasChildren={device.children.length !== 0}
+				debugState={playoutDebugStates.get(device.device._id)}
+			/>
+
+			{device.children.length > 0 && (
+				<div className="children">
+					<ul className="childlist">
+						{device.children.map((child) => (
+							<li key={unprotectString(child.device._id)} className="child-device-li">
+								<DeviceItemWithChildren playoutDebugStates={playoutDebugStates} parentDevice={device} device={child} />
+							</li>
+						))}
+					</ul>
+				</div>
+			)}
+		</div>
+	)
+}
