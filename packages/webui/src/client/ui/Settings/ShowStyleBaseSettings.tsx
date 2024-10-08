@@ -21,7 +21,6 @@ import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../../co
 import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 import { ShowStyleBaseBlueprintConfigurationSettings } from './ShowStyle/BlueprintConfiguration'
-import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 
 interface IProps {
 	match: {
