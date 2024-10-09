@@ -102,7 +102,8 @@ export async function executeAdlibActionAndSaveModel(
 		userData: data.userData,
 		triggerMode: data.triggerMode,
 		privateData: adLibActionDoc?.privateData,
-		publicData: data.actionOptions,
+		publicData: adLibActionDoc?.publicData,
+		actionOptions: data.actionOptions,
 	}
 
 	try {
@@ -162,6 +163,8 @@ export interface ExecuteActionParameters {
 	privateData: unknown | undefined
 	/** Optional arbitraty data used to modify the action parameters */
 	publicData: unknown | undefined
+	/** Optional arbitraty data used to modify the action parameters */
+	actionOptions: { [key: string]: any } | undefined
 
 	triggerMode: string | undefined
 }
@@ -211,7 +214,8 @@ export async function executeActionInner(
 			actionParameters.userData,
 			actionParameters.triggerMode,
 			actionParameters.privateData,
-			actionParameters.publicData
+			actionParameters.publicData,
+			actionParameters.actionOptions ?? {}
 		)
 	} catch (err) {
 		logger.error(`Error in showStyleBlueprint.executeAction: ${stringifyError(err)}`)
