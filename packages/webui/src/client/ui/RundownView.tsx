@@ -34,7 +34,7 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { ContextMenu, MenuItem, ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { RundownTimingProvider } from './RundownView/RundownTiming/RundownTimingProvider'
 import { withTiming, WithTiming } from './RundownView/RundownTiming/withTiming'
-import { CurrentPartRemaining } from './RundownView/RundownTiming/CurrentPartRemaining'
+import { CurrentPartOrSegmentRemaining } from './RundownView/RundownTiming/CurrentPartOrSegmentRemaining'
 import { AutoNextStatus } from './RundownView/RundownTiming/AutoNextStatus'
 import { SegmentTimelineContainer, PieceUi, PartUi, SegmentUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
@@ -310,7 +310,7 @@ const TimingDisplay = withTranslation()(
 						<TimeOfDay />
 						{rundownPlaylist.currentPartInfo && (
 							<span className="timing-clock current-remaining">
-								<CurrentPartRemaining
+								<CurrentPartOrSegmentRemaining
 									currentPartInstanceId={rundownPlaylist.currentPartInfo.partInstanceId}
 									heavyClassName="overtime"
 								/>

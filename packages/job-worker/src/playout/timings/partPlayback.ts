@@ -195,8 +195,11 @@ export function reportPartInstanceHasStarted(
 			playoutModel.setRundownStartedPlayback(partInstance.partInstance.rundownId, timestamp)
 		}
 
-		if (partInstance.partInstance.segmentId !== playoutModel.previousPartInstance?.partInstance.segmentId) {
-			playoutModel.setSegmentStartedPlayback(partInstance.partInstance.segmentId, timestamp)
+		if (
+			partInstance.partInstance.segmentPlayoutId !==
+			playoutModel.previousPartInstance?.partInstance.segmentPlayoutId
+		) {
+			playoutModel.setSegmentStartedPlayback(partInstance.partInstance.segmentPlayoutId, timestamp)
 		}
 
 		if (timestampUpdated) {

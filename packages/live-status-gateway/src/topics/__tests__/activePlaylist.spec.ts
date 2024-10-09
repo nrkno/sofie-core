@@ -9,6 +9,9 @@ import { literal } from '@sofie-automation/corelib/dist/lib'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PartsHandler } from '../../collections/partsHandler'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { SegmentHandler } from '../../collections/segmentHandler'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { CountdownType } from '@sofie-automation/blueprints-integration'
 
 function makeEmptyTestPartInstances(): SelectedPartInstances {
 	return {
@@ -73,6 +76,8 @@ describe('ActivePlaylistTopic', () => {
 
 		const testShowStyleBase = makeTestShowStyleBase()
 		await topic.update(ShowStyleBaseHandler.name, testShowStyleBase as ShowStyleBaseExt)
+
+		const segment1id = protectString('SEGMENT_1')
 		const part1: Partial<DBPart> = {
 			_id: protectString('PART_1'),
 			title: 'Test Part',
@@ -81,13 +86,15 @@ describe('ActivePlaylistTopic', () => {
 			expectedDuration: 10000,
 			publicData: { b: 'c' },
 		}
+		const currentPartInstance = {
+			_id: currentPartInstanceId,
+			part: part1,
+			timings: { plannedStartedPlayback: 1600000060000 },
+			segmentId: segment1id,
+		}
 		const testPartInstances: PartialDeep<SelectedPartInstances> = {
-			current: {
-				_id: currentPartInstanceId,
-				part: part1,
-				timings: { plannedStartedPlayback: 1600000060000 },
-			},
-			firstInSegmentPlayout: {},
+			current: currentPartInstance,
+			firstInSegmentPlayout: currentPartInstance,
 			inCurrentSegment: [
 				literal<PartialDeep<DBPartInstance>>({
 					_id: protectString(currentPartInstanceId),
@@ -99,6 +106,11 @@ describe('ActivePlaylistTopic', () => {
 		await topic.update(PartInstancesHandler.name, testPartInstances as SelectedPartInstances)
 
 		await topic.update(PartsHandler.name, [part1] as DBPart[])
+
+		await topic.update(SegmentHandler.name, {
+			_id: segment1id,
+			segmentTiming: { budgetDuration: 12300, countdownType: CountdownType.SEGMENT_BUDGET_DURATION },
+		} as DBSegment)
 
 		topic.addSubscriber(mockSubscriber)
 
@@ -120,7 +132,9 @@ describe('ActivePlaylistTopic', () => {
 				id: 'SEGMENT_1',
 				timing: {
 					expectedDurationMs: 10000,
-					projectedEndTime: 1600000070000,
+					budgetDurationMs: 12300,
+					projectedEndTime: 1600000072300,
+					countdownType: 'segment_budget_duration',
 				},
 			},
 			rundownIds: unprotectStringArray(playlist.rundownIdsInOrder),
