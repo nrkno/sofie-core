@@ -1114,7 +1114,7 @@ class ServerUserActionAPI
 		eventTime: Time,
 		studioId: StudioId,
 		routeSetId: string,
-		state: boolean
+		state: boolean | 'toggle'
 	): Promise<ClientAPI.ClientResponse<void>> {
 		return ServerClientAPI.runUserActionInLog(
 			this,
@@ -1125,7 +1125,7 @@ class ServerUserActionAPI
 			async () => {
 				check(studioId, String)
 				check(routeSetId, String)
-				check(state, Boolean)
+				check(state, Match.OneOf('toggle', Boolean))
 
 				const access = await StudioContentWriteAccess.routeSet(this, studioId)
 				return ServerPlayoutAPI.switchRouteSet(access, routeSetId, state)

@@ -34,6 +34,7 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 
 	#timelineHasChanged = false
 	#timeline: TimelineComplete | null
+
 	public get timeline(): TimelineComplete | null {
 		return this.#timeline
 	}
@@ -98,6 +99,10 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 		this.#timelineHasChanged = true
 
 		return this.#timeline
+	}
+
+	switchRouteSet(routeSetId: string, isActive: boolean | 'toggle'): void {
+		this.#baselineHelper.updateRouteSetActive(routeSetId, isActive)
 	}
 
 	/**

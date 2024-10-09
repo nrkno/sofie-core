@@ -46,13 +46,16 @@ interface FormComponentProps {
 		overrideHelper: OverrideOpHelperForItemContents
 		itemKey: string
 		opPrefix: string
+
+		/** Whether a clear button should be showed for fields not marked as "required" */
+		showClearButton: boolean
 	}
 
 	/** Whether this field has been marked as "required" */
 	isRequired: boolean
 }
 
-function useChildPropsForFormComponent(props: Readonly<SchemaFormWithOverridesProps>) {
+function useChildPropsForFormComponent(props: Readonly<SchemaFormWithOverridesProps>): FormComponentProps {
 	return useMemo(() => {
 		const title = getSchemaUIField(props.schema, SchemaFormUIField.Title) || props.attr
 		const description = getSchemaUIField(props.schema, SchemaFormUIField.Description)
@@ -67,10 +70,20 @@ function useChildPropsForFormComponent(props: Readonly<SchemaFormWithOverridesPr
 				itemKey: props.attr,
 				opPrefix: props.item.id,
 				overrideHelper: props.overrideHelper,
+
+				showClearButton: !!props.showClearButtonForNonRequiredFields && !props.isRequired,
 			},
 			isRequired: props.isRequired,
 		}
-	}, [props.schema, props.translationNamespaces, props.attr, props.item, props.overrideHelper, props.isRequired])
+	}, [
+		props.schema,
+		props.translationNamespaces,
+		props.attr,
+		props.item,
+		props.overrideHelper,
+		props.isRequired,
+		props.showClearButtonForNonRequiredFields,
+	])
 }
 
 export function SchemaFormWithOverrides(props: Readonly<SchemaFormWithOverridesProps>): JSX.Element {
@@ -179,6 +192,7 @@ const ObjectFormWithOverrides = (props: Readonly<SchemaFormWithOverridesProps>) 
 						sofieEnumDefinitons={props.sofieEnumDefinitons}
 						allowTables={props.allowTables}
 						isRequired={props.schema.required?.includes(index) ?? false}
+						showClearButtonForNonRequiredFields={props.showClearButtonForNonRequiredFields}
 					/>
 				)
 			})}

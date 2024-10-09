@@ -1,11 +1,32 @@
-import { BlueprintMapping, IBlueprintConfig, PackageContainer, TSR } from '@sofie-automation/blueprints-integration'
+import { IBlueprintConfig, PackageContainer, TSR } from '@sofie-automation/blueprints-integration'
 import { ObjectWithOverrides } from '../settings/objectWithOverrides'
 import { StudioId, OrganizationId, BlueprintId, ShowStyleBaseId, MappingsHash, PeripheralDeviceId } from './Ids'
 import { BlueprintHash, LastBlueprintConfig } from './Blueprint'
 import { MappingsExt, MappingExt } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 import { ForceQuickLoopAutoNext } from './RundownPlaylist'
+import {
+	ResultingMappingRoute,
+	RouteMapping,
+	StudioRouteBehavior,
+	ResultingMappingRoutes,
+	StudioRouteSet,
+	StudioRouteSetExclusivityGroup,
+	StudioRouteType,
+} from '@sofie-automation/shared-lib/dist/core/model/StudioRouteSet'
 
 export { MappingsExt, MappingExt, MappingsHash }
+
+// RouteSet functions has been moved to shared-lib:
+// So we need to re-export them here:
+export {
+	StudioRouteSetExclusivityGroup,
+	ResultingMappingRoute,
+	RouteMapping,
+	StudioRouteBehavior,
+	ResultingMappingRoutes,
+	StudioRouteSet,
+	StudioRouteType,
+}
 
 export interface IStudioSettings {
 	/** The framerate (frames per second) used to convert internal timing information (in milliseconds)
@@ -101,8 +122,8 @@ export interface DBStudio {
 
 	_rundownVersionHash: string
 
-	routeSets: Record<string, StudioRouteSet>
-	routeSetExclusivityGroups: Record<string, StudioRouteSetExclusivityGroup>
+	routeSetsWithOverrides: ObjectWithOverrides<Record<string, StudioRouteSet>>
+	routeSetExclusivityGroupsWithOverrides: ObjectWithOverrides<Record<string, StudioRouteSetExclusivityGroup>>
 
 	/** Contains settings for which Package Containers are present in the studio.
 	 * (These are used by the Package Manager and the Expected Packages)
@@ -166,53 +187,4 @@ export interface StudioPackageContainer {
 	/** List of which peripheraldevices uses this packageContainer */
 	deviceIds: string[]
 	container: PackageContainer
-}
-export interface StudioRouteSetExclusivityGroup {
-	name: string
-}
-
-export interface StudioRouteSet {
-	/** User-presentable name */
-	name: string
-	/** Whether this group is active or not */
-	active: boolean
-	/** Default state of this group */
-	defaultActive?: boolean
-	/** Only one Route can be active at the same time in the exclusivity-group */
-	exclusivityGroup?: string
-	/** If true, should be displayed and toggleable by user */
-	behavior: StudioRouteBehavior
-
-	routes: RouteMapping[]
-}
-export enum StudioRouteBehavior {
-	HIDDEN = 0,
-	TOGGLE = 1,
-	ACTIVATE_ONLY = 2,
-}
-
-export enum StudioRouteType {
-	/** Default */
-	REROUTE = 0,
-	/** Replace all properties with a new mapping */
-	REMAP = 1,
-}
-
-export interface RouteMapping extends ResultingMappingRoute {
-	/** Which original layer to route. If false, a "new" layer will be inserted during routing */
-	mappedLayer: string | undefined
-}
-export interface ResultingMappingRoutes {
-	/** Routes that route existing layers */
-	existing: {
-		[mappedLayer: string]: ResultingMappingRoute[]
-	}
-	/** Routes that create new layers, from nothing */
-	inserted: ResultingMappingRoute[]
-}
-export interface ResultingMappingRoute {
-	outputMappedLayer: string
-	deviceType?: TSR.DeviceType
-	remapping?: Partial<BlueprintMapping>
-	routeType: StudioRouteType
 }

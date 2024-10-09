@@ -3228,6 +3228,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 						this.props.studio &&
 						this.props.showStyleBase && (
 							<TriggersHandler
+								studioId={this.props.studio._id}
 								rundownPlaylistId={this.props.rundownPlaylistId}
 								showStyleBaseId={this.props.showStyleBase._id}
 								currentRundownId={this.props.currentRundown?._id || null}

@@ -390,6 +390,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 					<TriggersHandler
 						sorensen={sorensen}
 						simulateTriggerBinding={true}
+						studioId={previewContext.rundownPlaylist.studioId}
 						showStyleBaseId={showStyleBaseId}
 						currentRundownId={previewContext.currentRundownId}
 						rundownPlaylistId={previewContext.rundownPlaylist._id}

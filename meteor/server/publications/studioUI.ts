@@ -38,19 +38,25 @@ function convertDocument(studio: Pick<DBStudio, StudioFields>): UIStudio {
 
 		settings: studio.settings,
 
-		routeSets: studio.routeSets,
-		routeSetExclusivityGroups: studio.routeSetExclusivityGroups,
+		routeSets: applyAndValidateOverrides(studio.routeSetsWithOverrides).obj,
+		routeSetExclusivityGroups: applyAndValidateOverrides(studio.routeSetExclusivityGroupsWithOverrides).obj,
 	})
 }
 
-type StudioFields = '_id' | 'name' | 'mappingsWithOverrides' | 'settings' | 'routeSets' | 'routeSetExclusivityGroups'
+type StudioFields =
+	| '_id'
+	| 'name'
+	| 'mappingsWithOverrides'
+	| 'settings'
+	| 'routeSetsWithOverrides'
+	| 'routeSetExclusivityGroupsWithOverrides'
 const fieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBStudio, StudioFields>>>({
 	_id: 1,
 	name: 1,
 	mappingsWithOverrides: 1,
 	settings: 1,
-	routeSets: 1,
-	routeSetExclusivityGroups: 1,
+	routeSetsWithOverrides: 1,
+	routeSetExclusivityGroupsWithOverrides: 1,
 })
 
 async function setupUIStudioPublicationObservers(

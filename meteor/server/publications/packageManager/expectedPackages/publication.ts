@@ -54,14 +54,14 @@ interface ExpectedPackagesPublicationState {
 
 export type StudioFields =
 	| '_id'
-	| 'routeSets'
+	| 'routeSetsWithOverrides'
 	| 'mappingsWithOverrides'
 	| 'packageContainers'
 	| 'previewContainerIds'
 	| 'thumbnailContainerIds'
 const studioFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBStudio, StudioFields>>>({
 	_id: 1,
-	routeSets: 1,
+	routeSetsWithOverrides: 1,
 	mappingsWithOverrides: 1,
 	packageContainers: 1,
 	previewContainerIds: 1,
@@ -102,7 +102,7 @@ async function setupExpectedPackagesPublicationObservers(
 			{
 				fields: {
 					// mappingsHash gets updated when either of these omitted fields changes
-					...omit(studioFieldSpecifier, 'mappingsWithOverrides', 'routeSets'),
+					...omit(studioFieldSpecifier, 'mappingsWithOverrides', 'routeSetsWithOverrides'),
 					mappingsHash: 1,
 				},
 			}
@@ -143,7 +143,10 @@ async function manipulateExpectedPackagesPublicationData(
 			state.layerNameToDeviceIds = new Map()
 		} else {
 			const studioMappings = applyAndValidateOverrides(state.studio.mappingsWithOverrides).obj
-			state.layerNameToDeviceIds = buildMappingsToDeviceIdMap(state.studio.routeSets, studioMappings)
+			state.layerNameToDeviceIds = buildMappingsToDeviceIdMap(
+				applyAndValidateOverrides(state.studio.routeSetsWithOverrides).obj,
+				studioMappings
+			)
 		}
 	}
 

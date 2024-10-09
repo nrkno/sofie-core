@@ -132,6 +132,7 @@ function createContextForRundownPlaylistChain(
 	}
 
 	return {
+		studioId: new DummyReactiveVar(studioId),
 		rundownPlaylistId: new DummyReactiveVar(playlist?._id),
 		rundownPlaylist: new DummyReactiveVar(playlist),
 		currentRundownId: new DummyReactiveVar(currentPartInstance?.rundownId ?? playlist.rundownIdsInOrder[0] ?? null),

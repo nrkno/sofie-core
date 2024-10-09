@@ -18,7 +18,7 @@ export type StudioFields =
 	| 'previewContainerIds'
 	| 'thumbnailContainerIds'
 	| 'mappingsWithOverrides'
-	| 'routeSets'
+	| 'routeSetsWithOverrides'
 export const studioFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBStudio, StudioFields>>>({
 	_id: 1,
 	settings: 1,
@@ -26,7 +26,7 @@ export const studioFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<D
 	previewContainerIds: 1,
 	thumbnailContainerIds: 1,
 	mappingsWithOverrides: 1,
-	routeSets: 1,
+	routeSetsWithOverrides: 1,
 })
 
 export type PackageContainerPackageStatusLight = Pick<PackageContainerPackageStatusDB, '_id' | 'studioId' | 'status'>
@@ -117,6 +117,6 @@ export async function fetchStudio(studioId: StudioId): Promise<PieceContentStatu
 		previewContainerIds: studio.previewContainerIds,
 		thumbnailContainerIds: studio.thumbnailContainerIds,
 		mappings: applyAndValidateOverrides(studio.mappingsWithOverrides).obj,
-		routeSets: studio.routeSets,
+		routeSets: applyAndValidateOverrides(studio.routeSetsWithOverrides).obj,
 	}
 }

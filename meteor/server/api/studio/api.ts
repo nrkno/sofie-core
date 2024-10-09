@@ -50,8 +50,8 @@ export async function insertStudioInner(organizationId: OrganizationId | null, n
 				minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
 			},
 			_rundownVersionHash: '',
-			routeSets: {},
-			routeSetExclusivityGroups: {},
+			routeSetsWithOverrides: wrapDefaultObject({}),
+			routeSetExclusivityGroupsWithOverrides: wrapDefaultObject({}),
 			packageContainers: {},
 			thumbnailContainerIds: [],
 			previewContainerIds: [],
@@ -141,7 +141,7 @@ Studios.observeChanges(
 	{
 		fields: {
 			mappingsWithOverrides: 1,
-			routeSets: 1,
+			routeSetsWithOverrides: 1,
 		},
 	}
 )
