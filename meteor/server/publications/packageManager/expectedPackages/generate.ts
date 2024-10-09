@@ -17,7 +17,6 @@ import { CustomPublishCollection } from '../../../lib/customPublication'
 import { logger } from '../../../logging'
 import { ExpectedPackagesContentCache } from './contentCache'
 import type { StudioFields } from './publication'
-import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 /**
  * Regenerate the output for the provided ExpectedPackage `regenerateIds`, updating the data in `collection` as needed
@@ -32,13 +31,13 @@ export async function updateCollectionForExpectedPackageIds(
 	contentCache: ReadonlyDeep<ExpectedPackagesContentCache>,
 	studio: Pick<DBStudio, StudioFields>,
 	layerNameToDeviceIds: Map<string, PeripheralDeviceId[]>,
+	packageContainers: Record<string, StudioPackageContainer>,
 	collection: CustomPublishCollection<PackageManagerExpectedPackage>,
 	filterPlayoutDeviceIds: ReadonlyDeep<PeripheralDeviceId[]> | undefined,
 	regenerateIds: Set<ExpectedPackageId>
 ): Promise<void> {
 	const updatedDocIds = new Set<PackageManagerExpectedPackageId>()
 	const missingExpectedPackageIds = new Set<ExpectedPackageId>()
-	const packageContainers = applyAndValidateOverrides(studio.packageContainersWithOverrides).obj
 
 	for (const packageId of regenerateIds) {
 		const packageDoc = contentCache.ExpectedPackages.findOne(packageId)
@@ -102,13 +101,13 @@ export async function updateCollectionForPieceInstanceIds(
 	contentCache: ReadonlyDeep<ExpectedPackagesContentCache>,
 	studio: Pick<DBStudio, StudioFields>,
 	layerNameToDeviceIds: Map<string, PeripheralDeviceId[]>,
+	packageContainers: Record<string, StudioPackageContainer>,
 	collection: CustomPublishCollection<PackageManagerExpectedPackage>,
 	filterPlayoutDeviceIds: ReadonlyDeep<PeripheralDeviceId[]> | undefined,
 	regenerateIds: Set<PieceInstanceId>
 ): Promise<void> {
 	const updatedDocIds = new Set<PackageManagerExpectedPackageId>()
 	const missingPieceInstanceIds = new Set<PieceInstanceId>()
-	const packageContainers = applyAndValidateOverrides(studio.packageContainersWithOverrides).obj
 
 	for (const pieceInstanceId of regenerateIds) {
 		const pieceInstanceDoc = contentCache.PieceInstances.findOne(pieceInstanceId)
