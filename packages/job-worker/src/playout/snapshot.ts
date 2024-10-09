@@ -368,7 +368,7 @@ export async function handleRestorePlaylistSnapshot(
 			piece?: unknown
 		}
 	>(objs: undefined | T[], updateId: boolean): T[] {
-		const updateIds = (obj: T) => {
+		const updateIds = (obj: T, updateId: boolean) => {
 			if (obj.rundownId) {
 				obj.rundownId = getNewRundownId(obj.rundownId)
 			}
@@ -388,15 +388,15 @@ export async function handleRestorePlaylistSnapshot(
 			}
 
 			if (obj.part) {
-				updateIds(obj.part as any)
+				updateIds(obj.part as any, false)
 			}
 			if (obj.piece) {
-				updateIds(obj.piece as any)
+				updateIds(obj.piece as any, false)
 			}
 
 			return obj
 		}
-		return (objs || []).map((obj) => updateIds(obj))
+		return (objs || []).map((obj) => updateIds(obj, updateId))
 	}
 
 	await Promise.all([
