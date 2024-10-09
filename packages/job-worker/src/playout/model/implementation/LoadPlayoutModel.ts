@@ -23,6 +23,7 @@ import { PlayoutModel, PlayoutModelPreInit } from '../PlayoutModel'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
 import { sortRundownsWithinPlaylist } from '@sofie-automation/corelib/dist/playout/playlist'
+import { logger } from '../../../logging'
 
 /**
  * Load a PlayoutModelPreInit for the given RundownPlaylist
@@ -211,6 +212,11 @@ async function loadRundowns(
 	const groupedBaselineObjects = groupByToMap(baselineObjects, 'rundownId')
 
 	if (ingestModel) {
+		logger.warn(
+			`TESTDEBUG: using ingestModel, previous: ${JSON.stringify(
+				groupedSegmentsWithParts.get(ingestModel.rundownId)?.map((s) => s.segment._id)
+			)}`
+		)
 		const playoutSegments: PlayoutSegmentModelImpl[] = []
 		groupedSegmentsWithParts.set(ingestModel.rundownId, playoutSegments)
 		// Populate the collections with the in-memory data instead
@@ -231,6 +237,12 @@ async function loadRundowns(
 				}),
 			])
 		}
+
+		logger.warn(
+			`TESTDEBUG: using ingestModel, new: ${JSON.stringify(
+				groupedSegmentsWithParts.get(ingestModel.rundownId)?.map((s) => s.segment._id)
+			)}`
+		)
 	}
 
 	return rundowns.map(

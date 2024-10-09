@@ -199,6 +199,7 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 			const groupedParts = groupByToMap(existingData.parts, 'segmentId')
 
 			this.segmentsImpl = new Map()
+			logger.warn(`TESTDEBUG: existingData.segments: ${JSON.stringify(existingData.segments.map((s) => s._id))}`)
 			for (const segment of existingData.segments) {
 				const rawParts = groupedParts.get(segment._id) ?? []
 				const parts = rawParts.map(
