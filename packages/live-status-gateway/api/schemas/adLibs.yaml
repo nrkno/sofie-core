@@ -22,11 +22,6 @@ $defs:
         type: array
         items:
           $ref: '#/$defs/globalAdLib'
-      templateAdLibs:
-        description: The available Template AdLibs
-        type: array
-        items:
-          $ref: '#/$defs/templateAdLib'
     required: [event, rundownPlaylistId, adLibs, globalAdLibs]
     additionalProperties: false
     examples:
@@ -59,9 +54,6 @@ $defs:
         publicData:
           fileName: MV000123.mxf
   globalAdLib:
-    $ref: '#/$defs/adLibBase'
-    additionalProperties: false
-  templateAdLib:
     $ref: '#/$defs/adLibBase'
     additionalProperties: false
   adLibBase:

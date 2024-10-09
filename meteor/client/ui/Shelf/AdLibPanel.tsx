@@ -487,6 +487,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 								}
 							)
 								.fetch()
+								.filter((action) => !(action.publicData && ((action.publicData as any).template as boolean)))
 								.map((action) => actionToAdLibPieceUi(action, sourceLayerLookup, outputLayerLookup)),
 						'globalAdLibActions',
 						currentRundownId
