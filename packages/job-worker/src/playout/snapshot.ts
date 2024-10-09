@@ -242,12 +242,14 @@ export async function handleRestorePlaylistSnapshot(
 
 		partIdMap.set(oldId, part._id)
 	}
+
 	const partInstanceOldRundownIdMap = new Map<PartInstanceId, RundownId>()
 	const partInstanceIdMap = new Map<PartInstanceId, PartInstanceId>()
 	for (const partInstance of snapshot.partInstances) {
 		const oldId = partInstance._id
 		partInstance._id = getRandomId()
 		partInstanceIdMap.set(oldId, partInstance._id)
+
 		partInstance.part._id = partIdMap.get(partInstance.part._id) || getRandomId()
 		partInstanceOldRundownIdMap.set(oldId, partInstance.rundownId)
 	}
@@ -279,7 +281,6 @@ export async function handleRestorePlaylistSnapshot(
 		...snapshot.baselineAdLibActions,
 	]) {
 		const oldId = adlib._id
-		if (adlib.partId) adlib.partId = partIdMap.get(adlib.partId)
 		adlib._id = getRandomId()
 		pieceIdMap.set(oldId, adlib._id)
 	}
