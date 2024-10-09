@@ -505,8 +505,9 @@ export async function ShowStyleBaseBlueprintConfigFromAPI(
 	if (!apiShowStyleBase.blueprintConfigPresetId)
 		throw new Meteor.Error(500, `ShowStyleBase ${apiShowStyleBase.name} is missing config preset`)
 
-	if (typeof blueprintManifest.blueprintConfigFromAPI !== 'function')
-		throw new Meteor.Error(500, `Blueprint ${blueprintManifest.blueprintId} does not support this config flow`)
+	if (typeof blueprintManifest.blueprintConfigFromAPI !== 'function') {
+		return apiShowStyleBase.config as IBlueprintConfig
+	}
 
 	const blueprintContext = new CommonContext(
 		'BlueprintConfigFromAPI',
@@ -565,8 +566,9 @@ export async function StudioBlueprintConfigFromAPI(
 	if (!apiStudio.blueprintConfigPresetId)
 		throw new Meteor.Error(500, `Studio ${apiStudio.name} is missing config preset`)
 
-	if (typeof blueprintManifest.blueprintConfigFromAPI !== 'function')
-		throw new Meteor.Error(500, `Blueprint ${blueprintManifest.blueprintId} does not support this config flow`)
+	if (typeof blueprintManifest.blueprintConfigFromAPI !== 'function') {
+		return apiStudio.config as IBlueprintConfig
+	}
 
 	const blueprintContext = new CommonContext(
 		'BlueprintConfigFromAPI',
