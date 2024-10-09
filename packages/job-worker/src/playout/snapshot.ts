@@ -418,13 +418,13 @@ export async function handleRestorePlaylistSnapshot(
 			context,
 			context.directCollections.RundownBaselineAdLibPieces,
 			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.baselineAdlibs, true)
+			updateItemIds(snapshot.baselineAdlibs, false)
 		),
 		saveIntoDb(
 			context,
 			context.directCollections.RundownBaselineAdLibActions,
 			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.baselineAdLibActions, true)
+			updateItemIds(snapshot.baselineAdLibActions, false)
 		),
 		saveIntoDb(
 			context,
@@ -460,13 +460,13 @@ export async function handleRestorePlaylistSnapshot(
 			context,
 			context.directCollections.AdLibPieces,
 			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.adLibPieces, true)
+			updateItemIds(snapshot.adLibPieces, false)
 		),
 		saveIntoDb(
 			context,
 			context.directCollections.AdLibActions,
 			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.adLibActions, true)
+			updateItemIds(snapshot.adLibActions, false)
 		),
 		saveIntoDb(
 			context,
@@ -478,13 +478,13 @@ export async function handleRestorePlaylistSnapshot(
 			context,
 			context.directCollections.ExpectedPlayoutItems,
 			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.expectedPlayoutItems || [], false)
+			updateItemIds(snapshot.expectedPlayoutItems || [], true)
 		),
 		saveIntoDb(
 			context,
 			context.directCollections.ExpectedPackages,
 			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.expectedPackages || [], false)
+			snapshot.expectedPackages || []
 		),
 	])
 
