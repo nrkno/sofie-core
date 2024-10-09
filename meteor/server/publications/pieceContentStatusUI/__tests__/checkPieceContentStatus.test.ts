@@ -5,6 +5,7 @@ import {
 	getMediaObjectMediaId,
 	PieceContentStreamInfo,
 	checkPieceContentStatusAndDependencies,
+	PieceContentStatusStudio,
 } from '../checkPieceContentStatus'
 import {
 	PackageInfo,
@@ -31,12 +32,10 @@ import {
 	MediaStream,
 	MediaStreamType,
 } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
-import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { defaultStudio } from '../../../../__mocks__/defaultCollectionObjects'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { MediaObjects } from '../../../collections'
 import { PieceDependencies } from '../common'
-import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
 
 const mockMediaObjectsCollection = MongoMock.getInnerMockCollection<MediaObject>(MediaObjects)
@@ -174,17 +173,14 @@ describe('lib/mediaObjects', () => {
 		}
 
 		const mockDefaultStudio = defaultStudio(protectString('studio0'))
-		const mockStudio: Complete<
-			Pick<DBStudio, '_id' | 'settings' | 'packageContainers' | 'previewContainerIds' | 'thumbnailContainerIds'> &
-				Pick<UIStudio, 'mappings' | 'routeSets'>
-		> = {
+		const mockStudio: Complete<PieceContentStatusStudio> = {
 			_id: mockDefaultStudio._id,
 			settings: mockStudioSettings,
-			packageContainers: mockDefaultStudio.packageContainers,
 			previewContainerIds: ['previews0'],
 			thumbnailContainerIds: ['thumbnails0'],
 			routeSets: applyAndValidateOverrides(mockDefaultStudio.routeSetsWithOverrides).obj,
 			mappings: applyAndValidateOverrides(mockDefaultStudio.mappingsWithOverrides).obj,
+			packageContainers: applyAndValidateOverrides(mockDefaultStudio.packageContainersWithOverrides).obj,
 		}
 
 		mockMediaObjectsCollection.insert(
