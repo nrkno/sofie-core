@@ -1,3 +1,7 @@
 {
-	"extends": "../node_modules/@sofie-automation/code-standard-preset/eslint/main"
+	"extends": "../node_modules/@sofie-automation/code-standard-preset/eslint/main",
+	"parserOptions": {
+		"sourceType": "module",
+		"project": ["./packages/playout-gateway/tsconfig.json"]
+	}
 }

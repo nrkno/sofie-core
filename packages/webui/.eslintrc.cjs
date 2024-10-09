@@ -25,7 +25,7 @@ const {
 	commonRules,
 	tsRules,
 	tsParser,
-} = require('@sofie-automation/code-standard-preset/eslint/fragments') // eslint-disable-line node/no-unpublished-require
+} = require('@sofie-automation/code-standard-preset/eslint/fragments') // eslint-disable-line node/no-unpublished-require, node/no-extraneous-require
 
 const tmpRules = {
 	// Temporary rules to be removed over time
@@ -84,7 +84,11 @@ module.exports = {
 		'prettier/prettier': 'error',
 	},
 	env: { browser: true, es2020: true },
-	parserOptions: { sourceType: 'module', ecmaVersion: 2020 },
+	parserOptions: {
+		sourceType: 'module',
+		ecmaVersion: 2020,
+		project: ['./packages/webui/tsconfig.json'],
+	},
 	settings: {
 		react: {
 			version: 'detect', // Tells eslint-plugin-react to automatically detect the version of React to use
