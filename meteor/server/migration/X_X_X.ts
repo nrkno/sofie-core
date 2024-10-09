@@ -107,10 +107,13 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 		id: `convert packageContainers to ObjectWithOverrides`,
 		canBeRunAutomatically: true,
 		validate: async () => {
-			const studios = await Studios.findFetchAsync({ packageContainers: { $exists: true } })
+			const studios = await Studios.findFetchAsync({
+				packageContainers: { $exists: true },
+				packageContainersWithOverrides: { $exists: false },
+			})
 
 			for (const studio of studios) {
-				//@ts-expect-error packageContainers is not typed as ObjectWithOverrides
+				// @ts-expect-error packageContainers is typed as Record<string, StudioPackageContainer>
 				if (studio.packageContainers) {
 					return 'packageContainers must be converted to an ObjectWithOverrides'
 				}
@@ -119,15 +122,18 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			return false
 		},
 		migrate: async () => {
-			const studios = await Studios.findFetchAsync({ packageContainers: { $exists: true } })
+			const studios = await Studios.findFetchAsync({
+				packageContainers: { $exists: true },
+				packageContainersWithOverrides: { $exists: false },
+			})
 
 			for (const studio of studios) {
-				//@ts-expect-error packageContainers is not typed as ObjectWithOverrides
-				if (!studio.packageContainers) continue
-				//@ts-expect-error packageContainers is not typed as ObjectWithOverrides
-				const oldPackageContainers = studio.packageContainers as any as Record<string, StudioPackageContainer>
+				// @ts-expect-error packageContainers is typed as Record<string, StudioPackageContainer>
+				const oldPackageContainers = studio.packageContainers
 
-				const newPackageContainers = convertObjectIntoOverrides(oldPackageContainers)
+				const newPackageContainers = convertObjectIntoOverrides<StudioPackageContainer>(
+					oldPackageContainers || {}
+				)
 
 				await Studios.updateAsync(studio._id, {
 					$set: {

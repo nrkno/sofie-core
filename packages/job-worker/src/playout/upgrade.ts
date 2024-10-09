@@ -99,11 +99,11 @@ export async function handleBlueprintUpgradeForStudio(context: JobContext, _data
 	)
 
 	const packageContainers = Object.fromEntries(
-		Object.entries<unknown>(result.packageContainers ?? {}).map((dev) => [
+		Object.entries<Partial<StudioPackageContainer>>(result.packageContainers ?? {}).map((dev) => [
 			dev[0],
 			literal<Complete<StudioPackageContainer>>({
-				deviceIds: (dev[1] as StudioPackageContainer).deviceIds,
-				container: (dev[1] as StudioPackageContainer).container,
+				deviceIds: dev[1].deviceIds ?? [],
+				container: dev[1].container as any,
 			}),
 		])
 	)
