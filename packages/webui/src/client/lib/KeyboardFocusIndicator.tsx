@@ -1,17 +1,17 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 
-import { getAllowStudio, getAllowConfigure, getAllowService } from '../lib/localStorage'
-
 import { MeteorCall } from '../lib/meteorApi'
 import { getCurrentTime } from './systemTime'
 import { catchError } from './lib'
+import { UserPermissions } from '../ui/UserPermissions'
 
 interface IKeyboardFocusIndicatorState {
 	inFocus: boolean
 }
 interface IKeyboardFocusIndicatorProps {
 	showWhenFocused?: boolean
+	userPermissions: Readonly<UserPermissions>
 }
 
 export class KeyboardFocusIndicator extends React.Component<
@@ -54,9 +54,9 @@ export class KeyboardFocusIndicator extends React.Component<
 				url: window.location.href + window.location.search,
 				width: window.innerWidth,
 				height: window.innerHeight,
-				studio: getAllowStudio(),
-				configure: getAllowConfigure(),
-				service: getAllowService(),
+				studio: this.props.userPermissions.studio,
+				configure: this.props.userPermissions.configure,
+				service: this.props.userPermissions.service,
 			}
 			if (focusNow) {
 				MeteorCall.userAction

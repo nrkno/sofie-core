@@ -47,35 +47,35 @@ function localStorageUnsetCachedItem(key: LocalStorageProperty): void {
 export function setAllowStudio(studioMode: boolean): void {
 	localStorageSetCachedItem(LocalStorageProperty.STUDIO, studioMode ? '1' : '0')
 }
-export function getAllowStudio(): boolean {
+export function getLocalAllowStudio(): boolean {
 	return localStorageGetCachedItem(LocalStorageProperty.STUDIO) === '1'
 }
 
 export function setAllowConfigure(configureMode: boolean): void {
 	localStorageSetCachedItem(LocalStorageProperty.CONFIGURE, configureMode ? '1' : '0')
 }
-export function getAllowConfigure(): boolean {
+export function getLocalAllowConfigure(): boolean {
 	return localStorageGetCachedItem(LocalStorageProperty.CONFIGURE) === '1'
 }
 
 export function setAllowService(serviceMode: boolean): void {
 	localStorageSetCachedItem(LocalStorageProperty.SERVICE, serviceMode ? '1' : '0')
 }
-export function getAllowService(): boolean {
+export function getLocalAllowService(): boolean {
 	return localStorageGetCachedItem(LocalStorageProperty.SERVICE) === '1'
 }
 
 export function setAllowDeveloper(developerMode: boolean): void {
 	localStorageSetCachedItem(LocalStorageProperty.DEVELOPER, developerMode ? '1' : '0')
 }
-export function getAllowDeveloper(): boolean {
+export function getLocalAllowDeveloper(): boolean {
 	return localStorageGetCachedItem(LocalStorageProperty.DEVELOPER) === '1'
 }
 
 export function setAllowTesting(testingMode: boolean): void {
 	localStorageSetCachedItem(LocalStorageProperty.TESTING, testingMode ? '1' : '0')
 }
-export function getAllowTesting(): boolean {
+export function getLocalAllowTesting(): boolean {
 	return localStorageGetCachedItem(LocalStorageProperty.TESTING) === '1'
 }
 

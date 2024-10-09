@@ -1,7 +1,6 @@
-import { useEffect } from 'react'
+import { useContext, useEffect } from 'react'
 import classNames from 'classnames'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { getAllowConfigure, getAllowService, getAllowStudio } from '../../lib/localStorage'
 import { useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { confirmDeleteRundown, confirmReSyncRundown, getShowStyleBaseLink } from './util'
 import { useDrag, useDrop } from 'react-dnd'
@@ -15,6 +14,7 @@ import { ShowStyleBases, ShowStyleVariants } from '../../collections'
 import { useTranslation } from 'react-i18next'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
+import { UserPermissionsContext } from '../UserPermissions'
 
 export const HTML_ID_PREFIX = 'rundown-'
 
@@ -36,6 +36,7 @@ export function RundownListItem({
 	action?: IRundownPlaylistUiAction
 }>): JSX.Element | null {
 	const { t } = useTranslation()
+	const userPermissions = useContext(UserPermissionsContext)
 
 	const showStyleBase = useTracker(
 		() =>
@@ -51,8 +52,6 @@ export function RundownListItem({
 				| undefined,
 		[rundown.showStyleVariantId]
 	)
-
-	const userCanConfigure = getAllowConfigure()
 
 	const [dragState, connectDragSource, connectDragPreview] = useDrag<IRundownDragObject, void, { isDragging: boolean }>(
 		{
@@ -118,17 +117,17 @@ export function RundownListItem({
 			isOnlyRundownInPlaylist={isOnlyRundownInPlaylist}
 			rundownLayouts={rundownLayouts}
 			showStyleName={showStyleLabel}
-			showStyleBaseURL={userCanConfigure ? getShowStyleBaseLink(rundown.showStyleBaseId) : undefined}
+			showStyleBaseURL={userPermissions.configure ? getShowStyleBaseLink(rundown.showStyleBaseId) : undefined}
 			confirmDeleteRundownHandler={
-				(getAllowStudio() &&
+				(userPermissions.studio &&
 					(rundown.orphaned || rundown.source.type === 'testing' || rundown.source.type === 'snapshot')) ||
-				userCanConfigure ||
-				getAllowService()
+				userPermissions.configure ||
+				userPermissions.service
 					? () => confirmDeleteRundown(rundown, t)
 					: undefined
 			}
 			confirmReSyncRundownHandler={
-				rundown.orphaned && getAllowStudio() ? () => confirmReSyncRundown(rundown, t) : undefined
+				rundown.orphaned && userPermissions.studio ? () => confirmReSyncRundown(userPermissions, rundown, t) : undefined
 			}
 		/>
 	)

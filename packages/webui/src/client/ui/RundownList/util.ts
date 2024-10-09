@@ -12,6 +12,7 @@ import {
 	ShowStyleBaseId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { UserPermissions } from '../UserPermissions'
 
 export function getRundownPlaylistLink(rundownPlaylistId: RundownPlaylistId): string {
 	// double encoding so that "/" are handled correctly
@@ -70,7 +71,7 @@ export function confirmDeleteRundown(rundown: Rundown, t: TFunction): void {
 	})
 }
 
-export function confirmReSyncRundown(rundown: Rundown, t: TFunction): void {
+export function confirmReSyncRundown(userPermissions: Readonly<UserPermissions>, rundown: Rundown, t: TFunction): void {
 	doModalDialog({
 		title: t('Re-Sync rundown?'),
 		yes: t('Re-Sync'),
@@ -83,7 +84,7 @@ export function confirmReSyncRundown(rundown: Rundown, t: TFunction): void {
 				async (e, ts) => MeteorCall.userAction.resyncRundown(e, ts, rundown._id),
 				(err, res) => {
 					if (!err && res) {
-						return handleRundownReloadResponse(t, rundown._id, res)
+						return handleRundownReloadResponse(t, userPermissions, rundown._id, res)
 					}
 				}
 			)

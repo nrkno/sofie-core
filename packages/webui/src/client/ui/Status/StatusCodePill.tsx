@@ -1,9 +1,29 @@
 import * as React from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, TFunction } from 'react-i18next'
 import { assertNever } from '../../lib/tempLib'
 import ClassNames from 'classnames'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
-import { statusCodeToString } from './SystemStatus'
+import {} from './SystemStatus/SystemStatus'
+
+export function statusCodeToString(t: TFunction, statusCode: StatusCode): string {
+	switch (statusCode) {
+		case StatusCode.UNKNOWN:
+			return t('Unknown')
+		case StatusCode.GOOD:
+			return t('Good')
+		case StatusCode.WARNING_MINOR:
+			return t('Minor Warning')
+		case StatusCode.WARNING_MAJOR:
+			return t('Warning')
+		case StatusCode.BAD:
+			return t('Bad')
+		case StatusCode.FATAL:
+			return t('Fatal')
+		default:
+			assertNever(statusCode)
+			return t('Unknown')
+	}
+}
 
 export const StatusCodePill: React.FC<{
 	connected: boolean

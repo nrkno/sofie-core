@@ -4,18 +4,8 @@ import 'moment/min/locales'
 import { parse as queryStringParse } from 'query-string'
 import Header from './Header'
 import {
-	setAllowStudio,
-	setAllowConfigure,
-	getAllowStudio,
-	getAllowConfigure,
-	setAllowDeveloper,
-	setAllowTesting,
-	getAllowTesting,
-	getAllowDeveloper,
 	setAllowSpeaking,
 	setAllowVibrating,
-	setAllowService,
-	getAllowService,
 	setHelpMode,
 	setUIZoom,
 	getUIZoom,
@@ -48,6 +38,7 @@ import { Settings } from '../lib/Settings'
 import { DocumentTitleProvider } from '../lib/DocumentTitleProvider'
 import { catchError, firstIfArray, isRunningInPWA } from '../lib/lib'
 import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+import { useUserPermissions, UserPermissionsContext } from './UserPermissions'
 
 const NullComponent = () => null
 
@@ -61,7 +52,7 @@ export const App: React.FC = function App() {
 
 	const [lastStart] = useState(Date.now())
 
-	const roles = useRoles()
+	const roles = useUserPermissions()
 	const featureFlags = useFeatureFlags()
 
 	useEffect(() => {
@@ -155,136 +146,95 @@ export const App: React.FC = function App() {
 	}, [])
 
 	return (
-		<Router getUserConfirmation={onNavigationUserConfirmation}>
-			<div className="container-fluid header-clear">
-				{/* Header switch - render the usual header for all pages but the rundown view */}
-				<ErrorBoundary>
-					<Switch>
-						<Route path="/rundown/:playlistId" component={NullComponent} />
-						<Route path="/countdowns/:studioId" component={NullComponent} />
-						<Route path="/activeRundown" component={NullComponent} />
-						<Route path="/prompter/:studioId" component={NullComponent} />
-						<Route
-							path="/"
-							render={(props) => (
-								<Header
-									{...props}
-									allowConfigure={roles.configure}
-									allowTesting={roles.testing}
-									allowDeveloper={roles.developer}
-								/>
-							)}
-						/>
-					</Switch>
-				</ErrorBoundary>
-				{/* Main app switch */}
-				<ErrorBoundary>
-					<Switch>
-						<Route exact path="/" component={RundownList} />
-						<Route path="/rundowns" render={() => <RundownList />} />
-						<Route
-							path="/rundown/:playlistId/shelf"
-							exact
-							render={(props) => (
-								<RundownView
-									playlistId={protectString(decodeURIComponent(props.match.params.playlistId))}
-									onlyShelf={true}
-								/>
-							)}
-						/>
-						<Route
-							path="/rundown/:playlistId"
-							render={(props) => (
-								<RundownView playlistId={protectString(decodeURIComponent(props.match.params.playlistId))} />
-							)}
-						/>
-						<Route
-							path="/activeRundown/:studioId"
-							render={(props) => (
-								<ActiveRundownView studioId={protectString(decodeURIComponent(props.match.params.studioId))} />
-							)}
-						/>
-						<Route
-							path="/prompter/:studioId"
-							render={(props) => (
-								<PrompterView studioId={protectString(decodeURIComponent(props.match.params.studioId))} />
-							)}
-						/>
-						{/* We switch to the general ClockView component, and allow it to do the switch between various types of countdowns */}
-						<Route
-							path="/countdowns/:studioId"
-							render={(props) => (
-								<ClockView studioId={protectString(decodeURIComponent(props.match.params.studioId))} />
-							)}
-						/>
-						<Route path="/status" render={() => <Status />} />
-						<Route path="/settings" render={() => <SettingsView />} />
-						<Route path="/testTools" render={() => <TestTools />} />
-						<Route>
-							<Redirect to="/" />
-						</Route>
-					</Switch>
-				</ErrorBoundary>
-				<ErrorBoundary>
-					<Switch>
-						{/* Put views that should NOT have the Notification center here: */}
-						<Route path="/countdowns/:studioId" component={NullComponent} />
-						<Route path="/prompter/:studioId" component={NullComponent} />
-						<Route path="/" component={ConnectionStatusNotification} />
-					</Switch>
-				</ErrorBoundary>
-				<ErrorBoundary>
-					<DocumentTitleProvider />
-				</ErrorBoundary>
-				<ErrorBoundary>
-					<ModalDialogGlobalContainer />
-				</ErrorBoundary>
-			</div>
-		</Router>
+		<UserPermissionsContext.Provider value={roles}>
+			<Router getUserConfirmation={onNavigationUserConfirmation}>
+				<div className="container-fluid header-clear">
+					{/* Header switch - render the usual header for all pages but the rundown view */}
+					<ErrorBoundary>
+						<Switch>
+							<Route path="/rundown/:playlistId" component={NullComponent} />
+							<Route path="/countdowns/:studioId" component={NullComponent} />
+							<Route path="/activeRundown" component={NullComponent} />
+							<Route path="/prompter/:studioId" component={NullComponent} />
+							<Route
+								path="/"
+								render={(props) => (
+									<Header
+										{...props}
+										allowConfigure={roles.configure}
+										allowTesting={roles.testing}
+										allowDeveloper={roles.developer}
+									/>
+								)}
+							/>
+						</Switch>
+					</ErrorBoundary>
+					{/* Main app switch */}
+					<ErrorBoundary>
+						<Switch>
+							<Route exact path="/" component={RundownList} />
+							<Route path="/rundowns" render={() => <RundownList />} />
+							<Route
+								path="/rundown/:playlistId/shelf"
+								exact
+								render={(props) => (
+									<RundownView
+										playlistId={protectString(decodeURIComponent(props.match.params.playlistId))}
+										onlyShelf={true}
+									/>
+								)}
+							/>
+							<Route
+								path="/rundown/:playlistId"
+								render={(props) => (
+									<RundownView playlistId={protectString(decodeURIComponent(props.match.params.playlistId))} />
+								)}
+							/>
+							<Route
+								path="/activeRundown/:studioId"
+								render={(props) => (
+									<ActiveRundownView studioId={protectString(decodeURIComponent(props.match.params.studioId))} />
+								)}
+							/>
+							<Route
+								path="/prompter/:studioId"
+								render={(props) => (
+									<PrompterView studioId={protectString(decodeURIComponent(props.match.params.studioId))} />
+								)}
+							/>
+							{/* We switch to the general ClockView component, and allow it to do the switch between various types of countdowns */}
+							<Route
+								path="/countdowns/:studioId"
+								render={(props) => (
+									<ClockView studioId={protectString(decodeURIComponent(props.match.params.studioId))} />
+								)}
+							/>
+							<Route path="/status" render={() => <Status />} />
+							<Route path="/settings" render={() => <SettingsView />} />
+							<Route path="/testTools" render={() => <TestTools />} />
+							<Route>
+								<Redirect to="/" />
+							</Route>
+						</Switch>
+					</ErrorBoundary>
+					<ErrorBoundary>
+						<Switch>
+							{/* Put views that should NOT have the Notification center here: */}
+							<Route path="/countdowns/:studioId" component={NullComponent} />
+							<Route path="/prompter/:studioId" component={NullComponent} />
+							<Route path="/" component={ConnectionStatusNotification} />
+						</Switch>
+					</ErrorBoundary>
+					<ErrorBoundary>
+						<DocumentTitleProvider />
+					</ErrorBoundary>
+					<ErrorBoundary>
+						<ModalDialogGlobalContainer />
+					</ErrorBoundary>
+				</div>
+			</Router>
+		</UserPermissionsContext.Provider>
 	)
-}
-
-function useRoles() {
-	const location = window.location
-
-	const [roles, setRoles] = useState({
-		studio: getAllowStudio(),
-		configure: getAllowConfigure(),
-		developer: getAllowDeveloper(),
-		testing: getAllowTesting(),
-		service: getAllowService(),
-	})
-
-	useEffect(() => {
-		if (!location.search) return
-
-		const params = queryStringParse(location.search)
-
-		if (params['studio']) setAllowStudio(params['studio'] === '1')
-		if (params['configure']) setAllowConfigure(params['configure'] === '1')
-		if (params['develop']) setAllowDeveloper(params['develop'] === '1')
-		if (params['testing']) setAllowTesting(params['testing'] === '1')
-		if (params['service']) setAllowService(params['service'] === '1')
-
-		if (params['admin']) {
-			const val = params['admin'] === '1'
-			setAllowStudio(val)
-			setAllowConfigure(val)
-			setAllowDeveloper(val)
-			setAllowTesting(val)
-			setAllowService(val)
-		}
-
-		setRoles({
-			studio: getAllowStudio(),
-			configure: getAllowConfigure(),
-			developer: getAllowDeveloper(),
-			testing: getAllowTesting(),
-			service: getAllowService(),
-		})
-	}, [location.search])
-
-	return roles
 }
 
 function useFeatureFlags() {

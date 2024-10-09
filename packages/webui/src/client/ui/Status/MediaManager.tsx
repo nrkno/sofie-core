@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useContext } from 'react'
 import * as CoreIcons from '@nrk/core-icons/jsx'
 import { faChevronDown, faChevronRight, faCheck, faStopCircle, faRedo, faFlag } from '@fortawesome/free-solid-svg-icons'
 // @ts-expect-error No types available
@@ -19,10 +19,10 @@ import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { MeteorCall } from '../../lib/meteorApi'
 import Tooltip from 'rc-tooltip'
 import { MediaManagerAPI } from '@sofie-automation/meteor-lib/dist/api/mediaManager'
-import { getAllowConfigure, getAllowStudio } from '../../lib/localStorage'
 import { MediaWorkFlowId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MediaWorkFlows, MediaWorkFlowSteps } from '../../collections'
 import { useToggleExpandHelper } from '../util/useToggleExpandHelper'
+import { UserPermissionsContext } from '../UserPermissions'
 
 interface MediaWorkFlowUi extends MediaWorkFlow {
 	steps: MediaWorkFlowStep[]
@@ -338,6 +338,8 @@ function MediaManagerWorkFlowItem(props: Readonly<IItemProps>): JSX.Element {
 export function MediaManagerStatus(): JSX.Element {
 	const { t } = useTranslation()
 
+	const userPermissions = useContext(UserPermissionsContext)
+
 	// Subscribe to data:
 	useSubscription(MeteorPubSub.mediaWorkFlows) // TODO: add some limit
 	useSubscription(MeteorPubSub.mediaWorkFlowSteps)
@@ -407,7 +409,7 @@ export function MediaManagerStatus(): JSX.Element {
 				<h1>{t('Media Transfer Status')}</h1>
 			</header>
 			<div className="mod mvl alright">
-				{getAllowStudio() || getAllowConfigure() ? (
+				{userPermissions.studio || userPermissions.configure ? (
 					<React.Fragment>
 						<button className="btn btn-secondary mls" onClick={actionAbortAll}>
 							{t('Abort All')}
