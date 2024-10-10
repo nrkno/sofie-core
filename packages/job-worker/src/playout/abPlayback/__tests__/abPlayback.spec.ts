@@ -1,4 +1,5 @@
 import {
+	AbPlayerId,
 	ABResolverOptions,
 	IBlueprintPieceType,
 	PieceAbSessionInfo,
@@ -10,7 +11,7 @@ import { ABSessionAssignments } from '@sofie-automation/corelib/dist/dataModel/R
 import { OnGenerateTimelineObjExt } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { AssignmentResult, PlayerId, resolveAbAssignmentsFromRequests } from '../abPlaybackResolver'
+import { AssignmentResult, resolveAbAssignmentsFromRequests } from '../abPlaybackResolver'
 import { calculateSessionTimeRanges } from '../abPlaybackSessions'
 import { AbSessionHelper } from '../abSessionHelper'
 
@@ -79,7 +80,7 @@ function resolveAbSessions(
 	timelineObjs: OnGenerateTimelineObjExt[],
 	previousAssignmentMap: ABSessionAssignments,
 	sessionPool: string,
-	playerIds: Array<PlayerId>,
+	playerIds: Array<AbPlayerId>,
 	now: number
 ): AssignmentResult {
 	const sessionRequests = calculateSessionTimeRanges(
