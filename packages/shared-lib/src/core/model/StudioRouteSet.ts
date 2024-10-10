@@ -22,7 +22,8 @@ export interface StudioRouteSet {
 	routes: RouteMapping[]
 	/**
 	 * AB Pool members
-	 * Any players referenced here will only be active when this or another routeset is `active`
+	 * An AB player will be active if either no routesets reference it, or any active routset references it.
+	 * Specify the players here which this routeset should enable
 	 */
 	abPlayers: StudioAbPlayerDisabling[]
 }
