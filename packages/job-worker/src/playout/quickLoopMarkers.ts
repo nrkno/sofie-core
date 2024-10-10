@@ -8,6 +8,7 @@ import { setNextPart } from './setNext'
 import { resetPartInstancesWithPieceInstances } from './lib'
 import { QuickLoopMarker, QuickLoopMarkerType } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { clone } from 'underscore'
 
 export async function handleSetQuickLoopMarker(context: JobContext, data: SetQuickLoopMarkerProps): Promise<void> {
 	return runJobWithPlayoutModel(
@@ -20,7 +21,7 @@ export async function handleSetQuickLoopMarker(context: JobContext, data: SetQui
 		async (playoutModel) => {
 			const playlist = playoutModel.playlist
 			if (!playlist.activationId) throw new Error(`Playlist has no activationId!`)
-			const oldProps = playoutModel.playlist.quickLoop
+			const oldProps = clone(playoutModel.playlist.quickLoop)
 			const wasQuickLoopRunning = oldProps?.running
 			playoutModel.setQuickLoopMarker(data.type, data.marker)
 

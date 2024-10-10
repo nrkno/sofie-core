@@ -150,35 +150,55 @@ export class QuickLoopService {
 	}
 
 	getSegmentsBetweenMarkers(startMarker: QuickLoopMarker, endMarker: QuickLoopMarker): SegmentId[] {
-		const orderedParts = this.playoutModel.getAllOrderedParts()
-		const rundownIds = this.playoutModel.getRundownIds()
+		const segments = this.playoutModel.getAllOrderedSegments()
+		const segmentIds: SegmentId[] = []
 
-		const start = this.findQuickLoopMarkerPosition(startMarker, 'start', orderedParts, rundownIds)
-		const end = this.findQuickLoopMarkerPosition(endMarker, 'end', orderedParts, rundownIds)
+		let passedStart = false
+		let seenLastRundown = false
 
-		if (this.areMarkersFlipped(start, end)) return []
+		for (const s of segments) {
+			if (
+				(!passedStart &&
+					((startMarker.type === QuickLoopMarkerType.PART && s.getPart(startMarker.id)) ||
+						(startMarker.type === QuickLoopMarkerType.SEGMENT && s.segment._id === startMarker.id) ||
+						(startMarker.type === QuickLoopMarkerType.RUNDOWN &&
+							s.segment.rundownId === startMarker.id))) ||
+				startMarker.type === QuickLoopMarkerType.PLAYLIST
+			) {
+				// the start marker is inside this segment, is this segment, or this is the first segment that is in the loop
+				// segments from here on are included in the loop
+				passedStart = true
+			}
 
-		const segmentIds: Set<SegmentId> = new Set()
+			if (endMarker.type === QuickLoopMarkerType.RUNDOWN) {
+				// last rundown needs to be inclusive so we need to break once the rundownId is not equal to segment's rundownId
+				if (s.segment.rundownId === endMarker.id) {
+					if (!passedStart) {
+						// we hit the end before the start so quit now:
+						break
+					}
+					seenLastRundown = true
+				} else if (seenLastRundown) {
+					// we have passed the last rundown
+					break
+				}
+			}
 
-		for (const part of orderedParts) {
-			const currentSegment = this.playoutModel.findSegment(part.segmentId)?.segment
-			const currentRundownIndex = rundownIds.findIndex((id) => id === part.rundownId)
-
-			if (!currentSegment) continue // ???
+			if (passedStart) {
+				// passed the start but we have not seen the end yet
+				segmentIds.push(s.segment._id)
+			}
 
 			if (
-				currentRundownIndex >= start.rundownRank &&
-				currentRundownIndex <= end.rundownRank &&
-				currentSegment._rank >= start.segmentRank &&
-				currentSegment._rank <= end.segmentRank &&
-				part._rank >= start.partRank &&
-				part._rank <= start.partRank
+				(endMarker.type === QuickLoopMarkerType.PART && s.getPart(endMarker.id)) ||
+				(endMarker.type === QuickLoopMarkerType.SEGMENT && s.segment._id === endMarker.id)
 			) {
-				segmentIds.add(currentSegment._id)
+				// the endMarker is in this segment or this segment is the end marker
+				break
 			}
 		}
 
-		return Array.from(segmentIds.values())
+		return segmentIds
 	}
 
 	private areMarkersFlipped(startPosition: MarkerPosition, endPosition: MarkerPosition) {
