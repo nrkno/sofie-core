@@ -1,12 +1,11 @@
-import type { ABPlayerDefinition } from '@sofie-automation/blueprints-integration'
+import type { ABPlayerDefinition, AbPlayerId } from '@sofie-automation/blueprints-integration'
 import type { StudioRouteSet } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { logger } from '../../logging'
-import type { PlayerId } from './abPlaybackResolver'
 
 /**
  * Map<poolName, Map<playerId, disablePlayer>>
  */
-type MembersOfRouteSets = Map<string, Map<PlayerId, boolean>>
+type MembersOfRouteSets = Map<string, Map<AbPlayerId, boolean>>
 
 export function findPlayersInRouteSets(routeSets: Record<string, StudioRouteSet>): MembersOfRouteSets {
 	const routeSetEnabledPlayers: MembersOfRouteSets = new Map()

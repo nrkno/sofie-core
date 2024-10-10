@@ -26,7 +26,7 @@ import { abPoolFilterDisabled, findPlayersInRouteSets } from './routeSetDisablin
  * @param abSessionHelper Helper for generation sessionId
  * @param blueprint Blueprint of the currently playing ShowStyle
  * @param showStyle The currently playing ShowStyle
- * @param playoutModel The current playout model
+ * @param playlist The currently playing Playlist
  * @param resolvedPieces All the PieceInstances on the timeline, resolved to have 'accurate' playback timings
  * @param timelineObjects The current timeline
  * @returns New AB assignments to be persisted on the playlist for the next call

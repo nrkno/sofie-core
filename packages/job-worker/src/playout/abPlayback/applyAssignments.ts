@@ -4,12 +4,13 @@ import {
 	ABResolverConfiguration,
 	ICommonContext,
 	ABTimelineLayerChangeRules,
+	AbPlayerId,
 } from '@sofie-automation/blueprints-integration'
 import { ABSessionAssignment, ABSessionAssignments } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { OnGenerateTimelineObjExt } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { logger } from '../../logging'
 import * as _ from 'underscore'
-import { PlayerId, SessionRequest } from './abPlaybackResolver'
+import { SessionRequest } from './abPlaybackResolver'
 import { AbSessionHelper } from './abSessionHelper'
 import { ReadonlyDeep } from 'type-fest'
 
@@ -34,7 +35,7 @@ export function applyAbPlayerObjectAssignments(
 	poolName: string
 ): ABSessionAssignments {
 	const newAssignments: ABSessionAssignments = {}
-	const persistAssignment = (sessionId: string, playerId: PlayerId, lookahead: boolean): void => {
+	const persistAssignment = (sessionId: string, playerId: AbPlayerId, lookahead: boolean): void => {
 		// Track the assignment, so that the next onTimelineGenerate can try to reuse the same session
 		if (newAssignments[sessionId]) {
 			// TODO - warn?
@@ -120,7 +121,7 @@ function updateObjectsToAbPlayer(
 	context: ICommonContext,
 	abConfiguration: Pick<ABResolverConfiguration, 'timelineObjectLayerChangeRules' | 'customApplyToObject'>,
 	poolName: string,
-	playerId: PlayerId,
+	playerId: AbPlayerId,
 	objs: OnGenerateTimelineObj<TSR.TSRTimelineContent>[]
 ): OnGenerateTimelineObj<TSR.TSRTimelineContent>[] {
 	const failedObjects: OnGenerateTimelineObj<TSR.TSRTimelineContent>[] = []
@@ -143,7 +144,7 @@ function updateObjectsToAbPlayer(
 
 function applyUpdateToKeyframes(
 	poolName: string,
-	playerId: PlayerId,
+	playerId: AbPlayerId,
 	obj: OnGenerateTimelineObj<TSR.TSRTimelineContent>
 ): boolean {
 	if (!obj.keyframes) return false
@@ -175,7 +176,7 @@ function applyUpdateToKeyframes(
 function applylayerMoveRule(
 	timelineObjectLayerChangeRules: ABTimelineLayerChangeRules | undefined,
 	poolName: string,
-	playerId: PlayerId,
+	playerId: AbPlayerId,
 	obj: OnGenerateTimelineObj<TSR.TSRTimelineContent>
 ): boolean {
 	const ruleId = obj.isLookahead ? obj.lookaheadForLayer || obj.layer : obj.layer

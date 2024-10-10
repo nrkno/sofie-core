@@ -1,8 +1,6 @@
-import { ABResolverOptions } from '@sofie-automation/blueprints-integration'
+import type { AbPlayerId, ABResolverOptions } from '@sofie-automation/blueprints-integration'
 import { clone } from '@sofie-automation/corelib/dist/lib'
 import * as _ from 'underscore'
-
-export type PlayerId = number | string
 
 export interface SessionRequest {
 	readonly id: string
@@ -10,7 +8,7 @@ export interface SessionRequest {
 	readonly end: number | undefined
 	readonly optional?: boolean
 	readonly lookaheadRank?: number
-	playerId?: PlayerId
+	playerId?: AbPlayerId
 }
 
 export interface AssignmentResult {
@@ -23,7 +21,7 @@ export interface AssignmentResult {
 }
 
 interface SlotAvailability {
-	id: PlayerId
+	id: AbPlayerId
 	before: (SessionRequest & { end: number }) | null
 	after: SessionRequest | null
 	clashes: SessionRequest[]
@@ -57,7 +55,7 @@ function safeMin<T>(arr: T[], func: (val: T) => number): T | undefined {
  */
 export function resolveAbAssignmentsFromRequests(
 	resolverOptions: ABResolverOptions,
-	playerIds: PlayerId[],
+	playerIds: AbPlayerId[],
 	rawRequests: SessionRequest[],
 	now: number // Current time
 ): AssignmentResult {
@@ -69,7 +67,7 @@ export function resolveAbAssignmentsFromRequests(
 		}
 	}
 
-	const originalLookaheadAssignments: Record<string, PlayerId> = {}
+	const originalLookaheadAssignments: Record<string, AbPlayerId> = {}
 	for (const req of rawRequests) {
 		if (req.lookaheadRank !== undefined && req.playerId !== undefined) {
 			originalLookaheadAssignments[req.id] = req.playerId
@@ -114,7 +112,7 @@ export function resolveAbAssignmentsFromRequests(
 	pendingRequests = grouped[undefined as any]
 
 	// build map of slots and what they already have assigned
-	const slots = new Map<PlayerId, SessionRequest[]>()
+	const slots = new Map<AbPlayerId, SessionRequest[]>()
 	_.each(playerIds, (id) => slots.set(id, grouped[id] || []))
 
 	const beforeHasGap = (p: SlotAvailability, req: SessionRequest): boolean =>
@@ -327,14 +325,14 @@ export function resolveAbAssignmentsFromRequests(
 }
 
 function assignPlayersForLookahead(
-	slots: Map<PlayerId, SessionRequest[]>,
+	slots: Map<AbPlayerId, SessionRequest[]>,
 	res: AssignmentResult,
-	originalLookaheadAssignments: Record<string, PlayerId>,
+	originalLookaheadAssignments: Record<string, AbPlayerId>,
 	safeNow: number
 ) {
 	// Ensure lookahead gets assigned based on priority not some randomness
 	// Includes slots which have either no sessions, or the last has a known end time
-	const lastSessionPerSlot = new Map<PlayerId, number>() // playerId, end
+	const lastSessionPerSlot = new Map<AbPlayerId, number>() // playerId, end
 	for (const [playerId, sessions] of slots) {
 		const last = _.last(sessions.filter((s) => s.lookaheadRank === undefined))
 		if (!last) {
@@ -381,7 +379,7 @@ function assignPlayersForLookahead(
 	}
 }
 
-function getAvailability(id: PlayerId, thisReq: SessionRequest, orderedRequests: SessionRequest[]): SlotAvailability {
+function getAvailability(id: AbPlayerId, thisReq: SessionRequest, orderedRequests: SessionRequest[]): SlotAvailability {
 	const res: SlotAvailability = {
 		id,
 		before: null,

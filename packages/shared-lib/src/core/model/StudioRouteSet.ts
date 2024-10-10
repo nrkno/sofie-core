@@ -1,6 +1,8 @@
 import { BlueprintMapping } from './Timeline'
 import { TSR } from '../../tsr'
 
+export type AbPlayerId = number | string
+
 export interface StudioRouteSetExclusivityGroup {
 	name: string
 }
@@ -45,7 +47,7 @@ export interface RouteMapping extends ResultingMappingRoute {
 
 export interface StudioAbPlayerDisabling {
 	poolName: string
-	playerId: string | number
+	playerId: AbPlayerId
 }
 
 export interface ResultingMappingRoutes {
