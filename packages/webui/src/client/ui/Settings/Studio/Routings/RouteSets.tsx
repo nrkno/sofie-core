@@ -32,6 +32,7 @@ import {
 } from '../../../../lib/Components/LabelAndOverrides'
 import {
 	OverrideOpHelper,
+	OverrideOpHelperForItemContents,
 	useOverrideOpHelper,
 	WrappedOverridableItem,
 	WrappedOverridableItemDeleted,
@@ -49,6 +50,7 @@ import {
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { Studios } from '../../../../collections'
 import { useToggleExpandHelper } from '../../../util/useToggleExpandHelper'
+import { RouteSetAbPlayers } from './RouteSetAbPlayers'
 
 interface RouteSetsTable {
 	studio: DBStudio
@@ -85,6 +87,7 @@ export function RouteSetsTable({
 			name: 'New Route Set ' + iter.toString(),
 			active: false,
 			routes: [],
+			abPlayers: [],
 			behavior: StudioRouteBehavior.TOGGLE,
 			exclusivityGroup: undefined,
 		})
@@ -211,6 +214,17 @@ function RouteSetRow({
 		overrideHelper().setItemValue(routeId, 'routes', newRoutes).commit()
 	}
 
+	const addNewAbPlayerInSet = (routeId: string) => {
+		const newAbPlayers = routeSet.computed?.abPlayers || []
+
+		newAbPlayers.push({
+			poolName: '',
+			playerId: '',
+		})
+
+		overrideHelper().setItemValue(routeId, 'abPlayers', newAbPlayers).commit()
+	}
+
 	const updateRouteSetId = React.useCallback(
 		(newRouteSetId: string) => {
 			overrideHelper().changeItemId(routeSet.id, newRouteSetId).commit()
@@ -242,6 +256,12 @@ function RouteSetRow({
 		[overrideHelper, routeSet.id]
 	)
 	const routesIsOverridden = hasOpWithPath(routeSet.overrideOps, routeSet.id, 'routes')
+
+	const resyncAbPlayerTable = React.useCallback(
+		() => overrideHelper().clearItemOverrides(routeSet.id, 'abPlayers').commit(),
+		[overrideHelper, routeSet.id]
+	)
+	const abPlayerIsOverridden = hasOpWithPath(routeSet.overrideOps, routeSet.id, 'abPlayers')
 
 	return (
 		<React.Fragment>
@@ -371,9 +391,6 @@ function RouteSetRow({
 							studioMappings={studioMappings}
 						/>
 						<div className="mod">
-							<button className="btn btn-primary right" onClick={() => toggleExpanded(routeSet.id)}>
-								<FontAwesomeIcon icon={faCheck} />
-							</button>
 							<button className="btn btn-secondary" onClick={() => addNewRouteInSet(routeSet.id)}>
 								<FontAwesomeIcon icon={faPlus} />
 							</button>
@@ -391,6 +408,28 @@ function RouteSetRow({
 								</button>
 							)}
 						</div>
+						<RouteSetAbPlayers routeSet={routeSet} overrideHelper={overrideHelper} />
+						<div className="mod">
+							<button className="btn btn-secondary" onClick={() => addNewAbPlayerInSet(routeSet.id)}>
+								<FontAwesomeIcon icon={faPlus} />
+							</button>
+							&nbsp;
+							{routeSet.defaults && (
+								<button
+									className="btn btn-primary"
+									onClick={resyncAbPlayerTable}
+									title="Reset to default"
+									disabled={!abPlayerIsOverridden}
+								>
+									{t('Reset')}
+									&nbsp;
+									<FontAwesomeIcon icon={faSync} />
+								</button>
+							)}
+						</div>
+						<button className="btn btn-primary right" onClick={() => toggleExpanded(routeSet.id)}>
+							<FontAwesomeIcon icon={faCheck} />
+						</button>
 					</td>
 				</tr>
 			)}
@@ -497,7 +536,7 @@ function RenderRoutes({
 interface RenderRoutesRowProps {
 	manifest: MappingsSettingsManifests
 	translationNamespaces: string[]
-	tableOverrideHelper: () => OverrideOpHelperArrayTable
+	tableOverrideHelper: OverrideOpHelperForItemContents
 	studioMappings: ReadonlyDeep<MappingsExt>
 	rawRoute: RouteMapping
 	routeIndex: number
@@ -703,7 +742,7 @@ interface IDeviceMappingSettingsProps {
 	translationNamespaces: string[]
 	manifest: MappingsSettingsManifest | undefined
 	mappedLayer: ReadonlyDeep<MappingExt> | undefined
-	overrideHelper: () => OverrideOpHelperArrayTable
+	overrideHelper: OverrideOpHelperForItemContents
 	route: WrappedOverridableItemNormal<RouteMapping>
 }
 

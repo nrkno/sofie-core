@@ -17,6 +17,8 @@ import { AbSessionHelper } from './abSessionHelper'
 import { ShowStyleContext } from '../../blueprints/context'
 import { logger } from '../../logging'
 import { ABPlayerDefinition } from '@sofie-automation/blueprints-integration'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { abPoolFilterDisabled, findPlayersInRouteSets } from './routeSetDisabling'
 
 /**
  * Resolve and apply AB-playback for the given timeline
@@ -71,8 +73,14 @@ export function applyAbPlaybackForTimeline(
 	const now = getCurrentTime()
 
 	const abConfiguration = blueprint.blueprint.getAbResolverConfiguration(blueprintContext)
+	const routeSetMembers = findPlayersInRouteSets(applyAndValidateOverrides(context.studio.routeSetsWithOverrides).obj)
+
 	for (const [poolName, players] of Object.entries<ABPlayerDefinition[]>(abConfiguration.pools)) {
-		const previousAssignmentMap: ABSessionAssignments = previousAbSessionAssignments[poolName] || {}
+		// Filter out offline devices
+		const filteredPlayers = abPoolFilterDisabled(poolName, players, routeSetMembers)
+
+		const previousAssignmentMap: ReadonlyDeep<ABSessionAssignments> | undefined =
+			playlist.assignedAbSessions?.[poolName]
 		const sessionRequests = calculateSessionTimeRanges(
 			abSessionHelper,
 			resolvedPieces,
@@ -83,7 +91,7 @@ export function applyAbPlaybackForTimeline(
 
 		const assignments = resolveAbAssignmentsFromRequests(
 			abConfiguration.resolverOptions,
-			players.map((player) => player.playerId),
+			filteredPlayers.map((player) => player.playerId),
 			sessionRequests,
 			now
 		)

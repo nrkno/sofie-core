@@ -1,6 +1,8 @@
 import { BlueprintMapping } from './Timeline'
 import { TSR } from '../../tsr'
 
+export type AbPlayerId = number | string
+
 export interface StudioRouteSetExclusivityGroup {
 	name: string
 }
@@ -18,7 +20,14 @@ export interface StudioRouteSet {
 	behavior: StudioRouteBehavior
 
 	routes: RouteMapping[]
+	/**
+	 * AB Pool members
+	 * An AB player will be active if either no routesets reference it, or any active routset references it.
+	 * Specify the players here which this routeset should enable
+	 */
+	abPlayers: StudioAbPlayerDisabling[]
 }
+
 export enum StudioRouteBehavior {
 	HIDDEN = 0,
 	TOGGLE = 1,
@@ -36,6 +45,12 @@ export interface RouteMapping extends ResultingMappingRoute {
 	/** Which original layer to route. If false, a "new" layer will be inserted during routing */
 	mappedLayer: string | undefined
 }
+
+export interface StudioAbPlayerDisabling {
+	poolName: string
+	playerId: AbPlayerId
+}
+
 export interface ResultingMappingRoutes {
 	/** Routes that route existing layers */
 	existing: {

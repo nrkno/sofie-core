@@ -15,6 +15,8 @@ import { StudioRouteSet, StudioRouteSetExclusivityGroup } from '@sofie-automatio
  */
 
 export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
+	// Add your migration here
+
 	{
 		id: `convert routesets to ObjectWithOverrides`,
 		canBeRunAutomatically: true,
@@ -51,6 +53,45 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 					},
 					$unset: {
 						routeSets: 1,
+					},
+				})
+			}
+		},
+	},
+	{
+		id: `add abPlayers object`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const studios = await Studios.findFetchAsync({ routeSetsWithOverrides: { $exists: true } })
+
+			for (const studio of studios) {
+				const routeSetsDefaults = studio.routeSetsWithOverrides.defaults as any as Record<
+					string,
+					StudioRouteSet
+				>
+				for (const key of Object.keys(routeSetsDefaults)) {
+					if (!routeSetsDefaults[key].abPlayers) {
+						return 'AB players must be added to routeSetsWithOverrides'
+					}
+				}
+			}
+
+			return false
+		},
+		migrate: async () => {
+			const studios = await Studios.findFetchAsync({ routeSetsWithOverrides: { $exists: true } })
+
+			for (const studio of studios) {
+				const newRouteSetswithOverrides = studio.routeSetsWithOverrides
+				for (const key of Object.keys(newRouteSetswithOverrides.defaults)) {
+					if (!newRouteSetswithOverrides.defaults[key].abPlayers) {
+						newRouteSetswithOverrides.defaults[key].abPlayers = []
+					}
+				}
+
+				await Studios.updateAsync(studio._id, {
+					$set: {
+						routeSetsWithOverrides: newRouteSetswithOverrides,
 					},
 				})
 			}

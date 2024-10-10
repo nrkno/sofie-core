@@ -12,6 +12,7 @@ import {
 	StudioRouteSet,
 	StudioRouteSetExclusivityGroup,
 	StudioRouteType,
+	StudioAbPlayerDisabling,
 } from '@sofie-automation/shared-lib/dist/core/model/StudioRouteSet'
 
 export { MappingsExt, MappingExt, MappingsHash }
@@ -26,6 +27,7 @@ export {
 	ResultingMappingRoutes,
 	StudioRouteSet,
 	StudioRouteType,
+	StudioAbPlayerDisabling,
 }
 
 export interface IStudioSettings {
