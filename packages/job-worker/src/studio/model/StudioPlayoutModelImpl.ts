@@ -101,8 +101,8 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 		return this.#timeline
 	}
 
-	switchRouteSet(routeSetId: string, isActive: boolean | 'toggle'): void {
-		this.#baselineHelper.updateRouteSetActive(routeSetId, isActive)
+	switchRouteSet(routeSetId: string, isActive: boolean | 'toggle'): boolean {
+		return this.#baselineHelper.updateRouteSetActive(routeSetId, isActive)
 	}
 
 	/**

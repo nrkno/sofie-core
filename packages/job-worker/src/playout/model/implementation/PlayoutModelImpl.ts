@@ -480,8 +480,8 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		return partInstance
 	}
 
-	switchRouteSet(routeSetId: string, isActive: boolean | 'toggle'): void {
-		this.#baselineHelper.updateRouteSetActive(routeSetId, isActive)
+	switchRouteSet(routeSetId: string, isActive: boolean | 'toggle'): boolean {
+		return this.#baselineHelper.updateRouteSetActive(routeSetId, isActive)
 	}
 
 	cycleSelectedPartInstances(): void {

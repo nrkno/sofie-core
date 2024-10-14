@@ -195,8 +195,9 @@ export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBa
 	 * Update the active state of a RouteSet
 	 * @param routeSetId
 	 * @param isActive
+	 * @returns Whether the change may affect timeline generation
 	 */
-	switchRouteSet(routeSetId: string, isActive: boolean | 'toggle'): void
+	switchRouteSet(routeSetId: string, isActive: boolean | 'toggle'): boolean
 
 	/**
 	 * Clear the currently selected PartInstances, so that nothing is selected for playback

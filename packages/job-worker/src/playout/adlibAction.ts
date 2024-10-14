@@ -234,6 +234,7 @@ async function applyAnyExecutionSideEffects(
 	if (actionContext.takeAfterExecute) {
 		await performTakeToNextedPart(context, playoutModel, now)
 	} else if (
+		actionContext.forceRegenerateTimeline ||
 		actionContext.currentPartState !== ActionPartChange.NONE ||
 		actionContext.nextPartState !== ActionPartChange.NONE
 	) {

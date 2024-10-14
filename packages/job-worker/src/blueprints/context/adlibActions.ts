@@ -60,7 +60,15 @@ export class DatastoreActionExecutionContext
 
 /** Actions */
 export class ActionExecutionContext extends ShowStyleUserContext implements IActionExecutionContext, IEventContext {
-	public takeAfterExecute: boolean
+	/**
+	 * Whether the blueprints requested a take to be performed at the end of this action
+	 * */
+	public takeAfterExecute = false
+	/**
+	 * Whether the blueprints performed an action that explicitly requires the timeline to be regenerated
+	 * This isn't the only indicator that it should be regenerated
+	 */
+	public forceRegenerateTimeline = false
 
 	public get currentPartState(): ActionPartChange {
 		return this.partAndPieceInstanceService.currentPartState
@@ -84,7 +92,6 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		private readonly partAndPieceInstanceService: PartAndPieceInstanceActionService
 	) {
 		super(contextInfo, _context, showStyle, watchedPackages)
-		this.takeAfterExecute = false
 	}
 
 	async getPartInstance(part: 'current' | 'next'): Promise<IBlueprintPartInstance | undefined> {
@@ -185,7 +192,8 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	}
 
 	async switchRouteSet(routeSetId: string, state: boolean | 'toggle'): Promise<void> {
-		this._playoutModel.switchRouteSet(routeSetId, state)
+		const affectsTimeline = this._playoutModel.switchRouteSet(routeSetId, state)
+		this.forceRegenerateTimeline = this.forceRegenerateTimeline || affectsTimeline
 	}
 
 	async hackGetMediaObjectDuration(mediaId: string): Promise<number | undefined> {

@@ -73,6 +73,7 @@ export interface StudioPlayoutModel extends StudioPlayoutModelBase, BaseModel {
 	 * Update the active state of a RouteSet
 	 * @param routeSetId The RouteSet to update
 	 * @param isActive The new active state of the RouteSet
+	 * @returns Whether the change may affect timeline generation
 	 */
-	switchRouteSet(routeSetId: string, isActive: boolean | 'toggle'): void
+	switchRouteSet(routeSetId: string, isActive: boolean | 'toggle'): boolean
 }
