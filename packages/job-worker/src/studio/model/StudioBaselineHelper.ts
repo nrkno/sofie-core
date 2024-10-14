@@ -10,8 +10,8 @@ import { StudioRouteBehavior, StudioRouteSet } from '@sofie-automation/corelib/d
 import { logger } from '../../logging'
 import {
 	WrappedOverridableItemNormal,
-	useOverrideOpHelperBackend,
 	getAllCurrentItemsFromOverrides,
+	OverrideOpHelperImpl,
 } from '@sofie-automation/corelib/dist/overrideOpHelper'
 import { ObjectWithOverrides, SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
@@ -85,20 +85,13 @@ export class StudioBaselineHelper {
 
 	updateRouteSetActive(routeSetId: string, isActive: boolean | 'toggle'): void {
 		const studio = this.#context.studio
-		const saveOverrides = (newOps: SomeObjectOverrideOp[]) => {
-			this.#overridesRouteSetBuffer.overrides = newOps
-			this.#routeSetChanged = true
-		}
-		const overrideHelper = useOverrideOpHelperBackend(saveOverrides, this.#overridesRouteSetBuffer)
 
 		const routeSets: WrappedOverridableItemNormal<StudioRouteSet>[] = getAllCurrentItemsFromOverrides(
 			this.#overridesRouteSetBuffer,
 			null
 		)
 
-		const routeSet = routeSets.find((routeSet) => {
-			return routeSet.id === routeSetId
-		})
+		const routeSet = routeSets.find((routeSet) => routeSet.id === routeSetId)
 
 		if (routeSet === undefined) throw new Error(`RouteSet "${routeSetId}" not found!`)
 
@@ -107,8 +100,14 @@ export class StudioBaselineHelper {
 		if (routeSet.computed?.behavior === StudioRouteBehavior.ACTIVATE_ONLY && isActive === false)
 			throw new Error(`RouteSet "${routeSet.id}" is ACTIVATE_ONLY`)
 
+		const saveOverrides = (newOps: SomeObjectOverrideOp[]) => {
+			this.#overridesRouteSetBuffer.overrides = newOps
+			this.#routeSetChanged = true
+		}
+		const overrideHelper = new OverrideOpHelperImpl(saveOverrides, this.#overridesRouteSetBuffer)
+
 		logger.debug(`switchRouteSet "${studio._id}" "${routeSet.id}"=${isActive}`)
-		overrideHelper.setItemValue(routeSet.id, `active`, isActive).commit()
+		overrideHelper.setItemValue(routeSet.id, `active`, isActive)
 
 		// Deactivate other routeSets in the same exclusivity group:
 		if (routeSet.computed.exclusivityGroup && isActive === true) {
@@ -116,9 +115,11 @@ export class StudioBaselineHelper {
 				if (otherRouteSet.id === routeSet.id) continue
 				if (otherRouteSet.computed?.exclusivityGroup === routeSet.computed.exclusivityGroup) {
 					logger.debug(`switchRouteSet Other ID "${studio._id}" "${otherRouteSet.id}"=false`)
-					overrideHelper.setItemValue(otherRouteSet.id, `active`, false).commit()
+					overrideHelper.setItemValue(otherRouteSet.id, `active`, false)
 				}
 			}
 		}
+
+		overrideHelper.commit()
 	}
 }
