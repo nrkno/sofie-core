@@ -83,7 +83,7 @@ export class StudioBaselineHelper {
 		>
 	}
 
-	updateRouteSetActive(routeSetId: string, isActive: boolean | 'toggle'): void {
+	updateRouteSetActive(routeSetId: string, isActive: boolean | 'toggle'): boolean {
 		const studio = this.#context.studio
 
 		const routeSets: WrappedOverridableItemNormal<StudioRouteSet>[] = getAllCurrentItemsFromOverrides(
@@ -106,6 +106,9 @@ export class StudioBaselineHelper {
 		}
 		const overrideHelper = new OverrideOpHelperImpl(saveOverrides, this.#overridesRouteSetBuffer)
 
+		// Track whether changing this routeset could affect how the timeline is generated, so that it can be following this update
+		let mayAffectTimeline = couldRoutesetAffectTimelineGeneration(routeSet)
+
 		logger.debug(`switchRouteSet "${studio._id}" "${routeSet.id}"=${isActive}`)
 		overrideHelper.setItemValue(routeSet.id, `active`, isActive)
 
@@ -116,10 +119,18 @@ export class StudioBaselineHelper {
 				if (otherRouteSet.computed?.exclusivityGroup === routeSet.computed.exclusivityGroup) {
 					logger.debug(`switchRouteSet Other ID "${studio._id}" "${otherRouteSet.id}"=false`)
 					overrideHelper.setItemValue(otherRouteSet.id, `active`, false)
+
+					mayAffectTimeline = mayAffectTimeline || couldRoutesetAffectTimelineGeneration(otherRouteSet)
 				}
 			}
 		}
 
 		overrideHelper.commit()
+
+		return mayAffectTimeline
 	}
+}
+
+function couldRoutesetAffectTimelineGeneration(routeSet: WrappedOverridableItemNormal<StudioRouteSet>): boolean {
+	return routeSet.computed.abPlayers.length > 0
 }
