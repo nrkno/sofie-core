@@ -621,7 +621,7 @@ export const SegmentStoryboard = React.memo(
 						props.parts.length > 0 &&
 						(!props.hasAlreadyPlayed || props.isNextSegment || props.isLiveSegment) && (
 							<SegmentDuration
-								segmentId={props.segment._id}
+								segment={props.segment}
 								parts={props.parts}
 								label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
 								fixed={props.fixedSegmentDuration}

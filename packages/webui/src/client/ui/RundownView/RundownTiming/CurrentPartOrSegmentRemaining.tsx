@@ -20,11 +20,13 @@ interface IPartRemainingProps {
 let prevDisplayTime: number | undefined = undefined
 
 /**
- * A presentational component that will render a countdown to the end of the current part
- * @class CurrentPartRemaining
+ * A presentational component that will render a countdown to the end of the current part or segment,
+ * depending on the value of segmentTiming.countdownType
+ *
+ * @class CurrentPartOrSegmentRemaining
  * @extends React.Component<WithTiming<{}>>
  */
-export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
+export const CurrentPartOrSegmentRemaining = withTiming<IPartRemainingProps, {}>({
 	tickResolution: TimingTickResolution.Synced,
 	dataResolution: TimingDataResolution.Synced,
 })(
@@ -32,7 +34,9 @@ export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
 		render(): JSX.Element | null {
 			if (!this.props.timingDurations || !this.props.timingDurations.currentTime) return null
 			if (this.props.timingDurations.currentPartInstanceId !== this.props.currentPartInstanceId) return null
-			let displayTimecode = this.props.timingDurations.remainingTimeOnCurrentPart
+			let displayTimecode =
+				this.props.timingDurations.remainingBudgetOnCurrentSegment ??
+				this.props.timingDurations.remainingTimeOnCurrentPart
 			if (displayTimecode === undefined) return null
 			displayTimecode *= -1
 			return (
