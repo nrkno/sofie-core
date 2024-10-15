@@ -368,7 +368,7 @@ export async function handleRestorePlaylistSnapshot(
 			piece?: unknown
 		}
 	>(objs: undefined | T[], updateId: boolean): T[] {
-		const updateIds = (obj: T, updateId: boolean) => {
+		const updateIds = (obj: T, updateOwnId: boolean) => {
 			if (obj.rundownId) {
 				obj.rundownId = getNewRundownId(obj.rundownId)
 			}
@@ -383,7 +383,7 @@ export async function handleRestorePlaylistSnapshot(
 				obj.partInstanceId = partInstanceIdMap.get(obj.partInstanceId) || getRandomId()
 			}
 
-			if (updateId) {
+			if (updateOwnId) {
 				obj._id = getRandomId()
 			}
 
