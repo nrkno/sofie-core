@@ -96,7 +96,7 @@ function ExternalMessagesQueuedMessages({ studioId }: Readonly<ExternalMessagesQ
 			ExternalMessageQueue.find(
 				{
 					studioId: studioId,
-					sent: { $gt: 0 },
+					$or: [{ sent: { $lte: 0 } }, { sent: { $exists: false } }],
 				},
 				{
 					sort: {
