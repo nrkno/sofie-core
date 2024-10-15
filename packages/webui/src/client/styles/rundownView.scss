@@ -2270,7 +2270,7 @@ svg.icon {
 					vertical-align: top;
 					margin-right: 0.2em;
 					margin-top: 0.1em;
-					background: $segment-piece-step-counter-background;
+					background: var(--segment-piece-step-counter-background, #{$segment-piece-step-counter-background});
 					display: inline-block;
 					padding: 0 0.3em;
 					color: $segment-piece-step-counter;
@@ -3026,7 +3026,7 @@ svg.icon {
 			position: absolute;
 			top: 0;
 			left: 0;
-			background: $segment-piece-step-counter-background;
+			background: var(--segment-piece-step-counter-background, #{$segment-piece-step-counter-background});
 			padding: 0 0.2em;
 			font-weight: 400;
 			text-shadow: 0 0 1px #000, 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
@@ -3401,7 +3401,7 @@ svg.icon {
 .segment-storyboard__piece__step-chevron,
 .segment-opl__main-piece__label__step-chevron {
 	margin-right: 0.2em;
-	background: $segment-piece-step-counter-background;
+	background: var(--segment-piece-step-counter-background, #{$segment-piece-step-counter-background});
 	display: inline-block;
 	padding: 0 0.2em;
 	color: $segment-piece-step-counter;

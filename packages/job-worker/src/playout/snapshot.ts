@@ -242,12 +242,14 @@ export async function handleRestorePlaylistSnapshot(
 
 		partIdMap.set(oldId, part._id)
 	}
+
 	const partInstanceOldRundownIdMap = new Map<PartInstanceId, RundownId>()
 	const partInstanceIdMap = new Map<PartInstanceId, PartInstanceId>()
 	for (const partInstance of snapshot.partInstances) {
 		const oldId = partInstance._id
 		partInstance._id = getRandomId()
 		partInstanceIdMap.set(oldId, partInstance._id)
+
 		partInstance.part._id = partIdMap.get(partInstance.part._id) || getRandomId()
 		partInstanceOldRundownIdMap.set(oldId, partInstance.rundownId)
 	}
@@ -279,7 +281,6 @@ export async function handleRestorePlaylistSnapshot(
 		...snapshot.baselineAdLibActions,
 	]) {
 		const oldId = adlib._id
-		if (adlib.partId) adlib.partId = partIdMap.get(adlib.partId)
 		adlib._id = getRandomId()
 		pieceIdMap.set(oldId, adlib._id)
 	}
@@ -367,7 +368,7 @@ export async function handleRestorePlaylistSnapshot(
 			piece?: unknown
 		}
 	>(objs: undefined | T[], updateId: boolean): T[] {
-		const updateIds = (obj: T) => {
+		const updateIds = (obj: T, updateOwnId: boolean) => {
 			if (obj.rundownId) {
 				obj.rundownId = getNewRundownId(obj.rundownId)
 			}
@@ -382,20 +383,20 @@ export async function handleRestorePlaylistSnapshot(
 				obj.partInstanceId = partInstanceIdMap.get(obj.partInstanceId) || getRandomId()
 			}
 
-			if (updateId) {
+			if (updateOwnId) {
 				obj._id = getRandomId()
 			}
 
 			if (obj.part) {
-				updateIds(obj.part as any)
+				updateIds(obj.part as any, false)
 			}
 			if (obj.piece) {
-				updateIds(obj.piece as any)
+				updateIds(obj.piece as any, false)
 			}
 
 			return obj
 		}
-		return (objs || []).map((obj) => updateIds(obj))
+		return (objs || []).map((obj) => updateIds(obj, updateId))
 	}
 
 	await Promise.all([
@@ -417,13 +418,13 @@ export async function handleRestorePlaylistSnapshot(
 			context,
 			context.directCollections.RundownBaselineAdLibPieces,
 			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.baselineAdlibs, true)
+			updateItemIds(snapshot.baselineAdlibs, false)
 		),
 		saveIntoDb(
 			context,
 			context.directCollections.RundownBaselineAdLibActions,
 			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.baselineAdLibActions, true)
+			updateItemIds(snapshot.baselineAdLibActions, false)
 		),
 		saveIntoDb(
 			context,
@@ -459,13 +460,13 @@ export async function handleRestorePlaylistSnapshot(
 			context,
 			context.directCollections.AdLibPieces,
 			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.adLibPieces, true)
+			updateItemIds(snapshot.adLibPieces, false)
 		),
 		saveIntoDb(
 			context,
 			context.directCollections.AdLibActions,
 			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.adLibActions, true)
+			updateItemIds(snapshot.adLibActions, false)
 		),
 		saveIntoDb(
 			context,
@@ -477,13 +478,13 @@ export async function handleRestorePlaylistSnapshot(
 			context,
 			context.directCollections.ExpectedPlayoutItems,
 			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.expectedPlayoutItems || [], false)
+			updateItemIds(snapshot.expectedPlayoutItems || [], true)
 		),
 		saveIntoDb(
 			context,
 			context.directCollections.ExpectedPackages,
 			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.expectedPackages || [], false)
+			snapshot.expectedPackages || []
 		),
 	])
 

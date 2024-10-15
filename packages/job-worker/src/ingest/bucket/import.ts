@@ -30,10 +30,17 @@ import { BucketId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataMo
 import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 
 export async function handleBucketItemImport(context: JobContext, data: BucketItemImportProps): Promise<void> {
-	await regenerateBucketItemFromIngestInfo(context, data.bucketId, data.showStyleBaseId, {
-		limitToShowStyleVariantIds: data.showStyleVariantIds,
-		payload: data.payload,
-	})
+	await regenerateBucketItemFromIngestInfo(
+		context,
+		data.bucketId,
+		data.showStyleBaseId,
+		{
+			limitToShowStyleVariantIds: data.showStyleVariantIds,
+			payload: data.payload,
+		},
+		undefined,
+		undefined
+	)
 }
 
 export async function handleBucketItemRegenerate(context: JobContext, data: BucketItemRegenerateProps): Promise<void> {
@@ -49,9 +56,11 @@ export async function handleBucketItemRegenerate(context: JobContext, data: Buck
 				projection: {
 					showStyleBaseId: 1,
 					ingestInfo: 1,
+					name: 1,
+					_rank: 1,
 				},
 			}
-		) as Promise<Pick<BucketAdLib, 'showStyleBaseId' | 'ingestInfo'>> | undefined,
+		) as Promise<Pick<BucketAdLib, 'showStyleBaseId' | 'ingestInfo' | 'name' | '_rank'>> | undefined,
 		context.directCollections.BucketAdLibActions.findOne(
 			{
 				externalId: data.externalId,
@@ -62,9 +71,10 @@ export async function handleBucketItemRegenerate(context: JobContext, data: Buck
 				projection: {
 					showStyleBaseId: 1,
 					ingestInfo: 1,
+					display: 1,
 				},
 			}
-		) as Promise<Pick<BucketAdLibAction, 'showStyleBaseId' | 'ingestInfo'>> | undefined,
+		) as Promise<Pick<BucketAdLibAction, 'showStyleBaseId' | 'ingestInfo' | 'display'>> | undefined,
 	])
 
 	// TODO - UserErrors?
@@ -74,7 +84,9 @@ export async function handleBucketItemRegenerate(context: JobContext, data: Buck
 			context,
 			data.bucketId,
 			adlibAction.showStyleBaseId,
-			adlibAction.ingestInfo
+			adlibAction.ingestInfo,
+			adlibAction.display._rank,
+			typeof adlibAction.display.label === 'string' ? adlibAction.display.label : undefined
 		)
 	} else if (adlibPiece) {
 		if (!adlibPiece.ingestInfo) throw new Error(`Bucket AdLibPiece cannot be resynced, it has no ingest data`)
@@ -82,7 +94,9 @@ export async function handleBucketItemRegenerate(context: JobContext, data: Buck
 			context,
 			data.bucketId,
 			adlibPiece.showStyleBaseId,
-			adlibPiece.ingestInfo
+			adlibPiece.ingestInfo,
+			adlibPiece._rank,
+			adlibPiece.name
 		)
 	} else {
 		throw new Error(`No Bucket Items with externalId "${data.externalId}" were found`)
@@ -93,7 +107,9 @@ async function regenerateBucketItemFromIngestInfo(
 	context: JobContext,
 	bucketId: BucketId,
 	showStyleBaseId: ShowStyleBaseId,
-	ingestInfo: BucketAdLibIngestInfo
+	ingestInfo: BucketAdLibIngestInfo,
+	oldRank: number | undefined,
+	oldLabel: string | undefined
 ): Promise<void> {
 	const [showStyleBase, allShowStyleVariants, allOldAdLibPieces, allOldAdLibActions, blueprint] = await Promise.all([
 		context.getShowStyleBase(showStyleBaseId),
@@ -130,7 +146,7 @@ async function regenerateBucketItemFromIngestInfo(
 	const actionIdsToRemove = new Set(allOldAdLibActions.map((p) => p._id))
 
 	let isFirstShowStyleVariant = true
-	let newRank: number | undefined = undefined
+	const newRank: number | undefined = oldRank ?? (await calculateHighestRankInBucket(context, bucketId)) + 1
 	let onlyGenerateOneItem = false
 
 	const ps: Promise<any>[] = []
@@ -150,13 +166,6 @@ async function regenerateBucketItemFromIngestInfo(
 				core: getSystemVersion(),
 			}
 
-			// Cache the newRank, so we only have to calculate it once:
-			if (newRank === undefined) {
-				newRank = (await calculateHighestRankInBucket(context, bucketId)) + 1
-			} else {
-				newRank++
-			}
-
 			if (isAdlibAction(rawAdlib)) {
 				if (isFirstShowStyleVariant) {
 					if (rawAdlib.allVariants) {
@@ -174,6 +183,7 @@ async function regenerateBucketItemFromIngestInfo(
 					blueprint.blueprintId,
 					bucketId,
 					newRank,
+					oldLabel,
 					importVersions
 				)
 
@@ -194,6 +204,7 @@ async function regenerateBucketItemFromIngestInfo(
 					blueprint.blueprintId,
 					bucketId,
 					newRank,
+					oldLabel,
 					importVersions
 				)
 

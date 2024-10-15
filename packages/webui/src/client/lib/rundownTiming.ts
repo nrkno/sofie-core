@@ -206,7 +206,11 @@ export class RundownTimingCalculator {
 					totalRundownDuration += calculatePartInstanceExpectedDurationWithTransition(partInstance) || 0
 				}
 
-				const lastStartedPlayback = partInstance.timings?.plannedStartedPlayback
+				// note: lastStartedPlayback that lies in the future means it hasn't started yet (like from autonext)
+				const lastStartedPlayback =
+					(partInstance.timings?.plannedStartedPlayback ?? 0) <= now
+						? partInstance.timings?.plannedStartedPlayback
+						: undefined
 				const playOffset = partInstance.timings?.playOffset || 0
 
 				let partDuration = 0
