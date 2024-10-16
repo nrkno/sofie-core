@@ -2,7 +2,11 @@ import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 import { Studios } from '../collections'
 import { convertObjectIntoOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { StudioRouteSet, StudioRouteSetExclusivityGroup } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import {
+	StudioRouteSet,
+	StudioRouteSetExclusivityGroup,
+	StudioPackageContainer,
+} from '@sofie-automation/corelib/dist/dataModel/Studio'
 
 /*
  * **************************************************************************************
@@ -135,6 +139,49 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 					},
 					$unset: {
 						routeSetExclusivityGroups: 1,
+					},
+				})
+			}
+		},
+	},
+	{
+		id: `convert packageContainers to ObjectWithOverrides`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const studios = await Studios.findFetchAsync({
+				packageContainers: { $exists: true },
+				packageContainersWithOverrides: { $exists: false },
+			})
+
+			for (const studio of studios) {
+				// @ts-expect-error packageContainers is typed as Record<string, StudioPackageContainer>
+				if (studio.packageContainers) {
+					return 'packageContainers must be converted to an ObjectWithOverrides'
+				}
+			}
+
+			return false
+		},
+		migrate: async () => {
+			const studios = await Studios.findFetchAsync({
+				packageContainers: { $exists: true },
+				packageContainersWithOverrides: { $exists: false },
+			})
+
+			for (const studio of studios) {
+				// @ts-expect-error packageContainers is typed as Record<string, StudioPackageContainer>
+				const oldPackageContainers = studio.packageContainers
+
+				const newPackageContainers = convertObjectIntoOverrides<StudioPackageContainer>(
+					oldPackageContainers || {}
+				)
+
+				await Studios.updateAsync(studio._id, {
+					$set: {
+						packageContainersWithOverrides: newPackageContainers,
+					},
+					$unset: {
+						packageContainers: 1,
 					},
 				})
 			}

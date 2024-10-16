@@ -9,6 +9,7 @@ import {
 	MappingsExt,
 	StudioIngestDevice,
 	StudioInputDevice,
+	StudioPackageContainer,
 	StudioPlayoutDevice,
 	StudioRouteSet,
 	StudioRouteSetExclusivityGroup,
@@ -98,6 +99,16 @@ export async function handleBlueprintUpgradeForStudio(context: JobContext, _data
 		])
 	)
 
+	const packageContainers = Object.fromEntries(
+		Object.entries<Partial<StudioPackageContainer>>(result.packageContainers ?? {}).map((dev) => [
+			dev[0],
+			literal<Complete<StudioPackageContainer>>({
+				deviceIds: dev[1].deviceIds ?? [],
+				container: dev[1].container as any,
+			}),
+		])
+	)
+
 	await context.directCollections.Studios.update(context.studioId, {
 		$set: {
 			'mappingsWithOverrides.defaults': translateMappings(result.mappings),
@@ -106,6 +117,7 @@ export async function handleBlueprintUpgradeForStudio(context: JobContext, _data
 			'peripheralDeviceSettings.inputDevices.defaults': inputDevices,
 			'routeSetsWithOverrides.defaults': routeSets,
 			'routeSetExclusivityGroupsWithOverrides.defaults': routeSetExclusivityGroups,
+			'packageContainersWithOverrides.defaults': packageContainers,
 			lastBlueprintConfig: {
 				blueprintHash: blueprint.blueprintDoc.blueprintHash,
 				blueprintId: blueprint.blueprintId,

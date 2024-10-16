@@ -447,7 +447,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 				_rundownVersionHash: '',
 				routeSetsWithOverrides: wrapDefaultObject({}),
 				routeSetExclusivityGroupsWithOverrides: wrapDefaultObject({}),
-				packageContainers: {},
+				packageContainersWithOverrides: wrapDefaultObject({}),
 				thumbnailContainerIds: [],
 				previewContainerIds: [],
 				peripheralDeviceSettings: {
