@@ -1344,7 +1344,7 @@ describe('rundown Timing Calculator', () => {
 			partInstancesMap,
 			segmentsMap,
 			DEFAULT_DURATION,
-			[]
+			{}
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -1411,7 +1411,6 @@ describe('rundown Timing Calculator', () => {
 					[segmentId1]: 5000,
 					[segmentId2]: 3000,
 				},
-				segmentStartedPlayback: {},
 			})
 		)
 	})
@@ -1494,7 +1493,7 @@ describe('rundown Timing Calculator', () => {
 			partInstancesMap,
 			segmentsMap,
 			DEFAULT_DURATION,
-			[]
+			{}
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -1561,7 +1560,6 @@ describe('rundown Timing Calculator', () => {
 					[segmentId1]: 5000,
 					[segmentId2]: 3000,
 				},
-				segmentStartedPlayback: {},
 			})
 		)
 	})
