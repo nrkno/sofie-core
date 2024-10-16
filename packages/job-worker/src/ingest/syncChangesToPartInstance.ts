@@ -212,9 +212,10 @@ export async function syncChangesToPartInstances(
 					// TODO - these dont get shown to the user currently
 					// TODO - old notes from the sync may need to be pruned, or we will end up with duplicates and 'stuck' notes?+
 					existingPartInstance.appendNotes(newNotes)
-
-					validateAdlibTestingPartInstanceProperties(context, playoutModel, existingPartInstance)
 				}
+
+				// Make sure an adlib-testing part is still labeled correctly. This could happen if the partInstance used any recently updated adlibs
+				validateAdlibTestingPartInstanceProperties(context, playoutModel, existingPartInstance)
 
 				if (existingPartInstance.partInstance._id === playoutModel.playlist.currentPartInfo?.partInstanceId) {
 					// This should be run after 'current', before 'next':
