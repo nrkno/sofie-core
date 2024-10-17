@@ -1354,6 +1354,7 @@ describe('rundown Timing Calculator', () => {
 				asPlayedPlaylistDuration: 8000,
 				currentPartWillAutoNext: false,
 				currentTime: 0,
+				partsInQuickLoop: {},
 				rundownExpectedDurations: {
 					[rundownId1]: 4000,
 				},
@@ -1503,6 +1504,7 @@ describe('rundown Timing Calculator', () => {
 				asPlayedPlaylistDuration: 8000,
 				currentPartWillAutoNext: false,
 				currentTime: 3000,
+				partsInQuickLoop: {},
 				rundownExpectedDurations: {
 					[rundownId1]: 6000,
 				},

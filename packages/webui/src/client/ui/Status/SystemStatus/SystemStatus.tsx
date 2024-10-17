@@ -3,7 +3,6 @@ import { useSubscription, useTracker } from '../../../lib/ReactMeteorData/react-
 import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { useTranslation } from 'react-i18next'
 import { protectString, unprotectString } from '../../../lib/tempLib'
-import * as _ from 'underscore'
 import { NotificationCenter, NoticeLevel, Notification } from '../../../lib/notifications/notifications'
 import { StatusResponse } from '@sofie-automation/meteor-lib/dist/api/systemStatus'
 import { MeteorCall } from '../../../lib/meteorApi'
@@ -38,7 +37,12 @@ export function SystemStatus(): JSX.Element {
 				{coreSystem && <CoreItem coreSystem={coreSystem} systemStatus={systemStatus} />}
 
 				{devicesHeirarchy.map((d) => (
-					<DeviceItemWithChildren playoutDebugStates={playoutDebugStates} parentDevice={null} device={d} />
+					<DeviceItemWithChildren
+						key={unprotectString(d.device._id)}
+						playoutDebugStates={playoutDebugStates}
+						parentDevice={null}
+						device={d}
+					/>
 				))}
 			</div>
 		</div>
