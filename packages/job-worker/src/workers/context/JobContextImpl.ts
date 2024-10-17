@@ -18,10 +18,15 @@ import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timel
 import type { QueueJobFunc } from './util'
 import { StudioCacheContextImpl } from './StudioCacheContextImpl'
 import { PlaylistLockImpl, RundownLockImpl } from './Locks'
+import { StudioRouteSetUpdater } from './StudioRouteSetUpdater'
+import type { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import type { ReadonlyDeep } from 'type-fest'
 
 export class JobContextImpl extends StudioCacheContextImpl implements JobContext {
 	private readonly locks: Array<LockBase> = []
 	private readonly caches: Array<BaseModel> = []
+
+	private readonly studioRouteSetUpdater: StudioRouteSetUpdater
 
 	constructor(
 		directCollections: Readonly<IDirectCollections>,
@@ -32,6 +37,12 @@ export class JobContextImpl extends StudioCacheContextImpl implements JobContext
 		private readonly fastTrackTimeline: FastTrackTimelineFunc | null
 	) {
 		super(directCollections, cacheData)
+
+		this.studioRouteSetUpdater = new StudioRouteSetUpdater(directCollections, cacheData)
+	}
+
+	get studio(): ReadonlyDeep<DBStudio> {
+		return this.studioRouteSetUpdater.studioWithChanges ?? super.studio
 	}
 
 	trackCache(cache: BaseModel): void {
@@ -137,5 +148,17 @@ export class JobContextImpl extends StudioCacheContextImpl implements JobContext
 				logger.error(`Failed to publish timeline to fast track: ${stringifyError(e)}`)
 			})
 		}
+	}
+
+	setRouteSetActive(routeSetId: string, isActive: boolean | 'toggle'): boolean {
+		return this.studioRouteSetUpdater.setRouteSetActive(routeSetId, isActive)
+	}
+
+	async saveRouteSetChanges(): Promise<void> {
+		return this.studioRouteSetUpdater.saveRouteSetChanges()
+	}
+
+	discardRouteSetChanges(): void {
+		return this.studioRouteSetUpdater.discardRouteSetChanges()
 	}
 }

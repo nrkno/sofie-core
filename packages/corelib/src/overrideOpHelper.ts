@@ -162,12 +162,15 @@ export interface OverrideOpHelperBatcher extends OverrideOpHelperForItemContents
 export type OverrideOpHelper = () => OverrideOpHelperBatcher
 
 export class OverrideOpHelperImpl implements OverrideOpHelperBatcher {
-	readonly #saveOverrides: SaveOverridesFunction
+	readonly #saveOverrides: SaveOverridesFunction | null
 	readonly #object: ObjectWithOverrides<any>
 
-	constructor(saveOverrides: SaveOverridesFunction, object: ObjectWithOverrides<any>) {
+	constructor(
+		saveOverrides: SaveOverridesFunction | null,
+		object: ObjectWithOverrides<any> | ReadonlyDeep<ObjectWithOverrides<any>>
+	) {
 		this.#saveOverrides = saveOverrides
-		this.#object = { ...object }
+		this.#object = { defaults: object.defaults, overrides: [...object.overrides] }
 	}
 
 	clearItemOverrides = (itemId: string, subPath: string): this => {
@@ -314,6 +317,12 @@ export class OverrideOpHelperImpl implements OverrideOpHelperBatcher {
 	}
 
 	commit = (): void => {
+		if (!this.#saveOverrides) throw new Error('Cannot commit changes without a save function')
+
 		this.#saveOverrides(this.#object.overrides)
+	}
+
+	getPendingOps = (): SomeObjectOverrideOp[] => {
+		return this.#object.overrides
 	}
 }
