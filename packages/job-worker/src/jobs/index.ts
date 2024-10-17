@@ -64,6 +64,26 @@ export interface JobContext extends StudioCacheContext {
 
 	/** Hack: fast-track the timeline out to the playout-gateway. */
 	hackPublishTimelineToFastTrack(newTimeline: TimelineComplete): void
+
+	/**
+	 * Set whether a routeset for this studio is active.
+	 * Any routeset `exclusivityGroup` will be respected.
+	 * The changes will be immediately visible in subsequent calls to the `studio` getter
+	 * @param routeSetId The routeSetId to change
+	 * @param isActive Whether the routeSet should be active, or toggle
+	 * @returns Whether the change could affect playout
+	 */
+	setRouteSetActive(routeSetId: string, isActive: boolean | 'toggle'): boolean
+
+	/**
+	 * Save any changes to the routesets for this studio to the database
+	 */
+	saveRouteSetChanges(): Promise<void>
+
+	/**
+	 * Discard any unsaved changes to the routesets for this studio
+	 */
+	discardRouteSetChanges(): void
 }
 
 /**

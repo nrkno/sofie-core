@@ -6,33 +6,19 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { ExpectedPlayoutItemStudio } from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'
 import { saveIntoDb } from '../../db/changes'
-import { StudioRouteBehavior, StudioRouteSet } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { logger } from '../../logging'
-import {
-	WrappedOverridableItemNormal,
-	getAllCurrentItemsFromOverrides,
-	OverrideOpHelperImpl,
-} from '@sofie-automation/corelib/dist/overrideOpHelper'
-import { ObjectWithOverrides, SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 export class StudioBaselineHelper {
 	readonly #context: JobContext
 
-	#overridesRouteSetBuffer: ObjectWithOverrides<Record<string, StudioRouteSet>>
 	#pendingExpectedPackages: ExpectedPackageDBFromStudioBaselineObjects[] | undefined
 	#pendingExpectedPlayoutItems: ExpectedPlayoutItemStudio[] | undefined
-	#routeSetChanged: boolean
 
 	constructor(context: JobContext) {
 		this.#context = context
-		this.#overridesRouteSetBuffer = { ...context.studio.routeSetsWithOverrides } as ObjectWithOverrides<
-			Record<string, StudioRouteSet>
-		>
-		this.#routeSetChanged = false
 	}
 
 	hasChanges(): boolean {
-		return !!this.#pendingExpectedPackages || !!this.#pendingExpectedPlayoutItems || this.#routeSetChanged
+		return !!this.#pendingExpectedPackages || !!this.#pendingExpectedPlayoutItems
 	}
 
 	setExpectedPackages(packages: ExpectedPackageDBFromStudioBaselineObjects[]): void {
@@ -63,74 +49,9 @@ export class StudioBaselineHelper {
 						this.#pendingExpectedPackages
 				  )
 				: undefined,
-			this.#routeSetChanged
-				? this.#context.directCollections.Studios.update(
-						{
-							_id: this.#context.studioId,
-						},
-						{
-							$set: { 'routeSetsWithOverrides.overrides': this.#overridesRouteSetBuffer.overrides },
-						}
-				  )
-				: undefined,
 		])
 
 		this.#pendingExpectedPlayoutItems = undefined
 		this.#pendingExpectedPackages = undefined
-		this.#routeSetChanged = false
-		this.#overridesRouteSetBuffer = { ...this.#context.studio.routeSetsWithOverrides } as ObjectWithOverrides<
-			Record<string, StudioRouteSet>
-		>
 	}
-
-	updateRouteSetActive(routeSetId: string, isActive: boolean | 'toggle'): boolean {
-		const studio = this.#context.studio
-
-		const routeSets: WrappedOverridableItemNormal<StudioRouteSet>[] = getAllCurrentItemsFromOverrides(
-			this.#overridesRouteSetBuffer,
-			null
-		)
-
-		const routeSet = routeSets.find((routeSet) => routeSet.id === routeSetId)
-
-		if (routeSet === undefined) throw new Error(`RouteSet "${routeSetId}" not found!`)
-
-		if (isActive === 'toggle') isActive = !routeSet.computed.active
-
-		if (routeSet.computed?.behavior === StudioRouteBehavior.ACTIVATE_ONLY && isActive === false)
-			throw new Error(`RouteSet "${routeSet.id}" is ACTIVATE_ONLY`)
-
-		const saveOverrides = (newOps: SomeObjectOverrideOp[]) => {
-			this.#overridesRouteSetBuffer.overrides = newOps
-			this.#routeSetChanged = true
-		}
-		const overrideHelper = new OverrideOpHelperImpl(saveOverrides, this.#overridesRouteSetBuffer)
-
-		// Track whether changing this routeset could affect how the timeline is generated, so that it can be following this update
-		let mayAffectTimeline = couldRoutesetAffectTimelineGeneration(routeSet)
-
-		logger.debug(`switchRouteSet "${studio._id}" "${routeSet.id}"=${isActive}`)
-		overrideHelper.setItemValue(routeSet.id, `active`, isActive)
-
-		// Deactivate other routeSets in the same exclusivity group:
-		if (routeSet.computed.exclusivityGroup && isActive === true) {
-			for (const [, otherRouteSet] of Object.entries<WrappedOverridableItemNormal<StudioRouteSet>>(routeSets)) {
-				if (otherRouteSet.id === routeSet.id) continue
-				if (otherRouteSet.computed?.exclusivityGroup === routeSet.computed.exclusivityGroup) {
-					logger.debug(`switchRouteSet Other ID "${studio._id}" "${otherRouteSet.id}"=false`)
-					overrideHelper.setItemValue(otherRouteSet.id, `active`, false)
-
-					mayAffectTimeline = mayAffectTimeline || couldRoutesetAffectTimelineGeneration(otherRouteSet)
-				}
-			}
-		}
-
-		overrideHelper.commit()
-
-		return mayAffectTimeline
-	}
-}
-
-function couldRoutesetAffectTimelineGeneration(routeSet: WrappedOverridableItemNormal<StudioRouteSet>): boolean {
-	return routeSet.computed.abPlayers.length > 0
 }
