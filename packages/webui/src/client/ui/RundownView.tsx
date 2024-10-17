@@ -313,6 +313,7 @@ const TimingDisplay = withTranslation()(
 								<CurrentPartOrSegmentRemaining
 									currentPartInstanceId={rundownPlaylist.currentPartInfo.partInstanceId}
 									heavyClassName="overtime"
+									forceToPartTimer={true}
 								/>
 								<AutoNextStatus />
 								{rundownPlaylist.holdState && rundownPlaylist.holdState !== RundownHoldState.COMPLETE ? (
