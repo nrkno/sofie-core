@@ -59,6 +59,7 @@ class PartTimingPanelInner extends React.Component<
 								vibrating={getAllowVibrating() && panel.speakCountDown}
 								heavyClassName="overtime"
 								className="part-remaining"
+								useSegmentTime={true}
 							/>
 						) : (
 							<CurrentPartElapsed currentPartId={this.props.livePart?.part._id} className="part-elapsed" />
