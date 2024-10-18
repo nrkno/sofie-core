@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.51.1-1](https://github.com/nrkno/sofie-core/compare/v1.51.1-0...v1.51.1-1) (2024-10-18)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
 ## [1.51.1-0](https://github.com/nrkno/sofie-core/compare/v1.51.0...v1.51.1-0) (2024-10-18)
 
 **Note:** Version bump only for package playout-gateway
