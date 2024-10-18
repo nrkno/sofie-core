@@ -52,7 +52,7 @@
 		"node-fetch": "^2.7.0",
 		"p-lazy": "^3.1.0",
 		"p-timeout": "^4.1.0",
-		"superfly-timeline": "9.0.1",
+		"superfly-timeline": "9.0.2",
 		"threadedclass": "^1.2.2",
 		"tslib": "^2.6.2",
 		"type-fest": "^3.13.1",

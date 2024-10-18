@@ -4654,7 +4654,7 @@ __metadata:
     node-fetch: ^2.7.0
     p-lazy: ^3.1.0
     p-timeout: ^4.1.0
-    superfly-timeline: 9.0.1
+    superfly-timeline: 9.0.2
     threadedclass: ^1.2.2
     tslib: ^2.6.2
     type-fest: ^3.13.1
@@ -4693,7 +4693,7 @@ __metadata:
   resolution: "@sofie-automation/shared-lib@workspace:shared-lib"
   dependencies:
     "@mos-connection/model": ^4.1.1
-    timeline-state-resolver-types: 9.2.0
+    timeline-state-resolver-types: 9.2.1-nightly-release51-20241010-074534-2b45bc89d.0
     tslib: ^2.6.2
     type-fest: ^3.13.1
   languageName: unknown
@@ -22631,15 +22631,6 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"superfly-timeline@npm:9.0.1":
-  version: 9.0.1
-  resolution: "superfly-timeline@npm:9.0.1"
-  dependencies:
-    tslib: ^2.6.0
-  checksum: 4267eed691fe9ce9f89bf17c8aed1a98206938dd6d850c64b083e4fd3a3dc5329801c76c757450c9520375bad100ce512cc6d6a3e4a997bdfa14a4e7d65f09f2
-  languageName: node
-  linkType: hard
-
 "superfly-timeline@npm:9.0.2":
   version: 9.0.2
   resolution: "superfly-timeline@npm:9.0.2"
@@ -23003,15 +22994,6 @@ asn1@evs-broadcast/node-asn1:
   version: 0.0.4
   resolution: "timecode@npm:0.0.4"
   checksum: c7c0780a65e10beeca0259ed9b33da5b1e5b2ee1b77ff52aef3fa1f3793fe77445ff087dee5bafce8af9d0529b4cce2a3b36485ef69e68b0a71015ba218a8580
-  languageName: node
-  linkType: hard
-
-"timeline-state-resolver-types@npm:9.2.0":
-  version: 9.2.0
-  resolution: "timeline-state-resolver-types@npm:9.2.0"
-  dependencies:
-    tslib: ^2.6.2
-  checksum: aa51cff0d18b16c613705583f5a1c087e44df59b4b5a7e0fe2f31e52f492686a326bb3a63493b828b166dc8196d58d1470e2adcb730439e8c9ef522e796aea4e
   languageName: node
   linkType: hard
 
