@@ -274,7 +274,6 @@ exports[`client/lib/rundown RundownUtils.getResolvedSegment Basic Segment resolu
     "_id": "randomId9002_segment0",
     "_rank": 0,
     "externalId": "MOCK_SEGMENT_0",
-    "externalModified": 1,
     "name": "Segment 0",
     "outputLayers": {
       "pgm": {

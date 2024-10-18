@@ -120,7 +120,6 @@ function useRundownPlaylists(playlistIds: RundownPlaylistId[]) {
 							projection: {
 								displayAs: 0,
 								externalId: 0,
-								externalModified: 0,
 								privateData: 0,
 								notes: 0,
 								segmentTiming: 0,

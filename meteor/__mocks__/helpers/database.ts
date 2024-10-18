@@ -14,13 +14,11 @@ import {
 	SourceLayerType,
 	StudioBlueprintManifest,
 	BlueprintManifestType,
-	IngestRundown,
 	BlueprintManifestBase,
 	ShowStyleBlueprintManifest,
 	IShowStyleContext,
 	BlueprintResultRundown,
 	BlueprintResultSegment,
-	IngestSegment,
 	IBlueprintAdLibPiece,
 	IBlueprintRundown,
 	IBlueprintSegment,
@@ -32,6 +30,8 @@ import {
 	StatusCode,
 	IBlueprintPieceType,
 	IBlueprintActionManifest,
+	SofieIngestSegment,
+	SofieIngestRundown,
 } from '@sofie-automation/blueprints-integration'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
@@ -429,7 +429,10 @@ export async function setupMockShowStyleBlueprint(
 				getShowStyleVariantId: (): string | null => {
 					return SHOW_STYLE_VARIANT_ID
 				},
-				getRundown: (_context: IShowStyleContext, ingestRundown: IngestRundown): BlueprintResultRundown => {
+				getRundown: (
+					_context: IShowStyleContext,
+					ingestRundown: SofieIngestRundown<any, any, any>
+				): BlueprintResultRundown => {
 					const rundown: IBlueprintRundown = {
 						externalId: ingestRundown.externalId,
 						name: ingestRundown.name,
@@ -452,7 +455,10 @@ export async function setupMockShowStyleBlueprint(
 						baseline: { timelineObjects: [] },
 					}
 				},
-				getSegment: (_context: unknown, ingestSegment: IngestSegment): BlueprintResultSegment => {
+				getSegment: (
+					_context: unknown,
+					ingestSegment: SofieIngestSegment<any, any>
+				): BlueprintResultSegment => {
 					const segment: IBlueprintSegment = {
 						name: ingestSegment.name ? ingestSegment.name : ingestSegment.externalId,
 						privateData: ingestSegment.payload,
@@ -654,7 +660,6 @@ export async function setupDefaultRundown(
 		externalId: 'MOCK_SEGMENT_0',
 		rundownId: rundown._id,
 		name: 'Segment 0',
-		externalModified: 1,
 	}
 	await Segments.mutableCollection.insertAsync(segment0)
 	/* tslint:disable:ter-indent*/
@@ -764,7 +769,6 @@ export async function setupDefaultRundown(
 		externalId: 'MOCK_SEGMENT_2',
 		rundownId: rundown._id,
 		name: 'Segment 1',
-		externalModified: 1,
 	}
 	await Segments.mutableCollection.insertAsync(segment1)
 
@@ -807,7 +811,6 @@ export async function setupDefaultRundown(
 		externalId: 'MOCK_SEGMENT_2',
 		rundownId: rundown._id,
 		name: 'Segment 2',
-		externalModified: 1,
 	}
 	await Segments.mutableCollection.insertAsync(segment2)
 

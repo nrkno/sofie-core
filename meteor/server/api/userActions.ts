@@ -5,7 +5,7 @@ import { Time } from '../lib/tempLib'
 import { ServerPlayoutAPI } from './playout/playout'
 import { NewUserActionAPI, UserActionAPIMethods } from '@sofie-automation/meteor-lib/dist/api/userActions'
 import { EvaluationBase } from '@sofie-automation/meteor-lib/dist/collections/Evaluations'
-import { IngestPart, IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integration'
+import { IngestPart, IngestAdlib, ActionUserData, UserOperationTarget } from '@sofie-automation/blueprints-integration'
 import { storeRundownPlaylistSnapshot } from './snapshot'
 import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments } from '../methods'
 import { ServerRundownAPI } from './rundown'
@@ -46,11 +46,12 @@ import {
 	ShowStyleVariantId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { IngestDataCache, Parts, Pieces, Rundowns } from '../collections'
-import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
+import { NrcsIngestDataCache, Parts, Pieces, Rundowns } from '../collections'
+import { NrcsIngestCacheType } from '@sofie-automation/corelib/dist/dataModel/NrcsIngestDataCache'
 import { verifyHashedToken } from './singleUseTokens'
 import { QuickLoopMarker } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { runIngestOperation } from './ingest/lib'
+import { RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 
 async function pieceSetInOutPoints(
@@ -69,10 +70,10 @@ async function pieceSetInOutPoints(
 	})
 	if (!rundown) throw new Meteor.Error(501, `Rundown "${part.rundownId}" not found!`)
 
-	const partCache = await IngestDataCache.findOneAsync({
+	const partCache = await NrcsIngestDataCache.findOneAsync({
 		rundownId: rundown._id,
 		partId: part._id,
-		type: IngestCacheType.PART,
+		type: NrcsIngestCacheType.PART,
 	})
 	if (!partCache) throw new Meteor.Error(404, `Part Cache for "${partId}" not found!`)
 	const piece = await Pieces.findOneAsync(pieceId)
@@ -1265,6 +1266,32 @@ class ServerUserActionAPI
 				playlistId,
 				marker,
 				type: 'end',
+			}
+		)
+	}
+
+	async executeUserChangeOperation(
+		userEvent: string,
+		eventTime: Time,
+		rundownId: RundownId,
+		operationTarget: UserOperationTarget,
+		operation: { id: string; [key: string]: any }
+	): Promise<ClientAPI.ClientResponse<void>> {
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			eventTime,
+			'executeUserChangeOperation',
+			{ operationTarget, operation },
+			async () => {
+				const access = await RundownPlaylistContentWriteAccess.rundown(this, rundownId)
+				if (!access.rundown) throw new Error(`Rundown "${rundownId}" not found`)
+
+				await runIngestOperation(access.rundown.studioId, IngestJobs.UserExecuteChangeOperation, {
+					rundownExternalId: access.rundown.externalId,
+					operationTarget,
+					operation,
+				})
 			}
 		)
 	}
