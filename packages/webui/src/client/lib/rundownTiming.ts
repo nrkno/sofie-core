@@ -585,6 +585,7 @@ export class RundownTimingCalculator {
 
 		let remainingTimeOnCurrentPart: number | undefined = undefined
 		let currentPartWillAutoNext = false
+		let currentSegmentId: SegmentId | null | undefined
 		if (currentAIndex >= 0) {
 			const currentLivePartInstance = partInstances[currentAIndex]
 			const currentLivePart = currentLivePartInstance.part
@@ -610,10 +611,13 @@ export class RundownTimingCalculator {
 					: onAirPartDuration
 
 			currentPartWillAutoNext = !!(currentLivePart.autoNext && currentLivePart.expectedDuration)
+
+			currentSegmentId = currentLivePart.segmentId
 		}
 
 		return literal<RundownTimingContext>({
 			currentPartInstanceId: playlist ? playlist.currentPartInfo?.partInstanceId ?? null : undefined,
+			currentSegmentId: currentSegmentId,
 			totalPlaylistDuration: totalRundownDuration,
 			remainingPlaylistDuration: remainingRundownDuration,
 			asDisplayedPlaylistDuration: asDisplayedRundownDuration,
@@ -683,6 +687,8 @@ export class RundownTimingCalculator {
 export interface RundownTimingContext {
 	/** This stores the part instance that was active when this timing information was generated. */
 	currentPartInstanceId?: PartInstanceId | null
+	/** This stores the id of the segment that was active when this timing information was generated. */
+	currentSegmentId?: SegmentId | null
 	/** This is the total duration of the playlist as planned (using expectedDurations). */
 	totalPlaylistDuration?: number
 	/** This is the content remaining to be played in the playlist (based on the expectedDurations).  */

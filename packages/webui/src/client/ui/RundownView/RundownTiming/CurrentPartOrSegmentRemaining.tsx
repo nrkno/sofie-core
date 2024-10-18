@@ -32,7 +32,7 @@ export const CurrentPartOrSegmentRemaining = withTiming<IPartRemainingProps, {}>
 	tickResolution: TimingTickResolution.Synced,
 	dataResolution: TimingDataResolution.Synced,
 })(
-	class CurrentPartRemaining extends React.Component<WithTiming<IPartRemainingProps>> {
+	class CurrentPartOrSegmentRemaining extends React.Component<WithTiming<IPartRemainingProps>> {
 		render(): JSX.Element | null {
 			if (!this.props.timingDurations || !this.props.timingDurations.currentTime) return null
 			if (this.props.timingDurations.currentPartInstanceId !== this.props.currentPartInstanceId) return null
