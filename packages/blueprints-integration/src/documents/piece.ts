@@ -1,3 +1,4 @@
+import { UserEditingDefinition } from '../userEditing'
 import type { IBlueprintPieceGeneric } from './pieceGeneric'
 
 /** Special types of pieces. Some are not always used in all circumstances */
@@ -29,6 +30,11 @@ export interface IBlueprintPiece<TPrivateData = unknown, TPublicData = unknown>
 
 	/** Whether the piece affects the output of the Studio or is describing an invisible state within the Studio */
 	notInVision?: boolean
+
+	/**
+	 * User editing definitions for this piece
+	 */
+	userEditOperations?: UserEditingDefinition[]
 }
 export interface IBlueprintPieceDB<TPrivateData = unknown, TPublicData = unknown>
 	extends IBlueprintPiece<TPrivateData, TPublicData> {

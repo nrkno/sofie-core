@@ -18,7 +18,6 @@ function makeTestSegment(id: string, rank: number, rundownId: string): DBSegment
 		name: `Segment ${id}`,
 		_rank: rank,
 		rundownId: protectString(rundownId),
-		externalModified: 1695799420147,
 	}
 }
 

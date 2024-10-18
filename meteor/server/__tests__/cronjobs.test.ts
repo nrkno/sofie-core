@@ -19,7 +19,8 @@ import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceIns
 import { Meteor } from 'meteor/meteor'
 import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import {
-	IngestDataCacheObjId,
+	NrcsIngestDataCacheObjId,
+	SofieIngestDataCacheObjId,
 	PartId,
 	PeripheralDeviceId,
 	RundownId,
@@ -42,7 +43,7 @@ import '../cronjobs'
 import '../api/peripheralDevice'
 import {
 	CoreSystem,
-	IngestDataCache,
+	NrcsIngestDataCache,
 	PartInstances,
 	Parts,
 	PeripheralDeviceCommands,
@@ -51,8 +52,9 @@ import {
 	Snapshots,
 	UserActionsLog,
 	Segments,
+	SofieIngestDataCache,
 } from '../collections'
-import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
+import { NrcsIngestCacheType } from '@sofie-automation/corelib/dist/dataModel/NrcsIngestDataCache'
 import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import {
 	DefaultEnvironment,
@@ -61,6 +63,7 @@ import {
 } from '../../__mocks__/helpers/database'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { Settings } from '../Settings'
+import { SofieIngestCacheType } from '@sofie-automation/corelib/dist/dataModel/SofieIngestDataCache'
 
 describe('cronjobs', () => {
 	let env: DefaultEnvironment
@@ -170,45 +173,95 @@ describe('cronjobs', () => {
 			await PeripheralDevices.removeAsync({})
 		})
 
-		testInFiber('Remove IngestDataCache objects that are not connected to any Rundown', async () => {
-			// Set up a mock rundown, a detached IngestDataCache object and an object attached to the mock rundown
-			// Detached IngestDataCache object 0
-			const dataCache0Id = protectString<IngestDataCacheObjId>(getRandomString())
-			await IngestDataCache.mutableCollection.insertAsync({
+		testInFiber('Remove NrcsIngestDataCache objects that are not connected to any Rundown', async () => {
+			// Set up a mock rundown, a detached NrcsIngestDataCache object and an object attached to the mock rundown
+			// Detached NrcsIngestDataCache object 0
+			const dataCache0Id = protectString<NrcsIngestDataCacheObjId>(getRandomString())
+			await NrcsIngestDataCache.mutableCollection.insertAsync({
 				_id: dataCache0Id,
 				data: {
 					externalId: '',
 					name: '',
 					segments: [],
 					type: '',
+					rundownSource: {} as any,
+					payload: undefined,
 				},
 				modified: new Date(2000, 0, 1, 0, 0, 0).getTime(),
 				// this one is attached to rundown0
 				rundownId: getRandomId(),
-				type: IngestCacheType.RUNDOWN,
+				type: NrcsIngestCacheType.RUNDOWN,
 			})
-			// Attached IngestDataCache object 1
-			const dataCache1Id = protectString<IngestDataCacheObjId>(getRandomString())
-			await IngestDataCache.mutableCollection.insertAsync({
+			// Attached NrcsIngestDataCache object 1
+			const dataCache1Id = protectString<NrcsIngestDataCacheObjId>(getRandomString())
+			await NrcsIngestDataCache.mutableCollection.insertAsync({
 				_id: dataCache1Id,
 				data: {
 					externalId: '',
 					name: '',
 					segments: [],
 					type: '',
+					rundownSource: {} as any,
+					payload: undefined,
 				},
 				modified: new Date(2000, 0, 1, 0, 0, 0).getTime(),
 				// just some random ID
 				rundownId: rundownId,
-				type: IngestCacheType.RUNDOWN,
+				type: NrcsIngestCacheType.RUNDOWN,
 			})
 
 			await runCronjobs()
 
-			expect(await IngestDataCache.findOneAsync(dataCache1Id)).toMatchObject({
+			expect(await NrcsIngestDataCache.findOneAsync(dataCache1Id)).toMatchObject({
 				_id: dataCache1Id,
 			})
-			expect(await IngestDataCache.findOneAsync(dataCache0Id)).toBeUndefined()
+			expect(await NrcsIngestDataCache.findOneAsync(dataCache0Id)).toBeUndefined()
+		})
+		testInFiber('Remove SofieIngestDataCache objects that are not connected to any Rundown', async () => {
+			// Set up a mock rundown, a detached SofieIngestDataCache object and an object attached to the mock rundown
+			// Detached SofieIngestDataCache object 0
+			const dataCache0Id = protectString<SofieIngestDataCacheObjId>(getRandomString())
+			await SofieIngestDataCache.mutableCollection.insertAsync({
+				_id: dataCache0Id,
+				data: {
+					externalId: '',
+					name: '',
+					segments: [],
+					type: '',
+					rundownSource: {} as any,
+					userEditStates: {},
+					payload: undefined,
+				},
+				modified: new Date(2000, 0, 1, 0, 0, 0).getTime(),
+				// this one is attached to rundown0
+				rundownId: getRandomId(),
+				type: SofieIngestCacheType.RUNDOWN,
+			})
+			// Attached SofieIngestDataCache object 1
+			const dataCache1Id = protectString<SofieIngestDataCacheObjId>(getRandomString())
+			await SofieIngestDataCache.mutableCollection.insertAsync({
+				_id: dataCache1Id,
+				data: {
+					externalId: '',
+					name: '',
+					segments: [],
+					type: '',
+					rundownSource: {} as any,
+					userEditStates: {},
+					payload: undefined,
+				},
+				modified: new Date(2000, 0, 1, 0, 0, 0).getTime(),
+				// just some random ID
+				rundownId: rundownId,
+				type: SofieIngestCacheType.RUNDOWN,
+			})
+
+			await runCronjobs()
+
+			expect(await SofieIngestDataCache.findOneAsync(dataCache1Id)).toMatchObject({
+				_id: dataCache1Id,
+			})
+			expect(await SofieIngestDataCache.findOneAsync(dataCache0Id)).toBeUndefined()
 		})
 		testInFiber('Removes old PartInstances and PieceInstances', async () => {
 			// nightlyCronjobInner()
@@ -217,7 +270,6 @@ describe('cronjobs', () => {
 				_id: getRandomId<SegmentId>(),
 				_rank: 0,
 				externalId: '',
-				externalModified: 0,
 				rundownId,
 				name: 'mock segment',
 			}

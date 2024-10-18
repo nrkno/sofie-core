@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { IngestDataCache, MediaObjects, Parts, Rundowns, Segments } from '../../collections'
+import { NrcsIngestDataCache, MediaObjects, Parts, Rundowns, Segments } from '../../collections'
 import { literal } from '../../lib/tempLib'
 import { lazyIgnore } from '../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart, IngestPlaylist } from '@sofie-automation/blueprints-integration'
@@ -17,7 +17,7 @@ import { MethodContext } from '../methodContext'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import { PeripheralDeviceId, RundownId, SegmentId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
+import { NrcsIngestCacheType } from '@sofie-automation/corelib/dist/dataModel/NrcsIngestDataCache'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 export namespace RundownInput {
@@ -415,9 +415,9 @@ async function onMediaObjectChanged(newDocument: MediaObject, oldDocument?: Medi
 
 		const validSegmentIds = new Set(
 			(
-				await IngestDataCache.findFetchAsync(
+				await NrcsIngestDataCache.findFetchAsync(
 					{
-						type: IngestCacheType.SEGMENT,
+						type: NrcsIngestCacheType.SEGMENT,
 						rundownId: { $in: updateIds.map((obj) => obj.rundownId) },
 					},
 					{

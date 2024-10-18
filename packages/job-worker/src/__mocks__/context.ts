@@ -312,7 +312,10 @@ const MockShowStyleBlueprint: () => ShowStyleBlueprintManifest = () => ({
 	getShowStyleVariantId: (_context, variants): string | null => {
 		return variants[0]._id
 	},
-	getRundown: (_context: IShowStyleContext, ingestRundown: ExtendedIngestRundown): BlueprintResultRundown => {
+	getRundown: (
+		_context: IShowStyleContext,
+		ingestRundown: ExtendedIngestRundown<any, any, any>
+	): BlueprintResultRundown => {
 		const rundown: IBlueprintRundown = {
 			externalId: ingestRundown.externalId,
 			name: ingestRundown.name,
@@ -338,7 +341,7 @@ const MockShowStyleBlueprint: () => ShowStyleBlueprintManifest = () => ({
 			baseline: { timelineObjects: [] },
 		}
 	},
-	getSegment: (_context: ISegmentUserContext, ingestSegment: IngestSegment): BlueprintResultSegment => {
+	getSegment: (_context: ISegmentUserContext, ingestSegment: IngestSegment<any, any>): BlueprintResultSegment => {
 		const segment: IBlueprintSegment = {
 			name: ingestSegment.name ? ingestSegment.name : ingestSegment.externalId,
 			privateData: ingestSegment.payload,

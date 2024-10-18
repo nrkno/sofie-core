@@ -44,6 +44,7 @@ import { setDefaultIdOnExpectedPackages } from '../ingest/expectedPackages'
 import { logger } from '../logging'
 import { validateTimeline } from 'superfly-timeline'
 import { ReadonlyDeep } from 'type-fest'
+import { translateUserEditsFromBlueprint } from './context/lib'
 
 function getIdHash(docType: string, usedIds: Map<string, number>, uniqueId: string): string {
 	const count = usedIds.get(uniqueId)
@@ -108,6 +109,7 @@ export function postProcessPieces(
 			startPartId: partId,
 			invalid: setInvalid ?? false,
 			timelineObjectsString: EmptyPieceTimelineObjectsBlob,
+			userEditOperations: translateUserEditsFromBlueprint(orgPiece.userEditOperations, [blueprintId]),
 		}
 
 		if (piece.pieceType !== IBlueprintPieceType.Normal) {
