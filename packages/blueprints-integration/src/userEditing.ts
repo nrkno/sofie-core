@@ -1,6 +1,6 @@
-import { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import type { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import type { ITranslatableMessage } from './translations'
-import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
+import type { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 
 /**
  * Description of a user performed editing operation allowed on an document

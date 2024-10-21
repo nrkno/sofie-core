@@ -455,7 +455,7 @@ async function applyCalculatedIngestChangesToModel(
 				context,
 				ingestModel,
 				newIngestRundown,
-				GenerateRundownMode.MetadataChange // TODO - full vs metadata?
+				GenerateRundownMode.MetadataChange
 			)
 			if (regenerateCommitData?.regenerateAllContents) {
 				const regeneratedSegmentIds = await calculateSegmentsAndRemovalsFromIngestData(
@@ -488,7 +488,6 @@ async function applyCalculatedIngestChangesToModel(
 		for (const segmentId of Object.keys(computedIngestChanges.segmentsUpdatedRanks)) {
 			changedSegmentIdsSet.add(ingestModel.getSegmentIdFromExternalId(segmentId))
 		}
-		// TODO - include changed external ids?
 
 		// Remove/orphan old segments
 		const orphanedSegmentIds: SegmentId[] = []

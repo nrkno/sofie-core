@@ -1,4 +1,4 @@
-import { UserEditingDefinition } from '../userEditing'
+import type { UserEditingDefinition } from '../userEditing'
 import type { RundownPlaylistTiming } from './playlistTiming'
 
 /** The Rundown generated from Blueprint */

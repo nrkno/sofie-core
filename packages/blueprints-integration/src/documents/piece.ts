@@ -1,4 +1,4 @@
-import { UserEditingDefinition } from '../userEditing'
+import type { UserEditingDefinition } from '../userEditing'
 import type { IBlueprintPieceGeneric } from './pieceGeneric'
 
 /** Special types of pieces. Some are not always used in all circumstances */

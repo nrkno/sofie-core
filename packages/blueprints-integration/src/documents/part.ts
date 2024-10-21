@@ -1,4 +1,4 @@
-import { UserEditingDefinition } from '../userEditing'
+import type { UserEditingDefinition } from '../userEditing'
 import type { NoteSeverity } from '../lib'
 import type { ITranslatableMessage } from '../translations'
 
