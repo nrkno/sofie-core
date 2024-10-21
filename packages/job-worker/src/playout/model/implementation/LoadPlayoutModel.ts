@@ -215,7 +215,7 @@ async function loadRundowns(
 		logger.warn(
 			`TESTDEBUG: using ingestModel, previous: ${JSON.stringify(
 				groupedSegmentsWithParts.get(ingestModel.rundownId)?.map((s) => s.segment._id)
-			)}`
+			)} (rundownIds: ${JSON.stringify(rundownIds)} rundownId: ${ingestModel.rundownId})`
 		)
 		const playoutSegments: PlayoutSegmentModelImpl[] = []
 		groupedSegmentsWithParts.set(ingestModel.rundownId, playoutSegments)
@@ -241,7 +241,7 @@ async function loadRundowns(
 		logger.warn(
 			`TESTDEBUG: using ingestModel, new: ${JSON.stringify(
 				groupedSegmentsWithParts.get(ingestModel.rundownId)?.map((s) => s.segment._id)
-			)}`
+			)} (rundownIds: ${JSON.stringify(rundownIds)} rundownId: ${ingestModel.rundownId})`
 		)
 	}
 

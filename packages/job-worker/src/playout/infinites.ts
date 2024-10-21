@@ -333,7 +333,9 @@ export function getPieceInstancesForPart(
 		playingSegment = playingRundown.getSegment(playingPartInstance.partInstance.segmentId)
 		if (!playingSegment) {
 			logger.warn(`TESTDEBUG: segments: ${JSON.stringify(playingRundown.getSegmentIds())}`)
-			throw new Error(`Segment "${playingPartInstance.partInstance.segmentId}" not found!`)
+			throw new Error(
+				`Segment "${playingPartInstance.partInstance.segmentId}" not found (for partInstance "${playingPartInstance.partInstance._id}" in rundown "${playingPartInstance.partInstance.rundownId}")!`
+			)
 		}
 	}
 
