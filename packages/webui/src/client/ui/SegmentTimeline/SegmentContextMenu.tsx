@@ -14,7 +14,7 @@ import { IContextMenuContext } from '../RundownView'
 import { PartUi, SegmentUi } from './SegmentTimelineContainer'
 import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { RenderUserEditOperations } from '../UserEditOperations/RenderUserEditOperations'
+import { UserEditOperationMenuItems } from '../UserEditOperations/RenderUserEditOperations'
 import * as RundownResolver from '../../lib/RundownResolver'
 
 interface IProps {
@@ -84,18 +84,19 @@ export const SegmentContextMenu = withTranslation()(
 										<span>{t('Clear queued segment')}</span>
 									</MenuItem>
 								)}
-								{segment &&
-									RenderUserEditOperations(
-										isSegmentEditAble,
-										segment.rundownId,
-										segment.name,
-										segment.userEditOperations,
-										{
-											segmentExternalId: segment?.externalId,
+								{segment && (
+									<UserEditOperationMenuItems
+										rundownId={segment.rundownId}
+										targetName={segment.name}
+										operationTarget={{
+											segmentExternalId: segment.externalId,
 											partExternalId: undefined,
 											pieceExternalId: undefined,
-										}
-									)}
+										}}
+										userEditOperations={segment.userEditOperations}
+										isFormEditable={isSegmentEditAble}
+									/>
+								)}
 								<hr />
 							</>
 						)}
@@ -166,17 +167,17 @@ export const SegmentContextMenu = withTranslation()(
 									</>
 								)}
 
-								{RenderUserEditOperations(
-									isPartEditAble,
-									part.instance.rundownId,
-									part.instance.part.title,
-									part.instance.part.userEditOperations,
-									{
+								<UserEditOperationMenuItems
+									rundownId={part.instance.rundownId}
+									targetName={part.instance.part.title}
+									operationTarget={{
 										segmentExternalId: segment?.externalId,
 										partExternalId: part.instance.part.externalId,
 										pieceExternalId: undefined,
-									}
-								)}
+									}}
+									userEditOperations={part.instance.part.userEditOperations}
+									isFormEditable={isPartEditAble}
+								/>
 							</>
 						)}
 					</ContextMenu>
