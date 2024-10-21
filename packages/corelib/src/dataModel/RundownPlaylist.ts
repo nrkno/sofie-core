@@ -10,6 +10,7 @@ import {
 	StudioId,
 	RundownId,
 } from './Ids'
+import { RundownPlaylistNote } from './Notes'
 
 /** Details of an ab-session requested by the blueprints in onTimelineGenerate */
 export interface ABSessionInfo {
@@ -151,6 +152,9 @@ export interface DBRundownPlaylist {
 	 * In general this should only be set/cleared by a useraction, or during the take logic. This ensures that it isnt lost when doing manual set-next actions
 	 */
 	queuedSegmentId?: SegmentId
+
+	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
+	notes?: Array<RundownPlaylistNote>
 
 	quickLoop?: QuickLoopProps
 

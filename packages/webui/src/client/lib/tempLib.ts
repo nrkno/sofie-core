@@ -28,6 +28,7 @@ export {
 	groupByToMapFunc,
 	formatDurationAsTimecode,
 	formatDateAsTimecode,
+	generateTranslation,
 } from '@sofie-automation/corelib/dist/lib'
 export type { Complete } from '@sofie-automation/corelib/dist/lib'
-export { LogLevel, generateTranslation } from '@sofie-automation/meteor-lib/dist/lib'
+export { LogLevel } from '@sofie-automation/meteor-lib/dist/lib'
