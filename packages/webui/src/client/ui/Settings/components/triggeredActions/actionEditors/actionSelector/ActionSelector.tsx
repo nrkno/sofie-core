@@ -15,6 +15,7 @@ import { preventOverflow } from '@popperjs/core'
 import { ToggleSwitchControl } from '../../../../../../lib/Components/ToggleSwitch'
 import { DropdownInputControl, DropdownInputOption } from '../../../../../../lib/Components/DropdownInput'
 import { IntInputControl } from '../../../../../../lib/Components/IntInput'
+import { SwitchRouteSetEditor } from './actionEditors/SwitchRouteSetEditor'
 
 interface IProps {
 	action: SomeAction
@@ -74,6 +75,9 @@ function getArguments(t: TFunction, action: SomeAction): string[] {
 			break
 		case PlayoutActions.resyncRundownPlaylist:
 			break
+		case PlayoutActions.switchRouteSet:
+			result.push(t('State "{{state}}"', { state: action.state }))
+			break
 		case ClientActions.shelf:
 			if (action.state === true) {
 				result.push(t('Open'))
@@ -127,6 +131,8 @@ function hasArguments(action: SomeAction): boolean {
 			return !!action.undo
 		case PlayoutActions.moveNext:
 			return !!(action.parts || action.segments)
+		case PlayoutActions.switchRouteSet:
+			return !!action.routeSetId
 		case PlayoutActions.reloadRundownPlaylistData:
 			return false
 		case PlayoutActions.resetRundownPlaylist:
@@ -179,6 +185,8 @@ function actionToLabel(t: TFunction, action: SomeAction['action']): string {
 			return t('Take')
 		case PlayoutActions.resyncRundownPlaylist:
 			return t('Resync with NRCS')
+		case PlayoutActions.switchRouteSet:
+			return t('Switch Route Set')
 		case ClientActions.shelf:
 			return t('Shelf')
 		case ClientActions.rewindSegments:
@@ -247,6 +255,8 @@ function getActionParametersEditor(
 			return null
 		case PlayoutActions.activateAdlibTestingMode:
 			return null
+		case PlayoutActions.switchRouteSet:
+			return <SwitchRouteSetEditor action={action} onChange={onChange} />
 		case PlayoutActions.disableNextPiece:
 			return (
 				<div className="mts">
@@ -555,7 +565,6 @@ export const ActionSelector = function ActionSelector({
 					{...attributes.popper}
 				>
 					<div>
-						<p>ACT</p>
 						<DropdownInputControl
 							classNames="input text-input input-m"
 							value={action.action}

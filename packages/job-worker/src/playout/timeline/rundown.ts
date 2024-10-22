@@ -328,8 +328,16 @@ function generateCurrentInfinitePieceObjects(
 		infiniteGroup.enable.duration = infiniteInNextPart.piece.enable.duration
 	}
 
-	// If this piece does not continue in the next part, then set it to end with the part it belongs to
-	if (
+	const pieceInstanceWithUpdatedEndCap: PieceInstanceWithTimings = { ...pieceInstance }
+	// Give the infinite group and end cap when the end of the piece is known
+	if (pieceInstance.resolvedEndCap) {
+		// If the cap is a number, it is relative to the part, not the parent group so needs to be handled here
+		if (typeof pieceInstance.resolvedEndCap === 'number') {
+			infiniteGroup.enable.end = `#${timingContext.currentPartGroup.id}.start + ${pieceInstance.resolvedEndCap}`
+			delete pieceInstanceWithUpdatedEndCap.resolvedEndCap
+		}
+	} else if (
+		// If this piece does not continue in the next part, then set it to end with the part it belongs to
 		!infiniteInNextPart &&
 		currentPartInfo.partInstance.part.autoNext &&
 		infiniteGroup.enable.duration === undefined &&
@@ -355,7 +363,7 @@ function generateCurrentInfinitePieceObjects(
 			activePlaylist._id,
 			infiniteGroup,
 			nowInParent,
-			pieceInstance,
+			pieceInstanceWithUpdatedEndCap,
 			pieceEnable,
 			0,
 			groupClasses,

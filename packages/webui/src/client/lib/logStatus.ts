@@ -1,8 +1,8 @@
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import { getRandomString } from './tempLib'
-import { getAllowStudio } from './localStorage'
 import { logger } from './logging'
+import { getLocalAllowStudio } from './localStorage'
 
 /*
  * This file sets up logging of the connection status, for troubleshooting purposes.
@@ -12,7 +12,7 @@ import { logger } from './logging'
 const browserSessionId = getRandomString(8)
 
 // Only log status for studio users
-const logStatusEnable = getAllowStudio()
+const logStatusEnable = getLocalAllowStudio() // Future: this needs to be setup to be reactive if this is wanted to work correctly in environments with authentication
 
 const previouslyLogged: {
 	connected?: boolean

@@ -108,9 +108,9 @@ export function defaultStudio(_id: StudioId): DBStudio {
 			minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
 			allowAdlibTestingSegment: true,
 		},
-		routeSets: {},
-		routeSetExclusivityGroups: {},
-		packageContainers: {},
+		routeSetsWithOverrides: wrapDefaultObject({}),
+		routeSetExclusivityGroupsWithOverrides: wrapDefaultObject({}),
+		packageContainersWithOverrides: wrapDefaultObject({}),
 		previewContainerIds: [],
 		thumbnailContainerIds: [],
 		peripheralDeviceSettings: {

@@ -106,9 +106,13 @@ export function RundownRightHandControls(props: Readonly<IProps>): JSX.Element {
 		setSwitchboardOpen(false)
 	}
 
-	const availableRouteSets = Object.entries<StudioRouteSet>(props.studioRouteSets).filter(
-		([_id, routeSet]) => routeSet.behavior !== StudioRouteBehavior.HIDDEN
-	)
+	const availableRouteSets = Object.entries<StudioRouteSet>(props.studioRouteSets)
+		.filter(([_id, routeSet]) => routeSet.behavior !== StudioRouteBehavior.HIDDEN)
+		.sort((a, b) => {
+			if (a[1].name < b[1].name) return -1
+			if (a[1].name > b[1].name) return 1
+			return 0
+		})
 	const nonDefaultRoutes = availableRouteSets.filter(
 		([_id, routeSet]) => routeSet.defaultActive !== undefined && routeSet.active !== routeSet.defaultActive
 	).length

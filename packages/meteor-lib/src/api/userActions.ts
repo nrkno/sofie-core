@@ -301,7 +301,7 @@ export interface NewUserActionAPI {
 		eventTime: Time,
 		studioId: StudioId,
 		routeSetId: string,
-		state: boolean
+		state: boolean | 'toggle'
 	): Promise<ClientAPI.ClientResponse<void>>
 	moveRundown(
 		userEvent: string,

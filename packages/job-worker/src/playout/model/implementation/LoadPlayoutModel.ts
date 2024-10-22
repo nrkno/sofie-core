@@ -21,6 +21,7 @@ import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/Perip
 import { PlayoutModel, PlayoutModelPreInit } from '../PlayoutModel'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
+import { sortRundownsWithinPlaylist } from '@sofie-automation/corelib/dist/playout/playlist'
 
 /**
  * Load a PlayoutModelPreInit for the given RundownPlaylist
@@ -58,7 +59,7 @@ export async function loadPlayoutModelPreInit(
 		peripheralDevices: PeripheralDevices,
 
 		playlist: Playlist,
-		rundowns: Rundowns,
+		rundowns: sortRundownsWithinPlaylist(Playlist.rundownIdsInOrder, Rundowns),
 
 		getRundown: (id: RundownId) => Rundowns.find((rd) => rd._id === id),
 	}

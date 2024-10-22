@@ -152,7 +152,11 @@ export class RundownTimingCalculator {
 				const partsSegment = segmentsMap.get(partInstance.segmentId)
 				const segmentBudget = partsSegment?.segmentTiming?.budgetDuration
 				const segmentUsesBudget = segmentBudget !== undefined
-				const lastStartedPlayback = partInstance.timings?.plannedStartedPlayback
+				// note: lastStartedPlayback that lies in the future means it hasn't started yet (like from autonext)
+				const lastStartedPlayback =
+					(partInstance.timings?.plannedStartedPlayback ?? 0) <= now
+						? partInstance.timings?.plannedStartedPlayback
+						: undefined
 
 				if (!lastSegmentIds || partInstance.segmentId !== lastSegmentIds[0]) {
 					this.untimedSegments.add(partInstance.segmentId)

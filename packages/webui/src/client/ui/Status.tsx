@@ -1,7 +1,7 @@
 import { useSubscription } from '../lib/ReactMeteorData/react-meteor-data'
 import { useTranslation } from 'react-i18next'
 import { Route, Switch, Redirect, NavLink } from 'react-router-dom'
-import SystemStatus from './Status/SystemStatus'
+import { SystemStatus } from './Status/SystemStatus/SystemStatus'
 import { MediaManagerStatus } from './Status/MediaManager'
 import { ExternalMessages } from './Status/ExternalMessages'
 import { UserActivity } from './Status/UserActivity'

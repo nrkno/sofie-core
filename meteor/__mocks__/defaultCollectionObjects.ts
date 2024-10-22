@@ -112,9 +112,9 @@ export function defaultStudio(_id: StudioId): DBStudio {
 			fallbackPartDuration: DEFAULT_FALLBACK_PART_DURATION,
 		},
 		_rundownVersionHash: '',
-		routeSets: {},
-		routeSetExclusivityGroups: {},
-		packageContainers: {},
+		routeSetsWithOverrides: wrapDefaultObject({}),
+		routeSetExclusivityGroupsWithOverrides: wrapDefaultObject({}),
+		packageContainersWithOverrides: wrapDefaultObject({}),
 		previewContainerIds: [],
 		thumbnailContainerIds: [],
 		peripheralDeviceSettings: {

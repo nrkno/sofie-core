@@ -628,4 +628,149 @@ describe('resolveAbAssignmentsFromRequests', () => {
 		expectGotPlayer(res, 'e', 3)
 		expectGotPlayer(res, 'f', undefined)
 	})
+
+	describe('add/remove players', () => {
+		test('reshuffle lookahead when removing player', () => {
+			const requests: SessionRequest[] = [
+				// current clip
+				{
+					id: 'a',
+					start: 1000,
+					end: undefined,
+					playerId: 2,
+				},
+				// previous clip
+				{
+					id: 'b',
+					start: 0,
+					playerId: 1,
+					end: 5000,
+				},
+				// lookaheads
+				{
+					id: 'd',
+					start: Number.POSITIVE_INFINITY,
+					end: undefined,
+					lookaheadRank: 1,
+					playerId: 1,
+				},
+				{
+					id: 'e',
+					start: Number.POSITIVE_INFINITY,
+					playerId: 3, // From before
+					end: undefined,
+					lookaheadRank: 2,
+				},
+				{
+					id: 'f',
+					start: Number.POSITIVE_INFINITY,
+					end: undefined,
+					lookaheadRank: 3,
+					playerId: 2,
+				},
+			]
+
+			const res = resolveAbAssignmentsFromRequests(resolverOptions, TWO_SLOTS, requests, 10000)
+			expect(res).toBeTruthy()
+			expect(res.failedOptional).toEqual([])
+			expect(res.failedRequired).toEqual([])
+			expectGotPlayer(res, 'a', 2)
+			expectGotPlayer(res, 'b', 1)
+			expectGotPlayer(res, 'd', 1)
+			expectGotPlayer(res, 'e', undefined)
+			expectGotPlayer(res, 'f', undefined)
+		})
+
+		test('reshuffle current when removing player', () => {
+			const requests: SessionRequest[] = [
+				// current clip
+				{
+					id: 'a',
+					start: 1000,
+					end: undefined,
+					playerId: 3,
+				},
+				// previous clip
+				{
+					id: 'b',
+					start: 0,
+					playerId: 1,
+					end: 5000,
+				},
+				// lookaheads
+				{
+					id: 'd',
+					start: Number.POSITIVE_INFINITY,
+					end: undefined,
+					lookaheadRank: 1,
+					playerId: 1,
+				},
+				{
+					id: 'e',
+					start: Number.POSITIVE_INFINITY,
+					playerId: 2,
+					end: undefined,
+					lookaheadRank: 2,
+				},
+			]
+
+			const res = resolveAbAssignmentsFromRequests(resolverOptions, TWO_SLOTS, requests, 10000)
+			expect(res).toBeTruthy()
+			expect(res.failedOptional).toEqual([])
+			expect(res.failedRequired).toEqual([])
+			expectGotPlayer(res, 'a', 2)
+			expectGotPlayer(res, 'b', 1)
+			expectGotPlayer(res, 'd', 1)
+			expectGotPlayer(res, 'e', undefined)
+		})
+
+		test('add player allows distributing timed clips', () => {
+			const requests: SessionRequest[] = [
+				// current clip
+				{
+					id: 'a',
+					start: 1000,
+					end: 11000,
+					playerId: 1,
+				},
+				{
+					id: 'b',
+					start: 13000, // soon
+					end: undefined,
+					playerId: 1,
+				},
+				{
+					id: 'c',
+					start: 1000,
+					end: undefined,
+					playerId: 2,
+				},
+				// lookaheads
+				{
+					id: 'd',
+					start: Number.POSITIVE_INFINITY,
+					end: undefined,
+					lookaheadRank: 1,
+					playerId: 1,
+				},
+				{
+					id: 'e',
+					start: Number.POSITIVE_INFINITY,
+					playerId: 2,
+					end: undefined,
+					lookaheadRank: 2,
+				},
+			]
+
+			const res = resolveAbAssignmentsFromRequests(resolverOptions, THREE_SLOTS, requests, 10000)
+			expect(res).toBeTruthy()
+			expect(res.failedOptional).toEqual([])
+			expect(res.failedRequired).toEqual([])
+			expectGotPlayer(res, 'a', 1)
+			expectGotPlayer(res, 'b', 3)
+			expectGotPlayer(res, 'c', 2)
+			expectGotPlayer(res, 'd', 1)
+			expectGotPlayer(res, 'e', undefined)
+		})
+	})
 })

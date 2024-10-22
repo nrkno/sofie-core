@@ -56,7 +56,7 @@ export class StudioDeviceTriggerManager {
 			return
 		}
 
-		const context = createCurrentContextFromCache(cache)
+		const context = createCurrentContextFromCache(cache, studioId)
 		const actionManager = StudioActionManagers.get(studioId)
 		if (!actionManager)
 			throw new Meteor.Error(
@@ -271,7 +271,7 @@ function convertDocument(doc: ReadonlyObjectDeep<DBTriggeredActions>): UITrigger
 	})
 }
 
-function createCurrentContextFromCache(cache: ContentCache): ReactivePlaylistActionContext {
+function createCurrentContextFromCache(cache: ContentCache, studioId: StudioId): ReactivePlaylistActionContext {
 	const rundownPlaylist = cache.RundownPlaylists.findOne({
 		activationId: {
 			$exists: true,
@@ -301,6 +301,7 @@ function createCurrentContextFromCache(cache: ContentCache): ReactivePlaylistAct
 		: []
 
 	return {
+		studioId: new DummyReactiveVar(studioId),
 		currentPartInstanceId: new DummyReactiveVar(currentPartInstance?._id ?? null),
 		currentPartId: new DummyReactiveVar(currentPartInstance?.part._id ?? null),
 		nextPartId: new DummyReactiveVar(nextPartInstance?.part._id ?? null),

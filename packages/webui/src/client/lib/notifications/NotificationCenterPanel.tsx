@@ -105,7 +105,8 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 												key={i}
 												className={ClassNames(
 													'btn',
-													['default', 'primary'].indexOf(action.type) ? 'btn-primary' : 'btn-default'
+													['default', 'primary'].indexOf(action.type) ? 'btn-primary' : 'btn-default',
+													'mls'
 												)}
 												onClick={(e) => this.triggerEvent(action, e)}
 											>

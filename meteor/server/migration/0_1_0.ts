@@ -445,9 +445,9 @@ export const addSteps = addMigrationSteps('0.1.0', [
 				mappingsWithOverrides: wrapDefaultObject({}),
 				blueprintConfigWithOverrides: wrapDefaultObject({}),
 				_rundownVersionHash: '',
-				routeSets: {},
-				routeSetExclusivityGroups: {},
-				packageContainers: {},
+				routeSetsWithOverrides: wrapDefaultObject({}),
+				routeSetExclusivityGroupsWithOverrides: wrapDefaultObject({}),
+				packageContainersWithOverrides: wrapDefaultObject({}),
 				thumbnailContainerIds: [],
 				previewContainerIds: [],
 				peripheralDeviceSettings: {

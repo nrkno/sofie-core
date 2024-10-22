@@ -36,6 +36,7 @@ import {
 	PeripheralDevicePubSub,
 	PeripheralDevicePubSubCollectionsNames,
 } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 meteorPublish(CorelibPubSub.timelineDatastore, async function (studioId: StudioId, token: string | undefined) {
 	if (!studioId) throw new Meteor.Error(400, 'selector argument missing')
@@ -209,7 +210,7 @@ async function manipulateTimelinePublicationData(
 
 	if (!state.routes) {
 		// Routes need recalculating
-		state.routes = getActiveRoutes(state.studio.routeSets)
+		state.routes = getActiveRoutes(applyAndValidateOverrides(state.studio.routeSetsWithOverrides).obj)
 		invalidateTimeline = true
 	}
 

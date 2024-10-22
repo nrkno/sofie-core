@@ -202,7 +202,7 @@ async function manipulateMappingsPublicationData(
 	const studio = await Studios.findOneAsync(args.studioId)
 	if (!studio) return []
 
-	const routes = getActiveRoutes(studio.routeSets)
+	const routes = getActiveRoutes(applyAndValidateOverrides(studio.routeSetsWithOverrides).obj)
 	const rawMappings = applyAndValidateOverrides(studio.mappingsWithOverrides)
 	const routedMappings = getRoutedMappings(rawMappings.obj, routes)
 

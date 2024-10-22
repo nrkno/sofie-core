@@ -29,6 +29,11 @@ export interface SchemaFormCommonProps {
 	 * For example, a table inside a table will not display properly so this gets set automatically
 	 */
 	allowTables?: boolean
+
+	/**
+	 * Whether a clear button should be shown for any fields not marked as "required"
+	 */
+	showClearButtonForNonRequiredFields?: boolean
 }
 
 export function translateStringIfHasNamespaces(str: string, translationNamespaces: string[] | undefined): string {
