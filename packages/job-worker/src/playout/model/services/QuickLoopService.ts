@@ -8,7 +8,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { PlayoutPartInstanceModel } from '../PlayoutPartInstanceModel'
 import { JobContext } from '../../../jobs'
@@ -147,6 +147,58 @@ export class QuickLoopService {
 		quickLoopProps.running = false
 
 		return quickLoopProps
+	}
+
+	getSegmentsBetweenMarkers(startMarker: QuickLoopMarker, endMarker: QuickLoopMarker): SegmentId[] {
+		const segments = this.playoutModel.getAllOrderedSegments()
+		const segmentIds: SegmentId[] = []
+
+		let passedStart = false
+		let seenLastRundown = false
+
+		for (const s of segments) {
+			if (
+				(!passedStart &&
+					((startMarker.type === QuickLoopMarkerType.PART && s.getPart(startMarker.id)) ||
+						(startMarker.type === QuickLoopMarkerType.SEGMENT && s.segment._id === startMarker.id) ||
+						(startMarker.type === QuickLoopMarkerType.RUNDOWN &&
+							s.segment.rundownId === startMarker.id))) ||
+				startMarker.type === QuickLoopMarkerType.PLAYLIST
+			) {
+				// the start marker is inside this segment, is this segment, or this is the first segment that is in the loop
+				// segments from here on are included in the loop
+				passedStart = true
+			}
+
+			if (endMarker.type === QuickLoopMarkerType.RUNDOWN) {
+				// last rundown needs to be inclusive so we need to break once the rundownId is not equal to segment's rundownId
+				if (s.segment.rundownId === endMarker.id) {
+					if (!passedStart) {
+						// we hit the end before the start so quit now:
+						break
+					}
+					seenLastRundown = true
+				} else if (seenLastRundown) {
+					// we have passed the last rundown
+					break
+				}
+			}
+
+			if (passedStart) {
+				// passed the start but we have not seen the end yet
+				segmentIds.push(s.segment._id)
+			}
+
+			if (
+				(endMarker.type === QuickLoopMarkerType.PART && s.getPart(endMarker.id)) ||
+				(endMarker.type === QuickLoopMarkerType.SEGMENT && s.segment._id === endMarker.id)
+			) {
+				// the endMarker is in this segment or this segment is the end marker
+				break
+			}
+		}
+
+		return segmentIds
 	}
 
 	private areMarkersFlipped(startPosition: MarkerPosition, endPosition: MarkerPosition) {
