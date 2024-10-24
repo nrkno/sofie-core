@@ -594,7 +594,11 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 
 		if (regenerateActivationId) this.playlistImpl.activationId = getRandomId()
 
-		if (this.playlistImpl.quickLoop?.running) this.playlistImpl.quickLoop.running = false
+		// reset quickloop if applicable:
+		if (this.playlist.quickLoop && !this.playlist.quickLoop.locked) {
+			this.setQuickLoopMarker('start', null)
+			this.setQuickLoopMarker('end', null)
+		}
 
 		this.#playlistHasChanged = true
 	}
@@ -791,6 +795,10 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 	updateQuickLoopState(): void {
 		this.playlistImpl.quickLoop = this.quickLoopService.getUpdatedProps()
 		this.#playlistHasChanged = true
+	}
+
+	getSegmentsBetweenQuickLoopMarker(start: QuickLoopMarker, end: QuickLoopMarker): SegmentId[] {
+		return this.quickLoopService.getSegmentsBetweenMarkers(start, end)
 	}
 
 	/** Lifecycle */

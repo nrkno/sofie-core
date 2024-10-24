@@ -107,6 +107,8 @@ export class RundownTimingCalculator {
 		let remainingRundownDuration = 0
 		let asPlayedRundownDuration = 0
 		let asDisplayedRundownDuration = 0
+		// the "wait" for a part is defined as its asPlayedDuration or its displayDuration or its expectedDuration
+		const waitPerPart: Record<string, number> = {}
 		let waitAccumulator = 0
 		let currentRemaining = 0
 		let startsAtAccumulator = 0
@@ -436,10 +438,13 @@ export class RundownTimingCalculator {
 						0
 				}
 				if (segmentUsesBudget) {
-					waitAccumulator += Math.min(waitDuration, Math.max(segmentBudgetDurationLeft, 0))
+					const wait = Math.min(waitDuration, Math.max(segmentBudgetDurationLeft, 0))
+					waitAccumulator += wait
 					segmentBudgetDurationLeft -= waitDuration
+					waitPerPart[unprotectString(partId)] = wait + Math.max(0, segmentBudgetDurationLeft)
 				} else {
 					waitAccumulator += waitDuration
+					waitPerPart[unprotectString(partId)] = waitDuration
 				}
 
 				// remaining is the sum of unplayed lines + whatever is left of the current segment
@@ -480,7 +485,9 @@ export class RundownTimingCalculator {
 			})
 
 			// This is where the waitAccumulator-generated data in the linearSegLines is used to calculate the countdowns.
+			// at this point the "waitAccumulator" should be the total sum of all the "waits" in the rundown
 			let localAccum = 0
+			let timeTillEndLoop: undefined | number = undefined
 			for (let i = 0; i < this.linearParts.length; i++) {
 				if (i < nextAIndex) {
 					// this is a line before next line
@@ -517,6 +524,11 @@ export class RundownTimingCalculator {
 					// and add the currentRemaining countdown, since we are currentRemaining + diff between next and
 					// this away from this line.
 					this.linearParts[i][1] = (this.linearParts[i][1] || 0) - localAccum + currentRemaining
+
+					if (!partsInQuickLoop[unprotectString(this.linearParts[i][0])]) {
+						timeTillEndLoop = timeTillEndLoop ?? this.linearParts[i][1] ?? undefined
+					}
+
 					if (nextRundownAnchor === undefined) {
 						nextRundownAnchor = getSegmentRundownAnchorFromPart(
 							this.linearParts[i][0],
@@ -527,13 +539,22 @@ export class RundownTimingCalculator {
 					}
 				}
 			}
-			// contiunation of linearParts calculations for looping playlists
+			// at this point the localAccumulator should be the sum of waits before the next line
+			// continuation of linearParts calculations for looping playlists
 			if (isLoopRunning(playlist)) {
+				// we track the sum of all the "waits" that happen in the loop
+				let waitInLoop = 0
+				// if timeTillEndLoop was undefined then we can assume the end of the loop is the last line in the rundown
+				timeTillEndLoop = timeTillEndLoop ?? waitAccumulator - localAccum + currentRemaining
 				for (let i = 0; i < nextAIndex; i++) {
 					if (!partsInQuickLoop[unprotectString(this.linearParts[i][0])]) continue
-					// offset the parts before the on air line by the countdown for the end of the rundown
-					this.linearParts[i][1] =
-						(this.linearParts[i][1] || 0) + waitAccumulator - localAccum + currentRemaining
+
+					// this countdown is the wait until the loop ends + whatever waits occur before this part but inside the loop
+					this.linearParts[i][1] = timeTillEndLoop + waitInLoop
+
+					// add the wait from this part to the waitInLoop (the lookup here should still work by the definition of a "wait")
+					waitInLoop += waitPerPart[unprotectString(this.linearParts[i][0])] ?? 0
+
 					if (nextRundownAnchor === undefined) {
 						nextRundownAnchor = getSegmentRundownAnchorFromPart(
 							this.linearParts[i][0],

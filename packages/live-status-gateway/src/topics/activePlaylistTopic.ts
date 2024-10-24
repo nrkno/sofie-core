@@ -17,6 +17,7 @@ import { SelectedPieceInstances, PieceInstancesHandler, PieceInstanceMin } from 
 import { PieceStatus, toPieceStatus } from './helpers/pieceStatus'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { SegmentHandler } from '../collections/segmentHandler'
+import { PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 
 const THROTTLE_PERIOD_MS = 100
 
@@ -47,6 +48,13 @@ export interface ActivePlaylistStatus {
 	currentSegment: CurrentSegmentStatus | null
 	nextPart: PartStatus | null
 	publicData: unknown
+	timing: {
+		timingMode: PlaylistTimingType
+		startedPlayback?: number
+		expectedStart?: number
+		expectedDurationMs?: number
+		expectedEnd?: number
+	}
 }
 
 export class ActivePlaylistTopic
@@ -146,6 +154,19 @@ export class ActivePlaylistTopic
 						  })
 						: null,
 					publicData: this._activePlaylist.publicData,
+					timing: {
+						timingMode: this._activePlaylist.timing.type,
+						startedPlayback: this._activePlaylist.startedPlayback,
+						expectedDurationMs: this._activePlaylist.timing.expectedDuration,
+						expectedStart:
+							this._activePlaylist.timing.type !== PlaylistTimingType.None
+								? this._activePlaylist.timing.expectedStart
+								: undefined,
+						expectedEnd:
+							this._activePlaylist.timing.type !== PlaylistTimingType.None
+								? this._activePlaylist.timing.expectedEnd
+								: undefined,
+					},
 			  })
 			: literal<ActivePlaylistStatus>({
 					event: 'activePlaylist',
@@ -156,6 +177,9 @@ export class ActivePlaylistTopic
 					currentSegment: null,
 					nextPart: null,
 					publicData: undefined,
+					timing: {
+						timingMode: PlaylistTimingType.None,
+					},
 			  })
 
 		this.sendMessage(subscribers, message)

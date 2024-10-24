@@ -344,6 +344,14 @@ export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBa
 	 */
 	setQuickLoopMarker(type: 'start' | 'end', marker: QuickLoopMarker | null): void
 
+	/**
+	 * Returns any segmentId's that are found between 2 quickloop markers, none will be returned if
+	 * the end is before the start.
+	 * @param start A quickloop marker
+	 * @param end A quickloop marker
+	 */
+	getSegmentsBetweenQuickLoopMarker(start: QuickLoopMarker, end: QuickLoopMarker): SegmentId[]
+
 	calculatePartTimings(
 		fromPartInstance: PlayoutPartInstanceModel | null,
 		toPartInstance: PlayoutPartInstanceModel,
