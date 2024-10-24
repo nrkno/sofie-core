@@ -146,7 +146,7 @@ export const SelectedElementProvider: React.FC<{
 }
 
 // Custom hook for using the selection context
-export const useSelection = () => {
+export const useSelection = (): SelectionContextType => {
 	const context = React.useContext(SelectedElementsContext)
 	if (!context) {
 		throw new Error('useSelection must be used within a SelectedElementProvider')
@@ -155,7 +155,7 @@ export const useSelection = () => {
 }
 
 // Helper hook for common selection patterns
-export const useElementSelection = (element: SelectedElement) => {
+export const useElementSelection = (element: SelectedElement): { isSelected: boolean; toggleSelection: () => void } => {
 	const { isSelected, toggleSelection } = useSelection()
 
 	return {
