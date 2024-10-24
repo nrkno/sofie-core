@@ -1,7 +1,6 @@
 import React from 'react'
 import {
 	AdLibActionId,
-	PartId,
 	PartInstanceId,
 	PieceId,
 	RundownId,
@@ -44,6 +43,7 @@ type SelectedElement = RundownElement | SegmentElement | PartInstanceElement | P
 interface SelectionContextType {
 	selectedElements: Map<string, SelectedElement>
 	isSelected: (elementId: string) => boolean
+	clearAndSetSelection: (element: SelectedElement) => void
 	toggleSelection: (element: SelectedElement) => void
 	addSelection: (element: SelectedElement) => void
 	removeSelection: (elementId: string) => void
@@ -52,6 +52,7 @@ interface SelectionContextType {
 }
 
 type SelectionAction =
+	| { type: 'CLEAR_AND_SET_SELECTION'; payload: SelectedElement }
 	| { type: 'TOGGLE_SELECTION'; payload: SelectedElement }
 	| { type: 'ADD_SELECTION'; payload: SelectedElement }
 	| { type: 'REMOVE_SELECTION'; payload: string }
@@ -64,6 +65,10 @@ const selectionReducer = (
 	maxSelections: number
 ): Map<string, SelectedElement> => {
 	switch (action.type) {
+		case 'CLEAR_AND_SET_SELECTION': {
+			const newMap = new Map([[action.payload.id, action.payload]])
+			return newMap
+		}
 		case 'TOGGLE_SELECTION': {
 			const next = new Map(state)
 			if (next.has(action.payload.id)) {
@@ -109,6 +114,10 @@ export const SelectedElementProvider: React.FC<{
 
 			isSelected: (elementId: string) => {
 				return selectedElements.has(elementId)
+			},
+
+			clearAndSetSelection: (element: SelectedElement) => {
+				dispatch({ type: 'CLEAR_AND_SET_SELECTION', payload: element })
 			},
 
 			toggleSelection: (element: SelectedElement) => {

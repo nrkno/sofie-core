@@ -101,6 +101,8 @@ interface IProps {
 	showCountdownToSegment: boolean
 	showDurationSourceLayers?: Set<ISourceLayer['_id']>
 	fixedSegmentDuration: boolean | undefined
+	onSegmentSelect: (segmentId: SegmentId) => void
+	isSelected: boolean
 }
 interface IStateHeader {
 	timelineWidth: number
@@ -115,6 +117,7 @@ interface IStateHeader {
 		}
 	>
 	useTimeOfDayCountdowns: boolean
+	isSelected: boolean
 }
 
 interface IZoomPropsHeader {
@@ -273,6 +276,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 				`segment.${props.segment._id}.useTimeOfDayCountdowns`,
 				!!props.playlist.timeOfDayCountdowns
 			),
+			isSelected: props.isSelected,
 		}
 	}
 
@@ -298,6 +302,14 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 		RundownViewEventBus.off(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 		RundownViewEventBus.off(RundownViewEvents.SEGMENT_ZOOM_ON, this.onRundownEventSegmentZoomOn)
 		RundownViewEventBus.off(RundownViewEvents.SEGMENT_ZOOM_OFF, this.onRundownEventSegmentZoomOff)
+	}
+
+	componentDidUpdate(prevProps: Translated<WithTiming<IProps>>): void {
+		if (this.props.isSelected !== prevProps.isSelected) {
+			this.setState({
+				isSelected: this.props.isSelected,
+			})
+		}
 	}
 
 	private highlightTimeout: NodeJS.Timer | undefined
@@ -1051,9 +1063,23 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 				>
 					<h2
 						id={`segment-name-${this.props.segment._id}`}
-						className={'segment-timeline__title__label' + (this.props.segment.identifier ? ' identifier' : '')}
+						className={
+							'segment-timeline__title__label' +
+							(this.props.segment.identifier ? ' identifier' : '') +
+							(this.state.isSelected ? ' selected' : '')
+						}
 						data-identifier={this.props.segment.identifier}
+						onClick={(e: React.MouseEvent) => {
+							// If Alt/Option key is pressed
+							if (e.altKey) {
+								if (this.props.onSegmentSelect) {
+									this.props.onSegmentSelect(this.props.segment._id)
+								}
+							}
+						}}
 					>
+						{/* for debugging: */ this.state.isSelected && <span>**</span>}
+						{/* for debugging: */ this.props.isSelected && <span>!!</span>}
 						{this.props.segment.name}
 					</h2>
 					{(criticalNotes > 0 || warningNotes > 0) && (

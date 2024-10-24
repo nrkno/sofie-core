@@ -39,6 +39,7 @@ import {
 	TIMELINE_RIGHT_PADDING,
 } from './Constants'
 import { UIPartInstances, UIParts } from '../Collections'
+import { useSelection } from '../RundownView/SelectedElementsContext'
 
 // Kept for backwards compatibility
 export type {
@@ -71,6 +72,8 @@ interface IState {
 
 interface IProps extends IResolvedSegmentProps {
 	id: string
+	onSegmentSelect: (segmentId: SegmentId) => void
+	isSelected: (segmentId: SegmentId) => boolean
 }
 
 export function SegmentTimelineContainer(props: Readonly<IProps>): JSX.Element {
@@ -136,7 +139,28 @@ export function SegmentTimelineContainer(props: Readonly<IProps>): JSX.Element {
 	// past infinites subscription
 	useSubscription(CorelibPubSub.piecesInfiniteStartingBefore, props.rundownId, sortedSegmentIds, sortedRundownIds)
 
-	return <SegmentTimelineContainerContent {...props} />
+	return <SegmentTimelineContainerWithSelection {...props} />
+}
+
+function SegmentTimelineContainerWithSelection(props: Readonly<IProps>): JSX.Element {
+	const { clearAndSetSelection, isSelected } = useSelection()
+
+	const handleSegmentSelect = (segmentId: SegmentId) => {
+		console.log('handleSegmentSelect', segmentId)
+		clearAndSetSelection({
+			type: 'segment',
+			id: String(segmentId),
+			elementId: segmentId,
+		})
+	}
+
+	const handleIsSelected = (segmentId: SegmentId) => {
+		return isSelected(String(segmentId))
+	}
+
+	return (
+		<SegmentTimelineContainerContent {...props} isSelected={handleIsSelected} onSegmentSelect={handleSegmentSelect} />
+	)
 }
 
 const SegmentTimelineContainerContent = withResolvedSegment(
@@ -659,6 +683,14 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 			this.onTimeScaleChange(newScale)
 		}
 
+		handleSegmentSelect = (segmentId: SegmentId) => {
+			this.props.onSegmentSelect(segmentId)
+		}
+
+		isSelected = (segmentId: SegmentId) => {
+			return this.props.isSelected(segmentId)
+		}
+
 		render(): JSX.Element | null {
 			return this.props.segmentui ? (
 				<React.Fragment key={unprotectString(this.props.segmentui._id)}>
@@ -706,6 +738,8 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 							showCountdownToSegment={this.props.showCountdownToSegment}
 							fixedSegmentDuration={this.props.fixedSegmentDuration}
 							showDurationSourceLayers={this.props.showDurationSourceLayers}
+							onSegmentSelect={this.handleSegmentSelect}
+							isSelected={this.isSelected(this.props.segmentui._id)}
 						/>
 					)}
 					{this.props.segmentui.showShelf && this.props.adLibSegmentUi && (
