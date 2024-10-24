@@ -41,37 +41,119 @@ import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/cor
 const mockMediaObjectsCollection = MongoMock.getInnerMockCollection<MediaObject>(MediaObjects)
 
 describe('lib/mediaObjects', () => {
-	test('buildFormatString', () => {
-		const format1 = buildFormatString(
-			PackageInfo.FieldOrder.TFF,
-			literal<PieceContentStreamInfo>({
-				width: 1920,
-				height: 1080,
-				codec_time_base: '1/25',
-			})
-		)
-		expect(format1).toEqual('1920x1080i2500tff')
+	describe('buildFormatString', () => {
+		it('deepscan tff, stream unknown', () => {
+			const format1 = buildFormatString(
+				PackageInfo.FieldOrder.TFF,
+				literal<PieceContentStreamInfo>({
+					width: 1920,
+					height: 1080,
+					codec_time_base: '1/25',
+				})
+			)
+			expect(format1).toEqual('1920x1080i2500tff')
+		})
 
-		const format2 = buildFormatString(
-			PackageInfo.FieldOrder.Progressive,
+		it('deepscan progressive, stream unknown', () => {
+			const format2 = buildFormatString(
+				PackageInfo.FieldOrder.Progressive,
+				literal<PieceContentStreamInfo>({
+					width: 1280,
+					height: 720,
+					codec_time_base: '1001/60000',
+				})
+			)
+			expect(format2).toEqual('1280x720p5994')
+		})
 
-			literal<PieceContentStreamInfo>({
-				width: 1280,
-				height: 720,
-				codec_time_base: '1001/60000',
-			})
-		)
-		expect(format2).toEqual('1280x720p5994')
+		it('deepscan bff, stream unknown', () => {
+			const format3 = buildFormatString(
+				PackageInfo.FieldOrder.BFF,
+				literal<PieceContentStreamInfo>({
+					width: 720,
+					height: 576,
+					codec_time_base: '1/25',
+				})
+			)
+			expect(format3).toEqual('720x576i2500bff')
+		})
 
-		const format3 = buildFormatString(
-			PackageInfo.FieldOrder.BFF,
-			literal<PieceContentStreamInfo>({
-				width: 720,
-				height: 576,
-				codec_time_base: '1/25',
-			})
-		)
-		expect(format3).toEqual('720x576i2500bff')
+		it('deepscan tff, stream bff', () => {
+			const format3 = buildFormatString(
+				PackageInfo.FieldOrder.TFF,
+				literal<PieceContentStreamInfo>({
+					width: 720,
+					height: 576,
+					codec_time_base: '1/25',
+					field_order: PackageInfo.FieldOrder.BFF,
+				})
+			)
+			expect(format3).toEqual('720x576i2500bff')
+		})
+
+		it('deepscan bff, stream tff', () => {
+			const format3 = buildFormatString(
+				PackageInfo.FieldOrder.BFF,
+				literal<PieceContentStreamInfo>({
+					width: 720,
+					height: 576,
+					codec_time_base: '1/25',
+					field_order: PackageInfo.FieldOrder.TFF,
+				})
+			)
+			expect(format3).toEqual('720x576i2500tff')
+		})
+
+		it('deepscan progressive, stream tff', () => {
+			const format3 = buildFormatString(
+				PackageInfo.FieldOrder.Progressive,
+				literal<PieceContentStreamInfo>({
+					width: 720,
+					height: 576,
+					codec_time_base: '1/25',
+					field_order: PackageInfo.FieldOrder.TFF,
+				})
+			)
+			expect(format3).toEqual('720x576i2500tff')
+		})
+
+		it('deepscan bff, stream progressive', () => {
+			const format3 = buildFormatString(
+				PackageInfo.FieldOrder.BFF,
+				literal<PieceContentStreamInfo>({
+					width: 720,
+					height: 576,
+					codec_time_base: '1/25',
+					field_order: PackageInfo.FieldOrder.Progressive,
+				})
+			)
+			expect(format3).toEqual('720x576i2500bff')
+		})
+
+		it('deepscan unknown, stream progressive', () => {
+			const format3 = buildFormatString(
+				undefined,
+				literal<PieceContentStreamInfo>({
+					width: 720,
+					height: 576,
+					codec_time_base: '1/25',
+					field_order: PackageInfo.FieldOrder.Progressive,
+				})
+			)
+			expect(format3).toEqual('720x576p2500')
+		})
+
+		it('r_frame_rate', () => {
+			const format3 = buildFormatString(
+				PackageInfo.FieldOrder.Progressive,
+				literal<PieceContentStreamInfo>({
+					width: 720,
+					height: 576,
+					r_frame_rate: '25/1',
+				})
+			)
+			expect(format3).toEqual('720x576p2500')
+		})
 	})
 
 	test('acceptFormat', () => {
