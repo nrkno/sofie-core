@@ -50,6 +50,7 @@ describe('ActivePlaylistTopic', () => {
 			timing: {
 				timingMode: PlaylistTimingType.None,
 			},
+			quickLoop: undefined,
 		}
 
 		// eslint-disable-next-line @typescript-eslint/unbound-method
@@ -132,6 +133,7 @@ describe('ActivePlaylistTopic', () => {
 			timing: {
 				timingMode: PlaylistTimingType.None,
 			},
+			quickLoop: undefined,
 		}
 
 		// eslint-disable-next-line @typescript-eslint/unbound-method
