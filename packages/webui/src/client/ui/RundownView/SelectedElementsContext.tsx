@@ -8,20 +8,38 @@ import {
 	SegmentId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
-enum SelectedElementType {
-	RUNDOWN = 'rundown',
-	SEGMENT = 'segment',
-	PART = 'part',
-	PIECE = 'piece',
-	SHELF = 'shelf',
+interface RundownElement {
+	type: 'rundown'
+	id: string
+	elementId: RundownId
 }
 
-interface SelectedElement {
-	id: string // Add unique identifier
-	type: SelectedElementType
-	// Id of the element - further investigation may be needed to point to correct element:
-	element: RundownId | SegmentId | PartId | PartInstanceId | PieceId | AdLibActionId
+interface SegmentElement {
+	type: 'segment'
+	id: string
+	elementId: SegmentId
 }
+
+interface PartInstanceElement {
+	type: 'partInstance'
+	id: string
+	elementId: PartInstanceId
+}
+
+interface PieceElement {
+	type: 'piece'
+	id: string
+	elementId: PieceId
+}
+
+interface AdlibActionElement {
+	type: 'adlibAction'
+	id: string
+	elementId: AdLibActionId
+}
+
+// Union type for all possible elements
+type SelectedElement = RundownElement | SegmentElement | PartInstanceElement | PieceElement | AdlibActionElement
 
 interface SelectionContextType {
 	selectedElements: Map<string, SelectedElement>
