@@ -9,7 +9,7 @@ import { MarkerPosition, compareMarkerPositions } from '@sofie-automation/coreli
 import { ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { DEFAULT_FALLBACK_PART_DURATION } from '@sofie-automation/shared-lib/dist/core/constants'
 import { getCurrentTime } from '../../lib/lib'
-import { generateTranslation } from '@sofie-automation/meteor-lib/dist/lib'
+import { generateTranslation } from '@sofie-automation/corelib/dist/lib'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
