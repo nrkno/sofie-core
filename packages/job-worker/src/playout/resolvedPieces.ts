@@ -47,13 +47,14 @@ export function getResolvedPiecesForPartInstancesOnTimeline(
 
 	const currentPartStarted = partInstancesInfo.current.partStarted ?? now
 	const nextPartStarted =
+		partInstancesInfo.current.partInstance.part.autoNext &&
 		partInstancesInfo.current.partInstance.part.expectedDuration !== undefined
 			? currentPartStarted + partInstancesInfo.current.partInstance.part.expectedDuration
 			: null
 
 	// Calculate the next part if needed
 	let nextResolvedPieces: ResolvedPieceInstance[] = []
-	if (partInstancesInfo.next && partInstancesInfo.current.partInstance.part.autoNext && nextPartStarted != null) {
+	if (partInstancesInfo.next && nextPartStarted != null) {
 		const nowInPart = partInstancesInfo.next.nowInPart
 		nextResolvedPieces = partInstancesInfo.next.pieceInstances.map((instance) =>
 			resolvePrunedPieceInstance(nowInPart, instance)

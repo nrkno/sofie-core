@@ -154,6 +154,7 @@ export interface IBlueprintPart<TPrivateData = unknown, TPublicData = unknown>
 	/** When this part is just a filler to fill space in a segment. Generally, used with invalid: true */
 	gap?: boolean
 }
+
 /** The Part sent from Core */
 export interface IBlueprintPartDB<TPrivateData = unknown, TPublicData = unknown>
 	extends IBlueprintPart<TPrivateData, TPublicData> {

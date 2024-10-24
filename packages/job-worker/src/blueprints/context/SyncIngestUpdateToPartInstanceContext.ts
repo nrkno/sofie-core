@@ -165,10 +165,12 @@ export class SyncIngestUpdateToPartInstanceContext
 		if (!this.partInstance) throw new Error(`PartInstance has been removed`)
 
 		// for autoNext, the new expectedDuration cannot be shorter than the time a part has been on-air for
-		if (updatePart.expectedDuration && (updatePart.autoNext ?? this.partInstance.partInstance.part.autoNext)) {
+		const expectedDuration = updatePart.expectedDuration ?? this.partInstance.partInstance.part.expectedDuration
+		const autoNext = updatePart.autoNext ?? this.partInstance.partInstance.part.autoNext
+		if (expectedDuration && autoNext) {
 			const onAir = this.partInstance.partInstance.timings?.reportedStartedPlayback
 			const minTime = Date.now() - (onAir ?? 0) + EXPECTED_INGEST_TO_PLAYOUT_TIME
-			if (onAir && minTime > updatePart.expectedDuration) {
+			if (onAir && minTime > expectedDuration) {
 				updatePart.expectedDuration = minTime
 			}
 		}

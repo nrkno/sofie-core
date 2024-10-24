@@ -1,10 +1,10 @@
 import '../../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
-import { hashSingleUseToken } from '../../../../lib/api/userActions'
-import { getCurrentTime } from '../../../../lib/lib'
-import { MeteorCall } from '../../../../lib/api/methods'
-import { ClientAPI } from '../../../../lib/api/client'
+import { hashSingleUseToken } from '../../deviceTriggers/triggersContext'
+import { getCurrentTime } from '../../../lib/lib'
+import { MeteorCall } from '../../methods'
+import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { UserActionsLog } from '../../../collections'
 
 require('../../system') // include so that we can call generateSingleUseToken()

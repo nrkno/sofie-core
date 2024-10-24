@@ -12,7 +12,7 @@ import {
 	SourceLayerType,
 	TriggerType,
 } from '@sofie-automation/blueprints-integration'
-import { clone, generateTranslation, getRandomString, normalizeArray, omit } from '../../../../lib/lib'
+import { clone, generateTranslation, getRandomString, normalizeArray, omit } from '../../../lib/tempLib'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { BlueprintValidateConfigForStudioResult } from '@sofie-automation/corelib/dist/worker/studio'
 import { wrapTranslatableMessageFromBlueprints } from '@sofie-automation/corelib/dist/TranslatableMessage'

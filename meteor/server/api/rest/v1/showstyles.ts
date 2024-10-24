@@ -5,14 +5,14 @@ import {
 	ShowStyleBaseAction,
 	ShowStyleBaseActionType,
 	ShowStylesRestAPI,
-} from '../../../../lib/api/rest/v1'
+} from '../../../lib/rest/v1'
 import { logger } from '../../../logging'
 import { APIFactory, APIRegisterHook, ServerAPIContext } from './types'
 import { ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { check } from '../../../../lib/check'
+import { check } from '../../../lib/check'
 import { Meteor } from 'meteor/meteor'
-import { ClientAPI } from '../../../../lib/api/client'
+import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { RundownPlaylists, Rundowns, ShowStyleBases, ShowStyleVariants } from '../../../collections'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import {

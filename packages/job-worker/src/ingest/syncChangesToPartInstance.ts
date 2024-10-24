@@ -19,7 +19,6 @@ import {
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
 } from '../playout/infinites'
-import { isTooCloseToAutonext } from '../playout/lib'
 import _ = require('underscore')
 import { SyncIngestUpdateToPartInstanceContext } from '../blueprints/context'
 import {
@@ -113,7 +112,7 @@ export async function syncChangesToPartInstances(
 					ingestModel,
 					nextPartInstance,
 					currentPartInstance,
-					isTooCloseToAutonext(currentPartInstance?.partInstance, false) ? 'current' : 'next'
+					currentPartInstance?.isTooCloseToAutonext(false) ? 'current' : 'next'
 				)
 			}
 

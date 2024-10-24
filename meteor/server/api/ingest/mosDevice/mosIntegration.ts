@@ -7,7 +7,7 @@ import {
 	runIngestOperation,
 } from '../lib'
 import { parseMosString } from './lib'
-import { MethodContext } from '../../../../lib/api/methods'
+import { MethodContext } from '../../methodContext'
 import { profiler } from '../../profiler'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'

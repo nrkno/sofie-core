@@ -1,6 +1,7 @@
 {
 	"name": "@sofie-automation/openapi",
-	"version": "1.51.0",
+	"version": "1.52.0-in-development",
+	"private": true,
 	"license": "MIT",
 	"repository": {
 		"type": "git",

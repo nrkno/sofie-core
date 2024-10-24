@@ -29,12 +29,16 @@ import {
 	APISourceLayer,
 	APIStudio,
 	APIStudioSettings,
-} from '../../../../lib/api/rest/v1'
+} from '../../../lib/rest/v1'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { Blueprints, ShowStyleBases, Studios } from '../../../collections'
-import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
-import { Bucket } from '../../../../lib/collections/Buckets'
+import {
+	DEFAULT_MINIMUM_TAKE_SPAN,
+	DEFAULT_FALLBACK_PART_DURATION,
+} from '@sofie-automation/shared-lib/dist/core/constants'
+import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
+import { ForceQuickLoopAutoNext } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
 /*
 This file contains functions that convert between the internal Sofie-Core types and types exposed to the external API.
@@ -272,10 +276,10 @@ export async function studioFrom(apiStudio: APIStudio, existingId?: StudioId): P
 		supportedShowStyleBase: apiStudio.supportedShowStyleBase?.map((id) => protectString<ShowStyleBaseId>(id)) ?? [],
 		organizationId: null,
 		mappingsWithOverrides: wrapDefaultObject({}),
-		routeSets: {},
+		routeSetsWithOverrides: wrapDefaultObject({}),
 		_rundownVersionHash: '',
-		routeSetExclusivityGroups: {},
-		packageContainers: {},
+		routeSetExclusivityGroupsWithOverrides: wrapDefaultObject({}),
+		packageContainersWithOverrides: wrapDefaultObject({}),
 		previewContainerIds: [],
 		thumbnailContainerIds: [],
 		peripheralDeviceSettings: {
@@ -314,6 +318,9 @@ export function studioSettingsFrom(apiStudioSettings: APIStudioSettings): IStudi
 		allowRundownResetOnAir: apiStudioSettings.allowRundownResetOnAir,
 		preserveOrphanedSegmentPositionInRundown: apiStudioSettings.preserveOrphanedSegmentPositionInRundown,
 		minimumTakeSpan: apiStudioSettings.minimumTakeSpan ?? DEFAULT_MINIMUM_TAKE_SPAN,
+		enableQuickLoop: apiStudioSettings.enableQuickLoop,
+		forceQuickLoopAutoNext: forceQuickLoopAutoNextFrom(apiStudioSettings.forceQuickLoopAutoNext),
+		fallbackPartDuration: apiStudioSettings.fallbackPartDuration ?? DEFAULT_FALLBACK_PART_DURATION,
 	}
 }
 
@@ -330,6 +337,42 @@ export function APIStudioSettingsFrom(settings: IStudioSettings): APIStudioSetti
 		allowRundownResetOnAir: settings.allowRundownResetOnAir,
 		preserveOrphanedSegmentPositionInRundown: settings.preserveOrphanedSegmentPositionInRundown,
 		minimumTakeSpan: settings.minimumTakeSpan,
+		enableQuickLoop: settings.enableQuickLoop,
+		forceQuickLoopAutoNext: APIForceQuickLoopAutoNextFrom(settings.forceQuickLoopAutoNext),
+		fallbackPartDuration: settings.fallbackPartDuration,
+	}
+}
+
+export function forceQuickLoopAutoNextFrom(
+	forceQuickLoopAutoNext: APIStudioSettings['forceQuickLoopAutoNext']
+): ForceQuickLoopAutoNext | undefined {
+	if (!forceQuickLoopAutoNext) return undefined
+	switch (forceQuickLoopAutoNext) {
+		case 'disabled':
+			return ForceQuickLoopAutoNext.DISABLED
+		case 'enabled_forcing_min_duration':
+			return ForceQuickLoopAutoNext.ENABLED_FORCING_MIN_DURATION
+		case 'enabled_when_valid_duration':
+			return ForceQuickLoopAutoNext.ENABLED_WHEN_VALID_DURATION
+		default:
+			assertNever(forceQuickLoopAutoNext)
+			return undefined
+	}
+}
+
+export function APIForceQuickLoopAutoNextFrom(
+	forceQuickLoopAutoNext: ForceQuickLoopAutoNext | undefined
+): APIStudioSettings['forceQuickLoopAutoNext'] {
+	if (!forceQuickLoopAutoNext) return undefined
+	switch (forceQuickLoopAutoNext) {
+		case ForceQuickLoopAutoNext.DISABLED:
+			return 'disabled'
+		case ForceQuickLoopAutoNext.ENABLED_FORCING_MIN_DURATION:
+			return 'enabled_forcing_min_duration'
+		case ForceQuickLoopAutoNext.ENABLED_WHEN_VALID_DURATION:
+			return 'enabled_when_valid_duration'
+		default:
+			assertNever(forceQuickLoopAutoNext)
 	}
 }
 

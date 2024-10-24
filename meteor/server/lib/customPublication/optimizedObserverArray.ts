@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
-import { clone, ProtectedString } from '../../../lib/lib'
+import { clone, ProtectedString } from '../tempLib'
 import { TriggerUpdate, setUpOptimizedObserverInner } from './optimizedObserverBase'
 import { CustomPublish, CustomPublishChanges } from './publish'
 import { diffObject } from './lib'

@@ -9,7 +9,7 @@ export interface MigrationStepInput {
 	stepId?: string // automatically filled in later
 	label: string
 	description?: string
-	inputType: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown' | 'switch' | null // EditAttribute types, null = dont display edit field
+	inputType: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown' | 'toggle' | null // EditAttribute types, null = dont display edit field
 	attribute: string | null
 	defaultValue?: any
 	dropdownOptions?: string[]

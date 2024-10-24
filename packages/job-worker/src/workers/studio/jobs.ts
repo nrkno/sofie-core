@@ -44,8 +44,10 @@ import {
 import { handleTimelineTriggerTime, handleOnPlayoutPlaybackChanged } from '../../playout/timings'
 import { handleExecuteAdlibAction } from '../../playout/adlibAction'
 import { handleTakeNextPart } from '../../playout/take'
+import { handleSetQuickLoopMarker } from '../../playout/quickLoopMarkers'
 import { handleActivateAdlibTesting } from '../../playout/adlibTesting'
 import { handleExecuteBucketAdLibOrAction } from '../../playout/bucketAdlibJobs'
+import { handleSwitchRouteSet } from '../../studio/routeSet'
 
 type ExecutableFunction<T extends keyof StudioJobFunc> = (
 	context: JobContext,
@@ -103,4 +105,8 @@ export const studioJobHandlers: StudioJobHandlers = {
 	[StudioJobs.BlueprintIgnoreFixUpConfigForStudio]: handleBlueprintIgnoreFixUpConfigForStudio,
 
 	[StudioJobs.ActivateAdlibTesting]: handleActivateAdlibTesting,
+
+	[StudioJobs.SetQuickLoopMarker]: handleSetQuickLoopMarker,
+
+	[StudioJobs.SwitchRouteSet]: handleSwitchRouteSet,
 }

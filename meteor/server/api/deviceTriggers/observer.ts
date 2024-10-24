@@ -3,12 +3,12 @@ import { ITranslatableMessage } from '@sofie-automation/corelib/dist/Translatabl
 import { check } from 'meteor/check'
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
-import { MethodContext } from '../../../lib/api/methods'
+import { MethodContext } from '../methodContext'
 import {
 	DeviceTriggerArguments,
 	DeviceTriggerMountedAction,
 	PreviewWrappedAdLib,
-} from '../../../lib/api/triggers/MountedTriggers'
+} from '@sofie-automation/meteor-lib/dist/api/MountedTriggers'
 import { logger } from '../../logging'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 import { StudioActionManagers } from './StudioActionManagers'

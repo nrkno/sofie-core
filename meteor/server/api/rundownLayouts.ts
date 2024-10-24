@@ -1,11 +1,15 @@
 import { Meteor } from 'meteor/meteor'
-import { check, Match } from '../../lib/check'
+import { check, Match } from '../lib/check'
 import { registerClassToMeteorMethods } from '../methods'
-import { NewRundownLayoutsAPI, RundownLayoutsAPIMethods } from '../../lib/api/rundownLayouts'
-import { RundownLayoutType, RundownLayoutBase, CustomizableRegions } from '../../lib/collections/RundownLayouts'
-import { literal, getRandomId, protectString } from '../../lib/lib'
+import { NewRundownLayoutsAPI, RundownLayoutsAPIMethods } from '@sofie-automation/meteor-lib/dist/api/rundownLayouts'
+import {
+	RundownLayoutType,
+	RundownLayoutBase,
+	CustomizableRegions,
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
+import { literal, getRandomId, protectString } from '../lib/tempLib'
 import { logger } from '../logging'
-import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
+import { MethodContext, MethodContextAPI } from './methodContext'
 import { ShowStyleContentWriteAccess } from '../security/showStyle'
 import { fetchShowStyleBaseLight } from '../optimizations'
 import { BlueprintId, RundownLayoutId, ShowStyleBaseId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'

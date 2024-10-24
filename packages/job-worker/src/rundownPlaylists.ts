@@ -1,6 +1,10 @@
 import { RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundown, Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import {
+	DBRundownPlaylist,
+	ForceQuickLoopAutoNext,
+	QuickLoopMarkerType,
+} from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { clone, getHash, getRandomString, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
@@ -210,14 +214,23 @@ export function produceRundownPlaylistInfoFromRundown(
 			name: playlistInfo.playlist.name,
 			timing: playlistInfo.playlist.timing,
 
-			loop: playlistInfo.playlist.loop,
-
 			outOfOrderTiming: playlistInfo.playlist.outOfOrderTiming,
 			timeOfDayCountdowns: playlistInfo.playlist.timeOfDayCountdowns,
 			privateData: playlistInfo.playlist.privateData,
 			publicData: playlistInfo.playlist.publicData,
 
 			modified: getCurrentTime(),
+		}
+		if (playlistInfo.playlist.loop) {
+			newPlaylist.quickLoop = {
+				start: { type: QuickLoopMarkerType.PLAYLIST },
+				end: { type: QuickLoopMarkerType.PLAYLIST },
+				locked: true,
+				forceAutoNext: context.studio.settings.forceQuickLoopAutoNext ?? ForceQuickLoopAutoNext.DISABLED,
+				running: existingPlaylist?.quickLoop?.running ?? false,
+			}
+		} else if (existingPlaylist?.quickLoop?.locked) {
+			delete newPlaylist.quickLoop
 		}
 	} else {
 		newPlaylist = {
