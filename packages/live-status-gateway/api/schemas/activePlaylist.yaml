@@ -46,7 +46,7 @@ $defs:
           expectedStart:
             description: Unix timestamp of when the playlist is expected to start (milliseconds). Required when the timingMode is set to forward-time.
             type: number
-          expectedDuration:
+          expectedDurationMs:
             description: Duration of the playlist in ms
             type: number
           expectedEnd:
@@ -72,7 +72,7 @@ $defs:
         timing:
           timingMode: 'forward-time'
           expectedStart: 1728895750727
-          duration: 180000
+          expectedDurationMs: 180000
   partBase:
     type: object
     properties:
