@@ -109,6 +109,7 @@ export class LiveStatusServer {
 		await partsHandler.subscribe(activePlaylistTopic)
 		await pieceInstancesHandler.subscribe(activePlaylistTopic)
 		await segmentHandler.subscribe(activePlaylistTopic)
+		await segmentsHandler.subscribe(activePlaylistTopic)
 
 		await playlistHandler.subscribe(activePiecesTopic)
 		await showStyleBaseHandler.subscribe(activePiecesTopic)

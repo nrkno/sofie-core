@@ -348,6 +348,11 @@ export interface NewUserActionAPI {
 		rundownPlaylistId: RundownPlaylistId,
 		marker: QuickLoopMarker | null
 	): Promise<ClientAPI.ClientResponse<void>>
+	clearQuickLoop(
+		userEvent: string,
+		eventTime: Time,
+		rundownPlaylistId: RundownPlaylistId
+	): Promise<ClientAPI.ClientResponse<void>>
 }
 
 export enum UserActionAPIMethods {
@@ -433,6 +438,7 @@ export enum UserActionAPIMethods {
 
 	'setQuickLoopStart' = 'userAction.setQuickLoopStart',
 	'setQuickLoopEnd' = 'userAction.setQuickLoopEnd',
+	'clearQuickLoop' = 'userAction.clearQuickLoop',
 }
 
 export interface ReloadRundownPlaylistResponse {
