@@ -33,13 +33,57 @@ interface SelectionContextType {
 	getSelectedCount: () => number
 }
 
+type SelectionAction =
+	| { type: 'TOGGLE_SELECTION'; payload: SelectedElement }
+	| { type: 'ADD_SELECTION'; payload: SelectedElement }
+	| { type: 'REMOVE_SELECTION'; payload: string }
+	| { type: 'CLEAR_SELECTIONS' }
+
+// Reducer function
+const selectionReducer = (
+	state: Map<string, SelectedElement>,
+	action: SelectionAction,
+	maxSelections: number
+): Map<string, SelectedElement> => {
+	switch (action.type) {
+		case 'TOGGLE_SELECTION': {
+			const next = new Map(state)
+			if (next.has(action.payload.id)) {
+				next.delete(action.payload.id)
+			} else if (next.size < maxSelections) {
+				next.set(action.payload.id, action.payload)
+			}
+			return next
+		}
+		case 'ADD_SELECTION': {
+			if (state.size >= maxSelections) return state
+			const next = new Map(state)
+			next.set(action.payload.id, action.payload)
+			return next
+		}
+		case 'REMOVE_SELECTION': {
+			const next = new Map(state)
+			next.delete(action.payload)
+			return next
+		}
+		case 'CLEAR_SELECTIONS': {
+			return new Map()
+		}
+		default:
+			return state
+	}
+}
+
 export const SelectedElementsContext = React.createContext<SelectionContextType | null>(null)
 
 export const SelectedElementProvider: React.FC<{
 	children: React.ReactNode
 	maxSelections?: number // Optional prop to limit maximum selections
 }> = ({ children, maxSelections = 10 }) => {
-	const [selectedElements, setSelectedElements] = React.useState<Map<string, SelectedElement>>(new Map())
+	const [selectedElements, dispatch] = React.useReducer(
+		(state: Map<string, SelectedElement>, action: SelectionAction) => selectionReducer(state, action, maxSelections),
+		new Map()
+	)
 
 	const value = React.useMemo(
 		() => ({
@@ -50,38 +94,20 @@ export const SelectedElementProvider: React.FC<{
 			},
 
 			toggleSelection: (element: SelectedElement) => {
-				setSelectedElements((prev) => {
-					const next = new Map(prev)
-					if (next.has(element.id)) {
-						next.delete(element.id)
-					} else if (next.size < maxSelections) {
-						next.set(element.id, element)
-					}
-					return next
-				})
+				dispatch({ type: 'TOGGLE_SELECTION', payload: element })
 			},
 
 			addSelection: (element: SelectedElement) => {
-				setSelectedElements((prev) => {
-					if (prev.size >= maxSelections) return prev
-					const next = new Map(prev)
-					next.set(element.id, element)
-					return next
-				})
+				dispatch({ type: 'ADD_SELECTION', payload: element })
 			},
 
 			removeSelection: (elementId: string) => {
-				setSelectedElements((prev) => {
-					const next = new Map(prev)
-					next.delete(elementId)
-					return next
-				})
+				dispatch({ type: 'REMOVE_SELECTION', payload: elementId })
 			},
 
 			clearSelections: () => {
-				setSelectedElements(new Map())
+				dispatch({ type: 'CLEAR_SELECTIONS' })
 			},
-
 			getSelectedCount: () => {
 				return selectedElements.size
 			},
