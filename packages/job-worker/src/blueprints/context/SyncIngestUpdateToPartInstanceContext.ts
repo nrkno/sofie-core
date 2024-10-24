@@ -22,6 +22,7 @@ import {
 	IBlueprintPieceObjectsSampleKeys,
 	convertPieceInstanceToBlueprints,
 	convertPartInstanceToBlueprints,
+	convertPartialBlueprintMutablePartToCore,
 } from './lib'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -175,7 +176,12 @@ export class SyncIngestUpdateToPartInstanceContext
 			}
 		}
 
-		if (!this.partInstance.updatePartProps(updatePart)) {
+		const playoutUpdatePart = convertPartialBlueprintMutablePartToCore(
+			updatePart,
+			this.showStyleCompound.blueprintId
+		)
+
+		if (!this.partInstance.updatePartProps(playoutUpdatePart)) {
 			throw new Error(`Cannot update PartInstance. Some valid properties must be defined`)
 		}
 

@@ -18,6 +18,7 @@ import {
 	IBlueprintPieceObjectsSampleKeys,
 	convertPartInstanceToBlueprints,
 	convertPartToBlueprints,
+	convertPartialBlueprintMutablePartToCore,
 	convertPieceInstanceToBlueprints,
 	convertPieceToBlueprints,
 	convertResolvedPieceInstanceToBlueprints,
@@ -338,7 +339,9 @@ export class PartAndPieceInstanceActionService {
 			throw new Error('PartInstance could not be found')
 		}
 
-		if (!partInstance.updatePartProps(props)) {
+		const playoutUpdatePart = convertPartialBlueprintMutablePartToCore(props, this.showStyleCompound.blueprintId)
+
+		if (!partInstance.updatePartProps(playoutUpdatePart)) {
 			throw new Error('Some valid properties must be defined')
 		}
 
@@ -384,6 +387,7 @@ export class PartAndPieceInstanceActionService {
 			invalidReason: undefined,
 			floated: false,
 			expectedDurationWithTransition: undefined, // Filled in later
+			userEditOperations: [], // Adlibbed parts can't be edited by ingest
 		}
 
 		const pieces = postProcessPieces(

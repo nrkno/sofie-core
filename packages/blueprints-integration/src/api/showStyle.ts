@@ -19,7 +19,7 @@ import type {
 	IOnTakeContext,
 	IOnSetAsNextContext,
 } from '../context'
-import type { IngestAdlib, ExtendedIngestRundown, IngestSegment, IngestRundown } from '../ingest'
+import type { IngestAdlib, ExtendedIngestRundown, IngestRundown } from '../ingest'
 import type { IBlueprintExternalMessageQueueObj } from '../message'
 import type { MigrationStepShowStyle } from '../migrations'
 import type {
@@ -46,6 +46,7 @@ import type { BlueprintConfigCoreConfig, BlueprintManifestBase, BlueprintManifes
 import type { IBlueprintTriggeredActions } from '../triggers'
 import type { ExpectedPackage } from '../package'
 import type { ABResolverConfiguration } from '../abPlayback'
+import type { SofieIngestSegment } from '../ingest-types'
 
 export type TimelinePersistentState = unknown
 
@@ -85,7 +86,7 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 	/** Generate segment from ingest data */
 	getSegment: (
 		context: ISegmentUserContext,
-		ingestSegment: IngestSegment
+		ingestSegment: SofieIngestSegment
 	) => BlueprintResultSegment | Promise<BlueprintResultSegment>
 
 	/**
