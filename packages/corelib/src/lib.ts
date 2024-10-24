@@ -7,6 +7,7 @@ import { Timecode } from 'timecode'
 import { iterateDeeply, iterateDeeplyEnum, Time } from '@sofie-automation/blueprints-integration'
 import { IStudioSettings } from './dataModel/Studio'
 import { customAlphabet as createNanoid } from 'nanoid'
+import type { ITranslatableMessage } from './TranslatableMessage'
 
 /**
  * Limited character set to use for id generation
@@ -453,5 +454,18 @@ export function stringifyObjects(objs: unknown): string {
 		).join(',')
 	} else {
 		return objs + ''
+	}
+}
+
+/** Generate the translation for a string, to be applied later when it gets rendered */
+export function generateTranslation(
+	key: string,
+	args?: { [k: string]: any },
+	namespaces?: string[]
+): ITranslatableMessage {
+	return {
+		key,
+		args,
+		namespaces,
 	}
 }

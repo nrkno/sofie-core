@@ -135,7 +135,7 @@ export class NotifierHandle {
 	}
 }
 
-type NotificationsSource = RundownId | SegmentId | string | undefined
+export type NotificationsSource = RundownId | SegmentId | string | undefined
 /**
  * Singleton handling all the notifications.
  *

@@ -47,6 +47,9 @@ function uncaughtErrorHandler(errorObj: any, context: string) {
 		stringContent += stringifyError(errorObj)
 	}
 
+	// Ignore any react deprecation warnings, as they add a lot of noise
+	if (stringContent.includes('will be removed in the next major release')) return
+
 	const caughtErrorStack = new Error('')
 	if (caughtErrorStack.stack) {
 		stringContent += `\nCaught stack: ${caughtErrorStack.stack}`

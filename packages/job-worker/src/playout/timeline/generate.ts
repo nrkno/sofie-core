@@ -384,6 +384,16 @@ async function getTimelineRundown(
 						timelineObjs
 					)
 
+					// Store the new notes in the model
+					const notificationCategory = 'abPlayback'
+					playoutModel.clearAllNotifications(notificationCategory)
+					for (const notification of newAbSessionsResult.notifications) {
+						playoutModel.setNotification(notificationCategory, {
+							...notification,
+							relatedTo: { type: 'playlist' },
+						})
+					}
+
 					let tlGenRes: BlueprintResultTimeline | undefined
 					if (blueprint.blueprint.onTimelineGenerate) {
 						const span = context.startSpan('blueprint.onTimelineGenerate')
@@ -408,7 +418,7 @@ async function getTimelineRundown(
 
 					playoutModel.setOnTimelineGenerateResult(
 						tlGenRes?.persistentState,
-						newAbSessionsResult,
+						newAbSessionsResult.assignments,
 						blueprintContext.abSessionsHelper.knownSessions
 					)
 				} catch (err) {
