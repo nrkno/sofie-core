@@ -1,5 +1,5 @@
 import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
-import { UserContextInfo } from './CommonContext'
+import { ContextInfo } from './CommonContext'
 import { ShowStyleUserContext } from './ShowStyleUserContext'
 import {
 	IBlueprintMutatablePart,
@@ -28,7 +28,7 @@ export class OnSetAsNextContext
 	implements IOnSetAsNextContext, IEventContext, IPartAndPieceInstanceActionContext
 {
 	constructor(
-		contextInfo: UserContextInfo,
+		contextInfo: ContextInfo,
 		context: JobContext,
 		private playoutModel: PlayoutModel,
 		showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,

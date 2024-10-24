@@ -11,6 +11,7 @@ import {
 	ExpectedPackageWorkStatuses,
 	ExternalMessageQueue,
 	MediaObjects,
+	Notifications,
 	PackageContainerPackageStatuses,
 	PackageInfos,
 	PeripheralDevices,
@@ -102,6 +103,7 @@ async function removeStudio(context: MethodContext, studioId: StudioId): Promise
 		ExpectedPackageWorkStatuses.removeAsync({ studioId: studio._id }),
 		PackageInfos.removeAsync({ studioId: studio._id }),
 		PackageContainerPackageStatuses.removeAsync({ studioId: studio._id }),
+		Notifications.removeAsync({ 'relatedTo.studioId': studio._id }),
 	])
 }
 

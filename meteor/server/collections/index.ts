@@ -46,6 +46,7 @@ import {
 	allowAccessToStudio,
 } from '../security/lib/security'
 import { SystemWriteAccess } from '../security/system'
+import type { DBNotificationObj } from '@sofie-automation/corelib/dist/dataModel/Notifications'
 
 export * from './bucket'
 export * from './packages-media'
@@ -100,6 +101,26 @@ registerIndex(ExternalMessageQueue, {
 registerIndex(ExternalMessageQueue, {
 	studioId: 1,
 	rundownId: 1,
+})
+
+export const Notifications = createAsyncOnlyMongoCollection<DBNotificationObj>(CollectionName.Notifications, false)
+// For NotificationsModelHelper.getAllNotifications
+registerIndex(Notifications, {
+	// @ts-expect-error nested property
+	'relatedTo.studioId': 1,
+	catgory: 1,
+})
+// For MeteorPubSub.notificationsForRundownPlaylist
+registerIndex(Notifications, {
+	// @ts-expect-error nested property
+	'relatedTo.studioId': 1,
+	'relatedTo.playlistId': 1,
+})
+// For MeteorPubSub.notificationsForRundown
+registerIndex(Notifications, {
+	// @ts-expect-error nested property
+	'relatedTo.studioId': 1,
+	'relatedTo.rundownId': 1,
 })
 
 export const Organizations = createAsyncOnlyMongoCollection<DBOrganization>(CollectionName.Organizations, {

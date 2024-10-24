@@ -43,6 +43,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
 import { MediaObjects } from '@sofie-automation/corelib/dist/dataModel/MediaObjects'
 import EventEmitter = require('eventemitter3')
+import type { DBNotificationObj } from '@sofie-automation/corelib/dist/dataModel/Notifications'
 
 export type MongoQuery<TDoc> = Filter<TDoc>
 export type MongoModifier<TDoc> = UpdateFilter<TDoc>
@@ -98,6 +99,7 @@ export interface IDirectCollections {
 	ExpectedMediaItems: ICollection<ExpectedMediaItem>
 	ExpectedPlayoutItems: ICollection<ExpectedPlayoutItem>
 	IngestDataCache: ICollection<IngestDataCacheObj>
+	Notifications: ICollection<DBNotificationObj>
 	Parts: ICollection<DBPart>
 	PartInstances: ICollection<DBPartInstance>
 	PeripheralDevices: IReadOnlyCollection<PeripheralDevice>
@@ -159,6 +161,7 @@ export function getMongoCollections(
 				allowWatchers
 			),
 			IngestDataCache: wrapMongoCollection(database.collection(CollectionName.IngestDataCache), allowWatchers),
+			Notifications: wrapMongoCollection(database.collection(CollectionName.Notifications), allowWatchers),
 			Parts: wrapMongoCollection(database.collection(CollectionName.Parts), allowWatchers),
 			PartInstances: wrapMongoCollection(database.collection(CollectionName.PartInstances), allowWatchers),
 			PeripheralDevices: wrapMongoCollection(

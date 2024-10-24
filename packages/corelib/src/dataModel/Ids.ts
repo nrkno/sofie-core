@@ -38,6 +38,9 @@ export type ExternalMessageQueueObjId = ProtectedString<'ExternalMessageQueueObj
 /** A string, identifying a IngestDataCacheObj */
 export type IngestDataCacheObjId = ProtectedString<'IngestDataCacheObjId'>
 
+/** A string, identifying a DBNotificationObj */
+export type NotificationId = ProtectedString<'NotificationId'>
+
 /** A string, identifying a Organization */
 export type OrganizationId = ProtectedString<'OrganizationId'>
 

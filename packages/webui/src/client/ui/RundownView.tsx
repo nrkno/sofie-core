@@ -27,7 +27,7 @@ import {
 	QuickLoopMarker,
 	RundownHoldState,
 } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { Rundown, getRundownNrcsName } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { DBRundown, Rundown, getRundownNrcsName } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { StudioRouteSet } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
@@ -1319,6 +1319,31 @@ export function RundownView(props: Readonly<IProps>): JSX.Element {
 				].filter((p): p is PartInstanceId => p !== null),
 				{}
 			)
+		}
+	}, [playlistId])
+
+	auxSubsReady.push(
+		useSubscriptionIfEnabled(
+			MeteorPubSub.notificationsForRundownPlaylist,
+			!!playlistId && !!playlistStudioId,
+			playlistStudioId || protectString(''),
+			playlistId
+		)
+	)
+
+	useTracker(() => {
+		const rundowns = Rundowns.find(
+			{ playlistId },
+			{
+				fields: {
+					_id: 1,
+					studioId: 1,
+				},
+			}
+		).fetch() as Pick<DBRundown, '_id' | 'studioId'>[]
+
+		for (const rundown of rundowns) {
+			meteorSubscribe(MeteorPubSub.notificationsForRundown, rundown.studioId, rundown._id)
 		}
 	}, [playlistId])
 
