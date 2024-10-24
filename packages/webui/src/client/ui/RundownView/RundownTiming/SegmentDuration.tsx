@@ -48,17 +48,17 @@ export const SegmentDuration = withTiming<ISegmentDurationProps, {}>()(function 
 	} else {
 		if (props.parts && props.timingDurations.partPlayed) {
 			const { partPlayed } = props.timingDurations
-			if (segmentBudgetDuration === undefined) {
-				props.parts.forEach((part) => {
+
+			for (const part of props.parts) {
+				playedOut += (!part.instance.part.untimed ? partPlayed[getPartInstanceTimingId(part.instance)] : 0) || 0
+
+				if (segmentBudgetDuration === undefined) {
 					budget +=
 						part.instance.orphaned || part.instance.part.untimed
 							? 0
 							: calculatePartInstanceExpectedDurationWithTransition(part.instance) || 0
-				})
+				}
 			}
-			props.parts.forEach((part) => {
-				playedOut += (!part.instance.part.untimed ? partPlayed[getPartInstanceTimingId(part.instance)] : 0) || 0
-			})
 		}
 
 		duration = budget - playedOut

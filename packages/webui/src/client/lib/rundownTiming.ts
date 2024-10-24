@@ -122,7 +122,7 @@ export class RundownTimingCalculator {
 
 		let rundownsBeforeNextBreak: Rundown[] | undefined
 		let breakIsLastRundown: boolean | undefined
-		let liveSegmentIds: [SegmentId, SegmentPlayoutId] | undefined
+		let liveSegmentIds: { segmentId: SegmentId; segmentPlayoutId: SegmentPlayoutId } | undefined
 
 		Object.keys(this.displayDurationGroups).forEach((key) => delete this.displayDurationGroups[key])
 		Object.keys(this.segmentAsPlayedDurations).forEach((key) => delete this.segmentAsPlayedDurations[key])
@@ -132,7 +132,7 @@ export class RundownTimingCalculator {
 		let nextAIndex = -1
 		let currentAIndex = -1
 
-		let lastSegmentIds: [SegmentId, SegmentPlayoutId] | undefined = undefined
+		let lastSegmentIds: { segmentId: SegmentId; segmentPlayoutId: SegmentPlayoutId } | undefined = undefined
 		let nextRundownAnchor: number | undefined = undefined
 
 		if (playlist) {
@@ -160,14 +160,14 @@ export class RundownTimingCalculator {
 						? partInstance.timings?.plannedStartedPlayback
 						: undefined
 
-				if (!lastSegmentIds || partInstance.segmentId !== lastSegmentIds[0]) {
+				if (!lastSegmentIds || partInstance.segmentId !== lastSegmentIds.segmentId) {
 					this.untimedSegments.add(partInstance.segmentId)
-					if (liveSegmentIds && lastSegmentIds && lastSegmentIds[0] === liveSegmentIds[0]) {
-						const liveSegment = segmentsMap.get(liveSegmentIds[0])
+					if (liveSegmentIds && lastSegmentIds && lastSegmentIds.segmentId === liveSegmentIds.segmentId) {
+						const liveSegment = segmentsMap.get(liveSegmentIds.segmentId)
 
 						if (liveSegment?.segmentTiming?.countdownType === CountdownType.SEGMENT_BUDGET_DURATION) {
 							remainingBudgetOnCurrentSegment =
-								(playlist.segmentsStartedPlayback?.[unprotectString(liveSegmentIds[1])] ??
+								(playlist.segmentsStartedPlayback?.[unprotectString(liveSegmentIds.segmentPlayoutId)] ??
 									lastStartedPlayback ??
 									now) +
 								(liveSegment.segmentTiming.budgetDuration ?? 0) -
@@ -179,7 +179,10 @@ export class RundownTimingCalculator {
 						waitAccumulator += segmentBudgetDurationLeft
 					}
 					segmentBudgetDurationLeft = segmentBudget ?? 0
-					lastSegmentIds = [partInstance.segmentId, partInstance.segmentPlayoutId]
+					lastSegmentIds = {
+						segmentId: partInstance.segmentId,
+						segmentPlayoutId: partInstance.segmentPlayoutId,
+					}
 				}
 
 				// add piece to accumulator
@@ -191,7 +194,10 @@ export class RundownTimingCalculator {
 					this.nextSegmentId = partInstance.segmentId
 				} else if (playlist.currentPartInfo?.partInstanceId === partInstance._id) {
 					currentAIndex = aIndex
-					liveSegmentIds = [partInstance.segmentId, partInstance.segmentPlayoutId]
+					liveSegmentIds = {
+						segmentId: partInstance.segmentId,
+						segmentPlayoutId: partInstance.segmentPlayoutId,
+					}
 				}
 
 				const partCounts =
@@ -584,8 +590,9 @@ export class RundownTimingCalculator {
 
 				let valToAddToRundownAsPlayedDuration = 0
 				let valToAddToRundownRemainingDuration = 0
-				if (liveSegmentIds && segment._id === liveSegmentIds[0]) {
-					const startedPlayback = playlist.segmentsStartedPlayback?.[unprotectString(liveSegmentIds[1])]
+				if (liveSegmentIds && segment._id === liveSegmentIds.segmentId) {
+					const startedPlayback =
+						playlist.segmentsStartedPlayback?.[unprotectString(liveSegmentIds.segmentPlayoutId)]
 					valToAddToRundownRemainingDuration = Math.max(
 						0,
 						segmentBudgetDuration - (startedPlayback ? now - startedPlayback : 0)
