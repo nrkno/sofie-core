@@ -365,18 +365,7 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 		}
 
 		private getSegmentBudgetDuration(): number | undefined {
-			let duration = 0
-			let anyBudgetDurations = false
-			for (const part of this.props.parts) {
-				if (part.instance.part.budgetDuration !== undefined) {
-					anyBudgetDurations = true
-					duration += part.instance.part.budgetDuration
-				}
-			}
-			if (anyBudgetDurations) {
-				return duration
-			}
-			return undefined
+			return this.props.segmentui?.segmentTiming?.budgetDuration
 		}
 
 		onWindowResize = _.throttle(() => {
@@ -702,7 +691,6 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 							isLastSegment={this.props.isLastSegment}
 							lastValidPartIndex={this.props.lastValidPartIndex}
 							onHeaderNoteClick={this.props.onHeaderNoteClick}
-							budgetDuration={this.props.budgetDuration}
 							showCountdownToSegment={this.props.showCountdownToSegment}
 							fixedSegmentDuration={this.props.fixedSegmentDuration}
 							showDurationSourceLayers={this.props.showDurationSourceLayers}

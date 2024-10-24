@@ -11,7 +11,7 @@ import { getElementDocumentOffset } from '../../utils/positions'
 import { IContextMenuContext } from '../RundownView'
 import { literal } from '../../lib/tempLib'
 import { SegmentTimelinePartElementId } from '../SegmentTimeline/Parts/SegmentTimelinePart'
-import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRemaining'
+import { CurrentPartOrSegmentRemaining } from '../RundownView/RundownTiming/CurrentPartOrSegmentRemaining'
 import { getAllowSpeaking, getAllowVibrating } from '../../lib/localStorage'
 import RundownViewEventBus, {
 	HighlightEvent,
@@ -292,7 +292,7 @@ export const StoryboardPart = withTiming<IProps, {}>((props: IProps) => {
 				{isLivePart && displayLiveLineCounter ? (
 					<div className="segment-storyboard__part-timer segment-storyboard__part-timer--live">
 						<AutoNextStatus />
-						<CurrentPartRemaining
+						<CurrentPartOrSegmentRemaining
 							currentPartInstanceId={part.instance._id}
 							speaking={getAllowSpeaking()}
 							vibrating={getAllowVibrating()}

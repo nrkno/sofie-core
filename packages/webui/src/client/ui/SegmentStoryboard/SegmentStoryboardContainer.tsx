@@ -228,7 +228,6 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 			lastValidPartIndex={props.lastValidPartIndex}
 			onHeaderNoteClick={props.onHeaderNoteClick}
 			onSwitchViewMode={props.onSwitchViewMode}
-			budgetDuration={props.budgetDuration}
 			showCountdownToSegment={props.showCountdownToSegment}
 			fixedSegmentDuration={props.fixedSegmentDuration}
 			subscriptionsReady={initialSubscriptionsReady}
