@@ -47,10 +47,57 @@ export async function setNextPart(
 ): Promise<void> {
 	const span = context.startSpan('setNextPart')
 
-	const rundownIds = playoutModel.getRundownIds()
-	const currentPartInstance = playoutModel.currentPartInstance
-	const nextPartInstance = playoutModel.nextPartInstance
+	const attemptedPartIds = new Set<PartId | null>()
+	if (rawNextPart && 'part' in rawNextPart) attemptedPartIds.add(rawNextPart.part._id)
 
+	let moveNextToPart = await setNextPartAndCheckForPendingMoveNextPart(
+		context,
+		playoutModel,
+		rawNextPart,
+		setManually,
+		nextTimeOffset
+	)
+	while (moveNextToPart) {
+		// Ensure that we aren't stuck in an infinite loop. If this while loop is being run for a part twice, then the blueprints are behaving oddly and will likely get stuck
+		// Instead of throwing and causing a larger failure, we can stop processing here, and leave something as next
+		const nextedId = moveNextToPart.selectedPart?._id ?? null
+		if (attemptedPartIds.has(nextedId)) {
+			logger.error(`Blueprint onSetAsNext callback moved the next part ${attemptedPartIds.size}, forming a loop`)
+			break
+		}
+		attemptedPartIds.add(nextedId)
+
+		moveNextToPart = await setNextPartAndCheckForPendingMoveNextPart(
+			context,
+			playoutModel,
+			moveNextToPart.selectedPart
+				? {
+						part: moveNextToPart.selectedPart,
+						consumesQueuedSegmentId: false,
+				  }
+				: null,
+			true
+		)
+	}
+
+	playoutModel.removeUntakenPartInstances()
+
+	resetPartInstancesWhenChangingSegment(context, playoutModel)
+
+	playoutModel.updateQuickLoopState()
+
+	await cleanupOrphanedItems(context, playoutModel)
+
+	if (span) span.end()
+}
+
+async function setNextPartAndCheckForPendingMoveNextPart(
+	context: JobContext,
+	playoutModel: PlayoutModel,
+	rawNextPart: ReadonlyDeep<Omit<SelectNextPartResult, 'index'>> | PlayoutPartInstanceModel | null,
+	setManually: boolean,
+	nextTimeOffset?: number | undefined
+) {
 	if (rawNextPart) {
 		if (!playoutModel.playlist.activationId)
 			throw new Error(`RundownPlaylist "${playoutModel.playlist._id}" is not active`)
@@ -64,7 +111,7 @@ export async function setNextPart(
 				throw new Error('Part is marked as invalid, cannot set as next.')
 			}
 
-			if (!rundownIds.includes(inputPartInstance.partInstance.rundownId)) {
+			if (!playoutModel.getRundown(inputPartInstance.partInstance.rundownId)) {
 				throw new Error(
 					`PartInstance "${inputPartInstance.partInstance._id}" of rundown "${inputPartInstance.partInstance.rundownId}" not part of RundownPlaylist "${playoutModel.playlist._id}"`
 				)
@@ -78,13 +125,16 @@ export async function setNextPart(
 				throw new Error('Part is marked as invalid, cannot set as next.')
 			}
 
-			if (!rundownIds.includes(selectedPart.part.rundownId)) {
+			if (!playoutModel.getRundown(selectedPart.part.rundownId)) {
 				throw new Error(
 					`Part "${selectedPart.part._id}" of rundown "${selectedPart.part.rundownId}" not part of RundownPlaylist "${playoutModel.playlist._id}"`
 				)
 			}
 
 			consumesQueuedSegmentId = selectedPart.consumesQueuedSegmentId ?? false
+
+			const currentPartInstance = playoutModel.currentPartInstance
+			const nextPartInstance = playoutModel.nextPartInstance
 
 			if (nextPartInstance && nextPartInstance.partInstance.part._id === selectedPart.part._id) {
 				// Re-use existing
@@ -120,22 +170,13 @@ export async function setNextPart(
 
 		playoutModel.setPartInstanceAsNext(newPartInstance, setManually, consumesQueuedSegmentId, nextTimeOffset)
 
-		await executeOnSetAsNextCallback(playoutModel, newPartInstance, context)
+		return executeOnSetAsNextCallback(playoutModel, newPartInstance, context)
 	} else {
 		// Set to null
 
 		playoutModel.setPartInstanceAsNext(null, setManually, false, nextTimeOffset)
+		return undefined
 	}
-
-	playoutModel.removeUntakenPartInstances()
-
-	resetPartInstancesWhenChangingSegment(context, playoutModel)
-
-	playoutModel.updateQuickLoopState()
-
-	await cleanupOrphanedItems(context, playoutModel)
-
-	if (span) span.end()
 }
 
 async function executeOnSetAsNextCallback(
@@ -144,38 +185,40 @@ async function executeOnSetAsNextCallback(
 	context: JobContext
 ) {
 	const rundownOfNextPart = playoutModel.getRundown(newPartInstance.partInstance.rundownId)
-	if (rundownOfNextPart) {
-		const blueprint = await context.getShowStyleBlueprint(rundownOfNextPart.rundown.showStyleBaseId)
-		if (blueprint.blueprint.onSetAsNext) {
-			const showStyle = await context.getShowStyleCompound(
-				rundownOfNextPart.rundown.showStyleVariantId,
-				rundownOfNextPart.rundown.showStyleBaseId
-			)
-			const watchedPackagesHelper = WatchedPackagesHelper.empty(context)
-			const onSetAsNextContext = new OnSetAsNextContext(
-				{
-					name: `${rundownOfNextPart.rundown.name}(${playoutModel.playlist.name})`,
-					identifier: `playlist=${playoutModel.playlist._id},rundown=${
-						rundownOfNextPart.rundown._id
-					},currentPartInstance=${
-						playoutModel.playlist.currentPartInfo?.partInstanceId
-					},execution=${getRandomId()}`,
-					tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT store these notes
-				},
-				context,
-				playoutModel,
-				showStyle,
-				watchedPackagesHelper,
-				new PartAndPieceInstanceActionService(context, playoutModel, showStyle, rundownOfNextPart)
-			)
-			try {
-				await blueprint.blueprint.onSetAsNext(onSetAsNextContext)
-				await applyOnSetAsNextSideEffects(context, playoutModel, onSetAsNextContext)
-			} catch (err) {
-				logger.error(`Error in showStyleBlueprint.onSetAsNext: ${stringifyError(err)}`)
-			}
-		}
+	if (!rundownOfNextPart) return null
+
+	const blueprint = await context.getShowStyleBlueprint(rundownOfNextPart.rundown.showStyleBaseId)
+	if (!blueprint.blueprint.onSetAsNext) return null
+
+	const showStyle = await context.getShowStyleCompound(
+		rundownOfNextPart.rundown.showStyleVariantId,
+		rundownOfNextPart.rundown.showStyleBaseId
+	)
+
+	const watchedPackagesHelper = WatchedPackagesHelper.empty(context)
+	const onSetAsNextContext = new OnSetAsNextContext(
+		{
+			name: `${rundownOfNextPart.rundown.name}(${playoutModel.playlist.name})`,
+			identifier: `playlist=${playoutModel.playlist._id},rundown=${
+				rundownOfNextPart.rundown._id
+			},currentPartInstance=${playoutModel.playlist.currentPartInfo?.partInstanceId},execution=${getRandomId()}`,
+			tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT store these notes
+		},
+		context,
+		playoutModel,
+		showStyle,
+		watchedPackagesHelper,
+		new PartAndPieceInstanceActionService(context, playoutModel, showStyle, rundownOfNextPart)
+	)
+
+	try {
+		await blueprint.blueprint.onSetAsNext(onSetAsNextContext)
+		await applyOnSetAsNextSideEffects(context, playoutModel, onSetAsNextContext)
+	} catch (err) {
+		logger.error(`Error in showStyleBlueprint.onSetAsNext: ${stringifyError(err)}`)
 	}
+
+	return onSetAsNextContext.pendingMoveNextPart
 }
 
 async function applyOnSetAsNextSideEffects(
