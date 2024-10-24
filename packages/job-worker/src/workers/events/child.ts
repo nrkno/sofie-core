@@ -11,7 +11,8 @@ import {
 	WorkerDataCache,
 	WorkerDataCacheWrapperImpl,
 } from '../caches'
-import { JobContextImpl, QueueJobFunc } from '../context'
+import { JobContextImpl } from '../context/JobContextImpl'
+import { QueueJobFunc } from '../context/util'
 import { AnyLockEvent, LocksManager } from '../locks'
 import { FastTrackTimelineFunc, LogLineWithSourceFunc } from '../../main'
 import { interceptLogging, logger } from '../../logging'
