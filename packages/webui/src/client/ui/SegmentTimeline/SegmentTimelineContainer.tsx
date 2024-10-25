@@ -75,10 +75,6 @@ interface IProps extends IResolvedSegmentProps {
 	onSegmentSelect: (segmentId: SegmentId) => void
 }
 
-interface IWithSelectionProps extends IProps {
-	handleIsSelected: (segmentId: SegmentId) => boolean
-}
-
 export function SegmentTimelineContainer(props: Readonly<IProps>): JSX.Element {
 	const partIds = useTracker(
 		() =>
@@ -156,17 +152,21 @@ function SegmentTimelineContainerWithSelection(props: Readonly<IProps>): JSX.Ele
 		})
 	}
 
-	const handleIsSelected = (segmentId: SegmentId) => {
-		return isSelected(segmentId)
+	const isElementSelected = () => {
+		return isSelected(props.segmentId)
 	}
 
 	return (
 		<SegmentTimelineContainerContent
 			{...props}
-			handleIsSelected={handleIsSelected}
+			isSelected={isElementSelected()}
 			onSegmentSelect={handleSegmentSelect}
 		/>
 	)
+}
+
+interface IWithSelectionProps extends IProps {
+	isSelected: boolean
 }
 
 const SegmentTimelineContainerContent = withResolvedSegment(
@@ -696,10 +696,6 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 			this.props.onSegmentSelect(segmentId)
 		}
 
-		isSelected = (segmentId: SegmentId) => {
-			return this.props.handleIsSelected(segmentId)
-		}
-
 		render(): JSX.Element | null {
 			return this.props.segmentui ? (
 				<React.Fragment key={unprotectString(this.props.segmentui._id)}>
@@ -748,7 +744,7 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 							fixedSegmentDuration={this.props.fixedSegmentDuration}
 							showDurationSourceLayers={this.props.showDurationSourceLayers}
 							onSegmentSelect={this.handleSegmentSelect}
-							isSelected={this.isSelected(this.props.segmentui._id)}
+							isSelected={this.props.isSelected}
 						/>
 					)}
 					{this.props.segmentui.showShelf && this.props.adLibSegmentUi && (
