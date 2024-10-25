@@ -29,7 +29,7 @@ describe('SelectedElementProvider', () => {
 		test('init with no selections', () => {
 			const { result } = renderHook(() => useSelection(), { wrapper })
 
-			expect(result.current.listSelectedElements.length).toBe(0)
+			expect(result.current.listSelectedElements().length).toBe(0)
 			expect(result.current.getSelectedCount()).toBe(0)
 		})
 
@@ -41,13 +41,13 @@ describe('SelectedElementProvider', () => {
 			act(() => {
 				result.current.clearAndSetSelection(element1)
 			})
-			expect(result.current.listSelectedElements.length).toBe(1)
+			expect(result.current.listSelectedElements().length).toBe(1)
 			expect(result.current.isSelected(element1.elementId)).toBe(true)
 
 			act(() => {
 				result.current.clearAndSetSelection(element2)
 			})
-			expect(result.current.listSelectedElements.length).toBe(1)
+			expect(result.current.listSelectedElements().length).toBe(1)
 			expect(result.current.isSelected(element1.elementId)).toBe(false)
 			expect(result.current.isSelected(element2.elementId)).toBe(true)
 		})
