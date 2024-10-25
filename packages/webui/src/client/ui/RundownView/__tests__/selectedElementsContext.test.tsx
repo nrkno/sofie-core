@@ -8,19 +8,16 @@ import { RundownId, SegmentId, PartInstanceId } from '@sofie-automation/corelib/
 describe('SelectedElementProvider', () => {
 	const createRundownElement = (id: string) => ({
 		type: 'rundown' as const,
-		id,
 		elementId: protectString<RundownId>(id),
 	})
 
 	const createSegmentElement = (id: string) => ({
 		type: 'segment' as const,
-		id,
 		elementId: protectString<SegmentId>(id),
 	})
 
 	const createPartInstanceElement = (id: string) => ({
 		type: 'partInstance' as const,
-		id,
 		elementId: protectString<PartInstanceId>(id),
 	})
 
@@ -32,7 +29,7 @@ describe('SelectedElementProvider', () => {
 		test('init with no selections', () => {
 			const { result } = renderHook(() => useSelection(), { wrapper })
 
-			expect(result.current.selectedElements.size).toBe(0)
+			expect(result.current.listSelectedElements.length).toBe(0)
 			expect(result.current.getSelectedCount()).toBe(0)
 		})
 
@@ -44,15 +41,15 @@ describe('SelectedElementProvider', () => {
 			act(() => {
 				result.current.clearAndSetSelection(element1)
 			})
-			expect(result.current.selectedElements.size).toBe(1)
-			expect(result.current.isSelected(element1.id)).toBe(true)
+			expect(result.current.listSelectedElements.length).toBe(1)
+			expect(result.current.isSelected(element1.elementId)).toBe(true)
 
 			act(() => {
 				result.current.clearAndSetSelection(element2)
 			})
-			expect(result.current.selectedElements.size).toBe(1)
-			expect(result.current.isSelected(element1.id)).toBe(false)
-			expect(result.current.isSelected(element2.id)).toBe(true)
+			expect(result.current.listSelectedElements.length).toBe(1)
+			expect(result.current.isSelected(element1.elementId)).toBe(false)
+			expect(result.current.isSelected(element2.elementId)).toBe(true)
 		})
 
 		test('toggleSelection', () => {
@@ -62,12 +59,12 @@ describe('SelectedElementProvider', () => {
 			act(() => {
 				result.current.toggleSelection(element)
 			})
-			expect(result.current.isSelected(element.id)).toBe(true)
+			expect(result.current.isSelected(element.elementId)).toBe(true)
 
 			act(() => {
 				result.current.toggleSelection(element)
 			})
-			expect(result.current.isSelected(element.id)).toBe(false)
+			expect(result.current.isSelected(element.elementId)).toBe(false)
 		})
 
 		test('respect maxSelections limit', () => {
@@ -89,9 +86,9 @@ describe('SelectedElementProvider', () => {
 			})
 
 			expect(result.current.getSelectedCount()).toBe(2)
-			expect(result.current.isSelected(elements[0].id)).toBe(true)
-			expect(result.current.isSelected(elements[1].id)).toBe(true)
-			expect(result.current.isSelected(elements[2].id)).toBe(false)
+			expect(result.current.isSelected(elements[0].elementId)).toBe(true)
+			expect(result.current.isSelected(elements[1].elementId)).toBe(true)
+			expect(result.current.isSelected(elements[2].elementId)).toBe(false)
 		})
 
 		test('clearSelections removes all selections', () => {

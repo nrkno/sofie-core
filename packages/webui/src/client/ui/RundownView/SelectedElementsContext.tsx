@@ -43,7 +43,7 @@ interface SelectionContextType {
 	clearAndSetSelection: (element: SelectedElement) => void
 	toggleSelection: (element: SelectedElement) => void
 	addSelection: (element: SelectedElement) => void
-	removeSelection: (elementId: string) => void
+	removeSelection: (elementId: ElementId) => void
 	clearSelections: () => void
 	getSelectedCount: () => number
 }
@@ -159,7 +159,7 @@ export const useElementSelection = (element: SelectedElement): { isSelected: boo
 	const { isSelected, toggleSelection } = useSelection()
 
 	return {
-		isSelected: React.useMemo(() => isSelected(element.id), [isSelected, element.id]),
+		isSelected: React.useMemo(() => isSelected(element.elementId), [isSelected, element.elementId]),
 		toggleSelection: React.useCallback(() => toggleSelection(element), [toggleSelection, element]),
 	}
 }
