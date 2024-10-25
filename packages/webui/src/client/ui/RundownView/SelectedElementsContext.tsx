@@ -41,8 +41,8 @@ interface AdlibActionElement {
 type SelectedElement = RundownElement | SegmentElement | PartInstanceElement | PieceElement | AdlibActionElement
 
 interface SelectionContextType {
-	selectedElements: Map<string, SelectedElement>
 	isSelected: (elementId: string) => boolean
+	listSelectedElements: () => SelectedElement[]
 	clearAndSetSelection: (element: SelectedElement) => void
 	toggleSelection: (element: SelectedElement) => void
 	addSelection: (element: SelectedElement) => void
@@ -110,10 +110,12 @@ export const SelectedElementProvider: React.FC<{
 
 	const value = React.useMemo(
 		() => ({
-			selectedElements,
-
 			isSelected: (elementId: string) => {
 				return selectedElements.has(elementId)
+			},
+
+			listSelectedElements: () => {
+				return Array.from(selectedElements.values())
 			},
 
 			clearAndSetSelection: (element: SelectedElement) => {
