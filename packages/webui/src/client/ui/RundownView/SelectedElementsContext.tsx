@@ -6,6 +6,7 @@ import {
 	RundownId,
 	SegmentId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { assertNever } from '@sofie-automation/corelib/dist/lib'
 
 interface RundownElement {
 	type: 'rundown'
@@ -93,6 +94,7 @@ const selectionReducer = (
 			return new Map()
 		}
 		default:
+			assertNever(action)
 			return state
 	}
 }
