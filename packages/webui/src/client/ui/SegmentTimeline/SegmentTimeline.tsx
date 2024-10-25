@@ -1063,23 +1063,9 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 				>
 					<h2
 						id={`segment-name-${this.props.segment._id}`}
-						className={
-							'segment-timeline__title__label' +
-							(this.props.segment.identifier ? ' identifier' : '') +
-							(this.state.isSelected ? ' selected' : '')
-						}
+						className={'segment-timeline__title__label' + (this.props.segment.identifier ? ' identifier' : '')}
 						data-identifier={this.props.segment.identifier}
-						onClick={(e: React.MouseEvent) => {
-							// If Alt/Option key is pressed
-							if (e.altKey) {
-								if (this.props.onSegmentSelect) {
-									this.props.onSegmentSelect(this.props.segment._id)
-								}
-							}
-						}}
 					>
-						{/* for debugging: */ this.state.isSelected && <span>**</span>}
-						{/* for debugging: */ this.props.isSelected && <span>!!</span>}
 						{this.props.segment.name}
 					</h2>
 					{(criticalNotes > 0 || warningNotes > 0) && (
