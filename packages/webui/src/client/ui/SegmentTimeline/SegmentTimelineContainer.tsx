@@ -73,7 +73,10 @@ interface IState {
 interface IProps extends IResolvedSegmentProps {
 	id: string
 	onSegmentSelect: (segmentId: SegmentId) => void
-	isSelected: (segmentId: SegmentId) => boolean
+}
+
+interface IWithSelectionProps extends IProps {
+	handleIsSelected: (segmentId: SegmentId) => boolean
 }
 
 export function SegmentTimelineContainer(props: Readonly<IProps>): JSX.Element {
@@ -159,12 +162,19 @@ function SegmentTimelineContainerWithSelection(props: Readonly<IProps>): JSX.Ele
 	}
 
 	return (
-		<SegmentTimelineContainerContent {...props} isSelected={handleIsSelected} onSegmentSelect={handleSegmentSelect} />
+		<SegmentTimelineContainerContent
+			{...props}
+			handleIsSelected={handleIsSelected}
+			onSegmentSelect={handleSegmentSelect}
+		/>
 	)
 }
 
 const SegmentTimelineContainerContent = withResolvedSegment(
-	class SegmentTimelineContainerContent extends React.Component<IProps & ITrackedResolvedSegmentProps, IState> {
+	class SegmentTimelineContainerContent extends React.Component<
+		IWithSelectionProps & ITrackedResolvedSegmentProps,
+		IState
+	> {
 		static contextTypes = {
 			durations: PropTypes.object.isRequired,
 			syncedDurations: PropTypes.object.isRequired,
@@ -183,7 +193,7 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 			syncedDurations: RundownTimingContext
 		}
 
-		constructor(props: IProps & ITrackedResolvedSegmentProps) {
+		constructor(props: IWithSelectionProps & ITrackedResolvedSegmentProps) {
 			super(props)
 
 			this.state = {
@@ -688,7 +698,7 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 		}
 
 		isSelected = (segmentId: SegmentId) => {
-			return this.props.isSelected(segmentId)
+			return this.props.handleIsSelected(segmentId)
 		}
 
 		render(): JSX.Element | null {
