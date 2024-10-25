@@ -10,39 +10,35 @@ import { assertNever } from '@sofie-automation/corelib/dist/lib'
 
 interface RundownElement {
 	type: 'rundown'
-	id: string
 	elementId: RundownId
 }
 
 interface SegmentElement {
 	type: 'segment'
-	id: string
 	elementId: SegmentId
 }
 
 interface PartInstanceElement {
 	type: 'partInstance'
-	id: string
 	elementId: PartInstanceId
 }
 
 interface PieceElement {
 	type: 'piece'
-	id: string
 	elementId: PieceId
 }
 
 interface AdlibActionElement {
 	type: 'adlibAction'
-	id: string
 	elementId: AdLibActionId
 }
 
-// Union type for all possible elements
+// Union types for all possible elements
 type SelectedElement = RundownElement | SegmentElement | PartInstanceElement | PieceElement | AdlibActionElement
+type ElementId = SelectedElement['elementId']
 
 interface SelectionContextType {
-	isSelected: (elementId: string) => boolean
+	isSelected: (elementId: ElementId) => boolean
 	listSelectedElements: () => SelectedElement[]
 	clearAndSetSelection: (element: SelectedElement) => void
 	toggleSelection: (element: SelectedElement) => void
@@ -56,33 +52,33 @@ type SelectionAction =
 	| { type: 'CLEAR_AND_SET_SELECTION'; payload: SelectedElement }
 	| { type: 'TOGGLE_SELECTION'; payload: SelectedElement }
 	| { type: 'ADD_SELECTION'; payload: SelectedElement }
-	| { type: 'REMOVE_SELECTION'; payload: string }
+	| { type: 'REMOVE_SELECTION'; payload: ElementId }
 	| { type: 'CLEAR_SELECTIONS' }
 
 // Reducer function
 const selectionReducer = (
-	state: Map<string, SelectedElement>,
+	state: Map<ElementId, SelectedElement>,
 	action: SelectionAction,
 	maxSelections: number
-): Map<string, SelectedElement> => {
+): Map<ElementId, SelectedElement> => {
 	switch (action.type) {
 		case 'CLEAR_AND_SET_SELECTION': {
-			const newMap = new Map([[action.payload.id, action.payload]])
+			const newMap = new Map([[action.payload.elementId, action.payload]])
 			return newMap
 		}
 		case 'TOGGLE_SELECTION': {
 			const next = new Map(state)
-			if (next.has(action.payload.id)) {
-				next.delete(action.payload.id)
+			if (next.has(action.payload.elementId)) {
+				next.delete(action.payload.elementId)
 			} else if (next.size < maxSelections) {
-				next.set(action.payload.id, action.payload)
+				next.set(action.payload.elementId, action.payload)
 			}
 			return next
 		}
 		case 'ADD_SELECTION': {
 			if (state.size >= maxSelections) return state
 			const next = new Map(state)
-			next.set(action.payload.id, action.payload)
+			next.set(action.payload.elementId, action.payload)
 			return next
 		}
 		case 'REMOVE_SELECTION': {
@@ -106,13 +102,13 @@ export const SelectedElementProvider: React.FC<{
 	maxSelections?: number // Optional prop to limit maximum selections
 }> = ({ children, maxSelections = 10 }) => {
 	const [selectedElements, dispatch] = React.useReducer(
-		(state: Map<string, SelectedElement>, action: SelectionAction) => selectionReducer(state, action, maxSelections),
+		(state: Map<ElementId, SelectedElement>, action: SelectionAction) => selectionReducer(state, action, maxSelections),
 		new Map()
 	)
 
 	const value = React.useMemo(
 		() => ({
-			isSelected: (elementId: string) => {
+			isSelected: (elementId: ElementId) => {
 				return selectedElements.has(elementId)
 			},
 
@@ -132,7 +128,7 @@ export const SelectedElementProvider: React.FC<{
 				dispatch({ type: 'ADD_SELECTION', payload: element })
 			},
 
-			removeSelection: (elementId: string) => {
+			removeSelection: (elementId: ElementId) => {
 				dispatch({ type: 'REMOVE_SELECTION', payload: elementId })
 			},
 
