@@ -31,6 +31,7 @@ import {
 import { validateAdlibTestingPartInstanceProperties } from '../playout/adlibTesting'
 import { ReadonlyDeep } from 'type-fest'
 import { convertIngestModelToPlayoutRundownWithSegments } from './commit'
+import { PlayoutRundownModel } from '../playout/model/PlayoutRundownModel'
 
 type PlayStatus = 'previous' | 'current' | 'next'
 type SyncedInstance = {
@@ -131,12 +132,22 @@ export async function syncChangesToPartInstances(
 					pieceInstances: pieceInstancesInPart.map((p) => convertPieceInstanceToBlueprints(p.pieceInstance)),
 				}
 
+				const part = newPart ?? existingPartInstance.partInstance.part
+
+				let playoutRundownModelForPart: PlayoutRundownModel | undefined = playoutRundownModel
+				// Handle a case where the part is in a different rundown than the playoutRundownModel:
+				if (playoutRundownModel.rundown._id !== part.rundownId) {
+					playoutRundownModelForPart = playoutModel.getRundown(part.rundownId)
+				}
+				if (!playoutRundownModelForPart)
+					throw new Error(`Internal Error: playoutRundownModelForPart is undefined (it should never be)`)
+
 				const proposedPieceInstances = getPieceInstancesForPart(
 					context,
 					playoutModel,
 					previousPartInstance,
-					playoutRundownModel,
-					newPart ?? existingPartInstance.partInstance.part,
+					playoutRundownModelForPart,
+					part,
 					await piecesThatMayBeActive,
 					existingPartInstance.partInstance._id
 				)
@@ -211,9 +222,10 @@ export async function syncChangesToPartInstances(
 					// TODO - these dont get shown to the user currently
 					// TODO - old notes from the sync may need to be pruned, or we will end up with duplicates and 'stuck' notes?+
 					existingPartInstance.appendNotes(newNotes)
-
-					validateAdlibTestingPartInstanceProperties(context, playoutModel, existingPartInstance)
 				}
+
+				// Make sure an adlib-testing part is still labeled correctly. This could happen if the partInstance used any recently updated adlibs
+				validateAdlibTestingPartInstanceProperties(context, playoutModel, existingPartInstance)
 
 				if (existingPartInstance.partInstance._id === playoutModel.playlist.currentPartInfo?.partInstanceId) {
 					// This should be run after 'current', before 'next':

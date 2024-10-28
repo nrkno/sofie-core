@@ -1,6 +1,6 @@
 import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import classNames from 'classnames'
-import React, { useEffect, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { PartExtended, PieceExtended } from '../../../lib/RundownResolver'
 import { findPieceExtendedToShowFromOrderedResolvedInstances } from '../../PieceIcons/utils'
 import StudioContext from '../../RundownView/StudioContext'
@@ -31,30 +31,27 @@ export const StoryboardPartThumbnail = React.memo(function StoryboardPartThumbna
 	isLive,
 	isNext,
 }: Readonly<IProps>) {
-	const [mainPiece, setMainPiece] = useState<PieceExtended | undefined>(findMainPiece(part.pieces))
+	const mainPiece = useMemo<PieceExtended | undefined>(() => findMainPiece(part.pieces), [part.pieces])
 	const [highlight] = useState(false)
-
-	useEffect(() => {
-		const newMainPiece = findMainPiece(part.pieces)
-		setMainPiece(newMainPiece)
-	}, [part.pieces])
 
 	return mainPiece ? (
 		<StudioContext.Consumer>
-			{(studio) => (
-				<StoryboardPartThumbnailInner
-					piece={mainPiece}
-					isLive={isLive}
-					isNext={isNext}
-					layer={mainPiece?.sourceLayer}
-					studio={studio}
-					partId={part.partId}
-					partInstanceId={part.instance._id}
-					highlight={highlight}
-					partAutoNext={part.instance.part.autoNext ?? false}
-					partPlannedStoppedPlayback={part.instance.timings?.plannedStoppedPlayback}
-				/>
-			)}
+			{(studio) =>
+				studio ? (
+					<StoryboardPartThumbnailInner
+						piece={mainPiece}
+						isLive={isLive}
+						isNext={isNext}
+						layer={mainPiece?.sourceLayer}
+						studio={studio}
+						partId={part.partId}
+						partInstanceId={part.instance._id}
+						highlight={highlight}
+						partAutoNext={part.instance.part.autoNext ?? false}
+						partPlannedStoppedPlayback={part.instance.timings?.plannedStoppedPlayback}
+					/>
+				) : null
+			}
 		</StudioContext.Consumer>
 	) : (
 		<div

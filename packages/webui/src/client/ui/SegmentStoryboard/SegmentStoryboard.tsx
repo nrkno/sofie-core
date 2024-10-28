@@ -685,7 +685,7 @@ export const SegmentStoryboard = React.memo(
 					>
 						<div
 							className={classNames('segment-storyboard__part-list', {
-								loading: !props.subscriptionsReady /*  */,
+								loading: !props.subscriptionsReady,
 							})}
 							style={!animateScrollLeft ? { transform: `translateX(-${scrollLeft}px)` } : undefined}
 						>

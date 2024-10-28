@@ -1211,7 +1211,7 @@ __metadata:
     node-fetch: ^2.7.0
     p-lazy: ^3.1.0
     p-timeout: ^4.1.0
-    superfly-timeline: 9.0.1
+    superfly-timeline: 9.0.2
     threadedclass: ^1.2.2
     tslib: ^2.6.2
     type-fest: ^3.13.1
@@ -2349,7 +2349,7 @@ __metadata:
     prettier: ^2.8.8
     semver: ^7.5.4
     standard-version: ^9.5.0
-    superfly-timeline: 9.0.1
+    superfly-timeline: 9.0.2
     threadedclass: ^1.2.2
     timecode: 0.0.4
     ts-jest: ^29.1.2
@@ -10026,12 +10026,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"superfly-timeline@npm:9.0.1":
-  version: 9.0.1
-  resolution: "superfly-timeline@npm:9.0.1"
+"superfly-timeline@npm:9.0.2":
+  version: 9.0.2
+  resolution: "superfly-timeline@npm:9.0.2"
   dependencies:
     tslib: ^2.6.0
-  checksum: 4267eed691fe9ce9f89bf17c8aed1a98206938dd6d850c64b083e4fd3a3dc5329801c76c757450c9520375bad100ce512cc6d6a3e4a997bdfa14a4e7d65f09f2
+  checksum: d628d467d5384f5667bc10b877478c5b8b0a91774b5d5c5e9d9d3134b8f1b760225f2fbbb0f9ccd3e55f930c9f3719f81b9347b94ea853fbc0a18bc121d97665
   languageName: node
   linkType: hard
 

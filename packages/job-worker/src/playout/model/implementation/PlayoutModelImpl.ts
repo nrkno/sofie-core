@@ -502,6 +502,11 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 	deactivatePlaylist(): void {
 		delete this.playlistImpl.activationId
 
+		if (this.currentPartInstance) {
+			this.currentPartInstance.setReportedStoppedPlaybackWithPieceInstances(getCurrentTime())
+			this.queuePartInstanceTimingEvent(this.currentPartInstance.partInstance._id)
+		}
+
 		this.clearSelectedPartInstances()
 		this.playlistImpl.quickLoop = this.quickLoopService.getUpdatedPropsByClearingMarkers()
 
