@@ -101,7 +101,7 @@ export function PreviewPopUpContextProvider({ children }: React.PropsWithChildre
 	const previewRef = useRef<PreviewPopUpHandle>(null)
 
 	const [previewSession, setPreviewSession] = useState<PreviewSession | null>(null)
-	const [previewContent, setPreviewContent] = useState<PreviewContent | null>(null)
+	const [_previewContent, setPreviewContent] = useState<PreviewContent | null>(null)
 
 	const context: IPreviewPopUpContext = {
 		requestPreview: (anchor, content, opts) => {

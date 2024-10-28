@@ -3,6 +3,8 @@ import classNames from 'classnames'
 import { usePopper } from 'react-popper'
 import { Padding, Placement, VirtualElement } from '@popperjs/core'
 
+import './PreviewPopUp.scss'
+
 export const PreviewPopUp = React.forwardRef<
 	PreviewPopUpHandle,
 	React.PropsWithChildren<{
