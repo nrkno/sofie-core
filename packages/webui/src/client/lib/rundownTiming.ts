@@ -759,8 +759,8 @@ export interface RundownTimingContext {
 	partExpectedDurations?: Record<string, number>
 	/** Remaining time on current part */
 	remainingTimeOnCurrentPart?: number
-	/** Remaining budget on current segment, if its countdownType === CountdownType.SEGMENT_BUDGET_DURATION */
-	remainingBudgetOnCurrentSegment?: number
+	/** Remaining budget on current segment, if its countdownType === CountdownType.SEGMENT_BUDGET_DURATION, undefined otherwise */
+	remainingBudgetOnCurrentSegment?: number | undefined
 	/** Current part will autoNext */
 	currentPartWillAutoNext?: boolean
 	/** Current time of this calculation */
