@@ -160,7 +160,10 @@ export interface DBRundownPlaylist {
 	lastIncorrectPartPlaybackReported?: Time
 	/** Actual time of each rundown starting playback */
 	rundownsStartedPlayback?: Record<string, Time>
-	/** Actual time of SOME segments starting playback - usually just the previous and current one */
+	/**
+	 * Actual time of SOME segments starting playback - usually just the previous and current one
+	 * This is not using SegmentId, but SegmentPlayoutId
+	 */
 	segmentsStartedPlayback?: Record<string, Time>
 	/** Time of the last take */
 	lastTakeTime?: Time
