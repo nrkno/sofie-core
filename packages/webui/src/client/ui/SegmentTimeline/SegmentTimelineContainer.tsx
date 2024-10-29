@@ -145,7 +145,6 @@ function SegmentTimelineContainerWithSelection(props: Readonly<IProps>): JSX.Ele
 	const { clearAndSetSelection, isSelected } = useSelection()
 
 	const handleSegmentSelect = (segmentId: SegmentId) => {
-		console.log('handleSegmentSelect', segmentId)
 		clearAndSetSelection({
 			type: 'segment',
 			elementId: segmentId,
