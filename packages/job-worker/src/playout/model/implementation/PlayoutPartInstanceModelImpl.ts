@@ -492,6 +492,19 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		}
 		return false
 	}
+	setReportedStoppedPlaybackWithPieceInstances(time: number): boolean {
+		if (!this.partInstance.timings?.reportedStartedPlayback) return false
+
+		let setOnAll = this.setReportedStoppedPlayback(time)
+
+		for (const model of this.pieceInstances) {
+			if (model.pieceInstance.reportedStartedPlayback) {
+				setOnAll &&= model.setReportedStoppedPlayback(time)
+			}
+		}
+
+		return setOnAll
+	}
 
 	setRank(rank: number): void {
 		this.#compareAndSetPartValue('_rank', rank)

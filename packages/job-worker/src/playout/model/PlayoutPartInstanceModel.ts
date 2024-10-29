@@ -181,6 +181,11 @@ export interface PlayoutPartInstanceModel {
 	 * @param time Reported stopped time
 	 */
 	setReportedStoppedPlayback(time: Time): boolean
+	/**
+	 * Set the Reported stopped playback time, including still-playing PieceInstances
+	 * @param time Reported stopped time on all available objects
+	 */
+	setReportedStoppedPlaybackWithPieceInstances(time: Time): boolean
 
 	/**
 	 * Set the rank of this PartInstance, to update it's position in the Segment

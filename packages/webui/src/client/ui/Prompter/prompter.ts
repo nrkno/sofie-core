@@ -250,11 +250,11 @@ export namespace PrompterAPI {
 						const piece = pieceInstance.piece
 						const sourceLayer = sourceLayers[piece.sourceLayerId]
 
-						if (!piece.content || !sourceLayer || sourceLayer.type !== SourceLayerType.SCRIPT) break
+						if (!piece.content || !sourceLayer || sourceLayer.type !== SourceLayerType.SCRIPT) continue
 
 						const content = piece.content as ScriptContent
-						if (!content.fullScript) break
-						if (piecesIncluded.indexOf(piece._id) >= 0) break // piece already included in prompter script
+						if (!content.fullScript) continue
+						if (piecesIncluded.indexOf(piece._id) >= 0) continue // piece already included in prompter script
 
 						piecesIncluded.push(piece._id)
 						partData.pieces.push({

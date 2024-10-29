@@ -102,7 +102,7 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 	}
 
 	switchRouteSet(routeSetId: string, isActive: boolean | 'toggle'): boolean {
-		return this.#baselineHelper.updateRouteSetActive(routeSetId, isActive)
+		return this.context.setRouteSetActive(routeSetId, isActive)
 	}
 
 	/**
@@ -125,7 +125,11 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 		}
 		this.#timelineHasChanged = false
 
-		await this.#baselineHelper.saveAllToDatabase()
+		await Promise.all([
+			this.#baselineHelper.saveAllToDatabase(),
+			this.context.saveRouteSetChanges(),
+			//
+		])
 
 		if (span) span.end()
 	}

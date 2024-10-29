@@ -97,7 +97,7 @@ function ExternalMessagesQueuedMessages({ studioId }: Readonly<ExternalMessagesQ
 			ExternalMessageQueue.find(
 				{
 					studioId: studioId,
-					sent: { $gt: 0 },
+					sent: { $not: { $gt: 0 } },
 				},
 				{
 					sort: {
@@ -237,13 +237,13 @@ function ExternalMessagesRow({ msg }: Readonly<ExternalMessagesRowProps>) {
 			<td className="c2">
 				{userPermissions.configure ? (
 					<React.Fragment>
-						<button className="action-btn" onClick={removeMessage}>
+						<button className="action-btn mod mls" onClick={removeMessage}>
 							<FontAwesomeIcon icon={faTrash} />
 						</button>
-						<button className="action-btn" onClick={toggleHoldMessage}>
+						<button className="action-btn mod" onClick={toggleHoldMessage}>
 							{msg.hold ? <FontAwesomeIcon icon={faPlay} /> : <FontAwesomeIcon icon={faPause} />}
 						</button>
-						<button className="action-btn" onClick={retryMessage}>
+						<button className="action-btn mod" onClick={retryMessage}>
 							<FontAwesomeIcon icon={faRedo} />
 						</button>
 						<br />

@@ -13,6 +13,7 @@ import {
 	Time,
 	TSR,
 	IBlueprintPlayoutDevice,
+	StudioRouteSet,
 } from '@sofie-automation/blueprints-integration'
 import { PartInstanceId, PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
@@ -28,6 +29,7 @@ import { DatastorePersistenceMode } from '@sofie-automation/shared-lib/dist/core
 import { removeTimelineDatastoreValue, setTimelineDatastoreValue } from '../../playout/datastore'
 import { executePeripheralDeviceAction, listPlayoutDevices } from '../../peripheralDevice'
 import { ActionPartChange, PartAndPieceInstanceActionService } from './services/PartAndPieceInstanceActionService'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 export class DatastoreActionExecutionContext
 	extends ShowStyleUserContext
@@ -189,6 +191,10 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		}
 
 		partInstance.blockTakeUntil(time)
+	}
+
+	async listRouteSets(): Promise<Record<string, StudioRouteSet>> {
+		return applyAndValidateOverrides(this._context.studio.routeSetsWithOverrides).obj
 	}
 
 	async switchRouteSet(routeSetId: string, state: boolean | 'toggle'): Promise<void> {

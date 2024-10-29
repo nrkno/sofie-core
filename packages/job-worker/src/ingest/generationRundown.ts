@@ -115,13 +115,11 @@ export async function updateRundownFromIngestDataInner(
 		{
 			name: 'selectShowStyleVariant',
 			identifier: `studioId=${context.studio._id},rundownId=${ingestModel.rundownId},ingestRundownId=${ingestModel.rundownExternalId}`,
-			tempSendUserNotesIntoBlackHole: true,
 		},
 		context.studio,
 		context.getStudioBlueprintConfig()
 	)
 
-	// TODO-CONTEXT save any user notes from selectShowStyleContext
 	const showStyle = await selectShowStyleVariant(
 		context,
 		selectShowStyleContext,
@@ -138,6 +136,14 @@ export async function updateRundownFromIngestDataInner(
 	const showStyleBlueprint = await context.getShowStyleBlueprint(showStyle.base._id)
 	const allRundownWatchedPackages = await pAllRundownWatchedPackages
 
+	const extraRundownNotes: RundownNote[] = selectShowStyleContext.notes.map((note) => ({
+		type: note.type,
+		message: wrapTranslatableMessageFromBlueprints(note.message, [showStyleBlueprint.blueprintId]),
+		origin: {
+			name: 'selectShowStyleVariant',
+		},
+	}))
+
 	// Call blueprints, get rundown
 	const dbRundown = await regenerateRundownAndBaselineFromIngestData(
 		context,
@@ -146,7 +152,8 @@ export async function updateRundownFromIngestDataInner(
 		ingestRundown.rundownSource,
 		showStyle,
 		showStyleBlueprint,
-		allRundownWatchedPackages
+		allRundownWatchedPackages,
+		extraRundownNotes
 	)
 	if (!dbRundown) {
 		// We got no rundown, abort:
@@ -183,6 +190,7 @@ export async function updateRundownFromIngestDataInner(
  * @param showStyle ShowStyle to regenerate for
  * @param showStyleBlueprint ShowStyle Blueprint to regenerate with
  * @param allRundownWatchedPackages WatchedPackagesHelper for all packages belonging to the rundown
+ * @param extraRundownNotes Additional notes to add to the Rundown, produced earlier in the ingest process
  * @returns Generated documents or null if Blueprints reject the Rundown
  */
 export async function regenerateRundownAndBaselineFromIngestData(
@@ -192,7 +200,8 @@ export async function regenerateRundownAndBaselineFromIngestData(
 	rundownSource: RundownSource,
 	showStyle: SelectedShowStyleVariant,
 	showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
-	allRundownWatchedPackages: WatchedPackagesHelper
+	allRundownWatchedPackages: WatchedPackagesHelper,
+	extraRundownNotes: RundownNote[]
 ): Promise<ReadonlyDeep<DBRundown> | null> {
 	const rundownBaselinePackages = allRundownWatchedPackages.filter(
 		context,
@@ -255,15 +264,17 @@ export async function regenerateRundownAndBaselineFromIngestData(
 	}
 
 	// Ensure the ids in the notes are clean
-	const rundownNotes = blueprintContext.notes.map((note) =>
-		literal<RundownNote>({
-			type: note.type,
-			message: wrapTranslatableMessageFromBlueprints(note.message, translationNamespaces),
-			origin: {
-				name: `${showStyle.base.name}-${showStyle.variant.name}`,
-			},
-		})
-	)
+	const rundownNotes = blueprintContext.notes
+		.map((note) =>
+			literal<RundownNote>({
+				type: note.type,
+				message: wrapTranslatableMessageFromBlueprints(note.message, translationNamespaces),
+				origin: {
+					name: `${showStyle.base.name}-${showStyle.variant.name}`,
+				},
+			})
+		)
+		.concat(extraRundownNotes)
 
 	ingestModel.setRundownData(
 		rundownRes.rundown,

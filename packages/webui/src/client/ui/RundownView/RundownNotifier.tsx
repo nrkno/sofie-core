@@ -195,6 +195,28 @@ class RundownViewNotifier extends WithManagedTracker {
 			const playlist = RundownPlaylists.findOne(playlistId)
 			const rundowns = rRundowns.get()
 
+			if (playlist?.notes) {
+				const playlistNotesId = playlist._id + '_playlistnotes_'
+				playlist.notes.forEach((note) => {
+					const noteId = playlistNotesId + note.origin.name + '_' + note.message + '_' + note.type
+					const notificationFromNote = new Notification(
+						noteId,
+						getNoticeLevelForNoteSeverity(note.type),
+						note.message,
+						'RundownPlaylist',
+						getCurrentTime(),
+						true,
+						[],
+						-1
+					)
+					if (!Notification.isEqual(this._rundownStatus[noteId], notificationFromNote)) {
+						this._rundownStatus[noteId] = notificationFromNote
+						this._rundownStatusDep.changed()
+					}
+					newNoteIds.push(noteId)
+				})
+			}
+
 			if (playlist && rundowns) {
 				rundowns.forEach((rundown) => {
 					const unsyncedId = rundown._id + '_unsynced'

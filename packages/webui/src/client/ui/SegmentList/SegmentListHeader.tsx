@@ -98,7 +98,7 @@ export function SegmentListHeader({
 				>
 					{playlist && parts && parts.length > 0 && (
 						<SegmentDuration
-							segmentId={segment._id}
+							segment={segment}
 							parts={parts}
 							label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
 							fixed={fixedSegmentDuration}

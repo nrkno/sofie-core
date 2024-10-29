@@ -7,6 +7,7 @@ import {
 	RundownPlaylistActivationId,
 	RundownPlaylistId,
 	SegmentId,
+	SegmentPlayoutId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { BaseModel } from '../../modelBase'
 import {
@@ -331,10 +332,10 @@ export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBa
 
 	/**
 	 * Track a Segment as having started playback
-	 * @param segmentId Id of the Segment
+	 * @param segmentPlayoutId Playout id of the Segment
 	 * @param timestamp Timestamp playback started
 	 */
-	setSegmentStartedPlayback(segmentId: SegmentId, timestamp: number): void
+	setSegmentStartedPlayback(segmentPlayoutId: SegmentPlayoutId, timestamp: number): void
 
 	/**
 	 * Set or clear a QuickLoop Marker
@@ -342,6 +343,14 @@ export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBa
 	 * @param marker
 	 */
 	setQuickLoopMarker(type: 'start' | 'end', marker: QuickLoopMarker | null): void
+
+	/**
+	 * Returns any segmentId's that are found between 2 quickloop markers, none will be returned if
+	 * the end is before the start.
+	 * @param start A quickloop marker
+	 * @param end A quickloop marker
+	 */
+	getSegmentsBetweenQuickLoopMarker(start: QuickLoopMarker, end: QuickLoopMarker): SegmentId[]
 
 	calculatePartTimings(
 		fromPartInstance: PlayoutPartInstanceModel | null,

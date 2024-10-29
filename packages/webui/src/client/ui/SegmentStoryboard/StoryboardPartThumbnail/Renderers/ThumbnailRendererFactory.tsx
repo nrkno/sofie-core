@@ -1,3 +1,4 @@
+import React from 'react'
 import { ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
@@ -27,31 +28,32 @@ export interface IProps {
 	isNext: boolean
 }
 
-export default function renderThumbnail(props: Readonly<IProps>): JSX.Element {
+export const ThumbnailRenderer = React.memo(function ThumbnailRenderer(props: Readonly<IProps>): JSX.Element {
 	const type = props.layer?.type
+
 	switch (type) {
 		case SourceLayerType.VT:
 		case SourceLayerType.LIVE_SPEAK:
-			return VTThumbnailRenderer(props)
+			return <VTThumbnailRenderer {...props} />
 		case SourceLayerType.CAMERA:
 		case SourceLayerType.REMOTE:
-			return CameraThumbnailRenderer(props)
+			return <CameraThumbnailRenderer {...props} />
 		case SourceLayerType.SPLITS:
-			return SplitsThumbnailRenderer(props)
+			return <SplitsThumbnailRenderer {...props} />
 		case SourceLayerType.GRAPHICS:
 		case SourceLayerType.LOWER_THIRD:
 		case SourceLayerType.STUDIO_SCREEN:
-			return GraphicsThumbnailRenderer(props)
+			return <GraphicsThumbnailRenderer {...props} />
 		case SourceLayerType.LOCAL:
-			return LocalThumbnailRenderer(props)
+			return <LocalThumbnailRenderer {...props} />
 		case SourceLayerType.AUDIO:
 		case SourceLayerType.SCRIPT:
 		case SourceLayerType.TRANSITION:
 		case SourceLayerType.UNKNOWN:
 		case undefined:
-			return DefaultThumbnailRenderer(props)
+			return <DefaultThumbnailRenderer {...props} />
 		default:
 			assertNever(type)
-			return DefaultThumbnailRenderer(props)
+			return <DefaultThumbnailRenderer {...props} />
 	}
-}
+})
