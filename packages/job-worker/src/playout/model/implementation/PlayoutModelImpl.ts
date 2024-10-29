@@ -481,7 +481,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 	}
 
 	switchRouteSet(routeSetId: string, isActive: boolean | 'toggle'): boolean {
-		return this.#baselineHelper.updateRouteSetActive(routeSetId, isActive)
+		return this.context.setRouteSetActive(routeSetId, isActive)
 	}
 
 	cycleSelectedPartInstances(): void {
@@ -645,6 +645,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 			...writePartInstancesAndPieceInstances(this.context, this.allPartInstances),
 			writeAdlibTestingSegments(this.context, this.rundownsImpl),
 			this.#baselineHelper.saveAllToDatabase(),
+			this.context.saveRouteSetChanges(),
 		])
 
 		this.#playlistHasChanged = false

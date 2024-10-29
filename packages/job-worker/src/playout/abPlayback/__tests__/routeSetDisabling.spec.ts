@@ -26,6 +26,35 @@ describe('route set disabling ab players', () => {
 		expect(result).toEqual(DEFAULT_PLAYERS)
 	})
 
+	test('mismatch of playerId types', () => {
+		const routesets: Record<string, StudioRouteSet> = {
+			route1: {
+				name: '',
+				active: false,
+				behavior: StudioRouteBehavior.TOGGLE,
+				routes: [],
+				abPlayers: [
+					{
+						poolName: POOL_NAME,
+						playerId: '1', // because ui field is always a string
+					},
+				],
+			},
+		}
+
+		const players: ABPlayerDefinition[] = [
+			{
+				playerId: 1, // number because blueprint defined it as such
+			},
+			{ playerId: 2 },
+		]
+
+		const result = runDisablePlayersFiltering(routesets, players)
+
+		const expectedPlayers = players.filter((p) => p.playerId !== 1)
+		expect(result).toEqual(expectedPlayers)
+	})
+
 	describe('single routeset per player', () => {
 		const ROUTESETS_SEPARATE: Record<string, StudioRouteSet> = {
 			pl1: {
