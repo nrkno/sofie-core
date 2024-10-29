@@ -3,7 +3,7 @@ import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { PieceExtended } from '../../../lib/RundownResolver'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { getElementHeight, getElementWidth } from '../../../utils/dimensions'
-import renderThumbnail from './Renderers/ThumbnailRendererFactory'
+import { ThumbnailRenderer } from './Renderers/ThumbnailRendererFactory'
 import { PieceElement } from '../../SegmentContainer/PieceElement'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -15,7 +15,7 @@ interface IProps {
 	partPlannedStoppedPlayback: number | undefined
 	layer: ISourceLayer | undefined
 	piece: PieceExtended
-	studio: UIStudio | undefined
+	studio: UIStudio
 	isLive: boolean
 	isNext: boolean
 	highlight?: boolean
@@ -87,22 +87,21 @@ export function StoryboardPartThumbnailInner({
 			onPointerMove={onPointerMove}
 			ref={thumbnailEl}
 		>
-			{studio &&
-				renderThumbnail({
-					partId,
-					partInstanceId,
-					partAutoNext,
-					partPlannedStoppedPlayback,
-					hoverScrubTimePosition: mousePosition * (piece.instance.piece.content.sourceDuration || 0),
-					hovering: hover,
-					layer: layer,
-					height,
-					originPosition: origin,
-					pieceInstance: piece,
-					studio,
-					isLive,
-					isNext,
-				})}
+			<ThumbnailRenderer
+				partId={partId}
+				partInstanceId={partInstanceId}
+				partAutoNext={partAutoNext}
+				partPlannedStoppedPlayback={partPlannedStoppedPlayback}
+				hoverScrubTimePosition={mousePosition * (piece.instance.piece.content.sourceDuration || 0)}
+				hovering={hover}
+				layer={layer}
+				height={height}
+				originPosition={origin}
+				pieceInstance={piece}
+				studio={studio}
+				isLive={isLive}
+				isNext={isNext}
+			/>
 		</PieceElement>
 	)
 }

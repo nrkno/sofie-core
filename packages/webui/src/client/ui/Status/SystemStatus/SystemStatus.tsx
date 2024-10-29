@@ -26,7 +26,7 @@ export function SystemStatus(): JSX.Element {
 	const systemStatus = useSystemStatus()
 	const playoutDebugStates = usePlayoutDebugStates(devices)
 
-	const devicesHeirarchy = convertDevicesIntoHeirarchy(devices)
+	const devicesHierarchy = convertDevicesIntoHeirarchy(devices)
 
 	return (
 		<div className="mhl gutter system-status">
@@ -36,7 +36,7 @@ export function SystemStatus(): JSX.Element {
 			<div className="mod mvl">
 				{coreSystem && <CoreItem coreSystem={coreSystem} systemStatus={systemStatus} />}
 
-				{devicesHeirarchy.map((d) => (
+				{devicesHierarchy.map((d) => (
 					<DeviceItemWithChildren
 						key={unprotectString(d.device._id)}
 						playoutDebugStates={playoutDebugStates}

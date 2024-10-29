@@ -484,7 +484,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 	}
 
 	switchRouteSet(routeSetId: string, isActive: boolean | 'toggle'): boolean {
-		return this.#baselineHelper.updateRouteSetActive(routeSetId, isActive)
+		return this.context.setRouteSetActive(routeSetId, isActive)
 	}
 
 	cycleSelectedPartInstances(): void {
@@ -504,6 +504,11 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 
 	deactivatePlaylist(): void {
 		delete this.playlistImpl.activationId
+
+		if (this.currentPartInstance) {
+			this.currentPartInstance.setReportedStoppedPlaybackWithPieceInstances(getCurrentTime())
+			this.queuePartInstanceTimingEvent(this.currentPartInstance.partInstance._id)
+		}
 
 		this.clearSelectedPartInstances()
 		this.playlistImpl.quickLoop = this.quickLoopService.getUpdatedPropsByClearingMarkers()
@@ -613,6 +618,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		delete this.playlistImpl.lastTakeTime
 		delete this.playlistImpl.startedPlayback
 		delete this.playlistImpl.rundownsStartedPlayback
+		delete this.playlistImpl.segmentsStartedPlayback
 		delete this.playlistImpl.previousPersistentState
 		delete this.playlistImpl.trackedAbSessions
 		delete this.playlistImpl.queuedSegmentId
@@ -666,6 +672,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 			writeAdlibTestingSegments(this.context, this.rundownsImpl),
 			this.#baselineHelper.saveAllToDatabase(),
 			this.#notificationsHelper.saveAllToDatabase(),
+			this.context.saveRouteSetChanges(),
 		])
 
 		this.#playlistHasChanged = false
@@ -771,21 +778,21 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		this.#playlistHasChanged = true
 	}
 
-	setSegmentStartedPlayback(segmentId: SegmentId, timestamp: number): void {
-		const segmentIdsToKeep: string[] = []
+	setSegmentStartedPlayback(segmentPlayoutId: SegmentPlayoutId, timestamp: number): void {
+		const segmentPlayoutIdsToKeep: string[] = []
 		if (this.previousPartInstance) {
-			segmentIdsToKeep.push(unprotectString(this.previousPartInstance.partInstance.segmentId))
+			segmentPlayoutIdsToKeep.push(unprotectString(this.previousPartInstance.partInstance.segmentPlayoutId))
 		}
 		if (this.currentPartInstance) {
-			segmentIdsToKeep.push(unprotectString(this.currentPartInstance.partInstance.segmentId))
+			segmentPlayoutIdsToKeep.push(unprotectString(this.currentPartInstance.partInstance.segmentPlayoutId))
 		}
 
 		this.playlistImpl.segmentsStartedPlayback = this.playlistImpl.segmentsStartedPlayback
-			? _.pick(this.playlistImpl.segmentsStartedPlayback, segmentIdsToKeep)
+			? _.pick(this.playlistImpl.segmentsStartedPlayback, segmentPlayoutIdsToKeep)
 			: {}
 
-		const segmentIdStr = unprotectString(segmentId)
-		this.playlistImpl.segmentsStartedPlayback[segmentIdStr] = timestamp
+		const segmentPlayoutIdStr = unprotectString(segmentPlayoutId)
+		this.playlistImpl.segmentsStartedPlayback[segmentPlayoutIdStr] = timestamp
 		this.#playlistHasChanged = true
 	}
 
