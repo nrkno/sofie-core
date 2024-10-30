@@ -8,6 +8,10 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { assertNever } from '@sofie-automation/corelib/dist/lib'
 
+// This constant is used to limit the number of selections that can be made
+// to ensure that the UI doesn't become unusable (i.e. thousands of selected elements)
+const MAX_SELECTIONS = 100
+
 interface RundownElement {
 	type: 'rundown'
 	elementId: RundownId
@@ -100,7 +104,7 @@ export const SelectedElementsContext = React.createContext<SelectionContextType 
 export const SelectedElementProvider: React.FC<{
 	children: React.ReactNode
 	maxSelections?: number // Optional prop to limit maximum selections
-}> = ({ children, maxSelections = 10 }) => {
+}> = ({ children, maxSelections = MAX_SELECTIONS }) => {
 	const [selectedElements, dispatch] = React.useReducer(
 		(state: Map<ElementId, SelectedElement>, action: SelectionAction) => selectionReducer(state, action, maxSelections),
 		new Map()
