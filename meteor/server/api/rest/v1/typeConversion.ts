@@ -480,8 +480,10 @@ export async function validateAPIBlueprintConfigForShowStyle(
 	apiShowStyle: APIShowStyleBase | APIShowStyleVariant,
 	blueprintId: BlueprintId
 ): Promise<Array<IConfigMessage>> {
-	if (!apiShowStyle.blueprintConfigPresetId)
-		throw new Meteor.Error(500, `ShowStyle ${apiShowStyle.name} is missing config preset`)
+	if (!apiShowStyle.blueprintConfigPresetId) {
+		logger.warn(`ShowStyle ${apiShowStyle.name} is missing config preset`)
+		return []
+	}
 	const blueprint = await getBlueprint(blueprintId, BlueprintManifestType.SHOWSTYLE)
 	const blueprintManifest = evalBlueprint(blueprint) as ShowStyleBlueprintManifest
 
@@ -502,8 +504,10 @@ export async function ShowStyleBaseBlueprintConfigFromAPI(
 	apiShowStyleBase: APIShowStyleBase,
 	blueprintManifest: ShowStyleBlueprintManifest
 ): Promise<IBlueprintConfig> {
-	if (!apiShowStyleBase.blueprintConfigPresetId)
-		throw new Meteor.Error(500, `ShowStyleBase ${apiShowStyleBase.name} is missing config preset`)
+	if (!apiShowStyleBase.blueprintConfigPresetId) {
+		logger.warn(`ShowStyleBase ${apiShowStyleBase.name} is missing config preset`)
+		return apiShowStyleBase.config as IBlueprintConfig
+	}
 
 	if (typeof blueprintManifest.blueprintConfigFromAPI !== 'function') {
 		return apiShowStyleBase.config as IBlueprintConfig
@@ -521,8 +525,10 @@ export async function APIShowStyleBlueprintConfigFrom(
 	showStyle: DBShowStyleBase | DBShowStyleVariant,
 	blueprintId: BlueprintId
 ): Promise<object> {
-	if (!showStyle.blueprintConfigPresetId)
-		throw new Meteor.Error(500, `ShowStyle ${showStyle._id} is missing config preset`)
+	if (!showStyle.blueprintConfigPresetId) {
+		logger.warn(`ShowStyle ${showStyle._id} is missing config preset`)
+		return applyAndValidateOverrides(showStyle.blueprintConfigWithOverrides).obj
+	}
 	const blueprint = await getBlueprint(blueprintId, BlueprintManifestType.SHOWSTYLE)
 	const blueprintManifest = evalBlueprint(blueprint) as ShowStyleBlueprintManifest
 
@@ -541,8 +547,10 @@ export async function APIShowStyleBlueprintConfigFrom(
 }
 
 export async function validateAPIBlueprintConfigForStudio(apiStudio: APIStudio): Promise<Array<IConfigMessage>> {
-	if (!apiStudio.blueprintConfigPresetId)
-		throw new Meteor.Error(500, `Studio ${apiStudio.name} is missing config preset`)
+	if (!apiStudio.blueprintConfigPresetId) {
+		logger.warn(`Studio ${apiStudio.name} is missing config preset`)
+		return []
+	}
 	const blueprint = await getBlueprint(protectString(apiStudio.blueprintId), BlueprintManifestType.STUDIO)
 	const blueprintManifest = evalBlueprint(blueprint) as StudioBlueprintManifest
 
@@ -563,8 +571,10 @@ export async function StudioBlueprintConfigFromAPI(
 	apiStudio: APIStudio,
 	blueprintManifest: StudioBlueprintManifest
 ): Promise<IBlueprintConfig> {
-	if (!apiStudio.blueprintConfigPresetId)
-		throw new Meteor.Error(500, `Studio ${apiStudio.name} is missing config preset`)
+	if (!apiStudio.blueprintConfigPresetId) {
+		logger.warn(`Studio ${apiStudio.name} is missing config preset`)
+		return apiStudio.config as IBlueprintConfig
+	}
 
 	if (typeof blueprintManifest.blueprintConfigFromAPI !== 'function') {
 		return apiStudio.config as IBlueprintConfig
@@ -579,7 +589,10 @@ export async function StudioBlueprintConfigFromAPI(
 }
 
 export async function APIStudioBlueprintConfigFrom(studio: DBStudio): Promise<object> {
-	if (!studio.blueprintConfigPresetId) throw new Meteor.Error(500, `Studio ${studio._id} is missing config preset`)
+	if (!studio.blueprintConfigPresetId) {
+		logger.warn(`Studio ${studio._id} is missing config preset`)
+		return applyAndValidateOverrides(studio.blueprintConfigWithOverrides).obj
+	}
 	const blueprint = await getBlueprint(studio.blueprintId, BlueprintManifestType.STUDIO)
 	const blueprintManifest = evalBlueprint(blueprint) as StudioBlueprintManifest
 

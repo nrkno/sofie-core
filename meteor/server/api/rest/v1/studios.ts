@@ -10,7 +10,6 @@ import { ClientAPI } from '../../../../lib/api/client'
 import { PeripheralDevices, RundownPlaylists, Studios } from '../../../collections'
 import { APIStudioFrom, studioFrom, validateAPIBlueprintConfigForStudio } from './typeConversion'
 import { runUpgradeForStudio, validateConfigForStudio } from '../../../migration/upgrades'
-import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { ServerClientAPI } from '../../client'
 import { assertNever, getCurrentTime } from '../../../../lib/lib'
@@ -47,16 +46,7 @@ class StudiosServerAPI implements StudiosRestAPI {
 		const newStudioId = await Studios.insertAsync(newStudio)
 
 		const validation = await validateConfigForStudio(newStudioId)
-		const validateOK = validation.messages.reduce((acc, msg) => acc && msg.level === NoteSeverity.INFO, true)
-		if (!validateOK) {
-			const details = JSON.stringify(
-				validation.messages.filter((msg) => msg.level < NoteSeverity.INFO).map((msg) => msg.message.key),
-				null,
-				2
-			)
-			logger.error(`addStudio failed validation with errors: ${details}`)
-			throw new Meteor.Error(409, `Studio ${newStudioId} has failed validation`, details)
-		}
+		checkValidation(`addStudio ${newStudioId}`, validation.messages)
 
 		await runUpgradeForStudio(newStudioId)
 		return ClientAPI.responseSuccess(unprotectString(newStudioId), 200)
@@ -102,11 +92,12 @@ class StudiosServerAPI implements StudiosRestAPI {
 
 		await Studios.upsertAsync(studioId, newStudio)
 
+		// wait for the upsert to complete before validation and upgrade read from the studios collection
+		await new Promise<void>((resolve) => setTimeout(() => resolve(), 200))
+
 		const validation = await validateConfigForStudio(studioId)
 		checkValidation(`addOrUpdateStudio ${studioId}`, validation.messages)
 
-		// wait for the upsert to complete before upgrade
-		await new Promise<void>((resolve) => setTimeout(() => resolve(), 200))
 		return ClientAPI.responseSuccess(await runUpgradeForStudio(studioId))
 	}
 
@@ -143,11 +134,12 @@ class StudiosServerAPI implements StudiosRestAPI {
 
 		await Studios.upsertAsync(studioId, newStudio)
 
+		// wait for the upsert to complete before validation and upgrade read from the studios collection
+		await new Promise<void>((resolve) => setTimeout(() => resolve(), 200))
+
 		const validation = await validateConfigForStudio(studioId)
 		checkValidation(`updateStudioConfig ${studioId}`, validation.messages)
 
-		// wait for the upsert to complete before upgrade
-		await new Promise<void>((resolve) => setTimeout(() => resolve(), 200))
 		return ClientAPI.responseSuccess(await runUpgradeForStudio(studioId))
 	}
 

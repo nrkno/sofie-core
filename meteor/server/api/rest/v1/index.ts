@@ -94,15 +94,26 @@ function extractErrorDetails(e: unknown): string[] | undefined {
 }
 
 export const checkValidation = (method: string, configValidationMsgs: IConfigMessage[]): void => {
-	const configValidationOK = configValidationMsgs.reduce((acc, msg) => acc && msg.level === NoteSeverity.INFO, true)
+	/**
+	 * Throws if any of the configValidationMsgs indicates that the config has errors.
+	 * Will log any messages with severity WARNING or INFO
+	 */
+	const configValidationOK = configValidationMsgs.reduce((acc, msg) => acc && msg.level !== NoteSeverity.ERROR, true)
 	if (!configValidationOK) {
 		const details = JSON.stringify(
-			configValidationMsgs.filter((msg) => msg.level < NoteSeverity.INFO).map((msg) => msg.message.key),
+			configValidationMsgs.filter((msg) => msg.level === NoteSeverity.ERROR).map((msg) => msg.message.key),
 			null,
 			2
 		)
 		logger.error(`${method} failed blueprint config validation with errors: ${details}`)
 		throw new Meteor.Error(409, `${method} has failed blueprint config validation`, details)
+	} else {
+		const details = JSON.stringify(
+			configValidationMsgs.map((msg) => msg.message.key),
+			null,
+			2
+		)
+		logger.info(`${method} received messages from bluepring config validation: ${details}`)
 	}
 }
 

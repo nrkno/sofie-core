@@ -109,11 +109,12 @@ class ShowStylesServerAPI implements ShowStylesRestAPI {
 
 		await ShowStyleBases.upsertAsync(showStyleBaseId, showStyle)
 
+		// wait for the upsert to complete before validation and upgrade read from the showStyleBases collection
+		await new Promise<void>((resolve) => setTimeout(() => resolve(), 200))
+
 		const validation = await validateConfigForShowStyleBase(showStyleBaseId)
 		checkValidation(`addOrUpdateShowStyleBase ${showStyleBaseId}`, validation.messages)
 
-		// wait for the upsert to complete before upgrade
-		await new Promise<void>((resolve) => setTimeout(() => resolve(), 200))
 		return ClientAPI.responseSuccess(await runUpgradeForShowStyleBase(showStyleBaseId))
 	}
 
@@ -170,11 +171,12 @@ class ShowStylesServerAPI implements ShowStylesRestAPI {
 
 		await ShowStyleBases.upsertAsync(showStyleBaseId, showStyle)
 
+		// wait for the upsert to complete before validation and upgrade read from the showStyleBases collection
+		await new Promise<void>((resolve) => setTimeout(() => resolve(), 200))
+
 		const validation = await validateConfigForShowStyleBase(showStyleBaseId)
 		checkValidation(`updateShowStyleConfig ${showStyleBaseId}`, validation.messages)
 
-		// wait for the upsert to complete before upgrade
-		await new Promise<void>((resolve) => setTimeout(() => resolve(), 200))
 		return ClientAPI.responseSuccess(await runUpgradeForShowStyleBase(showStyleBaseId))
 	}
 
