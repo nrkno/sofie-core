@@ -7,16 +7,21 @@ import {
 	studioFieldSpecifier,
 } from './reactiveContentCache'
 import { Blueprints, ShowStyleBases, Studios } from '../../collections'
+import { waitForAllObserversReady } from '../lib/lib'
 
 export class UpgradesContentObserver {
-	#observers: Meteor.LiveQueryHandle[] = []
-	#cache: ContentCache
+	readonly #cache: ContentCache
+	readonly #observers: Meteor.LiveQueryHandle[]
 
-	constructor(cache: ContentCache) {
-		logger.silly(`Creating UpgradesContentObserver`)
+	constructor(cache: ContentCache, observers: Meteor.LiveQueryHandle[]) {
 		this.#cache = cache
+		this.#observers = observers
+	}
 
-		this.#observers = [
+	static async create(cache: ContentCache): Promise<UpgradesContentObserver> {
+		logger.silly(`Creating UpgradesContentObserver`)
+
+		const observers = await waitForAllObserversReady([
 			Studios.observeChanges({}, cache.Studios.link(), {
 				projection: studioFieldSpecifier,
 			}),
@@ -26,7 +31,9 @@ export class UpgradesContentObserver {
 			Blueprints.observeChanges({}, cache.Blueprints.link(), {
 				projection: blueprintFieldSpecifier,
 			}),
-		]
+		])
+
+		return new UpgradesContentObserver(cache, observers)
 	}
 
 	public get cache(): ContentCache {

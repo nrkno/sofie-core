@@ -4,7 +4,7 @@ import { registerClassToMeteorMethods } from '../../methods'
 import { NewStudiosAPI, StudiosAPIMethods } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { literal, getRandomId } from '../../lib/tempLib'
-import { lazyIgnore } from '../../lib/lib'
+import { lazyIgnore, MeteorStartupAsync } from '../../lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import {
 	ExpectedPackages,
@@ -131,17 +131,20 @@ function triggerUpdateStudioMappingsHash(studioId: StudioId) {
 		10
 	)
 }
-Studios.observeChanges(
-	{},
-	{
-		added: triggerUpdateStudioMappingsHash,
-		changed: triggerUpdateStudioMappingsHash,
-		removed: triggerUpdateStudioMappingsHash,
-	},
-	{
-		fields: {
-			mappingsWithOverrides: 1,
-			routeSetsWithOverrides: 1,
+
+MeteorStartupAsync(async () => {
+	await Studios.observeChanges(
+		{},
+		{
+			added: triggerUpdateStudioMappingsHash,
+			changed: triggerUpdateStudioMappingsHash,
+			removed: triggerUpdateStudioMappingsHash,
 		},
-	}
-)
+		{
+			fields: {
+				mappingsWithOverrides: 1,
+				routeSetsWithOverrides: 1,
+			},
+		}
+	)
+})

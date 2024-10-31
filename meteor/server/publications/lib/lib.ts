@@ -1,9 +1,9 @@
 import { Meteor, Subscription } from 'meteor/meteor'
 import { AllPubSubCollections, AllPubSubTypes } from '@sofie-automation/meteor-lib/dist/api/pubsub'
-import { extractFunctionSignature } from '../lib'
+import { extractFunctionSignature } from '../../lib'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
-import { ResolvedCredentials, resolveCredentials } from '../security/lib/credentials'
-import { Settings } from '../Settings'
+import { ResolvedCredentials, resolveCredentials } from '../../security/lib/credentials'
+import { Settings } from '../../Settings'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { MongoCursor } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import {
@@ -12,10 +12,9 @@ import {
 	ShowStyleBaseId,
 	UserId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { protectStringObject } from '../lib/tempLib'
-import { waitForPromise } from '../lib/lib'
+import { protectStringObject } from '../../lib/tempLib'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { PeripheralDevices, ShowStyleBases } from '../collections'
+import { PeripheralDevices, ShowStyleBases } from '../../collections'
 import { MetricsGauge } from '@sofie-automation/corelib/dist/prometheus'
 
 export const MeteorPublicationSignatures: { [key: string]: string[] } = {}
@@ -56,7 +55,7 @@ export function meteorPublishUnsafe(
 		publicationGauge.inc()
 		this.onStop(() => publicationGauge.dec())
 
-		return waitForPromise(callback.apply(protectStringObject<Subscription, 'userId'>(this), args)) || []
+		return callback.apply(protectStringObject<Subscription, 'userId'>(this), args) || []
 	})
 }
 
@@ -163,4 +162,34 @@ export namespace AutoFillSelector {
 		}
 		return { cred, selector }
 	}
+}
+
+/**
+ * Await each observer, and return the handles
+ * If an observer throws, this will make sure to stop all the ones that were successfully started, to avoid leaking memory
+ */
+export async function waitForAllObserversReady(
+	observers: Array<Promise<Meteor.LiveQueryHandle> | Meteor.LiveQueryHandle>
+): Promise<Meteor.LiveQueryHandle[]> {
+	// Wait for all the promises to complete
+	// Future: could this fail faster by aborting the rest once the first fails?
+	const results = await Promise.allSettled(observers)
+	const allSuccessfull = results.filter(
+		(r): r is PromiseFulfilledResult<Meteor.LiveQueryHandle> => r.status === 'fulfilled'
+	)
+
+	const firstFailure = results.find((r): r is PromiseRejectedResult => r.status === 'rejected')
+	if (firstFailure || allSuccessfull.length !== observers.length) {
+		// There was a failure, or not enough success so we should stop all the observers
+		for (const handle of allSuccessfull) {
+			handle.value.stop()
+		}
+		if (firstFailure) {
+			throw firstFailure.reason
+		} else {
+			throw new Meteor.Error(500, 'Not all observers were started')
+		}
+	}
+
+	return allSuccessfull.map((r) => r.value)
 }

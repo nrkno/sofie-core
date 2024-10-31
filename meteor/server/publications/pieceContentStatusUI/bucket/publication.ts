@@ -18,12 +18,12 @@ import {
 	meteorCustomPublish,
 	setUpCollectionOptimizedObserver,
 	TriggerUpdate,
+	SetupObserversResult,
 } from '../../../lib/customPublication'
 import { logger } from '../../../logging'
 import { resolveCredentials } from '../../../security/lib/credentials'
 import { NoSecurityReadAccess } from '../../../security/noSecurity'
 import { BucketContentCache, createReactiveContentCache } from './bucketContentCache'
-import { LiveQueryHandle } from '../../../lib/lib'
 import { StudioReadAccess } from '../../../security/studio'
 import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
 import {
@@ -72,7 +72,7 @@ const bucketFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<Bucket, 
 async function setupUIBucketContentStatusesPublicationObservers(
 	args: ReadonlyDeep<UIBucketContentStatusesArgs>,
 	triggerUpdate: TriggerUpdate<UIBucketContentStatusesUpdateProps>
-): Promise<LiveQueryHandle[]> {
+): Promise<SetupObserversResult> {
 	const trackMediaObjectChange = (mediaId: string): Partial<UIBucketContentStatusesUpdateProps> => ({
 		invalidateMediaObjectMediaId: [mediaId],
 	})
@@ -103,7 +103,7 @@ async function setupUIBucketContentStatusesPublicationObservers(
 
 	// Set up observers:
 	return [
-		new BucketContentObserver(args.bucketId, contentCache),
+		BucketContentObserver.create(args.bucketId, contentCache),
 
 		contentCache.BucketAdLibs.find({}).observeChanges({
 			added: (id) => triggerUpdate(trackAdlibChange(protectString(id))),

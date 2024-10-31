@@ -170,10 +170,24 @@ export interface MongoCursor<DBInterface extends { _id: ProtectedString<any> }> 
 	 */
 	observe(callbacks: ObserveCallbacks<DBInterface>): MongoLiveQueryHandle
 	/**
+	 * Watch a query. Receive callbacks as the result set changes.
+	 * @param callbacks Functions to call to deliver the result set as it changes
+	 */
+	observeAsync(callbacks: ObserveCallbacks<DBInterface>): Promise<MongoLiveQueryHandle>
+	/**
 	 * Watch a query. Receive callbacks as the result set changes. Only the differences between the old and new documents are passed to the callbacks.
 	 * @param callbacks Functions to call to deliver the result set as it changes
 	 */
 	observeChanges(callbacks: ObserveChangesCallbacks<DBInterface>): MongoLiveQueryHandle
+	/**
+	 * Watch a query. Receive callbacks as the result set changes. Only the differences between the old and new documents are passed to the callbacks.
+	 * @param callbacks Functions to call to deliver the result set as it changes
+	 * @param options { nonMutatingCallbacks: boolean }
+	 */
+	observeChangesAsync(
+		callbacks: ObserveChangesCallbacks<DBInterface>,
+		options?: { nonMutatingCallbacks?: boolean | undefined }
+	): Promise<MongoLiveQueryHandle>
 }
 export interface ObserveCallbacks<DBInterface> {
 	added?(document: DBInterface): void

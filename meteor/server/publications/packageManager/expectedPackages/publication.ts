@@ -6,6 +6,7 @@ import {
 	meteorCustomPublish,
 	setUpCollectionOptimizedObserver,
 	CustomPublishCollection,
+	SetupObserversResult,
 } from '../../../lib/customPublication'
 import { literal, omit, protectString } from '../../../lib/tempLib'
 import { logger } from '../../../logging'
@@ -72,7 +73,7 @@ const studioFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBStudio
 async function setupExpectedPackagesPublicationObservers(
 	args: ReadonlyDeep<ExpectedPackagesPublicationArgs>,
 	triggerUpdate: TriggerUpdate<ExpectedPackagesPublicationUpdateProps>
-): Promise<Meteor.LiveQueryHandle[]> {
+): Promise<SetupObserversResult> {
 	const contentCache = createReactiveContentCache()
 
 	// Push update
@@ -80,7 +81,7 @@ async function setupExpectedPackagesPublicationObservers(
 
 	// Set up observers:
 	return [
-		new ExpectedPackagesContentObserver(args.studioId, contentCache),
+		ExpectedPackagesContentObserver.create(args.studioId, contentCache),
 
 		contentCache.ExpectedPackages.find({}).observeChanges({
 			added: (id) => triggerUpdate({ invalidateExpectedPackageIds: [protectString<ExpectedPackageId>(id)] }),

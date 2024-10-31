@@ -54,7 +54,7 @@ describe('Test sending mos actions', () => {
 		const fakeRundown = { _id: rundownId, externalId: getRandomString(), studioId: studioId }
 
 		// Listen for changes
-		observer = PeripheralDeviceCommands.observeChanges(
+		observer = await PeripheralDeviceCommands.observeChanges(
 			{ deviceId: device._id },
 			{
 				added: (id: PeripheralDeviceCommandId) => {
@@ -96,7 +96,7 @@ describe('Test sending mos actions', () => {
 		}
 
 		// Listen for changes
-		observer = PeripheralDeviceCommands.observeChanges(
+		observer = await PeripheralDeviceCommands.observeChanges(
 			{ deviceId: device._id },
 			{
 				added: (id: PeripheralDeviceCommandId) => {
@@ -153,7 +153,7 @@ describe('Test sending mos actions', () => {
 		}
 
 		// Listen for changes
-		observer = PeripheralDeviceCommands.observeChanges(
+		observer = await PeripheralDeviceCommands.observeChanges(
 			{ deviceId: device._id },
 			{
 				added: (id: PeripheralDeviceCommandId) => {

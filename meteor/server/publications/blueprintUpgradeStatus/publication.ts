@@ -7,12 +7,12 @@ import {
 	CustomPublishCollection,
 	meteorCustomPublish,
 	setUpCollectionOptimizedObserver,
+	SetupObserversResult,
 	TriggerUpdate,
 } from '../../lib/customPublication'
 import { logger } from '../../logging'
 import { resolveCredentials } from '../../security/lib/credentials'
 import { NoSecurityReadAccess } from '../../security/noSecurity'
-import { LiveQueryHandle } from '../../lib/lib'
 import { ContentCache, createReactiveContentCache, ShowStyleBaseFields, StudioFields } from './reactiveContentCache'
 import { UpgradesContentObserver } from './upgradesContentObserver'
 import { BlueprintMapEntry, checkDocUpgradeStatus } from './checkStatus'
@@ -41,14 +41,14 @@ interface BlueprintUpgradeStatusUpdateProps {
 async function setupBlueprintUpgradeStatusPublicationObservers(
 	_args: ReadonlyDeep<BlueprintUpgradeStatusArgs>,
 	triggerUpdate: TriggerUpdate<BlueprintUpgradeStatusUpdateProps>
-): Promise<LiveQueryHandle[]> {
+): Promise<SetupObserversResult> {
 	// TODO - can this be done cheaper?
 	const cache = createReactiveContentCache()
 
 	// Push update
 	triggerUpdate({ newCache: cache })
 
-	const mongoObserver = new UpgradesContentObserver(cache)
+	const mongoObserver = await UpgradesContentObserver.create(cache)
 
 	// Set up observers:
 	return [

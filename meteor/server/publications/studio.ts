@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { check, Match } from '../lib/check'
-import { meteorPublish, AutoFillSelector } from './lib'
+import { meteorPublish, AutoFillSelector } from './lib/lib'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { getActiveRoutes, getRoutedMappings } from '@sofie-automation/meteor-lib/dist/collections/Studios'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
@@ -11,6 +11,7 @@ import { NoSecurityReadAccess } from '../security/noSecurity'
 import {
 	CustomPublish,
 	meteorCustomPublish,
+	SetupObserversResult,
 	setUpOptimizedObserverArray,
 	TriggerUpdate,
 } from '../lib/customPublication'
@@ -170,7 +171,7 @@ interface RoutedMappingsUpdateProps {
 async function setupMappingsPublicationObservers(
 	args: ReadonlyDeep<RoutedMappingsArgs>,
 	triggerUpdate: TriggerUpdate<RoutedMappingsUpdateProps>
-): Promise<Meteor.LiveQueryHandle[]> {
+): Promise<SetupObserversResult> {
 	// Set up observers:
 	return [
 		Studios.observeChanges(
