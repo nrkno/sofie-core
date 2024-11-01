@@ -116,7 +116,7 @@ export class NotifierHandle {
 				this.result = source().get()
 				notificationsDep.changed()
 			})
-		}) as any as Tracker.Computation
+		})
 
 		notifiers[notifierId] = this
 	}

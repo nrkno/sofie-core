@@ -342,17 +342,56 @@ export type Translated<T> = T & WithTranslation
  * @param {K} [initial] An optional, initial state of the tracker. If not provided, the tracker may return undefined.
  * @return {*}  {(T | K)}
  */
-export function useTracker<T>(autorun: () => T, deps: React.DependencyList): T | undefined
-export function useTracker<T>(autorun: () => T, deps: React.DependencyList, initial: T): T
+export function useTracker<T>(
+	autorun: (computation: Tracker.Computation) => T,
+	deps: React.DependencyList
+): T | undefined
+export function useTracker<T>(
+	autorun: (computation: Tracker.Computation) => T,
+	deps: React.DependencyList,
+	initial: T
+): T
 export function useTracker<T, K extends undefined | T = undefined>(
-	autorun: () => T,
+	autorun: (computation: Tracker.Computation) => T,
 	deps: React.DependencyList,
 	initial?: K
 ): T | K {
 	const [meteorData, setMeteorData] = useState<T | K>(initial as K)
 
 	useEffect(() => {
-		const computation = Tracker.nonreactive(() => Tracker.autorun(() => setMeteorData(autorun())))
+		const computation = Tracker.nonreactive(() =>
+			Tracker.autorun((innerComputation) => setMeteorData(autorun(innerComputation)))
+		)
+		return () => computation.stop()
+	}, deps)
+
+	return meteorData
+}
+
+/**
+ * A Meteor Tracker hook that allows using React Functional Components and the Hooks API with Meteor Tracker
+ *
+ * This is an alternate implementation which supports promises in the autorun function, and will preserve the previous value until the promise resolves.
+ *
+ * @param {() => Promise<T>} autorun The autorun function to be run.
+ * @param {React.DependencyList} [deps] A required list of dependenices to limit the tracker re-running. Can be left empty, if tracker
+ * 		has no external dependencies and should only be rerun when it's invalidated.
+ * @param {K} [initial] An optional, initial state of the tracker. If not provided, the tracker may return undefined.
+ * @return {*}  {(T | K)}
+ */
+export function useTrackerAsyncTest<T, K extends undefined | T = undefined>(
+	autorun: (computation: Tracker.Computation) => Promise<T>,
+	deps: React.DependencyList,
+	initial?: K
+): T | K {
+	const [meteorData, setMeteorData] = useState<T | K>(initial as K)
+
+	useEffect(() => {
+		const computation = Tracker.nonreactive(() =>
+			Tracker.autorun(async (innerComputation) => {
+				setMeteorData(await autorun(innerComputation))
+			})
+		)
 		return () => computation.stop()
 	}, deps)
 
