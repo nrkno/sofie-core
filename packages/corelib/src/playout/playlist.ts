@@ -93,8 +93,8 @@ export function sortRundownIDsInPlaylist(
 
 export function sortRundownsWithinPlaylist(
 	sortedPossibleIds: ReadonlyDeep<RundownId[]>,
-	unsortedRundowns: DBRundown[]
-): DBRundown[] {
+	unsortedRundowns: ReadonlyDeep<DBRundown[]>
+): ReadonlyDeep<DBRundown[]> {
 	return unsortedRundowns.slice().sort((a, b) => {
 		const indexA = sortedPossibleIds.indexOf(a._id)
 		const indexB = sortedPossibleIds.indexOf(b._id)
