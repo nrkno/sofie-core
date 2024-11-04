@@ -240,6 +240,16 @@ export class PlayoutModelReadonlyImpl implements PlayoutModelReadonly {
 		return undefined
 	}
 
+	getSegmentsBetweenQuickLoopMarker(start: QuickLoopMarker, end: QuickLoopMarker): SegmentId[] {
+		return this.quickLoopService.getSegmentsBetweenMarkers(start, end)
+	}
+	getPartsBetweenQuickLoopMarker(
+		start: QuickLoopMarker,
+		end: QuickLoopMarker
+	): { parts: PartId[]; segments: SegmentId[] } {
+		return this.quickLoopService.getPartsBetweenMarkers(start, end)
+	}
+
 	#isMultiGatewayMode: boolean | undefined = undefined
 	public get isMultiGatewayMode(): boolean {
 		if (this.#isMultiGatewayMode === undefined) {
@@ -828,10 +838,6 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 	updateQuickLoopState(): void {
 		this.playlistImpl.quickLoop = this.quickLoopService.getUpdatedProps()
 		this.#playlistHasChanged = true
-	}
-
-	getSegmentsBetweenQuickLoopMarker(start: QuickLoopMarker, end: QuickLoopMarker): SegmentId[] {
-		return this.quickLoopService.getSegmentsBetweenMarkers(start, end)
 	}
 
 	/** Notifications */

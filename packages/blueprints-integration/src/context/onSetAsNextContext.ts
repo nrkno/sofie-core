@@ -76,5 +76,5 @@ export interface IOnSetAsNextContext extends IShowStyleUserContext, IEventContex
 	 * Multiple calls of this inside one call to `onSetAsNext` will replace earlier calls.
 	 * @returns Whether a new Part was found using the provided offset
 	 */
-	moveNextPart(partDelta: number, segmentDelta: number): Promise<boolean>
+	moveNextPart(partDelta: number, segmentDelta: number, ignoreQuickLoop?: boolean): Promise<boolean>
 }

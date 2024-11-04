@@ -191,7 +191,8 @@ class ServerUserActionAPI
 		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		partDelta: number,
-		segmentDelta: number
+		segmentDelta: number,
+		ignoreQuickLoop: boolean | null
 	) {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
@@ -208,6 +209,7 @@ class ServerUserActionAPI
 				playlistId: rundownPlaylistId,
 				partDelta: partDelta,
 				segmentDelta: segmentDelta,
+				ignoreQuickLoop: ignoreQuickLoop ?? undefined,
 			}
 		)
 	}
