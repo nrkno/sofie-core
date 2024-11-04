@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react'
-import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { SegmentTimeline, SegmentTimelineClass } from './SegmentTimeline'
 import { computeSegmentDisplayDuration, RundownTiming, TimingEvent } from '../RundownView/RundownTiming/RundownTiming'
@@ -24,7 +23,7 @@ import {
 	ITrackedResolvedSegmentProps,
 	IOutputLayerUi,
 } from '../SegmentContainer/withResolvedSegment'
-import { computeSegmentDuration, getPartInstanceTimingId, RundownTimingContext } from '../../lib/rundownTiming'
+import { computeSegmentDuration, getPartInstanceTimingId } from '../../lib/rundownTiming'
 import { RundownViewShelf } from '../RundownView/RundownViewShelf'
 import { PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { catchError, useDebounce } from '../../lib/lib'
@@ -39,6 +38,7 @@ import {
 	TIMELINE_RIGHT_PADDING,
 } from './Constants'
 import { UIPartInstances, UIParts } from '../Collections'
+import { RundownTimingProviderContext } from '../RundownView/RundownTiming/withTiming'
 
 // Kept for backwards compatibility
 export type {
@@ -141,10 +141,8 @@ export function SegmentTimelineContainer(props: Readonly<IProps>): JSX.Element {
 
 const SegmentTimelineContainerContent = withResolvedSegment(
 	class SegmentTimelineContainerContent extends React.Component<IProps & ITrackedResolvedSegmentProps, IState> {
-		static contextTypes = {
-			durations: PropTypes.object.isRequired,
-			syncedDurations: PropTypes.object.isRequired,
-		}
+		static contextType = RundownTimingProviderContext
+		declare context: React.ContextType<typeof RundownTimingProviderContext>
 
 		isVisible: boolean
 		rundownCurrentPartInstanceId: PartInstanceId | null = null
@@ -152,12 +150,6 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 		intersectionObserver: IntersectionObserver | undefined
 		mountedTime = 0
 		nextPartOffset = 0
-
-		// Setup by React.Component constructor
-		declare context: {
-			durations: RundownTimingContext
-			syncedDurations: RundownTimingContext
-		}
 
 		constructor(props: IProps & ITrackedResolvedSegmentProps) {
 			super(props)
