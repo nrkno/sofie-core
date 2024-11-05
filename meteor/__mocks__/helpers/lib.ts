@@ -24,7 +24,7 @@ const METHOD_NAMES = [
 	'remove',
 	'update',
 	'upsert',
-	'_ensureIndex',
+	'createIndex',
 	'findFetchAsync',
 	'findOneAsync',
 	'insertAsync',

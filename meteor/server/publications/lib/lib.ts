@@ -5,7 +5,6 @@ import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { ResolvedCredentials, resolveCredentials } from '../../security/lib/credentials'
 import { Settings } from '../../Settings'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { MongoCursor } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import {
 	OrganizationId,
 	PeripheralDeviceId,
@@ -16,6 +15,7 @@ import { protectStringObject } from '../../lib/tempLib'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { PeripheralDevices, ShowStyleBases } from '../../collections'
 import { MetricsGauge } from '@sofie-automation/corelib/dist/prometheus'
+import { MinimalMongoCursor } from '../../collections/implementations/asyncCollection'
 
 export const MeteorPublicationSignatures: { [key: string]: string[] } = {}
 export const MeteorPublications: { [key: string]: Function } = {}
@@ -75,7 +75,7 @@ export function meteorPublish<K extends keyof AllPubSubTypes>(
 	callback: (
 		this: SubscriptionContext,
 		...args: Parameters<AllPubSubTypes[K]>
-	) => Promise<MongoCursor<PublishDocType<K>> | null>
+	) => Promise<MinimalMongoCursor<PublishDocType<K>> | null>
 ): void {
 	meteorPublishUnsafe(name, callback)
 }

@@ -1,8 +1,8 @@
-import { runTimersUntilNow, testInFiber } from '../../__mocks__/helpers/jest'
+import { runTimersUntilNow } from '../../__mocks__/helpers/jest'
 import { TimeJumpDetector } from '../systemTime'
 
 describe('lib/systemTime', () => {
-	testInFiber('TimeJumpDetector', async () => {
+	test('TimeJumpDetector', async () => {
 		jest.useFakeTimers()
 		const mockCallback = jest.fn()
 		let now = Date.now()

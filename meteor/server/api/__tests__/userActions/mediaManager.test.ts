@@ -1,5 +1,5 @@
 import '../../../../__mocks__/_extendJest'
-import { testInFiber, waitUntil } from '../../../../__mocks__/helpers/jest'
+import { waitUntil } from '../../../../__mocks__/helpers/jest'
 import { getRandomId, protectString } from '../../../lib/tempLib'
 import { getCurrentTime } from '../../../lib/lib'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../../__mocks__/helpers/database'
@@ -46,7 +46,7 @@ describe('User Actions - Media Manager', () => {
 		env = await setupDefaultStudioEnvironment()
 		jest.resetAllMocks()
 	})
-	testInFiber('Restart workflow', async () => {
+	test('Restart workflow', async () => {
 		const { workFlowId } = await setupMockWorkFlow()
 
 		// should fail if the workflow doesn't exist
@@ -76,7 +76,7 @@ describe('User Actions - Media Manager', () => {
 			await p
 		}
 	})
-	testInFiber('Abort worfklow', async () => {
+	test('Abort worfklow', async () => {
 		const { workFlowId } = await setupMockWorkFlow()
 
 		// should fail if the workflow doesn't exist
@@ -107,7 +107,7 @@ describe('User Actions - Media Manager', () => {
 			await p
 		}
 	})
-	testInFiber('Prioritize workflow', async () => {
+	test('Prioritize workflow', async () => {
 		const { workFlowId } = await setupMockWorkFlow()
 
 		// should fail if the workflow doesn't exist
@@ -138,7 +138,7 @@ describe('User Actions - Media Manager', () => {
 			await p
 		}
 	})
-	testInFiber('Restart all workflows', async () => {
+	test('Restart all workflows', async () => {
 		await setupMockWorkFlow()
 
 		{
@@ -160,7 +160,7 @@ describe('User Actions - Media Manager', () => {
 			await p
 		}
 	})
-	testInFiber('Abort all workflows', async () => {
+	test('Abort all workflows', async () => {
 		await setupMockWorkFlow()
 
 		{

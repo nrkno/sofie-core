@@ -10,7 +10,6 @@ import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mo
 import EventEmitter from 'events'
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
-import { MongoCursor } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
@@ -21,6 +20,7 @@ import { RundownContentObserver } from './RundownContentObserver'
 import { RundownsObserver } from './RundownsObserver'
 import { RundownPlaylists, Rundowns, ShowStyleBases } from '../../collections'
 import { PromiseDebounce } from '../../publications/lib/debounce'
+import { MinimalMongoCursor } from '../../collections/implementations/asyncCollection'
 
 type ChangedHandler = (showStyleBaseId: ShowStyleBaseId, cache: ContentCache) => () => void
 
@@ -84,7 +84,7 @@ export class StudioObserver extends EventEmitter {
 						{
 							projection: rundownPlaylistFieldSpecifier,
 						}
-					) as Promise<MongoCursor<Pick<DBRundownPlaylist, RundownPlaylistFields>>>
+					) as Promise<MinimalMongoCursor<Pick<DBRundownPlaylist, RundownPlaylistFields>>>
 			)
 			.end(this.updatePlaylistInStudio)
 	}
@@ -137,7 +137,7 @@ export class StudioObserver extends EventEmitter {
 				'currentRundown',
 				async () =>
 					Rundowns.findWithCursor({ _id: rundownId }, { fields: rundownFieldSpecifier, limit: 1 }) as Promise<
-						MongoCursor<Pick<DBRundown, RundownFields>>
+						MinimalMongoCursor<Pick<DBRundown, RundownFields>>
 					>
 			)
 			.next('showStyleBase', async (chain) =>
@@ -148,7 +148,7 @@ export class StudioObserver extends EventEmitter {
 								fields: showStyleBaseFieldSpecifier,
 								limit: 1,
 							}
-					  ) as Promise<MongoCursor<Pick<DBShowStyleBase, ShowStyleBaseFields>>>)
+					  ) as Promise<MinimalMongoCursor<Pick<DBShowStyleBase, ShowStyleBaseFields>>>)
 					: null
 			)
 			.end(this.updateShowStyle.call)

@@ -78,9 +78,9 @@ export function createLegacyApiRouter(): KoaRouter {
 
 		index.POST.push(docString)
 
-		assignRoute(router, 'POST', resource, signature.length, (args) => {
+		assignRoute(router, 'POST', resource, signature.length, async (args) => {
 			const convArgs = typeConvertUrlParameters(args)
-			return Meteor.call(methodValue, ...convArgs)
+			return Meteor.callAsync(methodValue, ...convArgs)
 		})
 	}
 
@@ -159,7 +159,7 @@ function assignRoute(
 	routeType: 'POST' | 'GET',
 	resource: string,
 	paramCount: number,
-	fcn: (p: any[]) => any
+	fcn: (p: any[]) => Promise<any>
 ) {
 	const route = routeType === 'POST' ? router.post.bind(router) : router.get.bind(router)
 

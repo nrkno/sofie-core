@@ -1,10 +1,10 @@
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Meteor } from 'meteor/meteor'
-import { MongoCursor } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import { Simplify } from 'type-fest'
 import { assertNever } from '../../lib/tempLib'
 import { logger } from '../../logging'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
+import { MinimalMongoCursor } from '../../collections/implementations/asyncCollection'
 
 /**
  * https://stackoverflow.com/a/66011942
@@ -19,7 +19,7 @@ type Not<Yes, Not> = Yes extends Not ? never : Yes
 type Link<T> = {
 	next: <L extends string, K extends { _id: ProtectedString<any> }>(
 		key: Not<L, keyof T>,
-		cursorChain: (state: T) => Promise<MongoCursor<K> | null>
+		cursorChain: (state: T) => Promise<MinimalMongoCursor<K> | null>
 	) => Link<Simplify<T & { [P in StringLiteral<L>]: K }>>
 
 	end: (complete: (state: T | null) => void) => Meteor.LiveQueryHandle
@@ -28,7 +28,7 @@ type Link<T> = {
 export function observerChain(): Pick<Link<{}>, 'next'> {
 	function createNextLink(baseCollectorObject: Record<string, any>, liveQueryHandle: Meteor.LiveQueryHandle) {
 		let mode: 'next' | 'end' | undefined
-		let chainedCursor: (state: Record<string, any>) => Promise<MongoCursor<any> | null>
+		let chainedCursor: (state: Record<string, any>) => Promise<MinimalMongoCursor<any> | null>
 		let completeFunction: (state: Record<string, any> | null) => void
 		let chainedKey: string | undefined = undefined
 		let previousObserver: Meteor.LiveQueryHandle | null = null

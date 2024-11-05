@@ -5,7 +5,6 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { NpmModuleMongodb } from 'meteor/npm-mongo'
 import { PromisifyCallbacks } from '@sofie-automation/shared-lib/dist/lib/types'
-import { waitForPromise } from '../lib/lib'
 import type { AnyBulkWriteOperation, Collection as RawCollection } from 'mongodb'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { registerCollection } from './lib'
@@ -15,22 +14,22 @@ import { WrappedReadOnlyMongoCollection } from './implementations/readonlyWrappe
 import {
 	FieldNames,
 	IndexSpecifier,
-	MongoCursor,
 	ObserveCallbacks,
 	ObserveChangesCallbacks,
 	UpdateOptions,
 	UpsertOptions,
 } from '@sofie-automation/meteor-lib/dist/collections/lib'
+import { MinimalMongoCursor } from './implementations/asyncCollection'
 
 export interface MongoAllowRules<DBInterface> {
-	insert?: (userId: UserId, doc: DBInterface) => Promise<boolean> | boolean
+	insert?: (userId: UserId | null, doc: DBInterface) => Promise<boolean> | boolean
 	update?: (
-		userId: UserId,
+		userId: UserId | null,
 		doc: DBInterface,
 		fieldNames: FieldNames<DBInterface>,
 		modifier: MongoModifier<DBInterface>
 	) => Promise<boolean> | boolean
-	remove?: (userId: UserId, doc: DBInterface) => Promise<boolean> | boolean
+	remove?: (userId: UserId | null, doc: DBInterface) => Promise<boolean> | boolean
 }
 
 /**
@@ -117,7 +116,7 @@ function wrapMeteorCollectionIntoAsyncCollection<DBInterface extends { _id: Prot
 	name: CollectionName
 ) {
 	if ((collection as any)._isMock) {
-		// We use a special one in tests, to reduce the amount of hops between fibers and promises
+		// We use a special one in tests, to add some async which naturally doesn't happen in the collection
 		return new WrappedMockCollection<DBInterface>(collection, name)
 	} else {
 		// Override the default mongodb methods, because the errors thrown by them doesn't contain the proper call stack
@@ -129,33 +128,32 @@ function setupCollectionAllowRules<DBInterface extends { _id: ProtectedString<an
 	collection: Mongo.Collection<DBInterface>,
 	args: MongoAllowRules<DBInterface> | false
 ) {
-	if (args) {
-		const { insert: origInsert, update: origUpdate, remove: origRemove } = args
-
-		const options: Parameters<Mongo.Collection<DBInterface>['allow']>[0] = {
-			insert: origInsert ? (userId, doc) => waitForPromise(origInsert(protectString(userId), doc)) : () => false,
-			update: origUpdate
-				? (userId, doc, fieldNames, modifier) =>
-						waitForPromise(origUpdate(protectString(userId), doc, fieldNames as any, modifier))
-				: () => false,
-			remove: origRemove ? (userId, doc) => waitForPromise(origRemove(protectString(userId), doc)) : () => false,
-		}
-
-		collection.allow(options)
-	} else {
-		// Block all client mutations
-		collection.allow({
-			insert(): boolean {
-				return false
-			},
-			update() {
-				return false
-			},
-			remove() {
-				return false
-			},
-		})
+	if (!args) {
+		// Mutations are disabled by default
+		return
 	}
+
+	const { insert: origInsert, update: origUpdate, remove: origRemove } = args
+
+	// These methods behave weirdly, we need to mangle this a bit.
+	// See https://github.com/meteor/meteor/issues/13444 for a full explanation
+	const options: any /*Parameters<Mongo.Collection<DBInterface>['allow']>[0]*/ = {
+		insert: () => false,
+		insertAsync: origInsert
+			? (userId: string | null, doc: DBInterface) => origInsert(protectString(userId), doc) as any
+			: () => false,
+		update: () => false,
+		updateAsync: origUpdate
+			? (userId: string | null, doc: DBInterface, fieldNames: string[], modifier: any) =>
+					origUpdate(protectString(userId), doc, fieldNames as any, modifier) as any
+			: () => false,
+		remove: () => false,
+		removeAsync: origRemove
+			? (userId: string | null, doc: DBInterface) => origRemove(protectString(userId), doc) as any
+			: () => false,
+	}
+
+	collection.allow(options)
 }
 
 /**
@@ -273,7 +271,7 @@ export interface AsyncOnlyReadOnlyMongoCollection<DBInterface extends { _id: Pro
 	findWithCursor(
 		selector?: MongoQuery<DBInterface> | DBInterface['_id'],
 		options?: FindOptions<DBInterface>
-	): Promise<MongoCursor<DBInterface>>
+	): Promise<MinimalMongoCursor<DBInterface>>
 
 	/**
 	 * Observe changes on this collection
@@ -301,5 +299,5 @@ export interface AsyncOnlyReadOnlyMongoCollection<DBInterface extends { _id: Pro
 	 */
 	countDocuments(selector?: MongoQuery<DBInterface>, options?: FindOptions<DBInterface>): Promise<number>
 
-	_ensureIndex(keys: IndexSpecifier<DBInterface> | string, options?: NpmModuleMongodb.CreateIndexesOptions): void
+	createIndex(indexSpec: IndexSpecifier<DBInterface>, options?: NpmModuleMongodb.CreateIndexesOptions): void
 }

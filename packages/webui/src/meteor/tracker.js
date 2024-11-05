@@ -51,18 +51,6 @@ function _debugFunc() {
 		: function () {}
 }
 
-function _maybeSuppressMoreLogs(messagesLength) {
-	// Sometimes when running tests, we intentionally suppress logs on expected
-	// printed errors. Since the current implementation of _throwOrLog can log
-	// multiple separate log messages, suppress all of them if at least one suppress
-	// is expected as we still want them to count as one.
-	if (typeof Meteor !== 'undefined') {
-		if (Meteor._suppressed_log_expected()) {
-			Meteor._suppress_log(messagesLength - 1)
-		}
-	}
-}
-
 function _throwOrLog(from, e) {
 	if (throwFirstError) {
 		throw e
@@ -78,7 +66,6 @@ function _throwOrLog(from, e) {
 			}
 		}
 		printArgs.push(e.stack)
-		_maybeSuppressMoreLogs(printArgs.length)
 
 		for (var i = 0; i < printArgs.length; i++) {
 			_debugFunc()(printArgs[i])

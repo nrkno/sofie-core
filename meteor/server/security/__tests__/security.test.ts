@@ -6,7 +6,6 @@ import { User } from '@sofie-automation/meteor-lib/dist/collections/Users'
 import { protectString } from '../../lib/tempLib'
 import { Settings } from '../../Settings'
 import { DefaultEnvironment, setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
-import { beforeAllInFiber, testInFiber } from '../../../__mocks__/helpers/jest'
 import { BucketsAPI } from '../../api/buckets'
 import { storeSystemSnapshot } from '../../api/snapshot'
 import { BucketSecurity } from '../buckets'
@@ -128,7 +127,7 @@ describe('Security', () => {
 		return expect(fcn()).resolves.not.toBeUndefined()
 	}
 	let env: DefaultEnvironment
-	beforeAllInFiber(async () => {
+	beforeAll(async () => {
 		env = await setupDefaultStudioEnvironment(org0._id)
 
 		await Organizations.insertAsync(org0)
@@ -142,7 +141,8 @@ describe('Security', () => {
 		await Users.insertAsync({ ...getUser(idSuperAdminInOtherOrg, org2._id), superAdmin: true })
 	})
 
-	testInFiber('Buckets', async () => {
+	// eslint-disable-next-line jest/expect-expect
+	test('Buckets', async () => {
 		const access = await StudioContentWriteAccess.bucket(creator, env.studio._id)
 		const bucket = await BucketsAPI.createNewBucket(access, 'myBucket')
 
@@ -187,12 +187,14 @@ describe('Security', () => {
 		})
 	})
 
-	testInFiber('NoSecurity', async () => {
+	// eslint-disable-next-line jest/expect-expect
+	test('NoSecurity', async () => {
 		await changeEnableUserAccounts(async () => {
 			await expectAllowed(async () => NoSecurityReadAccess.any())
 		})
 	})
-	testInFiber('Organization', async () => {
+	// eslint-disable-next-line jest/expect-expect
+	test('Organization', async () => {
 		const token = generateToken()
 		const snapshotId = await storeSystemSnapshot(superAdmin, hashSingleUseToken(token), env.studio._id, 'for test')
 

@@ -9,7 +9,7 @@ import { threadedClass, Promisify, ThreadedClassManager } from 'threadedclass'
 import type { JobSpec } from '@sofie-automation/job-worker/dist/main'
 import type { IpcJobWorker } from '@sofie-automation/job-worker/dist/ipc'
 import { createManualPromise, getRandomString, ManualPromise, Time } from '../lib/tempLib'
-import { MeteorStartupAsync, getCurrentTime } from '../lib/lib'
+import { getCurrentTime } from '../lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
 import { triggerFastTrackObserver, FastTrackObservers } from '../publications/fastTrack'
@@ -262,7 +262,7 @@ async function logLine(msg: LogEntry): Promise<void> {
 }
 
 let worker: Promisify<IpcJobWorker> | undefined
-MeteorStartupAsync(async () => {
+Meteor.startup(async () => {
 	if (Meteor.isDevelopment) {
 		// Ensure meteor restarts when the _force_restart file changes
 		try {

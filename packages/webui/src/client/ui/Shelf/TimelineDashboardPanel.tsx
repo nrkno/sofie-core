@@ -39,7 +39,7 @@ export const TimelineDashboardPanel = React.memo(
 const TimelineDashboardPanelContent = withTranslation()(
 	class TimelineDashboardPanelContent extends DashboardPanelInner {
 		liveLine: HTMLDivElement | null = null
-		scrollIntoViewTimeout: NodeJS.Timer | undefined = undefined
+		scrollIntoViewTimeout: NodeJS.Timeout | undefined = undefined
 
 		constructor(props: Translated<DashboardPanelInnerProps>) {
 			super(props)
