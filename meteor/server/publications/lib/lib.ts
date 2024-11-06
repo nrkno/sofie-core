@@ -51,11 +51,13 @@ export function meteorPublishUnsafe(
 
 	const publicationGauge = MeteorPublicationsGauge.labels({ publication: name })
 
-	Meteor.publish(name, function (...args: any[]): any {
+	Meteor.publish(name, async function (...args: any[]): Promise<any> {
 		publicationGauge.inc()
 		this.onStop(() => publicationGauge.dec())
 
-		return callback.apply(protectStringObject<Subscription, 'userId'>(this), args) || []
+		const callbackRes = await callback.apply(protectStringObject<Subscription, 'userId'>(this), args)
+		// If no value is returned, return an empty array so that meteor marks the subscription as ready
+		return callbackRes || []
 	})
 }
 
