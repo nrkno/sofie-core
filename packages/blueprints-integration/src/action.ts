@@ -41,6 +41,8 @@ export interface IBlueprintActionManifestDisplay {
 	uniquenessId?: string
 	/** When not playing, display in the UI as playing, and vice versa. Useful for Adlibs that toggle something off when taken */
 	invertOnAirState?: boolean
+	/** Hide this adLib from the shelf - it is accessible only through the API */
+	hidden?: boolean
 }
 
 export interface IBlueprintActionManifestDisplayContent extends IBlueprintActionManifestDisplay {

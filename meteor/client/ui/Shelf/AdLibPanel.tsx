@@ -371,15 +371,25 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 						// @ts-expect-error deep-property
 						sort: { 'display._rank': 1 },
 					}
-				).map<{
-					partId: PartId
-					piece: AdLibPieceUi
-				}>((action) => {
-					return {
-						partId: action.partId,
-						piece: actionToAdLibPieceUi(action, sourceLayerLookup, outputLayerLookup),
-					}
-				}),
+				)
+					.map<{
+						partId: PartId
+						piece: AdLibPieceUi
+						hidden: boolean
+					}>((action) => {
+						return {
+							partId: action.partId,
+							piece: actionToAdLibPieceUi(action, sourceLayerLookup, outputLayerLookup),
+							hidden: !!action.display.hidden,
+						}
+					})
+					.filter((adLibPiece) => {
+						if (!adLibPiece.hidden)
+							return {
+								partId: adLibPiece.partId,
+								piece: adLibPiece.piece,
+							}
+					}),
 			'adLibActions',
 			unorderedRundownIds,
 			partIds
@@ -487,7 +497,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 								}
 							)
 								.fetch()
-								.filter((action) => !(action.publicData && ((action.publicData as any).template as boolean)))
+								.filter((action) => !action.display.hidden)
 								.map((action) => actionToAdLibPieceUi(action, sourceLayerLookup, outputLayerLookup)),
 						'globalAdLibActions',
 						currentRundownId
