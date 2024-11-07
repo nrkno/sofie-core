@@ -29,7 +29,7 @@ export async function onPartPlaybackStarted(
 	const playingPartInstance = playoutModel.getPartInstance(data.partInstanceId)
 	if (!playingPartInstance)
 		throw new Error(
-			`PartInstance "${data.partInstanceId}" in RundownPlayst "${playoutModel.playlistId}" not found!`
+			`PartInstance "${data.partInstanceId}" in RundownPlaylist "${playoutModel.playlistId}" not found!`
 		)
 
 	// make sure we don't run multiple times, even if TSR calls us multiple times
