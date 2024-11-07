@@ -1570,27 +1570,6 @@ export default withTranslation()(
 			)
 		}
 
-		renderKeyboardLayout(item: RundownLayoutBase, index: number, isDashboardLayout: boolean) {
-			const { t } = this.props
-			return (
-				<React.Fragment>
-					<label className="field">
-						<LabelActual label={t('Name')} />
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute={`filters.${index}.name`}
-							obj={item}
-							type="text"
-							collection={RundownLayouts}
-							className="input text-input input-l"
-						/>
-					</label>
-
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
-				</React.Fragment>
-			)
-		}
-
 		renderNextBreakTiming(item: RundownLayoutBase, index: number, isDashboardLayout: boolean) {
 			const { t } = this.props
 			return (
@@ -1647,8 +1626,6 @@ export default withTranslation()(
 				return this.renderAdLibRegion(item, index, isDashboardLayout)
 			} else if (RundownLayoutsAPI.isPieceCountdown(filter)) {
 				return this.renderPieceCountdown(item, index, isDashboardLayout)
-			} else if (RundownLayoutsAPI.isKeyboardMap(filter)) {
-				return this.renderKeyboardLayout(item, index, isDashboardLayout)
 			} else if (RundownLayoutsAPI.isNextInfo(filter)) {
 				return this.renderNextInfo(item, index, isDashboardLayout)
 			} else if (RundownLayoutsAPI.isPlaylistStartTimer(filter)) {
