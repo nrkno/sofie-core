@@ -11,6 +11,9 @@ import { JobContext } from '../../../jobs'
 import { ExpectedPackagesStore } from './ExpectedPackagesStore'
 import { IngestSegmentModelImpl } from './IngestSegmentModelImpl'
 import { DocumentChangeTracker } from './DocumentChangeTracker'
+import { logger } from '../../../logging'
+import { AnyBulkWriteOperation } from 'mongodb'
+import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 
 export class SaveIngestModelHelper {
 	#expectedPackages = new DocumentChangeTracker<ExpectedPackageDB>()
@@ -55,6 +58,23 @@ export class SaveIngestModelHelper {
 	}
 
 	commit(context: JobContext): Array<Promise<unknown>> {
+		// Log deleted ids:
+		const deletedIds: { [key: string]: ProtectedString<any>[] } = {
+			expectedPackages: this.#expectedPackages.getDeletedIds(),
+			expectedPlayoutItems: this.#expectedPlayoutItems.getDeletedIds(),
+			expectedMediaItems: this.#expectedMediaItems.getDeletedIds(),
+			segments: this.#segments.getDeletedIds(),
+			parts: this.#parts.getDeletedIds(),
+			pieces: this.#pieces.getDeletedIds(),
+			adLibPieces: this.#adLibPieces.getDeletedIds(),
+			adLibActions: this.#adLibActions.getDeletedIds(),
+		}
+		for (const [key, ids] of Object.entries<ProtectedString<any>[]>(deletedIds)) {
+			if (ids.length > 0) {
+				logger.debug(`Deleted ${key}: ${JSON.stringify(ids)} `)
+			}
+		}
+
 		return [
 			context.directCollections.ExpectedPackages.bulkWrite(this.#expectedPackages.generateWriteOps()),
 			context.directCollections.ExpectedPlayoutItems.bulkWrite(this.#expectedPlayoutItems.generateWriteOps()),
