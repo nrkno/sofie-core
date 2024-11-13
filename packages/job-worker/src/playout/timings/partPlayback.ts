@@ -26,6 +26,18 @@ export async function onPartPlaybackStarted(
 		startedPlayback: Time
 	}
 ): Promise<void> {
+	if (
+		// We only expect to be able to update the current, next, or previous part:
+		data.partInstanceId !== playoutModel.playlist.currentPartInfo?.partInstanceId ||
+		data.partInstanceId !== playoutModel.playlist.nextPartInfo?.partInstanceId ||
+		data.partInstanceId !== playoutModel.playlist.previousPartInfo?.partInstanceId
+	) {
+		logger.debug(
+			`onPartPlaybackStarted PartInstance "${data.partInstanceId}" is neither current, next nor previous (current: ${playoutModel.playlist.currentPartInfo?.partInstanceId}, next: ${playoutModel.playlist.nextPartInfo?.partInstanceId}, previous: ${playoutModel.playlist.previousPartInfo?.partInstanceId}, timestamp: ${data.startedPlayback}`
+		)
+		return
+	}
+
 	const playingPartInstance = playoutModel.getPartInstance(data.partInstanceId)
 	if (!playingPartInstance)
 		throw new Error(
@@ -136,6 +148,18 @@ export function onPartPlaybackStopped(
 		stoppedPlayback: Time
 	}
 ): void {
+	if (
+		// We only expect to be able to update the current, next, or previous part:
+		data.partInstanceId !== playoutModel.playlist.currentPartInfo?.partInstanceId ||
+		data.partInstanceId !== playoutModel.playlist.nextPartInfo?.partInstanceId ||
+		data.partInstanceId !== playoutModel.playlist.previousPartInfo?.partInstanceId
+	) {
+		logger.debug(
+			`onPartPlaybackStopped PartInstance "${data.partInstanceId}" is neither current, next nor previous (current: ${playoutModel.playlist.currentPartInfo?.partInstanceId}, next: ${playoutModel.playlist.nextPartInfo?.partInstanceId}, previous: ${playoutModel.playlist.previousPartInfo?.partInstanceId}, timestamp: ${data.stoppedPlayback}`
+		)
+		return
+	}
+
 	const playlist = playoutModel.playlist
 
 	const partInstance = playoutModel.getPartInstance(data.partInstanceId)
