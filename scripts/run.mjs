@@ -44,6 +44,12 @@ function watchMeteor() {
 			name: "METEOR",
 			prefixColor: "cyan",
 		},
+		{
+			command: `yarn dev`,
+			cwd: "packages/webui",
+			name: "VITE",
+			prefixColor: "yellow",
+		},
 	];
 }
 
@@ -51,13 +57,11 @@ function hr() {
 	// write regular dashes if this is a "simple" output stream ()
 	if (!process.stdout.hasColors || !process.stdout.hasColors())
 		return "-".repeat(process.stdout.columns ?? 40);
-	return '─'.repeat(process.stdout.columns ?? 40)
+	return "─".repeat(process.stdout.columns ?? 40);
 }
 
 try {
 	// Note: This scricpt assumes that install-and-build.mjs has been run before
-
-	
 
 	// The main watching execution
 	console.log(hr());

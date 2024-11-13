@@ -24,14 +24,15 @@ import {
 	MappingsExt,
 	ResultingMappingRoutes,
 	StudioPackageContainer,
+	StudioRouteSet,
 } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { literal, Complete, assertNever } from '@sofie-automation/corelib/dist/lib'
 import { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
-import { getSideEffect } from '../../../lib/collections/ExpectedPackages'
-import { getActiveRoutes, getRoutedMappings } from '../../../lib/collections/Studios'
-import { ensureHasTrailingSlash, generateTranslation, unprotectString } from '../../../lib/lib'
-import { PieceContentStatusObj } from '../../../lib/api/pieceContentStatus'
+import { getSideEffect } from '@sofie-automation/meteor-lib/dist/collections/ExpectedPackages'
+import { getActiveRoutes, getRoutedMappings } from '@sofie-automation/meteor-lib/dist/collections/Studios'
+import { ensureHasTrailingSlash, generateTranslation, unprotectString } from '../../lib/tempLib'
+import { PieceContentStatusObj } from '@sofie-automation/meteor-lib/dist/api/pieceContentStatus'
 import { MediaObjects, PackageContainerPackageStatuses, PackageInfos } from '../../collections'
 import {
 	mediaObjectFieldSpecifier,
@@ -172,12 +173,15 @@ export type PieceContentStatusPiece = Pick<PieceGeneric, '_id' | 'content' | 'ex
 	pieceInstanceId?: PieceInstanceId
 }
 export interface PieceContentStatusStudio
-	extends Pick<
-		DBStudio,
-		'_id' | 'settings' | 'packageContainers' | 'previewContainerIds' | 'thumbnailContainerIds' | 'routeSets'
-	> {
+	extends Pick<DBStudio, '_id' | 'settings' | 'previewContainerIds' | 'thumbnailContainerIds'> {
 	/** Mappings between the physical devices / outputs and logical ones */
 	mappings: MappingsExt
+	/** Route sets with overrides */
+	routeSets: Record<string, StudioRouteSet>
+	/** Contains settings for which Package Containers are present in the studio.
+	 * (These are used by the Package Manager and the Expected Packages)
+	 */
+	packageContainers: Record<string, StudioPackageContainer>
 }
 
 export async function checkPieceContentStatusAndDependencies(
@@ -557,7 +561,7 @@ async function checkPieceContentExpectedPackageStatus(
 						const sideEffect = getSideEffect(expectedPackage, studio)
 
 						thumbnailUrl = await getAssetUrlFromPackageContainerStatus(
-							studio,
+							studio.packageContainers,
 							getPackageContainerPackageStatus,
 							expectedPackageId,
 							sideEffect.thumbnailContainerId,
@@ -569,7 +573,7 @@ async function checkPieceContentExpectedPackageStatus(
 						const sideEffect = getSideEffect(expectedPackage, studio)
 
 						previewUrl = await getAssetUrlFromPackageContainerStatus(
-							studio,
+							studio.packageContainers,
 							getPackageContainerPackageStatus,
 							expectedPackageId,
 							sideEffect.previewContainerId,
@@ -716,7 +720,7 @@ async function checkPieceContentExpectedPackageStatus(
 }
 
 async function getAssetUrlFromPackageContainerStatus(
-	studio: PieceContentStatusStudio,
+	packageContainers: Record<string, StudioPackageContainer>,
 	getPackageContainerPackageStatus: (
 		packageContainerId: string,
 		expectedPackageId: ExpectedPackageId
@@ -727,7 +731,7 @@ async function getAssetUrlFromPackageContainerStatus(
 ): Promise<string | undefined> {
 	if (!assetContainerId || !packageAssetPath) return
 
-	const assetPackageContainer = studio.packageContainers[assetContainerId]
+	const assetPackageContainer = packageContainers[assetContainerId]
 	if (!assetPackageContainer) return
 
 	const previewPackageOnPackageContainer = await getPackageContainerPackageStatus(assetContainerId, expectedPackageId)

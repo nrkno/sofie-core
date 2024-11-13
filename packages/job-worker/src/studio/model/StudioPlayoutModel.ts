@@ -45,7 +45,10 @@ export interface StudioPlayoutModelBase extends StudioPlayoutModelBaseReadonly {
 	 * @param timelineObjs Timeline objects to be run in the Studio
 	 * @param generationVersions Details about the versions where these objects were generated
 	 */
-	setTimeline(timelineObjs: TimelineObjGeneric[], generationVersions: TimelineCompleteGenerationVersions): void
+	setTimeline(
+		timelineObjs: TimelineObjGeneric[],
+		generationVersions: TimelineCompleteGenerationVersions
+	): ReadonlyDeep<TimelineComplete>
 }
 
 /**
@@ -65,4 +68,12 @@ export interface StudioPlayoutModel extends StudioPlayoutModelBase, BaseModel {
 	 * @param excludeRundownPlaylistId Ignore a given RundownPlaylist, useful to see if any other RundownPlaylists are active
 	 */
 	getActiveRundownPlaylists(excludeRundownPlaylistId?: RundownPlaylistId): ReadonlyDeep<DBRundownPlaylist[]>
+
+	/**
+	 * Update the active state of a RouteSet
+	 * @param routeSetId The RouteSet to update
+	 * @param isActive The new active state of the RouteSet
+	 * @returns Whether the change may affect timeline generation
+	 */
+	switchRouteSet(routeSetId: string, isActive: boolean | 'toggle'): boolean
 }

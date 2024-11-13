@@ -1,9 +1,9 @@
 import { beforeEachInFiber } from '../../../../../__mocks__/helpers/jest'
 import { MeteorMock } from '../../../../../__mocks__/meteor'
 import { Meteor } from 'meteor/meteor'
-import { UserActionAPIMethods } from '../../../../../lib/api/userActions'
+import { UserActionAPIMethods } from '@sofie-automation/meteor-lib/dist/api/userActions'
 import { MeteorMethodSignatures } from '../../../../methods'
-import { ClientAPI } from '../../../../../lib/api/client'
+import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { callKoaRoute } from '../../../../../__mocks__/koa-util'
 import { createLegacyApiRouter } from '..'
 import '../../../userActions.ts' // required to get the UserActionsAPI methods populated

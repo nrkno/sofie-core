@@ -9,8 +9,8 @@ import {
 	MongoCursor,
 	ObserveChangesCallbacks,
 	ObserveCallbacks,
-} from '../../../lib/collections/lib'
-import { PromisifyCallbacks } from '../../../lib/lib'
+} from '@sofie-automation/meteor-lib/dist/collections/lib'
+import { PromisifyCallbacks } from '@sofie-automation/shared-lib/dist/lib/types'
 import type { AnyBulkWriteOperation } from 'mongodb'
 import { AsyncOnlyMongoCollection } from '../collection'
 import { WrappedMongoCollectionBase, dePromiseObjectOfFunctions } from './base'

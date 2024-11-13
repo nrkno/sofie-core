@@ -111,10 +111,10 @@ export interface PlayoutPartInstanceModel {
 	markAsReset(): void
 
 	/**
-	 * Recalculate the `expectedDurationWithPreroll` property for this PartInstance
+	 * Recalculate the `expectedDurationWithTransition` property for this PartInstance
 	 * Future: is this needed? should this be handled internally?
 	 */
-	recalculateExpectedDurationWithPreroll(): void
+	recalculateExpectedDurationWithTransition(): void
 
 	/**
 	 * Remove a PieceInstance from the model.
@@ -176,6 +176,11 @@ export interface PlayoutPartInstanceModel {
 	 * @param time Reported stopped time
 	 */
 	setReportedStoppedPlayback(time: Time): boolean
+	/**
+	 * Set the Reported stopped playback time, including still-playing PieceInstances
+	 * @param time Reported stopped time on all available objects
+	 */
+	setReportedStoppedPlaybackWithPieceInstances(time: Time): boolean
 
 	/**
 	 * Set the rank of this PartInstance, to update it's position in the Segment
@@ -213,4 +218,15 @@ export interface PlayoutPartInstanceModel {
 	 * Ensure that this PartInstance is setup correctly for being in the AdlibTesting Segment
 	 */
 	validateAdlibTestingSegmentProperties(): void
+
+	/**
+	 * Whether this part instance is too close to autoNexting out of, to perform operations that might cause glitches
+	 * @param isTake
+	 */
+	isTooCloseToAutonext(isTake: boolean): boolean
+
+	/**
+	 * Returns the contained partInstance, with QuickLoop overrides applied, if needed
+	 */
+	getPartInstanceWithQuickLoopOverrides(): ReadonlyDeep<DBPartInstance>
 }

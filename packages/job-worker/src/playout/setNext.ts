@@ -131,6 +131,8 @@ export async function setNextPart(
 
 	resetPartInstancesWhenChangingSegment(context, playoutModel)
 
+	playoutModel.updateQuickLoopState()
+
 	await cleanupOrphanedItems(context, playoutModel)
 
 	if (span) span.end()

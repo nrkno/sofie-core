@@ -52,7 +52,6 @@ import { getCurrentTime } from '../../../lib'
 import _ = require('underscore')
 import { syncPlayheadInfinitesForNextPartInstance } from '../../../playout/infinites'
 import { validateAdlibTestingPartInstanceProperties } from '../../../playout/adlibTesting'
-import { isTooCloseToAutonext } from '../../../playout/lib'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PlayoutRundownModel } from '../../../playout/model/PlayoutRundownModel'
 
@@ -368,7 +367,7 @@ export class PartAndPieceInstanceActionService {
 			throw new Error('Cannot queue part when next part has already been modified')
 		}
 
-		if (isTooCloseToAutonext(currentPartInstance.partInstance, true)) {
+		if (currentPartInstance.isTooCloseToAutonext(true)) {
 			throw new Error('Too close to an autonext to queue a part')
 		}
 
@@ -384,7 +383,7 @@ export class PartAndPieceInstanceActionService {
 			invalid: false,
 			invalidReason: undefined,
 			floated: false,
-			expectedDurationWithPreroll: undefined, // Filled in later
+			expectedDurationWithTransition: undefined, // Filled in later
 		}
 
 		const pieces = postProcessPieces(
@@ -526,7 +525,7 @@ export async function applyActionSideEffects(
 	if (actionContext.nextPartState !== ActionPartChange.NONE) {
 		const nextPartInstance = playoutModel.nextPartInstance
 		if (nextPartInstance) {
-			nextPartInstance.recalculateExpectedDurationWithPreroll()
+			nextPartInstance.recalculateExpectedDurationWithTransition()
 
 			validateAdlibTestingPartInstanceProperties(context, playoutModel, nextPartInstance)
 		}

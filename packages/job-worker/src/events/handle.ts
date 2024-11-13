@@ -184,7 +184,7 @@ export async function queueExternalMessages(
 					}
 				}
 			} catch (e) {
-				logger.error(`Failed to save ExternalMessage: ${e} (${JSON.stringify(message)})`)
+				logger.error(`Failed to save ExternalMessage: ${stringifyError(e)} (${JSON.stringify(message)})`)
 			}
 		})
 	)

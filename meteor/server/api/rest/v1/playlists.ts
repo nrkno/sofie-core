@@ -13,10 +13,10 @@ import {
 	RundownPlaylistId,
 	SegmentId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Match, check } from '../../../../lib/check'
-import { PlaylistsRestAPI } from '../../../../lib/api/rest/v1'
+import { Match, check } from '../../../lib/check'
+import { PlaylistsRestAPI } from '../../../lib/rest/v1'
 import { Meteor } from 'meteor/meteor'
-import { ClientAPI } from '../../../../lib/api/client'
+import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import {
 	AdLibActions,
 	AdLibPieces,
@@ -30,8 +30,8 @@ import {
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { ServerClientAPI } from '../../client'
 import { QueueNextSegmentResult, StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import { getCurrentTime } from '../../../../lib/lib'
-import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
+import { getCurrentTime } from '../../../lib/lib'
+import { TriggerReloadDataResponse } from '@sofie-automation/meteor-lib/dist/api/userActions'
 import { ServerRundownAPI } from '../../rundown'
 import { triggerWriteAccess } from '../../../security/lib/securityVerify'
 
@@ -330,7 +330,7 @@ class PlaylistsServerAPI implements PlaylistsRestAPI {
 				check(rundownPlaylistId, String)
 			},
 			'reloadPlaylist',
-			[rundownPlaylistId],
+			{ rundownPlaylistId },
 			async (access) => {
 				const reloadResponse = await ServerRundownAPI.resyncRundownPlaylist(access)
 				const success = !reloadResponse.rundownsResponses.reduce((missing, rundownsResponse) => {
@@ -458,11 +458,11 @@ class PlaylistsServerAPI implements PlaylistsRestAPI {
 		)
 	}
 
-	async clearSourceLayer(
+	async clearSourceLayers(
 		connection: Meteor.Connection,
 		event: string,
 		rundownPlaylistId: RundownPlaylistId,
-		sourceLayerId: string
+		sourceLayerIds: string[]
 	): Promise<ClientAPI.ClientResponse<void>> {
 		const rundownPlaylist = await RundownPlaylists.findOneAsync(rundownPlaylistId)
 		if (!rundownPlaylist)
@@ -489,13 +489,13 @@ class PlaylistsServerAPI implements PlaylistsRestAPI {
 			rundownPlaylistId,
 			() => {
 				check(rundownPlaylistId, String)
-				check(sourceLayerId, String)
+				check(sourceLayerIds, [String])
 			},
 			StudioJobs.StopPiecesOnSourceLayers,
 			{
 				playlistId: rundownPlaylistId,
 				partInstanceId: rundownPlaylist.currentPartInfo.partInstanceId,
-				sourceLayerIds: [sourceLayerId],
+				sourceLayerIds: sourceLayerIds,
 			}
 		)
 	}
@@ -786,6 +786,26 @@ export function registerRoutes(registerRoute: APIRegisterHook<PlaylistsRestAPI>)
 		}
 	)
 
+	registerRoute<{ playlistId: string }, { sourceLayerIds: string[] }, void>(
+		'put',
+		'/playlists/:playlistId/clear-sourcelayers',
+		new Map([
+			[404, [UserErrorMessage.RundownPlaylistNotFound]],
+			[412, [UserErrorMessage.InactiveRundown]],
+		]),
+		playlistsAPIFactory,
+		async (serverAPI, connection, event, params, body) => {
+			const playlistId = protectString<RundownPlaylistId>(params.playlistId)
+			const sourceLayerIds = body?.sourceLayerIds
+			logger.info(`API POST: clear-sourcelayers ${playlistId} ${sourceLayerIds}`)
+
+			check(playlistId, String)
+			check(sourceLayerIds, Array<String>)
+
+			return await serverAPI.clearSourceLayers(connection, event, playlistId, sourceLayerIds)
+		}
+	)
+
 	registerRoute<{ playlistId: string; sourceLayerId: string }, never, void>(
 		'delete',
 		'/playlists/:playlistId/sourceLayer/:sourceLayerId',
@@ -801,7 +821,7 @@ export function registerRoutes(registerRoute: APIRegisterHook<PlaylistsRestAPI>)
 
 			check(playlistId, String)
 			check(sourceLayerId, String)
-			return await serverAPI.clearSourceLayer(connection, event, playlistId, sourceLayerId)
+			return await serverAPI.clearSourceLayers(connection, event, playlistId, [sourceLayerId])
 		}
 	)
 

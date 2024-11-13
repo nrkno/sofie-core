@@ -3,6 +3,8 @@ import {
 	AdLibActions,
 	AdLibPieces,
 	ExpectedPackages,
+	PartInstances,
+	Parts,
 	PeripheralDevices,
 	Pieces,
 	RundownPlaylists,
@@ -37,15 +39,7 @@ import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 
-/*
- * **************************************************************************************
- *
- *  These migrations are destined for the next release
- *
- * (This file is to be renamed to the correct version number when doing the release)
- *
- * **************************************************************************************
- */
+// Release 50
 
 const mappingBaseOptions: Array<keyof MappingExt> = [
 	'_id' as any,
@@ -89,10 +83,10 @@ function convertMappingsOverrideOps(studio: DBStudio) {
 	return changed && newOverrides
 }
 
-function convertRouteSetMappings(studio: DBStudio) {
+function convertRouteSetMappings(routeSets: Record<string, StudioRouteSet>) {
 	let changed = false
 
-	const newRouteSets = clone(studio.routeSets || {})
+	const newRouteSets = clone(routeSets || {})
 	for (const routeSet of Object.values<StudioRouteSet>(newRouteSets)) {
 		for (const route of routeSet.routes) {
 			if (route.remapping && !route.remapping.options) {
@@ -101,7 +95,7 @@ function convertRouteSetMappings(studio: DBStudio) {
 					..._.pick(route.remapping, ...mappingBaseOptions),
 					options: _.omit(route.remapping, ...mappingBaseOptions),
 				}
-				console.log('new route', route)
+				// console.log('new route', route)
 				changed = true
 			}
 		}
@@ -253,10 +247,13 @@ export const addSteps = addMigrationSteps('1.50.0', [
 		canBeRunAutomatically: true,
 		validate: async () => {
 			const studios = await Studios.findFetchAsync({ routeSets: { $exists: true } })
-
 			for (const studio of studios) {
-				const newOverrides = convertRouteSetMappings(studio)
-				if (newOverrides) {
+				// Ignore this if the routeSets has been converted into an OverrideWithObjects:
+				if (studio.routeSetsWithOverrides) continue
+				//@ts-expect-error routeSets are not part of the typings:
+				const plainRouteSets = studio.routeSets as any as Record<string, StudioRouteSet>
+				const newRouteSets = convertRouteSetMappings(plainRouteSets)
+				if (newRouteSets) {
 					return `object needs to be updated`
 				}
 			}
@@ -267,7 +264,12 @@ export const addSteps = addMigrationSteps('1.50.0', [
 			const studios = await Studios.findFetchAsync({ routeSets: { $exists: true } })
 
 			for (const studio of studios) {
-				const newRouteSets = convertRouteSetMappings(studio)
+				// Ignore this if the routeSets already has been converted into an OverrideWithObjects:
+				if (studio.routeSetsWithOverrides) continue
+				//@ts-expect-error routeSets are not part of the typings:
+				const plainRouteSets = studio.routeSets as any as Record<string, StudioRouteSet>
+
+				const newRouteSets = convertRouteSetMappings(plainRouteSets)
 
 				if (newRouteSets) {
 					await Studios.updateAsync(studio._id, {
@@ -923,6 +925,71 @@ export const addSteps = addMigrationSteps('1.50.0', [
 				await ExpectedPackages.mutableCollection.updateAsync(expectedPackage._id, {
 					$set: {
 						partId: partIdLookup.get(expectedPackage.pieceId) ?? protectString(''),
+					},
+				})
+			}
+		},
+	},
+
+	{
+		id: `Part rename 'expectedDurationWithPreroll' to 'expectedDurationWithTransition'`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objectCount = await Parts.countDocuments({
+				expectedDurationWithTransition: { $exists: false },
+				expectedDurationWithPreroll: { $exists: true },
+			})
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			const objects = await Parts.findFetchAsync({
+				expectedDurationWithTransition: { $exists: false },
+				expectedDurationWithPreroll: { $exists: true },
+			})
+
+			for (const part of objects) {
+				await Parts.mutableCollection.updateAsync(part._id, {
+					$set: {
+						expectedDurationWithTransition: (part as any).expectedDurationWithPreroll,
+					},
+					$unset: {
+						expectedDurationWithPreroll: 1,
+					},
+				})
+			}
+		},
+	},
+	{
+		id: `PartInstance rename 'part.expectedDurationWithPreroll' to 'part.expectedDurationWithTransition'`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objectCount = await PartInstances.countDocuments({
+				'part.expectedDurationWithTransition': { $exists: false },
+				'part.expectedDurationWithPreroll': { $exists: true },
+			})
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			const objects = await PartInstances.findFetchAsync({
+				'part.expectedDurationWithTransition': { $exists: false },
+				'part.expectedDurationWithPreroll': { $exists: true },
+			})
+
+			for (const partInstance of objects) {
+				await PartInstances.mutableCollection.updateAsync(partInstance._id, {
+					$set: {
+						'part.expectedDurationWithTransition': (partInstance.part as any).expectedDurationWithPreroll,
+					},
+					$unset: {
+						'part.expectedDurationWithPreroll': 1,
 					},
 				})
 			}

@@ -1,12 +1,13 @@
-import { check } from '../../lib/check'
-import { literal, getCurrentTime, Time, getRandomId } from '../../lib/lib'
+import { check } from '../lib/check'
+import { literal, Time, getRandomId } from '../lib/tempLib'
+import { getCurrentTime } from '../lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { logger } from '../logging'
-import { ClientAPI, NewClientAPI, ClientAPIMethods } from '../../lib/api/client'
-import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
+import { ClientAPI, NewClientAPI, ClientAPIMethods } from '@sofie-automation/meteor-lib/dist/api/client'
+import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
 import { registerClassToMeteorMethods } from '../methods'
-import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
-import { Settings } from '../../lib/Settings'
+import { MethodContext, MethodContextAPI } from './methodContext'
+import { Settings } from '../Settings'
 import { resolveCredentials } from '../security/lib/credentials'
 import { isInTestWrite, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
@@ -32,9 +33,9 @@ import {
 	VerifiedRundownPlaylistContentAccess,
 } from './lib'
 import { BasicAccessContext } from '../security/organization'
-import { NoticeLevel } from '../../lib/notifications/notifications'
 import { UserActionsLog } from '../collections'
 import { executePeripheralDeviceFunctionWithCustomTimeout } from './peripheralDevice/executeFunction'
+import { LeveledLogMethodFixed } from '@sofie-automation/corelib/dist/logging'
 
 function rewrapError(methodName: string, e: any): ClientAPI.ClientResponseError {
 	const userError = UserError.fromUnknown(e)
@@ -63,7 +64,7 @@ export namespace ServerClientAPI {
 			userEvent,
 			eventTime,
 			`worker.${jobName}`,
-			[jobArguments],
+			jobArguments as any,
 			async (_credentials, userActionMetadata) => {
 				checkArgs()
 
@@ -90,7 +91,7 @@ export namespace ServerClientAPI {
 			userEvent,
 			eventTime,
 			`worker.${jobName}`,
-			[jobArguments],
+			jobArguments as any,
 			async (_credentials, userActionMetadata) => {
 				checkArgs()
 
@@ -110,7 +111,7 @@ export namespace ServerClientAPI {
 		playlistId: RundownPlaylistId,
 		checkArgs: () => void,
 		methodName: string,
-		args: any[],
+		args: Record<string, unknown>,
 		fcn: (access: VerifiedRundownPlaylistContentAccess) => Promise<T>
 	): Promise<ClientAPI.ClientResponse<T>> {
 		return runUserActionInLog(context, userEvent, eventTime, methodName, args, async () => {
@@ -131,7 +132,7 @@ export namespace ServerClientAPI {
 		rundownId: RundownId,
 		checkArgs: () => void,
 		methodName: string,
-		args: any[],
+		args: Record<string, unknown>,
 		fcn: (access: VerifiedRundownContentAccess) => Promise<T>
 	): Promise<ClientAPI.ClientResponse<T>> {
 		return runUserActionInLog(context, userEvent, eventTime, methodName, args, async () => {
@@ -183,7 +184,7 @@ export namespace ServerClientAPI {
 		userEvent: string,
 		eventTime: Time,
 		methodName: string,
-		methodArgs: unknown[],
+		methodArgs: Record<string, unknown>,
 		fcn: (credentials: BasicAccessContext, userActionMetadata: UserActionMetadata) => Promise<TRes>
 	): Promise<ClientAPI.ClientResponse<TRes>> {
 		// If we are in the test write auth check mode, then bypass all special logic to ensure errors dont get mangled
@@ -235,14 +236,21 @@ export namespace ServerClientAPI {
 					const result = await fcn(credentials, userActionMetadata)
 
 					const completeTime = Date.now()
-					await UserActionsLog.updateAsync(actionId, {
-						$set: {
-							success: true,
-							doneTime: completeTime,
-							executionTime: completeTime - startTime,
-							workerTime: userActionMetadata.workerDuration,
-						},
-					})
+					pInitialInsert
+						.then(async () =>
+							UserActionsLog.updateAsync(actionId, {
+								$set: {
+									success: true,
+									doneTime: completeTime,
+									executionTime: completeTime - startTime,
+									workerTime: userActionMetadata.workerDuration,
+								},
+							})
+						)
+						.catch((err) => {
+							// If this fails make sure it is handled
+							logger.warn(`Failed to update UserActionsLog: ${stringifyError(err)}`)
+						})
 
 					return ClientAPI.responseSuccess(result)
 				} catch (e) {
@@ -413,6 +421,11 @@ export namespace ServerClientAPI {
 }
 
 class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
+	async clientLogger(type: string, ...args: string[]): Promise<void> {
+		const loggerFunction: LeveledLogMethodFixed = (logger as any)[type] || logger.log
+
+		loggerFunction(args.join(', '))
+	}
 	async clientErrorReport(timestamp: Time, errorString: string, location: string) {
 		check(timestamp, Number)
 		triggerWriteAccessBecauseNoCheckNecessary() // TODO: discuss if is this ok?
@@ -422,7 +435,7 @@ class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
 			}"\n  at ${new Date(timestamp).toISOString()}:\n"${errorString}`
 		)
 	}
-	async clientLogNotification(timestamp: Time, from: string, severity: NoticeLevel, message: string, source?: any) {
+	async clientLogNotification(timestamp: Time, from: string, severity: number, message: string, source?: any) {
 		check(timestamp, Number)
 		triggerWriteAccessBecauseNoCheckNecessary() // TODO: discuss if is this ok?
 		const address = this.connection ? this.connection.clientAddress : 'N/A'

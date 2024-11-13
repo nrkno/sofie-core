@@ -1,4 +1,4 @@
-import { FieldNames } from '../../../lib/collections/lib'
+import { FieldNames } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import { logger } from '../../logging'
 /**
  * Allow only edits to the fields specified. Edits to any other fields will be rejected

@@ -574,12 +574,67 @@ resources:
                     example: No Next point found, please set a part as Next before doing a TAKE.
         500:
           $ref: '#/components/responses/internalServerError'
+
+  clearSourceLayers:
+    put:
+      operationId: clearSourceLayers
+      tags:
+        - playlists
+      summary: Clears the target SourceLayers.
+      parameters:
+        - name: playlistId
+          in: path
+          description: Target playlist.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sourceLayerIds:
+                  description: Target SourceLayers.
+                  type: array
+                  items:
+                    type: string
+              required:
+                - sourceLayerIds
+              example:
+                sourceLayerIds:
+                  - 'mySourceLayerId'
+      responses:
+        200:
+          $ref: '#/components/responses/putSuccess'
+        404:
+          $ref: '#/components/responses/playlistNotFound'
+        412:
+          description: Playlist is not active.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 412
+                  message:
+                    type: string
+                    example: Rundown must be active!
+        500:
+          $ref: '#/components/responses/internalServerError'
+
   sourceLayer:
     delete:
+      deprecated: true
       operationId: clearSourceLayer
       tags:
         - sourceLayers
-      summary: Clears the target SourceLayer.
+      summary: |
+        Clears the target SourceLayer.
+        This endpoint is deprecated, use the `clear-sourcelayers` endpoint instead.
       parameters:
         - name: playlistId
           in: path

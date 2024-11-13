@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/corelib",
-	"version": "1.51.0-in-development",
+	"version": "1.52.0-in-development",
 	"private": true,
 	"description": "Internal library for some types shared by core and workers",
 	"main": "dist/index.js",
@@ -8,13 +8,13 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
+		"url": "git+https://github.com/nrkno/sofie-core.git",
 		"directory": "packages/corelib"
 	},
 	"bugs": {
-		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
+		"url": "https://github.com/nrkno/sofie-core/issues"
 	},
-	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/corelib#readme",
+	"homepage": "https://github.com/nrkno/sofie-core/blob/master/packages/corelib#readme",
 	"scripts": {
 		"build": "run -T rimraf dist && run build:main",
 		"build:main": "run -T tsc -p tsconfig.build.json",
@@ -39,8 +39,8 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"@sofie-automation/blueprints-integration": "1.51.0-in-development",
-		"@sofie-automation/shared-lib": "1.51.0-in-development",
+		"@sofie-automation/blueprints-integration": "1.52.0-in-development",
+		"@sofie-automation/shared-lib": "1.52.0-in-development",
 		"fast-clone": "^1.5.13",
 		"i18next": "^21.10.0",
 		"influx": "^5.9.3",

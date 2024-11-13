@@ -10,7 +10,6 @@ import { unprotectString, protectString } from '@sofie-automation/corelib/dist/p
 import { logger } from '../logging'
 import { PlayoutModel } from '../playout/model/PlayoutModel'
 import { PlayoutRundownModel } from '../playout/model/PlayoutRundownModel'
-import { isTooCloseToAutonext } from '../playout/lib'
 import { allowedToMoveRundownOutOfPlaylist } from '../rundown'
 import { updatePartInstanceRanksAndOrphanedState } from '../updatePartInstanceRanksAndOrphanedState'
 import {
@@ -42,6 +41,7 @@ import { createPlayoutModelFromIngestModel } from '../playout/model/implementati
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DatabasePersistedModel } from '../modelBase'
 import { updateSegmentIdsForAdlibbedPartInstances } from './commit/updateSegmentIdsForAdlibbedPartInstances'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 export type BeforePartMapItem = { id: PartId; rank: number }
 export type BeforeIngestOperationPartMap = ReadonlyMap<SegmentId, Array<BeforePartMapItem>>
@@ -221,6 +221,9 @@ export async function CommitIngestOperation(
 				// sync changes to the 'selected' partInstances
 				await syncChangesToPartInstances(context, playoutModel, ingestModel)
 
+				// update the quickloop in case we did any changes to things involving marker
+				playoutModel.updateQuickLoopState()
+
 				playoutModel.deferAfterSave(() => {
 					// Run in the background, we don't want to hold onto the lock to do this
 					context
@@ -229,7 +232,7 @@ export async function CommitIngestOperation(
 							rundownId: ingestModel.rundownId,
 						})
 						.catch((e) => {
-							logger.error(`Queue RundownDataChanged failed: ${e}`)
+							logger.error(`Queue RundownDataChanged failed: ${stringifyError(e)}`)
 						})
 
 					triggerUpdateTimelineAfterIngestData(context, playoutModel.playlistId)
@@ -239,6 +242,7 @@ export async function CommitIngestOperation(
 				await pSaveIngest
 
 				// do some final playout checks, which may load back some Parts data
+				// Note: This should trigger a timeline update, one is already queued in the `deferAfterSave` above
 				await ensureNextPartIsValid(context, playoutModel)
 
 				// save the final playout changes
@@ -261,10 +265,7 @@ function canRemoveSegment(
 	nextPartInstance: ReadonlyDeep<DBPartInstance> | undefined,
 	segmentId: SegmentId
 ): boolean {
-	if (
-		currentPartInstance?.segmentId === segmentId ||
-		(nextPartInstance?.segmentId === segmentId && isTooCloseToAutonext(currentPartInstance, false))
-	) {
+	if (currentPartInstance?.segmentId === segmentId || nextPartInstance?.segmentId === segmentId) {
 		// Don't allow removing an active rundown
 		logger.warn(`Not allowing removal of current playing segment "${segmentId}", making segment unsynced instead`)
 		return false
@@ -533,9 +534,9 @@ export async function updatePlayoutAfterChangingRundownInPlaylist(
 			}
 		}
 
-		await ensureNextPartIsValid(context, playoutModel)
+		const shouldUpdateTimeline = await ensureNextPartIsValid(context, playoutModel)
 
-		if (playoutModel.playlist.activationId) {
+		if (playoutModel.playlist.activationId || shouldUpdateTimeline) {
 			triggerUpdateTimelineAfterIngestData(context, playoutModel.playlistId)
 		}
 	})
@@ -563,7 +564,7 @@ export function triggerUpdateTimelineAfterIngestData(context: JobContext, playli
 					playlistId,
 				})
 				.catch((e) => {
-					logger.error(`triggerUpdateTimelineAfterIngestData: Execution failed: ${e}`)
+					logger.error(`triggerUpdateTimelineAfterIngestData: Execution failed: ${stringifyError(e)}`)
 				})
 		}
 	}, 1000)

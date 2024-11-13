@@ -1,13 +1,13 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from '../../lib/check'
+import { check } from '../lib/check'
 import { logNotAllowed } from './lib/lib'
 import { allowAccessToRundownPlaylist } from './lib/security'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
 import { triggerWriteAccess } from './lib/securityVerify'
-import { isProtectedString } from '../../lib/lib'
+import { isProtectedString } from '../lib/tempLib'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { Settings } from '../../lib/Settings'
+import { Settings } from '../Settings'
 import {
 	OrganizationId,
 	RundownId,

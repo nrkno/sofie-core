@@ -1,5 +1,6 @@
-import { ProtectedString, getCurrentTime } from '../../lib/lib'
-import { CollectionCleanupResult } from '../../lib/api/system'
+import { ProtectedString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+import { getCurrentTime } from '../lib/lib'
+import { CollectionCleanupResult } from '@sofie-automation/meteor-lib/dist/api/system'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import {
@@ -8,7 +9,7 @@ import {
 	getOrphanedPackageInfos,
 	removePackageInfos,
 } from './studio/lib'
-import { Settings } from '../../lib/Settings'
+import { Settings } from '../Settings'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import {
 	BlueprintId,

@@ -7,6 +7,8 @@ sidebar_position: 2
 
 # Contribution Guidelines
 
+_Last updated september 2024_
+
 ## About the Sofie TV Studio Automation Project
 
 The Sofie project includes a number of open source applications and libraries developed and maintained by the Norwegian public service broadcaster, [NRK](https://www.nrk.no/about/). Sofie has been used to produce live shows at NRK since September 2018.
@@ -35,8 +37,8 @@ However, Sofie is a big project with many differing users and use cases. **Large
 3. (If needed) NRK establishes contact with the RFC author, who will be invited to a workshop where the RFC is discussed. Meeting notes are published publicly on the RFC thread.
 4. The contributor references the RFC when a pull request is ready.
 
-### Base contributions on the in-development branch (or the master branch)
-In order to facilitate merging, we ask that contributions are based on the latest (at the time of the pull request) _in-development_ branch (often named `release*`), alternatively the stable (eg. `master`) branch. NRK will take responsibility for rebasing stable contributions to the latest in-development branch if needed.
+### Base contributions on the in-development branch
+In order to facilitate merging, we ask that contributions are based on the latest (at the time of the pull request) _in-development_ branch (often named `release*`).
 See **CONTRIBUTING.md** in each official repository for details on which branch to use as a base for contributions.
 
 ## Developer Guidelines

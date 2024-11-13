@@ -6,8 +6,7 @@
 		"outDir": "./dist",
 		"baseUrl": "./",
 		"paths": {
-			"*": ["./node_modules/*"],
-			"tv-automation-playout-gateway": ["./src/index.ts"]
+			"*": ["./node_modules/*"]
 		},
 		"types": ["node"],
 		// TSR throws some typings issues
