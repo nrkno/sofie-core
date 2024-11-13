@@ -17,7 +17,8 @@ import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/Buck
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { ExpectedMediaItem } from '@sofie-automation/corelib/dist/dataModel/ExpectedMediaItem'
 import { ExpectedPlayoutItem } from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'
-import { IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
+import { NrcsIngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/NrcsIngestDataCache'
+import { SofieIngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/SofieIngestDataCache'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
@@ -97,7 +98,8 @@ export interface IDirectCollections {
 	BucketAdLibPieces: ICollection<BucketAdLib>
 	ExpectedMediaItems: ICollection<ExpectedMediaItem>
 	ExpectedPlayoutItems: ICollection<ExpectedPlayoutItem>
-	IngestDataCache: ICollection<IngestDataCacheObj>
+	SofieIngestDataCache: ICollection<SofieIngestDataCacheObj>
+	NrcsIngestDataCache: ICollection<NrcsIngestDataCacheObj>
 	Parts: ICollection<DBPart>
 	PartInstances: ICollection<DBPartInstance>
 	PeripheralDevices: IReadOnlyCollection<PeripheralDevice>
@@ -158,7 +160,14 @@ export function getMongoCollections(
 				database.collection(CollectionName.ExpectedPlayoutItems),
 				allowWatchers
 			),
-			IngestDataCache: wrapMongoCollection(database.collection(CollectionName.IngestDataCache), allowWatchers),
+			SofieIngestDataCache: wrapMongoCollection(
+				database.collection(CollectionName.SofieIngestDataCache),
+				allowWatchers
+			),
+			NrcsIngestDataCache: wrapMongoCollection(
+				database.collection(CollectionName.NrcsIngestDataCache),
+				allowWatchers
+			),
 			Parts: wrapMongoCollection(database.collection(CollectionName.Parts), allowWatchers),
 			PartInstances: wrapMongoCollection(database.collection(CollectionName.PartInstances), allowWatchers),
 			PeripheralDevices: wrapMongoCollection(

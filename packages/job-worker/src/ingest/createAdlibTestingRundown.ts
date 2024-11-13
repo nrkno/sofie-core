@@ -1,17 +1,21 @@
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
-import type { CreateAdlibTestingRundownForShowStyleVariantProps } from '@sofie-automation/corelib/dist/worker/ingest'
+import type {
+	CreateAdlibTestingRundownForShowStyleVariantProps,
+	IngestUpdateRundownProps,
+} from '@sofie-automation/corelib/dist/worker/ingest'
 import type { JobContext } from '../jobs'
-import type { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { convertShowStyleVariantToBlueprints } from '../blueprints/context/lib'
 import { ShowStyleUserContext } from '../blueprints/context'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
-import { handleUpdatedRundown } from './ingestRundownJobs'
 import type {
 	IShowStyleUserContext,
 	IBlueprintShowStyleVariant,
 	IngestRundown,
 } from '@sofie-automation/blueprints-integration'
 import { logger } from '../logging'
+import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { handleUpdatedRundown } from './ingestRundownJobs'
+import { runIngestUpdateOperation } from './runOperation'
 
 export async function handleCreateAdlibTestingRundownForShowStyleVariant(
 	context: JobContext,
@@ -49,7 +53,7 @@ export async function handleCreateAdlibTestingRundownForShowStyleVariant(
 		`Creating adlib testing rundown "${ingestRundown.name}" for showStyleVariant "${showStyleVariant.name}"`
 	)
 
-	return handleUpdatedRundown(context, {
+	const updateData: IngestUpdateRundownProps = {
 		rundownExternalId: ingestRundown.externalId,
 		ingestRundown,
 		isCreateAction: true,
@@ -57,7 +61,10 @@ export async function handleCreateAdlibTestingRundownForShowStyleVariant(
 			type: 'testing',
 			showStyleVariantId: showStyleVariant._id,
 		},
-	})
+	}
+	return runIngestUpdateOperation(context, updateData, (ingestRundown) =>
+		handleUpdatedRundown(context, updateData, ingestRundown)
+	)
 }
 
 function fallbackBlueprintMethod(

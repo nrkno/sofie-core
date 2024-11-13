@@ -58,7 +58,6 @@ function makeMockSegment(id: string, rank: number, rundownId: string, timing?: S
 		_id: protectString(id),
 		name: 'mock-segment',
 		externalId: id,
-		externalModified: 0,
 		_rank: rank,
 		rundownId: protectString(rundownId),
 		segmentTiming: timing,
