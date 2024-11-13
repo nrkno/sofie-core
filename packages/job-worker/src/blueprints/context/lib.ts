@@ -282,6 +282,7 @@ export function convertAdLibPieceToBlueprints(adLib: ReadonlyDeep<AdLibPiece>): 
 		nextPieceTags: clone<string[] | undefined>(adLib.nextPieceTags),
 		uniquenessId: adLib.uniquenessId,
 		invertOnAirState: adLib.invertOnAirState,
+		hidden: adLib.hidden,
 	}
 
 	return obj
