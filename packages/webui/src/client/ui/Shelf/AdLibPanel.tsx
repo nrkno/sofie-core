@@ -356,38 +356,34 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 
 		const adlibActions = memoizedIsolatedAutorun(
 			(unorderedRundownIds: RundownId[], partIds: PartId[]) =>
-				AdLibActions.find(
-					{
-						rundownId: {
-							$in: unorderedRundownIds,
+				_.compact(
+					AdLibActions.find(
+						{
+							rundownId: {
+								$in: unorderedRundownIds,
+							},
+							partId: {
+								$in: partIds,
+							},
 						},
-						partId: {
-							$in: partIds,
-						},
-					},
-					{
-						// @ts-expect-error deep-property
-						sort: { 'display._rank': 1 },
-					}
-				)
-					.map<{
-						partId: PartId
-						piece: AdLibPieceUi
-						hidden: boolean
-					}>((action) => {
+						{
+							// @ts-expect-error deep-property
+							sort: { 'display._rank': 1 },
+						}
+					).map<
+						| {
+								partId: PartId
+								piece: AdLibPieceUi
+						  }
+						| undefined
+					>((action) => {
+						if (action.display.hidden) return undefined
 						return {
 							partId: action.partId,
 							piece: actionToAdLibPieceUi(action, sourceLayerLookup, outputLayerLookup),
-							hidden: !!action.display.hidden,
 						}
 					})
-					.filter((adLibPiece) => {
-						if (!adLibPiece.hidden)
-							return {
-								partId: adLibPiece.partId,
-								piece: adLibPiece.piece,
-							}
-					}),
+				),
 			'adLibActions',
 			unorderedRundownIds,
 			partIds
@@ -482,21 +478,23 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 
 					const globalAdLibActions = memoizedIsolatedAutorun(
 						(currentRundownId: RundownId) =>
-							RundownBaselineAdLibActions.find(
-								{
-									rundownId: currentRundownId,
-									partId: {
-										$exists: false,
+							_.compact(
+								RundownBaselineAdLibActions.find(
+									{
+										rundownId: currentRundownId,
+										partId: {
+											$exists: false,
+										},
 									},
-								},
-								{
-									// @ts-expect-error deep-property
-									sort: { 'display._rank': 1 },
-								}
-							)
-								.fetch()
-								.filter((action) => !action.display.hidden)
-								.map((action) => actionToAdLibPieceUi(action, sourceLayerLookup, outputLayerLookup)),
+									{
+										// @ts-expect-error deep-property
+										sort: { 'display._rank': 1 },
+									}
+								).map((action) => {
+									if (action.display.hidden) return undefined
+									return actionToAdLibPieceUi(action, sourceLayerLookup, outputLayerLookup)
+								})
+							),
 						'globalAdLibActions',
 						currentRundownId
 					)
