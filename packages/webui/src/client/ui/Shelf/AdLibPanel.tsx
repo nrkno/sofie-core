@@ -334,6 +334,9 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 				partId: {
 					$in: partIds,
 				},
+				hidden: {
+					$ne: true,
+				},
 			},
 			{
 				sort: { _rank: 1 },
@@ -447,6 +450,9 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 						RundownBaselineAdLibPieces.find(
 							{
 								rundownId: currentRundownId,
+								hidden: {
+									$ne: true,
+								},
 							},
 							{
 								sort: { sourceLayerId: 1, _rank: 1, name: 1 },
