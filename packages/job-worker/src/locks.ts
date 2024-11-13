@@ -1,6 +1,7 @@
 import { assertNever } from '@sofie-automation/corelib/dist/lib'
 import { logger } from './logging'
 import { AnyLockEvent } from './workers/locks'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 type OwnerAndLockIds = [string, string]
 
@@ -47,7 +48,7 @@ export class LocksManager {
 
 				this.#lockChanged(nextWorker[0], nextWorker[1], true)
 					.catch(async (e) => {
-						logger.error(`Failed to report lock to worker: ${e}`)
+						logger.error(`Failed to report lock to worker: ${stringifyError(e)}`)
 
 						// It failed, so next worker should be attempted
 						return Promise.resolve(false)
@@ -67,7 +68,7 @@ export class LocksManager {
 						}
 					})
 					.catch((e) => {
-						logger.error(`Failed to lock next worker: ${e}`)
+						logger.error(`Failed to lock next worker: ${stringifyError(e)}`)
 					})
 			}
 		}
@@ -96,7 +97,7 @@ export class LocksManager {
 							)
 
 							this.#lockChanged(threadId, e.lockId, false).catch((e) => {
-								logger.error(`Failed to report lock change back to worker: ${e}`)
+								logger.error(`Failed to report lock change back to worker: ${stringifyError(e)}`)
 							})
 						} else {
 							logger.warn(`Worker tried to unlock a lock it doesnt own`)
@@ -109,7 +110,7 @@ export class LocksManager {
 						break
 				}
 			} catch (e) {
-				logger.error(`Unexpected error in lock handler: ${e}`)
+				logger.error(`Unexpected error in lock handler: ${stringifyError(e)}`)
 			}
 		})
 	}

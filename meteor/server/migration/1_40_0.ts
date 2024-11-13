@@ -1,5 +1,5 @@
 import { addMigrationSteps } from './databaseMigration'
-import { Settings } from '../../lib/Settings'
+import { Settings } from '../Settings'
 import { Studios } from '../collections'
 
 // Release 40 (Skipped)
@@ -42,8 +42,6 @@ const OldSettings = Settings as Partial<ISettingsOld>
 const oldFrameRate = OldSettings.frameRate ?? 25
 
 export const addSteps = addMigrationSteps('1.40.0', [
-	// Add some migrations!
-
 	{
 		id: `Studio.settings.frameRate`,
 		canBeRunAutomatically: true,

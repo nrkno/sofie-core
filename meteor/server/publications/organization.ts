@@ -1,19 +1,19 @@
 import { meteorPublish, AutoFillSelector } from './lib'
-import { MeteorPubSub } from '../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
-import { Evaluation } from '../../lib/collections/Evaluations'
-import { SnapshotItem } from '../../lib/collections/Snapshots'
-import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
+import { Evaluation } from '@sofie-automation/meteor-lib/dist/collections/Evaluations'
+import { SnapshotItem } from '@sofie-automation/meteor-lib/dist/collections/Snapshots'
+import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
 import { OrganizationReadAccess } from '../security/organization'
-import { FindOptions } from '../../lib/collections/lib'
-import { DBOrganization } from '../../lib/collections/Organization'
+import { FindOptions } from '@sofie-automation/meteor-lib/dist/collections/lib'
+import { DBOrganization } from '@sofie-automation/meteor-lib/dist/collections/Organization'
 import { isProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Blueprints, Evaluations, Organizations, Snapshots, UserActionsLog } from '../collections'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { BlueprintId, OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
-import { check, Match } from '../../lib/check'
-import { getCurrentTime } from '../../lib/lib'
+import { check, Match } from '../lib/check'
+import { getCurrentTime } from '../lib/lib'
 
 meteorPublish(
 	MeteorPubSub.organization,
@@ -102,7 +102,9 @@ meteorPublish(
 			token
 		)
 		if (!cred || (await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) {
-			return UserActionsLog.findWithCursor(selector)
+			return UserActionsLog.findWithCursor(selector, {
+				limit: 10_000, // this is to prevent having a publication that produces a very large array
+			})
 		}
 		return null
 	}

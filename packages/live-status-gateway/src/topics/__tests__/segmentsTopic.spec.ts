@@ -11,7 +11,7 @@ const RUNDOWN_1_ID = 'RUNDOWN_1'
 const RUNDOWN_2_ID = 'RUNDOWN_2'
 const THROTTLE_PERIOD_MS = 205
 
-function makeTestSegment(id: string, rank: number, rundownId: string): DBSegment {
+function makeTestSegment(id: string, rank: number, rundownId: string, segmentProps?: Partial<DBSegment>): DBSegment {
 	return {
 		_id: protectString(id),
 		externalId: `NCS_SEGMENT_${id}`,
@@ -19,6 +19,7 @@ function makeTestSegment(id: string, rank: number, rundownId: string): DBSegment
 		_rank: rank,
 		rundownId: protectString(rundownId),
 		externalModified: 1695799420147,
+		...segmentProps,
 	}
 }
 
@@ -27,7 +28,7 @@ function makeTestPart(
 	rank: number,
 	rundownId: string,
 	segmentId: string,
-	partProps: Partial<DBPart>
+	partProps?: Partial<DBPart>
 ): DBPart {
 	return {
 		_id: protectString(id),
@@ -36,7 +37,7 @@ function makeTestPart(
 		_rank: rank,
 		rundownId: protectString(rundownId),
 		segmentId: protectString(segmentId),
-		expectedDurationWithPreroll: undefined,
+		expectedDurationWithTransition: undefined,
 		...partProps,
 	}
 }
@@ -260,33 +261,19 @@ describe('SegmentsTopic', () => {
 		const segment_2_2_id = '2_2'
 		await topic.update(SegmentsHandler.name, [
 			makeTestSegment('2_1', 1, RUNDOWN_2_ID),
-			makeTestSegment(segment_2_2_id, 2, RUNDOWN_2_ID),
-			makeTestSegment(segment_1_2_id, 2, RUNDOWN_1_ID),
-			makeTestSegment(segment_1_1_id, 1, RUNDOWN_1_ID),
+			makeTestSegment(segment_2_2_id, 2, RUNDOWN_2_ID, { segmentTiming: { budgetDuration: 51000 } }),
+			makeTestSegment(segment_1_2_id, 2, RUNDOWN_1_ID, { segmentTiming: { budgetDuration: 15000 } }),
+			makeTestSegment(segment_1_1_id, 1, RUNDOWN_1_ID, { segmentTiming: { budgetDuration: 5000 } }),
 		])
 		mockSubscriber.send.mockClear()
 		await topic.update(PartsHandler.name, [
-			makeTestPart('1_2_1', 1, RUNDOWN_1_ID, segment_1_2_id, {
-				budgetDuration: 10000,
-			}),
-			makeTestPart('2_2_1', 1, RUNDOWN_1_ID, segment_2_2_id, {
-				budgetDuration: 40000,
-			}),
-			makeTestPart('1_2_2', 2, RUNDOWN_1_ID, segment_1_2_id, {
-				budgetDuration: 5000,
-			}),
-			makeTestPart('1_1_2', 2, RUNDOWN_1_ID, segment_1_1_id, {
-				budgetDuration: 1000,
-			}),
-			makeTestPart('1_1_1', 1, RUNDOWN_1_ID, segment_1_1_id, {
-				budgetDuration: 3000,
-			}),
-			makeTestPart('2_2_2', 2, RUNDOWN_1_ID, segment_2_2_id, {
-				budgetDuration: 11000,
-			}),
-			makeTestPart('1_1_2', 2, RUNDOWN_1_ID, segment_1_1_id, {
-				budgetDuration: 1000,
-			}),
+			makeTestPart('1_2_1', 1, RUNDOWN_1_ID, segment_1_2_id),
+			makeTestPart('2_2_1', 1, RUNDOWN_1_ID, segment_2_2_id),
+			makeTestPart('1_2_2', 2, RUNDOWN_1_ID, segment_1_2_id),
+			makeTestPart('1_1_2', 2, RUNDOWN_1_ID, segment_1_1_id),
+			makeTestPart('1_1_1', 1, RUNDOWN_1_ID, segment_1_1_id),
+			makeTestPart('2_2_2', 2, RUNDOWN_1_ID, segment_2_2_id),
+			makeTestPart('1_1_2', 2, RUNDOWN_1_ID, segment_1_1_id),
 		])
 		jest.advanceTimersByTime(THROTTLE_PERIOD_MS)
 
@@ -354,25 +341,25 @@ describe('SegmentsTopic', () => {
 		mockSubscriber.send.mockClear()
 		await topic.update(PartsHandler.name, [
 			makeTestPart('1_2_1', 1, RUNDOWN_1_ID, segment_1_2_id, {
-				expectedDurationWithPreroll: 10000,
+				expectedDurationWithTransition: 10000,
 			}),
 			makeTestPart('2_2_1', 1, RUNDOWN_1_ID, segment_2_2_id, {
-				expectedDurationWithPreroll: 40000,
+				expectedDurationWithTransition: 40000,
 			}),
 			makeTestPart('1_2_2', 2, RUNDOWN_1_ID, segment_1_2_id, {
-				expectedDurationWithPreroll: 5000,
+				expectedDurationWithTransition: 5000,
 			}),
 			makeTestPart('1_1_2', 2, RUNDOWN_1_ID, segment_1_1_id, {
-				expectedDurationWithPreroll: 1000,
+				expectedDurationWithTransition: 1000,
 			}),
 			makeTestPart('1_1_1', 1, RUNDOWN_1_ID, segment_1_1_id, {
-				expectedDurationWithPreroll: 3000,
+				expectedDurationWithTransition: 3000,
 			}),
 			makeTestPart('2_2_2', 2, RUNDOWN_1_ID, segment_2_2_id, {
-				expectedDurationWithPreroll: 11000,
+				expectedDurationWithTransition: 11000,
 			}),
 			makeTestPart('1_1_2', 2, RUNDOWN_1_ID, segment_1_1_id, {
-				expectedDurationWithPreroll: 1000,
+				expectedDurationWithTransition: 1000,
 			}),
 		])
 		jest.advanceTimersByTime(THROTTLE_PERIOD_MS)

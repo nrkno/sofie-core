@@ -3,7 +3,6 @@ import {
 	ManualPromise,
 	createManualPromise,
 	assertNever,
-	sleep,
 	getRandomString,
 	deferAsync,
 } from '@sofie-automation/corelib/dist/lib'
@@ -21,6 +20,7 @@ import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { WorkerThreadStatus } from '@sofie-automation/corelib/dist/dataModel/WorkerThreads'
 import { UserError } from '@sofie-automation/corelib/dist/error'
+import { sleep } from '@sofie-automation/shared-lib/dist/lib/lib'
 
 export enum ThreadStatus {
 	Closed = 0,
@@ -278,7 +278,11 @@ export abstract class WorkerParentBase {
 
 								try {
 									logger.verbose(`Starting work ${job.id}: "${job.name}"`)
-									logger.debug(`Payload ${job.id}: ${JSON.stringify(job.data)}`)
+									logger.silly(
+										`Starting work ${job.id}: "${job.name}", payload ${job.id}: ${JSON.stringify(
+											job.data
+										)}`
+									)
 
 									// Future - extend the job lock on an interval
 									let result: WorkerJobResult

@@ -2,7 +2,8 @@ import { RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/data
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { getCurrentTime, protectString } from '../../../lib/lib'
+import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+import { getCurrentTime } from '../../lib/lib'
 import { ExpectedPackages, PackageInfos, PeripheralDevices, RundownPlaylists } from '../../collections'
 import { logger } from '../../logging'
 

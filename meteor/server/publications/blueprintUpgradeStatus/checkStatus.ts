@@ -14,11 +14,11 @@ import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowSt
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { joinObjectPathFragments, objectPathGet } from '@sofie-automation/corelib/dist/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { generateTranslation } from '../../../lib/lib'
+import { generateTranslation } from '../../lib/tempLib'
 import { logger } from '../../logging'
 import { ShowStyleBaseFields, StudioFields } from './reactiveContentCache'
 import _ from 'underscore'
-import { UIBlueprintUpgradeStatusBase } from '../../../lib/api/upgradeStatus'
+import { UIBlueprintUpgradeStatusBase } from '@sofie-automation/meteor-lib/dist/api/upgradeStatus'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 export interface BlueprintMapEntry {

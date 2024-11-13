@@ -5,7 +5,7 @@ import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowSt
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { ObserveChangesHelper } from '../collections/lib'
-import { MeteorStartupAsync } from '../../lib/lib'
+import { MeteorStartupAsync } from '../lib/lib'
 
 const ObserveChangeBufferTimeout = 100
 

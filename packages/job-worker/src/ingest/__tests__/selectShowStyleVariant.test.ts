@@ -22,7 +22,6 @@ describe('selectShowStyleVariant', () => {
 			{
 				name: 'test',
 				identifier: 'test',
-				tempSendUserNotesIntoBlackHole: true,
 			},
 			context.studio,
 			context.getStudioBlueprintConfig()

@@ -61,6 +61,8 @@ paths:
     $ref: 'definitions/playlists.yaml#/resources/setNextSegment'
   /playlists/{playlistId}/queue-next-segment:
     $ref: 'definitions/playlists.yaml#/resources/queueNextSegment'
+  /playlists/{playlistId}/clear-sourcelayers:
+    $ref: 'definitions/playlists.yaml#/resources/clearSourceLayers'
   /playlists/{playlistId}/take:
     $ref: 'definitions/playlists.yaml#/resources/take'
   /playlists/{playlistId}/sourceLayer/{sourceLayerId}:

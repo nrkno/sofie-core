@@ -1,8 +1,8 @@
 import { UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { Meteor } from 'meteor/meteor'
-import { ClientAPI } from '../../../../lib/api/client'
+import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { Credentials } from '../../../security/lib/credentials'
-import { MethodContextAPI } from '../../../../lib/api/methods'
+import { MethodContextAPI } from '../../methodContext'
 
 export type APIRegisterHook<T> = <Params, Body, Response>(
 	method: 'get' | 'post' | 'put' | 'delete',
