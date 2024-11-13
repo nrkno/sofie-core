@@ -1,9 +1,10 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from '../../../lib/check'
+import { check } from '../../lib/check'
 import { registerClassToMeteorMethods } from '../../methods'
-import { NewStudiosAPI, StudiosAPIMethods } from '../../../lib/api/studios'
+import { NewStudiosAPI, StudiosAPIMethods } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { literal, getRandomId, lazyIgnore } from '../../../lib/lib'
+import { literal, getRandomId } from '../../lib/tempLib'
+import { lazyIgnore } from '../../lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import {
 	ExpectedPackages,
@@ -18,7 +19,7 @@ import {
 	Studios,
 	Timeline,
 } from '../../collections'
-import { MethodContextAPI, MethodContext } from '../../../lib/api/methods'
+import { MethodContextAPI, MethodContext } from '../methodContext'
 import { OrganizationContentWriteAccess } from '../../security/organization'
 import { Credentials } from '../../security/lib/credentials'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
@@ -49,9 +50,9 @@ export async function insertStudioInner(organizationId: OrganizationId | null, n
 				minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
 			},
 			_rundownVersionHash: '',
-			routeSets: {},
-			routeSetExclusivityGroups: {},
-			packageContainers: {},
+			routeSetsWithOverrides: wrapDefaultObject({}),
+			routeSetExclusivityGroupsWithOverrides: wrapDefaultObject({}),
+			packageContainersWithOverrides: wrapDefaultObject({}),
 			thumbnailContainerIds: [],
 			previewContainerIds: [],
 			peripheralDeviceSettings: {
@@ -140,7 +141,7 @@ Studios.observeChanges(
 	{
 		fields: {
 			mappingsWithOverrides: 1,
-			routeSets: 1,
+			routeSetsWithOverrides: 1,
 		},
 	}
 )

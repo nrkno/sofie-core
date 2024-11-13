@@ -1,18 +1,18 @@
 {
 	"name": "playout-gateway",
-	"version": "1.51.0-in-development",
+	"version": "1.52.0-in-development",
 	"private": true,
 	"description": "Connect to Core, play stuff",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
+		"url": "git+https://github.com/nrkno/sofie-core.git",
 		"directory": "packages/playout-gateway"
 	},
 	"bugs": {
-		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
+		"url": "https://github.com/nrkno/sofie-core/issues"
 	},
-	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/playout-gateway#readme",
+	"homepage": "https://github.com/nrkno/sofie-core/blob/master/packages/playout-gateway#readme",
 	"author": {
 		"name": "Johan Nyman",
 		"email": "johan@superfly.tv",
@@ -56,11 +56,11 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/server-core-integration": "1.51.0-in-development",
-		"@sofie-automation/shared-lib": "1.51.0-in-development",
+		"@sofie-automation/server-core-integration": "1.52.0-in-development",
+		"@sofie-automation/shared-lib": "1.52.0-in-development",
 		"debug": "^4.3.4",
 		"influx": "^5.9.3",
-		"timeline-state-resolver": "9.1.0-nightly-release51-20240228-132329-b7ceb6950.0",
+		"timeline-state-resolver": "9.2.0-nightly-release52-20240923-122840-58cfbb259.0",
 		"tslib": "^2.6.2",
 		"underscore": "^1.13.6",
 		"winston": "^3.11.0"

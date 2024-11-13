@@ -1,7 +1,6 @@
 import { ManualPromise, createManualPromise, getRandomString } from '@sofie-automation/corelib/dist/lib'
 import { Meteor } from 'meteor/meteor'
-import { lazyIgnore } from '../../../lib/lib'
-import { LiveQueryHandle } from '../../lib/lib'
+import { LiveQueryHandle, lazyIgnore } from '../../lib/lib'
 
 export interface ReactiveMongoObserverGroupHandle extends LiveQueryHandle {
 	/**

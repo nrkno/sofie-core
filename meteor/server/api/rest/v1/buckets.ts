@@ -1,11 +1,12 @@
 import { Meteor } from 'meteor/meteor'
-import { APIBucket, APIBucketComplete, APIImportAdlib, BucketsRestAPI } from '../../../../lib/api/rest/v1/buckets'
+import { APIBucket, APIBucketComplete, APIImportAdlib, BucketsRestAPI } from '../../../lib/rest/v1/buckets'
 import { BucketAdLibActions, BucketAdLibs, Buckets } from '../../../collections'
 import { APIBucketFrom } from './typeConversion'
-import { ClientAPI } from '../../../../lib/api/client'
+import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { BucketId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ServerClientAPI } from '../../client'
-import { getCurrentTime, protectString } from '../../../../lib/lib'
+import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+import { getCurrentTime } from '../../../lib/lib'
 import { check } from 'meteor/check'
 import { StudioContentWriteAccess } from '../../../security/studio'
 import { BucketsAPI } from '../../buckets'
@@ -51,7 +52,7 @@ export class BucketsServerAPI implements BucketsRestAPI {
 			event,
 			getCurrentTime(),
 			'bucketsCreateNewBucket',
-			[bucket],
+			{ bucket },
 			async () => {
 				check(bucket.studioId, String)
 				check(bucket.name, String)
@@ -79,7 +80,7 @@ export class BucketsServerAPI implements BucketsRestAPI {
 			event,
 			getCurrentTime(),
 			'bucketsRemoveBucket',
-			[bucketId],
+			{ bucketId },
 			async () => {
 				check(bucketId, String)
 
@@ -99,7 +100,7 @@ export class BucketsServerAPI implements BucketsRestAPI {
 			event,
 			getCurrentTime(),
 			'bucketsEmptyBucket',
-			[bucketId],
+			{ bucketId },
 			async () => {
 				check(bucketId, String)
 
@@ -119,7 +120,7 @@ export class BucketsServerAPI implements BucketsRestAPI {
 			event,
 			getCurrentTime(),
 			'bucketsRemoveBucketAdLib',
-			[externalId],
+			{ externalId },
 			async () => {
 				const bucketAdLibPiecePromise = BucketAdLibs.findOneAsync(
 					{ externalId },
@@ -166,7 +167,7 @@ export class BucketsServerAPI implements BucketsRestAPI {
 			event,
 			getCurrentTime(),
 			'bucketAdlibImport',
-			[bucketId, showStyleBaseId, ingestItem],
+			{ bucketId, showStyleBaseId, ingestItem },
 			async () => {
 				check(bucketId, String)
 				check(showStyleBaseId, String)

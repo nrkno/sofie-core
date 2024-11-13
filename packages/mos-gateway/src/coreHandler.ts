@@ -167,7 +167,7 @@ export class CoreHandler {
 		const coreMosHandler = this._coreMosHandlers[foundI]
 		if (coreMosHandler) {
 			this._coreMosHandlers.splice(foundI, 1)
-			await coreMosHandler.dispose()
+			await coreMosHandler.dispose('removeSubDevice')
 		}
 	}
 	onConnectionRestored(): void {

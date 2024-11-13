@@ -98,7 +98,7 @@ describe('Lookahead', () => {
 				_rank: index,
 				externalId: 'MOCK_PART_' + index,
 				title: 'Part ' + index,
-				expectedDurationWithPreroll: undefined,
+				expectedDurationWithTransition: undefined,
 			}
 		}
 

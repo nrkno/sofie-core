@@ -7,7 +7,7 @@ import {
 import { logger } from '../logging'
 import { JobContext } from '../jobs'
 import { regenerateSegmentsFromIngestData } from './generationSegment'
-import { runIngestJob, runWithRundownLock } from './lock'
+import { UpdateIngestRundownAction, runIngestJob, runWithRundownLock } from './lock'
 import { updateExpectedPackagesForPartModel, updateExpectedPackagesForRundownBaseline } from './expectedPackages'
 import { loadIngestModelFromRundown } from './model/implementation/LoadIngestModel'
 
@@ -48,11 +48,16 @@ export async function handleUpdatedPackageInfoForRundown(
 		context,
 		data,
 		(ingestRundown) => {
-			if (!ingestRundown) throw new Error('onUpdatedPackageInfoForRundown called but ingestData is undefined')
+			if (!ingestRundown) {
+				logger.error(
+					`onUpdatedPackageInfoForRundown called but ingestRundown is undefined (rundownExternalId: "${data.rundownExternalId}")`
+				)
+				return UpdateIngestRundownAction.REJECT
+			}
 			return ingestRundown // don't mutate any ingest data
 		},
 		async (context, ingestModel, ingestRundown) => {
-			if (!ingestRundown) throw new Error('onUpdatedPackageInfoForRundown called but ingestData is undefined')
+			if (!ingestRundown) throw new Error('onUpdatedPackageInfoForRundown called but ingestRundown is undefined')
 
 			/** All segments that need updating */
 			const segmentsToUpdate = new Set<SegmentId>()

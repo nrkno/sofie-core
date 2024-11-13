@@ -43,7 +43,7 @@ import {
 	RundownPlaylistTiming,
 } from '@sofie-automation/blueprints-integration'
 import { JobContext, ProcessedShowStyleBase, ProcessedShowStyleVariant } from '../../jobs'
-import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { DBRundownPlaylist, QuickLoopMarkerType } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
 /**
  * Convert an object to have all the values of all keys (including optionals) be 'true'
@@ -94,7 +94,6 @@ export const IBlueprintMutatablePartSampleKeys = allKeysOfObject<IBlueprintMutat
 	disableNextInTransition: true,
 	outTransition: true,
 	expectedDuration: true,
-	budgetDuration: true,
 	holdMode: true,
 	shouldNotifyCurrentPlayingPart: true,
 	classes: true,
@@ -251,7 +250,6 @@ export function convertPartToBlueprints(part: ReadonlyDeep<DBPart>): IBlueprintP
 		disableNextInTransition: part.disableNextInTransition,
 		outTransition: clone(part.outTransition),
 		expectedDuration: part.expectedDuration,
-		budgetDuration: part.budgetDuration,
 		holdMode: part.holdMode,
 		shouldNotifyCurrentPlayingPart: part.shouldNotifyCurrentPlayingPart,
 		classes: clone<string[] | undefined>(part.classes),
@@ -392,7 +390,9 @@ export function convertRundownPlaylistToBlueprints(
 
 		timing: clone<RundownPlaylistTiming>(playlist.timing),
 		outOfOrderTiming: playlist.outOfOrderTiming,
-		loop: playlist.loop,
+		loop:
+			playlist.quickLoop?.start?.type === QuickLoopMarkerType.PLAYLIST &&
+			playlist.quickLoop.end?.type === QuickLoopMarkerType.PLAYLIST,
 		timeOfDayCountdowns: playlist.timeOfDayCountdowns,
 
 		privateData: clone(playlist.privateData),

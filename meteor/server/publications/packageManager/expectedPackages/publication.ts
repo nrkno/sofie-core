@@ -1,13 +1,13 @@
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDeviceReadAccess } from '../../../security/peripheralDevice'
-import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { DBStudio, StudioPackageContainer } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
 	TriggerUpdate,
 	meteorCustomPublish,
 	setUpCollectionOptimizedObserver,
 	CustomPublishCollection,
 } from '../../../lib/customPublication'
-import { literal, omit, protectString } from '../../../../lib/lib'
+import { literal, omit, protectString } from '../../../lib/tempLib'
 import { logger } from '../../../logging'
 import { ReadonlyDeep } from 'type-fest'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
@@ -48,22 +48,23 @@ interface ExpectedPackagesPublicationUpdateProps {
 interface ExpectedPackagesPublicationState {
 	studio: Pick<DBStudio, StudioFields> | undefined
 	layerNameToDeviceIds: Map<string, PeripheralDeviceId[]>
+	packageContainers: Record<string, StudioPackageContainer>
 
 	contentCache: ReadonlyDeep<ExpectedPackagesContentCache>
 }
 
 export type StudioFields =
 	| '_id'
-	| 'routeSets'
+	| 'routeSetsWithOverrides'
 	| 'mappingsWithOverrides'
-	| 'packageContainers'
+	| 'packageContainersWithOverrides'
 	| 'previewContainerIds'
 	| 'thumbnailContainerIds'
 const studioFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBStudio, StudioFields>>>({
 	_id: 1,
-	routeSets: 1,
+	routeSetsWithOverrides: 1,
 	mappingsWithOverrides: 1,
-	packageContainers: 1,
+	packageContainersWithOverrides: 1,
 	previewContainerIds: 1,
 	thumbnailContainerIds: 1,
 })
@@ -102,7 +103,7 @@ async function setupExpectedPackagesPublicationObservers(
 			{
 				fields: {
 					// mappingsHash gets updated when either of these omitted fields changes
-					...omit(studioFieldSpecifier, 'mappingsWithOverrides', 'routeSets'),
+					...omit(studioFieldSpecifier, 'mappingsWithOverrides', 'routeSetsWithOverrides'),
 					mappingsHash: 1,
 				},
 			}
@@ -122,6 +123,7 @@ async function manipulateExpectedPackagesPublicationData(
 	const invalidateAllItems = !updateProps || updateProps.newCache || updateProps.invalidateStudio
 
 	if (!state.layerNameToDeviceIds) state.layerNameToDeviceIds = new Map()
+	if (!state.packageContainers) state.packageContainers = {}
 
 	if (invalidateAllItems) {
 		// Everything is invalid, reset everything
@@ -141,9 +143,14 @@ async function manipulateExpectedPackagesPublicationData(
 		if (!state.studio) {
 			logger.warn(`Pub.expectedPackagesForDevice: studio "${args.studioId}" not found!`)
 			state.layerNameToDeviceIds = new Map()
+			state.packageContainers = {}
 		} else {
 			const studioMappings = applyAndValidateOverrides(state.studio.mappingsWithOverrides).obj
-			state.layerNameToDeviceIds = buildMappingsToDeviceIdMap(state.studio.routeSets, studioMappings)
+			state.layerNameToDeviceIds = buildMappingsToDeviceIdMap(
+				applyAndValidateOverrides(state.studio.routeSetsWithOverrides).obj,
+				studioMappings
+			)
+			state.packageContainers = applyAndValidateOverrides(state.studio.packageContainersWithOverrides).obj
 		}
 	}
 
@@ -170,6 +177,7 @@ async function manipulateExpectedPackagesPublicationData(
 		state.contentCache,
 		state.studio,
 		state.layerNameToDeviceIds,
+		state.packageContainers,
 		collection,
 		args.filterPlayoutDeviceIds,
 		regenerateExpectedPackageIds
@@ -178,6 +186,7 @@ async function manipulateExpectedPackagesPublicationData(
 		state.contentCache,
 		state.studio,
 		state.layerNameToDeviceIds,
+		state.packageContainers,
 		collection,
 		args.filterPlayoutDeviceIds,
 		regeneratePieceInstanceIds

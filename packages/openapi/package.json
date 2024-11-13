@@ -1,11 +1,11 @@
 {
 	"name": "@sofie-automation/openapi",
-	"version": "1.51.0-in-development",
+	"version": "1.52.0-in-development",
 	"private": true,
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
+		"url": "git+https://github.com/nrkno/sofie-core.git",
 		"directory": "packages/openapi"
 	},
 	"main": "dist/index.js",
