@@ -130,8 +130,10 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 		actionId: string,
 		userData: ActionUserData,
 		triggerMode: string | undefined,
-		privateData?: unknown
-	) => Promise<void>
+		privateData?: unknown,
+		publicData?: unknown,
+		actionOptions?: { [key: string]: any }
+	) => Promise<{ validationErrors: any } | void>
 
 	/** Generate adlib piece from ingest data */
 	getAdlibItem?: (
