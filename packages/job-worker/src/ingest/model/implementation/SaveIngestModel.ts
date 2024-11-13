@@ -12,7 +12,6 @@ import { ExpectedPackagesStore } from './ExpectedPackagesStore'
 import { IngestSegmentModelImpl } from './IngestSegmentModelImpl'
 import { DocumentChangeTracker } from './DocumentChangeTracker'
 import { logger } from '../../../logging'
-import { AnyBulkWriteOperation } from 'mongodb'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 
 export class SaveIngestModelHelper {
