@@ -259,10 +259,16 @@ export async function CommitIngestOperation(
 }
 
 function canRemoveSegment(
+	prevPartInstance: ReadonlyDeep<DBPartInstance> | undefined,
 	currentPartInstance: ReadonlyDeep<DBPartInstance> | undefined,
 	nextPartInstance: ReadonlyDeep<DBPartInstance> | undefined,
 	segmentId: SegmentId
 ): boolean {
+	if (prevPartInstance?.segmentId === segmentId) {
+		// Don't allow removing an active rundown
+		logger.warn(`Not allowing removal of previous playing segment "${segmentId}", making segment unsynced instead`)
+		return false
+	}
 	if (
 		currentPartInstance?.segmentId === segmentId ||
 		(nextPartInstance?.segmentId === segmentId && isTooCloseToAutonext(currentPartInstance, false))
@@ -662,7 +668,7 @@ async function removeSegments(
 	_changedSegmentIds: ReadonlyDeep<SegmentId[]>,
 	removedSegmentIds: ReadonlyDeep<SegmentId[]>
 ) {
-	const { currentPartInstance, nextPartInstance } = await getSelectedPartInstances(
+	const { previousPartInstance, currentPartInstance, nextPartInstance } = await getSelectedPartInstances(
 		context,
 		newPlaylist,
 		rundownsInPlaylist.map((r) => r._id)
@@ -672,7 +678,7 @@ async function removeSegments(
 	const orphanDeletedSegmentIds = new Set<SegmentId>()
 	const orphanHiddenSegmentIds = new Set<SegmentId>()
 	for (const segmentId of removedSegmentIds) {
-		if (canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
+		if (canRemoveSegment(previousPartInstance, currentPartInstance, nextPartInstance, segmentId)) {
 			purgeSegmentIds.add(segmentId)
 		} else {
 			logger.warn(
@@ -685,7 +691,7 @@ async function removeSegments(
 	for (const segment of ingestModel.getAllSegments()) {
 		const segmentId = segment.segment._id
 		if (segment.segment.isHidden) {
-			if (!canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
+			if (!canRemoveSegment(previousPartInstance, currentPartInstance, nextPartInstance, segmentId)) {
 				// Protect live segment from being hidden
 				logger.warn(`Cannot hide live segment ${segmentId}, it will be orphaned`)
 				switch (segment.segment.orphaned) {
@@ -706,7 +712,7 @@ async function removeSegments(
 		} else if (!orphanDeletedSegmentIds.has(segmentId) && segment.parts.length === 0) {
 			// No parts in segment
 
-			if (!canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
+			if (!canRemoveSegment(previousPartInstance, currentPartInstance, nextPartInstance, segmentId)) {
 				// Protect live segment from being hidden
 				logger.warn(`Cannot hide live segment ${segmentId}, it will be orphaned`)
 				orphanHiddenSegmentIds.add(segmentId)
