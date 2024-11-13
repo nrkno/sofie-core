@@ -46,8 +46,11 @@ export function getResolvedPiecesForPartInstancesOnTimeline(
 	if (!partInstancesInfo.current) return []
 
 	const currentPartStarted = partInstancesInfo.current.partStarted ?? now
+
 	const nextPartStarted =
-		partInstancesInfo.current.partInstance.part.expectedDuration !== undefined
+		partInstancesInfo.current.partInstance.part.expectedDuration !== undefined &&
+		partInstancesInfo.current.partInstance.part.expectedDuration !== 0 &&
+		partInstancesInfo.current.partInstance.part.autoNext
 			? currentPartStarted + partInstancesInfo.current.partInstance.part.expectedDuration
 			: null
 
