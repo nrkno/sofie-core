@@ -23,18 +23,6 @@ export function onPiecePlaybackStarted(
 ): void {
 	const playlist = playoutModel.playlist
 
-	if (
-		// We only expect to be able to update the current, next, or previous part:
-		data.partInstanceId !== playoutModel.playlist.currentPartInfo?.partInstanceId ||
-		data.partInstanceId !== playoutModel.playlist.nextPartInfo?.partInstanceId ||
-		data.partInstanceId !== playoutModel.playlist.previousPartInfo?.partInstanceId
-	) {
-		logger.debug(
-			`onPiecePlaybackStarted PartInstance "${data.partInstanceId}" is neither current, next nor previous (current: ${playoutModel.playlist.currentPartInfo?.partInstanceId}, next: ${playoutModel.playlist.nextPartInfo?.partInstanceId}, previous: ${playoutModel.playlist.previousPartInfo?.partInstanceId}), timestamp: ${data.startedPlayback}`
-		)
-		return
-	}
-
 	const partInstance = playoutModel.getPartInstance(data.partInstanceId)
 	if (!partInstance) {
 		if (!playlist.activationId) {
@@ -50,10 +38,7 @@ export function onPiecePlaybackStarted(
 		if (!playlist.activationId) {
 			logger.warn(`onPiecePlaybackStarted: Received for inactive RundownPlaylist "${playlist._id}"`)
 		} else {
-			const otherPieceInstanceIds = partInstance.pieceInstances.map((p) => p.pieceInstance._id)
-			throw new Error(
-				`PieceInstance "${data.pieceInstanceId}" in PartInstance "${partInstance.partInstance._id}" in RundownPlaylist "${playlist._id}" not found! (other pieceInstanceIds in PartInstance: ${otherPieceInstanceIds})`
-			)
+			throw new Error(`PieceInstance "${data.partInstanceId}" in RundownPlaylist "${playlist._id}" not found!`)
 		}
 		return
 	}
@@ -90,18 +75,6 @@ export function onPiecePlaybackStopped(
 ): void {
 	const playlist = playoutModel.playlist
 
-	if (
-		// We only expect to be able to update the current, next, or previous part:
-		data.partInstanceId !== playoutModel.playlist.currentPartInfo?.partInstanceId ||
-		data.partInstanceId !== playoutModel.playlist.nextPartInfo?.partInstanceId ||
-		data.partInstanceId !== playoutModel.playlist.previousPartInfo?.partInstanceId
-	) {
-		logger.debug(
-			`onPiecePlaybackStarted PartInstance "${data.partInstanceId}" is neither current, next nor previous (current: ${playoutModel.playlist.currentPartInfo?.partInstanceId}, next: ${playoutModel.playlist.nextPartInfo?.partInstanceId}, previous: ${playoutModel.playlist.previousPartInfo?.partInstanceId}), timestamp: ${data.stoppedPlayback}`
-		)
-		return
-	}
-
 	const partInstance = playoutModel.getPartInstance(data.partInstanceId)
 	if (!partInstance) {
 		// PartInstance not found, so we can rely on the onPartPlaybackStopped callback erroring
@@ -113,10 +86,7 @@ export function onPiecePlaybackStopped(
 		if (!playlist.activationId) {
 			logger.warn(`onPiecePlaybackStopped: Received for inactive RundownPlaylist "${playlist._id}"`)
 		} else {
-			const otherPieceInstanceIds = partInstance.pieceInstances.map((p) => p.pieceInstance._id)
-			throw new Error(
-				`PieceInstance "${data.pieceInstanceId}" in PartInstance "${partInstance.partInstance._id}" in RundownPlaylist "${playlist._id}" not found!  (other pieceInstanceIds in PartInstance: ${otherPieceInstanceIds})`
-			)
+			throw new Error(`PieceInstance "${data.partInstanceId}" in RundownPlaylist "${playlist._id}" not found!`)
 		}
 		return
 	}
