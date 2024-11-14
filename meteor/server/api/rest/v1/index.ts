@@ -1,6 +1,7 @@
 import KoaRouter from '@koa/router'
 import { interpollateTranslation, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
+import { IConfigMessage, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import { Meteor } from 'meteor/meteor'
@@ -89,6 +90,30 @@ function extractErrorDetails(e: unknown): string[] | undefined {
 		}
 	} else {
 		return undefined
+	}
+}
+
+export const checkValidation = (method: string, configValidationMsgs: IConfigMessage[]): void => {
+	/**
+	 * Throws if any of the configValidationMsgs indicates that the config has errors.
+	 * Will log any messages with severity WARNING or INFO
+	 */
+	const configValidationOK = configValidationMsgs.reduce((acc, msg) => acc && msg.level !== NoteSeverity.ERROR, true)
+	if (!configValidationOK) {
+		const details = JSON.stringify(
+			configValidationMsgs.filter((msg) => msg.level === NoteSeverity.ERROR).map((msg) => msg.message.key),
+			null,
+			2
+		)
+		logger.error(`${method} failed blueprint config validation with errors: ${details}`)
+		throw new Meteor.Error(409, `${method} has failed blueprint config validation`, details)
+	} else {
+		const details = JSON.stringify(
+			configValidationMsgs.map((msg) => msg.message.key),
+			null,
+			2
+		)
+		logger.info(`${method} received messages from bluepring config validation: ${details}`)
 	}
 }
 
