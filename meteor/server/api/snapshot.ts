@@ -498,12 +498,6 @@ async function restoreFromSnapshot(
 ): Promise<void> {
 	// Determine what kind of snapshot
 
-	// First, some special (debugging) cases:
-	if (snapshotIsAMOSDataDump(snapshot)) {
-		// Special: Not a snapshot, but a datadump of a MOS rundown
-		return ingestFromSnapshot(snapshot)
-	}
-
 	// Then, continue as if it's a normal snapshot:
 	if (!snapshot.snapshot) throw new Meteor.Error(500, `Restore input data is not a snapshot (${_.keys(snapshot)})`)
 
@@ -528,10 +522,7 @@ async function restoreFromSnapshot(
 		throw new Meteor.Error(402, `Unknown snapshot type "${snapshot.snapshot.type}"`)
 	}
 }
-function snapshotIsAMOSDataDump(snapshot: Record<string, any>): boolean {
-	// Special: Is not a snapshot, but a datadump of a MOS rundown
-	return snapshot.externalId && snapshot.segments && snapshot.type === 'mos'
-}
+
 async function getStudioIdFromPlaylistSnapshot(playlistSnapshot: RundownPlaylistSnapshot): Promise<StudioId> {
 	// TODO: Improve this. This matches the 'old' behaviour
 	const studios = await Studios.findFetchAsync({})
@@ -545,16 +536,6 @@ async function ingestFromSnapshot(
 	/** The snapshot data to restore */
 	snapshot: AnySnapshot
 ): Promise<void> {
-	// First, some special (debugging) cases:
-	if (snapshotIsAMOSDataDump(snapshot)) {
-		// Special: Not a snapshot, but a datadump of a MOS rundown
-		const studioId: StudioId = Meteor.settings.manualSnapshotIngestStudioId || 'studio0'
-		const studioExists = await checkStudioExists(studioId)
-		if (studioExists) {
-			return importIngestRundown(studioId, snapshot as unknown as IngestRundown)
-		} else throw new Meteor.Error(500, `No Studio found`)
-	}
-
 	// Determine what kind of snapshot
 	if (!snapshot.snapshot) throw new Meteor.Error(500, `Restore input data is not a snapshot (${_.keys(snapshot)})`)
 	if (snapshot.snapshot.type === SnapshotType.RUNDOWNPLAYLIST) {
