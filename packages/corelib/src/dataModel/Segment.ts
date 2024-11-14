@@ -5,7 +5,7 @@ import { SegmentNote } from './Notes'
 export enum SegmentOrphanedReason {
 	/** Segment is deleted from the NRCS but we still need it */
 	DELETED = 'deleted',
-	/** Segment should be hidden, but it is still playing */
+	/** Blueprints want the Segment to be hidden, but it is still playing so is must not be hidden right now. */
 	HIDDEN = 'hidden',
 	/** Segment is owned by playout, and is for AdlibTesting in its rundown */
 	ADLIB_TESTING = 'adlib-testing',

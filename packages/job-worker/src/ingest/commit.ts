@@ -178,6 +178,9 @@ export async function CommitIngestOperation(
 			// Ensure any adlibbed parts are updated to follow the segmentId of the previous part
 			await updateSegmentIdsForAdlibbedPartInstances(context, ingestModel, beforePartMap)
 
+			if (data.renamedSegments && data.renamedSegments.size > 0) {
+				logger.debug(`Renamed segments: ${JSON.stringify(Array.from(data.renamedSegments.entries()))}`)
+			}
 			// ensure instances have matching segmentIds with the parts
 			await updatePartInstancesSegmentIds(context, ingestModel, data.renamedSegments, beforePartMap)
 
@@ -397,6 +400,34 @@ async function updatePartInstancesSegmentIds(
 			}
 		}
 		if (writeOps.length) await context.directCollections.PartInstances.bulkWrite(writeOps)
+
+		// Double check that there are no parts using the old segment ids:
+		const oldSegmentIds = Array.from(renameRules.keys())
+		const [badPartInstances, badParts] = await Promise.all([
+			await context.directCollections.PartInstances.findFetch({
+				rundownId: ingestModel.rundownId,
+				segmentId: { $in: oldSegmentIds },
+			}),
+			await context.directCollections.Parts.findFetch({
+				rundownId: ingestModel.rundownId,
+				segmentId: { $in: oldSegmentIds },
+			}),
+		])
+		if (badPartInstances.length > 0) {
+			logger.error(
+				`updatePartInstancesSegmentIds: Failed to update all PartInstances using old SegmentIds "${JSON.stringify(
+					oldSegmentIds
+				)}": ${JSON.stringify(badPartInstances)}, writeOps: ${JSON.stringify(writeOps)}`
+			)
+		}
+
+		if (badParts.length > 0) {
+			logger.error(
+				`updatePartInstancesSegmentIds: Failed to update all Parts using old SegmentIds "${JSON.stringify(
+					oldSegmentIds
+				)}": ${JSON.stringify(badParts)}, writeOps: ${JSON.stringify(writeOps)}`
+			)
+		}
 	}
 }
 
