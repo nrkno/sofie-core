@@ -29,7 +29,7 @@ export async function onPartPlaybackStarted(
 	const playingPartInstance = playoutModel.getPartInstance(data.partInstanceId)
 	if (!playingPartInstance)
 		throw new Error(
-			`PartInstance "${data.partInstanceId}" in RundownPlayst "${playoutModel.playlistId}" not found!`
+			`PartInstance "${data.partInstanceId}" in RundownPlaylist "${playoutModel.playlistId}" not found!`
 		)
 
 	// make sure we don't run multiple times, even if TSR calls us multiple times
@@ -178,33 +178,32 @@ export function reportPartInstanceHasStarted(
 	partInstance: PlayoutPartInstanceModel,
 	timestamp: Time
 ): void {
-	if (partInstance) {
-		const timestampUpdated = partInstance.setReportedStartedPlayback(timestamp)
-		if (timestamp && !playoutModel.isMultiGatewayMode) {
+	const timestampUpdated = partInstance.setReportedStartedPlayback(timestamp)
+
+	if (!playoutModel.isMultiGatewayMode) {
+		if (timestamp) {
 			partInstance.setPlannedStartedPlayback(timestamp)
 		}
-
 		const previousPartInstance = playoutModel.previousPartInstance
-		if (timestampUpdated && !playoutModel.isMultiGatewayMode && previousPartInstance) {
+		if (timestampUpdated && previousPartInstance) {
 			// Ensure the plannedStoppedPlayback is set for the previous partinstance too
 			previousPartInstance.setPlannedStoppedPlayback(timestamp)
 		}
+	}
 
-		// Update the playlist:
-		if (!partInstance.partInstance.part.untimed) {
-			playoutModel.setRundownStartedPlayback(partInstance.partInstance.rundownId, timestamp)
-		}
+	// Update the playlist:
+	if (!partInstance.partInstance.part.untimed) {
+		playoutModel.setRundownStartedPlayback(partInstance.partInstance.rundownId, timestamp)
+	}
 
-		if (
-			partInstance.partInstance.segmentPlayoutId !==
-			playoutModel.previousPartInstance?.partInstance.segmentPlayoutId
-		) {
-			playoutModel.setSegmentStartedPlayback(partInstance.partInstance.segmentPlayoutId, timestamp)
-		}
+	if (
+		partInstance.partInstance.segmentPlayoutId !== playoutModel.previousPartInstance?.partInstance.segmentPlayoutId
+	) {
+		playoutModel.setSegmentStartedPlayback(partInstance.partInstance.segmentPlayoutId, timestamp)
+	}
 
-		if (timestampUpdated) {
-			playoutModel.queuePartInstanceTimingEvent(partInstance.partInstance._id)
-		}
+	if (timestampUpdated) {
+		playoutModel.queuePartInstanceTimingEvent(partInstance.partInstance._id)
 	}
 }
 

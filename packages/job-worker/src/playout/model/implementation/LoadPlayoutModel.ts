@@ -89,7 +89,7 @@ export async function createPlayoutModelFromIngestModel(
 
 	const [{ partInstances, groupedPieceInstances }, rundownsWithContent, timeline] = await Promise.all([
 		loadPartInstances(context, loadedPlaylist, rundownIds),
-		loadRundowns(context, ingestModel, rundowns),
+		loadRundowns(context, ingestModel, sortRundownsWithinPlaylist(playlist.rundownIdsInOrder, rundowns)),
 		loadTimeline(context),
 	])
 
