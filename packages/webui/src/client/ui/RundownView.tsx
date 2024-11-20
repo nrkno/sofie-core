@@ -1436,7 +1436,8 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 		rundownHeaderLayoutId: protectString((params['rundownHeaderLayout'] as string) || ''),
 		miniShelfLayoutId: protectString((params['miniShelfLayout'] as string) || ''),
 		shelfDisplayOptions: {
-			enableBuckets: displayOptions.includes('buckets'),
+			// If buckets are enabled in Studiosettings, it can also be filtered in the URLs display options.
+			enableBuckets: !!studio?.settings.enableBuckets && displayOptions.includes('buckets'),
 			enableLayout: displayOptions.includes('layout') || displayOptions.includes('shelfLayout'),
 			enableInspector: displayOptions.includes('inspector'),
 		},

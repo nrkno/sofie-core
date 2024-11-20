@@ -50,6 +50,7 @@ export async function insertStudioInner(organizationId: OrganizationId | null, n
 				minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
 				allowHold: false,
 				allowPieceDirectPlay: false,
+				enableBuckets: true,
 			},
 			_rundownVersionHash: '',
 			routeSetsWithOverrides: wrapDefaultObject({}),

@@ -170,6 +170,7 @@ describe('lib/mediaObjects', () => {
 			minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
 			allowHold: false,
 			allowPieceDirectPlay: false,
+			enableBuckets: false,
 		}
 
 		const mockDefaultStudio = defaultStudio(protectString('studio0'))

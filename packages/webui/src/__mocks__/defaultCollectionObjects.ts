@@ -107,6 +107,7 @@ export function defaultStudio(_id: StudioId): DBStudio {
 			minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
 			allowHold: true,
 			allowPieceDirectPlay: true,
+			enableBuckets: true,
 		},
 		_rundownVersionHash: '',
 		routeSetsWithOverrides: wrapDefaultObject({}),

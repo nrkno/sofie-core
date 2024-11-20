@@ -101,6 +101,11 @@ export interface IStudioSettings {
 	 * This behaviour is usally triggered by double-clicking on a piece in the GUI
 	 */
 	allowPieceDirectPlay: boolean
+
+	/**
+	 * Enable buckets - the default behavior is to have buckets.
+	 */
+	enableBuckets: boolean
 }
 
 export type StudioLight = Omit<DBStudio, 'mappingsWithOverrides' | 'blueprintConfigWithOverrides'>

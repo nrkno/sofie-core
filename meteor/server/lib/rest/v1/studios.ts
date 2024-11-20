@@ -217,4 +217,5 @@ export interface APIStudioSettings {
 	allowAdlibTestingSegment?: boolean
 	allowHold?: boolean
 	allowPieceDirectPlay?: boolean
+	enableBuckets?: boolean
 }

@@ -112,6 +112,7 @@ export function defaultStudio(_id: StudioId): DBStudio {
 			fallbackPartDuration: DEFAULT_FALLBACK_PART_DURATION,
 			allowHold: false,
 			allowPieceDirectPlay: false,
+			enableBuckets: false,
 		},
 		_rundownVersionHash: '',
 		routeSetsWithOverrides: wrapDefaultObject({}),

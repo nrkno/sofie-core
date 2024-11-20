@@ -109,6 +109,7 @@ export function defaultStudio(_id: StudioId): DBStudio {
 			allowAdlibTestingSegment: true,
 			allowHold: true,
 			allowPieceDirectPlay: true,
+			enableBuckets: true,
 		},
 		routeSetsWithOverrides: wrapDefaultObject({}),
 		routeSetExclusivityGroupsWithOverrides: wrapDefaultObject({}),
