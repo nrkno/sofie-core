@@ -16,6 +16,8 @@ import { NotificationCenter, Notification, NoticeLevel } from '../lib/notificati
 import { isLoopRunning } from '../lib/RundownResolver'
 import { useTracker } from '../lib/ReactMeteorData/ReactMeteorData'
 import { CoreSystem } from '../collections'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { SYSTEM_ID } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
 
 type ProblemType = 'nothing' | 'minor' | 'major'
 
@@ -169,9 +171,12 @@ export function AfterBroadcastForm({ playlist }: Readonly<{ playlist: DBRundownP
 }
 
 const EvaluationInfoBubble = React.memo(function EvaluationInfoBubble() {
-	const coreSystem = useTracker(() => CoreSystem.findOne(), [])
+	const coreSystemSettings = useTracker(() => {
+		const core = CoreSystem.findOne(SYSTEM_ID, { projection: { settingsWithOverrides: 1 } })
+		return core && applyAndValidateOverrides(core.settingsWithOverrides).obj
+	}, [])
 
-	const message = coreSystem?.evaluations?.enabled ? coreSystem.evaluations : undefined
+	const message = coreSystemSettings?.evaluationsMessage?.enabled ? coreSystemSettings.evaluationsMessage : undefined
 	if (!message) return null
 
 	return (

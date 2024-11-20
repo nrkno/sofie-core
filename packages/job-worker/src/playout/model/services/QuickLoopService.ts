@@ -1,11 +1,11 @@
 import { MarkerPosition, compareMarkerPositions } from '@sofie-automation/corelib/dist/playout/playlist'
 import { PlayoutModelReadonly } from '../PlayoutModel'
 import {
-	ForceQuickLoopAutoNext,
 	QuickLoopMarker,
 	QuickLoopMarkerType,
 	QuickLoopProps,
 } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { ForceQuickLoopAutoNext } from '@sofie-automation/shared-lib/dist/core/model/StudioSettings'
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'

@@ -35,7 +35,7 @@ describe('selectShowStyleVariant', () => {
 			const context = setupDefaultJobEnvironment()
 			const showStyleCompound = await setupMockShowStyleCompound(context)
 			context.setStudio({
-				...context.studio,
+				...context.rawStudio,
 				supportedShowStyleBase: [showStyleCompound._id],
 			})
 
@@ -57,7 +57,7 @@ describe('selectShowStyleVariant', () => {
 			const context = setupDefaultJobEnvironment()
 			const showStyleCompound = await setupMockShowStyleCompound(context)
 			context.setStudio({
-				...context.studio,
+				...context.rawStudio,
 				supportedShowStyleBase: [],
 			})
 
@@ -76,7 +76,7 @@ describe('selectShowStyleVariant', () => {
 			const context = setupDefaultJobEnvironment()
 			const showStyleCompound = await setupMockShowStyleCompound(context)
 			context.setStudio({
-				...context.studio,
+				...context.rawStudio,
 				supportedShowStyleBase: [showStyleCompound._id],
 			})
 
@@ -118,7 +118,7 @@ describe('selectShowStyleVariant', () => {
 			const showStyleCompoundVariant2 = await setupMockShowStyleVariant(context, showStyleCompound._id)
 			const showStyleCompound2 = await setupMockShowStyleCompound(context)
 			context.setStudio({
-				...context.studio,
+				...context.rawStudio,
 				supportedShowStyleBase: [showStyleCompound._id, showStyleCompound2._id],
 			})
 
@@ -153,7 +153,7 @@ describe('selectShowStyleVariant', () => {
 		test('no show style bases', async () => {
 			const context = setupDefaultJobEnvironment()
 			context.setStudio({
-				...context.studio,
+				...context.rawStudio,
 				supportedShowStyleBase: [protectString('fakeId')],
 			})
 
@@ -176,7 +176,7 @@ describe('selectShowStyleVariant', () => {
 			const context = setupDefaultJobEnvironment()
 			const showStyleCompound = await setupMockShowStyleCompound(context)
 			context.setStudio({
-				...context.studio,
+				...context.rawStudio,
 				supportedShowStyleBase: [showStyleCompound._id],
 			})
 
@@ -201,7 +201,7 @@ describe('selectShowStyleVariant', () => {
 			const context = setupDefaultJobEnvironment()
 			const showStyleCompound = await setupMockShowStyleCompound(context)
 			context.setStudio({
-				...context.studio,
+				...context.rawStudio,
 				supportedShowStyleBase: [showStyleCompound._id],
 			})
 
@@ -226,7 +226,7 @@ describe('selectShowStyleVariant', () => {
 			const context = setupDefaultJobEnvironment()
 			const showStyleCompound = await setupMockShowStyleCompound(context)
 			context.setStudio({
-				...context.studio,
+				...context.rawStudio,
 				supportedShowStyleBase: [showStyleCompound._id],
 			})
 
@@ -251,7 +251,7 @@ describe('selectShowStyleVariant', () => {
 			const context = setupDefaultJobEnvironment()
 			const showStyleCompound = await setupMockShowStyleCompound(context)
 			context.setStudio({
-				...context.studio,
+				...context.rawStudio,
 				supportedShowStyleBase: [showStyleCompound._id],
 			})
 

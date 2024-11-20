@@ -13,7 +13,6 @@ export interface LabelAndOverridesProps<T extends object, TValue> {
 	hint?: string
 	item: WrappedOverridableItemNormal<T>
 	itemKey: keyof ReadonlyDeep<T>
-	opPrefix: string
 	overrideHelper: OverrideOpHelperForItemContents
 
 	showClearButton?: boolean
@@ -32,7 +31,6 @@ export function LabelAndOverrides<T extends object, TValue = any>({
 	hint,
 	item,
 	itemKey,
-	opPrefix,
 	overrideHelper,
 	showClearButton,
 	formatDefaultValue,
@@ -40,16 +38,16 @@ export function LabelAndOverrides<T extends object, TValue = any>({
 	const { t } = useTranslation()
 
 	const clearOverride = useCallback(() => {
-		overrideHelper().clearItemOverrides(opPrefix, String(itemKey)).commit()
-	}, [overrideHelper, opPrefix, itemKey])
+		overrideHelper().clearItemOverrides(item.id, String(itemKey)).commit()
+	}, [overrideHelper, item.id, itemKey])
 	const setValue = useCallback(
 		(newValue: any) => {
-			overrideHelper().setItemValue(opPrefix, String(itemKey), newValue).commit()
+			overrideHelper().setItemValue(item.id, String(itemKey), newValue).commit()
 		},
-		[overrideHelper, opPrefix, itemKey]
+		[overrideHelper, item.id, itemKey]
 	)
 
-	const isOverridden = hasOpWithPath(item.overrideOps, opPrefix, String(itemKey))
+	const isOverridden = hasOpWithPath(item.overrideOps, item.id, String(itemKey))
 
 	let displayValue: JSX.Element | string | null = '""'
 	if (item.defaults) {

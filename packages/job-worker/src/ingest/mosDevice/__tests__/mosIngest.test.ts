@@ -87,7 +87,7 @@ describe('Test recieved mos ingest payloads', () => {
 		const showStyleCompound = await setupMockShowStyleCompound(context)
 
 		context.setStudio({
-			...context.studio,
+			...context.rawStudio,
 			supportedShowStyleBase: [showStyleCompound._id],
 		})
 

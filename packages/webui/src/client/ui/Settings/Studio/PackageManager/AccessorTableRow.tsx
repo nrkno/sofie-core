@@ -133,7 +133,6 @@ export function AccessorTableRow({
 								item={packageContainer}
 								//@ts-expect-error can't be 4 levels deep
 								itemKey={`container.accessors.${accessorId}.label`}
-								opPrefix={packageContainer.id}
 								overrideHelper={overrideHelper}
 							>
 								{(value, handleUpdate) => (
@@ -150,7 +149,6 @@ export function AccessorTableRow({
 								item={packageContainer}
 								//@ts-expect-error can't be 4 levels deep
 								itemKey={`container.accessors.${accessorId}.type`}
-								opPrefix={packageContainer.id}
 								overrideHelper={overrideHelper}
 								options={getDropdownInputOptions(Accessor.AccessType)}
 							>
@@ -173,7 +171,6 @@ export function AccessorTableRow({
 										item={packageContainer}
 										//@ts-expect-error can't be 4 levels deep
 										itemKey={`container.accessors.${accessorId}.folderPath`}
-										opPrefix={packageContainer.id}
 										overrideHelper={overrideHelper}
 									>
 										{(value, handleUpdate) => (
@@ -191,7 +188,6 @@ export function AccessorTableRow({
 										item={packageContainer}
 										//@ts-expect-error can't be 4 levels deep
 										itemKey={`container.accessors.${accessorId}.resourceId`}
-										opPrefix={packageContainer.id}
 										overrideHelper={overrideHelper}
 									>
 										{(value, handleUpdate) => (
@@ -212,7 +208,6 @@ export function AccessorTableRow({
 										item={packageContainer}
 										//@ts-expect-error can't be 4 levels deep
 										itemKey={`container.accessors.${accessorId}.baseUrl`}
-										opPrefix={packageContainer.id}
 										overrideHelper={overrideHelper}
 									>
 										{(value, handleUpdate) => (
@@ -230,7 +225,6 @@ export function AccessorTableRow({
 										item={packageContainer}
 										//@ts-expect-error can't be 4 levels deep
 										itemKey={`container.accessors.${accessorId}.isImmutable`}
-										opPrefix={packageContainer.id}
 										overrideHelper={overrideHelper}
 									>
 										{(value, handleUpdate) => (
@@ -249,7 +243,6 @@ export function AccessorTableRow({
 										item={packageContainer}
 										//@ts-expect-error can't be 4 levels deep
 										itemKey={`container.accessors.${accessorId}.useGETinsteadOfHEAD`}
-										opPrefix={packageContainer.id}
 										overrideHelper={overrideHelper}
 									>
 										{(value, handleUpdate) => (
@@ -269,7 +262,6 @@ export function AccessorTableRow({
 										item={packageContainer}
 										//@ts-expect-error can't be 4 levels deep
 										itemKey={`container.accessors.${accessorId}.networkId`}
-										opPrefix={packageContainer.id}
 										overrideHelper={overrideHelper}
 									>
 										{(value, handleUpdate) => (
@@ -290,7 +282,6 @@ export function AccessorTableRow({
 										item={packageContainer}
 										//@ts-expect-error can't be 4 levels deep
 										itemKey={`container.accessors.${accessorId}.baseUrl`}
-										opPrefix={packageContainer.id}
 										overrideHelper={overrideHelper}
 									>
 										{(value, handleUpdate) => (
@@ -310,7 +301,6 @@ export function AccessorTableRow({
 										item={packageContainer}
 										//@ts-expect-error can't be 4 levels deep
 										itemKey={`container.accessors.${accessorId}.networkId`}
-										opPrefix={packageContainer.id}
 										overrideHelper={overrideHelper}
 									>
 										{(value, handleUpdate) => (
@@ -331,7 +321,6 @@ export function AccessorTableRow({
 										item={packageContainer}
 										//@ts-expect-error can't be 4 levels deep
 										itemKey={`container.accessors.${accessorId}.folderPath`}
-										opPrefix={packageContainer.id}
 										overrideHelper={overrideHelper}
 									>
 										{(value, handleUpdate) => (
@@ -349,7 +338,6 @@ export function AccessorTableRow({
 										item={packageContainer}
 										//@ts-expect-error can't be 4 levels deep
 										itemKey={`container.accessors.${accessorId}.userName`}
-										opPrefix={packageContainer.id}
 										overrideHelper={overrideHelper}
 									>
 										{(value, handleUpdate) => (
@@ -367,7 +355,6 @@ export function AccessorTableRow({
 										item={packageContainer}
 										//@ts-expect-error can't be 4 levels deep
 										itemKey={`container.accessors.${accessorId}.password`}
-										opPrefix={packageContainer.id}
 										overrideHelper={overrideHelper}
 									>
 										{(value, handleUpdate) => (
@@ -385,7 +372,6 @@ export function AccessorTableRow({
 										item={packageContainer}
 										//@ts-expect-error can't be 4 levels deep
 										itemKey={`container.accessors.${accessorId}.networkId`}
-										opPrefix={packageContainer.id}
 										overrideHelper={overrideHelper}
 									>
 										{(value, handleUpdate) => (
@@ -406,7 +392,6 @@ export function AccessorTableRow({
 										item={packageContainer}
 										//@ts-expect-error can't be 4 levels deep
 										itemKey={`container.accessors.${accessorId}.quantelGatewayUrl`}
-										opPrefix={packageContainer.id}
 										overrideHelper={overrideHelper}
 									>
 										{(value, handleUpdate) => (
@@ -424,7 +409,6 @@ export function AccessorTableRow({
 										item={packageContainer}
 										//@ts-expect-error can't be 4 levels deep
 										itemKey={`container.accessors.${accessorId}.ISAUrls`}
-										opPrefix={packageContainer.id}
 										overrideHelper={overrideHelper}
 									>
 										{(value, handleUpdate) => (
@@ -442,7 +426,6 @@ export function AccessorTableRow({
 										item={packageContainer}
 										//@ts-expect-error can't be 4 levels deep
 										itemKey={`container.accessors.${accessorId}.zoneId`}
-										opPrefix={packageContainer.id}
 										overrideHelper={overrideHelper}
 									>
 										{(value, handleUpdate) => (
@@ -462,7 +445,6 @@ export function AccessorTableRow({
 										item={packageContainer}
 										//@ts-expect-error can't be 4 levels deep
 										itemKey={`container.accessors.${accessorId}.serverId`}
-										opPrefix={packageContainer.id}
 										overrideHelper={overrideHelper}
 									>
 										{(value, handleUpdate) => (
@@ -480,7 +462,6 @@ export function AccessorTableRow({
 										item={packageContainer}
 										//@ts-expect-error can't be 4 levels deep
 										itemKey={`container.accessors.${accessorId}.transformerURL`}
-										opPrefix={packageContainer.id}
 										overrideHelper={overrideHelper}
 									>
 										{(value, handleUpdate) => (
@@ -498,7 +479,6 @@ export function AccessorTableRow({
 										item={packageContainer}
 										//@ts-expect-error can't be 4 levels deep
 										itemKey={`container.accessors.${accessorId}.fileflowURL`}
-										opPrefix={packageContainer.id}
 										overrideHelper={overrideHelper}
 									>
 										{(value, handleUpdate) => (
@@ -516,7 +496,6 @@ export function AccessorTableRow({
 										item={packageContainer}
 										//@ts-expect-error can't be 4 levels deep
 										itemKey={`container.accessors.${accessorId}.fileflowProfile`}
-										opPrefix={packageContainer.id}
 										overrideHelper={overrideHelper}
 									>
 										{(value, handleUpdate) => (
@@ -536,7 +515,6 @@ export function AccessorTableRow({
 								item={packageContainer}
 								//@ts-expect-error can't be 4 levels deep
 								itemKey={`container.accessors.${accessorId}.allowRead`}
-								opPrefix={packageContainer.id}
 								overrideHelper={overrideHelper}
 							>
 								{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
@@ -546,7 +524,6 @@ export function AccessorTableRow({
 								item={packageContainer}
 								//@ts-expect-error can't be 4 levels deep
 								itemKey={`container.accessors.${accessorId}.allowWrite`}
-								opPrefix={packageContainer.id}
 								overrideHelper={overrideHelper}
 							>
 								{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}

@@ -9,14 +9,30 @@ import { languageAnd } from '../../lib/language'
 import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredActionsEditor'
 import { TFunction, useTranslation } from 'react-i18next'
 import { Meteor } from 'meteor/meteor'
-import { LogLevel } from '../../lib/tempLib'
+import { literal, LogLevel } from '../../lib/tempLib'
 import { CoreSystem } from '../../collections'
 import { CollectionCleanupResult } from '@sofie-automation/meteor-lib/dist/api/system'
-import { LabelActual } from '../../lib/Components/LabelAndOverrides'
+import {
+	LabelActual,
+	LabelAndOverrides,
+	LabelAndOverridesForCheckbox,
+	LabelAndOverridesForMultiLineText,
+} from '../../lib/Components/LabelAndOverrides'
 import { catchError } from '../../lib/lib'
+import { SystemManagementBlueprint } from './SystemManagement/Blueprint'
+import {
+	applyAndValidateOverrides,
+	ObjectWithOverrides,
+	SomeObjectOverrideOp,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { ICoreSystemSettings } from '@sofie-automation/blueprints-integration'
+import { WrappedOverridableItemNormal, useOverrideOpHelper } from './util/OverrideOpHelper'
+import { CheckboxControl } from '../../lib/Components/Checkbox'
+import { CombinedMultiLineTextInputControl, MultiLineTextInputControl } from '../../lib/Components/MultiLineTextInput'
+import { TextInputControl } from '../../lib/Components/TextInput'
 
 interface WithCoreSystemProps {
-	coreSystem: ICoreSystem | undefined
+	coreSystem: ICoreSystem
 }
 
 export default function SystemManagement(): JSX.Element | null {
@@ -29,6 +45,8 @@ export default function SystemManagement(): JSX.Element | null {
 	return (
 		<div className="studio-edit mod mhl mvn">
 			<SystemManagementGeneral coreSystem={coreSystem} />
+
+			<SystemManagementBlueprint coreSystem={coreSystem} />
 
 			<SystemManagementNotificationMessage coreSystem={coreSystem} />
 
@@ -156,25 +174,29 @@ function SystemManagementNotificationMessage({ coreSystem }: Readonly<WithCoreSy
 function SystemManagementSupportPanel({ coreSystem }: Readonly<WithCoreSystemProps>) {
 	const { t } = useTranslation()
 
+	const { wrappedItem, overrideHelper } = useCoreSystemSettingsWithOverrides(coreSystem)
+
 	return (
 		<>
 			<h2 className="mhn mtn">{t('Support Panel')}</h2>
 			<div className="properties-grid">
-				<label className="field">
-					<LabelActual label={t('Edit Support Panel')} />
-					<div className="mdi">
-						<EditAttribute
+				<LabelAndOverrides
+					label={t('Edit Support Panel')}
+					item={wrappedItem}
+					// @ts-expect-error deep property
+					itemKey={'support.message'}
+					overrideHelper={overrideHelper}
+					hint={t('HTML that will be shown in the Support Panel')}
+				>
+					{(value, handleUpdate) => (
+						<CombinedMultiLineTextInputControl
 							modifiedClassName="bghl"
-							attribute="support.message"
-							obj={coreSystem}
-							type="multiline"
-							collection={CoreSystem}
-							className="mdinput"
+							classNames="input text-input input-l"
+							value={value}
+							handleUpdate={handleUpdate}
 						/>
-						<span className="mdfx"></span>
-					</div>
-					<span className="text-s dimmed field-hint">{t('HTML that will be shown in the Support Panel')}</span>
-				</label>
+					)}
+				</LabelAndOverrides>
 			</div>
 		</>
 	)
@@ -183,50 +205,56 @@ function SystemManagementSupportPanel({ coreSystem }: Readonly<WithCoreSystemPro
 function SystemManagementEvaluationsMessage({ coreSystem }: Readonly<WithCoreSystemProps>) {
 	const { t } = useTranslation()
 
+	const { wrappedItem, overrideHelper } = useCoreSystemSettingsWithOverrides(coreSystem)
+
 	return (
 		<>
 			<h2 className="mhn mtn">{t('Evaluations')}</h2>
 			<div className="properties-grid">
-				<label className="field">
-					<LabelActual label={t('Heading')} />
-					<div className="mdi">
-						<EditAttribute
+				<LabelAndOverridesForCheckbox
+					label={t('Enabled')}
+					item={wrappedItem}
+					// @ts-expect-error deep property
+					itemKey={'evaluations.enabled'}
+					overrideHelper={overrideHelper}
+				>
+					{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+				</LabelAndOverridesForCheckbox>
+
+				<LabelAndOverrides
+					label={t('Heading')}
+					item={wrappedItem}
+					// @ts-expect-error deep property
+					itemKey={'evaluations.heading'}
+					overrideHelper={overrideHelper}
+				>
+					{(value, handleUpdate) => (
+						<TextInputControl
 							modifiedClassName="bghl"
-							attribute="evaluations.heading"
-							obj={coreSystem}
-							type="text"
-							collection={CoreSystem}
-							className="mdinput"
+							classNames="input text-input input-l"
+							value={value}
+							handleUpdate={handleUpdate}
 						/>
-						<span className="mdfx"></span>
-					</div>
-				</label>
-				<label className="field">
-					<LabelActual label={t('Message')} />
-					<div className="mdi">
-						<EditAttribute
+					)}
+				</LabelAndOverrides>
+
+				<LabelAndOverrides
+					label={t('Message')}
+					item={wrappedItem}
+					// @ts-expect-error deep property
+					itemKey={'evaluations.message'}
+					overrideHelper={overrideHelper}
+					hint={t('Message shown to users in the Evaluations form')}
+				>
+					{(value, handleUpdate) => (
+						<CombinedMultiLineTextInputControl
 							modifiedClassName="bghl"
-							attribute="evaluations.message"
-							obj={coreSystem}
-							type="multiline"
-							collection={CoreSystem}
-							className="mdinput"
+							classNames="input text-input input-l"
+							value={value}
+							handleUpdate={handleUpdate}
 						/>
-						<span className="mdfx"></span>
-					</div>
-					<span className="text-s dimmed field-hint">{t('Message shown to users in the Evaluations form')}</span>
-				</label>
-				<label className="field">
-					<LabelActual label={t('Enabled')} />
-					<div className="mdi">
-						<EditAttribute
-							attribute="evaluations.enabled"
-							obj={coreSystem}
-							type="checkbox"
-							collection={CoreSystem}
-						></EditAttribute>
-					</div>
-				</label>
+					)}
+				</LabelAndOverrides>
 			</div>
 		</>
 	)
@@ -304,55 +332,49 @@ function SystemManagementMonitoring({ coreSystem }: Readonly<WithCoreSystemProps
 function SystemManagementCronJobs({ coreSystem }: Readonly<WithCoreSystemProps>) {
 	const { t } = useTranslation()
 
+	const { wrappedItem, overrideHelper } = useCoreSystemSettingsWithOverrides(coreSystem)
+
 	return (
 		<>
 			<h2 className="mhn">{t('Cron jobs')}</h2>
 			<div className="properties-grid">
-				<label className="field">
-					<LabelActual label={t('Enable CasparCG restart job')} />
-					<div className="mdi">
-						<EditAttribute
-							attribute="cron.casparCGRestart.enabled"
-							obj={coreSystem}
-							type="checkbox"
-							collection={CoreSystem}
-						></EditAttribute>
-					</div>
-				</label>
-				<label className="field">
-					<LabelActual label={t('Enable automatic storage of Rundown Playlist snapshots periodically')} />
-					<div className="mdi">
-						<EditAttribute
-							attribute="cron.storeRundownSnapshots.enabled"
-							obj={coreSystem}
-							type="checkbox"
-							collection={CoreSystem}
-						></EditAttribute>
-					</div>
-				</label>
-				<label className="field">
-					<LabelActual label={t('Filter: If set, only store snapshots for certain rundowns')} />
-					<div className="mdi">
-						<EditAttribute
+				<LabelAndOverridesForCheckbox
+					label={t('Enable CasparCG restart job')}
+					item={wrappedItem}
+					// @ts-expect-error deep property
+					itemKey={'cron.casparCGRestart.enabled'}
+					overrideHelper={overrideHelper}
+				>
+					{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+				</LabelAndOverridesForCheckbox>
+
+				<LabelAndOverridesForCheckbox
+					label={t('Enable automatic storage of Rundown Playlist snapshots periodically')}
+					item={wrappedItem}
+					// @ts-expect-error deep property
+					itemKey={'cron.storeRundownSnapshots.enabled'}
+					overrideHelper={overrideHelper}
+				>
+					{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+				</LabelAndOverridesForCheckbox>
+
+				<LabelAndOverridesForMultiLineText
+					label={t('Rundown Playlist names to store')}
+					item={wrappedItem}
+					// @ts-expect-error deep property
+					itemKey={'cron.storeRundownSnapshots.rundownNames'}
+					overrideHelper={overrideHelper}
+					hint={t('(Comma separated list. Empty - will store snapshots of all Rundown Playlists)')}
+				>
+					{(value, handleUpdate) => (
+						<MultiLineTextInputControl
 							modifiedClassName="bghl"
-							attribute="cron.storeRundownSnapshots.rundownNames"
-							obj={coreSystem}
-							type="text"
-							collection={CoreSystem}
-							className="mdinput"
-							label="Rundown Playlist names"
-							mutateDisplayValue={(v: string[] | undefined) =>
-								v === undefined || v.length === 0 ? undefined : v.join(', ')
-							}
-							mutateUpdateValue={(v: string | undefined) =>
-								v === undefined || v.length === 0 ? undefined : v.split(',').map((i) => i.trim())
-							}
+							classNames="input text-input input-l"
+							value={value}
+							handleUpdate={handleUpdate}
 						/>
-					</div>
-					<span className="text-s dimmed field-hint">
-						{t('(Comma separated list. Empty - will store snapshots of all Rundown Playlists)')}
-					</span>
-				</label>
+					)}
+				</LabelAndOverridesForMultiLineText>
 			</div>
 		</>
 	)
@@ -570,4 +592,52 @@ function SystemManagementHeapSnapshot() {
 			</div>
 		</>
 	)
+}
+
+function useCoreSystemSettingsWithOverrides(coreSystem: ICoreSystem) {
+	const saveOverrides = useCallback(
+		(newOps: SomeObjectOverrideOp[]) => {
+			CoreSystem.update(coreSystem._id, {
+				$set: {
+					'settingsWithOverrides.overrides': newOps.map((op) => ({
+						...op,
+						path: op.path.startsWith('0.') ? op.path.slice(2) : op.path,
+					})),
+				},
+			})
+		},
+		[coreSystem._id]
+	)
+
+	const [wrappedItem, wrappedConfigObject] = useMemo(() => {
+		const prefixedOps = coreSystem.settingsWithOverrides.overrides.map((op) => ({
+			...op,
+			// TODO: can we avoid doing this hack?
+			path: `0.${op.path}`,
+		}))
+
+		const computedValue = applyAndValidateOverrides(coreSystem.settingsWithOverrides).obj
+
+		const wrappedItem = literal<WrappedOverridableItemNormal<ICoreSystemSettings>>({
+			type: 'normal',
+			id: '0',
+			computed: computedValue,
+			defaults: coreSystem.settingsWithOverrides.defaults,
+			overrideOps: prefixedOps,
+		})
+
+		const wrappedConfigObject: ObjectWithOverrides<ICoreSystemSettings> = {
+			defaults: coreSystem.settingsWithOverrides.defaults,
+			overrides: prefixedOps,
+		}
+
+		return [wrappedItem, wrappedConfigObject]
+	}, [coreSystem.settingsWithOverrides])
+
+	const overrideHelper = useOverrideOpHelper(saveOverrides, wrappedConfigObject)
+
+	return {
+		wrappedItem,
+		overrideHelper,
+	}
 }

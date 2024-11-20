@@ -67,14 +67,13 @@ export const CoreSystem = createAsyncOnlyMongoCollection<ICoreSystem>(Collection
 		if (!access.update) return logNotAllowed('CoreSystem', access.reason)
 
 		return allowOnlyFields(doc, fields, [
-			'support',
 			'systemInfo',
 			'name',
 			'logLevel',
 			'apm',
-			'cron',
 			'logo',
-			'evaluations',
+			'blueprintId',
+			'settingsWithOverrides',
 		])
 	},
 })

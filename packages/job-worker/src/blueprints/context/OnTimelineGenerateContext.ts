@@ -4,7 +4,6 @@ import {
 	ITimelineEventContext,
 } from '@sofie-automation/blueprints-integration'
 import { ReadonlyDeep } from 'type-fest'
-import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { OnGenerateTimelineObjExt } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { clone } from '@sofie-automation/corelib/dist/lib'
@@ -14,7 +13,7 @@ import { getCurrentTime } from '../../lib'
 import { PieceInstance, ResolvedPieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { ProcessedStudioConfig, ProcessedShowStyleConfig } from '../config'
 import _ = require('underscore')
-import { ProcessedShowStyleCompound } from '../../jobs'
+import { JobStudio, ProcessedShowStyleCompound } from '../../jobs'
 import { convertPartInstanceToBlueprints, createBlueprintQuickLoopInfo } from './lib'
 import { RundownContext } from './RundownContext'
 import { AbSessionHelper } from '../../playout/abPlayback/abSessionHelper'
@@ -33,7 +32,7 @@ export class OnTimelineGenerateContext extends RundownContext implements ITimeli
 	readonly #pieceInstanceCache = new Map<PieceInstanceId, ReadonlyDeep<PieceInstance>>()
 
 	constructor(
-		studio: ReadonlyDeep<DBStudio>,
+		studio: ReadonlyDeep<JobStudio>,
 		studioBlueprintConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		showStyleBlueprintConfig: ProcessedShowStyleConfig,
