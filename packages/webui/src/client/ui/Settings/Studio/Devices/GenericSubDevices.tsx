@@ -285,7 +285,6 @@ function SubDeviceEditRow({
 						label={t('Peripheral Device ID')}
 						item={item}
 						overrideHelper={overrideHelper}
-						opPrefix={item.id}
 						itemKey={'peripheralDeviceId'}
 						options={peripheralDeviceOptions}
 					>
@@ -379,7 +378,6 @@ function SubDeviceEditForm({ peripheralDevice, item, overrideHelper }: Readonly<
 					label={t('Device Type')}
 					item={item}
 					overrideHelper={overrideHelper}
-					opPrefix={item.id}
 					itemKey={'options.type'}
 					options={subdeviceTypeOptions}
 				>

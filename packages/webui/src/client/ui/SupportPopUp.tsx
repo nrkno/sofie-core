@@ -5,6 +5,8 @@ import { SupportIcon } from '../lib/ui/icons/supportIcon'
 import { useTranslation } from 'react-i18next'
 import { getHelpMode } from '../lib/localStorage'
 import { CoreSystem } from '../collections'
+import { SYSTEM_ID } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 interface IProps {}
 
@@ -13,9 +15,10 @@ export function SupportPopUp({ children }: Readonly<React.PropsWithChildren<IPro
 
 	const { supportMessage } = useTracker(
 		() => {
-			const core = CoreSystem.findOne()
+			const core = CoreSystem.findOne(SYSTEM_ID, { projection: { settingsWithOverrides: 1 } })
+			const coreSettings = core && applyAndValidateOverrides(core.settingsWithOverrides).obj
 			return {
-				supportMessage: core?.support?.message ?? '',
+				supportMessage: coreSettings?.support?.message ?? '',
 			}
 		},
 		[],

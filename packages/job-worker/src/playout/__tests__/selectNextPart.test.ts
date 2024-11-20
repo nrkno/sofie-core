@@ -8,7 +8,8 @@ import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/cont
 import { PlayoutSegmentModelImpl } from '../model/implementation/PlayoutSegmentModelImpl'
 import { PlayoutSegmentModel } from '../model/PlayoutSegmentModel'
 import { selectNextPart } from '../selectNextPart'
-import { ForceQuickLoopAutoNext, QuickLoopMarkerType } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { QuickLoopMarkerType } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { ForceQuickLoopAutoNext } from '@sofie-automation/shared-lib/dist/core/model/StudioSettings'
 
 class MockPart {
 	constructor(

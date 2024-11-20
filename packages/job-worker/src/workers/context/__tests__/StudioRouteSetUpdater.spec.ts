@@ -6,10 +6,14 @@ import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objec
 
 function setupTest(routeSets: Record<string, StudioRouteSet>) {
 	const context = setupDefaultJobEnvironment()
-	const mockCache: Pick<WorkerDataCache, 'studio'> = {
-		studio: {
-			...context.studio,
+	const mockCache: Pick<WorkerDataCache, 'rawStudio' | 'jobStudio'> = {
+		rawStudio: {
+			...context.rawStudio,
 			routeSetsWithOverrides: wrapDefaultObject(routeSets),
+		},
+		jobStudio: {
+			...context.studio,
+			routeSets: routeSets,
 		},
 	}
 	const mockCollection = context.mockCollections.Studios
@@ -197,11 +201,13 @@ describe('StudioRouteSetUpdater', () => {
 
 		routeSetHelper.setRouteSetActive('one', true)
 
-		expect(routeSetHelper.studioWithChanges).toBeTruthy()
+		expect(routeSetHelper.rawStudioWithChanges).toBeTruthy()
+		expect(routeSetHelper.jobStudioWithChanges).toBeTruthy()
 
 		routeSetHelper.discardRouteSetChanges()
 
-		expect(routeSetHelper.studioWithChanges).toBeFalsy()
+		expect(routeSetHelper.rawStudioWithChanges).toBeFalsy()
+		expect(routeSetHelper.jobStudioWithChanges).toBeFalsy()
 
 		expect(mockCollection.operations).toHaveLength(0)
 		await routeSetHelper.saveRouteSetChanges()
@@ -211,54 +217,70 @@ describe('StudioRouteSetUpdater', () => {
 	it('save should update mockCache', async () => {
 		const { mockCache, mockCollection, routeSetHelper } = setupTest(SINGLE_ROUTESET)
 
-		const studioBefore = mockCache.studio
-		expect(routeSetHelper.studioWithChanges).toBeFalsy()
+		const rawStudioBefore = mockCache.rawStudio
+		const jobStudioBefore = mockCache.jobStudio
+		expect(routeSetHelper.rawStudioWithChanges).toBeFalsy()
+		expect(routeSetHelper.jobStudioWithChanges).toBeFalsy()
 
 		routeSetHelper.setRouteSetActive('one', true)
-		expect(routeSetHelper.studioWithChanges).toBeTruthy()
+		expect(routeSetHelper.rawStudioWithChanges).toBeTruthy()
+		expect(routeSetHelper.jobStudioWithChanges).toBeTruthy()
 
 		expect(mockCollection.operations).toHaveLength(0)
 		await routeSetHelper.saveRouteSetChanges()
 		expect(mockCollection.operations).toHaveLength(1)
 
 		// Object should have changed
-		expect(mockCache.studio).not.toBe(studioBefore)
+		expect(mockCache.rawStudio).not.toBe(rawStudioBefore)
+		expect(mockCache.jobStudio).not.toBe(jobStudioBefore)
 		// Object should not be equal
-		expect(mockCache.studio).not.toEqual(studioBefore)
-		expect(routeSetHelper.studioWithChanges).toBeFalsy()
+		expect(mockCache.rawStudio).not.toEqual(rawStudioBefore)
+		expect(mockCache.jobStudio).not.toEqual(jobStudioBefore)
+		expect(routeSetHelper.rawStudioWithChanges).toBeFalsy()
+		expect(routeSetHelper.jobStudioWithChanges).toBeFalsy()
 	})
 
 	it('no changes should not update mockCache', async () => {
 		const { mockCache, mockCollection, routeSetHelper } = setupTest(SINGLE_ROUTESET)
 
-		const studioBefore = mockCache.studio
-		expect(routeSetHelper.studioWithChanges).toBeFalsy()
+		const rawStudioBefore = mockCache.rawStudio
+		const jobStudioBefore = mockCache.jobStudio
+		expect(routeSetHelper.rawStudioWithChanges).toBeFalsy()
+		expect(routeSetHelper.jobStudioWithChanges).toBeFalsy()
 
 		expect(mockCollection.operations).toHaveLength(0)
 		await routeSetHelper.saveRouteSetChanges()
 		expect(mockCollection.operations).toHaveLength(0)
 
-		expect(mockCache.studio).toBe(studioBefore)
-		expect(routeSetHelper.studioWithChanges).toBeFalsy()
+		expect(mockCache.rawStudio).toBe(rawStudioBefore)
+		expect(mockCache.jobStudio).toBe(jobStudioBefore)
+		expect(routeSetHelper.rawStudioWithChanges).toBeFalsy()
+		expect(routeSetHelper.jobStudioWithChanges).toBeFalsy()
 	})
 
 	it('discard changes should not update mockCache', async () => {
 		const { mockCache, mockCollection, routeSetHelper } = setupTest(SINGLE_ROUTESET)
 
-		const studioBefore = mockCache.studio
-		expect(routeSetHelper.studioWithChanges).toBeFalsy()
+		const rawStudioBefore = mockCache.rawStudio
+		const jobStudioBefore = mockCache.jobStudio
+		expect(routeSetHelper.rawStudioWithChanges).toBeFalsy()
+		expect(routeSetHelper.jobStudioWithChanges).toBeFalsy()
 
 		routeSetHelper.setRouteSetActive('one', true)
-		expect(routeSetHelper.studioWithChanges).toBeTruthy()
+		expect(routeSetHelper.rawStudioWithChanges).toBeTruthy()
+		expect(routeSetHelper.jobStudioWithChanges).toBeTruthy()
 		routeSetHelper.discardRouteSetChanges()
-		expect(routeSetHelper.studioWithChanges).toBeFalsy()
+		expect(routeSetHelper.rawStudioWithChanges).toBeFalsy()
+		expect(routeSetHelper.jobStudioWithChanges).toBeFalsy()
 
 		expect(mockCollection.operations).toHaveLength(0)
 		await routeSetHelper.saveRouteSetChanges()
 		expect(mockCollection.operations).toHaveLength(0)
 
-		expect(mockCache.studio).toBe(studioBefore)
-		expect(routeSetHelper.studioWithChanges).toBeFalsy()
+		expect(mockCache.rawStudio).toBe(rawStudioBefore)
+		expect(mockCache.jobStudio).toBe(jobStudioBefore)
+		expect(routeSetHelper.rawStudioWithChanges).toBeFalsy()
+		expect(routeSetHelper.jobStudioWithChanges).toBeFalsy()
 	})
 
 	it('ACTIVATE_ONLY routeset can be activated', async () => {

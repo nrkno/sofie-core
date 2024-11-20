@@ -1,6 +1,7 @@
 import type { ABPlayerDefinition } from '@sofie-automation/blueprints-integration'
 import type { StudioRouteSet } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { logger } from '../../logging'
+import { ReadonlyDeep } from 'type-fest'
 
 /**
  * Map<poolName, Map<playerId, disablePlayer>>
@@ -8,9 +9,9 @@ import { logger } from '../../logging'
  */
 type MembersOfRouteSets = Map<string, Map<string, boolean>>
 
-export function findPlayersInRouteSets(routeSets: Record<string, StudioRouteSet>): MembersOfRouteSets {
+export function findPlayersInRouteSets(routeSets: ReadonlyDeep<Record<string, StudioRouteSet>>): MembersOfRouteSets {
 	const routeSetEnabledPlayers: MembersOfRouteSets = new Map()
-	for (const [_key, routeSet] of Object.entries<StudioRouteSet>(routeSets)) {
+	for (const [_key, routeSet] of Object.entries<ReadonlyDeep<StudioRouteSet>>(routeSets)) {
 		for (const abPlayer of routeSet.abPlayers) {
 			let poolEntry = routeSetEnabledPlayers.get(abPlayer.poolName)
 			if (!poolEntry) {

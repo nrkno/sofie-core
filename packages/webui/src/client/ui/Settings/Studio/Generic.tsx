@@ -1,9 +1,8 @@
 import * as React from 'react'
-import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
+import { DBStudio, IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
-import { withTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { StudioBaselineStatus } from './Baseline'
 import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -11,9 +10,27 @@ import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowSt
 import { Studios } from '../../../collections'
 import { useHistory } from 'react-router-dom'
 import { MeteorCall } from '../../../lib/meteorApi'
-import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
+import {
+	LabelActual,
+	LabelAndOverrides,
+	LabelAndOverridesForCheckbox,
+	LabelAndOverridesForDropdown,
+	LabelAndOverridesForInt,
+} from '../../../lib/Components/LabelAndOverrides'
 import { catchError } from '../../../lib/lib'
-import { ForceQuickLoopAutoNext } from '@sofie-automation/corelib/src/dataModel/RundownPlaylist'
+import { ForceQuickLoopAutoNext } from '@sofie-automation/shared-lib/dist/core/model/StudioSettings'
+import {
+	applyAndValidateOverrides,
+	ObjectWithOverrides,
+	SomeObjectOverrideOp,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { useOverrideOpHelper, WrappedOverridableItemNormal } from '../util/OverrideOpHelper'
+import { IntInputControl } from '../../../lib/Components/IntInput'
+import { literal } from '@sofie-automation/corelib/dist/lib'
+import { useMemo } from 'react'
+import { CheckboxControl } from '../../../lib/Components/Checkbox'
+import { TextInputControl } from '../../../lib/Components/TextInput'
+import { DropdownInputControl, DropdownInputOption } from '../../../lib/Components/DropdownInput'
 
 interface IStudioGenericPropertiesProps {
 	studio: DBStudio
@@ -23,285 +40,76 @@ interface IStudioGenericPropertiesProps {
 		showStyleBase: DBShowStyleBase
 	}>
 }
-interface IStudioGenericPropertiesState {}
-export const StudioGenericProperties = withTranslation()(
-	class StudioGenericProperties extends React.Component<
-		Translated<IStudioGenericPropertiesProps>,
-		IStudioGenericPropertiesState
-	> {
-		constructor(props: Translated<IStudioGenericPropertiesProps>) {
-			super(props)
-		}
 
-		renderShowStyleEditButtons() {
-			const buttons: JSX.Element[] = []
-			if (this.props.studio) {
-				for (const showStyleBaseId of this.props.studio.supportedShowStyleBase) {
-					const showStyleBase = this.props.availableShowStyleBases.find(
-						(base) => base.showStyleBase._id === showStyleBaseId
-					)
-					if (showStyleBase) {
-						buttons.push(
-							<RedirectToShowStyleButton
-								key={'settings-nevigation-' + showStyleBase.showStyleBase._id}
-								name={showStyleBase.showStyleBase.name}
-								id={showStyleBase.showStyleBase._id}
-							/>
-						)
-					}
-				}
-			}
-			return buttons
-		}
+export function StudioGenericProperties({
+	studio,
+	availableShowStyleBases,
+}: IStudioGenericPropertiesProps): JSX.Element {
+	const { t } = useTranslation()
 
-		render(): JSX.Element {
-			const { t } = this.props
-			return (
-				<div className="properties-grid">
-					<h2 className="mhn mtn">{t('Generic Properties')}</h2>
-					<label className="field">
-						<LabelActual label={t('Studio Name')} />
-						{!this.props.studio.name ? (
-							<div className="error-notice">
-								{t('No name set')} <FontAwesomeIcon icon={faExclamationTriangle} />
-							</div>
-						) : null}
-						<div className="mdi">
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute="name"
-								obj={this.props.studio}
-								type="text"
-								collection={Studios}
-								className="mdinput"
-							/>
-							<span className="mdfx"></span>
-						</div>
-					</label>
-					<div className="field">
-						{t('Select Compatible Show Styles')}
-						<div className="mdi">
-							<EditAttribute
-								attribute="supportedShowStyleBase"
-								obj={this.props.studio}
-								options={this.props.availableShowStyleBases}
-								label={t('Click to show available Show Styles')}
-								type="multiselect"
-								collection={Studios}
-							/>
-							{this.renderShowStyleEditButtons()}
-							<NewShowStyleButton />
-						</div>
-						{!this.props.studio.supportedShowStyleBase.length ? (
-							<div className="error-notice">
-								{t('Show style not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
-							</div>
-						) : null}
-					</div>
-					<label className="field">
-						<LabelActual label={t('Frame Rate')} />
-						<div className="mdi">
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute="settings.frameRate"
-								obj={this.props.studio}
-								type="int"
-								collection={Studios}
-								className="mdinput"
-							/>
-							<span className="mdfx"></span>
-						</div>
-					</label>
-					<label className="field">
-						<LabelActual label={t('Minimum Take Span')} />
-						<div className="mdi">
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute="settings.minimumTakeSpan"
-								obj={this.props.studio}
-								type="int"
-								collection={Studios}
-								className="mdinput"
-							/>
-							<span className="mdfx"></span>
-						</div>
-					</label>
-					<label className="field">
-						<LabelActual label={t('Enable "Play from Anywhere"')} />
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute="settings.enablePlayFromAnywhere"
-							obj={this.props.studio}
-							type="checkbox"
-							collection={Studios}
-						/>
-					</label>
-					<label className="field">
-						<LabelActual label={t('Media Preview URL')} />
-						<div className="mdi">
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute="settings.mediaPreviewsUrl"
-								obj={this.props.studio}
-								type="text"
-								collection={Studios}
-								className="mdinput"
-							/>
-							<span className="mdfx"></span>
-						</div>
-					</label>
-					<label className="field">
-						<LabelActual label={t('Slack Webhook URLs')} />
-						<div className="mdi">
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute="settings.slackEvaluationUrls"
-								obj={this.props.studio}
-								type="text"
-								collection={Studios}
-								className="mdinput"
-							/>
-							<span className="mdfx"></span>
-						</div>
-					</label>
-					<label className="field">
-						<LabelActual label={t('Supported Media Formats')} />
-						<div className="mdi">
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute="settings.supportedMediaFormats"
-								obj={this.props.studio}
-								type="text"
-								collection={Studios}
-								className="mdinput"
-							/>
-							<span className="mdfx"></span>
-						</div>
-					</label>
-					<label className="field">
-						<LabelActual label={t('Supported Audio Formats')} />
-						<div className="mdi">
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute="settings.supportedAudioStreams"
-								obj={this.props.studio}
-								type="text"
-								collection={Studios}
-								className="mdinput"
-							/>
-							<span className="mdfx"></span>
-						</div>
-					</label>
-					<label className="field">
-						<LabelActual label={t('Force the Multi-gateway-mode')} />
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute="settings.forceMultiGatewayMode"
-							obj={this.props.studio}
-							type="checkbox"
-							collection={Studios}
-						/>
-					</label>
-					<label className="field">
-						<LabelActual label={t('Multi-gateway-mode delay time')} />
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute="settings.multiGatewayNowSafeLatency"
-							obj={this.props.studio}
-							type="int"
-							collection={Studios}
-							className="mdinput"
-						/>
-					</label>
-					<label className="field">
-						<LabelActual label={t('Allow Rundowns to be reset while on-air')} />
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute="settings.allowRundownResetOnAir"
-							obj={this.props.studio}
-							type="checkbox"
-							collection={Studios}
-						/>
-					</label>
-					<label className="field">
-						<LabelActual label={t('Preserve position of segments when unsynced relative to other segments')} />
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute="settings.preserveOrphanedSegmentPositionInRundown"
-							obj={this.props.studio}
-							type="checkbox"
-							collection={Studios}
-						/>
-						<span className="text-s dimmed field-hint">{t('This has only been tested for the iNews gateway')}</span>
-					</label>
-
-					<label className="field">
-						<LabelActual
-							label={t('Allow AdlibTesting (rehearsal) mode, for testing adlibs before taking the first Part')}
-						/>
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute="settings.allowAdlibTestingSegment"
-							obj={this.props.studio}
-							type="checkbox"
-							collection={Studios}
-						/>
-					</label>
-
-					<label className="field">
-						<LabelActual label={t('Enable QuickLoop')} />
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute="settings.enableQuickLoop"
-							obj={this.props.studio}
-							type="checkbox"
-							collection={Studios}
-						/>
-					</label>
-
-					<label className="field">
-						<LabelActual label={t('Force Auto in a Loop')} />
-						<div className="mdi">
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute="settings.forceQuickLoopAutoNext"
-								obj={this.props.studio}
-								mutateDisplayValue={(v) => v ?? ForceQuickLoopAutoNext.DISABLED}
-								options={{
-									[t('Disabled')]: ForceQuickLoopAutoNext.DISABLED,
-									[t('Enabled, but skipping parts with undefined or 0 duration')]:
-										ForceQuickLoopAutoNext.ENABLED_WHEN_VALID_DURATION,
-									[t('Enabled on all Parts, applying QuickLoop Fallback Part Duration if needed')]:
-										ForceQuickLoopAutoNext.ENABLED_FORCING_MIN_DURATION,
-								}}
-								type="dropdown"
-								collection={Studios}
-								className="mdinput"
-							/>
-							<span className="mdfx"></span>
-						</div>
-					</label>
-
-					<label className="field">
-						<LabelActual label={t('QuickLoop Fallback Part Duration')} />
-						<div className="mdi">
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute="settings.fallbackPartDuration"
-								obj={this.props.studio}
-								type="int"
-								collection={Studios}
-								className="mdinput"
-							/>
-						</div>
-					</label>
-
-					<StudioBaselineStatus studioId={this.props.studio._id} />
-				</div>
+	const showStyleEditButtons: JSX.Element[] = []
+	for (const showStyleBaseId of studio.supportedShowStyleBase) {
+		const showStyleBase = availableShowStyleBases.find((base) => base.showStyleBase._id === showStyleBaseId)
+		if (showStyleBase) {
+			showStyleEditButtons.push(
+				<RedirectToShowStyleButton
+					key={'settings-nevigation-' + showStyleBase.showStyleBase._id}
+					name={showStyleBase.showStyleBase.name}
+					id={showStyleBase.showStyleBase._id}
+				/>
 			)
 		}
 	}
-)
+
+	return (
+		<div className="properties-grid">
+			<h2 className="mhn mtn">{t('Generic Properties')}</h2>
+			<label className="field">
+				<LabelActual label={t('Studio Name')} />
+				{!studio.name ? (
+					<div className="error-notice">
+						{t('No name set')} <FontAwesomeIcon icon={faExclamationTriangle} />
+					</div>
+				) : null}
+				<div className="mdi">
+					<EditAttribute
+						modifiedClassName="bghl"
+						attribute="name"
+						obj={studio}
+						type="text"
+						collection={Studios}
+						className="mdinput"
+					/>
+					<span className="mdfx"></span>
+				</div>
+			</label>
+			<div className="field">
+				{t('Select Compatible Show Styles')}
+				<div className="mdi">
+					<EditAttribute
+						attribute="supportedShowStyleBase"
+						obj={studio}
+						options={availableShowStyleBases}
+						label={t('Click to show available Show Styles')}
+						type="multiselect"
+						collection={Studios}
+					/>
+					{showStyleEditButtons}
+					<NewShowStyleButton />
+				</div>
+				{!studio.supportedShowStyleBase.length ? (
+					<div className="error-notice">
+						{t('Show style not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
+					</div>
+				) : null}
+			</div>
+
+			<StudioSettings studio={studio} />
+
+			<StudioBaselineStatus studioId={studio._id} />
+		</div>
+	)
+}
 
 const NewShowStyleButton = React.memo(function NewShowStyleButton() {
 	const history = useHistory()
@@ -336,3 +144,273 @@ const RedirectToShowStyleButton = React.memo(function RedirectToShowStyleButton(
 		</button>
 	)
 })
+
+function StudioSettings({ studio }: { studio: DBStudio }): JSX.Element {
+	const { t } = useTranslation()
+
+	const saveOverrides = React.useCallback(
+		(newOps: SomeObjectOverrideOp[]) => {
+			Studios.update(studio._id, {
+				$set: {
+					'settingsWithOverrides.overrides': newOps.map((op) => ({
+						...op,
+						path: op.path.startsWith('0.') ? op.path.slice(2) : op.path,
+					})),
+				},
+			})
+		},
+		[studio._id]
+	)
+
+	const [wrappedItem, wrappedConfigObject] = useMemo(() => {
+		const prefixedOps = studio.settingsWithOverrides.overrides.map((op) => ({
+			...op,
+			// TODO: can we avoid doing this hack?
+			path: `0.${op.path}`,
+		}))
+
+		const computedValue = applyAndValidateOverrides(studio.settingsWithOverrides).obj
+
+		const wrappedItem = literal<WrappedOverridableItemNormal<IStudioSettings>>({
+			type: 'normal',
+			id: '0',
+			computed: computedValue,
+			defaults: studio.settingsWithOverrides.defaults,
+			overrideOps: prefixedOps,
+		})
+
+		const wrappedConfigObject: ObjectWithOverrides<IStudioSettings> = {
+			defaults: studio.settingsWithOverrides.defaults,
+			overrides: prefixedOps,
+		}
+
+		return [wrappedItem, wrappedConfigObject]
+	}, [studio.settingsWithOverrides])
+
+	const overrideHelper = useOverrideOpHelper(saveOverrides, wrappedConfigObject)
+
+	const autoNextOptions: DropdownInputOption<ForceQuickLoopAutoNext>[] = useMemo(
+		() => [
+			{
+				name: t('Disabled'),
+				value: ForceQuickLoopAutoNext.DISABLED,
+				i: 0,
+			},
+			{
+				name: t('Enabled, but skipping parts with undefined or 0 duration'),
+				value: ForceQuickLoopAutoNext.ENABLED_WHEN_VALID_DURATION,
+				i: 1,
+			},
+			{
+				name: t('Enabled on all Parts, applying QuickLoop Fallback Part Duration if needed'),
+				value: ForceQuickLoopAutoNext.ENABLED_FORCING_MIN_DURATION,
+				i: 2,
+			},
+		],
+		[t]
+	)
+
+	return (
+		<>
+			<LabelAndOverridesForInt
+				label={t('Frame Rate')}
+				item={wrappedItem}
+				itemKey={'frameRate'}
+				overrideHelper={overrideHelper}
+			>
+				{(value, handleUpdate) => (
+					<IntInputControl
+						modifiedClassName="bghl"
+						classNames="input text-input input-l"
+						value={value}
+						handleUpdate={handleUpdate}
+					/>
+				)}
+			</LabelAndOverridesForInt>
+
+			<LabelAndOverridesForInt
+				label={t('Minimum Take Span')}
+				item={wrappedItem}
+				itemKey={'minimumTakeSpan'}
+				overrideHelper={overrideHelper}
+			>
+				{(value, handleUpdate) => (
+					<IntInputControl
+						modifiedClassName="bghl"
+						classNames="input text-input input-l"
+						value={value}
+						handleUpdate={handleUpdate}
+					/>
+				)}
+			</LabelAndOverridesForInt>
+
+			<LabelAndOverridesForCheckbox
+				label={t('Enable "Play from Anywhere"')}
+				item={wrappedItem}
+				itemKey={'enablePlayFromAnywhere'}
+				overrideHelper={overrideHelper}
+			>
+				{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+			</LabelAndOverridesForCheckbox>
+
+			<LabelAndOverrides
+				label={t('Media Preview URL')}
+				item={wrappedItem}
+				itemKey={'mediaPreviewsUrl'}
+				overrideHelper={overrideHelper}
+			>
+				{(value, handleUpdate) => (
+					<TextInputControl
+						modifiedClassName="bghl"
+						classNames="input text-input input-l"
+						value={value}
+						handleUpdate={handleUpdate}
+					/>
+				)}
+			</LabelAndOverrides>
+
+			<LabelAndOverrides
+				label={t('Slack Webhook URLs')}
+				item={wrappedItem}
+				itemKey={'slackEvaluationUrls'}
+				overrideHelper={overrideHelper}
+			>
+				{(value, handleUpdate) => (
+					<TextInputControl
+						modifiedClassName="bghl"
+						classNames="input text-input input-l"
+						value={value}
+						handleUpdate={handleUpdate}
+					/>
+				)}
+			</LabelAndOverrides>
+
+			<LabelAndOverrides
+				label={t('Supported Media Formats')}
+				item={wrappedItem}
+				itemKey={'supportedMediaFormats'}
+				overrideHelper={overrideHelper}
+			>
+				{(value, handleUpdate) => (
+					<TextInputControl
+						modifiedClassName="bghl"
+						classNames="input text-input input-l"
+						value={value}
+						handleUpdate={handleUpdate}
+					/>
+				)}
+			</LabelAndOverrides>
+
+			<LabelAndOverrides
+				label={t('Supported Audio Formats')}
+				item={wrappedItem}
+				itemKey={'supportedAudioStreams'}
+				overrideHelper={overrideHelper}
+			>
+				{(value, handleUpdate) => (
+					<TextInputControl
+						modifiedClassName="bghl"
+						classNames="input text-input input-l"
+						value={value}
+						handleUpdate={handleUpdate}
+					/>
+				)}
+			</LabelAndOverrides>
+
+			<LabelAndOverridesForCheckbox
+				label={t('Force the Multi-gateway-mode')}
+				item={wrappedItem}
+				itemKey={'forceMultiGatewayMode'}
+				overrideHelper={overrideHelper}
+			>
+				{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+			</LabelAndOverridesForCheckbox>
+
+			<LabelAndOverridesForInt
+				label={t('Multi-gateway-mode delay time')}
+				item={wrappedItem}
+				itemKey={'multiGatewayNowSafeLatency'}
+				overrideHelper={overrideHelper}
+			>
+				{(value, handleUpdate) => (
+					<IntInputControl
+						modifiedClassName="bghl"
+						classNames="input text-input input-l"
+						value={value}
+						handleUpdate={handleUpdate}
+					/>
+				)}
+			</LabelAndOverridesForInt>
+
+			<LabelAndOverridesForCheckbox
+				label={t('Allow Rundowns to be reset while on-air')}
+				item={wrappedItem}
+				itemKey={'allowRundownResetOnAir'}
+				overrideHelper={overrideHelper}
+			>
+				{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+			</LabelAndOverridesForCheckbox>
+
+			<LabelAndOverridesForCheckbox
+				label={t('Preserve position of segments when unsynced relative to other segments')}
+				item={wrappedItem}
+				itemKey={'preserveOrphanedSegmentPositionInRundown'}
+				overrideHelper={overrideHelper}
+				hint={t('This has only been tested for the iNews gateway')}
+			>
+				{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+			</LabelAndOverridesForCheckbox>
+
+			<LabelAndOverridesForCheckbox
+				label={t('Allow AdlibTesting (rehearsal) mode, for testing adlibs before taking the first Part')}
+				item={wrappedItem}
+				itemKey={'allowAdlibTestingSegment'}
+				overrideHelper={overrideHelper}
+			>
+				{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+			</LabelAndOverridesForCheckbox>
+
+			<LabelAndOverridesForCheckbox
+				label={t('Enable QuickLoop')}
+				item={wrappedItem}
+				itemKey={'enableQuickLoop'}
+				overrideHelper={overrideHelper}
+			>
+				{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+			</LabelAndOverridesForCheckbox>
+
+			<LabelAndOverridesForDropdown
+				label={t('Source Type')}
+				item={wrappedItem}
+				itemKey={'forceQuickLoopAutoNext'}
+				overrideHelper={overrideHelper}
+				options={autoNextOptions}
+			>
+				{(value, handleUpdate, options) => (
+					<DropdownInputControl
+						classNames="focusable-main input-l"
+						options={options}
+						value={value}
+						handleUpdate={handleUpdate}
+					/>
+				)}
+			</LabelAndOverridesForDropdown>
+
+			<LabelAndOverridesForInt
+				label={t('QuickLoop Fallback Part Duration')}
+				item={wrappedItem}
+				itemKey={'fallbackPartDuration'}
+				overrideHelper={overrideHelper}
+			>
+				{(value, handleUpdate) => (
+					<IntInputControl
+						modifiedClassName="bghl"
+						classNames="input text-input input-l"
+						value={value}
+						handleUpdate={handleUpdate}
+					/>
+				)}
+			</LabelAndOverridesForInt>
+		</>
+	)
+}

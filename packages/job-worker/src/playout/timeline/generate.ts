@@ -1,5 +1,5 @@
 import { BlueprintId, TimelineHash } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { JobContext } from '../../jobs'
+import { JobContext, JobStudio } from '../../jobs'
 import { ReadonlyDeep } from 'type-fest'
 import {
 	BlueprintResultBaseline,
@@ -36,7 +36,6 @@ import { WatchedPackagesHelper } from '../../blueprints/context/watchedPackages'
 import { postProcessStudioBaselineObjects } from '../../blueprints/postProcess'
 import { updateBaselineExpectedPackagesOnStudio } from '../../ingest/expectedPackages'
 import { endTrace, sendTrace, startTrace } from '@sofie-automation/corelib/dist/influxdb'
-import { StudioLight } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { deserializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { convertResolvedPieceInstanceToBlueprints } from '../../blueprints/context/lib'
 import { buildTimelineObjsForRundown, RundownTimelineTimingContext } from './rundown'
@@ -54,7 +53,7 @@ function isModelForStudio(model: StudioPlayoutModelBase): model is StudioPlayout
 }
 
 function generateTimelineVersions(
-	studio: ReadonlyDeep<StudioLight>,
+	studio: ReadonlyDeep<JobStudio>,
 	blueprintId: BlueprintId | undefined,
 	blueprintVersion: string
 ): TimelineCompleteGenerationVersions {

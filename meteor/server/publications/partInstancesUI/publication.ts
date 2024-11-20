@@ -108,7 +108,7 @@ async function setupUIPartInstancesPublicationObservers(
 				changed: () => triggerUpdate({ invalidateQuickLoop: true }),
 				removed: () => triggerUpdate({ invalidateQuickLoop: true }),
 			}),
-			cache.Studios.find({}).observeChanges({
+			cache.StudioSettings.find({}).observeChanges({
 				added: () => triggerUpdate({ invalidateQuickLoop: true }),
 				changed: () => triggerUpdate({ invalidateQuickLoop: true }),
 				removed: () => triggerUpdate({ invalidateQuickLoop: true }),
@@ -150,8 +150,8 @@ export async function manipulateUIPartInstancesPublicationData(
 	const playlist = state.contentCache.RundownPlaylists.findOne({})
 	if (!playlist) return
 
-	const studio = state.contentCache.Studios.findOne({})
-	if (!studio) return
+	const studioSettings = state.contentCache.StudioSettings.findOne({})
+	if (!studioSettings) return
 
 	const rundownRanks = stringsToIndexLookup(playlist.rundownIdsInOrder as unknown as string[])
 	const segmentRanks = extractRanks(state.contentCache.Segments.find({}).fetch())
@@ -193,7 +193,7 @@ export async function manipulateUIPartInstancesPublicationData(
 				segmentRanks,
 				rundownRanks,
 				playlist,
-				studio,
+				studioSettings.settings,
 				quickLoopStartPosition,
 				quickLoopEndPosition
 			)
