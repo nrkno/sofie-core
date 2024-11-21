@@ -33,7 +33,7 @@ function traceDebuggingData() {
 	// Collect a set of data that can be useful for performance debugging
 
 	const debugData: any = {
-		connectionCount: 0,
+		connectionCount: 0 + 0,
 		namedSubscriptionCount: 0,
 		universalSubscriptionCount: 0,
 		documentCount: 0,
