@@ -8,4 +8,4 @@ COPY server-core-integration /opt/server-core-integration
 COPY shared-lib /opt/shared-lib
 
 WORKDIR /opt/mos-gateway
-CMD ["yarn", "start"]
+CMD ["node", "dist/index.js"]
