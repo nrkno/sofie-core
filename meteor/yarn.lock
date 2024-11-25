@@ -1557,19 +1557,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:>=12.0.0":
-  version: 20.6.3
-  resolution: "@types/node@npm:20.6.3"
-  checksum: 444a6f1f41cfa8d3e20ce0108e6e43960fb2ae0e481f233bb1c14d6252aa63a92e021de561cd317d9fdb411688f871065f40175a1f18763282dee2613a08f8a3
-  languageName: node
-  linkType: hard
-
-"@types/node@npm:^20.17.6":
-  version: 20.17.6
-  resolution: "@types/node@npm:20.17.6"
+"@types/node@npm:*, @types/node@npm:>=12.0.0, @types/node@npm:^22.9.3":
+  version: 22.9.3
+  resolution: "@types/node@npm:22.9.3"
   dependencies:
-    undici-types: ~6.19.2
-  checksum: d51dbb9881c94d0310b32b5fd8013e3261595c61bc888fa27258469c93c3dc0b3c4d20a9f28f3f5f79562f6737e28e7f3dd04940dc8b4d966d34aaf318f7f69b
+    undici-types: ~6.19.8
+  checksum: 274cced37a8a11cd89827c551de73980a174e00bef0768c10c1fb7d3887a26b4fade25f870e3fd870432b93546e092cdbe0979e65110c0839982dc2b5938aabc
   languageName: node
   linkType: hard
 
@@ -2297,7 +2290,7 @@ __metadata:
     "@types/koa-static": ^4.0.4
     "@types/koa__cors": ^5.0.0
     "@types/koa__router": ^12.0.4
-    "@types/node": ^20.17.6
+    "@types/node": ^22.9.3
     "@types/request": ^2.48.12
     "@types/semver": ^7.5.6
     "@types/underscore": ^1.11.15
@@ -7065,7 +7058,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lru-cache@npm:10.2.0":
+"lru-cache@npm:10.2.0, lru-cache@npm:^9.1.1 || ^10.0.0":
   version: 10.2.0
   resolution: "lru-cache@npm:10.2.0"
   checksum: eee7ddda4a7475deac51ac81d7dd78709095c6fa46e8350dc2d22462559a1faa3b81ed931d5464b13d48cbd7e08b46100b6f768c76833912bc444b99c37e25db
@@ -7094,13 +7087,6 @@ __metadata:
   version: 7.18.3
   resolution: "lru-cache@npm:7.18.3"
   checksum: e550d772384709deea3f141af34b6d4fa392e2e418c1498c078de0ee63670f1f46f5eee746e8ef7e69e1c895af0d4224e62ee33e66a543a14763b0f2e74c1356
-  languageName: node
-  linkType: hard
-
-"lru-cache@npm:^9.1.1 || ^10.0.0":
-  version: 10.0.1
-  resolution: "lru-cache@npm:10.0.1"
-  checksum: 06f8d0e1ceabd76bb6f644a26dbb0b4c471b79c7b514c13c6856113879b3bf369eb7b497dad4ff2b7e2636db202412394865b33c332100876d838ad1372f0181
   languageName: node
   linkType: hard
 
@@ -10348,14 +10334,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.5.3, tslib@npm:^2.6.0, tslib@npm:^2.6.2":
-  version: 2.6.2
-  resolution: "tslib@npm:2.6.2"
-  checksum: 329ea56123005922f39642318e3d1f0f8265d1e7fcb92c633e0809521da75eeaca28d2cf96d7248229deb40e5c19adf408259f4b9640afd20d13aecc1430f3ad
-  languageName: node
-  linkType: hard
-
-"tslib@npm:^2.6.3":
+"tslib@npm:^2.5.3, tslib@npm:^2.6.0, tslib@npm:^2.6.2, tslib@npm:^2.6.3":
   version: 2.7.0
   resolution: "tslib@npm:2.7.0"
   checksum: 1606d5c89f88d466889def78653f3aab0f88692e80bb2066d090ca6112ae250ec1cfa9dbfaab0d17b60da15a4186e8ec4d893801c67896b277c17374e36e1d28
@@ -10571,7 +10550,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici-types@npm:~6.19.2":
+"undici-types@npm:~6.19.8":
   version: 6.19.8
   resolution: "undici-types@npm:6.19.8"
   checksum: de51f1b447d22571cf155dfe14ff6d12c5bdaec237c765085b439c38ca8518fc360e88c70f99469162bf2e14188a7b0bcb06e1ed2dc031042b984b0bb9544017

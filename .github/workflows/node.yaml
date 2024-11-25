@@ -481,27 +481,27 @@ jobs:
           - server-core-integration
           - shared-lib
           - openapi
-        node-version: [20.x, 22.x]
+        node-version: [22.x]
         include:
           # include additional configs, to run certain packages only for a certain version of node
-          - node-version: 20.x
+          - node-version: 22.x
             package-name: corelib
             send-coverage: true
-          - node-version: 20.x
+          - node-version: 22.x
             package-name: job-worker
             send-coverage: true
           # No tests for the gateways yet
-          # - node-version: 20.x
+          # - node-version: 22.x
           #   package-name: playout-gateway
-          # - node-version: 20.x
+          # - node-version: 22.x
           #   package-name: mos-gateway
-          - node-version: 20.x
+          - node-version: 22.x
             package-name: live-status-gateway
             send-coverage: true
-          - node-version: 20.x
+          - node-version: 22.x
             package-name: webui
           # manual meteor-lib as it only needs a couple of versions
-          - node-version: 20.x
+          - node-version: 22.x
             package-name: meteor-lib
             send-coverage: true
 

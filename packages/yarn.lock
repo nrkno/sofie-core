@@ -6465,12 +6465,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:>=12.0.0, @types/node@npm:>=13.7.0, @types/node@npm:^20.17.6":
-  version: 20.17.6
-  resolution: "@types/node@npm:20.17.6"
+"@types/node@npm:*, @types/node@npm:>=12.0.0, @types/node@npm:>=13.7.0, @types/node@npm:^22.9.3":
+  version: 22.9.3
+  resolution: "@types/node@npm:22.9.3"
   dependencies:
-    undici-types: ~6.19.2
-  checksum: d51dbb9881c94d0310b32b5fd8013e3261595c61bc888fa27258469c93c3dc0b3c4d20a9f28f3f5f79562f6737e28e7f3dd04940dc8b4d966d34aaf318f7f69b
+    undici-types: ~6.19.8
+  checksum: 274cced37a8a11cd89827c551de73980a174e00bef0768c10c1fb7d3887a26b4fade25f870e3fd870432b93546e092cdbe0979e65110c0839982dc2b5938aabc
   languageName: node
   linkType: hard
 
@@ -21026,7 +21026,7 @@ asn1@evs-broadcast/node-asn1:
     "@types/ejson": ^2.2.2
     "@types/got": ^9.6.12
     "@types/jest": ^29.5.11
-    "@types/node": ^20.17.6
+    "@types/node": ^22.9.3
     "@types/node-fetch": ^2.6.11
     "@types/object-path": ^0.11.4
     "@types/underscore": ^1.11.15
@@ -26834,7 +26834,7 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"undici-types@npm:~6.19.2":
+"undici-types@npm:~6.19.8":
   version: 6.19.8
   resolution: "undici-types@npm:6.19.8"
   checksum: de51f1b447d22571cf155dfe14ff6d12c5bdaec237c765085b439c38ca8518fc360e88c70f99469162bf2e14188a7b0bcb06e1ed2dc031042b984b0bb9544017

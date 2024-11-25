@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:experimental
 
 # BUILD WEBUI
-FROM node:20
+FROM node:22
 COPY packages /opt/core/packages
 WORKDIR /opt/core/packages
 
@@ -14,8 +14,8 @@ RUN yarn install && yarn build
 # RUN yarn workspaces focus --production @sofie-automation/job-worker @sofie-automation/corelib
 
 # BUILD IMAGE
-FROM node:20
-RUN curl "https://install.meteor.com/?release=3.0.4" | sh
+FROM node:22
+RUN curl "https://install.meteor.com/?release=3.1" | sh
 
 # Temporary change the NODE_ENV env variable, so that all libraries are installed:
 ENV NODE_ENV_TMP $NODE_ENV
@@ -50,7 +50,7 @@ RUN npm install
 RUN mv /opt/bundle/programs/web.browser/assets /opt/bundle/programs/web.browser/app/assets || true
 
 # DEPLOY IMAGE
-FROM node:20-alpine
+FROM node:22-alpine
 
 RUN apk add --no-cache tzdata
 

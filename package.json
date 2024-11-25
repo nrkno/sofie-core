@@ -4,7 +4,7 @@
 	"license": "MIT",
 	"private": true,
 	"engines": {
-		"node": ">=20.18"
+		"node": ">=22.11"
 	},
 	"scripts": {
 		"postinstall": "run install:packages && run install:meteor",
