@@ -3,7 +3,7 @@
 	"version": "1.52.0-in-development",
 	"private": true,
 	"engines": {
-		"node": ">=20.18"
+		"node": ">=22.11"
 	},
 	"scripts": {
 		"preinstall": "node -v",
@@ -88,7 +88,7 @@
 		"@types/koa-static": "^4.0.4",
 		"@types/koa__cors": "^5.0.0",
 		"@types/koa__router": "^12.0.4",
-		"@types/node": "^20.17.6",
+		"@types/node": "^22.9.3",
 		"@types/request": "^2.48.12",
 		"@types/semver": "^7.5.6",
 		"@types/underscore": "^1.11.15",
