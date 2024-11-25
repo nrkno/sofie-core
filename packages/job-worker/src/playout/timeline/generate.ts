@@ -197,31 +197,30 @@ function preserveOrReplaceNowTimesInObjects(
 }
 
 function logAnyRemainingNowTimes(_context: JobContext, timelineObjs: Array<TimelineObjGeneric>): void {
-	const ids: string[] = []
-
-	const hasNow = (obj: TimelineEnableExt | TimelineEnableExt[]) => {
-		let res = false
-		applyToArray(obj, (enable) => {
-			if (enable.start === 'now' || enable.end === 'now') res = true
-		})
-		return res
-	}
+	const badTimelineObjs: any[] = []
 
 	for (const obj of timelineObjs) {
 		if (hasNow(obj.enable)) {
-			ids.push(obj.id)
+			badTimelineObjs.push(obj)
 		}
 
 		for (const kf of obj.keyframes || []) {
 			if (hasNow(kf.enable)) {
-				ids.push(kf.id)
+				badTimelineObjs.push(kf)
 			}
 		}
 	}
 
-	if (ids.length) {
-		logger.error(`Some timeline objects have unexpected now times!: ${JSON.stringify(ids)}`)
+	if (badTimelineObjs.length) {
+		logger.error(`Some timeline objects have unexpected now times!: ${JSON.stringify(badTimelineObjs)}`)
 	}
+}
+function hasNow(obj: TimelineEnableExt | TimelineEnableExt[]) {
+	let res = false
+	applyToArray(obj, (enable) => {
+		if (enable.start === 'now' || enable.end === 'now') res = true
+	})
+	return res
 }
 
 /** Store the timelineobjects into the model, and perform any post-save actions */

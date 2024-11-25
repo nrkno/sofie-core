@@ -23,6 +23,7 @@ import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/
 import { sortRundownIDsInPlaylist } from '@sofie-automation/corelib/dist/playout/playlist'
 import { mongoWhere } from '@sofie-automation/corelib/dist/mongo'
 import { PlayoutRundownModel } from './model/PlayoutRundownModel'
+import { logger } from '../logging'
 
 /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
 export const DEFINITELY_ENDED_FUTURE_DURATION = 1 * 1000
@@ -330,7 +331,26 @@ export function getPieceInstancesForPart(
 		if (!playingRundown) throw new Error(`Rundown "${playingPartInstance.partInstance.rundownId}" not found!`)
 
 		playingSegment = playingRundown.getSegment(playingPartInstance.partInstance.segmentId)
-		if (!playingSegment) throw new Error(`Segment "${playingPartInstance.partInstance.segmentId}" not found!`)
+		if (!playingSegment) {
+			const rundownId = playingRundown.rundown._id
+			context.directCollections.Segments.findFetch({
+				rundownId: rundownId,
+			})
+				.then((segment) => {
+					logger.error(
+						`TROUBLESHOOT: Segment not found, rundown "${rundownId}", segments in db: ${JSON.stringify(
+							segment.map((s) => s._id)
+						)}`
+					)
+				})
+				.catch((e) => logger.error(e))
+
+			throw new Error(
+				`Segment "${playingPartInstance.partInstance.segmentId}" in Rundown "${
+					playingRundown.rundown._id
+				}" not found! (other segments: ${JSON.stringify(playingRundown.segments.map((s) => s.segment._id))})`
+			)
+		}
 	}
 
 	const segment = rundown.getSegment(part.segmentId)

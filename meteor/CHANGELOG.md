@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.51.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.51.1...v1.51.2) (2024-11-21)
+
+
+### Bug Fixes
+
+* Include previousPartInstance in check to orphan segments rather than remove them. ([2c113b5](https://github.com/nrkno/tv-automation-server-core/commit/2c113b58b205198d13f0fc7e2114704311eb915b))
+* updatePartInstancesSegmentIds: take into account when multiple segments have been merged into one. ([bdab8c4](https://github.com/nrkno/tv-automation-server-core/commit/bdab8c4e4ee1e67a3568cccc98106bb7f1258673))
+
 ## [1.51.0-in-testing.3](https://github.com/nrkno/sofie-core/compare/v1.51.0-in-testing.2...v1.51.0-in-testing.3) (2024-09-25)
 
 ## [1.51.0-in-testing.2](https://github.com/nrkno/sofie-core/compare/v1.51.0-in-testing.1...v1.51.0-in-testing.2) (2024-09-24)
