@@ -110,6 +110,8 @@ export function defaultStudio(_id: StudioId): DBStudio {
 			mediaPreviewsUrl: '',
 			minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
 			fallbackPartDuration: DEFAULT_FALLBACK_PART_DURATION,
+			allowHold: false,
+			allowPieceDirectPlay: false,
 		},
 		_rundownVersionHash: '',
 		routeSetsWithOverrides: wrapDefaultObject({}),

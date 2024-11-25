@@ -105,6 +105,8 @@ export function defaultStudio(_id: StudioId): DBStudio {
 			frameRate: 25,
 			mediaPreviewsUrl: '',
 			minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
+			allowHold: true,
+			allowPieceDirectPlay: true,
 		},
 		_rundownVersionHash: '',
 		routeSetsWithOverrides: wrapDefaultObject({}),

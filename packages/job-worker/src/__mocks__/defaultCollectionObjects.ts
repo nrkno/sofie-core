@@ -107,6 +107,8 @@ export function defaultStudio(_id: StudioId): DBStudio {
 			mediaPreviewsUrl: '',
 			minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
 			allowAdlibTestingSegment: true,
+			allowHold: true,
+			allowPieceDirectPlay: true,
 		},
 		routeSetsWithOverrides: wrapDefaultObject({}),
 		routeSetExclusivityGroupsWithOverrides: wrapDefaultObject({}),

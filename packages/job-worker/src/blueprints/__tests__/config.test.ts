@@ -15,6 +15,8 @@ describe('Test blueprint config', () => {
 				mediaPreviewsUrl: '',
 				frameRate: 25,
 				minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
+				allowHold: true,
+				allowPieceDirectPlay: true,
 			},
 			blueprintConfigWithOverrides: wrapDefaultObject({ sdfsdf: 'one', another: 5 }),
 		})
@@ -38,6 +40,8 @@ describe('Test blueprint config', () => {
 				mediaPreviewsUrl: '',
 				frameRate: 25,
 				minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
+				allowHold: true,
+				allowPieceDirectPlay: true,
 			},
 			blueprintConfigWithOverrides: wrapDefaultObject({ sdfsdf: 'one', another: 5 }),
 		})

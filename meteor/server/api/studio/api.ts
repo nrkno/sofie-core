@@ -48,6 +48,8 @@ export async function insertStudioInner(organizationId: OrganizationId | null, n
 				frameRate: 25,
 				mediaPreviewsUrl: '',
 				minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
+				allowHold: false,
+				allowPieceDirectPlay: false,
 			},
 			_rundownVersionHash: '',
 			routeSetsWithOverrides: wrapDefaultObject({}),

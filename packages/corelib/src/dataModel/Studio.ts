@@ -88,6 +88,19 @@ export interface IStudioSettings {
 	 * Default: 3000
 	 */
 	fallbackPartDuration?: number
+
+	/**
+	 * Whether to allow hold operations for Rundowns in this Studio
+	 * When disabled, any action-triggers that would normally trigger a hold operation will be silently ignored
+	 * This should only block entering hold, to ensure Sofie doesn't get stuck if it somehow gets into hold
+	 */
+	allowHold: boolean
+
+	/**
+	 * Whether to allow direct playing of a piece in the rundown
+	 * This behaviour is usally triggered by double-clicking on a piece in the GUI
+	 */
+	allowPieceDirectPlay: boolean
 }
 
 export type StudioLight = Omit<DBStudio, 'mappingsWithOverrides' | 'blueprintConfigWithOverrides'>

@@ -296,6 +296,34 @@ export const StudioGenericProperties = withTranslation()(
 						</div>
 					</label>
 
+					<label className="field">
+						<LabelActual label={t('Allow HOLD mode')} />
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute="settings.allowHold"
+							obj={this.props.studio}
+							type="checkbox"
+							collection={Studios}
+						/>
+						<span className="text-s dimmed field-hint">
+							{t('When disabled, any HOLD operations will be silently ignored')}
+						</span>
+					</label>
+
+					<label className="field">
+						<LabelActual label={t('Allow direct playing pieces')} />
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute="settings.allowPieceDirectPlay"
+							obj={this.props.studio}
+							type="checkbox"
+							collection={Studios}
+						/>
+						<span className="text-s dimmed field-hint">
+							{t('When enabled, double clicking on certain pieces in the GUI will play them as adlibs')}
+						</span>
+					</label>
+
 					<StudioBaselineStatus studioId={this.props.studio._id} />
 				</div>
 			)
