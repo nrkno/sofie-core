@@ -3,10 +3,11 @@ export namespace PackageInfo {
 	export enum Type {
 		SCAN = 'scan',
 		DEEPSCAN = 'deepScan',
+		JSON = 'json',
 		OTHER = 'other',
 	}
 
-	export type Any = FFProbeScan | FFProbeDeepScan | FFOther
+	export type Any = FFProbeScan | FFProbeDeepScan | JSONDocument | FFOther
 	export interface Base {
 		type: Type
 		payload: any
@@ -20,6 +21,12 @@ export namespace PackageInfo {
 		type: Type.DEEPSCAN
 		payload: FFProbeDeepScanInfo
 	}
+
+	export interface JSONDocument extends Base {
+		type: Type.JSON
+		payload: unknown
+	}
+
 	export interface FFOther extends Base {
 		// placeholder
 		type: Type.OTHER

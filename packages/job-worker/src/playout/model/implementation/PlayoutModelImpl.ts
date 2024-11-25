@@ -432,6 +432,11 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 	deactivatePlaylist(): void {
 		delete this.playlistImpl.activationId
 
+		if (this.currentPartInstance) {
+			this.currentPartInstance.setReportedStoppedPlaybackWithPieceInstances(getCurrentTime())
+			this.queuePartInstanceTimingEvent(this.currentPartInstance.partInstance._id)
+		}
+
 		this.clearSelectedPartInstances()
 
 		this.#playlistHasChanged = true
@@ -746,12 +751,30 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		if (this.rundownsImpl.find((rd) => rd.AdlibTestingSegmentHasChanged))
 			logOrThrowError(new Error(`Failed no changes in model assertion, an AdlibTesting Segment has been changed`))
 
-		if (
-			Array.from(this.allPartInstances.values()).find(
-				(part) => !part || part.partInstanceHasChanges || part.changedPieceInstanceIds().length > 0
-			)
+		const changedPartInstances = Array.from(this.allPartInstances.entries()).filter(
+			([_, partInstance]) =>
+				!partInstance ||
+				partInstance.partInstanceHasChanges ||
+				partInstance.changedPieceInstanceIds().length > 0
 		)
-			logOrThrowError(new Error(`Failed no changes in model assertion, a PartInstance has been changed`))
+
+		if (changedPartInstances.length > 0) {
+			logOrThrowError(
+				new Error(
+					`Failed no changes in model assertion, PartInstances has been changed: ${JSON.stringify(
+						changedPartInstances.map(
+							([id, pi]) =>
+								`${id}: ` +
+								(!pi
+									? 'null'
+									: `partInstanceHasChanges: ${
+											pi.partInstanceHasChanges
+									  }, changedPieceInstanceIds: ${JSON.stringify(pi.changedPieceInstanceIds())}`)
+						)
+					)}`
+				)
+			)
+		}
 
 		if (span) span.end()
 	}

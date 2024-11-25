@@ -6,7 +6,7 @@ import { MeteorPubSub } from '../../../../../../lib/api/pubsub'
 import { Studios } from '../../../../../collections'
 import { getCurrentTime } from '../../../../../../lib/lib'
 import { UIDeviceTriggerPreview } from '../../../../../../lib/api/triggers/MountedTriggers'
-import { useSubscription, useTracker } from '../../../../../lib/ReactMeteorData/ReactMeteorData'
+import { useSubscriptionIfEnabled, useTracker } from '../../../../../lib/ReactMeteorData/ReactMeteorData'
 import { DeviceTriggersPreviews } from '../../../../Collections'
 import { DeviceTrigger } from './DeviceTrigger'
 
@@ -33,7 +33,7 @@ export const DeviceEditor = function DeviceEditor({ trigger, modified, readonly,
 	)
 	const studio = useTracker(() => Studios.findOne(), [], undefined)
 
-	useSubscription(MeteorPubSub.deviceTriggersPreview, studio?._id ?? protectString(''))
+	useSubscriptionIfEnabled(MeteorPubSub.deviceTriggersPreview, studio !== undefined, studio?._id ?? protectString(''))
 
 	return (
 		<>

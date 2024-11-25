@@ -31,8 +31,6 @@ export function ActiveRundownView({ studioId }: Readonly<{ studioId: StudioId }>
 		[studioId]
 	)
 
-	useSetDocumentClass('dark', 'vertical-overflow-only')
-
 	if (!subsReady) {
 		return (
 			<div className="rundown-view rundown-view--loading">
@@ -61,6 +59,8 @@ export function ActiveRundownView({ studioId }: Readonly<{ studioId: StudioId }>
 
 function NotFoundMessage({ message }: Readonly<{ message: string }>) {
 	const { t } = useTranslation()
+
+	useSetDocumentClass('dark', 'vertical-overflow-only')
 
 	return (
 		<div className="rundown-view rundown-view--unpublished">
