@@ -48,7 +48,7 @@ export namespace SystemWriteAccess {
 		return true
 	}
 	/** Check if access is allowed to modify a User, and that user is the current User */
-	export async function currentUser(userId: UserId, cred: Credentials): Promise<boolean> {
+	export async function currentUser(userId: UserId | null, cred: Credentials): Promise<boolean> {
 		const access = await allowAccessToCurrentUser(cred, userId)
 		if (!access.update) return logNotAllowed('Current user', access.reason)
 

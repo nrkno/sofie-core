@@ -1,12 +1,10 @@
-// https://github.com/meteor/meteor/blob/73fd519de6eef8e116d813fb457c8442db9d1cdd/packages/tracker/tracker.js
+// https://github.com/meteor/meteor/blob/0afa7df1fa4146f1f5dd26d867b32c19b7e8d4ad/packages/tracker/tracker.js
 
 /////////////////////////////////////////////////////
 // Package docs at http://docs.meteor.com/#tracker //
 /////////////////////////////////////////////////////
 
 import { Meteor } from './meteor'
-
-export const a = 'a'
 
 /**
  * @namespace Tracker
@@ -38,11 +36,6 @@ Tracker.active = false
  */
 Tracker.currentComputation = null
 
-function setCurrentComputation(c) {
-	Tracker.currentComputation = c
-	Tracker.active = !!c
-}
-
 function _debugFunc() {
 	// We want this code to work without Meteor, and also without
 	// "console" (which is technically non-standard and may be missing
@@ -56,18 +49,6 @@ function _debugFunc() {
 				console.error.apply(console, arguments)
 		  }
 		: function () {}
-}
-
-function _maybeSuppressMoreLogs(messagesLength) {
-	// Sometimes when running tests, we intentionally suppress logs on expected
-	// printed errors. Since the current implementation of _throwOrLog can log
-	// multiple separate log messages, suppress all of them if at least one suppress
-	// is expected as we still want them to count as one.
-	if (typeof Meteor !== 'undefined') {
-		if (Meteor._suppressed_log_expected()) {
-			Meteor._suppress_log(messagesLength - 1)
-		}
-	}
 }
 
 function _throwOrLog(from, e) {
@@ -85,7 +66,6 @@ function _throwOrLog(from, e) {
 			}
 		}
 		printArgs.push(e.stack)
-		_maybeSuppressMoreLogs(printArgs.length)
 
 		for (var i = 0; i < printArgs.length; i++) {
 			_debugFunc()(printArgs[i])
@@ -189,6 +169,16 @@ Tracker.Computation = class Computation {
 		this._onError = onError
 		this._recomputing = false
 
+		/**
+		 * @summary Forces autorun blocks to be executed in synchronous-looking order by storing the value autorun promise thus making it awaitable.
+		 * @locus Client
+		 * @memberOf Tracker.Computation
+		 * @instance
+		 * @name  firstRunPromise
+		 * @returns {Promise<unknown>}
+		 */
+		this.firstRunPromise = undefined
+
 		var errored = true
 		try {
 			this._compute()
@@ -197,6 +187,20 @@ Tracker.Computation = class Computation {
 			this.firstRun = false
 			if (errored) this.stop()
 		}
+	}
+
+	/**
+	 * Resolves the firstRunPromise with the result of the autorun function.
+	 * @param {*} onResolved
+	 * @param {*} onRejected
+	 * @returns{Promise<unknown}
+	 */
+	then(onResolved, onRejected) {
+		return this.firstRunPromise.then(onResolved, onRejected)
+	}
+
+	catch(onRejected) {
+		return this.firstRunPromise.catch(onRejected)
 	}
 
 	// http://docs.meteor.com/#computation_oninvalidate
@@ -285,14 +289,21 @@ Tracker.Computation = class Computation {
 	_compute() {
 		this.invalidated = false
 
-		var previous = Tracker.currentComputation
-		setCurrentComputation(this)
 		var previousInCompute = inCompute
 		inCompute = true
+
 		try {
-			this._func(this)
+			// In case of async functions, the result of this function will contain the promise of the autorun function
+			// & make autoruns await-able.
+			const firstRunPromise = Tracker.withComputation(this, () => {
+				return this._func(this)
+			})
+			// We'll store the firstRunPromise on the computation so it can be awaited by the callers, but only
+			// during the first run. We don't want things to get mixed up.
+			if (this.firstRun) {
+				this.firstRunPromise = Promise.resolve(firstRunPromise)
+			}
 		} finally {
-			setCurrentComputation(previous)
 			inCompute = previousInCompute
 		}
 	}
@@ -368,15 +379,15 @@ Tracker.Dependency = class Dependency {
 	// if there is no currentComputation.
 
 	/**
-    * @summary Declares that the current computation (or `fromComputation` if given) depends on `dependency`.  The computation will be invalidated the next time `dependency` changes.
- 
-    If there is no current computation and `depend()` is called with no arguments, it does nothing and returns false.
- 
-    Returns true if the computation is a new dependent of `dependency` rather than an existing one.
-    * @locus Client
-    * @param {Tracker.Computation} [fromComputation] An optional computation declared to depend on `dependency` instead of the current computation.
-    * @returns {Boolean}
-    */
+   * @summary Declares that the current computation (or `fromComputation` if given) depends on `dependency`.  The computation will be invalidated the next time `dependency` changes.
+
+   If there is no current computation and `depend()` is called with no arguments, it does nothing and returns false.
+
+   Returns true if the computation is a new dependent of `dependency` rather than an existing one.
+   * @locus Client
+   * @param {Tracker.Computation} [fromComputation] An optional computation declared to depend on `dependency` instead of the current computation.
+   * @returns {Boolean}
+   */
 	depend(computation) {
 		if (!computation) {
 			if (!Tracker.active) return false
@@ -542,10 +553,8 @@ Tracker._runFlush = function (options) {
  * thrown. Defaults to the error being logged to the console.
  * @returns {Tracker.Computation}
  */
-Tracker.autorun = function (f, options) {
+Tracker.autorun = function (f, options = {}) {
 	if (typeof f !== 'function') throw new Error('Tracker.autorun requires a function argument')
-
-	options = options || {}
 
 	constructingComputation = true
 	var c = new Tracker.Computation(f, Tracker.currentComputation, options.onError)
@@ -571,12 +580,25 @@ Tracker.autorun = function (f, options) {
  * @param {Function} func A function to call immediately.
  */
 Tracker.nonreactive = function (f) {
-	var previous = Tracker.currentComputation
-	setCurrentComputation(null)
+	return Tracker.withComputation(null, f)
+}
+
+/**
+ * @summary Helper function to make the tracker work with promises.
+ * @param computation Computation that tracked
+ * @param func async function that needs to be called and be reactive
+ */
+Tracker.withComputation = function (computation, f) {
+	var previousComputation = Tracker.currentComputation
+
+	Tracker.currentComputation = computation
+	Tracker.active = !!computation
+
 	try {
 		return f()
 	} finally {
-		setCurrentComputation(previous)
+		Tracker.currentComputation = previousComputation
+		Tracker.active = !!previousComputation
 	}
 }
 

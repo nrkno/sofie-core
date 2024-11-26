@@ -1,4 +1,4 @@
-import { meteorPublish, AutoFillSelector } from './lib'
+import { meteorPublish, AutoFillSelector } from './lib/lib'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'

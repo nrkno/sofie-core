@@ -9,7 +9,7 @@ import { logger } from './logging'
 const HEADER_MARGIN = 24 // TODOSYNC: TV2 uses 15. If it's needed to be different, it needs to be made generic somehow..
 const FALLBACK_HEADER_HEIGHT = 65
 
-let focusInterval: NodeJS.Timer | undefined
+let focusInterval: NodeJS.Timeout | undefined
 let _dontClearInterval = false
 
 export function maintainFocusOnPartInstance(

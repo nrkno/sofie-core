@@ -279,7 +279,6 @@ async function createDebugSnapshot(studioId: StudioId, organizationId: Organizat
 				if (device.connected && device.subType === PERIPHERAL_SUBTYPE_PROCESS) {
 					const startTime = getCurrentTime()
 
-					// defer to another fiber
 					const deviceSnapshot = await executePeripheralDeviceFunction(device._id, 'getSnapshot')
 
 					logger.info('Got snapshot from device "' + device._id + '"')

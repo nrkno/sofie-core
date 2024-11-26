@@ -10,7 +10,7 @@ describe('ReactiveMongoObserverGroup', () => {
 
 	test('cleanup on stop', async () => {
 		const handle: LiveQueryHandle = { stop: jest.fn() }
-		const generator = jest.fn(async () => [handle])
+		const generator = jest.fn(async () => [Promise.resolve(handle)])
 
 		const observerGroup = await ReactiveMongoObserverGroup(generator)
 
@@ -39,7 +39,7 @@ describe('ReactiveMongoObserverGroup', () => {
 
 	test('restarting', async () => {
 		const handle: LiveQueryHandle = { stop: jest.fn() }
-		const generator = jest.fn(async () => [handle])
+		const generator = jest.fn(async () => [Promise.resolve(handle)])
 
 		const observerGroup = await ReactiveMongoObserverGroup(generator)
 
@@ -80,7 +80,7 @@ describe('ReactiveMongoObserverGroup', () => {
 
 	test('restart debounce', async () => {
 		const handle: LiveQueryHandle = { stop: jest.fn() }
-		const generator = jest.fn(async () => [handle])
+		const generator = jest.fn(async () => [Promise.resolve(handle)])
 
 		const observerGroup = await ReactiveMongoObserverGroup(generator)
 

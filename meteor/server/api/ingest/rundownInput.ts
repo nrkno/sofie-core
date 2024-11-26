@@ -363,17 +363,15 @@ async function listIngestRundowns(peripheralDevice: PeripheralDevice): Promise<s
 }
 
 // hackGetMediaObjectDuration stuff
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		MediaObjects.observe(
-			{},
-			{
-				added: onMediaObjectChanged,
-				changed: onMediaObjectChanged,
-			},
-			{ fields: { _id: 1, mediaId: 1, mediainfo: 1, studioId: 1 } }
-		)
-	}
+Meteor.startup(async () => {
+	await MediaObjects.observe(
+		{},
+		{
+			added: onMediaObjectChanged,
+			changed: onMediaObjectChanged,
+		},
+		{ fields: { _id: 1, mediaId: 1, mediainfo: 1, studioId: 1 } }
+	)
 })
 
 interface MediaObjectUpdatedIds {
@@ -431,19 +429,19 @@ async function onMediaObjectChanged(newDocument: MediaObject, oldDocument?: Medi
 
 		for (const mediaObjectUpdatedIds of updateIds) {
 			if (validSegmentIds.has(mediaObjectUpdatedIds.segmentId)) {
-				try {
-					lazyIgnore(
-						`updateSegmentFromMediaObject_${mediaObjectUpdatedIds.segmentId}`,
-						async () => updateSegmentFromCache(newDocument.studioId, mediaObjectUpdatedIds),
-						200
-					)
-				} catch (exception) {
-					logger.error(
-						`Error thrown while updating Segment from cache after MediaObject changed: ${stringifyError(
-							exception
-						)}`
-					)
-				}
+				lazyIgnore(
+					`updateSegmentFromMediaObject_${mediaObjectUpdatedIds.segmentId}`,
+					() => {
+						updateSegmentFromCache(newDocument.studioId, mediaObjectUpdatedIds).catch((e) => {
+							logger.error(
+								`Error thrown while updating Segment from cache after MediaObject changed: ${stringifyError(
+									e
+								)}`
+							)
+						})
+					},
+					200
+				)
 			}
 		}
 	}

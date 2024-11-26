@@ -83,7 +83,7 @@ export abstract class WithManagedTracker {
 			const comp = Tracker.autorun(func, options)
 			this._autoruns.push(comp)
 			return comp
-		}) as any as Tracker.Computation
+		})
 	}
 }
 

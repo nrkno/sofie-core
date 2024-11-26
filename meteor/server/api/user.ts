@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
 import { Accounts } from 'meteor/accounts-base'
 import { unprotectString, protectString } from '../lib/tempLib'
 import { sleep, deferAsync } from '../lib/lib'
@@ -25,7 +24,7 @@ async function enrollUser(email: string, name: string): Promise<UserId> {
 		profile: { name: name },
 	})
 	try {
-		Accounts.sendEnrollmentEmail(unprotectString(id), email)
+		await Accounts.sendEnrollmentEmail(unprotectString(id), email)
 	} catch (error) {
 		logger.error('Accounts.sendEnrollmentEmail')
 		logger.error(error)
@@ -63,11 +62,13 @@ async function sendVerificationEmail(userId: UserId) {
 	const user = await Users.findOneAsync(userId)
 	if (!user) throw new Meteor.Error(404, `User "${userId}" not found!`)
 	try {
-		_.each(user.emails, (email) => {
-			if (!email.verified) {
-				Accounts.sendVerificationEmail(unprotectString(user._id), email.address)
-			}
-		})
+		await Promise.all(
+			user.emails.map(async (email) => {
+				if (!email.verified) {
+					await Accounts.sendVerificationEmail(unprotectString(user._id), email.address)
+				}
+			})
+		)
 	} catch (error) {
 		logger.error('ERROR sending email verification')
 		logger.error(error)
@@ -79,7 +80,7 @@ async function requestResetPassword(email: string): Promise<boolean> {
 	const meteorUser = Accounts.findUserByEmail(email) as unknown
 	const user = meteorUser as User
 	if (!user) return false
-	Accounts.sendResetPasswordEmail(unprotectString(user._id))
+	await Accounts.sendResetPasswordEmail(unprotectString(user._id))
 	return true
 }
 

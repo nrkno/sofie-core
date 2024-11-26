@@ -636,7 +636,7 @@ const PrompterContent = withTranslation()(
 		Translated<PropsWithChildren<IPrompterProps> & IPrompterTrackedProps>,
 		{}
 	> {
-		private _debounceUpdate: NodeJS.Timer | undefined
+		private _debounceUpdate: NodeJS.Timeout | undefined
 
 		constructor(props: Translated<PropsWithChildren<IPrompterProps> & IPrompterTrackedProps>) {
 			super(props)

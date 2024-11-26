@@ -3,13 +3,6 @@ const Meteor = {
 		console.debug(...args)
 	},
 
-	_suppressed_log_expected: () => {
-		return true
-	},
-	_suppress_log: (i) => {
-		//
-	},
-
 	_setImmediate: (cb) => {
 		return setTimeout(cb, 0)
 	},

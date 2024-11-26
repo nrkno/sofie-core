@@ -3,7 +3,6 @@ import { Meteor } from 'meteor/meteor'
 
 import { MOS } from '@sofie-automation/meteor-lib/dist/mos'
 import { setupDefaultStudioEnvironment } from '../../../../../__mocks__/helpers/database'
-import { testInFiber } from '../../../../../__mocks__/helpers/jest'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { MOSDeviceActions } from '../actions'
 import { PeripheralDeviceCommand } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceCommand'
@@ -47,14 +46,14 @@ describe('Test sending mos actions', () => {
 		}
 	})
 
-	testInFiber('reloadRundown: expect error', async () => {
+	test('reloadRundown: expect error', async () => {
 		// setLogLevel(LogLevel.DEBUG)
 
 		const rundownId: RundownId = getRandomId()
 		const fakeRundown = { _id: rundownId, externalId: getRandomString(), studioId: studioId }
 
 		// Listen for changes
-		observer = PeripheralDeviceCommands.observeChanges(
+		observer = await PeripheralDeviceCommands.observeChanges(
 			{ deviceId: device._id },
 			{
 				added: (id: PeripheralDeviceCommandId) => {
@@ -82,7 +81,7 @@ describe('Test sending mos actions', () => {
 		await expect(MOSDeviceActions.reloadRundown(device, fakeRundown)).rejects.toMatch(`unknown annoying error`)
 	})
 
-	testInFiber('reloadRundown: valid payload', async () => {
+	test('reloadRundown: valid payload', async () => {
 		// setLogLevel(LogLevel.DEBUG)
 
 		const roData = fakeMinimalRo()
@@ -96,7 +95,7 @@ describe('Test sending mos actions', () => {
 		}
 
 		// Listen for changes
-		observer = PeripheralDeviceCommands.observeChanges(
+		observer = await PeripheralDeviceCommands.observeChanges(
 			{ deviceId: device._id },
 			{
 				added: (id: PeripheralDeviceCommandId) => {
@@ -140,7 +139,7 @@ describe('Test sending mos actions', () => {
 		)
 	})
 
-	testInFiber('reloadRundown: receive incorrect response rundown id', async () => {
+	test('reloadRundown: receive incorrect response rundown id', async () => {
 		// setLogLevel(LogLevel.DEBUG)
 
 		const roData = fakeMinimalRo()
@@ -153,7 +152,7 @@ describe('Test sending mos actions', () => {
 		}
 
 		// Listen for changes
-		observer = PeripheralDeviceCommands.observeChanges(
+		observer = await PeripheralDeviceCommands.observeChanges(
 			{ deviceId: device._id },
 			{
 				added: (id: PeripheralDeviceCommandId) => {

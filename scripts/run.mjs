@@ -31,13 +31,13 @@ function watchWorker() {
 function watchMeteor() {
 	return [
 		{
-			command: "meteor yarn watch-types --preserveWatchOutput",
+			command: "yarn watch-types --preserveWatchOutput",
 			cwd: "meteor",
 			name: "METEOR-TSC",
 			prefixColor: "blue",
 		},
 		{
-			command: `meteor yarn debug${config.inspectMeteor ? " --inspect" : ""}${
+			command: `yarn debug${config.inspectMeteor ? " --inspect" : ""}${
 				config.verbose ? " --verbose" : ""
 			}`,
 			cwd: "meteor",

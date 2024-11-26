@@ -131,17 +131,20 @@ function triggerUpdateStudioMappingsHash(studioId: StudioId) {
 		10
 	)
 }
-Studios.observeChanges(
-	{},
-	{
-		added: triggerUpdateStudioMappingsHash,
-		changed: triggerUpdateStudioMappingsHash,
-		removed: triggerUpdateStudioMappingsHash,
-	},
-	{
-		fields: {
-			mappingsWithOverrides: 1,
-			routeSetsWithOverrides: 1,
+
+Meteor.startup(async () => {
+	await Studios.observeChanges(
+		{},
+		{
+			added: triggerUpdateStudioMappingsHash,
+			changed: triggerUpdateStudioMappingsHash,
+			removed: triggerUpdateStudioMappingsHash,
 		},
-	}
-)
+		{
+			fields: {
+				mappingsWithOverrides: 1,
+				routeSetsWithOverrides: 1,
+			},
+		}
+	)
+})

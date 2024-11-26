@@ -14,7 +14,7 @@
 		]
 	},
 	"scripts": {
-		"prepare": "(node is_node_14.js && lerna run prepare --ignore @sofie-automation/openapi || lerna run prepare)",
+		"prepare": "lerna run prepare",
 		"postinstall": "cd .. && \"$PROJECT_CWD/node_modules/.bin/husky\" install",
 		"build": "lerna run build --ignore @sofie-automation/openapi",
 		"build:try": "lerna run --no-bail build --ignore @sofie-automation/openapi",
@@ -45,7 +45,7 @@
 		"@types/ejson": "^2.2.2",
 		"@types/got": "^9.6.12",
 		"@types/jest": "^29.5.11",
-		"@types/node": "^14.18.63",
+		"@types/node": "^22.9.3",
 		"@types/node-fetch": "^2.6.11",
 		"@types/object-path": "^0.11.4",
 		"@types/underscore": "^1.11.15",

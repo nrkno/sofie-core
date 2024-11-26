@@ -50,18 +50,19 @@ function updateExternalMessageQueueStatus(): void {
 	}
 }
 
-ExternalMessageQueue.observeChanges(
-	{
-		sent: { $not: { $gt: 0 } },
-		tryCount: { $gt: 3 },
-	},
-	{
-		added: updateExternalMessageQueueStatus,
-		changed: updateExternalMessageQueueStatus,
-		removed: updateExternalMessageQueueStatus,
-	}
-)
-Meteor.startup(() => {
+Meteor.startup(async () => {
+	await ExternalMessageQueue.observeChanges(
+		{
+			sent: { $not: { $gt: 0 } },
+			tryCount: { $gt: 3 },
+		},
+		{
+			added: updateExternalMessageQueueStatus,
+			changed: updateExternalMessageQueueStatus,
+			removed: updateExternalMessageQueueStatus,
+		}
+	)
+
 	updateExternalMessageQueueStatus()
 	// triggerdoMessageQueue(5000)
 })

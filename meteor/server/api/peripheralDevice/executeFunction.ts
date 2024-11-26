@@ -126,7 +126,7 @@ export async function executePeripheralDeviceFunctionWithCustomTimeout(
 		})
 	}
 
-	observer = PeripheralDeviceCommands.observeChanges(
+	observer = await PeripheralDeviceCommands.observeChanges(
 		{
 			_id: commandId,
 		},

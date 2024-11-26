@@ -1,4 +1,3 @@
-import { beforeEachInFiber } from '../../../../../__mocks__/helpers/jest'
 import { MeteorMock } from '../../../../../__mocks__/meteor'
 import { Meteor } from 'meteor/meteor'
 import { UserActionAPIMethods } from '@sofie-automation/meteor-lib/dist/api/userActions'
@@ -15,8 +14,8 @@ import '../index.ts'
 
 describe('REST API', () => {
 	describe('UNSTABLE v0', () => {
-		beforeEachInFiber(() => {
-			MeteorMock.mockRunMeteorStartup()
+		beforeEach(async () => {
+			await MeteorMock.mockRunMeteorStartup()
 		})
 
 		const legacyApiRouter = createLegacyApiRouter()

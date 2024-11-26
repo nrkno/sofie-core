@@ -46,7 +46,7 @@ jobs:
           # setup zodern:types. No linters are setup, so this simply installs the packages
           meteor lint
 
-          meteor yarn ci:lint
+          yarn ci:lint
         env:
           CI: true
 
@@ -85,7 +85,7 @@ jobs:
           # setup zodern:types. No linters are setup, so this simply installs the packages
           meteor lint
 
-          NODE_OPTIONS="--max-old-space-size=6144" meteor yarn unitci --force-exit
+          NODE_OPTIONS="--max-old-space-size=6144" yarn unitci --force-exit
         env:
           CI: true
       - name: Send coverage
@@ -480,38 +480,30 @@ jobs:
           - blueprints-integration
           - server-core-integration
           - shared-lib
-        node-version: [14.x, 18.x, 20.x, 22.x]
+          - openapi
+        node-version: [22.x]
         include:
           # include additional configs, to run certain packages only for a certain version of node
-          - node-version: 14.x
+          - node-version: 22.x
             package-name: corelib
             send-coverage: true
-          - node-version: 14.x
+          - node-version: 22.x
             package-name: job-worker
             send-coverage: true
-          # manual openapi to avoid testing for 14.x
-          - node-version: 18.x
-            package-name: openapi
-          - node-version: 20.x
-            package-name: openapi
-          - node-version: 22.x
-            package-name: openapi
           # No tests for the gateways yet
-          # - node-version: 18.x
+          # - node-version: 22.x
           #   package-name: playout-gateway
-          # - node-version: 18.x
+          # - node-version: 22.x
           #   package-name: mos-gateway
-          - node-version: 18.x
+          - node-version: 22.x
             package-name: live-status-gateway
             send-coverage: true
-          - node-version: 18.x
+          - node-version: 22.x
             package-name: webui
           # manual meteor-lib as it only needs a couple of versions
-          - node-version: 18.x
+          - node-version: 22.x
             package-name: meteor-lib
             send-coverage: true
-          - node-version: 14.x
-            package-name: meteor-lib
 
     steps:
       - uses: actions/checkout@v4
@@ -531,7 +523,7 @@ jobs:
         run: |
           cd packages
           yarn config set cacheFolder /home/runner/test-packages-cache
-          node is_node_14.js && yarn lerna run --ignore openapi install || yarn install
+          yarn install
           yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
         env:
           CI: true

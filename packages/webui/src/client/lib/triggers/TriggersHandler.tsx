@@ -45,7 +45,7 @@ import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylist
 import { catchError } from '../lib'
 import { logger } from '../logging'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
-import { UiTriggersContext } from './triggersContext'
+import { toTriggersComputation, toTriggersReactiveVar, UiTriggersContext } from './triggersContext'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void
 
@@ -94,30 +94,42 @@ function createAction(
 	actions: SomeAction[],
 	showStyleBase: UIShowStyleBase,
 	t: TFunction,
-	collectContext: () => ReactivePlaylistActionContext | null
+	collectContext: (computation: Tracker.Computation | null) => ReactivePlaylistActionContext | null
 ): {
 	listener: HotkeyTriggerListener
-	preview: () => IWrappedAdLib[]
+	preview: (computation: Tracker.Computation) => Promise<IWrappedAdLib[]>
 } {
 	const executableActions = actions.map((value) =>
 		libCreateAction(UiTriggersContext, value, showStyleBase.sourceLayers)
 	)
 	return {
-		preview: () => {
-			const ctx = collectContext()
-			if (ctx) {
-				return flatten(executableActions.map((action) => (isPreviewableAction(action) ? action.preview(ctx) : [])))
-			} else {
-				return []
-			}
+		preview: async (computation: Tracker.Computation) => {
+			const trackerComputation = toTriggersComputation(computation)
+			const ctx = collectContext(computation)
+			if (!ctx) return []
+
+			return flatten(
+				await Promise.all(
+					executableActions.map(
+						async (action): Promise<IWrappedAdLib[]> =>
+							isPreviewableAction(action) ? action.preview(ctx, trackerComputation) : []
+					)
+				)
+			)
 		},
 		listener: (e) => {
 			e.preventDefault()
 			e.stopPropagation()
 
-			const ctx = collectContext()
+			const ctx = collectContext(null)
 			if (ctx) {
-				executableActions.forEach((action) => action.execute(t, e, ctx))
+				executableActions.forEach((action) =>
+					Promise.resolve()
+						.then(async () => action.execute(t, e, ctx))
+						.catch((e) => {
+							logger.error(`Execution Triggered Action "${_id}" failed: ${e}`)
+						})
+				)
 			}
 		},
 	}
@@ -128,8 +140,8 @@ const rundownPlaylistContext: ReactiveVar<ReactivePlaylistActionContext | null> 
 function setRundownPlaylistContext(ctx: ReactivePlaylistActionContext | null) {
 	rundownPlaylistContext.set(ctx)
 }
-function getCurrentContext(): ReactivePlaylistActionContext | null {
-	return rundownPlaylistContext.get()
+function getCurrentContext(computation: Tracker.Computation | null): ReactivePlaylistActionContext | null {
+	return rundownPlaylistContext.get(computation ?? undefined)
 }
 
 export const MountedAdLibTriggers = createInMemorySyncMongoCollection<MountedAdLibTrigger & MountedHotkeyMixin>(
@@ -145,10 +157,12 @@ export function isMountedAdLibTrigger(
 	return 'targetId' in mountedTrigger && !!mountedTrigger['targetId']
 }
 
-function isolatedAutorunWithCleanup(autorun: () => void | (() => void)): Tracker.Computation {
+function isolatedAutorunWithCleanup(
+	autorun: (computation: Tracker.Computation) => Promise<void | (() => void)>
+): Tracker.Computation {
 	return Tracker.nonreactive(() =>
-		Tracker.autorun((computation) => {
-			const cleanUp = autorun()
+		Tracker.autorun(async (computation) => {
+			const cleanUp = await autorun(computation)
 
 			if (typeof cleanUp === 'function') {
 				computation.onInvalidate(cleanUp)
@@ -322,15 +336,17 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 				let context = rundownPlaylistContext.get()
 				if (context === null) {
 					context = {
-						studioId: new ReactiveVar(props.studioId),
-						rundownPlaylistId: new ReactiveVar(playlist._id),
-						rundownPlaylist: new ReactiveVar(playlist),
-						currentRundownId: new ReactiveVar(props.currentRundownId),
-						currentPartId: new ReactiveVar(props.currentPartId),
-						nextPartId: new ReactiveVar(props.nextPartId),
-						currentSegmentPartIds: new ReactiveVar(props.currentSegmentPartIds),
-						nextSegmentPartIds: new ReactiveVar(props.nextSegmentPartIds),
-						currentPartInstanceId: new ReactiveVar(playlist.currentPartInfo?.partInstanceId ?? null),
+						studioId: toTriggersReactiveVar(new ReactiveVar(props.studioId)),
+						rundownPlaylistId: toTriggersReactiveVar(new ReactiveVar(playlist._id)),
+						rundownPlaylist: toTriggersReactiveVar(new ReactiveVar(playlist)),
+						currentRundownId: toTriggersReactiveVar(new ReactiveVar(props.currentRundownId)),
+						currentPartId: toTriggersReactiveVar(new ReactiveVar(props.currentPartId)),
+						nextPartId: toTriggersReactiveVar(new ReactiveVar(props.nextPartId)),
+						currentSegmentPartIds: toTriggersReactiveVar(new ReactiveVar(props.currentSegmentPartIds)),
+						nextSegmentPartIds: toTriggersReactiveVar(new ReactiveVar(props.nextSegmentPartIds)),
+						currentPartInstanceId: toTriggersReactiveVar(
+							new ReactiveVar(playlist.currentPartInfo?.partInstanceId ?? null)
+						),
 					}
 					rundownPlaylistContext.set(context)
 				} else {
@@ -444,10 +460,10 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			const hotkeyFinalKeys = hotkeyTriggers.map((key) => getFinalKey(key))
 
 			previewAutoruns.push(
-				isolatedAutorunWithCleanup(() => {
+				isolatedAutorunWithCleanup(async (computation) => {
 					let previewAdLibs: IWrappedAdLib[] = []
 					try {
-						previewAdLibs = action.preview()
+						previewAdLibs = await action.preview(computation)
 					} catch (e) {
 						logger.error(e)
 					}

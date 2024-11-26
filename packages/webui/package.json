@@ -16,6 +16,7 @@
 	"scripts": {
 		"dev": "vite --port=3005",
 		"build": "tsc -b && vite build",
+		"build:main": "tsc -p tsconfig.app.json --noEmit",
 		"check-types": "tsc -p tsconfig.app.json --noEmit",
 		"watch-types": "run check-types --watch",
 		"preview": "vite preview",
@@ -108,6 +109,6 @@
 		"xml2js": "^0.6.2"
 	},
 	"engines": {
-		"node": ">=18"
+		"node": ">=22.11"
 	}
 }
