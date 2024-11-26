@@ -6,29 +6,23 @@ import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { SYSTEM_ID, ICoreSystem } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
 import { insertBlueprint, uploadBlueprint } from '../api'
 import { MeteorCall } from '../../methods'
-import { MethodContext } from '../../methodContext'
 import '../../../../__mocks__/_extendJest'
 import { Blueprints, CoreSystem } from '../../../collections'
 import { SupressLogMessages } from '../../../../__mocks__/suppressLogging'
 import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import { Meteor } from 'meteor/meteor'
 
 // we don't want the deviceTriggers observer to start up at this time
 jest.mock('../../deviceTriggers/observer')
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
-const DEFAULT_CONTEXT: MethodContext = {
-	userId: null,
-	isSimulation: false,
-	connection: {
-		id: 'mockConnectionId',
-		close: () => undefined,
-		onClose: () => undefined,
-		clientAddress: '127.0.0.1',
-		httpHeaders: {},
-	},
-	setUserId: () => undefined,
-	unblock: () => undefined,
+const DEFAULT_CONNECTION: Meteor.Connection = {
+	id: 'mockConnectionId',
+	close: () => undefined,
+	onClose: () => undefined,
+	clientAddress: '127.0.0.1',
+	httpHeaders: {},
 }
 
 describe('Test blueprint management api', () => {
@@ -195,7 +189,7 @@ describe('Test blueprint management api', () => {
 		})
 		test('with name', async () => {
 			const rawName = 'some_fake_name'
-			const newId = await insertBlueprint(DEFAULT_CONTEXT, undefined, rawName)
+			const newId = await insertBlueprint(DEFAULT_CONNECTION, undefined, rawName)
 			expect(newId).toBeTruthy()
 
 			// Check some props
@@ -206,7 +200,7 @@ describe('Test blueprint management api', () => {
 		})
 		test('with type', async () => {
 			const type = BlueprintManifestType.STUDIO
-			const newId = await insertBlueprint(DEFAULT_CONTEXT, type)
+			const newId = await insertBlueprint(DEFAULT_CONNECTION, type)
 			expect(newId).toBeTruthy()
 
 			// Check some props
@@ -219,20 +213,20 @@ describe('Test blueprint management api', () => {
 
 	describe('uploadBlueprint', () => {
 		test('empty id', async () => {
-			await expect(uploadBlueprint(DEFAULT_CONTEXT, protectString(''), '0')).rejects.toThrowMeteor(
+			await expect(uploadBlueprint(DEFAULT_CONNECTION, protectString(''), '0')).rejects.toThrowMeteor(
 				400,
 				'Blueprint id "" is not valid'
 			)
 		})
 		test('empty body', async () => {
-			await expect(uploadBlueprint(DEFAULT_CONTEXT, protectString('blueprint99'), '')).rejects.toThrowMeteor(
+			await expect(uploadBlueprint(DEFAULT_CONNECTION, protectString('blueprint99'), '')).rejects.toThrowMeteor(
 				400,
 				'Blueprint blueprint99 failed to parse'
 			)
 		})
 		test('body not a manifest', async () => {
 			await expect(
-				uploadBlueprint(DEFAULT_CONTEXT, protectString('blueprint99'), `({default: (() => 5)()})`)
+				uploadBlueprint(DEFAULT_CONNECTION, protectString('blueprint99'), `({default: (() => 5)()})`)
 			).rejects.toThrowMeteor(400, 'Blueprint blueprint99 returned a manifest of type number')
 		})
 		test('manifest missing blueprintType', async () => {
@@ -254,7 +248,7 @@ describe('Test blueprint management api', () => {
 				}
 			})
 			await expect(
-				uploadBlueprint(DEFAULT_CONTEXT, protectString('blueprint99'), blueprintStr)
+				uploadBlueprint(DEFAULT_CONNECTION, protectString('blueprint99'), blueprintStr)
 			).rejects.toThrowMeteor(
 				400,
 				`Blueprint blueprint99 returned a manifest of unknown blueprintType "undefined"`
@@ -281,7 +275,9 @@ describe('Test blueprint management api', () => {
 			})) as Blueprint
 			expect(existingBlueprint).toBeTruthy()
 
-			await expect(uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)).rejects.toThrowMeteor(
+			await expect(
+				uploadBlueprint(DEFAULT_CONNECTION, existingBlueprint._id, blueprintStr)
+			).rejects.toThrowMeteor(
 				400,
 				`Cannot replace old blueprint (of type "showstyle") with new blueprint of type "studio"`
 			)
@@ -305,7 +301,7 @@ describe('Test blueprint management api', () => {
 				}
 			)
 
-			const blueprint = await uploadBlueprint(DEFAULT_CONTEXT, protectString('tmp_showstyle'), blueprintStr)
+			const blueprint = await uploadBlueprint(DEFAULT_CONNECTION, protectString('tmp_showstyle'), blueprintStr)
 			expect(blueprint).toBeTruthy()
 			expect(blueprint).toMatchObject(
 				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion' | 'blueprintHash'>>({
@@ -344,7 +340,7 @@ describe('Test blueprint management api', () => {
 			)
 
 			const blueprint = await uploadBlueprint(
-				DEFAULT_CONTEXT,
+				DEFAULT_CONNECTION,
 				protectString('tmp_studio'),
 				blueprintStr,
 				'tmp name'
@@ -388,7 +384,7 @@ describe('Test blueprint management api', () => {
 			)
 
 			const blueprint = await uploadBlueprint(
-				DEFAULT_CONTEXT,
+				DEFAULT_CONNECTION,
 				protectString('tmp_system'),
 				blueprintStr,
 				'tmp name'
@@ -436,7 +432,7 @@ describe('Test blueprint management api', () => {
 			expect(existingBlueprint).toBeTruthy()
 			expect(existingBlueprint.blueprintId).toBeFalsy()
 
-			const blueprint = await uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)
+			const blueprint = await uploadBlueprint(DEFAULT_CONNECTION, existingBlueprint._id, blueprintStr)
 			expect(blueprint).toBeTruthy()
 			expect(blueprint).toMatchObject(
 				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion' | 'blueprintHash'>>({
@@ -482,7 +478,7 @@ describe('Test blueprint management api', () => {
 			expect(existingBlueprint).toBeTruthy()
 			expect(existingBlueprint.blueprintId).toBeTruthy()
 
-			const blueprint = await uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)
+			const blueprint = await uploadBlueprint(DEFAULT_CONNECTION, existingBlueprint._id, blueprintStr)
 			expect(blueprint).toBeTruthy()
 			expect(blueprint).toMatchObject(
 				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion' | 'blueprintHash'>>({
@@ -528,7 +524,9 @@ describe('Test blueprint management api', () => {
 			expect(existingBlueprint).toBeTruthy()
 			expect(existingBlueprint.blueprintId).toBeTruthy()
 
-			await expect(uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)).rejects.toThrowMeteor(
+			await expect(
+				uploadBlueprint(DEFAULT_CONNECTION, existingBlueprint._id, blueprintStr)
+			).rejects.toThrowMeteor(
 				422,
 				`Cannot replace old blueprint "${existingBlueprint._id}" ("ss1") with new blueprint "show2"`
 			)
@@ -558,7 +556,9 @@ describe('Test blueprint management api', () => {
 			expect(existingBlueprint).toBeTruthy()
 			expect(existingBlueprint.blueprintId).toBeTruthy()
 
-			await expect(uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)).rejects.toThrowMeteor(
+			await expect(
+				uploadBlueprint(DEFAULT_CONNECTION, existingBlueprint._id, blueprintStr)
+			).rejects.toThrowMeteor(
 				422,
 				`Cannot replace old blueprint "${existingBlueprint._id}" ("ss1") with new blueprint ""`
 			)

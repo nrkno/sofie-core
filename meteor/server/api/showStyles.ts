@@ -10,9 +10,6 @@ import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowSt
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { protectString, getRandomId, omit } from '../lib/tempLib'
 import { MethodContextAPI, MethodContext } from './methodContext'
-import { OrganizationContentWriteAccess } from '../security/organization'
-import { ShowStyleContentWriteAccess } from '../security/showStyle'
-import { Credentials } from '../security/lib/credentials'
 import deepmerge from 'deepmerge'
 import {
 	applyAndValidateOverrides,
@@ -23,6 +20,10 @@ import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
 import { OrganizationId, ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownLayouts, ShowStyleBases, ShowStyleVariants, Studios } from '../collections'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { UserPermissions } from '@sofie-automation/meteor-lib/dist/userPermissions'
+import { assertConnectionHasOneOfPermissions } from '../security/auth'
+
+const PERMISSIONS_FOR_MANAGE_SHOWSTYLES: Array<keyof UserPermissions> = ['configure']
 
 export interface ShowStyleCompound extends Omit<DBShowStyleBase, 'blueprintConfigWithOverrides'> {
 	showStyleVariantId: ShowStyleVariantId
@@ -74,9 +75,10 @@ export function createShowStyleCompound(
 	}
 }
 
-export async function insertShowStyleBase(context: MethodContext | Credentials): Promise<ShowStyleBaseId> {
-	const access = await OrganizationContentWriteAccess.showStyleBase(context)
-	return insertShowStyleBaseInner(access.organizationId)
+export async function insertShowStyleBase(context: MethodContext): Promise<ShowStyleBaseId> {
+	assertConnectionHasOneOfPermissions(context.connection, ...PERMISSIONS_FOR_MANAGE_SHOWSTYLES)
+
+	return insertShowStyleBaseInner(null)
 }
 
 export async function insertShowStyleBaseInner(organizationId: OrganizationId | null): Promise<ShowStyleBaseId> {
@@ -97,20 +99,14 @@ export async function insertShowStyleBaseInner(organizationId: OrganizationId | 
 	await insertShowStyleVariantInner(showStyleBase._id, 'Default')
 	return showStyleBase._id
 }
-async function assertShowStyleBaseAccess(context: MethodContext | Credentials, showStyleBaseId: ShowStyleBaseId) {
-	check(showStyleBaseId, String)
-
-	const access = await ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
-	const showStyleBase = access.showStyleBase
-	if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${showStyleBaseId}" not found`)
-}
 
 export async function insertShowStyleVariant(
-	context: MethodContext | Credentials,
+	context: MethodContext,
 	showStyleBaseId: ShowStyleBaseId,
 	name?: string
 ): Promise<ShowStyleVariantId> {
-	await assertShowStyleBaseAccess(context, showStyleBaseId)
+	assertConnectionHasOneOfPermissions(context.connection, ...PERMISSIONS_FOR_MANAGE_SHOWSTYLES)
+
 	return insertShowStyleVariantInner(showStyleBaseId, name)
 }
 
@@ -150,19 +146,19 @@ async function insertShowStyleVariantInner(
 }
 
 export async function importShowStyleVariant(
-	context: MethodContext | Credentials,
+	context: MethodContext,
 	showStyleVariant: DBShowStyleVariant
 ): Promise<ShowStyleVariantId> {
-	await assertShowStyleBaseAccess(context, showStyleVariant.showStyleBaseId)
+	assertConnectionHasOneOfPermissions(context.connection, ...PERMISSIONS_FOR_MANAGE_SHOWSTYLES)
 
 	return ShowStyleVariants.insertAsync(showStyleVariant)
 }
 
 export async function importShowStyleVariantAsNew(
-	context: MethodContext | Credentials,
+	context: MethodContext,
 	showStyleVariant: Omit<DBShowStyleVariant, '_id'>
 ): Promise<ShowStyleVariantId> {
-	await assertShowStyleBaseAccess(context, showStyleVariant.showStyleBaseId)
+	assertConnectionHasOneOfPermissions(context.connection, ...PERMISSIONS_FOR_MANAGE_SHOWSTYLES)
 
 	const newShowStyleVariant: DBShowStyleVariant = {
 		...showStyleVariant,
@@ -173,7 +169,7 @@ export async function importShowStyleVariantAsNew(
 }
 
 export async function removeShowStyleBase(context: MethodContext, showStyleBaseId: ShowStyleBaseId): Promise<void> {
-	await assertShowStyleBaseAccess(context, showStyleBaseId)
+	assertConnectionHasOneOfPermissions(context.connection, ...PERMISSIONS_FOR_MANAGE_SHOWSTYLES)
 
 	await Promise.allSettled([
 		ShowStyleBases.removeAsync(showStyleBaseId),
@@ -192,8 +188,9 @@ export async function removeShowStyleVariant(
 ): Promise<void> {
 	check(showStyleVariantId, String)
 
-	const access = await ShowStyleContentWriteAccess.showStyleVariant(context, showStyleVariantId)
-	const showStyleVariant = access.showStyleVariant
+	assertConnectionHasOneOfPermissions(context.connection, ...PERMISSIONS_FOR_MANAGE_SHOWSTYLES)
+
+	const showStyleVariant = await ShowStyleVariants.findOneAsync(showStyleVariantId)
 	if (!showStyleVariant) throw new Meteor.Error(404, `showStyleVariant "${showStyleVariantId}" not found`)
 
 	await ShowStyleVariants.removeAsync(showStyleVariant._id)
@@ -207,8 +204,9 @@ export async function reorderShowStyleVariant(
 	check(showStyleVariantId, String)
 	check(rank, Number)
 
-	const access = await ShowStyleContentWriteAccess.showStyleVariant(context, showStyleVariantId)
-	const showStyleVariant = access.showStyleVariant
+	assertConnectionHasOneOfPermissions(context.connection, ...PERMISSIONS_FOR_MANAGE_SHOWSTYLES)
+
+	const showStyleVariant = await ShowStyleVariants.findOneAsync(showStyleVariantId)
 	if (!showStyleVariant) throw new Meteor.Error(404, `showStyleVariant "${showStyleVariantId}" not found`)
 
 	await ShowStyleVariants.updateAsync(showStyleVariantId, {
@@ -218,7 +216,9 @@ export async function reorderShowStyleVariant(
 	})
 }
 
-async function getCreateAdlibTestingRundownOptions(): Promise<CreateAdlibTestingRundownOption[]> {
+async function getCreateAdlibTestingRundownOptions(context: MethodContext): Promise<CreateAdlibTestingRundownOption[]> {
+	assertConnectionHasOneOfPermissions(context.connection, 'studio')
+
 	const [studios, showStyleBases, showStyleVariants] = await Promise.all([
 		Studios.findFetchAsync(
 			{},
@@ -306,7 +306,7 @@ class ServerShowStylesAPI extends MethodContextAPI implements NewShowStylesAPI {
 	}
 
 	async getCreateAdlibTestingRundownOptions() {
-		return getCreateAdlibTestingRundownOptions()
+		return getCreateAdlibTestingRundownOptions(this)
 	}
 }
 registerClassToMeteorMethods(ShowStylesAPIMethods, ServerShowStylesAPI, false)

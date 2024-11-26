@@ -12,35 +12,77 @@ import {
 	setAllowService,
 } from '../lib/localStorage'
 import { parse as queryStringParse } from 'query-string'
+import { MeteorCall } from '../lib/meteorApi'
+import { UserPermissions } from '@sofie-automation/meteor-lib/dist/userPermissions'
+import { Settings } from '../lib/Settings'
+import { useTracker } from '../lib/ReactMeteorData/ReactMeteorData'
+import { Meteor } from 'meteor/meteor'
 
-export interface UserPermissions {
-	studio: boolean
-	configure: boolean
-	developer: boolean
-	testing: boolean
-	service: boolean
-}
+export type { UserPermissions }
 
-export const UserPermissionsContext = React.createContext<Readonly<UserPermissions>>({
+const NO_PERMISSIONS: UserPermissions = Object.freeze({
 	studio: false,
 	configure: false,
 	developer: false,
 	testing: false,
 	service: false,
+	gateway: false,
 })
 
-export function useUserPermissions(): UserPermissions {
+export const UserPermissionsContext = React.createContext<Readonly<UserPermissions>>(NO_PERMISSIONS)
+
+export function useUserPermissions(): [roles: UserPermissions, ready: boolean] {
 	const location = window.location
 
-	const [permissions, setPermissions] = useState({
-		studio: getLocalAllowStudio(),
-		configure: getLocalAllowConfigure(),
-		developer: getLocalAllowDeveloper(),
-		testing: getLocalAllowTesting(),
-		service: getLocalAllowService(),
-	})
+	const [ready, setReady] = useState(!Settings.enableHeaderAuth)
+
+	const [permissions, setPermissions] = useState<UserPermissions>(
+		Settings.enableHeaderAuth
+			? NO_PERMISSIONS
+			: {
+					studio: getLocalAllowStudio(),
+					configure: getLocalAllowConfigure(),
+					developer: getLocalAllowDeveloper(),
+					testing: getLocalAllowTesting(),
+					service: getLocalAllowService(),
+					gateway: false,
+			  }
+	)
+
+	const isConnected = useTracker(() => Meteor.status().connected, [], false)
 
 	useEffect(() => {
+		if (!Settings.enableHeaderAuth) return
+
+		// Do nothing when not connected. Persist the previous values.
+		if (!isConnected) return
+
+		const checkPermissions = () => {
+			MeteorCall.user
+				.getUserPermissions()
+				.then((v) => {
+					setPermissions(v || NO_PERMISSIONS)
+					setReady(true)
+				})
+				.catch((e) => {
+					console.error('Failed to set level', e)
+					setPermissions(NO_PERMISSIONS)
+				})
+		}
+
+		const interval = setInterval(checkPermissions, 30000) // Arbitrary poll interval
+
+		// Initial check now
+		checkPermissions()
+
+		return () => {
+			clearInterval(interval)
+		}
+	}, [Settings.enableHeaderAuth, isConnected])
+
+	useEffect(() => {
+		if (Settings.enableHeaderAuth) return
+
 		if (!location.search) return
 
 		const params = queryStringParse(location.search)
@@ -66,9 +108,10 @@ export function useUserPermissions(): UserPermissions {
 			developer: getLocalAllowDeveloper(),
 			testing: getLocalAllowTesting(),
 			service: getLocalAllowService(),
+			gateway: false,
 		})
-	}, [location.search])
+	}, [location.search, Settings.enableHeaderAuth])
 
 	// A naive memoizing of the value, to avoid reactions when the value is identical
-	return useMemo(() => permissions, [JSON.stringify(permissions)])
+	return [useMemo(() => permissions, [JSON.stringify(permissions)]), ready]
 }

@@ -10,9 +10,6 @@ import {
 	SetupObserversResult,
 	TriggerUpdate,
 } from '../../lib/customPublication'
-import { logger } from '../../logging'
-import { resolveCredentials } from '../../security/lib/credentials'
-import { NoSecurityReadAccess } from '../../security/noSecurity'
 import { ContentCache, createReactiveContentCache, ShowStyleBaseFields, StudioFields } from './reactiveContentCache'
 import { UpgradesContentObserver } from './upgradesContentObserver'
 import { BlueprintMapEntry, checkDocUpgradeStatus } from './checkStatus'
@@ -23,6 +20,7 @@ import {
 	UIBlueprintUpgradeStatus,
 	UIBlueprintUpgradeStatusId,
 } from '@sofie-automation/meteor-lib/dist/api/upgradeStatus'
+import { assertConnectionHasOneOfPermissions } from '../../security/auth'
 
 type BlueprintUpgradeStatusArgs = Record<string, never>
 
@@ -238,12 +236,8 @@ meteorCustomPublish(
 	MeteorPubSub.uiBlueprintUpgradeStatuses,
 	CustomCollectionName.UIBlueprintUpgradeStatuses,
 	async function (pub) {
-		const cred = await resolveCredentials({ userId: this.userId, token: undefined })
+		assertConnectionHasOneOfPermissions(this.connection, 'configure', 'service')
 
-		if (!cred || NoSecurityReadAccess.any()) {
-			await createBlueprintUpgradeStatusSubscriptionHandle(pub)
-		} else {
-			logger.warn(`Pub.${CustomCollectionName.UIBlueprintUpgradeStatuses}: Not allowed`)
-		}
+		await createBlueprintUpgradeStatusSubscriptionHandle(pub)
 	}
 )

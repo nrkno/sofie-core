@@ -453,5 +453,3 @@ export function setup(): any {
 		Mongo: MongoMock,
 	}
 }
-
-MeteorMock.mockSetUsersCollection(new MongoMock.Collection('Meteor.users'))

@@ -17,8 +17,8 @@ export interface ISettings {
 	defaultTimeScale: number
 	// Allow grabbing the entire timeline
 	allowGrabbingTimeline: boolean
-	/** If true, enables security measures, access control and user accounts. */
-	enableUserAccounts: boolean
+	/** If true, enable http header based security measures */
+	enableHeaderAuth: boolean
 	/** Default duration to use to render parts when no duration is provided */
 	defaultDisplayDuration: number
 	/** If true, allows creation of new playlists in the Lobby Gui (rundown list). If false; only pre-existing playlists are allowed. */
@@ -69,7 +69,7 @@ export const DEFAULT_SETTINGS = Object.freeze<ISettings>({
 	disableBlurBorder: false,
 	defaultTimeScale: 1,
 	allowGrabbingTimeline: true,
-	enableUserAccounts: false,
+	enableHeaderAuth: false,
 	defaultDisplayDuration: 3000,
 	allowMultiplePlaylistsInGUI: false,
 	poisonKey: 'Escape',

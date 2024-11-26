@@ -16,9 +16,6 @@ import {
 	TriggerUpdate,
 } from '../../lib/customPublication'
 import { logger } from '../../logging'
-import { resolveCredentials } from '../../security/lib/credentials'
-import { NoSecurityReadAccess } from '../../security/noSecurity'
-import { RundownPlaylistReadAccess } from '../../security/rundownPlaylist'
 import {
 	ContentCache,
 	createReactiveContentCache,
@@ -33,6 +30,7 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { generateNotesForSegment } from './generateNotesForSegment'
 import { RundownPlaylists } from '../../collections'
 import { check, Match } from 'meteor/check'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../../security/securityVerify'
 
 interface UISegmentPartNotesArgs {
 	readonly playlistId: RundownPlaylistId
@@ -215,29 +213,25 @@ meteorCustomPublish(
 	async function (pub, playlistId: RundownPlaylistId | null) {
 		check(playlistId, Match.Maybe(String))
 
-		const cred = await resolveCredentials({ userId: this.userId, token: undefined })
+		triggerWriteAccessBecauseNoCheckNecessary()
 
-		if (
-			playlistId &&
-			(!cred ||
-				NoSecurityReadAccess.any() ||
-				(await RundownPlaylistReadAccess.rundownPlaylistContent(playlistId, cred)))
-		) {
-			await setUpCollectionOptimizedObserver<
-				UISegmentPartNote,
-				UISegmentPartNotesArgs,
-				UISegmentPartNotesState,
-				UISegmentPartNotesUpdateProps
-			>(
-				`pub_${MeteorPubSub.uiSegmentPartNotes}_${playlistId}`,
-				{ playlistId },
-				setupUISegmentPartNotesPublicationObservers,
-				manipulateUISegmentPartNotesPublicationData,
-				pub,
-				100
-			)
-		} else {
-			logger.warn(`Pub.${CustomCollectionName.UISegmentPartNotes}: Not allowed: "${playlistId}"`)
+		if (!playlistId) {
+			logger.info(`Pub.${CustomCollectionName.UISegmentPartNotes}: Not playlistId`)
+			return
 		}
+
+		await setUpCollectionOptimizedObserver<
+			UISegmentPartNote,
+			UISegmentPartNotesArgs,
+			UISegmentPartNotesState,
+			UISegmentPartNotesUpdateProps
+		>(
+			`pub_${MeteorPubSub.uiSegmentPartNotes}_${playlistId}`,
+			{ playlistId },
+			setupUISegmentPartNotesPublicationObservers,
+			manipulateUISegmentPartNotesPublicationData,
+			pub,
+			100
+		)
 	}
 )

@@ -1,5 +1,5 @@
 import { FieldNames } from '@sofie-automation/meteor-lib/dist/collections/lib'
-import { logger } from '../../logging'
+
 /**
  * Allow only edits to the fields specified. Edits to any other fields will be rejected
  * @param doc
@@ -31,9 +31,4 @@ export function rejectFields<T>(_doc: T, fieldNames: FieldNames<T>, rejectFields
 	}
 
 	return true
-}
-
-export function logNotAllowed(area: string, reason: string): false {
-	logger.warn(`Not allowed access to ${area}: ${reason}`)
-	return false
 }

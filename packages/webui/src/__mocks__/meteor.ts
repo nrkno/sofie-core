@@ -1,5 +1,4 @@
 import * as _ from 'underscore'
-import { MongoMock } from './mongo'
 import type { DDP } from 'meteor/ddp'
 
 let controllableDefer = false
@@ -11,25 +10,12 @@ export function useNextTickDefer(): void {
 	controllableDefer = false
 }
 
-namespace Meteor {
+export namespace Meteor {
 	export interface Settings {
 		public: {
 			[id: string]: any
 		}
 		[id: string]: any
-	}
-
-	export interface UserEmail {
-		address: string
-		verified: boolean
-	}
-	export interface User {
-		_id?: string
-		username?: string
-		emails?: UserEmail[]
-		createdAt?: number
-		profile?: any
-		services?: any
 	}
 
 	export interface ErrorStatic {
@@ -89,7 +75,6 @@ export namespace MeteorMock {
 	export const settings: any = {}
 
 	export const mockMethods: { [name: string]: Function } = {}
-	export let mockUser: Meteor.User | undefined = undefined
 	export const mockStartupFunctions: Function[] = []
 
 	export function status(): DDP.DDPStatus {
@@ -100,15 +85,8 @@ export namespace MeteorMock {
 		}
 	}
 
-	export function user(): Meteor.User | undefined {
-		return mockUser
-	}
-	export function userId(): string | undefined {
-		return mockUser ? mockUser._id : undefined
-	}
 	function getMethodContext() {
 		return {
-			userId: mockUser ? mockUser._id : undefined,
 			connection: {
 				clientAddress: '1.1.1.1',
 			},
@@ -223,7 +201,6 @@ export namespace MeteorMock {
 	export function bindEnvironment(_fcn: Function): any {
 		throw new Error(500, 'bindEnvironment not supported on client')
 	}
-	export let users: MongoMock.Collection<any> | undefined = undefined
 
 	// -- Mock functions: --------------------------
 	/**
@@ -235,12 +212,6 @@ export namespace MeteorMock {
 		})
 
 		await waitTimeNoFakeTimers(10) // So that any observers or defers has had time to run.
-	}
-	export function mockLoginUser(newUser: Meteor.User): void {
-		mockUser = newUser
-	}
-	export function mockSetUsersCollection(usersCollection: MongoMock.Collection<any>): void {
-		users = usersCollection
 	}
 
 	/** Wait for time to pass ( unaffected by jest.useFakeTimers() ) */

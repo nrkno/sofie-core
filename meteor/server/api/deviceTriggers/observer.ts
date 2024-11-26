@@ -10,7 +10,7 @@ import {
 	PreviewWrappedAdLib,
 } from '@sofie-automation/meteor-lib/dist/api/MountedTriggers'
 import { logger } from '../../logging'
-import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
+import { checkAccessAndGetPeripheralDevice } from '../../security/check'
 import { StudioActionManagers } from './StudioActionManagers'
 import { JobQueueWithClasses } from '@sofie-automation/shared-lib/dist/lib/JobQueueWithClasses'
 import { StudioDeviceTriggerManager } from './StudioDeviceTriggerManager'

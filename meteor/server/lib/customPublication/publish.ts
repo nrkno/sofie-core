@@ -1,4 +1,3 @@
-import { UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Meteor } from 'meteor/meteor'
 import { AllPubSubTypes } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { ProtectedString, unprotectString } from '../tempLib'
@@ -41,10 +40,6 @@ export class CustomPublishMeteor<DBObj extends { _id: ProtectedString<any> }> {
 
 	get isReady(): boolean {
 		return this.#isReady
-	}
-
-	get userId(): UserId | null {
-		return this._meteorSubscription.userId
 	}
 
 	/**

@@ -21,6 +21,7 @@ import { initializeWorkerStatus, setWorkerStatus } from './workerStatus'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { UserActionsLog } from '../collections'
 import { MetricsCounter } from '@sofie-automation/corelib/dist/prometheus'
+import { isInTestWrite } from '../security/securityVerify'
 
 const FREEZE_LIMIT = 1000 // how long to wait for a response to a Ping
 const RESTART_TIMEOUT = 30000 // how long to wait for a restart to complete before throwing an error
@@ -459,6 +460,7 @@ export async function QueueStudioJob<T extends keyof StudioJobFunc>(
 	studioId: StudioId,
 	jobParameters: Parameters<StudioJobFunc[T]>[0]
 ): Promise<WorkerJob<ReturnType<StudioJobFunc[T]>>> {
+	if (isInTestWrite()) throw new Meteor.Error(404, 'Should not be reachable during startup tests')
 	if (!studioId) throw new Meteor.Error(500, 'Missing studioId')
 
 	const now = getCurrentTime()

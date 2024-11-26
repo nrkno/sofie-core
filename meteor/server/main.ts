@@ -46,7 +46,6 @@ import './api/rest/api'
 import './Connections'
 import './coreSystem'
 import './cronjobs'
-import './email'
 import './prometheus'
 import './api/deviceTriggers/observer'
 import './logo'
@@ -55,4 +54,4 @@ import './systemTime'
 
 // Setup publications and security:
 import './publications/_publications'
-import './security/_security'
+import './security/securityVerify'

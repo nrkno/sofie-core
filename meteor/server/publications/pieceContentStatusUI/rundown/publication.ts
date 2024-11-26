@@ -32,9 +32,6 @@ import {
 	TriggerUpdate,
 } from '../../../lib/customPublication'
 import { logger } from '../../../logging'
-import { resolveCredentials } from '../../../security/lib/credentials'
-import { NoSecurityReadAccess } from '../../../security/noSecurity'
-import { RundownPlaylistReadAccess } from '../../../security/rundownPlaylist'
 import { ContentCache, PartInstanceFields, createReactiveContentCache } from './reactiveContentCache'
 import { RundownContentObserver } from './rundownContentObserver'
 import { RundownsObserver } from '../../lib/rundownsObserver'
@@ -59,6 +56,7 @@ import {
 import { PieceContentStatusStudio } from '../checkPieceContentStatus'
 import { check, Match } from 'meteor/check'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../../../security/securityVerify'
 
 interface UIPieceContentStatusesArgs {
 	readonly rundownPlaylistId: RundownPlaylistId
@@ -476,29 +474,25 @@ meteorCustomPublish(
 	async function (pub, rundownPlaylistId: RundownPlaylistId | null) {
 		check(rundownPlaylistId, Match.Maybe(String))
 
-		const cred = await resolveCredentials({ userId: this.userId, token: undefined })
+		triggerWriteAccessBecauseNoCheckNecessary()
 
-		if (
-			rundownPlaylistId &&
-			(!cred ||
-				NoSecurityReadAccess.any() ||
-				(await RundownPlaylistReadAccess.rundownPlaylistContent(rundownPlaylistId, cred)))
-		) {
-			await setUpCollectionOptimizedObserver<
-				UIPieceContentStatus,
-				UIPieceContentStatusesArgs,
-				UIPieceContentStatusesState,
-				UIPieceContentStatusesUpdateProps
-			>(
-				`pub_${MeteorPubSub.uiPieceContentStatuses}_${rundownPlaylistId}`,
-				{ rundownPlaylistId },
-				setupUIPieceContentStatusesPublicationObservers,
-				manipulateUIPieceContentStatusesPublicationData,
-				pub,
-				100
-			)
-		} else {
-			logger.warn(`Pub.${CustomCollectionName.UIPieceContentStatuses}: Not allowed: "${rundownPlaylistId}"`)
+		if (!rundownPlaylistId) {
+			logger.info(`Pub.${CustomCollectionName.UISegmentPartNotes}: Not playlistId`)
+			return
 		}
+
+		await setUpCollectionOptimizedObserver<
+			UIPieceContentStatus,
+			UIPieceContentStatusesArgs,
+			UIPieceContentStatusesState,
+			UIPieceContentStatusesUpdateProps
+		>(
+			`pub_${MeteorPubSub.uiPieceContentStatuses}_${rundownPlaylistId}`,
+			{ rundownPlaylistId },
+			setupUIPieceContentStatusesPublicationObservers,
+			manipulateUIPieceContentStatusesPublicationData,
+			pub,
+			100
+		)
 	}
 )

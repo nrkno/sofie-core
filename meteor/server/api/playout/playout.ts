@@ -1,15 +1,14 @@
 /* tslint:disable:no-use-before-declare */
 import { PackageInfo } from '../../coreSystem'
-import { StudioContentAccess } from '../../security/studio'
 import { shouldUpdateStudioBaselineInner } from '@sofie-automation/corelib/dist/studio/baseline'
 import { Blueprints, RundownPlaylists, Timeline } from '../../collections'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { QueueStudioJob } from '../../worker/worker'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export namespace ServerPlayoutAPI {
-	export async function shouldUpdateStudioBaseline(access: StudioContentAccess): Promise<string | false> {
-		const { studio } = access
-
+	export async function shouldUpdateStudioBaseline(studio: DBStudio): Promise<string | false> {
 		// This is intentionally not in a lock/queue, as doing so will cause it to block playout performance, and being wrong is harmless
 
 		if (studio) {
@@ -34,11 +33,11 @@ export namespace ServerPlayoutAPI {
 	}
 
 	export async function switchRouteSet(
-		access: StudioContentAccess,
+		studioId: StudioId,
 		routeSetId: string,
 		state: boolean | 'toggle'
 	): Promise<void> {
-		const queuedJob = await QueueStudioJob(StudioJobs.SwitchRouteSet, access.studioId, {
+		const queuedJob = await QueueStudioJob(StudioJobs.SwitchRouteSet, studioId, {
 			routeSetId,
 			state,
 		})

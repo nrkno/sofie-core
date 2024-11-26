@@ -7,22 +7,19 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { fetchStudioLight } from '../optimizations'
 import { sendSlackMessageToWebhook } from './integration/slack'
-import { OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Evaluations, RundownPlaylists } from '../collections'
+import { VerifiedRundownPlaylistForUserAction } from '../security/check'
 
 export async function saveEvaluation(
-	credentials: {
-		userId: UserId | null
-		organizationId: OrganizationId | null
-	},
+	_playlist: VerifiedRundownPlaylistForUserAction,
 	evaluation: EvaluationBase
 ): Promise<void> {
 	await Evaluations.insertAsync({
 		...evaluation,
 		_id: getRandomId(),
-		organizationId: credentials.organizationId,
-		userId: credentials.userId,
+		organizationId: null,
+		userId: null,
 		timestamp: getCurrentTime(),
 	})
 	logger.info({

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { useSubscription, useTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { useTranslation } from 'react-i18next'
@@ -13,9 +13,12 @@ import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { CoreItem } from './CoreItem'
 import { DeviceItem } from './DeviceItem'
+import { UserPermissions, UserPermissionsContext } from '../../UserPermissions'
 
 export function SystemStatus(): JSX.Element {
 	const { t } = useTranslation()
+
+	const userPermissions = useContext(UserPermissionsContext)
 
 	// Subscribe to data:
 	useSubscription(CorelibPubSub.peripheralDevices, null)
@@ -24,7 +27,7 @@ export function SystemStatus(): JSX.Element {
 	const devices = useTracker(() => PeripheralDevices.find({}, { sort: { lastConnected: -1 } }).fetch(), [], [])
 
 	const systemStatus = useSystemStatus()
-	const playoutDebugStates = usePlayoutDebugStates(devices)
+	const playoutDebugStates = usePlayoutDebugStates(devices, userPermissions)
 
 	const devicesHierarchy = convertDevicesIntoHeirarchy(devices)
 
@@ -98,7 +101,10 @@ function useSystemStatus(): StatusResponse | undefined {
 	return sytemStatus
 }
 
-function usePlayoutDebugStates(devices: PeripheralDevice[]): Map<PeripheralDeviceId, object> {
+function usePlayoutDebugStates(
+	devices: PeripheralDevice[],
+	userPermissions: UserPermissions
+): Map<PeripheralDeviceId, object> {
 	const { t } = useTranslation()
 
 	const [playoutDebugStates, setPlayoutDebugStates] = useState<Map<PeripheralDeviceId, object>>(new Map())
@@ -117,6 +123,11 @@ function usePlayoutDebugStates(devices: PeripheralDevice[]): Map<PeripheralDevic
 	}, [devices])
 
 	useEffect(() => {
+		if (!userPermissions.developer) {
+			setPlayoutDebugStates(new Map())
+			return
+		}
+
 		let destroyed = false
 
 		const refreshDebugStates = () => {
@@ -145,7 +156,7 @@ function usePlayoutDebugStates(devices: PeripheralDevice[]): Map<PeripheralDevic
 			clearInterval(interval)
 			destroyed = true
 		}
-	}, [t, JSON.stringify(playoutDeviceIds)])
+	}, [t, JSON.stringify(playoutDeviceIds), userPermissions.developer])
 
 	return playoutDebugStates
 }
