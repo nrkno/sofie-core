@@ -1289,12 +1289,7 @@ export function RundownView(props: Readonly<IProps>): JSX.Element {
 	)
 	auxSubsReady.push(useSubscriptionIfEnabled(MeteorPubSub.uiParts, rundownIds.length > 0, playlistId))
 	auxSubsReady.push(
-		useSubscriptionIfEnabled(
-			MeteorPubSub.uiPartInstances,
-			rundownIds.length > 0,
-			rundownIds,
-			playlistActivationId ?? null
-		)
+		useSubscriptionIfEnabled(MeteorPubSub.uiPartInstances, !!playlistActivationId, playlistActivationId ?? null)
 	)
 
 	useTracker(() => {

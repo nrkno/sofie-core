@@ -198,7 +198,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 			}
 			return [] as IWrappedAdLib[]
 		},
-		[selected, resolvedActions, sourceLayers],
+		[selected, resolvedActions, sourceLayers, previewContext],
 		[] as IWrappedAdLib[]
 	)
 
