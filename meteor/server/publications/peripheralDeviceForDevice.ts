@@ -3,7 +3,12 @@ import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { PeripheralDevice, PeripheralDeviceCategory } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevices, Studios } from '../collections'
-import { TriggerUpdate, meteorCustomPublish, setUpOptimizedObserverArray } from '../lib/customPublication'
+import {
+	SetupObserversResult,
+	TriggerUpdate,
+	meteorCustomPublish,
+	setUpOptimizedObserverArray,
+} from '../lib/customPublication'
 import { PeripheralDeviceForDevice } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 import { ReadonlyDeep } from 'type-fest'
 import { ReactiveMongoObserverGroup } from './lib/observerGroup'
@@ -120,7 +125,7 @@ export function convertPeripheralDeviceForGateway(
 async function setupPeripheralDevicePublicationObservers(
 	args: ReadonlyDeep<PeripheralDeviceForDeviceArgs>,
 	triggerUpdate: TriggerUpdate<PeripheralDeviceForDeviceUpdateProps>
-): Promise<Meteor.LiveQueryHandle[]> {
+): Promise<SetupObserversResult> {
 	const studioObserver = await ReactiveMongoObserverGroup(async () => {
 		const peripheralDeviceCompact = (await PeripheralDevices.findOneAsync(args.deviceId, {
 			fields: { studioId: 1 },

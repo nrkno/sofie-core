@@ -33,7 +33,7 @@ import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settin
 import { ReactiveMongoObserverGroup, ReactiveMongoObserverGroupHandle } from '../../lib/observerGroup'
 import _ from 'underscore'
 import { equivalentArrays } from '@sofie-automation/shared-lib/dist/lib/lib'
-import { waitForPromise } from '../../../lib/lib'
+import { waitForAllObserversReady } from '../../lib/lib'
 
 const REACTIVITY_DEBOUNCE = 20
 
@@ -46,59 +46,73 @@ function convertShowStyleBase(doc: Pick<DBShowStyleBase, ShowStyleBaseFields>): 
 
 export class RundownContentObserver {
 	#observers: Meteor.LiveQueryHandle[] = []
-	#cache: ContentCache
+	readonly #cache: ContentCache
 
 	#showStyleBaseIds: ShowStyleBaseId[] = []
-	#showStyleBaseIdObserver: ReactiveMongoObserverGroupHandle
+	#showStyleBaseIdObserver!: ReactiveMongoObserverGroupHandle
 
-	constructor(rundownIds: RundownId[], cache: ContentCache) {
-		logger.silly(`Creating RundownContentObserver for rundowns "${rundownIds.join(',')}"`)
+	private constructor(cache: ContentCache) {
 		this.#cache = cache
+	}
 
+	static async create(rundownIds: RundownId[], cache: ContentCache): Promise<RundownContentObserver> {
+		logger.silly(`Creating RundownContentObserver for rundowns "${rundownIds.join(',')}"`)
+
+		const observer = new RundownContentObserver(cache)
+
+		await observer.initShowStyleBaseIdObserver()
+
+		// This takes ownership of the #showStyleBaseIdObserver, and will stop it if this throws
+		await observer.initContentObservers(rundownIds)
+
+		return observer
+	}
+
+	private async initShowStyleBaseIdObserver() {
 		// Run the ShowStyleBase query in a ReactiveMongoObserverGroup, so that it can be restarted whenever
-		this.#showStyleBaseIdObserver = waitForPromise(
-			ReactiveMongoObserverGroup(async () => {
-				// Clear already cached data
-				cache.ShowStyleSourceLayers.remove({})
+		this.#showStyleBaseIdObserver = await ReactiveMongoObserverGroup(async () => {
+			// Clear already cached data
+			this.#cache.ShowStyleSourceLayers.remove({})
 
-				logger.silly(`optimized observer restarting ${this.#showStyleBaseIds}`)
+			logger.silly(`optimized observer restarting ${this.#showStyleBaseIds}`)
 
-				return [
-					ShowStyleBases.observe(
-						{
-							// We can use the `this.#showStyleBaseIds` here, as this is restarted every time that property changes
-							_id: { $in: this.#showStyleBaseIds },
+			return [
+				ShowStyleBases.observe(
+					{
+						// We can use the `this.#showStyleBaseIds` here, as this is restarted every time that property changes
+						_id: { $in: this.#showStyleBaseIds },
+					},
+					{
+						added: (doc) => {
+							const newDoc = convertShowStyleBase(doc)
+							this.#cache.ShowStyleSourceLayers.upsert(doc._id, { $set: newDoc as Partial<Document> })
 						},
-						{
-							added: (doc) => {
-								const newDoc = convertShowStyleBase(doc)
-								cache.ShowStyleSourceLayers.upsert(doc._id, { $set: newDoc as Partial<Document> })
-							},
-							changed: (doc) => {
-								const newDoc = convertShowStyleBase(doc)
-								cache.ShowStyleSourceLayers.upsert(doc._id, { $set: newDoc as Partial<Document> })
-							},
-							removed: (doc) => {
-								cache.ShowStyleSourceLayers.remove(doc._id)
-							},
+						changed: (doc) => {
+							const newDoc = convertShowStyleBase(doc)
+							this.#cache.ShowStyleSourceLayers.upsert(doc._id, { $set: newDoc as Partial<Document> })
 						},
-						{
-							projection: showStyleBaseFieldSpecifier,
-						}
-					),
-				]
-			})
-		)
+						removed: (doc) => {
+							this.#cache.ShowStyleSourceLayers.remove(doc._id)
+						},
+					},
+					{
+						projection: showStyleBaseFieldSpecifier,
+					}
+				),
+			]
+		})
+	}
 
+	private async initContentObservers(rundownIds: RundownId[]) {
 		// Subscribe to the database, and pipe any updates into the ReactiveCacheCollections
-		this.#observers = [
+		this.#observers = await waitForAllObserversReady([
 			Rundowns.observeChanges(
 				{
 					_id: {
 						$in: rundownIds,
 					},
 				},
-				cache.Rundowns.link(() => {
+				this.#cache.Rundowns.link(() => {
 					// Check if the ShowStyleBaseIds needs updating
 					this.updateShowStyleBaseIds()
 				}),
@@ -114,7 +128,7 @@ export class RundownContentObserver {
 						$in: rundownIds,
 					},
 				},
-				cache.Segments.link(),
+				this.#cache.Segments.link(),
 				{
 					projection: segmentFieldSpecifier,
 				}
@@ -125,7 +139,7 @@ export class RundownContentObserver {
 						$in: rundownIds,
 					},
 				},
-				cache.Parts.link(),
+				this.#cache.Parts.link(),
 				{
 					projection: partFieldSpecifier,
 				}
@@ -136,7 +150,7 @@ export class RundownContentObserver {
 						$in: rundownIds,
 					},
 				},
-				cache.Pieces.link(),
+				this.#cache.Pieces.link(),
 				{
 					projection: pieceFieldSpecifier,
 				}
@@ -148,7 +162,7 @@ export class RundownContentObserver {
 					},
 					reset: { $ne: true },
 				},
-				cache.PartInstances.link(),
+				this.#cache.PartInstances.link(),
 				{
 					projection: partInstanceFieldSpecifier,
 				}
@@ -160,7 +174,7 @@ export class RundownContentObserver {
 					},
 					reset: { $ne: true },
 				},
-				cache.PieceInstances.link(),
+				this.#cache.PieceInstances.link(),
 				{
 					projection: pieceInstanceFieldSpecifier,
 				}
@@ -171,7 +185,7 @@ export class RundownContentObserver {
 						$in: rundownIds,
 					},
 				},
-				cache.AdLibPieces.link(),
+				this.#cache.AdLibPieces.link(),
 				{
 					projection: adLibPieceFieldSpecifier,
 				}
@@ -182,7 +196,7 @@ export class RundownContentObserver {
 						$in: rundownIds,
 					},
 				},
-				cache.AdLibActions.link(),
+				this.#cache.AdLibActions.link(),
 				{
 					projection: adLibActionFieldSpecifier,
 				}
@@ -193,7 +207,7 @@ export class RundownContentObserver {
 						$in: rundownIds,
 					},
 				},
-				cache.BaselineAdLibPieces.link(),
+				this.#cache.BaselineAdLibPieces.link(),
 				{
 					projection: adLibPieceFieldSpecifier,
 				}
@@ -204,12 +218,12 @@ export class RundownContentObserver {
 						$in: rundownIds,
 					},
 				},
-				cache.BaselineAdLibActions.link(),
+				this.#cache.BaselineAdLibActions.link(),
 				{
 					projection: adLibActionFieldSpecifier,
 				}
 			),
-		]
+		])
 	}
 
 	private updateShowStyleBaseIds = _.debounce(

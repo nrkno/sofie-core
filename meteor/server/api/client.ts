@@ -422,6 +422,8 @@ export namespace ServerClientAPI {
 
 class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
 	async clientLogger(type: string, ...args: string[]): Promise<void> {
+		triggerWriteAccessBecauseNoCheckNecessary()
+
 		const loggerFunction: LeveledLogMethodFixed = (logger as any)[type] || logger.log
 
 		loggerFunction(args.join(', '))

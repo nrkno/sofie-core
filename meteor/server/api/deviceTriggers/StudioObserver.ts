@@ -20,6 +20,7 @@ import { ContentCache } from './reactiveContentCache'
 import { RundownContentObserver } from './RundownContentObserver'
 import { RundownsObserver } from './RundownsObserver'
 import { RundownPlaylists, Rundowns, ShowStyleBases } from '../../collections'
+import { PromiseDebounce } from '../../publications/lib/debounce'
 
 type ChangedHandler = (showStyleBaseId: ShowStyleBaseId, cache: ContentCache) => () => void
 
@@ -66,6 +67,8 @@ export class StudioObserver extends EventEmitter {
 
 	#changed: ChangedHandler
 
+	#disposed = false
+
 	constructor(studioId: StudioId, onChanged: ChangedHandler) {
 		super()
 		this.#changed = onChanged
@@ -93,6 +96,8 @@ export class StudioObserver extends EventEmitter {
 					activePlaylist: Pick<DBRundownPlaylist, RundownPlaylistFields>
 				} | null
 			): void => {
+				if (this.#disposed) return
+
 				const activePlaylistId = state?.activePlaylist?._id
 				const activationId = state?.activePlaylist?.activationId
 				const currentRundownId =
@@ -146,73 +151,72 @@ export class StudioObserver extends EventEmitter {
 					  ) as Promise<MongoCursor<Pick<DBShowStyleBase, ShowStyleBaseFields>>>)
 					: null
 			)
-			.end(this.updateShowStyle)
+			.end(this.updateShowStyle.call)
 	}
 
-	private updateShowStyle = _.debounce(
-		Meteor.bindEnvironment(
-			(
-				state: {
-					currentRundown: Pick<DBRundown, RundownFields>
-					showStyleBase: Pick<DBShowStyleBase, ShowStyleBaseFields>
-				} | null
-			) => {
-				const showStyleBaseId = state?.showStyleBase._id
+	private readonly updateShowStyle = new PromiseDebounce<
+		void,
+		[
+			{
+				currentRundown: Pick<DBRundown, RundownFields>
+				showStyleBase: Pick<DBShowStyleBase, ShowStyleBaseFields>
+			} | null
+		]
+	>(async (state): Promise<void> => {
+		if (this.#disposed) return
 
-				if (
-					showStyleBaseId === undefined ||
-					!this.nextProps?.activePlaylistId ||
-					!this.nextProps?.activationId
-				) {
-					this.currentProps = undefined
-					this.#rundownsLiveQuery?.stop()
-					this.#rundownsLiveQuery = undefined
-					this.showStyleBaseId = showStyleBaseId
-					return
-				}
+		const showStyleBaseId = state?.showStyleBase._id
 
-				if (
-					showStyleBaseId === this.showStyleBaseId &&
-					this.nextProps?.activationId === this.currentProps?.activationId &&
-					this.nextProps?.activePlaylistId === this.currentProps?.activePlaylistId &&
-					this.nextProps?.currentRundownId === this.currentProps?.currentRundownId
-				)
-					return
+		if (showStyleBaseId === undefined || !this.nextProps?.activePlaylistId || !this.nextProps?.activationId) {
+			this.currentProps = undefined
+			this.#rundownsLiveQuery?.stop()
+			this.#rundownsLiveQuery = undefined
+			this.showStyleBaseId = showStyleBaseId
+			return
+		}
 
-				this.#rundownsLiveQuery?.stop()
-				this.#rundownsLiveQuery = undefined
+		if (
+			showStyleBaseId === this.showStyleBaseId &&
+			this.nextProps?.activationId === this.currentProps?.activationId &&
+			this.nextProps?.activePlaylistId === this.currentProps?.activePlaylistId &&
+			this.nextProps?.currentRundownId === this.currentProps?.currentRundownId
+		)
+			return
 
-				this.currentProps = this.nextProps
-				this.nextProps = undefined
+		this.#rundownsLiveQuery?.stop()
+		this.#rundownsLiveQuery = undefined
 
-				const { activePlaylistId } = this.currentProps
+		this.currentProps = this.nextProps
+		this.nextProps = undefined
 
-				this.showStyleBaseId = showStyleBaseId
+		const { activePlaylistId } = this.currentProps
 
-				let cleanupChanges: (() => void) | undefined = undefined
+		this.showStyleBaseId = showStyleBaseId
 
-				this.#rundownsLiveQuery = new RundownsObserver(activePlaylistId, (rundownIds) => {
-					logger.silly(`Creating new RundownContentObserver`)
-					const obs1 = new RundownContentObserver(activePlaylistId, showStyleBaseId, rundownIds, (cache) => {
-						cleanupChanges = this.#changed(showStyleBaseId, cache)
+		this.#rundownsLiveQuery = await RundownsObserver.create(activePlaylistId, async (rundownIds) => {
+			logger.silly(`Creating new RundownContentObserver`)
 
-						return () => {
-							void 0
-						}
-					})
+			const obs1 = await RundownContentObserver.create(activePlaylistId, showStyleBaseId, rundownIds, (cache) => {
+				return this.#changed(showStyleBaseId, cache)
+			})
 
-					return () => {
-						obs1.stop()
-						cleanupChanges?.()
-					}
-				})
+			return () => {
+				obs1.stop()
 			}
-		),
-		REACTIVITY_DEBOUNCE
-	)
+		})
+
+		if (this.#disposed) {
+			// If we were disposed of while waiting for the observer to be created, stop it immediately
+			this.#rundownsLiveQuery.stop()
+		}
+	}, REACTIVITY_DEBOUNCE)
 
 	public stop = (): void => {
+		this.#disposed = true
+
+		this.updateShowStyle.cancelWaiting()
 		this.#playlistInStudioLiveQuery.stop()
 		this.updatePlaylistInStudio.cancel()
+		this.#rundownsLiveQuery?.stop()
 	}
 }
