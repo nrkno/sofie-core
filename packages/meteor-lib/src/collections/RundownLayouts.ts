@@ -42,7 +42,6 @@ export enum RundownLayoutElementType {
 	FILTER = 'filter',
 	EXTERNAL_FRAME = 'external_frame',
 	ADLIB_REGION = 'adlib_region',
-	KEYBOARD_PREVIEW = 'keyboard_preview', // This is used by TV2
 	PIECE_COUNTDOWN = 'piece_countdown',
 	NEXT_INFO = 'next_info',
 	PLAYLIST_START_TIMER = 'playlist_start_timer',
@@ -256,10 +255,6 @@ export interface RundownLayoutFilter extends RundownLayoutFilterBase {
 	default: boolean
 }
 
-export interface RundownLayoutKeyboardPreview extends RundownLayoutElementBase {
-	type: RundownLayoutElementType.KEYBOARD_PREVIEW
-}
-
 export enum DashboardPanelUnit {
 	/** Dashboard panels are defined in absolute (em) units */
 	EM = 'em',
@@ -304,7 +299,6 @@ export type DashboardLayoutShowStyleDisplay = DashboardPanel<RundownLayoutShowSt
 export type DashboardLayoutSegmentName = DashboardPanel<RundownLayoutSegmentName>
 export type DashboardLayoutPartName = DashboardPanel<RundownLayoutPartName>
 export type DashboardLayoutColoredBox = DashboardPanel<RundownLayoutColoredBox>
-export type DashboardLayoutKeyboardPreview = DashboardPanel<RundownLayoutKeyboardPreview>
 export type DashboardLayoutMiniRundown = DashboardPanel<RundownLayoutMiniRundown>
 export type DashboardLayoutFilter = DashboardPanel<
 	RundownLayoutFilterBase & {
