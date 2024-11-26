@@ -176,7 +176,7 @@ export function selectNextPart(
 
 	if (rundownPlaylist.queuedSegmentId) {
 		// No previous part, or segment has changed
-		if (!previousPartInstance || (nextPart && previousPartInstance.segmentId !== nextPart.part.segmentId)) {
+		if (!previousPartInstance || !nextPart || previousPartInstance.segmentId !== nextPart.part.segmentId) {
 			// Find first in segment
 			const newSegmentPart = findFirstPlayablePart(
 				0,
