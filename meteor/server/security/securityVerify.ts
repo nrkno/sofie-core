@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
-import { AllMeteorMethods, suppressExtraErrorLogging } from '../../methods'
-import { disableChecks, enableChecks as restoreChecks } from '../../lib/check'
+import { AllMeteorMethods, suppressExtraErrorLogging } from '../methods'
+import { disableChecks, enableChecks as restoreChecks } from '../lib/check'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 /** These function are used to verify that all methods defined are using security functions */

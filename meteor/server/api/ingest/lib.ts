@@ -5,9 +5,6 @@ import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyE
 import { PeripheralDevice, PeripheralDeviceCategory } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { Rundown, RundownSourceNrcs } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { logger } from '../../logging'
-import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
-import { MethodContext } from '../methodContext'
-import { Credentials } from '../../security/lib/credentials'
 import { profiler } from '../profiler'
 import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
 import { QueueIngestJob } from '../../worker/worker'
@@ -62,26 +59,6 @@ export async function runIngestOperation<T extends keyof IngestJobFunc>(
 
 		throw e
 	}
-}
-
-/** Check Access and return PeripheralDevice, throws otherwise */
-export async function checkAccessAndGetPeripheralDevice(
-	deviceId: PeripheralDeviceId,
-	token: string | undefined,
-	context: Credentials | MethodContext
-): Promise<PeripheralDevice> {
-	const span = profiler.startSpan('lib.checkAccessAndGetPeripheralDevice')
-
-	const { device: peripheralDevice } = await PeripheralDeviceContentWriteAccess.peripheralDevice(
-		{ userId: context.userId, token },
-		deviceId
-	)
-	if (!peripheralDevice) {
-		throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
-	}
-
-	span?.end()
-	return peripheralDevice
 }
 
 export function getRundownId(studioId: StudioId, rundownExternalId: string): RundownId {

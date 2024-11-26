@@ -47,11 +47,16 @@ describe('User Actions - Media Manager', () => {
 		jest.resetAllMocks()
 	})
 	test('Restart workflow', async () => {
-		const { workFlowId } = await setupMockWorkFlow()
+		const { workFlowId, workFlow } = await setupMockWorkFlow()
 
 		// should fail if the workflow doesn't exist
 		await expect(
-			MeteorCall.userAction.mediaRestartWorkflow('', getCurrentTime(), protectString('FAKE_ID'))
+			MeteorCall.userAction.mediaRestartWorkflow(
+				'',
+				getCurrentTime(),
+				workFlow.deviceId,
+				protectString('FAKE_ID')
+			)
 		).resolves.toMatchUserRawError(/not found/gi)
 
 		{
@@ -72,16 +77,16 @@ describe('User Actions - Media Manager', () => {
 				})
 			}, MAX_WAIT_TIME)
 
-			await MeteorCall.userAction.mediaRestartWorkflow('', getCurrentTime(), workFlowId)
+			await MeteorCall.userAction.mediaRestartWorkflow('', getCurrentTime(), workFlow.deviceId, workFlowId)
 			await p
 		}
 	})
 	test('Abort worfklow', async () => {
-		const { workFlowId } = await setupMockWorkFlow()
+		const { workFlowId, workFlow } = await setupMockWorkFlow()
 
 		// should fail if the workflow doesn't exist
 		await expect(
-			MeteorCall.userAction.mediaAbortWorkflow('', getCurrentTime(), protectString('FAKE_ID'))
+			MeteorCall.userAction.mediaAbortWorkflow('', getCurrentTime(), workFlow.deviceId, protectString('FAKE_ID'))
 		).resolves.toMatchUserRawError(/not found/gi)
 
 		{
@@ -103,16 +108,21 @@ describe('User Actions - Media Manager', () => {
 				})
 			}, MAX_WAIT_TIME)
 
-			await MeteorCall.userAction.mediaAbortWorkflow('', getCurrentTime(), workFlowId)
+			await MeteorCall.userAction.mediaAbortWorkflow('', getCurrentTime(), workFlow.deviceId, workFlowId)
 			await p
 		}
 	})
 	test('Prioritize workflow', async () => {
-		const { workFlowId } = await setupMockWorkFlow()
+		const { workFlowId, workFlow } = await setupMockWorkFlow()
 
 		// should fail if the workflow doesn't exist
 		await expect(
-			MeteorCall.userAction.mediaPrioritizeWorkflow('', getCurrentTime(), protectString('FAKE_ID'))
+			MeteorCall.userAction.mediaPrioritizeWorkflow(
+				'',
+				getCurrentTime(),
+				workFlow.deviceId,
+				protectString('FAKE_ID')
+			)
 		).resolves.toMatchUserRawError(/not found/gi)
 
 		{
@@ -134,7 +144,7 @@ describe('User Actions - Media Manager', () => {
 				})
 			}, MAX_WAIT_TIME)
 
-			await MeteorCall.userAction.mediaPrioritizeWorkflow('', getCurrentTime(), workFlowId)
+			await MeteorCall.userAction.mediaPrioritizeWorkflow('', getCurrentTime(), workFlow.deviceId, workFlowId)
 			await p
 		}
 	})

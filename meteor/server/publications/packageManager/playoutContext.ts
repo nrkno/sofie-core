@@ -5,9 +5,8 @@ import { literal } from '@sofie-automation/corelib/dist/lib'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { PackageManagerPlayoutContext } from '@sofie-automation/shared-lib/dist/package-manager/publications'
 import { check } from 'meteor/check'
-import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
-import { PeripheralDevices, RundownPlaylists, Rundowns } from '../../collections'
+import { RundownPlaylists, Rundowns } from '../../collections'
 import {
 	meteorCustomPublish,
 	SetupObserversResult,
@@ -15,11 +14,11 @@ import {
 	TriggerUpdate,
 } from '../../lib/customPublication'
 import { logger } from '../../logging'
-import { PeripheralDeviceReadAccess } from '../../security/peripheralDevice'
 import {
 	PeripheralDevicePubSub,
 	PeripheralDevicePubSubCollectionsNames,
 } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
+import { checkAccessAndGetPeripheralDevice } from '../../security/check'
 
 export type RundownPlaylistCompact = Pick<DBRundownPlaylist, '_id' | 'activationId' | 'rehearsal' | 'rundownIdsInOrder'>
 const rundownPlaylistFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<RundownPlaylistCompact>>({
@@ -114,32 +113,26 @@ meteorCustomPublish(
 	async function (pub, deviceId: PeripheralDeviceId, token: string | undefined) {
 		check(deviceId, String)
 
-		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
-			const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, this)
 
-			if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
-
-			const studioId = peripheralDevice.studioId
-			if (!studioId) {
-				logger.warn(`Pub.packageManagerPlayoutContext: device "${peripheralDevice._id}" has no studioId`)
-				return this.ready()
-			}
-
-			await setUpOptimizedObserverArray<
-				PackageManagerPlayoutContext,
-				PackageManagerPlayoutContextArgs,
-				PackageManagerPlayoutContextState,
-				PackageManagerPlayoutContextUpdateProps
-			>(
-				`${PeripheralDevicePubSub.packageManagerPlayoutContext}_${studioId}_${deviceId}`,
-				{ studioId, deviceId },
-				setupExpectedPackagesPublicationObservers,
-				manipulateExpectedPackagesPublicationData,
-				pub,
-				500 // ms, wait this time before sending an update
-			)
-		} else {
-			logger.warn(`Pub.packageManagerPlayoutContext: Not allowed: "${deviceId}"`)
+		const studioId = peripheralDevice.studioId
+		if (!studioId) {
+			logger.warn(`Pub.packageManagerPlayoutContext: device "${peripheralDevice._id}" has no studioId`)
+			return this.ready()
 		}
+
+		await setUpOptimizedObserverArray<
+			PackageManagerPlayoutContext,
+			PackageManagerPlayoutContextArgs,
+			PackageManagerPlayoutContextState,
+			PackageManagerPlayoutContextUpdateProps
+		>(
+			`${PeripheralDevicePubSub.packageManagerPlayoutContext}_${studioId}_${deviceId}`,
+			{ studioId, deviceId },
+			setupExpectedPackagesPublicationObservers,
+			manipulateExpectedPackagesPublicationData,
+			pub,
+			500 // ms, wait this time before sending an update
+		)
 	}
 )

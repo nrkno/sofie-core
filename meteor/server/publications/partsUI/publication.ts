@@ -9,9 +9,6 @@ import {
 } from '../../lib/customPublication'
 import { logger } from '../../logging'
 import { CustomCollectionName, MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
-import { RundownPlaylistReadAccess } from '../../security/rundownPlaylist'
-import { resolveCredentials } from '../../security/lib/credentials'
-import { NoSecurityReadAccess } from '../../security/noSecurity'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { ContentCache, PartOmitedFields, createReactiveContentCache } from './reactiveContentCache'
 import { ReadonlyDeep } from 'type-fest'
@@ -23,6 +20,7 @@ import { RundownsObserver } from '../lib/rundownsObserver'
 import { RundownContentObserver } from './rundownContentObserver'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { extractRanks, findMarkerPosition, modifyPartForQuickLoop, stringsToIndexLookup } from '../lib/quickLoop'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../../security/securityVerify'
 
 interface UIPartsArgs {
 	readonly playlistId: RundownPlaylistId
@@ -193,27 +191,24 @@ meteorCustomPublish(
 	async function (pub, playlistId: RundownPlaylistId | null) {
 		check(playlistId, String)
 
-		const credentials = await resolveCredentials({ userId: this.userId, token: undefined })
+		triggerWriteAccessBecauseNoCheckNecessary()
 
-		if (
-			!credentials ||
-			NoSecurityReadAccess.any() ||
-			(playlistId && (await RundownPlaylistReadAccess.rundownPlaylistContent(playlistId, credentials)))
-		) {
-			await setUpCollectionOptimizedObserver<
-				Omit<DBPart, PartOmitedFields>,
-				UIPartsArgs,
-				UIPartsState,
-				UIPartsUpdateProps
-			>(
-				`pub_${MeteorPubSub.uiParts}_${playlistId}`,
-				{ playlistId },
-				setupUIPartsPublicationObservers,
-				manipulateUIPartsPublicationData,
-				pub
-			)
-		} else {
+		if (!playlistId) {
 			logger.warn(`Pub.uiParts: Not allowed: "${playlistId}"`)
+			return
 		}
+
+		await setUpCollectionOptimizedObserver<
+			Omit<DBPart, PartOmitedFields>,
+			UIPartsArgs,
+			UIPartsState,
+			UIPartsUpdateProps
+		>(
+			`pub_${MeteorPubSub.uiParts}_${playlistId}`,
+			{ playlistId },
+			setupUIPartsPublicationObservers,
+			manipulateUIPartsPublicationData,
+			pub
+		)
 	}
 )

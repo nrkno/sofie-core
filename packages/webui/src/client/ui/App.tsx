@@ -52,7 +52,7 @@ export const App: React.FC = function App() {
 
 	const [lastStart] = useState(Date.now())
 
-	const roles = useUserPermissions()
+	const [roles, _rolesReady] = useUserPermissions()
 	const featureFlags = useFeatureFlags()
 
 	useEffect(() => {

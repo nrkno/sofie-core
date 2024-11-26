@@ -618,7 +618,7 @@ describe('test peripheralDevice general API methods', () => {
 			const deviceObj = await PeripheralDevices.findOneAsync(device?._id)
 			expect(deviceObj).toBeDefined()
 
-			await MeteorCall.peripheralDevice.removePeripheralDevice(device?._id)
+			await MeteorCall.peripheralDevice.removePeripheralDevice(device._id, device.token)
 		}
 
 		{
