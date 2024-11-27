@@ -719,6 +719,13 @@ export class DDPClient extends EventEmitter<DDPClientEvents> {
 		})
 	}
 
+	private getHeadersWithDefaults(): { [header: string]: string } {
+		return {
+			dnt: 'gateway', // Provide the header needed for the header based auth to work when not connected through a reverse proxy
+			...this.headers,
+		}
+	}
+
 	private async makeSockJSConnection(): Promise<void> {
 		const protocol = this.ssl ? 'https://' : 'http://'
 		if (this.path && !this.path?.endsWith('/')) {
@@ -728,7 +735,7 @@ export class DDPClient extends EventEmitter<DDPClientEvents> {
 
 		try {
 			const response = await got(url, {
-				headers: this.headers,
+				headers: this.getHeadersWithDefaults(),
 				https: {
 					certificateAuthority: this.tlsOpts.ca,
 					key: this.tlsOpts.key,
@@ -769,7 +776,7 @@ export class DDPClient extends EventEmitter<DDPClientEvents> {
 
 	private makeWebSocketConnection(url: string): void {
 		// console.log('About to create WebSocket client')
-		this.socket = new WebSocket.Client(url, null, { tls: this.tlsOpts, headers: this.headers })
+		this.socket = new WebSocket.Client(url, null, { tls: this.tlsOpts, headers: this.getHeadersWithDefaults() })
 
 		this.socket.on('open', () => {
 			// just go ahead and open the connection on connect
