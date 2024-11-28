@@ -10,7 +10,7 @@ description: This guide has a lot of links. Here they are all listed by section.
 - [Gateways](concepts-and-architecture.md#gateways)
 - [Blueprints](concepts-and-architecture.md#blueprints)
 
-- Ask questions in the [Sofie Slack Channel](https://join.slack.com/t/sofietv/shared_invite/enQtNTk2Mzc3MTQ1NzAzLTJkZjMyMDg3OGM0YWU3MmU4YzBhZDAyZWI1YmJmNmRiYWQ1OTZjYTkzOTkzMTA2YTE1YjgxMmVkM2U1OGZlNWI)
+- Ask questions in the [Sofie Slack Channel](https://sofietv.slack.com/join/shared_invite/zt-2bfz8l9lw-azLeDB55cvN2wvMgqL1alA#/shared-invite/email)
 
 ## Installation & Setup
 
