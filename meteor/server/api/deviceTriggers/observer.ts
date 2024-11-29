@@ -29,28 +29,28 @@ Meteor.startup(() => {
 	const studioObserversAndManagers = new Map<StudioId, ObserverAndManager>()
 	const jobQueue = new JobQueueWithClasses({
 		autoStart: true,
-		executionWrapper: Meteor.bindEnvironment,
-		resolutionWrapper: Meteor.defer,
 	})
 
-	function workInQueue(fnc: () => Promise<void>) {
-		jobQueue.add(fnc).catch((e) => {
-			logger.error(`Error in DeviceTriggers Studio observer reaction: ${stringifyError(e)}`)
-		})
+	function workInQueue(fnc: () => Promise<any>) {
+		jobQueue
+			.add(async () => {
+				const res = await fnc()
+				return res
+			})
+			.catch((e) => {
+				logger.error(`Error in DeviceTriggers Studio observer reaction: ${stringifyError(e)}`)
+			})
 	}
 
 	function createObserverAndManager(studioId: StudioId) {
 		logger.debug(`Creating observer for studio "${studioId}"`)
 		const manager = new StudioDeviceTriggerManager(studioId)
 		const observer = new StudioObserver(studioId, (showStyleBaseId, cache) => {
-			workInQueue(async () => {
-				manager.updateTriggers(cache, showStyleBaseId)
-			})
+			logger.silly(`Studio observer updating triggers for "${studioId}":"${showStyleBaseId}"`)
+			workInQueue(async () => manager.updateTriggers(cache, showStyleBaseId))
 
 			return () => {
-				workInQueue(async () => {
-					manager.clearTriggers()
-				})
+				workInQueue(async () => manager.clearTriggers())
 			}
 		})
 
@@ -58,15 +58,16 @@ Meteor.startup(() => {
 	}
 
 	function destroyObserverAndManager(studioId: StudioId) {
-		logger.debug(`Destroying observer for studio "${studioId}"`)
-		const toRemove = studioObserversAndManagers.get(studioId)
-		if (toRemove) {
-			toRemove.observer.stop()
-			toRemove.manager.stop()
-			studioObserversAndManagers.delete(studioId)
-		} else {
-			logger.error(`Observer for studio "${studioId}" not found`)
-		}
+		workInQueue(async () => {
+			const toRemove = studioObserversAndManagers.get(studioId)
+			if (toRemove) {
+				toRemove.observer.stop()
+				await toRemove.manager.stop()
+				studioObserversAndManagers.delete(studioId)
+			} else {
+				logger.error(`Observer for studio "${studioId}" not found`)
+			}
+		})
 	}
 
 	Studios.observeChanges(
