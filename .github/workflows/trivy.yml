@@ -2,7 +2,7 @@ name: Scheduled Trivy Scan
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 10 * * 1'
+    - cron: "0 10 * * 1"
 
 jobs:
   trivy:
@@ -17,21 +17,21 @@ jobs:
 
     steps:
       - name: Run Trivy vulnerability scanner (json)
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@0.29.0
         env:
           TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db
         with:
           image-ref: ghcr.io/nrkno/sofie-core-${{ matrix.image }}:latest
           format: json
-          output: '${{ matrix.image }}-trivy-scan-results.json'
+          output: "${{ matrix.image }}-trivy-scan-results.json"
 
       - name: Run Trivy vulnerability scanner (table)
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@0.29.0
         env:
           TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db
         with:
           image-ref: ghcr.io/nrkno/sofie-core-${{ matrix.image }}:latest
-          output: '${{ matrix.image }}-trivy-scan-results.txt'
+          output: "${{ matrix.image }}-trivy-scan-results.txt"
 
       - name: Post all scan results to Github Summary as a table
         env:
@@ -44,12 +44,12 @@ jobs:
           echo $CODE_BLOCK >> $GITHUB_STEP_SUMMARY
 
       - name: Run Trivy in GitHub SBOM mode and submit results to Dependency Graph
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@0.29.0
         env:
           TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db
         with:
-          format: 'github'
-          output: 'dependency-results-${{ matrix.image }}.sbom.json'
+          format: "github"
+          output: "dependency-results-${{ matrix.image }}.sbom.json"
           image-ref: ghcr.io/nrkno/sofie-core-${{ matrix.image }}:latest
           github-pat: ${{ secrets.GITHUB_TOKEN }}
 
@@ -64,46 +64,31 @@ jobs:
           echo ${{ env.SUMMARY }}
 
       - name: Send Slack Notification
-        uses: slackapi/slack-github-action@v1.27.0
+        uses: slackapi/slack-github-action@v2.0.0
         with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
           payload: |
-            {
-              "text": "Trivy scan results",
-              "blocks": [
-                {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "Trivy scan results for sofie-core-${{ matrix.image }}:latest"
-                  }
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": ":thisisfine: ${{ env.SUMMARY }}"
-                  }
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "Read the full scan results on Github"
-                  },
-                  "accessory": {
-                    "type": "button",
-                    "text": {
-                        "type": "plain_text",
-                        "text": ":github: Scan results",
-                        "emoji": true
-                    },
-                    "value": "workflow_run",
-                    "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-                    "action_id": "button-action"
-                  }
-                }
-              ]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+            text: "Trivy scan results"
+            blocks:
+              - type: "header"
+                text:
+                  type: "plain_text"
+                  text: "Trivy scan results for sofie-core-${{ matrix.image }}:latest"
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: ":thisisfine: ${{ env.SUMMARY }}"
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "Read the full scan results on Github"
+                accessory:
+                  type: "button"
+                  text:
+                    type: "plain_text"
+                    text: ":github: Scan results"
+                    emoji: true
+                  value: "workflow_run"
+                  url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                  action_id: "button-action"
