@@ -372,43 +372,58 @@ export function useTracker<T, K extends undefined | T = undefined>(
 	return meteorData
 }
 
-function useReadyState(): {
-	ready: boolean
-	setReady: (value: boolean) => void
-	cancelPreviousReady: (timeout: number) => void
+/**
+ * A hook to track a boolean state with a sort of histeresis, with preference for `true`. `setState` makes the returned
+ * `state` be `true` immediately, but `false` only after `resetState` is called and `timeout` elapses. If `setState`
+ * is called with `true` before `timeout` elapses, then `resetState` is aborted and `state` will remain `ture.
+ *
+ * Later `resetState` calls replace earlier unelapsed calls and their timeout periods.
+ *
+ * @param {boolean} [initialState=false]
+ * @return {*}  {{
+ * 	state: boolean
+ * 	setState: (value: boolean) => void
+ * 	resetState: (timeout: number) => void
+ * }}
+ */
+function useDelayState(initialState = false): {
+	state: boolean
+	setState: (value: boolean) => void
+	resetState: (timeout: number) => void
 } {
-	const [ready, setReady] = useState(false)
-	const [prevReady, setPrevReady] = useState(false)
+	const [state, setState] = useState(initialState)
+	const [prevState, setPrevState] = useState(initialState)
 	const prevReadyTimeoutRef = useRef<number | null>(null)
 
-	const setIsReady = useCallback(
+	const setStateAndClearResets = useCallback(
 		(value: boolean) => {
-			setReady(value)
+			setState(value)
 
 			if (value) {
-				setPrevReady(true)
+				setPrevState(true)
 				if (prevReadyTimeoutRef.current !== null) {
 					window.clearTimeout(prevReadyTimeoutRef.current)
 					prevReadyTimeoutRef.current = null
 				}
 			}
 		},
-		[setReady, setPrevReady]
+		[setState, setPrevState]
 	)
 
-	const cancelPrevReady = useCallback(
-		(timeout: number) => {
-			prevReadyTimeoutRef.current = window.setTimeout(() => {
-				setPrevReady(false)
-			}, timeout)
-		},
-		[prevReadyTimeoutRef]
-	)
+	const resetStateAfterDelay = useCallback((timeout: number) => {
+		if (prevReadyTimeoutRef.current !== null) {
+			window.clearTimeout(prevReadyTimeoutRef.current)
+		}
+		prevReadyTimeoutRef.current = window.setTimeout(() => {
+			prevReadyTimeoutRef.current = null
+			setPrevState(false)
+		}, timeout)
+	}, [])
 
 	return {
-		ready: ready || prevReady,
-		setReady: setIsReady,
-		cancelPreviousReady: cancelPrevReady,
+		state: state || prevState,
+		setState: setStateAndClearResets,
+		resetState: resetStateAfterDelay,
 	}
 }
 
@@ -425,7 +440,7 @@ export function useSubscription<K extends keyof AllPubSubTypes>(
 	sub: K,
 	...args: Parameters<AllPubSubTypes[K]>
 ): boolean {
-	const { ready, setReady, cancelPreviousReady } = useReadyState()
+	const { state: ready, setState: setReady, resetState: cancelPreviousReady } = useDelayState()
 
 	useEffect(() => {
 		const subscription = Tracker.nonreactive(() => meteorSubscribe(sub, ...args))
@@ -465,7 +480,7 @@ export function useSubscriptionIfEnabled<K extends keyof AllPubSubTypes>(
 	enable: boolean,
 	...args: Parameters<AllPubSubTypes[K]>
 ): boolean {
-	const { ready, setReady, cancelPreviousReady } = useReadyState()
+	const { state: ready, setState: setReady, resetState: cancelPreviousReady } = useDelayState()
 
 	useEffect(() => {
 		if (!enable) {
@@ -510,7 +525,7 @@ export function useSubscriptionIfEnabledReadyOnce<K extends keyof AllPubSubTypes
 	enable: boolean,
 	...args: Parameters<AllPubSubTypes[K]>
 ): boolean {
-	const { ready, setReady, cancelPreviousReady } = useReadyState()
+	const { state: ready, setState: setReady, resetState: cancelPreviousReady } = useDelayState()
 
 	useEffect(() => {
 		if (!enable) {
