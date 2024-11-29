@@ -22,12 +22,12 @@ version: '3.3'
 services:
   db:
     hostname: mongo
-    image: mongo:4.4
+    image: mongo:6.0
     restart: always
     entrypoint: ['/usr/bin/mongod', '--replSet', 'rs0', '--bind_ip_all']
     # the healthcheck avoids the need to initiate the replica set
     healthcheck:
-      test: test $$(echo "rs.initiate().ok || rs.status().ok" | mongo --quiet) -eq 1
+      test: test $$(mongosh --quiet --eval "try {rs.initiate()} catch(e) {rs.status().ok}") -eq 1
       interval: 10s
       start_period: 30s
     ports:
