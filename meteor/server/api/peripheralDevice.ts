@@ -67,6 +67,7 @@ import { convertPeripheralDeviceForGateway } from '../publications/peripheralDev
 import { executePeripheralDeviceFunction } from './peripheralDevice/executeFunction'
 import KoaRouter from '@koa/router'
 import bodyParser from 'koa-bodyparser'
+import { assertConnectionHasOneOfPermissions } from '../security/auth'
 
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
@@ -513,12 +514,11 @@ export namespace ServerPeripheralDeviceAPI {
 			},
 		})
 	}
-	export async function removePeripheralDevice(
-		context: MethodContext,
-		deviceId: PeripheralDeviceId,
-		token?: string
-	): Promise<void> {
-		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, context)
+	export async function removePeripheralDevice(context: MethodContext, deviceId: PeripheralDeviceId): Promise<void> {
+		assertConnectionHasOneOfPermissions(context.connection, 'configure')
+
+		const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
+		if (!peripheralDevice) throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
 
 		logger.info(`Removing PeripheralDevice ${peripheralDevice._id}`)
 
@@ -850,8 +850,8 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	async testMethod(deviceId: PeripheralDeviceId, deviceToken: string, returnValue: string, throwError?: boolean) {
 		return ServerPeripheralDeviceAPI.testMethod(this, deviceId, deviceToken, returnValue, throwError)
 	}
-	async removePeripheralDevice(deviceId: PeripheralDeviceId, token?: string) {
-		return ServerPeripheralDeviceAPI.removePeripheralDevice(this, deviceId, token)
+	async removePeripheralDevice(deviceId: PeripheralDeviceId) {
+		return ServerPeripheralDeviceAPI.removePeripheralDevice(this, deviceId)
 	}
 
 	// ------ Playout Gateway --------
