@@ -13,6 +13,7 @@ import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { ITranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { IFloatingInspectorPosition, useInspectorPosition } from './IFloatingInspectorPosition'
 import { ReadonlyDeep } from 'type-fest'
+import { getIgnorePieceContentStatus } from '../../lib/localStorage'
 
 interface IProps {
 	status: PieceStatusCode | undefined
@@ -109,19 +110,22 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 	const { t } = useTranslation()
 	const inspectorRef = useRef<HTMLDivElement>(null)
 
+	const debugMode = getIgnorePieceContentStatus()
+	const playPreviewUrl = debugMode ? 'http://some-ip-here:3000/preview.mp4' : previewUrl || ''
+
 	const itemDuration = content?.sourceDuration || renderedDuration || 0
 	const seek = content?.seek ?? 0
 	const loop = content?.loop ?? false
 
 	const offsetTimePosition = timePosition + seek
 
-	const showVideoPlayerInspector = !hideHoverscrubPreview && previewUrl
+	const showVideoPlayerInspector = !hideHoverscrubPreview && (previewUrl || debugMode)
 	const showMiniInspectorClipData = shouldShowFloatingInspectorContent(status ?? PieceStatusCode.UNKNOWN, content)
 	const showMiniInspectorNotice = noticeLevel !== null
 	const showMiniInspectorData = showMiniInspectorNotice || showMiniInspectorClipData
 	const showAnyFloatingInspector = Boolean(showVideoPlayerInspector) || showMiniInspectorData
 
-	const shown = showMiniInspector && itemElement !== undefined && showAnyFloatingInspector
+	const shown = showMiniInspector && (itemElement !== undefined || debugMode) && showAnyFloatingInspector
 
 	const { style: floatingInspectorStyle, isFlipped } = useInspectorPosition(position, inspectorRef, shown)
 
@@ -157,7 +161,7 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 					ref={inspectorRef}
 					loop={loop}
 					seek={seek}
-					previewUrl={previewUrl}
+					previewUrl={playPreviewUrl}
 					timePosition={offsetTimePosition}
 					studioSettings={studio?.settings}
 					floatingInspectorStyle={floatingInspectorStyle}
