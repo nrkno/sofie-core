@@ -55,6 +55,10 @@ export interface VTContent extends BaseContent {
 	/** Duration of extra content past sourceDuration. Not planned to play back but present on the media and playable. */
 	postrollDuration?: number
 	editable?: VTEditableParameters
+	/** This is for the VT's in out words */
+	firstWords?: string
+	lastWords?: string
+	fullScript?: string
 }
 
 export interface GraphicsContent extends BaseContent {
