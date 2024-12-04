@@ -345,6 +345,24 @@ export function getPieceInstancesForPart(
 				})
 				.catch((e) => logger.error(e))
 
+			context.directCollections.PartInstances.findOne({
+				_id: playingPartInstance.partInstance._id,
+			})
+				.then((partInstance) => {
+					if (!partInstance) {
+						logger.error(
+							`TROUBLESHOOT: Segment not found, no partInstance "${playingPartInstance.partInstance._id}" in DB`
+						)
+					} else {
+						logger.error(
+							`TROUBLESHOOT: Segment not found, partInstance "${partInstance._id}": ${JSON.stringify(
+								partInstance
+							)}`
+						)
+					}
+				})
+				.catch((e) => logger.error(e))
+
 			throw new Error(
 				`Segment "${playingPartInstance.partInstance.segmentId}" in Rundown "${
 					playingRundown.rundown._id

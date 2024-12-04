@@ -365,6 +365,8 @@ async function updatePartInstancesSegmentIds(
 
 		const writeOps: AnyBulkWriteOperation<DBPartInstance>[] = []
 
+		logger.debug(`updatePartInstancesSegmentIds: renameRules: ${JSON.stringify(renameRules)}`)
+
 		for (const [newSegmentId, rule] of rulesInOrder) {
 			if (rule.fromSegmentIds.length) {
 				writeOps.push({
