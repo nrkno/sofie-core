@@ -19,7 +19,7 @@ Appending query parameter(s) to the URL will allow you to modify the behaviour o
 | `show_hidden_source_layers=1` | _Default value is `0`._ | 
 | `speak=1` | _Default value is `0`._ | 
 | `vibrate=1` | _Default value is `0`._ | 
-| `zoom=1` | _Default value is `0`._ | 
+| `zoom=1,...` | Sets the scaling of the entire GUI. _The unit is a percentage where `100` is the default scaling._ | 
 
 
 
