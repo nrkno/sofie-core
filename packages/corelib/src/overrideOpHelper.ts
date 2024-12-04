@@ -44,13 +44,25 @@ export function getAllCurrentAndDeletedItemsFromOverrides<T extends object>(
 	// Sort and wrap in the return type
 	const sortedItems = getAllCurrentItemsFromOverrides(rawObject, comparitor)
 
-	const removedOutputLayers: WrappedOverridableItemDeleted<T>[] = []
+	const computedItemIds = new Set(sortedItems.map((l) => l.id))
+	const removedItems = getAllRemovedItemsFromOverrides(rawObject, comparitor, computedItemIds)
+
+	return [...sortedItems, ...removedItems]
+}
+
+export function getAllRemovedItemsFromOverrides<T extends object>(
+	rawObject: ReadonlyDeep<ObjectWithOverrides<Record<string, T | undefined>>>,
+	comparitor:
+		| ((a: [id: string, obj: T | ReadonlyDeep<T>], b: [id: string, obj: T | ReadonlyDeep<T>]) => number)
+		| null,
+	validItemIds: Set<string> // TODO - should this be optional?
+): WrappedOverridableItemDeleted<T>[] {
+	const removedItems: WrappedOverridableItemDeleted<T>[] = []
 
 	// Find the items which have been deleted with an override
-	const computedOutputLayerIds = new Set(sortedItems.map((l) => l.id))
 	for (const [id, output] of Object.entries<ReadonlyDeep<T | undefined>>(rawObject.defaults)) {
-		if (!computedOutputLayerIds.has(id) && output) {
-			removedOutputLayers.push(
+		if (!validItemIds.has(id) && output) {
+			removedItems.push(
 				literal<WrappedOverridableItemDeleted<T>>({
 					type: 'deleted',
 					id: id,
@@ -62,9 +74,9 @@ export function getAllCurrentAndDeletedItemsFromOverrides<T extends object>(
 		}
 	}
 
-	if (comparitor) removedOutputLayers.sort((a, b) => comparitor([a.id, a.defaults], [b.id, b.defaults]))
+	if (comparitor) removedItems.sort((a, b) => comparitor([a.id, a.defaults], [b.id, b.defaults]))
 
-	return [...sortedItems, ...removedOutputLayers]
+	return removedItems
 }
 
 /**

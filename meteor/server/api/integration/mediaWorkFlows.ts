@@ -22,10 +22,10 @@ export namespace MediaManagerIntegration {
 		logger.debug('getMediaWorkFlowStepRevisions')
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 
-		if (peripheralDevice.studioId) {
+		if (peripheralDevice.studioAndConfigId) {
 			const rawSteps = (await MediaWorkFlowSteps.findFetchAsync(
 				{
-					studioId: peripheralDevice.studioId,
+					studioId: peripheralDevice.studioAndConfigId.studioId,
 				},
 				{
 					fields: {
@@ -54,10 +54,10 @@ export namespace MediaManagerIntegration {
 		logger.debug('getMediaWorkFlowRevisions')
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 
-		if (peripheralDevice.studioId) {
+		if (peripheralDevice.studioAndConfigId) {
 			const rawWorkflows = (await MediaWorkFlows.findFetchAsync(
 				{
-					studioId: peripheralDevice.studioId,
+					studioId: peripheralDevice.studioAndConfigId.studioId,
 				},
 				{
 					fields: {
@@ -91,7 +91,7 @@ export namespace MediaManagerIntegration {
 				400,
 				`Device "${peripheralDevice._id}".type is "${peripheralDevice.type}", should be MEDIA_MANAGER `
 			)
-		if (!peripheralDevice.studioId)
+		if (!peripheralDevice.studioAndConfigId)
 			throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studio')
 
 		check(workFlowId, String)
@@ -100,7 +100,7 @@ export namespace MediaManagerIntegration {
 		if (obj) {
 			check(obj._id, String)
 			obj.deviceId = peripheralDevice._id
-			obj.studioId = peripheralDevice.studioId
+			obj.studioId = peripheralDevice.studioAndConfigId.studioId
 
 			await MediaWorkFlows.upsertAsync(workFlowId, obj)
 
@@ -131,7 +131,7 @@ export namespace MediaManagerIntegration {
 				400,
 				`Device "${peripheralDevice._id}".type is "${peripheralDevice.type}", should be MEDIA_MANAGER `
 			)
-		if (!peripheralDevice.studioId)
+		if (!peripheralDevice.studioAndConfigId)
 			throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studio')
 
 		check(stepId, String)
@@ -147,7 +147,7 @@ export namespace MediaManagerIntegration {
 
 			obj.workFlowId = workflow._id
 			obj.deviceId = peripheralDevice._id
-			obj.studioId = peripheralDevice.studioId
+			obj.studioId = peripheralDevice.studioAndConfigId.studioId
 
 			await MediaWorkFlowSteps.upsertAsync(stepId, obj)
 		} else {

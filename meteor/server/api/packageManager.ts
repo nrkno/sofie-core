@@ -16,7 +16,7 @@ export async function abortExpectation(deviceId: PeripheralDeviceId, workId: str
 
 export async function restartAllExpectationsInStudio(studioId: StudioId): Promise<void> {
 	const packageManagerDevices = await PeripheralDevices.findFetchAsync({
-		studioId: studioId,
+		'studioAndConfigId.studioId': studioId,
 		category: PeripheralDeviceCategory.PACKAGE_MANAGER,
 		type: PeripheralDeviceType.PACKAGE_MANAGER,
 		subType: PERIPHERAL_SUBTYPE_PROCESS,

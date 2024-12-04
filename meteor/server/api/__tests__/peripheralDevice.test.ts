@@ -11,10 +11,7 @@ import { getCurrentTime } from '../../lib/lib'
 import { waitUntil } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
 import { setLogLevel } from '../../logging'
-import {
-	IngestDeviceSettings,
-	IngestDeviceSecretSettings,
-} from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/ingestDevice'
+import { IngestDeviceSecretSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/ingestDevice'
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
 import { MediaManagerAPI } from '@sofie-automation/meteor-lib/dist/api/mediaManager'
@@ -415,7 +412,7 @@ describe('test peripheralDevice general API methods', () => {
 		expect(QueueStudioJobSpy).toHaveBeenNthCalledWith(
 			1,
 			StudioJobs.OnPlayoutPlaybackChanged,
-			device.studioId,
+			device.studioAndConfigId!.studioId,
 			literal<Parameters<StudioJobFunc[StudioJobs.OnPlayoutPlaybackChanged]>[0]>({
 				playlistId: rundownPlaylistID,
 				changes: [
@@ -477,7 +474,7 @@ describe('test peripheralDevice general API methods', () => {
 		expect(QueueStudioJobSpy).toHaveBeenNthCalledWith(
 			1,
 			StudioJobs.OnTimelineTriggerTime,
-			device.studioId,
+			device.studioAndConfigId!.studioId,
 			literal<OnTimelineTriggerTimeProps>({
 				results: timelineTriggerTimeResult,
 			})
@@ -559,7 +556,7 @@ describe('test peripheralDevice general API methods', () => {
 		expect((deviceWithSecretToken.secretSettings as IngestDeviceSecretSettings).accessToken).toBe(
 			'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 		)
-		expect((deviceWithSecretToken.settings as IngestDeviceSettings).secretAccessToken).toBe(true)
+		expect(deviceWithSecretToken.secretSettingsStatus?.accessToken).toBe(true)
 	})
 
 	test('uninitialize', async () => {
@@ -646,8 +643,10 @@ describe('test peripheralDevice general API methods', () => {
 				organizationId: null,
 				name: 'Mock Media Manager',
 				deviceName: 'Media Manager',
-				studioId: env.studio._id,
-				settings: {},
+				studioAndConfigId: {
+					studioId: env.studio._id,
+					configId: 'test',
+				},
 				category: PeripheralDeviceCategory.MEDIA_MANAGER,
 				configManifest: {
 					deviceConfigSchema: JSONBlobStringify({}),
@@ -673,7 +672,7 @@ describe('test peripheralDevice general API methods', () => {
 				deviceId: device._id,
 				priority: 1,
 				source: 'MockSource',
-				studioId: device.studioId!,
+				studioId: device.studioAndConfigId!.studioId,
 				finished: false,
 				success: false,
 			})
@@ -685,7 +684,7 @@ describe('test peripheralDevice general API methods', () => {
 				deviceId: device._id,
 				priority: 2,
 				status: MediaManagerAPI.WorkStepStatus.IDLE,
-				studioId: device.studioId!,
+				studioId: device.studioAndConfigId!.studioId,
 				workFlowId: workFlowId,
 			})
 			await MediaWorkFlowSteps.insertAsync({
@@ -696,14 +695,14 @@ describe('test peripheralDevice general API methods', () => {
 				deviceId: device._id,
 				priority: 1,
 				status: MediaManagerAPI.WorkStepStatus.IDLE,
-				studioId: device.studioId!,
+				studioId: device.studioAndConfigId!.studioId,
 				workFlowId: workFlowId,
 			})
 		})
 		test('getMediaWorkFlowRevisions', async () => {
 			const workFlows = (
 				await MediaWorkFlows.findFetchAsync({
-					studioId: device.studioId,
+					studioId: device.studioAndConfigId!.studioId,
 				})
 			).map((wf) => ({
 				_id: wf._id,
@@ -717,7 +716,7 @@ describe('test peripheralDevice general API methods', () => {
 		test('getMediaWorkFlowStepRevisions', async () => {
 			const workFlowSteps = (
 				await MediaWorkFlowSteps.findFetchAsync({
-					studioId: device.studioId,
+					studioId: device.studioAndConfigId!.studioId,
 				})
 			).map((wf) => ({
 				_id: wf._id,
@@ -802,8 +801,10 @@ describe('test peripheralDevice general API methods', () => {
 				organizationId: null,
 				name: 'Mock Media Manager',
 				deviceName: 'Media Manager',
-				studioId: env.studio._id,
-				settings: {},
+				studioAndConfigId: {
+					studioId: env.studio._id,
+					configId: 'test',
+				},
 				category: PeripheralDeviceCategory.MEDIA_MANAGER,
 				configManifest: {
 					deviceConfigSchema: JSONBlobStringify({}),
@@ -837,7 +838,7 @@ describe('test peripheralDevice general API methods', () => {
 				mediaSize: 10,
 				mediaTime: 0,
 				objId: MOCK_OBJID,
-				studioId: device.studioId!,
+				studioId: device.studioAndConfigId!.studioId,
 				thumbSize: 0,
 				thumbTime: 0,
 				tinf: '',
@@ -846,7 +847,7 @@ describe('test peripheralDevice general API methods', () => {
 		test('getMediaObjectRevisions', async () => {
 			const mobjects = (
 				await MediaObjects.findFetchAsync({
-					studioId: device.studioId,
+					studioId: device.studioAndConfigId!.studioId,
 				})
 			).map((mo) => ({
 				_id: mo._id,
@@ -867,7 +868,7 @@ describe('test peripheralDevice general API methods', () => {
 			test('update', async () => {
 				const mo = (await MediaObjects.findOneAsync({
 					collectionId: MOCK_COLLECTION,
-					studioId: device.studioId!,
+					studioId: device.studioAndConfigId!.studioId,
 				})) as MediaObject
 				expect(mo).toBeTruthy()
 
@@ -885,14 +886,14 @@ describe('test peripheralDevice general API methods', () => {
 
 				const updateMo = await MediaObjects.findOneAsync({
 					collectionId: MOCK_COLLECTION,
-					studioId: device.studioId!,
+					studioId: device.studioAndConfigId!.studioId,
 				})
 				expect(updateMo).toMatchObject(newMo)
 			})
 			test('remove', async () => {
 				const mo = (await MediaObjects.findOneAsync({
 					collectionId: MOCK_COLLECTION,
-					studioId: device.studioId!,
+					studioId: device.studioAndConfigId!.studioId,
 				})) as MediaObject
 				expect(mo).toBeTruthy()
 
@@ -906,7 +907,7 @@ describe('test peripheralDevice general API methods', () => {
 
 				const updateMo = await MediaObjects.findOneAsync({
 					collectionId: MOCK_COLLECTION,
-					studioId: device.studioId!,
+					studioId: device.studioAndConfigId!.studioId,
 				})
 				expect(updateMo).toBeFalsy()
 			})

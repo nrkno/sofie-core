@@ -283,6 +283,7 @@ export async function studioFrom(apiStudio: APIStudio, existingId?: StudioId): P
 		previewContainerIds: [],
 		thumbnailContainerIds: [],
 		peripheralDeviceSettings: {
+			deviceSettings: wrapDefaultObject({}),
 			playoutDevices: wrapDefaultObject({}),
 			ingestDevices: wrapDefaultObject({}),
 			inputDevices: wrapDefaultObject({}),

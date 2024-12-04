@@ -40,7 +40,6 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 			env.studio,
 			{
 				organizationId,
-				settings: {},
 				configManifest: {
 					deviceConfigSchema: JSONBlobStringify({}), // unused
 					subdeviceManifest: {
@@ -165,7 +164,6 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 			env.studio,
 			{
 				organizationId: null,
-				settings: {},
 				configManifest: {
 					deviceConfigSchema: JSONBlobStringify({}), // unused
 					subdeviceManifest: {

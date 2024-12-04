@@ -127,8 +127,7 @@ export async function setupMockPeripheralDevice(
 		_id: protectString('mockDevice' + dbI++),
 		name: 'mockDevice',
 		organizationId: null,
-		studioId: studio ? studio._id : undefined,
-		settings: {},
+		studioAndConfigId: studio ? { studioId: studio._id, configId: 'test' } : undefined,
 
 		category: category,
 		type: type,

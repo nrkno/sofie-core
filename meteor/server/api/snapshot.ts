@@ -184,7 +184,7 @@ async function createSystemSnapshot(
 	queryRundownLayouts = { showStyleBaseId: { $in: showStyleBaseIds } }
 	queryTriggeredActions = { showStyleBaseIds: { $in: [null, ...showStyleBaseIds] } }
 
-	if (studioId) queryDevices = { studioId: studioId }
+	if (studioId) queryDevices = { 'studioAndConfigId.studioId': studioId }
 	else if (organizationId) queryDevices = { organizationId: organizationId }
 
 	const [showStyleVariants, rundownLayouts, devices, triggeredActions] = await Promise.all([
@@ -623,7 +623,7 @@ async function restoreFromSystemSnapshot(snapshot: SystemSnapshot): Promise<void
 			snapshot.blueprints ? saveIntoDb(Blueprints, {}, snapshot.blueprints) : null,
 			snapshot.rundownLayouts ? saveIntoDb(RundownLayouts, {}, snapshot.rundownLayouts) : null,
 			snapshot.triggeredActions ? saveIntoDb(TriggeredActions, {}, snapshot.triggeredActions) : null,
-			saveIntoDb(PeripheralDevices, studioId ? { studioId: studioId } : {}, snapshot.devices),
+			saveIntoDb(PeripheralDevices, studioId ? { 'studioAndConfigId.studioId': studioId } : {}, snapshot.devices),
 			saveIntoDb(CoreSystem, {}, [snapshot.coreSystem]),
 		]))
 	)

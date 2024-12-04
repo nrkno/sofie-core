@@ -1,15 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { DeviceItem } from '../../Status/SystemStatus/DeviceItem'
 import { ConfigManifestOAuthFlowComponent } from './ConfigManifestOAuthFlow'
-import { protectString, unprotectString } from '../../../lib/tempLib'
-import { SchemaFormForCollection } from '../../../lib/forms/SchemaFormForCollection'
-import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
-import { PeripheralDevices } from '../../../collections'
-import { MeteorCall } from '../../../lib/meteorApi'
-import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
+import { unprotectString } from '../../../lib/tempLib'
+import { useDebugStatesForPlayoutDevice } from './useDebugStatesForPlayoutDevice'
 
 interface IGenericDeviceSettingsComponentProps {
 	device: PeripheralDevice
@@ -22,39 +16,7 @@ export function GenericDeviceSettingsComponent({
 }: Readonly<IGenericDeviceSettingsComponentProps>): JSX.Element {
 	const { t } = useTranslation()
 
-	const [debugStates, setDebugStates] = useState(() => new Map<PeripheralDeviceId, object>())
-	const deviceHasDebugStates = !!(
-		device.type === PeripheralDeviceType.PLAYOUT &&
-		device.settings &&
-		(device.settings as any)['debugState']
-	)
-	useEffect(() => {
-		if (deviceHasDebugStates) {
-			const interval = setInterval(() => {
-				MeteorCall.systemStatus
-					.getDebugStates(device._id)
-					.then((res) => {
-						const states: Map<PeripheralDeviceId, object> = new Map()
-						for (const [key, state] of Object.entries<any>(res)) {
-							states.set(protectString(key), state)
-						}
-						setDebugStates(states)
-					})
-					.catch((err) => console.log(`Error fetching device states: ${stringifyError(err)}`))
-			}, 1000)
-
-			return () => {
-				clearInterval(interval)
-			}
-		}
-	}, [device._id, device.type, device.settings])
-
-	const translationNamespaces = useMemo(() => ['peripheralDevice_' + device._id], [device._id])
-	const parsedSchema = useMemo(
-		() =>
-			device.configManifest.deviceConfigSchema ? JSONBlobParse(device.configManifest.deviceConfigSchema) : undefined,
-		[device.configManifest.deviceConfigSchema]
-	)
+	const debugStates = useDebugStatesForPlayoutDevice(device)
 
 	return (
 		<>
@@ -62,25 +24,11 @@ export function GenericDeviceSettingsComponent({
 				<ConfigManifestOAuthFlowComponent device={device}></ConfigManifestOAuthFlowComponent>
 			)}
 
-			{parsedSchema ? (
-				<SchemaFormForCollection
-					schema={parsedSchema}
-					object={device.settings}
-					collection={PeripheralDevices}
-					objectId={device._id}
-					basePath="settings"
-					translationNamespaces={translationNamespaces}
-					allowTables
-				/>
-			) : (
-				<p>{t('There is no JSON config schema provided by this Gateway')}</p>
-			)}
+			<p>{t('Configuration for this Gateway has moved to the Studio Peripheral Device settings')}</p>
 
 			{Object.keys(device.configManifest.subdeviceManifest ?? {}).length > 0 && (
 				<>
 					<h2 className="mhn">{t('Attached Subdevices')}</h2>
-
-					<p>{t('Sub-devices can be configured in the Studio Peripheral Device settings')}</p>
 
 					{(!subDevices || subDevices.length === 0) && <p>{t('There are no sub-devices for this gateway')}</p>}
 

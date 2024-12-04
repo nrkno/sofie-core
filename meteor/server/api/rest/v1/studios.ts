@@ -13,14 +13,18 @@ import { runUpgradeForStudio, validateConfigForStudio } from '../../../migration
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { ServerClientAPI } from '../../client'
-import { assertNever } from '../../../lib/tempLib'
+import { assertNever, literal } from '../../../lib/tempLib'
 import { getCurrentTime } from '../../../lib/lib'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { DBStudio, StudioDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { assertConnectionHasOneOfPermissions } from '../../../security/auth'
 import { UserPermissions } from '@sofie-automation/meteor-lib/dist/userPermissions'
+import {
+	applyAndValidateOverrides,
+	ObjectOverrideSetOp,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 const PERMISSIONS_FOR_PLAYOUT_USERACTION: Array<keyof UserPermissions> = ['studio']
 
@@ -134,7 +138,11 @@ class StudiosServerAPI implements StudiosRestAPI {
 			}
 		}
 
-		await PeripheralDevices.updateAsync({ studioId }, { $unset: { studioId: 1 } }, { multi: true })
+		await PeripheralDevices.updateAsync(
+			{ 'studioAndConfigId.studioId': studioId },
+			{ $unset: { studioAndConfigId: 1 } },
+			{ multi: true }
+		)
 
 		const rundownPlaylists = (await RundownPlaylists.findFetchAsync(
 			{ studioId },
@@ -198,7 +206,7 @@ class StudiosServerAPI implements StudiosRestAPI {
 		studioId: StudioId
 	): Promise<ClientAPI.ClientResponse<Array<{ id: string }>>> {
 		const peripheralDevices = (await PeripheralDevices.findFetchAsync(
-			{ studioId },
+			{ 'studioAndConfigId.studioId': studioId },
 			{ projection: { _id: 1 } }
 		)) as Array<Pick<PeripheralDevice, '_id'>>
 
@@ -209,7 +217,8 @@ class StudiosServerAPI implements StudiosRestAPI {
 		_connection: Meteor.Connection,
 		_event: string,
 		studioId: StudioId,
-		deviceId: PeripheralDeviceId
+		deviceId: PeripheralDeviceId,
+		configId: string | undefined
 	): Promise<ClientAPI.ClientResponse<void>> {
 		const studio = await Studios.findOneAsync(studioId)
 		if (!studio)
@@ -225,7 +234,7 @@ class StudiosServerAPI implements StudiosRestAPI {
 				404
 			)
 
-		if (device.studioId !== undefined && device.studioId !== studio._id) {
+		if (device.studioAndConfigId !== undefined && device.studioAndConfigId.studioId !== studio._id) {
 			return ClientAPI.responseError(
 				UserError.from(
 					new Error(`Device already attached to studio`),
@@ -234,9 +243,33 @@ class StudiosServerAPI implements StudiosRestAPI {
 				412
 			)
 		}
+
+		// If no configId is provided, use the id of the device
+		configId = configId || unprotectString(device._id)
+
+		// Ensure that the requested config blob exists
+		const availableDeviceSettings = applyAndValidateOverrides(studio.peripheralDeviceSettings.deviceSettings).obj
+		if (!availableDeviceSettings[configId]) {
+			await Studios.updateAsync(studioId, {
+				$push: {
+					'peripheralDeviceSettings.deviceSettings.overrides': literal<ObjectOverrideSetOp>({
+						op: 'set',
+						path: configId,
+						value: literal<StudioDeviceSettings>({
+							name: device.name,
+							options: {},
+						}),
+					}),
+				},
+			})
+		}
+
 		await PeripheralDevices.updateAsync(deviceId, {
 			$set: {
-				studioId,
+				studioAndConfigId: {
+					studioId,
+					configId,
+				},
 			},
 		})
 
@@ -255,11 +288,17 @@ class StudiosServerAPI implements StudiosRestAPI {
 				UserError.from(new Error(`Studio does not exist`), UserErrorMessage.StudioNotFound),
 				404
 			)
-		await PeripheralDevices.updateAsync(deviceId, {
-			$unset: {
-				studioId: 1,
+		await PeripheralDevices.updateAsync(
+			{
+				_id: deviceId,
+				'studioAndConfigId.studioId': studioId,
 			},
-		})
+			{
+				$unset: {
+					studioAndConfigId: 1,
+				},
+			}
+		)
 
 		return ClientAPI.responseSuccess(undefined, 200)
 	}
@@ -388,7 +427,7 @@ export function registerRoutes(registerRoute: APIRegisterHook<StudiosRestAPI>): 
 		}
 	)
 
-	registerRoute<{ studioId: string }, { deviceId: string }, void>(
+	registerRoute<{ studioId: string }, { deviceId: string; configId: string | undefined }, void>(
 		'put',
 		'/studios/:studioId/devices',
 		new Map([
@@ -399,9 +438,10 @@ export function registerRoutes(registerRoute: APIRegisterHook<StudiosRestAPI>): 
 		async (serverAPI, connection, events, params, body) => {
 			const studioId = protectString<StudioId>(params.studioId)
 			const deviceId = protectString<PeripheralDeviceId>(body.deviceId)
-			logger.info(`API PUT: Attach device ${deviceId} to studio ${studioId}`)
+			const configId = body.configId
+			logger.info(`API PUT: Attach device ${deviceId} to studio ${studioId} (${configId})`)
 
-			return await serverAPI.attachDeviceToStudio(connection, events, studioId, deviceId)
+			return await serverAPI.attachDeviceToStudio(connection, events, studioId, deviceId, configId)
 		}
 	)
 

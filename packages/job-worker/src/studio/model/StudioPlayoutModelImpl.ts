@@ -177,7 +177,7 @@ export async function loadStudioPlayoutModel(
 	const studioId = context.studioId
 
 	const collections = await Promise.all([
-		context.directCollections.PeripheralDevices.findFetch({ studioId }),
+		context.directCollections.PeripheralDevices.findFetch({ 'studioAndConfigId.studioId': studioId }),
 		context.directCollections.RundownPlaylists.findFetch({ studioId }),
 		context.directCollections.Timelines.findOne(studioId),
 	])

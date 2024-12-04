@@ -2,7 +2,7 @@ import * as React from 'react'
 import { withTranslation } from 'react-i18next'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
-import { IngestDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/ingestDevice'
+import { IngestDeviceSecretSettingsStatus } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/ingestDevice'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { fetchFrom } from '../../../lib/lib'
 
@@ -126,12 +126,12 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 
 		render(): JSX.Element {
 			const { t } = this.props
-			const settings = (this.props.device.settings || {}) as IngestDeviceSettings
+			const secretStatus = (this.props.device.secretSettingsStatus || {}) as IngestDeviceSecretSettingsStatus
 			const device = this.props.device
 
 			return (
 				<div>
-					{settings.secretAccessToken ? (
+					{secretStatus.accessToken ? (
 						// If this is set, we have completed the authentication procedure.
 						// A reset button is provided to begin the flow again if authorization is revoked by the user.
 						<div className="mod mvs mhs">
@@ -145,7 +145,7 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 						</div>
 					) : (
 						<div className="mod mvs mhs">
-							{!settings.secretCredentials ? (
+							{!secretStatus.credentials ? (
 								<label className="field">
 									<div className="mvs">{t('Application credentials')}</div>
 									<div className="mdi">

@@ -135,6 +135,7 @@ describe('Migrations', () => {
 						previewContainerIds: [],
 						thumbnailContainerIds: [],
 						peripheralDeviceSettings: {
+							deviceSettings: wrapDefaultObject({}),
 							playoutDevices: wrapDefaultObject({}),
 							ingestDevices: wrapDefaultObject({}),
 							inputDevices: wrapDefaultObject({}),
@@ -173,6 +174,7 @@ describe('Migrations', () => {
 						previewContainerIds: [],
 						thumbnailContainerIds: [],
 						peripheralDeviceSettings: {
+							deviceSettings: wrapDefaultObject({}),
 							playoutDevices: wrapDefaultObject({}),
 							ingestDevices: wrapDefaultObject({}),
 							inputDevices: wrapDefaultObject({}),
@@ -211,6 +213,7 @@ describe('Migrations', () => {
 						previewContainerIds: [],
 						thumbnailContainerIds: [],
 						peripheralDeviceSettings: {
+							deviceSettings: wrapDefaultObject({}),
 							playoutDevices: wrapDefaultObject({}),
 							ingestDevices: wrapDefaultObject({}),
 							inputDevices: wrapDefaultObject({}),

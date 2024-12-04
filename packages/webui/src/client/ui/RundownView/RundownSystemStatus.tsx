@@ -91,7 +91,7 @@ export const RundownSystemStatus = React.memo(
 		const parentDevices = useTracker(
 			() =>
 				PeripheralDevices.find({
-					studioId: props.studioId,
+					'studioAndConfigId.studioId': props.studioId,
 				}).fetch(),
 			[],
 			[]
