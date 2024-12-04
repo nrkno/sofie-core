@@ -15,15 +15,15 @@ The access level is persisted in browser's Local Storage. To disable, visit`?the
 | **Settings** | No | Yes | No | Yes |
 
 
-### Basic mode
+### Basic Mode
 
 Without enabling any additional modes in Sofie, the browser will have minimal access to the system. It will be able to view a rundown but, will not have the ability to manipulate it. This includes activating, deactivating, or resetting the rundown as well as taking the next part, adlib, etc.
 
-### Studio mode
+### Studio Mode
 
 Studio Mode gives the current browser full control of the studio and all information associated to it. This includes allowing actions like activating and deactivating rundowns, taking parts, adlibbing, etc. This mode is accessed by adding a `?studio=1` to the end of the URL.
 
-### Configuration mode
+### Configuration Mode
 
 Configuration mode gives the user full control over the Settings pages and allows full access to the system including the ability to modify _Blueprints_, _Studios_, or _Show Styles_, creating and restoring _Snapshots_, as well as modifying attached devices.
 
@@ -44,3 +44,4 @@ Enables the page Test Tools, which contains various tools useful for testing the
 ### Developer Mode
 
 This mode will enable the browsers default right click menu to appear and can be accessed by adding `?develop=1` to the URL. It will also reveal the Manual Control section on the Rundown page.
+
