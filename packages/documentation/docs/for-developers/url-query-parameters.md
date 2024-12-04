@@ -4,19 +4,22 @@ sidebar_position: 10
 ---
 
 # URL Query Parameters
-Appending query parameters to the URL will allow you to modify the behaviour of the GUI, as well as control the access level.
+Appending query parameter(s) to the URL will allow you to modify the behaviour of the GUI, as well as control the [access levels](../user-guide/features/access-levels.md).
 
 | Query Parameter                     | Description                                                               |
 | :---------------------------------- | :------------------------------------------------------------------------ |
-| `?admin=0,1` | Default value is `0`. | 
-| `?studio=0,1` | Default value is `0`. | 
-| `?display=layout,buckets,inspector` | A comma-separated list of features to be displayed in the shelf. Available values are: `layout` \(for displaying the Rundown Layout\), `buckets` \(for displaying the Buckets\) and `inspector` \(for displaying the Inspector\).           |
-| `?buckets=0,1,...`                  | The buckets can be specified as base-0 indices of the buckets as seen by the user. This means that `?buckets=1` will display the second bucket as seen by the user when not filtering the buckets. This allows the user to decide which bucket is displayed on a secondary attached screen simply by reordering the buckets on their main view.                         |
-| `?shelffollowsonair=0,1` | | 
-| `?speak=0,1` | Default value is `0`. | 
-| `?vibrate=0,1` | Default value is `0`. | 
-| `?help=0,1` | Default value is `0`. | 
-| `?zoom=0,1` | Default value is `0`. | 
-| `?show_hidden_source_layers=0,1` | Default value is `0`. | 
-| `?ignore_piece_content_status=0,1` | Default value is `0`. | 
-| `?reportNotificationsId=0,1` | Default value is `0`. | 
+| `admin=1` | Gives the GUI the same access as the combination of [Configuration Mode](../user-guide/features/access-levels.md#Configuration-Mode) and [Studio Mode](../user-guide/features/access-levels.md#Studio-Mode) as well as having access to a set of [Testing Mode](../user-guide/features/access-levels.md#Testing-Mode) tools and a Manual Control section on the Rundown page. _Default value is `0`._ | 
+| `studio=1` | [Studio Mode](../user-guide/features/access-levels.md#Studio-Mode) gives the GUI full control of the studio and all information associated to it. This includes allowing actions like activating and deactivating rundowns, taking parts, adlibbing, etcetera. _Default value is `0`._ | 
+| `buckets=0,1,...`                  | The buckets can be specified as base-0 indices of the buckets as seen by the user. This means that `?buckets=1` will display the second bucket as seen by the user when not filtering the buckets. This allows the user to decide which bucket is displayed on a secondary attached screen simply by reordering the buckets on their main view. |
+| `display=layout,buckets,inspector` | A comma-separated list of features to be displayed in the shelf. Available values are: `layout` \(for displaying the Rundown Layout\), `buckets` \(for displaying the Buckets\) and `inspector` \(for displaying the Inspector\).           |
+| `help=1` | Enables some tooltips that might be useful to new users. _Default value is `0`._ | 
+| `ignore_piece_content_status=1` | Removes the "zebra" marking on VT pieces that have a "missing" status. _Default value is `0`._ | 
+| `reportNotificationsId=0,1,...` | Allows you to set a specific `reportNotificationsId`. _Default value is `0`, meaning the that default ID (i.e. not `0`) will be used._ | 
+| `shelffollowsonair=1` | _Default value is `0`._ | 
+| `show_hidden_source_layers=1` | _Default value is `0`._ | 
+| `speak=1` | _Default value is `0`._ | 
+| `vibrate=1` | _Default value is `0`._ | 
+| `zoom=1` | _Default value is `0`._ | 
+
+
+
