@@ -569,6 +569,12 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 			this.#baselineHelper.saveAllToDatabase(),
 		])
 
+		// Clean up deleted partInstances, since they have now been deleted by writePartInstancesAndPieceInstances
+		for (const [partInstanceId, partInstance] of this.allPartInstances) {
+			if (partInstance !== null) continue
+			this.allPartInstances.delete(partInstanceId)
+		}
+
 		this.#playlistHasChanged = false
 
 		// Execute deferAfterSave()'s
@@ -753,8 +759,9 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 
 		const changedPartInstances = Array.from(this.allPartInstances.entries()).filter(
 			([_, partInstance]) =>
-				partInstance !== null && // null values mean a PartInstance was removed, which doesn't need to be tracked
-				(partInstance.partInstanceHasChanges || partInstance.changedPieceInstanceIds().length > 0)
+				!partInstance ||
+				partInstance.partInstanceHasChanges ||
+				partInstance.changedPieceInstanceIds().length > 0
 		)
 
 		if (changedPartInstances.length > 0) {

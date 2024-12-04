@@ -404,6 +404,8 @@ async function updatePartInstancesSegmentIds(
 		if (writeOps.length) await context.directCollections.PartInstances.bulkWrite(writeOps)
 
 		// Double check that there are no parts using the old segment ids:
+		// TODO: This whole section can probably be removed later, it's really unneccessary in the grand scheme of
+		// things, it's here only to debug some problems
 		const oldSegmentIds: SegmentId[] = []
 		for (const renameRule of renameRules.values()) {
 			oldSegmentIds.push(...renameRule.fromSegmentIds)
@@ -433,6 +435,7 @@ async function updatePartInstancesSegmentIds(
 				)}": ${JSON.stringify(badParts)}, writeOps: ${JSON.stringify(writeOps)}`
 			)
 		}
+		// End of the temporary section
 	}
 }
 
