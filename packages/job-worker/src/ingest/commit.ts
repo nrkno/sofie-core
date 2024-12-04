@@ -402,7 +402,10 @@ async function updatePartInstancesSegmentIds(
 		if (writeOps.length) await context.directCollections.PartInstances.bulkWrite(writeOps)
 
 		// Double check that there are no parts using the old segment ids:
-		const oldSegmentIds = Array.from(renameRules.keys())
+		const oldSegmentIds: SegmentId[] = []
+		for (const renameRule of renameRules.values()) {
+			oldSegmentIds.push(...renameRule.fromSegmentIds)
+		}
 		const [badPartInstances, badParts] = await Promise.all([
 			await context.directCollections.PartInstances.findFetch({
 				rundownId: ingestModel.rundownId,
