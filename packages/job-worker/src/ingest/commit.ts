@@ -179,7 +179,7 @@ export async function CommitIngestOperation(
 			await updateSegmentIdsForAdlibbedPartInstances(context, ingestModel, beforePartMap)
 
 			if (data.renamedSegments && data.renamedSegments.size > 0) {
-				logger.debug(`Renamed segments: ${JSON.stringify(Array.from(data.renamedSegments.entries()))}`)
+				logger.verbose(`Renamed segments: ${JSON.stringify(Array.from(data.renamedSegments.entries()))}`)
 			}
 			// ensure instances have matching segmentIds with the parts
 			await updatePartInstancesSegmentIds(context, ingestModel, data.renamedSegments, beforePartMap)
@@ -820,6 +820,7 @@ async function removeSegments(
 		})
 	}
 	for (const segmentId of purgeSegmentIds) {
+		logger.debug(`IngestModel: Removing segment "${segmentId}"`)
 		ingestModel.removeSegment(segmentId)
 	}
 }
