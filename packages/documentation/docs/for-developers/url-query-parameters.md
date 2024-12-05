@@ -18,9 +18,9 @@ Appending query parameter(s) to the URL will allow you to modify the behaviour o
 | `reportNotificationsId=0,1,...` | Allows you to set a specific `reportNotificationsId`. _Default value is `0`, meaning the that default ID (i.e. not `0`) will be used._ | 
 | `shelffollowsonair=1` | _Default value is `0`._ | 
 | `show_hidden_source_layers=1` | _Default value is `0`._ | 
-| `speak=1` | _Default value is `0`._ | 
+| `speak=1` | Experimental feature that starts playing an audible countdown 10 seconds before each planned _Take_. __Default value is `0`._ | 
 | `theaccessmode=0` | If user accounts are enabled \(`enableUserAccounts` in [_Sofie&nbsp;Core_ settings](../configuration/sofie-core-settings#settings-file)\), the [access levels](../user-guide/features/access-levels.md) are set under the user settings. If no user accounts are set, the access level for a browser is set by adding `?theaccessmode=1` to the URL. The access level is persisted in browser's Local Storage. To disable; add the URL query parameter `?theaccessmode=0`. _Default value is `1`._ | 
-| `vibrate=1` | _Default value is `0`._ | 
+| `vibrate=1` | Experimental feature that triggers the vibration API in the web browser 3 seconds before each planned _Take_. _Default value is `0`._ | 
 | `zoom=1,...` | Sets the scaling of the entire GUI. _The unit is a percentage where `100` is the default scaling._ | 
 
 
