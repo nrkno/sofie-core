@@ -314,8 +314,9 @@ export async function regenerateRundownAndBaselineFromIngestData(
 	}
 
 	// Ensure the ids in the notes are clean
-	const rundownNotes = blueprintContext.notes
-		.map((note) =>
+	const rundownNotes = [
+		...extraRundownNotes,
+		...blueprintContext.notes.map((note) =>
 			literal<RundownNote>({
 				type: note.type,
 				message: wrapTranslatableMessageFromBlueprints(note.message, translationNamespaces),
@@ -323,8 +324,8 @@ export async function regenerateRundownAndBaselineFromIngestData(
 					name: `${showStyle.base.name}-${showStyle.variant.name}`,
 				},
 			})
-		)
-		.concat(extraRundownNotes)
+		),
+	]
 
 	ingestModel.setRundownData(
 		rundownRes.rundown,

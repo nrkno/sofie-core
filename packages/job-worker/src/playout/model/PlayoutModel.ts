@@ -30,6 +30,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { PlayoutPieceInstanceModel } from './PlayoutPieceInstanceModel'
 import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/timings'
+import type { INotificationsModel } from '../../notifications/NotificationsModel'
 
 export type DeferredFunction = (playoutModel: PlayoutModel) => void | Promise<void>
 export type DeferredAfterSaveFunction = (playoutModel: PlayoutModelReadonly) => void | Promise<void>
@@ -179,7 +180,7 @@ export interface PlayoutModelReadonly extends StudioPlayoutModelBaseReadonly {
 /**
  * A view of a `RundownPlaylist` and its content in a `Studio`
  */
-export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBase, BaseModel {
+export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBase, BaseModel, INotificationsModel {
 	/**
 	 * Temporary hack for debug logging
 	 */

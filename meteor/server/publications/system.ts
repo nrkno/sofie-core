@@ -3,9 +3,11 @@ import { meteorPublish } from './lib'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { SystemReadAccess } from '../security/system'
 import { OrganizationReadAccess } from '../security/organization'
-import { CoreSystem, Users } from '../collections'
+import { CoreSystem, Notifications, Users } from '../collections'
 import { SYSTEM_ID } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
-import { OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { OrganizationId, RundownId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
+import { check } from 'meteor/check'
 
 meteorPublish(MeteorPubSub.coreSystem, async function (token: string | undefined) {
 	if (await SystemReadAccess.coreSystem({ userId: this.userId, token })) {
@@ -72,5 +74,36 @@ meteorPublish(
 			)
 		}
 		return null
+	}
+)
+
+meteorPublish(MeteorPubSub.notificationsForRundown, async function (studioId: StudioId, rundownId: RundownId) {
+	// HACK: This should do real auth
+	triggerWriteAccessBecauseNoCheckNecessary()
+
+	check(studioId, String)
+	check(rundownId, String)
+
+	return Notifications.findWithCursor({
+		// Loosely match any notifications related to this rundown
+		'relatedTo.studioId': studioId,
+		'relatedTo.rundownId': rundownId,
+	})
+})
+
+meteorPublish(
+	MeteorPubSub.notificationsForRundownPlaylist,
+	async function (studioId: StudioId, playlistId: RundownPlaylistId) {
+		// HACK: This should do real auth
+		triggerWriteAccessBecauseNoCheckNecessary()
+
+		check(studioId, String)
+		check(playlistId, String)
+
+		return Notifications.findWithCursor({
+			// Loosely match any notifications related to this playlist
+			'relatedTo.studioId': studioId,
+			'relatedTo.playlistId': playlistId,
+		})
 	}
 )

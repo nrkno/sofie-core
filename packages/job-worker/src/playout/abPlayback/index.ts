@@ -16,10 +16,16 @@ import { applyAbPlayerObjectAssignments } from './applyAssignments'
 import { AbSessionHelper } from './abSessionHelper'
 import { ShowStyleContext } from '../../blueprints/context'
 import { logger } from '../../logging'
-import { ABPlayerDefinition } from '@sofie-automation/blueprints-integration'
+import { ABPlayerDefinition, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { abPoolFilterDisabled, findPlayersInRouteSets } from './routeSetDisabling'
+import type { INotification } from '../../notifications/NotificationsModel'
+import { generateTranslation } from '@sofie-automation/corelib/dist/lib'
 
+export interface ABPlaybackResult {
+	assignments: Record<string, ABSessionAssignments>
+	notifications: INotification[]
+}
 /**
  * Resolve and apply AB-playback for the given timeline
  * @param context Context of the job
@@ -39,8 +45,12 @@ export function applyAbPlaybackForTimeline(
 	playlist: ReadonlyDeep<DBRundownPlaylist>,
 	resolvedPieces: ResolvedPieceInstance[],
 	timelineObjects: OnGenerateTimelineObjExt[]
-): Record<string, ABSessionAssignments> {
-	if (!blueprint.blueprint.getAbResolverConfiguration) return {}
+): ABPlaybackResult {
+	if (!blueprint.blueprint.getAbResolverConfiguration)
+		return {
+			assignments: {},
+			notifications: [],
+		}
 
 	const blueprintContext = new ShowStyleContext(
 		{
@@ -71,6 +81,8 @@ export function applyAbPlaybackForTimeline(
 	const influxTrace = startTrace('blueprints:abPlaybackResolver')
 
 	const now = getCurrentTime()
+
+	const notifications: INotification[] = []
 
 	const abConfiguration = blueprint.blueprint.getAbResolverConfiguration(blueprintContext)
 	const routeSetMembers = findPlayersInRouteSets(applyAndValidateOverrides(context.studio.routeSetsWithOverrides).obj)
@@ -107,6 +119,13 @@ export function applyAbPlaybackForTimeline(
 			logger.warn(
 				`ABPlayback failed to assign sessions for "${poolName}": ${JSON.stringify(assignments.failedRequired)}`
 			)
+			notifications.push({
+				id: `failedRequired-${poolName}`,
+				severity: NoteSeverity.ERROR,
+				message: generateTranslation('Failed to assign players for {{count}} sessions', {
+					count: assignments.failedRequired.length,
+				}),
+			})
 		}
 		if (assignments.failedOptional.length > 0) {
 			logger.info(
@@ -114,6 +133,13 @@ export function applyAbPlaybackForTimeline(
 					assignments.failedOptional
 				)}`
 			)
+			notifications.push({
+				id: `failedOptional-${poolName}`,
+				severity: NoteSeverity.WARNING,
+				message: generateTranslation('Failed to assign players for {{count}} non-critical sessions', {
+					count: assignments.failedOptional.length,
+				}),
+			})
 		}
 
 		newAbSessionsResult[poolName] = applyAbPlayerObjectAssignments(
@@ -130,5 +156,8 @@ export function applyAbPlaybackForTimeline(
 	sendTrace(endTrace(influxTrace))
 	if (span) span.end()
 
-	return newAbSessionsResult
+	return {
+		assignments: newAbSessionsResult,
+		notifications,
+	}
 }

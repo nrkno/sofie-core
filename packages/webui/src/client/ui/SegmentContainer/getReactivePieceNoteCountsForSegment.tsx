@@ -4,8 +4,11 @@ import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
 import { UIPieceContentStatus, UISegmentPartNote } from '@sofie-automation/meteor-lib/dist/api/rundownNotifications'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { getIgnorePieceContentStatus } from '../../lib/localStorage'
-import { UIPieceContentStatuses, UISegmentPartNotes } from '../Collections'
+import { UIPartInstances, UIPieceContentStatuses, UISegmentPartNotes } from '../Collections'
 import { SegmentNoteCounts, SegmentUi } from './withResolvedSegment'
+import { Notifications } from '../../collections'
+import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
+import { DBNotificationObj } from '@sofie-automation/corelib/dist/dataModel/Notifications'
 
 export function getReactivePieceNoteCountsForSegment(segment: SegmentUi): SegmentNoteCounts {
 	const segmentNoteCounts: SegmentNoteCounts = {
@@ -61,6 +64,38 @@ export function getReactivePieceNoteCountsForSegment(segment: SegmentUi): Segmen
 					segmentNoteCounts.warning++
 					break
 			}
+		}
+	}
+
+	// Find any relevant notifications
+	const partInstancesForSegment = UIPartInstances.find(
+		{ segmentId: segment._id, reset: { $ne: true } },
+		{
+			fields: {
+				_id: 1,
+			},
+		}
+	).fetch() as Array<Pick<PartInstance, '_id'>>
+	const rawNotifications = Notifications.find(
+		{
+			$or: [
+				{ 'relatedTo.segmentId': segment._id },
+				{
+					'relatedTo.partInstanceId': { $in: partInstancesForSegment.map((p) => p._id) },
+				},
+			],
+		},
+		{
+			fields: {
+				severity: 1,
+			},
+		}
+	).fetch() as Array<Pick<DBNotificationObj, 'severity'>>
+	for (const notification of rawNotifications) {
+		if (notification.severity === NoteSeverity.ERROR) {
+			segmentNoteCounts.criticial++
+		} else if (notification.severity === NoteSeverity.WARNING) {
+			segmentNoteCounts.warning++
 		}
 	}
 
