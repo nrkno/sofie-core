@@ -1035,7 +1035,7 @@ const RundownHeader = withTranslation()(
 									{this.props.playlist.activationId ? (
 										<MenuItem onClick={(e) => this.take(e)}>{t('Take')}</MenuItem>
 									) : null}
-									{this.props.playlist.activationId ? (
+									{this.props.studio.settings.allowHold && this.props.playlist.activationId ? (
 										<MenuItem onClick={(e) => this.hold(e)}>{t('Hold')}</MenuItem>
 									) : null}
 									{!(
@@ -1438,7 +1438,8 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 		rundownHeaderLayoutId: protectString((params['rundownHeaderLayout'] as string) || ''),
 		miniShelfLayoutId: protectString((params['miniShelfLayout'] as string) || ''),
 		shelfDisplayOptions: {
-			enableBuckets: displayOptions.includes('buckets'),
+			// If buckets are enabled in Studiosettings, it can also be filtered in the URLs display options.
+			enableBuckets: !!studio?.settings.enableBuckets && displayOptions.includes('buckets'),
 			enableLayout: displayOptions.includes('layout') || displayOptions.includes('shelfLayout'),
 			enableInspector: displayOptions.includes('inspector'),
 		},
@@ -2215,7 +2216,8 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 				item &&
 				item.instance &&
 				this.props.playlist &&
-				this.props.playlist.currentPartInfo
+				this.props.playlist.currentPartInfo &&
+				this.props.studio?.settings.allowPieceDirectPlay
 			) {
 				const idToCopy = item.instance.isTemporary ? item.instance.piece._id : item.instance._id
 				const playlistId = this.props.playlist._id
