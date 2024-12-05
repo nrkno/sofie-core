@@ -482,6 +482,7 @@ async function retreiveSnapshot(snapshotId: SnapshotId, cred0: Credentials): Pro
 
 	return readSnapshot
 }
+
 async function restoreFromSnapshot(
 	/** The snapshot data to restore */
 	snapshot: AnySnapshot,
@@ -490,22 +491,7 @@ async function restoreFromSnapshot(
 ): Promise<void> {
 	// Determine what kind of snapshot
 
-	if (!_.isObject(snapshot)) throw new Meteor.Error(500, `Restore input data is not an object`)
-	// First, some special (debugging) cases:
-	// @ts-expect-error is's not really a snapshot here:
-	if (snapshot.externalId && snapshot.segments && snapshot.type === 'mos') {
-		// Special: Not a snapshot, but a datadump of a MOS rundown
-		const studioId: StudioId = Meteor.settings.manualSnapshotIngestStudioId || 'studio0'
-		const studioExists = await checkStudioExists(studioId)
-		if (studioExists) {
-			await importIngestRundown(studioId, snapshot as unknown as IngestRundown)
-			return
-		}
-		throw new Meteor.Error(500, `No Studio found`)
-	}
-
 	// Then, continue as if it's a normal snapshot:
-
 	if (!snapshot.snapshot) throw new Meteor.Error(500, `Restore input data is not a snapshot (${_.keys(snapshot)})`)
 
 	if (snapshot.snapshot.type === SnapshotType.RUNDOWNPLAYLIST) {
@@ -518,11 +504,7 @@ async function restoreFromSnapshot(
 			)
 		}
 
-		// TODO: Improve this. This matches the 'old' behaviour
-		const studios = await Studios.findFetchAsync({})
-		const snapshotStudioExists = studios.find((studio) => studio._id === playlistSnapshot.playlist.studioId)
-		const studioId = snapshotStudioExists ? playlistSnapshot.playlist.studioId : studios[0]?._id
-		if (!studioId) throw new Meteor.Error(500, `No Studio found`)
+		const studioId = await getStudioIdFromPlaylistSnapshot(playlistSnapshot)
 
 		// A snapshot of a rundownPlaylist
 		return restoreFromRundownPlaylistSnapshot(snapshot as RundownPlaylistSnapshot, studioId, restoreDebugData)
@@ -531,6 +513,60 @@ async function restoreFromSnapshot(
 		return restoreFromSystemSnapshot(snapshot as SystemSnapshot)
 	} else {
 		throw new Meteor.Error(402, `Unknown snapshot type "${snapshot.snapshot.type}"`)
+	}
+}
+
+async function getStudioIdFromPlaylistSnapshot(playlistSnapshot: RundownPlaylistSnapshot): Promise<StudioId> {
+	// TODO: Improve this. This matches the 'old' behaviour
+	const studios = await Studios.findFetchAsync({})
+	const snapshotStudioExists = studios.find((studio) => studio._id === playlistSnapshot.playlist.studioId)
+	const studioId = snapshotStudioExists ? playlistSnapshot.playlist.studioId : studios[0]?._id
+	if (!studioId) throw new Meteor.Error(500, `No Studio found`)
+	return studioId
+}
+/** Read the ingest data from a snapshot and pipe it into blueprints */
+async function ingestFromSnapshot(
+	/** The snapshot data to restore */
+	snapshot: AnySnapshot
+): Promise<void> {
+	// Determine what kind of snapshot
+	if (!snapshot.snapshot) throw new Meteor.Error(500, `Restore input data is not a snapshot (${_.keys(snapshot)})`)
+	if (snapshot.snapshot.type === SnapshotType.RUNDOWNPLAYLIST) {
+		const playlistSnapshot = snapshot as RundownPlaylistSnapshot
+
+		const studioId = await getStudioIdFromPlaylistSnapshot(playlistSnapshot)
+
+		// Read the ingestData from the snapshot
+		const ingestData = playlistSnapshot.ingestData
+
+		const rundownData = ingestData.filter((e) => e.type === 'rundown')
+		const segmentData = ingestData.filter((e) => e.type === 'segment')
+		const partData = ingestData.filter((e) => e.type === 'part')
+
+		if (rundownData.length === 0) throw new Meteor.Error(402, `No rundowns found in ingestData`)
+
+		for (const seg of segmentData) {
+			seg.data.parts = partData
+				.filter((e) => e.segmentId === seg.segmentId)
+				.map((e) => e.data)
+				.sort((a, b) => b.rank - a.rank)
+		}
+
+		for (let i = 0; i < rundownData.length; i++) {
+			const rundown = rundownData[i]
+
+			const segmentsInRundown = segmentData.filter((e) => e.rundownId === rundown.rundownId)
+
+			const ingestRundown: IngestRundown = rundown.data
+			ingestRundown.segments = segmentsInRundown.map((s) => s.data).sort((a, b) => b.rank - a.rank)
+
+			await importIngestRundown(studioId, ingestRundown)
+		}
+	} else {
+		throw new Meteor.Error(
+			402,
+			`Unable to ingest a snapshot of type "${snapshot.snapshot.type}", did you mean to restore it?`
+		)
 	}
 }
 
@@ -809,8 +845,16 @@ if (!Settings.enableUserAccounts) {
 				if (!snapshot) throw new Meteor.Error(400, 'Restore Snapshot: Missing request body')
 
 				const restoreDebugData = ctx.headers['restore-debug-data'] === '1'
+				const ingestSnapshotData = ctx.headers['ingest-snapshot-data'] === '1'
 
-				await restoreFromSnapshot(snapshot, restoreDebugData)
+				if (typeof snapshot !== 'object' || snapshot === null)
+					throw new Meteor.Error(500, `Restore input data is not an object`)
+
+				if (ingestSnapshotData) {
+					await ingestFromSnapshot(snapshot)
+				} else {
+					await restoreFromSnapshot(snapshot, restoreDebugData)
+				}
 
 				ctx.response.status = 200
 				ctx.response.body = content
