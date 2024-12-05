@@ -8,6 +8,9 @@ input {
 	user-select: auto;
 } */
 
+@import 'defaultColors';
+@import 'itemTypeColors';
+@import 'colorScheme';
 @import '_variables';
 @import '_header';
 @import '_colorScheme';
