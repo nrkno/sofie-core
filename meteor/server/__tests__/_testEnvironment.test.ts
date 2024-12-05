@@ -153,7 +153,7 @@ describe('Basic test of test environment', () => {
 		const studios = await Studios.findFetchAsync({})
 		expect(studios).toHaveLength(1)
 
-		const observer = Studios.observeChanges({ _id: protectString('abc') }, {})
+		const observer = await Studios.observeChanges({ _id: protectString('abc') }, {})
 		expect(observer).toBeTruthy()
 
 		await Studios.insertAsync({

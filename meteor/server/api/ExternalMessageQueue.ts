@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../lib/check'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
-import { deferAsync, getCurrentTime } from '../lib/lib'
+import { deferAsync, getCurrentTime, MeteorStartupAsync } from '../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import {
 	NewExternalMessageQueueAPI,
@@ -50,18 +50,19 @@ function updateExternalMessageQueueStatus(): void {
 	}
 }
 
-ExternalMessageQueue.observeChanges(
-	{
-		sent: { $not: { $gt: 0 } },
-		tryCount: { $gt: 3 },
-	},
-	{
-		added: updateExternalMessageQueueStatus,
-		changed: updateExternalMessageQueueStatus,
-		removed: updateExternalMessageQueueStatus,
-	}
-)
-Meteor.startup(() => {
+MeteorStartupAsync(async () => {
+	await ExternalMessageQueue.observeChanges(
+		{
+			sent: { $not: { $gt: 0 } },
+			tryCount: { $gt: 3 },
+		},
+		{
+			added: updateExternalMessageQueueStatus,
+			changed: updateExternalMessageQueueStatus,
+			removed: updateExternalMessageQueueStatus,
+		}
+	)
+
 	updateExternalMessageQueueStatus()
 	// triggerdoMessageQueue(5000)
 })

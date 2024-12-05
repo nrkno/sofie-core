@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import './lib'
+import './lib/lib'
 
 import './buckets'
 import './blueprintUpgradeStatus/publication'
@@ -28,7 +28,7 @@ import './mountedTriggers'
 import './deviceTriggersPreview'
 
 import { AllPubSubNames } from '@sofie-automation/meteor-lib/dist/api/pubsub'
-import { MeteorPublications } from './lib'
+import { MeteorPublications } from './lib/lib'
 import { logger } from '../logging'
 
 // Ensure all the publications were registered at startup

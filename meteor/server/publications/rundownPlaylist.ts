@@ -1,5 +1,5 @@
 import { RundownPlaylistReadAccess } from '../security/rundownPlaylist'
-import { meteorPublish, AutoFillSelector } from './lib'
+import { meteorPublish, AutoFillSelector } from './lib/lib'
 import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
 import { NoSecurityReadAccess } from '../security/noSecurity'

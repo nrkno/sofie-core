@@ -1,6 +1,5 @@
 import { ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import {
@@ -12,6 +11,7 @@ import {
 	CustomPublishCollection,
 	meteorCustomPublish,
 	setUpCollectionOptimizedObserver,
+	SetupObserversResult,
 	TriggerUpdate,
 } from '../lib/customPublication'
 import { logger } from '../logging'
@@ -64,7 +64,7 @@ function convertDocument(doc: DBTriggeredActions): UITriggeredActionsObj {
 async function setupUITriggeredActionsPublicationObservers(
 	args: ReadonlyDeep<UITriggeredActionsArgs>,
 	triggerUpdate: TriggerUpdate<UITriggeredActionsUpdateProps>
-): Promise<Meteor.LiveQueryHandle[]> {
+): Promise<SetupObserversResult> {
 	const trackChange = (id: TriggeredActionId): Partial<UITriggeredActionsUpdateProps> => ({
 		invalidateTriggeredActions: [id],
 	})
