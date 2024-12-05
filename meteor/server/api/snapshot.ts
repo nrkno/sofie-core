@@ -53,7 +53,6 @@ import {
 	getPackageContainerPackageId,
 } from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
 import { PackageInfoDB, getPackageInfoId } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
-import { checkStudioExists } from '../optimizations'
 import { CoreRundownPlaylistSnapshot } from '@sofie-automation/corelib/dist/snapshots'
 import { QueueStudioJob } from '../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
@@ -93,6 +92,11 @@ import {
 import { getCoreSystemAsync } from '../coreSystem/collection'
 import { executePeripheralDeviceFunction } from './peripheralDevice/executeFunction'
 import { verifyHashedToken } from './singleUseTokens'
+import {
+	IngestDataCacheObjRundown,
+	IngestDataCacheObjSegment,
+	IngestDataCacheObjPart,
+} from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 
 interface RundownPlaylistSnapshot extends CoreRundownPlaylistSnapshot {
 	versionExtended: string | undefined
@@ -539,9 +543,9 @@ async function ingestFromSnapshot(
 		// Read the ingestData from the snapshot
 		const ingestData = playlistSnapshot.ingestData
 
-		const rundownData = ingestData.filter((e) => e.type === 'rundown')
-		const segmentData = ingestData.filter((e) => e.type === 'segment')
-		const partData = ingestData.filter((e) => e.type === 'part')
+		const rundownData = ingestData.filter((e) => e.type === 'rundown') as IngestDataCacheObjRundown[]
+		const segmentData = ingestData.filter((e) => e.type === 'segment') as IngestDataCacheObjSegment[]
+		const partData = ingestData.filter((e) => e.type === 'part') as IngestDataCacheObjPart[]
 
 		if (rundownData.length === 0) throw new Meteor.Error(402, `No rundowns found in ingestData`)
 
