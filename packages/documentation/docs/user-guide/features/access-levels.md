@@ -47,4 +47,4 @@ This mode will enable the browsers default right click menu to appear and can be
 
 ### See Also
 
-[URL Query Parameters](../for-developers/url-query-parameters.md)
+[URL Query Parameters](../../for-developers/url-query-parameters.md)
