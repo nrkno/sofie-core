@@ -1,6 +1,5 @@
 import React, { PropsWithChildren } from 'react'
 import { Meteor } from 'meteor/meteor'
-import * as PropTypes from 'prop-types'
 import { withTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { protectString } from '../../../lib/tempLib'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
@@ -21,6 +20,7 @@ import { sortPartInstancesInSortedSegments } from '@sofie-automation/corelib/dis
 import { RundownUtils } from '../../../lib/rundown'
 import { RundownPlaylistClientUtil } from '../../../lib/rundownPlaylistUtil'
 import { getCurrentTime } from '../../../lib/systemTime'
+import { IRundownTimingProviderValues, RundownTimingProviderContext } from './withTiming'
 
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
 const LOW_RESOLUTION_TIMING_DECIMATOR = 15
@@ -44,10 +44,7 @@ interface IRundownTimingProviderProps {
 	/** Fallback duration for Parts that have no as-played duration of their own. */
 	defaultDuration?: number
 }
-interface IRundownTimingProviderChildContext {
-	durations: RundownTimingContext
-	syncedDurations: RundownTimingContext
-}
+
 interface IRundownTimingProviderState {}
 interface IRundownTimingProviderTrackedProps {
 	rundowns: Array<Rundown>
@@ -156,27 +153,28 @@ export const RundownTimingProvider = withTracker<
 		partsInQuickLoop,
 	}
 })(
-	class RundownTimingProvider
-		extends React.Component<
-			PropsWithChildren<IRundownTimingProviderProps> & IRundownTimingProviderTrackedProps,
-			IRundownTimingProviderState
-		>
-		implements React.ChildContextProvider<IRundownTimingProviderChildContext>
-	{
-		static childContextTypes = {
-			durations: PropTypes.object.isRequired,
-			syncedDurations: PropTypes.object.isRequired,
-		}
-
-		durations: RundownTimingContext = {
+	class RundownTimingProvider extends React.Component<
+		PropsWithChildren<IRundownTimingProviderProps> & IRundownTimingProviderTrackedProps,
+		IRundownTimingProviderState
+	> {
+		private durations: RundownTimingContext = {
 			isLowResolution: false,
 		}
-		syncedDurations: RundownTimingContext = {
+		private syncedDurations: RundownTimingContext = {
 			isLowResolution: true,
 		}
-		refreshTimer: number | undefined
-		refreshTimerInterval: number
-		refreshDecimator: number
+		/**
+		 * This context works in an unusual way.
+		 * It contains a constant value which gets mutated in place, with the consumer expected to setup a timer to poll for changes.
+		 */
+		private childContextValue: IRundownTimingProviderValues = {
+			durations: this.durations,
+			syncedDurations: this.syncedDurations,
+		}
+
+		private refreshTimer: number | undefined
+		private refreshTimerInterval: number
+		private refreshDecimator: number
 
 		private timingCalculator: RundownTimingCalculator = new RundownTimingCalculator()
 		/** last time (ms rounded down to full seconds) for which the timeupdateSynced event was dispatched */
@@ -190,18 +188,11 @@ export const RundownTimingProvider = withTracker<
 			this.refreshDecimator = 0
 		}
 
-		getChildContext(): IRundownTimingProviderChildContext {
-			return {
-				durations: this.durations,
-				syncedDurations: this.syncedDurations,
-			}
-		}
-
-		calmDownTiming = (time: number) => {
+		private calmDownTiming = (time: number) => {
 			return Math.round(time / CURRENT_TIME_GRANULARITY) * CURRENT_TIME_GRANULARITY
 		}
 
-		onRefreshTimer = () => {
+		private onRefreshTimer = () => {
 			const now = getCurrentTime()
 			const calmedDownNow = this.calmDownTiming(now)
 			this.updateDurations(calmedDownNow, false)
@@ -252,7 +243,7 @@ export const RundownTimingProvider = withTracker<
 			if (this.refreshTimer !== undefined) Meteor.clearInterval(this.refreshTimer)
 		}
 
-		dispatchHREvent(now: number) {
+		private dispatchHREvent(now: number) {
 			const event = new CustomEvent<TimeEventArgs>(RundownTiming.Events.timeupdateHighResolution, {
 				detail: {
 					currentTime: now,
@@ -262,7 +253,7 @@ export const RundownTimingProvider = withTracker<
 			window.dispatchEvent(event)
 		}
 
-		dispatchLREvent(now: number) {
+		private dispatchLREvent(now: number) {
 			const event = new CustomEvent<TimeEventArgs>(RundownTiming.Events.timeupdateLowResolution, {
 				detail: {
 					currentTime: now,
@@ -272,7 +263,7 @@ export const RundownTimingProvider = withTracker<
 			window.dispatchEvent(event)
 		}
 
-		dispatchSyncedEvent(now: number) {
+		private dispatchSyncedEvent(now: number) {
 			const event = new CustomEvent<TimeEventArgs>(RundownTiming.Events.timeupdateSynced, {
 				detail: {
 					currentTime: now,
@@ -282,7 +273,7 @@ export const RundownTimingProvider = withTracker<
 			window.dispatchEvent(event)
 		}
 
-		updateDurations(now: number, isSynced: boolean) {
+		private updateDurations(now: number, isSynced: boolean) {
 			const { playlist, rundowns, currentRundown, partInstances, partInstancesMap, segmentsMap } = this.props
 
 			const updatedDurations = this.timingCalculator.updateDurations(
@@ -305,7 +296,11 @@ export const RundownTimingProvider = withTracker<
 		}
 
 		render(): React.ReactNode {
-			return this.props.children
+			return (
+				<RundownTimingProviderContext.Provider value={this.childContextValue}>
+					{this.props.children}
+				</RundownTimingProviderContext.Provider>
+			)
 		}
 	}
 )

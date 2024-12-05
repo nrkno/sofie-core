@@ -1,6 +1,5 @@
 import React from 'react'
 import _ from 'underscore'
-import PropTypes from 'prop-types'
 
 import { RundownUtils } from '../../lib/rundown'
 
@@ -10,8 +9,8 @@ import { PartUi } from './SegmentTimelineContainer'
 import { getCurrentTime } from '../../lib/systemTime'
 import { RundownTiming } from '../RundownView/RundownTiming/RundownTiming'
 import { SegmentTimelinePartClass } from './Parts/SegmentTimelinePart'
-import { RundownTimingContext } from '../../lib/rundownTiming'
 import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownTimingProviderContext } from '../RundownView/RundownTiming/withTiming'
 
 // We're cheating a little: Fontface
 declare class FontFace {
@@ -51,15 +50,8 @@ let gridFont: any | undefined = undefined
 let gridFontAvailable = false
 
 export class TimelineGrid extends React.Component<ITimelineGridProps> {
-	static contextTypes = {
-		durations: PropTypes.object.isRequired,
-	}
-
-	declare context:
-		| {
-				durations: RundownTimingContext
-		  }
-		| undefined
+	static contextType = RundownTimingProviderContext
+	declare context: React.ContextType<typeof RundownTimingProviderContext>
 
 	canvasElement: HTMLCanvasElement | null = null
 	parentElement: HTMLDivElement | null = null
