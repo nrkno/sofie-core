@@ -142,9 +142,13 @@ export class CoreHandler {
 
 		return options
 	}
-	async registerMosDevice(mosDevice: IMOSDevice, mosHandler: MosHandler): Promise<CoreMosDeviceHandler> {
+	async registerMosDevice(
+		mosDevice: IMOSDevice,
+		mosHandler: MosHandler,
+		openMediaHotStandby: boolean
+	): Promise<CoreMosDeviceHandler> {
 		this.logger.info('registerMosDevice -------------')
-		const coreMos = new CoreMosDeviceHandler(this, mosDevice, mosHandler)
+		const coreMos = new CoreMosDeviceHandler(this, mosDevice, mosHandler, openMediaHotStandby)
 
 		this._coreMosHandlers.push(coreMos)
 		return coreMos.init().then(() => {
