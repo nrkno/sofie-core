@@ -1,13 +1,13 @@
 import { RundownId, RundownPlaylistId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { ReadonlyDeep } from 'type-fest'
-import { CustomCollectionName, MeteorPubSub } from '../../../lib/api/pubsub'
-import { UISegmentPartNote } from '../../../lib/api/rundownNotifications'
+import { CustomCollectionName, MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
+import { UISegmentPartNote } from '@sofie-automation/meteor-lib/dist/api/rundownNotifications'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { Rundown, getRundownNrcsName } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { groupByToMap, literal, normalizeArrayToMap, protectString } from '../../../lib/lib'
+import { groupByToMap, literal, normalizeArrayToMap, protectString } from '../../lib/tempLib'
 import {
 	CustomPublishCollection,
 	meteorCustomPublish,

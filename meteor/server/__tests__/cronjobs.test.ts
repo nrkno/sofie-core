@@ -2,8 +2,8 @@ import '../../__mocks__/_extendJest'
 import { testInFiber, runAllTimers, beforeAllInFiber, waitUntil } from '../../__mocks__/helpers/jest'
 import { MeteorMock } from '../../__mocks__/meteor'
 import { logger } from '../logging'
-import { getRandomId, getRandomString, protectString } from '../../lib/lib'
-import { SnapshotType } from '../../lib/collections/Snapshots'
+import { getRandomId, getRandomString, protectString } from '../lib/tempLib'
+import { SnapshotType } from '@sofie-automation/meteor-lib/dist/collections/Snapshots'
 import { IBlueprintPieceType, PieceLifespan, StatusCode, TSR } from '@sofie-automation/blueprints-integration'
 import {
 	PeripheralDeviceType,
@@ -11,10 +11,10 @@ import {
 	PeripheralDevice,
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { SYSTEM_ID } from '../../lib/collections/CoreSystem'
-import * as lib from '../../lib/lib'
+import { SYSTEM_ID } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
+import * as lib from '../lib/lib'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { PartInstance } from '../../lib/collections/PartInstances'
+import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { Meteor } from 'meteor/meteor'
 import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
@@ -60,7 +60,7 @@ import {
 	setupDefaultStudioEnvironment,
 } from '../../__mocks__/helpers/database'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { Settings } from '../../lib/Settings'
+import { Settings } from '../Settings'
 
 describe('cronjobs', () => {
 	let env: DefaultEnvironment

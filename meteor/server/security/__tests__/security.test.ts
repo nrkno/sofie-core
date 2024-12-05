@@ -1,10 +1,10 @@
 import '../../../__mocks__/_extendJest'
 
-import { MethodContext } from '../../../lib/api/methods'
-import { DBOrganization } from '../../../lib/collections/Organization'
-import { User } from '../../../lib/collections/Users'
-import { protectString } from '../../../lib/lib'
-import { Settings } from '../../../lib/Settings'
+import { MethodContext } from '../../api/methodContext'
+import { DBOrganization } from '@sofie-automation/meteor-lib/dist/collections/Organization'
+import { User } from '@sofie-automation/meteor-lib/dist/collections/Users'
+import { protectString } from '../../lib/tempLib'
+import { Settings } from '../../Settings'
 import { DefaultEnvironment, setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
 import { beforeAllInFiber, testInFiber } from '../../../__mocks__/helpers/jest'
 import { BucketsAPI } from '../../api/buckets'
@@ -18,7 +18,7 @@ import { OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel
 import { Organizations, Users } from '../../collections'
 import { SupressLogMessages } from '../../../__mocks__/suppressLogging'
 import { generateToken } from '../../api/singleUseTokens'
-import { hashSingleUseToken } from '../../../lib/api/userActions'
+import { hashSingleUseToken } from '../../api/deviceTriggers/triggersContext'
 
 describe('Security', () => {
 	function getContext(cred: Credentials): MethodContext {

@@ -35,14 +35,7 @@ import {
 	ShowStyleBaseId,
 	StudioId,
 } from '@sofie-automation/shared-lib/dist/core/model/Ids'
-import {
-	BlueprintId,
-	BucketId,
-	RundownPlaylistActivationId,
-	SegmentId,
-	SegmentPlayoutId,
-	ShowStyleVariantId,
-} from './dataModel/Ids'
+import { BlueprintId, BucketId, RundownPlaylistActivationId, SegmentId, ShowStyleVariantId } from './dataModel/Ids'
 import { PackageInfoDB } from './dataModel/PackageInfos'
 
 /**
@@ -102,11 +95,6 @@ export enum CorelibPubSub {
 	 * This provides a simplified form of the PartInstance, with any timing information omitted to reduce data churn
 	 */
 	partInstancesSimple = 'partInstancesSimple',
-	/**
-	 * Fetch the most recent PartInstance in a Rundown with the SegmentPlayoutId, including reset instances
-	 * This provides a simplified form of the PartInstance, with any timing information omitted to reduce data churn
-	 */
-	partInstancesForSegmentPlayout = 'partInstancesForSegmentPlayout',
 	/**
 	 * Fetch Pieces belonging to the specified Rundowns, optionally limiting the result to the specified Parts
 	 */
@@ -281,11 +269,6 @@ export interface CorelibPubSubTypes {
 	[CorelibPubSub.partInstancesSimple]: (
 		rundownIds: RundownId[],
 		playlistActivationId: RundownPlaylistActivationId | null,
-		token?: string
-	) => CollectionName.PartInstances
-	[CorelibPubSub.partInstancesForSegmentPlayout]: (
-		rundownId: RundownId,
-		segmentPlayoutId: SegmentPlayoutId,
 		token?: string
 	) => CollectionName.PartInstances
 	[CorelibPubSub.segments]: (

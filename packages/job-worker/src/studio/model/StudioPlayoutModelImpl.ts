@@ -34,6 +34,7 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 
 	#timelineHasChanged = false
 	#timeline: TimelineComplete | null
+
 	public get timeline(): TimelineComplete | null {
 		return this.#timeline
 	}
@@ -100,6 +101,10 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 		return this.#timeline
 	}
 
+	switchRouteSet(routeSetId: string, isActive: boolean | 'toggle'): boolean {
+		return this.context.setRouteSetActive(routeSetId, isActive)
+	}
+
 	/**
 	 * Discards all documents in this model, and marks it as unusable
 	 */
@@ -120,7 +125,11 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 		}
 		this.#timelineHasChanged = false
 
-		await this.#baselineHelper.saveAllToDatabase()
+		await Promise.all([
+			this.#baselineHelper.saveAllToDatabase(),
+			this.context.saveRouteSetChanges(),
+			//
+		])
 
 		if (span) span.end()
 	}

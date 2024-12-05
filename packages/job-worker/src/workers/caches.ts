@@ -16,7 +16,7 @@ import { clone, deepFreeze } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../logging'
 import deepmerge = require('deepmerge')
 import { ProcessedShowStyleBase, ProcessedShowStyleVariant, StudioCacheContext } from '../jobs'
-import { StudioCacheContextImpl } from './context'
+import { StudioCacheContextImpl } from './context/StudioCacheContextImpl'
 
 /**
  * A Wrapper to maintain a cache and provide a context using the cache when appropriate

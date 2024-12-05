@@ -226,6 +226,18 @@ export class MockJobContext implements JobContext {
 		// throw new Error('Method not implemented.')
 	}
 
+	setRouteSetActive(_routeSetId: string, _isActive: boolean | 'toggle'): boolean {
+		throw new Error('Method not implemented.')
+	}
+
+	async saveRouteSetChanges(): Promise<void> {
+		// throw new Error('Method not implemented.')
+	}
+
+	discardRouteSetChanges(): void {
+		// throw new Error('Method not implemented.')
+	}
+
 	/**
 	 * Mock methods
 	 */

@@ -1,18 +1,19 @@
 import { Meteor, Subscription } from 'meteor/meteor'
-import { AllPubSubCollections, AllPubSubTypes } from '../../lib/api/pubsub'
+import { AllPubSubCollections, AllPubSubTypes } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { extractFunctionSignature } from '../lib'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { ResolvedCredentials, resolveCredentials } from '../security/lib/credentials'
-import { Settings } from '../../lib/Settings'
+import { Settings } from '../Settings'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { MongoCursor } from '../../lib/collections/lib'
+import { MongoCursor } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import {
 	OrganizationId,
 	PeripheralDeviceId,
 	ShowStyleBaseId,
 	UserId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { protectStringObject, waitForPromise } from '../../lib/lib'
+import { protectStringObject } from '../lib/tempLib'
+import { waitForPromise } from '../lib/lib'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { PeripheralDevices, ShowStyleBases } from '../collections'
 import { MetricsGauge } from '@sofie-automation/corelib/dist/prometheus'

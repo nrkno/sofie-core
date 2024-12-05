@@ -34,16 +34,6 @@ const commonConfig = {
 module.exports = {
 	projects: [
 		Object.assign({}, commonConfig, {
-			displayName: 'client',
-			testMatch: [
-				'<rootDir>/client/__tests__/**/*.(spec|test).(ts|js)',
-				'<rootDir>/client/**/__tests__/**/*.(spec|test).(ts|js)',
-				'!.meteor/*.*',
-			],
-			testEnvironment: 'jsdom',
-			setupFilesAfterEnv: [...commonConfig.setupFilesAfterEnv, '<rootDir>/client/__tests__/jest-setup.js'],
-		}),
-		Object.assign({}, commonConfig, {
 			displayName: 'lib',
 			testMatch: [
 				'<rootDir>/lib/__tests__/**/*.(spec|test).(ts|js)',
@@ -75,9 +65,7 @@ module.exports = {
 	collectCoverageFrom: [
 		'server/**/*.{js,ts}',
 		'lib/**/*.{js,ts}',
-		'client/**/*.{js,ts}',
 		'!**/*.{tsx}',
-		'!**/client/main.js',
 		'!.meteor/**/*.*',
 		'!**/__tests__/**',
 		'!**/__mocks__/**',

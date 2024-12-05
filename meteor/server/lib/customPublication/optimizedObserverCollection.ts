@@ -1,5 +1,5 @@
 import { ReadonlyDeep } from 'type-fest'
-import { ProtectedString } from '../../../lib/lib'
+import { ProtectedString } from '../tempLib'
 import { LiveQueryHandle } from '../lib'
 import { CustomPublishCollection } from './customPublishCollection'
 import { TriggerUpdate, setUpOptimizedObserverInner } from './optimizedObserverBase'

@@ -5,9 +5,9 @@ import { logNotAllowed } from './lib/lib'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { Settings } from '../../lib/Settings'
+import { Settings } from '../Settings'
 import { triggerWriteAccess } from './lib/securityVerify'
-import { isProtectedString } from '../../lib/lib'
+import { isProtectedString } from '../lib/tempLib'
 import { fetchStudioLight } from '../optimizations'
 import {
 	ExternalMessageQueueObjId,

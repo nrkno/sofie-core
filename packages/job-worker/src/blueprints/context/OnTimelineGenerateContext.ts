@@ -85,13 +85,13 @@ export class OnTimelineGenerateContext extends RundownContext implements ITimeli
 		const partInstanceId = pieceInstance?.partInstanceId
 		if (!partInstanceId) throw new Error('Missing partInstanceId in call to getPieceABSessionId')
 
-		return this.abSessionsHelper.getPieceABSessionId(pieceInstance, sessionName)
+		return this.abSessionsHelper.getPieceABSessionIdFromSessionName(pieceInstance, sessionName)
 	}
 
 	/**
 	 * @deprecated Use core provided AB resolving
 	 */
 	getTimelineObjectAbSessionId(tlObj: OnGenerateTimelineObjExt, sessionName: string): string | undefined {
-		return this.abSessionsHelper.getTimelineObjectAbSessionId(tlObj, sessionName)
+		return this.abSessionsHelper.getTimelineObjectAbSessionIdFromSessionName(tlObj, sessionName)
 	}
 }

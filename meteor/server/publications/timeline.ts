@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { getRoutedTimeline } from '../../lib/collections/Timeline'
+import { getRoutedTimeline } from '@sofie-automation/meteor-lib/dist/collections/Timeline'
 import {
 	RoutedTimeline,
 	TimelineComplete,
@@ -9,22 +9,22 @@ import {
 	TimelineBlob,
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { meteorPublish } from './lib'
-import { MeteorPubSub } from '../../lib/api/pubsub'
-import { FindOptions } from '../../lib/collections/lib'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
+import { FindOptions } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import {
 	CustomPublish,
 	meteorCustomPublish,
 	setUpOptimizedObserverArray,
 	TriggerUpdate,
 } from '../lib/customPublication'
-import { getActiveRoutes } from '../../lib/collections/Studios'
+import { getActiveRoutes } from '@sofie-automation/meteor-lib/dist/collections/Studios'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { StudioReadAccess } from '../security/studio'
 import { fetchStudioLight } from '../optimizations'
 import { FastTrackObservers, setupFastTrackObserver } from './fastTrack'
 import { logger } from '../logging'
 import { getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
-import { Time } from '../../lib/lib'
+import { Time } from '../lib/tempLib'
 import { ReadonlyDeep } from 'type-fest'
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBTimelineDatastoreEntry } from '@sofie-automation/corelib/dist/dataModel/TimelineDatastore'
@@ -36,6 +36,7 @@ import {
 	PeripheralDevicePubSub,
 	PeripheralDevicePubSubCollectionsNames,
 } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 meteorPublish(CorelibPubSub.timelineDatastore, async function (studioId: StudioId, token: string | undefined) {
 	if (!studioId) throw new Meteor.Error(400, 'selector argument missing')
@@ -209,7 +210,7 @@ async function manipulateTimelinePublicationData(
 
 	if (!state.routes) {
 		// Routes need recalculating
-		state.routes = getActiveRoutes(state.studio.routeSets)
+		state.routes = getActiveRoutes(applyAndValidateOverrides(state.studio.routeSetsWithOverrides).obj)
 		invalidateTimeline = true
 	}
 

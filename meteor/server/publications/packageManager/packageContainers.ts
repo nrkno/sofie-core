@@ -15,11 +15,12 @@ import {
 	PeripheralDevicePubSub,
 	PeripheralDevicePubSubCollectionsNames,
 } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
-type StudioFields = '_id' | 'packageContainers'
+type StudioFields = '_id' | 'packageContainersWithOverrides'
 const studioFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBStudio, StudioFields>>>({
 	_id: 1,
-	packageContainers: 1,
+	packageContainersWithOverrides: 1,
 })
 
 interface PackageManagerPackageContainersArgs {
@@ -68,8 +69,9 @@ async function manipulateExpectedPackagesPublicationData(
 
 	const packageContainers: { [containerId: string]: PackageContainer } = {}
 	if (studio) {
+		const studioPackageContainers = applyAndValidateOverrides(studio.packageContainersWithOverrides).obj
 		for (const [containerId, studioPackageContainer] of Object.entries<StudioPackageContainer>(
-			studio.packageContainers
+			studioPackageContainers
 		)) {
 			packageContainers[containerId] = studioPackageContainer.container
 		}

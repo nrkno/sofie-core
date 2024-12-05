@@ -1,11 +1,11 @@
 import * as _ from 'underscore'
 import { setupEmptyEnvironment } from '../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
-import { ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../../lib/collections/CoreSystem'
+import { ICoreSystem, GENESIS_SYSTEM_VERSION } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
 import { clearMigrationSteps, addMigrationSteps, prepareMigration, PreparedMigration } from '../databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from '../currentSystemVersion'
-import { RunMigrationResult, GetMigrationStatusResult } from '../../../lib/api/migration'
-import { literal, protectString } from '../../../lib/lib'
+import { RunMigrationResult, GetMigrationStatusResult } from '@sofie-automation/meteor-lib/dist/api/migration'
+import { literal, protectString } from '../../lib/tempLib'
 import {
 	MigrationStepInputResult,
 	BlueprintManifestType,
@@ -18,7 +18,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { generateFakeBlueprint } from '../../api/blueprints/__tests__/lib'
-import { MeteorCall } from '../../../lib/api/methods'
+import { MeteorCall } from '../../api/methods'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../../collections'
 import { getCoreSystemAsync } from '../../coreSystem/collection'
@@ -130,9 +130,9 @@ describe('Migrations', () => {
 						mappingsWithOverrides: wrapDefaultObject({}),
 						blueprintConfigWithOverrides: wrapDefaultObject({}),
 						_rundownVersionHash: '',
-						routeSets: {},
-						routeSetExclusivityGroups: {},
-						packageContainers: {},
+						routeSetsWithOverrides: wrapDefaultObject({}),
+						routeSetExclusivityGroupsWithOverrides: wrapDefaultObject({}),
+						packageContainersWithOverrides: wrapDefaultObject({}),
 						previewContainerIds: [],
 						thumbnailContainerIds: [],
 						peripheralDeviceSettings: {
@@ -168,9 +168,9 @@ describe('Migrations', () => {
 						mappingsWithOverrides: wrapDefaultObject({}),
 						blueprintConfigWithOverrides: wrapDefaultObject({}),
 						_rundownVersionHash: '',
-						routeSets: {},
-						routeSetExclusivityGroups: {},
-						packageContainers: {},
+						routeSetsWithOverrides: wrapDefaultObject({}),
+						routeSetExclusivityGroupsWithOverrides: wrapDefaultObject({}),
+						packageContainersWithOverrides: wrapDefaultObject({}),
 						previewContainerIds: [],
 						thumbnailContainerIds: [],
 						peripheralDeviceSettings: {
@@ -206,9 +206,9 @@ describe('Migrations', () => {
 						mappingsWithOverrides: wrapDefaultObject({}),
 						blueprintConfigWithOverrides: wrapDefaultObject({}),
 						_rundownVersionHash: '',
-						routeSets: {},
-						routeSetExclusivityGroups: {},
-						packageContainers: {},
+						routeSetsWithOverrides: wrapDefaultObject({}),
+						routeSetExclusivityGroupsWithOverrides: wrapDefaultObject({}),
+						packageContainersWithOverrides: wrapDefaultObject({}),
 						previewContainerIds: [],
 						thumbnailContainerIds: [],
 						peripheralDeviceSettings: {

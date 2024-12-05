@@ -1,14 +1,17 @@
 import * as _ from 'underscore'
-import { check } from '../../lib/check'
+import { check } from '../lib/check'
 import { logger } from '../logging'
 import { registerClassToMeteorMethods } from '../methods'
-import { NewRundownAPI, RundownAPIMethods } from '../../lib/api/rundown'
+import { NewRundownAPI, RundownAPIMethods } from '@sofie-automation/meteor-lib/dist/api/rundown'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { PackageInfo } from '../coreSystem'
 import { IngestActions } from './ingest/actions'
-import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
-import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
+import {
+	ReloadRundownPlaylistResponse,
+	TriggerReloadDataResponse,
+} from '@sofie-automation/meteor-lib/dist/api/userActions'
+import { MethodContextAPI, MethodContext } from './methodContext'
 import { StudioContentWriteAccess } from '../security/studio'
 import { runIngestOperation } from './ingest/lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
