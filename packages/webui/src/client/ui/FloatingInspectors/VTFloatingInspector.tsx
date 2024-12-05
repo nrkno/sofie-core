@@ -148,6 +148,8 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 			{showMiniInspectorClipData && (
 				<div className="segment-timeline__mini-inspector__properties">
 					<span className="mini-inspector__value">{content?.fileName}</span>
+					<span className="mini-inspector__value">{content?.firstWords}</span>
+					<span className="mini-inspector__value">{content?.lastWords}</span>
 				</div>
 			)}
 		</div>
