@@ -223,7 +223,6 @@ function ExclusivityGroupRow({
 								label={t('Exclusivity Group Name')}
 								item={exclusivityGroup}
 								itemKey={'name'}
-								opPrefix={exclusivityGroup.id}
 								overrideHelper={exclusivityOverrideHelper}
 							>
 								{(value, handleUpdate) => (

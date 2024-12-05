@@ -6,9 +6,20 @@ import {
 	partFieldSpecifier,
 	rundownPlaylistFieldSpecifier,
 	segmentFieldSpecifier,
+	StudioFields,
 	studioFieldSpecifier,
+	StudioSettingsDoc,
 } from './reactiveContentCache'
 import { Parts, RundownPlaylists, Segments, Studios } from '../../collections'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+
+function convertStudioSettingsDoc(doc: Pick<DBStudio, StudioFields>): StudioSettingsDoc {
+	return {
+		_id: doc._id,
+		settings: applyAndValidateOverrides(doc.settingsWithOverrides).obj,
+	}
+}
 
 export class RundownContentObserver {
 	#observers: Meteor.LiveQueryHandle[] = []
@@ -19,11 +30,23 @@ export class RundownContentObserver {
 		this.#cache = cache
 
 		this.#observers = [
-			Studios.observeChanges(
+			Studios.observe(
 				{
 					_id: studioId,
 				},
-				cache.Studios.link(),
+				{
+					added: (doc) => {
+						const newDoc = convertStudioSettingsDoc(doc)
+						cache.StudioSettings.upsert(doc._id, { $set: newDoc as Partial<Document> })
+					},
+					changed: (doc) => {
+						const newDoc = convertStudioSettingsDoc(doc)
+						cache.StudioSettings.upsert(doc._id, { $set: newDoc as Partial<Document> })
+					},
+					removed: (doc) => {
+						cache.StudioSettings.remove(doc._id)
+					},
+				},
 				{
 					fields: studioFieldSpecifier,
 				}

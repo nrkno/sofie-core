@@ -4,6 +4,7 @@ import {
 	ProcessedShowStyleVariant,
 	ProcessedShowStyleCompound,
 	StudioCacheContext,
+	JobStudio,
 } from '../../jobs'
 import { ReadonlyDeep } from 'type-fest'
 import { WorkerDataCache } from '../caches'
@@ -30,9 +31,14 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 		protected readonly cacheData: WorkerDataCache
 	) {}
 
-	get studio(): ReadonlyDeep<DBStudio> {
+	get studio(): ReadonlyDeep<JobStudio> {
 		// This is frozen at the point of populating the cache
-		return this.cacheData.studio
+		return this.cacheData.jobStudio
+	}
+
+	get rawStudio(): ReadonlyDeep<DBStudio> {
+		// This is frozen at the point of populating the cache
+		return this.cacheData.rawStudio
 	}
 
 	get studioId(): StudioId {
@@ -47,7 +53,9 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 	getStudioBlueprintConfig(): ProcessedStudioConfig {
 		if (!this.cacheData.studioBlueprintConfig) {
 			this.cacheData.studioBlueprintConfig = deepFreeze(
-				clone(preprocessStudioConfig(this.cacheData.studio, this.cacheData.studioBlueprint.blueprint) ?? null)
+				clone(
+					preprocessStudioConfig(this.cacheData.jobStudio, this.cacheData.studioBlueprint.blueprint) ?? null
+				)
 			)
 		}
 
@@ -59,7 +67,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 		const loadedDocs: Array<ReadonlyDeep<ProcessedShowStyleBase>> = []
 
 		// Figure out what is already cached, and what needs loading
-		for (const id of this.cacheData.studio.supportedShowStyleBase) {
+		for (const id of this.cacheData.jobStudio.supportedShowStyleBase) {
 			const doc = this.cacheData.showStyleBases.get(id)
 			if (doc === undefined) {
 				docsToLoad.push(id)
@@ -95,7 +103,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 
 	async getShowStyleBase(id: ShowStyleBaseId): Promise<ReadonlyDeep<ProcessedShowStyleBase>> {
 		// Check if allowed
-		if (!this.cacheData.studio.supportedShowStyleBase.includes(id)) {
+		if (!this.cacheData.jobStudio.supportedShowStyleBase.includes(id)) {
 			throw new Error(`ShowStyleBase "${id}" is not allowed in studio`)
 		}
 
@@ -123,7 +131,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 
 	async getShowStyleVariants(id: ShowStyleBaseId): Promise<ReadonlyDeep<Array<ProcessedShowStyleVariant>>> {
 		// Check if allowed
-		if (!this.cacheData.studio.supportedShowStyleBase.includes(id)) {
+		if (!this.cacheData.jobStudio.supportedShowStyleBase.includes(id)) {
 			throw new Error(`ShowStyleBase "${id}" is not allowed in studio`)
 		}
 
@@ -172,7 +180,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 			const doc0 = await this.directCollections.ShowStyleVariants.findOne(id)
 
 			// Check allowed
-			if (doc0 && !this.cacheData.studio.supportedShowStyleBase.includes(doc0.showStyleBaseId)) {
+			if (doc0 && !this.cacheData.jobStudio.supportedShowStyleBase.includes(doc0.showStyleBaseId)) {
 				throw new Error(`ShowStyleVariant "${id}" is not allowed in studio`)
 			}
 
@@ -187,7 +195,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 
 		if (doc) {
 			// Check allowed
-			if (!this.cacheData.studio.supportedShowStyleBase.includes(doc.showStyleBaseId)) {
+			if (!this.cacheData.jobStudio.supportedShowStyleBase.includes(doc.showStyleBaseId)) {
 				throw new Error(`ShowStyleVariant "${id}" is not allowed in studio`)
 			}
 

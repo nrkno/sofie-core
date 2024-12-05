@@ -295,13 +295,7 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 				<tr className="expando-details hl">
 					<td colSpan={4}>
 						<div className="properties-grid">
-							<LabelAndOverrides
-								label={t('Source Name')}
-								item={item}
-								itemKey={'name'}
-								opPrefix={item.id}
-								overrideHelper={overrideHelper}
-							>
+							<LabelAndOverrides label={t('Source Name')} item={item} itemKey={'name'} overrideHelper={overrideHelper}>
 								{(value, handleUpdate) => (
 									<TextInputControl
 										modifiedClassName="bghl"
@@ -315,7 +309,6 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								label={t('Source Abbreviation')}
 								item={item}
 								itemKey={'abbreviation'}
-								opPrefix={item.id}
 								overrideHelper={overrideHelper}
 							>
 								{(value, handleUpdate) => (
@@ -341,7 +334,6 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								label={t('Source Type')}
 								item={item}
 								itemKey={'type'}
-								opPrefix={item.id}
 								overrideHelper={overrideHelper}
 								options={getDropdownInputOptions(SourceLayerType)}
 							>
@@ -358,7 +350,6 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								label={t('Is a Live Remote Input')}
 								item={item}
 								itemKey={'isRemoteInput'}
-								opPrefix={item.id}
 								overrideHelper={overrideHelper}
 							>
 								{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
@@ -367,7 +358,6 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								label={t('Is a Guest Input')}
 								item={item}
 								itemKey={'isGuestInput'}
-								opPrefix={item.id}
 								overrideHelper={overrideHelper}
 							>
 								{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
@@ -376,7 +366,6 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								label={t('Is hidden')}
 								item={item}
 								itemKey={'isHidden'}
-								opPrefix={item.id}
 								overrideHelper={overrideHelper}
 							>
 								{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
@@ -385,7 +374,6 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								label={t('Display Rank')}
 								item={item}
 								itemKey={'_rank'}
-								opPrefix={item.id}
 								overrideHelper={overrideHelper}
 							>
 								{(value, handleUpdate) => (
@@ -401,7 +389,6 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								label={t('Treat as Main content')}
 								item={item}
 								itemKey={'onPresenterScreen'}
-								opPrefix={item.id}
 								overrideHelper={overrideHelper}
 								hint="When set, Pieces on this Source Layer will be used to display summaries, thumbnails etc for the Part in GUIs. "
 							>
@@ -411,7 +398,6 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								label={t('Display in a column in List View')}
 								item={item}
 								itemKey={'onListViewColumn'}
-								opPrefix={item.id}
 								overrideHelper={overrideHelper}
 							>
 								{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
@@ -420,7 +406,6 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								label={t('Display AdLibs in a column in List View')}
 								item={item}
 								itemKey={'onListViewAdLibColumn'}
-								opPrefix={item.id}
 								overrideHelper={overrideHelper}
 							>
 								{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
@@ -429,7 +414,6 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								label={t('Pieces on this layer can be cleared')}
 								item={item}
 								itemKey={'isClearable'}
-								opPrefix={item.id}
 								overrideHelper={overrideHelper}
 							>
 								{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
@@ -438,7 +422,6 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								label={t('Pieces on this layer are sticky')}
 								item={item}
 								itemKey={'isSticky'}
-								opPrefix={item.id}
 								overrideHelper={overrideHelper}
 							>
 								{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
@@ -447,7 +430,6 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								label={t('Only Pieces present in rundown are sticky')}
 								item={item}
 								itemKey={'stickyOriginalOnly'}
-								opPrefix={item.id}
 								overrideHelper={overrideHelper}
 							>
 								{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
@@ -456,7 +438,6 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								label={t('Allow disabling of Pieces')}
 								item={item}
 								itemKey={'allowDisable'}
-								opPrefix={item.id}
 								overrideHelper={overrideHelper}
 							>
 								{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
@@ -465,7 +446,6 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								label={t('AdLibs on this layer can be queued')}
 								item={item}
 								itemKey={'isQueueable'}
-								opPrefix={item.id}
 								overrideHelper={overrideHelper}
 							>
 								{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
@@ -474,7 +454,6 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								label={t('Exclusivity group')}
 								item={item}
 								itemKey={'exclusiveGroup'}
-								opPrefix={item.id}
 								overrideHelper={overrideHelper}
 							>
 								{(value, handleUpdate) => (

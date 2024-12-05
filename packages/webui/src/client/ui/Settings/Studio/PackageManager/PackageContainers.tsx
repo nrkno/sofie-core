@@ -285,7 +285,6 @@ function PackageContainerRow({
 								item={packageContainer}
 								//@ts-expect-error can't be 2 levels deep
 								itemKey={'container.label'}
-								opPrefix={packageContainer.id}
 								overrideHelper={overrideHelper}
 							>
 								{(value, handleUpdate) => (
@@ -302,7 +301,6 @@ function PackageContainerRow({
 								hint={t('Select which playout devices are using this package container')}
 								item={packageContainer}
 								itemKey={'deviceIds'}
-								opPrefix={packageContainer.id}
 								overrideHelper={overrideHelper}
 								options={availablePlayoutDevicesOptions}
 							>

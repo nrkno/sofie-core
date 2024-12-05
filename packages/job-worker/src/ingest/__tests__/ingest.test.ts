@@ -45,6 +45,7 @@ import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { insertQueuedPartWithPieces } from '../../playout/adlibUtils'
 import { UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { PlayoutPartInstanceModel } from '../../playout/model/PlayoutPartInstanceModel'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 const externalId = 'abcde'
 const rundownData1: IngestRundown = {
@@ -104,11 +105,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 		const showStyleCompound = await setupMockShowStyleCompound(context)
 
 		context.setStudio({
-			...context.studio,
-			settings: {
+			...context.rawStudio,
+			settingsWithOverrides: wrapDefaultObject({
 				...context.studio.settings,
 				minimumTakeSpan: 0,
-			},
+			}),
 			supportedShowStyleBase: [showStyleCompound._id],
 		})
 

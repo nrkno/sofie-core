@@ -10,6 +10,7 @@ import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { NotificationCenter, NoticeLevel, Notification } from '../../../lib/notifications/notifications'
 import {
 	UIBlueprintUpgradeStatusBase,
+	UIBlueprintUpgradeStatusCoreSystem,
 	UIBlueprintUpgradeStatusShowStyle,
 	UIBlueprintUpgradeStatusStudio,
 } from '@sofie-automation/meteor-lib/dist/api/upgradeStatus'
@@ -285,6 +286,79 @@ export function UpgradeStatusButtons({ upgradeResult }: Readonly<UpgradeStatusBu
 					</button>
 				</>
 			)}
+		</div>
+	)
+}
+
+interface SystemUpgradeStatusButtonsProps {
+	upgradeResult: UIBlueprintUpgradeStatusCoreSystem
+}
+export function SystemUpgradeStatusButtons({ upgradeResult }: Readonly<SystemUpgradeStatusButtonsProps>): JSX.Element {
+	const { t } = useTranslation()
+
+	const applyConfig = useCallback(
+		async () => MeteorCall.migration.runUpgradeForCoreSystem(upgradeResult.documentId),
+		[upgradeResult.documentId, upgradeResult.documentType]
+	)
+
+	const clickApply = useCallback(() => {
+		applyConfig()
+			.then(() => {
+				NotificationCenter.push(
+					new Notification(
+						undefined,
+						NoticeLevel.NOTIFICATION,
+						t('Config for {{name}} upgraded successfully', { name: upgradeResult.name }),
+						'UpgradesView'
+					)
+				)
+			})
+			.catch((e) => {
+				catchError('Upgrade applyConfig')(e)
+				NotificationCenter.push(
+					new Notification(
+						undefined,
+						NoticeLevel.WARNING,
+						t('Config for {{name}} upgraded failed', { name: upgradeResult.name }),
+						'UpgradesView'
+					)
+				)
+			})
+	}, [upgradeResult, applyConfig])
+
+	const clickShowChanges = useCallback(() => {
+		doModalDialog({
+			title: t('Upgrade config for {{name}}', { name: upgradeResult.name }),
+			message: (
+				<div>
+					{upgradeResult.changes.length === 0 && <p>{t('No changes')}</p>}
+					{upgradeResult.changes.map((msg, i) => (
+						<p key={i}>{translateMessage(msg, i18nTranslator)}</p>
+					))}
+				</div>
+			),
+			acceptOnly: true,
+			yes: t('Dismiss'),
+			onAccept: () => {
+				// Do nothing
+			},
+		})
+	}, [upgradeResult])
+
+	return (
+		<div className="mod mhn mvm">
+			<button
+				className="btn mrm"
+				onClick={clickShowChanges}
+				disabled={!!upgradeResult.invalidReason || upgradeResult.changes.length === 0}
+			>
+				<FontAwesomeIcon icon={faEye} />
+				<span>{t('Show config changes')}</span>
+			</button>
+			<button className="btn mrm" onClick={clickApply} disabled={!!upgradeResult.invalidReason}>
+				<FontAwesomeIcon icon={faDatabase} />
+				<span>{t('Apply Config')}</span>
+			</button>
 		</div>
 	)
 }

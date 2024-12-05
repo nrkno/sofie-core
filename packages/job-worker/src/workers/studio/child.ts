@@ -82,7 +82,7 @@ export class StudioWorkerChild {
 
 		const transaction = startTransaction('invalidateCaches', 'worker-studio')
 		if (transaction) {
-			transaction.setLabel('studioId', unprotectString(this.#staticData.dataCache.studio._id))
+			transaction.setLabel('studioId', unprotectString(this.#staticData.dataCache.jobStudio._id))
 		}
 
 		try {
@@ -100,7 +100,7 @@ export class StudioWorkerChild {
 		const trace = startTrace('studioWorker:' + jobName)
 		const transaction = startTransaction(jobName, 'worker-studio')
 		if (transaction) {
-			transaction.setLabel('studioId', unprotectString(this.#staticData.dataCache.studio._id))
+			transaction.setLabel('studioId', unprotectString(this.#staticData.dataCache.jobStudio._id))
 		}
 
 		const context = new JobContextImpl(

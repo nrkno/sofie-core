@@ -12,6 +12,7 @@ import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { useSubscription, useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { UIBlueprintUpgradeStatuses } from '../../../Collections'
 import { getUpgradeStatusMessage, UpgradeStatusButtons } from '../../Upgrades/Components'
+import { UIBlueprintUpgradeStatusShowStyle } from '@sofie-automation/meteor-lib/dist/api/upgradeStatus'
 
 interface ShowStyleBaseBlueprintConfigurationSettingsProps {
 	showStyleBase: DBShowStyleBase
@@ -33,7 +34,7 @@ export function ShowStyleBaseBlueprintConfigurationSettings(
 			UIBlueprintUpgradeStatuses.findOne({
 				documentId: props.showStyleBase._id,
 				documentType: 'showStyle',
-			}),
+			}) as UIBlueprintUpgradeStatusShowStyle | undefined,
 		[props.showStyleBase._id]
 	)
 	const statusMessage = isStatusReady && status ? getUpgradeStatusMessage(t, status) ?? t('OK') : t('Loading...')

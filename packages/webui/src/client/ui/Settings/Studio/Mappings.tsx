@@ -432,7 +432,6 @@ function StudioMappingsEntry({
 								hint={t('Human-readable name of the layer')}
 								item={item}
 								itemKey={'layerName'}
-								opPrefix={item.id}
 								overrideHelper={overrideHelper}
 							>
 								{(value, handleUpdate) => (
@@ -450,7 +449,6 @@ function StudioMappingsEntry({
 								hint={t('The type of device to use for the output')}
 								item={item}
 								itemKey={'device'}
-								opPrefix={item.id}
 								overrideHelper={overrideHelper}
 								options={deviceTypeOptions}
 							>
@@ -469,7 +467,6 @@ function StudioMappingsEntry({
 								hint={t('ID of the device (corresponds to the device ID in the peripheralDevice settings)')}
 								item={item}
 								itemKey={'deviceId'}
-								opPrefix={item.id}
 								overrideHelper={overrideHelper}
 							>
 								{(value, handleUpdate) => (
@@ -486,7 +483,6 @@ function StudioMappingsEntry({
 								label={t('Lookahead Mode')}
 								item={item}
 								itemKey={'lookahead'}
-								opPrefix={item.id}
 								overrideHelper={overrideHelper}
 								options={getDropdownInputOptions(LookaheadMode)}
 							>
@@ -504,7 +500,6 @@ function StudioMappingsEntry({
 								label={t('Lookahead Target Objects (Undefined = 1)')}
 								item={item}
 								itemKey={'lookaheadDepth'}
-								opPrefix={item.id}
 								overrideHelper={overrideHelper}
 							>
 								{(value, handleUpdate) => (
@@ -523,7 +518,6 @@ function StudioMappingsEntry({
 								})}
 								item={item}
 								itemKey={'lookaheadMaxSearchDistance'}
-								opPrefix={item.id}
 								overrideHelper={overrideHelper}
 							>
 								{(value, handleUpdate) => (
@@ -543,7 +537,6 @@ function StudioMappingsEntry({
 										hint={t('The type of mapping to use')}
 										item={item}
 										itemKey={'options.mappingType'}
-										opPrefix={item.id}
 										overrideHelper={overrideHelper}
 										options={mappingTypeOptions}
 									>
