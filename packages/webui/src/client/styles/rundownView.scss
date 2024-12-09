@@ -3148,7 +3148,7 @@ svg.icon {
 		> .video-preview,
 		> .thumbnail {
 			display: block;
-			width: 320px;
+			width: 420px;
 			height: 180px;
 			background: #000;
 		}
@@ -3262,6 +3262,10 @@ svg.icon {
 		text-overflow: ellipsis;
 		word-break: break-all;
 		white-space: normal;
+	}
+	.mini-inspector__value__right {
+		position: absolute;
+		right: 0;
 	}
 	.mini-inspector__system {
 		font-weight: 300;
