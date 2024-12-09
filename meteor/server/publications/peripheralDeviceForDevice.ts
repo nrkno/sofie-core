@@ -68,7 +68,8 @@ export function convertPeripheralDeviceForGateway(
 			const allDeviceSettingsInStudio = applyAndValidateOverrides(
 				studio.peripheralDeviceSettings.deviceSettings
 			).obj
-			deviceSettings = allDeviceSettingsInStudio[peripheralDevice.studioAndConfigId.configId] ?? deviceSettings
+			deviceSettings =
+				allDeviceSettingsInStudio[peripheralDevice.studioAndConfigId.configId]?.options ?? deviceSettings
 		}
 
 		switch (peripheralDevice.category) {
@@ -115,6 +116,8 @@ export function convertPeripheralDeviceForGateway(
 				break
 		}
 	}
+
+	console.log('got', peripheralDevice._id, deviceSettings)
 
 	return literal<Complete<PeripheralDeviceForDevice>>({
 		_id: peripheralDevice._id,
