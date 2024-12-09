@@ -18,7 +18,7 @@ Appending query parameter(s) to the URL will allow you to modify the behaviour o
 | `reportNotificationsId=1,...` | Sets a specific ID of the client GUI. Useful for troubleshooting since this ID shows up in _Sofie Core_'s log.  _Default value is "0", which disables the feature and uses a user-defined string (user as-in whoever is opening the client GUI, not necessarily the actual end-user)._  |  
 | `shelffollowsonair=1` | _Default value is `0`._ | 
 | `show_hidden_source_layers=1` | _Default value is `0`._ | 
-| `speak=1` | Experimental feature that starts playing an audible countdown 10 seconds before each planned _Take_. __Default value is `0`._ | 
+| `speak=1` | Experimental feature that starts playing an audible countdown 10 seconds before each planned _Take_. _Default value is `0`._ | 
 | `vibrate=1` | Experimental feature that triggers the vibration API in the web browser 3 seconds before each planned _Take_. _Default value is `0`._ | 
 | `zoom=1,...` | Sets the scaling of the entire GUI. _The unit is a percentage where `100` is the default scaling._ | 
 
