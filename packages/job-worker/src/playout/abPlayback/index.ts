@@ -17,7 +17,6 @@ import { AbSessionHelper } from './abSessionHelper'
 import { ShowStyleContext } from '../../blueprints/context'
 import { logger } from '../../logging'
 import { ABPlayerDefinition } from '@sofie-automation/blueprints-integration'
-import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { abPoolFilterDisabled, findPlayersInRouteSets } from './routeSetDisabling'
 
 /**
@@ -73,7 +72,7 @@ export function applyAbPlaybackForTimeline(
 	const now = getCurrentTime()
 
 	const abConfiguration = blueprint.blueprint.getAbResolverConfiguration(blueprintContext)
-	const routeSetMembers = findPlayersInRouteSets(applyAndValidateOverrides(context.studio.routeSetsWithOverrides).obj)
+	const routeSetMembers = findPlayersInRouteSets(context.studio.routeSets)
 
 	for (const [poolName, players] of Object.entries<ABPlayerDefinition[]>(abConfiguration.pools)) {
 		// Filter out offline devices

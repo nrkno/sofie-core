@@ -270,13 +270,7 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 				<tr className="expando-details hl">
 					<td colSpan={4}>
 						<div className="properties-grid">
-							<LabelAndOverrides
-								label={t('Channel Name')}
-								item={item}
-								itemKey={'name'}
-								opPrefix={item.id}
-								overrideHelper={overrideHelper}
-							>
+							<LabelAndOverrides label={t('Channel Name')} item={item} itemKey={'name'} overrideHelper={overrideHelper}>
 								{(value, handleUpdate) => (
 									<TextInputControl
 										modifiedClassName="bghl"
@@ -300,7 +294,6 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								label={t('Is PGM Output')}
 								item={item}
 								itemKey={'isPGM'}
-								opPrefix={item.id}
 								overrideHelper={overrideHelper}
 							>
 								{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
@@ -309,7 +302,6 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								label={t('Display Rank')}
 								item={item}
 								itemKey={'_rank'}
-								opPrefix={item.id}
 								overrideHelper={overrideHelper}
 							>
 								{(value, handleUpdate) => (
@@ -325,7 +317,6 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								label={t('Is collapsed by default')}
 								item={item}
 								itemKey={'isDefaultCollapsed'}
-								opPrefix={item.id}
 								overrideHelper={overrideHelper}
 							>
 								{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
@@ -334,7 +325,6 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								label={t('Is flattened')}
 								item={item}
 								itemKey={'isFlattened'}
-								opPrefix={item.id}
 								overrideHelper={overrideHelper}
 							>
 								{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}

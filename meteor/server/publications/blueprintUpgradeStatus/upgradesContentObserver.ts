@@ -3,10 +3,11 @@ import { logger } from '../../logging'
 import {
 	blueprintFieldSpecifier,
 	ContentCache,
+	coreSystemFieldsSpecifier,
 	showStyleFieldSpecifier,
 	studioFieldSpecifier,
 } from './reactiveContentCache'
-import { Blueprints, ShowStyleBases, Studios } from '../../collections'
+import { Blueprints, CoreSystem, ShowStyleBases, Studios } from '../../collections'
 
 export class UpgradesContentObserver {
 	#observers: Meteor.LiveQueryHandle[] = []
@@ -17,6 +18,9 @@ export class UpgradesContentObserver {
 		this.#cache = cache
 
 		this.#observers = [
+			CoreSystem.observeChanges({}, cache.CoreSystem.link(), {
+				projection: coreSystemFieldsSpecifier,
+			}),
 			Studios.observeChanges({}, cache.Studios.link(), {
 				projection: studioFieldSpecifier,
 			}),

@@ -1,6 +1,9 @@
+import { LastBlueprintConfig } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { LogLevel } from '../lib'
 import { CoreSystemId, BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { ObjectWithOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { ICoreSystemSettings } from '@sofie-automation/shared-lib/dist/core/model/CoreSystemSettings'
 
 export const SYSTEM_ID: CoreSystemId = protectString('core')
 
@@ -54,20 +57,9 @@ export interface ICoreSystem {
 	/** Id of the blueprint used by this system */
 	blueprintId?: BlueprintId
 
-	/** Support info */
-	support?: {
-		message: string
-	}
-
 	systemInfo?: {
 		message: string
 		enabled: boolean
-	}
-
-	evaluations?: {
-		enabled: boolean
-		heading: string
-		message: string
 	}
 
 	/** A user-defined name for the installation */
@@ -95,18 +87,20 @@ export interface ICoreSystem {
 	}
 	enableMonitorBlockedThread?: boolean
 
-	/** Cron jobs running nightly */
-	cron?: {
-		casparCGRestart?: {
-			enabled: boolean
-		}
-		storeRundownSnapshots?: {
-			enabled: boolean
-			rundownNames?: string[]
-		}
-	}
+	settingsWithOverrides: ObjectWithOverrides<ICoreSystemSettings>
 
 	logo?: SofieLogo
+
+	/** Details on the last blueprint used to generate the defaults values for this
+	 * Note: This doesn't currently have any 'config' which it relates to.
+	 * The name is to be consistent with studio/showstyle, and in preparation for their being config/configpresets used here
+	 */
+	lastBlueprintConfig: LastBlueprintConfig | undefined
+
+	/** These fields are to have type consistency with the full config driven upgrades flow, but we don't use them yet */
+	blueprintConfigPresetId?: undefined
+	lastBlueprintFixUpHash?: undefined
+	blueprintConfigWithOverrides?: undefined
 }
 
 /** In the beginning, there was the database, and the database was with Sofie, and the database was Sofie.

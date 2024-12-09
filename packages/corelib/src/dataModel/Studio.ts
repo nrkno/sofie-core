@@ -3,7 +3,6 @@ import { ObjectWithOverrides } from '../settings/objectWithOverrides'
 import { StudioId, OrganizationId, BlueprintId, ShowStyleBaseId, MappingsHash, PeripheralDeviceId } from './Ids'
 import { BlueprintHash, LastBlueprintConfig } from './Blueprint'
 import { MappingsExt, MappingExt } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
-import { ForceQuickLoopAutoNext } from './RundownPlaylist'
 import {
 	ResultingMappingRoute,
 	RouteMapping,
@@ -15,8 +14,9 @@ import {
 	StudioAbPlayerDisabling,
 } from '@sofie-automation/shared-lib/dist/core/model/StudioRouteSet'
 import { StudioPackageContainer } from '@sofie-automation/shared-lib/dist/core/model/PackageContainer'
+import { IStudioSettings } from '@sofie-automation/shared-lib/dist/core/model/StudioSettings'
 
-export { MappingsExt, MappingExt, MappingsHash }
+export { MappingsExt, MappingExt, MappingsHash, IStudioSettings }
 
 // RouteSet functions has been moved to shared-lib:
 // So we need to re-export them here:
@@ -30,64 +30,6 @@ export {
 	StudioRouteType,
 	StudioAbPlayerDisabling,
 	StudioPackageContainer,
-}
-
-export interface IStudioSettings {
-	/** The framerate (frames per second) used to convert internal timing information (in milliseconds)
-	 * into timecodes and timecode-like strings and interpret timecode user input
-	 * Default: 25
-	 */
-	frameRate: number
-
-	/** URL to endpoint where media preview are exposed */
-	mediaPreviewsUrl: string // (former media_previews_url in config)
-	/** URLs for slack webhook to send evaluations */
-	slackEvaluationUrls?: string // (former slack_evaluation in config)
-
-	/** Media Resolutions supported by the studio for media playback */
-	supportedMediaFormats?: string // (former mediaResolutions in config)
-	/** Audio Stream Formats supported by the studio for media playback */
-	supportedAudioStreams?: string // (former audioStreams in config)
-
-	/** Should the play from anywhere feature be enabled in this studio */
-	enablePlayFromAnywhere?: boolean
-
-	/**
-	 * If set, forces the multi-playout-gateway mode (aka set "now"-time right away)
-	 * for single playout-gateways setups
-	 */
-	forceMultiGatewayMode?: boolean
-
-	/** How much extra delay to add to the Now-time (used for the "multi-playout-gateway" feature) .
-	 * A higher value adds delays in playout, but reduces the risk of missed frames. */
-	multiGatewayNowSafeLatency?: number
-
-	/** Allow resets while a rundown is on-air */
-	allowRundownResetOnAir?: boolean
-
-	/** Preserve unsynced segments psoition in the rundown, relative to the other segments */
-	preserveOrphanedSegmentPositionInRundown?: boolean
-
-	/**
-	 * The minimum amount of time, in milliseconds, that must pass after a take before another take may be performed.
-	 * Default: 1000
-	 */
-	minimumTakeSpan: number
-
-	/** Whether to allow adlib testing mode, before a Part is playing in a Playlist */
-	allowAdlibTestingSegment?: boolean
-
-	/** Should QuickLoop context menu options be available to the users. It does not affect Playlist loop enabled by the NRCS. */
-	enableQuickLoop?: boolean
-
-	/** If and how to force auto-nexting in a looping Playlist */
-	forceQuickLoopAutoNext?: ForceQuickLoopAutoNext
-
-	/**
-	 * The duration to apply on too short Parts Within QuickLoop when ForceQuickLoopAutoNext.ENABLED_FORCING_MIN_DURATION is selected
-	 * Default: 3000
-	 */
-	fallbackPartDuration?: number
 }
 
 export type StudioLight = Omit<DBStudio, 'mappingsWithOverrides' | 'blueprintConfigWithOverrides'>
@@ -122,7 +64,7 @@ export interface DBStudio {
 	/** Config values are used by the Blueprints */
 	blueprintConfigWithOverrides: ObjectWithOverrides<IBlueprintConfig>
 
-	settings: IStudioSettings
+	settingsWithOverrides: ObjectWithOverrides<IStudioSettings>
 
 	_rundownVersionHash: string
 

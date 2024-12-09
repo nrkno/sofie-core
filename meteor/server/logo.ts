@@ -13,7 +13,7 @@ logoRouter.get('/', async (ctx) => {
 	const logo = core?.logo ?? SofieLogo.Default
 
 	const paths: Record<SofieLogo, string> = {
-		[SofieLogo.Default]: '/images/sofie-logo.svg',
+		[SofieLogo.Default]: '/images/sofie-logo-default.svg',
 		[SofieLogo.Pride]: '/images/sofie-logo-pride.svg',
 		[SofieLogo.Norway]: '/images/sofie-logo-norway.svg',
 		[SofieLogo.Christmas]: '/images/sofie-logo-christmas.svg',
