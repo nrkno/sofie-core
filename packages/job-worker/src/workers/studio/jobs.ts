@@ -44,7 +44,7 @@ import {
 import { handleTimelineTriggerTime, handleOnPlayoutPlaybackChanged } from '../../playout/timings'
 import { handleExecuteAdlibAction } from '../../playout/adlibAction'
 import { handleTakeNextPart } from '../../playout/take'
-import { handleSetQuickLoopMarker } from '../../playout/quickLoopMarkers'
+import { handleClearQuickLoopMarkers, handleSetQuickLoopMarker } from '../../playout/quickLoopMarkers'
 import { handleActivateAdlibTesting } from '../../playout/adlibTesting'
 import { handleExecuteBucketAdLibOrAction } from '../../playout/bucketAdlibJobs'
 import { handleSwitchRouteSet } from '../../studio/routeSet'
@@ -107,6 +107,7 @@ export const studioJobHandlers: StudioJobHandlers = {
 	[StudioJobs.ActivateAdlibTesting]: handleActivateAdlibTesting,
 
 	[StudioJobs.SetQuickLoopMarker]: handleSetQuickLoopMarker,
+	[StudioJobs.ClearQuickLoopMarkers]: handleClearQuickLoopMarkers,
 
 	[StudioJobs.SwitchRouteSet]: handleSwitchRouteSet,
 }
