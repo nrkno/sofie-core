@@ -1,6 +1,6 @@
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Meteor } from 'meteor/meteor'
-import { MongoCursor } from '../../../lib/collections/lib'
+import { MongoCursor } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import type { Collection } from 'mongodb'
 import { AsyncOnlyMongoCollection, AsyncOnlyReadOnlyMongoCollection } from '../collection'
 

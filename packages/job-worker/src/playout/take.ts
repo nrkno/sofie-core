@@ -1,16 +1,12 @@
 import { PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import {
-	DBRundownPlaylist,
-	RundownHoldState,
-	SelectedPartInstance,
-} from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { RundownHoldState, SelectedPartInstance } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { logger } from '../logging'
 import { JobContext, ProcessedShowStyleCompound } from '../jobs'
 import { PlayoutModel } from './model/PlayoutModel'
 import { PlayoutPartInstanceModel } from './model/PlayoutPartInstanceModel'
-import { isTooCloseToAutonext } from './lib'
+import { resetPartInstancesWithPieceInstances } from './lib'
 import { selectNextPart } from './selectNextPart'
 import { setNextPart } from './setNext'
 import { getCurrentTime } from '../lib'
@@ -25,7 +21,6 @@ import { OnTakeContext, PartEventContext, RundownContext } from '../blueprints/c
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { innerStopPieces } from './adlibUtils'
 import { reportPartInstanceHasStarted, reportPartInstanceHasStopped } from './timings/partPlayback'
-import { calculatePartTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { convertPartInstanceToBlueprints, convertResolvedPieceInstanceToBlueprints } from '../blueprints/context/lib'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { TakeNextPartProps } from '@sofie-automation/corelib/dist/worker/studio'
@@ -173,7 +168,7 @@ export async function performTakeToNextedPart(
 			throw UserError.create(UserErrorMessage.TakeDuringTransition)
 		}
 
-		if (isTooCloseToAutonext(currentPartInstance.partInstance, true)) {
+		if (currentPartInstance.isTooCloseToAutonext(true)) {
 			throw UserError.create(UserErrorMessage.TakeCloseToAutonext)
 		}
 	}
@@ -215,15 +210,6 @@ export async function performTakeToNextedPart(
 
 	clearQueuedSegmentId(playoutModel, takePartInstance.partInstance, playoutModel.playlist.nextPartInfo)
 
-	const nextPart = selectNextPart(
-		context,
-		playoutModel.playlist,
-		takePartInstance.partInstance,
-		null,
-		playoutModel.getAllOrderedSegments(),
-		playoutModel.getAllOrderedParts()
-	)
-
 	if (blueprint.blueprint.onPreTake) {
 		const span = context.startSpan('blueprint.onPreTake')
 		try {
@@ -246,7 +232,7 @@ export async function performTakeToNextedPart(
 
 	updatePartInstanceOnTake(
 		context,
-		playoutModel.playlist,
+		playoutModel,
 		showStyle,
 		blueprint,
 		takeRundown.rundown,
@@ -255,10 +241,24 @@ export async function performTakeToNextedPart(
 	)
 
 	playoutModel.cycleSelectedPartInstances()
+	const wasLooping = playoutModel.playlist.quickLoop?.running
+	playoutModel.updateQuickLoopState()
+
+	const nextPart = selectNextPart(
+		context,
+		playoutModel.playlist,
+		takePartInstance.partInstance,
+		null,
+		playoutModel.getAllOrderedSegments(),
+		playoutModel.getAllOrderedParts(),
+		{ ignoreUnplayable: true, ignoreQuickLoop: false }
+	)
 
 	takePartInstance.setTaken(now, timeOffset)
 
-	resetPreviousSegment(playoutModel)
+	if (wasLooping) {
+		resetPreviousSegmentIfLooping(context, playoutModel)
+	}
 
 	// Once everything is synced, we can choose the next part
 	await setNextPart(context, playoutModel, nextPart, false)
@@ -343,27 +343,23 @@ export function clearQueuedSegmentId(
 }
 
 /**
- * Reset the Segment of the previousPartInstance, if playback has left that Segment and the Rundown is looping
+ * Reset the Segment of the previousPartInstance, if playback has left that Segment and the Playlist is looping
  * @param playoutModel Model for the active Playlist
  */
-export function resetPreviousSegment(playoutModel: PlayoutModel): void {
+export function resetPreviousSegmentIfLooping(context: JobContext, playoutModel: PlayoutModel): void {
 	const previousPartInstance = playoutModel.previousPartInstance
 	const currentPartInstance = playoutModel.currentPartInstance
 
 	// If the playlist is looping and
 	// If the previous and current part are not in the same segment, then we have just left a segment
 	if (
-		playoutModel.playlist.loop &&
+		playoutModel.playlist.quickLoop?.running &&
 		previousPartInstance &&
 		previousPartInstance.partInstance.segmentId !== currentPartInstance?.partInstance?.segmentId
 	) {
 		// Reset the old segment
 		const segmentId = previousPartInstance.partInstance.segmentId
-		for (const partInstance of playoutModel.loadedPartInstances) {
-			if (partInstance.partInstance.segmentId === segmentId) {
-				partInstance.markAsReset()
-			}
-		}
+		resetPartInstancesWithPieceInstances(context, playoutModel, { segmentId })
 	}
 }
 
@@ -451,7 +447,7 @@ async function afterTakeUpdateTimingsAndEvents(
 
 export function updatePartInstanceOnTake(
 	context: JobContext,
-	playlist: ReadonlyDeep<DBRundownPlaylist>,
+	playoutModel: PlayoutModel,
 	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 	takeRundown: ReadonlyDeep<DBRundown>,
@@ -473,8 +469,8 @@ export function updatePartInstanceOnTake(
 			const span = context.startSpan('blueprint.getEndStateForPart')
 			const context2 = new RundownContext(
 				{
-					name: `${playlist.name}`,
-					identifier: `playlist=${playlist._id},currentPartInstance=${
+					name: `${playoutModel.playlist.name}`,
+					identifier: `playlist=${playoutModel.playlist._id},currentPartInstance=${
 						currentPartInstance.partInstance._id
 					},execution=${getRandomId()}`,
 				},
@@ -486,7 +482,7 @@ export function updatePartInstanceOnTake(
 			)
 			previousPartEndState = blueprint.blueprint.getEndStateForPart(
 				context2,
-				playlist.previousPersistentState,
+				playoutModel.playlist.previousPersistentState,
 				convertPartInstanceToBlueprints(currentPartInstance.partInstance),
 				resolvedPieces.map(convertResolvedPieceInstanceToBlueprints),
 				time
@@ -505,13 +501,7 @@ export function updatePartInstanceOnTake(
 		takePartInstance.pieceInstances.map((p) => p.pieceInstance),
 		0
 	)
-	const partPlayoutTimings = calculatePartTimings(
-		playlist.holdState,
-		currentPartInstance?.partInstance?.part,
-		currentPartInstance?.pieceInstances?.map((p) => p.pieceInstance.piece) ?? [],
-		takePartInstance.partInstance.part,
-		tmpTakePieces.filter((p) => !p.infinite || p.infinite.infiniteInstanceIndex === 0).map((p) => p.piece)
-	)
+	const partPlayoutTimings = playoutModel.calculatePartTimings(currentPartInstance, takePartInstance, tmpTakePieces)
 
 	takePartInstance.storePlayoutTimingsAndPreviousEndState(partPlayoutTimings, previousPartEndState)
 }

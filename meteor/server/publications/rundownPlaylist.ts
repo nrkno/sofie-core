@@ -7,10 +7,10 @@ import { isProtectedString } from '@sofie-automation/corelib/dist/protectedStrin
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { RundownPlaylists } from '../collections'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
-import { MeteorPubSub } from '../../lib/api/pubsub'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { resolveCredentials } from '../security/lib/credentials'
-import { check, Match } from '../../lib/check'
+import { check, Match } from '../lib/check'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 
 meteorPublish(

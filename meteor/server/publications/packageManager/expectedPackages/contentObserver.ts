@@ -7,9 +7,10 @@ import {
 	pieceInstanceFieldsSpecifier,
 } from './contentCache'
 import { ExpectedPackages, PieceInstances, RundownPlaylists } from '../../../collections'
-import { equivalentArrays, waitForPromise } from '../../../../lib/lib'
+import { waitForPromise } from '../../../lib/lib'
 import { ReactiveMongoObserverGroup, ReactiveMongoObserverGroupHandle } from '../../lib/observerGroup'
 import _ from 'underscore'
+import { equivalentArrays } from '@sofie-automation/shared-lib/dist/lib/lib'
 
 const REACTIVITY_DEBOUNCE = 20
 

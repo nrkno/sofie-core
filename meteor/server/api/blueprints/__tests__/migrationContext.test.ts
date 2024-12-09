@@ -7,7 +7,7 @@ import {
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { literal, getRandomId, protectString, unprotectString } from '../../../../lib/lib'
+import { literal, getRandomId, protectString, unprotectString } from '../../../lib/tempLib'
 import {
 	LookaheadMode,
 	BlueprintMapping,

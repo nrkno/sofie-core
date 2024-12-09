@@ -1,4 +1,4 @@
-import { getRandomId } from '../../../lib/lib'
+import { getRandomId } from '../../lib/tempLib'
 import { beforeEachInFiber, testInFiber } from '../../../__mocks__/helpers/jest'
 
 import '../../collections' // include this in order to get all of the collection set up
@@ -48,7 +48,7 @@ import {
 } from '../../collections'
 import { Collections } from '../../collections/lib'
 import { generateTranslationBundleOriginId } from '../translationsBundles'
-import { CollectionCleanupResult } from '../../../lib/api/system'
+import { CollectionCleanupResult } from '@sofie-automation/meteor-lib/dist/api/system'
 
 describe('Cleanup', () => {
 	let env: DefaultEnvironment

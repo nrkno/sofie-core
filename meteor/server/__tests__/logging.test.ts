@@ -19,4 +19,12 @@ describe('server/logger', () => {
 		await supressLogging(logMessages, true)
 		expect(1).toBe(1)
 	})
+
+	testInFiber('logger', () => {
+		expect(typeof logger.error).toEqual('function')
+		expect(typeof logger.warn).toEqual('function')
+		// expect(typeof logger.help).toEqual('function')
+		expect(typeof logger.info).toEqual('function')
+		expect(typeof logger.debug).toEqual('function')
+	})
 })

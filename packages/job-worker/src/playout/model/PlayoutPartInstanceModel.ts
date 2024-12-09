@@ -218,4 +218,15 @@ export interface PlayoutPartInstanceModel {
 	 * Ensure that this PartInstance is setup correctly for being in the AdlibTesting Segment
 	 */
 	validateAdlibTestingSegmentProperties(): void
+
+	/**
+	 * Whether this part instance is too close to autoNexting out of, to perform operations that might cause glitches
+	 * @param isTake
+	 */
+	isTooCloseToAutonext(isTake: boolean): boolean
+
+	/**
+	 * Returns the contained partInstance, with QuickLoop overrides applied, if needed
+	 */
+	getPartInstanceWithQuickLoopOverrides(): ReadonlyDeep<DBPartInstance>
 }

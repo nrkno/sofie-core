@@ -15,6 +15,9 @@ import _ = require('underscore')
 import { PartTiming, calculateCurrentPartTiming } from './helpers/partTiming'
 import { SelectedPieceInstances, PieceInstancesHandler, PieceInstanceMin } from '../collections/pieceInstancesHandler'
 import { PieceStatus, toPieceStatus } from './helpers/pieceStatus'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { SegmentHandler } from '../collections/segmentHandler'
+import { PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 
 const THROTTLE_PERIOD_MS = 100
 
@@ -45,6 +48,13 @@ export interface ActivePlaylistStatus {
 	currentSegment: CurrentSegmentStatus | null
 	nextPart: PartStatus | null
 	publicData: unknown
+	timing: {
+		timingMode: PlaylistTimingType
+		startedPlayback?: number
+		expectedStart?: number
+		expectedDurationMs?: number
+		expectedEnd?: number
+	}
 }
 
 export class ActivePlaylistTopic
@@ -55,7 +65,8 @@ export class ActivePlaylistTopic
 		CollectionObserver<ShowStyleBaseExt>,
 		CollectionObserver<SelectedPartInstances>,
 		CollectionObserver<DBPart[]>,
-		CollectionObserver<SelectedPieceInstances>
+		CollectionObserver<SelectedPieceInstances>,
+		CollectionObserver<DBSegment>
 {
 	public observerName = ActivePlaylistTopic.name
 	private _activePlaylist: DBRundownPlaylist | undefined
@@ -67,6 +78,7 @@ export class ActivePlaylistTopic
 	private _pieceInstancesInCurrentPartInstance: PieceInstanceMin[] | undefined
 	private _pieceInstancesInNextPartInstance: PieceInstanceMin[] | undefined
 	private _showStyleBaseExt: ShowStyleBaseExt | undefined
+	private _currentSegment: DBSegment | undefined
 	private throttledSendStatusToAll: () => void
 
 	constructor(logger: Logger) {
@@ -116,10 +128,11 @@ export class ActivePlaylistTopic
 							  })
 							: null,
 					currentSegment:
-						this._currentPartInstance && currentPart
+						this._currentPartInstance && currentPart && this._currentSegment
 							? literal<CurrentSegmentStatus>({
 									id: unprotectString(currentPart.segmentId),
 									timing: calculateCurrentSegmentTiming(
+										this._currentSegment,
 										this._currentPartInstance,
 										this._firstInstanceInSegmentPlayout,
 										this._partInstancesInCurrentSegment,
@@ -141,6 +154,19 @@ export class ActivePlaylistTopic
 						  })
 						: null,
 					publicData: this._activePlaylist.publicData,
+					timing: {
+						timingMode: this._activePlaylist.timing.type,
+						startedPlayback: this._activePlaylist.startedPlayback,
+						expectedDurationMs: this._activePlaylist.timing.expectedDuration,
+						expectedStart:
+							this._activePlaylist.timing.type !== PlaylistTimingType.None
+								? this._activePlaylist.timing.expectedStart
+								: undefined,
+						expectedEnd:
+							this._activePlaylist.timing.type !== PlaylistTimingType.None
+								? this._activePlaylist.timing.expectedEnd
+								: undefined,
+					},
 			  })
 			: literal<ActivePlaylistStatus>({
 					event: 'activePlaylist',
@@ -151,6 +177,9 @@ export class ActivePlaylistTopic
 					currentSegment: null,
 					nextPart: null,
 					publicData: undefined,
+					timing: {
+						timingMode: PlaylistTimingType.None,
+					},
 			  })
 
 		this.sendMessage(subscribers, message)
@@ -159,6 +188,7 @@ export class ActivePlaylistTopic
 	private isDataInconsistent() {
 		return (
 			this._currentPartInstance?._id !== this._activePlaylist?.currentPartInfo?.partInstanceId ||
+			this._currentPartInstance?.segmentId !== this._currentSegment?._id ||
 			this._nextPartInstance?._id !== this._activePlaylist?.nextPartInfo?.partInstanceId ||
 			(this._pieceInstancesInCurrentPartInstance?.[0] &&
 				this._pieceInstancesInCurrentPartInstance?.[0].partInstanceId !== this._currentPartInstance?._id) ||
@@ -175,6 +205,7 @@ export class ActivePlaylistTopic
 			| SelectedPartInstances
 			| DBPart[]
 			| SelectedPieceInstances
+			| DBSegment
 			| undefined
 	): Promise<void> {
 		let hasAnythingChanged = false
@@ -228,6 +259,12 @@ export class ActivePlaylistTopic
 				}
 				this._pieceInstancesInCurrentPartInstance = pieceInstances.currentPartInstance
 				this._pieceInstancesInNextPartInstance = pieceInstances.nextPartInstance
+				break
+			}
+			case SegmentHandler.name: {
+				this._currentSegment = data as DBSegment
+				this.logUpdateReceived('segment', source)
+				hasAnythingChanged = true
 				break
 			}
 			default:

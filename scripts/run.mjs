@@ -7,8 +7,8 @@ function watchPackages() {
 		{
 			command: config.uiOnly
 				? `yarn watch ${EXTRA_PACKAGES.map((pkg) => `--ignore ${pkg}`).join(
-						" "
-				  )}`
+					" "
+				)}`
 				: "yarn watch",
 			cwd: "packages",
 			name: "PACKAGES-TSC",
@@ -31,18 +31,23 @@ function watchWorker() {
 function watchMeteor() {
 	return [
 		{
-			command: "meteor yarn watch-types --preserveWatchOutput",
+			command: "meteor npm run watch-types --preserveWatchOutput",
 			cwd: "meteor",
 			name: "METEOR-TSC",
 			prefixColor: "blue",
 		},
 		{
-			command: `meteor yarn debug${config.inspectMeteor ? " --inspect" : ""}${
-				config.verbose ? " --verbose" : ""
-			}`,
+			command: `meteor npm run debug${config.inspectMeteor ? " --inspect" : ""}${config.verbose ? " --verbose" : ""
+				}`,
 			cwd: "meteor",
 			name: "METEOR",
 			prefixColor: "cyan",
+		},
+		{
+			command: `yarn dev`,
+			cwd: "packages/webui",
+			name: "VITE",
+			prefixColor: "yellow",
 		},
 	];
 }
@@ -51,13 +56,11 @@ function hr() {
 	// write regular dashes if this is a "simple" output stream ()
 	if (!process.stdout.hasColors || !process.stdout.hasColors())
 		return "-".repeat(process.stdout.columns ?? 40);
-	return '─'.repeat(process.stdout.columns ?? 40)
+	return "─".repeat(process.stdout.columns ?? 40);
 }
 
 try {
 	// Note: This scricpt assumes that install-and-build.mjs has been run before
-
-	
 
 	// The main watching execution
 	console.log(hr());

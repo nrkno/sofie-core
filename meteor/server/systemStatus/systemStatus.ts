@@ -1,13 +1,14 @@
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { getCurrentTime, Time, getRandomId, literal } from '../../lib/lib'
+import { Time, getRandomId, literal } from '../lib/tempLib'
+import { getCurrentTime } from '../lib/lib'
 import {
 	parseVersion,
 	parseCoreIntegrationCompatabilityRange,
 	stripVersion,
 	compareSemverVersions,
 	isPrerelease,
-} from '../../lib/collections/CoreSystem'
+} from './semverUtils'
 import {
 	StatusResponse,
 	CheckObj,
@@ -15,9 +16,9 @@ import {
 	CheckError,
 	SystemInstanceId,
 	Component,
-} from '../../lib/api/systemStatus'
+} from '@sofie-automation/meteor-lib/dist/api/systemStatus'
 import { RelevantSystemVersions } from '../coreSystem'
-import { Settings } from '../../lib/Settings'
+import { Settings } from '../Settings'
 import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
 import { resolveCredentials, Credentials } from '../security/lib/credentials'
@@ -27,7 +28,7 @@ import { PeripheralDevices, Workers, WorkerThreadStatuses } from '../collections
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ServerPeripheralDeviceAPI } from '../api/peripheralDevice'
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
-import { MethodContext } from '../../lib/api/methods'
+import { MethodContext } from '../api/methodContext'
 import { getBlueprintVersions } from './blueprintVersions'
 import { getUpgradeSystemStatusMessages } from './blueprintUpgradeStatus'
 

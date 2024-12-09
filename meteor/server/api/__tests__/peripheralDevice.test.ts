@@ -6,15 +6,8 @@ import {
 	PeripheralDeviceType,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import {
-	getCurrentTime,
-	literal,
-	protectString,
-	ProtectedString,
-	getRandomId,
-	LogLevel,
-	getRandomString,
-} from '../../../lib/lib'
+import { literal, protectString, ProtectedString, getRandomId, LogLevel, getRandomString } from '../../lib/tempLib'
+import { getCurrentTime } from '../../lib/lib'
 import { testInFiber, waitUntil } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
 import { setLogLevel } from '../../logging'
@@ -24,7 +17,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/ingestDevice'
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
-import { MediaManagerAPI } from '../../../lib/api/mediaManager'
+import { MediaManagerAPI } from '@sofie-automation/meteor-lib/dist/api/mediaManager'
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import {
 	IBlueprintPieceType,
@@ -38,7 +31,7 @@ jest.mock('../../api/deviceTriggers/observer')
 
 import '../peripheralDevice'
 import { OnTimelineTriggerTimeProps, StudioJobFunc, StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import { MeteorCall } from '../../../lib/api/methods'
+import { MeteorCall } from '../methods'
 import { PeripheralDeviceForDevice } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 import {
 	PeripheralDeviceInitOptions,

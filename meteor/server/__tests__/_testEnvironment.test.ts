@@ -1,7 +1,8 @@
 import { Meteor } from 'meteor/meteor'
 import { RandomMock } from '../../__mocks__/random'
 import { MongoMock } from '../../__mocks__/mongo'
-import { waitForPromise, protectString, getRandomString, sleep } from '../../lib/lib'
+import { protectString, getRandomString } from '../lib/tempLib'
+import { waitForPromise, sleep } from '../lib/lib'
 import { testInFiber } from '../../__mocks__/helpers/jest'
 import {
 	AdLibPieces,
