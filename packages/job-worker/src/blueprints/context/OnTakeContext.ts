@@ -16,7 +16,7 @@ import {
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import { PlayoutModel } from '../../playout/model/PlayoutModel'
-import { UserContextInfo } from './CommonContext'
+import { ContextInfo } from './CommonContext'
 import { ShowStyleUserContext } from './ShowStyleUserContext'
 import { WatchedPackagesHelper } from './watchedPackages'
 import { getCurrentTime } from '../../lib'
@@ -35,7 +35,7 @@ export class OnTakeContext extends ShowStyleUserContext implements IOnTakeContex
 	}
 
 	constructor(
-		contextInfo: UserContextInfo,
+		contextInfo: ContextInfo,
 		private readonly _context: JobContext,
 		private readonly _playoutModel: PlayoutModel,
 		showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
