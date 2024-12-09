@@ -171,7 +171,7 @@ export const addSteps = addMigrationSteps('1.50.0', [
 			})
 			const badObject = objects.find(
 				(device) =>
-					!!Object.values<unknown>((device.settings as any)?.['devices'] ?? {}).find(
+					!!Object.values<unknown>((device as any).settings?.['devices'] ?? {}).find(
 						(subdev: any) => !subdev?.type || !subdev?.options
 					)
 			)
@@ -187,7 +187,7 @@ export const addSteps = addMigrationSteps('1.50.0', [
 				'settings.device': { $exists: true },
 			})
 			for (const obj of objects) {
-				const newDevices: any = clone((obj.settings as any)?.['devices'] || {})
+				const newDevices: any = clone((obj as any).settings?.['devices'] || {})
 
 				for (const [id, subdev] of Object.entries<any>(newDevices)) {
 					if (!subdev) continue
@@ -436,6 +436,7 @@ export const addSteps = addMigrationSteps('1.50.0', [
 					await Studios.updateAsync(studio._id, {
 						$set: {
 							peripheralDeviceSettings: {
+								deviceSettings: wrapDefaultObject({}),
 								playoutDevices: wrapDefaultObject({}),
 								ingestDevices: wrapDefaultObject({}),
 								inputDevices: wrapDefaultObject({}),
@@ -496,11 +497,13 @@ export const addSteps = addMigrationSteps('1.50.0', [
 				'settings.devices': { $exists: true },
 			})
 			for (const device of objects) {
-				if (!device.studioId) continue
+				// @ts-expect-error removed in 1.52
+				const studioId: StudioId = device.studioId
+				if (!studioId) continue
 
 				const newOverrides: SomeObjectOverrideOp[] = []
 
-				for (const [id, subDevice] of Object.entries<unknown>((device.settings as any)?.['devices'] || {})) {
+				for (const [id, subDevice] of Object.entries<unknown>((device as any).settings?.['devices'] || {})) {
 					newOverrides.push(
 						literal<ObjectOverrideSetOp>({
 							op: 'set',
@@ -513,7 +516,7 @@ export const addSteps = addMigrationSteps('1.50.0', [
 					)
 				}
 
-				await Studios.updateAsync(device.studioId, {
+				await Studios.updateAsync(studioId, {
 					$set: {
 						[`peripheralDeviceSettings.playoutDevices.overrides`]: newOverrides,
 					},
@@ -550,11 +553,13 @@ export const addSteps = addMigrationSteps('1.50.0', [
 				'settings.devices': { $exists: true },
 			})
 			for (const device of objects) {
-				if (!device.studioId) continue
+				// @ts-expect-error removed in 1.52
+				const studioId: StudioId = device.studioId
+				if (!studioId) continue
 
 				const newOverrides: SomeObjectOverrideOp[] = []
 
-				for (const [id, subDevice] of Object.entries<unknown>((device.settings as any)?.['devices'] || {})) {
+				for (const [id, subDevice] of Object.entries<unknown>((device as any).settings?.['devices'] || {})) {
 					newOverrides.push(
 						literal<ObjectOverrideSetOp>({
 							op: 'set',
@@ -567,7 +572,7 @@ export const addSteps = addMigrationSteps('1.50.0', [
 					)
 				}
 
-				await Studios.updateAsync(device.studioId, {
+				await Studios.updateAsync(studioId, {
 					$set: {
 						[`peripheralDeviceSettings.ingestDevices.overrides`]: newOverrides,
 					},
@@ -604,11 +609,13 @@ export const addSteps = addMigrationSteps('1.50.0', [
 				'settings.devices': { $exists: true },
 			})
 			for (const device of objects) {
-				if (!device.studioId) continue
+				// @ts-expect-error removed in 1.52
+				const studioId: StudioId = device.studioId
+				if (!studioId) continue
 
 				const newOverrides: SomeObjectOverrideOp[] = []
 
-				for (const [id, subDevice] of Object.entries<unknown>((device.settings as any)?.['devices'] || {})) {
+				for (const [id, subDevice] of Object.entries<unknown>((device as any).settings?.['devices'] || {})) {
 					newOverrides.push(
 						literal<ObjectOverrideSetOp>({
 							op: 'set',
@@ -621,7 +628,7 @@ export const addSteps = addMigrationSteps('1.50.0', [
 					)
 				}
 
-				await Studios.updateAsync(device.studioId, {
+				await Studios.updateAsync(studioId, {
 					$set: {
 						[`peripheralDeviceSettings.inputDevices.overrides`]: newOverrides,
 					},

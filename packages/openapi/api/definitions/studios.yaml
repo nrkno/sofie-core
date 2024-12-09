@@ -317,6 +317,9 @@ resources:
               properties:
                 deviceId:
                   type: string
+                configId:
+                  type: string
+                  description: Id of the studio owned configuration to assign to the device. If not specified, one will be created.
               required:
                 - deviceId
       responses:

@@ -165,6 +165,9 @@ export interface DBStudio {
 }
 
 export interface StudioPeripheralDeviceSettings {
+	/** Settings for gateway parent-devices */
+	deviceSettings: ObjectWithOverrides<Record<string, StudioDeviceSettings>>
+
 	/** Playout gateway sub-devices */
 	playoutDevices: ObjectWithOverrides<Record<string, StudioPlayoutDevice>>
 
@@ -203,4 +206,13 @@ export interface StudioPlayoutDevice {
 	peripheralDeviceId: PeripheralDeviceId | undefined
 
 	options: TSR.DeviceOptionsAny
+}
+
+export interface StudioDeviceSettings {
+	/**
+	 * User friendly name for the device
+	 */
+	name: string
+
+	options: unknown
 }

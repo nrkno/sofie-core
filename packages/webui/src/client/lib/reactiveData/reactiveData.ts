@@ -131,7 +131,7 @@ export namespace reactiveData {
 			const allDevices: PeripheralDevice[] = []
 			const peripheralDevices = PeripheralDevices.find(
 				{
-					studioId: studioId,
+					'studioAndConfigId.studioId': studioId,
 					ignore: {
 						$ne: true,
 					},

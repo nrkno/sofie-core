@@ -454,6 +454,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 				thumbnailContainerIds: [],
 				previewContainerIds: [],
 				peripheralDeviceSettings: {
+					deviceSettings: wrapDefaultObject({}),
 					playoutDevices: wrapDefaultObject({}),
 					ingestDevices: wrapDefaultObject({}),
 					inputDevices: wrapDefaultObject({}),

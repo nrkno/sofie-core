@@ -49,7 +49,7 @@ meteorPublish(CorelibPubSub.peripheralDevicesAndSubDevices, async function (stud
 	triggerWriteAccessBecauseNoCheckNecessary()
 
 	const selector: MongoQuery<PeripheralDevice> = {
-		studioId,
+		'studioAndConfigId.studioId': studioId,
 	}
 
 	// TODO - this is not correctly reactive when changing the `studioId` property of a parent device

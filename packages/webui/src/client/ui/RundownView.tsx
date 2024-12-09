@@ -1443,7 +1443,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 				PeripheralDevices.find({
 					parentDeviceId: {
 						$in: PeripheralDevices.find({
-							studioId: studio._id,
+							'studioAndConfigId.studioId': studio._id,
 						})
 							.fetch()
 							.map((i) => i._id),
@@ -2776,7 +2776,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 			}
 
 			const attachedPlayoutGateways = PeripheralDevices.find({
-				studioId: studio._id,
+				'studioAndConfigId.studioId': studio._id,
 				connected: true,
 				type: PeripheralDeviceType.PLAYOUT,
 			}).fetch()

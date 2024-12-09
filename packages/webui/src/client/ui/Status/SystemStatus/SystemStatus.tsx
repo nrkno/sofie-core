@@ -1,8 +1,8 @@
-import { useContext, useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSubscription, useTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
-import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { useTranslation } from 'react-i18next'
-import { protectString, unprotectString } from '../../../lib/tempLib'
+import { unprotectString } from '../../../lib/tempLib'
 import { NotificationCenter, NoticeLevel, Notification } from '../../../lib/notifications/notifications'
 import { StatusResponse } from '@sofie-automation/meteor-lib/dist/api/systemStatus'
 import { MeteorCall } from '../../../lib/meteorApi'
@@ -10,15 +10,12 @@ import { CoreSystem, PeripheralDevices } from '../../../collections'
 import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 import { logger } from '../../../lib/logging'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
-import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { CoreItem } from './CoreItem'
 import { DeviceItem } from './DeviceItem'
-import { UserPermissions, UserPermissionsContext } from '../../UserPermissions'
+import { useDebugStatesForPlayoutDevice } from '../../Settings/components/useDebugStatesForPlayoutDevice'
 
 export function SystemStatus(): JSX.Element {
 	const { t } = useTranslation()
-
-	const userPermissions = useContext(UserPermissionsContext)
 
 	// Subscribe to data:
 	useSubscription(CorelibPubSub.peripheralDevices, null)
@@ -27,8 +24,6 @@ export function SystemStatus(): JSX.Element {
 	const devices = useTracker(() => PeripheralDevices.find({}, { sort: { lastConnected: -1 } }).fetch(), [], [])
 
 	const systemStatus = useSystemStatus()
-	const playoutDebugStates = usePlayoutDebugStates(devices, userPermissions)
-
 	const devicesHierarchy = convertDevicesIntoHeirarchy(devices)
 
 	return (
@@ -40,12 +35,7 @@ export function SystemStatus(): JSX.Element {
 				{coreSystem && <CoreItem coreSystem={coreSystem} systemStatus={systemStatus} />}
 
 				{devicesHierarchy.map((d) => (
-					<DeviceItemWithChildren
-						key={unprotectString(d.device._id)}
-						playoutDebugStates={playoutDebugStates}
-						parentDevice={null}
-						device={d}
-					/>
+					<ParentDeviceItemWithChildren key={unprotectString(d.device._id)} device={d} />
 				))}
 			</div>
 		</div>
@@ -101,66 +91,6 @@ function useSystemStatus(): StatusResponse | undefined {
 	return sytemStatus
 }
 
-function usePlayoutDebugStates(
-	devices: PeripheralDevice[],
-	userPermissions: UserPermissions
-): Map<PeripheralDeviceId, object> {
-	const { t } = useTranslation()
-
-	const [playoutDebugStates, setPlayoutDebugStates] = useState<Map<PeripheralDeviceId, object>>(new Map())
-
-	const playoutDeviceIds = useMemo(() => {
-		const deviceIds: PeripheralDeviceId[] = []
-
-		for (const device of devices) {
-			if (device.type === PeripheralDeviceType.PLAYOUT && device.settings && (device.settings as any)['debugState']) {
-				deviceIds.push(device._id)
-			}
-		}
-
-		deviceIds.sort()
-		return deviceIds
-	}, [devices])
-
-	useEffect(() => {
-		if (!userPermissions.developer) {
-			setPlayoutDebugStates(new Map())
-			return
-		}
-
-		let destroyed = false
-
-		const refreshDebugStates = () => {
-			for (const deviceId of playoutDeviceIds) {
-				MeteorCall.systemStatus
-					.getDebugStates(deviceId)
-					.then((res) => {
-						if (destroyed) return
-
-						setPlayoutDebugStates((oldState) => {
-							// Create a new map based on the old one
-							const newStates = new Map(oldState.entries())
-							for (const [key, state] of Object.entries<any>(res)) {
-								newStates.set(protectString(key), state)
-							}
-							return newStates
-						})
-					})
-					.catch((err) => console.log(`Error fetching device states: ${stringifyError(err)}`))
-			}
-		}
-
-		const interval = setInterval(refreshDebugStates, 1000)
-
-		return () => {
-			clearInterval(interval)
-			destroyed = true
-		}
-	}, [t, JSON.stringify(playoutDeviceIds), userPermissions.developer])
-
-	return playoutDebugStates
-}
-
 function convertDevicesIntoHeirarchy(devices: PeripheralDevice[]): DeviceInHierarchy[] {
 	const devicesMap = new Map<PeripheralDeviceId, DeviceInHierarchy>()
 	const devicesToAdd: DeviceInHierarchy[] = []
@@ -194,8 +124,18 @@ function convertDevicesIntoHeirarchy(devices: PeripheralDevice[]): DeviceInHiera
 	return devicesHeirarchy
 }
 
+interface ParentDeviceItemWithChildrenProps {
+	device: DeviceInHierarchy
+}
+
+function ParentDeviceItemWithChildren({ device }: ParentDeviceItemWithChildrenProps) {
+	const playoutDebugStates = useDebugStatesForPlayoutDevice(device.device)
+
+	return <DeviceItemWithChildren playoutDebugStates={playoutDebugStates} parentDevice={null} device={device} />
+}
+
 interface DeviceItemWithChildrenProps {
-	playoutDebugStates: Map<PeripheralDeviceId, object>
+	playoutDebugStates: ReadonlyMap<PeripheralDeviceId, object>
 	parentDevice: DeviceInHierarchy | null
 	device: DeviceInHierarchy
 }

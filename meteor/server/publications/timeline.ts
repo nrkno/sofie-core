@@ -58,7 +58,7 @@ meteorCustomPublish(
 
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, this)
 
-		const studioId = peripheralDevice.studioId
+		const studioId = peripheralDevice.studioAndConfigId?.studioId
 		if (!studioId) return
 
 		await createObserverForTimelinePublication(pub, studioId)
@@ -71,7 +71,7 @@ meteorPublish(
 
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, this)
 
-		const studioId = peripheralDevice.studioId
+		const studioId = peripheralDevice.studioAndConfigId?.studioId
 		if (!studioId) return null
 
 		const modifier: FindOptions<DBTimelineDatastoreEntry> = {

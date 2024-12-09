@@ -25,7 +25,7 @@ meteorCustomPublish(
 
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, this)
 
-		const studioId = peripheralDevice.studioId
+		const studioId = peripheralDevice.studioAndConfigId?.studioId
 		if (!studioId) throw new Meteor.Error(400, `Peripheral Device "${deviceId}" not attached to a studio`)
 
 		cursorCustomPublish(
@@ -48,7 +48,7 @@ meteorCustomPublish(
 
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, this)
 
-		const studioId = peripheralDevice.studioId
+		const studioId = peripheralDevice.studioAndConfigId?.studioId
 		if (!studioId) throw new Meteor.Error(400, `Peripheral Device "${deviceId}" not attached to a studio`)
 
 		cursorCustomPublish(

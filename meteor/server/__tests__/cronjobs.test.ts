@@ -488,7 +488,6 @@ describe('cronjobs', () => {
 					statusCode: StatusCode.GOOD,
 				},
 				token: '',
-				settings: {},
 				...props,
 			})
 

@@ -102,7 +102,7 @@ export async function receiveInputDeviceTrigger(
 	check(deviceId, String)
 	check(triggerId, String)
 
-	const studioId = peripheralDevice.studioId
+	const studioId = peripheralDevice.studioAndConfigId?.studioId
 	if (!studioId) throw new Meteor.Error(400, `Peripheral Device "${peripheralDevice._id}" not assigned to a studio`)
 
 	logger.debug(

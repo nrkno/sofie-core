@@ -50,7 +50,7 @@ export default function StudioSettings(): JSX.Element {
 		() =>
 			PeripheralDevices.findOne(
 				{
-					studioId: {
+					'studioAndConfigId.studioId': {
 						$eq: studioId,
 					},
 					parentDeviceId: {

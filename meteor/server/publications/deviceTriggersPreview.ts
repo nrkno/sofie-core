@@ -39,7 +39,7 @@ export async function insertInputDeviceTriggerIntoPreview(
 
 	if (!pDevice) throw new Meteor.Error(404, `Could not find peripheralDevice "${deviceId}"`)
 
-	const studioId = unprotectString(pDevice.studioId)
+	const studioId = unprotectString(pDevice.studioAndConfigId?.studioId)
 	if (!studioId) throw new Meteor.Error(501, `Device "${pDevice._id}" is not assigned to any studio`)
 
 	const lastTriggersStudio = prepareTriggerBufferForStudio(studioId)

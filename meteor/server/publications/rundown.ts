@@ -57,11 +57,12 @@ meteorPublish(
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, this)
 
 		// No studio, then no rundowns
-		if (!peripheralDevice.studioId) return null
+		const studioId = peripheralDevice.studioAndConfigId?.studioId
+		if (!studioId) return null
 
 		return Rundowns.findWithCursor(
 			{
-				studioId: peripheralDevice.studioId,
+				studioId: studioId,
 			},
 			{
 				fields: {
@@ -448,7 +449,7 @@ meteorPublish(
 
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, this)
 
-		const studioId = peripheralDevice.studioId
+		const studioId = peripheralDevice.studioAndConfigId?.studioId
 		if (!studioId) return null
 
 		return ExpectedPlayoutItems.findWithCursor({ studioId })
