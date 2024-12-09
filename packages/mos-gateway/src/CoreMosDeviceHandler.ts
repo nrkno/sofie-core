@@ -76,13 +76,15 @@ export class CoreMosDeviceHandler {
 	private _pendingStoryItemChanges: Array<IStoryItemChange> = []
 	private _pendingChangeTimeout: number = 60 * 1000
 	private mosTypes: MosTypes
+	private _openMediaHotStandby: boolean
 
 	private _messageQueue: Queue
 
-	constructor(parent: CoreHandler, mosDevice: IMOSDevice, mosHandler: MosHandler) {
+	constructor(parent: CoreHandler, mosDevice: IMOSDevice, mosHandler: MosHandler, openMediaHotStandby: boolean) {
 		this._coreParentHandler = parent
 		this._mosDevice = mosDevice
 		this._mosHandler = mosHandler
+		this._openMediaHotStandby = openMediaHotStandby
 
 		this._messageQueue = new Queue()
 
@@ -139,25 +141,47 @@ export class CoreMosDeviceHandler {
 		let statusCode: StatusCode
 		const messages: Array<string> = []
 
-		if (connectionStatus.PrimaryConnected) {
-			if (connectionStatus.SecondaryConnected || !this._mosDevice.idSecondary) {
+		if (this._openMediaHotStandby) {
+			// OpenMedia treats secondary server as hot-standby
+			// And thus is not considered as a warning if it's not connected
+			if (connectionStatus.PrimaryConnected) {
 				statusCode = StatusCode.GOOD
 			} else {
-				statusCode = StatusCode.WARNING_MINOR
+				// Primary not connected is only bad if there is no secondary:
+				if (connectionStatus.SecondaryConnected) {
+					statusCode = StatusCode.GOOD
+					messages.push(connectionStatus.SecondaryStatus || 'Running NRCS on hot standby')
+				} else {
+					statusCode = StatusCode.BAD
+					// Send messages for both connections
+					messages.push(connectionStatus.PrimaryStatus || 'Primary and hot standby are not connected')
+					messages.push(connectionStatus.SecondaryStatus || 'Primary and hot standby are not connected')
+				}
 			}
 		} else {
-			if (connectionStatus.SecondaryConnected) {
-				statusCode = StatusCode.WARNING_MAJOR
+			if (connectionStatus.PrimaryConnected) {
+				// ENPS expect both Primary and Secondary to be connected if both of them are configured
+				if (connectionStatus.SecondaryConnected || !this._mosDevice.idSecondary) {
+					statusCode = StatusCode.GOOD
+				} else {
+					statusCode = StatusCode.WARNING_MINOR
+				}
 			} else {
-				statusCode = StatusCode.BAD
+				if (connectionStatus.SecondaryConnected) {
+					// Primary not connected should give a warning if Secondary is used.
+					statusCode = StatusCode.WARNING_MAJOR
+				} else {
+					// If neither Primary nor Secondary is connected, it's a bad state.
+					statusCode = StatusCode.BAD
+				}
 			}
-		}
 
-		if (!connectionStatus.PrimaryConnected) {
-			messages.push(connectionStatus.PrimaryStatus || 'Primary not connected')
-		}
-		if (this._mosDevice.idSecondary && !connectionStatus.SecondaryConnected) {
-			messages.push(connectionStatus.SecondaryStatus || 'Fallback not connected')
+			if (!connectionStatus.PrimaryConnected) {
+				messages.push(connectionStatus.PrimaryStatus || 'Primary not connected')
+			}
+			if (this._mosDevice.idSecondary && !connectionStatus.SecondaryConnected) {
+				messages.push(connectionStatus.SecondaryStatus || 'Fallback not connected')
+			}
 		}
 
 		this.core
