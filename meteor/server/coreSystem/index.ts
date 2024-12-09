@@ -78,7 +78,7 @@ async function initializeCoreSystem() {
 	}
 
 	// Monitor database changes:
-	CoreSystem.observeChanges(SYSTEM_ID, {
+	await CoreSystem.observeChanges(SYSTEM_ID, {
 		added: onCoreSystemChanged,
 		changed: onCoreSystemChanged,
 		removed: onCoreSystemChanged,
@@ -88,7 +88,7 @@ async function initializeCoreSystem() {
 		checkDatabaseVersions()
 	}
 
-	Blueprints.observeChanges(
+	await Blueprints.observeChanges(
 		{},
 		{
 			added: observeBlueprintChanges,

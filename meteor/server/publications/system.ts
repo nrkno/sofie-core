@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { meteorPublish } from './lib'
+import { meteorPublish } from './lib/lib'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { SystemReadAccess } from '../security/system'
 import { OrganizationReadAccess } from '../security/organization'

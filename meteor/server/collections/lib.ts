@@ -60,7 +60,7 @@ export async function ObserveChangesHelper<DBInterface extends { _id: ProtectedS
 		projection[field] = 1
 	}
 
-	collection.observeChanges(
+	await collection.observeChanges(
 		{},
 		{
 			changed: (id: DBInterface['_id'], changedFields) => {

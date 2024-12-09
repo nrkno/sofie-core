@@ -57,7 +57,7 @@ export function MeteorWrapAsync(func: Function, context?: Object): any {
 }
 
 const lazyIgnoreCache: { [name: string]: number } = {}
-export function lazyIgnore(name: string, f1: () => Promise<void> | void, t: number): void {
+export function lazyIgnore(name: string, f1: () => void, t: number): void {
 	// Don't execute the function f1 until the time t has passed.
 	// Subsequent calls will extend the laziness and ignore the previous call
 
@@ -66,12 +66,11 @@ export function lazyIgnore(name: string, f1: () => Promise<void> | void, t: numb
 	}
 	lazyIgnoreCache[name] = Meteor.setTimeout(() => {
 		delete lazyIgnoreCache[name]
-		if (Meteor.isClient) {
-			f1()?.catch((e) => {
-				throw new Error(e)
-			})
-		} else {
-			waitForPromise(f1())
+
+		try {
+			f1()
+		} catch (e) {
+			logger.error(`Unhandled error in lazyIgnore "${name}": ${stringifyError(e)}`)
 		}
 	}, t)
 }

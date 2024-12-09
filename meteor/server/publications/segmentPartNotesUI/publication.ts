@@ -12,13 +12,13 @@ import {
 	CustomPublishCollection,
 	meteorCustomPublish,
 	setUpCollectionOptimizedObserver,
+	SetupObserversResult,
 	TriggerUpdate,
 } from '../../lib/customPublication'
 import { logger } from '../../logging'
 import { resolveCredentials } from '../../security/lib/credentials'
 import { NoSecurityReadAccess } from '../../security/noSecurity'
 import { RundownPlaylistReadAccess } from '../../security/rundownPlaylist'
-import { LiveQueryHandle } from '../../lib/lib'
 import {
 	ContentCache,
 	createReactiveContentCache,
@@ -60,13 +60,13 @@ const rundownPlaylistFieldSpecifier = literal<
 async function setupUISegmentPartNotesPublicationObservers(
 	args: ReadonlyDeep<UISegmentPartNotesArgs>,
 	triggerUpdate: TriggerUpdate<UISegmentPartNotesUpdateProps>
-): Promise<LiveQueryHandle[]> {
+): Promise<SetupObserversResult> {
 	const playlist = (await RundownPlaylists.findOneAsync(args.playlistId, {
 		projection: rundownPlaylistFieldSpecifier,
 	})) as Pick<DBRundownPlaylist, RundownPlaylistFields> | undefined
 	if (!playlist) throw new Error(`RundownPlaylist "${args.playlistId}" not found!`)
 
-	const rundownsObserver = new RundownsObserver(playlist.studioId, playlist._id, (rundownIds) => {
+	const rundownsObserver = await RundownsObserver.create(playlist.studioId, playlist._id, async (rundownIds) => {
 		logger.silly(`Creating new RundownContentObserver`)
 
 		// TODO - can this be done cheaper?
@@ -75,7 +75,7 @@ async function setupUISegmentPartNotesPublicationObservers(
 		// Push update
 		triggerUpdate({ newCache: cache })
 
-		const obs1 = new RundownContentObserver(rundownIds, cache)
+		const obs1 = await RundownContentObserver.create(rundownIds, cache)
 
 		const innerQueries = [
 			cache.Segments.find({}).observeChanges({
