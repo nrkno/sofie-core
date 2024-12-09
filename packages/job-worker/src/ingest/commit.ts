@@ -178,9 +178,13 @@ export async function CommitIngestOperation(
 			// Ensure any adlibbed parts are updated to follow the segmentId of the previous part
 			await updateSegmentIdsForAdlibbedPartInstances(context, ingestModel, beforePartMap)
 
+			// TODO: This whole section can probably be removed later, it's really unneccessary in the grand scheme of
+			// things, it's here only to debug some problems
 			if (data.renamedSegments && data.renamedSegments.size > 0) {
 				logger.verbose(`Renamed segments: ${JSON.stringify(Array.from(data.renamedSegments.entries()))}`)
 			}
+			// End of temporary section
+
 			// ensure instances have matching segmentIds with the parts
 			await updatePartInstancesSegmentIds(context, ingestModel, data.renamedSegments, beforePartMap)
 
