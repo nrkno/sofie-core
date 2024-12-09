@@ -46,7 +46,7 @@ jobs:
           # setup zodern:types. No linters are setup, so this simply installs the packages
           meteor lint
 
-          meteor yarn ci:lint
+          meteor npm run ci:lint
         env:
           CI: true
 
@@ -85,7 +85,7 @@ jobs:
           # setup zodern:types. No linters are setup, so this simply installs the packages
           meteor lint
 
-          NODE_OPTIONS="--max-old-space-size=6144" meteor yarn unitci --force-exit
+          NODE_OPTIONS="--max-old-space-size=6144" meteor npm run unitci --force-exit
         env:
           CI: true
       - name: Send coverage
