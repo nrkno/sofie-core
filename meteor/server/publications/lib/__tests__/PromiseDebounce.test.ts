@@ -1,5 +1,5 @@
 import { sleep } from '@sofie-automation/shared-lib/dist/lib/lib'
-import { PromiseDebounce } from '../debounce'
+import { PromiseDebounce } from '../PromiseDebounce'
 
 describe('PromiseDebounce', () => {
 	beforeEach(() => {

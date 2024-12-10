@@ -4,7 +4,7 @@ import { Rundowns } from '../../collections'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { PromiseDebounce } from '../../publications/lib/debounce'
+import { PromiseDebounce } from '../../publications/lib/PromiseDebounce'
 
 const REACTIVITY_DEBOUNCE = 20
 
