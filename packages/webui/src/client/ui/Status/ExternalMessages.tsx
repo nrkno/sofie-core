@@ -1,9 +1,8 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Time, unprotectString } from '../../lib/tempLib'
 import { getCurrentTime } from '../../lib/systemTime'
 import { MomentFromNow } from '../../lib/Moment'
-import { getAllowConfigure } from '../../lib/localStorage'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
 import { makeTableOfObject } from '../../lib/utilComponents'
@@ -19,6 +18,7 @@ import { ExternalMessageQueue } from '../../collections'
 import { catchError } from '../../lib/lib'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { useTranslation } from 'react-i18next'
+import { UserPermissionsContext } from '../UserPermissions'
 
 function ExternalMessages(): JSX.Element {
 	const { t } = useTranslation()
@@ -97,7 +97,7 @@ function ExternalMessagesQueuedMessages({ studioId }: Readonly<ExternalMessagesQ
 			ExternalMessageQueue.find(
 				{
 					studioId: studioId,
-					sent: { $gt: 0 },
+					sent: { $not: { $gt: 0 } },
 				},
 				{
 					sort: {
@@ -166,6 +166,8 @@ interface ExternalMessagesRowProps {
 	msg: ExternalMessageQueueObj
 }
 function ExternalMessagesRow({ msg }: Readonly<ExternalMessagesRowProps>) {
+	const userPermissions = useContext(UserPermissionsContext)
+
 	const removeMessage = useCallback(() => {
 		MeteorCall.externalMessages.remove(msg._id).catch(catchError('externalMessages.remove'))
 	}, [msg._id])
@@ -233,15 +235,15 @@ function ExternalMessagesRow({ msg }: Readonly<ExternalMessagesRowProps>) {
 	return (
 		<tr key={unprotectString(msg._id)} className={ClassNames(classes)}>
 			<td className="c2">
-				{getAllowConfigure() ? (
+				{userPermissions.configure ? (
 					<React.Fragment>
-						<button className="action-btn" onClick={removeMessage}>
+						<button className="action-btn mod mls" onClick={removeMessage}>
 							<FontAwesomeIcon icon={faTrash} />
 						</button>
-						<button className="action-btn" onClick={toggleHoldMessage}>
+						<button className="action-btn mod" onClick={toggleHoldMessage}>
 							{msg.hold ? <FontAwesomeIcon icon={faPlay} /> : <FontAwesomeIcon icon={faPause} />}
 						</button>
-						<button className="action-btn" onClick={retryMessage}>
+						<button className="action-btn mod" onClick={retryMessage}>
 							<FontAwesomeIcon icon={faRedo} />
 						</button>
 						<br />

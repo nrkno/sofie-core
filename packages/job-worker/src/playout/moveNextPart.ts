@@ -1,20 +1,18 @@
 import { groupByToMap } from '@sofie-automation/corelib/dist/lib'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { JobContext } from '../jobs'
-import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PlayoutModel } from './model/PlayoutModel'
+import { PlayoutModelReadonly } from './model/PlayoutModel'
 import { sortPartsInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
-import { setNextPartFromPart } from './setNext'
 import { logger } from '../logging'
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { ReadonlyDeep } from 'type-fest'
 
-export async function moveNextPart(
-	context: JobContext,
-	playoutModel: PlayoutModel,
+export function selectNewPartWithOffsets(
+	_context: JobContext,
+	playoutModel: PlayoutModelReadonly,
 	partDelta: number,
 	segmentDelta: number
-): Promise<PartId | null> {
+): ReadonlyDeep<DBPart> | null {
 	const playlist = playoutModel.playlist
 
 	const currentPartInstance = playoutModel.currentPartInstance?.partInstance
@@ -69,8 +67,7 @@ export async function moveNextPart(
 		// TODO - looping playlists
 		if (selectedPart) {
 			// Switch to that part
-			await setNextPartFromPart(context, playoutModel, selectedPart, true)
-			return selectedPart._id
+			return selectedPart
 		} else {
 			// Nothing looked valid so do nothing
 			// Note: we should try and a smaller delta if it is not -1/1
@@ -101,8 +98,7 @@ export async function moveNextPart(
 
 		if (targetPart) {
 			// Switch to that part
-			await setNextPartFromPart(context, playoutModel, targetPart, true)
-			return targetPart._id
+			return targetPart
 		} else {
 			// Nothing looked valid so do nothing
 			// Note: we should try and a smaller delta if it is not -1/1

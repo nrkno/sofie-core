@@ -11,7 +11,7 @@ import {
 	Evaluations,
 	ExpectedMediaItems,
 	ExternalMessageQueue,
-	IngestDataCache,
+	NrcsIngestDataCache,
 	MediaObjects,
 	MediaWorkFlows,
 	MediaWorkFlowSteps,
@@ -74,7 +74,7 @@ describe('Basic test of test environment', () => {
 		// @ts-ignore
 		expect(ExternalMessageQueue._isMock).toBeTruthy()
 		// @ts-ignore
-		expect(IngestDataCache._isMock).toBeTruthy()
+		expect(NrcsIngestDataCache._isMock).toBeTruthy()
 		// @ts-ignore
 		expect(MediaObjects._isMock).toBeTruthy()
 		// @ts-ignore
@@ -153,7 +153,7 @@ describe('Basic test of test environment', () => {
 		const studios = await Studios.findFetchAsync({})
 		expect(studios).toHaveLength(1)
 
-		const observer = Studios.observeChanges({ _id: protectString('abc') }, {})
+		const observer = await Studios.observeChanges({ _id: protectString('abc') }, {})
 		expect(observer).toBeTruthy()
 
 		await Studios.insertAsync({

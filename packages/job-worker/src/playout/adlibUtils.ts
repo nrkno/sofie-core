@@ -298,61 +298,69 @@ export function innerStopPieces(
 
 	for (const resolvedPieceInstance of resolvedPieces) {
 		const pieceInstance = resolvedPieceInstance.instance
-		if (
-			!pieceInstance.userDuration &&
-			!pieceInstance.piece.virtual &&
-			filter(pieceInstance) &&
-			resolvedPieceInstance.resolvedStart !== undefined &&
-			resolvedPieceInstance.resolvedStart <= relativeStopAt &&
-			!pieceInstance.plannedStoppedPlayback
-		) {
-			switch (pieceInstance.piece.lifespan) {
-				case PieceLifespan.WithinPart:
-				case PieceLifespan.OutOnSegmentChange:
-				case PieceLifespan.OutOnRundownChange: {
-					logger.info(`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${stopAt}`)
 
-					const pieceInstanceModel = playoutModel.findPieceInstance(pieceInstance._id)
-					if (pieceInstanceModel) {
-						const newDuration: Required<PieceInstance>['userDuration'] = playoutModel.isMultiGatewayMode
-							? {
-									endRelativeToNow: offsetRelativeToNow,
-							  }
-							: {
-									endRelativeToPart: relativeStopAt,
-							  }
+		// Virtual pieces aren't allowed a timed end
+		if (pieceInstance.piece.virtual) continue
 
-						pieceInstanceModel.pieceInstance.setDuration(newDuration)
+		// Check if piece has already had an end defined
+		if (pieceInstance.userDuration) continue
 
-						stoppedInstances.push(pieceInstance._id)
-					} else {
-						logger.warn(
-							`Blueprint action: Failed to crop PieceInstance "${pieceInstance._id}", it was not found`
-						)
-					}
+		// Caller can filter out pieces
+		if (!filter(pieceInstance)) continue
 
-					break
-				}
-				case PieceLifespan.OutOnSegmentEnd:
-				case PieceLifespan.OutOnRundownEnd:
-				case PieceLifespan.OutOnShowStyleEnd: {
-					logger.info(
-						`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${stopAt} with a virtual`
-					)
+		// Check if piece has started yet
+		if (resolvedPieceInstance.resolvedStart == undefined || resolvedPieceInstance.resolvedStart > relativeStopAt)
+			continue
 
-					currentPartInstance.insertVirtualPiece(
-						relativeStopAt,
-						pieceInstance.piece.lifespan,
-						pieceInstance.piece.sourceLayerId,
-						pieceInstance.piece.outputLayerId
-					)
+		// If there end time of the piece is already known, make sure it is in the future
+		if (pieceInstance.plannedStoppedPlayback && pieceInstance.plannedStoppedPlayback <= stopAt) continue
+
+		switch (pieceInstance.piece.lifespan) {
+			case PieceLifespan.WithinPart:
+			case PieceLifespan.OutOnSegmentChange:
+			case PieceLifespan.OutOnRundownChange: {
+				logger.info(`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${stopAt}`)
+
+				const pieceInstanceModel = playoutModel.findPieceInstance(pieceInstance._id)
+				if (pieceInstanceModel) {
+					const newDuration: Required<PieceInstance>['userDuration'] = playoutModel.isMultiGatewayMode
+						? {
+								endRelativeToNow: offsetRelativeToNow,
+						  }
+						: {
+								endRelativeToPart: relativeStopAt,
+						  }
+
+					pieceInstanceModel.pieceInstance.setDuration(newDuration)
 
 					stoppedInstances.push(pieceInstance._id)
-					break
+				} else {
+					logger.warn(
+						`Blueprint action: Failed to crop PieceInstance "${pieceInstance._id}", it was not found`
+					)
 				}
-				default:
-					assertNever(pieceInstance.piece.lifespan)
+
+				break
 			}
+			case PieceLifespan.OutOnSegmentEnd:
+			case PieceLifespan.OutOnRundownEnd:
+			case PieceLifespan.OutOnShowStyleEnd: {
+				logger.info(
+					`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${stopAt} with a virtual`
+				)
+
+				currentPartInstance.insertVirtualPiece(
+					relativeStopAt,
+					pieceInstance.piece.lifespan,
+					pieceInstance.piece.sourceLayerId,
+					pieceInstance.piece.outputLayerId
+				)
+
+				stoppedInstances.push(pieceInstance._id)
+				break
+			}
+			default:
+				assertNever(pieceInstance.piece.lifespan)
 		}
 	}
 

@@ -22,12 +22,12 @@ version: '3.3'
 services:
   db:
     hostname: mongo
-    image: mongo:4.2.18
+    image: mongo:6.0
     restart: always
     entrypoint: ['/usr/bin/mongod', '--replSet', 'rs0', '--bind_ip_all']
     # the healthcheck avoids the need to initiate the replica set
     healthcheck:
-      test: test $$(echo "rs.initiate().ok || rs.status().ok" | mongo --quiet) -eq 1
+      test: test $$(mongosh --quiet --eval "try {rs.initiate()} catch(e) {rs.status().ok}") -eq 1
       interval: 10s
       start_period: 30s
     ports:
@@ -39,7 +39,7 @@ services:
 
   core:
     hostname: core
-    image: sofietv/tv-automation-server-core:release37
+    image: sofietv/tv-automation-server-core:release51
     restart: always
     ports:
       - '3000:3000' # Same port as meteor uses by default
@@ -57,7 +57,7 @@ services:
       - db
 
   playout-gateway:
-    image: sofietv/tv-automation-playout-gateway:release37
+    image: sofietv/tv-automation-playout-gateway:release51
     restart: always
     command: yarn start -host core -port 3000 -id playoutGateway0
     networks:
@@ -80,7 +80,7 @@ services:
   #     - core
 
   # mos-gateway:
-  #   image: sofietv/tv-automation-mos-gateway:release37
+  #   image: sofietv/tv-automation-mos-gateway:release51
   #   restart: always
   #   ports:
   #     - "10540:10540" # MOS Lower port

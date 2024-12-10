@@ -1,3 +1,4 @@
+import { DBRundown } from '../dataModel/Rundown'
 import { DBSegment } from '../dataModel/Segment'
 import { DBPart } from '../dataModel/Part'
 import { DBPartInstance } from '../dataModel/PartInstance'
@@ -104,4 +105,23 @@ export function compareMarkerPositions(a: MarkerPosition, b: MarkerPosition): nu
 	if (a.partRank > b.partRank) return -1
 	if (a.partRank < b.partRank) return 1
 	return 0
+}
+
+export function sortRundownsWithinPlaylist(
+	sortedPossibleIds: ReadonlyDeep<RundownId[]>,
+	unsortedRundowns: ReadonlyDeep<DBRundown[]>
+): ReadonlyDeep<DBRundown[]> {
+	return unsortedRundowns.slice().sort((a, b) => {
+		const indexA = sortedPossibleIds.indexOf(a._id)
+		const indexB = sortedPossibleIds.indexOf(b._id)
+		if (indexA === -1 && indexB === -1) {
+			return a._id.toString().localeCompare(b._id.toString())
+		} else if (indexA === -1) {
+			return 1
+		} else if (indexB === -1) {
+			return -1
+		}
+
+		return indexA - indexB
+	})
 }

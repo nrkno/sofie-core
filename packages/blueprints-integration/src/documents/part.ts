@@ -1,3 +1,4 @@
+import type { UserEditingDefinition } from '../userEditing'
 import type { NoteSeverity } from '../lib'
 import type { ITranslatableMessage } from '../translations'
 
@@ -54,9 +55,6 @@ export interface IBlueprintMutatablePart<TPrivateData = unknown, TPublicData = u
 	/** Expected duration of the line, in milliseconds */
 	expectedDuration?: number
 
-	/** Budget duration of this part, in milliseconds */
-	budgetDuration?: number
-
 	/** Whether this segment line supports being used in HOLD */
 	holdMode?: PartHoldMode
 
@@ -85,6 +83,11 @@ export interface IBlueprintMutatablePart<TPrivateData = unknown, TPublicData = u
 
 	/** MediaObjects that when created/updated, should cause the blueprint to be rerun for the Segment of this Part */
 	hackListenToMediaObjectUpdates?: HackPartMediaObjectSubscription[]
+
+	/**
+	 * User editing definitions for this part
+	 */
+	userEditOperations?: UserEditingDefinition[]
 }
 
 export interface HackPartMediaObjectSubscription {

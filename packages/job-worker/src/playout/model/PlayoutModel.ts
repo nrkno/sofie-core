@@ -7,6 +7,7 @@ import {
 	RundownPlaylistActivationId,
 	RundownPlaylistId,
 	SegmentId,
+	SegmentPlayoutId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { BaseModel } from '../../modelBase'
 import {
@@ -58,7 +59,7 @@ export interface PlayoutModelPreInit {
 	 */
 	readonly playlist: ReadonlyDeep<DBRundownPlaylist>
 	/**
-	 * The unwrapped Rundowns in this RundownPlaylist
+	 * The unwrapped Rundowns in this RundownPlaylist, sorted in order specified by RundownPlaylist
 	 */
 	readonly rundowns: ReadonlyDeep<DBRundown[]>
 
@@ -192,6 +193,14 @@ export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBa
 	activatePlaylist(rehearsal: boolean): RundownPlaylistActivationId
 
 	/**
+	 * Update the active state of a RouteSet
+	 * @param routeSetId
+	 * @param isActive
+	 * @returns Whether the change may affect timeline generation
+	 */
+	switchRouteSet(routeSetId: string, isActive: boolean | 'toggle'): boolean
+
+	/**
 	 * Clear the currently selected PartInstances, so that nothing is selected for playback
 	 */
 	clearSelectedPartInstances(): void
@@ -323,10 +332,10 @@ export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBa
 
 	/**
 	 * Track a Segment as having started playback
-	 * @param segmentId Id of the Segment
+	 * @param segmentPlayoutId Playout id of the Segment
 	 * @param timestamp Timestamp playback started
 	 */
-	setSegmentStartedPlayback(segmentId: SegmentId, timestamp: number): void
+	setSegmentStartedPlayback(segmentPlayoutId: SegmentPlayoutId, timestamp: number): void
 
 	/**
 	 * Set or clear a QuickLoop Marker
@@ -334,6 +343,14 @@ export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBa
 	 * @param marker
 	 */
 	setQuickLoopMarker(type: 'start' | 'end', marker: QuickLoopMarker | null): void
+
+	/**
+	 * Returns any segmentId's that are found between 2 quickloop markers, none will be returned if
+	 * the end is before the start.
+	 * @param start A quickloop marker
+	 * @param end A quickloop marker
+	 */
+	getSegmentsBetweenQuickLoopMarker(start: QuickLoopMarker, end: QuickLoopMarker): SegmentId[]
 
 	calculatePartTimings(
 		fromPartInstance: PlayoutPartInstanceModel | null,

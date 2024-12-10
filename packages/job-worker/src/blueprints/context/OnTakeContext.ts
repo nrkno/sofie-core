@@ -23,9 +23,14 @@ import { getCurrentTime } from '../../lib'
 import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
 import { executePeripheralDeviceAction, listPlayoutDevices } from '../../peripheralDevice'
 import { ActionPartChange, PartAndPieceInstanceActionService } from './services/PartAndPieceInstanceActionService'
+import { BlueprintQuickLookInfo } from '@sofie-automation/blueprints-integration/dist/context/quickLoopInfo'
 
 export class OnTakeContext extends ShowStyleUserContext implements IOnTakeContext, IEventContext {
 	public isTakeAborted: boolean
+
+	public get quickLoopInfo(): BlueprintQuickLookInfo | null {
+		return this.partAndPieceInstanceService.quickLoopInfo
+	}
 
 	public get currentPartState(): ActionPartChange {
 		return this.partAndPieceInstanceService.currentPartState

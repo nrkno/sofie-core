@@ -7,7 +7,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { DeviceTriggerArguments, UIDeviceTriggerPreview } from '@sofie-automation/meteor-lib/dist/api/MountedTriggers'
 import { getCurrentTime } from '../lib/lib'
-import { setUpOptimizedObserverArray, TriggerUpdate } from '../lib/customPublication'
+import { SetupObserversResult, setUpOptimizedObserverArray, TriggerUpdate } from '../lib/customPublication'
 import { CustomPublish, meteorCustomPublish } from '../lib/customPublication/publish'
 import { StudioReadAccess } from '../security/studio'
 import { PeripheralDevices } from '../collections'
@@ -73,7 +73,7 @@ function prepareTriggerBufferForStudio(studioId: string) {
 async function setupDeviceTriggersPreviewsObservers(
 	args: ReadonlyDeep<DeviceTriggersPreviewArgs>,
 	triggerUpdate: TriggerUpdate<DeviceTriggersUpdateProps>
-): Promise<Meteor.LiveQueryHandle[]> {
+): Promise<SetupObserversResult> {
 	const studioId = unprotectString(args.studioId)
 	const lastTriggersStudio = prepareTriggerBufferForStudio(studioId)
 

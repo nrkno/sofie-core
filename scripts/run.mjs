@@ -7,8 +7,8 @@ function watchPackages() {
 		{
 			command: config.uiOnly
 				? `yarn watch ${EXTRA_PACKAGES.map((pkg) => `--ignore ${pkg}`).join(
-						" "
-				  )}`
+					" "
+				)}`
 				: "yarn watch",
 			cwd: "packages",
 			name: "PACKAGES-TSC",
@@ -31,15 +31,14 @@ function watchWorker() {
 function watchMeteor() {
 	return [
 		{
-			command: "meteor yarn watch-types --preserveWatchOutput",
+			command: "meteor npm run watch-types --preserveWatchOutput",
 			cwd: "meteor",
 			name: "METEOR-TSC",
 			prefixColor: "blue",
 		},
 		{
-			command: `meteor yarn debug${config.inspectMeteor ? " --inspect" : ""}${
-				config.verbose ? " --verbose" : ""
-			}`,
+			command: `meteor npm run debug${config.inspectMeteor ? " --inspect" : ""}${config.verbose ? " --verbose" : ""
+				}`,
 			cwd: "meteor",
 			name: "METEOR",
 			prefixColor: "cyan",

@@ -5223,7 +5223,7 @@ __metadata:
     node-fetch: ^2.7.0
     p-lazy: ^3.1.0
     p-timeout: ^4.1.0
-    superfly-timeline: 9.0.1
+    superfly-timeline: 9.0.2
     threadedclass: ^1.2.2
     tslib: ^2.6.2
     type-fest: ^3.13.1
@@ -5283,7 +5283,7 @@ __metadata:
   resolution: "@sofie-automation/shared-lib@workspace:shared-lib"
   dependencies:
     "@mos-connection/model": v4.2.0-alpha.1
-    timeline-state-resolver-types: 9.2.0-nightly-release52-20240909-111856-517f0ee37.0
+    timeline-state-resolver-types: 9.2.0-nightly-release52-20240923-122840-58cfbb259.0
     tslib: ^2.6.2
     type-fest: ^3.13.1
   languageName: unknown
@@ -19830,13 +19830,13 @@ asn1@evs-broadcast/node-asn1:
   linkType: hard
 
 "node-gyp-build@npm:^4.3.0":
-  version: 4.6.1
-  resolution: "node-gyp-build@npm:4.6.1"
+  version: 4.8.4
+  resolution: "node-gyp-build@npm:4.8.4"
   bin:
     node-gyp-build: bin.js
     node-gyp-build-optional: optional.js
     node-gyp-build-test: build-test.js
-  checksum: c3676d337b36803bc7792e35bf7fdcda7cdcb7e289b8f9855a5535702a82498eb976842fefcf487258c58005ca32ce3d537fbed91280b04409161dcd7232a882
+  checksum: 8b81ca8ffd5fa257ad8d067896d07908a36918bc84fb04647af09d92f58310def2d2b8614d8606d129d9cd9b48890a5d2bec18abe7fcff54818f72bedd3a7d74
   languageName: node
   linkType: hard
 
@@ -21721,7 +21721,7 @@ asn1@evs-broadcast/node-asn1:
     "@sofie-automation/shared-lib": 1.52.0-in-development
     debug: ^4.3.4
     influx: ^5.9.3
-    timeline-state-resolver: 9.2.0-nightly-release52-20240909-111856-517f0ee37.0
+    timeline-state-resolver: 9.2.0-nightly-release52-20240923-122840-58cfbb259.0
     tslib: ^2.6.2
     underscore: ^1.13.6
     winston: ^3.11.0
@@ -25637,12 +25637,12 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"superfly-timeline@npm:9.0.1, superfly-timeline@npm:^9.0.1":
-  version: 9.0.1
-  resolution: "superfly-timeline@npm:9.0.1"
+"superfly-timeline@npm:9.0.2, superfly-timeline@npm:^9.0.1":
+  version: 9.0.2
+  resolution: "superfly-timeline@npm:9.0.2"
   dependencies:
     tslib: ^2.6.0
-  checksum: 4267eed691fe9ce9f89bf17c8aed1a98206938dd6d850c64b083e4fd3a3dc5329801c76c757450c9520375bad100ce512cc6d6a3e4a997bdfa14a4e7d65f09f2
+  checksum: d628d467d5384f5667bc10b877478c5b8b0a91774b5d5c5e9d9d3134b8f1b760225f2fbbb0f9ccd3e55f930c9f3719f81b9347b94ea853fbc0a18bc121d97665
   languageName: node
   linkType: hard
 
@@ -26028,18 +26028,25 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"timeline-state-resolver-types@npm:9.2.0-nightly-release52-20240909-111856-517f0ee37.0":
-  version: 9.2.0-nightly-release52-20240909-111856-517f0ee37.0
-  resolution: "timeline-state-resolver-types@npm:9.2.0-nightly-release52-20240909-111856-517f0ee37.0"
-  dependencies:
-    tslib: ^2.6.3
-  checksum: 6f9526e3e60021b722fd152272a7697a2b78517fb800a9e0879170388dcfeaaa2d386f80b9868b20bffe058033c9158077f93294cff7907c5d8a6d7b27e186f6
+"timecode@patch:timecode@npm%3A0.0.4#./.yarn/patches/timecode-npm-0.0.4-82bde9e6fe.patch::locator=packages%40workspace%3A.":
+  version: 0.0.4
+  resolution: "timecode@patch:timecode@npm%3A0.0.4#./.yarn/patches/timecode-npm-0.0.4-82bde9e6fe.patch::version=0.0.4&hash=4d4986&locator=packages%40workspace%3A."
+  checksum: da05fb8e2f907a5bdb538c00ccaf216447337a568d9efddcb3835c130929fef2aeb864a5eba0381847e9404dbb412012806e0e02fd881562c82ae23c61ef139c
   languageName: node
   linkType: hard
 
-"timeline-state-resolver@npm:9.2.0-nightly-release52-20240909-111856-517f0ee37.0":
-  version: 9.2.0-nightly-release52-20240909-111856-517f0ee37.0
-  resolution: "timeline-state-resolver@npm:9.2.0-nightly-release52-20240909-111856-517f0ee37.0"
+"timeline-state-resolver-types@npm:9.2.0-nightly-release52-20240923-122840-58cfbb259.0":
+  version: 9.2.0-nightly-release52-20240923-122840-58cfbb259.0
+  resolution: "timeline-state-resolver-types@npm:9.2.0-nightly-release52-20240923-122840-58cfbb259.0"
+  dependencies:
+    tslib: ^2.6.3
+  checksum: c041363201bcfc0daac2ebca021b09fddc1f5b12fdeb932d9c19bfadc3ee308aa81f36c74c005edad2e756ed1c6465de779bfca5ed63ffd940878bf015497231
+  languageName: node
+  linkType: hard
+
+"timeline-state-resolver@npm:9.2.0-nightly-release52-20240923-122840-58cfbb259.0":
+  version: 9.2.0-nightly-release52-20240923-122840-58cfbb259.0
+  resolution: "timeline-state-resolver@npm:9.2.0-nightly-release52-20240923-122840-58cfbb259.0"
   dependencies:
     "@tv2media/v-connection": ^7.3.4
     atem-connection: 3.5.0
@@ -26064,7 +26071,7 @@ asn1@evs-broadcast/node-asn1:
     sprintf-js: ^1.1.3
     superfly-timeline: ^9.0.1
     threadedclass: ^1.2.2
-    timeline-state-resolver-types: 9.2.0-nightly-release52-20240909-111856-517f0ee37.0
+    timeline-state-resolver-types: 9.2.0-nightly-release52-20240923-122840-58cfbb259.0
     tslib: ^2.6.3
     tv-automation-quantel-gateway-client: ^3.1.7
     type-fest: ^3.13.1
@@ -26072,7 +26079,7 @@ asn1@evs-broadcast/node-asn1:
     utf-8-validate: ^6.0.4
     ws: ^8.18.0
     xml-js: ^1.6.11
-  checksum: 65e4b7ad24f414efd940fda3987900123aea8bd5ec41cadeca7763c13e98e24ceff4384f0103f8079d2e823986de56f3dd28bc2afeb3e6632d74c0e29f88ad6b
+  checksum: a127cd66d96f06bae3ff16291bc1be4cd1c6589c8843632c489e2432df2b34789adc62db0826d7069bb6ff1b4a8c56e0f37ffe5a17d9a92b8f3533963e0bdb71
   languageName: node
   linkType: hard
 
@@ -27205,12 +27212,12 @@ asn1@evs-broadcast/node-asn1:
   linkType: hard
 
 "utf-8-validate@npm:^6.0.4":
-  version: 6.0.4
-  resolution: "utf-8-validate@npm:6.0.4"
+  version: 6.0.5
+  resolution: "utf-8-validate@npm:6.0.5"
   dependencies:
     node-gyp: latest
     node-gyp-build: ^4.3.0
-  checksum: ccbfbceeed7cbad62282aed5420236d38006453ce583cf9021ad6225c2d15996a660a3b3bdd2b9344b4d3b5df5673fbaf9e70c3637628a2cd58824089d9d9153
+  checksum: ab6bd5b0db2241a990a9e1c434a29194900f9f8f715158b56d591306634cdd4f748e91b965d91a32fd459c86b082ec0a35d369bbc4efbb243b48f593c14448e8
   languageName: node
   linkType: hard
 

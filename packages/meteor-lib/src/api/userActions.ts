@@ -1,7 +1,7 @@
 import { ClientAPI } from './client'
 import { EvaluationBase } from '../collections/Evaluations'
 import { Bucket } from '../collections/Buckets'
-import { IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integration'
+import { IngestAdlib, ActionUserData, UserOperationTarget } from '@sofie-automation/blueprints-integration'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { AdLibActionCommon } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
@@ -301,7 +301,7 @@ export interface NewUserActionAPI {
 		eventTime: Time,
 		studioId: StudioId,
 		routeSetId: string,
-		state: boolean
+		state: boolean | 'toggle'
 	): Promise<ClientAPI.ClientResponse<void>>
 	moveRundown(
 		userEvent: string,
@@ -328,6 +328,13 @@ export interface NewUserActionAPI {
 		playlistId: RundownPlaylistId,
 		rundownId: RundownId
 	): Promise<ClientAPI.ClientResponse<void>>
+	executeUserChangeOperation(
+		userEvent: string,
+		eventTime: Time,
+		rundownId: RundownId,
+		operationTarget: UserOperationTarget,
+		operation: { id: string; [key: string]: any }
+	): Promise<ClientAPI.ClientResponse<void>>
 
 	createAdlibTestingRundownForShowStyleVariant(
 		userEvent: string,
@@ -347,6 +354,11 @@ export interface NewUserActionAPI {
 		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		marker: QuickLoopMarker | null
+	): Promise<ClientAPI.ClientResponse<void>>
+	clearQuickLoop(
+		userEvent: string,
+		eventTime: Time,
+		rundownPlaylistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<void>>
 }
 
@@ -427,12 +439,14 @@ export enum UserActionAPIMethods {
 
 	'disablePeripheralSubDevice' = 'userAction.system.disablePeripheralSubDevice',
 
+	'executeUserChangeOperation' = 'userAction.executeUserChangeOperation',
 	'activateAdlibTestingMode' = 'userAction.activateAdlibTestingMode',
 
 	'createAdlibTestingRundownForShowStyleVariant' = 'userAction.createAdlibTestingRundownForShowStyleVariant',
 
 	'setQuickLoopStart' = 'userAction.setQuickLoopStart',
 	'setQuickLoopEnd' = 'userAction.setQuickLoopEnd',
+	'clearQuickLoop' = 'userAction.clearQuickLoop',
 }
 
 export interface ReloadRundownPlaylistResponse {

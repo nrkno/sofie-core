@@ -35,6 +35,8 @@ $segment-layer-background-local: #9a2bd8;
 $segment-layer-background-local--second: darken($segment-layer-background-local, 10%);
 $segment-layer-background-studio-screen: #641fb3;
 
+$step-counter-background-studio-screen: #2a005b;
+
 $segment-item-disabled-background: #898989;
 $segment-item-disabled-color: #c9c9c9;
 
@@ -77,6 +79,10 @@ $layer-types: join($layer-types-solid, $layer-types-gradient);
 				background: var(--segment-layer-background-#{$layer-type}--second);
 			}
 		}
+	}
+
+	&.studio-screen {
+		--segment-piece-step-counter-background: #{$step-counter-background-studio-screen};
 	}
 }
 
@@ -251,6 +257,10 @@ $layer-types: join($layer-types-solid, $layer-types-gradient);
 			}
 		}
 	}
+
+	&.studio-screen {
+		--segment-piece-step-counter-background: #{$step-counter-background-studio-screen};
+	}
 }
 
 @mixin item-type-borders {
@@ -349,24 +359,6 @@ $layer-types: join($layer-types-solid, $layer-types-gradient);
 	&.source-unknown-state,
 	&.source-not-ready {
 		&::before {
-			@keyframes animated-zebra {
-				0% {
-					opacity: 0.4;
-				}
-				49% {
-					opacity: 0.4;
-				}
-				50% {
-					opacity: 0.9;
-				}
-				99% {
-					opacity: 0.9;
-				}
-				100% {
-					opacity: 0.4;
-				}
-			}
-
 			content: ' ';
 			display: block;
 			position: absolute;
@@ -394,6 +386,24 @@ $layer-types: join($layer-types-solid, $layer-types-gradient);
 				transparent 13px,
 				transparent 16px
 			);
+
+			@keyframes animated-zebra {
+				0% {
+					opacity: 0.4;
+				}
+				49% {
+					opacity: 0.4;
+				}
+				50% {
+					opacity: 0.9;
+				}
+				99% {
+					opacity: 0.9;
+				}
+				100% {
+					opacity: 0.4;
+				}
+			}
 		}
 	}
 

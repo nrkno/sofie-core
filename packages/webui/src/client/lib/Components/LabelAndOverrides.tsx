@@ -16,6 +16,7 @@ export interface LabelAndOverridesProps<T extends object, TValue> {
 	opPrefix: string
 	overrideHelper: OverrideOpHelperForItemContents
 
+	showClearButton?: boolean
 	formatDefaultValue?: (value: any) => JSX.Element | string | null
 
 	children: (value: TValue, setValue: (value: TValue) => void) => React.ReactNode
@@ -33,6 +34,7 @@ export function LabelAndOverrides<T extends object, TValue = any>({
 	itemKey,
 	opPrefix,
 	overrideHelper,
+	showClearButton,
 	formatDefaultValue,
 }: Readonly<LabelAndOverridesProps<T, TValue>>): JSX.Element {
 	const { t } = useTranslation()
@@ -51,7 +53,7 @@ export function LabelAndOverrides<T extends object, TValue = any>({
 
 	let displayValue: JSX.Element | string | null = '""'
 	if (item.defaults) {
-		const defaultValue: any = item.defaults[itemKey]
+		const defaultValue: any = objectPathGet(item.defaults, String(itemKey))
 		// Special cases for formatting of the default
 		if (formatDefaultValue) {
 			displayValue = formatDefaultValue(defaultValue)
@@ -75,7 +77,16 @@ export function LabelAndOverrides<T extends object, TValue = any>({
 		<label className="field">
 			<LabelActual label={label} />
 
-			{children(value, setValue)}
+			<div className="field-content">
+				{showClearButton && (
+					<button className="btn btn-primary field-clear" onClick={() => setValue(undefined)} title={t('Clear value')}>
+						&nbsp;
+						<FontAwesomeIcon icon={faSync} />
+					</button>
+				)}
+
+				{children(value, setValue)}
+			</div>
 
 			{item.defaults && (
 				<>
@@ -187,4 +198,45 @@ export function LabelAndOverridesForBase64Image<T extends object>(
 	}, [])
 
 	return <LabelAndOverrides<T, string> {...props} formatDefaultValue={formatter} />
+}
+
+export function LabelAndOverridesForMultiSelect<T extends object, TValue = any>(
+	props: Omit<LabelAndOverridesProps<T, TValue>, 'formatDefaultValue' | 'children'> & {
+		options: DropdownInputOption<TValue>[]
+		children: (
+			value: TValue[],
+			setValue: (value: TValue[]) => void,
+			options: DropdownInputOption<TValue>[]
+		) => React.ReactNode
+	}
+): JSX.Element {
+	const formatMultiLine = useCallback(
+		(value: any) => {
+			const matchedOption = findOptionByValue(props.options, value)
+			if (matchedOption) {
+				return `"${matchedOption.name}"`
+			} else {
+				return `Value: "${value}"`
+			}
+		},
+		[props.options]
+	)
+	const formatter = useCallback(
+		(defaultValue: any) => {
+			if (defaultValue === undefined || defaultValue.length === 0) return '""'
+
+			if (Array.isArray(defaultValue)) {
+				return defaultValue.map(formatMultiLine).join('/n')
+			} else {
+				return formatMultiLine(defaultValue)
+			}
+		},
+		[formatMultiLine]
+	)
+
+	return (
+		<LabelAndOverrides<T, TValue[]> {...props} formatDefaultValue={formatter}>
+			{(value, setValue) => props.children(value, setValue, props.options)}
+		</LabelAndOverrides>
+	)
 }

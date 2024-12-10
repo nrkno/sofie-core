@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { RundownTiming } from './RundownTiming'
 import { RundownTimingContext } from '../../../lib/rundownTiming'
@@ -32,6 +31,19 @@ type IWrappedComponent<IProps, IState> =
 	| (new (props: WithTiming<IProps>, state: IState) => React.Component<WithTiming<IProps>, IState>)
 	| ((props: WithTiming<IProps>) => JSX.Element | null)
 
+export interface IRundownTimingProviderValues {
+	durations: RundownTimingContext
+	syncedDurations: RundownTimingContext
+}
+export const RundownTimingProviderContext = React.createContext<IRundownTimingProviderValues>({
+	durations: {
+		isLowResolution: false,
+	},
+	syncedDurations: {
+		isLowResolution: true,
+	},
+})
+
 /**
  * Wrap a component in a HOC that will inject a the timing context as a prop. Takes an optional options object that
  * allows a high timing resolution or filtering of the changes in the context, so that the child component only
@@ -58,16 +70,8 @@ export function withTiming<IProps, IState>(
 
 	return (WrappedComponent) => {
 		return class WithTimingHOCComponent extends React.Component<IProps, IState> {
-			static contextTypes = {
-				durations: PropTypes.object.isRequired,
-				syncedDurations: PropTypes.object.isRequired,
-			}
-
-			// Setup by React.Component constructor
-			declare context: {
-				durations: RundownTimingContext
-				syncedDurations: RundownTimingContext
-			}
+			static contextType = RundownTimingProviderContext
+			declare context: React.ContextType<typeof RundownTimingProviderContext>
 
 			filterGetter: ((o: any) => any) | undefined
 			previousValue: any = undefined

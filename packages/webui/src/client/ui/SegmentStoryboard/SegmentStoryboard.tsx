@@ -621,7 +621,7 @@ export const SegmentStoryboard = React.memo(
 						props.parts.length > 0 &&
 						(!props.hasAlreadyPlayed || props.isNextSegment || props.isLiveSegment) && (
 							<SegmentDuration
-								segmentId={props.segment._id}
+								segment={props.segment}
 								parts={props.parts}
 								label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
 								fixed={props.fixedSegmentDuration}
@@ -685,7 +685,7 @@ export const SegmentStoryboard = React.memo(
 					>
 						<div
 							className={classNames('segment-storyboard__part-list', {
-								loading: !props.subscriptionsReady /*  */,
+								loading: !props.subscriptionsReady,
 							})}
 							style={!animateScrollLeft ? { transform: `translateX(-${scrollLeft}px)` } : undefined}
 						>

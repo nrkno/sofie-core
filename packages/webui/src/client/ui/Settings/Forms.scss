@@ -1,6 +1,6 @@
 .properties-grid {
 	display: grid;
-	grid-auto-columns: fit-content(350px) minmax(350px, 1fr) fit-content(350px) minmax(max-content, 100px);
+	grid-auto-columns: fit-content(350px) auto minmax(350px, 1fr) fit-content(350px) minmax(max-content, 100px);
 	gap: 0 10px;
 	margin-left: 10px;
 
@@ -26,6 +26,14 @@
 	content: '';
 	margin-bottom: 20px;
 	grid-column: 1 / 5;
+}
+
+.properties-grid > .field > .field-content {
+	text-wrap: nowrap;
+
+	.field-clear {
+		margin-bottom: -6px !important;
+	}
 }
 
 .properties-grid > .field > .field-hint {

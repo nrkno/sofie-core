@@ -12,7 +12,7 @@ import {
 } from 'react-dnd'
 import { DragDropItemTypes } from '../DragDropItemTypes'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
-import { useContentStatusForAdlibPiece } from '../SegmentTimeline/withMediaObjectStatus'
+import { useContentStatusForItem } from '../SegmentTimeline/withMediaObjectStatus'
 import { BucketAdLibActionUi, BucketAdLibItem } from './RundownViewBuckets'
 import { IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
 import { BucketId, PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -60,7 +60,7 @@ class BucketPieceButtonBase extends DashboardPieceButtonBase<ButtonSourceCollect
 export function BucketPieceButton(
 	props: React.PropsWithChildren<IDashboardButtonProps> & BucketPieceButtonBaseProps
 ): JSX.Element {
-	const contentStatus = useContentStatusForAdlibPiece(props.piece)
+	const contentStatus = useContentStatusForItem(props.piece)
 
 	const [, connectDropTarget] = useDrop<IBucketPieceDragObject, {}, {}>({
 		accept: DragDropItemTypes.BUCKET_ADLIB_PIECE,

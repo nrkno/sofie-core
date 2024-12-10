@@ -10,6 +10,9 @@ import { MongoQuery } from '../db'
 import { mongoWhere } from '@sofie-automation/corelib/dist/mongo'
 import { setNextPart } from './setNext'
 import { selectNextPart } from './selectNextPart'
+import { StudioPlayoutModel } from '../studio/model/StudioPlayoutModel'
+import { runJobWithPlayoutModel } from './lock'
+import { updateTimeline, updateStudioTimeline } from './timeline/generate'
 
 /**
  * Reset the rundownPlaylist (all of the rundowns within the playlist):
@@ -174,4 +177,22 @@ export function prefixAllObjectIds<T extends TimelineObjGeneric>(objList: T[], p
 
 		return obj
 	})
+}
+
+export async function updateTimelineFromStudioPlayoutModel(
+	context: JobContext,
+	studioPlayoutModel: StudioPlayoutModel
+): Promise<void> {
+	const activePlaylists = studioPlayoutModel.getActiveRundownPlaylists()
+	if (activePlaylists.length > 1) {
+		throw new Error(`Too many active playlists`)
+	} else if (activePlaylists.length > 0) {
+		const playlist = activePlaylists[0]
+
+		await runJobWithPlayoutModel(context, { playlistId: playlist._id }, null, async (playoutModel) => {
+			await updateTimeline(context, playoutModel)
+		})
+	} else {
+		await updateStudioTimeline(context, studioPlayoutModel)
+	}
 }

@@ -74,7 +74,7 @@ const SnapshotsViewContent = withTranslation()(
 			}
 		}
 
-		onUploadFile(e: React.ChangeEvent<HTMLInputElement>, restoreDebugData: boolean) {
+		onUploadFile(e: React.ChangeEvent<HTMLInputElement>, restoreVariant?: 'debug' | 'ingest') {
 			const { t } = this.props
 
 			const file = e.target.files?.[0]
@@ -101,7 +101,8 @@ const SnapshotsViewContent = withTranslation()(
 							body: uploadFileContents,
 							headers: {
 								'content-type': 'application/json',
-								'restore-debug-data': restoreDebugData ? '1' : '0',
+								'restore-debug-data': restoreVariant === 'debug' ? '1' : '0',
+								'ingest-snapshot-data': restoreVariant === 'ingest' ? '1' : '0',
 							},
 						})
 							.then(() => {
@@ -137,6 +138,7 @@ const SnapshotsViewContent = withTranslation()(
 
 			reader.readAsText(file)
 		}
+
 		restoreStoredSnapshot = (snapshotId: SnapshotId) => {
 			const snapshot = Snapshots.findOne(snapshotId)
 			if (snapshot) {
@@ -313,24 +315,48 @@ const SnapshotsViewContent = withTranslation()(
 						</div>
 						<h2 className="mhn">{t('Restore from Snapshot File')}</h2>
 						<div className="mdi">
-							<UploadButton
-								accept="application/json,.json"
-								className="btn btn-secondary"
-								onChange={(e) => this.onUploadFile(e, false)}
-								key={this.state.uploadFileKey}
-							>
-								<FontAwesomeIcon icon={faUpload} />
-								<span>{t('Upload Snapshot')}</span>
-							</UploadButton>
-							<UploadButton
-								accept="application/json,.json"
-								className="btn btn-secondary mls"
-								onChange={(e) => this.onUploadFile(e, true)}
-								key={this.state.uploadFileKey2}
-							>
-								<FontAwesomeIcon icon={faUpload} />
-								<span>{t('Upload Snapshot (for debugging)')}</span>
-							</UploadButton>
+							<p className="mhn">
+								<UploadButton
+									accept="application/json,.json"
+									className="btn btn-secondary"
+									onChange={(e) => this.onUploadFile(e)}
+									key={this.state.uploadFileKey}
+								>
+									<FontAwesomeIcon icon={faUpload} />
+									<span>{t('Upload Snapshot')}</span>
+								</UploadButton>
+								<span className="text-s vsubtle mls">{t('Upload a snapshot file')}</span>
+							</p>
+							<p className="mhn">
+								<UploadButton
+									accept="application/json,.json"
+									className="btn btn-secondary"
+									onChange={(e) => this.onUploadFile(e, 'debug')}
+									key={this.state.uploadFileKey2}
+								>
+									<FontAwesomeIcon icon={faUpload} />
+									<span>{t('Upload Snapshot (for debugging)')}</span>
+								</UploadButton>
+								<span className="text-s vsubtle mls">
+									{t(
+										'Upload a snapshot file (restores additional info not directly related to a Playlist / Rundown, such as Packages, PackageWorkStatuses etc'
+									)}
+								</span>
+							</p>
+							<p className="mhn">
+								<UploadButton
+									accept="application/json,.json"
+									className="btn btn-secondary"
+									onChange={(e) => this.onUploadFile(e, 'ingest')}
+									key={this.state.uploadFileKey2}
+								>
+									<FontAwesomeIcon icon={faUpload} />
+									<span>{t('Ingest from Snapshot')}</span>
+								</UploadButton>
+								<span className="text-s vsubtle mls">
+									{t('Reads the ingest (NRCS) data, and pipes it throught the blueprints')}
+								</span>
+							</p>
 						</div>
 						<h2 className="mhn">{t('Restore from Stored Snapshots')}</h2>
 						<div>

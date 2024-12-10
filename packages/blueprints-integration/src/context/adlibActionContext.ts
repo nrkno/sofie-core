@@ -4,6 +4,7 @@ import type { IShowStyleUserContext } from './showStyleContext'
 import { IPartAndPieceActionContext } from './partsAndPieceActionContext'
 import { IExecuteTSRActionsContext } from './executeTsrActionContext'
 import { IBlueprintPart, IBlueprintPartInstance, IBlueprintPiece } from '..'
+import { IRouteSetMethods } from './routeSetContext'
 
 /** Actions */
 export interface IDataStoreMethods {
@@ -24,7 +25,8 @@ export interface IActionExecutionContext
 		IEventContext,
 		IDataStoreMethods,
 		IPartAndPieceActionContext,
-		IExecuteTSRActionsContext {
+		IExecuteTSRActionsContext,
+		IRouteSetMethods {
 	/** Fetch the showstyle config for the specified part */
 	// getNextShowStyleConfig(): Readonly<{ [key: string]: ConfigItemValue }>
 

@@ -1,7 +1,5 @@
 @import '../../styles/colorScheme';
 @import '../../styles/utils';
-@import '../../styles/variables';
-@import '../../styles/itemTypeColors';
 
 /** Loans from rundownView.scss, to be refactored to a shared variable file */
 $segment-title-background-color: #4b4b4b;
@@ -78,7 +76,7 @@ $identifier-area-width: 3em;
 					&--live {
 						background: $general-live-color;
 						border-radius: 0 ($part-height * 0.7) ($part-height * 0.7) 0;
-						width: $duration-area-width - ($duration-area-margin / 2);
+						width: $duration-area-width - calc($duration-area-margin / 2);
 					}
 				}
 
@@ -150,7 +148,8 @@ $identifier-area-width: 3em;
 					}
 				}
 
-				> .segment-opl__quickloop-start, > .segment-opl__quickloop-end {
+				> .segment-opl__quickloop-start,
+				> .segment-opl__quickloop-end {
 					position: absolute;
 					right: -10px;
 					filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.6));
@@ -308,12 +307,14 @@ $identifier-area-width: 3em;
 						}
 
 						&.quickloop-start {
-							&::before, &::after {
+							&::before,
+							&::after {
 								left: 6px;
 							}
 
 							&:not(.next) {
-								&::before, &::after {
+								&::before,
+								&::after {
 									border-left-color: white;
 								}
 							}
@@ -370,7 +371,6 @@ $identifier-area-width: 3em;
 						font-weight: 400;
 						text-shadow: 0 0 5px rgba(0, 0, 0, 1);
 					}
-
 				}
 
 				> .segment-opl__take-line__quickloop-start {
@@ -521,6 +521,8 @@ $identifier-area-width: 3em;
 					white-space: nowrap;
 
 					> .flash {
+						animation: 0.3s linear 0s infinite normal forwards segment-opl__freeze-marker--flash;
+
 						@keyframes segment-opl__freeze-marker--flash {
 							0% {
 								opacity: 0;
@@ -535,7 +537,6 @@ $identifier-area-width: 3em;
 								opacity: 1;
 							}
 						}
-						animation: 0.3s linear 0s infinite normal forwards segment-opl__freeze-marker--flash;
 					}
 
 					> .segment-opl__freeze-marker-timer {

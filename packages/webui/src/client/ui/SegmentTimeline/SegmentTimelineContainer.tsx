@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react'
-import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { SegmentTimeline, SegmentTimelineClass } from './SegmentTimeline'
 import { computeSegmentDisplayDuration, RundownTiming, TimingEvent } from '../RundownView/RundownTiming/RundownTiming'
@@ -24,7 +23,7 @@ import {
 	ITrackedResolvedSegmentProps,
 	IOutputLayerUi,
 } from '../SegmentContainer/withResolvedSegment'
-import { computeSegmentDuration, getPartInstanceTimingId, RundownTimingContext } from '../../lib/rundownTiming'
+import { computeSegmentDuration, getPartInstanceTimingId } from '../../lib/rundownTiming'
 import { RundownViewShelf } from '../RundownView/RundownViewShelf'
 import { PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { catchError, useDebounce } from '../../lib/lib'
@@ -40,6 +39,7 @@ import {
 } from './Constants'
 import { UIPartInstances, UIParts } from '../Collections'
 import { useSelection } from '../RundownView/SelectedElementsContext'
+import { RundownTimingProviderContext } from '../RundownView/RundownTiming/withTiming'
 
 // Kept for backwards compatibility
 export type {
@@ -173,10 +173,8 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 		IWithSelectionProps & ITrackedResolvedSegmentProps,
 		IState
 	> {
-		static contextTypes = {
-			durations: PropTypes.object.isRequired,
-			syncedDurations: PropTypes.object.isRequired,
-		}
+		static contextType = RundownTimingProviderContext
+		declare context: React.ContextType<typeof RundownTimingProviderContext>
 
 		isVisible: boolean
 		rundownCurrentPartInstanceId: PartInstanceId | null = null
@@ -184,12 +182,6 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 		intersectionObserver: IntersectionObserver | undefined
 		mountedTime = 0
 		nextPartOffset = 0
-
-		// Setup by React.Component constructor
-		declare context: {
-			durations: RundownTimingContext
-			syncedDurations: RundownTimingContext
-		}
 
 		constructor(props: IWithSelectionProps & ITrackedResolvedSegmentProps) {
 			super(props)
@@ -397,18 +389,7 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 		}
 
 		private getSegmentBudgetDuration(): number | undefined {
-			let duration = 0
-			let anyBudgetDurations = false
-			for (const part of this.props.parts) {
-				if (part.instance.part.budgetDuration !== undefined) {
-					anyBudgetDurations = true
-					duration += part.instance.part.budgetDuration
-				}
-			}
-			if (anyBudgetDurations) {
-				return duration
-			}
-			return undefined
+			return this.props.segmentui?.segmentTiming?.budgetDuration
 		}
 
 		onWindowResize = _.throttle(() => {
@@ -738,7 +719,6 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 							isLastSegment={this.props.isLastSegment}
 							lastValidPartIndex={this.props.lastValidPartIndex}
 							onHeaderNoteClick={this.props.onHeaderNoteClick}
-							budgetDuration={this.props.budgetDuration}
 							showCountdownToSegment={this.props.showCountdownToSegment}
 							fixedSegmentDuration={this.props.fixedSegmentDuration}
 							showDurationSourceLayers={this.props.showDurationSourceLayers}

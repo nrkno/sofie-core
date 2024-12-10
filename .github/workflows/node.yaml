@@ -46,7 +46,7 @@ jobs:
           # setup zodern:types. No linters are setup, so this simply installs the packages
           meteor lint
 
-          meteor yarn ci:lint
+          meteor npm run ci:lint
         env:
           CI: true
 
@@ -85,12 +85,12 @@ jobs:
           # setup zodern:types. No linters are setup, so this simply installs the packages
           meteor lint
 
-          NODE_OPTIONS="--max-old-space-size=6144" meteor yarn unitci --force-exit
+          NODE_OPTIONS="--max-old-space-size=6144" meteor npm run unitci --force-exit
         env:
           CI: true
       - name: Send coverage
         if: ((github.event_name == 'pull_request') && (!startsWith(github.head_ref, 'release'))) || ((github.event_name == 'push') && (!startsWith(github.ref_name, 'release')))
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
@@ -246,7 +246,9 @@ jobs:
           echo "image=$image" >> $GITHUB_OUTPUT
       - name: Trivy scanning
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@0.29.0
+        env:
+          TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db
         with:
           image-ref: "${{ steps.trivy-image.outputs.image }}"
           format: "table"
@@ -395,7 +397,9 @@ jobs:
           echo "image=$image" >> $GITHUB_OUTPUT
       - name: Trivy scanning
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@0.29.0
+        env:
+          TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db
         with:
           image-ref: "${{ steps.trivy-image.outputs.image }}"
           format: "table"
@@ -587,13 +591,17 @@ jobs:
           yarn
         env:
           CI: true
-      - name: Run generator
+      - name: Build OpenAPI client library
         run: |
           cd packages/openapi
-
+          yarn build
+        env:
+          CI: true
+      - name: Generate OpenAPI docs and server
+        run: |
+          cd packages/openapi
           yarn gendocs
           yarn genserver
-          yarn genclient:ts
         env:
           CI: true
 
@@ -682,7 +690,7 @@ jobs:
           else
             # make dependencies of `determine-npm-tag` available
             yarn install --mode=skip-build
-            
+
             cd packages
             PACKAGE_NAME="@sofie-automation/shared-lib"
             PUBLISHED_VERSION=$(yarn npm info --json $PACKAGE_NAME | jq -c '.version' -r)
@@ -700,19 +708,11 @@ jobs:
           yarn build
         env:
           CI: true
-      - name: Generate OpenAPI client library
-        if: ${{ steps.do-publish.outputs.tag }}
-        uses: hatamiarash7/openapi-generator@v0.3.0
-        with:
-          generator: typescript-fetch
-          openapi-file: ./packages/openapi/api/actions.yaml
-          output-dir: ./packages/openapi/client/ts
-          command-args: -p supportsES6=true
       - name: Build OpenAPI client library
         if: ${{ steps.do-publish.outputs.tag }}
         run: |
           cd packages/openapi
-          yarn build:main
+          yarn build
         env:
           CI: true
       - name: Modify dependencies to use npm packages

@@ -9,7 +9,7 @@ import { SIMULATED_PLAYBACK_HARD_MARGIN } from '../SegmentTimeline/Constants'
 import { PartInstanceLimited } from '../../lib/RundownResolver'
 import { useTranslation } from 'react-i18next'
 import { getAllowSpeaking, getAllowVibrating } from '../../lib/localStorage'
-import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRemaining'
+import { CurrentPartOrSegmentRemaining } from '../RundownView/RundownTiming/CurrentPartOrSegmentRemaining'
 import { AutoNextStatus } from '../RundownView/RundownTiming/AutoNextStatus'
 import classNames from 'classnames'
 
@@ -107,7 +107,7 @@ export const OnAirLine = withTiming<IProps, {}>({
 				</div>
 				<div className="segment-opl__on-air-line__countdown">
 					<AutoNextStatus />
-					<CurrentPartRemaining
+					<CurrentPartOrSegmentRemaining
 						currentPartInstanceId={partInstance._id}
 						speaking={getAllowSpeaking()}
 						vibrating={getAllowVibrating()}

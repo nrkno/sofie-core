@@ -283,7 +283,7 @@ export interface AsyncOnlyReadOnlyMongoCollection<DBInterface extends { _id: Pro
 		selector: MongoQuery<DBInterface> | DBInterface['_id'],
 		callbacks: PromisifyCallbacks<ObserveChangesCallbacks<DBInterface>>,
 		options?: FindOptions<DBInterface>
-	): Meteor.LiveQueryHandle
+	): Promise<Meteor.LiveQueryHandle>
 
 	/**
 	 * Observe changes on this collection
@@ -293,7 +293,7 @@ export interface AsyncOnlyReadOnlyMongoCollection<DBInterface extends { _id: Pro
 		selector: MongoQuery<DBInterface> | DBInterface['_id'],
 		callbacks: PromisifyCallbacks<ObserveCallbacks<DBInterface>>,
 		options?: FindOptions<DBInterface>
-	): Meteor.LiveQueryHandle
+	): Promise<Meteor.LiveQueryHandle>
 
 	/**
 	 * Count the number of docuyments in a collection that match the selector.

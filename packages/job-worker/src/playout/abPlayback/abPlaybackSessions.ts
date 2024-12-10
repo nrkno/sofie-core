@@ -5,6 +5,7 @@ import { OnGenerateTimelineObjExt } from '@sofie-automation/corelib/dist/dataMod
 import * as _ from 'underscore'
 import { SessionRequest } from './abPlaybackResolver'
 import { AbSessionHelper } from './abSessionHelper'
+import { ReadonlyDeep } from 'type-fest'
 
 /**
  * Calculate all of the AB-playback sessions currently on the timeline
@@ -19,7 +20,7 @@ export function calculateSessionTimeRanges(
 	abSessionHelper: AbSessionHelper,
 	resolvedPieces: ResolvedPieceInstance[],
 	timelineObjects: OnGenerateTimelineObjExt[],
-	previousAssignmentMap: ABSessionAssignments,
+	previousAssignmentMap: ReadonlyDeep<ABSessionAssignments> | undefined,
 	poolName: string
 ): SessionRequest[] {
 	const sessionRequests: { [sessionId: string]: SessionRequest | undefined } = {}
@@ -47,7 +48,7 @@ export function calculateSessionTimeRanges(
 					end: val.end === undefined || end === undefined ? undefined : Math.max(val.end, end),
 					optional: val.optional && (session.optional ?? false),
 					lookaheadRank: undefined,
-					playerId: previousAssignmentMap[sessionId]?.playerId, // Persist previous assignments
+					playerId: previousAssignmentMap?.[sessionId]?.playerId, // Persist previous assignments
 				}
 			} else {
 				// New session
@@ -57,7 +58,7 @@ export function calculateSessionTimeRanges(
 					end,
 					optional: session.optional ?? false,
 					lookaheadRank: undefined,
-					playerId: previousAssignmentMap[sessionId]?.playerId, // Persist previous assignments
+					playerId: previousAssignmentMap?.[sessionId]?.playerId, // Persist previous assignments
 				}
 			}
 		}
@@ -102,7 +103,7 @@ export function calculateSessionTimeRanges(
 				start: Number.MAX_SAFE_INTEGER, // Distant future
 				end: undefined,
 				lookaheadRank: i + 1, // This is so that we can easily work out which to use first
-				playerId: previousAssignmentMap[grp.id]?.playerId,
+				playerId: previousAssignmentMap?.[grp.id]?.playerId,
 			})
 		}
 	})

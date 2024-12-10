@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as PropTypes from 'prop-types'
 import { WithTranslation, withTranslation } from 'react-i18next'
 
 import ClassNames from 'classnames'
@@ -13,7 +12,7 @@ import { SegmentTimelineZoomControls } from './SegmentTimelineZoomControls'
 import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
 import { PartCountdown } from '../RundownView/RundownTiming/PartCountdown'
 import { RundownTiming } from '../RundownView/RundownTiming/RundownTiming'
-import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRemaining'
+import { CurrentPartOrSegmentRemaining } from '../RundownView/RundownTiming/CurrentPartOrSegmentRemaining'
 
 import { RundownUtils } from '../../lib/rundown'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -37,7 +36,7 @@ import { wrapPartToTemporaryInstance } from '@sofie-automation/meteor-lib/dist/c
 import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { getPartInstanceTimingId, RundownTimingContext } from '../../lib/rundownTiming'
-import { IOutputLayer, ISourceLayer, NoteSeverity } from '@sofie-automation/blueprints-integration'
+import { IOutputLayer, ISourceLayer, NoteSeverity, UserEditingType } from '@sofie-automation/blueprints-integration'
 import { SegmentTimelineZoomButtons } from './SegmentTimelineZoomButtons'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
@@ -51,10 +50,12 @@ import {
 	TimingTickResolution,
 	TimingDataResolution,
 	WithTiming,
+	RundownTimingProviderContext,
 } from '../RundownView/RundownTiming/withTiming'
 import { SegmentTimeAnchorTime } from '../RundownView/RundownTiming/SegmentTimeAnchorTime'
 import { logger } from '../../lib/logging'
 import * as RundownResolver from '../../lib/RundownResolver'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 
 interface IProps {
 	id: string
@@ -97,7 +98,6 @@ interface IProps {
 	segmentRef?: (el: SegmentTimelineClass, segmentId: SegmentId) => void
 	isLastSegment: boolean
 	lastValidPartIndex: number | undefined
-	budgetDuration?: number
 	showCountdownToSegment: boolean
 	showDurationSourceLayers?: Set<ISourceLayer['_id']>
 	fixedSegmentDuration: boolean | undefined
@@ -132,15 +132,8 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 	IProps & IZoomPropsHeader,
 	IZoomStateHeader
 > {
-	static contextTypes = {
-		durations: PropTypes.object.isRequired,
-	}
-
-	declare context:
-		| {
-				durations: RundownTimingContext
-		  }
-		| undefined
+	static contextType = RundownTimingProviderContext
+	declare context: React.ContextType<typeof RundownTimingProviderContext>
 
 	constructor(props: IProps & IZoomPropsHeader, context: any) {
 		super(props, context)
@@ -627,6 +620,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 
 	private timelineStyle(outputGroups: IOutputLayerUi[]) {
 		const showHiddenSourceLayers = getShowHiddenSourceLayers()
+		const budgetDuration = this.getSegmentBudgetDuration()
 
 		return {
 			willChange: this.props.isLiveSegment ? 'transform' : 'none',
@@ -642,10 +636,14 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 				0
 			)} * var(--segment-layer-height) + var(--segment-timeline-padding-top) + var(--segment-timeline-padding-bottom))`,
 			minWidth:
-				this.props.budgetDuration !== undefined
-					? `calc(${this.convertTimeToPixels(this.props.budgetDuration).toString()}px + 100vW)`
+				budgetDuration !== undefined
+					? `calc(${this.convertTimeToPixels(budgetDuration).toString()}px + 100vW)`
 					: undefined,
 		}
+	}
+
+	private getSegmentBudgetDuration() {
+		return this.props.segment.segmentTiming?.budgetDuration
 	}
 
 	private renderLiveLine() {
@@ -690,7 +688,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 					</div>
 					<div className="segment-timeline__liveline__timecode">
 						{this.props.displayLiveLineCounter && (
-							<CurrentPartRemaining
+							<CurrentPartOrSegmentRemaining
 								currentPartInstanceId={this.props.playlist.currentPartInfo?.partInstanceId ?? null}
 								speaking={getAllowSpeaking()}
 								vibrating={getAllowVibrating()}
@@ -835,7 +833,8 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 	}
 
 	private renderBudgetGapPart() {
-		if (this.props.budgetDuration === undefined) return null
+		const budgetDuration = this.getSegmentBudgetDuration()
+		if (budgetDuration === undefined) return null
 
 		const livePart = this.props.parts.find(
 			(part) => part.instance._id === this.props.playlist.currentPartInfo?.partInstanceId
@@ -875,7 +874,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 				anyPriorPartWasLive={true}
 				livePartStartsAt={livePartStartsAt}
 				livePartDisplayDuration={livePartDisplayDuration}
-				budgetDuration={this.props.budgetDuration}
+				budgetDuration={budgetDuration}
 			/>
 		)
 	}
@@ -954,12 +953,13 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 	}
 
 	private renderEditorialLine() {
-		if (this.props.budgetDuration === undefined) {
+		const budgetDuration = this.getSegmentBudgetDuration()
+		if (budgetDuration === undefined) {
 			return null
 		}
 
 		const lineStyle = {
-			left: this.props.budgetDuration * this.props.timeScale - this.props.scrollLeft * this.props.timeScale + 'px',
+			left: budgetDuration * this.props.timeScale - this.props.scrollLeft * this.props.timeScale + 'px',
 		}
 		return <div className="segment-timeline__editorialline" style={lineStyle}></div>
 	}
@@ -1103,6 +1103,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 							))}
 						</div>
 					)}
+					<HeaderEditStates userEditOperations={this.props.segment.userEditOperations} />
 				</ContextMenuTrigger>
 				<div className="segment-timeline__duration" tabIndex={0}>
 					{this.props.playlist &&
@@ -1110,7 +1111,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 						this.props.parts.length > 0 &&
 						(!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) && (
 							<SegmentDuration
-								segmentId={this.props.segment._id}
+								segment={this.props.segment}
 								parts={this.props.parts}
 								label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
 								fixed={this.props.fixedSegmentDuration}
@@ -1235,3 +1236,27 @@ export const SegmentTimeline = withTranslation()(
 		}
 	})(SegmentTimelineClass)
 )
+
+interface HeaderEditStatesProps {
+	userEditOperations: DBSegment['userEditOperations']
+}
+function HeaderEditStates({ userEditOperations }: HeaderEditStatesProps) {
+	return (
+		<div className="segment-timeline__title__user-edit-states">
+			{userEditOperations &&
+				userEditOperations.map((operation) => {
+					if (operation.type === UserEditingType.FORM || !operation.svgIcon || !operation.isActive) return null
+
+					return (
+						<div
+							key={operation.id}
+							className="segment-timeline__title__user-edit-state"
+							dangerouslySetInnerHTML={{
+								__html: operation.svgIcon,
+							}}
+						></div>
+					)
+				})}
+		</div>
+	)
+}

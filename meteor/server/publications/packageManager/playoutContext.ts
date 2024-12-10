@@ -8,7 +8,12 @@ import { check } from 'meteor/check'
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { PeripheralDevices, RundownPlaylists, Rundowns } from '../../collections'
-import { meteorCustomPublish, setUpOptimizedObserverArray, TriggerUpdate } from '../../lib/customPublication'
+import {
+	meteorCustomPublish,
+	SetupObserversResult,
+	setUpOptimizedObserverArray,
+	TriggerUpdate,
+} from '../../lib/customPublication'
 import { logger } from '../../logging'
 import { PeripheralDeviceReadAccess } from '../../security/peripheralDevice'
 import {
@@ -36,7 +41,7 @@ type PackageManagerPlayoutContextState = Record<string, never>
 async function setupExpectedPackagesPublicationObservers(
 	args: ReadonlyDeep<PackageManagerPlayoutContextArgs>,
 	triggerUpdate: TriggerUpdate<PackageManagerPlayoutContextUpdateProps>
-): Promise<Meteor.LiveQueryHandle[]> {
+): Promise<SetupObserversResult> {
 	// Set up observers:
 	return [
 		RundownPlaylists.observeChanges(

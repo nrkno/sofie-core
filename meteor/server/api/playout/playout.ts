@@ -1,12 +1,10 @@
 /* tslint:disable:no-use-before-declare */
-import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
-import { StudioRouteBehavior } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { PackageInfo } from '../../coreSystem'
 import { StudioContentAccess } from '../../security/studio'
 import { shouldUpdateStudioBaselineInner } from '@sofie-automation/corelib/dist/studio/baseline'
-import { logger } from '../../logging'
-import { Blueprints, RundownPlaylists, Studios, Timeline } from '../../collections'
+import { Blueprints, RundownPlaylists, Timeline } from '../../collections'
+import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
+import { QueueStudioJob } from '../../worker/worker'
 
 export namespace ServerPlayoutAPI {
 	export async function shouldUpdateStudioBaseline(access: StudioContentAccess): Promise<string | false> {
@@ -38,32 +36,12 @@ export namespace ServerPlayoutAPI {
 	export async function switchRouteSet(
 		access: StudioContentAccess,
 		routeSetId: string,
-		state: boolean
+		state: boolean | 'toggle'
 	): Promise<void> {
-		logger.debug(`switchRouteSet "${access.studioId}" "${routeSetId}"=${state}`)
-
-		const studio = access.studio
-
-		if (studio.routeSets[routeSetId] === undefined)
-			throw new Meteor.Error(404, `RouteSet "${routeSetId}" not found!`)
-		const routeSet = studio.routeSets[routeSetId]
-		if (routeSet.behavior === StudioRouteBehavior.ACTIVATE_ONLY && state === false)
-			throw new Meteor.Error(400, `RouteSet "${routeSetId}" is ACTIVATE_ONLY`)
-
-		const modification: Record<string, any> = {}
-		modification[`routeSets.${routeSetId}.active`] = state
-
-		if (studio.routeSets[routeSetId].exclusivityGroup && state === true) {
-			_.each(studio.routeSets, (otherRouteSet, otherRouteSetId) => {
-				if (otherRouteSetId === routeSetId) return
-				if (otherRouteSet.exclusivityGroup === routeSet.exclusivityGroup) {
-					modification[`routeSets.${otherRouteSetId}.active`] = false
-				}
-			})
-		}
-
-		await Studios.updateAsync(studio._id, {
-			$set: modification,
+		const queuedJob = await QueueStudioJob(StudioJobs.SwitchRouteSet, access.studioId, {
+			routeSetId,
+			state,
 		})
+		await queuedJob.complete
 	}
 }

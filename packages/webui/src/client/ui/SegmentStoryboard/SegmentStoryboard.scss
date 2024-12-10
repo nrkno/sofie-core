@@ -1,7 +1,6 @@
 @import '../../styles/colorScheme';
 @import '../../styles/utils';
 @import '../../styles/variables';
-@import '../../styles/itemTypeColors';
 
 $part-left-padding: 6px;
 $part-right-padding: 5px;
@@ -13,19 +12,19 @@ $break-width: 35rem;
 		position: relative;
 		overflow: hidden;
 
-		grid-column: timeline / end;
-		grid-row: header / end;
-		@media screen and (max-width: $break-width) {
-			grid-column: timeline / end;
-			grid-row: timeline-header / zoom-area;
-		}
-
 		contain: content style;
 		touch-action: pan-y;
 
 		cursor: ew-resize;
 		cursor: url(/images/cursor_zoom_area_move.png), ew-resize;
 		cursor: url(/images/cursor_zoom_area_move.png) 15 8, ew-resize;
+
+		grid-column: timeline / end;
+		grid-row: header / end;
+		@media screen and (max-width: $break-width) {
+			grid-column: timeline / end;
+			grid-row: timeline-header / zoom-area;
+		}
 	}
 
 	> .segment-storyboard__storyboard-view-controls {
@@ -134,14 +133,14 @@ $break-width: 35rem;
 	}
 
 	> .segment-timeline__source-layers {
+		margin: $segment-storyboard-thumbnail-height 0.3em 0;
+
 		grid-column: segment-group-controls / timeline;
 		grid-row: main-view / zoom-area;
 		@media screen and (max-width: $break-width) {
 			grid-column: start / timeline;
 			grid-row: output-layers / zoom-area;
 		}
-
-		margin: $segment-storyboard-thumbnail-height 0.3em 0;
 
 		> .segment-timeline__output-group {
 			> .segment-timeline__source-layer {
@@ -163,6 +162,9 @@ $break-width: 35rem;
 	min-width: $segment-storyboard-part-width;
 	margin-top: 1em;
 	padding: 1.3rem $part-right-padding 1.5rem $part-left-padding;
+
+	--invalid-reason-color-transparent: transparent;
+	--invalid-reason-color-opaque: #{$segment-background-color}; // HERE
 
 	&--invalid {
 		background: $segment-timeline-background-color;
@@ -257,7 +259,8 @@ $break-width: 35rem;
 			&.segment-storyboard__part__next-line--quickloop-start {
 				border: none;
 
-				&::before, &::after {
+				&::before,
+				&::after {
 					left: 3px;
 					border-color: transparent transparent transparent white;
 				}
@@ -416,7 +419,7 @@ $break-width: 35rem;
 		z-index: 4;
 		background: $segment-background-color;
 	}
-	
+
 	> .segment-storyboard__part__bottom-left {
 		position: absolute;
 		bottom: 0;
@@ -450,7 +453,8 @@ $break-width: 35rem;
 		}
 	}
 
-	.segment-storyboard__part__quickloop-start-icon, .segment-storyboard__part__quickloop-end-icon {
+	.segment-storyboard__part__quickloop-start-icon,
+	.segment-storyboard__part__quickloop-end-icon {
 		background: $segment-background-color;
 		padding: 0 0.3em;
 		white-space: nowrap;
@@ -464,7 +468,8 @@ $break-width: 35rem;
 		}
 	}
 
-	&--quickloop-end + &, &--quickloop-end + .segment-storyboard__part-list--squished-parts > &:last-child {
+	&--quickloop-end + &,
+	&--quickloop-end + .segment-storyboard__part-list--squished-parts > &:last-child {
 		> .segment-storyboard__part__next-line {
 			margin-left: 3px;
 			z-index: 6;
@@ -496,15 +501,15 @@ $break-width: 35rem;
 			background: $segment-background-color;
 			color: #888;
 			font-size: 0.9em;
-	
+
 			opacity: 1;
 			visibility: visible;
-	
+
 			> .rundown-view__part__icon.rundown-view__part__icon--auto-next {
 				top: -0.2em;
 				margin-right: 0.2em;
 			}
-	
+
 			@keyframes segment-storyboard__part-timer--fadeIn {
 				0% {
 					opacity: 0;
@@ -513,14 +518,14 @@ $break-width: 35rem;
 					opacity: 1;
 				}
 			}
-	
+
 			&--live {
 				font-size: 1.2em;
 				line-height: 1em;
 				font-weight: 500;
 				color: $liveline-timecode-color;
 				opacity: 1;
-	
+
 				> .overtime {
 					color: $general-late-color;
 				}
@@ -582,9 +587,6 @@ $break-width: 35rem;
 			display: none;
 		}
 	}
-
-	--invalid-reason-color-transparent: transparent;
-	--invalid-reason-color-opaque: #{$segment-background-color}; // HERE
 
 	> .segment-storyboard__part__invalid-cover {
 		position: absolute;

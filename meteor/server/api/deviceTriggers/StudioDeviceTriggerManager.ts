@@ -43,7 +43,7 @@ export class StudioDeviceTriggerManager {
 		StudioActionManagers.set(studioId, new StudioActionManager())
 	}
 
-	updateTriggers(cache: ContentCache, showStyleBaseId: ShowStyleBaseId): void {
+	async updateTriggers(cache: ContentCache, showStyleBaseId: ShowStyleBaseId): Promise<void> {
 		const studioId = this.studioId
 		this.#lastShowStyleBaseId = showStyleBaseId
 
@@ -56,7 +56,7 @@ export class StudioDeviceTriggerManager {
 			return
 		}
 
-		const context = createCurrentContextFromCache(cache)
+		const context = createCurrentContextFromCache(cache, studioId)
 		const actionManager = StudioActionManagers.get(studioId)
 		if (!actionManager)
 			throw new Meteor.Error(
@@ -88,7 +88,7 @@ export class StudioDeviceTriggerManager {
 
 			const addedPreviewIds: PreviewWrappedAdLibId[] = []
 
-			Object.entries<SomeAction>(triggeredAction.actions).forEach(([key, action]) => {
+			for (const [key, action] of Object.entries<SomeAction>(triggeredAction.actions)) {
 				// Since the compiled action is cached using this actionId as a key, having the action
 				// and the filterChain allows for a quicker invalidation without doing a deepEquals
 				const actionId = protectString<DeviceActionId>(
@@ -106,9 +106,9 @@ export class StudioDeviceTriggerManager {
 				}
 				touchedActionIds.push(actionId)
 
-				Object.entries<SomeBlueprintTrigger>(triggeredAction.triggers).forEach(([key, trigger]) => {
+				for (const [key, trigger] of Object.entries<SomeBlueprintTrigger>(triggeredAction.triggers)) {
 					if (!isDeviceTrigger(trigger)) {
-						return
+						continue
 					}
 
 					let deviceActionArguments: ShiftRegisterActionArguments | undefined = undefined
@@ -141,7 +141,7 @@ export class StudioDeviceTriggerManager {
 						},
 					})
 					upsertedDeviceTriggerMountedActionIds.push(deviceTriggerMountedActionId)
-				})
+				}
 
 				if (!isPreviewableAction(thisAction)) {
 					const adLibPreviewId = protectString(`${actionId}_preview`)
@@ -165,7 +165,7 @@ export class StudioDeviceTriggerManager {
 
 					addedPreviewIds.push(adLibPreviewId)
 				} else {
-					const previewedAdLibs = thisAction.preview(context)
+					const previewedAdLibs = await thisAction.preview(context, null)
 
 					previewedAdLibs.forEach((adLib) => {
 						const adLibPreviewId = protectString<PreviewWrappedAdLibId>(
@@ -195,7 +195,7 @@ export class StudioDeviceTriggerManager {
 						addedPreviewIds.push(adLibPreviewId)
 					})
 				}
-			})
+			}
 
 			DeviceTriggerMountedActionAdlibsPreview.remove({
 				triggeredActionId: triggeredAction._id,
@@ -271,7 +271,7 @@ function convertDocument(doc: ReadonlyObjectDeep<DBTriggeredActions>): UITrigger
 	})
 }
 
-function createCurrentContextFromCache(cache: ContentCache): ReactivePlaylistActionContext {
+function createCurrentContextFromCache(cache: ContentCache, studioId: StudioId): ReactivePlaylistActionContext {
 	const rundownPlaylist = cache.RundownPlaylists.findOne({
 		activationId: {
 			$exists: true,
@@ -301,6 +301,7 @@ function createCurrentContextFromCache(cache: ContentCache): ReactivePlaylistAct
 		: []
 
 	return {
+		studioId: new DummyReactiveVar(studioId),
 		currentPartInstanceId: new DummyReactiveVar(currentPartInstance?._id ?? null),
 		currentPartId: new DummyReactiveVar(currentPartInstance?.part._id ?? null),
 		nextPartId: new DummyReactiveVar(nextPartInstance?.part._id ?? null),

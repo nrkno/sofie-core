@@ -8,12 +8,13 @@ import {
 	serializeTimelineBlob,
 	TimelineBlob,
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { meteorPublish } from './lib'
+import { meteorPublish } from './lib/lib'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { FindOptions } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import {
 	CustomPublish,
 	meteorCustomPublish,
+	SetupObserversResult,
 	setUpOptimizedObserverArray,
 	TriggerUpdate,
 } from '../lib/customPublication'
@@ -36,6 +37,7 @@ import {
 	PeripheralDevicePubSub,
 	PeripheralDevicePubSubCollectionsNames,
 } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 meteorPublish(CorelibPubSub.timelineDatastore, async function (studioId: StudioId, token: string | undefined) {
 	if (!studioId) throw new Meteor.Error(400, 'selector argument missing')
@@ -123,7 +125,7 @@ interface RoutedTimelineUpdateProps {
 async function setupTimelinePublicationObservers(
 	args: ReadonlyDeep<RoutedTimelineArgs>,
 	triggerUpdate: TriggerUpdate<RoutedTimelineUpdateProps>
-): Promise<Meteor.LiveQueryHandle[]> {
+): Promise<SetupObserversResult> {
 	// Set up observers:
 	return [
 		Studios.observeChanges(
@@ -209,7 +211,7 @@ async function manipulateTimelinePublicationData(
 
 	if (!state.routes) {
 		// Routes need recalculating
-		state.routes = getActiveRoutes(state.studio.routeSets)
+		state.routes = getActiveRoutes(applyAndValidateOverrides(state.studio.routeSetsWithOverrides).obj)
 		invalidateTimeline = true
 	}
 
