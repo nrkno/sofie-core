@@ -2,6 +2,7 @@ import {
 	BucketId,
 	OrganizationId,
 	PartId,
+	RundownId,
 	RundownPlaylistActivationId,
 	RundownPlaylistId,
 	ShowStyleBaseId,
