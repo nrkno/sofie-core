@@ -22,6 +22,7 @@ import {
 	convertPieceInstanceToBlueprints,
 	convertPieceToBlueprints,
 	convertResolvedPieceInstanceToBlueprints,
+	createBlueprintQuickLoopInfo,
 	getMediaObjectDuration,
 } from '../lib'
 import { getResolvedPiecesForCurrentPartInstance } from '../../../playout/resolvedPieces'
@@ -55,6 +56,7 @@ import { syncPlayheadInfinitesForNextPartInstance } from '../../../playout/infin
 import { validateAdlibTestingPartInstanceProperties } from '../../../playout/adlibTesting'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PlayoutRundownModel } from '../../../playout/model/PlayoutRundownModel'
+import { BlueprintQuickLookInfo } from '@sofie-automation/blueprints-integration/dist/context/quickLoopInfo'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -70,6 +72,10 @@ export class PartAndPieceInstanceActionService {
 	private readonly _context: JobContext
 	private readonly _playoutModel: PlayoutModel
 	readonly showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>
+
+	public get quickLoopInfo(): BlueprintQuickLookInfo | null {
+		return createBlueprintQuickLoopInfo(this._playoutModel.playlist)
+	}
 
 	/** To be set by any mutation methods on this context. Indicates to core how extensive the changes are to the current partInstance */
 	public currentPartState: ActionPartChange = ActionPartChange.NONE

@@ -59,6 +59,7 @@ import {
 	UserEditingType,
 } from '@sofie-automation/blueprints-integration/dist/userEditing'
 import type { PlayoutMutatablePart } from '../../playout/model/PlayoutPartInstanceModel'
+import { BlueprintQuickLookInfo } from '@sofie-automation/blueprints-integration/dist/context/quickLoopInfo'
 
 /**
  * Convert an object to have all the values of all keys (including optionals) be 'true'
@@ -584,4 +585,13 @@ export function convertPartialBlueprintMutablePartToCore(
 	}
 
 	return playoutUpdatePart
+}
+export function createBlueprintQuickLoopInfo(playlist: ReadonlyDeep<DBRundownPlaylist>): BlueprintQuickLookInfo | null {
+	const playlistLoopProps = playlist.quickLoop
+	if (!playlistLoopProps) return null
+
+	return {
+		running: playlistLoopProps.running,
+		locked: playlistLoopProps.locked,
+	}
 }

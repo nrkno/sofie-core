@@ -167,6 +167,7 @@ import { isEntirePlaylistLooping, isLoopRunning } from '../lib/RundownResolver'
 import { useRundownAndShowStyleIdsForPlaylist } from './util/useRundownAndShowStyleIdsForPlaylist'
 import { RundownPlaylistClientUtil } from '../lib/rundownPlaylistUtil'
 import { UserPermissionsContext, UserPermissions } from './UserPermissions'
+import * as RundownResolver from '../lib/RundownResolver'
 
 import { MAGIC_TIME_SCALE_FACTOR } from './SegmentTimeline/Constants'
 
@@ -552,6 +553,15 @@ const RundownHeader = withTranslation()(
 			if (this.props.userPermissions.studio && this.props.playlist.activationId) {
 				doUserAction(t, e, UserAction.ACTIVATE_HOLD, (e, ts) =>
 					MeteorCall.userAction.activateHold(e, ts, this.props.playlist._id, false)
+				)
+			}
+		}
+
+		clearQuickLoop = (e: any) => {
+			const { t } = this.props
+			if (this.props.userPermissions.studio && this.props.playlist.activationId) {
+				doUserAction(t, e, UserAction.CLEAR_QUICK_LOOP, (e, ts) =>
+					MeteorCall.userAction.clearQuickLoop(e, ts, this.props.playlist._id)
 				)
 			}
 		}
@@ -1005,6 +1015,12 @@ const RundownHeader = withTranslation()(
 
 		render(): JSX.Element {
 			const { t } = this.props
+
+			const canClearQuickLoop =
+				!!this.props.studio.settings.enableQuickLoop &&
+				!RundownResolver.isLoopLocked(this.props.playlist) &&
+				RundownResolver.isAnyLoopMarkerDefined(this.props.playlist)
+
 			return (
 				<>
 					<Escape to="document">
@@ -1037,6 +1053,9 @@ const RundownHeader = withTranslation()(
 									) : null}
 									{this.props.playlist.activationId ? (
 										<MenuItem onClick={(e) => this.hold(e)}>{t('Hold')}</MenuItem>
+									) : null}
+									{this.props.playlist.activationId && canClearQuickLoop ? (
+										<MenuItem onClick={(e) => this.clearQuickLoop(e)}>{t('Clear QuickLoop')}</MenuItem>
 									) : null}
 									{!(
 										this.props.playlist.activationId &&

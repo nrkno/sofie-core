@@ -299,6 +299,10 @@ export function isLoopDefined(playlist: DBRundownPlaylist | undefined): boolean 
 	return playlist?.quickLoop?.start != null && playlist?.quickLoop?.end != null
 }
 
+export function isAnyLoopMarkerDefined(playlist: DBRundownPlaylist | undefined): boolean {
+	return playlist?.quickLoop?.start != null || playlist?.quickLoop?.end != null
+}
+
 export function isLoopRunning(playlist: DBRundownPlaylist | undefined): boolean {
 	return !!playlist?.quickLoop?.running
 }

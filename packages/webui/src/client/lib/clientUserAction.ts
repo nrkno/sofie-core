@@ -123,6 +123,8 @@ function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
 			return t('Setting as QuickLoop Start')
 		case UserAction.SET_QUICK_LOOP_END:
 			return t('Setting as QuickLoop End')
+		case UserAction.CLEAR_QUICK_LOOP:
+			return t('Clear QuickLoop')
 		default:
 			assertNever(userAction)
 	}

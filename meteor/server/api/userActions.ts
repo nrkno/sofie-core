@@ -1295,6 +1295,25 @@ class ServerUserActionAPI
 			}
 		)
 	}
+	async clearQuickLoop(
+		userEvent: string,
+		eventTime: number,
+		playlistId: RundownPlaylistId
+	): Promise<ClientAPI.ClientResponse<void>> {
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			eventTime,
+			playlistId,
+			() => {
+				check(playlistId, String)
+			},
+			StudioJobs.ClearQuickLoopMarkers,
+			{
+				playlistId,
+			}
+		)
+	}
 
 	async createAdlibTestingRundownForShowStyleVariant(
 		userEvent: string,
