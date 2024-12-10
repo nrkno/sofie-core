@@ -62,6 +62,10 @@ interface IStoryItemChange {
 	itemDiff: PartialDeep<IMOSItem>
 }
 
+export interface CoreMosDeviceHandlerOptions {
+	openMediaHotStandby?: boolean
+}
+
 /**
  * Represents a connection between a mos-device and Core
  */
@@ -76,15 +80,20 @@ export class CoreMosDeviceHandler {
 	private _pendingStoryItemChanges: Array<IStoryItemChange> = []
 	private _pendingChangeTimeout: number = 60 * 1000
 	private mosTypes: MosTypes
-	private _openMediaHotStandby: boolean
+	private _options: CoreMosDeviceHandlerOptions
 
 	private _messageQueue: Queue
 
-	constructor(parent: CoreHandler, mosDevice: IMOSDevice, mosHandler: MosHandler, openMediaHotStandby: boolean) {
+	constructor(
+		parent: CoreHandler,
+		mosDevice: IMOSDevice,
+		mosHandler: MosHandler,
+		options: CoreMosDeviceHandlerOptions
+	) {
 		this._coreParentHandler = parent
 		this._mosDevice = mosDevice
 		this._mosHandler = mosHandler
-		this._openMediaHotStandby = openMediaHotStandby
+		this._options = options
 
 		this._messageQueue = new Queue()
 
@@ -141,7 +150,7 @@ export class CoreMosDeviceHandler {
 		let statusCode: StatusCode
 		const messages: Array<string> = []
 
-		if (this._openMediaHotStandby) {
+		if (this._options.openMediaHotStandby) {
 			// OpenMedia treats secondary server as hot-standby
 			// And thus is not considered as a warning if it's not connected
 			if (connectionStatus.PrimaryConnected) {

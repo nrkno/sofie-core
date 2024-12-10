@@ -243,11 +243,11 @@ export class MosHandler {
 
 				if (!this._coreHandler) throw Error('_coreHandler is undefined!')
 
-				const coreMosHandler = await this._coreHandler.registerMosDevice(
-					mosDevice,
-					this,
-					mosDevice.idSecondary ? this._openMediaHotStandby[mosDevice.idSecondary] : false
-				)
+				const coreMosHandler = await this._coreHandler.registerMosDevice(mosDevice, this, {
+					openMediaHotStandby: mosDevice.idSecondary
+						? this._openMediaHotStandby[mosDevice.idSecondary]
+						: false,
+				})
 				// this._logger.info('mosDevice registered -------------')
 				// Setup message flow between the devices:
 
