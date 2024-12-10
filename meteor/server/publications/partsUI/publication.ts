@@ -2,6 +2,7 @@ import { PartId, RundownPlaylistId, SegmentId } from '@sofie-automation/corelib/
 import { check } from 'meteor/check'
 import {
 	CustomPublishCollection,
+	SetupObserversResult,
 	TriggerUpdate,
 	meteorCustomPublish,
 	setUpCollectionOptimizedObserver,
@@ -14,7 +15,6 @@ import { NoSecurityReadAccess } from '../../security/noSecurity'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { ContentCache, PartOmitedFields, createReactiveContentCache } from './reactiveContentCache'
 import { ReadonlyDeep } from 'type-fest'
-import { LiveQueryHandle } from '../../lib/lib'
 import { RundownPlaylists } from '../../collections'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
@@ -53,13 +53,13 @@ const rundownPlaylistFieldSpecifier = literal<
 async function setupUIPartsPublicationObservers(
 	args: ReadonlyDeep<UIPartsArgs>,
 	triggerUpdate: TriggerUpdate<UIPartsUpdateProps>
-): Promise<LiveQueryHandle[]> {
+): Promise<SetupObserversResult> {
 	const playlist = (await RundownPlaylists.findOneAsync(args.playlistId, {
 		projection: rundownPlaylistFieldSpecifier,
 	})) as Pick<DBRundownPlaylist, RundownPlaylistFields> | undefined
 	if (!playlist) throw new Error(`RundownPlaylist "${args.playlistId}" not found!`)
 
-	const rundownsObserver = new RundownsObserver(playlist.studioId, playlist._id, (rundownIds) => {
+	const rundownsObserver = await RundownsObserver.create(playlist.studioId, playlist._id, async (rundownIds) => {
 		logger.silly(`Creating new RundownContentObserver`)
 
 		const cache = createReactiveContentCache()
@@ -67,7 +67,7 @@ async function setupUIPartsPublicationObservers(
 		// Push update
 		triggerUpdate({ newCache: cache })
 
-		const obs1 = new RundownContentObserver(playlist.studioId, playlist._id, rundownIds, cache)
+		const obs1 = await RundownContentObserver.create(playlist.studioId, playlist._id, rundownIds, cache)
 
 		const innerQueries = [
 			cache.Segments.find({}).observeChanges({

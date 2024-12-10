@@ -20,12 +20,12 @@ describe('RundownsObserver', () => {
 		const playlistId = protectString<RundownPlaylistId>('playlist0')
 
 		const onChangedCleanup = jest.fn()
-		const onChanged = jest.fn(() => onChangedCleanup)
+		const onChanged = jest.fn(async () => onChangedCleanup)
 
 		// should not be any observers yet
 		expect(RundownsMock.observers).toHaveLength(0)
 
-		const observer = new RundownsObserver(studioId, playlistId, onChanged)
+		const observer = await RundownsObserver.create(studioId, playlistId, onChanged)
 		try {
 			// should now be an observer
 			expect(RundownsMock.observers).toHaveLength(1)
@@ -73,12 +73,12 @@ describe('RundownsObserver', () => {
 		const playlistId = protectString<RundownPlaylistId>('playlist0')
 
 		const onChangedCleanup = jest.fn()
-		const onChanged = jest.fn<() => void, [RundownId[]]>(() => onChangedCleanup)
+		const onChanged = jest.fn<Promise<() => void>, [RundownId[]]>(async () => onChangedCleanup)
 
 		// should not be any observers yet
 		expect(RundownsMock.observers).toHaveLength(0)
 
-		const observer = new RundownsObserver(studioId, playlistId, onChanged)
+		const observer = await RundownsObserver.create(studioId, playlistId, onChanged)
 		try {
 			// ensure starts correct
 			await waitUntil(async () => {
@@ -127,12 +127,12 @@ describe('RundownsObserver', () => {
 		const playlistId = protectString<RundownPlaylistId>('playlist0')
 
 		const onChangedCleanup = jest.fn()
-		const onChanged = jest.fn<() => void, [RundownId[]]>(() => onChangedCleanup)
+		const onChanged = jest.fn<Promise<() => void>, [RundownId[]]>(async () => onChangedCleanup)
 
 		// should not be any observers yet
 		expect(RundownsMock.observers).toHaveLength(0)
 
-		const observer = new RundownsObserver(studioId, playlistId, onChanged)
+		const observer = await RundownsObserver.create(studioId, playlistId, onChanged)
 		try {
 			// ensure starts correct
 			// ensure starts correct
@@ -181,12 +181,12 @@ describe('RundownsObserver', () => {
 		const playlistId = protectString<RundownPlaylistId>('playlist0')
 
 		const onChangedCleanup = jest.fn()
-		const onChanged = jest.fn<() => void, [RundownId[]]>(() => onChangedCleanup)
+		const onChanged = jest.fn<Promise<() => void>, [RundownId[]]>(async () => onChangedCleanup)
 
 		// should not be any observers yet
 		expect(RundownsMock.observers).toHaveLength(0)
 
-		const observer = new RundownsObserver(studioId, playlistId, onChanged)
+		const observer = await RundownsObserver.create(studioId, playlistId, onChanged)
 		try {
 			// ensure starts correct
 			// ensure starts correct

@@ -8,12 +8,13 @@ import {
 	serializeTimelineBlob,
 	TimelineBlob,
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { meteorPublish } from './lib'
+import { meteorPublish } from './lib/lib'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { FindOptions } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import {
 	CustomPublish,
 	meteorCustomPublish,
+	SetupObserversResult,
 	setUpOptimizedObserverArray,
 	TriggerUpdate,
 } from '../lib/customPublication'
@@ -124,7 +125,7 @@ interface RoutedTimelineUpdateProps {
 async function setupTimelinePublicationObservers(
 	args: ReadonlyDeep<RoutedTimelineArgs>,
 	triggerUpdate: TriggerUpdate<RoutedTimelineUpdateProps>
-): Promise<Meteor.LiveQueryHandle[]> {
+): Promise<SetupObserversResult> {
 	// Set up observers:
 	return [
 		Studios.observeChanges(

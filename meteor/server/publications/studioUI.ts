@@ -1,7 +1,6 @@
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
@@ -11,6 +10,7 @@ import {
 	CustomPublishCollection,
 	meteorCustomPublish,
 	setUpCollectionOptimizedObserver,
+	SetupObserversResult,
 	TriggerUpdate,
 } from '../lib/customPublication'
 import { logger } from '../logging'
@@ -62,7 +62,7 @@ const fieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBStudio, Stud
 async function setupUIStudioPublicationObservers(
 	args: ReadonlyDeep<UIStudioArgs>,
 	triggerUpdate: TriggerUpdate<UIStudioUpdateProps>
-): Promise<Meteor.LiveQueryHandle[]> {
+): Promise<SetupObserversResult> {
 	const trackChange = (id: StudioId): Partial<UIStudioUpdateProps> => ({
 		invalidateStudioIds: [id],
 	})

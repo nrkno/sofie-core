@@ -63,19 +63,19 @@ export class WrappedMockCollection<DBInterface extends { _id: ProtectedString<an
 		throw new Error('findWithCursor not supported in tests')
 	}
 
-	observeChanges(
+	async observeChanges(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'],
 		callbacks: PromisifyCallbacks<ObserveChangesCallbacks<DBInterface>>,
 		options?: FindOptions<DBInterface>
-	): Meteor.LiveQueryHandle {
+	): Promise<Meteor.LiveQueryHandle> {
 		return this.find(selector, options).observeChanges(dePromiseObjectOfFunctions(callbacks))
 	}
 
-	observe(
+	async observe(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'],
 		callbacks: PromisifyCallbacks<ObserveCallbacks<DBInterface>>,
 		options?: FindOptions<DBInterface>
-	): Meteor.LiveQueryHandle {
+	): Promise<Meteor.LiveQueryHandle> {
 		return this.find(selector, options).observe(dePromiseObjectOfFunctions(callbacks))
 	}
 

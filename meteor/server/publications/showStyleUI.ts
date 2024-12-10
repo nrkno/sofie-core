@@ -1,19 +1,23 @@
 import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { Complete, literal } from '../lib/tempLib'
-import { meteorCustomPublish, setUpOptimizedObserverArray, TriggerUpdate } from '../lib/customPublication'
+import {
+	meteorCustomPublish,
+	SetupObserversResult,
+	setUpOptimizedObserverArray,
+	TriggerUpdate,
+} from '../lib/customPublication'
 import { logger } from '../logging'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { OrganizationReadAccess } from '../security/organization'
 import { ShowStyleReadAccess } from '../security/showStyle'
 import { ShowStyleBases } from '../collections'
-import { AutoFillSelector } from './lib'
+import { AutoFillSelector } from './lib/lib'
 import { check } from 'meteor/check'
 
 interface UIShowStyleBaseArgs {
@@ -38,7 +42,7 @@ const fieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBShowStyleBas
 async function setupUIShowStyleBasePublicationObservers(
 	args: ReadonlyDeep<UIShowStyleBaseArgs>,
 	triggerUpdate: TriggerUpdate<UIShowStyleBaseUpdateProps>
-): Promise<Meteor.LiveQueryHandle[]> {
+): Promise<SetupObserversResult> {
 	// Set up observers:
 	return [
 		ShowStyleBases.observeChanges(

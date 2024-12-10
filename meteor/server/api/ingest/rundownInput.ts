@@ -3,7 +3,7 @@ import { check } from '../../lib/check'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { NrcsIngestDataCache, MediaObjects, Parts, Rundowns, Segments } from '../../collections'
 import { literal } from '../../lib/tempLib'
-import { lazyIgnore } from '../../lib/lib'
+import { lazyIgnore, MeteorStartupAsync } from '../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart, IngestPlaylist } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../logging'
 import { RundownIngestDataCache } from './ingestCache'
@@ -363,17 +363,15 @@ async function listIngestRundowns(peripheralDevice: PeripheralDevice): Promise<s
 }
 
 // hackGetMediaObjectDuration stuff
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		MediaObjects.observe(
-			{},
-			{
-				added: onMediaObjectChanged,
-				changed: onMediaObjectChanged,
-			},
-			{ fields: { _id: 1, mediaId: 1, mediainfo: 1, studioId: 1 } }
-		)
-	}
+MeteorStartupAsync(async () => {
+	await MediaObjects.observe(
+		{},
+		{
+			added: onMediaObjectChanged,
+			changed: onMediaObjectChanged,
+		},
+		{ fields: { _id: 1, mediaId: 1, mediainfo: 1, studioId: 1 } }
+	)
 })
 
 interface MediaObjectUpdatedIds {
@@ -431,19 +429,19 @@ async function onMediaObjectChanged(newDocument: MediaObject, oldDocument?: Medi
 
 		for (const mediaObjectUpdatedIds of updateIds) {
 			if (validSegmentIds.has(mediaObjectUpdatedIds.segmentId)) {
-				try {
-					lazyIgnore(
-						`updateSegmentFromMediaObject_${mediaObjectUpdatedIds.segmentId}`,
-						async () => updateSegmentFromCache(newDocument.studioId, mediaObjectUpdatedIds),
-						200
-					)
-				} catch (exception) {
-					logger.error(
-						`Error thrown while updating Segment from cache after MediaObject changed: ${stringifyError(
-							exception
-						)}`
-					)
-				}
+				lazyIgnore(
+					`updateSegmentFromMediaObject_${mediaObjectUpdatedIds.segmentId}`,
+					() => {
+						updateSegmentFromCache(newDocument.studioId, mediaObjectUpdatedIds).catch((e) => {
+							logger.error(
+								`Error thrown while updating Segment from cache after MediaObject changed: ${stringifyError(
+									e
+								)}`
+							)
+						})
+					},
+					200
+				)
 			}
 		}
 	}
