@@ -18,6 +18,9 @@ import { AnyBulkWriteOperation } from 'mongodb'
 import { ICollection } from '../db'
 import { getCurrentTime } from '../lib'
 
+/**
+ * Represents a Rundown in the SofieIngestDataCache collection and provides methods for interacting with it.
+ */
 export class SofieIngestRundownDataCache {
 	readonly #changedDocumentIds = new Set<SofieIngestDataCacheObjId>()
 
@@ -180,6 +183,9 @@ export class SofieIngestRundownDataCache {
 	}
 }
 
+/**
+ * Convenience methods useful when interacting with the SofieIngestRundownDataCache
+ */
 export class SofieIngestRundownDataCacheGenerator {
 	constructor(public readonly rundownId: RundownId) {}
 

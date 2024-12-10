@@ -9,7 +9,7 @@ import { logger } from '../../logging'
 import { JobContext } from '../../jobs'
 import {
 	fixIllegalObject,
-	getMosIngestSegmentId,
+	getMosIngestSegmentExternalId,
 	mosStoryToIngestSegment,
 	parseMosString,
 	updateRanksBasedOnOrder,
@@ -45,7 +45,7 @@ export function handleMosFullStory(
 		// It appears that the name can't change during a fullStory. (based on a few years of usage)
 		// If it can then we need to be sure to update the segment groupings too
 
-		const segmentExternalId = getMosIngestSegmentId(partExternalId)
+		const segmentExternalId = getMosIngestSegmentExternalId(partExternalId)
 
 		const ingestSegment = ingestRundown.segments.find((s) => s.externalId === segmentExternalId)
 		const ingestPart = ingestSegment?.parts.find((p) => p.externalId === partExternalId)
@@ -91,26 +91,26 @@ export function handleMosDeleteStory(
 		}
 
 		const storyIdsToDelete = data.stories.map(parseMosString)
-		const segmentIdsToDelete = storyIdsToDelete.map(getMosIngestSegmentId)
+		const segmentExternalIdsToDelete = storyIdsToDelete.map(getMosIngestSegmentExternalId)
 
 		logger.debug(`handleMosDeleteStory storyIds: [${storyIdsToDelete.join(',')}]`)
 
 		const ingestSegmentIds = new Set(ingestRundown.segments.map((segment) => segment.externalId))
 
-		const missingIds = segmentIdsToDelete.filter((id) => !ingestSegmentIds.has(id))
+		const missingIds = segmentExternalIdsToDelete.filter((id) => !ingestSegmentIds.has(id))
 		if (missingIds.length > 0) {
 			throw new Error(`Parts ${missingIds.join(', ')} in rundown ${data.rundownExternalId} were not found`)
 		}
 
 		// Remove any segments
-		const segmentIdsToDeleteSet = new Set(segmentIdsToDelete)
+		const segmentExternalIdsToDeleteSet = new Set(segmentExternalIdsToDelete)
 		ingestRundown.segments = ingestRundown.segments.filter(
-			(segment) => !segmentIdsToDeleteSet.has(segment.externalId)
+			(segment) => !segmentExternalIdsToDeleteSet.has(segment.externalId)
 		)
 
 		// compute changes
 		const segmentChanges: Record<string, NrcsIngestSegmentChangeDetails> = {}
-		for (const segmentId of segmentIdsToDelete) {
+		for (const segmentId of segmentExternalIdsToDelete) {
 			segmentChanges[segmentId] = NrcsIngestSegmentChangeDetailsEnum.Deleted
 		}
 
@@ -147,7 +147,11 @@ export function handleMosInsertStories(
 			? ingestRundown.segments.findIndex((p) => p.externalId === insertBeforeSegmentExternalId)
 			: ingestRundown.segments.length
 		if (insertIndex === -1) {
-			throw new Error(`Part ${insertBeforeSegmentExternalId} in rundown ${data.rundownExternalId} not found`)
+			throw new Error(
+				`Part ${data.insertBeforeStoryId && parseMosString(data.insertBeforeStoryId)} in rundown ${
+					data.rundownExternalId
+				} not found`
+			)
 		}
 
 		const oldSegmentIds = new Set(ingestRundown.segments.map((s) => s.externalId))
@@ -205,13 +209,13 @@ export function handleMosSwapStories(
 			throw new Error(`Rundown "${data.rundownExternalId}" not found`)
 		}
 
-		const segment0Id = getMosIngestSegmentId(parseMosString(data.story0))
+		const segment0Id = getMosIngestSegmentExternalId(parseMosString(data.story0))
 		const story0Index = ingestRundown.segments.findIndex((s) => s.externalId === segment0Id)
 		if (story0Index === -1) {
 			throw new Error(`Story ${story0Str} not found in rundown ${data.rundownExternalId}`)
 		}
 
-		const segment1Id = getMosIngestSegmentId(parseMosString(data.story1))
+		const segment1Id = getMosIngestSegmentExternalId(parseMosString(data.story1))
 		const story1Index = ingestRundown.segments.findIndex((s) => s.externalId === segment1Id)
 		if (story1Index === -1) {
 			throw new Error(`Story ${story1Str} not found in rundown ${data.rundownExternalId}`)
@@ -259,7 +263,7 @@ export function handleMosMoveStories(
 		const moveIngestSegments: IngestSegment[] = []
 		const missingIds: string[] = []
 		for (const storyId of moveStoryIds) {
-			const segment = oldIngestSegmentMap.get(getMosIngestSegmentId(storyId))
+			const segment = oldIngestSegmentMap.get(getMosIngestSegmentExternalId(storyId))
 			if (segment) moveIngestSegments.push(segment)
 			else missingIds.push(storyId)
 		}
@@ -300,5 +304,5 @@ function storyIdToSegmentExternalId(storyId: MOS.IMOSString128 | null | undefine
 	if (!storyId) return undefined
 	const partExternalId = parseMosString(storyId)
 	if (!partExternalId) return undefined
-	return getMosIngestSegmentId(partExternalId)
+	return getMosIngestSegmentExternalId(partExternalId)
 }

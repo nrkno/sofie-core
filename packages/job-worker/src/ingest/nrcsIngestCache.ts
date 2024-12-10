@@ -19,6 +19,9 @@ import { diffAndReturnLatestObjects } from './model/implementation/utils'
 import { ICollection } from '../db'
 import { getCurrentTime } from '../lib'
 
+/**
+ * Represents a Rundown in the NRCSIngestDataCache collection and provides methods for interacting with it.
+ */
 export class NrcsIngestRundownDataCache {
 	readonly #changedDocumentIds = new Set<NrcsIngestDataCacheObjId>()
 
@@ -159,6 +162,9 @@ export class NrcsIngestRundownDataCache {
 	}
 }
 
+/**
+ * Convenience methods useful when interacting with the NrcsIngestRundownDataCache
+ */
 class RundownIngestDataCacheGenerator<TId extends ProtectedString<any>> {
 	constructor(public readonly rundownId: RundownId) {}
 

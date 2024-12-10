@@ -9,10 +9,14 @@ export interface SofieIngestRundown<TRundownPayload = unknown, TSegmentPayload =
 	/** Array of segments in this rundown */
 	segments: SofieIngestSegment<TSegmentPayload, TPartPayload>[]
 
-	/** States for UserEdits, could be lock from NRCS updates,
-	 * lock from user changes,
-	 * or removedByUser
-	 * */
+	/**
+	 * The userEditStates is a key-value store where Blueprints can store persistent data.
+	 *
+	 * Examples of use cases;
+	 * - locks from NRCS updates
+	 * - locks from user changes
+	 * - removedByUser flags
+	 */
 	userEditStates: Record<string, boolean>
 }
 export interface SofieIngestSegment<TSegmentPayload = unknown, TPartPayload = unknown>
@@ -20,16 +24,24 @@ export interface SofieIngestSegment<TSegmentPayload = unknown, TPartPayload = un
 	/** Array of parts in this segment */
 	parts: SofieIngestPart<TPartPayload>[]
 
-	/** States for UserEdits, could be lock from NRCS updates,
-	 * lock from user changes,
-	 * or removedByUser
-	 * */
+	/**
+	 * The userEditStates is a key-value store where Blueprints can store persistent data.
+	 *
+	 * Examples of use cases;
+	 * - locks from NRCS updates
+	 * - locks from user changes
+	 * - removedByUser flags
+	 */
 	userEditStates: Record<string, boolean>
 }
 export interface SofieIngestPart<TPayload = unknown> extends IngestPart<TPayload> {
-	/** States for UserEdits, could be lock from NRCS updates,
-	 * lock from user changes,
-	 * or removedByUser
-	 * */
+	/**
+	 * The userEditStates is a key-value store where Blueprints can store persistent data.
+	 *
+	 * Examples of use cases;
+	 * - locks from NRCS updates
+	 * - locks from user changes
+	 * - removedByUser flags
+	 */
 	userEditStates: Record<string, boolean>
 }

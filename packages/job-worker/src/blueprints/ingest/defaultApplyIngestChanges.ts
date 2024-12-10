@@ -16,6 +16,13 @@ import {
 import { assertNever, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { ReadonlyDeep } from 'type-fest'
 
+/**
+ * Perform the default syncing of changes from the ingest data to the rundown.
+ *
+ * Please note that this may be overly aggressive at removing any changes made by user operations
+ * If you are using user operations, you may need to perform some pre and post fixups to ensure
+ * changes aren't wiped unnecessarily.
+ */
 export function defaultApplyIngestChanges<TRundownPayload, TSegmentPayload, TPartPayload>(
 	mutableIngestRundown: MutableIngestRundown<TRundownPayload, TSegmentPayload, TPartPayload>,
 	nrcsRundown: IngestRundown,
@@ -200,16 +207,6 @@ function applySegmentRenames<TRundownPayload, TSegmentPayload, TPartPayload>(
 
 		mutableIngestRundown.changeSegmentExternalId(oldExternalId, newExternalId)
 	}
-	// for (const [segmentId, change] of Object.entries<NrcsIngestSegmentChangeDetails | undefined>(changes)) {
-	// 	if (!change) continue
-
-	// 	if (change && typeof change === 'object' && change.oldExternalId) {
-	// 		const mutableSegment = mutableIngestRundown.getSegment(change.oldExternalId)
-	// 		if (!mutableSegment) throw new Error(`Segment ${change.oldExternalId} not found in rundown`)
-
-	// 		mutableIngestRundown.renameSegment(change.oldExternalId, segmentId)
-	// 	}
-	// }
 }
 
 function applyChangesForSingleSegment<TRundownPayload, TSegmentPayload, TPartPayload>(

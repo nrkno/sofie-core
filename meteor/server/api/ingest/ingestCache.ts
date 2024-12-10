@@ -13,6 +13,10 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/NrcsIngestDataCache'
 import { groupByToMap } from '@sofie-automation/corelib/dist/lib'
 
+/**
+ * This class provides a few convenience methods for fetching IngestRundown
+ * (or its child types) from the NrcsIngestDataCache collection
+ */
 export class RundownIngestDataCache {
 	private constructor(private readonly rundownId: RundownId, private readonly documents: NrcsIngestDataCacheObj[]) {}
 

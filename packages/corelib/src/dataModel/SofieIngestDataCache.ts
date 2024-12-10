@@ -2,6 +2,11 @@ import { SofieIngestRundown, SofieIngestSegment, SofieIngestPart } from '@sofie-
 import { SofieIngestDataCacheObjId, RundownId, SegmentId, PartId } from './Ids'
 import { RundownSource } from './Rundown'
 
+/*
+	The SofieIngestDataCache collection is used to store data that comes from an NRCS and has been modified by Sofie.
+	See also ./NrcsIngestDataCache.ts for the raw data from the NRCS.
+*/
+
 export enum SofieIngestCacheType {
 	RUNDOWN = 'rundown',
 	SEGMENT = 'segment',

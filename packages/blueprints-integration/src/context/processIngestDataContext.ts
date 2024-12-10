@@ -5,10 +5,13 @@ import type { IngestDefaultChangesOptions, MutableIngestRundown, NrcsIngestChang
 export interface IProcessIngestDataContext extends IStudioContext {
 	/**
 	 * Perform the default syncing of changes from the ingest data to the rundown.
-	 * This may be overly agressive at removing any changes made by user operations.
-	 * If you are using user operations, you may need to perform some pre and post fixups to ensure changes aren't wiped unnecessarily.
+	 *
+	 * Please note that this may be overly aggressive at removing any changes made by user operations
+	 * If you are using user operations, you may need to perform some pre and post fixups to ensure
+	 * changes aren't wiped unnecessarily.
+	 *
 	 * @param ingestRundown NRCS version of the IngestRundown to copy from
-	 * @param ingestChanges A description of the changes that have been made to the rundown and should be propogated
+	 * @param ingestChanges A description of the changes that have been made to the rundown and should be propagated
 	 * @param options Options for how to apply the changes
 	 */
 	defaultApplyIngestChanges<TRundownPayload, TSegmentPayload, TPartPayload>(
@@ -19,9 +22,12 @@ export interface IProcessIngestDataContext extends IStudioContext {
 	): void
 
 	/**
-	 * Group Parts in a MOS Rundown and return a new changes object
+	 * Group the Parts in a MOS Rundown and return a new changes object
 	 * This will group the Parts based on the segment name, using the separator provided to extract the segment name from the part name
-	 * Note: This ignores a lot of the contents of the `ingestChanges` object, and relies more on the `previousIngestRundown` instead
+	 *
+	 * Please note that this ignores some of the granularity of the `ingestChanges` object, and relies more on the `previousIngestRundown` instead
+	 * If you are using user operations, you may need to perform some pre and post fixups to ensure changes aren't wiped unnecessarily.
+	 *
 	 * @param ingestRundown The rundown whose parts needs grouping
 	 * @param previousIngestRundown The rundown prior to the changes, if known
 	 * @param ingestChanges The changes which have been performed in `ingestRundown`, that need to translating
@@ -37,7 +43,10 @@ export interface IProcessIngestDataContext extends IStudioContext {
 
 	/**
 	 * Group Parts in a Rundown and return a new changes object
-	 * Note: This ignores a lot of the contents of the `ingestChanges` object, and relies more on the `previousIngestRundown` instead
+	 *
+	 * Please note that this ignores some of the granularity of the `ingestChanges` object, and relies more on the `previousIngestRundown` instead
+	 * If you are using user operations, you may need to perform some pre and post fixups to ensure changes aren't wiped unnecessarily.
+	 *
 	 * @param ingestRundown The rundown whose parts needs grouping
 	 * @param previousIngestRundown The rundown prior to the changes, if known
 	 * @param ingestChanges The changes which have been performed in `ingestRundown`, that need to translating

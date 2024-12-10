@@ -13,6 +13,15 @@ import {
 import { Complete, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import _ = require('underscore')
 
+/**
+ * Groups parts in a MOS rundown into segments, using a separator of the part names.
+ * For example:
+ * - "UN;story A"
+ * - "UN;story B"
+ * becomes a "UN" segment with two parts (story A and story B)
+ *
+ * (The input to this function is actually expected to be segments with a single part in them. This is what the MOS ingest produces.)
+ */
 export function groupMosPartsIntoIngestSegments(
 	rundownExternalId: string,
 	ingestSegments: IngestSegment[],
@@ -45,11 +54,14 @@ export function groupMosPartsIntoIngestSegments(
 
 /**
  * Group Parts in a Rundown and return a new changes object
- * Note: This ignores a lot of the contents of the `ingestChanges` object, and relies more on the `previousNrcsIngestRundown` instead
+ *
+ * Please note that this ignores some of the granularity of the `ingestChanges` object, and relies more on the `previousIngestRundown` instead
+ * If you are using user operations, you may need to perform some pre and post fixups to ensure changes aren't wiped unnecessarily.
+ *
  * @param nrcsIngestRundown The rundown whose parts needs grouping
- * @param previousNrcsIngestRundown The rundown prior to the changes, if known
- * @param ingestChanges The changes which have been performed in `nrcsIngestRundown`, that need to translating
- * @param groupPartsIntoSegmentsOrSeparator A string to split the segment name on, or a function to group parts into segments
+ * @param previousIngestRundown The rundown prior to the changes, if known
+ * @param ingestChanges The changes which have been performed in `ingestRundown`, that need to translating
+ * @param groupPartsIntoSegments A function to group parts into segments
  * @returns A transformed rundown and changes object
  */
 export function groupPartsInRundownAndChanges<TRundownPayload, TSegmentPayload, TPartPayload>(

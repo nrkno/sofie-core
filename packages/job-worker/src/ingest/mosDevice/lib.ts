@@ -28,7 +28,7 @@ export function parseMosString(str: MOS.IMOSString128): string {
 	return (str as any).toString()
 }
 
-export function getMosIngestSegmentId(partExternalId: string): string {
+export function getMosIngestSegmentExternalId(partExternalId: string): string {
 	return `segment-${partExternalId}`
 }
 
@@ -43,16 +43,16 @@ export function updateRanksBasedOnOrder(ingestRundown: IngestRundown): void {
 }
 
 export function mosStoryToIngestSegment(mosStory: MOS.IMOSStory, undefinedPayload: boolean): IngestSegment {
-	const externalId = parseMosString(mosStory.ID)
+	const partExternalId = parseMosString(mosStory.ID)
 
 	const name = mosStory.Slug ? parseMosString(mosStory.Slug) : ''
 	return {
-		externalId: getMosIngestSegmentId(externalId),
+		externalId: getMosIngestSegmentExternalId(partExternalId),
 		name: name,
 		rank: 0, // Set later
 		parts: [
 			{
-				externalId: externalId,
+				externalId: partExternalId,
 				name: name,
 				rank: 0,
 				payload: undefinedPayload ? undefined : {},

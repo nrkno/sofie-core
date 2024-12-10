@@ -11,6 +11,11 @@ import { StudioContext } from './StudioContext'
 import { defaultApplyIngestChanges } from '../ingest/defaultApplyIngestChanges'
 import { groupMosPartsIntoIngestSegments, groupPartsInRundownAndChanges } from '../ingest/groupPartsInRundownAndChanges'
 
+/**
+ * Provides a context for blueprints while running the blueprints.processIngestData() method.
+ * Note: This provides some common helpers for doing mutations of the IngestRundown.
+ * Custom updates of the IngestRundown are done by calling methods on the mutableIngestRundown itself.
+ */
 export class ProcessIngestDataContext extends StudioContext implements IProcessIngestDataContext {
 	defaultApplyIngestChanges<TRundownPayload, TSegmentPayload, TPartPayload>(
 		mutableIngestRundown: MutableIngestRundown<TRundownPayload, TSegmentPayload, TPartPayload>,

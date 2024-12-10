@@ -24,6 +24,7 @@ import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/
 import { IngestRundownWithSource } from '@sofie-automation/corelib/dist/dataModel/NrcsIngestDataCache'
 import { SofieIngestRundownWithSource } from '@sofie-automation/corelib/dist/dataModel/SofieIngestDataCache'
 import { NrcsIngestRundownDataCache } from './nrcsIngestCache'
+import { logger } from '../logging'
 
 export enum ComputedIngestChangeAction {
 	DELETE = 'delete',
@@ -77,7 +78,8 @@ export async function runCustomIngestUpdateOperation(
 
 		// Load the old ingest data
 		const pIngestModel = loadIngestModelFromRundownExternalId(context, rundownLock, data.rundownExternalId)
-		pIngestModel.catch(() => null) // Prevent unhandled promise rejection
+		pIngestModel.catch((e) => logger.error(e)) // Prevent unhandled promise rejection
+
 		const sofieIngestObjectCache = await SofieIngestRundownDataCache.create(context, rundownId)
 		const sofieIngestRundown = sofieIngestObjectCache.fetchRundown()
 		if (!sofieIngestRundown) throw new Error(`SofieIngestRundown "${rundownId}" not found`)
@@ -125,7 +127,7 @@ export type IngestUpdateOperationFunction = (
 
 /**
  * Perform an ingest update operation on a rundown
- * This will automatically do some post-update data changes, to ensure the playout side (partinstances etc) is updated with the changes
+ * This will automatically do some post-update data changes, to ensure the playout side (partInstances etc) is updated with the changes
  * @param context Context of the job being run
  * @param data Ids for the rundown and peripheral device
  * @param updateNrcsIngestModelFcn Function to mutate the ingestData. Throw if the requested change is not valid. Return undefined to indicate the ingestData should be deleted
@@ -142,10 +144,10 @@ export async function runIngestUpdateOperation(
 
 /**
  * Perform an ingest update operation on a rundown
- * This will automatically do some post-update data changes, to ensure the playout side (partinstances etc) is updated with the changes
+ * This will automatically do some post-update data changes, to ensure the playout side (partInstances etc) is updated with the changes
  * @param context Context of the job being run
  * @param data Ids for the rundown and peripheral device
- * @param updateNrcsIngestModelFcn Function to mutate the ingestData. Throw if the requested change is not valid. Return undefined to indicate the ingestData should be deleted
+ * @param executeFcn Function to mutate the ingestData. Throw if the requested change is not valid. Return undefined to indicate the ingestData should be deleted
  */
 export async function runIngestUpdateOperationBase(
 	context: JobContext,
@@ -162,9 +164,11 @@ export async function runIngestUpdateOperationBase(
 
 		// Load the old ingest data
 		const pIngestModel = loadIngestModelFromRundownExternalId(context, rundownLock, data.rundownExternalId)
-		pIngestModel.catch(() => null) // Prevent unhandled promise rejection
+		pIngestModel.catch((e) => logger.error(e)) // Prevent unhandled promise rejection
+
 		const pSofieIngestObjectCache = SofieIngestRundownDataCache.create(context, rundownId)
-		pSofieIngestObjectCache.catch(() => null) // Prevent unhandled promise rejection
+		pSofieIngestObjectCache.catch((e) => logger.error(e)) // Prevent unhandled promise rejection
+
 		const nrcsIngestObjectCache = await NrcsIngestRundownDataCache.create(context, rundownId)
 		const originalNrcsIngestRundown = clone(nrcsIngestObjectCache.fetchRundown())
 
@@ -172,7 +176,7 @@ export async function runIngestUpdateOperationBase(
 
 		// Start saving the nrcs ingest data
 		const pSaveNrcsIngestChanges = nrcsIngestObjectCache.saveToDatabase()
-		pSaveNrcsIngestChanges.catch(() => null) // Prevent unhandled promise rejection
+		pSaveNrcsIngestChanges.catch((e) => logger.error(e)) // Prevent unhandled promise rejection
 
 		let resultingError: UserError | void | undefined
 
@@ -292,7 +296,8 @@ async function updateSofieIngestRundown(
 				ingestRundownChanges.changes
 			)
 		} else if (ingestRundownChanges.changes.source === 'ingest') {
-			// Backwards compabible mode: Blueprints has not defined a processIngestData()
+			// Backwards compatible mode: Blueprints has not defined a processIngestData()
+			// so we'll simply accept the incoming changes as-is:
 
 			if (nrcsIngestRundown.type === 'mos') {
 				// MOS has a special flow to group parts into segments

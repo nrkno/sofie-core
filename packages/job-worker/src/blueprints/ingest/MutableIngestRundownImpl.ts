@@ -35,7 +35,6 @@ export class MutableIngestRundownImpl<TRundownPayload = unknown, TSegmentPayload
 		'segments'
 	>
 	#hasChangesToRundown = false
-	// #segmentOrderChanged = false
 
 	readonly #segments: MutableIngestSegmentImpl<TSegmentPayload, TPartPayload>[]
 
@@ -166,8 +165,6 @@ export class MutableIngestRundownImpl<TRundownPayload = unknown, TSegmentPayload
 		} else {
 			this.#segments.push(segment)
 		}
-
-		// this.#segmentOrderChanged = true
 	}
 
 	moveSegmentAfter(segmentExternalId: string, afterSegmentExternalId: string | null): void {
@@ -186,8 +183,6 @@ export class MutableIngestRundownImpl<TRundownPayload = unknown, TSegmentPayload
 		} else {
 			this.#segments.unshift(segment)
 		}
-
-		// this.#segmentOrderChanged = true
 	}
 
 	replaceSegment(
@@ -216,8 +211,6 @@ export class MutableIngestRundownImpl<TRundownPayload = unknown, TSegmentPayload
 		} else {
 			this.#segments.push(newSegment)
 		}
-
-		// this.#segmentOrderChanged = true
 
 		return newSegment
 	}
@@ -261,8 +254,6 @@ export class MutableIngestRundownImpl<TRundownPayload = unknown, TSegmentPayload
 		if (existingIndex !== -1) {
 			this.#segments.splice(existingIndex, 1)
 
-			// this.#segmentOrderChanged = true
-
 			return true
 		} else {
 			return false
@@ -275,8 +266,6 @@ export class MutableIngestRundownImpl<TRundownPayload = unknown, TSegmentPayload
 
 	removeAllSegments(): void {
 		this.#segments.length = 0
-
-		// this.#segmentOrderChanged = true
 	}
 
 	setUserEditState(key: string, value: boolean): void {
@@ -287,7 +276,14 @@ export class MutableIngestRundownImpl<TRundownPayload = unknown, TSegmentPayload
 		}
 	}
 
-	/** Note: This is NOT exposed to blueprints */
+	/**
+	 * Converts the state contained within this MutableIngestRundown,
+	 * into a structure of the computed changes and the cache objects (the SofieIngestDataCacheObj)
+	 * the MutableIngestRundownChanges are then used to update the SofieIngestDataCache and keep
+	 * track of what portions of the Rundown need regenerating/updating.
+	 *
+	 * Note: This is NOT exposed to blueprints
+	 */
 	intoIngestRundown(ingestObjectGenerator: SofieIngestRundownDataCacheGenerator): MutableIngestRundownChanges {
 		const ingestSegments: SofieIngestSegment[] = []
 		const changedCacheObjects: SofieIngestDataCacheObj[] = []
@@ -375,7 +371,6 @@ export class MutableIngestRundownImpl<TRundownPayload = unknown, TSegmentPayload
 		const regenerateRundown = this.#hasChangesToRundown
 
 		this.#hasChangesToRundown = false
-		// this.#segmentOrderChanged = false
 
 		// Reset this.#originalSegmentRanks
 		this.#originalSegmentRanks.clear()

@@ -2,6 +2,12 @@ import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blue
 import { NrcsIngestDataCacheObjId, RundownId, SegmentId, PartId } from './Ids'
 import { RundownSource } from './Rundown'
 
+/*
+	The NRCSIngestDataCache collection is used to store raw data that comes from an NRCS.
+	See also ./SofieIngestDataCache.ts
+	For where the ingested data is stored after being processed/modified by Sofie.
+*/
+
 export enum NrcsIngestCacheType {
 	RUNDOWN = 'rundown',
 	SEGMENT = 'segment',

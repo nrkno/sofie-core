@@ -29,6 +29,9 @@ registerIndex(AdLibPieces, {
 	_rank: 1,
 })
 
+/**
+ * The NrcsIngestDataCache collection is used to store data that comes from an NRCS
+ */
 export const NrcsIngestDataCache = createAsyncOnlyReadOnlyMongoCollection<NrcsIngestDataCacheObj>(
 	CollectionName.NrcsIngestDataCache
 )
@@ -36,6 +39,9 @@ registerIndex(NrcsIngestDataCache, {
 	rundownId: 1,
 })
 
+/**
+ * The SofieIngestDataCache collection is used to store data that comes from an NRCS and has been modified by Sofie
+ */
 export const SofieIngestDataCache = createAsyncOnlyReadOnlyMongoCollection<SofieIngestDataCacheObj>(
 	CollectionName.SofieIngestDataCache
 )
