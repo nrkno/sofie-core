@@ -93,10 +93,10 @@ import { getCoreSystemAsync } from '../coreSystem/collection'
 import { executePeripheralDeviceFunction } from './peripheralDevice/executeFunction'
 import { verifyHashedToken } from './singleUseTokens'
 import {
-	IngestDataCacheObjRundown,
-	IngestDataCacheObjSegment,
-	IngestDataCacheObjPart,
-} from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
+	NrcsIngestDataCacheObjRundown,
+	NrcsIngestDataCacheObjSegment,
+	NrcsIngestDataCacheObjPart,
+} from '@sofie-automation/corelib/dist/dataModel/NrcsIngestDataCache'
 
 interface RundownPlaylistSnapshot extends CoreRundownPlaylistSnapshot {
 	versionExtended: string | undefined
@@ -543,9 +543,9 @@ async function ingestFromSnapshot(
 		// Read the ingestData from the snapshot
 		const ingestData = playlistSnapshot.ingestData
 
-		const rundownData = ingestData.filter((e) => e.type === 'rundown') as IngestDataCacheObjRundown[]
-		const segmentData = ingestData.filter((e) => e.type === 'segment') as IngestDataCacheObjSegment[]
-		const partData = ingestData.filter((e) => e.type === 'part') as IngestDataCacheObjPart[]
+		const rundownData = ingestData.filter((e) => e.type === 'rundown') as NrcsIngestDataCacheObjRundown[]
+		const segmentData = ingestData.filter((e) => e.type === 'segment') as NrcsIngestDataCacheObjSegment[]
+		const partData = ingestData.filter((e) => e.type === 'part') as NrcsIngestDataCacheObjPart[]
 
 		if (rundownData.length === 0) throw new Meteor.Error(402, `No rundowns found in ingestData`)
 

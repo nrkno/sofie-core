@@ -9,9 +9,14 @@ import {
 	ResolvedPieceInstance,
 } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { DBRundown, Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import {
+	CoreUserEditingDefinition,
+	CoreUserEditingDefinitionAction,
+	CoreUserEditingDefinitionForm,
+} from '@sofie-automation/corelib/dist/dataModel/UserEditingDefinitions'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { clone, Complete, literal } from '@sofie-automation/corelib/dist/lib'
-import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { assertNever, clone, Complete, literal, omit } from '@sofie-automation/corelib/dist/lib'
+import { unprotectString, unprotectStringArray } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
 import {
 	ExpectedPackage,
@@ -44,6 +49,16 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { JobContext, ProcessedShowStyleBase, ProcessedShowStyleVariant } from '../../jobs'
 import { DBRundownPlaylist, QuickLoopMarkerType } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import _ = require('underscore')
+import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { wrapTranslatableMessageFromBlueprints } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import {
+	UserEditingDefinition,
+	UserEditingDefinitionAction,
+	UserEditingDefinitionForm,
+	UserEditingType,
+} from '@sofie-automation/blueprints-integration/dist/userEditing'
+import type { PlayoutMutatablePart } from '../../playout/model/PlayoutPartInstanceModel'
 
 /**
  * Convert an object to have all the values of all keys (including optionals) be 'true'
@@ -80,10 +95,11 @@ export const IBlueprintPieceObjectsSampleKeys = allKeysOfObject<IBlueprintPiece>
 	allowDirectPlay: true,
 	notInVision: true,
 	abSessions: true,
+	userEditOperations: true,
 })
 
 // Compile a list of the keys which are allowed to be set
-export const IBlueprintMutatablePartSampleKeys = allKeysOfObject<IBlueprintMutatablePart>({
+export const PlayoutMutatablePartSampleKeys = allKeysOfObject<PlayoutMutatablePart>({
 	title: true,
 	prompterTitle: true,
 	privateData: true,
@@ -102,6 +118,7 @@ export const IBlueprintMutatablePartSampleKeys = allKeysOfObject<IBlueprintMutat
 	displayDuration: true,
 	identifier: true,
 	hackListenToMediaObjectUpdates: true,
+	userEditOperations: true,
 })
 
 /*
@@ -220,6 +237,7 @@ export function convertPieceToBlueprints(piece: ReadonlyDeep<PieceInstancePiece>
 		pieceType: piece.pieceType,
 		extendOnHold: piece.extendOnHold,
 		notInVision: piece.notInVision,
+		userEditOperations: translateUserEditsToBlueprint(piece.userEditOperations),
 	}
 
 	return obj
@@ -260,6 +278,7 @@ export function convertPartToBlueprints(part: ReadonlyDeep<DBPart>): IBlueprintP
 		hackListenToMediaObjectUpdates: clone<HackPartMediaObjectSubscription[] | undefined>(
 			part.hackListenToMediaObjectUpdates
 		),
+		userEditOperations: translateUserEditsToBlueprint(part.userEditOperations),
 	}
 
 	return obj
@@ -328,6 +347,7 @@ export function convertSegmentToBlueprints(segment: ReadonlyDeep<DBSegment>): IB
 		displayAs: segment.displayAs,
 		showShelf: segment.showShelf,
 		segmentTiming: segment.segmentTiming,
+		userEditOperations: translateUserEditsToBlueprint(segment.userEditOperations),
 	}
 
 	return obj
@@ -352,6 +372,7 @@ export function convertRundownToBlueprints(rundown: ReadonlyDeep<DBRundown>): IB
 		showStyleVariantId: unprotectString(rundown.showStyleVariantId),
 		playlistId: unprotectString(rundown.playlistId),
 		airStatus: rundown.airStatus,
+		userEditOperations: translateUserEditsToBlueprint(rundown.userEditOperations),
 	}
 
 	return obj
@@ -474,4 +495,93 @@ export async function getMediaObjectDuration(context: JobContext, mediaId: strin
 	if (span) span.end()
 
 	return durations.length > 0 ? durations[0] : undefined
+}
+
+function translateUserEditsToBlueprint(
+	userEdits: ReadonlyDeep<CoreUserEditingDefinition[]> | undefined
+): UserEditingDefinition[] | undefined {
+	if (!userEdits) return undefined
+
+	return _.compact(
+		userEdits.map((userEdit) => {
+			switch (userEdit.type) {
+				case UserEditingType.ACTION:
+					return {
+						type: UserEditingType.ACTION,
+						id: userEdit.id,
+						label: omit(userEdit.label, 'namespaces'),
+						svgIcon: userEdit.svgIcon,
+						isActive: userEdit.isActive,
+					} satisfies Complete<UserEditingDefinitionAction>
+				case UserEditingType.FORM:
+					return {
+						type: UserEditingType.FORM,
+						id: userEdit.id,
+						label: omit(userEdit.label, 'namespaces'),
+						schema: clone(userEdit.schema),
+						currentValues: clone(userEdit.currentValues),
+					} satisfies Complete<UserEditingDefinitionForm>
+				default:
+					assertNever(userEdit)
+					return undefined
+			}
+		})
+	)
+}
+
+export function translateUserEditsFromBlueprint(
+	userEdits: UserEditingDefinition[] | undefined,
+	blueprintIds: BlueprintId[]
+): CoreUserEditingDefinition[] | undefined {
+	if (!userEdits) return undefined
+
+	return _.compact(
+		userEdits.map((userEdit) => {
+			switch (userEdit.type) {
+				case UserEditingType.ACTION:
+					return {
+						type: UserEditingType.ACTION,
+						id: userEdit.id,
+						label: wrapTranslatableMessageFromBlueprints(userEdit.label, blueprintIds),
+						svgIcon: userEdit.svgIcon,
+						isActive: userEdit.isActive,
+					} satisfies Complete<CoreUserEditingDefinitionAction>
+				case UserEditingType.FORM:
+					return {
+						type: UserEditingType.FORM,
+						id: userEdit.id,
+						label: wrapTranslatableMessageFromBlueprints(userEdit.label, blueprintIds),
+						schema: clone(userEdit.schema),
+						currentValues: clone(userEdit.currentValues),
+						translationNamespaces: unprotectStringArray(blueprintIds),
+					} satisfies Complete<CoreUserEditingDefinitionForm>
+				default:
+					assertNever(userEdit)
+					return undefined
+			}
+		})
+	)
+}
+
+/**
+ * Converts a BlueprintMutatablePart into a PlayoutMutatablePart
+ */
+export function convertPartialBlueprintMutablePartToCore(
+	updatePart: Partial<IBlueprintMutatablePart>,
+	blueprintId: BlueprintId
+): Partial<PlayoutMutatablePart> {
+	const playoutUpdatePart: Partial<PlayoutMutatablePart> = {
+		...updatePart,
+		userEditOperations: undefined,
+	}
+
+	if ('userEditOperations' in updatePart) {
+		playoutUpdatePart.userEditOperations = translateUserEditsFromBlueprint(updatePart.userEditOperations, [
+			blueprintId,
+		])
+	} else {
+		delete playoutUpdatePart.userEditOperations
+	}
+
+	return playoutUpdatePart
 }

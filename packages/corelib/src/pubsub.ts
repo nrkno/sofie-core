@@ -12,7 +12,7 @@ import { DBSegment } from './dataModel/Segment'
 import { DBShowStyleBase } from './dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from './dataModel/ShowStyleVariant'
 import { DBStudio } from './dataModel/Studio'
-import { IngestDataCacheObj } from './dataModel/IngestDataCache'
+import { NrcsIngestDataCacheObj } from './dataModel/NrcsIngestDataCache'
 import { DBTimelineDatastoreEntry } from '@sofie-automation/shared-lib/dist/core/model/TimelineDatastore'
 import { Blueprint } from './dataModel/Blueprint'
 import { BucketAdLibAction } from './dataModel/BucketAdLibAction'
@@ -211,9 +211,9 @@ export interface CorelibPubSubTypes {
 		token?: string
 	) => CollectionName.RundownBaselineAdLibActions
 	[CorelibPubSub.ingestDataCache]: (
-		selector: MongoQuery<IngestDataCacheObj>,
+		selector: MongoQuery<NrcsIngestDataCacheObj>,
 		token?: string
-	) => CollectionName.IngestDataCache
+	) => CollectionName.NrcsIngestDataCache
 	[CorelibPubSub.rundownPlaylists]: (
 		/** RundownPlaylistIds to fetch for, or null to fetch all */
 		rundownPlaylistIds: RundownPlaylistId[] | null,
@@ -329,7 +329,7 @@ export type CorelibPubSubCollections = {
 	[CollectionName.ExpectedPackages]: ExpectedPackageDBBase
 	[CollectionName.ExpectedPackageWorkStatuses]: ExpectedPackageWorkStatus
 	[CollectionName.ExternalMessageQueue]: ExternalMessageQueueObj
-	[CollectionName.IngestDataCache]: IngestDataCacheObj
+	[CollectionName.NrcsIngestDataCache]: NrcsIngestDataCacheObj
 	[CollectionName.PartInstances]: DBPartInstance
 	[CollectionName.PackageContainerStatuses]: PackageContainerStatusDB
 	[CollectionName.PackageInfos]: PackageInfoDB

@@ -114,7 +114,7 @@ export interface APIImportAdlib {
 	externalId: string
 	name: string
 	payloadType: string
-	payload?: unknown
+	payload: unknown | undefined
 
 	showStyleBaseId: string
 }

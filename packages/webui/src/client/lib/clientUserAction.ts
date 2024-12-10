@@ -113,6 +113,8 @@ function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
 			return t('Resetting Playlist to default order')
 		case UserAction.PERIPHERAL_DEVICE_REFRESH_DEBUG_STATES:
 			return t('Refreshing debug states')
+		case UserAction.EXECUTE_USER_OPERATION:
+			return t('Execute User Operation')
 		case UserAction.ACTIVATE_ADLIB_TESTING:
 			return t('Rehearsal Mode')
 		case UserAction.CREATE_ADLIB_TESTING_RUNDOWN:

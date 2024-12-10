@@ -25,6 +25,22 @@ $timeline-layer-height: 1em;
 	white-space: nowrap;
 	border-radius: 3px;
 }
+.segment-timeline__title__user-edit-states {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	display: flex;
+	flex-flow: row nowrap;
+}
+
+.segment-timeline__title__user-edit-state {
+	margin-left: 5px;
+	margin-bottom: 5px;
+	width: 20px;
+	height: 20px;
+}
+
 .segment-timeline__part-identifiers {
 	text-align: right;
 	margin: 0 1px 0 2px;
