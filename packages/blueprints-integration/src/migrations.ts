@@ -24,7 +24,10 @@ export interface MigrationStepInputFilteredResult {
 }
 
 export type ValidateFunctionCore = (afterMigration: boolean) => Promise<boolean | string>
-export type ValidateFunctionSystem = (context: MigrationContextSystem, afterMigration: boolean) => boolean | string
+export type ValidateFunctionSystem = (
+	context: MigrationContextSystem,
+	afterMigration: boolean
+) => Promise<boolean | string>
 export type ValidateFunctionStudio = (context: MigrationContextStudio, afterMigration: boolean) => boolean | string
 export type ValidateFunctionShowStyle = (
 	context: MigrationContextShowStyle,
@@ -37,7 +40,10 @@ export type ValidateFunction =
 	| ValidateFunctionCore
 
 export type MigrateFunctionCore = (input: MigrationStepInputFilteredResult) => Promise<void>
-export type MigrateFunctionSystem = (context: MigrationContextSystem, input: MigrationStepInputFilteredResult) => void
+export type MigrateFunctionSystem = (
+	context: MigrationContextSystem,
+	input: MigrationStepInputFilteredResult
+) => Promise<void>
 export type MigrateFunctionStudio = (context: MigrationContextStudio, input: MigrationStepInputFilteredResult) => void
 export type MigrateFunctionShowStyle = (
 	context: MigrationContextShowStyle,
@@ -77,11 +83,11 @@ export interface ShowStyleVariantPart {
 }
 
 interface MigrationContextWithTriggeredActions {
-	getAllTriggeredActions: () => IBlueprintTriggeredActions[]
-	getTriggeredAction: (triggeredActionId: string) => IBlueprintTriggeredActions | undefined
+	getAllTriggeredActions: () => Promise<IBlueprintTriggeredActions[]>
+	getTriggeredAction: (triggeredActionId: string) => Promise<IBlueprintTriggeredActions | undefined>
 	getTriggeredActionId: (triggeredActionId: string) => string
-	setTriggeredAction: (triggeredActions: IBlueprintTriggeredActions) => void
-	removeTriggeredAction: (triggeredActionId: string) => void
+	setTriggeredAction: (triggeredActions: IBlueprintTriggeredActions) => Promise<void>
+	removeTriggeredAction: (triggeredActionId: string) => Promise<void>
 }
 
 export interface MigrationContextShowStyle extends MigrationContextWithTriggeredActions {

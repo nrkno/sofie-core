@@ -411,7 +411,7 @@ export const SourceLayerItem = withTranslation()(
 		// 	}
 		// }
 
-		private highlightTimeout: NodeJS.Timer | undefined
+		private highlightTimeout: NodeJS.Timeout | undefined
 
 		private onHighlight = (e: HighlightEvent) => {
 			if (

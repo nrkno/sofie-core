@@ -53,7 +53,7 @@ export async function allowAccessToCoreSystem(cred: ResolvedCredentials): Promis
  */
 export async function allowAccessToCurrentUser(
 	cred0: Credentials | ResolvedCredentials,
-	userId: UserId
+	userId: UserId | null
 ): Promise<Access<null>> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 	if (!userId) return noAccess('userId missing')

@@ -1,52 +1,20 @@
-import * as _ from 'underscore'
-import {
-	getHash,
-	unprotectObject,
-	protectString,
-	unprotectString,
-	objectPathGet,
-	objectPathSet,
-	clone,
-	Complete,
-	objectPathDelete,
-} from '../../lib/tempLib'
-import { waitForPromise } from '../../lib/lib'
-import { DBStudio, StudioPlayoutDevice } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { getHash, protectString, unprotectString, clone, Complete } from '../../lib/tempLib'
 import { Meteor } from 'meteor/meteor'
 import {
-	ConfigItemValue,
-	MigrationContextStudio as IMigrationContextStudio,
-	MigrationContextShowStyle as IMigrationContextShowStyle,
 	MigrationContextSystem as IMigrationContextSystem,
-	BlueprintMapping,
-	IOutputLayer,
-	ISourceLayer,
-	ShowStyleVariantPart,
-	IBlueprintShowStyleVariant,
-	TSR,
-	OmitId,
 	IBlueprintTriggeredActions,
 } from '@sofie-automation/blueprints-integration'
-
-import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { check } from '../../lib/check'
-import {
-	PERIPHERAL_SUBTYPE_PROCESS,
-	PeripheralDeviceType,
-} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { TriggeredActionsObj } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import { Match } from 'meteor/check'
-import { MongoModifier } from '@sofie-automation/corelib/dist/mongo'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { ShowStyleBaseId, ShowStyleVariantId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PeripheralDevices, ShowStyleBases, ShowStyleVariants, Studios, TriggeredActions } from '../../collections'
-import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
+import { ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { TriggeredActions } from '../../collections'
 
-function trimIfString<T>(value: T): T | string {
-	if (_.isString(value)) return value.trim()
-	return value
-}
+// function trimIfString<T>(value: T): T | string {
+// 	if (_.isString(value)) return value.trim()
+// 	return value
+// }
 
 function convertTriggeredActionToBlueprints(triggeredAction: TriggeredActionsObj): IBlueprintTriggeredActions {
 	const obj: Complete<IBlueprintTriggeredActions> = {
@@ -69,40 +37,36 @@ class AbstractMigrationContextWithTriggeredActions {
 	private getProtectedTriggeredActionId(triggeredActionId: string): TriggeredActionId {
 		return protectString(this.getTriggeredActionId(triggeredActionId))
 	}
-	getAllTriggeredActions(): IBlueprintTriggeredActions[] {
-		return waitForPromise(
-			TriggeredActions.findFetchAsync({
+	async getAllTriggeredActions(): Promise<IBlueprintTriggeredActions[]> {
+		return (
+			await TriggeredActions.findFetchAsync({
 				showStyleBaseId: this.showStyleBaseId,
 			})
 		).map(convertTriggeredActionToBlueprints)
 	}
-	private getTriggeredActionFromDb(triggeredActionId: string): TriggeredActionsObj | undefined {
-		const triggeredAction = waitForPromise(
-			TriggeredActions.findOneAsync({
-				showStyleBaseId: this.showStyleBaseId,
-				_id: this.getProtectedTriggeredActionId(triggeredActionId),
-			})
-		)
+	private async getTriggeredActionFromDb(triggeredActionId: string): Promise<TriggeredActionsObj | undefined> {
+		const triggeredAction = await TriggeredActions.findOneAsync({
+			showStyleBaseId: this.showStyleBaseId,
+			_id: this.getProtectedTriggeredActionId(triggeredActionId),
+		})
 		if (triggeredAction) return triggeredAction
 
 		// Assume we were given the full id
-		return waitForPromise(
-			TriggeredActions.findOneAsync({
-				showStyleBaseId: this.showStyleBaseId,
-				_id: protectString(triggeredActionId),
-			})
-		)
+		return TriggeredActions.findOneAsync({
+			showStyleBaseId: this.showStyleBaseId,
+			_id: protectString(triggeredActionId),
+		})
 	}
-	getTriggeredAction(triggeredActionId: string): IBlueprintTriggeredActions | undefined {
+	async getTriggeredAction(triggeredActionId: string): Promise<IBlueprintTriggeredActions | undefined> {
 		check(triggeredActionId, String)
 		if (!triggeredActionId) {
 			throw new Meteor.Error(500, `Triggered actions Id "${triggeredActionId}" is invalid`)
 		}
 
-		const obj = this.getTriggeredActionFromDb(triggeredActionId)
+		const obj = await this.getTriggeredActionFromDb(triggeredActionId)
 		return obj ? convertTriggeredActionToBlueprints(obj) : undefined
 	}
-	setTriggeredAction(triggeredActions: IBlueprintTriggeredActions) {
+	async setTriggeredAction(triggeredActions: IBlueprintTriggeredActions): Promise<void> {
 		check(triggeredActions, Object)
 		check(triggeredActions._id, String)
 		check(triggeredActions._rank, Number)
@@ -123,43 +87,37 @@ class AbstractMigrationContextWithTriggeredActions {
 			blueprintUniqueId: triggeredActions._id,
 		}
 
-		const currentTriggeredAction = this.getTriggeredActionFromDb(triggeredActions._id)
+		const currentTriggeredAction = await this.getTriggeredActionFromDb(triggeredActions._id)
 		if (!currentTriggeredAction) {
-			waitForPromise(
-				TriggeredActions.insertAsync({
-					...newObj,
-					showStyleBaseId: this.showStyleBaseId,
-					_id: this.getProtectedTriggeredActionId(triggeredActions._id),
-				})
-			)
+			await TriggeredActions.insertAsync({
+				...newObj,
+				showStyleBaseId: this.showStyleBaseId,
+				_id: this.getProtectedTriggeredActionId(triggeredActions._id),
+			})
 		} else {
-			waitForPromise(
-				TriggeredActions.updateAsync(
-					{
-						_id: currentTriggeredAction._id,
-					},
-					{
-						$set: newObj,
-					},
-					{ multi: true }
-				)
+			await TriggeredActions.updateAsync(
+				{
+					_id: currentTriggeredAction._id,
+				},
+				{
+					$set: newObj,
+				},
+				{ multi: true }
 			)
 		}
 	}
-	removeTriggeredAction(triggeredActionId: string) {
+	async removeTriggeredAction(triggeredActionId: string): Promise<void> {
 		check(triggeredActionId, String)
 		if (!triggeredActionId) {
 			throw new Meteor.Error(500, `Triggered actions Id "${triggeredActionId}" is invalid`)
 		}
 
-		const currentTriggeredAction = this.getTriggeredActionFromDb(triggeredActionId)
+		const currentTriggeredAction = await this.getTriggeredActionFromDb(triggeredActionId)
 		if (currentTriggeredAction) {
-			waitForPromise(
-				TriggeredActions.removeAsync({
-					_id: currentTriggeredAction._id,
-					showStyleBaseId: this.showStyleBaseId,
-				})
-			)
+			await TriggeredActions.removeAsync({
+				_id: currentTriggeredAction._id,
+				showStyleBaseId: this.showStyleBaseId,
+			})
 		}
 	}
 }
@@ -168,6 +126,7 @@ export class MigrationContextSystem
 	extends AbstractMigrationContextWithTriggeredActions
 	implements IMigrationContextSystem {}
 
+/*
 export class MigrationContextStudio implements IMigrationContextStudio {
 	private studio: DBStudio
 
@@ -774,3 +733,4 @@ export class MigrationContextShowStyle
 		}
 	}
 }
+*/

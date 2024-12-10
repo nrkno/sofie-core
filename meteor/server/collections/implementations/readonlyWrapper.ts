@@ -1,13 +1,13 @@
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Meteor } from 'meteor/meteor'
-import { MongoCursor } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import type { Collection } from 'mongodb'
-import { AsyncOnlyMongoCollection, AsyncOnlyReadOnlyMongoCollection } from '../collection'
+import type { AsyncOnlyMongoCollection, AsyncOnlyReadOnlyMongoCollection } from '../collection'
+import type { MinimalMongoCursor } from './asyncCollection'
 
 export class WrappedReadOnlyMongoCollection<DBInterface extends { _id: ProtectedString<any> }>
 	implements AsyncOnlyReadOnlyMongoCollection<DBInterface>
 {
-	#mutableCollection: AsyncOnlyMongoCollection<DBInterface>
+	readonly #mutableCollection: AsyncOnlyMongoCollection<DBInterface>
 
 	constructor(collection: AsyncOnlyMongoCollection<DBInterface>) {
 		this.#mutableCollection = collection
@@ -49,7 +49,7 @@ export class WrappedReadOnlyMongoCollection<DBInterface extends { _id: Protected
 
 	async findWithCursor(
 		...args: Parameters<AsyncOnlyReadOnlyMongoCollection<DBInterface>['findWithCursor']>
-	): Promise<MongoCursor<DBInterface>> {
+	): Promise<MinimalMongoCursor<DBInterface>> {
 		return this.#mutableCollection.findWithCursor(...args)
 	}
 
@@ -71,7 +71,7 @@ export class WrappedReadOnlyMongoCollection<DBInterface extends { _id: Protected
 		return this.#mutableCollection.countDocuments(...args)
 	}
 
-	_ensureIndex(...args: Parameters<AsyncOnlyReadOnlyMongoCollection<DBInterface>['_ensureIndex']>): void {
-		return this.#mutableCollection._ensureIndex(...args)
+	createIndex(...args: Parameters<AsyncOnlyReadOnlyMongoCollection<DBInterface>['createIndex']>): void {
+		return this.#mutableCollection.createIndex(...args)
 	}
 }

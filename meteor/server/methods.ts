@@ -3,7 +3,6 @@ import * as _ from 'underscore'
 import { logger } from './logging'
 import { extractFunctionSignature } from './lib'
 import { MethodContext, MethodContextAPI } from './api/methodContext'
-import { waitForPromise } from './lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { Settings } from './Settings'
 import { isPromise } from '@sofie-automation/shared-lib/dist/lib/lib'
@@ -155,7 +154,7 @@ export function MeteorDebugMethods(methods: { [key: string]: MeteorDebugMethod }
 		for (const [key, fn] of Object.entries<MeteorDebugMethod>(methods)) {
 			if (key && !!fn) {
 				fiberMethods[key] = function (this: Meteor.MethodThisType, ...args: any[]) {
-					return waitForPromise(fn.call(this, ...args))
+					return fn.call(this, ...args)
 				}
 			}
 		}
