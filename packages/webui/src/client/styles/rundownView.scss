@@ -3264,7 +3264,16 @@ svg.icon {
 		white-space: normal;
 	}
 	.mini-inspector__value__right {
+		font-weight: 200;
+		font-size: 0.8em;
+		letter-spacing: 0em;
+		max-width: 60vw;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		word-break: break-all;
+		white-space: normal;
 		position: absolute;
+		bottom: 7px;
 		right: 0;
 	}
 	.mini-inspector__system {
