@@ -167,9 +167,7 @@ describe('lib/mediaObjects', () => {
 	test('getAcceptedFormats', () => {
 		const acceptedFormats = getAcceptedFormats({
 			supportedMediaFormats: '1920x1080i5000, 1280x720, i5000, i5000tff',
-			mediaPreviewsUrl: '',
 			frameRate: 25,
-			minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
 		})
 		expect(acceptedFormats).toEqual([
 			['1920', '1080', 'i', '5000', undefined],
@@ -252,6 +250,9 @@ describe('lib/mediaObjects', () => {
 			supportedAudioStreams: '4',
 			frameRate: 25,
 			minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
+			allowHold: false,
+			allowPieceDirectPlay: false,
+			enableBuckets: false,
 		}
 
 		const mockDefaultStudio = defaultStudio(protectString('studio0'))

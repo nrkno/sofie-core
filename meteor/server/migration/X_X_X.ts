@@ -187,4 +187,41 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			}
 		},
 	},
+
+	{
+		id: `add studio settings allowHold & allowPieceDirectPlay`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const studios = await Studios.findFetchAsync({
+				$or: [
+					{ 'settings.allowHold': { $exists: false } },
+					{ 'settings.allowPieceDirectPlay': { $exists: false } },
+				],
+			})
+
+			if (studios.length > 0) {
+				return 'studios must have settings.allowHold and settings.allowPieceDirectPlay defined'
+			}
+
+			return false
+		},
+		migrate: async () => {
+			const studios = await Studios.findFetchAsync({
+				$or: [
+					{ 'settings.allowHold': { $exists: false } },
+					{ 'settings.allowPieceDirectPlay': { $exists: false } },
+				],
+			})
+
+			for (const studio of studios) {
+				// Populate the settings to be backwards compatible
+				await Studios.updateAsync(studio._id, {
+					$set: {
+						'settings.allowHold': true,
+						'settings.allowPieceDirectPlay': true,
+					},
+				})
+			}
+		},
+	},
 ])

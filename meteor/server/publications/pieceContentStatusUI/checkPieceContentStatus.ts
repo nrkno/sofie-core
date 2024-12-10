@@ -147,7 +147,9 @@ export function acceptFormat(format: string, formats: Array<Array<string>>): boo
  * 	[undefined, undefined, i, 5000, tff]
  * ]
  */
-export function getAcceptedFormats(settings: IStudioSettings | undefined): Array<Array<string>> {
+export function getAcceptedFormats(
+	settings: Pick<IStudioSettings, 'supportedMediaFormats' | 'frameRate'> | undefined
+): Array<Array<string>> {
 	const formatsConfigField = settings ? settings.supportedMediaFormats : ''
 	const formatsString: string =
 		(formatsConfigField && formatsConfigField !== '' ? formatsConfigField : '1920x1080i5000') + ''
