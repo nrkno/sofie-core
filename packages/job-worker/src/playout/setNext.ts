@@ -60,12 +60,16 @@ export async function setNextPart(
 	while (moveNextToPart) {
 		// Ensure that we aren't stuck in an infinite loop. If this while loop is being run for a part twice, then the blueprints are behaving oddly and will likely get stuck
 		// Instead of throwing and causing a larger failure, we can stop processing here, and leave something as next
-		const nextedId = moveNextToPart.selectedPart?._id ?? null
-		if (attemptedPartIds.has(nextedId)) {
-			logger.error(`Blueprint onSetAsNext callback moved the next part ${attemptedPartIds.size}, forming a loop`)
+		const nextPartId = moveNextToPart.selectedPart?._id ?? null
+		if (attemptedPartIds.has(nextPartId)) {
+			logger.error(
+				`Blueprint onSetAsNext callback moved the next part "${nextPartId}" (trace: ${JSON.stringify(
+					Array.from(attemptedPartIds.values())
+				)}), forming a loop`
+			)
 			break
 		}
-		attemptedPartIds.add(nextedId)
+		attemptedPartIds.add(nextPartId)
 
 		moveNextToPart = await setNextPartAndCheckForPendingMoveNextPart(
 			context,
@@ -97,7 +101,7 @@ async function setNextPartAndCheckForPendingMoveNextPart(
 	rawNextPart: ReadonlyDeep<Omit<SelectNextPartResult, 'index'>> | PlayoutPartInstanceModel | null,
 	setManually: boolean,
 	nextTimeOffset?: number | undefined
-) {
+): Promise<{ selectedPart: ReadonlyDeep<DBPart> | null } | undefined> {
 	if (rawNextPart) {
 		if (!playoutModel.playlist.activationId)
 			throw new Error(`RundownPlaylist "${playoutModel.playlist._id}" is not active`)
@@ -185,10 +189,10 @@ async function executeOnSetAsNextCallback(
 	context: JobContext
 ) {
 	const rundownOfNextPart = playoutModel.getRundown(newPartInstance.partInstance.rundownId)
-	if (!rundownOfNextPart) return null
+	if (!rundownOfNextPart) return undefined
 
 	const blueprint = await context.getShowStyleBlueprint(rundownOfNextPart.rundown.showStyleBaseId)
-	if (!blueprint.blueprint.onSetAsNext) return null
+	if (!blueprint.blueprint.onSetAsNext) return undefined
 
 	const showStyle = await context.getShowStyleCompound(
 		rundownOfNextPart.rundown.showStyleVariantId,
