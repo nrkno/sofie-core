@@ -334,6 +334,7 @@ function generateCurrentInfinitePieceObjects(
 		// If the cap is a number, it is relative to the part, not the parent group so needs to be handled here
 		if (typeof pieceInstance.resolvedEndCap === 'number') {
 			infiniteGroup.enable.end = `#${timingContext.currentPartGroup.id}.start + ${pieceInstance.resolvedEndCap}`
+			delete infiniteGroup.enable.duration
 			delete pieceInstanceWithUpdatedEndCap.resolvedEndCap
 		}
 	} else if (

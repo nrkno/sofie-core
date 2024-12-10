@@ -110,6 +110,9 @@ export function defaultStudio(_id: StudioId): DBStudio {
 			mediaPreviewsUrl: '',
 			minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
 			fallbackPartDuration: DEFAULT_FALLBACK_PART_DURATION,
+			allowHold: false,
+			allowPieceDirectPlay: false,
+			enableBuckets: false,
 		},
 		_rundownVersionHash: '',
 		routeSetsWithOverrides: wrapDefaultObject({}),
@@ -134,7 +137,6 @@ export function defaultSegment(_id: SegmentId, rundownId: RundownId): DBSegment 
 		externalId: unprotectString(_id),
 		rundownId: rundownId,
 		name: 'Default Segment',
-		externalModified: 1,
 	}
 }
 

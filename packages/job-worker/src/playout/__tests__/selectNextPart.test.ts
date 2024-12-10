@@ -417,4 +417,11 @@ describe('selectNextPart', () => {
 			expect(nextPart).toEqual({ index: 6, part: defaultParts[6], consumesQueuedSegmentId: false })
 		}
 	})
+
+	test('on last part, with queued segment', () => {
+		// On the last part in the rundown, with a queuedSegment id set to earlier
+		defaultPlaylist.queuedSegmentId = segment2
+		const nextPart = selectNextPart2(defaultParts[8].toPartInstance(), defaultParts[8].toPartInstance())
+		expect(nextPart).toEqual({ index: 4, part: defaultParts[4], consumesQueuedSegmentId: true })
+	})
 })

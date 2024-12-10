@@ -3,7 +3,8 @@ import { Meteor } from 'meteor/meteor'
 import { MongoCursor } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import { Simplify } from 'type-fest'
 import { assertNever } from '../../lib/tempLib'
-import { waitForPromise } from '../../lib/lib'
+import { logger } from '../../logging'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 /**
  * https://stackoverflow.com/a/66011942
@@ -41,18 +42,18 @@ export function observerChain(): Pick<Link<{}>, 'next'> {
 			throw new Error('nextChanged: Unfinished observer chain. This is a memory leak.')
 		}
 
-		function changedLink(collectorObject: Record<string, any>) {
+		async function changedLink(collectorObject: Record<string, any>) {
 			if (previousObserver) {
 				previousObserver.stop()
 				previousObserver = null
 			}
-			const cursorResult = waitForPromise(chainedCursor(collectorObject))
+			const cursorResult = await chainedCursor(collectorObject)
 			if (cursorResult === null) {
 				nextStop()
 				return
 			}
 
-			previousObserver = cursorResult.observe({
+			previousObserver = await cursorResult.observeAsync({
 				added: (doc) => {
 					if (!chainedKey) throw new Error('Chained key needs to be defined')
 					const newCollectorObject: Record<string, any> = {
@@ -96,10 +97,10 @@ export function observerChain(): Pick<Link<{}>, 'next'> {
 		}
 
 		return {
-			changed: (obj: Record<string, any>) => {
+			changed: async (obj: Record<string, any>) => {
 				switch (mode) {
 					case 'next':
-						changedLink(obj)
+						await changedLink(obj)
 						break
 					case 'end':
 						changedEnd(obj)
@@ -160,7 +161,9 @@ export function observerChain(): Pick<Link<{}>, 'next'> {
 			const nextLink = link.next(key, cursorChain)
 			setImmediate(
 				Meteor.bindEnvironment(() => {
-					changed({})
+					changed({}).catch((e) => {
+						logger.error(`Error in observerChain: ${stringifyError(e)}`)
+					})
 				})
 			)
 			return nextLink as any

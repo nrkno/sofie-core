@@ -27,4 +27,4 @@ COPY --from=0 /opt/shared-lib /opt/shared-lib
 COPY --from=0 /opt/corelib /opt/corelib
 
 WORKDIR /opt/live-status-gateway
-CMD ["yarn", "start"]
+CMD ["node", "dist/index.js"]

@@ -1,7 +1,4 @@
-@import 'colorScheme';
-@import 'itemTypeColors';
 @import 'utils';
-@import '_variables';
 
 $output-layer-group-line: 1px solid #5c5c5c;
 $output-layer-group-collapse-animation-duration: 0.3s;
@@ -107,6 +104,7 @@ $break-width: 35rem;
 	transition: 0s padding-right 0s;
 
 	.invert-flash {
+		animation: invert-flash 1s infinite;
 		@keyframes invert-flash {
 			0% {
 				filter: #{'invert()'};
@@ -121,8 +119,6 @@ $break-width: 35rem;
 				filter: none;
 			}
 		}
-
-		animation: invert-flash 1s infinite;
 	}
 
 	.rundown-view__part__icon {
@@ -454,13 +450,10 @@ svg.icon {
 	grid-column-gap: 0;
 	grid-row-gap: 0;
 
-	grid-template-columns: [segment-name] ($segment-header-width / 2) [duration-onAirIn-split] ($segment-header-width / 2) [segment-group-controls] $segment-group-controls-width [timeline] auto [end]; // 120px [future-timeline-end]
+	grid-template-columns:
+		[segment-name] calc($segment-header-width / 2) [duration-onAirIn-split] calc($segment-header-width / 2)
+		[segment-group-controls] $segment-group-controls-width [timeline] auto [end]; // 120px [future-timeline-end]
 	grid-template-rows: [header] $segment-header-height [main-view] auto [zoom-area] auto [end];
-
-	@media screen and (max-width: $break-width) {
-		grid-template-columns: [start] $segment-group-controls-width [timeline] auto [toggle-view] 30px [end];
-		grid-template-rows: [header] $segment-header-height [title] auto [timeline-header] $segment-header-height [output-layers] auto [zoom-area] auto [end];
-	}
 
 	overflow: hidden;
 	user-select: none;
@@ -475,9 +468,14 @@ svg.icon {
 	box-shadow: 7px 6px 15px 0px rgba(0, 0, 0, 0.3);
 
 	--segment-layer-height: #{$segment-layer-height};
-	--infinite-piece-background-line-height: #{$segment-layer-height / 8};
+	--infinite-piece-background-line-height: calc($segment-layer-height / 8);
 	border-radius: $segment-border-radius;
 	border-bottom: 1px solid black;
+
+	@media screen and (max-width: $break-width) {
+		grid-template-columns: [start] $segment-group-controls-width [timeline] auto [toggle-view] 30px [end];
+		grid-template-rows: [header] $segment-header-height [title] auto [timeline-header] $segment-header-height [output-layers] auto [zoom-area] auto [end];
+	}
 
 	// padding has to be the same on both of these elements so that the layers and their controls line up
 	.segment-timeline__output-layers,
@@ -496,19 +494,19 @@ svg.icon {
 		padding: 0;
 		overflow: hidden;
 
-		grid-column: segment-name / segment-group-controls;
-		grid-row: main-view / end;
-		@media screen and (max-width: $break-width) {
-			grid-column: start / end;
-			grid-row: title / timeline-header;
-		}
-
 		transition: $output-layer-group-collapse-animation-duration opacity,
 			$output-layer-group-collapse-animation-duration visibility 0s;
 
 		background: $segment-title-background-color;
 
 		word-break: break-word;
+
+		grid-column: segment-name / segment-group-controls;
+		grid-row: main-view / end;
+		@media screen and (max-width: $break-width) {
+			grid-column: start / end;
+			grid-row: title / timeline-header;
+		}
 
 		h2 {
 			margin: 0;
@@ -676,13 +674,6 @@ svg.icon {
 		padding: 0;
 		text-align: right;
 
-		grid-column: segment-name / duration-onAirIn-split;
-		grid-row: header / main-view;
-		@media screen and (max-width: $break-width) {
-			grid-column: start / timeline;
-			grid-row: header / title;
-		}
-
 		padding-right: 0px;
 		margin-right: 0em;
 		font-size: 1em;
@@ -691,6 +682,13 @@ svg.icon {
 		font-weight: 400;
 
 		transition: 0.3s color;
+
+		grid-column: segment-name / duration-onAirIn-split;
+		grid-row: header / main-view;
+		@media screen and (max-width: $break-width) {
+			grid-column: start / timeline;
+			grid-row: header / title;
+		}
 
 		> span.negative {
 			transition: none;
@@ -724,13 +722,13 @@ svg.icon {
 	}
 
 	.segment-timeline__timeUntil {
+		color: #888;
+		cursor: pointer;
+
 		grid-column: duration-onAirIn-split / segment-group-controls;
 		@media screen and (max-width: $break-width) {
 			grid-column: timeline / toggle-view;
 		}
-
-		color: #888;
-		cursor: pointer;
 	}
 
 	&.time-of-day-countdowns {
@@ -746,13 +744,6 @@ svg.icon {
 }
 
 .segment-timeline__switch-view-mode-button {
-	grid-row: header / main-view;
-	grid-column: timeline / end;
-	@media screen and (max-width: $break-width) {
-		grid-column: toggle-view / end;
-		grid-row: header / title;
-	}
-
 	justify-self: end;
 	align-self: start;
 	z-index: 1;
@@ -767,6 +758,13 @@ svg.icon {
 
 	margin-top: 0.1em;
 	margin-right: 0.1em;
+
+	grid-row: header / main-view;
+	grid-column: timeline / end;
+	@media screen and (max-width: $break-width) {
+		grid-column: toggle-view / end;
+		grid-row: header / title;
+	}
 
 	&:hover {
 		background: #8c8c8c;
@@ -797,14 +795,14 @@ svg.icon {
 		grid-column: segment-group-controls / timeline;
 		grid-row: header / end;
 
+		align-self: end;
+		grid-template-columns: 1fr 1fr 1fr;
+		padding: 0 1.2em 0.05em;
+
 		@media screen and (max-width: $break-width) {
 			grid-column: start / timeline;
 			grid-row: zoom-area / end;
 		}
-
-		align-self: end;
-		grid-template-columns: 1fr 1fr 1fr;
-		padding: 0 1.2em 0.05em;
 
 		> .segment-timeline__timeline-zoom-buttons__button {
 			min-width: 22px;
@@ -878,19 +876,19 @@ svg.icon {
 		background: $segment-next-preview-background-color;
 		opacity: 1;
 		transition: $output-layer-group-collapse-animation-duration opacity
-				($output-layer-group-collapse-animation-duration * 1/2),
-			$output-layer-group-collapse-animation-duration margin ($output-layer-group-collapse-animation-duration * 1/2);
+				calc($output-layer-group-collapse-animation-duration * 0.5),
+			$output-layer-group-collapse-animation-duration margin calc($output-layer-group-collapse-animation-duration * 0.5);
 	}
 
 	.segment-timeline__zoom-area-container {
+		transition: 1s opacity, 0s visibility;
+
 		grid-column: timeline / end;
 		grid-row: zoom-area / end;
 		@media screen and (max-width: $break-width) {
 			grid-column: timeline / end;
 			grid-row: zoom-area / end;
 		}
-
-		transition: 1s opacity, 0s visibility;
 
 		&.hidden {
 			opacity: 0;
@@ -1073,33 +1071,26 @@ svg.icon {
 			.segment-timeline__timeline-container - contains the timeline elements and the live-line and other lines
 	*/
 	.segment-timeline__timeline-background {
+		min-width: 0;
+		overflow: hidden;
+		background: $segment-timeline-background-color;
+		opacity: 1;
+		transition: $output-layer-group-collapse-animation-duration opacity
+				calc($output-layer-group-collapse-animation-duration * 0.5),
+			$output-layer-group-collapse-animation-duration margin-bottom
+				calc($output-layer-group-collapse-animation-duration * 0.5);
+		margin-bottom: 1.5em;
+		margin-left: 2px;
+
 		grid-column: timeline / end;
 		grid-row: main-view / zoom-area;
 		@media screen and (max-width: $break-width) {
 			grid-column: timeline / end;
 			grid-row: output-layers / zoom-area;
 		}
-
-		min-width: 0;
-		overflow: hidden;
-		background: $segment-timeline-background-color;
-		opacity: 1;
-		transition: $output-layer-group-collapse-animation-duration opacity
-				($output-layer-group-collapse-animation-duration * 1/2),
-			$output-layer-group-collapse-animation-duration margin-bottom
-				($output-layer-group-collapse-animation-duration * 1/2);
-		margin-bottom: 1.5em;
-		margin-left: 2px;
 	}
 
 	.segment-timeline__timeline-grid {
-		grid-column: timeline / end;
-		grid-row: header / zoom-area;
-		@media screen and (max-width: $break-width) {
-			grid-column: timeline / end;
-			grid-row: timeline-header / zoom-area;
-		}
-
 		min-width: 0;
 		overflow: hidden;
 		margin-bottom: 1.15em;
@@ -1108,7 +1099,7 @@ svg.icon {
 		opacity: 1;
 		visibility: visible;
 		transition: $output-layer-group-collapse-animation-duration opacity
-				($output-layer-group-collapse-animation-duration * 1/2),
+				calc($output-layer-group-collapse-animation-duration * 0.5),
 			$output-layer-group-collapse-animation-duration visibility 0s;
 
 		color: #707070;
@@ -1119,20 +1110,27 @@ svg.icon {
 		--timeline-grid-long-line-height: 0;
 		--timeline-grid-short-line-top: 30px;
 		--timeline-grid-short-line-height: 6px;
-	}
 
-	.segment-timeline__timeline-container {
 		grid-column: timeline / end;
 		grid-row: header / zoom-area;
 		@media screen and (max-width: $break-width) {
 			grid-column: timeline / end;
 			grid-row: timeline-header / zoom-area;
 		}
+	}
 
+	.segment-timeline__timeline-container {
 		min-width: 0;
 		min-height: 0;
 
 		overflow: hidden;
+
+		grid-column: timeline / end;
+		grid-row: header / zoom-area;
+		@media screen and (max-width: $break-width) {
+			grid-column: timeline / end;
+			grid-row: timeline-header / zoom-area;
+		}
 	}
 
 	.segment-timeline__liveline-shade {
@@ -1399,12 +1397,13 @@ svg.icon {
 				&.quickloop-start {
 					left: -2px;
 
-					&::before, &::after {
+					&::before,
+					&::after {
 						z-index: 1;
 						margin-left: 5px;
 						border-left-color: white;
 					}
-					
+
 					.segment-timeline__part__nextline__label {
 						z-index: 5;
 						left: 5px;
@@ -1585,7 +1584,6 @@ svg.icon {
 					pointer-events: none;
 				}
 			}
-
 
 			&:not(.live) {
 				.segment-timeline__part__nextline.auto-next:not(.segment-timeline__part__nextline--endline),
@@ -1832,7 +1830,8 @@ svg.icon {
 					right: 0;
 				}
 
-				.segment-timeline__part__quickloop-start, .segment-timeline__part__quickloop-end {
+				.segment-timeline__part__quickloop-start,
+				.segment-timeline__part__quickloop-end {
 					background: $segment-background-color;
 					padding: 0 0.3em;
 					margin-bottom: -2px;
@@ -1849,7 +1848,7 @@ svg.icon {
 
 				.segment-timeline__part__quickloop-end {
 					padding-right: 0.6em;
-					margin-left: auto
+					margin-left: auto;
 				}
 			}
 
@@ -2087,30 +2086,30 @@ svg.icon {
 								.segment-timeline__piece__label {
 									opacity: 0;
 									visibility: hidden;
-									transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity,
-										0s visibility ($output-layer-group-collapse-animation-duration * 1/3);
+									transition: calc($output-layer-group-collapse-animation-duration / 3) opacity,
+										0s visibility calc($output-layer-group-collapse-animation-duration / 3);
 								}
 
 								.segment-timeline__piece--collapsed__step-chevron {
 									opacity: 1;
 									visibility: visible;
-									transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity
-											$output-layer-group-collapse-animation-duration * 4/3,
-										0s visibility $output-layer-group-collapse-animation-duration * 4/3;
+									transition: calc($output-layer-group-collapse-animation-duration / 3) opacity
+											calc($output-layer-group-collapse-animation-duration * 4 / 3),
+										0s visibility calc($output-layer-group-collapse-animation-duration * 4 / 3);
 								}
 
 								.segment-timeline__piece--decoration__step-chevron {
 									opacity: 0;
 									visibility: hidden;
-									transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity,
-										0s visibility ($output-layer-group-collapse-animation-duration * 1/3);
+									transition: calc($output-layer-group-collapse-animation-duration / 3) opacity,
+										0s visibility calc($output-layer-group-collapse-animation-duration / 3);
 								}
 							}
 						}
 
 						&.layer-count-1 {
 							.segment-timeline__layer {
-								max-height: $segment-layer-height / 2;
+								max-height: calc($segment-layer-height / 2);
 							}
 						}
 					}
@@ -2120,8 +2119,8 @@ svg.icon {
 			.segment-timeline__piece--collapsed__step-chevron {
 				opacity: 0;
 				visibility: hidden;
-				transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity,
-					0s visibility ($output-layer-group-collapse-animation-duration * 1/3);
+				transition: calc($output-layer-group-collapse-animation-duration / 3) opacity,
+					0s visibility calc($output-layer-group-collapse-animation-duration / 3);
 				position: absolute;
 				top: 0;
 				left: 0;
@@ -2136,7 +2135,7 @@ svg.icon {
 			.segment-timeline__piece--decoration__step-chevron {
 				opacity: 1;
 				visibility: visible;
-				transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity
+				transition: calc($output-layer-group-collapse-animation-duration / 3) opacity
 						$output-layer-group-collapse-animation-duration,
 					0s visibility $output-layer-group-collapse-animation-duration;
 				position: absolute;
@@ -2155,8 +2154,8 @@ svg.icon {
 				margin: 0 0.3em;
 				text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
 				font-weight: 400;
-				transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity
-					($output-layer-group-collapse-animation-duration * 2/3);
+				transition: calc($output-layer-group-collapse-animation-duration / 3) opacity
+					calc($output-layer-group-collapse-animation-duration * 2 / 3);
 				pointer-events: none;
 				display: inline-block;
 				white-space: nowrap;
@@ -2417,16 +2416,16 @@ svg.icon {
 
 	// This is the output layer controls section in the middle
 	.segment-timeline__output-layers {
+		transition: $output-layer-group-collapse-animation-duration padding ease-in-out;
+
+		margin: 0 0.3em;
+
 		grid-column: segment-group-controls / timeline;
 		grid-row: header / zoom-area;
 		@media screen and (max-width: $break-width) {
 			grid-column: start / timeline;
 			grid-row: timeline-header / zoom-area;
 		}
-
-		transition: $output-layer-group-collapse-animation-duration padding ease-in-out;
-
-		margin: 0 0.3em;
 
 		// this is a single output-layer container
 		.segment-timeline__output-layer-control {
@@ -2477,8 +2476,8 @@ svg.icon {
 					width: 50px;
 					box-sizing: border-box;
 					opacity: 1;
-					transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity
-						($output-layer-group-collapse-animation-duration * 1/3);
+					transition: calc($output-layer-group-collapse-animation-duration / 3) opacity
+						calc($output-layer-group-collapse-animation-duration / 3);
 				}
 
 				.segment-timeline__output-layer-control__label {
@@ -2506,7 +2505,7 @@ svg.icon {
 					}
 
 					&::after {
-						transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity;
+						transition: calc($output-layer-group-collapse-animation-duration / 3) opacity;
 						opacity: 0;
 					}
 				}
@@ -2593,8 +2592,8 @@ svg.icon {
 				}
 
 				&::after {
-					transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity,
-						0s visibility ($output-layer-group-collapse-animation-duration * 1/3);
+					transition: calc($output-layer-group-collapse-animation-duration / 3) opacity,
+						0s visibility calc($output-layer-group-collapse-animation-duration / 3);
 					opacity: 0 !important;
 					visibility: hidden;
 				}
@@ -2646,8 +2645,8 @@ svg.icon {
 							.segment-timeline__piece__label {
 								opacity: 0;
 								visibility: hidden;
-								transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity,
-									0s visibility ($output-layer-group-collapse-animation-duration * 1/3);
+								transition: calc($output-layer-group-collapse-animation-duration / 3) opacity,
+									0s visibility calc($output-layer-group-collapse-animation-duration / 3);
 							}
 						}
 					}
@@ -2794,6 +2793,8 @@ svg.icon {
 	}
 
 	.rundown-divider-timeline__notifications {
+		margin-right: 0.8em;
+
 		font-size: 0.8em;
 		font-weight: 400;
 		> svg {
@@ -2805,7 +2806,6 @@ svg.icon {
 			position: relative;
 			top: 0.05em;
 		}
-		margin-right: 0.8em;
 	}
 
 	> .rundown-divider-timeline__expected-start,

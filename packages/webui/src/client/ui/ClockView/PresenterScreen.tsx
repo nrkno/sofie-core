@@ -341,7 +341,7 @@ export function usePresenterScreenSubscriptions(props: PresenterScreenProps): vo
 
 	useSubscription(CorelibPubSub.segments, rundownIds, {})
 	useSubscription(CorelibPubSub.parts, rundownIds, null)
-	useSubscription(MeteorPubSub.uiPartInstances, rundownIds, playlist?.activationId ?? null)
+	useSubscription(MeteorPubSub.uiPartInstances, playlist?.activationId ?? null)
 	useSubscriptions(
 		MeteorPubSub.uiShowStyleBase,
 		showStyleBaseIds.map((id) => [id])

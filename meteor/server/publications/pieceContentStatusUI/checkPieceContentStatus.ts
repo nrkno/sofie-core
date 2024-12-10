@@ -60,9 +60,21 @@ interface ScanInfoForPackage {
  * formatted string
  */
 export function buildFormatString(
-	field_order: PackageInfo.FieldOrder | undefined,
+	scan_field_order: PackageInfo.FieldOrder | undefined,
 	stream: PieceContentStreamInfo
 ): string {
+	let field_order: PackageInfo.FieldOrder
+	if (stream.field_order === PackageInfo.FieldOrder.BFF || stream.field_order === PackageInfo.FieldOrder.TFF) {
+		// If the stream says it is interlaced, trust that
+		field_order = stream.field_order
+	} else if (scan_field_order && scan_field_order !== PackageInfo.FieldOrder.Unknown) {
+		// Then try the scan if it gave a value
+		field_order = scan_field_order
+	} else {
+		// Fallback to whatever the stream has
+		field_order = stream.field_order || PackageInfo.FieldOrder.Unknown
+	}
+
 	let format = `${stream.width || 0}x${stream.height || 0}`
 	switch (field_order) {
 		case PackageInfo.FieldOrder.Progressive:
@@ -135,7 +147,9 @@ export function acceptFormat(format: string, formats: Array<Array<string>>): boo
  * 	[undefined, undefined, i, 5000, tff]
  * ]
  */
-export function getAcceptedFormats(settings: IStudioSettings | undefined): Array<Array<string>> {
+export function getAcceptedFormats(
+	settings: Pick<IStudioSettings, 'supportedMediaFormats' | 'frameRate'> | undefined
+): Array<Array<string>> {
 	const formatsConfigField = settings ? settings.supportedMediaFormats : ''
 	const formatsString: string =
 		(formatsConfigField && formatsConfigField !== '' ? formatsConfigField : '1920x1080i5000') + ''
@@ -337,6 +351,7 @@ async function checkPieceContentMediaObjectStatus(
 										codec_time_base: stream.codec.time_base,
 										channels: stream.channels,
 										r_frame_rate: undefined,
+										field_order: undefined,
 									})
 								),
 								(stream) => buildFormatString(mediainfo.field_order, stream),
@@ -877,7 +892,7 @@ function getPackageWarningMessage(
 
 export type PieceContentStreamInfo = Pick<
 	PackageInfo.FFProbeScanStream,
-	'width' | 'height' | 'time_base' | 'codec_type' | 'codec_time_base' | 'channels' | 'r_frame_rate'
+	'width' | 'height' | 'time_base' | 'codec_type' | 'codec_time_base' | 'channels' | 'r_frame_rate' | 'field_order'
 >
 function checkStreamFormatsAndCounts(
 	messages: Array<ContentMessage>,

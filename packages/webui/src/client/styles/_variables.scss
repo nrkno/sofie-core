@@ -1,4 +1,3 @@
-@import 'colorScheme';
 
 $fullscreen-controls__button--radius: 3.125rem;
 
@@ -27,5 +26,5 @@ $segment-storyboard-thumbnail-height: 2.9rem;
 $portrait-mode-breakpoint: 35em;
 
 @function rem($pixels, $context: $browser-context) {
-	@return #{$pixels/$context}rem;
+	@return #{calc($pixels/$context)}rem;
 }

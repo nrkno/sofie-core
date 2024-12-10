@@ -1,5 +1,3 @@
-@import '_colorScheme';
-@import '_variables';
 
 .status-bar__controls__button.support__toggle-button {
 	z-index: 310;
@@ -7,8 +5,8 @@
 
 	> svg {
 		position: absolute !important;
-		width: #{$fullscreen-controls__button--radius / 2} !important;
-		height: #{$fullscreen-controls__button--radius / 2.86} !important;
+		width: calc($fullscreen-controls__button--radius / 2) !important;
+		height: calc($fullscreen-controls__button--radius / 2.86) !important;
 		right: 0 !important;
 		left: auto !important;
 		transform: translate(-50%, -53%) !important;
@@ -113,7 +111,6 @@
 	padding: 0;
 	padding-top: rem(15px);
 
-
 	> .media-status-panel__inside {
 		width: 28rem;
 	}
@@ -165,7 +162,7 @@
 }
 
 .rundown-view {
-	.support-pop-up-panel{
+	.support-pop-up-panel {
 		color: #000;
 		--panel-background: #eee;
 		background: var(--panel-background);

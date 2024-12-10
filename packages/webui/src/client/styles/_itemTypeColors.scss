@@ -359,24 +359,6 @@ $layer-types: join($layer-types-solid, $layer-types-gradient);
 	&.source-unknown-state,
 	&.source-not-ready {
 		&::before {
-			@keyframes animated-zebra {
-				0% {
-					opacity: 0.4;
-				}
-				49% {
-					opacity: 0.4;
-				}
-				50% {
-					opacity: 0.9;
-				}
-				99% {
-					opacity: 0.9;
-				}
-				100% {
-					opacity: 0.4;
-				}
-			}
-
 			content: ' ';
 			display: block;
 			position: absolute;
@@ -404,6 +386,24 @@ $layer-types: join($layer-types-solid, $layer-types-gradient);
 				transparent 13px,
 				transparent 16px
 			);
+
+			@keyframes animated-zebra {
+				0% {
+					opacity: 0.4;
+				}
+				49% {
+					opacity: 0.4;
+				}
+				50% {
+					opacity: 0.9;
+				}
+				99% {
+					opacity: 0.9;
+				}
+				100% {
+					opacity: 0.4;
+				}
+			}
 		}
 	}
 

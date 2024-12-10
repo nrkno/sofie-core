@@ -31,6 +31,7 @@ Follow these instructions to start up Sofie Core in development mode. (For produ
 ```bash
 git clone -b master https://github.com/nrkno/sofie-core.git
 cd sofie-core
+yarn
 yarn start
 ```
 
@@ -138,12 +139,12 @@ Then submit this as a PR.
 
 ### ConfigManifests
 
-The ConfigManifests for Blueprints and Gateways was replaced with JSONSchema in R50.  
+The ConfigManifests for Blueprints and Gateways was replaced with JSONSchema in R50.
 However, one usage by AdlibActions for their userDataManifest remains as this is not something we are actively using.
 
 ## Blueprint Migrations
 
-In R49, a replacement flow was added consisting of `validateConfig` and `applyConfig`.  
+In R49, a replacement flow was added consisting of `validateConfig` and `applyConfig`.
 It is no longer recommended to use the old migrations flow for showstyle and studio blueprints.
 
 ### ExpectedMediaItems

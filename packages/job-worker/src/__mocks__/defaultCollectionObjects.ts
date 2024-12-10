@@ -107,6 +107,9 @@ export function defaultStudio(_id: StudioId): DBStudio {
 			mediaPreviewsUrl: '',
 			minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
 			allowAdlibTestingSegment: true,
+			allowHold: true,
+			allowPieceDirectPlay: true,
+			enableBuckets: true,
 		},
 		routeSetsWithOverrides: wrapDefaultObject({}),
 		routeSetExclusivityGroupsWithOverrides: wrapDefaultObject({}),
@@ -131,7 +134,6 @@ export function defaultSegment(_id: SegmentId, rundownId: RundownId): DBSegment 
 		externalId: unprotectString(_id),
 		rundownId: rundownId,
 		name: 'Default Segment',
-		externalModified: 1,
 	}
 }
 

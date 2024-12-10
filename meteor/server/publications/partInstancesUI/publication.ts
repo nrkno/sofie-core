@@ -1,12 +1,8 @@
-import {
-	PartInstanceId,
-	RundownId,
-	RundownPlaylistActivationId,
-	SegmentId,
-} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstanceId, RundownPlaylistActivationId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { check } from 'meteor/check'
 import {
 	CustomPublishCollection,
+	SetupObserversResult,
 	TriggerUpdate,
 	meteorCustomPublish,
 	setUpCollectionOptimizedObserver,
@@ -17,7 +13,6 @@ import { resolveCredentials } from '../../security/lib/credentials'
 import { NoSecurityReadAccess } from '../../security/noSecurity'
 import { ContentCache, PartInstanceOmitedFields, createReactiveContentCache } from './reactiveContentCache'
 import { ReadonlyDeep } from 'type-fest'
-import { LiveQueryHandle } from '../../lib/lib'
 import { RundownPlaylists } from '../../collections'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
@@ -26,7 +21,6 @@ import { RundownsObserver } from '../lib/rundownsObserver'
 import { RundownContentObserver } from './rundownContentObserver'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { Match } from '../../lib/check'
-import { RundownReadAccess } from '../../security/rundown'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import {
 	extractRanks,
@@ -37,7 +31,6 @@ import {
 
 interface UIPartInstancesArgs {
 	readonly playlistActivationId: RundownPlaylistActivationId
-	readonly rundownIds: RundownId[]
 }
 
 export interface UIPartInstancesState {
@@ -65,7 +58,7 @@ const rundownPlaylistFieldSpecifier = literal<
 async function setupUIPartInstancesPublicationObservers(
 	args: ReadonlyDeep<UIPartInstancesArgs>,
 	triggerUpdate: TriggerUpdate<UIPartInstancesUpdateProps>
-): Promise<LiveQueryHandle[]> {
+): Promise<SetupObserversResult> {
 	const playlist = (await RundownPlaylists.findOneAsync(
 		{ activationId: args.playlistActivationId },
 		{
@@ -74,7 +67,7 @@ async function setupUIPartInstancesPublicationObservers(
 	)) as Pick<DBRundownPlaylist, RundownPlaylistFields> | undefined
 	if (!playlist) throw new Error(`RundownPlaylist with activationId="${args.playlistActivationId}" not found!`)
 
-	const rundownsObserver = new RundownsObserver(playlist.studioId, playlist._id, (rundownIds) => {
+	const rundownsObserver = await RundownsObserver.create(playlist.studioId, playlist._id, async (rundownIds) => {
 		logger.silly(`Creating new RundownContentObserver`)
 
 		const cache = createReactiveContentCache()
@@ -82,7 +75,12 @@ async function setupUIPartInstancesPublicationObservers(
 		// Push update
 		triggerUpdate({ newCache: cache })
 
-		const obs1 = new RundownContentObserver(playlist.studioId, args.playlistActivationId, rundownIds, cache)
+		const obs1 = await RundownContentObserver.create(
+			playlist.studioId,
+			args.playlistActivationId,
+			rundownIds,
+			cache
+		)
 
 		const innerQueries = [
 			cache.Segments.find({}).observeChanges({
@@ -205,32 +203,26 @@ export async function manipulateUIPartInstancesPublicationData(
 meteorCustomPublish(
 	MeteorPubSub.uiPartInstances,
 	CustomCollectionName.UIPartInstances,
-	async function (pub, rundownIds: RundownId[], playlistActivationId: RundownPlaylistActivationId | null) {
-		check(rundownIds, [String])
+	async function (pub, playlistActivationId: RundownPlaylistActivationId | null) {
 		check(playlistActivationId, Match.Maybe(String))
 
 		const credentials = await resolveCredentials({ userId: this.userId, token: undefined })
 
-		if (
-			playlistActivationId &&
-			(!credentials ||
-				NoSecurityReadAccess.any() ||
-				(await RundownReadAccess.rundownContent({ $in: rundownIds }, credentials)))
-		) {
+		if (playlistActivationId && (!credentials || NoSecurityReadAccess.any())) {
 			await setUpCollectionOptimizedObserver<
 				Omit<DBPartInstance, PartInstanceOmitedFields>,
 				UIPartInstancesArgs,
 				UIPartInstancesState,
 				UIPartInstancesUpdateProps
 			>(
-				`pub_${MeteorPubSub.uiPartInstances}_${rundownIds.join(',')}_${playlistActivationId}`,
-				{ rundownIds, playlistActivationId },
+				`pub_${MeteorPubSub.uiPartInstances}_${playlistActivationId}`,
+				{ playlistActivationId },
 				setupUIPartInstancesPublicationObservers,
 				manipulateUIPartInstancesPublicationData,
 				pub
 			)
 		} else {
-			logger.warn(`Pub.uiPartInstances: Not allowed: [${rundownIds.join(',')}] "${playlistActivationId}"`)
+			logger.warn(`Pub.uiPartInstances: Not allowed:"${playlistActivationId}"`)
 		}
 	}
 )

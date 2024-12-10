@@ -1,5 +1,3 @@
-import { KeyboardLayouts } from './KeyboardLayout'
-
 /**
  * This is an object specifying installation-wide, User Interface settings.
  * There are default values for these settings that will be used, unless overriden
@@ -21,8 +19,6 @@ export interface ISettings {
 	enableUserAccounts: boolean
 	/** Default duration to use to render parts when no duration is provided */
 	defaultDisplayDuration: number
-	/** If true, allows creation of new playlists in the Lobby Gui (rundown list). If false; only pre-existing playlists are allowed. */
-	allowMultiplePlaylistsInGUI: boolean
 	/** How many segments of history to show when scrolling back in time (0 = show current segment only) */
 	followOnAirSegmentsHistory: number
 	/** Clean up stuff that are older than this [ms] */
@@ -37,12 +33,6 @@ export interface ISettings {
 	}
 	/** Default value used to toggle Shelf options when the 'display' URL argument is not provided. */
 	defaultShelfDisplayOptions: string
-
-	/** The KeyboardPreview is a feature that is not implemented in the main Fork, and is kept here for compatibility */
-	enableKeyboardPreview: boolean
-
-	/** Keyboard map layout (what physical layout to use for the keyboard) */
-	keyboardMapLayout: KeyboardLayouts.Names
 
 	/**
 	 * CSS class applied to the body of the page. Used to include custom implementations that differ from the main Fork.
@@ -71,14 +61,11 @@ export const DEFAULT_SETTINGS = Object.freeze<ISettings>({
 	allowGrabbingTimeline: true,
 	enableUserAccounts: false,
 	defaultDisplayDuration: 3000,
-	allowMultiplePlaylistsInGUI: false,
 	poisonKey: 'Escape',
 	followOnAirSegmentsHistory: 0,
 	maximumDataAge: 1000 * 60 * 60 * 24 * 100, // 100 days
 	enableNTPTimeChecker: null,
 	defaultShelfDisplayOptions: 'buckets,layout,shelfLayout,inspector',
-	enableKeyboardPreview: false,
-	keyboardMapLayout: KeyboardLayouts.Names.STANDARD_102_TKL,
 	useCountdownToFreezeFrame: true,
 	confirmKeyCode: 'Enter',
 })

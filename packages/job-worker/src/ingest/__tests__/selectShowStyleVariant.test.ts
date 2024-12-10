@@ -15,6 +15,8 @@ describe('selectShowStyleVariant', () => {
 			type: 'mock',
 			segments: [],
 			coreData: undefined,
+			userEditStates: {},
+			payload: undefined,
 		}
 	}
 	function createBlueprintContext(context: MockJobContext): StudioUserContext {

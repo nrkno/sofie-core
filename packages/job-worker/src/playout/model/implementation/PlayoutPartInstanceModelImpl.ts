@@ -14,20 +14,19 @@ import {
 	calculatePartExpectedDurationWithTransition,
 	PartCalculatedTimings,
 } from '@sofie-automation/corelib/dist/playout/timings'
+import { IBlueprintPieceType, PieceLifespan, Time } from '@sofie-automation/blueprints-integration'
 import {
-	IBlueprintMutatablePart,
-	IBlueprintPieceType,
-	PieceLifespan,
-	Time,
-} from '@sofie-automation/blueprints-integration'
-import { PlayoutPartInstanceModel, PlayoutPartInstanceModelSnapshot } from '../PlayoutPartInstanceModel'
+	PlayoutMutatablePart,
+	PlayoutPartInstanceModel,
+	PlayoutPartInstanceModelSnapshot,
+} from '../PlayoutPartInstanceModel'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { PlayoutPieceInstanceModel } from '../PlayoutPieceInstanceModel'
 import { PlayoutPieceInstanceModelImpl } from './PlayoutPieceInstanceModelImpl'
 import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import _ = require('underscore')
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { IBlueprintMutatablePartSampleKeys } from '../../../blueprints/context/lib'
+import { PlayoutMutatablePartSampleKeys } from '../../../blueprints/context/lib'
 import { QuickLoopService } from '../services/QuickLoopService'
 
 /**
@@ -533,11 +532,11 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		this.#setPartInstanceValue('previousPartEndState', previousPartEndState)
 	}
 
-	updatePartProps(props: Partial<IBlueprintMutatablePart>): boolean {
+	updatePartProps(props: Partial<PlayoutMutatablePart>): boolean {
 		// Future: this could do some better validation
 
 		// filter the submission to the allowed ones
-		const trimmedProps: Partial<IBlueprintMutatablePart> = filterPropsToAllowed(props)
+		const trimmedProps: Partial<PlayoutMutatablePart> = filterPropsToAllowed(props)
 		if (Object.keys(trimmedProps).length === 0) return false
 
 		this.#compareAndSetPartInstanceValue(
@@ -583,8 +582,6 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 	}
 }
 
-function filterPropsToAllowed(
-	props: Partial<IBlueprintMutatablePart<unknown>>
-): Partial<IBlueprintMutatablePart<unknown>> {
-	return _.pick(props, [...IBlueprintMutatablePartSampleKeys])
+function filterPropsToAllowed(props: Partial<PlayoutMutatablePart>): Partial<PlayoutMutatablePart> {
+	return _.pick(props, [...PlayoutMutatablePartSampleKeys])
 }

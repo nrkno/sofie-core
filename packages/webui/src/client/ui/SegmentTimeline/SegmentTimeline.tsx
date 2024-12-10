@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as PropTypes from 'prop-types'
 import { WithTranslation, withTranslation } from 'react-i18next'
 
 import ClassNames from 'classnames'
@@ -37,7 +36,7 @@ import { wrapPartToTemporaryInstance } from '@sofie-automation/meteor-lib/dist/c
 import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { getPartInstanceTimingId, RundownTimingContext } from '../../lib/rundownTiming'
-import { IOutputLayer, ISourceLayer, NoteSeverity } from '@sofie-automation/blueprints-integration'
+import { IOutputLayer, ISourceLayer, NoteSeverity, UserEditingType } from '@sofie-automation/blueprints-integration'
 import { SegmentTimelineZoomButtons } from './SegmentTimelineZoomButtons'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
@@ -51,10 +50,12 @@ import {
 	TimingTickResolution,
 	TimingDataResolution,
 	WithTiming,
+	RundownTimingProviderContext,
 } from '../RundownView/RundownTiming/withTiming'
 import { SegmentTimeAnchorTime } from '../RundownView/RundownTiming/SegmentTimeAnchorTime'
 import { logger } from '../../lib/logging'
 import * as RundownResolver from '../../lib/RundownResolver'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 
 interface IProps {
 	id: string
@@ -128,15 +129,8 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 	IProps & IZoomPropsHeader,
 	IZoomStateHeader
 > {
-	static contextTypes = {
-		durations: PropTypes.object.isRequired,
-	}
-
-	declare context:
-		| {
-				durations: RundownTimingContext
-		  }
-		| undefined
+	static contextType = RundownTimingProviderContext
+	declare context: React.ContextType<typeof RundownTimingProviderContext>
 
 	constructor(props: IProps & IZoomPropsHeader, context: any) {
 		super(props, context)
@@ -1105,6 +1099,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 							))}
 						</div>
 					)}
+					<HeaderEditStates userEditOperations={this.props.segment.userEditOperations} />
 				</ContextMenuTrigger>
 				<div className="segment-timeline__duration" tabIndex={0}>
 					{this.props.playlist &&
@@ -1237,3 +1232,27 @@ export const SegmentTimeline = withTranslation()(
 		}
 	})(SegmentTimelineClass)
 )
+
+interface HeaderEditStatesProps {
+	userEditOperations: DBSegment['userEditOperations']
+}
+function HeaderEditStates({ userEditOperations }: HeaderEditStatesProps) {
+	return (
+		<div className="segment-timeline__title__user-edit-states">
+			{userEditOperations &&
+				userEditOperations.map((operation) => {
+					if (operation.type === UserEditingType.FORM || !operation.svgIcon || !operation.isActive) return null
+
+					return (
+						<div
+							key={operation.id}
+							className="segment-timeline__title__user-edit-state"
+							dangerouslySetInnerHTML={{
+								__html: operation.svgIcon,
+							}}
+						></div>
+					)
+				})}
+		</div>
+	)
+}

@@ -7,6 +7,7 @@ import {
 	Translated,
 	translateWithTracker,
 	useSubscriptionIfEnabled,
+	useSubscriptionIfEnabledReadyOnce,
 	useSubscriptions,
 	useTracker,
 } from '../lib/ReactMeteorData/react-meteor-data'
@@ -166,6 +167,7 @@ import { isEntirePlaylistLooping, isLoopRunning } from '../lib/RundownResolver'
 import { useRundownAndShowStyleIdsForPlaylist } from './util/useRundownAndShowStyleIdsForPlaylist'
 import { RundownPlaylistClientUtil } from '../lib/rundownPlaylistUtil'
 import { UserPermissionsContext, UserPermissions } from './UserPermissions'
+import * as RundownResolver from '../lib/RundownResolver'
 
 import { MAGIC_TIME_SCALE_FACTOR } from './SegmentTimeline/Constants'
 
@@ -551,6 +553,15 @@ const RundownHeader = withTranslation()(
 			if (this.props.userPermissions.studio && this.props.playlist.activationId) {
 				doUserAction(t, e, UserAction.ACTIVATE_HOLD, (e, ts) =>
 					MeteorCall.userAction.activateHold(e, ts, this.props.playlist._id, false)
+				)
+			}
+		}
+
+		clearQuickLoop = (e: any) => {
+			const { t } = this.props
+			if (this.props.userPermissions.studio && this.props.playlist.activationId) {
+				doUserAction(t, e, UserAction.CLEAR_QUICK_LOOP, (e, ts) =>
+					MeteorCall.userAction.clearQuickLoop(e, ts, this.props.playlist._id)
 				)
 			}
 		}
@@ -1004,6 +1015,12 @@ const RundownHeader = withTranslation()(
 
 		render(): JSX.Element {
 			const { t } = this.props
+
+			const canClearQuickLoop =
+				!!this.props.studio.settings.enableQuickLoop &&
+				!RundownResolver.isLoopLocked(this.props.playlist) &&
+				RundownResolver.isAnyLoopMarkerDefined(this.props.playlist)
+
 			return (
 				<>
 					<Escape to="document">
@@ -1034,8 +1051,11 @@ const RundownHeader = withTranslation()(
 									{this.props.playlist.activationId ? (
 										<MenuItem onClick={(e) => this.take(e)}>{t('Take')}</MenuItem>
 									) : null}
-									{this.props.playlist.activationId ? (
+									{this.props.studio.settings.allowHold && this.props.playlist.activationId ? (
 										<MenuItem onClick={(e) => this.hold(e)}>{t('Hold')}</MenuItem>
+									) : null}
+									{this.props.playlist.activationId && canClearQuickLoop ? (
+										<MenuItem onClick={(e) => this.clearQuickLoop(e)}>{t('Clear QuickLoop')}</MenuItem>
 									) : null}
 									{!(
 										this.props.playlist.activationId &&
@@ -1241,9 +1261,6 @@ export function RundownView(props: Readonly<IProps>): JSX.Element {
 
 		return playlist?.studioId
 	}, [playlistId])
-	// Load once the playlist is confirmed to exist
-	auxSubsReady.push(useSubscriptionIfEnabled(MeteorPubSub.uiSegmentPartNotes, !!playlistStudioId, playlistId))
-	auxSubsReady.push(useSubscriptionIfEnabled(MeteorPubSub.uiPieceContentStatuses, !!playlistStudioId, playlistId))
 	// Load only when the studio is known
 	requiredSubsReady.push(
 		useSubscriptionIfEnabled(MeteorPubSub.uiStudio, !!playlistStudioId, playlistStudioId ?? protectString(''))
@@ -1272,7 +1289,12 @@ export function RundownView(props: Readonly<IProps>): JSX.Element {
 		)
 	)
 	requiredSubsReady.push(
-		useSubscriptionIfEnabled(CorelibPubSub.showStyleVariants, showStyleVariantIds.length > 0, null, showStyleVariantIds)
+		useSubscriptionIfEnabledReadyOnce(
+			CorelibPubSub.showStyleVariants,
+			showStyleVariantIds.length > 0,
+			null,
+			showStyleVariantIds
+		)
 	)
 	auxSubsReady.push(
 		useSubscriptionIfEnabled(MeteorPubSub.rundownLayouts, showStyleBaseIds.length > 0, showStyleBaseIds)
@@ -1289,13 +1311,12 @@ export function RundownView(props: Readonly<IProps>): JSX.Element {
 	)
 	auxSubsReady.push(useSubscriptionIfEnabled(MeteorPubSub.uiParts, rundownIds.length > 0, playlistId))
 	auxSubsReady.push(
-		useSubscriptionIfEnabled(
-			MeteorPubSub.uiPartInstances,
-			rundownIds.length > 0,
-			rundownIds,
-			playlistActivationId ?? null
-		)
+		useSubscriptionIfEnabled(MeteorPubSub.uiPartInstances, !!playlistActivationId, playlistActivationId ?? null)
 	)
+
+	// Load once the playlist is confirmed to exist
+	auxSubsReady.push(useSubscriptionIfEnabled(MeteorPubSub.uiSegmentPartNotes, !!playlistStudioId, playlistId))
+	auxSubsReady.push(useSubscriptionIfEnabled(MeteorPubSub.uiPieceContentStatuses, !!playlistStudioId, playlistId))
 
 	useTracker(() => {
 		const playlist = RundownPlaylists.findOne(playlistId, {
@@ -1374,7 +1395,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 	if (playlist) {
 		studio = UIStudios.findOne({ _id: playlist.studioId })
 		rundowns = memoizedIsolatedAutorun(
-			(_playlistId) => RundownPlaylistCollectionUtil.getRundownsOrdered(playlist),
+			(_playlistId: RundownPlaylistId) => RundownPlaylistCollectionUtil.getRundownsOrdered(playlist),
 			'playlist.getRundowns',
 			playlistId
 		)
@@ -1461,7 +1482,8 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 		rundownHeaderLayoutId: protectString((params['rundownHeaderLayout'] as string) || ''),
 		miniShelfLayoutId: protectString((params['miniShelfLayout'] as string) || ''),
 		shelfDisplayOptions: {
-			enableBuckets: displayOptions.includes('buckets'),
+			// If buckets are enabled in Studiosettings, it can also be filtered in the URLs display options.
+			enableBuckets: !!studio?.settings.enableBuckets && displayOptions.includes('buckets'),
 			enableLayout: displayOptions.includes('layout') || displayOptions.includes('shelfLayout'),
 			enableInspector: displayOptions.includes('inspector'),
 		},
@@ -2238,7 +2260,8 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 				item &&
 				item.instance &&
 				this.props.playlist &&
-				this.props.playlist.currentPartInfo
+				this.props.playlist.currentPartInfo &&
+				this.props.studio?.settings.allowPieceDirectPlay
 			) {
 				const idToCopy = item.instance.isTemporary ? item.instance.piece._id : item.instance._id
 				const playlistId = this.props.playlist._id

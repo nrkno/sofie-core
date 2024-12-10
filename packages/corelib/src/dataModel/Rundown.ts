@@ -10,6 +10,7 @@ import {
 } from './Ids'
 import { RundownNote } from './Notes'
 import { ReadonlyDeep } from 'type-fest'
+import { CoreUserEditingDefinition } from './UserEditingDefinitions'
 
 export enum RundownOrphanedReason {
 	/** Rundown is deleted from the source but we still need it */
@@ -85,6 +86,10 @@ export interface Rundown {
 	playlistId: RundownPlaylistId
 	/** If the playlistId has ben set manually by a user in Sofie */
 	playlistIdIsSetInSofie?: boolean
+	/**
+	 * User editing definitions for this rundown
+	 */
+	userEditOperations?: CoreUserEditingDefinition[]
 }
 
 /** A description of where a Rundown originated from */

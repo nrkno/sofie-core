@@ -60,7 +60,7 @@ export interface PlayoutModelPreInit {
 	 */
 	readonly playlist: ReadonlyDeep<DBRundownPlaylist>
 	/**
-	 * The unwrapped Rundowns in this RundownPlaylist
+	 * The unwrapped Rundowns in this RundownPlaylist, sorted in order specified by RundownPlaylist
 	 */
 	readonly rundowns: ReadonlyDeep<DBRundown[]>
 

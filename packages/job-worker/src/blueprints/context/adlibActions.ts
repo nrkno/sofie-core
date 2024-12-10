@@ -23,13 +23,15 @@ import { ShowStyleUserContext } from './ShowStyleUserContext'
 import { WatchedPackagesHelper } from './watchedPackages'
 import { getCurrentTime } from '../../lib'
 import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
-import { moveNextPart } from '../../playout/moveNextPart'
+import { selectNewPartWithOffsets } from '../../playout/moveNextPart'
 import { ProcessedShowStyleConfig } from '../config'
 import { DatastorePersistenceMode } from '@sofie-automation/shared-lib/dist/core/model/TimelineDatastore'
 import { removeTimelineDatastoreValue, setTimelineDatastoreValue } from '../../playout/datastore'
 import { executePeripheralDeviceAction, listPlayoutDevices } from '../../peripheralDevice'
 import { ActionPartChange, PartAndPieceInstanceActionService } from './services/PartAndPieceInstanceActionService'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { BlueprintQuickLookInfo } from '@sofie-automation/blueprints-integration/dist/context/quickLoopInfo'
+import { setNextPartFromPart } from '../../playout/setNext'
 
 export class DatastoreActionExecutionContext
 	extends ShowStyleUserContext
@@ -71,6 +73,10 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	 * This isn't the only indicator that it should be regenerated
 	 */
 	public forceRegenerateTimeline = false
+
+	public get quickLoopInfo(): BlueprintQuickLookInfo | null {
+		return this.partAndPieceInstanceService.quickLoopInfo
+	}
 
 	public get currentPartState(): ActionPartChange {
 		return this.partAndPieceInstanceService.currentPartState
@@ -153,7 +159,8 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	}
 
 	async moveNextPart(partDelta: number, segmentDelta: number): Promise<void> {
-		await moveNextPart(this._context, this._playoutModel, partDelta, segmentDelta)
+		const selectedPart = selectNewPartWithOffsets(this._context, this._playoutModel, partDelta, segmentDelta)
+		if (selectedPart) await setNextPartFromPart(this._context, this._playoutModel, selectedPart, true)
 	}
 
 	async updatePartInstance(
