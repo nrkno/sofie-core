@@ -675,9 +675,7 @@ describe('Test recieved mos ingest payloads', () => {
 				replace: true,
 			})
 		).rejects.toThrow(
-			`Part ${getMosIngestSegmentExternalId(mosTypes.mosString128.stringify(beforeStoryId))} in rundown ${
-				rundown.externalId
-			} not found`
+			`Part ${mosTypes.mosString128.stringify(beforeStoryId)} in rundown ${rundown.externalId} not found`
 		)
 
 		expect(
