@@ -2,26 +2,16 @@ import React from 'react'
 import ClassNames from 'classnames'
 import { faPencilAlt, faTrash, faCheck, faPlus, faDownload, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { HotkeyDefinition } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { literal, getRandomString } from '@sofie-automation/corelib/dist/lib'
 import { withTranslation } from 'react-i18next'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import {
-	AHKBaseHeader,
-	AHKModifierMap,
-	AHKKeyboardMap,
-	useAHKComboTemplate,
-} from '@sofie-automation/meteor-lib/dist/tv2/AHKkeyboardMap'
-import { defaultColorPickerPalette } from '../../../lib/colorPicker'
-import { downloadBlob } from '../../../lib/downloadBlob'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { hotkeyHelper } from '../../../lib/hotkeyHelper'
 import { NotificationCenter, NoticeLevel, Notification } from '../../../lib/notifications/notifications'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { UploadButton } from '../../../lib/uploadButton'
 import _ from 'underscore'
-import { Settings } from '../../../lib/Settings'
 import { ShowStyleBases } from '../../../collections'
 import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
 
@@ -47,10 +37,10 @@ export const HotkeyLegendSettings = withTranslation()(
 			}
 		}
 
-		isItemEdited = (item: HotkeyDefinition) => {
+		private isItemEdited = (item: HotkeyDefinition) => {
 			return this.state.editedItems.indexOf(item._id) >= 0
 		}
-		finishEditItem = (item: HotkeyDefinition) => {
+		private finishEditItem = (item: HotkeyDefinition) => {
 			const index = this.state.editedItems.indexOf(item._id)
 			if (index >= 0) {
 				this.state.editedItems.splice(index, 1)
@@ -60,7 +50,7 @@ export const HotkeyLegendSettings = withTranslation()(
 			}
 		}
 
-		editItem = (item: HotkeyDefinition) => {
+		private editItem = (item: HotkeyDefinition) => {
 			if (this.state.editedItems.indexOf(item._id) < 0) {
 				this.state.editedItems.push(item._id)
 				this.setState({
@@ -71,7 +61,7 @@ export const HotkeyLegendSettings = withTranslation()(
 			}
 		}
 
-		onDeleteHotkeyLegend = (item: HotkeyDefinition) => {
+		private onDeleteHotkeyLegend = (item: HotkeyDefinition) => {
 			if (this.props.showStyleBase) {
 				ShowStyleBases.update(this.props.showStyleBase._id, {
 					$pull: {
@@ -82,7 +72,7 @@ export const HotkeyLegendSettings = withTranslation()(
 				})
 			}
 		}
-		onAddHotkeyLegend = () => {
+		private onAddHotkeyLegend = () => {
 			const newItem = literal<HotkeyDefinition>({
 				_id: getRandomString(),
 				key: '',
@@ -96,49 +86,7 @@ export const HotkeyLegendSettings = withTranslation()(
 			})
 		}
 
-		onDownloadAHKScript = () => {
-			// AHK = Auto Hot Key
-			const mappedKeys = this.props.showStyleBase.hotkeyLegend
-			let ahkCommands: string[] = _.clone(AHKBaseHeader)
-
-			function convertComboToAHK(combo: string, isPlatform: boolean) {
-				return combo
-					.split(/\s*\+\s*/)
-					.map((key) => {
-						const lowerCaseKey = key.toLowerCase()
-						if (AHKModifierMap[lowerCaseKey] !== undefined) {
-							return AHKModifierMap[lowerCaseKey]
-						} else if (AHKKeyboardMap[lowerCaseKey] !== undefined) {
-							const ahkKey = AHKKeyboardMap[lowerCaseKey]
-							return Array.isArray(ahkKey) ? ahkKey[isPlatform ? 0 : 1] : ahkKey
-						} else {
-							return lowerCaseKey
-						}
-					})
-					.join('')
-			}
-
-			if (mappedKeys) {
-				ahkCommands = ahkCommands.concat(
-					mappedKeys
-						.filter((key) => !!key.platformKey && key.key.toLowerCase() !== key.platformKey.toLowerCase())
-						.map((key) => {
-							const platformKeyCombo = convertComboToAHK(key.platformKey!, true)
-							const browserKeyCombo = convertComboToAHK(key.key, false)
-
-							return useAHKComboTemplate({ platformKeyCombo, browserKeyCombo })
-						})
-				)
-			}
-
-			const blob = new Blob([ahkCommands.join('\r\n')], { type: 'text/plain' })
-			downloadBlob(
-				blob,
-				`${this.props.showStyleBase.name}_${new Date().toLocaleDateString()}_${new Date().toLocaleTimeString()}.ahk`
-			)
-		}
-
-		exportHotkeyJSON() {
+		private exportHotkeyJSON() {
 			const jsonStr = JSON.stringify(this.props.showStyleBase.hotkeyLegend, undefined, 4)
 
 			const element = document.createElement('a')
@@ -153,7 +101,7 @@ export const HotkeyLegendSettings = withTranslation()(
 			document.body.removeChild(element) // Required for this to work in FireFox
 		}
 
-		importHotKeyJSON(e: React.ChangeEvent<HTMLInputElement>) {
+		private importHotKeyJSON(e: React.ChangeEvent<HTMLInputElement>) {
 			const { t } = this.props
 
 			const file = e.target.files ? e.target.files[0] : null
@@ -209,7 +157,7 @@ export const HotkeyLegendSettings = withTranslation()(
 			reader.readAsText(file)
 		}
 
-		renderItems() {
+		private renderItems() {
 			const { t } = this.props
 			return (this.props.showStyleBase.hotkeyLegend || []).map((item, index) => {
 				return (
@@ -221,14 +169,6 @@ export const HotkeyLegendSettings = withTranslation()(
 						>
 							<th className="settings-studio-custom-config-table__name c2">{hotkeyHelper.shortcutLabel(item.key)}</th>
 							<td className="settings-studio-custom-config-table__value c3">{item.label}</td>
-							{Settings.enableKeyboardPreview && (
-								<>
-									<td className="settings-studio-custom-config-table__value c2">{item.platformKey || ''}</td>
-									<td className="settings-studio-custom-config-table__value c2">
-										{item.sourceLayerType !== undefined ? SourceLayerType[item.sourceLayerType] : ''}
-									</td>
-								</>
-							)}
 
 							<td className="settings-studio-custom-config-table__actions table-item-actions c3">
 								<button className="action-btn" onClick={() => this.editItem(item)}>
@@ -268,49 +208,6 @@ export const HotkeyLegendSettings = withTranslation()(
 												className="input text-input input-l"
 											></EditAttribute>
 										</label>
-										{Settings.enableKeyboardPreview && (
-											<>
-												<label className="field">
-													<LabelActual label={t('Host Key')} />
-													<EditAttribute
-														modifiedClassName="bghl"
-														attribute={'hotkeyLegend.' + index + '.platformKey'}
-														obj={this.props.showStyleBase}
-														type="text"
-														collection={ShowStyleBases}
-														className="input text-input input-l"
-													></EditAttribute>
-												</label>
-
-												<label className="field">
-													<LabelActual label={t('Source Layer type')} />
-													<EditAttribute
-														modifiedClassName="bghl"
-														attribute={'hotkeyLegend.' + index + '.sourceLayerType'}
-														obj={this.props.showStyleBase}
-														type="dropdown"
-														options={SourceLayerType}
-														optionsAreNumbers
-														collection={ShowStyleBases}
-														className="input text-input input-l dropdown"
-														mutateUpdateValue={(v) => (v ? v : undefined)}
-													/>
-												</label>
-
-												<label className="field">
-													<LabelActual label={t('Key color')} />
-													<EditAttribute
-														modifiedClassName="bghl"
-														attribute={'hotkeyLegend.' + index + '.buttonColor'}
-														obj={this.props.showStyleBase}
-														options={defaultColorPickerPalette}
-														type="colorpicker"
-														collection={ShowStyleBases}
-														className="input text-input input-s"
-													></EditAttribute>
-												</label>
-											</>
-										)}
 									</div>
 									<div className="mod alright">
 										<button className="btn btn-primary" onClick={() => this.finishEditItem(item)}>
@@ -337,12 +234,7 @@ export const HotkeyLegendSettings = withTranslation()(
 						<button className="btn btn-primary" onClick={this.onAddHotkeyLegend}>
 							<FontAwesomeIcon icon={faPlus} />
 						</button>
-						{Settings.enableKeyboardPreview && (
-							<button className="btn mls btn-secondary" onClick={this.onDownloadAHKScript}>
-								<FontAwesomeIcon icon={faDownload} />
-								&nbsp;{t('AHK')}
-							</button>
-						)}
+
 						<button className="btn mls btn-secondary" onClick={() => this.exportHotkeyJSON()}>
 							<FontAwesomeIcon icon={faDownload} />
 							&nbsp;{t('Export')}

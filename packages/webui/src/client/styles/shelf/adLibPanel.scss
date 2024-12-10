@@ -1,5 +1,4 @@
 @import '../colorScheme';
-@import '../itemTypeColors';
 
 :root {
 	--adlib-item-selected-color: #009dff;
@@ -78,12 +77,12 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 		grid-column: list-view / end;
 		grid-row: tool-bar / list-view;
 
+		display: flex;
+		padding: 10px 5px;
+
 		&--no-segments {
 			grid-column: template-list / end;
 		}
-
-		display: flex;
-		padding: 10px 5px;
 
 		> .adlib-panel__list-view__toolbar__filter {
 			flex: 2 2;

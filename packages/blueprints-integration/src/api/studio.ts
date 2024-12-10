@@ -80,6 +80,24 @@ export interface StudioBlueprintManifest<TRawConfig = IBlueprintConfig, TProcess
 		config: TRawConfig,
 		coreConfig: BlueprintConfigCoreConfig
 	) => TProcessedConfig
+
+	/**
+	 * Optional method to validate the blueprint config passed to this blueprint according to the API schema.
+	 * Returns a list of messages to the caller that are used for logging or to throw if errors have been found.
+	 */
+	validateConfigFromAPI?: (context: ICommonContext, apiConfig: object) => Array<IConfigMessage>
+
+	/**
+	 * Optional method to transform from an API blueprint config to the database blueprint config if these are required to be different.
+	 * If this method is not defined the config object will be used directly
+	 */
+	blueprintConfigFromAPI?: (context: ICommonContext, config: object) => IBlueprintConfig
+
+	/**
+	 * Optional method to transform from a database blueprint config to the API blueprint config if these are required to be different.
+	 * If this method is not defined the config object will be used directly
+	 */
+	blueprintConfigToAPI?: (context: ICommonContext, config: TRawConfig) => object
 }
 
 export interface BlueprintResultStudioBaseline {

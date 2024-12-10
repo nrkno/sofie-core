@@ -1,4 +1,3 @@
-@import '../../../styles/itemTypeColors';
 
 .segment-opl__piece-indicator-menu {
 	background: #5a5a5a;
@@ -6,12 +5,13 @@
 	padding: 0.2em;
 
 	.segment-storyboard__part__piece {
-		@include piece-colors();
-		@include missing-overlay();
 		user-select: none;
 
 		width: 300px;
 		margin: 0 0 0.2em;
+
+		@include piece-colors();
+		@include missing-overlay();
 
 		&:last-child {
 			margin: 0;

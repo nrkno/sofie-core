@@ -246,12 +246,7 @@ export function withResolvedSegment<T extends IResolvedSegmentProps, IState = {}
 				}
 			}
 
-			let budgetDuration: number | undefined
-			for (const part of o.parts) {
-				if (part.instance.part.budgetDuration !== undefined) {
-					budgetDuration = (budgetDuration ?? 0) + part.instance.part.budgetDuration
-				}
-			}
+			const budgetDuration = segment.segmentTiming?.budgetDuration
 
 			let displayLiveLineCounter = true
 			if (props.rundownViewLayout && props.rundownViewLayout.liveLineProps?.requiredLayerIds) {

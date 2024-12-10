@@ -94,6 +94,10 @@ export class DocumentChangeTracker<TDoc extends { _id: ProtectedString<any> }> {
 		}
 	}
 
+	getDeletedIds(): TDoc['_id'][] {
+		return Array.from(this.#deletedIds.values())
+	}
+
 	/**
 	 * Generate the mongodb BulkWrite operations for the documents known to this tracker
 	 * @returns mongodb BulkWrite operations

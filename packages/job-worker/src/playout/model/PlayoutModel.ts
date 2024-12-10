@@ -7,6 +7,7 @@ import {
 	RundownPlaylistActivationId,
 	RundownPlaylistId,
 	SegmentId,
+	SegmentPlayoutId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { BaseModel } from '../../modelBase'
 import {
@@ -58,7 +59,7 @@ export interface PlayoutModelPreInit {
 	 */
 	readonly playlist: ReadonlyDeep<DBRundownPlaylist>
 	/**
-	 * The unwrapped Rundowns in this RundownPlaylist
+	 * The unwrapped Rundowns in this RundownPlaylist, sorted in order specified by RundownPlaylist
 	 */
 	readonly rundowns: ReadonlyDeep<DBRundown[]>
 
@@ -331,10 +332,10 @@ export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBa
 
 	/**
 	 * Track a Segment as having started playback
-	 * @param segmentId Id of the Segment
+	 * @param segmentPlayoutId Playout id of the Segment
 	 * @param timestamp Timestamp playback started
 	 */
-	setSegmentStartedPlayback(segmentId: SegmentId, timestamp: number): void
+	setSegmentStartedPlayback(segmentPlayoutId: SegmentPlayoutId, timestamp: number): void
 
 	/**
 	 * Set or clear a QuickLoop Marker

@@ -42,6 +42,7 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DatabasePersistedModel } from '../modelBase'
 import { updateSegmentIdsForAdlibbedPartInstances } from './commit/updateSegmentIdsForAdlibbedPartInstances'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
+import { AnyBulkWriteOperation } from 'mongodb'
 
 export type BeforePartMapItem = { id: PartId; rank: number }
 export type BeforeIngestOperationPartMap = ReadonlyMap<SegmentId, Array<BeforePartMapItem>>
@@ -176,6 +177,9 @@ export async function CommitIngestOperation(
 			// Ensure any adlibbed parts are updated to follow the segmentId of the previous part
 			await updateSegmentIdsForAdlibbedPartInstances(context, ingestModel, beforePartMap)
 
+			if (data.renamedSegments && data.renamedSegments.size > 0) {
+				logger.debug(`Renamed segments: ${JSON.stringify(Array.from(data.renamedSegments.entries()))}`)
+			}
 			// ensure instances have matching segmentIds with the parts
 			await updatePartInstancesSegmentIds(context, ingestModel, data.renamedSegments, beforePartMap)
 
@@ -261,11 +265,17 @@ export async function CommitIngestOperation(
 }
 
 function canRemoveSegment(
+	prevPartInstance: ReadonlyDeep<DBPartInstance> | undefined,
 	currentPartInstance: ReadonlyDeep<DBPartInstance> | undefined,
 	nextPartInstance: ReadonlyDeep<DBPartInstance> | undefined,
 	segmentId: SegmentId
 ): boolean {
-	if (currentPartInstance?.segmentId === segmentId || nextPartInstance?.segmentId === segmentId) {
+	if (prevPartInstance?.segmentId === segmentId) {
+		// Don't allow removing an active rundown
+		logger.warn(`Not allowing removal of previous playing segment "${segmentId}", making segment unsynced instead`)
+		return false
+	}
+	if (currentPartInstance?.segmentId === segmentId) {
 		// Don't allow removing an active rundown
 		logger.warn(`Not allowing removal of current playing segment "${segmentId}", making segment unsynced instead`)
 		return false
@@ -294,26 +304,32 @@ async function updatePartInstancesSegmentIds(
 	renamedSegments: ReadonlyMap<SegmentId, SegmentId> | null,
 	beforePartMap: BeforeIngestOperationPartMap
 ) {
-	// A set of rules which can be translated to mongo queries for PartInstances to update
+	/**
+	 * Maps new SegmentId ->
+	 * A set of rules which can be translated to mongo queries for PartInstances to update
+	 */
 	const renameRules = new Map<
 		SegmentId,
 		{
+			/** Parts that have been moved to the new SegmentId */
 			partIds: PartId[]
-			fromSegmentId: SegmentId | null
+			/** Segments that have been renamed to the new SegmentId */
+			fromSegmentIds: SegmentId[]
 		}
 	>()
 
 	// Add whole segment renames to the set of rules
 	if (renamedSegments) {
 		for (const [fromSegmentId, toSegmentId] of renamedSegments) {
-			const rule = renameRules.get(toSegmentId) ?? { partIds: [], fromSegmentId: null }
+			const rule = renameRules.get(toSegmentId) ?? { partIds: [], fromSegmentIds: [] }
 			renameRules.set(toSegmentId, rule)
 
-			rule.fromSegmentId = fromSegmentId
+			rule.fromSegmentIds.push(fromSegmentId)
 		}
 	}
 
-	// Reverse the structure
+	// Reverse the Map structure
+	/** Maps Part -> SegmentId-of-the-part-before-ingest-changes */
 	const beforePartSegmentIdMap = new Map<PartId, SegmentId>()
 	for (const [segmentId, partItems] of beforePartMap.entries()) {
 		for (const partItem of partItems) {
@@ -324,8 +340,11 @@ async function updatePartInstancesSegmentIds(
 	// Some parts may have gotten a different segmentId to the base rule, so track those seperately in the rules
 	for (const partModel of ingestModel.getAllOrderedParts()) {
 		const oldSegmentId = beforePartSegmentIdMap.get(partModel.part._id)
+
 		if (oldSegmentId && oldSegmentId !== partModel.part.segmentId) {
-			const rule = renameRules.get(partModel.part.segmentId) ?? { partIds: [], fromSegmentId: null }
+			// The part has moved to another segment, add a rule to update its corresponding PartInstances:
+
+			const rule = renameRules.get(partModel.part.segmentId) ?? { partIds: [], fromSegmentIds: [] }
 			renameRules.set(partModel.part.segmentId, rule)
 
 			rule.partIds.push(partModel.part._id)
@@ -334,30 +353,80 @@ async function updatePartInstancesSegmentIds(
 
 	// Perform a mongo update to modify the PartInstances
 	if (renameRules.size > 0) {
-		await context.directCollections.PartInstances.bulkWrite(
-			Array.from(renameRules.entries()).map(([newSegmentId, rule]) => ({
-				updateMany: {
-					filter: {
-						$or: _.compact([
-							rule.fromSegmentId
-								? {
-										segmentId: rule.fromSegmentId,
-								  }
-								: undefined,
-							{
-								'part._id': { $in: rule.partIds },
+		const rulesInOrder = Array.from(renameRules.entries()).sort((a, b) => {
+			// Ensure that the ones with partIds are processed last,
+			// as that should take precedence.
+
+			if (a[1].partIds.length && !b[1].partIds.length) return 1
+			if (!a[1].partIds.length && b[1].partIds.length) return -1
+			return 0
+		})
+
+		const writeOps: AnyBulkWriteOperation<DBPartInstance>[] = []
+
+		for (const [newSegmentId, rule] of rulesInOrder) {
+			if (rule.fromSegmentIds.length) {
+				writeOps.push({
+					updateMany: {
+						filter: {
+							rundownId: ingestModel.rundownId,
+							segmentId: { $in: rule.fromSegmentIds },
+						},
+						update: {
+							$set: {
+								segmentId: newSegmentId,
+								'part.segmentId': newSegmentId,
 							},
-						]),
-					},
-					update: {
-						$set: {
-							segmentId: newSegmentId,
-							'part.segmentId': newSegmentId,
 						},
 					},
-				},
-			}))
-		)
+				})
+			}
+			if (rule.partIds.length) {
+				writeOps.push({
+					updateMany: {
+						filter: {
+							rundownId: ingestModel.rundownId,
+							'part._id': { $in: rule.partIds },
+						},
+						update: {
+							$set: {
+								segmentId: newSegmentId,
+								'part.segmentId': newSegmentId,
+							},
+						},
+					},
+				})
+			}
+		}
+		if (writeOps.length) await context.directCollections.PartInstances.bulkWrite(writeOps)
+
+		// Double check that there are no parts using the old segment ids:
+		const oldSegmentIds = Array.from(renameRules.keys())
+		const [badPartInstances, badParts] = await Promise.all([
+			await context.directCollections.PartInstances.findFetch({
+				rundownId: ingestModel.rundownId,
+				segmentId: { $in: oldSegmentIds },
+			}),
+			await context.directCollections.Parts.findFetch({
+				rundownId: ingestModel.rundownId,
+				segmentId: { $in: oldSegmentIds },
+			}),
+		])
+		if (badPartInstances.length > 0) {
+			logger.error(
+				`updatePartInstancesSegmentIds: Failed to update all PartInstances using old SegmentIds "${JSON.stringify(
+					oldSegmentIds
+				)}": ${JSON.stringify(badPartInstances)}, writeOps: ${JSON.stringify(writeOps)}`
+			)
+		}
+
+		if (badParts.length > 0) {
+			logger.error(
+				`updatePartInstancesSegmentIds: Failed to update all Parts using old SegmentIds "${JSON.stringify(
+					oldSegmentIds
+				)}": ${JSON.stringify(badParts)}, writeOps: ${JSON.stringify(writeOps)}`
+			)
+		}
 	}
 }
 
@@ -661,7 +730,7 @@ async function removeSegments(
 	_changedSegmentIds: ReadonlyDeep<SegmentId[]>,
 	removedSegmentIds: ReadonlyDeep<SegmentId[]>
 ) {
-	const { currentPartInstance, nextPartInstance } = await getSelectedPartInstances(
+	const { previousPartInstance, currentPartInstance, nextPartInstance } = await getSelectedPartInstances(
 		context,
 		newPlaylist,
 		rundownsInPlaylist.map((r) => r._id)
@@ -671,7 +740,7 @@ async function removeSegments(
 	const orphanDeletedSegmentIds = new Set<SegmentId>()
 	const orphanHiddenSegmentIds = new Set<SegmentId>()
 	for (const segmentId of removedSegmentIds) {
-		if (canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
+		if (canRemoveSegment(previousPartInstance, currentPartInstance, nextPartInstance, segmentId)) {
 			purgeSegmentIds.add(segmentId)
 		} else {
 			logger.warn(
@@ -684,8 +753,10 @@ async function removeSegments(
 	for (const segment of ingestModel.getAllSegments()) {
 		const segmentId = segment.segment._id
 		if (segment.segment.isHidden) {
-			if (!canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
-				// Protect live segment from being hidden
+			// Blueprints want to hide the Segment
+
+			if (!canRemoveSegment(previousPartInstance, currentPartInstance, nextPartInstance, segmentId)) {
+				// The Segment is live, so we need to protect it from being hidden
 				logger.warn(`Cannot hide live segment ${segmentId}, it will be orphaned`)
 				switch (segment.segment.orphaned) {
 					case SegmentOrphanedReason.DELETED:
@@ -705,7 +776,7 @@ async function removeSegments(
 		} else if (!orphanDeletedSegmentIds.has(segmentId) && segment.parts.length === 0) {
 			// No parts in segment
 
-			if (!canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
+			if (!canRemoveSegment(previousPartInstance, currentPartInstance, nextPartInstance, segmentId)) {
 				// Protect live segment from being hidden
 				logger.warn(`Cannot hide live segment ${segmentId}, it will be orphaned`)
 				orphanHiddenSegmentIds.add(segmentId)

@@ -1,9 +1,4 @@
-import {
-	PartInstanceId,
-	RundownId,
-	RundownPlaylistActivationId,
-	SegmentId,
-} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstanceId, RundownPlaylistActivationId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { check } from 'meteor/check'
 import {
 	CustomPublishCollection,
@@ -26,7 +21,6 @@ import { RundownsObserver } from '../lib/rundownsObserver'
 import { RundownContentObserver } from './rundownContentObserver'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { Match } from '../../lib/check'
-import { RundownReadAccess } from '../../security/rundown'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import {
 	extractRanks,
@@ -37,7 +31,6 @@ import {
 
 interface UIPartInstancesArgs {
 	readonly playlistActivationId: RundownPlaylistActivationId
-	readonly rundownIds: RundownId[]
 }
 
 export interface UIPartInstancesState {
@@ -205,32 +198,26 @@ export async function manipulateUIPartInstancesPublicationData(
 meteorCustomPublish(
 	MeteorPubSub.uiPartInstances,
 	CustomCollectionName.UIPartInstances,
-	async function (pub, rundownIds: RundownId[], playlistActivationId: RundownPlaylistActivationId | null) {
-		check(rundownIds, [String])
+	async function (pub, playlistActivationId: RundownPlaylistActivationId | null) {
 		check(playlistActivationId, Match.Maybe(String))
 
 		const credentials = await resolveCredentials({ userId: this.userId, token: undefined })
 
-		if (
-			playlistActivationId &&
-			(!credentials ||
-				NoSecurityReadAccess.any() ||
-				(await RundownReadAccess.rundownContent({ $in: rundownIds }, credentials)))
-		) {
+		if (playlistActivationId && (!credentials || NoSecurityReadAccess.any())) {
 			await setUpCollectionOptimizedObserver<
 				Omit<DBPartInstance, PartInstanceOmitedFields>,
 				UIPartInstancesArgs,
 				UIPartInstancesState,
 				UIPartInstancesUpdateProps
 			>(
-				`pub_${MeteorPubSub.uiPartInstances}_${rundownIds.join(',')}_${playlistActivationId}`,
-				{ rundownIds, playlistActivationId },
+				`pub_${MeteorPubSub.uiPartInstances}_${playlistActivationId}`,
+				{ playlistActivationId },
 				setupUIPartInstancesPublicationObservers,
 				manipulateUIPartInstancesPublicationData,
 				pub
 			)
 		} else {
-			logger.warn(`Pub.uiPartInstances: Not allowed: [${rundownIds.join(',')}] "${playlistActivationId}"`)
+			logger.warn(`Pub.uiPartInstances: Not allowed:"${playlistActivationId}"`)
 		}
 	}
 )

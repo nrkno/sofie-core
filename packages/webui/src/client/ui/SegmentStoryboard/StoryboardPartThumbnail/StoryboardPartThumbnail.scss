@@ -1,7 +1,13 @@
 @import '../../../styles/variables';
-@import '../../../styles/itemTypeColors';
 
 .segment-storyboard__part__thumbnail {
+	position: relative;
+	width: 100%;
+	height: $segment-storyboard-thumbnail-height;
+	border-radius: 4px;
+	overflow: hidden;
+	cursor: default;
+
 	@include item-type-colors();
 	@include missing-overlay();
 
@@ -10,13 +16,6 @@
 		background-color: var(--segment-layer-background-live-speak-1);
 		background-repeat: repeat-x;
 	}
-
-	position: relative;
-	width: 100%;
-	height: $segment-storyboard-thumbnail-height;
-	border-radius: 4px;
-	overflow: hidden;
-	cursor: default;
 
 	&.segment-storyboard__part__thumbnail--placeholder {
 		background: lighten($segment-background-color, 10%);
@@ -118,6 +117,9 @@
 			margin-right: 0.2em;
 
 			&--flash {
+				/* @keyframes duration | easing-function | delay | iteration-count | direction | fill-mode | play-state | name */
+				animation: 0.3s linear 0s infinite normal forwards segment-storyboard__thumbnail__countdown-icon--flash;
+
 				@keyframes segment-storyboard__thumbnail__countdown-icon--flash {
 					0% {
 						opacity: 0;
@@ -132,8 +134,6 @@
 						opacity: 1;
 					}
 				}
-				/* @keyframes duration | easing-function | delay | iteration-count | direction | fill-mode | play-state | name */
-				animation: 0.3s linear 0s infinite normal forwards segment-storyboard__thumbnail__countdown-icon--flash;
 			}
 
 			&:last-child {

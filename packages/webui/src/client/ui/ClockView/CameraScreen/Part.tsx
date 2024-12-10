@@ -7,7 +7,7 @@ import { PieceExtended } from '../../../lib/RundownResolver'
 import { getAllowSpeaking, getAllowVibrating } from '../../../lib/localStorage'
 import { getPartInstanceTimingValue } from '../../../lib/rundownTiming'
 import { AutoNextStatus } from '../../RundownView/RundownTiming/AutoNextStatus'
-import { CurrentPartRemaining } from '../../RundownView/RundownTiming/CurrentPartRemaining'
+import { CurrentPartOrSegmentRemaining } from '../../RundownView/RundownTiming/CurrentPartOrSegmentRemaining'
 import { PartCountdown } from '../../RundownView/RundownTiming/PartCountdown'
 import { PartDisplayDuration } from '../../RundownView/RundownTiming/PartDuration'
 import { TimingDataResolution, TimingTickResolution, withTiming } from '../../RundownView/RundownTiming/withTiming'
@@ -70,7 +70,7 @@ export const Part = withTiming<IProps, {}>({
 						<span className="camera-screen__part-take-mode">
 							<AutoNextStatus />
 						</span>
-						<CurrentPartRemaining
+						<CurrentPartOrSegmentRemaining
 							currentPartInstanceId={part.instance._id}
 							speaking={getAllowSpeaking()}
 							vibrating={getAllowVibrating()}

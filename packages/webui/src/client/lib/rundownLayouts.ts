@@ -22,7 +22,6 @@ import {
 	RundownLayoutEndWords,
 	RundownLayoutExternalFrame,
 	RundownLayoutFilterBase,
-	RundownLayoutKeyboardPreview,
 	RundownLayoutMiniRundown,
 	RundownLayoutNextBreakTiming,
 	RundownLayoutNextInfo,
@@ -55,7 +54,6 @@ import { PieceInstances } from '../collections'
 import { ReadonlyDeep } from 'type-fest'
 import { TFunction } from 'i18next'
 import _ from 'underscore'
-import { Settings } from './Settings'
 import { UIPartInstances } from '../ui/Collections'
 
 export interface LayoutDescriptor {
@@ -309,9 +307,6 @@ export namespace RundownLayoutsAPI {
 		RundownLayoutElementType.PIECE_COUNTDOWN,
 		RundownLayoutElementType.NEXT_INFO,
 	]
-	if (Settings.enableKeyboardPreview) {
-		rundownLayoutSupportedFilters.push(RundownLayoutElementType.KEYBOARD_PREVIEW)
-	}
 	registry.registerShelfLayout(RundownLayoutType.RUNDOWN_LAYOUT, {
 		filtersTitle: 'Tabs',
 		supportedFilters: rundownLayoutSupportedFilters,
@@ -325,9 +320,6 @@ export namespace RundownLayoutsAPI {
 		RundownLayoutElementType.TEXT_LABEL,
 		RundownLayoutElementType.MINI_RUNDOWN,
 	]
-	if (Settings.enableKeyboardPreview) {
-		rundownLayoutSupportedFilters.push(RundownLayoutElementType.KEYBOARD_PREVIEW)
-	}
 	registry.registerShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
 		filtersTitle: 'Panels',
 		supportedFilters: dashboardLayoutSupportedFilters,
@@ -450,10 +442,6 @@ export namespace RundownLayoutsAPI {
 
 	export function isDashboardLayoutFilter(element: RundownLayoutElementBase): element is DashboardLayoutFilter {
 		return element.type === RundownLayoutElementType.FILTER
-	}
-
-	export function isKeyboardMap(element: RundownLayoutElementBase): element is RundownLayoutKeyboardPreview {
-		return element.type === RundownLayoutElementType.KEYBOARD_PREVIEW
 	}
 
 	export function isNextInfo(element: RundownLayoutElementBase): element is RundownLayoutNextInfo {

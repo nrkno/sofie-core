@@ -94,7 +94,6 @@ export const IBlueprintMutatablePartSampleKeys = allKeysOfObject<IBlueprintMutat
 	disableNextInTransition: true,
 	outTransition: true,
 	expectedDuration: true,
-	budgetDuration: true,
 	holdMode: true,
 	shouldNotifyCurrentPlayingPart: true,
 	classes: true,
@@ -251,7 +250,6 @@ export function convertPartToBlueprints(part: ReadonlyDeep<DBPart>): IBlueprintP
 		disableNextInTransition: part.disableNextInTransition,
 		outTransition: clone(part.outTransition),
 		expectedDuration: part.expectedDuration,
-		budgetDuration: part.budgetDuration,
 		holdMode: part.holdMode,
 		shouldNotifyCurrentPlayingPart: part.shouldNotifyCurrentPlayingPart,
 		classes: clone<string[] | undefined>(part.classes),
@@ -284,6 +282,7 @@ export function convertAdLibPieceToBlueprints(adLib: ReadonlyDeep<AdLibPiece>): 
 		nextPieceTags: clone<string[] | undefined>(adLib.nextPieceTags),
 		uniquenessId: adLib.uniquenessId,
 		invertOnAirState: adLib.invertOnAirState,
+		hidden: adLib.hidden,
 	}
 
 	return obj

@@ -100,7 +100,7 @@ export function CameraScreen({ playlist, studioId }: Readonly<IProps>): JSX.Elem
 	useSubscription(CorelibPubSub.segments, rundownIds, {})
 
 	const studioReady = useSubscription(MeteorPubSub.uiStudio, studioId)
-	useSubscription(MeteorPubSub.uiPartInstances, rundownIds, playlist?.activationId ?? null)
+	useSubscription(MeteorPubSub.uiPartInstances, playlist?.activationId ?? null)
 
 	useSubscription(CorelibPubSub.parts, rundownIds, null)
 

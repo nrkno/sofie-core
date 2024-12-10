@@ -7,6 +7,7 @@ import {
 	Translated,
 	translateWithTracker,
 	useSubscriptionIfEnabled,
+	useSubscriptionIfEnabledReadyOnce,
 	useSubscriptions,
 	useTracker,
 } from '../lib/ReactMeteorData/react-meteor-data'
@@ -34,7 +35,7 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { ContextMenu, MenuItem, ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { RundownTimingProvider } from './RundownView/RundownTiming/RundownTimingProvider'
 import { withTiming, WithTiming } from './RundownView/RundownTiming/withTiming'
-import { CurrentPartRemaining } from './RundownView/RundownTiming/CurrentPartRemaining'
+import { CurrentPartOrSegmentRemaining } from './RundownView/RundownTiming/CurrentPartOrSegmentRemaining'
 import { AutoNextStatus } from './RundownView/RundownTiming/AutoNextStatus'
 import { SegmentTimelineContainer, PieceUi, PartUi, SegmentUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
@@ -311,9 +312,10 @@ const TimingDisplay = withTranslation()(
 						<TimeOfDay />
 						{rundownPlaylist.currentPartInfo && (
 							<span className="timing-clock current-remaining">
-								<CurrentPartRemaining
+								<CurrentPartOrSegmentRemaining
 									currentPartInstanceId={rundownPlaylist.currentPartInfo.partInstanceId}
 									heavyClassName="overtime"
+									preferSegmentTime={true}
 								/>
 								<AutoNextStatus />
 								{rundownPlaylist.holdState && rundownPlaylist.holdState !== RundownHoldState.COMPLETE ? (
@@ -1240,9 +1242,6 @@ export function RundownView(props: Readonly<IProps>): JSX.Element {
 
 		return playlist?.studioId
 	}, [playlistId])
-	// Load once the playlist is confirmed to exist
-	auxSubsReady.push(useSubscriptionIfEnabled(MeteorPubSub.uiSegmentPartNotes, !!playlistStudioId, playlistId))
-	auxSubsReady.push(useSubscriptionIfEnabled(MeteorPubSub.uiPieceContentStatuses, !!playlistStudioId, playlistId))
 	// Load only when the studio is known
 	requiredSubsReady.push(
 		useSubscriptionIfEnabled(MeteorPubSub.uiStudio, !!playlistStudioId, playlistStudioId ?? protectString(''))
@@ -1271,7 +1270,12 @@ export function RundownView(props: Readonly<IProps>): JSX.Element {
 		)
 	)
 	requiredSubsReady.push(
-		useSubscriptionIfEnabled(CorelibPubSub.showStyleVariants, showStyleVariantIds.length > 0, null, showStyleVariantIds)
+		useSubscriptionIfEnabledReadyOnce(
+			CorelibPubSub.showStyleVariants,
+			showStyleVariantIds.length > 0,
+			null,
+			showStyleVariantIds
+		)
 	)
 	auxSubsReady.push(
 		useSubscriptionIfEnabled(MeteorPubSub.rundownLayouts, showStyleBaseIds.length > 0, showStyleBaseIds)
@@ -1288,13 +1292,12 @@ export function RundownView(props: Readonly<IProps>): JSX.Element {
 	)
 	auxSubsReady.push(useSubscriptionIfEnabled(MeteorPubSub.uiParts, rundownIds.length > 0, playlistId))
 	auxSubsReady.push(
-		useSubscriptionIfEnabled(
-			MeteorPubSub.uiPartInstances,
-			rundownIds.length > 0,
-			rundownIds,
-			playlistActivationId ?? null
-		)
+		useSubscriptionIfEnabled(MeteorPubSub.uiPartInstances, !!playlistActivationId, playlistActivationId ?? null)
 	)
+
+	// Load once the playlist is confirmed to exist
+	auxSubsReady.push(useSubscriptionIfEnabled(MeteorPubSub.uiSegmentPartNotes, !!playlistStudioId, playlistId))
+	auxSubsReady.push(useSubscriptionIfEnabled(MeteorPubSub.uiPieceContentStatuses, !!playlistStudioId, playlistId))
 
 	useTracker(() => {
 		const playlist = RundownPlaylists.findOne(playlistId, {

@@ -255,6 +255,7 @@ export interface ExecuteActionProps extends RundownPlayoutPropsBase {
 	actionId: string
 	userData: any
 	triggerMode?: string
+	actionOptions?: { [key: string]: any }
 }
 export interface ExecuteBucketAdLibOrActionProps extends RundownPlayoutPropsBase {
 	bucketId: BucketId

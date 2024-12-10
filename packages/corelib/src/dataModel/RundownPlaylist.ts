@@ -10,6 +10,7 @@ import {
 	StudioId,
 	RundownId,
 } from './Ids'
+import { RundownPlaylistNote } from './Notes'
 
 /** Details of an ab-session requested by the blueprints in onTimelineGenerate */
 export interface ABSessionInfo {
@@ -152,6 +153,9 @@ export interface DBRundownPlaylist {
 	 */
 	queuedSegmentId?: SegmentId
 
+	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
+	notes?: Array<RundownPlaylistNote>
+
 	quickLoop?: QuickLoopProps
 
 	/** Actual time of playback starting */
@@ -160,7 +164,10 @@ export interface DBRundownPlaylist {
 	lastIncorrectPartPlaybackReported?: Time
 	/** Actual time of each rundown starting playback */
 	rundownsStartedPlayback?: Record<string, Time>
-	/** Actual time of SOME segments starting playback - usually just the previous and current one */
+	/**
+	 * Actual time of SOME segments starting playback - usually just the previous and current one
+	 * This is not using SegmentId, but SegmentPlayoutId
+	 */
 	segmentsStartedPlayback?: Record<string, Time>
 	/** Time of the last take */
 	lastTakeTime?: Time

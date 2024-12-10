@@ -1,5 +1,4 @@
 @import '../colorScheme';
-@import '../itemTypeColors';
 
 $dashboard-button-width: 6.40625em;
 $dashboard-button-height: 5.625em;
@@ -86,12 +85,12 @@ $dashboard-button-height: 5.625em;
 			}
 
 			> .dashboard-panel__panel__button--standalone {
+				width: calc(100% - 8px);
+				height: calc(100% - 8px);
+
 				&.type--take {
 					background-color: $general-live-color;
 				}
-
-				width: calc(100% - 8px);
-				height: calc(100% - 8px);
 
 				&.active {
 					background-color: #761912;
@@ -124,12 +123,12 @@ $dashboard-button-height: 5.625em;
 		grid-column: list-view / end;
 		grid-row: tool-bar / list-view;
 
+		display: flex;
+		padding: 0.625rem 0.313rem;
+
 		&--no-segments {
 			grid-column: template-list / end;
 		}
-
-		display: flex;
-		padding: 0.625rem 0.313rem;
 
 		> .adlib-panel__list-view__toolbar__filter {
 			flex: 2 2;
@@ -315,6 +314,12 @@ $dashboard-button-height: 5.625em;
 		}
 
 		&.live {
+			box-shadow: $dashboard-panel__button__border-width $dashboard-panel__button__border-width 0 $general-live-color,
+				($dashboard-panel__button__border-width * -1) ($dashboard-panel__button__border-width * -1) 0
+					$general-live-color,
+				($dashboard-panel__button__border-width * -1) $dashboard-panel__button__border-width 0 $general-live-color,
+				$dashboard-panel__button__border-width ($dashboard-panel__button__border-width * -1) 0 $general-live-color;
+
 			@keyframes button-flash {
 				0% {
 					opacity: 1;
@@ -342,12 +347,6 @@ $dashboard-button-height: 5.625em;
 				z-index: 10;
 				// animation: 2s button-flash normal infinite;
 			}
-
-			box-shadow: $dashboard-panel__button__border-width $dashboard-panel__button__border-width 0 $general-live-color,
-				($dashboard-panel__button__border-width * -1) ($dashboard-panel__button__border-width * -1) 0
-					$general-live-color,
-				($dashboard-panel__button__border-width * -1) $dashboard-panel__button__border-width 0 $general-live-color,
-				$dashboard-panel__button__border-width ($dashboard-panel__button__border-width * -1) 0 $general-live-color;
 		}
 
 		&.disabled {
@@ -618,7 +617,7 @@ $dashboard-button-height: 5.625em;
 			}
 		}
 	}
-	
+
 	&.dashboard-panel__panel--bucket {
 		$dashboard-button-width: 10.625em;
 		$dashboard-button-height: 8.90625em;
@@ -626,13 +625,12 @@ $dashboard-button-height: 5.625em;
 		$dashboard-button-thumbnail-height: $dashboard-button-height - $dashboard-button-label-height;
 
 		.dashboard-panel__panel__group {
-	
 			.dashboard-panel__panel__group__liveline {
 				transform: translate(calc(-1 * #{$dashboard-button-width}), 0);
 				&::after {
 					transform: translate(calc(#{$dashboard-button-width} + -1px), 0);
 				}
-	
+
 				&::before {
 					transform: translate(calc(#{$dashboard-button-width} + -1px), 0);
 				}
@@ -644,15 +642,17 @@ $dashboard-button-height: 5.625em;
 			width: $dashboard-button-width;
 			height: $dashboard-button-height;
 
-			&.source-missing, &.source-not-ready, &.unknown-state, &.source-unknown-state {
+			&.source-missing,
+			&.source-not-ready,
+			&.unknown-state,
+			&.source-unknown-state {
 				&::before {
 					z-index: 2;
 				}
 			}
 
 			> .dashboard-panel__panel__button__content {
-				background: linear-gradient(90deg, rgb(84,84,84) 0%, rgb(61,61,61) 100%);
-			
+				background: linear-gradient(90deg, rgb(84, 84, 84) 0%, rgb(61, 61, 61) 100%);
 
 				> .dashboard-panel__panel__button__label-container {
 					background-color: #000;
@@ -695,7 +695,7 @@ $dashboard-button-height: 5.625em;
 					left: unset;
 					z-index: unset;
 				}
-	
+
 				> .dashboard-panel__panel__button__sub-label {
 					padding: 2px;
 					font-size: 0.9375em;

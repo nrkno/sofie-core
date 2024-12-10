@@ -190,7 +190,7 @@ export async function manipulateUIPartsPublicationData(
 meteorCustomPublish(
 	MeteorPubSub.uiParts,
 	CustomCollectionName.UIParts,
-	async function (pub, playlistId: RundownPlaylistId) {
+	async function (pub, playlistId: RundownPlaylistId | null) {
 		check(playlistId, String)
 
 		const credentials = await resolveCredentials({ userId: this.userId, token: undefined })
@@ -198,7 +198,7 @@ meteorCustomPublish(
 		if (
 			!credentials ||
 			NoSecurityReadAccess.any() ||
-			(await RundownPlaylistReadAccess.rundownPlaylistContent(playlistId, credentials))
+			(playlistId && (await RundownPlaylistReadAccess.rundownPlaylistContent(playlistId, credentials)))
 		) {
 			await setUpCollectionOptimizedObserver<
 				Omit<DBPart, PartOmitedFields>,

@@ -17,17 +17,17 @@
 	margin-top: 2em;
 
 	.media-status-table-search__search-input {
-		&::placeholder {
-			color: #333;
-			font-style: italic;
-		}
-
 		border: none;
 		border-radius: 1em;
 		width: 15em;
 		padding: 5px 2em 5px 0.5em;
 
 		background: #f5f5f5;
+
+		&::placeholder {
+			color: #333;
+			font-style: italic;
+		}
 	}
 	.media-status-table-search__clear-search-input {
 		position: absolute;
