@@ -1,51 +1,68 @@
-import { TriggersContext } from '@sofie-automation/meteor-lib/dist/triggers/triggersContext'
+import {
+	TriggersAsyncCollection,
+	TriggersContext,
+	TriggerTrackerComputation,
+} from '@sofie-automation/meteor-lib/dist/triggers/triggersContext'
 import { SINGLE_USE_TOKEN_SALT } from '@sofie-automation/meteor-lib/dist/api/userActions'
-import { assertNever, getHash, Time } from '../../lib/tempLib'
+import { assertNever, getHash, ProtectedString, Time } from '../../lib/tempLib'
 import { getCurrentTime } from '../../lib/lib'
 import { MeteorCall } from '../methods'
 import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { UserAction } from '@sofie-automation/meteor-lib/dist/userAction'
 import { TFunction } from 'i18next'
-import { Tracker } from 'meteor/tracker'
-
 import { logger } from '../../logging'
 import { IBaseFilterLink, IRundownPlaylistFilterLink } from '@sofie-automation/blueprints-integration'
 import { PartId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DummyReactiveVar } from '@sofie-automation/meteor-lib/dist/triggers/reactive-var'
 import { ReactivePlaylistActionContext } from '@sofie-automation/meteor-lib/dist/triggers/actionFactory'
-import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
-import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
-import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
+import { FindOneOptions, FindOptions, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
+import { DBRundownPlaylist, SelectedPartInstance } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import {
+	AdLibActions,
+	AdLibPieces,
+	PartInstances,
+	Parts,
+	RundownBaselineAdLibActions,
+	RundownBaselineAdLibPieces,
+	RundownPlaylists,
+	Rundowns,
+	Segments,
+} from '../../collections'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
-import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
-import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { createSyncReadOnlyMongoCollection } from './triggersContextCollection'
+import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
+import { AsyncOnlyReadOnlyMongoCollection } from '../../collections/collection'
 
 export function hashSingleUseToken(token: string): string {
 	return getHash(SINGLE_USE_TOKEN_SALT + token)
 }
 
-/**
- * Some synchronous read-only collections to satisfy the TriggersContext interface
- */
-const AdLibActions = createSyncReadOnlyMongoCollection<AdLibAction>(CollectionName.AdLibActions)
-const AdLibPieces = createSyncReadOnlyMongoCollection<AdLibPiece>(CollectionName.AdLibPieces)
-const PartInstances = createSyncReadOnlyMongoCollection<PartInstance>(CollectionName.PartInstances)
-const Parts = createSyncReadOnlyMongoCollection<DBPart>(CollectionName.Parts)
-const RundownBaselineAdLibActions = createSyncReadOnlyMongoCollection<RundownBaselineAdLibAction>(
-	CollectionName.RundownBaselineAdLibActions
-)
-const RundownBaselineAdLibPieces = createSyncReadOnlyMongoCollection<RundownBaselineAdLibItem>(
-	CollectionName.RundownBaselineAdLibPieces
-)
-const RundownPlaylists = createSyncReadOnlyMongoCollection<DBRundownPlaylist>(CollectionName.RundownPlaylists)
-const Rundowns = createSyncReadOnlyMongoCollection<DBRundown>(CollectionName.Rundowns)
-const Segments = createSyncReadOnlyMongoCollection<DBSegment>(CollectionName.Segments)
+class MeteorTriggersCollectionWrapper<DBInterface extends { _id: ProtectedString<any> }>
+	implements TriggersAsyncCollection<DBInterface>
+{
+	readonly #collection: AsyncOnlyReadOnlyMongoCollection<DBInterface>
+
+	constructor(collection: AsyncOnlyReadOnlyMongoCollection<DBInterface>) {
+		this.#collection = collection
+	}
+
+	async findFetchAsync(
+		_computation: TriggerTrackerComputation | null,
+		selector: MongoQuery<DBInterface>,
+		options?: FindOptions<DBInterface>
+	): Promise<Array<DBInterface>> {
+		// Note: the _computation is not used, since we are not using Tracker server-side
+		return this.#collection.findFetchAsync(selector, options)
+	}
+
+	async findOneAsync(
+		_computation: TriggerTrackerComputation | null,
+		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		options?: FindOneOptions<DBInterface>
+	): Promise<DBInterface | undefined> {
+		// Note: the _computation is not used, since we are not using Tracker server-side
+		return this.#collection.findOneAsync(selector, options)
+	}
+}
 
 export const MeteorTriggersContext: TriggersContext = {
 	MeteorCall,
@@ -54,14 +71,14 @@ export const MeteorTriggersContext: TriggersContext = {
 
 	isClient: false,
 
-	AdLibActions,
-	AdLibPieces,
-	Parts,
-	RundownBaselineAdLibActions,
-	RundownBaselineAdLibPieces,
-	RundownPlaylists,
-	Rundowns,
-	Segments,
+	AdLibActions: new MeteorTriggersCollectionWrapper(AdLibActions),
+	AdLibPieces: new MeteorTriggersCollectionWrapper(AdLibPieces),
+	Parts: new MeteorTriggersCollectionWrapper(Parts),
+	RundownBaselineAdLibActions: new MeteorTriggersCollectionWrapper(RundownBaselineAdLibActions),
+	RundownBaselineAdLibPieces: new MeteorTriggersCollectionWrapper(RundownBaselineAdLibPieces),
+	RundownPlaylists: new MeteorTriggersCollectionWrapper(RundownPlaylists),
+	Rundowns: new MeteorTriggersCollectionWrapper(Rundowns),
+	Segments: new MeteorTriggersCollectionWrapper(Segments),
 
 	hashSingleUseToken,
 
@@ -81,73 +98,92 @@ export const MeteorTriggersContext: TriggersContext = {
 		)
 	},
 
-	nonreactiveTracker: Tracker.nonreactive,
+	withComputation: async (_computation, func) => {
+		// Note: the _computation is not used, since we are not using Tracker server-side
+		return func()
+	},
 
-	memoizedIsolatedAutorun: <T extends (...args: any) => any>(
-		fnc: T,
+	memoizedIsolatedAutorun: async <TArgs extends any[], TRes>(
+		computation: TriggerTrackerComputation | null,
+		fnc: (computation: TriggerTrackerComputation | null, ...args: TArgs) => Promise<TRes>,
 		_functionName: string,
-		...params: Parameters<T>
-	): ReturnType<T> => {
-		return fnc(...(params as any))
+		...params: TArgs
+	): Promise<TRes> => {
+		return fnc(computation, ...params)
 	},
 
 	createContextForRundownPlaylistChain,
 }
 
-function createContextForRundownPlaylistChain(
+async function createContextForRundownPlaylistChain(
 	studioId: StudioId,
 	filterChain: IBaseFilterLink[]
-): ReactivePlaylistActionContext | undefined {
-	const playlist = rundownPlaylistFilter(
+): Promise<ReactivePlaylistActionContext | undefined> {
+	const playlist = await rundownPlaylistFilter(
 		studioId,
 		filterChain.filter((link) => link.object === 'rundownPlaylist') as IRundownPlaylistFilterLink[]
 	)
 
 	if (!playlist) return undefined
 
-	let currentPartId: PartId | null = null,
-		nextPartId: PartId | null = null,
-		currentPartInstance: PartInstance | null = null,
-		currentSegmentPartIds: PartId[] = [],
-		nextSegmentPartIds: PartId[] = []
-
-	if (playlist.currentPartInfo) {
-		currentPartInstance = PartInstances.findOne(playlist.currentPartInfo.partInstanceId) ?? null
-		const currentPart = currentPartInstance?.part ?? null
-		if (currentPart) {
-			currentPartId = currentPart._id
-			currentSegmentPartIds = Parts.find({
-				segmentId: currentPart.segmentId,
-			}).map((part) => part._id)
-		}
-	}
-	if (playlist.nextPartInfo) {
-		const nextPart = PartInstances.findOne(playlist.nextPartInfo.partInstanceId)?.part ?? null
-		if (nextPart) {
-			nextPartId = nextPart._id
-			nextSegmentPartIds = Parts.find({
-				segmentId: nextPart.segmentId,
-			}).map((part) => part._id)
-		}
-	}
+	const [currentPartInfo, nextPartInfo] = await Promise.all([
+		fetchInfoForSelectedPart(playlist.currentPartInfo),
+		fetchInfoForSelectedPart(playlist.nextPartInfo),
+	])
 
 	return {
 		studioId: new DummyReactiveVar(studioId),
 		rundownPlaylistId: new DummyReactiveVar(playlist?._id),
 		rundownPlaylist: new DummyReactiveVar(playlist),
-		currentRundownId: new DummyReactiveVar(currentPartInstance?.rundownId ?? playlist.rundownIdsInOrder[0] ?? null),
-		currentPartId: new DummyReactiveVar(currentPartId),
-		currentSegmentPartIds: new DummyReactiveVar(currentSegmentPartIds),
-		nextPartId: new DummyReactiveVar(nextPartId),
-		nextSegmentPartIds: new DummyReactiveVar(nextSegmentPartIds),
+		currentRundownId: new DummyReactiveVar(
+			playlist.currentPartInfo?.rundownId ?? playlist.rundownIdsInOrder[0] ?? null
+		),
+		currentPartId: new DummyReactiveVar(currentPartInfo?.partId ?? null),
+		currentSegmentPartIds: new DummyReactiveVar(currentPartInfo?.segmentPartIds ?? []),
+		nextPartId: new DummyReactiveVar(nextPartInfo?.partId ?? null),
+		nextSegmentPartIds: new DummyReactiveVar(nextPartInfo?.segmentPartIds ?? []),
 		currentPartInstanceId: new DummyReactiveVar(playlist.currentPartInfo?.partInstanceId ?? null),
 	}
 }
 
-function rundownPlaylistFilter(
+async function fetchInfoForSelectedPart(partInfo: SelectedPartInstance | null): Promise<{
+	partId: PartId
+	segmentPartIds: PartId[]
+} | null> {
+	if (!partInfo) return null
+
+	const partInstance = (await PartInstances.findOneAsync(partInfo.partInstanceId, {
+		projection: {
+			// @ts-expect-error deep property
+			'part._id': 1,
+			segmentId: 1,
+		},
+	})) as (Pick<DBPartInstance, 'segmentId'> & { part: Pick<DBPart, '_id'> }) | null
+
+	if (!partInstance) return null
+
+	const partId = partInstance.part._id
+	const segmentPartIds = await Parts.findFetchAsync(
+		{
+			segmentId: partInstance.segmentId,
+		},
+		{
+			projection: {
+				_id: 1,
+			},
+		}
+	).then((parts) => parts.map((part) => part._id))
+
+	return {
+		partId,
+		segmentPartIds,
+	}
+}
+
+async function rundownPlaylistFilter(
 	studioId: StudioId,
 	filterChain: IRundownPlaylistFilterLink[]
-): DBRundownPlaylist | undefined {
+): Promise<DBRundownPlaylist | undefined> {
 	const selector: MongoQuery<DBRundownPlaylist> = {
 		$and: [
 			{
@@ -181,5 +217,5 @@ function rundownPlaylistFilter(
 		}
 	})
 
-	return RundownPlaylists.findOne(selector)
+	return RundownPlaylists.findOneAsync(selector)
 }

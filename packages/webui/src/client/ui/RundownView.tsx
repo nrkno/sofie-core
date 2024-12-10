@@ -1370,7 +1370,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 	if (playlist) {
 		studio = UIStudios.findOne({ _id: playlist.studioId })
 		rundowns = memoizedIsolatedAutorun(
-			(_playlistId) => RundownPlaylistCollectionUtil.getRundownsOrdered(playlist),
+			(_playlistId: RundownPlaylistId) => RundownPlaylistCollectionUtil.getRundownsOrdered(playlist),
 			'playlist.getRundowns',
 			playlistId
 		)
