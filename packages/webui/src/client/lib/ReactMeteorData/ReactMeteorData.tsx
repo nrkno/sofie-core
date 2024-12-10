@@ -374,12 +374,12 @@ export function useTracker<T, K extends undefined | T = undefined>(
  * This is an alternate implementation which supports promises in the autorun function, and will preserve the previous value until the promise resolves.
  *
  * @param {() => Promise<T>} autorun The autorun function to be run.
- * @param {React.DependencyList} [deps] A required list of dependenices to limit the tracker re-running. Can be left empty, if tracker
+ * @param {React.DependencyList} [deps] A required list of dependencies to limit the tracker re-running. Can be left empty, if tracker
  * 		has no external dependencies and should only be rerun when it's invalidated.
  * @param {K} [initial] An optional, initial state of the tracker. If not provided, the tracker may return undefined.
  * @return {*}  {(T | K)}
  */
-export function useTrackerAsyncTest<T, K extends undefined | T = undefined>(
+export function useTrackerAsync<T, K extends undefined | T = undefined>(
 	autorun: (computation: Tracker.Computation) => Promise<T>,
 	deps: React.DependencyList,
 	initial?: K

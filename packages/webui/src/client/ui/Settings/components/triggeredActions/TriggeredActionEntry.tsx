@@ -10,7 +10,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import classNames from 'classnames'
 import { DBBlueprintTrigger } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
-import { useTracker, useTrackerAsyncTest } from '../../../../lib/ReactMeteorData/ReactMeteorData'
+import { useTracker, useTrackerAsync } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { ActionEditor } from './actionEditors/ActionEditor'
 import { OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { flatten, getRandomString } from '../../../../lib/tempLib'
@@ -183,7 +183,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 		[triggeredAction?.actionsWithOverrides]
 	)
 
-	const previewItems = useTrackerAsyncTest<IWrappedAdLib[], IWrappedAdLib[]>(
+	const previewItems = useTrackerAsync<IWrappedAdLib[], IWrappedAdLib[]>(
 		async (computation) => {
 			try {
 				if (!resolvedActions || !selected || !sourceLayers) return []

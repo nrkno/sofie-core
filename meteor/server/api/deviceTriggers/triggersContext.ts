@@ -50,6 +50,7 @@ class MeteorTriggersCollectionWrapper<DBInterface extends { _id: ProtectedString
 		selector: MongoQuery<DBInterface>,
 		options?: FindOptions<DBInterface>
 	): Promise<Array<DBInterface>> {
+		// Note: the _computation is not used, since we are not using Tracker server-side
 		return this.#collection.findFetchAsync(selector, options)
 	}
 
@@ -58,6 +59,7 @@ class MeteorTriggersCollectionWrapper<DBInterface extends { _id: ProtectedString
 		selector: MongoQuery<DBInterface> | DBInterface['_id'],
 		options?: FindOneOptions<DBInterface>
 	): Promise<DBInterface | undefined> {
+		// Note: the _computation is not used, since we are not using Tracker server-side
 		return this.#collection.findOneAsync(selector, options)
 	}
 }
@@ -97,6 +99,7 @@ export const MeteorTriggersContext: TriggersContext = {
 	},
 
 	withComputation: async (_computation, func) => {
+		// Note: the _computation is not used, since we are not using Tracker server-side
 		return func()
 	},
 
