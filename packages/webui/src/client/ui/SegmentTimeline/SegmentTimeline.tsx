@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as PropTypes from 'prop-types'
 import { WithTranslation, withTranslation } from 'react-i18next'
 
 import ClassNames from 'classnames'
@@ -51,6 +50,7 @@ import {
 	TimingTickResolution,
 	TimingDataResolution,
 	WithTiming,
+	RundownTimingProviderContext,
 } from '../RundownView/RundownTiming/withTiming'
 import { SegmentTimeAnchorTime } from '../RundownView/RundownTiming/SegmentTimeAnchorTime'
 import { logger } from '../../lib/logging'
@@ -128,15 +128,8 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 	IProps & IZoomPropsHeader,
 	IZoomStateHeader
 > {
-	static contextTypes = {
-		durations: PropTypes.object.isRequired,
-	}
-
-	declare context:
-		| {
-				durations: RundownTimingContext
-		  }
-		| undefined
+	static contextType = RundownTimingProviderContext
+	declare context: React.ContextType<typeof RundownTimingProviderContext>
 
 	constructor(props: IProps & IZoomPropsHeader, context: any) {
 		super(props, context)
