@@ -44,6 +44,7 @@ import { setDefaultIdOnExpectedPackages } from '../ingest/expectedPackages'
 import { logger } from '../logging'
 import { validateTimeline } from 'superfly-timeline'
 import { ReadonlyDeep } from 'type-fest'
+import { translateUserEditsFromBlueprint } from './context/lib'
 
 function getIdHash(docType: string, usedIds: Map<string, number>, uniqueId: string): string {
 	const count = usedIds.get(uniqueId)
@@ -108,6 +109,7 @@ export function postProcessPieces(
 			startPartId: partId,
 			invalid: setInvalid ?? false,
 			timelineObjectsString: EmptyPieceTimelineObjectsBlob,
+			userEditOperations: translateUserEditsFromBlueprint(orgPiece.userEditOperations, [blueprintId]),
 		}
 
 		if (piece.pieceType !== IBlueprintPieceType.Normal) {
@@ -397,6 +399,7 @@ export function postProcessBucketAdLib(
 	blueprintId: BlueprintId,
 	bucketId: BucketId,
 	rank: number | undefined,
+	name: string | undefined,
 	importVersions: RundownImportVersions
 ): BucketAdLib {
 	const id: PieceId = protectString(
@@ -416,6 +419,7 @@ export function postProcessBucketAdLib(
 		importVersions,
 		ingestInfo,
 		_rank: rank || itemOrig._rank,
+		name: name || itemOrig.name,
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 	// Fill in ids of unnamed expectedPackages
@@ -446,6 +450,7 @@ export function postProcessBucketAction(
 	blueprintId: BlueprintId,
 	bucketId: BucketId,
 	rank: number | undefined,
+	label: string | undefined,
 	importVersions: RundownImportVersions
 ): BucketAdLibAction {
 	const id: AdLibActionId = protectString(
@@ -463,7 +468,7 @@ export function postProcessBucketAction(
 		bucketId,
 		importVersions,
 		ingestInfo,
-		...processAdLibActionITranslatableMessages(itemOrig, blueprintId, rank),
+		...processAdLibActionITranslatableMessages(itemOrig, blueprintId, rank, label),
 	}
 
 	// Fill in ids of unnamed expectedPackages
@@ -498,12 +503,12 @@ function processAdLibActionITranslatableMessages<
 		})[]
 	},
 	T extends IBlueprintActionManifest
->(itemOrig: T, blueprintId: BlueprintId, rank?: number): Pick<K, 'display' | 'triggerModes'> {
+>(itemOrig: T, blueprintId: BlueprintId, rank?: number, label?: string): Pick<K, 'display' | 'triggerModes'> {
 	return {
 		display: {
 			...itemOrig.display,
 			_rank: rank ?? itemOrig.display._rank,
-			label: wrapTranslatableMessageFromBlueprints(itemOrig.display.label, [blueprintId]),
+			label: (label as any) ?? wrapTranslatableMessageFromBlueprints(itemOrig.display.label, [blueprintId]),
 			triggerLabel:
 				itemOrig.display.triggerLabel &&
 				wrapTranslatableMessageFromBlueprints(itemOrig.display.triggerLabel, [blueprintId]),

@@ -24,14 +24,15 @@ import {
 	MappingsExt,
 	ResultingMappingRoutes,
 	StudioPackageContainer,
+	StudioRouteSet,
 } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { literal, Complete, assertNever } from '@sofie-automation/corelib/dist/lib'
 import { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
-import { getSideEffect } from '../../../lib/collections/ExpectedPackages'
-import { getActiveRoutes, getRoutedMappings } from '../../../lib/collections/Studios'
-import { ensureHasTrailingSlash, generateTranslation, unprotectString } from '../../../lib/lib'
-import { PieceContentStatusObj } from '../../../lib/api/pieceContentStatus'
+import { getSideEffect } from '@sofie-automation/meteor-lib/dist/collections/ExpectedPackages'
+import { getActiveRoutes, getRoutedMappings } from '@sofie-automation/meteor-lib/dist/collections/Studios'
+import { ensureHasTrailingSlash, generateTranslation, unprotectString } from '../../lib/tempLib'
+import { PieceContentStatusObj } from '@sofie-automation/meteor-lib/dist/api/pieceContentStatus'
 import { MediaObjects, PackageContainerPackageStatuses, PackageInfos } from '../../collections'
 import {
 	mediaObjectFieldSpecifier,
@@ -59,9 +60,21 @@ interface ScanInfoForPackage {
  * formatted string
  */
 export function buildFormatString(
-	field_order: PackageInfo.FieldOrder | undefined,
+	scan_field_order: PackageInfo.FieldOrder | undefined,
 	stream: PieceContentStreamInfo
 ): string {
+	let field_order: PackageInfo.FieldOrder
+	if (stream.field_order === PackageInfo.FieldOrder.BFF || stream.field_order === PackageInfo.FieldOrder.TFF) {
+		// If the stream says it is interlaced, trust that
+		field_order = stream.field_order
+	} else if (scan_field_order && scan_field_order !== PackageInfo.FieldOrder.Unknown) {
+		// Then try the scan if it gave a value
+		field_order = scan_field_order
+	} else {
+		// Fallback to whatever the stream has
+		field_order = stream.field_order || PackageInfo.FieldOrder.Unknown
+	}
+
 	let format = `${stream.width || 0}x${stream.height || 0}`
 	switch (field_order) {
 		case PackageInfo.FieldOrder.Progressive:
@@ -134,7 +147,9 @@ export function acceptFormat(format: string, formats: Array<Array<string>>): boo
  * 	[undefined, undefined, i, 5000, tff]
  * ]
  */
-export function getAcceptedFormats(settings: IStudioSettings | undefined): Array<Array<string>> {
+export function getAcceptedFormats(
+	settings: Pick<IStudioSettings, 'supportedMediaFormats' | 'frameRate'> | undefined
+): Array<Array<string>> {
 	const formatsConfigField = settings ? settings.supportedMediaFormats : ''
 	const formatsString: string =
 		(formatsConfigField && formatsConfigField !== '' ? formatsConfigField : '1920x1080i5000') + ''
@@ -172,12 +187,15 @@ export type PieceContentStatusPiece = Pick<PieceGeneric, '_id' | 'content' | 'ex
 	pieceInstanceId?: PieceInstanceId
 }
 export interface PieceContentStatusStudio
-	extends Pick<
-		DBStudio,
-		'_id' | 'settings' | 'packageContainers' | 'previewContainerIds' | 'thumbnailContainerIds' | 'routeSets'
-	> {
+	extends Pick<DBStudio, '_id' | 'settings' | 'previewContainerIds' | 'thumbnailContainerIds'> {
 	/** Mappings between the physical devices / outputs and logical ones */
 	mappings: MappingsExt
+	/** Route sets with overrides */
+	routeSets: Record<string, StudioRouteSet>
+	/** Contains settings for which Package Containers are present in the studio.
+	 * (These are used by the Package Manager and the Expected Packages)
+	 */
+	packageContainers: Record<string, StudioPackageContainer>
 }
 
 export async function checkPieceContentStatusAndDependencies(
@@ -333,6 +351,7 @@ async function checkPieceContentMediaObjectStatus(
 										codec_time_base: stream.codec.time_base,
 										channels: stream.channels,
 										r_frame_rate: undefined,
+										field_order: undefined,
 									})
 								),
 								(stream) => buildFormatString(mediainfo.field_order, stream),
@@ -557,7 +576,7 @@ async function checkPieceContentExpectedPackageStatus(
 						const sideEffect = getSideEffect(expectedPackage, studio)
 
 						thumbnailUrl = await getAssetUrlFromPackageContainerStatus(
-							studio,
+							studio.packageContainers,
 							getPackageContainerPackageStatus,
 							expectedPackageId,
 							sideEffect.thumbnailContainerId,
@@ -569,7 +588,7 @@ async function checkPieceContentExpectedPackageStatus(
 						const sideEffect = getSideEffect(expectedPackage, studio)
 
 						previewUrl = await getAssetUrlFromPackageContainerStatus(
-							studio,
+							studio.packageContainers,
 							getPackageContainerPackageStatus,
 							expectedPackageId,
 							sideEffect.previewContainerId,
@@ -716,7 +735,7 @@ async function checkPieceContentExpectedPackageStatus(
 }
 
 async function getAssetUrlFromPackageContainerStatus(
-	studio: PieceContentStatusStudio,
+	packageContainers: Record<string, StudioPackageContainer>,
 	getPackageContainerPackageStatus: (
 		packageContainerId: string,
 		expectedPackageId: ExpectedPackageId
@@ -727,7 +746,7 @@ async function getAssetUrlFromPackageContainerStatus(
 ): Promise<string | undefined> {
 	if (!assetContainerId || !packageAssetPath) return
 
-	const assetPackageContainer = studio.packageContainers[assetContainerId]
+	const assetPackageContainer = packageContainers[assetContainerId]
 	if (!assetPackageContainer) return
 
 	const previewPackageOnPackageContainer = await getPackageContainerPackageStatus(assetContainerId, expectedPackageId)
@@ -873,7 +892,7 @@ function getPackageWarningMessage(
 
 export type PieceContentStreamInfo = Pick<
 	PackageInfo.FFProbeScanStream,
-	'width' | 'height' | 'time_base' | 'codec_type' | 'codec_time_base' | 'channels' | 'r_frame_rate'
+	'width' | 'height' | 'time_base' | 'codec_type' | 'codec_time_base' | 'channels' | 'r_frame_rate' | 'field_order'
 >
 function checkStreamFormatsAndCounts(
 	messages: Array<ContentMessage>,

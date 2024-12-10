@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
-import { meteorPublish, AutoFillSelector } from './lib'
-import { MeteorPubSub } from '../../lib/api/pubsub'
+import { meteorPublish, AutoFillSelector } from './lib/lib'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { MongoFieldSpecifierZeroes, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { RundownReadAccess } from '../security/rundown'
@@ -12,12 +12,12 @@ import { NoSecurityReadAccess } from '../security/noSecurity'
 import { OrganizationReadAccess } from '../security/organization'
 import { StudioReadAccess } from '../security/studio'
 import { check, Match } from 'meteor/check'
-import { FindOptions } from '../../lib/collections/lib'
+import { FindOptions } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import {
 	AdLibActions,
 	AdLibPieces,
 	ExpectedPlayoutItems,
-	IngestDataCache,
+	NrcsIngestDataCache,
 	PartInstances,
 	Parts,
 	PeripheralDevices,
@@ -29,7 +29,7 @@ import {
 	Segments,
 } from '../collections'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
+import { NrcsIngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/NrcsIngestDataCache'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import {
 	PartId,
@@ -39,7 +39,6 @@ import {
 	RundownPlaylistActivationId,
 	RundownPlaylistId,
 	SegmentId,
-	SegmentPlayoutId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
@@ -274,36 +273,6 @@ meteorPublish(
 					timings: 0,
 				}),
 			})
-		}
-		return null
-	}
-)
-meteorPublish(
-	CorelibPubSub.partInstancesForSegmentPlayout,
-	async function (rundownId: RundownId, segmentPlayoutId: SegmentPlayoutId, token: string | undefined) {
-		if (!rundownId) throw new Meteor.Error(400, 'rundownId argument missing')
-		if (!segmentPlayoutId) throw new Meteor.Error(400, 'segmentPlayoutId argument missing')
-
-		if (
-			NoSecurityReadAccess.any() ||
-			(await RundownReadAccess.rundownContent(rundownId, { userId: this.userId, token }))
-		) {
-			return PartInstances.findWithCursor(
-				{
-					rundownId,
-					segmentPlayoutId,
-				},
-				{
-					fields: {
-						// @ts-expect-error Mongo typings aren't clever enough yet
-						'part.privateData': 0,
-					},
-					sort: {
-						takeCount: 1,
-					},
-					limit: 1,
-				}
-			)
 		}
 		return null
 	}
@@ -563,16 +532,16 @@ meteorPublish(
 // Note: this publication is for dev purposes only:
 meteorPublish(
 	CorelibPubSub.ingestDataCache,
-	async function (selector: MongoQuery<IngestDataCacheObj>, token: string | undefined) {
+	async function (selector: MongoQuery<NrcsIngestDataCacheObj>, token: string | undefined) {
 		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-		const modifier: FindOptions<IngestDataCacheObj> = {
+		const modifier: FindOptions<NrcsIngestDataCacheObj> = {
 			fields: {},
 		}
 		if (
 			NoSecurityReadAccess.any() ||
 			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
 		) {
-			return IngestDataCache.findWithCursor(selector, modifier)
+			return NrcsIngestDataCache.findWithCursor(selector, modifier)
 		}
 		return null
 	}

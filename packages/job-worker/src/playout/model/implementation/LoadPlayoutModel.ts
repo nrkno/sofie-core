@@ -7,7 +7,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { JobContext } from '../../../jobs'
 import { PlayoutModelImpl } from './PlayoutModelImpl'
 import { PlayoutRundownModelImpl } from './PlayoutRundownModelImpl'
-import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstanceId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
@@ -17,11 +17,12 @@ import _ = require('underscore')
 import { clone, Complete, groupByToMap, groupByToMapFunc, literal } from '@sofie-automation/corelib/dist/lib'
 import { PlayoutSegmentModelImpl } from './PlayoutSegmentModelImpl'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { PlayoutPartInstanceModelImpl } from './PlayoutPartInstanceModelImpl'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { PlayoutModel, PlayoutModelPreInit } from '../PlayoutModel'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
+import { sortRundownsWithinPlaylist } from '@sofie-automation/corelib/dist/playout/playlist'
+import { logger } from '../../../logging'
 
 /**
  * Load a PlayoutModelPreInit for the given RundownPlaylist
@@ -59,7 +60,7 @@ export async function loadPlayoutModelPreInit(
 		peripheralDevices: PeripheralDevices,
 
 		playlist: Playlist,
-		rundowns: Rundowns,
+		rundowns: sortRundownsWithinPlaylist(Playlist.rundownIdsInOrder, Rundowns),
 
 		getRundown: (id: RundownId) => Rundowns.find((rd) => rd._id === id),
 	}
@@ -87,9 +88,9 @@ export async function createPlayoutModelFromIngestModel(
 	const [peripheralDevices, playlist, rundowns] = await loadInitData(context, loadedPlaylist, false, newRundowns)
 	const rundownIds = rundowns.map((r) => r._id)
 
-	const [partInstances, rundownsWithContent, timeline] = await Promise.all([
+	const [{ partInstances, groupedPieceInstances }, rundownsWithContent, timeline] = await Promise.all([
 		loadPartInstances(context, loadedPlaylist, rundownIds),
-		loadRundowns(context, ingestModel, rundowns),
+		loadRundowns(context, ingestModel, sortRundownsWithinPlaylist(playlist.rundownIdsInOrder, rundowns)),
 		loadTimeline(context),
 	])
 
@@ -100,6 +101,7 @@ export async function createPlayoutModelFromIngestModel(
 		peripheralDevices,
 		playlist,
 		partInstances,
+		groupedPieceInstances,
 		rundownsWithContent,
 		timeline
 	)
@@ -150,7 +152,7 @@ export async function createPlayoutModelfromInitModel(
 
 	const rundownIds = initModel.rundowns.map((r) => r._id)
 
-	const [partInstances, rundownsWithContent, timeline] = await Promise.all([
+	const [{ partInstances, groupedPieceInstances }, rundownsWithContent, timeline] = await Promise.all([
 		loadPartInstances(context, initModel.playlist, rundownIds),
 		loadRundowns(context, null, initModel.rundowns),
 		loadTimeline(context),
@@ -163,6 +165,7 @@ export async function createPlayoutModelfromInitModel(
 		initModel.peripheralDevices,
 		clone<DBRundownPlaylist>(initModel.playlist),
 		partInstances,
+		groupedPieceInstances,
 		rundownsWithContent,
 		timeline
 	)
@@ -187,7 +190,7 @@ async function loadRundowns(
 		context.directCollections.Segments.findFetch({
 			$or: [
 				{
-					// In a different rundown
+					// Either in rundown when ingestModel === null or not available in ingestModel
 					rundownId: { $in: loadRundownIds },
 				},
 				{
@@ -232,21 +235,32 @@ async function loadRundowns(
 		}
 	}
 
-	return rundowns.map(
-		(rundown) =>
-			new PlayoutRundownModelImpl(
-				rundown,
-				groupedSegmentsWithParts.get(rundown._id) ?? [],
-				groupedBaselineObjects.get(rundown._id) ?? []
+	return rundowns.map((rundown) => {
+		const groupedSegmentsWithPartsForRundown = groupedSegmentsWithParts.get(rundown._id)
+		if (!groupedSegmentsWithPartsForRundown) {
+			logger.debug(
+				`groupedSegmentsWithPartsForRundown for Rundown "${rundown._id}" is undefined (has the rundown no segments?)`
 			)
-	)
+		}
+		const groupedBaselineObjectsForRundown = groupedBaselineObjects.get(rundown._id)
+		if (!groupedBaselineObjectsForRundown)
+			logger.debug(
+				`groupedBaselineObjectsForRundown for Rundown "${rundown._id}" is undefined (has the rundown no baseline objects?)`
+			)
+
+		return new PlayoutRundownModelImpl(
+			rundown,
+			groupedSegmentsWithPartsForRundown ?? [],
+			groupedBaselineObjectsForRundown ?? []
+		)
+	})
 }
 
 async function loadPartInstances(
 	context: JobContext,
 	playlist: ReadonlyDeep<DBRundownPlaylist>,
 	rundownIds: RundownId[]
-): Promise<PlayoutPartInstanceModelImpl[]> {
+): Promise<{ partInstances: DBPartInstance[]; groupedPieceInstances: Map<PartInstanceId, PieceInstance[]> }> {
 	const selectedPartInstanceIds = _.compact([
 		playlist.currentPartInfo?.partInstanceId,
 		playlist.nextPartInfo?.partInstanceId,
@@ -302,15 +316,5 @@ async function loadPartInstances(
 
 	const groupedPieceInstances = groupByToMap(pieceInstances, 'partInstanceId')
 
-	const allPartInstances: PlayoutPartInstanceModelImpl[] = []
-	for (const partInstance of partInstances) {
-		const wrappedPartInstance = new PlayoutPartInstanceModelImpl(
-			partInstance,
-			groupedPieceInstances.get(partInstance._id) ?? [],
-			false
-		)
-		allPartInstances.push(wrappedPartInstance)
-	}
-
-	return allPartInstances
+	return { partInstances, groupedPieceInstances }
 }

@@ -1,4 +1,4 @@
-import { getRandomId } from '../../../lib/lib'
+import { getRandomId } from '../../lib/tempLib'
 import { beforeEachInFiber, testInFiber } from '../../../__mocks__/helpers/jest'
 
 import '../../collections' // include this in order to get all of the collection set up
@@ -32,7 +32,7 @@ import {
 	ExpectedPackageWorkStatuses,
 	ExpectedPlayoutItems,
 	ExternalMessageQueue,
-	IngestDataCache,
+	NrcsIngestDataCache,
 	PackageContainerPackageStatuses,
 	PackageInfos,
 	PeripheralDeviceCommands,
@@ -45,10 +45,11 @@ import {
 	TranslationsBundles,
 	PackageContainerStatuses,
 	TimelineDatastore,
+	SofieIngestDataCache,
 } from '../../collections'
 import { Collections } from '../../collections/lib'
 import { generateTranslationBundleOriginId } from '../translationsBundles'
-import { CollectionCleanupResult } from '../../../lib/api/system'
+import { CollectionCleanupResult } from '@sofie-automation/meteor-lib/dist/api/system'
 
 describe('Cleanup', () => {
 	let env: DefaultEnvironment
@@ -300,7 +301,14 @@ async function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		tryCount: 0,
 		type: '' as any,
 	})
-	await IngestDataCache.mutableCollection.insertAsync({
+	await NrcsIngestDataCache.mutableCollection.insertAsync({
+		_id: getRandomId(),
+		data: {} as any,
+		modified: 0,
+		rundownId,
+		type: '' as any,
+	})
+	await SofieIngestDataCache.mutableCollection.insertAsync({
 		_id: getRandomId(),
 		data: {} as any,
 		modified: 0,

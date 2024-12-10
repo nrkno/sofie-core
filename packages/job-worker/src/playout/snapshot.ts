@@ -19,16 +19,10 @@ import {
 	RestorePlaylistSnapshotResult,
 } from '@sofie-automation/corelib/dist/worker/studio'
 import { getCurrentTime, getSystemVersion } from '../lib'
-import _ = require('underscore')
 import { JobContext } from '../jobs'
 import { runWithPlaylistLock } from './lock'
 import { CoreRundownPlaylistSnapshot } from '@sofie-automation/corelib/dist/snapshots'
-import {
-	unprotectString,
-	ProtectedString,
-	protectStringArray,
-	protectString,
-} from '@sofie-automation/corelib/dist/protectedString'
+import { unprotectString, ProtectedString, protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { saveIntoDb } from '../db/changes'
 import { getPartId, getSegmentId } from '../ingest/lib'
 import { assertNever, getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
@@ -36,6 +30,7 @@ import { logger } from '../logging'
 import { JSONBlobParse, JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { RundownOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { SofieIngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/SofieIngestDataCache'
 
 /**
  * Generate the Playlist owned portions of a Playlist snapshot
@@ -53,10 +48,15 @@ export async function handleGeneratePlaylistSnapshot(
 
 		const rundowns = await context.directCollections.Rundowns.findFetch({ playlistId: playlist._id })
 		const rundownIds = rundowns.map((i) => i._id)
-		const ingestData = await context.directCollections.IngestDataCache.findFetch(
+		const ingestData = await context.directCollections.NrcsIngestDataCache.findFetch(
 			{ rundownId: { $in: rundownIds } },
 			{ sort: { modified: -1 } }
 		) // @todo: check sorting order
+		const sofieIngestData = await context.directCollections.SofieIngestDataCache.findFetch(
+			{ rundownId: { $in: rundownIds } },
+			{ sort: { modified: -1 } }
+		) // @todo: check sorting order
+
 		// const userActions = await context.directCollections.UserActionsLog.findFetch({
 		// 	args: {
 		// 		$regex:
@@ -121,6 +121,7 @@ export async function handleGeneratePlaylistSnapshot(
 			playlist,
 			rundowns,
 			ingestData,
+			sofieIngestData,
 			baselineObjs,
 			baselineAdlibs,
 			segments,
@@ -242,12 +243,14 @@ export async function handleRestorePlaylistSnapshot(
 
 		partIdMap.set(oldId, part._id)
 	}
+
 	const partInstanceOldRundownIdMap = new Map<PartInstanceId, RundownId>()
 	const partInstanceIdMap = new Map<PartInstanceId, PartInstanceId>()
 	for (const partInstance of snapshot.partInstances) {
 		const oldId = partInstance._id
 		partInstance._id = getRandomId()
 		partInstanceIdMap.set(oldId, partInstance._id)
+
 		partInstance.part._id = partIdMap.get(partInstance.part._id) || getRandomId()
 		partInstanceOldRundownIdMap.set(oldId, partInstance.rundownId)
 	}
@@ -279,7 +282,6 @@ export async function handleRestorePlaylistSnapshot(
 		...snapshot.baselineAdLibActions,
 	]) {
 		const oldId = adlib._id
-		if (adlib.partId) adlib.partId = partIdMap.get(adlib.partId)
 		adlib._id = getRandomId()
 		pieceIdMap.set(oldId, adlib._id)
 	}
@@ -367,7 +369,7 @@ export async function handleRestorePlaylistSnapshot(
 			piece?: unknown
 		}
 	>(objs: undefined | T[], updateId: boolean): T[] {
-		const updateIds = (obj: T) => {
+		const updateIds = (obj: T, updateOwnId: boolean) => {
 			if (obj.rundownId) {
 				obj.rundownId = getNewRundownId(obj.rundownId)
 			}
@@ -382,20 +384,20 @@ export async function handleRestorePlaylistSnapshot(
 				obj.partInstanceId = partInstanceIdMap.get(obj.partInstanceId) || getRandomId()
 			}
 
-			if (updateId) {
+			if (updateOwnId) {
 				obj._id = getRandomId()
 			}
 
 			if (obj.part) {
-				updateIds(obj.part as any)
+				updateIds(obj.part as any, false)
 			}
 			if (obj.piece) {
-				updateIds(obj.piece as any)
+				updateIds(obj.piece as any, false)
 			}
 
 			return obj
 		}
-		return (objs || []).map((obj) => updateIds(obj))
+		return (objs || []).map((obj) => updateIds(obj, updateId))
 	}
 
 	await Promise.all([
@@ -403,9 +405,15 @@ export async function handleRestorePlaylistSnapshot(
 		saveIntoDb(context, context.directCollections.Rundowns, { playlistId }, snapshot.rundowns),
 		saveIntoDb(
 			context,
-			context.directCollections.IngestDataCache,
+			context.directCollections.NrcsIngestDataCache,
 			{ rundownId: { $in: rundownIds } },
 			updateItemIds(snapshot.ingestData, true)
+		),
+		saveIntoDb(
+			context,
+			context.directCollections.SofieIngestDataCache,
+			{ rundownId: { $in: rundownIds } },
+			updateItemIds(snapshot.sofieIngestData || (snapshot.ingestData as any as SofieIngestDataCacheObj[]), true)
 		),
 		saveIntoDb(
 			context,
@@ -417,13 +425,13 @@ export async function handleRestorePlaylistSnapshot(
 			context,
 			context.directCollections.RundownBaselineAdLibPieces,
 			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.baselineAdlibs, true)
+			updateItemIds(snapshot.baselineAdlibs, false)
 		),
 		saveIntoDb(
 			context,
 			context.directCollections.RundownBaselineAdLibActions,
 			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.baselineAdLibActions, true)
+			updateItemIds(snapshot.baselineAdLibActions, false)
 		),
 		saveIntoDb(
 			context,
@@ -459,31 +467,31 @@ export async function handleRestorePlaylistSnapshot(
 			context,
 			context.directCollections.AdLibPieces,
 			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.adLibPieces, true)
+			updateItemIds(snapshot.adLibPieces, false)
 		),
 		saveIntoDb(
 			context,
 			context.directCollections.AdLibActions,
 			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.adLibActions, true)
+			updateItemIds(snapshot.adLibActions, false)
 		),
 		saveIntoDb(
 			context,
 			context.directCollections.ExpectedMediaItems,
-			{ partId: { $in: protectStringArray(_.keys(partIdMap)) } },
+			{ partId: { $in: Array.from(partIdMap.keys()) } },
 			updateItemIds(snapshot.expectedMediaItems, true)
 		),
 		saveIntoDb(
 			context,
 			context.directCollections.ExpectedPlayoutItems,
 			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.expectedPlayoutItems || [], false)
+			updateItemIds(snapshot.expectedPlayoutItems || [], true)
 		),
 		saveIntoDb(
 			context,
 			context.directCollections.ExpectedPackages,
 			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.expectedPackages || [], false)
+			snapshot.expectedPackages || []
 		),
 	])
 

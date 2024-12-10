@@ -25,7 +25,6 @@ import { getSelectedPartInstances } from './lib'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import * as peripheralDeviceLib from '../../peripheralDevice'
-import { sleep } from '@sofie-automation/corelib/dist/lib'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
@@ -47,6 +46,7 @@ import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { ProcessedShowStyleCompound } from '../../jobs'
 import { handleOnPlayoutPlaybackChanged } from '../timings'
+import { sleep } from '@sofie-automation/shared-lib/dist/lib/lib'
 
 // const mockGetCurrentTime = jest.spyOn(lib, 'getCurrentTime')
 const mockExecutePeripheralDeviceFunction = jest

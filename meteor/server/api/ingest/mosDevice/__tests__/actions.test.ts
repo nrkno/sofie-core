@@ -1,13 +1,13 @@
 import '../../../../../__mocks__/_extendJest'
 import { Meteor } from 'meteor/meteor'
 
-import * as MOS from '@mos-connection/helper'
+import { MOS } from '@sofie-automation/meteor-lib/dist/mos'
 import { setupDefaultStudioEnvironment } from '../../../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../../../__mocks__/helpers/jest'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { MOSDeviceActions } from '../actions'
 import { PeripheralDeviceCommand } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceCommand'
-import { TriggerReloadDataResponse } from '../../../../../lib/api/userActions'
+import { TriggerReloadDataResponse } from '@sofie-automation/meteor-lib/dist/api/userActions'
 import { deferAsync, getRandomId, getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { PeripheralDeviceCommandId, RundownId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -54,7 +54,7 @@ describe('Test sending mos actions', () => {
 		const fakeRundown = { _id: rundownId, externalId: getRandomString(), studioId: studioId }
 
 		// Listen for changes
-		observer = PeripheralDeviceCommands.observeChanges(
+		observer = await PeripheralDeviceCommands.observeChanges(
 			{ deviceId: device._id },
 			{
 				added: (id: PeripheralDeviceCommandId) => {
@@ -96,7 +96,7 @@ describe('Test sending mos actions', () => {
 		}
 
 		// Listen for changes
-		observer = PeripheralDeviceCommands.observeChanges(
+		observer = await PeripheralDeviceCommands.observeChanges(
 			{ deviceId: device._id },
 			{
 				added: (id: PeripheralDeviceCommandId) => {
@@ -153,7 +153,7 @@ describe('Test sending mos actions', () => {
 		}
 
 		// Listen for changes
-		observer = PeripheralDeviceCommands.observeChanges(
+		observer = await PeripheralDeviceCommands.observeChanges(
 			{ deviceId: device._id },
 			{
 				added: (id: PeripheralDeviceCommandId) => {

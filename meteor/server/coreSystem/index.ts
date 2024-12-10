@@ -1,5 +1,7 @@
-import { SYSTEM_ID, parseVersion, GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
-import { getCurrentTime, MeteorStartupAsync } from '../../lib/lib'
+import { SYSTEM_ID, GENESIS_SYSTEM_VERSION } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
+import { parseVersion } from '../systemStatus/semverUtils'
+import { MeteorStartupAsync } from '../lib/lib'
+import { getCurrentTime } from '../lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { Meteor } from 'meteor/meteor'
 import { prepareMigration, runMigration } from '../migration/databaseMigration'
@@ -76,7 +78,7 @@ async function initializeCoreSystem() {
 	}
 
 	// Monitor database changes:
-	CoreSystem.observeChanges(SYSTEM_ID, {
+	await CoreSystem.observeChanges(SYSTEM_ID, {
 		added: onCoreSystemChanged,
 		changed: onCoreSystemChanged,
 		removed: onCoreSystemChanged,
@@ -86,7 +88,7 @@ async function initializeCoreSystem() {
 		checkDatabaseVersions()
 	}
 
-	Blueprints.observeChanges(
+	await Blueprints.observeChanges(
 		{},
 		{
 			added: observeBlueprintChanges,

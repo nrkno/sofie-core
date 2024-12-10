@@ -1,10 +1,11 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from '../../../lib/check'
+import { check } from '../../lib/check'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { IngestDataCache, MediaObjects, Parts, Rundowns, Segments } from '../../collections'
-import { lazyIgnore, literal } from '../../../lib/lib'
+import { NrcsIngestDataCache, MediaObjects, Parts, Rundowns, Segments } from '../../collections'
+import { literal } from '../../lib/tempLib'
+import { lazyIgnore, MeteorStartupAsync } from '../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart, IngestPlaylist } from '@sofie-automation/blueprints-integration'
-import { logger } from '../../../lib/logging'
+import { logger } from '../../logging'
 import { RundownIngestDataCache } from './ingestCache'
 import {
 	checkAccessAndGetPeripheralDevice,
@@ -12,11 +13,12 @@ import {
 	generateRundownSource,
 	runIngestOperation,
 } from './lib'
-import { MethodContext } from '../../../lib/api/methods'
+import { MethodContext } from '../methodContext'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import { PeripheralDeviceId, RundownId, SegmentId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
+import { NrcsIngestCacheType } from '@sofie-automation/corelib/dist/dataModel/NrcsIngestDataCache'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 export namespace RundownInput {
 	export async function dataPlaylistGet(
@@ -26,7 +28,7 @@ export namespace RundownInput {
 		playlistExternalId: string
 	): Promise<IngestPlaylist> {
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-		logger.debug('dataPlaylistGet', playlistExternalId)
+		logger.debug('dataPlaylistGet', { playlistExternalId })
 		check(playlistExternalId, String)
 		return getIngestPlaylist(peripheralDevice, playlistExternalId)
 	}
@@ -47,7 +49,7 @@ export namespace RundownInput {
 		rundownExternalId: string
 	): Promise<IngestRundown> {
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-		logger.debug('dataRundownGet', rundownExternalId)
+		logger.debug('dataRundownGet', { rundownExternalId })
 		check(rundownExternalId, String)
 		return getIngestRundown(peripheralDevice, rundownExternalId)
 	}
@@ -60,7 +62,7 @@ export namespace RundownInput {
 	): Promise<void> {
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		const studioId = await fetchStudioIdFromDevice(peripheralDevice)
-		logger.debug('dataRundownDelete', rundownExternalId)
+		logger.debug('dataRundownDelete', { rundownExternalId })
 		check(rundownExternalId, String)
 
 		await runIngestOperation(studioId, IngestJobs.RemoveRundown, {
@@ -128,7 +130,7 @@ export namespace RundownInput {
 		segmentExternalId: string
 	): Promise<IngestSegment> {
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-		logger.debug('dataSegmentGet', rundownExternalId, segmentExternalId)
+		logger.debug('dataSegmentGet', { rundownExternalId, segmentExternalId })
 		check(rundownExternalId, String)
 		check(segmentExternalId, String)
 		return getIngestSegment(peripheralDevice, rundownExternalId, segmentExternalId)
@@ -143,7 +145,7 @@ export namespace RundownInput {
 	): Promise<void> {
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		const studioId = await fetchStudioIdFromDevice(peripheralDevice)
-		logger.debug('dataSegmentDelete', rundownExternalId, segmentExternalId)
+		logger.debug('dataSegmentDelete', { rundownExternalId, segmentExternalId })
 		check(rundownExternalId, String)
 		check(segmentExternalId, String)
 
@@ -161,7 +163,7 @@ export namespace RundownInput {
 	): Promise<void> {
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		const studioId = await fetchStudioIdFromDevice(peripheralDevice)
-		logger.debug('dataSegmentCreate', rundownExternalId, ingestSegment)
+		logger.debug('dataSegmentCreate', { rundownExternalId, ingestSegment })
 		check(rundownExternalId, String)
 		check(ingestSegment, Object)
 
@@ -180,7 +182,7 @@ export namespace RundownInput {
 	): Promise<void> {
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		const studioId = await fetchStudioIdFromDevice(peripheralDevice)
-		logger.debug('dataSegmentUpdate', rundownExternalId, ingestSegment)
+		logger.debug('dataSegmentUpdate', { rundownExternalId, ingestSegment })
 		check(rundownExternalId, String)
 		check(ingestSegment, Object)
 
@@ -199,7 +201,7 @@ export namespace RundownInput {
 	): Promise<void> {
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		const studioId = await fetchStudioIdFromDevice(peripheralDevice)
-		logger.debug('dataSegmentRanksUpdate', rundownExternalId, Object.keys(newRanks))
+		logger.debug('dataSegmentRanksUpdate', { rundownExternalId, ranks: Object.keys(newRanks) })
 		check(rundownExternalId, String)
 		check(newRanks, Object)
 
@@ -219,7 +221,7 @@ export namespace RundownInput {
 	): Promise<void> {
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		const studioId = await fetchStudioIdFromDevice(peripheralDevice)
-		logger.debug('dataPartDelete', rundownExternalId, segmentExternalId, partExternalId)
+		logger.debug('dataPartDelete', { rundownExternalId, segmentExternalId, partExternalId })
 		check(rundownExternalId, String)
 		check(segmentExternalId, String)
 		check(partExternalId, String)
@@ -240,7 +242,7 @@ export namespace RundownInput {
 	): Promise<void> {
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		const studioId = await fetchStudioIdFromDevice(peripheralDevice)
-		logger.debug('dataPartCreate', rundownExternalId, segmentExternalId, ingestPart)
+		logger.debug('dataPartCreate', { rundownExternalId, segmentExternalId, ingestPart })
 		check(rundownExternalId, String)
 		check(segmentExternalId, String)
 		check(ingestPart, Object)
@@ -262,7 +264,7 @@ export namespace RundownInput {
 	): Promise<void> {
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		const studioId = await fetchStudioIdFromDevice(peripheralDevice)
-		logger.debug('dataPartUpdate', rundownExternalId, segmentExternalId, ingestPart)
+		logger.debug('dataPartUpdate', { rundownExternalId, segmentExternalId, ingestPart })
 		check(rundownExternalId, String)
 		check(segmentExternalId, String)
 		check(ingestPart, Object)
@@ -361,17 +363,15 @@ async function listIngestRundowns(peripheralDevice: PeripheralDevice): Promise<s
 }
 
 // hackGetMediaObjectDuration stuff
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		MediaObjects.observe(
-			{},
-			{
-				added: onMediaObjectChanged,
-				changed: onMediaObjectChanged,
-			},
-			{ fields: { _id: 1, mediaId: 1, mediainfo: 1, studioId: 1 } }
-		)
-	}
+MeteorStartupAsync(async () => {
+	await MediaObjects.observe(
+		{},
+		{
+			added: onMediaObjectChanged,
+			changed: onMediaObjectChanged,
+		},
+		{ fields: { _id: 1, mediaId: 1, mediainfo: 1, studioId: 1 } }
+	)
 })
 
 interface MediaObjectUpdatedIds {
@@ -413,9 +413,9 @@ async function onMediaObjectChanged(newDocument: MediaObject, oldDocument?: Medi
 
 		const validSegmentIds = new Set(
 			(
-				await IngestDataCache.findFetchAsync(
+				await NrcsIngestDataCache.findFetchAsync(
 					{
-						type: IngestCacheType.SEGMENT,
+						type: NrcsIngestCacheType.SEGMENT,
 						rundownId: { $in: updateIds.map((obj) => obj.rundownId) },
 					},
 					{
@@ -429,15 +429,19 @@ async function onMediaObjectChanged(newDocument: MediaObject, oldDocument?: Medi
 
 		for (const mediaObjectUpdatedIds of updateIds) {
 			if (validSegmentIds.has(mediaObjectUpdatedIds.segmentId)) {
-				try {
-					lazyIgnore(
-						`updateSegmentFromMediaObject_${mediaObjectUpdatedIds.segmentId}`,
-						async () => updateSegmentFromCache(newDocument.studioId, mediaObjectUpdatedIds),
-						200
-					)
-				} catch (exception) {
-					logger.error('Error thrown while updating Segment from cache after MediaObject changed', exception)
-				}
+				lazyIgnore(
+					`updateSegmentFromMediaObject_${mediaObjectUpdatedIds.segmentId}`,
+					() => {
+						updateSegmentFromCache(newDocument.studioId, mediaObjectUpdatedIds).catch((e) => {
+							logger.error(
+								`Error thrown while updating Segment from cache after MediaObject changed: ${stringifyError(
+									e
+								)}`
+							)
+						})
+					},
+					200
+				)
 			}
 		}
 	}

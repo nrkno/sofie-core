@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { MeteorStartupAsync } from '../lib/lib'
+import { MeteorStartupAsync } from './lib/lib'
 import { getCoreSystemAsync } from './coreSystem/collection'
 import { logger } from './logging'
 import { getRunningMethods, resetRunningMethods } from './methods'

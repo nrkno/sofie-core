@@ -4,7 +4,7 @@ import * as _ from 'underscore'
 import Koa from 'koa'
 import KoaRouter from '@koa/router'
 import bodyParser from 'koa-bodyparser'
-import { check } from '../../lib/check'
+import { check } from '../lib/check'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
 	SnapshotType,
@@ -12,21 +12,13 @@ import {
 	SnapshotDebug,
 	SnapshotBase,
 	SnapshotRundownPlaylist,
-} from '../../lib/collections/Snapshots'
-import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
+} from '@sofie-automation/meteor-lib/dist/collections/Snapshots'
+import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
 import { PieceGeneric } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
-import {
-	getCurrentTime,
-	Time,
-	formatDateTime,
-	fixValidPath,
-	protectString,
-	getRandomId,
-	omit,
-	unprotectStringArray,
-	unprotectString,
-} from '../../lib/lib'
+import { Time, protectString, getRandomId, omit, unprotectStringArray, unprotectString } from '../lib/tempLib'
+import { formatDateTime } from '@sofie-automation/meteor-lib/dist/time'
+import { getCurrentTime, fixValidPath } from '../lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
@@ -34,8 +26,9 @@ import { logger } from '../logging'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { PeripheralDeviceCommand } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceCommand'
 import { registerClassToMeteorMethods } from '../methods'
-import { NewSnapshotAPI, SnapshotAPIMethods } from '../../lib/api/shapshot'
-import { ICoreSystem, parseVersion } from '../../lib/collections/CoreSystem'
+import { NewSnapshotAPI, SnapshotAPIMethods } from '@sofie-automation/meteor-lib/dist/api/shapshot'
+import { ICoreSystem } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
+import { parseVersion } from '../systemStatus/semverUtils'
 import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
 import { isVersionSupported } from '../migration/databaseMigration'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
@@ -44,10 +37,10 @@ import { IngestRundown, VTContent } from '@sofie-automation/blueprints-integrati
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { importIngestRundown } from './ingest/http'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
-import { DBTriggeredActions } from '../../lib/collections/TriggeredActions'
-import { Settings } from '../../lib/Settings'
-import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
+import { RundownLayoutBase } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
+import { DBTriggeredActions } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
+import { Settings } from '../Settings'
+import { MethodContext, MethodContextAPI } from './methodContext'
 import { Credentials, isResolvedCredentials } from '../security/lib/credentials'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { StudioContentWriteAccess } from '../security/studio'
@@ -60,7 +53,6 @@ import {
 	getPackageContainerPackageId,
 } from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
 import { PackageInfoDB, getPackageInfoId } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
-import { checkStudioExists } from '../optimizations'
 import { CoreRundownPlaylistSnapshot } from '@sofie-automation/corelib/dist/snapshots'
 import { QueueStudioJob } from '../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
@@ -100,6 +92,11 @@ import {
 import { getCoreSystemAsync } from '../coreSystem/collection'
 import { executePeripheralDeviceFunction } from './peripheralDevice/executeFunction'
 import { verifyHashedToken } from './singleUseTokens'
+import {
+	NrcsIngestDataCacheObjRundown,
+	NrcsIngestDataCacheObjSegment,
+	NrcsIngestDataCacheObjPart,
+} from '@sofie-automation/corelib/dist/dataModel/NrcsIngestDataCache'
 
 interface RundownPlaylistSnapshot extends CoreRundownPlaylistSnapshot {
 	versionExtended: string | undefined
@@ -489,6 +486,7 @@ async function retreiveSnapshot(snapshotId: SnapshotId, cred0: Credentials): Pro
 
 	return readSnapshot
 }
+
 async function restoreFromSnapshot(
 	/** The snapshot data to restore */
 	snapshot: AnySnapshot,
@@ -497,22 +495,7 @@ async function restoreFromSnapshot(
 ): Promise<void> {
 	// Determine what kind of snapshot
 
-	if (!_.isObject(snapshot)) throw new Meteor.Error(500, `Restore input data is not an object`)
-	// First, some special (debugging) cases:
-	// @ts-expect-error is's not really a snapshot here:
-	if (snapshot.externalId && snapshot.segments && snapshot.type === 'mos') {
-		// Special: Not a snapshot, but a datadump of a MOS rundown
-		const studioId: StudioId = Meteor.settings.manualSnapshotIngestStudioId || 'studio0'
-		const studioExists = await checkStudioExists(studioId)
-		if (studioExists) {
-			await importIngestRundown(studioId, snapshot as unknown as IngestRundown)
-			return
-		}
-		throw new Meteor.Error(500, `No Studio found`)
-	}
-
 	// Then, continue as if it's a normal snapshot:
-
 	if (!snapshot.snapshot) throw new Meteor.Error(500, `Restore input data is not a snapshot (${_.keys(snapshot)})`)
 
 	if (snapshot.snapshot.type === SnapshotType.RUNDOWNPLAYLIST) {
@@ -525,11 +508,7 @@ async function restoreFromSnapshot(
 			)
 		}
 
-		// TODO: Improve this. This matches the 'old' behaviour
-		const studios = await Studios.findFetchAsync({})
-		const snapshotStudioExists = studios.find((studio) => studio._id === playlistSnapshot.playlist.studioId)
-		const studioId = snapshotStudioExists ? playlistSnapshot.playlist.studioId : studios[0]?._id
-		if (!studioId) throw new Meteor.Error(500, `No Studio found`)
+		const studioId = await getStudioIdFromPlaylistSnapshot(playlistSnapshot)
 
 		// A snapshot of a rundownPlaylist
 		return restoreFromRundownPlaylistSnapshot(snapshot as RundownPlaylistSnapshot, studioId, restoreDebugData)
@@ -538,6 +517,60 @@ async function restoreFromSnapshot(
 		return restoreFromSystemSnapshot(snapshot as SystemSnapshot)
 	} else {
 		throw new Meteor.Error(402, `Unknown snapshot type "${snapshot.snapshot.type}"`)
+	}
+}
+
+async function getStudioIdFromPlaylistSnapshot(playlistSnapshot: RundownPlaylistSnapshot): Promise<StudioId> {
+	// TODO: Improve this. This matches the 'old' behaviour
+	const studios = await Studios.findFetchAsync({})
+	const snapshotStudioExists = studios.find((studio) => studio._id === playlistSnapshot.playlist.studioId)
+	const studioId = snapshotStudioExists ? playlistSnapshot.playlist.studioId : studios[0]?._id
+	if (!studioId) throw new Meteor.Error(500, `No Studio found`)
+	return studioId
+}
+/** Read the ingest data from a snapshot and pipe it into blueprints */
+async function ingestFromSnapshot(
+	/** The snapshot data to restore */
+	snapshot: AnySnapshot
+): Promise<void> {
+	// Determine what kind of snapshot
+	if (!snapshot.snapshot) throw new Meteor.Error(500, `Restore input data is not a snapshot (${_.keys(snapshot)})`)
+	if (snapshot.snapshot.type === SnapshotType.RUNDOWNPLAYLIST) {
+		const playlistSnapshot = snapshot as RundownPlaylistSnapshot
+
+		const studioId = await getStudioIdFromPlaylistSnapshot(playlistSnapshot)
+
+		// Read the ingestData from the snapshot
+		const ingestData = playlistSnapshot.ingestData
+
+		const rundownData = ingestData.filter((e) => e.type === 'rundown') as NrcsIngestDataCacheObjRundown[]
+		const segmentData = ingestData.filter((e) => e.type === 'segment') as NrcsIngestDataCacheObjSegment[]
+		const partData = ingestData.filter((e) => e.type === 'part') as NrcsIngestDataCacheObjPart[]
+
+		if (rundownData.length === 0) throw new Meteor.Error(402, `No rundowns found in ingestData`)
+
+		for (const seg of segmentData) {
+			seg.data.parts = partData
+				.filter((e) => e.segmentId === seg.segmentId)
+				.map((e) => e.data)
+				.sort((a, b) => b.rank - a.rank)
+		}
+
+		for (let i = 0; i < rundownData.length; i++) {
+			const rundown = rundownData[i]
+
+			const segmentsInRundown = segmentData.filter((e) => e.rundownId === rundown.rundownId)
+
+			const ingestRundown: IngestRundown = rundown.data
+			ingestRundown.segments = segmentsInRundown.map((s) => s.data).sort((a, b) => b.rank - a.rank)
+
+			await importIngestRundown(studioId, ingestRundown)
+		}
+	} else {
+		throw new Meteor.Error(
+			402,
+			`Unable to ingest a snapshot of type "${snapshot.snapshot.type}", did you mean to restore it?`
+		)
 	}
 }
 
@@ -816,8 +849,16 @@ if (!Settings.enableUserAccounts) {
 				if (!snapshot) throw new Meteor.Error(400, 'Restore Snapshot: Missing request body')
 
 				const restoreDebugData = ctx.headers['restore-debug-data'] === '1'
+				const ingestSnapshotData = ctx.headers['ingest-snapshot-data'] === '1'
 
-				await restoreFromSnapshot(snapshot, restoreDebugData)
+				if (typeof snapshot !== 'object' || snapshot === null)
+					throw new Meteor.Error(500, `Restore input data is not an object`)
+
+				if (ingestSnapshotData) {
+					await ingestFromSnapshot(snapshot)
+				} else {
+					await restoreFromSnapshot(snapshot, restoreDebugData)
+				}
 
 				ctx.response.status = 200
 				ctx.response.body = content

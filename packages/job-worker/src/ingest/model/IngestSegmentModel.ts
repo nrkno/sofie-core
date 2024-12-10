@@ -67,7 +67,7 @@ export interface IngestSegmentModel extends IngestSegmentModelReadonly {
 	setOrphaned(orphaned: SegmentOrphanedReason | undefined): void
 
 	/**
-	 * Mark this Part as being hidden
+	 * Mark this Segment as being hidden
 	 * @param hidden New hidden state
 	 */
 	setHidden(hidden: boolean): void

@@ -15,6 +15,8 @@ describe('selectShowStyleVariant', () => {
 			type: 'mock',
 			segments: [],
 			coreData: undefined,
+			userEditStates: {},
+			payload: undefined,
 		}
 	}
 	function createBlueprintContext(context: MockJobContext): StudioUserContext {
@@ -22,7 +24,6 @@ describe('selectShowStyleVariant', () => {
 			{
 				name: 'test',
 				identifier: 'test',
-				tempSendUserNotesIntoBlackHole: true,
 			},
 			context.studio,
 			context.getStudioBlueprintConfig()

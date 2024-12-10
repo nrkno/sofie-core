@@ -102,6 +102,8 @@ export async function executeAdlibActionAndSaveModel(
 		userData: data.userData,
 		triggerMode: data.triggerMode,
 		privateData: adLibActionDoc?.privateData,
+		publicData: adLibActionDoc?.publicData,
+		actionOptions: data.actionOptions,
 	}
 
 	try {
@@ -159,6 +161,10 @@ export interface ExecuteActionParameters {
 	userData: ActionUserData
 	/** Arbitraty data storage for internal use in the blueprints */
 	privateData: unknown | undefined
+	/** Optional arbitraty data used to modify the action parameters */
+	publicData: unknown | undefined
+	/** Optional arbitraty data used to modify the action parameters */
+	actionOptions: { [key: string]: any } | undefined
 
 	triggerMode: string | undefined
 }
@@ -195,10 +201,11 @@ export async function executeActionInner(
 	// If any action cannot be done due to timings, that needs to be rejected by the context
 	if (!blueprint.blueprint.executeAction) throw UserError.create(UserErrorMessage.ActionsNotSupported)
 
-	logger.info(
-		`Executing AdlibAction "${actionParameters.actionId}": ${JSON.stringify(actionParameters.userData)} (${
-			actionParameters.triggerMode
-		})`
+	logger.info(`Executing AdlibAction "${actionParameters.actionId}"`)
+	logger.silly(
+		`Executing AdlibAction Payload "${actionParameters.actionId}" Payload: ${JSON.stringify(
+			actionParameters.userData
+		)} (${actionParameters.triggerMode})`
 	)
 
 	try {
@@ -207,7 +214,9 @@ export async function executeActionInner(
 			actionParameters.actionId,
 			actionParameters.userData,
 			actionParameters.triggerMode,
-			actionParameters.privateData
+			actionParameters.privateData,
+			actionParameters.publicData,
+			actionParameters.actionOptions ?? {}
 		)
 	} catch (err) {
 		logger.error(`Error in showStyleBlueprint.executeAction: ${stringifyError(err)}`)
@@ -233,6 +242,7 @@ async function applyAnyExecutionSideEffects(
 	if (actionContext.takeAfterExecute) {
 		await performTakeToNextedPart(context, playoutModel, now)
 	} else if (
+		actionContext.forceRegenerateTimeline ||
 		actionContext.currentPartState !== ActionPartChange.NONE ||
 		actionContext.nextPartState !== ActionPartChange.NONE
 	) {
@@ -264,11 +274,9 @@ async function executeDataStoreAction(
 			showStyle,
 			watchedPackages
 		)
-
-		logger.info(
-			`Executing Datastore AdlibAction "${actionParameters.actionId}": ${JSON.stringify(
-				actionParameters.userData
-			)}`
+		logger.info(`Executing Datastore AdlibAction "${actionParameters.actionId}"`)
+		logger.silly(
+			`Datastore AdlibAction "${actionParameters.actionId}" Payload: ${JSON.stringify(actionParameters.userData)}`
 		)
 
 		try {

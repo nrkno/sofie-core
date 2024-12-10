@@ -1,6 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
 import { logger } from '../logging'
-import { getRandomId, protectString, generateTranslation as t, getHash } from '../../lib/lib'
+import { getRandomId, protectString, generateTranslation as t, getHash } from '../lib/tempLib'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ShowStyleBases, ShowStyleVariants, Studios, TriggeredActions } from '../collections'
@@ -441,13 +441,16 @@ export const addSteps = addMigrationSteps('0.1.0', [
 					frameRate: 25,
 					mediaPreviewsUrl: '',
 					minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
+					allowHold: false,
+					allowPieceDirectPlay: false,
+					enableBuckets: true,
 				},
 				mappingsWithOverrides: wrapDefaultObject({}),
 				blueprintConfigWithOverrides: wrapDefaultObject({}),
 				_rundownVersionHash: '',
-				routeSets: {},
-				routeSetExclusivityGroups: {},
-				packageContainers: {},
+				routeSetsWithOverrides: wrapDefaultObject({}),
+				routeSetExclusivityGroupsWithOverrides: wrapDefaultObject({}),
+				packageContainersWithOverrides: wrapDefaultObject({}),
 				thumbnailContainerIds: [],
 				previewContainerIds: [],
 				peripheralDeviceSettings: {

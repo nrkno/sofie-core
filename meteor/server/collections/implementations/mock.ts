@@ -9,8 +9,8 @@ import {
 	MongoCursor,
 	ObserveChangesCallbacks,
 	ObserveCallbacks,
-} from '../../../lib/collections/lib'
-import { PromisifyCallbacks } from '../../../lib/lib'
+} from '@sofie-automation/meteor-lib/dist/collections/lib'
+import { PromisifyCallbacks } from '@sofie-automation/shared-lib/dist/lib/types'
 import type { AnyBulkWriteOperation } from 'mongodb'
 import { AsyncOnlyMongoCollection } from '../collection'
 import { WrappedMongoCollectionBase, dePromiseObjectOfFunctions } from './base'
@@ -63,19 +63,19 @@ export class WrappedMockCollection<DBInterface extends { _id: ProtectedString<an
 		throw new Error('findWithCursor not supported in tests')
 	}
 
-	observeChanges(
+	async observeChanges(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'],
 		callbacks: PromisifyCallbacks<ObserveChangesCallbacks<DBInterface>>,
 		options?: FindOptions<DBInterface>
-	): Meteor.LiveQueryHandle {
+	): Promise<Meteor.LiveQueryHandle> {
 		return this.find(selector, options).observeChanges(dePromiseObjectOfFunctions(callbacks))
 	}
 
-	observe(
+	async observe(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'],
 		callbacks: PromisifyCallbacks<ObserveCallbacks<DBInterface>>,
 		options?: FindOptions<DBInterface>
-	): Meteor.LiveQueryHandle {
+	): Promise<Meteor.LiveQueryHandle> {
 		return this.find(selector, options).observe(dePromiseObjectOfFunctions(callbacks))
 	}
 

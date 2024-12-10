@@ -46,7 +46,7 @@ jobs:
           # setup zodern:types. No linters are setup, so this simply installs the packages
           meteor lint
 
-          meteor yarn ci:lint
+          meteor npm run ci:lint
         env:
           CI: true
 
@@ -85,12 +85,12 @@ jobs:
           # setup zodern:types. No linters are setup, so this simply installs the packages
           meteor lint
 
-          NODE_OPTIONS="--max-old-space-size=6144" meteor yarn unitci --force-exit
+          NODE_OPTIONS="--max-old-space-size=6144" meteor npm run unitci --force-exit
         env:
           CI: true
       - name: Send coverage
         if: ((github.event_name == 'pull_request') && (!startsWith(github.head_ref, 'release'))) || ((github.event_name == 'push') && (!startsWith(github.ref_name, 'release')))
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
@@ -184,11 +184,18 @@ jobs:
         run: |
           cd meteor
           yarn inject-git-hash
+      - name: Prepare webui for meteor build
+        if: steps.check-build-and-push.outputs.enable == 'true'
+        run: |
+          rm -Rf meteor/public
+          cp -R packages/webui/dist meteor/public
       - name: Meteor Build
         if: steps.check-build-and-push.outputs.enable == 'true'
         run: |
           cd meteor
           NODE_OPTIONS="--max-old-space-size=4096" METEOR_DEBUG_BUILD=1 meteor build --allow-superuser --directory .
+          mv bundle/programs/web.browser/assets/ bundle/programs/web.browser/app/assets/ || true
+
       - name: Meteor Bundle NPM Build
         if: steps.check-build-and-push.outputs.enable == 'true'
         run: |
@@ -239,7 +246,9 @@ jobs:
           echo "image=$image" >> $GITHUB_OUTPUT
       - name: Trivy scanning
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@0.29.0
+        env:
+          TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db
         with:
           image-ref: "${{ steps.trivy-image.outputs.image }}"
           format: "table"
@@ -388,7 +397,9 @@ jobs:
           echo "image=$image" >> $GITHUB_OUTPUT
       - name: Trivy scanning
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@0.29.0
+        env:
+          TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db
         with:
           image-ref: "${{ steps.trivy-image.outputs.image }}"
           format: "table"
@@ -422,9 +433,11 @@ jobs:
           - mos-gateway
           - corelib
           - shared-lib
+          - meteor-lib
           - job-worker
           - openapi
           - live-status-gateway
+          - webui
 
     steps:
       - uses: actions/checkout@v4
@@ -467,7 +480,7 @@ jobs:
           - blueprints-integration
           - server-core-integration
           - shared-lib
-        node-version: [14.x, 16.x, 18.x, 20.x]
+        node-version: [14.x, 18.x, 20.x, 22.x]
         include:
           # include additional configs, to run certain packages only for a certain version of node
           - node-version: 14.x
@@ -477,11 +490,11 @@ jobs:
             package-name: job-worker
             send-coverage: true
           # manual openapi to avoid testing for 14.x
-          - node-version: 16.x
-            package-name: openapi
           - node-version: 18.x
             package-name: openapi
           - node-version: 20.x
+            package-name: openapi
+          - node-version: 22.x
             package-name: openapi
           # No tests for the gateways yet
           # - node-version: 18.x
@@ -490,6 +503,15 @@ jobs:
           #   package-name: mos-gateway
           - node-version: 18.x
             package-name: live-status-gateway
+            send-coverage: true
+          - node-version: 18.x
+            package-name: webui
+          # manual meteor-lib as it only needs a couple of versions
+          - node-version: 18.x
+            package-name: meteor-lib
+            send-coverage: true
+          - node-version: 14.x
+            package-name: meteor-lib
 
     steps:
       - uses: actions/checkout@v4
@@ -520,7 +542,7 @@ jobs:
         env:
           CI: true
       - name: Send coverage
-        if: (matrix.node-version == '16.x' || matrix.send-coverage == true) && ((github.event_name == 'pull_request') && ((!startsWith(github.head_ref, 'release'))) || ((github.event_name == 'push') && (!startsWith(github.ref_name, 'release'))))
+        if: (matrix.node-version == '18.x' || matrix.send-coverage == true) && ((github.event_name == 'pull_request') && ((!startsWith(github.head_ref, 'release'))) || ((github.event_name == 'push') && (!startsWith(github.ref_name, 'release'))))
         uses: codecov/codecov-action@v4
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
@@ -569,13 +591,17 @@ jobs:
           yarn
         env:
           CI: true
-      - name: Run generator
+      - name: Build OpenAPI client library
         run: |
           cd packages/openapi
-
+          yarn build
+        env:
+          CI: true
+      - name: Generate OpenAPI docs and server
+        run: |
+          cd packages/openapi
           yarn gendocs
           yarn genserver
-          yarn genclient:ts
         env:
           CI: true
 
@@ -664,7 +690,7 @@ jobs:
           else
             # make dependencies of `determine-npm-tag` available
             yarn install --mode=skip-build
-            
+
             cd packages
             PACKAGE_NAME="@sofie-automation/shared-lib"
             PUBLISHED_VERSION=$(yarn npm info --json $PACKAGE_NAME | jq -c '.version' -r)
@@ -679,6 +705,13 @@ jobs:
         if: ${{ steps.do-publish.outputs.tag }}
         run: |
           cd packages
+          yarn build
+        env:
+          CI: true
+      - name: Build OpenAPI client library
+        if: ${{ steps.do-publish.outputs.tag }}
+        run: |
+          cd packages/openapi
           yarn build
         env:
           CI: true

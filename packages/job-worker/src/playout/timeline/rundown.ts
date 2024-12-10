@@ -146,7 +146,20 @@ export function buildTimelineObjsForRundown(
 			// If there is a valid autonext out of the current part, then calculate the duration
 			currentPartEnable.duration =
 				partInstancesInfo.current.partInstance.part.expectedDuration +
-				partInstancesInfo.current.calculatedTimings.toPartDelay
+				partInstancesInfo.current.calculatedTimings.toPartDelay +
+				partInstancesInfo.current.calculatedTimings.toPartPostroll // autonext should have the postroll added to it to not confuse the timeline
+
+			if (
+				typeof currentPartEnable.start === 'number' &&
+				currentPartEnable.start + currentPartEnable.duration < getCurrentTime()
+			) {
+				logger.warn('Prevented setting the end of an autonext in the past')
+				// note - this will cause a small glitch on air where the next part is skipped into because this calculation does not account
+				// for the time it takes between timeline generation and timeline execution. That small glitch is preferable to setting the time
+				// very far in the past however. To do this properly we should support setting the "end" to "now" and have that calculated after
+				// timeline generation as we do for start times.
+				currentPartEnable.duration = getCurrentTime() - currentPartEnable.start
+			}
 		}
 		const currentPartGroup = createPartGroup(partInstancesInfo.current.partInstance, currentPartEnable)
 
@@ -266,7 +279,9 @@ function generateCurrentInfinitePieceObjects(
 	const pieceEnable = getPieceEnableInsidePart(
 		pieceInstance,
 		currentPartInstanceTimings,
-		timingContext.currentPartGroup.id
+		timingContext.currentPartGroup.id,
+		timingContext.currentPartGroup.enable.end !== undefined ||
+			timingContext.currentPartGroup.enable.duration !== undefined
 	)
 
 	let nowInParent = currentPartInfo.nowInPart // Where is 'now' inside of the infiniteGroup?
@@ -313,8 +328,17 @@ function generateCurrentInfinitePieceObjects(
 		infiniteGroup.enable.duration = infiniteInNextPart.piece.enable.duration
 	}
 
-	// If this piece does not continue in the next part, then set it to end with the part it belongs to
-	if (
+	const pieceInstanceWithUpdatedEndCap: PieceInstanceWithTimings = { ...pieceInstance }
+	// Give the infinite group and end cap when the end of the piece is known
+	if (pieceInstance.resolvedEndCap) {
+		// If the cap is a number, it is relative to the part, not the parent group so needs to be handled here
+		if (typeof pieceInstance.resolvedEndCap === 'number') {
+			infiniteGroup.enable.end = `#${timingContext.currentPartGroup.id}.start + ${pieceInstance.resolvedEndCap}`
+			delete infiniteGroup.enable.duration
+			delete pieceInstanceWithUpdatedEndCap.resolvedEndCap
+		}
+	} else if (
+		// If this piece does not continue in the next part, then set it to end with the part it belongs to
 		!infiniteInNextPart &&
 		currentPartInfo.partInstance.part.autoNext &&
 		infiniteGroup.enable.duration === undefined &&
@@ -340,7 +364,7 @@ function generateCurrentInfinitePieceObjects(
 			activePlaylist._id,
 			infiniteGroup,
 			nowInParent,
-			pieceInstance,
+			pieceInstanceWithUpdatedEndCap,
 			pieceEnable,
 			0,
 			groupClasses,

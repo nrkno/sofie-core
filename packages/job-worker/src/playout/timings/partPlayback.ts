@@ -7,7 +7,7 @@ import { selectNextPart } from '../selectNextPart'
 import { setNextPart } from '../setNext'
 import { updateTimeline } from '../timeline/generate'
 import { getCurrentTime } from '../../lib'
-import { afterTake, clearQueuedSegmentId, resetPreviousSegment, updatePartInstanceOnTake } from '../take'
+import { afterTake, clearQueuedSegmentId, resetPreviousSegmentIfLooping, updatePartInstanceOnTake } from '../take'
 import { INCORRECT_PLAYING_PART_DEBOUNCE, RESET_IGNORE_ERRORS } from '../constants'
 import { Time } from '@sofie-automation/blueprints-integration'
 
@@ -29,7 +29,7 @@ export async function onPartPlaybackStarted(
 	const playingPartInstance = playoutModel.getPartInstance(data.partInstanceId)
 	if (!playingPartInstance)
 		throw new Error(
-			`PartInstance "${data.partInstanceId}" in RundownPlayst "${playoutModel.playlistId}" not found!`
+			`PartInstance "${data.partInstanceId}" in RundownPlaylist "${playoutModel.playlistId}" not found!`
 		)
 
 	// make sure we don't run multiple times, even if TSR calls us multiple times
@@ -73,7 +73,7 @@ export async function onPartPlaybackStarted(
 			const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 			updatePartInstanceOnTake(
 				context,
-				playoutModel.playlist,
+				playoutModel,
 				showStyle,
 				blueprint,
 				rundown.rundown,
@@ -82,7 +82,7 @@ export async function onPartPlaybackStarted(
 			)
 
 			clearQueuedSegmentId(playoutModel, playingPartInstance.partInstance, playlist.nextPartInfo)
-			resetPreviousSegment(playoutModel)
+			resetPreviousSegmentIfLooping(context, playoutModel) // Note: rare edgecase of auto-nexting into a loop causing reset of a segment outside of the loop; is it worth fixing?
 
 			// Update the next partinstance
 			const nextPart = selectNextPart(
@@ -91,9 +91,11 @@ export async function onPartPlaybackStarted(
 				playingPartInstance.partInstance,
 				null,
 				playoutModel.getAllOrderedSegments(),
-				playoutModel.getAllOrderedParts()
+				playoutModel.getAllOrderedParts(),
+				{ ignoreUnplayable: true, ignoreQuickLoop: false }
 			)
 			await setNextPart(context, playoutModel, nextPart, false)
+			playoutModel.updateQuickLoopState()
 
 			// complete the take
 			await afterTake(context, playoutModel, playingPartInstance)
@@ -176,26 +178,32 @@ export function reportPartInstanceHasStarted(
 	partInstance: PlayoutPartInstanceModel,
 	timestamp: Time
 ): void {
-	if (partInstance) {
-		const timestampUpdated = partInstance.setReportedStartedPlayback(timestamp)
-		if (timestamp && !playoutModel.isMultiGatewayMode) {
+	const timestampUpdated = partInstance.setReportedStartedPlayback(timestamp)
+
+	if (!playoutModel.isMultiGatewayMode) {
+		if (timestamp) {
 			partInstance.setPlannedStartedPlayback(timestamp)
 		}
-
 		const previousPartInstance = playoutModel.previousPartInstance
-		if (timestampUpdated && !playoutModel.isMultiGatewayMode && previousPartInstance) {
+		if (timestampUpdated && previousPartInstance) {
 			// Ensure the plannedStoppedPlayback is set for the previous partinstance too
 			previousPartInstance.setPlannedStoppedPlayback(timestamp)
 		}
+	}
 
-		// Update the playlist:
-		if (!partInstance.partInstance.part.untimed) {
-			playoutModel.setRundownStartedPlayback(partInstance.partInstance.rundownId, timestamp)
-		}
+	// Update the playlist:
+	if (!partInstance.partInstance.part.untimed) {
+		playoutModel.setRundownStartedPlayback(partInstance.partInstance.rundownId, timestamp)
+	}
 
-		if (timestampUpdated) {
-			playoutModel.queuePartInstanceTimingEvent(partInstance.partInstance._id)
-		}
+	if (
+		partInstance.partInstance.segmentPlayoutId !== playoutModel.previousPartInstance?.partInstance.segmentPlayoutId
+	) {
+		playoutModel.setSegmentStartedPlayback(partInstance.partInstance.segmentPlayoutId, timestamp)
+	}
+
+	if (timestampUpdated) {
+		playoutModel.queuePartInstanceTimingEvent(partInstance.partInstance._id)
 	}
 }
 

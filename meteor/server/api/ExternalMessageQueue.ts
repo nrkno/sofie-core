@@ -1,11 +1,14 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from '../../lib/check'
+import { check } from '../lib/check'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
-import { deferAsync, getCurrentTime } from '../../lib/lib'
+import { deferAsync, getCurrentTime, MeteorStartupAsync } from '../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
-import { NewExternalMessageQueueAPI, ExternalMessageQueueAPIMethods } from '../../lib/api/ExternalMessageQueue'
+import {
+	NewExternalMessageQueueAPI,
+	ExternalMessageQueueAPIMethods,
+} from '@sofie-automation/meteor-lib/dist/api/ExternalMessageQueue'
 import { StatusObject, setSystemStatus } from '../systemStatus/systemStatus'
-import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
+import { MethodContextAPI, MethodContext } from './methodContext'
 import { StudioContentWriteAccess } from '../security/studio'
 import { ExternalMessageQueueObjId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ExternalMessageQueue } from '../collections'
@@ -47,18 +50,19 @@ function updateExternalMessageQueueStatus(): void {
 	}
 }
 
-ExternalMessageQueue.observeChanges(
-	{
-		sent: { $not: { $gt: 0 } },
-		tryCount: { $gt: 3 },
-	},
-	{
-		added: updateExternalMessageQueueStatus,
-		changed: updateExternalMessageQueueStatus,
-		removed: updateExternalMessageQueueStatus,
-	}
-)
-Meteor.startup(() => {
+MeteorStartupAsync(async () => {
+	await ExternalMessageQueue.observeChanges(
+		{
+			sent: { $not: { $gt: 0 } },
+			tryCount: { $gt: 3 },
+		},
+		{
+			added: updateExternalMessageQueueStatus,
+			changed: updateExternalMessageQueueStatus,
+			removed: updateExternalMessageQueueStatus,
+		}
+	)
+
 	updateExternalMessageQueueStatus()
 	// triggerdoMessageQueue(5000)
 })

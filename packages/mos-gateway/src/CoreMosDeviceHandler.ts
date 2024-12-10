@@ -27,6 +27,7 @@ import {
 	MosTypes,
 	IMOSString128,
 	stringifyMosObject,
+	stringifyMosType,
 } from '@mos-connection/connector'
 import * as _ from 'underscore'
 import { MosHandler } from './mosHandler'
@@ -309,9 +310,13 @@ export class CoreMosDeviceHandler {
 				(change) => change.storyID === this.mosTypes.mosString128.stringify(story.ID)
 			)
 			if (pendingChange) {
-				const pendingChangeItem = story.Body.find(
-					(item) => item.Type === 'storyItem' && pendingChange.itemID === item.Content.ID.toString()
-				)
+				const pendingChangeItem = story.Body.find((item) => {
+					const content = item.Content && Array.isArray(item.Content) ? item.Content[0] : item.Content
+					const contentId =
+						typeof content === 'object' && content.ID ? stringifyMosType(content.ID, this.mosTypes) : ''
+
+					return item.Type === 'storyItem' && pendingChange.itemID === contentId
+				})
 				if (pendingChangeItem && deepMatch(pendingChangeItem.Content, pendingChange.itemDiff, true)) {
 					pendingChange.resolve()
 				}
@@ -451,7 +456,7 @@ export class CoreMosDeviceHandler {
 			}, 2000)
 		})
 	}
-	async dispose(): Promise<void> {
+	async dispose(subdevice: 'keepSubDevice' | 'removeSubDevice' = 'keepSubDevice'): Promise<void> {
 		this._observers.forEach((obs) => obs.stop())
 
 		await this.core.setStatus({
@@ -459,6 +464,7 @@ export class CoreMosDeviceHandler {
 			messages: ['Uninitialized'],
 		})
 
+		if (subdevice === 'removeSubDevice') await this.core.unInitialize()
 		await this.core.destroy()
 	}
 	killProcess(): void {

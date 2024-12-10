@@ -1,4 +1,4 @@
-import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BlueprintId, TimelineHash } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { JobContext } from '../../jobs'
 import { ReadonlyDeep } from 'type-fest'
 import {
@@ -11,8 +11,6 @@ import {
 import {
 	deserializeTimelineBlob,
 	OnGenerateTimelineObjExt,
-	serializeTimelineBlob,
-	TimelineComplete,
 	TimelineCompleteGenerationVersions,
 	TimelineEnableExt,
 	TimelineObjGeneric,
@@ -21,7 +19,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { applyToArray, clone, getRandomId, literal, normalizeArray, omit } from '@sofie-automation/corelib/dist/lib'
+import { applyToArray, clone, literal, normalizeArray, omit } from '@sofie-automation/corelib/dist/lib'
 import { PlayoutModel } from '../model/PlayoutModel'
 import { logger } from '../../logging'
 import { getCurrentTime, getSystemVersion } from '../../lib'
@@ -45,11 +43,7 @@ import { buildTimelineObjsForRundown, RundownTimelineTimingContext } from './run
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { deNowifyMultiGatewayTimeline } from './multi-gateway'
 import { validateTimeline } from 'superfly-timeline'
-import {
-	calculatePartTimings,
-	getPartTimingsOrDefaults,
-	PartCalculatedTimings,
-} from '@sofie-automation/corelib/dist/playout/timings'
+import { getPartTimingsOrDefaults, PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { applyAbPlaybackForTimeline } from '../abPlayback'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { PlayoutPartInstanceModel } from '../model/PlayoutPartInstanceModel'
@@ -133,13 +127,13 @@ export async function updateStudioTimeline(
 		logAnyRemainingNowTimes(context, baselineObjects)
 	}
 
-	saveTimeline(context, playoutModel, baselineObjects, versions)
+	const timelineHash = saveTimeline(context, playoutModel, baselineObjects, versions)
 
 	if (studioBaseline) {
 		updateBaselineExpectedPackagesOnStudio(context, playoutModel, studioBaseline)
 	}
 
-	logger.debug('updateStudioTimeline done!')
+	logger.verbose(`updateStudioTimeline done, hash: "${timelineHash}"`)
 	if (span) span.end()
 }
 
@@ -163,9 +157,8 @@ export async function updateTimeline(context: JobContext, playoutModel: PlayoutM
 		logAnyRemainingNowTimes(context, timelineObjs)
 	}
 
-	saveTimeline(context, playoutModel, timelineObjs, versions)
-
-	logger.debug('updateTimeline done!')
+	const timelineHash = saveTimeline(context, playoutModel, timelineObjs, versions)
+	logger.verbose(`updateTimeline done, hash: "${timelineHash}"`)
 
 	if (span) span.end()
 }
@@ -204,31 +197,30 @@ function preserveOrReplaceNowTimesInObjects(
 }
 
 function logAnyRemainingNowTimes(_context: JobContext, timelineObjs: Array<TimelineObjGeneric>): void {
-	const ids: string[] = []
-
-	const hasNow = (obj: TimelineEnableExt | TimelineEnableExt[]) => {
-		let res = false
-		applyToArray(obj, (enable) => {
-			if (enable.start === 'now' || enable.end === 'now') res = true
-		})
-		return res
-	}
+	const badTimelineObjs: any[] = []
 
 	for (const obj of timelineObjs) {
 		if (hasNow(obj.enable)) {
-			ids.push(obj.id)
+			badTimelineObjs.push(obj)
 		}
 
 		for (const kf of obj.keyframes || []) {
 			if (hasNow(kf.enable)) {
-				ids.push(kf.id)
+				badTimelineObjs.push(kf)
 			}
 		}
 	}
 
-	if (ids.length) {
-		logger.error(`Some timeline objects have unexpected now times!: ${JSON.stringify(ids)}`)
+	if (badTimelineObjs.length) {
+		logger.error(`Some timeline objects have unexpected now times!: ${JSON.stringify(badTimelineObjs)}`)
 	}
+}
+function hasNow(obj: TimelineEnableExt | TimelineEnableExt[]) {
+	let res = false
+	applyToArray(obj, (enable) => {
+		if (enable.start === 'now' || enable.end === 'now') res = true
+	})
+	return res
 }
 
 /** Store the timelineobjects into the model, and perform any post-save actions */
@@ -237,19 +229,13 @@ export function saveTimeline(
 	studioPlayoutModel: StudioPlayoutModelBase,
 	timelineObjs: TimelineObjGeneric[],
 	generationVersions: TimelineCompleteGenerationVersions
-): void {
-	const newTimeline: TimelineComplete = {
-		_id: context.studio._id,
-		timelineHash: getRandomId(), // randomized on every timeline change
-		generated: getCurrentTime(),
-		timelineBlob: serializeTimelineBlob(timelineObjs),
-		generationVersions: generationVersions,
-	}
-
-	studioPlayoutModel.setTimeline(timelineObjs, generationVersions)
+): TimelineHash {
+	const newTimeline = studioPlayoutModel.setTimeline(timelineObjs, generationVersions)
 
 	// Also do a fast-track for the timeline to be published faster:
 	context.hackPublishTimelineToFastTrack(newTimeline)
+
+	return newTimeline.timelineHash
 }
 
 export interface SelectedPartInstancesTimelineInfo {
@@ -270,25 +256,24 @@ function getPartInstanceTimelineInfo(
 	sourceLayers: SourceLayers,
 	partInstance: PlayoutPartInstanceModel | null
 ): SelectedPartInstanceTimelineInfo | undefined {
-	if (partInstance) {
-		const partStarted = partInstance.partInstance.timings?.plannedStartedPlayback
-		const nowInPart = partStarted === undefined ? 0 : currentTime - partStarted
-		const pieceInstances = processAndPrunePieceInstanceTimings(
-			sourceLayers,
-			partInstance.pieceInstances.map((p) => p.pieceInstance),
-			nowInPart
-		)
+	if (!partInstance) return undefined
 
-		return {
-			partInstance: partInstance.partInstance,
-			pieceInstances,
-			nowInPart,
-			partStarted,
-			// Approximate `calculatedTimings`, for the partInstances which already have it cached
-			calculatedTimings: getPartTimingsOrDefaults(partInstance.partInstance, pieceInstances),
-		}
-	} else {
-		return undefined
+	const partStarted = partInstance.partInstance.timings?.plannedStartedPlayback
+	const nowInPart = partStarted === undefined ? 0 : currentTime - partStarted
+	const pieceInstances = processAndPrunePieceInstanceTimings(
+		sourceLayers,
+		partInstance.pieceInstances.map((p) => p.pieceInstance),
+		nowInPart
+	)
+
+	const partInstanceWithOverrides = partInstance.getPartInstanceWithQuickLoopOverrides()
+	return {
+		partInstance: partInstanceWithOverrides,
+		pieceInstances,
+		nowInPart,
+		partStarted,
+		// Approximate `calculatedTimings`, for the partInstances which already have it cached
+		calculatedTimings: getPartTimingsOrDefaults(partInstanceWithOverrides, pieceInstances),
 	}
 }
 
@@ -333,16 +318,13 @@ async function getTimelineRundown(
 				next: getPartInstanceTimelineInfo(currentTime, showStyle.sourceLayers, nextPartInstance),
 				previous: getPartInstanceTimelineInfo(currentTime, showStyle.sourceLayers, previousPartInstance),
 			}
-			if (partInstancesInfo.next) {
+
+			if (partInstancesInfo.next && nextPartInstance) {
 				// the nextPartInstance doesn't have accurate cached `calculatedTimings` yet, so calculate a prediction
-				partInstancesInfo.next.calculatedTimings = calculatePartTimings(
-					playoutModel.playlist.holdState,
-					partInstancesInfo.current?.partInstance?.part,
-					partInstancesInfo.current?.pieceInstances?.map?.((p) => p.piece),
-					partInstancesInfo.next.partInstance.part,
-					partInstancesInfo.next.pieceInstances
-						.filter((p) => !p.infinite || p.infinite.infiniteInstanceIndex === 0)
-						.map((p) => p.piece)
+				partInstancesInfo.next.calculatedTimings = playoutModel.calculatePartTimings(
+					currentPartInstance,
+					nextPartInstance,
+					partInstancesInfo.next.pieceInstances // already processed and pruned
 				)
 			}
 

@@ -18,6 +18,7 @@ import { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { CoreRundownPlaylistSnapshot } from '../snapshots'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { ITranslatableMessage } from '../TranslatableMessage'
+import { QuickLoopMarker } from '../dataModel/RundownPlaylist'
 
 /** List of all Jobs performed by the Worker related to a certain Studio */
 export enum StudioJobs {
@@ -187,6 +188,22 @@ export enum StudioJobs {
 	 * Activate AdlibTesting (Rehearsal Mode) mode for the Rundown containing the nexted Part.
 	 */
 	ActivateAdlibTesting = 'activateAdlibTesting',
+
+	/**
+	 * Set QuickLoop marker
+	 */
+	SetQuickLoopMarker = 'setQuickLoopMarker',
+
+	/**
+	 * Clear all QuickLoop markers
+	 */
+	ClearQuickLoopMarkers = 'clearQuickLoopMarkers',
+
+	/**
+	 * Switch the route of the studio
+	 * for use in ad.lib actions and other triggers
+	 */
+	SwitchRouteSet = 'switchRouteSet',
 }
 
 export interface RundownPlayoutPropsBase {
@@ -243,6 +260,7 @@ export interface ExecuteActionProps extends RundownPlayoutPropsBase {
 	actionId: string
 	userData: any
 	triggerMode?: string
+	actionOptions?: { [key: string]: any }
 }
 export interface ExecuteBucketAdLibOrActionProps extends RundownPlayoutPropsBase {
 	bucketId: BucketId
@@ -334,6 +352,17 @@ export interface ActivateAdlibTestingProps extends RundownPlayoutPropsBase {
 	rundownId: RundownId
 }
 
+export interface SetQuickLoopMarkerProps extends RundownPlayoutPropsBase {
+	type: 'start' | 'end'
+	marker: QuickLoopMarker | null
+}
+export type ClearQuickLoopMarkersProps = RundownPlayoutPropsBase
+
+export interface SwitchRouteSetProps {
+	routeSetId: string
+	state: boolean | 'toggle'
+}
+
 /**
  * Set of valid functions, of form:
  * `id: (data) => return`
@@ -385,6 +414,11 @@ export type StudioJobFunc = {
 	[StudioJobs.BlueprintIgnoreFixUpConfigForStudio]: () => void
 
 	[StudioJobs.ActivateAdlibTesting]: (data: ActivateAdlibTestingProps) => void
+
+	[StudioJobs.SetQuickLoopMarker]: (data: SetQuickLoopMarkerProps) => void
+	[StudioJobs.ClearQuickLoopMarkers]: (data: ClearQuickLoopMarkersProps) => void
+
+	[StudioJobs.SwitchRouteSet]: (data: SwitchRouteSetProps) => void
 }
 
 export function getStudioQueueName(id: StudioId): string {

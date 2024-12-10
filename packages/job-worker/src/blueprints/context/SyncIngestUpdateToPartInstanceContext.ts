@@ -22,6 +22,7 @@ import {
 	IBlueprintPieceObjectsSampleKeys,
 	convertPieceInstanceToBlueprints,
 	convertPartInstanceToBlueprints,
+	convertPartialBlueprintMutablePartToCore,
 } from './lib'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -165,15 +166,22 @@ export class SyncIngestUpdateToPartInstanceContext
 		if (!this.partInstance) throw new Error(`PartInstance has been removed`)
 
 		// for autoNext, the new expectedDuration cannot be shorter than the time a part has been on-air for
-		if (updatePart.expectedDuration && (updatePart.autoNext ?? this.partInstance.partInstance.part.autoNext)) {
+		const expectedDuration = updatePart.expectedDuration ?? this.partInstance.partInstance.part.expectedDuration
+		const autoNext = updatePart.autoNext ?? this.partInstance.partInstance.part.autoNext
+		if (expectedDuration && autoNext) {
 			const onAir = this.partInstance.partInstance.timings?.reportedStartedPlayback
 			const minTime = Date.now() - (onAir ?? 0) + EXPECTED_INGEST_TO_PLAYOUT_TIME
-			if (onAir && minTime > updatePart.expectedDuration) {
+			if (onAir && minTime > expectedDuration) {
 				updatePart.expectedDuration = minTime
 			}
 		}
 
-		if (!this.partInstance.updatePartProps(updatePart)) {
+		const playoutUpdatePart = convertPartialBlueprintMutablePartToCore(
+			updatePart,
+			this.showStyleCompound.blueprintId
+		)
+
+		if (!this.partInstance.updatePartProps(playoutUpdatePart)) {
 			throw new Error(`Cannot update PartInstance. Some valid properties must be defined`)
 		}
 

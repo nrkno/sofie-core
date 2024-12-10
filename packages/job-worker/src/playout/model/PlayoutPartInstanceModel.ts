@@ -6,6 +6,7 @@ import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { IBlueprintMutatablePart, PieceLifespan, Time } from '@sofie-automation/blueprints-integration'
 import { PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { PlayoutPieceInstanceModel } from './PlayoutPieceInstanceModel'
+import { CoreUserEditingDefinition } from '@sofie-automation/corelib/dist/dataModel/UserEditingDefinitions'
 
 /**
  * Token returned when making a backup copy of a PlayoutPartInstanceModel
@@ -13,6 +14,10 @@ import { PlayoutPieceInstanceModel } from './PlayoutPieceInstanceModel'
  */
 export interface PlayoutPartInstanceModelSnapshot {
 	__isPlayoutPartInstanceModelBackup: true
+}
+
+export interface PlayoutMutatablePart extends Omit<IBlueprintMutatablePart, 'userEditOperations'> {
+	userEditOperations?: CoreUserEditingDefinition[]
 }
 
 export interface PlayoutPartInstanceModel {
@@ -176,6 +181,11 @@ export interface PlayoutPartInstanceModel {
 	 * @param time Reported stopped time
 	 */
 	setReportedStoppedPlayback(time: Time): boolean
+	/**
+	 * Set the Reported stopped playback time, including still-playing PieceInstances
+	 * @param time Reported stopped time on all available objects
+	 */
+	setReportedStoppedPlaybackWithPieceInstances(time: Time): boolean
 
 	/**
 	 * Set the rank of this PartInstance, to update it's position in the Segment
@@ -207,10 +217,21 @@ export interface PlayoutPartInstanceModel {
 	 * @param props New properties for the Part being wrapped
 	 * @returns True if any valid properties were provided
 	 */
-	updatePartProps(props: Partial<IBlueprintMutatablePart>): boolean
+	updatePartProps(props: Partial<PlayoutMutatablePart>): boolean
 
 	/**
 	 * Ensure that this PartInstance is setup correctly for being in the AdlibTesting Segment
 	 */
 	validateAdlibTestingSegmentProperties(): void
+
+	/**
+	 * Whether this part instance is too close to autoNexting out of, to perform operations that might cause glitches
+	 * @param isTake
+	 */
+	isTooCloseToAutonext(isTake: boolean): boolean
+
+	/**
+	 * Returns the contained partInstance, with QuickLoop overrides applied, if needed
+	 */
+	getPartInstanceWithQuickLoopOverrides(): ReadonlyDeep<DBPartInstance>
 }

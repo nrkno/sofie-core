@@ -1,8 +1,8 @@
 import { Meteor } from 'meteor/meteor'
-import { check, Match } from '../../lib/check'
-import { meteorPublish, AutoFillSelector } from './lib'
-import { MeteorPubSub } from '../../lib/api/pubsub'
-import { getActiveRoutes, getRoutedMappings } from '../../lib/collections/Studios'
+import { check, Match } from '../lib/check'
+import { meteorPublish, AutoFillSelector } from './lib/lib'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
+import { getActiveRoutes, getRoutedMappings } from '@sofie-automation/meteor-lib/dist/collections/Studios'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
 import { StudioReadAccess } from '../security/studio'
@@ -11,12 +11,13 @@ import { NoSecurityReadAccess } from '../security/noSecurity'
 import {
 	CustomPublish,
 	meteorCustomPublish,
+	SetupObserversResult,
 	setUpOptimizedObserverArray,
 	TriggerUpdate,
 } from '../lib/customPublication'
-import { literal } from '../../lib/lib'
+import { literal } from '../lib/tempLib'
 import { ReadonlyDeep } from 'type-fest'
-import { FindOptions } from '../../lib/collections/lib'
+import { FindOptions } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
@@ -170,7 +171,7 @@ interface RoutedMappingsUpdateProps {
 async function setupMappingsPublicationObservers(
 	args: ReadonlyDeep<RoutedMappingsArgs>,
 	triggerUpdate: TriggerUpdate<RoutedMappingsUpdateProps>
-): Promise<Meteor.LiveQueryHandle[]> {
+): Promise<SetupObserversResult> {
 	// Set up observers:
 	return [
 		Studios.observeChanges(
@@ -202,7 +203,7 @@ async function manipulateMappingsPublicationData(
 	const studio = await Studios.findOneAsync(args.studioId)
 	if (!studio) return []
 
-	const routes = getActiveRoutes(studio.routeSets)
+	const routes = getActiveRoutes(applyAndValidateOverrides(studio.routeSetsWithOverrides).obj)
 	const rawMappings = applyAndValidateOverrides(studio.mappingsWithOverrides)
 	const routedMappings = getRoutedMappings(rawMappings.obj, routes)
 

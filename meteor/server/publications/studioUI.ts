@@ -1,16 +1,16 @@
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
-import { CustomCollectionName, MeteorPubSub } from '../../lib/api/pubsub'
-import { UIStudio } from '../../lib/api/studios'
+import { CustomCollectionName, MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
+import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { Complete, literal } from '../../lib/lib'
+import { Complete, literal } from '../lib/tempLib'
 import {
 	CustomPublishCollection,
 	meteorCustomPublish,
 	setUpCollectionOptimizedObserver,
+	SetupObserversResult,
 	TriggerUpdate,
 } from '../lib/customPublication'
 import { logger } from '../logging'
@@ -38,25 +38,31 @@ function convertDocument(studio: Pick<DBStudio, StudioFields>): UIStudio {
 
 		settings: studio.settings,
 
-		routeSets: studio.routeSets,
-		routeSetExclusivityGroups: studio.routeSetExclusivityGroups,
+		routeSets: applyAndValidateOverrides(studio.routeSetsWithOverrides).obj,
+		routeSetExclusivityGroups: applyAndValidateOverrides(studio.routeSetExclusivityGroupsWithOverrides).obj,
 	})
 }
 
-type StudioFields = '_id' | 'name' | 'mappingsWithOverrides' | 'settings' | 'routeSets' | 'routeSetExclusivityGroups'
+type StudioFields =
+	| '_id'
+	| 'name'
+	| 'mappingsWithOverrides'
+	| 'settings'
+	| 'routeSetsWithOverrides'
+	| 'routeSetExclusivityGroupsWithOverrides'
 const fieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBStudio, StudioFields>>>({
 	_id: 1,
 	name: 1,
 	mappingsWithOverrides: 1,
 	settings: 1,
-	routeSets: 1,
-	routeSetExclusivityGroups: 1,
+	routeSetsWithOverrides: 1,
+	routeSetExclusivityGroupsWithOverrides: 1,
 })
 
 async function setupUIStudioPublicationObservers(
 	args: ReadonlyDeep<UIStudioArgs>,
 	triggerUpdate: TriggerUpdate<UIStudioUpdateProps>
-): Promise<Meteor.LiveQueryHandle[]> {
+): Promise<SetupObserversResult> {
 	const trackChange = (id: StudioId): Partial<UIStudioUpdateProps> => ({
 		invalidateStudioIds: [id],
 	})

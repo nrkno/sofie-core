@@ -1,9 +1,13 @@
 import '../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
-import { protectString, literal, getRandomString } from '../../../lib/lib'
-import { RundownLayoutType, RundownLayout, CustomizableRegions } from '../../../lib/collections/RundownLayouts'
-import { MeteorCall } from '../../../lib/api/methods'
+import { protectString, literal, getRandomString } from '../../lib/tempLib'
+import {
+	RundownLayoutType,
+	RundownLayout,
+	CustomizableRegions,
+} from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
+import { MeteorCall } from '../methods'
 import { RundownLayoutId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownLayouts } from '../../collections'
 import { SupressLogMessages } from '../../../__mocks__/suppressLogging'

@@ -8,8 +8,9 @@ import {
 	MongoCursor,
 	ObserveChangesCallbacks,
 	ObserveCallbacks,
-} from '../../../lib/collections/lib'
-import { PromisifyCallbacks, makePromise } from '../../../lib/lib'
+} from '@sofie-automation/meteor-lib/dist/collections/lib'
+import { PromisifyCallbacks } from '@sofie-automation/shared-lib/dist/lib/types'
+import { makePromise } from '../../lib/lib'
 import type { AnyBulkWriteOperation } from 'mongodb'
 import { WrappedMongoCollectionBase, dePromiseObjectOfFunctions } from './base'
 import { AsyncOnlyMongoCollection } from '../collection'
@@ -47,20 +48,20 @@ export class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedStr
 		return this.find(selector as any, options)
 	}
 
-	observeChanges(
+	async observeChanges(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'],
 		callbacks: PromisifyCallbacks<ObserveChangesCallbacks<DBInterface>>,
 		options?: FindOptions<DBInterface>
-	): Meteor.LiveQueryHandle {
-		return this.find(selector as any, options).observeChanges(dePromiseObjectOfFunctions(callbacks))
+	): Promise<Meteor.LiveQueryHandle> {
+		return this.find(selector as any, options).observeChangesAsync(dePromiseObjectOfFunctions(callbacks))
 	}
 
-	observe(
+	async observe(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'],
 		callbacks: PromisifyCallbacks<ObserveCallbacks<DBInterface>>,
 		options?: FindOptions<DBInterface>
-	): Meteor.LiveQueryHandle {
-		return this.find(selector as any, options).observe(dePromiseObjectOfFunctions(callbacks))
+	): Promise<Meteor.LiveQueryHandle> {
+		return this.find(selector as any, options).observeAsync(dePromiseObjectOfFunctions(callbacks))
 	}
 
 	async insertAsync(doc: DBInterface): Promise<DBInterface['_id']> {

@@ -1,6 +1,6 @@
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Meteor } from 'meteor/meteor'
-import { MongoCursor } from '../../../lib/collections/lib'
+import { MongoCursor } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import type { Collection } from 'mongodb'
 import { AsyncOnlyMongoCollection, AsyncOnlyReadOnlyMongoCollection } from '../collection'
 
@@ -53,13 +53,15 @@ export class WrappedReadOnlyMongoCollection<DBInterface extends { _id: Protected
 		return this.#mutableCollection.findWithCursor(...args)
 	}
 
-	observeChanges(
+	async observeChanges(
 		...args: Parameters<AsyncOnlyReadOnlyMongoCollection<DBInterface>['observeChanges']>
-	): Meteor.LiveQueryHandle {
+	): Promise<Meteor.LiveQueryHandle> {
 		return this.#mutableCollection.observeChanges(...args)
 	}
 
-	observe(...args: Parameters<AsyncOnlyReadOnlyMongoCollection<DBInterface>['observe']>): Meteor.LiveQueryHandle {
+	async observe(
+		...args: Parameters<AsyncOnlyReadOnlyMongoCollection<DBInterface>['observe']>
+	): Promise<Meteor.LiveQueryHandle> {
 		return this.#mutableCollection.observe(...args)
 	}
 

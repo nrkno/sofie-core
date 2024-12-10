@@ -20,13 +20,13 @@
 		"unit:packages": "cd packages && run unit",
 		"check-types:meteor": "cd meteor && run check-types",
 		"test:meteor": "cd meteor && run test",
-		"lint:meteor": "cd meteor && meteor yarn lint",
-		"unit:meteor": "cd meteor && meteor yarn unit",
-		"meteor:run": "cd meteor && meteor yarn start",
+		"lint:meteor": "cd meteor && meteor npm run lint",
+		"unit:meteor": "cd meteor && meteor npm run unit",
+		"meteor:run": "cd meteor && meteor npm run start",
 		"lint": "run lint:meteor && run lint:packages",
 		"unit": "run unit:meteor && run unit:packages",
 		"validate:release": "yarn install && run install-and-build && run validate:release:packages && run validate:release:meteor",
-		"validate:release:meteor": "cd meteor && meteor yarn validate:prod-dependencies && meteor yarn license-validate && meteor yarn lint && meteor yarn test",
+		"validate:release:meteor": "cd meteor && meteor npm run validate:prod-dependencies && meteor npm run license-validate && meteor npm run lint && meteor npm run test",
 		"validate:release:packages": "cd packages && run validate:dependencies && run test",
 		"meteor": "cd meteor && meteor",
 		"docs:serve": "cd packages && run docs:serve",
@@ -36,9 +36,9 @@
 	"devDependencies": {
 		"concurrently": "^8.2.2",
 		"lint-staged": "^13.3.0",
-		"rimraf": "^5.0.5",
-		"semver": "^7.5.4",
-		"snyk-nodejs-lockfile-parser": "^1.52.11"
+		"rimraf": "^5.0.10",
+		"semver": "^7.6.3",
+		"snyk-nodejs-lockfile-parser": "^1.58.11"
 	},
 	"packageManager": "yarn@3.5.0"
 }

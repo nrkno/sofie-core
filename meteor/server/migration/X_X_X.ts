@@ -1,8 +1,12 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
-import { Rundowns } from '../collections'
-import { RundownOrphanedReason, RundownSource } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { PeripheralDeviceId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Studios } from '../collections'
+import { convertObjectIntoOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import {
+	StudioRouteSet,
+	StudioRouteSetExclusivityGroup,
+	StudioPackageContainer,
+} from '@sofie-automation/corelib/dist/dataModel/Studio'
 
 /*
  * **************************************************************************************
@@ -14,90 +18,210 @@ import { PeripheralDeviceId, RundownId } from '@sofie-automation/corelib/dist/da
  * **************************************************************************************
  */
 
-interface RemovedRundownProps {
-	/** The peripheral device the rundown originates from */
-	peripheralDeviceId?: PeripheralDeviceId
-	restoredFromSnapshotId?: RundownId
-	externalNRCSName: string
-}
-
 export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
+	// Add your migration here
+
 	{
-		id: `Rundowns without source`,
+		id: `convert routesets to ObjectWithOverrides`,
 		canBeRunAutomatically: true,
 		validate: async () => {
-			const objects = await Rundowns.findFetchAsync({
-				source: { $exists: false },
+			const studios = await Studios.findFetchAsync({
+				routeSets: { $exists: true },
+				routeSetsWithOverrides: { $exists: false },
 			})
 
-			if (objects.length > 0) {
-				return `object needs to be updated`
+			for (const studio of studios) {
+				//@ts-expect-error routeSets is not typed as ObjectWithOverrides
+				if (studio.routeSets) {
+					return 'routesets must be converted to an ObjectWithOverrides'
+				}
 			}
+
 			return false
 		},
 		migrate: async () => {
-			const objects = await Rundowns.findFetchAsync({
-				source: { $exists: false },
+			const studios = await Studios.findFetchAsync({
+				routeSets: { $exists: true },
+				routeSetsWithOverrides: { $exists: false },
 			})
-			for (const obj of objects) {
-				const oldPartialObj = obj as any as RemovedRundownProps
 
-				let newSource: RundownSource = {
-					type: 'http', // Fallback
-				}
-				if (oldPartialObj.peripheralDeviceId) {
-					newSource = {
-						type: 'nrcs',
-						peripheralDeviceId: oldPartialObj.peripheralDeviceId,
-						nrcsName: oldPartialObj.externalNRCSName,
-					}
-				} else if (oldPartialObj.restoredFromSnapshotId) {
-					newSource = {
-						type: 'snapshot',
-						rundownId: oldPartialObj.restoredFromSnapshotId,
-					}
-				}
+			for (const studio of studios) {
+				//@ts-expect-error routeSets is typed as Record<string, StudioRouteSet>
+				const oldRouteSets = studio.routeSets
 
-				await Rundowns.mutableCollection.updateAsync(obj._id, {
+				const newRouteSets = convertObjectIntoOverrides<StudioRouteSet>(oldRouteSets || {})
+
+				await Studios.updateAsync(studio._id, {
 					$set: {
-						source: newSource,
+						routeSetsWithOverrides: newRouteSets,
 					},
 					$unset: {
-						peripheralDeviceId: 1,
-						externalNrcsName: 1,
-						restoredFromSnapshotId: 1,
+						routeSets: 1,
 					},
 				})
 			}
 		},
 	},
 	{
-		id: `Rundowns remove orphaned FROM_SNAPSHOT`,
+		id: `add abPlayers object`,
 		canBeRunAutomatically: true,
 		validate: async () => {
-			const objects = await Rundowns.findFetchAsync({
-				orphaned: 'from-snapshot' as any,
-			})
+			const studios = await Studios.findFetchAsync({ routeSetsWithOverrides: { $exists: true } })
 
-			if (objects.length > 0) {
-				return `object needs to be updated`
+			for (const studio of studios) {
+				const routeSetsDefaults = studio.routeSetsWithOverrides.defaults as any as Record<
+					string,
+					StudioRouteSet
+				>
+				for (const key of Object.keys(routeSetsDefaults)) {
+					if (!routeSetsDefaults[key].abPlayers) {
+						return 'AB players must be added to routeSetsWithOverrides'
+					}
+				}
 			}
+
 			return false
 		},
 		migrate: async () => {
-			await Rundowns.mutableCollection.updateAsync(
-				{
-					orphaned: 'from-snapshot' as any,
-				},
-				{
-					$set: {
-						orphaned: RundownOrphanedReason.DELETED,
-					},
-				},
-				{
-					multi: true,
+			const studios = await Studios.findFetchAsync({ routeSetsWithOverrides: { $exists: true } })
+
+			for (const studio of studios) {
+				const newRouteSetswithOverrides = studio.routeSetsWithOverrides
+				for (const key of Object.keys(newRouteSetswithOverrides.defaults)) {
+					if (!newRouteSetswithOverrides.defaults[key].abPlayers) {
+						newRouteSetswithOverrides.defaults[key].abPlayers = []
+					}
 				}
-			)
+
+				await Studios.updateAsync(studio._id, {
+					$set: {
+						routeSetsWithOverrides: newRouteSetswithOverrides,
+					},
+				})
+			}
+		},
+	},
+	{
+		id: `convert routeSetExclusivityGroups to ObjectWithOverrides`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const studios = await Studios.findFetchAsync({
+				routeSetExclusivityGroups: { $exists: true },
+				routeSetExclusivityGroupsWithOverrides: { $exists: false },
+			})
+
+			for (const studio of studios) {
+				//@ts-expect-error routeSetExclusivityGroups is not typed as ObjectWithOverrides
+				if (studio.routeSetExclusivityGroups) {
+					return 'routesets must be converted to an ObjectWithOverrides'
+				}
+			}
+
+			return false
+		},
+		migrate: async () => {
+			const studios = await Studios.findFetchAsync({
+				routeSetExclusivityGroups: { $exists: true },
+				routeSetExclusivityGroupsWithOverrides: { $exists: false },
+			})
+
+			for (const studio of studios) {
+				//@ts-expect-error routeSets is typed as Record<string, StudioRouteSetExclusivityGroup>
+				const oldRouteSetExclusivityGroups = studio.routeSetExclusivityGroups
+
+				const newRouteSetExclusivityGroups = convertObjectIntoOverrides<StudioRouteSetExclusivityGroup>(
+					oldRouteSetExclusivityGroups || {}
+				)
+
+				await Studios.updateAsync(studio._id, {
+					$set: {
+						routeSetExclusivityGroupsWithOverrides: newRouteSetExclusivityGroups,
+					},
+					$unset: {
+						routeSetExclusivityGroups: 1,
+					},
+				})
+			}
+		},
+	},
+	{
+		id: `convert packageContainers to ObjectWithOverrides`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const studios = await Studios.findFetchAsync({
+				packageContainers: { $exists: true },
+				packageContainersWithOverrides: { $exists: false },
+			})
+
+			for (const studio of studios) {
+				// @ts-expect-error packageContainers is typed as Record<string, StudioPackageContainer>
+				if (studio.packageContainers) {
+					return 'packageContainers must be converted to an ObjectWithOverrides'
+				}
+			}
+
+			return false
+		},
+		migrate: async () => {
+			const studios = await Studios.findFetchAsync({
+				packageContainers: { $exists: true },
+				packageContainersWithOverrides: { $exists: false },
+			})
+
+			for (const studio of studios) {
+				// @ts-expect-error packageContainers is typed as Record<string, StudioPackageContainer>
+				const oldPackageContainers = studio.packageContainers
+
+				const newPackageContainers = convertObjectIntoOverrides<StudioPackageContainer>(
+					oldPackageContainers || {}
+				)
+
+				await Studios.updateAsync(studio._id, {
+					$set: {
+						packageContainersWithOverrides: newPackageContainers,
+					},
+					$unset: {
+						packageContainers: 1,
+					},
+				})
+			}
+		},
+	},
+
+	{
+		id: `add studio settings allowHold & allowPieceDirectPlay`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const studios = await Studios.findFetchAsync({
+				$or: [
+					{ 'settings.allowHold': { $exists: false } },
+					{ 'settings.allowPieceDirectPlay': { $exists: false } },
+				],
+			})
+
+			if (studios.length > 0) {
+				return 'studios must have settings.allowHold and settings.allowPieceDirectPlay defined'
+			}
+
+			return false
+		},
+		migrate: async () => {
+			const studios = await Studios.findFetchAsync({
+				$or: [
+					{ 'settings.allowHold': { $exists: false } },
+					{ 'settings.allowPieceDirectPlay': { $exists: false } },
+				],
+			})
+
+			for (const studio of studios) {
+				// Populate the settings to be backwards compatible
+				await Studios.updateAsync(studio._id, {
+					$set: {
+						'settings.allowHold': true,
+						'settings.allowPieceDirectPlay': true,
+					},
+				})
+			}
 		},
 	},
 ])

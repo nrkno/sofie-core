@@ -12,8 +12,7 @@ addSteps1_40_0()
 import { addSteps as addSteps1_41_0 } from './1_41_0'
 addSteps1_41_0()
 
-import { addSteps as addSteps1_42_0 } from './1_42_0'
-addSteps1_42_0()
+// Note: There where no migrations for Release 42
 
 import { addSteps as addSteps1_44_0 } from './1_44_0'
 addSteps1_44_0()
@@ -34,6 +33,9 @@ addSteps1_49_0()
 
 import { addSteps as addSteps1_50_0 } from './1_50_0'
 addSteps1_50_0()
+
+import { addSteps as addSteps1_51_0 } from './1_51_0'
+addSteps1_51_0()
 
 // Migrations for the in-development release:
 import { addSteps as addStepsX_X_X } from './X_X_X'
