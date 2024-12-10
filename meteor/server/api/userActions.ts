@@ -45,10 +45,10 @@ import { NrcsIngestCacheType } from '@sofie-automation/corelib/dist/dataModel/Nr
 import { verifyHashedToken } from './singleUseTokens'
 import { QuickLoopMarker } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { runIngestOperation } from './ingest/lib'
-import { RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { UserPermissions } from '@sofie-automation/meteor-lib/dist/userPermissions'
 import { assertConnectionHasOneOfPermissions } from '../security/auth'
+import { checkAccessToRundown } from '../security/check'
 
 const PERMISSIONS_FOR_PLAYOUT_USERACTION: Array<keyof UserPermissions> = ['studio']
 const PERMISSIONS_FOR_BUCKET_MODIFICATION: Array<keyof UserPermissions> = ['studio']
@@ -1315,11 +1315,10 @@ class ServerUserActionAPI
 			'executeUserChangeOperation',
 			{ operationTarget, operation },
 			async () => {
-				const access = await RundownPlaylistContentWriteAccess.rundown(this, rundownId)
-				if (!access.rundown) throw new Error(`Rundown "${rundownId}" not found`)
+				const rundown = await checkAccessToRundown(this.connection, rundownId)
 
-				await runIngestOperation(access.rundown.studioId, IngestJobs.UserExecuteChangeOperation, {
-					rundownExternalId: access.rundown.externalId,
+				await runIngestOperation(rundown.studioId, IngestJobs.UserExecuteChangeOperation, {
+					rundownExternalId: rundown.externalId,
 					operationTarget,
 					operation,
 				})
