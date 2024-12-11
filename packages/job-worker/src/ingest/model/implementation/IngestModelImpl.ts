@@ -61,6 +61,7 @@ import { SaveIngestModelHelper } from './SaveIngestModel'
 import { generateWriteOpsForLazyDocuments } from './DocumentChangeTracker'
 import { IS_PRODUCTION } from '../../../environment'
 import { logger } from '../../../logging'
+import { NotificationsModelHelper } from '../../../notifications/NotificationsModelHelper'
 
 export interface IngestModelImplExistingData {
 	rundown: DBRundown
@@ -103,6 +104,8 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 	readonly #rundownBaselineObjs: LazyInitialise<RundownBaselineObj[]>
 	readonly #rundownBaselineAdLibPieces: LazyInitialise<RundownBaselineAdLibItem[]>
 	readonly #rundownBaselineAdLibActions: LazyInitialise<RundownBaselineAdLibAction[]>
+
+	readonly #notificationsHelper: NotificationsModelHelper
 
 	public get rundownId(): RundownId {
 		return this.#rundownImpl?._id ?? getRundownId(this.context.studioId, this.rundownExternalId)
@@ -255,6 +258,8 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 			this.#rundownBaselineAdLibPieces = new LazyInitialise(async () => [])
 			this.#rundownBaselineAdLibActions = new LazyInitialise(async () => [])
 		}
+
+		this.#notificationsHelper = new NotificationsModelHelper(context, `ingest:${this.rundownId}`, null)
 	}
 
 	getRundown(): ReadonlyDeep<DBRundown> {
@@ -555,12 +560,27 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 		}
 	}
 
-	appendRundownNotes(...notes: RundownNote[]): void {
-		// Future: this doesnt allow for removing notes
-		if (!this.#rundownImpl) throw new Error(`Rundown "${this.rundownId}" ("${this.rundownExternalId}") not found`)
+	/** Notifications */
 
-		this.#rundownImpl.notes = [...(this.#rundownImpl.notes ?? []), ...clone(notes)]
-		this.#rundownHasChanged = true
+	async getAllNotifications(
+		...args: Parameters<NotificationsModelHelper['getAllNotifications']>
+	): ReturnType<NotificationsModelHelper['getAllNotifications']> {
+		return this.#notificationsHelper.getAllNotifications(...args)
+	}
+	clearNotification(
+		...args: Parameters<NotificationsModelHelper['clearNotification']>
+	): ReturnType<NotificationsModelHelper['clearNotification']> {
+		return this.#notificationsHelper.clearNotification(...args)
+	}
+	setNotification(
+		...args: Parameters<NotificationsModelHelper['setNotification']>
+	): ReturnType<NotificationsModelHelper['setNotification']> {
+		return this.#notificationsHelper.setNotification(...args)
+	}
+	clearAllNotifications(
+		...args: Parameters<NotificationsModelHelper['clearAllNotifications']>
+	): ReturnType<NotificationsModelHelper['clearAllNotifications']> {
+		return this.#notificationsHelper.clearAllNotifications(...args)
 	}
 
 	/** BaseModel */
@@ -676,6 +696,7 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 			this.context.directCollections.RundownBaselineAdLibPieces.bulkWrite(baselineAdLibPiecesOps),
 			this.context.directCollections.RundownBaselineAdLibActions.bulkWrite(baselineAdLibActionsOps),
 			...saveHelper.commit(this.context),
+			this.#notificationsHelper.saveAllToDatabase(),
 		])
 
 		this.#rundownHasChanged = false

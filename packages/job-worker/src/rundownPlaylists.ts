@@ -40,7 +40,7 @@ import {
 import { allowedToMoveRundownOutOfPlaylist } from './rundown'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
-import { RundownLock } from './jobs/lock'
+import { PlaylistLock, RundownLock } from './jobs/lock'
 import { runWithRundownLock } from './ingest/lock'
 import { convertRundownToBlueprints } from './blueprints/context/lib'
 import { sortRundownIDsInPlaylist } from '@sofie-automation/corelib/dist/playout/playlist'
@@ -50,9 +50,10 @@ import { INoteBase } from '@sofie-automation/corelib/dist/dataModel/Notes'
  * Debug: Remove a Playlist and all its contents
  */
 export async function handleRemoveRundownPlaylist(context: JobContext, data: RemovePlaylistProps): Promise<void> {
-	const removed = await runJobWithPlaylistLock(context, data, async (playlist) => {
+	const removed = await runJobWithPlaylistLock(context, data, async (playlist, lock) => {
 		if (playlist) {
-			await context.directCollections.RundownPlaylists.remove(playlist._id)
+			await removePlaylistFromDb(context, lock)
+
 			return true
 		} else {
 			return false
@@ -167,6 +168,19 @@ export async function removeRundownFromDb(context: JobContext, lock: RundownLock
 		context.directCollections.PieceInstances.remove({ rundownId: rundownId }),
 		context.directCollections.RundownBaselineAdLibActions.remove({ rundownId: rundownId }),
 		context.directCollections.RundownBaselineObjects.remove({ rundownId: rundownId }),
+		context.directCollections.Notifications.remove({ 'relatedTo.rundownId': rundownId }),
+	])
+}
+
+export async function removePlaylistFromDb(context: JobContext, lock: PlaylistLock): Promise<void> {
+	if (!lock.isLocked) throw new Error(`Can't delete Playlist without lock: ${lock.toString()}`)
+
+	const playlistId = lock.playlistId
+
+	await Promise.allSettled([
+		context.directCollections.RundownPlaylists.remove({ _id: playlistId }),
+
+		context.directCollections.Notifications.remove({ 'relatedTo.playlistId': playlistId }),
 	])
 }
 

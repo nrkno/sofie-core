@@ -1,5 +1,5 @@
 import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
-import { UserContextInfo } from './CommonContext'
+import { ContextInfo } from './CommonContext'
 import { ShowStyleUserContext } from './ShowStyleUserContext'
 import {
 	IBlueprintMutatablePart,
@@ -33,7 +33,7 @@ export class OnSetAsNextContext
 	public pendingMoveNextPart: { selectedPart: ReadonlyDeep<DBPart> | null } | undefined = undefined
 
 	constructor(
-		contextInfo: UserContextInfo,
+		contextInfo: ContextInfo,
 		context: JobContext,
 		private playoutModel: PlayoutModel,
 		showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,

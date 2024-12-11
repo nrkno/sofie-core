@@ -2,7 +2,6 @@ import { PieceId, PieceInstanceId, RundownPlaylistActivationId } from '@sofie-au
 import { ReadonlyDeep } from 'type-fest'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { IBlueprintMutatablePart, PieceLifespan, Time } from '@sofie-automation/blueprints-integration'
 import { PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { PlayoutPieceInstanceModel } from './PlayoutPieceInstanceModel'
@@ -44,13 +43,6 @@ export interface PlayoutPartInstanceModel {
 	 * @param snapshot Snapshot to restore
 	 */
 	snapshotRestore(snapshot: PlayoutPartInstanceModelSnapshot): void
-
-	/**
-	 * Add some user facing notes for this PartInstance
-	 * Future: it is only possible to add these, there is no way to 'replace' or remove them
-	 * @param notes New notes to add
-	 */
-	appendNotes(notes: PartNote[]): void
 
 	/**
 	 * Block a take out of this PartInstance from happening until the specified timestamp

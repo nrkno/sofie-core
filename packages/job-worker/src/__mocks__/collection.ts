@@ -42,6 +42,7 @@ import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataMod
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
 import { MediaObjects } from '@sofie-automation/corelib/dist/dataModel/MediaObjects'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
+import type { DBNotificationObj } from '@sofie-automation/corelib/dist/dataModel/Notifications'
 
 export interface CollectionOperation {
 	type: string
@@ -284,6 +285,7 @@ export function getMockCollections(): {
 			BucketAdLibPieces: new MockMongoCollection<BucketAdLib>(CollectionName.BucketAdLibPieces),
 			ExpectedMediaItems: new MockMongoCollection(CollectionName.ExpectedMediaItems),
 			ExpectedPlayoutItems: new MockMongoCollection<ExpectedPlayoutItem>(CollectionName.ExpectedPlayoutItems),
+			Notifications: new MockMongoCollection<DBNotificationObj>(CollectionName.Notifications),
 			SofieIngestDataCache: new MockMongoCollection<SofieIngestDataCacheObj>(CollectionName.SofieIngestDataCache),
 			NrcsIngestDataCache: new MockMongoCollection<NrcsIngestDataCacheObj>(CollectionName.NrcsIngestDataCache),
 			Parts: new MockMongoCollection<DBPart>(CollectionName.Parts),
@@ -341,6 +343,7 @@ export interface IMockCollections {
 	BucketAdLibPieces: MockMongoCollection<BucketAdLib>
 	ExpectedMediaItems: MockMongoCollection<ExpectedMediaItem>
 	ExpectedPlayoutItems: MockMongoCollection<ExpectedPlayoutItem>
+	Notifications: MockMongoCollection<DBNotificationObj>
 	SofieIngestDataCache: MockMongoCollection<SofieIngestDataCacheObj>
 	NrcsIngestDataCache: MockMongoCollection<NrcsIngestDataCacheObj>
 	Parts: MockMongoCollection<DBPart>

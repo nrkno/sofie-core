@@ -14,7 +14,6 @@ import {
 	calculatePartExpectedDurationWithTransition,
 	PartCalculatedTimings,
 } from '@sofie-automation/corelib/dist/playout/timings'
-import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { IBlueprintPieceType, PieceLifespan, Time } from '@sofie-automation/blueprints-integration'
 import {
 	PlayoutMutatablePart,
@@ -212,10 +211,6 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 				this.pieceInstancesImpl.set(pieceInstanceId, null)
 			}
 		}
-	}
-
-	appendNotes(notes: PartNote[]): void {
-		this.#setPartValue('notes', [...(this.partInstanceImpl.part.notes ?? []), ...clone(notes)])
 	}
 
 	blockTakeUntil(timestamp: Time | null): void {

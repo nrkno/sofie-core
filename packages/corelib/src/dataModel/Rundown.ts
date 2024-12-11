@@ -60,7 +60,7 @@ export interface Rundown {
 	/** Last sent storyStatus to ingestDevice (MOS) */
 	notifiedCurrentPlayingPartExternalId?: string
 
-	/** Holds notes (warnings / errors) thrown by the blueprints during creation, or appended after */
+	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
 	notes?: Array<RundownNote>
 
 	externalId: string

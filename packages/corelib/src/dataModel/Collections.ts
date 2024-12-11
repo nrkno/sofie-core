@@ -18,6 +18,7 @@ export enum CollectionName {
 	MediaObjects = 'mediaObjects',
 	MediaWorkFlows = 'mediaWorkFlows',
 	MediaWorkFlowSteps = 'mediaWorkFlowSteps',
+	Notifications = 'notifications',
 	Organizations = 'organizations',
 	PartInstances = 'partInstances',
 	PackageInfos = 'packageInfos',

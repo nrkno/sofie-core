@@ -41,6 +41,9 @@ export type NrcsIngestDataCacheObjId = ProtectedString<'NrcsIngestDataCacheObjId
 /** A string, identifying a SofieIngestDataCacheObj */
 export type SofieIngestDataCacheObjId = ProtectedString<'SofieIngestDataCacheObjId'>
 
+/** A string, identifying a DBNotificationObj */
+export type NotificationId = ProtectedString<'NotificationId'>
+
 /** A string, identifying a Organization */
 export type OrganizationId = ProtectedString<'OrganizationId'>
 
