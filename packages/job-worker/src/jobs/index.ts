@@ -18,9 +18,11 @@ import { PlaylistLock, RundownLock } from './lock'
 import { BaseModel } from '../modelBase'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { ProcessedShowStyleBase, ProcessedShowStyleVariant, ProcessedShowStyleCompound } from './showStyle'
+import { JobStudio } from './studio'
 
 export { ApmSpan }
 export { ProcessedShowStyleVariant, ProcessedShowStyleBase, ProcessedShowStyleCompound }
+export { JobStudio }
 
 /**
  * Context for any job run in the job-worker
@@ -102,9 +104,16 @@ export interface StudioCacheContext {
 	 */
 	readonly studioId: StudioId
 	/**
-	 * The Studio the job belongs to
+	 * The Studio the job belongs to.
+	 * This has any ObjectWithOverrides in their computed/flattened form
 	 */
-	readonly studio: ReadonlyDeep<DBStudio>
+	readonly studio: ReadonlyDeep<JobStudio>
+
+	/**
+	 * The Studio the job belongs to
+	 * This has any ObjectWithOverrides in their original form
+	 */
+	readonly rawStudio: ReadonlyDeep<DBStudio>
 
 	/**
 	 * Blueprint for the studio the job belongs to

@@ -101,14 +101,14 @@ export function defaultStudio(_id: StudioId): DBStudio {
 		mappingsWithOverrides: wrapDefaultObject({}),
 		supportedShowStyleBase: [],
 		blueprintConfigWithOverrides: wrapDefaultObject({}),
-		settings: {
+		settingsWithOverrides: wrapDefaultObject({
 			frameRate: 25,
 			mediaPreviewsUrl: '',
 			minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
 			allowHold: true,
 			allowPieceDirectPlay: true,
 			enableBuckets: true,
-		},
+		}),
 		_rundownVersionHash: '',
 		routeSetsWithOverrides: wrapDefaultObject({}),
 		routeSetExclusivityGroupsWithOverrides: wrapDefaultObject({}),

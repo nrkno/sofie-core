@@ -26,7 +26,8 @@ import type {
 	StudioRouteSet,
 	StudioRouteSetExclusivityGroup,
 } from '@sofie-automation/shared-lib/dist/core/model/StudioRouteSet'
-import { StudioPackageContainer } from '@sofie-automation/shared-lib/dist/core/model/PackageContainer'
+import type { StudioPackageContainer } from '@sofie-automation/shared-lib/dist/core/model/PackageContainer'
+import type { IStudioSettings } from '@sofie-automation/shared-lib/dist/core/model/StudioSettings'
 
 export interface StudioBlueprintManifest<TRawConfig = IBlueprintConfig, TProcessedConfig = unknown>
 	extends BlueprintManifestBase {
@@ -155,6 +156,8 @@ export interface BlueprintResultApplyStudioConfig {
 	routeSetExclusivityGroups?: Record<string, StudioRouteSetExclusivityGroup>
 	/** Package Containers */
 	packageContainers?: Record<string, StudioPackageContainer>
+
+	studioSettings?: IStudioSettings
 }
 
 export interface IStudioConfigPreset<TConfig = IBlueprintConfig> {

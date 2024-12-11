@@ -162,6 +162,10 @@ export async function prepareMigration(returnAllChunks?: boolean): Promise<Prepa
 
 			if (blueprint.blueprintType === BlueprintManifestType.SYSTEM) {
 				const bp = blueprintManifest as SystemBlueprintManifest
+
+				// If blueprint uses the new flow, don't attempt migrations
+				if (typeof bp.applyConfig === 'function') continue
+
 				// Check if the coreSystem uses this blueprint
 				const coreSystems = await CoreSystem.findFetchAsync({
 					blueprintId: blueprint._id,

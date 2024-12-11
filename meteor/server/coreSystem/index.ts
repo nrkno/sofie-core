@@ -10,13 +10,14 @@ import { getEnvLogLevel, logger, LogLevel, setLogLevel } from '../logging'
 const PackageInfo = require('../../package.json')
 import { startAgent } from '../api/profiler/apm'
 import { profiler } from '../api/profiler'
-import { TMP_TSR_VERSION } from '@sofie-automation/blueprints-integration'
+import { ICoreSystemSettings, TMP_TSR_VERSION } from '@sofie-automation/blueprints-integration'
 import { getAbsolutePath } from '../lib'
 import * as fs from 'fs/promises'
 import path from 'path'
 import { checkDatabaseVersions } from './checkDatabaseVersions'
 import PLazy from 'p-lazy'
 import { getCoreSystemAsync } from './collection'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 export { PackageInfo }
 
@@ -59,11 +60,25 @@ async function initializeCoreSystem() {
 				enabled: false,
 				transactionSampleRate: -1,
 			},
-			cron: {
-				casparCGRestart: {
-					enabled: true,
+			settingsWithOverrides: wrapDefaultObject<ICoreSystemSettings>({
+				cron: {
+					casparCGRestart: {
+						enabled: true,
+					},
+					storeRundownSnapshots: {
+						enabled: false,
+					},
 				},
-			},
+				support: {
+					message: '',
+				},
+				evaluationsMessage: {
+					enabled: false,
+					heading: '',
+					message: '',
+				},
+			}),
+			lastBlueprintConfig: undefined,
 		})
 
 		if (!isRunningInJest()) {

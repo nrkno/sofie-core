@@ -15,6 +15,7 @@ import { SelectBlueprint } from './SelectBlueprint'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { UIBlueprintUpgradeStatuses } from '../../../Collections'
 import { getUpgradeStatusMessage, UpgradeStatusButtons } from '../../Upgrades/Components'
+import { UIBlueprintUpgradeStatusStudio } from '@sofie-automation/meteor-lib/dist/api/upgradeStatus'
 
 interface StudioBlueprintConfigurationSettingsProps {
 	studio: DBStudio
@@ -31,7 +32,7 @@ export function StudioBlueprintConfigurationSettings(
 			UIBlueprintUpgradeStatuses.findOne({
 				documentId: props.studio._id,
 				documentType: 'studio',
-			}),
+			}) as UIBlueprintUpgradeStatusStudio | undefined,
 		[props.studio._id]
 	)
 	const statusMessage = isStatusReady && status ? getUpgradeStatusMessage(t, status) ?? t('OK') : t('Loading...')

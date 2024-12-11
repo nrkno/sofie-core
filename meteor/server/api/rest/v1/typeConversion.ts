@@ -53,7 +53,7 @@ import {
 	DEFAULT_FALLBACK_PART_DURATION,
 } from '@sofie-automation/shared-lib/dist/core/constants'
 import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
-import { ForceQuickLoopAutoNext } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { ForceQuickLoopAutoNext } from '@sofie-automation/shared-lib/dist/core/model/StudioSettings'
 
 /*
 This file contains functions that convert between the internal Sofie-Core types and types exposed to the external API.
@@ -307,13 +307,17 @@ export async function studioFrom(apiStudio: APIStudio, existingId?: StudioId): P
 			: convertObjectIntoOverrides(await StudioBlueprintConfigFromAPI(apiStudio, blueprintManifest))
 	}
 
+	const studioSettings = studioSettingsFrom(apiStudio.settings)
+
 	return {
 		_id: existingId ?? getRandomId(),
 		name: apiStudio.name,
 		blueprintId: blueprint?._id,
 		blueprintConfigPresetId: apiStudio.blueprintConfigPresetId,
 		blueprintConfigWithOverrides: blueprintConfig,
-		settings: studioSettingsFrom(apiStudio.settings),
+		settingsWithOverrides: studio
+			? updateOverrides(studio.settingsWithOverrides, studioSettings)
+			: wrapDefaultObject(studioSettings),
 		supportedShowStyleBase: apiStudio.supportedShowStyleBase?.map((id) => protectString<ShowStyleBaseId>(id)) ?? [],
 		organizationId: null,
 		mappingsWithOverrides: wrapDefaultObject({}),
@@ -334,7 +338,7 @@ export async function studioFrom(apiStudio: APIStudio, existingId?: StudioId): P
 }
 
 export async function APIStudioFrom(studio: DBStudio): Promise<Complete<APIStudio>> {
-	const studioSettings = APIStudioSettingsFrom(studio.settings)
+	const studioSettings = APIStudioSettingsFrom(applyAndValidateOverrides(studio.settingsWithOverrides).obj)
 
 	return {
 		name: studio.name,

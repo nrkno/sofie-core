@@ -13,7 +13,7 @@ import { PieceContentStatusStudio } from './checkPieceContentStatus'
 
 export type StudioFields =
 	| '_id'
-	| 'settings'
+	| 'settingsWithOverrides'
 	| 'packageContainersWithOverrides'
 	| 'previewContainerIds'
 	| 'thumbnailContainerIds'
@@ -21,7 +21,7 @@ export type StudioFields =
 	| 'routeSetsWithOverrides'
 export const studioFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBStudio, StudioFields>>>({
 	_id: 1,
-	settings: 1,
+	settingsWithOverrides: 1,
 	packageContainersWithOverrides: 1,
 	previewContainerIds: 1,
 	thumbnailContainerIds: 1,
@@ -112,7 +112,7 @@ export async function fetchStudio(studioId: StudioId): Promise<PieceContentStatu
 
 	return {
 		_id: studio._id,
-		settings: studio.settings,
+		settings: applyAndValidateOverrides(studio.settingsWithOverrides).obj,
 		previewContainerIds: studio.previewContainerIds,
 		thumbnailContainerIds: studio.thumbnailContainerIds,
 		mappings: applyAndValidateOverrides(studio.mappingsWithOverrides).obj,

@@ -2,7 +2,7 @@ import '../../__mocks__/_extendJest'
 import { runAllTimers, waitUntil } from '../../__mocks__/helpers/jest'
 import { MeteorMock } from '../../__mocks__/meteor'
 import { logger } from '../logging'
-import { getRandomId, getRandomString, protectString } from '../lib/tempLib'
+import { getRandomId, getRandomString, literal, protectString } from '../lib/tempLib'
 import { SnapshotType } from '@sofie-automation/meteor-lib/dist/collections/Snapshots'
 import { IBlueprintPieceType, PieceLifespan, StatusCode, TSR } from '@sofie-automation/blueprints-integration'
 import {
@@ -64,10 +64,28 @@ import {
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { Settings } from '../Settings'
 import { SofieIngestCacheType } from '@sofie-automation/corelib/dist/dataModel/SofieIngestDataCache'
+import { ObjectOverrideSetOp } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 describe('cronjobs', () => {
 	let env: DefaultEnvironment
 	let rundownId: RundownId
+
+	async function setCasparCGCronEnabled(enabled: boolean) {
+		await CoreSystem.updateAsync(
+			{},
+			{
+				// This is a little bit of a hack, as it will result in duplicate ops, but it's fine for unit tests
+				$push: {
+					'settingsWithOverrides.overrides': literal<ObjectOverrideSetOp>({
+						op: 'set',
+						path: 'cron.casparCGRestart.enabled',
+						value: enabled,
+					}),
+				},
+			},
+			{ multi: true }
+		)
+	}
 
 	beforeAll(async () => {
 		env = await setupDefaultStudioEnvironment()
@@ -75,15 +93,7 @@ describe('cronjobs', () => {
 		const o = await setupDefaultRundownPlaylist(env)
 		rundownId = o.rundownId
 
-		await CoreSystem.updateAsync(
-			{},
-			{
-				$set: {
-					'cron.casparCGRestart.enabled': true,
-				},
-			},
-			{ multi: true }
-		)
+		await setCasparCGCronEnabled(true)
 
 		jest.useFakeTimers()
 		// set time to 2020/07/19 00:00 Local Time
@@ -591,15 +601,7 @@ describe('cronjobs', () => {
 		})
 		test('Does not attempt to restart CasparCG when job is disabled', async () => {
 			await createMockPlayoutGatewayAndDevices(Date.now()) // Some time after the threshold
-			await CoreSystem.updateAsync(
-				{},
-				{
-					$set: {
-						'cron.casparCGRestart.enabled': false,
-					},
-				},
-				{ multi: true }
-			)
+			await setCasparCGCronEnabled(false)
 			;(logger.info as jest.Mock).mockClear()
 			// set time to 2020/07/{date} 04:05 Local Time, should be more than 24 hours after 2020/07/19 00:00 UTC
 			mockCurrentTime = new Date(2020, 6, date++, 4, 5, 0).getTime()

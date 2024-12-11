@@ -47,6 +47,7 @@ import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheral
 import { ProcessedShowStyleCompound } from '../../jobs'
 import { handleOnPlayoutPlaybackChanged } from '../timings'
 import { sleep } from '@sofie-automation/shared-lib/dist/lib/lib'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 // const mockGetCurrentTime = jest.spyOn(lib, 'getCurrentTime')
 const mockExecutePeripheralDeviceFunction = jest
@@ -98,11 +99,11 @@ describe('Playout API', () => {
 		context = setupDefaultJobEnvironment()
 
 		context.setStudio({
-			...context.studio,
-			settings: {
+			...context.rawStudio,
+			settingsWithOverrides: wrapDefaultObject({
 				...context.studio.settings,
 				minimumTakeSpan: 0,
-			},
+			}),
 		})
 
 		// Ignore event jobs
