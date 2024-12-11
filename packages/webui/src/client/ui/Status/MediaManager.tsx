@@ -364,7 +364,7 @@ export function MediaManagerStatus(): JSX.Element {
 	const actionRestart = useCallback(
 		(event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
 			doUserAction(t, event, UserAction.RESTART_MEDIA_WORKFLOW, (e, ts) =>
-				MeteorCall.userAction.mediaRestartWorkflow(e, ts, workflow._id)
+				MeteorCall.userAction.mediaRestartWorkflow(e, ts, workflow.deviceId, workflow._id)
 			)
 		},
 		[t]
@@ -372,7 +372,7 @@ export function MediaManagerStatus(): JSX.Element {
 	const actionAbort = useCallback(
 		(event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
 			doUserAction(t, event, UserAction.ABORT_MEDIA_WORKFLOW, (e, ts) =>
-				MeteorCall.userAction.mediaAbortWorkflow(e, ts, workflow._id)
+				MeteorCall.userAction.mediaAbortWorkflow(e, ts, workflow.deviceId, workflow._id)
 			)
 		},
 		[t]
@@ -380,7 +380,7 @@ export function MediaManagerStatus(): JSX.Element {
 	const actionPrioritize = useCallback(
 		(event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
 			doUserAction(t, event, UserAction.PRIORITIZE_MEDIA_WORKFLOW, (e, ts) =>
-				MeteorCall.userAction.mediaPrioritizeWorkflow(e, ts, workflow._id)
+				MeteorCall.userAction.mediaPrioritizeWorkflow(e, ts, workflow.deviceId, workflow._id)
 			)
 		},
 		[t]

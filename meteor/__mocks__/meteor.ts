@@ -1,4 +1,4 @@
-import { MongoMock } from './mongo'
+import { USER_PERMISSIONS_HEADER } from '@sofie-automation/meteor-lib/dist/userPermissions'
 
 let controllableDefer = false
 
@@ -9,25 +9,12 @@ export function useNextTickDefer(): void {
 	controllableDefer = false
 }
 
-namespace Meteor {
+export namespace Meteor {
 	export interface Settings {
 		public: {
 			[id: string]: any
 		}
 		[id: string]: any
-	}
-
-	export interface UserEmail {
-		address: string
-		verified: boolean
-	}
-	export interface User {
-		_id?: string
-		username?: string
-		emails?: UserEmail[]
-		createdAt?: number
-		profile?: any
-		services?: any
 	}
 
 	export interface ErrorStatic {
@@ -103,22 +90,18 @@ export namespace MeteorMock {
 	export const settings: any = {}
 
 	export const mockMethods: { [name: string]: Function } = {}
-	export let mockUser: Meteor.User | undefined = undefined
 	export const mockStartupFunctions: Function[] = []
 
 	export const absolutePath = process.cwd()
 
-	export function user(): Meteor.User | undefined {
-		return mockUser
-	}
-	export function userId(): string | undefined {
-		return mockUser ? mockUser._id : undefined
-	}
 	function getMethodContext() {
 		return {
-			userId: mockUser ? mockUser._id : undefined,
 			connection: {
 				clientAddress: '1.1.1.1',
+				httpHeaders: {
+					// Default to full permissions for tests
+					[USER_PERMISSIONS_HEADER]: 'admin',
+				},
 			},
 			unblock: () => {
 				// noop
@@ -256,7 +239,6 @@ export namespace MeteorMock {
 			return fcn(...args)
 		}
 	}
-	export let users: MongoMock.Collection<any> | undefined = undefined
 
 	// -- Mock functions: --------------------------
 	/**
@@ -268,12 +250,6 @@ export namespace MeteorMock {
 		}
 
 		await waitTimeNoFakeTimers(10) // So that any observers or defers has had time to run.
-	}
-	export function mockLoginUser(newUser: Meteor.User): void {
-		mockUser = newUser
-	}
-	export function mockSetUsersCollection(usersCollection: MongoMock.Collection<any>): void {
-		users = usersCollection
 	}
 	export function mockSetClientEnvironment(): void {
 		mockIsClient = true

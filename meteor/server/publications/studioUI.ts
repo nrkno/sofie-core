@@ -13,12 +13,9 @@ import {
 	SetupObserversResult,
 	TriggerUpdate,
 } from '../lib/customPublication'
-import { logger } from '../logging'
-import { resolveCredentials } from '../security/lib/credentials'
-import { NoSecurityReadAccess } from '../security/noSecurity'
-import { StudioReadAccess } from '../security/studio'
 import { Studios } from '../collections'
 import { check, Match } from 'meteor/check'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify'
 
 interface UIStudioArgs {
 	readonly studioId: StudioId | null
@@ -131,18 +128,14 @@ meteorCustomPublish(
 	async function (pub, studioId: StudioId | null) {
 		check(studioId, Match.Maybe(String))
 
-		const cred = await resolveCredentials({ userId: this.userId, token: undefined })
+		triggerWriteAccessBecauseNoCheckNecessary()
 
-		if (!cred || NoSecurityReadAccess.any() || (studioId && (await StudioReadAccess.studio(studioId, cred)))) {
-			await setUpCollectionOptimizedObserver<UIStudio, UIStudioArgs, UIStudioState, UIStudioUpdateProps>(
-				`pub_${MeteorPubSub.uiStudio}_${studioId}`,
-				{ studioId },
-				setupUIStudioPublicationObservers,
-				manipulateUIStudioPublicationData,
-				pub
-			)
-		} else {
-			logger.warn(`Pub.${CustomCollectionName.UIStudio}: Not allowed: "${studioId}"`)
-		}
+		await setUpCollectionOptimizedObserver<UIStudio, UIStudioArgs, UIStudioState, UIStudioUpdateProps>(
+			`pub_${MeteorPubSub.uiStudio}_${studioId}`,
+			{ studioId },
+			setupUIStudioPublicationObservers,
+			manipulateUIStudioPublicationData,
+			pub
+		)
 	}
 )

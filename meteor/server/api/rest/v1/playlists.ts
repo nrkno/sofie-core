@@ -33,7 +33,7 @@ import { QueueNextSegmentResult, StudioJobs } from '@sofie-automation/corelib/di
 import { getCurrentTime } from '../../../lib/lib'
 import { TriggerReloadDataResponse } from '@sofie-automation/meteor-lib/dist/api/userActions'
 import { ServerRundownAPI } from '../../rundown'
-import { triggerWriteAccess } from '../../../security/lib/securityVerify'
+import { triggerWriteAccess } from '../../../security/securityVerify'
 
 class PlaylistsServerAPI implements PlaylistsRestAPI {
 	constructor(private context: ServerAPIContext) {}

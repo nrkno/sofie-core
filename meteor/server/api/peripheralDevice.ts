@@ -26,10 +26,9 @@ import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/
 import { MOS } from '@sofie-automation/corelib'
 import { determineDiffTime } from './systemTime/systemTime'
 import { getTimeDiff } from './systemTime/api'
-import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
 import { MethodContextAPI, MethodContext } from './methodContext'
-import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
-import { checkAccessAndGetPeripheralDevice } from './ingest/lib'
+import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify'
+import { checkAccessAndGetPeripheralDevice } from '../security/check'
 import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
 import { PackageManagerIntegration } from './integration/expectedPackages'
 import { profiler } from './profiler'
@@ -68,6 +67,7 @@ import { convertPeripheralDeviceForGateway } from '../publications/peripheralDev
 import { executePeripheralDeviceFunction } from './peripheralDevice/executeFunction'
 import KoaRouter from '@koa/router'
 import bodyParser from 'koa-bodyparser'
+import { assertConnectionHasOneOfPermissions } from '../security/auth'
 
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
@@ -81,7 +81,9 @@ export namespace ServerPeripheralDeviceAPI {
 		check(deviceId, String)
 		const existingDevice = await PeripheralDevices.findOneAsync(deviceId)
 		if (existingDevice) {
-			await PeripheralDeviceContentWriteAccess.peripheralDevice({ userId: context.userId, token }, deviceId)
+			await checkAccessAndGetPeripheralDevice(deviceId, token, context)
+		} else {
+			triggerWriteAccessBecauseNoCheckNecessary()
 		}
 
 		check(token, String)
@@ -356,12 +358,12 @@ export namespace ServerPeripheralDeviceAPI {
 		return false
 	}
 	export async function disableSubDevice(
-		access: PeripheralDeviceContentWriteAccess.ContentAccess,
+		deviceId: PeripheralDeviceId,
 		subDeviceId: string,
 		disable: boolean
 	): Promise<void> {
-		const peripheralDevice = access.device
-		const deviceId = access.deviceId
+		const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
+		if (!peripheralDevice) throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
 
 		// check that the peripheralDevice has subDevices
 		if (peripheralDevice.type !== PeripheralDeviceType.PLAYOUT)
@@ -432,18 +434,21 @@ export namespace ServerPeripheralDeviceAPI {
 			})
 		}
 	}
-	export async function getDebugStates(access: PeripheralDeviceContentWriteAccess.ContentAccess): Promise<object> {
+	export async function getDebugStates(peripheralDeviceId: PeripheralDeviceId): Promise<object> {
+		const peripheralDevice = await PeripheralDevices.findOneAsync(peripheralDeviceId)
+		if (!peripheralDevice) return {}
+
 		if (
 			// Debug states are only valid for Playout devices and must be enabled with the `debugState` option
-			access.device.type !== PeripheralDeviceType.PLAYOUT ||
-			!access.device.settings ||
-			!(access.device.settings as any)['debugState']
+			peripheralDevice.type !== PeripheralDeviceType.PLAYOUT ||
+			!peripheralDevice.settings ||
+			!(peripheralDevice.settings as any)['debugState']
 		) {
 			return {}
 		}
 
 		try {
-			return await executePeripheralDeviceFunction(access.deviceId, 'getDebugStates')
+			return await executePeripheralDeviceFunction(peripheralDevice._id, 'getDebugStates')
 		} catch (e) {
 			logger.error(e)
 			return {}
@@ -509,12 +514,11 @@ export namespace ServerPeripheralDeviceAPI {
 			},
 		})
 	}
-	export async function removePeripheralDevice(
-		context: MethodContext,
-		deviceId: PeripheralDeviceId,
-		token?: string
-	): Promise<void> {
-		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, context)
+	export async function removePeripheralDevice(context: MethodContext, deviceId: PeripheralDeviceId): Promise<void> {
+		assertConnectionHasOneOfPermissions(context.connection, 'configure')
+
+		const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
+		if (!peripheralDevice) throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
 
 		logger.info(`Removing PeripheralDevice ${peripheralDevice._id}`)
 
@@ -846,8 +850,8 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	async testMethod(deviceId: PeripheralDeviceId, deviceToken: string, returnValue: string, throwError?: boolean) {
 		return ServerPeripheralDeviceAPI.testMethod(this, deviceId, deviceToken, returnValue, throwError)
 	}
-	async removePeripheralDevice(deviceId: PeripheralDeviceId, token?: string) {
-		return ServerPeripheralDeviceAPI.removePeripheralDevice(this, deviceId, token)
+	async removePeripheralDevice(deviceId: PeripheralDeviceId) {
+		return ServerPeripheralDeviceAPI.removePeripheralDevice(this, deviceId)
 	}
 
 	// ------ Playout Gateway --------

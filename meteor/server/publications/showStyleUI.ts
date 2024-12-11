@@ -12,13 +12,9 @@ import {
 	setUpOptimizedObserverArray,
 	TriggerUpdate,
 } from '../lib/customPublication'
-import { logger } from '../logging'
-import { NoSecurityReadAccess } from '../security/noSecurity'
-import { OrganizationReadAccess } from '../security/organization'
-import { ShowStyleReadAccess } from '../security/showStyle'
 import { ShowStyleBases } from '../collections'
-import { AutoFillSelector } from './lib/lib'
 import { check } from 'meteor/check'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify'
 
 interface UIShowStyleBaseArgs {
 	readonly showStyleBaseId: ShowStyleBaseId
@@ -92,33 +88,19 @@ meteorCustomPublish(
 	async function (pub, showStyleBaseId: ShowStyleBaseId) {
 		check(showStyleBaseId, String)
 
-		const { cred, selector } = await AutoFillSelector.organizationId<DBShowStyleBase>(
-			this.userId,
-			{ _id: showStyleBaseId },
-			undefined
-		)
+		triggerWriteAccessBecauseNoCheckNecessary()
 
-		if (
-			!cred ||
-			NoSecurityReadAccess.any() ||
-			(selector.organizationId &&
-				(await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) ||
-			(selector._id && (await ShowStyleReadAccess.showStyleBase(selector._id, cred)))
-		) {
-			await setUpOptimizedObserverArray<
-				UIShowStyleBase,
-				UIShowStyleBaseArgs,
-				UIShowStyleBaseState,
-				UIShowStyleBaseUpdateProps
-			>(
-				`pub_${MeteorPubSub.uiShowStyleBase}_${showStyleBaseId}`,
-				{ showStyleBaseId },
-				setupUIShowStyleBasePublicationObservers,
-				manipulateUIShowStyleBasePublicationData,
-				pub
-			)
-		} else {
-			logger.warn(`Pub.${CustomCollectionName.UIShowStyleBase}: Not allowed: "${showStyleBaseId}"`)
-		}
+		await setUpOptimizedObserverArray<
+			UIShowStyleBase,
+			UIShowStyleBaseArgs,
+			UIShowStyleBaseState,
+			UIShowStyleBaseUpdateProps
+		>(
+			`pub_${MeteorPubSub.uiShowStyleBase}_${showStyleBaseId}`,
+			{ showStyleBaseId },
+			setupUIShowStyleBasePublicationObservers,
+			manipulateUIShowStyleBasePublicationData,
+			pub
+		)
 	}
 )

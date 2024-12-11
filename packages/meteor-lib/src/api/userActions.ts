@@ -212,16 +212,19 @@ export interface NewUserActionAPI {
 	mediaRestartWorkflow(
 		userEvent: string,
 		eventTime: Time,
+		deviceId: PeripheralDeviceId,
 		workflowId: MediaWorkFlowId
 	): Promise<ClientAPI.ClientResponse<void>>
 	mediaAbortWorkflow(
 		userEvent: string,
 		eventTime: Time,
+		deviceId: PeripheralDeviceId,
 		workflowId: MediaWorkFlowId
 	): Promise<ClientAPI.ClientResponse<void>>
 	mediaPrioritizeWorkflow(
 		userEvent: string,
 		eventTime: Time,
+		deviceId: PeripheralDeviceId,
 		workflowId: MediaWorkFlowId
 	): Promise<ClientAPI.ClientResponse<void>>
 	mediaRestartAllWorkflows(userEvent: string, eventTime: Time): Promise<ClientAPI.ClientResponse<void>>

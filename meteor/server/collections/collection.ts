@@ -22,14 +22,14 @@ import {
 import { MinimalMongoCursor } from './implementations/asyncCollection'
 
 export interface MongoAllowRules<DBInterface> {
-	insert?: (userId: UserId | null, doc: DBInterface) => Promise<boolean> | boolean
+	// insert?: (userId: UserId | null, doc: DBInterface) => Promise<boolean> | boolean
 	update?: (
 		userId: UserId | null,
 		doc: DBInterface,
 		fieldNames: FieldNames<DBInterface>,
 		modifier: MongoModifier<DBInterface>
 	) => Promise<boolean> | boolean
-	remove?: (userId: UserId | null, doc: DBInterface) => Promise<boolean> | boolean
+	// remove?: (userId: UserId | null, doc: DBInterface) => Promise<boolean> | boolean
 }
 
 /**
@@ -46,29 +46,6 @@ export function getOrCreateMongoCollection(name: string): Mongo.Collection<any> 
 	const newCollection = new Mongo.Collection(name)
 	collectionsCache.set(name, newCollection)
 	return newCollection
-}
-
-/**
- * Wrap an existing Mongo.Collection to have async methods. Primarily to convert the built-in Users collection
- * @param collection Collection to wrap
- * @param name Name of the collection
- * @param allowRules The 'allow' rules for publications. Set to `false` to make readonly
- */
-export function wrapMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
-	collection: Mongo.Collection<DBInterface>,
-	name: CollectionName,
-	allowRules: MongoAllowRules<DBInterface> | false
-): AsyncOnlyMongoCollection<DBInterface> {
-	if (collectionsCache.has(name)) throw new Meteor.Error(500, `Collection "${name}" has already been created`)
-	collectionsCache.set(name, collection)
-
-	setupCollectionAllowRules(collection, allowRules)
-
-	const wrapped = new WrappedAsyncMongoCollection<DBInterface>(collection, name)
-
-	registerCollection(name, wrapped as WrappedAsyncMongoCollection<any>)
-
-	return wrapped
 }
 
 /**
@@ -133,23 +110,15 @@ function setupCollectionAllowRules<DBInterface extends { _id: ProtectedString<an
 		return
 	}
 
-	const { insert: origInsert, update: origUpdate, remove: origRemove } = args
+	const { /* insert: origInsert,*/ update: origUpdate /*remove: origRemove*/ } = args
 
 	// These methods behave weirdly, we need to mangle this a bit.
 	// See https://github.com/meteor/meteor/issues/13444 for a full explanation
 	const options: any /*Parameters<Mongo.Collection<DBInterface>['allow']>[0]*/ = {
-		insert: () => false,
-		insertAsync: origInsert
-			? (userId: string | null, doc: DBInterface) => origInsert(protectString(userId), doc) as any
-			: () => false,
 		update: () => false,
 		updateAsync: origUpdate
 			? (userId: string | null, doc: DBInterface, fieldNames: string[], modifier: any) =>
 					origUpdate(protectString(userId), doc, fieldNames as any, modifier) as any
-			: () => false,
-		remove: () => false,
-		removeAsync: origRemove
-			? (userId: string | null, doc: DBInterface) => origRemove(protectString(userId), doc) as any
 			: () => false,
 	}
 

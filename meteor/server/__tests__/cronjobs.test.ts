@@ -476,7 +476,8 @@ describe('cronjobs', () => {
 			expect(await Snapshots.findOneAsync(snapshot1)).toBeUndefined()
 		})
 		async function insertPlayoutDevice(
-			props: Pick<PeripheralDevice, 'subType' | 'deviceName' | 'lastSeen' | 'parentDeviceId'>
+			props: Pick<PeripheralDevice, 'subType' | 'deviceName' | 'lastSeen' | 'parentDeviceId'> &
+				Partial<Pick<PeripheralDevice, 'token'>>
 		): Promise<PeripheralDeviceId> {
 			const deviceId = protectString<PeripheralDeviceId>(getRandomString())
 			await PeripheralDevices.insertAsync({
@@ -505,29 +506,35 @@ describe('cronjobs', () => {
 		}
 
 		async function createMockPlayoutGatewayAndDevices(lastSeen: number): Promise<{
+			deviceToken: string
 			mockPlayoutGw: PeripheralDeviceId
 			mockCasparCg: PeripheralDeviceId
 			mockAtem: PeripheralDeviceId
 		}> {
+			const deviceToken = 'token1'
 			const mockPlayoutGw = await insertPlayoutDevice({
 				deviceName: 'Playout Gateway',
 				lastSeen: lastSeen,
 				subType: PERIPHERAL_SUBTYPE_PROCESS,
+				token: deviceToken,
 			})
 			const mockCasparCg = await insertPlayoutDevice({
 				deviceName: 'CasparCG',
 				lastSeen: lastSeen,
 				subType: TSR.DeviceType.CASPARCG,
 				parentDeviceId: mockPlayoutGw,
+				token: deviceToken,
 			})
 			const mockAtem = await insertPlayoutDevice({
 				deviceName: 'ATEM',
 				lastSeen: lastSeen,
 				subType: TSR.DeviceType.ATEM,
 				parentDeviceId: mockPlayoutGw,
+				token: deviceToken,
 			})
 
 			return {
+				deviceToken,
 				mockPlayoutGw,
 				mockCasparCg,
 				mockAtem,
@@ -535,7 +542,7 @@ describe('cronjobs', () => {
 		}
 
 		test('Attempts to restart CasparCG when job is enabled', async () => {
-			const { mockCasparCg } = await createMockPlayoutGatewayAndDevices(Date.now()) // Some time after the threshold
+			const { mockCasparCg, deviceToken } = await createMockPlayoutGatewayAndDevices(Date.now()) // Some time after the threshold
 
 			;(logger.info as jest.Mock).mockClear()
 			// set time to 2020/07/{date} 04:05 Local Time, should be more than 24 hours after 2020/07/19 00:00 UTC
@@ -558,7 +565,7 @@ describe('cronjobs', () => {
 					Meteor.callAsync(
 						'peripheralDevice.functionReply',
 						cmd.deviceId, // deviceId
-						'', // deviceToken
+						deviceToken, // deviceToken
 						cmd._id, // commandId
 						null, // err
 						null // result

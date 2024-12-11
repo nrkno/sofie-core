@@ -20,18 +20,21 @@ import {
 	Timeline,
 } from '../../collections'
 import { MethodContextAPI, MethodContext } from '../methodContext'
-import { OrganizationContentWriteAccess } from '../../security/organization'
-import { Credentials } from '../../security/lib/credentials'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { OrganizationId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { logger } from '../../logging'
 import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
+import { UserPermissions } from '@sofie-automation/meteor-lib/dist/userPermissions'
+import { assertConnectionHasOneOfPermissions } from '../../security/auth'
 
-async function insertStudio(context: MethodContext | Credentials, newId?: StudioId): Promise<StudioId> {
+const PERMISSIONS_FOR_MANAGE_STUDIOS: Array<keyof UserPermissions> = ['configure']
+
+async function insertStudio(context: MethodContext, newId?: StudioId): Promise<StudioId> {
 	if (newId) check(newId, String)
 
-	const access = await OrganizationContentWriteAccess.studio(context)
-	return insertStudioInner(access.organizationId, newId)
+	assertConnectionHasOneOfPermissions(context.connection, ...PERMISSIONS_FOR_MANAGE_STUDIOS)
+
+	return insertStudioInner(null, newId)
 }
 export async function insertStudioInner(organizationId: OrganizationId | null, newId?: StudioId): Promise<StudioId> {
 	return Studios.insertAsync(
@@ -71,8 +74,9 @@ export async function insertStudioInner(organizationId: OrganizationId | null, n
 async function removeStudio(context: MethodContext, studioId: StudioId): Promise<void> {
 	check(studioId, String)
 
-	const access = await OrganizationContentWriteAccess.studio(context, studioId)
-	const studio = access.studio
+	assertConnectionHasOneOfPermissions(context.connection, ...PERMISSIONS_FOR_MANAGE_STUDIOS)
+
+	const studio = await Studios.findOneAsync(studioId)
 	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
 
 	// allowed to remove?

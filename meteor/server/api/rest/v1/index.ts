@@ -9,8 +9,7 @@ import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { MethodContextAPI } from '../../methodContext'
 import { logger } from '../../../logging'
 import { CURRENT_SYSTEM_VERSION } from '../../../migration/currentSystemVersion'
-import { Credentials } from '../../../security/lib/credentials'
-import { triggerWriteAccess } from '../../../security/lib/securityVerify'
+import { triggerWriteAccess } from '../../../security/securityVerify'
 import { makeMeteorConnectionFromKoa } from '../koa'
 import { registerRoutes as registerBlueprintsRoutes } from './blueprints'
 import { registerRoutes as registerDevicesRoutes } from './devices'
@@ -35,20 +34,11 @@ function restAPIUserEvent(
 class APIContext implements ServerAPIContext {
 	public getMethodContext(connection: Meteor.Connection): MethodContextAPI {
 		return {
-			userId: null,
 			connection,
-			isSimulation: false,
-			setUserId: () => {
-				/* no-op */
-			},
 			unblock: () => {
 				/* no-op */
 			},
 		}
-	}
-
-	public getCredentials(): Credentials {
-		return { userId: null }
 	}
 }
 

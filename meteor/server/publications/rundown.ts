@@ -1,16 +1,12 @@
 import { Meteor } from 'meteor/meteor'
-import { meteorPublish, AutoFillSelector } from './lib/lib'
+import { meteorPublish } from './lib/lib'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { MongoFieldSpecifierZeroes, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
-import { RundownReadAccess } from '../security/rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { NoSecurityReadAccess } from '../security/noSecurity'
-import { OrganizationReadAccess } from '../security/organization'
-import { StudioReadAccess } from '../security/studio'
 import { check, Match } from 'meteor/check'
 import { FindOptions } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import {
@@ -20,7 +16,6 @@ import {
 	NrcsIngestDataCache,
 	PartInstances,
 	Parts,
-	PeripheralDevices,
 	PieceInstances,
 	Pieces,
 	RundownBaselineAdLibActions,
@@ -44,58 +39,52 @@ import {
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { PeripheralDevicePubSub } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
-import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { resolveCredentials } from '../security/lib/credentials'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify'
+import { checkAccessAndGetPeripheralDevice } from '../security/check'
 
-meteorPublish(PeripheralDevicePubSub.rundownsForDevice, async function (deviceId, token: string | undefined) {
-	check(deviceId, String)
-	check(token, String)
+meteorPublish(
+	PeripheralDevicePubSub.rundownsForDevice,
+	async function (deviceId: PeripheralDeviceId, token: string | undefined) {
+		check(deviceId, String)
+		check(token, String)
 
-	const { cred, selector } = await AutoFillSelector.organizationId<DBRundown>(this.userId, {}, token)
+		// Future: this should be reactive to studioId changes, but this matches how the other *ForDevice publications behave
 
-	// Future: this should be reactive to studioId changes, but this matches how the other *ForDevice publications behave
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, this)
 
-	// The above auth check may return nothing when security is disabled, but we need the return value
-	const resolvedCred = cred?.device ? cred : await resolveCredentials({ userId: this.userId, token })
-	if (!resolvedCred || !resolvedCred.device)
-		throw new Meteor.Error(403, 'Publication can only be used by authorized PeripheralDevices')
+		// No studio, then no rundowns
+		if (!peripheralDevice.studioId) return null
 
-	// No studio, then no rundowns
-	if (!resolvedCred.device.studioId) return null
-
-	selector.studioId = resolvedCred.device.studioId
-
-	const modifier: FindOptions<DBRundown> = {
-		fields: {
-			privateData: 0,
-		},
+		return Rundowns.findWithCursor(
+			{
+				studioId: peripheralDevice.studioId,
+			},
+			{
+				fields: {
+					privateData: 0,
+				},
+			}
+		)
 	}
-
-	if (NoSecurityReadAccess.any() || (await StudioReadAccess.studioContent(selector.studioId, resolvedCred))) {
-		return Rundowns.findWithCursor(selector, modifier)
-	}
-	return null
-})
+)
 
 meteorPublish(
 	CorelibPubSub.rundownsInPlaylists,
-	async function (playlistIds: RundownPlaylistId[], token: string | undefined) {
+	async function (playlistIds: RundownPlaylistId[], _token: string | undefined) {
 		check(playlistIds, Array)
+
+		triggerWriteAccessBecauseNoCheckNecessary()
 
 		// If values were provided, they must have values
 		if (playlistIds.length === 0) return null
 
-		const { cred, selector } = await AutoFillSelector.organizationId<DBRundown>(
-			this.userId,
-			{
-				playlistId: { $in: playlistIds },
-			},
-			token
-		)
+		const selector: MongoQuery<DBRundown> = {
+			playlistId: { $in: playlistIds },
+		}
 
 		const modifier: FindOptions<DBRundown> = {
 			fields: {
@@ -103,33 +92,21 @@ meteorPublish(
 			},
 		}
 
-		if (
-			!cred ||
-			NoSecurityReadAccess.any() ||
-			(selector.organizationId &&
-				(await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) ||
-			(selector.studioId && (await StudioReadAccess.studioContent(selector.studioId, cred))) ||
-			(selector._id && (await RundownReadAccess.rundown(selector._id, cred)))
-		) {
-			return Rundowns.findWithCursor(selector, modifier)
-		}
-		return null
+		return Rundowns.findWithCursor(selector, modifier)
 	}
 )
 meteorPublish(
 	CorelibPubSub.rundownsWithShowStyleBases,
-	async function (showStyleBaseIds: ShowStyleBaseId[], token: string | undefined) {
+	async function (showStyleBaseIds: ShowStyleBaseId[], _token: string | undefined) {
 		check(showStyleBaseIds, Array)
+
+		triggerWriteAccessBecauseNoCheckNecessary()
 
 		if (showStyleBaseIds.length === 0) return null
 
-		const { cred, selector } = await AutoFillSelector.organizationId<DBRundown>(
-			this.userId,
-			{
-				showStyleBaseId: { $in: showStyleBaseIds },
-			},
-			token
-		)
+		const selector: MongoQuery<DBRundown> = {
+			showStyleBaseId: { $in: showStyleBaseIds },
+		}
 
 		const modifier: FindOptions<DBRundown> = {
 			fields: {
@@ -137,24 +114,16 @@ meteorPublish(
 			},
 		}
 
-		if (
-			!cred ||
-			NoSecurityReadAccess.any() ||
-			(selector.organizationId &&
-				(await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) ||
-			(selector.studioId && (await StudioReadAccess.studioContent(selector.studioId, cred))) ||
-			(selector._id && (await RundownReadAccess.rundown(selector._id, cred)))
-		) {
-			return Rundowns.findWithCursor(selector, modifier)
-		}
-		return null
+		return Rundowns.findWithCursor(selector, modifier)
 	}
 )
 
 meteorPublish(
 	CorelibPubSub.segments,
-	async function (rundownIds: RundownId[], filter: { omitHidden?: boolean } | undefined, token: string | undefined) {
+	async function (rundownIds: RundownId[], filter: { omitHidden?: boolean } | undefined, _token: string | undefined) {
 		check(rundownIds, Array)
+
+		triggerWriteAccessBecauseNoCheckNecessary()
 
 		if (rundownIds.length === 0) return null
 
@@ -163,25 +132,21 @@ meteorPublish(
 		}
 		if (filter?.omitHidden) selector.isHidden = { $ne: true }
 
-		if (
-			NoSecurityReadAccess.any() ||
-			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
-		) {
-			return Segments.findWithCursor(selector, {
-				fields: {
-					privateData: 0,
-				},
-			})
-		}
-		return null
+		return Segments.findWithCursor(selector, {
+			fields: {
+				privateData: 0,
+			},
+		})
 	}
 )
 
 meteorPublish(
 	CorelibPubSub.parts,
-	async function (rundownIds: RundownId[], segmentIds: SegmentId[] | null, token: string | undefined) {
+	async function (rundownIds: RundownId[], segmentIds: SegmentId[] | null, _token: string | undefined) {
 		check(rundownIds, Array)
 		check(segmentIds, Match.Maybe(Array))
+
+		triggerWriteAccessBecauseNoCheckNecessary()
 
 		if (rundownIds.length === 0) return null
 		if (segmentIds && segmentIds.length === 0) return null
@@ -198,15 +163,7 @@ meteorPublish(
 		}
 		if (segmentIds) selector.segmentId = { $in: segmentIds }
 
-		if (
-			NoSecurityReadAccess.any() ||
-			(selector.rundownId &&
-				(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))) // ||
-			// (selector._id && await RundownReadAccess.pieces(selector._id, { userId: this.userId, token })) // TODO - the types for this did not match
-		) {
-			return Parts.findWithCursor(selector, modifier)
-		}
-		return null
+		return Parts.findWithCursor(selector, modifier)
 	}
 )
 meteorPublish(
@@ -214,10 +171,12 @@ meteorPublish(
 	async function (
 		rundownIds: RundownId[],
 		playlistActivationId: RundownPlaylistActivationId | null,
-		token: string | undefined
+		_token: string | undefined
 	) {
 		check(rundownIds, Array)
 		check(playlistActivationId, Match.Maybe(String))
+
+		triggerWriteAccessBecauseNoCheckNecessary()
 
 		if (rundownIds.length === 0 || !playlistActivationId) return null
 
@@ -234,13 +193,7 @@ meteorPublish(
 		}
 		if (playlistActivationId) selector.playlistActivationId = playlistActivationId
 
-		if (
-			NoSecurityReadAccess.any() ||
-			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
-		) {
-			return PartInstances.findWithCursor(selector, modifier)
-		}
-		return null
+		return PartInstances.findWithCursor(selector, modifier)
 	}
 )
 meteorPublish(
@@ -248,9 +201,11 @@ meteorPublish(
 	async function (
 		rundownIds: RundownId[],
 		playlistActivationId: RundownPlaylistActivationId | null,
-		token: string | undefined
+		_token: string | undefined
 	) {
 		check(rundownIds, Array)
+
+		triggerWriteAccessBecauseNoCheckNecessary()
 
 		if (rundownIds.length === 0) return null
 
@@ -261,20 +216,14 @@ meteorPublish(
 		}
 		if (playlistActivationId) selector.playlistActivationId = playlistActivationId
 
-		if (
-			NoSecurityReadAccess.any() ||
-			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
-		) {
-			return PartInstances.findWithCursor(selector, {
-				fields: literal<MongoFieldSpecifierZeroes<DBPartInstance>>({
-					// @ts-expect-error Mongo typings aren't clever enough yet
-					'part.privateData': 0,
-					isTaken: 0,
-					timings: 0,
-				}),
-			})
-		}
-		return null
+		return PartInstances.findWithCursor(selector, {
+			fields: literal<MongoFieldSpecifierZeroes<DBPartInstance>>({
+				// @ts-expect-error Mongo typings aren't clever enough yet
+				'part.privateData': 0,
+				isTaken: 0,
+				timings: 0,
+			}),
+		})
 	}
 )
 
@@ -285,9 +234,11 @@ const piecesSubFields: MongoFieldSpecifierZeroes<Piece> = {
 
 meteorPublish(
 	CorelibPubSub.pieces,
-	async function (rundownIds: RundownId[], partIds: PartId[] | null, token: string | undefined) {
+	async function (rundownIds: RundownId[], partIds: PartId[] | null, _token: string | undefined) {
 		check(rundownIds, Array)
 		check(partIds, Match.Maybe(Array))
+
+		triggerWriteAccessBecauseNoCheckNecessary()
 
 		// If values were provided, they must have values
 		if (partIds && partIds.length === 0) return null
@@ -297,15 +248,9 @@ meteorPublish(
 		}
 		if (partIds) selector.startPartId = { $in: partIds }
 
-		if (
-			NoSecurityReadAccess.any() ||
-			(await RundownReadAccess.rundownContent(selector.startRundownId, { userId: this.userId, token }))
-		) {
-			return Pieces.findWithCursor(selector, {
-				fields: piecesSubFields,
-			})
-		}
-		return null
+		return Pieces.findWithCursor(selector, {
+			fields: piecesSubFields,
+		})
 	}
 )
 
@@ -317,8 +262,7 @@ meteorPublish(
 		rundownIdsBefore: RundownId[],
 		_token: string | undefined
 	) {
-		// TODO - Fix this when security is enabled
-		if (!NoSecurityReadAccess.any()) return null
+		triggerWriteAccessBecauseNoCheckNecessary()
 
 		const selector: MongoQuery<Piece> = {
 			invalid: {
@@ -358,8 +302,10 @@ const adlibPiecesSubFields: MongoFieldSpecifierZeroes<AdLibPiece> = {
 	timelineObjectsString: 0,
 }
 
-meteorPublish(CorelibPubSub.adLibPieces, async function (rundownIds: RundownId[], token: string | undefined) {
+meteorPublish(CorelibPubSub.adLibPieces, async function (rundownIds: RundownId[], _token: string | undefined) {
 	check(rundownIds, Array)
+
+	triggerWriteAccessBecauseNoCheckNecessary()
 
 	if (rundownIds.length === 0) return null
 
@@ -367,22 +313,15 @@ meteorPublish(CorelibPubSub.adLibPieces, async function (rundownIds: RundownId[]
 		rundownId: { $in: rundownIds },
 	}
 
-	if (
-		NoSecurityReadAccess.any() ||
-		(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
-	) {
-		return AdLibPieces.findWithCursor(selector, {
-			fields: adlibPiecesSubFields,
-		})
-	}
-	return null
+	return AdLibPieces.findWithCursor(selector, {
+		fields: adlibPiecesSubFields,
+	})
 })
 meteorPublish(MeteorPubSub.adLibPiecesForPart, async function (partId: PartId, sourceLayerIds: string[]) {
-	if (!partId) throw new Meteor.Error(400, 'partId argument missing')
-	if (!sourceLayerIds) throw new Meteor.Error(400, 'sourceLayerIds argument missing')
+	check(partId, String)
+	check(sourceLayerIds, Array)
 
-	// Future: This needs some thought for a security enabled environment
-	if (!NoSecurityReadAccess.any()) return null
+	triggerWriteAccessBecauseNoCheckNecessary()
 
 	return AdLibPieces.findWithCursor(
 		{
@@ -411,10 +350,12 @@ meteorPublish(
 					onlyPlayingAdlibsOrWithTags?: boolean
 			  }
 			| undefined,
-		token: string | undefined
+		_token: string | undefined
 	) {
 		check(rundownIds, Array)
 		check(partInstanceIds, Match.Maybe(Array))
+
+		triggerWriteAccessBecauseNoCheckNecessary()
 
 		// If values were provided, they must have values
 		if (rundownIds.length === 0) return null
@@ -464,15 +405,9 @@ meteorPublish(
 			]
 		}
 
-		if (
-			NoSecurityReadAccess.any() ||
-			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
-		) {
-			return PieceInstances.findWithCursor(selector, {
-				fields: pieceInstanceFields,
-			})
-		}
-		return null
+		return PieceInstances.findWithCursor(selector, {
+			fields: pieceInstanceFields,
+		})
 	}
 )
 
@@ -481,9 +416,11 @@ meteorPublish(
 	async function (
 		rundownIds: RundownId[],
 		playlistActivationId: RundownPlaylistActivationId | null,
-		token: string | undefined
+		_token: string | undefined
 	) {
 		check(rundownIds, Array)
+
+		triggerWriteAccessBecauseNoCheckNecessary()
 
 		if (rundownIds.length === 0) return null
 
@@ -494,62 +431,49 @@ meteorPublish(
 		}
 		if (playlistActivationId) selector.playlistActivationId = playlistActivationId
 
-		if (
-			NoSecurityReadAccess.any() ||
-			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
-		) {
-			return PieceInstances.findWithCursor(selector, {
-				fields: literal<MongoFieldSpecifierZeroes<PieceInstance>>({
-					...pieceInstanceFields,
-					plannedStartedPlayback: 0,
-					plannedStoppedPlayback: 0,
-				}),
-			})
-		}
-		return null
+		return PieceInstances.findWithCursor(selector, {
+			fields: literal<MongoFieldSpecifierZeroes<PieceInstance>>({
+				...pieceInstanceFields,
+				plannedStartedPlayback: 0,
+				plannedStoppedPlayback: 0,
+			}),
+		})
 	}
 )
 
 meteorPublish(
 	PeripheralDevicePubSub.expectedPlayoutItemsForDevice,
 	async function (deviceId: PeripheralDeviceId, token: string | undefined) {
-		if (!deviceId) throw new Meteor.Error(400, 'deviceId argument missing')
 		check(deviceId, String)
 
-		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
-			const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, this)
 
-			if (!peripheralDevice) throw new Meteor.Error(`PeripheralDevice "${deviceId}" not found`)
+		const studioId = peripheralDevice.studioId
+		if (!studioId) return null
 
-			const studioId = peripheralDevice.studioId
-			if (!studioId) return null
-
-			return ExpectedPlayoutItems.findWithCursor({ studioId })
-		}
-		return null
+		return ExpectedPlayoutItems.findWithCursor({ studioId })
 	}
 )
 // Note: this publication is for dev purposes only:
 meteorPublish(
 	CorelibPubSub.ingestDataCache,
-	async function (selector: MongoQuery<NrcsIngestDataCacheObj>, token: string | undefined) {
+	async function (selector: MongoQuery<NrcsIngestDataCacheObj>, _token: string | undefined) {
+		triggerWriteAccessBecauseNoCheckNecessary()
+
 		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 		const modifier: FindOptions<NrcsIngestDataCacheObj> = {
 			fields: {},
 		}
-		if (
-			NoSecurityReadAccess.any() ||
-			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
-		) {
-			return NrcsIngestDataCache.findWithCursor(selector, modifier)
-		}
-		return null
+
+		return NrcsIngestDataCache.findWithCursor(selector, modifier)
 	}
 )
 meteorPublish(
 	CorelibPubSub.rundownBaselineAdLibPieces,
-	async function (rundownIds: RundownId[], token: string | undefined) {
+	async function (rundownIds: RundownId[], _token: string | undefined) {
 		check(rundownIds, Array)
+
+		triggerWriteAccessBecauseNoCheckNecessary()
 
 		if (rundownIds.length === 0) return null
 
@@ -557,18 +481,12 @@ meteorPublish(
 			rundownId: { $in: rundownIds },
 		}
 
-		if (
-			NoSecurityReadAccess.any() ||
-			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
-		) {
-			return RundownBaselineAdLibPieces.findWithCursor(selector, {
-				fields: {
-					timelineObjectsString: 0,
-					privateData: 0,
-				},
-			})
-		}
-		return null
+		return RundownBaselineAdLibPieces.findWithCursor(selector, {
+			fields: {
+				timelineObjectsString: 0,
+				privateData: 0,
+			},
+		})
 	}
 )
 
@@ -576,8 +494,10 @@ const adlibActionSubFields: MongoFieldSpecifierZeroes<AdLibAction> = {
 	privateData: 0,
 }
 
-meteorPublish(CorelibPubSub.adLibActions, async function (rundownIds: RundownId[], token: string | undefined) {
+meteorPublish(CorelibPubSub.adLibActions, async function (rundownIds: RundownId[], _token: string | undefined) {
 	check(rundownIds, Array)
+
+	triggerWriteAccessBecauseNoCheckNecessary()
 
 	if (rundownIds.length === 0) return null
 
@@ -585,22 +505,15 @@ meteorPublish(CorelibPubSub.adLibActions, async function (rundownIds: RundownId[
 		rundownId: { $in: rundownIds },
 	}
 
-	if (
-		NoSecurityReadAccess.any() ||
-		(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
-	) {
-		return AdLibActions.findWithCursor(selector, {
-			fields: adlibActionSubFields,
-		})
-	}
-	return null
+	return AdLibActions.findWithCursor(selector, {
+		fields: adlibActionSubFields,
+	})
 })
 meteorPublish(MeteorPubSub.adLibActionsForPart, async function (partId: PartId, sourceLayerIds: string[]) {
-	if (!partId) throw new Meteor.Error(400, 'partId argument missing')
-	if (!sourceLayerIds) throw new Meteor.Error(400, 'sourceLayerIds argument missing')
+	check(partId, String)
+	check(sourceLayerIds, Array)
 
-	// Future: This needs some thought for a security enabled environment
-	if (!NoSecurityReadAccess.any()) return null
+	triggerWriteAccessBecauseNoCheckNecessary()
 
 	return AdLibActions.findWithCursor(
 		{
@@ -615,8 +528,10 @@ meteorPublish(MeteorPubSub.adLibActionsForPart, async function (partId: PartId, 
 
 meteorPublish(
 	CorelibPubSub.rundownBaselineAdLibActions,
-	async function (rundownIds: RundownId[], token: string | undefined) {
+	async function (rundownIds: RundownId[], _token: string | undefined) {
 		check(rundownIds, Array)
+
+		triggerWriteAccessBecauseNoCheckNecessary()
 
 		if (rundownIds.length === 0) return null
 
@@ -624,14 +539,8 @@ meteorPublish(
 			rundownId: { $in: rundownIds },
 		}
 
-		if (
-			NoSecurityReadAccess.any() ||
-			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
-		) {
-			return RundownBaselineAdLibActions.findWithCursor(selector, {
-				fields: adlibActionSubFields,
-			})
-		}
-		return null
+		return RundownBaselineAdLibActions.findWithCursor(selector, {
+			fields: adlibActionSubFields,
+		})
 	}
 )

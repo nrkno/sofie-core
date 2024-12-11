@@ -20,23 +20,6 @@ describe('REST API', () => {
 
 		const legacyApiRouter = createLegacyApiRouter()
 
-		test('registers endpoints for all UserActionAPI methods', async () => {
-			for (const [methodName, methodValue] of Object.entries<any>(UserActionAPIMethods)) {
-				const signature = MeteorMethodSignatures[methodValue]
-
-				let resource = `/action/${methodName}`
-				for (const paramName of signature || []) {
-					resource += `/${paramName}`
-				}
-
-				const ctx = await callKoaRoute(legacyApiRouter, {
-					method: 'POST',
-					url: resource,
-				})
-				expect(ctx.response.status).not.toBe(404)
-			}
-		})
-
 		test('calls the UserActionAPI methods, when doing a POST to the endpoint', async () => {
 			for (const [methodName, methodValue] of Object.entries<any>(UserActionAPIMethods)) {
 				const signature = MeteorMethodSignatures[methodValue]

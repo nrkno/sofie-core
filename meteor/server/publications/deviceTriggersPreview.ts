@@ -9,8 +9,8 @@ import { DeviceTriggerArguments, UIDeviceTriggerPreview } from '@sofie-automatio
 import { getCurrentTime } from '../lib/lib'
 import { SetupObserversResult, setUpOptimizedObserverArray, TriggerUpdate } from '../lib/customPublication'
 import { CustomPublish, meteorCustomPublish } from '../lib/customPublication/publish'
-import { StudioReadAccess } from '../security/studio'
 import { PeripheralDevices } from '../collections'
+import { assertConnectionHasOneOfPermissions } from '../security/auth'
 
 /** IDEA: This could potentially be a Capped Collection, thus enabling scaling Core horizontally:
  *  https://www.mongodb.com/docs/manual/core/capped-collections/ */
@@ -19,14 +19,12 @@ const lastTriggers: Record<string, { triggers: UIDeviceTriggerPreview[]; updated
 meteorCustomPublish(
 	MeteorPubSub.deviceTriggersPreview,
 	CustomCollectionName.UIDeviceTriggerPreviews,
-	async function (pub, studioId: StudioId, token: string | undefined) {
+	async function (pub, studioId: StudioId, _token: string | undefined) {
 		check(studioId, String)
 
-		if (!studioId) throw new Meteor.Error(400, 'One of studioId must be provided')
+		assertConnectionHasOneOfPermissions(this.connection, 'configure')
 
-		if (await StudioReadAccess.studioContent(studioId, { userId: this.userId, token })) {
-			await createObserverForDeviceTriggersPreviewsPublication(pub, MeteorPubSub.deviceTriggersPreview, studioId)
-		}
+		await createObserverForDeviceTriggersPreviewsPublication(pub, MeteorPubSub.deviceTriggersPreview, studioId)
 	}
 )
 
