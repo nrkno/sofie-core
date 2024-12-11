@@ -1,6 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
-import { PeripheralDevices, Studios } from '../collections'
+import { CoreSystem, PeripheralDevices, Studios, TriggeredActions } from '../collections'
 import {
 	convertObjectIntoOverrides,
 	ObjectOverrideSetOp,
@@ -10,8 +10,12 @@ import {
 	StudioRouteSet,
 	StudioRouteSetExclusivityGroup,
 	StudioPackageContainer,
+	IStudioSettings,
 	StudioDeviceSettings,
 } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { DEFAULT_CORE_TRIGGER_IDS } from './upgrades/defaultSystemActionTriggers'
+import { ICoreSystem } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
+import { ICoreSystemSettings } from '@sofie-automation/shared-lib/dist/core/model/CoreSystemSettings'
 import { logger } from '../logging'
 import { literal, unprotectString } from '../lib/tempLib'
 
@@ -233,6 +237,123 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	},
 
 	{
+		id: 'TriggeredActions.remove old systemwide',
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const coreTriggeredActionsCount = await TriggeredActions.countDocuments({
+				showStyleBaseId: null,
+				blueprintUniqueId: null,
+				_id: { $in: DEFAULT_CORE_TRIGGER_IDS },
+			})
+
+			if (coreTriggeredActionsCount > 0) {
+				return `System-wide triggered actions needing removal.`
+			}
+
+			return false
+		},
+		migrate: async () => {
+			await TriggeredActions.removeAsync({
+				showStyleBaseId: null,
+				blueprintUniqueId: null,
+				_id: { $in: DEFAULT_CORE_TRIGGER_IDS },
+			})
+		},
+	},
+
+	{
+		id: `convert studio.settings to ObjectWithOverrides`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const studios = await Studios.findFetchAsync({
+				settings: { $exists: true },
+				settingsWithOverrides: { $exists: false },
+			})
+
+			for (const studio of studios) {
+				//@ts-expect-error settings is not typed as ObjectWithOverrides
+				if (studio.settings) {
+					return 'settings must be converted to an ObjectWithOverrides'
+				}
+			}
+
+			return false
+		},
+		migrate: async () => {
+			const studios = await Studios.findFetchAsync({
+				settings: { $exists: true },
+				settingsWithOverrides: { $exists: false },
+			})
+
+			for (const studio of studios) {
+				//@ts-expect-error settings is typed as Record<string, StudioRouteSet>
+				const oldSettings = studio.settings
+
+				const newSettings = wrapDefaultObject<IStudioSettings>(oldSettings || {})
+
+				await Studios.updateAsync(studio._id, {
+					$set: {
+						settingsWithOverrides: newSettings,
+					},
+					$unset: {
+						// settings: 1,
+					},
+				})
+			}
+		},
+	},
+
+	{
+		id: `convert CoreSystem.settingsWithOverrides`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const systems = await CoreSystem.findFetchAsync({
+				settingsWithOverrides: { $exists: false },
+			})
+
+			if (systems.length > 0) {
+				return 'settings must be converted to an ObjectWithOverrides'
+			}
+
+			return false
+		},
+		migrate: async () => {
+			const systems = await CoreSystem.findFetchAsync({
+				settingsWithOverrides: { $exists: false },
+			})
+
+			for (const system of systems) {
+				const oldSystem = system as ICoreSystem as PartialOldICoreSystem
+
+				const newSettings = wrapDefaultObject<ICoreSystemSettings>({
+					cron: {
+						casparCGRestart: {
+							enabled: false,
+						},
+						storeRundownSnapshots: {
+							enabled: false,
+						},
+						...oldSystem.cron,
+					},
+					support: oldSystem.support ?? { message: '' },
+					evaluationsMessage: oldSystem.evaluations ?? { enabled: false, heading: '', message: '' },
+				})
+
+				await CoreSystem.updateAsync(system._id, {
+					$set: {
+						settingsWithOverrides: newSettings,
+					},
+					$unset: {
+						cron: 1,
+						support: 1,
+						evaluations: 1,
+					},
+				})
+			}
+		},
+	},
+
+	{
 		id: `studios create peripheralDeviceSettings.deviceSettings`,
 		canBeRunAutomatically: true,
 		validate: async () => {
@@ -370,3 +491,27 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 		},
 	},
 ])
+
+interface PartialOldICoreSystem {
+	/** Support info */
+	support?: {
+		message: string
+	}
+
+	evaluations?: {
+		enabled: boolean
+		heading: string
+		message: string
+	}
+
+	/** Cron jobs running nightly */
+	cron?: {
+		casparCGRestart?: {
+			enabled: boolean
+		}
+		storeRundownSnapshots?: {
+			enabled: boolean
+			rundownNames?: string[]
+		}
+	}
+}

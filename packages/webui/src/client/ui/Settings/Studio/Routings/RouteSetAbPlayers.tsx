@@ -118,7 +118,6 @@ function AbPlayerRow({
 					label={t('Pool name')}
 					item={player}
 					itemKey={'poolName'}
-					opPrefix={player.id}
 					overrideHelper={tableOverrideHelper}
 				>
 					{(value, handleUpdate) => (
@@ -134,7 +133,6 @@ function AbPlayerRow({
 					label={t('Pool PlayerId')}
 					item={player}
 					itemKey={'playerId'}
-					opPrefix={player.id}
 					overrideHelper={tableOverrideHelper}
 				>
 					{(value, handleUpdate) => (

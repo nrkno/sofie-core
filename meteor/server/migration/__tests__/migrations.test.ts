@@ -5,21 +5,11 @@ import { clearMigrationSteps, addMigrationSteps, prepareMigration, PreparedMigra
 import { CURRENT_SYSTEM_VERSION } from '../currentSystemVersion'
 import { RunMigrationResult, GetMigrationStatusResult } from '@sofie-automation/meteor-lib/dist/api/migration'
 import { literal, protectString } from '../../lib/tempLib'
-import {
-	MigrationStepInputResult,
-	BlueprintManifestType,
-	MigrationContextStudio,
-	MigrationContextShowStyle,
-	PlaylistTimingType,
-	PlaylistTimingNone,
-	ShowStyleBlueprintManifest,
-	StudioBlueprintManifest,
-} from '@sofie-automation/blueprints-integration'
+import { MigrationStepInputResult } from '@sofie-automation/blueprints-integration'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { generateFakeBlueprint } from '../../api/blueprints/__tests__/lib'
 import { MeteorCall } from '../../api/methods'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../../collections'
+import { ShowStyleBases, ShowStyleVariants, Studios } from '../../collections'
 import { getCoreSystemAsync } from '../../coreSystem/collection'
 import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
 import fs from 'fs'
@@ -121,14 +111,14 @@ describe('Migrations', () => {
 						name: 'Default studio',
 						organizationId: null,
 						supportedShowStyleBase: [],
-						settings: {
+						settingsWithOverrides: wrapDefaultObject({
 							mediaPreviewsUrl: '',
 							frameRate: 25,
 							minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
 							allowHold: true,
 							allowPieceDirectPlay: true,
 							enableBuckets: true,
-						},
+						}),
 						mappingsWithOverrides: wrapDefaultObject({}),
 						blueprintConfigWithOverrides: wrapDefaultObject({}),
 						_rundownVersionHash: '',
@@ -163,14 +153,14 @@ describe('Migrations', () => {
 						name: 'Default studio',
 						organizationId: null,
 						supportedShowStyleBase: [],
-						settings: {
+						settingsWithOverrides: wrapDefaultObject({
 							mediaPreviewsUrl: '',
 							frameRate: 25,
 							minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
 							allowHold: true,
 							allowPieceDirectPlay: true,
 							enableBuckets: true,
-						},
+						}),
 						mappingsWithOverrides: wrapDefaultObject({}),
 						blueprintConfigWithOverrides: wrapDefaultObject({}),
 						_rundownVersionHash: '',
@@ -205,14 +195,14 @@ describe('Migrations', () => {
 						name: 'Default studio',
 						organizationId: null,
 						supportedShowStyleBase: [],
-						settings: {
+						settingsWithOverrides: wrapDefaultObject({
 							mediaPreviewsUrl: '',
 							frameRate: 25,
 							minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
 							allowHold: true,
 							allowPieceDirectPlay: true,
 							enableBuckets: true,
-						},
+						}),
 						mappingsWithOverrides: wrapDefaultObject({}),
 						blueprintConfigWithOverrides: wrapDefaultObject({}),
 						_rundownVersionHash: '',
@@ -250,160 +240,6 @@ describe('Migrations', () => {
 		const studio = (await Studios.findOneAsync({})) as DBStudio
 		expect(studio).toBeTruthy()
 
-		const studioManifest = (): StudioBlueprintManifest => ({
-			blueprintType: 'studio' as BlueprintManifestType.STUDIO,
-			blueprintVersion: '1.0.0',
-			integrationVersion: '0.0.0',
-			TSRVersion: '0.0.0',
-
-			configPresets: {
-				main: {
-					name: 'Main',
-					config: {},
-				},
-			},
-
-			studioConfigSchema: '{}' as any,
-			studioMigrations: [
-				{
-					version: '0.2.0',
-					id: 'myStudioMockStep2',
-					validate: (context: MigrationContextStudio) => {
-						if (!context.getConfig('mocktest2')) return `mocktest2 config not set`
-						return false
-					},
-					canBeRunAutomatically: true,
-					migrate: (context: MigrationContextStudio) => {
-						if (!context.getConfig('mocktest2')) {
-							context.setConfig('mocktest2', true)
-						}
-					},
-				},
-				{
-					version: '0.3.0',
-					id: 'myStudioMockStep3',
-					validate: (context: MigrationContextStudio) => {
-						if (!context.getConfig('mocktest3')) return `mocktest3 config not set`
-						return false
-					},
-					canBeRunAutomatically: true,
-					migrate: (context: MigrationContextStudio) => {
-						if (!context.getConfig('mocktest3')) {
-							context.setConfig('mocktest3', true)
-						}
-					},
-				},
-				{
-					version: '0.1.0',
-					id: 'myStudioMockStep1',
-					validate: (context: MigrationContextStudio) => {
-						if (!context.getConfig('mocktest1')) return `mocktest1 config not set`
-						return false
-					},
-					canBeRunAutomatically: true,
-					migrate: (context: MigrationContextStudio) => {
-						if (!context.getConfig('mocktest1')) {
-							context.setConfig('mocktest1', true)
-						}
-					},
-				},
-			],
-			getBaseline: () => {
-				return {
-					timelineObjects: [],
-				}
-			},
-			getShowStyleId: () => null,
-		})
-
-		const showStyleManifest = (): ShowStyleBlueprintManifest => ({
-			blueprintType: 'showstyle' as BlueprintManifestType.SHOWSTYLE,
-			blueprintVersion: '1.0.0',
-			integrationVersion: '0.0.0',
-			TSRVersion: '0.0.0',
-
-			configPresets: {
-				main: {
-					name: 'Main',
-					config: {},
-
-					variants: {
-						main: {
-							name: 'Default',
-							config: {},
-						},
-					},
-				},
-			},
-
-			showStyleConfigSchema: '{}' as any,
-			showStyleMigrations: [
-				{
-					version: '0.2.0',
-					id: 'myShowStyleMockStep2',
-					validate: (context: MigrationContextShowStyle) => {
-						if (!context.getBaseConfig('mocktest2')) return `mocktest2 config not set`
-						return false
-					},
-					canBeRunAutomatically: true,
-					migrate: (context: MigrationContextShowStyle) => {
-						if (!context.getBaseConfig('mocktest2')) {
-							context.setBaseConfig('mocktest2', true)
-						}
-					},
-				},
-				{
-					version: '0.3.0',
-					id: 'myShowStyleMockStep3',
-					validate: (context: MigrationContextShowStyle) => {
-						if (!context.getBaseConfig('mocktest3')) return `mocktest3 config not set`
-						return false
-					},
-					canBeRunAutomatically: true,
-					migrate: (context: MigrationContextShowStyle) => {
-						if (!context.getBaseConfig('mocktest3')) {
-							context.setBaseConfig('mocktest3', true)
-						}
-					},
-				},
-				{
-					version: '0.1.0',
-					id: 'myShowStyleMockStep1',
-					validate: (context: MigrationContextShowStyle) => {
-						if (!context.getBaseConfig('mocktest1')) return `mocktest1 config not set`
-						return false
-					},
-					canBeRunAutomatically: true,
-					migrate: (context: MigrationContextShowStyle) => {
-						if (!context.getBaseConfig('mocktest1')) {
-							context.setBaseConfig('mocktest1', true)
-						}
-					},
-				},
-			],
-			getShowStyleVariantId: () => null,
-			getRundown: () => ({
-				rundown: {
-					externalId: '',
-					name: '',
-					timing: literal<PlaylistTimingNone>({
-						type: PlaylistTimingType.None,
-					}),
-				},
-				globalAdLibPieces: [],
-				globalActions: [],
-				baseline: { timelineObjects: [] },
-			}),
-			getSegment: () => ({
-				segment: { name: '' },
-				parts: [],
-			}),
-		})
-
-		await Blueprints.insertAsync(
-			generateFakeBlueprint('showStyle0', BlueprintManifestType.SHOWSTYLE, showStyleManifest)
-		)
-
 		await ShowStyleBases.insertAsync({
 			_id: protectString('showStyle0'),
 			name: '',
@@ -427,7 +263,6 @@ describe('Migrations', () => {
 			_rank: 0,
 		})
 
-		await Blueprints.insertAsync(generateFakeBlueprint('studio0', BlueprintManifestType.STUDIO, studioManifest))
 		await Studios.updateAsync(studio._id, {
 			$set: {
 				blueprintId: protectString('studio0'),

@@ -4,11 +4,8 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { useSubscription, useTracker } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { UIBlueprintUpgradeStatuses } from '../../Collections'
-import {
-	UIBlueprintUpgradeStatusShowStyle,
-	UIBlueprintUpgradeStatusStudio,
-} from '@sofie-automation/meteor-lib/dist/api/upgradeStatus'
-import { getUpgradeStatusMessage, UpgradeStatusButtons } from './Components'
+import { UIBlueprintUpgradeStatus } from '@sofie-automation/meteor-lib/dist/api/upgradeStatus'
+import { getUpgradeStatusMessage, SystemUpgradeStatusButtons, UpgradeStatusButtons } from './Components'
 
 export function UpgradesView(): JSX.Element {
 	const { t } = useTranslation()
@@ -41,6 +38,17 @@ export function UpgradesView(): JSX.Element {
 
 						{statuses?.map(
 							(document) =>
+								document.documentType === 'coreSystem' && (
+									<ShowUpgradesRow
+										key={unprotectString(document.documentId)}
+										resourceName={t('System')}
+										upgradeResult={document}
+									/>
+								)
+						)}
+
+						{statuses?.map(
+							(document) =>
 								document.documentType === 'studio' && (
 									<ShowUpgradesRow
 										key={unprotectString(document.documentId)}
@@ -69,7 +77,7 @@ export function UpgradesView(): JSX.Element {
 
 interface ShowUpgradesRowProps {
 	resourceName: string
-	upgradeResult: UIBlueprintUpgradeStatusStudio | UIBlueprintUpgradeStatusShowStyle
+	upgradeResult: UIBlueprintUpgradeStatus
 }
 function ShowUpgradesRow({ resourceName, upgradeResult }: Readonly<ShowUpgradesRowProps>) {
 	const { t } = useTranslation()
@@ -83,7 +91,11 @@ function ShowUpgradesRow({ resourceName, upgradeResult }: Readonly<ShowUpgradesR
 			<td>{getUpgradeStatusMessage(t, upgradeResult)}</td>
 
 			<td>
-				<UpgradeStatusButtons upgradeResult={upgradeResult} />
+				{upgradeResult.documentType === 'coreSystem' ? (
+					<SystemUpgradeStatusButtons upgradeResult={upgradeResult} />
+				) : (
+					<UpgradeStatusButtons upgradeResult={upgradeResult} />
+				)}
 			</td>
 		</tr>
 	)

@@ -54,14 +54,13 @@ export const CoreSystem = createAsyncOnlyMongoCollection<ICoreSystem>(Collection
 		if (!checkUserIdHasOneOfPermissions(userId, CollectionName.CoreSystem, 'configure')) return false
 
 		return allowOnlyFields(doc, fields, [
-			'support',
 			'systemInfo',
 			'name',
 			'logLevel',
 			'apm',
-			'cron',
 			'logo',
-			'evaluations',
+			'blueprintId',
+			'settingsWithOverrides',
 		])
 	},
 })

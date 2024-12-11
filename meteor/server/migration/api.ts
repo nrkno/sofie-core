@@ -19,8 +19,9 @@ import {
 	validateConfigForShowStyleBase,
 	validateConfigForStudio,
 } from './upgrades'
-import { ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CoreSystemId, ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { BlueprintValidateConfigForStudioResult } from '@sofie-automation/corelib/dist/worker/studio'
+import { runUpgradeForCoreSystem } from './upgrades/system'
 import { assertConnectionHasOneOfPermissions } from '../security/auth'
 import { UserPermissions } from '@sofie-automation/meteor-lib/dist/userPermissions'
 
@@ -127,6 +128,14 @@ class ServerMigrationAPI extends MethodContextAPI implements NewMigrationAPI {
 		assertConnectionHasOneOfPermissions(this.connection, ...PERMISSIONS_FOR_MIGRATIONS)
 
 		return runUpgradeForShowStyleBase(showStyleBaseId)
+	}
+
+	async runUpgradeForCoreSystem(coreSystemId: CoreSystemId): Promise<void> {
+		check(coreSystemId, String)
+
+		assertConnectionHasOneOfPermissions(this.connection, ...PERMISSIONS_FOR_MIGRATIONS)
+
+		return runUpgradeForCoreSystem(coreSystemId)
 	}
 }
 registerClassToMeteorMethods(MigrationAPIMethods, ServerMigrationAPI, false)

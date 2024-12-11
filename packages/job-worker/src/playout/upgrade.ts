@@ -2,6 +2,7 @@ import {
 	BlueprintMapping,
 	BlueprintMappings,
 	BlueprintParentDeviceSettings,
+	IStudioSettings,
 	JSONBlobParse,
 	StudioRouteBehavior,
 	TSR,
@@ -28,6 +29,7 @@ import { compileCoreConfigValues } from '../blueprints/config'
 import { CommonContext } from '../blueprints/context'
 import { JobContext } from '../jobs'
 import { FixUpBlueprintConfigContext } from '@sofie-automation/corelib/dist/fixUpBlueprintConfig/context'
+import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
 
 /**
  * Run the Blueprint applyConfig for the studio
@@ -43,7 +45,7 @@ export async function handleBlueprintUpgradeForStudio(context: JobContext, _data
 		name: 'applyConfig',
 		identifier: `studio:${context.studioId},blueprint:${blueprint.blueprintId}`,
 	})
-	const rawBlueprintConfig = applyAndValidateOverrides(context.studio.blueprintConfigWithOverrides).obj
+	const rawBlueprintConfig = context.studio.blueprintConfig
 
 	const result = blueprint.blueprint.applyConfig(
 		blueprintContext,
@@ -120,8 +122,18 @@ export async function handleBlueprintUpgradeForStudio(context: JobContext, _data
 		])
 	)
 
+	const studioSettings: IStudioSettings = result.studioSettings ?? {
+		frameRate: 25,
+		mediaPreviewsUrl: '',
+		minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
+		allowHold: true,
+		allowPieceDirectPlay: true,
+		enableBuckets: true,
+	}
+
 	await context.directCollections.Studios.update(context.studioId, {
 		$set: {
+			'settingsWithOverrides.defaults': studioSettings,
 			'mappingsWithOverrides.defaults': translateMappings(result.mappings),
 			'peripheralDeviceSettings.deviceSettings.defaults': parentDevices,
 			'peripheralDeviceSettings.playoutDevices.defaults': playoutDevices,
@@ -170,7 +182,7 @@ export async function handleBlueprintValidateConfigForStudio(
 		name: 'validateConfig',
 		identifier: `studio:${context.studioId},blueprint:${blueprint.blueprintId}`,
 	})
-	const rawBlueprintConfig = applyAndValidateOverrides(context.studio.blueprintConfigWithOverrides).obj
+	const rawBlueprintConfig = applyAndValidateOverrides(context.rawStudio.blueprintConfigWithOverrides).obj
 
 	// This clone seems excessive, but without it a DataCloneError is generated when posting the result to the parent
 	const messages = clone(blueprint.blueprint.validateConfig(blueprintContext, rawBlueprintConfig))
@@ -212,7 +224,7 @@ export async function handleBlueprintFixUpConfigForStudio(
 	const blueprintContext = new FixUpBlueprintConfigContext(
 		commonContext,
 		JSONBlobParse(blueprint.blueprint.studioConfigSchema),
-		context.studio.blueprintConfigWithOverrides
+		context.rawStudio.blueprintConfigWithOverrides
 	)
 
 	blueprint.blueprint.fixUpConfig(blueprintContext)

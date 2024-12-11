@@ -53,8 +53,6 @@ export async function insertBlueprint(
 		blueprintType: type,
 
 		databaseVersion: {
-			studio: {},
-			showStyle: {},
 			system: undefined,
 		},
 
@@ -154,8 +152,6 @@ async function innerUploadBlueprint(
 		databaseVersion: blueprint
 			? blueprint.databaseVersion
 			: {
-					studio: {},
-					showStyle: {},
 					system: undefined,
 			  },
 		blueprintId: '',
@@ -205,8 +201,6 @@ async function innerUploadBlueprint(
 
 			// Force reset migrations
 			newBlueprint.databaseVersion = {
-				showStyle: {},
-				studio: {},
 				system: undefined,
 			}
 		} else {

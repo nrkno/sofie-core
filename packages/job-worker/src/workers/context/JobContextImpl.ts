@@ -1,5 +1,5 @@
 import { IDirectCollections } from '../../db'
-import { JobContext } from '../../jobs'
+import { JobContext, JobStudio } from '../../jobs'
 import { WorkerDataCache } from '../caches'
 import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { getIngestQueueName, IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
@@ -41,8 +41,12 @@ export class JobContextImpl extends StudioCacheContextImpl implements JobContext
 		this.studioRouteSetUpdater = new StudioRouteSetUpdater(directCollections, cacheData)
 	}
 
-	get studio(): ReadonlyDeep<DBStudio> {
-		return this.studioRouteSetUpdater.studioWithChanges ?? super.studio
+	get studio(): ReadonlyDeep<JobStudio> {
+		return this.studioRouteSetUpdater.jobStudioWithChanges ?? super.studio
+	}
+
+	get rawStudio(): ReadonlyDeep<DBStudio> {
+		return this.studioRouteSetUpdater.rawStudioWithChanges ?? super.rawStudio
 	}
 
 	trackCache(cache: BaseModel): void {

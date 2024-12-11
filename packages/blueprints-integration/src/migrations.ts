@@ -1,9 +1,4 @@
-import { ConfigItemValue } from './common'
-import { OmitId } from './lib'
-import { IBlueprintShowStyleVariant, IOutputLayer, ISourceLayer } from './showStyle'
 import { IBlueprintTriggeredActions } from './triggers'
-import { BlueprintMapping } from './studio'
-import { TSR } from './timeline'
 
 export interface MigrationStepInput {
 	stepId?: string // automatically filled in later
@@ -28,59 +23,18 @@ export type ValidateFunctionSystem = (
 	context: MigrationContextSystem,
 	afterMigration: boolean
 ) => Promise<boolean | string>
-export type ValidateFunctionStudio = (context: MigrationContextStudio, afterMigration: boolean) => boolean | string
-export type ValidateFunctionShowStyle = (
-	context: MigrationContextShowStyle,
-	afterMigration: boolean
-) => boolean | string
-export type ValidateFunction =
-	| ValidateFunctionStudio
-	| ValidateFunctionShowStyle
-	| ValidateFunctionSystem
-	| ValidateFunctionCore
+export type ValidateFunction = ValidateFunctionSystem | ValidateFunctionCore
 
 export type MigrateFunctionCore = (input: MigrationStepInputFilteredResult) => Promise<void>
 export type MigrateFunctionSystem = (
 	context: MigrationContextSystem,
 	input: MigrationStepInputFilteredResult
 ) => Promise<void>
-export type MigrateFunctionStudio = (context: MigrationContextStudio, input: MigrationStepInputFilteredResult) => void
-export type MigrateFunctionShowStyle = (
-	context: MigrationContextShowStyle,
-	input: MigrationStepInputFilteredResult
-) => void
-export type MigrateFunction =
-	| MigrateFunctionStudio
-	| MigrateFunctionShowStyle
-	| MigrateFunctionSystem
-	| MigrateFunctionCore
+export type MigrateFunction = MigrateFunctionSystem | MigrateFunctionCore
 
 export type InputFunctionCore = () => MigrationStepInput[]
 export type InputFunctionSystem = (context: MigrationContextSystem) => MigrationStepInput[]
-export type InputFunctionStudio = (context: MigrationContextStudio) => MigrationStepInput[]
-export type InputFunctionShowStyle = (context: MigrationContextShowStyle) => MigrationStepInput[]
-export type InputFunction = InputFunctionStudio | InputFunctionShowStyle | InputFunctionSystem | InputFunctionCore
-
-export interface MigrationContextStudio {
-	getMapping: (mappingId: string) => BlueprintMapping | undefined
-	insertMapping: (mappingId: string, mapping: OmitId<BlueprintMapping>) => string
-	updateMapping: (mappingId: string, mapping: Partial<BlueprintMapping>) => void
-	removeMapping: (mappingId: string) => void
-
-	getConfig: (configId: string) => ConfigItemValue | undefined
-	setConfig: (configId: string, value: ConfigItemValue) => void
-	removeConfig: (configId: string) => void
-
-	getDevice: (deviceId: string) => TSR.DeviceOptionsAny | undefined
-	insertDevice: (deviceId: string, device: TSR.DeviceOptionsAny) => string | null
-	updateDevice: (deviceId: string, device: Partial<TSR.DeviceOptionsAny>) => void
-	removeDevice: (deviceId: string) => void
-}
-
-export interface ShowStyleVariantPart {
-	// Note: if more props are added it may make sense to use Omit<> to build this type
-	name: string
-}
+export type InputFunction = InputFunctionSystem | InputFunctionCore
 
 interface MigrationContextWithTriggeredActions {
 	getAllTriggeredActions: () => Promise<IBlueprintTriggeredActions[]>
@@ -88,33 +42,6 @@ interface MigrationContextWithTriggeredActions {
 	getTriggeredActionId: (triggeredActionId: string) => string
 	setTriggeredAction: (triggeredActions: IBlueprintTriggeredActions) => Promise<void>
 	removeTriggeredAction: (triggeredActionId: string) => Promise<void>
-}
-
-export interface MigrationContextShowStyle extends MigrationContextWithTriggeredActions {
-	getAllVariants: () => IBlueprintShowStyleVariant[]
-	getVariantId: (variantId: string) => string
-	getVariant: (variantId: string) => IBlueprintShowStyleVariant | undefined
-	insertVariant: (variantId: string, variant: OmitId<ShowStyleVariantPart>) => string
-	updateVariant: (variantId: string, variant: Partial<ShowStyleVariantPart>) => void
-	removeVariant: (variantId: string) => void
-
-	getSourceLayer: (sourceLayerId: string) => ISourceLayer | undefined
-	insertSourceLayer: (sourceLayerId: string, layer: OmitId<ISourceLayer>) => string
-	updateSourceLayer: (sourceLayerId: string, layer: Partial<ISourceLayer>) => void
-	removeSourceLayer: (sourceLayerId: string) => void
-
-	getOutputLayer: (outputLayerId: string) => IOutputLayer | undefined
-	insertOutputLayer: (outputLayerId: string, layer: OmitId<IOutputLayer>) => string
-	updateOutputLayer: (outputLayerId: string, layer: Partial<IOutputLayer>) => void
-	removeOutputLayer: (outputLayerId: string) => void
-
-	getBaseConfig: (configId: string) => ConfigItemValue | undefined
-	setBaseConfig: (configId: string, value: ConfigItemValue) => void
-	removeBaseConfig: (configId: string) => void
-
-	getVariantConfig: (variantId: string, configId: string) => ConfigItemValue | undefined
-	setVariantConfig: (variantId: string, configId: string, value: ConfigItemValue) => void
-	removeVariantConfig: (variantId: string, configId: string) => void
 }
 
 export type MigrationContextSystem = MigrationContextWithTriggeredActions
@@ -163,9 +90,3 @@ export interface MigrationStep<
 
 export type MigrationStepCore = MigrationStep<ValidateFunctionCore, MigrateFunctionCore, InputFunctionCore>
 export type MigrationStepSystem = MigrationStep<ValidateFunctionSystem, MigrateFunctionSystem, InputFunctionSystem>
-export type MigrationStepStudio = MigrationStep<ValidateFunctionStudio, MigrateFunctionStudio, InputFunctionStudio>
-export type MigrationStepShowStyle = MigrationStep<
-	ValidateFunctionShowStyle,
-	MigrateFunctionShowStyle,
-	InputFunctionShowStyle
->

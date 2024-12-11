@@ -340,3 +340,27 @@ export interface IBlueprintTriggeredActions {
 }
 
 export { SomeActionIdentifier, ClientActions, PlayoutActions }
+
+export enum IBlueprintDefaultCoreSystemTriggersType {
+	toggleShelf = 'toggleShelf',
+	activateRundownPlaylist = 'activateRundownPlaylist',
+	activateRundownPlaylistRehearsal = 'activateRundownPlaylistRehearsal',
+	deactivateRundownPlaylist = 'deactivateRundownPlaylist',
+	take = 'take',
+	hold = 'hold',
+	holdUndo = 'holdUndo',
+	resetRundownPlaylist = 'resetRundownPlaylist',
+	disableNextPiece = 'disableNextPiece',
+	disableNextPieceUndo = 'disableNextPieceUndo',
+	createSnapshotForDebug = 'createSnapshotForDebug',
+	moveNextPart = 'moveNextPart',
+	moveNextSegment = 'moveNextSegment',
+	movePreviousPart = 'movePreviousPart',
+	movePreviousSegment = 'movePreviousSegment',
+	goToOnAirLine = 'goToOnAirLine',
+	rewindSegments = 'rewindSegments',
+}
+
+export type IBlueprintDefaultCoreSystemTriggers = {
+	[key in IBlueprintDefaultCoreSystemTriggersType]: IBlueprintTriggeredActions
+}

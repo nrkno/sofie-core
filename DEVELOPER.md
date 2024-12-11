@@ -142,8 +142,8 @@ However, one usage by AdlibActions for their userDataManifest remains as this is
 
 ## Blueprint Migrations
 
-In R49, a replacement flow was added consisting of `validateConfig` and `applyConfig`.
-It is no longer recommended to use the old migrations flow for showstyle and studio blueprints.
+In R52, the replacement flow of `validateConfig` and `applyConfig` was extended to the system blueprint
+It is no longer recommended to use the old migrations flow for system blueprints.
 
 ### ExpectedMediaItems
 

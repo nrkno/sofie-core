@@ -25,8 +25,7 @@ import {
 	convertPartialBlueprintMutablePartToCore,
 } from './lib'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
+import { JobContext, JobStudio, ProcessedShowStyleCompound } from '../../jobs'
 import {
 	PieceTimelineObjectsBlob,
 	serializePieceTimelineObjectsBlob,
@@ -44,7 +43,7 @@ export class SyncIngestUpdateToPartInstanceContext
 	constructor(
 		private readonly _context: JobContext,
 		contextInfo: ContextInfo,
-		studio: ReadonlyDeep<DBStudio>,
+		studio: ReadonlyDeep<JobStudio>,
 		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		rundown: ReadonlyDeep<DBRundown>,
 		partInstance: PlayoutPartInstanceModel,

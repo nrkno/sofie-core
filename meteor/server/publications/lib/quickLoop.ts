@@ -1,16 +1,16 @@
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import {
 	DBRundownPlaylist,
-	ForceQuickLoopAutoNext,
 	QuickLoopMarker,
 	QuickLoopMarkerType,
 } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { ForceQuickLoopAutoNext } from '@sofie-automation/shared-lib/dist/core/model/StudioSettings'
 import { MarkerPosition, compareMarkerPositions } from '@sofie-automation/corelib/dist/playout/playlist'
 import { ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { DEFAULT_FALLBACK_PART_DURATION } from '@sofie-automation/shared-lib/dist/core/constants'
 import { getCurrentTime } from '../../lib/lib'
 import { generateTranslation } from '@sofie-automation/corelib/dist/lib'
-import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
@@ -47,7 +47,7 @@ export function modifyPartForQuickLoop(
 	segmentRanks: Record<string, number>,
 	rundownRanks: Record<string, number>,
 	playlist: Pick<DBRundownPlaylist, 'quickLoop'>,
-	studio: Pick<DBStudio, 'settings'>,
+	studioSettings: IStudioSettings,
 	quickLoopStartPosition: MarkerPosition | undefined,
 	quickLoopEndPosition: MarkerPosition | undefined,
 	canSetAutoNext = () => true
@@ -60,7 +60,7 @@ export function modifyPartForQuickLoop(
 		compareMarkerPositions(quickLoopStartPosition, partPosition) >= 0 &&
 		compareMarkerPositions(partPosition, quickLoopEndPosition) >= 0
 
-	const fallbackPartDuration = studio.settings.fallbackPartDuration ?? DEFAULT_FALLBACK_PART_DURATION
+	const fallbackPartDuration = studioSettings.fallbackPartDuration ?? DEFAULT_FALLBACK_PART_DURATION
 
 	if (isLoopingOverriden && (part.expectedDuration ?? 0) < fallbackPartDuration) {
 		if (playlist.quickLoop?.forceAutoNext === ForceQuickLoopAutoNext.ENABLED_FORCING_MIN_DURATION) {
@@ -82,7 +82,7 @@ export function modifyPartInstanceForQuickLoop(
 	segmentRanks: Record<string, number>,
 	rundownRanks: Record<string, number>,
 	playlist: Pick<DBRundownPlaylist, 'quickLoop'>,
-	studio: Pick<DBStudio, 'settings'>,
+	studioSettings: IStudioSettings,
 	quickLoopStartPosition: MarkerPosition | undefined,
 	quickLoopEndPosition: MarkerPosition | undefined
 ): void {
@@ -107,7 +107,7 @@ export function modifyPartInstanceForQuickLoop(
 		segmentRanks,
 		rundownRanks,
 		playlist,
-		studio,
+		studioSettings,
 		quickLoopStartPosition,
 		quickLoopEndPosition,
 		canAutoNext // do not adjust the part instance if we have passed the time where we can still enable auto next

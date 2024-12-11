@@ -9,6 +9,7 @@ import { fetchStudioLight } from '../optimizations'
 import { sendSlackMessageToWebhook } from './integration/slack'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Evaluations, RundownPlaylists } from '../collections'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { VerifiedRundownPlaylistForUserAction } from '../security/check'
 
 export async function saveEvaluation(
@@ -30,8 +31,9 @@ export async function saveEvaluation(
 	deferAsync(async () => {
 		const studio = await fetchStudioLight(evaluation.studioId)
 		if (!studio) throw new Meteor.Error(500, `Studio ${evaluation.studioId} not found!`)
+		const studioSettings = applyAndValidateOverrides(studio.settingsWithOverrides).obj
 
-		const webhookUrls = _.compact((studio.settings.slackEvaluationUrls || '').split(','))
+		const webhookUrls = _.compact((studioSettings.slackEvaluationUrls || '').split(','))
 
 		if (webhookUrls.length) {
 			// Only send notes if not everything is OK

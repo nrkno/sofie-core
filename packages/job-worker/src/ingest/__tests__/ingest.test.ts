@@ -47,6 +47,7 @@ import { UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { PlayoutPartInstanceModel } from '../../playout/model/PlayoutPartInstanceModel'
 import { NrcsIngestCacheType } from '@sofie-automation/corelib/dist/dataModel/NrcsIngestDataCache'
 import { wrapGenericIngestJob, wrapGenericIngestJobWithPrecheck } from '../jobWrappers'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 const handleRemovedRundownWrapped = wrapGenericIngestJob(handleRemovedRundown)
 const handleUpdatedRundownWrapped = wrapGenericIngestJob(handleUpdatedRundown)
@@ -121,11 +122,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 		const showStyleCompound = await setupMockShowStyleCompound(context)
 
 		context.setStudio({
-			...context.studio,
-			settings: {
+			...context.rawStudio,
+			settingsWithOverrides: wrapDefaultObject({
 				...context.studio.settings,
 				minimumTakeSpan: 0,
-			},
+			}),
 			supportedShowStyleBase: [showStyleCompound._id],
 		})
 

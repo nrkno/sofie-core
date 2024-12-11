@@ -11,16 +11,14 @@ meteorPublish(MeteorPubSub.coreSystem, async function (_token: string | undefine
 		fields: {
 			// Include only specific fields in the result documents:
 			_id: 1,
-			support: 1,
 			systemInfo: 1,
 			apm: 1,
 			name: 1,
 			logLevel: 1,
 			serviceMessages: 1,
 			blueprintId: 1,
-			cron: 1,
 			logo: 1,
-			evaluations: 1,
+			settingsWithOverrides: 1,
 		},
 	})
 })

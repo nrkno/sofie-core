@@ -47,14 +47,14 @@ export async function insertStudioInner(organizationId: OrganizationId | null, n
 			supportedShowStyleBase: [],
 			blueprintConfigWithOverrides: wrapDefaultObject({}),
 			// testToolsConfig?: ITestToolsConfig
-			settings: {
+			settingsWithOverrides: wrapDefaultObject({
 				frameRate: 25,
 				mediaPreviewsUrl: '',
 				minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
 				allowHold: false,
 				allowPieceDirectPlay: false,
 				enableBuckets: true,
-			},
+			}),
 			_rundownVersionHash: '',
 			routeSetsWithOverrides: wrapDefaultObject({}),
 			routeSetExclusivityGroupsWithOverrides: wrapDefaultObject({}),
