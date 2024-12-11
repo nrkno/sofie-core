@@ -29,7 +29,6 @@ import { DatastorePersistenceMode } from '@sofie-automation/shared-lib/dist/core
 import { removeTimelineDatastoreValue, setTimelineDatastoreValue } from '../../playout/datastore'
 import { executePeripheralDeviceAction, listPlayoutDevices } from '../../peripheralDevice'
 import { ActionPartChange, PartAndPieceInstanceActionService } from './services/PartAndPieceInstanceActionService'
-import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { BlueprintQuickLookInfo } from '@sofie-automation/blueprints-integration/dist/context/quickLoopInfo'
 import { setNextPartFromPart } from '../../playout/setNext'
 
@@ -201,7 +200,8 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	}
 
 	async listRouteSets(): Promise<Record<string, StudioRouteSet>> {
-		return applyAndValidateOverrides(this._context.studio.routeSetsWithOverrides).obj
+		// Discard ReadonlyDeep wrapper
+		return this._context.studio.routeSets as Record<string, StudioRouteSet>
 	}
 
 	async switchRouteSet(routeSetId: string, state: boolean | 'toggle'): Promise<void> {

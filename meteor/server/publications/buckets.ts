@@ -1,14 +1,12 @@
 import { FindOptions } from '@sofie-automation/meteor-lib/dist/collections/lib'
-import { BucketSecurity } from '../security/buckets'
 import { meteorPublish } from './lib/lib'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
-import { StudioReadAccess } from '../security/studio'
-import { isProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { BucketAdLibActions, BucketAdLibs, Buckets } from '../collections'
 import { check, Match } from 'meteor/check'
 import { StudioId, BucketId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify'
 
 meteorPublish(
 	MeteorPubSub.buckets,
@@ -16,26 +14,23 @@ meteorPublish(
 		check(studioId, String)
 		check(bucketId, Match.Maybe(String))
 
+		triggerWriteAccessBecauseNoCheckNecessary()
+
 		const modifier: FindOptions<Bucket> = {
 			fields: {},
 		}
-		if (
-			(await StudioReadAccess.studioContent(studioId, this)) ||
-			(isProtectedString(bucketId) && bucketId && (await BucketSecurity.allowReadAccess(this, bucketId)))
-		) {
-			return Buckets.findWithCursor(
-				bucketId
-					? {
-							_id: bucketId,
-							studioId,
-					  }
-					: {
-							studioId,
-					  },
-				modifier
-			)
-		}
-		return null
+
+		return Buckets.findWithCursor(
+			bucketId
+				? {
+						_id: bucketId,
+						studioId,
+				  }
+				: {
+						studioId,
+				  },
+			modifier
+		)
 	}
 )
 
@@ -46,23 +41,22 @@ meteorPublish(
 		check(bucketId, String)
 		check(showStyleVariantIds, Array)
 
-		if (isProtectedString(bucketId) && (await BucketSecurity.allowReadAccess(this, bucketId))) {
-			return BucketAdLibs.findWithCursor(
-				{
-					studioId: studioId,
-					bucketId: bucketId,
-					showStyleVariantId: {
-						$in: [null, ...showStyleVariantIds], // null = valid for all variants
-					},
+		triggerWriteAccessBecauseNoCheckNecessary()
+
+		return BucketAdLibs.findWithCursor(
+			{
+				studioId: studioId,
+				bucketId: bucketId,
+				showStyleVariantId: {
+					$in: [null, ...showStyleVariantIds], // null = valid for all variants
 				},
-				{
-					fields: {
-						ingestInfo: 0, // This is a large blob, and is not of interest to the UI
-					},
-				}
-			)
-		}
-		return null
+			},
+			{
+				fields: {
+					ingestInfo: 0, // This is a large blob, and is not of interest to the UI
+				},
+			}
+		)
 	}
 )
 
@@ -73,22 +67,21 @@ meteorPublish(
 		check(bucketId, String)
 		check(showStyleVariantIds, Array)
 
-		if (isProtectedString(bucketId) && (await BucketSecurity.allowReadAccess(this, bucketId))) {
-			return BucketAdLibActions.findWithCursor(
-				{
-					studioId: studioId,
-					bucketId: bucketId,
-					showStyleVariantId: {
-						$in: [null, ...showStyleVariantIds], // null = valid for all variants
-					},
+		triggerWriteAccessBecauseNoCheckNecessary()
+
+		return BucketAdLibActions.findWithCursor(
+			{
+				studioId: studioId,
+				bucketId: bucketId,
+				showStyleVariantId: {
+					$in: [null, ...showStyleVariantIds], // null = valid for all variants
 				},
-				{
-					fields: {
-						ingestInfo: 0, // This is a large blob, and is not of interest to the UI
-					},
-				}
-			)
-		}
-		return null
+			},
+			{
+				fields: {
+					ingestInfo: 0, // This is a large blob, and is not of interest to the UI
+				},
+			}
+		)
 	}
 )

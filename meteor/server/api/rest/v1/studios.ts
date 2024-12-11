@@ -17,9 +17,12 @@ import { getCurrentTime } from '../../../lib/lib'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { StudioContentWriteAccess } from '../../../security/studio'
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { checkValidation } from '.'
+import { assertConnectionHasOneOfPermissions } from '../../../security/auth'
+import { UserPermissions } from '@sofie-automation/meteor-lib/dist/userPermissions'
+
+const PERMISSIONS_FOR_PLAYOUT_USERACTION: Array<keyof UserPermissions> = ['studio']
 
 class StudiosServerAPI implements StudiosRestAPI {
 	constructor(private context: ServerAPIContext) {}
@@ -215,8 +218,9 @@ class StudiosServerAPI implements StudiosRestAPI {
 				check(routeSetId, String)
 				check(state, Boolean)
 
-				const access = await StudioContentWriteAccess.routeSet(this.context.getCredentials(), studioId)
-				return ServerPlayoutAPI.switchRouteSet(access, routeSetId, state)
+				assertConnectionHasOneOfPermissions(connection, ...PERMISSIONS_FOR_PLAYOUT_USERACTION)
+
+				return ServerPlayoutAPI.switchRouteSet(studioId, routeSetId, state)
 			}
 		)
 	}

@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
-import { AllMeteorMethods, suppressExtraErrorLogging } from '../../methods'
-import { disableChecks, enableChecks as restoreChecks } from '../../lib/check'
+import { AllMeteorMethods, suppressExtraErrorLogging } from '../methods'
+import { disableChecks, enableChecks as restoreChecks } from '../lib/check'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 /** These function are used to verify that all methods defined are using security functions */
@@ -62,7 +62,7 @@ export async function verifyAllMethods(): Promise<boolean> {
 	// Verify all Meteor methods
 	let ok = true
 	for (const methodName of AllMeteorMethods) {
-		ok = ok && verifyMethod(methodName)
+		ok = ok && (await verifyMethod(methodName))
 
 		if (!ok) return false // Bail on first error
 
@@ -70,7 +70,7 @@ export async function verifyAllMethods(): Promise<boolean> {
 	}
 	return ok
 }
-function verifyMethod(methodName: string) {
+async function verifyMethod(methodName: string) {
 	let ok = true
 	suppressExtraErrorLogging(true)
 	try {
@@ -78,7 +78,7 @@ function verifyMethod(methodName: string) {
 		testWriteAccess()
 		// Pass some fake args, to ensure that any trying to do a `arg.val` don't throw
 		const fakeArgs = [{}, {}, {}, {}, {}]
-		Meteor.call(methodName, ...fakeArgs)
+		await Meteor.callAsync(methodName, ...fakeArgs)
 	} catch (e) {
 		const errStr = stringifyError(e)
 		if (errStr.match(/triggerWriteAccess/i)) {

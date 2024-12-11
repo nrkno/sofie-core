@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { protectString } from '../../lib/tempLib'
-import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
+import { checkAccessAndGetPeripheralDevice } from '../../security/check'
 import { MethodContext } from '../methodContext'
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import { MediaObjId, PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'

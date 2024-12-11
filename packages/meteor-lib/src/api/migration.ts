@@ -1,5 +1,11 @@
 import { MigrationStepInput, MigrationStepInputResult } from '@sofie-automation/blueprints-integration'
-import { BlueprintId, ShowStyleBaseId, SnapshotId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	BlueprintId,
+	CoreSystemId,
+	ShowStyleBaseId,
+	SnapshotId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { BlueprintValidateConfigForStudioResult } from '@sofie-automation/corelib/dist/worker/studio'
 
@@ -64,10 +70,15 @@ export interface NewMigrationAPI {
 	validateConfigForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<BlueprintValidateConfigForStudioResult>
 
 	/**
-	 * Run `applyConfig` on the blueprint for a Studio, and store the results into the db
-	 * @param studioId Id of the Studio
+	 * Run `applyConfig` on the blueprint for a ShowStyleBase, and store the results into the db
+	 * @param showStyleBaseId Id of the ShowStyleBase
 	 */
 	runUpgradeForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void>
+
+	/**
+	 * Run `applyConfig` on the blueprint for the CoreSystem, and store the results into the db
+	 */
+	runUpgradeForCoreSystem(coreSystemId: CoreSystemId): Promise<void>
 }
 
 export enum MigrationAPIMethods {
@@ -85,6 +96,7 @@ export enum MigrationAPIMethods {
 	'ignoreFixupConfigForShowStyleBase' = 'migration.ignoreFixupConfigForShowStyleBase',
 	'validateConfigForShowStyleBase' = 'migration.validateConfigForShowStyleBase',
 	'runUpgradeForShowStyleBase' = 'migration.runUpgradeForShowStyleBase',
+	'runUpgradeForCoreSystem' = 'migration.runUpgradeForCoreSystem',
 }
 
 export interface GetMigrationStatusResult {

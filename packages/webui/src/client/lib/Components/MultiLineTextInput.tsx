@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import ClassNames from 'classnames'
 
 export function splitValueIntoLines(v: string | undefined): string[] {
@@ -84,4 +84,20 @@ export function MultiLineTextInputControl({
 			disabled={disabled}
 		/>
 	)
+}
+
+interface ICombinedMultiLineTextInputControlProps
+	extends Omit<IMultiLineTextInputControlProps, 'value' | 'handleUpdate'> {
+	value: string
+	handleUpdate: (value: string) => void
+}
+export function CombinedMultiLineTextInputControl({
+	value,
+	handleUpdate,
+	...props
+}: Readonly<ICombinedMultiLineTextInputControlProps>): JSX.Element {
+	const valueArray = useMemo(() => splitValueIntoLines(value), [value])
+	const handleUpdateArray = useCallback((value: string[]) => handleUpdate(joinLines(value)), [handleUpdate])
+
+	return <MultiLineTextInputControl {...props} value={valueArray} handleUpdate={handleUpdateArray} />
 }

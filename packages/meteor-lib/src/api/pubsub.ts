@@ -20,7 +20,6 @@ import { SnapshotItem } from '../collections/Snapshots'
 import { TranslationsBundle } from '../collections/TranslationsBundles'
 import { DBTriggeredActions, UITriggeredActionsObj } from '../collections/TriggeredActions'
 import { UserActionsLogItem } from '../collections/UserActionsLog'
-import { DBUser } from '../collections/Users'
 import { UIBucketContentStatus, UIPieceContentStatus, UISegmentPartNote } from './rundownNotifications'
 import { UIShowStyleBase } from './showStyles'
 import { UIStudio } from './studios'
@@ -218,8 +217,6 @@ export interface MeteorPubSubTypes {
 		showStyleBaseIds: ShowStyleBaseId[] | null,
 		token?: string
 	) => CollectionName.RundownLayouts
-	[MeteorPubSub.loggedInUser]: (token?: string) => CollectionName.Users
-	[MeteorPubSub.usersInOrganization]: (organizationId: OrganizationId, token?: string) => CollectionName.Users
 	[MeteorPubSub.organization]: (organizationId: OrganizationId | null, token?: string) => CollectionName.Organizations
 	[MeteorPubSub.buckets]: (studioId: StudioId, bucketId: BucketId | null, token?: string) => CollectionName.Buckets
 	[MeteorPubSub.translationsBundles]: (token?: string) => CollectionName.TranslationsBundles
@@ -297,7 +294,6 @@ export type MeteorPubSubCollections = {
 	[CollectionName.Organizations]: DBOrganization
 	[CollectionName.Buckets]: Bucket
 	[CollectionName.TranslationsBundles]: TranslationsBundle
-	[CollectionName.Users]: DBUser
 	[CollectionName.ExpectedPlayoutItems]: ExpectedPlayoutItem
 	[CollectionName.Notifications]: DBNotificationObj
 

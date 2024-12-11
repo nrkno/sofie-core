@@ -1,10 +1,7 @@
 import { RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundown, Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import {
-	DBRundownPlaylist,
-	ForceQuickLoopAutoNext,
-	QuickLoopMarkerType,
-} from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { DBRundownPlaylist, QuickLoopMarkerType } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { ForceQuickLoopAutoNext } from '@sofie-automation/shared-lib/dist/core/model/StudioSettings'
 import {
 	clone,
 	getHash,
@@ -27,12 +24,11 @@ import {
 	IBlueprintRundown,
 	NoteSeverity,
 } from '@sofie-automation/blueprints-integration'
-import { JobContext } from './jobs'
+import { JobContext, JobStudio } from './jobs'
 import { logger } from './logging'
 import { resetRundownPlaylist } from './playout/lib'
 import { runJobWithPlaylistLock, runWithPlayoutModel } from './playout/lock'
 import { updateTimeline } from './playout/timeline/generate'
-import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { WrappedStudioBlueprint } from './blueprints/cache'
 import { StudioUserContext } from './blueprints/context'
 import { getCurrentTime } from './lib'
@@ -329,7 +325,7 @@ export function produceRundownPlaylistInfoFromRundown(
 
 function defaultPlaylistForRundown(
 	rundown: ReadonlyDeep<IBlueprintRundown>,
-	studio: ReadonlyDeep<DBStudio>,
+	studio: ReadonlyDeep<JobStudio>,
 	existingPlaylist?: ReadonlyDeep<DBRundownPlaylist>
 ): Omit<DBRundownPlaylist, '_id' | 'externalId'> {
 	return {

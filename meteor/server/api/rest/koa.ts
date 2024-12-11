@@ -9,6 +9,7 @@ import { public_dir } from '../../lib'
 import staticServe from 'koa-static'
 import { logger } from '../../logging'
 import { PackageInfo } from '../../coreSystem'
+import { profiler } from '../profiler'
 
 declare module 'http' {
 	interface IncomingMessage {
@@ -45,7 +46,32 @@ Meteor.startup(() => {
 	)
 
 	// Expose the API at the url
-	WebApp.rawConnectHandlers.use((req, res) => {
+	WebApp.rawHandlers.use((req, res) => {
+		const transaction = profiler.startTransaction(`${req.method}:${req.url}`, 'http.incoming')
+		if (transaction) {
+			transaction.setLabel('url', `${req.url}`)
+			transaction.setLabel('method', `${req.method}`)
+
+			res.on('finish', () => {
+				// When the end of the request is sent to the client, submit the apm transaction
+				let route = req.originalUrl
+				if (req.originalUrl && req.url && req.originalUrl.endsWith(req.url.slice(1)) && req.url.length > 1) {
+					route = req.originalUrl.slice(0, -1 * (req.url.length - 1))
+				}
+
+				if (route && route.endsWith('/')) {
+					route = route.slice(0, -1)
+				}
+
+				if (route) {
+					transaction.name = `${req.method}:${route}`
+					transaction.setLabel('route', `${route}`)
+				}
+
+				transaction.end()
+			})
+		}
+
 		const callback = Meteor.bindEnvironment(koaApp.callback())
 		callback(req, res).catch(() => res.end())
 	})

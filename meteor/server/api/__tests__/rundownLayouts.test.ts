@@ -1,5 +1,4 @@
 import '../../../__mocks__/_extendJest'
-import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
 import { protectString, literal, getRandomString } from '../../lib/tempLib'
 import {
@@ -20,7 +19,7 @@ describe('Rundown Layouts', () => {
 		env = await setupDefaultStudioEnvironment()
 	})
 	let rundownLayoutId: RundownLayoutId
-	testInFiber('Create rundown layout', async () => {
+	test('Create rundown layout', async () => {
 		const res = await MeteorCall.rundownLayout.createRundownLayout(
 			'Test',
 			RundownLayoutType.RUNDOWN_LAYOUT,
@@ -35,7 +34,7 @@ describe('Rundown Layouts', () => {
 			_id: rundownLayoutId,
 		})
 	})
-	testInFiber('Remove rundown layout', async () => {
+	test('Remove rundown layout', async () => {
 		const item0 = await RundownLayouts.findOneAsync(rundownLayoutId)
 		expect(item0).toMatchObject({
 			_id: rundownLayoutId,

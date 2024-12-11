@@ -127,10 +127,6 @@ export async function cleanupOldDataInner(actuallyCleanup = false): Promise<Coll
 	{
 		addToResult(CollectionName.Organizations, 0) // Do nothing
 	}
-	// Users
-	{
-		addToResult(CollectionName.Users, 0) // Do nothing
-	}
 
 	// Documents owned by Organizations:
 	const organizationIds = await getAllIdsInCollection(Organizations)

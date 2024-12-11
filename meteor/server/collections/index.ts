@@ -24,36 +24,25 @@ import { DBTimelineDatastoreEntry } from '@sofie-automation/corelib/dist/dataMod
 import { TranslationsBundle } from '@sofie-automation/meteor-lib/dist/collections/TranslationsBundles'
 import { DBTriggeredActions } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
-import { DBUser } from '@sofie-automation/meteor-lib/dist/collections/Users'
 import { WorkerStatus } from '@sofie-automation/meteor-lib/dist/collections/Workers'
 import { registerIndex } from './indices'
 import { getCurrentTime } from '../lib/lib'
-import { MeteorStartupAsync } from '../lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import {
-	createAsyncOnlyMongoCollection,
-	createAsyncOnlyReadOnlyMongoCollection,
-	wrapMongoCollection,
-} from './collection'
+import { createAsyncOnlyMongoCollection, createAsyncOnlyReadOnlyMongoCollection } from './collection'
 import { ObserveChangesForHash } from './lib'
 import { logger } from '../logging'
-import { resolveCredentials } from '../security/lib/credentials'
-import { logNotAllowed, allowOnlyFields, rejectFields } from '../security/lib/lib'
-import {
-	allowAccessToCoreSystem,
-	allowAccessToOrganization,
-	allowAccessToShowStyleBase,
-	allowAccessToStudio,
-} from '../security/lib/security'
-import { SystemWriteAccess } from '../security/system'
-import type { DBNotificationObj } from '@sofie-automation/corelib/dist/dataModel/Notifications'
+import { allowOnlyFields, rejectFields } from '../security/allowDeny'
+import { checkUserIdHasOneOfPermissions } from '../security/auth'
+import { DBNotificationObj } from '@sofie-automation/corelib/dist/dataModel/Notifications'
 
 export * from './bucket'
 export * from './packages-media'
 export * from './rundown'
 
 export const Blueprints = createAsyncOnlyMongoCollection<Blueprint>(CollectionName.Blueprints, {
-	update(_userId, doc, fields, _modifier) {
+	update(userId, doc, fields, _modifier) {
+		if (!checkUserIdHasOneOfPermissions(userId, CollectionName.Blueprints, 'configure')) return false
+
 		return allowOnlyFields(doc, fields, ['name', 'disableVersionChecks'])
 	},
 })
@@ -63,19 +52,16 @@ registerIndex(Blueprints, {
 
 export const CoreSystem = createAsyncOnlyMongoCollection<ICoreSystem>(CollectionName.CoreSystem, {
 	async update(userId, doc, fields, _modifier) {
-		const cred = await resolveCredentials({ userId: userId })
-		const access = await allowAccessToCoreSystem(cred)
-		if (!access.update) return logNotAllowed('CoreSystem', access.reason)
+		if (!checkUserIdHasOneOfPermissions(userId, CollectionName.CoreSystem, 'configure')) return false
 
 		return allowOnlyFields(doc, fields, [
-			'support',
 			'systemInfo',
 			'name',
 			'logLevel',
 			'apm',
-			'cron',
 			'logo',
-			'evaluations',
+			'blueprintId',
+			'settingsWithOverrides',
 		])
 	},
 })
@@ -125,8 +111,8 @@ registerIndex(Notifications, {
 
 export const Organizations = createAsyncOnlyMongoCollection<DBOrganization>(CollectionName.Organizations, {
 	async update(userId, doc, fields, _modifier) {
-		const access = await allowAccessToOrganization({ userId: userId }, doc._id)
-		if (!access.update) return logNotAllowed('Organization', access.reason)
+		if (!checkUserIdHasOneOfPermissions(userId, CollectionName.Organizations, 'configure')) return false
+
 		return allowOnlyFields(doc, fields, ['userRoles'])
 	},
 })
@@ -140,7 +126,9 @@ registerIndex(PeripheralDeviceCommands, {
 })
 
 export const PeripheralDevices = createAsyncOnlyMongoCollection<PeripheralDevice>(CollectionName.PeripheralDevices, {
-	update(_userId, doc, fields, _modifier) {
+	update(userId, doc, fields, _modifier) {
+		if (!checkUserIdHasOneOfPermissions(userId, CollectionName.PeripheralDevices, 'configure')) return false
+
 		return rejectFields(doc, fields, [
 			'type',
 			'parentDeviceId',
@@ -169,8 +157,8 @@ registerIndex(PeripheralDevices, {
 
 export const RundownLayouts = createAsyncOnlyMongoCollection<RundownLayoutBase>(CollectionName.RundownLayouts, {
 	async update(userId, doc, fields) {
-		const access = await allowAccessToShowStyleBase({ userId: userId }, doc.showStyleBaseId)
-		if (!access.update) return logNotAllowed('ShowStyleBase', access.reason)
+		if (!checkUserIdHasOneOfPermissions(userId, CollectionName.RundownLayouts, 'configure')) return false
+
 		return rejectFields(doc, fields, ['_id', 'showStyleBaseId'])
 	},
 })
@@ -186,8 +174,8 @@ registerIndex(RundownLayouts, {
 
 export const ShowStyleBases = createAsyncOnlyMongoCollection<DBShowStyleBase>(CollectionName.ShowStyleBases, {
 	async update(userId, doc, fields) {
-		const access = await allowAccessToShowStyleBase({ userId: userId }, doc._id)
-		if (!access.update) return logNotAllowed('ShowStyleBase', access.reason)
+		if (!checkUserIdHasOneOfPermissions(userId, CollectionName.ShowStyleBases, 'configure')) return false
+
 		return rejectFields(doc, fields, ['_id'])
 	},
 })
@@ -197,8 +185,7 @@ registerIndex(ShowStyleBases, {
 
 export const ShowStyleVariants = createAsyncOnlyMongoCollection<DBShowStyleVariant>(CollectionName.ShowStyleVariants, {
 	async update(userId, doc, fields) {
-		const access = await allowAccessToShowStyleBase({ userId: userId }, doc.showStyleBaseId)
-		if (!access.update) return logNotAllowed('ShowStyleBase', access.reason)
+		if (!checkUserIdHasOneOfPermissions(userId, CollectionName.ShowStyleVariants, 'configure')) return false
 
 		return rejectFields(doc, fields, ['showStyleBaseId'])
 	},
@@ -209,7 +196,9 @@ registerIndex(ShowStyleVariants, {
 })
 
 export const Snapshots = createAsyncOnlyMongoCollection<SnapshotItem>(CollectionName.Snapshots, {
-	update(_userId, doc, fields, _modifier) {
+	update(userId, doc, fields, _modifier) {
+		if (!checkUserIdHasOneOfPermissions(userId, CollectionName.Snapshots, 'configure')) return false
+
 		return allowOnlyFields(doc, fields, ['comment'])
 	},
 })
@@ -222,8 +211,8 @@ registerIndex(Snapshots, {
 
 export const Studios = createAsyncOnlyMongoCollection<DBStudio>(CollectionName.Studios, {
 	async update(userId, doc, fields, _modifier) {
-		const access = await allowAccessToStudio({ userId: userId }, doc._id)
-		if (!access.update) return logNotAllowed('Studio', access.reason)
+		if (!checkUserIdHasOneOfPermissions(userId, CollectionName.Studios, 'configure')) return false
+
 		return rejectFields(doc, fields, ['_id'])
 	},
 })
@@ -251,17 +240,9 @@ export const TranslationsBundles = createAsyncOnlyMongoCollection<TranslationsBu
 
 export const TriggeredActions = createAsyncOnlyMongoCollection<DBTriggeredActions>(CollectionName.TriggeredActions, {
 	async update(userId, doc, fields) {
-		const cred = await resolveCredentials({ userId: userId })
+		if (!checkUserIdHasOneOfPermissions(userId, CollectionName.TriggeredActions, 'configure')) return false
 
-		if (doc.showStyleBaseId) {
-			const access = await allowAccessToShowStyleBase(cred, doc.showStyleBaseId)
-			if (!access.update) return logNotAllowed('ShowStyleBase', access.reason)
-			return rejectFields(doc, fields, ['_id'])
-		} else {
-			const access = await allowAccessToCoreSystem(cred)
-			if (!access.update) return logNotAllowed('CoreSystem', access.reason)
-			return rejectFields(doc, fields, ['_id'])
-		}
+		return rejectFields(doc, fields, ['_id'])
 	},
 })
 registerIndex(TriggeredActions, {
@@ -275,26 +256,6 @@ registerIndex(UserActionsLog, {
 })
 registerIndex(UserActionsLog, {
 	timelineHash: 1,
-})
-
-// This is a somewhat special collection, as it draws from the Meteor.users collection from the Accounts package
-export const Users = wrapMongoCollection<DBUser>(Meteor.users as any, CollectionName.Users, {
-	async update(userId, doc, fields, _modifier) {
-		const access = await SystemWriteAccess.currentUser(userId, { userId })
-		if (!access) return logNotAllowed('CurrentUser', '')
-		return rejectFields(doc, fields, [
-			'_id',
-			'createdAt',
-			'services',
-			'emails',
-			'profile',
-			'organizationId',
-			'superAdmin',
-		])
-	},
-})
-registerIndex(Users, {
-	organizationId: 1,
 })
 
 export const Workers = createAsyncOnlyMongoCollection<WorkerStatus>(CollectionName.Workers, false)
@@ -320,7 +281,7 @@ const removeOldCommands = () => {
 		logger.error(`Failed to cleanup old PeripheralDeviceCommands: ${stringifyError(e)}`)
 	})
 }
-MeteorStartupAsync(async () => {
+Meteor.startup(async () => {
 	Meteor.setInterval(() => removeOldCommands(), 5 * 60 * 1000)
 
 	await Promise.allSettled([

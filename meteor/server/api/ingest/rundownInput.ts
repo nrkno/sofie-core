@@ -3,22 +3,18 @@ import { check } from '../../lib/check'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { NrcsIngestDataCache, MediaObjects, Parts, Rundowns, Segments } from '../../collections'
 import { literal } from '../../lib/tempLib'
-import { lazyIgnore, MeteorStartupAsync } from '../../lib/lib'
+import { lazyIgnore } from '../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart, IngestPlaylist } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../logging'
 import { RundownIngestDataCache } from './ingestCache'
-import {
-	checkAccessAndGetPeripheralDevice,
-	fetchStudioIdFromDevice,
-	generateRundownSource,
-	runIngestOperation,
-} from './lib'
+import { fetchStudioIdFromDevice, generateRundownSource, runIngestOperation } from './lib'
 import { MethodContext } from '../methodContext'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import { PeripheralDeviceId, RundownId, SegmentId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { NrcsIngestCacheType } from '@sofie-automation/corelib/dist/dataModel/NrcsIngestDataCache'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
+import { checkAccessAndGetPeripheralDevice } from '../../security/check'
 
 export namespace RundownInput {
 	export async function dataPlaylistGet(
@@ -363,7 +359,7 @@ async function listIngestRundowns(peripheralDevice: PeripheralDevice): Promise<s
 }
 
 // hackGetMediaObjectDuration stuff
-MeteorStartupAsync(async () => {
+Meteor.startup(async () => {
 	await MediaObjects.observe(
 		{},
 		{

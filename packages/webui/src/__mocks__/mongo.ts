@@ -246,7 +246,7 @@ export namespace MongoMock {
 			return docs.length
 		}
 
-		_ensureIndex(_obj: any) {
+		createIndex(_obj: any) {
 			// todo
 		}
 		allow() {
@@ -349,5 +349,3 @@ export function setup(): any {
 		Mongo: MongoMock,
 	}
 }
-
-MeteorMock.mockSetUsersCollection(new MongoMock.Collection('Meteor.users'))

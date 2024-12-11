@@ -45,7 +45,6 @@ interface FormComponentProps {
 		item: WrappedOverridableItemNormal<any>
 		overrideHelper: OverrideOpHelperForItemContents
 		itemKey: string
-		opPrefix: string
 
 		/** Whether a clear button should be showed for fields not marked as "required" */
 		showClearButton: boolean
@@ -68,7 +67,6 @@ function useChildPropsForFormComponent(props: Readonly<SchemaFormWithOverridesPr
 				hint: description ? translateStringIfHasNamespaces(description, props.translationNamespaces) : undefined,
 				item: props.item,
 				itemKey: props.attr,
-				opPrefix: props.item.id,
 				overrideHelper: props.overrideHelper,
 
 				showClearButton: !!props.showClearButtonForNonRequiredFields && !props.isRequired,

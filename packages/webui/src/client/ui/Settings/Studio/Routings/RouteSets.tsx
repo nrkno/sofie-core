@@ -306,7 +306,6 @@ function RouteSetRow({
 								hint={t('he default state of this Route Set')}
 								item={routeSet}
 								itemKey={'defaultActive'}
-								opPrefix={routeSet.id}
 								overrideHelper={overrideHelper}
 								options={getDropdownInputOptions(DEFAULT_ACTIVE_OPTIONS)}
 							>
@@ -323,7 +322,6 @@ function RouteSetRow({
 								label={t('Active')}
 								item={routeSet}
 								itemKey={'active'}
-								opPrefix={routeSet.id}
 								overrideHelper={overrideHelper}
 							>
 								{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
@@ -332,7 +330,6 @@ function RouteSetRow({
 								label={t('Route Set Name')}
 								item={routeSet}
 								itemKey={'name'}
-								opPrefix={routeSet.id}
 								overrideHelper={overrideHelper}
 							>
 								{(value, handleUpdate) => (
@@ -350,7 +347,6 @@ function RouteSetRow({
 								hint={t('If set, only one Route Set will be active per exclusivity group')}
 								item={routeSet}
 								itemKey={'exclusivityGroup'}
-								opPrefix={routeSet.id}
 								overrideHelper={overrideHelper}
 								options={exclusivityGroupOptions}
 							>
@@ -369,7 +365,6 @@ function RouteSetRow({
 								hint={t('The way this Route Set should behave towards the user')}
 								item={routeSet}
 								itemKey={'behavior'}
-								opPrefix={routeSet.id}
 								overrideHelper={overrideHelper}
 								options={getDropdownInputOptions(StudioRouteBehavior)}
 							>
@@ -601,7 +596,6 @@ function RenderRoutesRow({
 					label={t('Original Layer')}
 					item={route}
 					itemKey={'mappedLayer'}
-					opPrefix={route.id}
 					overrideHelper={tableOverrideHelper}
 					options={getDropdownInputOptions(Object.keys(studioMappings))}
 				>
@@ -619,7 +613,6 @@ function RenderRoutesRow({
 					label={t('New Layer')}
 					item={route}
 					itemKey={'outputMappedLayer'}
-					opPrefix={route.id}
 					overrideHelper={tableOverrideHelper}
 				>
 					{(value, handleUpdate) => (
@@ -636,7 +629,6 @@ function RenderRoutesRow({
 					label={t('Route Type')}
 					item={route}
 					itemKey={'routeType'}
-					opPrefix={route.id}
 					overrideHelper={tableOverrideHelper}
 					options={getDropdownInputOptions(StudioRouteType)}
 				>
@@ -660,7 +652,6 @@ function RenderRoutesRow({
 					label={t('Device Type')}
 					item={route}
 					itemKey={'deviceType'}
-					opPrefix={route.id}
 					overrideHelper={tableOverrideHelper}
 					options={getDropdownInputOptions(TSR.DeviceType)}
 				>
@@ -689,7 +680,6 @@ function RenderRoutesRow({
 						label={t('Mapping Type')}
 						item={route}
 						itemKey={'remapping.options.mappingType'}
-						opPrefix={route.id}
 						overrideHelper={tableOverrideHelper}
 						options={mappingTypeOptions}
 					>
@@ -710,7 +700,6 @@ function RenderRoutesRow({
 							label={t('Device ID')}
 							item={route}
 							itemKey={'remapping.deviceId'}
-							opPrefix={route.id}
 							overrideHelper={tableOverrideHelper}
 							showClearButton={true}
 						>

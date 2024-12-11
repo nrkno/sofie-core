@@ -22,7 +22,6 @@ import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/shared-lib/
 import { prefixSingleObjectId } from '../lib'
 import { LookaheadTimelineObject } from './findObjects'
 import { hasPieceInstanceDefinitelyEnded } from '../timeline/lib'
-import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { ReadonlyDeep } from 'type-fest'
 
@@ -65,8 +64,8 @@ export async function getLookeaheadObjects(
 	partInstancesInfo0: SelectedPartInstancesTimelineInfo
 ): Promise<Array<TimelineObjRundown & OnGenerateTimelineObjExt>> {
 	const span = context.startSpan('getLookeaheadObjects')
-	const allMappings = applyAndValidateOverrides(context.studio.mappingsWithOverrides)
-	const mappingsToConsider = Object.entries<MappingExt>(allMappings.obj).filter(
+	const allMappings = context.studio.mappings
+	const mappingsToConsider = Object.entries<MappingExt>(allMappings).filter(
 		([_id, map]) => map.lookahead !== LookaheadMode.NONE && map.lookahead !== undefined
 	)
 	if (mappingsToConsider.length === 0) {

@@ -70,7 +70,6 @@ const tsBase = {
 				allowModules: ['meteor', 'mongodb'],
 			},
 		],
-		'jest/no-standalone-expect': 'off', // testInFiber confuses the rule
 		...tmpRules,
 
 		'react/react-in-jsx-scope': 'off',

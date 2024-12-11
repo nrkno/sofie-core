@@ -21,7 +21,7 @@ import type {
 } from '../context'
 import type { IngestAdlib, ExtendedIngestRundown, IngestRundown } from '../ingest'
 import type { IBlueprintExternalMessageQueueObj } from '../message'
-import type { MigrationStepShowStyle } from '../migrations'
+import type {} from '../migrations'
 import type {
 	IBlueprintAdLibPiece,
 	IBlueprintResolvedPieceInstance,
@@ -56,10 +56,6 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 
 	/** A list of config items this blueprint expects to be available on the ShowStyle */
 	showStyleConfigSchema: JSONBlob<JSONSchema>
-	/** A list of Migration steps related to a ShowStyle
-	 * @deprecated This has been replaced with `validateConfig` and `applyConfig`
-	 */
-	showStyleMigrations: MigrationStepShowStyle[]
 
 	/** The config presets exposed by this blueprint */
 	configPresets: Record<string, IShowStyleConfigPreset<TRawConfig>>

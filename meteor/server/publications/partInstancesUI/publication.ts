@@ -9,8 +9,6 @@ import {
 } from '../../lib/customPublication'
 import { logger } from '../../logging'
 import { CustomCollectionName, MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
-import { resolveCredentials } from '../../security/lib/credentials'
-import { NoSecurityReadAccess } from '../../security/noSecurity'
 import { ContentCache, PartInstanceOmitedFields, createReactiveContentCache } from './reactiveContentCache'
 import { ReadonlyDeep } from 'type-fest'
 import { RundownPlaylists } from '../../collections'
@@ -28,6 +26,7 @@ import {
 	modifyPartInstanceForQuickLoop,
 	stringsToIndexLookup,
 } from '../lib/quickLoop'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../../security/securityVerify'
 
 interface UIPartInstancesArgs {
 	readonly playlistActivationId: RundownPlaylistActivationId
@@ -106,7 +105,7 @@ async function setupUIPartInstancesPublicationObservers(
 				changed: () => triggerUpdate({ invalidateQuickLoop: true }),
 				removed: () => triggerUpdate({ invalidateQuickLoop: true }),
 			}),
-			cache.Studios.find({}).observeChanges({
+			cache.StudioSettings.find({}).observeChanges({
 				added: () => triggerUpdate({ invalidateQuickLoop: true }),
 				changed: () => triggerUpdate({ invalidateQuickLoop: true }),
 				removed: () => triggerUpdate({ invalidateQuickLoop: true }),
@@ -148,8 +147,8 @@ export async function manipulateUIPartInstancesPublicationData(
 	const playlist = state.contentCache.RundownPlaylists.findOne({})
 	if (!playlist) return
 
-	const studio = state.contentCache.Studios.findOne({})
-	if (!studio) return
+	const studioSettings = state.contentCache.StudioSettings.findOne({})
+	if (!studioSettings) return
 
 	const rundownRanks = stringsToIndexLookup(playlist.rundownIdsInOrder as unknown as string[])
 	const segmentRanks = extractRanks(state.contentCache.Segments.find({}).fetch())
@@ -191,7 +190,7 @@ export async function manipulateUIPartInstancesPublicationData(
 				segmentRanks,
 				rundownRanks,
 				playlist,
-				studio,
+				studioSettings.settings,
 				quickLoopStartPosition,
 				quickLoopEndPosition
 			)
@@ -206,23 +205,24 @@ meteorCustomPublish(
 	async function (pub, playlistActivationId: RundownPlaylistActivationId | null) {
 		check(playlistActivationId, Match.Maybe(String))
 
-		const credentials = await resolveCredentials({ userId: this.userId, token: undefined })
+		triggerWriteAccessBecauseNoCheckNecessary()
 
-		if (playlistActivationId && (!credentials || NoSecurityReadAccess.any())) {
-			await setUpCollectionOptimizedObserver<
-				Omit<DBPartInstance, PartInstanceOmitedFields>,
-				UIPartInstancesArgs,
-				UIPartInstancesState,
-				UIPartInstancesUpdateProps
-			>(
-				`pub_${MeteorPubSub.uiPartInstances}_${playlistActivationId}`,
-				{ playlistActivationId },
-				setupUIPartInstancesPublicationObservers,
-				manipulateUIPartInstancesPublicationData,
-				pub
-			)
-		} else {
-			logger.warn(`Pub.uiPartInstances: Not allowed:"${playlistActivationId}"`)
+		if (!playlistActivationId) {
+			logger.info(`Pub.${CustomCollectionName.UISegmentPartNotes}: Not playlistActivationId`)
+			return
 		}
+
+		await setUpCollectionOptimizedObserver<
+			Omit<DBPartInstance, PartInstanceOmitedFields>,
+			UIPartInstancesArgs,
+			UIPartInstancesState,
+			UIPartInstancesUpdateProps
+		>(
+			`pub_${MeteorPubSub.uiPartInstances}_${playlistActivationId}`,
+			{ playlistActivationId },
+			setupUIPartInstancesPublicationObservers,
+			manipulateUIPartInstancesPublicationData,
+			pub
+		)
 	}
 )

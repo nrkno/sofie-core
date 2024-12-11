@@ -3,10 +3,11 @@ import { logger } from '../../logging'
 import {
 	blueprintFieldSpecifier,
 	ContentCache,
+	coreSystemFieldsSpecifier,
 	showStyleFieldSpecifier,
 	studioFieldSpecifier,
 } from './reactiveContentCache'
-import { Blueprints, ShowStyleBases, Studios } from '../../collections'
+import { Blueprints, CoreSystem, ShowStyleBases, Studios } from '../../collections'
 import { waitForAllObserversReady } from '../lib/lib'
 
 export class UpgradesContentObserver {
@@ -22,6 +23,9 @@ export class UpgradesContentObserver {
 		logger.silly(`Creating UpgradesContentObserver`)
 
 		const observers = await waitForAllObserversReady([
+			CoreSystem.observeChanges({}, cache.CoreSystem.link(), {
+				projection: coreSystemFieldsSpecifier,
+			}),
 			Studios.observeChanges({}, cache.Studios.link(), {
 				projection: studioFieldSpecifier,
 			}),

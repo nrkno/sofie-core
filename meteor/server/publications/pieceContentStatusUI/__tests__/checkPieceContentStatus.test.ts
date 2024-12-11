@@ -33,7 +33,6 @@ import {
 	MediaStreamType,
 } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import { defaultStudio } from '../../../../__mocks__/defaultCollectionObjects'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { MediaObjects } from '../../../collections'
 import { PieceDependencies } from '../common'
 import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
@@ -243,7 +242,7 @@ describe('lib/mediaObjects', () => {
 		expect(mediaId3).toEqual(undefined)
 	})
 
-	testInFiber('checkPieceContentStatus', async () => {
+	test('checkPieceContentStatus', async () => {
 		const mockStudioSettings: IStudioSettings = {
 			supportedMediaFormats: '1920x1080i5000, 1280x720, i5000, i5000tff',
 			mediaPreviewsUrl: '',
@@ -266,7 +265,7 @@ describe('lib/mediaObjects', () => {
 			packageContainers: applyAndValidateOverrides(mockDefaultStudio.packageContainersWithOverrides).obj,
 		}
 
-		mockMediaObjectsCollection.insert(
+		await mockMediaObjectsCollection.insertAsync(
 			literal<MediaObject>({
 				_id: protectString(''),
 				_attachments: {},
@@ -353,7 +352,7 @@ describe('lib/mediaObjects', () => {
 			type: SourceLayerType.LIVE_SPEAK,
 		})
 
-		mockMediaObjectsCollection.insert(
+		await mockMediaObjectsCollection.insertAsync(
 			literal<MediaObject>({
 				_id: protectString(''),
 				_attachments: {},
