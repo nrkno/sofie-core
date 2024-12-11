@@ -489,7 +489,6 @@ export class MosHandler {
 			deviceOptions.primary.heartbeatInterval || DEFAULT_MOS_HEARTBEAT_INTERVAL
 
 		if (deviceOptions.secondary?.id && this._openMediaHotStandby[deviceOptions.secondary.id]) {
-			//@ts-expect-error  this is not yet added to the official mos-connection
 			deviceOptions.secondary.openMediaHotStandby = true
 		}
 

@@ -38,7 +38,7 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"@mos-connection/model": "v4.2.0-alpha.1",
+		"@mos-connection/model": "v4.2.0",
 		"timeline-state-resolver-types": "9.2.0-nightly-release52-20240923-122840-58cfbb259.0",
 		"tslib": "^2.6.2",
 		"type-fest": "^3.13.1"

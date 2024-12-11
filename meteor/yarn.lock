@@ -935,23 +935,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mos-connection/helper@npm:v4.2.0-alpha.1":
-  version: 4.2.0-alpha.1
-  resolution: "@mos-connection/helper@npm:4.2.0-alpha.1"
+"@mos-connection/helper@npm:v4.2.0":
+  version: 4.2.0
+  resolution: "@mos-connection/helper@npm:4.2.0"
   dependencies:
-    "@mos-connection/model": 4.2.0-alpha.1
+    "@mos-connection/model": 4.2.0
     iconv-lite: ^0.6.3
     tslib: ^2.5.3
     xml-js: ^1.6.11
     xmlbuilder: ^15.1.1
-  checksum: ad809b542065b921e2d16e30f9ce04fba03d39c18a2944af2a440bfa33e05820954e0448cc6f38a3ed3d043b9b6c9b052cb24af0e6504d4c6723e5864c3df780
+  checksum: 2f0f049bb6b4323f6b3ff8ed10ed92bea3ad01b7b69ae18414a72bda00a3600ae40e73906663c1274ac3d380b9875b59c971a3aaa2b871114a516da4c7a510c8
   languageName: node
   linkType: hard
 
-"@mos-connection/model@npm:4.2.0-alpha.1, @mos-connection/model@npm:v4.2.0-alpha.1":
-  version: 4.2.0-alpha.1
-  resolution: "@mos-connection/model@npm:4.2.0-alpha.1"
-  checksum: d0bbbbe86254cf7d17f52a71d4a6b7241749ee784faf4c1d7079852bdce758562a7b2a7d1d92637dafd5d3de433bff6b04e8a969d426be65b384118028b0f6f8
+"@mos-connection/model@npm:4.2.0, @mos-connection/model@npm:v4.2.0":
+  version: 4.2.0
+  resolution: "@mos-connection/model@npm:4.2.0"
+  checksum: dda98d14d498c7680aefb2aa143bbe5506f89673e072d84076b77226671b01a4452313c8aed1194e06dbb3d3cbe6561615536c96bb2e34e6223ebd4ee8eb548f
   languageName: node
   linkType: hard
 
@@ -1221,7 +1221,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@sofie-automation/meteor-lib@portal:../packages/meteor-lib::locator=automation-core%40workspace%3A."
   dependencies:
-    "@mos-connection/helper": v4.2.0-alpha.1
+    "@mos-connection/helper": v4.2.0
     "@sofie-automation/blueprints-integration": 1.52.0-in-development
     "@sofie-automation/corelib": 1.52.0-in-development
     "@sofie-automation/shared-lib": 1.52.0-in-development
@@ -1239,7 +1239,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@sofie-automation/shared-lib@portal:../packages/shared-lib::locator=automation-core%40workspace%3A."
   dependencies:
-    "@mos-connection/model": v4.2.0-alpha.1
+    "@mos-connection/model": v4.2.0
     timeline-state-resolver-types: 9.2.0-nightly-release52-20240923-122840-58cfbb259.0
     tslib: ^2.6.2
     type-fest: ^3.13.1
@@ -2271,7 +2271,7 @@ __metadata:
     "@babel/runtime": ^7.23.9
     "@koa/cors": ^5.0.0
     "@koa/router": ^12.0.1
-    "@mos-connection/helper": v4.2.0-alpha.1
+    "@mos-connection/helper": v4.2.0
     "@shopify/jest-koa-mocks": ^5.1.1
     "@slack/webhook": ^6.1.0
     "@sofie-automation/blueprints-integration": "portal:../packages/blueprints-integration"
