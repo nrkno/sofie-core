@@ -109,6 +109,7 @@ export interface StudioCacheContext {
 	readonly studio: ReadonlyDeep<JobStudio>
 
 	/**
+	 * // nocommit: so whats the difference between studio and rawStudio?
 	 * The Studio the job belongs to
 	 */
 	readonly rawStudio: ReadonlyDeep<DBStudio>

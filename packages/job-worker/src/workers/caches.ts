@@ -101,6 +101,7 @@ export class WorkerDataCacheWrapperImpl implements WorkerDataCacheWrapper {
  */
 export interface WorkerDataCache {
 	rawStudio: ReadonlyDeep<DBStudio>
+	// nocommit: maybe add description of what this is, why is it different from rawStudio
 	jobStudio: ReadonlyDeep<JobStudio>
 	studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>
 	studioBlueprintConfig: ProcessedStudioConfig | undefined
