@@ -104,13 +104,14 @@ export interface StudioCacheContext {
 	 */
 	readonly studioId: StudioId
 	/**
-	 * The Studio the job belongs to
+	 * The Studio the job belongs to.
+	 * This has any ObjectWithOverrides in their computed/flattened form
 	 */
 	readonly studio: ReadonlyDeep<JobStudio>
 
 	/**
-	 * // nocommit: so whats the difference between studio and rawStudio?
 	 * The Studio the job belongs to
+	 * This has any ObjectWithOverrides in their original form
 	 */
 	readonly rawStudio: ReadonlyDeep<DBStudio>
 
