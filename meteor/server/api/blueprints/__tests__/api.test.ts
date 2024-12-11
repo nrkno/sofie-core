@@ -61,8 +61,6 @@ describe('Test blueprint management api', () => {
 				showStyleConfigSchema: JSONBlobStringify({}),
 
 				databaseVersion: {
-					showStyle: {},
-					studio: {},
 					system: undefined,
 				},
 
@@ -244,7 +242,6 @@ describe('Test blueprint management api', () => {
 					TSRVersion: '0.0.0',
 
 					// studioConfigManifest: [],
-					// studioMigrations: [],
 					// getBaseline: (context: IStudioContext): TSRTimelineObjBase[] => {
 					// 	return []
 					// },

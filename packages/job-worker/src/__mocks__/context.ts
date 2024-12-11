@@ -288,7 +288,6 @@ const MockStudioBlueprint: () => StudioBlueprintManifest = () => ({
 	},
 
 	studioConfigSchema: JSONBlobStringify({}),
-	studioMigrations: [],
 	getBaseline: () => {
 		return {
 			timelineObjects: [],
@@ -320,7 +319,6 @@ const MockShowStyleBlueprint: () => ShowStyleBlueprintManifest = () => ({
 	},
 
 	showStyleConfigSchema: JSONBlobStringify({}),
-	showStyleMigrations: [],
 	getShowStyleVariantId: (_context, variants): string | null => {
 		return variants[0]._id
 	},

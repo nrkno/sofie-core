@@ -140,11 +140,6 @@ Then submit this as a PR.
 The ConfigManifests for Blueprints and Gateways was replaced with JSONSchema in R50.
 However, one usage by AdlibActions for their userDataManifest remains as this is not something we are actively using.
 
-## Blueprint Migrations
-
-In R49, a replacement flow was added consisting of `validateConfig` and `applyConfig`.
-It is no longer recommended to use the old migrations flow for showstyle and studio blueprints.
-
 ### ExpectedMediaItems
 
 These are used for Media-manager which is no longer being developed.

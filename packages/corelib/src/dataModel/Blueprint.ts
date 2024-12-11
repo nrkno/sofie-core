@@ -38,12 +38,6 @@ export interface Blueprint {
 	showStyleConfigPresets?: Record<string, IShowStyleConfigPreset>
 
 	databaseVersion: {
-		showStyle: {
-			[showStyleBaseId: string]: string
-		}
-		studio: {
-			[studioId: string]: string
-		}
 		system: string | undefined
 	}
 

@@ -49,7 +49,6 @@ describe('ShowStyleBase upgrades', () => {
 				},
 
 				showStyleConfigSchema: JSONBlobStringify({}),
-				showStyleMigrations: [],
 				getShowStyleVariantId: (): string | null => {
 					return null
 				},
