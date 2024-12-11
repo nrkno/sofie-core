@@ -404,13 +404,7 @@ function ParentDeviceEditRow({
 		<tr className="expando-details hl" key={item.id + '-details'}>
 			<td colSpan={99}>
 				<div className="properties-grid">
-					<LabelAndOverrides
-						label={t('Name')}
-						item={item}
-						overrideHelper={overrideHelper}
-						opPrefix={item.id}
-						itemKey={'name'}
-					>
+					<LabelAndOverrides label={t('Name')} item={item} overrideHelper={overrideHelper} itemKey={'name'}>
 						{(value, handleUpdate) => (
 							<TextInputControl
 								modifiedClassName="bghl"
