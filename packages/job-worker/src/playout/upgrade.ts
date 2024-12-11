@@ -1,6 +1,7 @@
 import {
 	BlueprintMapping,
 	BlueprintMappings,
+	BlueprintParentDeviceSettings,
 	IStudioSettings,
 	JSONBlobParse,
 	StudioRouteBehavior,
@@ -8,6 +9,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import {
 	MappingsExt,
+	StudioDeviceSettings,
 	StudioIngestDevice,
 	StudioInputDevice,
 	StudioPackageContainer,
@@ -51,6 +53,15 @@ export async function handleBlueprintUpgradeForStudio(context: JobContext, _data
 		compileCoreConfigValues(context.studio.settings)
 	)
 
+	const parentDevices = Object.fromEntries(
+		Object.entries<BlueprintParentDeviceSettings>(result.parentDevices ?? {}).map((dev) => [
+			dev[0],
+			literal<Complete<StudioDeviceSettings>>({
+				name: dev[1].name ?? '',
+				options: dev[1],
+			}),
+		])
+	)
 	const playoutDevices = Object.fromEntries(
 		Object.entries<TSR.DeviceOptionsAny>(result.playoutDevices ?? {}).map((dev) => [
 			dev[0],
@@ -124,6 +135,7 @@ export async function handleBlueprintUpgradeForStudio(context: JobContext, _data
 		$set: {
 			'settingsWithOverrides.defaults': studioSettings,
 			'mappingsWithOverrides.defaults': translateMappings(result.mappings),
+			'peripheralDeviceSettings.deviceSettings.defaults': parentDevices,
 			'peripheralDeviceSettings.playoutDevices.defaults': playoutDevices,
 			'peripheralDeviceSettings.ingestDevices.defaults': ingestDevices,
 			'peripheralDeviceSettings.inputDevices.defaults': inputDevices,

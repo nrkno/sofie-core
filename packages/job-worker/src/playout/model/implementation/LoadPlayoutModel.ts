@@ -46,7 +46,7 @@ export async function loadPlayoutModelPreInit(
 	}
 
 	const [PeripheralDevices, Playlist, Rundowns] = await Promise.all([
-		context.directCollections.PeripheralDevices.findFetch({ studioId: tmpPlaylist.studioId }),
+		context.directCollections.PeripheralDevices.findFetch({ 'studioAndConfigId.studioId': tmpPlaylist.studioId }),
 		reloadPlaylist ? context.directCollections.RundownPlaylists.findOne(tmpPlaylist._id) : clone(tmpPlaylist),
 		context.directCollections.Rundowns.findFetch({ playlistId: tmpPlaylist._id }),
 	])
@@ -121,7 +121,7 @@ async function loadInitData(
 	existingRundowns: ReadonlyDeep<DBRundown[]> | undefined
 ): Promise<[ReadonlyDeep<PeripheralDevice[]>, DBRundownPlaylist, ReadonlyDeep<DBRundown[]>]> {
 	const [peripheralDevices, reloadedPlaylist, rundowns] = await Promise.all([
-		context.directCollections.PeripheralDevices.findFetch({ studioId: tmpPlaylist.studioId }),
+		context.directCollections.PeripheralDevices.findFetch({ 'studioAndConfigId.studioId': tmpPlaylist.studioId }),
 		reloadPlaylist
 			? await context.directCollections.RundownPlaylists.findOne(tmpPlaylist._id)
 			: clone<DBRundownPlaylist>(tmpPlaylist),

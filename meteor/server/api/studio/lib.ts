@@ -84,19 +84,19 @@ export async function removePackageInfos(ids: PackageInfoDB['_id'][], mode: 'def
 }
 
 export async function getStudioIdFromDevice(peripheralDevice: PeripheralDevice): Promise<StudioId | undefined> {
-	if (peripheralDevice.studioId) {
-		return peripheralDevice.studioId
+	if (peripheralDevice.studioAndConfigId?.studioId) {
+		return peripheralDevice.studioAndConfigId.studioId
 	}
 	if (peripheralDevice.parentDeviceId) {
 		// Also check the parent device:
 		const parentDevice = (await PeripheralDevices.findOneAsync(peripheralDevice.parentDeviceId, {
 			fields: {
 				_id: 1,
-				studioId: 1,
+				studioAndConfigId: 1,
 			},
-		})) as Pick<PeripheralDevice, '_id' | 'studioId'> | undefined
+		})) as Pick<PeripheralDevice, '_id' | 'studioAndConfigId'> | undefined
 		if (parentDevice) {
-			return parentDevice.studioId
+			return parentDevice.studioAndConfigId?.studioId
 		}
 	}
 	return undefined

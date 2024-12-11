@@ -108,27 +108,22 @@ export const PeripheralDevices = createAsyncOnlyMongoCollection<PeripheralDevice
 	update(userId, doc, fields, _modifier) {
 		if (!checkUserIdHasOneOfPermissions(userId, CollectionName.PeripheralDevices, 'configure')) return false
 
-		return rejectFields(doc, fields, [
-			'type',
-			'parentDeviceId',
-			'versions',
-			'created',
-			'status',
-			'lastSeen',
-			'lastConnected',
-			'connected',
-			'connectionId',
-			'token',
-			// 'settings' is allowed
+		return allowOnlyFields(doc, fields, [
+			'name',
+			'deviceName',
+			'organizationId',
+			'disableVersionChecks',
+			'nrcsName',
+			'ignore',
 		])
 	},
 })
 registerIndex(PeripheralDevices, {
 	organizationId: 1,
-	studioId: 1,
+	studioAndConfigId: 1,
 })
 registerIndex(PeripheralDevices, {
-	studioId: 1,
+	studioAndConfigId: 1,
 })
 registerIndex(PeripheralDevices, {
 	token: 1,

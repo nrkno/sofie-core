@@ -134,12 +134,14 @@ export interface StudiosRestAPI {
 	 * @param event User event string
 	 * @param studioId Studio to attach to
 	 * @param deviceId Device to attach
+	 * @param configId Id of the studio owned configuration to assign to the device. If not set, one will be created.
 	 */
 	attachDeviceToStudio(
 		connection: Meteor.Connection,
 		event: string,
 		studioId: StudioId,
-		deviceId: PeripheralDeviceId
+		deviceId: PeripheralDeviceId,
+		configId: string | undefined
 	): Promise<ClientAPI.ClientResponse<void>>
 	/**
 	 * Detaches a device from a studio.

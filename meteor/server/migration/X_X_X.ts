@@ -1,8 +1,9 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
-import { CoreSystem, Studios, TriggeredActions } from '../collections'
+import { CoreSystem, PeripheralDevices, Studios, TriggeredActions } from '../collections'
 import {
 	convertObjectIntoOverrides,
+	ObjectOverrideSetOp,
 	wrapDefaultObject,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import {
@@ -10,10 +11,13 @@ import {
 	StudioRouteSetExclusivityGroup,
 	StudioPackageContainer,
 	IStudioSettings,
+	StudioDeviceSettings,
 } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DEFAULT_CORE_TRIGGER_IDS } from './upgrades/defaultSystemActionTriggers'
 import { ICoreSystem } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
 import { ICoreSystemSettings } from '@sofie-automation/shared-lib/dist/core/model/CoreSystemSettings'
+import { logger } from '../logging'
+import { literal, unprotectString } from '../lib/tempLib'
 
 /*
  * **************************************************************************************
@@ -343,6 +347,144 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 						cron: 1,
 						support: 1,
 						evaluations: 1,
+					},
+				})
+			}
+		},
+	},
+
+	{
+		id: `studios create peripheralDeviceSettings.deviceSettings`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const studios = await Studios.findFetchAsync({
+				'peripheralDeviceSettings.deviceSettings.defaults': { $exists: false },
+			})
+			if (studios.length > 0) {
+				return 'studio is missing peripheralDeviceSettings.deviceSettings'
+			}
+			return false
+		},
+		migrate: async () => {
+			const studios = await Studios.findFetchAsync({
+				'peripheralDeviceSettings.deviceSettings.defaults': { $exists: false },
+			})
+			for (const studio of studios) {
+				await Studios.updateAsync(studio._id, {
+					$set: {
+						'peripheralDeviceSettings.deviceSettings': {
+							// Ensure the object is setup, preserving anything already configured
+							...wrapDefaultObject({}),
+							...studio.peripheralDeviceSettings.deviceSettings,
+						},
+					},
+				})
+			}
+		},
+	},
+	{
+		id: `PeripheralDevice populate secretSettingsStatus`,
+		canBeRunAutomatically: true,
+		dependOnResultFrom: `studios create peripheralDeviceSettings.deviceSettings`,
+		validate: async () => {
+			const devices = await PeripheralDevices.findFetchAsync({
+				secretSettings: { $exists: true },
+				settings: { $exists: true },
+				secretSettingsStatus: { $exists: false },
+			})
+			if (devices.length > 0) {
+				return 'settings must be moved to the studio'
+			}
+			return false
+		},
+		migrate: async () => {
+			const devices = await PeripheralDevices.findFetchAsync({
+				secretSettings: { $exists: true },
+				settings: { $exists: true },
+				secretSettingsStatus: { $exists: false },
+			})
+			for (const device of devices) {
+				// @ts-expect-error settings is typed as Record<string, any>
+				const oldSettings = device.settings as Record<string, any> | undefined
+				await PeripheralDevices.updateAsync(device._id, {
+					$set: {
+						secretSettingsStatus: {
+							credentials: oldSettings?.secretCredentials,
+							accessToken: oldSettings?.secretAccessToken,
+						},
+					},
+					$unset: {
+						'settings.secretCredentials': 1,
+						'settings.secretAccessToken': 1,
+					},
+				})
+			}
+		},
+	},
+	{
+		id: `move PeripheralDevice settings to studio`,
+		canBeRunAutomatically: true,
+		dependOnResultFrom: `PeripheralDevice populate secretSettingsStatus`,
+		validate: async () => {
+			const devices = await PeripheralDevices.findFetchAsync({
+				studioId: { $exists: true },
+				settings: { $exists: true },
+			})
+			if (devices.length > 0) {
+				return 'settings must be moved to the studio'
+			}
+			return false
+		},
+		migrate: async () => {
+			const devices = await PeripheralDevices.findFetchAsync({
+				studioId: { $exists: true },
+				settings: { $exists: true },
+			})
+			for (const device of devices) {
+				// @ts-expect-error settings is typed as Record<string, any>
+				const oldSettings = device.settings
+				// @ts-expect-error studioId is typed as StudioId
+				const oldStudioId: StudioId = device.studioId
+				// Will never happen, but make types match query
+				if (!oldSettings || !oldStudioId) {
+					logger.warn(`Skipping migration of device ${device._id} as it is missing settings or studioId`)
+					continue
+				}
+				// If the studio is not found, then something is a little broken so skip
+				const existingStudio = await Studios.findOneAsync(oldStudioId)
+				if (!existingStudio) {
+					logger.warn(`Skipping migration of device ${device._id} as the studio ${oldStudioId} is missing`)
+					continue
+				}
+				// Use the device id as the settings id
+				const newConfigId = unprotectString(device._id)
+				// Compile the new list of overrides
+				const newOverrides = [
+					...existingStudio.peripheralDeviceSettings.deviceSettings.overrides,
+					literal<ObjectOverrideSetOp>({
+						op: 'set',
+						path: newConfigId,
+						value: literal<StudioDeviceSettings>({
+							name: device.name,
+							options: oldSettings,
+						}),
+					}),
+				]
+				await Studios.updateAsync(existingStudio._id, {
+					$set: {
+						'peripheralDeviceSettings.deviceSettings.overrides': newOverrides,
+					},
+				})
+				await PeripheralDevices.updateAsync(device._id, {
+					$set: {
+						studioAndConfigId: {
+							studioId: oldStudioId,
+							configId: newConfigId,
+						},
+					},
+					$unset: {
+						settings: 1,
+						studioId: 1,
 					},
 				})
 			}

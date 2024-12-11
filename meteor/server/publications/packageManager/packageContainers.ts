@@ -97,7 +97,7 @@ meteorCustomPublish(
 
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, this)
 
-		const studioId = peripheralDevice.studioId
+		const studioId = peripheralDevice.studioAndConfigId?.studioId
 		if (!studioId) {
 			logger.warn(`Pub.packageManagerPackageContainers: device "${peripheralDevice._id}" has no studioId`)
 			return this.ready()

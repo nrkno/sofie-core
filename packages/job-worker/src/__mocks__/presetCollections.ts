@@ -420,8 +420,10 @@ export async function setupMockPeripheralDevice(
 		name: 'mockDevice',
 		deviceName: 'Mock Gateway',
 		organizationId: null,
-		studioId: context.studioId,
-		settings: {},
+		studioAndConfigId: {
+			studioId: context.studioId,
+			configId: 'test',
+		},
 		nrcsName: category === PeripheralDeviceCategory.INGEST ? 'JEST-NRCS' : undefined,
 
 		category: category,

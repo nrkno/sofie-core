@@ -248,7 +248,7 @@ export async function getSystemStatus(_cred: RequestCredentials | null, studioId
 	if (studioId) {
 		// Check status for a certain studio:
 
-		devices = await PeripheralDevices.findFetchAsync({ studioId: studioId })
+		devices = await PeripheralDevices.findFetchAsync({ 'studioAndConfigId.studioId': studioId })
 	} else {
 		// Check status for all studios:
 

@@ -3,7 +3,7 @@ import { check } from '../../lib/check'
 import { registerClassToMeteorMethods } from '../../methods'
 import { NewStudiosAPI, StudiosAPIMethods } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { literal, getRandomId } from '../../lib/tempLib'
+import { literal, getRandomId, protectString } from '../../lib/tempLib'
 import { lazyIgnore } from '../../lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import {
@@ -21,7 +21,7 @@ import {
 } from '../../collections'
 import { MethodContextAPI, MethodContext } from '../methodContext'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { OrganizationId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { OrganizationId, PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { logger } from '../../logging'
 import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
 import { UserPermissions } from '@sofie-automation/meteor-lib/dist/userPermissions'
@@ -62,6 +62,7 @@ export async function insertStudioInner(organizationId: OrganizationId | null, n
 			thumbnailContainerIds: [],
 			previewContainerIds: [],
 			peripheralDeviceSettings: {
+				deviceSettings: wrapDefaultObject({}),
 				playoutDevices: wrapDefaultObject({}),
 				ingestDevices: wrapDefaultObject({}),
 				inputDevices: wrapDefaultObject({}),
@@ -91,7 +92,10 @@ async function removeStudio(context: MethodContext, studioId: StudioId): Promise
 			`Can't remove studio "${studioId}", because the rundownPlaylist "${playlist._id}" is in it.`
 		)
 
-	const peripheralDevice = await PeripheralDevices.findOneAsync({ studioId: studio._id }, { fields: { _id: 1 } })
+	const peripheralDevice = await PeripheralDevices.findOneAsync(
+		{ 'studioAndConfigId.studioId': studio._id },
+		{ fields: { _id: 1 } }
+	)
 	if (peripheralDevice)
 		throw new Meteor.Error(
 			404,
@@ -118,6 +122,41 @@ class ServerStudiosAPI extends MethodContextAPI implements NewStudiosAPI {
 	}
 	async removeStudio(studioId: StudioId) {
 		return removeStudio(this, studioId)
+	}
+
+	async assignConfigToPeripheralDevice(studioId: StudioId, configId: string, deviceId: PeripheralDeviceId | null) {
+		assertConnectionHasOneOfPermissions(this.connection, ...PERMISSIONS_FOR_MANAGE_STUDIOS)
+
+		// Unassign other uses
+		await PeripheralDevices.updateAsync(
+			{
+				studioAndConfigId: {
+					studioId,
+					configId,
+				},
+				_id: { $ne: deviceId ?? protectString('') },
+			},
+			{
+				$unset: {
+					studioAndConfigId: 1,
+				},
+			},
+			{
+				multi: true,
+			}
+		)
+
+		if (deviceId) {
+			// Set for the new one
+			await PeripheralDevices.updateAsync(deviceId, {
+				$set: {
+					studioAndConfigId: {
+						studioId,
+						configId,
+					},
+				},
+			})
+		}
 	}
 }
 registerClassToMeteorMethods(StudiosAPIMethods, ServerStudiosAPI, false)
