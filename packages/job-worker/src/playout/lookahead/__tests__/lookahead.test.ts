@@ -341,7 +341,7 @@ describe('Lookahead', () => {
 		await expectLookaheadForLayerMock(playlistId, [expectedCurrent, expectedNext], expectedPrevious, fakeParts)
 	})
 
-	// testInFiber('Pieces', () => {
+	// test('Pieces', () => {
 	// 	const fakeParts = partIds.map((p) => ({ _id: p })) as Part[]
 	// 	getOrderedPartsAfterPlayheadMock.mockReturnValue(fakeParts)
 

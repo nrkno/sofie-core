@@ -1,4 +1,4 @@
-import { deferAsync, getCurrentTime, MeteorStartupAsync } from './lib/lib'
+import { deferAsync, getCurrentTime } from './lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { logger } from './logging'
 import { sendTrace } from './api/integration/influx'
@@ -83,7 +83,7 @@ function traceConnections() {
 	}, 1000)
 }
 
-MeteorStartupAsync(async () => {
+Meteor.startup(async () => {
 	// Reset the connection status of the devices
 
 	await PeripheralDevices.updateAsync(

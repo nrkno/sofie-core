@@ -2,7 +2,7 @@ import { RundownId, RundownPlaylistId, StudioId } from '@sofie-automation/coreli
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Rundowns } from '../../../collections'
-import { runAllTimers, runTimersUntilNow, testInFiber, waitUntil } from '../../../../__mocks__/helpers/jest'
+import { runAllTimers, runTimersUntilNow, waitUntil } from '../../../../__mocks__/helpers/jest'
 import { MongoMock } from '../../../../__mocks__/mongo'
 import { RundownsObserver } from '../rundownsObserver'
 
@@ -15,7 +15,7 @@ describe('RundownsObserver', () => {
 		jest.useFakeTimers()
 	})
 
-	testInFiber('create and destroy observer', async () => {
+	test('create and destroy observer', async () => {
 		const studioId = protectString<StudioId>('studio0')
 		const playlistId = protectString<RundownPlaylistId>('playlist0')
 
@@ -68,7 +68,7 @@ describe('RundownsObserver', () => {
 		}
 	})
 
-	testInFiber('add a document', async () => {
+	test('add a document', async () => {
 		const studioId = protectString<StudioId>('studio0')
 		const playlistId = protectString<RundownPlaylistId>('playlist0')
 
@@ -122,7 +122,7 @@ describe('RundownsObserver', () => {
 		}
 	})
 
-	testInFiber('change a document', async () => {
+	test('change a document', async () => {
 		const studioId = protectString<StudioId>('studio0')
 		const playlistId = protectString<RundownPlaylistId>('playlist0')
 
@@ -176,7 +176,7 @@ describe('RundownsObserver', () => {
 		}
 	})
 
-	testInFiber('sequence of updates', async () => {
+	test('sequence of updates', async () => {
 		const studioId = protectString<StudioId>('studio0')
 		const playlistId = protectString<RundownPlaylistId>('playlist0')
 

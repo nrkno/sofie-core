@@ -1,16 +1,16 @@
-import Agent from 'meteor/julusian:meteor-elastic-apm'
+import { RawAgent } from './apm'
 
 class Profiler {
 	private active = false
 
 	startSpan(_name: string) {
 		if (!this.active) return
-		return Agent.startSpan(_name)
+		return RawAgent.startSpan(_name)
 	}
 
 	startTransaction(description: string, name: string) {
 		if (!this.active) return
-		return Agent.startTransaction(description, name)
+		return RawAgent.startTransaction(description, name)
 	}
 
 	setActive(active: boolean) {

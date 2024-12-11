@@ -67,27 +67,27 @@ async function setupIndexes(removeOldIndexes = false): Promise<Array<IndexSpecif
 
 			// Ensure new indexes (add if not existing):
 			for (const index of targetInfo.indexes) {
-				targetInfo.collection._ensureIndex(index)
+				targetInfo.collection.createIndex(index)
 			}
 		})
 	)
 	return removeIndexes
 }
-function ensureIndexes(): void {
+function createIndexes(): void {
 	const indexes = getTargetRegisteredIndexes()
 	if (!Meteor.isServer) throw new Meteor.Error(500, `setupIndexes() can only be run server-side`)
 
 	// Ensure new indexes:
 	_.each(indexes, (i) => {
 		_.each(i.indexes, (index) => {
-			i.collection._ensureIndex(index)
+			i.collection.createIndex(index)
 		})
 	})
 }
 
 Meteor.startup(() => {
 	// Ensure indexes are created on startup:
-	ensureIndexes()
+	createIndexes()
 })
 
 async function cleanupIndexes(
@@ -119,7 +119,7 @@ let mongoTest: AsyncOnlyMongoCollection<any> | undefined = undefined
 async function doSystemBenchmarkInner() {
 	if (!mongoTest) {
 		mongoTest = createAsyncOnlyMongoCollection<any>('benchmark-test' as any, false)
-		mongoTest._ensureIndex({
+		mongoTest.createIndex({
 			indexedProp: 1,
 		})
 	}

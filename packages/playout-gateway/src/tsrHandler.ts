@@ -828,7 +828,7 @@ export class TSRHandler {
 	}
 
 	private changedResults: PeripheralDeviceAPI.PlayoutChangedResults | undefined = undefined
-	private sendCallbacksTimeout: NodeJS.Timer | undefined = undefined
+	private sendCallbacksTimeout: NodeJS.Timeout | undefined = undefined
 
 	private sendChangedResults = (): void => {
 		this.sendCallbacksTimeout = undefined

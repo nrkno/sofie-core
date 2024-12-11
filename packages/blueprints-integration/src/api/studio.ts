@@ -3,7 +3,6 @@ import type { ReadonlyDeep } from 'type-fest'
 import type { BlueprintConfigCoreConfig, BlueprintManifestBase, BlueprintManifestType, IConfigMessage } from './base'
 import type { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 import type { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
-import type { MigrationStepStudio } from '../migrations'
 import type {
 	ICommonContext,
 	IFixUpConfigContext,
@@ -35,10 +34,6 @@ export interface StudioBlueprintManifest<TRawConfig = IBlueprintConfig, TProcess
 
 	/** A list of config items this blueprint expects to be available on the Studio */
 	studioConfigSchema: JSONBlob<JSONSchema>
-	/** A list of Migration steps related to a Studio
-	 * @deprecated This has been replaced with `validateConfig` and `applyConfig`
-	 */
-	studioMigrations: MigrationStepStudio[]
 
 	/** The config presets exposed by this blueprint */
 	configPresets: Record<string, IStudioConfigPreset<TRawConfig>>

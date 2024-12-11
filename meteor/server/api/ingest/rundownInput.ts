@@ -3,7 +3,7 @@ import { check } from '../../lib/check'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { NrcsIngestDataCache, MediaObjects, Parts, Rundowns, Segments } from '../../collections'
 import { literal } from '../../lib/tempLib'
-import { lazyIgnore, MeteorStartupAsync } from '../../lib/lib'
+import { lazyIgnore } from '../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart, IngestPlaylist } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../logging'
 import { RundownIngestDataCache } from './ingestCache'
@@ -363,7 +363,7 @@ async function listIngestRundowns(peripheralDevice: PeripheralDevice): Promise<s
 }
 
 // hackGetMediaObjectDuration stuff
-MeteorStartupAsync(async () => {
+Meteor.startup(async () => {
 	await MediaObjects.observe(
 		{},
 		{

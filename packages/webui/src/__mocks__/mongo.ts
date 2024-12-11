@@ -246,7 +246,7 @@ export namespace MongoMock {
 			return docs.length
 		}
 
-		_ensureIndex(_obj: any) {
+		createIndex(_obj: any) {
 			// todo
 		}
 		allow() {

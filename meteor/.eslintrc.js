@@ -20,7 +20,7 @@ const tmpRules = {
 }
 
 const tsBase = {
-	extends: [...tsExtends, 'plugin:custom-rules/all'],
+	extends: [...tsExtends],
 	plugins: tsPlugins,
 	...tsParser,
 	settings: {
@@ -50,7 +50,6 @@ const tsBase = {
 				allowModules: ['meteor', 'mongodb'],
 			},
 		],
-		'jest/no-standalone-expect': 'off', // testInFiber confuses the rule
 		...tmpRules,
 	},
 }

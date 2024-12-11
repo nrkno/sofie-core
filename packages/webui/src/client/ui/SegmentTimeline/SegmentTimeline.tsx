@@ -293,7 +293,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 		RundownViewEventBus.off(RundownViewEvents.SEGMENT_ZOOM_OFF, this.onRundownEventSegmentZoomOff)
 	}
 
-	private highlightTimeout: NodeJS.Timer | undefined
+	private highlightTimeout: NodeJS.Timeout | undefined
 
 	private onHighlight = (e: HighlightEvent) => {
 		if (e.segmentId === this.props.segment._id && !e.partId && !e.pieceId) {

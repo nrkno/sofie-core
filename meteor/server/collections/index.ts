@@ -28,7 +28,6 @@ import { DBUser } from '@sofie-automation/meteor-lib/dist/collections/Users'
 import { WorkerStatus } from '@sofie-automation/meteor-lib/dist/collections/Workers'
 import { registerIndex } from './indices'
 import { getCurrentTime } from '../lib/lib'
-import { MeteorStartupAsync } from '../lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import {
 	createAsyncOnlyMongoCollection,
@@ -299,7 +298,7 @@ const removeOldCommands = () => {
 		logger.error(`Failed to cleanup old PeripheralDeviceCommands: ${stringifyError(e)}`)
 	})
 }
-MeteorStartupAsync(async () => {
+Meteor.startup(async () => {
 	Meteor.setInterval(() => removeOldCommands(), 5 * 60 * 1000)
 
 	await Promise.allSettled([

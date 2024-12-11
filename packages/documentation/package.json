@@ -15,7 +15,7 @@
 		"write-heading-ids": "docusaurus write-heading-ids"
 	},
 	"engines": {
-		"node": ">=18.0"
+		"node": ">=22.11"
 	},
 	"devDependencies": {
 		"@docusaurus/core": "3.2.1",
