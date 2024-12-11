@@ -200,43 +200,6 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	},
 
 	{
-		id: `add studio settings allowHold & allowPieceDirectPlay`,
-		canBeRunAutomatically: true,
-		validate: async () => {
-			const studios = await Studios.findFetchAsync({
-				$or: [
-					{ 'settings.allowHold': { $exists: false } },
-					{ 'settings.allowPieceDirectPlay': { $exists: false } },
-				],
-			})
-
-			if (studios.length > 0) {
-				return 'studios must have settings.allowHold and settings.allowPieceDirectPlay defined'
-			}
-
-			return false
-		},
-		migrate: async () => {
-			const studios = await Studios.findFetchAsync({
-				$or: [
-					{ 'settings.allowHold': { $exists: false } },
-					{ 'settings.allowPieceDirectPlay': { $exists: false } },
-				],
-			})
-
-			for (const studio of studios) {
-				// Populate the settings to be backwards compatible
-				await Studios.updateAsync(studio._id, {
-					$set: {
-						'settings.allowHold': true,
-						'settings.allowPieceDirectPlay': true,
-					},
-				})
-			}
-		},
-	},
-
-	{
 		id: 'TriggeredActions.remove old systemwide',
 		canBeRunAutomatically: true,
 		validate: async () => {
@@ -347,6 +310,66 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 						cron: 1,
 						support: 1,
 						evaluations: 1,
+					},
+				})
+			}
+		},
+	},
+
+	{
+		id: 'Ensure CoreSystem.settingsWithOverrides is valid',
+		dependOnResultFrom: `convert CoreSystem.settingsWithOverrides`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const systems = await CoreSystem.findFetchAsync({
+				$or: [
+					{
+						'settingsWithOverrides.defaults': { $exists: false },
+					},
+					{
+						'settingsWithOverrides.overrides': { $exists: false },
+					},
+				],
+			})
+
+			if (systems.length > 0) {
+				return 'settings must be converted to an ObjectWithOverrides'
+			}
+
+			return false
+		},
+		migrate: async () => {
+			const systems = await CoreSystem.findFetchAsync({
+				$or: [
+					{
+						'settingsWithOverrides.defaults': { $exists: false },
+					},
+					{
+						'settingsWithOverrides.overrides': { $exists: false },
+					},
+				],
+			})
+
+			for (const system of systems) {
+				const newSettings = wrapDefaultObject<ICoreSystemSettings>({
+					cron: {
+						casparCGRestart: {
+							enabled: false,
+						},
+						storeRundownSnapshots: {
+							enabled: false,
+						},
+					},
+					support: { message: '' },
+					evaluationsMessage: { enabled: false, heading: '', message: '' },
+				})
+
+				await CoreSystem.updateAsync(system._id, {
+					$set: {
+						settingsWithOverrides: {
+							...newSettings,
+							...system.settingsWithOverrides,
+						},
 					},
 				})
 			}

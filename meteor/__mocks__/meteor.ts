@@ -195,9 +195,6 @@ export namespace MeteorMock {
 		// but it'll do for now:
 		return callAsync(methodName, ...args)
 	}
-	export function absoluteUrl(path?: string): string {
-		return path + '' // todo
-	}
 	export function setTimeout(fcn: () => void | Promise<void>, time: number): number {
 		return $.setTimeout(() => {
 			Promise.resolve()
