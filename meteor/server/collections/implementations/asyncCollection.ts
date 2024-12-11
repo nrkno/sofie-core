@@ -18,15 +18,19 @@ import { profiler } from '../../api/profiler'
 import { PromisifyCallbacks } from '@sofie-automation/shared-lib/dist/lib/types'
 import { AsyncOnlyMongoCollection } from '../collection'
 
+/**
+ * A stripped down version of Meteor's Mongo.Cursor, with only the async methods
+ */
 export type MinimalMongoCursor<T extends { _id: ProtectedString<any> }> = Pick<
 	MongoCursor<T>,
 	'fetchAsync' | 'observeChangesAsync' | 'observeAsync' | 'countAsync'
 	// | 'forEach' | 'map' |
 >
-
+/**
+ * A stripped down version of Meteor's Mongo.Collection, with only the async methods
+ */
 export type MinimalMeteorMongoCollection<T extends { _id: ProtectedString<any> }> = Pick<
 	Mongo.Collection<T>,
-	// | 'find'
 	'insertAsync' | 'removeAsync' | 'updateAsync' | 'upsertAsync' | 'rawCollection' | 'rawDatabase' | 'createIndex'
 > & {
 	find: (...args: Parameters<Mongo.Collection<T>['find']>) => MinimalMongoCursor<T>

@@ -73,7 +73,7 @@ async function setupIndexes(removeOldIndexes = false): Promise<Array<IndexSpecif
 	)
 	return removeIndexes
 }
-function ensureIndexes(): void {
+function createIndexes(): void {
 	const indexes = getTargetRegisteredIndexes()
 	if (!Meteor.isServer) throw new Meteor.Error(500, `setupIndexes() can only be run server-side`)
 
@@ -87,7 +87,7 @@ function ensureIndexes(): void {
 
 Meteor.startup(() => {
 	// Ensure indexes are created on startup:
-	ensureIndexes()
+	createIndexes()
 })
 
 async function cleanupIndexes(
