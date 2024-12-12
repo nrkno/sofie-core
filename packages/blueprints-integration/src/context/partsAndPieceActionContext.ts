@@ -8,8 +8,12 @@ import {
 	IBlueprintResolvedPieceInstance,
 	Time,
 } from '..'
+import { BlueprintQuickLookInfo } from './quickLoopInfo'
 
 export interface IPartAndPieceActionContext {
+	/** Information about the current loop, if there is one */
+	readonly quickLoopInfo: BlueprintQuickLookInfo | null
+
 	/**
 	 * Data fetching
 	 */

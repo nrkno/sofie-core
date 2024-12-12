@@ -4,7 +4,7 @@ import {
 	PeripheralDevice,
 	PeripheralDeviceType,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { getCurrentTime } from '../lib/lib'
+import { getCurrentTime } from './lib/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
@@ -17,14 +17,15 @@ import { internalStoreRundownPlaylistSnapshot } from './api/snapshot'
 import { deferAsync, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { getCoreSystemAsync } from './coreSystem/collection'
 import { cleanupOldDataInner } from './api/cleanup'
-import { CollectionCleanupResult } from '../lib/api/system'
-import { ICoreSystem } from '../lib/collections/CoreSystem'
+import { CollectionCleanupResult } from '@sofie-automation/meteor-lib/dist/api/system'
+import { ICoreSystemSettings } from '@sofie-automation/shared-lib/dist/core/model/CoreSystemSettings'
 import { executePeripheralDeviceFunctionWithCustomTimeout } from './api/peripheralDevice/executeFunction'
 import {
 	interpollateTranslation,
 	isTranslatableMessage,
 	translateMessage,
 } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 const lowPrioFcn = (fcn: () => any) => {
 	// Do it at a random time in the future:
@@ -49,15 +50,17 @@ export async function nightlyCronjobInner(): Promise<void> {
 	logger.info('Nightly cronjob: starting...')
 	const system = await getCoreSystemAsync()
 
+	const systemSettings = system && applyAndValidateOverrides(system.settingsWithOverrides).obj
+
 	await Promise.allSettled([
 		cleanupOldDataCronjob().catch((error) => {
 			logger.error(`Cronjob: Error when cleaning up old data: ${stringifyError(error)}`)
 			logger.error(error)
 		}),
-		restartCasparCG(system, previousLastNightlyCronjob).catch((e) => {
+		restartCasparCG(systemSettings, previousLastNightlyCronjob).catch((e) => {
 			logger.error(`Cron: Restart CasparCG error: ${stringifyError(e)}`)
 		}),
-		storeSnapshots(system).catch((e) => {
+		storeSnapshots(systemSettings).catch((e) => {
 			logger.error(`Cron: Rundown Snapshots error: ${stringifyError(e)}`)
 		}),
 	])
@@ -81,8 +84,8 @@ async function cleanupOldDataCronjob() {
 
 const CASPARCG_LAST_SEEN_PERIOD_MS = 3 * 60 * 1000 // Note: this must be higher than the ping interval used by playout-gateway
 
-async function restartCasparCG(system: ICoreSystem | undefined, previousLastNightlyCronjob: number) {
-	if (!system?.cron?.casparCGRestart?.enabled) return
+async function restartCasparCG(systemSettings: ICoreSystemSettings | undefined, previousLastNightlyCronjob: number) {
+	if (!systemSettings?.cron?.casparCGRestart?.enabled) return
 
 	let shouldRetryAttempt = false
 	const ps: Array<Promise<any>> = []
@@ -176,10 +179,10 @@ async function restartCasparCG(system: ICoreSystem | undefined, previousLastNigh
 	}
 }
 
-async function storeSnapshots(system: ICoreSystem | undefined) {
-	if (system?.cron?.storeRundownSnapshots?.enabled) {
-		const filter = system.cron.storeRundownSnapshots.rundownNames?.length
-			? { name: { $in: system.cron.storeRundownSnapshots.rundownNames } }
+async function storeSnapshots(systemSettings: ICoreSystemSettings | undefined) {
+	if (systemSettings?.cron?.storeRundownSnapshots?.enabled) {
+		const filter = systemSettings.cron.storeRundownSnapshots.rundownNames?.length
+			? { name: { $in: systemSettings.cron.storeRundownSnapshots.rundownNames } }
 			: {}
 
 		const playlists = await RundownPlaylists.findFetchAsync(filter)

@@ -61,7 +61,12 @@ export function transformPartIntoTimeline(
 				}
 				break
 			case IBlueprintPieceType.Normal:
-				pieceEnable = getPieceEnableInsidePart(pieceInstance, partTimings, parentGroup.id)
+				pieceEnable = getPieceEnableInsidePart(
+					pieceInstance,
+					partTimings,
+					parentGroup.id,
+					parentGroup.enable.duration !== undefined || parentGroup.enable.end !== undefined
+				)
 				break
 			default:
 				assertNever(pieceInstance.piece.pieceType)

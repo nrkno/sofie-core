@@ -194,6 +194,13 @@ export interface IRundownPlaylistActivateAdlibTestingAction extends ITriggeredAc
 	filterChain: (IRundownPlaylistFilterLink | IGUIContextFilterLink)[]
 }
 
+export interface ISwitchRouteSetAction extends ITriggeredActionBase {
+	action: PlayoutActions.switchRouteSet
+	filterChain: (IRundownPlaylistFilterLink | IGUIContextFilterLink)[]
+	routeSetId: string
+	state: boolean | 'toggle'
+}
+
 export interface ITakeAction extends ITriggeredActionBase {
 	action: PlayoutActions.take
 	filterChain: (IRundownPlaylistFilterLink | IGUIContextFilterLink)[]
@@ -316,6 +323,7 @@ export type SomeAction =
 	| IShowEntireCurrentSegmentAction
 	| IMiniShelfQueueAdLib
 	| IModifyShiftRegister
+	| ISwitchRouteSetAction
 
 export interface IBlueprintTriggeredActions {
 	_id: string
@@ -332,3 +340,27 @@ export interface IBlueprintTriggeredActions {
 }
 
 export { SomeActionIdentifier, ClientActions, PlayoutActions }
+
+export enum IBlueprintDefaultCoreSystemTriggersType {
+	toggleShelf = 'toggleShelf',
+	activateRundownPlaylist = 'activateRundownPlaylist',
+	activateRundownPlaylistRehearsal = 'activateRundownPlaylistRehearsal',
+	deactivateRundownPlaylist = 'deactivateRundownPlaylist',
+	take = 'take',
+	hold = 'hold',
+	holdUndo = 'holdUndo',
+	resetRundownPlaylist = 'resetRundownPlaylist',
+	disableNextPiece = 'disableNextPiece',
+	disableNextPieceUndo = 'disableNextPieceUndo',
+	createSnapshotForDebug = 'createSnapshotForDebug',
+	moveNextPart = 'moveNextPart',
+	moveNextSegment = 'moveNextSegment',
+	movePreviousPart = 'movePreviousPart',
+	movePreviousSegment = 'movePreviousSegment',
+	goToOnAirLine = 'goToOnAirLine',
+	rewindSegments = 'rewindSegments',
+}
+
+export type IBlueprintDefaultCoreSystemTriggers = {
+	[key in IBlueprintDefaultCoreSystemTriggersType]: IBlueprintTriggeredActions
+}

@@ -18,9 +18,11 @@ import {
 	IBlueprintPieceObjectsSampleKeys,
 	convertPartInstanceToBlueprints,
 	convertPartToBlueprints,
+	convertPartialBlueprintMutablePartToCore,
 	convertPieceInstanceToBlueprints,
 	convertPieceToBlueprints,
 	convertResolvedPieceInstanceToBlueprints,
+	createBlueprintQuickLoopInfo,
 	getMediaObjectDuration,
 } from '../lib'
 import { getResolvedPiecesForCurrentPartInstance } from '../../../playout/resolvedPieces'
@@ -52,9 +54,9 @@ import { getCurrentTime } from '../../../lib'
 import _ = require('underscore')
 import { syncPlayheadInfinitesForNextPartInstance } from '../../../playout/infinites'
 import { validateAdlibTestingPartInstanceProperties } from '../../../playout/adlibTesting'
-import { isTooCloseToAutonext } from '../../../playout/lib'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PlayoutRundownModel } from '../../../playout/model/PlayoutRundownModel'
+import { BlueprintQuickLookInfo } from '@sofie-automation/blueprints-integration/dist/context/quickLoopInfo'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -70,6 +72,10 @@ export class PartAndPieceInstanceActionService {
 	private readonly _context: JobContext
 	private readonly _playoutModel: PlayoutModel
 	readonly showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>
+
+	public get quickLoopInfo(): BlueprintQuickLookInfo | null {
+		return createBlueprintQuickLoopInfo(this._playoutModel.playlist)
+	}
 
 	/** To be set by any mutation methods on this context. Indicates to core how extensive the changes are to the current partInstance */
 	public currentPartState: ActionPartChange = ActionPartChange.NONE
@@ -339,7 +345,9 @@ export class PartAndPieceInstanceActionService {
 			throw new Error('PartInstance could not be found')
 		}
 
-		if (!partInstance.updatePartProps(props)) {
+		const playoutUpdatePart = convertPartialBlueprintMutablePartToCore(props, this.showStyleCompound.blueprintId)
+
+		if (!partInstance.updatePartProps(playoutUpdatePart)) {
 			throw new Error('Some valid properties must be defined')
 		}
 
@@ -368,7 +376,7 @@ export class PartAndPieceInstanceActionService {
 			throw new Error('Cannot queue part when next part has already been modified')
 		}
 
-		if (isTooCloseToAutonext(currentPartInstance.partInstance, true)) {
+		if (currentPartInstance.isTooCloseToAutonext(true)) {
 			throw new Error('Too close to an autonext to queue a part')
 		}
 
@@ -385,6 +393,7 @@ export class PartAndPieceInstanceActionService {
 			invalidReason: undefined,
 			floated: false,
 			expectedDurationWithTransition: undefined, // Filled in later
+			userEditOperations: [], // Adlibbed parts can't be edited by ingest
 		}
 
 		const pieces = postProcessPieces(

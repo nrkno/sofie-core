@@ -13,8 +13,8 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { ReadonlyDeep } from 'type-fest'
-import { CustomCollectionName, MeteorPubSub } from '../../../../lib/api/pubsub'
-import { UIPieceContentStatus } from '../../../../lib/api/rundownNotifications'
+import { CustomCollectionName, MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
+import { UIPieceContentStatus } from '@sofie-automation/meteor-lib/dist/api/rundownNotifications'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import {
 	MediaObjects,
@@ -23,21 +23,18 @@ import {
 	RundownPlaylists,
 	Studios,
 } from '../../../collections'
-import { literal, protectString } from '../../../../lib/lib'
+import { literal, protectString } from '../../../lib/tempLib'
 import {
 	CustomPublishCollection,
 	meteorCustomPublish,
 	setUpCollectionOptimizedObserver,
+	SetupObserversResult,
 	TriggerUpdate,
 } from '../../../lib/customPublication'
 import { logger } from '../../../logging'
-import { resolveCredentials } from '../../../security/lib/credentials'
-import { NoSecurityReadAccess } from '../../../security/noSecurity'
-import { RundownPlaylistReadAccess } from '../../../security/rundownPlaylist'
 import { ContentCache, PartInstanceFields, createReactiveContentCache } from './reactiveContentCache'
 import { RundownContentObserver } from './rundownContentObserver'
 import { RundownsObserver } from '../../lib/rundownsObserver'
-import { LiveQueryHandle } from '../../../lib/lib'
 import {
 	addItemsWithDependenciesChangesToChangedSet,
 	fetchStudio,
@@ -59,6 +56,7 @@ import {
 import { PieceContentStatusStudio } from '../checkPieceContentStatus'
 import { check, Match } from 'meteor/check'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../../../security/securityVerify'
 
 interface UIPieceContentStatusesArgs {
 	readonly rundownPlaylistId: RundownPlaylistId
@@ -104,7 +102,7 @@ const rundownPlaylistFieldSpecifier = literal<
 async function setupUIPieceContentStatusesPublicationObservers(
 	args: ReadonlyDeep<UIPieceContentStatusesArgs>,
 	triggerUpdate: TriggerUpdate<UIPieceContentStatusesUpdateProps>
-): Promise<LiveQueryHandle[]> {
+): Promise<SetupObserversResult> {
 	const trackMediaObjectChange = (mediaId: string): Partial<UIPieceContentStatusesUpdateProps> => ({
 		invalidateMediaObjectMediaId: [mediaId],
 	})
@@ -122,14 +120,14 @@ async function setupUIPieceContentStatusesPublicationObservers(
 	})) as Pick<DBRundownPlaylist, RundownPlaylistFields> | undefined
 	if (!playlist) throw new Error(`RundownPlaylist "${args.rundownPlaylistId}" not found!`)
 
-	const rundownsObserver = new RundownsObserver(playlist.studioId, playlist._id, (rundownIds) => {
+	const rundownsObserver = await RundownsObserver.create(playlist.studioId, playlist._id, async (rundownIds) => {
 		logger.silly(`Creating new RundownContentObserver`)
 
 		// TODO - can this be done cheaper?
 		const contentCache = createReactiveContentCache()
 		triggerUpdate({ newCache: contentCache })
 
-		const obs1 = new RundownContentObserver(rundownIds, contentCache)
+		const obs1 = await RundownContentObserver.create(rundownIds, contentCache)
 
 		const innerQueries = [
 			contentCache.Segments.find({}).observeChanges({
@@ -476,29 +474,25 @@ meteorCustomPublish(
 	async function (pub, rundownPlaylistId: RundownPlaylistId | null) {
 		check(rundownPlaylistId, Match.Maybe(String))
 
-		const cred = await resolveCredentials({ userId: this.userId, token: undefined })
+		triggerWriteAccessBecauseNoCheckNecessary()
 
-		if (
-			rundownPlaylistId &&
-			(!cred ||
-				NoSecurityReadAccess.any() ||
-				(await RundownPlaylistReadAccess.rundownPlaylistContent(rundownPlaylistId, cred)))
-		) {
-			await setUpCollectionOptimizedObserver<
-				UIPieceContentStatus,
-				UIPieceContentStatusesArgs,
-				UIPieceContentStatusesState,
-				UIPieceContentStatusesUpdateProps
-			>(
-				`pub_${MeteorPubSub.uiPieceContentStatuses}_${rundownPlaylistId}`,
-				{ rundownPlaylistId },
-				setupUIPieceContentStatusesPublicationObservers,
-				manipulateUIPieceContentStatusesPublicationData,
-				pub,
-				100
-			)
-		} else {
-			logger.warn(`Pub.${CustomCollectionName.UIPieceContentStatuses}: Not allowed: "${rundownPlaylistId}"`)
+		if (!rundownPlaylistId) {
+			logger.info(`Pub.${CustomCollectionName.UISegmentPartNotes}: Not playlistId`)
+			return
 		}
+
+		await setUpCollectionOptimizedObserver<
+			UIPieceContentStatus,
+			UIPieceContentStatusesArgs,
+			UIPieceContentStatusesState,
+			UIPieceContentStatusesUpdateProps
+		>(
+			`pub_${MeteorPubSub.uiPieceContentStatuses}_${rundownPlaylistId}`,
+			{ rundownPlaylistId },
+			setupUIPieceContentStatusesPublicationObservers,
+			manipulateUIPieceContentStatusesPublicationData,
+			pub,
+			100
+		)
 	}
 )
