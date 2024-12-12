@@ -33,15 +33,18 @@ export class RundownContentObserver {
 	#observers: Meteor.LiveQueryHandle[] = []
 	#cache: ContentCache
 	#cancelCache: () => void
-	#cleanup: () => void = () => {
+	#cleanup: (() => void) | undefined = () => {
 		throw new Error('RundownContentObserver.#cleanup has not been set!')
 	}
 	#disposed = false
 
 	private constructor(onChanged: ChangedHandler) {
 		const { cache, cancel: cancelCache } = createReactiveContentCache(() => {
+			if (this.#disposed) {
+				this.#cleanup?.()
+				return
+			}
 			this.#cleanup = onChanged(cache)
-			if (this.#disposed) this.#cleanup()
 		}, REACTIVITY_DEBOUNCE)
 
 		this.#cache = cache
@@ -173,5 +176,6 @@ export class RundownContentObserver {
 		this.#cancelCache()
 		this.#observers.forEach((observer) => observer.stop())
 		this.#cleanup?.()
+		this.#cleanup = undefined
 	}
 }

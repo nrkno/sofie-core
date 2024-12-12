@@ -47,16 +47,19 @@ export class StudioDeviceTriggerManager {
 		const studioId = this.studioId
 		this.#lastShowStyleBaseId = showStyleBaseId
 
-		const rundownPlaylist = cache.RundownPlaylists.findOne({
-			activationId: {
-				$exists: true,
-			},
-		})
-		if (!rundownPlaylist) {
+		const [showStyleBase, rundownPlaylist] = await Promise.all([
+			cache.ShowStyleBases.findOneAsync(showStyleBaseId),
+			cache.RundownPlaylists.findOneAsync({
+				activationId: {
+					$exists: true,
+				},
+			}),
+		])
+		if (!showStyleBase || !rundownPlaylist) {
 			return
 		}
 
-		const context = createCurrentContextFromCache(cache, studioId)
+		const context = await createCurrentContextFromCache(cache, studioId)
 		const actionManager = StudioActionManagers.get(studioId)
 		if (!actionManager)
 			throw new Meteor.Error(
@@ -65,18 +68,13 @@ export class StudioDeviceTriggerManager {
 			)
 		actionManager.setContext(context)
 
-		const showStyleBase = cache.ShowStyleBases.findOne(showStyleBaseId)
-		if (!showStyleBase) {
-			return
-		}
-
 		const { obj: sourceLayers } = applyAndValidateOverrides(showStyleBase.sourceLayersWithOverrides)
 
-		const allTriggeredActions = cache.TriggeredActions.find({
+		const allTriggeredActions = await cache.TriggeredActions.find({
 			showStyleBaseId: {
 				$in: [showStyleBaseId, null],
 			},
-		})
+		}).fetchAsync()
 
 		const upsertedDeviceTriggerMountedActionIds: DeviceTriggerMountedActionId[] = []
 		const touchedActionIds: DeviceActionId[] = []
@@ -88,116 +86,126 @@ export class StudioDeviceTriggerManager {
 
 			const addedPreviewIds: PreviewWrappedAdLibId[] = []
 
-			for (const [key, action] of Object.entries<SomeAction>(triggeredAction.actions)) {
-				// Since the compiled action is cached using this actionId as a key, having the action
-				// and the filterChain allows for a quicker invalidation without doing a deepEquals
-				const actionId = protectString<DeviceActionId>(
-					`${studioId}_${triggeredAction._id}_${key}_${JSON.stringify(action)}`
-				)
-				const existingAction = actionManager.getAction(actionId)
-				let thisAction: ExecutableAction
-				// Use the cached action or put a new one in the cache
-				if (existingAction) {
-					thisAction = existingAction
-				} else {
-					const compiledAction = createAction(MeteorTriggersContext, action, sourceLayers)
-					actionManager.setAction(actionId, compiledAction)
-					thisAction = compiledAction
-				}
-				touchedActionIds.push(actionId)
-
-				for (const [key, trigger] of Object.entries<SomeBlueprintTrigger>(triggeredAction.triggers)) {
-					if (!isDeviceTrigger(trigger)) {
-						continue
-					}
-
-					let deviceActionArguments: ShiftRegisterActionArguments | undefined = undefined
-
-					if (action.action === DeviceActions.modifyShiftRegister) {
-						deviceActionArguments = {
-							type: 'modifyRegister',
-							register: action.register,
-							operation: action.operation,
-							value: action.value,
-							limitMin: action.limitMin,
-							limitMax: action.limitMax,
-						}
-					}
-
-					const deviceTriggerMountedActionId = protectString<DeviceTriggerMountedActionId>(
-						`${actionId}_${key}`
+			const updateActionsPromises = Object.entries<SomeAction>(triggeredAction.actions).map(
+				async ([key, action]) => {
+					// Since the compiled action is cached using this actionId as a key, having the action
+					// and the filterChain allows for a quicker invalidation without doing a deepEquals
+					const actionId = protectString<DeviceActionId>(
+						`${studioId}_${triggeredAction._id}_${key}_${JSON.stringify(action)}`
 					)
-					DeviceTriggerMountedActions.upsert(deviceTriggerMountedActionId, {
-						$set: {
-							studioId,
-							showStyleBaseId,
-							actionType: thisAction.action,
-							actionId,
-							deviceId: trigger.deviceId,
-							deviceTriggerId: trigger.triggerId,
-							values: trigger.values,
-							deviceActionArguments,
-							name: triggeredAction.name,
-						},
-					})
-					upsertedDeviceTriggerMountedActionIds.push(deviceTriggerMountedActionId)
-				}
+					const existingAction = actionManager.getAction(actionId)
+					let thisAction: ExecutableAction
+					// Use the cached action or put a new one in the cache
+					if (existingAction) {
+						thisAction = existingAction
+					} else {
+						const compiledAction = createAction(MeteorTriggersContext, action, sourceLayers)
+						actionManager.setAction(actionId, compiledAction)
+						thisAction = compiledAction
+					}
+					touchedActionIds.push(actionId)
 
-				if (!isPreviewableAction(thisAction)) {
-					const adLibPreviewId = protectString(`${actionId}_preview`)
-					DeviceTriggerMountedActionAdlibsPreview.upsert(adLibPreviewId, {
-						$set: literal<PreviewWrappedAdLib>({
-							_id: adLibPreviewId,
-							_rank: 0,
-							partId: null,
-							type: undefined,
-							label: thisAction.action,
-							item: null,
-							triggeredActionId: triggeredAction._id,
-							actionId,
-							studioId,
-							showStyleBaseId,
-							sourceLayerType: undefined,
-							sourceLayerName: undefined,
-							styleClassNames: triggeredAction.styleClassNames,
-						}),
-					})
+					const updateMountedActionsPromises = Object.entries<SomeBlueprintTrigger>(
+						triggeredAction.triggers
+					).map(async ([key, trigger]) => {
+						if (!isDeviceTrigger(trigger)) {
+							return
+						}
 
-					addedPreviewIds.push(adLibPreviewId)
-				} else {
-					const previewedAdLibs = await thisAction.preview(context, null)
+						let deviceActionArguments: ShiftRegisterActionArguments | undefined = undefined
 
-					previewedAdLibs.forEach((adLib) => {
-						const adLibPreviewId = protectString<PreviewWrappedAdLibId>(
-							`${triggeredAction._id}_${studioId}_${key}_${adLib._id}`
+						if (action.action === DeviceActions.modifyShiftRegister) {
+							deviceActionArguments = {
+								type: 'modifyRegister',
+								register: action.register,
+								operation: action.operation,
+								value: action.value,
+								limitMin: action.limitMin,
+								limitMax: action.limitMax,
+							}
+						}
+
+						const deviceTriggerMountedActionId = protectString<DeviceTriggerMountedActionId>(
+							`${actionId}_${key}`
 						)
-						DeviceTriggerMountedActionAdlibsPreview.upsert(adLibPreviewId, {
+						upsertedDeviceTriggerMountedActionIds.push(deviceTriggerMountedActionId)
+						return DeviceTriggerMountedActions.upsertAsync(deviceTriggerMountedActionId, {
+							$set: {
+								studioId,
+								showStyleBaseId,
+								actionType: thisAction.action,
+								actionId,
+								deviceId: trigger.deviceId,
+								deviceTriggerId: trigger.triggerId,
+								values: trigger.values,
+								deviceActionArguments,
+								name: triggeredAction.name,
+							},
+						})
+					})
+
+					if (!isPreviewableAction(thisAction)) {
+						const adLibPreviewId = protectString(`${actionId}_preview`)
+
+						addedPreviewIds.push(adLibPreviewId)
+						await DeviceTriggerMountedActionAdlibsPreview.upsertAsync(adLibPreviewId, {
 							$set: literal<PreviewWrappedAdLib>({
-								...adLib,
 								_id: adLibPreviewId,
+								_rank: 0,
+								partId: null,
+								type: undefined,
+								label: thisAction.action,
+								item: null,
 								triggeredActionId: triggeredAction._id,
 								actionId,
 								studioId,
 								showStyleBaseId,
-								sourceLayerType: adLib.sourceLayerId
-									? sourceLayers[adLib.sourceLayerId]?.type
-									: undefined,
-								sourceLayerName: adLib.sourceLayerId
-									? {
-											name: sourceLayers[adLib.sourceLayerId]?.name,
-											abbreviation: sourceLayers[adLib.sourceLayerId]?.abbreviation,
-									  }
-									: undefined,
+								sourceLayerType: undefined,
+								sourceLayerName: undefined,
 								styleClassNames: triggeredAction.styleClassNames,
 							}),
 						})
+					} else {
+						const previewedAdLibs = await thisAction.preview(context, null)
 
-						addedPreviewIds.push(adLibPreviewId)
-					})
+						const previewedAdlibsUpdatePromises = previewedAdLibs.map(async (adLib) => {
+							const adLibPreviewId = protectString<PreviewWrappedAdLibId>(
+								`${triggeredAction._id}_${studioId}_${key}_${adLib._id}`
+							)
+
+							addedPreviewIds.push(adLibPreviewId)
+							return DeviceTriggerMountedActionAdlibsPreview.upsertAsync(adLibPreviewId, {
+								$set: literal<PreviewWrappedAdLib>({
+									...adLib,
+									_id: adLibPreviewId,
+									triggeredActionId: triggeredAction._id,
+									actionId,
+									studioId,
+									showStyleBaseId,
+									sourceLayerType: adLib.sourceLayerId
+										? sourceLayers[adLib.sourceLayerId]?.type
+										: undefined,
+									sourceLayerName: adLib.sourceLayerId
+										? {
+												name: sourceLayers[adLib.sourceLayerId]?.name,
+												abbreviation: sourceLayers[adLib.sourceLayerId]?.abbreviation,
+										  }
+										: undefined,
+									styleClassNames: triggeredAction.styleClassNames,
+								}),
+							})
+						})
+
+						await Promise.all(previewedAdlibsUpdatePromises)
+					}
+
+					await Promise.all(updateMountedActionsPromises)
 				}
-			}
+			)
 
-			DeviceTriggerMountedActionAdlibsPreview.remove({
+			await Promise.all(updateActionsPromises)
+
+			await DeviceTriggerMountedActionAdlibsPreview.removeAsync({
 				triggeredActionId: triggeredAction._id,
 				_id: {
 					$nin: addedPreviewIds,
@@ -205,7 +213,7 @@ export class StudioDeviceTriggerManager {
 			})
 		}
 
-		DeviceTriggerMountedActions.remove({
+		await DeviceTriggerMountedActions.removeAsync({
 			studioId,
 			showStyleBaseId,
 			_id: {
@@ -216,7 +224,7 @@ export class StudioDeviceTriggerManager {
 		actionManager.deleteActionsOtherThan(touchedActionIds)
 	}
 
-	clearTriggers(): void {
+	async clearTriggers(): Promise<void> {
 		const studioId = this.studioId
 		const showStyleBaseId = this.#lastShowStyleBaseId
 
@@ -231,28 +239,34 @@ export class StudioDeviceTriggerManager {
 				`No Studio Action Manager available to handle action context in Studio "${studioId}"`
 			)
 
-		DeviceTriggerMountedActions.find({
+		const mountedActions = await DeviceTriggerMountedActions.find({
 			studioId,
 			showStyleBaseId,
-		}).forEach((mountedAction) => {
+		}).fetchAsync()
+		for (const mountedAction of mountedActions) {
 			actionManager.deleteAction(mountedAction.actionId)
-		})
-		DeviceTriggerMountedActions.remove({
-			studioId,
-			showStyleBaseId,
-		})
-		DeviceTriggerMountedActionAdlibsPreview.remove({
-			studioId,
-			showStyleBaseId,
-		})
+		}
+
+		await Promise.all([
+			DeviceTriggerMountedActions.removeAsync({
+				studioId,
+				showStyleBaseId,
+			}),
+			DeviceTriggerMountedActionAdlibsPreview.removeAsync({
+				studioId,
+				showStyleBaseId,
+			}),
+		])
+
 		actionManager.deleteContext()
 
 		this.#lastShowStyleBaseId = null
+		return
 	}
 
-	stop(): void {
-		this.clearTriggers()
+	async stop(): Promise<void> {
 		StudioActionManagers.delete(this.studioId)
+		return await this.clearTriggers()
 	}
 }
 
@@ -271,8 +285,11 @@ function convertDocument(doc: ReadonlyObjectDeep<DBTriggeredActions>): UITrigger
 	})
 }
 
-function createCurrentContextFromCache(cache: ContentCache, studioId: StudioId): ReactivePlaylistActionContext {
-	const rundownPlaylist = cache.RundownPlaylists.findOne({
+async function createCurrentContextFromCache(
+	cache: ContentCache,
+	studioId: StudioId
+): Promise<ReactivePlaylistActionContext> {
+	const rundownPlaylist = await cache.RundownPlaylists.findOneAsync({
 		activationId: {
 			$exists: true,
 		},
@@ -280,24 +297,26 @@ function createCurrentContextFromCache(cache: ContentCache, studioId: StudioId):
 
 	if (!rundownPlaylist) throw new Error('There should be an active RundownPlaylist!')
 
-	const currentPartInstance = rundownPlaylist.currentPartInfo
-		? cache.PartInstances.findOne(rundownPlaylist.currentPartInfo.partInstanceId)
-		: undefined
-	const nextPartInstance = rundownPlaylist.nextPartInfo
-		? cache.PartInstances.findOne(rundownPlaylist.nextPartInfo.partInstanceId)
-		: undefined
+	const [currentPartInstance, nextPartInstance] = await Promise.all([
+		rundownPlaylist.currentPartInfo
+			? cache.PartInstances.findOneAsync(rundownPlaylist.currentPartInfo.partInstanceId)
+			: undefined,
+		rundownPlaylist.nextPartInfo
+			? cache.PartInstances.findOneAsync(rundownPlaylist.nextPartInfo.partInstanceId)
+			: undefined,
+	])
 
 	const currentSegmentPartIds = currentPartInstance
-		? cache.Parts.find({
+		? await cache.Parts.find({
 				segmentId: currentPartInstance.part.segmentId,
-		  }).map((part) => part._id)
+		  }).mapAsync((part) => part._id)
 		: []
 	const nextSegmentPartIds = nextPartInstance
 		? nextPartInstance.part.segmentId === currentPartInstance?.part.segmentId
 			? currentSegmentPartIds
-			: cache.Parts.find({
+			: await cache.Parts.find({
 					segmentId: nextPartInstance.part.segmentId,
-			  }).map((part) => part._id)
+			  }).mapAsync((part) => part._id)
 		: []
 
 	return {

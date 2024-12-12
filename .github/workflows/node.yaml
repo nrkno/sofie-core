@@ -758,6 +758,6 @@ jobs:
           CI: true
       - name: Run check
         run: |
-          node scripts/checkForMultipleVersions.mjs
+          yarn validate:versions
         env:
           CI: true

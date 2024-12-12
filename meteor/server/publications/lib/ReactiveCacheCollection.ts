@@ -73,6 +73,55 @@ export class ReactiveCacheCollection<Document extends { _id: ProtectedString<any
 		return res
 	}
 
+	async findOneAsync(
+		selector: Document['_id'] | Mongo.Selector<Document>,
+		options?: Omit<Mongo.Options<Document>, 'limit'>
+	): Promise<Document | undefined> {
+		return this.#collection.findOne(selector as any, options)
+	}
+
+	async insertAsync(doc: Mongo.OptionalId<Document>): Promise<string> {
+		const id = await this.#collection.insertAsync(doc)
+		this.runReaction()
+		return id
+	}
+
+	async removeAsync(selector: Document['_id'] | MongoQuery<Document>): Promise<number> {
+		const num = await this.#collection.removeAsync(selector as any)
+		if (num > 0) {
+			this.runReaction()
+		}
+		return num
+	}
+
+	async updateAsync(
+		selector: Document['_id'] | MongoQuery<Document>,
+		modifier: MongoModifier<Document>,
+		options?: {
+			multi?: boolean
+			upsert?: boolean
+			arrayFilters?: { [identifier: string]: any }[]
+		}
+	): Promise<number> {
+		const num = await this.#collection.updateAsync(selector as any, modifier as any, options)
+		if (num > 0) {
+			this.runReaction()
+		}
+		return num
+	}
+
+	async upsertAsync(
+		selector: Document['_id'] | Mongo.Selector<Document>,
+		modifier: Mongo.Modifier<Document>,
+		options?: { multi?: boolean }
+	): Promise<{ numberAffected?: number; insertedId?: string }> {
+		const res = await this.#collection.upsertAsync(selector as any, modifier as any, options)
+		if (res.numberAffected || res.insertedId) {
+			this.runReaction()
+		}
+		return res
+	}
+
 	link(cb?: () => void): ObserveChangesCallbacks<Document> {
 		return {
 			added: (id: Document['_id'], fields: Partial<Document>) => {

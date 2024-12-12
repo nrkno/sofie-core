@@ -6,7 +6,7 @@ sidebar_position: 3
 
 ## Permissions
 
-There are a few different access levels that users can be assigned. They are not heirarchical, you will often need to enable multiple for each user.  
+There are a few different access levels that users can be assigned. They are not heirarchical, you will often need to enable multiple for each user.
 Any client that can access sofie always has at least view-only access to the rundowns, and system status pages.
 
 | Level         | Summary                                                                                                                                          |
@@ -40,20 +40,24 @@ There are some additional url parameters that can be used to simplify the granti
 - `?help=1` will enable some tooltips that might be useful to new users.
 - `?admin=1` will give the user the same access as the _Configuration_ and _Studio_ modes as well as having access to a set of _Test Tools_ and a _Manual Control_ section on the Rundown page.
 
+#### See Also
+
+[URL Query Parameters](../../for-developers/url-query-parameters.md)
+
 ### Header based
 
 :::danger
 
-This mode is very new and could have some undiscovered holes.  
+This mode is very new and could have some undiscovered holes.
 It is known that secrets can be leaked to all clients who can connect to Sofie, which is not desirable.
 
 :::
 
-In this mode, we rely on Sofie being run behind a reverse-proxy which will inform Sofie of the permissions of each connection. This allows you to use your organisations preferred auth provider, and translate that into something that Sofie can understand.  
+In this mode, we rely on Sofie being run behind a reverse-proxy which will inform Sofie of the permissions of each connection. This allows you to use your organisations preferred auth provider, and translate that into something that Sofie can understand.
 To enable this mode, you need to enable the `enableHeaderAuth` property in the [settings file](../configuration/sofie-core-settings.md)
 
-Sofie expects that for each DDP connection or http request, the `dnt` header will be set containing a comma separated list of the levels from the above table. If the header is not defined or is empty, the connection will have view-only access to Sofie.  
-This header can also contain simply `admin` to grant the connection permission to everything.  
+Sofie expects that for each DDP connection or http request, the `dnt` header will be set containing a comma separated list of the levels from the above table. If the header is not defined or is empty, the connection will have view-only access to Sofie.
+This header can also contain simply `admin` to grant the connection permission to everything.
 We are using the `dnt` header due to limitations imposed by Meteor, but intend this to become a proper header name in a future release.
 
 When in this mode, you should make sure that Sofie can only be accessed through the reverse proxy, and that the reverse-proxy will always override any value sent by a client.
