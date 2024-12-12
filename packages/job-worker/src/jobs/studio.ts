@@ -48,11 +48,25 @@ export function convertStudioToJobStudio(studio: DBStudio): JobStudio {
 			'routeSetExclusivityGroupsWithOverrides',
 			'packageContainersWithOverrides'
 		),
-		mappings: applyAndValidateOverrides(studio.mappingsWithOverrides).obj,
-		blueprintConfig: applyAndValidateOverrides(studio.blueprintConfigWithOverrides).obj,
-		settings: applyAndValidateOverrides(studio.settingsWithOverrides).obj,
-		routeSets: applyAndValidateOverrides(studio.routeSetsWithOverrides).obj,
-		routeSetExclusivityGroups: applyAndValidateOverrides(studio.routeSetExclusivityGroupsWithOverrides).obj,
-		// packageContainers: applyAndValidateOverrides(studio.packageContainersWithOverrides).obj,
+		// Note: checking for the overrides properties to exist first,
+		// because if they might not exist when migrating from an older version
+		// and this would crash the job-worker, creating a catch-22 situation.
+
+		mappings: studio.mappingsWithOverrides
+			? applyAndValidateOverrides(studio.mappingsWithOverrides).obj
+			: (studio as any).mappings || {},
+		blueprintConfig: studio.blueprintConfigWithOverrides
+			? applyAndValidateOverrides(studio.blueprintConfigWithOverrides).obj
+			: (studio as any).blueprintConfig || {},
+		settings: studio.settingsWithOverrides
+			? applyAndValidateOverrides(studio.settingsWithOverrides).obj
+			: (studio as any).settings || {},
+		routeSets: studio.routeSetsWithOverrides
+			? applyAndValidateOverrides(studio.routeSetsWithOverrides).obj
+			: (studio as any).routeSets || {},
+		routeSetExclusivityGroups: studio.routeSetExclusivityGroupsWithOverrides
+			? applyAndValidateOverrides(studio.routeSetExclusivityGroupsWithOverrides).obj
+			: (studio as any).routeSetExclusivityGroups || {},
+		// packageContainers: studio.packageContainersWithOverrides ? applyAndValidateOverrides(studio.packageContainersWithOverrides).obj : (studio as any).packageContainers || {},
 	}
 }
