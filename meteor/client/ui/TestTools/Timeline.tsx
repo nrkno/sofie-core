@@ -1,8 +1,12 @@
 import * as React from 'react'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
-import { deserializeTimelineBlob, TimelineHash } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { applyToArray, clone, normalizeArray, protectString } from '../../../lib/lib'
+import {
+	deserializeTimelineBlob,
+	RoutedTimeline,
+	TimelineHash,
+} from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { applyToArray, clone, getCurrentTime, normalizeArray, protectString } from '../../../lib/lib'
 import { MeteorPubSub } from '../../../lib/api/pubsub'
 import {
 	TimelineState,
@@ -23,10 +27,16 @@ import Classnames from 'classnames'
 import { createSyncPeripheralDeviceCustomPublicationMongoCollection } from '../../../lib/collections/lib'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevicePubSubCollectionsNames } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
+import Moment from 'react-moment'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCirclePause } from '@fortawesome/free-solid-svg-icons'
+import classNames from 'classnames'
 
 export const StudioTimeline = createSyncPeripheralDeviceCustomPublicationMongoCollection(
 	PeripheralDevicePubSubCollectionsNames.studioTimeline
 )
+
+const JSON_INDENT = '  '
 
 interface TimelineViewRouteParams {
 	studioId: string | undefined
@@ -58,8 +68,29 @@ interface ITimelineSimulateProps {
 function ComponentTimelineSimulate({ studioId }: Readonly<ITimelineSimulateProps>) {
 	useSubscription(MeteorPubSub.timelineForStudio, studioId)
 
-	const now = useCurrentTime()
-	const tlComplete = useTracker(() => StudioTimeline.findOne(studioId), [studioId])
+	const nowLive = useCurrentTime()
+
+	const [tlComplete, setTlComplete] = useState<RoutedTimeline | undefined>(undefined)
+	const [tlUpdatesPaused, setTlUpdatesPaused] = useState(false)
+	const [now, setNow] = useState(getCurrentTime())
+
+	function onPause() {
+		setTlUpdatesPaused((value) => !value)
+	}
+
+	const tlCompleteLive = useTracker(() => StudioTimeline.findOne(studioId), [studioId])
+
+	useEffect(() => {
+		if (tlUpdatesPaused) return
+
+		setTlComplete(tlCompleteLive)
+	}, [tlUpdatesPaused, tlCompleteLive])
+
+	useEffect(() => {
+		if (tlUpdatesPaused) return
+
+		setNow(nowLive)
+	}, [nowLive])
 
 	const [resolvedTimeline, errorMsgResolve] = useMemo(() => {
 		try {
@@ -116,6 +147,24 @@ function ComponentTimelineSimulate({ studioId }: Readonly<ITimelineSimulateProps
 		<div>
 			<div>
 				<h2 className="mhn">Timeline state</h2>
+
+				<div>
+					{tlComplete ? (
+						<>
+							Timeline generated at: <Moment date={tlComplete?.generated} format="HH:mm:ss.SSSS" calendar={true} />
+						</>
+					) : null}
+					<button
+						onClick={onPause}
+						className={classNames('btn', {
+							'btn-primary': tlUpdatesPaused,
+							'btn-secondary': !tlUpdatesPaused,
+						})}
+					>
+						<FontAwesomeIcon icon={faCirclePause} /> Pause updates
+					</button>
+				</div>
+
 				{errorMsgResolve ? (
 					<p>{errorMsgResolve}</p>
 				) : (
@@ -242,12 +291,23 @@ function renderTimelineState(state: TimelineState, filter: RegExp | string | und
 		}
 	}
 
+	function linkify(input: string): string {
+		const referenceMatch = /#(\w+)/gi
+		return input.replace(referenceMatch, (m, p1) => `<a href="#timeline_state_obj_${p1}">${m}</a>`)
+	}
+
 	return filteredLayers.map((o) => (
 		<tr key={o.layer}>
 			<td>{o.layer}</td>
-			<td style={{ maxWidth: '25vw', minWidth: '10vw', overflowWrap: 'anywhere' }}>{o.id}</td>
+			<td style={{ maxWidth: '25vw', minWidth: '10vw', overflowWrap: 'anywhere' }}>
+				<a id={`timeline_state_obj_${o.id}`}></a>
+				{o.id}
+			</td>
 			<td style={{ whiteSpace: 'pre', maxWidth: '15vw', overflowX: 'auto' }}>
-				<pre>{JSON.stringify(o.enable, undefined, '\t')}</pre>
+				<code
+					className="block"
+					dangerouslySetInnerHTML={{ __html: linkify(JSON.stringify(o.enable, undefined, JSON_INDENT)) }}
+				></code>
 			</td>
 			<td>
 				Start: {o.instance.start}
@@ -257,7 +317,7 @@ function renderTimelineState(state: TimelineState, filter: RegExp | string | und
 			<td>{o.content.type}</td>
 			<td>{(o.classes ?? []).join('<br />')}</td>
 			<td style={{ whiteSpace: 'pre' }}>
-				<pre>{JSON.stringify(o.content, undefined, '\t')}</pre>
+				<pre>{JSON.stringify(o.content, undefined, JSON_INDENT)}</pre>
 			</td>
 		</tr>
 	))
