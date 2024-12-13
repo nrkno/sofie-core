@@ -367,6 +367,7 @@ export function studioSettingsFrom(apiStudioSettings: APIStudioSettings): Comple
 		enableQuickLoop: apiStudioSettings.enableQuickLoop,
 		forceQuickLoopAutoNext: forceQuickLoopAutoNextFrom(apiStudioSettings.forceQuickLoopAutoNext),
 		fallbackPartDuration: apiStudioSettings.fallbackPartDuration ?? DEFAULT_FALLBACK_PART_DURATION,
+		enableUserEdits: apiStudioSettings.enableUserEdits,
 		allowAdlibTestingSegment: apiStudioSettings.allowAdlibTestingSegment,
 		allowHold: apiStudioSettings.allowHold ?? true, // Backwards compatible
 		allowPieceDirectPlay: apiStudioSettings.allowPieceDirectPlay ?? true, // Backwards compatible
@@ -390,6 +391,7 @@ export function APIStudioSettingsFrom(settings: IStudioSettings): Complete<APISt
 		enableQuickLoop: settings.enableQuickLoop,
 		forceQuickLoopAutoNext: APIForceQuickLoopAutoNextFrom(settings.forceQuickLoopAutoNext),
 		fallbackPartDuration: settings.fallbackPartDuration,
+		enableUserEdits: settings.enableUserEdits,
 		allowAdlibTestingSegment: settings.allowAdlibTestingSegment,
 		allowHold: settings.allowHold,
 		allowPieceDirectPlay: settings.allowPieceDirectPlay,

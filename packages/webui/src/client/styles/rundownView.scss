@@ -154,6 +154,16 @@ $break-width: 35rem;
 			transition: 0s padding-right 1s;
 		}
 	}
+
+	&.properties-panel-open {
+		padding-right: $properties-panel-width;
+		transition: 0s padding-right 1s;
+
+		> .header .rundown-overview {
+			padding-right: calc(#{$properties-panel-width} + 1.5em);
+			transition: 0s padding-right 1s;
+		}
+	}
 }
 
 body.vertical-overflow-only {

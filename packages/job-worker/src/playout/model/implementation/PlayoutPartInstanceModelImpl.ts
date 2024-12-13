@@ -539,14 +539,17 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		const trimmedProps: Partial<PlayoutMutatablePart> = filterPropsToAllowed(props)
 		if (Object.keys(trimmedProps).length === 0) return false
 
-		this.#compareAndSetPartInstanceValue(
-			'part',
-			{
-				...this.partInstanceImpl.part,
-				...trimmedProps,
-			},
-			true
-		)
+		const newPart: DBPart = {
+			...this.partInstanceImpl.part,
+			...trimmedProps,
+			userEditOperations: this.partInstanceImpl.part.userEditOperations, // Replaced below if changed
+			userEditProperties: this.partInstanceImpl.part.userEditProperties,
+		}
+
+		// Only replace `userEditOperations` if new values were provided
+		if ('userEditOperations' in trimmedProps) newPart.userEditOperations = props.userEditOperations
+
+		this.#compareAndSetPartInstanceValue('part', newPart, true)
 
 		return true
 	}

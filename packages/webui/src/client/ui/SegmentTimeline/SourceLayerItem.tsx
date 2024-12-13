@@ -23,6 +23,7 @@ import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { ReadonlyDeep } from 'type-fest'
 import { PieceContentStatusObj } from '@sofie-automation/meteor-lib/dist/api/pieceContentStatus'
+import { SelectedElementsContext } from '../RundownView/SelectedElementsContext'
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 const MARGINAL_ANCHORED_WIDTH = 5
 
@@ -102,11 +103,15 @@ interface ISourceLayerItemState {
 	/** Set to `true` when the segment is "highlighted" (in focus, generally from a scroll event) */
 	highlight: boolean
 }
+
 export const SourceLayerItem = withTranslation()(
-	class SourceLayerItem extends React.Component<ISourceLayerItemProps & WithTranslation, ISourceLayerItemState> {
+	class SourceLayerItem extends React.Component<
+		ISourceLayerItemProps & WithTranslation & ISourceLayerItemProps,
+		ISourceLayerItemState
+	> {
 		animFrameHandle: number | undefined
 
-		constructor(props: ISourceLayerItemProps & WithTranslation) {
+		constructor(props: ISourceLayerItemProps & WithTranslation & ISourceLayerItemProps) {
 			super(props)
 			this.state = {
 				showMiniInspector: false,
@@ -663,42 +668,70 @@ export const SourceLayerItem = withTranslation()(
 				const elementWidth = this.getElementAbsoluteWidth()
 
 				return (
-					<div
-						className={pieceUiClassNames(
-							piece,
-							this.props.contentStatus,
-							'segment-timeline__piece',
-							this.props.layer.type,
-							this.props.part.partId,
-							this.state.highlight,
-							elementWidth,
-							this.state
-						)}
-						data-obj-id={piece.instance._id}
-						ref={this.setRef}
-						onClick={this.itemClick}
-						onDoubleClick={this.itemDblClick}
-						onMouseUp={this.itemMouseUp}
-						onMouseMove={this.moveMiniInspector}
-						onMouseEnter={this.toggleMiniInspectorOn}
-						onMouseLeave={this.toggleMiniInspectorOff}
-						style={this.getItemStyle()}
-					>
-						{this.renderInsideItem(typeClass)}
-						{DEBUG_MODE && this.props.studio && (
-							<div className="segment-timeline__debug-info">
-								{innerPiece.enable.start} /{' '}
-								{RundownUtils.formatTimeToTimecode(this.props.studio.settings, this.props.partDuration).substr(-5)} /{' '}
-								{piece.renderedDuration
-									? RundownUtils.formatTimeToTimecode(this.props.studio.settings, piece.renderedDuration).substr(-5)
-									: 'X'}{' '}
-								/{' '}
-								{typeof innerPiece.enable.duration === 'number'
-									? RundownUtils.formatTimeToTimecode(this.props.studio.settings, innerPiece.enable.duration).substr(-5)
-									: ''}
+					<SelectedElementsContext.Consumer>
+						{(selectElementContext) => (
+							<div
+								className={pieceUiClassNames(
+									piece,
+									this.props.contentStatus,
+									'segment-timeline__piece',
+									selectElementContext.isSelected(this.props.piece.instance.piece._id) ||
+										selectElementContext.isSelected(this.props.part.instance.part._id),
+									this.props.layer.type,
+									this.props.part.partId,
+									this.state.highlight,
+									elementWidth,
+									this.state
+								)}
+								data-obj-id={piece.instance._id}
+								ref={this.setRef}
+								onClick={this.itemClick}
+								onDoubleClick={(e) => {
+									if (this.props.studio?.settings.enableUserEdits) {
+										const pieceId = this.props.piece.instance.piece._id
+										if (!selectElementContext.isSelected(pieceId)) {
+											selectElementContext.clearAndSetSelection({ type: 'piece', elementId: pieceId })
+										} else {
+											selectElementContext.clearSelections()
+										}
+										// Until a proper data structure, the only reference is a part.
+										// const partId = this.props.part.instance.part._id
+										// if (!selectElementContext.isSelected(partId)) {
+										// 	selectElementContext.clearAndSetSelection({ type: 'part', elementId: partId })
+										// } else {
+										// 	selectElementContext.clearSelections()
+										// }
+									} else {
+										this.itemDblClick(e)
+									}
+								}}
+								onMouseUp={this.itemMouseUp}
+								onMouseMove={this.moveMiniInspector}
+								onMouseEnter={this.toggleMiniInspectorOn}
+								onMouseLeave={this.toggleMiniInspectorOff}
+								style={this.getItemStyle()}
+							>
+								{this.renderInsideItem(typeClass)}
+								{DEBUG_MODE && this.props.studio && (
+									<div className="segment-timeline__debug-info">
+										{innerPiece.enable.start} /{' '}
+										{RundownUtils.formatTimeToTimecode(this.props.studio.settings, this.props.partDuration).substr(-5)}{' '}
+										/{' '}
+										{piece.renderedDuration
+											? RundownUtils.formatTimeToTimecode(this.props.studio.settings, piece.renderedDuration).substr(-5)
+											: 'X'}{' '}
+										/{' '}
+										{typeof innerPiece.enable.duration === 'number'
+											? RundownUtils.formatTimeToTimecode(
+													this.props.studio.settings,
+													innerPiece.enable.duration
+											  ).substr(-5)
+											: ''}
+									</div>
+								)}
 							</div>
 						)}
-					</div>
+					</SelectedElementsContext.Consumer>
 				)
 			} else {
 				// render a placeholder
