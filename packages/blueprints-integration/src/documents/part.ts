@@ -1,4 +1,4 @@
-import type { UserEditingDefinition } from '../userEditing'
+import { UserEditingDefinition, UserEditingProperties } from '../userEditing'
 import type { NoteSeverity } from '../lib'
 import type { ITranslatableMessage } from '../translations'
 
@@ -88,6 +88,12 @@ export interface IBlueprintMutatablePart<TPrivateData = unknown, TPublicData = u
 	 * User editing definitions for this part
 	 */
 	userEditOperations?: UserEditingDefinition[]
+
+	/**
+	 * Properties that are user editable from the properties panel in the Sofie UI, if the user saves changes to these
+	 * it will trigger a user edit operation of type DefaultUserOperationEditProperties
+	 */
+	userEditProperties?: UserEditingProperties
 }
 
 export interface HackPartMediaObjectSubscription {

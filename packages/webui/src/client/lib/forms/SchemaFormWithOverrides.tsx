@@ -24,6 +24,7 @@ import { SchemaFormObjectTable } from './SchemaFormTable/ObjectTable'
 import { getSchemaUIField, SchemaFormUIField } from '@sofie-automation/blueprints-integration'
 import { SchemaFormSectionHeader } from './SchemaFormSectionHeader'
 import { Base64ImageInputControl } from '../Components/Base64ImageInput'
+import { ToggleSwitchControl } from '../Components/ToggleSwitch'
 
 interface SchemaFormWithOverridesProps extends SchemaFormCommonProps {
 	/** Base path of the schema within the document */
@@ -56,7 +57,7 @@ interface FormComponentProps {
 
 function useChildPropsForFormComponent(props: Readonly<SchemaFormWithOverridesProps>): FormComponentProps {
 	return useMemo(() => {
-		const title = getSchemaUIField(props.schema, SchemaFormUIField.Title) || props.attr
+		const title = getSchemaUIField(props.schema, SchemaFormUIField.Title) || props.schema.title || props.attr
 		const description = getSchemaUIField(props.schema, SchemaFormUIField.Description)
 
 		return {
@@ -113,7 +114,11 @@ export function SchemaFormWithOverrides(props: Readonly<SchemaFormWithOverridesP
 		case TypeName.Number:
 			return <NumberFormWithOverrides {...childProps} />
 		case TypeName.Boolean:
-			return <BooleanFormWithOverrides {...childProps} />
+			if (getSchemaUIField(props.schema, SchemaFormUIField.DisplayType) === 'switch') {
+				return <SwitchFormWithOverrides {...childProps} />
+			} else {
+				return <BooleanFormWithOverrides {...childProps} />
+			}
 		case TypeName.String:
 			if (getSchemaUIField(props.schema, SchemaFormUIField.DisplayType) === 'base64-image') {
 				return <Base64ImagePickerWithOverrides {...childProps} />
@@ -344,6 +349,17 @@ const BooleanFormWithOverrides = ({ commonAttrs }: Readonly<FormComponentProps>)
 		<LabelAndOverridesForCheckbox {...commonAttrs}>
 			{(value, handleUpdate) => (
 				<CheckboxControl classNames="input" value={value ?? false} handleUpdate={handleUpdate} />
+			)}
+		</LabelAndOverridesForCheckbox>
+	)
+}
+
+const SwitchFormWithOverrides = ({ commonAttrs }: Readonly<FormComponentProps>) => {
+	return (
+		<LabelAndOverridesForCheckbox {...commonAttrs}>
+			{(value, handleUpdate) => (
+				// <CheckboxControl classNames="input" value={value ?? false} handleUpdate={handleUpdate} />
+				<ToggleSwitchControl value={value ?? false} handleUpdate={handleUpdate} />
 			)}
 		</LabelAndOverridesForCheckbox>
 	)

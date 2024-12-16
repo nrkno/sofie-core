@@ -7,6 +7,14 @@
 	&:not(:first-child) {
 		margin-top: 20px;
 	}
+
+	&.form-dark {
+		color: white;
+
+		> .text-input.bghl {
+			color: black !important;
+		}
+	}
 }
 
 .properties-grid > :not(.field) {

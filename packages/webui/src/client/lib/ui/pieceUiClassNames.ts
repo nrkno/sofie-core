@@ -11,6 +11,7 @@ export function pieceUiClassNames(
 	pieceInstance: PieceUi,
 	contentStatus: ReadonlyDeep<PieceContentStatusObj> | undefined,
 	baseClassName: string,
+	selected: boolean,
 	layerType?: SourceLayerType,
 	partId?: PartId,
 	highlight?: boolean,
@@ -54,5 +55,7 @@ export function pieceUiClassNames(
 		disabled: pieceInstance.instance.disabled,
 
 		'invert-flash': highlight,
+
+		'element-selected': selected,
 	})
 }

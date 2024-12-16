@@ -43,7 +43,12 @@ If an integer property, whether to treat it as zero-based
 ### `ui:displayType`
 
 Override the presentation with a special mode.
-Currently only valid for string properties. Valid values are 'json'.
+
+Currently only valid for:
+
+- object properties. Valid values are 'json'.
+- string properties. Valid values are 'base64-image'.
+- boolean properties. Valid values are 'switch'.
 
 ### `tsEnumNames`
 

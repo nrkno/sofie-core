@@ -381,6 +381,16 @@ function StudioSettings({ studio }: { studio: DBStudio }): JSX.Element {
 			</LabelAndOverridesForCheckbox>
 
 			<LabelAndOverridesForCheckbox
+				label={t('Double click selection for properties panel')}
+				item={wrappedItem}
+				itemKey={'enableUserEdits'}
+				overrideHelper={overrideHelper}
+				hint={t('This feature enables user edits')}
+			>
+				{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+			</LabelAndOverridesForCheckbox>
+
+			<LabelAndOverridesForCheckbox
 				label={t('Enable QuickLoop')}
 				item={wrappedItem}
 				itemKey={'enableQuickLoop'}

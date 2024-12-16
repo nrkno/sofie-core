@@ -81,4 +81,9 @@ export interface IStudioSettings {
 	 * Enable buckets - the default behavior is to have buckets.
 	 */
 	enableBuckets: boolean
+
+	/**
+	 * Doubleclick changes behaviour as selector for userediting
+	 */
+	enableUserEdits?: boolean
 }
