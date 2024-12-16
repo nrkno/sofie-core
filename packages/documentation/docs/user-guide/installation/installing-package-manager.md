@@ -78,7 +78,7 @@ When configuring the http proxy server in sofie, you may need to follow extra co
 
 ### Distributed setup
 
-For setups where you need to interact with multiple CasparCG machines, or want a more resilient/scalable setup, package manager can be partially deployed in docker, with just the workers.
+For setups where you need to interact with multiple CasparCG machines, or want a more resilient/scalable setup, package manager can be partially deployed in docker, with just the workers running on each CasparCG machine.
 
 An example docker-compose of the setup is as follows:
 
@@ -116,7 +116,7 @@ services:
       DEVICE_TOKEN: 'some-secret'
       WORKFORCE_URL: 'ws://workforce:8070' # referencing the workforce component above
       PACKAGE_MANAGER_PORT: '8060'
-      PACKAGE_MANAGER_URL: 'ws://insert-service-ip-here:8060' # the workers connect back to this address, so it needs to be accessible from casparcg
+      PACKAGE_MANAGER_URL: 'ws://insert-service-ip-here:8060' # the workers connect back to this address, so it needs to be accessible from CasparCG
       # CONCURRENCY: 10 # How many expectation states can be evaluated at the same time
     ports:
       - '8060:8060'
@@ -150,7 +150,7 @@ Note that each appContainer needs to use a different resourceId and will need it
 1. Give this package container an ID of `casparcgContainer0` and a label of `CasparCG Package Container`.
 1. Click on the dropdown under "Playout devices which use this package container" and select `casparcg0`.
    - If you don't have a `casparcg0` device, add it to the Playout Gateway under the Devices heading, then restart the Playout Gateway.
-   - If you are using the distributed setup, you will likely want to repeat this step for each casparcg machine. You will also want to set `Resource Id` to match the `resourceId` value provided in the appContainer command line.
+   - If you are using the distributed setup, you will likely want to repeat this step for each CasparCG machine. You will also want to set `Resource Id` to match the `resourceId` value provided in the appContainer command line.
 1. Click the plus button under "Accessors", then click the edit icon to the right of the newly-created accessor.
 1. Give this accessor an ID of `casparcgHttpProxy0`, a Label of `CasparCG HTTP Proxy Accessor`, an Accessor Type of `HTTP_PROXY`, and a Base URL of `http://localhost:8080/package`. Then, ensure that both the "Allow Read access" and "Allow Write access" boxes are checked. Finally, click the done button (checkmark icon) in the bottom right.
 1. Scroll back to the top of the page and select "CasparCG Package Container" for both "Package Containers to use for previews" and "Package Containers to use for thumbnails".
