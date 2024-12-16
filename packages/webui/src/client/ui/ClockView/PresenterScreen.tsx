@@ -41,6 +41,7 @@ import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { useSetDocumentClass } from '../util/useSetDocumentClass'
 import { useRundownAndShowStyleIdsForPlaylist } from '../util/useRundownAndShowStyleIdsForPlaylist'
 import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil'
+import { CurrentPartOrSegmentRemaining } from '../RundownView/RundownTiming/CurrentPartOrSegmentRemaining'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -460,7 +461,11 @@ function PresenterScreenContentDefaultLayout({
 								/>
 							</div>
 							<div className="presenter-screen__part__piece-countdown">
-								<PieceCountdownContainer
+								<CurrentPartOrSegmentRemaining
+									currentPartInstanceId={currentPartInstance.instance._id}
+									heavyClassName="overtime"
+								/>
+								{/* <PieceCountdownContainer
 									partInstanceId={currentPartInstance.instance._id}
 									showStyleBaseId={currentShowStyleBaseId}
 									rundownIds={rundownIds}
@@ -470,7 +475,7 @@ function PresenterScreenContentDefaultLayout({
 									)}
 									partStartedPlayback={currentPartInstance.instance.timings?.plannedStartedPlayback}
 									playlistActivationId={playlist?.activationId}
-								/>
+								/>  */}
 							</div>
 							<div className="presenter-screen__part__part-countdown">
 								<Timediff time={currentPartOrSegmentCountdown} />
