@@ -674,10 +674,27 @@ async function getSelectedPartInstances(
 			  })
 			: []
 
+	const currentPartInstance = instances.find((inst) => inst._id === playlist.currentPartInfo?.partInstanceId)
+	const nextPartInstance = instances.find((inst) => inst._id === playlist.nextPartInfo?.partInstanceId)
+	const previousPartInstance = instances.find((inst) => inst._id === playlist.previousPartInfo?.partInstanceId)
+
+	if (playlist.currentPartInfo?.partInstanceId && !currentPartInstance)
+		logger.error(
+			`playlist.currentPartInfo is set, but PartInstance "${playlist.currentPartInfo?.partInstanceId}" was not found!`
+		)
+	if (playlist.nextPartInfo?.partInstanceId && !nextPartInstance)
+		logger.error(
+			`playlist.nextPartInfo is set, but PartInstance "${playlist.nextPartInfo?.partInstanceId}" was not found!`
+		)
+	if (playlist.previousPartInfo?.partInstanceId && !previousPartInstance)
+		logger.error(
+			`playlist.previousPartInfo is set, but PartInstance "${playlist.previousPartInfo?.partInstanceId}" was not found!`
+		)
+
 	return {
-		currentPartInstance: instances.find((inst) => inst._id === playlist.currentPartInfo?.partInstanceId),
-		nextPartInstance: instances.find((inst) => inst._id === playlist.nextPartInfo?.partInstanceId),
-		previousPartInstance: instances.find((inst) => inst._id === playlist.previousPartInfo?.partInstanceId),
+		currentPartInstance,
+		nextPartInstance,
+		previousPartInstance,
 	}
 }
 
@@ -827,7 +844,16 @@ async function removeSegments(
 		})
 	}
 	for (const segmentId of purgeSegmentIds) {
-		logger.debug(`IngestModel: Removing segment "${segmentId}"`)
+		logger.debug(
+			`IngestModel: Removing segment "${segmentId}" (` +
+				`previousPartInfo?.partInstanceId: ${newPlaylist.previousPartInfo?.partInstanceId},` +
+				`currentPartInfo?.partInstanceId: ${newPlaylist.currentPartInfo?.partInstanceId},` +
+				`nextPartInfo?.partInstanceId: ${newPlaylist.nextPartInfo?.partInstanceId},` +
+				`previousPartInstance.segmentId: ${!previousPartInstance ? 'N/A' : previousPartInstance.segmentId},` +
+				`currentPartInstance.segmentId: ${!currentPartInstance ? 'N/A' : currentPartInstance.segmentId},` +
+				`nextPartInstance.segmentId: ${!nextPartInstance ? 'N/A' : nextPartInstance.segmentId}` +
+				`)`
+		)
 		ingestModel.removeSegment(segmentId)
 	}
 }
