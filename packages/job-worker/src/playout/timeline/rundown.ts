@@ -19,7 +19,7 @@ import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout
 import { PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { JobContext } from '../../jobs'
-import { ReadonlyDeep, SetRequired } from 'type-fest'
+import { ReadonlyDeep } from 'type-fest'
 import { SelectedPartInstancesTimelineInfo, SelectedPartInstanceTimelineInfo } from './generate'
 import { createPartGroup, createPartGroupFirstObject, PartEnable, transformPartIntoTimeline } from './part'
 import { literal, normalizeArrayToMapFunc } from '@sofie-automation/corelib/dist/lib'
