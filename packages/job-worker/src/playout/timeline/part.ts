@@ -27,6 +27,7 @@ export function transformPartIntoTimeline(
 	pieceGroupFirstObjClasses: string[],
 	parentGroup: TimelineObjGroupPart & OnGenerateTimelineObjExt,
 	partInfo: SelectedPartInstanceTimelineInfo,
+	nextPartTimings: PartCalculatedTimings | null,
 	isInHold: boolean
 ): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
 	const span = context.startSpan('transformPartIntoTimeline')
@@ -34,6 +35,8 @@ export function transformPartIntoTimeline(
 	const nowInParentGroup = partInfo.nowInPart
 	const partTimings = partInfo.calculatedTimings
 	const outTransition = partInfo.partInstance.part.outTransition ?? null
+
+	let parentGroupNoKeepalive: (TimelineObjGroupPart & OnGenerateTimelineObjExt) | undefined
 
 	const timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 
@@ -45,10 +48,21 @@ export function transformPartIntoTimeline(
 		// Not able to enable this piece
 		if (!pieceEnable) continue
 
+		// Determine which group to add to
+		let partGroupToAddTo = parentGroup
+		if (pieceInstance.piece.excludeDuringPartKeepalive) {
+			if (!parentGroupNoKeepalive) {
+				// Only generate the no-keepalive group if is is needed
+				parentGroupNoKeepalive = createPartNoKeepaliveGroup(parentGroup, nextPartTimings)
+				timelineObjs.push(parentGroupNoKeepalive)
+			}
+			partGroupToAddTo = parentGroupNoKeepalive
+		}
+
 		timelineObjs.push(
 			...transformPieceGroupAndObjects(
 				playlistId,
-				parentGroup,
+				partGroupToAddTo,
 				nowInParentGroup,
 				pieceInstance,
 				pieceEnable,
@@ -165,4 +179,33 @@ export function createPartGroupFirstObject(
 		metaData: undefined,
 		priority: 0,
 	})
+}
+
+export function createPartNoKeepaliveGroup(
+	partGroup: TimelineObjGroupPart & OnGenerateTimelineObjExt,
+	nextPartTimings: PartCalculatedTimings | null
+): TimelineObjGroupPart & OnGenerateTimelineObjExt {
+	const keepaliveDuration = nextPartTimings?.fromPartKeepalive ?? 0
+
+	return {
+		id: `${partGroup.id}_no_keepalive`,
+		objectType: TimelineObjType.RUNDOWN,
+		enable: {
+			start: 0,
+			end: `#${partGroup.id}.end - ${keepaliveDuration}`,
+		},
+		priority: 5,
+		layer: '', // These should coexist
+		content: {
+			deviceType: TSR.DeviceType.ABSTRACT,
+			type: TimelineContentTypeOther.GROUP,
+		},
+		children: [],
+		isGroup: true,
+		partInstanceId: partGroup.partInstanceId,
+		metaData: literal<PieceTimelineMetadata>({
+			isPieceTimeline: true,
+		}),
+		inGroup: partGroup.id,
+	}
 }

@@ -19,14 +19,12 @@ import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout
 import { PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { JobContext } from '../../jobs'
-import { ReadonlyDeep, SetRequired } from 'type-fest'
+import { ReadonlyDeep } from 'type-fest'
 import { SelectedPartInstancesTimelineInfo, SelectedPartInstanceTimelineInfo } from './generate'
 import { createPartGroup, createPartGroupFirstObject, PartEnable, transformPartIntoTimeline } from './part'
-import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { literal, normalizeArrayToMapFunc } from '@sofie-automation/corelib/dist/lib'
 import { getCurrentTime } from '../../lib'
 import _ = require('underscore')
-import { PlayoutModel } from '../model/PlayoutModel'
 import { getPieceEnableInsidePart, transformPieceGroupAndObjects } from './piece'
 import { logger } from '../../logging'
 
@@ -50,14 +48,12 @@ export interface RundownTimelineResult {
 
 export function buildTimelineObjsForRundown(
 	context: JobContext,
-	playoutModel: PlayoutModel,
-	_activeRundown: ReadonlyDeep<DBRundown>,
+	activePlaylist: ReadonlyDeep<DBRundownPlaylist>,
 	partInstancesInfo: SelectedPartInstancesTimelineInfo
 ): RundownTimelineResult {
 	const span = context.startSpan('buildTimelineObjsForRundown')
 	const timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 
-	const activePlaylist = playoutModel.playlist
 	const currentTime = getCurrentTime()
 
 	timelineObjs.push(
@@ -168,7 +164,8 @@ export function buildTimelineObjsForRundown(
 				timingContext,
 				infinitePiece,
 				currentTime,
-				partInstancesInfo.current.calculatedTimings
+				partInstancesInfo.current.calculatedTimings,
+				partInstancesInfo.next?.calculatedTimings ?? null
 			)
 		)
 	}
@@ -189,6 +186,7 @@ export function buildTimelineObjsForRundown(
 			groupClasses,
 			currentPartGroup,
 			partInstancesInfo.current,
+			partInstancesInfo.next?.calculatedTimings ?? null,
 			activePlaylist.holdState === RundownHoldState.ACTIVE
 		)
 	)
@@ -263,7 +261,8 @@ function generateCurrentInfinitePieceObjects(
 	timingContext: RundownTimelineTimingContext,
 	pieceInstance: PieceInstanceWithTimings,
 	currentTime: Time,
-	currentPartInstanceTimings: PartCalculatedTimings
+	currentPartInstanceTimings: PartCalculatedTimings,
+	nextPartInstanceTimings: PartCalculatedTimings | null
 ): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
 	if (!pieceInstance.infinite) {
 		// Type guard, should never be hit
@@ -354,14 +353,17 @@ function generateCurrentInfinitePieceObjects(
 		infiniteGroup.enable.duration === undefined &&
 		infiniteGroup.enable.end === undefined
 	) {
+		let endOffset = 0
+
+		if (currentPartInstanceTimings.fromPartPostroll) endOffset -= currentPartInstanceTimings.fromPartPostroll
+
+		if (pieceInstance.piece.postrollDuration) endOffset += pieceInstance.piece.postrollDuration
+
+		if (pieceInstance.piece.excludeDuringPartKeepalive && nextPartInstanceTimings)
+			endOffset -= nextPartInstanceTimings.fromPartKeepalive
+
 		// cap relative to the currentPartGroup
-		infiniteGroup.enable.end = `#${timingContext.currentPartGroup.id}.end`
-		if (currentPartInstanceTimings.fromPartPostroll) {
-			infiniteGroup.enable.end += ' - ' + currentPartInstanceTimings.fromPartPostroll
-		}
-		if (pieceInstance.piece.postrollDuration) {
-			infiniteGroup.enable.end += ' + ' + pieceInstance.piece.postrollDuration
-		}
+		infiniteGroup.enable.end = `#${timingContext.currentPartGroup.id}.end + ${endOffset}`
 	}
 
 	// Still show objects flagged as 'HoldMode.EXCEPT' if this is a infinite continuation as they belong to the previous too
@@ -420,6 +422,7 @@ function generatePreviousPartInstanceObjects(
 				groupClasses,
 				previousPartGroup,
 				previousPartInfo,
+				currentPartInstanceTimings,
 				activePlaylist.holdState === RundownHoldState.ACTIVE
 			),
 		]
@@ -462,6 +465,7 @@ function generateNextPartInstanceObjects(
 			groupClasses,
 			nextPartGroup,
 			nextPartInfo,
+			null,
 			false
 		),
 	]
