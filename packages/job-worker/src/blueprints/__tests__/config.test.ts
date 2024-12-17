@@ -18,6 +18,7 @@ describe('Test blueprint config', () => {
 				allowHold: true,
 				allowPieceDirectPlay: true,
 				enableBuckets: true,
+				enableEvaluationForm: true,
 			}),
 			blueprintConfigWithOverrides: wrapDefaultObject({ sdfsdf: 'one', another: 5 }),
 		})
@@ -44,6 +45,7 @@ describe('Test blueprint config', () => {
 				allowHold: true,
 				allowPieceDirectPlay: true,
 				enableBuckets: true,
+				enableEvaluationForm: true,
 			}),
 			blueprintConfigWithOverrides: wrapDefaultObject({ sdfsdf: 'one', another: 5 }),
 		})
