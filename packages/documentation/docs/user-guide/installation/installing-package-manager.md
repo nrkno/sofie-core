@@ -18,14 +18,14 @@ Although Package Manager can be used to copy any kind of file to/from a wide arr
 
 :::caution
 
-Sofie supports only one package manager running for a Studio. Attaching more at a time will result in weird behaviour due to them fighting over reporting the statuses of packages.  
-If you feel like you need multiple, then you likely want to run package manager in the distributed setup instead.
+Sofie supports only one Package Manager running for a Studio. Attaching more at a time will result in weird behaviour due to them fighting over reporting the statuses of packages.  
+If you feel like you need multiple, then you likely want to run Package Manager in the distributed setup instead.
 
 :::
 
 :::caution
 
-The package manager worker process is primarily tested on Windows only. It does run on Linux (without support for network shares), but has not been extensively tested.
+The Package Manager worker process is primarily tested on Windows only. It does run on Linux (without support for network shares), but has not been extensively tested.
 
 :::
 
@@ -58,7 +58,7 @@ This first run is necessary to get the Package Manager device registered with _S
 
 ## Installation In Production
 
-Only one package manager can be running for a Sofie Studio. If you reached this point thinking of deploying multiple, you will want to follow the distributed setup.
+Only one Package Manager can be running for a Sofie Studio. If you reached this point thinking of deploying multiple, you will want to follow the distributed setup.
 
 ### Simple Setup
 
@@ -78,7 +78,7 @@ When configuring the http proxy server in Sofie, you may need to follow extra co
 
 ### Distributed Setup
 
-For setups where you need to interact with multiple CasparCG machines, or want a more resilient/scalable setup, package manager can be partially deployed in Docker, with just the workers running on each CasparCG machine.
+For setups where you need to interact with multiple CasparCG machines, or want a more resilient/scalable setup, Package Manager can be partially deployed in Docker, with just the workers running on each CasparCG machine.
 
 An example `docker-compose` of the setup is as follows:
 
@@ -110,7 +110,7 @@ services:
       context: .
       dockerfile: sofietv/package-manager-package-manager
     environment:
-      CORE_HOST: '172.18.0.1' # the address for connecting back to sofie core from this image
+      CORE_HOST: '172.18.0.1' # the address for connecting back to Sofie core from this image
       CORE_PORT: '3000'
       DEVICE_ID: 'my-package-manager-id'
       DEVICE_TOKEN: 'some-secret'
@@ -133,7 +133,7 @@ In addition to this, you will need to run the appContainer and workers on each w
 ./appContainer-node.exe
   --appContainerId=caspar01 // This is a unique id for this instance of the appContainer
   --workforceURL=ws://workforce-service-ip:8070
-  --resourceId=caspar01 // This should also be set in the 'resource id' field of the `casparcgLocalFolder1` accessor. This is how package manager can identify which machine is which.
+  --resourceId=caspar01 // This should also be set in the 'resource id' field of the `casparcgLocalFolder1` accessor. This is how Package Manager can identify which machine is which.
   --networkIds=pm-net // This is not necessary, but can be useful for more complex setups
 ```
 
@@ -144,7 +144,7 @@ Note that each appContainer needs to use a different resourceId and will need it
 ## Configuration
 
 1. Open the _Sofie&nbsp;Core_ Settings page ([http://localhost:3000/settings?admin=1](http://localhost:3000/settings?admin=1)), click on your Studio, and then Peripheral Devices.
-1. Click the plus button (`+`) in the Parent Devices section and configure the created device to be for your Package manager.
+1. Click the plus button (`+`) in the Parent Devices section and configure the created device to be for your Package Manager.
 1. On the sidebar under the current Studio, select to the Package Manager section.
 1. Click the plus button under the Package Containers heading, then click the edit icon (pencil) to the right of the newly-created package container.
 1. Give this package container an ID of `casparcgContainer0` and a label of `CasparCG Package Container`.
@@ -167,7 +167,7 @@ By adding `--networkIds=pm-net` (a semi colon separated list) when launching the
 
 Then in the Sofie UI:
 
-1. Return to the Package manager settings under the studio
+1. Return to the Package Manager settings under the studio
 1. Expand the `casparcgContainer` container.
 1. Edit the `casparcgHttpProxy` accessor to have a `Base URL` that is accessible from the casparcg machines.
 1. Set the `Network ID` to `pm-net` (matching what was passed in the command line)
