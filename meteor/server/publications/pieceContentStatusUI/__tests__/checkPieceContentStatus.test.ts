@@ -252,6 +252,7 @@ describe('lib/mediaObjects', () => {
 			allowHold: false,
 			allowPieceDirectPlay: false,
 			enableBuckets: false,
+			enableEvaluationForm: false,
 		}
 
 		const mockDefaultStudio = defaultStudio(protectString('studio0'))

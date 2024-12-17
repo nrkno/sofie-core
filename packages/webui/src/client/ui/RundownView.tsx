@@ -3029,7 +3029,8 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 							<ErrorBoundary>
 								{this.props.matchedSegments &&
 									this.props.matchedSegments.length > 0 &&
-									this.props.userPermissions.studio && <AfterBroadcastForm playlist={playlist} />}
+									this.props.userPermissions.studio &&
+									studio.settings.enableEvaluationForm && <AfterBroadcastForm playlist={playlist} />}
 							</ErrorBoundary>
 							<ErrorBoundary>
 								<RundownHeader

@@ -513,6 +513,56 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			}
 		},
 	},
+	{
+		id: `studios settings create default enableBuckets=true`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const studios = await Studios.findFetchAsync({
+				'settingsWithOverrides.defaults.enableBuckets': { $exists: false },
+			})
+			if (studios.length > 0) {
+				return 'studio is missing enableBuckets setting'
+			}
+			return false
+		},
+		migrate: async () => {
+			const studios = await Studios.findFetchAsync({
+				'settingsWithOverrides.defaults.enableBuckets': { $exists: false },
+			})
+			for (const studio of studios) {
+				await Studios.updateAsync(studio._id, {
+					$set: {
+						'settingsWithOverrides.defaults.enableBuckets': true,
+					},
+				})
+			}
+		},
+	},
+	{
+		id: `studios settings create default enableEvaluationForm=true`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const studios = await Studios.findFetchAsync({
+				'settingsWithOverrides.defaults.enableEvaluationForm': { $exists: false },
+			})
+			if (studios.length > 0) {
+				return 'studio is missing enableEvaluationForm setting'
+			}
+			return false
+		},
+		migrate: async () => {
+			const studios = await Studios.findFetchAsync({
+				'settingsWithOverrides.defaults.enableEvaluationForm': { $exists: false },
+			})
+			for (const studio of studios) {
+				await Studios.updateAsync(studio._id, {
+					$set: {
+						'settingsWithOverrides.defaults.enableEvaluationForm': true,
+					},
+				})
+			}
+		},
+	},
 ])
 
 interface PartialOldICoreSystem {

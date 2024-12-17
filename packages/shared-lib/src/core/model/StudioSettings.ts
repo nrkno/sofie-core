@@ -81,4 +81,9 @@ export interface IStudioSettings {
 	 * Enable buckets - the default behavior is to have buckets.
 	 */
 	enableBuckets: boolean
+
+	/**
+	 * Enable evaluation form - the default behavior is to have evaluation forms.
+	 */
+	enableEvaluationForm: boolean
 }
