@@ -19,7 +19,7 @@ Although Package Manager can be used to copy any kind of file to/from a wide arr
 :::caution
 
 Sofie supports only one package manager running for a Studio. Attaching more at a time will result in weird behaviour due to them fighting over reporting the statuses of packages.  
-If you feel like you need multiple, then you likely want to run package manager in the split setup instead.
+If you feel like you need multiple, then you likely want to run package manager in the distributed setup instead.
 
 :::
 
@@ -60,7 +60,7 @@ This first run is necessary to get the Package Manager device registered with _S
 
 Only one package manager can be running for a Sofie Studio. If you reached this point thinking of deploying multiple, you will want to follow the distributed setup.
 
-### Simple setup
+### Simple Setup
 
 For setups where you only need to interact with CasparCG on one machine, we provide pre-built executables for Windows (x64) systems. These can be found on the [Releases](https://github.com/nrkno/sofie-package-manager/releases) GitHub repository page for Package Manager. For a minimal installation, you'll need the `package-manager-single-app.exe` and `worker.exe`. Put them in a folder of your choice. You can also place `ffmpeg.exe` and `ffprobe.exe` alongside them, if you don't want to make them available in `PATH`.
 
@@ -72,15 +72,15 @@ Package Manager can be launched from [CasparCG Launcher](./installing-connection
 
 You can see a list of available options by running `package-manager-single-app.exe --help`.
 
-In some cases, you will need to run the http proxy server component elsewhere so that it can be accessed from your Sofie UI machines.  
+In some cases, you will need to run the HTTP proxy server component elsewhere so that it can be accessed from your Sofie UI machines.  
 For this, you can run the `sofietv/package-manager-http-server` docker image, which exposes its service on port 8080 and expects `/data/http-server` to be persistent storage.  
-When configuring the http proxy server in sofie, you may need to follow extra configuration steps for this to work as expected.
+When configuring the http proxy server in Sofie, you may need to follow extra configuration steps for this to work as expected.
 
-### Distributed setup
+### Distributed Setup
 
-For setups where you need to interact with multiple CasparCG machines, or want a more resilient/scalable setup, package manager can be partially deployed in docker, with just the workers running on each CasparCG machine.
+For setups where you need to interact with multiple CasparCG machines, or want a more resilient/scalable setup, package manager can be partially deployed in Docker, with just the workers running on each CasparCG machine.
 
-An example docker-compose of the setup is as follows:
+An example `docker-compose` of the setup is as follows:
 
 ```
 services:
@@ -158,10 +158,10 @@ Note that each appContainer needs to use a different resourceId and will need it
    ![Package Manager demo settings](/img/docs/Package_Manager_demo_settings.png)
 1. If Package Manager `start:single-app` is running, restart it. If not, start it (see the above [Installation instructions](#installation-quick-start) for the relevant command line).
 
-### Separate http proxy server
+### Separate HTTP proxy server
 
-In some setups, the url of the http proxy server is different when accessing the sofie ui and package manager.  
-You can use the 'Network ID' concept in package manager to provide guidance on which to use when.
+In some setups, the URL of the HTTP proxy server is different when accessing the Sofie UI and Package Manager.  
+You can use the 'Network ID' concept in Package Manager to provide guidance on which to use when.
 
 By adding `--networkIds=pm-net` (a semi colon separated list) when launching the exes on the CasparCG machine, the application will know to prefer certain accessors with matching values.
 
