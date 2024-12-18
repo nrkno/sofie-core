@@ -33,7 +33,6 @@ export type EditAttributeType =
 	| 'json'
 	| 'colorpicker'
 	| 'iconpicker'
-	| 'array'
 export class EditAttribute extends React.Component<IEditAttribute> {
 	render(): JSX.Element {
 		if (this.props.type === 'text') {
@@ -60,8 +59,6 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 			return <EditAttributeColorPicker {...this.props} />
 		} else if (this.props.type === 'iconpicker') {
 			return <EditAttributeIconPicker {...this.props} />
-		} else if (this.props.type === 'array') {
-			return <EditAttributeArray {...this.props} />
 		} else {
 			assertNever(this.props.type)
 		}
@@ -334,111 +331,6 @@ function EditAttributeJson(props: IEditAttributeBaseProps) {
 			handleUpdate={handleChange}
 		/>
 	)
-}
-function EditAttributeArray(props: IEditAttributeBaseProps) {
-	const stateHelper = useEditAttributeStateHelper(props)
-
-	const [editingValue, setEditingValue] = useState<string | null>(null)
-
-	const handleChange = useCallback(
-		(event: React.ChangeEvent<HTMLInputElement>) => {
-			const v = event.target.value
-
-			setEditingValue(v)
-
-			const arrayObj = stringIsArray(v, props.arrayType)
-			if (arrayObj) {
-				if (props.updateOnKey) {
-					stateHelper.handleUpdate(arrayObj.parsed)
-				}
-				stateHelper.setValueError(false)
-			}
-		},
-		[setEditingValue, props.arrayType, props.updateOnKey, stateHelper.handleUpdate, stateHelper.setValueError]
-	)
-	const handleBlur = useCallback(
-		(event: React.FocusEvent<HTMLInputElement>) => {
-			const v = event.target.value
-
-			setEditingValue(v)
-
-			const arrayObj = stringIsArray(v, props.arrayType)
-			if (arrayObj) {
-				stateHelper.handleUpdate(arrayObj.parsed)
-				stateHelper.setValueError(false)
-			} else {
-				stateHelper.setValueError(true)
-			}
-		},
-		[setEditingValue, props.arrayType, stateHelper.handleUpdate, stateHelper.setValueError]
-	)
-	const handleEscape = useCallback(
-		(e: React.KeyboardEvent<HTMLInputElement>) => {
-			if (e.key === 'Escape') {
-				setEditingValue(null)
-			}
-		},
-		[setEditingValue]
-	)
-
-	let currentValueString = stateHelper.getAttributeValue()
-	if (Array.isArray(currentValueString)) {
-		currentValueString = currentValueString.join(', ')
-	} else {
-		currentValueString = ''
-	}
-
-	return (
-		<input
-			type="text"
-			className={ClassNames(
-				'form-control',
-				props.className,
-				stateHelper.valueError && props.invalidClassName
-					? props.invalidClassName
-					: editingValue !== null
-					? props.modifiedClassName || ''
-					: ''
-			)}
-			placeholder={props.label}
-			value={(editingValue ?? currentValueString) || ''}
-			onChange={handleChange}
-			onBlur={handleBlur}
-			onKeyUp={handleEscape}
-			disabled={props.disabled}
-		/>
-	)
-}
-function stringIsArray(strOrg: string, arrayType: IEditAttributeBaseProps['arrayType']): { parsed: any[] } | false {
-	if (!(strOrg + '').trim().length) return { parsed: [] }
-
-	const values: any[] = []
-	const strs = (strOrg + '').split(',')
-
-	for (const str of strs) {
-		// Check that the values in the array are of the right type:
-
-		if (arrayType === 'boolean') {
-			const parsed = JSON.parse(str)
-			if (typeof parsed !== 'boolean') return false // type check failed
-			values.push(parsed)
-		} else if (arrayType === 'int') {
-			const parsed = parseInt(str, 10)
-
-			if (Number.isNaN(parsed)) return false // type check failed
-			values.push(parsed)
-		} else if (arrayType === 'float') {
-			const parsed = parseFloat(str)
-			if (Number.isNaN(parsed)) return false // type check failed
-			values.push(parsed)
-		} else {
-			// else this.props.arrayType is 'string'
-			const parsed = str + ''
-			if (typeof parsed !== 'string') return false // type check failed
-			values.push(parsed.trim())
-		}
-	}
-	return { parsed: values }
 }
 function EditAttributeColorPicker(props: IEditAttributeBaseProps) {
 	const stateHelper = useEditAttributeStateHelper(props)
