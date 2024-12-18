@@ -41,7 +41,6 @@ export function PlaylistEndTimerPanel({ playlist, panel, layout }: Readonly<IPla
 				hideCountdown={panel.hideCountdown}
 				hideDiff={panel.hideDiff}
 				hidePlannedEnd={panel.hidePlannedEnd}
-				rundownCount={0}
 			/>
 		</div>
 	)
