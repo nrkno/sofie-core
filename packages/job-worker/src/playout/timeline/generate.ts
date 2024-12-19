@@ -336,12 +336,7 @@ async function getTimelineRundown(
 				logger.warn(`Missing Baseline objects for Rundown "${activeRundown.rundown._id}"`)
 			}
 
-			const rundownTimelineResult = buildTimelineObjsForRundown(
-				context,
-				playoutModel,
-				activeRundown.rundown,
-				partInstancesInfo
-			)
+			const rundownTimelineResult = buildTimelineObjsForRundown(context, playoutModel.playlist, partInstancesInfo)
 
 			timelineObjs = timelineObjs.concat(rundownTimelineResult.timeline)
 			timelineObjs = timelineObjs.concat(await pLookaheadObjs)

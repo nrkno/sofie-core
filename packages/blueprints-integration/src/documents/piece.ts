@@ -35,6 +35,11 @@ export interface IBlueprintPiece<TPrivateData = unknown, TPublicData = unknown>
 	 * User editing definitions for this piece
 	 */
 	userEditOperations?: UserEditingDefinition[]
+
+	/**
+	 * Whether to stop this piece before the 'keepalive' period of the part
+	 */
+	excludeDuringPartKeepalive?: boolean
 }
 export interface IBlueprintPieceDB<TPrivateData = unknown, TPublicData = unknown>
 	extends IBlueprintPiece<TPrivateData, TPublicData> {
