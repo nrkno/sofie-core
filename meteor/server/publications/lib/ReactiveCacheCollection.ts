@@ -1,12 +1,16 @@
 import { omit } from '@sofie-automation/corelib/dist/lib'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Mongo } from 'meteor/mongo'
-import { ObserveChangesCallbacks } from '../../../lib/collections/lib'
+import { ObserveChangesCallbacks } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import { MongoModifier, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 
 type Reaction = () => void
 
 export class ReactiveCacheCollection<Document extends { _id: ProtectedString<any> }> {
+	/**
+	 * The collection still works in sync mode when operating on `null` in Meteor 3.0
+	 * It may break in a later update, but this is fine for now.
+	 */
 	readonly #collection: Mongo.Collection<Document>
 
 	constructor(public collectionName: string, private reaction?: Reaction) {
@@ -63,6 +67,55 @@ export class ReactiveCacheCollection<Document extends { _id: ProtectedString<any
 		options?: { multi?: boolean }
 	): { numberAffected?: number; insertedId?: string } {
 		const res = this.#collection.upsert(selector as any, modifier as any, options)
+		if (res.numberAffected || res.insertedId) {
+			this.runReaction()
+		}
+		return res
+	}
+
+	async findOneAsync(
+		selector: Document['_id'] | Mongo.Selector<Document>,
+		options?: Omit<Mongo.Options<Document>, 'limit'>
+	): Promise<Document | undefined> {
+		return this.#collection.findOne(selector as any, options)
+	}
+
+	async insertAsync(doc: Mongo.OptionalId<Document>): Promise<string> {
+		const id = await this.#collection.insertAsync(doc)
+		this.runReaction()
+		return id
+	}
+
+	async removeAsync(selector: Document['_id'] | MongoQuery<Document>): Promise<number> {
+		const num = await this.#collection.removeAsync(selector as any)
+		if (num > 0) {
+			this.runReaction()
+		}
+		return num
+	}
+
+	async updateAsync(
+		selector: Document['_id'] | MongoQuery<Document>,
+		modifier: MongoModifier<Document>,
+		options?: {
+			multi?: boolean
+			upsert?: boolean
+			arrayFilters?: { [identifier: string]: any }[]
+		}
+	): Promise<number> {
+		const num = await this.#collection.updateAsync(selector as any, modifier as any, options)
+		if (num > 0) {
+			this.runReaction()
+		}
+		return num
+	}
+
+	async upsertAsync(
+		selector: Document['_id'] | Mongo.Selector<Document>,
+		modifier: Mongo.Modifier<Document>,
+		options?: { multi?: boolean }
+	): Promise<{ numberAffected?: number; insertedId?: string }> {
+		const res = await this.#collection.upsertAsync(selector as any, modifier as any, options)
 		if (res.numberAffected || res.insertedId) {
 			this.runReaction()
 		}

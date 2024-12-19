@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/openapi",
-	"version": "1.51.3",
+	"version": "1.52.0-in-development",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
@@ -27,7 +27,7 @@
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"engines": {
-		"node": ">=16.0.0"
+		"node": ">=18.18"
 	},
 	"files": [
 		"/api",

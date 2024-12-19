@@ -10,12 +10,12 @@ import { unprotectString, protectString } from '@sofie-automation/corelib/dist/p
 import { logger } from '../logging'
 import { PlayoutModel } from '../playout/model/PlayoutModel'
 import { PlayoutRundownModel } from '../playout/model/PlayoutRundownModel'
-import { isTooCloseToAutonext } from '../playout/lib'
 import { allowedToMoveRundownOutOfPlaylist } from '../rundown'
 import { updatePartInstanceRanksAndOrphanedState } from '../updatePartInstanceRanksAndOrphanedState'
 import {
 	getPlaylistIdFromExternalId,
 	produceRundownPlaylistInfoFromRundown,
+	removePlaylistFromDb,
 	removeRundownFromDb,
 } from '../rundownPlaylists'
 import { ReadonlyDeep } from 'type-fest'
@@ -109,6 +109,8 @@ export async function CommitIngestOperation(
 				} else {
 					// The rundown is safe to simply move or remove
 					trappedInPlaylistId = undefined
+
+					updateNotificationForTrappedInPlaylist(ingestModel, false)
 
 					await removeRundownFromPlaylistAndUpdatePlaylist(
 						context,
@@ -226,6 +228,9 @@ export async function CommitIngestOperation(
 				// sync changes to the 'selected' partInstances
 				await syncChangesToPartInstances(context, playoutModel, ingestModel)
 
+				// update the quickloop in case we did any changes to things involving marker
+				playoutModel.updateQuickLoopState()
+
 				playoutModel.deferAfterSave(() => {
 					// Run in the background, we don't want to hold onto the lock to do this
 					context
@@ -273,10 +278,7 @@ function canRemoveSegment(
 		logger.warn(`Not allowing removal of previous playing segment "${segmentId}", making segment unsynced instead`)
 		return false
 	}
-	if (
-		currentPartInstance?.segmentId === segmentId ||
-		(nextPartInstance?.segmentId === segmentId && isTooCloseToAutonext(currentPartInstance, false))
-	) {
+	if (currentPartInstance?.segmentId === segmentId) {
 		// Don't allow removing an active rundown
 		logger.warn(`Not allowing removal of current playing segment "${segmentId}", making segment unsynced instead`)
 		return false
@@ -566,7 +568,7 @@ export async function regeneratePlaylistAndRundownOrder(
 		return newPlaylist
 	} else {
 		// Playlist is empty and should be removed
-		await context.directCollections.RundownPlaylists.remove(oldPlaylist._id)
+		await removePlaylistFromDb(context, lock)
 
 		return null
 	}
@@ -588,7 +590,7 @@ export async function updatePlayoutAfterChangingRundownInPlaylist(
 				throw new Error(`RundownPlaylist "${playoutModel.playlistId}" has no contents but is active...`)
 
 			// Remove an empty playlist
-			await context.directCollections.RundownPlaylists.remove({ _id: playoutModel.playlistId })
+			await removePlaylistFromDb(context, playlistLock)
 
 			playoutModel.assertNoChanges()
 			return
@@ -711,15 +713,29 @@ function setRundownAsTrappedInPlaylist(
 	if (rundownIsToBeRemoved) {
 		// Orphan the deleted rundown
 		ingestModel.setRundownOrphaned(RundownOrphanedReason.DELETED)
+
+		updateNotificationForTrappedInPlaylist(ingestModel, false)
 	} else {
+		updateNotificationForTrappedInPlaylist(ingestModel, true)
+	}
+}
+
+function updateNotificationForTrappedInPlaylist(ingestModel: IngestModel, isTrapped: boolean) {
+	const notificationCategory = `trappedInPlaylist:${ingestModel.rundownId}`
+
+	if (isTrapped) {
 		// The rundown is still synced, but is in the wrong playlist. Notify the user
-		ingestModel.appendRundownNotes({
-			type: NoteSeverity.WARNING,
+		ingestModel.setNotification(notificationCategory, {
+			id: `trappedInPlaylist`,
+			severity: NoteSeverity.WARNING,
 			message: getTranslatedMessage(ServerTranslatedMesssages.PLAYLIST_ON_AIR_CANT_MOVE_RUNDOWN),
-			origin: {
-				name: 'Data update',
+			relatedTo: {
+				type: 'rundown',
+				rundownId: ingestModel.rundownId,
 			},
 		})
+	} else {
+		ingestModel.clearAllNotifications(notificationCategory)
 	}
 }
 

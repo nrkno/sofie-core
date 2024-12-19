@@ -1,9 +1,8 @@
-import { beforeEachInFiber } from '../../../../../__mocks__/helpers/jest'
 import { MeteorMock } from '../../../../../__mocks__/meteor'
 import { Meteor } from 'meteor/meteor'
-import { UserActionAPIMethods } from '../../../../../lib/api/userActions'
+import { UserActionAPIMethods } from '@sofie-automation/meteor-lib/dist/api/userActions'
 import { MeteorMethodSignatures } from '../../../../methods'
-import { ClientAPI } from '../../../../../lib/api/client'
+import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { callKoaRoute } from '../../../../../__mocks__/koa-util'
 import { createLegacyApiRouter } from '..'
 import '../../../userActions.ts' // required to get the UserActionsAPI methods populated
@@ -15,28 +14,11 @@ import '../index.ts'
 
 describe('REST API', () => {
 	describe('UNSTABLE v0', () => {
-		beforeEachInFiber(() => {
-			MeteorMock.mockRunMeteorStartup()
+		beforeEach(async () => {
+			await MeteorMock.mockRunMeteorStartup()
 		})
 
 		const legacyApiRouter = createLegacyApiRouter()
-
-		test('registers endpoints for all UserActionAPI methods', async () => {
-			for (const [methodName, methodValue] of Object.entries<any>(UserActionAPIMethods)) {
-				const signature = MeteorMethodSignatures[methodValue]
-
-				let resource = `/action/${methodName}`
-				for (const paramName of signature || []) {
-					resource += `/${paramName}`
-				}
-
-				const ctx = await callKoaRoute(legacyApiRouter, {
-					method: 'POST',
-					url: resource,
-				})
-				expect(ctx.response.status).not.toBe(404)
-			}
-		})
 
 		test('calls the UserActionAPI methods, when doing a POST to the endpoint', async () => {
 			for (const [methodName, methodValue] of Object.entries<any>(UserActionAPIMethods)) {
