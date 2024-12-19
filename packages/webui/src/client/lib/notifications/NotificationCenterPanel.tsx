@@ -455,9 +455,6 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 /**
  * Presentational component that displays a panel containing the NotificationCenterPopUps list containing
  * the snoozed items and an 'Empty' label if no notifications are present.
- * @export
- * @class NotificationCenterPanel
- * @extends React.Component
  */
 export const NotificationCenterPanel = (props: { limitCount?: number; filter?: NoticeLevel }): JSX.Element => (
 	<div className="notification-center-panel">
@@ -486,9 +483,6 @@ interface IToggleProps {
 
 /**
  * A button for with a count of notifications in the Notification Center
- * @export
- * @class NotificationCenterPanelToggle
- * @extends React.Component<IToggleProps>
  */
 export function NotificationCenterPanelToggle({
 	className,

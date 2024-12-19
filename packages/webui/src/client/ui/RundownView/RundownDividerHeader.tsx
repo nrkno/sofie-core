@@ -1,9 +1,8 @@
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import Moment from 'react-moment'
 import { TimingDataResolution, TimingTickResolution, withTiming, WithTiming } from './RundownTiming/withTiming'
 import { RundownUtils } from '../../lib/rundown'
-import { withTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 
@@ -14,50 +13,41 @@ interface IProps {
 
 const QUATER_DAY = 6 * 60 * 60 * 1000
 
+interface MarkerCountdownProps {
+	markerTimestamp: number | undefined
+	className?: string | undefined
+}
+
 /**
  * This is a countdown to the rundown's Expected Start or Expected End time. It shows nothing if the expectedStart is undefined
  * or the time to Expected Start/End from now is larger than 6 hours.
  */
-const MarkerCountdownText = withTranslation()(
-	withTiming<
-		Translated<{
-			markerTimestamp: number | undefined
-			className?: string | undefined
-		}>,
-		{}
-	>({
-		filter: 'currentTime',
-		tickResolution: TimingTickResolution.Low,
-		dataResolution: TimingDataResolution.Synced,
-	})(function MarkerCountdown(
-		props: Translated<
-			WithTiming<{
-				markerTimestamp: number | undefined
-				className?: string | undefined
-			}>
-		>
-	) {
-		const { t } = props
-		if (props.markerTimestamp === undefined) return null
+const MarkerCountdownText = withTiming<MarkerCountdownProps, {}>({
+	filter: 'currentTime',
+	tickResolution: TimingTickResolution.Low,
+	dataResolution: TimingDataResolution.Synced,
+})(function MarkerCountdown(props: WithTiming<MarkerCountdownProps>) {
+	const { t } = useTranslation()
 
-		const time = props.markerTimestamp - (props.timingDurations.currentTime || 0)
+	if (props.markerTimestamp === undefined) return null
 
-		if (time < QUATER_DAY) {
-			return (
-				<span className={props.className}>
-					{time > 0
-						? t('(in: {{time}})', {
-								time: RundownUtils.formatDiffToTimecode(time, false, true, true, true, true),
-						  })
-						: t('({{time}} ago)', {
-								time: RundownUtils.formatDiffToTimecode(time, false, true, true, true, true),
-						  })}
-				</span>
-			)
-		}
-		return null
-	})
-)
+	const time = props.markerTimestamp - (props.timingDurations.currentTime || 0)
+
+	if (time < QUATER_DAY) {
+		return (
+			<span className={props.className}>
+				{time > 0
+					? t('(in: {{time}})', {
+							time: RundownUtils.formatDiffToTimecode(time, false, true, true, true, true),
+					  })
+					: t('({{time}} ago)', {
+							time: RundownUtils.formatDiffToTimecode(time, false, true, true, true, true),
+					  })}
+			</span>
+		)
+	}
+	return null
+})
 
 /**
  * This is a component for showing the title of the rundown, it's expectedStart and expectedDuration and
@@ -67,8 +57,9 @@ const MarkerCountdownText = withTranslation()(
  *
  * The component should be minimally reactive.
  */
-export const RundownDividerHeader = withTranslation()(function RundownDividerHeader(props: Translated<IProps>) {
-	const { t, rundown, playlist } = props
+export function RundownDividerHeader({ rundown, playlist }: IProps): JSX.Element {
+	const { t } = useTranslation()
+
 	const expectedStart = PlaylistTiming.getExpectedStart(rundown.timing)
 	const expectedDuration = PlaylistTiming.getExpectedDuration(rundown.timing)
 	const expectedEnd = PlaylistTiming.getExpectedEnd(rundown.timing)
@@ -120,4 +111,4 @@ export const RundownDividerHeader = withTranslation()(function RundownDividerHea
 			) : null}
 		</div>
 	)
-})
+}

@@ -2,10 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { DDP } from 'meteor/ddp'
 import * as React from 'react'
 import * as _ from 'underscore'
-
-import { Translated } from './ReactMeteorData/react-meteor-data'
 import { MomentFromNow } from './Moment'
-
 import {
 	NotificationCenter,
 	NoticeLevel,
@@ -14,13 +11,14 @@ import {
 	NotifierHandle,
 } from './notifications/notifications'
 import { WithManagedTracker } from './reactiveData/reactiveDataHelper'
-import { withTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { NotificationCenterPopUps } from './notifications/NotificationCenterPanel'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { ICoreSystem, ServiceMessage, Criticality } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
 import { TFunction } from 'react-i18next'
 import { getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { CoreSystem } from '../collections'
+import { useEffect } from 'react'
 
 export class ConnectionStatusNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList
@@ -233,30 +231,16 @@ function createSystemNotification(cs: ICoreSystem | undefined): Notification | u
 	return undefined
 }
 
-interface IProps {}
-interface IState {
-	dismissed: boolean
+export function ConnectionStatusNotification(): JSX.Element {
+	const { t } = useTranslation()
+
+	useEffect(() => {
+		const notifier = new ConnectionStatusNotifier(t)
+
+		return () => {
+			notifier.stop()
+		}
+	}, [t])
+
+	return <NotificationCenterPopUps />
 }
-
-export const ConnectionStatusNotification = withTranslation()(
-	class ConnectionStatusNotification extends React.Component<Translated<IProps>, IState> {
-		private notifier: ConnectionStatusNotifier | undefined
-
-		constructor(props: Translated<IProps>) {
-			super(props)
-		}
-
-		componentDidMount(): void {
-			this.notifier = new ConnectionStatusNotifier(this.props.t)
-		}
-
-		componentWillUnmount(): void {
-			if (this.notifier) this.notifier.stop()
-		}
-
-		render(): JSX.Element {
-			// this.props.connected
-			return <NotificationCenterPopUps />
-		}
-	}
-)

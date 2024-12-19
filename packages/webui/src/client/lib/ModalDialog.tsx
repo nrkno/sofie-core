@@ -12,7 +12,7 @@ import { logger } from './logging'
 import * as _ from 'underscore'
 import { withTranslation } from 'react-i18next'
 import { Translated } from './ReactMeteorData/ReactMeteorData'
-import { EditAttribute, EditAttributeType, EditAttributeBase } from './EditAttribute'
+import { EditAttribute, EditAttributeType, IEditAttributeBaseProps } from './EditAttribute'
 import { Settings } from '../lib/Settings'
 
 interface IModalDialogAttributes {
@@ -88,8 +88,8 @@ export function ModalDialog({
 		callback(e, inputResult.current)
 	}
 
-	function updateInput(edit: EditAttributeBase, newValue: any) {
-		inputResult.current[edit.props.attribute || ''] = newValue
+	function updateInput(editProps: IEditAttributeBaseProps, newValue: any) {
+		inputResult.current[editProps.attribute || ''] = newValue
 	}
 
 	function emulateClick(e: React.KeyboardEvent<HTMLButtonElement>) {

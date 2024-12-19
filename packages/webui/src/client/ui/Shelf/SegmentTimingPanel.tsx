@@ -1,4 +1,3 @@
-import * as React from 'react'
 import * as _ from 'underscore'
 import ClassNames from 'classnames'
 import {
@@ -6,7 +5,7 @@ import {
 	RundownLayoutBase,
 	RundownLayoutSegmentTiming,
 } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
@@ -23,6 +22,7 @@ import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyle
 import { PartId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil'
+import { useTranslation } from 'react-i18next'
 
 interface ISegmentTimingPanelProps {
 	visible?: boolean
@@ -38,49 +38,44 @@ interface ISegmentTimingPanelTrackedProps {
 	active: boolean
 }
 
-interface IState {}
+function SegmentTimingPanelInner({
+	layout,
+	panel,
+	liveSegment,
+	parts,
+	active,
+}: ISegmentTimingPanelProps & ISegmentTimingPanelTrackedProps) {
+	const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(layout)
+	const { t } = useTranslation()
 
-class SegmentTimingPanelInner extends React.Component<
-	Translated<ISegmentTimingPanelProps & ISegmentTimingPanelTrackedProps>,
-	IState
-> {
-	render(): JSX.Element {
-		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
-		const { t, panel } = this.props
-
-		return (
-			<div
-				className={ClassNames(
-					'segment-timing-panel timing',
-					isDashboardLayout ? (panel as DashboardLayoutSegmentCountDown).customClasses : undefined
+	return (
+		<div
+			className={ClassNames(
+				'segment-timing-panel timing',
+				isDashboardLayout ? (panel as DashboardLayoutSegmentCountDown).customClasses : undefined
+			)}
+			style={isDashboardLayout ? dashboardElementStyle(panel as DashboardLayoutSegmentCountDown) : {}}
+		>
+			<span className="timing-clock left">
+				{!panel.hideLabel && (
+					<span className="timing-clock-label">
+						{panel.timingType === 'count_down' ? t('Segment Count Down') : t('Segment Count Up')}
+					</span>
 				)}
-				style={isDashboardLayout ? dashboardElementStyle(this.props.panel as DashboardLayoutSegmentCountDown) : {}}
-			>
-				<span className="timing-clock left">
-					{!panel.hideLabel && (
-						<span className="timing-clock-label">
-							{panel.timingType === 'count_down' ? t('Segment Count Down') : t('Segment Count Up')}
-						</span>
-					)}
-					{this.props.active && this.props.liveSegment && this.props.parts && (
-						<SegmentDuration
-							segment={this.props.liveSegment}
-							parts={this.props.parts}
-							countUp={panel.timingType === 'count_up'}
-							className="segment-duration"
-						/>
-					)}
-				</span>
-			</div>
-		)
-	}
+				{active && liveSegment && parts && (
+					<SegmentDuration
+						segment={liveSegment}
+						parts={parts}
+						countUp={panel.timingType === 'count_up'}
+						className="segment-duration"
+					/>
+				)}
+			</span>
+		</div>
+	)
 }
 
-export const SegmentTimingPanel = translateWithTracker<
-	ISegmentTimingPanelProps,
-	IState,
-	ISegmentTimingPanelTrackedProps
->(
+export const SegmentTimingPanel = withTracker<ISegmentTimingPanelProps, {}, ISegmentTimingPanelTrackedProps>(
 	(props: ISegmentTimingPanelProps) => {
 		if (props.playlist.currentPartInfo) {
 			const livePart = RundownPlaylistClientUtil.getActivePartInstances(props.playlist, {
