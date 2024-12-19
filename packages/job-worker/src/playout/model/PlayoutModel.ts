@@ -235,6 +235,11 @@ export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBa
 	cycleSelectedPartInstances(): void
 
 	/**
+	 * Reset the hold state to a base state
+	 */
+	resetHoldState(): void
+
+	/**
 	 * Set the RundownPlaylist as deactivated
 	 */
 	deactivatePlaylist(): void
