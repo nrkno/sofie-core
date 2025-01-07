@@ -68,7 +68,13 @@ export async function handleMoveNextPart(context: JobContext, data: MoveNextPart
 			}
 		},
 		async (playoutModel) => {
-			const selectedPart = selectNewPartWithOffsets(context, playoutModel, data.partDelta, data.segmentDelta)
+			const selectedPart = selectNewPartWithOffsets(
+				context,
+				playoutModel,
+				data.partDelta,
+				data.segmentDelta,
+				data.ignoreQuickLoop
+			)
 			if (!selectedPart) return null
 
 			await setNextPartFromPart(context, playoutModel, selectedPart, true)

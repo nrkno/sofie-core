@@ -157,8 +157,14 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		return this.partAndPieceInstanceService.queuePart(rawPart, rawPieces)
 	}
 
-	async moveNextPart(partDelta: number, segmentDelta: number): Promise<void> {
-		const selectedPart = selectNewPartWithOffsets(this._context, this._playoutModel, partDelta, segmentDelta)
+	async moveNextPart(partDelta: number, segmentDelta: number, ignoreQuickloop?: boolean): Promise<void> {
+		const selectedPart = selectNewPartWithOffsets(
+			this._context,
+			this._playoutModel,
+			partDelta,
+			segmentDelta,
+			ignoreQuickloop
+		)
 		if (selectedPart) await setNextPartFromPart(this._context, this._playoutModel, selectedPart, true)
 	}
 

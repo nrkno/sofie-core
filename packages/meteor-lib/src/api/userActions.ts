@@ -58,7 +58,8 @@ export interface NewUserActionAPI {
 		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		partDelta: number,
-		segmentDelta: number
+		segmentDelta: number,
+		ignoreQuickLoop?: boolean
 	): Promise<ClientAPI.ClientResponse<PartId | null>>
 	prepareForBroadcast(
 		userEvent: string,

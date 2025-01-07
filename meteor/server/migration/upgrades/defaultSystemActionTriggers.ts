@@ -281,6 +281,7 @@ export const DEFAULT_CORE_TRIGGERS: IBlueprintDefaultCoreSystemTriggers = {
 				],
 				parts: 1,
 				segments: 0,
+				ignoreQuickLoop: false,
 			},
 		},
 		triggers: {
@@ -305,6 +306,7 @@ export const DEFAULT_CORE_TRIGGERS: IBlueprintDefaultCoreSystemTriggers = {
 				],
 				parts: 0,
 				segments: 1,
+				ignoreQuickLoop: false,
 			},
 		},
 		triggers: {
@@ -329,6 +331,7 @@ export const DEFAULT_CORE_TRIGGERS: IBlueprintDefaultCoreSystemTriggers = {
 				],
 				parts: -1,
 				segments: 0,
+				ignoreQuickLoop: false,
 			},
 		},
 		triggers: {
@@ -353,6 +356,7 @@ export const DEFAULT_CORE_TRIGGERS: IBlueprintDefaultCoreSystemTriggers = {
 				],
 				parts: 0,
 				segments: -1,
+				ignoreQuickLoop: false,
 			},
 		},
 		triggers: {
