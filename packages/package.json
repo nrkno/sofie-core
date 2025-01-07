@@ -8,16 +8,18 @@
 			"openapi",
 			"shared-lib",
 			"job-worker",
-			"documentation"
+			"meteor-lib",
+			"documentation",
+			"webui"
 		]
 	},
 	"scripts": {
-		"prepare": "(node is_node_14.js && lerna run prepare --ignore @sofie-automation/openapi || lerna run prepare)",
+		"prepare": "lerna run prepare",
 		"postinstall": "cd .. && \"$PROJECT_CWD/node_modules/.bin/husky\" install",
 		"build": "lerna run build --ignore @sofie-automation/openapi",
 		"build:try": "lerna run --no-bail build --ignore @sofie-automation/openapi",
 		"watch": "lerna run --parallel build:main --ignore @sofie-automation/openapi -- --watch --preserveWatchOutput",
-		"stage-versions": "git add -u */package.json */CHANGELOG.md lerna.json yarn.lock",
+		"stage-versions": "git add -u \"*/package.json\" \"*/CHANGELOG.md\" lerna.json yarn.lock",
 		"set-version": "lerna version --exact --no-changelog --no-git-tag-version --no-push --yes",
 		"set-version-and-commit": "lerna version --exact --no-changelog --no-changelog --no-commit-hooks --force-publish='*' --no-push --yes",
 		"set-version-and-changelog": "lerna version --exact --force-publish --conventional-commits --no-git-tag-version --no-push --yes",
@@ -43,13 +45,15 @@
 		"@types/ejson": "^2.2.2",
 		"@types/got": "^9.6.12",
 		"@types/jest": "^29.5.11",
-		"@types/node": "^14.18.63",
+		"@types/node": "^22.9.3",
 		"@types/node-fetch": "^2.6.11",
 		"@types/object-path": "^0.11.4",
 		"@types/underscore": "^1.11.15",
 		"babel-jest": "^29.7.0",
 		"copyfiles": "^2.4.1",
+		"eslint-plugin-react": "latest",
 		"jest": "^29.7.0",
+		"jest-environment-jsdom": "^29.7.0",
 		"jest-mock-extended": "^3.0.5",
 		"json-schema-to-typescript": "^10.1.5",
 		"lerna": "^6.6.2",
@@ -64,5 +68,8 @@
 		"typescript": "~4.9.5"
 	},
 	"name": "packages",
-	"packageManager": "yarn@3.5.0"
+	"packageManager": "yarn@3.5.0",
+	"resolutions": {
+		"timecode@0.0.4": "patch:timecode@npm%3A0.0.4#./.yarn/patches/timecode-npm-0.0.4-82bde9e6fe.patch"
+	}
 }

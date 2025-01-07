@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.51.5](///compare/v1.51.4...v1.51.5) (2025-01-07)
+
+
+### Bug Fixes
+
+* **job-worker/playout:** Hold mode doesn't work at all a7d6999
+
+### [1.51.4](///compare/v1.51.3...v1.51.4) (2024-12-04)
+
+
+### Bug Fixes
+
+* Device Action Studio Context gets lost, Adlib previews are unstable 193815d
+* Live Status Gateway Dockerfile (regular) still uses yarn to start 0ae53c4
+* release scripts broken on Windows 9636051
+* RundownView shows spinner when unMOSing a Rundown from a Playlist 874e85c
+
 ### [1.51.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.51.1...v1.51.2) (2024-11-21)
 
 
