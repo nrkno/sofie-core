@@ -1,6 +1,6 @@
 /* eslint-disable react/prefer-stateless-function */
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
@@ -12,6 +12,8 @@ import _ from 'underscore'
 const globalTrackerQueue: Array<Function> = []
 let globalTrackerTimestamp: number | undefined = undefined
 let globalTrackerTimeout: number | undefined = undefined
+
+const SUBSCRIPTION_TIMEOUT = 1000
 
 /**
  * Delay an update to be batched with the global tracker invalidation queue
@@ -371,6 +373,61 @@ export function useTracker<T, K extends undefined | T = undefined>(
 }
 
 /**
+ * A hook to track a boolean state with a sort of histeresis, with preference for `true`. `setState` makes the returned
+ * `state` be `true` immediately, but `false` only after `resetState` is called and `timeout` elapses. If `setState`
+ * is called with `true` before `timeout` elapses, then `resetState` is aborted and `state` will remain `ture.
+ *
+ * Later `resetState` calls replace earlier unelapsed calls and their timeout periods.
+ *
+ * @param {boolean} [initialState=false]
+ * @return {*}  {{
+ * 	state: boolean
+ * 	setState: (value: boolean) => void
+ * 	resetState: (timeout: number) => void
+ * }}
+ */
+function useDelayState(initialState = false): {
+	state: boolean
+	setState: (value: boolean) => void
+	resetState: (timeout: number) => void
+} {
+	const [state, setState] = useState(initialState)
+	const [prevState, setPrevState] = useState(initialState)
+	const prevReadyTimeoutRef = useRef<number | null>(null)
+
+	const setStateAndClearResets = useCallback(
+		(value: boolean) => {
+			setState(value)
+
+			if (value) {
+				setPrevState(true)
+				if (prevReadyTimeoutRef.current !== null) {
+					window.clearTimeout(prevReadyTimeoutRef.current)
+					prevReadyTimeoutRef.current = null
+				}
+			}
+		},
+		[setState, setPrevState]
+	)
+
+	const resetStateAfterDelay = useCallback((timeout: number) => {
+		if (prevReadyTimeoutRef.current !== null) {
+			window.clearTimeout(prevReadyTimeoutRef.current)
+		}
+		prevReadyTimeoutRef.current = window.setTimeout(() => {
+			prevReadyTimeoutRef.current = null
+			setPrevState(false)
+		}, timeout)
+	}, [])
+
+	return {
+		state: state || prevState,
+		setState: setStateAndClearResets,
+		resetState: resetStateAfterDelay,
+	}
+}
+
+/**
  * A Meteor Subscription hook that allows using React Functional Components and the Hooks API with Meteor subscriptions.
  * Subscriptions will be torn down 1000ms after unmounting the component.
  *
@@ -383,20 +440,28 @@ export function useSubscription<K extends keyof AllPubSubTypes>(
 	sub: K,
 	...args: Parameters<AllPubSubTypes[K]>
 ): boolean {
-	const [ready, setReady] = useState<boolean>(false)
+	const { state: ready, setState: setReady, resetState: cancelPreviousReady } = useDelayState()
 
 	useEffect(() => {
 		const subscription = Tracker.nonreactive(() => meteorSubscribe(sub, ...args))
-		const isReadyComp = Tracker.nonreactive(() => Tracker.autorun(() => setReady(subscription.ready())))
+		const isReadyComp = Tracker.nonreactive(() =>
+			Tracker.autorun(() => {
+				const isNowReady = subscription.ready()
+				setReady(isNowReady)
+			})
+		)
 		return () => {
 			isReadyComp.stop()
 			setTimeout(() => {
 				subscription.stop()
-			}, 1000)
+			}, SUBSCRIPTION_TIMEOUT)
+			cancelPreviousReady(SUBSCRIPTION_TIMEOUT)
 		}
 	}, [sub, stringifyObjects(args)])
 
-	return ready
+	const isReady = ready
+
+	return isReady
 }
 
 /**
@@ -415,7 +480,7 @@ export function useSubscriptionIfEnabled<K extends keyof AllPubSubTypes>(
 	enable: boolean,
 	...args: Parameters<AllPubSubTypes[K]>
 ): boolean {
-	const [ready, setReady] = useState<boolean>(false)
+	const { state: ready, setState: setReady, resetState: cancelPreviousReady } = useDelayState()
 
 	useEffect(() => {
 		if (!enable) {
@@ -424,16 +489,69 @@ export function useSubscriptionIfEnabled<K extends keyof AllPubSubTypes>(
 		}
 
 		const subscription = Tracker.nonreactive(() => meteorSubscribe(sub, ...args))
-		const isReadyComp = Tracker.nonreactive(() => Tracker.autorun(() => setReady(subscription.ready())))
+		const isReadyComp = Tracker.nonreactive(() =>
+			Tracker.autorun(() => {
+				const isNowReady = subscription.ready()
+				setReady(isNowReady)
+			})
+		)
 		return () => {
 			isReadyComp.stop()
 			setTimeout(() => {
 				subscription.stop()
-			}, 1000)
+			}, SUBSCRIPTION_TIMEOUT)
+			cancelPreviousReady(SUBSCRIPTION_TIMEOUT)
 		}
 	}, [sub, enable, stringifyObjects(args)])
 
-	return !enable || ready
+	const isReady = !enable || ready
+
+	return isReady
+}
+
+/**
+ * A Meteor Subscription hook that allows using React Functional Components and the Hooks API with Meteor subscriptions.
+ * Subscriptions will be torn down 1000ms after unmounting the component.
+ * If the subscription is not enabled, the subscription will not be created, and the ready state will always be true.
+ *
+ * @export
+ * @param {PubSub} sub The subscription to be subscribed to
+ * @param {boolean} enable Whether the subscription is enabled
+ * @param {...any[]} args A list of arugments for the subscription. This is used for optimizing the subscription across
+ * 		renders so that it isn't torn down and created for every render.
+ */
+export function useSubscriptionIfEnabledReadyOnce<K extends keyof AllPubSubTypes>(
+	sub: K,
+	enable: boolean,
+	...args: Parameters<AllPubSubTypes[K]>
+): boolean {
+	const { state: ready, setState: setReady, resetState: cancelPreviousReady } = useDelayState()
+
+	useEffect(() => {
+		if (!enable) {
+			setReady(false)
+			return
+		}
+
+		const subscription = Tracker.nonreactive(() => meteorSubscribe(sub, ...args))
+		const isReadyComp = Tracker.nonreactive(() =>
+			Tracker.autorun(() => {
+				const isNowReady = subscription.ready()
+				if (isNowReady) setReady(true)
+			})
+		)
+		return () => {
+			isReadyComp.stop()
+			setTimeout(() => {
+				subscription.stop()
+			}, SUBSCRIPTION_TIMEOUT)
+			cancelPreviousReady(SUBSCRIPTION_TIMEOUT)
+		}
+	}, [sub, enable, stringifyObjects(args)])
+
+	const isReady = !enable || ready
+
+	return isReady
 }
 
 /**

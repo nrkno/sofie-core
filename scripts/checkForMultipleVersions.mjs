@@ -1,5 +1,12 @@
 import { buildDepTreeFromFiles } from "snyk-nodejs-lockfile-parser";
 
+function hr() {
+	// write regular dashes if this is a "simple" output stream ()
+	if (!process.stdout.hasColors || !process.stdout.hasColors())
+		return "-".repeat(process.stdout.columns ?? 40);
+	return '─'.repeat(process.stdout.columns ?? 40)
+}
+
 /**
  * These are the libs we want to consider.
  * Its an array of arrays, to allow for multiple names to be treated as one package
@@ -58,6 +65,10 @@ await addDepsForRoot("./packages", "live-status-gateway");
 
 let hasFailure = false;
 
+console.log(hr())
+console.log(" 🔢 Checking dependency version consistency...")
+console.log(hr())
+
 // check each library
 for (const libName of libsToConsider) {
 	const allVersions = new Set();
@@ -73,11 +84,11 @@ for (const libName of libsToConsider) {
 	// output some info
 	const str = Array.from(allVersions).join(", ");
 	if (allVersions.size === 0) {
-		console.log(`No versions of "${nameStr}" installed`);
+		console.log(`❔ No versions of "${nameStr}" installed`);
 	} else if (allVersions.size === 1) {
-		console.log(`Single version of "${nameStr}" installed: ${str}`);
+		console.log(`✅ Single version of "${nameStr}" installed: ${str}`);
 	} else {
-		console.error(`Multiple versions of "${nameStr}" installed: ${str}`);
+		console.error(`⚠️ Multiple versions of "${nameStr}" installed: ${str}`);
 		hasFailure = true;
 	}
 }

@@ -7,6 +7,7 @@ import {
 	Translated,
 	translateWithTracker,
 	useSubscriptionIfEnabled,
+	useSubscriptionIfEnabledReadyOnce,
 	useSubscriptions,
 	useTracker,
 } from '../lib/ReactMeteorData/react-meteor-data'
@@ -1227,9 +1228,6 @@ export function RundownView(props: Readonly<IProps>): JSX.Element {
 
 		return playlist?.studioId
 	}, [playlistId])
-	// Load once the playlist is confirmed to exist
-	auxSubsReady.push(useSubscriptionIfEnabled(MeteorPubSub.uiSegmentPartNotes, !!playlistStudioId, playlistId))
-	auxSubsReady.push(useSubscriptionIfEnabled(MeteorPubSub.uiPieceContentStatuses, !!playlistStudioId, playlistId))
 	// Load only when the studio is known
 	requiredSubsReady.push(
 		useSubscriptionIfEnabled(MeteorPubSub.uiStudio, !!playlistStudioId, playlistStudioId ?? protectString(''))
@@ -1258,7 +1256,12 @@ export function RundownView(props: Readonly<IProps>): JSX.Element {
 		)
 	)
 	requiredSubsReady.push(
-		useSubscriptionIfEnabled(CorelibPubSub.showStyleVariants, showStyleVariantIds.length > 0, null, showStyleVariantIds)
+		useSubscriptionIfEnabledReadyOnce(
+			CorelibPubSub.showStyleVariants,
+			showStyleVariantIds.length > 0,
+			null,
+			showStyleVariantIds
+		)
 	)
 	auxSubsReady.push(
 		useSubscriptionIfEnabled(MeteorPubSub.rundownLayouts, showStyleBaseIds.length > 0, showStyleBaseIds)
@@ -1282,6 +1285,10 @@ export function RundownView(props: Readonly<IProps>): JSX.Element {
 			playlistActivationId ?? null
 		)
 	)
+
+	// Load once the playlist is confirmed to exist
+	auxSubsReady.push(useSubscriptionIfEnabled(MeteorPubSub.uiSegmentPartNotes, !!playlistStudioId, playlistId))
+	auxSubsReady.push(useSubscriptionIfEnabled(MeteorPubSub.uiPieceContentStatuses, !!playlistStudioId, playlistId))
 
 	useTracker(() => {
 		const playlist = RundownPlaylists.findOne(playlistId, {
