@@ -493,13 +493,11 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		this.playlistImpl.nextPartInfo = null
 		this.playlistImpl.lastTakeTime = getCurrentTime()
 
-		if (!this.playlistImpl.holdState || this.playlistImpl.holdState === RundownHoldState.COMPLETE) {
-			this.playlistImpl.holdState = RundownHoldState.NONE
-		} else {
-			this.playlistImpl.holdState = this.playlistImpl.holdState + 1
-		}
-
 		this.#playlistHasChanged = true
+	}
+
+	resetHoldState(): void {
+		this.setHoldState(RundownHoldState.NONE)
 	}
 
 	deactivatePlaylist(): void {

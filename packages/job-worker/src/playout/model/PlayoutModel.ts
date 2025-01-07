@@ -248,9 +248,14 @@ export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBa
 	cycleSelectedPartInstances(): void
 
 	/**
-	 * Update loop markers anytime something sinificant occurs that could result in entering or exiting the mode.
+	 * Update loop markers anytime something significant occurs that could result in entering or exiting the mode.
 	 */
 	updateQuickLoopState(): void
+
+	/*
+	 * Reset the hold state to a base state
+	 */
+	resetHoldState(): void
 
 	/**
 	 * Set the RundownPlaylist as deactivated

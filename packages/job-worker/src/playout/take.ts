@@ -174,12 +174,15 @@ export async function performTakeToNextedPart(
 		}
 	}
 
+	// If hold is COMPLETE, clear the hold state by this take
 	if (playoutModel.playlist.holdState === RundownHoldState.COMPLETE) {
 		playoutModel.setHoldState(RundownHoldState.NONE)
 
-		// If hold is active, then this take is to clear it
+		// If hold is ACTIVE, then this take is to complete it
 	} else if (playoutModel.playlist.holdState === RundownHoldState.ACTIVE) {
 		await completeHold(context, playoutModel, await pShowStyle, currentPartInstance)
+
+		await updateTimeline(context, playoutModel)
 
 		if (span) span.end()
 
@@ -187,7 +190,7 @@ export async function performTakeToNextedPart(
 	}
 
 	const takePartInstance = nextPartInstance
-	if (!takePartInstance) throw new Error('takePart not found!')
+	if (!takePartInstance) throw new Error('takePartInstance not found!')
 	const takeRundown = playoutModel.getRundown(takePartInstance.partInstance.rundownId)
 	if (!takeRundown)
 		throw new Error(`takeRundown: takeRundown not found! ("${takePartInstance.partInstance.rundownId}")`)
@@ -264,12 +267,10 @@ export async function performTakeToNextedPart(
 	// Once everything is synced, we can choose the next part
 	await setNextPart(context, playoutModel, nextPart, false)
 
-	// Setup the parts for the HOLD we are starting
-	if (
-		playoutModel.playlist.previousPartInfo &&
-		(playoutModel.playlist.holdState as RundownHoldState) === RundownHoldState.ACTIVE
-	) {
-		startHold(context, currentPartInstance, nextPartInstance)
+	// If the Hold is PENDING, make it active
+	if (playoutModel.playlist.holdState === RundownHoldState.PENDING) {
+		// Setup the parts for the HOLD we are starting
+		activateHold(context, playoutModel, currentPartInstance, takePartInstance)
 	}
 	await afterTake(context, playoutModel, takePartInstance)
 
@@ -555,35 +556,39 @@ export async function afterTake(
 /**
  * A Hold starts by extending the "extendOnHold"-able pieces in the previous Part.
  */
-function startHold(
+function activateHold(
 	context: JobContext,
+	playoutModel: PlayoutModel,
 	holdFromPartInstance: PlayoutPartInstanceModel | null,
 	holdToPartInstance: PlayoutPartInstanceModel | undefined
 ) {
 	if (!holdFromPartInstance) throw new Error('previousPart not found!')
 	if (!holdToPartInstance) throw new Error('currentPart not found!')
-	const span = context.startSpan('startHold')
+	const span = context.startSpan('activateHold')
+
+	playoutModel.setHoldState(RundownHoldState.ACTIVE)
 
 	// Make a copy of any item which is flagged as an 'infinite' extension
 	const pieceInstancesToCopy = holdFromPartInstance.pieceInstances.filter((p) => !!p.pieceInstance.piece.extendOnHold)
-	pieceInstancesToCopy.forEach((instance) => {
-		if (!instance.pieceInstance.infinite) {
-			// mark current one as infinite
-			instance.prepareForHold()
+	for (const instance of pieceInstancesToCopy) {
+		// skip any infinites
+		if (instance.pieceInstance.infinite) continue
 
-			// This gets deleted once the nextpart is activated, so it doesnt linger for long
-			const extendedPieceInstance = holdToPartInstance.insertHoldPieceInstance(instance)
+		instance.prepareForHold()
 
-			const content = clone(instance.pieceInstance.piece.content) as VTContent | undefined
-			if (content?.fileName && content.sourceDuration && instance.pieceInstance.plannedStartedPlayback) {
-				content.seek = Math.min(
-					content.sourceDuration,
-					getCurrentTime() - instance.pieceInstance.plannedStartedPlayback
-				)
-			}
-			extendedPieceInstance.updatePieceProps({ content })
+		// This gets deleted once the nextpart is activated, so it doesnt linger for long
+		const extendedPieceInstance = holdToPartInstance.insertHoldPieceInstance(instance)
+
+		const content = clone(instance.pieceInstance.piece.content) as VTContent | undefined
+		if (content?.fileName && content.sourceDuration && instance.pieceInstance.plannedStartedPlayback) {
+			content.seek = Math.min(
+				content.sourceDuration,
+				getCurrentTime() - instance.pieceInstance.plannedStartedPlayback
+			)
 		}
-	})
+		extendedPieceInstance.updatePieceProps({ content })
+	}
+
 	if (span) span.end()
 }
 
@@ -595,19 +600,16 @@ async function completeHold(
 ): Promise<void> {
 	playoutModel.setHoldState(RundownHoldState.COMPLETE)
 
-	if (playoutModel.playlist.currentPartInfo) {
-		if (!currentPartInstance) throw new Error('currentPart not found!')
+	if (!playoutModel.playlist.currentPartInfo) return
+	if (!currentPartInstance) throw new Error('currentPart not found!')
 
-		// Clear the current extension line
-		innerStopPieces(
-			context,
-			playoutModel,
-			showStyleCompound.sourceLayers,
-			currentPartInstance,
-			(p) => !!p.infinite?.fromHold,
-			undefined
-		)
-	}
-
-	await updateTimeline(context, playoutModel)
+	// Clear the current extension line
+	innerStopPieces(
+		context,
+		playoutModel,
+		showStyleCompound.sourceLayers,
+		currentPartInstance,
+		(p) => !!p.infinite?.fromHold,
+		undefined
+	)
 }
