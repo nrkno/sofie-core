@@ -1,25 +1,47 @@
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { CoreConnection, Observer, ProtectedString, SubscriptionId } from '@sofie-automation/server-core-integration'
+import {
+	CollectionDocCheck,
+	CoreConnection,
+	Observer,
+	PeripheralDevicePubSubCollections,
+	ProtectedString,
+	SubscriptionId,
+} from '@sofie-automation/server-core-integration'
 import { Logger } from 'winston'
 import { WebSocket } from 'ws'
 import { CoreHandler } from './coreHandler'
-import { CorelibPubSub, CorelibPubSubCollections, CorelibPubSubTypes } from '@sofie-automation/corelib/dist/pubsub'
+import { CorelibPubSubCollections, CorelibPubSubTypes } from '@sofie-automation/corelib/dist/pubsub'
+import throttleToNextTick from '@sofie-automation/shared-lib/dist/lib/throttleToNextTick'
+import _ = require('underscore')
+import { Collection as CoreCollection } from '@sofie-automation/server-core-integration'
+import { CollectionHandlers } from './liveStatusServer'
+import { arePropertiesShallowEqual } from './helpers/equality'
+import { ParametersOfFunctionOrNever } from '@sofie-automation/server-core-integration/dist/lib/subscriptions'
 
 export abstract class WebSocketTopicBase {
 	protected _name: string
 	protected _logger: Logger
 	protected _subscribers: Set<WebSocket> = new Set()
+	protected throttledSendStatusToAll: () => void
 
-	constructor(name: string, logger: Logger) {
+	constructor(name: string, logger: Logger, throttlePeriodMs = 0) {
 		this._name = name
 		this._logger = logger
 
 		this._logger.info(`Starting ${this._name} topic`)
+		this.throttledSendStatusToAll =
+			throttlePeriodMs > 0
+				? _.throttle(this.sendStatusToAll, throttlePeriodMs, {
+						leading: false,
+						trailing: true,
+				  })
+				: this.sendStatusToAll
 	}
 
 	addSubscriber(ws: WebSocket): void {
 		this._logger.info(`${this._name} adding a websocket subscriber`)
 		this._subscribers.add(ws)
+		this.sendStatus([ws])
 	}
 
 	hasSubscriber(ws: WebSocket): boolean {
@@ -54,12 +76,18 @@ export abstract class WebSocketTopicBase {
 		}
 	}
 
-	protected logUpdateReceived(collectionName: string, source: string, extraInfo?: string): void {
-		let message = `${this._name} received ${collectionName} update from ${source}`
+	protected logUpdateReceived(collectionName: string, extraInfo?: string): void {
+		let message = `${this._name} received ${collectionName} update`
 		if (extraInfo) {
 			message += `, ${extraInfo}`
 		}
 		this._logger.debug(message)
+	}
+
+	abstract sendStatus(_subscribers: Iterable<WebSocket>): void
+
+	protected sendStatusToAll = (): void => {
+		this.sendStatus(this._subscribers)
 	}
 }
 
@@ -71,67 +99,86 @@ export interface WebSocketTopic {
 	sendMessage(ws: WebSocket, msg: object): void
 }
 
-export type ObserverForCollection<T> = T extends keyof CorelibPubSubCollections
-	? Observer<CorelibPubSubCollections[T]>
-	: undefined
+const DEFAULT_THROTTLE_PERIOD_MS = 20
 
-export abstract class CollectionBase<
-	T,
-	TPubSub extends CorelibPubSub | undefined,
-	TCollection extends keyof CorelibPubSubCollections
-> {
+export abstract class CollectionBase<T, TCollection extends keyof CorelibPubSubCollections> {
 	protected _name: string
 	protected _collectionName: TCollection
-	protected _publicationName: TPubSub
 	protected _logger: Logger
 	protected _coreHandler: CoreHandler
 	protected _studioId!: StudioId
-	protected _subscribers: Set<WebSocket> = new Set()
-	protected _observers: Set<CollectionObserver<T>> = new Set()
+	protected _observers: Map<
+		ObserverCallback<T, keyof T>,
+		{ keysToPick: readonly (keyof T)[] | undefined; lastData: T | undefined }
+	> = new Map()
 	protected _collectionData: T | undefined
-	protected _subscriptionId: SubscriptionId | undefined
-	protected _dbObserver: ObserverForCollection<TCollection> | undefined
 
 	protected get _core(): CoreConnection<CorelibPubSubTypes, CorelibPubSubCollections> {
 		return this._coreHandler.core
 	}
+	protected throttledChanged: () => void
 
-	constructor(name: string, collection: TCollection, publication: TPubSub, logger: Logger, coreHandler: CoreHandler) {
-		this._name = name
+	constructor(
+		collection: TCollection,
+		logger: Logger,
+		coreHandler: CoreHandler,
+		throttlePeriodMs = DEFAULT_THROTTLE_PERIOD_MS
+	) {
+		this._name = this.constructor.name
 		this._collectionName = collection
-		this._publicationName = publication
 		this._logger = logger
 		this._coreHandler = coreHandler
+
+		this.throttledChanged = throttleToNextTick(
+			throttlePeriodMs > 0
+				? _.throttle(() => this.changed(), throttlePeriodMs, { leading: true, trailing: true })
+				: () => this.changed()
+		)
 
 		this._logger.info(`Starting ${this._name} handler`)
 	}
 
-	async init(): Promise<void> {
+	init(_handlers: CollectionHandlers): void {
 		if (!this._coreHandler.studioId) throw new Error('StudioId is not defined')
 		this._studioId = this._coreHandler.studioId
 	}
 
 	close(): void {
 		this._logger.info(`Closing ${this._name} handler`)
-		if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
-		if (this._dbObserver) this._dbObserver.stop()
 	}
 
-	async subscribe(observer: CollectionObserver<T>): Promise<void> {
-		this._logger.info(`${observer.observerName}' added observer for '${this._name}'`)
-		if (this._collectionData) await observer.update(this._name, this._collectionData)
-		this._observers.add(observer)
+	subscribe<K extends keyof T>(callback: ObserverCallback<T, K>, keysToPick?: readonly K[]): void {
+		//this._logger.info(`${name}' added observer for '${this._name}'`)
+		if (this._collectionData) callback(this._collectionData)
+		this._observers.set(callback, { keysToPick, lastData: this.shallowClone(this._collectionData) })
 	}
 
-	async unsubscribe(observer: CollectionObserver<T>): Promise<void> {
-		this._logger.info(`${observer.observerName}' removed observer for '${this._name}'`)
-		this._observers.delete(observer)
+	/**
+	 * Called after a batch of updates to documents in the collection
+	 */
+	protected changed(): void {
+		// override me
 	}
 
-	async notify(data: T | undefined): Promise<void> {
-		for (const observer of this._observers) {
-			await observer.update(this._name, data)
+	notify(data: T | undefined): void {
+		for (const [observer, o] of this._observers) {
+			if (
+				!o.lastData ||
+				!o.keysToPick ||
+				!data ||
+				!arePropertiesShallowEqual(o.lastData, data, undefined, o.keysToPick)
+			) {
+				observer(data)
+				o.lastData = this.shallowClone(data)
+			}
 		}
+	}
+
+	protected shallowClone(data: T | undefined): T | undefined {
+		if (data === undefined) return undefined
+		if (Array.isArray(data)) return [...data] as T
+		if (typeof data === 'object') return { ...data }
+		return data
 	}
 
 	protected logDocumentChange(documentId: string | ProtectedString<any>, changeType: string): void {
@@ -139,40 +186,139 @@ export abstract class CollectionBase<
 	}
 
 	protected logUpdateReceived(collectionName: string, updateCount: number | undefined): void
-	protected logUpdateReceived(collectionName: string, source: string, extraInfo?: string): void
+	protected logUpdateReceived(collectionName: string, extraInfo?: string): void
 	protected logUpdateReceived(
 		collectionName: string,
-		sourceOrUpdateCount: string | number | undefined,
-		extraInfo?: string
+		extraInfoOrUpdateCount: string | number | undefined | null = null
 	): void {
-		if (typeof sourceOrUpdateCount === 'string') {
-			let message = `${this._name} received ${collectionName} update from ${sourceOrUpdateCount}`
-			if (extraInfo) {
-				message += `, ${extraInfo}`
-			}
-			this._logger.debug(message)
-		} else {
-			this._logger.debug(`'${this._name}' handler received ${sourceOrUpdateCount} ${collectionName}`)
+		let message = `${this._name} received ${collectionName} update`
+		if (typeof extraInfoOrUpdateCount === 'string') {
+			message += `, ${extraInfoOrUpdateCount}`
+		} else if (extraInfoOrUpdateCount !== null) {
+			message += `(${extraInfoOrUpdateCount})`
 		}
+		this._logger.debug(message)
 	}
 
 	protected logNotifyingUpdate(updateCount: number | undefined): void {
 		this._logger.debug(`${this._name} notifying update with ${updateCount} ${this._collectionName}`)
 	}
+
+	protected getCollectionOrFail(): CoreCollection<CollectionDocCheck<CorelibPubSubCollections[TCollection]>> {
+		const collection = this._core.getCollection<TCollection>(this._collectionName)
+		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
+		return collection
+	}
+}
+
+export abstract class PublicationCollection<
+	T,
+	TPubSub extends keyof CorelibPubSubTypes,
+	TCollection extends keyof CorelibPubSubCollections
+> extends CollectionBase<T, TCollection> {
+	protected _publicationName: TPubSub
+	protected _subscriptionId: SubscriptionId | undefined
+	protected _subscriptionPending = false
+	protected _dbObserver:
+		| Observer<CollectionDocCheck<(CorelibPubSubCollections & PeripheralDevicePubSubCollections)[TCollection]>>
+		| undefined
+
+	constructor(
+		collection: TCollection,
+		publication: TPubSub,
+		logger: Logger,
+		coreHandler: CoreHandler,
+		throttlePeriodMs = DEFAULT_THROTTLE_PERIOD_MS
+	) {
+		super(collection, logger, coreHandler, throttlePeriodMs)
+		this._publicationName = publication
+	}
+
+	close(): void {
+		super.close()
+		if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
+		this._dbObserver?.stop()
+	}
+
+	subscribe<K extends keyof T>(callback: ObserverCallback<T, K>, keysToPick?: readonly K[]): void {
+		//this._logger.info(`${name}' added observer for '${this._name}'`)
+		if (this._collectionData) callback(this._collectionData)
+		this._observers.set(callback, { keysToPick, lastData: this.shallowClone(this._collectionData) })
+	}
+
+	/**
+	 * Called after a batch of updates to documents in the collection
+	 */
+	protected changed(): void {
+		// override me
+	}
+
+	protected onDocumentEvent(id: ProtectedString<any> | string, changeType: string): void {
+		this.logDocumentChange(id, changeType)
+		if (!this._subscriptionId) {
+			this._logger.silly(`${this._name} ${changeType} ${id} skipping (lack of subscription)`)
+			return
+		}
+		if (this._subscriptionPending) {
+			this._logger.silly(`${this._name} ${changeType} ${id} skipping (subscription pending)`)
+			return
+		}
+		this.throttledChanged()
+	}
+
+	protected setupObserver(): void {
+		this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
+		this._dbObserver.added = (id) => {
+			this.onDocumentEvent(id, 'added')
+		}
+		this._dbObserver.changed = (id) => {
+			this.onDocumentEvent(id, 'changed')
+		}
+		this._dbObserver.removed = (id) => {
+			this.onDocumentEvent(id, 'removed')
+		}
+	}
+
+	protected stopSubscription(): void {
+		if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
+		this._subscriptionId = undefined
+		this._dbObserver?.stop()
+		this._dbObserver = undefined
+	}
+
+	protected setupSubscription(...args: ParametersOfFunctionOrNever<CorelibPubSubTypes[TPubSub]>): void {
+		if (!this._publicationName) throw new Error(`Publication name not set for '${this._name}'`)
+		this.stopSubscription()
+		this._subscriptionPending = true
+		this._coreHandler
+			.setupSubscription(this._publicationName, ...args)
+			.then((subscriptionId) => {
+				this._subscriptionId = subscriptionId
+				this.setupObserver()
+			})
+			.catch((e) => this._logger.error(e))
+			.finally(() => {
+				this._subscriptionPending = false
+				this.changed()
+			})
+	}
 }
 
 export interface Collection<T> {
-	init(): Promise<void>
+	init(handlers: CollectionHandlers): void
 	close(): void
-	subscribe(observer: CollectionObserver<T>): Promise<void>
-	unsubscribe(observer: CollectionObserver<T>): Promise<void>
-	notify(data: T | undefined): Promise<void>
+	subscribe<K extends keyof T>(callback: ObserverCallback<T, K>, keys?: K[]): void
+	notify(data: T | undefined): void
 }
 
-export interface CollectionObserver<T> {
-	observerName: string
-	update(source: string, data: T | undefined): Promise<void>
-}
+export type ObserverCallback<T, K extends keyof T> = (data: Pick<T, K> | undefined) => void
+
+export type PickArr<T, K extends readonly (keyof T)[]> = Pick<T, K[number]>
+
+// export interface CollectionObserver<T, K extends keyof T> {
+// 	observerName: string
+// 	update(source: string, data: Pick<T, K> | undefined): void
+// }
 function isIterable<T>(obj: T | Iterable<T>): obj is Iterable<T> {
 	// checks for null and undefined
 	if (obj == null) {
