@@ -1,7 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import { withTracker } from './ReactMeteorData/react-meteor-data'
-
+import { useTracker } from './ReactMeteorData/react-meteor-data'
 import { MultiSelect, MultiSelectEvent, MultiSelectOptions } from './multiSelect'
 import ClassNames from 'classnames'
 import { ColorPickerEvent, ColorPicker } from './colorPicker'
@@ -11,11 +10,12 @@ import { MongoCollection } from '../collections/lib'
 import { CheckboxControl } from './Components/Checkbox'
 import { TextInputControl } from './Components/TextInput'
 import { IntInputControl } from './Components/IntInput'
-import { DropdownInputControl, DropdownInputOption, getDropdownInputOptions } from './Components/DropdownInput'
+import { DropdownInputControl, getDropdownInputOptions } from './Components/DropdownInput'
 import { FloatInputControl } from './Components/FloatInput'
 import { joinLines, MultiLineTextInputControl, splitValueIntoLines } from './Components/MultiLineTextInput'
 import { JsonTextInputControl, tryParseJson } from './Components/JsonTextInput'
 import { ToggleSwitchControl } from './Components/ToggleSwitch'
+import { useCallback, useMemo, useState } from 'react'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -33,7 +33,6 @@ export type EditAttributeType =
 	| 'json'
 	| 'colorpicker'
 	| 'iconpicker'
-	| 'array'
 export class EditAttribute extends React.Component<IEditAttribute> {
 	render(): JSX.Element {
 		if (this.props.type === 'text') {
@@ -60,8 +59,6 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 			return <EditAttributeColorPicker {...this.props} />
 		} else if (this.props.type === 'iconpicker') {
 			return <EditAttributeIconPicker {...this.props} />
-		} else if (this.props.type === 'array') {
-			return <EditAttributeArray {...this.props} />
 		} else {
 			assertNever(this.props.type)
 		}
@@ -70,18 +67,17 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 	}
 }
 
-interface IEditAttributeBaseProps {
+export interface IEditAttributeBaseProps {
 	updateOnKey?: boolean
 	attribute?: string
 	collection?: MongoCollection<any>
-	myObject?: any
 	obj?: any
 	options?: any
 	optionsAreNumbers?: boolean
 	className?: string
 	modifiedClassName?: string
 	invalidClassName?: string
-	updateFunction?: (edit: EditAttributeBase, newValue: any) => void
+	updateFunction?: (editProps: IEditAttributeBaseProps, newValue: any) => void
 	overrideDisplayValue?: any
 	label?: string
 	mutateDisplayValue?: (v: any) => any
@@ -91,601 +87,372 @@ interface IEditAttributeBaseProps {
 	/** Defaults to string */
 	arrayType?: 'boolean' | 'int' | 'float' | 'string'
 }
-interface IEditAttributeBaseState {
-	value: any
-	valueError: boolean
-	editing: boolean
+
+function EditAttributeText(props: IEditAttributeBaseProps) {
+	const stateHelper = useEditAttributeStateHelper(props)
+
+	return (
+		<TextInputControl
+			classNames={`${props.className || ''} ${stateHelper.valueError ? 'error ' : ''}`}
+			modifiedClassName={props.modifiedClassName}
+			disabled={props.disabled}
+			placeholder={props.label}
+			updateOnKey={props.updateOnKey}
+			value={stateHelper.getAttributeValue() ?? ''}
+			handleUpdate={stateHelper.handleUpdate}
+		/>
+	)
 }
-export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, IEditAttributeBaseState> {
-	constructor(props: IEditAttributeBaseProps) {
-		super(props)
+function EditAttributeMultilineText(props: IEditAttributeBaseProps) {
+	const stateHelper = useEditAttributeStateHelper(props)
 
-		this.state = {
-			value: this.getAttribute(),
-			valueError: false,
-			editing: false,
-		}
+	const handleChange = useCallback(
+		(value: string[]) => {
+			stateHelper.handleUpdate(joinLines(value)) // as single string
+		},
+		[stateHelper.handleUpdate]
+	)
 
-		this.handleEdit = this.handleEdit.bind(this)
-		this.handleUpdate = this.handleUpdate.bind(this)
-		this.handleDiscard = this.handleDiscard.bind(this)
-	}
-	/** Update the temporary value of this field, optionally saving a value */
-	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-	protected handleEdit(inputValue: any, storeValue?: any): void {
-		this.setState({
-			value: inputValue,
-			editing: true,
-		})
-		if (this.props.updateOnKey) {
-			this.updateValue(storeValue ?? inputValue)
-		}
-	}
-	/** Update and save the value of this field */
-	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-	protected handleUpdate(inputValue: any, storeValue?: any): void {
-		this.handleUpdateButDontSave(inputValue)
-		this.updateValue(storeValue ?? inputValue)
-	}
-	/** Update the temporary value of this field, and save it */
-	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-	protected handleUpdateEditing(newValue: any): void {
-		this.handleUpdateButDontSave(newValue, true)
-		this.updateValue(newValue)
-	}
-	/** Update the temporary value of this field, marking whether is being edited */
-	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-	protected handleUpdateButDontSave(newValue: any, editing = false): void {
-		this.setState({
-			value: newValue,
-			editing,
-		})
-	}
-	/** Discard the temporary value of this field */
-	protected handleDiscard(): void {
-		this.setState({
-			value: this.getAttribute(),
-			editing: false,
-		})
-	}
-	private deepAttribute(obj0: any, attr0: string | undefined): any {
-		// Returns a value deep inside an object
-		// Example: deepAttribute(company,"ceo.address.street");
-
-		const f = (obj: any, attr: string): any => {
-			if (obj) {
-				const attributes = attr.split('.')
-
-				if (attributes.length > 1) {
-					const outerAttr = attributes.shift() as string
-					const innerAttrs = attributes.join('.')
-
-					return f(obj[outerAttr], innerAttrs)
-				} else {
-					return obj[attributes[0]]
-				}
-			} else {
-				return obj
-			}
-		}
-		return f(obj0, attr0 || '')
-	}
-	protected getAttribute(): any {
-		let v = null
-		if (this.props.overrideDisplayValue !== undefined) {
-			v = this.props.overrideDisplayValue
-		} else {
-			v = this.deepAttribute(this.props.myObject, this.props.attribute)
-		}
-		return this.props.mutateDisplayValue ? this.props.mutateDisplayValue(v) : v
-	}
-
-	protected getEditAttribute(): any {
-		return this.state.editing ? this.state.value : this.getAttribute()
-	}
-	private updateValue(newValue: any) {
-		if (this.props.mutateUpdateValue) {
-			try {
-				newValue = this.props.mutateUpdateValue(newValue)
-				this.setState({
-					valueError: false,
-				})
-			} catch (e) {
-				this.setState({
-					valueError: true,
-					editing: true,
-				})
-				return
-			}
-		}
-
-		if (this.props.updateFunction && typeof this.props.updateFunction === 'function') {
-			this.props.updateFunction(this, newValue)
-		} else {
-			if (this.props.collection && this.props.attribute) {
-				if (newValue === undefined) {
-					const m: Record<string, 1> = {}
-					m[this.props.attribute] = 1
-					this.props.collection.update(this.props.obj._id, { $unset: m })
-				} else {
-					const m: Record<string, any> = {}
-					m[this.props.attribute] = newValue
-					this.props.collection.update(this.props.obj._id, { $set: m })
-				}
-			}
-		}
-	}
+	return (
+		<MultiLineTextInputControl
+			classNames={`${props.className || ''} ${stateHelper.valueError ? 'error ' : ''}`}
+			modifiedClassName={props.modifiedClassName}
+			disabled={props.disabled}
+			placeholder={props.label}
+			updateOnKey={props.updateOnKey}
+			value={splitValueIntoLines(stateHelper.getAttributeValue())}
+			handleUpdate={handleChange}
+		/>
+	)
 }
-function wrapEditAttribute(newClass: any) {
-	return withTracker((props: IEditAttributeBaseProps) => {
-		// These properties will be exposed under this.props
-		// Note that these properties are reactively recalculated
-		return {
-			myObject: props.collection ? props.collection.findOne(props.obj._id) : props.obj || {},
-		}
-	})(newClass)
+function EditAttributeInt(props: IEditAttributeBaseProps) {
+	const stateHelper = useEditAttributeStateHelper(props)
+
+	return (
+		<IntInputControl
+			classNames={props.className || ''}
+			modifiedClassName={props.modifiedClassName}
+			disabled={props.disabled}
+			placeholder={props.label}
+			updateOnKey={props.updateOnKey}
+			value={stateHelper.getAttributeValue() ?? ''}
+			handleUpdate={stateHelper.handleUpdate}
+		/>
+	)
 }
+function EditAttributeFloat(props: IEditAttributeBaseProps) {
+	const stateHelper = useEditAttributeStateHelper(props)
 
-const EditAttributeText = wrapEditAttribute(
-	class EditAttributeText extends EditAttributeBase {
-		constructor(props: any) {
-			super(props)
+	return (
+		<FloatInputControl
+			classNames={props.className || ''}
+			modifiedClassName={props.modifiedClassName}
+			disabled={props.disabled}
+			placeholder={props.label}
+			updateOnKey={props.updateOnKey}
+			value={stateHelper.getAttributeValue() ?? ''}
+			handleUpdate={stateHelper.handleUpdate}
+		/>
+	)
+}
+function EditAttributeCheckbox(props: IEditAttributeBaseProps) {
+	const stateHelper = useEditAttributeStateHelper(props)
 
-			this.handleChange = this.handleChange.bind(this)
-		}
-		private handleChange(value: string) {
-			this.handleUpdate(value)
-		}
-		render(): JSX.Element {
-			return (
-				<TextInputControl
-					classNames={`${this.props.className || ''} ${this.state.valueError ? 'error ' : ''}`}
-					modifiedClassName={this.props.modifiedClassName}
-					disabled={this.props.disabled}
-					placeholder={this.props.label}
-					updateOnKey={this.props.updateOnKey}
-					value={this.getAttribute() ?? ''}
-					handleUpdate={this.handleChange}
-				/>
-			)
-		}
-	}
-)
-const EditAttributeMultilineText = wrapEditAttribute(
-	class EditAttributeMultilineText extends EditAttributeBase {
-		constructor(props: any) {
-			super(props)
+	return (
+		<label>
+			<CheckboxControl
+				classNames={props.className}
+				value={!!stateHelper.getAttributeValue()}
+				handleUpdate={stateHelper.handleUpdate}
+				disabled={props.disabled}
+			/>
+		</label>
+	)
+}
+function EditAttributeToggle(props: IEditAttributeBaseProps) {
+	const stateHelper = useEditAttributeStateHelper(props)
 
-			this.handleChange = this.handleChange.bind(this)
-		}
-		private handleChange(value: string[]) {
-			this.handleUpdate(joinLines(value)) // as single string
-		}
-		render(): JSX.Element {
-			return (
-				<MultiLineTextInputControl
-					classNames={`${this.props.className || ''} ${this.state.valueError ? 'error ' : ''}`}
-					modifiedClassName={this.props.modifiedClassName}
-					disabled={this.props.disabled}
-					placeholder={this.props.label}
-					updateOnKey={this.props.updateOnKey}
-					value={splitValueIntoLines(this.getAttribute())}
-					handleUpdate={this.handleChange}
-				/>
-			)
-		}
-	}
-)
-const EditAttributeInt = wrapEditAttribute(
-	class EditAttributeInt extends EditAttributeBase {
-		constructor(props: any) {
-			super(props)
+	return (
+		<ToggleSwitchControl
+			classNames={props.className}
+			value={!!stateHelper.getAttributeValue()}
+			disabled={props.disabled}
+			label={props.label}
+			handleUpdate={stateHelper.handleUpdate}
+		/>
+	)
+}
+function EditAttributeDropdown(props: IEditAttributeBaseProps) {
+	const stateHelper = useEditAttributeStateHelper(props)
 
-			this.handleChange = this.handleChange.bind(this)
-		}
-		private handleChange(value: number) {
-			this.handleUpdate(value)
-		}
-		render(): JSX.Element {
-			return (
-				<IntInputControl
-					classNames={this.props.className || ''}
-					modifiedClassName={this.props.modifiedClassName}
-					disabled={this.props.disabled}
-					placeholder={this.props.label}
-					updateOnKey={this.props.updateOnKey}
-					value={this.getAttribute() ?? ''}
-					handleUpdate={this.handleChange}
-				/>
-			)
-		}
-	}
-)
-const EditAttributeFloat = wrapEditAttribute(
-	class EditAttributeFloat extends EditAttributeBase {
-		constructor(props: any) {
-			super(props)
+	const options = useMemo(() => getDropdownInputOptions<string>(props.options), [props.options])
 
-			this.handleChange = this.handleChange.bind(this)
-		}
-		private handleChange(value: number) {
-			this.handleUpdate(value)
-		}
-		render(): JSX.Element {
-			return (
-				<FloatInputControl
-					classNames={this.props.className || ''}
-					modifiedClassName={this.props.modifiedClassName}
-					disabled={this.props.disabled}
-					placeholder={this.props.label}
-					updateOnKey={this.props.updateOnKey}
-					value={this.getAttribute() ?? ''}
-					handleUpdate={this.handleChange}
-				/>
-			)
-		}
-	}
-)
-const EditAttributeCheckbox = wrapEditAttribute(
-	class EditAttributeCheckbox extends EditAttributeBase {
-		constructor(props: any) {
-			super(props)
+	const handleChange = useCallback(
+		(value: string) => {
+			stateHelper.handleUpdate(props.optionsAreNumbers ? parseInt(value, 10) : value)
+		},
+		[stateHelper.handleUpdate, props.optionsAreNumbers]
+	)
 
-			this.handleChange = this.handleChange.bind(this)
-		}
-		private handleChange(value: boolean) {
-			this.handleUpdate(value)
-		}
-		render(): JSX.Element {
-			const classNames = _.compact([
-				this.props.className,
-				this.state.editing ? this.props.modifiedClassName : undefined,
-			]).join(' ')
+	return (
+		<DropdownInputControl
+			classNames={props.className}
+			disabled={props.disabled}
+			value={stateHelper.getAttributeValue()}
+			options={options}
+			handleUpdate={handleChange}
+		/>
+	)
+}
+function EditAttributeDropdownText(props: IEditAttributeBaseProps) {
+	const stateHelper = useEditAttributeStateHelper(props)
 
-			return (
-				<label>
-					<CheckboxControl
-						classNames={classNames}
-						value={!!this.getAttribute()}
-						handleUpdate={this.handleChange}
-						disabled={this.props.disabled}
-					/>
-				</label>
-			)
-		}
-	}
-)
-const EditAttributeToggle = wrapEditAttribute(
-	class EditAttributeToggle extends EditAttributeBase {
-		constructor(props: any) {
-			super(props)
-		}
-		private isChecked() {
-			return !!this.getEditAttribute()
-		}
+	const options = useMemo(() => getDropdownInputOptions<string>(props.options), [props.options])
 
-		render(): JSX.Element {
-			return (
-				<ToggleSwitchControl
-					classNames={this.props.className}
-					value={this.isChecked()}
-					disabled={this.props.disabled}
-					label={this.props.label}
-					handleUpdate={this.handleUpdate}
-				/>
-			)
-		}
-	}
-)
-
-const EditAttributeDropdown = wrapEditAttribute(
-	class EditAttributeDropdown extends EditAttributeBase {
-		constructor(props: any) {
-			super(props)
-
-			this.handleChange = this.handleChange.bind(this)
-		}
-		handleChange(value: string) {
-			this.handleUpdate(this.props.optionsAreNumbers ? parseInt(value, 10) : value)
-		}
-		render(): JSX.Element {
-			const options = getDropdownInputOptions<string>(this.props.options)
-
-			return (
-				<DropdownInputControl
-					classNames={this.props.className}
-					disabled={this.props.disabled}
-					value={this.getAttribute()}
-					options={options}
-					handleUpdate={this.handleChange}
-				/>
-			)
-		}
-	}
-)
-const EditAttributeDropdownText = wrapEditAttribute(
-	class EditAttributeDropdownText extends EditAttributeBase {
-		private getOptions(): DropdownInputOption<string>[] {
-			return getDropdownInputOptions(this.props.options)
-		}
-		render(): JSX.Element {
-			return (
-				<TextInputControl
-					classNames={`${this.props.className || ''} ${this.state.valueError ? 'error ' : ''}`}
-					modifiedClassName={this.props.modifiedClassName}
-					disabled={this.props.disabled}
-					placeholder={this.props.label}
-					updateOnKey={this.props.updateOnKey}
-					value={this.getAttribute() ?? ''}
-					handleUpdate={this.handleUpdate}
-					spellCheck={false}
-					suggestions={this.getOptions()}
-				/>
-			)
-		}
-	}
-)
+	return (
+		<TextInputControl
+			classNames={`${props.className || ''} ${stateHelper.valueError ? 'error ' : ''}`}
+			modifiedClassName={props.modifiedClassName}
+			disabled={props.disabled}
+			placeholder={props.label}
+			updateOnKey={props.updateOnKey}
+			value={stateHelper.getAttributeValue() ?? ''}
+			handleUpdate={stateHelper.handleUpdate}
+			spellCheck={false}
+			suggestions={options}
+		/>
+	)
+}
 
 interface EditAttributeMultiSelectOptionsResult {
 	options: MultiSelectOptions
 	currentOptionMissing: boolean
 }
 
-const EditAttributeMultiSelect = wrapEditAttribute(
-	class EditAttributeMultiSelect extends EditAttributeBase {
-		constructor(props: any) {
-			super(props)
+function EditAttributeMultiSelect(props: IEditAttributeBaseProps) {
+	const stateHelper = useEditAttributeStateHelper(props)
 
-			this.handleChange = this.handleChange.bind(this)
-		}
-		handleChange(event: MultiSelectEvent) {
-			this.handleUpdate(event.selectedValues)
-		}
-		getOptions(addOptionsForCurrentValue?: boolean): EditAttributeMultiSelectOptionsResult {
-			const options: MultiSelectOptions = {}
+	const currentValue = stateHelper.getAttributeValue()
+	const options = getMultiselectOptions(props.options, currentValue, true)
 
-			if (Array.isArray(this.props.options)) {
-				// is it an enum?
-				for (const val of this.props.options) {
-					if (typeof val === 'object') {
-						options[val.value] = { value: val.name }
+	const handleChange = useCallback(
+		(event: MultiSelectEvent) => stateHelper.handleUpdate(event.selectedValues),
+		[stateHelper.handleUpdate]
+	)
+
+	return (
+		<MultiSelect
+			className={ClassNames(props.className, options.currentOptionMissing && 'option-missing')}
+			availableOptions={options.options}
+			value={currentValue}
+			placeholder={props.label}
+			onChange={handleChange}
+		/>
+	)
+}
+
+function getMultiselectOptions(
+	rawOptions: any,
+	currentValue: any,
+	addOptionsForCurrentValue?: boolean
+): EditAttributeMultiSelectOptionsResult {
+	const options: MultiSelectOptions = {}
+
+	if (Array.isArray(rawOptions)) {
+		// is it an enum?
+		for (const val of rawOptions) {
+			if (typeof val === 'object') {
+				options[val.value] = { value: val.name }
+			} else {
+				options[val] = { value: val }
+			}
+		}
+	} else if (typeof rawOptions === 'object') {
+		// Is options an enum?
+		const keys = Object.keys(rawOptions)
+		const first = rawOptions[keys[0]]
+		if (rawOptions[first] + '' === keys[0] + '') {
+			// is an enum, only pick
+			for (const key in rawOptions) {
+				if (!_.isNaN(parseInt(key, 10))) {
+					// key is a number (the key)
+					const enumValue = rawOptions[key]
+					const enumKey = rawOptions[enumValue]
+					options[enumKey] = { value: enumValue }
+				}
+			}
+		} else {
+			for (const key in rawOptions) {
+				const val = rawOptions[key]
+				if (Array.isArray(val)) {
+					options[key] = { value: val }
+				} else {
+					options[val] = { value: key + ': ' + val }
+				}
+			}
+		}
+	}
+
+	const missingOptions = Array.isArray(currentValue) ? currentValue.filter((v) => !(v in options)) : []
+
+	if (addOptionsForCurrentValue) {
+		missingOptions.forEach((option) => {
+			options[option] = { value: `${option}`, className: 'option-missing' }
+		})
+	}
+
+	return { options, currentOptionMissing: !!missingOptions.length }
+}
+
+function EditAttributeJson(props: IEditAttributeBaseProps) {
+	const stateHelper = useEditAttributeStateHelper(props)
+
+	const handleChange = useCallback(
+		(value: object) => {
+			const storeValue = props.storeJsonAsObject ? value : JSON.stringify(value, undefined, 2)
+			stateHelper.handleUpdate(storeValue)
+		},
+		[stateHelper.handleUpdate, props.storeJsonAsObject]
+	)
+
+	const value = props.storeJsonAsObject
+		? stateHelper.getAttributeValue()
+		: tryParseJson(stateHelper.getAttributeValue())?.parsed
+
+	return (
+		<JsonTextInputControl
+			classNames={`${props.className || ''} ${stateHelper.valueError ? `${props.invalidClassName || 'error'} ` : ''}`}
+			invalidClassName={props.invalidClassName}
+			modifiedClassName={props.modifiedClassName}
+			disabled={props.disabled}
+			placeholder={props.label}
+			updateOnKey={props.updateOnKey}
+			value={value}
+			handleUpdate={handleChange}
+		/>
+	)
+}
+function EditAttributeColorPicker(props: IEditAttributeBaseProps) {
+	const stateHelper = useEditAttributeStateHelper(props)
+
+	const handleChange = useCallback(
+		(event: ColorPickerEvent) => stateHelper.handleUpdate(event.selectedValue),
+		[stateHelper.handleUpdate]
+	)
+
+	return (
+		<ColorPicker
+			className={props.className}
+			availableOptions={props.options}
+			value={stateHelper.getAttributeValue()}
+			placeholder={props.label}
+			onChange={handleChange}
+		/>
+	)
+}
+function EditAttributeIconPicker(props: IEditAttributeBaseProps) {
+	const stateHelper = useEditAttributeStateHelper(props)
+
+	const handleChange = useCallback(
+		(event: IconPickerEvent) => stateHelper.handleUpdate(event.selectedValue),
+		[stateHelper.handleUpdate]
+	)
+
+	return (
+		<IconPicker
+			className={props.className}
+			availableOptions={props.options}
+			value={stateHelper.getAttributeValue()}
+			placeholder={props.label}
+			onChange={handleChange}
+		/>
+	)
+}
+
+interface EditAttributeStateHelper {
+	props: Readonly<IEditAttributeBaseProps>
+	myObject: any
+
+	valueError: boolean
+	setValueError: (value: boolean) => void
+
+	getAttributeValue: () => any
+	handleUpdate: (inputValue: any, storeValue?: any) => void
+}
+
+function useEditAttributeStateHelper(props: IEditAttributeBaseProps): EditAttributeStateHelper {
+	const [valueError, setValueError] = useState(false)
+
+	const myObject = useTracker(
+		() => (props.collection ? props.collection.findOne(props.obj._id) : props.obj || {}),
+		[props.collection, props.obj]
+	)
+
+	const getAttributeValue = useCallback((): any => {
+		let v = null
+		if (props.overrideDisplayValue !== undefined) {
+			v = props.overrideDisplayValue
+		} else {
+			v = deepAttribute(myObject, props.attribute)
+		}
+		return props.mutateDisplayValue ? props.mutateDisplayValue(v) : v
+	}, [props.overrideDisplayValue, props.mutateDisplayValue, deepAttribute, myObject, props.attribute])
+
+	/** Update and save the value of this field */
+	const handleUpdate = useCallback(
+		(newValue: any) => {
+			if (props.mutateUpdateValue) {
+				try {
+					newValue = props.mutateUpdateValue(newValue)
+					setValueError(false)
+				} catch (e) {
+					setValueError(true)
+
+					return
+				}
+			}
+
+			if (props.updateFunction && typeof props.updateFunction === 'function') {
+				props.updateFunction(props, newValue)
+			} else {
+				if (props.collection && props.attribute) {
+					if (newValue === undefined) {
+						const m: Record<string, 1> = {}
+						m[props.attribute] = 1
+						props.collection.update(props.obj._id, { $unset: m })
 					} else {
-						options[val] = { value: val }
-					}
-				}
-			} else if (typeof this.props.options === 'object') {
-				// Is options an enum?
-				const keys = Object.keys(this.props.options)
-				const first = this.props.options[keys[0]]
-				if (this.props.options[first] + '' === keys[0] + '') {
-					// is an enum, only pick
-					for (const key in this.props.options) {
-						if (!_.isNaN(parseInt(key, 10))) {
-							// key is a number (the key)
-							const enumValue = this.props.options[key]
-							const enumKey = this.props.options[enumValue]
-							options[enumKey] = { value: enumValue }
-						}
-					}
-				} else {
-					for (const key in this.props.options) {
-						const val = this.props.options[key]
-						if (Array.isArray(val)) {
-							options[key] = { value: val }
-						} else {
-							options[val] = { value: key + ': ' + val }
-						}
+						const m: Record<string, any> = {}
+						m[props.attribute] = newValue
+						props.collection.update(props.obj._id, { $set: m })
 					}
 				}
 			}
+		},
+		[props, props.mutateUpdateValue, props.updateFunction, props.collection, props.attribute, props.obj?._id]
+	)
 
-			const currentValue = this.getAttribute()
-			const missingOptions = Array.isArray(currentValue) ? currentValue.filter((v) => !(v in options)) : []
+	return { props, myObject, valueError, setValueError, getAttributeValue, handleUpdate }
+}
 
-			if (addOptionsForCurrentValue) {
-				missingOptions.forEach((option) => {
-					options[option] = { value: `${option}`, className: 'option-missing' }
-				})
-			}
+function deepAttribute(obj0: any, attr0: string | undefined): any {
+	// Returns a value deep inside an object
+	// Example: deepAttribute(company,"ceo.address.street");
 
-			return { options, currentOptionMissing: !!missingOptions.length }
-		}
-		render(): JSX.Element {
-			const options = this.getOptions(true)
-			return (
-				<MultiSelect
-					className={ClassNames(this.props.className, options.currentOptionMissing && 'option-missing')}
-					availableOptions={options.options}
-					value={this.getAttribute()}
-					placeholder={this.props.label}
-					onChange={this.handleChange}
-				></MultiSelect>
-			)
-		}
-	}
-)
+	const f = (obj: any, attr: string): any => {
+		if (obj) {
+			const attributes = attr.split('.')
 
-const EditAttributeJson = wrapEditAttribute(
-	class EditAttributeJson extends EditAttributeBase {
-		constructor(props: any) {
-			super(props)
+			if (attributes.length > 1) {
+				const outerAttr = attributes.shift() as string
+				const innerAttrs = attributes.join('.')
 
-			this.handleChange = this.handleChange.bind(this)
-		}
-		private handleChange(value: object) {
-			const storeValue = this.props.storeJsonAsObject ? value : JSON.stringify(value, undefined, 2)
-			this.handleUpdate(storeValue)
-		}
-		render(): JSX.Element {
-			const value = this.props.storeJsonAsObject ? this.getAttribute() : tryParseJson(this.getAttribute())?.parsed
-
-			return (
-				<JsonTextInputControl
-					classNames={`${this.props.className || ''} ${
-						this.state.valueError ? `${this.props.invalidClassName || 'error'} ` : ''
-					}`}
-					invalidClassName={this.props.invalidClassName}
-					modifiedClassName={this.props.modifiedClassName}
-					disabled={this.props.disabled}
-					placeholder={this.props.label}
-					updateOnKey={this.props.updateOnKey}
-					value={value}
-					handleUpdate={this.handleChange}
-				/>
-			)
-		}
-	}
-)
-const EditAttributeArray = wrapEditAttribute(
-	class EditAttributeArray extends EditAttributeBase {
-		constructor(props: any) {
-			super(props)
-
-			this.handleChange = this.handleChange.bind(this)
-			this.handleBlur = this.handleBlur.bind(this)
-			this.handleEscape = this.handleEscape.bind(this)
-		}
-		isArray(strOrg: string): { parsed: any[] } | false {
-			if (!(strOrg + '').trim().length) return { parsed: [] }
-
-			const values: any[] = []
-			const strs = (strOrg + '').split(',')
-
-			for (const str of strs) {
-				// Check that the values in the array are of the right type:
-
-				if (this.props.arrayType === 'boolean') {
-					const parsed = JSON.parse(str)
-					if (typeof parsed !== 'boolean') return false // type check failed
-					values.push(parsed)
-				} else if (this.props.arrayType === 'int') {
-					const parsed = parseInt(str, 10)
-
-					if (Number.isNaN(parsed)) return false // type check failed
-					values.push(parsed)
-				} else if (this.props.arrayType === 'float') {
-					const parsed = parseFloat(str)
-					if (Number.isNaN(parsed)) return false // type check failed
-					values.push(parsed)
-				} else {
-					// else this.props.arrayType is 'string'
-					const parsed = str + ''
-					if (typeof parsed !== 'string') return false // type check failed
-					values.push(parsed.trim())
-				}
-			}
-			return { parsed: values }
-		}
-		handleChange(event: React.ChangeEvent<HTMLInputElement>) {
-			const v = event.target.value
-
-			const arrayObj = this.isArray(v)
-			if (arrayObj) {
-				this.handleEdit(v, arrayObj.parsed)
-				this.setState({
-					valueError: false,
-				})
+				return f(obj[outerAttr], innerAttrs)
 			} else {
-				this.handleUpdateButDontSave(v, true)
+				return obj[attributes[0]]
 			}
-		}
-		handleBlur(event: React.FocusEvent<HTMLInputElement>) {
-			const v = event.target.value
-
-			const arrayObj = this.isArray(v)
-			if (arrayObj) {
-				this.handleUpdate(v, arrayObj.parsed)
-				this.setState({
-					valueError: false,
-				})
-			} else {
-				this.handleUpdateButDontSave(v, true)
-				this.setState({
-					valueError: true,
-				})
-			}
-		}
-		handleEscape(e: React.KeyboardEvent<HTMLInputElement>) {
-			if (e.key === 'Escape') {
-				this.handleDiscard()
-			}
-		}
-		getAttribute() {
-			const value = super.getAttribute()
-			if (Array.isArray(value)) {
-				return value.join(', ')
-			} else {
-				return ''
-			}
-		}
-		render(): JSX.Element {
-			return (
-				<input
-					type="text"
-					className={ClassNames(
-						'form-control',
-						this.props.className,
-						this.state.valueError && this.props.invalidClassName
-							? this.props.invalidClassName
-							: this.state.editing
-							? this.props.modifiedClassName || ''
-							: ''
-					)}
-					placeholder={this.props.label}
-					value={this.getEditAttribute() || ''}
-					onChange={this.handleChange}
-					onBlur={this.handleBlur}
-					onKeyUp={this.handleEscape}
-					disabled={this.props.disabled}
-				/>
-			)
+		} else {
+			return obj
 		}
 	}
-)
-
-const EditAttributeColorPicker = wrapEditAttribute(
-	class EditAttributeColorPicker extends EditAttributeBase {
-		constructor(props: any) {
-			super(props)
-
-			this.handleChange = this.handleChange.bind(this)
-		}
-		handleChange(event: ColorPickerEvent) {
-			this.handleUpdate(event.selectedValue)
-		}
-		render(): JSX.Element {
-			return (
-				<ColorPicker
-					className={this.props.className}
-					availableOptions={this.props.options}
-					value={this.getAttribute()}
-					placeholder={this.props.label}
-					onChange={this.handleChange}
-				></ColorPicker>
-			)
-		}
-	}
-)
-const EditAttributeIconPicker = wrapEditAttribute(
-	class extends EditAttributeBase {
-		constructor(props: any) {
-			super(props)
-
-			this.handleChange = this.handleChange.bind(this)
-		}
-		handleChange(event: IconPickerEvent) {
-			this.handleUpdate(event.selectedValue)
-		}
-		render(): JSX.Element {
-			return (
-				<IconPicker
-					className={this.props.className}
-					availableOptions={this.props.options}
-					value={this.getAttribute()}
-					placeholder={this.props.label}
-					onChange={this.handleChange}
-				></IconPicker>
-			)
-		}
-	}
-)
+	return f(obj0, attr0 || '')
+}

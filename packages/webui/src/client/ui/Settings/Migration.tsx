@@ -12,7 +12,7 @@ import {
 } from '@sofie-automation/meteor-lib/dist/api/migration'
 import { MigrationStepInput, MigrationStepInputResult } from '@sofie-automation/blueprints-integration'
 import * as _ from 'underscore'
-import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
+import { EditAttribute } from '../../lib/EditAttribute'
 import { MeteorCall } from '../../lib/meteorApi'
 import { checkForOldDataAndCleanUp } from './SystemManagement'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
@@ -232,7 +232,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 											className="input-full mtxs"
 											options={manualInput.dropdownOptions}
 											overrideDisplayValue={value}
-											updateFunction={(_edit: EditAttributeBase, newValue: any) => {
+											updateFunction={(_edit, newValue: any) => {
 												if (manualInput.attribute) {
 													const inputValues = this.state.inputValues
 													if (!inputValues[stepId]) inputValues[stepId] = {}

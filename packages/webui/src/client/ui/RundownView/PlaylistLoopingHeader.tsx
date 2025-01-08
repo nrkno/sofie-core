@@ -1,7 +1,6 @@
 import React from 'react'
 import classNames from 'classnames'
-import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { withTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import Moment from 'react-moment'
 import { LoopingIcon } from '../../lib/ui/icons/looping'
 import { WithTiming, withTiming } from './RundownTiming/withTiming'
@@ -44,10 +43,9 @@ interface ILoopingHeaderProps {
 	multiRundown?: boolean
 	showCountdowns?: boolean
 }
-export const PlaylistLoopingHeader = withTranslation()(function PlaylistLoopingHeader(
-	props: Translated<ILoopingHeaderProps>
-) {
-	const { t, position, multiRundown, showCountdowns } = props
+export function PlaylistLoopingHeader({ position, multiRundown, showCountdowns }: ILoopingHeaderProps): JSX.Element {
+	const { t } = useTranslation()
+
 	return (
 		<div
 			className={classNames('playlist-looping-header', {
@@ -71,4 +69,4 @@ export const PlaylistLoopingHeader = withTranslation()(function PlaylistLoopingH
 			) : null}
 		</div>
 	)
-})
+}
