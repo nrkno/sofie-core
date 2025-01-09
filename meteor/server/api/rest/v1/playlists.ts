@@ -275,7 +275,8 @@ class PlaylistsServerAPI implements PlaylistsRestAPI {
 		connection: Meteor.Connection,
 		event: string,
 		rundownPlaylistId: RundownPlaylistId,
-		delta: number
+		delta: number,
+		ignoreQuickLoop?: boolean
 	): Promise<ClientAPI.ClientResponse<PartId | null>> {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this.context.getMethodContext(connection),
@@ -291,6 +292,7 @@ class PlaylistsServerAPI implements PlaylistsRestAPI {
 				playlistId: rundownPlaylistId,
 				partDelta: delta,
 				segmentDelta: 0,
+				ignoreQuickLoop,
 			}
 		)
 	}
