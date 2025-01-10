@@ -2923,7 +2923,7 @@ svg.icon {
 	animation: 0.2s inspector-fadeIn;
 	animation-iteration-count: 1;
 	border: 1px black solid;
-	max-width: 26em;
+	width: 26em;
 	font-weight: 400;
 
 	&.segment-timeline__mini-inspector--sub-inspector {
