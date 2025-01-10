@@ -3263,7 +3263,20 @@ svg.icon {
 		word-break: break-all;
 		white-space: normal;
 	}
-	.mini-inspector__value__right {
+	.mini-inspector__firstwords {
+		color: #ffffff;
+		font-weight: 200;
+		font-size: 0.8em;
+		letter-spacing: 0em;
+		line-height: 80%;
+		max-width: 60vw;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		word-break: break-all;
+		white-space: normal;
+	}
+	.mini-inspector__lastwords {
+		color: #ffffff;
 		font-weight: 200;
 		font-size: 0.8em;
 		letter-spacing: 0em;

@@ -151,8 +151,8 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 						<span className="mini-inspector__value">{content?.fileName}</span>
 					</div>
 					<div className="segment-timeline__mini-inspector__properties">
-						<span className="mini-inspector__value">{content?.firstWords}</span>
-						<span className="mini-inspector__value__right">{content?.lastWords}</span>
+						<span className="mini-inspector__firstwords">{content?.firstWords}</span>
+						<span className="mini-inspector__lastwords">{content?.lastWords}</span>
 					</div>
 				</>
 			)}
