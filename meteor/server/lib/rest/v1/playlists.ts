@@ -109,12 +109,14 @@ export interface PlaylistsRestAPI {
 	 * @param event User event string
 	 * @param rundownPlaylistId Playlist to target.
 	 * @param delta Amount to move next point by (+/-)
+	 * @param ignoreQuickLoop When moving the next part it should ignore any of the boundaries set by the QuickLoop feature
 	 */
 	moveNextPart(
 		connection: Meteor.Connection,
 		event: string,
 		rundownPlaylistId: RundownPlaylistId,
-		delta: number
+		delta: number,
+		ignoreQuickLoop?: boolean
 	): Promise<ClientAPI.ClientResponse<PartId | null>>
 	/**
 	 * Moves the next Segment point by `delta` places. Negative values are allowed to move "backwards" in the script.
