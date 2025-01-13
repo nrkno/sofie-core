@@ -224,6 +224,8 @@ export async function CommitIngestOperation(
 			const pSaveIngest = ingestModel.saveAllToDatabase()
 			pSaveIngest.catch(() => null) // Ensure promise isn't reported as unhandled
 
+			ensureNextPartInstanceIsNotDeleted(playoutModel)
+
 			await validateAdlibTestingSegment(context, playoutModel)
 
 			try {
@@ -277,12 +279,16 @@ function canRemoveSegment(
 		logger.warn(`Not allowing removal of previous playing segment "${segmentId}", making segment unsynced instead`)
 		return false
 	}
-	if (
-		currentPartInstance?.segmentId === segmentId ||
-		(nextPartInstance?.segmentId === segmentId && isTooCloseToAutonext(currentPartInstance, false))
-	) {
+	if (currentPartInstance?.segmentId === segmentId) {
 		// Don't allow removing an active rundown
 		logger.warn(`Not allowing removal of current playing segment "${segmentId}", making segment unsynced instead`)
+		return false
+	}
+	if (nextPartInstance?.segmentId === segmentId && isTooCloseToAutonext(currentPartInstance, false)) {
+		// Don't allow removing an active rundown
+		logger.warn(
+			`Not allowing removal of nexted segment "${segmentId}", because it's too close to an auto-next, making segment unsynced instead`
+		)
 		return false
 	}
 
@@ -861,5 +867,14 @@ async function removeSegments(
 async function validateAdlibTestingSegment(_context: JobContext, playoutModel: PlayoutModel) {
 	for (const rundown of playoutModel.rundowns) {
 		rundown.updateAdlibTestingSegmentRank()
+	}
+}
+function ensureNextPartInstanceIsNotDeleted(playoutModel: PlayoutModel) {
+	if (playoutModel.nextPartInstance) {
+		// Check if the segment of the nextPartInstance exists
+		if (!playoutModel.findSegment(playoutModel.nextPartInstance.partInstance.segmentId)) {
+			// The segment doesn't exist, set nextPartInstance to null, it'll be set by ensureNextPartIsValid() later.
+			playoutModel.setPartInstanceAsNext(null, false, false)
+		}
 	}
 }

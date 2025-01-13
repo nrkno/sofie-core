@@ -157,10 +157,13 @@ export async function syncChangesToPartInstances(
 						existingPartInstance.partInstance._id
 					)
 				} catch (e) {
-
-					logger.error(`TROUBLESHOOTING: currentPartInstance: ${JSON.stringify(playoutModel.currentPartInstance)}`)
+					logger.error(
+						`TROUBLESHOOTING: currentPartInstance: ${JSON.stringify(playoutModel.currentPartInstance)}`
+					)
 					logger.error(`TROUBLESHOOTING: nextPartInstance: ${JSON.stringify(playoutModel.nextPartInstance)}`)
-					logger.error(`TROUBLESHOOTING: previousPartInstance: ${JSON.stringify(playoutModel.previousPartInstance)}`)
+					logger.error(
+						`TROUBLESHOOTING: previousPartInstance: ${JSON.stringify(playoutModel.previousPartInstance)}`
+					)
 
 					throw e
 				}
