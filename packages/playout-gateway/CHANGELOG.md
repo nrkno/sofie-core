@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.51.6](https://github.com/nrkno/sofie-core/compare/v1.51.5...v1.51.6) (2025-01-14)
+
+
+### Bug Fixes
+
+* **PoGw:** filter log output to ensure that message field in JSONL output is never an object ([0d2b844](https://github.com/nrkno/sofie-core/commit/0d2b84451751a859d6a3d67e0f3083c735905578))
+
+
+
+
+
 ## [1.51.5](https://github.com/nrkno/sofie-core/compare/v1.51.4...v1.51.5) (2025-01-07)
 
 **Note:** Version bump only for package playout-gateway
