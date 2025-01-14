@@ -352,7 +352,9 @@ export function getPieceInstancesForPart(
 			throw new Error(
 				`Segment "${playingPartInstance.partInstance.segmentId}" in Rundown "${
 					playingRundown.rundown._id
-				}" not found! (partInstanceId: "${playingPartInstance.partInstance._id}", other segments: ${JSON.stringify(playingRundown.segments.map((s) => s.segment._id))})`
+				}" not found! (partInstanceId: "${
+					playingPartInstance.partInstance._id
+				}", other segments: ${JSON.stringify(playingRundown.segments.map((s) => s.segment._id))})`
 			)
 		}
 	}
