@@ -10,7 +10,6 @@ import { unprotectString, protectString } from '@sofie-automation/corelib/dist/p
 import { logger } from '../logging'
 import { PlayoutModel } from '../playout/model/PlayoutModel'
 import { PlayoutRundownModel } from '../playout/model/PlayoutRundownModel'
-import { isTooCloseToAutonext } from '../playout/lib'
 import { allowedToMoveRundownOutOfPlaylist } from '../rundown'
 import { updatePartInstanceRanksAndOrphanedState } from '../updatePartInstanceRanksAndOrphanedState'
 import {
@@ -224,8 +223,6 @@ export async function CommitIngestOperation(
 			const pSaveIngest = ingestModel.saveAllToDatabase()
 			pSaveIngest.catch(() => null) // Ensure promise isn't reported as unhandled
 
-			ensureNextPartInstanceIsNotDeleted(playoutModel)
-
 			await validateAdlibTestingSegment(context, playoutModel)
 
 			try {
@@ -284,19 +281,9 @@ function canRemoveSegment(
 		logger.warn(`Not allowing removal of current playing segment "${segmentId}", making segment unsynced instead`)
 		return false
 	}
-	if (nextPartInstance?.segmentId === segmentId && isTooCloseToAutonext(currentPartInstance, false)) {
+	if (nextPartInstance?.segmentId === segmentId) {
 		// Don't allow removing an active rundown
-		logger.warn(
-			`Not allowing removal of nexted segment "${segmentId}", because it's too close to an auto-next, making segment unsynced instead`
-		)
-		return false
-	}
-
-	if (nextPartInstance?.segmentId === segmentId && nextPartInstance.orphaned === 'adlib-part') {
-		// Don't allow removing an active rundown
-		logger.warn(
-			`Not allowing removal of segment "${segmentId}" which contains nexted adlibbed part, making segment unsynced instead`
-		)
+		logger.warn(`Not allowing removal of nexted segment "${segmentId}", making segment unsynced instead`)
 		return false
 	}
 
@@ -853,14 +840,5 @@ async function removeSegments(
 async function validateAdlibTestingSegment(_context: JobContext, playoutModel: PlayoutModel) {
 	for (const rundown of playoutModel.rundowns) {
 		rundown.updateAdlibTestingSegmentRank()
-	}
-}
-function ensureNextPartInstanceIsNotDeleted(playoutModel: PlayoutModel) {
-	if (playoutModel.nextPartInstance) {
-		// Check if the segment of the nextPartInstance exists
-		if (!playoutModel.findSegment(playoutModel.nextPartInstance.partInstance.segmentId)) {
-			// The segment doesn't exist, set nextPartInstance to null, it'll be set by ensureNextPartIsValid() later.
-			playoutModel.setPartInstanceAsNext(null, false, false)
-		}
 	}
 }
