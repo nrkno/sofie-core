@@ -11,6 +11,7 @@ import { IngestSegment } from '@sofie-automation/blueprints-integration'
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { CommitIngestData } from '../lock'
 import { IngestSegmentModel } from '../model/IngestSegmentModel'
+import { logger } from '../../logging'
 
 /**
  * Update the Ids of Segments based on new Ingest data
@@ -158,9 +159,11 @@ function applyExternalIdDiff(
 			}
 
 			// Remove the old Segment and it's contents, the new one will be generated shortly
+			logger.debug(`applyExternalIdDiff: Marking Segment for removing "${oldSegmentId}"`)
 			ingestModel.removeSegment(oldSegmentId)
 		} else {
 			// Perform the rename
+			logger.debug(`applyExternalIdDiff: Marking Segment for renaming "${oldSegmentId}" -> "${newSegmentId}"`)
 			ingestModel.changeSegmentId(oldSegmentId, newSegmentId)
 		}
 	}
