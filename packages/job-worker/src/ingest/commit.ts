@@ -178,9 +178,13 @@ export async function CommitIngestOperation(
 			// Ensure any adlibbed parts are updated to follow the segmentId of the previous part
 			await updateSegmentIdsForAdlibbedPartInstances(context, ingestModel, beforePartMap)
 
+			// TODO: This whole section can probably be removed later, it's really unneccessary in the grand scheme of
+			// things, it's here only to debug some problems
 			if (data.renamedSegments && data.renamedSegments.size > 0) {
-				logger.debug(`Renamed segments: ${JSON.stringify(Array.from(data.renamedSegments.entries()))}`)
+				logger.verbose(`Renamed segments: ${JSON.stringify(Array.from(data.renamedSegments.entries()))}`)
 			}
+			// End of temporary section
+
 			// ensure instances have matching segmentIds with the parts
 			await updatePartInstancesSegmentIds(context, ingestModel, data.renamedSegments, beforePartMap)
 
@@ -219,6 +223,8 @@ export async function CommitIngestOperation(
 			// Start the save
 			const pSaveIngest = ingestModel.saveAllToDatabase()
 			pSaveIngest.catch(() => null) // Ensure promise isn't reported as unhandled
+
+			ensureNextPartInstanceIsNotDeleted(playoutModel)
 
 			await validateAdlibTestingSegment(context, playoutModel)
 
@@ -273,12 +279,16 @@ function canRemoveSegment(
 		logger.warn(`Not allowing removal of previous playing segment "${segmentId}", making segment unsynced instead`)
 		return false
 	}
-	if (
-		currentPartInstance?.segmentId === segmentId ||
-		(nextPartInstance?.segmentId === segmentId && isTooCloseToAutonext(currentPartInstance, false))
-	) {
+	if (currentPartInstance?.segmentId === segmentId) {
 		// Don't allow removing an active rundown
 		logger.warn(`Not allowing removal of current playing segment "${segmentId}", making segment unsynced instead`)
+		return false
+	}
+	if (nextPartInstance?.segmentId === segmentId && isTooCloseToAutonext(currentPartInstance, false)) {
+		// Don't allow removing an active rundown
+		logger.warn(
+			`Not allowing removal of nexted segment "${segmentId}", because it's too close to an auto-next, making segment unsynced instead`
+		)
 		return false
 	}
 
@@ -365,6 +375,8 @@ async function updatePartInstancesSegmentIds(
 
 		const writeOps: AnyBulkWriteOperation<DBPartInstance>[] = []
 
+		logger.debug(`updatePartInstancesSegmentIds: renameRules: ${JSON.stringify(renameRules)}`)
+
 		for (const [newSegmentId, rule] of rulesInOrder) {
 			if (rule.fromSegmentIds.length) {
 				writeOps.push({
@@ -402,7 +414,12 @@ async function updatePartInstancesSegmentIds(
 		if (writeOps.length) await context.directCollections.PartInstances.bulkWrite(writeOps)
 
 		// Double check that there are no parts using the old segment ids:
-		const oldSegmentIds = Array.from(renameRules.keys())
+		// TODO: This whole section can probably be removed later, it's really unneccessary in the grand scheme of
+		// things, it's here only to debug some problems
+		const oldSegmentIds: SegmentId[] = []
+		for (const renameRule of renameRules.values()) {
+			oldSegmentIds.push(...renameRule.fromSegmentIds)
+		}
 		const [badPartInstances, badParts] = await Promise.all([
 			await context.directCollections.PartInstances.findFetch({
 				rundownId: ingestModel.rundownId,
@@ -428,6 +445,7 @@ async function updatePartInstancesSegmentIds(
 				)}": ${JSON.stringify(badParts)}, writeOps: ${JSON.stringify(writeOps)}`
 			)
 		}
+		// End of the temporary section
 	}
 }
 
@@ -662,10 +680,27 @@ async function getSelectedPartInstances(
 			  })
 			: []
 
+	const currentPartInstance = instances.find((inst) => inst._id === playlist.currentPartInfo?.partInstanceId)
+	const nextPartInstance = instances.find((inst) => inst._id === playlist.nextPartInfo?.partInstanceId)
+	const previousPartInstance = instances.find((inst) => inst._id === playlist.previousPartInfo?.partInstanceId)
+
+	if (playlist.currentPartInfo?.partInstanceId && !currentPartInstance)
+		logger.error(
+			`playlist.currentPartInfo is set, but PartInstance "${playlist.currentPartInfo?.partInstanceId}" was not found!`
+		)
+	if (playlist.nextPartInfo?.partInstanceId && !nextPartInstance)
+		logger.error(
+			`playlist.nextPartInfo is set, but PartInstance "${playlist.nextPartInfo?.partInstanceId}" was not found!`
+		)
+	if (playlist.previousPartInfo?.partInstanceId && !previousPartInstance)
+		logger.error(
+			`playlist.previousPartInfo is set, but PartInstance "${playlist.previousPartInfo?.partInstanceId}" was not found!`
+		)
+
 	return {
-		currentPartInstance: instances.find((inst) => inst._id === playlist.currentPartInfo?.partInstanceId),
-		nextPartInstance: instances.find((inst) => inst._id === playlist.nextPartInfo?.partInstanceId),
-		previousPartInstance: instances.find((inst) => inst._id === playlist.previousPartInfo?.partInstanceId),
+		currentPartInstance,
+		nextPartInstance,
+		previousPartInstance,
 	}
 }
 
@@ -815,6 +850,16 @@ async function removeSegments(
 		})
 	}
 	for (const segmentId of purgeSegmentIds) {
+		logger.debug(
+			`IngestModel: Removing segment "${segmentId}" (` +
+				`previousPartInfo?.partInstanceId: ${newPlaylist.previousPartInfo?.partInstanceId},` +
+				`currentPartInfo?.partInstanceId: ${newPlaylist.currentPartInfo?.partInstanceId},` +
+				`nextPartInfo?.partInstanceId: ${newPlaylist.nextPartInfo?.partInstanceId},` +
+				`previousPartInstance.segmentId: ${!previousPartInstance ? 'N/A' : previousPartInstance.segmentId},` +
+				`currentPartInstance.segmentId: ${!currentPartInstance ? 'N/A' : currentPartInstance.segmentId},` +
+				`nextPartInstance.segmentId: ${!nextPartInstance ? 'N/A' : nextPartInstance.segmentId}` +
+				`)`
+		)
 		ingestModel.removeSegment(segmentId)
 	}
 }
@@ -822,5 +867,14 @@ async function removeSegments(
 async function validateAdlibTestingSegment(_context: JobContext, playoutModel: PlayoutModel) {
 	for (const rundown of playoutModel.rundowns) {
 		rundown.updateAdlibTestingSegmentRank()
+	}
+}
+function ensureNextPartInstanceIsNotDeleted(playoutModel: PlayoutModel) {
+	if (playoutModel.nextPartInstance) {
+		// Check if the segment of the nextPartInstance exists
+		if (!playoutModel.findSegment(playoutModel.nextPartInstance.partInstance.segmentId)) {
+			// The segment doesn't exist, set nextPartInstance to null, it'll be set by ensureNextPartIsValid() later.
+			playoutModel.setPartInstanceAsNext(null, false, false)
+		}
 	}
 }
