@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react'
 import { PreviewPopUp, PreviewPopUpHandle } from './PreviewPopUp'
 import { Padding, Placement } from '@popperjs/core'
+import { PreviewPopUpContent } from './PreviewPopUpContent'
 
 type VirtualElement = {
 	getBoundingClientRect: () => DOMRect
@@ -32,7 +33,7 @@ export type PreviewContent =
 			content: unknown
 	  }
 
-interface IPreviewPopUpSession {
+export interface IPreviewPopUpSession {
 	/**
 	 * Update the open preview with new content or modify the content already being previewed, such as change current showing
 	 * time in the video, etc.
@@ -77,7 +78,7 @@ interface IPreviewPopUpContext {
 	): IPreviewPopUpSession
 }
 
-const PreviewPopUpContext = React.createContext<IPreviewPopUpContext>({
+export const PreviewPopUpContext = React.createContext<IPreviewPopUpContext>({
 	requestPreview: () => {
 		throw new Error('Preview PopUp needs to set up with `PreviewPopUpContextProvider`.')
 	},
@@ -101,7 +102,7 @@ export function PreviewPopUpContextProvider({ children }: React.PropsWithChildre
 	const previewRef = useRef<PreviewPopUpHandle>(null)
 
 	const [previewSession, setPreviewSession] = useState<PreviewSession | null>(null)
-	const [_previewContent, setPreviewContent] = useState<PreviewContent | null>(null)
+	const [previewContent, setPreviewContent] = useState<PreviewContent | null>(null)
 
 	const context: IPreviewPopUpContext = {
 		requestPreview: (anchor, content, opts) => {
@@ -143,7 +144,9 @@ export function PreviewPopUpContextProvider({ children }: React.PropsWithChildre
 					contentInfo={previewSession.contentInfo}
 					controls={previewSession.controls}
 					warnings={previewSession.warnings}
-				/>
+				>
+					{previewContent && <PreviewPopUpContent content={previewContent} />}
+				</PreviewPopUp>
 			)}
 		</PreviewPopUpContext.Provider>
 	)

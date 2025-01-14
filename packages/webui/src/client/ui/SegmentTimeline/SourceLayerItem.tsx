@@ -1,6 +1,11 @@
 import * as React from 'react'
 import { ISourceLayerUi, IOutputLayerUi, PartUi, PieceUi } from './SegmentTimelineContainer'
-import { SourceLayerType, PieceLifespan, IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
+import {
+	SourceLayerType,
+	PieceLifespan,
+	IBlueprintPieceType,
+	ScriptContent,
+} from '@sofie-automation/blueprints-integration'
 import { RundownUtils } from '../../lib/rundown'
 import { DefaultLayerItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { MicSourceRenderer } from './Renderers/MicSourceRenderer'
@@ -20,9 +25,10 @@ import { pieceUiClassNames } from '../../lib/ui/pieceUiClassNames'
 import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { ReadonlyDeep } from 'type-fest'
-import { PieceContentStatusObj } from '@sofie-automation/corelib/dist/dataModel/PieceContentStatus'
-import { SelectedElementsContext, useSelectedElementsContext } from '../RundownView/SelectedElementsContext'
-import { useCallback, useRef, useState, useEffect } from 'react'
+import { useSelectedElementsContext } from '../RundownView/SelectedElementsContext'
+import { PieceContentStatusObj } from '@sofie-automation/meteor-lib/dist/api/pieceContentStatus'
+import { useCallback, useRef, useState, useEffect, useContext } from 'react'
+import { IPreviewPopUpSession, PreviewPopUpContext } from '../PreviewPopUp/PreviewPopUpContext'
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 const MARGINAL_ANCHORED_WIDTH = 5
 
@@ -193,6 +199,9 @@ export const SourceLayerItem = (props: Readonly<ISourceLayerItemProps>): JSX.Ele
 		}
 		return
 	}, [])
+
+	const previewContext = useContext(PreviewPopUpContext)
+	const previewSession = useRef<IPreviewPopUpSession | null>(null)
 	const toggleMiniInspectorOn = useCallback((e: React.MouseEvent) => toggleMiniInspector(e, true), [])
 	const toggleMiniInspectorOff = useCallback((e: React.MouseEvent) => toggleMiniInspector(e, false), [])
 	const updatePos = useCallback(() => {
@@ -213,19 +222,37 @@ export const SourceLayerItem = (props: Readonly<ISourceLayerItemProps>): JSX.Ele
 
 		animFrameHandle.current = requestAnimationFrame(updatePos)
 	}, [])
-	const toggleMiniInspector = useCallback((e: MouseEvent | any, v: boolean) => {
-		setShowMiniInspector(v)
-		cursorRawPosition.current = {
-			clientX: e.clientX,
-			clientY: e.clientY,
-		}
+	const toggleMiniInspector = useCallback(
+		(e: React.MouseEvent, v: boolean) => {
+			if (layer.type === SourceLayerType.SCRIPT) {
+				if (v) {
+					previewSession.current = previewContext.requestPreview(e.target as any, {
+						type: 'text',
+						content: (piece.instance.piece.content as ScriptContent).fullScript ?? '',
+					})
+				} else if (previewSession.current) {
+					previewSession.current.close()
+					previewSession.current = null
+				}
 
-		if (v) {
-			animFrameHandle.current = requestAnimationFrame(updatePos)
-		} else if (animFrameHandle.current !== undefined) {
-			cancelAnimationFrame(animFrameHandle.current)
-		}
-	}, [])
+				// overrule old stuff
+				return
+			}
+
+			setShowMiniInspector(v)
+			cursorRawPosition.current = {
+				clientX: e.clientX,
+				clientY: e.clientY,
+			}
+
+			if (v) {
+				animFrameHandle.current = requestAnimationFrame(updatePos)
+			} else if (animFrameHandle.current !== undefined) {
+				cancelAnimationFrame(animFrameHandle.current)
+			}
+		},
+		[previewSession.current]
+	)
 	const moveMiniInspector = useCallback((e: MouseEvent | any) => {
 		cursorRawPosition.current = {
 			clientX: e.clientX,

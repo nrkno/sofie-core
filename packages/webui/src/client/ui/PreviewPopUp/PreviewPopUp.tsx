@@ -60,12 +60,28 @@ export const PreviewPopUp = React.forwardRef<
 		}),
 		[padding]
 	)
-	const { styles, attributes, update } = usePopper(anchor, popperEl, popperOptions)
+	const virtualElement = useRef<VirtualElement>({
+		getBoundingClientRect: generateGetBoundingClientRect(),
+	})
+	const { styles, attributes, update } = usePopper(virtualElement.current, popperEl, popperOptions)
 
 	const updateRef = useRef(update)
 
 	useEffect(() => {
 		updateRef.current = update
+
+		const listener = ({ clientX: x }: MouseEvent) => {
+			virtualElement.current.getBoundingClientRect = generateGetBoundingClientRect(
+				x,
+				anchor?.getBoundingClientRect().y ?? 0
+			)
+			if (update) update()
+		}
+		document.addEventListener('mousemove', listener)
+
+		return () => {
+			document.removeEventListener('mousemove', listener)
+		}
 	}, [update])
 
 	useImperativeHandle(
@@ -110,4 +126,18 @@ export const PreviewPopUp = React.forwardRef<
 
 export type PreviewPopUpHandle = {
 	readonly update: () => void
+}
+
+function generateGetBoundingClientRect(x = 0, y = 0) {
+	return () => ({
+		width: 0,
+		height: 0,
+		x: x,
+		y: y,
+		top: y,
+		right: x,
+		bottom: y,
+		left: x,
+		toJSON: () => '',
+	})
 }
