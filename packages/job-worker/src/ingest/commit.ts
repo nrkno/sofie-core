@@ -420,29 +420,15 @@ async function updatePartInstancesSegmentIds(
 		for (const renameRule of renameRules.values()) {
 			oldSegmentIds.push(...renameRule.fromSegmentIds)
 		}
-		const [badPartInstances, badParts] = await Promise.all([
-			await context.directCollections.PartInstances.findFetch({
-				rundownId: ingestModel.rundownId,
-				segmentId: { $in: oldSegmentIds },
-			}),
-			await context.directCollections.Parts.findFetch({
-				rundownId: ingestModel.rundownId,
-				segmentId: { $in: oldSegmentIds },
-			}),
-		])
+		const badPartInstances = await context.directCollections.PartInstances.findFetch({
+			rundownId: ingestModel.rundownId,
+			segmentId: { $in: oldSegmentIds },
+		})
 		if (badPartInstances.length > 0) {
 			logger.error(
 				`updatePartInstancesSegmentIds: Failed to update all PartInstances using old SegmentIds "${JSON.stringify(
 					oldSegmentIds
 				)}": ${JSON.stringify(badPartInstances)}, writeOps: ${JSON.stringify(writeOps)}`
-			)
-		}
-
-		if (badParts.length > 0) {
-			logger.error(
-				`updatePartInstancesSegmentIds: Failed to update all Parts using old SegmentIds "${JSON.stringify(
-					oldSegmentIds
-				)}": ${JSON.stringify(badParts)}, writeOps: ${JSON.stringify(writeOps)}`
 			)
 		}
 		// End of the temporary section
