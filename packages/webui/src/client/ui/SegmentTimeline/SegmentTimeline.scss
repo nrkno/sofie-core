@@ -19,11 +19,14 @@ $timeline-layer-height: 1em;
 }
 .segment-timeline__title__label.identifier::before {
 	content: attr(data-identifier);
-	background-color: #095709;
-	margin-right: 10px;
-	padding: 3px;
-	white-space: nowrap;
 	border-radius: 3px;
+	background-color: #095709;
+	margin-right: 4px;
+	padding: 0px 3px 0px 2px;
+	white-space: nowrap;
+	font-size: 0.9em;
+	font-weight: 300;
+	vertical-align: text-bottom;
 }
 .segment-timeline__title__user-edit-states {
 	position: absolute;
