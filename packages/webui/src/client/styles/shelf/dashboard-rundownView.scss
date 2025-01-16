@@ -19,7 +19,7 @@
 			grid-template-areas: '. .';
 
 			> .dashboard-panel__panel__button__label-container {
-				padding: 2px 4px;
+				padding: 3px 1px 3px 6px;
 				white-space: nowrap;
 				overflow: hidden;
 				text-overflow: ellipsis;
@@ -125,9 +125,11 @@
 
 		&.graphics {
 			.dashboard-panel__panel__button__label-container {
+				/*
 				grid-row: 1;
 				white-space: normal;
 				padding-left: 26px;
+				*/
 			}
 		}
 	}
