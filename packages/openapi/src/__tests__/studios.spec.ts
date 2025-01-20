@@ -1,4 +1,4 @@
-// eslint-disable-next-line node/no-missing-import
+// eslint-disable-next-line n/no-missing-import
 import { Configuration, GetStudioConfig200ResponseResult, Studio, StudiosApi } from '../../client/ts'
 import { checkServer } from '../checkServer'
 import Logging from '../httpLogging'

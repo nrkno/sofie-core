@@ -17,7 +17,7 @@ import * as _ from 'underscore'
 import { DeviceConfig } from './connector'
 import { TSRHandler } from './tsrHandler'
 import { Logger } from 'winston'
-// eslint-disable-next-line node/no-extraneous-import
+// eslint-disable-next-line n/no-extraneous-import
 import { MemUsageReport as ThreadMemUsageReport } from 'threadedclass'
 import { PLAYOUT_DEVICE_CONFIG } from './configManifest'
 import { BaseRemoteDeviceIntegration } from 'timeline-state-resolver/dist/service/remoteDeviceInstance'
@@ -279,7 +279,7 @@ export class CoreHandler {
 		functionObject._observers.push(observer)
 		const addedChangedCommand = (id: PeripheralDeviceCommandId) => {
 			const cmds = functionObject.core.getCollection(
-				PeripheralDevicePubSubCollectionsNames.peripheralDeviceCommands
+				PeripheralDevicePubSubCollectionsNames.peripheralDeviceCommands,
 			)
 			if (!cmds) throw Error('"peripheralDeviceCommands" collection not found!')
 			const cmd = cmds.findOne(id)
@@ -444,7 +444,7 @@ export class CoreTSRDeviceHandler {
 		if (this.disposed) throw new Error('CoreTSRDeviceHandler cant init, is disposed')
 		this.core.on('error', (err: any) => {
 			this._coreParentHandler.logger.error(
-				'Core Error: ' + ((_.isObject(err) && err.message) || err.toString() || err)
+				'Core Error: ' + ((_.isObject(err) && err.message) || err.toString() || err),
 			)
 		})
 
@@ -471,7 +471,7 @@ export class CoreTSRDeviceHandler {
 		const deviceId = this._device.deviceId
 
 		this._coreParentHandler.logger.info(
-			'CoreTSRDevice: Setting up subscriptions for ' + this.core.deviceId + ' for device ' + deviceId + ' ..'
+			'CoreTSRDevice: Setting up subscriptions for ' + this.core.deviceId + ' for device ' + deviceId + ' ..',
 		)
 		try {
 			await this.core.autoSubscribe(PeripheralDevicePubSub.peripheralDeviceCommands, this.core.deviceId)
@@ -510,7 +510,7 @@ export class CoreTSRDeviceHandler {
 			pieceId?: string
 			context: string
 			timelineObjId: string
-		}
+		},
 	): void {
 		// This is not implemented in Core
 		// this.core
@@ -524,7 +524,7 @@ export class CoreTSRDeviceHandler {
 		this.core.coreMethodsLowPriority
 			.updateMediaObject(collectionId, docId, doc as any)
 			.catch((e: any) =>
-				this._coreParentHandler.logger.error(`Error when updating Media Object: ${stringifyError(e)}`)
+				this._coreParentHandler.logger.error(`Error when updating Media Object: ${stringifyError(e)}`),
 			)
 	}
 	onClearMediaObjectCollection(collectionId: string): void {
@@ -532,8 +532,8 @@ export class CoreTSRDeviceHandler {
 			.clearMediaObjectCollection(collectionId)
 			.catch((e: any) =>
 				this._coreParentHandler.logger.error(
-					`Error when clearing Media Objects collection: ${stringifyError(e)}`
-				)
+					`Error when clearing Media Objects collection: ${stringifyError(e)}`,
+				),
 			)
 	}
 
