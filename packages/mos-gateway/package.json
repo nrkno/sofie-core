@@ -65,13 +65,13 @@
 		"production"
 	],
 	"dependencies": {
-		"@mos-connection/connector": "v4.2.0",
+		"@mos-connection/connector": "^4.2.0",
 		"@sofie-automation/server-core-integration": "1.52.0-in-development",
 		"@sofie-automation/shared-lib": "1.52.0-in-development",
-		"tslib": "^2.6.2",
+		"tslib": "^2.8.1",
 		"type-fest": "^3.13.1",
-		"underscore": "^1.13.6",
-		"winston": "^3.11.0"
+		"underscore": "^1.13.7",
+		"winston": "^3.17.0"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {
