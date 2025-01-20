@@ -35,11 +35,11 @@
 		"test-all": "yarn install && run install-and-build && run check-types:meteor && run lint:packages && run lint:meteor && run test:packages && run test:meteor"
 	},
 	"devDependencies": {
-		"concurrently": "^8.2.2",
-		"lint-staged": "^13.3.0",
-		"rimraf": "^5.0.10",
+		"concurrently": "^9.1.2",
+		"lint-staged": "^15.4.1",
+		"rimraf": "^6.0.1",
 		"semver": "^7.6.3",
-		"snyk-nodejs-lockfile-parser": "^1.58.11"
+		"snyk-nodejs-lockfile-parser": "^1.58.16"
 	},
 	"packageManager": "yarn@3.5.0"
 }
