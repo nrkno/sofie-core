@@ -5871,7 +5871,6 @@ __metadata:
     eventemitter3: ^4.0.7
     jest-mock-extended: ^3.0.7
     mongodb: ^5.9.2
-    node-fetch: ^2.7.0
     p-lazy: ^3.1.0
     p-timeout: ^4.1.0
     superfly-timeline: 9.0.2
@@ -7352,16 +7351,6 @@ __metadata:
   version: 0.7.31
   resolution: "@types/ms@npm:0.7.31"
   checksum: daadd354aedde024cce6f5aa873fefe7b71b22cd0e28632a69e8b677aeb48ae8caa1c60e5919bb781df040d116b01cb4316335167a3fc0ef6a63fa3614c0f6da
-  languageName: node
-  linkType: hard
-
-"@types/node-fetch@npm:^2.6.12":
-  version: 2.6.12
-  resolution: "@types/node-fetch@npm:2.6.12"
-  dependencies:
-    "@types/node": "*"
-    form-data: ^4.0.0
-  checksum: 9647e68f9a125a090220c38d77b3c8e669c488658ae7506f1b4f9568214beba087624b1705bba1dc76649a65281ce3fd5b400e15266cbef8088027fb88777557
   languageName: node
   linkType: hard
 
@@ -20638,7 +20627,7 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"node-fetch@npm:^2.6.0, node-fetch@npm:^2.6.1, node-fetch@npm:^2.6.7, node-fetch@npm:^2.7.0":
+"node-fetch@npm:^2.6.0, node-fetch@npm:^2.6.1, node-fetch@npm:^2.6.7":
   version: 2.7.0
   resolution: "node-fetch@npm:2.7.0"
   dependencies:
@@ -21927,7 +21916,6 @@ asn1@evs-broadcast/node-asn1:
     "@types/got": ^9.6.12
     "@types/jest": ^29.5.14
     "@types/node": ^22.10.7
-    "@types/node-fetch": ^2.6.12
     "@types/object-path": ^0.11.4
     "@types/underscore": ^1.13.0
     babel-jest: ^29.7.0
