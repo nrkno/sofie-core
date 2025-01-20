@@ -1,7 +1,5 @@
 import React from 'react'
-// eslint-disable-next-line node/no-unpublished-import
 import { renderHook, act, render, screen, waitFor, RenderOptions } from '@testing-library/react'
-// eslint-disable-next-line node/no-unpublished-import
 import '@testing-library/jest-dom'
 import { MeteorCall } from '../../../lib/meteorApi'
 import { TFunction } from 'i18next'
@@ -148,7 +146,7 @@ const mockPartsCollection = MongoMock.getInnerMockCollection(UIParts)
 // Mock Client User Action:
 jest.mock('../../../lib/clientUserAction', () => ({
 	doUserAction: jest.fn((_t: TFunction, e: unknown, _action: UserAction, callback: Function) =>
-		callback(e, Date.now())
+		callback(e, Date.now()),
 	),
 	UserAction: {
 		EXECUTE_USER_OPERATION: 51,
@@ -180,11 +178,11 @@ describe('PropertiesPanel', () => {
 
 	const renderWithContext = (
 		ui: React.ReactNode,
-		{ ctxValue, ...renderOptions }: RenderOptions & { ctxValue: SelectionContextType }
+		{ ctxValue, ...renderOptions }: RenderOptions & { ctxValue: SelectionContextType },
 	) => {
 		return render(
 			<SelectedElementsContext.Provider value={ctxValue}>{ui}</SelectedElementsContext.Provider>,
-			renderOptions
+			renderOptions,
 		)
 	}
 
@@ -307,7 +305,7 @@ describe('PropertiesPanel', () => {
 			() => {
 				expect(screen.getByText(mockPart.title.slice(0, 30))).toBeInTheDocument()
 			},
-			{ timeout: 1000 }
+			{ timeout: 1000 },
 		)
 
 		const button = container.querySelector('.propertiespanel-pop-up__button')
@@ -358,7 +356,7 @@ describe('PropertiesPanel', () => {
 			{
 				id: 'operation1',
 				values: undefined,
-			}
+			},
 		)
 	})
 
@@ -402,7 +400,7 @@ describe('PropertiesPanel', () => {
 			},
 			{
 				id: '__sofie-revert-segment',
-			}
+			},
 		)
 	})
 
