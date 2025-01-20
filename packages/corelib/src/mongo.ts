@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { ProtectedString } from './protectedString'
 import * as objectPath from 'object-path'
-// eslint-disable-next-line node/no-extraneous-import
+// eslint-disable-next-line n/no-extraneous-import
 import type { Condition, Filter, UpdateFilter } from 'mongodb'
 import { clone } from './lib'
 
@@ -31,8 +31,8 @@ export type MongoFieldSpecifierOnesStrict<T extends Record<string, any>> = {
 	[key in keyof T]?: T[key] extends ProtectedString<any>
 		? 1
 		: T[key] extends object | undefined
-		? MongoFieldSpecifierOnesStrict<T[key]> | 1
-		: 1
+			? MongoFieldSpecifierOnesStrict<T[key]> | 1
+			: 1
 }
 
 export interface FindOneOptions<TDoc> {
@@ -369,7 +369,7 @@ export function mutatePath<T>(
 		o.forEach((val, i) => {
 			// mutate any objects which match
 			if (_.isMatch(val, info.query)) {
-				mutator(o, i + '')
+				mutator(o as any, i + '')
 			}
 		})
 	} else {
