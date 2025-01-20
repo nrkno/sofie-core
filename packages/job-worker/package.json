@@ -40,7 +40,7 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"@slack/webhook": "^6.1.0",
+		"@slack/webhook": "^7.0.4",
 		"@sofie-automation/blueprints-integration": "1.52.0-in-development",
 		"@sofie-automation/corelib": "1.52.0-in-development",
 		"@sofie-automation/shared-lib": "1.52.0-in-development",

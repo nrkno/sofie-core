@@ -66,8 +66,8 @@
 		"ws": "^8.18.0"
 	},
 	"devDependencies": {
-		"@asyncapi/generator": "^1.17.25",
-		"@asyncapi/html-template": "^2.3.14",
+		"@asyncapi/generator": "^2.5.0",
+		"@asyncapi/html-template": "^3.1.0",
 		"@asyncapi/nodejs-ws-template": "^0.9.36",
 		"type-fest": "^4.32.0"
 	},
