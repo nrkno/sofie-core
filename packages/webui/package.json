@@ -76,7 +76,7 @@
 		"react-timer-hoc": "^2.3.0",
 		"semver": "^7.6.3",
 		"sha.js": "^2.4.11",
-		"type-fest": "^3.13.1",
+		"type-fest": "^4.32.0",
 		"underscore": "^1.13.7",
 		"velocity-animate": "^1.5.2",
 		"velocity-react": "^1.4.3",
@@ -103,9 +103,9 @@
 		"sass": "^1.83.4",
 		"sinon": "^14.0.2",
 		"typescript": "^5.2.2",
-		"vite": "^5.4.12",
-		"vite-plugin-node-polyfills": "^0.22.0",
-		"vite-tsconfig-paths": "^4.3.2",
+		"vite": "^6.0.9",
+		"vite-plugin-node-polyfills": "^0.23.0",
+		"vite-tsconfig-paths": "^5.1.4",
 		"xml2js": "^0.6.2"
 	},
 	"engines": {

@@ -41,7 +41,7 @@
 		"@mos-connection/model": "^4.2.0",
 		"timeline-state-resolver-types": "9.2.0-nightly-release52-20241219-123204-90290cef1.0",
 		"tslib": "^2.8.1",
-		"type-fest": "^3.13.1"
+		"type-fest": "^4.32.0"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {
