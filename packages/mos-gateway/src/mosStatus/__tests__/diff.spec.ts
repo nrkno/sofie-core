@@ -25,7 +25,7 @@ describe('diffStatuses', () => {
 					{
 						externalId: 'part0',
 						isReady: true,
-						itemsReady: {},
+						itemsReady: [],
 						playbackStatus: IngestPartPlaybackStatus.UNKNOWN,
 					},
 				],
@@ -134,7 +134,7 @@ describe('diffStatuses', () => {
 		extraPartState.segments[0].parts.push({
 			externalId: 'part1',
 			isReady: false,
-			itemsReady: {},
+			itemsReady: [],
 			playbackStatus: IngestPartPlaybackStatus.UNKNOWN,
 		})
 
@@ -155,7 +155,7 @@ describe('diffStatuses', () => {
 		extraPartState.segments[0].parts.push({
 			externalId: 'part1',
 			isReady: false,
-			itemsReady: {},
+			itemsReady: [],
 			playbackStatus: IngestPartPlaybackStatus.UNKNOWN,
 		})
 
@@ -235,7 +235,7 @@ describe('diffStatuses', () => {
 	test('add items', () => {
 		{
 			const itemsState = structuredClone(singlePartRundown)
-			itemsState.segments[0].parts[0].itemsReady.item0 = true
+			itemsState.segments[0].parts[0].itemsReady.push({ externalId: 'item0', ready: true })
 
 			const diff = diffStatuses(defaultConfig, singlePartRundown, itemsState)
 			expect(diff).toHaveLength(1)
@@ -250,7 +250,7 @@ describe('diffStatuses', () => {
 
 		{
 			const itemsState = structuredClone(singlePartRundown)
-			itemsState.segments[0].parts[0].itemsReady.item0 = false
+			itemsState.segments[0].parts[0].itemsReady.push({ externalId: 'item0', ready: false })
 
 			const diff = diffStatuses(defaultConfig, singlePartRundown, itemsState)
 			expect(diff).toHaveLength(1)
@@ -265,7 +265,7 @@ describe('diffStatuses', () => {
 
 		{
 			const itemsState = structuredClone(singlePartRundown)
-			itemsState.segments[0].parts[0].itemsReady.item0 = undefined
+			// itemsState.segments[0].parts[0].itemsReady.item0 = undefined
 
 			const diff = diffStatuses(defaultConfig, singlePartRundown, itemsState)
 			expect(diff).toHaveLength(0)
@@ -275,7 +275,7 @@ describe('diffStatuses', () => {
 	test('remove items', () => {
 		{
 			const itemsState = structuredClone(singlePartRundown)
-			itemsState.segments[0].parts[0].itemsReady.item0 = true
+			itemsState.segments[0].parts[0].itemsReady.push({ externalId: 'item0', ready: true })
 
 			const diff = diffStatuses(defaultConfig, itemsState, singlePartRundown)
 			expect(diff).toHaveLength(1)
@@ -290,7 +290,7 @@ describe('diffStatuses', () => {
 
 		{
 			const itemsState = structuredClone(singlePartRundown)
-			itemsState.segments[0].parts[0].itemsReady.item0 = undefined
+			// itemsState.segments[0].parts[0].itemsReady.item0 = undefined
 
 			const diff = diffStatuses(defaultConfig, itemsState, singlePartRundown)
 			expect(diff).toHaveLength(0)
@@ -299,10 +299,10 @@ describe('diffStatuses', () => {
 
 	test('change item state', () => {
 		const itemsState = structuredClone(singlePartRundown)
-		itemsState.segments[0].parts[0].itemsReady.item0 = true
+		itemsState.segments[0].parts[0].itemsReady.push({ externalId: 'item0', ready: true })
 
 		const items2State = structuredClone(itemsState)
-		items2State.segments[0].parts[0].itemsReady.item0 = false
+		items2State.segments[0].parts[0].itemsReady[0].ready = false
 
 		const diff = diffStatuses(defaultConfig, itemsState, items2State)
 		expect(diff).toHaveLength(1)
