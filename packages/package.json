@@ -55,7 +55,7 @@
 		"jest-environment-jsdom": "^29.7.0",
 		"jest-mock-extended": "^3.0.7",
 		"json-schema-to-typescript": "^10.1.5",
-		"lerna": "^6.6.2",
+		"lerna": "^8.1.9",
 		"nodemon": "^2.0.22",
 		"open-cli": "^8.0.0",
 		"pinst": "^3.0.0",

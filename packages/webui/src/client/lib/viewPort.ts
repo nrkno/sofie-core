@@ -317,7 +317,9 @@ export function lockPointer(): void {
 	if (pointerLockTurnstile === 0) {
 		// pointerLockTurnstile === 0 means that no requests for locking the pointer have been made
 		// since we last unlocked it
-		document.body.requestPointerLock()
+		document.body.requestPointerLock().catch(() => {
+			console.warn('Failed to get pointer lock')
+		})
 		// attach the event handlers only once. Once they are attached, we will track the
 		// locked state and act according to the turnstile
 		if (!pointerHandlerAttached) {
