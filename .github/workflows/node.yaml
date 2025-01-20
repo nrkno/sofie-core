@@ -640,7 +640,7 @@ jobs:
           cd packages
           yarn config set cacheFolder /home/runner/publish-docs-cache
           yarn install
-          yarn build
+          yarn build:all
         env:
           CI: true
       - name: Run docusaurus

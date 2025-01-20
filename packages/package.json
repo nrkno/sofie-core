@@ -17,6 +17,7 @@
 		"prepare": "lerna run prepare",
 		"postinstall": "cd .. && \"$PROJECT_CWD/node_modules/.bin/husky\" install",
 		"build": "lerna run build --ignore @sofie-automation/openapi",
+		"build:all": "lerna run build",
 		"build:try": "lerna run --no-bail build --ignore @sofie-automation/openapi",
 		"watch": "lerna run --parallel build:main --ignore @sofie-automation/openapi -- --watch --preserveWatchOutput",
 		"stage-versions": "git add -u \"*/package.json\" \"*/CHANGELOG.md\" lerna.json yarn.lock",
