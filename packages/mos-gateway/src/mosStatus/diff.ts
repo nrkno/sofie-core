@@ -1,6 +1,7 @@
 import { IMOSObjectStatus } from '@mos-connection/connector'
 import type { MosDeviceStatusesConfig } from '../generated/devices'
 import {
+	IngestPartNotifyItemReady,
 	IngestPartPlaybackStatus,
 	type IngestPartStatus,
 	type IngestRundownStatus,
@@ -51,14 +52,12 @@ export function diffStatuses(
 			})
 
 			// Clear any items too
-			for (const [itemId, isReady] of Object.entries<boolean | undefined>(story.itemsReady)) {
-				if (isReady === undefined) continue
-
+			for (const itemStatus of story.itemsReady) {
 				statuses.push({
 					type: 'item',
 					rundownExternalId,
 					storyId,
-					itemId: itemId,
+					itemId: itemStatus.externalId,
 					mosStatus: MOS_STATUS_UNKNOWN,
 				})
 			}
@@ -88,21 +87,35 @@ export function diffStatuses(
 			})
 		}
 
+		const allItemIds = new Set<string>()
+		const previousItemStatuses = new Map<string, IngestPartNotifyItemReady>()
+		const newItemStatuses = new Map<string, IngestPartNotifyItemReady>()
+
+		for (const itemStatus of previousStatus?.itemsReady ?? []) {
+			previousItemStatuses.set(itemStatus.externalId, itemStatus)
+			allItemIds.add(itemStatus.externalId)
+		}
+		for (const itemStatus of status.itemsReady) {
+			newItemStatuses.set(itemStatus.externalId, itemStatus)
+			allItemIds.add(itemStatus.externalId)
+		}
+
 		// Diff each item in the story
-		const previousItemStatuses = previousStatus?.itemsReady ?? {}
-		const allItemIds = new Set<string>([...Object.keys(status.itemsReady), ...Object.keys(previousItemStatuses)])
-
 		for (const itemId of allItemIds) {
-			const newReady = status.itemsReady[itemId]
-			const previousReady = previousItemStatuses[itemId]
+			const newItemStatus = newItemStatuses.get(itemId)
+			const previousItemStatus = previousItemStatuses.get(itemId)
 
-			const newMosStatus =
-				newReady !== undefined
-					? buildMosStatus(config, status.playbackStatus, newReady, newStatuses?.active)
-					: null
+			const newMosStatus = newItemStatus
+				? buildMosStatus(config, status.playbackStatus, newItemStatus.ready, newStatuses?.active)
+				: null
 			const previousMosStatus =
-				previousReady !== undefined && previousStatus
-					? buildMosStatus(config, previousStatus.playbackStatus, previousReady, previousStatuses?.active)
+				previousItemStatus && previousStatus
+					? buildMosStatus(
+							config,
+							previousStatus.playbackStatus,
+							previousItemStatus.ready,
+							previousStatuses?.active
+					  )
 					: null
 
 			if ((newMosStatus !== null || previousMosStatus !== null) && previousMosStatus !== newMosStatus) {

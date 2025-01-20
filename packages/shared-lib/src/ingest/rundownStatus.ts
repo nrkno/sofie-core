@@ -30,7 +30,7 @@ export interface IngestPartStatus {
 
 	isReady: boolean | null
 
-	itemsReady: Record<string, boolean | undefined>
+	itemsReady: IngestPartNotifyItemReady[]
 
 	playbackStatus: IngestPartPlaybackStatus
 }
@@ -39,4 +39,9 @@ export enum IngestPartPlaybackStatus {
 	UNKNOWN = 'unknown',
 	PLAY = 'play',
 	STOP = 'stop',
+}
+
+export interface IngestPartNotifyItemReady {
+	externalId: string
+	ready: boolean
 }

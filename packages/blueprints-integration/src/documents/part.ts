@@ -1,6 +1,7 @@
 import { UserEditingDefinition, UserEditingProperties } from '../userEditing'
 import type { NoteSeverity } from '../lib'
 import type { ITranslatableMessage } from '../translations'
+import type { IngestPartNotifyItemReady } from '@sofie-automation/shared-lib/dist/ingest/rundownStatus'
 
 /** Timings for the inTransition, when supported and allowed */
 export interface IBlueprintPartInTransition {
@@ -65,7 +66,7 @@ export interface IBlueprintMutatablePart<TPrivateData = unknown, TPublicData = u
 	ingestNotifyPartReady?: boolean | null
 
 	/** Report items as ready to the ingest-device. Only named items will be reported, using the boolean value provided */
-	ingestNotifyItemsReady?: Record<string, boolean | undefined>
+	ingestNotifyItemsReady?: IngestPartNotifyItemReady[]
 
 	/** Classes to set on the TimelineGroupObj for this part */
 	classes?: string[]

@@ -127,7 +127,7 @@ function createIngestPartStatus(
 		externalId: ingestPart.externalId,
 
 		isReady: isReady ?? null,
-		itemsReady: itemsReady ?? {},
+		itemsReady: itemsReady ?? [],
 
 		playbackStatus,
 	}
