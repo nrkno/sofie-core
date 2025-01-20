@@ -1,5 +1,5 @@
 import React from 'react'
-// eslint-disable-next-line node/no-unpublished-import
+// eslint-disable-next-line n/no-unpublished-import
 import { renderHook, act } from '@testing-library/react'
 import { SelectedElementProvider, useSelectedElementsContext, useElementSelection } from '../SelectedElementsContext'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'

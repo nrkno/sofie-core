@@ -1,4 +1,4 @@
-// eslint-disable-next-line node/no-missing-import
+// eslint-disable-next-line n/no-missing-import
 import { Middleware, ResponseContext, ErrorContext, RequestContext, FetchParams } from '../client/ts'
 
 class TestError extends Error {

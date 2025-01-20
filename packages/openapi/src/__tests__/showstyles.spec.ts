@@ -1,4 +1,4 @@
-// eslint-disable-next-line node/no-missing-import
+// eslint-disable-next-line n/no-missing-import
 import {
 	Configuration,
 	GetShowStyleConfig200ResponseResult,

@@ -1,4 +1,4 @@
-// eslint-disable-next-line node/no-missing-import
+// eslint-disable-next-line n/no-missing-import
 import { Configuration, PlaylistsApi, ResponseError } from '../../client/ts'
 import { checkServer } from '../checkServer'
 import Logging from '../httpLogging'
@@ -160,7 +160,7 @@ describe('Network client', () => {
 				clearSourceLayersRequest: {
 					sourceLayerIds: ['42'],
 				},
-			})
+			}),
 		).rejects.toThrow()
 	})
 
