@@ -47,7 +47,7 @@
 		"amqplib": "^0.10.5",
 		"deepmerge": "^4.3.1",
 		"elastic-apm-node": "^4.10.0",
-		"mongodb": "^5.9.2",
+		"mongodb": "^6.12.0",
 		"p-lazy": "^3.1.0",
 		"p-timeout": "^4.1.0",
 		"superfly-timeline": "9.0.2",
