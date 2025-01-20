@@ -72,7 +72,6 @@
 	"dependencies": {
 		"@sofie-automation/shared-lib": "1.52.0-in-development",
 		"ejson": "^2.2.3",
-		"eventemitter3": "^4.0.7",
 		"faye-websocket": "^0.11.4",
 		"got": "^11.8.6",
 		"tslib": "^2.8.1",

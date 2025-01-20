@@ -47,7 +47,6 @@
 		"amqplib": "^0.10.5",
 		"deepmerge": "^4.3.1",
 		"elastic-apm-node": "^4.10.0",
-		"eventemitter3": "^4.0.7",
 		"mongodb": "^5.9.2",
 		"p-lazy": "^3.1.0",
 		"p-timeout": "^4.1.0",

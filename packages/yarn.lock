@@ -5920,7 +5920,6 @@ __metadata:
     amqplib: "npm:^0.10.5"
     deepmerge: "npm:^4.3.1"
     elastic-apm-node: "npm:^4.10.0"
-    eventemitter3: "npm:^4.0.7"
     jest-mock-extended: "npm:^3.0.7"
     mongodb: "npm:^5.9.2"
     p-lazy: "npm:^3.1.0"
@@ -5972,7 +5971,6 @@ __metadata:
   dependencies:
     "@sofie-automation/shared-lib": "npm:1.52.0-in-development"
     ejson: "npm:^2.2.3"
-    eventemitter3: "npm:^4.0.7"
     faye-websocket: "npm:^0.11.4"
     got: "npm:^11.8.6"
     tslib: "npm:^2.8.1"
