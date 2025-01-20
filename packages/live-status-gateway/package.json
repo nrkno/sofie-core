@@ -68,7 +68,7 @@
 	"devDependencies": {
 		"@asyncapi/generator": "^2.5.0",
 		"@asyncapi/html-template": "^3.1.0",
-		"@asyncapi/nodejs-ws-template": "^0.9.36",
+		"@asyncapi/nodejs-ws-template": "patch:@asyncapi/nodejs-ws-template@npm%3A0.9.36#~/.yarn/patches/@asyncapi-nodejs-ws-template-npm-0.9.36-2652c2d6e5.patch",
 		"type-fest": "^4.32.0"
 	},
 	"lint-staged": {
