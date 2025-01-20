@@ -1904,7 +1904,7 @@ svg.icon {
 						}
 
 						&.splits,
-						&.live-speak {
+						&.live-speak &.remote-speak {
 							.segment-timeline__piece__preview {
 								position: absolute;
 								top: 0;

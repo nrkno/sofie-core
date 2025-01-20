@@ -211,7 +211,7 @@ export async function checkPieceContentStatusAndDependencies(
 		packageContainerPackageStatuses: [],
 	}
 
-	const ignoreMediaStatus = piece.content && piece.content.ignoreMediaObjectStatus
+	const ignoreMediaStatus = true // piece.content && piece.content.ignoreMediaObjectStatus
 	if (!ignoreMediaStatus) {
 		if (piece.expectedPackages) {
 			const getPackageInfos = async (packageId: ExpectedPackageId) => {

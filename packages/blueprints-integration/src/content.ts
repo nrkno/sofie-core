@@ -42,6 +42,8 @@ export type SomeContent =
 	| GraphicsContent
 	| UnknownContent
 	| EvsContent
+	| RemoteSpeakContent
+	| LightingContent
 
 export type UnknownContent = BaseContent
 
@@ -189,5 +191,9 @@ export interface TransitionContent extends BaseContent {
 }
 
 export type SomeTransitionContent = VTContent | TransitionContent
+
+export type RemoteSpeakContent = RemoteContent
+
+export type LightingContent = UnknownContent
 
 export { SourceLayerType }
