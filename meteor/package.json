@@ -52,7 +52,7 @@
 		"body-parser": "^1.20.2",
 		"deep-extend": "0.6.0",
 		"deepmerge": "^4.3.1",
-		"elastic-apm-node": "^4.8.0",
+		"elastic-apm-node": "^4.10.0",
 		"i18next": "^21.10.0",
 		"indexof": "0.0.1",
 		"koa": "^2.15.0",
@@ -60,17 +60,17 @@
 		"koa-static": "^5.0.0",
 		"meteor-node-stubs": "^1.2.7",
 		"moment": "^2.30.1",
-		"nanoid": "^3.3.7",
+		"nanoid": "^3.3.8",
 		"node-gyp": "^9.4.1",
 		"ntp-client": "^0.5.3",
 		"object-path": "^0.11.8",
 		"p-lazy": "^3.1.0",
-		"semver": "^7.5.4",
+		"semver": "^7.6.3",
 		"superfly-timeline": "9.0.2",
 		"threadedclass": "^1.2.2",
 		"timecode": "0.0.4",
-		"type-fest": "^3.13.1",
-		"underscore": "^1.13.6",
+		"type-fest": "^4.32.0",
+		"underscore": "^1.13.7",
 		"winston": "^3.11.0"
 	},
 	"devDependencies": {
@@ -112,7 +112,7 @@
 		"prettier": "^2.8.8",
 		"standard-version": "^9.5.0",
 		"ts-jest": "^29.1.2",
-		"typescript": "^4.9.5",
+		"typescript": "~5.1",
 		"yargs": "^17.7.2"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
@@ -140,5 +140,5 @@
 		"@sofie-automation/job-worker": "portal:../packages/job-worker",
 		"@sofie-automation/shared-lib": "portal:../packages/shared-lib"
 	},
-	"packageManager": "yarn@3.5.0"
+	"packageManager": "yarn@4.6.0"
 }
