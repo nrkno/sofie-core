@@ -36,6 +36,7 @@ import { defaultStudio } from '../../../../__mocks__/defaultCollectionObjects'
 import { MediaObjects } from '../../../collections'
 import { PieceDependencies } from '../common'
 import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
+import { PieceContentStatusMessageFactory } from '../messageFactory'
 
 const mockMediaObjectsCollection = MongoMock.getInnerMockCollection<MediaObject>(MediaObjects)
 
@@ -449,7 +450,9 @@ describe('lib/mediaObjects', () => {
 			timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		})
 
-		const status1 = await checkPieceContentStatusAndDependencies(mockStudio, piece1, sourcelayer1)
+		const messageFactory = new PieceContentStatusMessageFactory(undefined)
+
+		const status1 = await checkPieceContentStatusAndDependencies(mockStudio, messageFactory, piece1, sourcelayer1)
 		expect(status1[0].status).toEqual(PieceStatusCode.OK)
 		expect(status1[0].messages).toHaveLength(0)
 		expect(status1[1]).toMatchObject(
@@ -460,7 +463,7 @@ describe('lib/mediaObjects', () => {
 			})
 		)
 
-		const status2 = await checkPieceContentStatusAndDependencies(mockStudio, piece2, sourcelayer1)
+		const status2 = await checkPieceContentStatusAndDependencies(mockStudio, messageFactory, piece2, sourcelayer1)
 		expect(status2[0].status).toEqual(PieceStatusCode.SOURCE_BROKEN)
 		expect(status2[0].messages).toHaveLength(1)
 		expect(status2[0].messages[0]).toMatchObject({
@@ -474,7 +477,7 @@ describe('lib/mediaObjects', () => {
 			})
 		)
 
-		const status3 = await checkPieceContentStatusAndDependencies(mockStudio, piece3, sourcelayer1)
+		const status3 = await checkPieceContentStatusAndDependencies(mockStudio, messageFactory, piece3, sourcelayer1)
 		expect(status3[0].status).toEqual(PieceStatusCode.SOURCE_MISSING)
 		expect(status3[0].messages).toHaveLength(1)
 		expect(status3[0].messages[0]).toMatchObject({
