@@ -1,0 +1,13 @@
+diff --git a/package.json b/package.json
+index 396670e16d727c56277a0a5d3e5a1f4bcddca588..93787ca546e8b9be46d353d59078bea63949a6b4 100644
+--- a/package.json
++++ b/package.json
+@@ -86,7 +86,7 @@
+         "description": "Custom location of the AsyncAPI file that you provided as an input in generation. By default it is located in the root of the output directory"
+       }
+     },
+-    "generator": ">=0.50.0 <2.0.0",
++    "generator": ">=0.50.0 <3.0.0",
+     "filters": [
+       "@asyncapi/generator-filters"
+     ],

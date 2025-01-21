@@ -35,11 +35,11 @@
 		"install_swagger.js"
 	],
 	"dependencies": {
-		"tslib": "^2.6.2"
+		"tslib": "^2.8.1"
 	},
 	"devDependencies": {
-		"@openapitools/openapi-generator-cli": "^2.9.0",
-		"eslint-plugin-yml": "^1.12.2",
+		"@openapitools/openapi-generator-cli": "^2.15.3",
+		"eslint-plugin-yml": "^1.16.0",
 		"js-yaml": "^4.1.0",
 		"wget-improved": "^3.4.0"
 	},
