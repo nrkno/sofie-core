@@ -332,6 +332,9 @@ export function getPieceInstancesForPart(
 
 		playingSegment = playingRundown.getSegment(playingPartInstance.partInstance.segmentId)
 		if (!playingSegment) {
+			// Double check that there are no parts using the old segment ids:
+			// TODO: This whole section can probably be removed later, it's really unneccessary in the grand scheme of
+			// things, it's here only to debug some problems
 			const rundownId = playingRundown.rundown._id
 			context.directCollections.Segments.findFetch({
 				rundownId: rundownId,
@@ -344,11 +347,14 @@ export function getPieceInstancesForPart(
 					)
 				})
 				.catch((e) => logger.error(e))
+			// End of temporary section
 
 			throw new Error(
 				`Segment "${playingPartInstance.partInstance.segmentId}" in Rundown "${
 					playingRundown.rundown._id
-				}" not found! (other segments: ${JSON.stringify(playingRundown.segments.map((s) => s.segment._id))})`
+				}" not found! (partInstanceId: "${
+					playingPartInstance.partInstance._id
+				}", other segments: ${JSON.stringify(playingRundown.segments.map((s) => s.segment._id))})`
 			)
 		}
 	}

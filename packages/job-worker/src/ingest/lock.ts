@@ -14,8 +14,11 @@ export interface CommitIngestData {
 	removedSegmentIds: SegmentId[]
 	/**
 	 * Segments that had their ids changed. This helps then be orphaned in the correct place
-	 * eg, whole segment is renamed and middle part deleted
-	 * Note: Only supported for MOS, not 'normal' ingest operations
+	 * eg, whole segment is renamed and middle part deleted.
+	 *
+	 * Maps fromSegmentId to toSegmentId.
+	 *
+	 * _Note: Only supported for MOS, not 'normal' ingest operations_
 	 */
 	renamedSegments: Map<SegmentId, SegmentId> | null
 

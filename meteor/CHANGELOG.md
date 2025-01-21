@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.51.6](///compare/v1.51.5...v1.51.6) (2025-01-14)
+
+
+### Features
+
+* add more logging 8c16ce8
+
+
+### Bug Fixes
+
+* Include previousPartInstance in check to orphan segments rather than remove them. 51b7104
+* only run onPart/PiecePlaybackStarted/Stopped on current, next or previous parts a9fe401
+* **PoGw:** filter log output to ensure that message field in JSONL output is never an object 0d2b844
+* set nextPartInstance to null if it's referring to a Segment that has been removed b1045f9
+* updatePartInstancesSegmentIds: take into account when multiple segments have been merged into one. b769157
+
 ### [1.51.5](///compare/v1.51.4...v1.51.5) (2025-01-07)
 
 

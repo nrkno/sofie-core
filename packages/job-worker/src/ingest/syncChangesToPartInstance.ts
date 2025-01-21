@@ -31,6 +31,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { convertIngestModelToPlayoutRundownWithSegments } from './commit'
 import { convertNoteToNotification } from '../notifications/util'
 import { PlayoutRundownModel } from '../playout/model/PlayoutRundownModel'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 
 type PlayStatus = 'previous' | 'current' | 'next'
 type SyncedInstance = {
@@ -141,15 +142,29 @@ export async function syncChangesToPartInstances(
 				if (!playoutRundownModelForPart)
 					throw new Error(`Internal Error: playoutRundownModelForPart is undefined (it should never be)`)
 
-				const proposedPieceInstances = getPieceInstancesForPart(
-					context,
-					playoutModel,
-					previousPartInstance,
-					playoutRundownModelForPart,
-					part,
-					await piecesThatMayBeActive,
-					existingPartInstance.partInstance._id
-				)
+				// TMP: wrap in try/catch for troubleshooting:
+				let proposedPieceInstances: PieceInstance[] = []
+				try {
+					proposedPieceInstances = getPieceInstancesForPart(
+						context,
+						playoutModel,
+						previousPartInstance,
+						playoutRundownModelForPart,
+						part,
+						await piecesThatMayBeActive,
+						existingPartInstance.partInstance._id
+					)
+				} catch (e) {
+					logger.error(
+						`TROUBLESHOOTING: currentPartInstance: ${JSON.stringify(playoutModel.currentPartInstance)}`
+					)
+					logger.error(`TROUBLESHOOTING: nextPartInstance: ${JSON.stringify(playoutModel.nextPartInstance)}`)
+					logger.error(
+						`TROUBLESHOOTING: previousPartInstance: ${JSON.stringify(playoutModel.previousPartInstance)}`
+					)
+
+					throw e
+				}
 
 				logger.info(`Syncing ingest changes for part: ${partId} (orphaned: ${!!newPart})`)
 
