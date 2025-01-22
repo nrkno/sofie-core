@@ -372,6 +372,7 @@ export function studioSettingsFrom(apiStudioSettings: APIStudioSettings): Comple
 		allowHold: apiStudioSettings.allowHold ?? true, // Backwards compatible
 		allowPieceDirectPlay: apiStudioSettings.allowPieceDirectPlay ?? true, // Backwards compatible
 		enableBuckets: apiStudioSettings.enableBuckets ?? true, // Backwards compatible
+		enableEvaluationForm: apiStudioSettings.enableEvaluationForm ?? true, // Backwards compatible
 	}
 }
 
@@ -396,6 +397,7 @@ export function APIStudioSettingsFrom(settings: IStudioSettings): Complete<APISt
 		allowHold: settings.allowHold,
 		allowPieceDirectPlay: settings.allowPieceDirectPlay,
 		enableBuckets: settings.enableBuckets,
+		enableEvaluationForm: settings.enableEvaluationForm,
 	}
 }
 

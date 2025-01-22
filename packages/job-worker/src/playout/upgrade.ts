@@ -129,6 +129,7 @@ export async function handleBlueprintUpgradeForStudio(context: JobContext, _data
 		allowHold: true,
 		allowPieceDirectPlay: true,
 		enableBuckets: true,
+		enableEvaluationForm: true,
 	}
 
 	await context.directCollections.Studios.update(context.studioId, {

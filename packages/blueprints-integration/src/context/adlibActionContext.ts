@@ -31,7 +31,7 @@ export interface IActionExecutionContext
 	// getNextShowStyleConfig(): Readonly<{ [key: string]: ConfigItemValue }>
 
 	/** Move the next part through the rundown. Can move by either a number of parts, or segments in either direction. */
-	moveNextPart(partDelta: number, segmentDelta: number): Promise<void>
+	moveNextPart(partDelta: number, segmentDelta: number, ignoreQuickloop?: boolean): Promise<void>
 	/** Set flag to perform take after executing the current action. Returns state of the flag after each call. */
 	takeAfterExecuteAction(take: boolean): Promise<boolean>
 	/** Inform core that a take out of the current partinstance should be blocked until the specified time */

@@ -1,5 +1,3 @@
-import * as React from 'react'
-import * as _ from 'underscore'
 import ClassNames from 'classnames'
 import {
 	DashboardLayoutEndsWords,
@@ -8,7 +6,7 @@ import {
 } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../lib/rundownLayouts'
 import { dashboardElementStyle } from './DashboardPanel'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { ScriptContent } from '@sofie-automation/blueprints-integration'
@@ -17,65 +15,55 @@ import { getScriptPreview } from '../../lib/ui/scriptPreview'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { PieceInstances } from '../../collections'
 import { ReadonlyDeep } from 'type-fest'
+import { useTranslation } from 'react-i18next'
 
 interface IEndsWordsPanelProps {
-	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutEndWords
 	playlist: DBRundownPlaylist
 	showStyleBase: UIShowStyleBase
 }
 
-interface IEndsWordsPanelTrackedProps {
-	livePieceInstance?: PieceInstance
-}
+export function EndWordsPanel({ layout, panel, playlist, showStyleBase }: IEndsWordsPanelProps): JSX.Element {
+	const { t } = useTranslation()
 
-interface IState {}
+	const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(layout)
 
-class EndWordsPanelInner extends React.Component<
-	Translated<IEndsWordsPanelProps & IEndsWordsPanelTrackedProps>,
-	IState
-> {
-	render(): JSX.Element {
-		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
+	const livePieceInstance = useTracker(
+		() => getPieceWithScript(playlist, showStyleBase, panel),
+		[playlist, showStyleBase, panel]
+	)
 
-		const { t, livePieceInstance, panel } = this.props
-		const content = livePieceInstance?.piece.content as Partial<ScriptContent> | undefined
+	const content = livePieceInstance?.piece.content as Partial<ScriptContent> | undefined
 
-		const { endOfScript } = getScriptPreview(content?.fullScript || '')
+	const { endOfScript } = getScriptPreview(content?.fullScript || '')
 
-		return (
-			<div
-				className={ClassNames(
-					'end-words-panel timing',
-					isDashboardLayout ? (panel as DashboardLayoutEndsWords).customClasses : undefined
-				)}
-				style={isDashboardLayout ? dashboardElementStyle(this.props.panel as DashboardLayoutEndsWords) : {}}
-			>
-				<div className="timing-clock left">
-					{!this.props.panel.hideLabel && <span className="timing-clock-label">{t('End Words')}</span>}
-					<span className="text">&lrm;{endOfScript}&lrm;</span>
-				</div>
+	return (
+		<div
+			className={ClassNames(
+				'end-words-panel timing',
+				isDashboardLayout ? (panel as DashboardLayoutEndsWords).customClasses : undefined
+			)}
+			style={isDashboardLayout ? dashboardElementStyle(panel as DashboardLayoutEndsWords) : {}}
+		>
+			<div className="timing-clock left">
+				{!panel.hideLabel && <span className="timing-clock-label">{t('End Words')}</span>}
+				<span className="text">&lrm;{endOfScript}&lrm;</span>
 			</div>
-		)
-	}
+		</div>
+	)
 }
 
-export const EndWordsPanel = translateWithTracker<IEndsWordsPanelProps, IState, IEndsWordsPanelTrackedProps>(
-	(props: IEndsWordsPanelProps) => {
-		return { livePieceInstance: getPieceWithScript(props) }
-	},
-	(_data, props: IEndsWordsPanelProps, nextProps: IEndsWordsPanelProps) => {
-		return !_.isEqual(props, nextProps)
-	}
-)(EndWordsPanelInner)
-
-function getPieceWithScript(props: IEndsWordsPanelProps): PieceInstance | undefined {
-	const currentPartInstanceId = props.playlist.currentPartInfo?.partInstanceId
+function getPieceWithScript(
+	playlist: DBRundownPlaylist,
+	showStyleBase: UIShowStyleBase,
+	panel: RundownLayoutEndWords
+): PieceInstance | undefined {
+	const currentPartInstanceId = playlist.currentPartInfo?.partInstanceId
 
 	const unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet = getUnfinishedPieceInstancesReactive(
-		props.playlist,
-		props.showStyleBase
+		playlist,
+		showStyleBase
 	)
 
 	const highestStartedPlayback = unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet.reduce(
@@ -90,7 +78,7 @@ function getPieceWithScript(props: IEndsWordsPanelProps): PieceInstance | undefi
 	)
 
 	const activeLayers = unfinishedPieces.map((p) => p.piece.sourceLayerId)
-	const hasAdditionalLayer: boolean = props.panel.additionalLayers?.some((s) => activeLayers.includes(s)) ?? false
+	const hasAdditionalLayer: boolean = panel.additionalLayers?.some((s) => activeLayers.includes(s)) ?? false
 
 	if (!hasAdditionalLayer) {
 		return undefined
@@ -100,15 +88,15 @@ function getPieceWithScript(props: IEndsWordsPanelProps): PieceInstance | undefi
 	const piecesInPart: PieceInstance[] = currentPartInstanceId
 		? PieceInstances.find({
 				partInstanceId: currentPartInstanceId,
-				playlistActivationId: props.playlist.activationId,
+				playlistActivationId: playlist.activationId,
 		  }).fetch()
 		: []
 
-	return props.panel.requiredLayerIds && props.panel.requiredLayerIds.length
+	return panel.requiredLayerIds && panel.requiredLayerIds.length
 		? piecesInPart.find((piece: PieceInstance) => {
 				return (
-					(props.panel.requiredLayerIds || []).indexOf(piece.piece.sourceLayerId) !== -1 &&
-					piece.partInstanceId === props.playlist.currentPartInfo?.partInstanceId
+					(panel.requiredLayerIds || []).indexOf(piece.piece.sourceLayerId) !== -1 &&
+					piece.partInstanceId === playlist.currentPartInfo?.partInstanceId
 				)
 		  })
 		: undefined

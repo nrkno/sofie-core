@@ -83,6 +83,11 @@ export interface IStudioSettings {
 	enableBuckets: boolean
 
 	/**
+	 * Enable evaluation form - the default behavior is to have evaluation forms.
+	 */
+	enableEvaluationForm: boolean
+
+	/**
 	 * Doubleclick changes behaviour as selector for userediting
 	 */
 	enableUserEdits?: boolean

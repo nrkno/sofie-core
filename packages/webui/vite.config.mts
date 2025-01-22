@@ -59,6 +59,11 @@ export default defineConfig({
 			'/api': 'http://127.0.0.1:3000',
 			'/site.webmanifest': 'http://127.0.0.1:3000',
 			'/meteor-runtime-config.js': 'http://127.0.0.1:3000',
+			'/images/sofie-logo.svg': 'http://127.0.0.1:3000',
+			'/websocket': {
+				target: `ws://127.0.0.1:3000`,
+				ws: true,
+			},
 		},
 	},
 

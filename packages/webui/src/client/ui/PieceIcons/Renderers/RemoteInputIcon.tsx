@@ -35,11 +35,17 @@ export function BaseRemoteInputIcon(props: Readonly<React.PropsWithChildren<{ cl
 	)
 }
 
-export default function RemoteInputIcon(props: Readonly<{ inputIndex?: string; abbreviation?: string }>): JSX.Element {
+export function RemoteInputIcon({
+	inputIndex,
+	abbreviation,
+}: {
+	inputIndex?: string
+	abbreviation?: string
+}): JSX.Element {
 	return (
 		<BaseRemoteInputIcon className="remote">
-			{props.abbreviation ? props.abbreviation : 'LIVE'}
-			<tspan style={{ fontFamily: 'Roboto', fontWeight: 'normal' }}>{props.inputIndex ?? ''}</tspan>
+			{abbreviation ? abbreviation : 'LIVE'}
+			<tspan style={{ fontFamily: 'Roboto', fontWeight: 'normal' }}>{inputIndex ?? ''}</tspan>
 		</BaseRemoteInputIcon>
 	)
 }

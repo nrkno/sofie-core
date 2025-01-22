@@ -230,6 +230,13 @@ export interface IMoveNextAction extends ITriggeredActionBase {
 	 * @memberof IMoveNextAction
 	 */
 	parts: number
+	/**
+	 * When moving the next part it should ignore any of the boundaries set by the QuickLoop feature
+	 *
+	 * @type {boolean}
+	 * @memberof IMoveNextAction
+	 */
+	ignoreQuickLoop: boolean
 }
 
 export interface ICreateSnapshotForDebugAction extends ITriggeredActionBase {

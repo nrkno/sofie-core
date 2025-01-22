@@ -8,7 +8,7 @@ import {
 import { ForceQuickLoopAutoNext } from '@sofie-automation/shared-lib/dist/core/model/StudioSettings'
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { PlayoutPartInstanceModel } from '../PlayoutPartInstanceModel'
 import { JobContext } from '../../../jobs'
@@ -150,6 +150,7 @@ export class QuickLoopService {
 	}
 
 	getSegmentsBetweenMarkers(startMarker: QuickLoopMarker, endMarker: QuickLoopMarker): SegmentId[] {
+		// note - this function could be refactored to call getPartsBetweenMarkers instead but it will be less efficient
 		const segments = this.playoutModel.getAllOrderedSegments()
 		const segmentIds: SegmentId[] = []
 
@@ -199,6 +200,71 @@ export class QuickLoopService {
 		}
 
 		return segmentIds
+	}
+
+	getPartsBetweenMarkers(
+		startMarker: QuickLoopMarker,
+		endMarker: QuickLoopMarker
+	): { parts: PartId[]; segments: SegmentId[] } {
+		const parts = this.playoutModel.getAllOrderedParts()
+		const segmentIds: SegmentId[] = []
+		const partIds: PartId[] = []
+
+		let passedStart = false
+		let seenLastRundown = false
+		let seenLastSegment = false
+
+		for (const p of parts) {
+			if (
+				!passedStart &&
+				((startMarker.type === QuickLoopMarkerType.PART && p._id === startMarker.id) ||
+					(startMarker.type === QuickLoopMarkerType.SEGMENT && p.segmentId === startMarker.id) ||
+					(startMarker.type === QuickLoopMarkerType.RUNDOWN && p.rundownId === startMarker.id) ||
+					startMarker.type === QuickLoopMarkerType.PLAYLIST)
+			) {
+				// the start marker is this part, this is the first part in the loop, or this is the first segment that is in the loop
+				// segments from here on are included in the loop
+				passedStart = true
+			}
+
+			if (endMarker.type === QuickLoopMarkerType.RUNDOWN) {
+				// last rundown needs to be inclusive so we need to break once the rundownId is not equal to segment's rundownId
+				if (p.rundownId === endMarker.id) {
+					if (!passedStart) {
+						// we hit the end before the start so quit now:
+						break
+					}
+					seenLastRundown = true
+				} else if (seenLastRundown) {
+					// we have passed the last rundown
+					break
+				}
+			} else if (endMarker.type === QuickLoopMarkerType.SEGMENT) {
+				// last segment needs to be inclusive so we need to break once the segmentId changes but not before
+				if (p.segmentId === endMarker.id) {
+					if (!passedStart) {
+						// we hit the end before the start so quit now:
+						break
+					}
+					seenLastSegment = true
+				} else if (seenLastSegment) {
+					// we have passed the last rundown
+					break
+				}
+			}
+
+			if (passedStart) {
+				if (segmentIds.slice(-1)[0] !== p.segmentId) segmentIds.push(p.segmentId)
+				partIds.push(p._id)
+			}
+
+			if (endMarker.type === QuickLoopMarkerType.PART && p._id === endMarker.id) {
+				// the endMarker is this part so we can quit now
+				break
+			}
+		}
+
+		return { parts: partIds, segments: segmentIds }
 	}
 
 	private areMarkersFlipped(startPosition: MarkerPosition, endPosition: MarkerPosition) {

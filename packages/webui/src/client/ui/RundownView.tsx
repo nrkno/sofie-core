@@ -12,7 +12,7 @@ import {
 	useTracker,
 } from '../lib/ReactMeteorData/react-meteor-data'
 import { VTContent, TSR, NoteSeverity, ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { withTranslation, WithTranslation } from 'react-i18next'
+import { useTranslation, withTranslation } from 'react-i18next'
 import timer from 'react-timer-hoc'
 import * as CoreIcon from '@nrk/core-icons/jsx'
 import { Spinner } from '../lib/Spinner'
@@ -281,75 +281,69 @@ interface ITimingDisplayProps {
 	layout: RundownLayoutRundownHeader | undefined
 }
 
-const TimingDisplay = withTranslation()(
-	withTiming<ITimingDisplayProps & WithTranslation, {}>()(
-		class TimingDisplay extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
-			render(): JSX.Element | null {
-				const { t, rundownPlaylist, currentRundown } = this.props
+const TimingDisplay = withTiming<ITimingDisplayProps, {}>()(function TimingDisplay({
+	rundownPlaylist,
+	currentRundown,
+	rundownCount,
+	layout,
+	timingDurations,
+}: WithTiming<ITimingDisplayProps>): JSX.Element | null {
+	const { t } = useTranslation()
 
-				if (!rundownPlaylist) return null
+	if (!rundownPlaylist) return null
 
-				const expectedStart = PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
-				const expectedEnd = PlaylistTiming.getExpectedEnd(rundownPlaylist.timing)
-				const expectedDuration = PlaylistTiming.getExpectedDuration(rundownPlaylist.timing)
-				const showEndTiming =
-					!this.props.timingDurations.rundownsBeforeNextBreak ||
-					!this.props.layout?.showNextBreakTiming ||
-					(this.props.timingDurations.rundownsBeforeNextBreak.length > 0 &&
-						(!this.props.layout?.hideExpectedEndBeforeBreak ||
-							(this.props.timingDurations.breakIsLastRundown && this.props.layout?.lastRundownIsNotBreak)))
-				const showNextBreakTiming =
-					rundownPlaylist.startedPlayback &&
-					this.props.timingDurations.rundownsBeforeNextBreak?.length &&
-					this.props.layout?.showNextBreakTiming &&
-					!(this.props.timingDurations.breakIsLastRundown && this.props.layout.lastRundownIsNotBreak)
+	const expectedStart = PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
+	const expectedEnd = PlaylistTiming.getExpectedEnd(rundownPlaylist.timing)
+	const expectedDuration = PlaylistTiming.getExpectedDuration(rundownPlaylist.timing)
+	const showEndTiming =
+		!timingDurations.rundownsBeforeNextBreak ||
+		!layout?.showNextBreakTiming ||
+		(timingDurations.rundownsBeforeNextBreak.length > 0 &&
+			(!layout?.hideExpectedEndBeforeBreak || (timingDurations.breakIsLastRundown && layout?.lastRundownIsNotBreak)))
+	const showNextBreakTiming =
+		rundownPlaylist.startedPlayback &&
+		timingDurations.rundownsBeforeNextBreak?.length &&
+		layout?.showNextBreakTiming &&
+		!(timingDurations.breakIsLastRundown && layout.lastRundownIsNotBreak)
 
-				return (
-					<div className="timing mod">
-						<PlaylistStartTiming rundownPlaylist={rundownPlaylist} hideDiff={true} />
-						<RundownName
-							rundownPlaylist={rundownPlaylist}
-							currentRundown={currentRundown}
-							rundownCount={this.props.rundownCount}
-						/>
-						<TimeOfDay />
-						{rundownPlaylist.currentPartInfo && (
-							<span className="timing-clock current-remaining">
-								<CurrentPartOrSegmentRemaining
-									currentPartInstanceId={rundownPlaylist.currentPartInfo.partInstanceId}
-									heavyClassName="overtime"
-									preferSegmentTime={true}
-								/>
-								<AutoNextStatus />
-								{rundownPlaylist.holdState && rundownPlaylist.holdState !== RundownHoldState.COMPLETE ? (
-									<div className="rundown__header-status rundown__header-status--hold">{t('Hold')}</div>
-								) : null}
-							</span>
-						)}
-						{showEndTiming ? (
-							<PlaylistEndTiming
-								rundownPlaylist={rundownPlaylist}
-								loop={isLoopRunning(rundownPlaylist)}
-								expectedStart={expectedStart}
-								expectedEnd={expectedEnd}
-								expectedDuration={expectedDuration}
-								endLabel={this.props.layout?.plannedEndText}
-								rundownCount={this.props.rundownCount}
-							/>
-						) : null}
-						{showNextBreakTiming ? (
-							<NextBreakTiming
-								rundownsBeforeBreak={this.props.timingDurations.rundownsBeforeNextBreak!}
-								breakText={this.props.layout?.nextBreakText}
-								lastChild={!showEndTiming}
-							/>
-						) : null}
-					</div>
-				)
-			}
-		}
+	return (
+		<div className="timing mod">
+			<PlaylistStartTiming rundownPlaylist={rundownPlaylist} hideDiff={true} />
+			<RundownName rundownPlaylist={rundownPlaylist} currentRundown={currentRundown} rundownCount={rundownCount} />
+			<TimeOfDay />
+			{rundownPlaylist.currentPartInfo && (
+				<span className="timing-clock current-remaining">
+					<CurrentPartOrSegmentRemaining
+						currentPartInstanceId={rundownPlaylist.currentPartInfo.partInstanceId}
+						heavyClassName="overtime"
+						preferSegmentTime={true}
+					/>
+					<AutoNextStatus />
+					{rundownPlaylist.holdState && rundownPlaylist.holdState !== RundownHoldState.COMPLETE ? (
+						<div className="rundown__header-status rundown__header-status--hold">{t('Hold')}</div>
+					) : null}
+				</span>
+			)}
+			{showEndTiming ? (
+				<PlaylistEndTiming
+					rundownPlaylist={rundownPlaylist}
+					loop={isLoopRunning(rundownPlaylist)}
+					expectedStart={expectedStart}
+					expectedEnd={expectedEnd}
+					expectedDuration={expectedDuration}
+					endLabel={layout?.plannedEndText}
+				/>
+			) : null}
+			{showNextBreakTiming ? (
+				<NextBreakTiming
+					rundownsBeforeBreak={timingDurations.rundownsBeforeNextBreak!}
+					breakText={layout?.nextBreakText}
+					lastChild={!showEndTiming}
+				/>
+			) : null}
+		</div>
 	)
-)
+})
 
 interface IRundownHeaderProps {
 	playlist: DBRundownPlaylist
@@ -3037,7 +3031,8 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 											<ErrorBoundary>
 												{this.props.matchedSegments &&
 													this.props.matchedSegments.length > 0 &&
-													this.props.userPermissions.studio && <AfterBroadcastForm playlist={playlist} />}
+													this.props.userPermissions.studio &&
+													studio.settings.enableEvaluationForm && <AfterBroadcastForm playlist={playlist} />}
 											</ErrorBoundary>
 											<ErrorBoundary>
 												<RundownHeader

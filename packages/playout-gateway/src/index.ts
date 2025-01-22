@@ -12,6 +12,16 @@ const myFormat = combine(
 	splat(),
 	printf((obj) => {
 		obj.localTimestamp = new Date().toISOString()
+		// Prevent errors and other objects to be inserted as Objects into message field
+		if (typeof obj.message === 'object') {
+			if (obj.message instanceof Error) {
+				const errorObj = obj.message
+				obj.message = errorObj.message
+				obj.details = errorObj
+			} else {
+				obj.message = JSON.stringify(obj.message)
+			}
+		}
 		return JSON.stringify(obj) // make single line
 	})
 )

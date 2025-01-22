@@ -221,4 +221,5 @@ export interface APIStudioSettings {
 	allowHold?: boolean
 	allowPieceDirectPlay?: boolean
 	enableBuckets?: boolean
+	enableEvaluationForm?: boolean
 }

@@ -1,7 +1,7 @@
 
 .rundown-view-shelf.dashboard-panel {
 	width: auto;
-	margin: 0 1.5em;
+	margin: -0.8em 1.5em 0px 0px;
 	padding: 0;
 	position: relative;
 	background: none;
@@ -19,7 +19,7 @@
 			grid-template-areas: '. .';
 
 			> .dashboard-panel__panel__button__label-container {
-				padding: 2px 4px;
+				padding: 3px 1px 3px 6px;
 				white-space: nowrap;
 				overflow: hidden;
 				text-overflow: ellipsis;
@@ -125,15 +125,16 @@
 
 		&.graphics {
 			.dashboard-panel__panel__button__label-container {
+				/*
 				grid-row: 1;
 				white-space: normal;
 				padding-left: 26px;
+				*/
 			}
 		}
 	}
 }
 
 .segment-timeline + .rundown-view-shelf {
-	padding: 5px;
-	padding-left: 12.5em;
+	padding: 2px 5px 5px 13.3em;
 }

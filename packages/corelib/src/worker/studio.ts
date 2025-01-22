@@ -231,6 +231,7 @@ export interface StopPiecesOnSourceLayersProps extends RundownPlayoutPropsBase {
 export interface MoveNextPartProps extends RundownPlayoutPropsBase {
 	partDelta: number
 	segmentDelta: number
+	ignoreQuickLoop?: boolean
 }
 export type ActivateHoldProps = RundownPlayoutPropsBase
 export type DeactivateHoldProps = RundownPlayoutPropsBase

@@ -7,7 +7,7 @@ sidebar_position: 3
 ## Permissions
 
 There are a few different access levels that users can be assigned. They are not heirarchical, you will often need to enable multiple for each user.
-Any client that can access sofie always has at least view-only access to the rundowns, and system status pages.
+Any client that can access Sofie always has at least view-only access to the rundowns, and system status pages.
 
 | Level         | Summary                                                                                                                                          |
 | :------------ | :----------------------------------------------------------------------------------------------------------------------------------------------- |

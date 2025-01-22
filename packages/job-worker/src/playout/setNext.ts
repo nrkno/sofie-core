@@ -364,9 +364,11 @@ async function cleanupOrphanedItems(context: JobContext, playoutModel: PlayoutMo
 
 	const selectedPartInstancesSegmentIds = new Set<SegmentId>()
 
+	const previousPartInstance = playoutModel.previousPartInstance?.partInstance
 	const currentPartInstance = playoutModel.currentPartInstance?.partInstance
 	const nextPartInstance = playoutModel.nextPartInstance?.partInstance
 
+	if (previousPartInstance) selectedPartInstancesSegmentIds.add(previousPartInstance.segmentId)
 	if (currentPartInstance) selectedPartInstancesSegmentIds.add(currentPartInstance.segmentId)
 	if (nextPartInstance) selectedPartInstancesSegmentIds.add(nextPartInstance.segmentId)
 
@@ -376,7 +378,7 @@ async function cleanupOrphanedItems(context: JobContext, playoutModel: PlayoutMo
 
 	const alterSegmentsFromRundowns = new Map<RundownId, { deleted: SegmentId[]; hidden: SegmentId[] }>()
 	for (const segment of segments) {
-		// If the segment is orphaned and not the segment for the next or current partinstance
+		// If the segment is orphaned and not the segment for the previous, current or next partInstance
 		if (!selectedPartInstancesSegmentIds.has(segment.segment._id)) {
 			let rundownSegments = alterSegmentsFromRundowns.get(segment.segment.rundownId)
 			if (!rundownSegments) {

@@ -58,6 +58,7 @@ export async function onPartPlaybackStarted(
 			// this is the next part, clearly an autoNext has taken place
 
 			playoutModel.cycleSelectedPartInstances()
+			playoutModel.resetHoldState()
 
 			reportPartInstanceHasStarted(context, playoutModel, playingPartInstance, data.startedPlayback)
 

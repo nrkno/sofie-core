@@ -568,15 +568,16 @@ export function createAction(
 				)
 			}
 		case PlayoutActions.moveNext:
-			return createUserActionWithCtx(triggersContext, action, UserAction.MOVE_NEXT, async (e, ts, ctx) =>
-				triggersContext.MeteorCall.userAction.moveNext(
+			return createUserActionWithCtx(triggersContext, action, UserAction.MOVE_NEXT, async (e, ts, ctx) => {
+				return triggersContext.MeteorCall.userAction.moveNext(
 					e,
 					ts,
 					ctx.rundownPlaylistId.get(null),
 					action.parts ?? 0,
-					action.segments ?? 0
+					action.segments ?? 0,
+					action.ignoreQuickLoop
 				)
-			)
+			})
 		case PlayoutActions.reloadRundownPlaylistData:
 			if (isActionTriggeredFromUiContext(triggersContext, action)) {
 				return createRundownPlaylistSoftResyncAction(action.filterChain as IGUIContextFilterLink[])

@@ -12,10 +12,6 @@ function translateUrl(url, newSchemeBase, subPath) {
     newSchemeBase = 'http';
   }
 
-  if (subPath !== "sockjs" && url.startsWith("/")) {
-    url = Meteor.absoluteUrl(url.substr(1));
-  }
-
   var ddpUrlMatch = url.match(/^ddp(i?)\+sockjs:\/\//);
   var httpUrlMatch = url.match(/^http(s?):\/\//);
   var newScheme;
