@@ -110,8 +110,9 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 	const { t } = useTranslation()
 	const inspectorRef = useRef<HTMLDivElement>(null)
 
+	// Display a "blank" video canvas when setting ?ignore_piece_content_status=1
 	const debugMode = getIgnorePieceContentStatus()
-	const playPreviewUrl = debugMode ? 'http://some-ip-here:3000/preview.mp4' : previewUrl || ''
+	const playPreviewUrl = debugMode ? 'http://dummy-video/no-video.mp4' : previewUrl || ''
 
 	const itemDuration = content?.sourceDuration || renderedDuration || 0
 	const seek = content?.seek ?? 0
