@@ -687,7 +687,10 @@ export const SourceLayerItem = withTranslation()(
 								ref={this.setRef}
 								onClick={this.itemClick}
 								onDoubleClick={(e) => {
-									if (this.props.studio?.settings.enableUserEdits) {
+									if (
+										this.props.studio?.settings.enableUserEdits &&
+										!this.props.studio?.settings.allowPieceDirectPlay
+									) {
 										const pieceId = this.props.piece.instance.piece._id
 										if (!selectElementContext.isSelected(pieceId)) {
 											selectElementContext.clearAndSetSelection({ type: 'piece', elementId: pieceId })

@@ -381,11 +381,11 @@ function StudioSettings({ studio }: { studio: DBStudio }): JSX.Element {
 			</LabelAndOverridesForCheckbox>
 
 			<LabelAndOverridesForCheckbox
-				label={t('Double click selection for properties panel')}
+				label={t('Enable User Editing')}
 				item={wrappedItem}
 				itemKey={'enableUserEdits'}
 				overrideHelper={overrideHelper}
-				hint={t('This feature enables user edits')}
+				hint={t('This feature enables the use of the Properties Panel and the Edit Mode')}
 			>
 				{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
 			</LabelAndOverridesForCheckbox>

@@ -163,7 +163,7 @@ import { logger } from '../lib/logging'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from './i18n'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
-import { isEntirePlaylistLooping, isLoopRunning } from '../lib/RundownResolver'
+import { isEntirePlaylistLooping, isLoopRunning, PieceExtended } from '../lib/RundownResolver'
 import { useRundownAndShowStyleIdsForPlaylist } from './util/useRundownAndShowStyleIdsForPlaylist'
 import { RundownPlaylistClientUtil } from '../lib/rundownPlaylistUtil'
 import { UserPermissionsContext, UserPermissions } from './UserPermissions'
@@ -1177,6 +1177,7 @@ interface IProps {
 export interface IContextMenuContext {
 	segment?: SegmentUi
 	part?: PartUi | null
+	piece?: PieceExtended | null
 
 	partDocumentOffset?: OffsetPosition
 	timeScale?: number
@@ -3184,12 +3185,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 													onQueueNextSegment={this.onQueueNextSegment}
 													onSetQuickLoopStart={this.onSetQuickLoopStart}
 													onSetQuickLoopEnd={this.onSetQuickLoopEnd}
-													onEditSegmentProps={(id) =>
-														selectionContext.clearAndSetSelection({ type: 'segment', elementId: id })
-													}
-													onEditPartProps={(id) =>
-														selectionContext.clearAndSetSelection({ type: 'part', elementId: id })
-													}
+													onEditProps={(selection) => selectionContext.clearAndSetSelection(selection)}
 													studioMode={this.props.userPermissions.studio}
 													enablePlayFromAnywhere={!!studio.settings.enablePlayFromAnywhere}
 													enableQuickLoop={!!studio.settings.enableQuickLoop}

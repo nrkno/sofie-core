@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react'
 import _ from 'underscore'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { literal, unprotectString } from '../../../lib/tempLib'
+import { literal, protectString, unprotectString } from '../../../lib/tempLib'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { IContextMenuContext } from '../../RundownView'
 import { IOutputLayerUi, ISourceLayerUi, PartUi, PieceUi, SegmentUi } from '../SegmentTimelineContainer'
@@ -10,6 +10,7 @@ import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { SourceLayerItemContainer } from '../SourceLayerItemContainer'
 import { contextMenuHoldToDisplayTime } from '../../../lib/lib'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
+import { PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface ISourceLayerPropsBase {
 	key: string
@@ -50,15 +51,18 @@ export function useMouseContext(props: ISourceLayerPropsBase): {
 	onMouseDown(e: React.MouseEvent<HTMLElement>): void
 } {
 	const [mousePosition, setMousePosition] = useState<OffsetPosition>({ left: 0, top: 0 })
+	const [pieceInstanceId, setPieceInstanceId] = useState<PieceInstanceId>()
 
 	return {
 		getPartContext: useCallback(() => {
 			const partElement = document.querySelector('#' + SegmentTimelinePartElementId + props.part.instance._id)
 			const partDocumentOffset = getElementDocumentOffset(partElement)
+			const piece = props.part?.pieces.find((p) => p.instance._id === pieceInstanceId)
 
 			const ctx = literal<IContextMenuContext>({
 				segment: props.segment,
 				part: props.part,
+				piece,
 				partDocumentOffset: partDocumentOffset || undefined,
 				timeScale: props.timeScale,
 				mousePosition: mousePosition,
@@ -72,6 +76,13 @@ export function useMouseContext(props: ISourceLayerPropsBase): {
 			return ctx
 		}, [props.segment, props.part, props.timeScale, props.startsAt, props.onContextMenu, mousePosition]),
 		onMouseDown: (e: React.MouseEvent<HTMLElement>) => {
+			const id = (e.target as HTMLElement)?.dataset?.objId
+			if (id) {
+				setPieceInstanceId(protectString(id))
+			} else {
+				setPieceInstanceId(undefined)
+			}
+
 			setMousePosition({ left: e.pageX, top: e.pageY })
 		},
 	}
