@@ -16,6 +16,8 @@ import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { UserEditOperationMenuItems } from '../UserEditOperations/RenderUserEditOperations'
 import * as RundownResolver from '../../lib/RundownResolver'
+import { SelectedElement } from '../RundownView/SelectedElementsContext'
+import { PieceExtended } from '../../lib/RundownResolver'
 
 interface IProps {
 	onSetNext: (part: DBPart | undefined, e: any, offset?: number, take?: boolean) => void
@@ -23,11 +25,13 @@ interface IProps {
 	onQueueNextSegment: (segmentId: SegmentId | null, e: any) => void
 	onSetQuickLoopStart: (marker: QuickLoopMarker | null, e: any) => void
 	onSetQuickLoopEnd: (marker: QuickLoopMarker | null, e: any) => void
+	onEditProps: (element: SelectedElement) => void
 	playlist?: DBRundownPlaylist
 	studioMode: boolean
 	contextMenuContext: IContextMenuContext | null
 	enablePlayFromAnywhere: boolean
 	enableQuickLoop: boolean
+	enableUserEdits: boolean
 }
 interface IState {}
 
@@ -40,8 +44,14 @@ export const SegmentContextMenu = withTranslation()(
 		render(): JSX.Element | null {
 			const { t } = this.props
 
-			if (!this.props.studioMode || !this.props.playlist || !this.props.playlist.activationId) return null
+			if (
+				!this.props.studioMode ||
+				!this.props.playlist ||
+				(!this.props.enableUserEdits && !this.props.playlist.activationId)
+			)
+				return null
 
+			const piece = this.getPieceFromContext()
 			const part = this.getPartFromContext()
 			const segment = this.getSegmentFromContext()
 			const timecode = this.getTimePosition()
@@ -98,6 +108,16 @@ export const SegmentContextMenu = withTranslation()(
 									/>
 								)}
 								<hr />
+								{this.props.enableUserEdits && (
+									<>
+										<hr />
+										<MenuItem
+											onClick={() => this.props.onEditProps({ type: 'segment', elementId: part.instance.segmentId })}
+										>
+											<span>{t('Edit Segment Properties')}</span>
+										</MenuItem>
+									</>
+								)}
 							</>
 						)}
 						{part && !part.instance.part.invalid && timecode !== null && (
@@ -178,6 +198,29 @@ export const SegmentContextMenu = withTranslation()(
 									userEditOperations={part.instance.part.userEditOperations}
 									isFormEditable={isPartEditAble}
 								/>
+
+								{this.props.enableUserEdits && (
+									<>
+										<hr />
+										<MenuItem
+											onClick={() => this.props.onEditProps({ type: 'segment', elementId: part.instance.segmentId })}
+										>
+											<span>{t('Edit Segment Properties')}</span>
+										</MenuItem>
+										<MenuItem
+											onClick={() => this.props.onEditProps({ type: 'part', elementId: part.instance.part._id })}
+										>
+											<span>{t('Edit Part Properties')}</span>
+										</MenuItem>
+										{piece && piece.instance.piece.userEditProperties && (
+											<MenuItem
+												onClick={() => this.props.onEditProps({ type: 'piece', elementId: piece.instance.piece._id })}
+											>
+												<span>{t('Edit Piece Properties')}</span>
+											</MenuItem>
+										)}
+									</>
+								)}
 							</>
 						)}
 					</ContextMenu>
@@ -196,6 +239,14 @@ export const SegmentContextMenu = withTranslation()(
 		getPartFromContext = (): PartUi | null => {
 			if (this.props.contextMenuContext && this.props.contextMenuContext.part) {
 				return this.props.contextMenuContext.part
+			} else {
+				return null
+			}
+		}
+
+		getPieceFromContext = (): PieceExtended | null => {
+			if (this.props.contextMenuContext && this.props.contextMenuContext.piece) {
+				return this.props.contextMenuContext.piece
 			} else {
 				return null
 			}

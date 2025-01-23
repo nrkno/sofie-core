@@ -45,6 +45,7 @@ export const PieceElement = React.forwardRef<HTMLDivElement, React.PropsWithChil
 				piece,
 				contentStatus,
 				className,
+				false,
 				layer?.type,
 				partId,
 				highlight,

@@ -112,7 +112,7 @@ export function DropdownInputControl<TValue>({
 			const newOptions = [
 				...options,
 				{
-					name: 'Value: ' + value,
+					name: String(value),
 					value: value,
 					i: options.length,
 				},
