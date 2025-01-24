@@ -86,6 +86,8 @@ export function UserEditOperationMenuItems({
 								<span>{translateMessage(userEditOperation.label, t)}</span>
 							</MenuItem>
 						)
+					case UserEditingType.SOFIE:
+						return null
 					default:
 						assertNever(userEditOperation)
 						return null

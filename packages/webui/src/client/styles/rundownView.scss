@@ -1580,6 +1580,19 @@ svg.icon {
 				z-index: 1;
 			}
 
+			&.drop-active {
+				&::after {
+					content: ' ';
+					display: block;
+					background-color: rgba(0, 183, 255, 0.5);
+					position: absolute;
+					top: 0;
+					left: 0;
+					bottom: 0;
+					right: 0;
+				}
+			}
+
 			&.outside-quickloop {
 				&::before {
 					content: ' ';

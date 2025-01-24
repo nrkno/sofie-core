@@ -2,11 +2,15 @@ import type { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import type { ITranslatableMessage } from './translations'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 import { SourceLayerType } from './content'
+import { DefaultUserOperationsTypes } from './ingest'
 
 /**
  * Description of a user performed editing operation allowed on an document
  */
-export type UserEditingDefinition = UserEditingDefinitionAction | UserEditingDefinitionForm
+export type UserEditingDefinition =
+	| UserEditingDefinitionAction
+	| UserEditingDefinitionForm
+	| UserEditingDefinitionSofieDefault
 
 /**
  * A simple 'action' that can be performed
@@ -40,11 +44,22 @@ export interface UserEditingDefinitionForm {
 	currentValues: Record<string, any>
 }
 
+/**
+ * A built in Sofie User operation
+ */
+export interface UserEditingDefinitionSofieDefault {
+	type: UserEditingType.SOFIE
+	/** Id of this operation */
+	id: DefaultUserOperationsTypes
+}
+
 export enum UserEditingType {
 	/** Action */
 	ACTION = 'action',
 	/** Form */
 	FORM = 'form',
+	/** Operation for the Built-in Sofie Rich Editing UI */
+	SOFIE = 'sofie',
 }
 
 export interface UserEditingSourceLayer {

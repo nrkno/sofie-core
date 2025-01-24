@@ -22,11 +22,16 @@ import {
 import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { withTranslation } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { IngestAdlib } from '@sofie-automation/blueprints-integration'
+import {
+	DefaultUserOperationImportMOSItem,
+	DefaultUserOperationsTypes,
+	IngestAdlib,
+	UserEditingType,
+} from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../lib/meteorApi'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { Buckets, Rundowns } from '../../collections'
-import { BucketId, PartInstanceId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Buckets, Rundowns, Segments } from '../../collections'
+import { BucketId, PartInstanceId, RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MOS_DATA_IS_STRICT } from '@sofie-automation/meteor-lib/dist/mos'
 import { mosTypes, MOS } from '@sofie-automation/meteor-lib/dist/mos'
 import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
@@ -35,7 +40,7 @@ import RundownViewEventBus, {
 	ItemDroppedEvent,
 	RundownViewEvents,
 } from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
-import { UIPartInstances } from '../Collections'
+import { UIPartInstances, UIParts } from '../Collections'
 
 interface IProps {
 	layout: RundownLayoutBase
@@ -210,6 +215,36 @@ export const ExternalFramePanel = withTranslation()(
 			return undefined
 		}
 
+		private findPartId(el: HTMLElement): {
+			rundownId: RundownId | undefined
+			segmentId: string | undefined
+			partId: string | undefined
+		} {
+			while (el.dataset.partId === undefined && el.parentElement) {
+				el = el.parentElement
+			}
+			const partId = el?.dataset.partId
+
+			if (partId) {
+				const part = UIParts.findOne(protectString(partId))
+				const supportsOp = part?.userEditOperations?.find(
+					(op) => op.type === UserEditingType.SOFIE && op.id === DefaultUserOperationsTypes.IMPORT_MOS_ITEM
+				)
+
+				if (supportsOp) {
+					const segment = Segments.findOne(part?.segmentId)
+
+					return {
+						rundownId: part?.rundownId,
+						segmentId: segment?.externalId,
+						partId: part?.externalId,
+					}
+				}
+			}
+
+			return { rundownId: undefined, partId: undefined, segmentId: undefined }
+		}
+
 		private getShowStyleBaseId() {
 			const { playlist } = this.props
 
@@ -243,11 +278,52 @@ export const ExternalFramePanel = withTranslation()(
 		}
 
 		receiveMOSItem(e: any, mosItem: MOS.IMOSItem) {
-			const { t } = this.props
-
 			console.log('Object received, passing onto blueprints', mosItem)
 
 			const bucketId = this.findBucketId(e.target)
+			if (bucketId) {
+				this.receiveMOSItemBucket(e, bucketId, mosItem)
+				return
+			}
+
+			const { rundownId, segmentId, partId } = this.findPartId(e.target)
+			if (rundownId && partId) {
+				console.log('pass to part', partId)
+				this.receiveMOSItemUserOp(e, rundownId, partId, segmentId, mosItem)
+				return
+			}
+		}
+
+		receiveMOSItemUserOp(
+			e: any,
+			rundownId: RundownId,
+			partId: string,
+			segmentId: string | undefined,
+			mosItem: MOS.IMOSItem
+		) {
+			const { t } = this.props
+
+			const operationTarget = { segmentExternalId: segmentId, partExternalId: partId, pieceExternalId: undefined }
+
+			doUserAction(t, e, UserAction.EXECUTE_USER_OPERATION, (e, ts) =>
+				MeteorCall.userAction.executeUserChangeOperation(
+					e,
+					ts,
+					rundownId,
+					operationTarget,
+					literal<DefaultUserOperationImportMOSItem>({
+						id: DefaultUserOperationsTypes.IMPORT_MOS_ITEM,
+
+						payloadType: 'MOS',
+						payload: MOS.stringifyMosObject(mosItem, MOS_DATA_IS_STRICT),
+					})
+				)
+			)
+		}
+
+		receiveMOSItemBucket(e: any, bucketId: BucketId, mosItem: MOS.IMOSItem) {
+			const { t } = this.props
+
 			const targetBucket = bucketId ? Buckets.findOne(bucketId) : Buckets.findOne()
 
 			const showStyleBaseId = this.getShowStyleBaseId()

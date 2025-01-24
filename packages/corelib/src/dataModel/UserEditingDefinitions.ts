@@ -3,10 +3,14 @@ import type {
 	JSONBlob,
 	JSONSchema,
 	UserEditingSourceLayer,
+	DefaultUserOperationsTypes,
 } from '@sofie-automation/blueprints-integration'
 import type { ITranslatableMessage } from '../TranslatableMessage'
 
-export type CoreUserEditingDefinition = CoreUserEditingDefinitionAction | CoreUserEditingDefinitionForm
+export type CoreUserEditingDefinition =
+	| CoreUserEditingDefinitionAction
+	| CoreUserEditingDefinitionForm
+	| CoreUserEditingDefinitionSofie
 
 export interface CoreUserEditingDefinitionAction {
 	type: UserEditingType.ACTION
@@ -82,4 +86,10 @@ export interface CoreUserEditingProperties {
 
 	/** Translation namespaces to use when rendering this form */
 	translationNamespaces: string[]
+}
+
+export interface CoreUserEditingDefinitionSofie {
+	type: UserEditingType.SOFIE
+	/** Id of this operation */
+	id: DefaultUserOperationsTypes
 }
