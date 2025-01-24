@@ -249,7 +249,8 @@ export interface AsyncOnlyReadOnlyMongoCollection<DBInterface extends { _id: Pro
 	observeChanges(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'],
 		callbacks: PromisifyCallbacks<ObserveChangesCallbacks<DBInterface>>,
-		options?: FindOptions<DBInterface>
+		findOptions?: FindOptions<DBInterface>,
+		callbackOptions?: { nonMutatingCallbacks?: boolean | undefined }
 	): Promise<Meteor.LiveQueryHandle>
 
 	/**
