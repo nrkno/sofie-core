@@ -379,23 +379,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@asyncapi/nodejs-ws-template@npm:0.9.36":
-  version: 0.9.36
-  resolution: "@asyncapi/nodejs-ws-template@npm:0.9.36"
+"@asyncapi/nodejs-ws-template@npm:^0.10.0":
+  version: 0.10.0
+  resolution: "@asyncapi/nodejs-ws-template@npm:0.10.0"
   dependencies:
     "@asyncapi/generator-filters": "npm:^2.1.0"
     "@asyncapi/generator-hooks": "npm:^0.1.0"
-  checksum: 10c0/3ed38f0d73540699effcc27c4b3d092b7b2b74ad01affa99e2547f356ef2e1720518298613f9e0aaaa8bdc11edd0dff2b904937526895b188b34076c76ea8d44
-  languageName: node
-  linkType: hard
-
-"@asyncapi/nodejs-ws-template@patch:@asyncapi/nodejs-ws-template@npm%3A0.9.36#~/.yarn/patches/@asyncapi-nodejs-ws-template-npm-0.9.36-2652c2d6e5.patch":
-  version: 0.9.36
-  resolution: "@asyncapi/nodejs-ws-template@patch:@asyncapi/nodejs-ws-template@npm%3A0.9.36#~/.yarn/patches/@asyncapi-nodejs-ws-template-npm-0.9.36-2652c2d6e5.patch::version=0.9.36&hash=b3b9ad"
-  dependencies:
-    "@asyncapi/generator-filters": "npm:^2.1.0"
-    "@asyncapi/generator-hooks": "npm:^0.1.0"
-  checksum: 10c0/3ad3f71ce82b71a42f3d7feeef727c3df9fd7b722fe09657c117a1fa3f07c28fda1a390f3b1280ac37d3618e598ed31801ebbc51ff983547295cabbc94aa0938
+  checksum: 10c0/10d34f5c45ff5accf327f7db3d0c58a19b95af7c270677651f650384a3965b1806762ea4913835d88a474ff55f2ad1a9ed00c175c8da9a367c54f275f53ac7c5
   languageName: node
   linkType: hard
 
@@ -18617,7 +18607,7 @@ asn1@evs-broadcast/node-asn1:
   dependencies:
     "@asyncapi/generator": "npm:^2.5.0"
     "@asyncapi/html-template": "npm:^3.1.0"
-    "@asyncapi/nodejs-ws-template": "patch:@asyncapi/nodejs-ws-template@npm%3A0.9.36#~/.yarn/patches/@asyncapi-nodejs-ws-template-npm-0.9.36-2652c2d6e5.patch"
+    "@asyncapi/nodejs-ws-template": "npm:^0.10.0"
     "@sofie-automation/blueprints-integration": "npm:1.52.0-in-development"
     "@sofie-automation/corelib": "npm:1.52.0-in-development"
     "@sofie-automation/server-core-integration": "npm:1.52.0-in-development"
