@@ -16,6 +16,10 @@
 		background-color: var(--segment-layer-background-live-speak-1);
 		background-repeat: repeat-x;
 	}
+	&.remote-speak {
+		background-color: var(--segment-layer-background-remote-speak-1);
+		background-repeat: repeat-x;
+	}
 
 	&.segment-storyboard__part__thumbnail--placeholder {
 		background: lighten($segment-background-color, 10%);

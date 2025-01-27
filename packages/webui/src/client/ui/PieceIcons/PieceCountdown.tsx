@@ -27,6 +27,7 @@ const supportedLayers = new Set([
 	SourceLayerType.STUDIO_SCREEN,
 	SourceLayerType.LIVE_SPEAK,
 	SourceLayerType.REMOTE,
+	SourceLayerType.REMOTE_SPEAK,
 	SourceLayerType.SPLITS,
 	SourceLayerType.VT,
 	SourceLayerType.CAMERA,

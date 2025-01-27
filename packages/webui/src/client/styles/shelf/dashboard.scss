@@ -313,6 +313,14 @@ $dashboard-button-height: 3.625em;
 			);
 		}
 
+		&.remote-speak {
+			background: linear-gradient(
+				to top,
+				var(--segment-layer-background-remote-speak-2) 1em,
+				var(--segment-layer-background-remote-speak-1) 1em
+			);
+		}
+
 		&.live {
 			box-shadow: $dashboard-panel__button__border-width $dashboard-panel__button__border-width 0 $general-live-color,
 				($dashboard-panel__button__border-width * -1) ($dashboard-panel__button__border-width * -1) 0

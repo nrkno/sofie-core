@@ -213,6 +213,13 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 						var(--$segment-layer-background-camera) 50.0001%
 					);
 				}
+				&.remote-speak {
+					background: linear-gradient(
+						to bottom,
+						var(--segment-layer-background-remote-speak-1) 50%,
+						var(--$segment-layer-background-remote-speak-2) 50.0001%
+					);
+				}
 
 				&.splits {
 					background: linear-gradient(

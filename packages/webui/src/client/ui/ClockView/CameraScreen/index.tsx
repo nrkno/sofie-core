@@ -1,5 +1,11 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { CameraContent, RemoteContent, SourceLayerType, SplitsContent } from '@sofie-automation/blueprints-integration'
+import {
+	CameraContent,
+	RemoteContent,
+	RemoteSpeakContent,
+	SourceLayerType,
+	SplitsContent,
+} from '@sofie-automation/blueprints-integration'
 import { RundownId, ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
@@ -163,7 +169,7 @@ export function CameraScreen({ playlist, studioId }: Readonly<IProps>): JSX.Elem
 
 	const pieceFilterFunction = useMemo(() => {
 		return (piece: PieceExtended) => {
-			const camLikeContent = piece.instance.piece.content as CameraContent | RemoteContent
+			const camLikeContent = piece.instance.piece.content as CameraContent | RemoteContent | RemoteSpeakContent
 			if (
 				sourceLayerIds !== null &&
 				(piece.sourceLayer?._id === undefined || !sourceLayerIds.includes(piece.sourceLayer?._id))

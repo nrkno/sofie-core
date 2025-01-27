@@ -10,19 +10,39 @@ $segment-layer-background-graphics: #dc5c00;
 $segment-layer-background-graphics--second: darken($segment-layer-background-graphics, 10%);
 $segment-layer-border-live-speak: #2f74ff;
 /** Gradients need to be defined with each color separately, so that they can be applied in SVG **/
+$segment-layer-background-gradient-divider: rgba(0, 0, 0, 0.5) 1px;
 $segment-layer-background-live-speak-1: #2f74ff;
 $segment-layer-background-live-speak-2: #39762b;
 $segment-layer-background-live-speak: linear-gradient(
 	to bottom,
-	$segment-layer-background-live-speak-1 50%,
-	$segment-layer-background-live-speak-2 50%
+	$segment-layer-background-live-speak-1 70%,
+	$segment-layer-background-gradient-divider,
+	$segment-layer-background-live-speak-2 72%
 );
 $segment-layer-background-live-speak--second-1: darken(#2f74ff, 10%);
 $segment-layer-background-live-speak--second-2: darken(#39762b, 10%);
 $segment-layer-background-live-speak--second: linear-gradient(
 	to bottom,
-	$segment-layer-background-live-speak--second-1 50%,
-	$segment-layer-background-live-speak--second-2 50%
+	$segment-layer-background-live-speak--second-1 70%,
+	$segment-layer-background-gradient-divider,
+	$segment-layer-background-live-speak--second-2 72%
+);
+$segment-layer-border-remote-speak: #e80064;
+$segment-layer-background-remote-speak-1: #e80064;
+$segment-layer-background-remote-speak-2: #39762b;
+$segment-layer-background-remote-speak: linear-gradient(
+	to bottom,
+	$segment-layer-background-remote-speak-1 70%,
+	$segment-layer-background-gradient-divider,
+	$segment-layer-background-remote-speak-2 72%
+);
+$segment-layer-background-remote-speak--second-1: darken(#e80064, 10%);
+$segment-layer-background-remote-speak--second-2: darken(#39762b, 10%);
+$segment-layer-background-remote-speak--second: linear-gradient(
+	to bottom,
+	$segment-layer-background-remote-speak--second-1 70%,
+	$segment-layer-background-gradient-divider,
+	$segment-layer-background-remote-speak--second-2 72%
 );
 $segment-layer-background-remote: #e80064;
 $segment-layer-background-remote--second: darken($segment-layer-background-remote, 10%);
@@ -42,7 +62,7 @@ $segment-item-disabled-color: #c9c9c9;
 
 $layer-types-solid: 'unknown', 'camera', 'lower-third', 'graphics', 'remote', 'vt', 'local', 'script', 'mic', 'guest',
 	'studio-screen';
-$layer-types-gradient: 'live-speak'; //
+$layer-types-gradient: 'live-speak', 'remote-speak'; //
 
 $layer-types: join($layer-types-solid, $layer-types-gradient);
 
@@ -460,6 +480,12 @@ $layer-types: join($layer-types-solid, $layer-types-gradient);
 	--segment-layer-background-live-speak--second-1: #{$segment-layer-background-live-speak--second-1};
 	--segment-layer-background-live-speak--second-2: #{$segment-layer-background-live-speak--second-2};
 	--segment-layer-background-live-speak--second: #{$segment-layer-background-live-speak--second};
+	--segment-layer-background-remote-speak-1: #{$segment-layer-background-remote-speak-1};
+	--segment-layer-background-remote-speak-2: #{$segment-layer-background-remote-speak-2};
+	--segment-layer-background-remote-speak: #{$segment-layer-background-remote-speak};
+	--segment-layer-background-remote-speak--second-1: #{$segment-layer-background-remote-speak--second-1};
+	--segment-layer-background-remote-speak--second-2: #{$segment-layer-background-remote-speak--second-2};
+	--segment-layer-background-remote-speak--second: #{$segment-layer-background-remote-speak--second};
 	--segment-layer-background-remote: #{$segment-layer-background-remote};
 	--segment-layer-background-remote--second: #{$segment-layer-background-remote--second};
 	--segment-layer-background-local: #{$segment-layer-background-local};

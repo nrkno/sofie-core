@@ -249,7 +249,9 @@ export interface APISourceLayer {
 		| 'lower-third'
 		| 'live-speak'
 		| 'transition'
+		| 'lights'
 		| 'local'
 		| 'studio-screen'
+		| 'remote-speak'
 	exclusiveGroup?: string
 }
