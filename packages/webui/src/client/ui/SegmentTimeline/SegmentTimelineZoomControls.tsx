@@ -24,10 +24,7 @@ interface IStateHeader {
 	width: number
 }
 
-export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls extends React.Component<
-	IPropsHeader,
-	IStateHeader
-> {
+export class SegmentTimelineZoomControls extends React.Component<IPropsHeader, IStateHeader> {
 	parentElement: HTMLDivElement | null = null
 	selAreaElement: HTMLDivElement | null = null
 	parentOffsetX = 0

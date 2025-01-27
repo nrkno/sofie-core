@@ -24,7 +24,11 @@ interface IProps {
 
 const _isMacLike = navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i) ? true : false
 
-function mountedTriggerToHotkeyList(hotkeys: MongoCursor<MountedTrigger>, sorensen: Sorensen | null, t: TFunction) {
+function mountedTriggerToHotkeyList(
+	hotkeys: MongoCursor<MountedTrigger>,
+	sorensen: typeof Sorensen | null,
+	t: TFunction
+) {
 	return hotkeys.map((mountedTrigger) => ({
 		key: (sorensen ? mountedTrigger.keys.map((codes) => codesToKeyLabels(codes, sorensen)) : mountedTrigger.keys).join(
 			', '

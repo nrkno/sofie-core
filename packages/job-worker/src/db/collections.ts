@@ -43,8 +43,8 @@ import { literal } from '@sofie-automation/corelib/dist/lib'
 import { ReadonlyDeep } from 'type-fest'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
 import { MediaObjects } from '@sofie-automation/corelib/dist/dataModel/MediaObjects'
-import EventEmitter = require('eventemitter3')
 import type { DBNotificationObj } from '@sofie-automation/corelib/dist/dataModel/Notifications'
+import type { EventEmitter } from 'events'
 
 export type MongoQuery<TDoc> = Filter<TDoc>
 export type MongoModifier<TDoc> = UpdateFilter<TDoc>

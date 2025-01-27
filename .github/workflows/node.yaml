@@ -34,6 +34,8 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('yarn.lock', 'meteor/yarn.lock', 'meteor/.meteor/release', 'packages/yarn.lock') }}
       - name: Prepare Environment
         run: |
+          corepack enable
+
           yarn config set cacheFolder /home/runner/lint-core-cache
           yarn
           yarn build:packages
@@ -73,6 +75,8 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('yarn.lock', 'meteor/yarn.lock', 'meteor/.meteor/release', 'packages/yarn.lock') }}
       - name: Prepare Environment
         run: |
+          corepack enable
+
           yarn config set cacheFolder /home/runner/test-core-cache
           yarn
           yarn build:packages
@@ -174,6 +178,8 @@ jobs:
       - name: Prepare Environment
         if: steps.check-build-and-push.outputs.enable == 'true'
         run: |
+          corepack enable
+
           yarn install
       - name: Build libs
         if: steps.check-build-and-push.outputs.enable == 'true'
@@ -348,6 +354,8 @@ jobs:
       - name: Build
         if: steps.check-build-and-push.outputs.enable == 'true'
         run: |
+          corepack enable
+
           cd packages
           yarn install
           yarn lerna run --scope \*\*/${{ matrix.gateway-name }} --include-dependencies --stream build
@@ -455,6 +463,8 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('packages/yarn.lock') }}
       - name: Prepare Environment
         run: |
+          corepack enable
+
           cd packages
           yarn config set cacheFolder /home/runner/${{ matrix.package-name }}-cache
           yarn install
@@ -521,6 +531,8 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('packages/yarn.lock') }}
       - name: Prepare Environment
         run: |
+          corepack enable
+
           cd packages
           yarn config set cacheFolder /home/runner/test-packages-cache
           yarn install
@@ -553,6 +565,8 @@ jobs:
           node-version-file: ".node-version"
       - name: Prepare Environment
         run: |
+          corepack enable
+
           cd packages
           yarn
         env:
@@ -579,6 +593,8 @@ jobs:
           node-version-file: ".node-version"
       - name: Prepare Environment
         run: |
+          corepack enable
+
           cd packages
           yarn
         env:
@@ -619,10 +635,12 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('packages/yarn.lock') }}
       - name: Prepare Environment
         run: |
+          corepack enable
+
           cd packages
           yarn config set cacheFolder /home/runner/publish-docs-cache
           yarn install
-          yarn build
+          yarn build:all
         env:
           CI: true
       - name: Run docusaurus
@@ -668,6 +686,8 @@ jobs:
           node-version-file: ".node-version"
       - name: Prepare Environment # have to run this first to make sure the semver lib is available
         run: |
+          corepack enable
+
           yarn config set cacheFolder /home/runner/release-libs-cache
 
           cd packages
@@ -752,6 +772,8 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('yarn.lock', 'meteor/yarn.lock', 'meteor/.meteor/release', 'packages/yarn.lock') }}
       - name: Prepare Environment
         run: |
+          corepack enable
+          
           yarn config set cacheFolder /home/runner/check-for-multiple-library-versions-cache
           yarn
         env:
