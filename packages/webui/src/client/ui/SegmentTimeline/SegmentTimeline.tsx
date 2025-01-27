@@ -56,6 +56,7 @@ import { SegmentTimeAnchorTime } from '../RundownView/RundownTiming/SegmentTimeA
 import { logger } from '../../lib/logging'
 import * as RundownResolver from '../../lib/RundownResolver'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { SelectedElementsContext } from '../RundownView/SelectedElementsContext'
 
 interface IProps {
 	id: string
@@ -91,8 +92,8 @@ interface IProps {
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	onShowEntireSegment?: (event: React.MouseEvent | undefined) => void
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
-	onItemClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
-	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
+	onPieceClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
+	onPieceDoubleClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteSeverity) => void
 	onSwitchViewMode?: (newViewMode: SegmentViewMode) => void
 	segmentRef?: (el: SegmentTimelineClass, segmentId: SegmentId) => void
@@ -115,6 +116,7 @@ interface IStateHeader {
 		}
 	>
 	useTimeOfDayCountdowns: boolean
+	// isSelected: boolean
 }
 
 interface IZoomPropsHeader {
@@ -266,6 +268,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 				`segment.${props.segment._id}.useTimeOfDayCountdowns`,
 				!!props.playlist.timeOfDayCountdowns
 			),
+			// isSelected: props.isSelected,
 		}
 	}
 
@@ -778,8 +781,8 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 						onCollapseOutputToggle={this.props.onCollapseOutputToggle}
 						onFollowLiveLine={this.props.onFollowLiveLine}
 						onContextMenu={this.props.onContextMenu}
-						onPieceClick={this.props.onItemClick}
-						onPieceDoubleClick={this.props.onItemDoubleClick}
+						onPieceClick={this.props.onPieceClick}
+						onPieceDoubleClick={this.props.onPieceDoubleClick}
 						onPartTooSmallChanged={this.onPartTooSmallChanged}
 						scrollWidth={this.state.timelineWidth / this.props.timeScale}
 						firstPartInSegment={firstPartInSegment}
@@ -855,8 +858,8 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 				onCollapseOutputToggle={this.props.onCollapseOutputToggle}
 				onFollowLiveLine={this.props.onFollowLiveLine}
 				onContextMenu={this.props.onContextMenu}
-				onPieceClick={this.props.onItemClick}
-				onPieceDoubleClick={this.props.onItemDoubleClick}
+				onPieceClick={this.props.onPieceClick}
+				onPieceDoubleClick={this.props.onPieceDoubleClick}
 				scrollWidth={this.state.timelineWidth / this.props.timeScale}
 				firstPartInSegment={firstPartInSegment}
 				lastPartInSegment={this.props.parts[this.props.parts.length - 1]}
@@ -1040,67 +1043,87 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 				aria-roledescription={t('segment')}
 				aria-labelledby={`segment-name-${this.props.segment._id}`}
 			>
-				<ContextMenuTrigger
-					id="segment-timeline-context-menu"
-					collect={this.getSegmentContext}
-					attributes={{
-						className: 'segment-timeline__title',
-					}}
-					holdToDisplay={contextMenuHoldToDisplayTime()}
-					renderTag="div"
-				>
-					<h2
-						id={`segment-name-${this.props.segment._id}`}
-						className={'segment-timeline__title__label' + (this.props.segment.identifier ? ' identifier' : '')}
-						data-identifier={this.props.segment.identifier}
-					>
-						{this.props.segment.name}
-					</h2>
-					{(criticalNotes > 0 || warningNotes > 0) && (
-						<div className="segment-timeline__title__notes">
-							{criticalNotes > 0 && (
-								<div
-									className="segment-timeline__title__notes__note segment-timeline__title__notes__note--critical"
-									onClick={() =>
-										this.props.onHeaderNoteClick &&
-										this.props.onHeaderNoteClick(this.props.segment._id, NoteSeverity.ERROR)
+				<SelectedElementsContext.Consumer>
+					{(selectElementContext) => (
+						<ContextMenuTrigger
+							id="segment-timeline-context-menu"
+							collect={this.getSegmentContext}
+							attributes={{
+								className: ClassNames('segment-timeline__title', {
+									'element-selected': selectElementContext.isSelected(this.props.segment._id),
+								}),
+							}}
+							holdToDisplay={contextMenuHoldToDisplayTime()}
+							renderTag="div"
+						>
+							<div
+								onDoubleClick={() => {
+									if (this.props.studio.settings.enableUserEdits) {
+										if (!selectElementContext.isSelected(this.props.segment._id)) {
+											selectElementContext.clearAndSetSelection({ type: 'segment', elementId: this.props.segment._id })
+										} else {
+											selectElementContext.clearSelections()
+										}
 									}
-									aria-label={t('Critical problems')}
+								}}
+							>
+								<h2
+									id={`segment-name-${this.props.segment._id}`}
+									className={ClassNames('segment-timeline__title__label', {
+										identifier: this.props.segment.identifier,
+									})}
+									data-identifier={this.props.segment.identifier}
 								>
-									<CriticalIconSmall />
-									<div className="segment-timeline__title__notes__count">{criticalNotes}</div>
-								</div>
-							)}
-							{warningNotes > 0 && (
-								<div
-									className="segment-timeline__title__notes__note segment-timeline__title__notes__note--warning"
-									onClick={() =>
-										this.props.onHeaderNoteClick &&
-										this.props.onHeaderNoteClick(this.props.segment._id, NoteSeverity.WARNING)
-									}
-									aria-label={t('Warnings')}
-								>
-									<WarningIconSmall />
-									<div className="segment-timeline__title__notes__count">{warningNotes}</div>
-								</div>
-							)}
-						</div>
+									{this.props.segment.name}
+								</h2>
+								{(criticalNotes > 0 || warningNotes > 0) && (
+									<div className="segment-timeline__title__notes">
+										{criticalNotes > 0 && (
+											<div
+												className="segment-timeline__title__notes__note segment-timeline__title__notes__note--critical"
+												onClick={() =>
+													this.props.onHeaderNoteClick &&
+													this.props.onHeaderNoteClick(this.props.segment._id, NoteSeverity.ERROR)
+												}
+												aria-label={t('Critical problems')}
+											>
+												<CriticalIconSmall />
+												<div className="segment-timeline__title__notes__count">{criticalNotes}</div>
+											</div>
+										)}
+										{warningNotes > 0 && (
+											<div
+												className="segment-timeline__title__notes__note segment-timeline__title__notes__note--warning"
+												onClick={() =>
+													this.props.onHeaderNoteClick &&
+													this.props.onHeaderNoteClick(this.props.segment._id, NoteSeverity.WARNING)
+												}
+												aria-label={t('Warnings')}
+											>
+												<WarningIconSmall />
+												<div className="segment-timeline__title__notes__count">{warningNotes}</div>
+											</div>
+										)}
+									</div>
+								)}
+								{identifiers.length > 0 && (
+									<div className="segment-timeline__part-identifiers">
+										{identifiers.map((ident) => (
+											<div
+												className="segment-timeline__part-identifiers__identifier"
+												key={ident.partId + ''}
+												onClick={() => this.onClickPartIdent(ident.partId)}
+											>
+												{ident.ident}
+											</div>
+										))}
+									</div>
+								)}
+								<HeaderEditStates userEditOperations={this.props.segment.userEditOperations} />
+							</div>
+						</ContextMenuTrigger>
 					)}
-					{identifiers.length > 0 && (
-						<div className="segment-timeline__part-identifiers">
-							{identifiers.map((ident) => (
-								<div
-									className="segment-timeline__part-identifiers__identifier"
-									key={ident.partId + ''}
-									onClick={() => this.onClickPartIdent(ident.partId)}
-								>
-									{ident.ident}
-								</div>
-							))}
-						</div>
-					)}
-					<HeaderEditStates userEditOperations={this.props.segment.userEditOperations} />
-				</ContextMenuTrigger>
+				</SelectedElementsContext.Consumer>
 				<div className="segment-timeline__duration" tabIndex={0}>
 					{this.props.playlist &&
 						this.props.parts &&
@@ -1241,7 +1264,7 @@ function HeaderEditStates({ userEditOperations }: HeaderEditStatesProps) {
 		<div className="segment-timeline__title__user-edit-states">
 			{userEditOperations &&
 				userEditOperations.map((operation) => {
-					if (operation.type === UserEditingType.FORM || !operation.svgIcon || !operation.isActive) return null
+					if (operation.type !== UserEditingType.ACTION || !operation.svgIcon || !operation.isActive) return null
 
 					return (
 						<div

@@ -6,6 +6,7 @@ import {
 } from '../../ui/Settings/util/OverrideOpHelper'
 import { SchemaFormCommonProps } from './schemaFormUtil'
 import { SchemaFormWithOverrides } from './SchemaFormWithOverrides'
+import './SchemaFormInPlace.scss'
 
 interface SchemaFormInPlaceProps extends Omit<SchemaFormCommonProps, 'isRequired'> {
 	/** The object to be modified in place */
