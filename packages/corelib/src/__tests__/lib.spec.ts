@@ -141,7 +141,7 @@ describe('Lib', () => {
 		expect(JSON.parse(str.replace('UserError: ', ''))).toMatchObject({
 			errorCode: 42,
 			key: UserErrorMessage.ValidationFailed,
-			message: {
+			userMessage: {
 				key: 'Validation failed!',
 				args: {},
 			},
