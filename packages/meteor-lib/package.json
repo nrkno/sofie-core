@@ -45,7 +45,7 @@
 		"@sofie-automation/shared-lib": "1.52.0-in-development",
 		"deep-extend": "0.6.0",
 		"semver": "^7.6.3",
-		"type-fest": "^4.32.0",
+		"type-fest": "^4.33.0",
 		"underscore": "^1.13.7"
 	},
 	"devDependencies": {

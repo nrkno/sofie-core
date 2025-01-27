@@ -37,7 +37,7 @@
 		"watch-types": "run check-types --watch"
 	},
 	"dependencies": {
-		"@babel/runtime": "^7.26.0",
+		"@babel/runtime": "^7.26.7",
 		"@koa/cors": "^5.0.0",
 		"@koa/router": "^13.1.0",
 		"@mos-connection/helper": "^4.2.2",
@@ -52,7 +52,7 @@
 		"body-parser": "^1.20.3",
 		"deep-extend": "0.6.0",
 		"deepmerge": "^4.3.1",
-		"elastic-apm-node": "^4.10.0",
+		"elastic-apm-node": "^4.11.0",
 		"i18next": "^21.10.0",
 		"indexof": "0.0.1",
 		"koa": "^2.15.3",
@@ -69,12 +69,12 @@
 		"superfly-timeline": "9.0.2",
 		"threadedclass": "^1.2.2",
 		"timecode": "0.0.4",
-		"type-fest": "^4.32.0",
+		"type-fest": "^4.33.0",
 		"underscore": "^1.13.7",
 		"winston": "^3.17.0"
 	},
 	"devDependencies": {
-		"@babel/core": "^7.26.0",
+		"@babel/core": "^7.26.7",
 		"@babel/plugin-transform-modules-commonjs": "^7.26.3",
 		"@shopify/jest-koa-mocks": "^5.3.1",
 		"@sofie-automation/code-standard-preset": "~2.4.7",
@@ -88,7 +88,7 @@
 		"@types/koa-static": "^4.0.4",
 		"@types/koa__cors": "^5.0.0",
 		"@types/koa__router": "^12.0.4",
-		"@types/node": "^22.10.7",
+		"@types/node": "^22.10.10",
 		"@types/request": "^2.48.12",
 		"@types/semver": "^7.5.8",
 		"@types/underscore": "^1.13.0",

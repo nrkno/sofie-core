@@ -59,7 +59,7 @@
 		"@sofie-automation/server-core-integration": "1.52.0-in-development",
 		"@sofie-automation/shared-lib": "1.52.0-in-development",
 		"debug": "^4.4.0",
-		"influx": "^5.9.3",
+		"influx": "^5.9.7",
 		"timeline-state-resolver": "9.2.0-nightly-release52-20241219-123204-90290cef1.0",
 		"tslib": "^2.8.1",
 		"underscore": "^1.13.7",
