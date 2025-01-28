@@ -91,38 +91,46 @@ async function restartCasparCG(systemSettings: ICoreSystemSettings | undefined, 
 	let shouldRetryAttempt = false
 	const ps: Array<Promise<any>> = []
 
-	const [casparcgAndParentDevices, activePlaylists] = await Promise.all([
-		PeripheralDevices.findFetchAsync(
-			{
-				type: PeripheralDeviceType.PLAYOUT,
-				subType: { $in: [PERIPHERAL_SUBTYPE_PROCESS, TSR.DeviceType.CASPARCG] },
+	const casparcgAndParentDevices = (await PeripheralDevices.findFetchAsync(
+		{
+			type: PeripheralDeviceType.PLAYOUT,
+			subType: { $in: [PERIPHERAL_SUBTYPE_PROCESS, TSR.DeviceType.CASPARCG] },
+		},
+		{
+			projection: {
+				_id: 1,
+				subType: 1,
+				parentDeviceId: 1,
+				lastSeen: 1,
+				studioAndConfigId: 1,
 			},
-			{
-				projection: {
-					_id: 1,
-					subType: 1,
-					parentDeviceId: 1,
-					lastSeen: 1,
-					studioAndConfigId: 1,
-				},
-			}
-		) as Promise<
-			Array<Pick<PeripheralDevice, '_id' | 'subType' | 'parentDeviceId' | 'lastSeen' | 'studioAndConfigId'>>
-		>,
-		RundownPlaylists.findFetchAsync(
-			{
-				activationId: {
-					$exists: true,
-				},
+		}
+	)) as Array<Pick<PeripheralDevice, '_id' | 'subType' | 'parentDeviceId' | 'lastSeen' | 'studioAndConfigId'>>
+
+	const relevantStudioIds = Array.from(
+		new Set(
+			casparcgAndParentDevices
+				.map((device) => device.studioAndConfigId?.studioId)
+				.filter((id) => id !== undefined)
+		)
+	)
+
+	const activePlaylists = (await RundownPlaylists.findFetchAsync(
+		{
+			activationId: {
+				$exists: true,
 			},
-			{
-				projection: {
-					_id: 1,
-					studioId: 1,
-				},
-			}
-		) as Promise<Array<Pick<DBRundownPlaylist, '_id' | 'studioId'>>>,
-	])
+			studioId: {
+				$in: relevantStudioIds,
+			},
+		},
+		{
+			projection: {
+				_id: 1,
+				studioId: 1,
+			},
+		}
+	)) as Array<Pick<DBRundownPlaylist, '_id' | 'studioId'>>
 
 	const deviceMap = normalizeArrayToMap(casparcgAndParentDevices, '_id')
 
