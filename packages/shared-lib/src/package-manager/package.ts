@@ -5,7 +5,7 @@
  *   will fetch from a MAM and copy to the media-folder of CasparCG.
  */
 
-import { StatusCode } from '../lib/status'
+import { StatusCode } from '../lib/status.js'
 
 type AccessorId = string
 type ExpectedPackageId = string
