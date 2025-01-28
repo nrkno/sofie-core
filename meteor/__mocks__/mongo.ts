@@ -22,7 +22,7 @@ import type {
 	MinimalMeteorMongoCollection,
 	MinimalMongoCursor,
 } from '../server/collections/implementations/asyncCollection.js'
-const clone = require('fast-clone')
+import clone from 'fast-clone'
 
 export namespace MongoMock {
 	interface ObserverEntry<T extends CollectionObject> {

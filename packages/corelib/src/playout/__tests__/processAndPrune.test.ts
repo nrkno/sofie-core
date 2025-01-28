@@ -1,5 +1,5 @@
 import { IBlueprintPieceType, PieceLifespan, SourceLayerType } from '@sofie-automation/blueprints-integration'
-import clone = require('fast-clone')
+import clone from 'fast-clone'
 import { EmptyPieceTimelineObjectsBlob, Piece } from '../../dataModel/Piece.js'
 import { PieceInstance, PieceInstancePiece, ResolvedPieceInstance } from '../../dataModel/PieceInstance.js'
 import { literal } from '../../lib.js'

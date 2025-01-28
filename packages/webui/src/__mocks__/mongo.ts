@@ -24,7 +24,7 @@ import {
 } from '@sofie-automation/corelib/dist/mongo'
 import { Mongo } from 'meteor/mongo'
 import { sleep } from '@sofie-automation/shared-lib/dist/lib/lib'
-const clone = require('fast-clone')
+import clone from 'fast-clone'
 
 export namespace MongoMock {
 	interface ObserverEntry<T extends CollectionObject> {

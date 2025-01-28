@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 import { ReadonlyDeep } from 'type-fest'
-import fastClone = require('fast-clone')
+import fastClone from 'fast-clone'
 import { ProtectedString, protectString } from './protectedString.js'
 import * as objectPath from 'object-path'
 import { Timecode } from 'timecode'
