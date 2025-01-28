@@ -1,7 +1,6 @@
 import { FindOptions } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import { meteorPublish } from './lib/lib'
-import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
-import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
+import { Bucket } from '@sofie-automation/corelib/dist/dataModel/Bucket'
 import { BucketAdLibActions, BucketAdLibs, Buckets } from '../collections'
 import { check, Match } from 'meteor/check'
 import { StudioId, BucketId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -9,7 +8,7 @@ import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify'
 
 meteorPublish(
-	MeteorPubSub.buckets,
+	CorelibPubSub.buckets,
 	async function (studioId: StudioId, bucketId: BucketId | null, _token: string | undefined) {
 		check(studioId, String)
 		check(bucketId, Match.Maybe(String))
@@ -21,14 +20,10 @@ meteorPublish(
 		}
 
 		return Buckets.findWithCursor(
-			bucketId
-				? {
-						_id: bucketId,
-						studioId,
-				  }
-				: {
-						studioId,
-				  },
+			{
+				_id: bucketId ?? undefined,
+				studioId,
+			},
 			modifier
 		)
 	}
@@ -36,9 +31,9 @@ meteorPublish(
 
 meteorPublish(
 	CorelibPubSub.bucketAdLibPieces,
-	async function (studioId: StudioId, bucketId: BucketId, showStyleVariantIds: ShowStyleVariantId[]) {
+	async function (studioId: StudioId, bucketId: BucketId | null, showStyleVariantIds: ShowStyleVariantId[]) {
 		check(studioId, String)
-		check(bucketId, String)
+		check(bucketId, Match.Maybe(String))
 		check(showStyleVariantIds, Array)
 
 		triggerWriteAccessBecauseNoCheckNecessary()
@@ -46,7 +41,7 @@ meteorPublish(
 		return BucketAdLibs.findWithCursor(
 			{
 				studioId: studioId,
-				bucketId: bucketId,
+				bucketId: bucketId ?? undefined,
 				showStyleVariantId: {
 					$in: [null, ...showStyleVariantIds], // null = valid for all variants
 				},
@@ -62,7 +57,7 @@ meteorPublish(
 
 meteorPublish(
 	CorelibPubSub.bucketAdLibActions,
-	async function (studioId: StudioId, bucketId: BucketId, showStyleVariantIds: ShowStyleVariantId[]) {
+	async function (studioId: StudioId, bucketId: BucketId | null, showStyleVariantIds: ShowStyleVariantId[]) {
 		check(studioId, String)
 		check(bucketId, String)
 		check(showStyleVariantIds, Array)
