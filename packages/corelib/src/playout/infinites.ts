@@ -1,5 +1,5 @@
-import { Piece } from '../dataModel/Piece'
-import { DBPart } from '../dataModel/Part'
+import { Piece } from '../dataModel/Piece.js'
+import { DBPart } from '../dataModel/Part.js'
 import {
 	PartId,
 	PartInstanceId,
@@ -7,17 +7,17 @@ import {
 	RundownPlaylistActivationId,
 	SegmentId,
 	ShowStyleBaseId,
-} from '../dataModel/Ids'
+} from '../dataModel/Ids.js'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { PieceInstance, PieceInstancePiece, rewrapPieceToInstance } from '../dataModel/PieceInstance'
-import { DBPartInstance } from '../dataModel/PartInstance'
-import { DBRundown } from '../dataModel/Rundown'
+import { PieceInstance, PieceInstancePiece, rewrapPieceToInstance } from '../dataModel/PieceInstance.js'
+import { DBPartInstance } from '../dataModel/PartInstance.js'
+import { DBRundown } from '../dataModel/Rundown.js'
 import { ReadonlyDeep } from 'type-fest'
-import { assertNever, clone, flatten, getRandomId, groupByToMapFunc, max, normalizeArrayToMapFunc } from '../lib'
-import { protectString } from '../protectedString'
+import { assertNever, clone, flatten, getRandomId, groupByToMapFunc, max, normalizeArrayToMapFunc } from '../lib.js'
+import { protectString } from '../protectedString.js'
 import _ = require('underscore')
-import { MongoQuery } from '../mongo'
-import { DBSegment, SegmentOrphanedReason } from '../dataModel/Segment'
+import { MongoQuery } from '../mongo.js'
+import { DBSegment, SegmentOrphanedReason } from '../dataModel/Segment.js'
 
 export function buildPiecesStartingInThisPartQuery(part: ReadonlyDeep<DBPart>): MongoQuery<Piece> {
 	return { startPartId: part._id }
