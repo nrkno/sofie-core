@@ -69,3 +69,18 @@ export function getSideEffect(
 		expectedPackage.sideEffect
 	)
 }
+
+export function getExpectedPackageFileName(expectedPackage: ExpectedPackage.Any): string | undefined {
+	if (expectedPackage.type === ExpectedPackage.PackageType.MEDIA_FILE) {
+		return expectedPackage.content.filePath
+	} else if (expectedPackage.type === ExpectedPackage.PackageType.QUANTEL_CLIP) {
+		return expectedPackage.content.guid || expectedPackage.content.title
+	} else if (expectedPackage.type === ExpectedPackage.PackageType.JSON_DATA) {
+		return undefined // Not supported
+	} else if (expectedPackage.type === ExpectedPackage.PackageType.HTML_TEMPLATE) {
+		return expectedPackage.content.path
+	} else {
+		assertNever(expectedPackage)
+		return undefined
+	}
+}

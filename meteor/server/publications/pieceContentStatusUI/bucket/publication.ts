@@ -5,6 +5,7 @@ import {
 	BucketId,
 	ExpectedPackageId,
 	PackageContainerPackageId,
+	ShowStyleBaseId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
@@ -37,6 +38,7 @@ import { regenerateForBucketActionIds, regenerateForBucketAdLibIds } from './reg
 import { PieceContentStatusStudio } from '../checkPieceContentStatus'
 import { check } from 'meteor/check'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../../../security/securityVerify'
+import { PieceContentStatusMessageFactory } from '../messageFactory'
 
 interface UIBucketContentStatusesArgs {
 	readonly studioId: StudioId
@@ -47,6 +49,8 @@ interface UIBucketContentStatusesState {
 	contentCache: ReadonlyDeep<BucketContentCache>
 
 	studio: PieceContentStatusStudio
+
+	showStyleMessageFactories: Map<ShowStyleBaseId, PieceContentStatusMessageFactory>
 
 	adlibDependencies: Map<BucketAdLibId, PieceDependencies>
 	actionDependencies: Map<BucketAdLibActionId, PieceDependencies>
@@ -110,6 +114,16 @@ async function setupUIBucketContentStatusesPublicationObservers(
 			added: (id) => triggerUpdate(trackActionChange(protectString(id))),
 			changed: (id) => triggerUpdate(trackActionChange(protectString(id))),
 			removed: (id) => triggerUpdate(trackActionChange(protectString(id))),
+		}),
+		contentCache.Blueprints.find({}).observeChanges({
+			added: () => triggerUpdate({ invalidateAll: true }),
+			changed: () => triggerUpdate({ invalidateAll: true }),
+			removed: () => triggerUpdate({ invalidateAll: true }),
+		}),
+		contentCache.ShowStyleSourceLayers.find({}).observeChanges({
+			added: () => triggerUpdate({ invalidateAll: true }),
+			changed: () => triggerUpdate({ invalidateAll: true }),
+			removed: () => triggerUpdate({ invalidateAll: true }),
 		}),
 
 		Studios.observeChanges(
@@ -198,14 +212,26 @@ async function manipulateUIBucketContentStatusesPublicationData(
 
 	let regenerateActionIds: Set<BucketAdLibActionId>
 	let regenerateAdlibIds: Set<BucketAdLibId>
-	if (!state.adlibDependencies || !state.actionDependencies || invalidateAllItems) {
+	if (
+		!state.adlibDependencies ||
+		!state.actionDependencies ||
+		!state.showStyleMessageFactories ||
+		invalidateAllItems
+	) {
 		state.adlibDependencies = new Map()
 		state.actionDependencies = new Map()
+		state.showStyleMessageFactories = new Map()
 
 		// force every piece to be regenerated
 		collection.remove(null)
 		regenerateAdlibIds = new Set(state.contentCache.BucketAdLibs.find({}).map((p) => p._id))
 		regenerateActionIds = new Set(state.contentCache.BucketAdLibActions.find({}).map((p) => p._id))
+
+		// prepare the message factories
+		for (const showStyle of state.contentCache.ShowStyleSourceLayers.find({})) {
+			const blueprint = state.contentCache.Blueprints.findOne(showStyle.blueprintId)
+			state.showStyleMessageFactories.set(showStyle._id, new PieceContentStatusMessageFactory(blueprint))
+		}
 	} else {
 		regenerateAdlibIds = new Set(updateProps.invalidateBucketAdlibIds)
 		regenerateActionIds = new Set(updateProps.invalidateBucketActionIds)
@@ -227,6 +253,7 @@ async function manipulateUIBucketContentStatusesPublicationData(
 		state.contentCache,
 		state.studio,
 		state.adlibDependencies,
+		state.showStyleMessageFactories,
 		collection,
 		regenerateAdlibIds
 	)
@@ -234,6 +261,7 @@ async function manipulateUIBucketContentStatusesPublicationData(
 		state.contentCache,
 		state.studio,
 		state.actionDependencies,
+		state.showStyleMessageFactories,
 		collection,
 		regenerateActionIds
 	)

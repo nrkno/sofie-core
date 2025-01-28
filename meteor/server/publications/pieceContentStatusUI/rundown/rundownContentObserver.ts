@@ -1,9 +1,10 @@
 import { Meteor } from 'meteor/meteor'
-import { RundownId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BlueprintId, RundownId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { logger } from '../../../logging'
 import {
 	adLibActionFieldSpecifier,
 	adLibPieceFieldSpecifier,
+	blueprintFieldSpecifier,
 	ContentCache,
 	partFieldSpecifier,
 	partInstanceFieldSpecifier,
@@ -18,6 +19,7 @@ import {
 import {
 	AdLibActions,
 	AdLibPieces,
+	Blueprints,
 	PartInstances,
 	Parts,
 	PieceInstances,
@@ -51,9 +53,14 @@ export class RundownContentObserver {
 	#showStyleBaseIds: ShowStyleBaseId[] = []
 	#showStyleBaseIdObserver!: ReactiveMongoObserverGroupHandle
 
+	#blueprintIds: BlueprintId[] = []
+	#blueprintIdObserver!: ReactiveMongoObserverGroupHandle
+
 	private constructor(cache: ContentCache) {
 		this.#cache = cache
 	}
+
+	#disposed = false
 
 	static async create(rundownIds: RundownId[], cache: ContentCache): Promise<RundownContentObserver> {
 		logger.silly(`Creating RundownContentObserver for rundowns "${rundownIds.join(',')}"`)
@@ -61,6 +68,7 @@ export class RundownContentObserver {
 		const observer = new RundownContentObserver(cache)
 
 		await observer.initShowStyleBaseIdObserver()
+		await observer.initBlueprintIdObserver()
 
 		// This takes ownership of the #showStyleBaseIdObserver, and will stop it if this throws
 		await observer.initContentObservers(rundownIds)
@@ -86,17 +94,43 @@ export class RundownContentObserver {
 						added: (doc) => {
 							const newDoc = convertShowStyleBase(doc)
 							this.#cache.ShowStyleSourceLayers.upsert(doc._id, { $set: newDoc as Partial<Document> })
+							this.updateBlueprintIds()
 						},
 						changed: (doc) => {
 							const newDoc = convertShowStyleBase(doc)
 							this.#cache.ShowStyleSourceLayers.upsert(doc._id, { $set: newDoc as Partial<Document> })
+							this.updateBlueprintIds()
 						},
 						removed: (doc) => {
 							this.#cache.ShowStyleSourceLayers.remove(doc._id)
+							this.updateBlueprintIds()
 						},
 					},
 					{
 						projection: showStyleBaseFieldSpecifier,
+					}
+				),
+			]
+		})
+	}
+
+	private async initBlueprintIdObserver() {
+		// Run the Blueprint query in a ReactiveMongoObserverGroup, so that it can be restarted whenever
+		this.#blueprintIdObserver = await ReactiveMongoObserverGroup(async () => {
+			// Clear already cached data
+			this.#cache.Blueprints.remove({})
+
+			logger.silly(`optimized observer restarting ${this.#blueprintIds}`)
+
+			return [
+				Blueprints.observeChanges(
+					{
+						// We can use the `this.#blueprintIds` here, as this is restarted every time that property changes
+						_id: { $in: this.#blueprintIds },
+					},
+					this.#cache.Blueprints.link(),
+					{
+						projection: blueprintFieldSpecifier,
 					}
 				),
 			]
@@ -121,6 +155,7 @@ export class RundownContentObserver {
 				}
 			),
 			this.#showStyleBaseIdObserver,
+			this.#blueprintIdObserver,
 
 			Segments.observeChanges(
 				{
@@ -228,6 +263,8 @@ export class RundownContentObserver {
 
 	private updateShowStyleBaseIds = _.debounce(
 		Meteor.bindEnvironment(() => {
+			if (this.#disposed) return
+
 			const newShowStyleBaseIds = _.uniq(this.#cache.Rundowns.find({}).map((rd) => rd.showStyleBaseId))
 
 			if (!equivalentArrays(newShowStyleBaseIds, this.#showStyleBaseIds)) {
@@ -242,11 +279,29 @@ export class RundownContentObserver {
 		REACTIVITY_DEBOUNCE
 	)
 
+	private updateBlueprintIds = _.debounce(
+		Meteor.bindEnvironment(() => {
+			if (this.#disposed) return
+
+			const newBlueprintIds = _.uniq(this.#cache.ShowStyleSourceLayers.find({}).map((rd) => rd.blueprintId))
+
+			if (!equivalentArrays(newBlueprintIds, this.#blueprintIds)) {
+				logger.silly(`optimized observer changed ids ${JSON.stringify(newBlueprintIds)} ${this.#blueprintIds}`)
+				this.#blueprintIds = newBlueprintIds
+				// trigger the rundown group to restart
+				this.#blueprintIdObserver.restart()
+			}
+		}),
+		REACTIVITY_DEBOUNCE
+	)
+
 	public get cache(): ContentCache {
 		return this.#cache
 	}
 
 	public dispose = (): void => {
+		this.#disposed = true
+
 		this.#observers.forEach((observer) => observer.stop())
 	}
 }

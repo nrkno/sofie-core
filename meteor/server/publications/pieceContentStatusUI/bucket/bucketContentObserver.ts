@@ -1,7 +1,8 @@
 import { Meteor } from 'meteor/meteor'
-import { BucketId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BlueprintId, BucketId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { logger } from '../../../logging'
 import {
+	blueprintFieldSpecifier,
 	bucketActionFieldSpecifier,
 	bucketAdlibFieldSpecifier,
 	BucketContentCache,
@@ -9,7 +10,7 @@ import {
 	showStyleBaseFieldSpecifier,
 	SourceLayersDoc,
 } from './bucketContentCache'
-import { BucketAdLibActions, BucketAdLibs, ShowStyleBases } from '../../../collections'
+import { Blueprints, BucketAdLibActions, BucketAdLibs, ShowStyleBases } from '../../../collections'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { equivalentArrays } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
@@ -32,6 +33,9 @@ export class BucketContentObserver implements Meteor.LiveQueryHandle {
 
 	#showStyleBaseIds: ShowStyleBaseId[] = []
 	#showStyleBaseIdObserver!: ReactiveMongoObserverGroupHandle
+
+	#blueprintIds: BlueprintId[] = []
+	#blueprintIdObserver!: ReactiveMongoObserverGroupHandle
 
 	#disposed = false
 
@@ -59,17 +63,41 @@ export class BucketContentObserver implements Meteor.LiveQueryHandle {
 						added: (doc) => {
 							const newDoc = convertShowStyleBase(doc)
 							cache.ShowStyleSourceLayers.upsert(doc._id, { $set: newDoc as Partial<Document> })
+							observer.updateBlueprintIds()
 						},
 						changed: (doc) => {
 							const newDoc = convertShowStyleBase(doc)
 							cache.ShowStyleSourceLayers.upsert(doc._id, { $set: newDoc as Partial<Document> })
+							observer.updateBlueprintIds()
 						},
 						removed: (doc) => {
 							cache.ShowStyleSourceLayers.remove(doc._id)
+							observer.updateBlueprintIds()
 						},
 					},
 					{
 						projection: showStyleBaseFieldSpecifier,
+					}
+				),
+			]
+		})
+
+		// Run the Blueprint query in a ReactiveMongoObserverGroup, so that it can be restarted whenever
+		observer.#blueprintIdObserver = await ReactiveMongoObserverGroup(async () => {
+			// Clear already cached data
+			cache.Blueprints.remove({})
+
+			logger.silly(`optimized observer restarting ${observer.#blueprintIds}`)
+
+			return [
+				Blueprints.observeChanges(
+					{
+						// We can use the `this.#blueprintIds` here, as this is restarted every time that property changes
+						_id: { $in: observer.#blueprintIds },
+					},
+					cache.Blueprints.link(),
+					{
+						projection: blueprintFieldSpecifier,
 					}
 				),
 			]
@@ -106,6 +134,7 @@ export class BucketContentObserver implements Meteor.LiveQueryHandle {
 			),
 
 			observer.#showStyleBaseIdObserver,
+			observer.#blueprintIdObserver,
 		])
 
 		return observer
@@ -127,6 +156,22 @@ export class BucketContentObserver implements Meteor.LiveQueryHandle {
 				this.#showStyleBaseIds = newShowStyleBaseIds
 				// trigger the rundown group to restart
 				this.#showStyleBaseIdObserver.restart()
+			}
+		}),
+		REACTIVITY_DEBOUNCE
+	)
+
+	private updateBlueprintIds = _.debounce(
+		Meteor.bindEnvironment(() => {
+			if (this.#disposed) return
+
+			const newBlueprintIds = _.uniq(this.#cache.ShowStyleSourceLayers.find({}).map((rd) => rd.blueprintId))
+
+			if (!equivalentArrays(newBlueprintIds, this.#blueprintIds)) {
+				logger.silly(`optimized observer changed ids ${JSON.stringify(newBlueprintIds)} ${this.#blueprintIds}`)
+				this.#blueprintIds = newBlueprintIds
+				// trigger the rundown group to restart
+				this.#blueprintIdObserver.restart()
 			}
 		}),
 		REACTIVITY_DEBOUNCE

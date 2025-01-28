@@ -603,10 +603,6 @@ class RundownViewNotifier extends WithManagedTracker {
 
 				let newNotification: Notification | undefined = undefined
 				if (status !== PieceStatusCode.OK && status !== PieceStatusCode.UNKNOWN) {
-					const messagesStr = messages.length
-						? messages.map((msg) => translateMessage(msg, t)).join('; ')
-						: t('There is an unspecified problem with the source.')
-
 					const issueName = typeof issue.name === 'string' ? issue.name : translateMessage(issue.name, t)
 					let messageName = issue.segmentName || issueName
 					if (issue.segmentName && issueName) {
@@ -619,7 +615,15 @@ class RundownViewNotifier extends WithManagedTracker {
 						(
 							<>
 								<h5>{messageName}</h5>
-								<div>{messagesStr}</div>
+								<div>
+									{messages.map((msg) => (
+										<>
+											{translateMessage(msg, t)}
+											<br />
+										</>
+									))}
+									{messages.length === 0 && t('There is an unspecified problem with the source.')}
+								</div>
 							</>
 						),
 						issue.segmentId ? issue.segmentId : 'line_' + issue.partId,

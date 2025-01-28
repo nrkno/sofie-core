@@ -39,7 +39,6 @@ function renderNotice(
 	noticeLevel: NoticeLevel,
 	noticeMessages: ReadonlyDeep<ITranslatableMessage[]> | null
 ): JSX.Element {
-	const messagesStr = noticeMessages ? noticeMessages.map((msg) => translateMessage(msg, t)).join('; ') : ''
 	return (
 		<>
 			<div className="segment-timeline__mini-inspector__notice-header">
@@ -49,7 +48,14 @@ function renderNotice(
 					<WarningIconSmall />
 				) : null}
 			</div>
-			<div className="segment-timeline__mini-inspector__notice">{messagesStr}</div>
+			<div className="segment-timeline__mini-inspector__notice">
+				{noticeMessages?.map((msg) => (
+					<>
+						{translateMessage(msg, t)}
+						<br />
+					</>
+				))}
+			</div>
 		</>
 	)
 }
