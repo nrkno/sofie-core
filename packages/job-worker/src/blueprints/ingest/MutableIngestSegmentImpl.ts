@@ -8,9 +8,9 @@ import type {
 import { Complete, clone, omit } from '@sofie-automation/corelib/dist/lib'
 import { ReadonlyDeep } from 'type-fest'
 import _ = require('underscore')
-import { MutableIngestPartImpl } from './MutableIngestPartImpl'
-import { SofieIngestRundownDataCacheGenerator } from '../../ingest/sofieIngestCache'
-import { getSegmentId } from '../../ingest/lib'
+import { MutableIngestPartImpl } from './MutableIngestPartImpl.js'
+import { SofieIngestRundownDataCacheGenerator } from '../../ingest/sofieIngestCache.js'
+import { getSegmentId } from '../../ingest/lib.js'
 import { SofieIngestDataCacheObjId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { SofieIngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/SofieIngestDataCache'
 

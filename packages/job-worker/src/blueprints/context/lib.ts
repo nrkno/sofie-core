@@ -49,7 +49,7 @@ import {
 	PieceAbSessionInfo,
 	RundownPlaylistTiming,
 } from '@sofie-automation/blueprints-integration'
-import { JobContext, ProcessedShowStyleBase, ProcessedShowStyleVariant } from '../../jobs'
+import { JobContext, ProcessedShowStyleBase, ProcessedShowStyleVariant } from '../../jobs/index.js'
 import { DBRundownPlaylist, QuickLoopMarkerType } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import _ = require('underscore')
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -62,7 +62,7 @@ import {
 	UserEditingDefinitionSofieDefault,
 	UserEditingType,
 } from '@sofie-automation/blueprints-integration/dist/userEditing'
-import type { PlayoutMutatablePart } from '../../playout/model/PlayoutPartInstanceModel'
+import type { PlayoutMutatablePart } from '../../playout/model/PlayoutPartInstanceModel.js'
 import { BlueprintQuickLookInfo } from '@sofie-automation/blueprints-integration/dist/context/quickLoopInfo'
 
 /**

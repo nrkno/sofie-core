@@ -5,27 +5,27 @@ import { serializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dis
 import { DBRundown, RundownSource } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { WrappedShowStyleBlueprint } from '../blueprints/cache'
-import { StudioUserContext, GetRundownContext } from '../blueprints/context'
-import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
+import { WrappedShowStyleBlueprint } from '../blueprints/cache.js'
+import { StudioUserContext, GetRundownContext } from '../blueprints/context/index.js'
+import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages.js'
 import {
 	postProcessAdLibPieces,
 	postProcessGlobalAdLibActions,
 	postProcessRundownBaselineItems,
-} from '../blueprints/postProcess'
-import { logger } from '../logging'
+} from '../blueprints/postProcess.js'
+import { logger } from '../logging.js'
 import _ = require('underscore')
-import { IngestModel } from './model/IngestModel'
-import { extendIngestRundownCore, canRundownBeUpdated } from './lib'
-import { JobContext } from '../jobs'
-import { CommitIngestData } from './lock'
-import { SelectedShowStyleVariant, selectShowStyleVariant } from './selectShowStyleVariant'
-import { updateExpectedPackagesForRundownBaseline } from './expectedPackages'
+import { IngestModel } from './model/IngestModel.js'
+import { extendIngestRundownCore, canRundownBeUpdated } from './lib.js'
+import { JobContext } from '../jobs/index.js'
+import { CommitIngestData } from './lock.js'
+import { SelectedShowStyleVariant, selectShowStyleVariant } from './selectShowStyleVariant.js'
+import { updateExpectedPackagesForRundownBaseline } from './expectedPackages.js'
 import { ReadonlyDeep } from 'type-fest'
 import { BlueprintResultRundown, ExtendedIngestRundown } from '@sofie-automation/blueprints-integration'
 import { wrapTranslatableMessageFromBlueprints } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { convertRundownToBlueprintSegmentRundown, translateUserEditsFromBlueprint } from '../blueprints/context/lib'
-import { calculateSegmentsAndRemovalsFromIngestData } from './generationSegment'
+import { convertRundownToBlueprintSegmentRundown, translateUserEditsFromBlueprint } from '../blueprints/context/lib.js'
+import { calculateSegmentsAndRemovalsFromIngestData } from './generationSegment.js'
 import { SofieIngestRundownWithSource } from '@sofie-automation/corelib/dist/dataModel/SofieIngestDataCache'
 
 export enum GenerateRundownMode {

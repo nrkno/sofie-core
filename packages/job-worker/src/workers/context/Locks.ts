@@ -1,6 +1,6 @@
 import type { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PlaylistLock, RundownLock } from '../../jobs/lock'
-import { logger } from '../../logging'
+import { PlaylistLock, RundownLock } from '../../jobs/lock.js'
+import { logger } from '../../logging.js'
 
 export class PlaylistLockImpl extends PlaylistLock {
 	#isLocked = true

@@ -8,10 +8,10 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { ABSessionAssignment, ABSessionAssignments } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { OnGenerateTimelineObjExt } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { logger } from '../../logging'
+import { logger } from '../../logging.js'
 import * as _ from 'underscore'
-import { SessionRequest } from './abPlaybackResolver'
-import { AbSessionHelper } from './abSessionHelper'
+import { SessionRequest } from './abPlaybackResolver.js'
+import { AbSessionHelper } from './abSessionHelper.js'
 import { ReadonlyDeep } from 'type-fest'
 
 /**

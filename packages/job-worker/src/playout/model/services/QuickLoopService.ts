@@ -1,5 +1,5 @@
 import { MarkerPosition, compareMarkerPositions } from '@sofie-automation/corelib/dist/playout/playlist'
-import { PlayoutModelReadonly } from '../PlayoutModel'
+import { PlayoutModelReadonly } from '../PlayoutModel.js'
 import {
 	QuickLoopMarker,
 	QuickLoopMarkerType,
@@ -10,11 +10,11 @@ import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PartId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { PlayoutPartInstanceModel } from '../PlayoutPartInstanceModel'
-import { JobContext } from '../../../jobs'
+import { PlayoutPartInstanceModel } from '../PlayoutPartInstanceModel.js'
+import { JobContext } from '../../../jobs/index.js'
 import { clone } from '@sofie-automation/corelib/dist/lib'
 import { DEFAULT_FALLBACK_PART_DURATION } from '@sofie-automation/shared-lib/dist/core/constants'
-import { getCurrentTime } from '../../../lib'
+import { getCurrentTime } from '../../../lib/index.js'
 
 export class QuickLoopService {
 	constructor(

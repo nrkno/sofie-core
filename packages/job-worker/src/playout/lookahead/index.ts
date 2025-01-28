@@ -1,16 +1,16 @@
-import { getOrderedPartsAfterPlayhead, PartAndPieces, PartInstanceAndPieceInstances } from './util'
-import { findLookaheadForLayer, LookaheadResult } from './findForLayer'
-import { PlayoutModel } from '../model/PlayoutModel'
-import { sortPieceInstancesByStart } from '../pieces'
+import { getOrderedPartsAfterPlayhead, PartAndPieces, PartInstanceAndPieceInstances } from './util.js'
+import { findLookaheadForLayer, LookaheadResult } from './findForLayer.js'
+import { PlayoutModel } from '../model/PlayoutModel.js'
+import { sortPieceInstancesByStart } from '../pieces.js'
 import { MappingExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { TSR, LookaheadMode, OnGenerateTimelineObj } from '@sofie-automation/blueprints-integration'
-import { SelectedPartInstancesTimelineInfo, SelectedPartInstanceTimelineInfo } from '../timeline/generate'
+import { SelectedPartInstancesTimelineInfo, SelectedPartInstanceTimelineInfo } from '../timeline/generate.js'
 import {
 	OnGenerateTimelineObjExt,
 	TimelineObjRundown,
 	updateLookaheadLayer,
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { JobContext } from '../../jobs'
+import { JobContext } from '../../jobs/index.js'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PieceInstance, wrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -19,9 +19,9 @@ import { clone } from '@sofie-automation/corelib/dist/lib'
 import { Filter as FilterQuery } from 'mongodb'
 import _ = require('underscore')
 import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/shared-lib/dist/core/constants'
-import { prefixSingleObjectId } from '../lib'
-import { LookaheadTimelineObject } from './findObjects'
-import { hasPieceInstanceDefinitelyEnded } from '../timeline/lib'
+import { prefixSingleObjectId } from '../lib.js'
+import { LookaheadTimelineObject } from './findObjects.js'
+import { hasPieceInstanceDefinitelyEnded } from '../timeline/lib.js'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { ReadonlyDeep } from 'type-fest'
 

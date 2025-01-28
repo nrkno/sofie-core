@@ -3,7 +3,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { Time } from '@sofie-automation/blueprints-integration'
-import { PlayoutPieceInstanceModel } from '../PlayoutPieceInstanceModel'
+import { PlayoutPieceInstanceModel } from '../PlayoutPieceInstanceModel.js'
 import _ = require('underscore')
 
 export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel {

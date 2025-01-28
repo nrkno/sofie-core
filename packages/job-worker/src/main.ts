@@ -1,15 +1,15 @@
-import { LeveledLogMethodFixed, LogEntry, logger } from './logging'
+import { LeveledLogMethodFixed, LogEntry, logger } from './logging.js'
 import { protectStringArray } from '@sofie-automation/corelib/dist/protectedString'
 import { StudioId, WorkerId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { setupApmAgent } from './profiler'
-import { createMongoConnection } from './db'
-import { StudioWorkerSet } from './workers/worker-set'
+import { setupApmAgent } from './profiler.js'
+import { createMongoConnection } from './db/index.js'
+import { StudioWorkerSet } from './workers/worker-set.js'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { Db as MongoDb, MongoClient } from 'mongodb'
-import { JobManager } from './manager'
+import { JobManager } from './manager.js'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { setupInfluxDb } from './influx'
+import { setupInfluxDb } from './influx.js'
 
 setupApmAgent()
 setupInfluxDb()

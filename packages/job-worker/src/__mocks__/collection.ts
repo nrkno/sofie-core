@@ -34,7 +34,14 @@ import {
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { AnyBulkWriteOperation, Collection, CountOptions, FindOptions } from 'mongodb'
 import { ReadonlyDeep } from 'type-fest'
-import { IChangeStream, IChangeStreamEvents, ICollection, IDirectCollections, MongoModifier, MongoQuery } from '../db'
+import {
+	IChangeStream,
+	IChangeStreamEvents,
+	ICollection,
+	IDirectCollections,
+	MongoModifier,
+	MongoQuery,
+} from '../db/index.js'
 import _ = require('underscore')
 import { ExpectedMediaItem } from '@sofie-automation/corelib/dist/dataModel/ExpectedMediaItem'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'

@@ -1,10 +1,4 @@
-import {
-	IBlueprintPieceType,
-	PieceLifespan,
-	Time,
-	TimelineObjClassesCore,
-	TSR,
-} from '@sofie-automation/blueprints-integration'
+import { IBlueprintPieceType, Time, TimelineObjClassesCore, TSR } from '@sofie-automation/blueprints-integration'
 import { PartInstanceId, PieceInstanceId, PieceInstanceInfiniteId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstanceInfinite } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { DBRundownPlaylist, RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
@@ -18,15 +12,15 @@ import { getPartGroupId } from '@sofie-automation/corelib/dist/playout/ids'
 import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { JobContext } from '../../jobs'
+import { JobContext } from '../../jobs/index.js'
 import { ReadonlyDeep } from 'type-fest'
-import { SelectedPartInstancesTimelineInfo, SelectedPartInstanceTimelineInfo } from './generate'
-import { createPartGroup, createPartGroupFirstObject, PartEnable, transformPartIntoTimeline } from './part'
+import { SelectedPartInstancesTimelineInfo, SelectedPartInstanceTimelineInfo } from './generate.js'
+import { createPartGroup, createPartGroupFirstObject, PartEnable, transformPartIntoTimeline } from './part.js'
 import { literal, normalizeArrayToMapFunc } from '@sofie-automation/corelib/dist/lib'
-import { getCurrentTime } from '../../lib'
-import _ = require('underscore')
-import { getPieceEnableInsidePart, transformPieceGroupAndObjects } from './piece'
-import { logger } from '../../logging'
+import { getCurrentTime } from '../../lib/index.js'
+import * as _ from 'underscore'
+import { getPieceEnableInsidePart, transformPieceGroupAndObjects } from './piece.js'
+import { logger } from '../../logging.js'
 
 /**
  * Some additional data used by the timeline generation process
