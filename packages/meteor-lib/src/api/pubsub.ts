@@ -8,23 +8,23 @@ import {
 	ShowStyleBaseId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Bucket } from '../collections/Buckets'
-import { ICoreSystem } from '../collections/CoreSystem'
-import { Evaluation } from '../collections/Evaluations'
+import { Bucket } from '../collections/Buckets.js'
+import { ICoreSystem } from '../collections/CoreSystem.js'
+import { Evaluation } from '../collections/Evaluations.js'
 import { ExpectedPlayoutItem } from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
-import { DBOrganization } from '../collections/Organization'
-import { RundownLayoutBase } from '../collections/RundownLayouts'
-import { SnapshotItem } from '../collections/Snapshots'
-import { TranslationsBundle } from '../collections/TranslationsBundles'
-import { DBTriggeredActions, UITriggeredActionsObj } from '../collections/TriggeredActions'
-import { UserActionsLogItem } from '../collections/UserActionsLog'
-import { UIBucketContentStatus, UIPieceContentStatus, UISegmentPartNote } from './rundownNotifications'
-import { UIShowStyleBase } from './showStyles'
-import { UIStudio } from './studios'
-import { UIDeviceTriggerPreview } from './MountedTriggers'
-import { UIBlueprintUpgradeStatus } from './upgradeStatus'
+import { DBOrganization } from '../collections/Organization.js'
+import { RundownLayoutBase } from '../collections/RundownLayouts.js'
+import { SnapshotItem } from '../collections/Snapshots.js'
+import { TranslationsBundle } from '../collections/TranslationsBundles.js'
+import { DBTriggeredActions, UITriggeredActionsObj } from '../collections/TriggeredActions.js'
+import { UserActionsLogItem } from '../collections/UserActionsLog.js'
+import { UIBucketContentStatus, UIPieceContentStatus, UISegmentPartNote } from './rundownNotifications.js'
+import { UIShowStyleBase } from './showStyles.js'
+import { UIStudio } from './studios.js'
+import { UIDeviceTriggerPreview } from './MountedTriggers.js'
+import { UIBlueprintUpgradeStatus } from './upgradeStatus.js'
 import {
 	PeripheralDevicePubSub,
 	PeripheralDevicePubSubTypes,
@@ -34,7 +34,7 @@ import {
 import { CorelibPubSub, CorelibPubSubCollections, CorelibPubSubTypes } from '@sofie-automation/corelib/dist/pubsub'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { PartInstance } from '../collections/PartInstances'
+import { PartInstance } from '../collections/PartInstances.js'
 import type { DBNotificationObj } from '@sofie-automation/corelib/dist/dataModel/Notifications'
 
 /**
