@@ -105,7 +105,7 @@ export const SegmentStoryboard = React.memo(
 					? {
 							partId: p.partId,
 							ident: p.instance.part.identifier,
-					  }
+						}
 					: null
 			)
 			.filter((entry) => entry !== null) as Array<{ partId: PartId; ident?: string }>
@@ -239,8 +239,8 @@ export const SegmentStoryboard = React.memo(
 								? 'background'
 								: undefined
 							: squishedHover === index
-							? 'hover'
-							: undefined
+								? 'hover'
+								: undefined
 					}
 					style={
 						needsToBeSquished && squishedPartCardStride
@@ -252,7 +252,7 @@ export const SegmentStoryboard = React.memo(
 												? renderedParts.length + index
 												: renderedParts.length - index
 											: undefined,
-							  }
+								}
 							: undefined
 					}
 					onHoverOver={() => needsToBeSquished && setSquishedHover(index)}

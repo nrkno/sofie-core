@@ -113,7 +113,7 @@ export class RundownPlaylistClientUtil {
 						rundownId: { $in: unorderedRundownIds },
 						_id: { $in: ids },
 						reset: { $ne: true },
-				  }).fetch()
+					}).fetch()
 				: []
 
 		return {
@@ -174,7 +174,7 @@ export class RundownPlaylistClientUtil {
 					? {
 							...piecesOptions?.fields,
 							startPartId: 1,
-					  }
+						}
 					: undefined,
 			}
 		).fetch()
@@ -270,7 +270,7 @@ export class RundownPlaylistClientUtil {
 							...segmentsOptions?.fields,
 							_rank: 1,
 							rundownId: 1,
-					  }
+						}
 					: undefined,
 				sort: {
 					...segmentsOptions?.sort,
@@ -296,7 +296,7 @@ export class RundownPlaylistClientUtil {
 							rundownId: 1,
 							segmentId: 1,
 							_rank: 1,
-					  }
+						}
 					: undefined,
 				sort: {
 					...segmentsOptions?.sort,

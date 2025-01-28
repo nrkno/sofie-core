@@ -81,7 +81,7 @@ export default function StudioSettings(): JSX.Element {
 									id,
 									JSONBlobParse(schema),
 								])
-						  )
+							)
 						: undefined
 
 					return [

@@ -166,9 +166,9 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 							? (
 									((vtContent.sourceDuration + postrollDuration - seek) / (this.getItemDuration() || 1)) *
 									100
-							  ).toString() + '%'
+								).toString() + '%'
 							: Math.round((vtContent.sourceDuration + postrollDuration - seek) * this.props.timeScale).toString() +
-							  'px',
+								'px',
 					}}
 				></div>
 			)

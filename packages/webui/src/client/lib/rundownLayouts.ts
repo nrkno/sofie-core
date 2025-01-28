@@ -92,8 +92,8 @@ export function getIsFilterActive(
 	const containsRequiredLayer = containsEveryRequiredLayer
 		? true
 		: panel.additionalLayers && panel.additionalLayers.length
-		? panel.additionalLayers.some((s) => activeLayers.includes(s))
-		: false
+			? panel.additionalLayers.some((s) => activeLayers.includes(s))
+			: false
 
 	if (
 		(!panel.requireAllAdditionalSourcelayers || containsEveryRequiredLayer) &&
@@ -106,7 +106,7 @@ export function getIsFilterActive(
 							(panel.requiredLayerIds || []).indexOf(piece.piece.sourceLayerId) !== -1 &&
 							piece.partInstanceId === playlist.currentPartInfo?.partInstanceId
 						)
-				  })
+					})
 				: undefined
 	}
 	return {

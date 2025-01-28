@@ -376,7 +376,7 @@ function updateModelWithGeneratedPart(
 					message: wrapTranslatableMessageFromBlueprints(blueprintPart.part.invalidReason.message, [
 						blueprintId,
 					]),
-			  }
+				}
 			: undefined,
 		userEditOperations: translateUserEditsFromBlueprint(blueprintPart.part.userEditOperations, [blueprintId]),
 		userEditProperties: translateUserEditPropertiesFromBlueprint(blueprintPart.part.userEditProperties, [

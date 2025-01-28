@@ -165,8 +165,8 @@ export const SegmentAdlibTesting = React.memo(
 								? 'background'
 								: undefined
 							: squishedHover === index
-							? 'hover'
-							: undefined
+								? 'hover'
+								: undefined
 					}
 					style={
 						needsToBeSquished && squishedPartCardStride
@@ -178,7 +178,7 @@ export const SegmentAdlibTesting = React.memo(
 												? renderedParts.length + index
 												: renderedParts.length - index
 											: undefined,
-							  }
+								}
 							: undefined
 					}
 					onHoverOver={() => needsToBeSquished && setSquishedHover(index)}

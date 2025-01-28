@@ -164,16 +164,16 @@ function getStartAndEndDateFromLocationSearch(locationSearch: string): { from: T
 		? {
 				from: qsStartDate.valueOf(),
 				to: qsEndDate?.isValid() ? qsEndDate.valueOf() : qsStartDate.add(1, 'days').valueOf(),
-		  }
+			}
 		: qsEndDate?.isValid()
-		? {
-				to: qsEndDate.valueOf(),
-				from: qsStartDate?.isValid() ? qsStartDate.valueOf() : qsEndDate.add(1, 'days').valueOf(),
-		  }
-		: {
-				from: moment().startOf('day').valueOf(),
-				to: moment().add(1, 'days').startOf('day').valueOf(),
-		  }
+			? {
+					to: qsEndDate.valueOf(),
+					from: qsStartDate?.isValid() ? qsStartDate.valueOf() : qsEndDate.add(1, 'days').valueOf(),
+				}
+			: {
+					from: moment().startOf('day').valueOf(),
+					to: moment().add(1, 'days').startOf('day').valueOf(),
+				}
 }
 
 function UserActivity(): JSX.Element {

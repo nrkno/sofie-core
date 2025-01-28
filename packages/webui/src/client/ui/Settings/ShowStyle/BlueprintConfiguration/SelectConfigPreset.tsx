@@ -21,7 +21,7 @@ export function SelectConfigPreset({ showStyleBase }: Readonly<SelectConfigPrese
 			? Blueprints.findOne({
 					_id: showStyleBase.blueprintId,
 					blueprintType: BlueprintManifestType.SHOWSTYLE,
-			  })
+				})
 			: undefined
 	}, [showStyleBase.blueprintId])
 

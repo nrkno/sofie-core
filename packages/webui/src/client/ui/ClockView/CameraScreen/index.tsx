@@ -82,8 +82,8 @@ export function CameraScreen({ playlist, studioId }: Readonly<IProps>): JSX.Elem
 			Array.isArray(sourceLayerTypeParam)
 				? sourceLayerTypeParam
 				: sourceLayerTypeParam === null
-				? null
-				: [sourceLayerTypeParam]
+					? null
+					: [sourceLayerTypeParam]
 		)
 		setFullScreenMode(Array.isArray(fullscreenParam) ? fullscreenParam[0] === '1' : fullscreenParam === '1')
 	}, [location.search])

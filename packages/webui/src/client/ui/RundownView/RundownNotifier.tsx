@@ -480,7 +480,7 @@ class RundownViewNotifier extends WithManagedTracker {
 												})
 											},
 										},
-								  ]
+									]
 								: undefined,
 							-1
 						)

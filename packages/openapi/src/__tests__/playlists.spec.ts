@@ -160,7 +160,7 @@ describe('Network client', () => {
 				clearSourceLayersRequest: {
 					sourceLayerIds: ['42'],
 				},
-			}),
+			})
 		).rejects.toThrow()
 	})
 

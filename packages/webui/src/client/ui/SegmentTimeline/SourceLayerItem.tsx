@@ -190,10 +190,10 @@ export const SourceLayerItem = withTranslation()(
 								this.state.rightAnchoredWidth > 0
 									? (elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
 									: maxLabelWidth !== undefined
-									? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
-									: nextIsTouching
-									? '100%'
-									: 'none',
+										? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
+										: nextIsTouching
+											? '100%'
+											: 'none',
 							transform:
 								'translate(' +
 								(widthConstrictedMode
@@ -220,10 +220,10 @@ export const SourceLayerItem = withTranslation()(
 								this.state.rightAnchoredWidth > 0
 									? (elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
 									: maxLabelWidth !== undefined
-									? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
-									: nextIsTouching
-									? '100%'
-									: 'none',
+										? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
+										: nextIsTouching
+											? '100%'
+											: 'none',
 							transform:
 								'translate(' +
 								Math.min(
@@ -243,10 +243,10 @@ export const SourceLayerItem = withTranslation()(
 								this.state.rightAnchoredWidth > 0
 									? (elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
 									: maxLabelWidth !== undefined
-									? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
-									: nextIsTouching
-									? '100%'
-									: 'none',
+										? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
+										: nextIsTouching
+											? '100%'
+											: 'none',
 						}
 					}
 				} else {
@@ -261,10 +261,10 @@ export const SourceLayerItem = withTranslation()(
 								this.state.rightAnchoredWidth > 0
 									? (elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
 									: maxLabelWidth !== undefined
-									? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
-									: nextIsTouching
-									? '100%'
-									: 'none',
+										? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
+										: nextIsTouching
+											? '100%'
+											: 'none',
 							transform:
 								'translate(' +
 								(widthConstrictedMode || this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0
@@ -279,10 +279,10 @@ export const SourceLayerItem = withTranslation()(
 								this.state.rightAnchoredWidth > 0
 									? (elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
 									: maxLabelWidth !== undefined
-									? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
-									: nextIsTouching
-									? '100%'
-									: 'none',
+										? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
+										: nextIsTouching
+											? '100%'
+											: 'none',
 						}
 					}
 				}
@@ -728,7 +728,7 @@ export const SourceLayerItem = withTranslation()(
 											? RundownUtils.formatTimeToTimecode(
 													this.props.studio.settings,
 													innerPiece.enable.duration
-											  ).substr(-5)
+												).substr(-5)
 											: ''}
 									</div>
 								)}

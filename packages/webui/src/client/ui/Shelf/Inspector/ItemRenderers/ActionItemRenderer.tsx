@@ -263,8 +263,8 @@ function isActionItem(item: BucketAdLibItem | IAdLibListItem | PieceUi): item is
 	const content = RundownUtils.isAdLibPieceOrAdLibListItem(item)
 		? (item as AdLibPieceUi)
 		: RundownUtils.isPieceInstance(item)
-		? (item.instance.piece as Piece)
-		: (item as AdLibPieceUi)
+			? (item.instance.piece as Piece)
+			: (item as AdLibPieceUi)
 
 	if (content && (content as AdLibPieceUi).isAction) {
 		return true

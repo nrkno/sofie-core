@@ -54,8 +54,8 @@ export const OnAirLine = withTiming<IProps, {}>({
 			(lastTake || 0) > (lastStartedPlayback || -1)
 				? lastTake
 				: lastStartedPlayback !== undefined
-				? lastStartedPlayback - lastTakeOffset
-				: undefined
+					? lastStartedPlayback - lastTakeOffset
+					: undefined
 
 		let isExpectedToPlay = !!lastStartedPlayback
 		if (lastTake && lastTake + SIMULATED_PLAYBACK_HARD_MARGIN > timingDurations.currentTime) {

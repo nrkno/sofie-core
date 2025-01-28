@@ -81,7 +81,7 @@ export async function CommitIngestOperation(
 		? {
 				id: beforeRundown.playlistId,
 				externalId: null, // The id on the Rundown is not correct
-		  }
+			}
 		: undefined) ?? {
 		id: getPlaylistIdFromExternalId(context.studioId, rundown.playlistExternalId ?? unprotectString(rundown._id)),
 		externalId: rundown.playlistExternalId ?? unprotectString(rundown._id),
@@ -656,7 +656,7 @@ async function getSelectedPartInstances(
 					rundownId: { $in: rundownIds },
 					_id: { $in: ids },
 					reset: { $ne: true },
-			  })
+				})
 			: []
 
 	const currentPartInstance = instances.find((inst) => inst._id === playlist.currentPartInfo?.partInstanceId)
@@ -698,7 +698,7 @@ export async function removeRundownFromPlaylistAndUpdatePlaylist(
 			...(updatePlaylistIdIsSetInSofieTo !== undefined
 				? {
 						playlistIdIsSetInSofie: updatePlaylistIdIsSetInSofieTo,
-				  }
+					}
 				: {}),
 		},
 	})

@@ -88,12 +88,12 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 			? 'rundownBaselineAdLibAction'
 			: 'adLibAction'
 		: props.adLibListItem.isClearSourceLayer
-		? 'clearSourceLayer'
-		: props.adLibListItem.isSticky
-		? 'sticky'
-		: props.adLibListItem.isGlobal
-		? 'rundownBaselineAdLibItem'
-		: 'adLibPiece'
+			? 'clearSourceLayer'
+			: props.adLibListItem.isSticky
+				? 'sticky'
+				: props.adLibListItem.isGlobal
+					? 'rundownBaselineAdLibItem'
+					: 'adLibPiece'
 
 	return (
 		<>

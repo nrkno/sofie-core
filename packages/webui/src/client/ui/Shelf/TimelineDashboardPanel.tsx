@@ -166,7 +166,7 @@ const TimelineDashboardPanelContent = withTranslation()(
 													this.state.searchFilter,
 													uniquenessIds
 												)
-										  )
+											)
 										: []
 									return filteredPieces.length > 0 ||
 										seg.isLive ||

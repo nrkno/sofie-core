@@ -125,12 +125,12 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 			? 'rundownBaselineAdLibAction'
 			: 'adLibAction'
 		: props.adLibListItem.isClearSourceLayer
-		? 'clearSourceLayer'
-		: props.adLibListItem.isSticky
-		? 'sticky'
-		: props.adLibListItem.isGlobal
-		? 'rundownBaselineAdLibItem'
-		: 'adLibPiece'
+			? 'clearSourceLayer'
+			: props.adLibListItem.isSticky
+				? 'sticky'
+				: props.adLibListItem.isGlobal
+					? 'rundownBaselineAdLibItem'
+					: 'adLibPiece'
 
 	return (
 		<>

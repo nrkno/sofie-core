@@ -76,16 +76,16 @@ function usePlayedOutPieceState(
 
 		const nextRevalidation = Number.isFinite(closestAbsoluteNext)
 			? // the next closest change is in that time, so let's wait until then
-			  Math.max(1, closestAbsoluteNext - getCurrentTime())
+				Math.max(1, closestAbsoluteNext - getCurrentTime())
 			: // the part has stopped playing, so we can stop checking
-			Number.isFinite(stoppedPlayback)
-			? 0
-			: // if all Pieces are finished, we can stop updating, because piecesOnLayer will change anyway if
-			// anything happens to the Pieces
-			finishedPieceIds.length === piecesOnLayer.length
-			? 0
-			: // essentially a fallback, we shouldn't hit this condition ever
-			  10000 + Math.random() * 1000
+				Number.isFinite(stoppedPlayback)
+				? 0
+				: // if all Pieces are finished, we can stop updating, because piecesOnLayer will change anyway if
+					// anything happens to the Pieces
+					finishedPieceIds.length === piecesOnLayer.length
+					? 0
+					: // essentially a fallback, we shouldn't hit this condition ever
+						10000 + Math.random() * 1000
 
 		return [
 			{

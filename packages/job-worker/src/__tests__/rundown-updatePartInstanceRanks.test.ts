@@ -32,7 +32,7 @@ describe('updatePartInstanceRanks', () => {
 	function addPartInstance(
 		partInstances: DBPartInstance[],
 		part: DBPart,
-		orphaned?: DBPartInstance['orphaned'],
+		orphaned?: DBPartInstance['orphaned']
 	): PartInstanceId {
 		const id: PartInstanceId = protectString(`${part._id}_instance`)
 		partInstances.push({
@@ -55,8 +55,8 @@ describe('updatePartInstanceRanks', () => {
 				{
 					part: part as any,
 				},
-				mockOptions,
-			),
+				mockOptions
+			)
 		)
 		return mock<IngestModel>(
 			{
@@ -66,12 +66,12 @@ describe('updatePartInstanceRanks', () => {
 						{
 							parts: partModels.filter((p) => p.part.segmentId === segmentId) as any,
 						},
-						mockOptions,
+						mockOptions
 					)
 				},
 				getAllOrderedParts: () => partModels,
 			},
-			mockOptions,
+			mockOptions
 		)
 	}
 
@@ -79,7 +79,7 @@ describe('updatePartInstanceRanks', () => {
 		context: JobContext,
 		expectedSegmentId: SegmentId,
 		parts: DBPart[],
-		initialRanks: BeforePartMapItem[],
+		initialRanks: BeforePartMapItem[]
 	): Promise<void> {
 		const ingestModel = createFakeIngestModel(parts, expectedSegmentId)
 
@@ -96,10 +96,10 @@ describe('updatePartInstanceRanks', () => {
 					{
 						PartInstances: fakeCollection,
 					},
-					mockOptions,
+					mockOptions
 				),
 			},
-			mockOptions,
+			mockOptions
 		)
 
 		const expectedQuery = {
@@ -166,7 +166,7 @@ describe('updatePartInstanceRanks', () => {
 		parts: DBPart[],
 		expectedOps: AnyBulkWriteOperation<DBPartInstance>[],
 		id: string,
-		newRank: number,
+		newRank: number
 	): void {
 		const partId = protectString(id)
 
@@ -195,7 +195,7 @@ describe('updatePartInstanceRanks', () => {
 		expectedOps: AnyBulkWriteOperation<DBPartInstance>[],
 		partInstanceId: PartInstanceId | string,
 		newRank: number | null,
-		orphaned: DBPartInstance['orphaned'] | null,
+		orphaned: DBPartInstance['orphaned'] | null
 	) {
 		expectedOps.push({
 			updateOne: {
@@ -252,7 +252,7 @@ describe('updatePartInstanceRanks', () => {
 				},
 				segmentId: { $in: [segmentId] },
 			},
-			partInstanceFetchOptions,
+			partInstanceFetchOptions
 		)
 		expect(fakeCollection.bulkWrite).toHaveBeenCalledTimes(0)
 	})
@@ -352,7 +352,7 @@ describe('updatePartInstanceRanks', () => {
 		addPartInstance(
 			partInstances,
 			createMinimalPart(adlibId, 3.5), // after part03
-			'adlib-part',
+			'adlib-part'
 		)
 
 		// remove one and offset the others
@@ -468,14 +468,14 @@ describe('updatePartInstanceRanks', () => {
 		addPartInstance(
 			partInstances,
 			createMinimalPart(adlibId0, 2.5), // after part02
-			'deleted',
+			'deleted'
 		)
 
 		const adlibId1 = 'adlib1'
 		addPartInstance(
 			partInstances,
 			createMinimalPart(adlibId1, 2.75), // after adlib0
-			'adlib-part',
+			'adlib-part'
 		)
 
 		// Ensure the segment is correct before the operation

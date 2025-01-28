@@ -339,10 +339,10 @@ function storeNotificationsForCategory(
 						type: 'partInstance',
 						rundownId: partInstanceInfo.rundownId,
 						partInstanceId: partInstanceInfo.partInstanceId,
-				  }
+					}
 				: {
 						type: 'playlist',
-				  },
+					},
 		})
 	}
 }

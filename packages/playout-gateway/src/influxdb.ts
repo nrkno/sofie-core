@@ -21,7 +21,7 @@ const client = config.influx.host
 			username: config.influx.user,
 			password: config.influx.password,
 			protocol,
-	  })
+		})
 	: undefined
 
 const versions = getVersions()

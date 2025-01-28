@@ -148,7 +148,7 @@ export class StudioObserver extends EventEmitter {
 								fields: showStyleBaseFieldSpecifier,
 								limit: 1,
 							}
-					  ) as Promise<MinimalMongoCursor<Pick<DBShowStyleBase, ShowStyleBaseFields>>>)
+						) as Promise<MinimalMongoCursor<Pick<DBShowStyleBase, ShowStyleBaseFields>>>)
 					: null
 			)
 			.end(this.updateShowStyle.call)
@@ -160,7 +160,7 @@ export class StudioObserver extends EventEmitter {
 			{
 				currentRundown: Pick<DBRundown, RundownFields>
 				showStyleBase: Pick<DBShowStyleBase, ShowStyleBaseFields>
-			} | null
+			} | null,
 		]
 	>(async (state): Promise<void> => {
 		if (this.#disposed) return

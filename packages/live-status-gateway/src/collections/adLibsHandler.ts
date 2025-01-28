@@ -34,7 +34,7 @@ export class AdLibsHandler
 	async update(source: string, data: SelectedPartInstances | undefined): Promise<void> {
 		this.logUpdateReceived('partInstances', source)
 		const prevRundownId = this._currentRundownId
-		this._currentPartInstance = data ? data.current ?? data.next : undefined
+		this._currentPartInstance = data ? (data.current ?? data.next) : undefined
 		this._currentRundownId = this._currentPartInstance?.rundownId
 
 		await new Promise(process.nextTick.bind(this))

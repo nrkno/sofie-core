@@ -17,13 +17,9 @@ export const NoraFloatingInspector = React.forwardRef<HTMLDivElement, IPropsHead
 	props: IPropsHeader,
 	ref
 ) {
-	useImperativeHandle(
-		ref,
-		() => {
-			return NoraPreviewRenderer._singletonRef.rootElement as HTMLDivElement
-		},
-		[]
-	)
+	useImperativeHandle(ref, () => {
+		return NoraPreviewRenderer._singletonRef.rootElement as HTMLDivElement
+	}, [])
 
 	useEffect(() => {
 		if (props.noraContent) {

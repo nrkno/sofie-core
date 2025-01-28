@@ -93,7 +93,7 @@ export const IconPicker = withTranslation()(
 			return this.state.searchText
 				? _.pick(this.state.iconPack, (value: IconDefinition) => {
 						return value.iconName.includes(this.state.searchText)
-				  })
+					})
 				: this.state.iconPack
 		}
 

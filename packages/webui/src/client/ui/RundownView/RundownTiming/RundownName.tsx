@@ -51,11 +51,11 @@ export const RundownName = withTiming<IRundownNameProps, {}>()(function RundownN
 							? t('{{currentRundownName}} - {{rundownPlaylistName}} (Looping)', {
 									currentRundownName: currentRundown.name,
 									rundownPlaylistName: rundownPlaylist.name,
-							  })
+								})
 							: t('{{currentRundownName}} - {{rundownPlaylistName}}', {
 									currentRundownName: currentRundown.name,
 									rundownPlaylistName: rundownPlaylist.name,
-							  })
+								})
 					}
 					id="rundown-playlist-name"
 				>
@@ -68,7 +68,7 @@ export const RundownName = withTiming<IRundownNameProps, {}>()(function RundownN
 						isPlaylistLooping
 							? t('{{rundownPlaylistName}} (Looping)', {
 									rundownPlaylistName: rundownPlaylist.name,
-							  })
+								})
 							: rundownPlaylist.name
 					}
 					id="rundown-playlist-name"
@@ -78,16 +78,16 @@ export const RundownName = withTiming<IRundownNameProps, {}>()(function RundownN
 			)}
 			{!hideDiff && rundownPlaylist.startedPlayback && rundownPlaylist.activationId && !rundownPlaylist.rehearsal
 				? expectedStart &&
-				  RundownUtils.formatDiffToTimecode(
+					RundownUtils.formatDiffToTimecode(
 						rundownPlaylist.startedPlayback - expectedStart,
 						true,
 						false,
 						true,
 						true,
 						true
-				  )
+					)
 				: expectedStart &&
-				  RundownUtils.formatDiffToTimecode(getCurrentTime() - expectedStart, true, false, true, true, true)}
+					RundownUtils.formatDiffToTimecode(getCurrentTime() - expectedStart, true, false, true, true, true)}
 		</div>
 	)
 })

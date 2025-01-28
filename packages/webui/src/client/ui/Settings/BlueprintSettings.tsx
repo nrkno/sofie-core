@@ -206,7 +206,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 													{showStyleBase.name}
 												</Link>
 											</span>
-									  ))
+										))
 									: t('This Blueprint is not being used by any Show Style')}
 							</p>
 						</div>
@@ -223,7 +223,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 													{i.name}
 												</Link>
 											</span>
-									  ))
+										))
 									: t('This Blueprint is not compatible with any Studio')}
 							</p>
 						</div>

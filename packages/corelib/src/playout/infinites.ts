@@ -45,7 +45,7 @@ export function buildPastInfinitePiecesForThisPartQuery(
 					startRundownId: part.rundownId,
 					startSegmentId: part.segmentId,
 					startPartId: { $in: partIdsToReceiveOnSegmentEndFrom },
-			  }
+				}
 			: undefined,
 		segmentsToReceiveOnRundownEndFrom.length > 0
 			? {
@@ -59,7 +59,7 @@ export function buildPastInfinitePiecesForThisPartQuery(
 					},
 					startRundownId: part.rundownId,
 					startSegmentId: { $in: segmentsToReceiveOnRundownEndFrom },
-			  }
+				}
 			: undefined,
 		rundownIdsBeforeThisInPlaylist.length > 0
 			? {
@@ -68,7 +68,7 @@ export function buildPastInfinitePiecesForThisPartQuery(
 						$in: [PieceLifespan.OutOnShowStyleEnd],
 					},
 					startRundownId: { $in: rundownIdsBeforeThisInPlaylist },
-			  }
+				}
 			: undefined,
 	])
 
@@ -338,7 +338,7 @@ export function isPiecePotentiallyActiveInPart(
 						rundownsToShowstyles,
 						previousPartInstance.rundownId,
 						rundown
-				  )
+					)
 				: false
 		default:
 			assertNever(pieceToCheck.lifespan)
@@ -459,7 +459,7 @@ export function getPieceInstancesForPart(
 					newInstanceId,
 					nextPartIsAfterCurrentPart,
 					isTemporary
-			  )
+				)
 			: []
 
 	// Compile the resulting list

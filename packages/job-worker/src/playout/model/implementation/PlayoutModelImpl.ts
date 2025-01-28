@@ -570,20 +570,20 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 					? this.context.directCollections.PartInstances.remove({
 							_id: { $in: removeFromDb },
 							rundownId: { $in: rundownIds },
-					  })
+						})
 					: undefined,
 				allToRemove.length > 0
 					? this.context.directCollections.PieceInstances.remove({
 							partInstanceId: { $in: allToRemove },
 							rundownId: { $in: rundownIds },
-					  })
+						})
 					: undefined,
 				allToRemove.length > 0
 					? this.context.directCollections.Notifications.remove({
 							'relatedTo.studioId': this.context.studioId,
 							'relatedTo.rundownId': { $in: rundownIds },
 							'relatedTo.partInstanceId': { $in: allToRemove },
-					  })
+						})
 					: undefined,
 			])
 		})
@@ -941,7 +941,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 									? 'null'
 									: `partInstanceHasChanges: ${
 											pi.partInstanceHasChanges
-									  }, changedPieceInstanceIds: ${JSON.stringify(pi.changedPieceInstanceIds())}`)
+										}, changedPieceInstanceIds: ${JSON.stringify(pi.changedPieceInstanceIds())}`)
 						)
 					)}`
 				)

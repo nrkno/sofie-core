@@ -46,7 +46,7 @@ export function useUserPermissions(): [roles: UserPermissions, ready: boolean] {
 					testing: getLocalAllowTesting(),
 					service: getLocalAllowService(),
 					gateway: false,
-			  }
+				}
 	)
 
 	const isConnected = useTracker(() => Meteor.status().connected, [], false)

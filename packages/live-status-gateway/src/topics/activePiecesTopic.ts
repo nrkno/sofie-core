@@ -53,12 +53,12 @@ export class ActivePiecesTopic
 					rundownPlaylistId: unprotectString(this._activePlaylistId),
 					activePieces:
 						this._activePieceInstances?.map((piece) => toPieceStatus(piece, this._showStyleBaseExt)) ?? [],
-			  })
+				})
 			: literal<ActivePiecesStatus>({
 					event: 'activePieces',
 					rundownPlaylistId: null,
 					activePieces: [],
-			  })
+				})
 
 		this.sendMessage(subscribers, message)
 	}

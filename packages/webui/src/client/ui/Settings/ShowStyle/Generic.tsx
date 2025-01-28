@@ -52,7 +52,7 @@ export function ShowStyleGenericProperties({
 										{i.name}
 									</Link>
 								</span>
-						  ))
+							))
 						: t('This Show Style is not compatible with any Studio')}
 				</p>
 			</div>

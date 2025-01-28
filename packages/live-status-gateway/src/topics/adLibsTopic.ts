@@ -111,7 +111,7 @@ export class AdLibsTopic
 									name: t.data,
 									label: interpollateTranslation(t.display.label.key, t.display.label.args),
 								})
-						  )
+							)
 						: []
 					const segmentId = this._parts.get(action.partId)?.segmentId
 					const name = interpollateTranslation(action.display.label.key, action.display.label.args)
@@ -183,7 +183,7 @@ export class AdLibsTopic
 									name: t.data,
 									label: interpollateTranslation(t.display.label.key, t.display.label.args),
 								})
-						  )
+							)
 						: []
 					const name = interpollateTranslation(action.display.label.key, action.display.label.args)
 					return literal<WithSortingMetadata<GlobalAdLibStatus>>({
@@ -236,7 +236,7 @@ export class AdLibsTopic
 					rundownPlaylistId: unprotectString(this._activePlaylist._id),
 					adLibs: sortContent(adLibs),
 					globalAdLibs: sortContent(globalAdLibs),
-			  }
+				}
 			: { event: 'adLibs', rundownPlaylistId: null, adLibs: [], globalAdLibs: [] }
 
 		this.sendMessage(subscribers, adLibsStatus)

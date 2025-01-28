@@ -39,10 +39,10 @@ const MarkerCountdownText = withTiming<MarkerCountdownProps, {}>({
 				{time > 0
 					? t('(in: {{time}})', {
 							time: RundownUtils.formatDiffToTimecode(time, false, true, true, true, true),
-					  })
+						})
 					: t('({{time}} ago)', {
 							time: RundownUtils.formatDiffToTimecode(time, false, true, true, true, true),
-					  })}
+						})}
 			</span>
 		)
 	}

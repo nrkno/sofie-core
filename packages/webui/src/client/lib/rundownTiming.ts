@@ -385,7 +385,7 @@ export class RundownTimingCalculator {
 							? Math.max(
 									partExpectedDuration,
 									calculatePartInstanceExpectedDurationWithTransition(partInstance) || 0
-							  )
+								)
 							: calculatePartInstanceExpectedDurationWithTransition(partInstance) || 0,
 						now - lastStartedPlayback
 					)
@@ -648,7 +648,7 @@ export class RundownTimingCalculator {
 		}
 
 		return literal<RundownTimingContext>({
-			currentPartInstanceId: playlist ? playlist.currentPartInfo?.partInstanceId ?? null : undefined,
+			currentPartInstanceId: playlist ? (playlist.currentPartInfo?.partInstanceId ?? null) : undefined,
 			currentSegmentId: currentSegmentId,
 			totalPlaylistDuration: totalRundownDuration,
 			remainingPlaylistDuration: remainingRundownDuration,
@@ -846,7 +846,7 @@ export function getPlaylistTimingDiff(
 
 	let diff = PlaylistTiming.isPlaylistTimingNone(timing)
 		? (timingContext.asPlayedPlaylistDuration || 0) -
-		  (timing.expectedDuration ?? timingContext.totalPlaylistDuration ?? 0)
+			(timing.expectedDuration ?? timingContext.totalPlaylistDuration ?? 0)
 		: frontAnchor + (timingContext.remainingPlaylistDuration || 0) - backAnchor
 
 	// handle special cases

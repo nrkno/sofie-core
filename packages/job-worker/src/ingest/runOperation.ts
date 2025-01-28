@@ -275,7 +275,7 @@ async function updateSofieIngestRundown(
 						rundownSource: nrcsIngestRundown.rundownSource,
 					} satisfies Complete<SofieIngestRundownWithSource>,
 					false
-			  )
+				)
 
 		const blueprintContext = new ProcessIngestDataContext(
 			{

@@ -153,7 +153,7 @@ async function innerUploadBlueprint(
 			? blueprint.databaseVersion
 			: {
 					system: undefined,
-			  },
+				},
 		blueprintId: '',
 		blueprintVersion: '',
 		integrationVersion: '',
@@ -283,10 +283,10 @@ async function syncConfigPresetsToShowStyles(blueprint: Blueprint): Promise<void
 					? {
 							'blueprintConfigWithOverrides.defaults': configPreset.config,
 							blueprintConfigPresetIdUnlinked: false,
-					  }
+						}
 					: {
 							blueprintConfigPresetIdUnlinked: true,
-					  },
+						},
 			})
 		})
 	)
@@ -315,10 +315,10 @@ async function syncConfigPresetsToShowStyles(blueprint: Blueprint): Promise<void
 					? {
 							'blueprintConfigWithOverrides.defaults': configPreset.config,
 							blueprintConfigPresetIdUnlinked: false,
-					  }
+						}
 					: {
 							blueprintConfigPresetIdUnlinked: true,
-					  },
+						},
 			})
 		})
 	)
@@ -346,10 +346,10 @@ async function syncConfigPresetsToStudios(blueprint: Blueprint): Promise<void> {
 					? {
 							'blueprintConfigWithOverrides.defaults': configPreset.config,
 							blueprintConfigPresetIdUnlinked: false,
-					  }
+						}
 					: {
 							blueprintConfigPresetIdUnlinked: true,
-					  },
+						},
 			})
 		})
 	)

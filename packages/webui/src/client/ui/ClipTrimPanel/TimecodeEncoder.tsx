@@ -41,11 +41,11 @@ export class TimecodeEncoder extends React.Component<IProps, IState> {
 				? {}
 				: {
 						currentValue: TimecodeEncoder.secondsToTimecode(props.value || 0, props.fps),
-				  },
+					},
 			state.validValue !== newValid
 				? {
 						hasError: false,
-				  }
+					}
 				: {}
 		)
 	}

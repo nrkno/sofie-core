@@ -20,7 +20,11 @@ export class PartHandler
 	private _activePlaylist: DBRundownPlaylist | undefined
 	private _currentPartInstance: DBPartInstance | undefined
 
-	constructor(logger: Logger, coreHandler: CoreHandler, private _partsHandler: PartsHandler) {
+	constructor(
+		logger: Logger,
+		coreHandler: CoreHandler,
+		private _partsHandler: PartsHandler
+	) {
 		super(PartHandler.name, CollectionName.Parts, CorelibPubSub.parts, logger, coreHandler)
 		this.observerName = this._name
 	}

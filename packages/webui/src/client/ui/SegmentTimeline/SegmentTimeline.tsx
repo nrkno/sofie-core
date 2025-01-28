@@ -630,8 +630,8 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 					(group.isFlattened
 						? 1
 						: this.isOutputGroupCollapsed(group)
-						? 1
-						: group.sourceLayers.filter((layer) => showHiddenSourceLayers || !layer.isHidden).length),
+							? 1
+							: group.sourceLayers.filter((layer) => showHiddenSourceLayers || !layer.isHidden).length),
 				0
 			)} * var(--segment-layer-height) + var(--segment-timeline-padding-top) + var(--segment-timeline-padding-bottom))`,
 			minWidth:
@@ -660,9 +660,9 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 			left:
 				(this.props.followLiveLine
 					? // if the livePostion is greater than historyTimeDuration and followLiveLine is on
-					  // we always lock the onAirLine in place at liveLineHistorySize, so we can just return
-					  // a fixed value here
-					  this.props.livePosition > historyTimeDuration
+						// we always lock the onAirLine in place at liveLineHistorySize, so we can just return
+						// a fixed value here
+						this.props.livePosition > historyTimeDuration
 						? this.props.liveLineHistorySize
 						: Math.min(pixelPostion, this.props.liveLineHistorySize).toString()
 					: pixelPostion.toString()) + 'px',
@@ -975,7 +975,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 						this.props.timingDurations.partDisplayStartsAt[getPartInstanceTimingId(livePart.instance)] -
 							this.props.timingDurations.partDisplayStartsAt[getPartInstanceTimingId(firstPartInSegment.instance)]) ||
 						0
-			  )
+				)
 			: 0
 	}
 
@@ -995,7 +995,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 					? {
 							partId: p.partId,
 							ident: p.instance.part.identifier,
-					  }
+						}
 					: null
 			)
 			.filter((entry): entry is { partId: PartId; ident: string } => entry !== null)
@@ -1182,7 +1182,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 					isLiveSegment={this.props.isLiveSegment}
 					partInstances={this.props.parts}
 					currentPartInstanceId={
-						this.props.isLiveSegment ? this.props.playlist.currentPartInfo?.partInstanceId ?? null : null
+						this.props.isLiveSegment ? (this.props.playlist.currentPartInfo?.partInstanceId ?? null) : null
 					}
 				/>
 				<div

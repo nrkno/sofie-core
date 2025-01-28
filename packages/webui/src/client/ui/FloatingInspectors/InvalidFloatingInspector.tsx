@@ -56,8 +56,8 @@ export const InvalidFloatingInspector: React.FunctionComponent<IProps> = (props:
 					(noteSeverity === NoteSeverity.ERROR
 						? 'segment-timeline__mini-inspector--notice notice-critical'
 						: noteSeverity === NoteSeverity.WARNING
-						? 'segment-timeline__mini-inspector--notice notice-warning'
-						: '')
+							? 'segment-timeline__mini-inspector--notice notice-warning'
+							: '')
 				}
 				style={floatingInspectorStyle}
 				ref={ref}

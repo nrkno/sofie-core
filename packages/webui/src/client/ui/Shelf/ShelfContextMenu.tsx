@@ -160,8 +160,8 @@ export default function ShelfContextMenu(props: Readonly<ShelfContextMenuProps>)
 		context?.type === ContextType.ADLIB
 			? renderStartExecuteAdLib(context.details)
 			: context?.type === ContextType.BUCKET_ADLIB
-			? renderStartExecuteAdLib(context.details)
-			: null
+				? renderStartExecuteAdLib(context.details)
+				: null
 
 	return (
 		<Escape to="viewport">

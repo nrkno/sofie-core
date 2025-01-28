@@ -112,7 +112,7 @@ export const SegmentTimingPanel = withTracker<ISegmentTimingPanelProps, {}, ISeg
 						),
 					] as [
 						PartId[],
-						{ currentPartInstance: PartInstance | undefined; nextPartInstance: PartInstance | undefined }
+						{ currentPartInstance: PartInstance | undefined; nextPartInstance: PartInstance | undefined },
 					],
 				// if the rundown isn't active, run the changes ASAP, we don't care if there's going to be jank
 				// if this is the current or next segment (will have those two properties defined), run the changes ASAP,

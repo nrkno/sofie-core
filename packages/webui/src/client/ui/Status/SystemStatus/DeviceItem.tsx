@@ -251,11 +251,11 @@ function onExecuteAction(event: any, t: TFunction, device: PeripheralDevice, act
 							actionName: action.name,
 							deviceName: device.name,
 							response: translateMessage(r.response, i18nTranslator),
-					  })
+						})
 					: t('Executed {{actionName}} on device "{{deviceName}}"...', {
 							actionName: action.name,
 							deviceName: device.name,
-					  }),
+						}),
 				'SystemStatus'
 			)
 		)

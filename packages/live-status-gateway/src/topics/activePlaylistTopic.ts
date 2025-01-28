@@ -148,7 +148,7 @@ export class ActivePlaylistTopic
 											toPieceStatus(piece, this._showStyleBaseExt)
 										) ?? [],
 									publicData: currentPart.publicData,
-							  })
+								})
 							: null,
 					currentSegment:
 						this._currentPartInstance && currentPart && this._currentSegment
@@ -161,7 +161,7 @@ export class ActivePlaylistTopic
 										this._partInstancesInCurrentSegment,
 										this._partsBySegmentId[unprotectString(currentPart.segmentId)] ?? []
 									),
-							  })
+								})
 							: null,
 					nextPart: nextPart
 						? literal<PartStatus>({
@@ -174,7 +174,7 @@ export class ActivePlaylistTopic
 										toPieceStatus(piece, this._showStyleBaseExt)
 									) ?? [],
 								publicData: nextPart.publicData,
-						  })
+							})
 						: null,
 					quickLoop: this.transformQuickLoopStatus(),
 					publicData: this._activePlaylist.publicData,
@@ -191,7 +191,7 @@ export class ActivePlaylistTopic
 								? this._activePlaylist.timing.expectedEnd
 								: undefined,
 					},
-			  })
+				})
 			: literal<ActivePlaylistStatus>({
 					event: 'activePlaylist',
 					id: null,
@@ -205,7 +205,7 @@ export class ActivePlaylistTopic
 					timing: {
 						timingMode: PlaylistTimingType.None,
 					},
-			  })
+				})
 
 		this.sendMessage(subscribers, message)
 	}

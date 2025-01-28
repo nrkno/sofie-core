@@ -83,10 +83,10 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 							object: 'adLib',
 							field: 'label',
 							value: [],
-					  })
+						})
 					: literal<IGUIContextFilterLink>({
 							object: 'view',
-					  })
+						})
 
 			action.filterChain.splice(filterIndex + 1, 0, obj)
 

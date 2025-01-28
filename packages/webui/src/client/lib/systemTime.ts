@@ -36,7 +36,10 @@ export class TimeJumpDetector {
 	private wallTime: number = TimeJumpDetector.getWallTime()
 	private monotonicTime: number = TimeJumpDetector.getMonotonicTime()
 
-	constructor(private jumpCheckInterval: number, private onJumpDetected: (syncDiff: number) => void) {}
+	constructor(
+		private jumpCheckInterval: number,
+		private onJumpDetected: (syncDiff: number) => void
+	) {}
 
 	public start(): void {
 		setInterval(() => {

@@ -277,11 +277,14 @@ export async function scrollToPosition(scrollPosition: number, noAnimation?: boo
 						left: 0,
 						behavior: 'smooth',
 					})
-					setTimeout(() => {
-						resolve()
-						scrollToPositionRequestReject = undefined
-						// this formula was experimentally created from Chrome 86 behavior
-					}, 3000 * Math.log(Math.abs(currentTop - targetTop) / 2000 + 1))
+					setTimeout(
+						() => {
+							resolve()
+							scrollToPositionRequestReject = undefined
+							// this formula was experimentally created from Chrome 86 behavior
+						},
+						3000 * Math.log(Math.abs(currentTop - targetTop) / 2000 + 1)
+					)
 				},
 				{ timeout: 250 }
 			)

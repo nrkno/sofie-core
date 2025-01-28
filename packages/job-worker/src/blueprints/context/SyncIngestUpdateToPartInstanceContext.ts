@@ -91,7 +91,7 @@ export class SyncIngestUpdateToPartInstanceContext
 					this.partInstance.partInstance.segmentId,
 					this.partInstance.partInstance.part._id,
 					this.playStatus === 'current'
-			  )[0]
+				)[0]
 			: proposedPieceInstance.piece
 
 		const newPieceInstance: ReadonlyDeep<PieceInstance> = {

@@ -19,7 +19,11 @@ export class SegmentHandler
 	private _currentSegmentId: SegmentId | undefined
 	private _rundownIds: RundownId[] = []
 
-	constructor(logger: Logger, coreHandler: CoreHandler, private _segmentsHandler: SegmentsHandler) {
+	constructor(
+		logger: Logger,
+		coreHandler: CoreHandler,
+		private _segmentsHandler: SegmentsHandler
+	) {
 		super(SegmentHandler.name, CollectionName.Segments, CorelibPubSub.segments, logger, coreHandler)
 		this.observerName = this._name
 	}

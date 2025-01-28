@@ -32,7 +32,7 @@ export function SystemManagementBlueprint({ coreSystem }: Readonly<SystemManagem
 			}) as UIBlueprintUpgradeStatusCoreSystem | undefined),
 		[coreSystem?._id]
 	)
-	const statusMessage = isStatusReady && status ? getUpgradeStatusMessage(t, status) ?? t('OK') : t('Loading...')
+	const statusMessage = isStatusReady && status ? (getUpgradeStatusMessage(t, status) ?? t('OK')) : t('Loading...')
 
 	return (
 		<div className="row">

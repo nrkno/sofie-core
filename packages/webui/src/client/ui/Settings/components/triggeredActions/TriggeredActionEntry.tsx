@@ -217,13 +217,13 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 
 	function getType(sourceLayerId: string | undefined): SourceLayerType {
 		return sourceLayerId && sourceLayers
-			? sourceLayers[sourceLayerId]?.type ?? SourceLayerType.UNKNOWN
+			? (sourceLayers[sourceLayerId]?.type ?? SourceLayerType.UNKNOWN)
 			: SourceLayerType.UNKNOWN
 	}
 
 	function getShortName(sourceLayerId: string | undefined) {
 		return sourceLayerId && sourceLayers
-			? sourceLayers[sourceLayerId]?.abbreviation ?? sourceLayers[sourceLayerId]?.name ?? t('Unknown')
+			? (sourceLayers[sourceLayerId]?.abbreviation ?? sourceLayers[sourceLayerId]?.name ?? t('Unknown'))
 			: t('Unknown')
 	}
 

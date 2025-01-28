@@ -78,7 +78,7 @@ export type ObserverForCollection<T> = T extends keyof CorelibPubSubCollections
 export abstract class CollectionBase<
 	T,
 	TPubSub extends CorelibPubSub | undefined,
-	TCollection extends keyof CorelibPubSubCollections
+	TCollection extends keyof CorelibPubSubCollections,
 > {
 	protected _name: string
 	protected _collectionName: TCollection

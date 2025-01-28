@@ -167,7 +167,7 @@ export function AdLibListView(props: Readonly<IListViewPropsHeader>): JSX.Elemen
 						(item) =>
 							!item.isHidden &&
 							matchFilter(item, props.showStyleBase, liveSegment, props.filter, props.searchFilter, uniquenessIds0)
-				  )
+					)
 				: ([] as AdLibPieceUi[]),
 			rundownAdLibsUniqueIds: uniquenessIds0,
 		}

@@ -17,7 +17,10 @@ import { DEFAULT_FALLBACK_PART_DURATION } from '@sofie-automation/shared-lib/dis
 import { getCurrentTime } from '../../../lib'
 
 export class QuickLoopService {
-	constructor(private readonly context: JobContext, private readonly playoutModel: PlayoutModelReadonly) {}
+	constructor(
+		private readonly context: JobContext,
+		private readonly playoutModel: PlayoutModelReadonly
+	) {}
 
 	isPartWithinQuickLoop(partInstanceModel: PlayoutPartInstanceModel | null): boolean | null {
 		const quickLoopProps = this.playoutModel.playlist.quickLoop
@@ -34,7 +37,7 @@ export class QuickLoopService {
 		const partPosition = this.findPartPosition(partInstanceModel, rundownIds)
 		const isPartBetweenMarkers = partPosition
 			? compareMarkerPositions(startPosition, partPosition) >= 0 &&
-			  compareMarkerPositions(partPosition, endPosition) >= 0
+				compareMarkerPositions(partPosition, endPosition) >= 0
 			: false
 
 		return isPartBetweenMarkers

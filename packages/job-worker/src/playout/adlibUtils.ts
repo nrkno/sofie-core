@@ -326,10 +326,10 @@ export function innerStopPieces(
 					const newDuration: Required<PieceInstance>['userDuration'] = playoutModel.isMultiGatewayMode
 						? {
 								endRelativeToNow: offsetRelativeToNow,
-						  }
+							}
 						: {
 								endRelativeToPart: relativeStopAt,
-						  }
+							}
 
 					pieceInstanceModel.pieceInstance.setDuration(newDuration)
 

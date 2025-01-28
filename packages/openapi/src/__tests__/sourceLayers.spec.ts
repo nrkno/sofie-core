@@ -45,7 +45,7 @@ describe('Network client', () => {
 			sourceLayersApi.clearSourceLayer({
 				playlistId: null,
 				sourceLayerId: '42',
-			}),
+			})
 		).rejects.toThrow()
 	})
 
@@ -54,7 +54,7 @@ describe('Network client', () => {
 			sourceLayersApi.clearSourceLayer({
 				playlistId: playlistIds[0],
 				sourceLayerId: null,
-			}),
+			})
 		).rejects.toThrow()
 	})
 
@@ -75,7 +75,7 @@ describe('Network client', () => {
 			sourceLayersApi.recallSticky({
 				playlistId: null,
 				sourceLayerId: '42',
-			}),
+			})
 		).rejects.toThrow()
 	})
 
@@ -84,7 +84,7 @@ describe('Network client', () => {
 			sourceLayersApi.recallSticky({
 				playlistId: playlistIds[0],
 				sourceLayerId: null,
-			}),
+			})
 		).rejects.toThrow()
 	})
 

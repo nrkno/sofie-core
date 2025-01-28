@@ -54,13 +54,13 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				supportedShowStyleBase: {
 					$in: [showStyleBase._id],
 				},
-		  }).fetch()
+			}).fetch()
 		: []
 	const blueprint = showStyleBase
 		? Blueprints.findOne({
 				_id: showStyleBase.blueprintId,
 				blueprintType: BlueprintManifestType.SHOWSTYLE,
-		  })
+			})
 		: undefined
 
 	const mappings: { [studioId: string]: MappingsExt } = {}
@@ -84,7 +84,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							_id: 1,
 						},
 					}
-			  ).fetch()
+				).fetch()
 			: [],
 		compatibleStudios: compatibleStudios,
 		blueprintConfigSchema: blueprint?.showStyleConfigSchema

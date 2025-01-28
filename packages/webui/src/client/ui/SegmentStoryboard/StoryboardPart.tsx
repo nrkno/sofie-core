@@ -243,8 +243,8 @@ export const StoryboardPart = withTiming<IProps, {}>((props: IProps) => {
 						{part.instance.part.autoNext
 							? t('Auto')
 							: isLivePart && (!isLastSegment || doesPlaylistHaveNextPart)
-							? t('Next')
-							: null}
+								? t('Next')
+								: null}
 					</div>
 				</>
 			)}

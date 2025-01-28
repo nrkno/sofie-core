@@ -37,7 +37,7 @@ export function ShowStyleBaseBlueprintConfigurationSettings(
 			}) as UIBlueprintUpgradeStatusShowStyle | undefined,
 		[props.showStyleBase._id]
 	)
-	const statusMessage = isStatusReady && status ? getUpgradeStatusMessage(t, status) ?? t('OK') : t('Loading...')
+	const statusMessage = isStatusReady && status ? (getUpgradeStatusMessage(t, status) ?? t('OK')) : t('Loading...')
 
 	const translationNamespaces = useMemo(
 		() => ['blueprint_' + props.showStyleBase.blueprintId],

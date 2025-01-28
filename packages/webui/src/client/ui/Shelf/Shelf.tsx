@@ -204,8 +204,8 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		return this.state.overrideHeight
 			? (this.state.overrideHeight / window.innerHeight) * 100 + 'vh'
 			: (newState !== undefined ? newState : this.props.isExpanded)
-			? this.state.shelfHeight
-			: undefined
+				? this.state.shelfHeight
+				: undefined
 	}
 
 	private getStyle() {

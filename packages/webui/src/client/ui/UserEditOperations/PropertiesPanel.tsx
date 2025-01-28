@@ -111,18 +111,18 @@ export function PropertiesPanel(): JSX.Element {
 		selectedElement?.type === 'piece'
 			? piece?.userEditOperations
 			: selectedElement?.type === 'part'
-			? part?.userEditOperations
-			: selectedElement?.type === 'segment'
-			? segment?.userEditOperations
-			: undefined
+				? part?.userEditOperations
+				: selectedElement?.type === 'segment'
+					? segment?.userEditOperations
+					: undefined
 	const userEditProperties =
 		selectedElement?.type === 'piece'
 			? piece?.userEditProperties
 			: selectedElement?.type === 'part'
-			? part?.userEditProperties
-			: selectedElement?.type === 'segment'
-			? segment?.userEditProperties
-			: undefined
+				? part?.userEditProperties
+				: selectedElement?.type === 'segment'
+					? segment?.userEditProperties
+					: undefined
 	const change = pendingChange ?? {
 		pieceTypeProperties: userEditProperties?.pieceTypeProperties?.currentValue ?? { type: '', value: {} },
 		globalProperties: userEditProperties?.globalProperties?.currentValue ?? {},
@@ -132,10 +132,10 @@ export function PropertiesPanel(): JSX.Element {
 		selectedElement?.type === 'piece'
 			? piece?.name
 			: selectedElement?.type === 'part'
-			? part?.title
-			: selectedElement?.type === 'segment'
-			? segment?.name
-			: undefined
+				? part?.title
+				: selectedElement?.type === 'segment'
+					? segment?.name
+					: undefined
 
 	return (
 		<div className={'properties-panel'}>

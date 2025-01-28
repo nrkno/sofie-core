@@ -217,7 +217,7 @@ function checkTimingsRaw(
 				? {
 						childGroup: parsePieceGroupPrerollAndPostroll(pieceObj?.enable ?? []),
 						controlObj: controlObj.enable,
-				  }
+					}
 				: null
 		} else {
 			const partGroupId =
@@ -256,7 +256,7 @@ function checkTimingsRaw(
 					? {
 							childGroup: parsePieceGroupPrerollAndPostroll(pieceObj?.enable ?? []),
 							controlObj: controlObj.enable,
-					  }
+						}
 					: null
 			}
 		}
@@ -352,7 +352,7 @@ async function doOnPlayoutPlaybackChanged(
 							time: timings.baseTime,
 						},
 						objId: getPartGroupId(timings.partId),
-				  }
+					}
 				: undefined,
 			// The piece controlObjects start offset into the part, so need a manual offset
 			...Object.entries<number | null>(timings.pieceOffsets).map(([pieceInstanceId, offset]) =>
@@ -365,7 +365,7 @@ async function doOnPlayoutPlaybackChanged(
 								time: timings.baseTime + offset,
 							},
 							objId: getPieceControlObjectId(protectString(pieceInstanceId)),
-					  }
+						}
 					: undefined
 			),
 		]),

@@ -72,7 +72,7 @@ export async function handleTakePieceAsAdlibNow(context: JobContext, data: TakeP
 				: ((await context.directCollections.Pieces.findOne({
 						_id: data.pieceInstanceIdOrPieceIdToCopy as PieceId,
 						startRundownId: { $in: rundownIds },
-				  })) as Piece)
+					})) as Piece)
 			if (!pieceToCopy) {
 				throw UserError.from(
 					new Error(`PieceInstance or Piece "${data.pieceInstanceIdOrPieceIdToCopy}" not found!`),

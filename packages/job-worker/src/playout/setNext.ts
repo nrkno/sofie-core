@@ -80,7 +80,7 @@ export async function setNextPart(
 				? {
 						part: moveNextToPart.selectedPart,
 						consumesQueuedSegmentId: false,
-				  }
+					}
 				: null,
 			true
 		)
@@ -237,7 +237,7 @@ async function executeOnSetAsNextCallback(
 							type: 'partInstance',
 							rundownId,
 							partInstanceId,
-					  }
+						}
 					: { type: 'playlist' },
 			})
 		}
@@ -253,7 +253,7 @@ async function executeOnSetAsNextCallback(
 						type: 'partInstance',
 						rundownId,
 						partInstanceId,
-				  }
+					}
 				: { type: 'playlist' },
 		})
 	}

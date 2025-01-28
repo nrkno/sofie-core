@@ -331,8 +331,8 @@ export const ExternalFramePanel = withTranslation()(
 			const name = mosItem.Slug
 				? mosTypes.mosString128.stringify(mosItem.Slug)
 				: mosItem.ObjectSlug
-				? mosTypes.mosString128.stringify(mosItem.ObjectSlug)
-				: ''
+					? mosTypes.mosString128.stringify(mosItem.ObjectSlug)
+					: ''
 
 			doUserAction(t, e, UserAction.INGEST_BUCKET_ADLIB, (e, ts) =>
 				MeteorCall.userAction.bucketAdlibImport(
@@ -656,8 +656,8 @@ export const ExternalFramePanel = withTranslation()(
 					const name = mosItem.Slug
 						? mosTypes.mosString128.stringify(mosItem.Slug)
 						: mosItem.ObjectSlug
-						? mosTypes.mosString128.stringify(mosItem.ObjectSlug)
-						: ''
+							? mosTypes.mosString128.stringify(mosItem.ObjectSlug)
+							: ''
 
 					return MeteorCall.userAction.bucketAdlibImport(
 						e,

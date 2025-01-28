@@ -196,7 +196,7 @@ class AdLibRegionPanelBase extends React.Component<
 						.concat(_.flatten(this.props.uiSegments.map((seg) => seg.pieces)))
 						.filter((item) => matchFilter(item, this.props.showStyleBase, liveSegment, this.props.filter))[
 						this.props.adlibRank ? this.props.adlibRank : 0
-				  ]
+					]
 				: undefined
 		return (
 			<div
@@ -269,15 +269,15 @@ export const AdLibRegionPanel = translateWithTracker<
 			? unfinishedPieceInstances.find((p) => props.panel.thumbnailSourceLayerIds?.includes(p.piece.sourceLayerId))
 			: undefined
 		const thumbnailPiece: ReadonlyDeep<PieceInstance> | undefined = props.panel.thumbnailPriorityNextPieces
-			? nextThumbnail ?? currentThumbnail
-			: currentThumbnail ?? nextThumbnail
+			? (nextThumbnail ?? currentThumbnail)
+			: (currentThumbnail ?? nextThumbnail)
 
 		const pieceUi: PieceUi | undefined = thumbnailPiece
 			? {
 					instance: { ...thumbnailPiece, priority: 1 },
 					renderedInPoint: null,
 					renderedDuration: null,
-			  }
+				}
 			: undefined
 
 		const sourceLayer = thumbnailPiece && props.showStyleBase.sourceLayers[thumbnailPiece.piece.sourceLayerId]

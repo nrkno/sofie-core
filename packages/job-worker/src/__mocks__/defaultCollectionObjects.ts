@@ -86,10 +86,10 @@ export function defaultRundown(
 					type: 'nrcs',
 					peripheralDeviceId: ingestDeviceId,
 					nrcsName: 'mock',
-			  }
+				}
 			: {
 					type: 'http',
-			  },
+				},
 	}
 }
 

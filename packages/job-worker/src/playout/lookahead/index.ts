@@ -98,7 +98,7 @@ export async function getLookeaheadObjects(
 					nowInPart: partInstancesInfo0.current.nowInPart,
 					allPieces: getPrunedEndedPieceInstances(partInstancesInfo0.current),
 					calculatedTimings: partInstancesInfo0.current.calculatedTimings,
-			  })
+				})
 			: undefined,
 		partInstancesInfo0.next
 			? removeInfiniteContinuations({
@@ -107,7 +107,7 @@ export async function getLookeaheadObjects(
 					nowInPart: partInstancesInfo0.next.nowInPart,
 					allPieces: partInstancesInfo0.next.pieceInstances,
 					calculatedTimings: partInstancesInfo0.next.calculatedTimings,
-			  })
+				})
 			: undefined,
 	])
 

@@ -769,9 +769,8 @@ describe('defaultApplyIngestChanges', () => {
 
 		describe('partsChanges', () => {
 			it('mix of operations', async () => {
-				const { mutableIngestRundown, defaultOptions, mockCalls } = createMutableIngestRundown(
-					createMediumIngestRundown()
-				)
+				const { mutableIngestRundown, defaultOptions, mockCalls } =
+					createMutableIngestRundown(createMediumIngestRundown())
 
 				// include some changes, which should be ignored
 				const modifiedRundown = createMediumIngestRundown()

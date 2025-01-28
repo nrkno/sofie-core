@@ -42,11 +42,10 @@ export function meteorPublishUnsafe(
 	})
 }
 
-export type PublishDocType<K extends keyof AllPubSubTypes> = ReturnType<
-	AllPubSubTypes[K]
-> extends keyof AllPubSubCollections
-	? AllPubSubCollections[ReturnType<AllPubSubTypes[K]>]
-	: never
+export type PublishDocType<K extends keyof AllPubSubTypes> =
+	ReturnType<AllPubSubTypes[K]> extends keyof AllPubSubCollections
+		? AllPubSubCollections[ReturnType<AllPubSubTypes[K]>]
+		: never
 
 /**
  * Wrapper around Meteor.publish with stricter typings

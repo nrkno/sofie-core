@@ -1064,18 +1064,18 @@ const PrompterContent = withTranslation()(
 								this.props.config.marker === 'center'
 									? '50vh'
 									: this.props.config.marker === 'bottom'
-									? '100vh'
-									: this.props.config.margin
-									? this.props.config.margin + 'vh'
-									: undefined,
+										? '100vh'
+										: this.props.config.margin
+											? this.props.config.margin + 'vh'
+											: undefined,
 							paddingBottom:
 								this.props.config.marker === 'center'
 									? '50vh'
 									: this.props.config.marker === 'top'
-									? '100vh'
-									: this.props.config.margin
-									? this.props.config.margin + 'vh'
-									: undefined,
+										? '100vh'
+										: this.props.config.margin
+											? this.props.config.margin + 'vh'
+											: undefined,
 						}}
 					>
 						<div className="prompter-break begin">{this.props.prompterData.title}</div>

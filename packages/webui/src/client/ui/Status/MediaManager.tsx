@@ -149,7 +149,7 @@ function MediaManagerWorkFlowItem(props: Readonly<IItemProps>): JSX.Element {
 			? false
 			: criticalSteps.reduce((memo, item) => {
 					return memo && item.status === MediaManagerAPI.WorkStepStatus.DONE
-			  }, true)
+				}, true)
 	const currentTask = mediaWorkflow.steps
 		.sort((a, b) => b.priority - a.priority)
 		.find(

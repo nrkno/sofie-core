@@ -41,7 +41,7 @@ export class GlobalAdLibActionsHandler
 	async update(source: string, data: SelectedPartInstances | undefined): Promise<void> {
 		this.logUpdateReceived('partInstances', source)
 		const prevRundownId = this._currentRundownId
-		const partInstance = data ? data.current ?? data.next : undefined
+		const partInstance = data ? (data.current ?? data.next) : undefined
 		this._currentRundownId = partInstance?.rundownId
 
 		await new Promise(process.nextTick.bind(this))

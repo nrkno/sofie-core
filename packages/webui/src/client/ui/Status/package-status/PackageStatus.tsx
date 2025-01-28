@@ -153,7 +153,7 @@ export const PackageStatus: React.FC<{
 			{isOpen
 				? statuses.map((status) => {
 						return <PackageWorkStatus key={unprotectString(status._id)} status={status} connected={connected} />
-				  })
+					})
 				: null}
 		</React.Fragment>
 	)

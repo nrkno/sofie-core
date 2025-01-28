@@ -12,12 +12,12 @@ export const DefaultListItemRenderer: React.FunctionComponent<ILayerItemRenderer
 			? 'rundownBaselineAdLibAction'
 			: 'adLibAction'
 		: props.adLibListItem.isClearSourceLayer
-		? 'clearSourceLayer'
-		: props.adLibListItem.isSticky
-		? 'sticky'
-		: props.adLibListItem.isGlobal
-		? 'rundownBaselineAdLibItem'
-		: 'adLibPiece'
+			? 'clearSourceLayer'
+			: props.adLibListItem.isSticky
+				? 'sticky'
+				: props.adLibListItem.isGlobal
+					? 'rundownBaselineAdLibItem'
+					: 'adLibPiece'
 
 	return (
 		<>

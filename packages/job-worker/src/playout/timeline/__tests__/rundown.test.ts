@@ -57,9 +57,9 @@ function transformTimelineIntoSimplifiedForm(res: RundownTimelineResult) {
 						? {
 								...res.timingContext.nextPartGroup,
 								children: res.timingContext.nextPartGroup.children.length as any,
-						  }
+							}
 						: undefined,
-			  } satisfies RundownTimelineTimingContext)
+				} satisfies RundownTimelineTimingContext)
 			: undefined,
 	}
 }

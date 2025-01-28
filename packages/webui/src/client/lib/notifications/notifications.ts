@@ -174,8 +174,8 @@ class NotificationCenter0 {
 							const message = isTranslatableMessage(notification.message)
 								? notification.message.key
 								: typeof notification.message === 'string'
-								? notification.message
-								: '[React Element]'
+									? notification.message
+									: '[React Element]'
 
 							MeteorCall.client
 								.clientLogNotification(

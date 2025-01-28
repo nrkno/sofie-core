@@ -272,7 +272,9 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 				0
 			const partOffset =
 				nextPartDisplayStartsAt -
-				(firstPartInstanceTimingId ? this.context.durations?.partDisplayStartsAt?.[firstPartInstanceTimingId] ?? 0 : 0)
+				(firstPartInstanceTimingId
+					? (this.context.durations?.partDisplayStartsAt?.[firstPartInstanceTimingId] ?? 0)
+					: 0)
 			const nextPartIdOrOffsetHasChanged =
 				currentNextPart &&
 				this.props.playlist.nextPartInfo &&
@@ -508,8 +510,8 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 						(lastTake || 0) > (lastStartedPlayback || -1)
 							? lastTake
 							: lastStartedPlayback !== undefined
-							? lastStartedPlayback - lastTakeOffset
-							: undefined
+								? lastStartedPlayback - lastTakeOffset
+								: undefined
 
 					if (lastTake && lastTake + SIMULATED_PLAYBACK_HARD_MARGIN > e.detail.currentTime) {
 						isExpectedToPlay = true

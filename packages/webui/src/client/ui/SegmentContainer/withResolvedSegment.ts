@@ -185,7 +185,7 @@ export function withResolvedSegment<T extends IResolvedSegmentProps, IState = {}
 						),
 					] as [
 						PartId[],
-						{ currentPartInstance: PartInstance | undefined; nextPartInstance: PartInstance | undefined }
+						{ currentPartInstance: PartInstance | undefined; nextPartInstance: PartInstance | undefined },
 					],
 				// if the rundown isn't active, run the changes ASAP, we don't care if there's going to be jank
 				// if this is the current or next segment (will have those two properties defined), run the changes ASAP,
@@ -193,8 +193,8 @@ export function withResolvedSegment<T extends IResolvedSegmentProps, IState = {}
 				props.playlist.activationId === undefined || props.ownCurrentPartInstance || props.ownNextPartInstance
 					? 0
 					: props.isFollowingOnAirSegment
-					? 150
-					: Math.random() * 2000 + 500
+						? 150
+						: Math.random() * 2000 + 500
 			)
 
 			const rundownOrder = RundownPlaylistCollectionUtil.getRundownOrderedIDs(props.playlist)

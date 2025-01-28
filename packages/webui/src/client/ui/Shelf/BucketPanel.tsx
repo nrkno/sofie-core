@@ -171,10 +171,10 @@ const bucketTarget = {
 				monitor.getItemType() === DragDropItemTypes.BUCKET
 					? 'reorder'
 					: monitor.getItemType() === DragDropItemTypes.BUCKET_ADLIB_PIECE
-					? monitor.getItem().bucketId === props.bucket._id
-						? 'reorder'
-						: 'move'
-					: undefined,
+						? monitor.getItem().bucketId === props.bucket._id
+							? 'reorder'
+							: 'move'
+						: undefined,
 		}
 	},
 }

@@ -97,8 +97,8 @@ export function RundownListItem({
 			? t('{{showStyleVariant}} – {{showStyleBase}}', {
 					showStyleVariant: showStyleVariant.name,
 					showStyleBase: showStyleBase.name,
-			  })
-			: showStyleBase?.name ?? ''
+				})
+			: (showStyleBase?.name ?? '')
 
 	return (
 		<RundownListItemView

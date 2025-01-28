@@ -73,7 +73,7 @@ export class AtemUploadScript {
 			if (pool.isUsed) {
 				consoleLog(type + ' is used')
 				const comparisonName = fileName.substr(
-					type === AtemMediaPoolType.Still ? -ATEM_MAX_FILENAME_LENGTH : -ATEM_MAX_CLIPNAME_LENGTH,
+					type === AtemMediaPoolType.Still ? -ATEM_MAX_FILENAME_LENGTH : -ATEM_MAX_CLIPNAME_LENGTH
 				)
 				const poolName = 'fileName' in pool ? pool.fileName : pool.name
 
@@ -150,5 +150,5 @@ singleton.connect(process.argv[2]).then(
 		consoleLog('All media checked/uploaded, exiting...')
 		process.exit(0)
 	},
-	() => process.exit(-1),
+	() => process.exit(-1)
 )

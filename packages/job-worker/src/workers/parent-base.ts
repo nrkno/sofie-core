@@ -307,7 +307,7 @@ export abstract class WorkerParentBase {
 										startTime,
 										endTime,
 										result.error
-											? UserError.tryFromJSON(result.error) ?? new Error(result.error)
+											? (UserError.tryFromJSON(result.error) ?? new Error(result.error))
 											: null,
 										result.result
 									)

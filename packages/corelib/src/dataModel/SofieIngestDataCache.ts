@@ -17,7 +17,7 @@ export type SofieIngestCacheData = SofieIngestRundown | SofieIngestSegment | Sof
 export interface SofieIngestRundownWithSource<
 	TRundownPayload = unknown,
 	TSegmentPayload = unknown,
-	TPartPayload = unknown
+	TPartPayload = unknown,
 > extends SofieIngestRundown<TRundownPayload, TSegmentPayload, TPartPayload> {
 	rundownSource: RundownSource
 }

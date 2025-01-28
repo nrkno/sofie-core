@@ -270,7 +270,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 												toVersion: chunk._targetVersion,
 											})
 											return <div key={i}>{chunk._dbVersion === chunk._targetVersion ? <b>{str}</b> : str}</div>
-									  })
+										})
 									: null}
 							</div>
 							<div>{this.state.errorMessage ? <p>{this.state.errorMessage}</p> : null}</div>

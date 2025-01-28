@@ -1529,7 +1529,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 								...segmentArray.slice(0, segmentIndex).map((segment) => segment._id),
 							])
 					),
-			  }))
+				}))
 			: [],
 		rundownsToShowstyles: rundownsToShowStyles,
 		playlist,
@@ -1587,7 +1587,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 							_id: 1,
 						},
 					}
-			  ).map((part) => part._id)
+				).map((part) => part._id)
 			: [],
 		nextSegmentPartIds: nextPartInstance
 			? UIParts.find(
@@ -1599,7 +1599,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 							_id: 1,
 						},
 					}
-			  ).map((part) => part._id)
+				).map((part) => part._id)
 			: [],
 	}
 })(
@@ -1646,7 +1646,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 							`rundownView.${this.props.playlist._id}`,
 							`rundownDefaultSegmentViewMode`,
 							''
-					  ) as SegmentViewMode) || undefined
+						) as SegmentViewMode) || undefined
 					: undefined,
 				uiSegmentMap: new Map(),
 				uiSegments: [],
@@ -1796,7 +1796,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 								? {
 										...miniShelfFilter,
 										currentSegment: !(segment.isHidden && segment.showShelf) && miniShelfFilter.currentSegment,
-								  }
+									}
 								: undefined,
 							undefined,
 							uniquenessIds
@@ -2636,9 +2636,9 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 			if (currentSegmentInd >= 0) {
 				const nextShelfOnlySegment = forward
 					? this.findShelfOnlySegment(currentSegmentInd + 1, uiSegments.length) ||
-					  this.findShelfOnlySegment(0, currentSegmentInd)
+						this.findShelfOnlySegment(0, currentSegmentInd)
 					: this.findShelfOnlySegment(currentSegmentInd - 1, -1) ||
-					  this.findShelfOnlySegment(uiSegments.length - 1, currentSegmentInd)
+						this.findShelfOnlySegment(uiSegments.length - 1, currentSegmentInd)
 				if (nextShelfOnlySegment && nextShelfOnlySegment.queueablePieces.length) {
 					pieceToQueue =
 						nextShelfOnlySegment.queueablePieces[forward ? 0 : nextShelfOnlySegment.queueablePieces.length - 1]
@@ -3076,7 +3076,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 								key: poisonKey,
 								label: t('Cancel currently pressed hotkey'),
 							},
-					  ]
+						]
 					: []),
 				{
 					key: 'F11',
@@ -3417,12 +3417,12 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 							{!this.props.playlist
 								? t('This rundown has been unpublished from Sofie.')
 								: !this.props.studio
-								? t('Error: The studio of this Rundown was not found.')
-								: !this.props.rundowns.length
-								? t('This playlist is empty')
-								: !this.props.showStyleBase || !this.props.showStyleVariant
-								? t('Error: The ShowStyle of this Rundown was not found.')
-								: t('Unknown error')}
+									? t('Error: The studio of this Rundown was not found.')
+									: !this.props.rundowns.length
+										? t('This playlist is empty')
+										: !this.props.showStyleBase || !this.props.showStyleVariant
+											? t('Error: The ShowStyle of this Rundown was not found.')
+											: t('Unknown error')}
 						</p>
 						<p>
 							<Route

@@ -157,7 +157,7 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 								Meteor.reconnect()
 							},
 						},
-				  ]
+					]
 				: undefined,
 			-100
 		)

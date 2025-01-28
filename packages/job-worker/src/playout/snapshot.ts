@@ -81,7 +81,7 @@ export async function handleGeneratePlaylistSnapshot(
 							{ 'timings.plannedStoppedPlayback': { $gte: validTime }, reset: true },
 							{ reset: { $ne: true } },
 						],
-				  }
+					}
 		)
 		const pieces = await context.directCollections.Pieces.findFetch({ startRundownId: { $in: rundownIds } })
 		const pieceInstances = await context.directCollections.PieceInstances.findFetch(
@@ -90,7 +90,7 @@ export async function handleGeneratePlaylistSnapshot(
 				: {
 						rundownId: { $in: rundownIds },
 						$or: [{ partInstanceId: { $in: partInstances.map((p) => p._id) } }, { reset: { $ne: true } }],
-				  }
+					}
 		)
 		const adLibPieces = await context.directCollections.AdLibPieces.findFetch({ rundownId: { $in: rundownIds } })
 		const baselineAdlibs = await context.directCollections.RundownBaselineAdLibPieces.findFetch({
@@ -118,7 +118,7 @@ export async function handleGeneratePlaylistSnapshot(
 			playlist.activationId && props.withTimeline
 				? await context.directCollections.Timelines.findOne({
 						_id: playlist.studioId,
-				  })
+					})
 				: undefined
 
 		logger.info(`Snapshot generation done`)
@@ -375,7 +375,7 @@ export async function handleRestorePlaylistSnapshot(
 			segmentId?: SegmentId
 			part?: unknown
 			piece?: unknown
-		}
+		},
 	>(objs: undefined | T[], updateId: boolean): T[] {
 		const updateIds = (obj: T, updateOwnId: boolean) => {
 			if (obj.rundownId) {

@@ -107,10 +107,12 @@ export function buildTimelineObjsForRundown(
 		}
 	}
 
-	const [currentInfinitePieces, currentNormalItems] = _.partition(
-		partInstancesInfo.current.pieceInstances,
-		(l) => !!(l.infinite && (l.piece.lifespan !== PieceLifespan.WithinPart || l.infinite.fromHold))
-	)
+	const previousPartInfinites: Map<PieceInstanceInfinite['infiniteInstanceId'], PieceInstanceWithTimings> =
+		partInstancesInfo.previous
+			? normalizeArrayToMapFunc(partInstancesInfo.previous.pieceInstances, (inst) =>
+					inst.infinite ? inst.infinite.infiniteInstanceId : undefined
+				)
+			: new Map()
 
 	// Find all the infinites in each of the selected parts
 	const currentInfinitePieceIds = new Set(_.compact(currentInfinitePieces.map((l) => l.infinite?.infiniteInstanceId)))
@@ -127,7 +129,7 @@ export function buildTimelineObjsForRundown(
 		partInstancesInfo.previous
 			? normalizeArrayToMapFunc(partInstancesInfo.previous.pieceInstances, (inst) =>
 					inst.infinite ? inst.infinite.infiniteInstanceId : undefined
-			  )
+				)
 			: new Map()
 
 	// The startTime of this start is used as the reference point for the calculated timings, so we can use 'now' and everything will lie after this point

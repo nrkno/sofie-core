@@ -29,8 +29,8 @@ export const PlaylistStartTiming = withTiming<IStartTimingProps, {}>()(function 
 	const expectedStart = playlistExpectedStart
 		? playlistExpectedStart
 		: playlistExpectedDuration && playlistExpectedEnd
-		? playlistExpectedEnd - playlistExpectedDuration
-		: undefined
+			? playlistExpectedEnd - playlistExpectedDuration
+			: undefined
 
 	return (
 		<React.Fragment>
@@ -68,7 +68,7 @@ export const PlaylistStartTiming = withTiming<IStartTimingProps, {}>()(function 
 								true,
 								true,
 								true
-						  )
+							)
 						: RundownUtils.formatDiffToTimecode(getCurrentTime() - expectedStart, true, false, true, true, true)}
 				</span>
 			)}

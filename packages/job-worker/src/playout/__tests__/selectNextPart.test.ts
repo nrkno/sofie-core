@@ -32,7 +32,10 @@ class MockPart {
 	}
 }
 class MockSegment {
-	constructor(public _id: SegmentId, public _rank: number) {}
+	constructor(
+		public _id: SegmentId,
+		public _rank: number
+	) {}
 }
 
 describe('selectNextPart', () => {

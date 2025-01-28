@@ -117,7 +117,7 @@ export function wrapTranslatableMessageFromBlueprintsIfNotString(
 		: {
 				...message,
 				namespaces: blueprintIds.map((id) => `blueprint_${id}`),
-		  }
+			}
 }
 
 function checkArgs(args: any): args is { [key: string]: any } {

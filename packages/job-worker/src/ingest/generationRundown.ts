@@ -70,7 +70,7 @@ export async function updateRundownFromIngestData(
 				ingestModel,
 				ingestRundown,
 				regenerateAllContents.allRundownWatchedPackages
-		  )
+			)
 		: undefined
 
 	logger.info(`Rundown ${ingestModel.rundownId} update complete`)

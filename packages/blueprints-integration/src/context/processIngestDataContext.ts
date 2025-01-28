@@ -64,7 +64,7 @@ export interface IProcessIngestDataContext extends IStudioContext {
 export interface GroupPartsInMosRundownAndChangesResult<
 	TRundownPayload = unknown,
 	TSegmentPayload = unknown,
-	TPartPayload = unknown
+	TPartPayload = unknown,
 > {
 	nrcsIngestRundown: IngestRundown<TRundownPayload, TSegmentPayload, TPartPayload>
 	ingestChanges: NrcsIngestChangeDetails

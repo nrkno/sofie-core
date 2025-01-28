@@ -116,7 +116,7 @@ export class WatchedPackagesHelper {
 				? await context.directCollections.PackageInfos.findFetch({
 						studioId: context.studio._id,
 						packageId: { $in: packages.map((p) => p._id) },
-				  })
+					})
 				: []
 
 		return new WatchedPackagesHelper(packages, watchedPackageInfos)

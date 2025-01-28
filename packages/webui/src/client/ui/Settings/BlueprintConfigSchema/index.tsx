@@ -91,7 +91,7 @@ export function BlueprintConfigSchemaSettings({
 		const combinedDefaults: IBlueprintConfig = alternateConfig
 			? deepmerge<IBlueprintConfig>(alternateConfig, rawConfigObject.defaults, {
 					arrayMerge: (_destinationArray, sourceArray, _options) => sourceArray,
-			  })
+				})
 			: rawConfigObject.defaults
 
 		const prefixedOps = rawConfigObject.overrides.map((op) => ({

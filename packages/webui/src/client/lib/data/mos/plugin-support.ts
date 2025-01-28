@@ -75,7 +75,7 @@ export function createMosAppInfoXmlString(uiMetrics?: UIMetric[]): string {
 										num: index.toString(),
 									},
 								})
-						  })
+							})
 						: undefined,
 				},
 			},

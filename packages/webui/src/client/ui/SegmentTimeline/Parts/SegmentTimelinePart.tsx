@@ -138,7 +138,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 							? partInstance.part.displayDuration ||
 									props.timingDurations.partDurations[getPartInstanceTimingId(partInstance)]
 							: 0
-				  )
+					)
 				: 0,
 			dropActive: false,
 		}
@@ -320,7 +320,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 								this.state.liveDuration,
 								this.state.isDurationSettling,
 								this.state.durationSettlingStartsAt
-						  )
+							)
 						: false,
 					SegmentTimelinePartClass.getPartActualDuration(this.props.part, this.props.timingDurations)
 				)
@@ -495,13 +495,13 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 													this.state.isDurationSettling,
 													this.state.durationSettlingStartsAt
 												)
-										  )
+											)
 										: SegmentTimelinePartClass.getPartDuration(
 												this.props,
 												this.state.liveDuration,
 												this.state.isDurationSettling,
 												this.state.durationSettlingStartsAt
-										  )
+											)
 								}
 								displayDuration={SegmentTimelinePartClass.getPartDisplayDuration(
 									this.props.part,
@@ -766,8 +766,8 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 											{this.props.autoNextPart || this.props.part.willProbablyAutoNext
 												? t('Auto')
 												: this.state.isNext
-												? t('Next')
-												: null}
+													? t('Next')
+													: null}
 										</React.Fragment>
 									)}
 								</div>
@@ -801,8 +801,8 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 										(!this.state.isNext && this.props.part.willProbablyAutoNext)
 											? t('Auto')
 											: this.state.isNext || this.props.isAfterLastValidInSegmentAndItsLive
-											? t('Next')
-											: null}
+												? t('Next')
+												: null}
 									</React.Fragment>
 								)}
 								{this.props.isAfterLastValidInSegmentAndItsLive && !isPlaylistLooping && <SegmentEnd />}

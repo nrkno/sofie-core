@@ -48,7 +48,7 @@ export function groupMosPartsIntoIngestSegments(
 				rank: i,
 				parts: partGroup.parts.map((part, i) => ({ ...part, rank: i })),
 				payload: undefined,
-			} satisfies IngestSegment)
+			}) satisfies IngestSegment
 	)
 }
 

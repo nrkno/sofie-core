@@ -423,8 +423,8 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 					width: isList
 						? 'calc(100% - 8px)'
 						: this.props.widthScale
-						? (this.props.widthScale as number) * DEFAULT_BUTTON_WIDTH + 'em'
-						: undefined,
+							? (this.props.widthScale as number) * DEFAULT_BUTTON_WIDTH + 'em'
+							: undefined,
 					height:
 						!isList && !!this.props.heightScale
 							? (this.props.heightScale as number) * DEFAULT_BUTTON_HEIGHT + 'em'
@@ -449,15 +449,15 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 					{this.props.disableHoverInspector || !this.props.layer
 						? null
 						: this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK
-						? // VT should have thumbnails in "Button" layout.
-						  this.renderVTLiveSpeak(isButtons || (isList && this.props.showThumbnailsInList))
-						: this.props.layer.type === SourceLayerType.SPLITS
-						? this.renderSplits(isList && this.props.showThumbnailsInList)
-						: this.props.layer.type === SourceLayerType.GRAPHICS ||
-						  this.props.layer.type === SourceLayerType.LOWER_THIRD ||
-						  this.props.layer.type === SourceLayerType.STUDIO_SCREEN
-						? this.renderGraphics(isButtons || (isList && this.props.showThumbnailsInList))
-						: null}
+							? // VT should have thumbnails in "Button" layout.
+								this.renderVTLiveSpeak(isButtons || (isList && this.props.showThumbnailsInList))
+							: this.props.layer.type === SourceLayerType.SPLITS
+								? this.renderSplits(isList && this.props.showThumbnailsInList)
+								: this.props.layer.type === SourceLayerType.GRAPHICS ||
+									  this.props.layer.type === SourceLayerType.LOWER_THIRD ||
+									  this.props.layer.type === SourceLayerType.STUDIO_SCREEN
+									? this.renderGraphics(isButtons || (isList && this.props.showThumbnailsInList))
+									: null}
 
 					{this.renderHotkey()}
 					<div className="dashboard-panel__panel__button__label-container">

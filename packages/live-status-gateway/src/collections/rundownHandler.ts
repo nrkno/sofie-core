@@ -19,7 +19,11 @@ export class RundownHandler
 	private _currentPlaylistId: RundownPlaylistId | undefined
 	private _currentRundownId: RundownId | undefined
 
-	constructor(logger: Logger, coreHandler: CoreHandler, private _rundownsHandler?: RundownsHandler) {
+	constructor(
+		logger: Logger,
+		coreHandler: CoreHandler,
+		private _rundownsHandler?: RundownsHandler
+	) {
 		super(RundownHandler.name, CollectionName.Rundowns, CorelibPubSub.rundownsInPlaylists, logger, coreHandler)
 		this.observerName = this._name
 	}

@@ -507,15 +507,15 @@ export function compileAdLibFilter(
 			adLibPieceTypeFilter.segment === 'current'
 				? context.currentSegmentPartIds.get(computation)
 				: adLibPieceTypeFilter.segment === 'next'
-				? context.nextSegmentPartIds.get(computation)
-				: undefined
+					? context.nextSegmentPartIds.get(computation)
+					: undefined
 
 		const singlePartId =
 			adLibPieceTypeFilter.part === 'current'
 				? context.currentPartId.get(computation)
 				: adLibPieceTypeFilter.part === 'next'
-				? context.nextPartId.get(computation)
-				: undefined
+					? context.nextPartId.get(computation)
+					: undefined
 
 		/** Note: undefined means that all parts are to be considered */
 		let partFilter: PartId[] | undefined = undefined

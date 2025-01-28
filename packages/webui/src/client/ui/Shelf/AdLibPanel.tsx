@@ -261,7 +261,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 					isNext: false,
 					isCompatibleShowStyle: currentPartInstance?.rundownId
 						? rundowns[unprotectString(currentPartInstance.rundownId)].showStyleVariantId ===
-						  rundowns[unprotectString(segment.rundownId)].showStyleVariantId
+							rundowns[unprotectString(segment.rundownId)].showStyleVariantId
 						: true,
 				})
 

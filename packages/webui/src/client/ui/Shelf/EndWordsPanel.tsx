@@ -89,7 +89,7 @@ function getPieceWithScript(
 		? PieceInstances.find({
 				partInstanceId: currentPartInstanceId,
 				playlistActivationId: playlist.activationId,
-		  }).fetch()
+			}).fetch()
 		: []
 
 	return panel.requiredLayerIds && panel.requiredLayerIds.length
@@ -98,6 +98,6 @@ function getPieceWithScript(
 					(panel.requiredLayerIds || []).indexOf(piece.piece.sourceLayerId) !== -1 &&
 					piece.partInstanceId === playlist.currentPartInfo?.partInstanceId
 				)
-		  })
+			})
 		: undefined
 }

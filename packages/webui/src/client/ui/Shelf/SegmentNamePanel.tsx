@@ -48,7 +48,7 @@ function getSegmentName(selectedSegment: 'current' | 'next', playlist: DBRundown
 	const currentPartInstance = playlist.currentPartInfo
 		? (RundownPlaylistClientUtil.getActivePartInstances(playlist, {
 				_id: playlist.currentPartInfo.partInstanceId,
-		  })[0] as PartInstance | undefined)
+			})[0] as PartInstance | undefined)
 		: undefined
 
 	if (!currentPartInstance) return

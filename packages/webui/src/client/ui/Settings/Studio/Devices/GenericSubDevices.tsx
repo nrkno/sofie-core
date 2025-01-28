@@ -182,7 +182,7 @@ function SummaryRow({
 	const removeItem = useCallback(() => removeItemWithId(item.id), [removeItemWithId, item.id])
 
 	const deviceType = peripheralDevice
-		? peripheralDevice.subdeviceManifest?.[item.computed.options.type]?.displayName ?? '-'
+		? (peripheralDevice.subdeviceManifest?.[item.computed.options.type]?.displayName ?? '-')
 		: '-'
 
 	return (
@@ -224,7 +224,7 @@ function DeletedSummaryRow({
 	const undeleteItem = useCallback(() => undeleteItemWithId(item.id), [undeleteItemWithId, item.id])
 
 	const deviceType = peripheralDevice
-		? peripheralDevice.subdeviceManifest[item.defaults.options.type]?.displayName ?? '-'
+		? (peripheralDevice.subdeviceManifest[item.defaults.options.type]?.displayName ?? '-')
 		: '-'
 
 	return (

@@ -227,7 +227,7 @@ async function updateNormalPartInstanceRanksAndFindOrphans(
 									$set: {
 										'part._rank': part._rank,
 									},
-							  }
+								}
 							: ''),
 						$unset: {
 							orphaned: 1,

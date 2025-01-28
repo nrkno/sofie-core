@@ -113,21 +113,21 @@ export class PieceInstancesHandler
 					this._partInstances?.previous,
 					collection.find({ partInstanceId: this._currentPlaylist.previousPartInfo.partInstanceId }),
 					true
-			  )
+				)
 			: []
 		const inCurrentPartInstance = this._currentPlaylist?.currentPartInfo?.partInstanceId
 			? this.processAndPrunePieceInstanceTimings(
 					this._partInstances?.current,
 					collection.find({ partInstanceId: this._currentPlaylist.currentPartInfo.partInstanceId }),
 					true
-			  )
+				)
 			: []
 		const inNextPartInstance = this._currentPlaylist?.nextPartInfo?.partInstanceId
 			? this.processAndPrunePieceInstanceTimings(
 					undefined,
 					collection.find({ partInstanceId: this._currentPlaylist.nextPartInfo.partInstanceId }),
 					false
-			  )
+				)
 			: []
 
 		const active = [...inCurrentPartInstance]
@@ -210,7 +210,7 @@ export class PieceInstancesHandler
 					this._currentPlaylist.previousPartInfo?.partInstanceId,
 					this._currentPlaylist.nextPartInfo?.partInstanceId,
 					this._currentPlaylist.currentPartInfo?.partInstanceId,
-			  ])
+				])
 			: []
 		this._activationId = unprotectString(this._currentPlaylist?.activationId)
 		if (this._currentPlaylist && this._partInstanceIds.length && this._activationId) {

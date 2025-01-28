@@ -39,12 +39,12 @@ export const PartCountdown = withTiming<IPartCountdownProps, {}>()(function Part
 							date={
 								(props.playlist.activationId
 									? // if show is activated, use currentTime as base
-									  props.timingDurations.currentTime ?? 0
+										(props.timingDurations.currentTime ?? 0)
 									: // if show is not activated, use expectedStart or currentTime, whichever is later
-									  Math.max(
+										Math.max(
 											PlaylistTiming.getExpectedStart(props.playlist.timing) ?? 0,
 											props.timingDurations.currentTime ?? 0
-									  )) + (thisPartCountdown || 0)
+										)) + (thisPartCountdown || 0)
 							}
 						/>
 					) : (

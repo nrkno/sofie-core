@@ -233,7 +233,7 @@ function SettingsCollapsibleGroup({
 						>
 							<h4>{link.label}</h4>
 						</NavLink>
-				  ))
+					))
 				: ''}
 			<hr className="vsubtle man" />
 		</>

@@ -40,7 +40,7 @@ export const RenderSplitPreview = React.memo(function RenderSplitPreview({
 							clipPath: item.content?.crop
 								? `inset(${item.content.crop.top * 100}% ${item.content.crop.right * 100}% ${
 										item.content.crop.bottom * 100
-								  }% ${item.content.crop.left * 100}%)`
+									}% ${item.content.crop.left * 100}%)`
 								: undefined,
 						}}
 					>

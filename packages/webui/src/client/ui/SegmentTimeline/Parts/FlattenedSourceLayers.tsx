@@ -33,7 +33,7 @@ export function FlattenedSourceLayers(props: Readonly<IFlattenedSourceLayerProps
 							// filter only pieces belonging to this part
 							return piece.instance.partInstanceId === props.part.instance._id
 								? // filter only pieces, that have not been hidden from the UI
-								  piece.instance.piece.virtual !== true
+									piece.instance.piece.virtual !== true
 								: false
 						})
 					)

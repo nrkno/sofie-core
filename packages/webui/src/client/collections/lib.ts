@@ -114,7 +114,7 @@ export function createSyncReadOnlyMongoCollection<DBInterface extends { _id: Pro
  * @param name Name of the custom-collection
  */
 export function createSyncCustomPublicationMongoCollection<
-	K extends CustomCollectionName & keyof MeteorPubSubCustomCollections
+	K extends CustomCollectionName & keyof MeteorPubSubCustomCollections,
 >(name: K): MongoReadOnlyCollection<MeteorPubSubCustomCollections[K]> {
 	const collection = new Mongo.Collection<MeteorPubSubCustomCollections[K]>(name)
 	const wrapped = new WrappedMongoReadOnlyCollection<MeteorPubSubCustomCollections[K]>(collection, name)
@@ -126,7 +126,7 @@ export function createSyncCustomPublicationMongoCollection<
 }
 
 export function createSyncPeripheralDeviceCustomPublicationMongoCollection<
-	K extends PeripheralDevicePubSubCollectionsNames & keyof PeripheralDevicePubSubCollections
+	K extends PeripheralDevicePubSubCollectionsNames & keyof PeripheralDevicePubSubCollections,
 >(name: K): MongoReadOnlyCollection<PeripheralDevicePubSubCollections[K]> {
 	const collection = new Mongo.Collection<PeripheralDevicePubSubCollections[K]>(name)
 	const wrapped = new WrappedMongoReadOnlyCollection<PeripheralDevicePubSubCollections[K]>(collection, name)

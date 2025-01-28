@@ -503,7 +503,7 @@ function processAdLibActionITranslatableMessages<
 			}
 		})[]
 	},
-	T extends IBlueprintActionManifest
+	T extends IBlueprintActionManifest,
 >(itemOrig: T, blueprintId: BlueprintId, rank?: number, label?: string): Pick<K, 'display' | 'triggerModes'> {
 	return {
 		display: {

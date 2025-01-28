@@ -108,7 +108,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 										keys: { $regex: `${parsedTriggerFilter}`, $options: 'i' },
 									},
 								},
-						  }
+							}
 						: undefined
 				),
 				{
@@ -137,7 +137,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 										keys: { $regex: `${parsedTriggerFilter}`, $options: 'i' },
 									},
 								},
-						  }
+							}
 						: undefined
 				),
 				{
@@ -468,7 +468,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 										}
 										onFocus={setSelectedTriggeredActionId}
 									/>
-							  ))
+								))
 							: null}
 
 						{!systemWideCollapsed && !parsedTriggerFilter && systemTriggeredActionIds?.length === 0 && (

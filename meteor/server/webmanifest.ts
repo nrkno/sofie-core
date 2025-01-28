@@ -57,7 +57,7 @@ function getShortcutsForStudio(
 				multiStudio
 					? t('{{studioName}}: Active Rundown', {
 							studioName: studio.name,
-					  })
+						})
 					: t('Active Rundown')
 			),
 			icons: SOFIE_DEFAULT_ICONS,
@@ -70,7 +70,7 @@ function getShortcutsForStudio(
 				multiStudio
 					? t('{{studioName}}: Prompter', {
 							studioName: studio.name,
-					  })
+						})
 					: t('Prompter')
 			),
 			icons: SOFIE_DEFAULT_ICONS,

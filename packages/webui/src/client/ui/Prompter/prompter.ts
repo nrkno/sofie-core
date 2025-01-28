@@ -88,7 +88,7 @@ export namespace PrompterAPI {
 						_id: 1,
 						orphaned: 1,
 					},
-			  }) as Pick<DBSegment, '_id' | 'orphaned'>)
+				}) as Pick<DBSegment, '_id' | 'orphaned'>)
 			: undefined
 
 		const groupedParts = RundownUtils.getSegmentsWithPartInstances(
@@ -174,7 +174,7 @@ export namespace PrompterAPI {
 						partInstanceId: currentPartInstance._id,
 					},
 					pieceInstanceFieldOptions
-			  ).fetch()
+				).fetch()
 			: undefined
 
 		const orderedRundowns = new Map<RundownId, PrompterDataRundown>()

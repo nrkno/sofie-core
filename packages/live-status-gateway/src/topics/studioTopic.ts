@@ -47,13 +47,13 @@ export class StudioTopic
 					id: unprotectString(this._studio._id),
 					name: this._studio.name,
 					playlists: this._playlists,
-			  }
+				}
 			: {
 					event: 'studio',
 					id: null,
 					name: '',
 					playlists: [],
-			  }
+				}
 
 		this.sendMessage(subscribers, studioStatus)
 	}

@@ -40,11 +40,11 @@ export const Piece = React.memo(function Piece({
 				? {
 						width: `100%`,
 						transform: `translate(${pixelLeft}px, 0)`,
-				  }
+					}
 				: {
 						width: `${pixelWidth}px`,
 						transform: `translate(${pixelLeft}px, 0)`,
-				  },
+					},
 		[width, pixelLeft, pixelWidth]
 	)
 

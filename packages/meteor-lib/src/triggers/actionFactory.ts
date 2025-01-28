@@ -197,7 +197,7 @@ function createAdLibAction(
 										currentPartInstanceId,
 										wrappedAdLib.item._id,
 										false
-								  )
+									)
 								: ClientAPI.responseSuccess<void>(undefined)
 						)
 						break
@@ -211,7 +211,7 @@ function createAdLibAction(
 										currentPartInstanceId,
 										wrappedAdLib.item._id,
 										false
-								  )
+									)
 								: ClientAPI.responseSuccess<void>(undefined)
 						)
 						break

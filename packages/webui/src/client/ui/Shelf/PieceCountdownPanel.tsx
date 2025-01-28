@@ -113,7 +113,7 @@ export const PieceCountdownPanel = withTracker<IPieceCountdownPanelProps, IState
 							(props.panel.sourceLayerIds || []).indexOf(piece.piece.sourceLayerId) !== -1 &&
 							piece.partInstanceId === props.playlist.currentPartInfo?.partInstanceId
 						)
-				  })
+					})
 				: undefined
 		return { livePieceInstance }
 	},

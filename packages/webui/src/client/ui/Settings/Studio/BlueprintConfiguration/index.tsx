@@ -35,14 +35,14 @@ export function StudioBlueprintConfigurationSettings(
 			}) as UIBlueprintUpgradeStatusStudio | undefined,
 		[props.studio._id]
 	)
-	const statusMessage = isStatusReady && status ? getUpgradeStatusMessage(t, status) ?? t('OK') : t('Loading...')
+	const statusMessage = isStatusReady && status ? (getUpgradeStatusMessage(t, status) ?? t('OK')) : t('Loading...')
 
 	const blueprint = useTracker(() => {
 		return props.studio.blueprintId
 			? Blueprints.findOne({
 					_id: props.studio.blueprintId,
 					blueprintType: BlueprintManifestType.STUDIO,
-			  })
+				})
 			: undefined
 	}, [props.studio.blueprintId])
 	const configSchema = useMemo(

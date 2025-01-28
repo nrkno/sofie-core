@@ -38,7 +38,7 @@ export enum TimelineObjHoldMode {
 export interface TimelineObjectCoreExt<
 	TContent extends { deviceType: TSR.DeviceType },
 	TMetadata = unknown,
-	TKeyframeMetadata = unknown
+	TKeyframeMetadata = unknown,
 > extends TSR.TSRTimelineObj<TContent> {
 	/**
 	 * AB playback sessions needed for this Object

@@ -122,8 +122,8 @@ export const RundownViewBuckets = withTranslation()(
 										'rundownView.shelf.buckets',
 										unprotectString(bucket._id),
 										bucket.width !== undefined ? bucket.width : 0.2
-								  )
-					  )
+									)
+						)
 					: [],
 			}
 		}

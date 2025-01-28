@@ -35,14 +35,14 @@ function getPieceDuration(
 ): number {
 	return capToPartDuration
 		? // capToPartDuration is something that can be used when the part is Auto and there is no chance of the Piece
-		  // being extended
-		  Math.min(piece.renderedDuration ?? partDuration, partDuration)
+			// being extended
+			Math.min(piece.renderedDuration ?? partDuration, partDuration)
 		: Math.max(
 				// renderedDuration can be null. If there is a sourceDuration, use that, if not, use timelineBase
 				piece.renderedDuration ??
 					(piece.instance.piece.content?.sourceDuration && !piece.instance.piece.content?.loop ? 0 : timelineBase),
 				piece.instance.piece.content?.sourceDuration ?? 0
-		  )
+			)
 }
 
 function widthInBase(pieceMaxDuration: number, timelineBase: number): number {

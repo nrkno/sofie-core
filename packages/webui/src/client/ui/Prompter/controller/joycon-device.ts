@@ -217,10 +217,10 @@ export class JoyConController extends ControllerAbstract {
 						o.axes.length === 4
 							? 'LR' // for documentation: L+R mode is also identified as Vendor: 057e Product: 200e
 							: o.id.match('Product: 2006')
-							? 'L'
-							: o.id.match('Product: 2007')
-							? 'R'
-							: null
+								? 'L'
+								: o.id.match('Product: 2007')
+									? 'R'
+									: null
 					joyconInputs.push({
 						index: o.index,
 						timestamp: o.timestamp,

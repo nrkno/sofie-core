@@ -33,10 +33,10 @@ describe('updateSegmentsForAdlibbedPartInstances', () => {
 					{
 						PartInstances: fakeCollection,
 					},
-					mockOptions,
+					mockOptions
 				),
 			},
-			mockOptions,
+			mockOptions
 		)
 
 		const expectedQuery = {
@@ -64,14 +64,14 @@ describe('updateSegmentsForAdlibbedPartInstances', () => {
 				{
 					part: part as any,
 				},
-				mockOptions,
-			),
+				mockOptions
+			)
 		)
 		const ingestModel = mock<IngestModel>(
 			{
 				findPart: (id: PartId) => partModels.find((p) => p.part._id === id),
 			},
-			mockOptions,
+			mockOptions
 		)
 		;(ingestModel as any).rundownId = rundownId
 
@@ -129,7 +129,7 @@ describe('updateSegmentsForAdlibbedPartInstances', () => {
 				segmentParts.map((part) => ({
 					id: part._id,
 					rank: part._rank,
-				})),
+				}))
 			)
 		}
 
@@ -140,7 +140,7 @@ describe('updateSegmentsForAdlibbedPartInstances', () => {
 		segmentId: SegmentId,
 		partId: string,
 		rank: number,
-		orphaned: DBPartInstance['orphaned'],
+		orphaned: DBPartInstance['orphaned']
 	): DBPartInstance {
 		return literal<PartialDeep<DBPartInstance>>({
 			_id: protectString(`instance_${partId}`),

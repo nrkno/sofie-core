@@ -63,7 +63,7 @@ export function useContentStatusForAdlibPiece(
 				? UIPieceContentStatuses.findOne({
 						pieceId: piece._id,
 						rundownId: piece.rundownId || { $exists: false },
-				  })?.status
+					})?.status
 				: undefined,
 		[piece?._id, piece?.rundownId]
 	)
@@ -79,7 +79,7 @@ export function useContentStatusForPiece(
 						pieceId: piece._id,
 						rundownId: piece.startRundownId || { $exists: false },
 						segmentId: piece.startSegmentId || { $exists: false },
-				  })?.status
+					})?.status
 				: undefined,
 		[piece?._id, piece?.startRundownId, piece?.startSegmentId]
 	)

@@ -443,7 +443,7 @@ export type TransformPayloadFunction<T> = (payload: any, oldPayload: ReadonlyDee
 export interface IngestDefaultChangesOptions<
 	TRundownPayload = unknown,
 	TSegmentPayload = unknown,
-	TPartPayload = unknown
+	TPartPayload = unknown,
 > {
 	/**
 	 * A custom transform for the payload of a Rundown.

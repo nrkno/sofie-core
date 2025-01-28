@@ -182,11 +182,11 @@ export namespace RundownUtils {
 				? minusPrefix !== undefined
 					? minusPrefix
 					: enDashAsMinus
-					? '\u2013'
-					: '-'
+						? '\u2013'
+						: '-'
 				: showPlus && milliseconds > 0
-				? '+'
-				: '') +
+					? '+'
+					: '') +
 			(showHours || (useSmartHours && hours > 0) ? padZeros(hours) + ':' : '') +
 			padZeros(minutes) +
 			':' +
@@ -212,7 +212,7 @@ export namespace RundownUtils {
 			(partStartsAt || part.startsAt || 0) +
 				(piece !== undefined
 					? (piece.renderedInPoint || 0) +
-					  (piece.renderedDuration ||
+						(piece.renderedDuration ||
 							(part.instance.timings?.duration !== undefined
 								? part.instance.timings.duration + (part.instance.timings?.playOffset || 0)
 								: (partDuration ||
@@ -220,8 +220,8 @@ export namespace RundownUtils {
 										calculatePartInstanceExpectedDurationWithTransition(part.instance) ||
 										0) - (piece.renderedInPoint || 0)))
 					: part.instance.timings?.duration !== undefined
-					? part.instance.timings.duration + (part.instance.timings?.playOffset || 0)
-					: partDuration || part.renderedDuration || 0)
+						? part.instance.timings.duration + (part.instance.timings?.playOffset || 0)
+						: partDuration || part.renderedDuration || 0)
 		) {
 			return false
 		}
@@ -484,7 +484,7 @@ export namespace RundownUtils {
 									_id: 1,
 									orphaned: 1,
 								},
-						  }) as Pick<DBSegment, '_id' | 'orphaned'> | undefined)
+							}) as Pick<DBSegment, '_id' | 'orphaned'> | undefined)
 						: undefined,
 					currentPartInstance
 						? PieceInstances.find(
@@ -492,7 +492,7 @@ export namespace RundownUtils {
 									partInstanceId: currentPartInstance._id,
 								},
 								pieceInstanceFieldOptions
-						  ).fetch()
+							).fetch()
 						: undefined,
 					undefined,
 					pieceInstanceFieldOptions,

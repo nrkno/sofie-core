@@ -556,8 +556,8 @@ function RenderRoutesRow({
 		rawRoute.routeType === StudioRouteType.REMAP
 			? rawRoute.deviceType
 			: rawRoute.mappedLayer
-			? deviceTypeFromMappedLayer
-			: rawRoute.deviceType
+				? deviceTypeFromMappedLayer
+				: rawRoute.deviceType
 
 	const routeMappingSchema = manifest[(routeDeviceType ?? rawRoute.remapping?.device) as TSR.DeviceType]
 

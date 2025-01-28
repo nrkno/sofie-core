@@ -36,7 +36,7 @@ export class StudioBaselineHelper {
 						this.#context.directCollections.ExpectedPlayoutItems,
 						{ studioId: this.#context.studioId, baseline: 'studio' },
 						this.#pendingExpectedPlayoutItems
-				  )
+					)
 				: undefined,
 			this.#pendingExpectedPackages
 				? saveIntoDb<ExpectedPackageDB>(
@@ -47,7 +47,7 @@ export class StudioBaselineHelper {
 							fromPieceType: ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS,
 						},
 						this.#pendingExpectedPackages
-				  )
+					)
 				: undefined,
 		])
 

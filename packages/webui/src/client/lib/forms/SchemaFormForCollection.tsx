@@ -58,12 +58,12 @@ export function SchemaFormForCollection({
 					? literal<ObjectOverrideDeleteOp>({
 							op: 'delete',
 							path: `0.${key}`,
-					  })
+						})
 					: literal<ObjectOverrideSetOp>({
 							op: 'set',
 							path: `0.${key}`,
 							value: val,
-					  })
+						})
 			)
 
 			return literal<WrappedOverridableItemNormal<any>>({
