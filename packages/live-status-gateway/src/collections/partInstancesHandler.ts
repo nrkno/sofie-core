@@ -1,6 +1,6 @@
 import { Logger } from 'winston'
-import { CoreHandler } from '../coreHandler'
-import { CollectionBase, Collection, CollectionObserver } from '../wsHandler'
+import { CoreHandler } from '../coreHandler.js'
+import { CollectionBase, Collection, CollectionObserver } from '../wsHandler.js'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'

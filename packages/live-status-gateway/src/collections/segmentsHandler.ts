@@ -1,6 +1,6 @@
 import { Logger } from 'winston'
-import { CoreHandler } from '../coreHandler'
-import { CollectionBase, Collection } from '../wsHandler'
+import { CoreHandler } from '../coreHandler.js'
+import { CollectionBase, Collection } from '../wsHandler.js'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import * as _ from 'underscore'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'

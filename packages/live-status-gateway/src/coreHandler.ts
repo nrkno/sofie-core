@@ -11,10 +11,10 @@ import {
 	SubscriptionId,
 	stringifyError,
 } from '@sofie-automation/server-core-integration'
-import { DeviceConfig } from './connector'
+import { DeviceConfig } from './connector.js'
 import { Logger } from 'winston'
-import { Process } from './process'
-import { LIVE_STATUS_DEVICE_CONFIG } from './configManifest'
+import { Process } from './process.js'
+import { LIVE_STATUS_DEVICE_CONFIG } from './configManifest.js'
 import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
@@ -23,7 +23,7 @@ import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedSt
 import { PeripheralDeviceCommandId, StudioId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
 import { PeripheralDeviceCommand } from '@sofie-automation/shared-lib/dist/core/model/PeripheralDeviceCommand'
-import { LiveStatusGatewayConfig } from './generated/options'
+import { LiveStatusGatewayConfig } from './generated/options.js'
 import { CorelibPubSubTypes, CorelibPubSubCollections } from '@sofie-automation/corelib/dist/pubsub'
 import { ParametersOfFunctionOrNever } from '@sofie-automation/server-core-integration/dist/lib/subscriptions'
 

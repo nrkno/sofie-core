@@ -1,12 +1,12 @@
 import { Logger } from 'winston'
-import { CoreHandler } from '../coreHandler'
-import { CollectionBase, Collection, CollectionObserver } from '../wsHandler'
+import { CoreHandler } from '../coreHandler.js'
+import { CollectionBase, Collection, CollectionObserver } from '../wsHandler.js'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { PieceId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { SelectedPartInstances } from './partInstancesHandler'
+import { SelectedPartInstances } from './partInstancesHandler.js'
 
 export class AdLibsHandler
 	extends CollectionBase<AdLibPiece[], CorelibPubSub.adLibPieces, CollectionName.AdLibPieces>

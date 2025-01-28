@@ -2,7 +2,7 @@ import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CoreConnection, Observer, ProtectedString, SubscriptionId } from '@sofie-automation/server-core-integration'
 import { Logger } from 'winston'
 import { WebSocket } from 'ws'
-import { CoreHandler } from './coreHandler'
+import { CoreHandler } from './coreHandler.js'
 import { CorelibPubSub, CorelibPubSubCollections, CorelibPubSubTypes } from '@sofie-automation/corelib/dist/pubsub'
 
 export abstract class WebSocketTopicBase {

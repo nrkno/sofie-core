@@ -1,6 +1,6 @@
 import { Logger } from 'winston'
-import { CoreHandler } from '../coreHandler'
-import { CollectionBase, Collection, CollectionObserver } from '../wsHandler'
+import { CoreHandler } from '../coreHandler.js'
+import { CollectionBase, Collection, CollectionObserver } from '../wsHandler.js'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBShowStyleBase, OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'

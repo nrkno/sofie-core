@@ -3,12 +3,16 @@ import { WebSocket } from 'ws'
 import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
-import { WebSocketTopicBase, WebSocketTopic, CollectionObserver } from '../wsHandler'
-import { PlaylistHandler } from '../collections/playlistHandler'
-import { ShowStyleBaseExt, ShowStyleBaseHandler } from '../collections/showStyleBaseHandler'
+import { WebSocketTopicBase, WebSocketTopic, CollectionObserver } from '../wsHandler.js'
+import { PlaylistHandler } from '../collections/playlistHandler.js'
+import { ShowStyleBaseExt, ShowStyleBaseHandler } from '../collections/showStyleBaseHandler.js'
 import _ = require('underscore')
-import { SelectedPieceInstances, PieceInstancesHandler, PieceInstanceMin } from '../collections/pieceInstancesHandler'
-import { PieceStatus, toPieceStatus } from './helpers/pieceStatus'
+import {
+	SelectedPieceInstances,
+	PieceInstancesHandler,
+	PieceInstanceMin,
+} from '../collections/pieceInstancesHandler.js'
+import { PieceStatus, toPieceStatus } from './helpers/pieceStatus.js'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 const THROTTLE_PERIOD_MS = 100

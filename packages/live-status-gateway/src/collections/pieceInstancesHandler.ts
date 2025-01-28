@@ -1,6 +1,6 @@
 import { Logger } from 'winston'
-import { CoreHandler } from '../coreHandler'
-import { CollectionBase, Collection, CollectionObserver } from '../wsHandler'
+import { CoreHandler } from '../coreHandler.js'
+import { CollectionBase, Collection, CollectionObserver } from '../wsHandler.js'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
@@ -14,10 +14,10 @@ import {
 	processAndPrunePieceInstanceTimings,
 	resolvePrunedPieceInstance,
 } from '@sofie-automation/corelib/dist/playout/processAndPrune'
-import { ShowStyleBaseExt, ShowStyleBaseHandler } from './showStyleBaseHandler'
-import { PlaylistHandler } from './playlistHandler'
+import { ShowStyleBaseExt, ShowStyleBaseHandler } from './showStyleBaseHandler.js'
+import { PlaylistHandler } from './playlistHandler.js'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { PartInstancesHandler, SelectedPartInstances } from './partInstancesHandler'
+import { PartInstancesHandler, SelectedPartInstances } from './partInstancesHandler.js'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { ReadonlyDeep } from 'type-fest'
 

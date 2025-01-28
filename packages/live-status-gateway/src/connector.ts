@@ -1,8 +1,8 @@
-import { CoreHandler, CoreConfig } from './coreHandler'
+import { CoreHandler, CoreConfig } from './coreHandler.js'
 import { Logger } from 'winston'
-import { Process } from './process'
+import { Process } from './process.js'
 import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
-import { LiveStatusServer } from './liveStatusServer'
+import { LiveStatusServer } from './liveStatusServer.js'
 
 export interface Config {
 	process: ProcessConfig
