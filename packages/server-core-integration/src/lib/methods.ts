@@ -4,9 +4,9 @@ import {
 	PeripheralDeviceAPIMethods,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
 import _ = require('underscore')
-import { CoreConnection, CoreCredentials } from './coreConnection'
-import { DDPError } from './ddpClient'
-import { DDPConnector } from './ddpConnector'
+import { CoreConnection, CoreCredentials } from './coreConnection.js'
+import { DDPError } from './ddpClient.js'
+import { DDPConnector } from './ddpConnector.js'
 
 export function makeMethods(connection: Pick<CoreConnection, 'callMethodRaw'>, methods: object): any {
 	const o: any = {}
