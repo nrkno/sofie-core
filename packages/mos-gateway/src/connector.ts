@@ -1,5 +1,5 @@
-import { MosHandler, MosConfig } from './mosHandler'
-import { CoreHandler, CoreConfig } from './coreHandler'
+import { MosHandler, MosConfig } from './mosHandler.js'
+import { CoreHandler, CoreConfig } from './coreHandler.js'
 import * as Winston from 'winston'
 import {
 	PeripheralDeviceId,

@@ -1,4 +1,4 @@
-import { Connector, Config } from './connector'
+import { Connector, Config } from './connector.js'
 import * as Winston from 'winston'
 import _ = require('underscore')
 import { protectString, stringifyError } from '@sofie-automation/server-core-integration'

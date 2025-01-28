@@ -14,11 +14,11 @@ import {
 import * as Winston from 'winston'
 
 import { IMOSDevice } from '@mos-connection/connector'
-import { MosHandler } from './mosHandler'
-import { DeviceConfig } from './connector'
-import { MOS_DEVICE_CONFIG_MANIFEST } from './configManifest'
-import { getVersions } from './versions'
-import { CoreMosDeviceHandler, CoreMosDeviceHandlerOptions } from './CoreMosDeviceHandler'
+import { MosHandler } from './mosHandler.js'
+import { DeviceConfig } from './connector.js'
+import { MOS_DEVICE_CONFIG_MANIFEST } from './configManifest.js'
+import { getVersions } from './versions.js'
+import { CoreMosDeviceHandler, CoreMosDeviceHandlerOptions } from './CoreMosDeviceHandler.js'
 import { PeripheralDeviceCommandId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 
 export interface CoreConfig {
