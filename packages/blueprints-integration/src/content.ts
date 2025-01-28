@@ -21,7 +21,7 @@ export interface BaseContent {
 	ignoreAudioFormat?: boolean
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface BaseEditableParameters {}
 
 export interface VTEditableParameters extends BaseEditableParameters {
@@ -37,6 +37,7 @@ export type SomeContent =
 	| ScriptContent
 	| NoraContent
 	| SplitsContent
+	// eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
 	| LiveSpeakContent
 	| TransitionContent
 	| GraphicsContent
