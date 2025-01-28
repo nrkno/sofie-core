@@ -14,7 +14,7 @@ import {
 	StatusCode,
 	Datastore,
 } from 'timeline-state-resolver'
-import { CoreHandler, CoreTSRDeviceHandler } from './coreHandler'
+import { CoreHandler, CoreTSRDeviceHandler } from './coreHandler.js'
 import * as crypto from 'crypto'
 import * as cp from 'child_process'
 
@@ -25,9 +25,9 @@ import {
 	stringifyError,
 } from '@sofie-automation/server-core-integration'
 import { Logger } from 'winston'
-import { disableAtemUpload } from './config'
+import { disableAtemUpload } from './config.js'
 import Debug from 'debug'
-import { FinishedTrace, sendTrace } from './influxdb'
+import { FinishedTrace, sendTrace } from './influxdb.js'
 
 import { RundownId, RundownPlaylistId, StudioId, TimelineHash } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 import {
@@ -36,8 +36,8 @@ import {
 	RoutedTimeline,
 	TimelineObjGeneric,
 } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
-import { PLAYOUT_DEVICE_CONFIG } from './configManifest'
-import { PlayoutGatewayConfig } from './generated/options'
+import { PLAYOUT_DEVICE_CONFIG } from './configManifest.js'
+import { PlayoutGatewayConfig } from './generated/options.js'
 import {
 	assertNever,
 	getSchemaDefaultValues,

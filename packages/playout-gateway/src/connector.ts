@@ -1,7 +1,7 @@
-import { TSRHandler, TSRConfig } from './tsrHandler'
-import { CoreHandler, CoreConfig } from './coreHandler'
+import { TSRHandler, TSRConfig } from './tsrHandler.js'
+import { CoreHandler, CoreConfig } from './coreHandler.js'
 import { Logger } from 'winston'
-import { InfluxConfig } from './influxdb'
+import { InfluxConfig } from './influxdb.js'
 import {
 	CertificatesConfig,
 	PeripheralDeviceId,

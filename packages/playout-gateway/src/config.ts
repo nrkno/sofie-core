@@ -1,4 +1,4 @@
-import { Config } from './connector'
+import { Config } from './connector.js'
 import * as _ from 'underscore'
 import { protectString } from '@sofie-automation/server-core-integration'
 
