@@ -1,4 +1,4 @@
-import * as EventEmitter from 'events'
+import { EventEmitter } from 'events'
 import { Bucket } from '../collections/Buckets.js'
 import {
 	BucketId,
