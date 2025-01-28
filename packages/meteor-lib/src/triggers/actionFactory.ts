@@ -32,7 +32,6 @@ import { assertNever } from '@sofie-automation/corelib/dist/lib'
 
 // as described in this issue: https://github.com/Microsoft/TypeScript/issues/14094
 type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
-// eslint-disable-next-line @typescript-eslint/ban-types
 type XOR<T, U> = T | U extends object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U
 
 export interface ReactivePlaylistActionContext {
