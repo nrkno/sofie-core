@@ -20,7 +20,7 @@ import { SnapshotItem } from '../collections/Snapshots'
 import { TranslationsBundle } from '../collections/TranslationsBundles'
 import { DBTriggeredActions, UITriggeredActionsObj } from '../collections/TriggeredActions'
 import { UserActionsLogItem } from '../collections/UserActionsLog'
-import { UIBucketContentStatus, UIPieceContentStatus, UISegmentPartNote } from './rundownNotifications'
+import { UIBucketContentStatus, UISegmentPartNote } from './rundownNotifications'
 import { UIShowStyleBase } from './showStyles'
 import { UIStudio } from './studios'
 import { UIDeviceTriggerPreview } from './MountedTriggers'
@@ -156,11 +156,6 @@ export enum MeteorPubSub {
 	 */
 	uiSegmentPartNotes = 'uiSegmentPartNotes',
 	/**
-	 * Fetch the Pieces content-status in the given RundownPlaylist
-	 * If the id is null, nothing will be returned
-	 */
-	uiPieceContentStatuses = 'uiPieceContentStatuses',
-	/**
 	 * Fetch the Pieces content-status in the given Bucket
 	 */
 	uiBucketContentStatuses = 'uiBucketContentStatuses',
@@ -250,9 +245,6 @@ export interface MeteorPubSubTypes {
 
 	/** Custom publications for the UI */
 	[MeteorPubSub.uiSegmentPartNotes]: (playlistId: RundownPlaylistId | null) => CustomCollectionName.UISegmentPartNotes
-	[MeteorPubSub.uiPieceContentStatuses]: (
-		rundownPlaylistId: RundownPlaylistId | null
-	) => CustomCollectionName.UIPieceContentStatuses
 	[MeteorPubSub.uiBucketContentStatuses]: (
 		studioId: StudioId,
 		bucketId: BucketId
@@ -307,7 +299,6 @@ export type MeteorPubSubCustomCollections = {
 	[CustomCollectionName.UITriggeredActions]: UITriggeredActionsObj
 	[CustomCollectionName.UIDeviceTriggerPreviews]: UIDeviceTriggerPreview
 	[CustomCollectionName.UISegmentPartNotes]: UISegmentPartNote
-	[CustomCollectionName.UIPieceContentStatuses]: UIPieceContentStatus
 	[CustomCollectionName.UIBucketContentStatuses]: UIBucketContentStatus
 	[CustomCollectionName.UIBlueprintUpgradeStatuses]: UIBlueprintUpgradeStatus
 	[CustomCollectionName.UIParts]: DBPart

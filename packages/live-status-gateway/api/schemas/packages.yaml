@@ -1,0 +1,63 @@
+title: Packages
+description: Packages schema for websocket subscriptions
+$defs:
+  packages:
+    type: object
+    properties:
+      event:
+        type: string
+        const: packages
+      rundownPlaylistId:
+        description: Unique id of the rundown playlist, or null if no playlist is active
+        oneOf:
+          - type: string
+          - type: 'null'
+      packages:
+        description: The Package statuses for this playlist
+        type: array
+        items:
+          $ref: '#/$defs/package'
+    required: [event, rundownPlaylistId, packages]
+    additionalProperties: false
+    examples:
+      - event: packages
+        rundownPlaylistId: 'OKAgZmZ0Buc99lE_2uPPSKVbMrQ_'
+        packages:
+          $ref: '#/$defs/package/examples'
+  package:
+    type: object
+    properties:
+      packageName:
+        description: Name of the package
+        oneOf:
+          - type: string
+          - type: 'null'
+      statusCode:
+        description: Status code
+        type: number
+      rundownId:
+        description: Id of the Rundown that expects this package
+        type: string
+      partId:
+        description: Id of the Part that expects this package
+        type: string
+      segmentId:
+        description: Id of the Segment that expects this package
+        type: string
+      pieceId:
+        description: Id of the Piece that expects this package
+        type: string
+      thumbnailUrl:
+        description: URL where the thumbnail can be accessed
+        type: string
+      previewUrl:
+        description: URL where the preview can be accessed
+        type: string
+    required: [packageName, statusCode, rundownId, pieceId]
+    additionalProperties: false
+    examples:
+      - packageName: 'MV000123.mxf'
+        statusCode: 0
+        rundownId: 'y9HauyWkcxQS3XaAOsW40BRLLsI_'
+        pieceId: 'C6K_yIMuGFUk8X_L9A9_jRT6aq4_'
+        thumbnailUrl: 'https://package-manager.local/package/MV000123.mov_thumbnail.jpg'

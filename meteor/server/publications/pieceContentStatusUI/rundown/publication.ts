@@ -13,8 +13,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { ReadonlyDeep } from 'type-fest'
-import { CustomCollectionName, MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
-import { UIPieceContentStatus } from '@sofie-automation/meteor-lib/dist/api/rundownNotifications'
+import { UIPieceContentStatus } from '@sofie-automation/corelib/dist/dataModel/PieceContentStatus'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import {
 	MediaObjects,
@@ -57,6 +56,8 @@ import { PieceContentStatusStudio } from '../checkPieceContentStatus'
 import { check, Match } from 'meteor/check'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../../../security/securityVerify'
+import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { CustomCollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 interface UIPieceContentStatusesArgs {
 	readonly rundownPlaylistId: RundownPlaylistId
@@ -469,7 +470,7 @@ function updatePartAndSegmentInfoForExistingDocs(
 }
 
 meteorCustomPublish(
-	MeteorPubSub.uiPieceContentStatuses,
+	CorelibPubSub.uiPieceContentStatuses,
 	CustomCollectionName.UIPieceContentStatuses,
 	async function (pub, rundownPlaylistId: RundownPlaylistId | null) {
 		check(rundownPlaylistId, Match.Maybe(String))
@@ -477,7 +478,7 @@ meteorCustomPublish(
 		triggerWriteAccessBecauseNoCheckNecessary()
 
 		if (!rundownPlaylistId) {
-			logger.info(`Pub.${CustomCollectionName.UISegmentPartNotes}: Not playlistId`)
+			logger.info(`Pub.${CustomCollectionName.UIPieceContentStatuses}: Not playlistId`)
 			return
 		}
 
@@ -487,7 +488,7 @@ meteorCustomPublish(
 			UIPieceContentStatusesState,
 			UIPieceContentStatusesUpdateProps
 		>(
-			`pub_${MeteorPubSub.uiPieceContentStatuses}_${rundownPlaylistId}`,
+			`pub_${CorelibPubSub.uiPieceContentStatuses}_${rundownPlaylistId}`,
 			{ rundownPlaylistId },
 			setupUIPieceContentStatusesPublicationObservers,
 			manipulateUIPieceContentStatusesPublicationData,
