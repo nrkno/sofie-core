@@ -5,7 +5,7 @@ import {
 	ITranslatableMessage,
 	JSONSchema,
 } from '@sofie-automation/blueprints-integration'
-import objectPath = require('object-path')
+import * as objectPath from 'object-path'
 import { ReadonlyDeep } from 'type-fest'
 import { literal, objectPathGet, objectPathSet, clone } from '../lib.js'
 import {

@@ -189,7 +189,7 @@ export class UserError implements UserErrorObj {
 			} else {
 				return undefined
 			}
-		} catch (e: any) {
+		} catch (_e: any) {
 			return undefined
 		}
 	}
