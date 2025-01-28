@@ -27,6 +27,7 @@ import {
 } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 const lowPrioFcn = (fcn: () => any) => {
 	// Do it at a random time in the future:
@@ -113,7 +114,7 @@ async function restartCasparCG(systemSettings: ICoreSystemSettings | undefined, 
 				.map((device) => device.studioAndConfigId?.studioId)
 				.filter((id) => id !== undefined)
 		)
-	)
+	) as StudioId[]
 
 	const activePlaylists = (await RundownPlaylists.findFetchAsync(
 		{
