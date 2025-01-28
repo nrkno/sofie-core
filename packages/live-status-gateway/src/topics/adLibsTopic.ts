@@ -5,7 +5,7 @@ import { WebSocketTopicBase, WebSocketTopic, CollectionObserver } from '../wsHan
 import { PlaylistHandler } from '../collections/playlistHandler.js'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 import { AdLibActionsHandler } from '../collections/adLibActionsHandler.js'

@@ -51,7 +51,7 @@ import {
 } from '@sofie-automation/corelib/dist/protectedString'
 import { postProcessPieces, postProcessTimelineObjects } from '../../postProcess.js'
 import { getCurrentTime } from '../../../lib/index.js'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { syncPlayheadInfinitesForNextPartInstance } from '../../../playout/infinites.js'
 import { validateAdlibTestingPartInstanceProperties } from '../../../playout/adlibTesting.js'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'

@@ -4,7 +4,7 @@ import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dis
 import { clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { Time } from '@sofie-automation/blueprints-integration'
 import { PlayoutPieceInstanceModel } from '../PlayoutPieceInstanceModel.js'
-import _ = require('underscore')
+import * as _ from 'underscore'
 
 export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel {
 	/**

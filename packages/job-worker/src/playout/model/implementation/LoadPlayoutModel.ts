@@ -13,7 +13,7 @@ import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceIns
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { clone, Complete, groupByToMap, groupByToMapFunc, literal } from '@sofie-automation/corelib/dist/lib'
 import { PlayoutSegmentModelImpl } from './PlayoutSegmentModelImpl.js'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'

@@ -42,7 +42,7 @@ import {
 	MongoModifier,
 	MongoQuery,
 } from '../db/index.js'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { ExpectedMediaItem } from '@sofie-automation/corelib/dist/dataModel/ExpectedMediaItem'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'

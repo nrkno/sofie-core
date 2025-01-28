@@ -13,7 +13,7 @@ import { IngestSegmentModel } from '../ingest/model/IngestSegmentModel.js'
 import { clone } from '@sofie-automation/corelib/dist/lib'
 import { IngestPartModel } from '../ingest/model/IngestPartModel.js'
 import { AnyBulkWriteOperation } from 'mongodb'
-import _ = require('underscore')
+import * as _ from 'underscore'
 
 const mockOptions = {
 	fallbackMockImplementation: () => {

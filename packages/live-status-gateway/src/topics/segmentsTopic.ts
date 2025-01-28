@@ -10,7 +10,7 @@ import { SegmentsHandler } from '../collections/segmentsHandler.js'
 import areElementsShallowEqual from '@sofie-automation/shared-lib/dist/lib/isShallowEqual'
 import { PartsHandler } from '../collections/partsHandler.js'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { SegmentTiming, calculateSegmentTiming } from './helpers/segmentTiming.js'
 
 const THROTTLE_PERIOD_MS = 200

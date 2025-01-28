@@ -14,7 +14,7 @@ import {
 	postProcessRundownBaselineItems,
 } from '../blueprints/postProcess.js'
 import { logger } from '../logging.js'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { IngestModel } from './model/IngestModel.js'
 import { extendIngestRundownCore, canRundownBeUpdated } from './lib.js'
 import { JobContext } from '../jobs/index.js'

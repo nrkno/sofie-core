@@ -1,6 +1,6 @@
 // This is a collection of functions that match what the playout-gateway / TSR does
 
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { TSR } from '@sofie-automation/blueprints-integration'
 import { TimelineObjGeneric, TimelineObjGroup } from '../dataModel/Timeline.js'
 

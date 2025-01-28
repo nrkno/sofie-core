@@ -6,7 +6,7 @@ import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { WebSocketTopicBase, WebSocketTopic, CollectionObserver } from '../wsHandler.js'
 import { PlaylistHandler } from '../collections/playlistHandler.js'
 import { ShowStyleBaseExt, ShowStyleBaseHandler } from '../collections/showStyleBaseHandler.js'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import {
 	SelectedPieceInstances,
 	PieceInstancesHandler,

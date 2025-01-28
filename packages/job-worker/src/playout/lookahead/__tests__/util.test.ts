@@ -8,7 +8,7 @@ import { getOrderedPartsAfterPlayhead } from '../util.js'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../../__mocks__/context.js'
 import { runJobWithPlayoutModel } from '../../../playout/lock.js'
 import { defaultRundownPlaylist } from '../../../__mocks__/defaultCollectionObjects.js'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { wrapPartToTemporaryInstance } from '../../../__mocks__/partinstance.js'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { QuickLoopMarkerType } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'

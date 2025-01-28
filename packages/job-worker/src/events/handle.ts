@@ -11,7 +11,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { RundownDataChangedEventContext, RundownTimingEventContext } from '../blueprints/context/index.js'
 import { IBlueprintExternalMessageQueueObj } from '@sofie-automation/blueprints-integration'
 import { protectString, unDeepString } from '@sofie-automation/corelib/dist/protectedString'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { getRandomId, omit, removeNullyProperties } from '@sofie-automation/corelib/dist/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'

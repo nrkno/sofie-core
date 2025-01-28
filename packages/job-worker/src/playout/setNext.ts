@@ -13,7 +13,7 @@ import {
 } from './infinites.js'
 import { PRESERVE_UNSYNCED_PLAYING_SEGMENT_CONTENTS } from '@sofie-automation/shared-lib/dist/core/constants'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { resetPartInstancesWithPieceInstances } from './lib.js'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'

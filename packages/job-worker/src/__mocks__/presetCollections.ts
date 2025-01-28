@@ -23,7 +23,7 @@ import { ProcessedShowStyleCompound } from '../jobs/index.js'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { getRandomId, literal, normalizeArray } from '@sofie-automation/corelib/dist/lib'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { defaultRundownPlaylist } from './defaultCollectionObjects.js'
 import {
 	PeripheralDeviceCategory,

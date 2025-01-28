@@ -25,7 +25,7 @@ import { convertPartInstanceToBlueprints, convertResolvedPieceInstanceToBlueprin
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { TakeNextPartProps } from '@sofie-automation/corelib/dist/worker/studio'
 import { runJobWithPlayoutModel } from './lock.js'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages.js'
 import {

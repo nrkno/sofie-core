@@ -11,7 +11,7 @@ import {
 	NrcsIngestSegmentChangeDetailsEnum,
 } from '@sofie-automation/blueprints-integration'
 import { Complete, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
-import _ = require('underscore')
+import * as _ from 'underscore'
 
 /**
  * Groups parts in a MOS rundown into segments, using a separator of the part names.

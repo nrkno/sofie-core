@@ -12,7 +12,7 @@ import { ABSessionInfo, DBRundownPlaylist } from '@sofie-automation/corelib/dist
 import { getCurrentTime } from '../../lib/index.js'
 import { PieceInstance, ResolvedPieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { ProcessedStudioConfig, ProcessedShowStyleConfig } from '../config.js'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { JobStudio, ProcessedShowStyleCompound } from '../../jobs/index.js'
 import { convertPartInstanceToBlueprints, createBlueprintQuickLoopInfo } from './lib.js'
 import { RundownContext } from './RundownContext.js'

@@ -3,7 +3,7 @@ import {
 	NewPeripheralDeviceAPI,
 	PeripheralDeviceAPIMethods,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { CoreConnection, CoreCredentials } from './coreConnection.js'
 import { DDPError } from './ddpClient.js'
 import { DDPConnector } from './ddpConnector.js'

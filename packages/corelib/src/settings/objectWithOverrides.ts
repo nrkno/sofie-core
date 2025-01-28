@@ -1,6 +1,6 @@
 import objectPath = require('object-path')
 import { ReadonlyDeep } from 'type-fest'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { assertNever, clone, literal } from '../lib.js'
 
 /**

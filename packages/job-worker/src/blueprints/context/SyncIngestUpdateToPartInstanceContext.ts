@@ -4,7 +4,7 @@ import { normalizeArrayToMap, omit } from '@sofie-automation/corelib/dist/lib'
 import { protectString, protectStringArray, unprotectStringArray } from '@sofie-automation/corelib/dist/protectedString'
 import { PlayoutPartInstanceModel } from '../../playout/model/PlayoutPartInstanceModel.js'
 import { ReadonlyDeep } from 'type-fest'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { ContextInfo } from './CommonContext.js'
 import { RundownUserContext } from './RundownUserContext.js'
 import {

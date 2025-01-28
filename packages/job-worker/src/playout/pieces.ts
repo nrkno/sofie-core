@@ -5,7 +5,7 @@ import { PieceLifespan, IBlueprintPieceType } from '@sofie-automation/blueprints
 import { getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
 import { JobContext } from '../jobs/index.js'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { ReadonlyDeep } from 'type-fest'

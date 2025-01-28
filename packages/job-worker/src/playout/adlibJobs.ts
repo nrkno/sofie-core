@@ -27,7 +27,7 @@ import { IBlueprintDirectPlayType, IBlueprintPieceType } from '@sofie-automation
 import { ReadonlyDeep } from 'type-fest'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages.js'
 import { innerFindLastPieceOnLayer, innerStartOrQueueAdLibPiece, innerStopPieces } from './adlibUtils.js'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { executeActionInner } from './adlibAction.js'
 import { PlayoutPieceInstanceModel } from './model/PlayoutPieceInstanceModel.js'
 

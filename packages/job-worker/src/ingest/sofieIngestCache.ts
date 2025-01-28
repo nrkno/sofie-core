@@ -8,7 +8,7 @@ import {
 	SofieIngestRundownWithSource,
 } from '@sofie-automation/corelib/dist/dataModel/SofieIngestDataCache'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { SofieIngestPart, SofieIngestSegment } from '@sofie-automation/blueprints-integration'
 import { JobContext } from '../jobs/index.js'
 import { getPartId, getSegmentId } from './lib.js'

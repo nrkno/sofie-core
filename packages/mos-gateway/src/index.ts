@@ -1,6 +1,6 @@
 import { Connector, Config } from './connector.js'
 import * as Winston from 'winston'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { protectString, stringifyError } from '@sofie-automation/server-core-integration'
 
 console.log('process started') // This is a message all Sofie processes log upon startup

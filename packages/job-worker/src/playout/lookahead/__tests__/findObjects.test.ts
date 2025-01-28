@@ -13,7 +13,7 @@ import { literal } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { setupDefaultJobEnvironment } from '../../../__mocks__/context.js'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import {
 	EmptyPieceTimelineObjectsBlob,
 	serializePieceTimelineObjectsBlob,

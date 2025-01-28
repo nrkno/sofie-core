@@ -52,7 +52,7 @@ import {
 } from '../IngestModel.js'
 import { RundownNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { diffAndReturnLatestObjects } from './utils.js'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { IBlueprintRundown } from '@sofie-automation/blueprints-integration'
 import { getCurrentTime, getSystemVersion } from '../../../lib/index.js'

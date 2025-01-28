@@ -8,7 +8,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { getSofieHostUrl, objectPathGet } from '@sofie-automation/corelib/dist/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { logger } from '../logging.js'
 import { CommonContext } from './context/index.js'
 import { IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'

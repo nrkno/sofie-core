@@ -17,7 +17,7 @@ import {
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
 } from '../playout/infinites.js'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { SyncIngestUpdateToPartInstanceContext } from '../blueprints/context/index.js'
 import {
 	convertAdLibActionToBlueprints,

@@ -2,7 +2,7 @@ import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { IngestReplacePartType, IngestSegmentModel } from '../IngestSegmentModel.js'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { IngestPartModelImpl } from './IngestPartModelImpl.js'
 import { IngestPartModel } from '../IngestPartModel.js'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'

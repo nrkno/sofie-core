@@ -6,7 +6,7 @@ import { OnGenerateTimelineObjExt } from '@sofie-automation/corelib/dist/dataMod
 import { clone, getRandomId, omit } from '@sofie-automation/corelib/dist/lib'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../../__mocks__/context.js'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { setupDefaultRundownPlaylist, setupMockShowStyleCompound } from '../../../__mocks__/presetCollections.js'
 import { AbSessionHelper } from '../abSessionHelper.js'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'

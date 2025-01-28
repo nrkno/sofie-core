@@ -15,7 +15,7 @@ import { ShowStyleBaseExt, ShowStyleBaseHandler } from '../collections/showStyle
 import { CurrentSegmentTiming, calculateCurrentSegmentTiming } from './helpers/segmentTiming.js'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PartsHandler } from '../collections/partsHandler.js'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { PartTiming, calculateCurrentPartTiming } from './helpers/partTiming.js'
 import {
 	SelectedPieceInstances,

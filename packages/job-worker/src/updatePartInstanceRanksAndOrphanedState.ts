@@ -6,7 +6,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { BeforeIngestOperationPartMap, BeforePartMapItem } from './ingest/commit.js'
 import { JobContext } from './jobs/index.js'
 import { logger } from './logging.js'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PlayoutModel } from './playout/model/PlayoutModel.js'
 import { IngestModelReadonly } from './ingest/model/IngestModel.js'

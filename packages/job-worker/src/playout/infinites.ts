@@ -17,7 +17,7 @@ import { PlayoutPartInstanceModel } from './model/PlayoutPartInstanceModel.js'
 import { PlayoutSegmentModel } from './model/PlayoutSegmentModel.js'
 import { getCurrentTime } from '../lib/index.js'
 import { flatten } from '@sofie-automation/corelib/dist/lib'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { IngestModelReadonly } from '../ingest/model/IngestModel.js'
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { sortRundownIDsInPlaylist } from '@sofie-automation/corelib/dist/playout/playlist'

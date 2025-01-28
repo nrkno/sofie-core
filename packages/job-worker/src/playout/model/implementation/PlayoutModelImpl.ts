@@ -33,7 +33,7 @@ import {
 	TimelineCompleteGenerationVersions,
 	TimelineObjGeneric,
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { PlaylistLock } from '../../../jobs/lock.js'
 import { logger } from '../../../logging.js'

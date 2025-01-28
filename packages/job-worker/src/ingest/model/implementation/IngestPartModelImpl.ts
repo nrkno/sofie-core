@@ -1,6 +1,6 @@
 import { ReadonlyDeep } from 'type-fest'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { IngestPartModel } from '../IngestPartModel.js'
 import { AdLibActionId, PieceId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'

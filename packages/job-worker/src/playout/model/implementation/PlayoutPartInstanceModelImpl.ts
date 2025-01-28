@@ -24,7 +24,7 @@ import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { PlayoutPieceInstanceModel } from '../PlayoutPieceInstanceModel.js'
 import { PlayoutPieceInstanceModelImpl } from './PlayoutPieceInstanceModelImpl.js'
 import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PlayoutMutatablePartSampleKeys } from '../../../blueprints/context/lib.js'
 import { QuickLoopService } from '../services/QuickLoopService.js'

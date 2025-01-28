@@ -51,7 +51,7 @@ import { PlaylistLock, RundownLock } from '../jobs/lock.js'
 import { BaseModel } from '../modelBase.js'
 import { createShowStyleCompound } from '../showStyles.js'
 import { IMockCollections, getMockCollections } from './collection.js'
-// import _ = require('underscore')
+// import * as _ from 'underscore'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { removeRundownPlaylistFromDb } from '../ingest/__tests__/lib.js'

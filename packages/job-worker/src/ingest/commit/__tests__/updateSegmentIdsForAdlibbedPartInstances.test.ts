@@ -13,7 +13,7 @@ import { PartialDeep } from 'type-fest'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { IngestModel } from '../../model/IngestModel.js'
 import { IngestPartModel } from '../../model/IngestPartModel.js'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { AnyBulkWriteOperation } from 'mongodb'
 
 const mockOptions = {

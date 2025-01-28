@@ -17,7 +17,7 @@ import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { clone } from '@sofie-automation/corelib/dist/lib'
 import { Filter as FilterQuery } from 'mongodb'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/shared-lib/dist/core/constants'
 import { prefixSingleObjectId } from '../lib.js'
 import { LookaheadTimelineObject } from './findObjects.js'

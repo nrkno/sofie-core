@@ -1,5 +1,5 @@
 import { ReadonlyDeep } from 'type-fest'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { PeripheralDevice } from '../dataModel/PeripheralDevice.js'
 
 /**

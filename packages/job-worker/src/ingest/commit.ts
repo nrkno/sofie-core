@@ -31,7 +31,7 @@ import { syncChangesToPartInstances } from './syncChangesToPartInstance.js'
 import { ensureNextPartIsValid } from './updateNext.js'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { getTranslatedMessage, ServerTranslatedMesssages } from '../notes.js'
-import _ = require('underscore')
+import * as _ from 'underscore'
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
