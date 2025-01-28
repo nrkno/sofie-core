@@ -1,4 +1,4 @@
-import { IBlueprintTriggeredActions } from './triggers'
+import { IBlueprintTriggeredActions } from './triggers.js'
 
 export interface MigrationStepInput {
 	stepId?: string // automatically filled in later

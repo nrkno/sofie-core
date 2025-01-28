@@ -1,6 +1,6 @@
 import { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
-import { Time } from './common'
-import { TSR, TimelineObjectCoreExt } from './timeline'
+import { Time } from './common.js'
+import { TSR, TimelineObjectCoreExt } from './timeline.js'
 import { SourceLayerType } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
 
 export type WithTimeline<T extends BaseContent> = T & {
