@@ -2,8 +2,8 @@ import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/Buck
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
-import { createAsyncOnlyMongoCollection } from './collection'
-import { registerIndex } from './indices'
+import { createAsyncOnlyMongoCollection } from './collection.js'
+import { registerIndex } from './indices.js'
 
 export const BucketAdLibActions = createAsyncOnlyMongoCollection<BucketAdLibAction>(
 	CollectionName.BucketAdLibActions,

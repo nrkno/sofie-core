@@ -1,7 +1,7 @@
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { MediaWorkFlows, PeripheralDevices } from '../collections'
-import { executePeripheralDeviceFunction } from './peripheralDevice/executeFunction'
+import { MediaWorkFlows, PeripheralDevices } from '../collections/index.js'
+import { executePeripheralDeviceFunction } from './peripheralDevice/executeFunction.js'
 import { MediaWorkFlowId, OrganizationId, PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export async function restartAllWorkflows(organizationId: OrganizationId | null): Promise<void> {

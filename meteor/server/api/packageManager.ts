@@ -3,8 +3,8 @@ import {
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { PeripheralDevices } from '../collections'
-import { executePeripheralDeviceFunction } from './peripheralDevice/executeFunction'
+import { PeripheralDevices } from '../collections/index.js'
+import { executePeripheralDeviceFunction } from './peripheralDevice/executeFunction.js'
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export async function restartExpectation(deviceId: PeripheralDeviceId, workId: string): Promise<void> {

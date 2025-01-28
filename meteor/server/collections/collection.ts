@@ -7,10 +7,10 @@ import { NpmModuleMongodb } from 'meteor/npm-mongo'
 import { PromisifyCallbacks } from '@sofie-automation/shared-lib/dist/lib/types'
 import type { AnyBulkWriteOperation, Collection as RawCollection } from 'mongodb'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-import { registerCollection } from './lib'
-import { WrappedMockCollection } from './implementations/mock'
-import { WrappedAsyncMongoCollection } from './implementations/asyncCollection'
-import { WrappedReadOnlyMongoCollection } from './implementations/readonlyWrapper'
+import { registerCollection } from './lib.js'
+import { WrappedMockCollection } from './implementations/mock.js'
+import { WrappedAsyncMongoCollection } from './implementations/asyncCollection.js'
+import { WrappedReadOnlyMongoCollection } from './implementations/readonlyWrapper.js'
 import {
 	FieldNames,
 	IndexSpecifier,
@@ -19,7 +19,7 @@ import {
 	UpdateOptions,
 	UpsertOptions,
 } from '@sofie-automation/meteor-lib/dist/collections/lib'
-import { MinimalMongoCursor } from './implementations/asyncCollection'
+import { MinimalMongoCursor } from './implementations/asyncCollection.js'
 
 export interface MongoAllowRules<DBInterface> {
 	// insert?: (userId: UserId | null, doc: DBInterface) => Promise<boolean> | boolean

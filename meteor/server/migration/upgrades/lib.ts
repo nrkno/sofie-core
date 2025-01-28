@@ -1,5 +1,5 @@
 import type { ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { TriggeredActions } from '../../collections'
+import { TriggeredActions } from '../../collections/index.js'
 import { Complete, getRandomId, literal, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import type { DBTriggeredActions } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import type { AnyBulkWriteOperation } from 'mongodb'

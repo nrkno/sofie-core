@@ -9,15 +9,15 @@ import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settin
 import { wrapTranslatableMessageFromBlueprints } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { BlueprintValidateConfigForStudioResult } from '@sofie-automation/corelib/dist/worker/studio'
 import { Meteor } from 'meteor/meteor'
-import { Blueprints, ShowStyleBases } from '../../collections'
+import { Blueprints, ShowStyleBases } from '../../collections/index.js'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { evalBlueprint } from '../../api/blueprints/cache'
-import { logger } from '../../logging'
-import { CommonContext } from './context'
+import { evalBlueprint } from '../../api/blueprints/cache.js'
+import { logger } from '../../logging.js'
+import { CommonContext } from './context.js'
 import { FixUpBlueprintConfigContext } from '@sofie-automation/corelib/dist/fixUpBlueprintConfig/context'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { BlueprintFixUpConfigMessage } from '@sofie-automation/meteor-lib/dist/api/migration'
-import { updateTriggeredActionsForShowStyleBaseId } from './lib'
+import { updateTriggeredActionsForShowStyleBaseId } from './lib.js'
 
 export async function fixupConfigForShowStyleBase(
 	showStyleBaseId: ShowStyleBaseId

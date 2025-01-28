@@ -1,10 +1,10 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from '../../lib/check'
-import { registerClassToMeteorMethods } from '../../methods'
+import { check } from '../../lib/check.js'
+import { registerClassToMeteorMethods } from '../../methods.js'
 import { NewStudiosAPI, StudiosAPIMethods } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { literal, getRandomId, protectString } from '../../lib/tempLib'
-import { lazyIgnore } from '../../lib/lib'
+import { literal, getRandomId, protectString } from '../../lib/tempLib.js'
+import { lazyIgnore } from '../../lib/lib.js'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import {
 	ExpectedPackages,
@@ -19,14 +19,14 @@ import {
 	Rundowns,
 	Studios,
 	Timeline,
-} from '../../collections'
-import { MethodContextAPI, MethodContext } from '../methodContext'
+} from '../../collections/index.js'
+import { MethodContextAPI, MethodContext } from '../methodContext.js'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { OrganizationId, PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { logger } from '../../logging'
+import { logger } from '../../logging.js'
 import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
 import { UserPermissions } from '@sofie-automation/meteor-lib/dist/userPermissions'
-import { assertConnectionHasOneOfPermissions } from '../../security/auth'
+import { assertConnectionHasOneOfPermissions } from '../../security/auth.js'
 
 const PERMISSIONS_FOR_MANAGE_STUDIOS: Array<keyof UserPermissions> = ['configure']
 

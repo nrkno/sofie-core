@@ -1,25 +1,25 @@
-import { PeripheralDevices, RundownPlaylists } from './collections'
+import { PeripheralDevices, RundownPlaylists } from './collections/index.js'
 import {
 	PERIPHERAL_SUBTYPE_PROCESS,
 	PeripheralDevice,
 	PeripheralDeviceType,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { getCurrentTime } from './lib/lib'
+import { getCurrentTime } from './lib/lib.js'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { logger } from './logging'
+import { logger } from './logging.js'
 import { Meteor } from 'meteor/meteor'
 import { TSR } from '@sofie-automation/blueprints-integration'
 import { DEFAULT_TSR_ACTION_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
-import { QueueStudioJob } from './worker/worker'
+import { QueueStudioJob } from './worker/worker.js'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import { fetchStudioIds } from './optimizations'
-import { internalStoreRundownPlaylistSnapshot } from './api/snapshot'
+import { fetchStudioIds } from './optimizations.js'
+import { internalStoreRundownPlaylistSnapshot } from './api/snapshot.js'
 import { deferAsync, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
-import { getCoreSystemAsync } from './coreSystem/collection'
-import { cleanupOldDataInner } from './api/cleanup'
+import { getCoreSystemAsync } from './coreSystem/collection.js'
+import { cleanupOldDataInner } from './api/cleanup.js'
 import { CollectionCleanupResult } from '@sofie-automation/meteor-lib/dist/api/system'
 import { ICoreSystemSettings } from '@sofie-automation/shared-lib/dist/core/model/CoreSystemSettings'
-import { executePeripheralDeviceFunctionWithCustomTimeout } from './api/peripheralDevice/executeFunction'
+import { executePeripheralDeviceFunctionWithCustomTimeout } from './api/peripheralDevice/executeFunction.js'
 import {
 	interpollateTranslation,
 	isTranslatableMessage,

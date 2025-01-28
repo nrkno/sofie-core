@@ -1,12 +1,12 @@
 import { FindOptions } from '@sofie-automation/meteor-lib/dist/collections/lib'
-import { meteorPublish } from './lib/lib'
+import { meteorPublish } from './lib/lib.js'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
-import { BucketAdLibActions, BucketAdLibs, Buckets } from '../collections'
+import { BucketAdLibActions, BucketAdLibs, Buckets } from '../collections/index.js'
 import { check, Match } from 'meteor/check'
 import { StudioId, BucketId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
-import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify.js'
 
 meteorPublish(
 	MeteorPubSub.buckets,

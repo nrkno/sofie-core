@@ -8,7 +8,7 @@ import {
 	serializeTimelineBlob,
 	TimelineBlob,
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { meteorPublish } from './lib/lib'
+import { meteorPublish } from './lib/lib.js'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { FindOptions } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import {
@@ -17,17 +17,17 @@ import {
 	SetupObserversResult,
 	setUpOptimizedObserverArray,
 	TriggerUpdate,
-} from '../lib/customPublication'
+} from '../lib/customPublication/index.js'
 import { getActiveRoutes } from '@sofie-automation/meteor-lib/dist/collections/Studios'
-import { fetchStudioLight } from '../optimizations'
-import { FastTrackObservers, setupFastTrackObserver } from './fastTrack'
-import { logger } from '../logging'
+import { fetchStudioLight } from '../optimizations.js'
+import { FastTrackObservers, setupFastTrackObserver } from './fastTrack.js'
+import { logger } from '../logging.js'
 import { getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
-import { Time } from '../lib/tempLib'
+import { Time } from '../lib/tempLib.js'
 import { ReadonlyDeep } from 'type-fest'
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBTimelineDatastoreEntry } from '@sofie-automation/corelib/dist/dataModel/TimelineDatastore'
-import { Studios, Timeline, TimelineDatastore } from '../collections'
+import { Studios, Timeline, TimelineDatastore } from '../collections/index.js'
 import { check } from 'meteor/check'
 import { ResultingMappingRoutes, StudioLight } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
@@ -36,8 +36,8 @@ import {
 	PeripheralDevicePubSubCollectionsNames,
 } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { checkAccessAndGetPeripheralDevice } from '../security/check'
-import { assertConnectionHasOneOfPermissions } from '../security/auth'
+import { checkAccessAndGetPeripheralDevice } from '../security/check.js'
+import { assertConnectionHasOneOfPermissions } from '../security/auth.js'
 
 meteorPublish(CorelibPubSub.timelineDatastore, async function (studioId: StudioId, _token: string | undefined) {
 	assertConnectionHasOneOfPermissions(this.connection, 'testing')

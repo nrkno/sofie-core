@@ -1,9 +1,9 @@
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
-import { clone, ProtectedString } from '../tempLib'
-import { SetupObserversResult, TriggerUpdate, setUpOptimizedObserverInner } from './optimizedObserverBase'
-import { CustomPublish, CustomPublishChanges } from './publish'
-import { diffObject } from './lib'
+import { clone, ProtectedString } from '../tempLib.js'
+import { SetupObserversResult, TriggerUpdate, setUpOptimizedObserverInner } from './optimizedObserverBase.js'
+import { CustomPublish, CustomPublishChanges } from './publish.js'
+import { diffObject } from './lib.js'
 
 /**
  * This is an optimization to enable multiple listeners that observes (and manipulates) the same data, to only use one observer and manipulator,

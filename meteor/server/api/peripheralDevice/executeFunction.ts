@@ -1,9 +1,9 @@
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDeviceCommandId, PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
-import { createManualPromise, getRandomId } from '../../lib/tempLib'
-import { getCurrentTime } from '../../lib/lib'
-import { PeripheralDeviceCommands } from '../../collections'
-import { logger } from '../../logging'
+import { createManualPromise, getRandomId } from '../../lib/tempLib.js'
+import { getCurrentTime } from '../../lib/lib.js'
+import { PeripheralDeviceCommands } from '../../collections/index.js'
+import { logger } from '../../logging.js'
 import { TSR } from '@sofie-automation/blueprints-integration'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 

@@ -26,19 +26,19 @@ import {
 	MigrationStepType,
 	RunMigrationResult,
 } from '@sofie-automation/meteor-lib/dist/api/migration'
-import { logger } from '../logging'
-import { internalStoreSystemSnapshot } from '../api/snapshot'
-import { parseVersion, Version } from '../systemStatus/semverUtils'
+import { logger } from '../logging.js'
+import { internalStoreSystemSnapshot } from '../api/snapshot.js'
+import { parseVersion, Version } from '../systemStatus/semverUtils.js'
 import { GENESIS_SYSTEM_VERSION } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
-import { clone, getHash, omit, protectString } from '../lib/tempLib'
+import { clone, getHash, omit, protectString } from '../lib/tempLib.js'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { evalBlueprint } from '../api/blueprints/cache'
-import { MigrationContextSystem } from '../api/blueprints/migrationContext'
-import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
+import { evalBlueprint } from '../api/blueprints/cache.js'
+import { MigrationContextSystem } from '../api/blueprints/migrationContext.js'
+import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion.js'
 import { SnapshotId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Blueprints, CoreSystem } from '../collections'
-import { getSystemStorePath } from '../coreSystem'
-import { getCoreSystemAsync, setCoreSystemVersion } from '../coreSystem/collection'
+import { Blueprints, CoreSystem } from '../collections/index.js'
+import { getSystemStorePath } from '../coreSystem/index.js'
+import { getCoreSystemAsync, setCoreSystemVersion } from '../coreSystem/collection.js'
 
 /**
  * These versions are not supported anymore (breaking changes occurred after these versions)

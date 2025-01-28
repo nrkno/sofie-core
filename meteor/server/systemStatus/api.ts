@@ -1,20 +1,20 @@
-import { registerClassToMeteorMethods } from '../methods'
+import { registerClassToMeteorMethods } from '../methods.js'
 import {
 	StatusResponse,
 	NewSystemStatusAPI,
 	SystemStatusAPIMethods,
 } from '@sofie-automation/meteor-lib/dist/api/systemStatus'
-import { getDebugStates, getSystemStatus } from './systemStatus'
-import { protectString } from '../lib/tempLib'
-import { MethodContextAPI } from '../api/methodContext'
-import { profiler } from '../api/profiler'
+import { getDebugStates, getSystemStatus } from './systemStatus.js'
+import { protectString } from '../lib/tempLib.js'
+import { MethodContextAPI } from '../api/methodContext.js'
+import { profiler } from '../api/profiler/index.js'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PrometheusHTTPContentType, getPrometheusMetricsString } from '@sofie-automation/corelib/dist/prometheus'
-import { collectWorkerPrometheusMetrics } from '../worker/worker'
+import { collectWorkerPrometheusMetrics } from '../worker/worker.js'
 import Koa from 'koa'
 import KoaRouter from '@koa/router'
 import { Meteor } from 'meteor/meteor'
-import { bindKoaRouter } from '../api/rest/koa'
+import { bindKoaRouter } from '../api/rest/koa.js'
 
 const apmNamespace = 'http'
 

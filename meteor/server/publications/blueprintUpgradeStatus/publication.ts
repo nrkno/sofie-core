@@ -1,7 +1,7 @@
 import { BlueprintId, ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
-import { ProtectedString, protectString } from '../../lib/tempLib'
+import { ProtectedString, protectString } from '../../lib/tempLib.js'
 import {
 	CustomPublish,
 	CustomPublishCollection,
@@ -9,16 +9,16 @@ import {
 	setUpCollectionOptimizedObserver,
 	SetupObserversResult,
 	TriggerUpdate,
-} from '../../lib/customPublication'
+} from '../../lib/customPublication/index.js'
 import {
 	ContentCache,
 	CoreSystemFields,
 	createReactiveContentCache,
 	ShowStyleBaseFields,
 	StudioFields,
-} from './reactiveContentCache'
-import { UpgradesContentObserver } from './upgradesContentObserver'
-import { BlueprintMapEntry, checkDocUpgradeStatus, checkSystemUpgradeStatus } from './checkStatus'
+} from './reactiveContentCache.js'
+import { UpgradesContentObserver } from './upgradesContentObserver.js'
+import { BlueprintMapEntry, checkDocUpgradeStatus, checkSystemUpgradeStatus } from './checkStatus.js'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -27,7 +27,7 @@ import {
 	UIBlueprintUpgradeStatusId,
 } from '@sofie-automation/meteor-lib/dist/api/upgradeStatus'
 import { ICoreSystem } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
-import { assertConnectionHasOneOfPermissions } from '../../security/auth'
+import { assertConnectionHasOneOfPermissions } from '../../security/auth.js'
 
 type BlueprintUpgradeStatusArgs = Record<string, never>
 

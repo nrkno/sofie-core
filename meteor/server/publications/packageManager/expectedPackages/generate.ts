@@ -12,11 +12,11 @@ import { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
 import { getSideEffect } from '@sofie-automation/meteor-lib/dist/collections/ExpectedPackages'
 import { DBStudio, StudioLight, StudioPackageContainer } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { clone, omit } from '../../../lib/tempLib'
-import { CustomPublishCollection } from '../../../lib/customPublication'
-import { logger } from '../../../logging'
-import { ExpectedPackagesContentCache } from './contentCache'
-import type { StudioFields } from './publication'
+import { clone, omit } from '../../../lib/tempLib.js'
+import { CustomPublishCollection } from '../../../lib/customPublication/index.js'
+import { logger } from '../../../logging.js'
+import { ExpectedPackagesContentCache } from './contentCache.js'
+import type { StudioFields } from './publication.js'
 
 /**
  * Regenerate the output for the provided ExpectedPackage `regenerateIds`, updating the data in `collection` as needed

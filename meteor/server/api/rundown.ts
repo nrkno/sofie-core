@@ -1,25 +1,25 @@
 import * as _ from 'underscore'
-import { check } from '../lib/check'
-import { logger } from '../logging'
-import { registerClassToMeteorMethods } from '../methods'
+import { check } from '../lib/check.js'
+import { logger } from '../logging.js'
+import { registerClassToMeteorMethods } from '../methods.js'
 import { NewRundownAPI, RundownAPIMethods } from '@sofie-automation/meteor-lib/dist/api/rundown'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { PackageInfo } from '../coreSystem'
-import { IngestActions } from './ingest/actions'
+import { PackageInfo } from '../coreSystem/index.js'
+import { IngestActions } from './ingest/actions.js'
 import {
 	ReloadRundownPlaylistResponse,
 	TriggerReloadDataResponse,
 } from '@sofie-automation/meteor-lib/dist/api/userActions'
-import { MethodContextAPI, MethodContext } from './methodContext'
-import { runIngestOperation } from './ingest/lib'
+import { MethodContextAPI, MethodContext } from './methodContext.js'
+import { runIngestOperation } from './ingest/lib.js'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
-import { VerifiedRundownForUserAction, VerifiedRundownPlaylistForUserAction } from '../security/check'
+import { VerifiedRundownForUserAction, VerifiedRundownPlaylistForUserAction } from '../security/check.js'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Blueprints, Rundowns, ShowStyleBases, ShowStyleVariants, Studios } from '../collections'
-import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify'
+import { Blueprints, Rundowns, ShowStyleBases, ShowStyleVariants, Studios } from '../collections/index.js'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify.js'
 
 export namespace ServerRundownAPI {
 	/** Remove an individual rundown */

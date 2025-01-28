@@ -1,4 +1,4 @@
-import { MeteorCall } from '../../methods'
+import { MeteorCall } from '../../methods.js'
 import {
 	PeripheralDevice,
 	PeripheralDeviceCategory,
@@ -6,14 +6,14 @@ import {
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
-import { getCurrentTime } from '../../../lib/lib'
+import { getCurrentTime } from '../../../lib/lib.js'
 import {
 	DefaultEnvironment,
 	setupDefaultStudioEnvironment,
 	setupMockPeripheralDevice,
-} from '../../../../__mocks__/helpers/database'
-import '../../../../__mocks__/_extendJest'
-import { Studios } from '../../../collections'
+} from '../../../../__mocks__/helpers/database.js'
+import '../../../../__mocks__/_extendJest.js'
+import { Studios } from '../../../collections/index.js'
 import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import {
 	applyAndValidateOverrides,

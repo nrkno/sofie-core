@@ -3,21 +3,21 @@ import type {
 	JSONSchemaForWebApplicationManifestFiles,
 	ManifestImageResource,
 	ShortcutItem,
-} from './typings/webmanifest'
-import { logger } from './logging'
+} from './typings/webmanifest.d.ts'
+import { logger } from './logging.js'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { RundownPlaylists, Rundowns, Studios } from './collections'
-import { getLocale, Translations } from './lib'
-import { generateTranslation } from './lib/tempLib'
+import { RundownPlaylists, Rundowns, Studios } from './collections/index.js'
+import { getLocale, Translations } from './lib.js'
+import { generateTranslation } from './lib/tempLib.js'
 import { ITranslatableMessage } from '@sofie-automation/blueprints-integration'
 import { interpollateTranslation } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { getCoreSystemAsync } from './coreSystem/collection'
+import { getCoreSystemAsync } from './coreSystem/collection.js'
 import Koa from 'koa'
 import KoaRouter from '@koa/router'
 import { Meteor } from 'meteor/meteor'
-import { bindKoaRouter } from './api/rest/koa'
+import { bindKoaRouter } from './api/rest/koa.js'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 const appShortName = 'Sofie'

@@ -1,8 +1,8 @@
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { ServiceMessage } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
-import { getCoreSystemAsync } from '../../coreSystem/collection'
-import { logger } from '../../logging'
-import { CoreSystem } from '../../collections'
+import { getCoreSystemAsync } from '../../coreSystem/collection.js'
+import { logger } from '../../logging.js'
+import { CoreSystem } from '../../collections/index.js'
 
 export interface WriteStatus {
 	isUpdate?: boolean

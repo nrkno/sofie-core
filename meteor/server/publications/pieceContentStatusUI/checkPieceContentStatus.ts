@@ -31,9 +31,9 @@ import { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
 import { getSideEffect } from '@sofie-automation/meteor-lib/dist/collections/ExpectedPackages'
 import { getActiveRoutes, getRoutedMappings } from '@sofie-automation/meteor-lib/dist/collections/Studios'
-import { ensureHasTrailingSlash, generateTranslation, unprotectString } from '../../lib/tempLib'
+import { ensureHasTrailingSlash, generateTranslation, unprotectString } from '../../lib/tempLib.js'
 import { PieceContentStatusObj } from '@sofie-automation/meteor-lib/dist/api/pieceContentStatus'
-import { MediaObjects, PackageContainerPackageStatuses, PackageInfos } from '../../collections'
+import { MediaObjects, PackageContainerPackageStatuses, PackageInfos } from '../../collections/index.js'
 import {
 	mediaObjectFieldSpecifier,
 	MediaObjectLight,
@@ -42,7 +42,7 @@ import {
 	packageInfoFieldSpecifier,
 	PackageInfoLight,
 	PieceDependencies,
-} from './common'
+} from './common.js'
 
 interface ScanInfoForPackages {
 	[packageId: string]: ScanInfoForPackage

@@ -1,10 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Rundowns } from '../../collections'
+import { Rundowns } from '../../collections/index.js'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { PromiseDebounce } from '../../publications/lib/PromiseDebounce'
+import { PromiseDebounce } from '../../publications/lib/PromiseDebounce.js'
 
 const REACTIVITY_DEBOUNCE = 20
 

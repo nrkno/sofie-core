@@ -1,6 +1,6 @@
-import { addMigrationSteps } from './databaseMigration'
-import { Settings } from '../Settings'
-import { Studios } from '../collections'
+import { addMigrationSteps } from './databaseMigration.js'
+import { Settings } from '../Settings.js'
+import { Studios } from '../collections/index.js'
 
 // Release 40 (Skipped)
 

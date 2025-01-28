@@ -8,9 +8,9 @@ import { clone, getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { UISegmentPartNote } from '@sofie-automation/meteor-lib/dist/api/rundownNotifications'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { generateTranslation } from '../../../lib/tempLib'
-import { generateNotesForSegment } from '../generateNotesForSegment'
-import { PartFields, PartInstanceFields, SegmentFields } from '../reactiveContentCache'
+import { generateTranslation } from '../../../lib/tempLib.js'
+import { generateNotesForSegment } from '../generateNotesForSegment.js'
+import { PartFields, PartInstanceFields, SegmentFields } from '../reactiveContentCache.js'
 
 describe('generateNotesForSegment', () => {
 	test('no notes', async () => {

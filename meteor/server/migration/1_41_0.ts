@@ -1,4 +1,4 @@
-import { addMigrationSteps } from './databaseMigration'
+import { addMigrationSteps } from './databaseMigration.js'
 import { serializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { TimelineObjGeneric } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import {
@@ -8,7 +8,7 @@ import {
 	RundownBaselineObjs,
 	PieceInstances,
 	Pieces,
-} from '../collections'
+} from '../collections/index.js'
 
 // Release 41
 export const addSteps = addMigrationSteps('1.41.0', [

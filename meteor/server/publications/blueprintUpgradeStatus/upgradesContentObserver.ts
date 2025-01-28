@@ -1,14 +1,14 @@
 import { Meteor } from 'meteor/meteor'
-import { logger } from '../../logging'
+import { logger } from '../../logging.js'
 import {
 	blueprintFieldSpecifier,
 	ContentCache,
 	coreSystemFieldsSpecifier,
 	showStyleFieldSpecifier,
 	studioFieldSpecifier,
-} from './reactiveContentCache'
-import { Blueprints, CoreSystem, ShowStyleBases, Studios } from '../../collections'
-import { waitForAllObserversReady } from '../lib/lib'
+} from './reactiveContentCache.js'
+import { Blueprints, CoreSystem, ShowStyleBases, Studios } from '../../collections/index.js'
+import { waitForAllObserversReady } from '../lib/lib.js'
 
 export class UpgradesContentObserver {
 	readonly #cache: ContentCache

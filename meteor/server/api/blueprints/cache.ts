@@ -1,5 +1,5 @@
 import * as vm from 'vm'
-import { logger } from '../../logging'
+import { logger } from '../../logging.js'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { SomeBlueprintManifest } from '@sofie-automation/blueprints-integration'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'

@@ -1,15 +1,15 @@
-import { meteorPublish } from './lib/lib'
+import { meteorPublish } from './lib/lib.js'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { RundownLayoutBase } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
-import { RundownLayouts, ShowStyleBases, ShowStyleVariants, TriggeredActions } from '../collections'
+import { RundownLayouts, ShowStyleBases, ShowStyleVariants, TriggeredActions } from '../collections/index.js'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { DBTriggeredActions } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { check, Match } from '../lib/check'
-import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify'
+import { check, Match } from '../lib/check.js'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify.js'
 
 meteorPublish(
 	CorelibPubSub.showStyleBases,

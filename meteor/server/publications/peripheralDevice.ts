@@ -1,15 +1,20 @@
-import { check, Match } from '../lib/check'
-import { meteorPublish } from './lib/lib'
+import { check, Match } from '../lib/check.js'
+import { meteorPublish } from './lib/lib.js'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { MongoFieldSpecifierZeroes, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { MediaWorkFlows, MediaWorkFlowSteps, PeripheralDeviceCommands, PeripheralDevices } from '../collections'
+import {
+	MediaWorkFlows,
+	MediaWorkFlowSteps,
+	PeripheralDeviceCommands,
+	PeripheralDevices,
+} from '../collections/index.js'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { PeripheralDevicePubSub } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 import { clone } from '@sofie-automation/corelib/dist/lib'
-import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify'
-import { checkAccessAndGetPeripheralDevice } from '../security/check'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify.js'
+import { checkAccessAndGetPeripheralDevice } from '../security/check.js'
 
 /*
  * This file contains publications for the peripheralDevices, such as playout-gateway, mos-gateway and package-manager

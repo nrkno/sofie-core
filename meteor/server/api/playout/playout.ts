@@ -1,9 +1,9 @@
 /* tslint:disable:no-use-before-declare */
-import { PackageInfo } from '../../coreSystem'
+import { PackageInfo } from '../../coreSystem/index.js'
 import { shouldUpdateStudioBaselineInner } from '@sofie-automation/corelib/dist/studio/baseline'
-import { Blueprints, RundownPlaylists, Timeline } from '../../collections'
+import { Blueprints, RundownPlaylists, Timeline } from '../../collections/index.js'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import { QueueStudioJob } from '../../worker/worker'
+import { QueueStudioJob } from '../../worker/worker.js'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 

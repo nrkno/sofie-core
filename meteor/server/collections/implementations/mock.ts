@@ -3,8 +3,8 @@ import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Meteor } from 'meteor/meteor'
 import { FindOptions, MongoCursor } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import type { AnyBulkWriteOperation, Db as RawDb } from 'mongodb'
-import { AsyncOnlyMongoCollection } from '../collection'
-import { WrappedAsyncMongoCollection } from './asyncCollection'
+import { AsyncOnlyMongoCollection } from '../collection.js'
+import { WrappedAsyncMongoCollection } from './asyncCollection.js'
 import { Mongo } from 'meteor/mongo'
 
 /** This is for the mock mongo collection, as internally it is sync and so we dont need or want to play around with fibers */

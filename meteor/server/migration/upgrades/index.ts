@@ -1,2 +1,2 @@
-export * from './showStyleBase'
-export * from './studio'
+export * from './showStyleBase.js'
+export * from './studio.js'

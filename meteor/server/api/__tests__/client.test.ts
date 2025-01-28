@@ -1,20 +1,20 @@
 import { Meteor } from 'meteor/meteor'
-import { MeteorMock } from '../../../__mocks__/meteor'
+import { MeteorMock } from '../../../__mocks__/meteor.js'
 import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
 import { ClientAPIMethods } from '@sofie-automation/meteor-lib/dist/api/client'
-import { protectString, LogLevel } from '../../lib/tempLib'
+import { protectString, LogLevel } from '../../lib/tempLib.js'
 import { PeripheralDeviceCommand } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceCommand'
-import { setLogLevel } from '../../logging'
+import { setLogLevel } from '../../logging.js'
 import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { setupMockPeripheralDevice, setupMockStudio } from '../../../__mocks__/helpers/database'
-import { MeteorCall } from '../methods'
+import { setupMockPeripheralDevice, setupMockStudio } from '../../../__mocks__/helpers/database.js'
+import { MeteorCall } from '../methods.js'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PeripheralDeviceCommands, UserActionsLog } from '../../collections'
-import { SupressLogMessages } from '../../../__mocks__/suppressLogging'
+import { PeripheralDeviceCommands, UserActionsLog } from '../../collections/index.js'
+import { SupressLogMessages } from '../../../__mocks__/suppressLogging.js'
 
 require('../client') // include in order to create the Meteor methods needed
 

@@ -2,8 +2,8 @@ import { createManualPromise } from '@sofie-automation/corelib/dist/lib'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Meteor } from 'meteor/meteor'
 import { UIBlueprintUpgradeStatus } from '@sofie-automation/meteor-lib/dist/api/upgradeStatus'
-import { CustomPublish, CustomPublishChanges } from '../../lib/customPublication'
-import { createBlueprintUpgradeStatusSubscriptionHandle } from './publication'
+import { CustomPublish, CustomPublishChanges } from '../../lib/customPublication/index.js'
+import { createBlueprintUpgradeStatusSubscriptionHandle } from './publication.js'
 
 class CustomPublishToMap<DBObj extends { _id: ProtectedString<any> }> implements CustomPublish<DBObj> {
 	#isReady = false

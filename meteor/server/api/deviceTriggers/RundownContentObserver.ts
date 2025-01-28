@@ -11,8 +11,8 @@ import {
 	Segments,
 	ShowStyleBases,
 	TriggeredActions,
-} from '../../collections'
-import { logger } from '../../logging'
+} from '../../collections/index.js'
+import { logger } from '../../logging.js'
 import {
 	adLibActionFieldSpecifier,
 	adLibPieceFieldSpecifier,
@@ -22,8 +22,8 @@ import {
 	partInstanceFieldSpecifier,
 	rundownPlaylistFieldSpecifier,
 	segmentFieldSpecifier,
-} from './reactiveContentCache'
-import { waitForAllObserversReady } from '../../publications/lib/lib'
+} from './reactiveContentCache.js'
+import { waitForAllObserversReady } from '../../publications/lib/lib.js'
 
 const REACTIVITY_DEBOUNCE = 20
 

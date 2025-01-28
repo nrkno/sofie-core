@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { logger } from '../logging'
+import { logger } from '../logging.js'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { Time } from '@sofie-automation/shared-lib/dist/lib/lib'
 

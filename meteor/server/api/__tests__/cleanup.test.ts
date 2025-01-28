@@ -1,12 +1,12 @@
-import { getRandomId } from '../../lib/tempLib'
+import { getRandomId } from '../../lib/tempLib.js'
 
-import '../../collections' // include this in order to get all of the collection set up
-import { cleanupOldDataInner } from '../cleanup'
+import '../../collections/index.js' // include this in order to get all of the collection set up
+import { cleanupOldDataInner } from '../cleanup.js'
 import {
 	DefaultEnvironment,
 	setupDefaultRundownPlaylist,
 	setupDefaultStudioEnvironment,
-} from '../../../__mocks__/helpers/database'
+} from '../../../__mocks__/helpers/database.js'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import {
 	RundownPlaylists,
@@ -46,9 +46,9 @@ import {
 	TimelineDatastore,
 	Notifications,
 	SofieIngestDataCache,
-} from '../../collections'
-import { Collections } from '../../collections/lib'
-import { generateTranslationBundleOriginId } from '../translationsBundles'
+} from '../../collections/index.js'
+import { Collections } from '../../collections/lib.js'
+import { generateTranslationBundleOriginId } from '../translationsBundles.js'
 import { CollectionCleanupResult } from '@sofie-automation/meteor-lib/dist/api/system'
 import { DBNotificationTargetType } from '@sofie-automation/corelib/dist/dataModel/Notifications'
 

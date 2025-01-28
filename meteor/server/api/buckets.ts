@@ -1,15 +1,22 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
-import { getRandomId, getRandomString, literal } from '../lib/tempLib'
+import { getRandomId, getRandomString, literal } from '../lib/tempLib.js'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { AdLibAction, AdLibActionCommon } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
-import { BucketAdLibActions, BucketAdLibs, Buckets, Rundowns, ShowStyleVariants, Studios } from '../collections'
-import { runIngestOperation } from './ingest/lib'
+import {
+	BucketAdLibActions,
+	BucketAdLibs,
+	Buckets,
+	Rundowns,
+	ShowStyleVariants,
+	Studios,
+} from '../collections/index.js'
+import { runIngestOperation } from './ingest/lib.js'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { IngestAdlib } from '@sofie-automation/blueprints-integration'
-import { getShowStyleCompound } from './showStyles'
+import { getShowStyleCompound } from './showStyles.js'
 import {
 	BucketAdLibActionId,
 	BucketAdLibId,
@@ -18,7 +25,7 @@ import {
 	ShowStyleVariantId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { fetchStudioLight } from '../optimizations'
+import { fetchStudioLight } from '../optimizations.js'
 
 const DEFAULT_BUCKET_WIDTH = undefined
 

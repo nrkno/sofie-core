@@ -6,20 +6,20 @@ import { PackageContainer } from '@sofie-automation/shared-lib/dist/package-mana
 import { PackageManagerPackageContainers } from '@sofie-automation/shared-lib/dist/package-manager/publications'
 import { check } from 'meteor/check'
 import { ReadonlyDeep } from 'type-fest'
-import { Studios } from '../../collections'
+import { Studios } from '../../collections/index.js'
 import {
 	meteorCustomPublish,
 	SetupObserversResult,
 	setUpOptimizedObserverArray,
 	TriggerUpdate,
-} from '../../lib/customPublication'
-import { logger } from '../../logging'
+} from '../../lib/customPublication/index.js'
+import { logger } from '../../logging.js'
 import {
 	PeripheralDevicePubSub,
 	PeripheralDevicePubSubCollectionsNames,
 } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { checkAccessAndGetPeripheralDevice } from '../../security/check'
+import { checkAccessAndGetPeripheralDevice } from '../../security/check.js'
 
 type StudioFields = '_id' | 'packageContainersWithOverrides'
 const studioFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBStudio, StudioFields>>>({

@@ -1,11 +1,11 @@
 import * as _ from 'underscore'
 import { MigrationStepCore } from '@sofie-automation/blueprints-integration'
-import { objectPathGet, ProtectedString } from '../lib/tempLib'
+import { objectPathGet, ProtectedString } from '../lib/tempLib.js'
 import { Meteor } from 'meteor/meteor'
-import { logger } from '../logging'
+import { logger } from '../logging.js'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-import { AsyncOnlyMongoCollection } from '../collections/collection'
-import { Collections } from '../collections/lib'
+import { AsyncOnlyMongoCollection } from '../collections/collection.js'
+import { Collections } from '../collections/lib.js'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 
 /**

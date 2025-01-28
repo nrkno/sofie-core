@@ -3,13 +3,13 @@ import {
 	USER_PERMISSIONS_HEADER,
 	UserPermissions,
 } from '@sofie-automation/meteor-lib/dist/userPermissions'
-import { Settings } from '../Settings'
+import { Settings } from '../Settings.js'
 import { Meteor } from 'meteor/meteor'
 import Koa from 'koa'
-import { triggerWriteAccess } from './securityVerify'
+import { triggerWriteAccess } from './securityVerify.js'
 import { UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { unprotectString } from '../lib/tempLib'
-import { logger } from '../logging'
+import { unprotectString } from '../lib/tempLib.js'
+import { logger } from '../logging.js'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 export type RequestCredentials = Meteor.Connection | Koa.ParameterizedContext

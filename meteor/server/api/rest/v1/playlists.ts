@@ -1,6 +1,6 @@
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
-import { logger } from '../../../logging'
-import { APIFactory, APIRegisterHook, ServerAPIContext } from './types'
+import { logger } from '../../../logging.js'
+import { APIFactory, APIRegisterHook, ServerAPIContext } from './types.js'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import {
 	AdLibActionId,
@@ -13,8 +13,8 @@ import {
 	RundownPlaylistId,
 	SegmentId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Match, check } from '../../../lib/check'
-import { PlaylistsRestAPI } from '../../../lib/rest/v1'
+import { Match, check } from '../../../lib/check.js'
+import { PlaylistsRestAPI } from '../../../lib/rest/v1/index.js'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import {
@@ -26,14 +26,14 @@ import {
 	RundownBaselineAdLibActions,
 	RundownBaselineAdLibPieces,
 	RundownPlaylists,
-} from '../../../collections'
+} from '../../../collections/index.js'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { ServerClientAPI } from '../../client'
+import { ServerClientAPI } from '../../client.js'
 import { QueueNextSegmentResult, StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import { getCurrentTime } from '../../../lib/lib'
+import { getCurrentTime } from '../../../lib/lib.js'
 import { TriggerReloadDataResponse } from '@sofie-automation/meteor-lib/dist/api/userActions'
-import { ServerRundownAPI } from '../../rundown'
-import { triggerWriteAccess } from '../../../security/securityVerify'
+import { ServerRundownAPI } from '../../rundown.js'
+import { triggerWriteAccess } from '../../../security/securityVerify.js'
 
 class PlaylistsServerAPI implements PlaylistsRestAPI {
 	constructor(private context: ServerAPIContext) {}

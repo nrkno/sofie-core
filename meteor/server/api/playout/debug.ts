@@ -1,14 +1,14 @@
 import { Meteor } from 'meteor/meteor'
-import { logger } from '../../logging'
-import { PartInstances, PieceInstances, RundownPlaylists } from '../../collections'
+import { logger } from '../../logging.js'
+import { PartInstances, PieceInstances, RundownPlaylists } from '../../collections/index.js'
 import { check } from 'meteor/check'
-import { profiler } from '../profiler'
-import { QueueForceClearAllCaches, QueueStudioJob } from '../../worker/worker'
+import { profiler } from '../profiler/index.js'
+import { QueueForceClearAllCaches, QueueStudioJob } from '../../worker/worker.js'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import { fetchStudioIds } from '../../optimizations'
+import { fetchStudioIds } from '../../optimizations.js'
 import { PeripheralDeviceId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { insertInputDeviceTriggerIntoPreview } from '../../publications/deviceTriggersPreview'
-import { MeteorDebugMethods } from '../../methods'
+import { insertInputDeviceTriggerIntoPreview } from '../../publications/deviceTriggersPreview.js'
+import { MeteorDebugMethods } from '../../methods.js'
 
 // These are temporary method to fill the rundown database with some sample data
 // for development

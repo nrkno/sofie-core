@@ -1,14 +1,14 @@
 import { Meteor } from 'meteor/meteor'
-import { getHash, protectString } from '../../lib/tempLib'
-import { getCurrentTime } from '../../lib/lib'
+import { getHash, protectString } from '../../lib/tempLib.js'
+import { getCurrentTime } from '../../lib/lib.js'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { PeripheralDevice, PeripheralDeviceCategory } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { Rundown, RundownSourceNrcs } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { logger } from '../../logging'
-import { profiler } from '../profiler'
+import { logger } from '../../logging.js'
+import { profiler } from '../profiler/index.js'
 import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
-import { QueueIngestJob } from '../../worker/worker'
-import { checkStudioExists } from '../../optimizations'
+import { QueueIngestJob } from '../../worker/worker.js'
+import { checkStudioExists } from '../../optimizations.js'
 import {
 	PartId,
 	PeripheralDeviceId,
@@ -16,8 +16,8 @@ import {
 	SegmentId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PeripheralDevices } from '../../collections'
-import { getStudioIdFromDevice } from '../studio/lib'
+import { PeripheralDevices } from '../../collections/index.js'
+import { getStudioIdFromDevice } from '../studio/lib.js'
 
 /**
  * Run an ingest operation via the worker.

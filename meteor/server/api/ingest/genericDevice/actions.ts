@@ -3,13 +3,13 @@ import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/Perip
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { TriggerReloadDataResponse } from '@sofie-automation/meteor-lib/dist/api/userActions'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { logger } from '../../../logging'
+import { logger } from '../../../logging.js'
 import * as _ from 'underscore'
 import { IngestRundown } from '@sofie-automation/blueprints-integration'
-import { generateRundownSource, runIngestOperation } from '../lib'
+import { generateRundownSource, runIngestOperation } from '../lib.js'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { DEFAULT_NRCS_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
-import { executePeripheralDeviceFunctionWithCustomTimeout } from '../../peripheralDevice/executeFunction'
+import { executePeripheralDeviceFunctionWithCustomTimeout } from '../../peripheralDevice/executeFunction.js'
 
 export namespace GenericDeviceActions {
 	export async function reloadRundown(

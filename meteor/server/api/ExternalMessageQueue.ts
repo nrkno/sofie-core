@@ -1,20 +1,20 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from '../lib/check'
+import { check } from '../lib/check.js'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
-import { deferAsync, getCurrentTime } from '../lib/lib'
-import { registerClassToMeteorMethods } from '../methods'
+import { deferAsync, getCurrentTime } from '../lib/lib.js'
+import { registerClassToMeteorMethods } from '../methods.js'
 import {
 	NewExternalMessageQueueAPI,
 	ExternalMessageQueueAPIMethods,
 } from '@sofie-automation/meteor-lib/dist/api/ExternalMessageQueue'
-import { StatusObject, setSystemStatus } from '../systemStatus/systemStatus'
-import { MethodContextAPI, MethodContext } from './methodContext'
+import { StatusObject, setSystemStatus } from '../systemStatus/systemStatus.js'
+import { MethodContextAPI, MethodContext } from './methodContext.js'
 import { ExternalMessageQueueObjId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ExternalMessageQueue } from '../collections'
+import { ExternalMessageQueue } from '../collections/index.js'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { UserPermissions } from '@sofie-automation/meteor-lib/dist/userPermissions'
-import { assertConnectionHasOneOfPermissions } from '../security/auth'
+import { assertConnectionHasOneOfPermissions } from '../security/auth.js'
 
 const USER_PERMISSIONS_FOR_EXTERNAL_MESSAGES: Array<keyof UserPermissions> = ['configure', 'studio', 'service']
 

@@ -1,4 +1,4 @@
-import { addMigrationSteps } from './databaseMigration'
+import { addMigrationSteps } from './databaseMigration.js'
 import {
 	AdLibActions,
 	AdLibPieces,
@@ -9,7 +9,7 @@ import {
 	Pieces,
 	RundownPlaylists,
 	Studios,
-} from '../collections'
+} from '../collections/index.js'
 import { assertNever, clone, literal } from '@sofie-automation/corelib/dist/lib'
 import {
 	MappingExt,

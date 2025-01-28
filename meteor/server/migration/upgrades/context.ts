@@ -4,9 +4,9 @@ import {
 	NoteSeverity,
 } from '@sofie-automation/blueprints-integration'
 import { assertNever, clone, getHash } from '@sofie-automation/corelib/dist/lib'
-import { logger } from '../../logging'
+import { logger } from '../../logging.js'
 import { ICoreSystemApplyConfigContext } from '@sofie-automation/blueprints-integration/dist/context/systemApplyConfigContext'
-import { DEFAULT_CORE_TRIGGERS } from './defaultSystemActionTriggers'
+import { DEFAULT_CORE_TRIGGERS } from './defaultSystemActionTriggers.js'
 
 /**
  * This is almost identical to the one in the job-worker, but it is hard to share the implementation due to differing loggers

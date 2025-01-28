@@ -1,14 +1,14 @@
 import { Meteor } from 'meteor/meteor'
-import { check, Match } from '../lib/check'
+import { check, Match } from '../lib/check.js'
 import * as _ from 'underscore'
 import { PeripheralDeviceType, PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { PeripheralDeviceCommands, PeripheralDevices, Rundowns, Studios, UserActionsLog } from '../collections'
-import { protectString, stringifyObjects, literal, unprotectString } from '../lib/tempLib'
-import { getCurrentTime } from '../lib/lib'
-import { logger } from '../logging'
+import { PeripheralDeviceCommands, PeripheralDevices, Rundowns, Studios, UserActionsLog } from '../collections/index.js'
+import { protectString, stringifyObjects, literal, unprotectString } from '../lib/tempLib.js'
+import { getCurrentTime } from '../lib/lib.js'
+import { logger } from '../logging.js'
 import { TimelineHash } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { registerClassToMeteorMethods } from '../methods'
-import { RundownInput } from './ingest/rundownInput'
+import { registerClassToMeteorMethods } from '../methods.js'
+import { RundownInput } from './ingest/rundownInput.js'
 import {
 	IngestRundown,
 	IngestSegment,
@@ -17,22 +17,22 @@ import {
 	PackageInfo,
 	StatusCode,
 } from '@sofie-automation/blueprints-integration'
-import { MosIntegration } from './ingest/mosDevice/mosIntegration'
-import { MediaScannerIntegration } from './integration/media-scanner'
+import { MosIntegration } from './ingest/mosDevice/mosIntegration.js'
+import { MediaScannerIntegration } from './integration/media-scanner.js'
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
-import { MediaManagerIntegration } from './integration/mediaWorkFlows'
+import { MediaManagerIntegration } from './integration/mediaWorkFlows.js'
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
 import { MOS } from '@sofie-automation/corelib'
-import { determineDiffTime } from './systemTime/systemTime'
-import { getTimeDiff } from './systemTime/api'
-import { MethodContextAPI, MethodContext } from './methodContext'
-import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify'
-import { checkAccessAndGetPeripheralDevice } from '../security/check'
+import { determineDiffTime } from './systemTime/systemTime.js'
+import { getTimeDiff } from './systemTime/api.js'
+import { MethodContextAPI, MethodContext } from './methodContext.js'
+import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify.js'
+import { checkAccessAndGetPeripheralDevice } from '../security/check.js'
 import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
-import { PackageManagerIntegration } from './integration/expectedPackages'
-import { profiler } from './profiler'
-import { QueueStudioJob } from '../worker/worker'
+import { PackageManagerIntegration } from './integration/expectedPackages.js'
+import { profiler } from './profiler/index.js'
+import { QueueStudioJob } from '../worker/worker.js'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { DeviceConfigManifest } from '@sofie-automation/corelib/dist/deviceConfig'
 import {
@@ -41,7 +41,7 @@ import {
 	PeripheralDeviceStatusObject,
 	TimelineTriggerTimeResult,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
-import { checkStudioExists } from '../optimizations'
+import { checkStudioExists } from '../optimizations.js'
 import {
 	ExpectedPackageId,
 	ExpectedPackageWorkStatusId,
@@ -54,20 +54,20 @@ import {
 	NewPeripheralDeviceAPI,
 	PeripheralDeviceAPIMethods,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
-import { insertInputDeviceTriggerIntoPreview } from '../publications/deviceTriggersPreview'
-import { receiveInputDeviceTrigger } from './deviceTriggers/observer'
-import { upsertBundles, generateTranslationBundleOriginId } from './translationsBundles'
+import { insertInputDeviceTriggerIntoPreview } from '../publications/deviceTriggersPreview.js'
+import { receiveInputDeviceTrigger } from './deviceTriggers/observer.js'
+import { upsertBundles, generateTranslationBundleOriginId } from './translationsBundles.js'
 import { isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { JSONBlobParse, JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import {
 	applyAndValidateOverrides,
 	SomeObjectOverrideOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { convertPeripheralDeviceForGateway } from '../publications/peripheralDeviceForDevice'
-import { executePeripheralDeviceFunction } from './peripheralDevice/executeFunction'
+import { convertPeripheralDeviceForGateway } from '../publications/peripheralDeviceForDevice.js'
+import { executePeripheralDeviceFunction } from './peripheralDevice/executeFunction.js'
 import KoaRouter from '@koa/router'
 import bodyParser from 'koa-bodyparser'
-import { assertConnectionHasOneOfPermissions } from '../security/auth'
+import { assertConnectionHasOneOfPermissions } from '../security/auth.js'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 
 const apmNamespace = 'peripheralDevice'

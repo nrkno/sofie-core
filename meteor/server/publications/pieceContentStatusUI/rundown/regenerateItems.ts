@@ -7,16 +7,16 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import { UIPieceContentStatus } from '@sofie-automation/meteor-lib/dist/api/rundownNotifications'
-import { literal, protectString } from '../../../lib/tempLib'
-import { CustomPublishCollection } from '../../../lib/customPublication'
-import { ContentCache } from './reactiveContentCache'
+import { literal, protectString } from '../../../lib/tempLib.js'
+import { CustomPublishCollection } from '../../../lib/customPublication/index.js'
+import { ContentCache } from './reactiveContentCache.js'
 import { wrapTranslatableMessageFromBlueprintsIfNotString } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import {
 	checkPieceContentStatusAndDependencies,
 	PieceContentStatusPiece,
 	PieceContentStatusStudio,
-} from '../checkPieceContentStatus'
-import { PieceDependencies } from '../common'
+} from '../checkPieceContentStatus.js'
+import { PieceDependencies } from '../common.js'
 
 async function regenerateGenericPiece(
 	contentCache: ReadonlyDeep<ContentCache>,

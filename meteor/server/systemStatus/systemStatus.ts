@@ -1,13 +1,13 @@
 import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { Time, getRandomId, literal } from '../lib/tempLib'
-import { getCurrentTime } from '../lib/lib'
+import { Time, getRandomId, literal } from '../lib/tempLib.js'
+import { getCurrentTime } from '../lib/lib.js'
 import {
 	parseVersion,
 	parseCoreIntegrationCompatabilityRange,
 	stripVersion,
 	compareSemverVersions,
 	isPrerelease,
-} from './semverUtils'
+} from './semverUtils.js'
 import {
 	StatusResponse,
 	CheckObj,
@@ -16,16 +16,16 @@ import {
 	SystemInstanceId,
 	Component,
 } from '@sofie-automation/meteor-lib/dist/api/systemStatus'
-import { RelevantSystemVersions } from '../coreSystem'
+import { RelevantSystemVersions } from '../coreSystem/index.js'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
-import { PeripheralDevices, Workers, WorkerThreadStatuses } from '../collections'
+import { PeripheralDevices, Workers, WorkerThreadStatuses } from '../collections/index.js'
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ServerPeripheralDeviceAPI } from '../api/peripheralDevice'
-import { MethodContext } from '../api/methodContext'
-import { getBlueprintVersions } from './blueprintVersions'
-import { getUpgradeSystemStatusMessages } from './blueprintUpgradeStatus'
-import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify'
-import { assertConnectionHasOneOfPermissions, RequestCredentials } from '../security/auth'
+import { ServerPeripheralDeviceAPI } from '../api/peripheralDevice.js'
+import { MethodContext } from '../api/methodContext.js'
+import { getBlueprintVersions } from './blueprintVersions.js'
+import { getUpgradeSystemStatusMessages } from './blueprintUpgradeStatus.js'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify.js'
+import { assertConnectionHasOneOfPermissions, RequestCredentials } from '../security/auth.js'
 
 const PackageInfo = require('../../package.json')
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)

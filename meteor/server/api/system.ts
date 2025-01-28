@@ -1,8 +1,8 @@
 import * as _ from 'underscore'
-import { Time } from '../lib/tempLib'
-import { sleep, getCurrentTime } from '../lib/lib'
-import { registerClassToMeteorMethods } from '../methods'
-import { MethodContextAPI, MethodContext } from './methodContext'
+import { Time } from '../lib/tempLib.js'
+import { sleep, getCurrentTime } from '../lib/lib.js'
+import { registerClassToMeteorMethods } from '../methods.js'
+import { MethodContextAPI, MethodContext } from './methodContext.js'
 import {
 	SystemAPIMethods,
 	CollectionCleanupResult,
@@ -10,23 +10,23 @@ import {
 	BenchmarkResult,
 	SystemBenchmarkResults,
 } from '@sofie-automation/meteor-lib/dist/api/system'
-import { CollectionIndexes, getTargetRegisteredIndexes } from '../collections/indices'
+import { CollectionIndexes, getTargetRegisteredIndexes } from '../collections/indices.js'
 import { Meteor } from 'meteor/meteor'
-import { logger } from '../logging'
-import { check } from '../lib/check'
+import { logger } from '../logging.js'
+import { check } from '../lib/check.js'
 import { IndexSpecifier } from '@sofie-automation/meteor-lib/dist/collections/lib'
-import { getBundle as getTranslationBundleInner } from './translationsBundles'
+import { getBundle as getTranslationBundleInner } from './translationsBundles.js'
 import { TranslationsBundle } from '@sofie-automation/meteor-lib/dist/collections/TranslationsBundles'
 import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
-import { cleanupOldDataInner } from './cleanup'
+import { cleanupOldDataInner } from './cleanup.js'
 import { IndexSpecification } from 'mongodb'
-import { nightlyCronjobInner } from '../cronjobs'
+import { nightlyCronjobInner } from '../cronjobs.js'
 import { TranslationsBundleId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { createAsyncOnlyMongoCollection, AsyncOnlyMongoCollection } from '../collections/collection'
-import { generateToken } from './singleUseTokens'
-import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify'
+import { createAsyncOnlyMongoCollection, AsyncOnlyMongoCollection } from '../collections/collection.js'
+import { generateToken } from './singleUseTokens.js'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify.js'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { assertConnectionHasOneOfPermissions } from '../security/auth'
+import { assertConnectionHasOneOfPermissions } from '../security/auth.js'
 import { UserPermissions } from '@sofie-automation/meteor-lib/dist/userPermissions'
 
 const PERMISSIONS_FOR_SYSTEM_CLEANUP: Array<keyof UserPermissions> = ['configure']

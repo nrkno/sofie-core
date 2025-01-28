@@ -1,9 +1,9 @@
-import { addMigrationSteps } from './databaseMigration'
+import { addMigrationSteps } from './databaseMigration.js'
 import { TranslationsBundle } from '@sofie-automation/meteor-lib/dist/collections/TranslationsBundles'
-import { generateTranslationBundleOriginId } from '../api/translationsBundles'
+import { generateTranslationBundleOriginId } from '../api/translationsBundles.js'
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { TranslationsBundles } from '../collections'
+import { TranslationsBundles } from '../collections/index.js'
 
 // Release 48
 

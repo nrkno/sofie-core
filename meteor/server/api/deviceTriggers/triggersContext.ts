@@ -4,13 +4,13 @@ import {
 	TriggerTrackerComputation,
 } from '@sofie-automation/meteor-lib/dist/triggers/triggersContext'
 import { SINGLE_USE_TOKEN_SALT } from '@sofie-automation/meteor-lib/dist/api/userActions'
-import { assertNever, getHash, ProtectedString, Time } from '../../lib/tempLib'
-import { getCurrentTime } from '../../lib/lib'
-import { MeteorCall } from '../methods'
+import { assertNever, getHash, ProtectedString, Time } from '../../lib/tempLib.js'
+import { getCurrentTime } from '../../lib/lib.js'
+import { MeteorCall } from '../methods.js'
 import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { UserAction } from '@sofie-automation/meteor-lib/dist/userAction'
 import { TFunction } from 'i18next'
-import { logger } from '../../logging'
+import { logger } from '../../logging.js'
 import { IBaseFilterLink, IRundownPlaylistFilterLink } from '@sofie-automation/blueprints-integration'
 import { PartId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DummyReactiveVar } from '@sofie-automation/meteor-lib/dist/triggers/reactive-var'
@@ -27,10 +27,10 @@ import {
 	RundownPlaylists,
 	Rundowns,
 	Segments,
-} from '../../collections'
+} from '../../collections/index.js'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { AsyncOnlyReadOnlyMongoCollection } from '../../collections/collection'
+import { AsyncOnlyReadOnlyMongoCollection } from '../../collections/collection.js'
 
 export function hashSingleUseToken(token: string): string {
 	return getHash(SINGLE_USE_TOKEN_SALT + token)

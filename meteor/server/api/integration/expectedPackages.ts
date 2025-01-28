@@ -1,18 +1,18 @@
-import { check } from '../../lib/check'
+import { check } from '../../lib/check.js'
 import { Meteor } from 'meteor/meteor'
-import { MethodContext } from '../methodContext'
-import { checkAccessAndGetPeripheralDevice } from '../../security/check'
+import { MethodContext } from '../methodContext.js'
+import { checkAccessAndGetPeripheralDevice } from '../../security/check.js'
 import { ExpectedPackageStatusAPI, PackageInfo } from '@sofie-automation/blueprints-integration'
 import { ExpectedPackageWorkStatus } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackageWorkStatuses'
-import { assertNever, literal, protectString } from '../../lib/tempLib'
-import { getCurrentTime } from '../../lib/lib'
+import { assertNever, literal, protectString } from '../../lib/tempLib.js'
+import { getCurrentTime } from '../../lib/lib.js'
 import {
 	getPackageContainerPackageId,
 	PackageContainerPackageStatusDB,
 } from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
 import { getPackageInfoId, PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import type { AnyBulkWriteOperation } from 'mongodb'
-import { onUpdatedPackageInfo } from '../ingest/packageInfo'
+import { onUpdatedPackageInfo } from '../ingest/packageInfo.js'
 import {
 	getPackageContainerId,
 	PackageContainerStatusDB,
@@ -30,8 +30,8 @@ import {
 	PackageContainerPackageStatuses,
 	PackageContainerStatuses,
 	PackageInfos,
-} from '../../collections'
-import { logger } from '../../logging'
+} from '../../collections/index.js'
+import { logger } from '../../logging.js'
 import _ from 'underscore'
 
 export namespace PackageManagerIntegration {

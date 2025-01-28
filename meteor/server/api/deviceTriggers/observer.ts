@@ -3,20 +3,20 @@ import { ITranslatableMessage } from '@sofie-automation/corelib/dist/Translatabl
 import { check } from 'meteor/check'
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
-import { MethodContext } from '../methodContext'
+import { MethodContext } from '../methodContext.js'
 import {
 	DeviceTriggerArguments,
 	DeviceTriggerMountedAction,
 	PreviewWrappedAdLib,
 } from '@sofie-automation/meteor-lib/dist/api/MountedTriggers'
-import { logger } from '../../logging'
-import { checkAccessAndGetPeripheralDevice } from '../../security/check'
-import { StudioActionManagers } from './StudioActionManagers'
+import { logger } from '../../logging.js'
+import { checkAccessAndGetPeripheralDevice } from '../../security/check.js'
+import { StudioActionManagers } from './StudioActionManagers.js'
 import { JobQueueWithClasses } from '@sofie-automation/shared-lib/dist/lib/JobQueueWithClasses'
-import { StudioDeviceTriggerManager } from './StudioDeviceTriggerManager'
-import { StudioObserver } from './StudioObserver'
-import { Studios } from '../../collections'
-import { ReactiveCacheCollection } from '../../publications/lib/ReactiveCacheCollection'
+import { StudioDeviceTriggerManager } from './StudioDeviceTriggerManager.js'
+import { StudioObserver } from './StudioObserver.js'
+import { Studios } from '../../collections/index.js'
+import { ReactiveCacheCollection } from '../../publications/lib/ReactiveCacheCollection.js'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 type ObserverAndManager = {

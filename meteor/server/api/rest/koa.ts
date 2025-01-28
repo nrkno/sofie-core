@@ -5,11 +5,11 @@ import { WebApp } from 'meteor/webapp'
 import { Meteor } from 'meteor/meteor'
 import { getRandomString } from '@sofie-automation/corelib/dist/lib'
 import _ from 'underscore'
-import { public_dir } from '../../lib'
+import { public_dir } from '../../lib.js'
 import staticServe from 'koa-static'
-import { logger } from '../../logging'
-import { PackageInfo } from '../../coreSystem'
-import { profiler } from '../profiler'
+import { logger } from '../../logging.js'
+import { PackageInfo } from '../../coreSystem/index.js'
+import { profiler } from '../profiler/index.js'
 
 declare module 'http' {
 	interface IncomingMessage {

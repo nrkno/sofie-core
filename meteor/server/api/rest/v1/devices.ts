@@ -4,18 +4,18 @@ import {
 	DevicesRestAPI,
 	PeripheralDeviceActionRestart,
 	PeripheralDeviceActionType,
-} from '../../../lib/rest/v1'
-import { logger } from '../../../logging'
-import { APIFactory, APIRegisterHook, ServerAPIContext } from './types'
+} from '../../../lib/rest/v1/index.js'
+import { logger } from '../../../logging.js'
+import { APIFactory, APIRegisterHook, ServerAPIContext } from './types.js'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { check } from '../../../lib/check'
+import { check } from '../../../lib/check.js'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
-import { PeripheralDevices } from '../../../collections'
+import { PeripheralDevices } from '../../../collections/index.js'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
-import { APIPeripheralDeviceFrom } from './typeConversion'
-import { executePeripheralDeviceFunction } from '../../peripheralDevice/executeFunction'
+import { APIPeripheralDeviceFrom } from './typeConversion.js'
+import { executePeripheralDeviceFunction } from '../../peripheralDevice/executeFunction.js'
 import { assertNever } from '@sofie-automation/corelib/dist/lib'
 
 class DevicesServerAPI implements DevicesRestAPI {

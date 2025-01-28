@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { meteorPublish } from './lib/lib'
+import { meteorPublish } from './lib/lib.js'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { MongoFieldSpecifierZeroes, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
@@ -22,7 +22,7 @@ import {
 	RundownBaselineAdLibPieces,
 	Rundowns,
 	Segments,
-} from '../collections'
+} from '../collections/index.js'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { NrcsIngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/NrcsIngestDataCache'
 import { literal } from '@sofie-automation/corelib/dist/lib'
@@ -43,8 +43,8 @@ import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataM
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify'
-import { checkAccessAndGetPeripheralDevice } from '../security/check'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify.js'
+import { checkAccessAndGetPeripheralDevice } from '../security/check.js'
 
 meteorPublish(
 	PeripheralDevicePubSub.rundownsForDevice,

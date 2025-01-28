@@ -7,15 +7,15 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { Rundown, getRundownNrcsName } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { groupByToMap, literal, normalizeArrayToMap, protectString } from '../../lib/tempLib'
+import { groupByToMap, literal, normalizeArrayToMap, protectString } from '../../lib/tempLib.js'
 import {
 	CustomPublishCollection,
 	meteorCustomPublish,
 	setUpCollectionOptimizedObserver,
 	SetupObserversResult,
 	TriggerUpdate,
-} from '../../lib/customPublication'
-import { logger } from '../../logging'
+} from '../../lib/customPublication/index.js'
+import { logger } from '../../logging.js'
 import {
 	ContentCache,
 	createReactiveContentCache,
@@ -23,14 +23,14 @@ import {
 	PartInstanceFields,
 	RundownFields,
 	SegmentFields,
-} from './reactiveContentCache'
-import { RundownsObserver } from '../lib/rundownsObserver'
-import { RundownContentObserver } from './rundownContentObserver'
+} from './reactiveContentCache.js'
+import { RundownsObserver } from '../lib/rundownsObserver.js'
+import { RundownContentObserver } from './rundownContentObserver.js'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { generateNotesForSegment } from './generateNotesForSegment'
-import { RundownPlaylists } from '../../collections'
+import { generateNotesForSegment } from './generateNotesForSegment.js'
+import { RundownPlaylists } from '../../collections/index.js'
 import { check, Match } from 'meteor/check'
-import { triggerWriteAccessBecauseNoCheckNecessary } from '../../security/securityVerify'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../../security/securityVerify.js'
 
 interface UISegmentPartNotesArgs {
 	readonly playlistId: RundownPlaylistId

@@ -1,4 +1,4 @@
-import { ReactiveCacheCollection } from '../../lib/ReactiveCacheCollection'
+import { ReactiveCacheCollection } from '../../lib/ReactiveCacheCollection.js'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'

@@ -1,15 +1,15 @@
 import { PeripheralDevice, PeripheralDeviceCategory } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PeripheralDevices, Studios } from '../collections'
+import { PeripheralDevices, Studios } from '../collections/index.js'
 import {
 	SetupObserversResult,
 	TriggerUpdate,
 	meteorCustomPublish,
 	setUpOptimizedObserverArray,
-} from '../lib/customPublication'
+} from '../lib/customPublication/index.js'
 import { PeripheralDeviceForDevice } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 import { ReadonlyDeep } from 'type-fest'
-import { ReactiveMongoObserverGroup } from './lib/observerGroup'
+import { ReactiveMongoObserverGroup } from './lib/observerGroup.js'
 import { Complete, assertNever, literal } from '@sofie-automation/corelib/dist/lib'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import {
@@ -24,7 +24,7 @@ import {
 	PeripheralDevicePubSub,
 	PeripheralDevicePubSubCollectionsNames,
 } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
-import { checkAccessAndGetPeripheralDevice } from '../security/check'
+import { checkAccessAndGetPeripheralDevice } from '../security/check.js'
 
 interface PeripheralDeviceForDeviceArgs {
 	readonly deviceId: PeripheralDeviceId

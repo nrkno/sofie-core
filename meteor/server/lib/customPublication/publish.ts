@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { AllPubSubTypes } from '@sofie-automation/meteor-lib/dist/api/pubsub'
-import { ProtectedString, unprotectString } from '../tempLib'
-import { PublishDocType, SubscriptionContext, meteorPublishUnsafe } from '../../publications/lib/lib'
+import { ProtectedString, unprotectString } from '../tempLib.js'
+import { PublishDocType, SubscriptionContext, meteorPublishUnsafe } from '../../publications/lib/lib.js'
 
 export interface CustomPublishChanges<T extends { _id: ProtectedString<any> }> {
 	added: Array<T>

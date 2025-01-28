@@ -1,19 +1,19 @@
-import { check } from '../lib/check'
-import { literal, Time, getRandomId } from '../lib/tempLib'
-import { getCurrentTime } from '../lib/lib'
+import { check } from '../lib/check.js'
+import { literal, Time, getRandomId } from '../lib/tempLib.js'
+import { getCurrentTime } from '../lib/lib.js'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { logger } from '../logging'
+import { logger } from '../logging.js'
 import { ClientAPI, NewClientAPI, ClientAPIMethods } from '@sofie-automation/meteor-lib/dist/api/client'
 import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
-import { registerClassToMeteorMethods } from '../methods'
-import { MethodContext, MethodContextAPI } from './methodContext'
-import { isInTestWrite, triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify'
-import { endTrace, sendTrace, startTrace } from './integration/influx'
+import { registerClassToMeteorMethods } from '../methods.js'
+import { MethodContext, MethodContextAPI } from './methodContext.js'
+import { isInTestWrite, triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify.js'
+import { endTrace, sendTrace, startTrace } from './integration/influx.js'
 import { interpollateTranslation, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { UserError } from '@sofie-automation/corelib/dist/error'
 import { StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
-import { QueueStudioJob } from '../worker/worker'
-import { profiler } from './profiler'
+import { QueueStudioJob } from '../worker/worker.js'
+import { profiler } from './profiler/index.js'
 import {
 	PeripheralDeviceId,
 	RundownId,
@@ -26,11 +26,11 @@ import {
 	checkAccessToRundown,
 	VerifiedRundownForUserAction,
 	VerifiedRundownPlaylistForUserAction,
-} from '../security/check'
-import { UserActionsLog } from '../collections'
-import { executePeripheralDeviceFunctionWithCustomTimeout } from './peripheralDevice/executeFunction'
+} from '../security/check.js'
+import { UserActionsLog } from '../collections/index.js'
+import { executePeripheralDeviceFunctionWithCustomTimeout } from './peripheralDevice/executeFunction.js'
 import { LeveledLogMethodFixed } from '@sofie-automation/corelib/dist/logging'
-import { assertConnectionHasOneOfPermissions } from '../security/auth'
+import { assertConnectionHasOneOfPermissions } from '../security/auth.js'
 
 function rewrapError(methodName: string, e: any): ClientAPI.ClientResponseError {
 	const userError = UserError.fromUnknown(e)

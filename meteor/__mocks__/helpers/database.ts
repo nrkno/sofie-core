@@ -37,8 +37,8 @@ import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowSt
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { ICoreSystem, SYSTEM_ID } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
-import { stripVersion } from '../../server/systemStatus/semverUtils'
-import { internalUploadBlueprint } from '../../server/api/blueprints/api'
+import { stripVersion } from '../../server/systemStatus/semverUtils.js'
+import { internalUploadBlueprint } from '../../server/api/blueprints/api.js'
 import {
 	literal,
 	protectString,
@@ -47,7 +47,7 @@ import {
 	getRandomString,
 	Complete,
 	normalizeArray,
-} from '../../server/lib/tempLib'
+} from '../../server/lib/tempLib.js'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
@@ -55,10 +55,10 @@ import { EmptyPieceTimelineObjectsBlob, Piece } from '@sofie-automation/corelib/
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
-import { restartRandomId } from '../random'
-import { MongoMock } from '../mongo'
-import { defaultRundownPlaylist, defaultStudio } from '../defaultCollectionObjects'
-import { PackageInfo } from '../../server/coreSystem'
+import { restartRandomId } from '../random.js'
+import { MongoMock } from '../mongo.js'
+import { defaultRundownPlaylist, defaultStudio } from '../defaultCollectionObjects.js'
+import { PackageInfo } from '../../server/coreSystem/index.js'
 import { DBTriggeredActions } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import { WorkerStatus } from '@sofie-automation/meteor-lib/dist/collections/Workers'
 import { WorkerThreadStatus } from '@sofie-automation/corelib/dist/dataModel/WorkerThreads'
@@ -91,7 +91,7 @@ import {
 	TriggeredActions,
 	Workers,
 	WorkerThreadStatuses,
-} from '../../server/collections'
+} from '../../server/collections/index.js'
 import { TSR_VERSION } from '@sofie-automation/shared-lib/dist/tsr'
 import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 

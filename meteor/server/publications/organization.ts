@@ -1,4 +1,4 @@
-import { meteorPublish } from './lib/lib'
+import { meteorPublish } from './lib/lib.js'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { Evaluation } from '@sofie-automation/meteor-lib/dist/collections/Evaluations'
@@ -6,14 +6,14 @@ import { SnapshotItem } from '@sofie-automation/meteor-lib/dist/collections/Snap
 import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
 import { FindOptions } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import { DBOrganization } from '@sofie-automation/meteor-lib/dist/collections/Organization'
-import { Blueprints, Evaluations, Organizations, Snapshots, UserActionsLog } from '../collections'
+import { Blueprints, Evaluations, Organizations, Snapshots, UserActionsLog } from '../collections/index.js'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { BlueprintId, OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
-import { check, Match } from '../lib/check'
-import { getCurrentTime } from '../lib/lib'
-import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify'
-import { assertConnectionHasOneOfPermissions } from '../security/auth'
+import { check, Match } from '../lib/check.js'
+import { getCurrentTime } from '../lib/lib.js'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify.js'
+import { assertConnectionHasOneOfPermissions } from '../security/auth.js'
 
 meteorPublish(
 	MeteorPubSub.organization,

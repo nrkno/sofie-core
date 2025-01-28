@@ -1,26 +1,26 @@
 import { Meteor } from 'meteor/meteor'
-import { check, Match } from '../lib/check'
-import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments } from '../methods'
-import { literal, getRandomId, protectString, Complete } from '../lib/tempLib'
-import { logger } from '../logging'
-import { MethodContext, MethodContextAPI } from './methodContext'
+import { check, Match } from '../lib/check.js'
+import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments } from '../methods.js'
+import { literal, getRandomId, protectString, Complete } from '../lib/tempLib.js'
+import { logger } from '../logging.js'
+import { MethodContext, MethodContextAPI } from './methodContext.js'
 import { DBTriggeredActions, TriggeredActionsObj } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import {
 	CreateTriggeredActionsContent,
 	NewTriggeredActionsAPI,
 	TriggeredActionsAPIMethods,
 } from '@sofie-automation/meteor-lib/dist/api/triggeredActions'
-import { fetchShowStyleBaseLight } from '../optimizations'
+import { fetchShowStyleBaseLight } from '../optimizations.js'
 import {
 	convertObjectIntoOverrides,
 	wrapDefaultObject,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { TriggeredActions } from '../collections'
+import { TriggeredActions } from '../collections/index.js'
 import KoaRouter from '@koa/router'
 import bodyParser from 'koa-bodyparser'
 import { UserPermissions } from '@sofie-automation/meteor-lib/dist/userPermissions'
-import { assertConnectionHasOneOfPermissions } from '../security/auth'
+import { assertConnectionHasOneOfPermissions } from '../security/auth.js'
 
 const PERMISSIONS_FOR_TRIGGERED_ACTIONS: Array<keyof UserPermissions> = ['configure']
 

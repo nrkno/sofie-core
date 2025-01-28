@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
-import { LogLevel, ProtectedString } from '../../server/lib/tempLib'
-import { AsyncOnlyMongoCollection } from '../../server/collections/collection'
-import { getLogLevel, setLogLevel } from '../../server/logging'
+import { LogLevel, ProtectedString } from '../../server/lib/tempLib.js'
+import { AsyncOnlyMongoCollection } from '../../server/collections/collection.js'
+import { getLogLevel, setLogLevel } from '../../server/logging.js'
 
 /*
 interface MockedCollection<T, Y extends any[]> {

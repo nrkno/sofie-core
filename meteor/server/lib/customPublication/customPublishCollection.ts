@@ -1,9 +1,9 @@
 import { getRandomId, deleteAllUndefinedProperties, clone } from '@sofie-automation/corelib/dist/lib'
 import { ProtectedString, isProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
-import { profiler } from '../../api/profiler'
-import { diffObject } from './lib'
-import { CustomPublishChanges } from './publish'
+import { profiler } from '../../api/profiler/index.js'
+import { diffObject } from './lib.js'
+import { CustomPublishChanges } from './publish.js'
 
 type SelectorFunction<TDoc extends { _id: ProtectedString<any> }> = (doc: TDoc) => boolean
 type CustomPublishCollectionDocument<TDoc> = {

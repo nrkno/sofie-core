@@ -1,8 +1,8 @@
 import { ReadonlyDeep } from 'type-fest'
-import { ProtectedString } from '../tempLib'
-import { CustomPublishCollection } from './customPublishCollection'
-import { SetupObserversResult, TriggerUpdate, setUpOptimizedObserverInner } from './optimizedObserverBase'
-import { CustomPublish } from './publish'
+import { ProtectedString } from '../tempLib.js'
+import { CustomPublishCollection } from './customPublishCollection.js'
+import { SetupObserversResult, TriggerUpdate, setUpOptimizedObserverInner } from './optimizedObserverBase.js'
+import { CustomPublish } from './publish.js'
 
 /**
  * This is an optimization to enable multiple listeners that observes (and manipulates) the same data, to only use one observer and manipulator,

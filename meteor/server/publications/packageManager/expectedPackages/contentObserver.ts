@@ -1,16 +1,16 @@
 import { Meteor } from 'meteor/meteor'
 import { PartInstanceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { logger } from '../../../logging'
+import { logger } from '../../../logging.js'
 import {
 	ExpectedPackagesContentCache,
 	rundownPlaylistFieldSpecifier,
 	pieceInstanceFieldsSpecifier,
-} from './contentCache'
-import { ExpectedPackages, PieceInstances, RundownPlaylists } from '../../../collections'
-import { ReactiveMongoObserverGroup, ReactiveMongoObserverGroupHandle } from '../../lib/observerGroup'
+} from './contentCache.js'
+import { ExpectedPackages, PieceInstances, RundownPlaylists } from '../../../collections/index.js'
+import { ReactiveMongoObserverGroup, ReactiveMongoObserverGroupHandle } from '../../lib/observerGroup.js'
 import _ from 'underscore'
 import { equivalentArrays } from '@sofie-automation/shared-lib/dist/lib/lib'
-import { waitForAllObserversReady } from '../../lib/lib'
+import { waitForAllObserversReady } from '../../lib/lib.js'
 
 const REACTIVITY_DEBOUNCE = 20
 

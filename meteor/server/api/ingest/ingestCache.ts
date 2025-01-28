@@ -1,10 +1,10 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { IngestRundown, IngestSegment } from '@sofie-automation/blueprints-integration'
-import { logger } from '../../logging'
-import { profiler } from '../profiler'
+import { logger } from '../../logging.js'
+import { profiler } from '../profiler/index.js'
 import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { NrcsIngestDataCache } from '../../collections'
+import { NrcsIngestDataCache } from '../../collections/index.js'
 import {
 	NrcsIngestCacheType,
 	NrcsIngestDataCacheObj,

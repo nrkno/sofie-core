@@ -1,11 +1,11 @@
-import { deferAsync, getCurrentTime } from './lib/lib'
+import { deferAsync, getCurrentTime } from './lib/lib.js'
 import { Meteor } from 'meteor/meteor'
-import { logger } from './logging'
-import { sendTrace } from './api/integration/influx'
-import { PeripheralDevices } from './collections'
+import { logger } from './logging.js'
+import { sendTrace } from './api/integration/influx.js'
+import { PeripheralDevices } from './collections/index.js'
 import { MetricsGauge } from '@sofie-automation/corelib/dist/prometheus'
 import { parseUserPermissions, USER_PERMISSIONS_HEADER } from '@sofie-automation/meteor-lib/dist/userPermissions'
-import { Settings } from './Settings'
+import { Settings } from './Settings.js'
 
 const connections = new Set<string>()
 const connectionsGauge = new MetricsGauge({

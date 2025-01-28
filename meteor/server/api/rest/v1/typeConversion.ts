@@ -42,14 +42,14 @@ import {
 	APIStudioSettings,
 	APIPlaylistSnapshotOptions,
 	APISystemSnapshotOptions,
-} from '../../../lib/rest/v1'
+} from '../../../lib/rest/v1/index.js'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { Blueprints, ShowStyleBases, Studios } from '../../../collections'
+import { Blueprints, ShowStyleBases, Studios } from '../../../collections/index.js'
 import { Meteor } from 'meteor/meteor'
-import { evalBlueprint } from '../../blueprints/cache'
-import { CommonContext } from '../../../migration/upgrades/context'
-import { logger } from '../../../logging'
+import { evalBlueprint } from '../../blueprints/cache.js'
+import { CommonContext } from '../../../migration/upgrades/context.js'
+import { logger } from '../../../logging.js'
 import {
 	DEFAULT_MINIMUM_TAKE_SPAN,
 	DEFAULT_FALLBACK_PART_DURATION,

@@ -1,4 +1,4 @@
-import { RawAgent } from './apm'
+import { RawAgent } from './apm.js'
 
 class Profiler {
 	private active = false

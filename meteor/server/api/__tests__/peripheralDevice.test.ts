@@ -1,4 +1,4 @@
-import '../../../__mocks__/_extendJest'
+import '../../../__mocks__/_extendJest.js'
 import { Meteor } from 'meteor/meteor'
 import {
 	PeripheralDevice,
@@ -6,11 +6,11 @@ import {
 	PeripheralDeviceType,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { literal, protectString, ProtectedString, getRandomId, LogLevel, getRandomString } from '../../lib/tempLib'
-import { getCurrentTime } from '../../lib/lib'
-import { waitUntil } from '../../../__mocks__/helpers/jest'
-import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
-import { setLogLevel } from '../../logging'
+import { literal, protectString, ProtectedString, getRandomId, LogLevel, getRandomString } from '../../lib/tempLib.js'
+import { getCurrentTime } from '../../lib/lib.js'
+import { waitUntil } from '../../../__mocks__/helpers/jest.js'
+import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database.js'
+import { setLogLevel } from '../../logging.js'
 import { IngestDeviceSecretSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/ingestDevice'
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
@@ -22,13 +22,13 @@ import {
 	PlaylistTimingType,
 	StatusCode,
 } from '@sofie-automation/blueprints-integration'
-import { CreateFakeResult, QueueStudioJobSpy } from '../../../__mocks__/worker'
+import { CreateFakeResult, QueueStudioJobSpy } from '../../../__mocks__/worker.js'
 
 jest.mock('../../api/deviceTriggers/observer')
 
-import '../peripheralDevice'
+import '../peripheralDevice.js'
 import { OnTimelineTriggerTimeProps, StudioJobFunc, StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import { MeteorCall } from '../methods'
+import { MeteorCall } from '../methods.js'
 import { PeripheralDeviceForDevice } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 import {
 	PeripheralDeviceInitOptions,
@@ -48,8 +48,8 @@ import {
 	RundownPlaylists,
 	Rundowns,
 	Segments,
-} from '../../collections'
-import { SupressLogMessages } from '../../../__mocks__/suppressLogging'
+} from '../../collections/index.js'
+import { SupressLogMessages } from '../../../__mocks__/suppressLogging.js'
 import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { PeripheralDeviceCommand } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceCommand'
 

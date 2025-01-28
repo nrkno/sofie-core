@@ -4,7 +4,7 @@ import * as _ from 'underscore'
 import Koa from 'koa'
 import KoaRouter from '@koa/router'
 import bodyParser from 'koa-bodyparser'
-import { check, Match } from '../lib/check'
+import { check, Match } from '../lib/check.js'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
 	SnapshotType,
@@ -16,16 +16,16 @@ import {
 import { UserActionsLogItem } from '@sofie-automation/meteor-lib/dist/collections/UserActionsLog'
 import { PieceGeneric } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
-import { Time, protectString, getRandomId, omit, unprotectStringArray, unprotectString } from '../lib/tempLib'
+import { Time, protectString, getRandomId, omit, unprotectStringArray, unprotectString } from '../lib/tempLib.js'
 import { formatDateTime } from '@sofie-automation/meteor-lib/dist/time'
-import { getCurrentTime, fixValidPath } from '../lib/lib'
+import { getCurrentTime, fixValidPath } from '../lib/lib.js'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { logger } from '../logging'
+import { logger } from '../logging.js'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { PeripheralDeviceCommand } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceCommand'
-import { registerClassToMeteorMethods } from '../methods'
+import { registerClassToMeteorMethods } from '../methods.js'
 import {
 	NewSnapshotAPI,
 	SnapshotAPIMethods,
@@ -33,19 +33,19 @@ import {
 	SystemSnapshotOptions,
 } from '@sofie-automation/meteor-lib/dist/api/shapshot'
 import { ICoreSystem } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
-import { parseVersion } from '../systemStatus/semverUtils'
-import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
-import { isVersionSupported } from '../migration/databaseMigration'
+import { parseVersion } from '../systemStatus/semverUtils.js'
+import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion.js'
+import { isVersionSupported } from '../migration/databaseMigration.js'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { IngestRundown, VTContent } from '@sofie-automation/blueprints-integration'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
-import { importIngestRundown } from './ingest/http'
+import { importIngestRundown } from './ingest/http.js'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { RundownLayoutBase } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { DBTriggeredActions } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
-import { MethodContext, MethodContextAPI } from './methodContext'
-import { saveIntoDb, sumChanges } from '../lib/database'
+import { MethodContext, MethodContextAPI } from './methodContext.js'
+import { saveIntoDb, sumChanges } from '../lib/database.js'
 import * as fs from 'fs'
 import { ExpectedPackageWorkStatus } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackageWorkStatuses'
 import {
@@ -54,10 +54,10 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
 import { PackageInfoDB, getPackageInfoId } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { CoreRundownPlaylistSnapshot } from '@sofie-automation/corelib/dist/snapshots'
-import { QueueStudioJob } from '../worker/worker'
+import { QueueStudioJob } from '../worker/worker.js'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import { checkAccessToPlaylist, VerifiedRundownPlaylistForUserAction } from '../security/check'
-import { getSystemStorePath, PackageInfo } from '../coreSystem'
+import { checkAccessToPlaylist, VerifiedRundownPlaylistForUserAction } from '../security/check.js'
+import { getSystemStorePath, PackageInfo } from '../coreSystem/index.js'
 import { JSONBlobParse, JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import {
 	BlueprintId,
@@ -87,17 +87,17 @@ import {
 	Timeline,
 	TriggeredActions,
 	UserActionsLog,
-} from '../collections'
-import { getCoreSystemAsync } from '../coreSystem/collection'
-import { executePeripheralDeviceFunction } from './peripheralDevice/executeFunction'
-import { verifyHashedToken } from './singleUseTokens'
+} from '../collections/index.js'
+import { getCoreSystemAsync } from '../coreSystem/collection.js'
+import { executePeripheralDeviceFunction } from './peripheralDevice/executeFunction.js'
+import { verifyHashedToken } from './singleUseTokens.js'
 import {
 	NrcsIngestDataCacheObjRundown,
 	NrcsIngestDataCacheObjSegment,
 	NrcsIngestDataCacheObjPart,
 } from '@sofie-automation/corelib/dist/dataModel/NrcsIngestDataCache'
 import { UserPermissions } from '@sofie-automation/meteor-lib/dist/userPermissions'
-import { assertConnectionHasOneOfPermissions, RequestCredentials } from '../security/auth'
+import { assertConnectionHasOneOfPermissions, RequestCredentials } from '../security/auth.js'
 
 const PERMISSIONS_FOR_SNAPSHOT_MANAGEMENT: Array<keyof UserPermissions> = ['configure']
 

@@ -1,7 +1,7 @@
 import { UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
-import { MethodContextAPI } from '../../methodContext'
+import { MethodContextAPI } from '../../methodContext.js'
 
 export type APIHandler<T, Params, Body, Response> = (
 	serverAPI: T,

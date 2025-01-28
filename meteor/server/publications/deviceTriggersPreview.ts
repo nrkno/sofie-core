@@ -6,11 +6,11 @@ import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { DeviceTriggerArguments, UIDeviceTriggerPreview } from '@sofie-automation/meteor-lib/dist/api/MountedTriggers'
-import { getCurrentTime } from '../lib/lib'
-import { SetupObserversResult, setUpOptimizedObserverArray, TriggerUpdate } from '../lib/customPublication'
-import { CustomPublish, meteorCustomPublish } from '../lib/customPublication/publish'
-import { PeripheralDevices } from '../collections'
-import { assertConnectionHasOneOfPermissions } from '../security/auth'
+import { getCurrentTime } from '../lib/lib.js'
+import { SetupObserversResult, setUpOptimizedObserverArray, TriggerUpdate } from '../lib/customPublication/index.js'
+import { CustomPublish, meteorCustomPublish } from '../lib/customPublication/publish.js'
+import { PeripheralDevices } from '../collections/index.js'
+import { assertConnectionHasOneOfPermissions } from '../security/auth.js'
 
 /** IDEA: This could potentially be a Capped Collection, thus enabling scaling Core horizontally:
  *  https://www.mongodb.com/docs/manual/core/capped-collections/ */

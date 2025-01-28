@@ -1,9 +1,9 @@
 import { Meteor } from 'meteor/meteor'
-import { Settings } from '../../Settings'
+import { Settings } from '../../Settings.js'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
-import { setSystemStatus } from '../../systemStatus/systemStatus'
-import { logger } from '../../logging'
-import { determineDiffTime } from './systemTime'
+import { setSystemStatus } from '../../systemStatus/systemStatus.js'
+import { logger } from '../../logging.js'
+import { determineDiffTime } from './systemTime.js'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 const CHECK_INTERVAL = 60 * 1000

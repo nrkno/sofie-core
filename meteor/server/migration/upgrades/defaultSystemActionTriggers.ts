@@ -6,7 +6,7 @@ import {
 	IBlueprintDefaultCoreSystemTriggersType,
 	IBlueprintDefaultCoreSystemTriggers,
 } from '@sofie-automation/blueprints-integration'
-import { getHash, protectString, generateTranslation as t } from '../../lib/tempLib'
+import { getHash, protectString, generateTranslation as t } from '../../lib/tempLib.js'
 import { TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 let j = 0

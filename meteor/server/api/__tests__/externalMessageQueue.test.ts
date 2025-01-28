@@ -1,14 +1,14 @@
-import '../../../__mocks__/_extendJest'
+import '../../../__mocks__/_extendJest.js'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
-import { ExternalMessageQueue, RundownPlaylists, Rundowns } from '../../collections'
+import { ExternalMessageQueue, RundownPlaylists, Rundowns } from '../../collections/index.js'
 import { IBlueprintExternalMessageQueueType, PlaylistTimingType } from '@sofie-automation/blueprints-integration'
-import { DefaultEnvironment, setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
-import { getRandomId, protectString } from '../../lib/tempLib'
-import { getCurrentTime } from '../../lib/lib'
-import { MeteorCall } from '../methods'
+import { DefaultEnvironment, setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database.js'
+import { getRandomId, protectString } from '../../lib/tempLib.js'
+import { getCurrentTime } from '../../lib/lib.js'
+import { MeteorCall } from '../methods.js'
 
-import '../ExternalMessageQueue'
-import { SupressLogMessages } from '../../../__mocks__/suppressLogging'
+import '../ExternalMessageQueue.js'
+import { SupressLogMessages } from '../../../__mocks__/suppressLogging.js'
 
 describe('Test external message queue static methods', () => {
 	let studioEnv: DefaultEnvironment

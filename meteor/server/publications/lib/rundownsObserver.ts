@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { RundownId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Rundowns } from '../../collections'
-import { PromiseDebounce } from './PromiseDebounce'
+import { Rundowns } from '../../collections/index.js'
+import { PromiseDebounce } from './PromiseDebounce.js'
 
 const REACTIVITY_DEBOUNCE = 20
 

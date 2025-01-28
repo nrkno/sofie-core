@@ -1,10 +1,10 @@
-import { MeteorMock } from '../../../../../__mocks__/meteor'
+import { MeteorMock } from '../../../../../__mocks__/meteor.js'
 import { Meteor } from 'meteor/meteor'
 import { UserActionAPIMethods } from '@sofie-automation/meteor-lib/dist/api/userActions'
-import { MeteorMethodSignatures } from '../../../../methods'
+import { MeteorMethodSignatures } from '../../../../methods.js'
 import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
-import { callKoaRoute } from '../../../../../__mocks__/koa-util'
-import { createLegacyApiRouter } from '..'
+import { callKoaRoute } from '../../../../../__mocks__/koa-util.js'
+import { createLegacyApiRouter } from '../index.js'
 import '../../../userActions.ts' // required to get the UserActionsAPI methods populated
 
 // we don't want the deviceTriggers observer to start up at this time

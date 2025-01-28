@@ -1,15 +1,15 @@
-import '../../../__mocks__/_extendJest'
-import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
-import { generateTranslation, literal, protectString, unprotectString } from '../../lib/tempLib'
-import { MeteorMock } from '../../../__mocks__/meteor'
-import { status2ExternalStatus, setSystemStatus } from '../systemStatus'
+import '../../../__mocks__/_extendJest.js'
+import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database.js'
+import { generateTranslation, literal, protectString, unprotectString } from '../../lib/tempLib.js'
+import { MeteorMock } from '../../../__mocks__/meteor.js'
+import { status2ExternalStatus, setSystemStatus } from '../systemStatus.js'
 import { StatusResponse } from '@sofie-automation/meteor-lib/dist/api/systemStatus'
-import { stripVersion } from '../semverUtils'
+import { stripVersion } from '../semverUtils.js'
 import semver from 'semver'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
-import { MeteorCall } from '../../api/methods'
+import { MeteorCall } from '../../api/methods.js'
 import { PeripheralDeviceStatusObject } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
-import { PeripheralDevices } from '../../collections'
+import { PeripheralDevices } from '../../collections/index.js'
 import { UIBlueprintUpgradeStatus } from '@sofie-automation/meteor-lib/dist/api/upgradeStatus'
 
 // we don't want the deviceTriggers observer to start up at this time
@@ -18,7 +18,7 @@ jest.mock('../../api/deviceTriggers/observer')
 require('../api')
 const PackageInfo = require('../../../package.json')
 
-import * as getServerBlueprintUpgradeStatuses from '../../publications/blueprintUpgradeStatus/systemStatus'
+import * as getServerBlueprintUpgradeStatuses from '../../publications/blueprintUpgradeStatus/systemStatus.js'
 const getServerBlueprintUpgradeStatusesMock = jest.spyOn(
 	getServerBlueprintUpgradeStatuses,
 	'getServerBlueprintUpgradeStatuses'

@@ -5,9 +5,9 @@ import {
 	setUpCollectionOptimizedObserver,
 	CustomPublishCollection,
 	SetupObserversResult,
-} from '../../../lib/customPublication'
-import { literal, omit, protectString } from '../../../lib/tempLib'
-import { logger } from '../../../logging'
+} from '../../../lib/customPublication/index.js'
+import { literal, omit, protectString } from '../../../lib/tempLib.js'
+import { logger } from '../../../logging.js'
 import { ReadonlyDeep } from 'type-fest'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
@@ -17,18 +17,18 @@ import {
 	PieceInstanceId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Studios } from '../../../collections'
+import { Studios } from '../../../collections/index.js'
 import { check, Match } from 'meteor/check'
 import { PackageManagerExpectedPackage } from '@sofie-automation/shared-lib/dist/package-manager/publications'
-import { ExpectedPackagesContentObserver } from './contentObserver'
-import { createReactiveContentCache, ExpectedPackagesContentCache } from './contentCache'
-import { buildMappingsToDeviceIdMap } from './util'
-import { updateCollectionForExpectedPackageIds, updateCollectionForPieceInstanceIds } from './generate'
+import { ExpectedPackagesContentObserver } from './contentObserver.js'
+import { createReactiveContentCache, ExpectedPackagesContentCache } from './contentCache.js'
+import { buildMappingsToDeviceIdMap } from './util.js'
+import { updateCollectionForExpectedPackageIds, updateCollectionForPieceInstanceIds } from './generate.js'
 import {
 	PeripheralDevicePubSub,
 	PeripheralDevicePubSubCollectionsNames,
 } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
-import { checkAccessAndGetPeripheralDevice } from '../../../security/check'
+import { checkAccessAndGetPeripheralDevice } from '../../../security/check.js'
 
 interface ExpectedPackagesPublicationArgs {
 	readonly studioId: StudioId

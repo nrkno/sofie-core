@@ -2,12 +2,12 @@ import { PeripheralDeviceId, RundownId, RundownPlaylistId } from '@sofie-automat
 import { Meteor } from 'meteor/meteor'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { assertConnectionHasOneOfPermissions, RequestCredentials } from './auth'
-import { PeripheralDevices, RundownPlaylists, Rundowns } from '../collections'
+import { assertConnectionHasOneOfPermissions, RequestCredentials } from './auth.js'
+import { PeripheralDevices, RundownPlaylists, Rundowns } from '../collections/index.js'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { MethodContext } from '../api/methodContext'
-import { profiler } from '../api/profiler'
-import { SubscriptionContext } from '../publications/lib/lib'
+import { MethodContext } from '../api/methodContext.js'
+import { profiler } from '../api/profiler/index.js'
+import { SubscriptionContext } from '../publications/lib/lib.js'
 
 /**
  * Check that the current user has write access to the specified playlist, and ensure that the playlist exists

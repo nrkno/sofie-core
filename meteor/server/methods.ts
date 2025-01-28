@@ -1,11 +1,11 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { logger } from './logging'
-import { extractFunctionSignature } from './lib'
-import { MethodContext, MethodContextAPI } from './api/methodContext'
+import { logger } from './logging.js'
+import { extractFunctionSignature } from './lib.js'
+import { MethodContext, MethodContextAPI } from './api/methodContext.js'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { isPromise } from '@sofie-automation/shared-lib/dist/lib/lib'
-import { assertConnectionHasOneOfPermissions } from './security/auth'
+import { assertConnectionHasOneOfPermissions } from './security/auth.js'
 
 type MeteorMethod = (this: MethodContext, ...args: any[]) => any
 

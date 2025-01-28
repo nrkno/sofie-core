@@ -8,8 +8,8 @@ import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { assertNever } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { UISegmentPartNote } from '@sofie-automation/meteor-lib/dist/api/rundownNotifications'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { generateTranslation } from '../../lib/tempLib'
-import { SegmentFields, PartFields, PartInstanceFields } from './reactiveContentCache'
+import { generateTranslation } from '../../lib/tempLib.js'
+import { SegmentFields, PartFields, PartInstanceFields } from './reactiveContentCache.js'
 
 export function generateNotesForSegment(
 	playlistId: RundownPlaylistId,

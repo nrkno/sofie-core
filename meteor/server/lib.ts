@@ -2,7 +2,7 @@ import process from 'process'
 import * as _ from 'underscore'
 import fs from 'fs'
 import path from 'path'
-import { logger } from './logging'
+import { logger } from './logging.js'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { Meteor } from 'meteor/meteor'
 

@@ -1,11 +1,11 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
-import { SupressLogMessages } from '../../../../__mocks__/suppressLogging'
-import { callKoaRoute } from '../../../../__mocks__/koa-util'
-import { blueprintsRouter } from '../http'
+import { SupressLogMessages } from '../../../../__mocks__/suppressLogging.js'
+import { callKoaRoute } from '../../../../__mocks__/koa-util.js'
+import { blueprintsRouter } from '../http.js'
 
 jest.mock('../../deviceTriggers/observer')
-import * as api from '../api'
+import * as api from '../api.js'
 jest.mock('../api.ts')
 
 const DEFAULT_CONTEXT = expect.objectContaining({ req: expect.any(Object), res: expect.any(Object) })

@@ -1,8 +1,12 @@
 import { createManualPromise } from '@sofie-automation/corelib/dist/lib'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
-import { optimizedObserverCountSubscribers, setUpOptimizedObserverInner, TriggerUpdate } from '../optimizedObserverBase'
-import { CustomPublish, CustomPublishChanges } from '../publish'
-import { sleep } from '../../lib'
+import {
+	optimizedObserverCountSubscribers,
+	setUpOptimizedObserverInner,
+	TriggerUpdate,
+} from '../optimizedObserverBase.js'
+import { CustomPublish, CustomPublishChanges } from '../publish.js'
+import { sleep } from '../../lib.js'
 
 interface CustomPublishMockExt {
 	stop?: () => void

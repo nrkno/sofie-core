@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { logger } from './logging'
+import { logger } from './logging.js'
 
 /** How good time sync quality we should strive for [ms] */
 const TARGET_TIME_SYNC_QUALITY = 50 // 50 milliseconds
