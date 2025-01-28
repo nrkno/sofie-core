@@ -434,7 +434,7 @@ export namespace AccessorOnPackage {
 		guid?: string
 		title?: string
 	}
-	// eslint-disable-next-line @typescript-eslint/no-empty-interface
+	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 	export interface CorePackageCollection extends Partial<Accessor.CorePackageCollection> {
 		// empty
 	}

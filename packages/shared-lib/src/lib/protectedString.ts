@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
-
 import { PartialDeep, ReadonlyDeep } from 'type-fest'
 
 /** Runtime-wise, this is a string.
