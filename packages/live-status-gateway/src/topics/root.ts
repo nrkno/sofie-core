@@ -66,6 +66,7 @@ export class RootChannel extends WebSocketTopicBase implements WebSocketTopic {
 	}
 
 	processMessage(ws: WebSocket, msg: object): void {
+		// eslint-disable-next-line @typescript-eslint/no-base-to-string
 		this._logger.info(`Process root message '${msg}'`)
 		try {
 			const msgObj = JSON.parse(msg as unknown as string) as RootMsg
@@ -86,7 +87,7 @@ export class RootChannel extends WebSocketTopicBase implements WebSocketTopic {
 						this._logger.info(`Process root message received unexpected event`)
 				}
 			} else this._logger.error(`Process root message received malformed payload`)
-		} catch (e) {
+		} catch (_e) {
 			this._logger.error(`Process root message expected an object as payload`)
 		}
 	}
