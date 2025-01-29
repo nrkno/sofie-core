@@ -67,7 +67,7 @@ export class Connector {
 
 			this._logger.info('Shutting down in 10 seconds!')
 			setTimeout(() => {
-				// eslint-disable-next-line no-process-exit
+				// eslint-disable-next-line n/no-process-exit
 				process.exit(0)
 			}, 10 * 1000)
 			return

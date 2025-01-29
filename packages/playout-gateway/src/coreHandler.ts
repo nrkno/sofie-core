@@ -239,7 +239,7 @@ export class CoreHandler {
 				}
 				this._executedFunctions.add(cmd._id)
 				// @ts-expect-error Untyped bunch of functions
-				// eslint-disable-next-line @typescript-eslint/ban-types
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 				const fcn: Function = fcnObject[cmd.functionName]
 				try {
 					if (!fcn) throw Error(`Function "${cmd.functionName}" not found on device "${cmd.deviceId}"!`)
@@ -311,7 +311,7 @@ export class CoreHandler {
 	killProcess(): void {
 		this.logger.info('KillProcess command received, shutting down in 1000ms!')
 		setTimeout(() => {
-			// eslint-disable-next-line no-process-exit
+			// eslint-disable-next-line n/no-process-exit
 			process.exit(0)
 		}, 1000)
 	}

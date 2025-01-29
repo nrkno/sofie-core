@@ -53,7 +53,7 @@ import { BaseRemoteDeviceIntegration } from 'timeline-state-resolver/dist/servic
 
 const debug = Debug('playout-gateway')
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface TSRConfig {}
 
 // ----------------------------------------------------------------------------
@@ -302,7 +302,7 @@ export class TSRHandler {
 							coreTsrHandler._device,
 							assets.filter((asset) => _.isNumber(asset.position) && asset.path)
 						)
-					} catch (e) {
+					} catch (_e) {
 						// don't worry about it.
 					}
 				}
