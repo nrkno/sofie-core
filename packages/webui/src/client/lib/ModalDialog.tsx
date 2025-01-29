@@ -203,13 +203,17 @@ export function ModalDialog({
 										</div>
 									) : null}
 									<div
-										className={ClassNames('mod', {
-											alright: !secondaryText,
-										})}
+										className={ClassNames(
+											'mod',
+											{
+												alright: !secondaryText,
+											},
+											'modal-dialog-actions'
+										)}
 									>
 										{secondaryText && (
 											<button
-												className="btn btn-secondary"
+												className="btn btn-secondary cancel-btn"
 												onClick={handleSecondary}
 												onKeyDown={preventClickOnEnter}
 												onKeyUp={emulateClick}

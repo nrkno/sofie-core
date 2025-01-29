@@ -4,6 +4,7 @@
 		padding: 0;
 		border: none;
 		pointer-events: auto;
+		min-width: 500px;
 
 		.big {
 			max-width: 500px;
@@ -18,14 +19,40 @@
 	}
 }
 
+.modal-dialog-actions {
+	display: flex;
+	justify-content: space-between;
+
+	.cancel-btn {
+		margin-right: 2rem;
+		margin-left: 0px;
+	}
+}
+
 .dark .border-box {
 	color: #fff;
 }
+
+.btn {
+	font-weight: 100;
+	min-width: fit-content;
+}
+
+.btn.btn-primary {
+	font-weight: 500;
+	border: #fffcfc;
+	border-width: 1px;
+	border-style: solid;
+}
+
 
 .btn.btn-primary.btn-warn {
 	background: #e62421;
 	border-color: #e62421;
 	color: #ffffff;
+	border: #ffffff;
+	border-width: 1px;
+	border-style: solid;
 }
 
 .btn.btn-secondary.btn-warn {
