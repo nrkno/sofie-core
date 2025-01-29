@@ -41,7 +41,7 @@ function typeConvertUrlParameters(args: any[]) {
 				let json: any = null
 				try {
 					json = JSON.parse(val)
-				} catch (e) {
+				} catch (_e) {
 					// ignore
 				}
 				if (json) val = json
