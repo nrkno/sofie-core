@@ -13,6 +13,17 @@ export interface NewSnapshotAPI {
 	removeSnapshot(snapshotId: SnapshotId): Promise<void>
 }
 
+export interface SystemSnapshotOptions {
+	studioId?: StudioId
+	withDeviceSnapshots?: boolean
+}
+
+export interface PlaylistSnapshotOptions {
+	withTimeline?: boolean
+	withArchivedDocuments?: boolean
+	withDeviceSnapshots?: boolean
+}
+
 export enum SnapshotAPIMethods {
 	storeSystemSnapshot = 'snapshot.systemSnapshot',
 	storeRundownPlaylist = 'snapshot.rundownPlaylistSnapshot',

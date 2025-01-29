@@ -189,7 +189,7 @@ async function storeSnapshots(systemSettings: ICoreSystemSettings | undefined) {
 		for (const playlist of playlists) {
 			lowPrioFcn(() => {
 				logger.info(`Cronjob: Will store snapshot for rundown playlist "${playlist._id}"`)
-				internalStoreRundownPlaylistSnapshot(playlist, 'Automatic, taken by cron job').catch((err) => {
+				internalStoreRundownPlaylistSnapshot(playlist, {}, 'Automatic, taken by cron job').catch((err) => {
 					logger.error(err)
 				})
 			})
