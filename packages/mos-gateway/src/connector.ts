@@ -50,7 +50,7 @@ export class Connector {
 			this.dispose().catch((e2) => this._logger.error(e2))
 
 			setTimeout(() => {
-				// eslint-disable-next-line no-process-exit
+				// eslint-disable-next-line n/no-process-exit
 				process.exit(0)
 			}, 10 * 1000)
 		}

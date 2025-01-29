@@ -66,7 +66,7 @@ CLI                ENV
 -debug                               Debug mode
 -h, -help                            Displays this help message
 `)
-	// eslint-disable-next-line no-process-exit
+	// eslint-disable-next-line n/no-process-exit
 	process.exit(0)
 }
 
@@ -85,7 +85,7 @@ const JSONStringifyCircular = () => {
 				try {
 					// If this value does not reference a parent it can be deduped
 					return JSON.parse(JSON.stringify(value))
-				} catch (error) {
+				} catch (_error) {
 					// discard key if value cannot be deduped
 					return '[circular of ' + (cacheKeys[i] || '*root*') + ']'
 				}

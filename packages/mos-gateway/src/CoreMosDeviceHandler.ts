@@ -56,7 +56,7 @@ interface IStoryItemChange {
 	itemID: string
 	timestamp: number
 
-	resolve: (value?: IMOSROAck | PromiseLike<IMOSROAck> | undefined) => void
+	resolve: (value?: IMOSROAck | PromiseLike<IMOSROAck>) => void
 	reject: (error: any) => void
 
 	itemDiff: PartialDeep<IMOSItem>
