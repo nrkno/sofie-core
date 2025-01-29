@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { useCurrentTime } from '../../lib/lib'
+import { useCurrentTime } from '../../lib/lib.js'
 
 function floorCeil(val: number) {
 	return val < 0 ? Math.ceil(val) : Math.floor(val)

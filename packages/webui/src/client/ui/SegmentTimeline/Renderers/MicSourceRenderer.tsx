@@ -1,15 +1,15 @@
 import ClassNames from 'classnames'
 import { ScriptContent } from '@sofie-automation/blueprints-integration'
-import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
+import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer.js'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import * as _ from 'underscore'
 
-import { getElementWidth } from '../../../utils/dimensions'
-import { MicFloatingInspector } from '../../FloatingInspectors/MicFloatingInspector'
+import { getElementWidth } from '../../../utils/dimensions.js'
+import { MicFloatingInspector } from '../../FloatingInspectors/MicFloatingInspector.js'
 import { calculatePartInstanceExpectedDurationWithTransition } from '@sofie-automation/corelib/dist/playout/timings'
-import { unprotectString } from '../../../lib/tempLib'
-import { IFloatingInspectorPosition } from '../../FloatingInspectors/IFloatingInspectorPosition'
-import { logger } from '../../../lib/logging'
+import { unprotectString } from '../../../lib/tempLib.js'
+import { IFloatingInspectorPosition } from '../../FloatingInspectors/IFloatingInspectorPosition.js'
+import { logger } from '../../../lib/logging.js'
 
 type IProps = ICustomLayerItemProps
 interface IState {}

@@ -1,7 +1,7 @@
-import { ControllerAbstract } from './lib'
-import { PrompterConfigMode, PrompterViewContent } from '../PrompterView'
+import { ControllerAbstract } from './lib.js'
+import { PrompterConfigMode, PrompterViewContent } from '../PrompterView.js'
 import Spline from 'cubic-spline'
-import { logger } from '../../../lib/logging'
+import { logger } from '../../../lib/logging.js'
 
 type JoyconWithData = { index: number; timestamp: number; mode: JoyconMode; axes: readonly number[]; buttons: number[] }
 type JoyconMode = 'L' | 'R' | 'LR' | null

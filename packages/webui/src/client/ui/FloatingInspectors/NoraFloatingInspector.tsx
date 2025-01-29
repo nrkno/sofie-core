@@ -1,8 +1,8 @@
 import { JSONBlobParse, NoraContent, NoraPayload } from '@sofie-automation/blueprints-integration'
 import React, { useEffect, useImperativeHandle } from 'react'
 import _ from 'underscore'
-import { getNoraContentSteps } from '../SegmentContainer/PieceMultistepChevron'
-import Escape from './../../lib/Escape'
+import { getNoraContentSteps } from '../SegmentContainer/PieceMultistepChevron.js'
+import Escape from './../../lib/Escape.js'
 
 interface IPropsHeader {
 	noraContent: NoraContent | undefined

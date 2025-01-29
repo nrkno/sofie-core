@@ -1,13 +1,13 @@
 import { useTranslation } from 'react-i18next'
-import { withTiming, WithTiming } from './withTiming'
+import { withTiming, WithTiming } from './withTiming.js'
 import ClassNames from 'classnames'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { LoopingIcon } from '../../../lib/ui/icons/looping'
+import { LoopingIcon } from '../../../lib/ui/icons/looping.js'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { RundownUtils } from '../../../lib/rundown'
-import { getCurrentTime } from '../../../lib/systemTime'
+import { RundownUtils } from '../../../lib/rundown.js'
+import { getCurrentTime } from '../../../lib/systemTime.js'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
-import { isLoopDefined } from '../../../lib/RundownResolver'
+import { isLoopDefined } from '../../../lib/RundownResolver.js'
 
 interface IRundownNameProps {
 	rundownPlaylist: DBRundownPlaylist

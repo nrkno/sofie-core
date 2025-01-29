@@ -5,12 +5,12 @@ import {
 	RundownLayoutSegmentName,
 } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { dashboardElementStyle } from './DashboardPanel'
-import { RundownLayoutsAPI } from '../../lib/rundownLayouts'
-import { useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { dashboardElementStyle } from './DashboardPanel.js'
+import { RundownLayoutsAPI } from '../../lib/rundownLayouts.js'
+import { useTracker } from '../../lib/ReactMeteorData/ReactMeteorData.js'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
-import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil'
+import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil.js'
 import { useTranslation } from 'react-i18next'
 
 interface ISegmentNamePanelProps {

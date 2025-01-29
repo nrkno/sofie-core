@@ -11,12 +11,12 @@ import {
 	protectString,
 	assertNever,
 	getRandomString,
-} from '../tempLib'
+} from '../tempLib.js'
 import { isTranslatableMessage, ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { MeteorCall } from '../../lib/meteorApi'
+import { MeteorCall } from '../../lib/meteorApi.js'
 import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { LocalStorageProperty } from '../localStorage'
+import { LocalStorageProperty } from '../localStorage.js'
 
 let reportNotificationsId: string | null = null
 

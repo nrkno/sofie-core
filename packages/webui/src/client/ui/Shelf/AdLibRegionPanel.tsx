@@ -6,15 +6,15 @@ import {
 	DashboardLayoutAdLibRegion,
 	RundownLayoutAdLibRegionRole,
 } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
-import { RundownLayoutsAPI } from '../../lib/rundownLayouts'
-import { dashboardElementStyle, IDashboardPanelTrackedProps } from './DashboardPanel'
+import { RundownLayoutsAPI } from '../../lib/rundownLayouts.js'
+import { dashboardElementStyle, IDashboardPanelTrackedProps } from './DashboardPanel.js'
 import ClassNames from 'classnames'
-import { IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter } from './AdLibPanel'
-import { matchFilter } from './AdLibListView'
-import { doUserAction, UserAction } from '../../lib/clientUserAction'
-import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { MeteorCall } from '../../lib/meteorApi'
+import { IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter } from './AdLibPanel.js'
+import { matchFilter } from './AdLibListView.js'
+import { doUserAction, UserAction } from '../../lib/clientUserAction.js'
+import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData.js'
+import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications.js'
+import { MeteorCall } from '../../lib/meteorApi.js'
 import {
 	AdLibPieceUi,
 	getNextPieceInstancesGrouped,
@@ -22,12 +22,15 @@ import {
 	isAdLibDisplayedAsOnAir,
 	isAdLibNext,
 	isAdLibOnAir,
-} from '../../lib/shelf'
+} from '../../lib/shelf.js'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { useContentStatusForPieceInstance, WithMediaObjectStatusProps } from '../SegmentTimeline/withMediaObjectStatus'
+import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer.js'
+import {
+	useContentStatusForPieceInstance,
+	WithMediaObjectStatusProps,
+} from '../SegmentTimeline/withMediaObjectStatus.js'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { UIStudios } from '../Collections'
+import { UIStudios } from '../Collections.js'
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 

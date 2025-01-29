@@ -3,12 +3,12 @@ import * as _ from 'underscore'
 
 import { GraphicsContent, JSONBlobParse, NoraContent } from '@sofie-automation/blueprints-integration'
 
-import { NoraFloatingInspector } from './NoraFloatingInspector'
-import { FloatingInspector } from '../FloatingInspector'
-import { Time } from '../../lib/tempLib'
+import { NoraFloatingInspector } from './NoraFloatingInspector.js'
+import { FloatingInspector } from '../FloatingInspector.js'
+import { Time } from '../../lib/tempLib.js'
 import { PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { FloatingInspectorTimeInformationRow } from './FloatingInspectorHelpers/FloatingInspectorTimeInformationRow'
-import { IFloatingInspectorPosition, useInspectorPosition } from './IFloatingInspectorPosition'
+import { FloatingInspectorTimeInformationRow } from './FloatingInspectorHelpers/FloatingInspectorTimeInformationRow.js'
+import { IFloatingInspectorPosition, useInspectorPosition } from './IFloatingInspectorPosition.js'
 import { ReadonlyDeep } from 'type-fest'
 
 interface IProps {

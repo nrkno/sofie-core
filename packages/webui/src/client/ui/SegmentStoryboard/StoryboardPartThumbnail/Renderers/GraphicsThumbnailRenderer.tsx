@@ -1,9 +1,9 @@
 import { GraphicsContent, NoraContent } from '@sofie-automation/blueprints-integration'
-import { RundownUtils } from '../../../../lib/rundown'
-import { L3rdFloatingInspector } from '../../../FloatingInspectors/L3rdFloatingInspector'
-import { PieceMultistepChevron } from '../../../SegmentContainer/PieceMultistepChevron'
-import { IProps } from './ThumbnailRendererFactory'
-import { LoopingPieceIcon } from '../../../../lib/ui/icons/looping'
+import { RundownUtils } from '../../../../lib/rundown.js'
+import { L3rdFloatingInspector } from '../../../FloatingInspectors/L3rdFloatingInspector.js'
+import { PieceMultistepChevron } from '../../../SegmentContainer/PieceMultistepChevron.js'
+import { IProps } from './ThumbnailRendererFactory.js'
+import { LoopingPieceIcon } from '../../../../lib/ui/icons/looping.js'
 
 export function GraphicsThumbnailRenderer({
 	pieceInstance,

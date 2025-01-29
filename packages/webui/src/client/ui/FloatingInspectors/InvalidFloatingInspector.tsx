@@ -1,12 +1,12 @@
 import React, { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { FloatingInspector } from '../FloatingInspector'
+import { FloatingInspector } from '../FloatingInspector.js'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
-import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
+import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications.js'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { IFloatingInspectorPosition, useInspectorPosition } from './IFloatingInspectorPosition'
+import { IFloatingInspectorPosition, useInspectorPosition } from './IFloatingInspectorPosition.js'
 
 interface IProps {
 	itemElement: HTMLDivElement | null

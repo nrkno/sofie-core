@@ -1,11 +1,14 @@
 import { useRef } from 'react'
-import { getElementWidth } from '../../../utils/dimensions'
+import { getElementWidth } from '../../../utils/dimensions.js'
 
 import { TransitionContent } from '@sofie-automation/blueprints-integration'
 
-import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
-import { FloatingInspector } from '../../FloatingInspector'
-import { IFloatingInspectorPosition, useInspectorPosition } from '../../FloatingInspectors/IFloatingInspectorPosition'
+import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer.js'
+import { FloatingInspector } from '../../FloatingInspector.js'
+import {
+	IFloatingInspectorPosition,
+	useInspectorPosition,
+} from '../../FloatingInspectors/IFloatingInspectorPosition.js'
 
 type IProps = ICustomLayerItemProps
 interface IState {

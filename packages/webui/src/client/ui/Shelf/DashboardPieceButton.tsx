@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import ClassNames from 'classnames'
-import { RundownUtils } from '../../lib/rundown'
+import { RundownUtils } from '../../lib/rundown.js'
 import {
 	ISourceLayer,
 	IOutputLayer,
@@ -11,19 +11,19 @@ import {
 	IBlueprintPieceType,
 } from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { IAdLibListItem } from './AdLibListItem'
-import SplitInputIcon from '../PieceIcons/Renderers/SplitInputIcon'
+import { IAdLibListItem } from './AdLibListItem.js'
+import SplitInputIcon from '../PieceIcons/Renderers/SplitInputIcon.js'
 import { PieceDisplayStyle } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
-import { DashboardPieceButtonSplitPreview } from './DashboardPieceButtonSplitPreview'
-import { StyledTimecode } from '../../lib/StyledTimecode'
-import { VTFloatingInspector } from '../FloatingInspectors/VTFloatingInspector'
-import { getNoticeLevelForPieceStatus } from '../../lib/notifications/notifications'
-import { L3rdFloatingInspector } from '../FloatingInspectors/L3rdFloatingInspector'
-import { useContentStatusForAdlibPiece, WithMediaObjectStatusProps } from '../SegmentTimeline/withMediaObjectStatus'
+import { DashboardPieceButtonSplitPreview } from './DashboardPieceButtonSplitPreview.js'
+import { StyledTimecode } from '../../lib/StyledTimecode.js'
+import { VTFloatingInspector } from '../FloatingInspectors/VTFloatingInspector.js'
+import { getNoticeLevelForPieceStatus } from '../../lib/notifications/notifications.js'
+import { L3rdFloatingInspector } from '../FloatingInspectors/L3rdFloatingInspector.js'
+import { useContentStatusForAdlibPiece, WithMediaObjectStatusProps } from '../SegmentTimeline/withMediaObjectStatus.js'
 
-import { isTouchDevice } from '../../lib/lib'
-import { AdLibPieceUi } from '../../lib/shelf'
-import { protectString } from '../../lib/tempLib'
+import { isTouchDevice } from '../../lib/lib.js'
+import { AdLibPieceUi } from '../../lib/shelf.js'
+import { protectString } from '../../lib/tempLib.js'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 

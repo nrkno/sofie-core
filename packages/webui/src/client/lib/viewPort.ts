@@ -1,10 +1,10 @@
-import { SEGMENT_TIMELINE_ELEMENT_ID } from '../ui/SegmentTimeline/SegmentTimeline'
-import { isProtectedString } from './tempLib'
+import { SEGMENT_TIMELINE_ELEMENT_ID } from '../ui/SegmentTimeline/SegmentTimeline.js'
+import { isProtectedString } from './tempLib.js'
 import RundownViewEventBus, { RundownViewEvents } from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
-import { Settings } from '../lib/Settings'
+import { Settings } from '../lib/Settings.js'
 import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { UIPartInstances, UIParts } from '../ui/Collections'
-import { logger } from './logging'
+import { UIPartInstances, UIParts } from '../ui/Collections.js'
+import { logger } from './logging.js'
 
 const HEADER_MARGIN = 24 // TODOSYNC: TV2 uses 15. If it's needed to be different, it needs to be made generic somehow..
 const FALLBACK_HEADER_HEIGHT = 65

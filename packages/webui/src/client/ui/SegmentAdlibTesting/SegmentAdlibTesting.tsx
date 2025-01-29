@@ -1,31 +1,37 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
-import { IContextMenuContext } from '../RundownView'
-import { IOutputLayerUi, PartUi, PieceUi, SegmentNoteCounts, SegmentUi } from '../SegmentContainer/withResolvedSegment'
+import { IContextMenuContext } from '../RundownView.js'
+import {
+	IOutputLayerUi,
+	PartUi,
+	PieceUi,
+	SegmentNoteCounts,
+	SegmentUi,
+} from '../SegmentContainer/withResolvedSegment.js'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
-import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
-import { contextMenuHoldToDisplayTime, useCombinedRefs } from '../../lib/lib'
+import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications.js'
+import { contextMenuHoldToDisplayTime, useCombinedRefs } from '../../lib/lib.js'
 import { useTranslation } from 'react-i18next'
-import { literal, unprotectString } from '../../lib/tempLib'
-import { lockPointer, unlockPointer } from '../../lib/viewPort'
-import { StoryboardPart } from '../SegmentStoryboard/StoryboardPart'
+import { literal, unprotectString } from '../../lib/tempLib.js'
+import { lockPointer, unlockPointer } from '../../lib/viewPort.js'
+import { StoryboardPart } from '../SegmentStoryboard/StoryboardPart.js'
 import classNames from 'classnames'
 import RundownViewEventBus, {
 	GoToPartEvent,
 	GoToPartInstanceEvent,
 	RundownViewEvents,
 } from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
-import { getElementWidth } from '../../utils/dimensions'
-import { HOVER_TIMEOUT } from '../Shelf/DashboardPieceButton'
+import { getElementWidth } from '../../utils/dimensions.js'
+import { HOVER_TIMEOUT } from '../Shelf/DashboardPieceButton.js'
 import { Meteor } from 'meteor/meteor'
-import { hidePointerLockCursor, showPointerLockCursor } from '../../lib/PointerLockCursor'
-import { OptionalVelocityComponent } from '../../lib/utilComponents'
-import { filterSecondarySourceLayers } from '../SegmentStoryboard/StoryboardPartSecondaryPieces/StoryboardPartSecondaryPieces'
+import { hidePointerLockCursor, showPointerLockCursor } from '../../lib/PointerLockCursor.js'
+import { OptionalVelocityComponent } from '../../lib/utilComponents.js'
+import { filterSecondarySourceLayers } from '../SegmentStoryboard/StoryboardPartSecondaryPieces/StoryboardPartSecondaryPieces.js'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundownPlaylist, RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { isLoopRunning } from '../../lib/RundownResolver'
+import { isLoopRunning } from '../../lib/RundownResolver.js'
 
 interface IProps {
 	id: string

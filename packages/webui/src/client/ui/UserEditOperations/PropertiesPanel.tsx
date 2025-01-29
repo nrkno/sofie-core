@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { doUserAction, UserAction } from '../../lib/clientUserAction'
-import { MeteorCall } from '../../lib/meteorApi'
+import { doUserAction, UserAction } from '../../lib/clientUserAction.js'
+import { MeteorCall } from '../../lib/meteorApi.js'
 import {
 	DefaultUserOperationEditProperties,
 	DefaultUserOperationsTypes,
@@ -15,11 +15,11 @@ import {
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import classNames from 'classnames'
 import { useTranslation } from 'react-i18next'
-import { useSelectedElements, useSelectedElementsContext } from '../RundownView/SelectedElementsContext'
-import { RundownUtils } from '../../lib/rundown'
+import { useSelectedElements, useSelectedElementsContext } from '../RundownView/SelectedElementsContext.js'
+import { RundownUtils } from '../../lib/rundown.js'
 import * as CoreIcon from '@nrk/core-icons/jsx'
 import { useCallback, useMemo, useState } from 'react'
-import { SchemaFormWithState } from '../../lib/forms/SchemaFormWithState'
+import { SchemaFormWithState } from '../../lib/forms/SchemaFormWithState.js'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 type PendingChange = DefaultUserOperationEditProperties['payload']

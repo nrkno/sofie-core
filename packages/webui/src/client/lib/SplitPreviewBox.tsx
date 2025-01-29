@@ -1,7 +1,7 @@
 import classNames from 'classnames'
 import React from 'react'
-import { RundownUtils } from './rundown'
-import { SplitRole, SplitSubItem } from './ui/splitPreview'
+import { RundownUtils } from './rundown.js'
+import { SplitRole, SplitSubItem } from './ui/splitPreview.js'
 
 export const RenderSplitPreview = React.memo(function RenderSplitPreview({
 	subItems,

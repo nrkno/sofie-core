@@ -6,7 +6,7 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { fas, faChevronUp, IconName, IconPack, IconDefinition } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { withTranslation } from 'react-i18next'
-import { Translated } from './ReactMeteorData/ReactMeteorData'
+import { Translated } from './ReactMeteorData/ReactMeteorData.js'
 
 library.add(fas)
 

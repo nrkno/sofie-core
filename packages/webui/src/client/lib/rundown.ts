@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
-import { PieceUi, PartUi } from '../ui/SegmentTimeline/SegmentTimelineContainer'
+import { PieceUi, PartUi } from '../ui/SegmentTimeline/SegmentTimelineContainer.js'
 import { Timecode } from '@sofie-automation/corelib/dist/index'
-import { Settings } from '../lib/Settings'
+import { Settings } from '../lib/Settings.js'
 import {
 	SourceLayerType,
 	PieceLifespan,
@@ -19,33 +19,33 @@ import {
 	ISourceLayerExtended,
 	PartInstanceLimited,
 	isLoopRunning,
-} from './RundownResolver'
+} from './RundownResolver.js'
 import { PartInstance, wrapPartToTemporaryInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { literal, protectString, groupByToMap } from './tempLib'
-import { getCurrentTime } from './systemTime'
+import { literal, protectString, groupByToMap } from './tempLib.js'
+import { getCurrentTime } from './systemTime.js'
 import {
 	processAndPrunePieceInstanceTimings,
 	resolvePrunedPieceInstance,
 } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { IAdLibListItem } from '../ui/Shelf/AdLibListItem'
-import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
-import { FindOptions } from '../collections/lib'
-import { getShowHiddenSourceLayers } from './localStorage'
+import { IAdLibListItem } from '../ui/Shelf/AdLibListItem.js'
+import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets.js'
+import { FindOptions } from '../collections/lib.js'
+import { getShowHiddenSourceLayers } from './localStorage.js'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { calculatePartInstanceExpectedDurationWithTransition } from '@sofie-automation/corelib/dist/playout/timings'
-import { AdLibPieceUi } from './shelf'
+import { AdLibPieceUi } from './shelf.js'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { PartId, PieceId, RundownId, SegmentId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PieceInstances, Segments } from '../collections'
+import { PieceInstances, Segments } from '../collections/index.js'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { assertNever } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { RundownPlaylistClientUtil } from './rundownPlaylistUtil'
+import { RundownPlaylistClientUtil } from './rundownPlaylistUtil.js'
 
 export namespace RundownUtils {
 	export function padZeros(input: number, places?: number): string {

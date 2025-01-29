@@ -4,11 +4,11 @@ import {
 	TimingTickResolution,
 	WithTiming,
 	withTiming,
-} from '../RundownView/RundownTiming/withTiming'
-import { RundownUtils } from '../../lib/rundown'
-import { FreezeFrameIcon } from '../../lib/ui/icons/freezeFrame'
+} from '../RundownView/RundownTiming/withTiming.js'
+import { RundownUtils } from '../../lib/rundown.js'
+import { FreezeFrameIcon } from '../../lib/ui/icons/freezeFrame.js'
 import classNames from 'classnames'
-import { FREEZE_FRAME_FLASH } from '../SegmentContainer/withResolvedSegment'
+import { FREEZE_FRAME_FLASH } from '../SegmentContainer/withResolvedSegment.js'
 
 interface IProps {
 	partInstanceTimingId: string

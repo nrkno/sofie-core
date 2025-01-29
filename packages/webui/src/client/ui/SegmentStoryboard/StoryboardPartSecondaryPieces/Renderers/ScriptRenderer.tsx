@@ -1,6 +1,6 @@
-import { MicFloatingInspector } from '../../../FloatingInspectors/MicFloatingInspector'
+import { MicFloatingInspector } from '../../../FloatingInspectors/MicFloatingInspector.js'
 import { ScriptContent } from '@sofie-automation/blueprints-integration'
-import { IDefaultRendererProps } from './DefaultRenderer'
+import { IDefaultRendererProps } from './DefaultRenderer.js'
 
 export function ScriptRenderer(props: Readonly<IDefaultRendererProps>): JSX.Element | string {
 	const labelItems = (props.piece.instance.piece.name || '').split('||')

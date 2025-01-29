@@ -1,19 +1,25 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { IContextMenuContext } from '../RundownView'
-import { IOutputLayerUi, PartUi, PieceUi, SegmentNoteCounts, SegmentUi } from '../SegmentContainer/withResolvedSegment'
+import { IContextMenuContext } from '../RundownView.js'
+import {
+	IOutputLayerUi,
+	PartUi,
+	PieceUi,
+	SegmentNoteCounts,
+	SegmentUi,
+} from '../SegmentContainer/withResolvedSegment.js'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
-import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
-import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
-import { PartCountdown } from '../RundownView/RundownTiming/PartCountdown'
-import { contextMenuHoldToDisplayTime, useCombinedRefs } from '../../lib/lib'
+import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications.js'
+import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration.js'
+import { PartCountdown } from '../RundownView/RundownTiming/PartCountdown.js'
+import { contextMenuHoldToDisplayTime, useCombinedRefs } from '../../lib/lib.js'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { useTranslation } from 'react-i18next'
-import { UIStateStorage } from '../../lib/UIStateStorage'
-import { literal, unprotectString } from '../../lib/tempLib'
-import { lockPointer, scrollToPart, unlockPointer } from '../../lib/viewPort'
-import { StoryboardPart } from './StoryboardPart'
+import { UIStateStorage } from '../../lib/UIStateStorage.js'
+import { literal, unprotectString } from '../../lib/tempLib.js'
+import { lockPointer, scrollToPart, unlockPointer } from '../../lib/viewPort.js'
+import { StoryboardPart } from './StoryboardPart.js'
 import classNames from 'classnames'
 import RundownViewEventBus, {
 	GoToPartEvent,
@@ -21,22 +27,22 @@ import RundownViewEventBus, {
 	HighlightEvent,
 	RundownViewEvents,
 } from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
-import { getElementWidth } from '../../utils/dimensions'
-import { HOVER_TIMEOUT } from '../Shelf/DashboardPieceButton'
+import { getElementWidth } from '../../utils/dimensions.js'
+import { HOVER_TIMEOUT } from '../Shelf/DashboardPieceButton.js'
 import { Meteor } from 'meteor/meteor'
-import { hidePointerLockCursor, showPointerLockCursor } from '../../lib/PointerLockCursor'
-import { SegmentScrollbar } from './SegmentScrollbar'
-import { OptionalVelocityComponent } from '../../lib/utilComponents'
-import { filterSecondarySourceLayers } from './StoryboardPartSecondaryPieces/StoryboardPartSecondaryPieces'
-import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
-import { ErrorBoundary } from '../../lib/ErrorBoundary'
-import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
+import { hidePointerLockCursor, showPointerLockCursor } from '../../lib/PointerLockCursor.js'
+import { SegmentScrollbar } from './SegmentScrollbar.js'
+import { OptionalVelocityComponent } from '../../lib/utilComponents.js'
+import { filterSecondarySourceLayers } from './StoryboardPartSecondaryPieces/StoryboardPartSecondaryPieces.js'
+import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes.js'
+import { ErrorBoundary } from '../../lib/ErrorBoundary.js'
+import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton.js'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { SegmentTimeAnchorTime } from '../RundownView/RundownTiming/SegmentTimeAnchorTime'
-import * as RundownResolver from '../../lib/RundownResolver'
-import { logger } from '../../lib/logging'
+import { SegmentTimeAnchorTime } from '../RundownView/RundownTiming/SegmentTimeAnchorTime.js'
+import * as RundownResolver from '../../lib/RundownResolver.js'
+import { logger } from '../../lib/logging.js'
 
 interface IProps {
 	id: string

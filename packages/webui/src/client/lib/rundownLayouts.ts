@@ -46,15 +46,15 @@ import {
 	RundownViewLayout,
 } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { literal } from './tempLib'
-import { getCurrentTime } from './systemTime'
-import { invalidateAt } from './invalidatingTime'
-import { memoizedIsolatedAutorun } from './memoizedIsolatedAutorun'
-import { PieceInstances } from '../collections'
+import { literal } from './tempLib.js'
+import { getCurrentTime } from './systemTime.js'
+import { invalidateAt } from './invalidatingTime.js'
+import { memoizedIsolatedAutorun } from './memoizedIsolatedAutorun.js'
+import { PieceInstances } from '../collections/index.js'
 import { ReadonlyDeep } from 'type-fest'
 import { TFunction } from 'i18next'
 import _ from 'underscore'
-import { UIPartInstances } from '../ui/Collections'
+import { UIPartInstances } from '../ui/Collections.js'
 
 export interface LayoutDescriptor {
 	supportedFilters: RundownLayoutElementType[]
