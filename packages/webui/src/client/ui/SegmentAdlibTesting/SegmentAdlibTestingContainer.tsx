@@ -76,13 +76,14 @@ export const SegmentAdlibTestingContainer = withResolvedSegment<IProps>(function
 				_rank: 1,
 			},
 		})
-		segment &&
-			meteorSubscribe(
-				CorelibPubSub.piecesInfiniteStartingBefore,
-				rundownId,
-				Array.from(segmentsIdsBefore.values()),
-				Array.from(rundownIdsBefore.values())
-			)
+		if (!segment) return
+
+		meteorSubscribe(
+			CorelibPubSub.piecesInfiniteStartingBefore,
+			rundownId,
+			Array.from(segmentsIdsBefore.values()),
+			Array.from(rundownIdsBefore.values())
+		)
 	}, [segmentId, rundownId, segmentsIdsBefore.values(), rundownIdsBefore.values()])
 
 	const isLiveSegment = useTracker(

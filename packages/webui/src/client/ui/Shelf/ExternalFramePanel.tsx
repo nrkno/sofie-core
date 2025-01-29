@@ -113,7 +113,9 @@ export const ExternalFramePanel = withTranslation()(
 
 		awaitingReply: {
 			[key: string]: {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 				resolve: Function
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 				reject: Function
 			}
 		} = {}

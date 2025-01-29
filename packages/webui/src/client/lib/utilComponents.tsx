@@ -24,7 +24,7 @@ export function makeTableOfObject(o: any): React.ReactNode {
 							let json = ''
 							try {
 								json = JSON.parse(val)
-							} catch (e) {
+							} catch (_e) {
 								// ignore
 							}
 							if (json) {

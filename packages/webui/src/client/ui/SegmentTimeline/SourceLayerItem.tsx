@@ -105,13 +105,10 @@ interface ISourceLayerItemState {
 }
 
 export const SourceLayerItem = withTranslation()(
-	class SourceLayerItem extends React.Component<
-		ISourceLayerItemProps & WithTranslation & ISourceLayerItemProps,
-		ISourceLayerItemState
-	> {
+	class SourceLayerItem extends React.Component<ISourceLayerItemProps & WithTranslation, ISourceLayerItemState> {
 		animFrameHandle: number | undefined
 
-		constructor(props: ISourceLayerItemProps & WithTranslation & ISourceLayerItemProps) {
+		constructor(props: ISourceLayerItemProps & WithTranslation) {
 			super(props)
 			this.state = {
 				showMiniInspector: false,
@@ -440,7 +437,7 @@ export const SourceLayerItem = withTranslation()(
 		}
 
 		componentWillUnmount(): void {
-			super.componentWillUnmount && super.componentWillUnmount()
+			super.componentWillUnmount?.()
 			RundownViewEventBus.off(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 			clearTimeout(this.highlightTimeout)
 		}
@@ -466,7 +463,7 @@ export const SourceLayerItem = withTranslation()(
 			// this.props.onFollowLiveLine && this.props.onFollowLiveLine(false, e)
 			e.preventDefault()
 			e.stopPropagation()
-			this.props.onClick && this.props.onClick(this.props.piece, e)
+			this.props.onClick?.(this.props.piece, e)
 		}
 
 		itemDblClick = (e: React.MouseEvent<HTMLDivElement>) => {

@@ -122,14 +122,14 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 	const onRemove = useCallback(() => onRemoveAction(actionId), [actionId])
 	const onOuterClose = useCallback(() => onOuterCloseAction && onOuterCloseAction(actionId), [actionId])
 	const onActionFocus = useCallback(() => {
-		onOuterActionFocus && onOuterActionFocus(actionId)
-		onFocus && onFocus(actionId)
+		onOuterActionFocus?.(actionId)
+		onFocus?.(actionId)
 	}, [onOuterActionFocus, onFocus, actionId])
 	const onSetFilter = useCallback(() => onFilterInsertNext(-1), [onFilterInsertNext])
 	const onFilterFocus = useCallback(
 		(chainIndex: number) => {
 			setOpenFilterIndex(chainIndex)
-			onFocus && onFocus(actionId)
+			onFocus?.(actionId)
 		},
 		[onFocus, actionId]
 	)

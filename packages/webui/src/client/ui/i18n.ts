@@ -66,11 +66,11 @@ async function getAndCacheTranslationBundle(bundleId: TranslationsBundleId) {
 	return new Promise<TranslationsBundle>((resolve, reject) => {
 		MeteorCall.system.getTranslationBundle(bundleId).then(
 			(response) => {
-				if (ClientAPI.isClientResponseSuccess(response) && response.result) {
+				if (ClientAPI.isClientResponseSuccess(response)) {
 					localStorage.setItem(`i18n.translationBundles.${bundleId}`, JSON.stringify(response.result))
 					resolve(response.result)
 				} else {
-					reject(response)
+					reject(response.error)
 				}
 			},
 			(reason) => {

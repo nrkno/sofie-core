@@ -219,7 +219,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		try {
 			// @ts-expect-error blur isnt always valid
 			document.activeElement.blur()
-		} catch (e) {
+		} catch (_e) {
 			// do nothing
 		}
 	}

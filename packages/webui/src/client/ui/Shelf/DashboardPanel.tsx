@@ -173,7 +173,7 @@ export class DashboardPanelInner extends React.Component<Translated<DashboardPan
 		) {
 			// If the local selectedAdLib is changing, inform the application that the selection has changed
 			// (this will change the inspected AdLib in the inspector)
-			this.props.onSelectPiece && this.props.onSelectPiece(selectedAdLib)
+			this.props.onSelectPiece?.(selectedAdLib)
 		} else if (
 			selectedPiece &&
 			selectedPiece !== prevProps.selectedPiece &&

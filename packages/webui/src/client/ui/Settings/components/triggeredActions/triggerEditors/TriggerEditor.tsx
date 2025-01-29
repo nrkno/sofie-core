@@ -145,7 +145,7 @@ export const TriggerEditor = function TriggerEditor({
 	) : null
 
 	useLayoutEffect(() => {
-		update && update().catch(catchError('TriggerEditor update'))
+		update?.().catch(catchError('TriggerEditor update'))
 	}, [trigger])
 
 	useEffect(() => {

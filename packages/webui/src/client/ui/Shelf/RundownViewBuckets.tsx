@@ -129,7 +129,7 @@ export const RundownViewBuckets = withTranslation()(
 		}
 
 		componentDidMount(): void {
-			super.componentDidMount && super.componentDidMount()
+			super.componentDidMount?.()
 
 			RundownViewEventBus.on(RundownViewEvents.CREATE_BUCKET, this.createNewBucket)
 			RundownViewEventBus.on(RundownViewEvents.DELETE_BUCKET, this.deleteBucket)
@@ -141,7 +141,7 @@ export const RundownViewBuckets = withTranslation()(
 		}
 
 		componentWillUnmount(): void {
-			super.componentWillUnmount && super.componentWillUnmount()
+			super.componentWillUnmount?.()
 
 			RundownViewEventBus.off(RundownViewEvents.CREATE_BUCKET, this.createNewBucket)
 			RundownViewEventBus.off(RundownViewEvents.DELETE_BUCKET, this.deleteBucket)

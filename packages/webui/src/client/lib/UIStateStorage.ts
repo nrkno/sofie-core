@@ -18,7 +18,7 @@ export namespace UIStateStorage {
 	localStorage.removeItem('collapsedItems')
 	try {
 		_collapsedState = JSON.parse(localStorage.getItem(NAMESPACE) || '') || {}
-	} catch (e) {
+	} catch (_e) {
 		_collapsedState = {}
 	}
 	_cleanUp()

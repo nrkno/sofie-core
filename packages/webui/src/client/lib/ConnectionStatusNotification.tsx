@@ -53,7 +53,7 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 				lastNotificationId = undefined
 				try {
 					NotificationCenter.drop(buf)
-				} catch (e) {
+				} catch (_e) {
 					// if the last notification can't be dropped, ignore
 				}
 			}

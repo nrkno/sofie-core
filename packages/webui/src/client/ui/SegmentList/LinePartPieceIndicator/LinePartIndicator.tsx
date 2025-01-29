@@ -57,7 +57,7 @@ export function LinePartIndicator({
 	function onClick(e: React.MouseEvent<HTMLDivElement>) {
 		const shouldBeOpen = !isMenuOpen
 		setIsMenuOpen(shouldBeOpen)
-		onClickExternal && onClickExternal(e)
+		onClickExternal?.(e)
 		window.addEventListener('mousedown', onClickAway)
 	}
 

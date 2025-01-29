@@ -21,6 +21,7 @@ import { MongoMock } from '../../../../__mocks__/mongo'
 import { PropertiesPanel } from '../PropertiesPanel'
 import { UserAction } from '../../../lib/clientUserAction'
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 jest.mock('meteor/tracker', (...args) => require('../../../../__mocks__/tracker').setup(args), { virtual: true })
 
 jest.mock('react-i18next', () => ({
@@ -145,6 +146,7 @@ const mockPartsCollection = MongoMock.getInnerMockCollection(UIParts)
 
 // Mock Client User Action:
 jest.mock('../../../lib/clientUserAction', () => ({
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 	doUserAction: jest.fn((_t: TFunction, e: unknown, _action: UserAction, callback: Function) =>
 		callback(e, Date.now())
 	),

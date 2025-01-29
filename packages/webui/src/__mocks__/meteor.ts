@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import * as _ from 'underscore'
 import type { DDP } from 'meteor/ddp'
 

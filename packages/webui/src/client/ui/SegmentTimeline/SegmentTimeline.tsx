@@ -273,7 +273,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 	}
 
 	componentDidMount(): void {
-		super.componentDidMount && super.componentDidMount()
+		super.componentDidMount?.()
 
 		RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 		RundownViewEventBus.on(RundownViewEvents.SEGMENT_ZOOM_ON, this.onRundownEventSegmentZoomOn)
@@ -288,7 +288,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 	}
 
 	componentWillUnmount(): void {
-		super.componentWillUnmount && super.componentWillUnmount()
+		super.componentWillUnmount?.()
 		clearTimeout(this.highlightTimeout)
 
 		RundownViewEventBus.off(RundownViewEvents.HIGHLIGHT, this.onHighlight)

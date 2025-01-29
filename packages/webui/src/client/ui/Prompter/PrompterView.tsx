@@ -799,7 +799,7 @@ const PrompterContent = withTranslation()(
 				const { top } = anchor.getBoundingClientRect()
 
 				if (scrollAnchor.offset !== null) {
-					this.props.config.debug &&
+					if (this.props.config.debug)
 						logger.debug(
 							`Selected anchor ${scrollAnchor.anchorId} as anchor element in view, restoring position ${scrollAnchor.offset}`
 						)
@@ -810,7 +810,7 @@ const PrompterContent = withTranslation()(
 					// We've scrolled, exit the function!
 					return
 				} else {
-					this.props.config.debug &&
+					if (this.props.config.debug)
 						logger.debug(`Selected anchor ${scrollAnchor.anchorId} as anchor element outside of view, jumping to it`)
 
 					// Note: config.margin does not have to be taken into account here,

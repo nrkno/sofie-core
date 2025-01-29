@@ -163,7 +163,7 @@ const StudioScreenSaverContent = withTranslation()(
 				document.body.classList.remove('dark', 'xdark')
 			}
 
-			this._nextAnimationFrameRequest && window.cancelAnimationFrame(this._nextAnimationFrameRequest)
+			if (this._nextAnimationFrameRequest) window.cancelAnimationFrame(this._nextAnimationFrameRequest)
 			window.removeEventListener('resize', this.measureElement)
 		}
 

@@ -270,36 +270,35 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 	}
 
 	componentDidMount(): void {
-		super.componentDidMount && super.componentDidMount()
+		super.componentDidMount?.()
 
 		window.addEventListener(MOSEvents.dragenter, this.onDragEnter)
 		window.addEventListener(MOSEvents.dragleave, this.onDragLeave)
 
 		RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 		const tooSmallState = this.state.isTooSmallForDisplay || this.state.isTooSmallForText
-		if (tooSmallState) {
-			this.props.onPartTooSmallChanged &&
-				this.props.onPartTooSmallChanged(
-					this.props.part,
-					SegmentTimelinePartClass.getPartDuration(
-						this.props,
-						this.state.liveDuration,
-						this.state.isDurationSettling,
-						this.state.durationSettlingStartsAt
-					),
-					SegmentTimelinePartClass.getPartActualDuration(this.props.part, this.props.timingDurations)
-				)
+		if (tooSmallState && this.props.onPartTooSmallChanged) {
+			this.props.onPartTooSmallChanged(
+				this.props.part,
+				SegmentTimelinePartClass.getPartDuration(
+					this.props,
+					this.state.liveDuration,
+					this.state.isDurationSettling,
+					this.state.durationSettlingStartsAt
+				),
+				SegmentTimelinePartClass.getPartActualDuration(this.props.part, this.props.timingDurations)
+			)
 		}
 	}
 
 	componentWillUnmount(): void {
-		super.componentWillUnmount && super.componentWillUnmount()
+		super.componentWillUnmount?.()
 
 		window.removeEventListener(MOSEvents.dragenter, this.onDragEnter)
 		window.removeEventListener(MOSEvents.dragleave, this.onDragLeave)
 
 		RundownViewEventBus.off(RundownViewEvents.HIGHLIGHT, this.onHighlight)
-		this.highlightTimeout && clearTimeout(this.highlightTimeout)
+		if (this.highlightTimeout) clearTimeout(this.highlightTimeout)
 	}
 
 	shouldComponentUpdate(nextProps: Readonly<WithTiming<IProps>>, nextState: Readonly<IState>): boolean {
@@ -311,23 +310,22 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 	}
 
 	componentDidUpdate(prevProps: Readonly<Translated<WithTiming<IProps>>>, prevState: IState, snapshot?: unknown): void {
-		super.componentDidUpdate && super.componentDidUpdate(prevProps, prevState, snapshot)
+		super.componentDidUpdate?.(prevProps, prevState, snapshot)
 		const tooSmallState = this.state.isTooSmallForDisplay || this.state.isTooSmallForText
 		const prevTooSmallState = prevState.isTooSmallForDisplay || prevState.isTooSmallForText
-		if (tooSmallState !== prevTooSmallState) {
-			this.props.onPartTooSmallChanged &&
-				this.props.onPartTooSmallChanged(
-					this.props.part,
-					tooSmallState
-						? SegmentTimelinePartClass.getPartDuration(
-								this.props,
-								this.state.liveDuration,
-								this.state.isDurationSettling,
-								this.state.durationSettlingStartsAt
-							)
-						: false,
-					SegmentTimelinePartClass.getPartActualDuration(this.props.part, this.props.timingDurations)
-				)
+		if (tooSmallState !== prevTooSmallState && this.props.onPartTooSmallChanged) {
+			this.props.onPartTooSmallChanged(
+				this.props.part,
+				tooSmallState
+					? SegmentTimelinePartClass.getPartDuration(
+							this.props,
+							this.state.liveDuration,
+							this.state.isDurationSettling,
+							this.state.durationSettlingStartsAt
+						)
+					: false,
+				SegmentTimelinePartClass.getPartActualDuration(this.props.part, this.props.timingDurations)
+			)
 		}
 	}
 

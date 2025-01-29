@@ -536,7 +536,7 @@ export const ActionSelector = function ActionSelector({
 				!composedPath.includes(popperElement) &&
 				!composedPath.includes(referenceElement)
 			) {
-				onClose && onClose()
+				onClose?.()
 			}
 		}
 
@@ -550,7 +550,7 @@ export const ActionSelector = function ActionSelector({
 	}, [popperElement, referenceElement, opened])
 
 	useLayoutEffect(() => {
-		update && update().catch(catchError('ActionSelector update'))
+		update?.().catch(catchError('ActionSelector update'))
 	}, [action])
 
 	const { t } = useTranslation()
@@ -607,8 +607,8 @@ export const ActionSelector = function ActionSelector({
 						<button
 							className="btn right btn-tight btn-primary"
 							onClick={() => {
-								onClose && onClose()
-								onSetFilter && onSetFilter()
+								onClose?.()
+								onSetFilter?.()
 							}}
 						>
 							<FontAwesomeIcon icon={faAngleRight} />

@@ -610,13 +610,13 @@ const RundownHeader = withTranslation()(
 			playlistId: RundownPlaylistId,
 			rehersal: boolean,
 			err: UserError,
-			clb?: Function
+			clb?: () => void
 		) => {
 			const { t } = this.props
 
-			function handleResult(err: any, response: void) {
+			function handleResult(err: any) {
 				if (!err) {
-					if (typeof clb === 'function') clb(response)
+					if (typeof clb === 'function') clb()
 				} else {
 					logger.error(err)
 					doModalDialog({
@@ -990,9 +990,8 @@ const RundownHeader = withTranslation()(
 					UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
 					(e, ts) =>
 						MeteorCall.system.generateSingleUseToken().then((tokenResponse) => {
-							if (ClientAPI.isClientResponseError(tokenResponse) || !tokenResponse.result) {
-								throw tokenResponse
-							}
+							if (ClientAPI.isClientResponseError(tokenResponse)) throw tokenResponse.error
+							if (!tokenResponse.result) throw new Error('Failed to generate token')
 							return MeteorCall.userAction.storeRundownSnapshot(
 								e,
 								ts,
@@ -3009,9 +3008,9 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 					async (e, ts) => {
 						const tokenResponse = await MeteorCall.system.generateSingleUseToken()
 
-						if (ClientAPI.isClientResponseError(tokenResponse) || !tokenResponse.result) {
-							throw tokenResponse
-						}
+						if (ClientAPI.isClientResponseError(tokenResponse)) throw tokenResponse.error
+						if (!tokenResponse.result) throw new Meteor.Error(500, 'Failed to generate token')
+
 						return MeteorCall.userAction.storeRundownSnapshot(
 							e,
 							ts,
@@ -3570,9 +3569,9 @@ export function handleRundownReloadResponse(
 							(err) => {
 								if (!err) {
 									notificationHandle.stop()
-									clb && clb('unsynced')
+									clb?.('unsynced')
 								} else {
-									clb && clb('error')
+									clb?.('error')
 								}
 							}
 						)
@@ -3601,9 +3600,9 @@ export function handleRundownReloadResponse(
 									(err) => {
 										if (!err) {
 											notificationHandle.stop()
-											clb && clb('removed')
+											clb?.('removed')
 										} else {
-											clb && clb('error')
+											clb?.('error')
 										}
 									}
 								)
