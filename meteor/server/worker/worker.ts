@@ -264,6 +264,8 @@ async function logLine(msg: LogEntry): Promise<void> {
 
 let worker: Promisify<IpcJobWorker> | undefined
 Meteor.startup(async () => {
+	if (Meteor.isTest) return // Don't start the worker
+
 	if (Meteor.isDevelopment) {
 		// Ensure meteor restarts when the _force_restart file changes
 		try {
