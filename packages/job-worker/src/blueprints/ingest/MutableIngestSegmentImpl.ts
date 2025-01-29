@@ -200,7 +200,6 @@ export class MutableIngestSegmentImpl<TSegmentPayload = unknown, TPartPayload = 
 		}
 
 		if (this.#segmentHasChanges || !_.isEqual(this.#ingestSegment.payload[key], value)) {
-			// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 			;(this.#ingestSegment.payload as any)[key] = clone(value)
 			this.#segmentHasChanges = true
 		}

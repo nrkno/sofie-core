@@ -1603,7 +1603,6 @@ describe('Test blueprint api context', () => {
 
 					await expect(service.removePieceInstances('next', [])).resolves.toEqual([])
 					await expect(
-						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 						service.removePieceInstances('next', [unprotectString(pieceInstanceFromOther._id)])
 					).resolves.toEqual([]) // Try and remove something belonging to a different part
 					expectCountsToEqual(getPieceInstanceCounts(playoutModel), beforePieceInstancesCounts)

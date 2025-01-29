@@ -13,7 +13,7 @@ import { sendSlackMessageToWebhook } from './integration/slack.js'
 import { StudioCacheContext } from '../jobs/index.js'
 import { InvalidateWorkerDataCache, WorkerDataCacheWrapper } from '../workers/caches.js'
 import { ReadonlyDeep } from 'type-fest'
-import pTimeout = require('p-timeout')
+import pTimeout from 'p-timeout'
 import { logger } from '../logging.js'
 
 const TRIGGER_DELAY_DEFAULT = 1000 // TODO: Now that this is in its own thread, does it need a delay?

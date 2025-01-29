@@ -117,7 +117,6 @@ export class MutableIngestRundownImpl<TRundownPayload = unknown, TSegmentPayload
 		}
 
 		if (this.#hasChangesToRundown || !_.isEqual(this.ingestRundown.payload[key], value)) {
-			// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 			;(this.ingestRundown.payload as any)[key] = clone(value)
 			this.#hasChangesToRundown = true
 		}

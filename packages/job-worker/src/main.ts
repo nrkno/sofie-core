@@ -75,7 +75,7 @@ export abstract class JobWorkerBase {
 			logger.debug('Mongo connection closed. Forcing exit')
 			// Note: This is terribele error handling, but it does the job.
 			// If we start handling this more gracefully, then we will need to make sure to avoid/kill jobs being processed and flush all caches upon reconnection
-			// eslint-disable-next-line no-process-exit
+			// eslint-disable-next-line n/no-process-exit
 			process.exit(0)
 		})
 
@@ -150,14 +150,14 @@ async function getStudioIdsToRun(db: MongoDb): Promise<Array<StudioId>> {
 					// Something about the list of studios that exist has changed, lets restart
 					// The easiest thing to do is to restart the process. This will happen so rarely, its probably not worth trying to improve on
 
-					// eslint-disable-next-line no-process-exit
+					// eslint-disable-next-line n/no-process-exit
 					process.exit(1)
 				}
 			})
 			.on('end', () => {
 				logger.warn(`Changes stream for Studios ended`)
 				// Note: This is terribele error handling, but it does the job.
-				// eslint-disable-next-line no-process-exit
+				// eslint-disable-next-line n/no-process-exit
 				process.exit(1)
 			})
 

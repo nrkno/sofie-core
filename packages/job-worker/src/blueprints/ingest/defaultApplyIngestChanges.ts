@@ -12,6 +12,7 @@ import {
 	NrcsIngestPartChangeDetails,
 	IngestPart,
 	MutableIngestPart,
+	IngestChangeType,
 } from '@sofie-automation/blueprints-integration'
 import { assertNever, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { ReadonlyDeep } from 'type-fest'
@@ -29,7 +30,7 @@ export function defaultApplyIngestChanges<TRundownPayload, TSegmentPayload, TPar
 	ingestChanges: NrcsIngestChangeDetails,
 	options: IngestDefaultChangesOptions<TRundownPayload, TSegmentPayload, TPartPayload>
 ): void {
-	if (ingestChanges.source !== 'ingest')
+	if (ingestChanges.source !== IngestChangeType.Ingest)
 		throw new Error(`Changes passed to defaultApplyIngestChanges must be from ingest source`)
 
 	const payloadTransformers = new PayloadTransformers(options, mutableIngestRundown)

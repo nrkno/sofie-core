@@ -14,6 +14,7 @@ import {
 	IngestRundown,
 	UserOperationChange,
 	SofieIngestSegment,
+	IngestChangeType,
 } from '@sofie-automation/blueprints-integration'
 import { MutableIngestRundownImpl } from '../blueprints/ingest/MutableIngestRundownImpl.js'
 import { ProcessIngestDataContext } from '../blueprints/context/index.js'
@@ -299,7 +300,7 @@ async function updateSofieIngestRundown(
 				previousNrcsIngestRundown,
 				ingestRundownChanges.changes
 			)
-		} else if (ingestRundownChanges.changes.source === 'ingest') {
+		} else if (ingestRundownChanges.changes.source === IngestChangeType.Ingest) {
 			// Backwards compatible mode: Blueprints has not defined a processIngestData()
 			// so we'll simply accept the incoming changes as-is:
 

@@ -14,7 +14,7 @@ import { DefaultStudioBlueprint } from '../blueprints/defaults/studio.js'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { clone, deepFreeze } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../logging.js'
-import deepmerge = require('deepmerge')
+import deepmerge from 'deepmerge'
 import { JobStudio, ProcessedShowStyleBase, ProcessedShowStyleVariant, StudioCacheContext } from '../jobs/index.js'
 import { StudioCacheContextImpl } from './context/StudioCacheContextImpl.js'
 import { convertStudioToJobStudio } from '../jobs/studio.js'

@@ -334,7 +334,7 @@ export function postProcessAdLibActions(
 	return adlibActions.map((action) => {
 		if (!action.externalId)
 			throw new Error(
-				`Error in blueprint "${blueprintId}" externalId not set for adlib action in ${partId}! ("${action.display.label}")`
+				`Error in blueprint "${blueprintId}" externalId not set for adlib action in ${partId}! ("${typeof action.display.label === 'string' ? action.display.label : action.display.label.key}")`
 			)
 
 		const docId = getIdHash(
