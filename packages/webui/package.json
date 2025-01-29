@@ -45,7 +45,7 @@
 		"@sofie-automation/corelib": "1.52.0-in-development",
 		"@sofie-automation/meteor-lib": "1.52.0-in-development",
 		"@sofie-automation/shared-lib": "1.52.0-in-development",
-		"@sofie-automation/sorensen": "^1.5.8",
+		"@sofie-automation/sorensen": "patch:@sofie-automation/sorensen@npm%3A1.5.8#~/.yarn/patches/@sofie-automation-sorensen-npm-1.5.8-7b99076666.patch",
 		"@testing-library/user-event": "^14.6.1",
 		"@types/sinon": "^10.0.20",
 		"classnames": "^2.5.1",

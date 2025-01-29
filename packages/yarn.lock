@@ -6125,10 +6125,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@sofie-automation/sorensen@npm:^1.5.8":
+"@sofie-automation/sorensen@npm:1.5.8":
   version: 1.5.8
   resolution: "@sofie-automation/sorensen@npm:1.5.8"
   checksum: 10/ae8fa1bb9c49fbd46490f42de79cdbdeafc17d2184c81da033910400f20b1ce1686d97a63536cd0a9a48a0fa1843566bbbece4b78030c8fef37022a7476bf834
+  languageName: node
+  linkType: hard
+
+"@sofie-automation/sorensen@patch:@sofie-automation/sorensen@npm%3A1.5.8#~/.yarn/patches/@sofie-automation-sorensen-npm-1.5.8-7b99076666.patch":
+  version: 1.5.8
+  resolution: "@sofie-automation/sorensen@patch:@sofie-automation/sorensen@npm%3A1.5.8#~/.yarn/patches/@sofie-automation-sorensen-npm-1.5.8-7b99076666.patch::version=1.5.8&hash=ca3d17"
+  checksum: 10c0/f9d612f13004c68675b50ac2e9dceb8da33df21be44e2547700a382879f40642a8f20426fa05f82f94c6329e7a43f57cce122326c106b8466ff159daa4e23d58
   languageName: node
   linkType: hard
 
@@ -6149,7 +6156,7 @@ __metadata:
     "@sofie-automation/corelib": "npm:1.52.0-in-development"
     "@sofie-automation/meteor-lib": "npm:1.52.0-in-development"
     "@sofie-automation/shared-lib": "npm:1.52.0-in-development"
-    "@sofie-automation/sorensen": "npm:^1.5.8"
+    "@sofie-automation/sorensen": "patch:@sofie-automation/sorensen@npm%3A1.5.8#~/.yarn/patches/@sofie-automation-sorensen-npm-1.5.8-7b99076666.patch"
     "@testing-library/dom": "npm:^10.4.0"
     "@testing-library/jest-dom": "npm:^6.6.3"
     "@testing-library/react": "npm:^16.2.0"
