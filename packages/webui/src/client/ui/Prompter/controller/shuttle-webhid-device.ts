@@ -1,14 +1,14 @@
 import { ControllerAbstract } from './lib'
-import { AccessRequestCallback, PrompterViewInner } from '../PrompterView'
-import { logger } from '../../../../lib/logging'
+import { AccessRequestCallback, PrompterViewContent } from '../PrompterView'
 
 import { getOpenedDevices, requestAccess, setupShuttle, Shuttle } from 'shuttle-webhid'
+import { logger } from '../../../lib/logging'
 
 /**
  * This class handles control of the prompter using Contour Shuttle / Multimedia Controller line of devices
  */
 export class ShuttleWebHidController extends ControllerAbstract {
-	private prompterView: PrompterViewInner
+	private prompterView: PrompterViewContent
 
 	private speedMap = [0, 1, 2, 3, 5, 7, 9, 30]
 
@@ -25,7 +25,7 @@ export class ShuttleWebHidController extends ControllerAbstract {
 		deviceName: 'Contour Shuttle',
 	}
 
-	constructor(view: PrompterViewInner) {
+	constructor(view: PrompterViewContent) {
 		super()
 		this.prompterView = view
 
