@@ -59,7 +59,7 @@ meteorPublish(
 	CorelibPubSub.bucketAdLibActions,
 	async function (studioId: StudioId, bucketId: BucketId | null, showStyleVariantIds: ShowStyleVariantId[]) {
 		check(studioId, String)
-		check(bucketId, String)
+		check(bucketId, Match.Maybe(String))
 		check(showStyleVariantIds, Array)
 
 		triggerWriteAccessBecauseNoCheckNecessary()
@@ -67,7 +67,7 @@ meteorPublish(
 		return BucketAdLibActions.findWithCursor(
 			{
 				studioId: studioId,
-				bucketId: bucketId,
+				bucketId: bucketId ?? undefined,
 				showStyleVariantId: {
 					$in: [null, ...showStyleVariantIds], // null = valid for all variants
 				},
