@@ -362,7 +362,7 @@ function StudioSettings({ studio }: { studio: DBStudio }): JSX.Element {
 			</LabelAndOverridesForCheckbox>
 
 			<LabelAndOverridesForCheckbox
-				label={t('Allow AdlibTesting (rehearsal) mode, for testing adlibs before taking the first Part')}
+				label={t('Enable Adlib Testing, for testing adlibs before taking the first part')}
 				item={wrappedItem}
 				itemKey={'allowAdlibTestingSegment'}
 				overrideHelper={overrideHelper}
