@@ -504,6 +504,10 @@ const RundownHeader = withTranslation()(
 						warning: true,
 						yes: t('Activate "On Air"'),
 						no: t('Cancel'),
+						discardAsPrimary: true,
+						onDiscard: () => {
+							// Do nothing
+						},
 						actions: [
 							{
 								label: t('Activate "Rehearsal"'),
