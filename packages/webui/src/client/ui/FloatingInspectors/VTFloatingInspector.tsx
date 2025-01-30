@@ -13,6 +13,7 @@ import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { ITranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { IFloatingInspectorPosition, useInspectorPosition } from './IFloatingInspectorPosition'
 import { ReadonlyDeep } from 'type-fest'
+import { getIgnorePieceContentStatus } from '../../lib/localStorage'
 
 interface IProps {
 	status: PieceStatusCode | undefined
@@ -109,19 +110,23 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 	const { t } = useTranslation()
 	const inspectorRef = useRef<HTMLDivElement>(null)
 
+	// Display a "blank" video canvas when setting ?ignore_piece_content_status=1
+	const debugMode = getIgnorePieceContentStatus()
+	const playPreviewUrl = debugMode ? 'http://dummy-video/no-video.mp4' : previewUrl || ''
+
 	const itemDuration = content?.sourceDuration || renderedDuration || 0
 	const seek = content?.seek ?? 0
 	const loop = content?.loop ?? false
 
 	const offsetTimePosition = timePosition + seek
 
-	const showVideoPlayerInspector = !hideHoverscrubPreview && previewUrl
+	const showVideoPlayerInspector = !hideHoverscrubPreview && (previewUrl || debugMode)
 	const showMiniInspectorClipData = shouldShowFloatingInspectorContent(status ?? PieceStatusCode.UNKNOWN, content)
 	const showMiniInspectorNotice = noticeLevel !== null
 	const showMiniInspectorData = showMiniInspectorNotice || showMiniInspectorClipData
 	const showAnyFloatingInspector = Boolean(showVideoPlayerInspector) || showMiniInspectorData
 
-	const shown = showMiniInspector && itemElement !== undefined && showAnyFloatingInspector
+	const shown = showMiniInspector && (itemElement !== undefined || debugMode) && showAnyFloatingInspector
 
 	const { style: floatingInspectorStyle, isFlipped } = useInspectorPosition(position, inspectorRef, shown)
 
@@ -142,9 +147,15 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 		>
 			{showMiniInspectorNotice && noticeLevel && renderNotice(t, noticeLevel, noticeMessages)}
 			{showMiniInspectorClipData && (
-				<div className="segment-timeline__mini-inspector__properties">
-					<span className="mini-inspector__value">{content?.fileName}</span>
-				</div>
+				<>
+					<div className="segment-timeline__mini-inspector__properties">
+						<span className="mini-inspector__value">{content?.fileName}</span>
+					</div>
+					<div className="segment-timeline__mini-inspector__properties">
+						<span className="mini-inspector__firstwords">{content?.firstWords}</span>
+						<span className="mini-inspector__lastwords">{content?.lastWords}</span>
+					</div>
+				</>
 			)}
 		</div>
 	)
@@ -157,7 +168,7 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 					ref={inspectorRef}
 					loop={loop}
 					seek={seek}
-					previewUrl={previewUrl}
+					previewUrl={playPreviewUrl}
 					timePosition={offsetTimePosition}
 					studioSettings={studio?.settings}
 					floatingInspectorStyle={floatingInspectorStyle}

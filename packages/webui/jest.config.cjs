@@ -1,7 +1,11 @@
 module.exports = {
-	setupFilesAfterEnv: ['./src/__mocks__/_setupMocks.ts', '<rootDir>/src/client/__tests__/jest-setup.cjs'],
+	setupFilesAfterEnv: [
+		'./src/__mocks__/_setupMocks.ts',
+		'<rootDir>/src/client/__tests__/jest-setup.cjs',
+		'@testing-library/jest-dom',
+	],
 	globals: {},
-	moduleFileExtensions: ['js', 'ts'],
+	moduleFileExtensions: ['js', 'ts', 'tsx'],
 	moduleNameMapper: {
 		'meteor/(.*)': '<rootDir>/src/meteor/$1',
 	},
@@ -15,7 +19,7 @@ module.exports = {
 		'^.+\\.(js|jsx)$': ['babel-jest', { presets: ['@babel/preset-env'] }],
 	},
 	transformIgnorePatterns: ['node_modules/(?!(nanoid)/)', '\\.pnp\\.[^\\/]+$'],
-	testMatch: ['**/__tests__/**/*.(spec|test).(ts|js)'],
+	testMatch: ['**/__tests__/**/*.(spec|test).(ts|tsx|js)'],
 	testPathIgnorePatterns: ['integrationTests'],
 	testEnvironment: 'jsdom',
 	// coverageThreshold: {

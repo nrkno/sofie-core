@@ -44,7 +44,29 @@ export async function ensureNextPartIsValid(context: JobContext, playoutModel: P
 	const orderedSegments = playoutModel.getAllOrderedSegments()
 	const orderedParts = playoutModel.getAllOrderedParts()
 
-	if (currentPartInstance && nextPartInstance) {
+	if (!nextPartInstance || nextPartInstance.partInstance.orphaned === 'deleted') {
+		// Don't have a nextPart or it has been deleted, so autoselect something
+		const newNextPart = selectNextPart(
+			context,
+			playlist,
+			currentPartInstance?.partInstance ?? null,
+			nextPartInstance?.partInstance ?? null,
+			orderedSegments,
+			orderedParts,
+			{ ignoreUnplayable: true, ignoreQuickLoop: false }
+		)
+
+		if (!newNextPart && !playoutModel.playlist.nextPartInfo) {
+			// No currently nexted part, and nothing was selected, so nothing to update
+			span?.end()
+			return false
+		}
+
+		await setNextPart(context, playoutModel, newNextPart ?? null, false)
+
+		span?.end()
+		return true
+	} else if (currentPartInstance && nextPartInstance) {
 		// Check if the part is the same
 		const newNextPart = selectNextPart(
 			context,
@@ -70,28 +92,6 @@ export async function ensureNextPartIsValid(context: JobContext, playoutModel: P
 			span?.end()
 			return true
 		}
-	} else if (!nextPartInstance || nextPartInstance.partInstance.orphaned === 'deleted') {
-		// Don't have a nextPart or it has been deleted, so autoselect something
-		const newNextPart = selectNextPart(
-			context,
-			playlist,
-			currentPartInstance?.partInstance ?? null,
-			nextPartInstance?.partInstance ?? null,
-			orderedSegments,
-			orderedParts,
-			{ ignoreUnplayable: true, ignoreQuickLoop: false }
-		)
-
-		if (!newNextPart && !playoutModel.playlist.nextPartInfo) {
-			// No currently nexted part, and nothing was selected, so nothing to update
-			span?.end()
-			return false
-		}
-
-		await setNextPart(context, playoutModel, newNextPart ?? null, false)
-
-		span?.end()
-		return true
 	}
 
 	span?.end()

@@ -683,6 +683,12 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 			this.context.saveRouteSetChanges(),
 		])
 
+		// Clean up deleted partInstances, since they have now been deleted by writePartInstancesAndPieceInstances
+		for (const [partInstanceId, partInstance] of this.allPartInstances) {
+			if (partInstance !== null) continue
+			this.allPartInstances.delete(partInstanceId)
+		}
+
 		this.#playlistHasChanged = false
 
 		// Execute deferAfterSave()'s

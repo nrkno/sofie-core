@@ -446,6 +446,7 @@ export async function handleDisableNextPiece(context: JobContext, data: DisableN
 
 				return sortedPieces.find((piece) => {
 					return (
+						piece.pieceInstance.piece.enable.start !== 'now' &&
 						piece.pieceInstance.piece.enable.start >= nowInPart &&
 						((!data.undo && !piece.pieceInstance.disabled) || (data.undo && piece.pieceInstance.disabled))
 					)
