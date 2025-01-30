@@ -866,8 +866,10 @@ const RundownHeader = withTranslation()(
 					} else {
 						doModalDialog({
 							title: 'Deactivate "On Air"',
-							message: t('Are you sure you want to deactivate this Rundown?\n(This will clear the outputs)'),
+							message: t('Are you sure you want to deactivate this rundown?\n(This will clear the outputs.)'),
 							warning: true,
+							yes: t('Deactivate "On Air"'),
+							no: t('Cancel'),
 							onAccept: () => {
 								doUserAction(t, e, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, (e, ts) =>
 									MeteorCall.userAction.deactivate(e, ts, this.props.playlist._id)
