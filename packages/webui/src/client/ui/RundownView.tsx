@@ -1042,7 +1042,7 @@ const RundownHeader = withTranslation()(
 										<MenuItem onClick={(e) => this.deactivate(e)}>{t('Deactivate')}</MenuItem>
 									) : null}
 									{this.props.studio.settings.allowAdlibTestingSegment && this.props.playlist.activationId ? (
-										<MenuItem onClick={(e) => this.activateAdlibTesting(e)}>{t('Adlib Testing')}</MenuItem>
+										<MenuItem onClick={(e) => this.activateAdlibTesting(e)}>{t('AdLib Testing')}</MenuItem>
 									) : null}
 									{this.props.playlist.activationId ? (
 										<MenuItem onClick={(e) => this.take(e)}>{t('Take')}</MenuItem>
