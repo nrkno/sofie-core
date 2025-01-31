@@ -753,19 +753,19 @@ const RundownHeader = withTranslation()(
 					doModalDialog({
 						title: 'Activate "On Air"',
 						message: t('The planned end time has passed, are you sure you want to activate this Rundown?'),
-						yes: 'Activate "On Air"',
+						yes: 'Reset and Activate "On Air"',
 						actions: [
 							{
-								label: 'Reset and Activate "On Air"',
+								label: 'Activate "On Air"',
 								classNames: 'btn-secondary',
 								on: () => {
-									doActivateAndReset()
+									doActivate() // this one activates without resetting
 								},
 							},
 						],
 						acceptOnly: false,
 						onAccept: () => {
-							doActivate() // this one should activate without resetting
+							doActivateAndReset()
 						},
 					})
 				}
