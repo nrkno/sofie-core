@@ -249,8 +249,8 @@ const WarningDisplay = withTranslation()(
 				return (
 					<ModalDialog
 						title={t('Start time is close')}
-						acceptText={t('Yes')}
-						secondaryText={t('No')}
+						acceptText={t('Activate "On Air"')}
+						secondaryText={t('Cancel')}
 						onAccept={this.oneMinuteBeforeAction}
 						onDiscard={this.discard}
 						onSecondary={this.discard}
@@ -638,6 +638,7 @@ const RundownHeader = withTranslation()(
 				),
 				yes: t('Activate "On Air"'),
 				no: t('Cancel'),
+				discardAsPrimary: true,
 				actions: [
 					{
 						label: t('Activate "Rehearsal"'),
@@ -724,9 +725,19 @@ const RundownHeader = withTranslation()(
 					doModalDialog({
 						title: 'Activate "On Air"',
 						message: t('Do you want to activate this Rundown?'),
-						yes: 'Activate "On Air"',
+						yes: 'Reset and Activate "On Air"',
+						no: t('Cancel'),
+						actions: [
+							{
+								label: 'Activate "On Air"',
+								classNames: 'btn-secondary',
+								on: () => {
+									doActivate() // this one activates without resetting
+								},
+							},
+						],
+						acceptOnly: false,
 						onAccept: () => {
-							this.rewindSegments()
 							doUserAction(
 								t,
 								e,
@@ -754,6 +765,7 @@ const RundownHeader = withTranslation()(
 						title: 'Activate "On Air"',
 						message: t('The planned end time has passed, are you sure you want to activate this Rundown?'),
 						yes: 'Reset and Activate "On Air"',
+						no: t('Cancel'),
 						actions: [
 							{
 								label: 'Activate "On Air"',
@@ -826,6 +838,7 @@ const RundownHeader = withTranslation()(
 							title: 'Activate "Rehearsal"',
 							message: t('Are you sure you want to activate Rehearsal Mode?'),
 							yes: 'Activate "Rehearsal"',
+							no: t('Cancel'),
 							onAccept: () => {
 								doActivateRehersal()
 							},
@@ -841,6 +854,7 @@ const RundownHeader = withTranslation()(
 							title: 'Activate "Rehearsal"',
 							message: t('Are you sure you want to activate Rehearsal Mode?'),
 							yes: 'Activate "Rehearsal"',
+							no: t('Cancel'),
 							onAccept: () => {
 								doActivateRehersal()
 							},
