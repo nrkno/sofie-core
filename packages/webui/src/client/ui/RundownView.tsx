@@ -180,7 +180,7 @@ interface ITimingWarningProps {
 	playlist: DBRundownPlaylist
 	inActiveRundownView?: boolean
 	studioMode: boolean
-	oneMinuteBeforeAction: (e: Event) => void
+	oneMinuteBeforeAction: (e: Event, noResetOnActivate: boolean) => void
 }
 
 interface ITimingWarningState {
@@ -233,12 +233,12 @@ const WarningDisplay = withTranslation()(
 				})
 			}
 
-			oneMinuteBeforeAction = (e: any) => {
+			oneMinuteBeforeAction = (e: any, noResetOnActivate: boolean) => {
 				this.setState({
 					plannedStartCloseShow: false,
 				})
 
-				this.props.oneMinuteBeforeAction(e)
+				this.props.oneMinuteBeforeAction(e, noResetOnActivate)
 			}
 
 			render(): JSX.Element | null {
@@ -249,9 +249,18 @@ const WarningDisplay = withTranslation()(
 				return (
 					<ModalDialog
 						title={t('Start time is close')}
-						acceptText={t('Activate "On Air"')}
+						acceptText={t('Reset and Activate "On Air"')}
 						secondaryText={t('Cancel')}
-						onAccept={this.oneMinuteBeforeAction}
+						actions={[
+							{
+								label: t('Activate "On Air"'),
+								classNames: 'btn-secondary',
+								on: (e) => {
+									this.oneMinuteBeforeAction(e as Event, true) // this one activates without resetting
+								},
+							},
+						]}
+						onAccept={(e) => this.oneMinuteBeforeAction(e as Event, false)}
 						onDiscard={this.discard}
 						onSecondary={this.discard}
 						show={
@@ -263,7 +272,7 @@ const WarningDisplay = withTranslation()(
 					>
 						<p>
 							{t(
-								'You are in rehearsal mode, the broadcast starts in less than 1 minute. Do you want to reset the rundown and go into On-Air mode?'
+								'You are in rehearsal mode, the broadcast starts in less than 1 minute. Do you want to go into On-Air mode?'
 							)}
 						</p>
 					</ModalDialog>
@@ -1018,6 +1027,33 @@ const RundownHeader = withTranslation()(
 			}
 		}
 
+		activateRundown = (e: any) => {
+			// Called from the ModalDialog, 1 minute before broadcast starts
+			if (this.props.userPermissions.studio) {
+				const { t } = this.props
+				this.rewindSegments() // Do a rewind right away
+
+				doUserAction(
+					t,
+					e,
+					UserAction.ACTIVATE_RUNDOWN_PLAYLIST,
+					(e, ts) => MeteorCall.userAction.activate(e, ts, this.props.playlist._id, false),
+					(err) => {
+						if (!err) {
+							if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+						} else if (ClientAPI.isClientResponseError(err)) {
+							if (err.error.key === UserErrorMessage.RundownAlreadyActiveNames) {
+								this.handleAnotherPlaylistActive(this.props.playlist._id, false, err.error, () => {
+									if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+								})
+								return false
+							}
+						}
+					}
+				)
+			}
+		}
+
 		resetAndActivateRundown = (e: any) => {
 			// Called from the ModalDialog, 1 minute before broadcast starts
 			if (this.props.userPermissions.studio) {
@@ -1148,7 +1184,9 @@ const RundownHeader = withTranslation()(
 								studioMode={this.props.userPermissions.studio}
 								inActiveRundownView={this.props.inActiveRundownView}
 								playlist={this.props.playlist}
-								oneMinuteBeforeAction={this.resetAndActivateRundown}
+								oneMinuteBeforeAction={(e, noResetOnActivate) =>
+									noResetOnActivate ? this.activateRundown(e) : this.resetAndActivateRundown(e)
+								}
 							/>
 							<div className="row flex-row first-row super-dark">
 								<div className="flex-col left horizontal-align-left">
