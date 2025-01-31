@@ -235,6 +235,7 @@ export class StudioObserver extends EventEmitter {
 		if (this.#disposed) {
 			// If we were disposed of while waiting for the observer to be created, stop it immediately
 			this.#rundownsLiveQuery.stop()
+			this.#pieceInstancesLiveQuery.stop()
 		}
 	}, REACTIVITY_DEBOUNCE)
 

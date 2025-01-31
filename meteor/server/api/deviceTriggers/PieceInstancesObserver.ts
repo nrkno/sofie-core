@@ -94,5 +94,6 @@ export class PieceInstancesObserver {
 		this.#cancelCache()
 		this.#observers.forEach((observer) => observer.stop())
 		this.#cleanup?.()
+		this.#cleanup = undefined
 	}
 }
