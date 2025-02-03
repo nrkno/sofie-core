@@ -200,6 +200,9 @@ export function sourceLayerFrom(apiSourceLayer: APISourceLayer): ISourceLayer {
 		case 'transition':
 			layerType = SourceLayerType.TRANSITION
 			break
+		case 'lights':
+			layerType = SourceLayerType.LIGHTS
+			break
 		case 'unknown':
 			layerType = SourceLayerType.UNKNOWN
 			break
@@ -208,6 +211,9 @@ export function sourceLayerFrom(apiSourceLayer: APISourceLayer): ISourceLayer {
 			break
 		case 'studio-screen':
 			layerType = SourceLayerType.STUDIO_SCREEN
+			break
+		case 'remote-speak':
+			layerType = SourceLayerType.REMOTE_SPEAK
 			break
 		default:
 			layerType = SourceLayerType.UNKNOWN
@@ -257,6 +263,9 @@ export function APISourceLayerFrom(sourceLayer: ISourceLayer): APISourceLayer {
 		case SourceLayerType.TRANSITION:
 			layerType = 'transition'
 			break
+		case SourceLayerType.LIGHTS:
+			layerType = 'lights'
+			break
 		case SourceLayerType.UNKNOWN:
 			layerType = 'unknown'
 			break
@@ -265,6 +274,9 @@ export function APISourceLayerFrom(sourceLayer: ISourceLayer): APISourceLayer {
 			break
 		case SourceLayerType.STUDIO_SCREEN:
 			layerType = 'studio-screen'
+			break
+		case SourceLayerType.REMOTE_SPEAK:
+			layerType = 'remote-speak'
 			break
 		default:
 			layerType = 'unknown'
