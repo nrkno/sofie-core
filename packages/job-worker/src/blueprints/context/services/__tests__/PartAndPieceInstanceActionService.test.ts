@@ -1666,7 +1666,7 @@ describe('Test blueprint api context', () => {
 
 					// Ensure it was all removed
 					expect(playoutModel.findPieceInstance(targetPieceInstance.pieceInstance._id)).toBeFalsy()
-					expect(service.nextPartState).toEqual(ActionPartChange.SAFE_CHANGE)
+					expect(service.currentPartState).toEqual(ActionPartChange.SAFE_CHANGE)
 				})
 			})
 		})
