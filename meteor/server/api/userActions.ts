@@ -638,6 +638,9 @@ class ServerUserActionAPI
 		reason: string,
 		full: boolean
 	) {
+		if (!verifyHashedToken(hashedToken)) {
+			throw new Meteor.Error(401, `Idempotency token is invalid or has expired`)
+		}
 		return ServerClientAPI.runUserActionInLogForPlaylist(
 			this,
 			userEvent,
@@ -650,7 +653,7 @@ class ServerUserActionAPI
 			'storeRundownSnapshot',
 			{ playlistId, reason, full },
 			async (playlist) => {
-				return storeRundownPlaylistSnapshot(playlist, hashedToken, reason, full)
+				return storeRundownPlaylistSnapshot(playlist, { withArchivedDocuments: full }, reason)
 			}
 		)
 	}

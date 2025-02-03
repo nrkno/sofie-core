@@ -309,6 +309,8 @@ export type DebugSyncInfinitesForNextPartInstanceProps = RundownPlayoutPropsBase
 export interface GeneratePlaylistSnapshotProps extends RundownPlayoutPropsBase {
 	// Include all Instances, or just recent ones
 	full: boolean
+	// Include the Timeline
+	withTimeline: boolean
 }
 export interface GeneratePlaylistSnapshotResult {
 	/**
