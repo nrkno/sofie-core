@@ -182,7 +182,7 @@ interface ITimingWarningProps {
 	playlist: DBRundownPlaylist
 	inActiveRundownView?: boolean
 	studioMode: boolean
-	oneMinuteBeforeAction: (e: Event) => void
+	oneMinuteBeforeAction: (e: Event, noResetOnActivate: boolean) => void
 }
 
 interface ITimingWarningState {
@@ -235,12 +235,12 @@ const WarningDisplay = withTranslation()(
 				})
 			}
 
-			oneMinuteBeforeAction = (e: any) => {
+			oneMinuteBeforeAction = (e: any, noResetOnActivate: boolean) => {
 				this.setState({
 					plannedStartCloseShow: false,
 				})
 
-				this.props.oneMinuteBeforeAction(e)
+				this.props.oneMinuteBeforeAction(e, noResetOnActivate)
 			}
 
 			render(): JSX.Element | null {
@@ -251,9 +251,18 @@ const WarningDisplay = withTranslation()(
 				return (
 					<ModalDialog
 						title={t('Start time is close')}
-						acceptText={t('Yes')}
-						secondaryText={t('No')}
-						onAccept={this.oneMinuteBeforeAction}
+						acceptText={t('Reset and Activate "On Air"')}
+						secondaryText={t('Cancel')}
+						actions={[
+							{
+								label: t('Activate "On Air"'),
+								classNames: 'btn-secondary',
+								on: (e) => {
+									this.oneMinuteBeforeAction(e as Event, true) // this one activates without resetting
+								},
+							},
+						]}
+						onAccept={(e) => this.oneMinuteBeforeAction(e as Event, false)}
 						onDiscard={this.discard}
 						onSecondary={this.discard}
 						show={
@@ -265,7 +274,7 @@ const WarningDisplay = withTranslation()(
 					>
 						<p>
 							{t(
-								'You are in rehearsal mode, the broadcast starts in less than 1 minute. Do you want to reset the rundown and go into On-Air mode?'
+								'You are in rehearsal mode, the broadcast starts in less than 1 minute. Do you want to go into On-Air mode?'
 							)}
 						</p>
 					</ModalDialog>
@@ -498,17 +507,22 @@ const RundownHeader = withTranslation()(
 						),
 						acceptOnly: false,
 						warning: true,
-						yes: t('Activate (Rehearsal)'),
+						yes: t('Activate "On Air"'),
+						no: t('Cancel'),
+						discardAsPrimary: true,
+						onDiscard: () => {
+							// Do nothing
+						},
 						actions: [
 							{
-								label: t('Activate (On-Air)'),
-								classNames: 'btn-primary',
+								label: t('Activate "Rehearsal"'),
+								classNames: 'btn-secondary',
 								on: (e) => {
 									doUserAction(
 										t,
 										e,
 										UserAction.DEACTIVATE_OTHER_RUNDOWN_PLAYLIST,
-										(e, ts) => MeteorCall.userAction.forceResetAndActivate(e, ts, this.props.playlist._id, false),
+										(e, ts) => MeteorCall.userAction.forceResetAndActivate(e, ts, this.props.playlist._id, true),
 										handleResult
 									)
 								},
@@ -520,7 +534,7 @@ const RundownHeader = withTranslation()(
 								t,
 								e,
 								UserAction.ACTIVATE_RUNDOWN_PLAYLIST,
-								(e, ts) => MeteorCall.userAction.activate(e, ts, this.props.playlist._id, true),
+								(e, ts) => MeteorCall.userAction.activate(e, ts, this.props.playlist._id, false),
 								handleResult
 							)
 						},
@@ -621,24 +635,25 @@ const RundownHeader = withTranslation()(
 			doModalDialog({
 				title: t('Another Rundown is Already Active!'),
 				message: t(
-					'The rundown "{{rundownName}}" will need to be deactivated in order to activate this one.\n\nAre you sure you want to activate this one anyway?',
+					'The rundown: "{{rundownName}}" will need to be deactivated in order to activate this one.\n\nAre you sure you want to activate this one anyway?',
 					{
 						// TODO: this is a bit of a hack, could a better string sent from the server instead?
 						rundownName: err.message.args?.names ?? '',
 					}
 				),
-				yes: t('Activate Anyway (Rehearsal)'),
+				yes: t('Activate "On Air"'),
 				no: t('Cancel'),
+				discardAsPrimary: true,
 				actions: [
 					{
-						label: t('Activate Anyway (On-Air)'),
-						classNames: 'btn-primary',
+						label: t('Activate "Rehearsal"'),
+						classNames: 'btn-secondary',
 						on: (e) => {
 							doUserAction(
 								t,
 								e,
 								UserAction.DEACTIVATE_OTHER_RUNDOWN_PLAYLIST,
-								(e, ts) => MeteorCall.userAction.forceResetAndActivate(e, ts, playlistId, false),
+								(e, ts) => MeteorCall.userAction.forceResetAndActivate(e, ts, playlistId, rehersal),
 								handleResult
 							)
 						},
@@ -650,7 +665,7 @@ const RundownHeader = withTranslation()(
 						t,
 						e,
 						UserAction.DEACTIVATE_OTHER_RUNDOWN_PLAYLIST,
-						(e, ts) => MeteorCall.userAction.forceResetAndActivate(e, ts, playlistId, rehersal),
+						(e, ts) => MeteorCall.userAction.forceResetAndActivate(e, ts, playlistId, false),
 						handleResult
 					)
 				},
@@ -689,14 +704,45 @@ const RundownHeader = withTranslation()(
 						}
 					)
 				}
+
+				const doActivateAndReset = () => {
+					this.rewindSegments()
+					doUserAction(
+						t,
+						e,
+						UserAction.RESET_AND_ACTIVATE_RUNDOWN_PLAYLIST,
+						(e, ts) => MeteorCall.userAction.resetAndActivate(e, ts, this.props.playlist._id),
+						(err) => {
+							if (!err) {
+								onSuccess()
+							} else if (ClientAPI.isClientResponseError(err)) {
+								if (err.error.key === UserErrorMessage.RundownAlreadyActiveNames) {
+									this.handleAnotherPlaylistActive(this.props.playlist._id, false, err.error, onSuccess)
+									return false
+								}
+							}
+						}
+					)
+				}
+
 				if (!this.rundownShouldHaveStarted()) {
 					// The broadcast hasn't started yet
 					doModalDialog({
-						title: this.props.playlist.name,
+						title: 'Activate "On Air"',
 						message: t('Do you want to activate this Rundown?'),
-						yes: 'Activate (On-Air)',
+						yes: 'Reset and Activate "On Air"',
+						no: t('Cancel'),
+						actions: [
+							{
+								label: 'Activate "On Air"',
+								classNames: 'btn-secondary',
+								on: () => {
+									doActivate() // this one activates without resetting
+								},
+							},
+						],
+						acceptOnly: false,
 						onAccept: () => {
-							this.rewindSegments()
 							doUserAction(
 								t,
 								e,
@@ -721,11 +767,22 @@ const RundownHeader = withTranslation()(
 				} else {
 					// The broadcast has ended, going into active mode is probably not what you want to do
 					doModalDialog({
-						title: this.props.playlist.name,
+						title: 'Activate "On Air"',
 						message: t('The planned end time has passed, are you sure you want to activate this Rundown?'),
-						yes: 'Activate (On-Air)',
+						yes: 'Reset and Activate "On Air"',
+						no: t('Cancel'),
+						actions: [
+							{
+								label: 'Activate "On Air"',
+								classNames: 'btn-secondary',
+								on: () => {
+									doActivate() // this one activates without resetting
+								},
+							},
+						],
+						acceptOnly: false,
 						onAccept: () => {
-							doActivate()
+							doActivateAndReset()
 						},
 					})
 				}
@@ -783,9 +840,10 @@ const RundownHeader = withTranslation()(
 					} else if (!this.props.playlist.rehearsal) {
 						// Active, and not in rehearsal
 						doModalDialog({
-							title: this.props.playlist.name,
+							title: 'Activate "Rehearsal"',
 							message: t('Are you sure you want to activate Rehearsal Mode?'),
-							yes: 'Activate (Rehearsal)',
+							yes: 'Activate "Rehearsal"',
+							no: t('Cancel'),
 							onAccept: () => {
 								doActivateRehersal()
 							},
@@ -798,9 +856,10 @@ const RundownHeader = withTranslation()(
 					if (!this.rundownShouldHaveEnded()) {
 						// We are in the broadcast
 						doModalDialog({
-							title: this.props.playlist.name,
+							title: 'Activate "Rehearsal"',
 							message: t('Are you sure you want to activate Rehearsal Mode?'),
-							yes: 'Activate (Rehearsal)',
+							yes: 'Activate "Rehearsal"',
+							no: t('Cancel'),
 							onAccept: () => {
 								doActivateRehersal()
 							},
@@ -825,9 +884,11 @@ const RundownHeader = withTranslation()(
 						)
 					} else {
 						doModalDialog({
-							title: this.props.playlist.name,
-							message: t('Are you sure you want to deactivate this Rundown?\n(This will clear the outputs)'),
+							title: 'Deactivate "On Air"',
+							message: t('Are you sure you want to deactivate this rundown?\n(This will clear the outputs.)'),
 							warning: true,
+							yes: t('Deactivate "On Air"'),
+							no: t('Cancel'),
 							onAccept: () => {
 								doUserAction(t, e, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, (e, ts) =>
 									MeteorCall.userAction.deactivate(e, ts, this.props.playlist._id)
@@ -883,7 +944,7 @@ const RundownHeader = withTranslation()(
 			) {
 				// The rundown is active and not in rehersal
 				doModalDialog({
-					title: this.props.playlist.name,
+					title: 'Reset Rundown',
 					message: t('The rundown can not be reset while it is active'),
 					onAccept: () => {
 						// nothing
@@ -958,6 +1019,33 @@ const RundownHeader = withTranslation()(
 						return false
 					},
 					doneMessage
+				)
+			}
+		}
+
+		activateRundown = (e: any) => {
+			// Called from the ModalDialog, 1 minute before broadcast starts
+			if (this.props.userPermissions.studio) {
+				const { t } = this.props
+				this.rewindSegments() // Do a rewind right away
+
+				doUserAction(
+					t,
+					e,
+					UserAction.ACTIVATE_RUNDOWN_PLAYLIST,
+					(e, ts) => MeteorCall.userAction.activate(e, ts, this.props.playlist._id, false),
+					(err) => {
+						if (!err) {
+							if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+						} else if (ClientAPI.isClientResponseError(err)) {
+							if (err.error.key === UserErrorMessage.RundownAlreadyActiveNames) {
+								this.handleAnotherPlaylistActive(this.props.playlist._id, false, err.error, () => {
+									if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+								})
+								return false
+							}
+						}
+					}
 				)
 			}
 		}
@@ -1092,7 +1180,9 @@ const RundownHeader = withTranslation()(
 								studioMode={this.props.userPermissions.studio}
 								inActiveRundownView={this.props.inActiveRundownView}
 								playlist={this.props.playlist}
-								oneMinuteBeforeAction={this.resetAndActivateRundown}
+								oneMinuteBeforeAction={(e, noResetOnActivate) =>
+									noResetOnActivate ? this.activateRundown(e) : this.resetAndActivateRundown(e)
+								}
 							/>
 							<div className="row flex-row first-row super-dark">
 								<div className="flex-col left horizontal-align-left">
@@ -3495,7 +3585,7 @@ export function handleRundownReloadResponse(
 						doModalDialog({
 							title: t('Remove rundown'),
 							message: t(
-								'Do you really want to remove just the rundown "{{rundownName}}" in the playlist {{playlistName}} from Sofie? This cannot be undone!',
+								'Do you really want to remove just the rundown "{{rundownName}}" in the playlist {{playlistName}} from Sofie? \n\nThis cannot be undone!',
 								{
 									rundownName: rundown?.name || 'N/A',
 									playlistName: playlist?.name || 'N/A',
