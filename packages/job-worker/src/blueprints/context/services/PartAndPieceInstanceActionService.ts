@@ -450,8 +450,8 @@ export class PartAndPieceInstanceActionService {
 		)
 	}
 
-	async removePieceInstances(_part: 'next', pieceInstanceIds: string[]): Promise<string[]> {
-		const partInstance = this._getPartInstance('next')
+	async removePieceInstances(part: 'current' | 'next', pieceInstanceIds: string[]): Promise<string[]> {
+		const partInstance = this._getPartInstance(part)
 		if (!partInstance) {
 			throw new Error('Cannot remove pieceInstances when no selected partInstance')
 		}
