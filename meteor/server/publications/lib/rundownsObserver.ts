@@ -30,11 +30,15 @@ export class RundownsObserver implements Meteor.LiveQueryHandle {
 		if (this.#disposed) return
 		if (!this.#changed) return
 		this.#cleanup?.()
+		this.#cleanup = undefined
 
 		const changed = this.#changed
 		this.#cleanup = await changed(this.rundownIds)
 
-		if (this.#disposed) this.#cleanup?.()
+		if (this.#disposed) {
+			this.#cleanup?.()
+			this.#cleanup = undefined
+		}
 	}, REACTIVITY_DEBOUNCE)
 
 	private constructor(onChanged: ChangedHandler) {
@@ -109,5 +113,6 @@ export class RundownsObserver implements Meteor.LiveQueryHandle {
 		this.#rundownsLiveQuery.stop()
 		this.#changed = undefined
 		this.#cleanup?.()
+		this.#cleanup = undefined
 	}
 }
