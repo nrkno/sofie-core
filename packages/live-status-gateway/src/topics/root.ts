@@ -37,6 +37,7 @@ export enum StatusChannels {
 	activePieces = 'activePieces',
 	segments = 'segments',
 	adLibs = 'adLibs',
+	packages = 'packages',
 }
 
 interface RootMsg {
@@ -157,5 +158,9 @@ export class RootChannel extends WebSocketTopicBase implements WebSocketTopic {
 				})
 			)
 		}
+	}
+
+	sendStatus(): void {
+		// no status here
 	}
 }
