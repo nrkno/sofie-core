@@ -14,6 +14,7 @@ import {
 	CoreUserEditingDefinitionAction,
 	CoreUserEditingDefinitionForm,
 	CoreUserEditingProperties,
+	CoreUserEditingDefinitionSofie,
 } from '@sofie-automation/corelib/dist/dataModel/UserEditingDefinitions'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { assertNever, clone, Complete, literal, omit } from '@sofie-automation/corelib/dist/lib'
@@ -58,6 +59,7 @@ import {
 	UserEditingDefinitionAction,
 	UserEditingDefinitionForm,
 	UserEditingProperties,
+	UserEditingDefinitionSofieDefault,
 	UserEditingType,
 } from '@sofie-automation/blueprints-integration/dist/userEditing'
 import type { PlayoutMutatablePart } from '../../playout/model/PlayoutPartInstanceModel'
@@ -532,6 +534,11 @@ function translateUserEditsToBlueprint(
 						schema: clone(userEdit.schema),
 						currentValues: clone(userEdit.currentValues),
 					} satisfies Complete<UserEditingDefinitionForm>
+				case UserEditingType.SOFIE:
+					return {
+						type: UserEditingType.SOFIE,
+						id: userEdit.id,
+					} satisfies Complete<UserEditingDefinitionSofieDefault>
 				default:
 					assertNever(userEdit)
 					return undefined
@@ -590,6 +597,11 @@ export function translateUserEditsFromBlueprint(
 						currentValues: clone(userEdit.currentValues),
 						translationNamespaces: unprotectStringArray(blueprintIds),
 					} satisfies Complete<CoreUserEditingDefinitionForm>
+				case UserEditingType.SOFIE:
+					return {
+						type: UserEditingType.SOFIE,
+						id: userEdit.id,
+					} satisfies Complete<CoreUserEditingDefinitionSofie>
 				default:
 					assertNever(userEdit)
 					return undefined
