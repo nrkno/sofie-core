@@ -10,7 +10,7 @@
 
 import * as WebSocket from 'faye-websocket'
 import * as EJSON from 'ejson'
-import { EventEmitter } from 'eventemitter3'
+import { EventEmitter } from 'events'
 import got from 'got'
 import { ProtectedString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 

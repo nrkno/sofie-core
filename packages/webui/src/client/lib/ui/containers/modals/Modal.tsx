@@ -16,14 +16,14 @@ export type SomeEvent = Event | React.SyntheticEvent<object>
 
 export class Modal extends React.Component<React.PropsWithChildren<IModalAttributes>> {
 	boundKeys: Array<string> = []
-	sorensen: Sorensen | undefined
+	sorensen: typeof Sorensen | undefined
 
 	constructor(props: IModalAttributes) {
 		super(props)
 	}
 
 	componentDidMount(): void {
-		this.sorensen = this.context as Sorensen
+		this.sorensen = this.context as typeof Sorensen
 		this.bindKeys()
 	}
 
