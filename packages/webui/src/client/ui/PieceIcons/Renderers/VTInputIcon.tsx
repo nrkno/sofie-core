@@ -3,29 +3,18 @@ import * as React from 'react'
 export default class VTInputIcon extends React.Component<{ abbreviation?: string }> {
 	render(): JSX.Element {
 		return (
-			<svg className="piece_icon" version="1.1" viewBox="0 0 126.5 89" xmlns="http://www.w3.org/2000/svg">
+			<svg className="piece-icon" version="1.1" viewBox="0 0 126.5 89" xmlns="http://www.w3.org/2000/svg">
 				<rect width="126.5" height="89" className="vt" />
 				<text
-					x="5.25"
+					x="63.25"
 					y="71.513954"
-					style={{
-						fill: '#ffffff',
-						fontFamily: 'open-sans',
-						fontSize: '40px',
-						letterSpacing: '0px',
-						lineHeight: '1.25',
-						wordSpacing: '0px',
-						textShadow: '0 2px 9px rgba(0, 0, 0, 0.5)',
-					}}
+					textAnchor="middle"
+					textLength="126.5"
+					className="piece-icon-text"
 					xmlSpace="preserve"
-					className="label"
 				>
-					<tspan
-						x="5.25"
-						y="71.513954"
-						style={{ fill: '#ffffff', fontFamily: 'Roboto', fontSize: '75px', fontWeight: 100 }}
-					>
-						{this.props.abbreviation ? this.props.abbreviation : 'VT'}
+					<tspan lengthAdjust="spacing" className="label">
+						{this.props.abbreviation !== undefined ? this.props.abbreviation : 'VT'}
 					</tspan>
 				</text>
 			</svg>

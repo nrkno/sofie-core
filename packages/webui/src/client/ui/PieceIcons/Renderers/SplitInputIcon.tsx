@@ -25,10 +25,10 @@ export default class SplitInputIcon extends React.Component<{
 					</React.Fragment>
 				)
 			} else {
-				return this.props.abbreviation ? this.props.abbreviation : 'Spl'
+				return this.props.abbreviation !== undefined ? this.props.abbreviation : 'Spl'
 			}
 		} else {
-			return this.props.abbreviation ? this.props.abbreviation : 'Spl'
+			return this.props.abbreviation !== undefined ? this.props.abbreviation : 'Spl'
 		}
 	}
 
