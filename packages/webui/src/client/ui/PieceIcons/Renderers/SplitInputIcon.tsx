@@ -17,7 +17,7 @@ export default class SplitInputIcon extends React.Component<{
 			const c = piece.content as SplitsContent
 			const camera = c.boxSourceConfiguration.find((i) => i.type === SourceLayerType.CAMERA)
 			if (camera && camera.studioLabel) {
-				const label = camera.studioLabel.match(/([a-zA-Z]+)?(\d+)/)
+				const label = camera.studioLabelShort || camera.studioLabel.match(/([a-zA-Z]+)?(\d+)/)
 				return (
 					<React.Fragment>
 						{label && label[1] ? label[1].substr(0, 1).toUpperCase() + ' ' : ''}
@@ -69,29 +69,14 @@ export default class SplitInputIcon extends React.Component<{
 				/>
 				{!this.props.hideLabel && (
 					<text
-						x="9.6414976"
-						textLength="106.5"
+						x="63.25"
 						y="71.513954"
 						textAnchor="middle"
-						style={{
-							fill: '#ffffff',
-							fontFamily: 'open-sans',
-							fontSize: '40px',
-							letterSpacing: '0px',
-							lineHeight: '1.25',
-							wordSpacing: '0px',
-							textShadow: '0 2px 9px rgba(0, 0, 0, 0.5)',
-						}}
+						textLength="126.5"
+						className="piece-icon-text"
 						xmlSpace="preserve"
-						className="label"
 					>
-						<tspan
-							x="63.25"
-							y="71.513954"
-							textLength="106.5"
-							lengthAdjust="spacingAndGlyphs"
-							style={{ fill: '#ffffff', fontFamily: 'Roboto', fontSize: '75px', fontWeight: 100 }}
-						>
+						<tspan lengthAdjust="spacing" className="label">
 							{this.getCameraLabel(this.props.piece)}
 						</tspan>
 					</text>
