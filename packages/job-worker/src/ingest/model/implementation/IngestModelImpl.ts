@@ -462,7 +462,6 @@ export class IngestModelImpl implements IngestModel, DatabasePersistedModel {
 			// owned by elsewhere
 			airStatus: this.#rundownImpl?.airStatus,
 			status: this.#rundownImpl?.status,
-			notifiedCurrentPlayingPartExternalId: this.#rundownImpl?.notifiedCurrentPlayingPartExternalId,
 		})
 		deleteAllUndefinedProperties(newRundown)
 

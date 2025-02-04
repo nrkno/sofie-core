@@ -145,8 +145,6 @@ export async function deactivateRundownPlaylistInner(
 	let rundown: ReadonlyDeep<DBRundown> | undefined
 	if (currentPartInstance) {
 		rundown = playoutModel.getRundown(currentPartInstance.partInstance.rundownId)?.rundown
-
-		playoutModel.queueNotifyCurrentlyPlayingPartEvent(currentPartInstance.partInstance.rundownId, null)
 	} else if (nextPartInstance) {
 		rundown = playoutModel.getRundown(nextPartInstance.partInstance.rundownId)?.rundown
 	}
