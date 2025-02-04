@@ -117,7 +117,7 @@ export class OnTakeContext extends ShowStyleUserContext implements IOnTakeContex
 	async stopPieceInstances(pieceInstanceIds: string[], timeOffset?: number | undefined): Promise<string[]> {
 		return this.partAndPieceInstanceService.stopPieceInstances(pieceInstanceIds, timeOffset)
 	}
-	async removePieceInstances(part: 'next', pieceInstanceIds: string[]): Promise<string[]> {
+	async removePieceInstances(part: 'current' | 'next', pieceInstanceIds: string[]): Promise<string[]> {
 		return this.partAndPieceInstanceService.removePieceInstances(part, pieceInstanceIds)
 	}
 

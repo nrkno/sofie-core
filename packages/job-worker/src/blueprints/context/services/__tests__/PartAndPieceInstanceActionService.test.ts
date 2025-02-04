@@ -1610,7 +1610,7 @@ describe('Test blueprint api context', () => {
 				})
 			})
 
-			test('good', async () => {
+			test('good - from next', async () => {
 				const { jobContext, playlistId, allPartInstances } = await setupMyDefaultRundown()
 
 				const partInstance = allPartInstances[0]
@@ -1636,6 +1636,37 @@ describe('Test blueprint api context', () => {
 					// Ensure it was all removed
 					expect(playoutModel.findPieceInstance(targetPieceInstance.pieceInstance._id)).toBeFalsy()
 					expect(service.nextPartState).toEqual(ActionPartChange.SAFE_CHANGE)
+				})
+			})
+
+			test('good - from current', async () => {
+				const { jobContext, playlistId, allPartInstances } = await setupMyDefaultRundown()
+
+				const partInstance = allPartInstances[0]
+				await setPartInstances(jobContext, playlistId, partInstance, undefined)
+
+				await wrapWithPlayoutModel(jobContext, playlistId, async (playoutModel) => {
+					const { service } = await getTestee(jobContext, playoutModel)
+
+					const beforePieceInstancesCounts = getPieceInstanceCounts(playoutModel)
+					expect(beforePieceInstancesCounts.previous).toEqual(0)
+					expect(beforePieceInstancesCounts.current).not.toEqual(0)
+					expect(beforePieceInstancesCounts.next).toEqual(0)
+					expect(beforePieceInstancesCounts.other).toEqual(0)
+
+					// Find the instance, and create its backing piece
+					const targetPieceInstance = playoutModel.currentPartInstance!.pieceInstances[0]
+					expect(targetPieceInstance).toBeTruthy()
+
+					await expect(
+						service.removePieceInstances('current', [
+							unprotectString(targetPieceInstance.pieceInstance._id),
+						])
+					).resolves.toEqual([unprotectString(targetPieceInstance.pieceInstance._id)])
+
+					// Ensure it was all removed
+					expect(playoutModel.findPieceInstance(targetPieceInstance.pieceInstance._id)).toBeFalsy()
+					expect(service.currentPartState).toEqual(ActionPartChange.SAFE_CHANGE)
 				})
 			})
 		})
