@@ -13,7 +13,7 @@ export default class GraphicsInputIcon extends React.Component<{ abbreviation?: 
 					xmlSpace="preserve"
 				>
 					<tspan lengthAdjust="spacing" className="label">
-						{this.props.abbreviation ? this.props.abbreviation : 'G'}
+						{this.props.abbreviation !== undefined ? this.props.abbreviation : 'G'}
 					</tspan>
 				</text>
 			</svg>
