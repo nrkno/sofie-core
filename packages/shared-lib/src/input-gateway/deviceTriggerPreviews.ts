@@ -61,4 +61,6 @@ export type PreviewWrappedAdLib = Omit<IWrappedAdLibBase, '_id'> & {
 		  }
 		| undefined
 	styleClassNames: string | undefined
+	isCurrent: boolean | undefined
+	isNext: boolean | undefined
 }
