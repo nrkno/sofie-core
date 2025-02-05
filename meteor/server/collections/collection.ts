@@ -112,13 +112,10 @@ function setupCollectionAllowRules<DBInterface extends { _id: ProtectedString<an
 
 	const { /* insert: origInsert,*/ update: origUpdate /*remove: origRemove*/ } = args
 
-	// These methods behave weirdly, we need to mangle this a bit.
-	// See https://github.com/meteor/meteor/issues/13444 for a full explanation
-	const options: any /*Parameters<Mongo.Collection<DBInterface>['allow']>[0]*/ = {
-		update: () => false,
-		updateAsync: origUpdate
-			? (userId: string | null, doc: DBInterface, fieldNames: string[], modifier: any) =>
-					origUpdate(protectString(userId), doc, fieldNames as any, modifier) as any
+	const options: Parameters<Mongo.Collection<DBInterface>['allow']>[0] = {
+		update: origUpdate
+			? async (userId: string | null, doc: DBInterface, fieldNames: string[], modifier: any) =>
+					origUpdate(protectString(userId), doc, fieldNames as any, modifier)
 			: () => false,
 	}
 
