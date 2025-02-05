@@ -16,7 +16,7 @@ import { DEFAULT_CORE_TRIGGER_IDS } from './upgrades/defaultSystemActionTriggers
 import { ICoreSystem } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
 import { ICoreSystemSettings } from '@sofie-automation/shared-lib/dist/core/model/CoreSystemSettings'
 import { logger } from '../logging'
-import { literal, unprotectString } from '../lib/tempLib'
+import { assertNever, literal, unprotectString } from '../lib/tempLib'
 
 // Release 52
 
@@ -71,13 +71,25 @@ export const addSteps = addMigrationSteps('1.52.0', [
 			const studios = await Studios.findFetchAsync({ routeSetsWithOverrides: { $exists: true } })
 
 			for (const studio of studios) {
-				const routeSetsDefaults = studio.routeSetsWithOverrides.defaults as any as Record<
-					string,
-					StudioRouteSet
-				>
+				// .abPlayers in the defaults:
+				const routeSetsDefaults = studio.routeSetsWithOverrides.defaults
 				for (const key of Object.keys(routeSetsDefaults)) {
 					if (!routeSetsDefaults[key].abPlayers) {
 						return 'AB players must be added to routeSetsWithOverrides'
+					}
+				}
+				// .abPlayers in the overrides:
+				for (const override of studio.routeSetsWithOverrides.overrides) {
+					if (override.op === 'set') {
+						const value = override.value as StudioRouteSet
+
+						if (!value.abPlayers) {
+							return 'AB players must be added to routeSetsWithOverrides'
+						}
+					} else if (override.op === 'delete') {
+						// ignore this
+					} else {
+						assertNever(override)
 					}
 				}
 			}
@@ -88,16 +100,29 @@ export const addSteps = addMigrationSteps('1.52.0', [
 			const studios = await Studios.findFetchAsync({ routeSetsWithOverrides: { $exists: true } })
 
 			for (const studio of studios) {
-				const newRouteSetswithOverrides = studio.routeSetsWithOverrides
-				for (const key of Object.keys(newRouteSetswithOverrides.defaults)) {
-					if (!newRouteSetswithOverrides.defaults[key].abPlayers) {
-						newRouteSetswithOverrides.defaults[key].abPlayers = []
+				const newRouteSetsWithOverrides = studio.routeSetsWithOverrides
+
+				// .abPlayers in the defaults:
+				const routeSetsDefaults = newRouteSetsWithOverrides.defaults
+				for (const key of Object.keys(routeSetsDefaults)) {
+					if (!routeSetsDefaults[key].abPlayers) {
+						routeSetsDefaults[key].abPlayers = []
+					}
+				}
+				// .abPlayers in the overrides:
+				for (const override of newRouteSetsWithOverrides.overrides) {
+					if (override.op === 'set') {
+						const value = override.value as StudioRouteSet
+
+						if (!value.abPlayers) {
+							value.abPlayers = []
+						}
 					}
 				}
 
 				await Studios.updateAsync(studio._id, {
 					$set: {
-						routeSetsWithOverrides: newRouteSetswithOverrides,
+						routeSetsWithOverrides: newRouteSetsWithOverrides,
 					},
 				})
 			}
