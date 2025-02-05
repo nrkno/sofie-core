@@ -65,6 +65,8 @@ import * as _ from 'underscore'
 import { PlayoutRundownModel } from '../model/PlayoutRundownModel'
 import { PlayoutPartInstanceModel } from '../model/PlayoutPartInstanceModel'
 import { PlayoutPartInstanceModelImpl } from '../model/implementation/PlayoutPartInstanceModelImpl'
+import { mock } from 'jest-mock-extended'
+import { QuickLoopService } from '../model/services/QuickLoopService'
 
 /**
  * An object used to represent the simplified timeline structure.
@@ -710,7 +712,7 @@ describe('Timeline', () => {
 				const pieceInstances = await context.directCollections.PieceInstances.findFetch({
 					partInstanceId: partInstance?._id,
 				})
-				return new PlayoutPartInstanceModelImpl(partInstance, pieceInstances, false)
+				return new PlayoutPartInstanceModelImpl(partInstance, pieceInstances, false, mock<QuickLoopService>())
 			}
 
 			return {
