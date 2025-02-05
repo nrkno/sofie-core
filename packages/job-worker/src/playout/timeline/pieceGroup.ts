@@ -42,8 +42,11 @@ export function createPieceGroupAndCap(
 	partGroup?: TimelineObjRundown,
 	pieceStartOffset?: number
 ): {
+	/** The 'control' object which defines the bounds of the group. This triggers the timing, and does not include and pre/postroll */
 	controlObj: TimelineObjPieceAbstract & OnGenerateTimelineObjExt<PieceTimelineMetadata>
+	/** The 'group' object that should contain all the content. This uses the control object for its timing, and adds the pre/postroll. */
 	childGroup: TimelineObjGroupRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>
+	/** Any additional objects which are used to determine points in time that the piece should start/end relative to. */
 	capObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>>
 } {
 	const controlObj = literal<TimelineObjPieceAbstract & OnGenerateTimelineObjExt<PieceTimelineMetadata>>({
