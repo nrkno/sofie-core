@@ -5,6 +5,7 @@ import { TimelineObjRundown } from '@sofie-automation/corelib/dist/dataModel/Tim
 import { normalizeArray } from '@sofie-automation/corelib/dist/lib'
 import { PieceTimelineMetadata } from './pieceGroup'
 import { StudioPlayoutModelBase } from '../../studio/model/StudioPlayoutModel'
+import { logger } from '../../logging'
 import { JobContext } from '../../jobs'
 import { getCurrentTime } from '../../lib'
 import { PlayoutModel } from '../model/PlayoutModel'
@@ -46,7 +47,7 @@ export function deNowifyMultiGatewayTimeline(
 		playoutModel.nextPartInstance
 	)
 
-	deNowifyCurrentPieces(
+	const { objectsNotDeNowified } = deNowifyCurrentPieces(
 		targetNowTime,
 		timingContext,
 		currentPartInstance,
@@ -55,6 +56,9 @@ export function deNowifyMultiGatewayTimeline(
 	)
 
 	updatePlannedTimingsForPieceInstances(playoutModel, currentPartInstance, partGroupTimings, timelineObjsMap)
+
+	// Because updatePlannedTimingsForPieceInstances changes start times of infinites, we can now run deNowifyInfinites()
+	deNowifyInfinites(targetNowTime, objectsNotDeNowified, timelineObjsMap)
 }
 
 /**
@@ -143,7 +147,65 @@ function updatePartInstancePlannedTimes(
 }
 
 /**
+ * Replace the `now` time in any timeline objects in infinites
+ */
+function deNowifyInfinites(
+	targetNowTime: number,
+	/** A list of objects that need to be updated */
+	infiniteObjs: TimelineObjRundown[],
+	timelineObjsMap: Record<string, TimelineObjRundown>
+) {
+	/**
+	 * Recursively look up the absolute starttime of a timeline object
+	 * taking into account its parent's times.
+	 * Note: This only supports timeline objects that have absolute enable.start times.
+	 */
+	const getStartTime = (obj: TimelineObjRundown): number | undefined => {
+		if (Array.isArray(obj.enable)) return undefined
+
+		const myStartTime = typeof obj.enable.start === 'number' ? obj.enable.start : undefined
+
+		if (!obj.inGroup) return myStartTime
+
+		if (myStartTime === undefined) return undefined
+
+		const parentObject = timelineObjsMap[obj.inGroup]
+		if (!parentObject) return undefined
+
+		const parentStartTime = getStartTime(parentObject)
+		if (parentStartTime === undefined) return undefined
+
+		return parentStartTime + myStartTime
+	}
+
+	for (const obj of infiniteObjs) {
+		if (!Array.isArray(obj.enable) && obj.enable.start === 'now') {
+			if (obj.inGroup) {
+				const parentObject = timelineObjsMap[obj.inGroup]
+				if (parentObject) {
+					const parentStartTime = getStartTime(parentObject)
+					if (parentStartTime !== undefined) {
+						obj.enable = { start: targetNowTime - parentStartTime }
+					} else {
+						logger.error(
+							`Unable to derive an absolute start time of parent "${obj.inGroup}" for object "${obj.id}" during deNowifyInfinites`
+						)
+					}
+				} else {
+					logger.error(`Parent obj "${obj.inGroup}" not found of object "${obj.id}" during deNowifyInfinites`)
+				}
+			} else {
+				logger.error(
+					`Unexpected "now" time during deNowifyInfinites, setting to absolute time for a timelineObject not inGroup: "${obj.id}"`
+				)
+				obj.enable = { start: targetNowTime }
+			}
+		}
+	}
+}
+/**
  * Replace the `now` time in any Pieces on the timeline from the current Part with concrete start times
+ * @returns a list of object that couldn't be updated at this time.
  */
 function deNowifyCurrentPieces(
 	targetNowTime: number,
@@ -151,7 +213,8 @@ function deNowifyCurrentPieces(
 	currentPartInstance: PlayoutPartInstanceModel,
 	currentPartGroupStartTime: number,
 	timelineObjsMap: Record<string, TimelineObjRundown>
-) {
+): { objectsNotDeNowified: TimelineObjRundown[] } {
+	const objectsNotDeNowified: TimelineObjRundown[] = []
 	// The relative time for 'now' to be resolved to, inside of the part group
 	const nowInPart = targetNowTime - currentPartGroupStartTime
 
@@ -176,6 +239,8 @@ function deNowifyCurrentPieces(
 				obj.enable = { start: nowInPart }
 			} else if (!obj.inGroup) {
 				obj.enable = { start: targetNowTime }
+			} else {
+				objectsNotDeNowified.push(obj)
 			}
 		}
 	}
@@ -203,6 +268,7 @@ function deNowifyCurrentPieces(
 			}
 		}
 	}
+	return { objectsNotDeNowified }
 }
 
 function updatePlannedTimingsForPieceInstances(
