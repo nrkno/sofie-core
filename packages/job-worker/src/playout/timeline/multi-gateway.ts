@@ -147,7 +147,12 @@ function updatePartInstancePlannedTimes(
 }
 
 /**
- * Replace the `now` time in any timeline objects in infinites
+ * Replace the `now` time in any timeline objects in freshly-placed infinites.
+ *
+ * This is effectively only needed when a new item has been placed on the timeline just now and changes made by
+ * `updatePlannedTimingsForPieceInstances` haven't been taken into account when generating the timeline. On the next
+ * regeneration, items will already use the timestamps persited by `updatePlannedTimingsForPieceInstances` and will not
+ * be included in `infiniteObjs`.
  */
 function deNowifyInfinites(
 	targetNowTime: number,
@@ -179,28 +184,31 @@ function deNowifyInfinites(
 	}
 
 	for (const obj of infiniteObjs) {
-		if (!Array.isArray(obj.enable) && obj.enable.start === 'now') {
-			if (obj.inGroup) {
-				const parentObject = timelineObjsMap[obj.inGroup]
-				if (parentObject) {
-					const parentStartTime = getStartTime(parentObject)
-					if (parentStartTime !== undefined) {
-						obj.enable = { start: targetNowTime - parentStartTime }
-					} else {
-						logger.error(
-							`Unable to derive an absolute start time of parent "${obj.inGroup}" for object "${obj.id}" during deNowifyInfinites`
-						)
-					}
-				} else {
-					logger.error(`Parent obj "${obj.inGroup}" not found of object "${obj.id}" during deNowifyInfinites`)
-				}
-			} else {
-				logger.error(
-					`Unexpected "now" time during deNowifyInfinites, setting to absolute time for a timelineObject not inGroup: "${obj.id}"`
-				)
-				obj.enable = { start: targetNowTime }
-			}
+		if (Array.isArray(obj.enable) || obj.enable.start !== 'now') continue
+
+		if (!obj.inGroup) {
+			obj.enable = { start: targetNowTime }
+			continue
 		}
+
+		const parentObject = timelineObjsMap[obj.inGroup]
+		if (!parentObject) {
+			logger.error(`deNowifyInfinites: Parent obj "${obj.inGroup}" not found of object "${obj.id}"`)
+			continue
+		}
+
+		const parentStartTime = getStartTime(parentObject)
+		if (parentStartTime === undefined) {
+			logger.error(
+				`deNowifyInfinites: Unable to derive an absolute start time of parent "${obj.inGroup}" for object "${obj.id}"`
+			)
+			continue
+		}
+
+		obj.enable = { start: targetNowTime - parentStartTime }
+		logger.silly(
+			`deNowifyInfinites: Setting "${obj.id}" enable.start = ${obj.enable.start}, ${targetNowTime} ${parentStartTime} parentObject: "${parentObject.id}"`
+		)
 	}
 }
 /**
