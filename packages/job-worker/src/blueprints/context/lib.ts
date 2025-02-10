@@ -80,6 +80,8 @@ export const IBlueprintPieceObjectsSampleKeys = allKeysOfObject<IBlueprintPiece>
 	pieceType: true,
 	extendOnHold: true,
 	name: true,
+	nameShort: true,
+	nameTruncated: true,
 	privateData: true,
 	publicData: true,
 	sourceLayerId: true,
@@ -201,6 +203,8 @@ function convertPieceGenericToBlueprintsInner(piece: ReadonlyDeep<PieceGeneric>)
 	const obj: Complete<IBlueprintPieceGeneric> = {
 		externalId: piece.externalId,
 		name: piece.name,
+		nameShort: piece.nameShort,
+		nameTruncated: piece.nameTruncated,
 		privateData: clone(piece.privateData),
 		publicData: clone(piece.publicData),
 		lifespan: piece.lifespan,

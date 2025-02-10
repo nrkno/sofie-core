@@ -34,6 +34,13 @@ export interface IBlueprintPieceGeneric<TPrivateData = unknown, TPublicData = un
 	externalId: string
 	/** User-presentable name for the timeline item */
 	name: string
+	/** Optionals that can be used to have production specific handling of truncation and shortening */
+	/** nameShort should be less than 20 characters */
+	/** nameTruncated should be less than 50 characters */
+	/** e.g: A nameTruncated with the first part and the last part of a very long "path+fileName" */
+	nameShort?: string
+	nameTruncated?: string
+
 	/** Arbitraty data storage for internal use in the blueprints */
 	privateData?: TPrivateData
 	/** Arbitraty data relevant for other systems, made available to them through APIs */
