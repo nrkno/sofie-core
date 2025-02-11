@@ -181,7 +181,14 @@ function timelineTriggerTimeInner(
 			}
 		}
 		if (tlChanged) {
-			const timelineHash = saveTimeline(context, studioPlayoutModel, timelineObjs, timeline.generationVersions)
+			const timelineHash = saveTimeline(
+				context,
+				studioPlayoutModel,
+				timelineObjs,
+				// Preserve some current values:
+				timeline.generationVersions,
+				timeline.regenerateTimelineToken
+			)
 
 			logger.verbose(`timelineTriggerTime: Updated Timeline, hash: "${timelineHash}"`)
 		}

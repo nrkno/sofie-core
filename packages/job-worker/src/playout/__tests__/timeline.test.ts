@@ -355,18 +355,19 @@ async function doOnPlayoutPlaybackChanged(
 				  }
 				: undefined,
 			// The piece controlObjects start offset into the part, so need a manual offset
-			...Object.entries<number | null>(timings.pieceOffsets).map(([pieceInstanceId, offset]) =>
-				offset !== null
-					? {
-							type: PlayoutChangedType.PIECE_PLAYBACK_STARTED,
-							data: {
-								partInstanceId: timings.partId,
-								pieceInstanceId: protectString(pieceInstanceId),
-								time: timings.baseTime + offset,
-							},
-							objId: getPieceControlObjectId(protectString(pieceInstanceId)),
-					  }
-					: undefined
+			...Object.entries<number | null>(timings.pieceOffsets).map(
+				([pieceInstanceId, offset]): PlayoutChangedResult | undefined =>
+					offset !== null
+						? {
+								type: PlayoutChangedType.PIECE_PLAYBACK_STARTED,
+								data: {
+									partInstanceId: timings.partId,
+									pieceInstanceId: protectString(pieceInstanceId),
+									time: timings.baseTime + offset,
+								},
+								objId: getPieceControlObjectId(protectString(pieceInstanceId)),
+						  }
+						: undefined
 			),
 		]),
 	})
