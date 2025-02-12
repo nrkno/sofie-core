@@ -812,7 +812,8 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 
 	setTimeline(
 		timelineObjs: TimelineObjGeneric[],
-		generationVersions: TimelineCompleteGenerationVersions
+		generationVersions: TimelineCompleteGenerationVersions,
+		regenerateTimelineToken: string | undefined
 	): ReadonlyDeep<TimelineComplete> {
 		this.timelineImpl = {
 			_id: this.context.studioId,
@@ -820,6 +821,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 			generated: getCurrentTime(),
 			timelineBlob: serializeTimelineBlob(timelineObjs),
 			generationVersions: generationVersions,
+			regenerateTimelineToken: regenerateTimelineToken,
 		}
 		this.#timelineHasChanged = true
 

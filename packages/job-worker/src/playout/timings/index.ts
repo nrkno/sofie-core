@@ -7,6 +7,7 @@ import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyE
 import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { onPiecePlaybackStarted, onPiecePlaybackStopped } from './piecePlayback'
 import { onPartPlaybackStarted, onPartPlaybackStopped } from './partPlayback'
+import { updateTimeline } from '../timeline/generate'
 
 export { handleTimelineTriggerTime } from './timelineTriggerTime'
 
@@ -18,6 +19,8 @@ export async function handleOnPlayoutPlaybackChanged(
 	data: OnPlayoutPlaybackChangedProps
 ): Promise<void> {
 	return runJobWithPlayoutModel(context, data, null, async (playoutModel) => {
+		let triggerRegeneration = false
+
 		for (const change of data.changes) {
 			try {
 				if (change.type === PlayoutChangedType.PART_PLAYBACK_STARTED) {
@@ -42,8 +45,24 @@ export async function handleOnPlayoutPlaybackChanged(
 						pieceInstanceId: change.data.pieceInstanceId,
 						stoppedPlayback: change.data.time,
 					})
+				} else if (change.type === PlayoutChangedType.TRIGGER_REGENERATION) {
+					if (
+						playoutModel.timeline?.regenerateTimelineToken &&
+						change.data.regenerationToken === playoutModel.timeline.regenerateTimelineToken
+					) {
+						triggerRegeneration = true
+					} else {
+						logger.info(
+							`Playout gateway requested a regeneration of the timeline, with an incorrect regenerationToken. Got ${change.data.regenerationToken}, expected ${playoutModel.timeline?.regenerateTimelineToken}`
+						)
+					}
 				} else {
 					assertNever(change)
+				}
+
+				if (triggerRegeneration) {
+					logger.info('Playout gateway requested a regeneration of the timeline')
+					await updateTimeline(context, playoutModel)
 				}
 			} catch (err) {
 				logger.error(stringifyError(err))

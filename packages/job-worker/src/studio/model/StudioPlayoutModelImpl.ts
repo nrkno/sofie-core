@@ -87,7 +87,8 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 
 	setTimeline(
 		timelineObjs: TimelineObjGeneric[],
-		generationVersions: TimelineCompleteGenerationVersions
+		generationVersions: TimelineCompleteGenerationVersions,
+		regenerateTimelineToken: string | undefined
 	): ReadonlyDeep<TimelineComplete> {
 		this.#timeline = {
 			_id: this.context.studioId,
@@ -95,6 +96,7 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 			generated: getCurrentTime(),
 			timelineBlob: serializeTimelineBlob(timelineObjs),
 			generationVersions: generationVersions,
+			regenerateTimelineToken: regenerateTimelineToken,
 		}
 		this.#timelineHasChanged = true
 
