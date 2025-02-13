@@ -245,31 +245,31 @@ export class AdLibsTopic extends WebSocketTopicBase implements WebSocketTopic {
 		this.throttledSendStatusToAll()
 	}
 
-	protected onAdLibActionsUpdate = (adLibActions: AdLibAction[] | undefined): void => {
+	private onAdLibActionsUpdate = (adLibActions: AdLibAction[] | undefined): void => {
 		this.logUpdateReceived('adLibActions')
 		this._adLibActions = adLibActions
 		this.throttledSendStatusToAll()
 	}
 
-	protected onAdLibsUpdate = (adLibs: AdLibPiece[] | undefined): void => {
+	private onAdLibsUpdate = (adLibs: AdLibPiece[] | undefined): void => {
 		this.logUpdateReceived('adLibs')
 		this._adLibs = adLibs
 		this.throttledSendStatusToAll()
 	}
 
-	protected onGlobalAdLibActionsUpdate = (adLibActions: RundownBaselineAdLibAction[] | undefined): void => {
+	private onGlobalAdLibActionsUpdate = (adLibActions: RundownBaselineAdLibAction[] | undefined): void => {
 		this.logUpdateReceived('globalAdLibActions')
 		this._globalAdLibActions = adLibActions
 		this.throttledSendStatusToAll()
 	}
 
-	protected onGlobalAdLibsUpdate = (adLibs: RundownBaselineAdLibItem[] | undefined): void => {
+	private onGlobalAdLibsUpdate = (adLibs: RundownBaselineAdLibItem[] | undefined): void => {
 		this.logUpdateReceived('globalAdLibs')
 		this._globalAdLibs = adLibs
 		this.throttledSendStatusToAll()
 	}
 
-	protected onSegmentsUpdate = (segments: DBSegment[] | undefined): void => {
+	private onSegmentsUpdate = (segments: DBSegment[] | undefined): void => {
 		this.logUpdateReceived('segments')
 		const newSegments = new Map()
 		segments ??= []
@@ -280,7 +280,7 @@ export class AdLibsTopic extends WebSocketTopicBase implements WebSocketTopic {
 		this.throttledSendStatusToAll()
 	}
 
-	protected onPartsUpdate = (parts: DBPart[] | undefined): void => {
+	private onPartsUpdate = (parts: DBPart[] | undefined): void => {
 		this.logUpdateReceived('parts')
 		const newParts = new Map()
 		parts ??= []

@@ -36,7 +36,7 @@ export class GlobalAdLibActionsHandler
 		handlers.playlistHandler.subscribe(this.onPlaylistUpdate, PLAYLIST_KEYS)
 	}
 
-	changed(): void {
+	protected changed(): void {
 		this.updateAndNotify()
 	}
 
@@ -55,7 +55,7 @@ export class GlobalAdLibActionsHandler
 		}
 	}
 
-	protected updateAndNotify(): void {
+	private updateAndNotify(): void {
 		const collection = this.getCollectionOrFail()
 		this._collectionData = collection.find({ rundownId: this._currentRundownId })
 		this.notify(this._collectionData)

@@ -54,13 +54,13 @@ export class ActivePiecesTopic extends WebSocketTopicBase implements WebSocketTo
 		this.sendMessage(subscribers, message)
 	}
 
-	protected onShowStyleBaseUpdate = (showStyleBase: ShowStyleBaseExt | undefined): void => {
+	private onShowStyleBaseUpdate = (showStyleBase: ShowStyleBaseExt | undefined): void => {
 		this.logUpdateReceived('showStyleBase')
 		this._showStyleBaseExt = showStyleBase
 		this.throttledSendStatusToAll()
 	}
 
-	protected onPlaylistUpdate = (rundownPlaylist: Playlist | undefined): void => {
+	private onPlaylistUpdate = (rundownPlaylist: Playlist | undefined): void => {
 		this.logUpdateReceived(
 			'playlist',
 			`rundownPlaylistId ${rundownPlaylist?._id}, activationId ${rundownPlaylist?.activationId}`
@@ -73,7 +73,7 @@ export class ActivePiecesTopic extends WebSocketTopicBase implements WebSocketTo
 		}
 	}
 
-	protected onPieceInstancesUpdate = (pieceInstances: PieceInstances | undefined): void => {
+	private onPieceInstancesUpdate = (pieceInstances: PieceInstances | undefined): void => {
 		this.logUpdateReceived('pieceInstances')
 		const prevPieceInstances = this._activePieceInstances
 		this._activePieceInstances = pieceInstances?.active

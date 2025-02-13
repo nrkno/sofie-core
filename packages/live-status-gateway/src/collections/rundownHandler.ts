@@ -30,11 +30,11 @@ export class RundownHandler
 		handlers.playlistHandler.subscribe(this.onPlaylistUpdate, PLAYLIST_KEYS)
 	}
 
-	changed(): void {
+	protected changed(): void {
 		this.updateAndNotify()
 	}
 
-	protected updateAndNotify(): void {
+	private updateAndNotify(): void {
 		const collection = this.getCollectionOrFail()
 		this._rundownsHandler?.setRundowns(collection.find(undefined))
 		if (this._currentRundownId) {

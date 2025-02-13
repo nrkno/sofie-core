@@ -48,7 +48,7 @@ export class AdLibActionsHandler
 		}
 	}
 
-	protected updateAndNotify(): void {
+	private updateAndNotify(): void {
 		const col = this.getCollectionOrFail()
 		this._collectionData = col.find({ rundownId: this._currentRundownId })
 		this.notify(this._collectionData)

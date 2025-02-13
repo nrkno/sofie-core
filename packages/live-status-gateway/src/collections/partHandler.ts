@@ -34,7 +34,7 @@ export class PartHandler
 		handlers.partInstancesHandler.subscribe(this.onPartInstanceUpdate, PART_INSTANCES_KEYS)
 	}
 
-	changed(): void {
+	protected changed(): void {
 		const collection = this.getCollectionOrFail()
 		const allParts = collection.find(undefined)
 		this._partsHandler.setParts(allParts)

@@ -37,11 +37,11 @@ export class PlaylistHandler
 		this.setupSubscription(null, [this._studioId])
 	}
 
-	changed(): void {
+	protected changed(): void {
 		this.updateAndNotify()
 	}
 
-	protected updateAndNotify(): void {
+	private updateAndNotify(): void {
 		const collection = this.getCollectionOrFail()
 		const playlists = collection.find(undefined)
 		this._playlistsHandler.setPlaylists(playlists)

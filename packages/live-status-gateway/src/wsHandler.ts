@@ -253,7 +253,7 @@ export abstract class PublicationCollection<
 		// override me
 	}
 
-	protected onDocumentEvent(id: ProtectedString<any> | string, changeType: string): void {
+	private onDocumentEvent(id: ProtectedString<any> | string, changeType: string): void {
 		this.logDocumentChange(id, changeType)
 		if (!this._subscriptionId) {
 			this._logger.silly(`${this._name} ${changeType} ${id} skipping (lack of subscription)`)
@@ -266,7 +266,7 @@ export abstract class PublicationCollection<
 		this.throttledChanged()
 	}
 
-	protected setupObserver(): void {
+	private setupObserver(): void {
 		this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
 		this._dbObserver.added = (id) => {
 			this.onDocumentEvent(id, 'added')

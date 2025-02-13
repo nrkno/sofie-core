@@ -59,7 +59,7 @@ export class PartInstancesHandler
 		handlers.playlistHandler.subscribe(this.onPlaylistUpdate, PLAYLIST_KEYS)
 	}
 
-	changed(): void {
+	protected changed(): void {
 		this._throttledUpdateAndNotify()
 	}
 

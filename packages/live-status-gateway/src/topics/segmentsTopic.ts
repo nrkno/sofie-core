@@ -73,13 +73,13 @@ export class SegmentsTopic extends WebSocketTopicBase implements WebSocketTopic 
 		this.updateAndSendStatusToAll()
 	}
 
-	protected onSegmentsUpdate = (segments: DBSegment[] | undefined): void => {
+	private onSegmentsUpdate = (segments: DBSegment[] | undefined): void => {
 		this.logUpdateReceived('segments')
 		this._segments = segments ?? []
 		this.updateAndSendStatusToAll()
 	}
 
-	protected onPartsUpdate = (parts: DBPart[] | undefined): void => {
+	private onPartsUpdate = (parts: DBPart[] | undefined): void => {
 		this.logUpdateReceived('parts')
 		this._partsBySegment = _.groupBy(parts ?? [], 'segmentId')
 		this.updateAndSendStatusToAll()

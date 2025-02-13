@@ -34,7 +34,7 @@ export class ShowStyleBaseHandler
 		handlers.rundownHandler.subscribe(this.onRundownUpdate)
 	}
 
-	changed(): void {
+	protected changed(): void {
 		if (this._showStyleBaseId) {
 			this.updateCollectionData()
 			this.notify(this._collectionData)

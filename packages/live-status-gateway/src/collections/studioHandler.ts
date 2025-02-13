@@ -20,7 +20,7 @@ export class StudioHandler
 		this.setupSubscription([this._studioId])
 	}
 
-	changed(): void {
+	protected changed(): void {
 		const collection = this.getCollectionOrFail()
 		const studio = collection.findOne(this._studioId)
 		this._collectionData = studio
