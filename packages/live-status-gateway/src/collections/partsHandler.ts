@@ -1,6 +1,7 @@
 import { Logger } from 'winston'
 import { CoreHandler } from '../coreHandler'
-import { CollectionBase, Collection } from '../wsHandler'
+import { Collection } from '../wsHandler'
+import { CollectionBase } from '../collectionBase'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import _ = require('underscore')
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'

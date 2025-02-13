@@ -1,7 +1,7 @@
 import { Logger } from 'winston'
 import { WebSocket } from 'ws'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { WebSocketTopicBase, WebSocketTopic, PickArr } from '../wsHandler'
+import { WebSocketTopicBase, WebSocketTopic } from '../wsHandler'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
@@ -16,6 +16,7 @@ import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { WithSortingMetadata, getRank, sortContent } from './helpers/contentSorting'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { CollectionHandlers } from '../liveStatusServer'
+import { PickKeys } from '@sofie-automation/shared-lib/dist/lib/types'
 
 const THROTTLE_PERIOD_MS = 100
 
@@ -50,10 +51,10 @@ interface AdLibStatusBase {
 }
 
 const PLAYLIST_KEYS = ['_id', 'rundownIdsInOrder', 'activationId'] as const
-type Playlist = PickArr<DBRundownPlaylist, typeof PLAYLIST_KEYS>
+type Playlist = PickKeys<DBRundownPlaylist, typeof PLAYLIST_KEYS>
 
 const SHOW_STYLE_BASE_KEYS = ['sourceLayerNamesById', 'outputLayerNamesById'] as const
-type ShowStyle = PickArr<ShowStyleBaseExt, typeof SHOW_STYLE_BASE_KEYS>
+type ShowStyle = PickKeys<ShowStyleBaseExt, typeof SHOW_STYLE_BASE_KEYS>
 
 export class AdLibsTopic extends WebSocketTopicBase implements WebSocketTopic {
 	private _activePlaylist: Playlist | undefined

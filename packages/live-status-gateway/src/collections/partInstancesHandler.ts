@@ -1,6 +1,7 @@
 import { Logger } from 'winston'
 import { CoreHandler } from '../coreHandler'
-import { Collection, PickArr, PublicationCollection } from '../wsHandler'
+import { Collection } from '../wsHandler'
+import { PublicationCollection } from '../publicationCollection'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
@@ -10,6 +11,7 @@ import throttleToNextTick from '@sofie-automation/shared-lib/dist/lib/throttleTo
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { RundownId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CollectionHandlers } from '../liveStatusServer'
+import { PickKeys } from '@sofie-automation/shared-lib/dist/lib/types'
 
 export interface SelectedPartInstances {
 	previous: DBPartInstance | undefined
@@ -27,7 +29,7 @@ const PLAYLIST_KEYS = [
 	'nextPartInfo',
 	'rundownIdsInOrder',
 ] as const
-type Playlist = PickArr<DBRundownPlaylist, typeof PLAYLIST_KEYS>
+type Playlist = PickKeys<DBRundownPlaylist, typeof PLAYLIST_KEYS>
 
 export class PartInstancesHandler
 	extends PublicationCollection<SelectedPartInstances, CorelibPubSub.partInstances, CollectionName.PartInstances>
