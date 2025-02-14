@@ -5,6 +5,8 @@ import {
 	PieceLifespan,
 	IBlueprintPieceType,
 	ScriptContent,
+	VTContent,
+	GraphicsContent,
 } from '@sofie-automation/blueprints-integration'
 import { RundownUtils } from '../../lib/rundown'
 import { DefaultLayerItemRenderer } from './Renderers/DefaultLayerItemRenderer'
@@ -28,7 +30,13 @@ import { ReadonlyDeep } from 'type-fest'
 import { useSelectedElementsContext } from '../RundownView/SelectedElementsContext'
 import { PieceContentStatusObj } from '@sofie-automation/meteor-lib/dist/api/pieceContentStatus'
 import { useCallback, useRef, useState, useEffect, useContext } from 'react'
-import { IPreviewPopUpSession, PreviewPopUpContext } from '../PreviewPopUp/PreviewPopUpContext'
+import {
+	convertPreviewToContents,
+	convertSourceLayerItemToPreview,
+	IPreviewPopUpSession,
+	PreviewContent,
+	PreviewPopUpContext,
+} from '../PreviewPopUp/PreviewPopUpContext'
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 const MARGINAL_ANCHORED_WIDTH = 5
 
@@ -202,8 +210,14 @@ export const SourceLayerItem = (props: Readonly<ISourceLayerItemProps>): JSX.Ele
 
 	const previewContext = useContext(PreviewPopUpContext)
 	const previewSession = useRef<IPreviewPopUpSession | null>(null)
-	const toggleMiniInspectorOn = useCallback((e: React.MouseEvent) => toggleMiniInspector(e, true), [])
-	const toggleMiniInspectorOff = useCallback((e: React.MouseEvent) => toggleMiniInspector(e, false), [])
+	const toggleMiniInspectorOn = useCallback(
+		(e: React.MouseEvent) => toggleMiniInspector(e, true),
+		[piece, cursorTimePosition, contentStatus]
+	)
+	const toggleMiniInspectorOff = useCallback(
+		(e: React.MouseEvent) => toggleMiniInspector(e, false),
+		[piece, cursorTimePosition, contentStatus]
+	)
 	const updatePos = useCallback(() => {
 		const elementPos = getElementDocumentOffset(itemElementRef.current) || {
 			top: 0,
@@ -220,26 +234,37 @@ export const SourceLayerItem = (props: Readonly<ISourceLayerItemProps>): JSX.Ele
 		setCursorPosition(cursorPosition)
 		setCursorTimePosition(cursorTimePosition)
 
+		if (previewSession.current) {
+			previewSession.current.setPointerTime(cursorTimePosition)
+		}
+
 		animFrameHandle.current = requestAnimationFrame(updatePos)
-	}, [])
+	}, [piece, contentStatus])
 	const toggleMiniInspector = useCallback(
 		(e: React.MouseEvent, v: boolean) => {
-			if (layer.type === SourceLayerType.SCRIPT) {
-				if (v) {
-					previewSession.current = previewContext.requestPreview(e.target as any, {
-						type: 'text',
-						content: (piece.instance.piece.content as ScriptContent).fullScript ?? '',
-					})
-				} else if (previewSession.current) {
-					previewSession.current.close()
-					previewSession.current = null
-				}
+			if (!v && previewSession.current) {
+				previewSession.current.close()
+				previewSession.current = null
 
-				// overrule old stuff
 				return
+			} else if (piece.instance.piece.content.popUpPreview) {
+				previewSession.current = previewContext.requestPreview(
+					e.target as any,
+					convertPreviewToContents(piece.instance.piece.content.popUpPreview, contentStatus)
+				)
+			} else {
+				const previewContents = convertSourceLayerItemToPreview(layer.type, piece, contentStatus)
+
+				if (previewContents.length) {
+					previewSession.current = previewContext.requestPreview(e.target as any, previewContents, {
+						time: cursorTimePosition,
+						startX: e.screenX,
+					})
+				} else {
+					setShowMiniInspector(v)
+				}
 			}
 
-			setShowMiniInspector(v)
 			cursorRawPosition.current = {
 				clientX: e.clientX,
 				clientY: e.clientY,
@@ -251,7 +276,7 @@ export const SourceLayerItem = (props: Readonly<ISourceLayerItemProps>): JSX.Ele
 				cancelAnimationFrame(animFrameHandle.current)
 			}
 		},
-		[previewSession.current]
+		[piece, cursorTimePosition, contentStatus]
 	)
 	const moveMiniInspector = useCallback((e: MouseEvent | any) => {
 		cursorRawPosition.current = {
@@ -505,7 +530,6 @@ export const SourceLayerItem = (props: Readonly<ISourceLayerItemProps>): JSX.Ele
 
 	const renderInsideItem = (typeClass: string) => {
 		const elProps = {
-			key: unprotectString(piece.instance._id),
 			typeClass: typeClass,
 			getItemDuration: getItemDuration,
 			getItemLabelOffsetLeft: getItemLabelOffsetLeft,
@@ -519,25 +543,25 @@ export const SourceLayerItem = (props: Readonly<ISourceLayerItemProps>): JSX.Ele
 		switch (layer.type) {
 			case SourceLayerType.SCRIPT:
 				// case SourceLayerType.MIC:
-				return <MicSourceRenderer {...elProps} />
+				return <MicSourceRenderer key={unprotectString(piece.instance._id)} {...elProps} />
 			case SourceLayerType.VT:
 			case SourceLayerType.LIVE_SPEAK:
-				return <VTSourceRenderer {...elProps} />
+				return <VTSourceRenderer key={unprotectString(piece.instance._id)} {...elProps} />
 			case SourceLayerType.GRAPHICS:
 			case SourceLayerType.LOWER_THIRD:
 			case SourceLayerType.STUDIO_SCREEN:
-				return <L3rdSourceRenderer {...elProps} />
+				return <L3rdSourceRenderer key={unprotectString(piece.instance._id)} {...elProps} />
 			case SourceLayerType.SPLITS:
-				return <SplitsSourceRenderer {...elProps} />
+				return <SplitsSourceRenderer key={unprotectString(piece.instance._id)} {...elProps} />
 
 			case SourceLayerType.TRANSITION:
 				// TODOSYNC: TV2 uses other renderers, to be discussed.
 
-				return <TransitionSourceRenderer {...elProps} />
+				return <TransitionSourceRenderer key={unprotectString(piece.instance._id)} {...elProps} />
 			case SourceLayerType.LOCAL:
-				return <LocalLayerItemRenderer {...elProps} />
+				return <LocalLayerItemRenderer key={unprotectString(piece.instance._id)} {...elProps} />
 			default:
-				return <DefaultLayerItemRenderer {...elProps} />
+				return <DefaultLayerItemRenderer key={unprotectString(piece.instance._id)} {...elProps} />
 		}
 	}
 

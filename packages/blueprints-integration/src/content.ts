@@ -2,6 +2,7 @@ import { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { Time } from './common'
 import { TSR, TimelineObjectCoreExt } from './timeline'
 import { SourceLayerType } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
+import { Previews } from './previews'
 
 export type WithTimeline<T extends BaseContent> = T & {
 	timelineObjects: TimelineObjectCoreExt<TSR.TSRTimelineContent>[]
@@ -19,6 +20,10 @@ export interface BaseContent {
 	ignoreBlackFrames?: boolean
 	ignoreFreezeFrame?: boolean
 	ignoreAudioFormat?: boolean
+
+	popUpPreview?: Previews
+	// note - should we allow multiple previews?
+	// note - what properties can be removed from the main content object now?
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface

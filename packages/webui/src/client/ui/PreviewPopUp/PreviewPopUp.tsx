@@ -14,16 +14,12 @@ export const PreviewPopUp = React.forwardRef<
 		size: 'small' | 'large'
 		hidden?: boolean
 		preview?: React.ReactNode
-		controls?: React.ReactNode
-		contentInfo?: React.ReactNode
-		warnings?: React.ReactNode[]
+		startCoordinate?: number
 	}>
 >(function PreviewPopUp(
-	{ anchor, padding, placement, hidden, size, children, controls, contentInfo, warnings },
+	{ anchor, padding, placement, hidden, size, children, startCoordinate },
 	ref
 ): React.JSX.Element {
-	const warningsCount = warnings?.length ?? 0
-
 	const [popperEl, setPopperEl] = useState<HTMLDivElement | null>(null)
 	const popperOptions = useMemo(
 		() => ({
@@ -61,7 +57,10 @@ export const PreviewPopUp = React.forwardRef<
 		[padding]
 	)
 	const virtualElement = useRef<VirtualElement>({
-		getBoundingClientRect: generateGetBoundingClientRect(),
+		getBoundingClientRect: generateGetBoundingClientRect(
+			startCoordinate ?? anchor?.getBoundingClientRect().x ?? 0,
+			anchor?.getBoundingClientRect().y ?? 0
+		),
 	})
 	const { styles, attributes, update } = usePopper(virtualElement.current, popperEl, popperOptions)
 
@@ -82,7 +81,7 @@ export const PreviewPopUp = React.forwardRef<
 		return () => {
 			document.removeEventListener('mousemove', listener)
 		}
-	}, [update])
+	}, [update, anchor])
 
 	useImperativeHandle(
 		ref,
@@ -109,17 +108,6 @@ export const PreviewPopUp = React.forwardRef<
 			{...attributes.popper}
 		>
 			{children && <div className="preview-popUp__preview">{children}</div>}
-			{controls && <div className="preview-popUp__controls">{controls}</div>}
-			{contentInfo && <div className="preview-popUp__content-info">{contentInfo}</div>}
-			{warnings && warningsCount > 0 && (
-				<div className="preview-popUp__warnings">
-					{React.Children.map(warnings, (child, index) => (
-						<div className="preview-popUp__warning-row" key={index}>
-							{child}
-						</div>
-					))}
-				</div>
-			)}
 		</div>
 	)
 })
