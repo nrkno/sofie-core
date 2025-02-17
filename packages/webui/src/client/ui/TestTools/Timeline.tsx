@@ -258,6 +258,12 @@ function renderTimelineState(state: TimelineState, filter: RegExp | string | und
 			<td>{(o.classes ?? []).join('<br />')}</td>
 			<td style={{ whiteSpace: 'pre' }}>
 				<pre>{JSON.stringify(o.content, undefined, '\t')}</pre>
+				<pre>
+					{
+						//@ts-expect-error - abSessions is not in the type but are still in the object if used:
+						o.abSessions && 'AB-Sessions:' + '\n' + JSON.stringify(o.abSessions, undefined, '\t')
+					}
+				</pre>
 			</td>
 		</tr>
 	))
