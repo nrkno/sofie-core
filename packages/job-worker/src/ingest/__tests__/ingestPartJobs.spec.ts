@@ -288,27 +288,4 @@ describe('handleUpdatedPart', () => {
 			},
 		} satisfies UpdateIngestRundownChange)
 	})
-
-	// TODO: should this be a test case?
-	// it('part belongs to different segment', () => {
-	// 	const context = setupDefaultJobEnvironment()
-
-	// 	const ingestRundown = getDefaultIngestRundown()
-
-	// 	const newIngestPart2 = { ...newIngestPart, externalId: 'part0' }
-
-	// 	expect(() =>
-	// 		handleUpdatedPart(
-	// 			context,
-	// 			{
-	// 				peripheralDeviceId: null,
-	// 				rundownExternalId: 'rundown0',
-	// 				segmentExternalId: 'segment1',
-	// 				ingestPart: clone(newIngestPart2),
-	// 				isCreateAction: true,
-	// 			},
-	// 			clone(ingestRundown)
-	// 		)
-	// 	).toThrow('TODO fill out this error')
-	// })
 })

@@ -250,6 +250,7 @@ export class AdLibsTopic
 			| AdLibAction[]
 			| RundownBaselineAdLibAction[]
 			| AdLibPiece[]
+			// eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
 			| RundownBaselineAdLibItem[]
 			| DBPart[]
 			| DBSegment[]

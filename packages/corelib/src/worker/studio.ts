@@ -2,6 +2,7 @@ import { PlayoutChangedResults } from '@sofie-automation/shared-lib/dist/periphe
 import {
 	AdLibActionId,
 	BucketAdLibActionId,
+	BucketAdLibId,
 	BucketId,
 	ExpectedPackageId,
 	PartId,
@@ -213,7 +214,7 @@ export type UpdateTimelineAfterIngestProps = RundownPlayoutPropsBase
 
 export interface AdlibPieceStartProps extends RundownPlayoutPropsBase {
 	partInstanceId: PartInstanceId
-	adLibPieceId: PieceId
+	adLibPieceId: PieceId | BucketAdLibId
 	pieceType: 'baseline' | 'normal' | 'bucket'
 	queue?: boolean
 }

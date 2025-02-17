@@ -43,6 +43,7 @@ import {
 	PackageInfoLight,
 	PieceDependencies,
 } from './common'
+import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 
 interface ScanInfoForPackages {
 	[packageId: string]: ScanInfoForPackage
@@ -183,7 +184,7 @@ export function getMediaObjectMediaId(
 	return undefined
 }
 
-export type PieceContentStatusPiece = Pick<PieceGeneric, '_id' | 'content' | 'expectedPackages'> & {
+export type PieceContentStatusPiece = Pick<PieceGeneric | BucketAdLib, '_id' | 'content' | 'expectedPackages'> & {
 	pieceInstanceId?: PieceInstanceId
 }
 export interface PieceContentStatusStudio

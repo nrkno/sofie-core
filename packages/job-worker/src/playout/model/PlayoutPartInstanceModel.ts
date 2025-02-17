@@ -1,4 +1,9 @@
-import { PieceId, PieceInstanceId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	BucketAdLibId,
+	PieceId,
+	PieceInstanceId,
+	RundownPlaylistActivationId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
@@ -65,7 +70,7 @@ export interface PlayoutPartInstanceModel {
 	 */
 	insertAdlibbedPiece(
 		piece: Omit<PieceInstancePiece, 'startPartId'>,
-		fromAdlibId: PieceId | undefined
+		fromAdlibId: PieceId | BucketAdLibId | undefined
 	): PlayoutPieceInstanceModel
 
 	/**

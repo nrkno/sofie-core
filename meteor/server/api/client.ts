@@ -251,7 +251,7 @@ export namespace ServerClientAPI {
 
 					const wrappedError = rewrapError(methodName, e)
 					const wrappedErrorStr = `ClientResponseError: ${translateMessage(
-						wrappedError.error.message,
+						wrappedError.error.userMessage,
 						interpollateTranslation
 					)}`
 
@@ -314,7 +314,7 @@ export namespace ServerClientAPI {
 			return makeCall().catch(async (e) => {
 				logger.error(stringifyError(e))
 				// allow the exception to be handled by the Client code
-				return Promise.reject(e)
+				return Promise.reject(e instanceof Error ? e : new Error(e))
 			})
 		}
 
@@ -359,7 +359,7 @@ export namespace ServerClientAPI {
 				})
 
 				// allow the exception to be handled by the Client code
-				return Promise.reject(err)
+				return Promise.reject(err instanceof Error ? err : new Error(err))
 			})
 	}
 
@@ -385,7 +385,7 @@ export namespace ServerClientAPI {
 			}).catch(async (e) => {
 				logger.error(stringifyError(e))
 				// allow the exception to be handled by the Client code
-				return Promise.reject(e)
+				return Promise.reject(e instanceof Error ? e : new Error(e))
 			})
 		}
 
@@ -399,7 +399,7 @@ export namespace ServerClientAPI {
 			const errMsg = stringifyError(err)
 			logger.error(errMsg)
 			// allow the exception to be handled by the Client code
-			return Promise.reject(err)
+			return Promise.reject(err instanceof Error ? err : new Error(err))
 		})
 	}
 }

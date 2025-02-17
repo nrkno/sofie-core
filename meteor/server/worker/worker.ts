@@ -128,7 +128,7 @@ async function waitForNextJob(queueName: string): Promise<void> {
 			try {
 				// Notify the worker in the background
 				oldNotify.manualReject(new Error('new workerThread, replacing the old'))
-			} catch (e) {
+			} catch (_e) {
 				// Ignore
 			}
 		})
@@ -169,7 +169,7 @@ async function interruptJobStream(queueName: string): Promise<void> {
 			try {
 				// Notify the worker in the background
 				oldNotify.manualResolve()
-			} catch (e) {
+			} catch (_e) {
 				// Ignore
 			}
 		})
@@ -264,12 +264,13 @@ async function logLine(msg: LogEntry): Promise<void> {
 
 let worker: Promisify<IpcJobWorker> | undefined
 Meteor.startup(async () => {
+	if (Meteor.isTest) return // Don't start the worker
+
 	if (Meteor.isDevelopment) {
 		// Ensure meteor restarts when the _force_restart file changes
 		try {
-			// eslint-disable-next-line node/no-missing-require, node/no-unpublished-require
 			require('../_force_restart')
-		} catch (e) {
+		} catch (_e) {
 			// ignore
 		}
 	}

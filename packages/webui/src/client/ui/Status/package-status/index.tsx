@@ -20,6 +20,7 @@ import {
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { ExpectedPackageStatusAPI } from '@sofie-automation/blueprints-integration'
 
 export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesStatus(_props: {}) {
 	const { t } = useTranslation()
@@ -101,7 +102,7 @@ export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesSta
 
 			let incompleteRank = 999
 			for (const status of p.statuses) {
-				if (status.status !== 'fulfilled') {
+				if (status.status !== ExpectedPackageStatusAPI.WorkStatusState.FULFILLED) {
 					if (status.requiredForPlayout) {
 						incompleteRank = Math.min(incompleteRank, 0)
 					} else {

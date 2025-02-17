@@ -81,16 +81,18 @@ export function buildTimelineObjsForRundown(
 	// Fetch the nextPart first, because that affects how the currentPart will be treated
 	if (activePlaylist.nextPartInfo) {
 		// We may be at the end of a show, where there is no next part
-		if (!partInstancesInfo.next) throw new Error(`PartInstance "${activePlaylist.nextPartInfo}" not found!`)
+		if (!partInstancesInfo.next)
+			throw new Error(`PartInstance "${activePlaylist.nextPartInfo?.partInstanceId}" not found!`)
 	}
 	if (activePlaylist.currentPartInfo) {
 		// We may be before the beginning of a show, and there can be no currentPart and we are waiting for the user to Take
-		if (!partInstancesInfo.current) throw new Error(`PartInstance "${activePlaylist.currentPartInfo}" not found!`)
+		if (!partInstancesInfo.current)
+			throw new Error(`PartInstance "${activePlaylist.currentPartInfo?.partInstanceId}" not found!`)
 	}
 	if (activePlaylist.previousPartInfo) {
 		// We may be at the beginning of a show, where there is no previous part
 		if (!partInstancesInfo.previous)
-			logger.warn(`Previous PartInstance "${activePlaylist.previousPartInfo}" not found!`)
+			logger.warn(`Previous PartInstance "${activePlaylist.previousPartInfo?.partInstanceId}" not found!`)
 	}
 
 	if (!partInstancesInfo.next && !partInstancesInfo.current) {

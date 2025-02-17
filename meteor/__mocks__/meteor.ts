@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-function-type, @typescript-eslint/only-throw-error */
 import { USER_PERMISSIONS_HEADER } from '@sofie-automation/meteor-lib/dist/userPermissions'
 
 let controllableDefer = false

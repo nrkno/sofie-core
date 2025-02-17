@@ -816,7 +816,7 @@ export function registerRoutes(registerRoute: APIRegisterHook<PlaylistsRestAPI>)
 			logger.info(`API POST: clear-sourcelayers ${playlistId} ${sourceLayerIds}`)
 
 			check(playlistId, String)
-			check(sourceLayerIds, Array<String>)
+			check(sourceLayerIds, Array<string>)
 
 			return await serverAPI.clearSourceLayers(connection, event, playlistId, sourceLayerIds)
 		}

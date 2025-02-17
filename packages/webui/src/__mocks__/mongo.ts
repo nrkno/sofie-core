@@ -182,6 +182,7 @@ export namespace MongoMock {
 			if (!d._id) d._id = protectString(RandomMock.id())
 
 			if (this.documents[unprotectString(d._id)]) {
+				// eslint-disable-next-line @typescript-eslint/only-throw-error
 				throw new MeteorMock.Error(500, `Duplicate key '${d._id}'`)
 			}
 

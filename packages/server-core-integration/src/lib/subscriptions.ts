@@ -44,7 +44,7 @@ export class SubscriptionsHelper<PubSubTypes> {
 		const orgError = new Error()
 		return new Promise((resolve, reject) => {
 			if (!this.#ddp.ddpClient) {
-				reject('subscribe: DDP client is not initialized')
+				reject(new Error('subscribe: DDP client is not initialized'))
 				return
 			}
 			try {
@@ -67,7 +67,7 @@ export class SubscriptionsHelper<PubSubTypes> {
 					unprotectString(existingSubscriptionId)
 				)
 			} catch (e) {
-				reject(e)
+				reject(e instanceof Error ? e : new Error('subscribe failed: ' + e))
 			}
 		})
 	}
