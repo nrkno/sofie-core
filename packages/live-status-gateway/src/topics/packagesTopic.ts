@@ -10,7 +10,7 @@ import { CollectionHandlers } from '../liveStatusServer'
 const THROTTLE_PERIOD_MS = 200
 
 interface PackageStatus {
-	packageName: string | null
+	packageName?: string
 	statusCode: PieceStatusCode
 
 	rundownId: string
@@ -49,7 +49,7 @@ export class PackagesTopic extends WebSocketTopicBase implements WebSocketTopic 
 			event: 'packages',
 			rundownPlaylistId: this._activePlaylist ? unprotectString(this._activePlaylist._id) : null,
 			packages: this._pieceContentStatuses.map((contentStatus) => ({
-				packageName: contentStatus.status.packageName,
+				packageName: contentStatus.status.packageName ?? undefined,
 				statusCode: contentStatus.status.status,
 				pieceId: unprotectString(contentStatus.pieceId),
 				rundownId: unprotectString(contentStatus.rundownId),

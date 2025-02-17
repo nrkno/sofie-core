@@ -29,9 +29,7 @@ $defs:
     properties:
       packageName:
         description: Name of the package
-        oneOf:
-          - type: string
-          - type: 'null'
+        type: string
       statusCode:
         description: Status code
         type: number
@@ -53,7 +51,7 @@ $defs:
       previewUrl:
         description: URL where the preview can be accessed
         type: string
-    required: [packageName, statusCode, rundownId, pieceId]
+    required: [statusCode, rundownId, pieceId]
     additionalProperties: false
     examples:
       - packageName: 'MV000123.mxf'
