@@ -1,6 +1,5 @@
 import { Logger } from 'winston'
 import { CoreHandler } from '../coreHandler'
-import { Collection } from '../wsHandler'
 import { PublicationCollection } from '../publicationCollection'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
@@ -31,10 +30,11 @@ const PLAYLIST_KEYS = [
 ] as const
 type Playlist = PickKeys<DBRundownPlaylist, typeof PLAYLIST_KEYS>
 
-export class PartInstancesHandler
-	extends PublicationCollection<SelectedPartInstances, CorelibPubSub.partInstances, CollectionName.PartInstances>
-	implements Collection<SelectedPartInstances>
-{
+export class PartInstancesHandler extends PublicationCollection<
+	SelectedPartInstances,
+	CorelibPubSub.partInstances,
+	CollectionName.PartInstances
+> {
 	private _currentPlaylist: Playlist | undefined
 	private _rundownIds: RundownId[] = []
 	private _activationId: RundownPlaylistActivationId | undefined

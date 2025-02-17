@@ -10,7 +10,7 @@ import { ParametersOfFunctionOrNever } from '@sofie-automation/server-core-integ
 import { Logger } from 'winston'
 import { CollectionBase, DEFAULT_THROTTLE_PERIOD_MS } from './collectionBase'
 import { CoreHandler } from './coreHandler'
-import { ObserverCallback } from './wsHandler'
+import { ObserverCallback } from './collectionBase'
 
 export abstract class PublicationCollection<
 	T,

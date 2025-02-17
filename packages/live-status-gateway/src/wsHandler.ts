@@ -1,7 +1,6 @@
 import { Logger } from 'winston'
 import { WebSocket } from 'ws'
 import _ = require('underscore')
-import { CollectionHandlers } from './liveStatusServer'
 
 export abstract class WebSocketTopicBase {
 	protected _name: string
@@ -84,19 +83,6 @@ export interface WebSocketTopic {
 	sendMessage(ws: WebSocket, msg: object): void
 }
 
-export interface Collection<T> {
-	init(handlers: CollectionHandlers): void
-	close(): void
-	subscribe<K extends keyof T>(callback: ObserverCallback<T, K>, keys?: K[]): void
-	notify(data: T | undefined): void
-}
-
-export type ObserverCallback<T, K extends keyof T> = (data: Pick<T, K> | undefined) => void
-
-// export interface CollectionObserver<T, K extends keyof T> {
-// 	observerName: string
-// 	update(source: string, data: Pick<T, K> | undefined): void
-// }
 function isIterable<T>(obj: T | Iterable<T>): obj is Iterable<T> {
 	// checks for null and undefined
 	if (obj == null) {

@@ -1,6 +1,5 @@
 import { Logger } from 'winston'
 import { CoreHandler } from '../coreHandler'
-import { Collection } from '../wsHandler'
 import { PublicationCollection } from '../publicationCollection'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
@@ -52,10 +51,11 @@ export interface SelectedPieceInstances {
 	nextPartInstance: PieceInstanceMin[]
 }
 
-export class PieceInstancesHandler
-	extends PublicationCollection<SelectedPieceInstances, CorelibPubSub.pieceInstances, CollectionName.PieceInstances>
-	implements Collection<SelectedPieceInstances>
-{
+export class PieceInstancesHandler extends PublicationCollection<
+	SelectedPieceInstances,
+	CorelibPubSub.pieceInstances,
+	CollectionName.PieceInstances
+> {
 	private _currentPlaylist: Playlist | undefined
 	private _partInstanceIds: PartInstanceId[] = []
 	private _sourceLayers: SourceLayers = {}

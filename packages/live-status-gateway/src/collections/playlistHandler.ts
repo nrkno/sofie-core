@@ -1,6 +1,5 @@
 import { Logger } from 'winston'
 import { CoreHandler } from '../coreHandler'
-import { Collection } from '../wsHandler'
 import { PublicationCollection } from '../publicationCollection'
 import { CollectionBase } from '../collectionBase'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
@@ -8,10 +7,7 @@ import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collect
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { CollectionHandlers } from '../liveStatusServer'
 
-export class PlaylistsHandler
-	extends CollectionBase<DBRundownPlaylist[], CollectionName.RundownPlaylists>
-	implements Collection<DBRundownPlaylist[]>
-{
+export class PlaylistsHandler extends CollectionBase<DBRundownPlaylist[], CollectionName.RundownPlaylists> {
 	constructor(logger: Logger, coreHandler: CoreHandler) {
 		super(CollectionName.RundownPlaylists, logger, coreHandler)
 	}
@@ -23,10 +19,11 @@ export class PlaylistsHandler
 	}
 }
 
-export class PlaylistHandler
-	extends PublicationCollection<DBRundownPlaylist, CorelibPubSub.rundownPlaylists, CollectionName.RundownPlaylists>
-	implements Collection<DBRundownPlaylist>
-{
+export class PlaylistHandler extends PublicationCollection<
+	DBRundownPlaylist,
+	CorelibPubSub.rundownPlaylists,
+	CollectionName.RundownPlaylists
+> {
 	private _playlistsHandler: PlaylistsHandler
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {

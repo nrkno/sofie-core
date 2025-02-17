@@ -1,6 +1,5 @@
 import { Logger } from 'winston'
 import { CoreHandler } from '../coreHandler'
-import { Collection } from '../wsHandler'
 import { PublicationCollection } from '../publicationCollection'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { SelectedPartInstances } from './partInstancesHandler'
@@ -19,10 +18,7 @@ type Playlist = PickKeys<DBRundownPlaylist, typeof PLAYLIST_KEYS>
 const PART_INSTANCES_KEYS = ['current'] as const
 type PartInstances = PickKeys<SelectedPartInstances, typeof PART_INSTANCES_KEYS>
 
-export class SegmentHandler
-	extends PublicationCollection<DBSegment, CorelibPubSub.segments, CollectionName.Segments>
-	implements Collection<DBSegment>
-{
+export class SegmentHandler extends PublicationCollection<DBSegment, CorelibPubSub.segments, CollectionName.Segments> {
 	private _currentSegmentId: SegmentId | undefined
 	private _rundownIds: RundownId[] = []
 

@@ -1,6 +1,5 @@
 import { Logger } from 'winston'
 import { CoreHandler } from '../coreHandler'
-import { Collection } from '../wsHandler'
 import { PublicationCollection } from '../publicationCollection'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
@@ -15,10 +14,11 @@ import { PickKeys } from '@sofie-automation/shared-lib/dist/lib/types'
 const PLAYLIST_KEYS = ['_id', 'currentPartInfo', 'nextPartInfo'] as const
 type Playlist = PickKeys<DBRundownPlaylist, typeof PLAYLIST_KEYS>
 
-export class RundownHandler
-	extends PublicationCollection<DBRundown, CorelibPubSub.rundownsInPlaylists, CollectionName.Rundowns>
-	implements Collection<DBRundown>
-{
+export class RundownHandler extends PublicationCollection<
+	DBRundown,
+	CorelibPubSub.rundownsInPlaylists,
+	CollectionName.Rundowns
+> {
 	private _currentPlaylistId: RundownPlaylistId | undefined
 	private _currentRundownId: RundownId | undefined
 

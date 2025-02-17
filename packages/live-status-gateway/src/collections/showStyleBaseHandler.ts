@@ -1,6 +1,5 @@
 import { Logger } from 'winston'
 import { CoreHandler } from '../coreHandler'
-import { Collection } from '../wsHandler'
 import { PublicationCollection } from '../publicationCollection'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBShowStyleBase, OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
@@ -17,10 +16,11 @@ export interface ShowStyleBaseExt extends DBShowStyleBase {
 	sourceLayers: SourceLayers
 }
 
-export class ShowStyleBaseHandler
-	extends PublicationCollection<ShowStyleBaseExt, CorelibPubSub.showStyleBases, CollectionName.ShowStyleBases>
-	implements Collection<ShowStyleBaseExt>
-{
+export class ShowStyleBaseHandler extends PublicationCollection<
+	ShowStyleBaseExt,
+	CorelibPubSub.showStyleBases,
+	CollectionName.ShowStyleBases
+> {
 	private _showStyleBaseId: ShowStyleBaseId | undefined
 	private _sourceLayersMap: Map<string, string> = new Map()
 	private _outputLayersMap: Map<string, string> = new Map()

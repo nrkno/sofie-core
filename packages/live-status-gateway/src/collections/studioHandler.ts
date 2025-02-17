@@ -1,16 +1,12 @@
 import { Logger } from 'winston'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { CoreHandler } from '../coreHandler'
-import { Collection } from '../wsHandler'
 import { PublicationCollection } from '../publicationCollection'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { CollectionHandlers } from '../liveStatusServer'
 
-export class StudioHandler
-	extends PublicationCollection<DBStudio, CorelibPubSub.studios, CollectionName.Studios>
-	implements Collection<DBStudio>
-{
+export class StudioHandler extends PublicationCollection<DBStudio, CorelibPubSub.studios, CollectionName.Studios> {
 	constructor(logger: Logger, coreHandler: CoreHandler) {
 		super(CollectionName.Studios, CorelibPubSub.studios, logger, coreHandler)
 	}

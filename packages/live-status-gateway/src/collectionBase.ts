@@ -12,7 +12,8 @@ import { Logger } from 'winston'
 import { CoreHandler } from './coreHandler'
 import { arePropertiesShallowEqual } from './helpers/equality'
 import { CollectionHandlers } from './liveStatusServer'
-import { ObserverCallback } from './wsHandler'
+
+export type ObserverCallback<T, K extends keyof T> = (data: Pick<T, K> | undefined) => void
 
 export const DEFAULT_THROTTLE_PERIOD_MS = 20
 

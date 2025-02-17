@@ -1,6 +1,5 @@
 import { Logger } from 'winston'
 import { CoreHandler } from '../coreHandler'
-import { Collection } from '../wsHandler'
 import { PublicationCollection } from '../publicationCollection'
 import { CorelibPubSubCollections, CorelibPubSubTypes } from '@sofie-automation/corelib/dist/pubsub'
 import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -22,14 +21,11 @@ type RundownMatchingKeys = MatchingKeys<CorelibPubSubTypes, [RundownId[], (strin
 /**
  * For items whose `rundownId` should equal `rundownId` of the current Part (or next Part, if the firts Take was not performed)
  */
-export abstract class RundownContentHandlerBase<TPubSub extends RundownMatchingKeys>
-	extends PublicationCollection<
-		CollectionDocCheck<CorelibPubSubCollections[ReturnType<CorelibPubSubTypes[TPubSub]>]>[],
-		TPubSub,
-		ReturnType<CorelibPubSubTypes[TPubSub]>
-	>
-	implements Collection<CollectionDocCheck<CorelibPubSubCollections[ReturnType<CorelibPubSubTypes[TPubSub]>]>[]>
-{
+export abstract class RundownContentHandlerBase<TPubSub extends RundownMatchingKeys> extends PublicationCollection<
+	CollectionDocCheck<CorelibPubSubCollections[ReturnType<CorelibPubSubTypes[TPubSub]>]>[],
+	TPubSub,
+	ReturnType<CorelibPubSubTypes[TPubSub]>
+> {
 	private _currentRundownId: RundownId | undefined
 
 	constructor(
