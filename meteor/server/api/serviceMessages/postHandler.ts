@@ -1,6 +1,6 @@
-import { logger } from '../../logging'
+import { logger } from '../../logging.js'
 import { ServiceMessage, Criticality } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
-import { writeMessage } from './serviceMessagesApi'
+import { writeMessage } from './serviceMessagesApi.js'
 import moment from 'moment'
 import Koa from 'koa'
 

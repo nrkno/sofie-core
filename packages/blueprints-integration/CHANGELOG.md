@@ -7,136 +7,73 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
 
-
-
-
-
 ## [1.51.5](https://github.com/nrkno/sofie-core/compare/v1.51.4...v1.51.5) (2025-01-07)
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
-
-
-
-
 
 ## [1.51.4](https://github.com/nrkno/sofie-core/compare/v1.51.3...v1.51.4) (2024-12-04)
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
 
-
-
-
-
 ## [1.51.3](https://github.com/nrkno/sofie-core/compare/v1.51.2...v1.51.3) (2024-11-21)
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
-
-
-
-
 
 ## [1.51.2](https://github.com/nrkno/sofie-core/compare/v1.51.1...v1.51.2) (2024-11-21)
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
 
-
-
-
-
 ## [1.51.1](https://github.com/nrkno/sofie-core/compare/v1.51.1-2...v1.51.1) (2024-11-13)
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
 
-
-
-
-
 ## [1.51.1-2](https://github.com/nrkno/sofie-core/compare/v1.51.1-1...v1.51.1-2) (2024-10-24)
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
 
-
-
-
-
 ## [1.51.1-2](https://github.com/nrkno/sofie-core/compare/v1.51.1-1...v1.51.1-2) (2024-10-24)
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
-
-
-
-
 
 ## [1.51.1-1](https://github.com/nrkno/sofie-core/compare/v1.51.1-0...v1.51.1-1) (2024-10-18)
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
 
+## [1.51.1-0](https://github.com/nrkno/sofie-core/compare/v1.51.0...v1.51.1-0) (2024-10-18)
 
-
-
+**Note:** Version bump only for package @sofie-automation/blueprints-integration
 
 ## [1.51.1-0](https://github.com/nrkno/sofie-core/compare/v1.51.0...v1.51.1-0) (2024-10-18)
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
 
-
-
-
-
-## [1.51.1-0](https://github.com/nrkno/sofie-core/compare/v1.51.0...v1.51.1-0) (2024-10-18)
-
-**Note:** Version bump only for package @sofie-automation/blueprints-integration
-
-
-
-
-
 # [1.51.0](https://github.com/nrkno/sofie-core/compare/v1.51.0-in-testing.3...v1.51.0) (2024-10-07)
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
 
-
-
-
-
 # [1.51.0](https://github.com/nrkno/sofie-core/compare/v1.51.0-in-testing.3...v1.51.0) (2024-10-07)
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
-
-
-
-
 
 # [1.51.0-in-testing.3](https://github.com/nrkno/sofie-core/compare/v1.51.0-in-testing.2...v1.51.0-in-testing.3) (2024-09-25)
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
 
-
-
-
-
 # [1.51.0-in-testing.2](https://github.com/nrkno/sofie-core/compare/v1.51.0-in-testing.1...v1.51.0-in-testing.2) (2024-09-24)
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
 
-
-
-
-
 # [1.51.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.51.0-in-testing.0...v1.51.0-in-testing.1) (2024-09-06)
-
 
 ### Features
 
-* stringify piece NoraContent payload SOFIE-3398 ([#1248](https://github.com/nrkno/sofie-core/issues/1248)) ([0613f74](https://github.com/nrkno/sofie-core/commit/0613f740c1e2f740d7d9c39bc72178e301f5f72f))
+- stringify piece NoraContent payload SOFIE-3398 ([#1248](https://github.com/nrkno/sofie-core/issues/1248)) ([0613f74](https://github.com/nrkno/sofie-core/commit/0613f740c1e2f740d7d9c39bc72178e301f5f72f))
 
 # [1.51.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.51.0-in-testing.0...v1.51.0-in-testing.1) (2024-09-06)
 
-
 ### Features
 
-* stringify piece NoraContent payload SOFIE-3398 ([#1248](https://github.com/nrkno/sofie-core/issues/1248)) ([0613f74](https://github.com/nrkno/sofie-core/commit/0613f740c1e2f740d7d9c39bc72178e301f5f72f))
-
+- stringify piece NoraContent payload SOFIE-3398 ([#1248](https://github.com/nrkno/sofie-core/issues/1248)) ([0613f74](https://github.com/nrkno/sofie-core/commit/0613f740c1e2f740d7d9c39bc72178e301f5f72f))
 
 # [1.51.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.50.4...v1.51.0-in-testing.0) (2024-08-19)
 
@@ -205,7 +142,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 - support packageinfo update flow for buckets and studio baseline SOFIE-2655 ([#1051](https://github.com/nrkno/sofie-core/issues/1051)) ([df7ed0c](https://github.com/nrkno/sofie-core/commit/df7ed0c653b897774f01a33c9e60a5e22fac99e4))
 - typed publications in gateways/peripheraldevices SOFIE-1183 ([#1056](https://github.com/nrkno/sofie-core/issues/1056)) ([0c3c1bf](https://github.com/nrkno/sofie-core/commit/0c3c1bfd2bb779034976dc34e49aa6e664ea874b))
 - update meteor to 2.12 SOFIE-2368 ([#931](https://github.com/nrkno/sofie-core/issues/931)) ([d7dfb71](https://github.com/nrkno/sofie-core/commit/d7dfb71d19405267cab5e2abc39794a80acb30b1))
-
 
 ## [1.50.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.4...v1.50.5) (2024-09-19)
 

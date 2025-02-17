@@ -1,11 +1,11 @@
 import { Logger } from 'winston'
-import { CoreHandler } from '../coreHandler'
-import { CollectionBase, Collection, CollectionObserver } from '../wsHandler'
+import { CoreHandler } from '../coreHandler.js'
+import { CollectionBase, Collection, CollectionObserver } from '../wsHandler.js'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { RundownBaselineAdLibActionId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { SelectedPartInstances } from './partInstancesHandler'
+import { SelectedPartInstances } from './partInstancesHandler.js'
 
 export class GlobalAdLibActionsHandler
 	extends CollectionBase<
@@ -41,7 +41,7 @@ export class GlobalAdLibActionsHandler
 	async update(source: string, data: SelectedPartInstances | undefined): Promise<void> {
 		this.logUpdateReceived('partInstances', source)
 		const prevRundownId = this._currentRundownId
-		const partInstance = data ? data.current ?? data.next : undefined
+		const partInstance = data ? (data.current ?? data.next) : undefined
 		this._currentRundownId = partInstance?.rundownId
 
 		await new Promise(process.nextTick.bind(this))

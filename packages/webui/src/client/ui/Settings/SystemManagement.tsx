@@ -1,35 +1,38 @@
 import React, { useCallback, useMemo } from 'react'
-import { useTracker, useSubscription } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { useTracker, useSubscription } from '../../lib/ReactMeteorData/ReactMeteorData.js'
 import { ICoreSystem, SofieLogo } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
-import { EditAttribute } from '../../lib/EditAttribute'
-import { doModalDialog } from '../../lib/ModalDialog'
-import { MeteorCall } from '../../lib/meteorApi'
-import { languageAnd } from '../../lib/language'
-import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredActionsEditor'
+import { EditAttribute } from '../../lib/EditAttribute.js'
+import { doModalDialog } from '../../lib/ModalDialog.js'
+import { MeteorCall } from '../../lib/meteorApi.js'
+import { languageAnd } from '../../lib/language.js'
+import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredActionsEditor.js'
 import { TFunction, useTranslation } from 'react-i18next'
 import { Meteor } from 'meteor/meteor'
-import { literal, LogLevel } from '../../lib/tempLib'
-import { CoreSystem } from '../../collections'
+import { literal, LogLevel } from '../../lib/tempLib.js'
+import { CoreSystem } from '../../collections/index.js'
 import { CollectionCleanupResult } from '@sofie-automation/meteor-lib/dist/api/system'
 import {
 	LabelActual,
 	LabelAndOverrides,
 	LabelAndOverridesForCheckbox,
 	LabelAndOverridesForMultiLineText,
-} from '../../lib/Components/LabelAndOverrides'
-import { catchError } from '../../lib/lib'
-import { SystemManagementBlueprint } from './SystemManagement/Blueprint'
+} from '../../lib/Components/LabelAndOverrides.js'
+import { catchError } from '../../lib/lib.js'
+import { SystemManagementBlueprint } from './SystemManagement/Blueprint.js'
 import {
 	applyAndValidateOverrides,
 	ObjectWithOverrides,
 	SomeObjectOverrideOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ICoreSystemSettings } from '@sofie-automation/blueprints-integration'
-import { WrappedOverridableItemNormal, useOverrideOpHelper } from './util/OverrideOpHelper'
-import { CheckboxControl } from '../../lib/Components/Checkbox'
-import { CombinedMultiLineTextInputControl, MultiLineTextInputControl } from '../../lib/Components/MultiLineTextInput'
-import { TextInputControl } from '../../lib/Components/TextInput'
+import { WrappedOverridableItemNormal, useOverrideOpHelper } from './util/OverrideOpHelper.js'
+import { CheckboxControl } from '../../lib/Components/Checkbox.js'
+import {
+	CombinedMultiLineTextInputControl,
+	MultiLineTextInputControl,
+} from '../../lib/Components/MultiLineTextInput.js'
+import { TextInputControl } from '../../lib/Components/TextInput.js'
 
 interface WithCoreSystemProps {
 	coreSystem: ICoreSystem

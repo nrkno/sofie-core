@@ -3,13 +3,13 @@ import {
 	Translation,
 	TranslationsBundle as DBTranslationsBundle,
 } from '@sofie-automation/meteor-lib/dist/collections/TranslationsBundles'
-import { TranslationsBundles as TranslationsBundleCollection } from '../collections'
+import { TranslationsBundles as TranslationsBundleCollection } from '../collections/index.js'
 import {
 	I18NextData,
 	TranslationsBundle as BlueprintTranslationsbundle,
 	TranslationsBundleType,
 } from '@sofie-automation/blueprints-integration'
-import { getHash, protectString, unprotectString } from '../lib/tempLib'
+import { getHash, protectString, unprotectString } from '../lib/tempLib.js'
 import {
 	BlueprintId,
 	PeripheralDeviceId,

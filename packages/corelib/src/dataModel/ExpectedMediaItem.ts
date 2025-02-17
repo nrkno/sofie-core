@@ -1,5 +1,5 @@
 import { Time } from '@sofie-automation/blueprints-integration'
-import { ExpectedMediaItemId, StudioId, RundownId, PartId, BucketId, PieceId, AdLibActionId } from './Ids'
+import { ExpectedMediaItemId, StudioId, RundownId, PartId, BucketId, PieceId, AdLibActionId } from './Ids.js'
 
 /** @deprecated */
 export interface ExpectedMediaItemBase {

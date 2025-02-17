@@ -49,9 +49,7 @@ export function SplitDropdown(props: Readonly<IProps>): JSX.Element {
 				<FontAwesomeIcon icon={faChevronUp} />
 			</div>
 			<div className="expco-body bd">
-				{props.options?.map((child, index) => (
-					<React.Fragment key={child.key || index}>{child.node}</React.Fragment>
-				))}
+				{props.options?.map((child, index) => <React.Fragment key={child.key || index}>{child.node}</React.Fragment>)}
 			</div>
 		</div>
 	)

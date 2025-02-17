@@ -1,10 +1,10 @@
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Meteor } from 'meteor/meteor'
 import { Simplify } from 'type-fest'
-import { assertNever } from '../../lib/tempLib'
-import { logger } from '../../logging'
+import { assertNever } from '../../lib/tempLib.js'
+import { logger } from '../../logging.js'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { MinimalMongoCursor } from '../../collections/implementations/asyncCollection'
+import { MinimalMongoCursor } from '../../collections/implementations/asyncCollection.js'
 
 /**
  * https://stackoverflow.com/a/66011942

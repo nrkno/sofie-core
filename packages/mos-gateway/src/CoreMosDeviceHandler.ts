@@ -29,10 +29,10 @@ import {
 	stringifyMosObject,
 	stringifyMosType,
 } from '@mos-connection/connector'
-import * as _ from 'underscore'
-import { MosHandler } from './mosHandler'
+import _ from 'underscore'
+import { MosHandler } from './mosHandler.js'
 import { PartialDeep } from 'type-fest'
-import type { CoreHandler } from './coreHandler'
+import type { CoreHandler } from './coreHandler.js'
 import { CoreConnectionChild } from '@sofie-automation/server-core-integration/dist/lib/CoreConnectionChild'
 import { Queue } from '@sofie-automation/server-core-integration/dist/lib/queue'
 

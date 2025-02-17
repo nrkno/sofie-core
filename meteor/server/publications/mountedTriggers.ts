@@ -1,8 +1,8 @@
 import { Meteor } from 'meteor/meteor'
-import { CustomPublish, meteorCustomPublish } from '../lib/customPublication'
+import { CustomPublish, meteorCustomPublish } from '../lib/customPublication/index.js'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { logger } from '../logging'
-import { DeviceTriggerMountedActionAdlibsPreview, DeviceTriggerMountedActions } from '../api/deviceTriggers/observer'
+import { logger } from '../logging.js'
+import { DeviceTriggerMountedActionAdlibsPreview, DeviceTriggerMountedActions } from '../api/deviceTriggers/observer.js'
 import { Mongo } from 'meteor/mongo'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import _ from 'underscore'
@@ -12,7 +12,7 @@ import {
 	PeripheralDevicePubSubCollectionsNames,
 } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { checkAccessAndGetPeripheralDevice } from '../security/check'
+import { checkAccessAndGetPeripheralDevice } from '../security/check.js'
 
 const PUBLICATION_DEBOUNCE = 20
 

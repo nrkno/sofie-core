@@ -1,5 +1,5 @@
 import { PieceId, AdLibActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { JobContext } from '../../jobs'
+import { JobContext } from '../../jobs/index.js'
 import {
 	BucketActionModifyProps,
 	BucketActionRegenerateExpectedPackagesProps,
@@ -13,18 +13,18 @@ import {
 	cleanUpExpectedPackagesForBucketAdLibsActions,
 	updateExpectedPackagesForBucketAdLibPiece,
 	updateExpectedPackagesForBucketAdLibAction,
-} from '../expectedPackages'
+} from '../expectedPackages.js'
 import {
 	cleanUpExpectedMediaItemForBucketAdLibActions,
 	cleanUpExpectedMediaItemForBucketAdLibPiece,
 	updateExpectedMediaItemForBucketAdLibAction,
 	updateExpectedMediaItemForBucketAdLibPiece,
-} from '../expectedMediaItems'
+} from '../expectedMediaItems.js'
 import { omit } from '@sofie-automation/corelib/dist/lib'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import { MongoQuery } from '../../db'
+import { MongoQuery } from '../../db/index.js'
 
 export async function handleBucketRemoveAdlibPiece(
 	context: JobContext,

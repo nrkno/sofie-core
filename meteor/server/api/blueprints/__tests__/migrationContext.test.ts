@@ -1,15 +1,15 @@
-import '../../../../__mocks__/_extendJest'
-import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
-import { literal, unprotectString } from '../../../lib/tempLib'
+import '../../../../__mocks__/_extendJest.js'
+import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database.js'
+import { literal, unprotectString } from '../../../lib/tempLib.js'
 import {
 	TriggerType,
 	ClientActions,
 	PlayoutActions,
 	IBlueprintTriggeredActions,
 } from '@sofie-automation/blueprints-integration'
-import { MigrationContextSystem } from '../migrationContext'
+import { MigrationContextSystem } from '../migrationContext.js'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { CoreSystem, TriggeredActions } from '../../../collections'
+import { CoreSystem, TriggeredActions } from '../../../collections/index.js'
 
 describe('Test blueprint migrationContext', () => {
 	beforeAll(async () => {

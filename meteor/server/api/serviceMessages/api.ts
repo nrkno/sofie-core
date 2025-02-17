@@ -1,8 +1,8 @@
-import { postHandler } from './postHandler'
-import { deleteMessage, readAllMessages } from './serviceMessagesApi'
+import { postHandler } from './postHandler.js'
+import { deleteMessage, readAllMessages } from './serviceMessagesApi.js'
 import KoaRouter from '@koa/router'
 import { Meteor } from 'meteor/meteor'
-import { bindKoaRouter } from '../rest/koa'
+import { bindKoaRouter } from '../rest/koa.js'
 import bodyParser from 'koa-bodyparser'
 
 const serviceMessagesRouter = new KoaRouter()

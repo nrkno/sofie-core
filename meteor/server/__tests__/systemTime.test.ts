@@ -1,5 +1,5 @@
-import { runTimersUntilNow } from '../../__mocks__/helpers/jest'
-import { TimeJumpDetector } from '../systemTime'
+import { runTimersUntilNow } from '../../__mocks__/helpers/jest.js'
+import { TimeJumpDetector } from '../systemTime.js'
 
 describe('lib/systemTime', () => {
 	test('TimeJumpDetector', async () => {

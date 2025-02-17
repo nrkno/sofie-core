@@ -1,17 +1,17 @@
-import '../../../__mocks__/_extendJest'
-import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
-import { protectString, literal, getRandomString } from '../../lib/tempLib'
+import '../../../__mocks__/_extendJest.js'
+import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database.js'
+import { protectString, literal, getRandomString } from '../../lib/tempLib.js'
 import {
 	RundownLayoutType,
 	RundownLayout,
 	CustomizableRegions,
 } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
-import { MeteorCall } from '../methods'
+import { MeteorCall } from '../methods.js'
 import { RundownLayoutId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownLayouts } from '../../collections'
-import { SupressLogMessages } from '../../../__mocks__/suppressLogging'
-import { shelfLayoutsRouter } from '../rundownLayouts'
-import { callKoaRoute } from '../../../__mocks__/koa-util'
+import { RundownLayouts } from '../../collections/index.js'
+import { SupressLogMessages } from '../../../__mocks__/suppressLogging.js'
+import { shelfLayoutsRouter } from '../rundownLayouts.js'
+import { callKoaRoute } from '../../../__mocks__/koa-util.js'
 
 describe('Rundown Layouts', () => {
 	let env: DefaultEnvironment

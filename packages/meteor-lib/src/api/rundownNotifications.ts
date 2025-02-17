@@ -12,7 +12,7 @@ import {
 	RundownPlaylistId,
 	SegmentId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PieceContentStatusObj } from './pieceContentStatus'
+import { PieceContentStatusObj } from './pieceContentStatus.js'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 

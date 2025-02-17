@@ -1,7 +1,7 @@
-import { ProtectedString } from '../lib/tempLib'
+import { ProtectedString } from '../lib/tempLib.js'
 import { Meteor } from 'meteor/meteor'
 import { IndexSpecifier } from '@sofie-automation/meteor-lib/dist/collections/lib'
-import { AsyncOnlyReadOnlyMongoCollection } from './collection'
+import { AsyncOnlyReadOnlyMongoCollection } from './collection.js'
 
 interface CollectionsIndexes {
 	[collectionName: string]: CollectionIndexes<any>

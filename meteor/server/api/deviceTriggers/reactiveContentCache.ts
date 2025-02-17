@@ -12,7 +12,7 @@ import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowSt
 import { DBTriggeredActions } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { literal } from '@sofie-automation/corelib/dist/lib'
-import { ReactiveCacheCollection } from '../../publications/lib/ReactiveCacheCollection'
+import { ReactiveCacheCollection } from '../../publications/lib/ReactiveCacheCollection.js'
 
 export type RundownPlaylistFields = '_id' | 'name' | 'activationId' | 'currentPartInfo' | 'nextPartInfo'
 export const rundownPlaylistFieldSpecifier = literal<

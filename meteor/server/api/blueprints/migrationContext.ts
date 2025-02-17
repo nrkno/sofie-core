@@ -1,15 +1,15 @@
-import { getHash, protectString, unprotectString, clone, Complete } from '../../lib/tempLib'
+import { getHash, protectString, unprotectString, clone, Complete } from '../../lib/tempLib.js'
 import { Meteor } from 'meteor/meteor'
 import {
 	MigrationContextSystem as IMigrationContextSystem,
 	IBlueprintTriggeredActions,
 } from '@sofie-automation/blueprints-integration'
-import { check } from '../../lib/check'
+import { check } from '../../lib/check.js'
 import { TriggeredActionsObj } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
 import { Match } from 'meteor/check'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { TriggeredActions } from '../../collections'
+import { TriggeredActions } from '../../collections/index.js'
 
 function convertTriggeredActionToBlueprints(triggeredAction: TriggeredActionsObj): IBlueprintTriggeredActions {
 	const obj: Complete<IBlueprintTriggeredActions> = {

@@ -1,10 +1,10 @@
 import * as Winston from 'winston'
 import * as fs from 'fs'
-import { getAbsolutePath } from './lib'
-import { LogLevel } from './lib/tempLib'
+import { getAbsolutePath } from './lib.js'
+import { LogLevel } from './lib/tempLib.js'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
+import _ from 'underscore'
 import { LoggerInstanceFixed } from '@sofie-automation/corelib/dist/logging'
 
 export function getLogLevel(): LogLevel {

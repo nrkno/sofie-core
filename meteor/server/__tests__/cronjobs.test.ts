@@ -1,8 +1,8 @@
-import '../../__mocks__/_extendJest'
-import { runAllTimers, waitUntil } from '../../__mocks__/helpers/jest'
-import { MeteorMock } from '../../__mocks__/meteor'
-import { logger } from '../logging'
-import { getRandomId, getRandomString, literal, protectString } from '../lib/tempLib'
+import '../../__mocks__/_extendJest.js'
+import { runAllTimers, waitUntil } from '../../__mocks__/helpers/jest.js'
+import { MeteorMock } from '../../__mocks__/meteor.js'
+import { logger } from '../logging.js'
+import { getRandomId, getRandomString, literal, protectString } from '../lib/tempLib.js'
 import { SnapshotType } from '@sofie-automation/meteor-lib/dist/collections/Snapshots'
 import {
 	IBlueprintPieceType,
@@ -18,7 +18,7 @@ import {
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { SYSTEM_ID } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
-import * as lib from '../lib/lib'
+import * as lib from '../lib/lib.js'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
@@ -46,9 +46,9 @@ jest.mock('../api/deviceTriggers/observer')
 
 const MAX_WAIT_TIME = 4 * 1000
 
-import '../cronjobs'
+import '../cronjobs.js'
 
-import '../api/peripheralDevice'
+import '../api/peripheralDevice.js'
 import {
 	CoreSystem,
 	NrcsIngestDataCache,
@@ -63,16 +63,16 @@ import {
 	SofieIngestDataCache,
 	Studios,
 	RundownPlaylists,
-} from '../collections'
+} from '../collections/index.js'
 import { NrcsIngestCacheType } from '@sofie-automation/corelib/dist/dataModel/NrcsIngestDataCache'
 import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import {
 	DefaultEnvironment,
 	setupDefaultRundownPlaylist,
 	setupDefaultStudioEnvironment,
-} from '../../__mocks__/helpers/database'
+} from '../../__mocks__/helpers/database.js'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { Settings } from '../Settings'
+import { Settings } from '../Settings.js'
 import { SofieIngestCacheType } from '@sofie-automation/corelib/dist/dataModel/SofieIngestDataCache'
 import { ObjectOverrideSetOp, ObjectWithOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
@@ -536,7 +536,7 @@ describe('cronjobs', () => {
 					? {
 							configId: '',
 							studioId,
-					  }
+						}
 					: undefined,
 			})
 			const mockCasparCg = await insertPlayoutDevice({

@@ -1,13 +1,13 @@
-import '../../../__mocks__/_extendJest'
-import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
-import { literal, unprotectString } from '../../lib/tempLib'
-import { MeteorMock } from '../../../__mocks__/meteor'
-import { status2ExternalStatus, setSystemStatus } from '../systemStatus'
+import '../../../__mocks__/_extendJest.js'
+import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database.js'
+import { literal, unprotectString } from '../../lib/tempLib.js'
+import { MeteorMock } from '../../../__mocks__/meteor.js'
+import { status2ExternalStatus, setSystemStatus } from '../systemStatus.js'
 import { StatusResponse } from '@sofie-automation/meteor-lib/dist/api/systemStatus'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
-import { MeteorCall } from '../../api/methods'
-import { callKoaRoute } from '../../../__mocks__/koa-util'
-import { healthRouter } from '../api'
+import { MeteorCall } from '../../api/methods.js'
+import { callKoaRoute } from '../../../__mocks__/koa-util.js'
+import { healthRouter } from '../api.js'
 import { UIBlueprintUpgradeStatus } from '@sofie-automation/meteor-lib/dist/api/upgradeStatus'
 
 // we don't want the deviceTriggers observer to start up at this time
@@ -17,7 +17,7 @@ require('../api')
 require('../../coreSystem/index')
 const PackageInfo = require('../../../package.json')
 
-import * as getServerBlueprintUpgradeStatuses from '../../publications/blueprintUpgradeStatus/systemStatus'
+import * as getServerBlueprintUpgradeStatuses from '../../publications/blueprintUpgradeStatus/systemStatus.js'
 jest.spyOn(getServerBlueprintUpgradeStatuses, 'getServerBlueprintUpgradeStatuses').mockReturnValue(
 	Promise.resolve(literal<UIBlueprintUpgradeStatus[]>([]))
 )

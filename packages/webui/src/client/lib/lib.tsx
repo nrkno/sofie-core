@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
-import { Time } from './tempLib'
-import { getCurrentTime, systemTime } from './systemTime'
-import { logger } from './logging'
+import { Time } from './tempLib.js'
+import { getCurrentTime, systemTime } from './systemTime.js'
+import { logger } from './logging.js'
 import shajs from 'sha.js'
 import { SINGLE_USE_TOKEN_SALT } from '@sofie-automation/meteor-lib/dist/api/userActions'
 

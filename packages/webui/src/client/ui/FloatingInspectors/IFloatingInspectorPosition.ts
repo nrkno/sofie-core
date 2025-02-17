@@ -1,8 +1,8 @@
 import { VirtualElement } from '@popperjs/core'
 import React, { useMemo, useEffect, useRef, RefObject, useLayoutEffect, useState } from 'react'
 import { usePopper } from 'react-popper'
-import { getHeaderHeight } from '../../lib/viewPort'
-import { catchError } from '../../lib/lib'
+import { getHeaderHeight } from '../../lib/viewPort.js'
+import { catchError } from '../../lib/lib.js'
 
 export function useInspectorPosition(
 	position: IFloatingInspectorPosition,

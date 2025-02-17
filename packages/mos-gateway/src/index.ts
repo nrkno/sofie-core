@@ -1,6 +1,6 @@
-import { Connector, Config } from './connector'
+import { Connector, Config } from './connector.js'
 import * as Winston from 'winston'
-import _ = require('underscore')
+import _ from 'underscore'
 import { protectString, stringifyError } from '@sofie-automation/server-core-integration'
 
 console.log('process started') // This is a message all Sofie processes log upon startup
@@ -66,7 +66,7 @@ CLI                ENV
 -debug                               Debug mode
 -h, -help                            Displays this help message
 `)
-	// eslint-disable-next-line no-process-exit
+	// eslint-disable-next-line n/no-process-exit
 	process.exit(0)
 }
 

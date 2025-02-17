@@ -1,9 +1,9 @@
-import * as _ from 'underscore'
-import { ProtectedString } from './protectedString'
+import _ from 'underscore'
+import { ProtectedString } from './protectedString.js'
 import * as objectPath from 'object-path'
 // eslint-disable-next-line n/no-extraneous-import
 import type { Condition, Filter, UpdateFilter } from 'mongodb'
-import { clone } from './lib'
+import { clone } from './lib.js'
 
 /** Hack's using typings pulled from meteor */
 

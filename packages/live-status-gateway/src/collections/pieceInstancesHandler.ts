@@ -1,23 +1,23 @@
 import { Logger } from 'winston'
-import { CoreHandler } from '../coreHandler'
-import { CollectionBase, Collection, CollectionObserver } from '../wsHandler'
+import { CoreHandler } from '../coreHandler.js'
+import { CollectionBase, Collection, CollectionObserver } from '../wsHandler.js'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import areElementsShallowEqual from '@sofie-automation/shared-lib/dist/lib/isShallowEqual'
 import throttleToNextTick from '@sofie-automation/shared-lib/dist/lib/throttleToNextTick'
-import _ = require('underscore')
+import _ from 'underscore'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { PartInstanceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
 	processAndPrunePieceInstanceTimings,
 	resolvePrunedPieceInstance,
 } from '@sofie-automation/corelib/dist/playout/processAndPrune'
-import { ShowStyleBaseExt, ShowStyleBaseHandler } from './showStyleBaseHandler'
-import { PlaylistHandler } from './playlistHandler'
+import { ShowStyleBaseExt, ShowStyleBaseHandler } from './showStyleBaseHandler.js'
+import { PlaylistHandler } from './playlistHandler.js'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { PartInstancesHandler, SelectedPartInstances } from './partInstancesHandler'
+import { PartInstancesHandler, SelectedPartInstances } from './partInstancesHandler.js'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { ReadonlyDeep } from 'type-fest'
 
@@ -113,21 +113,21 @@ export class PieceInstancesHandler
 					this._partInstances?.previous,
 					collection.find({ partInstanceId: this._currentPlaylist.previousPartInfo.partInstanceId }),
 					true
-			  )
+				)
 			: []
 		const inCurrentPartInstance = this._currentPlaylist?.currentPartInfo?.partInstanceId
 			? this.processAndPrunePieceInstanceTimings(
 					this._partInstances?.current,
 					collection.find({ partInstanceId: this._currentPlaylist.currentPartInfo.partInstanceId }),
 					true
-			  )
+				)
 			: []
 		const inNextPartInstance = this._currentPlaylist?.nextPartInfo?.partInstanceId
 			? this.processAndPrunePieceInstanceTimings(
 					undefined,
 					collection.find({ partInstanceId: this._currentPlaylist.nextPartInfo.partInstanceId }),
 					false
-			  )
+				)
 			: []
 
 		const active = [...inCurrentPartInstance]
@@ -210,7 +210,7 @@ export class PieceInstancesHandler
 					this._currentPlaylist.previousPartInfo?.partInstanceId,
 					this._currentPlaylist.nextPartInfo?.partInstanceId,
 					this._currentPlaylist.currentPartInfo?.partInstanceId,
-			  ])
+				])
 			: []
 		this._activationId = unprotectString(this._currentPlaylist?.activationId)
 		if (this._currentPlaylist && this._partInstanceIds.length && this._activationId) {

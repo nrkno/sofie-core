@@ -1,5 +1,5 @@
 import React, { JSX } from 'react'
-import * as loopAnimation from './icon-loop.json'
+import * as loopAnimation from './icon-loop.json.js'
 import { Lottie } from '@crello/react-lottie'
 
 export function LoopingIcon(props?: Readonly<React.SVGProps<SVGSVGElement>>): JSX.Element {

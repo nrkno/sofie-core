@@ -4,9 +4,9 @@ import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protected
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
-import { WebSocketTopicBase, WebSocketTopic, CollectionObserver } from '../wsHandler'
-import { StudioHandler } from '../collections/studioHandler'
-import { PlaylistsHandler } from '../collections/playlistHandler'
+import { WebSocketTopicBase, WebSocketTopic, CollectionObserver } from '../wsHandler.js'
+import { StudioHandler } from '../collections/studioHandler.js'
+import { PlaylistsHandler } from '../collections/playlistHandler.js'
 
 type PlaylistActivationStatus = 'deactivated' | 'rehearsal' | 'activated'
 
@@ -47,13 +47,13 @@ export class StudioTopic
 					id: unprotectString(this._studio._id),
 					name: this._studio.name,
 					playlists: this._playlists,
-			  }
+				}
 			: {
 					event: 'studio',
 					id: null,
 					name: '',
 					playlists: [],
-			  }
+				}
 
 		this.sendMessage(subscribers, studioStatus)
 	}

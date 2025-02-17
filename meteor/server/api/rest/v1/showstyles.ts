@@ -5,15 +5,15 @@ import {
 	ShowStyleBaseAction,
 	ShowStyleBaseActionType,
 	ShowStylesRestAPI,
-} from '../../../lib/rest/v1'
-import { logger } from '../../../logging'
-import { APIFactory, APIRegisterHook, ServerAPIContext } from './types'
+} from '../../../lib/rest/v1/index.js'
+import { logger } from '../../../logging.js'
+import { APIFactory, APIRegisterHook, ServerAPIContext } from './types.js'
 import { ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { check } from '../../../lib/check'
+import { check } from '../../../lib/check.js'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
-import { RundownPlaylists, Rundowns, ShowStyleBases, ShowStyleVariants } from '../../../collections'
+import { RundownPlaylists, Rundowns, ShowStyleBases, ShowStyleVariants } from '../../../collections/index.js'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import {
 	APIShowStyleBaseFrom,
@@ -21,13 +21,13 @@ import {
 	showStyleBaseFrom,
 	showStyleVariantFrom,
 	validateAPIBlueprintConfigForShowStyle,
-} from './typeConversion'
+} from './typeConversion.js'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { runUpgradeForShowStyleBase, validateConfigForShowStyleBase } from '../../../migration/upgrades'
+import { runUpgradeForShowStyleBase, validateConfigForShowStyleBase } from '../../../migration/upgrades/index.js'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { assertNever } from '@sofie-automation/corelib/dist/lib'
-import { checkValidation } from '.'
+import { checkValidation } from './index.js'
 
 class ShowStylesServerAPI implements ShowStylesRestAPI {
 	async getShowStyleBases(

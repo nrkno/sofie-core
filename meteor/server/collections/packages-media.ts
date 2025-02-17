@@ -9,8 +9,8 @@ import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageI
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
-import { createAsyncOnlyMongoCollection, createAsyncOnlyReadOnlyMongoCollection } from './collection'
-import { registerIndex } from './indices'
+import { createAsyncOnlyMongoCollection, createAsyncOnlyReadOnlyMongoCollection } from './collection.js'
+import { registerIndex } from './indices.js'
 
 /** @deprecated */
 export const ExpectedMediaItems = createAsyncOnlyReadOnlyMongoCollection<ExpectedMediaItem>(

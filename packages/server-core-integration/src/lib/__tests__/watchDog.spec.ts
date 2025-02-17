@@ -1,4 +1,4 @@
-import { WatchDog } from '../watchDog'
+import { WatchDog } from '../watchDog.js'
 
 const setTimeoutOrg = setTimeout
 const delay = async (time: any) => {

@@ -1,8 +1,8 @@
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { Component } from '@sofie-automation/meteor-lib/dist/api/systemStatus'
-import { status2ExternalStatus } from './systemStatus'
-import { getServerBlueprintUpgradeStatuses } from '../publications/blueprintUpgradeStatus/systemStatus'
+import { status2ExternalStatus } from './systemStatus.js'
+import { getServerBlueprintUpgradeStatuses } from '../publications/blueprintUpgradeStatus/systemStatus.js'
 
 export async function getUpgradeSystemStatusMessages(): Promise<Component[]> {
 	const result: Component[] = []

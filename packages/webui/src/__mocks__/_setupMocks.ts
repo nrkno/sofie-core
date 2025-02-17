@@ -1,4 +1,4 @@
-import { resetRandomId } from './random'
+import { resetRandomId } from './random.js'
 
 // This file is run before all tests start.
 

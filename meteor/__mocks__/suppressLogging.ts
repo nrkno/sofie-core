@@ -1,4 +1,4 @@
-import { overrideLogger } from '../server/logging'
+import { overrideLogger } from '../server/logging.js'
 
 export class SupressLogMessages {
 	private static suppressMessages: RegExp[] = []

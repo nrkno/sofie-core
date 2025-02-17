@@ -2,9 +2,9 @@ import React from 'react'
 import classNames from 'classnames'
 import { useTranslation } from 'react-i18next'
 import Moment from 'react-moment'
-import { LoopingIcon } from '../../lib/ui/icons/looping'
-import { WithTiming, withTiming } from './RundownTiming/withTiming'
-import { RundownUtils } from '../../lib/rundown'
+import { LoopingIcon } from '../../lib/ui/icons/looping.js'
+import { WithTiming, withTiming } from './RundownTiming/withTiming.js'
+import { RundownUtils } from '../../lib/rundown.js'
 
 const NextLoopClock = withTiming<{ useWallClock?: boolean }, {}>()(
 	class NextLoopClock extends React.Component<

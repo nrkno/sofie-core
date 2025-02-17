@@ -13,8 +13,8 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { createAsyncOnlyReadOnlyMongoCollection } from './collection'
-import { registerIndex } from './indices'
+import { createAsyncOnlyReadOnlyMongoCollection } from './collection.js'
+import { registerIndex } from './indices.js'
 
 export const AdLibActions = createAsyncOnlyReadOnlyMongoCollection<AdLibAction>(CollectionName.AdLibActions)
 registerIndex(AdLibActions, {

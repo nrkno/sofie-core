@@ -1,6 +1,6 @@
 import { unprotectString } from '@sofie-automation/server-core-integration'
-import { ShowStyleBaseExt } from '../../collections/showStyleBaseHandler'
-import { PieceInstanceMin } from '../../collections/pieceInstancesHandler'
+import { ShowStyleBaseExt } from '../../collections/showStyleBaseHandler.js'
+import { PieceInstanceMin } from '../../collections/pieceInstancesHandler.js'
 
 export interface PieceStatus {
 	id: string

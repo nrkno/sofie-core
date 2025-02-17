@@ -1,20 +1,20 @@
 import { Meteor } from 'meteor/meteor'
 import { SnapshotId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { check } from 'meteor/check'
-import { APIFactory, APIRegisterHook, ServerAPIContext } from './types'
-import { logger } from '../../../logging'
-import { storeRundownPlaylistSnapshot, storeSystemSnapshot } from '../../snapshot'
-import { makeIdempotent, makeRateLimited } from './middlewares'
+import { APIFactory, APIRegisterHook, ServerAPIContext } from './types.js'
+import { logger } from '../../../logging.js'
+import { storeRundownPlaylistSnapshot, storeSystemSnapshot } from '../../snapshot.js'
+import { makeIdempotent, makeRateLimited } from './middlewares.js'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { playlistSnapshotOptionsFrom, systemSnapshotOptionsFrom } from './typeConversion'
+import { playlistSnapshotOptionsFrom, systemSnapshotOptionsFrom } from './typeConversion.js'
 import {
 	APIPlaylistSnapshotOptions,
 	APISnapshotType,
 	APISystemSnapshotOptions,
 	SnapshotsRestAPI,
-} from '../../../lib/rest/v1'
+} from '../../../lib/rest/v1/index.js'
 import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
-import { checkAccessToPlaylist } from '../../../security/check'
+import { checkAccessToPlaylist } from '../../../security/check.js'
 
 export class SnapshotsServerAPI implements SnapshotsRestAPI {
 	constructor(private context: ServerAPIContext) {}

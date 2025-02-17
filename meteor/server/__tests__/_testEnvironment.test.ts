@@ -1,7 +1,7 @@
-import { RandomMock } from '../../__mocks__/random'
-import { MongoMock } from '../../__mocks__/mongo'
-import { protectString, getRandomString } from '../lib/tempLib'
-import { sleep } from '../lib/lib'
+import { RandomMock } from '../../__mocks__/random.js'
+import { MongoMock } from '../../__mocks__/mongo.js'
+import { protectString, getRandomString } from '../lib/tempLib.js'
+import { sleep } from '../lib/lib.js'
 import {
 	AdLibPieces,
 	Blueprints,
@@ -27,11 +27,11 @@ import {
 	Studios,
 	Timeline,
 	UserActionsLog,
-} from '../collections'
+} from '../collections/index.js'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { Mongo } from 'meteor/mongo'
-import { defaultStudio } from '../../__mocks__/defaultCollectionObjects'
-import { MinimalMeteorMongoCollection } from '../collections/implementations/asyncCollection'
+import { defaultStudio } from '../../__mocks__/defaultCollectionObjects.js'
+import { MinimalMeteorMongoCollection } from '../collections/implementations/asyncCollection.js'
 
 describe('Basic test of test environment', () => {
 	test('Meteor Random mock', () => {

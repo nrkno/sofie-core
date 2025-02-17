@@ -1,6 +1,6 @@
-import { DeviceConfigManifest } from '../core/deviceConfigManifest'
-import { PeripheralDeviceId, RundownPlaylistId, PartInstanceId, PieceInstanceId } from '../core/model/Ids'
-import { StatusCode } from '../lib/status'
+import { DeviceConfigManifest } from '../core/deviceConfigManifest.js'
+import { PeripheralDeviceId, RundownPlaylistId, PartInstanceId, PieceInstanceId } from '../core/model/Ids.js'
+import { StatusCode } from '../lib/status.js'
 
 export interface PartPlaybackCallbackData {
 	rundownPlaylistId: RundownPlaylistId

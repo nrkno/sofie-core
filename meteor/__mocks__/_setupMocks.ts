@@ -1,7 +1,7 @@
-import { setLogLevel } from '../server/logging'
-import { resetRandomId } from './random'
-import { LogLevel } from '../server/lib/tempLib'
-import { SupressLogMessages } from './suppressLogging'
+import { setLogLevel } from '../server/logging.js'
+import { resetRandomId } from './random.js'
+import { LogLevel } from '../server/lib/tempLib.js'
+import { SupressLogMessages } from './suppressLogging.js'
 
 // This file is run before all tests start.
 

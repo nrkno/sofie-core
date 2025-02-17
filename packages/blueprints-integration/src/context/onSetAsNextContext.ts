@@ -8,8 +8,8 @@ import {
 	IBlueprintResolvedPieceInstance,
 	IEventContext,
 	IShowStyleUserContext,
-} from '..'
-import { BlueprintQuickLookInfo } from './quickLoopInfo'
+} from '../index.js'
+import { BlueprintQuickLookInfo } from './quickLoopInfo.js'
 
 /**
  * Context in which 'current' is the part currently on air, and 'next' is the partInstance being set as Next

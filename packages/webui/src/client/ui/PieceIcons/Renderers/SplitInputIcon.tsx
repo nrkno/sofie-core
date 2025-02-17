@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { PieceGeneric } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { SplitsContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
-import { RundownUtils } from '../../../lib/rundown'
+import { RundownUtils } from '../../../lib/rundown.js'
 import classNames from 'classnames'
 import { ReadonlyDeep } from 'type-fest'
 

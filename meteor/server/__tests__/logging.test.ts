@@ -1,6 +1,6 @@
-import { supressLogging } from '../../__mocks__/helpers/lib'
-import { SupressLogMessages } from '../../__mocks__/suppressLogging'
-import { logger } from '../logging'
+import { supressLogging } from '../../__mocks__/helpers/lib.js'
+import { SupressLogMessages } from '../../__mocks__/suppressLogging.js'
+import { logger } from '../logging.js'
 
 describe('server/logger', () => {
 	test('supress errors', async () => {

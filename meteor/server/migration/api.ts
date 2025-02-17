@@ -1,14 +1,14 @@
-import { check, Match } from '../lib/check'
-import { registerClassToMeteorMethods } from '../methods'
+import { check, Match } from '../lib/check.js'
+import { registerClassToMeteorMethods } from '../methods.js'
 import {
 	MigrationChunk,
 	NewMigrationAPI,
 	MigrationAPIMethods,
 	BlueprintFixUpConfigMessage,
 } from '@sofie-automation/meteor-lib/dist/api/migration'
-import * as Migrations from './databaseMigration'
+import * as Migrations from './databaseMigration.js'
 import { MigrationStepInputResult } from '@sofie-automation/blueprints-integration'
-import { MethodContextAPI } from '../api/methodContext'
+import { MethodContextAPI } from '../api/methodContext.js'
 import {
 	fixupConfigForShowStyleBase,
 	fixupConfigForStudio,
@@ -18,11 +18,11 @@ import {
 	runUpgradeForStudio,
 	validateConfigForShowStyleBase,
 	validateConfigForStudio,
-} from './upgrades'
+} from './upgrades/index.js'
 import { CoreSystemId, ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { BlueprintValidateConfigForStudioResult } from '@sofie-automation/corelib/dist/worker/studio'
-import { runUpgradeForCoreSystem } from './upgrades/system'
-import { assertConnectionHasOneOfPermissions } from '../security/auth'
+import { runUpgradeForCoreSystem } from './upgrades/system.js'
+import { assertConnectionHasOneOfPermissions } from '../security/auth.js'
 import { UserPermissions } from '@sofie-automation/meteor-lib/dist/userPermissions'
 
 const PERMISSIONS_FOR_MIGRATIONS: Array<keyof UserPermissions> = ['configure']

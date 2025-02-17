@@ -1,4 +1,4 @@
-import * as _ from 'underscore'
+import _ from 'underscore'
 import { Time } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { UserError } from '@sofie-automation/corelib/dist/error'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'

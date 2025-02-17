@@ -7,9 +7,9 @@ import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settin
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import { ReadonlyDeep } from 'type-fest'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { literal } from '../../lib/tempLib'
-import { Studios } from '../../collections'
-import { PieceContentStatusStudio } from './checkPieceContentStatus'
+import { literal } from '../../lib/tempLib.js'
+import { Studios } from '../../collections/index.js'
+import { PieceContentStatusStudio } from './checkPieceContentStatus.js'
 
 export type StudioFields =
 	| '_id'

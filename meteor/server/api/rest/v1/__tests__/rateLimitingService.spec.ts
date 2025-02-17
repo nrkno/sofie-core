@@ -1,4 +1,4 @@
-import { RateLimitingService } from '../rateLimitingService'
+import { RateLimitingService } from '../rateLimitingService.js'
 
 describe('RateLimitingService', () => {
 	let rateLimitingService: RateLimitingService

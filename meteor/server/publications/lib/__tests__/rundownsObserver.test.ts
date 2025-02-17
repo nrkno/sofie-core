@@ -1,10 +1,10 @@
 import { RundownId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { Rundowns } from '../../../collections'
-import { runAllTimers, runTimersUntilNow, waitUntil } from '../../../../__mocks__/helpers/jest'
-import { MongoMock } from '../../../../__mocks__/mongo'
-import { RundownsObserver } from '../rundownsObserver'
+import { Rundowns } from '../../../collections/index.js'
+import { runAllTimers, runTimersUntilNow, waitUntil } from '../../../../__mocks__/helpers/jest.js'
+import { MongoMock } from '../../../../__mocks__/mongo.js'
+import { RundownsObserver } from '../rundownsObserver.js'
 
 const RundownsMock = (Rundowns as any).mockCollection as MongoMock.Collection<Rundown>
 

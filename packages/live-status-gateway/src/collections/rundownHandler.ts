@@ -1,14 +1,14 @@
 import { Logger } from 'winston'
-import { CoreHandler } from '../coreHandler'
-import { CollectionBase, Collection, CollectionObserver } from '../wsHandler'
+import { CoreHandler } from '../coreHandler.js'
+import { CollectionBase, Collection, CollectionObserver } from '../wsHandler.js'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
-import { PartInstancesHandler, SelectedPartInstances } from './partInstancesHandler'
+import { PartInstancesHandler, SelectedPartInstances } from './partInstancesHandler.js'
 import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-import { PlaylistHandler } from './playlistHandler'
-import { RundownsHandler } from './rundownsHandler'
+import { PlaylistHandler } from './playlistHandler.js'
+import { RundownsHandler } from './rundownsHandler.js'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 export class RundownHandler
@@ -19,7 +19,11 @@ export class RundownHandler
 	private _currentPlaylistId: RundownPlaylistId | undefined
 	private _currentRundownId: RundownId | undefined
 
-	constructor(logger: Logger, coreHandler: CoreHandler, private _rundownsHandler?: RundownsHandler) {
+	constructor(
+		logger: Logger,
+		coreHandler: CoreHandler,
+		private _rundownsHandler?: RundownsHandler
+	) {
 		super(RundownHandler.name, CollectionName.Rundowns, CorelibPubSub.rundownsInPlaylists, logger, coreHandler)
 		this.observerName = this._name
 	}

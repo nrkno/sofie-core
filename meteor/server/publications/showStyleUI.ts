@@ -5,16 +5,16 @@ import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { Complete, literal } from '../lib/tempLib'
+import { Complete, literal } from '../lib/tempLib.js'
 import {
 	meteorCustomPublish,
 	SetupObserversResult,
 	setUpOptimizedObserverArray,
 	TriggerUpdate,
-} from '../lib/customPublication'
-import { ShowStyleBases } from '../collections'
+} from '../lib/customPublication/index.js'
+import { ShowStyleBases } from '../collections/index.js'
 import { check } from 'meteor/check'
-import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify.js'
 
 interface UIShowStyleBaseArgs {
 	readonly showStyleBaseId: ShowStyleBaseId

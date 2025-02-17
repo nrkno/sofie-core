@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { logger } from '../logging'
+import { logger } from '../logging.js'
 
 export enum FastTrackObservers {
 	TIMELINE = 'timeline',

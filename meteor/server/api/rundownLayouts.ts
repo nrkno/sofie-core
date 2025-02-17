@@ -1,22 +1,22 @@
 import { Meteor } from 'meteor/meteor'
-import { check, Match } from '../lib/check'
-import { registerClassToMeteorMethods } from '../methods'
+import { check, Match } from '../lib/check.js'
+import { registerClassToMeteorMethods } from '../methods.js'
 import { NewRundownLayoutsAPI, RundownLayoutsAPIMethods } from '@sofie-automation/meteor-lib/dist/api/rundownLayouts'
 import {
 	RundownLayoutType,
 	RundownLayoutBase,
 	CustomizableRegions,
 } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
-import { literal, getRandomId, protectString } from '../lib/tempLib'
-import { logger } from '../logging'
-import { MethodContext, MethodContextAPI } from './methodContext'
-import { fetchShowStyleBaseLight } from '../optimizations'
+import { literal, getRandomId, protectString } from '../lib/tempLib.js'
+import { logger } from '../logging.js'
+import { MethodContext, MethodContextAPI } from './methodContext.js'
+import { fetchShowStyleBaseLight } from '../optimizations.js'
 import { BlueprintId, RundownLayoutId, ShowStyleBaseId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownLayouts } from '../collections'
+import { RundownLayouts } from '../collections/index.js'
 import KoaRouter from '@koa/router'
 import bodyParser from 'koa-bodyparser'
 import { UserPermissions } from '@sofie-automation/meteor-lib/dist/userPermissions'
-import { assertConnectionHasOneOfPermissions } from '../security/auth'
+import { assertConnectionHasOneOfPermissions } from '../security/auth.js'
 
 const PERMISSIONS_FOR_MANAGE_RUNDOWN_LAYOUTS: Array<keyof UserPermissions> = ['configure']
 

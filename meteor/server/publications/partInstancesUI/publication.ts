@@ -6,27 +6,27 @@ import {
 	TriggerUpdate,
 	meteorCustomPublish,
 	setUpCollectionOptimizedObserver,
-} from '../../lib/customPublication'
-import { logger } from '../../logging'
+} from '../../lib/customPublication/index.js'
+import { logger } from '../../logging.js'
 import { CustomCollectionName, MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
-import { ContentCache, PartInstanceOmitedFields, createReactiveContentCache } from './reactiveContentCache'
+import { ContentCache, PartInstanceOmitedFields, createReactiveContentCache } from './reactiveContentCache.js'
 import { ReadonlyDeep } from 'type-fest'
-import { RundownPlaylists } from '../../collections'
+import { RundownPlaylists } from '../../collections/index.js'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
-import { RundownsObserver } from '../lib/rundownsObserver'
-import { RundownContentObserver } from './rundownContentObserver'
+import { RundownsObserver } from '../lib/rundownsObserver.js'
+import { RundownContentObserver } from './rundownContentObserver.js'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { Match } from '../../lib/check'
+import { Match } from '../../lib/check.js'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import {
 	extractRanks,
 	findMarkerPosition,
 	modifyPartInstanceForQuickLoop,
 	stringsToIndexLookup,
-} from '../lib/quickLoop'
-import { triggerWriteAccessBecauseNoCheckNecessary } from '../../security/securityVerify'
+} from '../lib/quickLoop.js'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../../security/securityVerify.js'
 
 interface UIPartInstancesArgs {
 	readonly playlistActivationId: RundownPlaylistActivationId

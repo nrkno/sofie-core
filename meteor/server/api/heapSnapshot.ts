@@ -3,11 +3,11 @@ import { Readable } from 'stream'
 import { Meteor } from 'meteor/meteor'
 import Koa from 'koa'
 import KoaRouter from '@koa/router'
-import { fixValidPath } from '../lib/lib'
-import { sleep } from '../lib/lib'
+import { fixValidPath } from '../lib/lib.js'
+import { sleep } from '../lib/lib.js'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { logger } from '../logging'
-import { assertConnectionHasOneOfPermissions, RequestCredentials } from '../security/auth'
+import { logger } from '../logging.js'
+import { assertConnectionHasOneOfPermissions, RequestCredentials } from '../security/auth.js'
 
 async function retrieveHeapSnapshot(cred: RequestCredentials): Promise<Readable> {
 	assertConnectionHasOneOfPermissions(cred, 'developer')

@@ -4,10 +4,10 @@ import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
-import { stringifyObjects } from '../lib/tempLib'
+import { stringifyObjects } from '../lib/tempLib.js'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { logger } from '../logging'
-import { AsyncOnlyMongoCollection, AsyncOnlyReadOnlyMongoCollection } from './collection'
+import { logger } from '../logging.js'
+import { AsyncOnlyMongoCollection, AsyncOnlyReadOnlyMongoCollection } from './collection.js'
 
 type Timeout = number
 

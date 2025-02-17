@@ -1,5 +1,5 @@
-import { check } from '../lib/check'
-import { registerClassToMeteorMethods } from '../methods'
+import { check } from '../lib/check.js'
+import { registerClassToMeteorMethods } from '../methods.js'
 import {
 	CreateAdlibTestingRundownOption,
 	NewShowStylesAPI,
@@ -8,8 +8,8 @@ import {
 import { Meteor } from 'meteor/meteor'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { protectString, getRandomId, omit } from '../lib/tempLib'
-import { MethodContextAPI, MethodContext } from './methodContext'
+import { protectString, getRandomId, omit } from '../lib/tempLib.js'
+import { MethodContextAPI, MethodContext } from './methodContext.js'
 import deepmerge from 'deepmerge'
 import {
 	applyAndValidateOverrides,
@@ -18,10 +18,10 @@ import {
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
 import { OrganizationId, ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownLayouts, ShowStyleBases, ShowStyleVariants, Studios } from '../collections'
+import { RundownLayouts, ShowStyleBases, ShowStyleVariants, Studios } from '../collections/index.js'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { UserPermissions } from '@sofie-automation/meteor-lib/dist/userPermissions'
-import { assertConnectionHasOneOfPermissions } from '../security/auth'
+import { assertConnectionHasOneOfPermissions } from '../security/auth.js'
 
 const PERMISSIONS_FOR_MANAGE_SHOWSTYLES: Array<keyof UserPermissions> = ['configure']
 

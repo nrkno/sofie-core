@@ -1,17 +1,17 @@
 import { Logger } from 'winston'
 import { WebSocket } from 'ws'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { WebSocketTopicBase, WebSocketTopic, CollectionObserver } from '../wsHandler'
+import { WebSocketTopicBase, WebSocketTopic, CollectionObserver } from '../wsHandler.js'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { PlaylistHandler } from '../collections/playlistHandler'
+import { PlaylistHandler } from '../collections/playlistHandler.js'
 import { groupByToMap } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
-import { SegmentsHandler } from '../collections/segmentsHandler'
+import { SegmentsHandler } from '../collections/segmentsHandler.js'
 import areElementsShallowEqual from '@sofie-automation/shared-lib/dist/lib/isShallowEqual'
-import { PartsHandler } from '../collections/partsHandler'
+import { PartsHandler } from '../collections/partsHandler.js'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import _ = require('underscore')
-import { SegmentTiming, calculateSegmentTiming } from './helpers/segmentTiming'
+import _ from 'underscore'
+import { SegmentTiming, calculateSegmentTiming } from './helpers/segmentTiming.js'
 
 const THROTTLE_PERIOD_MS = 200
 

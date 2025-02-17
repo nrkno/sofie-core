@@ -47,16 +47,16 @@ export type JSONSchema<
 	SchemaType = Value extends boolean
 		? 'boolean'
 		: Value extends null
-		? 'null'
-		: Value extends number
-		? 'number' | 'integer'
-		: Value extends string
-		? 'string'
-		: Value extends unknown[]
-		? 'array'
-		: Value extends Record<string | number, unknown>
-		? 'object'
-		: JSONSchema.TypeValue
+			? 'null'
+			: Value extends number
+				? 'number' | 'integer'
+				: Value extends string
+					? 'string'
+					: Value extends unknown[]
+						? 'array'
+						: Value extends Record<string | number, unknown>
+							? 'object'
+							: JSONSchema.TypeValue,
 > = {
 	/**
 	 * Using JSON Pointer fragments requires knowledge of the structure of the

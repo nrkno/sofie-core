@@ -1,8 +1,8 @@
 import * as React from 'react'
 import ClassNames from 'classnames'
-import { TimingDataResolution, TimingTickResolution, withTiming, WithTiming } from './withTiming'
-import { RundownUtils } from '../../../lib/rundown'
-import { unprotectString } from '../../../lib/tempLib'
+import { TimingDataResolution, TimingTickResolution, withTiming, WithTiming } from './withTiming.js'
+import { RundownUtils } from '../../../lib/rundown.js'
+import { unprotectString } from '../../../lib/tempLib.js'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IPartElapsedProps {

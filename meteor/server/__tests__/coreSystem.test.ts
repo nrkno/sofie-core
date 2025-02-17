@@ -1,4 +1,4 @@
-import { RelevantSystemVersions } from '../coreSystem'
+import { RelevantSystemVersions } from '../coreSystem/index.js'
 
 describe('coreSystem', () => {
 	test('RelevantSystemVersions', async () => {

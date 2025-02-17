@@ -22,19 +22,19 @@ import {
 	PackageInfos,
 	RundownPlaylists,
 	Studios,
-} from '../../../collections'
-import { literal, protectString } from '../../../lib/tempLib'
+} from '../../../collections/index.js'
+import { literal, protectString } from '../../../lib/tempLib.js'
 import {
 	CustomPublishCollection,
 	meteorCustomPublish,
 	setUpCollectionOptimizedObserver,
 	SetupObserversResult,
 	TriggerUpdate,
-} from '../../../lib/customPublication'
-import { logger } from '../../../logging'
-import { ContentCache, PartInstanceFields, createReactiveContentCache } from './reactiveContentCache'
-import { RundownContentObserver } from './rundownContentObserver'
-import { RundownsObserver } from '../../lib/rundownsObserver'
+} from '../../../lib/customPublication/index.js'
+import { logger } from '../../../logging.js'
+import { ContentCache, PartInstanceFields, createReactiveContentCache } from './reactiveContentCache.js'
+import { RundownContentObserver } from './rundownContentObserver.js'
+import { RundownsObserver } from '../../lib/rundownsObserver.js'
 import {
 	addItemsWithDependenciesChangesToChangedSet,
 	fetchStudio,
@@ -44,7 +44,7 @@ import {
 	packageInfoFieldSpecifier,
 	PieceDependencies,
 	studioFieldSpecifier,
-} from '../common'
+} from '../common.js'
 import {
 	regenerateForAdLibActionIds,
 	regenerateForAdLibPieceIds,
@@ -52,11 +52,11 @@ import {
 	regenerateForBaselineAdLibPieceIds,
 	regenerateForPieceIds,
 	regenerateForPieceInstanceIds,
-} from './regenerateItems'
-import { PieceContentStatusStudio } from '../checkPieceContentStatus'
+} from './regenerateItems.js'
+import { PieceContentStatusStudio } from '../checkPieceContentStatus.js'
 import { check, Match } from 'meteor/check'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { triggerWriteAccessBecauseNoCheckNecessary } from '../../../security/securityVerify'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../../../security/securityVerify.js'
 
 interface UIPieceContentStatusesArgs {
 	readonly rundownPlaylistId: RundownPlaylistId

@@ -6,7 +6,7 @@ import {
 	PieceContentStreamInfo,
 	checkPieceContentStatusAndDependencies,
 	PieceContentStatusStudio,
-} from '../checkPieceContentStatus'
+} from '../checkPieceContentStatus.js'
 import {
 	PackageInfo,
 	WithTimeline,
@@ -17,7 +17,7 @@ import {
 	VTContent,
 } from '@sofie-automation/blueprints-integration'
 import { Complete, literal } from '@sofie-automation/corelib/dist/lib'
-import { MongoMock } from '../../../../__mocks__/mongo'
+import { MongoMock } from '../../../../__mocks__/mongo.js'
 import {
 	PieceGeneric,
 	PieceStatusCode,
@@ -32,9 +32,9 @@ import {
 	MediaStream,
 	MediaStreamType,
 } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
-import { defaultStudio } from '../../../../__mocks__/defaultCollectionObjects'
-import { MediaObjects } from '../../../collections'
-import { PieceDependencies } from '../common'
+import { defaultStudio } from '../../../../__mocks__/defaultCollectionObjects.js'
+import { MediaObjects } from '../../../collections/index.js'
+import { PieceDependencies } from '../common.js'
 import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
 
 const mockMediaObjectsCollection = MongoMock.getInnerMockCollection<MediaObject>(MediaObjects)

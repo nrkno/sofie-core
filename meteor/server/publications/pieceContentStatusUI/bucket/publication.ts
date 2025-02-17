@@ -11,16 +11,22 @@ import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mo
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { UIBucketContentStatus } from '@sofie-automation/meteor-lib/dist/api/rundownNotifications'
-import { Buckets, MediaObjects, PackageContainerPackageStatuses, PackageInfos, Studios } from '../../../collections'
-import { literal, protectString } from '../../../lib/tempLib'
+import {
+	Buckets,
+	MediaObjects,
+	PackageContainerPackageStatuses,
+	PackageInfos,
+	Studios,
+} from '../../../collections/index.js'
+import { literal, protectString } from '../../../lib/tempLib.js'
 import {
 	CustomPublishCollection,
 	meteorCustomPublish,
 	setUpCollectionOptimizedObserver,
 	TriggerUpdate,
 	SetupObserversResult,
-} from '../../../lib/customPublication'
-import { BucketContentCache, createReactiveContentCache } from './bucketContentCache'
+} from '../../../lib/customPublication/index.js'
+import { BucketContentCache, createReactiveContentCache } from './bucketContentCache.js'
 import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
 import {
 	addItemsWithDependenciesChangesToChangedSet,
@@ -31,12 +37,12 @@ import {
 	packageInfoFieldSpecifier,
 	PieceDependencies,
 	studioFieldSpecifier,
-} from '../common'
-import { BucketContentObserver } from './bucketContentObserver'
-import { regenerateForBucketActionIds, regenerateForBucketAdLibIds } from './regenerateForItem'
-import { PieceContentStatusStudio } from '../checkPieceContentStatus'
+} from '../common.js'
+import { BucketContentObserver } from './bucketContentObserver.js'
+import { regenerateForBucketActionIds, regenerateForBucketAdLibIds } from './regenerateForItem.js'
+import { PieceContentStatusStudio } from '../checkPieceContentStatus.js'
 import { check } from 'meteor/check'
-import { triggerWriteAccessBecauseNoCheckNecessary } from '../../../security/securityVerify'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../../../security/securityVerify.js'
 
 interface UIBucketContentStatusesArgs {
 	readonly studioId: StudioId

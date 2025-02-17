@@ -2,14 +2,14 @@ import deepmerge from 'deepmerge'
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { ReadonlyDeep } from 'type-fest'
-import { clone, createManualPromise, ProtectedString } from '../tempLib'
+import { clone, createManualPromise, ProtectedString } from '../tempLib.js'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { profiler } from '../../api/profiler'
-import { logger } from '../../logging'
-import { ReactiveCacheCollection } from '../../publications/lib/ReactiveCacheCollection'
-import { LiveQueryHandle, lazyIgnore } from '../lib'
-import { CustomPublish, CustomPublishChanges } from './publish'
-import { waitForAllObserversReady } from '../../publications/lib/lib'
+import { profiler } from '../../api/profiler/index.js'
+import { logger } from '../../logging.js'
+import { ReactiveCacheCollection } from '../../publications/lib/ReactiveCacheCollection.js'
+import { LiveQueryHandle, lazyIgnore } from '../lib.js'
+import { CustomPublish, CustomPublishChanges } from './publish.js'
+import { waitForAllObserversReady } from '../../publications/lib/lib.js'
 
 const apmNamespace = 'optimizedObserver'
 
@@ -60,7 +60,7 @@ export async function setUpOptimizedObserverInner<
 	PublicationDoc extends { _id: ProtectedString<any> },
 	Args,
 	State extends Record<string, any>,
-	UpdateProps extends Record<string, any>
+	UpdateProps extends Record<string, any>,
 >(
 	identifier: string,
 	args0: ReadonlyDeep<Args>,
@@ -180,7 +180,7 @@ async function createOptimizedObserverWorker<
 	PublicationDoc extends { _id: ProtectedString<any> },
 	Args,
 	State extends Record<string, any>,
-	UpdateProps extends Record<string, any>
+	UpdateProps extends Record<string, any>,
 >(
 	identifier: string,
 	thisObserverWrapper: OptimizedObserverWrapper<PublicationDoc, Args, State>,

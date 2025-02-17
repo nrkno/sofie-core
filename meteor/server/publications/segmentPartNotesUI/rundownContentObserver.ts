@@ -1,15 +1,15 @@
 import { Meteor } from 'meteor/meteor'
 import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { logger } from '../../logging'
+import { logger } from '../../logging.js'
 import {
 	ContentCache,
 	partFieldSpecifier,
 	partInstanceFieldSpecifier,
 	rundownFieldSpecifier,
 	segmentFieldSpecifier,
-} from './reactiveContentCache'
-import { PartInstances, Parts, Rundowns, Segments } from '../../collections'
-import { waitForAllObserversReady } from '../lib/lib'
+} from './reactiveContentCache.js'
+import { PartInstances, Parts, Rundowns, Segments } from '../../collections/index.js'
+import { waitForAllObserversReady } from '../lib/lib.js'
 
 export class RundownContentObserver {
 	readonly #observers: Meteor.LiveQueryHandle[]

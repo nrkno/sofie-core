@@ -3,9 +3,9 @@ import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageI
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
-import { getCurrentTime } from '../../lib/lib'
-import { ExpectedPackages, PackageInfos, PeripheralDevices, RundownPlaylists } from '../../collections'
-import { logger } from '../../logging'
+import { getCurrentTime } from '../../lib/lib.js'
+import { ExpectedPackages, PackageInfos, PeripheralDevices, RundownPlaylists } from '../../collections/index.js'
+import { logger } from '../../logging.js'
 
 export async function getActiveRundownPlaylistsInStudioFromDb(
 	studioId: StudioId,

@@ -3,8 +3,8 @@ import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { Blueprints, ShowStyleBases, Studios } from '../collections'
-import { getCoreSystemAsync } from '../coreSystem/collection'
+import { Blueprints, ShowStyleBases, Studios } from '../collections/index.js'
+import { getCoreSystemAsync } from '../coreSystem/collection.js'
 
 /**
  * Returns the versions for all Blueprints that are in use (in Studio, System or ShowStyles)

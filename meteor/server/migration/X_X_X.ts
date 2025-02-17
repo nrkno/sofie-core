@@ -1,6 +1,6 @@
-import { addMigrationSteps } from './databaseMigration'
-import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
-import { CoreSystem, PeripheralDevices, Studios, TriggeredActions } from '../collections'
+import { addMigrationSteps } from './databaseMigration.js'
+import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion.js'
+import { CoreSystem, PeripheralDevices, Studios, TriggeredActions } from '../collections/index.js'
 import {
 	convertObjectIntoOverrides,
 	ObjectOverrideSetOp,
@@ -13,11 +13,11 @@ import {
 	IStudioSettings,
 	StudioDeviceSettings,
 } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { DEFAULT_CORE_TRIGGER_IDS } from './upgrades/defaultSystemActionTriggers'
+import { DEFAULT_CORE_TRIGGER_IDS } from './upgrades/defaultSystemActionTriggers.js'
 import { ICoreSystem } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
 import { ICoreSystemSettings } from '@sofie-automation/shared-lib/dist/core/model/CoreSystemSettings'
-import { logger } from '../logging'
-import { literal, unprotectString } from '../lib/tempLib'
+import { logger } from '../logging.js'
+import { literal, unprotectString } from '../lib/tempLib.js'
 
 /*
  * **************************************************************************************

@@ -1,17 +1,17 @@
 import { Meteor } from 'meteor/meteor'
-import { logger } from '../../logging'
-import { Blueprints, CoreSystem } from '../../collections'
+import { logger } from '../../logging.js'
+import { Blueprints, CoreSystem } from '../../collections/index.js'
 import {
 	BlueprintManifestType,
 	BlueprintResultApplySystemConfig,
 	IBlueprintTriggeredActions,
 	SystemBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
-import { evalBlueprint } from '../../api/blueprints/cache'
-import { CoreSystemApplyConfigContext } from './context'
-import { updateTriggeredActionsForShowStyleBaseId } from './lib'
+import { evalBlueprint } from '../../api/blueprints/cache.js'
+import { CoreSystemApplyConfigContext } from './context.js'
+import { updateTriggeredActionsForShowStyleBaseId } from './lib.js'
 import { CoreSystemId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DEFAULT_CORE_TRIGGERS } from './defaultSystemActionTriggers'
+import { DEFAULT_CORE_TRIGGERS } from './defaultSystemActionTriggers.js'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ICoreSystemSettings } from '@sofie-automation/shared-lib/dist/core/model/CoreSystemSettings'
 

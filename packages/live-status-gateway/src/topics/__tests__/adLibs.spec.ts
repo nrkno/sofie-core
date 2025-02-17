@@ -1,13 +1,13 @@
 import { protectString, unprotectString } from '@sofie-automation/server-core-integration'
-import { makeMockLogger, makeMockSubscriber, makeTestParts, makeTestPlaylist, makeTestShowStyleBase } from './utils'
-import { AdLibsStatus, AdLibsTopic } from '../adLibsTopic'
-import { PlaylistHandler } from '../../collections/playlistHandler'
-import { ShowStyleBaseExt, ShowStyleBaseHandler } from '../../collections/showStyleBaseHandler'
+import { makeMockLogger, makeMockSubscriber, makeTestParts, makeTestPlaylist, makeTestShowStyleBase } from './utils.js'
+import { AdLibsStatus, AdLibsTopic } from '../adLibsTopic.js'
+import { PlaylistHandler } from '../../collections/playlistHandler.js'
+import { ShowStyleBaseExt, ShowStyleBaseHandler } from '../../collections/showStyleBaseHandler.js'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
-import { AdLibActionsHandler } from '../../collections/adLibActionsHandler'
-import { GlobalAdLibActionsHandler } from '../../collections/globalAdLibActionsHandler'
-import { PartsHandler } from '../../collections/partsHandler'
+import { AdLibActionsHandler } from '../../collections/adLibActionsHandler.js'
+import { GlobalAdLibActionsHandler } from '../../collections/globalAdLibActionsHandler.js'
+import { PartsHandler } from '../../collections/partsHandler.js'
 
 function makeTestAdLibActions(): AdLibAction[] {
 	return [

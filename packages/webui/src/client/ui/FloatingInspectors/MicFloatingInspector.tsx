@@ -2,10 +2,10 @@ import React, { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import Moment from 'react-moment'
 
-import { FloatingInspector } from '../FloatingInspector'
+import { FloatingInspector } from '../FloatingInspector.js'
 import { ScriptContent } from '@sofie-automation/blueprints-integration'
-import { getScriptPreview } from '../../lib/ui/scriptPreview'
-import { IFloatingInspectorPosition, useInspectorPosition } from './IFloatingInspectorPosition'
+import { getScriptPreview } from '../../lib/ui/scriptPreview.js'
+import { IFloatingInspectorPosition, useInspectorPosition } from './IFloatingInspectorPosition.js'
 
 interface IProps {
 	typeClass?: string
