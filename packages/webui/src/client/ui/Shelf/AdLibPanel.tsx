@@ -648,7 +648,7 @@ export function AdLibPanel({
 	const currentPartInstanceId = playlist.currentPartInfo?.partInstanceId
 
 	const onToggleAdLib = useCallback(
-		(adlibPiece: IAdLibListItem, queue: boolean, e: KeyboardEvent, mode?: IBlueprintActionTriggerMode | undefined) => {
+		(adlibPiece: IAdLibListItem, queue: boolean, e: KeyboardEvent, mode?: IBlueprintActionTriggerMode) => {
 			if (adlibPiece.invalid) {
 				NotificationCenter.push(
 					new Notification(

@@ -22,8 +22,8 @@ import {
 
 const THROTTLE_PERIOD_MS = 100
 
-const SHOW_STYLE_BASE_KEYS = ['sourceLayerNamesById', 'outputLayerNamesById'] as const
-type ShowStyle = PickKeys<ShowStyleBaseExt, typeof SHOW_STYLE_BASE_KEYS>
+const _SHOW_STYLE_BASE_KEYS = ['sourceLayerNamesById', 'outputLayerNamesById'] as const
+type ShowStyle = PickKeys<ShowStyleBaseExt, typeof _SHOW_STYLE_BASE_KEYS>
 
 export class BucketsTopic extends WebSocketTopicBase implements WebSocketTopic {
 	private _buckets: Bucket[] = []

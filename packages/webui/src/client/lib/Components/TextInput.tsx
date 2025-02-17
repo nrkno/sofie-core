@@ -103,7 +103,9 @@ export function TextInputControl({
 						'options' in o ? (
 							<optgroup key={j} label={o.name}>
 								{o.options.map((v, i) => (
-									<option key={i} value={v + ''}></option>
+									<option key={i} value={v.value + ''}>
+										{v.value !== v.name ? v.name : null}
+									</option>
 								))}
 							</optgroup>
 						) : (

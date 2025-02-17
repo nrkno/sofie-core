@@ -64,6 +64,7 @@ if (!asyncApiDoc.document) {
 	console.error('No document was produced from the asyncapi parser')
 	console.error(JSON.stringify(asyncApiDoc.diagnostics))
 
+	// eslint-disable-next-line n/no-process-exit
 	process.exit(5)
 }
 

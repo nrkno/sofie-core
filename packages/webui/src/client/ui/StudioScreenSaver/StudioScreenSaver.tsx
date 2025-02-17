@@ -166,7 +166,7 @@ const StudioScreenSaverContent = withTranslation()(
 				document.body.removeAttribute('data-bs-theme')
 			}
 
-			this._nextAnimationFrameRequest && window.cancelAnimationFrame(this._nextAnimationFrameRequest)
+			if (this._nextAnimationFrameRequest) window.cancelAnimationFrame(this._nextAnimationFrameRequest)
 			window.removeEventListener('resize', this.measureElement)
 		}
 

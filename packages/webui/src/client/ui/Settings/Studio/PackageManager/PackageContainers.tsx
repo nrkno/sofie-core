@@ -200,7 +200,7 @@ interface PackageContainerRowProps {
 	studio: DBStudio
 	packageContainer: WrappedOverridableItemNormal<StudioPackageContainer>
 	overrideHelper: OverrideOpHelper
-	toggleExpanded: (id: string, forceState?: boolean | undefined) => void
+	toggleExpanded: (id: string, forceState?: boolean) => void
 	isExpanded: (id: string) => boolean
 	confirmRemovePackageContainer: (id: string) => void
 	confirmReset: (id: string) => void

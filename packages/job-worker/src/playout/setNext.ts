@@ -46,7 +46,7 @@ export async function setNextPart(
 	playoutModel: PlayoutModel,
 	rawNextPart: ReadonlyDeep<Omit<SelectNextPartResult, 'index'>> | PlayoutPartInstanceModel | null,
 	setManually: boolean,
-	nextTimeOffset?: number | undefined
+	nextTimeOffset?: number
 ): Promise<void> {
 	const span = context.startSpan('setNextPart')
 
@@ -103,7 +103,7 @@ async function setNextPartAndCheckForPendingMoveNextPart(
 	playoutModel: PlayoutModel,
 	rawNextPart: ReadonlyDeep<Omit<SelectNextPartResult, 'index'>> | PlayoutPartInstanceModel | null,
 	setManually: boolean,
-	nextTimeOffset?: number | undefined
+	nextTimeOffset?: number
 ): Promise<{ selectedPart: ReadonlyDeep<DBPart> | null } | undefined> {
 	if (rawNextPart) {
 		if (!playoutModel.playlist.activationId)
@@ -558,7 +558,7 @@ export async function setNextPartFromPart(
 	playoutModel: PlayoutModel,
 	nextPart: ReadonlyDeep<DBPart>,
 	setManually: boolean,
-	nextTimeOffset?: number | undefined
+	nextTimeOffset?: number
 ): Promise<void> {
 	const playlist = playoutModel.playlist
 	if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)

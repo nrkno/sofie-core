@@ -30,7 +30,7 @@ import RundownViewEventBus, {
 	IEventContext,
 } from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
-import { BucketId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BucketAdLibId, BucketId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DashboardLayoutExternalFrame } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { BucketAdLibItem, BucketAdLibUi, BucketAdLibActionUi } from '@sofie-automation/meteor-lib/dist/uiTypes/Bucket'
 
@@ -361,11 +361,12 @@ export const RundownViewBuckets = withTranslation()(
 								clb
 							)
 						} else {
+							const bucketAdLibId = bucketAdLib._id as BucketAdLibId
 							doUserAction(
 								t,
 								e.context,
 								UserAction.REMOVE_BUCKET_ADLIB,
-								(e, ts) => MeteorCall.userAction.bucketsRemoveBucketAdLib(e, ts, bucketAdLib._id),
+								(e, ts) => MeteorCall.userAction.bucketsRemoveBucketAdLib(e, ts, bucketAdLibId),
 								clb
 							)
 						}

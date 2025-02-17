@@ -116,9 +116,8 @@ const SnapshotsViewContent = withTranslation()(
 			MeteorCall.system
 				.generateSingleUseToken()
 				.then((tokenResponse) => {
-					if (ClientAPI.isClientResponseError(tokenResponse) || !tokenResponse.result) {
-						throw tokenResponse
-					}
+					if (ClientAPI.isClientResponseError(tokenResponse)) throw tokenResponse.error
+					if (!tokenResponse.result) throw new Error('Failed to generate token')
 					return MeteorCall.snapshot.storeSystemSnapshot(
 						hashSingleUseToken(tokenResponse.result),
 						studioId,
@@ -141,9 +140,8 @@ const SnapshotsViewContent = withTranslation()(
 			MeteorCall.system
 				.generateSingleUseToken()
 				.then((tokenResponse) => {
-					if (ClientAPI.isClientResponseError(tokenResponse) || !tokenResponse.result) {
-						throw tokenResponse
-					}
+					if (ClientAPI.isClientResponseError(tokenResponse)) throw tokenResponse.error
+					if (!tokenResponse.result) throw new Error('Failed to generate token')
 					return MeteorCall.snapshot.storeDebugSnapshot(
 						hashSingleUseToken(tokenResponse.result),
 						studioId,

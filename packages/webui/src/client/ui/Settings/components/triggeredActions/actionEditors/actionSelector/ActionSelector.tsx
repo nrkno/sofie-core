@@ -545,7 +545,7 @@ export const ActionSelector = function ActionSelector({
 	}, [popperElement, referenceElement, opened])
 
 	useLayoutEffect(() => {
-		update && update().catch(catchError('ActionSelector update'))
+		update?.().catch(catchError('ActionSelector update'))
 	}, [action])
 
 	const { t } = useTranslation()

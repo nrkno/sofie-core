@@ -43,12 +43,15 @@ export type SomeContent =
 	| ScriptContent
 	| NoraContent
 	| SplitsContent
+	// eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
 	| LiveSpeakContent
 	| TransitionContent
 	| GraphicsContent
 	| UnknownContent
 	| EvsContent
+	// eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
 	| RemoteSpeakContent
+	// eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
 	| LightingContent
 
 export type UnknownContent = BaseContent

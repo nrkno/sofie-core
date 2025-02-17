@@ -23,6 +23,7 @@ import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Button from 'react-bootstrap/Button'
+import { ExpectedPackageStatusAPI } from '@sofie-automation/blueprints-integration'
 
 export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesStatus(_props: {}) {
 	const { t } = useTranslation()
@@ -104,7 +105,7 @@ export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesSta
 
 			let incompleteRank = 999
 			for (const status of p.statuses) {
-				if (status.status !== 'fulfilled') {
+				if (status.status !== ExpectedPackageStatusAPI.WorkStatusState.FULFILLED) {
 					if (status.requiredForPlayout) {
 						incompleteRank = Math.min(incompleteRank, 0)
 					} else {

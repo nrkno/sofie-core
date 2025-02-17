@@ -41,7 +41,7 @@ export function flatten<T>(vals: Array<T[] | undefined>): T[] {
 	return _.flatten(
 		vals.filter((v) => v !== undefined),
 		true
-	) as T[]
+	)
 }
 
 export function max<T>(vals: T[], iterator: _.ListIterator<T, any>): T | undefined {

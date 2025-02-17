@@ -9,7 +9,7 @@ import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-met
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
 import { useTranslation } from 'react-i18next'
-import { unprotectString } from '../../lib/tempLib.js'
+import { assertNever, unprotectString } from '../../lib/tempLib.js'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { Spinner } from '../../lib/Spinner.js'
 import { sofieWarningIcon as WarningIcon } from '../../lib/notifications/warningIcon.js'
@@ -37,7 +37,8 @@ interface IItemProps {
 
 type TFunc = (label: string, attrs?: object) => string
 
-function actionLabel(t: TFunc, action: string): string {
+function actionLabel(t: TFunc, action0: string): string {
+	const action = action0 as MediaManagerAPI.WorkStepAction
 	switch (action) {
 		case MediaManagerAPI.WorkStepAction.COPY:
 			return t('File Copy')
@@ -52,6 +53,7 @@ function actionLabel(t: TFunc, action: string): string {
 		case MediaManagerAPI.WorkStepAction.GENERATE_PREVIEW:
 			return t('Generate Preview')
 		default:
+			assertNever(action)
 			return t('Unknown action: {{action}}', { action })
 	}
 }

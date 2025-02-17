@@ -119,7 +119,8 @@ export const DashboardActionButtonGroup = withTranslation()(
 				UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
 				(e, ts) =>
 					MeteorCall.system.generateSingleUseToken().then((tokenResult) => {
-						if (ClientAPI.isClientResponseError(tokenResult) || !tokenResult.result) throw tokenResult
+						if (ClientAPI.isClientResponseError(tokenResult)) throw tokenResult.error
+						if (!tokenResult.result) throw new Error('Failed to generate token')
 						return MeteorCall.userAction.storeRundownSnapshot(
 							e,
 							ts,

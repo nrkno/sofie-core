@@ -85,7 +85,7 @@ const JSONStringifyCircular = () => {
 				try {
 					// If this value does not reference a parent it can be deduped
 					return JSON.parse(JSON.stringify(value))
-				} catch (error) {
+				} catch (_error) {
 					// discard key if value cannot be deduped
 					return '[circular of ' + (cacheKeys[i] || '*root*') + ']'
 				}

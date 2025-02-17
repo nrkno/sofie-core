@@ -70,7 +70,7 @@ export const ViewFilter: React.FC<IProps> = function ViewFilter({
 	}, [popperElement, referenceElement, opened, index])
 
 	useLayoutEffect(() => {
-		update && update().catch(catchError('ViewFilter update'))
+		update?.().catch(catchError('ViewFilter update'))
 	}, [link])
 
 	return (

@@ -28,7 +28,7 @@ export function PieceIndicatorMenu({
 	const { styles, attributes, update } = usePopper(parentEl, indicatorMenuEl, POPPER_OPTIONS)
 
 	useLayoutEffect(() => {
-		update && update().catch(catchError('pieceIndicatorMenu popper update'))
+		update?.().catch(catchError('pieceIndicatorMenu popper update'))
 	}, [pieces.length])
 
 	useEffect(() => {

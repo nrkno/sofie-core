@@ -6,7 +6,7 @@ import Tooltip from 'rc-tooltip'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons'
 import ClassNames from 'classnames'
-import { ExpectedPackage } from '@sofie-automation/blueprints-integration'
+import { ExpectedPackage, ExpectedPackageStatusAPI } from '@sofie-automation/blueprints-integration'
 import { useTranslation } from 'react-i18next'
 import { DisplayFormattedTime } from '../../RundownList/DisplayFormattedTime.js'
 import { PackageWorkStatus } from './PackageWorkStatus.js'
@@ -262,9 +262,9 @@ function getProgress(statuses: ExpectedPackageWorkStatus[], onlyRequired: boolea
 			continue
 		}
 		count++
-		if (status.status === 'fulfilled') {
+		if (status.status === ExpectedPackageStatusAPI.WorkStatusState.FULFILLED) {
 			progress += 1
-		} else if (status.status === 'working') {
+		} else if (status.status === ExpectedPackageStatusAPI.WorkStatusState.WORKING) {
 			progress += status.progress || 0.1
 		} else {
 			progress += 0

@@ -180,7 +180,7 @@ export function doUserAction<Result>(
 		} else {
 			try {
 				timeoutMessage.drop()
-			} catch (e) {
+			} catch (_e) {
 				// message was already dropped, that's fine
 			}
 		}
@@ -202,7 +202,7 @@ export function doUserAction<Result>(
 							undefined,
 							NoticeLevel.CRITICAL,
 							t('Action {{actionName}} failed: {{error}}', {
-								error: translateMessage(res.error.message || res.error, t),
+								error: translateMessage(res.error.userMessage || res.error, t),
 								actionName: actionName,
 							}),
 							'userAction'

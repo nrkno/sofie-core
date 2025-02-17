@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import '../../__mocks__/_extendJest.js'
 import {
 	IBlueprintPiece,
