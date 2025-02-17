@@ -50,7 +50,7 @@ describe('optimizedObserver base', () => {
 		const receiver2 = CustomPublishMock.create<any>()
 
 		try {
-			let triggerUpdate: TriggerUpdate<{}> | undefined
+			let triggerUpdate: TriggerUpdate<Record<string, never>> | undefined
 			const setupObservers = jest.fn(async (_args, triggerUpdate0) => {
 				triggerUpdate = triggerUpdate0
 				return []

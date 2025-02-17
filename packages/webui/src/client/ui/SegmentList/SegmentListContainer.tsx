@@ -12,7 +12,7 @@ import { unprotectString } from '../../lib/tempLib.js'
 import { LIVELINE_HISTORY_SIZE as TIMELINE_LIVELINE_HISTORY_SIZE } from '../SegmentTimeline/Constants.js'
 import { Segments } from '../../collections/index.js'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
-import { UIPartInstances, UIParts } from '../Collections/index.js'
+import { UIPartInstances, UIParts } from '../Collections.js'
 
 export const LIVELINE_HISTORY_SIZE = TIMELINE_LIVELINE_HISTORY_SIZE
 
@@ -72,13 +72,14 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 				_rank: 1,
 			},
 		})
-		segment &&
-			meteorSubscribe(
-				CorelibPubSub.piecesInfiniteStartingBefore,
-				rundownId,
-				Array.from(segmentsIdsBefore.values()),
-				Array.from(rundownIdsBefore.values())
-			)
+		if (!segment) return
+
+		meteorSubscribe(
+			CorelibPubSub.piecesInfiniteStartingBefore,
+			rundownId,
+			Array.from(segmentsIdsBefore.values()),
+			Array.from(rundownIdsBefore.values())
+		)
 	}, [segmentId, rundownId, segmentsIdsBefore.values(), rundownIdsBefore.values()])
 
 	const isLiveSegment = useTracker(

@@ -31,7 +31,7 @@ import { IBlueprintActionManifestDisplayContent, SourceLayerType } from '@sofie-
 import { PieceContentStatusObj } from '@sofie-automation/meteor-lib/dist/api/pieceContentStatus'
 import { Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { assertNever, literal } from '@sofie-automation/corelib/dist/lib'
-import { UIPieceContentStatuses, UIShowStyleBases } from '../Collections/index.js'
+import { UIPieceContentStatuses, UIShowStyleBases } from '../Collections.js'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../i18n.js'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'

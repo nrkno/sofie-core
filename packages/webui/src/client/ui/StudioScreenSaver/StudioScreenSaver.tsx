@@ -8,7 +8,7 @@ import classNames from 'classnames'
 import { Clock } from './Clock.js'
 import { Countdown } from './Countdown.js'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
-import { UIStudios } from '../Collections/index.js'
+import { UIStudios } from '../Collections.js'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylists } from '../../collections/index.js'
@@ -163,7 +163,7 @@ const StudioScreenSaverContent = withTranslation()(
 				document.body.classList.remove('dark', 'xdark')
 			}
 
-			this._nextAnimationFrameRequest && window.cancelAnimationFrame(this._nextAnimationFrameRequest)
+			if (this._nextAnimationFrameRequest) window.cancelAnimationFrame(this._nextAnimationFrameRequest)
 			window.removeEventListener('resize', this.measureElement)
 		}
 

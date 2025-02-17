@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useTracker } from '../lib/ReactMeteorData/ReactMeteorData.js'
 import * as React from 'react'
 import {

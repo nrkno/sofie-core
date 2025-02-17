@@ -52,7 +52,7 @@ import { AdLibPanelToolbar } from './AdLibPanelToolbar.js'
 import { AdLibListView } from './AdLibListView.js'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
-import { UIPartInstances, UIStudios } from '../Collections/index.js'
+import { UIPartInstances, UIStudios } from '../Collections.js'
 import { PartId, PartInstanceId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
 	AdLibActions,
@@ -656,7 +656,7 @@ export function AdLibPanel({
 	const currentPartInstanceId = playlist.currentPartInfo?.partInstanceId
 
 	const onToggleAdLib = useCallback(
-		(adlibPiece: IAdLibListItem, queue: boolean, e: KeyboardEvent, mode?: IBlueprintActionTriggerMode | undefined) => {
+		(adlibPiece: IAdLibListItem, queue: boolean, e: KeyboardEvent, mode?: IBlueprintActionTriggerMode) => {
 			if (adlibPiece.invalid) {
 				NotificationCenter.push(
 					new Notification(

@@ -25,7 +25,7 @@ import { doUserAction, UserAction } from '../../lib/clientUserAction.js'
 import { i18nTranslator as t } from '../i18n.js'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI.js'
-import { handleRundownReloadResponse } from '../RundownView/index.js'
+import { handleRundownReloadResponse } from '../RundownView.js'
 import { MeteorCall } from '../../lib/meteorApi.js'
 import { UIPieceContentStatus, UISegmentPartNote } from '@sofie-automation/meteor-lib/dist/api/rundownNotifications'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
@@ -43,7 +43,7 @@ import {
 	SegmentId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { UIPartInstances, UIPieceContentStatuses, UISegmentPartNotes } from '../Collections/index.js'
+import { UIPartInstances, UIPieceContentStatuses, UISegmentPartNotes } from '../Collections.js'
 import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil.js'
 import { logger } from '../../lib/logging.js'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
@@ -209,7 +209,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			if (playlist?.notes) {
 				const playlistNotesId = playlist._id + '_playlistnotes_'
 				playlist.notes.forEach((note) => {
-					const noteId = playlistNotesId + note.origin.name + '_' + note.message + '_' + note.type
+					const noteId = playlistNotesId + note.origin.name + '_' + note.message.key + '_' + note.type
 					const notificationFromNote = new Notification(
 						noteId,
 						getNoticeLevelForNoteSeverity(note.type),
@@ -296,7 +296,7 @@ class RundownViewNotifier extends WithManagedTracker {
 					const rundownNotesId = rundown._id + '_ronotes_'
 					if (rundown.notes) {
 						rundown.notes.forEach((note) => {
-							const rundownNoteId = rundownNotesId + note.origin.name + '_' + note.message + '_' + note.type
+							const rundownNoteId = rundownNotesId + note.origin.name + '_' + note.message.key + '_' + note.type
 							const notificationFromNote = new Notification(
 								rundownNoteId,
 								getNoticeLevelForNoteSeverity(note.type),

@@ -25,7 +25,7 @@ import { Tracker } from 'meteor/tracker'
 import { Settings } from '../../lib/Settings.js'
 import { createInMemorySyncMongoCollection } from '../../collections/lib.js'
 import { RundownPlaylists } from '../../collections/index.js'
-import { UIShowStyleBases, UITriggeredActions } from '../../ui/Collections/index.js'
+import { UIShowStyleBases, UITriggeredActions } from '../../ui/Collections.js'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import {
 	PartId,

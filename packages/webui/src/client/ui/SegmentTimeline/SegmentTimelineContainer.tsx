@@ -41,7 +41,7 @@ import {
 	SIMULATED_PLAYBACK_HARD_MARGIN,
 	TIMELINE_RIGHT_PADDING,
 } from './Constants.js'
-import { UIPartInstances, UIParts } from '../Collections/index.js'
+import { UIPartInstances, UIParts } from '../Collections.js'
 import { RundownTimingProviderContext } from '../RundownView/RundownTiming/withTiming.js'
 
 // Kept for backwards compatibility

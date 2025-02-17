@@ -16,7 +16,7 @@ import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
 import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
-import { UIPartInstances, UIParts } from '../Collections/index.js'
+import { UIPartInstances, UIParts } from '../Collections.js'
 
 export const LIVELINE_HISTORY_SIZE = TIMELINE_LIVELINE_HISTORY_SIZE
 
@@ -76,13 +76,14 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 				_rank: 1,
 			},
 		})
-		segment &&
-			meteorSubscribe(
-				CorelibPubSub.piecesInfiniteStartingBefore,
-				rundownId,
-				Array.from(segmentsIdsBefore.values()),
-				Array.from(rundownIdsBefore.values())
-			)
+		if (!segment) return
+
+		meteorSubscribe(
+			CorelibPubSub.piecesInfiniteStartingBefore,
+			rundownId,
+			Array.from(segmentsIdsBefore.values()),
+			Array.from(rundownIdsBefore.values())
+		)
 	}, [segmentId, rundownId, segmentsIdsBefore.values(), rundownIdsBefore.values()])
 
 	const isLiveSegment = useTracker(

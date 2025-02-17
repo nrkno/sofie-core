@@ -251,7 +251,7 @@ export namespace ServerClientAPI {
 
 					const wrappedError = rewrapError(methodName, e)
 					const wrappedErrorStr = `ClientResponseError: ${translateMessage(
-						wrappedError.error.message,
+						wrappedError.error.userMessage,
 						interpollateTranslation
 					)}`
 

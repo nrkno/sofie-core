@@ -19,7 +19,7 @@ import { getCurrentTime } from '../../../lib/systemTime.js'
 import { DEBUG_MODE } from '../SegmentTimelineDebugMode.js'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData.js'
 
-import { IContextMenuContext } from '../../RundownView/index.js'
+import { IContextMenuContext } from '../../RundownView.js'
 import { CSSProperties } from '../../../styles/_cssVariables.js'
 import RundownViewEventBus, {
 	RundownViewEvents,
@@ -277,18 +277,17 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 
 		RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 		const tooSmallState = this.state.isTooSmallForDisplay || this.state.isTooSmallForText
-		if (tooSmallState) {
-			this.props.onPartTooSmallChanged &&
-				this.props.onPartTooSmallChanged(
-					this.props.part,
-					SegmentTimelinePartClass.getPartDuration(
-						this.props,
-						this.state.liveDuration,
-						this.state.isDurationSettling,
-						this.state.durationSettlingStartsAt
-					),
-					SegmentTimelinePartClass.getPartActualDuration(this.props.part, this.props.timingDurations)
-				)
+		if (tooSmallState && this.props.onPartTooSmallChanged) {
+			this.props.onPartTooSmallChanged(
+				this.props.part,
+				SegmentTimelinePartClass.getPartDuration(
+					this.props,
+					this.state.liveDuration,
+					this.state.isDurationSettling,
+					this.state.durationSettlingStartsAt
+				),
+				SegmentTimelinePartClass.getPartActualDuration(this.props.part, this.props.timingDurations)
+			)
 		}
 	}
 
@@ -299,7 +298,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		window.removeEventListener(MOSEvents.dragleave, this.onDragLeave)
 
 		RundownViewEventBus.off(RundownViewEvents.HIGHLIGHT, this.onHighlight)
-		this.highlightTimeout && clearTimeout(this.highlightTimeout)
+		if (this.highlightTimeout) clearTimeout(this.highlightTimeout)
 	}
 
 	shouldComponentUpdate(nextProps: Readonly<WithTiming<IProps>>, nextState: Readonly<IState>): boolean {
@@ -314,20 +313,19 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		super.componentDidUpdate?.(prevProps, prevState, snapshot)
 		const tooSmallState = this.state.isTooSmallForDisplay || this.state.isTooSmallForText
 		const prevTooSmallState = prevState.isTooSmallForDisplay || prevState.isTooSmallForText
-		if (tooSmallState !== prevTooSmallState) {
-			this.props.onPartTooSmallChanged &&
-				this.props.onPartTooSmallChanged(
-					this.props.part,
-					tooSmallState
-						? SegmentTimelinePartClass.getPartDuration(
-								this.props,
-								this.state.liveDuration,
-								this.state.isDurationSettling,
-								this.state.durationSettlingStartsAt
-							)
-						: false,
-					SegmentTimelinePartClass.getPartActualDuration(this.props.part, this.props.timingDurations)
-				)
+		if (tooSmallState !== prevTooSmallState && this.props.onPartTooSmallChanged) {
+			this.props.onPartTooSmallChanged(
+				this.props.part,
+				tooSmallState
+					? SegmentTimelinePartClass.getPartDuration(
+							this.props,
+							this.state.liveDuration,
+							this.state.isDurationSettling,
+							this.state.durationSettlingStartsAt
+						)
+					: false,
+				SegmentTimelinePartClass.getPartActualDuration(this.props.part, this.props.timingDurations)
+			)
 		}
 	}
 

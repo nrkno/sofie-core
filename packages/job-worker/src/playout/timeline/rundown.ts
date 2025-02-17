@@ -1,10 +1,4 @@
-import {
-	IBlueprintPieceType,
-	PieceLifespan,
-	Time,
-	TimelineObjClassesCore,
-	TSR,
-} from '@sofie-automation/blueprints-integration'
+import { IBlueprintPieceType, Time, TimelineObjClassesCore, TSR } from '@sofie-automation/blueprints-integration'
 import { PartInstanceId, PieceInstanceId, PieceInstanceInfiniteId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstanceInfinite } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { DBRundownPlaylist, RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
@@ -81,16 +75,18 @@ export function buildTimelineObjsForRundown(
 	// Fetch the nextPart first, because that affects how the currentPart will be treated
 	if (activePlaylist.nextPartInfo) {
 		// We may be at the end of a show, where there is no next part
-		if (!partInstancesInfo.next) throw new Error(`PartInstance "${activePlaylist.nextPartInfo}" not found!`)
+		if (!partInstancesInfo.next)
+			throw new Error(`PartInstance "${activePlaylist.nextPartInfo?.partInstanceId}" not found!`)
 	}
 	if (activePlaylist.currentPartInfo) {
 		// We may be before the beginning of a show, and there can be no currentPart and we are waiting for the user to Take
-		if (!partInstancesInfo.current) throw new Error(`PartInstance "${activePlaylist.currentPartInfo}" not found!`)
+		if (!partInstancesInfo.current)
+			throw new Error(`PartInstance "${activePlaylist.currentPartInfo?.partInstanceId}" not found!`)
 	}
 	if (activePlaylist.previousPartInfo) {
 		// We may be at the beginning of a show, where there is no previous part
 		if (!partInstancesInfo.previous)
-			logger.warn(`Previous PartInstance "${activePlaylist.previousPartInfo}" not found!`)
+			logger.warn(`Previous PartInstance "${activePlaylist.previousPartInfo?.partInstanceId}" not found!`)
 	}
 
 	if (!partInstancesInfo.next && !partInstancesInfo.current) {
@@ -107,10 +103,12 @@ export function buildTimelineObjsForRundown(
 		}
 	}
 
-	const [currentInfinitePieces, currentNormalItems] = _.partition(
-		partInstancesInfo.current.pieceInstances,
-		(l) => !!(l.infinite && (l.piece.lifespan !== PieceLifespan.WithinPart || l.infinite.fromHold))
-	)
+	const previousPartInfinites: Map<PieceInstanceInfinite['infiniteInstanceId'], PieceInstanceWithTimings> =
+		partInstancesInfo.previous
+			? normalizeArrayToMapFunc(partInstancesInfo.previous.pieceInstances, (inst) =>
+					inst.infinite ? inst.infinite.infiniteInstanceId : undefined
+				)
+			: new Map()
 
 	// Find all the infinites in each of the selected parts
 	const currentInfinitePieceIds = new Set(_.compact(currentInfinitePieces.map((l) => l.infinite?.infiniteInstanceId)))

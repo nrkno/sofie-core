@@ -29,7 +29,7 @@ import {
 	UserEditingType,
 } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../lib/meteorApi.js'
-import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown.js'
 import { Buckets, Rundowns, Segments } from '../../collections/index.js'
 import { BucketId, PartInstanceId, RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MOS_DATA_IS_STRICT } from '@sofie-automation/meteor-lib/dist/mos'
@@ -40,7 +40,7 @@ import RundownViewEventBus, {
 	ItemDroppedEvent,
 	RundownViewEvents,
 } from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
-import { UIPartInstances, UIParts } from '../Collections/index.js'
+import { UIPartInstances, UIParts } from '../Collections.js'
 
 interface IProps {
 	layout: RundownLayoutBase
@@ -113,7 +113,9 @@ export const ExternalFramePanel = withTranslation()(
 
 		awaitingReply: {
 			[key: string]: {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 				resolve: Function
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 				reject: Function
 			}
 		} = {}

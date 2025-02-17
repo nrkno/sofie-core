@@ -6,7 +6,7 @@ import { ISourceLayerExtended, PartExtended } from '../../lib/RundownResolver.js
 import { contextMenuHoldToDisplayTime } from '../../lib/lib.js'
 import { RundownUtils } from '../../lib/rundown.js'
 import { getElementDocumentOffset } from '../../utils/positions.js'
-import { IContextMenuContext } from '../RundownView/index.js'
+import { IContextMenuContext } from '../RundownView.js'
 import { CurrentPartOrSegmentRemaining } from '../RundownView/RundownTiming/CurrentPartOrSegmentRemaining.js'
 import { PieceUi, SegmentUi } from '../SegmentContainer/withResolvedSegment.js'
 import { SegmentTimelinePartElementId } from '../SegmentTimeline/Parts/SegmentTimelinePart.js'

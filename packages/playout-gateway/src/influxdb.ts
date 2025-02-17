@@ -101,10 +101,9 @@ function getVersions(): Record<string, string> {
 	}
 
 	try {
-		// eslint-disable-next-line @typescript-eslint/no-var-requires
 		const pkgInfo = require(`timeline-state-resolver/package.json`)
 		versions['tsrVersion'] = pkgInfo.version || 'N/A'
-	} catch (e) {
+	} catch (_e) {
 		// this.logger.error(`Failed to load package.json for lib "${pkgName}": ${stringifyError(e)}`)
 	}
 

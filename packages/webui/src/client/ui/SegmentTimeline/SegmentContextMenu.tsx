@@ -10,7 +10,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData.js'
 import { RundownUtils } from '../../lib/rundown.js'
-import { IContextMenuContext } from '../RundownView/index.js'
+import { IContextMenuContext } from '../RundownView.js'
 import { PartUi, SegmentUi } from './SegmentTimelineContainer.js'
 import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'

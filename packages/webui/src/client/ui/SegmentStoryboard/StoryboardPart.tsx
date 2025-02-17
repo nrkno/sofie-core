@@ -8,7 +8,7 @@ import { StoryboardPartThumbnail } from './StoryboardPartThumbnail/StoryboardPar
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib.js'
 import { getElementDocumentOffset } from '../../utils/positions.js'
-import { IContextMenuContext } from '../RundownView/index.js'
+import { IContextMenuContext } from '../RundownView.js'
 import { literal } from '../../lib/tempLib.js'
 import { SegmentTimelinePartElementId } from '../SegmentTimeline/Parts/SegmentTimelinePart.js'
 import { CurrentPartOrSegmentRemaining } from '../RundownView/RundownTiming/CurrentPartOrSegmentRemaining.js'

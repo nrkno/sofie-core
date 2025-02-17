@@ -22,7 +22,7 @@ import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylist
 import { normalizeArrayToMap, protectString } from '../../lib/tempLib.js'
 import { PieceInstances, Pieces, RundownPlaylists, Segments } from '../../collections/index.js'
 import { getPieceInstancesForPartInstance } from '../../lib/RundownResolver.js'
-import { UIShowStyleBases } from '../Collections/index.js'
+import { UIShowStyleBases } from '../Collections.js'
 
 // export interface NewPrompterAPI {
 // 	getPrompterData (playlistId: RundownPlaylistId): Promise<PrompterData>

@@ -3,7 +3,7 @@ import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyle
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { IPropsHeader } from './PieceIcon.js'
 import { PieceExtended } from '../../lib/RundownResolver.js'
-import { UIShowStyleBases } from '../Collections/index.js'
+import { UIShowStyleBases } from '../Collections.js'
 import { PieceInstances } from '../../collections/index.js'
 import { ReadonlyDeep } from 'type-fest'
 

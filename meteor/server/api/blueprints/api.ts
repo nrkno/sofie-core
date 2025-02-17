@@ -167,7 +167,7 @@ async function innerUploadBlueprint(
 	let blueprintManifest: SomeBlueprintManifest | undefined
 	try {
 		blueprintManifest = evalBlueprint(newBlueprint)
-	} catch (e) {
+	} catch (_e) {
 		throw new Meteor.Error(400, `Blueprint ${blueprintId} failed to parse`)
 	}
 

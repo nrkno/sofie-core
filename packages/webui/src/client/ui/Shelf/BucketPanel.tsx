@@ -67,7 +67,7 @@ import { BucketAdLibActions, BucketAdLibs, Rundowns } from '../../collections/in
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
-import { UIPartInstances, UIStudios } from '../Collections/index.js'
+import { UIPartInstances, UIStudios } from '../Collections.js'
 import {
 	AdLibActionId,
 	BucketId,
@@ -583,14 +583,14 @@ const BucketPanelContent = withTranslation()(
 								bucketName: this.props.bucket.name,
 							},
 							() => {
-								this._nameTextBox && this._nameTextBox.blur()
+								this._nameTextBox?.blur()
 							}
 						)
 						e.preventDefault()
 						e.stopPropagation()
 						e.stopImmediatePropagation()
 					} else if (e.key === 'Enter') {
-						this._nameTextBox && this._nameTextBox.blur()
+						this._nameTextBox?.blur()
 						e.preventDefault()
 						e.stopPropagation()
 						e.stopImmediatePropagation()
@@ -785,7 +785,7 @@ const BucketPanelContent = withTranslation()(
 						const style = window.getComputedStyle(this._panel)
 						// check if a special variable is set through CSS to indicate that we shouldn't expect
 						// double clicks to trigger AdLibs
-						const value = style.getPropertyValue(USER_AGENT_POINTER_PROPERTY)
+						const value = style.getPropertyValue(USER_AGENT_POINTER_PROPERTY) as UserAgentPointer | undefined
 						if (this.state.singleClickMode !== (value === UserAgentPointer.NO_POINTER)) {
 							this.setState({
 								singleClickMode: value === UserAgentPointer.NO_POINTER,

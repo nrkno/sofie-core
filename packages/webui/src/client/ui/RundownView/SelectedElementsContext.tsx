@@ -13,7 +13,7 @@ import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { Tracker } from 'meteor/tracker'
 import { Pieces, Segments } from '../../collections/index.js'
-import { UIParts } from '../Collections/index.js'
+import { UIParts } from '../Collections.js'
 
 interface RundownElement {
 	type: 'rundown'

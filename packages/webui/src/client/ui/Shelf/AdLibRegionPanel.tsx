@@ -30,7 +30,7 @@ import {
 	WithMediaObjectStatusProps,
 } from '../SegmentTimeline/withMediaObjectStatus.js'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { UIStudios } from '../Collections/index.js'
+import { UIStudios } from '../Collections.js'
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 

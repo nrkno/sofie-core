@@ -11,7 +11,7 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { dashboardElementStyle } from './DashboardPanel.js'
 import { Segments } from '../../collections/index.js'
-import { UIPartInstances } from '../Collections/index.js'
+import { UIPartInstances } from '../Collections.js'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 
 interface INextInfoPanelProps {

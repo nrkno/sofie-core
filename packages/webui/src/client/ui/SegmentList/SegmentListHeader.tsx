@@ -11,7 +11,7 @@ import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration.js
 import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { useTranslation } from 'react-i18next'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { IContextMenuContext } from '../RundownView/index.js'
+import { IContextMenuContext } from '../RundownView.js'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications.js'
 import { SegmentTimeAnchorTime } from '../RundownView/RundownTiming/SegmentTimeAnchorTime.js'

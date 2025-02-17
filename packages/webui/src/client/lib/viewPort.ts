@@ -3,7 +3,7 @@ import { isProtectedString } from './tempLib.js'
 import RundownViewEventBus, { RundownViewEvents } from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
 import { Settings } from '../lib/Settings.js'
 import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { UIPartInstances, UIParts } from '../ui/Collections/index.js'
+import { UIPartInstances, UIParts } from '../ui/Collections.js'
 import { logger } from './logging.js'
 
 const HEADER_MARGIN = 24 // TODOSYNC: TV2 uses 15. If it's needed to be different, it needs to be made generic somehow..
@@ -120,7 +120,7 @@ export async function scrollToSegment(
 	elementToScrollToOrSegmentId: HTMLElement | SegmentId,
 	forceScroll?: boolean,
 	noAnimation?: boolean,
-	partInstanceId?: PartInstanceId | undefined
+	partInstanceId?: PartInstanceId
 ): Promise<boolean> {
 	const getElementToScrollTo = (showHistory: boolean): HTMLElement | null => {
 		if (isProtectedString(elementToScrollToOrSegmentId)) {
@@ -172,7 +172,7 @@ async function innerScrollToSegment(
 	forceScroll?: boolean,
 	noAnimation?: boolean,
 	secondStage?: boolean,
-	partInstanceId?: PartInstanceId | undefined
+	partInstanceId?: PartInstanceId
 ): Promise<boolean> {
 	if (!secondStage) {
 		currentScrollingElement = elementToScrollTo
@@ -320,7 +320,7 @@ export function lockPointer(): void {
 	if (pointerLockTurnstile === 0) {
 		// pointerLockTurnstile === 0 means that no requests for locking the pointer have been made
 		// since we last unlocked it
-		document.body.requestPointerLock()
+		document.body.requestPointerLock().catch((e) => console.error('Lock pointer failed', e))
 		// attach the event handlers only once. Once they are attached, we will track the
 		// locked state and act according to the turnstile
 		if (!pointerHandlerAttached) {

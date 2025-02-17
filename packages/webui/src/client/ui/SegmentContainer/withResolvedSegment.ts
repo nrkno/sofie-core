@@ -4,7 +4,7 @@ import { ISourceLayer, NoteSeverity, PieceLifespan } from '@sofie-automation/blu
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data.js'
 import { IOutputLayerExtended, ISourceLayerExtended, PartExtended, SegmentExtended } from '../../lib/RundownResolver.js'
-import { IContextMenuContext } from '../RundownView/index.js'
+import { IContextMenuContext } from '../RundownView.js'
 import { equalSets } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { RundownUtils } from '../../lib/rundown.js'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'

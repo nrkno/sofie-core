@@ -302,7 +302,7 @@ export class TSRHandler {
 							coreTsrHandler._device,
 							assets.filter((asset) => _.isNumber(asset.position) && asset.path)
 						)
-					} catch (e) {
+					} catch (_e) {
 						// don't worry about it.
 					}
 				}

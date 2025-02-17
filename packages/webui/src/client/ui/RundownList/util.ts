@@ -4,7 +4,7 @@ import { doModalDialog } from '../../lib/ModalDialog.js'
 import { doUserAction, UserAction } from '../../lib/clientUserAction.js'
 import { MeteorCall } from '../../lib/meteorApi.js'
 import { TFunction } from 'i18next'
-import { handleRundownReloadResponse } from '../RundownView/index.js'
+import { handleRundownReloadResponse } from '../RundownView.js'
 import {
 	RundownId,
 	RundownLayoutId,

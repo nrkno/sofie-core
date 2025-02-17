@@ -368,7 +368,7 @@ describe('coreConnection', () => {
 
 		// temporary scramble the ddp host:
 		options.host = '127.0.0.9'
-		core.ddp.ddpClient && core.ddp.ddpClient.resetOptions(options)
+		core.ddp.ddpClient?.resetOptions(options)
 		// Force-close the socket:
 		core.ddp.ddpClient?.socket?.close()
 
@@ -379,7 +379,7 @@ describe('coreConnection', () => {
 
 		// restore ddp host:
 		options.host = '127.0.0.1'
-		core.ddp.ddpClient && core.ddp.ddpClient.resetOptions(options)
+		core.ddp.ddpClient?.resetOptions(options)
 		await wait(1000)
 		// should have reconnected by now
 

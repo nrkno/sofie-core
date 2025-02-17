@@ -34,6 +34,7 @@ export async function retrieveBlueprintConfigRefs(
 	const refs = stringWithReferences.match(/\$\{[^}]+\}/g) || []
 	for (const ref of refs) {
 		if (ref) {
+			// eslint-disable-next-line @typescript-eslint/no-base-to-string
 			let value = (await retrieveBlueprintConfigRef(context, ref, bailOnError)) + ''
 			if (value) {
 				if (modifier) value = modifier(value)

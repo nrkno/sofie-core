@@ -54,7 +54,7 @@ import { PieceInstances } from '../collections/index.js'
 import { ReadonlyDeep } from 'type-fest'
 import { TFunction } from 'i18next'
 import _ from 'underscore'
-import { UIPartInstances } from '../ui/Collections/index.js'
+import { UIPartInstances } from '../ui/Collections.js'
 
 export interface LayoutDescriptor {
 	supportedFilters: RundownLayoutElementType[]

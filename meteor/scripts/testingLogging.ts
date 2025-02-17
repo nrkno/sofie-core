@@ -13,7 +13,7 @@ For a thorough test, it should be run:
 */
 
 import { Meteor } from 'meteor/meteor'
-import { logger } from './logging.js'
+import { logger } from '../server/logging.js'
 import { EventEmitter } from 'events'
 
 /* eslint @typescript-eslint/no-floating-promises: 0 */

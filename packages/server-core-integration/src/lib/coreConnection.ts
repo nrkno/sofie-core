@@ -27,7 +27,6 @@ import {
 	PeripheralDevicePubSubTypes,
 } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const PkgInfo = require('../../package.json')
 
 export interface CoreCredentials {
@@ -272,7 +271,7 @@ export class CoreConnection<
 	 */
 	async callMethodRaw(methodName: string, attrs: Array<any>): Promise<any> {
 		if (this._destroyed) {
-			throw 'callMethod: CoreConnection has been destroyed'
+			throw new Error('callMethod: CoreConnection has been destroyed')
 		}
 
 		if (!this._methodQueue) throw new Error('Connection is not ready to call methods')
@@ -444,7 +443,7 @@ export class CoreConnection<
 				} else {
 					i++
 					if (i > 50) {
-						reject()
+						reject(new Error('Watchdog ping timeout'))
 					} else {
 						setTimeout(checkPingReply, 300)
 					}

@@ -111,7 +111,7 @@ describe('Test blueprint post-process', () => {
 
 			// Certain fields should be defined by simple rules
 			expect(res.filter((r) => r.id === '')).toHaveLength(0)
-			expect(res.filter((r) => r.objectType !== 'rundown')).toHaveLength(0)
+			expect(res.filter((r) => r.objectType !== TimelineObjType.RUNDOWN)).toHaveLength(0)
 
 			// Ensure no ids were duplicates
 			const ids = res.map((obj) => obj.id)
@@ -229,7 +229,7 @@ describe('Test blueprint post-process', () => {
 
 			// Certain fields should be defined by simple rules
 			expect(res.filter((r) => r.id === '')).toHaveLength(0)
-			expect(res.filter((r) => r.objectType !== 'rundown')).toHaveLength(0)
+			expect(res.filter((r) => r.objectType !== TimelineObjType.RUNDOWN)).toHaveLength(0)
 
 			// Ensure getHash was called as expected
 			expect(getHashMock).toHaveBeenCalledTimes(2)

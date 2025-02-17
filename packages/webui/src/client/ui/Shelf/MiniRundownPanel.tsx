@@ -14,7 +14,7 @@ import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { dashboardElementStyle } from './DashboardPanel.js'
 import { Meteor } from 'meteor/meteor'
 import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { UIPartInstances } from '../Collections/index.js'
+import { UIPartInstances } from '../Collections.js'
 import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil.js'
 
 interface IMiniRundownPanelProps {
