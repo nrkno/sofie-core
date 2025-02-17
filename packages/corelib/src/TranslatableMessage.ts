@@ -44,6 +44,7 @@ export function interpollateTranslation(key: unknown, ...args: any[]): string {
 	}
 
 	if (typeof args[0] === 'string') {
+		// eslint-disable-next-line @typescript-eslint/no-base-to-string
 		return String(key || args[0])
 	}
 

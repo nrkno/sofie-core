@@ -105,13 +105,10 @@ interface ISourceLayerItemState {
 }
 
 export const SourceLayerItem = withTranslation()(
-	class SourceLayerItem extends React.Component<
-		ISourceLayerItemProps & WithTranslation & ISourceLayerItemProps,
-		ISourceLayerItemState
-	> {
+	class SourceLayerItem extends React.Component<ISourceLayerItemProps & WithTranslation, ISourceLayerItemState> {
 		animFrameHandle: number | undefined
 
-		constructor(props: ISourceLayerItemProps & WithTranslation & ISourceLayerItemProps) {
+		constructor(props: ISourceLayerItemProps & WithTranslation) {
 			super(props)
 			this.state = {
 				showMiniInspector: false,

@@ -99,10 +99,7 @@ function getPieceEnableForPieceInstance(
 			if (!outTransition) return undefined
 
 			const pieceEnable: TSR.Timeline.TimelineEnable = {
-				start: `#${parentGroup.id}.end - ${outTransition.duration}`,
-			}
-			if (partTimings.toPartPostroll) {
-				pieceEnable.start += ' - ' + partTimings.toPartPostroll
+				start: `#${parentGroup.id}.end - ${outTransition.duration + partTimings.toPartPostroll}`,
 			}
 
 			return pieceEnable

@@ -115,10 +115,10 @@ export class OnTakeContext extends ShowStyleUserContext implements IOnTakeContex
 		return this.partAndPieceInstanceService.updatePartInstance(part, props)
 	}
 
-	async stopPiecesOnLayers(sourceLayerIds: string[], timeOffset?: number | undefined): Promise<string[]> {
+	async stopPiecesOnLayers(sourceLayerIds: string[], timeOffset?: number): Promise<string[]> {
 		return this.partAndPieceInstanceService.stopPiecesOnLayers(sourceLayerIds, timeOffset)
 	}
-	async stopPieceInstances(pieceInstanceIds: string[], timeOffset?: number | undefined): Promise<string[]> {
+	async stopPieceInstances(pieceInstanceIds: string[], timeOffset?: number): Promise<string[]> {
 		return this.partAndPieceInstanceService.stopPieceInstances(pieceInstanceIds, timeOffset)
 	}
 	async removePieceInstances(part: 'current' | 'next', pieceInstanceIds: string[]): Promise<string[]> {

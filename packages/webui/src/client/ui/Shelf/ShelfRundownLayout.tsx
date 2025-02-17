@@ -45,7 +45,7 @@ export function ShelfRundownLayout(props: Readonly<IShelfRundownLayoutProps>): J
 						<>
 							<button
 								className={ClassNames('rundown-view__shelf__tabs__tab', {
-									selected: (props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.ADLIB,
+									selected: (props.selectedTab || SHELF_DEFAULT_TAB) === `${ShelfTabs.ADLIB}`,
 								})}
 								onClick={() => onSwitchTab(ShelfTabs.ADLIB)}
 								tabIndex={0}
@@ -55,7 +55,7 @@ export function ShelfRundownLayout(props: Readonly<IShelfRundownLayoutProps>): J
 							</button>
 							<button
 								className={ClassNames('rundown-view__shelf__tabs__tab', {
-									selected: (props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.GLOBAL_ADLIB,
+									selected: (props.selectedTab || SHELF_DEFAULT_TAB) === `${ShelfTabs.GLOBAL_ADLIB}`,
 								})}
 								onClick={() => onSwitchTab(ShelfTabs.GLOBAL_ADLIB)}
 								tabIndex={0}
@@ -85,7 +85,7 @@ export function ShelfRundownLayout(props: Readonly<IShelfRundownLayoutProps>): J
 				</OverflowingContainer>
 				<button
 					className={ClassNames('rundown-view__shelf__tabs__tab', {
-						selected: (props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS,
+						selected: (props.selectedTab || SHELF_DEFAULT_TAB) === `${ShelfTabs.SYSTEM_HOTKEYS}`,
 					})}
 					onClick={() => onSwitchTab(ShelfTabs.SYSTEM_HOTKEYS)}
 					tabIndex={0}
@@ -98,7 +98,7 @@ export function ShelfRundownLayout(props: Readonly<IShelfRundownLayoutProps>): J
 				{!rundownLayout ? (
 					<>
 						<AdLibPanel
-							visible={(props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.ADLIB}
+							visible={(props.selectedTab || SHELF_DEFAULT_TAB) === `${ShelfTabs.ADLIB}`}
 							selectedPiece={props.selectedPiece}
 							onSelectPiece={props.onSelectPiece}
 							playlist={props.playlist}
@@ -107,7 +107,7 @@ export function ShelfRundownLayout(props: Readonly<IShelfRundownLayoutProps>): J
 							studio={props.studio}
 						></AdLibPanel>
 						<GlobalAdLibPanel
-							visible={(props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.GLOBAL_ADLIB}
+							visible={(props.selectedTab || SHELF_DEFAULT_TAB) === `${ShelfTabs.GLOBAL_ADLIB}`}
 							selectedPiece={props.selectedPiece}
 							onSelectPiece={props.onSelectPiece}
 							playlist={props.playlist}
@@ -143,7 +143,7 @@ export function ShelfRundownLayout(props: Readonly<IShelfRundownLayoutProps>): J
 					)
 				)}
 				<HotkeyHelpPanel
-					visible={(props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS}
+					visible={(props.selectedTab || SHELF_DEFAULT_TAB) === `${ShelfTabs.SYSTEM_HOTKEYS}`}
 					showStyleBase={props.showStyleBase}
 					hotkeys={props.hotkeys}
 				></HotkeyHelpPanel>

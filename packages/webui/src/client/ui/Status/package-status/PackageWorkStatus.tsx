@@ -109,7 +109,7 @@ export const PackageWorkStatus: React.FC<{ status: ExpectedPackageWorkStatus; co
 												})}
 												placement="bottom"
 											>
-												<span>{status.statusReason.user ?? status.statusReason?.toString()}</span>
+												<span>{status.statusReason.user ?? JSON.stringify(status.statusReason)}</span>
 											</Tooltip>
 										</td>
 									</tr>
@@ -129,7 +129,7 @@ export const PackageWorkStatus: React.FC<{ status: ExpectedPackageWorkStatus; co
 																		})}
 																		placement="bottom"
 																	>
-																		<span>{reason.user ?? reason?.toString()}</span>
+																		<span>{reason.user ?? JSON.stringify(reason)}</span>
 																	</Tooltip>
 																</li>
 															)

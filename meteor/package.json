@@ -7,7 +7,7 @@
 	},
 	"scripts": {
 		"preinstall": "node -v",
-		"debug": "meteor run",
+		"debug": "meteor run --exclude-archs \"web.browser.legacy,web.browser,web.cordova\"",
 		"libs:syncVersions": "node scripts/libs-sync-version.js",
 		"libs:syncVersionsAndChangelogs": "node scripts/libs-sync-version-and-changelog.js",
 		"inject-git-hash": "node ./scripts/generate-version-file.js",

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/no-require-imports */
 
 import './_extendJest.js'
 
@@ -7,9 +7,9 @@ import './_extendJest.js'
 // Mock random ids to be predictable. Imports have to be relative, not via package nmmes for some reason..
 jest.mock('nanoid')
 
-jest.mock('../lib/time', (...args) => require('./time').setup(args), {
+jest.mock('../lib/time.js', (...args) => require('./time').setup(args), {
 	virtual: true,
 })
 
-jest.mock('../events/integration/rabbitMQ', (...args) => require('./rabbitMQ').setup(args), { virtual: true })
-jest.mock('../events/integration/slack', (...args) => require('./slack').setup(args), { virtual: true })
+jest.mock('../events/integration/rabbitMQ.js', (...args) => require('./rabbitMQ').setup(args), { virtual: true })
+jest.mock('../events/integration/slack.js', (...args) => require('./slack').setup(args), { virtual: true })

@@ -46,7 +46,7 @@ Meteor.startup(() => {
 	)
 
 	// Expose the API at the url
-	WebApp.rawHandlers.use((req, res) => {
+	WebApp.rawConnectHandlers.use((req, res) => {
 		const transaction = profiler.startTransaction(`${req.method}:${req.url}`, 'http.incoming')
 		if (transaction) {
 			transaction.setLabel('url', `${req.url}`)

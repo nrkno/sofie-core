@@ -19,7 +19,7 @@ describe('watchDog', () => {
 
 		return new Promise<void>((resolver, reject) => {
 			if (coreIsHappy) resolver()
-			else if (coreReplies) reject()
+			else if (coreReplies) reject(new Error('Core is not happy'))
 		})
 	})
 	const exitFcn = jest.fn(() => {

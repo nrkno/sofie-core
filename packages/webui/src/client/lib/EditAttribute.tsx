@@ -405,7 +405,7 @@ function useEditAttributeStateHelper(props: IEditAttributeBaseProps): EditAttrib
 				try {
 					newValue = props.mutateUpdateValue(newValue)
 					setValueError(false)
-				} catch (e) {
+				} catch (_e) {
 					setValueError(true)
 
 					return

@@ -45,9 +45,10 @@ import {
 	PackageInfoLight,
 	PieceDependencies,
 } from './common.js'
-import { PieceContentStatusObj } from '@sofie-automation/corelib/dist/dataModel/PieceContentStatus'
+import { PieceContentStatusObj } from '@sofie-automation/corelib/dist/dataModel/PieceContentStatus.js'
 import { PieceContentStatusMessageFactory, PieceContentStatusMessageRequiredArgs } from './messageFactory.js'
-import { PackageStatusMessage } from '@sofie-automation/shared-lib/dist/packageStatusMessages'
+import { PackageStatusMessage } from '@sofie-automation/shared-lib/dist/packageStatusMessages.js'
+import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece.js'
 
 const DEFAULT_MESSAGE_FACTORY = new PieceContentStatusMessageFactory(undefined)
 
@@ -192,7 +193,10 @@ export function getMediaObjectMediaId(
 	return undefined
 }
 
-export type PieceContentStatusPiece = Pick<PieceGeneric, '_id' | 'content' | 'expectedPackages' | 'name'> & {
+export type PieceContentStatusPiece = Pick<
+	PieceGeneric | BucketAdLib,
+	'_id' | 'content' | 'expectedPackages' | 'name'
+> & {
 	pieceInstanceId?: PieceInstanceId
 }
 export interface PieceContentStatusStudio

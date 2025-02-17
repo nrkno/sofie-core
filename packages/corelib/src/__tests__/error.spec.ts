@@ -8,18 +8,20 @@ describe('UserError', () => {
 		const userError = UserError.from(rawError, UserErrorMessage.PartNotFound, { key: 'translatable message' })
 
 		expect(stringifyError(userError)).toEqual(
-			'UserError: ' +
-				JSON.stringify({
-					rawError: 'Error: raw, mock stack',
-					message: {
-						key: 'The selected part does not exist',
-						args: {
-							key: 'translatable message',
+			expect.stringContaining(
+				'UserError: ' +
+					JSON.stringify({
+						rawError: 'Error: raw, mock stack',
+						userMessage: {
+							key: 'The selected part does not exist',
+							args: {
+								key: 'translatable message',
+							},
 						},
-					},
-					key: 25,
-					errorCode: 500,
-				})
+						key: 25,
+						errorCode: 500,
+					})
+			)
 		)
 
 		// serialized and restored

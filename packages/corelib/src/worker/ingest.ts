@@ -1,9 +1,8 @@
 import {
-	AdLibActionId,
 	BucketAdLibActionId,
+	BucketAdLibId,
 	BucketId,
 	ExpectedPackageId,
-	PieceId,
 	RundownId,
 	SegmentId,
 	ShowStyleBaseId,
@@ -268,14 +267,14 @@ export interface BucketActionModifyProps {
 	props: Partial<Omit<BucketAdLibAction, '_id'>>
 }
 export interface BucketPieceModifyProps {
-	pieceId: PieceId
+	pieceId: BucketAdLibId
 	props: Partial<Omit<BucketAdLibAction, '_id'>>
 }
 export interface BucketRemoveAdlibPieceProps {
-	pieceId: PieceId
+	pieceId: BucketAdLibId
 }
 export interface BucketRemoveAdlibActionProps {
-	actionId: AdLibActionId
+	actionId: BucketAdLibActionId
 }
 export interface BucketEmptyProps {
 	bucketId: BucketId
