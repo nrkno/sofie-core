@@ -48,7 +48,12 @@ type CompiledFilter<T> = {
 	skip?: true
 }
 
-type SomeAdLib = RundownBaselineAdLibItem | RundownBaselineAdLibAction | AdLibPiece | AdLibAction
+type SomeAdLib =
+	| RundownBaselineAdLibItem
+	| RundownBaselineAdLibAction
+	// eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
+	| AdLibPiece
+	| AdLibAction
 
 interface IWrappedAdLibType<T extends SomeAdLib, typeName extends MountedAdLibTriggerType> extends IWrappedAdLibBase {
 	_id: T['_id']
@@ -98,7 +103,12 @@ function wrapRundownBaselineAdLibAction(
 	}
 }
 
-function wrapAdLibPiece<T extends RundownBaselineAdLibItem | AdLibPiece>(
+function wrapAdLibPiece<
+	T extends
+		| RundownBaselineAdLibItem
+		// eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
+		| AdLibPiece,
+>(
 	adLib: T,
 	type: MountedAdLibTriggerType.adLibPiece | MountedAdLibTriggerType.rundownBaselineAdLibItem
 ): IWrappedAdLib {
@@ -387,7 +397,10 @@ function compileAdLibActionFilter(
 	}
 }
 
-type AdLibPieceType = RundownBaselineAdLibItem | AdLibPiece
+type AdLibPieceType =
+	| RundownBaselineAdLibItem
+	// eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
+	| AdLibPiece
 
 function compileAdLibPieceFilter(
 	filterChain: IAdLibFilterLink[],

@@ -171,6 +171,7 @@ export function CameraScreen({ playlist, studioId }: Readonly<IProps>): JSX.Elem
 
 	const pieceFilterFunction = useMemo(() => {
 		return (piece: PieceExtended) => {
+			// eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
 			const camLikeContent = piece.instance.piece.content as CameraContent | RemoteContent | RemoteSpeakContent
 			if (
 				sourceLayerIds !== null &&

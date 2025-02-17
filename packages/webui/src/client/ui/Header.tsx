@@ -86,7 +86,9 @@ class Header extends React.Component<Translated<IPropsHeader & ITrackedPropsHead
 						/>
 						<NotificationCenterPanelToggle
 							onClick={(e) => this.onToggleNotifications(e, NoticeLevel.NOTIFICATION | NoticeLevel.TIP)}
-							isOpen={this.state.isNotificationCenterOpen === (NoticeLevel.NOTIFICATION | NoticeLevel.TIP)}
+							isOpen={
+								this.state.isNotificationCenterOpen === ((NoticeLevel.NOTIFICATION | NoticeLevel.TIP) as NoticeLevel)
+							}
 							filter={NoticeLevel.NOTIFICATION | NoticeLevel.TIP}
 							className="type-notification"
 							title={t('Notes')}

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/only-throw-error */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import _ from 'underscore'
 import { literal, ProtectedString, unprotectString, protectString, getRandomString } from '../server/lib/tempLib'

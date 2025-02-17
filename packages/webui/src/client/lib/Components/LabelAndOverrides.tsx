@@ -102,7 +102,13 @@ export function LabelAndOverrides<T extends object, TValue = any>({
 			{item.defaults && (
 				<>
 					<span className="field-default">
-						<FontAwesomeIcon icon={faQuestionCircle} title={`${t('Default')}: ${displayValue}`} />
+						{displayValue === null ? (
+							<FontAwesomeIcon icon={faQuestionCircle} title={`${t('Default')}: null`} />
+						) : typeof displayValue === 'object' ? (
+							displayValue
+						) : (
+							<FontAwesomeIcon icon={faQuestionCircle} title={`${t('Default')}: ${displayValue}`} />
+						)}
 					</span>
 					<Button variant="primary" onClick={clearOverride} title="Reset to default" disabled={!isOverridden}>
 						{t('Reset')}

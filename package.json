@@ -9,7 +9,7 @@
 	"scripts": {
 		"prepare": "husky",
 		"postinstall": "run install:packages && run install:meteor",
-		"install:meteor": "cd meteor && meteor --version && meteor npm install -g yarn && node ../scripts/fix-windows-yarn.js && yarn install",
+		"install:meteor": "yarn restart:meteor && cd meteor && meteor --version && meteor npm install -g yarn && node ../scripts/fix-windows-yarn.js && yarn install",
 		"install:packages": "cd packages && yarn install",
 		"start": "yarn install && run install-and-build && run dev",
 		"install-and-build": "node ./scripts/install-and-build.mjs",

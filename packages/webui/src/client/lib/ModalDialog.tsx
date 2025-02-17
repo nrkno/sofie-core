@@ -117,7 +117,8 @@ export function ModalDialog({
 		e.stopPropagation()
 
 		if (isAcceptKey(e.code)) {
-			discardAsPrimary ? handleDiscard(e) : handleAccept(e)
+			if (discardAsPrimary) handleDiscard(e)
+			else handleAccept(e)
 		} else if (isDismissKey(e.code)) {
 			handleDiscard(e)
 		}

@@ -210,7 +210,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			if (playlist?.notes) {
 				const playlistNotesId = playlist._id + '_playlistnotes_'
 				playlist.notes.forEach((note) => {
-					const noteId = playlistNotesId + note.origin.name + '_' + note.message + '_' + note.type
+					const noteId = playlistNotesId + note.origin.name + '_' + note.message.key + '_' + note.type
 					const notificationFromNote = new Notification(
 						noteId,
 						getNoticeLevelForNoteSeverity(note.type),
@@ -297,7 +297,7 @@ class RundownViewNotifier extends WithManagedTracker {
 					const rundownNotesId = rundown._id + '_ronotes_'
 					if (rundown.notes) {
 						rundown.notes.forEach((note) => {
-							const rundownNoteId = rundownNotesId + note.origin.name + '_' + note.message + '_' + note.type
+							const rundownNoteId = rundownNotesId + note.origin.name + '_' + note.message.key + '_' + note.type
 							const notificationFromNote = new Notification(
 								rundownNoteId,
 								getNoticeLevelForNoteSeverity(note.type),

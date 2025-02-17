@@ -273,14 +273,14 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 					label: this.props.piece.name,
 				},
 				() => {
-					this._labelEl && this._labelEl.blur()
+					this._labelEl?.blur()
 				}
 			)
 			e.preventDefault()
 			e.stopPropagation()
 			e.stopImmediatePropagation()
 		} else if (e.key === 'Enter') {
-			this._labelEl && this._labelEl.blur()
+			this._labelEl?.blur()
 			e.preventDefault()
 			e.stopPropagation()
 			e.stopImmediatePropagation()

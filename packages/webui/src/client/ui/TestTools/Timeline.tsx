@@ -153,7 +153,7 @@ function FilterInput({ filterChanged }: Readonly<FilterInputProps>) {
 			try {
 				filterChanged(new RegExp(filterText.substr(1, filterText.length - 2)))
 				setIsError(false)
-			} catch (e) {
+			} catch (_e) {
 				setIsError(true)
 			}
 		} else {

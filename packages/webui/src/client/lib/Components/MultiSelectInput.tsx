@@ -40,7 +40,7 @@ export function MultiSelectInputControl({
 					currentOptionMissing = true
 				}
 			}
-		} catch (e) {
+		} catch (_e) {
 			// `value` is probably invalid. We can't do much
 		}
 

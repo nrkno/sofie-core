@@ -339,7 +339,10 @@ export async function updateExpectedPackagesForBucketAdLibAction(
 
 	await saveIntoDb(context, context.directCollections.ExpectedPackages, { pieceId: action._id }, packages)
 }
-export async function cleanUpExpectedPackagesForBucketAdLibs(context: JobContext, adLibIds: PieceId[]): Promise<void> {
+export async function cleanUpExpectedPackagesForBucketAdLibs(
+	context: JobContext,
+	adLibIds: BucketAdLibId[]
+): Promise<void> {
 	if (adLibIds.length > 0) {
 		await context.directCollections.ExpectedPackages.remove({
 			pieceId: {
@@ -350,7 +353,7 @@ export async function cleanUpExpectedPackagesForBucketAdLibs(context: JobContext
 }
 export async function cleanUpExpectedPackagesForBucketAdLibsActions(
 	context: JobContext,
-	adLibIds: AdLibActionId[]
+	adLibIds: BucketAdLibActionId[]
 ): Promise<void> {
 	if (adLibIds.length > 0) {
 		await context.directCollections.ExpectedPackages.remove({

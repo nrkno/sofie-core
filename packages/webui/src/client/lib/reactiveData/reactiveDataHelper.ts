@@ -77,7 +77,8 @@ export abstract class WithManagedTracker {
 
 	protected autorun(
 		func: (comp: Tracker.Computation) => void,
-		options?: { onError: Function | undefined } | undefined
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+		options?: { onError: Function | undefined }
 	): Tracker.Computation {
 		return Tracker.nonreactive(() => {
 			const comp = Tracker.autorun(func, options)

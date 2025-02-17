@@ -23,6 +23,7 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 	const [showMiniInspector, setShowMiniInspector] = useState(false)
 	const [itemIconPosition, setItemIconPosition] = useState<(OffsetPosition & { width: number }) | null>(null)
 
+	// eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
 	const vtContent = props.adLibListItem.content as VTContent | LiveSpeakContent | undefined
 	let sourceDuration: number | null = null
 

@@ -111,12 +111,14 @@ describe('cronjobs', () => {
 		await MeteorMock.mockRunMeteorStartup()
 		origGetCurrentTime = lib.getCurrentTime
 		//@ts-ignore Mock getCurrentTime for tests
+		// eslint-disable-next-line no-import-assign
 		lib.getCurrentTime = jest.fn(() => {
 			return mockCurrentTime
 		})
 	})
 	afterAll(async () => {
 		//@ts-ignore Return getCurrentTime to orig
+		// eslint-disable-next-line no-import-assign
 		lib.getCurrentTime = origGetCurrentTime
 		await CoreSystem.removeAsync(SYSTEM_ID)
 	})
@@ -566,7 +568,7 @@ describe('cronjobs', () => {
 			studioId: StudioId
 			rundownPlaylistId: RundownPlaylistId
 		}> {
-			function newObjectWithOverrides<T extends {}>(defaults: T): ObjectWithOverrides<T> {
+			function newObjectWithOverrides<T extends object>(defaults: T): ObjectWithOverrides<T> {
 				return {
 					defaults,
 					overrides: [],

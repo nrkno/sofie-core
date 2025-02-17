@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion, @typescript-eslint/unbound-method */
+/* eslint-disable @typescript-eslint/unbound-method */
 import { IBlueprintMutatablePart, IBlueprintPiece } from '@sofie-automation/blueprints-integration'
 import { PlayoutModel } from '../../playout/model/PlayoutModel.js'
 import { WatchedPackagesHelper } from '../context/watchedPackages.js'

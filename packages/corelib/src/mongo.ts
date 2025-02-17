@@ -1,7 +1,6 @@
 import _ from 'underscore'
 import { ProtectedString } from './protectedString.js'
 import * as objectPath from 'object-path'
-// eslint-disable-next-line n/no-extraneous-import
 import type { Condition, Filter, UpdateFilter } from 'mongodb'
 import { clone } from './lib.js'
 
@@ -146,7 +145,7 @@ export function mongoWhere<T>(o: Record<string, any>, selector: MongoQuery<T>): 
 					ok = mongoWhere(o, innerSelector)
 				}
 			}
-		} catch (e) {
+		} catch (_e) {
 			ok = false
 		}
 	}

@@ -74,7 +74,7 @@ interface IState {
 	shelfHeight: string
 	overrideHeight: number | undefined
 	moving: boolean
-	selectedTab: string | undefined
+	selectedTab: string | ShelfTabs | undefined
 	shouldQueue: boolean
 	selectedPiece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined
 	localStorageName: string
@@ -116,6 +116,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 			overrideHeight: undefined,
 			selectedTab: UIStateStorage.getItem(`rundownView.${props.playlist._id}`, 'shelfTab', undefined) as
 				| string
+				| ShelfTabs
 				| undefined,
 			shouldQueue: false,
 			selectedPiece: undefined,
@@ -219,7 +220,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		try {
 			// @ts-expect-error blur isnt always valid
 			document.activeElement.blur()
-		} catch (e) {
+		} catch (_e) {
 			// do nothing
 		}
 	}

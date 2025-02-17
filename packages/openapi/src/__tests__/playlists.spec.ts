@@ -1,4 +1,3 @@
-// eslint-disable-next-line n/no-missing-import
 import { Configuration, PlaylistsApi, ResponseError } from '../../client/ts/index.js'
 import { checkServer } from '../checkServer.js'
 import Logging from '../httpLogging.js'

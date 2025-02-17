@@ -207,7 +207,7 @@ function deNowifyInfinites(
 
 		obj.enable = { start: targetNowTime - parentStartTime }
 		logger.silly(
-			`deNowifyInfinites: Setting "${obj.id}" enable.start = ${obj.enable.start}, ${targetNowTime} ${parentStartTime} parentObject: "${parentObject.id}"`
+			`deNowifyInfinites: Setting "${obj.id}" enable.start = ${JSON.stringify(obj.enable.start)}, ${targetNowTime} ${parentStartTime} parentObject: "${parentObject.id}"`
 		)
 	}
 }

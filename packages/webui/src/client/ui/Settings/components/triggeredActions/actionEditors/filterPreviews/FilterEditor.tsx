@@ -72,7 +72,7 @@ export const FilterEditor: React.FC<IProps> = function FilterEditor(props: IProp
 	}, [popperElement, referenceElement, opened, index])
 
 	useLayoutEffect(() => {
-		update && update().catch(catchError('FilterEditor update'))
+		update?.().catch(catchError('FilterEditor update'))
 	}, [props.fieldLabel, props.valueLabel])
 
 	return (

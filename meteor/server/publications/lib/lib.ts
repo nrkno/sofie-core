@@ -6,6 +6,7 @@ import { MetricsGauge } from '@sofie-automation/corelib/dist/prometheus'
 import { MinimalMongoCursor } from '../../collections/implementations/asyncCollection'
 
 export const MeteorPublicationSignatures: { [key: string]: string[] } = {}
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export const MeteorPublications: { [key: string]: Function } = {}
 
 const MeteorPublicationsGauge = new MetricsGauge({
