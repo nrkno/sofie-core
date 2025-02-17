@@ -51,7 +51,6 @@ export class MutableIngestPartImpl<TPartPayload = unknown> implements MutableIng
 		}
 
 		if (this.#hasChanges || !_.isEqual(this.#ingestPart.payload[key], value)) {
-			// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 			;(this.#ingestPart.payload as any)[key] = clone(value)
 			this.#hasChanges = true
 		}

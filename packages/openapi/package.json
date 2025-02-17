@@ -27,7 +27,7 @@
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"engines": {
-		"node": ">=18.18"
+		"node": ">=21"
 	},
 	"files": [
 		"/api",

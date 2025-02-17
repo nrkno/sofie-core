@@ -134,10 +134,10 @@ export interface UserErrorObj {
 	/** The UserErrorMessage key (for matching certain error) */
 	readonly key: UserErrorMessage
 	/** The translatable string for the key */
-	readonly message: ITranslatableMessage
+	readonly userMessage: ITranslatableMessage
 }
 
-export class UserError implements UserErrorObj {
+export class UserError extends Error implements UserErrorObj {
 	public readonly errorCode: number
 
 	private constructor(
@@ -146,10 +146,11 @@ export class UserError implements UserErrorObj {
 		/** The UserErrorMessage key (for matching certain error) */
 		public readonly key: UserErrorMessage,
 		/** The translatable string for the key */
-		public readonly message: ITranslatableMessage,
+		public readonly userMessage: ITranslatableMessage,
 		/** Appropriate HTTP status code. Defaults to 500 for generic internal error. */
 		errorCode: number | undefined
 	) {
+		super()
 		this.errorCode = errorCode ?? 500
 	}
 
@@ -165,7 +166,7 @@ export class UserError implements UserErrorObj {
 	static fromUnknown(err: unknown, errorCode?: number): UserError {
 		if (err instanceof UserError) return err
 		if (this.isUserError(err))
-			return new UserError(new Error(err.rawError.toString()), err.key, err.message, err.errorCode)
+			return new UserError(new Error(err.rawError.toString()), err.key, err.userMessage, err.errorCode)
 
 		const err2 = err instanceof Error ? err : new Error(stringifyError(err))
 		return new UserError(
@@ -185,11 +186,11 @@ export class UserError implements UserErrorObj {
 		try {
 			const p = JSON.parse(str)
 			if (UserError.isUserError(p)) {
-				return new UserError(new Error(p.rawError.toString()), p.key, p.message, p.errorCode)
+				return new UserError(new Error(p.rawError.toString()), p.key, p.userMessage, p.errorCode)
 			} else {
 				return undefined
 			}
-		} catch (e: any) {
+		} catch (_e: any) {
 			return undefined
 		}
 	}
@@ -197,17 +198,17 @@ export class UserError implements UserErrorObj {
 	static toJSON(e: UserErrorObj): string {
 		return JSON.stringify({
 			rawError: stringifyError(e.rawError),
-			message: e.message,
+			userMessage: e.userMessage,
 			key: e.key,
 			errorCode: e.errorCode,
 		})
 	}
 
 	static isUserError(e: unknown): e is UserErrorObj {
-		return !(e instanceof Error) && !!e && typeof e === 'object' && 'rawError' in e && 'message' in e && 'key' in e
+		return !!e && typeof e === 'object' && 'rawError' in e && 'userMessage' in e && 'key' in e
 	}
 
 	toErrorString(): string {
-		return `${translateMessage(this.message, interpollateTranslation)}\n${stringifyError(this.rawError)}`
+		return `${translateMessage(this.userMessage, interpollateTranslation)}\n${stringifyError(this.rawError)}`
 	}
 }

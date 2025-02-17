@@ -5,9 +5,9 @@ import {
 	ExpectedMediaItemRundown,
 } from '@sofie-automation/corelib/dist/dataModel/ExpectedMediaItem'
 import {
-	AdLibActionId,
+	BucketAdLibActionId,
+	BucketAdLibId,
 	ExpectedMediaItemId,
-	PieceId,
 	RundownId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -140,7 +140,7 @@ function generateExpectedMediaItemsFull(
  */
 export async function cleanUpExpectedMediaItemForBucketAdLibPiece(
 	context: JobContext,
-	adLibIds: PieceId[]
+	adLibIds: BucketAdLibId[]
 ): Promise<void> {
 	if (adLibIds.length > 0) {
 		const removedItems = await context.directCollections.ExpectedMediaItems.remove({
@@ -160,7 +160,7 @@ export async function cleanUpExpectedMediaItemForBucketAdLibPiece(
  */
 export async function cleanUpExpectedMediaItemForBucketAdLibActions(
 	context: JobContext,
-	actionIds: AdLibActionId[]
+	actionIds: BucketAdLibActionId[]
 ): Promise<void> {
 	if (actionIds.length > 0) {
 		const removedItems = await context.directCollections.ExpectedMediaItems.remove({

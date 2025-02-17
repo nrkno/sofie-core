@@ -147,7 +147,7 @@ export class CoreConnectionChild<
 	 */
 	async callMethodRaw(methodName: string, attrs: Array<any>): Promise<any> {
 		if (this._destroyed) {
-			throw 'callMethod: CoreConnection has been destroyed'
+			throw new Error('callMethod: CoreConnection has been destroyed')
 		}
 
 		return this._methodQueue.callMethodRaw(methodName, attrs)

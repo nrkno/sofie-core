@@ -56,8 +56,8 @@ interface IStoryItemChange {
 	itemID: string
 	timestamp: number
 
-	resolve: (value?: IMOSROAck | PromiseLike<IMOSROAck> | undefined) => void
-	reject: (error: any) => void
+	resolve: (value?: IMOSROAck | PromiseLike<IMOSROAck>) => void
+	reject: (error: Error) => void
 
 	itemDiff: PartialDeep<IMOSItem>
 }
@@ -410,7 +410,7 @@ export class CoreMosDeviceHandler {
 				!result.mos.roAck.roStatus ||
 				result.mos.roAck.roStatus.toString() !== 'OK'
 			) {
-				return Promise.reject(result)
+				return Promise.reject(new Error(`Bad result: ${JSON.stringify(result)}`))
 			} else {
 				// When the result of the replaceStoryItem operation comes in,
 				// it is not confirmed if the change actually was performed or not.
@@ -442,7 +442,7 @@ export class CoreMosDeviceHandler {
 						)
 						promiseResolve(value || result)
 					}
-					pendingChange.reject = (reason) => {
+					pendingChange.reject = (reason: Error) => {
 						this.removePendingChange(pendingChange)
 						this._coreParentHandler.logger.debug(
 							`pending change rejected: ${pendingChange.storyID}:${pendingChange.itemID}`
@@ -452,7 +452,7 @@ export class CoreMosDeviceHandler {
 				})
 				this.addPendingChange(pendingChange)
 				setTimeout(() => {
-					pendingChange.reject('Pending change timed out')
+					pendingChange.reject(new Error('Pending change timed out'))
 				}, this._pendingChangeTimeout)
 				return promise
 			}

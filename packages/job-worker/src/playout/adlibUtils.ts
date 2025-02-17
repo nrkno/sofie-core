@@ -1,6 +1,6 @@
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
-import { PartInstanceId, PieceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BucketAdLibId, PartInstanceId, PieceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { assertNever, getRandomId, getRank } from '@sofie-automation/corelib/dist/lib'
@@ -214,7 +214,7 @@ export async function insertQueuedPartWithPieces(
 	currentPartInstance: PlayoutPartInstanceModel,
 	newPart: Omit<DBPart, 'segmentId' | 'rundownId'>,
 	initialPieces: Omit<PieceInstancePiece, 'startPartId'>[],
-	fromAdlibId: PieceId | undefined
+	fromAdlibId: PieceId | BucketAdLibId | undefined
 ): Promise<PlayoutPartInstanceModel> {
 	const span = context.startSpan('insertQueuedPartWithPieces')
 

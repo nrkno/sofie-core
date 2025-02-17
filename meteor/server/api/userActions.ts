@@ -25,6 +25,8 @@ import { ServerPeripheralDeviceAPI } from './peripheralDevice'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import {
 	AdLibActionId,
+	BucketAdLibActionId,
+	BucketAdLibId,
 	BucketId,
 	MediaWorkFlowId,
 	PartId,
@@ -959,7 +961,7 @@ class ServerUserActionAPI
 				}
 
 				setTimeout(() => {
-					// eslint-disable-next-line no-process-exit
+					// eslint-disable-next-line n/no-process-exit
 					process.exit(0)
 				}, 3000)
 				return `Restarting Core in 3s.`
@@ -1045,7 +1047,7 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async bucketsRemoveBucketAdLib(userEvent: string, eventTime: Time, adlibId: PieceId) {
+	async bucketsRemoveBucketAdLib(userEvent: string, eventTime: Time, adlibId: BucketAdLibId) {
 		check(adlibId, String)
 
 		return ServerClientAPI.runUserActionInLog(
@@ -1060,7 +1062,7 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async bucketsRemoveBucketAdLibAction(userEvent: string, eventTime: Time, actionId: AdLibActionId) {
+	async bucketsRemoveBucketAdLibAction(userEvent: string, eventTime: Time, actionId: BucketAdLibActionId) {
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
@@ -1078,7 +1080,7 @@ class ServerUserActionAPI
 	async bucketsModifyBucketAdLib(
 		userEvent: string,
 		eventTime: Time,
-		adlibId: PieceId,
+		adlibId: BucketAdLibId,
 		adlibProps: Partial<Omit<BucketAdLib, '_id'>>
 	) {
 		return ServerClientAPI.runUserActionInLog(
@@ -1099,7 +1101,7 @@ class ServerUserActionAPI
 	async bucketsModifyBucketAdLibAction(
 		userEvent: string,
 		eventTime: Time,
-		actionId: AdLibActionId,
+		actionId: BucketAdLibActionId,
 		actionProps: Partial<Omit<BucketAdLibAction, '_id'>>
 	) {
 		return ServerClientAPI.runUserActionInLog(

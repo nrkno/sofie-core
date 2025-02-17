@@ -1,4 +1,5 @@
 import {
+	BucketAdLibId,
 	PartId,
 	PartInstanceId,
 	PieceId,
@@ -236,7 +237,7 @@ export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBa
 	createAdlibbedPartInstance(
 		part: Omit<DBPart, 'segmentId' | 'rundownId'>,
 		pieces: Omit<PieceInstancePiece, 'startPartId'>[],
-		fromAdlibId: PieceId | undefined,
+		fromAdlibId: PieceId | BucketAdLibId | undefined,
 		infinitePieceInstances: PieceInstance[]
 	): PlayoutPartInstanceModel
 

@@ -33,7 +33,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 export const draft = '2020-12' as const
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 export const $schema = 'https://json-schema.org/draft/2020-12/schema' as const
 
 type MaybeReadonlyArray<T> = Array<T> | ReadonlyArray<T>

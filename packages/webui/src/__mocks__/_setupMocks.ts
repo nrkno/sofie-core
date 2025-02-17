@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import { resetRandomId } from './random.js'
 
 // This file is run before all tests start.

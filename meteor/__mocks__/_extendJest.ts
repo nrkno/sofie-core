@@ -71,7 +71,7 @@ expect.extend({
 		if (UserError.isUserError(received)) {
 			const pass = !!received.rawError.toString().match(regexp)
 			return {
-				message: () => `expected ${received} to match ${regexp}`,
+				message: () => `expected ${received.rawError} to match ${regexp}`,
 				pass: pass,
 			}
 		} else {

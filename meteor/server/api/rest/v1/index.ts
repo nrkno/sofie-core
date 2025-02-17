@@ -60,9 +60,9 @@ function extractErrorCode(e: unknown): number {
 
 function extractErrorMessage(e: unknown): string {
 	if (ClientAPI.isClientResponseError(e)) {
-		return translateMessage(e.error.message, interpollateTranslation)
+		return translateMessage(e.error.userMessage, interpollateTranslation)
 	} else if (UserError.isUserError(e)) {
-		return translateMessage(e.message, interpollateTranslation)
+		return translateMessage(e.userMessage, interpollateTranslation)
 	} else if ((e as Meteor.Error).reason && typeof (e as Meteor.Error).reason === 'string') {
 		return (e as Meteor.Error).reason as string
 	} else {
@@ -138,7 +138,7 @@ function sofieAPIRequest<API, Params, Body, Response>(
 				ctx.params as unknown as Params,
 				ctx.request.body as unknown as Body
 			)
-			if (ClientAPI.isClientResponseError(response)) throw response
+			if (ClientAPI.isClientResponseError(response)) throw response.error
 			ctx.body = JSON.stringify({ status: response.success, result: response.result })
 			ctx.status = response.success
 		} catch (e) {
@@ -148,7 +148,7 @@ function sofieAPIRequest<API, Params, Body, Response>(
 			if (msgs) {
 				const msgConcat = {
 					key: msgs
-						.map((msg) => UserError.create(msg, undefined, errCode).message.key)
+						.map((msg) => UserError.create(msg, undefined, errCode).userMessage.key)
 						.reduce((acc, msg) => acc + (acc.length ? ' or ' : '') + msg, ''),
 				}
 				errMsg = translateMessage(msgConcat, interpollateTranslation)

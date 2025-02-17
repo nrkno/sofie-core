@@ -4,13 +4,13 @@ import { UserActionAPIMethods } from '@sofie-automation/meteor-lib/dist/api/user
 import { MeteorMethodSignatures } from '../../../../methods'
 import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { callKoaRoute } from '../../../../../__mocks__/koa-util'
-import { createLegacyApiRouter } from '..'
-import '../../../userActions.ts' // required to get the UserActionsAPI methods populated
+import { createLegacyApiRouter } from '../index'
+import '../../../userActions' // required to get the UserActionsAPI methods populated
 
 // we don't want the deviceTriggers observer to start up at this time
 jest.mock('../../../deviceTriggers/observer')
 
-import '../index.ts'
+import '../index'
 
 describe('REST API', () => {
 	describe('UNSTABLE v0', () => {

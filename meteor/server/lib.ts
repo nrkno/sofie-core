@@ -11,6 +11,7 @@ export function getAbsolutePath(): string {
 	const rootPath = path.resolve('.')
 	return rootPath.split(`${path.sep}.meteor`)[0]
 }
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export function extractFunctionSignature(f: Function): string[] | undefined {
 	if (f) {
 		const str = f.toString() || ''

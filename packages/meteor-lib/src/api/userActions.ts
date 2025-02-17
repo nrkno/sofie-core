@@ -9,6 +9,8 @@ import { Time } from '@sofie-automation/blueprints-integration'
 import { ExecuteActionResult, QueueNextSegmentResult } from '@sofie-automation/corelib/dist/worker/studio'
 import {
 	AdLibActionId,
+	BucketAdLibActionId,
+	BucketAdLibId,
 	BucketId,
 	MediaWorkFlowId,
 	PartId,
@@ -275,22 +277,26 @@ export interface NewUserActionAPI {
 		studioId: StudioId,
 		name: string
 	): Promise<ClientAPI.ClientResponse<Bucket>>
-	bucketsRemoveBucketAdLib(userEvent: string, eventTime: Time, id: PieceId): Promise<ClientAPI.ClientResponse<void>>
+	bucketsRemoveBucketAdLib(
+		userEvent: string,
+		eventTime: Time,
+		id: BucketAdLibId
+	): Promise<ClientAPI.ClientResponse<void>>
 	bucketsRemoveBucketAdLibAction(
 		userEvent: string,
 		eventTime: Time,
-		id: AdLibActionId
+		id: BucketAdLibActionId
 	): Promise<ClientAPI.ClientResponse<void>>
 	bucketsModifyBucketAdLib(
 		userEvent: string,
 		eventTime: Time,
-		id: PieceId,
+		id: BucketAdLibId,
 		bucket: Partial<Omit<BucketAdLib, '_id'>>
 	): Promise<ClientAPI.ClientResponse<void>>
 	bucketsModifyBucketAdLibAction(
 		userEvent: string,
 		eventTime: Time,
-		id: AdLibActionId,
+		id: BucketAdLibActionId,
 		action: Partial<Omit<BucketAdLibAction, '_id'>>
 	): Promise<ClientAPI.ClientResponse<void>>
 	bucketsSaveActionIntoBucket(

@@ -1,4 +1,4 @@
-import { PieceId, AdLibActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BucketAdLibActionId, BucketAdLibId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { JobContext } from '../../jobs/index.js'
 import {
 	BucketActionModifyProps,
@@ -34,7 +34,7 @@ export async function handleBucketRemoveAdlibPiece(
 	if (!piece || piece.studioId !== context.studioId)
 		throw new Error(`Bucket Piece "${data.pieceId}" not found in this studio`)
 
-	const idsToUpdate: PieceId[] = [piece._id]
+	const idsToUpdate: BucketAdLibId[] = [piece._id]
 	// Also remove adlibs that are grouped together with this adlib in the GUI:
 	;(await getGroupedAdlibs(context, piece)).forEach(({ _id }) => idsToUpdate.push(_id))
 
@@ -53,7 +53,7 @@ export async function handleBucketRemoveAdlibAction(
 	if (!action || action.studioId !== context.studioId)
 		throw new Error(`Bucket Action "${data.actionId}" not found in this studio`)
 
-	const idsToUpdate: AdLibActionId[] = [action._id]
+	const idsToUpdate: BucketAdLibActionId[] = [action._id]
 	// Also remove adlibs that are grouped together with this adlib in the GUI:
 	;(await getGroupedAdlibActions(context, action)).forEach(({ _id }) => idsToUpdate.push(_id))
 
