@@ -1,5 +1,5 @@
 title: Packages
-description: Packages schema for websocket subscriptions
+description: Packages schema for websocket subscriptions. Packages are assets that need to be prepared by Sofie Package Manager or third-party systems to make AdLibs and Pieces playable.
 $defs:
   packages:
     type: object
