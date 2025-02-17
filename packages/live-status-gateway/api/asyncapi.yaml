@@ -127,6 +127,7 @@ components:
         $ref: './schemas/adLibs.yaml#/$defs/adLibs'
     packages:
       name: packages
+      messageId: packages
       description: Status of Packages expected by Pieces
       payload:
         $ref: './schemas/packages.yaml#/$defs/packages'
