@@ -12,6 +12,7 @@ import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLi
 import { interpollateTranslation } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { AdLibActionType, AdLibStatus } from './adLibsTopic'
 import { CollectionHandlers } from '../liveStatusServer'
+import { sortContent, WithSortingMetadata } from './helpers/contentSorting'
 
 const THROTTLE_PERIOD_MS = 100
 
@@ -50,63 +51,29 @@ export class BucketsTopic extends WebSocketTopicBase implements WebSocketTopic {
 	}
 
 	sendStatus(subscribers: Iterable<WebSocket>): void {
-		const buckets: BucketStatus[] = this._buckets.map((bucket) => {
+		const sortedBuckets = sortContent(this._buckets.map(this.addBucketSortingMetadata))
+
+		const bucketStatuses: BucketStatus[] = sortedBuckets.map((bucket) => {
 			const bucketId = unprotectString(bucket._id)
-			const bucketAdLibs = (this._adLibsByBucket?.[bucketId] ?? []).map((adLib) => {
-				const sourceLayerName = this._sourceLayersMap.get(adLib.sourceLayerId)
-				const outputLayerName = this._outputLayersMap.get(adLib.outputLayerId)
-				return literal<BucketAdLibStatus>({
-					id: unprotectString(adLib._id),
-					name: adLib.name,
-					sourceLayer: sourceLayerName ?? 'invalid',
-					outputLayer: outputLayerName ?? 'invalid',
-					actionType: [],
-					tags: adLib.tags,
-					externalId: adLib.externalId,
-					publicData: adLib.publicData,
-				})
-			})
-			const bucketAdLibActions = (this._adLibActionsByBucket?.[bucketId] ?? []).map((action) => {
-				const sourceLayerName = this._sourceLayersMap.get(
-					(action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
-				)
-				const outputLayerName = this._outputLayersMap.get(
-					(action.display as IBlueprintActionManifestDisplayContent).outputLayerId
-				)
-				const triggerModes = action.triggerModes
-					? action.triggerModes.map((t) =>
-							literal<AdLibActionType>({
-								name: t.data,
-								label: interpollateTranslation(t.display.label.key, t.display.label.args),
-							})
-					  )
-					: []
-				return literal<BucketAdLibStatus>({
-					id: unprotectString(action._id),
-					name: interpollateTranslation(action.display.label.key, action.display.label.args),
-					sourceLayer: sourceLayerName ?? 'invalid',
-					outputLayer: outputLayerName ?? 'invalid',
-					actionType: triggerModes,
-					tags: action.display.tags,
-					externalId: action.externalId,
-					publicData: action.publicData,
-				})
-			})
+
+			const bucketAdLibs = (this._adLibsByBucket?.[bucketId] ?? []).map(this.toSortableBucketAdLib)
+			const bucketAdLibActions = (this._adLibActionsByBucket?.[bucketId] ?? []).map(
+				this.toSortableBucketAdLibAction
+			)
+
 			return {
 				id: bucketId,
 				name: bucket.name,
-				adLibs: [...bucketAdLibs, ...bucketAdLibActions],
+				adLibs: sortContent([...bucketAdLibs, ...bucketAdLibActions]),
 			}
 		})
 
 		const bucketsStatus: BucketsStatus = {
 			event: 'buckets',
-			buckets: buckets,
+			buckets: bucketStatuses,
 		}
 
-		for (const subscriber of subscribers) {
-			this.sendMessage(subscriber, bucketsStatus)
-		}
+		this.sendMessage(subscribers, bucketsStatus)
 	}
 
 	private onShowStyleBaseUpdate = (showStyleBase: ShowStyle | undefined): void => {
@@ -118,7 +85,8 @@ export class BucketsTopic extends WebSocketTopicBase implements WebSocketTopic {
 
 	private onBucketsUpdate = (buckets: Bucket[] | undefined): void => {
 		this.logUpdateReceived('buckets')
-		this._buckets = buckets ?? []
+		buckets ??= []
+		this._buckets = sortContent(buckets.map(this.addBucketSortingMetadata))
 		this.throttledSendStatusToAll()
 	}
 
@@ -132,5 +100,67 @@ export class BucketsTopic extends WebSocketTopicBase implements WebSocketTopic {
 		this.logUpdateReceived('bucketAdLibs')
 		this._adLibsByBucket = _.groupBy(adLibs ?? [], 'bucketId')
 		this.throttledSendStatusToAll()
+	}
+
+	private addBucketSortingMetadata = (bucket: Bucket): WithSortingMetadata<Bucket> => {
+		return {
+			obj: bucket,
+			id: unprotectString(bucket._id),
+			itemRank: bucket._rank,
+			label: bucket.name,
+		}
+	}
+
+	private toSortableBucketAdLib = (adLib: BucketAdLib): WithSortingMetadata<BucketAdLibStatus> => {
+		const sourceLayerName = this._sourceLayersMap.get(adLib.sourceLayerId)
+		const outputLayerName = this._outputLayersMap.get(adLib.outputLayerId)
+		return {
+			obj: {
+				id: unprotectString(adLib._id),
+				name: adLib.name,
+				sourceLayer: sourceLayerName ?? 'invalid',
+				outputLayer: outputLayerName ?? 'invalid',
+				actionType: [],
+				tags: adLib.tags,
+				externalId: adLib.externalId,
+				publicData: adLib.publicData,
+			},
+			id: unprotectString(adLib._id),
+			itemRank: adLib._rank,
+			label: adLib.name,
+		}
+	}
+
+	private toSortableBucketAdLibAction = (action: BucketAdLibAction): WithSortingMetadata<BucketAdLibStatus> => {
+		const sourceLayerName = this._sourceLayersMap.get(
+			(action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
+		)
+		const outputLayerName = this._outputLayersMap.get(
+			(action.display as IBlueprintActionManifestDisplayContent).outputLayerId
+		)
+		const triggerModes = action.triggerModes
+			? action.triggerModes.map((t) =>
+					literal<AdLibActionType>({
+						name: t.data,
+						label: interpollateTranslation(t.display.label.key, t.display.label.args),
+					})
+			  )
+			: []
+		const name = interpollateTranslation(action.display.label.key, action.display.label.args)
+		return {
+			obj: {
+				id: unprotectString(action._id),
+				name,
+				sourceLayer: sourceLayerName ?? 'invalid',
+				outputLayer: outputLayerName ?? 'invalid',
+				actionType: triggerModes,
+				tags: action.display.tags,
+				externalId: action.externalId,
+				publicData: action.publicData,
+			},
+			id: unprotectString(action._id),
+			itemRank: action.display._rank,
+			label: name,
+		}
 	}
 }
