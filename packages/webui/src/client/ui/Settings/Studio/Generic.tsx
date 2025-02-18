@@ -461,6 +461,18 @@ function StudioSettings({ studio }: { studio: DBStudio }): JSX.Element {
 			>
 				{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
 			</LabelAndOverridesForCheckbox>
+
+			<LabelAndOverridesForCheckbox
+				label={t('Mock Piece Content Status')}
+				item={wrappedItem}
+				itemKey={'mockPieceContentStatus'}
+				overrideHelper={overrideHelper}
+				hint={t(
+					'When enabled, this will override the piece content statuses to have no errors or warnings and display a mock preview. This should only be used for development!'
+				)}
+			>
+				{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+			</LabelAndOverridesForCheckbox>
 		</>
 	)
 }

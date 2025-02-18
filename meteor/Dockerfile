@@ -30,6 +30,8 @@ COPY meteor /opt/core/meteor
 COPY scripts /opt/core/scripts
 WORKDIR /opt/core/meteor
 
+# remove the dev only assets from the webui output
+RUN rm -Rf /opt/core/packages/webui/dist/dev
 # move the webui to the correct place
 RUN rm -Rf /opt/core/meteor/public
 RUN cp -R /opt/core/packages/webui/dist /opt/core/meteor/public
