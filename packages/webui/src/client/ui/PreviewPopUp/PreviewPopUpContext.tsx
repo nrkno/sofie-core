@@ -112,7 +112,13 @@ export function convertSourceLayerItemToPreview(
 	} else if (sourceLayerType === SourceLayerType.SCRIPT) {
 		const content = piece.instance.piece.content as ScriptContent
 		return [
-			{ type: 'script', content: content.fullScript ?? content.firstWords ?? content.lastWords ?? content.comment },
+			{
+				type: 'script',
+				script: content.fullScript,
+				lastWords: content.lastWords,
+				comment: content.comment,
+				lastModified: content.lastModified ?? undefined,
+			},
 		]
 	} else if (sourceLayerType === SourceLayerType.SPLITS) {
 		const content = piece.instance.piece.content as SplitsContent
@@ -126,7 +132,6 @@ export type PreviewContent =
 	| {
 			type: 'iframe'
 			href: string
-			// awaitMessage?: any
 			postMessage?: any
 	  }
 	| {
@@ -139,7 +144,10 @@ export type PreviewContent =
 	  }
 	| {
 			type: 'script'
-			content: string
+			script?: string
+			lastWords?: string
+			comment?: string
+			lastModified?: number
 	  }
 	| {
 			type: 'title'
@@ -152,16 +160,22 @@ export type PreviewContent =
 	  }
 	| {
 			type: 'data'
-			content: Record<string, string> // todo - translateable? 👀
+			content: Record<string, string>
 	  }
 	| {
 			type: 'boxLayout'
-			// content: unknown
 			boxSourceConfiguration: (SplitsContentBoxContent & SplitsContentBoxProperties)[]
+			showLabels?: boolean
+			backgroundArt?: string
 	  }
 	| {
 			type: 'warning'
 			content: ITranslatableMessage
+	  }
+	| {
+			type: 'stepCount'
+			current: number
+			total?: number
 	  }
 
 export interface IPreviewPopUpSession {
@@ -191,7 +205,8 @@ interface PreviewRequestOptions {
 	size?: 'small' | 'large'
 	/** Set this to the time the pointer is  */
 	time?: number
-	startX?: number
+	/**  */
+	startCoordinate?: number
 }
 
 interface IPreviewPopUpContext {
@@ -242,7 +257,7 @@ export function PreviewPopUpContextProvider({ children }: React.PropsWithChildre
 				padding: opts?.padding ?? 0,
 				placement: opts?.placement ?? 'top',
 				size: opts?.size ?? 'small',
-				startCoordinate: opts?.startX,
+				startCoordinate: opts?.startCoordinate,
 			})
 			setPreviewContent(content)
 

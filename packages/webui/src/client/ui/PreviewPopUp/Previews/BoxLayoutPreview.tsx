@@ -7,7 +7,6 @@ import { getSplitPreview, SplitRole } from '../../../lib/ui/splitPreview'
 interface BoxLayoutPreviewProps {
 	content: {
 		type: 'boxLayout'
-		// content: unknown
 		boxSourceConfiguration: (SplitsContentBoxContent & SplitsContentBoxProperties)[]
 		showLabels?: boolean
 		backgroundArt?: string

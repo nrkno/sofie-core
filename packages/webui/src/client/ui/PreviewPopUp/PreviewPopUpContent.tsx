@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { VTPreviewElement } from './Previews/VTPreview'
 import { IFramePreview } from './Previews/IFramePreview'
 import { BoxLayoutPreview } from './Previews/BoxLayoutPreview'
+import { ScriptPreview } from './Previews/ScriptPreview'
 
 interface PreviewPopUpContentProps {
 	content: PreviewContent
@@ -27,7 +28,7 @@ export function PreviewPopUpContent({ content, time }: PreviewPopUpContentProps)
 		case 'video':
 			return <VTPreviewElement time={time} content={content} />
 		case 'script':
-			return <div className="preview-popUp__script">{content.content}</div>
+			return <ScriptPreview content={content} />
 		case 'title':
 			return <div className="preview-popUp__title">{content.content}</div>
 		case 'inOutWords':
@@ -62,6 +63,13 @@ export function PreviewPopUpContent({ content, time }: PreviewPopUpContentProps)
 						<WarningIconSmall />
 					</div>
 					<div className="content">{translateMessage(content.content, t)}</div>
+				</div>
+			)
+		case 'stepCount':
+			return (
+				<div className="preview-popUp__step-count">
+					{content.current}
+					{content.total && '/' + content.total}
 				</div>
 			)
 		default:

@@ -233,7 +233,7 @@ export const MicSourceRenderer = withTranslation()(
 							</span>
 						</>
 					)}
-					{/* {content && (
+					{content && (
 						<MicFloatingInspector
 							content={content}
 							position={this.getFloatingInspectorStyle()}
@@ -241,7 +241,7 @@ export const MicSourceRenderer = withTranslation()(
 							showMiniInspector={this.props.showMiniInspector}
 							typeClass={this.props.typeClass}
 						/>
-					)} */}
+					)}
 				</>
 			)
 		}

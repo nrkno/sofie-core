@@ -54,7 +54,7 @@ export function VTPreviewElement({ content, time }: VTPreviewProps): React.React
 				<div
 					className={classNames('preview-popUp__video-frame-marker', {
 						'preview-popUp__video-frame-marker--first-frame': offsetTimePosition === 0,
-						'preview-popUp__video-frame-marker--last-frame': offsetTimePosition >= itemDuration,
+						'preview-popUp__video-frame-marker--last-frame': itemDuration > 0 && offsetTimePosition >= itemDuration,
 					})}
 				>
 					<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">

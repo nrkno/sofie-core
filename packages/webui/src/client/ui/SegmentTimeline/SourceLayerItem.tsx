@@ -212,11 +212,11 @@ export const SourceLayerItem = (props: Readonly<ISourceLayerItemProps>): JSX.Ele
 	const previewSession = useRef<IPreviewPopUpSession | null>(null)
 	const toggleMiniInspectorOn = useCallback(
 		(e: React.MouseEvent) => toggleMiniInspector(e, true),
-		[piece, cursorTimePosition, contentStatus]
+		[piece, cursorTimePosition, contentStatus, timeScale]
 	)
 	const toggleMiniInspectorOff = useCallback(
 		(e: React.MouseEvent) => toggleMiniInspector(e, false),
-		[piece, cursorTimePosition, contentStatus]
+		[piece, cursorTimePosition, contentStatus, timeScale]
 	)
 	const updatePos = useCallback(() => {
 		const elementPos = getElementDocumentOffset(itemElementRef.current) || {
@@ -239,14 +239,12 @@ export const SourceLayerItem = (props: Readonly<ISourceLayerItemProps>): JSX.Ele
 		}
 
 		animFrameHandle.current = requestAnimationFrame(updatePos)
-	}, [piece, contentStatus])
+	}, [piece, contentStatus, timeScale])
 	const toggleMiniInspector = useCallback(
 		(e: React.MouseEvent, v: boolean) => {
 			if (!v && previewSession.current) {
 				previewSession.current.close()
 				previewSession.current = null
-
-				return
 			} else if (piece.instance.piece.content.popUpPreview) {
 				previewSession.current = previewContext.requestPreview(
 					e.target as any,
@@ -258,7 +256,7 @@ export const SourceLayerItem = (props: Readonly<ISourceLayerItemProps>): JSX.Ele
 				if (previewContents.length) {
 					previewSession.current = previewContext.requestPreview(e.target as any, previewContents, {
 						time: cursorTimePosition,
-						startX: e.screenX,
+						startCoordinate: e.screenX,
 					})
 				} else {
 					setShowMiniInspector(v)
@@ -276,7 +274,7 @@ export const SourceLayerItem = (props: Readonly<ISourceLayerItemProps>): JSX.Ele
 				cancelAnimationFrame(animFrameHandle.current)
 			}
 		},
-		[piece, cursorTimePosition, contentStatus]
+		[piece, cursorTimePosition, contentStatus, timeScale]
 	)
 	const moveMiniInspector = useCallback((e: MouseEvent | any) => {
 		cursorRawPosition.current = {
