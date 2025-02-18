@@ -6,12 +6,13 @@ import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protected
 import { UIPieceContentStatus } from '@sofie-automation/corelib/dist/dataModel/PieceContentStatus'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { CollectionHandlers } from '../liveStatusServer'
+import { assertNever } from '@sofie-automation/server-core-integration'
 
 const THROTTLE_PERIOD_MS = 200
 
-interface PackageStatus {
+interface Package {
 	packageName?: string
-	statusCode: PieceStatusCode
+	status: PackageStatus
 
 	rundownId: string
 	partId?: string
@@ -23,10 +24,21 @@ interface PackageStatus {
 	previewUrl?: string
 }
 
+export enum PackageStatus {
+	UNKNOWN = 'unknown',
+	OK = 'ok',
+	SOURCE_BROKEN = 'source_broken',
+	SOURCE_HAS_ISSUES = 'source_has_issues',
+	SOURCE_MISSING = 'source_missing',
+	SOURCE_NOT_READY = 'source_not_ready',
+	SOURCE_NOT_SET = 'source_not_set',
+	SOURCE_UNKNOWN_STATE = 'source_unknown_state',
+}
+
 export interface PackagesStatus {
 	event: 'packages'
 	rundownPlaylistId: string | null
-	packages: PackageStatus[]
+	packages: Package[]
 }
 
 const PLAYLIST_KEYS = ['_id', 'activationId'] as const
@@ -50,7 +62,7 @@ export class PackagesTopic extends WebSocketTopicBase implements WebSocketTopic 
 			rundownPlaylistId: this._activePlaylist ? unprotectString(this._activePlaylist._id) : null,
 			packages: this._pieceContentStatuses.map((contentStatus) => ({
 				packageName: contentStatus.status.packageName ?? undefined,
-				statusCode: contentStatus.status.status,
+				status: this.toStatusString(contentStatus.status.status),
 				pieceId: unprotectString(contentStatus.pieceId),
 				rundownId: unprotectString(contentStatus.rundownId),
 				partId: unprotectString(contentStatus.partId),
@@ -62,6 +74,30 @@ export class PackagesTopic extends WebSocketTopicBase implements WebSocketTopic 
 
 		for (const subscriber of subscribers) {
 			this.sendMessage(subscriber, packagesStatus)
+		}
+	}
+
+	private toStatusString(status: PieceStatusCode): PackageStatus {
+		switch (status) {
+			case PieceStatusCode.UNKNOWN:
+				return PackageStatus.UNKNOWN
+			case PieceStatusCode.OK:
+				return PackageStatus.OK
+			case PieceStatusCode.SOURCE_BROKEN:
+				return PackageStatus.SOURCE_BROKEN
+			case PieceStatusCode.SOURCE_HAS_ISSUES:
+				return PackageStatus.SOURCE_HAS_ISSUES
+			case PieceStatusCode.SOURCE_MISSING:
+				return PackageStatus.SOURCE_MISSING
+			case PieceStatusCode.SOURCE_NOT_READY:
+				return PackageStatus.SOURCE_NOT_READY
+			case PieceStatusCode.SOURCE_NOT_SET:
+				return PackageStatus.SOURCE_NOT_SET
+			case PieceStatusCode.SOURCE_UNKNOWN_STATE:
+				return PackageStatus.SOURCE_UNKNOWN_STATE
+			default:
+				assertNever(status)
+				return PackageStatus.UNKNOWN
 		}
 	}
 

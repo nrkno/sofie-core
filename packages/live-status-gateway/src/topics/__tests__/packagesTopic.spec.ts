@@ -1,6 +1,6 @@
 import { protectString, unprotectString } from '@sofie-automation/server-core-integration'
 import { makeMockHandlers, makeMockLogger, makeMockSubscriber } from './utils'
-import { PackagesTopic } from '../packagesTopic'
+import { PackageStatus, PackagesTopic } from '../packagesTopic'
 import { UIPieceContentStatus } from '@sofie-automation/corelib/dist/dataModel/PieceContentStatus'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
@@ -61,7 +61,7 @@ describe('PackagesTopic', () => {
 			packages: [
 				{
 					packageName: 'Test Package',
-					statusCode: PieceStatusCode.OK,
+					status: PackageStatus.OK,
 					pieceId: 'PIECE_0',
 					rundownId: 'RUNDOWN_0',
 					partId: 'PART_0',
