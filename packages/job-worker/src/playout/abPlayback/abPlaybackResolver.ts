@@ -9,13 +9,19 @@ export interface SessionRequest {
 	readonly optional?: boolean
 	readonly lookaheadRank?: number
 	playerId?: AbPlayerId
+	pieceNames: string[]
+}
+
+export interface FailedSession {
+	id: string
+	pieceNames: string[]
 }
 
 export interface AssignmentResult {
 	/** Any non-optional sessions which were not assigned a player */
-	failedRequired: string[]
+	failedRequired: FailedSession[]
 	/** Any optional sessions which were not assigned a player */
-	failedOptional: string[]
+	failedOptional: FailedSession[]
 	/** All of the requests with their player assignments set */
 	requests: Readonly<SessionRequest[]>
 }
@@ -312,9 +318,9 @@ export function resolveAbAssignmentsFromRequests(
 			if (req.lookaheadRank !== undefined) {
 				// ignore
 			} else if (req.optional) {
-				res.failedOptional.push(req.id)
+				res.failedOptional.push({ id: req.id, pieceNames: req.pieceNames })
 			} else {
-				res.failedRequired.push(req.id)
+				res.failedRequired.push({ id: req.id, pieceNames: req.pieceNames })
 			}
 		}
 	}

@@ -24,18 +24,21 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				start: 1000,
 				end: undefined,
 				playerId: 1,
+				pieceNames: [],
 			},
 			{
 				id: 'b',
 				start: 1000,
 				end: undefined,
 				playerId: 1,
+				pieceNames: [],
 			},
 			{
 				id: 'c',
 				start: 1000,
 				end: undefined,
 				playerId: 1,
+				pieceNames: [],
 			},
 		]
 
@@ -52,11 +55,13 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				id: 'a',
 				start: 1000,
 				end: undefined,
+				pieceNames: [],
 			},
 			{
 				id: 'b',
 				start: 2000,
 				end: undefined,
+				pieceNames: [],
 			},
 		]
 
@@ -75,11 +80,13 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				start: 1000,
 				end: undefined,
 				playerId: 2,
+				pieceNames: [],
 			},
 			{
 				id: 'b',
 				start: 2000,
 				end: undefined,
+				pieceNames: [],
 			},
 		]
 
@@ -97,23 +104,26 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				id: 'a',
 				start: 1000,
 				end: undefined,
+				pieceNames: [],
 			},
 			{
 				id: 'b',
 				start: 2000,
 				end: undefined,
+				pieceNames: [],
 			},
 			{
 				id: 'c',
 				start: 3000,
 				end: undefined,
+				pieceNames: [],
 			},
 		]
 
 		const res = resolveAbAssignmentsFromRequests(resolverOptions, TWO_SLOTS, requests, 10000)
 		expect(res).toBeTruthy()
 		expect(res.failedOptional).toEqual([])
-		expect(res.failedRequired).toEqual(['c'])
+		expect(res.failedRequired).toEqual([{ id: 'c', pieceNames: [] }])
 		expectGotPlayer(res, 'a', 1)
 		expectGotPlayer(res, 'b', 2)
 		expectGotPlayer(res, 'c', undefined)
@@ -126,24 +136,27 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				start: 1000,
 				end: undefined,
 				playerId: 2,
+				pieceNames: [],
 			},
 			{
 				id: 'b',
 				start: 2000,
 				end: undefined,
+				pieceNames: [],
 			},
 			{
 				id: 'c',
 				start: 3000,
 				end: undefined,
 				playerId: 1,
+				pieceNames: [],
 			},
 		]
 
 		const res = resolveAbAssignmentsFromRequests(resolverOptions, TWO_SLOTS, requests, 10000)
 		expect(res).toBeTruthy()
 		expect(res.failedOptional).toEqual([])
-		expect(res.failedRequired).toEqual(['b'])
+		expect(res.failedRequired).toEqual([{ id: 'b', pieceNames: [] }])
 		expectGotPlayer(res, 'a', 2)
 		expectGotPlayer(res, 'b', undefined)
 		expectGotPlayer(res, 'c', 1)
@@ -156,22 +169,26 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				start: 1000,
 				end: 10000,
 				playerId: 2,
+				pieceNames: [],
 			},
 			{
 				id: 'b',
 				start: 2000,
 				end: 10500,
 				playerId: 1,
+				pieceNames: [],
 			},
 			{
 				id: 'c',
 				start: 10900,
 				end: undefined,
+				pieceNames: [],
 			},
 			{
 				id: 'd',
 				start: 10950,
 				end: undefined,
+				pieceNames: [],
 			},
 		]
 
@@ -192,22 +209,26 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				start: 1000,
 				end: 9000,
 				playerId: 2,
+				pieceNames: [],
 			},
 			{
 				id: 'b',
 				start: 2000,
 				end: 8500,
 				playerId: 1,
+				pieceNames: [],
 			},
 			{
 				id: 'c',
 				start: 10900,
 				end: undefined,
+				pieceNames: [],
 			},
 			{
 				id: 'd',
 				start: 10950,
 				end: undefined,
+				pieceNames: [],
 			},
 		]
 
@@ -228,28 +249,33 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				start: 1000,
 				end: 15000,
 				playerId: 3,
+				pieceNames: [],
 			},
 			{
 				id: 'b',
 				start: 2000,
 				end: 16000,
 				playerId: 1,
+				pieceNames: [],
 			},
 			{
 				id: 'c',
 				start: 20000,
 				end: 40000,
+				pieceNames: [],
 			},
 			{
 				id: 'd',
 				start: 30000,
 				end: undefined,
 				playerId: 1,
+				pieceNames: [],
 			},
 			{
 				id: 'e',
 				start: 35000,
 				end: undefined,
+				pieceNames: [],
 			},
 		]
 
@@ -272,12 +298,14 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				start: 1000,
 				end: undefined,
 				playerId: 2,
+				pieceNames: [],
 			},
 			// adlib
 			{
 				id: 'b',
 				start: 10000,
 				end: undefined,
+				pieceNames: [],
 			},
 			// lookaheads
 			{
@@ -286,12 +314,14 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				end: undefined,
 				playerId: 1,
 				lookaheadRank: 1,
+				pieceNames: [],
 			},
 			{
 				id: 'd',
 				start: Number.POSITIVE_INFINITY,
 				end: undefined,
 				lookaheadRank: 2,
+				pieceNames: [],
 			},
 		]
 
@@ -313,12 +343,14 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				start: 1000,
 				end: 10500,
 				playerId: 2,
+				pieceNames: [],
 			},
 			// adlib
 			{
 				id: 'b',
 				start: 10000,
 				end: undefined,
+				pieceNames: [],
 			},
 			// lookaheads (in order of future use)
 			{
@@ -327,6 +359,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				end: undefined,
 				playerId: 1,
 				lookaheadRank: 1,
+				pieceNames: [],
 			},
 			{
 				id: 'd',
@@ -334,6 +367,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				end: undefined,
 				playerId: 2,
 				lookaheadRank: 2,
+				pieceNames: [],
 			},
 		]
 
@@ -354,18 +388,21 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				start: 1000,
 				end: 9500,
 				playerId: 2,
+				pieceNames: [],
 			},
 			// adlib
 			{
 				id: 'b',
 				start: 10000,
 				end: undefined,
+				pieceNames: [],
 			},
 			// adlib
 			{
 				id: 'e',
 				start: 10000,
 				end: undefined,
+				pieceNames: [],
 			},
 			// lookaheads (in order of future use)
 			{
@@ -374,6 +411,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				end: undefined,
 				playerId: 1,
 				lookaheadRank: 1,
+				pieceNames: [],
 			},
 			{
 				id: 'd',
@@ -381,6 +419,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				end: undefined,
 				playerId: 2,
 				lookaheadRank: 2,
+				pieceNames: [],
 			},
 		]
 
@@ -402,12 +441,14 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				start: 1000,
 				end: 10500,
 				playerId: 2,
+				pieceNames: [],
 			},
 			// adlib
 			{
 				id: 'b',
 				start: 10000,
 				end: 15000,
+				pieceNames: [],
 			},
 			// lookaheads (in order of future use)
 			{
@@ -416,6 +457,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				end: undefined,
 				playerId: 1,
 				lookaheadRank: 1,
+				pieceNames: [],
 			},
 			{
 				id: 'd',
@@ -423,6 +465,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				end: undefined,
 				playerId: 2,
 				lookaheadRank: 2,
+				pieceNames: [],
 			},
 		]
 
@@ -444,12 +487,14 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				start: 1000,
 				end: 10500,
 				playerId: 2,
+				pieceNames: [],
 			},
 			// adlib
 			{
 				id: 'b',
 				start: 10000,
 				end: 20500,
+				pieceNames: [],
 			},
 			// next part
 			{
@@ -457,6 +502,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				start: 20000,
 				end: undefined,
 				playerId: 1,
+				pieceNames: [],
 			},
 			// lookaheads (in order of future use)
 			{
@@ -465,12 +511,14 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				end: undefined,
 				playerId: 2,
 				lookaheadRank: 1,
+				pieceNames: [],
 			},
 			{
 				id: 'd',
 				start: Number.POSITIVE_INFINITY,
 				end: undefined,
 				lookaheadRank: 2,
+				pieceNames: [],
 			},
 		]
 
@@ -492,12 +540,14 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				start: 1000,
 				end: 10500,
 				playerId: 2,
+				pieceNames: [],
 			},
 			// adlib
 			{
 				id: 'b',
 				start: 10000,
 				end: 20500,
+				pieceNames: [],
 			},
 			// next part
 			{
@@ -505,6 +555,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				start: 20000,
 				end: undefined,
 				playerId: 1,
+				pieceNames: [],
 			},
 			// lookaheads (in order of future use)
 			{
@@ -513,12 +564,14 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				end: undefined,
 				playerId: 2,
 				lookaheadRank: 1,
+				pieceNames: [],
 			},
 			{
 				id: 'd',
 				start: Number.POSITIVE_INFINITY,
 				end: undefined,
 				lookaheadRank: 2,
+				pieceNames: [],
 			},
 		]
 
@@ -541,6 +594,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				start: 1000,
 				end: undefined,
 				playerId: 2,
+				pieceNames: [],
 			},
 			// bak
 			{
@@ -549,12 +603,14 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				optional: true,
 				playerId: 1,
 				end: undefined,
+				pieceNames: [],
 			},
 			// adlib
 			{
 				id: 'c',
 				start: 10000,
 				end: undefined,
+				pieceNames: [],
 			},
 			// lookaheads
 			{
@@ -562,19 +618,21 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				start: Number.POSITIVE_INFINITY,
 				end: undefined,
 				lookaheadRank: 1,
+				pieceNames: [],
 			},
 			{
 				id: 'e',
 				start: Number.POSITIVE_INFINITY,
 				end: undefined,
 				lookaheadRank: 2,
+				pieceNames: [],
 			},
 		]
 
 		const res = resolveAbAssignmentsFromRequests(resolverOptions, TWO_SLOTS, requests, 10000)
 		expect(res).toBeTruthy()
 		expect(res.failedOptional).toEqual([])
-		expect(res.failedRequired).toEqual(['c'])
+		expect(res.failedRequired).toEqual([{ id: 'c', pieceNames: [] }])
 		expectGotPlayer(res, 'a', 2)
 		expectGotPlayer(res, 'b', 1)
 		expectGotPlayer(res, 'c', undefined)
@@ -588,6 +646,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				start: 1000,
 				end: undefined,
 				playerId: 2,
+				pieceNames: [],
 			},
 			// previous clip
 			{
@@ -595,6 +654,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				start: 0,
 				playerId: 1,
 				end: 5000,
+				pieceNames: [],
 			},
 			// lookaheads
 			{
@@ -602,6 +662,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				start: Number.POSITIVE_INFINITY,
 				end: undefined,
 				lookaheadRank: 1,
+				pieceNames: [],
 			},
 			{
 				id: 'e',
@@ -609,12 +670,14 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				playerId: 3, // From before
 				end: undefined,
 				lookaheadRank: 2,
+				pieceNames: [],
 			},
 			{
 				id: 'f',
 				start: Number.POSITIVE_INFINITY,
 				end: undefined,
 				lookaheadRank: 3,
+				pieceNames: [],
 			},
 		]
 
@@ -638,6 +701,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 					start: 1000,
 					end: undefined,
 					playerId: 2,
+					pieceNames: [],
 				},
 				// previous clip
 				{
@@ -645,6 +709,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 					start: 0,
 					playerId: 1,
 					end: 5000,
+					pieceNames: [],
 				},
 				// lookaheads
 				{
@@ -653,6 +718,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 					end: undefined,
 					lookaheadRank: 1,
 					playerId: 1,
+					pieceNames: [],
 				},
 				{
 					id: 'e',
@@ -660,6 +726,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 					playerId: 3, // From before
 					end: undefined,
 					lookaheadRank: 2,
+					pieceNames: [],
 				},
 				{
 					id: 'f',
@@ -667,6 +734,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 					end: undefined,
 					lookaheadRank: 3,
 					playerId: 2,
+					pieceNames: [],
 				},
 			]
 
@@ -689,6 +757,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 					start: 1000,
 					end: undefined,
 					playerId: 3,
+					pieceNames: [],
 				},
 				// previous clip
 				{
@@ -696,6 +765,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 					start: 0,
 					playerId: 1,
 					end: 5000,
+					pieceNames: [],
 				},
 				// lookaheads
 				{
@@ -704,6 +774,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 					end: undefined,
 					lookaheadRank: 1,
 					playerId: 1,
+					pieceNames: [],
 				},
 				{
 					id: 'e',
@@ -711,6 +782,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 					playerId: 2,
 					end: undefined,
 					lookaheadRank: 2,
+					pieceNames: [],
 				},
 			]
 
@@ -732,18 +804,21 @@ describe('resolveAbAssignmentsFromRequests', () => {
 					start: 1000,
 					end: 11000,
 					playerId: 1,
+					pieceNames: [],
 				},
 				{
 					id: 'b',
 					start: 13000, // soon
 					end: undefined,
 					playerId: 1,
+					pieceNames: [],
 				},
 				{
 					id: 'c',
 					start: 1000,
 					end: undefined,
 					playerId: 2,
+					pieceNames: [],
 				},
 				// lookaheads
 				{
@@ -752,6 +827,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 					end: undefined,
 					lookaheadRank: 1,
 					playerId: 1,
+					pieceNames: [],
 				},
 				{
 					id: 'e',
@@ -759,6 +835,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 					playerId: 2,
 					end: undefined,
 					lookaheadRank: 2,
+					pieceNames: [],
 				},
 			]
 

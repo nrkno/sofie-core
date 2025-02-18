@@ -49,6 +49,7 @@ export function calculateSessionTimeRanges(
 					optional: val.optional && (session.optional ?? false),
 					lookaheadRank: undefined,
 					playerId: previousAssignmentMap?.[sessionId]?.playerId, // Persist previous assignments
+					pieceNames: [...(val.pieceNames || []), p.instance.piece.name],
 				}
 			} else {
 				// New session
@@ -59,6 +60,7 @@ export function calculateSessionTimeRanges(
 					optional: session.optional ?? false,
 					lookaheadRank: undefined,
 					playerId: previousAssignmentMap?.[sessionId]?.playerId, // Persist previous assignments
+					pieceNames: [p.instance.piece.name],
 				}
 			}
 		}
@@ -104,6 +106,7 @@ export function calculateSessionTimeRanges(
 				end: undefined,
 				lookaheadRank: i + 1, // This is so that we can easily work out which to use first
 				playerId: previousAssignmentMap?.[grp.id]?.playerId,
+				pieceNames: [],
 			})
 		}
 	})

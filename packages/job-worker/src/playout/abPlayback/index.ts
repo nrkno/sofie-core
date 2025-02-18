@@ -20,6 +20,7 @@ import { ABPlayerDefinition, NoteSeverity } from '@sofie-automation/blueprints-i
 import { abPoolFilterDisabled, findPlayersInRouteSets } from './routeSetDisabling'
 import type { INotification } from '../../notifications/NotificationsModel'
 import { generateTranslation } from '@sofie-automation/corelib/dist/lib'
+import _ = require('underscore')
 
 export interface ABPlaybackResult {
 	assignments: Record<string, ABSessionAssignments>
@@ -114,29 +115,36 @@ export function applyAbPlaybackForTimeline(
 				}" (${JSON.stringify(assignment)})`
 			)
 		}
-		if (assignments.failedRequired.length > 0) {
-			logger.warn(
-				`ABPlayback failed to assign sessions for "${poolName}": ${JSON.stringify(assignments.failedRequired)}`
-			)
+		for (const failedSession of assignments.failedRequired) {
+			const uniqueNames = _.uniq(failedSession.pieceNames).join(', ')
+			logger.warn(`ABPlayback failed to assign session for "${poolName}"-"${failedSession.id}": ${uniqueNames}`)
+
+			// Ignore lookahead
+			if (failedSession.pieceNames.length === 0) continue
+
 			notifications.push({
 				id: `failedRequired-${poolName}`,
 				severity: NoteSeverity.ERROR,
-				message: generateTranslation('Failed to assign players for {{count}} sessions', {
-					count: assignments.failedRequired.length,
+				message: generateTranslation('Failed to assign AB player for {{pieceNames}}', {
+					pieceNames: uniqueNames,
 				}),
 			})
 		}
-		if (assignments.failedOptional.length > 0) {
+
+		for (const failedSession of assignments.failedOptional) {
+			const uniqueNames = _.uniq(failedSession.pieceNames).join(', ')
 			logger.info(
-				`ABPlayback failed to assign optional sessions for "${poolName}": ${JSON.stringify(
-					assignments.failedOptional
-				)}`
+				`ABPlayback failed to assign optional session for "${poolName}"-"${failedSession.id}": ${uniqueNames}`
 			)
+
+			// Ignore lookahead
+			if (failedSession.pieceNames.length === 0) continue
+
 			notifications.push({
-				id: `failedOptional-${poolName}`,
+				id: `failedRequired-${poolName}`,
 				severity: NoteSeverity.WARNING,
-				message: generateTranslation('Failed to assign players for {{count}} non-critical sessions', {
-					count: assignments.failedOptional.length,
+				message: generateTranslation('Failed to assign non-critical AB player for {{pieceNames}}', {
+					pieceNames: uniqueNames,
 				}),
 			})
 		}
