@@ -4,6 +4,7 @@ import * as _ from 'underscore'
 
 export interface SessionRequest {
 	readonly id: string
+	readonly name: string
 	readonly start: number
 	readonly end: number | undefined
 	readonly optional?: boolean
@@ -14,6 +15,7 @@ export interface SessionRequest {
 
 export interface FailedSession {
 	id: string
+	name: string
 	pieceNames: string[]
 }
 
@@ -318,9 +320,9 @@ export function resolveAbAssignmentsFromRequests(
 			if (req.lookaheadRank !== undefined) {
 				// ignore
 			} else if (req.optional) {
-				res.failedOptional.push({ id: req.id, pieceNames: req.pieceNames })
+				res.failedOptional.push({ id: req.id, name: req.name, pieceNames: req.pieceNames })
 			} else {
-				res.failedRequired.push({ id: req.id, pieceNames: req.pieceNames })
+				res.failedRequired.push({ id: req.id, name: req.name, pieceNames: req.pieceNames })
 			}
 		}
 	}

@@ -69,7 +69,7 @@ export function applyAbPlaybackForTimeline(
 		for (const assignment of Object.values<ABSessionAssignment | undefined>(assignments)) {
 			if (assignment) {
 				logger.silly(
-					`ABPlayback: Previous assignment "${pool}"-"${assignment.sessionId}" to player "${assignment.playerId}"`
+					`ABPlayback: Previous assignment "${pool}"-"${assignment.sessionId}" (${assignment.sessionName}) to player "${assignment.playerId}"`
 				)
 			}
 		}
@@ -110,14 +110,16 @@ export function applyAbPlaybackForTimeline(
 
 		for (const assignment of Object.values<SessionRequest>(assignments.requests)) {
 			logger.silly(
-				`ABPlayback resolved session "${poolName}"-"${assignment.id}" to player "${
+				`ABPlayback resolved session "${poolName}"-"${assignment.id}" (${assignment.name}) to player "${
 					assignment.playerId
 				}" (${JSON.stringify(assignment)})`
 			)
 		}
 		for (const failedSession of assignments.failedRequired) {
 			const uniqueNames = _.uniq(failedSession.pieceNames).join(', ')
-			logger.warn(`ABPlayback failed to assign session for "${poolName}"-"${failedSession.id}": ${uniqueNames}`)
+			logger.warn(
+				`ABPlayback failed to assign session for "${poolName}"-"${failedSession.id}" (${failedSession.name}): ${uniqueNames}`
+			)
 
 			// Ignore lookahead
 			if (failedSession.pieceNames.length === 0) continue
@@ -134,7 +136,7 @@ export function applyAbPlaybackForTimeline(
 		for (const failedSession of assignments.failedOptional) {
 			const uniqueNames = _.uniq(failedSession.pieceNames).join(', ')
 			logger.info(
-				`ABPlayback failed to assign optional session for "${poolName}"-"${failedSession.id}": ${uniqueNames}`
+				`ABPlayback failed to assign optional session for "${poolName}"-"${failedSession.id}" (${failedSession.name}): ${uniqueNames}`
 			)
 
 			// Ignore lookahead
