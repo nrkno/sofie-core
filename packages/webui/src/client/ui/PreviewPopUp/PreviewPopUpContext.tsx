@@ -68,7 +68,7 @@ export function convertSourceLayerItemToPreview(
 	piece: PieceUi,
 	contentStatus?: ReadonlyObjectDeep<PieceContentStatusObj>
 ): PreviewContent[] {
-	if (sourceLayerType === SourceLayerType.VT) {
+	if (sourceLayerType === SourceLayerType.VT || sourceLayerType === SourceLayerType.LIVE_SPEAK) {
 		const content = piece.instance.piece.content as VTContent
 
 		return _.compact([
