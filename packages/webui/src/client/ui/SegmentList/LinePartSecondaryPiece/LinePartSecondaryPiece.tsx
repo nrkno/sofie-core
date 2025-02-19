@@ -1,5 +1,5 @@
 import classNames from 'classnames'
-import React, { CSSProperties, useCallback, useMemo, useRef, useState } from 'react'
+import React, { CSSProperties, useCallback, useContext, useMemo, useRef, useState } from 'react'
 import { PieceExtended } from '../../../lib/RundownResolver'
 import { RundownUtils } from '../../../lib/rundown'
 import { PieceHoverInspector } from '../PieceHoverInspector'
@@ -7,6 +7,12 @@ import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positio
 import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
 import StudioContext from '../../RundownView/StudioContext'
 import { useContentStatusForPieceInstance } from '../../SegmentTimeline/withMediaObjectStatus'
+import {
+	PreviewPopUpContext,
+	IPreviewPopUpSession,
+	convertPreviewToContents,
+	convertSourceLayerItemToPreview,
+} from '../../PreviewPopUp/PreviewPopUpContext'
 
 interface IProps {
 	piece: PieceExtended
@@ -47,11 +53,24 @@ export const LinePartSecondaryPiece: React.FC<IProps> = React.memo(function Line
 		}
 	}, [piece, partDuration, timelineBase])
 
+	const previewContext = useContext(PreviewPopUpContext)
+	const previewSession = useRef<IPreviewPopUpSession | null>(null)
+	const previewContents = piece.instance.piece.content.popUpPreview
+		? convertPreviewToContents(piece.instance.piece.content.popUpPreview, contentStatus)
+		: piece.sourceLayer
+		? convertSourceLayerItemToPreview(piece.sourceLayer?.type, piece, contentStatus)
+		: []
+
 	const onPointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
 		if (e.pointerType !== 'mouse') {
 			return
 		}
-		setHover(true)
+		// setHover(true)
+
+		if (previewContents.length > 0)
+			previewSession.current = previewContext.requestPreview(e.target as any, previewContents, {
+				startCoordinate: e.screenX,
+			})
 
 		const newOffset = pieceEl.current && getElementDocumentOffset(pieceEl.current)
 		if (newOffset !== null) {
@@ -64,6 +83,10 @@ export const LinePartSecondaryPiece: React.FC<IProps> = React.memo(function Line
 			return
 		}
 		setHover(false)
+		if (previewSession.current) {
+			previewSession.current.close()
+			previewSession.current = null
+		}
 	}
 
 	const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {

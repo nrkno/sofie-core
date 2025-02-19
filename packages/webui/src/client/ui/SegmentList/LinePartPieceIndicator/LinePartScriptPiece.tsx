@@ -1,8 +1,15 @@
 import { ScriptContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
-import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useContext, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { PieceExtended } from '../../../lib/RundownResolver'
 import { IFloatingInspectorPosition } from '../../FloatingInspectors/IFloatingInspectorPosition'
 import { MicFloatingInspector } from '../../FloatingInspectors/MicFloatingInspector'
+import {
+	PreviewPopUpContext,
+	IPreviewPopUpSession,
+	convertPreviewToContents,
+	convertSourceLayerItemToPreview,
+} from '../../PreviewPopUp/PreviewPopUpContext'
+import { useContentStatusForPieceInstance } from '../../SegmentTimeline/withMediaObjectStatus'
 
 interface IProps {
 	pieces: PieceExtended[]
@@ -40,12 +47,31 @@ export function LinePartScriptPiece({ pieces }: IProps): JSX.Element {
 		})
 	}, [])
 
-	function onMouseEnter() {
-		setHover(true)
+	const previewContext = useContext(PreviewPopUpContext)
+	const previewSession = useRef<IPreviewPopUpSession | null>(null)
+	const contentStatus = thisPieces[0] && useContentStatusForPieceInstance(thisPieces[0].instance)
+	const previewContents =
+		thisPieces[0] &&
+		(thisPieces[0].instance.piece.content.popUpPreview
+			? convertPreviewToContents(thisPieces[0].instance.piece.content.popUpPreview, contentStatus)
+			: thisPieces[0].sourceLayer
+			? convertSourceLayerItemToPreview(thisPieces[0].sourceLayer?.type, thisPieces[0], contentStatus)
+			: [])
+
+	function onMouseEnter(e: React.PointerEvent<HTMLDivElement>) {
+		// setHover(true)
+		if (previewContents && previewContents.length > 0)
+			previewSession.current = previewContext.requestPreview(e.target as any, previewContents, {
+				startCoordinate: e.screenX,
+			})
 	}
 
 	function onMouseLeave() {
 		setHover(false)
+		if (previewSession.current) {
+			previewSession.current.close()
+			previewSession.current = null
+		}
 	}
 
 	const hasPiece = thisPieces[0]
