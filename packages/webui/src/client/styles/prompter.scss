@@ -265,6 +265,16 @@ body.prompter-scrollbar {
 	}
 }
 
+#prompter-device-access {
+	position: fixed;
+	top: 0;
+	left: 0;
+	padding: 0.7em;
+	button {
+		background: black;
+	}
+}
+
 .prompter-timing-clock {
 	position: fixed;
 	display: block;

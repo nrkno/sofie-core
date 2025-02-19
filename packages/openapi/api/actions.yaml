@@ -106,3 +106,6 @@ paths:
     $ref: 'definitions/buckets.yaml#/resources/bucketAdlibs'
   /buckets/{bucketId}/adlibs/{externalId}:
     $ref: 'definitions/buckets.yaml#/resources/bucketAdlib'
+  # snapshot operations
+  /snapshots:
+    $ref: 'definitions/snapshots.yaml#/resources/snapshots'

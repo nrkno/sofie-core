@@ -37,6 +37,7 @@ export const ThumbnailRenderer = React.memo(function ThumbnailRenderer(props: Re
 			return <VTThumbnailRenderer {...props} />
 		case SourceLayerType.CAMERA:
 		case SourceLayerType.REMOTE:
+		case SourceLayerType.REMOTE_SPEAK:
 			return <CameraThumbnailRenderer {...props} />
 		case SourceLayerType.SPLITS:
 			return <SplitsThumbnailRenderer {...props} />
@@ -49,6 +50,7 @@ export const ThumbnailRenderer = React.memo(function ThumbnailRenderer(props: Re
 		case SourceLayerType.AUDIO:
 		case SourceLayerType.SCRIPT:
 		case SourceLayerType.TRANSITION:
+		case SourceLayerType.LIGHTS:
 		case SourceLayerType.UNKNOWN:
 		case undefined:
 			return <DefaultThumbnailRenderer {...props} />

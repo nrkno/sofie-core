@@ -16,6 +16,7 @@ import { RundownBaselineObj } from './dataModel/RundownBaselineObj'
 import { DBRundownPlaylist } from './dataModel/RundownPlaylist'
 import { DBSegment } from './dataModel/Segment'
 import { SofieIngestDataCacheObj } from './dataModel/SofieIngestDataCache'
+import { TimelineComplete } from './dataModel/Timeline'
 
 export interface CoreRundownPlaylistSnapshot {
 	version: string
@@ -37,4 +38,5 @@ export interface CoreRundownPlaylistSnapshot {
 	expectedMediaItems: Array<ExpectedMediaItem>
 	expectedPlayoutItems: Array<ExpectedPlayoutItem>
 	expectedPackages: Array<ExpectedPackageDB>
+	timeline?: TimelineComplete
 }

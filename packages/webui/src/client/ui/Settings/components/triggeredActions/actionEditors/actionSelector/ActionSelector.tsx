@@ -173,7 +173,7 @@ function actionToLabel(t: TFunction, action: SomeAction['action']): string {
 		case PlayoutActions.deactivateRundownPlaylist:
 			return t('Deactivate Rundown')
 		case PlayoutActions.activateAdlibTestingMode:
-			return t('Rehearsal Mode')
+			return t('AdLib Testing')
 		case PlayoutActions.disableNextPiece:
 			return t('Disable next Piece')
 		case PlayoutActions.hold:

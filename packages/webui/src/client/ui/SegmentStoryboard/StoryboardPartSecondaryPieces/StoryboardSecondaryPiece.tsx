@@ -44,10 +44,12 @@ function renderPieceInside(
 		case SourceLayerType.SPLITS:
 			return SplitsRenderer({ ...props, elementOffset, hovering, typeClass })
 		case SourceLayerType.AUDIO:
+		case SourceLayerType.LIGHTS:
 		case SourceLayerType.CAMERA:
 		case SourceLayerType.LIVE_SPEAK:
 		case SourceLayerType.VT:
 		case SourceLayerType.LOCAL:
+		case SourceLayerType.REMOTE_SPEAK:
 		case SourceLayerType.REMOTE:
 		case SourceLayerType.TRANSITION:
 		case SourceLayerType.UNKNOWN:

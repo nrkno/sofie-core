@@ -47,6 +47,9 @@ import type { IBlueprintTriggeredActions } from '../triggers'
 import type { ExpectedPackage } from '../package'
 import type { ABResolverConfiguration } from '../abPlayback'
 import type { SofieIngestSegment } from '../ingest-types'
+import { PackageStatusMessage } from '@sofie-automation/shared-lib/dist/packageStatusMessages'
+
+export { PackageStatusMessage }
 
 export type TimelinePersistentState = unknown
 
@@ -59,6 +62,9 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 
 	/** The config presets exposed by this blueprint */
 	configPresets: Record<string, IShowStyleConfigPreset<TRawConfig>>
+
+	/** Alternate package status messages, to override the builtin ones produced by Sofie */
+	packageStatusMessages?: Partial<Record<PackageStatusMessage, string | undefined>>
 
 	/** Translations connected to the studio (as stringified JSON) */
 	translations?: string

@@ -67,8 +67,8 @@ export interface IOnSetAsNextContext extends IShowStyleUserContext, IEventContex
 	/**
 	 * Destructive actions
 	 */
-	/** Remove piecesInstances by id. Returns ids of piecesInstances that were removed. Note: For now we only allow removing from the next, but this might change to include current if there is justification */
-	removePieceInstances(part: 'next', pieceInstanceIds: string[]): Promise<string[]>
+	/** Remove piecesInstances by id. Returns ids of piecesInstances that were removed. */
+	removePieceInstances(part: 'current' | 'next', pieceInstanceIds: string[]): Promise<string[]>
 
 	/**
 	 * Move the next part through the rundown. Can move by either a number of parts, or segments in either direction.

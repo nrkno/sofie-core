@@ -15,7 +15,7 @@ Appending query parameter(s) to the URL will allow you to modify the behaviour o
 | `display=layout,buckets,inspector` | A comma-separated list of features to be displayed in the shelf. Available values are: `layout` \(for displaying the Rundown Layout\), `buckets` \(for displaying the Buckets\) and `inspector` \(for displaying the Inspector\).           |
 | `help=1` | Enables some tooltips that might be useful to new users. _Default value is `0`._ | 
 | `ignore_piece_content_status=1` | Removes the "zebra" marking on VT pieces that have a "missing" status. _Default value is `0`._ | 
-| `reportNotificationsId=1,...` | Sets a specific ID of the client GUI. Useful for troubleshooting since this ID shows up in _Sofie Core_'s log.  _Default value is "0", which disables the feature and uses a user-defined string (user as-in whoever is opening the client GUI, not necessarily the actual end-user)._  |  
+| `reportNotificationsId=anyId,...` | Sets an ID for an individual client GUI system, to be used for reporting Notifications shown to the user. The Notifications' contents, tagged with this ID, will be sent back to the Sofie Core's log. _Default value is `0`, which disables the feature._  |  
 | `shelffollowsonair=1` | _Default value is `0`._ | 
 | `show_hidden_source_layers=1` | _Default value is `0`._ | 
 | `speak=1` | Experimental feature that starts playing an audible countdown 10 seconds before each planned _Take_. _Default value is `0`._ | 

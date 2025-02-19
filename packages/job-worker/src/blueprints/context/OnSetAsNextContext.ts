@@ -117,8 +117,8 @@ export class OnSetAsNextContext
 		return this.partAndPieceInstanceService.updatePartInstance(part, props)
 	}
 
-	async removePieceInstances(_part: 'next', pieceInstanceIds: string[]): Promise<string[]> {
-		return this.partAndPieceInstanceService.removePieceInstances('next', pieceInstanceIds)
+	async removePieceInstances(part: 'current' | 'next', pieceInstanceIds: string[]): Promise<string[]> {
+		return this.partAndPieceInstanceService.removePieceInstances(part, pieceInstanceIds)
 	}
 
 	async moveNextPart(partDelta: number, segmentDelta: number, ignoreQuickLoop?: boolean): Promise<boolean> {

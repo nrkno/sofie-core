@@ -4,7 +4,13 @@ import { MeteorMock } from '../../__mocks__/meteor'
 import { logger } from '../logging'
 import { getRandomId, getRandomString, literal, protectString } from '../lib/tempLib'
 import { SnapshotType } from '@sofie-automation/meteor-lib/dist/collections/Snapshots'
-import { IBlueprintPieceType, PieceLifespan, StatusCode, TSR } from '@sofie-automation/blueprints-integration'
+import {
+	IBlueprintPieceType,
+	PieceLifespan,
+	PlaylistTimingType,
+	StatusCode,
+	TSR,
+} from '@sofie-automation/blueprints-integration'
 import {
 	PeripheralDeviceType,
 	PeripheralDeviceCategory,
@@ -27,6 +33,8 @@ import {
 	SegmentId,
 	SnapshotId,
 	UserActionsLogItemId,
+	StudioId,
+	RundownPlaylistId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 // Set up mocks for tests in this suite
@@ -53,6 +61,8 @@ import {
 	UserActionsLog,
 	Segments,
 	SofieIngestDataCache,
+	Studios,
+	RundownPlaylists,
 } from '../collections'
 import { NrcsIngestCacheType } from '@sofie-automation/corelib/dist/dataModel/NrcsIngestDataCache'
 import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
@@ -64,7 +74,7 @@ import {
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { Settings } from '../Settings'
 import { SofieIngestCacheType } from '@sofie-automation/corelib/dist/dataModel/SofieIngestDataCache'
-import { ObjectOverrideSetOp } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { ObjectOverrideSetOp, ObjectWithOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 describe('cronjobs', () => {
 	let env: DefaultEnvironment
@@ -476,7 +486,10 @@ describe('cronjobs', () => {
 			expect(await Snapshots.findOneAsync(snapshot1)).toBeUndefined()
 		})
 		async function insertPlayoutDevice(
-			props: Pick<PeripheralDevice, 'subType' | 'deviceName' | 'lastSeen' | 'parentDeviceId'> &
+			props: Pick<
+				PeripheralDevice,
+				'subType' | 'deviceName' | 'lastSeen' | 'parentDeviceId' | 'studioAndConfigId'
+			> &
 				Partial<Pick<PeripheralDevice, 'token'>>
 		): Promise<PeripheralDeviceId> {
 			const deviceId = protectString<PeripheralDeviceId>(getRandomString())
@@ -504,7 +517,10 @@ describe('cronjobs', () => {
 			return deviceId
 		}
 
-		async function createMockPlayoutGatewayAndDevices(lastSeen: number): Promise<{
+		async function createMockPlayoutGatewayAndDevices(
+			lastSeen: number,
+			studioId?: StudioId
+		): Promise<{
 			deviceToken: string
 			mockPlayoutGw: PeripheralDeviceId
 			mockCasparCg: PeripheralDeviceId
@@ -516,6 +532,12 @@ describe('cronjobs', () => {
 				lastSeen: lastSeen,
 				subType: PERIPHERAL_SUBTYPE_PROCESS,
 				token: deviceToken,
+				studioAndConfigId: studioId
+					? {
+							configId: '',
+							studioId,
+					  }
+					: undefined,
 			})
 			const mockCasparCg = await insertPlayoutDevice({
 				deviceName: 'CasparCG',
@@ -537,6 +559,73 @@ describe('cronjobs', () => {
 				mockPlayoutGw,
 				mockCasparCg,
 				mockAtem,
+			}
+		}
+
+		async function createMockStudioAndRundown(): Promise<{
+			studioId: StudioId
+			rundownPlaylistId: RundownPlaylistId
+		}> {
+			function newObjectWithOverrides<T extends {}>(defaults: T): ObjectWithOverrides<T> {
+				return {
+					defaults,
+					overrides: [],
+				}
+			}
+			const studioId = protectString<StudioId>(getRandomString())
+			await Studios.insertAsync({
+				_id: studioId,
+				organizationId: null,
+				name: 'Studio',
+				blueprintConfigWithOverrides: newObjectWithOverrides({}),
+				_rundownVersionHash: '',
+				lastBlueprintConfig: undefined,
+				lastBlueprintFixUpHash: undefined,
+				mappingsWithOverrides: newObjectWithOverrides({}),
+				supportedShowStyleBase: [],
+				settingsWithOverrides: newObjectWithOverrides({
+					allowHold: true,
+					allowPieceDirectPlay: true,
+					enableBuckets: true,
+					enableEvaluationForm: true,
+					frameRate: 25,
+					mediaPreviewsUrl: '',
+					minimumTakeSpan: 1000,
+				}),
+				routeSetsWithOverrides: newObjectWithOverrides({}),
+				routeSetExclusivityGroupsWithOverrides: newObjectWithOverrides({}),
+				packageContainersWithOverrides: newObjectWithOverrides({}),
+				previewContainerIds: [],
+				thumbnailContainerIds: [],
+				peripheralDeviceSettings: {
+					deviceSettings: newObjectWithOverrides({}),
+					ingestDevices: newObjectWithOverrides({}),
+					inputDevices: newObjectWithOverrides({}),
+					playoutDevices: newObjectWithOverrides({}),
+				},
+			})
+
+			const rundownPlaylistId = protectString<RundownPlaylistId>(getRandomString())
+			await RundownPlaylists.mutableCollection.insertAsync({
+				_id: rundownPlaylistId,
+				created: Date.now(),
+				currentPartInfo: null,
+				nextPartInfo: null,
+				externalId: '',
+				modified: Date.now(),
+				name: 'Rundown',
+				previousPartInfo: null,
+				rundownIdsInOrder: [],
+				studioId,
+				timing: {
+					type: PlaylistTimingType.None,
+				},
+				activationId: protectString(''),
+			})
+
+			return {
+				studioId,
+				rundownPlaylistId,
 			}
 		}
 
@@ -586,6 +675,28 @@ describe('cronjobs', () => {
 					lastSeen: 0,
 				},
 			})
+			;(logger.info as jest.Mock).mockClear()
+			// set time to 2020/07/{date} 04:05 Local Time, should be more than 24 hours after 2020/07/19 00:00 UTC
+			mockCurrentTime = new Date(2020, 6, date++, 4, 5, 0).getTime()
+			// cronjob is checked every 5 minutes, so advance 6 minutes
+			await jest.advanceTimersByTimeAsync(6 * 60 * 1000)
+
+			await waitUntil(async () => {
+				// Run timers, so that all promises in the cronjob has a chance to resolve:
+				const pendingCommands = await PeripheralDeviceCommands.findFetchAsync({})
+				expect(pendingCommands).toHaveLength(0)
+			}, MAX_WAIT_TIME)
+
+			// make sure that the cronjob ends
+			await waitUntil(async () => {
+				// Run timers, so that all promises in the cronjob has a chance to resolve:
+				await runAllTimers()
+				expect(logger.info).toHaveBeenLastCalledWith('Nightly cronjob: done')
+			}, MAX_WAIT_TIME)
+		})
+		test('Skips CasparCG in Studios with active Playlists when job is enabled', async () => {
+			const { studioId } = await createMockStudioAndRundown()
+			await createMockPlayoutGatewayAndDevices(Date.now(), studioId) // Some time after the threshold
 			;(logger.info as jest.Mock).mockClear()
 			// set time to 2020/07/{date} 04:05 Local Time, should be more than 24 hours after 2020/07/19 00:00 UTC
 			mockCurrentTime = new Date(2020, 6, date++, 4, 5, 0).getTime()
