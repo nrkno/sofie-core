@@ -33,6 +33,8 @@ import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
 import { PrompterControlManager } from './controller/manager'
 import { OverUnderTimer } from './OverUnderTimer'
 import { PrompterAPI, PrompterData, PrompterDataPart } from './prompter'
+import { doUserAction, UserAction } from '../../lib/clientUserAction'
+import { MeteorCall } from '../../lib/meteorApi'
 
 const DEFAULT_UPDATE_THROTTLE = 250 //ms
 const PIECE_MISSING_UPDATE_THROTTLE = 2000 //ms
@@ -74,6 +76,7 @@ export enum PrompterConfigMode {
 	SHUTTLEKEYBOARD = 'shuttlekeyboard',
 	JOYCON = 'joycon',
 	PEDAL = 'pedal',
+	SHUTTLEWEBHID = 'shuttlewebhid',
 }
 
 export interface IPrompterControllerState {
@@ -92,6 +95,15 @@ interface ITrackedProps {
 	subsReady: boolean
 }
 
+export interface AccessRequestCallback {
+	deviceName: string
+	callback: () => void
+}
+
+interface IState {
+	accessRequestCallbacks: AccessRequestCallback[]
+}
+
 function asArray<T>(value: T | T[] | null): T[] {
 	if (Array.isArray(value)) {
 		return value
@@ -102,7 +114,7 @@ function asArray<T>(value: T | T[] | null): T[] {
 	}
 }
 
-export class PrompterViewContent extends React.Component<Translated<IProps & ITrackedProps>> {
+export class PrompterViewContent extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 	autoScrollPreviousPartInstanceId: PartInstanceId | null = null
 
 	configOptions: PrompterConfig
@@ -115,7 +127,7 @@ export class PrompterViewContent extends React.Component<Translated<IProps & ITr
 	constructor(props: Translated<IProps & ITrackedProps>) {
 		super(props)
 		this.state = {
-			subsReady: false,
+			accessRequestCallbacks: [],
 		}
 		// Disable the context menu:
 		document.addEventListener('contextmenu', (e) => {
@@ -287,6 +299,19 @@ export class PrompterViewContent extends React.Component<Translated<IProps & ITr
 		// margin in pixels
 		return ((this.configOptions.margin || 0) * window.innerHeight) / 100
 	}
+
+	public registerAccessRequestCallback(callback: AccessRequestCallback): void {
+		this.setState((state) => ({
+			accessRequestCallbacks: [...state.accessRequestCallbacks, callback],
+		}))
+	}
+
+	public unregisterAccessRequestCallback(callback: AccessRequestCallback): void {
+		this.setState((state) => ({
+			accessRequestCallbacks: state.accessRequestCallbacks.filter((candidate) => candidate !== callback),
+		}))
+	}
+
 	scrollToPartInstance(partInstanceId: PartInstanceId): void {
 		const scrollMargin = this.calculateScrollPosition()
 		const target = document.querySelector<HTMLElement>(`[data-part-instance-id="${partInstanceId}"]`)
@@ -360,6 +385,17 @@ export class PrompterViewContent extends React.Component<Translated<IProps & ITr
 	}
 	findAnchorPosition(startY: number, endY: number, sortDirection = 1): number | null {
 		return (this.listAnchorPositions(startY, endY, sortDirection)[0] || [])[0] || null
+	}
+	take(e: Event | string): void {
+		const { t } = this.props
+		if (!this.props.rundownPlaylist) {
+			logger.error('No active Rundown Playlist to perform a Take in')
+			return
+		}
+		const playlist = this.props.rundownPlaylist
+		doUserAction(t, e, UserAction.TAKE, (e, ts) =>
+			MeteorCall.userAction.take(e, ts, playlist._id, playlist.currentPartInfo?.partInstanceId ?? null)
+		)
 	}
 	private onWindowScroll = () => {
 		this.triggerCheckCurrentTakeMarkers()
@@ -461,6 +497,25 @@ export class PrompterViewContent extends React.Component<Translated<IProps & ITr
 		)
 	}
 
+	private renderAccessRequestButtons() {
+		const { t } = this.props
+		return this.state.accessRequestCallbacks.length > 0 ? (
+			<div id="prompter-device-access">
+				{this.state.accessRequestCallbacks.map((accessRequest, i) => (
+					<button
+						className="btn btn-secondary"
+						key={i}
+						onClick={() => {
+							accessRequest.callback()
+						}}
+					>
+						{t('Connect to {{deviceName}}', { deviceName: accessRequest.deviceName })}
+					</button>
+				))}
+			</div>
+		) : null
+	}
+
 	render(): JSX.Element {
 		const { t } = this.props
 
@@ -498,6 +553,7 @@ export class PrompterViewContent extends React.Component<Translated<IProps & ITr
 								}}
 							></div>
 						) : null}
+						{this.renderAccessRequestButtons()}
 					</>
 				) : this.props.studio ? (
 					<StudioScreenSaver studioId={this.props.studio._id} />

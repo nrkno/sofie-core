@@ -8,7 +8,7 @@ function toTitleCase(input: string): string {
 	return str.join(' ')
 }
 
-export function codesToKeyLabels(keys: string, sorensen: Sorensen): string {
+export function codesToKeyLabels(keys: string, sorensen: typeof Sorensen): string {
 	return keys
 		.split(/\s+/gi)
 		.map((note) =>
@@ -20,7 +20,7 @@ export function codesToKeyLabels(keys: string, sorensen: Sorensen): string {
 		.join(' ')
 }
 
-export function keyLabelsToCodes(labels: string, sorensen: Sorensen): string {
+export function keyLabelsToCodes(labels: string, sorensen: typeof Sorensen): string {
 	return labels
 		.split(/\s+/gi)
 		.map((note) => {

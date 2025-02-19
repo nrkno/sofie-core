@@ -183,7 +183,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		return this.partAndPieceInstanceService.stopPieceInstances(pieceInstanceIds, timeOffset)
 	}
 
-	async removePieceInstances(part: 'next', pieceInstanceIds: string[]): Promise<string[]> {
+	async removePieceInstances(part: 'current' | 'next', pieceInstanceIds: string[]): Promise<string[]> {
 		return this.partAndPieceInstanceService.removePieceInstances(part, pieceInstanceIds)
 	}
 

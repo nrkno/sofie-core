@@ -27,6 +27,7 @@ interface IModalDialogAttributes {
 	warning?: boolean
 	actions?: ModalAction[]
 	className?: string
+	discardAsPrimary?: boolean
 }
 interface ModalInput {
 	type: EditAttributeType
@@ -56,6 +57,7 @@ export function ModalDialog({
 	onDiscard,
 	onSecondary,
 	secondaryText,
+	discardAsPrimary,
 }: React.PropsWithChildren<IModalDialogAttributes>): JSX.Element | null {
 	const { t } = useTranslation()
 	const inputResult = useRef<ModalInputResult>(
@@ -114,7 +116,7 @@ export function ModalDialog({
 		e.stopPropagation()
 
 		if (isAcceptKey(e.code)) {
-			handleAccept(e)
+			discardAsPrimary ? handleDiscard(e) : handleAccept(e)
 		} else if (isDismissKey(e.code)) {
 			handleDiscard(e)
 		}
@@ -203,13 +205,23 @@ export function ModalDialog({
 										</div>
 									) : null}
 									<div
-										className={ClassNames('mod', {
-											alright: !secondaryText,
-										})}
+										className={ClassNames(
+											'mod',
+											{
+												alright: !secondaryText,
+											},
+											'modal-dialog-actions'
+										)}
 									>
 										{secondaryText && (
 											<button
-												className="btn btn-secondary"
+												className={ClassNames(
+													'btn',
+													discardAsPrimary ? 'btn-primary' : 'btn-secondary',
+													'discard-btn',
+													{ 'btn-warn': discardAsPrimary && warning }
+												)}
+												autoFocus={discardAsPrimary}
 												onClick={handleSecondary}
 												onKeyDown={preventClickOnEnter}
 												onKeyUp={emulateClick}
@@ -240,11 +252,11 @@ export function ModalDialog({
 											})
 										)}
 										<button
-											className={ClassNames('btn btn-primary', {
+											className={ClassNames('btn', !discardAsPrimary ? 'btn-primary' : 'btn-secondary', {
 												right: secondaryText !== undefined,
-												'btn-warn': warning,
+												'btn-warn': !discardAsPrimary && warning,
 											})}
-											autoFocus
+											autoFocus={!discardAsPrimary}
 											onClick={handleAccept}
 											onKeyDown={preventClickOnEnter}
 											onKeyUp={emulateClick}
@@ -284,6 +296,8 @@ export interface ModalDialogQueueItem {
 	actions?: ModalAction[]
 	/** Is a critical decition/information */
 	warning?: boolean
+	/** Discard as primary */
+	discardAsPrimary?: boolean
 }
 interface IModalDialogGlobalContainerProps {}
 interface IModalDialogGlobalContainerState {
@@ -382,6 +396,7 @@ class ModalDialogGlobalContainer0 extends React.Component<
 					actions={actions}
 					show={true}
 					warning={onQueue.warning}
+					discardAsPrimary={onQueue.discardAsPrimary}
 				>
 					{_.isString(onQueue.message) ? this.renderString(onQueue.message) : onQueue.message}
 				</ModalDialog>

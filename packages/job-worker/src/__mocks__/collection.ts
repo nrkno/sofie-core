@@ -32,7 +32,6 @@ import {
 	mongoWhere,
 } from '@sofie-automation/corelib/dist/mongo'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
-import EventEmitter = require('eventemitter3')
 import { AnyBulkWriteOperation, Collection, CountOptions, FindOptions } from 'mongodb'
 import { ReadonlyDeep } from 'type-fest'
 import { IChangeStream, IChangeStreamEvents, ICollection, IDirectCollections, MongoModifier, MongoQuery } from '../db'
@@ -43,6 +42,7 @@ import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataMode
 import { MediaObjects } from '@sofie-automation/corelib/dist/dataModel/MediaObjects'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import type { DBNotificationObj } from '@sofie-automation/corelib/dist/dataModel/Notifications'
+import { EventEmitter } from 'events'
 
 export interface CollectionOperation {
 	type: string

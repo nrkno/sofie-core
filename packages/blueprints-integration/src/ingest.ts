@@ -129,6 +129,7 @@ export enum DefaultUserOperationsTypes {
 	REVERT_PART = '__sofie-revert-part',
 	REVERT_RUNDOWN = '__sofie-revert-rundown',
 	UPDATE_PROPS = '__sofie-update-props',
+	IMPORT_MOS_ITEM = '__sofie-import-mos',
 }
 
 export interface DefaultUserOperationRevertRundown {
@@ -153,11 +154,19 @@ export interface DefaultUserOperationEditProperties {
 	}
 }
 
+export type DefaultUserOperationImportMOSItem = {
+	id: DefaultUserOperationsTypes.IMPORT_MOS_ITEM
+
+	payloadType: string
+	payload: any
+}
+
 export type DefaultUserOperations =
 	| DefaultUserOperationRevertRundown
 	| DefaultUserOperationRevertSegment
 	| DefaultUserOperationRevertPart
 	| DefaultUserOperationEditProperties
+	| DefaultUserOperationImportMOSItem
 
 export interface UserOperationChange<TCustomBlueprintOperations extends { id: string } = never> {
 	/** Indicate that this change is from user operations */
