@@ -145,7 +145,7 @@ describe('TagsService', () => {
 
 		testee.updatePieceInstances(cache, showStyleBaseId)
 		const result = testee.getTallyStateFromTags({} as IWrappedAdLib)
-		expect(result).toEqual({ isCurrent: false, isNext: false })
+		expect(result).toEqual({ isActive: false, isNext: false })
 	})
 
 	test('adlib that is neither on air or next', () => {
@@ -156,7 +156,7 @@ describe('TagsService', () => {
 		const result = testee.getTallyStateFromTags({
 			currentPieceTags: [tag3],
 		} as IWrappedAdLib)
-		expect(result).toEqual({ isCurrent: false, isNext: false })
+		expect(result).toEqual({ isActive: false, isNext: false })
 	})
 
 	test('adlib that is both on air and next', () => {
@@ -168,7 +168,7 @@ describe('TagsService', () => {
 			currentPieceTags: [tag2],
 		} as IWrappedAdLib)
 
-		expect(result).toEqual({ isCurrent: true, isNext: true })
+		expect(result).toEqual({ isActive: true, isNext: true })
 	})
 
 	test('adlib that is only on air', () => {
@@ -179,7 +179,7 @@ describe('TagsService', () => {
 		const result = testee.getTallyStateFromTags({
 			currentPieceTags: [tag0],
 		} as IWrappedAdLib)
-		expect(result).toEqual({ isCurrent: true, isNext: false })
+		expect(result).toEqual({ isActive: true, isNext: false })
 	})
 
 	test('adlib that is only next', () => {
@@ -190,7 +190,7 @@ describe('TagsService', () => {
 		const result = testee.getTallyStateFromTags({
 			currentPieceTags: [tag1],
 		} as IWrappedAdLib)
-		expect(result).toEqual({ isCurrent: false, isNext: true })
+		expect(result).toEqual({ isActive: false, isNext: true })
 	})
 
 	test('updatePieceInstances returns true if observed tags are present in pieces', () => {

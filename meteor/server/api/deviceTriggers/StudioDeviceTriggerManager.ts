@@ -170,7 +170,7 @@ export class StudioDeviceTriggerManager {
 								sourceLayerType: undefined,
 								sourceLayerName: undefined,
 								styleClassNames: triggeredAction.styleClassNames,
-								isCurrent: undefined,
+								isActive: undefined,
 								isNext: undefined,
 							}),
 						})
@@ -185,7 +185,7 @@ export class StudioDeviceTriggerManager {
 							addedPreviewIds.push(adLibPreviewId)
 
 							this.tagsService.observeTallyTags(adLib)
-							const { isCurrent, isNext } = this.tagsService.getTallyStateFromTags(adLib)
+							const { isActive, isNext } = this.tagsService.getTallyStateFromTags(adLib)
 							return DeviceTriggerMountedActionAdlibsPreview.upsertAsync(adLibPreviewId, {
 								$set: literal<PreviewWrappedAdLib>({
 									...adLib,
@@ -204,7 +204,7 @@ export class StudioDeviceTriggerManager {
 										  }
 										: undefined,
 									styleClassNames: triggeredAction.styleClassNames,
-									isCurrent,
+									isActive,
 									isNext,
 								}),
 							})

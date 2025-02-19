@@ -9,6 +9,7 @@ import {
 } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { IWrappedAdLib } from '@sofie-automation/meteor-lib/dist/triggers/actionFilterChainCompilers'
+import { areSetsEqual, doSetsIntersect } from '@sofie-automation/corelib/dist/lib'
 
 export class TagsService {
 	protected onAirPiecesTags: Set<string> = new Set()
@@ -28,14 +29,14 @@ export class TagsService {
 		}
 	}
 
-	public getTallyStateFromTags(adLib: IWrappedAdLib): { isCurrent: boolean; isNext: boolean } {
-		let isCurrent = false
+	public getTallyStateFromTags(adLib: IWrappedAdLib): { isActive: boolean; isNext: boolean } {
+		let isActive = false
 		let isNext = false
 		if ('currentPieceTags' in adLib && adLib.currentPieceTags) {
-			isCurrent = adLib.currentPieceTags.every((tag) => this.onAirPiecesTags.has(tag))
+			isActive = adLib.currentPieceTags.every((tag) => this.onAirPiecesTags.has(tag))
 			isNext = adLib.currentPieceTags.every((tag) => this.nextPiecesTags.has(tag))
 		}
-		return { isCurrent, isNext }
+		return { isActive, isNext }
 	}
 
 	/**
@@ -113,24 +114,16 @@ export class TagsService {
 
 	private shouldUpdateTriggers(activePieceInstancesTags: Set<string>, nextPieceInstancesTags: Set<string>) {
 		return (
-			(!this.areSetsEqual(this.onAirPiecesTags, activePieceInstancesTags) ||
-				!this.areSetsEqual(this.nextPiecesTags, nextPieceInstancesTags)) &&
-			(this.doSetsIntersect(activePieceInstancesTags, this.tagsObservedByTriggers) ||
-				this.doSetsIntersect(nextPieceInstancesTags, this.tagsObservedByTriggers) ||
-				this.doSetsIntersect(this.onAirPiecesTags, this.tagsObservedByTriggers) ||
-				this.doSetsIntersect(this.nextPiecesTags, this.tagsObservedByTriggers))
+			(!areSetsEqual(this.onAirPiecesTags, activePieceInstancesTags) ||
+				!areSetsEqual(this.nextPiecesTags, nextPieceInstancesTags)) &&
+			(doSetsIntersect(activePieceInstancesTags, this.tagsObservedByTriggers) ||
+				doSetsIntersect(nextPieceInstancesTags, this.tagsObservedByTriggers) ||
+				doSetsIntersect(this.onAirPiecesTags, this.tagsObservedByTriggers) ||
+				doSetsIntersect(this.nextPiecesTags, this.tagsObservedByTriggers))
 		)
 	}
 
-	protected areSetsEqual<T>(a: Set<T>, b: Set<T>): boolean {
-		return a.size === b.size && [...a].every((value) => b.has(value))
-	}
-
-	protected doSetsIntersect<T>(a: Set<T>, b: Set<T>): boolean {
-		return [...a].some((value) => b.has(value))
-	}
-
-	protected processAndPrunePieceInstanceTimings(
+	private processAndPrunePieceInstanceTimings(
 		partInstanceTimings: DBPartInstance['timings'] | undefined,
 		pieceInstances: Array<Pick<PieceInstance, PieceInstanceFields>>,
 		sourceLayers: SourceLayers
