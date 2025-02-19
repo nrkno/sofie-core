@@ -142,15 +142,32 @@ describe('resolveMediaPlayers', () => {
 			[1, 2],
 			4500
 		)
-		expect(assignments.failedRequired).toEqual([{ id: 'inst_2_clip_ghi', pieceNames: ['name-2'] }])
+		expect(assignments.failedRequired).toEqual([{ id: 'inst_2_clip_ghi', name: 'ghi', pieceNames: ['name-2'] }])
 		expect(assignments.failedOptional).toHaveLength(0)
 		expect(assignments.requests).toHaveLength(3)
 		expect(assignments.requests).toEqual([
-			{ end: 5400, id: 'inst_0_clip_abc', playerId: 1, start: 400, optional: false, pieceNames: ['name-0'] },
-			{ end: 5400, id: 'inst_1_clip_def', playerId: 2, start: 400, optional: false, pieceNames: ['name-1'] },
+			{
+				end: 5400,
+				id: 'inst_0_clip_abc',
+				name: 'abc',
+				playerId: 1,
+				start: 400,
+				optional: false,
+				pieceNames: ['name-0'],
+			},
+			{
+				end: 5400,
+				id: 'inst_1_clip_def',
+				name: 'def',
+				playerId: 2,
+				start: 400,
+				optional: false,
+				pieceNames: ['name-1'],
+			},
 			{
 				end: 4800,
 				id: 'inst_2_clip_ghi',
+				name: 'ghi',
 				playerId: undefined,
 				start: 800,
 				optional: false,
@@ -196,13 +213,14 @@ describe('resolveMediaPlayers', () => {
 			['player1', 'player2'],
 			4500
 		)
-		expect(assignments.failedRequired).toEqual([{ id: 'inst_2_clip_ghi', pieceNames: ['name-2'] }])
+		expect(assignments.failedRequired).toEqual([{ id: 'inst_2_clip_ghi', name: 'ghi', pieceNames: ['name-2'] }])
 		expect(assignments.failedOptional).toHaveLength(0)
 		expect(assignments.requests).toHaveLength(3)
 		expect(assignments.requests).toEqual([
 			{
 				end: 5400,
 				id: 'inst_0_clip_abc',
+				name: 'abc',
 				playerId: 'player1',
 				start: 400,
 				optional: false,
@@ -211,6 +229,7 @@ describe('resolveMediaPlayers', () => {
 			{
 				end: 5400,
 				id: 'inst_1_clip_def',
+				name: 'def',
 				playerId: 'player2',
 				start: 400,
 				optional: false,
@@ -219,6 +238,7 @@ describe('resolveMediaPlayers', () => {
 			{
 				end: 4800,
 				id: 'inst_2_clip_ghi',
+				name: 'ghi',
 				playerId: undefined,
 				start: 800,
 				optional: false,
@@ -264,14 +284,23 @@ describe('resolveMediaPlayers', () => {
 			[1, 'player2'],
 			4500
 		)
-		expect(assignments.failedRequired).toEqual([{ id: 'inst_2_clip_ghi', pieceNames: ['name-2'] }])
+		expect(assignments.failedRequired).toEqual([{ id: 'inst_2_clip_ghi', name: 'ghi', pieceNames: ['name-2'] }])
 		expect(assignments.failedOptional).toHaveLength(0)
 		expect(assignments.requests).toHaveLength(3)
 		expect(assignments.requests).toEqual([
-			{ end: 5400, id: 'inst_0_clip_abc', playerId: 1, start: 400, optional: false, pieceNames: ['name-0'] },
+			{
+				end: 5400,
+				id: 'inst_0_clip_abc',
+				name: 'abc',
+				playerId: 1,
+				start: 400,
+				optional: false,
+				pieceNames: ['name-0'],
+			},
 			{
 				end: 5400,
 				id: 'inst_1_clip_def',
+				name: 'def',
 				playerId: 'player2',
 				start: 400,
 				optional: false,
@@ -280,6 +309,7 @@ describe('resolveMediaPlayers', () => {
 			{
 				end: 4800,
 				id: 'inst_2_clip_ghi',
+				name: 'ghi',
 				playerId: undefined,
 				start: 800,
 				optional: false,
@@ -331,6 +361,7 @@ describe('resolveMediaPlayers', () => {
 			{
 				end: 7400,
 				id: 'tmp_clip_abc',
+				name: 'abc',
 				playerId: 1,
 				start: 400,
 				optional: false,
@@ -384,9 +415,33 @@ describe('resolveMediaPlayers', () => {
 		expect(assignments.failedOptional).toHaveLength(0)
 		expect(assignments.requests).toHaveLength(3)
 		expect(assignments.requests).toEqual([
-			{ end: 5400, id: 'inst_0_clip_abc', playerId: 1, start: 400, optional: false, pieceNames: ['name-0'] },
-			{ end: 4800, id: 'inst_1_clip_def', playerId: 2, start: 800, optional: false, pieceNames: ['name-1'] },
-			{ end: 7400, id: 'inst_3_clip_ghi', playerId: 2, start: 6400, optional: false, pieceNames: ['name-3'] },
+			{
+				end: 5400,
+				id: 'inst_0_clip_abc',
+				name: 'abc',
+				playerId: 1,
+				start: 400,
+				optional: false,
+				pieceNames: ['name-0'],
+			},
+			{
+				end: 4800,
+				id: 'inst_1_clip_def',
+				name: 'def',
+				playerId: 2,
+				start: 800,
+				optional: false,
+				pieceNames: ['name-1'],
+			},
+			{
+				end: 7400,
+				id: 'inst_3_clip_ghi',
+				name: 'ghi',
+				playerId: 2,
+				start: 6400,
+				optional: false,
+				pieceNames: ['name-3'],
+			},
 		])
 
 		expect(mockGetPieceSessionId).toHaveBeenCalledTimes(3)
@@ -431,9 +486,33 @@ describe('resolveMediaPlayers', () => {
 		expect(assignments.failedOptional).toHaveLength(0)
 		expect(assignments.requests).toHaveLength(3)
 		expect(assignments.requests).toEqual([
-			{ end: 5400, id: 'inst_0_clip_abc', playerId: 1, start: 400, optional: false, pieceNames: ['name-0'] },
-			{ end: 6800, id: 'inst_1_clip_def', playerId: 2, start: 800, optional: false, pieceNames: ['name-1'] },
-			{ end: 6400, id: 'inst_3_clip_ghi', playerId: 1, start: 5400, optional: false, pieceNames: ['name-3'] },
+			{
+				end: 5400,
+				id: 'inst_0_clip_abc',
+				name: 'abc',
+				playerId: 1,
+				start: 400,
+				optional: false,
+				pieceNames: ['name-0'],
+			},
+			{
+				end: 6800,
+				id: 'inst_1_clip_def',
+				name: 'def',
+				playerId: 2,
+				start: 800,
+				optional: false,
+				pieceNames: ['name-1'],
+			},
+			{
+				end: 6400,
+				id: 'inst_3_clip_ghi',
+				name: 'ghi',
+				playerId: 1,
+				start: 5400,
+				optional: false,
+				pieceNames: ['name-3'],
+			},
 		])
 
 		expect(mockGetPieceSessionId).toHaveBeenCalledTimes(3)
@@ -478,9 +557,33 @@ describe('resolveMediaPlayers', () => {
 		expect(assignments.failedOptional).toHaveLength(0)
 		expect(assignments.requests).toHaveLength(3)
 		expect(assignments.requests).toEqual([
-			{ end: 5400, id: 'inst_0_clip_abc', playerId: 1, start: 400, optional: false, pieceNames: ['name-0'] },
-			{ end: 6800, id: 'inst_1_clip_def', playerId: 2, start: 800, optional: false, pieceNames: ['name-1'] },
-			{ end: 6400, id: 'inst_3_clip_ghi', playerId: 1, start: 5400, optional: false, pieceNames: ['name-3'] },
+			{
+				end: 5400,
+				id: 'inst_0_clip_abc',
+				name: 'abc',
+				playerId: 1,
+				start: 400,
+				optional: false,
+				pieceNames: ['name-0'],
+			},
+			{
+				end: 6800,
+				id: 'inst_1_clip_def',
+				name: 'def',
+				playerId: 2,
+				start: 800,
+				optional: false,
+				pieceNames: ['name-1'],
+			},
+			{
+				end: 6400,
+				id: 'inst_3_clip_ghi',
+				name: 'ghi',
+				playerId: 1,
+				start: 5400,
+				optional: false,
+				pieceNames: ['name-3'],
+			},
 		])
 
 		expect(mockGetPieceSessionId).toHaveBeenCalledTimes(3)
@@ -503,11 +606,13 @@ describe('resolveMediaPlayers', () => {
 		const previousAssignments: ABSessionAssignments = {
 			inst_0_clip_abc: {
 				sessionId: 'inst_0_clip_abc',
+				sessionName: 'abc',
 				playerId: 5,
 				lookahead: false,
 			},
 			inst_1_clip_def: {
 				sessionId: 'inst_1_clip_def',
+				sessionName: 'def',
 				playerId: 1,
 				lookahead: true,
 			},
@@ -532,15 +637,32 @@ describe('resolveMediaPlayers', () => {
 			[1, 2],
 			0
 		)
-		expect(assignments.failedRequired).toEqual([{ id: 'inst_2_clip_ghi', pieceNames: ['name-2'] }])
+		expect(assignments.failedRequired).toEqual([{ id: 'inst_2_clip_ghi', name: 'ghi', pieceNames: ['name-2'] }])
 		expect(assignments.failedOptional).toHaveLength(0)
 		expect(assignments.requests).toHaveLength(3)
 		expect(assignments.requests).toEqual([
-			{ end: 7400, id: 'inst_0_clip_abc', playerId: 2, start: 2400, optional: false, pieceNames: ['name-0'] },
-			{ end: 7400, id: 'inst_1_clip_def', playerId: 1, start: 2400, optional: false, pieceNames: ['name-1'] },
+			{
+				end: 7400,
+				id: 'inst_0_clip_abc',
+				name: 'abc',
+				playerId: 2,
+				start: 2400,
+				optional: false,
+				pieceNames: ['name-0'],
+			},
+			{
+				end: 7400,
+				id: 'inst_1_clip_def',
+				name: 'def',
+				playerId: 1,
+				start: 2400,
+				optional: false,
+				pieceNames: ['name-1'],
+			},
 			{
 				end: 6800,
 				id: 'inst_2_clip_ghi',
+				name: 'ghi',
 				playerId: undefined,
 				start: 2800,
 				optional: false,
@@ -568,11 +690,13 @@ describe('resolveMediaPlayers', () => {
 		const previousAssignments: ABSessionAssignments = {
 			inst_0_clip_abc: {
 				sessionId: 'inst_0_clip_abc',
+				sessionName: 'abc',
 				playerId: 2,
 				lookahead: false,
 			},
 			inst_1_clip_def: {
 				sessionId: 'inst_1_clip_def',
+				sessionName: 'def',
 				playerId: 1,
 				lookahead: false,
 			},
@@ -598,19 +722,36 @@ describe('resolveMediaPlayers', () => {
 			0
 		)
 		expect(assignments.failedRequired).toHaveLength(0)
-		expect(assignments.failedOptional).toEqual([{ id: 'inst_1_clip_def', pieceNames: ['name-1'] }])
+		expect(assignments.failedOptional).toEqual([{ id: 'inst_1_clip_def', name: 'def', pieceNames: ['name-1'] }])
 		expect(assignments.requests).toHaveLength(3)
 		expect(assignments.requests).toEqual([
-			{ end: 7400, id: 'inst_0_clip_abc', playerId: 2, start: 2400, optional: false, pieceNames: ['name-0'] },
+			{
+				end: 7400,
+				id: 'inst_0_clip_abc',
+				name: 'abc',
+				playerId: 2,
+				start: 2400,
+				optional: false,
+				pieceNames: ['name-0'],
+			},
 			{
 				end: 7400,
 				id: 'inst_1_clip_def',
+				name: 'def',
 				playerId: undefined,
 				start: 2400,
 				optional: true,
 				pieceNames: ['name-1'],
 			},
-			{ end: 6800, id: 'inst_2_clip_ghi', playerId: 1, start: 2800, optional: false, pieceNames: ['name-2'] },
+			{
+				end: 6800,
+				id: 'inst_2_clip_ghi',
+				name: 'ghi',
+				playerId: 1,
+				start: 2800,
+				optional: false,
+				pieceNames: ['name-2'],
+			},
 		])
 
 		expect(mockGetPieceSessionId).toHaveBeenCalledTimes(3)
