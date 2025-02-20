@@ -31,10 +31,4 @@ export interface MosDeviceConfig {
 			query: number
 		}
 	}
-	statuses: MosDeviceStatusesConfig
-}
-export interface MosDeviceStatusesConfig {
-	enabled: boolean
-	sendInRehearsal?: boolean
-	onlySendPlay?: boolean
 }
