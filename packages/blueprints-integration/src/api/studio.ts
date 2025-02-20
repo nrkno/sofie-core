@@ -29,7 +29,9 @@ import type {
 import type { StudioPackageContainer } from '@sofie-automation/shared-lib/dist/core/model/PackageContainer'
 import type { IStudioSettings } from '@sofie-automation/shared-lib/dist/core/model/StudioSettings'
 import type { MosDeviceConfig } from '@sofie-automation/shared-lib/dist/generated/MosGatewayDevicesTypes'
+import type { MosGatewayConfig } from '@sofie-automation/shared-lib/dist/generated/MosGatewayOptionsTypes'
 import type { PlayoutGatewayConfig } from '@sofie-automation/shared-lib/dist/generated/PlayoutGatewayConfigTypes'
+import type { LiveStatusGatewayConfig } from '@sofie-automation/shared-lib/dist/generated/LiveStatusGatewayOptionsTypes'
 
 export interface StudioBlueprintManifest<TRawConfig = IBlueprintConfig, TProcessedConfig = unknown>
 	extends BlueprintManifestBase {
@@ -172,9 +174,13 @@ export interface BlueprintParentDeviceSettings {
 	options: Record<string, any>
 }
 
+export type BlueprintMosGatewayConfig = MosGatewayConfig
+
 export type BlueprintMosDeviceConfig = MosDeviceConfig
 
 export type BlueprintPlayoutGatewayConfig = PlayoutGatewayConfig
+
+export type BlueprintLiveStatusGatewayConfig = LiveStatusGatewayConfig
 
 export interface IStudioConfigPreset<TConfig = IBlueprintConfig> {
 	name: string
