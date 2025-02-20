@@ -23,6 +23,7 @@ try {
 	})
 
 	await fs.writeFile('./playout-gateway/src/generated/options.ts', BANNER + '\n' + schema)
+	await fs.writeFile('./shared-lib/src/generated/PlayoutGatewayConfigTypes.ts', BANNER + '\n' + schema)
 } catch (e) {
 	console.error('Error while generating playout-gateway options.json, continuing...')
 	console.error(e)
@@ -37,6 +38,7 @@ try {
 	})
 
 	await fs.writeFile('./mos-gateway/src/generated/options.ts', BANNER + '\n' + schema)
+	await fs.writeFile('./shared-lib/src/generated/MosGatewayOptionsTypes.ts', BANNER + '\n' + schema)
 } catch (e) {
 	console.error('Error while generating mos-gateway options.json, continuing...')
 	console.error(e)
@@ -49,6 +51,7 @@ try {
 	})
 
 	await fs.writeFile('./mos-gateway/src/generated/devices.ts', BANNER + '\n' + schema)
+	await fs.writeFile('./shared-lib/src/generated/MosGatewayDevicesTypes.ts', BANNER + '\n' + schema)
 } catch (e) {
 	console.error('Error while generating mos-gateway devices.json, continuing...')
 	console.error(e)
@@ -63,6 +66,7 @@ try {
 	})
 
 	await fs.writeFile('./live-status-gateway/src/generated/options.ts', BANNER + '\n' + schema)
+	await fs.writeFile('./shared-lib/src/generated/LiveStatusGatewayOptionsTypes.ts', BANNER + '\n' + schema)
 } catch (e) {
 	console.error('Error while generating live-status-gateway options.json, continuing...')
 	console.error(e)
