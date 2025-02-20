@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useContext } from 'react'
 import ClassNames from 'classnames'
 import { RundownUtils } from '../../../lib/rundown'
 import { ILayerItemRendererProps } from './ItemRendererFactory'
@@ -11,6 +11,12 @@ import { StyledTimecode } from '../../../lib/StyledTimecode'
 import { ActionAdLibHotkeyPreview } from '../../../lib/triggers/ActionAdLibHotkeyPreview'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { HourglassIconSmall } from '../../../lib/ui/icons/notifications'
+import {
+	PreviewPopUpContext,
+	IPreviewPopUpSession,
+	convertPreviewToContents,
+	convertSourceLayerItemToPreview,
+} from '../../PreviewPopUp/PreviewPopUpContext'
 
 export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps> = (
 	props: ILayerItemRendererProps
@@ -55,17 +61,38 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 		}
 	})
 
+	const previewContext = useContext(PreviewPopUpContext)
+	const previewSession = useRef<IPreviewPopUpSession | null>(null)
+	const previewContents = props.adLibListItem.content.popUpPreview
+		? convertPreviewToContents(props.adLibListItem.content.popUpPreview, props.contentStatus)
+		: props.adLibListItem.sourceLayer
+		? convertSourceLayerItemToPreview(props.adLibListItem.sourceLayer.type, props.adLibListItem, props.contentStatus)
+		: []
+
 	const handleOnMouseOver = (e: React.MouseEvent) => {
 		if (itemIconPosition) {
 			const left = e.pageX - itemIconPosition.left
 			const unprocessedPercentage = left / itemIconPosition.width
 			if (unprocessedPercentage <= 1 && !showMiniInspector) {
-				setShowMiniInspector(true)
+				// setShowMiniInspector(true)
+
+				previewSession.current = previewContext.requestPreview(e.target as any, previewContents, {
+					time: hoverScrubTimePosition,
+					startCoordinate: e.screenX,
+					trackMouse: true,
+				})
 			}
 		}
 	}
 
-	const handleOnMouseLeave = () => setShowMiniInspector(false)
+	const handleOnMouseLeave = () => {
+		setShowMiniInspector(false)
+
+		if (previewSession.current) {
+			previewSession.current.close()
+			previewSession.current = null
+		}
+	}
 
 	const handleOnMouseMove = (e: React.MouseEvent) => {
 		if (itemIconPosition) {
@@ -80,6 +107,9 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 			unprocessedPercentage = (left - 5) / (itemIconPosition.width - 15)
 			const percentage = Math.max(0, Math.min(1, unprocessedPercentage))
 			setHoverScrubTimePosition(percentage * (sourceDuration || 0))
+			if (previewSession.current) {
+				previewSession.current.setPointerTime(percentage * (sourceDuration || 0))
+			}
 		}
 	}
 

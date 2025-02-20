@@ -55,7 +55,7 @@ export function LinePartScriptPiece({ pieces }: IProps): JSX.Element {
 		(thisPieces[0].instance.piece.content.popUpPreview
 			? convertPreviewToContents(thisPieces[0].instance.piece.content.popUpPreview, contentStatus)
 			: thisPieces[0].sourceLayer
-			? convertSourceLayerItemToPreview(thisPieces[0].sourceLayer?.type, thisPieces[0], contentStatus)
+			? convertSourceLayerItemToPreview(thisPieces[0].sourceLayer?.type, thisPieces[0].instance.piece, contentStatus)
 			: [])
 
 	function onMouseEnter(e: React.PointerEvent<HTMLDivElement>) {

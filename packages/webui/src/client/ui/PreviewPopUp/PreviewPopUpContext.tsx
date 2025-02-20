@@ -17,6 +17,8 @@ import { PieceContentStatusObj } from '@sofie-automation/meteor-lib/dist/api/pie
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { PieceUi } from '../SegmentContainer/withResolvedSegment'
 import _ from 'underscore'
+import { IAdLibListItem } from '../Shelf/AdLibListItem'
+import { PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 
 type VirtualElement = {
 	getBoundingClientRect: () => DOMRect
@@ -65,11 +67,11 @@ export function convertPreviewToContents(
 
 export function convertSourceLayerItemToPreview(
 	sourceLayerType: SourceLayerType,
-	piece: PieceUi,
+	item: ReadonlyObjectDeep<PieceInstancePiece> | IAdLibListItem,
 	contentStatus?: ReadonlyObjectDeep<PieceContentStatusObj>
 ): PreviewContent[] {
 	if (sourceLayerType === SourceLayerType.VT || sourceLayerType === SourceLayerType.LIVE_SPEAK) {
-		const content = piece.instance.piece.content as VTContent
+		const content = item.content as VTContent
 
 		return _.compact([
 			{
@@ -94,7 +96,7 @@ export function convertSourceLayerItemToPreview(
 		return [
 			{
 				type: 'title',
-				content: piece.instance.piece.name,
+				content: item.name,
 			},
 			// {
 			// 	type: 'data',
@@ -105,12 +107,12 @@ export function convertSourceLayerItemToPreview(
 				href: 'http://localhost:3005/dev/templatePreview.html',
 				postMessage: {
 					event: 'sofie-update',
-					payload: piece.instance.piece.name,
+					payload: item.name,
 				},
 			},
 		]
 	} else if (sourceLayerType === SourceLayerType.SCRIPT) {
-		const content = piece.instance.piece.content as ScriptContent
+		const content = item.content as ScriptContent
 		return [
 			{
 				type: 'script',
@@ -121,7 +123,7 @@ export function convertSourceLayerItemToPreview(
 			},
 		]
 	} else if (sourceLayerType === SourceLayerType.SPLITS) {
-		const content = piece.instance.piece.content as SplitsContent
+		const content = item.content as SplitsContent
 		return [{ type: 'boxLayout', boxSourceConfiguration: content.boxSourceConfiguration }]
 	}
 
@@ -207,9 +209,11 @@ interface PreviewRequestOptions {
 	time?: number
 	/**  */
 	startCoordinate?: number
+	/** */
+	trackMouse?: boolean
 }
 
-interface IPreviewPopUpContext {
+export interface IPreviewPopUpContext {
 	/**
 	 * Request a new preview session
 	 * @param anchor The HTML element the preview
@@ -235,6 +239,7 @@ interface PreviewSession {
 	placement: Placement
 	size: 'small' | 'large'
 	startCoordinate?: number
+	trackMouse?: boolean
 }
 
 export function PreviewPopUpContextProvider({ children }: React.PropsWithChildren<{}>): React.ReactNode {
@@ -258,6 +263,7 @@ export function PreviewPopUpContextProvider({ children }: React.PropsWithChildre
 				placement: opts?.placement ?? 'top',
 				size: opts?.size ?? 'small',
 				startCoordinate: opts?.startCoordinate,
+				trackMouse: opts?.trackMouse,
 			})
 			setPreviewContent(content)
 
@@ -292,6 +298,7 @@ export function PreviewPopUpContextProvider({ children }: React.PropsWithChildre
 					size={previewSession.size}
 					placement={previewSession.placement}
 					startCoordinate={previewSession.startCoordinate}
+					trackMouse={previewSession.trackMouse}
 				>
 					{previewContent && previewContent.map((content) => <PreviewPopUpContent time={t} content={content} />)}
 				</PreviewPopUp>

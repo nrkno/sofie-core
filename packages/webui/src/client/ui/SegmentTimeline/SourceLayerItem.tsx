@@ -251,12 +251,13 @@ export const SourceLayerItem = (props: Readonly<ISourceLayerItemProps>): JSX.Ele
 					convertPreviewToContents(piece.instance.piece.content.popUpPreview, contentStatus)
 				)
 			} else {
-				const previewContents = convertSourceLayerItemToPreview(layer.type, piece, contentStatus)
+				const previewContents = convertSourceLayerItemToPreview(layer.type, piece.instance.piece, contentStatus)
 
 				if (previewContents.length) {
 					previewSession.current = previewContext.requestPreview(e.target as any, previewContents, {
 						time: cursorTimePosition,
 						startCoordinate: e.screenX,
+						trackMouse: true,
 					})
 				} else {
 					setShowMiniInspector(v)

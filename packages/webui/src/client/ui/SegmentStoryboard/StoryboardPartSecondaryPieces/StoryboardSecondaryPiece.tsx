@@ -96,7 +96,7 @@ export function StoryboardSecondaryPiece(props: IProps): JSX.Element {
 	const contentStatus = useContentStatusForPieceInstance(piece.instance)
 	const previewContents = piece.instance.piece.content.popUpPreview
 		? convertPreviewToContents(piece.instance.piece.content.popUpPreview, contentStatus)
-		: convertSourceLayerItemToPreview(props.layer.type, piece, contentStatus)
+		: convertSourceLayerItemToPreview(props.layer.type, piece.instance.piece, contentStatus)
 
 	const onPointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
 		if (e.pointerType !== 'mouse') return

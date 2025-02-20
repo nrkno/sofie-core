@@ -26,6 +26,13 @@ import { AdLibPieceUi } from '../../lib/shelf'
 import { protectString } from '../../lib/tempLib'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import {
+	convertPreviewToContents,
+	convertSourceLayerItemToPreview,
+	IPreviewPopUpContext,
+	IPreviewPopUpSession,
+	PreviewPopUpContext,
+} from '../PreviewPopUp/PreviewPopUpContext'
 
 export interface IDashboardButtonProps {
 	piece: IAdLibListItem
@@ -51,6 +58,9 @@ export interface IDashboardButtonProps {
 	canOverflowHorizontally?: boolean
 	lineBreak?: string
 }
+interface WithPreviewContext {
+	previewContext: IPreviewPopUpContext
+}
 export const DEFAULT_BUTTON_WIDTH = 6.40625
 export const DEFAULT_BUTTON_HEIGHT = 5.625
 export const HOVER_TIMEOUT = 5000
@@ -63,7 +73,7 @@ interface IState {
 }
 
 export class DashboardPieceButtonBase<T = {}> extends React.Component<
-	React.PropsWithChildren<IDashboardButtonProps> & T & WithMediaObjectStatusProps,
+	React.PropsWithChildren<IDashboardButtonProps> & T & WithMediaObjectStatusProps & WithPreviewContext,
 	IState
 > {
 	private element: HTMLDivElement | null = null
@@ -78,8 +88,9 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 	private pointerId: number | null = null
 	private hoverTimeout: number | null = null
 	protected inBucket = false
+	private previewSession: IPreviewPopUpSession | null = null
 
-	constructor(props: IDashboardButtonProps & T & WithMediaObjectStatusProps) {
+	constructor(props: IDashboardButtonProps & T & WithMediaObjectStatusProps & WithPreviewContext) {
 		super(props)
 
 		this.state = {
@@ -201,7 +212,7 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 		this.element = el
 	}
 
-	private handleOnMouseEnter = (_e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+	private handleOnMouseEnter = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
 		if (this.element) {
 			const { top, left, width, height } = this.element.getBoundingClientRect()
 			this.positionAndSize = {
@@ -211,12 +222,27 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 				height,
 			}
 		}
-		this.setState({ isHovered: true })
+
+		const previewContents = this.props.piece.content.popUpPreview
+			? convertPreviewToContents(this.props.piece.content.popUpPreview, this.props.contentStatus)
+			: this.props.layer
+			? convertSourceLayerItemToPreview(this.props.layer.type, this.props.piece, this.props.contentStatus)
+			: []
+		if (!previewContents.length) return
+
+		this.previewSession = this.props.previewContext.requestPreview(e.target as any, previewContents, {
+			time: this.state.timePosition,
+		})
 	}
 
 	private handleOnMouseLeave = (_e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
 		this.setState({ isHovered: false })
 		this.positionAndSize = null
+
+		if (this.previewSession) {
+			this.previewSession.close()
+			this.previewSession = null
+		}
 	}
 
 	private handleOnPointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -230,8 +256,18 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 			}
 		}
 		if (e.pointerType === 'mouse') {
-			this.setState({ isHovered: true })
 			this.startHoverTimeout()
+
+			const previewContents = this.props.piece.content.popUpPreview
+				? convertPreviewToContents(this.props.piece.content.popUpPreview, this.props.contentStatus)
+				: this.props.layer
+				? convertSourceLayerItemToPreview(this.props.layer.type, this.props.piece, this.props.contentStatus)
+				: []
+			if (!previewContents.length) return
+
+			this.previewSession = this.props.previewContext.requestPreview(e.target as any, previewContents, {
+				time: this.state.timePosition,
+			})
 		}
 	}
 
@@ -242,6 +278,11 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 			this.hoverTimeout = null
 		}
 		this.positionAndSize = null
+
+		if (this.previewSession) {
+			this.previewSession.close()
+			this.previewSession = null
+		}
 	}
 
 	private handleOnMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -266,6 +307,9 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 		if (this.hoverTimeout) {
 			Meteor.clearTimeout(this.hoverTimeout)
 			this.startHoverTimeout()
+		}
+		if (this.previewSession) {
+			this.previewSession.setPointerTime(timePercentage * sourceDuration)
 		}
 	}
 
@@ -491,6 +535,7 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 
 export function DashboardPieceButton(props: React.PropsWithChildren<IDashboardButtonProps>): JSX.Element {
 	const contentStatus = useContentStatusForAdlibPiece(props.piece)
+	const previewContext = React.useContext(PreviewPopUpContext)
 
-	return <DashboardPieceButtonBase {...props} contentStatus={contentStatus} />
+	return <DashboardPieceButtonBase {...props} contentStatus={contentStatus} previewContext={previewContext} />
 }

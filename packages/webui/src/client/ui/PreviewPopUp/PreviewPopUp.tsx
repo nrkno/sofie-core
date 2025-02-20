@@ -15,9 +15,10 @@ export const PreviewPopUp = React.forwardRef<
 		hidden?: boolean
 		preview?: React.ReactNode
 		startCoordinate?: number
+		trackMouse?: boolean
 	}>
 >(function PreviewPopUp(
-	{ anchor, padding, placement, hidden, size, children, startCoordinate },
+	{ anchor, padding, placement, hidden, size, children, startCoordinate, trackMouse },
 	ref
 ): React.JSX.Element {
 	const [popperEl, setPopperEl] = useState<HTMLDivElement | null>(null)
@@ -62,24 +63,30 @@ export const PreviewPopUp = React.forwardRef<
 			anchor?.getBoundingClientRect().y ?? 0
 		),
 	})
-	const { styles, attributes, update } = usePopper(virtualElement.current, popperEl, popperOptions)
+	const { styles, attributes, update } = usePopper(
+		trackMouse ? virtualElement.current : anchor,
+		popperEl,
+		popperOptions
+	)
 
 	const updateRef = useRef(update)
 
 	useEffect(() => {
 		updateRef.current = update
 
-		const listener = ({ clientX: x }: MouseEvent) => {
-			virtualElement.current.getBoundingClientRect = generateGetBoundingClientRect(
-				x,
-				anchor?.getBoundingClientRect().y ?? 0
-			)
-			if (update) update()
-		}
-		document.addEventListener('mousemove', listener)
+		if (trackMouse) {
+			const listener = ({ clientX: x }: MouseEvent) => {
+				virtualElement.current.getBoundingClientRect = generateGetBoundingClientRect(
+					x,
+					anchor?.getBoundingClientRect().y ?? 0
+				)
+				if (update) update()
+			}
+			document.addEventListener('mousemove', listener)
 
-		return () => {
-			document.removeEventListener('mousemove', listener)
+			return () => {
+				document.removeEventListener('mousemove', listener)
+			}
 		}
 	}, [update, anchor])
 

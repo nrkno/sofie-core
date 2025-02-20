@@ -58,7 +58,7 @@ export const LinePartSecondaryPiece: React.FC<IProps> = React.memo(function Line
 	const previewContents = piece.instance.piece.content.popUpPreview
 		? convertPreviewToContents(piece.instance.piece.content.popUpPreview, contentStatus)
 		: piece.sourceLayer
-		? convertSourceLayerItemToPreview(piece.sourceLayer?.type, piece, contentStatus)
+		? convertSourceLayerItemToPreview(piece.sourceLayer?.type, piece.instance.piece, contentStatus)
 		: []
 
 	const onPointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {

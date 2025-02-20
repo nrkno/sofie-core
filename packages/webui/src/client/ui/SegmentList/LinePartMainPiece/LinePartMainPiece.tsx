@@ -139,7 +139,7 @@ export function LinePartMainPiece({
 	const previewContents = piece.instance.piece.content.popUpPreview
 		? convertPreviewToContents(piece.instance.piece.content.popUpPreview, contentStatus)
 		: piece.sourceLayer
-		? convertSourceLayerItemToPreview(piece.sourceLayer?.type, piece, contentStatus)
+		? convertSourceLayerItemToPreview(piece.sourceLayer?.type, piece.instance.piece, contentStatus)
 		: []
 
 	const onPointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -152,6 +152,7 @@ export function LinePartMainPiece({
 			previewSession.current = previewContext.requestPreview(e.target as any, previewContents, {
 				time: mousePosition * (piece.instance.piece.content.sourceDuration || 0),
 				startCoordinate: e.screenX,
+				trackMouse: true,
 			})
 
 		const newOffset = pieceEl.current && getElementDocumentOffset(pieceEl.current)
