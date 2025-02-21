@@ -44,10 +44,10 @@ export function PreviewPopUpContent({ content, time }: PreviewPopUpContentProps)
 				<div className="preview-popUp__table">
 					<table>
 						<tbody>
-							{Object.entries(content.content).map(([key, entry]) => (
+							{content.content.map(({ key, value }) => (
 								<tr>
 									<td className="preview-popup__label">{key}</td>
-									<td className="preview-popup__value">{entry}</td>
+									<td className="preview-popup__value">{value}</td>
 								</tr>
 							))}
 						</tbody>

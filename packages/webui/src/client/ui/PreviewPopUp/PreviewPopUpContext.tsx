@@ -3,7 +3,8 @@ import { PreviewPopUp, PreviewPopUpHandle } from './PreviewPopUp'
 import { Padding, Placement } from '@popperjs/core'
 import { PreviewPopUpContent } from './PreviewPopUpContent'
 import {
-	Previews,
+	JSONBlobParse,
+	NoraPayload,
 	PreviewType,
 	ScriptContent,
 	SourceLayerType,
@@ -15,7 +16,6 @@ import {
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import { PieceContentStatusObj } from '@sofie-automation/meteor-lib/dist/api/pieceContentStatus'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { PieceUi } from '../SegmentContainer/withResolvedSegment'
 import _ from 'underscore'
 import { IAdLibListItem } from '../Shelf/AdLibListItem'
 import { PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
@@ -25,90 +25,174 @@ type VirtualElement = {
 	contextElement?: Element
 }
 
-export function convertPreviewToContents(
-	content: Previews | ReadonlyObjectDeep<Previews>,
-	contentStatus?: ReadonlyObjectDeep<PieceContentStatusObj>
-): PreviewContent[] {
-	switch (content.type) {
-		case PreviewType.Script:
-			return [
-				{
-					type: 'script',
-					content: content.fullText ?? content.lastWords ?? content.comment ?? 'No text found', // note - translate here?
-				},
-			]
-		case PreviewType.VT: {
-			if (contentStatus?.previewUrl) {
-				return [
-					{ type: 'title', content: 'VT Todo' },
-					{
-						type: 'video',
-						src: contentStatus?.previewUrl,
-					},
-				]
-			} else {
-				return [
-					{
-						type: 'warning',
-						content: { key: 'No preview url found' },
-					},
-				]
-			}
-		}
-		default:
-			return [
-				{
-					type: 'warning',
-					content: { key: 'No preview type found' },
-				},
-			]
-	}
-}
-
 export function convertSourceLayerItemToPreview(
-	sourceLayerType: SourceLayerType,
+	sourceLayerType: SourceLayerType | undefined,
 	item: ReadonlyObjectDeep<PieceInstancePiece> | IAdLibListItem,
 	contentStatus?: ReadonlyObjectDeep<PieceContentStatusObj>
 ): PreviewContent[] {
+	// first try to read the popup preview
+	if (item.content.popUpPreview) {
+		const popupPreview = item.content.popUpPreview
+		const contents: PreviewContent[] = []
+
+		if (popupPreview.name) {
+			contents.push({ type: 'title', content: popupPreview.name })
+		}
+
+		if (popupPreview.preview) {
+			switch (popupPreview.preview.type) {
+				case PreviewType.BlueprintImage:
+					contents.push({ type: 'image', src: '/api/private/blueprints/assets/' + popupPreview.preview.image })
+					break
+				case PreviewType.HTML:
+					contents.push({
+						type: 'iframe',
+						href: popupPreview.preview.previewUrl,
+						postMessage: popupPreview.preview.postMessageOnLoad,
+					})
+					if (popupPreview.preview.steps) {
+						contents.push({
+							type: 'stepCount',
+							current: popupPreview.preview.steps.current,
+							total: popupPreview.preview.steps.total,
+						})
+					}
+					break
+				case PreviewType.Script:
+					contents.push({
+						type: 'script',
+						script: popupPreview.preview.fullText,
+						lastWords: popupPreview.preview.lastWords,
+						comment: popupPreview.preview.comment,
+						lastModified: popupPreview.preview.lastModified,
+					})
+					break
+				case PreviewType.Split:
+					contents.push({
+						type: 'boxLayout',
+						boxSourceConfiguration: popupPreview.preview.boxes,
+						backgroundArt: popupPreview.preview.background,
+					})
+					break
+				case PreviewType.Table:
+					contents.push({
+						type: 'data',
+						content: [...popupPreview.preview.entries],
+					})
+					break
+				case PreviewType.VT:
+					if (contentStatus?.previewUrl) {
+						contents.push({
+							type: 'video',
+							src: contentStatus?.previewUrl,
+						})
+					} else if (contentStatus?.thumbnailUrl) {
+						contents.push({
+							type: 'image',
+							src: contentStatus.thumbnailUrl,
+						})
+					}
+					if (popupPreview.preview.outWords) {
+						contents.push({
+							type: 'inOutWords',
+							in: popupPreview.preview.inWords,
+							out: popupPreview.preview.outWords,
+						})
+					}
+					break
+			}
+		}
+
+		if (popupPreview.warnings) {
+			contents.push(...popupPreview.warnings.map((w): PreviewContent => ({ type: 'warning', content: w.reason })))
+		}
+
+		return contents
+	}
+
+	// if no preview was specified, we try to infer one based on the source layer
+	if (!sourceLayerType) return []
+
 	if (sourceLayerType === SourceLayerType.VT || sourceLayerType === SourceLayerType.LIVE_SPEAK) {
 		const content = item.content as VTContent
 
-		return _.compact([
+		return _.compact<(PreviewContent | undefined)[]>([
 			{
 				type: 'title',
 				content: content.fileName,
 			},
-			contentStatus?.previewUrl && {
-				type: 'video',
-				src: contentStatus.previewUrl,
-			},
-			{
-				type: 'inOutWords',
-				in: 'This is a sentence of words for the inpoint',
-				out: 'these words mark the outpoint of the VT',
-			},
+			contentStatus?.previewUrl
+				? {
+						type: 'video',
+						src: contentStatus.previewUrl,
+				  }
+				: contentStatus?.thumbnailUrl
+				? {
+						type: 'image',
+						src: contentStatus.thumbnailUrl,
+				  }
+				: undefined,
+			// todo - add in-out words after rebasing
 			...(contentStatus?.messages?.map<PreviewContent>((m) => ({
 				type: 'warning',
 				content: m as any,
 			})) || []),
-		])
+		]) as PreviewContent[]
+	} else if (sourceLayerType === SourceLayerType.GRAPHICS && 'previewPayload' in item.content) {
+		const payload = JSONBlobParse<NoraPayload>(item.content.previewPayload)
+		const tableProps = Object.entries(payload.content)
+			.filter(([key, value]) => !(key.startsWith('_') || key.startsWith('@') || value === ''))
+			.map(([key, value]) => ({ key, value }))
+
+		return _.compact([
+			{
+				type: 'title',
+				content: payload.template.name ?? item.name, // todo - subtitle with variant
+			},
+			item.content.previewRenderer
+				? {
+						type: 'iframe',
+						href: item.content.previewRenderer,
+						postMessage: {
+							event: 'nora',
+							contentToShow: {
+								manifest: payload.manifest,
+								template: {
+									event: 'preview',
+									name: payload.template.name,
+									channel: 'gfx1',
+									layer: payload.template.layer,
+									system: 'html',
+								},
+								content: {
+									...payload.content,
+									_valid: false,
+								},
+								timing: {
+									duration: '00:05',
+									in: 'auto',
+									out: 'auto',
+									timeIn: '00:00',
+								},
+								step: payload.step,
+							},
+						},
+				  }
+				: {
+						type: 'data',
+						content: tableProps,
+				  },
+			item.content.step && {
+				type: 'stepCount',
+				current: item.content.step.current,
+				count: item.content.step.count,
+			},
+		]) as PreviewContent[]
 	} else if (sourceLayerType === SourceLayerType.GRAPHICS) {
 		return [
 			{
 				type: 'title',
 				content: item.name,
-			},
-			// {
-			// 	type: 'data',
-			// 	content: { exampleField: 'exampleValue' }, // todo - take data from actual templateData
-			// },
-			{
-				type: 'iframe',
-				href: 'http://localhost:3005/dev/templatePreview.html',
-				postMessage: {
-					event: 'sofie-update',
-					payload: item.name,
-				},
 			},
 		]
 	} else if (sourceLayerType === SourceLayerType.SCRIPT) {
@@ -135,6 +219,7 @@ export type PreviewContent =
 			type: 'iframe'
 			href: string
 			postMessage?: any
+			dimensions?: { width: number; height: number }
 	  }
 	| {
 			type: 'image'
@@ -162,7 +247,7 @@ export type PreviewContent =
 	  }
 	| {
 			type: 'data'
-			content: Record<string, string>
+			content: { key: string; value: string }[]
 	  }
 	| {
 			type: 'boxLayout'

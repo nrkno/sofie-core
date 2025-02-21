@@ -1,13 +1,13 @@
+import { SplitsContentBoxContent, SplitsContentBoxProperties } from './content'
 import { NoteSeverity } from './lib'
+import { ITranslatableMessage } from './translations'
 
-export type Previews =
-	| InvalidPreview
-	| TablePreview
-	| ScriptPreview
-	| HTMLPreview
-	| SplitPreview
-	| VTPreview
-	| BlueprintImagePreview
+export interface PopupPreview<P extends Previews = Previews> {
+	name?: string
+	preview?: P
+	warnings?: InvalidPreview[]
+}
+export type Previews = TablePreview | ScriptPreview | HTMLPreview | SplitPreview | VTPreview | BlueprintImagePreview
 
 export enum PreviewType {
 	Invalid = 'invalid',
@@ -24,18 +24,14 @@ interface PreviewBase {
 }
 
 export interface InvalidPreview extends PreviewBase {
-	// todo - is this required or would we just pull this from the piece warning anyway
 	type: PreviewType.Invalid
 
 	severity: NoteSeverity
-	reason: string // todo - translate
+	reason: ITranslatableMessage
 }
 export interface TablePreview extends PreviewBase {
-	// todo - translations
 	type: PreviewType.Table
 
-	heading: string
-	subheading?: string
 	entries: { key: string; value: string }[]
 }
 export interface ScriptPreview extends PreviewBase {
@@ -47,31 +43,35 @@ export interface ScriptPreview extends PreviewBase {
 	lastModified?: number
 }
 export interface HTMLPreview extends PreviewBase {
-	// todo - steps and how to control them
+	// todo - expose if and how steps can be controlled
 	type: PreviewType.HTML
 
-	previewUrl: string
+	name?: string
 
+	previewUrl: string
 	previewDimension?: { width: number; height: number }
-	hasSteps?: boolean
 
 	postMessageOnLoad?: any
+
+	steps?: { current: number; total: number }
 }
 export interface SplitPreview extends PreviewBase {
 	type: PreviewType.Split
 
 	background?: string // file asset upload?
-	boxes: any // todo
+	boxes: (SplitsContentBoxContent & SplitsContentBoxProperties)[]
 }
 export interface VTPreview extends PreviewBase {
 	type: PreviewType.VT
 
 	// note: the info required for the preview follows from package manager so there's nothing for blueprins here
 	// note: if we want to allow a preview for different media than saved on the piece (because perhaps the media is in a non-primary piece) should we allow to specifiy the package to preview?
-	// todo - turn this into a "PackagePreview"?
+
+	inWords?: string // note - only displayed if outWords are present
+	outWords?: string
 }
 export interface BlueprintImagePreview extends PreviewBase {
 	type: PreviewType.BlueprintImage
 
-	image?: string // to be put in as asset
+	image: string // to be put in as asset
 }

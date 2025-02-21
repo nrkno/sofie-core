@@ -258,11 +258,12 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 		if (e.pointerType === 'mouse') {
 			this.startHoverTimeout()
 
-			const previewContents = this.props.piece.content.popUpPreview
-				? convertPreviewToContents(this.props.piece.content.popUpPreview, this.props.contentStatus)
-				: this.props.layer
-				? convertSourceLayerItemToPreview(this.props.layer.type, this.props.piece, this.props.contentStatus)
-				: []
+			const previewContents = convertSourceLayerItemToPreview(
+				this.props.layer?.type,
+				this.props.piece,
+				this.props.contentStatus
+			)
+
 			if (!previewContents.length) return
 
 			this.previewSession = this.props.previewContext.requestPreview(e.target as any, previewContents, {

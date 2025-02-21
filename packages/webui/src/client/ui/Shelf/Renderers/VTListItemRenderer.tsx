@@ -63,11 +63,11 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 
 	const previewContext = useContext(PreviewPopUpContext)
 	const previewSession = useRef<IPreviewPopUpSession | null>(null)
-	const previewContents = props.adLibListItem.content.popUpPreview
-		? convertPreviewToContents(props.adLibListItem.content.popUpPreview, props.contentStatus)
-		: props.adLibListItem.sourceLayer
-		? convertSourceLayerItemToPreview(props.adLibListItem.sourceLayer.type, props.adLibListItem, props.contentStatus)
-		: []
+	const previewContents = convertSourceLayerItemToPreview(
+		props.adLibListItem.sourceLayer?.type,
+		props.adLibListItem,
+		props.contentStatus
+	)
 
 	const handleOnMouseOver = (e: React.MouseEvent) => {
 		if (itemIconPosition) {

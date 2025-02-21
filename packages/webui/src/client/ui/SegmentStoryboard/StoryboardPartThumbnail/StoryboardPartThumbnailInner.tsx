@@ -51,11 +51,7 @@ export function StoryboardPartThumbnailInner({
 	const previewSession = useRef<IPreviewPopUpSession | null>(null)
 
 	const contentStatus = useContentStatusForPieceInstance(piece.instance)
-	const previewContents = piece.instance.piece.content.popUpPreview
-		? convertPreviewToContents(piece.instance.piece.content.popUpPreview, contentStatus)
-		: layer
-		? convertSourceLayerItemToPreview(layer.type, piece.instance.piece, contentStatus)
-		: []
+	const previewContents = convertSourceLayerItemToPreview(layer.type, piece.instance.piece, contentStatus)
 
 	const onPointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
 		if (e.pointerType !== 'mouse') {

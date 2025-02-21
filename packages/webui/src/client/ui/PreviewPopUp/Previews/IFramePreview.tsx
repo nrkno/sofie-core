@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useRef } from 'react'
 
 interface IFramePreviewProps {
-	content: { type: 'iframe'; href: string; awaitMessage?: any; postMessage?: any }
+	content: {
+		type: 'iframe'
+		href: string
+		awaitMessage?: any
+		postMessage?: any
+		dimensions?: { width: number; height: number }
+	}
 	time: number | null
 }
 
@@ -9,7 +15,6 @@ export function IFramePreview({ content }: IFramePreviewProps): React.ReactEleme
 	const iFrameElement = useRef<HTMLIFrameElement>(null)
 
 	const onLoadListener = useCallback(() => {
-		console.log('send', content.postMessage)
 		if (content.postMessage) {
 			iFrameElement.current?.contentWindow?.postMessage(content.postMessage)
 		}
@@ -23,9 +28,15 @@ export function IFramePreview({ content }: IFramePreviewProps): React.ReactEleme
 		return () => iFrameElement.current?.removeEventListener('load', onLoadListener)
 	}, [iFrameElement.current, onLoadListener])
 
+	const style: Record<string, string | number> = {}
+	if (content.dimensions) {
+		style['--preview-render-width'] = content.dimensions.width
+		style['--preview-render-height'] = content.dimensions.height
+	}
+
 	return (
 		<div className="preview-popUp__iframe">
-			<div className="preview">
+			<div className="preview" style={style}>
 				<img src="/images/previewBG.jpg" alt="" />
 				{content.href && (
 					<iframe
