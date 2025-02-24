@@ -14,9 +14,7 @@ import { getSplitItems } from '../../SegmentContainer/getSplitItems'
 import { PieceElement } from '../../SegmentContainer/PieceElement'
 import { getPieceSteps, PieceMultistepChevron } from '../../SegmentContainer/PieceMultistepChevron'
 import { useContentStatusForPieceInstance } from '../../SegmentTimeline/withMediaObjectStatus'
-import { PieceHoverInspector } from '../PieceHoverInspector'
 import {
-	convertPreviewToContents,
 	convertSourceLayerItemToPreview,
 	IPreviewPopUpSession,
 	PreviewPopUpContext,
@@ -63,14 +61,12 @@ export function LinePartMainPiece({
 	partDuration,
 	timelineBase,
 	capToPartDuration,
-	studio,
 }: IProps): JSX.Element {
 	const contentStatus = useContentStatusForPieceInstance(piece.instance)
 
 	const [hover, setHover] = useState(false)
 	const [origin, setOrigin] = useState<OffsetPosition>({ left: 0, top: 0 })
 	const [width, setWidth] = useState(0)
-	const [mouseTimePosition, setMouseTimePosition] = useState(0)
 	const [mousePosition, setMousePosition] = useState(0)
 	const pieceEl = useRef<HTMLDivElement>(null)
 
@@ -142,7 +138,7 @@ export function LinePartMainPiece({
 		if (e.pointerType !== 'mouse') {
 			return
 		}
-		// setHover(true)
+		setHover(true)
 
 		if (previewContents.length > 0)
 			previewSession.current = previewContext.requestPreview(e.target as any, previewContents, {
@@ -177,7 +173,6 @@ export function LinePartMainPiece({
 			return
 		}
 		const newMousePosition = Math.max(0, Math.min(1, (e.pageX - origin.left - 5) / (width - 10)))
-		setMouseTimePosition(newMousePosition)
 		setMousePosition(e.pageX - origin.left)
 
 		previewSession.current?.setPointerTime(
@@ -224,18 +219,6 @@ export function LinePartMainPiece({
 					<LoopingPieceIcon className="segment-opl__main-piece__label-icon" playing={hover} />
 				)}
 			</div>
-			{studio && (
-				<PieceHoverInspector
-					hoverScrubTimePosition={mouseTimePosition * (piece.instance.piece.content.sourceDuration || 0)}
-					hovering={hover}
-					pieceInstance={piece}
-					contentStatus={contentStatus}
-					layer={piece.sourceLayer}
-					originPosition={origin}
-					mousePosition={mousePosition}
-					studio={studio}
-				/>
-			)}
 		</PieceElement>
 	)
 }

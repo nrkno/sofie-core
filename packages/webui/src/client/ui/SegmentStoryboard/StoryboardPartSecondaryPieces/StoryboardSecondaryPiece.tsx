@@ -14,7 +14,6 @@ import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { useContentStatusForPieceInstance } from '../../SegmentTimeline/withMediaObjectStatus'
 import {
-	convertPreviewToContents,
 	convertSourceLayerItemToPreview,
 	IPreviewPopUpSession,
 	PreviewPopUpContext,

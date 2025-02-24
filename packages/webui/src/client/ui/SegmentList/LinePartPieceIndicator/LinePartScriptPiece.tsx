@@ -1,12 +1,9 @@
-import { ScriptContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
-import { useContext, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { useContext, useMemo, useRef } from 'react'
 import { PieceExtended } from '../../../lib/RundownResolver'
-import { IFloatingInspectorPosition } from '../../FloatingInspectors/IFloatingInspectorPosition'
-import { MicFloatingInspector } from '../../FloatingInspectors/MicFloatingInspector'
 import {
 	PreviewPopUpContext,
 	IPreviewPopUpSession,
-	convertPreviewToContents,
 	convertSourceLayerItemToPreview,
 } from '../../PreviewPopUp/PreviewPopUpContext'
 import { useContentStatusForPieceInstance } from '../../SegmentTimeline/withMediaObjectStatus'
@@ -17,13 +14,6 @@ interface IProps {
 
 export function LinePartScriptPiece({ pieces }: IProps): JSX.Element {
 	const pieceEl = useRef<HTMLDivElement>(null)
-	const [miniInspectorPosition, setMiniInspectorPosition] = useState<IFloatingInspectorPosition>({
-		position: 'bottom',
-		anchor: 'start',
-		left: 0,
-		top: 0,
-	})
-	const [isHover, setHover] = useState(false)
 	const thisPieces = useMemo(
 		() =>
 			pieces.filter(
@@ -34,18 +24,6 @@ export function LinePartScriptPiece({ pieces }: IProps): JSX.Element {
 			),
 		[pieces]
 	)
-	useLayoutEffect(() => {
-		if (!pieceEl.current) return
-
-		const { top, left, width } = pieceEl.current.getBoundingClientRect()
-
-		setMiniInspectorPosition({
-			top: top + window.scrollY,
-			left: left + width / 2 + window.scrollX,
-			position: 'bottom',
-			anchor: 'start',
-		})
-	}, [])
 
 	const previewContext = useContext(PreviewPopUpContext)
 	const previewSession = useRef<IPreviewPopUpSession | null>(null)
@@ -63,7 +41,6 @@ export function LinePartScriptPiece({ pieces }: IProps): JSX.Element {
 	}
 
 	function onMouseLeave() {
-		setHover(false)
 		if (previewSession.current) {
 			previewSession.current.close()
 			previewSession.current = null
@@ -93,15 +70,6 @@ export function LinePartScriptPiece({ pieces }: IProps): JSX.Element {
 				<div className="segment-opl__piece-indicator segment-opl__piece-indicator--script script">{scriptLabel}</div>
 			)}
 			{!hasPiece && <div className="segment-opl__piece-indicator"></div>}
-			{hasPiece && hasPiece.instance.piece.content && (
-				<MicFloatingInspector
-					content={hasPiece.instance.piece.content as ScriptContent}
-					position={miniInspectorPosition}
-					itemElement={pieceEl.current}
-					showMiniInspector={isHover}
-					typeClass={'script'}
-				/>
-			)}
 		</div>
 	)
 }

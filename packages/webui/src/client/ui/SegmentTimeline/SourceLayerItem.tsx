@@ -1,13 +1,6 @@
 import * as React from 'react'
 import { ISourceLayerUi, IOutputLayerUi, PartUi, PieceUi } from './SegmentTimelineContainer'
-import {
-	SourceLayerType,
-	PieceLifespan,
-	IBlueprintPieceType,
-	ScriptContent,
-	VTContent,
-	GraphicsContent,
-} from '@sofie-automation/blueprints-integration'
+import { SourceLayerType, PieceLifespan, IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
 import { RundownUtils } from '../../lib/rundown'
 import { DefaultLayerItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { MicSourceRenderer } from './Renderers/MicSourceRenderer'
@@ -31,10 +24,8 @@ import { useSelectedElementsContext } from '../RundownView/SelectedElementsConte
 import { PieceContentStatusObj } from '@sofie-automation/meteor-lib/dist/api/pieceContentStatus'
 import { useCallback, useRef, useState, useEffect, useContext } from 'react'
 import {
-	convertPreviewToContents,
 	convertSourceLayerItemToPreview,
 	IPreviewPopUpSession,
-	PreviewContent,
 	PreviewPopUpContext,
 } from '../PreviewPopUp/PreviewPopUpContext'
 const LEFT_RIGHT_ANCHOR_SPACER = 15
@@ -118,7 +109,7 @@ export const SourceLayerItem = (props: Readonly<ISourceLayerItemProps>): JSX.Ele
 	} = props
 
 	const [highlight, setHighlight] = useState(false)
-	const [showMiniInspector, setShowMiniInspector] = useState(false)
+	const [showPreviewPopUp, setShowPreviewPopUp] = useState(false)
 	const [elementPosition, setElementPosition] = useState<OffsetPosition>({ top: 0, left: 0 })
 	const [cursorPosition, setCursorPosition] = useState<OffsetPosition>({ top: 0, left: 0 })
 	const [cursorTimePosition, setCursorTimePosition] = useState(0)
@@ -127,7 +118,7 @@ export const SourceLayerItem = (props: Readonly<ISourceLayerItemProps>): JSX.Ele
 
 	const state = {
 		highlight,
-		showMiniInspector,
+		showPreviewPopUp,
 		elementPosition,
 		cursorPosition,
 		cursorTimePosition,
@@ -211,11 +202,11 @@ export const SourceLayerItem = (props: Readonly<ISourceLayerItemProps>): JSX.Ele
 	const previewContext = useContext(PreviewPopUpContext)
 	const previewSession = useRef<IPreviewPopUpSession | null>(null)
 	const toggleMiniInspectorOn = useCallback(
-		(e: React.MouseEvent) => toggleMiniInspector(e, true),
+		(e: React.MouseEvent) => togglePreviewPopUp(e, true),
 		[piece, cursorTimePosition, contentStatus, timeScale]
 	)
 	const toggleMiniInspectorOff = useCallback(
-		(e: React.MouseEvent) => toggleMiniInspector(e, false),
+		(e: React.MouseEvent) => togglePreviewPopUp(e, false),
 		[piece, cursorTimePosition, contentStatus, timeScale]
 	)
 	const updatePos = useCallback(() => {
@@ -240,16 +231,11 @@ export const SourceLayerItem = (props: Readonly<ISourceLayerItemProps>): JSX.Ele
 
 		animFrameHandle.current = requestAnimationFrame(updatePos)
 	}, [piece, contentStatus, timeScale])
-	const toggleMiniInspector = useCallback(
+	const togglePreviewPopUp = useCallback(
 		(e: React.MouseEvent, v: boolean) => {
 			if (!v && previewSession.current) {
 				previewSession.current.close()
 				previewSession.current = null
-			} else if (piece.instance.piece.content.popUpPreview) {
-				previewSession.current = previewContext.requestPreview(
-					e.target as any,
-					convertPreviewToContents(piece.instance.piece.content.popUpPreview, contentStatus)
-				)
 			} else {
 				const previewContents = convertSourceLayerItemToPreview(layer.type, piece.instance.piece, contentStatus)
 
@@ -259,10 +245,10 @@ export const SourceLayerItem = (props: Readonly<ISourceLayerItemProps>): JSX.Ele
 						startCoordinate: e.screenX,
 						trackMouse: true,
 					})
-				} else {
-					setShowMiniInspector(v)
 				}
 			}
+
+			setShowPreviewPopUp(v)
 
 			cursorRawPosition.current = {
 				clientX: e.clientX,

@@ -194,6 +194,7 @@ export function convertSourceLayerItemToPreview(
 				type: 'title',
 				content: item.name,
 			},
+			// todo - item inpoint and duration
 		]
 	} else if (sourceLayerType === SourceLayerType.SCRIPT) {
 		const content = item.content as ScriptContent

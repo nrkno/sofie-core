@@ -9,7 +9,6 @@ import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { useContentStatusForPieceInstance } from '../../SegmentTimeline/withMediaObjectStatus'
 import {
-	convertPreviewToContents,
 	convertSourceLayerItemToPreview,
 	IPreviewPopUpSession,
 	PreviewPopUpContext,
@@ -51,7 +50,7 @@ export function StoryboardPartThumbnailInner({
 	const previewSession = useRef<IPreviewPopUpSession | null>(null)
 
 	const contentStatus = useContentStatusForPieceInstance(piece.instance)
-	const previewContents = convertSourceLayerItemToPreview(layer.type, piece.instance.piece, contentStatus)
+	const previewContents = convertSourceLayerItemToPreview(layer?.type, piece.instance.piece, contentStatus)
 
 	const onPointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
 		if (e.pointerType !== 'mouse') {

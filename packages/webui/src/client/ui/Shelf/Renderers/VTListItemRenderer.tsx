@@ -3,8 +3,6 @@ import ClassNames from 'classnames'
 import { RundownUtils } from '../../../lib/rundown'
 import { ILayerItemRendererProps } from './ItemRendererFactory'
 import { VTContent, LiveSpeakContent } from '@sofie-automation/blueprints-integration'
-import { VTFloatingInspector } from '../../FloatingInspectors/VTFloatingInspector'
-import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { getElementWidth } from '../../../utils/dimensions'
 import { StyledTimecode } from '../../../lib/StyledTimecode'
@@ -14,7 +12,6 @@ import { HourglassIconSmall } from '../../../lib/ui/icons/notifications'
 import {
 	PreviewPopUpContext,
 	IPreviewPopUpSession,
-	convertPreviewToContents,
 	convertSourceLayerItemToPreview,
 } from '../../PreviewPopUp/PreviewPopUpContext'
 
@@ -73,9 +70,7 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 		if (itemIconPosition) {
 			const left = e.pageX - itemIconPosition.left
 			const unprocessedPercentage = left / itemIconPosition.width
-			if (unprocessedPercentage <= 1 && !showMiniInspector) {
-				// setShowMiniInspector(true)
-
+			if (unprocessedPercentage <= 1 && !previewSession.current) {
 				previewSession.current = previewContext.requestPreview(e.target as any, previewContents, {
 					time: hoverScrubTimePosition,
 					startCoordinate: e.screenX,
@@ -155,24 +150,6 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 					</div>
 				)}
 				{props.adLibListItem.name}
-				<VTFloatingInspector
-					status={props.status || PieceStatusCode.UNKNOWN}
-					showMiniInspector={showMiniInspector}
-					timePosition={hoverScrubTimePosition}
-					content={vtContent}
-					position={{
-						top: itemIconPosition?.top ?? 0,
-						left: itemIconPosition?.left ?? 0,
-						anchor: 'start',
-						position: 'top-start',
-					}}
-					typeClass={props.layer && RundownUtils.getSourceLayerClassName(props.layer.type)}
-					itemElement={itemIcon.current}
-					noticeMessages={props.messages || null}
-					noticeLevel={getNoticeLevelForPieceStatus(props.status ?? undefined)}
-					previewUrl={props.contentStatus?.previewUrl}
-					studio={props.studio}
-				/>
 			</td>
 			<td className="adlib-panel__list-view__list__table__cell--duration">
 				{sourceDuration ? <StyledTimecode time={sourceDuration} studioSettings={props.studio?.settings} /> : null}

@@ -2,32 +2,18 @@ import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import ClassNames from 'classnames'
 import { RundownUtils } from '../../lib/rundown'
-import {
-	ISourceLayer,
-	IOutputLayer,
-	SourceLayerType,
-	VTContent,
-	NoraContent,
-	IBlueprintPieceType,
-} from '@sofie-automation/blueprints-integration'
+import { ISourceLayer, IOutputLayer, SourceLayerType, VTContent } from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { IAdLibListItem } from './AdLibListItem'
 import SplitInputIcon from '../PieceIcons/Renderers/SplitInputIcon'
 import { PieceDisplayStyle } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import { DashboardPieceButtonSplitPreview } from './DashboardPieceButtonSplitPreview'
 import { StyledTimecode } from '../../lib/StyledTimecode'
-import { VTFloatingInspector } from '../FloatingInspectors/VTFloatingInspector'
-import { getNoticeLevelForPieceStatus } from '../../lib/notifications/notifications'
-import { L3rdFloatingInspector } from '../FloatingInspectors/L3rdFloatingInspector'
 import { useContentStatusForAdlibPiece, WithMediaObjectStatusProps } from '../SegmentTimeline/withMediaObjectStatus'
 
 import { isTouchDevice } from '../../lib/lib'
-import { AdLibPieceUi } from '../../lib/shelf'
-import { protectString } from '../../lib/tempLib'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
-import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import {
-	convertPreviewToContents,
 	convertSourceLayerItemToPreview,
 	IPreviewPopUpContext,
 	IPreviewPopUpSession,
@@ -116,37 +102,6 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 		}
 	}
 
-	private renderGraphics(_renderThumbnail?: boolean) {
-		const adLib = this.props.piece as any as AdLibPieceUi
-		const noraContent = adLib.content as NoraContent | undefined
-		return (
-			<>
-				<L3rdFloatingInspector
-					showMiniInspector={this.state.isHovered}
-					content={noraContent}
-					position={{
-						top: this.positionAndSize?.top ?? 0,
-						left: this.positionAndSize?.left ?? 0,
-						anchor: 'start',
-						position: 'top',
-					}}
-					typeClass={this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)}
-					itemElement={this.element}
-					piece={{
-						...adLib,
-						enable: { start: 0 },
-						startPartId: protectString(''),
-						invalid: false,
-						pieceType: IBlueprintPieceType.Normal,
-					}}
-					pieceRenderedDuration={adLib.expectedDuration || null}
-					pieceRenderedIn={null}
-					displayOn="viewport"
-				/>
-			</>
-		)
-	}
-
 	private renderVTLiveSpeak(renderThumbnail?: boolean) {
 		const thumbnailUrl = this.props.contentStatus?.thumbnailUrl
 		const vtContent = this.props.piece.content as VTContent | undefined
@@ -161,25 +116,6 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 						) : null}
 					</span>
 				)}
-				<VTFloatingInspector
-					status={this.props.contentStatus?.status ?? PieceStatusCode.UNKNOWN}
-					showMiniInspector={this.state.isHovered}
-					timePosition={this.state.timePosition}
-					content={vtContent}
-					position={{
-						top: this.positionAndSize?.top ?? 0,
-						left: this.positionAndSize?.left ?? 0,
-						anchor: 'start',
-						position: 'top',
-					}}
-					typeClass={this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)}
-					itemElement={null}
-					noticeMessages={this.props.contentStatus?.messages || null}
-					noticeLevel={getNoticeLevelForPieceStatus(this.props.contentStatus?.status)}
-					studio={this.props.studio}
-					displayOn="viewport"
-					previewUrl={this.props.contentStatus?.previewUrl}
-				/>
 				{thumbnailUrl && renderThumbnail && (
 					<div className="dashboard-panel__panel__button__thumbnail">
 						<img src={thumbnailUrl} />
@@ -223,11 +159,12 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 			}
 		}
 
-		const previewContents = this.props.piece.content.popUpPreview
-			? convertPreviewToContents(this.props.piece.content.popUpPreview, this.props.contentStatus)
-			: this.props.layer
-			? convertSourceLayerItemToPreview(this.props.layer.type, this.props.piece, this.props.contentStatus)
-			: []
+		const previewContents = convertSourceLayerItemToPreview(
+			this.props.layer?.type,
+			this.props.piece,
+			this.props.contentStatus
+		)
+
 		if (!previewContents.length) return
 
 		this.previewSession = this.props.previewContext.requestPreview(e.target as any, previewContents, {
@@ -498,10 +435,6 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 						  this.renderVTLiveSpeak(isButtons || (isList && this.props.showThumbnailsInList))
 						: this.props.layer.type === SourceLayerType.SPLITS
 						? this.renderSplits(isList && this.props.showThumbnailsInList)
-						: this.props.layer.type === SourceLayerType.GRAPHICS ||
-						  this.props.layer.type === SourceLayerType.LOWER_THIRD ||
-						  this.props.layer.type === SourceLayerType.STUDIO_SCREEN
-						? this.renderGraphics(isButtons || (isList && this.props.showThumbnailsInList))
 						: null}
 
 					{this.renderHotkey()}
