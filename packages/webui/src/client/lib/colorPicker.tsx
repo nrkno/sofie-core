@@ -1,5 +1,5 @@
 import * as React from 'react'
-import * as _ from 'underscore'
+import _ from 'underscore'
 import ClassNames from 'classnames'
 
 import { faChevronUp } from '@fortawesome/free-solid-svg-icons'

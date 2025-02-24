@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 
-import './_extendJest'
+import './_extendJest.js'
 
 // This file is run before all tests start.
 

@@ -1,14 +1,14 @@
 import * as React from 'react'
 import { WithTranslation } from 'react-i18next'
 import { NavLink, Link } from 'react-router-dom'
-import { NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
-import { NotificationCenter, NoticeLevel } from '../lib/notifications/notifications'
-import { ErrorBoundary } from '../lib/ErrorBoundary'
-import { SupportPopUpToggle, SupportPopUp } from './SupportPopUp'
+import { NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel.js'
+import { NotificationCenter, NoticeLevel } from '../lib/notifications/notifications.js'
+import { ErrorBoundary } from '../lib/ErrorBoundary.js'
+import { SupportPopUpToggle, SupportPopUp } from './SupportPopUp.js'
 // @ts-expect-error No types available
 import * as VelocityReact from 'velocity-react'
-import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
-import { CoreSystem } from '../collections'
+import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData.js'
+import { CoreSystem } from '../collections/index.js'
 
 interface IPropsHeader {
 	allowConfigure?: boolean

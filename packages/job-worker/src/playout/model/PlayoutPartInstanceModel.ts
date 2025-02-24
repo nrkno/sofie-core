@@ -4,7 +4,7 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { IBlueprintMutatablePart, PieceLifespan, Time } from '@sofie-automation/blueprints-integration'
 import { PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/timings'
-import { PlayoutPieceInstanceModel } from './PlayoutPieceInstanceModel'
+import { PlayoutPieceInstanceModel } from './PlayoutPieceInstanceModel.js'
 import { CoreUserEditingDefinition } from '@sofie-automation/corelib/dist/dataModel/UserEditingDefinitions'
 
 /**

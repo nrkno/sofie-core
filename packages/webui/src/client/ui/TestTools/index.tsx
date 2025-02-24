@@ -1,11 +1,11 @@
 import { useTranslation } from 'react-i18next'
-import { useSubscription } from '../../lib/ReactMeteorData/react-meteor-data'
+import { useSubscription } from '../../lib/ReactMeteorData/react-meteor-data.js'
 import { Route, Switch, NavLink, Redirect } from 'react-router-dom'
-import { TimelineView, TimelineStudioSelect } from './Timeline'
+import { TimelineView, TimelineStudioSelect } from './Timeline.js'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
-import { MappingsStudioSelect, MappingsView } from './Mappings'
-import { TimelineDatastoreStudioSelect, TimelineDatastoreView } from './TimelineDatastore'
-import { DeviceTriggersDeviceSelect, DeviceTriggersView } from './DeviceTriggers'
+import { MappingsStudioSelect, MappingsView } from './Mappings.js'
+import { TimelineDatastoreStudioSelect, TimelineDatastoreView } from './TimelineDatastore.js'
+import { DeviceTriggersDeviceSelect, DeviceTriggersView } from './DeviceTriggers.js'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 
 interface IStatusMenuProps {

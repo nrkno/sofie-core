@@ -11,10 +11,10 @@ import {
 	SubscriptionId,
 	stringifyError,
 } from '@sofie-automation/server-core-integration'
-import { DeviceConfig } from './connector'
+import { DeviceConfig } from './connector.js'
 import { Logger } from 'winston'
-import { Process } from './process'
-import { LIVE_STATUS_DEVICE_CONFIG } from './configManifest'
+import { Process } from './process.js'
+import { LIVE_STATUS_DEVICE_CONFIG } from './configManifest.js'
 import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
@@ -23,7 +23,7 @@ import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedSt
 import { PeripheralDeviceCommandId, StudioId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
 import { PeripheralDeviceCommand } from '@sofie-automation/shared-lib/dist/core/model/PeripheralDeviceCommand'
-import { LiveStatusGatewayConfig } from './generated/options'
+import { LiveStatusGatewayConfig } from './generated/options.js'
 import { CorelibPubSubTypes, CorelibPubSubCollections } from '@sofie-automation/corelib/dist/pubsub'
 import { ParametersOfFunctionOrNever } from '@sofie-automation/server-core-integration/dist/lib/subscriptions'
 
@@ -251,7 +251,7 @@ export class CoreHandler {
 					this.logger.error(e)
 				})
 			}
-			// eslint-disable-next-line @typescript-eslint/ban-types
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 			const fcn: Function = fcnObject[cmd.functionName as keyof CoreHandler] as Function
 			try {
 				if (!fcn) throw Error(`Function "${cmd.functionName}" not found on device "${cmd.deviceId}"!`)
@@ -309,7 +309,7 @@ export class CoreHandler {
 		if (actually === 1) {
 			this.logger.info('KillProcess command received, shutting down in 1000ms!')
 			setTimeout(() => {
-				// eslint-disable-next-line no-process-exit
+				// eslint-disable-next-line n/no-process-exit
 				process.exit(0)
 			}, 1000)
 			return true

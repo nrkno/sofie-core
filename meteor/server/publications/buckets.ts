@@ -25,10 +25,10 @@ meteorPublish(
 				? {
 						_id: bucketId,
 						studioId,
-				  }
+					}
 				: {
 						studioId,
-				  },
+					},
 			modifier
 		)
 	}

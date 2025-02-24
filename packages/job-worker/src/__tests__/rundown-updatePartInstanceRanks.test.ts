@@ -1,19 +1,19 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { RundownId, SegmentId, PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { updatePartInstanceRanksAndOrphanedState } from '../updatePartInstanceRanksAndOrphanedState'
+import { updatePartInstanceRanksAndOrphanedState } from '../updatePartInstanceRanksAndOrphanedState.js'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { JobContext } from '../jobs'
-import { BeforePartMapItem } from '../ingest/commit'
+import { JobContext } from '../jobs/index.js'
+import { BeforePartMapItem } from '../ingest/commit.js'
 import { mock } from 'jest-mock-extended'
-import { ICollection } from '../db'
-import { IngestModel } from '../ingest/model/IngestModel'
-import { IngestSegmentModel } from '../ingest/model/IngestSegmentModel'
+import { ICollection } from '../db/index.js'
+import { IngestModel } from '../ingest/model/IngestModel.js'
+import { IngestSegmentModel } from '../ingest/model/IngestSegmentModel.js'
 import { clone } from '@sofie-automation/corelib/dist/lib'
-import { IngestPartModel } from '../ingest/model/IngestPartModel'
+import { IngestPartModel } from '../ingest/model/IngestPartModel.js'
 import { AnyBulkWriteOperation } from 'mongodb'
-import _ = require('underscore')
+import _ from 'underscore'
 
 const mockOptions = {
 	fallbackMockImplementation: () => {
@@ -32,7 +32,7 @@ describe('updatePartInstanceRanks', () => {
 	function addPartInstance(
 		partInstances: DBPartInstance[],
 		part: DBPart,
-		orphaned?: DBPartInstance['orphaned'],
+		orphaned?: DBPartInstance['orphaned']
 	): PartInstanceId {
 		const id: PartInstanceId = protectString(`${part._id}_instance`)
 		partInstances.push({
@@ -55,8 +55,8 @@ describe('updatePartInstanceRanks', () => {
 				{
 					part: part as any,
 				},
-				mockOptions,
-			),
+				mockOptions
+			)
 		)
 		return mock<IngestModel>(
 			{
@@ -66,12 +66,12 @@ describe('updatePartInstanceRanks', () => {
 						{
 							parts: partModels.filter((p) => p.part.segmentId === segmentId) as any,
 						},
-						mockOptions,
+						mockOptions
 					)
 				},
 				getAllOrderedParts: () => partModels,
 			},
-			mockOptions,
+			mockOptions
 		)
 	}
 
@@ -79,7 +79,7 @@ describe('updatePartInstanceRanks', () => {
 		context: JobContext,
 		expectedSegmentId: SegmentId,
 		parts: DBPart[],
-		initialRanks: BeforePartMapItem[],
+		initialRanks: BeforePartMapItem[]
 	): Promise<void> {
 		const ingestModel = createFakeIngestModel(parts, expectedSegmentId)
 
@@ -96,10 +96,10 @@ describe('updatePartInstanceRanks', () => {
 					{
 						PartInstances: fakeCollection,
 					},
-					mockOptions,
+					mockOptions
 				),
 			},
-			mockOptions,
+			mockOptions
 		)
 
 		const expectedQuery = {
@@ -166,7 +166,7 @@ describe('updatePartInstanceRanks', () => {
 		parts: DBPart[],
 		expectedOps: AnyBulkWriteOperation<DBPartInstance>[],
 		id: string,
-		newRank: number,
+		newRank: number
 	): void {
 		const partId = protectString(id)
 
@@ -195,7 +195,7 @@ describe('updatePartInstanceRanks', () => {
 		expectedOps: AnyBulkWriteOperation<DBPartInstance>[],
 		partInstanceId: PartInstanceId | string,
 		newRank: number | null,
-		orphaned: DBPartInstance['orphaned'] | null,
+		orphaned: DBPartInstance['orphaned'] | null
 	) {
 		expectedOps.push({
 			updateOne: {
@@ -252,7 +252,7 @@ describe('updatePartInstanceRanks', () => {
 				},
 				segmentId: { $in: [segmentId] },
 			},
-			partInstanceFetchOptions,
+			partInstanceFetchOptions
 		)
 		expect(fakeCollection.bulkWrite).toHaveBeenCalledTimes(0)
 	})
@@ -352,7 +352,7 @@ describe('updatePartInstanceRanks', () => {
 		addPartInstance(
 			partInstances,
 			createMinimalPart(adlibId, 3.5), // after part03
-			'adlib-part',
+			'adlib-part'
 		)
 
 		// remove one and offset the others
@@ -468,14 +468,14 @@ describe('updatePartInstanceRanks', () => {
 		addPartInstance(
 			partInstances,
 			createMinimalPart(adlibId0, 2.5), // after part02
-			'deleted',
+			'deleted'
 		)
 
 		const adlibId1 = 'adlib1'
 		addPartInstance(
 			partInstances,
 			createMinimalPart(adlibId1, 2.75), // after adlib0
-			'adlib-part',
+			'adlib-part'
 		)
 
 		// Ensure the segment is correct before the operation

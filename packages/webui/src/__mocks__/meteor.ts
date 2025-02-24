@@ -1,4 +1,4 @@
-import * as _ from 'underscore'
+import _ from 'underscore'
 import type { DDP } from 'meteor/ddp'
 
 let controllableDefer = false
@@ -97,7 +97,10 @@ export namespace MeteorMock {
 	}
 	export class Error {
 		private _stack?: string
-		constructor(public error: number, public reason?: string) {
+		constructor(
+			public error: number,
+			public reason?: string
+		) {
 			const e = new $.Error('')
 			let stack: string = e.stack || ''
 

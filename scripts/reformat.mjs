@@ -57,7 +57,11 @@ async function prettierReformatFiles() {
 async function customReformatFiles() {
 	// include a
 	const files = await glob(["**/*.ts", "**/*.tsx"], {
-		ignore: ["**/node_modules/**", "**/dist/**"],
+		ignore: [
+			"**/node_modules/**",
+			"**/dist/**",
+			"meteor/**", // Because Meteor doesn't like the file extension in imports
+		],
 	});
 
 	console.log(`Found ${files.length} files...`);

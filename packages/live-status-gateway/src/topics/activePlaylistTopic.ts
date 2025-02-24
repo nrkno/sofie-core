@@ -8,21 +8,25 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { assertNever, literal } from '@sofie-automation/shared-lib/dist/lib/lib'
-import { WebSocketTopicBase, WebSocketTopic, CollectionObserver } from '../wsHandler'
-import { SelectedPartInstances, PartInstancesHandler } from '../collections/partInstancesHandler'
-import { PlaylistHandler } from '../collections/playlistHandler'
-import { ShowStyleBaseExt, ShowStyleBaseHandler } from '../collections/showStyleBaseHandler'
-import { CurrentSegmentTiming, calculateCurrentSegmentTiming } from './helpers/segmentTiming'
+import { WebSocketTopicBase, WebSocketTopic, CollectionObserver } from '../wsHandler.js'
+import { SelectedPartInstances, PartInstancesHandler } from '../collections/partInstancesHandler.js'
+import { PlaylistHandler } from '../collections/playlistHandler.js'
+import { ShowStyleBaseExt, ShowStyleBaseHandler } from '../collections/showStyleBaseHandler.js'
+import { CurrentSegmentTiming, calculateCurrentSegmentTiming } from './helpers/segmentTiming.js'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { PartsHandler } from '../collections/partsHandler'
-import _ = require('underscore')
-import { PartTiming, calculateCurrentPartTiming } from './helpers/partTiming'
-import { SelectedPieceInstances, PieceInstancesHandler, PieceInstanceMin } from '../collections/pieceInstancesHandler'
-import { PieceStatus, toPieceStatus } from './helpers/pieceStatus'
+import { PartsHandler } from '../collections/partsHandler.js'
+import _ from 'underscore'
+import { PartTiming, calculateCurrentPartTiming } from './helpers/partTiming.js'
+import {
+	SelectedPieceInstances,
+	PieceInstancesHandler,
+	PieceInstanceMin,
+} from '../collections/pieceInstancesHandler.js'
+import { PieceStatus, toPieceStatus } from './helpers/pieceStatus.js'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { SegmentHandler } from '../collections/segmentHandler'
+import { SegmentHandler } from '../collections/segmentHandler.js'
 import { PlaylistTimingType } from '@sofie-automation/blueprints-integration'
-import { SegmentsHandler } from '../collections/segmentsHandler'
+import { SegmentsHandler } from '../collections/segmentsHandler.js'
 import { normalizeArray } from '@sofie-automation/corelib/dist/lib'
 
 const THROTTLE_PERIOD_MS = 100
@@ -148,7 +152,7 @@ export class ActivePlaylistTopic
 											toPieceStatus(piece, this._showStyleBaseExt)
 										) ?? [],
 									publicData: currentPart.publicData,
-							  })
+								})
 							: null,
 					currentSegment:
 						this._currentPartInstance && currentPart && this._currentSegment
@@ -161,7 +165,7 @@ export class ActivePlaylistTopic
 										this._partInstancesInCurrentSegment,
 										this._partsBySegmentId[unprotectString(currentPart.segmentId)] ?? []
 									),
-							  })
+								})
 							: null,
 					nextPart: nextPart
 						? literal<PartStatus>({
@@ -174,7 +178,7 @@ export class ActivePlaylistTopic
 										toPieceStatus(piece, this._showStyleBaseExt)
 									) ?? [],
 								publicData: nextPart.publicData,
-						  })
+							})
 						: null,
 					quickLoop: this.transformQuickLoopStatus(),
 					publicData: this._activePlaylist.publicData,
@@ -191,7 +195,7 @@ export class ActivePlaylistTopic
 								? this._activePlaylist.timing.expectedEnd
 								: undefined,
 					},
-			  })
+				})
 			: literal<ActivePlaylistStatus>({
 					event: 'activePlaylist',
 					id: null,
@@ -205,7 +209,7 @@ export class ActivePlaylistTopic
 					timing: {
 						timingMode: PlaylistTimingType.None,
 					},
-			  })
+				})
 
 		this.sendMessage(subscribers, message)
 	}

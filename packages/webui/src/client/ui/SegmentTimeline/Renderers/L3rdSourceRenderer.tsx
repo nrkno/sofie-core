@@ -1,12 +1,12 @@
 import * as React from 'react'
-import { getElementWidth } from '../../../utils/dimensions'
+import { getElementWidth } from '../../../utils/dimensions.js'
 
 import { NoraContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import classNames from 'classnames'
-import { RundownUtils } from '../../../lib/rundown'
-import { L3rdFloatingInspector } from '../../FloatingInspectors/L3rdFloatingInspector'
-import { PieceMultistepChevron, getPieceSteps } from '../../SegmentContainer/PieceMultistepChevron'
-import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
+import { RundownUtils } from '../../../lib/rundown.js'
+import { L3rdFloatingInspector } from '../../FloatingInspectors/L3rdFloatingInspector.js'
+import { PieceMultistepChevron, getPieceSteps } from '../../SegmentContainer/PieceMultistepChevron.js'
+import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer.js'
 
 type IProps = ICustomLayerItemProps
 interface IState {

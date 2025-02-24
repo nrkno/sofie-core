@@ -1,6 +1,6 @@
-import { JobContext, ProcessedShowStyleCompound } from '../../../jobs'
-import { PlayoutModel } from '../../../playout/model/PlayoutModel'
-import { PlayoutPartInstanceModel } from '../../../playout/model/PlayoutPartInstanceModel'
+import { JobContext, ProcessedShowStyleCompound } from '../../../jobs/index.js'
+import { PlayoutModel } from '../../../playout/model/PlayoutModel.js'
+import { PlayoutPartInstanceModel } from '../../../playout/model/PlayoutPartInstanceModel.js'
 import {
 	IBlueprintMutatablePart,
 	IBlueprintPart,
@@ -24,8 +24,8 @@ import {
 	convertResolvedPieceInstanceToBlueprints,
 	createBlueprintQuickLoopInfo,
 	getMediaObjectDuration,
-} from '../lib'
-import { getResolvedPiecesForCurrentPartInstance } from '../../../playout/resolvedPieces'
+} from '../lib.js'
+import { getResolvedPiecesForCurrentPartInstance } from '../../../playout/resolvedPieces.js'
 import { ReadonlyDeep } from 'type-fest'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
@@ -34,9 +34,9 @@ import {
 	innerFindLastScriptedPieceOnLayer,
 	innerStopPieces,
 	insertQueuedPartWithPieces,
-} from '../../../playout/adlibUtils'
+} from '../../../playout/adlibUtils.js'
 import { assertNever, getRandomId, omit } from '@sofie-automation/corelib/dist/lib'
-import { logger } from '../../../logging'
+import { logger } from '../../../logging.js'
 import {
 	Piece,
 	PieceTimelineObjectsBlob,
@@ -49,13 +49,13 @@ import {
 	protectStringArray,
 	unprotectStringArray,
 } from '@sofie-automation/corelib/dist/protectedString'
-import { postProcessPieces, postProcessTimelineObjects } from '../../postProcess'
-import { getCurrentTime } from '../../../lib'
-import _ = require('underscore')
-import { syncPlayheadInfinitesForNextPartInstance } from '../../../playout/infinites'
-import { validateAdlibTestingPartInstanceProperties } from '../../../playout/adlibTesting'
+import { postProcessPieces, postProcessTimelineObjects } from '../../postProcess.js'
+import { getCurrentTime } from '../../../lib/index.js'
+import _ from 'underscore'
+import { syncPlayheadInfinitesForNextPartInstance } from '../../../playout/infinites.js'
+import { validateAdlibTestingPartInstanceProperties } from '../../../playout/adlibTesting.js'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { PlayoutRundownModel } from '../../../playout/model/PlayoutRundownModel'
+import { PlayoutRundownModel } from '../../../playout/model/PlayoutRundownModel.js'
 import { BlueprintQuickLookInfo } from '@sofie-automation/blueprints-integration/dist/context/quickLoopInfo'
 
 export enum ActionPartChange {

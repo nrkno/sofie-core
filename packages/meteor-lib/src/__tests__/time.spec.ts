@@ -1,4 +1,4 @@
-import { formatDateTime } from '../time'
+import { formatDateTime } from '../time.js'
 
 test('formatDateTime', () => {
 	expect(formatDateTime(1556194064374)).toMatch(/2019-04-\d{2} \d{2}:\d{2}:\d{2}/)

@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
-import { MultiSelect, MultiSelectEvent, MultiSelectOptions } from '../multiSelect'
-import { DropdownInputOption } from './DropdownInput'
+import { MultiSelect, MultiSelectEvent, MultiSelectOptions } from '../multiSelect.js'
+import { DropdownInputOption } from './DropdownInput.js'
 import ClassNames from 'classnames'
 
 interface IMultiSelectInputControlProps {

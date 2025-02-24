@@ -1,4 +1,4 @@
-import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData.js'
 import {
 	SourceLayerType,
 	ISourceLayer,
@@ -6,18 +6,18 @@ import {
 	RemoteContent,
 	EvsContent,
 } from '@sofie-automation/blueprints-integration'
-import { CamInputIcon } from './Renderers/CamInputIcon'
-import { VTInputIcon } from './Renderers/VTInputIcon'
-import SplitInputIcon from './Renderers/SplitInputIcon'
-import { RemoteInputIcon } from './Renderers/RemoteInputIcon'
-import { LiveSpeakInputIcon } from './Renderers/LiveSpeakInputIcon'
-import { RemoteSpeakInputIcon } from './Renderers/RemoteSpeakInputIcon'
-import { GraphicsInputIcon } from './Renderers/GraphicsInputIcon'
-import { UnknownInputIcon } from './Renderers/UnknownInputIcon'
+import { CamInputIcon } from './Renderers/CamInputIcon.js'
+import { VTInputIcon } from './Renderers/VTInputIcon.js'
+import SplitInputIcon from './Renderers/SplitInputIcon.js'
+import { RemoteInputIcon } from './Renderers/RemoteInputIcon.js'
+import { LiveSpeakInputIcon } from './Renderers/LiveSpeakInputIcon.js'
+import { RemoteSpeakInputIcon } from './Renderers/RemoteSpeakInputIcon.js'
+import { GraphicsInputIcon } from './Renderers/GraphicsInputIcon.js'
+import { UnknownInputIcon } from './Renderers/UnknownInputIcon.js'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { findPieceInstanceToShow, findPieceInstanceToShowFromInstances } from './utils'
-import LocalInputIcon from './Renderers/LocalInputIcon'
+import { findPieceInstanceToShow, findPieceInstanceToShowFromInstances } from './utils.js'
+import LocalInputIcon from './Renderers/LocalInputIcon.js'
 import {
 	PartInstanceId,
 	RundownId,

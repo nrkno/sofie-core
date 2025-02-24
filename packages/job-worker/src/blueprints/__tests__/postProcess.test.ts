@@ -1,10 +1,10 @@
-import * as _ from 'underscore'
+import _ from 'underscore'
 import {
 	postProcessAdLibPieces,
 	postProcessPieces,
 	postProcessRundownBaselineItems,
 	postProcessStudioBaselineObjects,
-} from '../postProcess'
+} from '../postProcess.js'
 import {
 	IBlueprintAdLibPiece,
 	IBlueprintPiece,
@@ -13,7 +13,7 @@ import {
 	TSR,
 	IBlueprintPieceType,
 } from '@sofie-automation/blueprints-integration'
-import { setupDefaultJobEnvironment } from '../../__mocks__/context'
+import { setupDefaultJobEnvironment } from '../../__mocks__/context.js'
 import { clone, literal, omit } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { TimelineObjGeneric, TimelineObjType } from '@sofie-automation/corelib/dist/dataModel/Timeline'

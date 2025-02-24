@@ -1,8 +1,8 @@
 import * as React from 'react'
-import { EditAttribute } from '../../lib/EditAttribute'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { Spinner } from '../../lib/Spinner'
-import { doModalDialog } from '../../lib/ModalDialog'
+import { EditAttribute } from '../../lib/EditAttribute.js'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data.js'
+import { Spinner } from '../../lib/Spinner.js'
+import { doModalDialog } from '../../lib/ModalDialog.js'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import Moment from 'react-moment'
 import { Link } from 'react-router-dom'
@@ -10,16 +10,16 @@ import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { ICoreSystem } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
-import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { catchError, fetchFrom } from '../../lib/lib'
-import { UploadButton } from '../../lib/uploadButton'
+import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications.js'
+import { catchError, fetchFrom } from '../../lib/lib.js'
+import { UploadButton } from '../../lib/uploadButton.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUpload, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
-import { unprotectString } from '../../lib/tempLib'
-import { MeteorCall } from '../../lib/meteorApi'
+import { unprotectString } from '../../lib/tempLib.js'
+import { MeteorCall } from '../../lib/meteorApi.js'
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Blueprints, CoreSystem, ShowStyleBases, Studios } from '../../collections'
-import { LabelActual } from '../../lib/Components/LabelAndOverrides'
+import { Blueprints, CoreSystem, ShowStyleBases, Studios } from '../../collections/index.js'
+import { LabelActual } from '../../lib/Components/LabelAndOverrides.js'
 
 interface IProps {
 	blueprintId: BlueprintId
@@ -206,7 +206,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 													{showStyleBase.name}
 												</Link>
 											</span>
-									  ))
+										))
 									: t('This Blueprint is not being used by any Show Style')}
 							</p>
 						</div>
@@ -223,7 +223,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 													{i.name}
 												</Link>
 											</span>
-									  ))
+										))
 									: t('This Blueprint is not compatible with any Studio')}
 							</p>
 						</div>

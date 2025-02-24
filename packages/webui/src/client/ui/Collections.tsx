@@ -1,5 +1,5 @@
 import { CustomCollectionName } from '@sofie-automation/meteor-lib/dist/api/pubsub'
-import { createSyncCustomPublicationMongoCollection } from '../collections/lib'
+import { createSyncCustomPublicationMongoCollection } from '../collections/lib.js'
 
 /**
  * A playout UI version of ShowStyleBases.

@@ -7,15 +7,15 @@ import type {
 } from '@sofie-automation/blueprints-integration'
 import { Complete, clone, omit } from '@sofie-automation/corelib/dist/lib'
 import { ReadonlyDeep } from 'type-fest'
-import _ = require('underscore')
-import { MutableIngestSegmentImpl } from './MutableIngestSegmentImpl'
+import _ from 'underscore'
+import { MutableIngestSegmentImpl } from './MutableIngestSegmentImpl.js'
 import { SofieIngestDataCacheObjId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { SofieIngestRundownDataCacheGenerator } from '../../ingest/sofieIngestCache'
+import { SofieIngestRundownDataCacheGenerator } from '../../ingest/sofieIngestCache.js'
 import {
 	SofieIngestDataCacheObj,
 	SofieIngestRundownWithSource,
 } from '@sofie-automation/corelib/dist/dataModel/SofieIngestDataCache'
-import type { ComputedIngestChangeObject } from '../../ingest/runOperation'
+import type { ComputedIngestChangeObject } from '../../ingest/runOperation.js'
 import { RundownSource } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 
 export interface MutableIngestRundownChanges {

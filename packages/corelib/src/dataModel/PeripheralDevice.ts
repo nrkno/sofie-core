@@ -1,6 +1,6 @@
 import { Time } from '@sofie-automation/blueprints-integration'
-import { DeviceConfigManifest } from '../deviceConfig'
-import { OrganizationId, PeripheralDeviceId, StudioId } from './Ids'
+import { DeviceConfigManifest } from '../deviceConfig.js'
+import { OrganizationId, PeripheralDeviceId, StudioId } from './Ids.js'
 import type {
 	IngestDeviceSecretSettings,
 	IngestDeviceSecretSettingsStatus,

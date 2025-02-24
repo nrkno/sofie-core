@@ -1,10 +1,10 @@
 import { VTContent } from '@sofie-automation/blueprints-integration'
-import { VTFloatingInspector } from '../../../FloatingInspectors/VTFloatingInspector'
-import { IDefaultRendererProps } from './DefaultRenderer'
-import { getNoticeLevelForPieceStatus } from '../../../../lib/notifications/notifications'
+import { VTFloatingInspector } from '../../../FloatingInspectors/VTFloatingInspector.js'
+import { IDefaultRendererProps } from './DefaultRenderer.js'
+import { getNoticeLevelForPieceStatus } from '../../../../lib/notifications/notifications.js'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { LoopingPieceIcon } from '../../../../lib/ui/icons/looping'
-import { useContentStatusForPieceInstance } from '../../../SegmentTimeline/withMediaObjectStatus'
+import { LoopingPieceIcon } from '../../../../lib/ui/icons/looping.js'
+import { useContentStatusForPieceInstance } from '../../../SegmentTimeline/withMediaObjectStatus.js'
 
 export function VTRenderer({
 	piece: pieceInstance,

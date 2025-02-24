@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react'
-import { UploadButton } from '../uploadButton'
+import { UploadButton } from '../uploadButton.js'
 import { faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useTranslation } from 'react-i18next'

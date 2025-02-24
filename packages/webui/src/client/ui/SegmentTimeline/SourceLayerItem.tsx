@@ -1,29 +1,29 @@
 import * as React from 'react'
-import { ISourceLayerUi, IOutputLayerUi, PartUi, PieceUi } from './SegmentTimelineContainer'
+import { ISourceLayerUi, IOutputLayerUi, PartUi, PieceUi } from './SegmentTimelineContainer.js'
 import { SourceLayerType, PieceLifespan, IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
-import { RundownUtils } from '../../lib/rundown'
-import { DefaultLayerItemRenderer } from './Renderers/DefaultLayerItemRenderer'
-import { MicSourceRenderer } from './Renderers/MicSourceRenderer'
-import { VTSourceRenderer } from './Renderers/VTSourceRenderer'
-import { L3rdSourceRenderer } from './Renderers/L3rdSourceRenderer'
-import { SplitsSourceRenderer } from './Renderers/SplitsSourceRenderer'
-import { LocalLayerItemRenderer } from './Renderers/LocalLayerItemRenderer'
+import { RundownUtils } from '../../lib/rundown.js'
+import { DefaultLayerItemRenderer } from './Renderers/DefaultLayerItemRenderer.js'
+import { MicSourceRenderer } from './Renderers/MicSourceRenderer.js'
+import { VTSourceRenderer } from './Renderers/VTSourceRenderer.js'
+import { L3rdSourceRenderer } from './Renderers/L3rdSourceRenderer.js'
+import { SplitsSourceRenderer } from './Renderers/SplitsSourceRenderer.js'
+import { LocalLayerItemRenderer } from './Renderers/LocalLayerItemRenderer.js'
 
-import { DEBUG_MODE } from './SegmentTimelineDebugMode'
+import { DEBUG_MODE } from './SegmentTimelineDebugMode.js'
 import { withTranslation, WithTranslation } from 'react-i18next'
-import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
-import { unprotectString } from '../../lib/tempLib'
+import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions.js'
+import { unprotectString } from '../../lib/tempLib.js'
 import RundownViewEventBus, {
 	RundownViewEvents,
 	HighlightEvent,
 } from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
-import { pieceUiClassNames } from '../../lib/ui/pieceUiClassNames'
-import { SourceDurationLabelAlignment } from './Renderers/CustomLayerItemRenderer'
-import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
+import { pieceUiClassNames } from '../../lib/ui/pieceUiClassNames.js'
+import { SourceDurationLabelAlignment } from './Renderers/CustomLayerItemRenderer.js'
+import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer.js'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { ReadonlyDeep } from 'type-fest'
 import { PieceContentStatusObj } from '@sofie-automation/meteor-lib/dist/api/pieceContentStatus'
-import { SelectedElementsContext } from '../RundownView/SelectedElementsContext'
+import { SelectedElementsContext } from '../RundownView/SelectedElementsContext.js'
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 const MARGINAL_ANCHORED_WIDTH = 5
 
@@ -190,10 +190,10 @@ export const SourceLayerItem = withTranslation()(
 								this.state.rightAnchoredWidth > 0
 									? (elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
 									: maxLabelWidth !== undefined
-									? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
-									: nextIsTouching
-									? '100%'
-									: 'none',
+										? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
+										: nextIsTouching
+											? '100%'
+											: 'none',
 							transform:
 								'translate(' +
 								(widthConstrictedMode
@@ -220,10 +220,10 @@ export const SourceLayerItem = withTranslation()(
 								this.state.rightAnchoredWidth > 0
 									? (elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
 									: maxLabelWidth !== undefined
-									? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
-									: nextIsTouching
-									? '100%'
-									: 'none',
+										? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
+										: nextIsTouching
+											? '100%'
+											: 'none',
 							transform:
 								'translate(' +
 								Math.min(
@@ -243,10 +243,10 @@ export const SourceLayerItem = withTranslation()(
 								this.state.rightAnchoredWidth > 0
 									? (elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
 									: maxLabelWidth !== undefined
-									? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
-									: nextIsTouching
-									? '100%'
-									: 'none',
+										? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
+										: nextIsTouching
+											? '100%'
+											: 'none',
 						}
 					}
 				} else {
@@ -261,10 +261,10 @@ export const SourceLayerItem = withTranslation()(
 								this.state.rightAnchoredWidth > 0
 									? (elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
 									: maxLabelWidth !== undefined
-									? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
-									: nextIsTouching
-									? '100%'
-									: 'none',
+										? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
+										: nextIsTouching
+											? '100%'
+											: 'none',
 							transform:
 								'translate(' +
 								(widthConstrictedMode || this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0
@@ -279,10 +279,10 @@ export const SourceLayerItem = withTranslation()(
 								this.state.rightAnchoredWidth > 0
 									? (elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
 									: maxLabelWidth !== undefined
-									? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
-									: nextIsTouching
-									? '100%'
-									: 'none',
+										? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
+										: nextIsTouching
+											? '100%'
+											: 'none',
 						}
 					}
 				}
@@ -440,7 +440,7 @@ export const SourceLayerItem = withTranslation()(
 		}
 
 		componentWillUnmount(): void {
-			super.componentWillUnmount && super.componentWillUnmount()
+			super.componentWillUnmount?.()
 			RundownViewEventBus.off(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 			clearTimeout(this.highlightTimeout)
 		}
@@ -463,10 +463,10 @@ export const SourceLayerItem = withTranslation()(
 		}
 
 		itemClick = (e: React.MouseEvent<HTMLDivElement>) => {
-			// this.props.onFollowLiveLine && this.props.onFollowLiveLine(false, e)
+			// this.props.onFollowLiveLine?.(false, e)
 			e.preventDefault()
 			e.stopPropagation()
-			this.props.onClick && this.props.onClick(this.props.piece, e)
+			this.props.onClick?.(this.props.piece, e)
 		}
 
 		itemDblClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -728,7 +728,7 @@ export const SourceLayerItem = withTranslation()(
 											? RundownUtils.formatTimeToTimecode(
 													this.props.studio.settings,
 													innerPiece.enable.duration
-											  ).substr(-5)
+												).substr(-5)
 											: ''}
 									</div>
 								)}

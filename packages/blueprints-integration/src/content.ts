@@ -1,6 +1,6 @@
 import { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
-import { Time } from './common'
-import { TSR, TimelineObjectCoreExt } from './timeline'
+import { Time } from './common.js'
+import { TSR, TimelineObjectCoreExt } from './timeline.js'
 import { SourceLayerType } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
 
 export type WithTimeline<T extends BaseContent> = T & {
@@ -21,7 +21,7 @@ export interface BaseContent {
 	ignoreAudioFormat?: boolean
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface BaseEditableParameters {}
 
 export interface VTEditableParameters extends BaseEditableParameters {

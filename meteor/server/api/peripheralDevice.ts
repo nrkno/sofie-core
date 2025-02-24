@@ -127,7 +127,7 @@ export namespace ServerPeripheralDeviceAPI {
 						? {
 								...options.configManifest,
 								translations: undefined, // unset the translations
-						  }
+							}
 						: undefined,
 
 					documentationUrl: options.documentationUrl,
@@ -136,7 +136,7 @@ export namespace ServerPeripheralDeviceAPI {
 					newVersionsStr !== oldVersionsStr
 						? {
 								disableVersionChecks: 1,
-						  }
+							}
 						: undefined,
 			})
 		} else {
@@ -166,11 +166,11 @@ export namespace ServerPeripheralDeviceAPI {
 					? {
 							...options.configManifest,
 							translations: undefined,
-					  }
+						}
 					: literal<DeviceConfigManifest>({
 							deviceConfigSchema: JSONBlobStringify({}),
 							subdeviceManifest: {},
-					  }),
+						}),
 
 				documentationUrl: options.documentationUrl,
 			})

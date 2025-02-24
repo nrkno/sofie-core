@@ -1,9 +1,9 @@
 import React, { useMemo, useRef } from 'react'
-import { FloatingInspector } from '../FloatingInspector'
+import { FloatingInspector } from '../FloatingInspector.js'
 import { SplitsContent } from '@sofie-automation/blueprints-integration'
-import { getSplitPreview } from '../../lib/ui/splitPreview'
-import { RenderSplitPreview } from '../../lib/SplitPreviewBox'
-import { IFloatingInspectorPosition, useInspectorPosition } from './IFloatingInspectorPosition'
+import { getSplitPreview } from '../../lib/ui/splitPreview.js'
+import { RenderSplitPreview } from '../../lib/SplitPreviewBox.js'
+import { IFloatingInspectorPosition, useInspectorPosition } from './IFloatingInspectorPosition.js'
 
 interface IProps {
 	typeClass?: string

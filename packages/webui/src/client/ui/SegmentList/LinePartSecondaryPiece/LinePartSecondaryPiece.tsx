@@ -1,12 +1,12 @@
 import classNames from 'classnames'
 import React, { CSSProperties, useCallback, useMemo, useRef, useState } from 'react'
-import { PieceExtended } from '../../../lib/RundownResolver'
-import { RundownUtils } from '../../../lib/rundown'
-import { PieceHoverInspector } from '../PieceHoverInspector'
-import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
-import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
-import StudioContext from '../../RundownView/StudioContext'
-import { useContentStatusForPieceInstance } from '../../SegmentTimeline/withMediaObjectStatus'
+import { PieceExtended } from '../../../lib/RundownResolver.js'
+import { RundownUtils } from '../../../lib/rundown.js'
+import { PieceHoverInspector } from '../PieceHoverInspector.js'
+import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions.js'
+import { PieceUi } from '../../SegmentContainer/withResolvedSegment.js'
+import StudioContext from '../../RundownView/StudioContext.js'
+import { useContentStatusForPieceInstance } from '../../SegmentTimeline/withMediaObjectStatus.js'
 
 interface IProps {
 	piece: PieceExtended
@@ -75,14 +75,14 @@ export const LinePartSecondaryPiece: React.FC<IProps> = React.memo(function Line
 
 	const onClick = useCallback(
 		(e: React.MouseEvent<HTMLDivElement>) => {
-			incomingOnClick && incomingOnClick(piece, e)
+			incomingOnClick?.(piece, e)
 		},
 		[piece, incomingOnClick]
 	)
 
 	const onDoubleClick = useCallback(
 		(e: React.MouseEvent<HTMLDivElement>) => {
-			incomingOnDoubleClick && incomingOnDoubleClick(piece, e)
+			incomingOnDoubleClick?.(piece, e)
 		},
 		[piece, incomingOnDoubleClick]
 	)

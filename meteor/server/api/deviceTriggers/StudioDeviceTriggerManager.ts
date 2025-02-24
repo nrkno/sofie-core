@@ -189,7 +189,7 @@ export class StudioDeviceTriggerManager {
 										? {
 												name: sourceLayers[adLib.sourceLayerId]?.name,
 												abbreviation: sourceLayers[adLib.sourceLayerId]?.abbreviation,
-										  }
+											}
 										: undefined,
 									styleClassNames: triggeredAction.styleClassNames,
 								}),
@@ -309,14 +309,14 @@ async function createCurrentContextFromCache(
 	const currentSegmentPartIds = currentPartInstance
 		? await cache.Parts.find({
 				segmentId: currentPartInstance.part.segmentId,
-		  }).mapAsync((part) => part._id)
+			}).mapAsync((part) => part._id)
 		: []
 	const nextSegmentPartIds = nextPartInstance
 		? nextPartInstance.part.segmentId === currentPartInstance?.part.segmentId
 			? currentSegmentPartIds
 			: await cache.Parts.find({
 					segmentId: nextPartInstance.part.segmentId,
-			  }).mapAsync((part) => part._id)
+				}).mapAsync((part) => part._id)
 		: []
 
 	return {

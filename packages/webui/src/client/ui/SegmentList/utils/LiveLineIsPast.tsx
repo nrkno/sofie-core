@@ -1,6 +1,6 @@
 import React from 'react'
-import { RundownTimingConsumer } from '../../RundownView/RundownTiming/RundownTimingConsumer'
-import { TimingDataResolution, TimingTickResolution } from '../../RundownView/RundownTiming/withTiming'
+import { RundownTimingConsumer } from '../../RundownView/RundownTiming/RundownTimingConsumer.js'
+import { TimingDataResolution, TimingTickResolution } from '../../RundownView/RundownTiming/withTiming.js'
 
 export const LiveLineIsPast = React.memo(function LiveLineIsPast({
 	partTimingId,

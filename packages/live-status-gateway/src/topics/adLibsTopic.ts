@@ -1,29 +1,29 @@
 import { Logger } from 'winston'
 import { WebSocket } from 'ws'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { WebSocketTopicBase, WebSocketTopic, CollectionObserver } from '../wsHandler'
-import { PlaylistHandler } from '../collections/playlistHandler'
+import { WebSocketTopicBase, WebSocketTopic, CollectionObserver } from '../wsHandler.js'
+import { PlaylistHandler } from '../collections/playlistHandler.js'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
-import _ = require('underscore')
+import _ from 'underscore'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
-import { AdLibActionsHandler } from '../collections/adLibActionsHandler'
-import { GlobalAdLibActionsHandler } from '../collections/globalAdLibActionsHandler'
+import { AdLibActionsHandler } from '../collections/adLibActionsHandler.js'
+import { GlobalAdLibActionsHandler } from '../collections/globalAdLibActionsHandler.js'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { IBlueprintActionManifestDisplayContent } from '@sofie-automation/blueprints-integration'
-import { ShowStyleBaseExt, ShowStyleBaseHandler } from '../collections/showStyleBaseHandler'
+import { ShowStyleBaseExt, ShowStyleBaseHandler } from '../collections/showStyleBaseHandler.js'
 import { interpollateTranslation } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { AdLibsHandler } from '../collections/adLibsHandler'
-import { GlobalAdLibsHandler } from '../collections/globalAdLibsHandler'
+import { AdLibsHandler } from '../collections/adLibsHandler.js'
+import { GlobalAdLibsHandler } from '../collections/globalAdLibsHandler.js'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { PartsHandler } from '../collections/partsHandler'
+import { PartsHandler } from '../collections/partsHandler.js'
 import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { WithSortingMetadata, getRank, sortContent } from './helpers/contentSorting'
+import { WithSortingMetadata, getRank, sortContent } from './helpers/contentSorting.js'
 import { isDeepStrictEqual } from 'util'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { SegmentsHandler } from '../collections/segmentsHandler'
+import { SegmentsHandler } from '../collections/segmentsHandler.js'
 
 const THROTTLE_PERIOD_MS = 100
 
@@ -111,7 +111,7 @@ export class AdLibsTopic
 									name: t.data,
 									label: interpollateTranslation(t.display.label.key, t.display.label.args),
 								})
-						  )
+							)
 						: []
 					const segmentId = this._parts.get(action.partId)?.segmentId
 					const name = interpollateTranslation(action.display.label.key, action.display.label.args)
@@ -183,7 +183,7 @@ export class AdLibsTopic
 									name: t.data,
 									label: interpollateTranslation(t.display.label.key, t.display.label.args),
 								})
-						  )
+							)
 						: []
 					const name = interpollateTranslation(action.display.label.key, action.display.label.args)
 					return literal<WithSortingMetadata<GlobalAdLibStatus>>({
@@ -236,7 +236,7 @@ export class AdLibsTopic
 					rundownPlaylistId: unprotectString(this._activePlaylist._id),
 					adLibs: sortContent(adLibs),
 					globalAdLibs: sortContent(globalAdLibs),
-			  }
+				}
 			: { event: 'adLibs', rundownPlaylistId: null, adLibs: [], globalAdLibs: [] }
 
 		this.sendMessage(subscribers, adLibsStatus)

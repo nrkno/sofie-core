@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { InvalidFloatingInspector } from '../../FloatingInspectors/InvalidFloatingInspector'
+import { InvalidFloatingInspector } from '../../FloatingInspectors/InvalidFloatingInspector.js'
 
 interface IProps {
 	className?: string

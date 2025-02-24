@@ -536,7 +536,7 @@ describe('cronjobs', () => {
 					? {
 							configId: '',
 							studioId,
-					  }
+						}
 					: undefined,
 			})
 			const mockCasparCg = await insertPlayoutDevice({

@@ -1,6 +1,6 @@
 import React, { useLayoutEffect, useRef } from 'react'
 import * as CoreIcons from '@nrk/core-icons/jsx'
-import Escape from './Escape'
+import Escape from './Escape.js'
 // @ts-expect-error type linking issue
 import FocusBounder from 'react-focus-bounder'
 import { useTranslation } from 'react-i18next'
@@ -8,12 +8,12 @@ import { useTranslation } from 'react-i18next'
 import ClassNames from 'classnames'
 // @ts-expect-error No types available
 import * as VelocityReact from 'velocity-react'
-import { logger } from './logging'
-import * as _ from 'underscore'
+import { logger } from './logging.js'
+import _ from 'underscore'
 import { withTranslation } from 'react-i18next'
-import { Translated } from './ReactMeteorData/ReactMeteorData'
-import { EditAttribute, EditAttributeType, IEditAttributeBaseProps } from './EditAttribute'
-import { Settings } from '../lib/Settings'
+import { Translated } from './ReactMeteorData/ReactMeteorData.js'
+import { EditAttribute, EditAttributeType, IEditAttributeBaseProps } from './EditAttribute.js'
+import { Settings } from '../lib/Settings.js'
 
 interface IModalDialogAttributes {
 	show?: boolean

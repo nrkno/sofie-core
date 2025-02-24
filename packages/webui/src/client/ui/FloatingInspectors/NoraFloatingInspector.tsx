@@ -1,8 +1,8 @@
 import { JSONBlobParse, NoraContent, NoraPayload } from '@sofie-automation/blueprints-integration'
 import React, { useEffect, useImperativeHandle } from 'react'
 import _ from 'underscore'
-import { getNoraContentSteps } from '../SegmentContainer/PieceMultistepChevron'
-import Escape from './../../lib/Escape'
+import { getNoraContentSteps } from '../SegmentContainer/PieceMultistepChevron.js'
+import Escape from './../../lib/Escape.js'
 
 interface IPropsHeader {
 	noraContent: NoraContent | undefined
@@ -17,13 +17,9 @@ export const NoraFloatingInspector = React.forwardRef<HTMLDivElement, IPropsHead
 	props: IPropsHeader,
 	ref
 ) {
-	useImperativeHandle(
-		ref,
-		() => {
-			return NoraPreviewRenderer._singletonRef.rootElement as HTMLDivElement
-		},
-		[]
-	)
+	useImperativeHandle(ref, () => {
+		return NoraPreviewRenderer._singletonRef.rootElement as HTMLDivElement
+	}, [])
 
 	useEffect(() => {
 		if (props.noraContent) {

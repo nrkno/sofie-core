@@ -354,7 +354,7 @@ export async function prepareMigration(returnAllChunks?: boolean): Promise<Prepa
 		? migrationChunks
 		: migrationChunks.filter((chunk) => {
 				return chunk._steps.length > 0
-		  })
+			})
 	const hash = getHash(stepsHash.join(','))
 
 	const steps = Object.values<MigrationStepInternal>(migrationSteps)

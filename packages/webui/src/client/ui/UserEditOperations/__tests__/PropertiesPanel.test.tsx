@@ -1,13 +1,13 @@
 import React from 'react'
 import { renderHook, act, render, screen, waitFor, RenderOptions } from '@testing-library/react'
 import '@testing-library/jest-dom'
-import { MeteorCall } from '../../../lib/meteorApi'
+import { MeteorCall } from '../../../lib/meteorApi.js'
 import { TFunction } from 'i18next'
 
 import userEvent from '@testing-library/user-event'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { UIParts } from '../../Collections'
-import { Segments } from '../../../../client/collections'
+import { UIParts } from '../../Collections.js'
+import { Segments } from '../../../../client/collections/index.js'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { UserEditingType } from '@sofie-automation/blueprints-integration'
@@ -16,10 +16,10 @@ import {
 	SelectedElementsContext,
 	SelectionContextType,
 	useSelectedElementsContext,
-} from '../../RundownView/SelectedElementsContext'
-import { MongoMock } from '../../../../__mocks__/mongo'
-import { PropertiesPanel } from '../PropertiesPanel'
-import { UserAction } from '../../../lib/clientUserAction'
+} from '../../RundownView/SelectedElementsContext.js'
+import { MongoMock } from '../../../../__mocks__/mongo.js'
+import { PropertiesPanel } from '../PropertiesPanel.js'
+import { UserAction } from '../../../lib/clientUserAction.js'
 
 jest.mock('meteor/tracker', (...args) => require('../../../../__mocks__/tracker').setup(args), { virtual: true })
 
@@ -146,7 +146,7 @@ const mockPartsCollection = MongoMock.getInnerMockCollection(UIParts)
 // Mock Client User Action:
 jest.mock('../../../lib/clientUserAction', () => ({
 	doUserAction: jest.fn((_t: TFunction, e: unknown, _action: UserAction, callback: Function) =>
-		callback(e, Date.now()),
+		callback(e, Date.now())
 	),
 	UserAction: {
 		EXECUTE_USER_OPERATION: 51,
@@ -178,11 +178,11 @@ describe('PropertiesPanel', () => {
 
 	const renderWithContext = (
 		ui: React.ReactNode,
-		{ ctxValue, ...renderOptions }: RenderOptions & { ctxValue: SelectionContextType },
+		{ ctxValue, ...renderOptions }: RenderOptions & { ctxValue: SelectionContextType }
 	) => {
 		return render(
 			<SelectedElementsContext.Provider value={ctxValue}>{ui}</SelectedElementsContext.Provider>,
-			renderOptions,
+			renderOptions
 		)
 	}
 
@@ -305,7 +305,7 @@ describe('PropertiesPanel', () => {
 			() => {
 				expect(screen.getByText(mockPart.title.slice(0, 30))).toBeInTheDocument()
 			},
-			{ timeout: 1000 },
+			{ timeout: 1000 }
 		)
 
 		const button = container.querySelector('.propertiespanel-pop-up__button')
@@ -356,7 +356,7 @@ describe('PropertiesPanel', () => {
 			{
 				id: 'operation1',
 				values: undefined,
-			},
+			}
 		)
 	})
 
@@ -400,7 +400,7 @@ describe('PropertiesPanel', () => {
 			},
 			{
 				id: '__sofie-revert-segment',
-			},
+			}
 		)
 	})
 

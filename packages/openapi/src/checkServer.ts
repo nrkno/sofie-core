@@ -1,5 +1,5 @@
 // eslint-disable-next-line n/no-missing-import
-import { Configuration, SofieApi } from '../client/ts'
+import { Configuration, SofieApi } from '../client/ts/index.js'
 
 async function wait(ms: number): Promise<void> {
 	return new Promise((resolve) => {

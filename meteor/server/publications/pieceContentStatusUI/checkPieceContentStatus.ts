@@ -845,13 +845,13 @@ function getPackageWarningMessage(
 				? {
 						// remove any trailing double "."
 						key: (packageOnPackageContainer?.status.statusReason.user + '.').replace(/\.\.$/, '.'),
-				  }
+					}
 				: generateTranslation(
 						'{{sourceLayer}} is in a placeholder state for an unknown workflow-defined reason',
 						{
 							sourceLayer: sourceLayer.name,
 						}
-				  ),
+					),
 		}
 	} else if (
 		packageOnPackageContainer.status.status ===

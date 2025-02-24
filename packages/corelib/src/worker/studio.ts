@@ -13,12 +13,12 @@ import {
 	RundownPlaylistId,
 	SegmentId,
 	StudioId,
-} from '../dataModel/Ids'
+} from '../dataModel/Ids.js'
 import { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
-import { CoreRundownPlaylistSnapshot } from '../snapshots'
+import { CoreRundownPlaylistSnapshot } from '../snapshots.js'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
-import { ITranslatableMessage } from '../TranslatableMessage'
-import { QuickLoopMarker } from '../dataModel/RundownPlaylist'
+import { ITranslatableMessage } from '../TranslatableMessage.js'
+import { QuickLoopMarker } from '../dataModel/RundownPlaylist.js'
 
 /** List of all Jobs performed by the Worker related to a certain Studio */
 export enum StudioJobs {

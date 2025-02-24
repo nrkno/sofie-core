@@ -1,5 +1,5 @@
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { UserError, UserErrorMessage } from '../error'
+import { UserError, UserErrorMessage } from '../error.js'
 
 describe('UserError', () => {
 	test('stringifyError', () => {

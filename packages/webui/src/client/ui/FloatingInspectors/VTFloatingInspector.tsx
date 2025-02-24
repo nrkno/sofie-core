@@ -1,19 +1,19 @@
 import React, { MutableRefObject, useRef } from 'react'
 import { TFunction, useTranslation } from 'react-i18next'
 
-import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
-import { FloatingInspector } from '../FloatingInspector'
-import { NoticeLevel } from '../../lib/notifications/notifications'
+import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications.js'
+import { FloatingInspector } from '../FloatingInspector.js'
+import { NoticeLevel } from '../../lib/notifications/notifications.js'
 import { VTContent } from '@sofie-automation/blueprints-integration'
 import { IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { VideoPreviewPlayer } from '../../lib/VideoPreviewPlayer'
+import { VideoPreviewPlayer } from '../../lib/VideoPreviewPlayer.js'
 import classNames from 'classnames'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { ITranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { IFloatingInspectorPosition, useInspectorPosition } from './IFloatingInspectorPosition'
+import { IFloatingInspectorPosition, useInspectorPosition } from './IFloatingInspectorPosition.js'
 import { ReadonlyDeep } from 'type-fest'
-import { getIgnorePieceContentStatus } from '../../lib/localStorage'
+import { getIgnorePieceContentStatus } from '../../lib/localStorage.js'
 
 interface IProps {
 	status: PieceStatusCode | undefined

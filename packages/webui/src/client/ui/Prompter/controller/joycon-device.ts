@@ -1,7 +1,7 @@
-import { ControllerAbstract } from './lib'
-import { PrompterConfigMode, PrompterViewContent } from '../PrompterView'
+import { ControllerAbstract } from './lib.js'
+import { PrompterConfigMode, PrompterViewContent } from '../PrompterView.js'
 import Spline from 'cubic-spline'
-import { logger } from '../../../lib/logging'
+import { logger } from '../../../lib/logging.js'
 
 type JoyconWithData = { index: number; timestamp: number; mode: JoyconMode; axes: readonly number[]; buttons: number[] }
 type JoyconMode = 'L' | 'R' | 'LR' | null
@@ -217,10 +217,10 @@ export class JoyConController extends ControllerAbstract {
 						o.axes.length === 4
 							? 'LR' // for documentation: L+R mode is also identified as Vendor: 057e Product: 200e
 							: o.id.match('Product: 2006')
-							? 'L'
-							: o.id.match('Product: 2007')
-							? 'R'
-							: null
+								? 'L'
+								: o.id.match('Product: 2007')
+									? 'R'
+									: null
 					joyconInputs.push({
 						index: o.index,
 						timestamp: o.timestamp,

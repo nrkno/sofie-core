@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useLayoutEffect } from 'react'
 import classNames from 'classnames'
 import { usePopper } from 'react-popper'
-import { EditAttribute, EditAttributeType } from '../../../../../../lib/EditAttribute'
+import { EditAttribute, EditAttributeType } from '../../../../../../lib/EditAttribute.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleRight, faCheck, faTrash } from '@fortawesome/free-solid-svg-icons'
-import { sameWidth } from '../../../../../../lib/popperUtils'
-import { catchError } from '../../../../../../lib/lib'
+import { sameWidth } from '../../../../../../lib/popperUtils.js'
+import { catchError } from '../../../../../../lib/lib.js'
 import { preventOverflow } from '@popperjs/core'
-import { DropdownInputControl, getDropdownInputOptions } from '../../../../../../lib/Components/DropdownInput'
+import { DropdownInputControl, getDropdownInputOptions } from '../../../../../../lib/Components/DropdownInput.js'
 
 interface IProps {
 	fieldLabel: string
@@ -85,7 +85,7 @@ export const FilterEditor: React.FC<IProps> = function FilterEditor(props: IProp
 				ref={setReferenceElement}
 				tabIndex={0}
 				role="button"
-				onClick={() => !props.readonly && onFocus && onFocus(index)}
+				onClick={() => !props.readonly && onFocus?.(index)}
 			>
 				<dt>{props.fieldLabel}</dt>
 				<dd>{props.valueLabel}</dd>
@@ -121,10 +121,7 @@ export const FilterEditor: React.FC<IProps> = function FilterEditor(props: IProp
 					</div>
 					<div className="mts">
 						{!props.final ? (
-							<button
-								className="btn right btn-tight btn-primary"
-								onClick={() => props.onInsertNext && props.onInsertNext(index)}
-							>
+							<button className="btn right btn-tight btn-primary" onClick={() => props.onInsertNext?.(index)}>
 								<FontAwesomeIcon icon={faAngleRight} />
 							</button>
 						) : (
@@ -132,7 +129,7 @@ export const FilterEditor: React.FC<IProps> = function FilterEditor(props: IProp
 								<FontAwesomeIcon icon={faCheck} />
 							</button>
 						)}
-						<button className="btn btn-tight btn-secondary" onClick={() => props.onRemove && props.onRemove(index)}>
+						<button className="btn btn-tight btn-secondary" onClick={() => props.onRemove?.(index)}>
 							<FontAwesomeIcon icon={faTrash} />
 						</button>
 					</div>
