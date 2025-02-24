@@ -21,6 +21,7 @@ import { IngestRundownStatus } from '@sofie-automation/shared-lib/dist/ingest/ru
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { createIngestRundownStatus } from './createIngestRundownStatus'
+import { Settings } from '../../Settings'
 
 interface IngestRundownStatusArgs {
 	readonly deviceId: PeripheralDeviceId
@@ -176,7 +177,10 @@ meteorCustomPublish(
 	async function (pub, deviceId: PeripheralDeviceId, token: string | undefined) {
 		check(deviceId, String)
 
-		await checkAccessAndGetPeripheralDevice(deviceId, token, this)
+		if (Settings.enableHeaderAuth) {
+			// This is used in a testTool, so only check when auth is enabled
+			await checkAccessAndGetPeripheralDevice(deviceId, token, this)
+		}
 
 		await setUpCollectionOptimizedObserver<
 			IngestRundownStatus,
