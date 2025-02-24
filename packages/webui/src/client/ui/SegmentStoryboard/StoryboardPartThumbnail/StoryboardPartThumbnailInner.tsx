@@ -56,7 +56,7 @@ export function StoryboardPartThumbnailInner({
 		if (e.pointerType !== 'mouse') {
 			return
 		}
-		// setHover(true)
+		setHover(true)
 
 		const newOffset = thumbnailEl.current && getElementDocumentOffset(thumbnailEl.current)
 		if (newOffset !== null) {

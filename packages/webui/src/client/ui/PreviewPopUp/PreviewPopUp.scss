@@ -277,4 +277,21 @@
 		padding: 5px;
 		font-weight: 700;
 	}
+
+	.preview-popUp__timing {
+		padding: 5px;
+
+		overflow: none;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+
+		font-feature-settings: 'liga' off;
+		font-style: normal;
+		font-weight: 500;
+		line-height: 100%; /* 15px */
+
+		.label {
+			font-weight: 300;
+		}
+	}
 }

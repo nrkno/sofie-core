@@ -3360,24 +3360,26 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 		renderDetachedShelf() {
 			return (
 				<RundownTimingProvider playlist={this.props.playlist} defaultDuration={Settings.defaultDisplayDuration}>
-					<ErrorBoundary>
-						<Shelf
-							buckets={this.props.buckets}
-							isExpanded={this.state.isInspectorShelfExpanded}
-							onChangeExpanded={this.onShelfChangeExpanded}
-							hotkeys={this.defaultHotkeys(this.props.t)}
-							playlist={this.props.playlist}
-							showStyleBase={this.props.showStyleBase}
-							showStyleVariant={this.props.showStyleVariant}
-							studioMode={this.props.userPermissions.studio}
-							onChangeBottomMargin={this.onChangeBottomMargin}
-							rundownLayout={this.state.shelfLayout}
-							studio={this.props.studio}
-							fullViewport={true}
-							shelfDisplayOptions={this.props.shelfDisplayOptions}
-							bucketDisplayFilter={this.props.bucketDisplayFilter}
-						/>
-					</ErrorBoundary>
+					<PreviewPopUpContextProvider>
+						<ErrorBoundary>
+							<Shelf
+								buckets={this.props.buckets}
+								isExpanded={this.state.isInspectorShelfExpanded}
+								onChangeExpanded={this.onShelfChangeExpanded}
+								hotkeys={this.defaultHotkeys(this.props.t)}
+								playlist={this.props.playlist}
+								showStyleBase={this.props.showStyleBase}
+								showStyleVariant={this.props.showStyleVariant}
+								studioMode={this.props.userPermissions.studio}
+								onChangeBottomMargin={this.onChangeBottomMargin}
+								rundownLayout={this.state.shelfLayout}
+								studio={this.props.studio}
+								fullViewport={true}
+								shelfDisplayOptions={this.props.shelfDisplayOptions}
+								bucketDisplayFilter={this.props.bucketDisplayFilter}
+							/>
+						</ErrorBoundary>
+					</PreviewPopUpContextProvider>
 					<ErrorBoundary>{this.renderSorensenContext()}</ErrorBoundary>
 				</RundownTimingProvider>
 			)

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import ClassNames from 'classnames'
 import { RundownUtils } from '../../../lib/rundown'
@@ -10,6 +10,11 @@ import { StyledTimecode } from '../../../lib/StyledTimecode'
 import { assertNever } from '../../../lib/tempLib'
 import { AdLibPieceUi } from '../../../lib/shelf'
 import { ActionAdLibHotkeyPreview } from '../../../lib/triggers/ActionAdLibHotkeyPreview'
+import {
+	PreviewPopUpContext,
+	IPreviewPopUpSession,
+	convertSourceLayerItemToPreview,
+} from '../../PreviewPopUp/PreviewPopUpContext'
 
 export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererProps> = (
 	props: ILayerItemRendererProps
@@ -80,12 +85,21 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 		}
 	})
 
+	const previewContext = useContext(PreviewPopUpContext)
+	const previewSession = useRef<IPreviewPopUpSession | null>(null)
+	const previewContents = convertSourceLayerItemToPreview(
+		props.adLibListItem.sourceLayer?.type,
+		props.adLibListItem,
+		props.contentStatus
+	)
+
 	const handleOnMouseOver = (e: React.MouseEvent) => {
 		if (itemIconPosition) {
 			const left = e.pageX - itemIconPosition.left
 			const unprocessedPercentage = left / itemIconPosition.width
 			if (unprocessedPercentage <= 1 && !showMiniInspector) {
 				setShowMiniInspector(true)
+				previewSession.current = previewContext.requestPreview(e.target as any, previewContents)
 			}
 		}
 	}
@@ -96,14 +110,25 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 			const unprocessedPercentage = left / itemIconPosition.width
 			if ((unprocessedPercentage > 1 || unprocessedPercentage < 0) && showMiniInspector) {
 				setShowMiniInspector(false)
+				if (previewSession.current) {
+					previewSession.current.close()
+					previewSession.current = null
+				}
 				return false
 			} else if (unprocessedPercentage >= 0 && unprocessedPercentage <= 1 && !showMiniInspector) {
 				setShowMiniInspector(true)
+				previewSession.current = previewContext.requestPreview(e.target as any, previewContents)
 			}
 		}
 	}
 
-	const handleOnMouseLeave = () => setShowMiniInspector(false)
+	const handleOnMouseLeave = () => {
+		setShowMiniInspector(false)
+		if (previewSession.current) {
+			previewSession.current.close()
+			previewSession.current = null
+		}
+	}
 
 	const type = props.adLibListItem.isAction
 		? props.adLibListItem.isGlobal

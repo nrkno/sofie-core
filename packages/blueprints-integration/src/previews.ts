@@ -33,6 +33,7 @@ export interface TablePreview extends PreviewBase {
 	type: PreviewType.Table
 
 	entries: { key: string; value: string }[]
+	displayTiming: boolean
 }
 export interface ScriptPreview extends PreviewBase {
 	type: PreviewType.Script

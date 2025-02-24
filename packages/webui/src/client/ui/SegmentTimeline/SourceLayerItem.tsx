@@ -237,7 +237,10 @@ export const SourceLayerItem = (props: Readonly<ISourceLayerItemProps>): JSX.Ele
 				previewSession.current.close()
 				previewSession.current = null
 			} else {
-				const previewContents = convertSourceLayerItemToPreview(layer.type, piece.instance.piece, contentStatus)
+				const previewContents = convertSourceLayerItemToPreview(layer.type, piece.instance.piece, contentStatus, {
+					in: props.piece.renderedInPoint,
+					dur: props.piece.renderedDuration,
+				})
 
 				if (previewContents.length) {
 					previewSession.current = previewContext.requestPreview(e.target as any, previewContents, {

@@ -48,7 +48,12 @@ export const LinePartSecondaryPiece: React.FC<IProps> = React.memo(function Line
 
 	const previewContext = useContext(PreviewPopUpContext)
 	const previewSession = useRef<IPreviewPopUpSession | null>(null)
-	const previewContents = convertSourceLayerItemToPreview(piece.sourceLayer?.type, piece.instance.piece, contentStatus)
+	const previewContents = convertSourceLayerItemToPreview(
+		piece.sourceLayer?.type,
+		piece.instance.piece,
+		contentStatus,
+		{ in: piece.renderedInPoint, dur: piece.renderedDuration }
+	)
 
 	const onPointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
 		if (e.pointerType !== 'mouse') {

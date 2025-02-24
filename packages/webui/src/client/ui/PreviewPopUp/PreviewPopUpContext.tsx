@@ -5,15 +5,17 @@ import { PreviewPopUpContent } from './PreviewPopUpContent'
 import {
 	JSONBlobParse,
 	NoraPayload,
+	PieceLifespan,
 	PreviewType,
 	ScriptContent,
 	SourceLayerType,
 	SplitsContent,
 	SplitsContentBoxContent,
 	SplitsContentBoxProperties,
+	TransitionContent,
 	VTContent,
 } from '@sofie-automation/blueprints-integration'
-import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
+import { ReadonlyDeep, ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import { PieceContentStatusObj } from '@sofie-automation/meteor-lib/dist/api/pieceContentStatus'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import _ from 'underscore'
@@ -28,7 +30,8 @@ type VirtualElement = {
 export function convertSourceLayerItemToPreview(
 	sourceLayerType: SourceLayerType | undefined,
 	item: ReadonlyObjectDeep<PieceInstancePiece> | IAdLibListItem,
-	contentStatus?: ReadonlyObjectDeep<PieceContentStatusObj>
+	contentStatus?: ReadonlyObjectDeep<PieceContentStatusObj>,
+	timeAsRendered?: { in?: number | null; dur?: number | null }
 ): PreviewContent[] {
 	// first try to read the popup preview
 	if (item.content.popUpPreview) {
@@ -79,6 +82,14 @@ export function convertSourceLayerItemToPreview(
 						type: 'data',
 						content: [...popupPreview.preview.entries],
 					})
+					if (popupPreview.preview.displayTiming) {
+						contents.push({
+							type: 'timing',
+							timeAsRendered,
+							enable: 'enable' in item ? item.enable : undefined,
+							lifespan: item.lifespan,
+						})
+					}
 					break
 				case PreviewType.VT:
 					if (contentStatus?.previewUrl) {
@@ -194,7 +205,13 @@ export function convertSourceLayerItemToPreview(
 				type: 'title',
 				content: item.name,
 			},
-			// todo - item inpoint and duration
+			// note - this may have contained some NORA data before but idk the details on how to add that back
+			{
+				type: 'timing',
+				timeAsRendered,
+				enable: 'enable' in item ? item.enable : undefined,
+				lifespan: item.lifespan,
+			},
 		]
 	} else if (sourceLayerType === SourceLayerType.SCRIPT) {
 		const content = item.content as ScriptContent
@@ -210,6 +227,9 @@ export function convertSourceLayerItemToPreview(
 	} else if (sourceLayerType === SourceLayerType.SPLITS) {
 		const content = item.content as SplitsContent
 		return [{ type: 'boxLayout', boxSourceConfiguration: content.boxSourceConfiguration }]
+	} else if (sourceLayerType === SourceLayerType.TRANSITION) {
+		const content = item.content as TransitionContent
+		if (content.preview) return [{ type: 'image', src: '/api/private/blueprints/assets/' + content.preview }]
 	}
 
 	return []
@@ -252,7 +272,7 @@ export type PreviewContent =
 	  }
 	| {
 			type: 'boxLayout'
-			boxSourceConfiguration: (SplitsContentBoxContent & SplitsContentBoxProperties)[]
+			boxSourceConfiguration: ReadonlyDeep<(SplitsContentBoxContent & SplitsContentBoxProperties)[]>
 			showLabels?: boolean
 			backgroundArt?: string
 	  }
@@ -264,6 +284,12 @@ export type PreviewContent =
 			type: 'stepCount'
 			current: number
 			total?: number
+	  }
+	| {
+			type: 'timing'
+			timeAsRendered?: { in?: number | null; dur?: number | null }
+			enable?: ReadonlyObjectDeep<PieceInstancePiece>['enable']
+			lifespan: PieceLifespan
 	  }
 
 export interface IPreviewPopUpSession {

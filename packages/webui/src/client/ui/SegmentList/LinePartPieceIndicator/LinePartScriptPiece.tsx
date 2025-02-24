@@ -30,7 +30,10 @@ export function LinePartScriptPiece({ pieces }: IProps): JSX.Element {
 	const contentStatus = thisPieces[0] && useContentStatusForPieceInstance(thisPieces[0].instance)
 	const previewContents =
 		thisPieces[0] &&
-		convertSourceLayerItemToPreview(thisPieces[0].sourceLayer?.type, thisPieces[0].instance.piece, contentStatus)
+		convertSourceLayerItemToPreview(thisPieces[0].sourceLayer?.type, thisPieces[0].instance.piece, contentStatus, {
+			in: thisPieces[0].renderedInPoint,
+			dur: thisPieces[0].renderedDuration,
+		})
 
 	function onMouseEnter(e: React.PointerEvent<HTMLDivElement>) {
 		// setHover(true)

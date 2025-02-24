@@ -73,8 +73,6 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 			if (unprocessedPercentage <= 1 && !previewSession.current) {
 				previewSession.current = previewContext.requestPreview(e.target as any, previewContents, {
 					time: hoverScrubTimePosition,
-					startCoordinate: e.screenX,
-					trackMouse: true,
 				})
 			}
 		}

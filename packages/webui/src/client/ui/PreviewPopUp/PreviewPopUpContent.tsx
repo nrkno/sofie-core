@@ -2,11 +2,15 @@ import React from 'react'
 import { PreviewContent } from './PreviewPopUpContext'
 import { WarningIconSmall } from '../../lib/ui/icons/notifications'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { useTranslation } from 'react-i18next'
+import { TFunction, useTranslation } from 'react-i18next'
 import { VTPreviewElement } from './Previews/VTPreview'
 import { IFramePreview } from './Previews/IFramePreview'
 import { BoxLayoutPreview } from './Previews/BoxLayoutPreview'
 import { ScriptPreview } from './Previews/ScriptPreview'
+import { RundownUtils } from '../../lib/rundown'
+import { PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
+import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 
 interface PreviewPopUpContentProps {
 	content: PreviewContent
@@ -72,7 +76,49 @@ export function PreviewPopUpContent({ content, time }: PreviewPopUpContentProps)
 					{content.total && '/' + content.total}
 				</div>
 			)
+		case 'timing':
+			return (
+				<div className="preview-popUp__timing">
+					<span className="label">IN: </span> {RundownUtils.formatTimeToShortTime(content.timeAsRendered?.in || 0)}
+					<span className="label"> DURATION: </span>
+					{getDurationText(t, content.lifespan, content.timeAsRendered, content.enable)}
+				</div>
+			)
 		default:
 			return <></>
+	}
+}
+
+function getDurationText(
+	t: TFunction,
+	lifespan: PieceLifespan,
+	timeAsRendered?: { in?: number; dur?: number },
+	enable?: ReadonlyObjectDeep<PieceInstancePiece>['enable']
+): string {
+	if (!timeAsRendered?.dur && !enable?.duration) {
+		return getLifeSpanText(t, lifespan)
+	} else {
+		return RundownUtils.formatTimeToShortTime(
+			timeAsRendered?.dur ?? (typeof enable?.duration === 'number' ? enable?.duration : 0)
+		)
+	}
+}
+
+function getLifeSpanText(t: TFunction, lifespan: PieceLifespan): string {
+	switch (lifespan) {
+		case PieceLifespan.WithinPart:
+			return t('Until next take')
+		case PieceLifespan.OutOnSegmentChange:
+			return t('Until next segment')
+		case PieceLifespan.OutOnSegmentEnd:
+			return t('Until end of segment')
+		case PieceLifespan.OutOnRundownChange:
+			return t('Until next rundown')
+		case PieceLifespan.OutOnRundownEnd:
+			return t('Until end of rundown')
+		case PieceLifespan.OutOnShowStyleEnd:
+			return t('Until end of showstyle')
+		default:
+			return ''
 	}
 }

@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react'
+import { useContext, useEffect, useRef } from 'react'
 import { StyledTimecode } from '../../../lib/StyledTimecode'
 import classNames from 'classnames'
+import StudioContext from '../../RundownView/StudioContext'
 
 interface VTPreviewProps {
 	content: {
@@ -12,6 +13,7 @@ interface VTPreviewProps {
 	}
 	time: number | null
 }
+
 function setVideoElementPosition(
 	vEl: HTMLVideoElement,
 	timePosition: number,
@@ -28,8 +30,10 @@ function setVideoElementPosition(
 	}
 	vEl.currentTime = targetTime / 1000
 }
+
 export function VTPreviewElement({ content, time }: VTPreviewProps): React.ReactElement {
 	const videoElement = useRef<HTMLVideoElement>(null)
+	const studioContext = useContext(StudioContext)
 
 	useEffect(() => {
 		if (!videoElement.current) return
@@ -45,16 +49,17 @@ export function VTPreviewElement({ content, time }: VTPreviewProps): React.React
 
 	const itemDuration = content.itemDuration ?? 0
 	const offsetTimePosition = (time ?? 0) + (content.seek ?? 0)
-	const showFrameMarker = offsetTimePosition === 0 || (itemDuration > 0 && offsetTimePosition >= itemDuration)
+	// note - we should probably be following the content's framerate for this
+	const showFrameMarker = offsetTimePosition <= 20 || (itemDuration > 0 && offsetTimePosition >= itemDuration - 20)
 
-	// todo - add studio settings. I _really_ don't look forward to prop drilling these....
 	return (
 		<div className="preview-popUp__video">
 			{showFrameMarker && (
 				<div
 					className={classNames('preview-popUp__video-frame-marker', {
-						'preview-popUp__video-frame-marker--first-frame': offsetTimePosition === 0,
-						'preview-popUp__video-frame-marker--last-frame': itemDuration > 0 && offsetTimePosition >= itemDuration,
+						'preview-popUp__video-frame-marker--first-frame': offsetTimePosition <= 20,
+						'preview-popUp__video-frame-marker--last-frame':
+							itemDuration > 0 && offsetTimePosition >= itemDuration - 20,
 					})}
 				>
 					<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -64,7 +69,7 @@ export function VTPreviewElement({ content, time }: VTPreviewProps): React.React
 			)}
 			<video src={content.src} ref={videoElement} crossOrigin="anonymous" playsInline={true} muted={true} />
 			<div className="time">
-				<StyledTimecode studioSettings={undefined} time={Math.round(time ?? 0)} />
+				<StyledTimecode studioSettings={studioContext?.settings} time={Math.round(time ?? 0)} />
 			</div>
 		</div>
 	)
