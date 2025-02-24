@@ -61,6 +61,7 @@ export function createIngestRundownStatus(
 						$or: [
 							{
 								externalId: nrcsPart.data.externalId,
+								ingestNotifyPartExternalId: { $exists: false },
 							},
 							{
 								ingestNotifyPartExternalId: nrcsPart.data.externalId,
@@ -98,6 +99,7 @@ function findPartInstancesForIngestPart(
 			$or: [
 				{
 					'part.externalId': partExternalId,
+					'part.ingestNotifyPartExternalId': { $exists: false },
 				},
 				{
 					'part.ingestNotifyPartExternalId': partExternalId,
