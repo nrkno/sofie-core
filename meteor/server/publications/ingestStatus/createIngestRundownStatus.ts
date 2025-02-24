@@ -1,11 +1,11 @@
-import type { RundownId, PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import type { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { NrcsIngestCacheType } from '@sofie-automation/corelib/dist/dataModel/NrcsIngestDataCache'
-import type { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import {
 	IngestRundownStatus,
 	IngestPartPlaybackStatus,
 	IngestRundownActiveStatus,
 	IngestPartStatus,
+	IngestPartNotifyItemReady,
 } from '@sofie-automation/shared-lib/dist/ingest/rundownStatus'
 import type { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
@@ -15,6 +15,7 @@ import { ReactiveCacheCollection } from '../lib/ReactiveCacheCollection'
 import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { IngestPart } from '@sofie-automation/blueprints-integration'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 
 export function createIngestRundownStatus(
 	cache: ReadonlyDeep<ContentCache>,
@@ -41,9 +42,6 @@ export function createIngestRundownStatus(
 		newDoc.active = playlist.rehearsal ? IngestRundownActiveStatus.REHEARSAL : IngestRundownActiveStatus.ACTIVE
 	}
 
-	// Find the most important part instance for each part
-	const partInstanceMap = findPartInstanceForEachPart(playlist, rundownId, cache.PartInstances)
-
 	const nrcsSegments = cache.NrcsIngestData.find({ rundownId, type: NrcsIngestCacheType.SEGMENT }).fetch()
 	for (const nrcsSegment of nrcsSegments) {
 		const nrcsParts = cache.NrcsIngestData.find({
@@ -58,10 +56,25 @@ export function createIngestRundownStatus(
 				nrcsParts.map((nrcsPart) => {
 					if (!nrcsPart.partId || !nrcsPart.segmentId) return null
 
-					const part = cache.Parts.findOne({ _id: nrcsPart.partId, rundownId })
-					const partInstance = partInstanceMap.get(nrcsPart.partId)
+					const parts = cache.Parts.find({
+						rundownId: rundownId,
+						$or: [
+							{
+								externalId: nrcsPart.data.externalId,
+							},
+							{
+								ingestNotifyPartExternalId: nrcsPart.data.externalId,
+							},
+						],
+					}).fetch()
+					const partInstances = findPartInstancesForIngestPart(
+						playlist,
+						rundownId,
+						cache.PartInstances,
+						nrcsPart.data.externalId
+					)
 
-					return createIngestPartStatus(playlist, partInstance, part, nrcsPart.data as IngestPart)
+					return createIngestPartStatus(playlist, partInstances, parts, nrcsPart.data as IngestPart)
 				})
 			),
 		})
@@ -70,64 +83,110 @@ export function createIngestRundownStatus(
 	return newDoc
 }
 
-function findPartInstanceForEachPart(
+function findPartInstancesForIngestPart(
 	playlist: Pick<DBRundownPlaylist, PlaylistFields> | undefined,
 	rundownId: RundownId,
-	partInstancesCache: ReadonlyDeep<ReactiveCacheCollection<Pick<PartInstance, PartInstanceFields>>>
+	partInstancesCache: ReadonlyDeep<ReactiveCacheCollection<Pick<PartInstance, PartInstanceFields>>>,
+	partExternalId: string
 ) {
-	const partInstanceMap = new Map<PartId, Pick<DBPartInstance, PartInstanceFields>>()
-	if (!playlist) return partInstanceMap
+	const result: Record<string, Pick<PartInstance, PartInstanceFields>> = {}
+	if (!playlist) return result
 
-	for (const partInstance of partInstancesCache.find({}).fetch()) {
+	const candidatePartInstances = partInstancesCache
+		.find({
+			rundownId: rundownId,
+			$or: [
+				{
+					'part.externalId': partExternalId,
+				},
+				{
+					'part.ingestNotifyPartExternalId': partExternalId,
+				},
+			],
+		})
+		.fetch()
+
+	for (const partInstance of candidatePartInstances) {
 		if (partInstance.rundownId !== rundownId) continue
 		// Ignore the next partinstance
 		if (partInstance._id === playlist.nextPartInfo?.partInstanceId) continue
 
+		const partId = unprotectString(partInstance.part._id)
+
 		// The current part instance is the most important
 		if (partInstance._id === playlist.currentPartInfo?.partInstanceId) {
-			partInstanceMap.set(partInstance.part._id, partInstance)
+			result[partId] = partInstance
 			continue
 		}
 
 		// Take the part with the highest takeCount
-		const existingEntry = partInstanceMap.get(partInstance.part._id)
+		const existingEntry = result[partId]
 		if (!existingEntry || existingEntry.takeCount < partInstance.takeCount) {
-			partInstanceMap.set(partInstance.part._id, partInstance)
+			result[partId] = partInstance
 		}
 	}
 
-	return partInstanceMap
+	return result
 }
 
 function createIngestPartStatus(
 	playlist: Pick<DBRundownPlaylist, PlaylistFields> | undefined,
-	partInstance: Pick<PartInstance, PartInstanceFields> | undefined,
-	part: Pick<DBPart, PartFields> | undefined,
+	partInstances: Record<string, Pick<PartInstance, PartInstanceFields>>,
+	parts: Pick<DBPart, PartFields>[],
 	ingestPart: IngestPart
 ): IngestPartStatus {
 	// Determine the playback status from the PartInstance
 	let playbackStatus = IngestPartPlaybackStatus.UNKNOWN
-	if (playlist && partInstance && partInstance.part.shouldNotifyCurrentPlayingPart) {
-		const isCurrentPartInstance = playlist.currentPartInfo?.partInstanceId === partInstance._id
 
-		if (isCurrentPartInstance) {
-			// If the current, it is playing
-			playbackStatus = IngestPartPlaybackStatus.PLAY
-		} else {
-			// If not the current, but has been played, it is stopped
-			playbackStatus = IngestPartPlaybackStatus.STOP
+	let isReady: boolean | null = null // Start off as null, the first value will make this true or false
+
+	const itemsReady: IngestPartNotifyItemReady[] = []
+
+	const updateStatusWithPart = (part: Pick<DBPart, PartFields>) => {
+		// If the part affects the ready status, update it
+		if (typeof part.ingestNotifyPartReady === 'boolean') {
+			isReady = (isReady ?? true) && part.ingestNotifyPartReady
+		}
+
+		// Include the items
+		if (part.ingestNotifyItemsReady) {
+			itemsReady.push(...part.ingestNotifyItemsReady)
 		}
 	}
 
-	// Determine the ready status from the PartInstance or Part
-	const isReady = partInstance ? partInstance.part.ingestNotifyPartReady : part?.ingestNotifyPartReady
-	const itemsReady = partInstance ? partInstance.part.ingestNotifyItemsReady : part?.ingestNotifyItemsReady
+	// Loop through the partInstances, starting off the state
+	if (playlist) {
+		for (const partInstance of Object.values<Pick<PartInstance, PartInstanceFields>>(partInstances)) {
+			if (!partInstance) continue
+
+			if (partInstance.part.shouldNotifyCurrentPlayingPart) {
+				const isCurrentPartInstance = playlist.currentPartInfo?.partInstanceId === partInstance._id
+
+				if (isCurrentPartInstance) {
+					// If the current, it is playing
+					playbackStatus = IngestPartPlaybackStatus.PLAY
+				} else if (playbackStatus === IngestPartPlaybackStatus.UNKNOWN) {
+					// If not the current, but has been played, it is stopped
+					playbackStatus = IngestPartPlaybackStatus.STOP
+				}
+			}
+
+			updateStatusWithPart(partInstance.part)
+		}
+	}
+
+	for (const part of parts) {
+		// Check if the part has already been handled by a partInstance
+		if (partInstances[unprotectString(part._id)]) continue
+
+		updateStatusWithPart(part)
+	}
 
 	return {
 		externalId: ingestPart.externalId,
 
-		isReady: isReady ?? null,
-		itemsReady: itemsReady ?? [],
+		isReady: isReady,
+		itemsReady: itemsReady,
 
 		playbackStatus,
 	}

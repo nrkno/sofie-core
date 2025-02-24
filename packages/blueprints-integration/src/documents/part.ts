@@ -59,6 +59,9 @@ export interface IBlueprintMutatablePart<TPrivateData = unknown, TPublicData = u
 	/** Whether this segment line supports being used in HOLD */
 	holdMode?: PartHoldMode
 
+	/** The externalId of the part as expected by the NRCS. If not set, the externalId property will be used */
+	ingestNotifyPartExternalId?: string
+
 	/** Set to true if ingest-device should be notified when this part starts playing */
 	shouldNotifyCurrentPlayingPart?: boolean
 

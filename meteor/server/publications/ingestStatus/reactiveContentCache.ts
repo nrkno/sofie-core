@@ -32,6 +32,7 @@ export type PartFields =
 	| 'shouldNotifyCurrentPlayingPart'
 	| 'ingestNotifyPartReady'
 	| 'ingestNotifyItemsReady'
+	| 'ingestNotifyPartExternalId'
 export const partFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBPart, PartFields>>>({
 	_id: 1,
 	rundownId: 1,
@@ -40,6 +41,7 @@ export const partFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBP
 	shouldNotifyCurrentPlayingPart: 1,
 	ingestNotifyPartReady: 1,
 	ingestNotifyItemsReady: 1,
+	ingestNotifyPartExternalId: 1,
 })
 
 export type PartInstanceFields = '_id' | 'rundownId' | 'segmentId' | 'part' | 'takeCount'
