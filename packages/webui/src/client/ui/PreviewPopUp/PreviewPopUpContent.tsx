@@ -48,8 +48,8 @@ export function PreviewPopUpContent({ content, time }: PreviewPopUpContentProps)
 				<div className="preview-popUp__table">
 					<table>
 						<tbody>
-							{content.content.map(({ key, value }) => (
-								<tr>
+							{content.content.map(({ key, value }, i) => (
+								<tr key={key + i}>
 									<td className="preview-popup__label">{key}</td>
 									<td className="preview-popup__value">{value}</td>
 								</tr>
@@ -92,7 +92,7 @@ export function PreviewPopUpContent({ content, time }: PreviewPopUpContentProps)
 function getDurationText(
 	t: TFunction,
 	lifespan: PieceLifespan,
-	timeAsRendered?: { in?: number; dur?: number },
+	timeAsRendered?: { in?: number | null; dur?: number | null },
 	enable?: ReadonlyObjectDeep<PieceInstancePiece>['enable']
 ): string {
 	if (!timeAsRendered?.dur && !enable?.duration) {

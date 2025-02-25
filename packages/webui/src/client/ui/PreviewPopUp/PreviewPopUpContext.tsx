@@ -151,7 +151,7 @@ export function convertSourceLayerItemToPreview(
 		]) as PreviewContent[]
 	} else if (sourceLayerType === SourceLayerType.GRAPHICS && 'previewPayload' in item.content) {
 		const payload = JSONBlobParse<NoraPayload>(item.content.previewPayload)
-		const tableProps = Object.entries(payload.content)
+		const tableProps = Object.entries<unknown>(payload.content)
 			.filter(([key, value]) => !(key.startsWith('_') || key.startsWith('@') || value === ''))
 			.map(([key, value]) => ({ key, value }))
 
@@ -412,7 +412,8 @@ export function PreviewPopUpContextProvider({ children }: React.PropsWithChildre
 					startCoordinate={previewSession.startCoordinate}
 					trackMouse={previewSession.trackMouse}
 				>
-					{previewContent && previewContent.map((content) => <PreviewPopUpContent time={t} content={content} />)}
+					{previewContent &&
+						previewContent.map((content, i) => <PreviewPopUpContent key={i} time={t} content={content} />)}
 				</PreviewPopUp>
 			)}
 		</PreviewPopUpContext.Provider>

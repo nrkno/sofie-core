@@ -3,11 +3,12 @@ import classNames from 'classnames'
 import { useMemo } from 'react'
 import { RundownUtils } from '../../../lib/rundown'
 import { getSplitPreview, SplitRole } from '../../../lib/ui/splitPreview'
+import { ReadonlyDeep } from 'type-fest'
 
 interface BoxLayoutPreviewProps {
 	content: {
 		type: 'boxLayout'
-		boxSourceConfiguration: (SplitsContentBoxContent & SplitsContentBoxProperties)[]
+		boxSourceConfiguration: ReadonlyDeep<(SplitsContentBoxContent & SplitsContentBoxProperties)[]>
 		showLabels?: boolean
 		backgroundArt?: string
 	}
