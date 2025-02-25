@@ -3263,9 +3263,6 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 													)}
 												</ErrorBoundary>
 												<ErrorBoundary>
-													<NoraPreviewRenderer />
-												</ErrorBoundary>
-												<ErrorBoundary>
 													<SegmentContextMenu
 														contextMenuContext={this.state.contextMenuContext}
 														playlist={playlist}
