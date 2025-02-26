@@ -9,7 +9,7 @@
 # but you can also edit it by hand.
 
 meteor@2.1.0
-webapp@2.0.4
+webapp@2.0.5
 ddp@1.4.2
 
 mongo@2.1.0 # The database Meteor supports right now
