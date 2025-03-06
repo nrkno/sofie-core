@@ -345,118 +345,123 @@ function DirectorScreenRender({
 			timingDurations.remainingBudgetOnCurrentSegment ?? timingDurations.remainingTimeOnCurrentPart ?? 0
 
 		const expectedStart = PlaylistTiming.getExpectedStart(playlist.timing)
+		const expectedEnd = PlaylistTiming.getExpectedEnd(playlist.timing)
+		const expectedDuration = PlaylistTiming.getExpectedDuration(playlist.timing)
+
 		const overUnderClock = getPlaylistTimingDiff(playlist, timingDurations) ?? 0
 
 		return (
 			<div className="director-screen">
-				<div className="director-screen__part director-screen__part--current-part">
+				<div className="director-screen__header">
+					{RundownUtils.formatTimeToTimecode({ frameRate: 25 }, expectedStart || 0, true)}
+					{RundownUtils.formatTimeToTimecode({ frameRate: 25 }, expectedEnd || 0, true)}
+					{RundownUtils.formatTimeToTimecode({ frameRate: 25 }, expectedDuration || 0, true)}
 					<div
-						className={ClassNames('director-screen__segment-name', {
-							live: currentSegment !== undefined,
+						className={ClassNames('director-screen__header__countdown', {
+							over: Math.floor(overUnderClock / 1000) >= 0,
 						})}
 					>
-						{currentSegment?.name}
+						{RundownUtils.formatDiffToTimecode(overUnderClock, true, false, true, true, true, undefined, true, true)}
 					</div>
-					{currentPartInstance && currentShowStyleBaseId ? (
-						<>
-							<div className="director-screen__part__piece-icon">
-								<PieceIconContainer
-									partInstanceId={currentPartInstance.instance._id}
-									showStyleBaseId={currentShowStyleBaseId}
-									rundownIds={rundownIds}
-									playlistActivationId={playlist?.activationId}
-								/>
-							</div>
-							<div className="director-screen__part__piece-name">
-								<PieceNameContainer
-									partName={currentPartInstance.instance.part.title}
-									partInstanceId={currentPartInstance.instance._id}
-									showStyleBaseId={currentShowStyleBaseId}
-									rundownIds={rundownIds}
-									playlistActivationId={playlist?.activationId}
-								/>
-							</div>
-							<div className="director-screen__part__piece-countdown">
-								{currentSegment?.segmentTiming?.countdownType === CountdownType.SEGMENT_BUDGET_DURATION ? (
-									<CurrentPartOrSegmentRemaining
-										currentPartInstanceId={currentPartInstance.instance._id}
-										heavyClassName="overtime"
-									/>
-								) : (
-									<PieceCountdownContainer
+				</div>
+				<div className="director-screen__body">
+					<div className="director-screen__body__part director-screen__body__part--current-part">
+						<div
+							className={ClassNames('director-screen__body__segment-name', {
+								live: currentSegment !== undefined,
+							})}
+						>
+							{currentSegment?.name}
+						</div>
+						{currentPartInstance && currentShowStyleBaseId ? (
+							<>
+								<div className="director-screen__body__part__piece-icon">
+									<PieceIconContainer
 										partInstanceId={currentPartInstance.instance._id}
 										showStyleBaseId={currentShowStyleBaseId}
 										rundownIds={rundownIds}
-										partAutoNext={currentPartInstance.instance.part.autoNext || false}
-										partExpectedDuration={calculatePartInstanceExpectedDurationWithTransition(
-											currentPartInstance.instance
-										)}
-										partStartedPlayback={currentPartInstance.instance.timings?.plannedStartedPlayback}
 										playlistActivationId={playlist?.activationId}
 									/>
-								)}
-							</div>
-							<div className="director-screen__part__part-countdown">
-								<Timediff time={currentPartOrSegmentCountdown} />
-							</div>
-						</>
-					) : expectedStart ? (
-						<div className="director-screen__rundown-countdown">
-							<Timediff time={expectedStart - getCurrentTime()} />
-						</div>
-					) : null}
-				</div>
-				<div className="director-screen__part director-screen__part--next-part">
-					<div
-						className={ClassNames('director-screen__segment-name', {
-							next: nextSegment !== undefined && nextSegment?._id !== currentSegment?._id,
-						})}
-					>
-						{nextSegment?._id !== currentSegment?._id ? nextSegment?.name : undefined}
-					</div>
-					{nextPartInstance && nextShowStyleBaseId ? (
-						<>
-							<div className="director-screen__part__piece-icon">
-								<PieceIconContainer
-									partInstanceId={nextPartInstance.instance._id}
-									showStyleBaseId={nextShowStyleBaseId}
-									rundownIds={rundownIds}
-									playlistActivationId={playlist?.activationId}
-								/>
-							</div>
-							<div className="director-screen__part__piece-name">
-								{currentPartInstance && currentPartInstance.instance.part.autoNext ? (
-									<img
-										className="director-screen__part__auto-next-icon"
-										src="/icons/auto-presenter-screen.svg"
-										alt="Autonext"
-									/>
-								) : null}
-								{nextPartInstance && nextShowStyleBaseId && nextPartInstance.instance.part.title ? (
+								</div>
+								<div className="director-screen__body__part__piece-name">
 									<PieceNameContainer
-										partName={nextPartInstance.instance.part.title}
+										partName={currentPartInstance.instance.part.title}
+										partInstanceId={currentPartInstance.instance._id}
+										showStyleBaseId={currentShowStyleBaseId}
+										rundownIds={rundownIds}
+										playlistActivationId={playlist?.activationId}
+									/>
+								</div>
+								<div className="director-screen__body__part__piece-countdown">
+									{currentSegment?.segmentTiming?.countdownType === CountdownType.SEGMENT_BUDGET_DURATION ? (
+										<CurrentPartOrSegmentRemaining
+											currentPartInstanceId={currentPartInstance.instance._id}
+											heavyClassName="overtime"
+										/>
+									) : (
+										<PieceCountdownContainer
+											partInstanceId={currentPartInstance.instance._id}
+											showStyleBaseId={currentShowStyleBaseId}
+											rundownIds={rundownIds}
+											partAutoNext={currentPartInstance.instance.part.autoNext || false}
+											partExpectedDuration={calculatePartInstanceExpectedDurationWithTransition(
+												currentPartInstance.instance
+											)}
+											partStartedPlayback={currentPartInstance.instance.timings?.plannedStartedPlayback}
+											playlistActivationId={playlist?.activationId}
+										/>
+									)}
+								</div>
+								<div className="director-screen__body__part__part-countdown">
+									<Timediff time={currentPartOrSegmentCountdown} />
+								</div>
+							</>
+						) : expectedStart ? (
+							<div className="director-screen__body__rundown-countdown">
+								<Timediff time={expectedStart - getCurrentTime()} />
+							</div>
+						) : null}
+					</div>
+					<div className="director-screen__body__part director-screen__body__part--next-part">
+						<div
+							className={ClassNames('director-screen__body__segment-name', {
+								next: nextSegment !== undefined && nextSegment?._id !== currentSegment?._id,
+							})}
+						>
+							{nextSegment?._id !== currentSegment?._id ? nextSegment?.name : undefined}
+						</div>
+						{nextPartInstance && nextShowStyleBaseId ? (
+							<>
+								<div className="director-screen__body__part__piece-icon">
+									<PieceIconContainer
 										partInstanceId={nextPartInstance.instance._id}
 										showStyleBaseId={nextShowStyleBaseId}
 										rundownIds={rundownIds}
 										playlistActivationId={playlist?.activationId}
 									/>
-								) : (
-									'_'
-								)}
-							</div>
-						</>
-					) : null}
-				</div>
-				<div className="director-screen__rundown-status-bar">
-					<div className="director-screen__rundown-status-bar__rundown-name">
-						{playlist ? playlist.name : 'UNKNOWN'}
-					</div>
-					<div
-						className={ClassNames('director-screen__rundown-status-bar__countdown', {
-							over: Math.floor(overUnderClock / 1000) >= 0,
-						})}
-					>
-						{RundownUtils.formatDiffToTimecode(overUnderClock, true, false, true, true, true, undefined, true, true)}
+								</div>
+								<div className="director-screen__body__part__piece-name">
+									{currentPartInstance && currentPartInstance.instance.part.autoNext ? (
+										<img
+											className="director-screen__body__part__auto-next-icon"
+											src="/icons/auto-presenter-screen.svg"
+											alt="Autonext"
+										/>
+									) : null}
+									{nextPartInstance && nextShowStyleBaseId && nextPartInstance.instance.part.title ? (
+										<PieceNameContainer
+											partName={nextPartInstance.instance.part.title}
+											partInstanceId={nextPartInstance.instance._id}
+											showStyleBaseId={nextShowStyleBaseId}
+											rundownIds={rundownIds}
+											playlistActivationId={playlist?.activationId}
+										/>
+									) : (
+										'_'
+									)}
+								</div>
+							</>
+						) : null}
 					</div>
 				</div>
 			</div>
