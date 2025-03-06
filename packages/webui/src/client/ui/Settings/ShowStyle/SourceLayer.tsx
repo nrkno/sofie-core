@@ -43,6 +43,8 @@ function sourceLayerString(t: TFunction<'translation', undefined>, type: SourceL
 			return t('Lower Third')
 		// case SourceLayerType.MIC:
 		// 	return t('Studio Microphone')
+		case SourceLayerType.REMOTE_SPEAK:
+			return t('Remote Speak')
 		case SourceLayerType.REMOTE:
 			return t('Remote Source')
 		case SourceLayerType.SCRIPT:
@@ -55,6 +57,8 @@ function sourceLayerString(t: TFunction<'translation', undefined>, type: SourceL
 			return t('Unknown Layer')
 		case SourceLayerType.AUDIO:
 			return t('Audio Mixing')
+		case SourceLayerType.LIGHTS:
+			return t('Lighting')
 		case SourceLayerType.TRANSITION:
 			return t('Transition')
 		// case SourceLayerType.LIGHTS:

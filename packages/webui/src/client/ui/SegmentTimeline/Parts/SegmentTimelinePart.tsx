@@ -32,10 +32,11 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { getPartInstanceTimingId, getPartInstanceTimingValue, RundownTimingContext } from '../../../lib/rundownTiming'
 import { OutputGroup } from './OutputGroup'
 import { InvalidPartCover } from './InvalidPartCover'
-import { ISourceLayer } from '@sofie-automation/blueprints-integration'
+import { DefaultUserOperationsTypes, ISourceLayer, UserEditingType } from '@sofie-automation/blueprints-integration'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { LIVE_LINE_TIME_PADDING } from '../Constants'
 import * as RundownResolver from '../../../lib/RundownResolver'
+import { Events as MOSEvents } from '../../../lib/data/mos/plugin-support'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -99,6 +100,8 @@ interface IState {
 	isTooSmallForText: boolean
 	isTooSmallForDisplay: boolean
 	highlight: boolean
+
+	dropActive: boolean
 }
 export class SegmentTimelinePartClass extends React.Component<Translated<WithTiming<IProps>>, IState> {
 	constructor(props: Readonly<Translated<WithTiming<IProps>>>) {
@@ -137,6 +140,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 							: 0
 				  )
 				: 0,
+			dropActive: false,
 		}
 	}
 
@@ -263,6 +267,10 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 
 	componentDidMount(): void {
 		super.componentDidMount && super.componentDidMount()
+
+		window.addEventListener(MOSEvents.dragenter, this.onDragEnter)
+		window.addEventListener(MOSEvents.dragleave, this.onDragLeave)
+
 		RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 		const tooSmallState = this.state.isTooSmallForDisplay || this.state.isTooSmallForText
 		if (tooSmallState) {
@@ -282,6 +290,10 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 
 	componentWillUnmount(): void {
 		super.componentWillUnmount && super.componentWillUnmount()
+
+		window.removeEventListener(MOSEvents.dragenter, this.onDragEnter)
+		window.removeEventListener(MOSEvents.dragleave, this.onDragLeave)
+
 		RundownViewEventBus.off(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 		this.highlightTimeout && clearTimeout(this.highlightTimeout)
 	}
@@ -622,6 +634,23 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		return { red, green, blue }
 	}
 
+	onDragEnter = (): void => {
+		const supportsDrop = this.props.part.instance.part.userEditOperations?.find(
+			(op) => op.type === UserEditingType.SOFIE && op.id === DefaultUserOperationsTypes.IMPORT_MOS_ITEM
+		)
+		if (!supportsDrop) return
+
+		this.setState({
+			dropActive: true,
+		})
+	}
+
+	onDragLeave = (): void => {
+		this.setState({
+			dropActive: false,
+		})
+	}
+
 	render(): JSX.Element | null {
 		// optimize early, if not inside viewport
 		if (!this.state.isInsideViewport) {
@@ -681,6 +710,8 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 							'outside-quickloop': isOutsideActiveQuickLoop,
 							'quickloop-start': isQuickLoopStart,
 							'quickloop-end': isQuickLoopEnd,
+
+							'drop-active': this.state.dropActive,
 						},
 						this.props.className
 					)}
@@ -690,6 +721,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 					role="region"
 					aria-roledescription={t('part')}
 					aria-label={this.props.part.instance.part.title}
+					data-part-id={this.props.part.partId}
 				>
 					{DEBUG_MODE && (
 						<div className="segment-timeline__debug-info">

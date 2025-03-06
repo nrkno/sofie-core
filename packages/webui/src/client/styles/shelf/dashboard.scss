@@ -1,7 +1,7 @@
 @import '../colorScheme';
 
 $dashboard-button-width: 6.40625em;
-$dashboard-button-height: 5.625em;
+$dashboard-button-height: 3.625em;
 
 .dashboard {
 	position: absolute;
@@ -310,6 +310,14 @@ $dashboard-button-height: 5.625em;
 				to top,
 				var(--segment-layer-background-live-speak-2) 1em,
 				var(--segment-layer-background-live-speak-1) 1em
+			);
+		}
+
+		&.remote-speak {
+			background: linear-gradient(
+				to top,
+				var(--segment-layer-background-remote-speak-2) 1em,
+				var(--segment-layer-background-remote-speak-1) 1em
 			);
 		}
 

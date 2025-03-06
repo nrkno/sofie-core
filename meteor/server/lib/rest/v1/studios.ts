@@ -216,8 +216,10 @@ export interface APIStudioSettings {
 	forceQuickLoopAutoNext?: 'disabled' | 'enabled_when_valid_duration' | 'enabled_forcing_min_duration'
 	minimumTakeSpan?: number
 	fallbackPartDuration?: number
+	enableUserEdits?: boolean
 	allowAdlibTestingSegment?: boolean
 	allowHold?: boolean
 	allowPieceDirectPlay?: boolean
 	enableBuckets?: boolean
+	enableEvaluationForm?: boolean
 }

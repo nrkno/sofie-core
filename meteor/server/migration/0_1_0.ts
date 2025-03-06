@@ -36,6 +36,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 					allowHold: false,
 					allowPieceDirectPlay: false,
 					enableBuckets: true,
+					enableEvaluationForm: true,
 				}),
 				mappingsWithOverrides: wrapDefaultObject({}),
 				blueprintConfigWithOverrides: wrapDefaultObject({}),

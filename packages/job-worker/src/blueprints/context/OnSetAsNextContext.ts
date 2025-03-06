@@ -117,11 +117,11 @@ export class OnSetAsNextContext
 		return this.partAndPieceInstanceService.updatePartInstance(part, props)
 	}
 
-	async removePieceInstances(_part: 'next', pieceInstanceIds: string[]): Promise<string[]> {
-		return this.partAndPieceInstanceService.removePieceInstances('next', pieceInstanceIds)
+	async removePieceInstances(part: 'current' | 'next', pieceInstanceIds: string[]): Promise<string[]> {
+		return this.partAndPieceInstanceService.removePieceInstances(part, pieceInstanceIds)
 	}
 
-	async moveNextPart(partDelta: number, segmentDelta: number): Promise<boolean> {
+	async moveNextPart(partDelta: number, segmentDelta: number, ignoreQuickLoop?: boolean): Promise<boolean> {
 		if (typeof partDelta !== 'number') throw new Error('partDelta must be a number')
 		if (typeof segmentDelta !== 'number') throw new Error('segmentDelta must be a number')
 
@@ -132,7 +132,13 @@ export class OnSetAsNextContext
 		}
 
 		this.pendingMoveNextPart = {
-			selectedPart: selectNewPartWithOffsets(this.jobContext, this.playoutModel, partDelta, segmentDelta),
+			selectedPart: selectNewPartWithOffsets(
+				this.jobContext,
+				this.playoutModel,
+				partDelta,
+				segmentDelta,
+				ignoreQuickLoop
+			),
 		}
 
 		return !!this.pendingMoveNextPart.selectedPart

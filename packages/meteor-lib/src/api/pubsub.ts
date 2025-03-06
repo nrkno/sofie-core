@@ -90,14 +90,6 @@ export enum MeteorPubSub {
 	 */
 	rundownLayouts = 'rundownLayouts',
 	/**
-	 * Fetch information about the current logged in user, if any
-	 */
-	loggedInUser = 'loggedInUser',
-	/**
-	 * Fetch information about all users for a given organization
-	 */
-	usersInOrganization = 'usersInOrganization',
-	/**
 	 * Fetch information about a specified organization.
 	 * If null is provided, nothing will be returned
 	 */

@@ -108,6 +108,7 @@ export function defaultStudio(_id: StudioId): DBStudio {
 			allowHold: true,
 			allowPieceDirectPlay: true,
 			enableBuckets: true,
+			enableEvaluationForm: true,
 		}),
 		_rundownVersionHash: '',
 		routeSetsWithOverrides: wrapDefaultObject({}),

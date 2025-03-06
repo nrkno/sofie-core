@@ -240,6 +240,16 @@ export class PlayoutModelReadonlyImpl implements PlayoutModelReadonly {
 		return undefined
 	}
 
+	getSegmentsBetweenQuickLoopMarker(start: QuickLoopMarker, end: QuickLoopMarker): SegmentId[] {
+		return this.quickLoopService.getSegmentsBetweenMarkers(start, end)
+	}
+	getPartsBetweenQuickLoopMarker(
+		start: QuickLoopMarker,
+		end: QuickLoopMarker
+	): { parts: PartId[]; segments: SegmentId[] } {
+		return this.quickLoopService.getPartsBetweenMarkers(start, end)
+	}
+
 	#isMultiGatewayMode: boolean | undefined = undefined
 	public get isMultiGatewayMode(): boolean {
 		if (this.#isMultiGatewayMode === undefined) {
@@ -493,13 +503,11 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		this.playlistImpl.nextPartInfo = null
 		this.playlistImpl.lastTakeTime = getCurrentTime()
 
-		if (!this.playlistImpl.holdState || this.playlistImpl.holdState === RundownHoldState.COMPLETE) {
-			this.playlistImpl.holdState = RundownHoldState.NONE
-		} else {
-			this.playlistImpl.holdState = this.playlistImpl.holdState + 1
-		}
-
 		this.#playlistHasChanged = true
+	}
+
+	resetHoldState(): void {
+		this.setHoldState(RundownHoldState.NONE)
 	}
 
 	deactivatePlaylist(): void {
@@ -675,6 +683,12 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 			this.context.saveRouteSetChanges(),
 		])
 
+		// Clean up deleted partInstances, since they have now been deleted by writePartInstancesAndPieceInstances
+		for (const [partInstanceId, partInstance] of this.allPartInstances) {
+			if (partInstance !== null) continue
+			this.allPartInstances.delete(partInstanceId)
+		}
+
 		this.#playlistHasChanged = false
 
 		// Execute deferAfterSave()'s
@@ -828,10 +842,6 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 	updateQuickLoopState(): void {
 		this.playlistImpl.quickLoop = this.quickLoopService.getUpdatedProps()
 		this.#playlistHasChanged = true
-	}
-
-	getSegmentsBetweenQuickLoopMarker(start: QuickLoopMarker, end: QuickLoopMarker): SegmentId[] {
-		return this.quickLoopService.getSegmentsBetweenMarkers(start, end)
 	}
 
 	/** Notifications */

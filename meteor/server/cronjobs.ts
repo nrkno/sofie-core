@@ -26,6 +26,8 @@ import {
 	translateMessage,
 } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 const lowPrioFcn = (fcn: () => any) => {
 	// Do it at a random time in the future:
@@ -101,9 +103,35 @@ async function restartCasparCG(systemSettings: ICoreSystemSettings | undefined, 
 				subType: 1,
 				parentDeviceId: 1,
 				lastSeen: 1,
+				studioAndConfigId: 1,
 			},
 		}
-	)) as Array<Pick<PeripheralDevice, '_id' | 'subType' | 'parentDeviceId' | 'lastSeen'>>
+	)) as Array<Pick<PeripheralDevice, '_id' | 'subType' | 'parentDeviceId' | 'lastSeen' | 'studioAndConfigId'>>
+
+	const relevantStudioIds = Array.from(
+		new Set(
+			casparcgAndParentDevices
+				.map((device) => device.studioAndConfigId?.studioId)
+				.filter((id) => id !== undefined)
+		)
+	) as StudioId[]
+
+	const activePlaylists = (await RundownPlaylists.findFetchAsync(
+		{
+			activationId: {
+				$exists: true,
+			},
+			studioId: {
+				$in: relevantStudioIds,
+			},
+		},
+		{
+			projection: {
+				_id: 1,
+				studioId: 1,
+			},
+		}
+	)) as Array<Pick<DBRundownPlaylist, '_id' | 'studioId'>>
 
 	const deviceMap = normalizeArrayToMap(casparcgAndParentDevices, '_id')
 
@@ -125,6 +153,17 @@ async function restartCasparCG(systemSettings: ICoreSystemSettings | undefined, 
 		if (!parentDevice) {
 			logger.info(`Cronjob: Skipping CasparCG device "${device._id}" with a missing parent device`)
 			// Misconfiguration, don't retry
+			continue
+		}
+
+		const activePlaylistUsingDevice = activePlaylists.find(
+			(playlist) => playlist.studioId === parentDevice.studioAndConfigId?.studioId
+		)
+		if (activePlaylistUsingDevice) {
+			logger.info(
+				`Cronjob: Skipping CasparCG device "${device._id}" with a parent device belonging to a Studio ("${activePlaylistUsingDevice.studioId}") with an active RundownPlaylist: "${activePlaylistUsingDevice._id}"`
+			)
+			// If a Rundown is active during "low season", it's proably best to just let it go until next "low season" the following day, don't retry
 			continue
 		}
 
@@ -189,7 +228,7 @@ async function storeSnapshots(systemSettings: ICoreSystemSettings | undefined) {
 		for (const playlist of playlists) {
 			lowPrioFcn(() => {
 				logger.info(`Cronjob: Will store snapshot for rundown playlist "${playlist._id}"`)
-				internalStoreRundownPlaylistSnapshot(playlist, 'Automatic, taken by cron job').catch((err) => {
+				internalStoreRundownPlaylistSnapshot(playlist, {}, 'Automatic, taken by cron job').catch((err) => {
 					logger.error(err)
 				})
 			})

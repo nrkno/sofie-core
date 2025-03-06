@@ -7,7 +7,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { ProtectedString, protectString, unprotectString } from '../protectedString'
 import { PieceId, RundownId, SegmentId, PartId } from './Ids'
-import { CoreUserEditingDefinition } from './UserEditingDefinitions'
+import { CoreUserEditingDefinition, CoreUserEditingProperties } from './UserEditingDefinitions'
 
 /** A generic list of playback availability statuses for a Piece */
 export enum PieceStatusCode {
@@ -50,7 +50,9 @@ export interface PieceGeneric extends Omit<IBlueprintPieceGeneric, 'content'> {
 	/** Stringified timelineObjects */
 	timelineObjectsString: PieceTimelineObjectsBlob
 }
-export interface Piece extends PieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'content' | 'userEditOperations'> {
+export interface Piece
+	extends PieceGeneric,
+		Omit<IBlueprintPieceDB, '_id' | 'content' | 'userEditOperations' | 'userEditProperties'> {
 	/**
 	 * This is the id of the rundown this piece starts playing in.
 	 * Currently this is the only rundown the piece could be playing in
@@ -77,6 +79,12 @@ export interface Piece extends PieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'co
 	 * User editing definitions for this piece
 	 */
 	userEditOperations?: CoreUserEditingDefinition[]
+
+	/**
+	 * Properties that are user editable from the properties panel in the Sofie UI, if the user saves changes to these
+	 * it will trigger a user edit operation of type DefaultUserOperationEditProperties
+	 */
+	userEditProperties?: CoreUserEditingProperties
 }
 
 export type PieceTimelineObjectsBlob = ProtectedString<'PieceTimelineObjectsBlob'>

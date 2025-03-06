@@ -55,6 +55,7 @@ export async function insertStudioInner(organizationId: OrganizationId | null, n
 				allowHold: false,
 				allowPieceDirectPlay: false,
 				enableBuckets: true,
+				enableEvaluationForm: true,
 			}),
 			_rundownVersionHash: '',
 			routeSetsWithOverrides: wrapDefaultObject({}),

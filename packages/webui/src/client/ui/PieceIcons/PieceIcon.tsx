@@ -6,13 +6,14 @@ import {
 	RemoteContent,
 	EvsContent,
 } from '@sofie-automation/blueprints-integration'
-import CamInputIcon from './Renderers/CamInputIcon'
-import VTInputIcon from './Renderers/VTInputIcon'
+import { CamInputIcon } from './Renderers/CamInputIcon'
+import { VTInputIcon } from './Renderers/VTInputIcon'
 import SplitInputIcon from './Renderers/SplitInputIcon'
-import RemoteInputIcon from './Renderers/RemoteInputIcon'
-import LiveSpeakInputIcon from './Renderers/LiveSpeakInputIcon'
-import GraphicsInputIcon from './Renderers/GraphicsInputIcon'
-import UnknownInputIcon from './Renderers/UnknownInputIcon'
+import { RemoteInputIcon } from './Renderers/RemoteInputIcon'
+import { LiveSpeakInputIcon } from './Renderers/LiveSpeakInputIcon'
+import { RemoteSpeakInputIcon } from './Renderers/RemoteSpeakInputIcon'
+import { GraphicsInputIcon } from './Renderers/GraphicsInputIcon'
+import { UnknownInputIcon } from './Renderers/UnknownInputIcon'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { findPieceInstanceToShow, findPieceInstanceToShowFromInstances } from './utils'
@@ -54,6 +55,9 @@ export const PieceIcon = (props: {
 					/>
 				)
 			}
+			case SourceLayerType.REMOTE_SPEAK: {
+				return <RemoteSpeakInputIcon abbreviation={props.sourceLayer.abbreviation} />
+			}
 			case SourceLayerType.LOCAL: {
 				const localContent = piece ? (piece.content as EvsContent | undefined) : undefined
 				return (
@@ -90,6 +94,7 @@ export const pieceIconSupportedLayers = new Set([
 	SourceLayerType.GRAPHICS,
 	SourceLayerType.LIVE_SPEAK,
 	SourceLayerType.REMOTE,
+	SourceLayerType.REMOTE_SPEAK,
 	SourceLayerType.SPLITS,
 	SourceLayerType.VT,
 	SourceLayerType.CAMERA,

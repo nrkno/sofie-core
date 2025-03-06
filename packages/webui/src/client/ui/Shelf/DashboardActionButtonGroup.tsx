@@ -41,11 +41,18 @@ export const DashboardActionButtonGroup = withTranslation()(
 			}
 		}
 
-		moveNext = (e: any, horizontalDelta: number, verticalDelta: number) => {
+		moveNext = (e: any, horizontalDelta: number, verticalDelta: number, ignoreQuickLoop?: boolean) => {
 			const { t } = this.props
 			if (this.props.studioMode) {
 				doUserAction(t, e, UserAction.MOVE_NEXT, (e, ts) =>
-					MeteorCall.userAction.moveNext(e, ts, this.props.playlist._id, horizontalDelta, verticalDelta)
+					MeteorCall.userAction.moveNext(
+						e,
+						ts,
+						this.props.playlist._id,
+						horizontalDelta,
+						verticalDelta,
+						ignoreQuickLoop
+					)
 				)
 			}
 		}

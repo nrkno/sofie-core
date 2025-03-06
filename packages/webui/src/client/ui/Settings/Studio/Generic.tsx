@@ -381,6 +381,26 @@ function StudioSettings({ studio }: { studio: DBStudio }): JSX.Element {
 			</LabelAndOverridesForCheckbox>
 
 			<LabelAndOverridesForCheckbox
+				label={t('Enable User Editing')}
+				item={wrappedItem}
+				itemKey={'enableUserEdits'}
+				overrideHelper={overrideHelper}
+				hint={t('This feature enables the use of the Properties Panel and the Edit Mode')}
+			>
+				{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+			</LabelAndOverridesForCheckbox>
+
+			<LabelAndOverridesForCheckbox
+				label={t('Enable Evaluation Form')}
+				item={wrappedItem}
+				itemKey={'enableEvaluationForm'}
+				overrideHelper={overrideHelper}
+				hint={t('This enables or disables the evaluationform in the UI - enabled is the default behavior')}
+			>
+				{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+			</LabelAndOverridesForCheckbox>
+
+			<LabelAndOverridesForCheckbox
 				label={t('Enable QuickLoop')}
 				item={wrappedItem}
 				itemKey={'enableQuickLoop'}

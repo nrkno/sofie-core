@@ -24,6 +24,8 @@ import { SegmentViewMode } from '../../lib/ui/icons/listView'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MediaStatusPopUp } from './MediaStatusPopUp'
 import { MediaStatusIcon } from '../../lib/ui/icons/mediaStatus'
+import { SelectedElementsContext } from './SelectedElementsContext'
+import { UserEditsCloseIcon, UserEditsIcon } from '../../lib/ui/icons/useredits'
 
 interface IProps {
 	playlistId: RundownPlaylistId
@@ -39,6 +41,7 @@ interface IProps {
 	isNotificationCenterOpen: NoticeLevel | undefined
 	isSupportPanelOpen: boolean
 	isStudioMode: boolean
+	isUserEditsEnabled: boolean
 	onToggleNotifications?: (e: React.MouseEvent<HTMLButtonElement>, filter: NoticeLevel) => void
 	onToggleSupportPanel?: (e: React.MouseEvent<HTMLButtonElement>) => void
 	onTake?: (e: React.MouseEvent<HTMLButtonElement>) => void
@@ -153,6 +156,9 @@ export function RundownRightHandControls(props: Readonly<IProps>): JSX.Element {
 					className="type-notification"
 					title={t('Notes')}
 				/>
+				{props.isUserEditsEnabled && (
+					<PropertiesPanelToggle isNotificationCenterOpen={props.isNotificationCenterOpen} />
+				)}
 				<button
 					className="status-bar__controls__button"
 					role="button"
@@ -298,5 +304,25 @@ export function RundownRightHandControls(props: Readonly<IProps>): JSX.Element {
 				/>
 			</VelocityReact.VelocityTransitionGroup>
 		</div>
+	)
+}
+
+function PropertiesPanelToggle(props: { isNotificationCenterOpen: NoticeLevel | undefined }) {
+	return (
+		<SelectedElementsContext.Consumer>
+			{(context) => {
+				const isOpen = context.listSelectedElements().length > 0 && !props.isNotificationCenterOpen
+				return (
+					<button
+						onClick={context.clearSelections}
+						className={classNames('status-bar__controls__button', {
+							'status-bar__controls__button--open': isOpen,
+						})}
+					>
+						{isOpen ? <UserEditsIcon /> : <UserEditsCloseIcon />}
+					</button>
+				)
+			}}
+		</SelectedElementsContext.Consumer>
 	)
 }

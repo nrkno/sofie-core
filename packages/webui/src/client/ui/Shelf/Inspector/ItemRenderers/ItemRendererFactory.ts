@@ -1,6 +1,6 @@
 import * as React from 'react'
 import DefaultItemRenderer from './DefaultItemRenderer'
-import NoraItemRenderer, { isNoraItem } from './NoraItemRenderer'
+import { NoraItemRenderer, isNoraItem } from './NoraItemRenderer'
 import ActionItemRenderer, { isActionItem } from './ActionItemRenderer'
 
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'

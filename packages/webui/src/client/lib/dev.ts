@@ -11,8 +11,11 @@ import { logger } from './logging'
 const windowAny: any = window
 
 Meteor.startup(() => {
-	windowAny['Collections'] = Object.fromEntries(ClientCollections.entries())
-	windowAny['PublicationCollections'] = Object.fromEntries(PublicationCollections.entries())
+	// Perform on a delay, to ensure the collections are setup
+	setTimeout(() => {
+		windowAny['Collections'] = Object.fromEntries(ClientCollections.entries())
+		windowAny['PublicationCollections'] = Object.fromEntries(PublicationCollections.entries())
+	}, 1000)
 })
 
 windowAny['getCurrentTime'] = getCurrentTime

@@ -3,6 +3,38 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.52.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.51.6...v1.52.0-in-testing.0) (2025-02-04)
+
+
+### Features
+
+* meteor 3.0.4 ([8670727](https://github.com/nrkno/sofie-core/commit/8670727bba5ac9cffe0e5d36b4bd45d6664482be))
+* modify datastore in `onRundownActivate` SOFIE-3310 ([#1240](https://github.com/nrkno/sofie-core/issues/1240)) ([8a0759f](https://github.com/nrkno/sofie-core/commit/8a0759f610497e37493e8a798aa0dd13f4f57119))
+* update meteor to 3.1 and node to 22 ([61b6854](https://github.com/nrkno/sofie-core/commit/61b6854261a03f04e81416b9d37ee995e3a10108))
+
+
+
+
+
+## [1.51.6](https://github.com/nrkno/sofie-core/compare/v1.51.5...v1.51.6) (2025-01-14)
+
+
+### Bug Fixes
+
+* **PoGw:** filter log output to ensure that message field in JSONL output is never an object ([0d2b844](https://github.com/nrkno/sofie-core/commit/0d2b84451751a859d6a3d67e0f3083c735905578))
+
+
+
+
+
+## [1.51.5](https://github.com/nrkno/sofie-core/compare/v1.51.4...v1.51.5) (2025-01-07)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
 ## [1.51.4](https://github.com/nrkno/sofie-core/compare/v1.51.3...v1.51.4) (2024-12-04)
 
 **Note:** Version bump only for package playout-gateway

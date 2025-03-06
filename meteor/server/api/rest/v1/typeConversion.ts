@@ -40,6 +40,8 @@ import {
 	APISourceLayer,
 	APIStudio,
 	APIStudioSettings,
+	APIPlaylistSnapshotOptions,
+	APISystemSnapshotOptions,
 } from '../../../lib/rest/v1'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
@@ -54,6 +56,7 @@ import {
 } from '@sofie-automation/shared-lib/dist/core/constants'
 import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
 import { ForceQuickLoopAutoNext } from '@sofie-automation/shared-lib/dist/core/model/StudioSettings'
+import { PlaylistSnapshotOptions, SystemSnapshotOptions } from '@sofie-automation/meteor-lib/dist/api/shapshot'
 
 /*
 This file contains functions that convert between the internal Sofie-Core types and types exposed to the external API.
@@ -200,6 +203,9 @@ export function sourceLayerFrom(apiSourceLayer: APISourceLayer): ISourceLayer {
 		case 'transition':
 			layerType = SourceLayerType.TRANSITION
 			break
+		case 'lights':
+			layerType = SourceLayerType.LIGHTS
+			break
 		case 'unknown':
 			layerType = SourceLayerType.UNKNOWN
 			break
@@ -208,6 +214,9 @@ export function sourceLayerFrom(apiSourceLayer: APISourceLayer): ISourceLayer {
 			break
 		case 'studio-screen':
 			layerType = SourceLayerType.STUDIO_SCREEN
+			break
+		case 'remote-speak':
+			layerType = SourceLayerType.REMOTE_SPEAK
 			break
 		default:
 			layerType = SourceLayerType.UNKNOWN
@@ -257,6 +266,9 @@ export function APISourceLayerFrom(sourceLayer: ISourceLayer): APISourceLayer {
 		case SourceLayerType.TRANSITION:
 			layerType = 'transition'
 			break
+		case SourceLayerType.LIGHTS:
+			layerType = 'lights'
+			break
 		case SourceLayerType.UNKNOWN:
 			layerType = 'unknown'
 			break
@@ -265,6 +277,9 @@ export function APISourceLayerFrom(sourceLayer: ISourceLayer): APISourceLayer {
 			break
 		case SourceLayerType.STUDIO_SCREEN:
 			layerType = 'studio-screen'
+			break
+		case SourceLayerType.REMOTE_SPEAK:
+			layerType = 'remote-speak'
 			break
 		default:
 			layerType = 'unknown'
@@ -367,10 +382,12 @@ export function studioSettingsFrom(apiStudioSettings: APIStudioSettings): Comple
 		enableQuickLoop: apiStudioSettings.enableQuickLoop,
 		forceQuickLoopAutoNext: forceQuickLoopAutoNextFrom(apiStudioSettings.forceQuickLoopAutoNext),
 		fallbackPartDuration: apiStudioSettings.fallbackPartDuration ?? DEFAULT_FALLBACK_PART_DURATION,
+		enableUserEdits: apiStudioSettings.enableUserEdits,
 		allowAdlibTestingSegment: apiStudioSettings.allowAdlibTestingSegment,
 		allowHold: apiStudioSettings.allowHold ?? true, // Backwards compatible
 		allowPieceDirectPlay: apiStudioSettings.allowPieceDirectPlay ?? true, // Backwards compatible
 		enableBuckets: apiStudioSettings.enableBuckets ?? true, // Backwards compatible
+		enableEvaluationForm: apiStudioSettings.enableEvaluationForm ?? true, // Backwards compatible
 	}
 }
 
@@ -390,10 +407,12 @@ export function APIStudioSettingsFrom(settings: IStudioSettings): Complete<APISt
 		enableQuickLoop: settings.enableQuickLoop,
 		forceQuickLoopAutoNext: APIForceQuickLoopAutoNextFrom(settings.forceQuickLoopAutoNext),
 		fallbackPartDuration: settings.fallbackPartDuration,
+		enableUserEdits: settings.enableUserEdits,
 		allowAdlibTestingSegment: settings.allowAdlibTestingSegment,
 		allowHold: settings.allowHold,
 		allowPieceDirectPlay: settings.allowPieceDirectPlay,
 		enableBuckets: settings.enableBuckets,
+		enableEvaluationForm: settings.enableEvaluationForm,
 	}
 }
 
@@ -683,5 +702,20 @@ export function APIBucketFrom(bucket: Bucket): APIBucketComplete {
 		id: unprotectString(bucket._id),
 		name: bucket.name,
 		studioId: unprotectString(bucket.studioId),
+	}
+}
+
+export function systemSnapshotOptionsFrom(options: APISystemSnapshotOptions): SystemSnapshotOptions {
+	return {
+		withDeviceSnapshots: !!options.withDeviceSnapshots,
+		studioId: typeof options.studioId === 'string' ? protectString(options.studioId) : undefined,
+	}
+}
+
+export function playlistSnapshotOptionsFrom(options: APIPlaylistSnapshotOptions): PlaylistSnapshotOptions {
+	return {
+		withDeviceSnapshots: !!options.withDeviceSnapshots,
+		withArchivedDocuments: !!options.withArchivedDocuments,
+		withTimeline: !!options.withTimeline,
 	}
 }

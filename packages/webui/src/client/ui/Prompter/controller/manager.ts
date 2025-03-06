@@ -5,6 +5,7 @@ import { ControllerAbstract } from './lib'
 import { JoyConController } from './joycon-device'
 import { KeyboardController } from './keyboard-device'
 import { ShuttleKeyboardController } from './shuttle-keyboard-device'
+import { ShuttleWebHidController } from './shuttle-webhid-device'
 
 export class PrompterControlManager {
 	private _view: PrompterViewContent
@@ -35,6 +36,9 @@ export class PrompterControlManager {
 			if (this._view.configOptions.mode.indexOf(PrompterConfigMode.JOYCON) > -1) {
 				this._controllers.push(new JoyConController(this._view))
 			}
+			if (this._view.configOptions.mode.indexOf(PrompterConfigMode.SHUTTLEWEBHID) > -1) {
+				this._controllers.push(new ShuttleWebHidController(this._view))
+			}
 		}
 
 		if (this._controllers.length === 0) {
@@ -43,6 +47,7 @@ export class PrompterControlManager {
 			this._controllers.push(new KeyboardController(this._view))
 		}
 	}
+
 	destroy(): void {
 		window.removeEventListener('keydown', this._onKeyDown)
 		window.removeEventListener('keyup', this._onKeyUp)

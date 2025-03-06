@@ -1,4 +1,3 @@
-import * as React from 'react'
 import ClassNames from 'classnames'
 import {
 	DashboardLayoutSegmentName,
@@ -8,49 +7,41 @@ import {
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../lib/rundownLayouts'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil'
+import { useTranslation } from 'react-i18next'
 
 interface ISegmentNamePanelProps {
-	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutSegmentName
 	playlist: DBRundownPlaylist
 }
 
-interface IState {}
+export function SegmentNamePanel({ layout, panel, playlist }: ISegmentNamePanelProps): JSX.Element {
+	const { t } = useTranslation()
 
-interface ISegmentNamePanelTrackedProps {
-	name?: string
-}
+	const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(layout)
 
-class SegmentNamePanelInner extends React.Component<
-	Translated<ISegmentNamePanelProps & ISegmentNamePanelTrackedProps>,
-	IState
-> {
-	render(): JSX.Element {
-		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
-		const { t, panel } = this.props
+	const segmentName = useTracker(() => getSegmentName(panel.segment, playlist), [panel.segment, playlist])
 
-		return (
-			<div
-				className={ClassNames(
-					'segment-name-panel',
-					isDashboardLayout ? (panel as DashboardLayoutSegmentName).customClasses : undefined
-				)}
-				style={isDashboardLayout ? dashboardElementStyle(this.props.panel as DashboardLayoutSegmentName) : {}}
-			>
-				<div className="wrapper">
-					<span className="segment-name-title">
-						{this.props.panel.segment === 'current' ? t('Current Segment') : t('Next Segment')}
-					</span>
-					<span className="segment-name">{this.props.name}</span>
-				</div>
+	return (
+		<div
+			className={ClassNames(
+				'segment-name-panel',
+				isDashboardLayout ? (panel as DashboardLayoutSegmentName).customClasses : undefined
+			)}
+			style={isDashboardLayout ? dashboardElementStyle(panel as DashboardLayoutSegmentName) : {}}
+		>
+			<div className="wrapper">
+				<span className="segment-name-title">
+					{panel.segment === 'current' ? t('Current Segment') : t('Next Segment')}
+				</span>
+				<span className="segment-name">{segmentName}</span>
 			</div>
-		)
-	}
+		</div>
+	)
 }
 
 function getSegmentName(selectedSegment: 'current' | 'next', playlist: DBRundownPlaylist): string | undefined {
@@ -92,14 +83,3 @@ function getSegmentName(selectedSegment: 'current' | 'next', playlist: DBRundown
 		return nextSegment?.name
 	}
 }
-
-export const SegmentNamePanel = translateWithTracker<ISegmentNamePanelProps, IState, ISegmentNamePanelTrackedProps>(
-	(props) => {
-		const name: string | undefined = getSegmentName(props.panel.segment, props.playlist)
-
-		return {
-			...props,
-			name,
-		}
-	}
-)(SegmentNamePanelInner)

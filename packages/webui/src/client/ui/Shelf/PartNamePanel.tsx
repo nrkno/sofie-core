@@ -1,5 +1,3 @@
-import * as React from 'react'
-import * as _ from 'underscore'
 import ClassNames from 'classnames'
 import {
 	DashboardLayoutPartName,
@@ -9,94 +7,74 @@ import {
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../lib/rundownLayouts'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { findPieceInstanceToShowFromInstances, IFoundPieceInstance } from '../PieceIcons/utils'
 import { pieceIconSupportedLayers } from '../PieceIcons/PieceIcon'
 import { RundownUtils } from '../../lib/rundown'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
 import { PieceInstances } from '../../collections'
 import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil'
+import { useTranslation } from 'react-i18next'
 
 interface IPartNamePanelProps {
-	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutPartName
 	playlist: DBRundownPlaylist
 	showStyleBase: UIShowStyleBase
 }
 
-interface IState {}
-
 interface IPartNamePanelTrackedProps {
-	name?: string
+	partName?: string
 	instanceToShow?: IFoundPieceInstance
 }
 
-class PartNamePanelInner extends React.Component<Translated<IPartNamePanelProps & IPartNamePanelTrackedProps>, IState> {
-	render(): JSX.Element {
-		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
-		const { t } = this.props
+export function PartNamePanel({ layout, panel, playlist, showStyleBase }: IPartNamePanelProps): JSX.Element {
+	const { t } = useTranslation()
 
-		const sourceLayerType = this.props.instanceToShow?.sourceLayer?.type
-		let backgroundSourceLayer = sourceLayerType ? RundownUtils.getSourceLayerClassName(sourceLayerType) : undefined
+	const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(layout)
 
-		if (!backgroundSourceLayer) {
-			backgroundSourceLayer = ''
-		}
+	const selectedPartInstanceId =
+		panel.part === 'current' ? playlist.currentPartInfo?.partInstanceId : playlist.nextPartInfo?.partInstanceId
 
-		return (
-			<div
-				className={ClassNames('part-name-panel', {
-					[backgroundSourceLayer || 'unknown']: true,
-				})}
-				style={isDashboardLayout ? dashboardElementStyle(this.props.panel as DashboardLayoutPartName) : {}}
-			>
-				<div className="wrapper">
-					<span className="part-name-title">
-						{this.props.panel.part === 'current' ? t('Current Part') : t('Next Part')}
-					</span>
-					<span className="part-name">{this.props.name}</span>
-				</div>
-			</div>
-		)
-	}
-}
-
-export const PartNamePanel = translateWithTracker<IPartNamePanelProps, IState, IPartNamePanelTrackedProps>(
-	(props) => {
-		const selectedPartInstanceId =
-			props.panel.part === 'current'
-				? props.playlist.currentPartInfo?.partInstanceId
-				: props.playlist.nextPartInfo?.partInstanceId
-		let name: string | undefined
-		let instanceToShow: IFoundPieceInstance | undefined
-
-		if (selectedPartInstanceId) {
-			const selectedPartInstance = RundownPlaylistClientUtil.getActivePartInstances(props.playlist, {
+	const { partName, instanceToShow } = useTracker<IPartNamePanelTrackedProps>(
+		() => {
+			if (!selectedPartInstanceId || !panel.showPieceIconColor) return {}
+			const selectedPartInstance = RundownPlaylistClientUtil.getActivePartInstances(playlist, {
 				_id: selectedPartInstanceId,
 			})[0]
-			if (selectedPartInstance && props.panel.showPieceIconColor) {
-				name = selectedPartInstance.part?.title
-				const pieceInstances = PieceInstances.find({ partInstanceId: selectedPartInstance._id }).fetch()
-				instanceToShow = findPieceInstanceToShowFromInstances(
-					pieceInstances,
-					props.showStyleBase.sourceLayers,
-					pieceIconSupportedLayers
-				)
-			}
-		}
+			if (!selectedPartInstance) return {}
 
-		return {
-			...props,
-			name,
-			instanceToShow,
-		}
-	},
-	(_data, props, nextProps) => {
-		return (
-			!_.isEqual(props.panel, nextProps.panel) ||
-			props.playlist.currentPartInfo?.partInstanceId !== nextProps.playlist.currentPartInfo?.partInstanceId ||
-			props.playlist.nextPartInfo?.partInstanceId !== nextProps.playlist.nextPartInfo?.partInstanceId
-		)
+			const partName = selectedPartInstance.part?.title
+			const pieceInstances = PieceInstances.find({ partInstanceId: selectedPartInstance._id }).fetch()
+			const instanceToShow = findPieceInstanceToShowFromInstances(
+				pieceInstances,
+				showStyleBase.sourceLayers,
+				pieceIconSupportedLayers
+			)
+			return { partName, instanceToShow }
+		},
+		[panel.showPieceIconColor, playlist._id, showStyleBase.sourceLayers],
+		{}
+	)
+
+	const sourceLayerType = instanceToShow?.sourceLayer?.type
+	let backgroundSourceLayer = sourceLayerType ? RundownUtils.getSourceLayerClassName(sourceLayerType) : undefined
+
+	if (!backgroundSourceLayer) {
+		backgroundSourceLayer = ''
 	}
-)(PartNamePanelInner)
+
+	return (
+		<div
+			className={ClassNames('part-name-panel', {
+				[backgroundSourceLayer || 'unknown']: true,
+			})}
+			style={isDashboardLayout ? dashboardElementStyle(panel as DashboardLayoutPartName) : {}}
+		>
+			<div className="wrapper">
+				<span className="part-name-title">{panel.part === 'current' ? t('Current Part') : t('Next Part')}</span>
+				<span className="part-name">{partName}</span>
+			</div>
+		</div>
+	)
+}

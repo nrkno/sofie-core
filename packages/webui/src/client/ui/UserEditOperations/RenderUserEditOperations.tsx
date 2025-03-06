@@ -21,7 +21,6 @@ interface UserEditOperationMenuItemsProps {
 
 export function UserEditOperationMenuItems({
 	rundownId,
-	targetName,
 	operationTarget,
 	userEditOperations,
 	isFormEditable,
@@ -62,9 +61,8 @@ export function UserEditOperationMenuItems({
 									const schema = JSONBlobParse(userEditOperation.schema)
 									const values = clone(userEditOperation.currentValues)
 
-									// TODO:
 									doModalDialog({
-										title: t(`Edit {{targetName}}`, { targetName }),
+										title: translateMessage(userEditOperation.label, t),
 										message: (
 											<SchemaFormInPlace
 												schema={schema}
@@ -72,7 +70,6 @@ export function UserEditOperationMenuItems({
 												translationNamespaces={userEditOperation.translationNamespaces}
 											/>
 										),
-										// acceptText: 'OK',
 										yes: t('Save Changes'),
 										no: t('Cancel'),
 										onAccept: () => {
@@ -89,6 +86,8 @@ export function UserEditOperationMenuItems({
 								<span>{translateMessage(userEditOperation.label, t)}</span>
 							</MenuItem>
 						)
+					case UserEditingType.SOFIE:
+						return null
 					default:
 						assertNever(userEditOperation)
 						return null
