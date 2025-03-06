@@ -353,15 +353,23 @@ function DirectorScreenRender({
 		return (
 			<div className="director-screen">
 				<div className="director-screen__header">
-					{RundownUtils.formatTimeToTimecode({ frameRate: 25 }, expectedStart || 0, true)}
-					{RundownUtils.formatTimeToTimecode({ frameRate: 25 }, expectedEnd || 0, true)}
-					{RundownUtils.formatTimeToTimecode({ frameRate: 25 }, expectedDuration || 0, true)}
-					<div
-						className={ClassNames('director-screen__header__countdown', {
-							over: Math.floor(overUnderClock / 1000) >= 0,
-						})}
-					>
-						{RundownUtils.formatDiffToTimecode(overUnderClock, true, false, true, true, true, undefined, true, true)}
+					<div className="director-screen__header__planned-end">
+						<div>{RundownUtils.formatTimeToTimecode({ frameRate: 25 }, expectedEnd || 0, true)}</div>
+						PLANNED END
+					</div>
+					<div className="director-screen__header__planned-duration">
+						<div>{RundownUtils.formatTimeToTimecode({ frameRate: 25 }, expectedDuration || 0, true)}</div>
+						TIME TO PLANNED END
+					</div>
+					<div className="director-screen__header__over-under">
+						<div
+							className={ClassNames('director-screen__header__countdown', {
+								over: Math.floor(overUnderClock / 1000) >= 0,
+							})}
+						>
+							{RundownUtils.formatDiffToTimecode(overUnderClock, true, false, true, true, true, undefined, true, true)}
+						</div>
+						OVER/UNDER
 					</div>
 				</div>
 				<div className="director-screen__body">

@@ -15,10 +15,11 @@ $hold-status-color: $liveline-timecode-color;
 
 .director-screen {
 	.director-screen__header {
-		display: grid;
-		grid-template-columns: auto fit-content(5em);
-		grid-template-rows: fit-content(1em);
-		font-size: 6em;
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+		font-size: 2em;
 		color: #888;
 		padding: 0 0.2em;
 
@@ -46,7 +47,7 @@ $hold-status-color: $liveline-timecode-color;
 
 	.director-screen__body {
 		position: fixed;
-		top: 1;
+		top: 20vh;
 		bottom: 0;
 		left: 0;
 		right: 0;
