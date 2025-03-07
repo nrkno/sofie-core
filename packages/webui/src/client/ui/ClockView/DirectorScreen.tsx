@@ -36,6 +36,11 @@ import { useSetDocumentClass } from '../util/useSetDocumentClass'
 import { useRundownAndShowStyleIdsForPlaylist } from '../util/useRundownAndShowStyleIdsForPlaylist'
 import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil'
 import { CurrentPartOrSegmentRemaining } from '../RundownView/RundownTiming/CurrentPartOrSegmentRemaining'
+import {
+	OverUnderClockComponent,
+	PlannedEndComponent,
+	TimeToPlannedEndComponent,
+} from '../../lib/Components/CounterComponents'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -345,7 +350,7 @@ function DirectorScreenRender({
 			timingDurations.remainingBudgetOnCurrentSegment ?? timingDurations.remainingTimeOnCurrentPart ?? 0
 
 		const expectedStart = PlaylistTiming.getExpectedStart(playlist.timing)
-		const expectedEnd = PlaylistTiming.getExpectedEnd(playlist.timing)
+		const expectedEnd = PlaylistTiming.getExpectedEnd(playlist.timing) || 0
 		const expectedDuration = PlaylistTiming.getExpectedDuration(playlist.timing)
 
 		const overUnderClock = getPlaylistTimingDiff(playlist, timingDurations) ?? 0
@@ -354,11 +359,15 @@ function DirectorScreenRender({
 			<div className="director-screen">
 				<div className="director-screen__header">
 					<div className="director-screen__header__planned-end">
-						<div>{RundownUtils.formatTimeToTimecode({ frameRate: 25 }, expectedEnd || 0, true)}</div>
+						<div>
+							<PlannedEndComponent value={expectedEnd} />
+						</div>
 						PLANNED END
 					</div>
 					<div className="director-screen__header__planned-duration">
-						<div>{RundownUtils.formatTimeToTimecode({ frameRate: 25 }, expectedDuration || 0, true)}</div>
+						<div>
+							<TimeToPlannedEndComponent value={expectedEnd - overUnderClock} />
+						</div>
 						TIME TO PLANNED END
 					</div>
 					<div className="director-screen__header__over-under">
@@ -367,7 +376,7 @@ function DirectorScreenRender({
 								over: Math.floor(overUnderClock / 1000) >= 0,
 							})}
 						>
-							{RundownUtils.formatDiffToTimecode(overUnderClock, true, false, true, true, true, undefined, true, true)}
+							<OverUnderClockComponent value={overUnderClock} />
 						</div>
 						OVER/UNDER
 					</div>
