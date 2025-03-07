@@ -1456,7 +1456,11 @@ export function RundownView(props: Readonly<IProps>): JSX.Element {
 	}, [playlistId])
 
 	const subsReady = requiredSubsReady.findIndex((ready) => !ready) === -1
-	return <RundownViewContent {...props} subsReady={subsReady} userPermissions={userPermissions} />
+	return (
+		<div className="container-fluid header-clear">
+			<RundownViewContent {...props} subsReady={subsReady} userPermissions={userPermissions} />
+		</div>
+	)
 }
 
 interface IPropsWithReady extends IProps {
