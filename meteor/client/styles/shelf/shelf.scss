@@ -134,7 +134,7 @@
 			position: relative;
 			flex: 1 1;
 			max-width: 7em;
-			min-width: 13em;
+			min-width: min-content;
 			overflow: hidden;
 			text-overflow: ellipsis;
 			white-space: nowrap;
@@ -143,6 +143,7 @@
 			line-height: $inspector-shelf-tabs-height;
 			cursor: pointer;
 			user-select: none;
+			padding-inline: 1.5em;
 
 			outline-offset: -5px;
 
