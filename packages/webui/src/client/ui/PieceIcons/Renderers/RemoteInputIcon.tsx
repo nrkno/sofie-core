@@ -29,7 +29,7 @@ export function RemoteInputIcon({
 }): JSX.Element {
 	return (
 		<BaseRemoteInputIcon className="remote">
-			{abbreviation ? abbreviation : 'LIVE'}
+			{abbreviation !== undefined ? abbreviation : 'LIVE'}
 			<tspan style={{ fontFamily: 'Roboto', fontWeight: 'normal' }}>{inputIndex ?? ''}</tspan>
 		</BaseRemoteInputIcon>
 	)

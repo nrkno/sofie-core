@@ -32,7 +32,7 @@ export function CamInputIcon({
 					style={{ fill: '#ffffff', fontFamily: 'Roboto', fontSize: '75px', fontWeight: 100 }}
 					className="label"
 				>
-					{abbreviation ? abbreviation : 'C'}
+					{abbreviation !== undefined ? abbreviation : 'C'}
 					<tspan style={{ fontFamily: 'Roboto', fontWeight: 'normal' }}>
 						{inputIndex !== undefined ? inputIndex : ''}
 					</tspan>

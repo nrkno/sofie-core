@@ -22,7 +22,7 @@ export function VTInputIcon({ abbreviation }: { abbreviation?: string }): JSX.El
 					y="71.513954"
 					style={{ fill: '#ffffff', fontFamily: 'Roboto', fontSize: '75px', fontWeight: 100 }}
 				>
-					{abbreviation ? abbreviation : 'VT'}
+					{abbreviation !== undefined ? abbreviation : 'VT'}
 				</tspan>
 			</text>
 		</svg>

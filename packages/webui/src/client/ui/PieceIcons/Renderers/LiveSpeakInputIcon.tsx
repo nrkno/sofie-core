@@ -27,7 +27,7 @@ export function LiveSpeakInputIcon({ abbreviation }: { abbreviation?: string }):
 					style={{ fill: '#ffffff', fontFamily: 'Roboto', fontSize: '62px', fontWeight: 100 }}
 					className="label"
 				>
-					{abbreviation ? abbreviation : 'LSK'}
+					{abbreviation !== undefined ? abbreviation : 'LSK'}
 				</tspan>
 			</text>
 		</svg>

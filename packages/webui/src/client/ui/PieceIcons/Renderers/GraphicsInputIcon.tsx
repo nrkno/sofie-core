@@ -22,7 +22,7 @@ export function GraphicsInputIcon({ abbreviation }: { abbreviation?: string }): 
 					style={{ fill: '#ffffff', fontFamily: 'Roboto', fontSize: '75px', fontWeight: 100 }}
 					className="label"
 				>
-					{abbreviation ? abbreviation : 'G'}
+					{abbreviation !== undefined ? abbreviation : 'G'}
 				</tspan>
 			</text>
 		</svg>
