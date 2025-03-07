@@ -52,6 +52,7 @@ export function ShelfRundownLayout(props: Readonly<IShelfRundownLayoutProps>): J
 								tabIndex={0}
 								role="tab"
 							>
+								<div className="rundown-view__shelf__tabs__tab-label">{t('AdLib')}</div>
 								{t('AdLib')}
 							</button>
 							<button
@@ -62,6 +63,7 @@ export function ShelfRundownLayout(props: Readonly<IShelfRundownLayoutProps>): J
 								tabIndex={0}
 								role="tab"
 							>
+								<div className="rundown-view__shelf__tabs__tab-label">{t('Global AdLib')}</div>
 								{t('Global AdLib')}
 							</button>
 						</>
@@ -79,6 +81,7 @@ export function ShelfRundownLayout(props: Readonly<IShelfRundownLayoutProps>): J
 									tabIndex={0}
 									role="tab"
 								>
+									<div className="rundown-view__shelf__tabs__tab-label">{panel.name}</div>
 									{panel.name}
 								</button>
 							))
@@ -91,6 +94,7 @@ export function ShelfRundownLayout(props: Readonly<IShelfRundownLayoutProps>): J
 						tabIndex={0}
 						role="tab"
 					>
+						<div className="rundown-view__shelf__tabs__tab-label">{t('Shortcuts')}</div>
 						{t('Shortcuts')}
 					</button>
 				</OverflowingContainer>
