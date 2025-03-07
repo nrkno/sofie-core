@@ -150,7 +150,7 @@ export function ModalDialog({
 					<div className="glass-pane-content">
 						<motion.dialog
 							open={true}
-							className={'border-box overlay-m ' + className || ''}
+							className={'border-box overlay-m ' + (className || '')}
 							role="alertdialog"
 							onKeyUp={onDialogKeyUp}
 							onKeyDown={onDialogKeyDown}
