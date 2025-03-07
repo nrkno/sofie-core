@@ -49,7 +49,7 @@ export function OverlayScreenSaver({ studioId }: Readonly<{ studioId: StudioId }
 
 			const animation = motionAnimate([
 				[el, { opacity: 1 }, { duration: 3, delay: 1 }],
-				[el, { opacity: 1 }, { duration: 3, delay: 5 }],
+				[el, { opacity: 0 }, { duration: 3, delay: 5 }],
 			])
 			animation
 				.then(() => {
@@ -68,13 +68,13 @@ export function OverlayScreenSaver({ studioId }: Readonly<{ studioId: StudioId }
 			animate()
 		}
 		return () => {
-			if (el) {
-				el.style.transform = ''
-				el.style.opacity = ''
-				el.style.position = ''
-				el.style.left = ''
-				animationControlsRef.current?.stop()
-			}
+			animationControlsRef.current?.stop()
+
+			if (!el) return
+			el.style.transform = ''
+			el.style.opacity = ''
+			el.style.position = ''
+			el.style.left = ''
 		}
 	}, [studioNameRef.current, data?.rundownPlaylist?.name, data?.studio?.name])
 
