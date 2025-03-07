@@ -83,17 +83,17 @@ export function ShelfRundownLayout(props: Readonly<IShelfRundownLayoutProps>): J
 								</button>
 							))
 					)}
+					<button
+						className={ClassNames('rundown-view__shelf__tabs__tab', {
+							selected: (props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS,
+						})}
+						onClick={() => onSwitchTab(ShelfTabs.SYSTEM_HOTKEYS)}
+						tabIndex={0}
+						role="tab"
+					>
+						{t('Shortcuts')}
+					</button>
 				</OverflowingContainer>
-				<button
-					className={ClassNames('rundown-view__shelf__tabs__tab', {
-						selected: (props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS,
-					})}
-					onClick={() => onSwitchTab(ShelfTabs.SYSTEM_HOTKEYS)}
-					tabIndex={0}
-					role="tab"
-				>
-					{t('Shortcuts')}
-				</button>
 			</div>
 			<div className="rundown-view__shelf__panel super-dark" role="tabpanel">
 				{!rundownLayout ? (
