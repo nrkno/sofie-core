@@ -1,11 +1,57 @@
 .counter-component__over-under {
-background-color: aqua;
+	color: black;
+	font-family: Roboto Flex;
+	font-weight: 400;
+	font-size: 2em;
+	line-height: 100%;
+	letter-spacing: 0%;	
+
+	.under {
+		background-color: #ff0;
+		border-radius: 139px;
+		align-self: stretch;
+		gap: 10px;
+		min-width: 240px;
+		padding-left: 22px;
+		padding-right: 22px;
+	}
+	.over {
+		background-color: #FF5218;
+		border-radius: 139px;
+		align-self: stretch;
+		gap: 10px;
+		min-width: 240px;
+		padding-left: 22px;
+		padding-right: 22px;
+	}
 }
 
 .counter-component__planned-end {
-background-color: purple;
+	color: #fff;
+	font-family: Roboto Flex;
+	font-weight: 400;
+	font-style: italic;
+	font-size: 2em;
+	line-height: 100%;
+	letter-spacing: 0%;	
 }
 
 .counter-component__time-to-planned-end {
-background-color: pink;
+	color:#ff0;
+	font-family: Roboto Flex;
+	font-weight: 500;
+	font-size: 2em;
+	line-height: 100%;
+	letter-spacing: 0%;
+	text-align: center;
+}
+
+.counter-component__time-since-planned-end {
+	color: #FF5218;
+	font-family: Roboto Flex;
+	font-weight: 630;
+	font-size: 2em;
+	line-height: 100%;
+	letter-spacing: -3.5%;
+	text-align: center;
 }

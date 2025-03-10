@@ -5,12 +5,10 @@ interface OverUnderProps {
 }
 
 export const OverUnderClockComponent = (props: OverUnderProps): JSX.Element => {
-	const overUnder = props.value > 0 ? 'Over' : 'Under'
 	return (
-		<div className="counter-component__over-under-clock">
-			<span>{overUnder}</span>
-			<span>
-				{RundownUtils.formatDiffToTimecode(props.value, true, false, true, true, true, undefined, true, true)}
+		<div className="counter-component__over-under">
+			<span className={props.value < 0 ? 'under' : 'over'}>
+				{RundownUtils.formatTimeToTimecode({ frameRate: 25 }, props.value, true, false, true)}
 			</span>
 		</div>
 	)
@@ -19,7 +17,7 @@ export const OverUnderClockComponent = (props: OverUnderProps): JSX.Element => {
 export const PlannedEndComponent = (props: OverUnderProps): JSX.Element => {
 	return (
 		<span className="counter-component__planned-end">
-			{RundownUtils.formatTimeToTimecode({ frameRate: 25 }, props.value, true)}
+			{RundownUtils.formatTimeToTimecode({ frameRate: 25 }, props.value, false, false, true)}
 		</span>
 	)
 }
@@ -28,6 +26,14 @@ export const TimeToPlannedEndComponent = (props: OverUnderProps): JSX.Element =>
 	return (
 		<span className="counter-component__time-to-planned-end">
 			{RundownUtils.formatTimeToTimecode({ frameRate: 25 }, props.value, true)}
+		</span>
+	)
+}
+
+export const TimesSincePlannedEndComponent = (props: OverUnderProps): JSX.Element => {
+	return (
+		<span className="counter-component__time-since-planned-end">
+			{RundownUtils.formatTimeToTimecode({ frameRate: 25 }, props.value, true, false, true)}
 		</span>
 	)
 }

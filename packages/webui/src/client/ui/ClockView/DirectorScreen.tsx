@@ -39,6 +39,7 @@ import { CurrentPartOrSegmentRemaining } from '../RundownView/RundownTiming/Curr
 import {
 	OverUnderClockComponent,
 	PlannedEndComponent,
+	TimesSincePlannedEndComponent,
 	TimeToPlannedEndComponent,
 } from '../../lib/Components/CounterComponents'
 
@@ -364,25 +365,30 @@ function DirectorScreenRender({
 						</div>
 						PLANNED END
 					</div>
-					<div className="director-screen__header__planned-duration">
+					{expectedEnd - overUnderClock < 0 ? (
 						<div>
-							<TimeToPlannedEndComponent value={expectedEnd - overUnderClock} />
+							<div>
+								<TimeToPlannedEndComponent value={expectedEnd - overUnderClock} />
+							</div>
+							TIME TO PLANNED END
 						</div>
-						TIME TO PLANNED END
-					</div>
-					<div className="director-screen__header__over-under">
-						<div
-							className={ClassNames('director-screen__header__countdown', {
-								over: Math.floor(overUnderClock / 1000) >= 0,
-							})}
-						>
+					) : (
+						<div>
+							<div>
+								<TimesSincePlannedEndComponent value={expectedEnd - overUnderClock} />
+							</div>
+							TIME SINCE PLANNED END
+						</div>
+					)}
+					<div>
+						<div>
 							<OverUnderClockComponent value={overUnderClock} />
 						</div>
 						OVER/UNDER
 					</div>
 				</div>
 				<div className="director-screen__body">
-					<div className="director-screen__body__part director-screen__body__part--current-part">
+					<div className="director-screen__body__part">
 						<div
 							className={ClassNames('director-screen__body__segment-name', {
 								live: currentSegment !== undefined,

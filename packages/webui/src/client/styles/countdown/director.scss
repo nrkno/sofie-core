@@ -22,26 +22,8 @@ $hold-status-color: $liveline-timecode-color;
 		font-size: 2em;
 		color: #888;
 		padding: 0 0.2em;
+		padding-left: 10px;
 
-		.director-screen__header__rundown-name {
-			overflow: hidden;
-			white-space: nowrap;
-			text-overflow: ellipsis;
-			line-height: 1.44em;
-		}
-
-		.director-screen__header__countdown {
-			white-space: nowrap;
-
-			color: $general-countdown-to-next-color;
-
-			font-weight: 600;
-			font-size: 1.2em;
-
-			&.over {
-				color: $general-late-color;
-			}
-		}
 	}
 
 
@@ -65,7 +47,7 @@ $hold-status-color: $liveline-timecode-color;
 			grid-template:
 				16em
 				4fr
-				6fr / 13vw auto; // allow a fallback for CasparCG
+				6fr / 13vw auto;
 			grid-template:
 				16em
 				4fr
@@ -74,23 +56,23 @@ $hold-status-color: $liveline-timecode-color;
 			.director-screen__body__segment-name {
 				grid-row: 1;
 				grid-column: 1 / -1;
-				text-align: center;
+				text-align: left;
+				padding-left: 10px;
 				font-size: 16em;
-				font-weight: bold;
+				font-weight: 500;
+				line-height: 100%;
+				letter-spacing: 0%;
+				vertical-align: middle;
 
 				&.live {
 					background: $general-live-color;
 					color: #fff;
-					border-top: 0.1em solid #fff;
-					-webkit-text-stroke: black;
-					-webkit-text-stroke-width: 0.025em;
-					text-shadow: 0px 0px 20px #00000044;
+					text-shadow: 0px 0px 6px #000000;
 				}
 
 				&.next {
 					background: $general-next-color;
 					color: #000;
-					border-top: 0.1em solid #fff;
 				}
 			}
 
@@ -173,7 +155,7 @@ $hold-status-color: $liveline-timecode-color;
 				line-height: 1em;
 
 				> span {
-					font-size: 2em; // Allow a fallback for CasparCG
+					font-size: 2em;
 					font-size: #{'min(2em, 20vw)'};
 				}
 			}
