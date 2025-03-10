@@ -420,7 +420,7 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 						'notification-pop-ups--empty': displayList.length === 0,
 					})}
 				>
-					<AnimatePresence initial={this.props.initialAnimation ?? true}>
+					<AnimatePresence initial={this.props.initialAnimation ?? true} onExitComplete={this.checkKeepDisplaying}>
 						{displayList}
 						{this.props.showEmptyListLabel && displayList.length === 0 && (
 							<NotificationCenterElement className="notification-pop-ups__empty-list">
