@@ -2,7 +2,6 @@ import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-met
 import { unprotectString } from '../../lib/tempLib'
 import { makeTableOfObject } from '../../lib/utilComponents'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PeripheralDevicePubSub } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
 import { useTranslation } from 'react-i18next'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { PeripheralDevices } from '../../collections'
@@ -10,6 +9,7 @@ import { Link } from 'react-router-dom'
 import { PeripheralDeviceCategory } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { IngestRundownStatuses } from './collections'
 import { IngestPartStatus, IngestRundownStatus } from '@sofie-automation/shared-lib/dist/ingest/rundownStatus'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 
 interface IMappingsViewProps {
 	match?: {
@@ -39,7 +39,7 @@ interface ComponentMappingsTableProps {
 	peripheralDeviceId: PeripheralDeviceId
 }
 function ComponentMappingsTable({ peripheralDeviceId }: Readonly<ComponentMappingsTableProps>): JSX.Element {
-	useSubscription(PeripheralDevicePubSub.ingestDeviceRundownStatus, peripheralDeviceId)
+	useSubscription(MeteorPubSub.ingestDeviceRundownStatusTestTool, peripheralDeviceId)
 
 	const rundowns = useTracker(() => IngestRundownStatuses.find({}).fetch(), [], [])
 

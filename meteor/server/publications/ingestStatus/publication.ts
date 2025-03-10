@@ -1,6 +1,7 @@
 import { PeripheralDeviceId, RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import {
+	CustomPublish,
 	CustomPublishCollection,
 	meteorCustomPublish,
 	setUpCollectionOptimizedObserver,
@@ -21,7 +22,8 @@ import { IngestRundownStatus } from '@sofie-automation/shared-lib/dist/ingest/ru
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { createIngestRundownStatus } from './createIngestRundownStatus'
-import { Settings } from '../../Settings'
+import { assertConnectionHasOneOfPermissions } from '../../security/auth'
+import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 
 interface IngestRundownStatusArgs {
 	readonly deviceId: PeripheralDeviceId
@@ -171,29 +173,45 @@ async function manipulateIngestRundownStatusPublicationData(
 	}
 }
 
+async function startOrJoinIngestStatusPublication(
+	pub: CustomPublish<IngestRundownStatus>,
+	deviceId: PeripheralDeviceId
+) {
+	await setUpCollectionOptimizedObserver<
+		IngestRundownStatus,
+		IngestRundownStatusArgs,
+		IngestRundownStatusState,
+		IngestRundownStatusUpdateProps
+	>(
+		`pub_${PeripheralDevicePubSub.ingestDeviceRundownStatus}_${deviceId}`,
+		{ deviceId },
+		setupIngestRundownStatusPublicationObservers,
+		manipulateIngestRundownStatusPublicationData,
+		pub,
+		100
+	)
+}
+
 meteorCustomPublish(
 	PeripheralDevicePubSub.ingestDeviceRundownStatus,
 	PeripheralDevicePubSubCollectionsNames.ingestRundownStatus,
 	async function (pub, deviceId: PeripheralDeviceId, token: string | undefined) {
 		check(deviceId, String)
 
-		if (Settings.enableHeaderAuth) {
-			// This is used in a testTool, so only check when auth is enabled
-			await checkAccessAndGetPeripheralDevice(deviceId, token, this)
-		}
+		await checkAccessAndGetPeripheralDevice(deviceId, token, this)
 
-		await setUpCollectionOptimizedObserver<
-			IngestRundownStatus,
-			IngestRundownStatusArgs,
-			IngestRundownStatusState,
-			IngestRundownStatusUpdateProps
-		>(
-			`pub_${PeripheralDevicePubSub.ingestDeviceRundownStatus}_${deviceId}`,
-			{ deviceId },
-			setupIngestRundownStatusPublicationObservers,
-			manipulateIngestRundownStatusPublicationData,
-			pub,
-			100
-		)
+		await startOrJoinIngestStatusPublication(pub, deviceId)
+	}
+)
+
+meteorCustomPublish(
+	MeteorPubSub.ingestDeviceRundownStatusTestTool,
+	PeripheralDevicePubSubCollectionsNames.ingestRundownStatus,
+	async function (pub, deviceId: PeripheralDeviceId) {
+		check(deviceId, String)
+
+		assertConnectionHasOneOfPermissions(this.connection, 'testing')
+
+		await startOrJoinIngestStatusPublication(pub, deviceId)
 	}
 )
