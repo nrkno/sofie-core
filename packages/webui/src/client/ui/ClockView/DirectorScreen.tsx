@@ -352,7 +352,6 @@ function DirectorScreenRender({
 
 		const expectedStart = PlaylistTiming.getExpectedStart(playlist.timing)
 		const expectedEnd = PlaylistTiming.getExpectedEnd(playlist.timing) || 0
-		const expectedDuration = PlaylistTiming.getExpectedDuration(playlist.timing)
 
 		const overUnderClock = getPlaylistTimingDiff(playlist, timingDurations) ?? 0
 
@@ -394,7 +393,14 @@ function DirectorScreenRender({
 								live: currentSegment !== undefined,
 							})}
 						>
-							{currentSegment?.name}
+							<span>{currentSegment?.name}</span>
+							<span className="director-screen__body__segment__countdown">
+								<CurrentPartOrSegmentRemaining
+									currentPartInstanceId={playlist.currentPartInfo?.partInstanceId || null}
+									heavyClassName="overtime"
+									preferSegmentTime={true}
+								/>
+							</span>
 						</div>
 						{currentPartInstance && currentShowStyleBaseId ? (
 							<>

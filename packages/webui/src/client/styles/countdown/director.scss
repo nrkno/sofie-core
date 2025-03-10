@@ -14,6 +14,8 @@ $hold-status-color: $liveline-timecode-color;
 }
 
 .director-screen {
+	font-family: Roboto Flex;
+
 	.director-screen__header {
 		display: flex;
 		flex-direction: row;
@@ -45,11 +47,11 @@ $hold-status-color: $liveline-timecode-color;
 		.director-screen__body__part {
 			display: grid;
 			grid-template:
-				16em
+				22em
 				4fr
 				6fr / 13vw auto;
 			grid-template:
-				16em
+				22em
 				4fr
 				6fr / #{'min(13vw, 27vh)'} auto;
 
@@ -58,7 +60,7 @@ $hold-status-color: $liveline-timecode-color;
 				grid-column: 1 / -1;
 				text-align: left;
 				padding-left: 10px;
-				font-size: 16em;
+				font-size: 20em;
 				font-weight: 500;
 				line-height: 100%;
 				letter-spacing: 0%;
@@ -74,6 +76,10 @@ $hold-status-color: $liveline-timecode-color;
 					background: $general-next-color;
 					color: #000;
 				}
+			}
+			.director-screen__body__segment__countdown {
+				float: right;
+				margin-right: 10px;
 			}
 
 			.director-screen__body__rundown-countdown {
