@@ -147,9 +147,6 @@ $hold-status-color: $liveline-timecode-color;
 
 			.director-screen__body__part__piece-countdown {
 				text-align: left;
-
-				display: flex;
-				align-items: center;
 				font-size: 13em; // Allow a fallback for CasparCG
 				font-size: #{'min(13em, 8vw)'};
 				padding: 0 0.2em;
@@ -170,9 +167,7 @@ $hold-status-color: $liveline-timecode-color;
 			.director-screen__body__part__part-countdown {
 				text-align: right;
 
-				display: flex;
 				align-items: center;
-				justify-content: flex-end;
 				font-size: 13em;
 				padding: 0 0.2em;
 				line-height: 1em;
