@@ -42,6 +42,7 @@ import {
 	TimesSincePlannedEndComponent,
 	TimeToPlannedEndComponent,
 } from '../../lib/Components/CounterComponents'
+import { AdjustLabelFit } from '../util/AdjustLabelFit'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -396,7 +397,15 @@ function DirectorScreenRender({
 								live: currentSegment !== undefined,
 							})}
 						>
-							<span>{currentSegment?.name}</span>
+							<AdjustLabelFit
+								label={currentSegment?.name || ''}
+								width={'80vw'}
+								fontFamily="Roboto"
+								fontSize="1em"
+								minLetterSpacing={0}
+								useVariableFont={true}
+								hardCutText={true}
+							/>
 							<span className="director-screen__body__segment__countdown">
 								<CurrentPartOrSegmentRemaining
 									currentPartInstanceId={playlist.currentPartInfo?.partInstanceId || null}
@@ -424,10 +433,9 @@ function DirectorScreenRender({
 										playlistActivationId={playlist?.activationId}
 										autowidth={{
 											label: '',
-											width: '80%',
+											width: '90vw',
 											fontFamily: 'Roboto Flex',
 											fontSize: '2em',
-											minWidthPercentage: 5,
 											minLetterSpacing: 2,
 											useVariableFont: true,
 										}}
@@ -499,6 +507,14 @@ function DirectorScreenRender({
 											showStyleBaseId={nextShowStyleBaseId}
 											rundownIds={rundownIds}
 											playlistActivationId={playlist?.activationId}
+											autowidth={{
+												label: '',
+												width: '90vw',
+												fontFamily: 'Roboto Flex',
+												fontSize: '2em',
+												minLetterSpacing: 2,
+												useVariableFont: true,
+											}}
 										/>
 									) : (
 										'_'
