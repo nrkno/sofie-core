@@ -30,12 +30,18 @@ Before you start, there are a few things you should know:
 
 **Minor changes** (most bug fixes and small features) can be submitted directly as pull requests to the appropriate official repo.
 
-However, Sofie is a big project with many differing users and use cases. **Larger changes** might be more difficult to merge into an official repository if NRK has not been made aware of their existence beforehand. To facilitate a timely handling of larger contributions, there’s a workflow intended to keep an open dialogue between all interested parties:
+However, Sofie is a big project with many differing users and use cases. **Larger changes** may be difficult to merge into an official repository if NRK and other contributors have not been made aware of their existence beforehand. Since figuring out what side-effects a new feature or a change may have for other Sofie users can be tricky, we advise opening an RFC (_Request for Comments_) issue early in your process. Good moments to open an RFC include:
+* When a user need is identified and described
+* When you have a rough idea about how a feature may be implemented
+* When you have a sketch of how a feature could look like to the user
+
+To facilitate timely handling of larger contributions, there’s a workflow intended to keep an open dialogue between all interested parties:
 
 1. Contributor opens an RFC (as a _GitHub issue_) in the appropriate repository.
 2. NRK evaluates the RFC, usually within a week.
-3. (If needed) NRK establishes contact with the RFC author, who will be invited to a workshop where the RFC is discussed. Meeting notes are published publicly on the RFC thread.
-4. The contributor references the RFC when a pull request is ready.
+3. If needed, NRK establishes contact with the RFC author, who will be invited to a workshop where the RFC is discussed. Meeting notes are published publicly on the RFC thread.
+4. Discussions about the RFC continue as needed, either in workshops or in comments in the RFC issue.
+5. The contributor references the RFC when a pull request is ready.
 
 ### Base contributions on the in-development branch
 In order to facilitate merging, we ask that contributions are based on the latest (at the time of the pull request) _in-development_ branch (often named `release*`).
