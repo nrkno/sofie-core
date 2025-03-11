@@ -43,6 +43,10 @@ To facilitate timely handling of larger contributions, there’s a workflow inte
 4. Discussions about the RFC continue as needed, either in workshops or in comments in the RFC issue.
 5. The contributor references the RFC when a pull request is ready.
 
+It will be very helpful if your RFC includes specific use-cases that you are facing. Providing a background on how your users are using Sofie can clear up situations in which certain phrases or processes may be ambiguous. If during your process you have already identified various solutions as favorable or unfavorable, offering this context will move the discussion further still.
+
+Via the RFC process, we're looking to maximize involvement from various stakeholders, so you probably don't need to come up with a very detailed design of your proposed change or feature in the RFC. An end-user oriented description will be most valuable in creating a constructive dialogue, but don't shy away from also adding a more technical description, if you find that will convey your ideas better.
+
 ### Base contributions on the in-development branch
 In order to facilitate merging, we ask that contributions are based on the latest (at the time of the pull request) _in-development_ branch (often named `release*`).
 See **CONTRIBUTING.md** in each official repository for details on which branch to use as a base for contributions.
