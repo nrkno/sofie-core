@@ -1,6 +1,6 @@
 {
 	"name": "automation-core",
-	"version": "1.52.0-in-testing.0",
+	"version": "1.53.0-in-development",
 	"private": true,
 	"engines": {
 		"node": ">=22.11"
@@ -103,7 +103,7 @@
 		"eslint-plugin-node": "^11.1.0",
 		"eslint-plugin-prettier": "^4.2.1",
 		"fast-clone": "^1.5.13",
-		"glob": "^8.1.0",
+		"glob": "^11.0.1",
 		"i18next-conv": "^10.2.0",
 		"i18next-scanner": "^4.6.0",
 		"jest": "^29.7.0",
