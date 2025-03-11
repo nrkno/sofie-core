@@ -402,6 +402,8 @@ function DirectorScreenRender({
 								width={'80vw'}
 								fontFamily="Roboto"
 								fontSize="1em"
+								minFontSize={70}
+								maxFontSize={100}
 								minLetterSpacing={0}
 								useVariableFont={true}
 								hardCutText={true}
@@ -436,6 +438,8 @@ function DirectorScreenRender({
 											width: '90vw',
 											fontFamily: 'Roboto Flex',
 											fontSize: '2em',
+											minFontSize: 70,
+											maxFontSize: 120,
 											minLetterSpacing: 2,
 											useVariableFont: true,
 										}}
@@ -512,6 +516,8 @@ function DirectorScreenRender({
 												width: '90vw',
 												fontFamily: 'Roboto Flex',
 												fontSize: '2em',
+												minFontSize: 70,
+												maxFontSize: 120,
 												minLetterSpacing: 2,
 												useVariableFont: true,
 											}}

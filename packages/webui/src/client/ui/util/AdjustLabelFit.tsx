@@ -24,14 +24,14 @@ export interface AdjustLabelFitProps {
 	fontSize?: string | number
 
 	/**
-	 * Minimum font size in pixels (for auto-scaling)
-	 * Default is 10px
+	 * Minimum font size in percentage relative to fontSize (for auto-scaling)
+	 * Default is 50
 	 */
 	minFontSize?: number
 
 	/**
-	 * Maximum font size in pixels (for auto-scaling)
-	 * Default is 100px
+	 * Maximum font size in percentage relative to fontSize (for auto-scaling)
+	 * Default is 120
 	 */
 	maxFontSize?: number
 
@@ -70,6 +70,7 @@ export interface AdjustLabelFitProps {
 
 	/**
 	 * Hard cut length of the text if it doesn't fit
+	 * When unset, it will wrap text per letter
 	 */
 	hardCutText?: boolean
 }
@@ -83,8 +84,8 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 	width,
 	fontFamily,
 	fontSize,
-	minFontSize = 10,
-	maxFontSize = 100,
+	minFontSize = 50,
+	maxFontSize = 120,
 	minLetterSpacing = -1,
 	containerStyle = {},
 	labelStyle = {},
@@ -104,6 +105,7 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 		overflow: 'hidden',
 		...containerStyle,
 		...(widthValue ? { width: widthValue } : {}),
+		...(hardCutText ? {} : { wordBreak: 'break-all' }),
 	}
 
 	// Label style - add optional font settings
@@ -169,7 +171,6 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 			const currentFontSize = parseFloat(window.getComputedStyle(labelElement).fontSize)
 			const scaleFactor = containerWidth / textWidth
 			const newFontSize = Math.max(currentFontSize * scaleFactor, minFontSize)
-
 			labelElement.style.fontSize = `${newFontSize}px`
 
 			// Remeasure after font size adjustment
@@ -214,6 +215,30 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 						const visibleChars = Math.floor(label.length * ratio) - 1
 						labelElement.textContent = label.slice(0, Math.max(visibleChars, 1))
 					}
+				} else {
+					// Apply line wrapping per letter if hardCutText is not set
+					void labelElement.offsetWidth
+					const finalTextWidth = labelElement.getBoundingClientRect().width
+					if (finalTextWidth > containerWidth) {
+						const currentFontSize = parseFloat(window.getComputedStyle(labelElement).fontSize)
+						const minFontSizeValue = currentFontSize * (minFontSize / 100)
+						labelElement.style.fontSize = `${minFontSizeValue}px`
+
+						labelElement.textContent = ''
+
+						for (let i = 0; i < label.length; i++) {
+							const charSpan = document.createElement('span')
+							charSpan.textContent = label[i]
+							charSpan.style.display = 'inline-block'
+							charSpan.style.wordBreak = 'break-all'
+							charSpan.style.whiteSpace = 'normal'
+							labelElement.appendChild(charSpan)
+						}
+
+						// Apply wrapping styles
+						labelElement.style.wordBreak = 'break-all'
+						labelElement.style.whiteSpace = 'normal'
+					}
 				}
 			}
 		} else {
@@ -235,6 +260,31 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 					const ratio = containerWidth / finalTextWidth
 					const visibleChars = Math.floor(label.length * ratio) - 1
 					labelElement.textContent = label.slice(0, Math.max(visibleChars, 1))
+				}
+			} else {
+				// Apply line wrapping per letter if hardCutText is not set
+				void labelElement.offsetWidth
+				const finalTextWidth = labelElement.getBoundingClientRect().width
+				if (finalTextWidth > containerWidth) {
+					const currentFontSize = parseFloat(window.getComputedStyle(labelElement).fontSize)
+					// Use minFontSize as a percentage relative to fontSize
+					const minFontSizeValue = (fontSize ? parseFloat(fontSizeValue || '0') : currentFontSize) * (minFontSize / 100)
+					//labelElement.style.fontSize = `${minFontSizeValue}px`
+
+					labelElement.textContent = ''
+
+					for (let i = 0; i < label.length; i++) {
+						const charSpan = document.createElement('span')
+						charSpan.textContent = label[i]
+						charSpan.style.display = 'inline-block'
+						charSpan.style.wordBreak = 'break-all'
+						charSpan.style.whiteSpace = 'normal'
+						labelElement.appendChild(charSpan)
+					}
+
+					// Apply wrapping styles
+					labelElement.style.wordBreak = 'break-all'
+					labelElement.style.whiteSpace = 'normal'
 				}
 			}
 		}
