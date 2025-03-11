@@ -357,8 +357,8 @@ function DirectorScreenRender({
 
 		return (
 			<div className="director-screen">
-				<div className="director-screen__header">
-					<div className="director-screen__header__planned-end">
+				<div className="director-screen__top">
+					<div className="director-screen__top__planned-end">
 						<div>
 							<PlannedEndComponent value={expectedEnd} />
 						</div>
@@ -387,6 +387,9 @@ function DirectorScreenRender({
 					</div>
 				</div>
 				<div className="director-screen__body">
+					{
+						// Current Part:
+					}
 					<div className="director-screen__body__part">
 						<div
 							className={ClassNames('director-screen__body__segment-name', {
@@ -419,6 +422,15 @@ function DirectorScreenRender({
 										showStyleBaseId={currentShowStyleBaseId}
 										rundownIds={rundownIds}
 										playlistActivationId={playlist?.activationId}
+										autowidth={{
+											label: '',
+											width: '80%',
+											fontFamily: 'Roboto Flex',
+											fontSize: '2em',
+											minWidthPercentage: 5,
+											minLetterSpacing: 2,
+											useVariableFont: true,
+										}}
 									/>
 								</div>
 								<div className="director-screen__body__part__piece-countdown">
@@ -451,6 +463,9 @@ function DirectorScreenRender({
 							</div>
 						) : null}
 					</div>
+					{
+						// Next Part:
+					}
 					<div className="director-screen__body__part director-screen__body__part--next-part">
 						<div
 							className={ClassNames('director-screen__body__segment-name', {

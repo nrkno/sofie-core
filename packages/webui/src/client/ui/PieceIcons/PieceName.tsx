@@ -8,10 +8,12 @@ import { PieceGeneric } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import { AdjustLabelFit, AdjustLabelFitProps } from '../util/AdjustLabelFit'
 
 interface INamePropsHeader extends IPropsHeader {
 	partName: string
 	playlistActivationId: RundownPlaylistActivationId | undefined
+	autowidth?: AdjustLabelFitProps
 }
 
 const supportedLayers = new Set([
@@ -21,7 +23,7 @@ const supportedLayers = new Set([
 	SourceLayerType.LOCAL,
 ])
 
-function getLocalPieceLabel(piece: ReadonlyDeep<PieceGeneric>): JSX.Element | null {
+function getLocalPieceLabel(piece: ReadonlyDeep<PieceGeneric>, autowidth?: AdjustLabelFitProps): JSX.Element | null {
 	const { color } = piece.content as EvsContent
 	return (
 		<>
@@ -30,17 +32,21 @@ function getLocalPieceLabel(piece: ReadonlyDeep<PieceGeneric>): JSX.Element | nu
 					·
 				</span>
 			)}
-			{piece.name}
+			<AdjustLabelFit {...autowidth} label={piece.name || ''} />
 		</>
 	)
 }
 
-function getPieceLabel(piece: ReadonlyDeep<PieceGeneric>, type: SourceLayerType): JSX.Element | null {
+function getPieceLabel(
+	piece: ReadonlyDeep<PieceGeneric>,
+	type: SourceLayerType,
+	autowidth?: AdjustLabelFitProps
+): JSX.Element | null {
 	switch (type) {
 		case SourceLayerType.LOCAL:
-			return getLocalPieceLabel(piece)
+			return getLocalPieceLabel(piece, autowidth)
 		default:
-			return <>{piece.name}</>
+			return <AdjustLabelFit {...autowidth} label={piece.name || ''} />
 	}
 }
 
@@ -59,7 +65,7 @@ export function PieceNameContainer(props: Readonly<INamePropsHeader>): JSX.Eleme
 	useSubscription(MeteorPubSub.uiShowStyleBase, props.showStyleBaseId)
 
 	if (pieceInstance && sourceLayer && supportedLayers.has(sourceLayer.type)) {
-		return getPieceLabel(pieceInstance.piece, sourceLayer.type)
+		return getPieceLabel(pieceInstance.piece, sourceLayer.type, props.autowidth)
 	}
-	return <>{props.partName || ''}</>
+	return <AdjustLabelFit {...props.autowidth} label={props.partName || ''} />
 }
