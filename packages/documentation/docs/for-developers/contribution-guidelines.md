@@ -40,7 +40,7 @@ To facilitate timely handling of larger contributions, there’s a workflow inte
 1. Contributor opens an RFC (as a _GitHub issue_) in the appropriate repository.
 2. NRK evaluates the RFC, usually within a week.
 3. If needed, NRK establishes contact with the RFC author, who will be invited to a workshop where the RFC is discussed. Meeting notes are published publicly on the RFC thread.
-4. Discussions about the RFC continue as needed, either in workshops or in comments in the RFC issue.
+4. Discussions about the RFC continue as needed, either in workshops or in comments in the RFC thread.
 5. The contributor references the RFC when a pull request is ready.
 
 It will be very helpful if your RFC includes specific use-cases that you are facing. Providing a background on how your users are using Sofie can clear up situations in which certain phrases or processes may be ambiguous. If during your process you have already identified various solutions as favorable or unfavorable, offering this context will move the discussion further still.
