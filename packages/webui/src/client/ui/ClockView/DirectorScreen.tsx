@@ -439,7 +439,7 @@ function DirectorScreenRender({
 											fontFamily: 'Roboto Flex',
 											fontSize: '2em',
 											minFontSize: 70,
-											maxFontSize: 120,
+											maxFontSize: 100,
 											minLetterSpacing: 2,
 											useVariableFont: true,
 										}}
@@ -517,7 +517,7 @@ function DirectorScreenRender({
 												fontFamily: 'Roboto Flex',
 												fontSize: '2em',
 												minFontSize: 70,
-												maxFontSize: 120,
+												maxFontSize: 100,
 												minLetterSpacing: 2,
 												useVariableFont: true,
 											}}

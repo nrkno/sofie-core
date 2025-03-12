@@ -8,45 +8,31 @@ $letter-spacing: 0.02em;
 .piece-icon {
   .camera {
     @include item-type-colors-svg();
-    rx: 4;
-    ry: 4;
   }
 
   .live-speak {
     fill: url(#background-gradient);
-    rx: 4;
-    ry: 4;
   }
 
 
   .graphics {
     @include item-type-colors-svg();
-    rx: 4;
-    ry: 4;
   }
 
   .local {
     @include item-type-colors-svg();
-    rx: 4;
-    ry: 4;
   }
 
   .remote {
     @include item-type-colors-svg();
-    rx: 4;
-    ry: 4;
   }
 
   .vt {
     @include item-type-colors-svg();
-    rx: 4;
-    ry: 4;
   }
 
   .unknown {
     @include item-type-colors-svg();
-    rx: 4;
-    ry: 4;
   }
 
   // Gradient styles for live-speak
