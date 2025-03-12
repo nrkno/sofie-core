@@ -53,13 +53,9 @@ $hold-status-color: $liveline-timecode-color;
 		.director-screen__body__part {
 			display: grid;
 			grid-template:
-				22em
-				4fr
-				6fr / 13vw auto;
-			grid-template:
-				22em
-				4fr
-				6fr / #{'min(13vw, 27vh)'} auto;
+				24em
+				60em
+				30em / #{'min(13vw, 27vh)'} auto;
 			white-space: nowrap;
 
 			.director-screen__body__segment-name {
@@ -120,7 +116,7 @@ $hold-status-color: $liveline-timecode-color;
 
 				text-align: center;
 				display: flex;
-				align-items: center;
+				align-items: top;
 				justify-content: center;
 
 				> svg {
@@ -138,7 +134,8 @@ $hold-status-color: $liveline-timecode-color;
 				padding-left: 0.2em;
 
 				display: flex;
-				align-items: center;
+				align-items: top;
+				margin-top: 20px;
 
 				.director-screen__part__auto-next-icon {
 					display: block;
@@ -182,13 +179,11 @@ $hold-status-color: $liveline-timecode-color;
 
 			.director-screen__body__part__piece-countdown,
 			.director-screen__body__part__part-countdown {
-				grid-row: 3;
 				grid-column: 2;
 				color: $general-countdown-to-next-color;
 			}
 
 			&.director-screen__body__part--next-part {
-				border-top: solid 2em $general-next-color;
 				.director-screen__body__part__piece-icon,
 				.director-screen__body__part__piece-name {
 					grid-row: 2 / -1;

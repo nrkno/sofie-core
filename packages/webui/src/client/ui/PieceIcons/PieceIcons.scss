@@ -9,9 +9,9 @@ $letter-spacing: 0.02em;
     &.#{$layer-type} {
       // Background:
       display: inline-block;
-      width: 180px;
-      height: 140px;
-      line-height: 140px;
+      width: 207px;
+      height: 126px;
+      line-height: 126px;
 
       background-color: var(--segment-layer-background-#{$layer-type});
       
