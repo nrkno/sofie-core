@@ -400,12 +400,11 @@ function DirectorScreenRender({
 							<AdjustLabelFit
 								label={currentSegment?.name || ''}
 								width={'80vw'}
-								fontFamily="Roboto"
+								fontFamily="Roboto Flex"
 								fontSize="1em"
 								minFontSize={70}
 								maxFontSize={100}
 								minLetterSpacing={0}
-								useVariableFont={true}
 								hardCutText={true}
 							/>
 							<span className="director-screen__body__segment__countdown">
@@ -441,7 +440,6 @@ function DirectorScreenRender({
 											minFontSize: 70,
 											maxFontSize: 100,
 											minLetterSpacing: 2,
-											useVariableFont: true,
 										}}
 									/>
 								</div>
@@ -464,9 +462,6 @@ function DirectorScreenRender({
 											playlistActivationId={playlist?.activationId}
 										/>
 									)}
-								</div>
-								<div className="director-screen__body__part__part-countdown">
-									<Timediff time={currentPartOrSegmentCountdown} />
 								</div>
 							</>
 						) : expectedStart ? (
@@ -519,7 +514,6 @@ function DirectorScreenRender({
 												minFontSize: 70,
 												maxFontSize: 100,
 												minLetterSpacing: 2,
-												useVariableFont: true,
 											}}
 										/>
 									) : (
