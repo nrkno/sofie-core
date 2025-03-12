@@ -4,7 +4,7 @@ export default function LocalInputIcon(props: Readonly<{ inputIndex?: string; ab
 	return (
 		<BaseRemoteInputIcon className="local">
 			{props.abbreviation !== undefined ? props.abbreviation : 'EVS'}
-			<tspan>{props.inputIndex ?? ''}</tspan>
+			<span>{props.inputIndex ?? ''}</span>
 		</BaseRemoteInputIcon>
 	)
 }
