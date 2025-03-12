@@ -218,6 +218,10 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 	}
 
 	useEffect(() => {
+		const adjustmentTimer = requestAnimationFrame(() => {
+			adjustTextToFit()
+		})
+
 		// Add debouncing for resize events
 		let resizeTimer: number
 		const handleResize = () => {
@@ -240,6 +244,7 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 		window.addEventListener('resize', handleResize)
 		return () => {
 			window.removeEventListener('resize', handleResize)
+			cancelAnimationFrame(adjustmentTimer)
 			cancelAnimationFrame(resizeTimer)
 		}
 	}, [label, width, fontFamily, fontSize, minFontSize, maxFontSize, minLetterSpacing])
