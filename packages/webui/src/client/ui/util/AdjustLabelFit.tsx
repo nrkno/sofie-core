@@ -218,12 +218,29 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 	}
 
 	useEffect(() => {
-		adjustTextToFit()
+		// Add debouncing for resize events
+		let resizeTimer: number
+		const handleResize = () => {
+			cancelAnimationFrame(resizeTimer)
+			resizeTimer = requestAnimationFrame(() => {
+				// Reset all styles first before recalculating
+				if (labelRef.current) {
+					labelRef.current.style.letterSpacing = '0px'
+					labelRef.current.style.fontVariationSettings = ''
+					labelRef.current.textContent = label
+					// Reset the word break and white space properties
+					labelRef.current.style.wordBreak = 'normal'
+					labelRef.current.style.whiteSpace = 'nowrap'
+				}
+				adjustTextToFit()
+			})
+		}
 
 		// Adjust on window resize
-		window.addEventListener('resize', adjustTextToFit)
+		window.addEventListener('resize', handleResize)
 		return () => {
-			window.removeEventListener('resize', adjustTextToFit)
+			window.removeEventListener('resize', handleResize)
+			cancelAnimationFrame(resizeTimer)
 		}
 	}, [label, width, fontFamily, fontSize, minFontSize, maxFontSize, minLetterSpacing])
 
