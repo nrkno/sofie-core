@@ -1,7 +1,7 @@
 /* BEGIN Roboto Flex */
 @font-face {
     font-family: 'Roboto Flex';
-    @include fontdef-woff($FontPath, 'RobotoFlex', $FontVersion, 'Regular');
+    @include fontdef-ttf($FontPath, 'RobotoFlex', $FontVersion, 'Regular');
     font-weight: 400;
     font-style: normal;
   }

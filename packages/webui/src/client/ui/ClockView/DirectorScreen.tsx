@@ -479,7 +479,18 @@ function DirectorScreenRender({
 								next: nextSegment !== undefined && nextSegment?._id !== currentSegment?._id,
 							})}
 						>
-							{nextSegment?._id !== currentSegment?._id ? nextSegment?.name : undefined}
+							{nextSegment?._id !== currentSegment?._id ? (
+								<AdjustLabelFit
+									label={nextSegment?.name || ''}
+									width={'80vw'}
+									fontFamily="Roboto Flex"
+									fontSize="1em"
+									minFontSize={70}
+									maxFontSize={100}
+									minLetterSpacing={0}
+									hardCutText={true}
+								/>
+							) : undefined}
 						</div>
 						{nextPartInstance && nextShowStyleBaseId ? (
 							<>
