@@ -21,6 +21,7 @@ import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Blueprints, CoreSystem, ShowStyleBases, Studios } from '../../collections'
 import { LabelActual } from '../../lib/Components/LabelAndOverrides'
 import Button from 'react-bootstrap/esm/Button'
+import { createPrivateApiPath } from '../../url'
 
 interface IProps {
 	blueprintId: BlueprintId
@@ -88,7 +89,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					),
 					onAccept: () => {
 						if (uploadFileContents && blueprint) {
-							fetchFrom(`/api/private/blueprints/restore/${blueprint._id}`, {
+							fetchFrom(createPrivateApiPath(`blueprints/restore/${blueprint._id}`), {
 								method: 'POST',
 								body: uploadFileContents,
 								headers: {
@@ -128,7 +129,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											),
 											onAccept: () => {
 												if (uploadFileContents && blueprint) {
-													fetchFrom(`/api/private/blueprints/restore/${blueprint._id}?force=1`, {
+													fetchFrom(createPrivateApiPath(`blueprints/restore/${blueprint._id}?force=1`), {
 														method: 'POST',
 														body: uploadFileContents,
 														headers: {

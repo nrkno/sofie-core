@@ -17,6 +17,7 @@ import './client/lib/uncaughtErrorHandler'
 import './client/lib/dev'
 import './client/lib/systemTime'
 
+import { relativeToSiteRootUrl } from './client/url'
 import App from './client/ui/App'
 import { logger } from './client/lib/logging'
 import './client/lib/logStatus'
@@ -26,7 +27,7 @@ if ('serviceWorker' in navigator) {
 	window.addEventListener('load', () => {
 		// in some versions of Chrome, registering the Service Worker over HTTP throws an arror
 		if (window.location.protocol === 'https:' || window.location.hostname === 'localhost') {
-			navigator.serviceWorker.register('/sw.js').catch((err) => {
+			navigator.serviceWorker.register(relativeToSiteRootUrl('/sw.js')).catch((err) => {
 				logger.error('Error registering serviceWorker', err)
 			})
 		}

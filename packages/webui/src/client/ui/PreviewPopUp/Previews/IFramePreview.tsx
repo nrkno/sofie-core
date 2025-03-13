@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react'
+import { relativeToSiteRootUrl } from '../../../url'
 
 interface IFramePreviewProps {
 	content: {
@@ -37,7 +38,7 @@ export function IFramePreview({ content }: IFramePreviewProps): React.ReactEleme
 	return (
 		<div className="preview-popUp__iframe">
 			<div className="preview" style={style}>
-				<img src="/images/previewBG.jpg" alt="" />
+				<img src={relativeToSiteRootUrl('/images/previewBG.jpg')} alt="" />
 				{content.href && (
 					<iframe
 						key={content.href} // Use the url as the key, so that the old renderer unloads immediately when changing url
