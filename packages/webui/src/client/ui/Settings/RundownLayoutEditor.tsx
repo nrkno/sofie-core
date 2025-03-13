@@ -40,6 +40,7 @@ import { LabelActual } from '../../lib/Components/LabelAndOverrides'
 import { useTranslation, withTranslation } from 'react-i18next'
 import Button from 'react-bootstrap/esm/Button'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
+import { createPrivateApiPath } from '../../url'
 
 export interface IProps {
 	showStyleBaseId: ShowStyleBaseId
@@ -174,7 +175,7 @@ const RundownLayoutEditorContent = withTranslation()(
 		}
 
 		downloadItem = (item: RundownLayoutBase) => {
-			window.location.replace(`/api/private/shelfLayouts/download/${item._id}`)
+			window.location.replace(createPrivateApiPath(`shelfLayouts/download/${item._id}`))
 		}
 
 		finishEditItem = (item: RundownLayoutBase) => {
@@ -511,7 +512,7 @@ function ImportRundownLayoutsButton({ showStyleBaseId }: { showStyleBaseId: Show
 					</React.Fragment>
 				),
 				onAccept: () => {
-					fetchFrom(`/api/private/shelfLayouts/upload/${showStyleBaseId}`, {
+					fetchFrom(createPrivateApiPath(`/shelfLayouts/upload/${showStyleBaseId}`), {
 						method: 'POST',
 						body: fileContents,
 						headers: {

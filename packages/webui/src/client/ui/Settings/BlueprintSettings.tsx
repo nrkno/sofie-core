@@ -23,6 +23,7 @@ import { LabelActual } from '../../lib/Components/LabelAndOverrides'
 import Button from 'react-bootstrap/esm/Button'
 import { useTranslation } from 'react-i18next'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
+import { createPrivateApiPath } from '../../url'
 
 interface IProps {
 	blueprintId: BlueprintId
@@ -237,7 +238,7 @@ function ImportConfigButton({ blueprintId }: { blueprintId: BlueprintId }) {
 					</React.Fragment>
 				),
 				onAccept: () => {
-					fetchFrom(`/api/private/blueprints/restore/${blueprintId}`, {
+					fetchFrom(createPrivateApiPath(`blueprints/restore/${blueprintId}`), {
 						method: 'POST',
 						body: uploadFileContents,
 						headers: {
@@ -276,7 +277,7 @@ function ImportConfigButton({ blueprintId }: { blueprintId: BlueprintId }) {
 										</React.Fragment>
 									),
 									onAccept: () => {
-										fetchFrom(`/api/private/blueprints/restore/${blueprintId}?force=1`, {
+										fetchFrom(createPrivateApiPath(`blueprints/restore/${blueprintId}?force=1`), {
 											method: 'POST',
 											body: uploadFileContents,
 											headers: {

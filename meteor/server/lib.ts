@@ -33,6 +33,13 @@ export const public_dir = Meteor.isProduction
 	: // In development, find the webui package and use its public directory
 	  path.join(process.cwd(), '../../../../../../packages/webui/public')
 
+export function getRootSubpath(): string {
+	// @ts-expect-error Untyped meteor export
+	const settings: any = __meteor_runtime_config__
+
+	return settings.ROOT_URL_PATH_PREFIX || ''
+}
+
 /**
  * Get the i18next locale object for a given `languageCode`. If the translations file can not be found or it can't be
  * parsed, it will return an empty object.

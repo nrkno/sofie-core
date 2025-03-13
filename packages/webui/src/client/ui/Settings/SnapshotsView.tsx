@@ -22,6 +22,7 @@ import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { useTranslation, withTranslation } from 'react-i18next'
 import Button from 'react-bootstrap/esm/Button'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
+import { createPrivateApiPath } from '../../url'
 
 interface IProps {
 	match: {
@@ -303,7 +304,11 @@ const SnapshotsViewContent = withTranslation()(
 											</td>
 											<td>{snapshot.type}</td>
 											<td>
-												<a href={`/api/private/snapshot/retrieve/${snapshot._id}`} target="_blank" rel="noreferrer">
+												<a
+													href={createPrivateApiPath(`snapshot/retrieve/${snapshot._id}`)}
+													target="_blank"
+													rel="noreferrer"
+												>
 													{snapshot.name}
 												</a>
 											</td>
@@ -377,7 +382,7 @@ function SnapshotImportButton({
 					fileName: file.name,
 				}),
 				onAccept: () => {
-					fetchFrom('/api/private/snapshot/restore', {
+					fetchFrom(createPrivateApiPath('snapshot/restore'), {
 						method: 'POST',
 						body: uploadFileContents,
 						headers: {
