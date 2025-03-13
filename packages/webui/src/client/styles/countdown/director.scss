@@ -70,7 +70,7 @@ $hold-status-color: $liveline-timecode-color;
 			display: grid;
 			grid-template:
 				24em
-				70em
+				50em
 				30em / #{'min(13vw, 27vh)'} auto;
 			white-space: nowrap;
 
@@ -79,14 +79,17 @@ $hold-status-color: $liveline-timecode-color;
 				grid-column: 1 / -1;
 				text-align: left;
 				padding-left: 10px;
+				letter-spacing: 0%;
 				vertical-align: middle;
+				color: #fff;
 				position: relative;
 				/* PartNameWide */
 				font-family: 'Roboto Flex';
 				font-style: normal;
 				font-weight: 700;
-				font-size: 99px;
+				font-size: 90px;
 				line-height: 110%;
+				/* or 110px */
 				letter-spacing: 0.01em;
 				font-feature-settings: 'pnum' on, 'lnum' on;
 
@@ -214,6 +217,30 @@ $hold-status-color: $liveline-timecode-color;
 				.director-screen__body__part__piece-name {
 					grid-row: 2 / -1;
 				}
+			}
+
+			.director-screen__body__part__next {
+				background-color: $general-next-color;
+				position: relative;
+				clip-path: polygon(0 0, 85% 0, 100% 50%, 85% 100%, 0 100%);
+			}
+			.director-screen__body__part__auto {
+				background-color: #DF0000;
+				position: relative;
+				border-radius: 0 25px 25px 0;
+			}
+			
+			.director-screen__body__part__next,
+			.director-screen__body__part__auto {
+				grid-row: 1;
+				grid-column: 1;
+				margin-top: -50px;
+				text-align: center;
+				font-size: 1.5rem;
+				color: #000;
+				padding-top: 10px;
+				max-width: 100px;
+				max-height: 50px;
 			}
 		}
 

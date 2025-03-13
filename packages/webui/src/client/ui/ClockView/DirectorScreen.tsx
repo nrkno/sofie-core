@@ -494,6 +494,11 @@ function DirectorScreenRender({
 						</div>
 						{nextPartInstance && nextShowStyleBaseId ? (
 							<>
+								{currentPartInstance && currentPartInstance.instance.part.autoNext ? (
+									<span className="director-screen__body__part__auto">AUTO</span>
+								) : (
+									<span className="director-screen__body__part__next">NEXT</span>
+								)}
 								<div className="director-screen__body__part__piece-icon">
 									<PieceIconContainer
 										partInstanceId={nextPartInstance.instance._id}
@@ -503,13 +508,6 @@ function DirectorScreenRender({
 									/>
 								</div>
 								<div className="director-screen__body__part__piece-name">
-									{currentPartInstance && currentPartInstance.instance.part.autoNext ? (
-										<img
-											className="director-screen__body__part__auto-next-icon"
-											src="/icons/auto-presenter-screen.svg"
-											alt="Autonext"
-										/>
-									) : null}
 									{nextPartInstance && nextShowStyleBaseId && nextPartInstance.instance.part.title ? (
 										<PieceNameContainer
 											partName={nextPartInstance.instance.part.title}
