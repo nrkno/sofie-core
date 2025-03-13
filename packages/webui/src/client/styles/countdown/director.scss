@@ -70,7 +70,7 @@ $hold-status-color: $liveline-timecode-color;
 			display: grid;
 			grid-template:
 				24em
-				50em
+				70em
 				30em / #{'min(13vw, 27vh)'} auto;
 			white-space: nowrap;
 
@@ -79,13 +79,22 @@ $hold-status-color: $liveline-timecode-color;
 				grid-column: 1 / -1;
 				text-align: left;
 				padding-left: 10px;
-				font-size: 20em;
-				font-weight: 500;
-				line-height: 120%;
-				letter-spacing: 0%;
 				vertical-align: middle;
-				color: #fff;
 				position: relative;
+				/* PartNameWide */
+				font-family: 'Roboto Flex';
+				font-style: normal;
+				font-weight: 700;
+				font-size: 99px;
+				line-height: 110%;
+				letter-spacing: 0.01em;
+				font-feature-settings: 'pnum' on, 'lnum' on;
+
+				color: #FFFFFF;
+				font-stretch: 100;
+				font-variation-settings: 'GRAD' -90, 'XOPQ' 96, 'XTRA' 372, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738, 'YTLC' 514, 'YTUC' 712, 'slnt' 0, 'opsz' 38;
+
+				text-shadow: 0px 0px 4px rgba(0, 0, 0, 0.5);
 				box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.5);
 				z-index: 1; 
 
@@ -100,6 +109,7 @@ $hold-status-color: $liveline-timecode-color;
 				}
 				.director-screen__body__segment__countdown {
 					position: absolute;
+					font-size: 120px;
 					top: 0;
 					right: 0;
 					height: 100%;

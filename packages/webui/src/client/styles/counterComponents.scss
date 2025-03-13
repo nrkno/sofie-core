@@ -1,10 +1,19 @@
 .counter-component__over-under {
 	color: black;
-	font-family: Roboto Flex;
-	font-weight: 400;
-	font-size: 2em;
+	font-family: 'Roboto Flex';
+	margin-top: 4px;
+	margin-bottom: 4px;
+	font-style: normal;
+	font-weight: 500;
+	font-size: 90px;
 	line-height: 100%;
-	letter-spacing: 0%;	
+	/* identical to box height, or 120px */
+	text-align: right;
+	font-feature-settings: 'liga' off;
+
+	font-stretch: 57;
+	font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738, 'YTLC' 548, 'YTUC' 712, 'slnt' 0, 'opsz' 44;
+
 
 	.under {
 		background-color: #ff0;
@@ -27,31 +36,67 @@
 }
 
 .counter-component__planned-end {
-	color: #fff;
-	font-family: Roboto Flex;
+	/* TimeOfDay */
+	font-family: 'Roboto Flex';
+	font-style: normal;
 	font-weight: 400;
-	font-style: italic;
-	font-size: 2em;
+	font-size: 90px;
 	line-height: 100%;
 	letter-spacing: 0%;	
+	/* identical to box height, or 120px */
+	font-feature-settings: 'liga' off;
+
+	color: #FFFFFF;
+	font-stretch: 70;
+	font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738, 'YTLC' 548, 'YTUC' 712, 'slnt' -7, 'opsz' 44;
+
+
+	/* Inside auto layout */
+	flex: none;
+	order: 0;
+	flex-grow: 0;
+
 }
 
 .counter-component__time-to-planned-end {
 	color:#ff0;
-	font-family: Roboto Flex;
-	font-weight: 500;
-	font-size: 2em;
-	line-height: 100%;
 	letter-spacing: 0%;
-	text-align: center;
+	/* CounterUnder */
+font-family: 'Roboto Flex';
+font-style: normal;
+font-weight: 500;
+font-size: 90px;
+line-height: 100%;
+/* identical to box height, or 120px */
+text-align: right;
+font-feature-settings: 'liga' off;
+
+color: #000000;
+font-stretch: 57;
+font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738, 'YTLC' 548, 'YTUC' 712, 'slnt' 0, 'opsz' 44;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
 }
 
 .counter-component__time-since-planned-end {
 	color: #FF5218;
-	font-family: Roboto Flex;
-	font-weight: 630;
-	font-size: 2em;
-	line-height: 100%;
-	letter-spacing: -3.5%;
-	text-align: center;
+
+	font-family: 'Roboto Flex';
+font-style: normal;
+font-weight: 500;
+font-size: 90px;
+line-height: 100%;
+/* identical to box height, or 120px */
+text-align: right;
+font-feature-settings: 'liga' off;
+
+font-stretch: 57;
+font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738, 'YTLC' 548, 'YTUC' 712, 'slnt' 0, 'opsz' 44;
+
+
 }

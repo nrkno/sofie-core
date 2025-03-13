@@ -401,9 +401,9 @@ function DirectorScreenRender({
 								label={currentSegment?.name || ''}
 								width={'80vw'}
 								fontFamily="Roboto Flex"
-								fontSize="1em"
-								minFontSize={70}
-								maxFontSize={100}
+								fontSize="0.8em"
+								minFontWidth={70}
+								maxFontWidth={90}
 								minLetterSpacing={0}
 								hardCutText={true}
 							/>
@@ -437,8 +437,8 @@ function DirectorScreenRender({
 											width: '90vw',
 											fontFamily: 'Roboto Flex',
 											fontSize: '2em',
-											minFontSize: 70,
-											maxFontSize: 100,
+											minFontWidth: 20,
+											maxFontWidth: 90,
 											minLetterSpacing: 2,
 										}}
 									/>
@@ -484,9 +484,9 @@ function DirectorScreenRender({
 									label={nextSegment?.name || ''}
 									width={'80vw'}
 									fontFamily="Roboto Flex"
-									fontSize="1em"
-									minFontSize={70}
-									maxFontSize={100}
+									fontSize="0.8em"
+									minFontWidth={70}
+									maxFontWidth={90}
 									minLetterSpacing={0}
 									hardCutText={true}
 								/>
@@ -522,8 +522,8 @@ function DirectorScreenRender({
 												width: '90vw',
 												fontFamily: 'Roboto Flex',
 												fontSize: '2em',
-												minFontSize: 70,
-												maxFontSize: 100,
+												minFontWidth: 20,
+												maxFontWidth: 90,
 												minLetterSpacing: 2,
 											}}
 										/>

@@ -24,16 +24,16 @@ export interface AdjustLabelFitProps {
 	fontSize?: string | number
 
 	/**
-	 * Minimum font size in percentage relative to fontSize (for auto-scaling)
+	 * Minimum font width in percentage relative to normal (for auto-scaling)
 	 * Default is 50
 	 */
-	minFontSize?: number
+	minFontWidth?: number
 
 	/**
-	 * Maximum font size in percentage relative to fontSize (for auto-scaling)
+	 * Maximum font size in percentage relative to normal (for auto-scaling)
 	 * Default is 120
 	 */
-	maxFontSize?: number
+	maxFontWidth?: number
 
 	/**
 	 * Minimum letter spacing in pixels
@@ -72,8 +72,8 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 	width,
 	fontFamily,
 	fontSize,
-	minFontSize = 50,
-	maxFontSize = 120,
+	minFontWidth = 50,
+	maxFontWidth = 120,
 	minLetterSpacing = -1,
 	containerStyle = {},
 	labelStyle = {},
@@ -109,9 +109,11 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 		if (!labelElement || !containerElement) return
 
 		const DEFAULT_WIDTH = 100
+		const DEFAULT_OPTICAL_SIZE = 10
 		labelElement.style.letterSpacing = '0px'
 
-		labelElement.style.fontVariationSettings = `'wdth' ${DEFAULT_WIDTH}`
+		// Apply the new width setting
+		labelElement.style.fontVariationSettings = `'opsz' ${DEFAULT_OPTICAL_SIZE}, 'wdth' ${DEFAULT_WIDTH}`
 
 		// Reset label content if it was cut
 		labelElement.textContent = label
@@ -131,25 +133,6 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 
 		// Measure the container and text widths
 		const containerWidth = containerElement.clientWidth
-		const textWidth = labelElement.getBoundingClientRect().width
-
-		if (textWidth <= containerWidth) {
-			const currentFontSize = parseFloat(window.getComputedStyle(labelElement).fontSize)
-			const scaleFactor = containerWidth / textWidth
-			const newFontSize = Math.min(currentFontSize * scaleFactor, maxFontSize)
-
-			labelElement.style.fontSize = `${newFontSize}px`
-
-			// Re-center text vertically if needed
-			labelElement.style.lineHeight = '1'
-
-			return
-		}
-
-		const currentFontSize = parseFloat(window.getComputedStyle(labelElement).fontSize)
-		const scaleFactor = containerWidth / textWidth
-		const newFontSize = Math.max(currentFontSize * scaleFactor, minFontSize)
-		labelElement.style.fontSize = `${newFontSize}px`
 
 		// Remeasure after font size adjustment
 		void labelElement.offsetWidth
@@ -162,10 +145,10 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 		let currentWidth = DEFAULT_WIDTH * widthRatio
 
 		// Use a reasonable range for width variation
-		currentWidth = Math.max(currentWidth, 75) // minimum 75%
-		currentWidth = Math.min(currentWidth, 110) // maximum 110%
+		currentWidth = Math.max(currentWidth, minFontWidth)
+		currentWidth = Math.min(currentWidth, maxFontWidth)
 
-		labelElement.style.fontVariationSettings = `'wdth' ${currentWidth}`
+		labelElement.style.fontVariationSettings = `'opsz' ${100 - minFontWidth}, 'wdth' ${currentWidth}`
 
 		// Remeasure text width after adjustment:
 		void labelElement.offsetWidth
@@ -194,10 +177,6 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 				void labelElement.offsetWidth
 				const finalTextWidth = labelElement.getBoundingClientRect().width
 				if (finalTextWidth > containerWidth) {
-					const currentFontSize = parseFloat(window.getComputedStyle(labelElement).fontSize)
-					const minFontSizeValue = currentFontSize * (minFontSize / 100)
-					labelElement.style.fontSize = `${minFontSizeValue}px`
-
 					labelElement.textContent = ''
 
 					for (let i = 0; i < label.length; i++) {
@@ -247,7 +226,7 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 			cancelAnimationFrame(adjustmentTimer)
 			cancelAnimationFrame(resizeTimer)
 		}
-	}, [label, width, fontFamily, fontSize, minFontSize, maxFontSize, minLetterSpacing])
+	}, [label, width, fontFamily, fontSize, minFontWidth, maxFontWidth, minLetterSpacing])
 
 	return (
 		<div ref={containerRef} className={`adjust-label-fit ${className}`} style={finalContainerStyle}>
