@@ -370,21 +370,21 @@ function DirectorScreenRender({
 							<div>
 								<TimeToPlannedEndComponent value={expectedEnd - overUnderClock} />
 							</div>
-							TIME TO PLANNED END
+							<span className="director-screen__top__planned-to">TIME TO PLANNED END</span>
 						</div>
 					) : (
 						<div>
 							<div>
 								<TimesSincePlannedEndComponent value={expectedEnd - overUnderClock} />
 							</div>
-							TIME SINCE PLANNED END
+							<span className="director-screen__top__planned-since">TIME SINCE PLANNED END</span>
 						</div>
 					)}
 					<div>
 						<div>
 							<OverUnderClockComponent value={overUnderClock} />
 						</div>
-						OVER/UNDER
+						<span className="director-screen__top__over-under">OVER/UNDER</span>
 					</div>
 				</div>
 				<div className="director-screen__body">

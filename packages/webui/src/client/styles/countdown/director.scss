@@ -32,6 +32,22 @@ $hold-status-color: $liveline-timecode-color;
 		font-size: 2em;
 		padding: 0 0.2em;
 
+		.director-screen__top__planned-end {
+			text-align: left;
+		}
+		
+		.director-screen__top__planned-to {
+			text-align: left;
+		}
+		.director-screen__top__planned-since {
+			margin-left: -50px;
+		}
+
+		.director-screen__top__over-under {
+			margin-left: 120px;
+		}
+
+
 	}
 
 
@@ -54,7 +70,7 @@ $hold-status-color: $liveline-timecode-color;
 			display: grid;
 			grid-template:
 				24em
-				60em
+				50em
 				30em / #{'min(13vw, 27vh)'} auto;
 			white-space: nowrap;
 
