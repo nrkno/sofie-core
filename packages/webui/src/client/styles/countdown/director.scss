@@ -70,7 +70,7 @@ $hold-status-color: $liveline-timecode-color;
 			display: grid;
 			grid-template:
 				24em
-				50em
+				60em
 				30em / #{'min(13vw, 27vh)'} auto;
 			white-space: nowrap;
 
@@ -241,6 +241,7 @@ $hold-status-color: $liveline-timecode-color;
 				padding-top: 10px;
 				max-width: 100px;
 				max-height: 50px;
+				z-index: 1;
 			}
 		}
 
