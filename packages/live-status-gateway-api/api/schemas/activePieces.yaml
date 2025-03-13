@@ -3,6 +3,7 @@ description: Active Pieces schema for websocket subscriptions
 $defs:
   activePieces:
     type: object
+    title: ActivePiecesEvent
     properties:
       event:
         type: string

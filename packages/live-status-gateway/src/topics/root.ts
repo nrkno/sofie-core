@@ -2,6 +2,14 @@ import { Logger } from 'winston'
 import { WebSocket } from 'ws'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { WebSocketTopicBase, WebSocketTopic } from '../wsHandler'
+import {
+	PongEvent,
+	SubscriptionStatusSuccess,
+	SubscriptionStatusError,
+	SubscriptionDetails,
+	SubscriptionStatus,
+	SubscriptionName,
+} from '@sofie-automation/live-status-gateway-api'
 
 enum PublishMsg {
 	ping = 'ping',
@@ -9,43 +17,11 @@ enum PublishMsg {
 	unsubscribe = 'unsubscribe',
 }
 
-interface PongMsg {
-	event: string
-	reqid: number
-}
-
-enum SubscriptionStatus {
-	subscribed = 'subscribed',
-	unsubscribed = 'unsubscribed',
-}
-
-interface SubscriptionDetails {
-	name: string
-	status: SubscriptionStatus
-}
-
-interface SubscriptionResponse {
-	event: string
-	reqid: number
-	subscription: SubscriptionDetails
-	errorMessage?: string
-}
-
-export enum StatusChannels {
-	studio = 'studio',
-	activePlaylist = 'activePlaylist',
-	activePieces = 'activePieces',
-	segments = 'segments',
-	adLibs = 'adLibs',
-	packages = 'packages',
-	buckets = 'buckets',
-}
-
 interface RootMsg {
 	event: PublishMsg
 	reqid: number
 	subscription: {
-		name: StatusChannels
+		name: SubscriptionName
 	}
 }
 
@@ -74,7 +50,7 @@ export class RootChannel extends WebSocketTopicBase implements WebSocketTopic {
 			if (typeof msgObj.event === 'string' && typeof msgObj.reqid === 'number') {
 				switch (msgObj.event) {
 					case PublishMsg.ping:
-						this.sendMessage(ws, literal<PongMsg>({ event: 'pong', reqid: msgObj.reqid }))
+						this.sendMessage(ws, literal<PongEvent>({ event: 'pong', reqid: msgObj.reqid }))
 						return
 					case PublishMsg.subscribe:
 						this._logger.info(`Subscribe request to '${msgObj.subscription.name}' channel`)
@@ -94,21 +70,21 @@ export class RootChannel extends WebSocketTopicBase implements WebSocketTopic {
 	}
 
 	addTopic(channel: string, topic: WebSocketTopic): void {
-		if (channel in StatusChannels) this._topics.set(channel, topic)
+		if (channel in SubscriptionName) this._topics.set(channel, topic)
 	}
 
-	subscribe(ws: WebSocket, name: string, reqid: number): void {
+	subscribe(ws: WebSocket, name: SubscriptionName, reqid: number): void {
 		const topic = this._topics.get(name)
-		const curUnsubscribed = topic && !topic.hasSubscriber(ws) && name in StatusChannels
+		const curUnsubscribed = topic && !topic.hasSubscriber(ws) && name in SubscriptionName
 		if (curUnsubscribed) {
 			this.sendMessage(
 				ws,
-				literal<SubscriptionResponse>({
+				literal<SubscriptionStatusSuccess>({
 					event: 'subscriptionStatus',
 					reqid: reqid,
 					subscription: literal<SubscriptionDetails>({
 						name: name,
-						status: SubscriptionStatus.subscribed,
+						status: SubscriptionStatus.SUBSCRIBED,
 					}),
 				})
 			)
@@ -116,45 +92,45 @@ export class RootChannel extends WebSocketTopicBase implements WebSocketTopic {
 		} else {
 			this.sendMessage(
 				ws,
-				literal<SubscriptionResponse>({
+				literal<SubscriptionStatusError>({
 					errorMessage: `Subscribe to '${name}' topic failed`,
 					event: 'subscriptionStatus',
 					reqid: reqid,
 					subscription: literal<SubscriptionDetails>({
 						name: name,
-						status: curUnsubscribed ? SubscriptionStatus.unsubscribed : SubscriptionStatus.subscribed,
+						status: curUnsubscribed ? SubscriptionStatus.UNSUBSCRIBED : SubscriptionStatus.SUBSCRIBED,
 					}),
 				})
 			)
 		}
 	}
 
-	unsubscribe(ws: WebSocket, name: string, reqid: number): void {
+	unsubscribe(ws: WebSocket, name: SubscriptionName, reqid: number): void {
 		const topic = this._topics.get(name)
-		const curSubscribed = topic && topic.hasSubscriber(ws) && name in StatusChannels
+		const curSubscribed = topic && topic.hasSubscriber(ws) && name in SubscriptionName
 		if (curSubscribed) {
 			topic.removeSubscriber(ws)
 			this.sendMessage(
 				ws,
-				literal<SubscriptionResponse>({
+				literal<SubscriptionStatusSuccess>({
 					event: 'subscriptionStatus',
 					reqid: reqid,
 					subscription: literal<SubscriptionDetails>({
 						name: name,
-						status: SubscriptionStatus.unsubscribed,
+						status: SubscriptionStatus.UNSUBSCRIBED,
 					}),
 				})
 			)
 		} else {
 			this.sendMessage(
 				ws,
-				literal<SubscriptionResponse>({
+				literal<SubscriptionStatusError>({
 					errorMessage: `Unsubscribe from '${name}' topic failed`,
 					event: 'subscriptionStatus',
 					reqid: reqid,
 					subscription: literal<SubscriptionDetails>({
 						name: name,
-						status: curSubscribed ? SubscriptionStatus.subscribed : SubscriptionStatus.unsubscribed,
+						status: curSubscribed ? SubscriptionStatus.SUBSCRIBED : SubscriptionStatus.UNSUBSCRIBED,
 					}),
 				})
 			)

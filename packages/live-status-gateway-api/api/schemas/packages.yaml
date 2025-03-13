@@ -3,6 +3,7 @@ description: Packages schema for websocket subscriptions. Packages are assets th
 $defs:
   packages:
     type: object
+    title: PackagesEvent
     properties:
       event:
         type: string
@@ -26,12 +27,14 @@ $defs:
           $ref: '#/$defs/package/examples'
   package:
     type: object
+    title: PackageInfoStatus
     properties:
       packageName:
         description: Name of the package
         type: string
       status:
         type: string
+        title: PackageStatus
         enum:
           - unknown
           - ok

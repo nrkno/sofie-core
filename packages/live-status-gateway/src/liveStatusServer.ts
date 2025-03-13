@@ -11,7 +11,7 @@ import { SegmentHandler } from './collections/segmentHandler'
 import { PartInstancesHandler } from './collections/partInstancesHandler'
 import { AdLibActionsHandler } from './collections/adLibActionsHandler'
 import { GlobalAdLibActionsHandler } from './collections/globalAdLibActionsHandler'
-import { RootChannel, StatusChannels } from './topics/root'
+import { RootChannel } from './topics/root'
 import { StudioTopic } from './topics/studioTopic'
 import { ActivePlaylistTopic } from './topics/activePlaylistTopic'
 import { AdLibsHandler } from './collections/adLibsHandler'
@@ -23,6 +23,7 @@ import { PartsHandler } from './collections/partsHandler'
 import { PieceInstancesHandler } from './collections/pieceInstancesHandler'
 import { AdLibsTopic } from './topics/adLibsTopic'
 import { ActivePiecesTopic } from './topics/activePiecesTopic'
+import { SubscriptionName } from '@sofie-automation/live-status-gateway-api'
 import { PieceContentStatusesHandler } from './collections/pieceContentStatusesHandler'
 import { PackagesTopic } from './topics/packagesTopic'
 import { BucketsHandler } from './collections/bucketsHandler'
@@ -121,13 +122,13 @@ export class LiveStatusServer {
 		const packageStatusTopic = new PackagesTopic(this._logger, handlers)
 		const bucketsTopic = new BucketsTopic(this._logger, handlers)
 
-		rootChannel.addTopic(StatusChannels.studio, studioTopic)
-		rootChannel.addTopic(StatusChannels.activePlaylist, activePlaylistTopic)
-		rootChannel.addTopic(StatusChannels.activePieces, activePiecesTopic)
-		rootChannel.addTopic(StatusChannels.segments, segmentsTopic)
-		rootChannel.addTopic(StatusChannels.adLibs, adLibsTopic)
-		rootChannel.addTopic(StatusChannels.packages, packageStatusTopic)
-		rootChannel.addTopic(StatusChannels.buckets, bucketsTopic)
+		rootChannel.addTopic(SubscriptionName.STUDIO, studioTopic)
+		rootChannel.addTopic(SubscriptionName.ACTIVE_PLAYLIST, activePlaylistTopic)
+		rootChannel.addTopic(SubscriptionName.ACTIVE_PIECES, activePiecesTopic)
+		rootChannel.addTopic(SubscriptionName.SEGMENTS, segmentsTopic)
+		rootChannel.addTopic(SubscriptionName.AD_LIBS, adLibsTopic)
+		rootChannel.addTopic(SubscriptionName.RESERVED_PACKAGES, packageStatusTopic)
+		rootChannel.addTopic(SubscriptionName.BUCKETS, bucketsTopic)
 
 		const wss = new WebSocketServer({ port: 8080 })
 		wss.on('connection', (ws, request) => {

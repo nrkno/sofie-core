@@ -3,6 +3,7 @@ description: Segments schema for websocket subscriptions
 $defs:
   segments:
     type: object
+    title: SegmentsEvent
     properties:
       event:
         type: string
@@ -26,6 +27,7 @@ $defs:
           $ref: '#/$defs/segment/examples'
   segment:
     type: object
+    title: Segment
     properties:
       id:
         description: Unique id of the segment
@@ -41,6 +43,7 @@ $defs:
         type: string
       timing:
         type: object
+        title: SegmentTiming
         properties:
           expectedDurationMs:
             description: Expected duration of the segment (milliseconds)
@@ -51,6 +54,7 @@ $defs:
           countdownType:
             description: 'Countdown type within the segment. Default: `part_expected_duration`'
             type: string
+            title: SegmentCountdownType
             enum:
               - part_expected_duration
               - segment_budget_duration
