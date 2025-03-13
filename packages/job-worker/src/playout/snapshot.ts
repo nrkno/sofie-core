@@ -224,9 +224,10 @@ export async function handleRestorePlaylistSnapshot(
 			delete pieceOld.rundownId
 		}
 		if (pieceOld.partId) {
-			piece.startPartId = pieceOld.partId
+			const partId = pieceOld.partId
+			piece.startPartId = partId
 			delete pieceOld.partId
-			piece.startSegmentId = partSegmentIds[unprotectString(piece.startPartId)]
+			piece.startSegmentId = partSegmentIds[unprotectString(partId)]
 		}
 	}
 
@@ -273,12 +274,16 @@ export async function handleRestorePlaylistSnapshot(
 	for (const piece of snapshot.pieces) {
 		const oldId = piece._id
 		piece.startRundownId = getNewRundownId(piece.startRundownId)
-		piece.startPartId =
-			partIdMap.get(piece.startPartId) ||
-			getRandomIdAndWarn(`piece.startPartId=${piece.startPartId} of piece=${piece._id}`)
-		piece.startSegmentId =
-			segmentIdMap.get(piece.startSegmentId) ||
-			getRandomIdAndWarn(`piece.startSegmentId=${piece.startSegmentId} of piece=${piece._id}`)
+		if (piece.startPartId) {
+			piece.startPartId =
+				partIdMap.get(piece.startPartId) ||
+				getRandomIdAndWarn(`piece.startPartId=${piece.startPartId} of piece=${piece._id}`)
+		}
+		if (piece.startSegmentId) {
+			piece.startSegmentId =
+				segmentIdMap.get(piece.startSegmentId) ||
+				getRandomIdAndWarn(`piece.startSegmentId=${piece.startSegmentId} of piece=${piece._id}`)
+		}
 		piece._id = getRandomId()
 		pieceIdMap.set(oldId, piece._id)
 	}
@@ -329,7 +334,8 @@ export async function handleRestorePlaylistSnapshot(
 			case ExpectedPackageDBType.ADLIB_PIECE:
 			case ExpectedPackageDBType.ADLIB_ACTION:
 			case ExpectedPackageDBType.BASELINE_ADLIB_PIECE:
-			case ExpectedPackageDBType.BASELINE_ADLIB_ACTION: {
+			case ExpectedPackageDBType.BASELINE_ADLIB_ACTION:
+			case ExpectedPackageDBType.BASELINE_PIECE: {
 				expectedPackage.pieceId =
 					pieceIdMap.get(expectedPackage.pieceId) ||
 					getRandomIdAndWarn(`expectedPackage.pieceId=${expectedPackage.pieceId}`)
