@@ -4,7 +4,7 @@ sidebar_position: 3
 
 # Prompter
 
-See [Sofie views](sofie-views.mdx#prompter-view) for how to access the prompter page.
+See [Sofie views](sofie-views-and-screens.mdx#prompter-view) for how to access the prompter page.
 
 ![Prompter screen before the first Part is taken](/img/docs/main/features/prompter-view.png)
 
