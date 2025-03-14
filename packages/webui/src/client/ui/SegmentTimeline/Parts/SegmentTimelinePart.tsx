@@ -591,7 +591,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 								'segment-timeline__part__nextline__label--thin': innerPart.autoNext && !this.state.isLive,
 							})}
 						>
-							{innerPart.autoNext ? t('Auto') : this.state.isLive ? 'cc' : null}
+							{innerPart.autoNext ? t('Auto') : this.state.isLive ? t('Next') : null}
 							{isEndOfLoopingShow && <LoopingIcon />}
 						</div>
 					</div>
@@ -766,7 +766,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 											{this.props.autoNextPart || this.props.part.willProbablyAutoNext
 												? t('Auto')
 												: this.state.isNext
-												? 'dd'
+												? t('Next')
 												: null}
 										</React.Fragment>
 									)}
@@ -801,7 +801,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 										(!this.state.isNext && this.props.part.willProbablyAutoNext)
 											? t('Auto')
 											: this.state.isNext || this.props.isAfterLastValidInSegmentAndItsLive
-											? 'aa'
+											? t('Next')
 											: null}
 									</React.Fragment>
 								)}
