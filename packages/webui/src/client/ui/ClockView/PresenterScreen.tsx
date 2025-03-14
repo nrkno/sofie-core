@@ -461,24 +461,17 @@ function PresenterScreenContentDefaultLayout({
 								/>
 							</div>
 							<div className="presenter-screen__part__piece-countdown">
-								{currentSegment?.segmentTiming?.countdownType === CountdownType.SEGMENT_BUDGET_DURATION ? (
-									<CurrentPartOrSegmentRemaining
-										currentPartInstanceId={currentPartInstance.instance._id}
-										heavyClassName="overtime"
-									/>
-								) : (
-									<PieceCountdownContainer
-										partInstanceId={currentPartInstance.instance._id}
-										showStyleBaseId={currentShowStyleBaseId}
-										rundownIds={rundownIds}
-										partAutoNext={currentPartInstance.instance.part.autoNext || false}
-										partExpectedDuration={calculatePartInstanceExpectedDurationWithTransition(
-											currentPartInstance.instance
-										)}
-										partStartedPlayback={currentPartInstance.instance.timings?.plannedStartedPlayback}
-										playlistActivationId={playlist?.activationId}
-									/>
-								)}
+								<PieceCountdownContainer
+									partInstanceId={currentPartInstance.instance._id}
+									showStyleBaseId={currentShowStyleBaseId}
+									rundownIds={rundownIds}
+									partAutoNext={currentPartInstance.instance.part.autoNext || false}
+									partExpectedDuration={calculatePartInstanceExpectedDurationWithTransition(
+										currentPartInstance.instance
+									)}
+									partStartedPlayback={currentPartInstance.instance.timings?.plannedStartedPlayback}
+									playlistActivationId={playlist?.activationId}
+								/>
 							</div>
 							<div className="presenter-screen__part__part-countdown">
 								<Timediff time={currentPartOrSegmentCountdown} />
