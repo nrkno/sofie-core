@@ -109,18 +109,20 @@ $hold-status-color: $liveline-timecode-color;
 				&.notext {
 					background: $general-next-color;
 					height: 20px;
+					margin-top: 8vh;
 					text-shadow: 0px 0px 6px #000000;
 				}
 				.director-screen__body__segment__countdown {
 					position: absolute;
 					font-size: 110px;
 					top: 0;
-					right: 3vw;
+					right: 0px;
 					height: 100%;
 					width: 20vw;
-					float: right;
-					text-align: left;
+					float: left;
+					text-align: right;
 					padding-left: 4vw;
+					padding-top: 6px;
 					color: #ff0;
 					background: linear-gradient(
 						90deg,
@@ -170,6 +172,7 @@ $hold-status-color: $liveline-timecode-color;
 				display: flex;
 				flex-direction: column;
 				text-align: left;
+				width: 87vw;
 
 				.director-screen__body__part__piece-name {
 					font-size: 13em;
@@ -269,6 +272,10 @@ $hold-status-color: $liveline-timecode-color;
 				max-height: 50px;
 				z-index: 1;
 				font-stretch: 25;
+			}
+			.director-screen__body__part__next-icon--notext,
+			.director-screen__body__part__auto-icon--notext {
+				margin-top: 4vh !important; /* Override the default -50px when notext is true */
 			}
 		}
 

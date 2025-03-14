@@ -157,7 +157,7 @@ function getShowStyleBaseIdSegmentPartUi(
 	}
 }
 
-export const getDirectorScreenReactive = (props: DirectorScreenProps): DirectorScreenTrackedProps => {
+const getDirectorScreenReactive = (props: DirectorScreenProps): DirectorScreenTrackedProps => {
 	const studio = UIStudios.findOne(props.studioId)
 
 	let playlist: DBRundownPlaylist | undefined
@@ -269,7 +269,7 @@ export const getDirectorScreenReactive = (props: DirectorScreenProps): DirectorS
 	}
 }
 
-export function useDirectorScreenSubscriptions(props: DirectorScreenProps): void {
+function useDirectorScreenSubscriptions(props: DirectorScreenProps): void {
 	useSubscription(MeteorPubSub.uiStudio, props.studioId)
 
 	const playlist = useTracker(
@@ -442,7 +442,7 @@ function DirectorScreenRender({
 												width: '90vw',
 												fontFamily: 'Roboto Flex',
 												fontSize: '1.4em',
-												minFontWidth: 20,
+												minFontWidth: 32,
 												maxFontWidth: 90,
 												minLetterSpacing: 2,
 											}}
@@ -502,9 +502,23 @@ function DirectorScreenRender({
 						{nextPartInstance && nextShowStyleBaseId ? (
 							<>
 								{currentPartInstance && currentPartInstance.instance.part.autoNext ? (
-									<span className="director-screen__body__part__auto-icon">AUTO</span>
+									<span
+										className={ClassNames('director-screen__body__part__auto-icon', {
+											'director-screen__body__part__auto-icon--notext':
+												nextSegment === undefined || nextSegment?._id === currentSegment?._id,
+										})}
+									>
+										AUTO
+									</span>
 								) : (
-									<span className="director-screen__body__part__next-icon">NEXT</span>
+									<span
+										className={ClassNames('director-screen__body__part__next-icon', {
+											'director-screen__body__part__next-icon--notext':
+												nextSegment === undefined || nextSegment?._id === currentSegment?._id,
+										})}
+									>
+										NEXT
+									</span>
 								)}
 								<div className="director-screen__body__part__piece-icon">
 									<PieceIconContainer
@@ -528,7 +542,7 @@ function DirectorScreenRender({
 													width: '90vw',
 													fontFamily: 'Roboto Flex',
 													fontSize: '1.4em',
-													minFontWidth: 20,
+													minFontWidth: 32,
 													maxFontWidth: 90,
 													minLetterSpacing: 2,
 												}}
