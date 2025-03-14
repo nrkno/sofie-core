@@ -411,13 +411,15 @@ function DirectorScreenRender({
 								minLetterSpacing={0}
 								hardCutText={true}
 							/>
-							<span className="director-screen__body__segment__countdown">
-								<CurrentPartOrSegmentRemaining
-									currentPartInstanceId={playlist.currentPartInfo?.partInstanceId || null}
-									heavyClassName="overtime"
-									preferSegmentTime={true}
-								/>
-							</span>
+							{playlist.currentPartInfo?.partInstanceId ? (
+								<span className="director-screen__body__segment__countdown">
+									<CurrentPartOrSegmentRemaining
+										currentPartInstanceId={playlist.currentPartInfo?.partInstanceId || null}
+										heavyClassName="overtime"
+										preferSegmentTime={true}
+									/>
+								</span>
+							) : null}
 						</div>
 						{currentPartInstance && currentShowStyleBaseId ? (
 							<>
@@ -444,7 +446,7 @@ function DirectorScreenRender({
 												fontSize: '1.4em',
 												minFontWidth: 32,
 												maxFontWidth: 90,
-												minLetterSpacing: 2,
+												minLetterSpacing: 0,
 											}}
 										/>
 									</div>
@@ -544,7 +546,7 @@ function DirectorScreenRender({
 													fontSize: '1.4em',
 													minFontWidth: 32,
 													maxFontWidth: 90,
-													minLetterSpacing: 2,
+													minLetterSpacing: 0,
 												}}
 											/>
 										) : (

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, CSSProperties } from 'react'
+import React, { useEffect, useRef, CSSProperties, useLayoutEffect } from 'react'
 
 export interface AdjustLabelFitProps {
 	/**
@@ -82,6 +82,8 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 }) => {
 	const labelRef = useRef<HTMLSpanElement>(null)
 	const containerRef = useRef<HTMLDivElement>(null)
+	const prevLabelRef = useRef<string>(label)
+
 	// If label is longer than 140 characters, cut it off
 	if (label.length > 140) {
 		label = label.slice(0, 137) + '...'
@@ -106,6 +108,21 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 		...(fontSizeValue ? { fontSize: fontSizeValue } : {}),
 	}
 
+	const resetLabelStyles = () => {
+		if (labelRef.current) {
+			labelRef.current.style.letterSpacing = '0px'
+			labelRef.current.style.fontVariationSettings = ''
+			labelRef.current.textContent = label
+			labelRef.current.style.wordBreak = 'normal'
+			labelRef.current.style.whiteSpace = 'nowrap'
+
+			// Remove any child spans if they were added in previous calculations
+			while (labelRef.current.firstChild) {
+				labelRef.current.removeChild(labelRef.current.firstChild)
+			}
+		}
+	}
+
 	const adjustTextToFit = () => {
 		const labelElement = labelRef.current
 		const containerElement = containerRef.current
@@ -114,7 +131,8 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 
 		const DEFAULT_WIDTH = 100
 		const DEFAULT_OPTICAL_SIZE = 10
-		labelElement.style.letterSpacing = '0px'
+
+		resetLabelStyles()
 
 		// Apply the new width setting
 		labelElement.style.fontVariationSettings = `'opsz' ${DEFAULT_OPTICAL_SIZE}, 'wdth' ${DEFAULT_WIDTH}`
@@ -135,9 +153,7 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 		// Force reflow to ensure measurements are accurate
 		void labelElement.offsetWidth
 
-		// Measure the container and text widths
 		const containerWidth = containerElement.clientWidth
-
 		// Remeasure after font size adjustment
 		void labelElement.offsetWidth
 		const newTextWidth = labelElement.getBoundingClientRect().width
@@ -200,7 +216,18 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 		}
 	}
 
+	// Synchronous layout calculation before paint
+	useLayoutEffect(() => {
+		// Check if label has changed
+		if (prevLabelRef.current !== label) {
+			prevLabelRef.current = label
+			resetLabelStyles()
+			adjustTextToFit()
+		}
+	}, [label])
+
 	useEffect(() => {
+		// Initial adjustment
 		const adjustmentTimer = requestAnimationFrame(() => {
 			adjustTextToFit()
 		})
@@ -210,27 +237,31 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 		const handleResize = () => {
 			cancelAnimationFrame(resizeTimer)
 			resizeTimer = requestAnimationFrame(() => {
-				// Reset all styles first before recalculating
-				if (labelRef.current) {
-					labelRef.current.style.letterSpacing = '0px'
-					labelRef.current.style.fontVariationSettings = ''
-					labelRef.current.textContent = label
-					// Reset the word break and white space properties
-					labelRef.current.style.wordBreak = 'normal'
-					labelRef.current.style.whiteSpace = 'nowrap'
-				}
+				resetLabelStyles()
 				adjustTextToFit()
 			})
 		}
 
+		// Properties change
+		const handlePropsChange = () => {
+			resetLabelStyles()
+			adjustTextToFit()
+		}
+
 		// Adjust on window resize
 		window.addEventListener('resize', handleResize)
+
+		// Run adjustment when width or font settings change
+		if (width || fontFamily || fontSize || minFontWidth || maxFontWidth || minLetterSpacing) {
+			handlePropsChange()
+		}
+
 		return () => {
 			window.removeEventListener('resize', handleResize)
 			cancelAnimationFrame(adjustmentTimer)
-			cancelAnimationFrame(resizeTimer)
+			if (resizeTimer) cancelAnimationFrame(resizeTimer)
 		}
-	}, [label, width, fontFamily, fontSize, minFontWidth, maxFontWidth, minLetterSpacing])
+	}, [width, fontFamily, fontSize, minFontWidth, maxFontWidth, minLetterSpacing])
 
 	return (
 		<div ref={containerRef} className={`adjust-label-fit ${className}`} style={finalContainerStyle}>
