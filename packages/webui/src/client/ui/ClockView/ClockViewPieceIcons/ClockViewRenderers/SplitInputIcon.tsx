@@ -21,7 +21,7 @@ export default class SplitInputIcon extends React.Component<{
 				return (
 					<React.Fragment>
 						{label && label[1] ? label[1].substr(0, 1).toUpperCase() + ' ' : ''}
-						<tspan style={{ fontFamily: 'Roboto', fontWeight: 'normal' }}>{label ? label[2] : ''}</tspan>
+						<span className="camera">{label ? label[2] : ''}</span>
 					</React.Fragment>
 				)
 			} else {
@@ -53,13 +53,7 @@ export default class SplitInputIcon extends React.Component<{
 
 	render(): JSX.Element {
 		return (
-			<svg
-				className="clock-view-piece-icon"
-				version="1.1"
-				viewBox="0 0 126.5 89"
-				xmlns="http://www.w3.org/2000/svg"
-				preserveAspectRatio="none"
-			>
+			<div className="clock-view-piece-icon">
 				<rect width="126.5" height="44.5" className={classNames('upper', this.getLeftSourceType(this.props.piece))} />
 				<rect
 					width="126.5"
@@ -67,21 +61,8 @@ export default class SplitInputIcon extends React.Component<{
 					y="44.5"
 					className={classNames('lower', this.getRightSourceType(this.props.piece))}
 				/>
-				{!this.props.hideLabel && (
-					<text
-						x="63.25"
-						y="71.513954"
-						textAnchor="middle"
-						textLength="126.5"
-						className="piece-icon-text"
-						xmlSpace="preserve"
-					>
-						<tspan lengthAdjust="spacing" className="label">
-							{this.getCameraLabel(this.props.piece)}
-						</tspan>
-					</text>
-				)}
-			</svg>
+				{!this.props.hideLabel && <span className="piece-icon-text">{this.getCameraLabel(this.props.piece)}</span>}
+			</div>
 		)
 	}
 }

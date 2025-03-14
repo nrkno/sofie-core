@@ -38,17 +38,13 @@ $letter-spacing: 0.02em;
 	}
 
 	.live-speak {
-		fill: url(#background-gradient);
-	}
+		--vt-color-light: color-mix(in srgb, var(--segment-layer-background-#{'vt'}) 90%, white);
+		--camera-color-light: color-mix(in srgb, var(--segment-layer-background-#{'camera'}) 90%, white);
 
-	// Gradient styles for live-speak
-	#background-gradient {
-		.stop1 {
-			stop-color: #954c4c;
-		}
-		.stop2 {
-			stop-color: #4c954c;
-		}
+		background-image: linear-gradient(to bottom, var(--vt-color-light) 50%, var(--camera-color-light) 50%);
+		display: flex;
+		justify-content: center;
+		align-items: center;
 	}
 
 	// Split view specific styles
