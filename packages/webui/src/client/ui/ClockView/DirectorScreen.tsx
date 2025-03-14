@@ -436,7 +436,7 @@ function DirectorScreenRender({
 											label: '',
 											width: '90vw',
 											fontFamily: 'Roboto Flex',
-											fontSize: '2em',
+											fontSize: '1.6em',
 											minFontWidth: 20,
 											maxFontWidth: 90,
 											minLetterSpacing: 2,
@@ -477,6 +477,7 @@ function DirectorScreenRender({
 						<div
 							className={ClassNames('director-screen__body__segment-name', {
 								next: nextSegment !== undefined && nextSegment?._id !== currentSegment?._id,
+								notext: nextSegment === undefined || nextSegment?._id === currentSegment?._id,
 							})}
 						>
 							{nextSegment?._id !== currentSegment?._id ? (
@@ -495,9 +496,9 @@ function DirectorScreenRender({
 						{nextPartInstance && nextShowStyleBaseId ? (
 							<>
 								{currentPartInstance && currentPartInstance.instance.part.autoNext ? (
-									<span className="director-screen__body__part__auto">AUTO</span>
+									<span className="director-screen__body__part__auto-icon">AUTO</span>
 								) : (
-									<span className="director-screen__body__part__next">NEXT</span>
+									<span className="director-screen__body__part__next-icon">NEXT</span>
 								)}
 								<div className="director-screen__body__part__piece-icon">
 									<PieceIconContainer
@@ -519,7 +520,7 @@ function DirectorScreenRender({
 												label: '',
 												width: '90vw',
 												fontFamily: 'Roboto Flex',
-												fontSize: '2em',
+												fontSize: '1.6em',
 												minFontWidth: 20,
 												maxFontWidth: 90,
 												minLetterSpacing: 2,

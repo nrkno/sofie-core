@@ -15,19 +15,20 @@ $hold-status-color: $liveline-timecode-color;
 
 .director-screen {
 	font-family: Roboto Flex;
+	font-style: normal;
 
 	.director-screen__top {
 		position: fixed;
 		top: 0;
 		left: 0;
 		right: 0;
-		height: 14vh;
+		height: 16vh;
 		padding-left: 10px;
 		display: flex;
 		flex-direction: row;
 		justify-content: space-between;
 		align-items: center;
-		background-color: #3F3F3F;
+		background-color: #3f3f3f;
 		color: #888;
 		font-size: 2em;
 		padding: 0 0.2em;
@@ -35,7 +36,7 @@ $hold-status-color: $liveline-timecode-color;
 		.director-screen__top__planned-end {
 			text-align: left;
 		}
-		
+
 		.director-screen__top__planned-to {
 			text-align: left;
 		}
@@ -46,14 +47,11 @@ $hold-status-color: $liveline-timecode-color;
 		.director-screen__top__over-under {
 			margin-left: 120px;
 		}
-
-
 	}
-
 
 	.director-screen__body {
 		position: fixed;
-		top: 14vh;
+		top: 16vh;
 		bottom: 0;
 		left: 0;
 		right: 0;
@@ -83,9 +81,6 @@ $hold-status-color: $liveline-timecode-color;
 				vertical-align: middle;
 				color: #fff;
 				position: relative;
-				/* PartNameWide */
-				font-family: 'Roboto Flex';
-				font-style: normal;
 				font-weight: 700;
 				font-size: 90px;
 				line-height: 110%;
@@ -93,35 +88,47 @@ $hold-status-color: $liveline-timecode-color;
 				letter-spacing: 0.01em;
 				font-feature-settings: 'pnum' on, 'lnum' on;
 
-				color: #FFFFFF;
+				color: #ffffff;
 				font-stretch: 100;
-				font-variation-settings: 'GRAD' -90, 'XOPQ' 96, 'XTRA' 372, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738, 'YTLC' 514, 'YTUC' 712, 'slnt' 0, 'opsz' 38;
+				font-variation-settings: 'GRAD' -90, 'XOPQ' 96, 'XTRA' 372, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738,
+					'YTLC' 514, 'YTUC' 712, 'slnt' 0, 'opsz' 38;
 
 				text-shadow: 0px 0px 4px rgba(0, 0, 0, 0.5);
 				box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.5);
-				z-index: 1; 
+				z-index: 1;
 
 				&.live {
 					background: $general-live-color;
 					text-shadow: 0px 0px 6px #000000;
 				}
-				
+
 				&.next {
 					background: $general-next-color;
 					text-shadow: 0px 0px 6px #000000;
 				}
+				&.notext {
+					background: $general-next-color;
+					height: 20px;
+					text-shadow: 0px 0px 6px #000000;
+				}
 				.director-screen__body__segment__countdown {
 					position: absolute;
-					font-size: 120px;
+					font-size: 110px;
 					top: 0;
 					right: 0;
 					height: 100%;
 					width: 20vw;
-					color: #FF5218;
+					color: #ff5218;
 					float: right;
 					text-align: right;
 					padding-right: 10px;
-					background: linear-gradient(90deg, rgba(223, 0, 0, 0) 0%, #DF0000 7.86%, rgba(116, 0, 0, 0.808) 16.21%, rgba(0, 0, 0, 0.6) 24.94%);		
+					background: linear-gradient(
+						90deg,
+						rgba(223, 0, 0, 0) 0%,
+						#df0000 7.86%,
+						rgba(116, 0, 0, 0.808) 16.21%,
+						rgba(0, 0, 0, 0.6) 24.94%
+					);
 				}
 			}
 
@@ -219,29 +226,33 @@ $hold-status-color: $liveline-timecode-color;
 				}
 			}
 
-			.director-screen__body__part__next {
+			.director-screen__body__part__next-icon {
+				clip-path: polygon(0 0, 85% 0, 100% 50%, 85% 100%, 0 100%);
+				font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738,
+					'YTLC' 548, 'YTUC' 712, 'slnt' 0, 'opsz' 3;
+			}
+			.director-screen__body__part__auto-icon {
+				border-radius: 0 25px 25px 0;
+				font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738,
+					'YTLC' 548, 'YTUC' 712, 'slnt' -7, 'opsz' 3;
+			}
+			.director-screen__body__part__next-icon,
+			.director-screen__body__part__auto-icon {
 				background-color: $general-next-color;
 				position: relative;
-				clip-path: polygon(0 0, 85% 0, 100% 50%, 85% 100%, 0 100%);
-			}
-			.director-screen__body__part__auto {
-				background-color: #DF0000;
-				position: relative;
-				border-radius: 0 25px 25px 0;
-			}
-			
-			.director-screen__body__part__next,
-			.director-screen__body__part__auto {
 				grid-row: 1;
 				grid-column: 1;
 				margin-top: -50px;
-				text-align: center;
-				font-size: 1.5rem;
+				text-align: left;
+				font-size: 2.2rem;
+				font-weight: 900;
 				color: #000;
-				padding-top: 10px;
-				max-width: 100px;
+				padding-top: 5px;
+				padding-left: 8px;
+				max-width: 120px;
 				max-height: 50px;
 				z-index: 1;
+				font-stretch: 25;
 			}
 		}
 
