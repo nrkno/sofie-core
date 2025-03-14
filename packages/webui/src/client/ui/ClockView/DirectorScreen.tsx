@@ -12,9 +12,9 @@ import { PieceIconContainer } from './ClockViewPieceIcons/ClockViewPieceIcon'
 import { PieceNameContainer } from './ClockViewPieceIcons/ClockViewPieceName'
 import { Timediff } from './Timediff'
 import { RundownUtils } from '../../lib/rundown'
-import { CountdownType, PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { PieceCountdownContainer } from '../PieceIcons/PieceCountdown'
+import { PieceFreezeContainer } from './ClockViewPieceIcons/ClockViewFreezeCount'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import {
 	RundownId,
@@ -348,8 +348,8 @@ function DirectorScreenRender({
 	useSetDocumentClass('dark', 'xdark')
 
 	if (playlist && playlistId && segments) {
-		// const currentPartOrSegmentCountdown =
-		// 	timingDurations.remainingBudgetOnCurrentSegment ?? timingDurations.remainingTimeOnCurrentPart ?? 0
+		const currentPartOrSegmentCountdown =
+			timingDurations.remainingBudgetOnCurrentSegment ?? timingDurations.remainingTimeOnCurrentPart ?? 0
 
 		const expectedStart = PlaylistTiming.getExpectedStart(playlist.timing) || 0
 		const expectedEnd = PlaylistTiming.getExpectedEnd(playlist.timing)
@@ -451,13 +451,9 @@ function DirectorScreenRender({
 										/>
 									</div>
 									<div className="director-screen__body__part__piece-countdown">
-										{currentSegment?.segmentTiming?.countdownType === CountdownType.SEGMENT_BUDGET_DURATION ? (
-											<CurrentPartOrSegmentRemaining
-												currentPartInstanceId={currentPartInstance.instance._id}
-												heavyClassName="overtime"
-											/>
-										) : (
-											<PieceCountdownContainer
+										<Timediff time={currentPartOrSegmentCountdown} />
+										<span className="freeze-counter">
+											<PieceFreezeContainer
 												partInstanceId={currentPartInstance.instance._id}
 												showStyleBaseId={currentShowStyleBaseId}
 												rundownIds={rundownIds}
@@ -468,7 +464,7 @@ function DirectorScreenRender({
 												partStartedPlayback={currentPartInstance.instance.timings?.plannedStartedPlayback}
 												playlistActivationId={playlist?.activationId}
 											/>
-										)}
+										</span>
 									</div>
 								</div>
 							</>

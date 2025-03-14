@@ -200,7 +200,7 @@ $hold-status-color: $liveline-timecode-color;
 				.director-screen__body__part__piece-countdown {
 					grid-row: inherit;
 					text-align: left;
-					font-size: 13em; // Allow a fallback for CasparCG
+					font-size: 13em;
 					font-size: #{'min(13em, 8vw)'};
 					padding: 0 0.2em;
 					line-height: 1em;
@@ -209,11 +209,16 @@ $hold-status-color: $liveline-timecode-color;
 						color: $general-late-color;
 					}
 
-					> img.freeze-icon {
-						width: 0.9em;
-						height: 0.9em;
-						margin-left: -0.05em;
-						margin-top: -0.05em;
+					.freeze-counter {
+						font-size: 3.3rem;
+						color: #00bfff;
+						margin-left: 4vw;
+					}
+					img.freeze-counter-icon {
+						width: 1.4em;
+						height: 1.4em;
+						vertical-align: middle;
+						display: inline-block;
 					}
 				}
 			}

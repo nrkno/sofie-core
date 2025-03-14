@@ -2,7 +2,7 @@ import { useSubscription, useTracker } from '../../../lib/ReactMeteorData/ReactM
 import { SourceLayerType, VTContent } from '@sofie-automation/blueprints-integration'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { findPieceInstanceToShow } from './utils'
-import { Timediff } from '../../ClockView/Timediff'
+import { Timediff } from '../Timediff'
 import { getCurrentTime } from '../../../lib/systemTime'
 import {
 	PartInstanceId,
@@ -33,7 +33,7 @@ const supportedLayers = new Set([
 	SourceLayerType.CAMERA,
 ])
 
-export function PieceCountdownContainer(props: Readonly<IPropsHeader>): JSX.Element | null {
+export function PieceFreezeContainer(props: Readonly<IPropsHeader>): JSX.Element | null {
 	const { pieceInstance, sourceLayer } = useTracker(
 		() => findPieceInstanceToShow(props, supportedLayers),
 		[props.partInstanceId, props.showStyleBaseId],
@@ -69,7 +69,7 @@ export function PieceCountdownContainer(props: Readonly<IPropsHeader>): JSX.Elem
 			return (
 				<>
 					<Timediff time={freezeCountdown} />
-					<img className="freeze-icon" src="/icons/freeze-presenter-screen.svg" />
+					<img className="freeze-counter-icon" src="/icons/freeze-presenter-screen.svg" />
 				</>
 			)
 		}
