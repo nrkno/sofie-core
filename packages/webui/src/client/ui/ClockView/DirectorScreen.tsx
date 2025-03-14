@@ -405,7 +405,7 @@ function DirectorScreenRender({
 								label={currentSegment?.name || ''}
 								width={'80vw'}
 								fontFamily="Roboto Flex"
-								fontSize="0.8em"
+								fontSize="0.7em"
 								minFontWidth={70}
 								maxFontWidth={90}
 								minLetterSpacing={0}
@@ -429,43 +429,45 @@ function DirectorScreenRender({
 										playlistActivationId={playlist?.activationId}
 									/>
 								</div>
-								<div className="director-screen__body__part__piece-name">
-									<PieceNameContainer
-										partName={currentPartInstance.instance.part.title}
-										partInstanceId={currentPartInstance.instance._id}
-										showStyleBaseId={currentShowStyleBaseId}
-										rundownIds={rundownIds}
-										playlistActivationId={playlist?.activationId}
-										autowidth={{
-											label: '',
-											width: '90vw',
-											fontFamily: 'Roboto Flex',
-											fontSize: '1.6em',
-											minFontWidth: 20,
-											maxFontWidth: 90,
-											minLetterSpacing: 2,
-										}}
-									/>
-								</div>
-								<div className="director-screen__body__part__piece-countdown">
-									{currentSegment?.segmentTiming?.countdownType === CountdownType.SEGMENT_BUDGET_DURATION ? (
-										<CurrentPartOrSegmentRemaining
-											currentPartInstanceId={currentPartInstance.instance._id}
-											heavyClassName="overtime"
-										/>
-									) : (
-										<PieceCountdownContainer
+								<div className="director-screen__body__part__piece-content">
+									<div className="director-screen__body__part__piece-name">
+										<PieceNameContainer
+											partName={currentPartInstance.instance.part.title}
 											partInstanceId={currentPartInstance.instance._id}
 											showStyleBaseId={currentShowStyleBaseId}
 											rundownIds={rundownIds}
-											partAutoNext={currentPartInstance.instance.part.autoNext || false}
-											partExpectedDuration={calculatePartInstanceExpectedDurationWithTransition(
-												currentPartInstance.instance
-											)}
-											partStartedPlayback={currentPartInstance.instance.timings?.plannedStartedPlayback}
 											playlistActivationId={playlist?.activationId}
+											autowidth={{
+												label: '',
+												width: '90vw',
+												fontFamily: 'Roboto Flex',
+												fontSize: '1.4em',
+												minFontWidth: 20,
+												maxFontWidth: 90,
+												minLetterSpacing: 2,
+											}}
 										/>
-									)}
+									</div>
+									<div className="director-screen__body__part__piece-countdown">
+										{currentSegment?.segmentTiming?.countdownType === CountdownType.SEGMENT_BUDGET_DURATION ? (
+											<CurrentPartOrSegmentRemaining
+												currentPartInstanceId={currentPartInstance.instance._id}
+												heavyClassName="overtime"
+											/>
+										) : (
+											<PieceCountdownContainer
+												partInstanceId={currentPartInstance.instance._id}
+												showStyleBaseId={currentShowStyleBaseId}
+												rundownIds={rundownIds}
+												partAutoNext={currentPartInstance.instance.part.autoNext || false}
+												partExpectedDuration={calculatePartInstanceExpectedDurationWithTransition(
+													currentPartInstance.instance
+												)}
+												partStartedPlayback={currentPartInstance.instance.timings?.plannedStartedPlayback}
+												playlistActivationId={playlist?.activationId}
+											/>
+										)}
+									</div>
 								</div>
 							</>
 						) : expectedStart ? (
@@ -489,7 +491,7 @@ function DirectorScreenRender({
 									label={nextSegment?.name || ''}
 									width={'80vw'}
 									fontFamily="Roboto Flex"
-									fontSize="0.8em"
+									fontSize="0.7em"
 									minFontWidth={70}
 									maxFontWidth={90}
 									minLetterSpacing={0}
@@ -512,27 +514,29 @@ function DirectorScreenRender({
 										playlistActivationId={playlist?.activationId}
 									/>
 								</div>
-								<div className="director-screen__body__part__piece-name">
-									{nextPartInstance && nextShowStyleBaseId && nextPartInstance.instance.part.title ? (
-										<PieceNameContainer
-											partName={nextPartInstance.instance.part.title}
-											partInstanceId={nextPartInstance.instance._id}
-											showStyleBaseId={nextShowStyleBaseId}
-											rundownIds={rundownIds}
-											playlistActivationId={playlist?.activationId}
-											autowidth={{
-												label: '',
-												width: '90vw',
-												fontFamily: 'Roboto Flex',
-												fontSize: '1.6em',
-												minFontWidth: 20,
-												maxFontWidth: 90,
-												minLetterSpacing: 2,
-											}}
-										/>
-									) : (
-										'_'
-									)}
+								<div className="director-screen__body__part__piece-content">
+									<div className="director-screen__body__part__piece-name">
+										{nextPartInstance && nextShowStyleBaseId && nextPartInstance.instance.part.title ? (
+											<PieceNameContainer
+												partName={nextPartInstance.instance.part.title}
+												partInstanceId={nextPartInstance.instance._id}
+												showStyleBaseId={nextShowStyleBaseId}
+												rundownIds={rundownIds}
+												playlistActivationId={playlist?.activationId}
+												autowidth={{
+													label: '',
+													width: '90vw',
+													fontFamily: 'Roboto Flex',
+													fontSize: '1.4em',
+													minFontWidth: 20,
+													maxFontWidth: 90,
+													minLetterSpacing: 2,
+												}}
+											/>
+										) : (
+											'_'
+										)}
+									</div>
 								</div>
 							</>
 						) : null}

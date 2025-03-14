@@ -69,7 +69,7 @@ $hold-status-color: $liveline-timecode-color;
 			grid-template:
 				24em
 				60em
-				30em / #{'min(13vw, 27vh)'} auto;
+				30em / min(13vw, 27vh) auto;
 			white-space: nowrap;
 
 			.director-screen__body__segment-name {
@@ -83,7 +83,7 @@ $hold-status-color: $liveline-timecode-color;
 				position: relative;
 				font-weight: 700;
 				font-size: 90px;
-				line-height: 110%;
+				line-height: 100%;
 				/* or 110px */
 				letter-spacing: 0.01em;
 				font-feature-settings: 'pnum' on, 'lnum' on;
@@ -115,20 +115,12 @@ $hold-status-color: $liveline-timecode-color;
 					position: absolute;
 					font-size: 110px;
 					top: 0;
-					right: 0;
+					right: 3vw;
 					height: 100%;
 					width: 20vw;
-					color: #ff5218;
 					float: right;
 					text-align: right;
 					padding-right: 10px;
-					background: linear-gradient(
-						90deg,
-						rgba(223, 0, 0, 0) 0%,
-						#df0000 7.86%,
-						rgba(116, 0, 0, 0.808) 16.21%,
-						rgba(0, 0, 0, 0.6) 24.94%
-					);
 				}
 			}
 
@@ -160,42 +152,54 @@ $hold-status-color: $liveline-timecode-color;
 				}
 			}
 
-			.director-screen__body__part__piece-name {
+			.director-screen__body__part__piece-content {
 				grid-row: 2;
 				grid-column: 2;
-				text-align: left;
-				font-size: 13em;
-				overflow: hidden;
-				white-space: nowrap;
-				padding-left: 0.2em;
-
 				display: flex;
-				align-items: top;
-				margin-top: 20px;
-
-				.director-screen__part__auto-next-icon {
-					display: block;
-					min-width: 1em;
-					max-width: 1em;
-				}
-			}
-
-			.director-screen__body__part__piece-countdown {
+				flex-direction: column;
 				text-align: left;
-				font-size: 13em; // Allow a fallback for CasparCG
-				font-size: #{'min(13em, 8vw)'};
-				padding: 0 0.2em;
-				line-height: 1em;
 
-				> .overtime {
-					color: $general-late-color;
+				.director-screen__body__part__piece-name {
+					font-size: 13em;
+					overflow: hidden;
+					white-space: nowrap;
+					padding-left: 0.2em;
+					margin-top: 20px;
+					display: flex;
+					align-items: top;
 				}
 
-				> img.freeze-icon {
-					width: 0.9em;
-					height: 0.9em;
-					margin-left: -0.05em;
-					margin-top: -0.05em;
+				.director-screen__body__part__piece-content .director-screen__body__part__piece-countdown {
+					font-size: 13em;
+					padding: 0 0.2em;
+					line-height: 1em;
+					margin-top: 10px;
+					color: $general-countdown-to-next-color;
+				}
+
+				/* Update next part styling if needed */
+				.director-screen__body__part--next-part .director-screen__body__part__piece-content {
+					grid-row: 2 / 4; /* Span both rows as in the original design */
+				}
+
+				.director-screen__body__part__piece-countdown {
+					grid-row: inherit;
+					text-align: left;
+					font-size: 13em; // Allow a fallback for CasparCG
+					font-size: #{'min(13em, 8vw)'};
+					padding: 0 0.2em;
+					line-height: 1em;
+
+					> .overtime {
+						color: $general-late-color;
+					}
+
+					> img.freeze-icon {
+						width: 0.9em;
+						height: 0.9em;
+						margin-left: -0.05em;
+						margin-top: -0.05em;
+					}
 				}
 			}
 
