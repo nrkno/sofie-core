@@ -54,7 +54,7 @@ export default class SplitInputIcon extends React.Component<{
 	render(): JSX.Element {
 		return (
 			<svg
-				className="piece-icon"
+				className="clock-view-piece-icon"
 				version="1.1"
 				viewBox="0 0 126.5 89"
 				xmlns="http://www.w3.org/2000/svg"

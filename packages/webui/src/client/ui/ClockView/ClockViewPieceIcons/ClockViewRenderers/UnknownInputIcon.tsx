@@ -1,6 +1,6 @@
 export function UnknownInputIcon(): JSX.Element {
 	return (
-		<div className="piece-icon">
+		<div className="clock-view-piece-icon">
 			<span className="unknown">?</span>
 		</div>
 	)

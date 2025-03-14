@@ -5,63 +5,63 @@ $text-shadow: 0 2px 9px rgba(0, 0, 0, 0.5);
 $letter-spacing: 0.02em;
 
 @mixin layer-type-backgrounds {
-  @each $layer-type in $layer-types {
-    &.#{$layer-type} {
-      // Background:
-      display: inline-block;
-      width: 207px;
-      height: 126px;
-      line-height: 126px;
+	@each $layer-type in $layer-types {
+		&.#{$layer-type} {
+			// Background:
+			display: inline-block;
+			width: 207px;
+			height: 126px;
+			line-height: 126px;
 
-      background-color: var(--segment-layer-background-#{$layer-type});
-      
-      &.second {
-        background-color: var(--segment-layer-background-#{$layer-type}--second);
-      }
-    }
-  }
+			background-color: var(--segment-layer-background-#{$layer-type});
+
+			&.second {
+				background-color: var(--segment-layer-background-#{$layer-type}--second);
+			}
+		}
+	}
 }
 
 // Base icon styles
-.piece-icon {
-    // Text styles:
-    fill: $text-color;
-    font-family: Roboto Flex;
-    filter: drop-shadow($text-shadow);
-    font-size: $font-size-base;
-    font-weight: 300;
-    letter-spacing: $letter-spacing;
+.clock-view-piece-icon {
+	// Text styles:
+	fill: $text-color;
+	font-family: Roboto Flex;
+	filter: drop-shadow($text-shadow);
+	font-size: $font-size-base;
+	font-weight: 300;
+	letter-spacing: $letter-spacing;
 
-  span {
-    // Common styles
-    @include layer-type-backgrounds; // Apply to all span elements that have layer type classes
-  }
+	span {
+		// Common styles
+		@include layer-type-backgrounds; // Apply to all span elements that have layer type classes
+	}
 
-  .live-speak {
-    fill: url(#background-gradient);
-  }
+	.live-speak {
+		fill: url(#background-gradient);
+	}
 
-  // Gradient styles for live-speak
-  #background-gradient {
-    .stop1 {
-      stop-color: #954c4c;
-    }
-    .stop2 {
-      stop-color: #4c954c;
-    }
-  }
+	// Gradient styles for live-speak
+	#background-gradient {
+		.stop1 {
+			stop-color: #954c4c;
+		}
+		.stop2 {
+			stop-color: #4c954c;
+		}
+	}
 
-  // Split view specific styles
-  .upper, .lower {
-    
-    &.camera {
-      @include item-type-colors-svg();
-    }
-    &.remote {
-      @include item-type-colors-svg();
-    }
-    &.remote.second {
-      @include item-type-colors-svg();
-    }
-  }
+	// Split view specific styles
+	.upper,
+	.lower {
+		&.camera {
+			@include item-type-colors-svg();
+		}
+		&.remote {
+			@include item-type-colors-svg();
+		}
+		&.remote.second {
+			@include item-type-colors-svg();
+		}
+	}
 }
