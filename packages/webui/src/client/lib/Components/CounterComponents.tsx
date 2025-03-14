@@ -1,3 +1,4 @@
+import Moment from 'react-moment'
 import { RundownUtils } from '../rundown'
 
 interface OverUnderProps {
@@ -17,7 +18,7 @@ export const OverUnderClockComponent = (props: OverUnderProps): JSX.Element => {
 export const PlannedEndComponent = (props: OverUnderProps): JSX.Element => {
 	return (
 		<span className="counter-component__planned-end">
-			{RundownUtils.formatTimeToTimecode({ frameRate: 25 }, props.value, false, false, true)}
+			<Moment interval={0} format="HH:mm:ss" date={props.value} />
 		</span>
 	)
 }
@@ -25,15 +26,15 @@ export const PlannedEndComponent = (props: OverUnderProps): JSX.Element => {
 export const TimeToPlannedEndComponent = (props: OverUnderProps): JSX.Element => {
 	return (
 		<span className="counter-component__time-to-planned-end">
-			{RundownUtils.formatTimeToTimecode({ frameRate: 25 }, props.value, true)}
+			{RundownUtils.formatDiffToTimecode(props.value, true, true, true)}
 		</span>
 	)
 }
 
-export const TimesSincePlannedEndComponent = (props: OverUnderProps): JSX.Element => {
+export const TimeSincePlannedEndComponent = (props: OverUnderProps): JSX.Element => {
 	return (
 		<span className="counter-component__time-since-planned-end">
-			{RundownUtils.formatTimeToTimecode({ frameRate: 25 }, props.value, true, false, true)}
+			{RundownUtils.formatDiffToTimecode(props.value, true, true, true)}
 		</span>
 	)
 }

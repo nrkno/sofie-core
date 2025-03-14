@@ -39,7 +39,7 @@ import { CurrentPartOrSegmentRemaining } from '../RundownView/RundownTiming/Curr
 import {
 	OverUnderClockComponent,
 	PlannedEndComponent,
-	TimesSincePlannedEndComponent,
+	TimeSincePlannedEndComponent,
 	TimeToPlannedEndComponent,
 } from '../../lib/Components/CounterComponents'
 import { AdjustLabelFit } from '../util/AdjustLabelFit'
@@ -351,33 +351,37 @@ function DirectorScreenRender({
 		// const currentPartOrSegmentCountdown =
 		// 	timingDurations.remainingBudgetOnCurrentSegment ?? timingDurations.remainingTimeOnCurrentPart ?? 0
 
-		const expectedStart = PlaylistTiming.getExpectedStart(playlist.timing)
-		const expectedEnd = PlaylistTiming.getExpectedEnd(playlist.timing) || 0
+		const expectedStart = PlaylistTiming.getExpectedStart(playlist.timing) || 0
+		const expectedEnd = PlaylistTiming.getExpectedEnd(playlist.timing)
+		const expectedDuration = PlaylistTiming.getExpectedDuration(playlist.timing) || 0
+		const now = timingDurations.currentTime ?? getCurrentTime()
 
 		const overUnderClock = getPlaylistTimingDiff(playlist, timingDurations) ?? 0
 
 		return (
 			<div className="director-screen">
 				<div className="director-screen__top">
-					<div className="director-screen__top__planned-end">
-						<div>
-							<PlannedEndComponent value={expectedEnd} />
+					{expectedEnd ? (
+						<div className="director-screen__top__planned-end">
+							<div>
+								<PlannedEndComponent value={expectedEnd} />
+							</div>
+							PLANNED END
 						</div>
-						PLANNED END
-					</div>
-					{expectedEnd - overUnderClock < 0 ? (
+					) : null}
+					{expectedEnd ? (
 						<div>
 							<div>
-								<TimeToPlannedEndComponent value={expectedEnd - overUnderClock} />
+								<TimeToPlannedEndComponent value={now - expectedEnd} />
 							</div>
 							<span className="director-screen__top__planned-to">TIME TO PLANNED END</span>
 						</div>
 					) : (
 						<div>
 							<div>
-								<TimesSincePlannedEndComponent value={expectedEnd - overUnderClock} />
+								<TimeSincePlannedEndComponent value={getCurrentTime() - (expectedStart + expectedDuration)} />
+								<span className="director-screen__top__planned-since">TIME SINCE PLANNED END</span>
 							</div>
-							<span className="director-screen__top__planned-since">TIME SINCE PLANNED END</span>
 						</div>
 					)}
 					<div>
