@@ -184,7 +184,7 @@ $hold-status-color: $liveline-timecode-color;
 					align-items: top;
 				}
 
-				.director-screen__body__part__piece-content .director-screen__body__part__piece-countdown {
+				.director-screen__body__part__piece-content {
 					font-size: 13em;
 					padding: 0 0.2em;
 					line-height: 1em;
@@ -200,8 +200,7 @@ $hold-status-color: $liveline-timecode-color;
 				.director-screen__body__part__piece-countdown {
 					grid-row: inherit;
 					text-align: left;
-					font-size: 13em;
-					font-size: #{'min(13em, 8vw)'};
+					font-size: 16em;
 					padding: 0 0.2em;
 					line-height: 1em;
 
@@ -210,13 +209,13 @@ $hold-status-color: $liveline-timecode-color;
 					}
 
 					.freeze-counter {
-						font-size: 3.3rem;
 						color: #00bfff;
 						margin-left: 4vw;
 					}
 					img.freeze-counter-icon {
-						width: 1.4em;
-						height: 1.4em;
+						margin-top: -0.3em;
+						width: 1em;
+						height: 1em;
 						vertical-align: middle;
 						display: inline-block;
 					}
