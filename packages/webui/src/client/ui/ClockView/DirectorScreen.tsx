@@ -453,7 +453,10 @@ function DirectorScreenRender({
 										/>
 									</div>
 									<div className="director-screen__body__part__piece-countdown">
-										<Timediff time={currentPartOrSegmentCountdown} />
+										<CurrentPartOrSegmentRemaining
+											currentPartInstanceId={playlist.currentPartInfo?.partInstanceId ?? null}
+											heavyClassName="overtime"
+										/>{' '}
 										<span className="freeze-counter">
 											<PieceFreezeContainer
 												partInstanceId={currentPartInstance.instance._id}
