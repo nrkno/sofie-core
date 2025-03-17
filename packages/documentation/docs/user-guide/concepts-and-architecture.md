@@ -82,7 +82,7 @@ The AdLib pieces are Pieces that isn't programmed to fire at a specific time, bu
 
 The AdLib pieces can either come from the currently playing Part, or it could be _global AdLibs_ that are available throughout the show.
 
-An AdLib isn't added to the Part in the GUI until it starts playing, instead you find it in the [Shelf](features/sofie-views.mdx#shelf).
+An AdLib isn't added to the Part in the GUI until it starts playing, instead you find it in the [Shelf](features/sofie-views-and-screens.mdx#shelf).
 
 ## Buckets
 
@@ -94,7 +94,7 @@ The ingest happens via the `getAdlibItem` method: [https://github.com/nrkno/sofi
 
 ## Views
 
-Being a web-based system, Sofie has a number of customisable, user-facing web [views](features/sofie-views.mdx) used for control and monitoring.
+Being a web-based system, Sofie has a number of customisable, user-facing web [views](features/sofie-views-and-screens.mdx) used for control and monitoring.
 
 ## Blueprints
 
