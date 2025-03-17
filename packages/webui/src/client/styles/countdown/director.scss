@@ -24,13 +24,14 @@ $hold-status-color: $liveline-timecode-color;
 		right: 0;
 		height: 19vh;
 		padding-left: 10px;
+		padding-top: 0px;
 		display: flex;
 		flex-direction: row;
 		justify-content: space-between;
 		align-items: center;
 		background-color: #3f3f3f;
 		color: #888;
-		font-size: 2em;
+		font-size: 2.6em;
 		padding: 0 0.2em;
 
 		.director-screen__top__planned-end {
@@ -82,7 +83,7 @@ $hold-status-color: $liveline-timecode-color;
 				color: #fff;
 				position: relative;
 				font-weight: 700;
-				font-size: 90px;
+				font-size: 100px;
 				line-height: 110%;
 				height: 11vh;
 				/* or 110px */
