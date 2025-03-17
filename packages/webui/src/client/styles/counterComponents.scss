@@ -14,7 +14,6 @@
 .counter-component__over-under {
 	color: black;
 	text-align: right;
-	padding-bottom: 10px;
 
 	font-stretch: 57;
 	font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738, 'YTLC' 548,
@@ -28,6 +27,9 @@
 		min-width: 240px;
 		padding-left: 22px;
 		padding-right: 22px;
+		padding-top: 0px;
+		padding-bottom: 0px;
+		display: inline-block;
 	}
 	.over {
 		background-color: #ff5218;
@@ -37,6 +39,9 @@
 		min-width: 240px;
 		padding-left: 22px;
 		padding-right: 22px;
+		padding-top: 0px;
+		padding-bottom: 0px;
+		display: inline-block;
 	}
 }
 
