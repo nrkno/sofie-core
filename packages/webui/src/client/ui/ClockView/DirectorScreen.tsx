@@ -402,7 +402,7 @@ function DirectorScreenRender({
 								label={currentSegment?.name || ''}
 								width={'80vw'}
 								fontFamily="Roboto Flex"
-								fontSize="0.7em"
+								fontSize="0.9em"
 								minFontWidth={70}
 								maxFontWidth={100}
 								defaultWidth={90}
@@ -491,7 +491,7 @@ function DirectorScreenRender({
 									label={nextSegment?.name || ''}
 									width={'80vw'}
 									fontFamily="Roboto Flex"
-									fontSize="0.7em"
+									fontSize="0.9em"
 									minFontWidth={70}
 									maxFontWidth={100}
 									defaultWidth={90}

@@ -22,7 +22,7 @@ $hold-status-color: $liveline-timecode-color;
 		top: 0;
 		left: 0;
 		right: 0;
-		height: 16vh;
+		height: 19vh;
 		padding-left: 10px;
 		display: flex;
 		flex-direction: row;
@@ -51,7 +51,7 @@ $hold-status-color: $liveline-timecode-color;
 
 	.director-screen__body {
 		position: fixed;
-		top: 16vh;
+		top: 19vh;
 		bottom: 0;
 		left: 0;
 		right: 0;
@@ -68,8 +68,8 @@ $hold-status-color: $liveline-timecode-color;
 			display: grid;
 			grid-template:
 				24em
-				60em
-				30em / min(13vw, 27vh) auto;
+				70em
+				20em / min(13vw, 27vh) auto;
 			white-space: nowrap;
 
 			.director-screen__body__segment-name {
@@ -83,7 +83,8 @@ $hold-status-color: $liveline-timecode-color;
 				position: relative;
 				font-weight: 700;
 				font-size: 90px;
-				line-height: 100%;
+				line-height: 110%;
+				height: 11vh;
 				/* or 110px */
 				letter-spacing: 0.01em;
 				font-feature-settings: 'pnum' on, 'lnum' on;
