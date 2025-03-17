@@ -231,7 +231,6 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 		// Check if label has changed
 		if (prevLabelRef.current !== label) {
 			prevLabelRef.current = label
-			resetLabelStyles()
 			adjustTextToFit()
 		}
 	}, [label])
@@ -247,14 +246,12 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 		const handleResize = () => {
 			cancelAnimationFrame(resizeTimer)
 			resizeTimer = requestAnimationFrame(() => {
-				resetLabelStyles()
 				adjustTextToFit()
 			})
 		}
 
 		// Properties change
 		const handlePropsChange = () => {
-			resetLabelStyles()
 			adjustTextToFit()
 		}
 
@@ -271,7 +268,7 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 			cancelAnimationFrame(adjustmentTimer)
 			if (resizeTimer) cancelAnimationFrame(resizeTimer)
 		}
-	}, [width, fontFamily, fontSize, minFontWidth, maxFontWidth, minLetterSpacing])
+	}, [label, width, fontFamily, fontSize, minFontWidth, maxFontWidth, minLetterSpacing])
 
 	return (
 		<div ref={containerRef} className={`adjust-label-fit ${className}`} style={finalContainerStyle}>

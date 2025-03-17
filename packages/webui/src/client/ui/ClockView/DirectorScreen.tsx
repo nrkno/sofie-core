@@ -348,9 +348,6 @@ function DirectorScreenRender({
 	useSetDocumentClass('dark', 'xdark')
 
 	if (playlist && playlistId && segments) {
-		const currentPartOrSegmentCountdown =
-			timingDurations.remainingBudgetOnCurrentSegment ?? timingDurations.remainingTimeOnCurrentPart ?? 0
-
 		const expectedStart = PlaylistTiming.getExpectedStart(playlist.timing) || 0
 		const expectedEnd = PlaylistTiming.getExpectedEnd(playlist.timing)
 		const expectedDuration = PlaylistTiming.getExpectedDuration(playlist.timing) || 0
