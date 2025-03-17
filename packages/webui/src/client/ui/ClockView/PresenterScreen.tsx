@@ -13,7 +13,7 @@ import { PieceIconContainer } from '../PieceIcons/PieceIcon'
 import { PieceNameContainer } from '../PieceIcons/PieceName'
 import { Timediff } from './Timediff'
 import { RundownUtils } from '../../lib/rundown'
-import { CountdownType, PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PieceCountdownContainer } from '../PieceIcons/PieceCountdown'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
@@ -41,7 +41,6 @@ import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { useSetDocumentClass } from '../util/useSetDocumentClass'
 import { useRundownAndShowStyleIdsForPlaylist } from '../util/useRundownAndShowStyleIdsForPlaylist'
 import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil'
-import { CurrentPartOrSegmentRemaining } from '../RundownView/RundownTiming/CurrentPartOrSegmentRemaining'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
