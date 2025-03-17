@@ -24,6 +24,16 @@ export interface AdjustLabelFitProps {
 	fontSize?: string | number
 
 	/**
+	 * Default Width of the font
+	 */
+	defaultWidth?: number
+
+	/**
+	 * Default Optical Size of the font
+	 */
+	defaultOpticalSize?: number
+
+	/**
 	 * Minimum font width in percentage relative to normal (for auto-scaling)
 	 * Default is 50
 	 */
@@ -74,6 +84,8 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 	fontSize,
 	minFontWidth = 50,
 	maxFontWidth = 120,
+	defaultOpticalSize = 40,
+	defaultWidth = 100,
 	minLetterSpacing = -1,
 	containerStyle = {},
 	labelStyle = {},
@@ -129,13 +141,10 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 
 		if (!labelElement || !containerElement) return
 
-		const DEFAULT_WIDTH = 100
-		const DEFAULT_OPTICAL_SIZE = 10
-
 		resetLabelStyles()
 
 		// Apply the new width setting
-		labelElement.style.fontVariationSettings = `'opsz' ${DEFAULT_OPTICAL_SIZE}, 'wdth' ${DEFAULT_WIDTH}`
+		labelElement.style.fontVariationSettings = `'opsz' ${defaultOpticalSize}, 'wdth' ${defaultWidth}`
 
 		// Reset label content if it was cut
 		labelElement.textContent = label
@@ -162,13 +171,14 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 		if (newTextWidth <= containerWidth) return
 
 		const widthRatio = containerWidth / newTextWidth
-		let currentWidth = DEFAULT_WIDTH * widthRatio
+		let currentWidth = defaultWidth * widthRatio
+		const currentOpticalSize = 100 - defaultOpticalSize * widthRatio
 
 		// Use a reasonable range for width variation
 		currentWidth = Math.max(currentWidth, minFontWidth)
 		currentWidth = Math.min(currentWidth, maxFontWidth)
 
-		labelElement.style.fontVariationSettings = `'opsz' ${100 - minFontWidth}, 'wdth' ${currentWidth}`
+		labelElement.style.fontVariationSettings = `'opsz' ${currentOpticalSize}, 'wdth' ${currentWidth}`
 
 		// Remeasure text width after adjustment:
 		void labelElement.offsetWidth
