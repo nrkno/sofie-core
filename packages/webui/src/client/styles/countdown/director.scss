@@ -202,7 +202,11 @@ $hold-status-color: $liveline-timecode-color;
 				.director-screen__body__part__piece-countdown {
 					grid-row: inherit;
 					text-align: left;
-					font-size: 16em;
+					font-size: 20em;
+					font-weight: 500;
+					font-stretch: 57;
+					font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738,
+						'YTLC' 548, 'YTUC' 712, 'slnt' 0, 'opsz' 44;
 					padding: 0 0.2em;
 					line-height: 1em;
 					margin-top: 10px;
