@@ -4,7 +4,7 @@
 .counter-component__over-under {
 	font-family: 'Roboto Flex';
 	font-style: normal;
-	font-size: 120px;
+	font-size: 7.5rem;
 	font-weight: 500;
 	line-height: 100%;
 	font-feature-settings: 'liga' off;
@@ -42,6 +42,11 @@
 		padding-top: 0px;
 		padding-bottom: 0px;
 		display: inline-block;
+
+		font-weight: 630;
+		letter-spacing: -0.035em;
+		font-feature-settings: 'liga' off;
+		font-variation-settings: 'GRAD' 75, 'XOPQ' 82, 'XTRA' 387, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738, 'YTLC' 514, 'YTUC' 712, 'opsz' 14, 'slnt' 0, 'wdth' 25;
 	}
 }
 
