@@ -40,6 +40,10 @@ export class SyncIngestUpdateToPartInstanceContext
 
 	private partInstance: PlayoutPartInstanceModel | null
 
+	public get hasRemovedPartInstance(): boolean {
+		return !this.partInstance
+	}
+
 	constructor(
 		private readonly _context: JobContext,
 		contextInfo: ContextInfo,

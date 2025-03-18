@@ -31,6 +31,7 @@ import { convertIngestModelToPlayoutRundownWithSegments } from './commit'
 import { convertNoteToNotification } from '../notifications/util'
 import { PlayoutRundownModel } from '../playout/model/PlayoutRundownModel'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { setNextPart } from '../playout/setNext'
 import { PartId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import type { WrappedShowStyleBlueprint } from '../blueprints/cache'
 
@@ -157,6 +158,14 @@ export class SyncChangesToPartInstancesWorker {
 			existingPartInstance.snapshotRestore(partInstanceSnapshot)
 		}
 
+		if (instanceToSync.playStatus === 'next' && syncContext.hasRemovedPartInstance) {
+			// PartInstance was removed, so we need to remove it and re-select the next part
+			await this.recreateNextPartInstance(instanceToSync.newPart)
+
+			// We don't need to continue syncing this partInstance, as it's been replaced
+			return
+		}
+
 		if (instanceToSync.playStatus === 'next') {
 			existingPartInstance.recalculateExpectedDurationWithTransition()
 		}
@@ -201,6 +210,29 @@ export class SyncChangesToPartInstancesWorker {
 			actions:
 				instanceToSync.newPart && ingestPart ? ingestPart.adLibActions.map(convertAdLibActionToBlueprints) : [],
 			referencedAdlibs: referencedAdlibs,
+		}
+	}
+
+	async recreateNextPartInstance(newPart: ReadonlyDeep<DBPart> | undefined): Promise<void> {
+		const originalNextPartInfo = this.#playoutModel.playlist.nextPartInfo
+
+		// Clear the next part
+		await setNextPart(this.#context, this.#playoutModel, null, false, 0)
+
+		if (originalNextPartInfo?.manuallySelected && newPart) {
+			// If the next part was manually selected, we need to force it to be re-created
+			await setNextPart(
+				this.#context,
+				this.#playoutModel,
+				{
+					part: newPart,
+					consumesQueuedSegmentId: originalNextPartInfo.consumesQueuedSegmentId,
+				},
+				true,
+				this.#playoutModel.playlist.nextTimeOffset || 0
+			)
+		} else {
+			// A new next part will be selected automatically during the commit
 		}
 	}
 
