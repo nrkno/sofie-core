@@ -35,7 +35,7 @@
 	.preview-popUp__script,
 	.preview-popUp__script-comment,
 	.preview-popUp__script-last-modified {
-		padding: 0.3em;
+		padding: 0.4em 0.4em 0.4em 0.6em;
 		font-style: italic;
 	}
 
@@ -48,9 +48,10 @@
 	.preview-popUp__title {
 		width: 100%;
 
-		color: #adadad;
-		font-size: 0.875rem; // 14px;
+		color: #b2b2b2;
+		font-size: 0.938rem; // 15px;
 		font-weight: 400;
+		letter-spacing: 0.02rem;
 
 		padding: 5px;
 	}

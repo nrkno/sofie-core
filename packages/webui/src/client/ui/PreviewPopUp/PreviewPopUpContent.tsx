@@ -80,7 +80,7 @@ export function PreviewPopUpContent({ content, time }: PreviewPopUpContentProps)
 			return (
 				<div className="preview-popUp__timing">
 					<span className="label">IN: </span> {RundownUtils.formatTimeToShortTime(content.timeAsRendered?.in || 0)}
-					<span className="label"> DURATION: </span>
+					&nbsp; <span className="label">DURATION: </span>
 					{getDurationText(t, content.lifespan, content.timeAsRendered, content.enable)}
 				</div>
 			)
