@@ -145,6 +145,7 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 		declare context: React.ContextType<typeof RundownTimingProviderContext>
 
 		isVisible: boolean
+		visibilityChangeTimeout: NodeJS.Timeout | undefined
 		rundownCurrentPartInstanceId: PartInstanceId | null = null
 		timelineDiv: HTMLDivElement | null = null
 		intersectionObserver: IntersectionObserver | undefined
@@ -535,12 +536,20 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 		}
 
 		visibleChanged = (entries: IntersectionObserverEntry[]) => {
-			if (entries[0].intersectionRatio < 0.99 && !isMaintainingFocus() && Date.now() - this.mountedTime > 2000) {
-				if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
-				this.isVisible = false
-			} else {
-				this.isVisible = true
+			// Add a small debounce to ensure UI has settled before checking
+			if (this.visibilityChangeTimeout) {
+				clearTimeout(this.visibilityChangeTimeout)
 			}
+
+			this.visibilityChangeTimeout = setTimeout(() => {
+				if (entries[0].intersectionRatio < 0.99 && !isMaintainingFocus() && Date.now() - this.mountedTime > 2000) {
+					console.log('Segment out of view :', this.props.segmentId)
+					if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
+					this.isVisible = false
+				} else {
+					this.isVisible = true
+				}
+			}, 2000)
 		}
 
 		startLive = () => {
