@@ -13,12 +13,12 @@
 	z-index: 9999;
 
 	&--large {
-		width: 480px;
+		width: 482px;
 		--preview-max-dimension: 480;
 	}
 
 	&--small {
-		width: 320px;
+		width: 322px;
 		--preview-max-dimension: 320;
 	}
 
@@ -123,6 +123,12 @@
 				right: 6px;
 				transform: scaleX(-1);
 			}
+		}
+		height: calc(1px * 1080 * var(--preview-max-dimension) / 1920);
+
+		video {
+			width: calc(var(--preview-max-dimension) * 1px);
+			height: inherit;
 		}
 	}
 
