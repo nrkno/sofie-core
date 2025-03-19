@@ -549,7 +549,7 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 				} else {
 					this.isVisible = true
 				}
-			}, 2000)
+			}, 1200)
 		}
 
 		startLive = () => {
