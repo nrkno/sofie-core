@@ -31,6 +31,7 @@ import {
 	serializePieceTimelineObjectsBlob,
 } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { EXPECTED_INGEST_TO_PLAYOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
+import { getCurrentTime } from '../../lib'
 
 export class SyncIngestUpdateToPartInstanceContext
 	extends RundownUserContext
@@ -212,5 +213,9 @@ export class SyncIngestUpdateToPartInstanceContext
 		}
 
 		return unprotectStringArray(pieceInstanceIdsToRemove)
+	}
+
+	getCurrentTime(): number {
+		return getCurrentTime()
 	}
 }
