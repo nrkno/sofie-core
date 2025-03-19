@@ -68,10 +68,11 @@ export async function scrollToPartInstance(
 	quitFocusOnPart()
 	const partInstance = UIPartInstances.findOne(partInstanceId)
 	if (partInstance) {
-		RundownViewEventBus.emit(RundownViewEvents.GO_TO_PART_INSTANCE, {
-			segmentId: partInstance.segmentId,
-			partInstanceId: partInstanceId,
-		})
+		console.log('scrollToPartInstance - Emitting GO_TO_PART_INSTANCE', partInstance.segmentId, partInstanceId)
+		// RundownViewEventBus.emit(RundownViewEvents.GO_TO_PART_INSTANCE, {
+		// 	segmentId: partInstance.segmentId,
+		// 	partInstanceId: partInstanceId,
+		// })
 		return scrollToSegment(partInstance.segmentId, forceScroll, noAnimation, partInstanceId)
 	}
 	throw new Error('Could not find PartInstance')
@@ -255,9 +256,13 @@ let scrollToPositionRequest: number | undefined
 let scrollToPositionRequestReject: ((reason?: any) => void) | undefined
 
 export async function scrollToPosition(scrollPosition: number, noAnimation?: boolean): Promise<void> {
+	// Calculate the exact position
+	const headerOffset = getHeaderHeight() + HEADER_MARGIN
+	const targetTop = Math.max(0, scrollPosition - headerOffset)
+
 	if (noAnimation) {
 		window.scroll({
-			top: Math.max(0, scrollPosition - getHeaderHeight() - HEADER_MARGIN),
+			top: targetTop,
 			left: 0,
 		})
 		return Promise.resolve()
@@ -268,8 +273,7 @@ export async function scrollToPosition(scrollPosition: number, noAnimation?: boo
 				scrollToPositionRequestReject('Prevented by another scroll')
 
 			scrollToPositionRequestReject = reject
-			const currentTop = window.scrollY
-			const targetTop = Math.max(0, scrollPosition - getHeaderHeight() - HEADER_MARGIN)
+
 			scrollToPositionRequest = window.requestIdleCallback(
 				() => {
 					window.scroll({
@@ -277,12 +281,47 @@ export async function scrollToPosition(scrollPosition: number, noAnimation?: boo
 						left: 0,
 						behavior: 'smooth',
 					})
-					setTimeout(() => {
+
+					const checkScrollPosition = () => {
+						const currentPosition = window.scrollY
+						// Check if target position is reached
+						if (
+							Math.abs(currentPosition - targetTop) < 2 ||
+							Math.abs(currentPosition - lastCheckedPosition) < 1
+						) {
+							// Fine adjust the position
+							if (Math.abs(currentPosition - targetTop) > 2) {
+								window.scroll({
+									top: targetTop,
+									left: 0,
+								})
+							}
+
+							// Clean up and resolve
+							clearInterval(checkInterval)
+							clearTimeout(timeoutTimer)
+							resolve()
+							scrollToPositionRequestReject = undefined
+							return
+						}
+
+						lastCheckedPosition = currentPosition
+					}
+
+					// Keep track of the last position to detect when scrolling stops
+					let lastCheckedPosition = window.scrollY
+
+					// Check every 100ms
+					const checkInterval = setInterval(checkScrollPosition, 100)
+
+					// Fallback timeout - resolve after a reasonable time even if not at target
+					const timeoutTimer = setTimeout(() => {
+						clearInterval(checkInterval)
 						resolve()
 						scrollToPositionRequestReject = undefined
-						// this formula was experimentally created from Chrome 86 behavior
-					}, 3000 * Math.log(Math.abs(currentTop - targetTop) / 2000 + 1))
+					}, 1500)
 				},
+				// Make sure we wait to ensure the scroll is started
 				{ timeout: 250 }
 			)
 		})
