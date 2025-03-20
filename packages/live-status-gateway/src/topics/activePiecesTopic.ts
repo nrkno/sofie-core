@@ -5,19 +5,14 @@ import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { WebSocketTopicBase, WebSocketTopic } from '../wsHandler'
 import { ShowStyleBaseExt } from '../collections/showStyleBaseHandler'
 import { SelectedPieceInstances, PieceInstanceMin } from '../collections/pieceInstancesHandler'
-import { PieceStatus, toPieceStatus } from './helpers/pieceStatus'
+import { toPieceStatus } from './helpers/pieceStatus'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CollectionHandlers } from '../liveStatusServer'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PickKeys } from '@sofie-automation/shared-lib/dist/lib/types'
+import { ActivePiecesEvent } from '@sofie-automation/live-status-gateway-api'
 
 const THROTTLE_PERIOD_MS = 100
-
-export interface ActivePiecesStatus {
-	event: 'activePieces'
-	rundownPlaylistId: string | null
-	activePieces: PieceStatus[]
-}
 
 const PLAYLIST_KEYS = ['_id', 'activationId'] as const
 type Playlist = PickKeys<DBRundownPlaylist, typeof PLAYLIST_KEYS>
@@ -40,13 +35,13 @@ export class ActivePiecesTopic extends WebSocketTopicBase implements WebSocketTo
 
 	sendStatus(subscribers: Iterable<WebSocket>): void {
 		const message = this._activePlaylistId
-			? literal<ActivePiecesStatus>({
+			? literal<ActivePiecesEvent>({
 					event: 'activePieces',
 					rundownPlaylistId: unprotectString(this._activePlaylistId),
 					activePieces:
 						this._activePieceInstances?.map((piece) => toPieceStatus(piece, this._showStyleBaseExt)) ?? [],
 			  })
-			: literal<ActivePiecesStatus>({
+			: literal<ActivePiecesEvent>({
 					event: 'activePieces',
 					rundownPlaylistId: null,
 					activePieces: [],

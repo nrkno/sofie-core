@@ -8,12 +8,13 @@ import {
 	makeTestShowStyleBase,
 } from './utils'
 import { ShowStyleBaseExt } from '../../collections/showStyleBaseHandler'
-import { BucketsStatus, BucketsTopic } from '../bucketsTopic'
+import { BucketsTopic } from '../bucketsTopic'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { RundownImportVersions } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { BucketAdLib, BucketAdLibIngestInfo } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { Bucket } from '@sofie-automation/corelib/dist/dataModel/Bucket'
+import { BucketsEvent } from '@sofie-automation/live-status-gateway-api'
 
 describe('BucketsTopic', () => {
 	it('notifies subscribers', async () => {
@@ -42,7 +43,7 @@ describe('BucketsTopic', () => {
 
 		topic.addSubscriber(mockSubscriber)
 
-		const expectedStatus: BucketsStatus = {
+		const expectedStatus: BucketsEvent = {
 			event: 'buckets',
 			buckets: [
 				{

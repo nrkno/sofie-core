@@ -3,13 +3,16 @@ description: Studio schema for websocket subscriptions
 $defs:
   studio:
     type: object
+    title: StudioEvent
     properties:
       event:
         type: string
         const: studio
       id:
         description: Unique id of the studio
-        type: string
+        oneOf:
+          - type: string
+          - type: 'null'
       name:
         description: User-presentable name for the studio installation
         type: string
@@ -28,6 +31,7 @@ $defs:
           $ref: '#/$defs/playlist/examples'
   playlist:
     type: object
+    title: PlaylistStatus
     properties:
       id:
         description: Unique id of the playlist
@@ -38,6 +42,7 @@ $defs:
       activationStatus:
         description: Whether this playlist is currently active or in rehearsal
         type: string
+        title: PlaylistActivationStatus
         enum:
           - deactivated
           - rehearsal

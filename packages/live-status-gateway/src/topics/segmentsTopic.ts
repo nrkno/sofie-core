@@ -7,26 +7,12 @@ import { groupByToMap } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import _ = require('underscore')
-import { SegmentTiming, calculateSegmentTiming } from './helpers/segmentTiming'
+import { calculateSegmentTiming } from './helpers/segmentTiming'
+import { SegmentsEvent } from '@sofie-automation/live-status-gateway-api'
 import { CollectionHandlers } from '../liveStatusServer'
 import { PickKeys } from '@sofie-automation/shared-lib/dist/lib/types'
 
 const THROTTLE_PERIOD_MS = 200
-
-interface SegmentStatus {
-	id: string
-	identifier?: string
-	rundownId: string
-	name: string
-	timing: SegmentTiming
-	publicData: unknown
-}
-
-export interface SegmentsStatus {
-	event: 'segments'
-	rundownPlaylistId: string | null
-	segments: SegmentStatus[]
-}
 
 const PLAYLIST_KEYS = ['_id', 'rundownIdsInOrder', 'activationId'] as const
 type Playlist = PickKeys<DBRundownPlaylist, typeof PLAYLIST_KEYS>
@@ -46,7 +32,7 @@ export class SegmentsTopic extends WebSocketTopicBase implements WebSocketTopic 
 	}
 
 	sendStatus(subscribers: Iterable<WebSocket>): void {
-		const segmentsStatus: SegmentsStatus = {
+		const segmentsStatus: SegmentsEvent = {
 			event: 'segments',
 			rundownPlaylistId: this._activePlaylist ? unprotectString(this._activePlaylist._id) : null,
 			segments: this._orderedSegments.map((segment) => {

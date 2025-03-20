@@ -11,26 +11,16 @@ import { WebSocket } from 'ws'
 import { ShowStyleBaseExt } from '../collections/showStyleBaseHandler'
 import { CollectionHandlers } from '../liveStatusServer'
 import { WebSocketTopic, WebSocketTopicBase } from '../wsHandler'
-import { AdLibActionType, AdLibStatus } from './adLibsTopic'
 import { sortContent, WithSortingMetadata } from './helpers/contentSorting'
 import _ = require('underscore')
+import {
+	BucketsEvent,
+	BucketStatus,
+	BucketAdLibStatus,
+	AdLibActionType,
+} from '@sofie-automation/live-status-gateway-api'
 
 const THROTTLE_PERIOD_MS = 100
-
-export interface BucketsStatus {
-	event: 'buckets'
-	buckets: BucketStatus[]
-}
-
-interface BucketAdLibStatus extends Omit<AdLibStatus, 'partId' | 'segmentId'> {
-	externalId: string
-}
-
-export interface BucketStatus {
-	id: string
-	name: string
-	adLibs: BucketAdLibStatus[]
-}
 
 const SHOW_STYLE_BASE_KEYS = ['sourceLayerNamesById', 'outputLayerNamesById'] as const
 type ShowStyle = PickKeys<ShowStyleBaseExt, typeof SHOW_STYLE_BASE_KEYS>
@@ -69,7 +59,7 @@ export class BucketsTopic extends WebSocketTopicBase implements WebSocketTopic {
 			}
 		})
 
-		const bucketsStatus: BucketsStatus = {
+		const bucketsStatus: BucketsEvent = {
 			event: 'buckets',
 			buckets: bucketStatuses,
 		}

@@ -1,4 +1,4 @@
-import { ActivePlaylistStatus, ActivePlaylistTopic } from '../activePlaylistTopic'
+import { ActivePlaylistTopic } from '../activePlaylistTopic'
 import { makeMockHandlers, makeMockLogger, makeMockSubscriber, makeTestPlaylist, makeTestShowStyleBase } from './utils'
 import { ShowStyleBaseExt } from '../../collections/showStyleBaseHandler'
 import { SelectedPartInstances } from '../../collections/partInstancesHandler'
@@ -9,7 +9,11 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { CountdownType } from '@sofie-automation/blueprints-integration'
-import { PlaylistTimingType } from '@sofie-automation/blueprints-integration'
+import {
+	ActivePlaylistEvent,
+	ActivePlaylistTimingMode,
+	SegmentCountdownType,
+} from '@sofie-automation/live-status-gateway-api'
 
 function makeEmptyTestPartInstances(): SelectedPartInstances {
 	return {
@@ -39,7 +43,7 @@ describe('ActivePlaylistTopic', () => {
 
 		topic.addSubscriber(mockSubscriber)
 
-		const expectedStatus: ActivePlaylistStatus = {
+		const expectedStatus: ActivePlaylistEvent = {
 			event: 'activePlaylist',
 			name: playlist.name,
 			id: unprotectString(playlist._id),
@@ -49,7 +53,7 @@ describe('ActivePlaylistTopic', () => {
 			rundownIds: unprotectStringArray(playlist.rundownIdsInOrder),
 			publicData: undefined,
 			timing: {
-				timingMode: PlaylistTimingType.None,
+				timingMode: ActivePlaylistTimingMode.NONE,
 			},
 			quickLoop: undefined,
 		}
@@ -115,7 +119,7 @@ describe('ActivePlaylistTopic', () => {
 
 		topic.addSubscriber(mockSubscriber)
 
-		const expectedStatus: ActivePlaylistStatus = {
+		const expectedStatus: ActivePlaylistEvent = {
 			event: 'activePlaylist',
 			name: playlist.name,
 			id: unprotectString(playlist._id),
@@ -139,7 +143,7 @@ describe('ActivePlaylistTopic', () => {
 			rundownIds: unprotectStringArray(playlist.rundownIdsInOrder),
 			publicData: { a: 'b' },
 			timing: {
-				timingMode: PlaylistTimingType.None,
+				timingMode: ActivePlaylistTimingMode.NONE,
 			},
 			quickLoop: undefined,
 		}
@@ -208,7 +212,7 @@ describe('ActivePlaylistTopic', () => {
 
 		topic.addSubscriber(mockSubscriber)
 
-		const expectedStatus: ActivePlaylistStatus = {
+		const expectedStatus: ActivePlaylistEvent = {
 			event: 'activePlaylist',
 			name: playlist.name,
 			id: unprotectString(playlist._id),
@@ -228,13 +232,13 @@ describe('ActivePlaylistTopic', () => {
 					expectedDurationMs: 10000,
 					budgetDurationMs: 12300,
 					projectedEndTime: 1600000072300,
-					countdownType: 'segment_budget_duration',
+					countdownType: SegmentCountdownType.SEGMENT_BUDGET_DURATION,
 				},
 			},
 			rundownIds: unprotectStringArray(playlist.rundownIdsInOrder),
 			publicData: { a: 'b' },
 			timing: {
-				timingMode: PlaylistTimingType.None,
+				timingMode: ActivePlaylistTimingMode.NONE,
 			},
 			quickLoop: undefined,
 		}
