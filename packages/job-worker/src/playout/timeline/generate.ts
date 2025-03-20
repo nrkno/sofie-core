@@ -1,13 +1,7 @@
 import { BlueprintId, TimelineHash } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { JobContext, JobStudio } from '../../jobs'
 import { ReadonlyDeep } from 'type-fest'
-import {
-	BlueprintResultBaseline,
-	BlueprintResultTimeline,
-	OnGenerateTimelineObj,
-	Time,
-	TSR,
-} from '@sofie-automation/blueprints-integration'
+import { BlueprintResultBaseline, OnGenerateTimelineObj, Time, TSR } from '@sofie-automation/blueprints-integration'
 import {
 	deserializeTimelineBlob,
 	OnGenerateTimelineObjExt,
@@ -46,6 +40,7 @@ import { getPartTimingsOrDefaults, PartCalculatedTimings } from '@sofie-automati
 import { applyAbPlaybackForTimeline } from '../abPlayback'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { PlayoutPartInstanceModel } from '../model/PlayoutPartInstanceModel'
+import { PersistentPlayoutStateStore } from '../../blueprints/context/services/PersistantStateStore'
 
 function isModelForStudio(model: StudioPlayoutModelBase): model is StudioPlayoutModel {
 	const tmp = model as StudioPlayoutModel
@@ -388,14 +383,17 @@ async function getTimelineRundown(
 						})
 					}
 
-					let tlGenRes: BlueprintResultTimeline | undefined
 					if (blueprint.blueprint.onTimelineGenerate) {
+						const blueprintPersistentState = new PersistentPlayoutStateStore(
+							playoutModel.playlist.previousPersistentState
+						)
+
 						const span = context.startSpan('blueprint.onTimelineGenerate')
 						const influxTrace = startTrace('blueprints:onTimelineGenerate')
-						tlGenRes = await blueprint.blueprint.onTimelineGenerate(
+						const tlGenRes = await blueprint.blueprint.onTimelineGenerate(
 							blueprintContext,
 							timelineObjs,
-							clone(playoutModel.playlist.previousPersistentState),
+							blueprintPersistentState,
 							clone(currentPartInstance?.partInstance?.previousPartEndState),
 							resolvedPieces.map(convertResolvedPieceInstanceToBlueprints)
 						)
@@ -408,10 +406,13 @@ async function getTimelineRundown(
 								objectType: TimelineObjType.RUNDOWN,
 							})
 						})
+
+						if (blueprintPersistentState.hasChanges) {
+							playoutModel.setBlueprintPersistentState(blueprintPersistentState.getAll())
+						}
 					}
 
-					playoutModel.setOnTimelineGenerateResult(
-						tlGenRes?.persistentState,
+					playoutModel.setAbResolvingState(
 						newAbSessionsResult.assignments,
 						blueprintContext.abSessionsHelper.knownSessions
 					)

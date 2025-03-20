@@ -31,6 +31,7 @@ import {
 } from '../blueprints/context/services/PartAndPieceInstanceActionService'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { convertNoteToNotification } from '../notifications/util'
+import { PersistentPlayoutStateStore } from '../blueprints/context/services/PersistantStateStore'
 
 /**
  * Set or clear the nexted part, from a given PartInstance, or SelectNextPartResult
@@ -225,8 +226,14 @@ async function executeOnSetAsNextCallback(
 	playoutModel.clearAllNotifications(NOTIFICATION_CATEGORY)
 
 	try {
-		await blueprint.blueprint.onSetAsNext(onSetAsNextContext)
+		const blueprintPersistentState = new PersistentPlayoutStateStore(playoutModel.playlist.previousPersistentState)
+
+		await blueprint.blueprint.onSetAsNext(onSetAsNextContext, blueprintPersistentState)
 		await applyOnSetAsNextSideEffects(context, playoutModel, onSetAsNextContext)
+
+		if (blueprintPersistentState.hasChanges) {
+			playoutModel.setBlueprintPersistentState(blueprintPersistentState.getAll())
+		}
 
 		for (const note of onSetAsNextContext.notes) {
 			// Update the notifications. Even though these are related to a partInstance, they will be cleared on the next take
