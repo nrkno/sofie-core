@@ -21,7 +21,7 @@ import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { ReadonlyDeep } from 'type-fest'
 import { useSelectedElementsContext } from '../RundownView/SelectedElementsContext'
-import { PieceContentStatusObj } from '@sofie-automation/meteor-lib/dist/api/pieceContentStatus'
+import { PieceContentStatusObj } from '@sofie-automation/corelib/dist/dataModel/PieceContentStatus'
 import { useCallback, useRef, useState, useEffect, useContext } from 'react'
 import {
 	convertSourceLayerItemToPreview,

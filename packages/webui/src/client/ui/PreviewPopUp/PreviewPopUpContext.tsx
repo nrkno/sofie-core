@@ -16,7 +16,7 @@ import {
 	VTContent,
 } from '@sofie-automation/blueprints-integration'
 import { ReadonlyDeep, ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
-import { PieceContentStatusObj } from '@sofie-automation/meteor-lib/dist/api/pieceContentStatus'
+import { PieceContentStatusObj } from '@sofie-automation/corelib/dist/dataModel/PieceContentStatus'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import _ from 'underscore'
 import { IAdLibListItem } from '../Shelf/AdLibListItem'
