@@ -73,17 +73,20 @@ export interface GraphicsContent extends BaseContent {
 
 export interface CameraContent extends BaseContent {
 	studioLabel: string
+	studioLabelShort?: string
 	switcherInput: number | string
 }
 
 export interface RemoteContent extends BaseContent {
 	studioLabel: string
+	studioLabelShort?: string
 	switcherInput: number | string
 }
 
 /** Content description for the EVS variant of a LOCAL source */
 export interface EvsContent extends BaseContent {
 	studioLabel: string
+	studioLabelShort?: string
 	/** Switcher input for the EVS channel */
 	switcherInput: number | string
 	/** Name of the EVS channel as used in the studio */
@@ -161,6 +164,7 @@ export interface NoraContent extends BaseContent {
 export interface SplitsContentBoxProperties {
 	type: SourceLayerType
 	studioLabel: string
+	studioLabelShort?: string
 	switcherInput: number | string
 	/** Geometry information for a given box item in the Split. X,Y are relative to center of Box, Scale is 0...1, where 1 is Full-Screen */
 	geometry?: {
