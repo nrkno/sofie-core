@@ -9,8 +9,12 @@ import { logger } from './logging'
 const HEADER_MARGIN = 24 // TODOSYNC: TV2 uses 15. If it's needed to be different, it needs to be made generic somehow..
 const FALLBACK_HEADER_HEIGHT = 65
 
-let focusInterval: NodeJS.Timeout | undefined
-let _dontClearInterval = false
+// Replace the global variable with a more structured approach
+const focusState = {
+	interval: undefined as NodeJS.Timeout | undefined,
+	isScrolling: false,
+	startTime: 0,
+}
 
 export function maintainFocusOnPartInstance(
 	partInstanceId: PartInstanceId,
@@ -18,32 +22,47 @@ export function maintainFocusOnPartInstance(
 	forceScroll?: boolean,
 	noAnimation?: boolean
 ): void {
-	const startTime = Date.now()
-	const focus = () => {
-		if (Date.now() - startTime < timeWindow) {
-			_dontClearInterval = true
-			scrollToPartInstance(partInstanceId, forceScroll, noAnimation)
-				.then(() => {
-					_dontClearInterval = false
-				})
-				.catch(() => {
-					_dontClearInterval = false
-				})
-		} else {
+	focusState.startTime = Date.now()
+
+	const focus = async () => {
+		// Only proceed if we're not already scrolling and within the time window
+		if (!focusState.isScrolling && Date.now() - focusState.startTime < timeWindow) {
+			focusState.isScrolling = true
+
+			try {
+				await scrollToPartInstance(partInstanceId, forceScroll, noAnimation)
+			} catch (error) {
+				// Handle error if needed
+			} finally {
+				focusState.isScrolling = false
+			}
+		} else if (Date.now() - focusState.startTime >= timeWindow) {
 			quitFocusOnPart()
 		}
 	}
+
 	document.addEventListener('wheel', onWheelWhenMaintainingFocus, {
 		once: true,
 		capture: true,
 		passive: true,
 	})
-	focusInterval = setInterval(focus, 500)
+
+	// Clear any existing interval before creating a new one
+	if (focusState.interval) {
+		clearInterval(focusState.interval)
+	}
+
 	focus()
+		.then(() => {
+			focusState.interval = setInterval(focus, 500)
+		})
+		.catch(() => {
+			// Handle error if needed
+		})
 }
 
 export function isMaintainingFocus(): boolean {
-	return !!focusInterval
+	return !!focusState.interval
 }
 
 function onWheelWhenMaintainingFocus() {
@@ -54,9 +73,10 @@ function quitFocusOnPart() {
 	document.removeEventListener('wheel', onWheelWhenMaintainingFocus, {
 		capture: true,
 	})
-	if (!_dontClearInterval && focusInterval) {
-		clearInterval(focusInterval)
-		focusInterval = undefined
+
+	if (focusState.interval) {
+		clearInterval(focusState.interval)
+		focusState.interval = undefined
 	}
 }
 
