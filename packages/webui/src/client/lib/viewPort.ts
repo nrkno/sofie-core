@@ -68,12 +68,7 @@ export async function scrollToPartInstance(
 	quitFocusOnPart()
 	const partInstance = UIPartInstances.findOne(partInstanceId)
 	if (partInstance) {
-		console.log('scrollToPartInstance - Emitting GO_TO_PART_INSTANCE', partInstance.segmentId, partInstanceId)
-		// RundownViewEventBus.emit(RundownViewEvents.GO_TO_PART_INSTANCE, {
-		// 	segmentId: partInstance.segmentId,
-		// 	partInstanceId: partInstanceId,
-		// })
-		return scrollToSegment(partInstance.segmentId, forceScroll, noAnimation, partInstanceId)
+		return scrollToSegment(partInstance.segmentId, forceScroll, noAnimation)
 	}
 	throw new Error('Could not find PartInstance')
 }
@@ -120,39 +115,10 @@ let currentScrollingElement: HTMLElement | undefined
 export async function scrollToSegment(
 	elementToScrollToOrSegmentId: HTMLElement | SegmentId,
 	forceScroll?: boolean,
-	noAnimation?: boolean,
-	partInstanceId?: PartInstanceId | undefined
+	noAnimation?: boolean
 ): Promise<boolean> {
-	const getElementToScrollTo = (showHistory: boolean): HTMLElement | null => {
-		if (isProtectedString(elementToScrollToOrSegmentId)) {
-			let targetElement = document.querySelector<HTMLElement>(
-				`#${SEGMENT_TIMELINE_ELEMENT_ID}${elementToScrollToOrSegmentId}`
-			)
-
-			if (showHistory && Settings.followOnAirSegmentsHistory && targetElement) {
-				let i = Settings.followOnAirSegmentsHistory
-				while (i > 0) {
-					// Segment timeline is wrapped by <div><div>...</div></div> when rendered
-					const next: any = targetElement?.parentElement?.parentElement?.previousElementSibling?.children
-						.item(0)
-						?.children.item(0)
-					if (next) {
-						targetElement = next
-						i--
-					} else {
-						i = 0
-					}
-				}
-			}
-
-			return targetElement
-		}
-
-		return elementToScrollToOrSegmentId
-	}
-
-	const elementToScrollTo: HTMLElement | null = getElementToScrollTo(false)
-	const historyTarget: HTMLElement | null = getElementToScrollTo(true)
+	const elementToScrollTo: HTMLElement | null = getElementToScrollTo(elementToScrollToOrSegmentId, false)
+	const historyTarget: HTMLElement | null = getElementToScrollTo(elementToScrollToOrSegmentId, true)
 
 	// historyTarget will be === to elementToScrollTo if history is not used / not found
 	if (!elementToScrollTo || !historyTarget) {
@@ -163,23 +129,65 @@ export async function scrollToSegment(
 		historyTarget,
 		forceScroll || !regionInViewport(historyTarget, elementToScrollTo),
 		noAnimation,
-		false,
-		partInstanceId
+		false
 	)
+}
+
+function getElementToScrollTo(
+	elementToScrollToOrSegmentId: HTMLElement | SegmentId,
+	showHistory: boolean
+): HTMLElement | null {
+	if (isProtectedString(elementToScrollToOrSegmentId)) {
+		// Get the current segment element
+		let targetElement = document.querySelector<HTMLElement>(
+			`#${SEGMENT_TIMELINE_ELEMENT_ID}${elementToScrollToOrSegmentId}`
+		)
+		if (showHistory && Settings.followOnAirSegmentsHistory && targetElement) {
+			let i = Settings.followOnAirSegmentsHistory
+
+			// Find previous segments
+			while (i > 0 && targetElement) {
+				const currentSegmentId = targetElement.id
+				const allSegments = Array.from(document.querySelectorAll(`[id^="${SEGMENT_TIMELINE_ELEMENT_ID}"]`))
+
+				// Find current segment's index in the array of all segments
+				const currentIndex = allSegments.findIndex((el) => el.id === currentSegmentId)
+
+				// Find the previous segment
+				if (currentIndex > 0) {
+					targetElement = allSegments[currentIndex - 1] as HTMLElement
+					i--
+				} else {
+					// No more previous segments
+					break
+				}
+			}
+		}
+
+		return targetElement
+	}
+
+	return elementToScrollToOrSegmentId
 }
 
 async function innerScrollToSegment(
 	elementToScrollTo: HTMLElement,
 	forceScroll?: boolean,
 	noAnimation?: boolean,
-	secondStage?: boolean,
-	partInstanceId?: PartInstanceId | undefined
+	secondStage?: boolean
 ): Promise<boolean> {
 	if (!secondStage) {
 		currentScrollingElement = elementToScrollTo
 	} else if (secondStage && elementToScrollTo !== currentScrollingElement) {
 		throw new Error('Scroll overriden by another scroll')
 	}
+
+	// Ensure that the element is ready to be scrolled:
+	if (!secondStage) {
+		await new Promise((resolve) => setTimeout(resolve, 250))
+	}
+	console.log('innerScrollToSegment', elementToScrollTo)
+	await new Promise((resolve) => requestAnimationFrame(resolve))
 
 	let { top, bottom } = elementToScrollTo.getBoundingClientRect()
 	top = Math.floor(top)
@@ -193,36 +201,24 @@ async function innerScrollToSegment(
 
 		return scrollToPosition(top + window.scrollY, noAnimation).then(
 			async () => {
-				// retry scroll in case we have to load some data
-				if (pendingSecondStageScroll) window.cancelIdleCallback(pendingSecondStageScroll)
 				return new Promise<boolean>((resolve, reject) => {
-					// scrollToPosition will resolve after some time, at which point a new pendingSecondStageScroll may have been created
-
-					pendingSecondStageScroll = window.requestIdleCallback(
-						() => {
-							if (!secondStage) {
-								let { top, bottom } = elementToScrollTo.getBoundingClientRect()
-								top = Math.floor(top)
-								bottom = Math.floor(bottom)
-
-								if (bottom > Math.floor(window.innerHeight) || top < headerHeight) {
-									innerScrollToSegment(
-										elementToScrollTo,
-										forceScroll,
-										true,
-										true,
-										partInstanceId
-									).then(resolve, reject)
-								} else {
-									resolve(true)
-								}
+					if (!secondStage) {
+						//  Wait to settle 1 atemt to scroll
+						setTimeout(() => {
+							let { top, bottom } = elementToScrollTo.getBoundingClientRect()
+							top = Math.floor(top)
+							bottom = Math.floor(bottom)
+							if (bottom > Math.floor(window.innerHeight) || top < headerHeight) {
+								// If not in place atempt to scroll again
+								innerScrollToSegment(elementToScrollTo, forceScroll, true, true).then(resolve, reject)
 							} else {
-								currentScrollingElement = undefined
 								resolve(true)
 							}
-						},
-						{ timeout: 250 }
-					)
+						}, 600)
+					} else {
+						currentScrollingElement = undefined
+						resolve(true)
+					}
 				})
 			},
 			(error) => {
@@ -252,9 +248,6 @@ function getRegionPosition(topElement: HTMLElement, bottomElement: HTMLElement):
 	return { top, bottom }
 }
 
-let scrollToPositionRequest: number | undefined
-let scrollToPositionRequestReject: ((reason?: any) => void) | undefined
-
 export async function scrollToPosition(scrollPosition: number, noAnimation?: boolean): Promise<void> {
 	// Calculate the exact position
 	const headerOffset = getHeaderHeight() + HEADER_MARGIN
@@ -264,66 +257,15 @@ export async function scrollToPosition(scrollPosition: number, noAnimation?: boo
 		window.scroll({
 			top: targetTop,
 			left: 0,
+			behavior: 'instant',
 		})
+		console.log(`scrollToPosition: immediate scroll complete, position=${window.scrollY}`)
 		return Promise.resolve()
 	} else {
-		return new Promise((resolve, reject) => {
-			if (scrollToPositionRequest !== undefined) window.cancelIdleCallback(scrollToPositionRequest)
-			if (scrollToPositionRequestReject !== undefined)
-				scrollToPositionRequestReject('Prevented by another scroll')
-
-			scrollToPositionRequestReject = reject
-
-			scrollToPositionRequest = window.requestIdleCallback(
-				() => {
-					window.scroll({
-						top: targetTop,
-						left: 0,
-						behavior: 'smooth',
-					})
-
-					const checkScrollPosition = () => {
-						const currentPosition = window.scrollY
-						// Check if target position is reached
-						if (
-							Math.abs(currentPosition - targetTop) < 2 ||
-							Math.abs(currentPosition - lastCheckedPosition) < 1
-						) {
-							// Fine adjust the position
-							if (Math.abs(currentPosition - targetTop) > 2) {
-								window.scroll({
-									top: targetTop,
-									left: 0,
-								})
-							}
-
-							// Clean up and resolve
-							clearInterval(checkInterval)
-							clearTimeout(timeoutTimer)
-							resolve()
-							scrollToPositionRequestReject = undefined
-							return
-						}
-
-						lastCheckedPosition = currentPosition
-					}
-
-					// Keep track of the last position to detect when scrolling stops
-					let lastCheckedPosition = window.scrollY
-
-					// Check every 100ms
-					const checkInterval = setInterval(checkScrollPosition, 100)
-
-					// Fallback timeout - resolve after a reasonable time even if not at target
-					const timeoutTimer = setTimeout(() => {
-						clearInterval(checkInterval)
-						resolve()
-						scrollToPositionRequestReject = undefined
-					}, 1500)
-				},
-				// Make sure we wait to ensure the scroll is started
-				{ timeout: 250 }
-			)
+		window.scroll({
+			top: targetTop,
+			left: 0,
+			behavior: 'smooth',
 		})
 	}
 }
