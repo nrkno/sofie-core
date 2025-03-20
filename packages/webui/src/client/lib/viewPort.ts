@@ -206,7 +206,6 @@ async function innerScrollToSegment(
 	if (!secondStage) {
 		await new Promise((resolve) => setTimeout(resolve, 250))
 	}
-	console.log('innerScrollToSegment', elementToScrollTo)
 	await new Promise((resolve) => requestAnimationFrame(resolve))
 
 	let { top, bottom } = elementToScrollTo.getBoundingClientRect()
@@ -279,7 +278,6 @@ export async function scrollToPosition(scrollPosition: number, noAnimation?: boo
 			left: 0,
 			behavior: 'instant',
 		})
-		console.log(`scrollToPosition: immediate scroll complete, position=${window.scrollY}`)
 		return Promise.resolve()
 	} else {
 		window.scroll({
