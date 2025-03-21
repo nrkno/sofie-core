@@ -25,6 +25,7 @@ import {
 	convertPartInstanceToBlueprints,
 	convertPartToBlueprints,
 	convertPieceInstanceToBlueprints,
+	convertRundownPieceToBlueprints,
 } from '../blueprints/context/lib'
 import { validateAdlibTestingPartInstanceProperties } from '../playout/adlibTesting'
 import { ReadonlyDeep } from 'type-fest'
@@ -47,7 +48,7 @@ type SyncedInstance = {
  * This defers out to the Blueprints to do the syncing
  * @param context Context of the job ebeing run
  * @param playoutModel Playout model containing containing the Rundown being ingested
- * @param ingestModel Ingest model for the Rundown
+ * @param ingestModel Ingest model for the Rundown. This is being written to mongodb while this method runs
  */
 export async function syncChangesToPartInstances(
 	context: JobContext,
@@ -182,6 +183,7 @@ export async function syncChangesToPartInstances(
 					adLibPieces: newPart && ingestPart ? ingestPart.adLibPieces.map(convertAdLibPieceToBlueprints) : [],
 					actions: newPart && ingestPart ? ingestPart.adLibActions.map(convertAdLibActionToBlueprints) : [],
 					referencedAdlibs: referencedAdlibs,
+					rundownPieces: ingestModel.getGlobalPieces().map(convertRundownPieceToBlueprints),
 				}
 
 				const partInstanceSnapshot = existingPartInstance.snapshotMakeCopy()
@@ -241,6 +243,7 @@ export async function syncChangesToPartInstances(
 					await syncPlayheadInfinitesForNextPartInstance(
 						context,
 						playoutModel,
+						ingestModel,
 						playoutModel.currentPartInstance,
 						playoutModel.nextPartInstance
 					)
