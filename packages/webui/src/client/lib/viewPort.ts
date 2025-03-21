@@ -234,7 +234,7 @@ async function innerScrollToSegment(
 							} else {
 								resolve(true)
 							}
-						}, 100)
+						}, 420)
 					} else {
 						currentScrollingElement = undefined
 						resolve(true)
