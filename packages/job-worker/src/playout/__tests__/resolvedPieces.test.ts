@@ -412,6 +412,7 @@ describe('Resolved Pieces', () => {
 				partStarted,
 				// Approximate `calculatedTimings`, for the partInstances which already have it cached
 				calculatedTimings: getPartTimingsOrDefaults(partInstance, pieceInstances),
+				regenerateTimelineAt: undefined,
 			}
 		}
 

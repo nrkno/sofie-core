@@ -8,28 +8,37 @@ import {
 	ExecutableAction,
 	isPreviewableAction,
 	ReactivePlaylistActionContext,
-} from '../../../lib/api/triggers/actionFactory'
+} from '@sofie-automation/meteor-lib/dist/triggers/actionFactory'
 import {
 	DeviceActionId,
 	DeviceTriggerMountedActionId,
 	PreviewWrappedAdLib,
 	PreviewWrappedAdLibId,
 	ShiftRegisterActionArguments,
-} from '../../../lib/api/triggers/MountedTriggers'
-import { isDeviceTrigger } from '../../../lib/api/triggers/triggerTypeSelectors'
-import { DBTriggeredActions, UITriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
-import { DummyReactiveVar, protectString } from '../../../lib/lib'
+} from '@sofie-automation/meteor-lib/dist/api/MountedTriggers'
+import { isDeviceTrigger } from '@sofie-automation/meteor-lib/dist/triggers/triggerTypeSelectors'
+import {
+	DBTriggeredActions,
+	UITriggeredActionsObj,
+} from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
+import { protectString } from '../../lib/tempLib'
 import { StudioActionManager, StudioActionManagers } from './StudioActionManagers'
 import { DeviceTriggerMountedActionAdlibsPreview, DeviceTriggerMountedActions } from './observer'
 import { ContentCache } from './reactiveContentCache'
+import { ContentCache as PieceInstancesContentCache } from './reactiveContentCacheForPieceInstances'
 import { logger } from '../../logging'
 import { SomeAction, SomeBlueprintTrigger } from '@sofie-automation/blueprints-integration'
 import { DeviceActions } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
+import { DummyReactiveVar } from '@sofie-automation/meteor-lib/dist/triggers/reactive-var'
+import { MeteorTriggersContext } from './triggersContext'
+import { TagsService } from './TagsService'
 
 export class StudioDeviceTriggerManager {
 	#lastShowStyleBaseId: ShowStyleBaseId | null = null
 
-	constructor(public studioId: StudioId) {
+	lastCache: ContentCache | undefined
+
+	constructor(public studioId: StudioId, protected tagsService: TagsService) {
 		if (StudioActionManagers.get(studioId)) {
 			logger.error(`A StudioActionManager for "${studioId}" already exists`)
 			return
@@ -40,6 +49,7 @@ export class StudioDeviceTriggerManager {
 
 	async updateTriggers(cache: ContentCache, showStyleBaseId: ShowStyleBaseId): Promise<void> {
 		const studioId = this.studioId
+		this.lastCache = cache
 		this.#lastShowStyleBaseId = showStyleBaseId
 
 		const [showStyleBase, rundownPlaylist] = await Promise.all([
@@ -54,7 +64,7 @@ export class StudioDeviceTriggerManager {
 			return
 		}
 
-		const context = await createCurrentContextFromCache(cache)
+		const context = await createCurrentContextFromCache(cache, studioId)
 		const actionManager = StudioActionManagers.get(studioId)
 		if (!actionManager)
 			throw new Meteor.Error(
@@ -73,6 +83,8 @@ export class StudioDeviceTriggerManager {
 
 		const upsertedDeviceTriggerMountedActionIds: DeviceTriggerMountedActionId[] = []
 		const touchedActionIds: DeviceActionId[] = []
+
+		this.tagsService.clearObservedTags()
 
 		for (const rawTriggeredAction of allTriggeredActions) {
 			const triggeredAction = convertDocument(rawTriggeredAction)
@@ -94,7 +106,7 @@ export class StudioDeviceTriggerManager {
 					if (existingAction) {
 						thisAction = existingAction
 					} else {
-						const compiledAction = createAction(action, sourceLayers)
+						const compiledAction = createAction(MeteorTriggersContext, action, sourceLayers)
 						actionManager.setAction(actionId, compiledAction)
 						thisAction = compiledAction
 					}
@@ -158,10 +170,12 @@ export class StudioDeviceTriggerManager {
 								sourceLayerType: undefined,
 								sourceLayerName: undefined,
 								styleClassNames: triggeredAction.styleClassNames,
+								isActive: undefined,
+								isNext: undefined,
 							}),
 						})
 					} else {
-						const previewedAdLibs = thisAction.preview(context)
+						const previewedAdLibs = await thisAction.preview(context, null)
 
 						const previewedAdlibsUpdatePromises = previewedAdLibs.map(async (adLib) => {
 							const adLibPreviewId = protectString<PreviewWrappedAdLibId>(
@@ -169,6 +183,9 @@ export class StudioDeviceTriggerManager {
 							)
 
 							addedPreviewIds.push(adLibPreviewId)
+
+							this.tagsService.observeTallyTags(adLib)
+							const { isActive, isNext } = this.tagsService.getTallyStateFromTags(adLib)
 							return DeviceTriggerMountedActionAdlibsPreview.upsertAsync(adLibPreviewId, {
 								$set: literal<PreviewWrappedAdLib>({
 									...adLib,
@@ -187,6 +204,8 @@ export class StudioDeviceTriggerManager {
 										  }
 										: undefined,
 									styleClassNames: triggeredAction.styleClassNames,
+									isActive,
+									isNext,
 								}),
 							})
 						})
@@ -217,6 +236,18 @@ export class StudioDeviceTriggerManager {
 		})
 
 		actionManager.deleteActionsOtherThan(touchedActionIds)
+	}
+
+	protected async updateTriggersFromLastCache(): Promise<void> {
+		if (!this.lastCache || !this.#lastShowStyleBaseId) return
+		return this.updateTriggers(this.lastCache, this.#lastShowStyleBaseId)
+	}
+
+	async updatePieceInstances(cache: PieceInstancesContentCache, showStyleBaseId: ShowStyleBaseId): Promise<void> {
+		const shouldUpdateTriggers = this.tagsService.updatePieceInstances(cache, showStyleBaseId)
+		if (shouldUpdateTriggers) {
+			await this.updateTriggersFromLastCache()
+		}
 	}
 
 	async clearTriggers(): Promise<void> {
@@ -280,7 +311,10 @@ function convertDocument(doc: ReadonlyObjectDeep<DBTriggeredActions>): UITrigger
 	})
 }
 
-async function createCurrentContextFromCache(cache: ContentCache): Promise<ReactivePlaylistActionContext> {
+async function createCurrentContextFromCache(
+	cache: ContentCache,
+	studioId: StudioId
+): Promise<ReactivePlaylistActionContext> {
 	const rundownPlaylist = await cache.RundownPlaylists.findOneAsync({
 		activationId: {
 			$exists: true,
@@ -312,6 +346,7 @@ async function createCurrentContextFromCache(cache: ContentCache): Promise<React
 		: []
 
 	return {
+		studioId: new DummyReactiveVar(studioId),
 		currentPartInstanceId: new DummyReactiveVar(currentPartInstance?._id ?? null),
 		currentPartId: new DummyReactiveVar(currentPartInstance?.part._id ?? null),
 		nextPartId: new DummyReactiveVar(nextPartInstance?.part._id ?? null),

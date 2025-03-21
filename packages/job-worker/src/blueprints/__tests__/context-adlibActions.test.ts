@@ -55,6 +55,14 @@ describe('Test blueprint api context', () => {
 			expect(mockActionService.getResolvedPieceInstances).toHaveBeenCalledWith('current')
 		})
 
+		test('getSegment', async () => {
+			const { context, mockActionService } = await getTestee()
+
+			await context.getSegment('current')
+			expect(mockActionService.getSegment).toHaveBeenCalledTimes(1)
+			expect(mockActionService.getSegment).toHaveBeenCalledWith('current')
+		})
+
 		test('findLastPieceOnLayer', async () => {
 			const { context, mockActionService } = await getTestee()
 
@@ -139,6 +147,10 @@ describe('Test blueprint api context', () => {
 			await context.removePieceInstances('next', ['pieceInstanceId'])
 			expect(mockActionService.removePieceInstances).toHaveBeenCalledTimes(1)
 			expect(mockActionService.removePieceInstances).toHaveBeenCalledWith('next', ['pieceInstanceId'])
+
+			await context.removePieceInstances('current', ['pieceInstanceId'])
+			expect(mockActionService.removePieceInstances).toHaveBeenCalledTimes(2)
+			expect(mockActionService.removePieceInstances).toHaveBeenCalledWith('current', ['pieceInstanceId'])
 		})
 
 		test('updatePartInstance', async () => {

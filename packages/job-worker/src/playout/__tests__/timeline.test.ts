@@ -65,6 +65,8 @@ import * as _ from 'underscore'
 import { PlayoutRundownModel } from '../model/PlayoutRundownModel'
 import { PlayoutPartInstanceModel } from '../model/PlayoutPartInstanceModel'
 import { PlayoutPartInstanceModelImpl } from '../model/implementation/PlayoutPartInstanceModelImpl'
+import { mock } from 'jest-mock-extended'
+import { QuickLoopService } from '../model/services/QuickLoopService'
 
 /**
  * An object used to represent the simplified timeline structure.
@@ -353,18 +355,19 @@ async function doOnPlayoutPlaybackChanged(
 				  }
 				: undefined,
 			// The piece controlObjects start offset into the part, so need a manual offset
-			...Object.entries<number | null>(timings.pieceOffsets).map(([pieceInstanceId, offset]) =>
-				offset !== null
-					? {
-							type: PlayoutChangedType.PIECE_PLAYBACK_STARTED,
-							data: {
-								partInstanceId: timings.partId,
-								pieceInstanceId: protectString(pieceInstanceId),
-								time: timings.baseTime + offset,
-							},
-							objId: getPieceControlObjectId(protectString(pieceInstanceId)),
-					  }
-					: undefined
+			...Object.entries<number | null>(timings.pieceOffsets).map(
+				([pieceInstanceId, offset]): PlayoutChangedResult | undefined =>
+					offset !== null
+						? {
+								type: PlayoutChangedType.PIECE_PLAYBACK_STARTED,
+								data: {
+									partInstanceId: timings.partId,
+									pieceInstanceId: protectString(pieceInstanceId),
+									time: timings.baseTime + offset,
+								},
+								objId: getPieceControlObjectId(protectString(pieceInstanceId)),
+						  }
+						: undefined
 			),
 		]),
 	})
@@ -710,7 +713,7 @@ describe('Timeline', () => {
 				const pieceInstances = await context.directCollections.PieceInstances.findFetch({
 					partInstanceId: partInstance?._id,
 				})
-				return new PlayoutPartInstanceModelImpl(partInstance, pieceInstances, false)
+				return new PlayoutPartInstanceModelImpl(partInstance, pieceInstances, false, mock<QuickLoopService>())
 			}
 
 			return {
