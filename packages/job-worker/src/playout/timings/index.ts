@@ -52,7 +52,7 @@ export async function handleOnPlayoutPlaybackChanged(
 					) {
 						triggerRegeneration = true
 					} else {
-						logger.info(
+						logger.warn(
 							`Playout gateway requested a regeneration of the timeline, with an incorrect regenerationToken. Got ${change.data.regenerationToken}, expected ${playoutModel.timeline?.regenerateTimelineToken}`
 						)
 					}
