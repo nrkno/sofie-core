@@ -39,6 +39,7 @@ import { DocumentTitleProvider } from '../lib/DocumentTitleProvider'
 import { catchError, firstIfArray, isRunningInPWA } from '../lib/lib'
 import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { useUserPermissions, UserPermissionsContext } from './UserPermissions'
+import { relativeToSiteRootUrl, ROOT_URL_PATH_PREFIX } from '../url'
 
 const NullComponent = () => null
 
@@ -147,8 +148,14 @@ export const App: React.FC = function App() {
 
 	return (
 		<UserPermissionsContext.Provider value={roles}>
-			<Router getUserConfirmation={onNavigationUserConfirmation}>
-				<div className="container-fluid header-clear">
+			<Router getUserConfirmation={onNavigationUserConfirmation} basename={ROOT_URL_PATH_PREFIX}>
+				<div
+					className="container-fluid header-clear"
+					style={{
+						// @ts-expect-error custom variable
+						'--sofie-logo-url': `url(${relativeToSiteRootUrl('/images/sofie-logo.svg')})`,
+					}}
+				>
 					{/* Header switch - render the usual header for all pages but the rundown view */}
 					<ErrorBoundary>
 						<Switch>

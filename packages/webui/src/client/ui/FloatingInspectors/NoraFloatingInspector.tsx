@@ -3,6 +3,7 @@ import React, { useEffect, useImperativeHandle } from 'react'
 import _ from 'underscore'
 import { getNoraContentSteps } from '../SegmentContainer/PieceMultistepChevron'
 import Escape from './../../lib/Escape'
+import { relativeToSiteRootUrl } from '../../url'
 
 interface IPropsHeader {
 	noraContent: NoraContent | undefined
@@ -206,7 +207,7 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 					ref={this._setRootElement}
 				>
 					<div className="preview">
-						<img src="/images/previewBG.jpg" alt="" />
+						<img src={relativeToSiteRootUrl('/images/previewBG.jpg')} alt="" />
 						{rendererUrl && (
 							<iframe
 								key={rendererUrl} // Use the url as the key, so that the old renderer unloads immediately when changing url

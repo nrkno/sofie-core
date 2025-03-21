@@ -6,6 +6,7 @@ import { TransitionContent } from '@sofie-automation/blueprints-integration'
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 import { FloatingInspector } from '../../FloatingInspector'
 import { IFloatingInspectorPosition, useInspectorPosition } from '../../FloatingInspectors/IFloatingInspectorPosition'
+import { createPrivateApiPath } from '../../../url'
 
 type IProps = ICustomLayerItemProps
 interface IState {
@@ -68,7 +69,7 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<IProps, IS
 						{this.props.piece.instance.piece.name}
 						{content?.icon && !this.state.iconFailed && (
 							<img
-								src={'/api/private/blueprints/assets/' + content.icon}
+								src={createPrivateApiPath('blueprints/assets/' + content.icon)}
 								className="segment-timeline__piece__label__transition-icon"
 								onError={this.iconFailed}
 								alt={this.props.piece.instance.piece.name}
@@ -99,7 +100,7 @@ function TransitionFloatingInspector({
 				style={floatingInspectorStyle}
 				ref={ref}
 			>
-				<img src={`/api/private/blueprints/assets/${preview}`} className="thumbnail" />
+				<img src={createPrivateApiPath(`blueprints/assets/${preview}`)} className="thumbnail" />
 			</div>
 		</FloatingInspector>
 	)

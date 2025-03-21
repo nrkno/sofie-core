@@ -14,6 +14,7 @@ import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylists } from '../../collections'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { withTranslation } from 'react-i18next'
+import { relativeToSiteRootUrl } from '../../url'
 
 interface IProps {
 	// the studio to be displayed in the screen saver
@@ -337,7 +338,7 @@ const StudioScreenSaverContent = withTranslation()(
 				>
 					<object
 						className="studio-screen-saver__bkg"
-						data="/images/screen-saver-bkg.svg"
+						data={relativeToSiteRootUrl('/images/screen-saver-bkg.svg')}
 						type="image/svg+xml"
 					></object>
 					<div

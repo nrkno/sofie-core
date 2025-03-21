@@ -38,6 +38,7 @@ import { OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataM
 import { RundownLayouts } from '../../collections'
 import { LabelActual } from '../../lib/Components/LabelAndOverrides'
 import { withTranslation } from 'react-i18next'
+import { createPrivateApiPath } from '../../url'
 
 export interface IProps {
 	showStyleBaseId: ShowStyleBaseId
@@ -174,7 +175,7 @@ const RundownLayoutEditorContent = withTranslation()(
 		}
 
 		downloadItem = (item: RundownLayoutBase) => {
-			window.location.replace(`/api/private/shelfLayouts/download/${item._id}`)
+			window.location.replace(createPrivateApiPath(`shelfLayouts/download/${item._id}`))
 		}
 
 		finishEditItem = (item: RundownLayoutBase) => {
@@ -530,7 +531,7 @@ const RundownLayoutEditorContent = withTranslation()(
 					),
 					onAccept: () => {
 						if (uploadFileContents) {
-							fetchFrom(`/api/private/shelfLayouts/upload/${this.props.showStyleBaseId}`, {
+							fetchFrom(createPrivateApiPath(`shelfLayouts/upload/${this.props.showStyleBaseId}`), {
 								method: 'POST',
 								body: uploadFileContents,
 								headers: {

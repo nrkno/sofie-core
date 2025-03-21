@@ -30,6 +30,7 @@ import { WrappedOverridableItemNormal, useOverrideOpHelper } from './util/Overri
 import { CheckboxControl } from '../../lib/Components/Checkbox'
 import { CombinedMultiLineTextInputControl, MultiLineTextInputControl } from '../../lib/Components/MultiLineTextInput'
 import { TextInputControl } from '../../lib/Components/TextInput'
+import { createPrivateApiPath } from '../../url'
 
 interface WithCoreSystemProps {
 	coreSystem: ICoreSystem
@@ -572,7 +573,11 @@ function SystemManagementHeapSnapshot() {
 					<>
 						<div>{t(`Are you sure? This will cause the whole Sofie system to be unresponsive several seconds!`)}</div>
 
-						<a className="btn btn-primary" href="/api/private/heapSnapshot/retrieve?areYouSure=yes" onClick={onConfirm}>
+						<a
+							className="btn btn-primary"
+							href={createPrivateApiPath('heapSnapshot/retrieve?areYouSure=yes')}
+							onClick={onConfirm}
+						>
 							{t(`Yes, Take and Download Memory Heap Snapshot`)}
 						</a>
 						<button className="btn btn-default" onClick={onReset}>

@@ -29,6 +29,7 @@ import { SourceLayers, OutputLayers } from '@sofie-automation/corelib/dist/dataM
 import { RundownPlaylistCollectionUtil } from '../../../../collections/rundownPlaylistUtil'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { UIPartInstances, UIParts } from '../../../Collections'
+import { createPrivateApiPath } from '../../../../url'
 
 export interface PreviewContext {
 	rundownPlaylist: DBRundownPlaylist | null
@@ -316,7 +317,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 	)
 
 	const onDownloadActions = useCallback(() => {
-		window.location.replace(`/api/private/actionTriggers/download/${showStyleBaseId ?? ''}`)
+		window.location.replace(createPrivateApiPath(`actionTriggers/download/${showStyleBaseId ?? ''}`))
 	}, [showStyleBaseId])
 
 	const onUploadActions = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -335,14 +336,17 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 
 			if (uploadFileContents) {
 				function uploadStoredTriggeredActions(replace?: boolean) {
-					fetchFrom(`/api/private/actionTriggers/upload/${showStyleBaseId ?? ''}${replace ? '?replace' : ''}`, {
-						method: 'POST',
-						body: uploadFileContents,
-						headers: {
-							'content-type': 'application/json',
-							// authorization: 'id ' + Meteor.userId(),
-						},
-					})
+					fetchFrom(
+						createPrivateApiPath(`actionTriggers/upload/${showStyleBaseId ?? ''}${replace ? '?replace' : ''}`),
+						{
+							method: 'POST',
+							body: uploadFileContents,
+							headers: {
+								'content-type': 'application/json',
+								// authorization: 'id ' + Meteor.userId(),
+							},
+						}
+					)
 						.then(() => {
 							NotificationCenter.push(
 								new Notification(

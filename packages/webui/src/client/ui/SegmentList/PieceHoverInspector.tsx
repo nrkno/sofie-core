@@ -16,6 +16,7 @@ import { VTFloatingInspector } from '../FloatingInspectors/VTFloatingInspector'
 import { PieceUi } from '../SegmentContainer/withResolvedSegment'
 import { ReadonlyDeep } from 'type-fest'
 import { PieceContentStatusObj } from '@sofie-automation/corelib/dist/dataModel/PieceContentStatus'
+import { createPrivateApiPath } from '../../url'
 
 export function PieceHoverInspector({
 	studio,
@@ -56,7 +57,7 @@ export function PieceHoverInspector({
 								transform: 'translate(0, -100%)',
 							}}
 						>
-							<img src={'/api/private/blueprints/assets/' + transitionContent.preview} className="thumbnail" />
+							<img src={createPrivateApiPath('blueprints/assets/' + transitionContent.preview)} className="thumbnail" />
 						</div>
 					)}
 				</FloatingInspector>
