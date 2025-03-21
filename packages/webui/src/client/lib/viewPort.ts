@@ -190,6 +190,8 @@ function getElementToScrollTo(
 	return elementToScrollToOrSegmentId
 }
 
+let pendingFirstStageTimeout: NodeJS.Timeout | undefined
+
 async function innerScrollToSegment(
 	elementToScrollTo: HTMLElement,
 	forceScroll?: boolean,
@@ -197,6 +199,10 @@ async function innerScrollToSegment(
 	secondStage?: boolean
 ): Promise<boolean> {
 	if (!secondStage) {
+		if (pendingFirstStageTimeout) {
+			clearTimeout(pendingFirstStageTimeout)
+			pendingFirstStageTimeout = undefined
+		}
 		currentScrollingElement = elementToScrollTo
 	} else if (secondStage && elementToScrollTo !== currentScrollingElement) {
 		throw new Error('Scroll overriden by another scroll')
@@ -223,7 +229,8 @@ async function innerScrollToSegment(
 				return new Promise<boolean>((resolve, reject) => {
 					if (!secondStage) {
 						//  Wait to settle 1 atemt to scroll
-						setTimeout(() => {
+						pendingFirstStageTimeout = setTimeout(() => {
+							pendingFirstStageTimeout = undefined
 							let { top, bottom } = elementToScrollTo.getBoundingClientRect()
 							top = Math.floor(top)
 							bottom = Math.floor(bottom)
