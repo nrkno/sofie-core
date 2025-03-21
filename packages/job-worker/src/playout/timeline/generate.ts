@@ -1,4 +1,4 @@
-import { BlueprintId, TimelineHash } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BlueprintId, RundownPlaylistId, TimelineHash } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { JobContext, JobStudio } from '../../jobs'
 import { ReadonlyDeep } from 'type-fest'
 import { BlueprintResultBaseline, OnGenerateTimelineObj, Time, TSR } from '@sofie-automation/blueprints-integration'
@@ -10,10 +10,11 @@ import {
 	TimelineObjGeneric,
 	TimelineObjRundown,
 	TimelineObjType,
+	TimelineObjRegenerateTrigger,
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { applyToArray, clone, literal, normalizeArray, omit } from '@sofie-automation/corelib/dist/lib'
+import { applyToArray, clone, getHash, literal, normalizeArray, omit } from '@sofie-automation/corelib/dist/lib'
 import { PlayoutModel } from '../model/PlayoutModel'
 import { logger } from '../../logging'
 import { getCurrentTime, getSystemVersion } from '../../lib'
@@ -41,6 +42,7 @@ import { applyAbPlaybackForTimeline } from '../abPlayback'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { PlayoutPartInstanceModel } from '../model/PlayoutPartInstanceModel'
 import { PersistentPlayoutStateStore } from '../../blueprints/context/services/PersistantStateStore'
+import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 
 function isModelForStudio(model: StudioPlayoutModelBase): model is StudioPlayoutModel {
 	const tmp = model as StudioPlayoutModel
@@ -121,7 +123,7 @@ export async function updateStudioTimeline(
 		logAnyRemainingNowTimes(context, baselineObjects)
 	}
 
-	const timelineHash = saveTimeline(context, playoutModel, baselineObjects, versions)
+	const timelineHash = saveTimeline(context, playoutModel, baselineObjects, versions, undefined)
 
 	if (studioBaseline) {
 		updateBaselineExpectedPackagesOnStudio(context, playoutModel, studioBaseline)
@@ -139,7 +141,12 @@ export async function updateTimeline(context: JobContext, playoutModel: PlayoutM
 		throw new Error(`RundownPlaylist ("${playoutModel.playlist._id}") is not active")`)
 	}
 
-	const { versions, objs: timelineObjs, timingContext: timingInfo } = await getTimelineRundown(context, playoutModel)
+	const {
+		versions,
+		objs: timelineObjs,
+		timingContext: timingInfo,
+		regenerateTimelineToken,
+	} = await getTimelineRundown(context, playoutModel)
 
 	flattenAndProcessTimelineObjects(context, timelineObjs)
 
@@ -151,7 +158,7 @@ export async function updateTimeline(context: JobContext, playoutModel: PlayoutM
 		logAnyRemainingNowTimes(context, timelineObjs)
 	}
 
-	const timelineHash = saveTimeline(context, playoutModel, timelineObjs, versions)
+	const timelineHash = saveTimeline(context, playoutModel, timelineObjs, versions, regenerateTimelineToken)
 	logger.verbose(`updateTimeline done, hash: "${timelineHash}"`)
 
 	if (span) span.end()
@@ -222,9 +229,10 @@ export function saveTimeline(
 	context: JobContext,
 	studioPlayoutModel: StudioPlayoutModelBase,
 	timelineObjs: TimelineObjGeneric[],
-	generationVersions: TimelineCompleteGenerationVersions
+	generationVersions: TimelineCompleteGenerationVersions,
+	regenerateTimelineToken: string | undefined
 ): TimelineHash {
-	const newTimeline = studioPlayoutModel.setTimeline(timelineObjs, generationVersions)
+	const newTimeline = studioPlayoutModel.setTimeline(timelineObjs, generationVersions, regenerateTimelineToken)
 
 	// Also do a fast-track for the timeline to be published faster:
 	context.hackPublishTimelineToFastTrack(newTimeline)
@@ -243,6 +251,7 @@ export interface SelectedPartInstanceTimelineInfo {
 	partInstance: ReadonlyDeep<DBPartInstance>
 	pieceInstances: PieceInstanceWithTimings[]
 	calculatedTimings: PartCalculatedTimings
+	regenerateTimelineAt: number | undefined
 }
 
 function getPartInstanceTimelineInfo(
@@ -268,6 +277,7 @@ function getPartInstanceTimelineInfo(
 		partStarted,
 		// Approximate `calculatedTimings`, for the partInstances which already have it cached
 		calculatedTimings: getPartTimingsOrDefaults(partInstanceWithOverrides, pieceInstances),
+		regenerateTimelineAt: undefined, // Future use
 	}
 }
 
@@ -281,6 +291,7 @@ async function getTimelineRundown(
 	objs: Array<TimelineObjRundown>
 	versions: TimelineCompleteGenerationVersions
 	timingContext: RundownTimelineTimingContext | undefined
+	regenerateTimelineToken: string | undefined
 }> {
 	const span = context.startSpan('getTimelineRundown')
 	try {
@@ -335,6 +346,9 @@ async function getTimelineRundown(
 
 			timelineObjs = timelineObjs.concat(rundownTimelineResult.timeline)
 			timelineObjs = timelineObjs.concat(await pLookaheadObjs)
+
+			const regenerateTimelineObj = createRegenerateTimelineObj(playoutModel.playlistId, partInstancesInfo)
+			if (regenerateTimelineObj) timelineObjs.push(regenerateTimelineObj.obj)
 
 			const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 			timelineVersions = generateTimelineVersions(
@@ -439,6 +453,7 @@ async function getTimelineRundown(
 				}),
 				versions: timelineVersions ?? generateTimelineVersions(context.studio, undefined, '-'),
 				timingContext: rundownTimelineResult.timingContext,
+				regenerateTimelineToken: regenerateTimelineObj?.token,
 			}
 		} else {
 			if (span) span.end()
@@ -447,6 +462,7 @@ async function getTimelineRundown(
 				objs: [],
 				versions: generateTimelineVersions(context.studio, undefined, '-'),
 				timingContext: undefined,
+				regenerateTimelineToken: undefined,
 			}
 		}
 	} catch (e) {
@@ -456,7 +472,46 @@ async function getTimelineRundown(
 			objs: [],
 			versions: generateTimelineVersions(context.studio, undefined, '-'),
 			timingContext: undefined,
+			regenerateTimelineToken: undefined,
 		}
+	}
+}
+
+function createRegenerateTimelineObj(
+	playlistId: RundownPlaylistId,
+	partInstancesInfo: SelectedPartInstancesTimelineInfo
+) {
+	const regenerateTimelineAt = Math.min(
+		partInstancesInfo.current?.regenerateTimelineAt ?? Number.POSITIVE_INFINITY,
+		partInstancesInfo.next?.regenerateTimelineAt ?? Number.POSITIVE_INFINITY
+	)
+	if (regenerateTimelineAt < Number.POSITIVE_INFINITY) {
+		// The timeline has requested a regeneration at a specific time
+		const token = getHash(`regenerate-${playlistId}-${getCurrentTime()}`)
+		const obj = literal<TimelineObjRegenerateTrigger & OnGenerateTimelineObjExt>({
+			id: `regenerate_${token}`,
+			enable: {
+				start: regenerateTimelineAt,
+			},
+			layer: '__timeline_regeneration_trigger__', // Some unique name, as callbacks need to be on a layer
+			priority: 1,
+			content: {
+				deviceType: TSR.DeviceType.ABSTRACT,
+				type: 'callback',
+				callBack: PlayoutChangedType.TRIGGER_REGENERATION,
+				callBackData: {
+					rundownPlaylistId: playlistId,
+					regenerationToken: token,
+				},
+			},
+			objectType: TimelineObjType.RUNDOWN,
+			metaData: undefined,
+			partInstanceId: null,
+		})
+
+		return { token, obj }
+	} else {
+		return null
 	}
 }
 

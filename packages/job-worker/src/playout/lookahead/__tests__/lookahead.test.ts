@@ -276,6 +276,7 @@ describe('Lookahead', () => {
 			partStarted: getCurrentTime() + 546,
 			pieceInstances: ['1', '2'] as any,
 			calculatedTimings: { inTransitionStart: null } as any,
+			regenerateTimelineAt: undefined,
 		}
 
 		const expectedPrevious = {
@@ -299,6 +300,7 @@ describe('Lookahead', () => {
 			partStarted: getCurrentTime() + 865,
 			pieceInstances: ['3', '4'] as any,
 			calculatedTimings: { inTransitionStart: null } as any,
+			regenerateTimelineAt: undefined,
 		}
 		const expectedCurrent = {
 			part: partInstancesInfo.current.partInstance,
@@ -319,6 +321,7 @@ describe('Lookahead', () => {
 			partStarted: getCurrentTime() + 142,
 			pieceInstances: ['5'] as any,
 			calculatedTimings: { inTransitionStart: null } as any,
+			regenerateTimelineAt: undefined,
 		}
 		const expectedNext = {
 			part: partInstancesInfo.next.partInstance,
