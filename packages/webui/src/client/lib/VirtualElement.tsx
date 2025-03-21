@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { InView } from 'react-intersection-observer'
-import { viewPortScrollingState } from './viewPort'
+import { getViewPortScrollingState } from './viewPort'
 
 interface IElementMeasurements {
 	width: string | number
@@ -91,11 +91,11 @@ export function VirtualElement({
 
 	const isScrolling = (): boolean => {
 		// Don't do updates while scrolling:
-		if (viewPortScrollingState.isProgrammaticScrollInProgress) {
+		if (getViewPortScrollingState().isProgrammaticScrollInProgress) {
 			return true
 		}
 		// And wait if a programmatic scroll was done recently:
-		const timeSinceLastProgrammaticScroll = Date.now() - viewPortScrollingState.lastProgrammaticScrollTime
+		const timeSinceLastProgrammaticScroll = Date.now() - getViewPortScrollingState().lastProgrammaticScrollTime
 		if (timeSinceLastProgrammaticScroll < 100) {
 			return true
 		}
