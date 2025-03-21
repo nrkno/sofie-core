@@ -267,6 +267,11 @@ function getRegionPosition(topElement: HTMLElement, bottomElement: HTMLElement):
 	return { top, bottom }
 }
 
+export const viewPortScrollingState = {
+	isProgrammaticScrollInProgress: false,
+	lastProgrammaticScrollTime: 0,
+}
+
 export async function scrollToPosition(scrollPosition: number, noAnimation?: boolean): Promise<void> {
 	// Calculate the exact position
 	const headerOffset = getHeaderHeight() + HEADER_MARGIN
@@ -280,11 +285,16 @@ export async function scrollToPosition(scrollPosition: number, noAnimation?: boo
 		})
 		return Promise.resolve()
 	} else {
+		viewPortScrollingState.isProgrammaticScrollInProgress = true
+		viewPortScrollingState.lastProgrammaticScrollTime = Date.now()
+
 		window.scroll({
 			top: targetTop,
 			left: 0,
 			behavior: 'smooth',
 		})
+		await new Promise((resolve) => setTimeout(resolve, 500))
+		viewPortScrollingState.isProgrammaticScrollInProgress = false
 	}
 }
 

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { InView } from 'react-intersection-observer'
+import { viewPortScrollingState } from './viewPort'
 
 interface IElementMeasurements {
 	width: string | number
@@ -11,12 +12,12 @@ interface IElementMeasurements {
 	id: string | undefined
 }
 
-const OPTIMIZE_PERIOD = 5000
 const IDLE_CALLBACK_TIMEOUT = 100
 
 /**
  * This is a component that allows optimizing the amount of elements present in the DOM through replacing them
  * with placeholders when they aren't visible in the viewport.
+ * Scroll timing issues, should be handled in viewPort.tsx where the scrolling state is tracked.
  *
  * @export
  * @param {(React.PropsWithChildren<{
@@ -83,6 +84,19 @@ export function VirtualElement({
 		setInView(visible)
 	}, [])
 
+	const isScrolling = (): boolean => {
+		// Don't do updates while scrolling:
+		if (viewPortScrollingState.isProgrammaticScrollInProgress) {
+			return true
+		}
+		// And wait if a programmatic scroll was done recently:
+		const timeSinceLastProgrammaticScroll = Date.now() - viewPortScrollingState.lastProgrammaticScrollTime
+		if (timeSinceLastProgrammaticScroll < 100) {
+			return true
+		}
+		return false
+	}
+
 	useEffect(() => {
 		if (inView === true) {
 			setIsShowingChildren(true)
@@ -90,7 +104,20 @@ export function VirtualElement({
 		}
 
 		let idleCallback: number | undefined
-		const optimizeTimeout = window.setTimeout(() => {
+		let optimizeTimeout: number | undefined
+
+		const scheduleOptimization = () => {
+			if (optimizeTimeout) {
+				window.clearTimeout(optimizeTimeout)
+			}
+			// Don't proceed if we're scrolling
+			if (isScrolling()) {
+				// Reschedule for after the scroll should be complete
+				const scrollDelay = 200
+				window.clearTimeout(optimizeTimeout)
+				optimizeTimeout = window.setTimeout(scheduleOptimization, scrollDelay)
+				return
+			}
 			idleCallback = window.requestIdleCallback(
 				() => {
 					if (childRef) {
@@ -102,14 +129,18 @@ export function VirtualElement({
 					timeout: IDLE_CALLBACK_TIMEOUT,
 				}
 			)
-		}, OPTIMIZE_PERIOD)
+		}
+
+		// Schedule the optimization:
+		scheduleOptimization()
 
 		return () => {
 			if (idleCallback) {
 				window.cancelIdleCallback(idleCallback)
 			}
-
-			window.clearTimeout(optimizeTimeout)
+			if (optimizeTimeout) {
+				window.clearTimeout(optimizeTimeout)
+			}
 		}
 	}, [childRef, inView])
 
