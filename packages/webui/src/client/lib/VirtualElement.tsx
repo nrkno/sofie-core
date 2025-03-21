@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState, useRef } from 'react'
 import { InView } from 'react-intersection-observer'
 import { getViewPortScrollingState } from './viewPort'
 
@@ -13,6 +13,8 @@ interface IElementMeasurements {
 }
 
 const IDLE_CALLBACK_TIMEOUT = 100
+// Increased delay for Safari, as Safari doesn't have scroll time when using 'smooth' scroll
+const SAFARI_VISIBILITY_DELAY = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) ? 100 : 0
 
 /**
  * This is a component that allows optimizing the amount of elements present in the DOM through replacing them
@@ -66,6 +68,9 @@ export function VirtualElement({
 	const [ref, setRef] = useState<HTMLDivElement | null>(null)
 	const [childRef, setChildRef] = useState<HTMLElement | null>(null)
 
+	// Track the last visibility change to debounce
+	const lastVisibilityChangeRef = useRef<number>(0)
+
 	const isMeasured = !!measurements
 
 	const styleObj = useMemo<React.CSSProperties>(
@@ -85,9 +90,21 @@ export function VirtualElement({
 		[width, measurements, placeholderHeight]
 	)
 
-	const onVisibleChanged = useCallback((visible: boolean) => {
-		setInView(visible)
-	}, [])
+	const onVisibleChanged = useCallback(
+		(visible: boolean) => {
+			const now = Date.now()
+
+			// Debounce visibility changes in Safari to prevent unnecessary recaconditions
+			if (SAFARI_VISIBILITY_DELAY > 0 && now - lastVisibilityChangeRef.current < SAFARI_VISIBILITY_DELAY) {
+				return
+			}
+
+			lastVisibilityChangeRef.current = now
+
+			setInView(visible)
+		},
+		[inView]
+	)
 
 	const isScrolling = (): boolean => {
 		// Don't do updates while scrolling:
@@ -147,7 +164,7 @@ export function VirtualElement({
 				window.clearTimeout(optimizeTimeout)
 			}
 		}
-	}, [childRef, inView])
+	}, [childRef, inView, measurements])
 
 	const showPlaceholder = !isShowingChildren && (!initialShow || isMeasured)
 
@@ -183,7 +200,7 @@ export function VirtualElement({
 			}
 			window.clearTimeout(refreshSizingTimeout)
 		}
-	}, [ref, showPlaceholder])
+	}, [ref, showPlaceholder, measurements])
 
 	return (
 		<InView
