@@ -2152,24 +2152,36 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 			}
 		}
 
-		onWheelScrollInner = _.debounce(() => {
-			if (this.state.followLiveSegments && this.props.playlist && this.props.playlist.activationId) {
-				const liveSegmentComponent = document.querySelector('.segment-timeline.live')
-				if (liveSegmentComponent) {
-					const offsetPosition = liveSegmentComponent.getBoundingClientRect()
-					// if it's closer to the top edge than the headerHeight
-					const segmentComponentTooHigh = offsetPosition.top < getHeaderHeight()
-					// or if it's closer to the bottom edge than very close to the top
-					const segmentComponentTooLow =
-						offsetPosition.bottom < window.innerHeight - getHeaderHeight() - 20 - (offsetPosition.height * 3) / 2
-					if (segmentComponentTooHigh || segmentComponentTooLow) {
-						this.setState({
-							followLiveSegments: false,
-						})
+		onWheelScrollInner = _.throttle(
+			() => {
+				if (this.state.followLiveSegments && this.props.playlist && this.props.playlist.activationId) {
+					const liveSegmentComponent = document.querySelector('.segment-timeline.live')
+					if (liveSegmentComponent) {
+						const offsetPosition = liveSegmentComponent.getBoundingClientRect()
+						const headerHeight = getHeaderHeight()
+
+						// Use a buffer zone to prevent oscillation
+						const topBuffer = headerHeight + 10
+						const bottomBuffer = window.innerHeight - headerHeight - 20 - (offsetPosition.height * 3) / 2
+
+						// Check if segment is outside the comfortable viewing area
+						const segmentComponentTooHigh = offsetPosition.top < topBuffer
+						const segmentComponentTooLow = offsetPosition.bottom < bottomBuffer
+
+						if (segmentComponentTooHigh || segmentComponentTooLow) {
+							// Only change state if we need to
+							if (this.state.followLiveSegments) {
+								this.setState({
+									followLiveSegments: false,
+								})
+							}
+						}
 					}
 				}
-			}
-		}, 250)
+			},
+			100,
+			{ leading: true, trailing: true }
+		)
 
 		onWheel = (e: React.WheelEvent<HTMLDivElement>) => {
 			if (e.deltaX === 0 && e.deltaY !== 0 && !e.altKey && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
