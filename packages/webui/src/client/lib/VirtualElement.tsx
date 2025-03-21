@@ -113,7 +113,7 @@ export function VirtualElement({
 			// Don't proceed if we're scrolling
 			if (isScrolling()) {
 				// Reschedule for after the scroll should be complete
-				const scrollDelay = 200
+				const scrollDelay = 400
 				window.clearTimeout(optimizeTimeout)
 				optimizeTimeout = window.setTimeout(scheduleOptimization, scrollDelay)
 				return

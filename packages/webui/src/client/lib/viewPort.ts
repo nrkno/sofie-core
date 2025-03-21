@@ -234,7 +234,7 @@ async function innerScrollToSegment(
 							} else {
 								resolve(true)
 							}
-						}, 600)
+						}, 100)
 					} else {
 						currentScrollingElement = undefined
 						resolve(true)
@@ -294,7 +294,7 @@ export async function scrollToPosition(scrollPosition: number, noAnimation?: boo
 			left: 0,
 			behavior: 'smooth',
 		})
-		await new Promise((resolve) => setTimeout(resolve, 500))
+		await new Promise((resolve) => setTimeout(resolve, 300))
 		viewPortScrollingState.isProgrammaticScrollInProgress = false
 	}
 }
