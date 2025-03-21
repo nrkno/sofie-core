@@ -4,6 +4,7 @@ import {
 	SplitsContentBoxProperties,
 } from '@sofie-automation/blueprints-integration'
 import { literal } from '../tempLib'
+import { ReadonlyDeep } from 'type-fest'
 
 const DEFAULT_POSITIONS = [
 	{
@@ -33,7 +34,9 @@ export interface SplitSubItem {
 }
 
 export function getSplitPreview(
-	boxSourceConfiguration: (SplitsContentBoxContent & SplitsContentBoxProperties)[]
+	boxSourceConfiguration:
+		| (SplitsContentBoxContent & SplitsContentBoxProperties)[]
+		| ReadonlyDeep<(SplitsContentBoxContent & SplitsContentBoxProperties)[]>
 ): ReadonlyArray<Readonly<SplitSubItem>> {
 	return boxSourceConfiguration.map((item, index) => {
 		return literal<Readonly<SplitSubItem>>({

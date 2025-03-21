@@ -221,6 +221,27 @@ export async function checkPieceContentStatusAndDependencies(
 		packageContainerPackageStatuses: [],
 	}
 
+	if (studio.settings.mockPieceContentStatus) {
+		return [
+			{
+				status: PieceStatusCode.OK,
+				messages: [],
+				progress: undefined,
+
+				freezes: [],
+				blacks: [],
+				scenes: [],
+
+				thumbnailUrl: undefined,
+				previewUrl: '/dev/fakePreview.mp4',
+
+				packageName: null,
+				contentDuration: 30 * 1000,
+			},
+			pieceDependencies,
+		]
+	}
+
 	const ignoreMediaStatus = piece.content && piece.content.ignoreMediaObjectStatus
 	if (!ignoreMediaStatus) {
 		if (piece.expectedPackages) {

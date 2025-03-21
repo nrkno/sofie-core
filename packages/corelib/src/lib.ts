@@ -8,6 +8,7 @@ import { iterateDeeply, iterateDeeplyEnum, Time } from '@sofie-automation/bluepr
 import { IStudioSettings } from './dataModel/Studio'
 import { customAlphabet as createNanoid } from 'nanoid'
 import type { ITranslatableMessage } from './TranslatableMessage'
+import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 
 /**
  * Limited character set to use for id generation
@@ -60,6 +61,10 @@ export function min<T>(vals: T[] | readonly T[], iterator: _.ListIterator<T, any
 }
 
 export function clone<T>(o: ReadonlyDeep<T> | Readonly<T> | T): T {
+	// Use this instead of fast-clone directly, as this retains the type
+	return fastClone(o as any)
+}
+export function cloneObject<T extends object>(o: ReadonlyObjectDeep<T> | Readonly<T> | T): T {
 	// Use this instead of fast-clone directly, as this retains the type
 	return fastClone(o as any)
 }

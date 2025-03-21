@@ -6,7 +6,6 @@ import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerIte
 
 import { SplitsContent } from '@sofie-automation/blueprints-integration'
 import { RundownUtils } from '../../../lib/rundown'
-import { SplitsFloatingInspector } from '../../FloatingInspectors/SplitsFloatingInspector'
 import { getSplitPreview, SplitRole, SplitSubItem } from '../../../lib/ui/splitPreview'
 
 type IProps = ICustomLayerItemProps
@@ -121,15 +120,6 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 						</span>
 					</>
 				)}
-				{this.props.piece.instance.piece.content ? (
-					<SplitsFloatingInspector
-						position={this.getFloatingInspectorStyle()}
-						content={this.props.piece.instance.piece.content as Partial<SplitsContent>}
-						itemElement={this.props.itemElement}
-						showMiniInspector={this.props.showMiniInspector}
-						typeClass={this.props.typeClass}
-					/>
-				) : null}
 			</React.Fragment>
 		)
 	}

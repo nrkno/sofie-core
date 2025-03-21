@@ -91,4 +91,9 @@ export interface IStudioSettings {
 	 * Doubleclick changes behaviour as selector for userediting
 	 */
 	enableUserEdits?: boolean
+
+	/**
+	 * Override the piece content statuses with fake info - used for developing the UI
+	 */
+	mockPieceContentStatus?: boolean
 }

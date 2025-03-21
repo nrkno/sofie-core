@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { IDashboardButtonProps, DashboardPieceButtonBase } from './DashboardPieceButton'
 
 import {
@@ -16,6 +16,7 @@ import { useContentStatusForItem } from '../SegmentTimeline/withMediaObjectStatu
 import { BucketAdLibActionUi, BucketAdLibItem } from './RundownViewBuckets'
 import { IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
 import { BucketId, PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PreviewPopUpContext } from '../PreviewPopUp/PreviewPopUpContext'
 
 interface IBucketPieceDragObject {
 	id: PieceId
@@ -128,9 +129,12 @@ export function BucketPieceButton(
 		}),
 	})
 
+	const previewContext = useContext(PreviewPopUpContext)
+
 	return (
 		<BucketPieceButtonBase
 			{...props}
+			previewContext={previewContext}
 			contentStatus={contentStatus}
 			connectDropTarget={connectDropTarget}
 			connectDragPreview={connectDragPreview}
