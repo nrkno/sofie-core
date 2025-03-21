@@ -204,7 +204,7 @@ async function innerScrollToSegment(
 
 	// Ensure that the element is ready to be scrolled:
 	if (!secondStage) {
-		await new Promise((resolve) => setTimeout(resolve, 50))
+		await new Promise((resolve) => setTimeout(resolve, 100))
 	}
 	await new Promise((resolve) => requestAnimationFrame(resolve))
 
