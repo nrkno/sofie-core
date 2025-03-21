@@ -76,6 +76,11 @@ export function VirtualElement({
 			marginLeft: measurements?.marginLeft,
 			marginRight: measurements?.marginRight,
 			marginBottom: measurements?.marginBottom,
+			// These properties are used to ensure that if a prior element is changed from
+			// placeHolder to element, the position of visible elements are not affected.
+			contentVisibility: 'auto',
+			containIntrinsicSize: `0 ${measurements?.clientHeight ?? placeholderHeight ?? '0'}px`,
+			contain: 'size layout',
 		}),
 		[width, measurements, placeholderHeight]
 	)
@@ -158,7 +163,13 @@ export function VirtualElement({
 		const refreshSizingTimeout = window.setTimeout(() => {
 			idleCallback = window.requestIdleCallback(
 				() => {
-					setMeasurements(measureElement(el))
+					const newMeasurements = measureElement(el)
+					setMeasurements(newMeasurements)
+
+					// Set CSS variable for expected height on parent element
+					if (ref && newMeasurements) {
+						ref.style.setProperty('--expected-height', `${newMeasurements.clientHeight}px`)
+					}
 				},
 				{
 					timeout: IDLE_CALLBACK_TIMEOUT,
@@ -182,7 +193,17 @@ export function VirtualElement({
 			className={className}
 			as="div"
 		>
-			<div ref={setRef}>
+			<div
+				ref={setRef}
+				style={
+					// We need to set undefined if the height is not known, to allow the parent to calculate the height
+					measurements
+						? {
+								height: measurements.clientHeight + 'px',
+						  }
+						: undefined
+				}
+			>
 				{showPlaceholder ? (
 					<div
 						id={measurements?.id ?? id}
@@ -199,11 +220,26 @@ export function VirtualElement({
 
 function measureElement(el: HTMLElement): IElementMeasurements | null {
 	const style = window.getComputedStyle(el)
-	const clientRect = el.getBoundingClientRect()
+
+	// Get children to be measured
+	const segmentTimeline = el.querySelector('.segment-timeline')
+	const dashboardPanel = el.querySelector('.rundown-view-shelf.dashboard-panel')
+
+	if (!segmentTimeline) return null
+
+	// Segment height
+	const segmentRect = segmentTimeline.getBoundingClientRect()
+	let totalHeight = segmentRect.height
+
+	// Dashboard panel height if present
+	if (dashboardPanel) {
+		const panelRect = dashboardPanel.getBoundingClientRect()
+		totalHeight += panelRect.height
+	}
 
 	return {
 		width: style.width || 'auto',
-		clientHeight: clientRect.height,
+		clientHeight: totalHeight,
 		marginTop: style.marginTop || undefined,
 		marginBottom: style.marginBottom || undefined,
 		marginLeft: style.marginLeft || undefined,
