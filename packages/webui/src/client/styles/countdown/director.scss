@@ -116,16 +116,20 @@ $hold-status-color: $liveline-timecode-color;
 				}
 				.director-screen__body__segment__countdown {
 					position: absolute;
-					font-size: 110px;
 					top: 0;
 					right: 0px;
 					height: 100%;
-					width: 20vw;
-					float: left;
-					text-align: right;
-					padding-left: 4vw;
+					width: 25vw;
+					display: flex;
+					align-items: center;
+					font-size: 110px;
+					padding-left: 8vw;
 					padding-top: 6px;
 					color: #ff0;
+					font-stretch: 40;
+					font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738,
+						'YTLC' 548, 'YTUC' 712, 'slnt' 0, 'opsz' 100;
+
 					background: linear-gradient(
 						90deg,
 						rgba(223, 0, 0, 0) 0%,
