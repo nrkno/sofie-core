@@ -27,7 +27,10 @@ import { Meteor } from 'meteor/meteor'
 import { hidePointerLockCursor, showPointerLockCursor } from '../../lib/PointerLockCursor'
 import { SegmentScrollbar } from './SegmentScrollbar'
 import { OptionalVelocityComponent } from '../../lib/utilComponents'
-import { filterSecondarySourceLayers } from './StoryboardPartSecondaryPieces/StoryboardPartSecondaryPieces'
+import {
+	filterSecondaryOutputLayers,
+	filterSecondarySourceLayers,
+} from './StoryboardPartSecondaryPieces/StoryboardPartSecondaryPieces'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
@@ -658,19 +661,17 @@ export const SegmentStoryboard = React.memo(
 
 				<div className="segment-timeline__mos-id">{props.segment.externalId}</div>
 				<div className="segment-timeline__source-layers" role="tree" aria-label={t('Sources')}>
-					{Object.values<IOutputLayerUi>(props.segment.outputLayers)
-						.filter((outputGroup) => outputGroup.used)
-						.map((outputGroup) => (
-							<div className="segment-timeline__output-group" key={outputGroup._id}>
-								{filterSecondarySourceLayers(outputGroup.sourceLayers).map((sourceLayer) =>
-									sourceLayer.pieces.length > 0 ? (
-										<div className="segment-timeline__source-layer" key={sourceLayer._id} role="treeitem">
-											{sourceLayer.name}
-										</div>
-									) : null
-								)}
-							</div>
-						))}
+					{filterSecondaryOutputLayers(Object.values<IOutputLayerUi>(props.segment.outputLayers)).map((outputGroup) => (
+						<div className="segment-timeline__output-group" key={outputGroup._id}>
+							{filterSecondarySourceLayers(outputGroup.sourceLayers).map((sourceLayer) =>
+								sourceLayer.pieces.length > 0 ? (
+									<div className="segment-timeline__source-layer" key={sourceLayer._id} role="treeitem">
+										{sourceLayer.name}
+									</div>
+								) : null
+							)}
+						</div>
+					))}
 				</div>
 				<ErrorBoundary>
 					<SwitchViewModeButton currentMode={SegmentViewMode.Storyboard} onSwitchViewMode={props.onSwitchViewMode} />
