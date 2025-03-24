@@ -37,7 +37,7 @@ import {
 	TimelineObjGeneric,
 } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 import { PLAYOUT_DEVICE_CONFIG } from './configManifest'
-import { PlayoutGatewayConfig } from './generated/options'
+import { PlayoutGatewayConfig } from '@sofie-automation/shared-lib/dist/generated/PlayoutGatewayConfigTypes'
 import {
 	assertNever,
 	getSchemaDefaultValues,
