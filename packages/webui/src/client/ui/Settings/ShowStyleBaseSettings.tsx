@@ -130,73 +130,69 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		renderEditForm(showStyleBase: DBShowStyleBase) {
 			const { t } = this.props
 			return (
-				<div className="studio-edit mod mhl mvn">
-					<div className="row">
-						<div className="col c12 r1-c12">
-							<ErrorBoundary>
-								<Switch>
-									<Route path={`${this.props.match.path}/generic`}>
-										<ShowStyleGenericProperties
-											showStyleBase={showStyleBase}
-											compatibleStudios={this.props.compatibleStudios}
-										/>
-									</Route>
-									<Route path={`${this.props.match.path}/layers`}>
-										<>
-											<SourceLayerSettings showStyleBase={showStyleBase} />
-											<OutputLayerSettings showStyleBase={showStyleBase} />
-										</>
-									</Route>
-									<Route path={`${this.props.match.path}/action-triggers`}>
-										<TriggeredActionsEditor
+				<div className="studio-edit mx-4">
+					<ErrorBoundary>
+						<Switch>
+							<Route path={`${this.props.match.path}/generic`}>
+								<ShowStyleGenericProperties
+									showStyleBase={showStyleBase}
+									compatibleStudios={this.props.compatibleStudios}
+								/>
+							</Route>
+							<Route path={`${this.props.match.path}/layers`}>
+								<>
+									<SourceLayerSettings showStyleBase={showStyleBase} />
+									<OutputLayerSettings showStyleBase={showStyleBase} />
+								</>
+							</Route>
+							<Route path={`${this.props.match.path}/action-triggers`}>
+								<TriggeredActionsEditor
+									showStyleBaseId={showStyleBase._id}
+									sourceLayers={this.props.sourceLayers}
+									outputLayers={this.props.outputLayers}
+								/>
+							</Route>
+							<Route path={`${this.props.match.path}/hotkey-labels`}>
+								<HotkeyLegendSettings showStyleBase={showStyleBase} />
+							</Route>
+
+							{RundownLayoutsAPI.getSettingsManifest(t).map((region) => {
+								return (
+									<Route key={region._id} path={`${this.props.match.path}/layouts-${region._id}`}>
+										<RundownLayoutEditor
 											showStyleBaseId={showStyleBase._id}
 											sourceLayers={this.props.sourceLayers}
 											outputLayers={this.props.outputLayers}
+											studios={this.props.compatibleStudios}
+											customRegion={region}
 										/>
 									</Route>
-									<Route path={`${this.props.match.path}/hotkey-labels`}>
-										<HotkeyLegendSettings showStyleBase={showStyleBase} />
-									</Route>
+								)
+							})}
 
-									{RundownLayoutsAPI.getSettingsManifest(t).map((region) => {
-										return (
-											<Route key={region._id} path={`${this.props.match.path}/layouts-${region._id}`}>
-												<RundownLayoutEditor
-													showStyleBaseId={showStyleBase._id}
-													sourceLayers={this.props.sourceLayers}
-													outputLayers={this.props.outputLayers}
-													studios={this.props.compatibleStudios}
-													customRegion={region}
-												/>
-											</Route>
-										)
-									})}
+							<Route path={`${this.props.match.path}/blueprint-config`}>
+								<ShowStyleBaseBlueprintConfigurationSettings
+									showStyleBase={showStyleBase}
+									schema={this.props.blueprintConfigSchema}
+									layerMappings={this.props.layerMappings}
+									sourceLayers={this.props.sourceLayers}
+								/>
+							</Route>
+							<Route path={`${this.props.match.path}/variants`}>
+								<ShowStyleVariantsSettings
+									showStyleVariants={this.props.showStyleVariants}
+									blueprintConfigSchema={this.props.blueprintConfigSchema}
+									blueprintTranslationNamespaces={['blueprint_' + this.props.showStyleBase?.blueprintId]}
+									blueprintConfigPreset={this.props.blueprintConfigPreset}
+									showStyleBase={showStyleBase}
+									layerMappings={this.props.layerMappings}
+									sourceLayers={this.props.sourceLayers}
+								/>
+							</Route>
 
-									<Route path={`${this.props.match.path}/blueprint-config`}>
-										<ShowStyleBaseBlueprintConfigurationSettings
-											showStyleBase={showStyleBase}
-											schema={this.props.blueprintConfigSchema}
-											layerMappings={this.props.layerMappings}
-											sourceLayers={this.props.sourceLayers}
-										/>
-									</Route>
-									<Route path={`${this.props.match.path}/variants`}>
-										<ShowStyleVariantsSettings
-											showStyleVariants={this.props.showStyleVariants}
-											blueprintConfigSchema={this.props.blueprintConfigSchema}
-											blueprintTranslationNamespaces={['blueprint_' + this.props.showStyleBase?.blueprintId]}
-											blueprintConfigPreset={this.props.blueprintConfigPreset}
-											showStyleBase={showStyleBase}
-											layerMappings={this.props.layerMappings}
-											sourceLayers={this.props.sourceLayers}
-										/>
-									</Route>
-
-									<Redirect to={`${this.props.match.path}/generic`} />
-								</Switch>
-							</ErrorBoundary>
-						</div>
-					</div>
+							<Redirect to={`${this.props.match.path}/generic`} />
+						</Switch>
+					</ErrorBoundary>
 				</div>
 			)
 		}

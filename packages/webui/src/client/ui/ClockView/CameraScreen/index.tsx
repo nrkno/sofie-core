@@ -28,7 +28,7 @@ import { useBlackBrowserTheme } from '../../../lib/useBlackBrowserTheme'
 import { useWakeLock } from './useWakeLock'
 import { catchError, useDebounce } from '../../../lib/lib'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
-import { useSetDocumentClass } from '../../util/useSetDocumentClass'
+import { useSetDocumentClass, useSetDocumentDarkTheme } from '../../util/useSetDocumentClass'
 
 interface IProps {
 	playlist: DBRundownPlaylist | undefined
@@ -148,6 +148,8 @@ export function CameraScreen({ playlist, studioId }: Readonly<IProps>): JSX.Elem
 	)
 
 	useSetDocumentClass('dark', 'xdark', 'vertical-overflow-only')
+	useSetDocumentDarkTheme()
+
 	useEffect(() => {
 		const containerEl = document.querySelector('#render-target > .container-fluid.header-clear')
 		if (containerEl) containerEl.classList.remove('header-clear')
@@ -237,14 +239,14 @@ export function CameraScreen({ playlist, studioId }: Readonly<IProps>): JSX.Elem
 
 	useWakeLock()
 
-	if (!studio && studioReady) return <h1 className="mod mal alc">{t("This studio doesn't exist.")}</h1>
+	if (!studio && studioReady) return <h1 className="m-4 text-center">{t("This studio doesn't exist.")}</h1>
 
 	if (!playlist && rundownsReady)
-		return <h1 className="mod mal alc">{t('There is no rundown active in this studio.')}</h1>
+		return <h1 className="m-4 text-center">{t('There is no rundown active in this studio.')}</h1>
 
 	if ((playlist && !piecesReadyOnce) || !playlist)
 		return (
-			<div className="mod mal alc">
+			<div className="m-4">
 				<Spinner />
 			</div>
 		)

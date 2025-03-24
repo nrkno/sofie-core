@@ -51,7 +51,7 @@ export function AccessorsTable({ packageContainer, overrideHelper }: AccessorsTa
 			<table className="expando settings-studio-package-containers-accessors-table">
 				{Object.keys(container.accessors || {}).length === 0 ? (
 					<tr>
-						<td className="mhn dimmed">{t('There are no Accessors set up.')}</td>
+						<td className="dimmed">{t('There are no Accessors set up.')}</td>
 					</tr>
 				) : (
 					_.map(container.accessors || {}, (accessor: Accessor.Any, accessorId: string) => (
@@ -67,7 +67,7 @@ export function AccessorsTable({ packageContainer, overrideHelper }: AccessorsTa
 					))
 				)}
 			</table>
-			<div className="mod mhs">
+			<div className="my-1 mx-2">
 				<button className="btn btn-primary" onClick={addNewAccessor}>
 					<FontAwesomeIcon icon={faPlus} />
 				</button>

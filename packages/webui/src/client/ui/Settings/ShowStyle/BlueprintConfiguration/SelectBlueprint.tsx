@@ -38,26 +38,26 @@ export function SelectBlueprint({ showStyleBase }: Readonly<SelectBlueprintProps
 	}, [allShowStyleBlueprints])
 
 	return (
-		<div className="mod mvs mhs">
-			<label className="field">
-				<LabelActual label={t('Blueprint')} />
+		<label className="field">
+			<LabelActual label={t('Blueprint')} />
+
+			<EditAttribute
+				attribute="blueprintId"
+				obj={showStyleBase}
+				type="dropdown"
+				options={blueprintOptions}
+				collection={ShowStyleBases}
+			/>
+			<div>
 				{!showStyleBase.blueprintId ? (
 					<div className="error-notice inline">
 						{t('Blueprint not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
 					</div>
 				) : null}
-
-				<EditAttribute
-					modifiedClassName="bghl"
-					attribute="blueprintId"
-					obj={showStyleBase}
-					type="dropdown"
-					options={blueprintOptions}
-					collection={ShowStyleBases}
-					className="input text-input input-l"
-				/>
+			</div>
+			<div>
 				<RedirectToBlueprintButton id={showStyleBase.blueprintId} />
-			</label>
-		</div>
+			</div>
+		</label>
 	)
 }

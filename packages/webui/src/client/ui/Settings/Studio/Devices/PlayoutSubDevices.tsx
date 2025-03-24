@@ -92,7 +92,7 @@ export function StudioPlayoutSubDevices({
 
 	return (
 		<div>
-			<h2 className="mhn">
+			<h2 className="mb-4">
 				<Tooltip
 					overlay={t('Playout devices are needed to control your studio hardware')}
 					visible={getHelpMode() && !wrappedSubDevices.length}
@@ -108,7 +108,7 @@ export function StudioPlayoutSubDevices({
 				peripheralDevices={filteredPeripheralDevices}
 			/>
 
-			<div className="mod mhs">
+			<div className="my-1 mx-2">
 				<button className="btn btn-primary" onClick={addNewItem}>
 					<FontAwesomeIcon icon={faPlus} />
 				</button>

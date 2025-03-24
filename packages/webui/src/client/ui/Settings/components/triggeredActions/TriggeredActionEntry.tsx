@@ -41,6 +41,7 @@ import { TriggeredActions } from '../../../../collections'
 import { catchError } from '../../../../lib/lib'
 import { toTriggersComputation, UiTriggersContext } from '../../../../lib/triggers/triggersContext'
 import { last, literal } from '@sofie-automation/shared-lib/dist/lib/lib'
+import { LabelActual } from '../../../../lib/Components/LabelAndOverrides'
 
 interface IProps {
 	sourceLayers: SourceLayers | undefined
@@ -529,49 +530,53 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 						))}
 						{previewItems.length === 0 ? (
 							previewContext?.rundownPlaylist ? (
-								<span className="placeholder dimmed">
+								<span className="dimmed">
 									{t('No Ad-Lib matches in the current state of Rundown: "{{rundownPlaylistName}}"', {
 										rundownPlaylistName: previewContext?.rundownPlaylist?.name,
 									})}
 								</span>
 							) : (
-								<span className="placeholder dimmed">{t('No matching Rundowns available to be used for preview')}</span>
+								<span className="dimmed">{t('No matching Rundowns available to be used for preview')}</span>
 							)
 						) : null}
 					</ul>
-					<label className="mas">
-						<span className="mrs">{t('Label')}</span>
-						<EditAttribute
-							type="text"
-							obj={triggeredAction}
-							collection={TriggeredActions}
-							attribute="name"
-							className="input text-input input-l pan"
-							modifiedClassName="bghl"
-							mutateDisplayValue={(val) => (typeof val === 'object' ? undefined : val)}
-							mutateUpdateValue={(val) =>
-								val === '' && typeof triggeredAction.name === 'object' ? triggeredAction.name : val
-							}
-							label={
-								typeof triggeredAction.name === 'object' ? t('Multilingual description, editing will overwrite') : ''
-							}
-						/>
-						<span className="mls text-s dimmed field-hint">{t('Optional description of the action')}</span>
-					</label>
-					<label className="mas">
-						<span className="mrs">{t('Style class names')}</span>
-						<EditAttribute
-							type="text"
-							obj={triggeredAction}
-							collection={TriggeredActions}
-							attribute="styleClassNames"
-							className="input text-input input-l pan"
-							modifiedClassName="bghl"
-						/>
-						<span className="mls text-s dimmed field-hint">
-							{t('Space separated list of style class names to use when displaying the action')}
-						</span>
-					</label>
+					<div className="properties-grid mt-2 w-100">
+						<label className="field">
+							<LabelActual label={t('Label')} />
+							<div className="field-content">
+								<EditAttribute
+									type="text"
+									obj={triggeredAction}
+									collection={TriggeredActions}
+									attribute="name"
+									mutateDisplayValue={(val) => (typeof val === 'object' ? undefined : val)}
+									mutateUpdateValue={(val) =>
+										val === '' && typeof triggeredAction.name === 'object' ? triggeredAction.name : val
+									}
+									label={
+										typeof triggeredAction.name === 'object'
+											? t('Multilingual description, editing will overwrite')
+											: ''
+									}
+								/>
+							</div>
+							<span className="text-s dimmed field-hint">{t('Optional description of the action')}</span>
+						</label>
+						<label className="field">
+							<LabelActual label={t('Style class names')} />
+							<div className="field-content">
+								<EditAttribute
+									type="text"
+									obj={triggeredAction}
+									collection={TriggeredActions}
+									attribute="styleClassNames"
+								/>
+							</div>
+							<span className="text-s dimmed field-hint">
+								{t('Space separated list of style class names to use when displaying the action')}
+							</span>
+						</label>
+					</div>
 				</>
 			) : null}
 		</div>

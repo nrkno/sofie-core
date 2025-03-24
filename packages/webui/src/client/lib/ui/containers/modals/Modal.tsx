@@ -107,7 +107,7 @@ export class Modal extends React.Component<React.PropsWithChildren<IModalAttribu
 								</div>
 							</div>
 							<div className="title-box-content">{this.props.children}</div>
-							<div className="mod alright">
+							<div className="m-1 me-2 text-end">
 								<button className="btn btn-primary" onClick={this.handleDiscard}>
 									OK
 								</button>

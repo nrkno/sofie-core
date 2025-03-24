@@ -38,7 +38,7 @@ import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { PieceInstances, RundownLayouts, RundownPlaylists, Rundowns, ShowStyleVariants } from '../../collections'
 import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
-import { useSetDocumentClass } from '../util/useSetDocumentClass'
+import { useSetDocumentClass, useSetDocumentDarkTheme } from '../util/useSetDocumentClass'
 import { useRundownAndShowStyleIdsForPlaylist } from '../util/useRundownAndShowStyleIdsForPlaylist'
 import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil'
 import { CurrentPartOrSegmentRemaining } from '../RundownView/RundownTiming/CurrentPartOrSegmentRemaining'
@@ -306,6 +306,7 @@ function PresenterScreenContent(props: WithTiming<PresenterScreenProps & Present
 			: undefined
 
 	useSetDocumentClass('dark', 'xdark')
+	useSetDocumentDarkTheme()
 
 	if (presenterLayout && RundownLayoutsAPI.isDashboardLayout(presenterLayout)) {
 		return (

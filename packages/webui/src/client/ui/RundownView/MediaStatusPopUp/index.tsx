@@ -87,7 +87,7 @@ export function MediaStatusPopUp({ playlistId }: Readonly<IProps>): JSX.Element 
 						<MediaStatusPopOutIcon />
 					</NavLink>
 				</div>
-				<h2 className="mhm mvn">{t('Media Status')}</h2>
+				<h2 className="mx-3 my-0">{t('Media Status')}</h2>
 				<div className="media-status-panel__scrollbox">
 					<table className="media-status-panel__table">
 						<MediaStatusPopUpHeader

@@ -43,9 +43,19 @@ export function SelectConfigPreset({ showStyleBase }: Readonly<SelectConfigPrese
 	}, [blueprint?.showStyleConfigPresets])
 
 	return (
-		<div className="mod mvs mhs">
-			<label className="field">
-				<LabelActual label={t('Blueprint config preset')} />
+		<label className="field">
+			<LabelActual label={t('Blueprint config preset')} />
+
+			<EditAttribute
+				attribute="blueprintConfigPresetId"
+				obj={showStyleBase}
+				type="dropdown"
+				options={configPresetOptions}
+				mutateDisplayValue={(v) => v || ''}
+				mutateUpdateValue={(v) => (v === '' ? undefined : v)}
+				collection={ShowStyleBases}
+			/>
+			<div>
 				{!showStyleBase.blueprintConfigPresetId && (
 					<div className="error-notice inline">
 						{t('Blueprint config preset not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
@@ -56,18 +66,7 @@ export function SelectConfigPreset({ showStyleBase }: Readonly<SelectConfigPrese
 						{t('Blueprint config preset is missing')} <FontAwesomeIcon icon={faExclamationTriangle} />
 					</div>
 				)}
-				<EditAttribute
-					modifiedClassName="bghl"
-					attribute="blueprintConfigPresetId"
-					obj={showStyleBase}
-					type="dropdown"
-					options={configPresetOptions}
-					mutateDisplayValue={(v) => v || ''}
-					mutateUpdateValue={(v) => (v === '' ? undefined : v)}
-					collection={ShowStyleBases}
-					className="input text-input input-l"
-				/>
-			</label>
-		</div>
+			</div>
+		</label>
 	)
 }
