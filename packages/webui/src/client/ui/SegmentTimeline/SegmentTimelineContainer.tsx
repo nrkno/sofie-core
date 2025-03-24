@@ -195,14 +195,18 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 			RundownViewEventBus.on(RundownViewEvents.REWIND_SEGMENTS, this.onRewindSegment)
 			RundownViewEventBus.on(RundownViewEvents.GO_TO_PART, this.onGoToPart)
 			RundownViewEventBus.on(RundownViewEvents.GO_TO_PART_INSTANCE, this.onGoToPartInstance)
-			window.requestAnimationFrame(() => {
-				this.mountedTime = Date.now()
-				if (this.state.isLiveSegment && this.props.followLiveSegments && !this.isVisible) {
-					scrollToSegment(this.props.segmentId, true).catch((error) => {
-						if (!error.toString().match(/another scroll/)) console.warn(error)
-					})
-				}
-			})
+			// Delay is to ensure UI has settled before checking:
+			setTimeout(() => {
+				window.requestAnimationFrame(() => {
+					this.mountedTime = Date.now()
+					if (this.state.isLiveSegment && this.props.followLiveSegments && !this.isVisible) {
+						console.log('SegmentTimelinecontainer is not visible')
+						scrollToSegment(this.props.segmentId, true).catch((error) => {
+							if (!error.toString().match(/another scroll/)) console.warn(error)
+						})
+					}
+				})
+			}, 500)
 			window.addEventListener('resize', this.onWindowResize)
 			this.updateMaxTimeScale()
 				.then(() => this.showEntireSegment())
