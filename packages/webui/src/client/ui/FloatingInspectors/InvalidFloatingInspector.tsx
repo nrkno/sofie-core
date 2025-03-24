@@ -1,12 +1,12 @@
 import React, { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { FloatingInspector } from '../FloatingInspector'
+import { FloatingInspector } from '../FloatingInspector.js'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
-import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
+import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications.js'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { IFloatingInspectorPosition, useInspectorPosition } from './IFloatingInspectorPosition'
+import { IFloatingInspectorPosition, useInspectorPosition } from './IFloatingInspectorPosition.js'
 
 interface IProps {
 	itemElement: HTMLDivElement | null
@@ -56,8 +56,8 @@ export const InvalidFloatingInspector: React.FunctionComponent<IProps> = (props:
 					(noteSeverity === NoteSeverity.ERROR
 						? 'segment-timeline__mini-inspector--notice notice-critical'
 						: noteSeverity === NoteSeverity.WARNING
-						? 'segment-timeline__mini-inspector--notice notice-warning'
-						: '')
+							? 'segment-timeline__mini-inspector--notice notice-warning'
+							: '')
 				}
 				style={floatingInspectorStyle}
 				ref={ref}

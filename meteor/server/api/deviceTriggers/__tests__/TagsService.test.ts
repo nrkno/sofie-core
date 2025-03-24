@@ -1,5 +1,5 @@
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { TagsService } from '../TagsService'
+import { TagsService } from '../TagsService.js'
 import {
 	PartInstanceId,
 	PieceInstanceId,
@@ -7,8 +7,8 @@ import {
 	RundownPlaylistId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ContentCache } from '../reactiveContentCacheForPieceInstances'
-import { ReactiveCacheCollection } from '../../../publications/lib/ReactiveCacheCollection'
+import { ContentCache } from '../reactiveContentCacheForPieceInstances.js'
+import { ReactiveCacheCollection } from '../../../publications/lib/ReactiveCacheCollection.js'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'

@@ -1,5 +1,5 @@
-import { RundownTimingContext } from '../../../lib/rundownTiming'
-import { TimingDataResolution, TimingTickResolution, WithTiming, withTiming } from './withTiming'
+import { RundownTimingContext } from '../../../lib/rundownTiming.js'
+import { TimingDataResolution, TimingTickResolution, WithTiming, withTiming } from './withTiming.js'
 
 interface IProps {
 	filter?: (timingDurations: RundownTimingContext) => any

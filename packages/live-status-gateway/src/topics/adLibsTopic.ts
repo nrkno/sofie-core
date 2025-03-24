@@ -1,7 +1,7 @@
 import { Logger } from 'winston'
 import { WebSocket } from 'ws'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { WebSocketTopicBase, WebSocketTopic } from '../wsHandler'
+import { WebSocketTopicBase, WebSocketTopic } from '../wsHandler.js'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
@@ -9,13 +9,13 @@ import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataM
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { IBlueprintActionManifestDisplayContent } from '@sofie-automation/blueprints-integration'
-import { ShowStyleBaseExt } from '../collections/showStyleBaseHandler'
+import { ShowStyleBaseExt } from '../collections/showStyleBaseHandler.js'
 import { interpollateTranslation } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { WithSortingMetadata, getRank, sortContent } from './helpers/contentSorting'
+import { WithSortingMetadata, getRank, sortContent } from './helpers/contentSorting.js'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { CollectionHandlers } from '../liveStatusServer'
+import { CollectionHandlers } from '../liveStatusServer.js'
 import { PickKeys } from '@sofie-automation/shared-lib/dist/lib/types'
 
 const THROTTLE_PERIOD_MS = 100
@@ -99,7 +99,7 @@ export class AdLibsTopic extends WebSocketTopicBase implements WebSocketTopic {
 									name: t.data,
 									label: interpollateTranslation(t.display.label.key, t.display.label.args),
 								})
-						  )
+							)
 						: []
 					const segmentId = this._parts.get(action.partId)?.segmentId
 					const name = interpollateTranslation(action.display.label.key, action.display.label.args)
@@ -171,7 +171,7 @@ export class AdLibsTopic extends WebSocketTopicBase implements WebSocketTopic {
 									name: t.data,
 									label: interpollateTranslation(t.display.label.key, t.display.label.args),
 								})
-						  )
+							)
 						: []
 					const name = interpollateTranslation(action.display.label.key, action.display.label.args)
 					return literal<WithSortingMetadata<GlobalAdLibStatus>>({
@@ -224,7 +224,7 @@ export class AdLibsTopic extends WebSocketTopicBase implements WebSocketTopic {
 					rundownPlaylistId: unprotectString(this._activePlaylist._id),
 					adLibs: sortContent(adLibs),
 					globalAdLibs: sortContent(globalAdLibs),
-			  }
+				}
 			: { event: 'adLibs', rundownPlaylistId: null, adLibs: [], globalAdLibs: [] }
 
 		this.sendMessage(subscribers, adLibsStatus)

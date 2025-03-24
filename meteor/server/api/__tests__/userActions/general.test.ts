@@ -1,10 +1,10 @@
-import '../../../../__mocks__/_extendJest'
-import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
-import { hashSingleUseToken } from '../../deviceTriggers/triggersContext'
-import { getCurrentTime, sleep } from '../../../lib/lib'
-import { MeteorCall } from '../../methods'
+import '../../../../__mocks__/_extendJest.js'
+import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database.js'
+import { hashSingleUseToken } from '../../deviceTriggers/triggersContext.js'
+import { getCurrentTime, sleep } from '../../../lib/lib.js'
+import { MeteorCall } from '../../methods.js'
 import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
-import { UserActionsLog } from '../../../collections'
+import { UserActionsLog } from '../../../collections/index.js'
 
 require('../../system') // include so that we can call generateSingleUseToken()
 require('../../client') // include in order to create the Meteor methods needed

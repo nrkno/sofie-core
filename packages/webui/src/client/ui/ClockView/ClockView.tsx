@@ -1,15 +1,15 @@
 import { Switch, Route, Redirect } from 'react-router-dom'
-import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data.js'
 
-import { RundownTimingProvider } from '../RundownView/RundownTiming/RundownTimingProvider'
+import { RundownTimingProvider } from '../RundownView/RundownTiming/RundownTimingProvider.js'
 
-import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
-import { PresenterScreen } from './PresenterScreen'
-import { OverlayScreen } from './OverlayScreen'
-import { OverlayScreenSaver } from './OverlayScreenSaver'
-import { RundownPlaylists } from '../../collections'
+import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver.js'
+import { PresenterScreen } from './PresenterScreen.js'
+import { OverlayScreen } from './OverlayScreen.js'
+import { OverlayScreenSaver } from './OverlayScreenSaver.js'
+import { RundownPlaylists } from '../../collections/index.js'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { CameraScreen } from './CameraScreen'
+import { CameraScreen } from './CameraScreen/index.js'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 
 export function ClockView({ studioId }: Readonly<{ studioId: StudioId }>): JSX.Element {

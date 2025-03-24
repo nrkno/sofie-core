@@ -1,10 +1,10 @@
-import { meteorPublish } from './lib/lib'
+import { meteorPublish } from './lib/lib.js'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
-import { CoreSystem, Notifications } from '../collections'
+import { CoreSystem, Notifications } from '../collections/index.js'
 import { RundownId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { check } from 'meteor/check'
 import { SYSTEM_ID } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
-import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify.js'
 
 meteorPublish(MeteorPubSub.coreSystem, async function (_token: string | undefined) {
 	triggerWriteAccessBecauseNoCheckNecessary()

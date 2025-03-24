@@ -1,10 +1,10 @@
 // not really middlewares
 
 import { Meteor } from 'meteor/meteor'
-import { APIHandler } from './types'
+import { APIHandler } from './types.js'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
-import idempotencyService from './idempotencyService'
-import rateLimitingService from './rateLimitingService'
+import idempotencyService from './idempotencyService.js'
+import rateLimitingService from './rateLimitingService.js'
 
 export function makeIdempotent<T, Params, Body, Response>(
 	handler: APIHandler<T, Params, Body, Response>

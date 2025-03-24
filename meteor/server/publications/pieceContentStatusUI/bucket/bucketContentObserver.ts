@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { BlueprintId, BucketId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { logger } from '../../../logging'
+import { logger } from '../../../logging.js'
 import {
 	blueprintFieldSpecifier,
 	bucketActionFieldSpecifier,
@@ -9,14 +9,14 @@ import {
 	ShowStyleBaseFields,
 	showStyleBaseFieldSpecifier,
 	SourceLayersDoc,
-} from './bucketContentCache'
-import { Blueprints, BucketAdLibActions, BucketAdLibs, ShowStyleBases } from '../../../collections'
+} from './bucketContentCache.js'
+import { Blueprints, BucketAdLibActions, BucketAdLibs, ShowStyleBases } from '../../../collections/index.js'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { equivalentArrays } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { ReactiveMongoObserverGroup, ReactiveMongoObserverGroupHandle } from '../../lib/observerGroup'
+import { ReactiveMongoObserverGroup, ReactiveMongoObserverGroupHandle } from '../../lib/observerGroup.js'
 import _ from 'underscore'
-import { waitForAllObserversReady } from '../../lib/lib'
+import { waitForAllObserversReady } from '../../lib/lib.js'
 
 const REACTIVITY_DEBOUNCE = 20
 

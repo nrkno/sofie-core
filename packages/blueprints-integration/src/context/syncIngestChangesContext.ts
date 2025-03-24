@@ -1,10 +1,10 @@
-import type { IRundownUserContext } from './rundownContext'
+import type { IRundownUserContext } from './rundownContext.js'
 import type {
 	IBlueprintMutatablePart,
 	IBlueprintPartInstance,
 	IBlueprintPiece,
 	IBlueprintPieceInstance,
-} from '../documents'
+} from '../documents/index.js'
 
 export interface ISyncIngestUpdateToPartInstanceContext extends IRundownUserContext {
 	/** Sync a pieceInstance. Inserts the pieceInstance if new, updates if existing. Optionally pass in a mutated Piece, to override the content of the instance */

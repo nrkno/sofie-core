@@ -1,4 +1,4 @@
-import { IdempotencyService } from '../idempotencyService'
+import { IdempotencyService } from '../idempotencyService.js'
 
 describe('IdempotencyService', () => {
 	let idempotencyService: IdempotencyService

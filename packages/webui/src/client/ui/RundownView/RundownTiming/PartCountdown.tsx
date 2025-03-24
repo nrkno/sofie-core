@@ -1,8 +1,8 @@
 import { ReactNode } from 'react'
 import Moment from 'react-moment'
-import { withTiming, WithTiming } from './withTiming'
-import { unprotectString } from '../../../lib/tempLib'
-import { RundownUtils } from '../../../lib/rundown'
+import { withTiming, WithTiming } from './withTiming.js'
+import { unprotectString } from '../../../lib/tempLib.js'
+import { RundownUtils } from '../../../lib/rundown.js'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -39,12 +39,12 @@ export const PartCountdown = withTiming<IPartCountdownProps, {}>()(function Part
 							date={
 								(props.playlist.activationId
 									? // if show is activated, use currentTime as base
-									  props.timingDurations.currentTime ?? 0
+										(props.timingDurations.currentTime ?? 0)
 									: // if show is not activated, use expectedStart or currentTime, whichever is later
-									  Math.max(
+										Math.max(
 											PlaylistTiming.getExpectedStart(props.playlist.timing) ?? 0,
 											props.timingDurations.currentTime ?? 0
-									  )) + (thisPartCountdown || 0)
+										)) + (thisPartCountdown || 0)
 							}
 						/>
 					) : (

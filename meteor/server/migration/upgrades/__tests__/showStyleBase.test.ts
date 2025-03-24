@@ -1,7 +1,7 @@
-import '../../../../__mocks__/_extendJest'
+import '../../../../__mocks__/_extendJest.js'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { runUpgradeForShowStyleBase, validateConfigForShowStyleBase } from '../showStyleBase'
-import { setupMockShowStyleBase, setupMockShowStyleBlueprint } from '../../../../__mocks__/helpers/database'
+import { runUpgradeForShowStyleBase, validateConfigForShowStyleBase } from '../showStyleBase.js'
+import { setupMockShowStyleBase, setupMockShowStyleBlueprint } from '../../../../__mocks__/helpers/database.js'
 import {
 	BlueprintManifestType,
 	BlueprintResultApplyShowStyleConfig,
@@ -11,14 +11,14 @@ import {
 	SourceLayerType,
 	TriggerType,
 } from '@sofie-automation/blueprints-integration'
-import { clone, generateTranslation, getRandomString, normalizeArray, omit } from '../../../lib/tempLib'
+import { clone, generateTranslation, getRandomString, normalizeArray, omit } from '../../../lib/tempLib.js'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { BlueprintValidateConfigForStudioResult } from '@sofie-automation/corelib/dist/worker/studio'
 import { wrapTranslatableMessageFromBlueprints } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
-import * as blueprintCache from '../../../api/blueprints/cache'
+import * as blueprintCache from '../../../api/blueprints/cache.js'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { ShowStyleBases, TriggeredActions } from '../../../collections'
+import { ShowStyleBases, TriggeredActions } from '../../../collections/index.js'
 import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 describe('ShowStyleBase upgrades', () => {

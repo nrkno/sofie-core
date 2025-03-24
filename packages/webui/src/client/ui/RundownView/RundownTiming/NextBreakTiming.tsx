@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import Moment from 'react-moment'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { WithTiming, withTiming } from './withTiming'
+import { WithTiming, withTiming } from './withTiming.js'
 import ClassNames from 'classnames'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 

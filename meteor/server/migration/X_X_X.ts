@@ -1,5 +1,5 @@
-import { addMigrationSteps } from './databaseMigration'
-import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
+import { addMigrationSteps } from './databaseMigration.js'
+import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion.js'
 
 /*
  * **************************************************************************************

@@ -42,14 +42,14 @@ import {
 	APIStudioSettings,
 	APIPlaylistSnapshotOptions,
 	APISystemSnapshotOptions,
-} from '../../../lib/rest/v1'
+} from '../../../lib/rest/v1/index.js'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { Blueprints, ShowStyleBases, Studios } from '../../../collections'
+import { Blueprints, ShowStyleBases, Studios } from '../../../collections/index.js'
 import { Meteor } from 'meteor/meteor'
-import { evalBlueprint } from '../../blueprints/cache'
-import { CommonContext } from '../../../migration/upgrades/context'
-import { logger } from '../../../logging'
+import { evalBlueprint } from '../../blueprints/cache.js'
+import { CommonContext } from '../../../migration/upgrades/context.js'
+import { logger } from '../../../logging.js'
 import {
 	DEFAULT_MINIMUM_TAKE_SPAN,
 	DEFAULT_FALLBACK_PART_DURATION,
@@ -74,18 +74,24 @@ export async function showStyleBaseFrom(
 	let showStyleBase: DBShowStyleBase | undefined
 	if (existingId) showStyleBase = await ShowStyleBases.findOneAsync(existingId)
 
-	const newOutputLayers = apiShowStyleBase.outputLayers.reduce<Record<string, IOutputLayer>>((acc, op) => {
-		acc[op.id] = { _id: op.id, name: op.name, _rank: op.rank, isPGM: op.isPgm }
-		return acc
-	}, {} as Record<string, IOutputLayer>)
+	const newOutputLayers = apiShowStyleBase.outputLayers.reduce<Record<string, IOutputLayer>>(
+		(acc, op) => {
+			acc[op.id] = { _id: op.id, name: op.name, _rank: op.rank, isPGM: op.isPgm }
+			return acc
+		},
+		{} as Record<string, IOutputLayer>
+	)
 	const outputLayers = showStyleBase
 		? updateOverrides(showStyleBase.outputLayersWithOverrides, newOutputLayers)
 		: wrapDefaultObject({})
 
-	const newSourceLayers = apiShowStyleBase.sourceLayers.reduce<Record<string, ISourceLayer>>((acc, op) => {
-		acc[op.id] = sourceLayerFrom(op)
-		return acc
-	}, {} as Record<string, ISourceLayer>)
+	const newSourceLayers = apiShowStyleBase.sourceLayers.reduce<Record<string, ISourceLayer>>(
+		(acc, op) => {
+			acc[op.id] = sourceLayerFrom(op)
+			return acc
+		},
+		{} as Record<string, ISourceLayer>
+	)
 	const sourceLayers = showStyleBase
 		? updateOverrides(showStyleBase.sourceLayersWithOverrides, newSourceLayers)
 		: wrapDefaultObject({})
@@ -101,7 +107,7 @@ export async function showStyleBaseFrom(
 			? updateOverrides(
 					showStyleBase.blueprintConfigWithOverrides,
 					await ShowStyleBaseBlueprintConfigFromAPI(apiShowStyleBase, blueprintManifest)
-			  )
+				)
 			: convertObjectIntoOverrides(await ShowStyleBaseBlueprintConfigFromAPI(apiShowStyleBase, blueprintManifest))
 	}
 
@@ -318,7 +324,7 @@ export async function studioFrom(apiStudio: APIStudio, existingId?: StudioId): P
 			? updateOverrides(
 					studio.blueprintConfigWithOverrides,
 					await StudioBlueprintConfigFromAPI(apiStudio, blueprintManifest)
-			  )
+				)
 			: convertObjectIntoOverrides(await StudioBlueprintConfigFromAPI(apiStudio, blueprintManifest))
 	}
 
@@ -542,7 +548,7 @@ async function getBlueprint(
 		? await Blueprints.findOneAsync({
 				_id: blueprintId,
 				blueprintType,
-		  })
+			})
 		: undefined
 	if (!blueprint) throw new Meteor.Error(404, `Blueprint "${blueprintId}" not found!`)
 

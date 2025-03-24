@@ -6,9 +6,9 @@ import {
 	StudioRouteBehavior,
 } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import classNames from 'classnames'
-import { RouteSetOverrideIcon } from '../../lib/ui/icons/switchboard'
+import { RouteSetOverrideIcon } from '../../lib/ui/icons/switchboard.js'
 import Tooltip from 'rc-tooltip'
-import { TOOLTIP_DEFAULT_DELAY } from '../../lib/lib'
+import { TOOLTIP_DEFAULT_DELAY } from '../../lib/lib.js'
 
 interface IProps {
 	onStudioRouteSetSwitch?: (

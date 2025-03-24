@@ -186,7 +186,7 @@ function applyAllSegmentChanges<TRundownPayload, TSegmentPayload, TPartPayload>(
 	segmentsToInsert.sort((a, b) => nrcsSegmentIds.indexOf(b.externalId) - nrcsSegmentIds.indexOf(a.externalId))
 	for (const nrcsSegment of segmentsToInsert) {
 		const segmentIndex = nrcsSegmentIds.indexOf(nrcsSegment.externalId)
-		const beforeSegmentId = segmentIndex !== -1 ? nrcsSegmentIds[segmentIndex + 1] ?? null : null
+		const beforeSegmentId = segmentIndex !== -1 ? (nrcsSegmentIds[segmentIndex + 1] ?? null) : null
 
 		mutableIngestRundown.replaceSegment(
 			payloadTransformers.transformPayloadsOnSegmentAndParts(
@@ -274,7 +274,7 @@ function applyChangesObjectForSingleSegment<TRundownPayload, TSegmentPayload, TP
 		partsToInsert.sort((a, b) => nrcsPartIds.indexOf(b.externalId) - nrcsPartIds.indexOf(a.externalId))
 		for (const nrcsPart of partsToInsert) {
 			const partIndex = nrcsPartIds.indexOf(nrcsPart.externalId)
-			const beforePartId = partIndex !== -1 ? nrcsPartIds[partIndex + 1] ?? null : null
+			const beforePartId = partIndex !== -1 ? (nrcsPartIds[partIndex + 1] ?? null) : null
 
 			mutableSegment.replacePart(
 				payloadTransformers.transformPayloadOnPart(nrcsPart, mutableSegment.getPart(nrcsPart.externalId)),

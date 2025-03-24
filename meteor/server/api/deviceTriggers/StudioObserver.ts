@@ -13,16 +13,16 @@ import _ from 'underscore'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { logger } from '../../logging'
-import { observerChain } from '../../publications/lib/observerChain'
-import { ContentCache } from './reactiveContentCache'
-import { ContentCache as PieceInstancesContentCache } from './reactiveContentCacheForPieceInstances'
-import { RundownContentObserver } from './RundownContentObserver'
-import { RundownsObserver } from './RundownsObserver'
-import { RundownPlaylists, Rundowns, ShowStyleBases } from '../../collections'
-import { PromiseDebounce } from '../../publications/lib/PromiseDebounce'
-import { MinimalMongoCursor } from '../../collections/implementations/asyncCollection'
-import { PieceInstancesObserver } from './PieceInstancesObserver'
+import { logger } from '../../logging.js'
+import { observerChain } from '../../publications/lib/observerChain.js'
+import { ContentCache } from './reactiveContentCache.js'
+import { ContentCache as PieceInstancesContentCache } from './reactiveContentCacheForPieceInstances.js'
+import { RundownContentObserver } from './RundownContentObserver.js'
+import { RundownsObserver } from './RundownsObserver.js'
+import { RundownPlaylists, Rundowns, ShowStyleBases } from '../../collections/index.js'
+import { PromiseDebounce } from '../../publications/lib/PromiseDebounce.js'
+import { MinimalMongoCursor } from '../../collections/implementations/asyncCollection.js'
+import { PieceInstancesObserver } from './PieceInstancesObserver.js'
 
 type RundownContentChangeHandler = (showStyleBaseId: ShowStyleBaseId, cache: ContentCache) => () => void
 type PieceInstancesChangeHandler = (showStyleBaseId: ShowStyleBaseId, cache: PieceInstancesContentCache) => () => void
@@ -159,7 +159,7 @@ export class StudioObserver extends EventEmitter {
 								fields: showStyleBaseFieldSpecifier,
 								limit: 1,
 							}
-					  ) as Promise<MinimalMongoCursor<Pick<DBShowStyleBase, ShowStyleBaseFields>>>)
+						) as Promise<MinimalMongoCursor<Pick<DBShowStyleBase, ShowStyleBaseFields>>>)
 					: null
 			)
 			.end(this.updateShowStyle.call)
@@ -171,7 +171,7 @@ export class StudioObserver extends EventEmitter {
 			{
 				currentRundown: Pick<DBRundown, RundownFields>
 				showStyleBase: Pick<DBShowStyleBase, ShowStyleBaseFields>
-			} | null
+			} | null,
 		]
 	>(async (state): Promise<void> => {
 		if (this.#disposed) return

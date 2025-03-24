@@ -1,9 +1,9 @@
 import { Meteor } from 'meteor/meteor'
 import semver from 'semver'
 import { ICoreSystem, SYSTEM_ID } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
-import { parseVersion } from '../systemStatus/semverUtils'
-import { logger } from '../logging'
-import { CoreSystem } from '../collections'
+import { parseVersion } from '../systemStatus/semverUtils.js'
+import { logger } from '../logging.js'
+import { CoreSystem } from '../collections/index.js'
 
 // The CoreSystem collection will contain one (exactly 1) object.
 // This represents the "system"

@@ -2,10 +2,10 @@ import * as React from 'react'
 import { DBStudio, MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { useTranslation } from 'react-i18next'
 import { ReadonlyDeep } from 'type-fest'
-import { MappingsSettingsManifests } from '../Mappings'
-import { getAllCurrentAndDeletedItemsFromOverrides } from '../../util/OverrideOpHelper'
-import { ExclusivityGroupsTable } from './ExclusivityGroups'
-import { RouteSetsTable } from './RouteSets'
+import { MappingsSettingsManifests } from '../Mappings.js'
+import { getAllCurrentAndDeletedItemsFromOverrides } from '../../util/OverrideOpHelper.js'
+import { ExclusivityGroupsTable } from './ExclusivityGroups.js'
+import { RouteSetsTable } from './RouteSets.js'
 
 interface IStudioRoutingsProps {
 	translationNamespaces: string[]

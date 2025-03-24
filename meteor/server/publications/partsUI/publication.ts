@@ -6,21 +6,21 @@ import {
 	TriggerUpdate,
 	meteorCustomPublish,
 	setUpCollectionOptimizedObserver,
-} from '../../lib/customPublication'
-import { logger } from '../../logging'
+} from '../../lib/customPublication/index.js'
+import { logger } from '../../logging.js'
 import { CustomCollectionName, MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { ContentCache, PartOmitedFields, createReactiveContentCache } from './reactiveContentCache'
+import { ContentCache, PartOmitedFields, createReactiveContentCache } from './reactiveContentCache.js'
 import { ReadonlyDeep } from 'type-fest'
-import { RundownPlaylists } from '../../collections'
+import { RundownPlaylists } from '../../collections/index.js'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
-import { RundownsObserver } from '../lib/rundownsObserver'
-import { RundownContentObserver } from './rundownContentObserver'
+import { RundownsObserver } from '../lib/rundownsObserver.js'
+import { RundownContentObserver } from './rundownContentObserver.js'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { extractRanks, findMarkerPosition, modifyPartForQuickLoop, stringsToIndexLookup } from '../lib/quickLoop'
-import { triggerWriteAccessBecauseNoCheckNecessary } from '../../security/securityVerify'
+import { extractRanks, findMarkerPosition, modifyPartForQuickLoop, stringsToIndexLookup } from '../lib/quickLoop.js'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../../security/securityVerify.js'
 
 interface UIPartsArgs {
 	readonly playlistId: RundownPlaylistId

@@ -4,9 +4,9 @@ import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protected
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
-import { WebSocketTopicBase, WebSocketTopic } from '../wsHandler'
-import { CollectionHandlers } from '../liveStatusServer'
-import _ = require('underscore')
+import { WebSocketTopicBase, WebSocketTopic } from '../wsHandler.js'
+import { CollectionHandlers } from '../liveStatusServer.js'
+import _ from 'underscore'
 
 type PlaylistActivationStatus = 'deactivated' | 'rehearsal' | 'activated'
 
@@ -42,13 +42,13 @@ export class StudioTopic extends WebSocketTopicBase implements WebSocketTopic {
 					id: unprotectString(this._studio._id),
 					name: this._studio.name,
 					playlists: this._playlists,
-			  }
+				}
 			: {
 					event: 'studio',
 					id: null,
 					name: '',
 					playlists: [],
-			  }
+				}
 
 		this.sendMessage(subscribers, studioStatus)
 	}

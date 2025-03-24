@@ -14,9 +14,9 @@ import {
 import type { AnyBulkWriteOperation, Collection as RawCollection, Db as RawDb } from 'mongodb'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { NpmModuleMongodb } from 'meteor/npm-mongo'
-import { profiler } from '../../api/profiler'
+import { profiler } from '../../api/profiler/index.js'
 import { PromisifyCallbacks } from '@sofie-automation/shared-lib/dist/lib/types'
-import { AsyncOnlyMongoCollection } from '../collection'
+import { AsyncOnlyMongoCollection } from '../collection.js'
 
 /**
  * A stripped down version of Meteor's Mongo.Cursor, with only the async methods

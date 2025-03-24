@@ -1,17 +1,17 @@
 import { BucketAdLibActionId, BucketAdLibId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import { UIBucketContentStatus } from '@sofie-automation/meteor-lib/dist/api/rundownNotifications'
-import { literal, protectString } from '../../../lib/tempLib'
-import { CustomPublishCollection } from '../../../lib/customPublication'
-import { BucketContentCache } from './bucketContentCache'
-import { PieceDependencies } from '../common'
+import { literal, protectString } from '../../../lib/tempLib.js'
+import { CustomPublishCollection } from '../../../lib/customPublication/index.js'
+import { BucketContentCache } from './bucketContentCache.js'
+import { PieceDependencies } from '../common.js'
 import { wrapTranslatableMessageFromBlueprintsIfNotString } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import {
 	checkPieceContentStatusAndDependencies,
 	PieceContentStatusPiece,
 	PieceContentStatusStudio,
-} from '../checkPieceContentStatus'
-import type { PieceContentStatusMessageFactory } from '../messageFactory'
+} from '../checkPieceContentStatus.js'
+import type { PieceContentStatusMessageFactory } from '../messageFactory.js'
 
 /**
  * Regenerating the status for the provided AdLibActionId

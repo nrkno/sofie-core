@@ -1,8 +1,8 @@
 import { SplitsContent } from '@sofie-automation/blueprints-integration'
-import { IProps } from './ThumbnailRendererFactory'
-import { RundownUtils } from '../../../../lib/rundown'
-import { SplitsFloatingInspector } from '../../../FloatingInspectors/SplitsFloatingInspector'
-import { getSplitItems } from '../../../SegmentContainer/getSplitItems'
+import { IProps } from './ThumbnailRendererFactory.js'
+import { RundownUtils } from '../../../../lib/rundown.js'
+import { SplitsFloatingInspector } from '../../../FloatingInspectors/SplitsFloatingInspector.js'
+import { getSplitItems } from '../../../SegmentContainer/getSplitItems.js'
 
 export function SplitsThumbnailRenderer({
 	pieceInstance,

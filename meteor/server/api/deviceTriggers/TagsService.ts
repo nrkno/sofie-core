@@ -1,7 +1,7 @@
 import { PartInstanceId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { PieceInstanceFields, ContentCache } from './reactiveContentCacheForPieceInstances'
+import { PieceInstanceFields, ContentCache } from './reactiveContentCacheForPieceInstances.js'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import {
 	PieceInstanceWithTimings,
@@ -69,21 +69,21 @@ export class TagsService {
 					cache.PartInstances.findOne(previousPartInstanceId)?.timings,
 					cache.PieceInstances.find({ partInstanceId: previousPartInstanceId }).fetch(),
 					resolvedSourceLayers
-			  )
+				)
 			: []
 		const inCurrentPartInstance = currentPartInstanceId
 			? this.processAndPrunePieceInstanceTimings(
 					cache.PartInstances.findOne(currentPartInstanceId)?.timings,
 					cache.PieceInstances.find({ partInstanceId: currentPartInstanceId }).fetch(),
 					resolvedSourceLayers
-			  )
+				)
 			: []
 		const inNextPartInstance = nextPartInstanceId
 			? this.processAndPrunePieceInstanceTimings(
 					undefined,
 					cache.PieceInstances.find({ partInstanceId: nextPartInstanceId }).fetch(),
 					resolvedSourceLayers
-			  )
+				)
 			: []
 
 		const activePieceInstances = [...inPreviousPartInstance, ...inCurrentPartInstance].filter((pieceInstance) =>

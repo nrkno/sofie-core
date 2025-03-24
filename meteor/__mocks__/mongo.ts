@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-import * as _ from 'underscore'
-import { literal, ProtectedString, unprotectString, protectString, getRandomString } from '../server/lib/tempLib'
-import { RandomMock } from './random'
-import { MeteorMock } from './meteor'
+import _ from 'underscore'
+import { literal, ProtectedString, unprotectString, protectString, getRandomString } from '../server/lib/tempLib.js'
+import { RandomMock } from './random.js'
+import { MeteorMock } from './meteor.js'
 import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
 import type { AnyBulkWriteOperation } from 'mongodb'
@@ -17,12 +17,12 @@ import {
 	UpsertOptions,
 } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import { mongoWhere, mongoFindOptions, mongoModify, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
-import { AsyncOnlyMongoCollection, AsyncOnlyReadOnlyMongoCollection } from '../server/collections/collection'
+import { AsyncOnlyMongoCollection, AsyncOnlyReadOnlyMongoCollection } from '../server/collections/collection.js'
 import type {
 	MinimalMeteorMongoCollection,
 	MinimalMongoCursor,
-} from '../server/collections/implementations/asyncCollection'
-const clone = require('fast-clone')
+} from '../server/collections/implementations/asyncCollection.js'
+import clone from 'fast-clone'
 
 export namespace MongoMock {
 	interface ObserverEntry<T extends CollectionObject> {

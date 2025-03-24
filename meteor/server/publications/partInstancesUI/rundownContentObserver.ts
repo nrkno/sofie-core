@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { RundownId, RundownPlaylistActivationId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { logger } from '../../logging'
+import { logger } from '../../logging.js'
 import {
 	ContentCache,
 	partInstanceFieldSpecifier,
@@ -9,9 +9,9 @@ import {
 	StudioFields,
 	studioFieldSpecifier,
 	StudioSettingsDoc,
-} from './reactiveContentCache'
-import { PartInstances, RundownPlaylists, Segments, Studios } from '../../collections'
-import { waitForAllObserversReady } from '../lib/lib'
+} from './reactiveContentCache.js'
+import { PartInstances, RundownPlaylists, Segments, Studios } from '../../collections/index.js'
+import { waitForAllObserversReady } from '../lib/lib.js'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 

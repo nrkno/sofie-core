@@ -1,12 +1,12 @@
-import { meteorPublish } from './lib/lib'
+import { meteorPublish } from './lib/lib.js'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { RundownPlaylists } from '../collections'
+import { RundownPlaylists } from '../collections/index.js'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { check, Match } from '../lib/check'
+import { check, Match } from '../lib/check.js'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
-import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify.js'
 
 meteorPublish(
 	CorelibPubSub.rundownPlaylists,

@@ -18,20 +18,20 @@ import {
 	SomeContent,
 	VTContent,
 } from '@sofie-automation/blueprints-integration'
-import { getCurrentTime } from '../lib'
+import { getCurrentTime } from '../lib/index.js'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { IngestModel } from './model/IngestModel'
-import { JobContext } from '../jobs'
-import { logger } from '../logging'
-import { saveIntoDb } from '../db/changes'
+import { IngestModel } from './model/IngestModel.js'
+import { JobContext } from '../jobs/index.js'
+import { logger } from '../logging.js'
+import { saveIntoDb } from '../db/changes.js'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { interpollateTranslation, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 import { ReadonlyDeep } from 'type-fest'
-import { IngestPartModel } from './model/IngestPartModel'
+import { IngestPartModel } from './model/IngestPartModel.js'
 
 export enum PieceType {
 	PIECE = 'piece',

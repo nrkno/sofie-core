@@ -1,37 +1,37 @@
 import { assertNever, getRandomId, generateTranslation } from '@sofie-automation/corelib/dist/lib'
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { JobContext } from '../jobs'
+import { JobContext } from '../jobs/index.js'
 import { PartId, PartInstanceId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PlayoutModel } from './model/PlayoutModel'
-import { PlayoutPartInstanceModel } from './model/PlayoutPartInstanceModel'
-import { PlayoutSegmentModel } from './model/PlayoutSegmentModel'
+import { PlayoutModel } from './model/PlayoutModel.js'
+import { PlayoutPartInstanceModel } from './model/PlayoutPartInstanceModel.js'
+import { PlayoutSegmentModel } from './model/PlayoutSegmentModel.js'
 import {
 	fetchPiecesThatMayBeActiveForPart,
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
-} from './infinites'
+} from './infinites.js'
 import { PRESERVE_UNSYNCED_PLAYING_SEGMENT_CONTENTS } from '@sofie-automation/shared-lib/dist/core/constants'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
-import _ = require('underscore')
-import { resetPartInstancesWithPieceInstances } from './lib'
+import _ from 'underscore'
+import { resetPartInstancesWithPieceInstances } from './lib.js'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
-import { SelectNextPartResult } from './selectNextPart'
+import { SelectNextPartResult } from './selectNextPart.js'
 import { ReadonlyDeep } from 'type-fest'
 import { QueueNextSegmentResult } from '@sofie-automation/corelib/dist/worker/studio'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { OnSetAsNextContext } from '../blueprints/context'
-import { logger } from '../logging'
-import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
+import { OnSetAsNextContext } from '../blueprints/context/index.js'
+import { logger } from '../logging.js'
+import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages.js'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import {
 	PartAndPieceInstanceActionService,
 	applyActionSideEffects,
-} from '../blueprints/context/services/PartAndPieceInstanceActionService'
+} from '../blueprints/context/services/PartAndPieceInstanceActionService.js'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
-import { convertNoteToNotification } from '../notifications/util'
-import { PersistentPlayoutStateStore } from '../blueprints/context/services/PersistantStateStore'
+import { convertNoteToNotification } from '../notifications/util.js'
+import { PersistentPlayoutStateStore } from '../blueprints/context/services/PersistantStateStore.js'
 
 /**
  * Set or clear the nexted part, from a given PartInstance, or SelectNextPartResult
@@ -81,7 +81,7 @@ export async function setNextPart(
 				? {
 						part: moveNextToPart.selectedPart,
 						consumesQueuedSegmentId: false,
-				  }
+					}
 				: null,
 			true
 		)
@@ -244,7 +244,7 @@ async function executeOnSetAsNextCallback(
 							type: 'partInstance',
 							rundownId,
 							partInstanceId,
-					  }
+						}
 					: { type: 'playlist' },
 			})
 		}
@@ -260,7 +260,7 @@ async function executeOnSetAsNextCallback(
 						type: 'partInstance',
 						rundownId,
 						partInstanceId,
-				  }
+					}
 				: { type: 'playlist' },
 		})
 	}

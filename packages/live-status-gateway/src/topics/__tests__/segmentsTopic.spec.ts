@@ -1,7 +1,7 @@
-import { SegmentsStatus, SegmentsTopic } from '../segmentsTopic'
+import { SegmentsStatus, SegmentsTopic } from '../segmentsTopic.js'
 import { protectString, unprotectString } from '@sofie-automation/server-core-integration'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { makeMockHandlers, makeMockLogger, makeMockSubscriber, makeTestPlaylist } from './utils'
+import { makeMockHandlers, makeMockLogger, makeMockSubscriber, makeTestPlaylist } from './utils.js'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 
 const RUNDOWN_1_ID = 'RUNDOWN_1'

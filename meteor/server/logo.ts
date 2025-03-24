@@ -1,10 +1,10 @@
 import * as fs from 'fs'
-import { public_dir } from './lib'
-import { getCoreSystemAsync } from './coreSystem/collection'
+import { public_dir } from './lib.js'
+import { getCoreSystemAsync } from './coreSystem/collection.js'
 import { SofieLogo } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
 import KoaRouter from '@koa/router'
 import { Meteor } from 'meteor/meteor'
-import { bindKoaRouter } from './api/rest/koa'
+import { bindKoaRouter } from './api/rest/koa.js'
 
 export const logoRouter = new KoaRouter()
 

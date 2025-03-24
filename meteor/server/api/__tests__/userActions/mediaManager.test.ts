@@ -1,11 +1,11 @@
-import '../../../../__mocks__/_extendJest'
-import { waitUntil } from '../../../../__mocks__/helpers/jest'
-import { getRandomId, protectString } from '../../../lib/tempLib'
-import { getCurrentTime } from '../../../lib/lib'
-import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../../__mocks__/helpers/database'
-import { MeteorCall } from '../../methods'
+import '../../../../__mocks__/_extendJest.js'
+import { waitUntil } from '../../../../__mocks__/helpers/jest.js'
+import { getRandomId, protectString } from '../../../lib/tempLib.js'
+import { getCurrentTime } from '../../../lib/lib.js'
+import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../../__mocks__/helpers/database.js'
+import { MeteorCall } from '../../methods.js'
 import { MediaWorkFlowId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { MediaWorkFlows, PeripheralDeviceCommands, PeripheralDevices } from '../../../collections'
+import { MediaWorkFlows, PeripheralDeviceCommands, PeripheralDevices } from '../../../collections/index.js'
 
 require('../../client') // include in order to create the Meteor methods needed
 require('../../userActions') // include in order to create the Meteor methods needed

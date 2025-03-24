@@ -1,6 +1,6 @@
 import Tooltip from 'rc-tooltip'
 import { useTranslation } from 'react-i18next'
-import { ToolTipStep } from '../RundownList'
+import { ToolTipStep } from '../RundownList.js'
 
 export interface IGettingStartedProps {
 	step: ToolTipStep

@@ -1,5 +1,5 @@
 import deepExtend from 'deep-extend'
-import { check, Match } from '../check'
+import { check, Match } from '../check.js'
 
 describe('lib/check', () => {
 	test('check basic', () => {

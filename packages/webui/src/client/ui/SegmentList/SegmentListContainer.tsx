@@ -1,19 +1,19 @@
 import { useEffect, useRef } from 'react'
-import { meteorSubscribe } from '../../lib/meteorApi'
-import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { meteorSubscribe } from '../../lib/meteorApi.js'
+import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData.js'
 import {
 	withResolvedSegment,
 	IResolvedSegmentProps,
 	ITrackedResolvedSegmentProps,
-} from '../SegmentContainer/withResolvedSegment'
-import { SpeechSynthesiser } from '../../lib/speechSynthesis'
-import { SegmentList } from './SegmentList'
-import { unprotectString } from '../../lib/tempLib'
-import { LIVELINE_HISTORY_SIZE as TIMELINE_LIVELINE_HISTORY_SIZE } from '../SegmentTimeline/Constants'
-import { Segments } from '../../collections'
+} from '../SegmentContainer/withResolvedSegment.js'
+import { SpeechSynthesiser } from '../../lib/speechSynthesis.js'
+import { SegmentList } from './SegmentList.js'
+import { unprotectString } from '../../lib/tempLib.js'
+import { LIVELINE_HISTORY_SIZE as TIMELINE_LIVELINE_HISTORY_SIZE } from '../SegmentTimeline/Constants.js'
+import { Segments } from '../../collections/index.js'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
-import { UIPartInstances, UIParts } from '../Collections'
-import { RundownViewShelf } from '../RundownView/RundownViewShelf'
+import { UIPartInstances, UIParts } from '../Collections.js'
+import { RundownViewShelf } from '../RundownView/RundownViewShelf.js'
 
 export const LIVELINE_HISTORY_SIZE = TIMELINE_LIVELINE_HISTORY_SIZE
 

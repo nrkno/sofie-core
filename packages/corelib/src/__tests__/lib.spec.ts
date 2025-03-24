@@ -1,5 +1,5 @@
 import { TSR } from '@sofie-automation/blueprints-integration'
-import { TimelineObjGeneric, TimelineObjType } from '../dataModel/Timeline'
+import { TimelineObjGeneric, TimelineObjType } from '../dataModel/Timeline.js'
 import {
 	formatDateAsTimecode,
 	formatDurationAsTimecode,
@@ -10,8 +10,8 @@ import {
 	objectPathSet,
 	removeNullyProperties,
 	stringifyObjects,
-} from '../lib'
-import { UserError, UserErrorMessage } from '../error'
+} from '../lib.js'
+import { UserError, UserErrorMessage } from '../error.js'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 describe('Lib', () => {

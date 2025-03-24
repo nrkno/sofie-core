@@ -1,19 +1,19 @@
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
-import { Blueprints } from '../collections'
+import { Blueprints } from '../collections/index.js'
 import {
 	parseVersion,
 	compareSemverVersions,
 	parseRange,
 	isPrerelease,
 	parseCoreIntegrationCompatabilityRange,
-} from '../systemStatus/semverUtils'
-import { lazyIgnore } from '../lib/lib'
-import { logger } from '../logging'
-import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
-import { setSystemStatus, removeSystemStatus } from '../systemStatus/systemStatus'
-import { getCoreSystemAsync } from './collection'
+} from '../systemStatus/semverUtils.js'
+import { lazyIgnore } from '../lib/lib.js'
+import { logger } from '../logging.js'
+import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion.js'
+import { setSystemStatus, removeSystemStatus } from '../systemStatus/systemStatus.js'
+import { getCoreSystemAsync } from './collection.js'
 
 const PackageInfo = require('../../package.json')
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)

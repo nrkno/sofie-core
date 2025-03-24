@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
-import { check, Match } from '../lib/check'
-import { meteorPublish } from './lib/lib'
+import { check, Match } from '../lib/check.js'
+import { meteorPublish } from './lib/lib.js'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { getActiveRoutes, getRoutedMappings } from '@sofie-automation/meteor-lib/dist/collections/Studios'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
@@ -10,8 +10,8 @@ import {
 	SetupObserversResult,
 	setUpOptimizedObserverArray,
 	TriggerUpdate,
-} from '../lib/customPublication'
-import { literal } from '../lib/tempLib'
+} from '../lib/customPublication/index.js'
+import { literal } from '../lib/tempLib.js'
 import { ReadonlyDeep } from 'type-fest'
 import { FindOptions } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
@@ -23,7 +23,7 @@ import {
 	PackageContainerStatuses,
 	PackageInfos,
 	Studios,
-} from '../collections'
+} from '../collections/index.js'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { RoutedMappings } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -32,9 +32,9 @@ import {
 	PeripheralDevicePubSub,
 	PeripheralDevicePubSubCollectionsNames,
 } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
-import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify'
-import { checkAccessAndGetPeripheralDevice } from '../security/check'
-import { assertConnectionHasOneOfPermissions } from '../security/auth'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify.js'
+import { checkAccessAndGetPeripheralDevice } from '../security/check.js'
+import { assertConnectionHasOneOfPermissions } from '../security/auth.js'
 
 meteorPublish(CorelibPubSub.studios, async function (studioIds: StudioId[] | null, _token: string | undefined) {
 	check(studioIds, Match.Maybe(Array))

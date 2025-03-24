@@ -8,9 +8,9 @@ import {
 	buildPiecesStartingInThisPartQuery,
 	buildPastInfinitePiecesForThisPartQuery,
 } from '@sofie-automation/corelib/dist/playout/infinites'
-import { invalidateAfter } from './invalidatingTime'
-import { groupByToMap, protectString } from './tempLib'
-import { getCurrentTime } from './systemTime'
+import { invalidateAfter } from './invalidatingTime.js'
+import { groupByToMap, protectString } from './tempLib.js'
+import { getCurrentTime } from './systemTime.js'
 import { DBRundownPlaylist, QuickLoopMarkerType } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { mongoWhereFilter, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
@@ -22,8 +22,8 @@ import {
 	SegmentId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownPlaylistClientUtil } from './rundownPlaylistUtil'
-import { PieceInstances, Pieces } from '../collections/index'
+import { RundownPlaylistClientUtil } from './rundownPlaylistUtil.js'
+import { PieceInstances, Pieces } from '../collections/index.js'
 
 import { PieceExtended } from '@sofie-automation/meteor-lib/dist/uiTypes/Piece'
 import { ISourceLayerExtended } from '@sofie-automation/meteor-lib/dist/uiTypes/SourceLayer'

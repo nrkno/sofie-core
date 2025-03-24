@@ -1,5 +1,5 @@
 import { ProtectedString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
-import { getCurrentTime } from '../lib/lib'
+import { getCurrentTime } from '../lib/lib.js'
 import { CollectionCleanupResult } from '@sofie-automation/meteor-lib/dist/api/system'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
@@ -8,8 +8,8 @@ import {
 	getExpiredRemovedPackageInfos,
 	getOrphanedPackageInfos,
 	removePackageInfos,
-} from './studio/lib'
-import { Settings } from '../Settings'
+} from './studio/lib.js'
+import { Settings } from '../Settings.js'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import {
 	BlueprintId,
@@ -71,10 +71,10 @@ import {
 	WorkerThreadStatuses,
 	Notifications,
 	SofieIngestDataCache,
-} from '../collections'
-import { AsyncOnlyMongoCollection, AsyncOnlyReadOnlyMongoCollection } from '../collections/collection'
-import { getCollectionKey } from '../collections/lib'
-import { generateTranslationBundleOriginId } from './translationsBundles'
+} from '../collections/index.js'
+import { AsyncOnlyMongoCollection, AsyncOnlyReadOnlyMongoCollection } from '../collections/collection.js'
+import { getCollectionKey } from '../collections/lib.js'
+import { generateTranslationBundleOriginId } from './translationsBundles.js'
 import { DBNotificationTargetType } from '@sofie-automation/corelib/dist/dataModel/Notifications'
 
 /**
@@ -137,7 +137,7 @@ export async function cleanupOldDataInner(actuallyCleanup = false): Promise<Coll
 	{
 		const ownedByOrganizationId = async <
 			DBInterface extends { _id: ID; organizationId: OrganizationId | null | undefined },
-			ID extends ProtectedString<any>
+			ID extends ProtectedString<any>,
 		>(
 			collection: AsyncOnlyReadOnlyMongoCollection<DBInterface>
 		): Promise<ID[]> => {
@@ -167,7 +167,7 @@ export async function cleanupOldDataInner(actuallyCleanup = false): Promise<Coll
 	{
 		const ownedByDeviceId = async <
 			DBInterface extends { _id: ID; deviceId: PeripheralDeviceId },
-			ID extends ProtectedString<any>
+			ID extends ProtectedString<any>,
 		>(
 			collection: AsyncOnlyReadOnlyMongoCollection<DBInterface>
 		): Promise<ID[]> => {
@@ -190,7 +190,7 @@ export async function cleanupOldDataInner(actuallyCleanup = false): Promise<Coll
 	{
 		const ownedByStudioId = async <
 			DBInterface extends { _id: ID; studioId: StudioId },
-			ID extends ProtectedString<any>
+			ID extends ProtectedString<any>,
 		>(
 			collection: AsyncOnlyReadOnlyMongoCollection<DBInterface>
 		): Promise<ID[]> => {
@@ -248,7 +248,7 @@ export async function cleanupOldDataInner(actuallyCleanup = false): Promise<Coll
 	{
 		const ownedByRundownPlaylistId = async <
 			DBInterface extends { _id: ID; playlistId: RundownPlaylistId },
-			ID extends ProtectedString<any>
+			ID extends ProtectedString<any>,
 		>(
 			collection: AsyncOnlyReadOnlyMongoCollection<DBInterface>
 		): Promise<ID[]> => {
@@ -265,7 +265,7 @@ export async function cleanupOldDataInner(actuallyCleanup = false): Promise<Coll
 	{
 		const ownedByRundownId = async <
 			DBInterface extends { _id: ID; rundownId: RundownId },
-			ID extends ProtectedString<any>
+			ID extends ProtectedString<any>,
 		>(
 			collection: AsyncOnlyReadOnlyMongoCollection<DBInterface>
 		): Promise<ID[]> => {

@@ -1,15 +1,15 @@
 import { Meteor } from 'meteor/meteor'
 import { RundownPlaylistActivationId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownPlaylists, ShowStyleBases, PieceInstances, PartInstances } from '../../collections'
-import { logger } from '../../logging'
-import { rundownPlaylistFieldSpecifier } from './reactiveContentCache'
+import { RundownPlaylists, ShowStyleBases, PieceInstances, PartInstances } from '../../collections/index.js'
+import { logger } from '../../logging.js'
+import { rundownPlaylistFieldSpecifier } from './reactiveContentCache.js'
 import {
 	ContentCache,
 	createReactiveContentCache,
 	partInstanceFieldSpecifier,
 	pieceInstanceFieldSpecifier,
-} from './reactiveContentCacheForPieceInstances'
-import { waitForAllObserversReady } from '../../publications/lib/lib'
+} from './reactiveContentCacheForPieceInstances.js'
+import { waitForAllObserversReady } from '../../publications/lib/lib.js'
 
 const REACTIVITY_DEBOUNCE = 20
 

@@ -1,4 +1,4 @@
-import * as EventEmitter from 'events'
+import { EventEmitter } from 'events'
 import {
 	BucketId,
 	PartId,
@@ -9,10 +9,10 @@ import {
 	SegmentId,
 	TriggeredActionId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import type { PieceUi } from '../uiTypes/Piece'
-import type { ShelfTabs } from '../uiTypes/ShelfTabs'
-import type { IAdLibListItem } from '../uiTypes/Adlib'
-import type { BucketAdLibItem } from '../uiTypes/Bucket'
+import type { PieceUi } from '../uiTypes/Piece.js'
+import type { ShelfTabs } from '../uiTypes/ShelfTabs.js'
+import type { IAdLibListItem } from '../uiTypes/Adlib.js'
+import type { BucketAdLibItem } from '../uiTypes/Bucket.js'
 import { Bucket } from '@sofie-automation/corelib/dist/dataModel/Bucket'
 
 export enum RundownViewEvents {

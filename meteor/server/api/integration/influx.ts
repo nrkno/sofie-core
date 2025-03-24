@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { PackageInfo } from '../../coreSystem'
+import { PackageInfo } from '../../coreSystem/index.js'
 import { initInfluxdb } from '@sofie-automation/corelib/dist/influxdb'
 export { startTrace, endTrace, sendTrace, TimeTrace, FinishedTrace } from '@sofie-automation/corelib/dist/influxdb'
 

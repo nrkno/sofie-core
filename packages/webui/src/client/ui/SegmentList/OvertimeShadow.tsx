@@ -4,11 +4,11 @@ import {
 	TimingTickResolution,
 	WithTiming,
 	withTiming,
-} from '../RundownView/RundownTiming/withTiming'
-import { RundownUtils } from '../../lib/rundown'
-import { FreezeFrameIcon } from '../../lib/ui/icons/freezeFrame'
+} from '../RundownView/RundownTiming/withTiming.js'
+import { RundownUtils } from '../../lib/rundown.js'
+import { FreezeFrameIcon } from '../../lib/ui/icons/freezeFrame.js'
 import classNames from 'classnames'
-import { FREEZE_FRAME_FLASH } from '../SegmentContainer/withResolvedSegment'
+import { FREEZE_FRAME_FLASH } from '../SegmentContainer/withResolvedSegment.js'
 
 interface IProps {
 	partInstanceTimingId: string
@@ -60,12 +60,12 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 				partActualDuration !== undefined
 					? timeToPosition(partActualDuration, timelineBase, timelineBase)
 					: endsInFreeze && mainSourceEnd && contentVsPartDiff >= 0
-					? timeToPosition(
-							Math.min(mainSourceEnd, Math.max(livePosition, partRenderedDuration)),
-							timelineBase,
-							timelineBase
-					  )
-					: timeToPosition(Math.max(livePosition, partRenderedDuration), timelineBase, timelineBase),
+						? timeToPosition(
+								Math.min(mainSourceEnd, Math.max(livePosition, partRenderedDuration)),
+								timelineBase,
+								timelineBase
+							)
+						: timeToPosition(Math.max(livePosition, partRenderedDuration), timelineBase, timelineBase),
 			display: endsInFreeze && livePosition > timelineBase ? 'none' : undefined,
 		}),
 		[livePosition, timelineBase, mainSourceEnd, partActualDuration, partRenderedDuration, toFreezeFrame]

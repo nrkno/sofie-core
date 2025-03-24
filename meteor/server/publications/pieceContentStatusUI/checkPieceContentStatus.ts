@@ -34,8 +34,8 @@ import {
 	getSideEffect,
 } from '@sofie-automation/meteor-lib/dist/collections/ExpectedPackages'
 import { getActiveRoutes, getRoutedMappings } from '@sofie-automation/meteor-lib/dist/collections/Studios'
-import { ensureHasTrailingSlash, unprotectString } from '../../lib/tempLib'
-import { MediaObjects, PackageContainerPackageStatuses, PackageInfos } from '../../collections'
+import { ensureHasTrailingSlash, unprotectString } from '../../lib/tempLib.js'
+import { MediaObjects, PackageContainerPackageStatuses, PackageInfos } from '../../collections/index.js'
 import {
 	mediaObjectFieldSpecifier,
 	MediaObjectLight,
@@ -44,9 +44,9 @@ import {
 	packageInfoFieldSpecifier,
 	PackageInfoLight,
 	PieceDependencies,
-} from './common'
+} from './common.js'
 import { PieceContentStatusObj } from '@sofie-automation/corelib/dist/dataModel/PieceContentStatus'
-import { PieceContentStatusMessageFactory, PieceContentStatusMessageRequiredArgs } from './messageFactory'
+import { PieceContentStatusMessageFactory, PieceContentStatusMessageRequiredArgs } from './messageFactory.js'
 import { PackageStatusMessage } from '@sofie-automation/shared-lib/dist/packageStatusMessages'
 
 const DEFAULT_MESSAGE_FACTORY = new PieceContentStatusMessageFactory(undefined)

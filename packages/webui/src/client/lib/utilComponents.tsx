@@ -1,5 +1,5 @@
 import * as React from 'react'
-import * as _ from 'underscore'
+import _ from 'underscore'
 // @ts-expect-error No types available
 import * as VelocityReact from 'velocity-react'
 

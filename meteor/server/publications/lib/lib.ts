@@ -1,9 +1,9 @@
 import { Meteor, Subscription } from 'meteor/meteor'
 import { AllPubSubCollections, AllPubSubTypes } from '@sofie-automation/meteor-lib/dist/api/pubsub'
-import { extractFunctionSignature } from '../../lib'
-import { protectStringObject } from '../../lib/tempLib'
+import { extractFunctionSignature } from '../../lib.js'
+import { protectStringObject } from '../../lib/tempLib.js'
 import { MetricsGauge } from '@sofie-automation/corelib/dist/prometheus'
-import { MinimalMongoCursor } from '../../collections/implementations/asyncCollection'
+import { MinimalMongoCursor } from '../../collections/implementations/asyncCollection.js'
 
 export const MeteorPublicationSignatures: { [key: string]: string[] } = {}
 export const MeteorPublications: { [key: string]: Function } = {}
@@ -42,11 +42,10 @@ export function meteorPublishUnsafe(
 	})
 }
 
-export type PublishDocType<K extends keyof AllPubSubTypes> = ReturnType<
-	AllPubSubTypes[K]
-> extends keyof AllPubSubCollections
-	? AllPubSubCollections[ReturnType<AllPubSubTypes[K]>]
-	: never
+export type PublishDocType<K extends keyof AllPubSubTypes> =
+	ReturnType<AllPubSubTypes[K]> extends keyof AllPubSubCollections
+		? AllPubSubCollections[ReturnType<AllPubSubTypes[K]>]
+		: never
 
 /**
  * Wrapper around Meteor.publish with stricter typings

@@ -21,24 +21,27 @@ import {
 	DBTriggeredActions,
 	UITriggeredActionsObj,
 } from '@sofie-automation/meteor-lib/dist/collections/TriggeredActions'
-import { protectString } from '../../lib/tempLib'
-import { StudioActionManager, StudioActionManagers } from './StudioActionManagers'
-import { DeviceTriggerMountedActionAdlibsPreview, DeviceTriggerMountedActions } from './observer'
-import { ContentCache } from './reactiveContentCache'
-import { ContentCache as PieceInstancesContentCache } from './reactiveContentCacheForPieceInstances'
-import { logger } from '../../logging'
+import { protectString } from '../../lib/tempLib.js'
+import { StudioActionManager, StudioActionManagers } from './StudioActionManagers.js'
+import { DeviceTriggerMountedActionAdlibsPreview, DeviceTriggerMountedActions } from './observer.js'
+import { ContentCache } from './reactiveContentCache.js'
+import { ContentCache as PieceInstancesContentCache } from './reactiveContentCacheForPieceInstances.js'
+import { logger } from '../../logging.js'
 import { SomeAction, SomeBlueprintTrigger } from '@sofie-automation/blueprints-integration'
 import { DeviceActions } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
 import { DummyReactiveVar } from '@sofie-automation/meteor-lib/dist/triggers/reactive-var'
-import { MeteorTriggersContext } from './triggersContext'
-import { TagsService } from './TagsService'
+import { MeteorTriggersContext } from './triggersContext.js'
+import { TagsService } from './TagsService.js'
 
 export class StudioDeviceTriggerManager {
 	#lastShowStyleBaseId: ShowStyleBaseId | null = null
 
 	lastCache: ContentCache | undefined
 
-	constructor(public studioId: StudioId, protected tagsService: TagsService) {
+	constructor(
+		public studioId: StudioId,
+		protected tagsService: TagsService
+	) {
 		if (StudioActionManagers.get(studioId)) {
 			logger.error(`A StudioActionManager for "${studioId}" already exists`)
 			return
@@ -201,7 +204,7 @@ export class StudioDeviceTriggerManager {
 										? {
 												name: sourceLayers[adLib.sourceLayerId]?.name,
 												abbreviation: sourceLayers[adLib.sourceLayerId]?.abbreviation,
-										  }
+											}
 										: undefined,
 									styleClassNames: triggeredAction.styleClassNames,
 									isActive,
@@ -335,14 +338,14 @@ async function createCurrentContextFromCache(
 	const currentSegmentPartIds = currentPartInstance
 		? await cache.Parts.find({
 				segmentId: currentPartInstance.part.segmentId,
-		  }).mapAsync((part) => part._id)
+			}).mapAsync((part) => part._id)
 		: []
 	const nextSegmentPartIds = nextPartInstance
 		? nextPartInstance.part.segmentId === currentPartInstance?.part.segmentId
 			? currentSegmentPartIds
 			: await cache.Parts.find({
 					segmentId: nextPartInstance.part.segmentId,
-			  }).mapAsync((part) => part._id)
+				}).mapAsync((part) => part._id)
 		: []
 
 	return {

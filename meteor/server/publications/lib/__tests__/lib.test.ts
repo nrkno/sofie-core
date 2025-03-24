@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { waitForAllObserversReady } from '../lib'
+import { waitForAllObserversReady } from '../lib.js'
 import { sleep } from '@sofie-automation/shared-lib/dist/lib/lib'
 
 describe('waitForAllObserversReady', () => {

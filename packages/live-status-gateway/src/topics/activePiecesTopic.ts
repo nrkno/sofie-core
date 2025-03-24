@@ -2,12 +2,12 @@ import { Logger } from 'winston'
 import { WebSocket } from 'ws'
 import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
-import { WebSocketTopicBase, WebSocketTopic } from '../wsHandler'
-import { ShowStyleBaseExt } from '../collections/showStyleBaseHandler'
-import { SelectedPieceInstances, PieceInstanceMin } from '../collections/pieceInstancesHandler'
-import { PieceStatus, toPieceStatus } from './helpers/pieceStatus'
+import { WebSocketTopicBase, WebSocketTopic } from '../wsHandler.js'
+import { ShowStyleBaseExt } from '../collections/showStyleBaseHandler.js'
+import { SelectedPieceInstances, PieceInstanceMin } from '../collections/pieceInstancesHandler.js'
+import { PieceStatus, toPieceStatus } from './helpers/pieceStatus.js'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { CollectionHandlers } from '../liveStatusServer'
+import { CollectionHandlers } from '../liveStatusServer.js'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PickKeys } from '@sofie-automation/shared-lib/dist/lib/types'
 
@@ -45,12 +45,12 @@ export class ActivePiecesTopic extends WebSocketTopicBase implements WebSocketTo
 					rundownPlaylistId: unprotectString(this._activePlaylistId),
 					activePieces:
 						this._activePieceInstances?.map((piece) => toPieceStatus(piece, this._showStyleBaseExt)) ?? [],
-			  })
+				})
 			: literal<ActivePiecesStatus>({
 					event: 'activePieces',
 					rundownPlaylistId: null,
 					activePieces: [],
-			  })
+				})
 
 		this.sendMessage(subscribers, message)
 	}

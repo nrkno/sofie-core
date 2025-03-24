@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import ClassNames from 'classnames'
-import { DropdownInputOption } from './DropdownInput'
+import { DropdownInputOption } from './DropdownInput.js'
 import { getRandomString } from '@sofie-automation/corelib/dist/lib'
 
 export type TextInputSuggestion = DropdownInputOption<string>

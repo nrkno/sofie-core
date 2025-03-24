@@ -1,8 +1,8 @@
 import process from 'process'
-import * as _ from 'underscore'
+import _ from 'underscore'
 import fs from 'fs'
 import path from 'path'
-import { logger } from './logging'
+import { logger } from './logging.js'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { Meteor } from 'meteor/meteor'
 
@@ -31,7 +31,7 @@ export type Translations = Record<string, string>
 export const public_dir = Meteor.isProduction
 	? path.join(process.cwd(), '../web.browser/app')
 	: // In development, find the webui package and use its public directory
-	  path.join(process.cwd(), '../../../../../../packages/webui/public')
+		path.join(process.cwd(), '../../../../../../packages/webui/public')
 
 /**
  * Get the i18next locale object for a given `languageCode`. If the translations file can not be found or it can't be

@@ -1,4 +1,4 @@
-import { BaseRemoteInputIcon } from './RemoteInputIcon'
+import { BaseRemoteInputIcon } from './RemoteInputIcon.js'
 
 export default function LocalInputIcon(props: Readonly<{ inputIndex?: string; abbreviation?: string }>): JSX.Element {
 	return (

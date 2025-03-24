@@ -1,7 +1,7 @@
 import * as React from 'react'
-import * as _ from 'underscore'
-import { RundownTiming } from './RundownTiming'
-import { RundownTimingContext } from '../../../lib/rundownTiming'
+import _ from 'underscore'
+import { RundownTiming } from './RundownTiming.js'
+import { RundownTimingContext } from '../../../lib/rundownTiming.js'
 
 export type TimingFilterFunction = (durations: RundownTimingContext) => any
 

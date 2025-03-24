@@ -1,8 +1,8 @@
-import { ControllerAbstract } from './lib'
-import { AccessRequestCallback, PrompterViewContent } from '../PrompterView'
+import { ControllerAbstract } from './lib.js'
+import { AccessRequestCallback, PrompterViewContent } from '../PrompterView.js'
 
 import { getOpenedDevices, requestAccess, setupShuttle, Shuttle } from 'shuttle-webhid'
-import { logger } from '../../../lib/logging'
+import { logger } from '../../../lib/logging.js'
 
 /**
  * This class handles control of the prompter using Contour Shuttle / Multimedia Controller line of devices

@@ -5,8 +5,8 @@ import {
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
-import { CoreConnection, PeripheralDevicePubSub, PeripheralDevicePubSubCollectionsNames } from '../index'
-import { DDPConnectorOptions } from '../lib/ddpClient'
+import { CoreConnection, PeripheralDevicePubSub, PeripheralDevicePubSubCollectionsNames } from '../index.js'
+import { DDPConnectorOptions } from '../lib/ddpClient.js'
 jest.mock('faye-websocket')
 jest.mock('got')
 

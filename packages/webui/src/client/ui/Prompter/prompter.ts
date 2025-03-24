@@ -12,17 +12,17 @@ import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { RundownUtils } from '../../lib/rundown'
-import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil'
+import { RundownUtils } from '../../lib/rundown.js'
+import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil.js'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
-import * as _ from 'underscore'
-import { FindOptions } from '../../collections/lib'
-import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
-import { normalizeArrayToMap, protectString } from '../../lib/tempLib'
-import { PieceInstances, Pieces, RundownPlaylists, Segments } from '../../collections'
-import { getPieceInstancesForPartInstance } from '../../lib/RundownResolver'
-import { UIShowStyleBases } from '../Collections'
+import _ from 'underscore'
+import { FindOptions } from '../../collections/lib.js'
+import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil.js'
+import { normalizeArrayToMap, protectString } from '../../lib/tempLib.js'
+import { PieceInstances, Pieces, RundownPlaylists, Segments } from '../../collections/index.js'
+import { getPieceInstancesForPartInstance } from '../../lib/RundownResolver.js'
+import { UIShowStyleBases } from '../Collections.js'
 
 // export interface NewPrompterAPI {
 // 	getPrompterData (playlistId: RundownPlaylistId): Promise<PrompterData>
@@ -88,7 +88,7 @@ export namespace PrompterAPI {
 						_id: 1,
 						orphaned: 1,
 					},
-			  }) as Pick<DBSegment, '_id' | 'orphaned'>)
+				}) as Pick<DBSegment, '_id' | 'orphaned'>)
 			: undefined
 
 		const groupedParts = RundownUtils.getSegmentsWithPartInstances(
@@ -174,7 +174,7 @@ export namespace PrompterAPI {
 						partInstanceId: currentPartInstance._id,
 					},
 					pieceInstanceFieldOptions
-			  ).fetch()
+				).fetch()
 			: undefined
 
 		const orderedRundowns = new Map<RundownId, PrompterDataRundown>()

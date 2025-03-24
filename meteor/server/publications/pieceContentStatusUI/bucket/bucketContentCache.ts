@@ -1,4 +1,4 @@
-import { ReactiveCacheCollection } from '../../lib/ReactiveCacheCollection'
+import { ReactiveCacheCollection } from '../../lib/ReactiveCacheCollection.js'
 import { DBShowStyleBase, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'

@@ -1,9 +1,9 @@
-import { addMigrationSteps } from './databaseMigration'
-import { logger } from '../logging'
-import { getRandomId, protectString } from '../lib/tempLib'
+import { addMigrationSteps } from './databaseMigration.js'
+import { logger } from '../logging.js'
+import { getRandomId, protectString } from '../lib/tempLib.js'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ShowStyleBases, ShowStyleVariants, Studios } from '../collections'
+import { ShowStyleBases, ShowStyleVariants, Studios } from '../collections/index.js'
 import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
 
 /**

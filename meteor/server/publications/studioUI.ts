@@ -5,17 +5,17 @@ import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { Complete, literal } from '../lib/tempLib'
+import { Complete, literal } from '../lib/tempLib.js'
 import {
 	CustomPublishCollection,
 	meteorCustomPublish,
 	setUpCollectionOptimizedObserver,
 	SetupObserversResult,
 	TriggerUpdate,
-} from '../lib/customPublication'
-import { Studios } from '../collections'
+} from '../lib/customPublication/index.js'
+import { Studios } from '../collections/index.js'
 import { check, Match } from 'meteor/check'
-import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/securityVerify.js'
 
 interface UIStudioArgs {
 	readonly studioId: StudioId | null

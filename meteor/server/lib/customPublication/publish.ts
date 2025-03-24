@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { AllPubSubTypes } from '@sofie-automation/meteor-lib/dist/api/pubsub'
-import { ProtectedString, unprotectString } from '../tempLib'
-import { PublishDocType, SubscriptionContext, meteorPublishUnsafe } from '../../publications/lib/lib'
+import { ProtectedString, unprotectString } from '../tempLib.js'
+import { PublishDocType, SubscriptionContext, meteorPublishUnsafe } from '../../publications/lib/lib.js'
 
 export interface CustomPublishChanges<T extends { _id: ProtectedString<any> }> {
 	added: Array<T>
@@ -32,7 +32,10 @@ export class CustomPublishMeteor<DBObj extends { _id: ProtectedString<any> }> {
 	#onStop: (() => void) | undefined
 	#isReady = false
 
-	constructor(private _meteorSubscription: SubscriptionContext, private _collectionName: string) {
+	constructor(
+		private _meteorSubscription: SubscriptionContext,
+		private _collectionName: string
+	) {
 		this._meteorSubscription.onStop(() => {
 			if (this.#onStop) this.#onStop()
 		})

@@ -6,19 +6,19 @@ import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mo
 import { PackageManagerPlayoutContext } from '@sofie-automation/shared-lib/dist/package-manager/publications'
 import { check } from 'meteor/check'
 import { ReadonlyDeep } from 'type-fest'
-import { RundownPlaylists, Rundowns } from '../../collections'
+import { RundownPlaylists, Rundowns } from '../../collections/index.js'
 import {
 	meteorCustomPublish,
 	SetupObserversResult,
 	setUpOptimizedObserverArray,
 	TriggerUpdate,
-} from '../../lib/customPublication'
-import { logger } from '../../logging'
+} from '../../lib/customPublication/index.js'
+import { logger } from '../../logging.js'
 import {
 	PeripheralDevicePubSub,
 	PeripheralDevicePubSubCollectionsNames,
 } from '@sofie-automation/shared-lib/dist/pubsub/peripheralDevice'
-import { checkAccessAndGetPeripheralDevice } from '../../security/check'
+import { checkAccessAndGetPeripheralDevice } from '../../security/check.js'
 
 export type RundownPlaylistCompact = Pick<DBRundownPlaylist, '_id' | 'activationId' | 'rehearsal' | 'rundownIdsInOrder'>
 const rundownPlaylistFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<RundownPlaylistCompact>>({
@@ -84,7 +84,7 @@ async function manipulateExpectedPackagesPublicationData(
 				{
 					fields: { _id: 1 },
 				}
-		  )) as Pick<DBRundown, '_id'>[])
+			)) as Pick<DBRundown, '_id'>[])
 		: []
 
 	return literal<PackageManagerPlayoutContext[]>([
@@ -95,7 +95,7 @@ async function manipulateExpectedPackagesPublicationData(
 						_id: activePlaylist._id,
 						active: !!activePlaylist.activationId,
 						rehearsal: !!activePlaylist.rehearsal,
-				  }
+					}
 				: null,
 			activeRundowns: activeRundowns.map((rundown) => {
 				return {
