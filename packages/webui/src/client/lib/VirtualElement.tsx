@@ -43,6 +43,7 @@ const SAFARI_VISIBILITY_DELAY = /^((?!chrome|android).)*safari/i.test(navigator.
  * }
  * @return {*}  {(JSX.Element | null)}
  */
+
 export function VirtualElement({
 	initialShow,
 	placeholderHeight,
@@ -62,6 +63,7 @@ export function VirtualElement({
 	id?: string | undefined
 	className?: string
 }>): JSX.Element | null {
+	const resizeObserverManager = ResizeObserverManager.getInstance()
 	const [waitForInitialLoad, setWaitForInitialLoad] = useState(true)
 	const [inView, setInView] = useState(initialShow ?? false)
 	const [isShowingChildren, setIsShowingChildren] = useState(inView)
@@ -69,11 +71,12 @@ export function VirtualElement({
 	const [measurements, setMeasurements] = useState<IElementMeasurements | null>(null)
 	const [ref, setRef] = useState<HTMLDivElement | null>(null)
 
-	// Store the old dashboard height to detect changes:
-	let oldElementHeight: number | undefined
-	let resizeTimeout: NodeJS.Timeout
+	let inViewChangetimer: NodeJS.Timeout | undefined
 
 	const showPlaceholder = !isShowingChildren && !initialShow
+
+	const isCurrentlyObserving = useRef(false)
+	const isTransitioning = useRef(false)
 
 	// Track the last visibility change to debounce
 	const lastVisibilityChangeRef = useRef<number>(0)
@@ -95,6 +98,27 @@ export function VirtualElement({
 		[width, placeholderHeight]
 	)
 
+	const handleResize = useCallback(() => {
+		if (ref) {
+			// Show children during measurement
+			setIsShowingChildren(true)
+
+			requestAnimationFrame(() => {
+				const measurements = measureElement(ref, placeholderHeight)
+				if (measurements) {
+					setMeasurements(measurements)
+
+					// Only hide children again if not in view
+					if (!inView && measurements.clientHeight > 0) {
+						setIsShowingChildren(false)
+					} else {
+						setIsShowingChildren(true)
+					}
+				}
+			})
+		}
+	}, [ref, inView, placeholderHeight])
+
 	const onVisibleChanged = useCallback(
 		(visible: boolean) => {
 			const now = Date.now()
@@ -109,20 +133,33 @@ export function VirtualElement({
 				return
 			}
 
-			if (visible) {
-				oldElementHeight = findElementHeight()
-				if (ref) {
-					console.log('Connecting observer for element', ref)
-					resizeObserver.observe(ref)
-				}
-			} else {
-				console.log('Disconnecting observer for element', ref)
-				resizeObserver.disconnect()
+			setInView(visible)
+
+			// Don't do updates while transitioning:
+			if (isTransitioning.current) {
+				return
+			}
+			isTransitioning.current = true
+
+			// Clear any existing timers
+			if (inViewChangetimer) {
+				clearTimeout(inViewChangetimer)
 			}
 
-			setInView(visible)
+			// Delay the observer connection to prevent flickering
+			inViewChangetimer = setTimeout(() => {
+				if (visible) {
+					if (ref) {
+						if (!isCurrentlyObserving.current) {
+							resizeObserverManager.observe(ref, handleResize)
+							isCurrentlyObserving.current = true
+						}
+					}
+				}
+				isTransitioning.current = false
+			}, 100)
 		},
-		[inView]
+		[ref]
 	)
 
 	const isScrolling = (): boolean => {
@@ -138,62 +175,26 @@ export function VirtualElement({
 		return false
 	}
 
-	function handleResize() {
-		if (ref) {
-			// Show children during measurement
-			setIsShowingChildren(true)
-			if (resizeTimeout) {
-				clearTimeout(resizeTimeout)
+	useEffect(() => {
+		// Setup initial observer if element is in view
+		if (ref && inView && !isCurrentlyObserving.current) {
+			resizeObserverManager.observe(ref, handleResize)
+			isCurrentlyObserving.current = true
+		}
+
+		// Cleanup function
+		return () => {
+			// Clean up resize observer
+			if (ref && isCurrentlyObserving.current) {
+				resizeObserverManager.unobserve(ref)
+				isCurrentlyObserving.current = false
 			}
-			resizeTimeout = setTimeout(() => {
-				requestAnimationFrame(() => {
-					const measurements = measureElement(ref, placeholderHeight)
-					if (measurements) {
-						setMeasurements(measurements)
 
-						// Only hide children again if not in view
-						if (!inView && measurements.clientHeight > 0) {
-							setIsShowingChildren(false)
-						} else {
-							setIsShowingChildren(true)
-						}
-					}
-				})
-			}, 50)
+			if (inViewChangetimer) {
+				clearTimeout(inViewChangetimer)
+			}
 		}
-	}
-
-	const findDashboardPanel = (): HTMLElement | null => {
-		const timelineWrapper = ref?.closest('.segment-timeline-wrapper--shelf')
-		const dashboardPanel = timelineWrapper?.querySelector('.dashboard-panel')
-		if (dashboardPanel) {
-			return dashboardPanel as HTMLElement
-		}
-		return null
-	}
-
-	function findElementHeight(): number {
-		const dashboardElement = findDashboardPanel()
-		// Get heigth of timeline wrapper
-		const dashboardHeight = dashboardElement?.clientHeight || 0
-		const totalHeight = ref?.clientHeight || placeholderHeight || 160 + dashboardHeight
-
-		return totalHeight
-	}
-
-	// Handle Viewport heigth changes:
-	const resizeObserver = new ResizeObserver(() => {
-		console.log('Observing resize')
-
-		const elementHeight = findElementHeight()
-		console.log('elementHeight', elementHeight, 'oldElementHeight', oldElementHeight)
-
-		if (elementHeight && elementHeight !== oldElementHeight) {
-			console.log('dashboard containerHeigth changed to ', elementHeight, 'from', oldElementHeight)
-			oldElementHeight = elementHeight
-			handleResize()
-		}
-	})
+	}, [ref, inView])
 
 	useEffect(() => {
 		if (inView === true) {
@@ -207,12 +208,7 @@ export function VirtualElement({
 						setMeasurements(measurements)
 						setWaitForInitialLoad(false)
 					}
-					// Setup initial resize observers
-					oldElementHeight = findElementHeight()
-					if (ref) {
-						resizeObserver.observe(ref)
-					}
-				}, 2000)
+				}, 800)
 
 				return () => {
 					window.clearTimeout(initialMeasurementTimeout)
@@ -349,5 +345,52 @@ function measureElement(wrapperEl: HTMLDivElement, placeholderHeight?: number): 
 		marginLeft: style.marginLeft || undefined,
 		marginRight: style.marginRight || undefined,
 		id: el.id,
+	}
+}
+
+// Singleton class to manage ResizeObserver instances
+export class ResizeObserverManager {
+	private static instance: ResizeObserverManager
+	private resizeObserver: ResizeObserver
+	private observedElements: Map<HTMLElement, (entry: ResizeObserverEntry) => void>
+
+	private constructor() {
+		this.observedElements = new Map()
+		this.resizeObserver = new ResizeObserver((entries) => {
+			entries.forEach((entry) => {
+				const element = entry.target as HTMLElement
+				const callback = this.observedElements.get(element)
+				if (callback) {
+					callback(entry)
+				}
+			})
+		})
+	}
+
+	public static getInstance(): ResizeObserverManager {
+		if (!ResizeObserverManager.instance) {
+			ResizeObserverManager.instance = new ResizeObserverManager()
+		}
+		return ResizeObserverManager.instance
+	}
+
+	public observe(element: HTMLElement, callback: (entry: ResizeObserverEntry) => void): void {
+		if (!element) return
+
+		// Store the callback in our map
+		this.observedElements.set(element, callback)
+
+		// Start observing
+		this.resizeObserver.observe(element)
+	}
+
+	public unobserve(element: HTMLElement): void {
+		if (!element) return
+
+		// Remove from our map
+		this.observedElements.delete(element)
+
+		// Stop observing
+		this.resizeObserver.unobserve(element)
 	}
 }
