@@ -388,6 +388,7 @@ export function studioSettingsFrom(apiStudioSettings: APIStudioSettings): Comple
 		allowPieceDirectPlay: apiStudioSettings.allowPieceDirectPlay ?? true, // Backwards compatible
 		enableBuckets: apiStudioSettings.enableBuckets ?? true, // Backwards compatible
 		enableEvaluationForm: apiStudioSettings.enableEvaluationForm ?? true, // Backwards compatible
+		rundownGlobalPiecesPrepareTime: apiStudioSettings.rundownGlobalPiecesPrepareTime,
 	}
 }
 
@@ -413,6 +414,7 @@ export function APIStudioSettingsFrom(settings: IStudioSettings): Complete<APISt
 		allowPieceDirectPlay: settings.allowPieceDirectPlay,
 		enableBuckets: settings.enableBuckets,
 		enableEvaluationForm: settings.enableEvaluationForm,
+		rundownGlobalPiecesPrepareTime: settings.rundownGlobalPiecesPrepareTime,
 	}
 }
 

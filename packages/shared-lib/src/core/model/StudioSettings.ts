@@ -91,4 +91,9 @@ export interface IStudioSettings {
 	 * Doubleclick changes behaviour as selector for userediting
 	 */
 	enableUserEdits?: boolean
+
+	/**
+	 * How long before their start time a rundown owned piece be added to the timeline
+	 */
+	rundownGlobalPiecesPrepareTime?: number
 }

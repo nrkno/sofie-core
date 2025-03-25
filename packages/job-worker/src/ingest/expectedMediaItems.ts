@@ -89,7 +89,7 @@ function generateExpectedMediaItemsFull(
 			...generateExpectedMediaItems<ExpectedMediaItemRundown>(
 				doc._id,
 				{
-					partId: doc.startPartId,
+					partId: doc.startPartId ?? undefined,
 					rundownId: doc.startRundownId,
 				},
 				studioId,
@@ -254,7 +254,7 @@ export async function updateExpectedMediaItemsForRundownBaseline(
 	const expectedMediaItems = generateExpectedMediaItemsFull(
 		context.studio._id,
 		ingestModel.rundownId,
-		[],
+		ingestModel.getGlobalPieces(),
 		baselineAdlibPieces,
 		baselineAdlibActions
 	)
