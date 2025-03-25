@@ -105,6 +105,11 @@ export function VirtualElement({
 			}
 
 			lastVisibilityChangeRef.current = now
+			if (inView === visible) {
+				//Setup resize observer and recalculations
+			} else {
+				// Stop resize observer:
+			}
 
 			setInView(visible)
 		},
@@ -147,14 +152,11 @@ export function VirtualElement({
 							}
 						}
 					})
-				}, 500)
+				}, 200)
 			}
 		}
 
-		const findDashboardPanel = (el: HTMLElement | null): HTMLElement | null => {
-			if (!el) {
-				return null
-			}
+		const findDashboardPanel = (): HTMLElement | null => {
 			const timelineWrapper = ref?.closest('.segment-timeline-wrapper--shelf')
 			const dashboardPanel = timelineWrapper?.querySelector('.dashboard-panel')
 			if (dashboardPanel) {
@@ -164,7 +166,7 @@ export function VirtualElement({
 		}
 
 		const resizeObserver = new ResizeObserver(() => {
-			const dashboardElement = findDashboardPanel(ref)
+			const dashboardElement = findDashboardPanel()
 			// Get heigth of timeline wrapper
 			const containerHeight = dashboardElement?.clientHeight
 
@@ -176,20 +178,17 @@ export function VirtualElement({
 		})
 
 		if (ref) {
-			// Delay the initial observer to allow the UI to render
-			setTimeout(() => {
-				const dashboardElement = findDashboardPanel(ref)
-				if (dashboardElement) {
-					oldDashboardHeight = dashboardElement?.clientHeight
-					resizeObserver.observe(ref)
-				}
-			}, 2000)
+			const dashboardElement = findDashboardPanel()
+			if (dashboardElement) {
+				oldDashboardHeight = dashboardElement?.clientHeight
+				resizeObserver.observe(ref)
+			}
 		}
 
 		return () => {
 			resizeObserver.disconnect()
 		}
-	}, [inView, ref, placeholderHeight])
+	}, [ref, placeholderHeight])
 
 	useEffect(() => {
 		if (inView === true) {
@@ -316,7 +315,7 @@ function measureElement(wrapperEl: HTMLDivElement, placeholderHeight?: number): 
 			totalHeight += panelRect.height
 		}
 
-		if (totalHeight < 10) {
+		if (totalHeight < 40) {
 			totalHeight = placeholderHeight ?? el.clientHeight
 		}
 
