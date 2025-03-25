@@ -32,7 +32,7 @@ export function SupportPopUp({ children }: Readonly<React.PropsWithChildren<IPro
 
 	return (
 		<div className="support-pop-up-panel" role="dialog">
-			<h2 className="mhn mvn">{t('Help & Support')}</h2>
+			<h2 className="m-0">{t('Help & Support')}</h2>
 			{children && <div className="support-pop-up-panel__actions">{children}</div>}
 			{!supportMessage && <DocumentationLink />}
 			<div dangerouslySetInnerHTML={supportMessageHTML} />
@@ -69,17 +69,17 @@ export function DocumentationLink(): JSX.Element {
 	const { t } = useTranslation()
 
 	return (
-		<div className="mod mhn mbn">
+		<div>
 			{getHelpMode() ? (
-				<div>
+				<p>
 					{t('Disable hints by adding this to the URL:')}&nbsp;
 					<a href="?help=0">?help=0</a>
-				</div>
+				</p>
 			) : (
-				<div>
+				<p>
 					{t('Enable hints by adding this to the URL:')}&nbsp;
 					<a href="?help=1">?help=1</a>
-				</div>
+				</p>
 			)}
 			<p>
 				{t('More documentation available at:')}&nbsp;

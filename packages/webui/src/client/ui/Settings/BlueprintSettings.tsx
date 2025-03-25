@@ -20,6 +20,7 @@ import { MeteorCall } from '../../lib/meteorApi'
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Blueprints, CoreSystem, ShowStyleBases, Studios } from '../../collections'
 import { LabelActual } from '../../lib/Components/LabelAndOverrides'
+import Button from 'react-bootstrap/esm/Button'
 
 interface IProps {
 	blueprintId: BlueprintId
@@ -196,9 +197,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			switch (blueprint.blueprintType) {
 				case BlueprintManifestType.SHOWSTYLE:
 					return (
-						<div>
-							<p className="mod mhn mvs">{t('Assigned Show Styles:')}</p>
-							<p className="mod mhn mvs">
+						<div className="field">
+							<LabelActual label={t('Assigned Show Styles')} />
+							<div className="field-content">
 								{this.props.assignedShowStyles.length > 0
 									? this.props.assignedShowStyles.map((showStyleBase) => (
 											<span key={unprotectString(showStyleBase._id)} className="pill">
@@ -208,14 +209,14 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											</span>
 									  ))
 									: t('This Blueprint is not being used by any Show Style')}
-							</p>
+							</div>
 						</div>
 					)
 				case BlueprintManifestType.STUDIO:
 					return (
-						<div>
-							<p className="mod mhn mvs">{t('Assigned Studios:')}</p>
-							<p className="mod mhn mvs">
+						<div className="field">
+							<LabelActual label={t('Assigned Studios')} />
+							<div className="field-content">
 								{this.props.assignedStudios.length > 0
 									? this.props.assignedStudios.map((i) => (
 											<span key={unprotectString(i._id)} className="pill">
@@ -225,24 +226,25 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											</span>
 									  ))
 									: t('This Blueprint is not compatible with any Studio')}
-							</p>
+							</div>
 						</div>
 					)
 				case BlueprintManifestType.SYSTEM:
 					return (
-						<div>
-							<p className="mod mhn mvs">
-								<button
-									className="btn btn-primary"
+						<div className="field">
+							<LabelActual label="" />
+							<div className="field-content">
+								<Button
+									variant="primary"
 									onClick={() => this.assignSystemBlueprint(this.props.assignedSystem ? undefined : blueprint._id)}
 								>
 									{this.props.assignedSystem ? t('Unassign') : t('Assign')}
-								</button>
-							</p>
+								</Button>
+							</div>
 						</div>
 					)
 				default:
-					return <div></div>
+					return null
 			}
 		}
 
@@ -250,82 +252,99 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			const { t } = this.props
 
 			return (
-				<div className="studio-edit mod mhl mvn">
-					<div>
-						<div className="mod mvs mhn">
-							{t('Blueprint ID')}: <i>{unprotectString(blueprint._id)}</i>
-						</div>
+				<div className="studio-edit mx-4">
+					<div className="properties-grid">
 						<label className="field">
-							<LabelActual label={t('Blueprint Name')} />
-							{!blueprint.name ? (
-								<div className="error-notice inline">
-									{t('No name set')} <FontAwesomeIcon icon={faExclamationTriangle} />
-								</div>
-							) : null}
-							<div className="mdi">
-								<EditAttribute
-									modifiedClassName="bghl"
-									attribute="name"
-									obj={blueprint}
-									type="text"
-									collection={Blueprints}
-									className="mdinput"
-								></EditAttribute>
-								<span className="mdfx"></span>
+							<LabelActual label={t('Blueprint ID')} />
+							<div className="field-content">
+								<i>{unprotectString(blueprint._id)}</i>
 							</div>
 						</label>
-						<div className="mod mvs mhn">
-							{t('Blueprint Type')}: <i>{(blueprint.blueprintType || '').toUpperCase()}</i>
-							{!blueprint.blueprintType ? (
-								<div className="error-notice inline">
-									{t('Upload a new blueprint')} <FontAwesomeIcon icon={faExclamationTriangle} />
-								</div>
-							) : null}
-						</div>
+
+						<label className="field">
+							<LabelActual label={t('Blueprint Name')} />
+
+							<div className="field-content">
+								<EditAttribute attribute="name" obj={blueprint} type="text" collection={Blueprints} />
+							</div>
+							<div></div>
+							<div>
+								{!blueprint.name ? (
+									<div className="error-notice inline">
+										{t('No name set')} <FontAwesomeIcon icon={faExclamationTriangle} />
+									</div>
+								) : null}
+							</div>
+						</label>
+
+						<label className="field">
+							<LabelActual label={t('Blueprint Type')} />
+							<div className="field-content">
+								<i>{(blueprint.blueprintType || '').toUpperCase()}</i>
+							</div>
+							<div></div>
+							<div>
+								{!blueprint.blueprintType ? (
+									<div className="error-notice inline">
+										{t('Upload a new blueprint')} <FontAwesomeIcon icon={faExclamationTriangle} />
+									</div>
+								) : null}
+							</div>
+						</label>
+
 						{this.renderAssignment(blueprint)}
-						<div className="mod mvs mhn">
-							<p className="mhn">
-								{t('Last modified')}: <Moment format="YYYY/MM/DD HH:mm:ss">{blueprint.modified}</Moment>
-							</p>
-						</div>
+
+						<label className="field">
+							<LabelActual label={t('Last modified')} />
+							<div className="field-content">
+								<Moment format="YYYY/MM/DD HH:mm:ss">{blueprint.modified}</Moment>
+							</div>
+						</label>
+
 						{blueprint.blueprintId ? (
-							<div className="mod mvs mhn">
-								<p className="mhn">
-									{t('Blueprint Id')}: {blueprint.blueprintId}
-								</p>
-							</div>
-						) : null}
-						{blueprint.blueprintVersion ? (
-							<div className="mod mvs mhn">
-								<p className="mhn">
-									{t('Blueprint Version')}: {blueprint.blueprintVersion}
-								</p>
-							</div>
-						) : null}
-						<div className="mod mtn mbm mhn">
 							<label className="field">
-								<LabelActual label={t('Disable version check')} />
+								<LabelActual label={t('Blueprint Id')} />
+								<div className="field-content">
+									<i>{blueprint.blueprintId}</i>
+								</div>
+							</label>
+						) : null}
+
+						{blueprint.blueprintVersion ? (
+							<label className="field">
+								<LabelActual label={t('Blueprint Version')} />
+								<div className="field-content">
+									<i>{blueprint.blueprintVersion}</i>
+								</div>
+							</label>
+						) : null}
+
+						<label className="field">
+							<LabelActual label={t('Disable version check')} />
+							<div className="field-content">
 								<EditAttribute
-									modifiedClassName="bghl"
 									attribute="disableVersionChecks"
 									obj={blueprint}
 									type="checkbox"
 									collection={Blueprints}
 									className="input"
 								/>
-							</label>
-						</div>
+							</div>
+						</label>
 
-						<div className="mod mvs mhn">
-							<UploadButton
-								className="btn btn-primary"
-								accept="text/javascript,.js"
-								onChange={(e) => this.onUploadFile(e)}
-								key={this.state.uploadFileKey}
-							>
-								<FontAwesomeIcon icon={faUpload} />
-								<span>{t('Upload Blueprints')}</span>
-							</UploadButton>
+						<div className="field">
+							<LabelActual label="" />
+							<div className="field-content">
+								<UploadButton
+									className="btn btn-primary"
+									accept="text/javascript,.js"
+									onChange={(e) => this.onUploadFile(e)}
+									key={this.state.uploadFileKey}
+								>
+									<FontAwesomeIcon icon={faUpload} />
+									<span>{t('Upload Blueprints')}</span>
+								</UploadButton>
+							</div>
 						</div>
 					</div>
 				</div>

@@ -42,7 +42,7 @@ export const CreateAdlibTestingRundownPanel = memo(function CreateAdlibTestingRu
 	if (options.length === 0) return null
 
 	return (
-		<div className="mtl gutter create-testing-rundown">
+		<div className="mt-5 mx-5 create-testing-rundown">
 			<h2>{t('Create Adlib Testing Rundown')}</h2>
 			<p>
 				{options.map((option) => (

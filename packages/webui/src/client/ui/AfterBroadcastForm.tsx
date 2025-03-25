@@ -120,7 +120,7 @@ export function AfterBroadcastForm({ playlist }: Readonly<{ playlist: DBRundownP
 	const problemOptions = useMemo(() => getDropdownInputOptions<ProblemType>(getQuestionOptions(t)), [])
 
 	return (
-		<div className="afterbroadcastform-container" role="complementary" aria-labelledby="evaluation-header">
+		<div className="afterbroadcastform-container my-4" role="complementary" aria-labelledby="evaluation-header">
 			<div className="afterbroadcastform">
 				<form className="form" onSubmit={saveForm}>
 					<EvaluationInfoBubble />

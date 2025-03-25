@@ -59,7 +59,7 @@ $triggered-action-color: #146985;
 		> div {
 			display: inline-flex;
 			border-radius: 3px;
-			padding: 0 3px;
+			padding: 0 10px;
 			margin: 0 3px 3px 0;
 		}
 
@@ -120,7 +120,7 @@ $triggered-action-color: #146985;
 			padding-top: 40px !important;
 			padding-bottom: 10px !important;
 
-			&[data-popper-placement="top"] {
+			&[data-popper-placement='top'] {
 				padding-bottom: 40px !important;
 				padding-top: 10px !important;
 			}
@@ -341,11 +341,12 @@ $triggered-action-color: #146985;
 			> .triggered-action-entry__action-editor {
 				box-sizing: content-box;
 				min-width: 208px;
-				
+
 				padding-top: 40px !important;
 				padding-bottom: 10px !important;
+				padding: 0 10px;
 
-				&[data-popper-placement="top"] {
+				&[data-popper-placement='top'] {
 					padding-bottom: 40px !important;
 					padding-top: 10px !important;
 				}
@@ -361,8 +362,9 @@ $triggered-action-color: #146985;
 
 				padding-top: 40px !important;
 				padding-bottom: 10px !important;
+				padding: 0 10px;
 
-				&[data-popper-placement="top"] {
+				&[data-popper-placement='top'] {
 					padding-bottom: 40px !important;
 					padding-top: 10px !important;
 				}
@@ -375,11 +377,11 @@ $triggered-action-color: #146985;
 					display: block;
 				}
 
-				> div > .form-control.input {
+				> div > .form-control {
 					width: 100%;
 				}
 
-				> div > .form-control.input.expco-popper {
+				> div > .form-control.expco-popper {
 					width: auto;
 					min-width: 100%;
 

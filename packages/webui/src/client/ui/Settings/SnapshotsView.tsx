@@ -20,6 +20,7 @@ import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { hashSingleUseToken } from '../../lib/lib'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { withTranslation } from 'react-i18next'
+import Button from 'react-bootstrap/esm/Button'
 
 interface IProps {
 	match: {
@@ -266,182 +267,176 @@ const SnapshotsViewContent = withTranslation()(
 			const { t } = this.props
 
 			return (
-				<div className="studio-edit mod mhl mvn">
+				<div className="studio-edit mx-4">
+					<h2 className="my-2">{t('Take a Snapshot')}</h2>
 					<div>
+						<h3 className="my-2">{t('Full System Snapshot')}</h3>
+						<p className="my-2">
+							<span className="text-s vsubtle">
+								{t(
+									'A Full System Snapshot contains all system settings (studios, showstyles, blueprints, devices, etc.)'
+								)}
+							</span>
+						</p>
+
 						<div>
-							<h2 className="mhn mtn">{t('Take a Snapshot')}</h2>
+							<button
+								className="btn btn-primary"
+								onClick={() => {
+									this.takeSystemSnapshot(null)
+								}}
+							>
+								{t('Take a Full System Snapshot')}
+							</button>
+						</div>
+
+						{this.props.studios.length > 1 ? (
 							<div>
-								<h3 className="mhn">{t('Full System Snapshot')}</h3>
-								<p className="mhn">
-									<span className="text-s vsubtle">
-										{t(
-											'A Full System Snapshot contains all system settings (studios, showstyles, blueprints, devices, etc.)'
-										)}
-									</span>
+								<h3 className="my-2">{t('Studio Snapshot')}</h3>
+								<p className="my-2 text-s dimmed field-hint">
+									{t('A Studio Snapshot contains all system settings related to that studio')}
 								</p>
-								<div>
-									<button
-										className="btn btn-primary"
-										onClick={() => {
-											this.takeSystemSnapshot(null)
-										}}
-									>
-										{t('Take a Full System Snapshot')}
-									</button>
-								</div>
-								{this.props.studios.length > 1 ? (
-									<div>
-										<h3 className="mhn">{t('Studio Snapshot')}</h3>
-										<p className="mhn text-s dimmed field-hint">
-											{t('A Studio Snapshot contains all system settings related to that studio')}
-										</p>
-										{_.map(this.props.studios, (studio) => {
-											return (
-												<div key={unprotectString(studio._id)}>
-													<button
-														className="btn btn-primary"
-														onClick={() => {
-															this.takeSystemSnapshot(studio._id)
-														}}
-													>
-														{t('Take a Snapshot for studio "{{studioName}}" only', { studioName: studio.name })}
-													</button>
-												</div>
-											)
-										})}
-									</div>
-								) : null}
+								{_.map(this.props.studios, (studio) => {
+									return (
+										<div key={unprotectString(studio._id)}>
+											<button
+												className="btn btn-primary"
+												onClick={() => {
+													this.takeSystemSnapshot(studio._id)
+												}}
+											>
+												{t('Take a Snapshot for studio "{{studioName}}" only', { studioName: studio.name })}
+											</button>
+										</div>
+									)
+								})}
 							</div>
-						</div>
-						<h2 className="mhn">{t('Restore from Snapshot File')}</h2>
-						<div className="mdi">
-							<p className="mhn">
-								<UploadButton
-									accept="application/json,.json"
-									className="btn btn-secondary"
-									onChange={(e) => this.onUploadFile(e)}
-									key={this.state.uploadFileKey}
-								>
-									<FontAwesomeIcon icon={faUpload} />
-									<span>{t('Upload Snapshot')}</span>
-								</UploadButton>
-								<span className="text-s vsubtle mls">{t('Upload a snapshot file')}</span>
-							</p>
-							<p className="mhn">
-								<UploadButton
-									accept="application/json,.json"
-									className="btn btn-secondary"
-									onChange={(e) => this.onUploadFile(e, 'debug')}
-									key={this.state.uploadFileKey2}
-								>
-									<FontAwesomeIcon icon={faUpload} />
-									<span>{t('Upload Snapshot (for debugging)')}</span>
-								</UploadButton>
-								<span className="text-s vsubtle mls">
-									{t(
-										'Upload a snapshot file (restores additional info not directly related to a Playlist / Rundown, such as Packages, PackageWorkStatuses etc'
-									)}
-								</span>
-							</p>
-							<p className="mhn">
-								<UploadButton
-									accept="application/json,.json"
-									className="btn btn-secondary"
-									onChange={(e) => this.onUploadFile(e, 'ingest')}
-									key={this.state.uploadFileKey2}
-								>
-									<FontAwesomeIcon icon={faUpload} />
-									<span>{t('Ingest from Snapshot')}</span>
-								</UploadButton>
-								<span className="text-s vsubtle mls">
-									{t('Reads the ingest (NRCS) data, and pipes it throught the blueprints')}
-								</span>
-							</p>
-						</div>
-						<h2 className="mhn">{t('Restore from Stored Snapshots')}</h2>
-						<div>
-							<table className="table">
-								<tbody>
-									<tr>
-										<th></th>
-										<th>Type</th>
-										<th>Name</th>
-										<th>Comment</th>
-										{this.state.removeSnapshots ? <th></th> : null}
-									</tr>
-									{_.map(this.props.snapshots, (snapshot) => {
-										return (
-											<tr key={unprotectString(snapshot._id)}>
-												<td>
-													<button
-														className="btn mod mhm"
-														onClick={() => {
-															this.restoreStoredSnapshot(snapshot._id)
-														}}
-													>
-														{t('Restore')}
-													</button>
-												</td>
-												<td>{snapshot.type}</td>
-												<td>
-													<a href={`/api/private/snapshot/retrieve/${snapshot._id}`} target="_blank" rel="noreferrer">
-														{snapshot.name}
-													</a>
-												</td>
-												<td>
-													{this.state.editSnapshotId === snapshot._id ? (
-														[
-															<EditAttribute
-																key={0}
-																collection={Snapshots}
-																obj={snapshot}
-																attribute="comment"
-																type="multiline"
-															/>,
-															<button key={1} className="action-btn" onClick={() => this.editSnapshot(snapshot._id)}>
-																<FontAwesomeIcon icon={faWindowClose} />
-															</button>,
-														]
-													) : (
-														<a
-															href="#"
-															onClick={(e) => {
-																e.preventDefault()
-																this.editSnapshot(snapshot._id)
-															}}
-														>
-															<span className="text-s vsubtle">{multilineText(snapshot.comment)}</span>
-														</a>
-													)}
-												</td>
-												{this.state.removeSnapshots ? (
-													<td>
-														<button
-															className="btn mod mhm btn-secondary"
-															onClick={() => {
-																this.removeStoredSnapshot(snapshot._id)
-															}}
-														>
-															{t('Remove')}
+						) : null}
+					</div>
+
+					<h2 className="mb-4">{t('Restore from Snapshot File')}</h2>
+
+					<p className="my-2">
+						<UploadButton
+							accept="application/json,.json"
+							className="btn btn-outline-secondary me-2"
+							onChange={(e) => this.onUploadFile(e)}
+							key={this.state.uploadFileKey}
+						>
+							<FontAwesomeIcon icon={faUpload} />
+							<span>{t('Upload Snapshot')}</span>
+						</UploadButton>
+						<span className="text-s vsubtle ms-2">{t('Upload a snapshot file')}</span>
+					</p>
+					<p className="my-2">
+						<UploadButton
+							accept="application/json,.json"
+							className="btn btn-outline-secondary me-2"
+							onChange={(e) => this.onUploadFile(e, 'debug')}
+							key={this.state.uploadFileKey2}
+						>
+							<FontAwesomeIcon icon={faUpload} />
+							<span>{t('Upload Snapshot (for debugging)')}</span>
+						</UploadButton>
+						<span className="text-s vsubtle ms-2">
+							{t(
+								'Upload a snapshot file (restores additional info not directly related to a Playlist / Rundown, such as Packages, PackageWorkStatuses etc'
+							)}
+						</span>
+					</p>
+					<p className="my-2">
+						<UploadButton
+							accept="application/json,.json"
+							className="btn btn-outline-secondary me-2"
+							onChange={(e) => this.onUploadFile(e, 'ingest')}
+							key={this.state.uploadFileKey2}
+						>
+							<FontAwesomeIcon icon={faUpload} />
+							<span>{t('Ingest from Snapshot')}</span>
+						</UploadButton>
+						<span className="text-s vsubtle ms-2">
+							{t('Reads the ingest (NRCS) data, and pipes it throught the blueprints')}
+						</span>
+					</p>
+
+					<h2 className="mb-4">{t('Restore from Stored Snapshots')}</h2>
+					<div>
+						<table className="table">
+							<tbody>
+								<tr>
+									<th></th>
+									<th>Type</th>
+									<th>Name</th>
+									<th>Comment</th>
+									{this.state.removeSnapshots ? <th></th> : null}
+								</tr>
+								{_.map(this.props.snapshots, (snapshot) => {
+									return (
+										<tr key={unprotectString(snapshot._id)}>
+											<td>
+												<Button
+													variant="outline-secondary"
+													onClick={() => {
+														this.restoreStoredSnapshot(snapshot._id)
+													}}
+												>
+													{t('Restore')}
+												</Button>
+											</td>
+											<td>{snapshot.type}</td>
+											<td>
+												<a href={`/api/private/snapshot/retrieve/${snapshot._id}`} target="_blank" rel="noreferrer">
+													{snapshot.name}
+												</a>
+											</td>
+											<td>
+												{this.state.editSnapshotId === snapshot._id ? (
+													<div className="secondary-control-after">
+														<EditAttribute collection={Snapshots} obj={snapshot} attribute="comment" type="multiline" />
+
+														<button className="action-btn" onClick={() => this.editSnapshot(snapshot._id)}>
+															<FontAwesomeIcon icon={faWindowClose} />
 														</button>
-													</td>
-												) : null}
-											</tr>
-										)
-									})}
-								</tbody>
-							</table>
-							<div>
-								<a
-									href="#"
-									onClick={(e) => {
-										e.preventDefault()
-										this.toggleRemoveView()
-									}}
-								>
-									{t('Show "Remove snapshots"-buttons')}
-								</a>
-							</div>
+													</div>
+												) : (
+													<a
+														href="#"
+														onClick={(e) => {
+															e.preventDefault()
+															this.editSnapshot(snapshot._id)
+														}}
+													>
+														<span className="text-s vsubtle">{multilineText(snapshot.comment)}</span>
+													</a>
+												)}
+											</td>
+											{this.state.removeSnapshots ? (
+												<td>
+													<Button
+														variant="outline-secondary"
+														onClick={() => {
+															this.removeStoredSnapshot(snapshot._id)
+														}}
+													>
+														{t('Remove')}
+													</Button>
+												</td>
+											) : null}
+										</tr>
+									)
+								})}
+							</tbody>
+						</table>
+						<div>
+							<a
+								href="#"
+								onClick={(e) => {
+									e.preventDefault()
+									this.toggleRemoveView()
+								}}
+							>
+								{t('Show "Remove snapshots"-buttons')}
+							</a>
 						</div>
 					</div>
 				</div>

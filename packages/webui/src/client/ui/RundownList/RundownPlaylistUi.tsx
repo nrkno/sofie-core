@@ -199,6 +199,7 @@ export function RundownPlaylistUi({
 		>
 			{/* Drop target { droptarget: isActiveDropZone } */}
 			<header className="rundown-playlist__header">
+				<span>{/* Spacer */}</span>
 				<span>
 					<h2 className="rundown-playlist__heading" role="rowheader">
 						<FontAwesomeIcon icon={faFolderOpen} />
@@ -253,19 +254,19 @@ export function RundownPlaylistUi({
 				<span className="rundown-list-item__text" role="gridcell">
 					<DisplayFormattedTime displayTimestamp={playlist.modified} t={t} />
 				</span>
-				{rundownLayouts.some(
-					(l) =>
-						(RundownLayoutsAPI.isLayoutForShelf(l) && l.exposeAsStandalone) ||
-						(RundownLayoutsAPI.isLayoutForRundownView(l) && l.exposeAsSelectableLayout)
-				) && (
-					<span className="rundown-list-item__text" role="gridcell">
+				<span className="rundown-list-item__text" role="gridcell">
+					{rundownLayouts.some(
+						(l) =>
+							(RundownLayoutsAPI.isLayoutForShelf(l) && l.exposeAsStandalone) ||
+							(RundownLayoutsAPI.isLayoutForRundownView(l) && l.exposeAsSelectableLayout)
+					) && (
 						<RundownViewLayoutSelection
 							rundowns={playlist.rundowns}
 							rundownLayouts={rundownLayouts}
 							playlistId={playlist._id}
 						/>
-					</span>
-				)}
+					)}
+				</span>
 				<span className="rundown-list-item__actions" role="gridcell"></span>
 			</header>
 			<ol className="rundown-playlist__rundowns">{rundownListComponents}</ol>

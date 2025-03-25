@@ -11,6 +11,7 @@ import { MeteorCall } from '../../../lib/meteorApi'
 import { hashSingleUseToken } from '../../../lib/lib'
 import { UserPermissionsContext } from '../../UserPermissions'
 import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
+import Button from 'react-bootstrap/Button'
 
 interface ICoreItemProps {
 	systemStatus: StatusResponse | undefined
@@ -66,8 +67,8 @@ export function CoreItem({ systemStatus, coreSystem }: ICoreItemProps): JSX.Elem
 			{(userPermissions.configure || userPermissions.developer) && (
 				<div className="actions-container">
 					<div className="device-item__actions">
-						<button
-							className="btn btn-secondary"
+						<Button
+							variant="outline-secondary"
 							onClick={(e) => {
 								e.preventDefault()
 								e.stopPropagation()
@@ -126,7 +127,7 @@ export function CoreItem({ systemStatus, coreSystem }: ICoreItemProps): JSX.Elem
 							}}
 						>
 							{t('Restart')}
-						</button>
+						</Button>
 					</div>
 				</div>
 			)}

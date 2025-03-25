@@ -27,11 +27,11 @@ export function SystemStatus(): JSX.Element {
 	const devicesHierarchy = convertDevicesIntoHeirarchy(devices)
 
 	return (
-		<div className="mhl gutter system-status">
-			<header className="mbs">
+		<div className="system-status">
+			<header className="mb-2">
 				<h1>{t('System Status')}</h1>
 			</header>
-			<div className="mod mvl">
+			<div className="my-5">
 				{coreSystem && <CoreItem coreSystem={coreSystem} systemStatus={systemStatus} />}
 
 				{devicesHierarchy.map((d) => (

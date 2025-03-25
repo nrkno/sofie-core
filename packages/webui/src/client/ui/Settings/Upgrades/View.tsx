@@ -16,7 +16,7 @@ export function UpgradesView(): JSX.Element {
 
 	return (
 		<div>
-			<h2 className="mhn">{t('Apply blueprint upgrades')}</h2>
+			<h2 className="my-4">{t('Apply blueprint upgrades')}</h2>
 
 			<div>
 				{(!isReady || !statuses) && <Spinner />}

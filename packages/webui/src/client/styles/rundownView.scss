@@ -137,11 +137,11 @@ $break-width: 35rem;
 		}
 	}
 
-	.header.rundown .notification-pop-ups {
+	.rundown-header .notification-pop-ups {
 		top: 65px;
 	}
 
-	> .header .rundown-overview {
+	> .rundown-header .rundown-overview {
 		transition: 0s padding-right 0.5s;
 	}
 
@@ -149,7 +149,7 @@ $break-width: 35rem;
 		padding-right: $notification-center-width;
 		transition: 0s padding-right 1s;
 
-		> .header .rundown-overview {
+		> .rundown-header .rundown-overview {
 			padding-right: calc(#{$notification-center-width} + 1.5em);
 			transition: 0s padding-right 1s;
 		}
@@ -159,10 +159,14 @@ $break-width: 35rem;
 		padding-right: $properties-panel-width;
 		transition: 0s padding-right 1s;
 
-		> .header .rundown-overview {
+		> .rundown-header .rundown-overview {
 			padding-right: calc(#{$properties-panel-width} + 1.5em);
 			transition: 0s padding-right 1s;
 		}
+	}
+
+	.dark {
+		background: #343434;
 	}
 }
 
@@ -220,8 +224,10 @@ body.no-overflow {
 	}
 }
 
-.header.rundown {
-	.row {
+.rundown-header {
+	padding: 0;
+
+	.header-row {
 		width: 100%;
 
 		&.margin-right {
@@ -238,6 +244,23 @@ body.no-overflow {
 		min-width: auto;
 		width: 100%;
 		text-align: center;
+
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
+
+		.timing__header__left {
+			text-align: left;
+		}
+		.timing__header__right {
+			display: grid;
+			grid-template-columns: auto auto;
+			text-align: right;
+			vertical-align: middle;
+
+			.timing__header__right__right {
+				align-content: end;
+			}
+		}
 
 		.timing-clock {
 			display: inline;
@@ -269,11 +292,7 @@ body.no-overflow {
 			}
 
 			&.time-now {
-				position: absolute;
-				top: 0.05em;
-				left: 50%;
-				transform: translateX(-50%);
-				margin-top: 0px;
+				margin-top: 0.05em;
 				margin-right: 0;
 				font-size: 2.3em;
 				font-weight: 100;
@@ -435,17 +454,17 @@ body.no-overflow {
 	cursor: default;
 }
 
-.header.rundown.not-active .first-row {
+.rundown-header.not-active .first-row {
 	background-color: rgb(38, 137, 186);
 }
-.header.rundown.not-active .first-row .timing-clock,
-.header.rundown.not-active .first-row .timing-clock-label {
+.rundown-header.not-active .first-row .timing-clock,
+.rundown-header.not-active .first-row .timing-clock-label {
 	color: #fff !important;
 }
-// .header.rundown.active .first-row  {
+// .rundown-header.active .first-row  {
 // background-color: #600
 // }
-.header.rundown.active.rehearsal .first-row {
+.rundown-header.active.rehearsal .first-row {
 	background-color: #660;
 }
 
@@ -768,6 +787,9 @@ svg.icon {
 
 	margin-top: 0.1em;
 	margin-right: 0.1em;
+
+	display: flex;
+	justify-content: center;
 
 	grid-row: header / main-view;
 	grid-column: timeline / end;
@@ -1898,6 +1920,7 @@ svg.icon {
 						transition: box-shadow 0.5s ease-out;
 						box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5);
 						cursor: default;
+						color: #fff;
 
 						.piece__status-icon {
 							> svg.type-warning {
@@ -3172,7 +3195,7 @@ svg.icon {
 		> .thumbnail {
 			display: block;
 			width: 414px;
-			height: 233px; 
+			height: 233px;
 			background: #000;
 		}
 
@@ -3405,8 +3428,11 @@ svg.icon {
 		left: 0;
 		right: 0;
 		text-align: center;
-		font-size: 3em;
 		transform: translateY(-50%);
+
+		.summary {
+			font-size: 3em;
+		}
 
 		> p {
 			margin: 20px auto;

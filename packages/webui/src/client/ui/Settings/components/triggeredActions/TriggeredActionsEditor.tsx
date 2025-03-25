@@ -29,6 +29,8 @@ import { SourceLayers, OutputLayers } from '@sofie-automation/corelib/dist/dataM
 import { RundownPlaylistCollectionUtil } from '../../../../collections/rundownPlaylistUtil'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { UIPartInstances, UIParts } from '../../../Collections'
+import Form from 'react-bootstrap/esm/Form'
+import Button from 'react-bootstrap/esm/Button'
 
 export interface PreviewContext {
 	rundownPlaylist: DBRundownPlaylist | null
@@ -401,10 +403,9 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 					/>
 				</ErrorBoundary>
 			)}
-			<h2 className="mhn">{t('Action Triggers')}</h2>
-			<div className="mod mhn mvn">
-				<input
-					className="form-control input text-input input-m"
+			<h2 className="mb-4">{t('Action Triggers')}</h2>
+			<div className="my-2">
+				<Form.Control
 					placeholder={t('Find Trigger...')}
 					value={triggerFilter}
 					onChange={(e) => setTriggerFilter(e.target.value)}
@@ -412,12 +413,12 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 			</div>
 			{showTriggeredActionIds?.length === 0 && systemTriggeredActionIds?.length === 0 ? (
 				parsedTriggerFilter ? (
-					<p className="mod mhn subtle">{t('No matching Action Trigger.')}</p>
+					<p className="my-2 subtle">{t('No matching Action Trigger.')}</p>
 				) : (
-					<p className="mod mhn subtle">{t('No Action Triggers set up.')}</p>
+					<p className="my-2 subtle">{t('No Action Triggers set up.')}</p>
 				)
 			) : null}
-			<div className={classNames('mod mhn', parsedTriggerFilter ? 'mbn' : undefined)}>
+			<div className={classNames('my-2', parsedTriggerFilter ? 'mb-0' : undefined)}>
 				{showTriggeredActionIds?.map((triggeredActionId) => (
 					<TriggeredActionEntry
 						key={unprotectString(triggeredActionId)}
@@ -436,16 +437,16 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 			</div>
 			{showStyleBaseId !== null ? (
 				<>
-					<div className={classNames('mod mhn', parsedTriggerFilter ? 'mtn' : undefined)}>
+					<div className={classNames('my-2', parsedTriggerFilter ? 'mt-0' : undefined)}>
 						{!parsedTriggerFilter ? (
 							<h3
-								className="mhn mvs clickable disable-select"
+								className="my-3 clickable disable-select"
 								onClick={() => setSystemWideCollapsed(!systemWideCollapsed)}
 								role="button"
 								tabIndex={0}
 								ref={drop}
 							>
-								<span className="icon action-item">
+								<span className="icon action-item me-2">
 									<FontAwesomeIcon icon={systemWideCollapsed ? faCaretRight : faCaretDown} />
 								</span>
 								{t('System-wide')}
@@ -472,21 +473,21 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 							: null}
 
 						{!systemWideCollapsed && !parsedTriggerFilter && systemTriggeredActionIds?.length === 0 && (
-							<p className="mod mhn subtle">{t('No Action Triggers set up.')}</p>
+							<p className="my-2 subtle">{t('No Action Triggers set up.')}</p>
 						)}
 					</div>
 				</>
 			) : null}
-			<div className="mod mhs">
+			<div className="my-1 mx-2">
 				<Tooltip overlay={t('Add Action Trigger')} placement="top">
-					<button className="btn btn-primary" onClick={onNewTriggeredAction}>
+					<Button variant="primary" className="mx-1" onClick={onNewTriggeredAction}>
 						<FontAwesomeIcon icon={faPlus} />
-					</button>
+					</Button>
 				</Tooltip>
 				<Tooltip overlay={t('Upload stored Action Triggers')} placement="top">
 					<span className="inline-block">
 						<UploadButton
-							className="btn btn-secondary mls"
+							className="btn btn-outline-secondary mx-1"
 							key={uploadFileKey}
 							onChange={onUploadActions}
 							accept="application/json,.json"
@@ -496,9 +497,9 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 					</span>
 				</Tooltip>
 				<Tooltip overlay={t('Download Action Triggers')} placement="top">
-					<button className="btn btn-secondary mls" onClick={onDownloadActions}>
+					<Button variant="outline-secondary" className="mx-1" onClick={onDownloadActions}>
 						<FontAwesomeIcon icon={faDownload} />
-					</button>
+					</Button>
 				</Tooltip>
 			</div>
 		</div>

@@ -265,7 +265,7 @@ export const SchemaFormObjectTable = ({
 					</tbody>
 				</table>
 
-				<div className="mod mhs">
+				<div className="my-1 mx-2">
 					<button className="btn btn-primary" onClick={addNewItem}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
@@ -384,7 +384,7 @@ function ImportExportButtons({ schema, overrideHelper, wrappedRows }: Readonly<I
 				<span className="inline-block">
 					<UploadButton
 						key={uploadFileKey}
-						className="btn btn-secondary mls"
+						className="btn btn-secondary"
 						onChange={importTable}
 						accept="application/json,.json"
 					>
@@ -394,7 +394,7 @@ function ImportExportButtons({ schema, overrideHelper, wrappedRows }: Readonly<I
 			</Tooltip>
 
 			<Tooltip overlay={t('Export')} placement="top">
-				<button className="btn btn-secondary mls" onClick={exportTable}>
+				<button className="btn btn-secondary" onClick={exportTable}>
 					<FontAwesomeIcon icon={faDownload} />
 				</button>
 			</Tooltip>

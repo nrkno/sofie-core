@@ -9,8 +9,7 @@ import { StudioPackageManagerSettings } from './Studio/PackageManager'
 import { StudioGenericProperties } from './Studio/Generic'
 import { Redirect, Route, Switch, useRouteMatch } from 'react-router-dom'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
-import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { PeripheralDevices, ShowStyleBases, Studios } from '../../collections'
+import { PeripheralDevices, Studios } from '../../collections'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { translateStringIfHasNamespaces } from '../../lib/forms/schemaFormUtil'
@@ -24,27 +23,6 @@ export default function StudioSettings(): JSX.Element {
 	const studioId = protectString(match.params.studioId)
 
 	const studio = useTracker(() => Studios.findOne(studioId), [studioId])
-
-	const studioMappings = useMemo(
-		() => (studio ? applyAndValidateOverrides(studio.mappingsWithOverrides).obj : {}),
-		[studio?.mappingsWithOverrides]
-	)
-
-	// TODO - move into child-component
-	const availableShowStyleBases = useTracker(
-		() =>
-			ShowStyleBases.find()
-				.fetch()
-				.map((showStyle) => {
-					return {
-						name: `${showStyle.name}`,
-						value: showStyle._id,
-						showStyleBase: showStyle,
-					}
-				}),
-		[],
-		[]
-	)
 
 	const firstPlayoutDevice = useTracker(
 		() =>
@@ -99,43 +77,38 @@ export default function StudioSettings(): JSX.Element {
 	}, [firstPlayoutDevice])
 
 	return studio ? (
-		<div className="studio-edit mod mhl mvn">
-			<div className="row">
-				<div className="col c12 r1-c12">
-					<ErrorBoundary>
-						<Switch>
-							<Route path={`${match.path}/generic`}>
-								<StudioGenericProperties studio={studio} availableShowStyleBases={availableShowStyleBases} />
-							</Route>
-							<Route path={`${match.path}/devices`}>
-								<StudioDevices studioId={studio._id} />
-							</Route>
-							<Route path={`${match.path}/blueprint-config`}>
-								<StudioBlueprintConfigurationSettings studio={studio} />
-							</Route>
-							<Route path={`${match.path}/mappings`}>
-								<StudioMappings
-									translationNamespaces={translationNamespaces}
-									studio={studio}
-									manifest={layerMappingsSchema}
-								/>
-							</Route>
-							<Route path={`${match.path}/route-sets`}>
-								<StudioRoutings
-									translationNamespaces={translationNamespaces}
-									studio={studio}
-									studioMappings={studioMappings}
-									manifest={layerMappingsSchema}
-								/>
-							</Route>
-							<Route path={`${match.path}/package-manager`}>
-								<StudioPackageManagerSettings studio={studio} />
-							</Route>
-							<Redirect to={`${match.path}/generic`} />
-						</Switch>
-					</ErrorBoundary>
-				</div>
-			</div>
+		<div className="studio-edit mx-4">
+			<ErrorBoundary>
+				<Switch>
+					<Route path={`${match.path}/generic`}>
+						<StudioGenericProperties studio={studio} />
+					</Route>
+					<Route path={`${match.path}/devices`}>
+						<StudioDevices studioId={studio._id} />
+					</Route>
+					<Route path={`${match.path}/blueprint-config`}>
+						<StudioBlueprintConfigurationSettings studio={studio} />
+					</Route>
+					<Route path={`${match.path}/mappings`}>
+						<StudioMappings
+							translationNamespaces={translationNamespaces}
+							studio={studio}
+							manifest={layerMappingsSchema}
+						/>
+					</Route>
+					<Route path={`${match.path}/route-sets`}>
+						<StudioRoutings
+							translationNamespaces={translationNamespaces}
+							studio={studio}
+							manifest={layerMappingsSchema}
+						/>
+					</Route>
+					<Route path={`${match.path}/package-manager`}>
+						<StudioPackageManagerSettings studio={studio} />
+					</Route>
+					<Redirect to={`${match.path}/generic`} />
+				</Switch>
+			</ErrorBoundary>
 		</div>
 	) : (
 		<Spinner />
