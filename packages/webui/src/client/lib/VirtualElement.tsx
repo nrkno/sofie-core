@@ -69,8 +69,11 @@ export function VirtualElement({
 	const [measurements, setMeasurements] = useState<IElementMeasurements | null>(null)
 	const [ref, setRef] = useState<HTMLDivElement | null>(null)
 
+	// Store the old dashboard height to detect changes:
+	let oldDashboardHeight: number | undefined
+	let resizeTimeout: NodeJS.Timeout
+
 	const showPlaceholder = !isShowingChildren && !initialShow
-	//let resizeTimeout: NodeJS.Timeout
 
 	// Track the last visibility change to debounce
 	const lastVisibilityChangeRef = useRef<number>(0)
@@ -121,59 +124,72 @@ export function VirtualElement({
 		return false
 	}
 
-	// // Handle Viewport width changes:
-	// useEffect(() => {
-	// 	let oldWidth = ref?.clientWidth
+	// // Handle Viewport heigth changes:
+	useEffect(() => {
+		function handleResize() {
+			if (ref) {
+				// Show children during measurement
+				setIsShowingChildren(true)
+				if (resizeTimeout) {
+					clearTimeout(resizeTimeout)
+				}
+				resizeTimeout = setTimeout(() => {
+					requestAnimationFrame(() => {
+						const measurements = measureElement(ref, placeholderHeight)
+						if (measurements) {
+							setMeasurements(measurements)
 
-	// 	function handleResize() {
-	// 		if (ref) {
-	// 			// Show children during measurement
-	// 			setIsShowingChildren(true)
-	// 			if (resizeTimeout) {
-	// 				clearTimeout(resizeTimeout)
-	// 			}
-	// 			resizeTimeout = setTimeout(() => {
-	// 				setMeasurements(null)
-	// 				requestAnimationFrame(() => {
-	// 					const measurements = measureElement(ref, placeholderHeight)
-	// 					if (measurements) {
-	// 						setMeasurements(measurements)
+							// Only hide children again if not in view
+							if (!inView && measurements.clientHeight > 0) {
+								setIsShowingChildren(false)
+							} else {
+								setIsShowingChildren(true)
+							}
+						}
+					})
+				}, 500)
+			}
+		}
 
-	// 						// Only hide children again if not in view
-	// 						if (!inView) {
-	// 							setIsShowingChildren(false)
-	// 						}
-	// 					}
-	// 				})
-	// 			}, 50)
-	// 		}
-	// 	}
+		const findDashboardPanel = (el: HTMLElement | null): HTMLElement | null => {
+			if (!el) {
+				return null
+			}
+			const timelineWrapper = ref?.closest('.segment-timeline-wrapper--shelf')
+			const dashboardPanel = timelineWrapper?.querySelector('.dashboard-panel')
+			if (dashboardPanel) {
+				return dashboardPanel as HTMLElement
+			}
+			return null
+		}
 
-	// 	const resizeObserver = new ResizeObserver(() => {
-	// 		// Find the segment-timeline-container parent
-	// 		const timelineWrapper = ref?.closest('.segment-timeline-wrapper--shelf')?.querySelector('.dashboard-panel')
+		const resizeObserver = new ResizeObserver(() => {
+			const dashboardElement = findDashboardPanel(ref)
+			// Get heigth of timeline wrapper
+			const containerHeight = dashboardElement?.clientHeight
 
-	// 		// Get width of timeline wrapper
-	// 		const containerWidth = timelineWrapper?.clientWidth
+			if (containerHeight && containerHeight !== oldDashboardHeight) {
+				console.log('dashboard containerHeigth changed to ', containerHeight, 'from', oldDashboardHeight)
+				oldDashboardHeight = containerHeight
+				handleResize()
+			}
+		})
 
-	// 		if (containerWidth !== oldWidth) {
-	// 			handleResize()
-	// 			oldWidth = containerWidth
-	// 		}
-	// 	})
+		if (ref) {
+			// Delay the initial observer to allow the UI to render
+			setTimeout(() => {
+				const dashboardElement = findDashboardPanel(ref)
+				if (dashboardElement) {
+					oldDashboardHeight = dashboardElement?.clientHeight
+					resizeObserver.observe(ref)
+				}
+			}, 2000)
+		}
 
-	// 	if (ref) {
-	// 		// Find and observe the segment-timeline-container parent
-	// 		const timelineContainer = ref.closest('.segment-timeline-container')
-	// 		if (timelineContainer) {
-	// 			resizeObserver.observe(timelineContainer)
-	// 		}
-	// 	}
-
-	// 	return () => {
-	// 		resizeObserver.disconnect()
-	// 	}
-	// }, [inView, ref])
+		return () => {
+			resizeObserver.disconnect()
+		}
+	}, [inView, ref, placeholderHeight])
 
 	useEffect(() => {
 		if (inView === true) {
@@ -298,6 +314,10 @@ function measureElement(wrapperEl: HTMLDivElement, placeholderHeight?: number): 
 		if (dashboardPanel) {
 			const panelRect = dashboardPanel.getBoundingClientRect()
 			totalHeight += panelRect.height
+		}
+
+		if (totalHeight < 10) {
+			totalHeight = placeholderHeight ?? el.clientHeight
 		}
 
 		return {
