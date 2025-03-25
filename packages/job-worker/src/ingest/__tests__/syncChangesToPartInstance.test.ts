@@ -100,7 +100,7 @@ describe('SyncChangesToPartInstancesWorker', () => {
 			return mock<IngestModelReadonly>(
 				{
 					findPart: jest.fn(() => undefined),
-					getGlobalPieces: jest.fn(() => []),
+					getAllPieces: jest.fn(() => []),
 				},
 				mockOptions
 			)
@@ -335,7 +335,7 @@ describe('SyncChangesToPartInstancesWorker', () => {
 			return mock<IngestModelReadonly>(
 				{
 					findPart: jest.fn(() => undefined),
-					getGlobalPieces: jest.fn(() => []),
+					getAllPieces: jest.fn(() => []),
 				},
 				mockOptions
 			)
