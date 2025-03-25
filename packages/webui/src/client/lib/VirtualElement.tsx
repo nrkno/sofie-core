@@ -70,6 +70,7 @@ export function VirtualElement({
 	const [ref, setRef] = useState<HTMLDivElement | null>(null)
 
 	const showPlaceholder = !isShowingChildren && !initialShow
+	//let resizeTimeout: NodeJS.Timeout
 
 	// Track the last visibility change to debounce
 	const lastVisibilityChangeRef = useRef<number>(0)
@@ -120,6 +121,60 @@ export function VirtualElement({
 		return false
 	}
 
+	// // Handle Viewport width changes:
+	// useEffect(() => {
+	// 	let oldWidth = ref?.clientWidth
+
+	// 	function handleResize() {
+	// 		if (ref) {
+	// 			// Show children during measurement
+	// 			setIsShowingChildren(true)
+	// 			if (resizeTimeout) {
+	// 				clearTimeout(resizeTimeout)
+	// 			}
+	// 			resizeTimeout = setTimeout(() => {
+	// 				setMeasurements(null)
+	// 				requestAnimationFrame(() => {
+	// 					const measurements = measureElement(ref, placeholderHeight)
+	// 					if (measurements) {
+	// 						setMeasurements(measurements)
+
+	// 						// Only hide children again if not in view
+	// 						if (!inView) {
+	// 							setIsShowingChildren(false)
+	// 						}
+	// 					}
+	// 				})
+	// 			}, 50)
+	// 		}
+	// 	}
+
+	// 	const resizeObserver = new ResizeObserver(() => {
+	// 		// Find the segment-timeline-container parent
+	// 		const timelineWrapper = ref?.closest('.segment-timeline-wrapper--shelf')?.querySelector('.dashboard-panel')
+
+	// 		// Get width of timeline wrapper
+	// 		const containerWidth = timelineWrapper?.clientWidth
+
+	// 		if (containerWidth !== oldWidth) {
+	// 			handleResize()
+	// 			oldWidth = containerWidth
+	// 		}
+	// 	})
+
+	// 	if (ref) {
+	// 		// Find and observe the segment-timeline-container parent
+	// 		const timelineContainer = ref.closest('.segment-timeline-container')
+	// 		if (timelineContainer) {
+	// 			resizeObserver.observe(timelineContainer)
+	// 		}
+	// 	}
+
+	// 	return () => {
+	// 		resizeObserver.disconnect()
+	// 	}
+	// }, [inView, ref])
+
 	useEffect(() => {
 		if (inView === true) {
 			setIsShowingChildren(true)
@@ -127,7 +182,7 @@ export function VirtualElement({
 			// Schedule a measurement after a short delay
 			if (waitForInitialLoad && ref) {
 				const initialMeasurementTimeout = window.setTimeout(() => {
-					const measurements = measureElement(ref)
+					const measurements = measureElement(ref, placeholderHeight)
 					if (measurements) {
 						setMeasurements(measurements)
 						setWaitForInitialLoad(false)
@@ -160,7 +215,7 @@ export function VirtualElement({
 				() => {
 					// Measure the entire wrapper element instead of just the childRef
 					if (ref) {
-						const measurements = measureElement(ref)
+						const measurements = measureElement(ref, placeholderHeight)
 						if (measurements) {
 							setMeasurements(measurements)
 						}
@@ -218,8 +273,7 @@ export function VirtualElement({
 		</InView>
 	)
 }
-
-function measureElement(wrapperEl: HTMLDivElement): IElementMeasurements | null {
+function measureElement(wrapperEl: HTMLDivElement, placeholderHeight?: number): IElementMeasurements | null {
 	if (!wrapperEl || !wrapperEl.firstElementChild) {
 		return null
 	}
@@ -227,42 +281,23 @@ function measureElement(wrapperEl: HTMLDivElement): IElementMeasurements | null 
 	const el = wrapperEl.firstElementChild as HTMLElement
 	const style = window.getComputedStyle(el)
 
-	// Look for the complete wrapper that contains both the timeline and dashboard
 	const timelineWrapper = el.closest('.segment-timeline-wrapper--shelf')
 
 	if (timelineWrapper) {
-		// Check if the direct child of the wrapper has an explicit height set
-		const wrapperChild = timelineWrapper.querySelector(':scope > div')
 		let totalHeight = 0
 
-		if (wrapperChild && wrapperChild instanceof HTMLElement) {
-			// Check for explicit height style
-			const inlineHeight = wrapperChild.style.height
-			if (inlineHeight && inlineHeight.length > 0) {
-				// Use the explicit height if it exists
-				// Extract the numeric value if it's in pixels
-				const heightValue = parseInt(inlineHeight, 10)
-				if (!isNaN(heightValue)) {
-					totalHeight = heightValue
-				}
-			}
+		// Get the segment timeline height
+		const segmentTimeline = timelineWrapper.querySelector('.segment-timeline')
+		if (segmentTimeline) {
+			const segmentRect = segmentTimeline.getBoundingClientRect()
+			totalHeight = segmentRect.height
 		}
 
-		// If no explicit height was found or it wasn't parseable, fall back to measuring
-		if (totalHeight === 0) {
-			// Get the segment timeline height
-			const segmentTimeline = timelineWrapper.querySelector('.segment-timeline')
-			if (segmentTimeline) {
-				const segmentRect = segmentTimeline.getBoundingClientRect()
-				totalHeight = segmentRect.height
-			}
-
-			// Add the dashboard panel height if it exists
-			const dashboardPanel = timelineWrapper.querySelector('.dashboard-panel')
-			if (dashboardPanel) {
-				const panelRect = dashboardPanel.getBoundingClientRect()
-				totalHeight += panelRect.height
-			}
+		// Add the dashboard panel height if it exists
+		const dashboardPanel = timelineWrapper.querySelector('.dashboard-panel')
+		if (dashboardPanel) {
+			const panelRect = dashboardPanel.getBoundingClientRect()
+			totalHeight += panelRect.height
 		}
 
 		return {
@@ -279,7 +314,7 @@ function measureElement(wrapperEl: HTMLDivElement): IElementMeasurements | null 
 	// Fallback to just measuring the element itself if wrapper isn't found
 	return {
 		width: style.width || 'auto',
-		clientHeight: el.clientHeight,
+		clientHeight: placeholderHeight ?? el.clientHeight,
 		marginTop: style.marginTop || undefined,
 		marginBottom: style.marginBottom || undefined,
 		marginLeft: style.marginLeft || undefined,
