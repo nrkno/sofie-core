@@ -70,7 +70,7 @@ export function VirtualElement({
 	const [ref, setRef] = useState<HTMLDivElement | null>(null)
 
 	// Store the old dashboard height to detect changes:
-	let oldDashboardHeight: number | undefined
+	let oldElementHeight: number | undefined
 	let resizeTimeout: NodeJS.Timeout
 
 	const showPlaceholder = !isShowingChildren && !initialShow
@@ -106,9 +106,18 @@ export function VirtualElement({
 
 			lastVisibilityChangeRef.current = now
 			if (inView === visible) {
-				//Setup resize observer and recalculations
+				return
+			}
+
+			if (visible) {
+				oldElementHeight = findElementHeight()
+				if (ref) {
+					console.log('Connecting observer for element', ref)
+					resizeObserver.observe(ref)
+				}
 			} else {
-				// Stop resize observer:
+				console.log('Disconnecting observer for element', ref)
+				resizeObserver.disconnect()
 			}
 
 			setInView(visible)
@@ -129,66 +138,62 @@ export function VirtualElement({
 		return false
 	}
 
-	// // Handle Viewport heigth changes:
-	useEffect(() => {
-		function handleResize() {
-			if (ref) {
-				// Show children during measurement
-				setIsShowingChildren(true)
-				if (resizeTimeout) {
-					clearTimeout(resizeTimeout)
-				}
-				resizeTimeout = setTimeout(() => {
-					requestAnimationFrame(() => {
-						const measurements = measureElement(ref, placeholderHeight)
-						if (measurements) {
-							setMeasurements(measurements)
-
-							// Only hide children again if not in view
-							if (!inView && measurements.clientHeight > 0) {
-								setIsShowingChildren(false)
-							} else {
-								setIsShowingChildren(true)
-							}
-						}
-					})
-				}, 200)
-			}
-		}
-
-		const findDashboardPanel = (): HTMLElement | null => {
-			const timelineWrapper = ref?.closest('.segment-timeline-wrapper--shelf')
-			const dashboardPanel = timelineWrapper?.querySelector('.dashboard-panel')
-			if (dashboardPanel) {
-				return dashboardPanel as HTMLElement
-			}
-			return null
-		}
-
-		const resizeObserver = new ResizeObserver(() => {
-			const dashboardElement = findDashboardPanel()
-			// Get heigth of timeline wrapper
-			const containerHeight = dashboardElement?.clientHeight
-
-			if (containerHeight && containerHeight !== oldDashboardHeight) {
-				console.log('dashboard containerHeigth changed to ', containerHeight, 'from', oldDashboardHeight)
-				oldDashboardHeight = containerHeight
-				handleResize()
-			}
-		})
-
+	function handleResize() {
 		if (ref) {
-			const dashboardElement = findDashboardPanel()
-			if (dashboardElement) {
-				oldDashboardHeight = dashboardElement?.clientHeight
-				resizeObserver.observe(ref)
+			// Show children during measurement
+			setIsShowingChildren(true)
+			if (resizeTimeout) {
+				clearTimeout(resizeTimeout)
 			}
-		}
+			resizeTimeout = setTimeout(() => {
+				requestAnimationFrame(() => {
+					const measurements = measureElement(ref, placeholderHeight)
+					if (measurements) {
+						setMeasurements(measurements)
 
-		return () => {
-			resizeObserver.disconnect()
+						// Only hide children again if not in view
+						if (!inView && measurements.clientHeight > 0) {
+							setIsShowingChildren(false)
+						} else {
+							setIsShowingChildren(true)
+						}
+					}
+				})
+			}, 50)
 		}
-	}, [ref, placeholderHeight])
+	}
+
+	const findDashboardPanel = (): HTMLElement | null => {
+		const timelineWrapper = ref?.closest('.segment-timeline-wrapper--shelf')
+		const dashboardPanel = timelineWrapper?.querySelector('.dashboard-panel')
+		if (dashboardPanel) {
+			return dashboardPanel as HTMLElement
+		}
+		return null
+	}
+
+	function findElementHeight(): number {
+		const dashboardElement = findDashboardPanel()
+		// Get heigth of timeline wrapper
+		const dashboardHeight = dashboardElement?.clientHeight || 0
+		const totalHeight = ref?.clientHeight || placeholderHeight || 160 + dashboardHeight
+
+		return totalHeight
+	}
+
+	// Handle Viewport heigth changes:
+	const resizeObserver = new ResizeObserver(() => {
+		console.log('Observing resize')
+
+		const elementHeight = findElementHeight()
+		console.log('elementHeight', elementHeight, 'oldElementHeight', oldElementHeight)
+
+		if (elementHeight && elementHeight !== oldElementHeight) {
+			console.log('dashboard containerHeigth changed to ', elementHeight, 'from', oldElementHeight)
+			oldElementHeight = elementHeight
+			handleResize()
+		}
+	})
 
 	useEffect(() => {
 		if (inView === true) {
@@ -202,7 +207,12 @@ export function VirtualElement({
 						setMeasurements(measurements)
 						setWaitForInitialLoad(false)
 					}
-				}, 1000)
+					// Setup initial resize observers
+					oldElementHeight = findElementHeight()
+					if (ref) {
+						resizeObserver.observe(ref)
+					}
+				}, 2000)
 
 				return () => {
 					window.clearTimeout(initialMeasurementTimeout)
