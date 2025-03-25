@@ -21,6 +21,7 @@ export * from './util'
 export * from './translations'
 export * from './triggers'
 export * from './userEditing'
+export * from './previews'
 
 export { MOS } from '@sofie-automation/shared-lib/dist/mos'
 

@@ -2,6 +2,7 @@ import { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { Time } from './common'
 import { TSR, TimelineObjectCoreExt } from './timeline'
 import { SourceLayerType } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
+import { PopupPreview } from './previews'
 
 export type WithTimeline<T extends BaseContent> = T & {
 	timelineObjects: TimelineObjectCoreExt<TSR.TSRTimelineContent>[]
@@ -19,6 +20,11 @@ export interface BaseContent {
 	ignoreBlackFrames?: boolean
 	ignoreFreezeFrame?: boolean
 	ignoreAudioFormat?: boolean
+
+	/**
+	 * Overwrite any default hover previews in Sofie
+	 */
+	popUpPreview?: PopupPreview
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface

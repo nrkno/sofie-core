@@ -1,6 +1,5 @@
 import classNames from 'classnames'
 import { VTContent } from '@sofie-automation/blueprints-integration'
-import { VTFloatingInspector } from '../../../FloatingInspectors/VTFloatingInspector'
 import { getNoticeLevelForPieceStatus } from '../../../../lib/notifications/notifications'
 import { RundownUtils } from '../../../../lib/rundown'
 import { IProps } from './ThumbnailRendererFactory'
@@ -8,7 +7,6 @@ import { RundownTimingConsumer } from '../../../RundownView/RundownTiming/Rundow
 import { unprotectString } from '../../../../lib/tempLib'
 import { FreezeFrameIcon } from '../../../../lib/ui/icons/freezeFrame'
 import { PieceStatusIcon } from '../../../../lib/ui/PieceStatusIcon'
-import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { FREEZE_FRAME_FLASH } from '../../../SegmentContainer/withResolvedSegment'
 import { LoopingPieceIcon } from '../../../../lib/ui/icons/looping'
 import { useContentStatusForPieceInstance } from '../../../SegmentTimeline/withMediaObjectStatus'
@@ -20,11 +18,6 @@ export function VTThumbnailRenderer({
 	partPlannedStoppedPlayback,
 	isLive,
 	hovering,
-	hoverScrubTimePosition,
-	originPosition,
-	studio,
-	layer,
-	height,
 }: Readonly<IProps>): JSX.Element {
 	const contentStatus = useContentStatusForPieceInstance(pieceInstance.instance)
 
@@ -37,25 +30,6 @@ export function VTThumbnailRenderer({
 
 	return (
 		<>
-			<VTFloatingInspector
-				status={contentStatus?.status ?? PieceStatusCode.UNKNOWN}
-				showMiniInspector={hovering}
-				timePosition={hoverScrubTimePosition}
-				content={vtContent}
-				position={{
-					top: originPosition.top,
-					left: originPosition.left,
-					height,
-					anchor: 'start',
-					position: 'top-start',
-				}}
-				typeClass={layer && RundownUtils.getSourceLayerClassName(layer.type)}
-				itemElement={null}
-				noticeMessages={contentStatus?.messages ?? null}
-				noticeLevel={noticeLevel}
-				studio={studio}
-				previewUrl={contentStatus?.previewUrl}
-			/>
 			<RundownTimingConsumer
 				filter={(timingContext) => ({
 					partPlayed: timingContext.partPlayed && timingContext.partPlayed[unprotectString(partId)],
