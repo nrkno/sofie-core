@@ -284,21 +284,14 @@ const EnumFormControlWrapper = ({
 				if (multiple) {
 					return (
 						<MultiSelectInputControl
-							classNames="input text-input dropdown input-l"
+							classNames="dropdown"
 							options={options}
 							value={value}
 							handleUpdate={handleUpdate}
 						/>
 					)
 				} else {
-					return (
-						<DropdownInputControl
-							classNames="input text-input input-l"
-							options={options}
-							value={value}
-							handleUpdate={handleUpdate}
-						/>
-					)
+					return <DropdownInputControl options={options} value={value} handleUpdate={handleUpdate} />
 				}
 			}}
 		</LabelAndOverridesForDropdown>
@@ -312,8 +305,6 @@ const IntegerFormWithOverrides = ({ schema, commonAttrs }: Readonly<FormComponen
 		<LabelAndOverridesForInt {...commonAttrs} zeroBased={zeroBased}>
 			{(value, handleUpdate) => (
 				<IntInputControl
-					modifiedClassName="bghl"
-					classNames="input text-input input-l"
 					placeholder={schema.default}
 					zeroBased={zeroBased}
 					value={value}
@@ -331,8 +322,6 @@ const NumberFormWithOverrides = ({ schema, commonAttrs }: Readonly<FormComponent
 		<LabelAndOverrides {...commonAttrs}>
 			{(value, handleUpdate) => (
 				<FloatInputControl
-					modifiedClassName="bghl"
-					classNames="input text-input input-l"
 					placeholder={schema.default}
 					value={value}
 					handleUpdate={handleUpdate}
@@ -369,13 +358,7 @@ const StringFormWithOverrides = ({ schema, commonAttrs }: Readonly<FormComponent
 	return (
 		<LabelAndOverrides {...commonAttrs}>
 			{(value, handleUpdate) => (
-				<TextInputControl
-					modifiedClassName="bghl"
-					classNames="input text-input input-l"
-					placeholder={schema.default}
-					value={value}
-					handleUpdate={handleUpdate}
-				/>
+				<TextInputControl placeholder={schema.default} value={value} handleUpdate={handleUpdate} />
 			)}
 		</LabelAndOverrides>
 	)
@@ -386,8 +369,6 @@ const StringArrayFormWithOverrides = ({ schema, commonAttrs }: Readonly<FormComp
 		<LabelAndOverrides {...commonAttrs}>
 			{(value, handleUpdate) => (
 				<MultiLineTextInputControl
-					modifiedClassName="bghl"
-					classNames="input text-input input-l"
 					placeholder={schema.default?.join('\n')}
 					value={value || []}
 					handleUpdate={handleUpdate}
@@ -401,13 +382,7 @@ const JsonFormWithOverrides = ({ schema, commonAttrs }: Readonly<FormComponentPr
 	return (
 		<LabelAndOverrides {...commonAttrs}>
 			{(value, handleUpdate) => (
-				<JsonTextInputControl
-					modifiedClassName="bghl"
-					classNames="input text-input input-l"
-					placeholder={JSON.stringify(schema.default)}
-					value={value}
-					handleUpdate={handleUpdate}
-				/>
+				<JsonTextInputControl placeholder={JSON.stringify(schema.default)} value={value} handleUpdate={handleUpdate} />
 			)}
 		</LabelAndOverrides>
 	)
@@ -416,9 +391,7 @@ const JsonFormWithOverrides = ({ schema, commonAttrs }: Readonly<FormComponentPr
 const Base64ImagePickerWithOverrides = ({ commonAttrs }: FormComponentProps) => {
 	return (
 		<LabelAndOverridesForBase64Image {...commonAttrs}>
-			{(value, handleUpdate) => (
-				<Base64ImageInputControl classNames="input input-l" value={value} handleUpdate={handleUpdate} />
-			)}
+			{(value, handleUpdate) => <Base64ImageInputControl value={value} handleUpdate={handleUpdate} />}
 		</LabelAndOverridesForBase64Image>
 	)
 }

@@ -87,7 +87,7 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 
 	const previewContext = useContext(PreviewPopUpContext)
 	const previewSession = useRef<IPreviewPopUpSession | null>(null)
-	const previewContents = convertSourceLayerItemToPreview(
+	const { contents: previewContents, options: previewOptions } = convertSourceLayerItemToPreview(
 		props.adLibListItem.sourceLayer?.type,
 		props.adLibListItem,
 		props.contentStatus
@@ -99,7 +99,7 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 			const unprocessedPercentage = left / itemIconPosition.width
 			if (unprocessedPercentage <= 1 && !showMiniInspector) {
 				setShowMiniInspector(true)
-				previewSession.current = previewContext.requestPreview(e.target as any, previewContents)
+				previewSession.current = previewContext.requestPreview(e.target as any, previewContents, previewOptions)
 			}
 		}
 	}
@@ -117,7 +117,7 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 				return false
 			} else if (unprocessedPercentage >= 0 && unprocessedPercentage <= 1 && !showMiniInspector) {
 				setShowMiniInspector(true)
-				previewSession.current = previewContext.requestPreview(e.target as any, previewContents)
+				previewSession.current = previewContext.requestPreview(e.target as any, previewContents, previewOptions)
 			}
 		}
 	}

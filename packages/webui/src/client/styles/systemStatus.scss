@@ -1,8 +1,3 @@
-
-.status-dialog {
-	overflow: visible !important;
-}
-
 .system-status {
 	.device-item-container {
 		.children {
@@ -250,7 +245,7 @@
 		min-width: 6em;
 	}
 	.user-action-log__args {
-		min-width: 30em;
+		min-width: 25em;
 	}
 	td.user-action-log__args {
 		position: relative;
@@ -267,6 +262,12 @@
 			margin: 0;
 		}
 	}
+}
+
+.user-action-log__pickers {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	align-items: center;
 }
 
 .media-manager-status {

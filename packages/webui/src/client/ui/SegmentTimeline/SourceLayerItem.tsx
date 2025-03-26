@@ -232,33 +232,41 @@ export const SourceLayerItem = (props: Readonly<ISourceLayerItemProps>): JSX.Ele
 		animFrameHandle.current = requestAnimationFrame(updatePos)
 	}, [piece, contentStatus, timeScale])
 	const togglePreviewPopUp = useCallback(
-		(e: React.MouseEvent, v: boolean) => {
-			if (!v && previewSession.current) {
+		(e: React.MouseEvent, state: boolean) => {
+			if (!state && previewSession.current) {
 				previewSession.current.close()
 				previewSession.current = null
 			} else {
-				const previewContents = convertSourceLayerItemToPreview(layer.type, piece.instance.piece, contentStatus, {
-					in: props.piece.renderedInPoint,
-					dur: props.piece.renderedDuration,
-				})
+				const { contents: previewContents, options: previewOptions } = convertSourceLayerItemToPreview(
+					layer.type,
+					piece.instance.piece,
+					contentStatus,
+					{
+						in: props.piece.renderedInPoint,
+						dur: props.piece.renderedDuration,
+					}
+				)
+
+				console.log(previewContents)
 
 				if (previewContents.length) {
 					previewSession.current = previewContext.requestPreview(e.target as any, previewContents, {
+						...previewOptions,
 						time: cursorTimePosition,
-						startCoordinate: e.screenX,
+						initialOffsetX: e.screenX,
 						trackMouse: true,
 					})
 				}
 			}
 
-			setShowPreviewPopUp(v)
+			setShowPreviewPopUp(state)
 
 			cursorRawPosition.current = {
 				clientX: e.clientX,
 				clientY: e.clientY,
 			}
 
-			if (v) {
+			if (state) {
 				animFrameHandle.current = requestAnimationFrame(updatePos)
 			} else if (animFrameHandle.current !== undefined) {
 				cancelAnimationFrame(animFrameHandle.current)

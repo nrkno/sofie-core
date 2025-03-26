@@ -23,6 +23,7 @@ import { downloadBlob } from '../../../lib/downloadBlob'
 import { SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { useTracker } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { Blueprints, ShowStyleVariants } from '../../../collections'
+import Button from 'react-bootstrap/esm/Button'
 
 interface IShowStyleVariantsProps {
 	showStyleBase: DBShowStyleBase
@@ -329,7 +330,7 @@ export const ShowStyleVariantsSettings = ({
 
 	return (
 		<div>
-			<h2 className="mhn">{t('Show Style Variants')}</h2>
+			<h2 className="mb-4">{t('Show Style Variants')}</h2>
 			<div>
 				<table className="table expando settings-studio-showStyleVariants-table">
 					{localVariants.map((variant: DBShowStyleVariant) => (
@@ -356,16 +357,16 @@ export const ShowStyleVariantsSettings = ({
 					))}
 				</table>
 			</div>
-			<div className="mod mhs">
-				<button className="btn btn-primary" onClick={onAddShowStyleVariant}>
+			<div className="my-1 mx-2">
+				<Button variant="primary" className="mx-1" onClick={onAddShowStyleVariant}>
 					<FontAwesomeIcon icon={faPlus} />
-				</button>
-				<button className="btn btn-secondary mls" onClick={onDownloadAllShowStyleVariants}>
+				</Button>
+				<Button variant="outline-secondary" className="mx-1" onClick={onDownloadAllShowStyleVariants}>
 					<FontAwesomeIcon icon={faDownload} />
 					&nbsp;{t('Export')}
-				</button>
+				</Button>
 				<UploadButton
-					className="btn btn-secondary mls"
+					className="btn btn-outline-secondary mx-1"
 					accept="application/json,.json"
 					onChange={importShowStyleVariants}
 					key={timestampedFileKey}
@@ -373,9 +374,9 @@ export const ShowStyleVariantsSettings = ({
 					<FontAwesomeIcon icon={faUpload} />
 					&nbsp;{t('Import')}
 				</UploadButton>
-				<button className="btn btn-secondary right" onClick={onRemoveAllShowStyleVariants}>
+				<Button variant="outline-secondary" className="mx-1" onClick={onRemoveAllShowStyleVariants}>
 					<FontAwesomeIcon icon={faTrash} />
-				</button>
+				</Button>
 			</div>
 		</div>
 	)

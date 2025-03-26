@@ -50,7 +50,11 @@ export function StoryboardPartThumbnailInner({
 	const previewSession = useRef<IPreviewPopUpSession | null>(null)
 
 	const contentStatus = useContentStatusForPieceInstance(piece.instance)
-	const previewContents = convertSourceLayerItemToPreview(layer?.type, piece.instance.piece, contentStatus)
+	const { contents: previewContents, options: previewOptions } = convertSourceLayerItemToPreview(
+		layer?.type,
+		piece.instance.piece,
+		contentStatus
+	)
 
 	const onPointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
 		if (e.pointerType !== 'mouse') {
@@ -73,8 +77,9 @@ export function StoryboardPartThumbnailInner({
 
 		if (previewContents.length > 0)
 			previewSession.current = previewContext.requestPreview(e.target as any, previewContents, {
+				...previewOptions,
 				time: mousePosition * (piece.instance.piece.content.sourceDuration || 0),
-				startCoordinate: e.screenX,
+				initialOffsetX: e.screenX,
 			})
 	}
 

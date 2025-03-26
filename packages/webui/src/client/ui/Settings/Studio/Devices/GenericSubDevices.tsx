@@ -289,23 +289,12 @@ function SubDeviceEditRow({
 						options={peripheralDeviceOptions}
 					>
 						{(value, handleUpdate, options) => (
-							<DropdownInputControl
-								classNames="input text-input input-l"
-								options={options}
-								value={value}
-								handleUpdate={handleUpdate}
-							/>
+							<DropdownInputControl options={options} value={value} handleUpdate={handleUpdate} />
 						)}
 					</LabelAndOverridesForDropdown>
 					<label className="field">
 						<LabelActual label={t('Device ID')} />
-						<TextInputControl
-							classNames="input text-input input-l"
-							modifiedClassName="bghl"
-							value={item.id}
-							handleUpdate={updateObjectId}
-							disabled={!!item.defaults}
-						/>
+						<TextInputControl value={item.id} handleUpdate={updateObjectId} disabled={!!item.defaults} />
 					</label>
 
 					{!item.computed.peripheralDeviceId && (
@@ -318,7 +307,7 @@ function SubDeviceEditRow({
 						<SubDeviceEditForm peripheralDevice={peripheralDevice} item={item} overrideHelper={overrideHelper} />
 					)}
 				</div>
-				<div className="mod alright">
+				<div className="m-1 me-2 text-end">
 					<button className={classNames('btn btn-primary')} onClick={finishEditItem}>
 						<FontAwesomeIcon icon={faCheck} />
 					</button>
@@ -382,12 +371,7 @@ function SubDeviceEditForm({ peripheralDevice, item, overrideHelper }: Readonly<
 					options={subdeviceTypeOptions}
 				>
 					{(value, handleUpdate, options) => (
-						<DropdownInputControl
-							classNames="input text-input input-l"
-							options={options}
-							value={value + ''}
-							handleUpdate={handleUpdate}
-						/>
+						<DropdownInputControl options={options} value={value + ''} handleUpdate={handleUpdate} />
 					)}
 				</LabelAndOverridesForDropdown>
 			)}

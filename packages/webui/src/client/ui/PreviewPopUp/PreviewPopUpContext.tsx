@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { PreviewPopUp, PreviewPopUpHandle } from './PreviewPopUp'
 import { Padding, Placement } from '@popperjs/core'
 import { PreviewPopUpContent } from './PreviewPopUpContent'
@@ -32,11 +32,12 @@ export function convertSourceLayerItemToPreview(
 	item: ReadonlyObjectDeep<PieceInstancePiece> | IAdLibListItem,
 	contentStatus?: ReadonlyObjectDeep<PieceContentStatusObj>,
 	timeAsRendered?: { in?: number | null; dur?: number | null }
-): PreviewContent[] {
+): { contents: PreviewContent[]; options: Readonly<Partial<PreviewRequestOptions>> } {
 	// first try to read the popup preview
 	if (item.content.popUpPreview) {
 		const popupPreview = item.content.popUpPreview
 		const contents: PreviewContent[] = []
+		const options: Partial<PreviewRequestOptions> = {}
 
 		if (popupPreview.name) {
 			contents.push({ type: 'title', content: popupPreview.name })
@@ -60,6 +61,7 @@ export function convertSourceLayerItemToPreview(
 							total: popupPreview.preview.steps.total,
 						})
 					}
+					options.size = 'large'
 					break
 				case PreviewType.Script:
 					contents.push({
@@ -74,7 +76,7 @@ export function convertSourceLayerItemToPreview(
 					contents.push({
 						type: 'boxLayout',
 						boxSourceConfiguration: popupPreview.preview.boxes,
-						backgroundArt: popupPreview.preview.background,
+						backgroundArtSrc: '/api/private/blueprints/assets/' + popupPreview.preview.background,
 					})
 					break
 				case PreviewType.Table:
@@ -118,121 +120,152 @@ export function convertSourceLayerItemToPreview(
 			contents.push(...popupPreview.warnings.map((w): PreviewContent => ({ type: 'warning', content: w.reason })))
 		}
 
-		return contents
+		return { contents, options }
 	}
 
 	// if no preview was specified, we try to infer one based on the source layer
-	if (!sourceLayerType) return []
+	if (!sourceLayerType) return { contents: [], options: {} }
 
 	if (sourceLayerType === SourceLayerType.VT || sourceLayerType === SourceLayerType.LIVE_SPEAK) {
 		const content = item.content as VTContent
 
-		return _.compact<(PreviewContent | undefined)[]>([
-			{
-				type: 'title',
-				content: content.fileName,
-			},
-			contentStatus?.previewUrl
-				? {
-						type: 'video',
-						src: contentStatus.previewUrl,
-				  }
-				: contentStatus?.thumbnailUrl
-				? {
-						type: 'image',
-						src: contentStatus.thumbnailUrl,
-				  }
-				: undefined,
-			// todo - add in-out words after rebasing
-			...(contentStatus?.messages?.map<PreviewContent>((m) => ({
-				type: 'warning',
-				content: m as any,
-			})) || []),
-		]) as PreviewContent[]
-	} else if (sourceLayerType === SourceLayerType.GRAPHICS && 'previewPayload' in item.content) {
-		const payload = JSONBlobParse<NoraPayload>(item.content.previewPayload)
-		const tableProps = Object.entries<unknown>(payload.content)
-			.filter(([key, value]) => !(key.startsWith('_') || key.startsWith('@') || value === ''))
-			.map(([key, value]) => ({ key, value }))
+		return {
+			contents: _.compact<(PreviewContent | undefined)[]>([
+				{
+					type: 'title',
+					content: content.fileName,
+				},
+				contentStatus?.previewUrl
+					? {
+							type: 'video',
+							src: contentStatus.previewUrl,
+					  }
+					: contentStatus?.thumbnailUrl
+					? {
+							type: 'image',
+							src: contentStatus.thumbnailUrl,
+					  }
+					: undefined,
+				// todo - add in-out words after rebasing
+				...(contentStatus?.messages?.map<PreviewContent>((m) => ({
+					type: 'warning',
+					content: m as any,
+				})) || []),
+			]) as PreviewContent[],
+			options: {},
+		}
+	} else if (
+		(sourceLayerType === SourceLayerType.GRAPHICS || sourceLayerType === SourceLayerType.LOWER_THIRD) &&
+		'previewPayload' in item.content
+	) {
+		try {
+			const payload = JSONBlobParse<NoraPayload>(item.content.previewPayload)
+			const tableProps = Object.entries<unknown>(payload.content)
+				.filter(([key, value]) => !(key.startsWith('_') || key.startsWith('@') || value === ''))
+				.map(([key, value]) => ({ key, value }))
 
-		return _.compact([
-			{
-				type: 'title',
-				content: payload.template.name ?? item.name, // todo - subtitle with variant
-			},
-			item.content.previewRenderer
-				? {
-						type: 'iframe',
-						href: item.content.previewRenderer,
-						postMessage: {
-							event: 'nora',
-							contentToShow: {
-								manifest: payload.manifest,
-								template: {
-									event: 'preview',
-									name: payload.template.name,
-									channel: 'gfx1',
-									layer: payload.template.layer,
-									system: 'html',
+			return {
+				contents: _.compact([
+					item.content.previewRenderer
+						? {
+								type: 'iframe',
+								href: item.content.previewRenderer,
+								postMessage: {
+									event: 'nora',
+									contentToShow: {
+										manifest: payload.manifest,
+										template: {
+											event: 'preview',
+											name: payload.template.name,
+											channel: 'gfx1',
+											layer: payload.template.layer,
+											system: 'html',
+										},
+										content: {
+											...payload.content,
+											_valid: false,
+										},
+										timing: {
+											duration: '00:05',
+											in: 'auto',
+											out: 'auto',
+											timeIn: '00:00',
+										},
+										step: payload.step,
+									},
 								},
-								content: {
-									...payload.content,
-									_valid: false,
-								},
-								timing: {
-									duration: '00:05',
-									in: 'auto',
-									out: 'auto',
-									timeIn: '00:00',
-								},
-								step: payload.step,
-							},
-						},
-				  }
-				: {
-						type: 'data',
-						content: tableProps,
-				  },
-			item.content.step && {
-				type: 'stepCount',
-				current: item.content.step.current,
-				count: item.content.step.count,
-			},
-		]) as PreviewContent[]
+						  }
+						: {
+								type: 'data',
+								content: tableProps,
+						  },
+					item.content.step && {
+						type: 'stepCount',
+						current: item.content.step.current,
+						count: item.content.step.count,
+					},
+				]) as PreviewContent[],
+				options: { size: 'large' },
+			}
+		} catch (e) {
+			console.error(`Failed to generate preview PopUp payload:`, e, item.content.previewPayload)
+
+			return {
+				contents: _.compact([
+					{
+						type: 'title',
+						content: item.name,
+					},
+					item.content.step && {
+						type: 'stepCount',
+						current: item.content.step.current,
+						count: item.content.step.count,
+					},
+				]) as PreviewContent[],
+				options: {},
+			}
+		}
 	} else if (sourceLayerType === SourceLayerType.GRAPHICS) {
-		return [
-			{
-				type: 'title',
-				content: item.name,
-			},
-			// note - this may have contained some NORA data before but idk the details on how to add that back
-			{
-				type: 'timing',
-				timeAsRendered,
-				enable: 'enable' in item ? item.enable : undefined,
-				lifespan: item.lifespan,
-			},
-		]
+		return {
+			contents: [
+				{
+					type: 'title',
+					content: item.name,
+				},
+				// note - this may have contained some NORA data before but idk the details on how to add that back
+				{
+					type: 'timing',
+					timeAsRendered,
+					enable: 'enable' in item ? item.enable : undefined,
+					lifespan: item.lifespan,
+				},
+			],
+			options: {},
+		}
 	} else if (sourceLayerType === SourceLayerType.SCRIPT) {
 		const content = item.content as ScriptContent
-		return [
-			{
-				type: 'script',
-				script: content.fullScript,
-				lastWords: content.lastWords,
-				comment: content.comment,
-				lastModified: content.lastModified ?? undefined,
-			},
-		]
+		return {
+			contents: [
+				{
+					type: 'script',
+					script: content.fullScript,
+					lastWords: content.lastWords,
+					comment: content.comment,
+					lastModified: content.lastModified ?? undefined,
+				},
+			],
+			options: {},
+		}
 	} else if (sourceLayerType === SourceLayerType.SPLITS) {
 		const content = item.content as SplitsContent
-		return [{ type: 'boxLayout', boxSourceConfiguration: content.boxSourceConfiguration }]
+		return { contents: [{ type: 'boxLayout', boxSourceConfiguration: content.boxSourceConfiguration }], options: {} }
 	} else if (sourceLayerType === SourceLayerType.TRANSITION) {
 		const content = item.content as TransitionContent
-		if (content.preview) return [{ type: 'image', src: '/api/private/blueprints/assets/' + content.preview }]
+		if (content.preview)
+			return { contents: [{ type: 'image', src: '/api/private/blueprints/assets/' + content.preview }], options: {} }
 	}
 
-	return []
+	return { contents: [], options: {} }
 }
 
 export type PreviewContent =
@@ -274,7 +307,7 @@ export type PreviewContent =
 			type: 'boxLayout'
 			boxSourceConfiguration: ReadonlyDeep<(SplitsContentBoxContent & SplitsContentBoxProperties)[]>
 			showLabels?: boolean
-			backgroundArt?: string
+			backgroundArtSrc?: string
 	  }
 	| {
 			type: 'warning'
@@ -298,8 +331,10 @@ export interface IPreviewPopUpSession {
 	 * time in the video, etc.
 	 */
 	readonly update: (content?: PreviewContent[]) => void
-	/** */
-	readonly setPointerTime: (t: number) => void
+	/**
+	 * Set the time that the current pointer position is representing in the scope of the preview contents
+	 */
+	readonly setPointerTime: (time: number) => void
 	/**
 	 * Close the preview
 	 */
@@ -319,9 +354,9 @@ interface PreviewRequestOptions {
 	size?: 'small' | 'large'
 	/** Set this to the time the pointer is  */
 	time?: number
-	/**  */
-	startCoordinate?: number
-	/** */
+	/** The initial X offset of the preview (in viewport coordinates) */
+	initialOffsetX?: number
+	/** If enabled, the preview will follow the cursor, until closed */
 	trackMouse?: boolean
 }
 
@@ -350,7 +385,7 @@ interface PreviewSession {
 	padding: Padding
 	placement: Placement
 	size: 'small' | 'large'
-	startCoordinate?: number
+	initialOffsetX?: number
 	trackMouse?: boolean
 }
 
@@ -374,7 +409,7 @@ export function PreviewPopUpContextProvider({ children }: React.PropsWithChildre
 				padding: opts?.padding ?? 0,
 				placement: opts?.placement ?? 'top',
 				size: opts?.size ?? 'small',
-				startCoordinate: opts?.startCoordinate,
+				initialOffsetX: opts?.initialOffsetX,
 				trackMouse: opts?.trackMouse,
 			})
 			setPreviewContent(content)
@@ -399,6 +434,10 @@ export function PreviewPopUpContextProvider({ children }: React.PropsWithChildre
 		},
 	}
 
+	useEffect(() => {
+		console.log(previewSession)
+	}, [previewSession])
+
 	return (
 		<PreviewPopUpContext.Provider value={context}>
 			{children}
@@ -409,7 +448,7 @@ export function PreviewPopUpContextProvider({ children }: React.PropsWithChildre
 					padding={previewSession.padding}
 					size={previewSession.size}
 					placement={previewSession.placement}
-					startCoordinate={previewSession.startCoordinate}
+					initialOffsetX={previewSession.initialOffsetX}
 					trackMouse={previewSession.trackMouse}
 				>
 					{previewContent &&

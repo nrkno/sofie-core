@@ -172,6 +172,7 @@ import { MAGIC_TIME_SCALE_FACTOR } from './SegmentTimeline/Constants'
 import { SelectedElementProvider, SelectedElementsContext } from './RundownView/SelectedElementsContext'
 import { PropertiesPanel } from './UserEditOperations/PropertiesPanel'
 import { PreviewPopUpContextProvider } from './PreviewPopUp/PreviewPopUpContext'
+import Navbar from 'react-bootstrap/Navbar'
 
 const REHEARSAL_MARGIN = 1 * 60 * 1000
 const HIDE_NOTIFICATIONS_AFTER_MOUNT: number | undefined = 5000
@@ -316,40 +317,50 @@ const TimingDisplay = withTiming<ITimingDisplayProps, {}>()(function TimingDispl
 		!(timingDurations.breakIsLastRundown && layout.lastRundownIsNotBreak)
 
 	return (
-		<div className="timing mod">
-			<PlaylistStartTiming rundownPlaylist={rundownPlaylist} hideDiff={true} />
-			<RundownName rundownPlaylist={rundownPlaylist} currentRundown={currentRundown} rundownCount={rundownCount} />
-			<TimeOfDay />
-			{rundownPlaylist.currentPartInfo && (
-				<span className="timing-clock current-remaining">
-					<CurrentPartOrSegmentRemaining
-						currentPartInstanceId={rundownPlaylist.currentPartInfo.partInstanceId}
-						heavyClassName="overtime"
-						preferSegmentTime={true}
-					/>
-					<AutoNextStatus />
-					{rundownPlaylist.holdState && rundownPlaylist.holdState !== RundownHoldState.COMPLETE ? (
-						<div className="rundown__header-status rundown__header-status--hold">{t('Hold')}</div>
+		<div className="timing">
+			<div className="timing__header__left">
+				<PlaylistStartTiming rundownPlaylist={rundownPlaylist} hideDiff={true} />
+				<RundownName rundownPlaylist={rundownPlaylist} currentRundown={currentRundown} rundownCount={rundownCount} />
+			</div>
+			<div className="timing__header__center">
+				<TimeOfDay />
+			</div>
+			<div className="timing__header__right">
+				<div className="timing__header__right__left">
+					{rundownPlaylist.currentPartInfo && (
+						<span className="timing-clock current-remaining">
+							<CurrentPartOrSegmentRemaining
+								currentPartInstanceId={rundownPlaylist.currentPartInfo.partInstanceId}
+								heavyClassName="overtime"
+								preferSegmentTime={true}
+							/>
+							<AutoNextStatus />
+							{rundownPlaylist.holdState && rundownPlaylist.holdState !== RundownHoldState.COMPLETE ? (
+								<div className="rundown__header-status rundown__header-status--hold">{t('Hold')}</div>
+							) : null}
+						</span>
+					)}
+				</div>
+				<div className="timing__header__right__right">
+					{showNextBreakTiming ? (
+						<NextBreakTiming
+							rundownsBeforeBreak={timingDurations.rundownsBeforeNextBreak!}
+							breakText={layout?.nextBreakText}
+							lastChild={!showEndTiming}
+						/>
 					) : null}
-				</span>
-			)}
-			{showEndTiming ? (
-				<PlaylistEndTiming
-					rundownPlaylist={rundownPlaylist}
-					loop={isLoopRunning(rundownPlaylist)}
-					expectedStart={expectedStart}
-					expectedEnd={expectedEnd}
-					expectedDuration={expectedDuration}
-					endLabel={layout?.plannedEndText}
-				/>
-			) : null}
-			{showNextBreakTiming ? (
-				<NextBreakTiming
-					rundownsBeforeBreak={timingDurations.rundownsBeforeNextBreak!}
-					breakText={layout?.nextBreakText}
-					lastChild={!showEndTiming}
-				/>
-			) : null}
+					{showEndTiming ? (
+						<PlaylistEndTiming
+							rundownPlaylist={rundownPlaylist}
+							loop={isLoopRunning(rundownPlaylist)}
+							expectedStart={expectedStart}
+							expectedEnd={expectedEnd}
+							expectedDuration={expectedDuration}
+							endLabel={layout?.plannedEndText}
+						/>
+					) : null}
+				</div>
+			</div>
 		</div>
 	)
 })
@@ -1162,8 +1173,11 @@ const RundownHeader = withTranslation()(
 							)}
 						</ContextMenu>
 					</Escape>
-					<div
-						className={ClassNames('header rundown', {
+					<Navbar
+						data-bs-theme="dark"
+						fixed="top"
+						expand
+						className={ClassNames('rundown-header', {
 							active: !!this.props.playlist.activationId,
 							'not-active': !this.props.playlist.activationId,
 							rehearsal: this.props.playlist.rehearsal,
@@ -1184,19 +1198,16 @@ const RundownHeader = withTranslation()(
 									noResetOnActivate ? this.activateRundown(e) : this.resetAndActivateRundown(e)
 								}
 							/>
-							<div className="row flex-row first-row super-dark">
+							<div className="header-row flex-row first-row super-dark">
 								<div className="flex-col left horizontal-align-left">
-									<div className="badge mod">
+									<div className="badge-sofie mt-4 mb-3 mx-4">
 										<Tooltip
 											overlay={t('Add ?studio=1 to the URL to enter studio mode')}
 											visible={getHelpMode() && !this.props.userPermissions.studio}
 											placement="bottom"
 										>
-											<div className="media-elem mrs sofie-logo" />
+											<div className="media-elem me-2 sofie-logo" />
 										</Tooltip>
-										<div className="bd mls">
-											<span className="logo-text"></span>
-										</div>
 									</div>
 								</div>
 								{this.props.layout && RundownLayoutsAPI.isDashboardLayout(this.props.layout) ? (
@@ -1228,7 +1239,7 @@ const RundownHeader = withTranslation()(
 									</>
 								)}
 								<div className="flex-col right horizontal-align-right">
-									<div className="links mod close">
+									<div className="links close">
 										<NavLink to="/rundowns" title={t('Exit')}>
 											<CoreIcon.NrkClose />
 										</NavLink>
@@ -1236,7 +1247,8 @@ const RundownHeader = withTranslation()(
 								</div>
 							</div>
 						</ContextMenuTrigger>
-					</div>
+					</Navbar>
+
 					<ModalDialog
 						title={t('Error')}
 						acceptText={t('OK')}
@@ -1839,6 +1851,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 
 		componentDidMount(): void {
 			document.body.classList.add('dark', 'vertical-overflow-only')
+			document.body.setAttribute('data-bs-theme', 'dark')
 
 			rundownNotificationHandler.set(this.onRONotificationClick)
 
@@ -2104,6 +2117,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 
 		componentWillUnmount(): void {
 			document.body.classList.remove('dark', 'vertical-overflow-only')
+			document.body.removeAttribute('data-bs-theme')
 			window.removeEventListener('beforeunload', this.onBeforeUnload)
 
 			documentTitle.set(null)
@@ -2811,7 +2825,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 		renderSegmentsList() {
 			if (!this.props.playlist || !this.props.rundowns.length) {
 				return (
-					<div className="mod">
+					<div className="m-2">
 						<Spinner />
 					</div>
 				)
@@ -3414,7 +3428,7 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 			return (
 				<div className="rundown-view rundown-view--unpublished">
 					<div className="rundown-view__label">
-						<p>
+						<p className="summary">
 							{!this.props.playlist
 								? t('This rundown has been unpublished from Sofie.')
 								: !this.props.studio

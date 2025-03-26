@@ -35,15 +35,21 @@ export function SystemManagementBlueprint({ coreSystem }: Readonly<SystemManagem
 	const statusMessage = isStatusReady && status ? getUpgradeStatusMessage(t, status) ?? t('OK') : t('Loading...')
 
 	return (
-		<div className="row">
-			<div className="col c12 r1-c12">
-				<SelectBlueprint coreSystem={coreSystem} />
+		<div className="properties-grid">
+			<SelectBlueprint coreSystem={coreSystem} />
 
-				<p>
-					{t('Upgrade Status')}: {statusMessage}
-					{status && <SystemUpgradeStatusButtons upgradeResult={status} />}
-				</p>
-			</div>
+			<label className="field">
+				<div className="label-actual">{t('Upgrade Status')}</div>
+				<div className="field-content">{statusMessage}</div>
+			</label>
+			{status && (
+				<div className="field">
+					<div className="label-actual"></div>
+					<div className="field-content">
+						<SystemUpgradeStatusButtons upgradeResult={status} />
+					</div>
+				</div>
+			)}
 		</div>
 	)
 }
@@ -74,26 +80,27 @@ function SelectBlueprint({ coreSystem }: Readonly<SelectBlueprintProps>): JSX.El
 	}, [allSystemBlueprints])
 
 	return (
-		<div className="mod mvs mhs">
-			<label className="field">
-				<LabelActual label={t('Blueprint')} />
+		<label className="field">
+			<LabelActual label={t('Blueprint')} />
+
+			<EditAttribute
+				attribute="blueprintId"
+				obj={coreSystem}
+				type="dropdown"
+				options={blueprintOptions}
+				collection={CoreSystem}
+			/>
+
+			<div>
 				{!coreSystem?.blueprintId ? (
 					<div className="error-notice inline">
 						{t('Blueprint not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
 					</div>
 				) : null}
-
-				<EditAttribute
-					modifiedClassName="bghl"
-					attribute="blueprintId"
-					obj={coreSystem}
-					type="dropdown"
-					options={blueprintOptions}
-					collection={CoreSystem}
-					className="input text-input input-l"
-				/>
+			</div>
+			<div>
 				<RedirectToBlueprintButton id={coreSystem?.blueprintId} />
-			</label>
-		</div>
+			</div>
+		</label>
 	)
 }

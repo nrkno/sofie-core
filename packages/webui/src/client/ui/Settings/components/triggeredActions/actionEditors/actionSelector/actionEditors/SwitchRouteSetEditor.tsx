@@ -35,10 +35,9 @@ export function SwitchRouteSetEditor({
 
 	return (
 		<>
-			<div className="mts">
+			<div className="mt-2">
 				<label className="block">{t('Route Set')}</label>
 				<DropdownInputControl<typeof action.routeSetId>
-					classNames="input text-input input-m"
 					value={action.routeSetId}
 					options={allRouteSetOptions}
 					handleUpdate={(newVal) => {
@@ -50,10 +49,9 @@ export function SwitchRouteSetEditor({
 				/>
 			</div>
 
-			<div className="mts">
+			<div className="mt-2">
 				<label className="block">{t('State')}</label>
 				<DropdownInputControl<typeof action.state>
-					classNames="input text-input input-m"
 					value={action.state}
 					options={[
 						{

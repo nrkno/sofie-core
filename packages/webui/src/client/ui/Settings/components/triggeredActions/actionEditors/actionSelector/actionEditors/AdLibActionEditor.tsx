@@ -39,9 +39,9 @@ export function AdLibActionEditor({
 
 	return (
 		<>
-			<div className="mts">
+			<div className="mt-2">
 				<ToggleSwitchControl
-					classNames={'form-control'}
+					classNames="mb-2"
 					value={!!action.arguments}
 					label={t('Use Trigger Mode')}
 					handleUpdate={(newVal) => {
@@ -53,10 +53,9 @@ export function AdLibActionEditor({
 				/>
 			</div>
 			{action.arguments && (
-				<div className="mts">
+				<div className="mt-2">
 					<label className="block">{t('Trigger Mode')}</label>
 					<TextInputControl
-						classNames={`input text-input input-m`}
 						updateOnKey={true}
 						value={action.arguments.triggerMode ?? ''}
 						handleUpdate={(newVal) =>

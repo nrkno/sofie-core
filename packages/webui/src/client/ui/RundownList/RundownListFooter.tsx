@@ -44,14 +44,14 @@ export function RundownListFooter(): JSX.Element {
 	const versionExtended = APP_VERSION_EXTENDED || version
 
 	return (
-		<div className="mtl gutter version-info">
+		<div className="mt-5 mx-5 version-info">
 			<p>
 				{t('Sofie Automation')} {t('version')}:&nbsp;
 				<Tooltip overlay={versionExtended} placement="top" mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}>
 					<span>{version}</span>
 				</Tooltip>
 			</p>
-			<div className="mod">
+			<div>
 				{systemStatus ? (
 					<>
 						<div>

@@ -8,7 +8,7 @@ import { UIStudios } from './Collections'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylists } from '../collections'
 import { useTranslation } from 'react-i18next'
-import { useSetDocumentClass } from './util/useSetDocumentClass'
+import { useSetDocumentClass, useSetDocumentDarkTheme } from './util/useSetDocumentClass'
 
 export function ActiveRundownView({ studioId }: Readonly<{ studioId: StudioId }>): JSX.Element | null {
 	const { t } = useTranslation()
@@ -60,11 +60,12 @@ function NotFoundMessage({ message }: Readonly<{ message: string }>) {
 	const { t } = useTranslation()
 
 	useSetDocumentClass('dark', 'vertical-overflow-only')
+	useSetDocumentDarkTheme()
 
 	return (
 		<div className="rundown-view rundown-view--unpublished">
 			<div className="rundown-view__label">
-				<p>{message}</p>
+				<p className="summary">{message}</p>
 				<p>
 					<NavLink to="/rundowns" className="btn btn-primary">
 						{t('Return to list')}

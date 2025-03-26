@@ -7,11 +7,10 @@ import { MappingsStudioSelect, MappingsView } from './Mappings'
 import { TimelineDatastoreStudioSelect, TimelineDatastoreView } from './TimelineDatastore'
 import { DeviceTriggersDeviceSelect, DeviceTriggersView } from './DeviceTriggers'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
+import Row from 'react-bootstrap/Row'
+import Col from 'react-bootstrap/Col'
 
-interface IStatusMenuProps {
-	match?: any
-}
-function StatusMenu(_props: Readonly<IStatusMenuProps>) {
+function StatusMenu() {
 	const { t } = useTranslation()
 
 	return (
@@ -48,45 +47,32 @@ function StatusMenu(_props: Readonly<IStatusMenuProps>) {
 	)
 }
 
-interface IStatusProps {
-	match?: any
-}
-export default function Status(props: Readonly<IStatusProps>): JSX.Element {
+export default function Status(): JSX.Element {
 	// Subscribe to data:
 	useSubscription(MeteorPubSub.uiStudio, null)
 	useSubscription(CorelibPubSub.showStyleBases, null)
 	useSubscription(CorelibPubSub.showStyleVariants, null, null)
 
 	return (
-		<div className="mtl gutter has-statusbar">
-			{/* <header className='mvs'>
-					<h1>{t('Status')}</h1>
-				</header> */}
-			<div className="mod mvl mhs">
-				<div className="flex-row hide-m-up">
-					<div className="flex-col c12 rm-c1 status-menu">
-						<StatusMenu match={props.match} />
-					</div>
-				</div>
-				<div className="flex-row">
-					<div className="flex-col c12 rm-c1 show-m-up status-menu">
-						<StatusMenu match={props.match} />
-					</div>
-					<div className="flex-col c12 rm-c11 status-dialog">
-						<Switch>
-							<Route path="/testTools/timeline/:studioId" component={TimelineView} />
-							<Route path="/testTools/timeline" component={TimelineStudioSelect} />
-							<Route path="/testTools/mappings/:studioId" component={MappingsView} />
-							<Route path="/testTools/mappings" component={MappingsStudioSelect} />
-							<Route path="/testTools/timelinedatastore/:studioId" component={TimelineDatastoreView} />
-							<Route path="/testTools/timelinedatastore" component={TimelineDatastoreStudioSelect} />
-							<Route path="/testTools/devicetriggers/:peripheralDeviceId" component={DeviceTriggersView} />
-							<Route path="/testTools/devicetriggers" component={DeviceTriggersDeviceSelect} />
-							<Redirect to="/testTools/timeline" />
-						</Switch>
-					</div>
-				</div>
-			</div>
+		<div className="mt-5 mx-5 has-statusbar">
+			<Row>
+				<Col xs={12} sm={4} md={3} lg={2}>
+					<StatusMenu />
+				</Col>
+				<Col xs={12} sm={8} md={9} lg={10}>
+					<Switch>
+						<Route path="/testTools/timeline/:studioId" component={TimelineView} />
+						<Route path="/testTools/timeline" component={TimelineStudioSelect} />
+						<Route path="/testTools/mappings/:studioId" component={MappingsView} />
+						<Route path="/testTools/mappings" component={MappingsStudioSelect} />
+						<Route path="/testTools/timelinedatastore/:studioId" component={TimelineDatastoreView} />
+						<Route path="/testTools/timelinedatastore" component={TimelineDatastoreStudioSelect} />
+						<Route path="/testTools/devicetriggers/:peripheralDeviceId" component={DeviceTriggersView} />
+						<Route path="/testTools/devicetriggers" component={DeviceTriggersDeviceSelect} />{' '}
+						<Redirect to="/testTools/timeline" />
+					</Switch>
+				</Col>
+			</Row>
 		</div>
 	)
 }

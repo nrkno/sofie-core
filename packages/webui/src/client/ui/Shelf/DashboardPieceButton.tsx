@@ -159,7 +159,7 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 			}
 		}
 
-		const previewContents = convertSourceLayerItemToPreview(
+		const { contents: previewContents, options: previewOptions } = convertSourceLayerItemToPreview(
 			this.props.layer?.type,
 			this.props.piece,
 			this.props.contentStatus
@@ -168,6 +168,7 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 		if (!previewContents.length) return
 
 		this.previewSession = this.props.previewContext.requestPreview(e.target as any, previewContents, {
+			...previewOptions,
 			time: this.state.timePosition,
 		})
 	}
@@ -195,7 +196,7 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 		if (e.pointerType === 'mouse') {
 			this.startHoverTimeout()
 
-			const previewContents = convertSourceLayerItemToPreview(
+			const { contents: previewContents, options: previewOptions } = convertSourceLayerItemToPreview(
 				this.props.layer?.type,
 				this.props.piece,
 				this.props.contentStatus
@@ -204,6 +205,7 @@ export class DashboardPieceButtonBase<T = {}> extends React.Component<
 			if (!previewContents.length) return
 
 			this.previewSession = this.props.previewContext.requestPreview(e.target as any, previewContents, {
+				...previewOptions,
 				time: this.state.timePosition,
 			})
 		}

@@ -10,7 +10,7 @@ interface BoxLayoutPreviewProps {
 		type: 'boxLayout'
 		boxSourceConfiguration: ReadonlyDeep<(SplitsContentBoxContent & SplitsContentBoxProperties)[]>
 		showLabels?: boolean
-		backgroundArt?: string
+		backgroundArtSrc?: string
 	}
 }
 
@@ -22,9 +22,9 @@ export function BoxLayoutPreview({ content }: BoxLayoutPreviewProps): React.Reac
 
 	return (
 		<div className="preview-popUp__box-layout">
-			{content.backgroundArt && (
+			{content.backgroundArtSrc && (
 				<div className="video-preview background">
-					<img src={`/api/private/blueprints/assets/${content.backgroundArt}`} alt="" />
+					<img src={content.backgroundArtSrc} alt="" />
 				</div>
 			)}
 			{reversedItems.map((item, index, array) => (

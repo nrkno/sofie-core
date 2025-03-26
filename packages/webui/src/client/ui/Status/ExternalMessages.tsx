@@ -19,6 +19,8 @@ import { catchError } from '../../lib/lib'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { useTranslation } from 'react-i18next'
 import { UserPermissionsContext } from '../UserPermissions'
+import Row from 'react-bootstrap/Row'
+import Col from 'react-bootstrap/Col'
 
 function ExternalMessages(): JSX.Element {
 	const { t } = useTranslation()
@@ -30,11 +32,11 @@ function ExternalMessages(): JSX.Element {
 	const [selectedStudioId, setSelectedStudioId] = useState<StudioId | null>(null)
 
 	return (
-		<div className="mhl gutter external-message-status">
-			<header className="mbs">
+		<div className="external-message-status">
+			<header className="mb-2">
 				<h1>{t('Message Queue')}</h1>
 			</header>
-			<div className="mod mvl">
+			<div className="my-5">
 				<strong>Studio</strong>
 				<ul>
 					{studios.map((studio) => {
@@ -74,11 +76,11 @@ function ExternalMessagesInStudio({ studioId }: Readonly<IExternalMessagesInStud
 	}, [])
 
 	return (
-		<div className="mhl gutter external-message-status">
+		<div className="external-message-status">
 			<div className="paging alc">
 				<DatePickerFromTo from={dateFrom} to={dateTo} onChange={handleChangeDate} />
 			</div>
-			<div className="mod mvl">
+			<div className="my-5">
 				<ExternalMessagesQueuedMessages studioId={studioId} />
 				<ExternalMessagesSentMessages studioId={studioId} />
 			</div>
@@ -113,13 +115,11 @@ function ExternalMessagesQueuedMessages({ studioId }: Readonly<ExternalMessagesQ
 	return (
 		<div>
 			<h2>{t('Queued Messages')}</h2>
-			<table className="table system-status-table">
-				<tbody>
-					{queuedMessages.map((msg) => (
-						<ExternalMessagesRow key={unprotectString(msg._id)} msg={msg} />
-					))}
-				</tbody>
-			</table>
+			<Row className="system-status-table">
+				{queuedMessages.map((msg) => (
+					<ExternalMessagesRow key={unprotectString(msg._id)} msg={msg} />
+				))}
+			</Row>
 		</div>
 	)
 }
@@ -151,13 +151,12 @@ function ExternalMessagesSentMessages({ studioId }: Readonly<ExternalMessagesSen
 	return (
 		<div>
 			<h2>{t('Sent Messages')}</h2>
-			<table className="table system-status-table">
-				<tbody>
-					{sentMessages.map((msg) => (
-						<ExternalMessagesRow key={unprotectString(msg._id)} msg={msg} />
-					))}
-				</tbody>
-			</table>
+
+			<Row className="system-status-table">
+				{sentMessages.map((msg) => (
+					<ExternalMessagesRow key={unprotectString(msg._id)} msg={msg} />
+				))}
+			</Row>
 		</div>
 	)
 }
@@ -233,17 +232,17 @@ function ExternalMessagesRow({ msg }: Readonly<ExternalMessagesRowProps>) {
 		}
 	}
 	return (
-		<tr key={unprotectString(msg._id)} className={ClassNames(classes)}>
-			<td className="c2">
+		<React.Fragment key={unprotectString(msg._id)}>
+			<Col xs={2} className={ClassNames(classes)}>
 				{userPermissions.configure ? (
 					<React.Fragment>
-						<button className="action-btn mod mls" onClick={removeMessage}>
+						<button className="action-btn m-2 ms-1" onClick={removeMessage}>
 							<FontAwesomeIcon icon={faTrash} />
 						</button>
-						<button className="action-btn mod" onClick={toggleHoldMessage}>
+						<button className="action-btn m-2" onClick={toggleHoldMessage}>
 							{msg.hold ? <FontAwesomeIcon icon={faPlay} /> : <FontAwesomeIcon icon={faPause} />}
 						</button>
-						<button className="action-btn mod" onClick={retryMessage}>
+						<button className="action-btn m-2" onClick={retryMessage}>
 							<FontAwesomeIcon icon={faRedo} />
 						</button>
 						<br />
@@ -257,8 +256,8 @@ function ExternalMessagesRow({ msg }: Readonly<ExternalMessagesRowProps>) {
 						<b>Queued for later due to: {msg.queueForLaterReason || 'Unknown reason'}</b>
 					</div>
 				) : null}
-			</td>
-			<td className="c7 small">
+			</Col>
+			<Col xs={8} className={ClassNames(classes, 'small')}>
 				<div>{info}</div>
 				<div>
 					<div>
@@ -272,8 +271,8 @@ function ExternalMessagesRow({ msg }: Readonly<ExternalMessagesRowProps>) {
 						{makeTableOfObject(msg.message)}
 					</div>
 				</div>
-			</td>
-		</tr>
+			</Col>
+		</React.Fragment>
 	)
 }
 

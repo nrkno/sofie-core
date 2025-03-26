@@ -39,6 +39,7 @@ import { DocumentTitleProvider } from '../lib/DocumentTitleProvider'
 import { catchError, firstIfArray, isRunningInPWA } from '../lib/lib'
 import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { useUserPermissions, UserPermissionsContext } from './UserPermissions'
+import Container from 'react-bootstrap/Container'
 
 const NullComponent = () => null
 
@@ -148,7 +149,7 @@ export const App: React.FC = function App() {
 	return (
 		<UserPermissionsContext.Provider value={roles}>
 			<Router getUserConfirmation={onNavigationUserConfirmation}>
-				<div className="container-fluid header-clear">
+				<Container fluid className="header-clear">
 					{/* Header switch - render the usual header for all pages but the rundown view */}
 					<ErrorBoundary>
 						<Switch>
@@ -231,7 +232,7 @@ export const App: React.FC = function App() {
 					<ErrorBoundary>
 						<ModalDialogGlobalContainer />
 					</ErrorBoundary>
-				</div>
+				</Container>
 			</Router>
 		</UserPermissionsContext.Provider>
 	)

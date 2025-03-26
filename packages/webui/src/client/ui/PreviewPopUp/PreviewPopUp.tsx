@@ -14,11 +14,11 @@ export const PreviewPopUp = React.forwardRef<
 		size: 'small' | 'large'
 		hidden?: boolean
 		preview?: React.ReactNode
-		startCoordinate?: number
+		initialOffsetX?: number
 		trackMouse?: boolean
 	}>
 >(function PreviewPopUp(
-	{ anchor, padding, placement, hidden, size, children, startCoordinate, trackMouse },
+	{ anchor, padding, placement, hidden, size, children, initialOffsetX, trackMouse },
 	ref
 ): React.JSX.Element {
 	const [popperEl, setPopperEl] = useState<HTMLDivElement | null>(null)
@@ -59,7 +59,7 @@ export const PreviewPopUp = React.forwardRef<
 	)
 	const virtualElement = useRef<VirtualElement>({
 		getBoundingClientRect: generateGetBoundingClientRect(
-			startCoordinate ?? anchor?.getBoundingClientRect().x ?? 0,
+			initialOffsetX ?? anchor?.getBoundingClientRect().x ?? 0,
 			anchor?.getBoundingClientRect().y ?? 0
 		),
 	})

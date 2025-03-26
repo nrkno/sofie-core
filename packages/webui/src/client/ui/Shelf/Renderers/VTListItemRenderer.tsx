@@ -60,7 +60,7 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 
 	const previewContext = useContext(PreviewPopUpContext)
 	const previewSession = useRef<IPreviewPopUpSession | null>(null)
-	const previewContents = convertSourceLayerItemToPreview(
+	const { contents: previewContents, options: previewOptions } = convertSourceLayerItemToPreview(
 		props.adLibListItem.sourceLayer?.type,
 		props.adLibListItem,
 		props.contentStatus
@@ -72,6 +72,7 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 			const unprocessedPercentage = left / itemIconPosition.width
 			if (unprocessedPercentage <= 1 && !previewSession.current) {
 				previewSession.current = previewContext.requestPreview(e.target as any, previewContents, {
+					...previewOptions,
 					time: hoverScrubTimePosition,
 				})
 			}

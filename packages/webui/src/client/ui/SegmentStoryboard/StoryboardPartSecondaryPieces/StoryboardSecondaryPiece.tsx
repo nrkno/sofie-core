@@ -93,7 +93,11 @@ export function StoryboardSecondaryPiece(props: IProps): JSX.Element {
 	const previewContext = useContext(PreviewPopUpContext)
 	const previewSession = useRef<IPreviewPopUpSession | null>(null)
 	const contentStatus = useContentStatusForPieceInstance(piece.instance)
-	const previewContents = convertSourceLayerItemToPreview(props.layer.type, piece.instance.piece, contentStatus)
+	const { contents: previewContents, options: previewOptions } = convertSourceLayerItemToPreview(
+		props.layer.type,
+		piece.instance.piece,
+		contentStatus
+	)
 
 	const onPointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
 		if (e.pointerType !== 'mouse') return
@@ -113,7 +117,8 @@ export function StoryboardSecondaryPiece(props: IProps): JSX.Element {
 
 		if (previewContents.length > 0)
 			previewSession.current = previewContext.requestPreview(e.target as any, previewContents, {
-				startCoordinate: e.screenX,
+				...previewOptions,
+				initialOffsetX: e.screenX,
 			})
 
 		if (onPointerEnterCallback) onPointerEnterCallback(e)

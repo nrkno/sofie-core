@@ -27,8 +27,8 @@ export function LinePartScriptPiece({ pieces }: IProps): JSX.Element {
 
 	const previewContext = useContext(PreviewPopUpContext)
 	const previewSession = useRef<IPreviewPopUpSession | null>(null)
-	const contentStatus = thisPieces[0] && useContentStatusForPieceInstance(thisPieces[0].instance)
-	const previewContents =
+	const contentStatus = useContentStatusForPieceInstance(thisPieces?.[0]?.instance)
+	const previewProps =
 		thisPieces[0] &&
 		convertSourceLayerItemToPreview(thisPieces[0].sourceLayer?.type, thisPieces[0].instance.piece, contentStatus, {
 			in: thisPieces[0].renderedInPoint,
@@ -37,9 +37,10 @@ export function LinePartScriptPiece({ pieces }: IProps): JSX.Element {
 
 	function onMouseEnter(e: React.PointerEvent<HTMLDivElement>) {
 		// setHover(true)
-		if (previewContents && previewContents.length > 0)
-			previewSession.current = previewContext.requestPreview(e.target as any, previewContents, {
-				startCoordinate: e.screenX,
+		if (previewProps?.contents && previewProps.contents.length > 0)
+			previewSession.current = previewContext.requestPreview(e.target as any, previewProps.contents, {
+				...previewProps.options,
+				initialOffsetX: e.screenX,
 			})
 	}
 

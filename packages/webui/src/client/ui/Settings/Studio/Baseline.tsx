@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
 import { logger } from '../../../lib/logging'
+import Button from 'react-bootstrap/Button'
 
 interface IStudioBaselineStatusProps {
 	studioId: StudioId
@@ -55,23 +56,21 @@ export function StudioBaselineStatus({ studioId }: Readonly<IStudioBaselineStatu
 	return (
 		<div className="field">
 			<LabelActual label={t('Studio Baseline needs update: ')}></LabelActual>
-			<div className="mhn">
-				<p className="mhn mvn">
-					{needsUpdate ? (
-						<Tooltip
-							overlay={t('Baseline needs reload, this studio may not work until reloaded')}
-							visible={getHelpMode()}
-							placement="right"
-						>
-							<span>{t('Yes')}</span>
-						</Tooltip>
-					) : (
-						t('No')
-					)}
-				</p>
-				<button className="btn btn-primary mts" onClick={reloadBaseline}>
+			<div className="field-content">
+				{needsUpdate ? (
+					<Tooltip
+						overlay={t('Baseline needs reload, this studio may not work until reloaded')}
+						visible={getHelpMode()}
+						placement="right"
+					>
+						<span>{t('Yes')}</span>
+					</Tooltip>
+				) : (
+					t('No')
+				)}
+				<Button variant="primary" className="ms-2" onClick={reloadBaseline}>
 					{t('Reload Baseline')}
-				</button>
+				</Button>
 				{needsUpdate ? (
 					<span className="error-notice inline">
 						{t('Reload Baseline')} <FontAwesomeIcon icon={faExclamationTriangle} />
