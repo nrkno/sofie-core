@@ -547,7 +547,6 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 
 			this.visibilityChangeTimeout = setTimeout(() => {
 				if (entries[0].intersectionRatio < 0.99 && !isMaintainingFocus() && Date.now() - this.mountedTime > 2000) {
-					console.log('Segment out of view :', this.props.segmentId)
 					if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
 					this.isVisible = false
 				} else {
