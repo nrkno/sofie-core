@@ -63,7 +63,7 @@ export function VirtualElement({
 	id?: string | undefined
 	className?: string
 }>): JSX.Element | null {
-	const resizeObserverManager = ResizeObserverManager.getInstance()
+	const resizeObserverManager = ElementObserverManager.getInstance()
 	const [waitForInitialLoad, setWaitForInitialLoad] = useState(true)
 	const [inView, setInView] = useState(initialShow ?? false)
 	const [isShowingChildren, setIsShowingChildren] = useState(inView)
@@ -349,48 +349,86 @@ function measureElement(wrapperEl: HTMLDivElement, placeholderHeight?: number): 
 }
 
 // Singleton class to manage ResizeObserver instances
-export class ResizeObserverManager {
-	private static instance: ResizeObserverManager
+export class ElementObserverManager {
+	private static instance: ElementObserverManager
 	private resizeObserver: ResizeObserver
-	private observedElements: Map<HTMLElement, (entry: ResizeObserverEntry) => void>
+	private mutationObserver: MutationObserver
+	private observedElements: Map<HTMLElement, () => void>
 
 	private constructor() {
 		this.observedElements = new Map()
+
+		// Configure ResizeObserver
 		this.resizeObserver = new ResizeObserver((entries) => {
 			entries.forEach((entry) => {
 				const element = entry.target as HTMLElement
 				const callback = this.observedElements.get(element)
 				if (callback) {
-					callback(entry)
+					callback()
 				}
+			})
+		})
+
+		// Configure MutationObserver
+		this.mutationObserver = new MutationObserver((mutations) => {
+			const targets = new Set<HTMLElement>()
+
+			mutations.forEach((mutation) => {
+				const target = mutation.target as HTMLElement
+				// Find the closest observed element
+				let element = target
+				while (element) {
+					if (this.observedElements.has(element)) {
+						targets.add(element)
+						break
+					}
+					if (!element.parentElement) break
+					element = element.parentElement
+				}
+			})
+
+			// Call callbacks for affected elements
+			targets.forEach((element) => {
+				const callback = this.observedElements.get(element)
+				if (callback) callback()
 			})
 		})
 	}
 
-	public static getInstance(): ResizeObserverManager {
-		if (!ResizeObserverManager.instance) {
-			ResizeObserverManager.instance = new ResizeObserverManager()
+	public static getInstance(): ElementObserverManager {
+		if (!ElementObserverManager.instance) {
+			ElementObserverManager.instance = new ElementObserverManager()
 		}
-		return ResizeObserverManager.instance
+		return ElementObserverManager.instance
 	}
 
-	public observe(element: HTMLElement, callback: (entry: ResizeObserverEntry) => void): void {
+	public observe(element: HTMLElement, callback: () => void): void {
 		if (!element) return
 
-		// Store the callback in our map
 		this.observedElements.set(element, callback)
-
-		// Start observing
 		this.resizeObserver.observe(element)
+		this.mutationObserver.observe(element, {
+			childList: true,
+			subtree: true,
+			attributes: true,
+			characterData: true,
+		})
 	}
 
 	public unobserve(element: HTMLElement): void {
 		if (!element) return
-
-		// Remove from our map
 		this.observedElements.delete(element)
-
-		// Stop observing
 		this.resizeObserver.unobserve(element)
+
+		// Disconnect and reconnect mutation observer to refresh the list of observed elements
+		this.mutationObserver.disconnect()
+		this.observedElements.forEach((_, el) => {
+			this.mutationObserver.observe(el, {
+				childList: true,
+				subtree: true,
+				attributes: true,
+				characterData: true,
+			})
+		})
 	}
 }
