@@ -65,6 +65,7 @@ export function VirtualElement({
 }>): JSX.Element | null {
 	const resizeObserverManager = ElementObserverManager.getInstance()
 	const [inView, setInView] = useState(initialShow ?? false)
+	const [waitForInitialLoad, setWaitForInitialLoad] = useState(true)
 	const [isShowingChildren, setIsShowingChildren] = useState(inView)
 
 	const [measurements, setMeasurements] = useState<IElementMeasurements | null>(null)
@@ -199,6 +200,26 @@ export function VirtualElement({
 	}, [ref, inView])
 
 	useEffect(() => {
+		if (inView === true) {
+			setIsShowingChildren(true)
+
+			// Schedule a measurement after a short delay
+			if (waitForInitialLoad && ref) {
+				const initialMeasurementTimeout = window.setTimeout(() => {
+					const measurements = measureElement(ref, placeholderHeight)
+					if (measurements) {
+						setMeasurements(measurements)
+						setWaitForInitialLoad(false)
+					}
+				}, 800)
+
+				return () => {
+					window.clearTimeout(initialMeasurementTimeout)
+				}
+			}
+			return
+		}
+
 		let idleCallback: number | undefined
 		let optimizeTimeout: number | undefined
 
