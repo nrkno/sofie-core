@@ -1,5 +1,5 @@
 import { IMOSObjectStatus } from '@mos-connection/connector'
-import type { MosDeviceStatusesConfig } from '../generated/devices'
+import type { MosDeviceStatusesConfig } from '@sofie-automation/shared-lib/dist/generated/MosGatewayDevicesTypes'
 import {
 	IngestPartNotifyItemReady,
 	IngestPartPlaybackStatus,

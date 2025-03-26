@@ -6,7 +6,7 @@ import {
 	type MosTypes,
 	type IMOSDevice,
 } from '@mos-connection/connector'
-import type { MosDeviceStatusesConfig } from '../generated/devices'
+import type { MosDeviceStatusesConfig } from '@sofie-automation/shared-lib/dist/generated/MosGatewayDevicesTypes'
 import type { CoreMosDeviceHandler } from '../CoreMosDeviceHandler'
 import {
 	assertNever,
