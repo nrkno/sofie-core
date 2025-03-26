@@ -10,6 +10,8 @@ import { PeripheralDeviceCategory } from '@sofie-automation/shared-lib/dist/peri
 import { IngestRundownStatuses } from './collections'
 import { IngestPartStatus, IngestRundownStatus } from '@sofie-automation/shared-lib/dist/ingest/rundownStatus'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
+import Row from 'react-bootstrap/Row'
+import Col from 'react-bootstrap/Col'
 
 interface IMappingsViewProps {
 	match?: {
@@ -22,11 +24,11 @@ function IngestRundownStatusView(props: Readonly<IMappingsViewProps>): JSX.Eleme
 	const { t } = useTranslation()
 
 	return (
-		<div className="mtl gutter">
-			<header className="mvs">
+		<div className="mx-5">
+			<header className="my-2">
 				<h1>{t('Ingest Rundown Status')}</h1>
 			</header>
-			<div className="mod mvl">
+			<div className="my-5">
 				{props.match && props.match.params && (
 					<ComponentMappingsTable peripheralDeviceId={props.match.params.peripheralDeviceId} />
 				)}
@@ -54,32 +56,32 @@ function ComponentMappingsTable({ peripheralDeviceId }: Readonly<ComponentMappin
 
 function StatusesForRundown({ rundown }: { rundown: IngestRundownStatus }): JSX.Element {
 	return (
-		<div className="mbl">
-			<h3>
-				{rundown.externalId} ({unprotectString(rundown._id)})
-			</h3>
+		<Row>
+			<Col xs={12}>
+				<h3>
+					{rundown.externalId} ({unprotectString(rundown._id)})
+				</h3>
 
-			<p>Status: {rundown.active}</p>
+				<p>Status: {rundown.active}</p>
 
-			<table className="testtools-timelinetable mll">
-				<tbody>
-					<tr>
-						<th>Segment Id</th>
-						<th>Part Id</th>
-						<th>Ready</th>
-						<th>Status</th>
-						<th>Items</th>
-					</tr>
-					{rundown.segments.flatMap((segment) =>
-						segment.parts.map((part) => (
-							<StatusesForSegmentRow key={segment.externalId} part={part} segmentId={segment.externalId} />
-						))
-					)}
-				</tbody>
-			</table>
-
-			<p></p>
-		</div>
+				<table className="testtools-timelinetable">
+					<tbody>
+						<tr>
+							<th>Segment Id</th>
+							<th>Part Id</th>
+							<th>Ready</th>
+							<th>Status</th>
+							<th>Items</th>
+						</tr>
+						{rundown.segments.flatMap((segment) =>
+							segment.parts.map((part) => (
+								<StatusesForSegmentRow key={segment.externalId} part={part} segmentId={segment.externalId} />
+							))
+						)}
+					</tbody>
+				</table>
+			</Col>
+		</Row>
 	)
 }
 
@@ -106,11 +108,11 @@ function IngestRundownStatusSelect(): JSX.Element | null {
 	const devices = useTracker(() => PeripheralDevices.find({ category: PeripheralDeviceCategory.INGEST }).fetch(), [])
 
 	return (
-		<div className="mhl gutter recordings-studio-select">
-			<header className="mbs">
+		<div className="mx-5 recordings-studio-select">
+			<header className="mb-2">
 				<h1>{t('Ingest Rundown Statuses')}</h1>
 			</header>
-			<div className="mod mvl">
+			<div className="my-5">
 				<strong>Peripheral Device</strong>
 				<ul>
 					{devices?.map((device) => (
