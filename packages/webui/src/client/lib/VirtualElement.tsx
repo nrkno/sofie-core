@@ -116,6 +116,34 @@ export function VirtualElement({
 		}
 	}, [ref, inView, placeholderHeight])
 
+	// failsafe to ensure visible elements if resizing happens while scrolling
+	useEffect(() => {
+		if (inView && !isShowingChildren) {
+			// If element is in view but showing placeholder, force show children
+			const forceShowTimeout = setTimeout(() => {
+				setIsShowingChildren(true)
+			}, 400)
+
+			return () => {
+				clearTimeout(forceShowTimeout)
+			}
+		}
+	}, [inView, isShowingChildren])
+
+	useEffect(() => {
+		const checkVisibilityOnScroll = () => {
+			if (inView && !isShowingChildren) {
+				setIsShowingChildren(true)
+			}
+		}
+
+		window.addEventListener('scroll', checkVisibilityOnScroll, { passive: true })
+
+		return () => {
+			window.removeEventListener('scroll', checkVisibilityOnScroll)
+		}
+	}, [inView, isShowingChildren])
+
 	useEffect(() => {
 		if (inView) {
 			setIsShowingChildren(true)
