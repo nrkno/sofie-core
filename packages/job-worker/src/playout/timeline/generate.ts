@@ -212,6 +212,7 @@ function logAnyRemainingNowTimes(_context: JobContext, timelineObjs: Array<Timel
 
 	if (badTimelineObjs.length) {
 		logger.error(`Some timeline objects have unexpected now times!: ${JSON.stringify(badTimelineObjs)}`)
+		logger.error(`DEBUG: timeline: ${JSON.stringify(timelineObjs)}`)
 	}
 }
 function hasNow(obj: TimelineEnableExt | TimelineEnableExt[]) {
