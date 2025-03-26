@@ -133,6 +133,9 @@ export function VirtualElement({
 			}
 
 			setInView(visible)
+			if (visible) {
+				setIsShowingChildren(true)
+			}
 
 			// Don't do updates while transitioning:
 			if (isTransitioning.current) {
