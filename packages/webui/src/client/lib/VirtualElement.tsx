@@ -13,8 +13,6 @@ interface IElementMeasurements {
 }
 
 const IDLE_CALLBACK_TIMEOUT = 100
-// Increased delay for Safari, as Safari doesn't have scroll time when using 'smooth' scroll
-const SAFARI_VISIBILITY_DELAY = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) ? 100 : 0
 
 /**
  * This is a component that allows optimizing the amount of elements present in the DOM through replacing them
@@ -71,15 +69,14 @@ export function VirtualElement({
 	const [measurements, setMeasurements] = useState<IElementMeasurements | null>(null)
 	const [ref, setRef] = useState<HTMLDivElement | null>(null)
 
-	let inViewChangetimer: NodeJS.Timeout | undefined
+	// Timers for visibility changes:
+	const inViewChangeTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+	const skipInitialrunRef = useRef<boolean>(true)
+	const isTransitioning = useRef(false)
 
 	const showPlaceholder = !isShowingChildren && !initialShow
 
 	const isCurrentlyObserving = useRef(false)
-	const isTransitioning = useRef(false)
-
-	// Track the last visibility change to debounce
-	const lastVisibilityChangeRef = useRef<number>(0)
 
 	const styleObj = useMemo<React.CSSProperties>(
 		() => ({
@@ -119,50 +116,64 @@ export function VirtualElement({
 		}
 	}, [ref, inView, placeholderHeight])
 
-	const onVisibleChanged = useCallback(
-		(visible: boolean) => {
-			const now = Date.now()
+	useEffect(() => {
+		if (inView) {
+			setIsShowingChildren(true)
+		}
 
-			// Debounce visibility changes in Safari to prevent unnecessary recaconditions
-			if (SAFARI_VISIBILITY_DELAY > 0 && now - lastVisibilityChangeRef.current < SAFARI_VISIBILITY_DELAY) {
-				return
-			}
+		// Startup skip:
+		if (skipInitialrunRef.current) {
+			skipInitialrunRef.current = false
+			return
+		}
 
-			lastVisibilityChangeRef.current = now
-			if (inView === visible) {
-				return
-			}
+		if (isTransitioning.current) {
+			return
+		}
 
-			setInView(visible)
-			if (visible) {
-				setIsShowingChildren(true)
-			}
+		isTransitioning.current = true
 
-			// Don't do updates while transitioning:
-			if (isTransitioning.current) {
-				return
-			}
-			isTransitioning.current = true
+		// Clear any existing timers
+		if (inViewChangeTimerRef.current) {
+			clearTimeout(inViewChangeTimerRef.current)
+			inViewChangeTimerRef.current = undefined
+		}
 
-			// Clear any existing timers
-			if (inViewChangetimer) {
-				clearTimeout(inViewChangetimer)
-			}
-
-			// Delay the observer connection to prevent flickering
-			inViewChangetimer = setTimeout(() => {
-				if (visible) {
+		// Delay the visibility change to avoid flickering
+		// But low enough for scrolling to be responsive
+		inViewChangeTimerRef.current = setTimeout(() => {
+			try {
+				if (inView) {
 					if (ref) {
 						if (!isCurrentlyObserving.current) {
 							resizeObserverManager.observe(ref, handleResize)
 							isCurrentlyObserving.current = true
 						}
 					}
+				} else {
+					if (ref && isCurrentlyObserving.current) {
+						resizeObserverManager.unobserve(ref)
+						isCurrentlyObserving.current = false
+					}
+					setIsShowingChildren(false)
 				}
+			} catch (error) {
+				console.error('Error in visibility change handler:', error)
+			} finally {
 				isTransitioning.current = false
-			}, 100)
+				inViewChangeTimerRef.current = undefined
+			}
+		}, 50)
+	}, [inView, ref, handleResize, resizeObserverManager])
+
+	const onVisibleChanged = useCallback(
+		(visible: boolean) => {
+			// Only update state if there's a change
+			if (inView !== visible) {
+				setInView(visible)
+			}
 		},
-		[ref]
+		[inView]
 	)
 
 	const isScrolling = (): boolean => {
@@ -193,11 +204,11 @@ export function VirtualElement({
 				isCurrentlyObserving.current = false
 			}
 
-			if (inViewChangetimer) {
-				clearTimeout(inViewChangetimer)
+			if (inViewChangeTimerRef.current) {
+				clearTimeout(inViewChangeTimerRef.current)
 			}
 		}
-	}, [ref, inView])
+	}, [ref, inView, handleResize])
 
 	useEffect(() => {
 		if (inView === true) {
@@ -263,7 +274,7 @@ export function VirtualElement({
 				window.clearTimeout(optimizeTimeout)
 			}
 		}
-	}, [ref, inView])
+	}, [ref, inView, placeholderHeight])
 
 	return (
 		<InView
