@@ -46,6 +46,12 @@ export interface AdjustLabelFitProps {
 	maxFontWidth?: number
 
 	/**
+	 * Enable letter spacing adjustment to fit text
+	 * Default is false
+	 */
+	useLetterSpacing?: boolean
+
+	/**
 	 * Minimum letter spacing in pixels
 	 * Default is -1px
 	 */
@@ -84,8 +90,9 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 	fontSize,
 	minFontWidth = 50,
 	maxFontWidth = 120,
-	defaultOpticalSize = 40,
+	defaultOpticalSize = 120,
 	defaultWidth = 100,
+	useLetterSpacing = false,
 	minLetterSpacing = -1,
 	containerStyle = {},
 	labelStyle = {},
@@ -145,7 +152,6 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 
 		// Apply the new width setting
 		labelElement.style.fontVariationSettings = `'opsz' ${defaultOpticalSize}, 'wdth' ${defaultWidth}`
-
 		// Reset label content if it was cut
 		labelElement.textContent = label
 
@@ -163,8 +169,6 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 		void labelElement.offsetWidth
 
 		const containerWidth = containerElement.clientWidth
-		// Remeasure after font size adjustment
-		void labelElement.offsetWidth
 		const newTextWidth = labelElement.getBoundingClientRect().width
 
 		// If text now fits with font size adjustment alone, we're done
@@ -172,56 +176,55 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 
 		const widthRatio = containerWidth / newTextWidth
 		let currentWidth = defaultWidth * widthRatio
-		const currentOpticalSize = 100 - defaultOpticalSize * widthRatio
 
 		// Use a reasonable range for width variation
 		currentWidth = Math.max(currentWidth, minFontWidth)
 		currentWidth = Math.min(currentWidth, maxFontWidth)
 
-		labelElement.style.fontVariationSettings = `'opsz' ${currentOpticalSize}, 'wdth' ${currentWidth}`
+		labelElement.style.fontVariationSettings = `'opsz' ${defaultOpticalSize}, 'wdth' ${currentWidth}`
 
 		// Remeasure text width after adjustment:
 		void labelElement.offsetWidth
 		const adjustedTextWidth = labelElement.getBoundingClientRect().width
 
 		// Letter spacing if text still overflows
-		if (adjustedTextWidth > containerWidth) {
+		if (useLetterSpacing && adjustedTextWidth > containerWidth) {
 			const overflow = adjustedTextWidth - containerWidth
 			const letterCount = label.length - 1 // Spaces between letters
 			let letterSpacing = letterCount > 0 ? -overflow / letterCount : 0
 
 			letterSpacing = Math.max(letterSpacing, minLetterSpacing)
 			labelElement.style.letterSpacing = `${letterSpacing}px`
+		}
 
-			// Hard cut text if enabled and letterspacing is not enough:
-			if (hardCutText) {
-				void labelElement.offsetWidth
-				const finalTextWidth = labelElement.getBoundingClientRect().width
-				if (finalTextWidth > containerWidth) {
-					const ratio = containerWidth / finalTextWidth
-					const visibleChars = Math.floor(label.length * ratio) - 1
-					labelElement.textContent = label.slice(0, Math.max(visibleChars, 1))
+		// Hard cut text or wrap per letter:
+		if (hardCutText) {
+			void labelElement.offsetWidth
+			const finalTextWidth = labelElement.getBoundingClientRect().width
+			if (finalTextWidth > containerWidth) {
+				const ratio = containerWidth / finalTextWidth
+				const visibleChars = Math.floor(label.length * ratio) - 1
+				labelElement.textContent = label.slice(0, Math.max(visibleChars, 1))
+			}
+		} else {
+			// Apply line wrapping per letter if hardCutText is not set
+			void labelElement.offsetWidth
+			const finalTextWidth = labelElement.getBoundingClientRect().width
+			if (finalTextWidth > containerWidth) {
+				labelElement.textContent = ''
+
+				for (let i = 0; i < label.length; i++) {
+					const charSpan = document.createElement('span')
+					charSpan.textContent = label[i]
+					charSpan.style.display = 'inline-block'
+					charSpan.style.wordBreak = 'break-all'
+					charSpan.style.whiteSpace = 'normal'
+					labelElement.appendChild(charSpan)
 				}
-			} else {
-				// Apply line wrapping per letter if hardCutText is not set
-				void labelElement.offsetWidth
-				const finalTextWidth = labelElement.getBoundingClientRect().width
-				if (finalTextWidth > containerWidth) {
-					labelElement.textContent = ''
 
-					for (let i = 0; i < label.length; i++) {
-						const charSpan = document.createElement('span')
-						charSpan.textContent = label[i]
-						charSpan.style.display = 'inline-block'
-						charSpan.style.wordBreak = 'break-all'
-						charSpan.style.whiteSpace = 'normal'
-						labelElement.appendChild(charSpan)
-					}
-
-					// Apply wrapping styles
-					labelElement.style.wordBreak = 'break-all'
-					labelElement.style.whiteSpace = 'normal'
-				}
+				// Apply wrapping styles
+				labelElement.style.wordBreak = 'break-all'
+				labelElement.style.whiteSpace = 'normal'
 			}
 		}
 	}

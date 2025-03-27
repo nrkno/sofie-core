@@ -405,8 +405,9 @@ function DirectorScreenRender({
 								fontSize="0.9em"
 								minFontWidth={70}
 								maxFontWidth={100}
-								defaultWidth={90}
-								minLetterSpacing={0}
+								defaultWidth={100}
+								defaultOpticalSize={120}
+								useLetterSpacing={false}
 								hardCutText={true}
 							/>
 							{playlist.currentPartInfo?.partInstanceId ? (
@@ -445,7 +446,8 @@ function DirectorScreenRender({
 												minFontWidth: 55,
 												maxFontWidth: 100,
 												defaultWidth: 90,
-												minLetterSpacing: 0,
+												useLetterSpacing: false,
+												defaultOpticalSize: 120,
 											}}
 										/>
 									</div>
@@ -495,7 +497,8 @@ function DirectorScreenRender({
 									minFontWidth={70}
 									maxFontWidth={100}
 									defaultWidth={90}
-									minLetterSpacing={0}
+									defaultOpticalSize={120}
+									useLetterSpacing={false}
 									hardCutText={true}
 								/>
 							) : undefined}
@@ -546,7 +549,8 @@ function DirectorScreenRender({
 													minFontWidth: 55,
 													maxFontWidth: 100,
 													defaultWidth: 90,
-													minLetterSpacing: 0,
+													useLetterSpacing: false,
+													defaultOpticalSize: 120,
 												}}
 											/>
 										) : (
