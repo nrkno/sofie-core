@@ -270,13 +270,23 @@ $hold-status-color: $liveline-timecode-color;
 
 			.director-screen__body__part__next-icon {
 				clip-path: polygon(0 0, 85% 0, 100% 50%, 85% 100%, 0 100%);
-				font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738,
-					'YTLC' 548, 'YTUC' 712, 'slnt' 0, 'opsz' 3;
+				// font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738,
+				// 	'YTLC' 548, 'YTUC' 712, 'slnt' 0, 'opsz' 3;
+				font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738, 'YTLC' 514, 'YTUC' 712, 
+					'opsz' 30,
+					'slnt' 0, 
+					'wdth' 50, 
+					'wght' 700;
 			}
 			.director-screen__body__part__auto-icon {
 				border-radius: 0 25px 25px 0;
-				font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738,
-					'YTLC' 548, 'YTUC' 712, 'slnt' -7, 'opsz' 3;
+				// font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738,
+				// 	'YTLC' 548, 'YTUC' 712, 'slnt' -7, 'opsz' 3;
+				font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738, 'YTLC' 514, 'YTUC' 712, 
+				'opsz' 30,
+				'slnt' 0, 
+				'wdth' 50, 
+				'wght' 700;
 			}
 			.director-screen__body__part__next-icon,
 			.director-screen__body__part__auto-icon {
