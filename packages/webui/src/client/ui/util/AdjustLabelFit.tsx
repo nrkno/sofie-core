@@ -90,7 +90,7 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 	fontSize,
 	minFontWidth = 50,
 	maxFontWidth = 120,
-	defaultOpticalSize = 120,
+	defaultOpticalSize = 100,
 	defaultWidth = 100,
 	useLetterSpacing = false,
 	minLetterSpacing = -1,
@@ -151,7 +151,9 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 		resetLabelStyles()
 
 		// Apply the new width setting
-		labelElement.style.fontVariationSettings = `'opsz' ${defaultOpticalSize}, 'wdth' ${defaultWidth}`
+		//labelElement.style.fontVariationSettings = `'opsz' ${defaultOpticalSize}, 'wdth' ${defaultWidth}`
+		labelElement.style.fontVariationSettings = `'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738, 'YTLC' 514, 'YTUC' 712, 'opsz' ${defaultOpticalSize}, 'slnt' 0, 'wdth' ${defaultWidth}, 'wght' 550`
+
 		// Reset label content if it was cut
 		labelElement.textContent = label
 
@@ -181,7 +183,8 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 		currentWidth = Math.max(currentWidth, minFontWidth)
 		currentWidth = Math.min(currentWidth, maxFontWidth)
 
-		labelElement.style.fontVariationSettings = `'opsz' ${defaultOpticalSize}, 'wdth' ${currentWidth}`
+		//labelElement.style.fontVariationSettings = `'opsz' ${defaultOpticalSize}, 'wdth' ${currentWidth}`
+		labelElement.style.fontVariationSettings = `'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738, 'YTLC' 514, 'YTUC' 712, 'opsz' ${defaultOpticalSize}, 'slnt' 0, 'wdth' ${currentWidth}, 'wght' 550`
 
 		// Remeasure text width after adjustment:
 		void labelElement.offsetWidth
