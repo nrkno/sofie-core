@@ -75,8 +75,6 @@ export function VirtualElement({
 	const skipInitialrunRef = useRef<boolean>(true)
 	const isTransitioning = useRef(false)
 
-	const showPlaceholder = !isShowingChildren && !initialShow
-
 	const isCurrentlyObserving = useRef(false)
 
 	const styleObj = useMemo<React.CSSProperties>(
@@ -119,17 +117,27 @@ export function VirtualElement({
 
 	// failsafe to ensure visible elements if resizing happens while scrolling
 	useEffect(() => {
-		if (inView && !isShowingChildren) {
-			// If element is in view but showing placeholder, force show children
-			const forceShowTimeout = setTimeout(() => {
-				setIsShowingChildren(true)
-			}, 400)
+		if (!isShowingChildren) {
+			const checkVisibilityByPosition = () => {
+				if (ref) {
+					const rect = ref.getBoundingClientRect()
+					const isInViewport = rect.top < window.innerHeight && rect.bottom > 0
+
+					if (isInViewport) {
+						setIsShowingChildren(true)
+						setInView(true)
+					}
+				}
+			}
+
+			// Check every second
+			const positionCheckInterval = setInterval(checkVisibilityByPosition, 1000)
 
 			return () => {
-				clearTimeout(forceShowTimeout)
+				clearInterval(positionCheckInterval)
 			}
 		}
-	}, [inView, isShowingChildren])
+	}, [ref, isShowingChildren])
 
 	// Ensure elements are visible after a fast scroll:
 	useEffect(() => {
@@ -147,7 +155,7 @@ export function VirtualElement({
 				if (inView && !isShowingChildren) {
 					setIsShowingChildren(true)
 				}
-			}, 400)
+			}, 200)
 		}
 
 		window.addEventListener('scroll', checkVisibilityOnScroll, { passive: true })
@@ -157,19 +165,6 @@ export function VirtualElement({
 			if (scrollTimeoutRef.current) {
 				clearTimeout(scrollTimeoutRef.current)
 			}
-		}
-	}, [inView, isShowingChildren])
-
-	// Periodic check to ensure elements in view are shown
-	useEffect(() => {
-		const periodicCheckInterval = setInterval(() => {
-			if (inView && !isShowingChildren) {
-				setIsShowingChildren(true)
-			}
-		}, 1000)
-
-		return () => {
-			clearInterval(periodicCheckInterval)
 		}
 	}, [inView, isShowingChildren])
 
@@ -352,7 +347,7 @@ export function VirtualElement({
 						: undefined
 				}
 			>
-				{showPlaceholder ? (
+				{!isShowingChildren ? (
 					<div
 						id={measurements?.id ?? id}
 						className={`virtual-element-placeholder ${placeholderClassName}`}
