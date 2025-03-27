@@ -404,7 +404,6 @@ function DirectorScreenRender({
 								fontFamily="Roboto Flex"
 								fontSize="0.9em"
 								minFontWidth={70}
-								maxFontWidth={100}
 								defaultWidth={100}
 								defaultOpticalSize={120}
 								useLetterSpacing={false}
@@ -444,8 +443,7 @@ function DirectorScreenRender({
 												fontFamily: 'Roboto Flex',
 												fontSize: '1.5em',
 												minFontWidth: 55,
-												maxFontWidth: 100,
-												defaultWidth: 90,
+												defaultWidth: 120,
 												useLetterSpacing: false,
 												defaultOpticalSize: 120,
 											}}
@@ -495,7 +493,6 @@ function DirectorScreenRender({
 									fontFamily="Roboto Flex"
 									fontSize="0.9em"
 									minFontWidth={70}
-									maxFontWidth={100}
 									defaultWidth={90}
 									defaultOpticalSize={120}
 									useLetterSpacing={false}
@@ -547,7 +544,6 @@ function DirectorScreenRender({
 													fontFamily: 'Roboto Flex',
 													fontSize: '1.5em',
 													minFontWidth: 55,
-													maxFontWidth: 100,
 													defaultWidth: 90,
 													useLetterSpacing: false,
 													defaultOpticalSize: 120,
