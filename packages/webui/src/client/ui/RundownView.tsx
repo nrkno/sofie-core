@@ -1969,9 +1969,14 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 				this.props.playlist.nextPartInfo
 			) {
 				// scroll to next after activation
-				scrollToPartInstance(this.props.playlist.nextPartInfo.partInstanceId).catch((error) => {
-					if (!error.toString().match(/another scroll/)) console.warn(error)
-				})
+				// add small delay to ensure the nextPartInfo is available
+				setTimeout(() => {
+					if (this.props.playlist && this.props.playlist.nextPartInfo) {
+						scrollToPartInstance(this.props.playlist.nextPartInfo.partInstanceId).catch((error) => {
+							if (!error.toString().match(/another scroll/)) console.warn(error)
+						})
+					}
+				}, 120)
 			} else if (
 				// after take
 				this.props.playlist &&
@@ -2214,9 +2219,14 @@ const RundownViewContent = translateWithTracker<IPropsWithReady, IState, ITracke
 				this.setState({
 					followLiveSegments: true,
 				})
-				scrollToPartInstance(this.props.playlist.nextPartInfo.partInstanceId, true).catch((error) => {
-					if (!error.toString().match(/another scroll/)) console.warn(error)
-				})
+				// Small delay to ensure the nextPartInfo is available
+				setTimeout(() => {
+					if (this.props.playlist && this.props.playlist.nextPartInfo) {
+						scrollToPartInstance(this.props.playlist.nextPartInfo.partInstanceId, true).catch((error) => {
+							if (!error.toString().match(/another scroll/)) console.warn(error)
+						})
+					}
+				}, 120)
 				setTimeout(() => {
 					this.setState({
 						followLiveSegments: true,
