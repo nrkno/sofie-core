@@ -70,6 +70,7 @@ export function VirtualElement({
 	const [ref, setRef] = useState<HTMLDivElement | null>(null)
 
 	// Timers for visibility changes:
+	const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 	const inViewChangeTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 	const skipInitialrunRef = useRef<boolean>(true)
 	const isTransitioning = useRef(false)
@@ -130,17 +131,45 @@ export function VirtualElement({
 		}
 	}, [inView, isShowingChildren])
 
+	// Ensure elements are visible after a fast scroll:
 	useEffect(() => {
 		const checkVisibilityOnScroll = () => {
 			if (inView && !isShowingChildren) {
 				setIsShowingChildren(true)
 			}
+
+			// Add a check after scroll stops
+			if (scrollTimeoutRef.current) {
+				clearTimeout(scrollTimeoutRef.current)
+			}
+			scrollTimeoutRef.current = setTimeout(() => {
+				// Recheck visibility after scroll appears to have stopped
+				if (inView && !isShowingChildren) {
+					setIsShowingChildren(true)
+				}
+			}, 400)
 		}
 
 		window.addEventListener('scroll', checkVisibilityOnScroll, { passive: true })
 
 		return () => {
 			window.removeEventListener('scroll', checkVisibilityOnScroll)
+			if (scrollTimeoutRef.current) {
+				clearTimeout(scrollTimeoutRef.current)
+			}
+		}
+	}, [inView, isShowingChildren])
+
+	// Periodic check to ensure elements in view are shown
+	useEffect(() => {
+		const periodicCheckInterval = setInterval(() => {
+			if (inView && !isShowingChildren) {
+				setIsShowingChildren(true)
+			}
+		}, 1000)
+
+		return () => {
+			clearInterval(periodicCheckInterval)
 		}
 	}, [inView, isShowingChildren])
 
@@ -191,7 +220,7 @@ export function VirtualElement({
 				isTransitioning.current = false
 				inViewChangeTimerRef.current = undefined
 			}
-		}, 50)
+		}, 100)
 	}, [inView, ref, handleResize, resizeObserverManager])
 
 	const onVisibleChanged = useCallback(
