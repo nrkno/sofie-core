@@ -258,7 +258,7 @@ $hold-status-color: $liveline-timecode-color;
 			&.director-screen__body__part--next-part {
 				.director-screen__body__part__piece-icon,
 				.director-screen__body__part__piece-name {
-					grid-row: 2 / -1;
+					grid-row: 2;
 				}
 			}
 
