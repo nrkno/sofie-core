@@ -77,13 +77,12 @@ $hold-status-color: $liveline-timecode-color;
 				grid-row: 1;
 				grid-column: 1 / -1;
 				text-align: left;
-				padding-left: 10px;
+				text-indent: 5px;
 				letter-spacing: 0%;
-				vertical-align: middle;
+				align-items: center;
 				color: #fff;
 				position: relative;
 				font-size: 100px;
-				line-height: 117%;
 				height: 11vh;
 				letter-spacing: 0.01em;
 				font-feature-settings: 'tnum' on, 'liga' off;
@@ -119,11 +118,13 @@ $hold-status-color: $liveline-timecode-color;
 					right: 0px;
 					height: 100%;
 					width: 25vw;
+					text-align: right;
 					display: flex;
+					justify-content: flex-end;
 					align-items: center;
+					padding-right: 30px;
+
 					font-size: 110px;
-					padding-left: 8vw;
-					padding-top: vh;
 					color: #ff0;
 					font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738,
 						'YTLC' 514, 'YTUC' 712, 'opsz' 120, 'slnt' 0, 'wdth' 70, 'wght' 500;
@@ -208,11 +209,10 @@ $hold-status-color: $liveline-timecode-color;
 					grid-row: inherit;
 					text-align: left;
 					font-size: 25em;
-					font-weight: 500;
 					font-feature-settings: 'liga' off, 'tnum' on;
 					font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738,
 						'YTLC' 514, 'YTUC' 712, 'opsz' 120, 'slnt' 0, 'wdth' 70, 'wght' 500;
-					padding: 0 0.2em;
+					padding: 0 0.1em;
 					line-height: 1em;
 
 					> .overtime {
@@ -296,7 +296,7 @@ $hold-status-color: $liveline-timecode-color;
 			}
 			.director-screen__body__part__next-icon--notext,
 			.director-screen__body__part__auto-icon--notext {
-				margin-top: 4vh !important; /* Override the default -50px when notext is true */
+				margin-top: 4.08vh !important; /* Override the default -50px when notext is true */
 			}
 		}
 
