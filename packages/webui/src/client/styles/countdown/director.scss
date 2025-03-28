@@ -214,6 +214,8 @@ $hold-status-color: $liveline-timecode-color;
 						'YTLC' 514, 'YTUC' 712, 'opsz' 120, 'slnt' 0, 'wdth' 70, 'wght' 500;
 					padding: 0 0.1em;
 					line-height: 1em;
+					display: flex;
+					align-items: center;
 
 					> .overtime {
 						color: $general-late-color;
@@ -221,10 +223,22 @@ $hold-status-color: $liveline-timecode-color;
 							'YTLC' 514, 'YTUC' 712, 'opsz' 100, 'slnt' 0, 'wdth' 70, 'wght' 600;
 					}
 
+					.auto-next-status {
+						font-size: 0.5em;
+						margin-left: 0.2em;
+						margin-top: -4vh;
+						color: $general-next-color;
+						font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738,
+							'YTLC' 514, 'YTUC' 712, 'opsz' 100, 'slnt' -20, 'wdth' 70, 'wght' 600;
+					}
+
 					.freeze-counter {
 						color: #00bfff;
 						margin-left: 4vw;
+						display: flex;
+						align-items: center;
 					}
+
 					img.freeze-counter-icon {
 						margin-top: -0.3em;
 						width: 1em;

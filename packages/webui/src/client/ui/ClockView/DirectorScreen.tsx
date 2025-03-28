@@ -43,6 +43,7 @@ import {
 	TimeToPlannedEndComponent,
 } from '../../lib/Components/CounterComponents'
 import { AdjustLabelFit } from '../util/AdjustLabelFit'
+import { AutoNextStatus } from '../RundownView/RundownTiming/AutoNextStatus'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -453,7 +454,10 @@ function DirectorScreenRender({
 										<CurrentPartOrSegmentRemaining
 											currentPartInstanceId={playlist.currentPartInfo?.partInstanceId ?? null}
 											heavyClassName="overtime"
-										/>{' '}
+										/>
+										<span className="auto-next-status">
+											<AutoNextStatus />
+										</span>{' '}
 										<span className="freeze-counter">
 											<PieceFreezeContainer
 												partInstanceId={currentPartInstance.instance._id}
