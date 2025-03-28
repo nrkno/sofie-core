@@ -80,7 +80,7 @@ export function VirtualElement({
 	const styleObj = useMemo<React.CSSProperties>(
 		() => ({
 			width: width ?? 'auto',
-			height: (placeholderHeight ?? '0') + 'px',
+			height: ((placeholderHeight || ref?.clientHeight) ?? '0') + 'px',
 			marginTop: 0,
 			marginLeft: 0,
 			marginRight: 0,
@@ -88,7 +88,7 @@ export function VirtualElement({
 			// These properties are used to ensure that if a prior element is changed from
 			// placeHolder to element, the position of visible elements are not affected.
 			contentVisibility: 'auto',
-			containIntrinsicSize: `0 ${placeholderHeight ?? '0'}px`,
+			containIntrinsicSize: `0 ${(placeholderHeight || ref?.clientHeight) ?? '0'}px`,
 			contain: 'size layout',
 		}),
 		[width, placeholderHeight]
@@ -368,20 +368,16 @@ function measureElement(wrapperEl: HTMLDivElement, placeholderHeight?: number): 
 	const el = wrapperEl.firstElementChild as HTMLElement
 	const style = window.getComputedStyle(el)
 
-	const timelineWrapper = el.closest('.segment-timeline-wrapper--shelf')
+	let segmentTimeline: Element | null = null
+	let dashboardPanel: Element | null = null
 
-	if (timelineWrapper) {
-		let totalHeight = 0
+	segmentTimeline = wrapperEl.querySelector('.segment-timeline')
+	dashboardPanel = wrapperEl.querySelector('.dashboard-panel')
 
-		// Get the segment timeline height
-		const segmentTimeline = timelineWrapper.querySelector('.segment-timeline')
-		if (segmentTimeline) {
-			const segmentRect = segmentTimeline.getBoundingClientRect()
-			totalHeight = segmentRect.height
-		}
+	if (segmentTimeline) {
+		const segmentRect = segmentTimeline.getBoundingClientRect()
+		let totalHeight = segmentRect.height
 
-		// Add the dashboard panel height if it exists
-		const dashboardPanel = timelineWrapper.querySelector('.dashboard-panel')
 		if (dashboardPanel) {
 			const panelRect = dashboardPanel.getBoundingClientRect()
 			totalHeight += panelRect.height
