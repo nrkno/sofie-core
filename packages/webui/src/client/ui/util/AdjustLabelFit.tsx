@@ -105,7 +105,7 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 
 	// If label is longer than 140 characters, cut it off
 	if (label.length > 140) {
-		label = label.slice(0, 137) + '...'
+		label = label.slice(0, 120) + '...'
 	}
 
 	// Convert to CSS values:
