@@ -167,7 +167,7 @@ $hold-status-color: $liveline-timecode-color;
 				text-align: center;
 				display: flex;
 				align-items: top;
-				justify-content: center;
+				justify-content: left;
 
 				> svg {
 					flex-grow: 1;
@@ -279,6 +279,7 @@ $hold-status-color: $liveline-timecode-color;
 			.director-screen__body__part__next-icon,
 			.director-screen__body__part__auto-icon {
 				background-color: $general-next-color;
+				justify-content: left;
 				position: relative;
 				grid-row: 1;
 				grid-column: 1;
