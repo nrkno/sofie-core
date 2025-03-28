@@ -44,6 +44,7 @@ import {
 } from '../../lib/Components/CounterComponents'
 import { AdjustLabelFit } from '../util/AdjustLabelFit'
 import { AutoNextStatus } from '../RundownView/RundownTiming/AutoNextStatus'
+import { useTranslation } from 'react-i18next'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -347,6 +348,7 @@ function DirectorScreenRender({
 	rundownIds,
 }: Readonly<WithTiming<DirectorScreenProps & DirectorScreenTrackedProps>>) {
 	useSetDocumentClass('dark', 'xdark')
+	const { t } = useTranslation()
 
 	if (playlist && playlistId && segments) {
 		const expectedStart = PlaylistTiming.getExpectedStart(playlist.timing) || 0
@@ -513,7 +515,7 @@ function DirectorScreenRender({
 												nextSegment === undefined || nextSegment?._id === currentSegment?._id,
 										})}
 									>
-										AUTO
+										{t('Auto')}
 									</span>
 								) : (
 									<span
@@ -522,7 +524,7 @@ function DirectorScreenRender({
 												nextSegment === undefined || nextSegment?._id === currentSegment?._id,
 										})}
 									>
-										NEXT
+										{t('Next')}
 									</span>
 								)}
 								<div className="director-screen__body__part__piece-icon">
