@@ -544,7 +544,7 @@ function DirectorScreenRender({
 													fontFamily: 'Roboto Flex',
 													fontSize: '1.5em',
 													minFontWidth: 55,
-													defaultWidth: 90,
+													defaultWidth: 120,
 													useLetterSpacing: false,
 													defaultOpticalSize: 120,
 												}}
