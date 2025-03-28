@@ -248,7 +248,6 @@ async function innerScrollToSegment(
 							bottom = Math.floor(bottom)
 							if (bottom > Math.floor(window.innerHeight) || top < headerHeight) {
 								// If not in place atempt to scroll again
-								console.log('A Second attempt to scroll is needed')
 								innerScrollToSegment(elementToScrollTo, forceScroll, true, true).then(resolve, reject)
 							} else {
 								resolve(true)

@@ -86,7 +86,6 @@ export function RundownRightHandControls(props: Readonly<IProps>): JSX.Element {
 	} = props
 
 	useEffect(() => {
-		console.log('onAirHover - props.isFollowingOnAir state', props.isFollowingOnAir)
 		if (onAirHover && props.isFollowingOnAir) {
 			setOnAirHover(false)
 		}

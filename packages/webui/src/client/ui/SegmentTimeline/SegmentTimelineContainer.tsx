@@ -200,7 +200,6 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 				window.requestAnimationFrame(() => {
 					this.mountedTime = Date.now()
 					if (this.state.isLiveSegment && this.props.followLiveSegments && !this.isVisible) {
-						console.log('SegmentTimelinecontainer is not visible')
 						scrollToSegment(this.props.segmentId, true).catch((error) => {
 							if (!error.toString().match(/another scroll/)) console.warn(error)
 						})
@@ -552,7 +551,7 @@ const SegmentTimelineContainerContent = withResolvedSegment(
 				} else {
 					this.isVisible = true
 				}
-			}, 1200)
+			}, 1800)
 		}
 
 		startLive = () => {
