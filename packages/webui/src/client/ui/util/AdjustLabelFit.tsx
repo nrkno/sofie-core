@@ -40,12 +40,6 @@ export interface AdjustLabelFitProps {
 	minFontWidth?: number
 
 	/**
-	 * Maximum font size in percentage relative to normal (for auto-scaling)
-	 * Default is 120
-	 */
-	maxFontWidth?: number
-
-	/**
 	 * Enable letter spacing adjustment to fit text
 	 * Default is false
 	 */
@@ -89,7 +83,6 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 	fontFamily,
 	fontSize,
 	minFontWidth = 30,
-	maxFontWidth = 100,
 	defaultOpticalSize = 100,
 	defaultWidth = 100,
 	useLetterSpacing = false,
@@ -181,7 +174,6 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 
 		// Use a reasonable range for width variation
 		currentWidth = Math.max(currentWidth, minFontWidth)
-		currentWidth = Math.min(currentWidth, maxFontWidth)
 
 		//labelElement.style.fontVariationSettings = `'opsz' ${defaultOpticalSize}, 'wdth' ${currentWidth}`
 		labelElement.style.fontVariationSettings = `'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738, 'YTLC' 514, 'YTUC' 712, 'opsz' ${defaultOpticalSize}, 'slnt' 0, 'wdth' ${currentWidth}, 'wght' 550`
@@ -265,7 +257,7 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 		window.addEventListener('resize', handleResize)
 
 		// Run adjustment when width or font settings change
-		if (width || fontFamily || fontSize || minFontWidth || maxFontWidth || minLetterSpacing) {
+		if (width || fontFamily || fontSize || minFontWidth || minLetterSpacing) {
 			handlePropsChange()
 		}
 
@@ -274,7 +266,7 @@ export const AdjustLabelFit: React.FC<AdjustLabelFitProps> = ({
 			cancelAnimationFrame(adjustmentTimer)
 			if (resizeTimer) cancelAnimationFrame(resizeTimer)
 		}
-	}, [label, width, fontFamily, fontSize, minFontWidth, maxFontWidth, minLetterSpacing])
+	}, [label, width, fontFamily, fontSize, minFontWidth, minLetterSpacing])
 
 	return (
 		<div ref={containerRef} className={`adjust-label-fit ${className}`} style={finalContainerStyle}>
