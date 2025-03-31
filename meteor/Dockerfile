@@ -67,4 +67,6 @@ COPY meteor/docker-entrypoint.sh /opt
 ENV WORKER_EXEC_DIR=/opt/packages/job-worker
 
 WORKDIR /opt/core/
+RUN chown -R 1000:1000 /opt/core
+USER 1000
 CMD ["/opt/docker-entrypoint.sh"]
