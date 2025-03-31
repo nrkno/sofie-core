@@ -125,7 +125,7 @@ $hold-status-color: $liveline-timecode-color;
 					padding-right: 30px;
 
 					font-size: 110px;
-					color: #ff0;
+					color: $general-countdown-to-next-color;
 					font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738,
 						'YTLC' 514, 'YTUC' 712, 'opsz' 120, 'slnt' 0, 'wdth' 70, 'wght' 500;
 
@@ -233,7 +233,7 @@ $hold-status-color: $liveline-timecode-color;
 					}
 
 					.freeze-counter {
-						color: #00bfff;
+						color: $general-freeze-color;
 						margin-left: 4vw;
 						display: flex;
 						align-items: center;

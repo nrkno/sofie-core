@@ -1,3 +1,5 @@
+@import '../styles/colorScheme';
+
 .counter-component__planned-end,
 .counter-component__time-to-planned-end,
 .counter-component__time-since-planned-end,
@@ -22,7 +24,7 @@
 		'YTUC' 712, 'opsz' 120, 'slnt' 0, 'wdth' 70, 'wght' 500;
 
 	.under {
-		background-color: #ff0;
+		background-color: $general-countdown-to-next-color;
 		border-radius: 139px;
 		align-self: stretch;
 		gap: 10px;
@@ -60,7 +62,7 @@
 }
 
 .counter-component__time-to-planned-end {
-	color: #ff0;
+	color: $general-countdown-to-next-color;
 	letter-spacing: 0%;
 	text-align: right;
 	margin-left: 1.2vw;
