@@ -5,7 +5,8 @@ import { PartialDeep } from 'type-fest'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { SelectedPieceInstances } from '../../collections/pieceInstancesHandler'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { ActivePiecesStatus, ActivePiecesTopic } from '../activePiecesTopic'
+import { ActivePiecesTopic } from '../activePiecesTopic'
+import { ActivePiecesEvent } from '@sofie-automation/live-status-gateway-api'
 
 describe('ActivePiecesTopic', () => {
 	it('provides active pieces', async () => {
@@ -48,7 +49,7 @@ describe('ActivePiecesTopic', () => {
 
 		topic.addSubscriber(mockSubscriber)
 
-		const expectedStatus: PartialDeep<ActivePiecesStatus> = {
+		const expectedStatus: PartialDeep<ActivePiecesEvent> = {
 			event: 'activePieces',
 
 			activePieces: [
