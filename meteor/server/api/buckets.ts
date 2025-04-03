@@ -89,7 +89,7 @@ export namespace BucketsAPI {
 					sort: {
 						_rank: 1,
 					},
-					fields: {
+					projection: {
 						_rank: 1,
 					},
 				}
