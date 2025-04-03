@@ -166,15 +166,11 @@ function getFilterFunction(
 	return undefined
 }
 
-export function useTiming({
-	tickResolution,
-	dataResolution,
-	filter,
-}: {
-	tickResolution: TimingTickResolution
-	dataResolution: TimingDataResolution
+export function useTiming(
+	tickResolution: TimingTickResolution = TimingTickResolution.Synced,
+	dataResolution: TimingDataResolution = TimingDataResolution.Synced,
 	filter?: TimingFilterFunction | string | (string | number)[]
-}): RundownTimingContext {
+): RundownTimingContext {
 	const [_0, setForceUpdate] = useState(0)
 
 	const context = useContext(RundownTimingProviderContext)
