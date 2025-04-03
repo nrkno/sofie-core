@@ -95,7 +95,7 @@ export function WarningDisplay({
 		>
 			<p>
 				{t(
-					'You are in rehearsal mode, the broadcast starts in less than 1 minute. Do you want to go into On-Air mode?',
+					'You are in rehearsal mode, the broadcast starts in less than 1 minute. Do you want to go into On-Air mode?'
 				)}
 			</p>
 		</ModalDialog>
