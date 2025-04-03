@@ -19,8 +19,9 @@ import { Snapshots, Studios } from '../../collections'
 import { ClientAPI } from '@sofie-automation/meteor-lib/dist/api/client'
 import { hashSingleUseToken } from '../../lib/lib'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
-import { withTranslation } from 'react-i18next'
+import { useTranslation, withTranslation } from 'react-i18next'
 import Button from 'react-bootstrap/esm/Button'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 interface IProps {
 	match: {
@@ -73,71 +74,6 @@ const SnapshotsViewContent = withTranslation()(
 				editSnapshotId: null,
 				removeSnapshots: false,
 			}
-		}
-
-		onUploadFile(e: React.ChangeEvent<HTMLInputElement>, restoreVariant?: 'debug' | 'ingest') {
-			const { t } = this.props
-
-			const file = e.target.files?.[0]
-			if (!file) {
-				return
-			}
-
-			const reader = new FileReader()
-			reader.onload = (e2) => {
-				this.setState({
-					uploadFileKey: `${Date.now()}_1`,
-					uploadFileKey2: `${Date.now()}_2`,
-				})
-				const uploadFileContents = ((e2.target as any) || {}).result
-
-				doModalDialog({
-					title: t('Restore from this Snapshot file?'),
-					message: t('Are you sure you want to restore the system from the snapshot file "{{fileName}}"?', {
-						fileName: file.name,
-					}),
-					onAccept: () => {
-						fetchFrom('/api/private/snapshot/restore', {
-							method: 'POST',
-							body: uploadFileContents,
-							headers: {
-								'content-type': 'application/json',
-								'restore-debug-data': restoreVariant === 'debug' ? '1' : '0',
-								'ingest-snapshot-data': restoreVariant === 'ingest' ? '1' : '0',
-							},
-						})
-							.then(() => {
-								NotificationCenter.push(
-									new Notification(
-										undefined,
-										NoticeLevel.NOTIFICATION,
-										t('Successfully restored snapshot'),
-										'RestoreSnapshot'
-									)
-								)
-							})
-							.catch((err) => {
-								NotificationCenter.push(
-									new Notification(
-										undefined,
-										NoticeLevel.WARNING,
-										t('Snapshot restore failed: {{errorMessage}}', { errorMessage: err + '' }),
-										'RestoreSnapshot'
-									)
-								)
-							})
-					},
-					onDiscard: () => {
-						this.setState({
-							// to clear input field:
-							uploadFileKey: `${Date.now()}_1`,
-							uploadFileKey2: `${Date.now()}_2`,
-						})
-					},
-				})
-			}
-
-			reader.readAsText(file)
 		}
 
 		restoreStoredSnapshot = (snapshotId: SnapshotId) => {
@@ -317,27 +253,15 @@ const SnapshotsViewContent = withTranslation()(
 					<h2 className="mb-4">{t('Restore from Snapshot File')}</h2>
 
 					<p className="my-2">
-						<UploadButton
-							accept="application/json,.json"
-							className="btn btn-outline-secondary me-2"
-							onChange={(e) => this.onUploadFile(e)}
-							key={this.state.uploadFileKey}
-						>
-							<FontAwesomeIcon icon={faUpload} />
+						<SnapshotImportButton>
 							<span>{t('Upload Snapshot')}</span>
-						</UploadButton>
+						</SnapshotImportButton>
 						<span className="text-s vsubtle ms-2">{t('Upload a snapshot file')}</span>
 					</p>
 					<p className="my-2">
-						<UploadButton
-							accept="application/json,.json"
-							className="btn btn-outline-secondary me-2"
-							onChange={(e) => this.onUploadFile(e, 'debug')}
-							key={this.state.uploadFileKey2}
-						>
-							<FontAwesomeIcon icon={faUpload} />
+						<SnapshotImportButton restoreVariant="debug">
 							<span>{t('Upload Snapshot (for debugging)')}</span>
-						</UploadButton>
+						</SnapshotImportButton>
 						<span className="text-s vsubtle ms-2">
 							{t(
 								'Upload a snapshot file (restores additional info not directly related to a Playlist / Rundown, such as Packages, PackageWorkStatuses etc'
@@ -345,15 +269,9 @@ const SnapshotsViewContent = withTranslation()(
 						</span>
 					</p>
 					<p className="my-2">
-						<UploadButton
-							accept="application/json,.json"
-							className="btn btn-outline-secondary me-2"
-							onChange={(e) => this.onUploadFile(e, 'ingest')}
-							key={this.state.uploadFileKey2}
-						>
-							<FontAwesomeIcon icon={faUpload} />
+						<SnapshotImportButton restoreVariant="ingest">
 							<span>{t('Ingest from Snapshot')}</span>
-						</UploadButton>
+						</SnapshotImportButton>
 						<span className="text-s vsubtle ms-2">
 							{t('Reads the ingest (NRCS) data, and pipes it throught the blueprints')}
 						</span>
@@ -444,3 +362,78 @@ const SnapshotsViewContent = withTranslation()(
 		}
 	}
 )
+
+function SnapshotImportButton({
+	restoreVariant,
+	children,
+}: React.PropsWithChildren<{ restoreVariant?: 'debug' | 'ingest' }>) {
+	const { t } = useTranslation()
+
+	const onUploadFile = React.useCallback(
+		(uploadFileContents: string, file: File) => {
+			doModalDialog({
+				title: t('Restore from this Snapshot file?'),
+				message: t('Are you sure you want to restore the system from the snapshot file "{{fileName}}"?', {
+					fileName: file.name,
+				}),
+				onAccept: () => {
+					fetchFrom('/api/private/snapshot/restore', {
+						method: 'POST',
+						body: uploadFileContents,
+						headers: {
+							'content-type': 'application/json',
+							'restore-debug-data': restoreVariant === 'debug' ? '1' : '0',
+							'ingest-snapshot-data': restoreVariant === 'ingest' ? '1' : '0',
+						},
+					})
+						.then(() => {
+							NotificationCenter.push(
+								new Notification(
+									undefined,
+									NoticeLevel.NOTIFICATION,
+									t('Successfully restored snapshot'),
+									'RestoreSnapshot'
+								)
+							)
+						})
+						.catch((err) => {
+							NotificationCenter.push(
+								new Notification(
+									undefined,
+									NoticeLevel.WARNING,
+									t('Snapshot restore failed: {{errorMessage}}', { errorMessage: err + '' }),
+									'RestoreSnapshot'
+								)
+							)
+						})
+				},
+			})
+		},
+		[t, restoreVariant]
+	)
+	const onUploadError = React.useCallback(
+		(err: Error) => {
+			NotificationCenter.push(
+				new Notification(
+					undefined,
+					NoticeLevel.WARNING,
+					t('Snapshot restore failed: {{errorMessage}}', { errorMessage: stringifyError(err) }),
+					'RestoreSnapshot'
+				)
+			)
+		},
+		[t]
+	)
+
+	return (
+		<UploadButton
+			accept="application/json,.json"
+			className="btn btn-outline-secondary me-2"
+			onUploadContents={onUploadFile}
+			onUploadError={onUploadError}
+		>
+			<FontAwesomeIcon icon={faUpload} />
+			{children}
+		</UploadButton>
+	)
+}

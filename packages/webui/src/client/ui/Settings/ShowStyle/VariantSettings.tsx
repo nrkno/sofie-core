@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { faTrash, faPlus, faDownload, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
@@ -24,6 +24,7 @@ import { SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/ob
 import { useTracker } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { Blueprints, ShowStyleVariants } from '../../../collections'
 import Button from 'react-bootstrap/esm/Button'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 interface IShowStyleVariantsProps {
 	showStyleBase: DBShowStyleBase
@@ -46,7 +47,6 @@ export const ShowStyleVariantsSettings = ({
 }: Readonly<IShowStyleVariantsProps>): JSX.Element => {
 	const [localVariants, setLocalVariants] = useState<DBShowStyleVariant[]>([])
 	const [editedVariants, setEditedVariants] = useState<ShowStyleVariantId[]>([])
-	const [timestampedFileKey, setTimestampedFileKey] = useState(0)
 	const { t } = useTranslation()
 
 	useEffect(() => {
@@ -80,69 +80,6 @@ export const ShowStyleVariantsSettings = ({
 		},
 		[showStyleBase],
 		[]
-	)
-
-	const importShowStyleVariantsFromArray = useCallback(
-		(showStyleVariants: DBShowStyleVariant[]): void => {
-			showStyleVariants.forEach((showStyleVariant: DBShowStyleVariant, index: number) => {
-				const rank = localVariants.length
-				showStyleVariant._rank = rank + index
-				MeteorCall.showstyles.importShowStyleVariant(showStyleVariant).catch(() => {
-					NotificationCenter.push(
-						new Notification(
-							undefined,
-							NoticeLevel.CRITICAL,
-							t('Failed to import Show Style Variant {{name}}. Make sure it is not already imported.', {
-								name: showStyleVariant.name,
-							}),
-							'VariantSettings'
-						)
-					)
-				})
-			})
-		},
-		[localVariants]
-	)
-
-	const importShowStyleVariants = useCallback(
-		(event: React.ChangeEvent<HTMLInputElement>): void => {
-			const file = event.target.files?.[0]
-			if (!file) {
-				return
-			}
-
-			const reader = new FileReader()
-
-			reader.onload = () => {
-				setTimestampedFileKey(Date.now())
-
-				const fileContents = reader.result as string
-
-				const newShowStyleVariants: DBShowStyleVariant[] = []
-				try {
-					JSON.parse(fileContents).map((showStyleVariant: DBShowStyleVariant) =>
-						newShowStyleVariants.push(showStyleVariant)
-					)
-					if (!Array.isArray(newShowStyleVariants)) {
-						throw new Error('Imported file did not contain an array')
-					}
-				} catch (error) {
-					NotificationCenter.push(
-						new Notification(
-							undefined,
-							NoticeLevel.CRITICAL,
-							t('Failed to import new Show Style Variants: {{errorMessage}}', { errorMessage: error + '' }),
-							'VariantSettings'
-						)
-					)
-					return
-				}
-
-				importShowStyleVariantsFromArray(newShowStyleVariants)
-			}
-			reader.readAsText(file)
-		},
-		[importShowStyleVariantsFromArray]
 	)
 
 	const onCopyShowStyleVariant = useCallback(
@@ -365,19 +302,71 @@ export const ShowStyleVariantsSettings = ({
 					<FontAwesomeIcon icon={faDownload} />
 					&nbsp;{t('Export')}
 				</Button>
-				<UploadButton
-					className="btn btn-outline-secondary mx-1"
-					accept="application/json,.json"
-					onChange={importShowStyleVariants}
-					key={timestampedFileKey}
-				>
-					<FontAwesomeIcon icon={faUpload} />
-					&nbsp;{t('Import')}
-				</UploadButton>
+				<ImportVariantsButton localVariantCount={localVariants.length} />
 				<Button variant="outline-secondary" className="mx-1" onClick={onRemoveAllShowStyleVariants}>
 					<FontAwesomeIcon icon={faTrash} />
 				</Button>
 			</div>
 		</div>
+	)
+}
+
+function ImportVariantsButton({ localVariantCount }: { localVariantCount: number }) {
+	const { t } = useTranslation()
+
+	const importShowStyleVariantsError = useCallback((err: Error): void => {
+		NotificationCenter.push(
+			new Notification(
+				undefined,
+				NoticeLevel.CRITICAL,
+				t('Failed to import new Show Style Variants: {{errorMessage}}', { errorMessage: stringifyError(err) }),
+				'VariantSettings'
+			)
+		)
+	}, [])
+
+	const importShowStyleVariantsFromArray = useCallback(
+		(showStyleVariants: DBShowStyleVariant[]): void => {
+			showStyleVariants.forEach((showStyleVariant: DBShowStyleVariant, index: number) => {
+				showStyleVariant._rank = localVariantCount + index
+				MeteorCall.showstyles.importShowStyleVariant(showStyleVariant).catch(() => {
+					NotificationCenter.push(
+						new Notification(
+							undefined,
+							NoticeLevel.CRITICAL,
+							t('Failed to import Show Style Variant {{name}}. Make sure it is not already imported.', {
+								name: showStyleVariant.name,
+							}),
+							'VariantSettings'
+						)
+					)
+				})
+			})
+		},
+		[localVariantCount]
+	)
+
+	const importShowStyleVariantsContents = useCallback(
+		(fileContents: string): void => {
+			const newShowStyleVariants: DBShowStyleVariant[] = JSON.parse(fileContents)
+			if (!Array.isArray(newShowStyleVariants)) {
+				throw new Error('Imported file did not contain an array')
+			}
+
+			importShowStyleVariantsFromArray(newShowStyleVariants)
+		},
+		[importShowStyleVariantsFromArray]
+	)
+
+	return (
+		<UploadButton
+			className="btn btn-outline-secondary mx-1"
+			accept="application/json,.json"
+			onUploadError={importShowStyleVariantsError}
+			onUploadContents={importShowStyleVariantsContents}
+		>
+			<FontAwesomeIcon icon={faUpload} />
+			&nbsp;{t('Import')}
+		</UploadButton>
 	)
 }
