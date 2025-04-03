@@ -31,6 +31,7 @@ import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { UIPartInstances, UIParts } from '../../../Collections'
 import Form from 'react-bootstrap/esm/Form'
 import Button from 'react-bootstrap/esm/Button'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 export interface PreviewContext {
 	rundownPlaylist: DBRundownPlaylist | null
@@ -51,7 +52,6 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 	props: IProps
 ): React.ReactElement | null {
 	const sorensen = useContext(SorensenContext)
-	const [uploadFileKey, setUploadFileKey] = useState(Date.now())
 	const [systemWideCollapsed, setSystemWideCollapsed] = useState(true)
 	const [selectedTriggeredActionId, setSelectedTriggeredActionId] = useState<null | TriggeredActionId>(null)
 	const [triggerFilter, setTriggerFilter] = useState('')
@@ -321,70 +321,6 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 		window.location.replace(`/api/private/actionTriggers/download/${showStyleBaseId ?? ''}`)
 	}, [showStyleBaseId])
 
-	const onUploadActions = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files && e.target.files[0]
-		if (!file) {
-			return
-		}
-
-		const reader = new FileReader()
-		reader.onload = (e2) => {
-			// On file upload
-
-			setUploadFileKey(Date.now())
-
-			const uploadFileContents = (e2.target as any).result
-
-			if (uploadFileContents) {
-				function uploadStoredTriggeredActions(replace?: boolean) {
-					fetchFrom(`/api/private/actionTriggers/upload/${showStyleBaseId ?? ''}${replace ? '?replace' : ''}`, {
-						method: 'POST',
-						body: uploadFileContents,
-						headers: {
-							'content-type': 'application/json',
-							// authorization: 'id ' + Meteor.userId(),
-						},
-					})
-						.then(() => {
-							NotificationCenter.push(
-								new Notification(
-									undefined,
-									NoticeLevel.NOTIFICATION,
-									t('Triggered Actions uploaded successfully.'),
-									'TriggeredActions'
-								)
-							)
-						})
-						.catch((err) => {
-							NotificationCenter.push(
-								new Notification(
-									undefined,
-									NoticeLevel.WARNING,
-									t('Triggered Actions failed to upload: {{errorMessage}}', { errorMessage: err + '' }),
-									'TriggeredActions'
-								)
-							)
-						})
-				}
-
-				doModalDialog({
-					title: t('Append or Replace'),
-					message: t('Do you want to append these to existing Action Triggers, or do you want to replace them?'),
-					no: t('Append'),
-					yes: t('Replace'),
-					warning: true,
-					onAccept: () => {
-						uploadStoredTriggeredActions(true)
-					},
-					onSecondary: () => {
-						uploadStoredTriggeredActions(false)
-					},
-				})
-			}
-		}
-		reader.readAsText(file)
-	}, [])
-
 	return (
 		<div>
 			{sorensen && previewContext.rundownPlaylist && showStyleBaseId && (
@@ -486,14 +422,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 				</Tooltip>
 				<Tooltip overlay={t('Upload stored Action Triggers')} placement="top">
 					<span className="inline-block">
-						<UploadButton
-							className="btn btn-outline-secondary mx-1"
-							key={uploadFileKey}
-							onChange={onUploadActions}
-							accept="application/json,.json"
-						>
-							<FontAwesomeIcon icon={faUpload} />
-						</UploadButton>
+						<ImportTriggeredActionsButton showStyleBaseId={showStyleBaseId} />
 					</span>
 				</Tooltip>
 				<Tooltip overlay={t('Download Action Triggers')} placement="top">
@@ -503,5 +432,84 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 				</Tooltip>
 			</div>
 		</div>
+	)
+}
+
+function ImportTriggeredActionsButton({ showStyleBaseId }: { showStyleBaseId: ShowStyleBaseId | null }) {
+	const { t } = useTranslation()
+
+	const onUploadActions = useCallback(
+		(uploadFileContents: string) => {
+			function uploadStoredTriggeredActions(replace?: boolean) {
+				fetchFrom(`/api/private/actionTriggers/upload/${showStyleBaseId ?? ''}${replace ? '?replace' : ''}`, {
+					method: 'POST',
+					body: uploadFileContents,
+					headers: {
+						'content-type': 'application/json',
+						// authorization: 'id ' + Meteor.userId(),
+					},
+				})
+					.then(() => {
+						NotificationCenter.push(
+							new Notification(
+								undefined,
+								NoticeLevel.NOTIFICATION,
+								t('Triggered Actions uploaded successfully.'),
+								'TriggeredActions'
+							)
+						)
+					})
+					.catch((err) => {
+						NotificationCenter.push(
+							new Notification(
+								undefined,
+								NoticeLevel.WARNING,
+								t('Triggered Actions failed to upload: {{errorMessage}}', { errorMessage: err + '' }),
+								'TriggeredActions'
+							)
+						)
+					})
+			}
+
+			doModalDialog({
+				title: t('Append or Replace'),
+				message: t('Do you want to append these to existing Action Triggers, or do you want to replace them?'),
+				no: t('Append'),
+				yes: t('Replace'),
+				warning: true,
+				onAccept: () => {
+					uploadStoredTriggeredActions(true)
+				},
+				onSecondary: () => {
+					uploadStoredTriggeredActions(false)
+				},
+			})
+		},
+		[t, showStyleBaseId]
+	)
+
+	const onUploadError = useCallback(
+		(err: Error) => {
+			NotificationCenter.push(
+				new Notification(
+					undefined,
+					NoticeLevel.WARNING,
+					t('Triggered Actions failed to upload: {{errorMessage}}', { errorMessage: stringifyError(err) }),
+					'TriggeredActions'
+				)
+			)
+		},
+		[t]
+	)
+
+	return (
+		<UploadButton
+			className="btn btn-outline-secondary mx-1"
+			onUploadContents={onUploadActions}
+			onUploadError={onUploadError}
+			accept="application/json,.json"
+		>
+			<FontAwesomeIcon icon={faUpload} />
+		</UploadButton>
 	)
 }
