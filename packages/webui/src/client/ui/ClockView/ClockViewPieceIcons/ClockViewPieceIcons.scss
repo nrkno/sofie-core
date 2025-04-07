@@ -36,13 +36,12 @@ $letter-spacing: 0.03em;
 	font-family: Roboto Flex;
 	filter: drop-shadow($text-shadow);
 	font-size: $font-size-base;
-	font-weight: 550;
 	letter-spacing: $letter-spacing;
 	font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738, 'YTLC' 514, 'YTUC' 712, 
 	'opsz' 80,
 	'slnt' 0, 
 	'wdth' 50, 
-	'wght' 550;
+	'wght' 400;
 
 	span {
 		// Common styles

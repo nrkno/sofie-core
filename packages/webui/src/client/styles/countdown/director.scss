@@ -92,7 +92,7 @@ $hold-status-color: $liveline-timecode-color;
 
 				// Default Roboto Flex settings:
 				font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738,
-					'YTLC' 514, 'YTUC' 712, 'opsz' 100, 'slnt' 0, 'wdth' 100, 'wght' 550;
+					'YTLC' 548, 'YTUC' 712, 'opsz' 100, 'slnt' 0, 'wdth' 100, 'wght' 550;
 
 				text-shadow: 0px 0px 2px rgba(0, 0, 0, 0.2);
 				box-shadow: 0px 8px 12px rgba(0, 0, 0, 0.3);
@@ -128,7 +128,7 @@ $hold-status-color: $liveline-timecode-color;
 					font-size: 110px;
 					color: $general-countdown-to-next-color;
 					font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738,
-						'YTLC' 514, 'YTUC' 712, 'opsz' 120, 'slnt' 0, 'wdth' 70, 'wght' 500;
+						'YTLC' 548, 'YTUC' 712, 'opsz' 120, 'slnt' 0, 'wdth' 70, 'wght' 500;
 
 					background: linear-gradient(
 						90deg,
@@ -141,7 +141,7 @@ $hold-status-color: $liveline-timecode-color;
 						color: $general-fast-color;
 						//text-shadow: 0px 0px 6px $general-fast-color--shadow;
 						font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738,
-							'YTLC' 514, 'YTUC' 712, 'opsz' 100, 'slnt' 0, 'wdth' 70, 'wght' 600;
+							'YTLC' 548, 'YTUC' 712, 'opsz' 100, 'slnt' 0, 'wdth' 70, 'wght' 600;
 					}
 				}
 			}
@@ -212,7 +212,7 @@ $hold-status-color: $liveline-timecode-color;
 					font-size: 25em;
 					font-feature-settings: 'liga' off, 'tnum' on;
 					font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738,
-						'YTLC' 514, 'YTUC' 712, 'opsz' 120, 'slnt' 0, 'wdth' 70, 'wght' 500;
+						'YTLC' 548, 'YTUC' 712, 'opsz' 120, 'slnt' 0, 'wdth' 70, 'wght' 500;
 					padding: 0 0.1em;
 					line-height: 1em;
 					display: flex;
@@ -221,7 +221,7 @@ $hold-status-color: $liveline-timecode-color;
 					> .overtime {
 						color: $general-late-color;
 						font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738,
-							'YTLC' 514, 'YTUC' 712, 'opsz' 100, 'slnt' 0, 'wdth' 70, 'wght' 600;
+							'YTLC' 548, 'YTUC' 712, 'opsz' 100, 'slnt' 0, 'wdth' 70, 'wght' 600;
 					}
 
 					.auto-next-status {
@@ -230,7 +230,7 @@ $hold-status-color: $liveline-timecode-color;
 						margin-top: -4vh;
 						color: $general-next-color;
 						font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738,
-							'YTLC' 514, 'YTUC' 712, 'opsz' 100, 'slnt' -20, 'wdth' 70, 'wght' 600;
+							'YTLC' 548, 'YTUC' 712, 'opsz' 100, 'slnt' -20, 'wdth' 70, 'wght' 600;
 					}
 
 					.freeze-counter {
@@ -281,15 +281,17 @@ $hold-status-color: $liveline-timecode-color;
 				clip-path: polygon(0 0, 85% 0, 100% 50%, 85% 100%, 0 100%);
 				// font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738,
 				// 	'YTLC' 548, 'YTUC' 712, 'slnt' 0, 'opsz' 3;
+				letter-spacing: 0.05em;
 				font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738,
-					'YTLC' 514, 'YTUC' 712, 'opsz' 30, 'slnt' 0, 'wdth' 50, 'wght' 700;
+					'YTLC' 548, 'YTUC' 712, 'opsz' 30, 'slnt' 0, 'wdth' 70, 'wght' 400;
 			}
 			.director-screen__body__part__auto-icon {
 				border-radius: 0 25px 25px 0;
 				// font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738,
 				// 	'YTLC' 548, 'YTUC' 712, 'slnt' -7, 'opsz' 3;
+				letter-spacing: 0.05em;
 				font-variation-settings: 'GRAD' 0, 'XOPQ' 96, 'XTRA' 468, 'YOPQ' 79, 'YTAS' 750, 'YTDE' -203, 'YTFI' 738,
-					'YTLC' 514, 'YTUC' 712, 'opsz' 30, 'slnt' 0, 'wdth' 50, 'wght' 700;
+					'YTLC' 548, 'YTUC' 712, 'opsz' 30, 'slnt' 0, 'wdth' 70, 'wght' 400;
 			}
 			.director-screen__body__part__next-icon,
 			.director-screen__body__part__auto-icon {
