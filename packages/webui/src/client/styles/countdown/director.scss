@@ -33,6 +33,7 @@ $hold-status-color: $liveline-timecode-color;
 		color: #888;
 		font-size: 2.6em;
 		padding: 0 0.2em;
+		text-transform: uppercase;
 
 		.director-screen__top__planned-end {
 			text-align: left;
@@ -293,6 +294,7 @@ $hold-status-color: $liveline-timecode-color;
 			.director-screen__body__part__next-icon,
 			.director-screen__body__part__auto-icon {
 				background-color: $general-next-color;
+				text-transform: uppercase;
 				justify-content: left;
 				position: relative;
 				grid-row: 1;

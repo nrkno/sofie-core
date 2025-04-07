@@ -366,7 +366,7 @@ function DirectorScreenRender({
 							<div>
 								<PlannedEndComponent value={expectedEnd} />
 							</div>
-							PLANNED END
+							{t('Planned End')}
 						</div>
 					) : null}
 					{expectedEnd ? (
@@ -374,13 +374,13 @@ function DirectorScreenRender({
 							<div>
 								<TimeToPlannedEndComponent value={now - expectedEnd} />
 							</div>
-							<span className="director-screen__top__planned-to">TIME TO PLANNED END</span>
+							<span className="director-screen__top__planned-to">{t('Time to planned end')}</span>
 						</div>
 					) : (
 						<div>
 							<div>
 								<TimeSincePlannedEndComponent value={getCurrentTime() - (expectedStart + expectedDuration)} />
-								<span className="director-screen__top__planned-since">TIME SINCE PLANNED END</span>
+								<span className="director-screen__top__planned-since">{t('Time since planned end')}</span>
 							</div>
 						</div>
 					)}
@@ -388,7 +388,7 @@ function DirectorScreenRender({
 						<div>
 							<OverUnderClockComponent value={overUnderClock} />
 						</div>
-						<span className="director-screen__top__over-under">OVER/UNDER</span>
+						<span className="director-screen__top__over-under">{t('Over/Under')}</span>
 					</div>
 				</div>
 				<div className="director-screen__body">
