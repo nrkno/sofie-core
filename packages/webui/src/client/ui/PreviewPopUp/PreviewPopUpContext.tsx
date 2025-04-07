@@ -21,6 +21,7 @@ import { ITranslatableMessage } from '@sofie-automation/corelib/dist/Translatabl
 import _ from 'underscore'
 import { IAdLibListItem } from '../Shelf/AdLibListItem'
 import { PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { createPrivateApiPath } from '../../url'
 
 type VirtualElement = {
 	getBoundingClientRect: () => DOMRect
@@ -46,7 +47,10 @@ export function convertSourceLayerItemToPreview(
 		if (popupPreview.preview) {
 			switch (popupPreview.preview.type) {
 				case PreviewType.BlueprintImage:
-					contents.push({ type: 'image', src: '/api/private/blueprints/assets/' + popupPreview.preview.image })
+					contents.push({
+						type: 'image',
+						src: createPrivateApiPath('/blueprints/assets/' + popupPreview.preview.image),
+					})
 					break
 				case PreviewType.HTML:
 					contents.push({
@@ -76,7 +80,7 @@ export function convertSourceLayerItemToPreview(
 					contents.push({
 						type: 'boxLayout',
 						boxSourceConfiguration: popupPreview.preview.boxes,
-						backgroundArtSrc: '/api/private/blueprints/assets/' + popupPreview.preview.background,
+						backgroundArtSrc: createPrivateApiPath('/blueprints/assets/' + popupPreview.preview.background),
 					})
 					break
 				case PreviewType.Table:
@@ -262,7 +266,10 @@ export function convertSourceLayerItemToPreview(
 	} else if (sourceLayerType === SourceLayerType.TRANSITION) {
 		const content = item.content as TransitionContent
 		if (content.preview)
-			return { contents: [{ type: 'image', src: '/api/private/blueprints/assets/' + content.preview }], options: {} }
+			return {
+				contents: [{ type: 'image', src: createPrivateApiPath('/blueprints/assets/' + content.preview) }],
+				options: {},
+			}
 	}
 
 	return { contents: [], options: {} }

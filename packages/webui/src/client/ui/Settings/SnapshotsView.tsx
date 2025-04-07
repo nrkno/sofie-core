@@ -21,6 +21,7 @@ import { hashSingleUseToken } from '../../lib/lib'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { withTranslation } from 'react-i18next'
 import Button from 'react-bootstrap/esm/Button'
+import { createPrivateApiPath } from '../../url'
 
 interface IProps {
 	match: {
@@ -97,7 +98,7 @@ const SnapshotsViewContent = withTranslation()(
 						fileName: file.name,
 					}),
 					onAccept: () => {
-						fetchFrom('/api/private/snapshot/restore', {
+						fetchFrom(createPrivateApiPath('snapshot/restore'), {
 							method: 'POST',
 							body: uploadFileContents,
 							headers: {
@@ -385,7 +386,11 @@ const SnapshotsViewContent = withTranslation()(
 											</td>
 											<td>{snapshot.type}</td>
 											<td>
-												<a href={`/api/private/snapshot/retrieve/${snapshot._id}`} target="_blank" rel="noreferrer">
+												<a
+													href={createPrivateApiPath(`snapshot/retrieve/${snapshot._id}`)}
+													target="_blank"
+													rel="noreferrer"
+												>
 													{snapshot.name}
 												</a>
 											</td>
