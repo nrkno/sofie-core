@@ -5,6 +5,7 @@ import { RundownTimingProvider } from '../RundownView/RundownTiming/RundownTimin
 
 import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
 import { PresenterScreen } from './PresenterScreen'
+import { DirectorScreen } from './DirectorScreen'
 import { OverlayScreen } from './OverlayScreen'
 import { OverlayScreenSaver } from './OverlayScreenSaver'
 import { RundownPlaylists } from '../../collections'
@@ -30,6 +31,15 @@ export function ClockView({ studioId }: Readonly<{ studioId: StudioId }>): JSX.E
 				{playlist ? (
 					<RundownTimingProvider playlist={playlist}>
 						<PresenterScreen playlistId={playlist._id} studioId={studioId} />
+					</RundownTimingProvider>
+				) : (
+					<StudioScreenSaver studioId={studioId} ownBackground={true} />
+				)}
+			</Route>
+			<Route path="/countdowns/:studioId/director">
+				{playlist ? (
+					<RundownTimingProvider playlist={playlist}>
+						<DirectorScreen playlistId={playlist._id} studioId={studioId} />
 					</RundownTimingProvider>
 				) : (
 					<StudioScreenSaver studioId={studioId} ownBackground={true} />
