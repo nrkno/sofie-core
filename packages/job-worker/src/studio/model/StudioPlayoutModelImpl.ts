@@ -34,6 +34,7 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 
 	#timelineHasChanged = false
 	#timeline: TimelineComplete | null
+
 	public get timeline(): TimelineComplete | null {
 		return this.#timeline
 	}
@@ -86,7 +87,8 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 
 	setTimeline(
 		timelineObjs: TimelineObjGeneric[],
-		generationVersions: TimelineCompleteGenerationVersions
+		generationVersions: TimelineCompleteGenerationVersions,
+		regenerateTimelineToken: string | undefined
 	): ReadonlyDeep<TimelineComplete> {
 		this.#timeline = {
 			_id: this.context.studioId,
@@ -94,10 +96,15 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 			generated: getCurrentTime(),
 			timelineBlob: serializeTimelineBlob(timelineObjs),
 			generationVersions: generationVersions,
+			regenerateTimelineToken: regenerateTimelineToken,
 		}
 		this.#timelineHasChanged = true
 
 		return this.#timeline
+	}
+
+	switchRouteSet(routeSetId: string, isActive: boolean | 'toggle'): boolean {
+		return this.context.setRouteSetActive(routeSetId, isActive)
 	}
 
 	/**
@@ -120,7 +127,11 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 		}
 		this.#timelineHasChanged = false
 
-		await this.#baselineHelper.saveAllToDatabase()
+		await Promise.all([
+			this.#baselineHelper.saveAllToDatabase(),
+			this.context.saveRouteSetChanges(),
+			//
+		])
 
 		if (span) span.end()
 	}
@@ -168,7 +179,7 @@ export async function loadStudioPlayoutModel(
 	const studioId = context.studioId
 
 	const collections = await Promise.all([
-		context.directCollections.PeripheralDevices.findFetch({ studioId }),
+		context.directCollections.PeripheralDevices.findFetch({ 'studioAndConfigId.studioId': studioId }),
 		context.directCollections.RundownPlaylists.findFetch({ studioId }),
 		context.directCollections.Timelines.findOne(studioId),
 	])

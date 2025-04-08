@@ -55,7 +55,8 @@ const getResolvedPiecesForCurrentPartInstanceMock =
 jest.mock('../../../postProcess')
 import { postProcessPieces, postProcessTimelineObjects } from '../../../postProcess'
 import { ActionPartChange, PartAndPieceInstanceActionService } from '../PartAndPieceInstanceActionService'
-import { isTooCloseToAutonext } from '../../../../playout/lib'
+import { mock } from 'jest-mock-extended'
+import { QuickLoopService } from '../../../../playout/model/services/QuickLoopService'
 const { postProcessPieces: postProcessPiecesOrig, postProcessTimelineObjects: postProcessTimelineObjectsOrig } =
 	jest.requireActual('../../../postProcess')
 
@@ -138,7 +139,7 @@ describe('Test blueprint api context', () => {
 				const pieceInstances = await context.mockCollections.PieceInstances.findFetch({
 					partInstanceId: partInstance._id,
 				})
-				return new PlayoutPartInstanceModelImpl(partInstance, pieceInstances, false)
+				return new PlayoutPartInstanceModelImpl(partInstance, pieceInstances, false, mock<QuickLoopService>())
 			})
 		)
 	}
@@ -1126,7 +1127,7 @@ describe('Test blueprint api context', () => {
 					})
 					partInstanceModel.setPlannedStartedPlayback(getCurrentTime())
 
-					expect(isTooCloseToAutonext(partInstanceModel.partInstance, true)).toBeTruthy()
+					expect(partInstanceModel.isTooCloseToAutonext(true)).toBeTruthy()
 					await expect(service.queuePart({} as any, [{}] as any)).rejects.toThrow(
 						'Too close to an autonext to queue a part'
 					)
@@ -1609,7 +1610,7 @@ describe('Test blueprint api context', () => {
 				})
 			})
 
-			test('good', async () => {
+			test('good - from next', async () => {
 				const { jobContext, playlistId, allPartInstances } = await setupMyDefaultRundown()
 
 				const partInstance = allPartInstances[0]
@@ -1635,6 +1636,37 @@ describe('Test blueprint api context', () => {
 					// Ensure it was all removed
 					expect(playoutModel.findPieceInstance(targetPieceInstance.pieceInstance._id)).toBeFalsy()
 					expect(service.nextPartState).toEqual(ActionPartChange.SAFE_CHANGE)
+				})
+			})
+
+			test('good - from current', async () => {
+				const { jobContext, playlistId, allPartInstances } = await setupMyDefaultRundown()
+
+				const partInstance = allPartInstances[0]
+				await setPartInstances(jobContext, playlistId, partInstance, undefined)
+
+				await wrapWithPlayoutModel(jobContext, playlistId, async (playoutModel) => {
+					const { service } = await getTestee(jobContext, playoutModel)
+
+					const beforePieceInstancesCounts = getPieceInstanceCounts(playoutModel)
+					expect(beforePieceInstancesCounts.previous).toEqual(0)
+					expect(beforePieceInstancesCounts.current).not.toEqual(0)
+					expect(beforePieceInstancesCounts.next).toEqual(0)
+					expect(beforePieceInstancesCounts.other).toEqual(0)
+
+					// Find the instance, and create its backing piece
+					const targetPieceInstance = playoutModel.currentPartInstance!.pieceInstances[0]
+					expect(targetPieceInstance).toBeTruthy()
+
+					await expect(
+						service.removePieceInstances('current', [
+							unprotectString(targetPieceInstance.pieceInstance._id),
+						])
+					).resolves.toEqual([unprotectString(targetPieceInstance.pieceInstance._id)])
+
+					// Ensure it was all removed
+					expect(playoutModel.findPieceInstance(targetPieceInstance.pieceInstance._id)).toBeFalsy()
+					expect(service.currentPartState).toEqual(ActionPartChange.SAFE_CHANGE)
 				})
 			})
 		})
