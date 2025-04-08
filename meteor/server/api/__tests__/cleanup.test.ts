@@ -410,6 +410,7 @@ async function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		generationVersions: {} as any,
 		timelineBlob: '' as any,
 		timelineHash: '' as any,
+		regenerateTimelineToken: undefined,
 	})
 	await TimelineDatastore.mutableCollection.insertAsync({
 		_id: getRandomId(),

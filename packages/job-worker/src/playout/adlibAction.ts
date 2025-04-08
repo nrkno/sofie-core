@@ -34,6 +34,7 @@ import { convertNoteToNotification } from '../notifications/util'
 import type { INoteBase } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { NotificationsModelHelper } from '../notifications/NotificationsModelHelper'
 import type { INotificationsModel } from '../notifications/NotificationsModel'
+import { PersistentPlayoutStateStore } from '../blueprints/context/services/PersistantStateStore'
 
 /**
  * Execute an AdLib Action
@@ -230,8 +231,11 @@ export async function executeActionInner(
 	)
 
 	try {
+		const blueprintPersistentState = new PersistentPlayoutStateStore(playoutModel.playlist.previousPersistentState)
+
 		await blueprint.blueprint.executeAction(
 			actionContext,
+			blueprintPersistentState,
 			actionParameters.actionId,
 			actionParameters.userData,
 			actionParameters.triggerMode,
@@ -239,6 +243,10 @@ export async function executeActionInner(
 			actionParameters.publicData,
 			actionParameters.actionOptions ?? {}
 		)
+
+		if (blueprintPersistentState.hasChanges) {
+			playoutModel.setBlueprintPersistentState(blueprintPersistentState.getAll())
+		}
 	} catch (err) {
 		logger.error(`Error in showStyleBlueprint.executeAction: ${stringifyError(err)}`)
 		throw UserError.fromUnknown(err)

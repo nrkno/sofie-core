@@ -15,6 +15,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { CollapseJSON } from '../../lib/collapseJSON'
 import { faDownload } from '@fortawesome/free-solid-svg-icons'
 import { downloadBlob } from '../../lib/downloadBlob'
+import Button from 'react-bootstrap/Button'
 
 const PARAM_DATE_FORMAT = 'YYYY-MM-DDTHHmm'
 const PARAM_NAME_FROM_DATE = 'fromDate'
@@ -244,13 +245,15 @@ function UserActivity(): JSX.Element {
 	function renderUserActivity() {
 		return (
 			<div>
-				<div className="paging">
-					<Tooltip overlay={t('Export visible')} placement="top">
-						<button className="btn btn-secondary mod rs-right mtm" onClick={onDownloadAllLogItems}>
-							<FontAwesomeIcon icon={faDownload} />
-						</button>
-					</Tooltip>
+				<div className="user-action-log__pickers">
 					<DatePickerFromTo from={dateFrom} to={dateTo} onChange={onDateChange} />
+					<div>
+						<Tooltip overlay={t('Export visible')} placement="top">
+							<Button variant="outline-secondary" onClick={onDownloadAllLogItems}>
+								<FontAwesomeIcon icon={faDownload} />
+							</Button>
+						</Tooltip>
+					</div>
 				</div>
 				<UserActionsList logItems={logItems} startDate={dateFrom} highlighted={highlighted} />
 			</div>
@@ -268,11 +271,11 @@ function UserActivity(): JSX.Element {
 	}, [location, location.hash, highlighted, logItems.length])
 
 	return (
-		<div className="mhl gutter external-message-status">
-			<header className="mbs">
+		<div>
+			<header className="mb-2">
 				<h1>{t('User Activity Log')}</h1>
 			</header>
-			<div className="mod mvl">{renderUserActivity()}</div>
+			<div className="my-5">{renderUserActivity()}</div>
 		</div>
 	)
 }

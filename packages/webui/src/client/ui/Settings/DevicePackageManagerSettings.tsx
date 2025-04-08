@@ -11,6 +11,9 @@ import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids
 import { PeripheralDevices } from '../../collections'
 import { eventContextForLog } from '../../lib/clientUserAction'
 import { logger } from '../../lib/logging'
+import Row from 'react-bootstrap/Row'
+import Col from 'react-bootstrap/Col'
+import Button from 'react-bootstrap/Button'
 
 interface IDevicePackageManagerSettingsProps {
 	deviceId: PeripheralDeviceId
@@ -86,149 +89,137 @@ export const DevicePackageManagerSettings: React.FC<IDevicePackageManagerSetting
 		}
 
 		return (
-			<div>
-				<div className="row">
-					<h2 className="mhn mtn">{t('Package Manager status')}</h2>
-				</div>
-				<div className="row">
-					<div className="col c12 rl-c6">
-						<button className="btn btn-secondary btn-tight" onClick={() => reloadStatus()}>
-							{t('Reload statuses')}
-						</button>
-					</div>
-				</div>
+			<Row>
+				<Col xs={12}>
+					<h2 className="my-4">{t('Package Manager status')}</h2>
+					<Button variant="outline-secondary" size="sm" className="mb-2" onClick={() => reloadStatus()}>
+						{t('Reload statuses')}
+					</Button>
+					{status?.updated ? (
+						<p>
+							{t('Updated')}: {new Date(status.updated).toLocaleString()}
+						</p>
+					) : null}
+				</Col>
+
 				{status ? (
-					<div>
-						{status.updated ? (
-							<div className="row">
-								<div className="col c12">
-									{t('Updated')}: {new Date(status.updated).toLocaleString()}
-								</div>
-							</div>
-						) : null}
-						<div className="row">
-							<div className="col c12 rl-c6">
-								<h3 className="">{t('Package Manager')}</h3>
-								<table className="table">
-									<tbody>
-										{Object.entries<any>(status.packageManager || {}).map(([key, value]) => {
-											return (
-												<tr key={key}>
-													<td>{key}</td>
-													<td>{JSON.stringify(value)}</td>
-												</tr>
-											)
-										})}
-									</tbody>
-								</table>
-							</div>
-							<div className="col c12 rl-c6">
-								<h3 className="">{t('Expectation Manager')}</h3>
-								<div>Id: {status.expectationManager?.id}</div>
-								{status.expectationManager?.updated ? (
-									<div>
-										{t('Updated')}: {new Date(status.expectationManager.updated).toLocaleString()}
-									</div>
-								) : null}
+					<>
+						<Col xs={12} xxl={6}>
+							<h3 className="">{t('Package Manager')}</h3>
+							<table className="table">
+								<tbody>
+									{Object.entries<any>(status.packageManager || {}).map(([key, value]) => {
+										return (
+											<tr key={key}>
+												<td>{key}</td>
+												<td>{JSON.stringify(value)}</td>
+											</tr>
+										)
+									})}
+								</tbody>
+							</table>
+						</Col>
+						<Col xs={12} xxl={6}>
+							<h3 className="">{t('Expectation Manager')}</h3>
+							<div>Id: {status.expectationManager?.id}</div>
+							{status.expectationManager?.updated ? (
 								<div>
-									<h4 className="">{t('Statistics')}</h4>
-									<table className="table">
-										<tbody>
-											{Object.entries<any>(status.expectationManager?.expectationStatistics || {}).map(
-												([key, value]) => {
-													return (
-														<tr key={key}>
-															<td>{key}</td>
-															<td>{JSON.stringify(value)}</td>
-														</tr>
-													)
-												}
-											)}
-										</tbody>
-									</table>
+									{t('Updated')}: {new Date(status.expectationManager.updated).toLocaleString()}
 								</div>
-								<div>
-									<h4 className="">{t('Times')}</h4>
-									<table className="table">
-										<tbody>
-											{Object.entries<any>(status.expectationManager?.times || {}).map(([key, value]) => {
-												return (
-													<tr key={key}>
-														<td>{key}</td>
-														<td>{JSON.stringify(value)}</td>
-													</tr>
-												)
-											})}
-										</tbody>
-									</table>
-								</div>
-								<div>
-									<h4 className="">{t('Connected Workers')}</h4>
-									<TableFromObjectArray dataObjs={status.expectationManager?.workerAgents} />
-								</div>
-							</div>
-						</div>
-						<div className="row">
-							<div className="col c12">
-								<h4 className="">{t('Work-in-progress')}</h4>
-								<TableFromObjectArray dataObjs={status.expectationManager?.worksInProgress} />
-							</div>
-						</div>
-						<div className="row">
-							<div>
-								<h3 className="">{t('WorkForce')}</h3>
-								<div className="col c12 rl-c12">
-									<h4 className="">{t('Connected Workers')}</h4>
-									<TableFromObjectArray
-										dataObjs={status.workforce?.workerAgents}
-										rowFcn={(workerAgent) => (
-											<button
-												className="btn btn-secondary btn-tight"
-												onClick={(e) => killApp(eventContextForLog(e)[0], workerAgent.id)}
-											>
-												{t('Kill (debug)')}
-											</button>
-										)}
-									/>
-								</div>
-							</div>
-							<div>
-								<h4 className="">{t('Connected Expectation Managers')}</h4>
-								<TableFromObjectArray dataObjs={status.workforce?.expectationManagers} />
-							</div>
-							<div>
-								<h4 className="">{t('Connected App Containers')}</h4>
-								<table className="table">
-									<tbody>
-										<tr>
-											<th>Id</th>
-											<th>Initialized</th>
-											<th>Available apps</th>
-										</tr>
-										{status.workforce?.appContainers?.map((appContainer) => {
-											return (
-												<tr key={appContainer.id}>
-													<td>{appContainer.id}</td>
-													<td>{appContainer.initialized ? 'true' : 'false'}</td>
-													<td>
-														<ul>
-															{appContainer.availableApps.map((availableApp, index) => {
-																return <li key={index}>{availableApp.appType}</li>
-															})}
-														</ul>
-													</td>
-												</tr>
-											)
-										})}
-									</tbody>
-								</table>
-							</div>
-						</div>
-					</div>
+							) : null}
+
+							<h4 className="">{t('Statistics')}</h4>
+							<table className="table">
+								<tbody>
+									{Object.entries<any>(status.expectationManager?.expectationStatistics || {}).map(([key, value]) => {
+										return (
+											<tr key={key}>
+												<td>{key}</td>
+												<td>{JSON.stringify(value)}</td>
+											</tr>
+										)
+									})}
+								</tbody>
+							</table>
+
+							<h4 className="">{t('Times')}</h4>
+							<table className="table">
+								<tbody>
+									{Object.entries<any>(status.expectationManager?.times || {}).map(([key, value]) => {
+										return (
+											<tr key={key}>
+												<td>{key}</td>
+												<td>{JSON.stringify(value)}</td>
+											</tr>
+										)
+									})}
+								</tbody>
+							</table>
+
+							<h4 className="">{t('Connected Workers')}</h4>
+							<TableFromObjectArray dataObjs={status.expectationManager?.workerAgents} />
+						</Col>
+
+						<Col xs={12}>
+							<h4 className="">{t('Work-in-progress')}</h4>
+							<TableFromObjectArray dataObjs={status.expectationManager?.worksInProgress} />
+						</Col>
+
+						<Col xs={12}>
+							<h3 className="">{t('WorkForce')}</h3>
+
+							<h4 className="">{t('Connected Workers')}</h4>
+							<TableFromObjectArray
+								dataObjs={status.workforce?.workerAgents}
+								rowFcn={(workerAgent) => (
+									<Button
+										variant="outline-secondary"
+										size="sm"
+										onClick={(e) => killApp(eventContextForLog(e)[0], workerAgent.id)}
+									>
+										{t('Kill (debug)')}
+									</Button>
+								)}
+							/>
+						</Col>
+
+						<Col xs={12}>
+							<h4 className="">{t('Connected Expectation Managers')}</h4>
+							<TableFromObjectArray dataObjs={status.workforce?.expectationManagers} />
+						</Col>
+
+						<Col xs={12}>
+							<h4 className="">{t('Connected App Containers')}</h4>
+							<table className="table">
+								<tbody>
+									<tr>
+										<th>Id</th>
+										<th>Initialized</th>
+										<th>Available apps</th>
+									</tr>
+									{status.workforce?.appContainers?.map((appContainer) => {
+										return (
+											<tr key={appContainer.id}>
+												<td>{appContainer.id}</td>
+												<td>{appContainer.initialized ? 'true' : 'false'}</td>
+												<td>
+													<ul>
+														{appContainer.availableApps.map((availableApp, index) => {
+															return <li key={index}>{availableApp.appType}</li>
+														})}
+													</ul>
+												</td>
+											</tr>
+										)
+									})}
+								</tbody>
+							</table>
+						</Col>
+					</>
 				) : (
-					<div>{t('No status loaded')}</div>
+					<Col xs={12}>{t('No status loaded')}</Col>
 				)}
-			</div>
+			</Row>
 		)
 	}
 

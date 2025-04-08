@@ -12,6 +12,7 @@ import {
 	TSR,
 	IBlueprintPlayoutDevice,
 	IOnTakeContext,
+	IBlueprintSegment,
 } from '@sofie-automation/blueprints-integration'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
@@ -63,6 +64,9 @@ export class OnTakeContext extends ShowStyleUserContext implements IOnTakeContex
 	}
 	async getResolvedPieceInstances(part: 'current' | 'next'): Promise<IBlueprintResolvedPieceInstance[]> {
 		return this.partAndPieceInstanceService.getResolvedPieceInstances(part)
+	}
+	async getSegment(segment: 'current' | 'next'): Promise<IBlueprintSegment | undefined> {
+		return this.partAndPieceInstanceService.getSegment(segment)
 	}
 
 	async findLastPieceOnLayer(

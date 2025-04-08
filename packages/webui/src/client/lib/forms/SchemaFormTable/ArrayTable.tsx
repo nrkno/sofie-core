@@ -156,7 +156,7 @@ export const SchemaFormArrayTable = ({
 				</tbody>
 			</table>
 
-			<div className="mod mhs">
+			<div className="my-1 mx-2">
 				<button className="btn btn-primary" onClick={addNewItem}>
 					<FontAwesomeIcon icon={faPlus} />
 				</button>

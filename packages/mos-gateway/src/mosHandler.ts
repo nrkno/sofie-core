@@ -32,8 +32,8 @@ import {
 	DEFAULT_MOS_TIMEOUT_TIME,
 	DEFAULT_MOS_HEARTBEAT_INTERVAL,
 } from '@sofie-automation/shared-lib/dist/core/constants'
-import { MosGatewayConfig } from './generated/options'
-import { MosDeviceConfig } from './generated/devices'
+import { MosGatewayConfig } from '@sofie-automation/shared-lib/dist/generated/MosGatewayOptionsTypes'
+import { MosDeviceConfig } from '@sofie-automation/shared-lib/dist/generated/MosGatewayDevicesTypes'
 import { PeripheralDeviceForDevice } from '@sofie-automation/server-core-integration'
 
 export interface MosConfig {

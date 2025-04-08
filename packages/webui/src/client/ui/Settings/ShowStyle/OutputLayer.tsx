@@ -99,7 +99,7 @@ export function OutputLayerSettings({ showStyleBase }: Readonly<IOutputSettingsP
 
 	return (
 		<div>
-			<h2 className="mhn">
+			<h2 className="mb-4">
 				<Tooltip
 					overlay={t('Output channels are required for your studio to work')}
 					visible={getHelpMode() && !sortedOutputLayers.length}
@@ -135,7 +135,7 @@ export function OutputLayerSettings({ showStyleBase }: Readonly<IOutputSettingsP
 					)}
 				</tbody>
 			</table>
-			<div className="mod mhs">
+			<div className="my-1 mx-2">
 				<button className="btn btn-primary" onClick={onAddOutput}>
 					<FontAwesomeIcon icon={faPlus} />
 				</button>
@@ -271,24 +271,11 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 					<td colSpan={4}>
 						<div className="properties-grid">
 							<LabelAndOverrides label={t('Channel Name')} item={item} itemKey={'name'} overrideHelper={overrideHelper}>
-								{(value, handleUpdate) => (
-									<TextInputControl
-										modifiedClassName="bghl"
-										classNames="input text-input input-l"
-										value={value}
-										handleUpdate={handleUpdate}
-									/>
-								)}
+								{(value, handleUpdate) => <TextInputControl value={value} handleUpdate={handleUpdate} />}
 							</LabelAndOverrides>
 							<label className="field">
 								<LabelActual label={t('Internal ID')} />
-								<TextInputControl
-									modifiedClassName="bghl"
-									classNames="input text-input input-l"
-									value={item.id}
-									handleUpdate={doChangeItemId}
-									disabled={!!item.defaults}
-								/>
+								<TextInputControl value={item.id} handleUpdate={doChangeItemId} disabled={!!item.defaults} />
 							</label>
 							<LabelAndOverridesForCheckbox
 								label={t('Is PGM Output')}
@@ -304,14 +291,7 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								itemKey={'_rank'}
 								overrideHelper={overrideHelper}
 							>
-								{(value, handleUpdate) => (
-									<IntInputControl
-										modifiedClassName="bghl"
-										classNames="input text-input input-l"
-										value={value}
-										handleUpdate={handleUpdate}
-									/>
-								)}
+								{(value, handleUpdate) => <IntInputControl value={value} handleUpdate={handleUpdate} />}
 							</LabelAndOverridesForInt>
 							<LabelAndOverridesForCheckbox
 								label={t('Is collapsed by default')}
@@ -330,7 +310,7 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
 							</LabelAndOverridesForCheckbox>
 						</div>
-						<div className="mod alright">
+						<div className="m-1 me-2 text-end">
 							{item.defaults && (
 								<button className="btn btn-primary" onClick={doResetItem} title="Reset to defaults">
 									<FontAwesomeIcon icon={faSync} />

@@ -43,7 +43,10 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { ReadonlyDeep } from 'type-fest'
 import { adjustFakeTime, getCurrentTime, useFakeCurrentTime } from '../../__mocks__/time'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import {
+	PlayoutChangedResult,
+	PlayoutChangedType,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { ProcessedShowStyleCompound } from '../../jobs'
 import { handleOnPlayoutPlaybackChanged } from '../timings'
 import { sleep } from '@sofie-automation/shared-lib/dist/lib/lib'
@@ -592,7 +595,7 @@ describe('Playout API', () => {
 							time: now,
 						},
 					},
-					...pieceInstances.map((pieceInstance) => {
+					...pieceInstances.map((pieceInstance): PlayoutChangedResult => {
 						return {
 							type: PlayoutChangedType.PIECE_PLAYBACK_STARTED,
 							objId: 'objectId',
@@ -685,7 +688,7 @@ describe('Playout API', () => {
 							time: now,
 						},
 					},
-					...pieceInstances.map((pieceInstance) => {
+					...pieceInstances.map((pieceInstance): PlayoutChangedResult => {
 						return {
 							type: PlayoutChangedType.PIECE_PLAYBACK_STOPPED,
 							objId: 'objectId',

@@ -63,7 +63,7 @@ export function ConfigCategoryEntry({
 								isRequired
 							/>
 						</div>
-						<div className="mod alright">
+						<div className="m-1 me-2 text-end">
 							<button className="btn btn-primary" onClick={toggleEditItem}>
 								<FontAwesomeIcon icon={faCheck} />
 							</button>

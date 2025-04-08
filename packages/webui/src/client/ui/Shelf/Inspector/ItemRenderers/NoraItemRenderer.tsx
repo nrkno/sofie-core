@@ -38,8 +38,8 @@ export function NoraItemRenderer({ studio, showStyleBase, piece }: INoraSuperRen
 		<ErrorBoundary>
 			<InspectorTitle piece={piece} showStyleBase={showStyleBase} studio={studio} />
 			<div className="shelf-inspector__content">
-				<h2 className="mod mas">{actualPiece.name}</h2>
-				<div className="mod mas">
+				<h2 className="m-2">{actualPiece.name}</h2>
+				<div className="m-2">
 					<button
 						className="btn btn-primary"
 						disabled={editMode}

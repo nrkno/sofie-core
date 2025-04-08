@@ -15,6 +15,7 @@ import { faCheck, faSync, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { DropdownInputControl, DropdownInputOption } from '../../../../../lib/Components/DropdownInput'
 import { catchError } from '../../../../../lib/lib'
 import { preventOverflow } from '@popperjs/core'
+import Button from 'react-bootstrap/esm/Button'
 
 interface IProps {
 	id: string
@@ -171,42 +172,45 @@ export const TriggerEditor = function TriggerEditor({
 			{triggerPreview}
 			{opened ? (
 				<div
-					className="expco expco-expanded expco-popper mod pas expco-popper-rounded triggered-action-entry__trigger-editor"
+					className="expco expco-expanded expco-popper expco-popper-rounded triggered-action-entry__trigger-editor"
 					ref={setPopperElement}
 					style={styles.popper}
 					{...attributes.popper}
 				>
-					<div>
-						<DropdownInputControl
-							classNames="form-control input text-input input-m"
-							value={localTrigger.type}
-							options={getTriggerTypes(t)}
-							handleUpdate={onChangeType}
-							disabled={isDeleted}
-						/>
-					</div>
-					<div>{triggerEditor}</div>
-					<div className="mts">
+					<DropdownInputControl
+						classNames="mb-2"
+						value={localTrigger.type}
+						options={getTriggerTypes(t)}
+						handleUpdate={onChangeType}
+						disabled={isDeleted}
+					/>
+
+					{triggerEditor}
+					<div className="mt-2">
 						{isDeleted ? (
 							<>
-								<button className="btn btn-tight btn-secondary" onClick={onResetTrigger}>
+								<Button variant="outline-secondary" size="sm" onClick={onResetTrigger}>
 									<FontAwesomeIcon icon={faSync} />
-								</button>
+								</Button>
 							</>
 						) : (
-							<>
-								<button className="btn right btn-tight btn-primary" onClick={onConfirm}>
-									<FontAwesomeIcon icon={faCheck} />
-								</button>
-								<button className="btn btn-tight btn-secondary" onClick={onRemove}>
-									<FontAwesomeIcon icon={faTrash} />
-								</button>
-								{canReset && (
-									<button className="btn btn-tight btn-secondary" onClick={onResetTrigger}>
-										<FontAwesomeIcon icon={faSync} />
-									</button>
-								)}
-							</>
+							<div className="grid-buttons-right">
+								<div>
+									<Button variant="outline-secondary" size="sm" onClick={onRemove}>
+										<FontAwesomeIcon icon={faTrash} />
+									</Button>
+									{canReset && (
+										<Button variant="outline-secondary" size="sm" onClick={onResetTrigger}>
+											<FontAwesomeIcon icon={faSync} />
+										</Button>
+									)}
+								</div>
+								<div>
+									<Button variant="primary" size="sm" onClick={onConfirm}>
+										<FontAwesomeIcon icon={faCheck} />
+									</Button>
+								</div>
+							</div>
 						)}
 					</div>
 				</div>

@@ -9,6 +9,7 @@ import { UIDeviceTriggerPreview } from '@sofie-automation/meteor-lib/dist/api/Mo
 import { useSubscriptionIfEnabled, useTracker } from '../../../../../lib/ReactMeteorData/ReactMeteorData'
 import { DeviceTriggersPreviews } from '../../../../Collections'
 import { DeviceTrigger } from './DeviceTrigger'
+import Form from 'react-bootstrap/esm/Form'
 
 interface IProps {
 	trigger: IBlueprintDeviceTrigger
@@ -37,9 +38,9 @@ export const DeviceEditor = function DeviceEditor({ trigger, modified, readonly,
 
 	return (
 		<>
-			<input
+			<Form.Control
 				type="text"
-				className={classNames('form-control input text-input input-m', {
+				className={classNames('mb-2', {
 					bghl: modified,
 				})}
 				value={trigger.deviceId ?? ''}
@@ -51,9 +52,9 @@ export const DeviceEditor = function DeviceEditor({ trigger, modified, readonly,
 				}
 				disabled={readonly}
 			/>
-			<input
+			<Form.Control
 				type="text"
-				className={classNames('form-control input text-input input-m', {
+				className={classNames('mb-2', {
 					bghl: modified,
 				})}
 				value={trigger.triggerId ?? ''}

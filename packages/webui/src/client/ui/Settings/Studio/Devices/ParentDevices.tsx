@@ -102,7 +102,7 @@ export function StudioParentDevices({ studioId }: Readonly<StudioParentDevicesPr
 
 	return (
 		<div>
-			<h2 className="mhn">
+			<h2 className="mb-4">
 				<Tooltip
 					overlay={t('No gateways are configured')}
 					visible={getHelpMode() && !hasCurrentDevice}
@@ -119,7 +119,7 @@ export function StudioParentDevices({ studioId }: Readonly<StudioParentDevicesPr
 				createItemWithId={addNewItem}
 			/>
 
-			<div className="mod mhs">
+			<div className="my-1 mx-2">
 				<button className="btn btn-primary" onClick={addNewItemClick}>
 					<FontAwesomeIcon icon={faPlus} />
 				</button>
@@ -405,14 +405,7 @@ function ParentDeviceEditRow({
 			<td colSpan={99}>
 				<div className="properties-grid">
 					<LabelAndOverrides label={t('Name')} item={item} overrideHelper={overrideHelper} itemKey={'name'}>
-						{(value, handleUpdate) => (
-							<TextInputControl
-								modifiedClassName="bghl"
-								classNames="input text-input input-l"
-								value={value}
-								handleUpdate={handleUpdate}
-							/>
-						)}
+						{(value, handleUpdate) => <TextInputControl value={value} handleUpdate={handleUpdate} />}
 					</LabelAndOverrides>
 
 					<AssignPeripheralDeviceConfigId
@@ -428,7 +421,7 @@ function ParentDeviceEditRow({
 						<ParentDeviceEditForm peripheralDevice={peripheralDevice} item={item} overrideHelper={overrideHelper} />
 					)}
 				</div>
-				<div className="mod alright">
+				<div className="m-1 me-2 text-end">
 					<button className={classNames('btn btn-primary')} onClick={finishEditItem}>
 						<FontAwesomeIcon icon={faCheck} />
 					</button>
@@ -465,7 +458,6 @@ function AssignPeripheralDeviceConfigId({
 			<LabelActual label={'Peripheral Device'} />
 			<div className="field-content">
 				<DropdownInputControl<PeripheralDeviceId | undefined>
-					classNames="input text-input input-l"
 					options={peripheralDeviceOptions}
 					value={value}
 					handleUpdate={handleUpdate}

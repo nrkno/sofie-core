@@ -1,5 +1,5 @@
 import { EvsContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useContext, useMemo, useRef, useState } from 'react'
 import { PieceExtended } from '../../../lib/RundownResolver'
 // TODO: Move to a shared lib file
 import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -14,7 +14,11 @@ import { getSplitItems } from '../../SegmentContainer/getSplitItems'
 import { PieceElement } from '../../SegmentContainer/PieceElement'
 import { getPieceSteps, PieceMultistepChevron } from '../../SegmentContainer/PieceMultistepChevron'
 import { useContentStatusForPieceInstance } from '../../SegmentTimeline/withMediaObjectStatus'
-import { PieceHoverInspector } from '../PieceHoverInspector'
+import {
+	convertSourceLayerItemToPreview,
+	IPreviewPopUpSession,
+	PreviewPopUpContext,
+} from '../../PreviewPopUp/PreviewPopUpContext'
 
 interface IProps {
 	partId: PartId
@@ -57,14 +61,12 @@ export function LinePartMainPiece({
 	partDuration,
 	timelineBase,
 	capToPartDuration,
-	studio,
 }: IProps): JSX.Element {
 	const contentStatus = useContentStatusForPieceInstance(piece.instance)
 
 	const [hover, setHover] = useState(false)
 	const [origin, setOrigin] = useState<OffsetPosition>({ left: 0, top: 0 })
 	const [width, setWidth] = useState(0)
-	const [mouseTimePosition, setMouseTimePosition] = useState(0)
 	const [mousePosition, setMousePosition] = useState(0)
 	const pieceEl = useRef<HTMLDivElement>(null)
 
@@ -128,11 +130,27 @@ export function LinePartMainPiece({
 		[contentStatus?.blacks, contentStatus?.freezes, contentStatus?.scenes]
 	)
 
+	const previewContext = useContext(PreviewPopUpContext)
+	const previewSession = useRef<IPreviewPopUpSession | null>(null)
+	const { contents: previewContents, options: previewOptions } = convertSourceLayerItemToPreview(
+		piece.sourceLayer?.type,
+		piece.instance.piece,
+		contentStatus
+	)
+
 	const onPointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
 		if (e.pointerType !== 'mouse') {
 			return
 		}
 		setHover(true)
+
+		if (previewContents.length > 0)
+			previewSession.current = previewContext.requestPreview(e.target as any, previewContents, {
+				...previewOptions,
+				time: mousePosition * (piece.instance.piece.content.sourceDuration || 0),
+				initialOffsetX: e.screenX,
+				trackMouse: true,
+			})
 
 		const newOffset = pieceEl.current && getElementDocumentOffset(pieceEl.current)
 		if (newOffset !== null) {
@@ -149,6 +167,10 @@ export function LinePartMainPiece({
 			return
 		}
 		setHover(false)
+		if (previewSession.current) {
+			previewSession.current.close()
+			previewSession.current = null
+		}
 	}
 
 	const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -156,8 +178,11 @@ export function LinePartMainPiece({
 			return
 		}
 		const newMousePosition = Math.max(0, Math.min(1, (e.pageX - origin.left - 5) / (width - 10)))
-		setMouseTimePosition(newMousePosition)
 		setMousePosition(e.pageX - origin.left)
+
+		previewSession.current?.setPointerTime(
+			newMousePosition * (piece.instance.piece.content.sourceDuration ?? contentStatus?.contentDuration ?? 0)
+		)
 	}
 
 	const noticeLevel = getNoticeLevelForPieceStatus(contentStatus?.status)
@@ -199,18 +224,6 @@ export function LinePartMainPiece({
 					<LoopingPieceIcon className="segment-opl__main-piece__label-icon" playing={hover} />
 				)}
 			</div>
-			{studio && (
-				<PieceHoverInspector
-					hoverScrubTimePosition={mouseTimePosition * (piece.instance.piece.content.sourceDuration || 0)}
-					hovering={hover}
-					pieceInstance={piece}
-					contentStatus={contentStatus}
-					layer={piece.sourceLayer}
-					originPosition={origin}
-					mousePosition={mousePosition}
-					studio={studio}
-				/>
-			)}
 		</PieceElement>
 	)
 }

@@ -6,6 +6,7 @@ import { Accessor } from '@sofie-automation/blueprints-integration'
 import { Studios } from '../../../../collections'
 import { DropdownInputOption } from '../../../../lib/Components/DropdownInput'
 import { WrappedOverridableItem } from '../../util/OverrideOpHelper'
+import { LabelActual } from '../../../../lib/Components/LabelAndOverrides'
 
 interface PackageContainersPickersProps {
 	studio: DBStudio
@@ -43,10 +44,10 @@ export function PackageContainersPickers({
 	}, [packageContainersFromOverrides])
 
 	return (
-		<div>
-			<div className="field mvs">
-				<label>{t('Package Containers to use for previews')}</label>
-				<div className="mdi">
+		<div className="properties-grid">
+			<div className="field">
+				<LabelActual label={t('Package Containers to use for previews')} />
+				<div className="field-content">
 					<EditAttribute
 						attribute="previewContainerIds"
 						obj={studio}
@@ -57,9 +58,9 @@ export function PackageContainersPickers({
 					/>
 				</div>
 			</div>
-			<div className="field mvs">
-				<label>{t('Package Containers to use for thumbnails')}</label>
-				<div className="mdi">
+			<div className="field">
+				<LabelActual label={t('Package Containers to use for thumbnails')} />
+				<div className="field-content">
 					<EditAttribute
 						attribute="thumbnailContainerIds"
 						obj={studio}

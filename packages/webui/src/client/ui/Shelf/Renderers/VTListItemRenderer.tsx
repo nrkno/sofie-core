@@ -1,16 +1,19 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useContext } from 'react'
 import ClassNames from 'classnames'
 import { RundownUtils } from '../../../lib/rundown'
 import { ILayerItemRendererProps } from './ItemRendererFactory'
 import { VTContent, LiveSpeakContent } from '@sofie-automation/blueprints-integration'
-import { VTFloatingInspector } from '../../FloatingInspectors/VTFloatingInspector'
-import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { getElementWidth } from '../../../utils/dimensions'
 import { StyledTimecode } from '../../../lib/StyledTimecode'
 import { ActionAdLibHotkeyPreview } from '../../../lib/triggers/ActionAdLibHotkeyPreview'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { HourglassIconSmall } from '../../../lib/ui/icons/notifications'
+import {
+	PreviewPopUpContext,
+	IPreviewPopUpSession,
+	convertSourceLayerItemToPreview,
+} from '../../PreviewPopUp/PreviewPopUpContext'
 
 export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps> = (
 	props: ILayerItemRendererProps
@@ -55,17 +58,35 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 		}
 	})
 
+	const previewContext = useContext(PreviewPopUpContext)
+	const previewSession = useRef<IPreviewPopUpSession | null>(null)
+	const { contents: previewContents, options: previewOptions } = convertSourceLayerItemToPreview(
+		props.adLibListItem.sourceLayer?.type,
+		props.adLibListItem,
+		props.contentStatus
+	)
+
 	const handleOnMouseOver = (e: React.MouseEvent) => {
 		if (itemIconPosition) {
 			const left = e.pageX - itemIconPosition.left
 			const unprocessedPercentage = left / itemIconPosition.width
-			if (unprocessedPercentage <= 1 && !showMiniInspector) {
-				setShowMiniInspector(true)
+			if (unprocessedPercentage <= 1 && !previewSession.current) {
+				previewSession.current = previewContext.requestPreview(e.target as any, previewContents, {
+					...previewOptions,
+					time: hoverScrubTimePosition,
+				})
 			}
 		}
 	}
 
-	const handleOnMouseLeave = () => setShowMiniInspector(false)
+	const handleOnMouseLeave = () => {
+		setShowMiniInspector(false)
+
+		if (previewSession.current) {
+			previewSession.current.close()
+			previewSession.current = null
+		}
+	}
 
 	const handleOnMouseMove = (e: React.MouseEvent) => {
 		if (itemIconPosition) {
@@ -80,6 +101,9 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 			unprocessedPercentage = (left - 5) / (itemIconPosition.width - 15)
 			const percentage = Math.max(0, Math.min(1, unprocessedPercentage))
 			setHoverScrubTimePosition(percentage * (sourceDuration || 0))
+			if (previewSession.current) {
+				previewSession.current.setPointerTime(percentage * (sourceDuration || 0))
+			}
 		}
 	}
 
@@ -125,24 +149,6 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 					</div>
 				)}
 				{props.adLibListItem.name}
-				<VTFloatingInspector
-					status={props.status || PieceStatusCode.UNKNOWN}
-					showMiniInspector={showMiniInspector}
-					timePosition={hoverScrubTimePosition}
-					content={vtContent}
-					position={{
-						top: itemIconPosition?.top ?? 0,
-						left: itemIconPosition?.left ?? 0,
-						anchor: 'start',
-						position: 'top-start',
-					}}
-					typeClass={props.layer && RundownUtils.getSourceLayerClassName(props.layer.type)}
-					itemElement={itemIcon.current}
-					noticeMessages={props.messages || null}
-					noticeLevel={getNoticeLevelForPieceStatus(props.status ?? undefined)}
-					previewUrl={props.contentStatus?.previewUrl}
-					studio={props.studio}
-				/>
 			</td>
 			<td className="adlib-panel__list-view__list__table__cell--duration">
 				{sourceDuration ? <StyledTimecode time={sourceDuration} studioSettings={props.studio?.settings} /> : null}

@@ -5,10 +5,8 @@ import { withTranslation, WithTranslation } from 'react-i18next'
 import * as _ from 'underscore'
 
 import { getElementWidth } from '../../../utils/dimensions'
-import { MicFloatingInspector } from '../../FloatingInspectors/MicFloatingInspector'
 import { calculatePartInstanceExpectedDurationWithTransition } from '@sofie-automation/corelib/dist/playout/timings'
 import { unprotectString } from '../../../lib/tempLib'
-import { IFloatingInspectorPosition } from '../../FloatingInspectors/IFloatingInspectorPosition'
 import { logger } from '../../../lib/logging'
 
 type IProps = ICustomLayerItemProps
@@ -186,15 +184,6 @@ export const MicSourceRenderer = withTranslation()(
 			}
 		}
 
-		protected getFloatingInspectorStyle(): IFloatingInspectorPosition {
-			return {
-				left: this.props.elementPosition.left + this.props.cursorPosition.left,
-				top: this.props.elementPosition.top,
-				anchor: 'start',
-				position: 'bottom',
-			}
-		}
-
 		render(): JSX.Element {
 			const labelItems = (this.props.piece.instance.piece.name || '').split('||')
 			const begin = labelItems[0] || ''
@@ -204,8 +193,6 @@ export const MicSourceRenderer = withTranslation()(
 			// 	if (str.length <= maxLen) return str
 			// 	return str.substr(0, str.substr(0, maxLen).lastIndexOf(separator))
 			// }
-
-			const content = this.props.piece.instance.piece.content as ScriptContent | undefined
 
 			return (
 				<>
@@ -232,15 +219,6 @@ export const MicSourceRenderer = withTranslation()(
 								{/* this.renderOverflowTimeLabel() */}
 							</span>
 						</>
-					)}
-					{content && (
-						<MicFloatingInspector
-							content={content}
-							position={this.getFloatingInspectorStyle()}
-							itemElement={this.props.itemElement}
-							showMiniInspector={this.props.showMiniInspector}
-							typeClass={this.props.typeClass}
-						/>
 					)}
 				</>
 			)

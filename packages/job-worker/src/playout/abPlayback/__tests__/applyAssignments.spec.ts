@@ -42,11 +42,13 @@ describe('applyMediaPlayersAssignments', () => {
 		const previousAssignments: ABSessionAssignments = {
 			abc: {
 				sessionId: 'abc',
+				sessionName: 'abc',
 				playerId: 5,
 				lookahead: false,
 			},
 			def: {
 				sessionId: 'def',
+				sessionName: 'def',
 				playerId: 3,
 				lookahead: true,
 			},
@@ -68,6 +70,7 @@ describe('applyMediaPlayersAssignments', () => {
 		const previousAssignments: ABSessionAssignments = {
 			piece0_clip_def: {
 				sessionId: 'piece0_clip_def',
+				sessionName: 'def',
 				playerId: 3,
 				lookahead: false,
 			},

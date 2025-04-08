@@ -57,15 +57,25 @@ export function ShowStyleBaseBlueprintConfigurationSettings(
 
 	return (
 		<>
-			<h2 className="mhn">{t('Blueprint Configuration')}</h2>
+			<h2 className="mb-4">{t('Blueprint Configuration')}</h2>
 
-			<SelectBlueprint showStyleBase={props.showStyleBase} />
-			<SelectConfigPreset showStyleBase={props.showStyleBase} />
+			<div className="properties-grid">
+				<SelectBlueprint showStyleBase={props.showStyleBase} />
+				<SelectConfigPreset showStyleBase={props.showStyleBase} />
 
-			<p>
-				{t('Upgrade Status')}: {statusMessage}
-				{status && <UpgradeStatusButtons upgradeResult={status} />}
-			</p>
+				<label className="field">
+					<div className="label-actual">{t('Upgrade Status')}</div>
+					<div className="field-content">{statusMessage}</div>
+				</label>
+				{status && (
+					<div className="field">
+						<div className="label-actual"></div>
+						<div className="field-content">
+							<UpgradeStatusButtons upgradeResult={status} />
+						</div>
+					</div>
+				)}
+			</div>
 
 			{!status || status.pendingRunOfFixupFunction ? (
 				!status ? (

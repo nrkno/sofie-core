@@ -47,28 +47,28 @@ export function SelectBlueprint({ studio }: Readonly<SelectBlueprintProps>): JSX
 	}, [t, allStudioBlueprints])
 
 	return (
-		<div className="mod mvs mhs">
-			<label className="field">
-				<LabelActual label={t('Blueprint')} />
+		<label className="field">
+			<LabelActual label={t('Blueprint')} />
+
+			<EditAttribute
+				attribute="blueprintId"
+				obj={studio}
+				type="dropdown"
+				options={blueprintOptions}
+				mutateDisplayValue={(v) => v || ''}
+				mutateUpdateValue={(v) => (v === '' ? undefined : v)}
+				collection={Studios}
+			/>
+			<div>
 				{!studio.blueprintId ? (
 					<div className="error-notice inline">
 						{t('Blueprint not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
 					</div>
 				) : null}
-
-				<EditAttribute
-					modifiedClassName="bghl"
-					attribute="blueprintId"
-					obj={studio}
-					type="dropdown"
-					options={blueprintOptions}
-					mutateDisplayValue={(v) => v || ''}
-					mutateUpdateValue={(v) => (v === '' ? undefined : v)}
-					collection={Studios}
-					className="input text-input input-l"
-				/>
+			</div>
+			<div>
 				<RedirectToBlueprintButton id={studio.blueprintId} />
-			</label>
-		</div>
+			</div>
+		</label>
 	)
 }

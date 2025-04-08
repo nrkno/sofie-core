@@ -17,6 +17,7 @@ import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
 import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { UIPartInstances, UIParts } from '../Collections'
+import { RundownViewShelf } from '../RundownView/RundownViewShelf'
 
 export const LIVELINE_HISTORY_SIZE = TIMELINE_LIVELINE_HISTORY_SIZE
 
@@ -201,36 +202,50 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 	}
 
 	return (
-		<SegmentStoryboard
-			id={props.id}
-			ref={segmentRef}
-			key={unprotectString(props.segmentui._id)}
-			segment={props.segmentui}
-			studio={props.studio}
-			parts={props.parts}
-			segmentNoteCounts={props.segmentNoteCounts}
-			onItemClick={props.onPieceClick}
-			onItemDoubleClick={props.onPieceDoubleClick}
-			playlist={props.playlist}
-			isLiveSegment={isLiveSegment}
-			isNextSegment={isNextSegment}
-			isQueuedSegment={props.playlist.queuedSegmentId === props.segmentui._id}
-			hasRemoteItems={props.hasRemoteItems}
-			hasGuestItems={props.hasGuestItems}
-			currentPartWillAutoNext={currentPartWillAutoNext}
-			hasAlreadyPlayed={props.hasAlreadyPlayed}
-			followLiveLine={props.followLiveSegments}
-			liveLineHistorySize={LIVELINE_HISTORY_SIZE}
-			displayLiveLineCounter={props.displayLiveLineCounter}
-			onContextMenu={props.onContextMenu}
-			onScroll={onScroll}
-			isLastSegment={props.isLastSegment}
-			lastValidPartIndex={props.lastValidPartIndex}
-			onHeaderNoteClick={props.onHeaderNoteClick}
-			onSwitchViewMode={props.onSwitchViewMode}
-			showCountdownToSegment={props.showCountdownToSegment}
-			fixedSegmentDuration={props.fixedSegmentDuration}
-			subscriptionsReady={initialSubscriptionsReady}
-		/>
+		<>
+			<SegmentStoryboard
+				id={props.id}
+				ref={segmentRef}
+				key={unprotectString(props.segmentui._id)}
+				segment={props.segmentui}
+				studio={props.studio}
+				parts={props.parts}
+				segmentNoteCounts={props.segmentNoteCounts}
+				onItemClick={props.onPieceClick}
+				onItemDoubleClick={props.onPieceDoubleClick}
+				playlist={props.playlist}
+				isLiveSegment={isLiveSegment}
+				isNextSegment={isNextSegment}
+				isQueuedSegment={props.playlist.queuedSegmentId === props.segmentui._id}
+				hasRemoteItems={props.hasRemoteItems}
+				hasGuestItems={props.hasGuestItems}
+				currentPartWillAutoNext={currentPartWillAutoNext}
+				hasAlreadyPlayed={props.hasAlreadyPlayed}
+				followLiveLine={props.followLiveSegments}
+				liveLineHistorySize={LIVELINE_HISTORY_SIZE}
+				displayLiveLineCounter={props.displayLiveLineCounter}
+				onContextMenu={props.onContextMenu}
+				onScroll={onScroll}
+				isLastSegment={props.isLastSegment}
+				lastValidPartIndex={props.lastValidPartIndex}
+				onHeaderNoteClick={props.onHeaderNoteClick}
+				onSwitchViewMode={props.onSwitchViewMode}
+				showCountdownToSegment={props.showCountdownToSegment}
+				fixedSegmentDuration={props.fixedSegmentDuration}
+				subscriptionsReady={initialSubscriptionsReady}
+			/>
+			{props.segmentui.showShelf && props.adLibSegmentUi && (
+				<RundownViewShelf
+					studio={props.studio}
+					segment={props.segmentui}
+					playlist={props.playlist}
+					showStyleBase={props.showStyleBase}
+					adLibSegmentUi={props.adLibSegmentUi}
+					hotkeyGroup={unprotectString(props.segmentui._id) + '_RundownViewShelf'}
+					miniShelfFilter={props.miniShelfFilter}
+					studioMode={props.studioMode}
+				/>
+			)}
+		</>
 	)
 })

@@ -138,29 +138,31 @@ export function PackageContainersTable({
 	return (
 		<>
 			<table className="table expando settings-studio-package-containers-table">
-				{packageContainersFromOverrides.map(
-					(packageContainer: WrappedOverridableItem<StudioPackageContainer>): React.JSX.Element =>
-						packageContainer.type == 'normal' ? (
-							<PackageContainerRow
-								key={packageContainer.id}
-								studio={studio}
-								packageContainer={packageContainer}
-								overrideHelper={overrideHelper}
-								toggleExpanded={toggleExpanded}
-								isExpanded={isExpanded}
-								confirmRemovePackageContainer={confirmRemovePackageContainer}
-								confirmReset={confirmReset}
-							/>
-						) : (
-							<PackageContainerDeletedRow
-								key={packageContainer.id}
-								packageContainer={packageContainer}
-								overrideHelper={overrideHelper}
-							/>
-						)
-				)}
+				<tbody>
+					{packageContainersFromOverrides.map(
+						(packageContainer: WrappedOverridableItem<StudioPackageContainer>): React.JSX.Element =>
+							packageContainer.type == 'normal' ? (
+								<PackageContainerRow
+									key={packageContainer.id}
+									studio={studio}
+									packageContainer={packageContainer}
+									overrideHelper={overrideHelper}
+									toggleExpanded={toggleExpanded}
+									isExpanded={isExpanded}
+									confirmRemovePackageContainer={confirmRemovePackageContainer}
+									confirmReset={confirmReset}
+								/>
+							) : (
+								<PackageContainerDeletedRow
+									key={packageContainer.id}
+									packageContainer={packageContainer}
+									overrideHelper={overrideHelper}
+								/>
+							)
+					)}
+				</tbody>
 			</table>
-			<div className="mod mhs">
+			<div className="my-1 mx-2">
 				<button className="btn btn-primary" onClick={addNewPackageContainer}>
 					<FontAwesomeIcon icon={faPlus} />
 				</button>
@@ -273,8 +275,6 @@ function PackageContainerRow({
 							<label className="field">
 								<LabelActual label={t('Package Container ID')} />
 								<TextInputControl
-									modifiedClassName="bghl"
-									classNames="input text-input input-l"
 									value={packageContainer.id}
 									handleUpdate={updatePackageContainerId}
 									disabled={!!packageContainer.defaults}
@@ -287,14 +287,7 @@ function PackageContainerRow({
 								itemKey={'container.label'}
 								overrideHelper={overrideHelper}
 							>
-								{(value, handleUpdate) => (
-									<TextInputControl
-										modifiedClassName="bghl"
-										classNames="input text-input input-l"
-										value={value}
-										handleUpdate={handleUpdate}
-									/>
-								)}
+								{(value, handleUpdate) => <TextInputControl value={value} handleUpdate={handleUpdate} />}
 							</LabelAndOverrides>
 							<LabelAndOverridesForMultiSelect
 								label={t('Playout devices which uses this package container')}
@@ -305,19 +298,13 @@ function PackageContainerRow({
 								options={availablePlayoutDevicesOptions}
 							>
 								{(value, handleUpdate, options) => (
-									<MultiSelectInputControl
-										classNames="input text-input input-l"
-										options={options}
-										value={value}
-										handleUpdate={handleUpdate}
-									/>
+									<MultiSelectInputControl options={options} value={value} handleUpdate={handleUpdate} />
 								)}
 							</LabelAndOverridesForMultiSelect>
-							<div className="mdi"></div>
 						</div>
 						<div>
 							<div className="settings-studio-accessors">
-								<h3 className="mhn">{t('Accessors')}</h3>
+								<h3>{t('Accessors')}</h3>
 								<AccessorsTable packageContainer={packageContainer} overrideHelper={overrideHelper} />
 							</div>
 						</div>

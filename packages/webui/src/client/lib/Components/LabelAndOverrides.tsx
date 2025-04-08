@@ -1,4 +1,4 @@
-import { faSync } from '@fortawesome/free-solid-svg-icons'
+import { faQuestionCircle, faSync } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { objectPathGet } from '@sofie-automation/corelib/dist/lib'
 import React, { useCallback } from 'react'
@@ -7,6 +7,8 @@ import { ReadonlyDeep } from 'type-fest'
 import { OverrideOpHelperForItemContents, WrappedOverridableItemNormal } from '../../ui/Settings/util/OverrideOpHelper'
 import { DropdownInputOption, findOptionByValue } from './DropdownInput'
 import { hasOpWithPath } from './util'
+import Button from 'react-bootstrap/Button'
+import classNames from 'classnames'
 
 export interface LabelAndOverridesProps<T extends object, TValue> {
 	label: string
@@ -60,12 +62,12 @@ export function LabelAndOverrides<T extends object, TValue = any>({
 		} else if (defaultValue === true) {
 			displayValue = 'true'
 		} else if (!defaultValue) {
-			displayValue = '""'
+			displayValue = ''
 		} else if (Array.isArray(defaultValue) || typeof defaultValue === 'object') {
 			displayValue = JSON.stringify(defaultValue) || ''
 		} else {
 			// Display it as a string
-			displayValue = `"${defaultValue}"`
+			displayValue = `${defaultValue}`
 		}
 	}
 
@@ -75,12 +77,20 @@ export function LabelAndOverrides<T extends object, TValue = any>({
 		<label className="field">
 			<LabelActual label={label} />
 
-			<div className="field-content">
+			<div
+				className={classNames('field-content', {
+					'checkbox-enable-before': showClearButton,
+				})}
+			>
 				{showClearButton && (
-					<button className="btn btn-primary field-clear" onClick={() => setValue(undefined)} title={t('Clear value')}>
-						&nbsp;
+					<Button
+						variant="primary"
+						className="field-clear"
+						onClick={() => setValue(undefined)}
+						title={t('Clear value')}
+					>
 						<FontAwesomeIcon icon={faSync} />
-					</button>
+					</Button>
 				)}
 
 				{children(value, setValue)}
@@ -88,14 +98,14 @@ export function LabelAndOverrides<T extends object, TValue = any>({
 
 			{item.defaults && (
 				<>
-					<span>
-						&nbsp;({t('Default')} = {displayValue})
+					<span className="field-default">
+						<FontAwesomeIcon icon={faQuestionCircle} title={`${t('Default')}: ${displayValue}`} />
 					</span>
-					<button className="btn btn-primary" onClick={clearOverride} title="Reset to default" disabled={!isOverridden}>
+					<Button variant="primary" onClick={clearOverride} title="Reset to default" disabled={!isOverridden}>
 						{t('Reset')}
 						&nbsp;
 						<FontAwesomeIcon icon={faSync} />
-					</button>
+					</Button>
 				</>
 			)}
 

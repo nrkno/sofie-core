@@ -23,11 +23,11 @@ function StudioSelect({ title, path }: Readonly<{ title: string; path: string }>
 	const { t } = useTranslation()
 
 	return (
-		<div className="mhl gutter recordings-studio-select">
-			<header className="mbs">
+		<div className="mx-5 recordings-studio-select">
+			<header className="mb-2">
 				<h1>{t(title)}</h1>
 			</header>
-			<div className="mod mvl">
+			<div className="my-5">
 				<strong>Studio</strong>
 				<ul>
 					{studios.map((studio) => {

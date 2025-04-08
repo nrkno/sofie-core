@@ -131,7 +131,9 @@ let HEADER_HEIGHT: number | undefined = undefined
 
 export function getHeaderHeight(): number {
 	if (HEADER_HEIGHT === undefined) {
-		const root = document.querySelector('#render-target > .container-fluid > .rundown-view > .header')
+		const root = document.querySelector(
+			'#render-target > .container-fluid-custom > .rundown-view > .rundown-header'
+		)
 		if (!root) {
 			return FALLBACK_HEADER_HEIGHT
 		}
