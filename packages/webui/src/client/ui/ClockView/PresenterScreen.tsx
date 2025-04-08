@@ -13,7 +13,7 @@ import { PieceIconContainer } from '../PieceIcons/PieceIcon'
 import { PieceNameContainer } from '../PieceIcons/PieceName'
 import { Timediff } from './Timediff'
 import { RundownUtils } from '../../lib/rundown'
-import { PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { CountdownType, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PieceCountdownContainer } from '../PieceIcons/PieceCountdown'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
@@ -41,6 +41,7 @@ import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { useSetDocumentClass, useSetDocumentDarkTheme } from '../util/useSetDocumentClass'
 import { useRundownAndShowStyleIdsForPlaylist } from '../util/useRundownAndShowStyleIdsForPlaylist'
 import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil'
+import { CurrentPartOrSegmentRemaining } from '../RundownView/RundownTiming/CurrentPartOrSegmentRemaining'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -461,17 +462,24 @@ function PresenterScreenContentDefaultLayout({
 								/>
 							</div>
 							<div className="presenter-screen__part__piece-countdown">
-								<PieceCountdownContainer
-									partInstanceId={currentPartInstance.instance._id}
-									showStyleBaseId={currentShowStyleBaseId}
-									rundownIds={rundownIds}
-									partAutoNext={currentPartInstance.instance.part.autoNext || false}
-									partExpectedDuration={calculatePartInstanceExpectedDurationWithTransition(
-										currentPartInstance.instance
-									)}
-									partStartedPlayback={currentPartInstance.instance.timings?.plannedStartedPlayback}
-									playlistActivationId={playlist?.activationId}
-								/>
+								{currentSegment?.segmentTiming?.countdownType === CountdownType.SEGMENT_BUDGET_DURATION ? (
+									<CurrentPartOrSegmentRemaining
+										currentPartInstanceId={currentPartInstance.instance._id}
+										heavyClassName="overtime"
+									/>
+								) : (
+									<PieceCountdownContainer
+										partInstanceId={currentPartInstance.instance._id}
+										showStyleBaseId={currentShowStyleBaseId}
+										rundownIds={rundownIds}
+										partAutoNext={currentPartInstance.instance.part.autoNext || false}
+										partExpectedDuration={calculatePartInstanceExpectedDurationWithTransition(
+											currentPartInstance.instance
+										)}
+										partStartedPlayback={currentPartInstance.instance.timings?.plannedStartedPlayback}
+										playlistActivationId={playlist?.activationId}
+									/>
+								)}
 							</div>
 							<div className="presenter-screen__part__part-countdown">
 								<Timediff time={currentPartOrSegmentCountdown} />
