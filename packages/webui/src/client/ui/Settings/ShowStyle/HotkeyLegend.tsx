@@ -14,6 +14,7 @@ import { UploadButton } from '../../../lib/uploadButton'
 import _ from 'underscore'
 import { ShowStyleBases } from '../../../collections'
 import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
+import Button from 'react-bootstrap/esm/Button'
 
 interface IHotkeyLegendSettingsProps {
 	showStyleBase: DBShowStyleBase
@@ -189,30 +190,26 @@ export const HotkeyLegendSettings = withTranslation()(
 										<label className="field">
 											<LabelActual label={t('Key')} />
 											<EditAttribute
-												modifiedClassName="bghl"
 												attribute={'hotkeyLegend.' + index + '.key'}
 												obj={this.props.showStyleBase}
 												type="text"
 												collection={ShowStyleBases}
-												className="input text-input input-l"
 											></EditAttribute>
 										</label>
 										<label className="field">
 											<LabelActual label={t('Value')} />
 											<EditAttribute
-												modifiedClassName="bghl"
 												attribute={'hotkeyLegend.' + index + '.label'}
 												obj={this.props.showStyleBase}
 												type="text"
 												collection={ShowStyleBases}
-												className="input text-input input-l"
 											></EditAttribute>
 										</label>
 									</div>
-									<div className="mod alright">
-										<button className="btn btn-primary" onClick={() => this.finishEditItem(item)}>
+									<div className="m-1 me-2 text-end">
+										<Button variant="primary" onClick={() => this.finishEditItem(item)}>
 											<FontAwesomeIcon icon={faCheck} />
-										</button>
+										</Button>
 									</div>
 								</td>
 							</tr>
@@ -226,21 +223,21 @@ export const HotkeyLegendSettings = withTranslation()(
 			const { t } = this.props
 			return (
 				<div>
-					<h2 className="mhn">{t('Custom Hotkey Labels')}</h2>
+					<h2 className="mb-4">{t('Custom Hotkey Labels')}</h2>
 					<table className="expando settings-studio-custom-config-table">
 						<tbody>{this.renderItems()}</tbody>
 					</table>
-					<div className="mod mhs">
-						<button className="btn btn-primary" onClick={this.onAddHotkeyLegend}>
+					<div className="my-1 mx-2">
+						<Button variant="primary" className="mx-1" onClick={this.onAddHotkeyLegend}>
 							<FontAwesomeIcon icon={faPlus} />
-						</button>
+						</Button>
 
-						<button className="btn mls btn-secondary" onClick={() => this.exportHotkeyJSON()}>
+						<Button variant="outline-secondary" className="mx-1" onClick={() => this.exportHotkeyJSON()}>
 							<FontAwesomeIcon icon={faDownload} />
 							&nbsp;{t('Export')}
-						</button>
+						</Button>
 						<UploadButton
-							className="btn mls btn-secondary"
+							className="btn btn-outline-secondary mx-1"
 							accept="application/json,.json"
 							onChange={(e) => this.importHotKeyJSON(e)}
 							key={this.state.uploadFileKey}

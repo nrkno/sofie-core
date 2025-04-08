@@ -1,4 +1,3 @@
-
 .notification-pop-ups {
 	position: fixed;
 	top: 4rem;
@@ -148,6 +147,8 @@
 
 				.btn-default {
 					background: #d7dade;
+					color: #000;
+					font-weight: 300;
 				}
 
 				> .notification-pop-up__actions--default {
@@ -397,7 +398,7 @@
 .rundown-view .notification-center-panel {
 	background: #acacad;
 	color: #000;
-	top: 3.1rem;
+	top: 4rem;
 
 	&::before {
 		content: ' ';
@@ -470,7 +471,7 @@
 	.rundown-view {
 		&.notification-center-open {
 			padding-right: 25vw !important;
-			> .header .rundown-overview {
+			> .rundown-header .rundown-overview {
 				padding-right: calc(25vw + 1.5em) !important;
 			}
 		}
@@ -482,7 +483,7 @@
 }
 
 @media screen and (max-width: 1023px) {
-	.container-fluid > .notification-pop-ups {
+	.container-fluid-custom > .notification-pop-ups {
 		.notification-pop-up.persistent {
 			display: none !important;
 		}

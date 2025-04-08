@@ -54,7 +54,7 @@ import {
 	DEFAULT_MINIMUM_TAKE_SPAN,
 	DEFAULT_FALLBACK_PART_DURATION,
 } from '@sofie-automation/shared-lib/dist/core/constants'
-import { Bucket } from '@sofie-automation/meteor-lib/dist/collections/Buckets'
+import { Bucket } from '@sofie-automation/corelib/dist/dataModel/Bucket'
 import { ForceQuickLoopAutoNext } from '@sofie-automation/shared-lib/dist/core/model/StudioSettings'
 import { PlaylistSnapshotOptions, SystemSnapshotOptions } from '@sofie-automation/meteor-lib/dist/api/shapshot'
 
@@ -388,6 +388,7 @@ export function studioSettingsFrom(apiStudioSettings: APIStudioSettings): Comple
 		allowPieceDirectPlay: apiStudioSettings.allowPieceDirectPlay ?? true, // Backwards compatible
 		enableBuckets: apiStudioSettings.enableBuckets ?? true, // Backwards compatible
 		enableEvaluationForm: apiStudioSettings.enableEvaluationForm ?? true, // Backwards compatible
+		mockPieceContentStatus: apiStudioSettings.mockPieceContentStatus,
 	}
 }
 
@@ -413,6 +414,7 @@ export function APIStudioSettingsFrom(settings: IStudioSettings): Complete<APISt
 		allowPieceDirectPlay: settings.allowPieceDirectPlay,
 		enableBuckets: settings.enableBuckets,
 		enableEvaluationForm: settings.enableEvaluationForm,
+		mockPieceContentStatus: settings.mockPieceContentStatus,
 	}
 }
 

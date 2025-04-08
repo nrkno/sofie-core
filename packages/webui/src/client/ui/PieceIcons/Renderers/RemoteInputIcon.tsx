@@ -30,7 +30,7 @@ export function RemoteInputIcon({
 	return (
 		<BaseRemoteInputIcon className="remote">
 			{abbreviation !== undefined ? abbreviation : 'LIVE'}
-			<tspan style={{ fontFamily: 'Roboto', fontWeight: 'normal' }}>{inputIndex ?? ''}</tspan>
+			<tspan className="index">{inputIndex ?? ''}</tspan>
 		</BaseRemoteInputIcon>
 	)
 }

@@ -13,7 +13,6 @@ import { RundownListFooter } from './RundownList/RundownListFooter'
 import RundownPlaylistDragLayer from './RundownList/RundownPlaylistDragLayer'
 import { RundownPlaylistUi } from './RundownList/RundownPlaylistUi'
 import { RundownLayoutsAPI } from '../lib/rundownLayouts'
-import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { getCoreSystem, RundownLayouts, RundownPlaylists, Rundowns } from '../collections'
 import { RundownPlaylistCollectionUtil } from '../collections/rundownPlaylistUtil'
 import { useEffect, useMemo, useState, useContext } from 'react'
@@ -144,13 +143,14 @@ export function RundownList(): JSX.Element {
 
 			{showGettingStarted === true ? <GettingStarted step={step} /> : null}
 
-			<section className="mtl gutter has-statusbar">
-				<header className="mvs">
+			<section className="mt-5 mx-5 has-statusbar">
+				<header className="my-2">
 					<h1>{t('Rundowns')}</h1>
 				</header>
 				{subsReady ? (
-					<section className="mod mvl rundown-list" role="treegrid">
+					<section className="my-5 rundown-list" role="treegrid">
 						<header className="rundown-list__header">
+							<span>{/* Spacer */}</span>
 							<span className="rundown-list-item__name" role="columnheader">
 								<Tooltip
 									overlay={t('Click on a rundown to control your studio')}
@@ -164,11 +164,7 @@ export function RundownList(): JSX.Element {
 							<span role="columnheader">{t('Show Style')}</span>
 							<span role="columnheader">{t('On Air Start Time')}</span>
 							<span role="columnheader">{t('Duration')}</span>
-							{rundownPlaylists.some(
-								(p) =>
-									!!PlaylistTiming.getExpectedEnd(p.timing) ||
-									p.rundowns.some((r) => PlaylistTiming.getExpectedEnd(r.timing))
-							) && <span role="columnheader">{t('Expected End Time')}</span>}
+							<span role="columnheader">{t('Expected End Time')}</span>
 							<span role="columnheader">{t('Last updated')}</span>
 							{rundownLayouts.some(
 								(l) =>

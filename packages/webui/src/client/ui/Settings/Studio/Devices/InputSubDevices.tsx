@@ -86,7 +86,7 @@ export function StudioInputSubDevices({ studioId, studioDevices }: Readonly<Stud
 
 	return (
 		<div>
-			<h2 className="mhn">
+			<h2 className="mb-4">
 				<Tooltip
 					overlay={t('Input devices allow you to trigger Sofie actions remotely')}
 					visible={getHelpMode() && !wrappedSubDevices.length}
@@ -102,7 +102,7 @@ export function StudioInputSubDevices({ studioId, studioDevices }: Readonly<Stud
 				peripheralDevices={filteredPeripheralDevices}
 			/>
 
-			<div className="mod mhs">
+			<div className="my-1 mx-2">
 				<button className="btn btn-primary" onClick={addNewItem}>
 					<FontAwesomeIcon icon={faPlus} />
 				</button>

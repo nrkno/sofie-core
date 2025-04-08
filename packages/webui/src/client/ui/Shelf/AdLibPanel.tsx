@@ -46,7 +46,7 @@ import RundownViewEventBus, {
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
 import { AdLibPieceUi, AdlibSegmentUi } from '../../lib/shelf'
-import { getShelfFollowsOnAir, getShowHiddenSourceLayers } from '../../lib/localStorage'
+import { getShelfFollowsOnAir } from '../../lib/localStorage'
 import { sortAdlibs } from '@sofie-automation/meteor-lib/dist/adlibs'
 import { AdLibPanelToolbar } from './AdLibPanelToolbar'
 import { AdLibListView } from './AdLibListView'
@@ -505,8 +505,6 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 						currentRundownId
 					)
 
-					const showHiddenSourceLayers = getShowHiddenSourceLayers()
-
 					rundownBaselineAdLibs = rundownBaselineAdLibs
 						.concat(globalAdLibActions)
 						.sort((a, b) => a._rank - b._rank)
@@ -515,13 +513,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 							const uiAdLib: AdLibPieceUi = _.clone(item)
 							uiAdLib.isGlobal = true
 
-							const sourceLayer = (uiAdLib.sourceLayer =
-								(item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]) || undefined)
 							uiAdLib.outputLayer = (item.outputLayerId && outputLayerLookup[item.outputLayerId]) || undefined
-
-							if (sourceLayer && sourceLayer.isHidden && !showHiddenSourceLayers) {
-								uiAdLib.isHidden = true
-							}
 
 							// always add them to the list
 							return uiAdLib

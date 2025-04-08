@@ -49,6 +49,10 @@
 			transition: 0.2s color;
 			color: #777;
 		}
+
+		&.dark {
+			background: #343434;
+		}
 	}
 
 	&.moving {

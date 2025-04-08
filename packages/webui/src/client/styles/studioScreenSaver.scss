@@ -23,6 +23,9 @@
 
 		z-index: -1;
 		object-fit: cover;
+
+		// The 'dark' scheme causes this to draw with a white background, so we need to override it
+		color-scheme: none;
 	}
 
 	.studio-screen-saver__info {

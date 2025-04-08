@@ -16,6 +16,7 @@ import {
 } from '@sofie-automation/meteor-lib/dist/api/upgradeStatus'
 import { assertNever } from '@sofie-automation/corelib/dist/lib'
 import { catchError } from '../../../lib/lib'
+import Button from 'react-bootstrap/esm/Button'
 
 export function getUpgradeStatusMessage(t: TFunction, upgradeResult: UIBlueprintUpgradeStatusBase): string | null {
 	if (upgradeResult.invalidReason)
@@ -257,36 +258,42 @@ export function UpgradeStatusButtons({ upgradeResult }: Readonly<UpgradeStatusBu
 			})
 	}, [upgradeResult, fixupConfig])
 
+	if (upgradeResult.pendingRunOfFixupFunction) {
+		return (
+			<>
+				<Button variant="light" className="me-2" onClick={clickFixup} disabled={!!upgradeResult.invalidReason}>
+					<FontAwesomeIcon icon={faDatabase} className="me-2" />
+					<span>{t('Fix Up Config')}</span>
+				</Button>
+				<Button variant="light" className="me-2" onClick={clickIgnoreFixup} disabled={!!upgradeResult.invalidReason}>
+					<FontAwesomeIcon icon={faWarning} className="me-2" />
+					<span>{t('Skip Fix Up Step')}</span>
+				</Button>
+			</>
+		)
+	}
+
 	return (
-		<div className="mod mhn mvm">
-			{upgradeResult.pendingRunOfFixupFunction ? (
-				<>
-					<button className="btn mrm" onClick={clickFixup} disabled={!!upgradeResult.invalidReason}>
-						<FontAwesomeIcon icon={faDatabase} />
-						<span>{t('Fix Up Config')}</span>
-					</button>
-					<button className="btn mrm" onClick={clickIgnoreFixup} disabled={!!upgradeResult.invalidReason}>
-						<FontAwesomeIcon icon={faWarning} />
-						<span>{t('Skip Fix Up Step')}</span>
-					</button>
-				</>
-			) : (
-				<>
-					<button
-						className="btn mrm"
-						onClick={clickShowChanges}
-						disabled={!!upgradeResult.invalidReason || upgradeResult.changes.length === 0}
-					>
-						<FontAwesomeIcon icon={faEye} />
-						<span>{t('Show config changes')}</span>
-					</button>
-					<button className="btn mrm" onClick={clickValidate} disabled={!!upgradeResult.invalidReason}>
-						<FontAwesomeIcon icon={faDatabase} />
-						<span>{t('Validate and Apply Config')}</span>
-					</button>
-				</>
-			)}
-		</div>
+		<>
+			<Button
+				variant="outline-secondary"
+				className="me-2"
+				onClick={clickShowChanges}
+				disabled={!!upgradeResult.invalidReason || upgradeResult.changes.length === 0}
+			>
+				<FontAwesomeIcon icon={faEye} className="me-2" />
+				<span>{t('Show config changes')}</span>
+			</Button>
+			<Button
+				variant="outline-secondary"
+				className="me-2"
+				onClick={clickValidate}
+				disabled={!!upgradeResult.invalidReason}
+			>
+				<FontAwesomeIcon icon={faDatabase} className="me-2" />
+				<span>{t('Validate and Apply Config')}</span>
+			</Button>
+		</>
 	)
 }
 
@@ -346,19 +353,25 @@ export function SystemUpgradeStatusButtons({ upgradeResult }: Readonly<SystemUpg
 	}, [upgradeResult])
 
 	return (
-		<div className="mod mhn mvm">
-			<button
-				className="btn mrm"
+		<>
+			<Button
+				variant="outline-secondary"
+				className="me-2"
 				onClick={clickShowChanges}
 				disabled={!!upgradeResult.invalidReason || upgradeResult.changes.length === 0}
 			>
-				<FontAwesomeIcon icon={faEye} />
+				<FontAwesomeIcon icon={faEye} className="me-2" />
 				<span>{t('Show config changes')}</span>
-			</button>
-			<button className="btn mrm" onClick={clickApply} disabled={!!upgradeResult.invalidReason}>
-				<FontAwesomeIcon icon={faDatabase} />
+			</Button>
+			<Button
+				variant="outline-secondary"
+				className="me-2"
+				onClick={clickApply}
+				disabled={!!upgradeResult.invalidReason}
+			>
+				<FontAwesomeIcon icon={faDatabase} className="me-2" />
 				<span>{t('Apply Config')}</span>
-			</button>
-		</div>
+			</Button>
+		</>
 	)
 }

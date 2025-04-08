@@ -81,23 +81,25 @@ export default React.memo(function RundownListItemView({
 			ref={connectDropTarget}
 			role="row"
 		>
+			{userPermissions.studio ? (
+				<span className="rundown-list-item__draghandle" ref={connectDragSource}>
+					<Tooltip
+						overlay={t('Drag to reorder or move out of playlist')}
+						placement="top"
+						mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
+						overlayStyle={{ display: renderTooltips ? undefined : 'none' }}
+					>
+						<button className="rundown-list-item__action" aria-label="Drag handle">
+							{iconDragHandle()}
+						</button>
+					</Tooltip>
+				</span>
+			) : (
+				<span></span>
+			)}
 			<span className="rundown-list-item__name" role="rowheader">
-				<>
-					{userPermissions.studio ? (
-						<span className="draghandle" ref={connectDragSource}>
-							<Tooltip
-								overlay={t('Drag to reorder or move out of playlist')}
-								placement="top"
-								mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
-								overlayStyle={{ display: renderTooltips ? undefined : 'none' }}
-							>
-								<button className="rundown-list-item__action" aria-label="Drag handle">
-									{iconDragHandle()}
-								</button>
-							</Tooltip>
-						</span>
-					) : null}
-					<b className="rundown-name">{rundownNameContent}</b>
+				<div className="grid-buttons-right">
+					<span className="rundown-name">{rundownNameContent}</span>
 					{rundown.description ? (
 						<Tooltip overlay={rundown.description} trigger={['hover']} placement="right">
 							<span className="rundown-list-description__icon">
@@ -106,21 +108,23 @@ export default React.memo(function RundownListItemView({
 						</Tooltip>
 					) : null}
 
-					{isActive === true ? (
-						<Tooltip
-							overlay={t('This rundown is currently active')}
-							mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
-							placement="bottom"
-						>
-							<div className="origo-pulse small right mrs">
-								<div className="pulse-marker">
-									<div className="pulse-rays"></div>
-									<div className="pulse-rays delay"></div>
+					<div>
+						{isActive === true ? (
+							<Tooltip
+								overlay={t('This rundown is currently active')}
+								mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
+								placement="bottom"
+							>
+								<div className="origo-pulse small me-2">
+									<div className="pulse-marker">
+										<div className="pulse-rays"></div>
+										<div className="pulse-rays delay"></div>
+									</div>
 								</div>
-							</div>
-						</Tooltip>
-					) : null}
-				</>
+							</Tooltip>
+						) : null}
+					</div>
+				</div>
 			</span>
 			{/* <RundownListItemProblems warnings={warnings} errors={errors} /> */}
 			<span className="rundown-list-item__text" role="gridcell">
@@ -180,21 +184,20 @@ export default React.memo(function RundownListItemView({
 			<span className="rundown-list-item__text" role="gridcell">
 				<DisplayFormattedTime displayTimestamp={rundown.modified} t={t} />
 			</span>
-			{rundownLayouts.some(
-				(l) =>
-					(RundownLayoutsAPI.isLayoutForShelf(l) && l.exposeAsStandalone) ||
-					(RundownLayoutsAPI.isLayoutForRundownView(l) && l.exposeAsSelectableLayout)
-			) && (
-				<span className="rundown-list-item__text" role="gridcell">
-					{isOnlyRundownInPlaylist && (
+			<span className="rundown-list-item__text" role="gridcell">
+				{rundownLayouts.some(
+					(l) =>
+						(RundownLayoutsAPI.isLayoutForShelf(l) && l.exposeAsStandalone) ||
+						(RundownLayoutsAPI.isLayoutForRundownView(l) && l.exposeAsSelectableLayout)
+				) &&
+					isOnlyRundownInPlaylist && (
 						<RundownViewLayoutSelection
 							rundowns={[rundown]}
 							rundownLayouts={rundownLayouts}
 							playlistId={rundown.playlistId}
 						/>
 					)}
-				</span>
-			)}
+			</span>
 			<span className="rundown-list-item__actions" role="gridcell">
 				{confirmReSyncRundownHandler ? (
 					<Tooltip

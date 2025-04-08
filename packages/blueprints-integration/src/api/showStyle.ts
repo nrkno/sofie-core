@@ -48,6 +48,7 @@ import type { ExpectedPackage } from '../package'
 import type { ABResolverConfiguration } from '../abPlayback'
 import type { SofieIngestSegment } from '../ingest-types'
 import { PackageStatusMessage } from '@sofie-automation/shared-lib/dist/packageStatusMessages'
+import { BlueprintPlayoutPersistentStore } from '../context/playoutStore'
 
 export { PackageStatusMessage }
 
@@ -111,7 +112,6 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 		context: ISyncIngestUpdateToPartInstanceContext,
 		existingPartInstance: BlueprintSyncIngestPartInstance,
 		newData: BlueprintSyncIngestNewData,
-
 		playoutStatus: 'previous' | 'current' | 'next'
 	) => void
 
@@ -130,12 +130,13 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 	/** Execute an action defined by an IBlueprintActionManifest */
 	executeAction?: (
 		context: IActionExecutionContext,
+		playoutPersistentState: BlueprintPlayoutPersistentStore<TimelinePersistentState>,
 		actionId: string,
 		userData: ActionUserData,
 		triggerMode: string | undefined,
-		privateData?: unknown,
-		publicData?: unknown,
-		actionOptions?: { [key: string]: any }
+		privateData: unknown | undefined,
+		publicData: unknown | undefined,
+		actionOptions: { [key: string]: any } | undefined
 	) => Promise<{ validationErrors: any } | void>
 
 	/** Generate adlib piece from ingest data */
@@ -204,7 +205,10 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 	 * Called during a Take action.
 	 * Allows for part modification or aborting the take.
 	 */
-	onTake?: (context: IOnTakeContext) => Promise<void>
+	onTake?: (
+		context: IOnTakeContext,
+		playoutPersistentState: BlueprintPlayoutPersistentStore<TimelinePersistentState>
+	) => Promise<void>
 	/** Called after a Take action */
 	onPostTake?: (context: IPartEventContext) => Promise<void>
 
@@ -212,13 +216,16 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 	 * Called when a part is set as Next, including right after a Take.
 	 * Allows for part modification.
 	 */
-	onSetAsNext?: (context: IOnSetAsNextContext) => Promise<void>
+	onSetAsNext?: (
+		context: IOnSetAsNextContext,
+		playoutPersistentState: BlueprintPlayoutPersistentStore<TimelinePersistentState>
+	) => Promise<void>
 
 	/** Called after the timeline has been generated, used to manipulate the timeline */
 	onTimelineGenerate?: (
 		context: ITimelineEventContext,
 		timeline: OnGenerateTimelineObj<TSR.TSRTimelineContent>[],
-		previousPersistentState: TimelinePersistentState | undefined,
+		playoutPersistentState: BlueprintPlayoutPersistentStore<TimelinePersistentState>,
 		previousPartEndState: PartEndState | undefined,
 		resolvedPieces: IBlueprintResolvedPieceInstance[]
 	) => Promise<BlueprintResultTimeline>
@@ -229,7 +236,7 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 	/** Called just before taking the next part. This generates some persisted data used by onTimelineGenerate to modify the timeline based on the previous part (eg, persist audio levels) */
 	getEndStateForPart?: (
 		context: IRundownContext,
-		previousPersistentState: TimelinePersistentState | undefined,
+		playoutPersistentState: BlueprintPlayoutPersistentStore<TimelinePersistentState>,
 		partInstance: IBlueprintPartInstance,
 		resolvedPieces: IBlueprintResolvedPieceInstance[],
 		time: number
@@ -249,7 +256,6 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 
 export interface BlueprintResultTimeline {
 	timeline: OnGenerateTimelineObj<TSR.TSRTimelineContent>[]
-	persistentState: TimelinePersistentState
 }
 export interface BlueprintResultBaseline {
 	timelineObjects: TimelineObjectCoreExt<TSR.TSRTimelineContent>[]

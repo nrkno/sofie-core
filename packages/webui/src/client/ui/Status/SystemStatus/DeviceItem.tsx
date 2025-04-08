@@ -30,6 +30,7 @@ import { DebugStateTable } from '../DebugState'
 import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { catchError } from '../../../lib/lib'
 import { UserPermissionsContext } from '../../UserPermissions'
+import Button from 'react-bootstrap/Button'
 
 interface IDeviceItemProps {
 	parentDevice: PeripheralDevice | null
@@ -109,8 +110,8 @@ export function DeviceItem({
 				<div className="device-item__actions">
 					{configManifest?.actions?.map((action) => (
 						<React.Fragment key={action.id}>
-							<button
-								className="btn btn-secondary"
+							<Button
+								variant="outline-secondary"
 								onClick={(e) => {
 									e.preventDefault()
 									e.stopPropagation()
@@ -118,13 +119,14 @@ export function DeviceItem({
 								}}
 							>
 								{translateMessage({ key: action.name, namespaces }, i18nTranslator)}
-							</button>
+							</Button>
 						</React.Fragment>
 					))}
 					{userPermissions.developer ? (
-						<button
+						<Button
+							variant="outline-secondary"
 							key="button-ignore"
-							className={ClassNames('btn btn-secondary', {
+							className={ClassNames({
 								warn: device.ignore,
 							})}
 							onClick={(e) => {
@@ -135,12 +137,12 @@ export function DeviceItem({
 							title={device.ignore ? 'Click to show device status to users' : 'Click to hide device status from users'}
 						>
 							<FontAwesomeIcon icon={faEye} />
-						</button>
+						</Button>
 					) : null}
 					{showRemoveButtons ? (
-						<button
+						<Button
+							variant="primary"
 							key="button-device"
-							className="btn btn-primary"
 							onClick={(e) => {
 								e.preventDefault()
 								e.stopPropagation()
@@ -163,12 +165,12 @@ export function DeviceItem({
 							}}
 						>
 							<FontAwesomeIcon icon={faTrash} />
-						</button>
+						</Button>
 					) : null}
 					{userPermissions.studio && device.subType === PERIPHERAL_SUBTYPE_PROCESS ? (
 						<React.Fragment>
-							<button
-								className="btn btn-secondary"
+							<Button
+								variant="outline-secondary"
 								onClick={(e) => {
 									e.preventDefault()
 									e.stopPropagation()
@@ -211,7 +213,7 @@ export function DeviceItem({
 								}}
 							>
 								{t('Restart')}
-							</button>
+							</Button>
 						</React.Fragment>
 					) : null}
 				</div>

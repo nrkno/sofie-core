@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useContext, useRef, useState } from 'react'
 import { RundownUtils } from '../../../lib/rundown'
 import { ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
@@ -12,6 +12,12 @@ import { SplitsRenderer } from './Renderers/SplitsRenderer'
 import { PieceElement } from '../../SegmentContainer/PieceElement'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { useContentStatusForPieceInstance } from '../../SegmentTimeline/withMediaObjectStatus'
+import {
+	convertSourceLayerItemToPreview,
+	IPreviewPopUpSession,
+	PreviewPopUpContext,
+} from '../../PreviewPopUp/PreviewPopUpContext'
 
 interface IProps {
 	layer: ISourceLayer
@@ -84,10 +90,19 @@ export function StoryboardSecondaryPiece(props: IProps): JSX.Element {
 
 	const typeClass = piece?.sourceLayer?.type ? RundownUtils.getSourceLayerClassName(piece?.sourceLayer?.type) : ''
 
+	const previewContext = useContext(PreviewPopUpContext)
+	const previewSession = useRef<IPreviewPopUpSession | null>(null)
+	const contentStatus = useContentStatusForPieceInstance(piece.instance)
+	const { contents: previewContents, options: previewOptions } = convertSourceLayerItemToPreview(
+		props.layer.type,
+		piece.instance.piece,
+		contentStatus
+	)
+
 	const onPointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
 		if (e.pointerType !== 'mouse') return
 
-		setHovering({ pageX: e.pageX, pageY: e.pageY })
+		// setHovering({ pageX: e.pageX, pageY: e.pageY })
 		if (!element.current) return
 
 		const offset = getElementDocumentOffset(element.current)
@@ -100,11 +115,22 @@ export function StoryboardSecondaryPiece(props: IProps): JSX.Element {
 			width,
 		})
 
+		if (previewContents.length > 0)
+			previewSession.current = previewContext.requestPreview(e.target as any, previewContents, {
+				...previewOptions,
+				initialOffsetX: e.screenX,
+			})
+
 		if (onPointerEnterCallback) onPointerEnterCallback(e)
 	}
 
 	const onPointerLeave = (e: React.PointerEvent<HTMLDivElement>) => {
 		setHovering(null)
+
+		if (previewSession.current) {
+			previewSession.current.close()
+			previewSession.current = null
+		}
 
 		if (onPointerLeaveCallback) onPointerLeaveCallback(e)
 	}

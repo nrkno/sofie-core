@@ -47,7 +47,8 @@ export interface StudioPlayoutModelBase extends StudioPlayoutModelBaseReadonly {
 	 */
 	setTimeline(
 		timelineObjs: TimelineObjGeneric[],
-		generationVersions: TimelineCompleteGenerationVersions
+		generationVersions: TimelineCompleteGenerationVersions,
+		regenerateTimelineToken: string | undefined
 	): ReadonlyDeep<TimelineComplete>
 }
 

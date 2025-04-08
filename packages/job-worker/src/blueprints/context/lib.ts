@@ -17,7 +17,7 @@ import {
 	CoreUserEditingDefinitionSofie,
 } from '@sofie-automation/corelib/dist/dataModel/UserEditingDefinitions'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { assertNever, clone, Complete, literal, omit } from '@sofie-automation/corelib/dist/lib'
+import { assertNever, clone, cloneObject, Complete, literal, omit } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString, unprotectStringArray } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
 import {
@@ -222,7 +222,7 @@ function convertPieceGenericToBlueprintsInner(piece: ReadonlyDeep<PieceGeneric>)
 		expectedPackages: clone<ExpectedPackage.Any[] | undefined>(piece.expectedPackages),
 		hasSideEffects: piece.hasSideEffects,
 		content: {
-			...clone(piece.content),
+			...cloneObject(piece.content),
 			timelineObjects: deserializePieceTimelineObjectsBlob(piece.timelineObjectsString),
 		},
 		abSessions: clone<PieceAbSessionInfo[] | undefined>(piece.abSessions),

@@ -15,13 +15,17 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notific
 import { StatusCodePill } from '../Status/StatusCodePill'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
-import { GenericDeviceSettingsComponent } from './components/GenericDeviceSettingsComponent'
+import {
+	GenericAttahcedSubDeviceSettingsComponent,
+	GenericDeviceSettingsComponent,
+} from './components/GenericDeviceSettingsComponent'
 import { DevicePackageManagerSettings } from './DevicePackageManagerSettings'
 import { getExpectedLatency } from '@sofie-automation/corelib/dist/studio/playout'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevices } from '../../collections'
 import { useTranslation } from 'react-i18next'
 import { LabelActual } from '../../lib/Components/LabelAndOverrides'
+import Button from 'react-bootstrap/esm/Button'
 
 interface IDeviceSettingsProps {
 	match: {
@@ -46,28 +50,6 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 	}
 )(
 	class DeviceSettings extends React.Component<Translated<IDeviceSettingsProps & IDeviceSettingsTrackedProps>> {
-		renderSpecifics() {
-			if (this.props.device && this.props.device.subType === PERIPHERAL_SUBTYPE_PROCESS) {
-				if (this.props.device.configManifest) {
-					return <GenericDeviceSettingsComponent device={this.props.device} subDevices={this.props.subDevices} />
-				} else {
-					const { t } = this.props
-
-					return (
-						<div>
-							<h2>{t('Peripheral Device is outdated')}</h2>
-							<p>
-								{t(
-									'The config UI is now driven by manifests fed by the device. This device needs updating to provide the configManifest to be configurable'
-								)}
-							</p>
-						</div>
-					)
-				}
-			}
-			return null
-		}
-
 		restartDevice(device: PeripheralDevice, e: React.UIEvent<HTMLElement>) {
 			e.persist()
 
@@ -143,10 +125,10 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 			const latencies = getExpectedLatency(device)
 
 			return (
-				<div className="studio-edit mod mhl mvn">
-					<div className="row">
-						<div className="col c12 rl-c6">
-							<h2 className="mhn mtn">{t('Generic Properties')}</h2>
+				<div className="studio-edit mx-4">
+					<div className="grid-buttons-right">
+						<div className="properties-grid">
+							<h2>{t('Generic Properties')}</h2>
 							<label className="field">
 								<LabelActual label={t('Device Name')} />
 								{!device?.name ? (
@@ -154,29 +136,31 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 										{t('No name set')} <FontAwesomeIcon icon={faExclamationTriangle} />
 									</div>
 								) : null}
-								<div className="mdi">
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute="name"
-										obj={device}
-										type="text"
-										collection={PeripheralDevices}
-										className="mdinput"
-									></EditAttribute>
-									<span className="mdfx"></span>
-								</div>
+								<EditAttribute attribute="name" obj={device} type="text" collection={PeripheralDevices}></EditAttribute>
 							</label>
+
+							<label className="field">
+								<LabelActual label={t('Disable version check')} />
+								<EditAttribute
+									attribute="disableVersionChecks"
+									obj={device}
+									type="checkbox"
+									collection={PeripheralDevices}
+									className="input"
+								/>
+							</label>
+
+							{device.category === PeripheralDeviceCategory.INGEST && <IngestDeviceCoreConfig device={device} />}
+
+							{device.subType === PERIPHERAL_SUBTYPE_PROCESS && <GenericDeviceSettingsComponent device={device} />}
 						</div>
-						<div className="col c12 rl-c6 alright">
-							<div className="mbs">
-								<button
-									className="btn btn-secondary btn-tight"
-									onClick={(e) => device && this.restartDevice(device, e)}
-								>
+						<div className="text-end">
+							<div className="mb-2">
+								<Button size="sm" variant="outline-secondary" onClick={(e) => device && this.restartDevice(device, e)}>
 									{t('Restart Device')}
-								</button>
+								</Button>
 							</div>
-							<div className="mbs">
+							<div className="mb-2">
 								<StatusCodePill
 									connected={device.connected}
 									statusCode={device.status?.statusCode}
@@ -184,16 +168,17 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 								/>
 							</div>
 							{device.type === PeripheralDeviceType.PACKAGE_MANAGER ? (
-								<div className="mbs">
-									<button
-										className="btn btn-secondary btn-tight"
+								<div className="mb-2">
+									<Button
+										size="sm"
+										variant="outline-secondary"
 										onClick={(e) => device && this.troubleshootDevice(device, e)}
 									>
 										{t('Troubleshoot')}
-									</button>
+									</Button>
 								</div>
 							) : null}
-							<div className="mbs">
+							<div className="mb-2">
 								{latencies.average > 0 ? (
 									<React.Fragment>
 										<b>Latencies:</b>
@@ -211,36 +196,15 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 						</div>
 					</div>
 
-					<div className="properties-grid">
-						<label className="field">
-							<LabelActual label={t('Disable version check')} />
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute="disableVersionChecks"
-								obj={device}
-								type="checkbox"
-								collection={PeripheralDevices}
-								className="input"
-							/>
-						</label>
-
-						{device.category === PeripheralDeviceCategory.INGEST && <IngestDeviceCoreConfig device={device} />}
-
-						{this.renderSpecifics()}
-					</div>
+					<GenericAttahcedSubDeviceSettingsComponent device={device} subDevices={this.props.subDevices} />
 
 					{device &&
 					device.type === PeripheralDeviceType.PACKAGE_MANAGER &&
-					device.subType === PERIPHERAL_SUBTYPE_PROCESS
-						? this.renderPackageManagerSpecial()
-						: null}
+					device.subType === PERIPHERAL_SUBTYPE_PROCESS ? (
+						<DevicePackageManagerSettings deviceId={device._id} />
+					) : null}
 				</div>
 			)
-		}
-		renderPackageManagerSpecial() {
-			if (this.props.device) {
-				return <DevicePackageManagerSettings deviceId={this.props.device._id} />
-			}
 		}
 
 		render(): JSX.Element {
@@ -262,14 +226,7 @@ function IngestDeviceCoreConfig({ device }: Readonly<IngestDeviceCoreConfigProps
 	return (
 		<label className="field">
 			<LabelActual label={t('NRCS Name')} />
-			<EditAttribute
-				modifiedClassName="bghl"
-				attribute="nrcsName"
-				obj={device}
-				type="text"
-				collection={PeripheralDevices}
-				className="form-control input text-input input-l"
-			/>
+			<EditAttribute attribute="nrcsName" obj={device} type="text" collection={PeripheralDevices} />
 		</label>
 	)
 }

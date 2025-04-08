@@ -317,16 +317,20 @@ export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBa
 	setHoldState(newState: RundownHoldState): void
 
 	/**
-	 * Store the persistent results of the AB playback resolving and onTimelineGenerate
-	 * @param persistentState Blueprint owned state from onTimelineGenerate
+	 * Store the persistent results of the AB playback resolving
 	 * @param assignedAbSessions The applied AB sessions
 	 * @param trackedAbSessions The known AB sessions
 	 */
-	setOnTimelineGenerateResult(
-		persistentState: unknown | undefined,
+	setAbResolvingState(
 		assignedAbSessions: Record<string, ABSessionAssignments>,
 		trackedAbSessions: ABSessionInfo[]
 	): void
+
+	/**
+	 * Store the blueprint persistent state
+	 * @param persistentState Blueprint owned state
+	 */
+	setBlueprintPersistentState(persistentState: unknown | undefined): void
 
 	/**
 	 * Set a PartInstance as the nexted PartInstance

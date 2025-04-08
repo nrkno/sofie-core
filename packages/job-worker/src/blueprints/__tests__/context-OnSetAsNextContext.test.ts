@@ -53,6 +53,14 @@ describe('Test blueprint api context', () => {
 			expect(mockActionService.getResolvedPieceInstances).toHaveBeenCalledWith('current')
 		})
 
+		test('getSegment', async () => {
+			const { context, mockActionService } = await getTestee()
+
+			await context.getSegment('current')
+			expect(mockActionService.getSegment).toHaveBeenCalledTimes(1)
+			expect(mockActionService.getSegment).toHaveBeenCalledWith('current')
+		})
+
 		test('findLastPieceOnLayer', async () => {
 			const { context, mockActionService } = await getTestee()
 

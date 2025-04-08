@@ -1,17 +1,20 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react'
+import React, { useState, useRef, useEffect, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import ClassNames from 'classnames'
 import { RundownUtils } from '../../../lib/rundown'
 import { ILayerItemRendererProps } from './ItemRendererFactory'
-import { IBlueprintPieceType, NoraContent, PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { NoraContent, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { getElementWidth } from '../../../utils/dimensions'
 import { StyledTimecode } from '../../../lib/StyledTimecode'
-import { assertNever, protectString } from '../../../lib/tempLib'
-import { L3rdFloatingInspector } from '../../FloatingInspectors/L3rdFloatingInspector'
-import { PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { assertNever } from '../../../lib/tempLib'
 import { AdLibPieceUi } from '../../../lib/shelf'
 import { ActionAdLibHotkeyPreview } from '../../../lib/triggers/ActionAdLibHotkeyPreview'
+import {
+	PreviewPopUpContext,
+	IPreviewPopUpSession,
+	convertSourceLayerItemToPreview,
+} from '../../PreviewPopUp/PreviewPopUpContext'
 
 export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererProps> = (
 	props: ILayerItemRendererProps
@@ -82,12 +85,21 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 		}
 	})
 
+	const previewContext = useContext(PreviewPopUpContext)
+	const previewSession = useRef<IPreviewPopUpSession | null>(null)
+	const { contents: previewContents, options: previewOptions } = convertSourceLayerItemToPreview(
+		props.adLibListItem.sourceLayer?.type,
+		props.adLibListItem,
+		props.contentStatus
+	)
+
 	const handleOnMouseOver = (e: React.MouseEvent) => {
 		if (itemIconPosition) {
 			const left = e.pageX - itemIconPosition.left
 			const unprocessedPercentage = left / itemIconPosition.width
 			if (unprocessedPercentage <= 1 && !showMiniInspector) {
 				setShowMiniInspector(true)
+				previewSession.current = previewContext.requestPreview(e.target as any, previewContents, previewOptions)
 			}
 		}
 	}
@@ -98,27 +110,25 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 			const unprocessedPercentage = left / itemIconPosition.width
 			if ((unprocessedPercentage > 1 || unprocessedPercentage < 0) && showMiniInspector) {
 				setShowMiniInspector(false)
+				if (previewSession.current) {
+					previewSession.current.close()
+					previewSession.current = null
+				}
 				return false
 			} else if (unprocessedPercentage >= 0 && unprocessedPercentage <= 1 && !showMiniInspector) {
 				setShowMiniInspector(true)
+				previewSession.current = previewContext.requestPreview(e.target as any, previewContents, previewOptions)
 			}
 		}
 	}
 
-	const handleOnMouseLeave = () => setShowMiniInspector(false)
-
-	const virtualPiece: Omit<PieceInstancePiece, 'timelineObjectsString'> = useMemo(
-		() => ({
-			...props.adLibListItem,
-			enable: {
-				start: 'now',
-			},
-			startPartId: protectString(''),
-			invalid: !!props.adLibListItem.invalid,
-			pieceType: IBlueprintPieceType.Normal,
-		}),
-		[props.adLibListItem]
-	)
+	const handleOnMouseLeave = () => {
+		setShowMiniInspector(false)
+		if (previewSession.current) {
+			previewSession.current.close()
+			previewSession.current = null
+		}
+	}
 
 	const type = props.adLibListItem.isAction
 		? props.adLibListItem.isGlobal
@@ -155,24 +165,7 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 			<td className="adlib-panel__list-view__list__table__cell--output">
 				{(props.outputLayer && props.outputLayer.name) || null}
 			</td>
-			<td className="adlib-panel__list-view__list__table__cell--name">
-				{props.adLibListItem.name}
-				<L3rdFloatingInspector
-					showMiniInspector={showMiniInspector}
-					content={noraContent}
-					position={{
-						top: itemIconPosition?.top ?? 0,
-						left: itemIconPosition?.left ?? 0,
-						anchor: 'start',
-						position: 'top-start',
-					}}
-					typeClass={props.layer && RundownUtils.getSourceLayerClassName(props.layer.type)}
-					itemElement={itemIcon.current}
-					piece={virtualPiece}
-					pieceRenderedDuration={itemAsPieceUi.expectedDuration || null}
-					pieceRenderedIn={null}
-				/>
-			</td>
+			<td className="adlib-panel__list-view__list__table__cell--name">{props.adLibListItem.name}</td>
 			<td className="adlib-panel__list-view__list__table__cell--duration">
 				{typeof sourceDuration === 'string' ? (
 					sourceDuration

@@ -185,7 +185,7 @@ export enum StudioJobs {
 	BlueprintIgnoreFixUpConfigForStudio = 'blueprintIgnoreFixUpConfigForStudio',
 
 	/**
-	 * Activate AdlibTesting (Rehearsal Mode) mode for the Rundown containing the nexted Part.
+	 * Activate AdlibTesting for the Rundown containing the nexted part.
 	 */
 	ActivateAdlibTesting = 'activateAdlibTesting',
 

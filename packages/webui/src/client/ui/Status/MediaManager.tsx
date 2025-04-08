@@ -171,7 +171,7 @@ function MediaManagerWorkFlowItem(props: Readonly<IItemProps>): JSX.Element {
 
 	return (
 		<div
-			className={ClassNames('workflow mbs', {
+			className={ClassNames('workflow mb-2', {
 				expanded: isExpanded,
 
 				keyOk: keyFinishedOK,
@@ -179,7 +179,7 @@ function MediaManagerWorkFlowItem(props: Readonly<IItemProps>): JSX.Element {
 				error: finishedError,
 			})}
 		>
-			<div className="workflow__header pas">
+			<div className="workflow__header">
 				<div className="workflow__header__progress">
 					<VelocityReact.VelocityComponent
 						animation={finishedOK ? iconEnterAnimation : iconLeaveAnimation}
@@ -247,8 +247,8 @@ function MediaManagerWorkFlowItem(props: Readonly<IItemProps>): JSX.Element {
 					<div className="workflow__header__current-task workflow__step">
 						{currentTask && (
 							<React.Fragment>
-								<div className="workflow__step__action pts">{actionLabel(t, currentTask.action)}</div>
-								<div className="workflow__step__status pts">{workStepStatusLabel(t, currentTask)}</div>
+								<div className="workflow__step__action">{actionLabel(t, currentTask.action)}</div>
+								<div className="workflow__step__status">{workStepStatusLabel(t, currentTask)}</div>
 							</React.Fragment>
 						)}
 					</div>
@@ -309,8 +309,8 @@ function MediaManagerWorkFlowItem(props: Readonly<IItemProps>): JSX.Element {
 									})}
 									key={unprotectString(step._id)}
 								>
-									<div className="workflow__step__action pas">{actionLabel(t, step.action)}</div>
-									<div className="workflow__step__status pas">{workStepStatusLabel(t, step)}</div>
+									<div className="workflow__step__action">{actionLabel(t, step.action)}</div>
+									<div className="workflow__step__status">{workStepStatusLabel(t, step)}</div>
 									<div className="workflow__step__progress progress-bar">
 										<div
 											className="pb-indicator"
@@ -320,7 +320,7 @@ function MediaManagerWorkFlowItem(props: Readonly<IItemProps>): JSX.Element {
 										/>
 									</div>
 									{step.messages && step.messages.length > 0 && (
-										<ul className="workflow__step__messages pas man">
+										<ul className="workflow__step__messages">
 											{step.messages.map((k, key) => (
 												<li key={key}>{k}</li>
 											))}
@@ -404,23 +404,23 @@ export function MediaManagerStatus(): JSX.Element {
 	const expandedHelper = useToggleExpandHelper()
 
 	return (
-		<div className="mhl gutter media-manager-status">
-			<header className="mbs">
+		<div className="media-manager-status">
+			<header className="mb-2">
 				<h1>{t('Media Transfer Status')}</h1>
 			</header>
-			<div className="mod mvl alright">
+			<div className="mx-2 my-4 text-end">
 				{userPermissions.studio || userPermissions.configure ? (
 					<React.Fragment>
-						<button className="btn btn-secondary mls" onClick={actionAbortAll}>
+						<button className="btn btn-secondary ms-1" onClick={actionAbortAll}>
 							{t('Abort All')}
 						</button>
-						<button className="btn btn-secondary mls" onClick={actionRestartAll}>
+						<button className="btn btn-secondary ms-1" onClick={actionRestartAll}>
 							{t('Restart All')}
 						</button>
 					</React.Fragment>
 				) : null}
 			</div>
-			<div className="mod mvl">
+			<div className="my-5">
 				{sortedWorkflows.map((mediaWorkflow) => (
 					<MediaManagerWorkFlowItem
 						isExpanded={expandedHelper.isExpanded(mediaWorkflow._id)}

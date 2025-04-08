@@ -9,6 +9,7 @@ import {
 	IBlueprintPieceDB,
 	IBlueprintPieceInstance,
 	IBlueprintResolvedPieceInstance,
+	IBlueprintSegment,
 	OmitId,
 	SomeContent,
 	Time,
@@ -22,6 +23,7 @@ import {
 	convertPieceInstanceToBlueprints,
 	convertPieceToBlueprints,
 	convertResolvedPieceInstanceToBlueprints,
+	convertSegmentToBlueprints,
 	createBlueprintQuickLoopInfo,
 	getMediaObjectDuration,
 } from '../lib'
@@ -137,6 +139,14 @@ export class PartAndPieceInstanceActionService {
 			partInstance
 		)
 		return resolvedInstances.map(convertResolvedPieceInstanceToBlueprints)
+	}
+	getSegment(segment: 'current' | 'next'): IBlueprintSegment | undefined {
+		const partInstance = this.#getPartInstance(segment)
+		if (!partInstance) return undefined
+
+		const segmentModel = this._playoutModel.findSegment(partInstance.partInstance.segmentId)
+
+		return segmentModel?.segment ? convertSegmentToBlueprints(segmentModel?.segment) : undefined
 	}
 
 	async findLastPieceOnLayer(

@@ -10,7 +10,7 @@ export function GettingStarted({ step }: Readonly<IGettingStartedProps>): JSX.El
 	const { t } = useTranslation()
 
 	return (
-		<div className="mtl gutter has-statusbar">
+		<div className="mx-5 mt-5 has-statusbar">
 			<h1>{t('Getting Started')}</h1>
 			<div>
 				<ul>

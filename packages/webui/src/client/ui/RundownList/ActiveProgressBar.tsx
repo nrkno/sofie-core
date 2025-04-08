@@ -13,8 +13,8 @@ export function ActiveProgressBar({
 		const progress = Math.min(((currentTime - startedPlayback) / expectedDuration) * 100, 100)
 
 		return (
-			<div className="progress-bar">
-				<div className="pb-indicator" style={{ width: `${progress}%` }} />
+			<div className="rundown-progress-bar">
+				<div className="rundown-progress-bar-indicator" style={{ width: `${progress}%` }} />
 			</div>
 		)
 	}

@@ -89,7 +89,7 @@ export function StudioIngestSubDevices({
 
 	return (
 		<div>
-			<h2 className="mhn">
+			<h2 className="mb-4">
 				<Tooltip
 					overlay={t('Ingest devices are needed to create rundowns')}
 					visible={getHelpMode() && !wrappedSubDevices.length}
@@ -105,7 +105,7 @@ export function StudioIngestSubDevices({
 				peripheralDevices={filteredPeripheralDevices}
 			/>
 
-			<div className="mod mhs">
+			<div className="my-1 mx-2">
 				<button className="btn btn-primary" onClick={addNewItem}>
 					<FontAwesomeIcon icon={faPlus} />
 				</button>

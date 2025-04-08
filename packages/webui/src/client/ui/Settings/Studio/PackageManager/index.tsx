@@ -21,17 +21,15 @@ export function StudioPackageManagerSettings({ studio }: StudioPackageManagerSet
 	)
 
 	return (
-		<div>
-			<h2 className="mhn mbs">{t('Package Manager')}</h2>
+		<div className="settings-studio-package-containers">
+			<h2 className="mb-4">{t('Package Manager')}</h2>
 
-			<div className="settings-studio-package-containers">
-				<h3 className="mhn">{t('Studio Settings')}</h3>
+			<h3 className="my-2">{t('Studio Settings')}</h3>
 
-				<PackageContainersPickers studio={studio} packageContainersFromOverrides={packageContainersFromOverrides} />
+			<PackageContainersPickers studio={studio} packageContainersFromOverrides={packageContainersFromOverrides} />
 
-				<h3 className="mhn">{t('Package Containers')}</h3>
-				<PackageContainersTable studio={studio} packageContainersFromOverrides={packageContainersFromOverrides} />
-			</div>
+			<h3 className="my-2">{t('Package Containers')}</h3>
+			<PackageContainersTable studio={studio} packageContainersFromOverrides={packageContainersFromOverrides} />
 		</div>
 	)
 }

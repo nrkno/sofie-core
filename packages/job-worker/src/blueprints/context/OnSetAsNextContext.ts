@@ -9,6 +9,7 @@ import {
 	IBlueprintPieceDB,
 	IBlueprintPieceInstance,
 	IBlueprintResolvedPieceInstance,
+	IBlueprintSegment,
 	IEventContext,
 	IOnSetAsNextContext,
 } from '@sofie-automation/blueprints-integration'
@@ -65,6 +66,10 @@ export class OnSetAsNextContext
 
 	async getResolvedPieceInstances(part: 'current' | 'next'): Promise<IBlueprintResolvedPieceInstance<unknown>[]> {
 		return this.partAndPieceInstanceService.getResolvedPieceInstances(part)
+	}
+
+	async getSegment(segment: 'current' | 'next'): Promise<IBlueprintSegment | undefined> {
+		return this.partAndPieceInstanceService.getSegment(segment)
 	}
 
 	async findLastPieceOnLayer(

@@ -34,6 +34,7 @@ import {
 } from '../blueprints/context/services/PartAndPieceInstanceActionService'
 import { PlayoutRundownModel } from './model/PlayoutRundownModel'
 import { convertNoteToNotification } from '../notifications/util'
+import { PersistentPlayoutStateStore } from '../blueprints/context/services/PersistantStateStore'
 
 /**
  * Take the currently Next:ed Part (start playing it)
@@ -316,9 +317,17 @@ async function executeOnTakeCallback(
 			new PartAndPieceInstanceActionService(context, playoutModel, showStyle, currentRundown)
 		)
 		try {
-			await blueprint.blueprint.onTake(onSetAsNextContext)
+			const blueprintPersistentState = new PersistentPlayoutStateStore(
+				playoutModel.playlist.previousPersistentState
+			)
+
+			await blueprint.blueprint.onTake(onSetAsNextContext, blueprintPersistentState)
 			await applyOnTakeSideEffects(context, playoutModel, onSetAsNextContext)
 			isTakeAborted = onSetAsNextContext.isTakeAborted
+
+			if (blueprintPersistentState.hasChanges) {
+				playoutModel.setBlueprintPersistentState(blueprintPersistentState.getAll())
+			}
 
 			for (const note of onSetAsNextContext.notes) {
 				// Update the notifications. Even though these are related to a partInstance, they will be cleared on the next take
@@ -511,13 +520,19 @@ export function updatePartInstanceOnTake(
 				context.getShowStyleBlueprintConfig(showStyle),
 				takeRundown
 			)
+			const blueprintPersistentState = new PersistentPlayoutStateStore(
+				playoutModel.playlist.previousPersistentState
+			)
 			previousPartEndState = blueprint.blueprint.getEndStateForPart(
 				context2,
-				playoutModel.playlist.previousPersistentState,
+				blueprintPersistentState,
 				convertPartInstanceToBlueprints(currentPartInstance.partInstance),
 				resolvedPieces.map(convertResolvedPieceInstanceToBlueprints),
 				time
 			)
+			if (blueprintPersistentState.hasChanges) {
+				playoutModel.setBlueprintPersistentState(blueprintPersistentState.getAll())
+			}
 			if (span) span.end()
 			logger.info(`Calculated end state in ${getCurrentTime() - time}ms`)
 		} catch (err) {
