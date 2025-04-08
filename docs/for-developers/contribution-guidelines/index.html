@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.2.1">
 <title data-rh="true">Contribution Guidelines | Sofie TV Automation Documentation</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://nrkno.github.io/sofie-core/img/pilot_fredag-05.jpg"><meta data-rh="true" name="twitter:image" content="https://nrkno.github.io/sofie-core/img/pilot_fredag-05.jpg"><meta data-rh="true" property="og:url" content="https://nrkno.github.io/sofie-core/docs/for-developers/contribution-guidelines"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Contribution Guidelines | Sofie TV Automation Documentation"><meta data-rh="true" name="description" content="The Sofie team happily encourage contributions to the Sofie project, and kindly ask you to observe these guidelines when doing so."><meta data-rh="true" property="og:description" content="The Sofie team happily encourage contributions to the Sofie project, and kindly ask you to observe these guidelines when doing so."><link data-rh="true" rel="icon" href="/sofie-core/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://nrkno.github.io/sofie-core/docs/for-developers/contribution-guidelines"><link data-rh="true" rel="alternate" href="https://nrkno.github.io/sofie-core/docs/for-developers/contribution-guidelines" hreflang="en"><link data-rh="true" rel="alternate" href="https://nrkno.github.io/sofie-core/docs/for-developers/contribution-guidelines" hreflang="x-default"><link data-rh="true" rel="preconnect" href="https://0J21XARTCE-dsn.algolia.net" crossorigin="anonymous"><link rel="search" type="application/opensearchdescription+xml" title="Sofie TV Automation Documentation" href="/sofie-core/opensearch.xml"><link rel="stylesheet" href="/sofie-core/assets/css/styles.6fc8b6c1.css">
-<script src="/sofie-core/assets/js/runtime~main.812de1c7.js" defer="defer"></script>
+<script src="/sofie-core/assets/js/runtime~main.c00060e4.js" defer="defer"></script>
 <script src="/sofie-core/assets/js/main.1874a1c6.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -20,13 +20,22 @@
 <p>Before you start, there are a few things you should know:</p>
 <h3 class="anchor anchorWithStickyNavbar_JmGV" id="discussions-before-pull-requests">“Discussions Before Pull Requests”<a href="#discussions-before-pull-requests" class="hash-link" aria-label="Direct link to “Discussions Before Pull Requests”" title="Direct link to “Discussions Before Pull Requests”">​</a></h3>
 <p><strong>Minor changes</strong> (most bug fixes and small features) can be submitted directly as pull requests to the appropriate official repo.</p>
-<p>However, Sofie is a big project with many differing users and use cases. <strong>Larger changes</strong> might be more difficult to merge into an official repository if NRK has not been made aware of their existence beforehand. To facilitate a timely handling of larger contributions, there’s a workflow intended to keep an open dialogue between all interested parties:</p>
+<p>However, Sofie is a big project with many differing users and use cases. <strong>Larger changes</strong> may be difficult to merge into an official repository if NRK and other contributors have not been made aware of their existence beforehand. Since figuring out what side-effects a new feature or a change may have for other Sofie users can be tricky, we advise opening an RFC issue (<em>Request for Comments</em>) early in your process. Good moments to open an RFC include:</p>
+<ul>
+<li>When a user need is identified and described</li>
+<li>When you have a rough idea about how a feature may be implemented</li>
+<li>When you have a sketch of how a feature could look like to the user</li>
+</ul>
+<p>To facilitate timely handling of larger contributions, there’s a workflow intended to keep an open dialogue between all interested parties:</p>
 <ol>
 <li>Contributor opens an RFC (as a <em>GitHub issue</em>) in the appropriate repository.</li>
 <li>NRK evaluates the RFC, usually within a week.</li>
-<li>(If needed) NRK establishes contact with the RFC author, who will be invited to a workshop where the RFC is discussed. Meeting notes are published publicly on the RFC thread.</li>
+<li>If needed, NRK establishes contact with the RFC author, who will be invited to a workshop where the RFC is discussed. Meeting notes are published publicly on the RFC thread.</li>
+<li>Discussions about the RFC continue as needed, either in workshops or in comments in the RFC thread.</li>
 <li>The contributor references the RFC when a pull request is ready.</li>
 </ol>
+<p>It will be very helpful if your RFC includes specific use-cases that you are facing. Providing a background on how your users are using Sofie can clear up situations in which certain phrases or processes may be ambiguous. If during your process you have already identified various solutions as favorable or unfavorable, offering this context will move the discussion further still.</p>
+<p>Via the RFC process, we&#x27;re looking to maximize involvement from various stakeholders, so you probably don&#x27;t need to come up with a very detailed design of your proposed change or feature in the RFC. An end-user oriented description will be most valuable in creating a constructive dialogue, but don&#x27;t shy away from also adding a more technical description, if you find that will convey your ideas better.</p>
 <h3 class="anchor anchorWithStickyNavbar_JmGV" id="base-contributions-on-the-in-development-branch">Base contributions on the in-development branch<a href="#base-contributions-on-the-in-development-branch" class="hash-link" aria-label="Direct link to Base contributions on the in-development branch" title="Direct link to Base contributions on the in-development branch">​</a></h3>
 <p>In order to facilitate merging, we ask that contributions are based on the latest (at the time of the pull request) <em>in-development</em> branch (often named <code>release*</code>).
 See <strong>CONTRIBUTING.md</strong> in each official repository for details on which branch to use as a base for contributions.</p>
