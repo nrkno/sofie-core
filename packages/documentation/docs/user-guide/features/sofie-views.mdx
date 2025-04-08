@@ -77,7 +77,7 @@ If a Part has an _in-transition_ Piece, it will be displayed to the left of the 
 This view is designed to be used in productions that are mixing pre-planned and timed segments with more free-flowing production or mixing short live in-camera links with longer pre-produced clips, while trying to keep as much of the show in the viewport as possible, at the expense of hiding some of the content from the User and the _duration_ of the Part on screen having no bearing on it's _width_. This mode also allows Sofie to visualize content _beyond_ the planned duration of a Part.
 
 :::info
-The Segment header area also shows the expected (planned) durations for all the Parts and will also show which Parts are sharing timing in a timing group using a *⌊* symbol in the place of a counter.
+The Segment header area also shows the expected (planned) durations for all the Parts and will also show which Parts are sharing timing in a timing group using a _⌊_ symbol in the place of a counter.
 :::
 
 All user interactions work in the Storyboard and List View mode the same as in Timeline mode: Takes, AdLibs, Holds and moving the [Next Point](#next-point) around the Rundown.
@@ -167,11 +167,11 @@ Technically, the switchboard activates and deactivates Route Sets. The Route Set
 
 ![Media Status panel](/img/docs/main/features/media-status-rundown-view-panel.png)
 
-This provides an overview of the status of the various Media assets required by 
-this Rundown for playback. You can sort these assets according to their playout 
+This provides an overview of the status of the various Media assets required by
+this Rundown for playback. You can sort these assets according to their playout
 order, status, Source Layer Name and Piece Name by clicking on the table header.
 
-Note that while the _Filter..._ text field is focused, you will not be able to 
+Note that while the _Filter..._ text field is focused, you will not be able to
 use hotkey triggers for playout actions. You can remove the focus from the field
 by pressing the <kbd>Esc</kbd> key.
 
@@ -182,6 +182,14 @@ by pressing the <kbd>Esc</kbd> key.
 ![Prompter View](/img/docs/main/features/prompter-example.png)
 
 A fullscreen page which displays the prompter text for the currently active rundown. The prompter can be controlled and configured in various ways, see more at the [Prompter](prompter.md) documentation. If no Rundown is active in a given studio, the [Screensaver](sofie-views.mdx#screensaver) will be displayed.
+
+## Presenter View
+
+`/countdowns/:studioId/director`
+
+![Director View](/img/docs/main/features/director-screen-example.png)
+
+A fullscreen page, intended to be shown to the director. It displays countdown timers for the current and next items in the rundown. If no Rundown is active in a given studio, the [Screensaver](sofie-views.mdx#screensaver) will be shown.
 
 ## Presenter View
 
@@ -211,11 +219,11 @@ The Pieces are displayed as a Timeline, with the Pieces moving right-to-left as 
 
 This view can be configured using query parameters:
 
-| Query parameter | Type | Description | Default |
-| :-------------- | :--- | :---------- | :------ |
-| `sourceLayerIds` | string | A comma-separated list of Source Layer IDs to be considered for display | _(show all)_ |
-| `studioLabels` | string | A comma-separated list of Studio Labels (Piece `.content.studioLabel` values) to be considered for display | _(show all)_ |
-| `fullscreen` | 0 / 1 | Should the view become fullscreen on the device on first user interaction | 0 |
+| Query parameter  | Type   | Description                                                                                                | Default      |
+| :--------------- | :----- | :--------------------------------------------------------------------------------------------------------- | :----------- |
+| `sourceLayerIds` | string | A comma-separated list of Source Layer IDs to be considered for display                                    | _(show all)_ |
+| `studioLabels`   | string | A comma-separated list of Studio Labels (Piece `.content.studioLabel` values) to be considered for display | _(show all)_ |
+| `fullscreen`     | 0 / 1  | Should the view become fullscreen on the device on first user interaction                                  | 0            |
 
 Example: [http://127.0.0.1/countdowns/studio0/camera?sourceLayerIds=camera0,dve0&studioLabels=1,KAM%201,K1,KAM1&fullscreen=1](http://127.0.0.1/countdowns/studio0/camera?sourceLayerIds=camera0,dve0&studioLabels=1,KAM%201,K1,KAM1&fullscreen=1)
 
@@ -263,16 +271,16 @@ An API endpoint for the system status is also available under the URL `/health`
 
 ## Media Status View
 
-This view is a summary of all the media required for playback for Rundowns 
-present in this System. This view allows you to see if clips are ready for 
-playback or if they are still waiting to become available to be transferred 
+This view is a summary of all the media required for playback for Rundowns
+present in this System. This view allows you to see if clips are ready for
+playback or if they are still waiting to become available to be transferred
 onto a playout system.
 
 ![Media Status page](/img/docs/main/features/media-status.png)
 
 By default, the Media items are sorted according to their position in the
 rundown, and the rundowns are in the same order as in the [Lobby View]
-(#lobby-view). You can change the sorting order by clicking on the buttons in 
+(#lobby-view). You can change the sorting order by clicking on the buttons in
 the table header.
 
 Rundown View also has a panel that presents this information in the [context of the current Rundown](#media-status-panel).
