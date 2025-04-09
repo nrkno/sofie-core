@@ -2,6 +2,7 @@ import {
 	BucketId,
 	OrganizationId,
 	PartId,
+	PeripheralDeviceId,
 	RundownId,
 	RundownPlaylistActivationId,
 	RundownPlaylistId,
@@ -119,6 +120,11 @@ export enum MeteorPubSub {
 	timelineForStudio = 'timelineForStudio',
 
 	/**
+	 * Ingest status of rundowns for a PeripheralDevice
+	 */
+	ingestDeviceRundownStatusTestTool = 'ingestDeviceRundownStatusTestTool',
+
+	/**
 	 * Fetch the simplified playout UI view of the specified ShowStyleBase
 	 */
 	uiShowStyleBase = 'uiShowStyleBase',
@@ -218,6 +224,11 @@ export interface MeteorPubSubTypes {
 		studioId: StudioId,
 		token?: string
 	) => PeripheralDevicePubSubCollectionsNames.studioTimeline
+
+	[MeteorPubSub.ingestDeviceRundownStatusTestTool]: (
+		peripheralDeviceId: PeripheralDeviceId
+	) => PeripheralDevicePubSubCollectionsNames.ingestRundownStatus
+
 	[MeteorPubSub.uiShowStyleBase]: (showStyleBaseId: ShowStyleBaseId) => CustomCollectionName.UIShowStyleBase
 	/** Subscribe to one or all studios */
 	[MeteorPubSub.uiStudio]: (studioId: StudioId | null) => CustomCollectionName.UIStudio

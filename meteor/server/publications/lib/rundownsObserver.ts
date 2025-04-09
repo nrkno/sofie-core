@@ -1,7 +1,14 @@
 import { Meteor } from 'meteor/meteor'
-import { RundownId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import type {
+	PeripheralDeviceId,
+	RundownId,
+	RundownPlaylistId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Rundowns } from '../../collections'
 import { PromiseDebounce } from './PromiseDebounce'
+import type { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
+import type { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 
 const REACTIVITY_DEBOUNCE = 20
 
@@ -23,35 +30,54 @@ export class RundownsObserver implements Meteor.LiveQueryHandle {
 		if (this.#disposed) return
 		if (!this.#changed) return
 		this.#cleanup?.()
+		this.#cleanup = undefined
 
 		const changed = this.#changed
 		this.#cleanup = await changed(this.rundownIds)
 
-		if (this.#disposed) this.#cleanup?.()
+		if (this.#disposed) {
+			this.#cleanup?.()
+			this.#cleanup = undefined
+		}
 	}, REACTIVITY_DEBOUNCE)
 
 	private constructor(onChanged: ChangedHandler) {
 		this.#changed = onChanged
 	}
 
-	static async create(
+	static async createForPlaylist(
 		studioId: StudioId,
 		playlistId: RundownPlaylistId,
 		onChanged: ChangedHandler
 	): Promise<RundownsObserver> {
 		const observer = new RundownsObserver(onChanged)
 
-		await observer.init(studioId, playlistId)
+		await observer.init({
+			playlistId,
+			studioId,
+		})
 
 		return observer
 	}
 
-	private async init(studioId: StudioId, playlistId: RundownPlaylistId) {
+	static async createForPeripheralDevice(
+		// studioId: StudioId, // TODO - this?
+		deviceId: PeripheralDeviceId,
+		onChanged: ChangedHandler
+	): Promise<RundownsObserver> {
+		const observer = new RundownsObserver(onChanged)
+
+		await observer.init({
+			'source.type': 'nrcs',
+			'source.peripheralDeviceId': deviceId,
+		})
+
+		return observer
+	}
+
+	private async init(query: MongoQuery<Rundown>) {
 		this.#rundownsLiveQuery = await Rundowns.observe(
-			{
-				playlistId,
-				studioId,
-			},
+			query,
 			{
 				added: (doc) => {
 					this.#rundownIds.add(doc._id)
@@ -87,5 +113,6 @@ export class RundownsObserver implements Meteor.LiveQueryHandle {
 		this.#rundownsLiveQuery.stop()
 		this.#changed = undefined
 		this.#cleanup?.()
+		this.#cleanup = undefined
 	}
 }
