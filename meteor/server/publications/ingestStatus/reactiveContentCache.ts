@@ -8,8 +8,11 @@ import type { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import type { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import type { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
-export type PlaylistFields = '_id' | 'activationId' | 'rehearsal' | 'currentPartInfo' | 'nextPartInfo'
-export const playlistFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBRundownPlaylist, PlaylistFields>>>({
+export type PlaylistCompact = Pick<
+	DBRundownPlaylist,
+	'_id' | 'activationId' | 'rehearsal' | 'currentPartInfo' | 'nextPartInfo'
+>
+export const playlistFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<PlaylistCompact>>({
 	_id: 1,
 	activationId: 1,
 	rehearsal: 1,
@@ -17,14 +20,15 @@ export const playlistFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick
 	nextPartInfo: 1,
 })
 
-export type RundownFields = '_id' | 'externalId' | 'playlistId'
-export const rundownFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBRundown, RundownFields>>>({
+export type RundownCompact = Pick<DBRundown, '_id' | 'externalId' | 'playlistId'>
+export const rundownFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<RundownCompact>>({
 	_id: 1,
 	externalId: 1,
 	playlistId: 1,
 })
 
-export type PartFields =
+export type PartCompact = Pick<
+	DBPart,
 	| '_id'
 	| 'rundownId'
 	| 'segmentId'
@@ -33,7 +37,8 @@ export type PartFields =
 	| 'ingestNotifyPartReady'
 	| 'ingestNotifyItemsReady'
 	| 'ingestNotifyPartExternalId'
-export const partFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBPart, PartFields>>>({
+>
+export const partFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<PartCompact>>({
 	_id: 1,
 	rundownId: 1,
 	segmentId: 1,
@@ -44,10 +49,8 @@ export const partFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBP
 	ingestNotifyPartExternalId: 1,
 })
 
-export type PartInstanceFields = '_id' | 'rundownId' | 'segmentId' | 'part' | 'takeCount'
-export const partInstanceFieldSpecifier = literal<
-	MongoFieldSpecifierOnesStrict<Pick<PartInstance, PartInstanceFields>>
->({
+export type PartInstanceCompact = Pick<PartInstance, '_id' | 'rundownId' | 'segmentId' | 'part' | 'takeCount'>
+export const partInstanceFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<PartInstanceCompact>>({
 	_id: 1,
 	rundownId: 1,
 	segmentId: 1,
@@ -55,25 +58,41 @@ export const partInstanceFieldSpecifier = literal<
 	takeCount: 1,
 })
 
+export type NrcsIngestDataCacheObjCompact = Pick<
+	NrcsIngestDataCacheObj,
+	'_id' | 'type' | 'rundownId' | 'segmentId' | 'partId'
+> & { data: { externalId: string } }
+export const nrcsIngestDataCacheObjSpecifier = literal<MongoFieldSpecifierOnesStrict<NrcsIngestDataCacheObjCompact>>({
+	_id: 1,
+	type: 1,
+	rundownId: 1,
+	segmentId: 1,
+	partId: 1,
+	data: {
+		// We need to be very selective here, as the payload portion could contain data not safe for minimongo
+		externalId: 1,
+	},
+})
+
 export interface ContentCache {
 	RundownIds: RundownId[]
 
-	Playlists: ReactiveCacheCollection<Pick<DBRundownPlaylist, PlaylistFields>>
-	Rundowns: ReactiveCacheCollection<Pick<DBRundown, RundownFields>>
-	NrcsIngestData: ReactiveCacheCollection<NrcsIngestDataCacheObj>
-	Parts: ReactiveCacheCollection<Pick<DBPart, PartFields>>
-	PartInstances: ReactiveCacheCollection<Pick<PartInstance, PartInstanceFields>>
+	Playlists: ReactiveCacheCollection<PlaylistCompact>
+	Rundowns: ReactiveCacheCollection<RundownCompact>
+	NrcsIngestData: ReactiveCacheCollection<NrcsIngestDataCacheObjCompact>
+	Parts: ReactiveCacheCollection<PartCompact>
+	PartInstances: ReactiveCacheCollection<PartInstanceCompact>
 }
 
 export function createReactiveContentCache(rundownIds: RundownId[]): ContentCache {
 	const cache: ContentCache = {
 		RundownIds: rundownIds,
 
-		Playlists: new ReactiveCacheCollection<Pick<DBRundownPlaylist, PlaylistFields>>('playlists'),
-		Rundowns: new ReactiveCacheCollection<Pick<DBRundown, RundownFields>>('rundowns'),
-		NrcsIngestData: new ReactiveCacheCollection<NrcsIngestDataCacheObj>('nrcsIngestData'), // TODO - is this needed?
-		Parts: new ReactiveCacheCollection<Pick<DBPart, PartFields>>('parts'),
-		PartInstances: new ReactiveCacheCollection<Pick<PartInstance, PartInstanceFields>>('partInstances'),
+		Playlists: new ReactiveCacheCollection<PlaylistCompact>('playlists'),
+		Rundowns: new ReactiveCacheCollection<RundownCompact>('rundowns'),
+		NrcsIngestData: new ReactiveCacheCollection<NrcsIngestDataCacheObjCompact>('nrcsIngestData'),
+		Parts: new ReactiveCacheCollection<PartCompact>('parts'),
+		PartInstances: new ReactiveCacheCollection<PartInstanceCompact>('partInstances'),
 	}
 
 	return cache

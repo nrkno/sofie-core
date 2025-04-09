@@ -3,6 +3,7 @@ import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dat
 import { logger } from '../../logging'
 import {
 	ContentCache,
+	nrcsIngestDataCacheObjSpecifier,
 	partFieldSpecifier,
 	partInstanceFieldSpecifier,
 	playlistFieldSpecifier,
@@ -111,7 +112,9 @@ export class RundownContentObserver {
 					},
 				},
 				cache.NrcsIngestData.link(),
-				{},
+				{
+					projection: nrcsIngestDataCacheObjSpecifier,
+				},
 				{
 					nonMutatingCallbacks: true,
 				}

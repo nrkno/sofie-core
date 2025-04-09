@@ -9,12 +9,8 @@ import {
 } from '@sofie-automation/shared-lib/dist/ingest/rundownStatus'
 import type { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
-import type { ContentCache, PartFields, PartInstanceFields, PlaylistFields } from './reactiveContentCache'
-import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import type { ContentCache, PartCompact, PartInstanceCompact, PlaylistCompact } from './reactiveContentCache'
 import { ReactiveCacheCollection } from '../lib/ReactiveCacheCollection'
-import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
-import { IngestPart } from '@sofie-automation/blueprints-integration'
-import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 
 export function createIngestRundownStatus(
@@ -75,7 +71,7 @@ export function createIngestRundownStatus(
 						nrcsPart.data.externalId
 					)
 
-					return createIngestPartStatus(playlist, partInstances, parts, nrcsPart.data as IngestPart)
+					return createIngestPartStatus(playlist, partInstances, parts, nrcsPart.data.externalId)
 				})
 			),
 		})
@@ -85,12 +81,12 @@ export function createIngestRundownStatus(
 }
 
 function findPartInstancesForIngestPart(
-	playlist: Pick<DBRundownPlaylist, PlaylistFields> | undefined,
+	playlist: PlaylistCompact | undefined,
 	rundownId: RundownId,
-	partInstancesCache: ReadonlyDeep<ReactiveCacheCollection<Pick<PartInstance, PartInstanceFields>>>,
+	partInstancesCache: ReadonlyDeep<ReactiveCacheCollection<PartInstanceCompact>>,
 	partExternalId: string
 ) {
-	const result: Record<string, Pick<PartInstance, PartInstanceFields>> = {}
+	const result: Record<string, PartInstanceCompact> = {}
 	if (!playlist) return result
 
 	const candidatePartInstances = partInstancesCache
@@ -132,10 +128,10 @@ function findPartInstancesForIngestPart(
 }
 
 function createIngestPartStatus(
-	playlist: Pick<DBRundownPlaylist, PlaylistFields> | undefined,
-	partInstances: Record<string, Pick<PartInstance, PartInstanceFields>>,
-	parts: Pick<DBPart, PartFields>[],
-	ingestPart: IngestPart
+	playlist: PlaylistCompact | undefined,
+	partInstances: Record<string, PartInstanceCompact>,
+	parts: PartCompact[],
+	ingestPartExternalId: string
 ): IngestPartStatus {
 	// Determine the playback status from the PartInstance
 	let playbackStatus = IngestPartPlaybackStatus.UNKNOWN
@@ -144,7 +140,7 @@ function createIngestPartStatus(
 
 	const itemsReady: IngestPartNotifyItemReady[] = []
 
-	const updateStatusWithPart = (part: Pick<DBPart, PartFields>) => {
+	const updateStatusWithPart = (part: PartCompact) => {
 		// If the part affects the ready status, update it
 		if (typeof part.ingestNotifyPartReady === 'boolean') {
 			isReady = (isReady ?? true) && part.ingestNotifyPartReady
@@ -158,7 +154,7 @@ function createIngestPartStatus(
 
 	// Loop through the partInstances, starting off the state
 	if (playlist) {
-		for (const partInstance of Object.values<Pick<PartInstance, PartInstanceFields>>(partInstances)) {
+		for (const partInstance of Object.values<PartInstanceCompact>(partInstances)) {
 			if (!partInstance) continue
 
 			if (partInstance.part.shouldNotifyCurrentPlayingPart) {
@@ -185,7 +181,7 @@ function createIngestPartStatus(
 	}
 
 	return {
-		externalId: ingestPart.externalId,
+		externalId: ingestPartExternalId,
 
 		isReady: isReady,
 		itemsReady: itemsReady,
