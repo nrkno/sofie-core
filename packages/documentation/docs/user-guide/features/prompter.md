@@ -4,11 +4,11 @@ sidebar_position: 3
 
 # Prompter
 
-See [Sofie views](sofie-views.mdx#prompter-view) for how to access the prompter page.
+See [Sofie views](sofie-views-and-screens.mdx#prompter-screen) for how to access the prompter page.
 
-![Prompter screen before the first Part is taken](/img/docs/main/features/prompter-view.png)
+![Prompter view before the first Part is taken](/img/docs/main/features/prompter-view.png)
 
-The prompter will display the script for the Rundown currently active in the Studio. On Air and Next parts and segments are highlighted - in red and green, respectively - to aid in navigation. In top-right corner of the screen, a Diff clock is shown, showing the difference between planned playback and what has been actually produced. This allows the host to know how far behind/ahead they are in regards to planned execution.
+The prompter will display the script for the Rundown currently active in the Studio. On Air and Next parts and segments are highlighted - in red and green, respectively - to aid in navigation. In top-right corner of the view, a Diff clock is shown, showing the difference between planned playback and what has been actually produced. This allows the host to know how far behind/ahead they are in regards to planned execution.
 
 ![Indicators for the On Air and Next part shown underneath the Diff clock](/img/docs/main/features/prompter-view-indicators.png)
 
@@ -16,7 +16,7 @@ If the user scrolls the prompter ahead or behind the On Air part, helpful indica
 
 ## Customize looks
 
-The prompter UI can be configured using query parameters:
+The prompter view can be configured using query parameters:
 
 | Query parameter | Type   | Description                                                                                                                                                         | Default |
 | :-------------- | :----- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------ |
