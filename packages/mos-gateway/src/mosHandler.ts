@@ -424,7 +424,8 @@ export class MosHandler {
 			for (const [deviceId, device] of Object.entries<{ options: MosDeviceConfig }>(devices)) {
 				if (device) {
 					if (device.options.secondary) {
-						this._openMediaHotStandby[device.options.secondary.id] =
+						const fullSecondaryId = this._settings?.mosId + '_' + device.options.secondary.id
+						this._openMediaHotStandby[fullSecondaryId] =
 							device.options.secondary?.openMediaHotStandby || false
 						// If the host isn't set, don't use secondary:
 						if (!device.options.secondary.host || !device.options.secondary.id)
