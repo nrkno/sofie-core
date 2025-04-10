@@ -147,7 +147,7 @@ export async function runUpgradeForShowStyleBase(showStyleBaseId: ShowStyleBaseI
 
 async function loadShowStyleAndBlueprint(showStyleBaseId: ShowStyleBaseId) {
 	const showStyleBase = (await ShowStyleBases.findOneAsync(showStyleBaseId, {
-		fields: {
+		projection: {
 			_id: 1,
 			blueprintId: 1,
 			blueprintConfigPresetId: 1,

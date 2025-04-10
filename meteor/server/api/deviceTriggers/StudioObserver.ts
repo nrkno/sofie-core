@@ -147,16 +147,17 @@ export class StudioObserver extends EventEmitter {
 			.next(
 				'currentRundown',
 				async () =>
-					Rundowns.findWithCursor({ _id: rundownId }, { fields: rundownFieldSpecifier, limit: 1 }) as Promise<
-						MinimalMongoCursor<Pick<DBRundown, RundownFields>>
-					>
+					Rundowns.findWithCursor(
+						{ _id: rundownId },
+						{ projection: rundownFieldSpecifier, limit: 1 }
+					) as Promise<MinimalMongoCursor<Pick<DBRundown, RundownFields>>>
 			)
 			.next('showStyleBase', async (chain) =>
 				chain.currentRundown
 					? (ShowStyleBases.findWithCursor(
 							{ _id: chain.currentRundown.showStyleBaseId },
 							{
-								fields: showStyleBaseFieldSpecifier,
+								projection: showStyleBaseFieldSpecifier,
 								limit: 1,
 							}
 					  ) as Promise<MinimalMongoCursor<Pick<DBShowStyleBase, ShowStyleBaseFields>>>)

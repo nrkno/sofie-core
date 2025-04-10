@@ -218,7 +218,10 @@ export interface AsyncOnlyReadOnlyMongoCollection<DBInterface extends { _id: Pro
 	 * @param selector A query describing the documents to find
 	 * @param options Options for the operation
 	 */
-	findFetchAsync(selector: MongoQuery<DBInterface>, options?: FindOptions<DBInterface>): Promise<Array<DBInterface>>
+	findFetchAsync(
+		selector: MongoQuery<DBInterface>,
+		options?: Omit<FindOptions<DBInterface>, 'fields'>
+	): Promise<Array<DBInterface>>
 
 	/**
 	 * Find and return a document
@@ -227,7 +230,7 @@ export interface AsyncOnlyReadOnlyMongoCollection<DBInterface extends { _id: Pro
 	 */
 	findOneAsync(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'],
-		options?: FindOptions<DBInterface>
+		options?: Omit<FindOptions<DBInterface>, 'fields'>
 	): Promise<DBInterface | undefined>
 
 	/**
@@ -236,7 +239,7 @@ export interface AsyncOnlyReadOnlyMongoCollection<DBInterface extends { _id: Pro
 	 */
 	findWithCursor(
 		selector?: MongoQuery<DBInterface> | DBInterface['_id'],
-		options?: FindOptions<DBInterface>
+		options?: Omit<FindOptions<DBInterface>, 'fields'>
 	): Promise<MinimalMongoCursor<DBInterface>>
 
 	/**
@@ -246,7 +249,7 @@ export interface AsyncOnlyReadOnlyMongoCollection<DBInterface extends { _id: Pro
 	observeChanges(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'],
 		callbacks: PromisifyCallbacks<ObserveChangesCallbacks<DBInterface>>,
-		options?: FindOptions<DBInterface>
+		options?: Omit<FindOptions<DBInterface>, 'fields'>
 	): Promise<Meteor.LiveQueryHandle>
 
 	/**
@@ -256,7 +259,7 @@ export interface AsyncOnlyReadOnlyMongoCollection<DBInterface extends { _id: Pro
 	observe(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'],
 		callbacks: PromisifyCallbacks<ObserveCallbacks<DBInterface>>,
-		options?: FindOptions<DBInterface>
+		options?: Omit<FindOptions<DBInterface>, 'fields'>
 	): Promise<Meteor.LiveQueryHandle>
 
 	/**

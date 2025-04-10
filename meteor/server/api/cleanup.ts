@@ -107,7 +107,7 @@ export async function cleanupOldDataInner(actuallyCleanup = false): Promise<Coll
 	): Promise<ID[]> => {
 		const collectionName = getCollectionKey(collection)
 
-		const ids = (await collection.findFetchAsync(query, { fields: { _id: 1 } })).map((doc) => doc._id)
+		const ids = (await collection.findFetchAsync(query, { projection: { _id: 1 } })).map((doc) => doc._id)
 		const count = ids.length
 		if (actuallyCleanup) {
 			await collection.mutableCollection.removeAsync(query)
@@ -354,7 +354,7 @@ export async function cleanupOldDataInner(actuallyCleanup = false): Promise<Coll
 					},
 				],
 			},
-			{ fields: { _id: 1 } }
+			{ projection: { _id: 1 } }
 		)
 		const emiFromRundowns = await ExpectedMediaItems.findFetchAsync(
 			{
@@ -368,7 +368,7 @@ export async function cleanupOldDataInner(actuallyCleanup = false): Promise<Coll
 					},
 				],
 			},
-			{ fields: { _id: 1 } }
+			{ projection: { _id: 1 } }
 		)
 		addToResult(CollectionName.ExpectedMediaItems, emiFromBuckets.length)
 		addToResult(CollectionName.ExpectedMediaItems, emiFromRundowns.length)
@@ -481,7 +481,7 @@ async function isAllowedToRunCleanup(): Promise<string | void> {
 	// HACK: TODO - should we check this?
 	// if (isAnyQueuedWorkRunning()) return `Another sync-function is running, try again later`
 
-	const studios = await Studios.findFetchAsync({}, { fields: { _id: 1 } })
+	const studios = await Studios.findFetchAsync({}, { projection: { _id: 1 } })
 	for (const studio of studios) {
 		const activePlaylist: DBRundownPlaylist | undefined = (
 			await getActiveRundownPlaylistsInStudioFromDb(studio._id)
@@ -500,7 +500,7 @@ async function getAllIdsInCollection<DBInterface extends { _id: ID }, ID extends
 		await collection.findFetchAsync(
 			{},
 			{
-				fields: {
+				projection: {
 					_id: 1,
 				},
 			}
