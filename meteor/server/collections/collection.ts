@@ -1,6 +1,5 @@
-import { UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { FindOptions, MongoModifier, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
-import { ProtectedString, protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { NpmModuleMongodb } from 'meteor/npm-mongo'
@@ -20,17 +19,21 @@ import {
 	UpsertOptions,
 } from '@sofie-automation/meteor-lib/dist/collections/lib'
 import { MinimalMongoCursor } from './implementations/asyncCollection'
+import { UserPermissions } from '@sofie-automation/meteor-lib/dist/userPermissions'
 
-export interface MongoAllowRules<DBInterface> {
+export interface CustomMongoAllowRules<DBInterface> {
 	// insert?: (userId: UserId | null, doc: DBInterface) => Promise<boolean> | boolean
-	update?: (
-		userId: UserId | null,
+	requiredPermissions: Array<keyof UserPermissions>
+	update: (
+		permissions: UserPermissions,
 		doc: DBInterface,
 		fieldNames: FieldNames<DBInterface>,
 		modifier: MongoModifier<DBInterface>
 	) => Promise<boolean> | boolean
 	// remove?: (userId: UserId | null, doc: DBInterface) => Promise<boolean> | boolean
 }
+
+export const collectionsAllowDenyCache = new Map<string, CustomMongoAllowRules<any>>()
 
 /**
  * Map of current collection objects.
@@ -55,11 +58,16 @@ export function getOrCreateMongoCollection(name: string): Mongo.Collection<any> 
  */
 export function createAsyncOnlyMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
 	name: CollectionName,
-	allowRules: MongoAllowRules<DBInterface> | false
+	allowRules: CustomMongoAllowRules<DBInterface> | false
 ): AsyncOnlyMongoCollection<DBInterface> {
 	const collection = getOrCreateMongoCollection(name)
 
-	setupCollectionAllowRules(collection, allowRules)
+	if (allowRules) {
+		if (allowRules.requiredPermissions.length === 0)
+			throw new Meteor.Error(403, `No permissions specified for collection "${name}"`)
+
+		collectionsAllowDenyCache.set(name, allowRules as CustomMongoAllowRules<any>)
+	}
 
 	const wrappedCollection = wrapMeteorCollectionIntoAsyncCollection<DBInterface>(collection, name)
 
@@ -83,8 +91,6 @@ export function createAsyncOnlyReadOnlyMongoCollection<DBInterface extends { _id
 
 	registerCollection(name, readonlyCollection)
 
-	setupCollectionAllowRules(collection, false)
-
 	return readonlyCollection
 }
 
@@ -99,27 +105,6 @@ function wrapMeteorCollectionIntoAsyncCollection<DBInterface extends { _id: Prot
 		// Override the default mongodb methods, because the errors thrown by them doesn't contain the proper call stack
 		return new WrappedAsyncMongoCollection<DBInterface>(collection, name)
 	}
-}
-
-function setupCollectionAllowRules<DBInterface extends { _id: ProtectedString<any> }>(
-	collection: Mongo.Collection<DBInterface>,
-	args: MongoAllowRules<DBInterface> | false
-) {
-	if (!args) {
-		// Mutations are disabled by default
-		return
-	}
-
-	const { /* insert: origInsert,*/ update: origUpdate /*remove: origRemove*/ } = args
-
-	const options: Parameters<Mongo.Collection<DBInterface>['allow']>[0] = {
-		update: origUpdate
-			? async (userId: string | null, doc: DBInterface, fieldNames: string[], modifier: any) =>
-					origUpdate(protectString(userId), doc, fieldNames as any, modifier)
-			: () => false,
-	}
-
-	collection.allow(options)
 }
 
 /**
