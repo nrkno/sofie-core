@@ -92,9 +92,9 @@ The primary use-case of these elements is for breaking-news formats where quick 
 
 The ingest happens via the `getAdlibItem` method: [https://github.com/nrkno/sofie-core/blob/6c4edee7f352bb542c8a29317d59c0bf9ac340ba/packages/blueprints-integration/src/api/showStyle.ts#L122](https://github.com/nrkno/sofie-core/blob/6c4edee7f352bb542c8a29317d59c0bf9ac340ba/packages/blueprints-integration/src/api/showStyle.ts#L122)
 
-## Views
+## Views and Screens
 
-Being a web-based system, Sofie has a number of customisable, user-facing web [views](features/sofie-views-and-screens.mdx) used for control and monitoring.
+Being a web-based system, Sofie has a number of customisable, user-facing web [views and screens](features/sofie-views-and-screens.mdx) used for control and monitoring.
 
 ## Blueprints
 
