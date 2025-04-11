@@ -558,7 +558,7 @@ export class PrompterViewContent extends React.Component<Translated<IProps & ITr
 						{this.renderAccessRequestButtons()}
 					</>
 				) : this.props.studio ? (
-					<StudioScreenSaver studioId={this.props.studio._id} />
+					<StudioScreenSaver studioId={this.props.studio._id} screenName={t('Prompter Screen')} />
 				) : this.props.studioId ? (
 					this.renderMessage(t("This studio doesn't exist."))
 				) : (
