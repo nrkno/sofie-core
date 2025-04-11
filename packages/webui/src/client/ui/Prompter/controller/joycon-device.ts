@@ -352,7 +352,7 @@ export class JoyConController extends ControllerAbstract {
 		const speed = this.calculateSpeed(joycons)
 
 		// update scroll position
-		window.scrollBy(0, speed)
+		window.scrollBy({ top: speed, behavior: 'instant' })
 
 		const scrollPosition = window.scrollY
 		// check for reached end-of-scroll:

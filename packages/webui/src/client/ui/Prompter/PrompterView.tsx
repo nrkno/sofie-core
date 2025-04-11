@@ -810,6 +810,7 @@ const PrompterContent = withTranslation()(
 
 					window.scrollBy({
 						top: top - scrollAnchor.offset,
+						behavior: 'instant',
 					})
 					// We've scrolled, exit the function!
 					return
@@ -821,6 +822,7 @@ const PrompterContent = withTranslation()(
 					// the css margins magically does it for us.
 					window.scrollBy({
 						top: top - readPosition,
+						behavior: 'instant',
 					})
 					// We've scrolled, exit the function!
 					return
