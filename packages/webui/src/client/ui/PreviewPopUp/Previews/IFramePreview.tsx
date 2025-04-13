@@ -17,7 +17,7 @@ export function IFramePreview({ content }: IFramePreviewProps): React.ReactEleme
 	const onLoadListener = useCallback(() => {
 		if (content.postMessage) {
 			const url = new URL(content.href)
-			iFrameElement.current?.contentWindow?.postMessage(content.postMessage, `${url.protocol}//${url.host}`)
+			iFrameElement.current?.contentWindow?.postMessage(content.postMessage, url.origin)
 		}
 	}, [])
 
