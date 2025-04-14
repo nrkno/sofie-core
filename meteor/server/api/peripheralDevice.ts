@@ -69,6 +69,7 @@ import KoaRouter from '@koa/router'
 import bodyParser from 'koa-bodyparser'
 import { assertConnectionHasOneOfPermissions } from '../security/auth'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { getRootSubpath } from '../lib'
 
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
@@ -680,7 +681,7 @@ peripheralDeviceRouter.get('/:deviceId/oauthResponse', async (ctx) => {
 				.catch(logger.error)
 		}
 
-		ctx.redirect(`/settings/peripheralDevice/${deviceId}`)
+		ctx.redirect(`${getRootSubpath()}/settings/peripheralDevice/${deviceId}`)
 	} catch (e) {
 		ctx.response.type = 'text/plain'
 		ctx.response.status = 500

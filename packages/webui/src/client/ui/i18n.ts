@@ -14,6 +14,7 @@ import { interpollateTranslation } from '@sofie-automation/corelib/dist/Translat
 import { TranslationsBundleId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { TranslationsBundles } from '../collections'
 import { catchError } from '../lib/lib'
+import { relativeToSiteRootUrl } from '../url'
 
 const i18nOptions = {
 	fallbackLng: {
@@ -45,7 +46,7 @@ const i18nOptions = {
 	},
 
 	backend: {
-		loadPath: '/locales/{{lng}}/{{ns}}.json',
+		loadPath: relativeToSiteRootUrl('/locales/{{lng}}/{{ns}}.json'),
 	},
 
 	detection: {

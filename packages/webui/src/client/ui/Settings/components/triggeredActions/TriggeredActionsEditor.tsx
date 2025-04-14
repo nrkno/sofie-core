@@ -32,6 +32,7 @@ import { UIPartInstances, UIParts } from '../../../Collections'
 import Form from 'react-bootstrap/esm/Form'
 import Button from 'react-bootstrap/esm/Button'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
+import { createPrivateApiPath } from '../../../../url'
 
 export interface PreviewContext {
 	rundownPlaylist: DBRundownPlaylist | null
@@ -318,7 +319,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 	)
 
 	const onDownloadActions = useCallback(() => {
-		window.location.replace(`/api/private/actionTriggers/download/${showStyleBaseId ?? ''}`)
+		window.location.replace(createPrivateApiPath(`actionTriggers/download/${showStyleBaseId ?? ''}`))
 	}, [showStyleBaseId])
 
 	return (
@@ -441,7 +442,7 @@ function ImportTriggeredActionsButton({ showStyleBaseId }: { showStyleBaseId: Sh
 	const onUploadActions = useCallback(
 		(uploadFileContents: string) => {
 			function uploadStoredTriggeredActions(replace?: boolean) {
-				fetchFrom(`/api/private/actionTriggers/upload/${showStyleBaseId ?? ''}${replace ? '?replace' : ''}`, {
+				fetchFrom(createPrivateApiPath(`actionTriggers/upload/${showStyleBaseId ?? ''}${replace ? '?replace' : ''}`), {
 					method: 'POST',
 					body: uploadFileContents,
 					headers: {
