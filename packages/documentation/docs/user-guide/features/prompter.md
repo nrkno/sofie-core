@@ -2,11 +2,11 @@
 sidebar_position: 3
 ---
 
-# Prompter
+# Prompter Screen
 
-See [Sofie views](sofie-views.mdx#prompter-view) for how to access the prompter page.
+See [Sofie Views and Screens](sofie-views-and-screens.mdx#prompter-screen) to learn how to access the Prompter Screen.
 
-![Prompter screen before the first Part is taken](/img/docs/main/features/prompter-view.png)
+![Prompter Screen before the first Part is taken](/img/docs/main/features/prompter-view.png)
 
 The prompter will display the script for the Rundown currently active in the Studio. On Air and Next parts and segments are highlighted - in red and green, respectively - to aid in navigation. In top-right corner of the screen, a Diff clock is shown, showing the difference between planned playback and what has been actually produced. This allows the host to know how far behind/ahead they are in regards to planned execution.
 
@@ -16,7 +16,7 @@ If the user scrolls the prompter ahead or behind the On Air part, helpful indica
 
 ## Customize looks
 
-The prompter UI can be configured using query parameters:
+The Prompter Screen can be configured using query parameters:
 
 | Query parameter | Type   | Description                                                                                                                                                         | Default |
 | :-------------- | :----- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------ |
