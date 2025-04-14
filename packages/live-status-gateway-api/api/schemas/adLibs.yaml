@@ -3,6 +3,7 @@ description: AdLibs schema for websocket subscriptions
 $defs:
   adLibs:
     type: object
+    title: AdLibsEvent
     properties:
       event:
         type: string
@@ -32,14 +33,17 @@ $defs:
         globalAdLibs:
           $ref: '#/$defs/adLibBase/examples'
   adLib:
+    title: AdLibStatus
     allOf:
       - $ref: '#/$defs/adLibBase'
       - type: object
         properties:
           segmentId:
             description: Unique id of the segment this adLib belongs to
+            type: string
           partId:
             description: Unique id of the part this adLib belongs to
+            type: string
         required: [segmentId, partId]
     examples:
       - id: 'C6K_yIMuGFUk8X_L9A9_jRT6aq4_'
@@ -54,10 +58,12 @@ $defs:
         publicData:
           fileName: MV000123.mxf
   globalAdLib:
-    $ref: '#/$defs/adLibBase'
-    additionalProperties: false
+    title: GlobalAdLibStatus
+    allOf:
+      - $ref: '#/$defs/adLibBase'
   adLibBase:
     type: object
+    title: AdLibBaseStatus
     properties:
       id:
         description: Unique id of the AdLib
@@ -76,6 +82,7 @@ $defs:
         type: array
         items:
           type: object
+          title: AdLibActionType
           properties:
             name:
               description: The string to be passed to the ExecuteAdlib function

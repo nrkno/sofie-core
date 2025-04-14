@@ -7,10 +7,11 @@ import {
 	makeTestPlaylist,
 	makeTestShowStyleBase,
 } from './utils'
-import { AdLibsStatus, AdLibsTopic } from '../adLibsTopic'
+import { AdLibsTopic } from '../adLibsTopic'
 import { ShowStyleBaseExt } from '../../collections/showStyleBaseHandler'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
+import { AdLibsEvent } from '@sofie-automation/live-status-gateway-api'
 
 function makeTestAdLibActions(): AdLibAction[] {
 	return [
@@ -81,7 +82,7 @@ describe('AdLibsTopic', () => {
 
 		topic.addSubscriber(mockSubscriber)
 
-		const expectedStatus: AdLibsStatus = {
+		const expectedStatus: AdLibsEvent = {
 			event: 'adLibs',
 			rundownPlaylistId: unprotectString(playlist._id),
 			adLibs: [

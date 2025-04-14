@@ -27,8 +27,6 @@
 		"cov": "run -T jest; run -T open-cli coverage/lcov-report/index.html",
 		"cov-open": "open-cli coverage/lcov-report/index.html",
 		"ci": "run test",
-		"gendocs": "run -T rimraf docs && ag ./api/asyncapi.yaml @asyncapi/html-template -o docs -p singleFile=true -p outFilename=liveStatus.html",
-		"genserver": "run -T rimraf server && ag ./api/asyncapi.yaml @asyncapi/nodejs-ws-template -o server -p server=development",
 		"inspect": "node --experimental-fetch --inspect dist/index.js",
 		"start": "node --experimental-fetch dist/index.js",
 		"dev": "run start -id localDevLsg",
@@ -55,6 +53,7 @@
 	"dependencies": {
 		"@sofie-automation/blueprints-integration": "1.53.0-in-development",
 		"@sofie-automation/corelib": "1.53.0-in-development",
+		"@sofie-automation/live-status-gateway-api": "1.53.0-in-development",
 		"@sofie-automation/server-core-integration": "1.53.0-in-development",
 		"@sofie-automation/shared-lib": "1.53.0-in-development",
 		"debug": "^4.4.0",
@@ -66,9 +65,6 @@
 		"ws": "^8.18.0"
 	},
 	"devDependencies": {
-		"@asyncapi/generator": "^2.6.0",
-		"@asyncapi/html-template": "^3.1.0",
-		"@asyncapi/nodejs-ws-template": "^0.10.0",
 		"type-fest": "^4.33.0"
 	},
 	"lint-staged": {

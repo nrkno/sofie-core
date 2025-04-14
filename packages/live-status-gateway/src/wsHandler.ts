@@ -1,5 +1,6 @@
 import { Logger } from 'winston'
 import { WebSocket } from 'ws'
+import { AllMessages } from '@sofie-automation/live-status-gateway-api'
 import _ = require('underscore')
 
 export abstract class WebSocketTopicBase {
@@ -40,7 +41,7 @@ export abstract class WebSocketTopicBase {
 		this._logger.error(`Process ${this._name} message not expected '${JSON.stringify(msg)}'`)
 	}
 
-	sendMessage(recipients: WebSocket | Iterable<WebSocket>, msg: object): void {
+	sendMessage(recipients: WebSocket | Iterable<WebSocket>, msg: AllMessages): void {
 		recipients = isIterable(recipients) ? recipients : [recipients]
 
 		let count = 0
