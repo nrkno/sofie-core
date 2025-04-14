@@ -168,19 +168,21 @@ export function RundownRightHandControls(props: Readonly<IProps>): JSX.Element {
 				>
 					<RewindAllSegmentsIcon />
 				</button>
-				{!props.isFollowingOnAir && (
-					<button
-						className="status-bar__controls__button"
-						role="button"
-						onMouseEnter={onOnAirMouseEnter}
-						onMouseLeave={onOnAirMouseLeave}
-						onClick={onOnAirClick}
-						tabIndex={0}
-						aria-label={t('Go to On Air Segment')}
-					>
-						{onAirHover ? <Lottie config={ONAIR_OVER} /> : <Lottie config={ONAIR_OUT} />}
-					</button>
-				)}
+				<div>
+					{!props.isFollowingOnAir && (
+						<button
+							className="status-bar__controls__button"
+							role="button"
+							onMouseEnter={onOnAirMouseEnter}
+							onMouseLeave={onOnAirMouseLeave}
+							onClick={onOnAirClick}
+							tabIndex={0}
+							aria-label={t('Go to On Air Segment')}
+						>
+							{onAirHover ? <Lottie config={ONAIR_OVER} /> : <Lottie config={ONAIR_OUT} />}
+						</button>
+					)}
+				</div>
 			</VelocityReact.VelocityTransitionGroup>
 			<VelocityReact.VelocityTransitionGroup
 				enter={{ animation: 'fadeIn', easing: 'ease-out', duration: 250 }}
