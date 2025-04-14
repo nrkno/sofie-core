@@ -150,7 +150,13 @@ export function convertSourceLayerItemToPreview(
 							src: contentStatus.thumbnailUrl,
 					  }
 					: undefined,
-				// todo - add in-out words after rebasing
+				content.lastWords
+					? {
+							type: 'inOutWords',
+							in: content.firstWords,
+							out: content.lastWords,
+					  }
+					: undefined,
 				...(contentStatus?.messages?.map<PreviewContent>((m) => ({
 					type: 'warning',
 					content: m as any,
