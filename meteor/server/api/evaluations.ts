@@ -63,7 +63,7 @@ export async function saveEvaluation(
 			// only send message for evaluations with content
 			if (evaluationMessage) {
 				const playlist = (await RundownPlaylists.findOneAsync(evaluation.playlistId, {
-					fields: {
+					projection: {
 						_id: 1,
 						name: 1,
 					},
