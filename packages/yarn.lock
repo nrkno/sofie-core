@@ -6363,10 +6363,10 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@sofie-automation/sorensen@npm:^1.5.8":
-  version: 1.5.8
-  resolution: "@sofie-automation/sorensen@npm:1.5.8"
-  checksum: 10/ae8fa1bb9c49fbd46490f42de79cdbdeafc17d2184c81da033910400f20b1ce1686d97a63536cd0a9a48a0fa1843566bbbece4b78030c8fef37022a7476bf834
+"@sofie-automation/sorensen@npm:^1.5.11":
+  version: 1.5.11
+  resolution: "@sofie-automation/sorensen@npm:1.5.11"
+  checksum: 10/99cd4cc86746cf0f5eb27d91938c13dfb0ba33ee40bc2ba2b0208af230eb1daf43388855798661bf106eed0847645e2e9a85dd41d774b04ec96afbd08761316c
   languageName: node
   linkType: hard
 
@@ -6387,7 +6387,7 @@ __metadata:
     "@sofie-automation/corelib": "npm:1.53.0-in-development"
     "@sofie-automation/meteor-lib": "npm:1.53.0-in-development"
     "@sofie-automation/shared-lib": "npm:1.53.0-in-development"
-    "@sofie-automation/sorensen": "npm:^1.5.8"
+    "@sofie-automation/sorensen": "npm:^1.5.11"
     "@testing-library/dom": "npm:^10.4.0"
     "@testing-library/jest-dom": "npm:^6.6.3"
     "@testing-library/react": "npm:^16.2.0"
@@ -10510,6 +10510,7 @@ asn1@evs-broadcast/node-asn1:
     no-case: "npm:^3.0.4"
     param-case: "npm:^3.0.4"
     pascal-case: "npm:^3.1.2"
+    path-case: "npm:^3.0.4"
     sentence-case: "npm:^3.0.4"
     snake-case: "npm:^3.0.4"
     tslib: "npm:^2.0.3"
@@ -22805,6 +22806,16 @@ asn1@evs-broadcast/node-asn1:
   version: 1.0.1
   resolution: "path-browserify@npm:1.0.1"
   checksum: 10/7e7368a5207e7c6b9051ef045711d0dc3c2b6203e96057e408e6e74d09f383061010d2be95cb8593fe6258a767c3e9fc6b2bfc7ce8d48ae8c3d9f6994cca9ad8
+  languageName: node
+  linkType: hard
+
+"path-case@npm:^3.0.4":
+  version: 3.0.4
+  resolution: "path-case@npm:3.0.4"
+  dependencies:
+    dot-case: "npm:^3.0.4"
+    tslib: "npm:^2.0.3"
+  checksum: 10/61de0526222629f65038a66f63330dd22d5b54014ded6636283e1d15364da38b3cf29e4433aa3f9d8b0dba407ae2b059c23b0104a34ee789944b1bc1c5c7e06d
   languageName: node
   linkType: hard
 
