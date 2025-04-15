@@ -125,10 +125,12 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 				})
 		}
 
-		render(): JSX.Element {
+		render(): JSX.Element | null {
 			const { t } = this.props
 			const secretStatus = (this.props.device.secretSettingsStatus || {}) as IngestDeviceSecretSettingsStatus
 			const device = this.props.device
+
+			if (!device.configManifest) return null
 
 			return (
 				<div>

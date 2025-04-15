@@ -34,7 +34,6 @@ import { PackageManagerIntegration } from './integration/expectedPackages'
 import { profiler } from './profiler'
 import { QueueStudioJob } from '../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import { DeviceConfigManifest } from '@sofie-automation/corelib/dist/deviceConfig'
 import {
 	PlayoutChangedResults,
 	PeripheralDeviceInitOptions,
@@ -58,7 +57,7 @@ import { insertInputDeviceTriggerIntoPreview } from '../publications/deviceTrigg
 import { receiveInputDeviceTrigger } from './deviceTriggers/observer'
 import { upsertBundles, generateTranslationBundleOriginId } from './translationsBundles'
 import { isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { JSONBlobParse, JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import {
 	applyAndValidateOverrides,
 	SomeObjectOverrideOp,
@@ -128,16 +127,16 @@ export namespace ServerPeripheralDeviceAPI {
 						? {
 								...options.configManifest,
 								translations: undefined, // unset the translations
-							}
+						  }
 						: undefined,
 
 					documentationUrl: options.documentationUrl,
-				},
+				} satisfies Partial<PeripheralDevice>,
 				$unset:
 					newVersionsStr !== oldVersionsStr
 						? {
 								disableVersionChecks: 1,
-							}
+						  }
 						: undefined,
 			})
 		} else {
@@ -167,11 +166,8 @@ export namespace ServerPeripheralDeviceAPI {
 					? {
 							...options.configManifest,
 							translations: undefined,
-						}
-					: literal<DeviceConfigManifest>({
-							deviceConfigSchema: JSONBlobStringify({}),
-							subdeviceManifest: {},
-						}),
+					  }
+					: undefined,
 
 				documentationUrl: options.documentationUrl,
 			})

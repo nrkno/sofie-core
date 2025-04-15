@@ -196,7 +196,9 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 						</div>
 					</div>
 
-					<GenericAttahcedSubDeviceSettingsComponent device={device} subDevices={this.props.subDevices} />
+					{!device.parentDeviceId && (
+						<GenericAttahcedSubDeviceSettingsComponent device={device} subDevices={this.props.subDevices} />
+					)}
 
 					{device &&
 					device.type === PeripheralDeviceType.PACKAGE_MANAGER &&

@@ -51,8 +51,8 @@ export function GenericSubDevicesTable({
 				literal<PeripheralDeviceTranslated>({
 					_id: device._id,
 					name: device.name || unprotectString(device._id),
-					subdeviceConfigSchema: device.configManifest.subdeviceConfigSchema,
-					subdeviceManifest: device.configManifest.subdeviceManifest,
+					subdeviceConfigSchema: device.configManifest?.subdeviceConfigSchema,
+					subdeviceManifest: device.configManifest?.subdeviceManifest ?? {},
 				})
 			)
 		}
