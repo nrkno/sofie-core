@@ -84,7 +84,7 @@ async function manipulateExpectedPackagesPublicationData(
 				{
 					projection: { _id: 1 },
 				}
-		  )) as Pick<DBRundown, '_id'>[])
+			)) as Pick<DBRundown, '_id'>[])
 		: []
 
 	return literal<PackageManagerPlayoutContext[]>([
@@ -95,7 +95,7 @@ async function manipulateExpectedPackagesPublicationData(
 						_id: activePlaylist._id,
 						active: !!activePlaylist.activationId,
 						rehearsal: !!activePlaylist.rehearsal,
-				  }
+					}
 				: null,
 			activeRundowns: activeRundowns.map((rundown) => {
 				return {

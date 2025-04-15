@@ -4,39 +4,43 @@ import { withTranslation, WithTranslation, TFunction } from 'react-i18next'
 
 import ClassNames from 'classnames'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { SegmentUi, PartUi, IOutputLayerUi, PieceUi } from '../SegmentTimelineContainer'
+import { SegmentUi, PartUi, IOutputLayerUi, PieceUi } from '../SegmentTimelineContainer.js'
 import {
 	TimingDataResolution,
 	TimingTickResolution,
 	WithTiming,
 	withTiming,
-} from '../../RundownView/RundownTiming/withTiming'
-import { RundownTiming } from '../../RundownView/RundownTiming/RundownTiming'
+} from '../../RundownView/RundownTiming/withTiming.js'
+import { RundownTiming } from '../../RundownView/RundownTiming/RundownTiming.js'
 
-import { RundownUtils } from '../../../lib/rundown'
-import { getCurrentTime } from '../../../lib/systemTime'
+import { RundownUtils } from '../../../lib/rundown.js'
+import { getCurrentTime } from '../../../lib/systemTime.js'
 
-import { DEBUG_MODE } from '../SegmentTimelineDebugMode'
-import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
+import { DEBUG_MODE } from '../SegmentTimelineDebugMode.js'
+import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData.js'
 
-import { IContextMenuContext } from '../../RundownView'
-import { CSSProperties } from '../../../styles/_cssVariables'
+import { IContextMenuContext } from '../../RundownView.js'
+import { CSSProperties } from '../../../styles/_cssVariables.js'
 import RundownViewEventBus, {
 	RundownViewEvents,
 	HighlightEvent,
 } from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
-import { LoopingIcon } from '../../../lib/ui/icons/looping'
-import { SegmentEnd } from '../../../lib/ui/icons/segment'
-import { getShowHiddenSourceLayers } from '../../../lib/localStorage'
+import { LoopingIcon } from '../../../lib/ui/icons/looping.js'
+import { SegmentEnd } from '../../../lib/ui/icons/segment.js'
+import { getShowHiddenSourceLayers } from '../../../lib/localStorage.js'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { getPartInstanceTimingId, getPartInstanceTimingValue, RundownTimingContext } from '../../../lib/rundownTiming'
-import { OutputGroup } from './OutputGroup'
-import { InvalidPartCover } from './InvalidPartCover'
+import {
+	getPartInstanceTimingId,
+	getPartInstanceTimingValue,
+	RundownTimingContext,
+} from '../../../lib/rundownTiming.js'
+import { OutputGroup } from './OutputGroup.js'
+import { InvalidPartCover } from './InvalidPartCover.js'
 import { DefaultUserOperationsTypes, ISourceLayer, UserEditingType } from '@sofie-automation/blueprints-integration'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
-import { LIVE_LINE_TIME_PADDING } from '../Constants'
-import * as RundownResolver from '../../../lib/RundownResolver'
-import { Events as MOSEvents } from '../../../lib/data/mos/plugin-support'
+import { LIVE_LINE_TIME_PADDING } from '../Constants.js'
+import * as RundownResolver from '../../../lib/RundownResolver.js'
+import { Events as MOSEvents } from '../../../lib/data/mos/plugin-support.js'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -138,7 +142,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 							? partInstance.part.displayDuration ||
 									props.timingDurations.partDurations[getPartInstanceTimingId(partInstance)]
 							: 0
-				  )
+					)
 				: 0,
 			dropActive: false,
 		}
@@ -266,7 +270,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 	}
 
 	componentDidMount(): void {
-		super.componentDidMount && super.componentDidMount()
+		super.componentDidMount?.()
 
 		window.addEventListener(MOSEvents.dragenter, this.onDragEnter)
 		window.addEventListener(MOSEvents.dragleave, this.onDragLeave)
@@ -289,7 +293,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 	}
 
 	componentWillUnmount(): void {
-		super.componentWillUnmount && super.componentWillUnmount()
+		super.componentWillUnmount?.()
 
 		window.removeEventListener(MOSEvents.dragenter, this.onDragEnter)
 		window.removeEventListener(MOSEvents.dragleave, this.onDragLeave)
@@ -307,7 +311,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 	}
 
 	componentDidUpdate(prevProps: Readonly<Translated<WithTiming<IProps>>>, prevState: IState, snapshot?: unknown): void {
-		super.componentDidUpdate && super.componentDidUpdate(prevProps, prevState, snapshot)
+		super.componentDidUpdate?.(prevProps, prevState, snapshot)
 		const tooSmallState = this.state.isTooSmallForDisplay || this.state.isTooSmallForText
 		const prevTooSmallState = prevState.isTooSmallForDisplay || prevState.isTooSmallForText
 		if (tooSmallState !== prevTooSmallState) {
@@ -320,7 +324,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 								this.state.liveDuration,
 								this.state.isDurationSettling,
 								this.state.durationSettlingStartsAt
-						  )
+							)
 						: false,
 					SegmentTimelinePartClass.getPartActualDuration(this.props.part, this.props.timingDurations)
 				)
@@ -495,13 +499,13 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 													this.state.isDurationSettling,
 													this.state.durationSettlingStartsAt
 												)
-										  )
+											)
 										: SegmentTimelinePartClass.getPartDuration(
 												this.props,
 												this.state.liveDuration,
 												this.state.isDurationSettling,
 												this.state.durationSettlingStartsAt
-										  )
+											)
 								}
 								displayDuration={SegmentTimelinePartClass.getPartDisplayDuration(
 									this.props.part,
@@ -766,8 +770,8 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 											{this.props.autoNextPart || this.props.part.willProbablyAutoNext
 												? t('Auto')
 												: this.state.isNext
-												? t('Next')
-												: null}
+													? t('Next')
+													: null}
 										</React.Fragment>
 									)}
 								</div>
@@ -801,8 +805,8 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 										(!this.state.isNext && this.props.part.willProbablyAutoNext)
 											? t('Auto')
 											: this.state.isNext || this.props.isAfterLastValidInSegmentAndItsLive
-											? t('Next')
-											: null}
+												? t('Next')
+												: null}
 									</React.Fragment>
 								)}
 								{this.props.isAfterLastValidInSegmentAndItsLive && !isPlaylistLooping && <SegmentEnd />}

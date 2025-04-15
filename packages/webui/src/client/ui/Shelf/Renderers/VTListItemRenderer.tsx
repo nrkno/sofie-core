@@ -1,19 +1,19 @@
 import React, { useState, useRef, useEffect, useContext } from 'react'
 import ClassNames from 'classnames'
-import { RundownUtils } from '../../../lib/rundown'
-import { ILayerItemRendererProps } from './ItemRendererFactory'
+import { RundownUtils } from '../../../lib/rundown.js'
+import { ILayerItemRendererProps } from './ItemRendererFactory.js'
 import { VTContent, LiveSpeakContent } from '@sofie-automation/blueprints-integration'
-import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
-import { getElementWidth } from '../../../utils/dimensions'
-import { StyledTimecode } from '../../../lib/StyledTimecode'
-import { ActionAdLibHotkeyPreview } from '../../../lib/triggers/ActionAdLibHotkeyPreview'
+import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions.js'
+import { getElementWidth } from '../../../utils/dimensions.js'
+import { StyledTimecode } from '../../../lib/StyledTimecode.js'
+import { ActionAdLibHotkeyPreview } from '../../../lib/triggers/ActionAdLibHotkeyPreview.js'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { HourglassIconSmall } from '../../../lib/ui/icons/notifications'
+import { HourglassIconSmall } from '../../../lib/ui/icons/notifications.js'
 import {
 	PreviewPopUpContext,
 	IPreviewPopUpSession,
 	convertSourceLayerItemToPreview,
-} from '../../PreviewPopUp/PreviewPopUpContext'
+} from '../../PreviewPopUp/PreviewPopUpContext.js'
 
 export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps> = (
 	props: ILayerItemRendererProps
@@ -112,12 +112,12 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 			? 'rundownBaselineAdLibAction'
 			: 'adLibAction'
 		: props.adLibListItem.isClearSourceLayer
-		? 'clearSourceLayer'
-		: props.adLibListItem.isSticky
-		? 'sticky'
-		: props.adLibListItem.isGlobal
-		? 'rundownBaselineAdLibItem'
-		: 'adLibPiece'
+			? 'clearSourceLayer'
+			: props.adLibListItem.isSticky
+				? 'sticky'
+				: props.adLibListItem.isGlobal
+					? 'rundownBaselineAdLibItem'
+					: 'adLibPiece'
 
 	return (
 		<>

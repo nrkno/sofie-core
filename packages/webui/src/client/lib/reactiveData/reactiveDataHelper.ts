@@ -1,6 +1,6 @@
 import { Tracker } from 'meteor/tracker'
 import { AllPubSubTypes } from '@sofie-automation/meteor-lib/dist/api/pubsub'
-import { meteorSubscribe } from '../meteorApi'
+import { meteorSubscribe } from '../meteorApi.js'
 import { Meteor } from 'meteor/meteor'
 
 /**

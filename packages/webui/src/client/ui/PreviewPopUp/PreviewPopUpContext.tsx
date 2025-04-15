@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { PreviewPopUp, PreviewPopUpHandle } from './PreviewPopUp'
+import { PreviewPopUp, PreviewPopUpHandle } from './PreviewPopUp.js'
 import { Padding, Placement } from '@popperjs/core'
-import { PreviewPopUpContent } from './PreviewPopUpContent'
+import { PreviewPopUpContent } from './PreviewPopUpContent.js'
 import {
 	JSONBlobParse,
 	NoraPayload,
@@ -19,9 +19,9 @@ import { ReadonlyDeep, ReadonlyObjectDeep } from 'type-fest/source/readonly-deep
 import { PieceContentStatusObj } from '@sofie-automation/corelib/dist/dataModel/PieceContentStatus'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import _ from 'underscore'
-import { IAdLibListItem } from '../Shelf/AdLibListItem'
+import { IAdLibListItem } from '../Shelf/AdLibListItem.js'
 import { PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { createPrivateApiPath } from '../../url'
+import { createPrivateApiPath } from '../../url.js'
 
 type VirtualElement = {
 	getBoundingClientRect: () => DOMRect
@@ -143,19 +143,19 @@ export function convertSourceLayerItemToPreview(
 					? {
 							type: 'video',
 							src: contentStatus.previewUrl,
-					  }
+						}
 					: contentStatus?.thumbnailUrl
-					? {
-							type: 'image',
-							src: contentStatus.thumbnailUrl,
-					  }
-					: undefined,
+						? {
+								type: 'image',
+								src: contentStatus.thumbnailUrl,
+							}
+						: undefined,
 				content.lastWords
 					? {
 							type: 'inOutWords',
 							in: content.firstWords,
 							out: content.lastWords,
-					  }
+						}
 					: undefined,
 				...(contentStatus?.messages?.map<PreviewContent>((m) => ({
 					type: 'warning',
@@ -204,11 +204,11 @@ export function convertSourceLayerItemToPreview(
 										step: payload.step,
 									},
 								},
-						  }
+							}
 						: {
 								type: 'data',
 								content: tableProps,
-						  },
+							},
 					item.content.step && {
 						type: 'stepCount',
 						current: item.content.step.current,

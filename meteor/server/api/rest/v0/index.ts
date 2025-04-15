@@ -4,7 +4,7 @@
  * You should generally use the latest REST API for integrating with Sofie.
  */
 
-import * as _ from 'underscore'
+import _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { MeteorMethodSignatures } from '../../../methods'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'

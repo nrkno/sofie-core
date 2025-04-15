@@ -1,7 +1,7 @@
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import Moment from 'react-moment'
-import { TimingDataResolution, TimingTickResolution, withTiming, WithTiming } from './RundownTiming/withTiming'
-import { RundownUtils } from '../../lib/rundown'
+import { TimingDataResolution, TimingTickResolution, withTiming, WithTiming } from './RundownTiming/withTiming.js'
+import { RundownUtils } from '../../lib/rundown.js'
 import { useTranslation } from 'react-i18next'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
@@ -39,10 +39,10 @@ const MarkerCountdownText = withTiming<MarkerCountdownProps, {}>({
 				{time > 0
 					? t('(in: {{time}})', {
 							time: RundownUtils.formatDiffToTimecode(time, false, true, true, true, true),
-					  })
+						})
 					: t('({{time}} ago)', {
 							time: RundownUtils.formatDiffToTimecode(time, false, true, true, true, true),
-					  })}
+						})}
 			</span>
 		)
 	}

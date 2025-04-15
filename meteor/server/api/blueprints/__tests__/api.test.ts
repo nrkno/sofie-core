@@ -1,4 +1,4 @@
-import * as _ from 'underscore'
+import _ from 'underscore'
 import { setupDefaultStudioEnvironment, packageBlueprint } from '../../../../__mocks__/helpers/database'
 import { literal, getRandomId, protectString } from '../../../lib/tempLib'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'

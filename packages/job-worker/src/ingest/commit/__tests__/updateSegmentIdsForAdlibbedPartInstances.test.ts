@@ -1,19 +1,19 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import { updateSegmentIdsForAdlibbedPartInstances } from '../updateSegmentIdsForAdlibbedPartInstances'
-import { BeforePartMapItem } from '../../commit'
+import { updateSegmentIdsForAdlibbedPartInstances } from '../updateSegmentIdsForAdlibbedPartInstances.js'
+import { BeforePartMapItem } from '../../commit.js'
 import { PartId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { mock } from 'jest-mock-extended'
-import { ICollection } from '../../../db'
-import { JobContext } from '../../../jobs'
+import { ICollection } from '../../../db/index.js'
+import { JobContext } from '../../../jobs/index.js'
 import { clone, literal } from '@sofie-automation/corelib/dist/lib'
 import { PartialDeep } from 'type-fest'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { IngestModel } from '../../model/IngestModel'
-import { IngestPartModel } from '../../model/IngestPartModel'
-import _ = require('underscore')
+import { IngestModel } from '../../model/IngestModel.js'
+import { IngestPartModel } from '../../model/IngestPartModel.js'
+import _ from 'underscore'
 import { AnyBulkWriteOperation } from 'mongodb'
 
 const mockOptions = {
@@ -33,10 +33,10 @@ describe('updateSegmentsForAdlibbedPartInstances', () => {
 					{
 						PartInstances: fakeCollection,
 					},
-					mockOptions,
+					mockOptions
 				),
 			},
-			mockOptions,
+			mockOptions
 		)
 
 		const expectedQuery = {
@@ -64,14 +64,14 @@ describe('updateSegmentsForAdlibbedPartInstances', () => {
 				{
 					part: part as any,
 				},
-				mockOptions,
-			),
+				mockOptions
+			)
 		)
 		const ingestModel = mock<IngestModel>(
 			{
 				findPart: (id: PartId) => partModels.find((p) => p.part._id === id),
 			},
-			mockOptions,
+			mockOptions
 		)
 		;(ingestModel as any).rundownId = rundownId
 
@@ -129,7 +129,7 @@ describe('updateSegmentsForAdlibbedPartInstances', () => {
 				segmentParts.map((part) => ({
 					id: part._id,
 					rank: part._rank,
-				})),
+				}))
 			)
 		}
 
@@ -140,7 +140,7 @@ describe('updateSegmentsForAdlibbedPartInstances', () => {
 		segmentId: SegmentId,
 		partId: string,
 		rank: number,
-		orphaned: DBPartInstance['orphaned'],
+		orphaned: DBPartInstance['orphaned']
 	): DBPartInstance {
 		return literal<PartialDeep<DBPartInstance>>({
 			_id: protectString(`instance_${partId}`),

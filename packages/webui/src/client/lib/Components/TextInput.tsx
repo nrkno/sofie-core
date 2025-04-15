@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import ClassNames from 'classnames'
-import { DropdownInputOption } from './DropdownInput'
+import { DropdownInputOption } from './DropdownInput.js'
 import { getRandomString } from '@sofie-automation/corelib/dist/lib'
 import Form from 'react-bootstrap/Form'
 

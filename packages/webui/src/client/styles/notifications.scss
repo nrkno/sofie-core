@@ -53,7 +53,9 @@
 
 		&.notification-pop-up--dismiss {
 			opacity: 0;
-			transition: opacity 0.5s ease-in, transform 0.5s ease-in;
+			transition:
+				opacity 0.5s ease-in,
+				transform 0.5s ease-in;
 		}
 
 		> .notification-pop-up__header {
@@ -420,15 +422,21 @@
 			@keyframes highlight {
 				0% {
 					background-color: rgb(206, 240, 255);
-					box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 1px 14px var(--ui-button-primary--translucent);
+					box-shadow:
+						0 1px 4px rgba(0, 0, 0, 0.3),
+						0 1px 14px var(--ui-button-primary--translucent);
 				}
 				50% {
 					background-color: rgb(206, 240, 255);
-					box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 1px 14px var(--ui-button-primary--translucent);
+					box-shadow:
+						0 1px 4px rgba(0, 0, 0, 0.3),
+						0 1px 14px var(--ui-button-primary--translucent);
 				}
 				51% {
 					background-color: #fff;
-					box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 1px 14px var(--ui-button-primary--transparent);
+					box-shadow:
+						0 1px 4px rgba(0, 0, 0, 0.3),
+						0 1px 14px var(--ui-button-primary--transparent);
 				}
 			}
 
@@ -448,7 +456,9 @@
 	transition: right 1s ease-out;
 
 	&.notification-pop-ups--empty {
-		transition: right 1s ease-out, visibility 0s 5s;
+		transition:
+			right 1s ease-out,
+			visibility 0s 5s;
 	}
 }
 
@@ -457,7 +467,9 @@
 	transition: right 1s ease-out;
 
 	&.notification-pop-ups--empty {
-		transition: right 1s ease-out, visibility 0s 5s;
+		transition:
+			right 1s ease-out,
+			visibility 0s 5s;
 	}
 }
 

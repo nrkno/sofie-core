@@ -3,10 +3,10 @@ import { useTranslation } from 'react-i18next'
 import { IGUIContextFilterLink } from '@sofie-automation/blueprints-integration'
 import classNames from 'classnames'
 import { usePopper } from 'react-popper'
-import { sameWidth } from '../../../../../../lib/popperUtils'
+import { sameWidth } from '../../../../../../lib/popperUtils.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleRight, faCheck, faTrash } from '@fortawesome/free-solid-svg-icons'
-import { catchError } from '../../../../../../lib/lib'
+import { catchError } from '../../../../../../lib/lib.js'
 import Button from 'react-bootstrap/Button'
 
 interface IProps {

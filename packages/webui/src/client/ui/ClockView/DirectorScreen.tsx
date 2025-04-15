@@ -1,20 +1,25 @@
 import ClassNames from 'classnames'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
+import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer.js'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { withTiming, WithTiming } from '../RundownView/RundownTiming/withTiming'
-import { useSubscription, useSubscriptions, useTracker, withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { getCurrentTime } from '../../lib/systemTime'
+import { withTiming, WithTiming } from '../RundownView/RundownTiming/withTiming.js'
+import {
+	useSubscription,
+	useSubscriptions,
+	useTracker,
+	withTracker,
+} from '../../lib/ReactMeteorData/ReactMeteorData.js'
+import { getCurrentTime } from '../../lib/systemTime.js'
 import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
-import { PieceIconContainer } from './ClockViewPieceIcons/ClockViewPieceIcon'
-import { PieceNameContainer } from './ClockViewPieceIcons/ClockViewPieceName'
-import { Timediff } from './Timediff'
-import { RundownUtils } from '../../lib/rundown'
+import { PieceIconContainer } from './ClockViewPieceIcons/ClockViewPieceIcon.js'
+import { PieceNameContainer } from './ClockViewPieceIcons/ClockViewPieceName.js'
+import { Timediff } from './Timediff.js'
+import { RundownUtils } from '../../lib/rundown.js'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { PieceFreezeContainer } from './ClockViewPieceIcons/ClockViewFreezeCount'
+import { PieceFreezeContainer } from './ClockViewPieceIcons/ClockViewFreezeCount.js'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import {
 	RundownId,
@@ -25,25 +30,25 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { calculatePartInstanceExpectedDurationWithTransition } from '@sofie-automation/corelib/dist/playout/timings'
-import { getPlaylistTimingDiff } from '../../lib/rundownTiming'
+import { getPlaylistTimingDiff } from '../../lib/rundownTiming.js'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
-import { UIShowStyleBases, UIStudios } from '../Collections'
+import { UIShowStyleBases, UIStudios } from '../Collections.js'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
-import { PieceInstances, RundownPlaylists, Rundowns, ShowStyleVariants } from '../../collections'
-import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
+import { PieceInstances, RundownPlaylists, Rundowns, ShowStyleVariants } from '../../collections/index.js'
+import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil.js'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
-import { useSetDocumentClass } from '../util/useSetDocumentClass'
-import { useRundownAndShowStyleIdsForPlaylist } from '../util/useRundownAndShowStyleIdsForPlaylist'
-import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil'
-import { CurrentPartOrSegmentRemaining } from '../RundownView/RundownTiming/CurrentPartOrSegmentRemaining'
+import { useSetDocumentClass } from '../util/useSetDocumentClass.js'
+import { useRundownAndShowStyleIdsForPlaylist } from '../util/useRundownAndShowStyleIdsForPlaylist.js'
+import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil.js'
+import { CurrentPartOrSegmentRemaining } from '../RundownView/RundownTiming/CurrentPartOrSegmentRemaining.js'
 import {
 	OverUnderClockComponent,
 	PlannedEndComponent,
 	TimeSincePlannedEndComponent,
 	TimeToPlannedEndComponent,
-} from '../../lib/Components/CounterComponents'
-import { AdjustLabelFit } from '../util/AdjustLabelFit'
-import { AutoNextStatus } from '../RundownView/RundownTiming/AutoNextStatus'
+} from '../../lib/Components/CounterComponents.js'
+import { AdjustLabelFit } from '../util/AdjustLabelFit.js'
+import { AutoNextStatus } from '../RundownView/RundownTiming/AutoNextStatus.js'
 import { useTranslation } from 'react-i18next'
 
 interface SegmentUi extends DBSegment {

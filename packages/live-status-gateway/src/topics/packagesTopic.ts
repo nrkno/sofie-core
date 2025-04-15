@@ -6,8 +6,8 @@ import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protected
 import { PickKeys } from '@sofie-automation/shared-lib/dist/lib/types'
 import { Logger } from 'winston'
 import { WebSocket } from 'ws'
-import { CollectionHandlers } from '../liveStatusServer'
-import { WebSocketTopic, WebSocketTopicBase } from '../wsHandler'
+import { CollectionHandlers } from '../liveStatusServer.js'
+import { WebSocketTopic, WebSocketTopicBase } from '../wsHandler.js'
 import { PackagesEvent, PackageStatus } from '@sofie-automation/live-status-gateway-api'
 
 const THROTTLE_PERIOD_MS = 200

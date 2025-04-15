@@ -1,7 +1,7 @@
-import { SegmentsTopic } from '../segmentsTopic'
+import { SegmentsTopic } from '../segmentsTopic.js'
 import { protectString, unprotectString } from '@sofie-automation/server-core-integration'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { makeMockHandlers, makeMockLogger, makeMockSubscriber, makeTestPlaylist } from './utils'
+import { makeMockHandlers, makeMockLogger, makeMockSubscriber, makeTestPlaylist } from './utils.js'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { SegmentsEvent } from '@sofie-automation/live-status-gateway-api'
 

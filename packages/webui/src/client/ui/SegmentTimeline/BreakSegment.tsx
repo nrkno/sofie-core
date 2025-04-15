@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import Moment from 'react-moment'
-import { RundownUtils } from '../../lib/rundown'
-import { WithTiming, withTiming } from '../RundownView/RundownTiming/withTiming'
+import { RundownUtils } from '../../lib/rundown.js'
+import { WithTiming, withTiming } from '../RundownView/RundownTiming/withTiming.js'
 
 interface IProps {
 	breakTime: number | undefined

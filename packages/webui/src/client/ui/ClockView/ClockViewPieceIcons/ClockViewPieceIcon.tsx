@@ -1,4 +1,4 @@
-import { useSubscription, useTracker } from '../../../lib/ReactMeteorData/ReactMeteorData'
+import { useSubscription, useTracker } from '../../../lib/ReactMeteorData/ReactMeteorData.js'
 import {
 	SourceLayerType,
 	ISourceLayer,
@@ -6,18 +6,18 @@ import {
 	RemoteContent,
 	EvsContent,
 } from '@sofie-automation/blueprints-integration'
-import { CamInputIcon } from './ClockViewRenderers/CamInputIcon'
-import { VTInputIcon } from './ClockViewRenderers/VTInputIcon'
-import SplitInputIcon from './ClockViewRenderers/SplitInputIcon'
-import { RemoteInputIcon } from './ClockViewRenderers/RemoteInputIcon'
-import { LiveSpeakInputIcon } from './ClockViewRenderers/LiveSpeakInputIcon'
-import { RemoteSpeakInputIcon } from './ClockViewRenderers/RemoteSpeakInputIcon'
-import { GraphicsInputIcon } from './ClockViewRenderers/GraphicsInputIcon'
-import { UnknownInputIcon } from './ClockViewRenderers/UnknownInputIcon'
+import { CamInputIcon } from './ClockViewRenderers/CamInputIcon.js'
+import { VTInputIcon } from './ClockViewRenderers/VTInputIcon.js'
+import SplitInputIcon from './ClockViewRenderers/SplitInputIcon.js'
+import { RemoteInputIcon } from './ClockViewRenderers/RemoteInputIcon.js'
+import { LiveSpeakInputIcon } from './ClockViewRenderers/LiveSpeakInputIcon.js'
+import { RemoteSpeakInputIcon } from './ClockViewRenderers/RemoteSpeakInputIcon.js'
+import { GraphicsInputIcon } from './ClockViewRenderers/GraphicsInputIcon.js'
+import { UnknownInputIcon } from './ClockViewRenderers/UnknownInputIcon.js'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { findPieceInstanceToShow, findPieceInstanceToShowFromInstances } from './utils'
-import LocalInputIcon from './ClockViewRenderers/LocalInputIcon'
+import { findPieceInstanceToShow, findPieceInstanceToShowFromInstances } from './utils.js'
+import LocalInputIcon from './ClockViewRenderers/LocalInputIcon.js'
 import {
 	PartInstanceId,
 	RundownId,

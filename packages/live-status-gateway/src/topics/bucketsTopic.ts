@@ -8,11 +8,11 @@ import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protected
 import { PickKeys } from '@sofie-automation/shared-lib/dist/lib/types'
 import { Logger } from 'winston'
 import { WebSocket } from 'ws'
-import { ShowStyleBaseExt } from '../collections/showStyleBaseHandler'
-import { CollectionHandlers } from '../liveStatusServer'
-import { WebSocketTopic, WebSocketTopicBase } from '../wsHandler'
-import { sortContent, WithSortingMetadata } from './helpers/contentSorting'
-import _ = require('underscore')
+import { ShowStyleBaseExt } from '../collections/showStyleBaseHandler.js'
+import { CollectionHandlers } from '../liveStatusServer.js'
+import { WebSocketTopic, WebSocketTopicBase } from '../wsHandler.js'
+import { sortContent, WithSortingMetadata } from './helpers/contentSorting.js'
+import _ from 'underscore'
 import {
 	BucketsEvent,
 	BucketStatus,
@@ -135,7 +135,7 @@ export class BucketsTopic extends WebSocketTopicBase implements WebSocketTopic {
 						name: t.data,
 						label: interpollateTranslation(t.display.label.key, t.display.label.args),
 					})
-			  )
+				)
 			: []
 		const name = interpollateTranslation(action.display.label.key, action.display.label.args)
 		return {

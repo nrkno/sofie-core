@@ -1,5 +1,5 @@
 import { ProtectedString, protectString, unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
-import type { DDPConnector } from './ddpConnector'
+import type { DDPConnector } from './ddpConnector.js'
 
 export type SubscriptionId = ProtectedString<'SubscriptionId'>
 
@@ -18,7 +18,11 @@ export class SubscriptionsHelper<PubSubTypes> {
 	>()
 	readonly #otherSubscriptions = new Set<SubscriptionId>()
 
-	constructor(private readonly emitError: (err: string) => void, ddp: DDPConnector, deviceToken: string) {
+	constructor(
+		private readonly emitError: (err: string) => void,
+		ddp: DDPConnector,
+		deviceToken: string
+	) {
 		this.#ddp = ddp
 		this.#deviceToken = deviceToken
 	}

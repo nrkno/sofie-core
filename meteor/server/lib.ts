@@ -1,5 +1,5 @@
 import process from 'process'
-import * as _ from 'underscore'
+import _ from 'underscore'
 import fs from 'fs'
 import path from 'path'
 import { logger } from './logging'
@@ -31,7 +31,7 @@ export type Translations = Record<string, string>
 export const public_dir = Meteor.isProduction
 	? path.join(process.cwd(), '../web.browser/app')
 	: // In development, find the webui package and use its public directory
-	  path.join(process.cwd(), '../../../../../../packages/webui/public')
+		path.join(process.cwd(), '../../../../../../packages/webui/public')
 
 export function getRootSubpath(): string {
 	// @ts-expect-error Untyped meteor export

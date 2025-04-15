@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { check, Match } from '../lib/check'
-import * as _ from 'underscore'
+import _ from 'underscore'
 import { PeripheralDeviceType, PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { PeripheralDeviceCommands, PeripheralDevices, Rundowns, Studios, UserActionsLog } from '../collections'
 import { protectString, stringifyObjects, literal, unprotectString } from '../lib/tempLib'
@@ -128,7 +128,7 @@ export namespace ServerPeripheralDeviceAPI {
 						? {
 								...options.configManifest,
 								translations: undefined, // unset the translations
-						  }
+							}
 						: undefined,
 
 					documentationUrl: options.documentationUrl,
@@ -137,7 +137,7 @@ export namespace ServerPeripheralDeviceAPI {
 					newVersionsStr !== oldVersionsStr
 						? {
 								disableVersionChecks: 1,
-						  }
+							}
 						: undefined,
 			})
 		} else {
@@ -167,11 +167,11 @@ export namespace ServerPeripheralDeviceAPI {
 					? {
 							...options.configManifest,
 							translations: undefined,
-					  }
+						}
 					: literal<DeviceConfigManifest>({
 							deviceConfigSchema: JSONBlobStringify({}),
 							subdeviceManifest: {},
-					  }),
+						}),
 
 				documentationUrl: options.documentationUrl,
 			})
@@ -358,7 +358,7 @@ export namespace ServerPeripheralDeviceAPI {
 		if (really) {
 			logger.info('KillProcess command received from ' + peripheralDevice._id + ', shutting down in 1000ms!')
 			setTimeout(() => {
-				// eslint-disable-next-line no-process-exit
+				// eslint-disable-next-line n/no-process-exit
 				process.exit(0)
 			}, 1000)
 			return true

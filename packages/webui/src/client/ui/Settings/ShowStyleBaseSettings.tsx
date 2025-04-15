@@ -1,26 +1,26 @@
 import * as React from 'react'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { Spinner } from '../../lib/Spinner'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data.js'
+import { Spinner } from '../../lib/Spinner.js'
 import { OutputLayers, DBShowStyleBase, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import RundownLayoutEditor from './RundownLayoutEditor'
+import RundownLayoutEditor from './RundownLayoutEditor.js'
 import { DBStudio, MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { BlueprintManifestType, IShowStyleConfigPreset } from '@sofie-automation/blueprints-integration'
-import { RundownLayoutsAPI } from '../../lib/rundownLayouts'
-import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredActionsEditor'
-import { SourceLayerSettings } from './ShowStyle/SourceLayer'
-import { OutputLayerSettings } from './ShowStyle/OutputLayer'
-import { HotkeyLegendSettings } from './ShowStyle/HotkeyLegend'
-import { ShowStyleVariantsSettings } from './ShowStyle/VariantSettings'
-import { ShowStyleGenericProperties } from './ShowStyle/Generic'
+import { RundownLayoutsAPI } from '../../lib/rundownLayouts.js'
+import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredActionsEditor.js'
+import { SourceLayerSettings } from './ShowStyle/SourceLayer.js'
+import { OutputLayerSettings } from './ShowStyle/OutputLayer.js'
+import { HotkeyLegendSettings } from './ShowStyle/HotkeyLegend.js'
+import { ShowStyleVariantsSettings } from './ShowStyle/VariantSettings.js'
+import { ShowStyleGenericProperties } from './ShowStyle/Generic.js'
 import { Switch, Route, Redirect } from 'react-router-dom'
-import { ErrorBoundary } from '../../lib/ErrorBoundary'
+import { ErrorBoundary } from '../../lib/ErrorBoundary.js'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../../collections'
+import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../../collections/index.js'
 import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
-import { ShowStyleBaseBlueprintConfigurationSettings } from './ShowStyle/BlueprintConfiguration'
+import { ShowStyleBaseBlueprintConfigurationSettings } from './ShowStyle/BlueprintConfiguration/index.js'
 
 interface IProps {
 	match: {
@@ -54,13 +54,13 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				supportedShowStyleBase: {
 					$in: [showStyleBase._id],
 				},
-		  }).fetch()
+			}).fetch()
 		: []
 	const blueprint = showStyleBase
 		? Blueprints.findOne({
 				_id: showStyleBase.blueprintId,
 				blueprintType: BlueprintManifestType.SHOWSTYLE,
-		  })
+			})
 		: undefined
 
 	const mappings: { [studioId: string]: MappingsExt } = {}
@@ -84,7 +84,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							_id: 1,
 						},
 					}
-			  ).fetch()
+				).fetch()
 			: [],
 		compatibleStudios: compatibleStudios,
 		blueprintConfigSchema: blueprint?.showStyleConfigSchema

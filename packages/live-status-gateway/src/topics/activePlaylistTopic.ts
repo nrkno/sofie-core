@@ -8,16 +8,16 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { assertNever, literal } from '@sofie-automation/shared-lib/dist/lib/lib'
-import { SelectedPartInstances } from '../collections/partInstancesHandler'
-import { ShowStyleBaseExt } from '../collections/showStyleBaseHandler'
-import { WebSocketTopicBase, WebSocketTopic } from '../wsHandler'
-import { calculateCurrentSegmentTiming } from './helpers/segmentTiming'
+import { SelectedPartInstances } from '../collections/partInstancesHandler.js'
+import { ShowStyleBaseExt } from '../collections/showStyleBaseHandler.js'
+import { WebSocketTopicBase, WebSocketTopic } from '../wsHandler.js'
+import { calculateCurrentSegmentTiming } from './helpers/segmentTiming.js'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import _ = require('underscore')
-import { calculateCurrentPartTiming } from './helpers/partTiming'
-import { getCurrentSegmentParts } from './helpers/segmentParts'
-import { SelectedPieceInstances, PieceInstanceMin } from '../collections/pieceInstancesHandler'
-import { toPieceStatus } from './helpers/pieceStatus'
+import _ from 'underscore'
+import { calculateCurrentPartTiming } from './helpers/partTiming.js'
+import { getCurrentSegmentParts } from './helpers/segmentParts.js'
+import { SelectedPieceInstances, PieceInstanceMin } from '../collections/pieceInstancesHandler.js'
+import { toPieceStatus } from './helpers/pieceStatus.js'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 import { normalizeArray } from '@sofie-automation/corelib/dist/lib'
@@ -32,7 +32,7 @@ import {
 	QuickLoopMarkerType as QuickLoopMarkerStatusType,
 } from '@sofie-automation/live-status-gateway-api'
 
-import { CollectionHandlers } from '../liveStatusServer'
+import { CollectionHandlers } from '../liveStatusServer.js'
 import areElementsShallowEqual from '@sofie-automation/shared-lib/dist/lib/isShallowEqual'
 import { PickKeys } from '@sofie-automation/shared-lib/dist/lib/types'
 
@@ -121,7 +121,7 @@ export class ActivePlaylistTopic extends WebSocketTopicBase implements WebSocket
 											toPieceStatus(piece, this._showStyleBaseExt)
 										) ?? [],
 									publicData: currentPart.publicData,
-							  })
+								})
 							: null,
 					currentSegment:
 						this._currentPartInstance && currentPart && this._currentSegment
@@ -138,7 +138,7 @@ export class ActivePlaylistTopic extends WebSocketTopicBase implements WebSocket
 										this._partInstancesInCurrentSegment,
 										currentSegmentParts
 									),
-							  })
+								})
 							: null,
 					nextPart: nextPart
 						? literal<PartStatus>({
@@ -151,7 +151,7 @@ export class ActivePlaylistTopic extends WebSocketTopicBase implements WebSocket
 										toPieceStatus(piece, this._showStyleBaseExt)
 									) ?? [],
 								publicData: nextPart.publicData,
-						  })
+							})
 						: null,
 					quickLoop: this.transformQuickLoopStatus(),
 					publicData: this._activePlaylist.publicData,
@@ -168,7 +168,7 @@ export class ActivePlaylistTopic extends WebSocketTopicBase implements WebSocket
 								? this._activePlaylist.timing.expectedEnd
 								: undefined,
 					},
-			  })
+				})
 			: literal<ActivePlaylistEvent>({
 					event: 'activePlaylist',
 					id: null,
@@ -182,7 +182,7 @@ export class ActivePlaylistTopic extends WebSocketTopicBase implements WebSocket
 					timing: {
 						timingMode: ActivePlaylistTimingMode.NONE,
 					},
-			  })
+				})
 
 		this.sendMessage(subscribers, message)
 	}

@@ -23,7 +23,7 @@ import {
 	RundownId,
 	SegmentId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { JobContext, ProcessedShowStyleCompound } from '../jobs'
+import { JobContext, ProcessedShowStyleCompound } from '../jobs/index.js'
 import {
 	EmptyPieceTimelineObjectsBlob,
 	Piece,
@@ -40,11 +40,11 @@ import {
 	interpollateTranslation,
 	wrapTranslatableMessageFromBlueprints,
 } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { setDefaultIdOnExpectedPackages } from '../ingest/expectedPackages'
-import { logger } from '../logging'
+import { setDefaultIdOnExpectedPackages } from '../ingest/expectedPackages.js'
+import { logger } from '../logging.js'
 import { validateTimeline } from 'superfly-timeline'
 import { ReadonlyDeep } from 'type-fest'
-import { translateUserEditPropertiesFromBlueprint, translateUserEditsFromBlueprint } from './context/lib'
+import { translateUserEditPropertiesFromBlueprint, translateUserEditsFromBlueprint } from './context/lib.js'
 
 function getIdHash(docType: string, usedIds: Map<string, number>, uniqueId: string): string {
 	const count = usedIds.get(uniqueId)
@@ -503,7 +503,7 @@ function processAdLibActionITranslatableMessages<
 			}
 		})[]
 	},
-	T extends IBlueprintActionManifest
+	T extends IBlueprintActionManifest,
 >(itemOrig: T, blueprintId: BlueprintId, rank?: number, label?: string): Pick<K, 'display' | 'triggerModes'> {
 	return {
 		display: {

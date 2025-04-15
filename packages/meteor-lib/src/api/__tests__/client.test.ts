@@ -1,4 +1,4 @@
-import { ClientAPI } from '../client'
+import { ClientAPI } from '../client.js'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 
 describe('ClientAPI', () => {

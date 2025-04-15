@@ -1,5 +1,5 @@
-import { ClientAPI } from './client'
-import { EvaluationBase } from '../collections/Evaluations'
+import { ClientAPI } from './client.js'
+import { EvaluationBase } from '../collections/Evaluations.js'
 import { Bucket } from '@sofie-automation/corelib/dist/dataModel/Bucket'
 import { IngestAdlib, ActionUserData, UserOperationTarget } from '@sofie-automation/blueprints-integration'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'

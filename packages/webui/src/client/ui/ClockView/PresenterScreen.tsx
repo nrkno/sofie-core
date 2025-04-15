@@ -1,21 +1,26 @@
 import ClassNames from 'classnames'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
+import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer.js'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { withTiming, WithTiming } from '../RundownView/RundownTiming/withTiming'
-import { useSubscription, useSubscriptions, useTracker, withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { withTiming, WithTiming } from '../RundownView/RundownTiming/withTiming.js'
+import {
+	useSubscription,
+	useSubscriptions,
+	useTracker,
+	withTracker,
+} from '../../lib/ReactMeteorData/ReactMeteorData.js'
 import { protectString, unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
-import { getCurrentTime } from '../../lib/systemTime'
+import { getCurrentTime } from '../../lib/systemTime.js'
 import { PartInstance } from '@sofie-automation/meteor-lib/dist/collections/PartInstances'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
-import { PieceIconContainer } from '../PieceIcons/PieceIcon'
-import { PieceNameContainer } from '../PieceIcons/PieceName'
-import { Timediff } from './Timediff'
-import { RundownUtils } from '../../lib/rundown'
+import { PieceIconContainer } from '../PieceIcons/PieceIcon.js'
+import { PieceNameContainer } from '../PieceIcons/PieceName.js'
+import { Timediff } from './Timediff.js'
+import { RundownUtils } from '../../lib/rundown.js'
 import { CountdownType, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { PieceCountdownContainer } from '../PieceIcons/PieceCountdown'
+import { PieceCountdownContainer } from '../PieceIcons/PieceCountdown.js'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { DashboardLayout, RundownLayoutBase } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
 import {
@@ -27,21 +32,27 @@ import {
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { RundownLayoutsAPI } from '../../lib/rundownLayouts'
-import { ShelfDashboardLayout } from '../Shelf/ShelfDashboardLayout'
+import { RundownLayoutsAPI } from '../../lib/rundownLayouts.js'
+import { ShelfDashboardLayout } from '../Shelf/ShelfDashboardLayout.js'
 import { parse as queryStringParse } from 'query-string'
 import { calculatePartInstanceExpectedDurationWithTransition } from '@sofie-automation/corelib/dist/playout/timings'
-import { getPlaylistTimingDiff } from '../../lib/rundownTiming'
+import { getPlaylistTimingDiff } from '../../lib/rundownTiming.js'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
-import { UIShowStyleBases, UIStudios } from '../Collections'
+import { UIShowStyleBases, UIStudios } from '../Collections.js'
 import { UIStudio } from '@sofie-automation/meteor-lib/dist/api/studios'
-import { PieceInstances, RundownLayouts, RundownPlaylists, Rundowns, ShowStyleVariants } from '../../collections'
-import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
+import {
+	PieceInstances,
+	RundownLayouts,
+	RundownPlaylists,
+	Rundowns,
+	ShowStyleVariants,
+} from '../../collections/index.js'
+import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil.js'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
-import { useSetDocumentClass, useSetDocumentDarkTheme } from '../util/useSetDocumentClass'
-import { useRundownAndShowStyleIdsForPlaylist } from '../util/useRundownAndShowStyleIdsForPlaylist'
-import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil'
-import { CurrentPartOrSegmentRemaining } from '../RundownView/RundownTiming/CurrentPartOrSegmentRemaining'
+import { useSetDocumentClass, useSetDocumentDarkTheme } from '../util/useSetDocumentClass.js'
+import { useRundownAndShowStyleIdsForPlaylist } from '../util/useRundownAndShowStyleIdsForPlaylist.js'
+import { RundownPlaylistClientUtil } from '../../lib/rundownPlaylistUtil.js'
+import { CurrentPartOrSegmentRemaining } from '../RundownView/RundownTiming/CurrentPartOrSegmentRemaining.js'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>

@@ -1,14 +1,14 @@
 import * as React from 'react'
 import ClassNames from 'classnames'
-import { useTracker } from '../lib/ReactMeteorData/ReactMeteorData'
-import { SupportIcon } from '../lib/ui/icons/supportIcon'
+import { useTracker } from '../lib/ReactMeteorData/ReactMeteorData.js'
+import { SupportIcon } from '../lib/ui/icons/supportIcon.js'
 import { useTranslation } from 'react-i18next'
-import { getHelpMode } from '../lib/localStorage'
-import { CoreSystem } from '../collections'
+import { getHelpMode } from '../lib/localStorage.js'
+import { CoreSystem } from '../collections/index.js'
 import { SYSTEM_ID } from '@sofie-automation/meteor-lib/dist/collections/CoreSystem'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { PopUpPanel } from './RundownView/PopUpPanel'
-import { RundownRightHandButton } from './RundownView/RundownRightHandButton'
+import { PopUpPanel } from './RundownView/PopUpPanel.js'
+import { RundownRightHandButton } from './RundownView/RundownRightHandButton.js'
 
 interface IProps {}
 

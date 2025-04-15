@@ -3,12 +3,12 @@ import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dis
 import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { TimingDataResolution, TimingTickResolution, withTiming } from '../RundownTiming/withTiming'
-import { RundownUtils } from '../../../lib/rundown'
+import { TimingDataResolution, TimingTickResolution, withTiming } from '../RundownTiming/withTiming.js'
+import { RundownUtils } from '../../../lib/rundown.js'
 import classNames from 'classnames'
-import { MediaStatusIndicator } from '../../MediaStatus/MediaStatusIndicator'
-import { scrollToPart, scrollToSegment } from '../../../lib/viewPort'
-import { logger } from '../../../lib/logging'
+import { MediaStatusIndicator } from '../../MediaStatus/MediaStatusIndicator.js'
+import { scrollToPart, scrollToSegment } from '../../../lib/viewPort.js'
+import { logger } from '../../../lib/logging.js'
 
 export const MediaStatusPopUpItem = withTiming<
 	{

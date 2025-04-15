@@ -1,6 +1,6 @@
-import type { IBlueprintConfig } from '../common'
+import type { IBlueprintConfig } from '../common.js'
 import type { ReadonlyDeep } from 'type-fest'
-import type { BlueprintConfigCoreConfig, BlueprintManifestBase, BlueprintManifestType, IConfigMessage } from './base'
+import type { BlueprintConfigCoreConfig, BlueprintManifestBase, BlueprintManifestType, IConfigMessage } from './base.js'
 import type { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 import type { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import type {
@@ -9,19 +9,23 @@ import type {
 	IStudioBaselineContext,
 	IStudioUserContext,
 	IProcessIngestDataContext,
-} from '../context'
-import type { IBlueprintShowStyleBase } from '../showStyle'
+} from '../context/index.js'
+import type { IBlueprintShowStyleBase } from '../showStyle.js'
 import type {
 	ExtendedIngestRundown,
 	NrcsIngestChangeDetails,
 	IngestRundown,
 	MutableIngestRundown,
 	UserOperationChange,
-} from '../ingest'
-import type { ExpectedPlayoutItemGeneric, IBlueprintResultRundownPlaylist, IBlueprintRundownDB } from '../documents'
-import type { BlueprintMappings } from '../studio'
-import type { TimelineObjectCoreExt, TSR } from '../timeline'
-import type { ExpectedPackage } from '../package'
+} from '../ingest.js'
+import type {
+	ExpectedPlayoutItemGeneric,
+	IBlueprintResultRundownPlaylist,
+	IBlueprintRundownDB,
+} from '../documents/index.js'
+import type { BlueprintMappings } from '../studio.js'
+import type { TimelineObjectCoreExt, TSR } from '../timeline.js'
+import type { ExpectedPackage } from '../package.js'
 import type {
 	StudioRouteSet,
 	StudioRouteSetExclusivityGroup,

@@ -1,11 +1,17 @@
-import { makeMockHandlers, makeMockLogger, makeMockSubscriber, makeTestPlaylist, makeTestShowStyleBase } from './utils'
-import { ShowStyleBaseExt } from '../../collections/showStyleBaseHandler'
+import {
+	makeMockHandlers,
+	makeMockLogger,
+	makeMockSubscriber,
+	makeTestPlaylist,
+	makeTestShowStyleBase,
+} from './utils.js'
+import { ShowStyleBaseExt } from '../../collections/showStyleBaseHandler.js'
 import { protectString } from '@sofie-automation/server-core-integration/dist'
 import { PartialDeep } from 'type-fest'
 import { literal } from '@sofie-automation/corelib/dist/lib'
-import { SelectedPieceInstances } from '../../collections/pieceInstancesHandler'
+import { SelectedPieceInstances } from '../../collections/pieceInstancesHandler.js'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { ActivePiecesTopic } from '../activePiecesTopic'
+import { ActivePiecesTopic } from '../activePiecesTopic.js'
 import { ActivePiecesEvent } from '@sofie-automation/live-status-gateway-api'
 
 describe('ActivePiecesTopic', () => {

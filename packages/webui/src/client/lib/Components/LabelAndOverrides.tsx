@@ -4,9 +4,12 @@ import { objectPathGet } from '@sofie-automation/corelib/dist/lib'
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ReadonlyDeep } from 'type-fest'
-import { OverrideOpHelperForItemContents, WrappedOverridableItemNormal } from '../../ui/Settings/util/OverrideOpHelper'
-import { DropdownInputOption, findOptionByValue } from './DropdownInput'
-import { hasOpWithPath } from './util'
+import {
+	OverrideOpHelperForItemContents,
+	WrappedOverridableItemNormal,
+} from '../../ui/Settings/util/OverrideOpHelper.js'
+import { DropdownInputOption, findOptionByValue } from './DropdownInput.js'
+import { hasOpWithPath } from './util.js'
 import Button from 'react-bootstrap/Button'
 import classNames from 'classnames'
 

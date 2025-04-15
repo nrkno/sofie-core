@@ -6,9 +6,9 @@ import {
 	makeTestParts,
 	makeTestPlaylist,
 	makeTestShowStyleBase,
-} from './utils'
-import { ShowStyleBaseExt } from '../../collections/showStyleBaseHandler'
-import { BucketsTopic } from '../bucketsTopic'
+} from './utils.js'
+import { ShowStyleBaseExt } from '../../collections/showStyleBaseHandler.js'
+import { BucketsTopic } from '../bucketsTopic.js'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { RundownImportVersions } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { BucketAdLib, BucketAdLibIngestInfo } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'

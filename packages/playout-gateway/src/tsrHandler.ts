@@ -14,20 +14,20 @@ import {
 	StatusCode,
 	Datastore,
 } from 'timeline-state-resolver'
-import { CoreHandler, CoreTSRDeviceHandler } from './coreHandler'
+import { CoreHandler, CoreTSRDeviceHandler } from './coreHandler.js'
 import * as crypto from 'crypto'
 import * as cp from 'child_process'
 
-import * as _ from 'underscore'
+import _ from 'underscore'
 import {
 	Observer,
 	PeripheralDevicePubSubCollectionsNames,
 	stringifyError,
 } from '@sofie-automation/server-core-integration'
 import { Logger } from 'winston'
-import { disableAtemUpload } from './config'
+import { disableAtemUpload } from './config.js'
 import Debug from 'debug'
-import { FinishedTrace, sendTrace } from './influxdb'
+import { FinishedTrace, sendTrace } from './influxdb.js'
 
 import { RundownId, RundownPlaylistId, StudioId, TimelineHash } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 import {
@@ -36,7 +36,7 @@ import {
 	RoutedTimeline,
 	TimelineObjGeneric,
 } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
-import { PLAYOUT_DEVICE_CONFIG } from './configManifest'
+import { PLAYOUT_DEVICE_CONFIG } from './configManifest.js'
 import { PlayoutGatewayConfig } from '@sofie-automation/shared-lib/dist/generated/PlayoutGatewayConfigTypes'
 import {
 	assertNever,
@@ -53,7 +53,7 @@ import { BaseRemoteDeviceIntegration } from 'timeline-state-resolver/dist/servic
 
 const debug = Debug('playout-gateway')
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface TSRConfig {}
 
 // ----------------------------------------------------------------------------

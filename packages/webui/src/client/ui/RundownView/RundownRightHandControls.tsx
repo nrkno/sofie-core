@@ -5,26 +5,26 @@ import {
 	StudioRouteBehavior,
 	StudioRouteSetExclusivityGroup,
 } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { RewindAllSegmentsIcon } from '../../lib/ui/icons/rewindAllSegmentsIcon'
+import { RewindAllSegmentsIcon } from '../../lib/ui/icons/rewindAllSegmentsIcon.js'
 
 import { Lottie } from '@crello/react-lottie'
-import { NotificationCenterPanelToggle } from '../../lib/notifications/NotificationCenterPanel'
+import { NotificationCenterPanelToggle } from '../../lib/notifications/NotificationCenterPanel.js'
 
 import * as On_Air_MouseOut from './On_Air_MouseOut.json'
 import * as On_Air_MouseOver from './On_Air_MouseOver.json'
-import { SupportPopUpToggle } from '../SupportPopUp'
+import { SupportPopUpToggle } from '../SupportPopUp.js'
 import classNames from 'classnames'
-import { NoticeLevel } from '../../lib/notifications/notifications'
-import { SwitchboardIcon, RouteSetOverrideIcon } from '../../lib/ui/icons/switchboard'
-import { SwitchboardPopUp } from './SwitchboardPopUp'
+import { NoticeLevel } from '../../lib/notifications/notifications.js'
+import { SwitchboardIcon, RouteSetOverrideIcon } from '../../lib/ui/icons/switchboard.js'
+import { SwitchboardPopUp } from './SwitchboardPopUp.js'
 import { useTranslation } from 'react-i18next'
-import { SegmentViewMode } from '../../lib/ui/icons/listView'
+import { SegmentViewMode } from '../../lib/ui/icons/listView.js'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { MediaStatusPopUp } from './MediaStatusPopUp'
-import { MediaStatusIcon } from '../../lib/ui/icons/mediaStatus'
-import { SelectedElementsContext } from './SelectedElementsContext'
-import { UserEditsCloseIcon, UserEditsIcon } from '../../lib/ui/icons/useredits'
-import { RundownRightHandButton } from './RundownRightHandButton'
+import { MediaStatusPopUp } from './MediaStatusPopUp/index.js'
+import { MediaStatusIcon } from '../../lib/ui/icons/mediaStatus.js'
+import { SelectedElementsContext } from './SelectedElementsContext.js'
+import { UserEditsCloseIcon, UserEditsIcon } from '../../lib/ui/icons/useredits.js'
+import { RundownRightHandButton } from './RundownRightHandButton.js'
 
 interface IProps {
 	playlistId: RundownPlaylistId

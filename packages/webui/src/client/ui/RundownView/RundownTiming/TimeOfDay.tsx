@@ -1,4 +1,4 @@
-import { withTiming, WithTiming } from './withTiming'
+import { withTiming, WithTiming } from './withTiming.js'
 import Moment from 'react-moment'
 
 export const TimeOfDay = withTiming<{}, {}>()(function TimeOfDay({ timingDurations }: WithTiming<{}>) {

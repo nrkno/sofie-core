@@ -8,12 +8,7 @@
 		"skipLibCheck": true,
 		"sourceMap": true,
 		"allowJs": false,
-		"lib": [
-			"dom",
-			"es2022",
-			"dom.iterable",
-			"scripthost"
-		],
+		"lib": ["dom", "es2022", "dom.iterable", "scripthost"],
 		"paths": {
 			"meteor/*": [
 				//   "./node_modules/@types/meteor/*",
@@ -21,15 +16,6 @@
 			]
 		}
 	},
-	"include": [
-		"client/**/*",
-		"server/**/*",
-		"lib/**/*",
-		"__mocks__/**/*",
-		"tslint-rules/**/*"
-	],
-	"exclude": [
-		"node_modules",
-		"**/.coverage/**/*"
-	]
+	"include": ["client/**/*", "server/**/*", "lib/**/*", "__mocks__/**/*", "tslint-rules/**/*"],
+	"exclude": ["node_modules", "**/.coverage/**/*"]
 }

@@ -959,7 +959,7 @@ class ServerUserActionAPI
 				}
 
 				setTimeout(() => {
-					// eslint-disable-next-line no-process-exit
+					// eslint-disable-next-line n/no-process-exit
 					process.exit(0)
 				}, 3000)
 				return `Restarting Core in 3s.`

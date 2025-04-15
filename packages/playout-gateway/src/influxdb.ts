@@ -1,6 +1,6 @@
 import { unprotectString } from '@sofie-automation/server-core-integration'
 import * as Influx from 'influx'
-import { config } from './config'
+import { config } from './config.js'
 
 export interface InfluxConfig {
 	host: string | undefined
@@ -21,7 +21,7 @@ const client = config.influx.host
 			username: config.influx.user,
 			password: config.influx.password,
 			protocol,
-	  })
+		})
 	: undefined
 
 const versions = getVersions()

@@ -1,8 +1,8 @@
 import { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
-import { Time } from './common'
-import { TSR, TimelineObjectCoreExt } from './timeline'
+import { Time } from './common.js'
+import { TSR, TimelineObjectCoreExt } from './timeline.js'
 import { SourceLayerType } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
-import { PopupPreview } from './previews'
+import { PopupPreview } from './previews.js'
 
 export type WithTimeline<T extends BaseContent> = T & {
 	timelineObjects: TimelineObjectCoreExt<TSR.TSRTimelineContent>[]
@@ -27,7 +27,7 @@ export interface BaseContent {
 	popUpPreview?: PopupPreview
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface BaseEditableParameters {}
 
 export interface VTEditableParameters extends BaseEditableParameters {
