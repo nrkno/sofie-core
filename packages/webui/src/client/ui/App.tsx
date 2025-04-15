@@ -39,7 +39,6 @@ import { DocumentTitleProvider } from '../lib/DocumentTitleProvider.js'
 import { catchError, firstIfArray, isRunningInPWA } from '../lib/lib.js'
 import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { useUserPermissions, UserPermissionsContext } from './UserPermissions.js'
-import Container from 'react-bootstrap/Container'
 import { relativeToSiteRootUrl, ROOT_URL_PATH_PREFIX } from '../url.js'
 
 const NullComponent = () => null
@@ -150,9 +149,7 @@ export const App: React.FC = function App() {
 	return (
 		<UserPermissionsContext.Provider value={roles}>
 			<Router getUserConfirmation={onNavigationUserConfirmation} basename={ROOT_URL_PATH_PREFIX}>
-				<Container
-					fluid
-					className="header-clear"
+				<div
 					style={{
 						// @ts-expect-error custom variable
 						'--sofie-logo-url': `url(${relativeToSiteRootUrl('/images/sofie-logo.svg')})`,
@@ -240,7 +237,7 @@ export const App: React.FC = function App() {
 					<ErrorBoundary>
 						<ModalDialogGlobalContainer />
 					</ErrorBoundary>
-				</Container>
+				</div>
 			</Router>
 		</UserPermissionsContext.Provider>
 	)

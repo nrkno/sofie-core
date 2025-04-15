@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
 import { CreateAdlibTestingRundownPanel } from './RundownList/CreateAdlibTestingRundownPanel.js'
 import { UserPermissionsContext } from './UserPermissions.js'
+import Container from 'react-bootstrap/esm/Container'
 
 export enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',
@@ -138,7 +139,7 @@ export function RundownList(): JSX.Element {
 	}
 
 	return (
-		<>
+		<Container fluid className="header-clear">
 			{coreSystem ? <RegisterHelp step={step} /> : null}
 
 			{showGettingStarted === true ? <GettingStarted step={step} /> : null}
@@ -187,6 +188,6 @@ export function RundownList(): JSX.Element {
 			{userPermissions.studio && <CreateAdlibTestingRundownPanel />}
 
 			<RundownListFooter />
-		</>
+		</Container>
 	)
 }
