@@ -1,4 +1,4 @@
-import * as _ from 'underscore'
+import _ from 'underscore'
 import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'
 import { BlueprintManifestSet } from '@sofie-automation/blueprints-integration'

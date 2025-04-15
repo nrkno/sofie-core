@@ -6,13 +6,13 @@ import { HotkeyDefinition } from '@sofie-automation/corelib/dist/dataModel/ShowS
 import { literal, getRandomString } from '@sofie-automation/corelib/dist/lib'
 import { useTranslation, withTranslation } from 'react-i18next'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { EditAttribute } from '../../../lib/EditAttribute'
-import { hotkeyHelper } from '../../../lib/hotkeyHelper'
-import { NotificationCenter, NoticeLevel, Notification } from '../../../lib/notifications/notifications'
-import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
-import { UploadButton } from '../../../lib/uploadButton'
-import { ShowStyleBases } from '../../../collections'
-import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
+import { EditAttribute } from '../../../lib/EditAttribute.js'
+import { hotkeyHelper } from '../../../lib/hotkeyHelper.js'
+import { NotificationCenter, NoticeLevel, Notification } from '../../../lib/notifications/notifications.js'
+import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData.js'
+import { UploadButton } from '../../../lib/uploadButton.js'
+import { ShowStyleBases } from '../../../collections/index.js'
+import { LabelActual } from '../../../lib/Components/LabelAndOverrides.js'
 import Button from 'react-bootstrap/esm/Button'
 import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
@@ -118,10 +118,7 @@ export const HotkeyLegendSettings = withTranslation()(
 								<button className="action-btn" onClick={() => this.editItem(item)}>
 									<FontAwesomeIcon icon={faPencilAlt} />
 								</button>
-								<button
-									className="action-btn"
-									onClick={() => this.onDeleteHotkeyLegend && this.onDeleteHotkeyLegend(item)}
-								>
+								<button className="action-btn" onClick={() => this.onDeleteHotkeyLegend?.(item)}>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
 							</td>

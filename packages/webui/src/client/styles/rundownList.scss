@@ -338,7 +338,9 @@
 		grid-template-columns:
 			var(--dragHandleWidth)
 			var(--nameColumnWidth) var(--showStyleColumnWidth) var(--airTimeColumnWidth)
-			var(--durationColumnWidth) var(--expectedEndColumnWidth) var(--lastModifiedColumnWidth) var(--layoutSelectionColumnWidth);
+			var(--durationColumnWidth) var(--expectedEndColumnWidth) var(--lastModifiedColumnWidth) var(
+				--layoutSelectionColumnWidth
+			);
 
 		.rundown-list-item__actions {
 			padding: 0 0 3px; // cater for icons being larger than the font

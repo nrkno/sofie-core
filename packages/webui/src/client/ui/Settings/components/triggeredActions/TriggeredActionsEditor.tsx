@@ -1,38 +1,38 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSubscription, useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
+import { useSubscription, useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData.js'
 import { MeteorPubSub } from '@sofie-automation/meteor-lib/dist/api/pubsub'
 import { faCaretDown, faCaretRight, faDownload, faPlus, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { TriggeredActionEntry, TRIGGERED_ACTION_ENTRY_DRAG_TYPE } from './TriggeredActionEntry'
-import { literal, unprotectString } from '../../../../lib/tempLib'
-import { TriggersHandler } from '../../../../lib/triggers/TriggersHandler'
+import { TriggeredActionEntry, TRIGGERED_ACTION_ENTRY_DRAG_TYPE } from './TriggeredActionEntry.js'
+import { literal, unprotectString } from '../../../../lib/tempLib.js'
+import { TriggersHandler } from '../../../../lib/triggers/TriggersHandler.js'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { MeteorCall } from '../../../../lib/meteorApi'
-import { UploadButton } from '../../../../lib/uploadButton'
-import { ErrorBoundary } from '../../../../lib/ErrorBoundary'
-import { SorensenContext } from '../../../../lib/SorensenContext'
+import { MeteorCall } from '../../../../lib/meteorApi.js'
+import { UploadButton } from '../../../../lib/uploadButton.js'
+import { ErrorBoundary } from '../../../../lib/ErrorBoundary.js'
+import { SorensenContext } from '../../../../lib/SorensenContext.js'
 import Tooltip from 'rc-tooltip'
 import { useDrop } from 'react-dnd'
 import { TriggerType } from '@sofie-automation/blueprints-integration'
-import { keyLabelsToCodes } from '../../../../lib/triggers/codesToKeyLabels'
+import { keyLabelsToCodes } from '../../../../lib/triggers/codesToKeyLabels.js'
 import classNames from 'classnames'
-import { catchError, fetchFrom } from '../../../../lib/lib'
-import { NotificationCenter, Notification, NoticeLevel } from '../../../../lib/notifications/notifications'
-import { doModalDialog } from '../../../../lib/ModalDialog'
+import { catchError, fetchFrom } from '../../../../lib/lib.js'
+import { NotificationCenter, Notification, NoticeLevel } from '../../../../lib/notifications/notifications.js'
+import { doModalDialog } from '../../../../lib/ModalDialog.js'
 import { PartId, RundownId, ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownPlaylists, Rundowns, TriggeredActions } from '../../../../collections'
+import { RundownPlaylists, Rundowns, TriggeredActions } from '../../../../collections/index.js'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { SourceLayers, OutputLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { RundownPlaylistCollectionUtil } from '../../../../collections/rundownPlaylistUtil'
+import { RundownPlaylistCollectionUtil } from '../../../../collections/rundownPlaylistUtil.js'
 import { CorelibPubSub } from '@sofie-automation/corelib/dist/pubsub'
-import { UIPartInstances, UIParts } from '../../../Collections'
+import { UIPartInstances, UIParts } from '../../../Collections.js'
 import Form from 'react-bootstrap/esm/Form'
 import Button from 'react-bootstrap/esm/Button'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { createPrivateApiPath } from '../../../../url'
+import { createPrivateApiPath } from '../../../../url.js'
 
 export interface PreviewContext {
 	rundownPlaylist: DBRundownPlaylist | null
@@ -111,7 +111,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 										keys: { $regex: `${parsedTriggerFilter}`, $options: 'i' },
 									},
 								},
-						  }
+							}
 						: undefined
 				),
 				{
@@ -140,7 +140,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 										keys: { $regex: `${parsedTriggerFilter}`, $options: 'i' },
 									},
 								},
-						  }
+							}
 						: undefined
 				),
 				{
@@ -406,7 +406,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 										}
 										onFocus={setSelectedTriggeredActionId}
 									/>
-							  ))
+								))
 							: null}
 
 						{!systemWideCollapsed && !parsedTriggerFilter && systemTriggeredActionIds?.length === 0 && (

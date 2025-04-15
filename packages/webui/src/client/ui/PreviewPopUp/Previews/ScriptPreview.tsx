@@ -1,4 +1,4 @@
-import { getScriptPreview } from '../../../lib/ui/scriptPreview'
+import { getScriptPreview } from '../../../lib/ui/scriptPreview.js'
 import { useTranslation } from 'react-i18next'
 import Moment from 'react-moment'
 

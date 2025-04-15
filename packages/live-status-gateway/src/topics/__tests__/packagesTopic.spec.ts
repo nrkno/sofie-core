@@ -1,6 +1,6 @@
 import { protectString, unprotectString } from '@sofie-automation/server-core-integration'
-import { makeMockHandlers, makeMockLogger, makeMockSubscriber } from './utils'
-import { PackagesTopic } from '../packagesTopic'
+import { makeMockHandlers, makeMockLogger, makeMockSubscriber } from './utils.js'
+import { PackagesTopic } from '../packagesTopic.js'
 import { UIPieceContentStatus } from '@sofie-automation/corelib/dist/dataModel/PieceContentStatus'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'

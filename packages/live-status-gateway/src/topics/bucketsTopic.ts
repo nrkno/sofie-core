@@ -8,11 +8,11 @@ import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protected
 import { PickKeys } from '@sofie-automation/shared-lib/dist/lib/types'
 import { Logger } from 'winston'
 import { WebSocket } from 'ws'
-import { ShowStyleBaseExt } from '../collections/showStyleBaseHandler'
-import { CollectionHandlers } from '../liveStatusServer'
-import { WebSocketTopic, WebSocketTopicBase } from '../wsHandler'
-import { sortContent, WithSortingMetadata } from './helpers/contentSorting'
-import _ = require('underscore')
+import { ShowStyleBaseExt } from '../collections/showStyleBaseHandler.js'
+import { CollectionHandlers } from '../liveStatusServer.js'
+import { WebSocketTopic, WebSocketTopicBase } from '../wsHandler.js'
+import { sortContent, WithSortingMetadata } from './helpers/contentSorting.js'
+import _ from 'underscore'
 import {
 	BucketsEvent,
 	BucketStatus,
@@ -22,8 +22,8 @@ import {
 
 const THROTTLE_PERIOD_MS = 100
 
-const SHOW_STYLE_BASE_KEYS = ['sourceLayerNamesById', 'outputLayerNamesById'] as const
-type ShowStyle = PickKeys<ShowStyleBaseExt, typeof SHOW_STYLE_BASE_KEYS>
+const _SHOW_STYLE_BASE_KEYS = ['sourceLayerNamesById', 'outputLayerNamesById'] as const
+type ShowStyle = PickKeys<ShowStyleBaseExt, typeof _SHOW_STYLE_BASE_KEYS>
 
 export class BucketsTopic extends WebSocketTopicBase implements WebSocketTopic {
 	private _buckets: Bucket[] = []
@@ -135,7 +135,7 @@ export class BucketsTopic extends WebSocketTopicBase implements WebSocketTopic {
 						name: t.data,
 						label: interpollateTranslation(t.display.label.key, t.display.label.args),
 					})
-			  )
+				)
 			: []
 		const name = interpollateTranslation(action.display.label.key, action.display.label.args)
 		return {

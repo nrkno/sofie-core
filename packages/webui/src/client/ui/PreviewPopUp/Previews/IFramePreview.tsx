@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react'
-import { relativeToSiteRootUrl } from '../../../url'
+import { relativeToSiteRootUrl } from '../../../url.js'
 
 interface IFramePreviewProps {
 	content: {

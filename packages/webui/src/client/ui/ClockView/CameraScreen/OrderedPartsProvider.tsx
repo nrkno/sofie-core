@@ -1,6 +1,6 @@
 import React, { PropsWithChildren, useMemo } from 'react'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { TimingDataResolution, TimingTickResolution, withTiming } from '../../RundownView/RundownTiming/withTiming'
+import { TimingDataResolution, TimingTickResolution, withTiming } from '../../RundownView/RundownTiming/withTiming.js'
 import { protectStringArray } from '@sofie-automation/corelib/dist/protectedString'
 
 export const OrderedPartsContext = React.createContext<PartId[]>([])

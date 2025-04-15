@@ -27,7 +27,9 @@
 	left: auto;
 	opacity: 0.5;
 	visibility: visible;
-	transition: opacity 200ms, visibility 0ms 0ms;
+	transition:
+		opacity 200ms,
+		visibility 0ms 0ms;
 
 	&:hover {
 		opacity: 1;

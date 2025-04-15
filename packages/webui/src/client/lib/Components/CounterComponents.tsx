@@ -1,5 +1,5 @@
 import Moment from 'react-moment'
-import { RundownUtils } from '../rundown'
+import { RundownUtils } from '../rundown.js'
 
 interface OverUnderProps {
 	value: number

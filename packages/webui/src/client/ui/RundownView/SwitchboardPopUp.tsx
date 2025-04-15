@@ -6,11 +6,11 @@ import {
 	StudioRouteBehavior,
 } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import classNames from 'classnames'
-import { RouteSetOverrideIcon } from '../../lib/ui/icons/switchboard'
+import { RouteSetOverrideIcon } from '../../lib/ui/icons/switchboard.js'
 import Tooltip from 'rc-tooltip'
-import { TOOLTIP_DEFAULT_DELAY } from '../../lib/lib'
-import { ToggleSwitchControl } from '../../lib/Components/ToggleSwitch'
-import { PopUpPanel } from './PopUpPanel'
+import { TOOLTIP_DEFAULT_DELAY } from '../../lib/lib.js'
+import { ToggleSwitchControl } from '../../lib/Components/ToggleSwitch.js'
+import { PopUpPanel } from './PopUpPanel.js'
 
 interface IProps {
 	onStudioRouteSetSwitch?: (

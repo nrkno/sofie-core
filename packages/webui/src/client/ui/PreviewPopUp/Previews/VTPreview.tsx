@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef } from 'react'
-import { StyledTimecode } from '../../../lib/StyledTimecode'
+import { StyledTimecode } from '../../../lib/StyledTimecode.js'
 import classNames from 'classnames'
-import StudioContext from '../../RundownView/StudioContext'
+import StudioContext from '../../RundownView/StudioContext.js'
 
 interface VTPreviewProps {
 	content: {

@@ -1,6 +1,6 @@
 import { unprotectString } from '@sofie-automation/server-core-integration'
-import type { ShowStyleBaseExt } from '../../collections/showStyleBaseHandler'
-import type { PieceInstanceMin } from '../../collections/pieceInstancesHandler'
+import type { ShowStyleBaseExt } from '../../collections/showStyleBaseHandler.js'
+import type { PieceInstanceMin } from '../../collections/pieceInstancesHandler.js'
 import type { PieceStatus } from '@sofie-automation/live-status-gateway-api'
 import { clone } from '@sofie-automation/corelib/dist/lib'
 

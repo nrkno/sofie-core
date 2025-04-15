@@ -6,9 +6,9 @@ import {
 	makeTestParts,
 	makeTestPlaylist,
 	makeTestShowStyleBase,
-} from './utils'
-import { AdLibsTopic } from '../adLibsTopic'
-import { ShowStyleBaseExt } from '../../collections/showStyleBaseHandler'
+} from './utils.js'
+import { AdLibsTopic } from '../adLibsTopic.js'
+import { ShowStyleBaseExt } from '../../collections/showStyleBaseHandler.js'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 import { AdLibsEvent } from '@sofie-automation/live-status-gateway-api'

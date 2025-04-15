@@ -5,6 +5,7 @@ import KoaMount from 'koa-mount'
 import { WebApp } from 'meteor/webapp'
 import { Meteor } from 'meteor/meteor'
 import { getRandomString } from '@sofie-automation/corelib/dist/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import _ from 'underscore'
 import { getRootSubpath, public_dir } from '../../lib'
 import staticServe from 'koa-static'
@@ -48,7 +49,7 @@ Meteor.startup(() => {
 	)
 
 	// Expose the API at the url
-	WebApp.rawHandlers.use((req, res) => {
+	WebApp.rawConnectHandlers.use((req, res) => {
 		const transaction = profiler.startTransaction(`${req.method}:${req.url}`, 'http.incoming')
 		if (transaction) {
 			transaction.setLabel('url', `${req.url}`)
@@ -146,7 +147,8 @@ async function serveIndexHtml(ctx: Koa.ParameterizedContext, next: Koa.Next) {
 		modifiedFile = modifiedFile.replaceAll('src="./', `src="${rootPath}/`)
 
 		ctx.body = modifiedFile
-	} catch (e) {
+	} catch (e: unknown) {
+		logger.error(`error in serveIndexHtml: ${stringifyError(e)}`)
 		return next()
 	}
 }

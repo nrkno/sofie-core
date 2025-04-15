@@ -1,4 +1,4 @@
-import * as _ from 'underscore'
+import _ from 'underscore'
 import path from 'path'
 import { ReadStream, createReadStream, promises as fsp } from 'fs'
 import { unprotectString, getRandomId } from '../../lib/tempLib'
@@ -153,7 +153,7 @@ async function innerUploadBlueprint(
 			? blueprint.databaseVersion
 			: {
 					system: undefined,
-			  },
+				},
 		blueprintId: '',
 		blueprintVersion: '',
 		integrationVersion: '',
@@ -167,7 +167,7 @@ async function innerUploadBlueprint(
 	let blueprintManifest: SomeBlueprintManifest | undefined
 	try {
 		blueprintManifest = evalBlueprint(newBlueprint)
-	} catch (e) {
+	} catch (_e) {
 		throw new Meteor.Error(400, `Blueprint ${blueprintId} failed to parse`)
 	}
 
@@ -284,10 +284,10 @@ async function syncConfigPresetsToShowStyles(blueprint: Blueprint): Promise<void
 					? {
 							'blueprintConfigWithOverrides.defaults': configPreset.config,
 							blueprintConfigPresetIdUnlinked: false,
-					  }
+						}
 					: {
 							blueprintConfigPresetIdUnlinked: true,
-					  },
+						},
 			})
 		})
 	)
@@ -316,10 +316,10 @@ async function syncConfigPresetsToShowStyles(blueprint: Blueprint): Promise<void
 					? {
 							'blueprintConfigWithOverrides.defaults': configPreset.config,
 							blueprintConfigPresetIdUnlinked: false,
-					  }
+						}
 					: {
 							blueprintConfigPresetIdUnlinked: true,
-					  },
+						},
 			})
 		})
 	)
@@ -347,10 +347,10 @@ async function syncConfigPresetsToStudios(blueprint: Blueprint): Promise<void> {
 					? {
 							'blueprintConfigWithOverrides.defaults': configPreset.config,
 							blueprintConfigPresetIdUnlinked: false,
-					  }
+						}
 					: {
 							blueprintConfigPresetIdUnlinked: true,
-					  },
+						},
 			})
 		})
 	)

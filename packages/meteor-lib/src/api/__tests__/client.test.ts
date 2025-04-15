@@ -1,4 +1,4 @@
-import { ClientAPI } from '../client'
+import { ClientAPI } from '../client.js'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 
 describe('ClientAPI', () => {
@@ -22,7 +22,7 @@ describe('ClientAPI', () => {
 			expect(error).toMatchObject({
 				error: {
 					key: UserErrorMessage.InactiveRundown,
-					message: {
+					userMessage: {
 						args: mockArgs,
 						key: 'Rundown must be active!',
 					},
@@ -37,7 +37,7 @@ describe('ClientAPI', () => {
 			expect(error).toMatchObject({
 				error: {
 					key: UserErrorMessage.InternalError,
-					message: {
+					userMessage: {
 						args: mockArgs,
 						key: 'An internal error occured!',
 					},

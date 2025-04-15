@@ -1,12 +1,12 @@
 import { useCallback, useMemo } from 'react'
-import { Studios } from '../../../../collections'
+import { Studios } from '../../../../collections/index.js'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
+import { useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData.js'
 import { PeripheralDevice, PeripheralDeviceCategory } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { getHelpMode } from '../../../../lib/localStorage'
+import { getHelpMode } from '../../../../lib/localStorage.js'
 import Tooltip from 'rc-tooltip'
 import { useTranslation } from 'react-i18next'
-import { getAllCurrentAndDeletedItemsFromOverrides, useOverrideOpHelper } from '../../util/OverrideOpHelper'
+import { getAllCurrentAndDeletedItemsFromOverrides, useOverrideOpHelper } from '../../util/OverrideOpHelper.js'
 import {
 	ObjectOverrideSetOp,
 	SomeObjectOverrideOp,
@@ -16,7 +16,7 @@ import { StudioIngestDevice } from '@sofie-automation/corelib/dist/dataModel/Stu
 import { faPlus } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { literal } from '@sofie-automation/corelib/dist/lib'
-import { GenericSubDevicesTable } from './GenericSubDevices'
+import { GenericSubDevicesTable } from './GenericSubDevices.js'
 
 interface StudioIngestSubDevicesProps {
 	studioId: StudioId

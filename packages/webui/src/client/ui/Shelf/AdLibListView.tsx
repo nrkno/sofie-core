@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useRef } from 'react'
 import classNames from 'classnames'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { RundownUtils } from '../../lib/rundown'
-import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
-import { AdLibPieceUi, AdlibSegmentUi } from '../../lib/shelf'
+import { RundownUtils } from '../../lib/rundown.js'
+import { AdLibListItem, IAdLibListItem } from './AdLibListItem.js'
+import { AdLibPieceUi, AdlibSegmentUi } from '../../lib/shelf.js'
 import {
 	RundownLayoutFilter,
 	RundownLayoutFilterBase,
 } from '@sofie-automation/meteor-lib/dist/collections/RundownLayouts'
-import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
-import { PieceUi } from '../SegmentContainer/withResolvedSegment'
+import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets.js'
+import { PieceUi } from '../SegmentContainer/withResolvedSegment.js'
 import { IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
 import { getRandomString } from '@sofie-automation/corelib/dist/lib'
 import { UIShowStyleBase } from '@sofie-automation/meteor-lib/dist/api/showStyles'
@@ -165,7 +165,7 @@ export function AdLibListView(props: Readonly<IListViewPropsHeader>): JSX.Elemen
 			rundownAdLibs: props.rundownAdLibs
 				? props.rundownAdLibs.filter((item) =>
 						matchFilter(item, props.showStyleBase, liveSegment, props.filter, props.searchFilter, uniquenessIds0)
-				  )
+					)
 				: ([] as AdLibPieceUi[]),
 			rundownAdLibsUniqueIds: uniquenessIds0,
 		}

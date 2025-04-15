@@ -1,4 +1,4 @@
-import * as _ from 'underscore'
+import _ from 'underscore'
 import { check } from '../lib/check'
 import { logger } from '../logging'
 import { registerClassToMeteorMethods } from '../methods'

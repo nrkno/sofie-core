@@ -8,14 +8,14 @@ import {
 	OverrideOpHelperForItemContents,
 	getAllCurrentAndDeletedItemsFromOverrides,
 	WrappedOverridableItem,
-} from '../../../ui/Settings/util/OverrideOpHelper'
-import { useToggleExpandHelper } from '../../../ui/util/useToggleExpandHelper'
-import { doModalDialog } from '../../ModalDialog'
+} from '../../../ui/Settings/util/OverrideOpHelper.js'
+import { useToggleExpandHelper } from '../../../ui/util/useToggleExpandHelper.js'
+import { doModalDialog } from '../../ModalDialog.js'
 import {
 	getSchemaSummaryFieldsForObject,
 	SchemaFormSofieEnumDefinition,
 	translateStringIfHasNamespaces,
-} from '../schemaFormUtil'
+} from '../schemaFormUtil.js'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 import {
 	getSchemaDefaultValues,
@@ -23,14 +23,14 @@ import {
 	SchemaFormUIField,
 } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaUtil'
 import { SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { SchemaFormTableEditRow } from './TableEditRow'
-import { SchemaTableSummaryRow } from '../SchemaTableSummaryRow'
-import { OverrideOpHelperObjectTable } from './ObjectTableOpHelper'
-import { ObjectTableDeletedRow } from './ObjectTableDeletedRow'
-import { SchemaFormSectionHeader } from '../SchemaFormSectionHeader'
-import { UploadButton } from '../../uploadButton'
+import { SchemaFormTableEditRow } from './TableEditRow.js'
+import { SchemaTableSummaryRow } from '../SchemaTableSummaryRow.js'
+import { OverrideOpHelperObjectTable } from './ObjectTableOpHelper.js'
+import { ObjectTableDeletedRow } from './ObjectTableDeletedRow.js'
+import { SchemaFormSectionHeader } from '../SchemaFormSectionHeader.js'
+import { UploadButton } from '../../uploadButton.js'
 import Tooltip from 'rc-tooltip'
-import { NoticeLevel, Notification, NotificationCenter } from '../../notifications/notifications'
+import { NoticeLevel, Notification, NotificationCenter } from '../../notifications/notifications.js'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 interface SchemaFormObjectTableProps {

@@ -25,8 +25,8 @@ import {
 } from '@mos-connection/connector'
 
 import * as Winston from 'winston'
-import { CoreHandler } from './coreHandler'
-import { CoreMosDeviceHandler } from './CoreMosDeviceHandler'
+import { CoreHandler } from './coreHandler.js'
+import { CoreMosDeviceHandler } from './CoreMosDeviceHandler.js'
 import { Observer, PeripheralDevicePubSubCollectionsNames } from '@sofie-automation/server-core-integration'
 import {
 	DEFAULT_MOS_TIMEOUT_TIME,

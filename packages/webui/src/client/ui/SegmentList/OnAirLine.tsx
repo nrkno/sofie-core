@@ -4,13 +4,13 @@ import {
 	TimingTickResolution,
 	WithTiming,
 	withTiming,
-} from '../RundownView/RundownTiming/withTiming'
-import { SIMULATED_PLAYBACK_HARD_MARGIN } from '../SegmentTimeline/Constants'
-import { PartInstanceLimited } from '../../lib/RundownResolver'
+} from '../RundownView/RundownTiming/withTiming.js'
+import { SIMULATED_PLAYBACK_HARD_MARGIN } from '../SegmentTimeline/Constants.js'
+import { PartInstanceLimited } from '../../lib/RundownResolver.js'
 import { useTranslation } from 'react-i18next'
-import { getAllowSpeaking, getAllowVibrating } from '../../lib/localStorage'
-import { CurrentPartOrSegmentRemaining } from '../RundownView/RundownTiming/CurrentPartOrSegmentRemaining'
-import { AutoNextStatus } from '../RundownView/RundownTiming/AutoNextStatus'
+import { getAllowSpeaking, getAllowVibrating } from '../../lib/localStorage.js'
+import { CurrentPartOrSegmentRemaining } from '../RundownView/RundownTiming/CurrentPartOrSegmentRemaining.js'
+import { AutoNextStatus } from '../RundownView/RundownTiming/AutoNextStatus.js'
 import classNames from 'classnames'
 
 interface IProps {
@@ -54,8 +54,8 @@ export const OnAirLine = withTiming<IProps, {}>({
 			(lastTake || 0) > (lastStartedPlayback || -1)
 				? lastTake
 				: lastStartedPlayback !== undefined
-				? lastStartedPlayback - lastTakeOffset
-				: undefined
+					? lastStartedPlayback - lastTakeOffset
+					: undefined
 
 		let isExpectedToPlay = !!lastStartedPlayback
 		if (lastTake && lastTake + SIMULATED_PLAYBACK_HARD_MARGIN > timingDurations.currentTime) {

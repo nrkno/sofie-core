@@ -1,11 +1,11 @@
 import * as React from 'react'
 import { withTranslation } from 'react-i18next'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
+import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data.js'
 import { IngestDeviceSecretSettingsStatus } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/ingestDevice'
-import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
-import { fetchFrom } from '../../../lib/lib'
-import { createPrivateApiPath } from '../../../url'
+import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications.js'
+import { fetchFrom } from '../../../lib/lib.js'
+import { createPrivateApiPath } from '../../../url.js'
 
 interface IConfigManifestOAuthFlowComponentState {}
 interface IConfigManifestOAuthFlowComponentProps {

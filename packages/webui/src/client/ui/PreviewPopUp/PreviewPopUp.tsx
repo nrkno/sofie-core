@@ -90,18 +90,14 @@ export const PreviewPopUp = React.forwardRef<
 		}
 	}, [update, anchor])
 
-	useImperativeHandle(
-		ref,
-		() => {
-			return {
-				update: () => {
-					if (!updateRef.current) return
-					updateRef.current().catch(console.error)
-				},
-			}
-		},
-		[]
-	)
+	useImperativeHandle(ref, () => {
+		return {
+			update: () => {
+				if (!updateRef.current) return
+				updateRef.current().catch(console.error)
+			},
+		}
+	}, [])
 
 	return (
 		<div

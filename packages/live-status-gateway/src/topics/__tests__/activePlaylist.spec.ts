@@ -1,7 +1,13 @@
-import { ActivePlaylistTopic } from '../activePlaylistTopic'
-import { makeMockHandlers, makeMockLogger, makeMockSubscriber, makeTestPlaylist, makeTestShowStyleBase } from './utils'
-import { ShowStyleBaseExt } from '../../collections/showStyleBaseHandler'
-import { SelectedPartInstances } from '../../collections/partInstancesHandler'
+import { ActivePlaylistTopic } from '../activePlaylistTopic.js'
+import {
+	makeMockHandlers,
+	makeMockLogger,
+	makeMockSubscriber,
+	makeTestPlaylist,
+	makeTestShowStyleBase,
+} from './utils.js'
+import { ShowStyleBaseExt } from '../../collections/showStyleBaseHandler.js'
+import { SelectedPartInstances } from '../../collections/partInstancesHandler.js'
 import { protectString, unprotectString, unprotectStringArray } from '@sofie-automation/server-core-integration/dist'
 import { PartialDeep } from 'type-fest'
 import { literal } from '@sofie-automation/corelib/dist/lib'

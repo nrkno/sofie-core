@@ -2,7 +2,7 @@ import ClassNames from 'classnames'
 import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import { StudioPackageContainer } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { doModalDialog } from '../../../../lib/ModalDialog'
+import { doModalDialog } from '../../../../lib/ModalDialog.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash, faPencilAlt, faCheck } from '@fortawesome/free-solid-svg-icons'
 import { useTranslation } from 'react-i18next'
@@ -12,11 +12,11 @@ import {
 	LabelAndOverrides,
 	LabelAndOverridesForCheckbox,
 	LabelAndOverridesForDropdown,
-} from '../../../../lib/Components/LabelAndOverrides'
-import { TextInputControl } from '../../../../lib/Components/TextInput'
-import { DropdownInputControl, getDropdownInputOptions } from '../../../../lib/Components/DropdownInput'
-import { OverrideOpHelper, WrappedOverridableItemNormal } from '../../util/OverrideOpHelper'
-import { CheckboxControl } from '../../../../lib/Components/Checkbox'
+} from '../../../../lib/Components/LabelAndOverrides.js'
+import { TextInputControl } from '../../../../lib/Components/TextInput.js'
+import { DropdownInputControl, getDropdownInputOptions } from '../../../../lib/Components/DropdownInput.js'
+import { OverrideOpHelper, WrappedOverridableItemNormal } from '../../util/OverrideOpHelper.js'
+import { CheckboxControl } from '../../../../lib/Components/Checkbox.js'
 import Button from 'react-bootstrap/Button'
 
 interface AccessorTableRowProps {

@@ -1,4 +1,4 @@
-import * as _ from 'underscore'
+import _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { SupressLogMessages } from '../../../../__mocks__/suppressLogging'
 import { callKoaRoute } from '../../../../__mocks__/koa-util'

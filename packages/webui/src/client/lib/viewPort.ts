@@ -1,10 +1,10 @@
-import { SEGMENT_TIMELINE_ELEMENT_ID } from '../ui/SegmentTimeline/SegmentTimeline'
-import { isProtectedString } from './tempLib'
+import { SEGMENT_TIMELINE_ELEMENT_ID } from '../ui/SegmentTimeline/SegmentTimeline.js'
+import { isProtectedString } from './tempLib.js'
 import RundownViewEventBus, { RundownViewEvents } from '@sofie-automation/meteor-lib/dist/triggers/RundownViewEventBus'
-import { Settings } from '../lib/Settings'
+import { Settings } from '../lib/Settings.js'
 import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { UIPartInstances, UIParts } from '../ui/Collections'
-import { logger } from './logging'
+import { UIPartInstances, UIParts } from '../ui/Collections.js'
+import { logger } from './logging.js'
 
 const HEADER_MARGIN = 24 // TODOSYNC: TV2 uses 15. If it's needed to be different, it needs to be made generic somehow..
 const FALLBACK_HEADER_HEIGHT = 65
@@ -122,7 +122,7 @@ export async function scrollToSegment(
 	elementToScrollToOrSegmentId: HTMLElement | SegmentId,
 	forceScroll?: boolean,
 	noAnimation?: boolean,
-	partInstanceId?: PartInstanceId | undefined
+	partInstanceId?: PartInstanceId
 ): Promise<boolean> {
 	const getElementToScrollTo = (showHistory: boolean): HTMLElement | null => {
 		if (isProtectedString(elementToScrollToOrSegmentId)) {
@@ -174,7 +174,7 @@ async function innerScrollToSegment(
 	forceScroll?: boolean,
 	noAnimation?: boolean,
 	secondStage?: boolean,
-	partInstanceId?: PartInstanceId | undefined
+	partInstanceId?: PartInstanceId
 ): Promise<boolean> {
 	if (!secondStage) {
 		currentScrollingElement = elementToScrollTo
@@ -279,11 +279,14 @@ export async function scrollToPosition(scrollPosition: number, noAnimation?: boo
 						left: 0,
 						behavior: 'smooth',
 					})
-					setTimeout(() => {
-						resolve()
-						scrollToPositionRequestReject = undefined
-						// this formula was experimentally created from Chrome 86 behavior
-					}, 3000 * Math.log(Math.abs(currentTop - targetTop) / 2000 + 1))
+					setTimeout(
+						() => {
+							resolve()
+							scrollToPositionRequestReject = undefined
+							// this formula was experimentally created from Chrome 86 behavior
+						},
+						3000 * Math.log(Math.abs(currentTop - targetTop) / 2000 + 1)
+					)
 				},
 				{ timeout: 250 }
 			)
@@ -319,7 +322,7 @@ export function lockPointer(): void {
 	if (pointerLockTurnstile === 0) {
 		// pointerLockTurnstile === 0 means that no requests for locking the pointer have been made
 		// since we last unlocked it
-		document.body.requestPointerLock()
+		document.body.requestPointerLock().catch((e) => console.error('Lock pointer failed', e))
 		// attach the event handlers only once. Once they are attached, we will track the
 		// locked state and act according to the turnstile
 		if (!pointerHandlerAttached) {

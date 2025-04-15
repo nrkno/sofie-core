@@ -2,7 +2,7 @@ import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { unprotectString } from '@sofie-automation/server-core-integration'
-import _ = require('underscore')
+import _ from 'underscore'
 import type { CurrentSegmentPart } from '@sofie-automation/live-status-gateway-api'
 
 export function getCurrentSegmentParts(
